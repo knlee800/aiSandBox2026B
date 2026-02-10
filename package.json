@@ -9,6 +9,8 @@
     "frontend"
   ],
   "scripts": {
+    "start:all": "pwsh -File scripts/start-all.ps1",
+    "start:all:bash": "bash scripts/start-all.sh",
     "dev": "docker-compose up",
     "dev:build": "docker-compose up --build",
     "down": "docker-compose down",
