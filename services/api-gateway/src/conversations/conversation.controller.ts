@@ -71,9 +71,9 @@ export class ConversationController {
   @HttpCode(HttpStatus.OK)
   async getMessages(
     @Param('id') id: string,
+    @Request() req,
     @Query('limit') limit?: number,
     @Query('offset') offset?: number,
-    @Request() req,
   ): Promise<ChatMessage[]> {
     const userId = req.user.userId;
 

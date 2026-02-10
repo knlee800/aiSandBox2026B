@@ -86,7 +86,7 @@ export class ReconciliationService {
           governanceMismatch: false,
           exportUnavailable: false,
           invoiceVoid: true,
-          invoiceFinalized: invoice.status === 'finalized',
+          invoiceFinalized: false, // void invoices are never finalized
           highRiskDrift: false,
         },
       };
@@ -118,7 +118,7 @@ export class ReconciliationService {
           governanceMismatch: false,
           exportUnavailable: true,
           invoiceVoid: false,
-          invoiceFinalized: invoice.status === 'finalized',
+          invoiceFinalized: String(invoice.status) === 'finalized',
           highRiskDrift: true, // Export unavailable is high risk
         },
       };
@@ -194,7 +194,7 @@ export class ReconciliationService {
         governanceMismatch,
         exportUnavailable: false,
         invoiceVoid: false,
-        invoiceFinalized: invoice.status === 'finalized',
+        invoiceFinalized: String(invoice.status) === 'finalized',
         highRiskDrift,
       },
     };
