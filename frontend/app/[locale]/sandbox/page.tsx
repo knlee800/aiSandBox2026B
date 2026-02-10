@@ -9,6 +9,7 @@ import Editor from '@monaco-editor/react';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import TokenCounter from '@/components/TokenCounter';
 import Timeline from '@/components/Timeline';
+import ErrorRemediation, { ErrorContext, createErrorContext } from '@/components/ErrorRemediation';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -51,6 +52,9 @@ export default function SandboxPage() {
   const [previewFramework, setPreviewFramework] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+
+  // Error state
+  const [currentError, setCurrentError] = useState<ErrorContext | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -320,6 +324,7 @@ export default function SandboxPage() {
       }, 100);
     } catch (error) {
       console.error('Failed to send message:', error);
+      setCurrentError(createErrorContext(error));
       setMessages(prev => [
         ...prev,
         {
@@ -393,8 +398,7 @@ export default function SandboxPage() {
       }
     } catch (error: any) {
       console.error('Failed to start preview:', error);
-      const errorMessage = error.response?.data?.message || 'Failed to start preview server';
-      alert(errorMessage + '\n\nTip: Create an index.html file or package.json to enable preview.');
+      setCurrentError(createErrorContext(error));
       setPreviewStatus('stopped');
     }
   };
@@ -439,7 +443,16 @@ export default function SandboxPage() {
   }, [sessionId]);
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <>
+      <ErrorRemediation
+        error={currentError}
+        onDismiss={() => setCurrentError(null)}
+        onRetry={() => {
+          // Retry the last action - in this case, we'll just clear the error
+          // The user can manually retry their action
+        }}
+      />
+      <div className="flex h-screen bg-gray-100">
       {/* Column 1: Chat Panel (Left) */}
       <div className="w-[500px] bg-white border-r border-gray-200 flex flex-col">
         <div className="p-4 border-b border-gray-200">
@@ -712,5 +725,6 @@ export default function SandboxPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

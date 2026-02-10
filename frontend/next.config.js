@@ -9,6 +9,14 @@ const nextConfig = {
   async rewrites() {
     return [
       {
+        source: '/api/health/:path*',
+        destination: 'http://localhost:4000/api/health/:path*',
+      },
+      {
+        source: '/api/health',
+        destination: 'http://localhost:4000/api/health',
+      },
+      {
         source: '/api/auth/:path*',
         destination: 'http://localhost:4000/api/auth/:path*',
       },

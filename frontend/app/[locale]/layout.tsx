@@ -1,5 +1,6 @@
 import {notFound} from 'next/navigation';
 import {TranslationProvider} from '../../components/TranslationProvider';
+import SystemReadiness from '../../components/SystemReadiness';
 import "../globals.css";
 
 export default async function LocaleLayout({
@@ -25,6 +26,7 @@ export default async function LocaleLayout({
     <html lang={locale}>
       <body>
         <TranslationProvider locale={locale} messages={messages}>
+          <SystemReadiness />
           {children}
         </TranslationProvider>
       </body>
