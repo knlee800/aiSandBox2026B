@@ -1,0 +1,1688 @@
+## Authority Notice
+
+This document is the MASTER task backlog.
+
+All implementation tasks originate here.
+
+Other task documents derive from this file:
+
+- TASKS.md → Active / selected tasks
+- Checkpoints → Completion records
+
+Rules:
+
+- No task may be invented outside this file
+- No task may be executed unless listed here
+- All checkpoints must reference task IDs from this file
+- Deprecated tasks must be marked, never deleted
+
+This file is the single source of truth for project scope.
+
+
+# TASKS.md — Project Task Breakdown
+## AI Sandbox Platform
+
+---
+
+## Overview
+
+This document breaks down the AI Sandbox Platform into discrete, actionable tasks organized by module. Each task includes priority, dependencies, and acceptance criteria.
+
+**Priority Levels:**
+- 🔴 **High**: Critical for MVP, blocks other work
+- 🟡 **Medium**: Important but not blocking
+- 🟢 **Low**: Nice-to-have, polish, future features
+
+**Important:** Follow CLAUDE.md workflow rules:
+- Only work on current module specified by user
+- Ask for clarifications if ambiguous
+- Stop after completing assigned task
+- Never refactor unrelated code unless requested
+- Always ask before adding new dependencies
+
+---
+
+## Module 1: Project Setup & Infrastructure
+
+### Task 1.1: Initialize Project Structure
+**Priority:** 🔴 High
+**Dependencies:** None
+**Description:**
+- Create monorepo structure with `/frontend`, `/backend`, `/services`, `/db`, `/docs`, `/tests`
+- Initialize git repository
+- Set up `.gitignore` for Node.js/TypeScript projects
+- Create `.env.example` template
+
+**Acceptance Criteria:**
+- [ ] Directory structure matches ARCHITECTURE.md Section 1
+- [ ] Git initialized with initial commit
+- [ ] README.md with project overview created
+- [ ] .env.example includes all required secrets
+
+**Effort:** 1 hour
+
+---
+
+### Task 1.2: Setup TypeScript Configuration
+**Priority:** 🔴 High
+**Dependencies:** 1.1
+**Description:**
+- Configure `tsconfig.json` for both frontend and backend
+- Set up ES modules
+- Configure path aliases
+- Enable strict mode
+
+**Acceptance Criteria:**
+- [ ] TypeScript compiles without errors
+- [ ] ES module imports work correctly
+- [ ] Path aliases configured for clean imports
+- [ ] Strict mode enabled
+
+**Effort:** 2 hours
+
+---
+
+### Task 1.3: Setup Linting & Formatting
+**Priority:** 🟡 Medium
+**Dependencies:** 1.2
+**Description:**
+- Install ESLint with TypeScript parser
+- Configure Prettier
+- Add pre-commit hooks with Husky
+- Create `.eslintrc` and `.prettierrc`
+
+**Acceptance Criteria:**
+- [ ] `npm run lint` runs successfully
+- [ ] `npm run format` formats code consistently
+- [ ] Pre-commit hooks prevent bad commits
+- [ ] Functions kept under 120 lines as per CLAUDE.md conventions
+
+**Effort:** 2 hours
+
+---
+
+### Task 1.4: Setup Docker Environment
+**Priority:** 🔴 High
+**Dependencies:** 1.1
+**Description:**
+- Install Docker and Docker Compose
+- Create `docker-compose.yml` for local development
+- Configure gVisor runtime (runsc)
+- Set up Docker secrets management
+
+**Acceptance Criteria:**
+- [ ] Docker Compose starts all services
+- [ ] gVisor runtime installed and configured
+- [ ] Can create isolated containers with gVisor
+- [ ] Docker secrets configured per ARCHITECTURE.md Section 10
+
+**Effort:** 4 hours
+
+---
+
+## Module 2: Database Setup
+
+### Task 2.1: PostgreSQL Setup
+**Priority:** 🔴 High
+**Dependencies:** 1.4
+**Description:**
+- Add PostgreSQL container to docker-compose
+- Create initial database schema
+- Set up connection pooling
+- Configure encryption at rest
+
+**Acceptance Criteria:**
+- [ ] PostgreSQL container starts successfully
+- [ ] Can connect from backend
+- [ ] Database persists after container restart
+- [ ] Encryption configured for sensitive fields
+
+**Effort:** 2 hours
+
+---
+
+### Task 2.2: Redis Setup
+**Priority:** 🔴 High
+**Dependencies:** 1.4
+**Description:**
+- Add Redis container to docker-compose
+- Configure Redis for session storage and caching
+- Set up pub/sub channels
+- Configure for rate limiting
+
+**Acceptance Criteria:**
+- [ ] Redis container starts successfully
+- [ ] Can connect from backend
+- [ ] Pub/sub working for real-time events
+- [ ] Rate limiting storage configured
+
+**Effort:** 2 hours
+
+---
+
+### Task 2.3: TypeORM Integration
+**Priority:** 🔴 High
+**Dependencies:** 2.1, 1.2
+**Description:**
+- Install TypeORM and pg driver
+- Configure TypeORM with NestJS
+- Create base entity classes
+- Set up migration system
+
+**Acceptance Criteria:**
+- [ ] TypeORM connects to PostgreSQL
+- [ ] Migrations system working
+- [ ] Can run `npm run migration:run`
+- [ ] Parameterized queries enforced (prevent SQL injection)
+
+**Effort:** 3 hours
+
+---
+
+### Task 2.4: Define Data Models
+**Priority:** 🔴 High
+**Dependencies:** 2.3
+**Description:**
+- Create entity models: User, Session, ChatMessage, GitCommit, BillingLog, Container
+- Define relationships (1:N, etc.)
+- Add validation decorators
+- Implement encryption for sensitive fields
+
+**Acceptance Criteria:**
+- [ ] All entities match ERD in ARCHITECTURE.md Section 4
+- [ ] Relationships properly defined with foreign keys
+- [ ] Validation works on entity fields
+- [ ] Sensitive fields encrypted (email, payment info)
+- [ ] Initial migration generated
+
+**Effort:** 4 hours
+
+---
+
+### Task 2.5: Create Repository Layer
+**Priority:** 🔴 High
+**Dependencies:** 2.4
+**Description:**
+- Create repositories for each entity
+- Implement common CRUD operations
+- Add custom query methods
+- Ensure all queries use parameterization
+
+**Acceptance Criteria:**
+- [ ] Repository pattern implemented
+- [ ] Basic CRUD works for all entities
+- [ ] Custom queries tested
+- [ ] No raw SQL with string concatenation
+
+**Effort:** 3 hours
+
+---
+
+## Module 3: Backend - Core Infrastructure
+
+### Task 3.1: NestJS Project Setup
+**Priority:** 🔴 High
+**Dependencies:** 1.2, 2.3
+**Description:**
+- Initialize NestJS application in `/backend`
+- Configure modules, controllers, services structure
+- Set up dependency injection
+- Configure environment variables with validation
+
+**Acceptance Criteria:**
+- [ ] NestJS app starts on port 3002
+- [ ] Health check endpoint returns 200
+- [ ] Environment variables loaded and validated from .env
+- [ ] Modular structure matches ARCHITECTURE.md Section 2
+- [ ] Missing secrets throw errors at startup
+
+**Effort:** 3 hours
+
+---
+
+### Task 3.2: Error Handling Infrastructure
+**Priority:** 🔴 High
+**Dependencies:** 3.1
+**Description:**
+- Implement global exception filter
+- Create standard error response format
+- Define error code categories
+- Add correlation ID middleware
+
+**Reference:** ARCHITECTURE.md Section 11
+
+**Acceptance Criteria:**
+- [ ] All errors return consistent JSON structure
+- [ ] Error codes match ARCHITECTURE.md Section 11
+- [ ] Correlation IDs added to all requests
+- [ ] X-Correlation-Id header in responses
+- [ ] Stack traces included in error logs (not exposed to clients)
+
+**Effort:** 4 hours
+
+---
+
+### Task 3.3: Centralized Logging Setup
+**Priority:** 🔴 High
+**Dependencies:** 3.2
+**Description:**
+- Install and configure Winston logger
+- Implement structured logging format
+- Add correlation ID to all logs
+- Configure log levels (debug, info, warn, error, critical)
+- Set up log rotation
+
+**Reference:** ARCHITECTURE.md Section 11
+
+**Acceptance Criteria:**
+- [ ] Winston configured with JSON format
+- [ ] Logs include timestamp, level, service, correlationId
+- [ ] Log files: error.log and combined.log
+- [ ] Secrets redacted in logs
+- [ ] Log rotation configured
+- [ ] 90-day retention policy
+
+**Effort:** 3 hours
+
+---
+
+### Task 3.4: Authentication & User Service
+**Priority:** 🔴 High
+**Dependencies:** 3.1, 2.5, 3.3
+**Description:**
+- Implement user registration
+- Implement login with JWT
+- Create auth middleware
+- Hash passwords with bcrypt
+- Implement JWT validation
+- Add password strength validation
+
+**Reference:** ARCHITECTURE.md Section 10
+
+**Acceptance Criteria:**
+- [ ] POST /auth/register creates user
+- [ ] POST /auth/login returns JWT token
+- [ ] Protected routes require valid JWT
+- [ ] Passwords stored as bcrypt hashes
+- [ ] JWT expires after 24 hours
+- [ ] Tokens stored securely (httpOnly cookies)
+- [ ] All auth attempts logged
+
+**Effort:** 5 hours
+
+---
+
+### Task 3.5: Rate Limiting Service
+**Priority:** 🔴 High
+**Dependencies:** 2.2, 3.2
+**Description:**
+- Implement Redis-based rate limiting
+- Configure per-user and per-endpoint limits
+- Add rate limit middleware
+- Return proper 429 responses with Retry-After header
+
+**Reference:** ARCHITECTURE.md Section 10
+
+**Acceptance Criteria:**
+- [ ] Global: 1000 req/hour, 100 req/minute per user
+- [ ] /auth/login: 5 req/5min
+- [ ] /auth/register: 3 req/hour
+- [ ] /chat/send: 60 req/minute
+- [ ] /container/exec: 120 req/minute
+- [ ] 429 responses include retry info
+- [ ] Rate limits tracked by user ID or IP
+
+**Effort:** 4 hours
+
+---
+
+## Module 4: Backend - Core Services
+
+### Task 4.1: Session Service
+**Priority:** 🔴 High
+**Dependencies:** 3.4, 2.5
+**Description:**
+- Implement `SessionService` with methods:
+  - `createSession(userId, runtimeType)`
+  - `getSession(sessionId)`
+  - `deleteSession(sessionId)`
+  - `listSessions(userId)`
+- Add session ownership validation
+
+**Acceptance Criteria:**
+- [ ] Sessions stored in database
+- [ ] Session lifecycle tracked (active, expired, archived)
+- [ ] Auto-expiration after timeout
+- [ ] Each session linked to user
+- [ ] Ownership validated before operations
+- [ ] All operations logged with correlationId
+
+**Effort:** 4 hours
+
+---
+
+### Task 4.2: Container Service - Basic Operations
+**Priority:** 🔴 High
+**Dependencies:** 4.1, 1.4
+**Description:**
+- Implement `ContainerService` with Docker SDK
+- Methods:
+  - `startContainer(sessionId, image)`
+  - `stopContainer(containerId)`
+  - `execCommand(containerId, command)`
+  - `getContainerLogs(containerId)`
+- Implement retry logic for container startup
+
+**Reference:** ARCHITECTURE.md Section 11 (Retry Logic)
+
+**Acceptance Criteria:**
+- [ ] Can create Docker container with gVisor
+- [ ] Container starts in <5 seconds
+- [ ] Retry up to 2 times on startup failure
+- [ ] Can execute commands in container
+- [ ] Logs retrieved successfully
+- [ ] Failed containers cleaned up
+
+**Effort:** 6 hours
+
+---
+
+### Task 4.3: Container Service - Isolation & Security
+**Priority:** 🔴 High
+**Dependencies:** 4.2
+**Description:**
+- Configure gVisor runtime for containers
+- Set resource limits (CPU, memory, disk, network)
+- Implement network isolation
+- Configure read-only base image with writable overlay
+- Run as non-root user
+- Drop all capabilities
+
+**Reference:** ARCHITECTURE.md Section 6 & 10
+
+**Acceptance Criteria:**
+- [ ] Containers run with gVisor
+- [ ] Resource limits enforced (1 core, 2GB RAM, 5GB disk)
+- [ ] No inter-container communication
+- [ ] Filesystem isolation working
+- [ ] Containers run as non-root
+- [ ] No privileged mode
+- [ ] AppArmor/SELinux profiles applied
+
+**Effort:** 5 hours
+
+---
+
+### Task 4.4: Input Validation Service
+**Priority:** 🔴 High
+**Dependencies:** 3.1
+**Description:**
+- Create validation DTOs for all endpoints
+- Implement class-validator decorators
+- Add validation pipe globally
+- Create sanitization utilities for command injection prevention
+
+**Reference:** ARCHITECTURE.md Section 10
+
+**Acceptance Criteria:**
+- [ ] All DTOs have validation decorators
+- [ ] Invalid requests return 400 with field errors
+- [ ] Command injection prevented (use execFile, not execSync)
+- [ ] XSS prevention utilities created
+- [ ] File upload validation (size, type, malware scan)
+- [ ] SQL injection prevented (parameterized queries only)
+
+**Effort:** 4 hours
+
+---
+
+### Task 4.5: Git Service - Repository Management
+**Priority:** 🔴 High
+**Dependencies:** 4.2, 4.4
+**Description:**
+- Implement `GitService` with methods:
+  - `initRepo(containerId)`
+  - `commit(containerId, message, files[])`
+  - `getHistory(containerId)`
+  - `rollback(containerId, commitHash)`
+- Implement rollback on commit failure
+
+**Reference:** ARCHITECTURE.md Section 11 (Rollback)
+
+**Acceptance Criteria:**
+- [ ] Git initialized in container workspace
+- [ ] Can create commits programmatically (use execFile for safety)
+- [ ] Can retrieve commit history
+- [ ] Rollback restores previous state
+- [ ] Failed commits automatically rolled back
+- [ ] Sessions marked corrupted if rollback fails
+- [ ] All git operations logged
+
+**Effort:** 5 hours
+
+---
+
+### Task 4.6: AI Gateway Service - Claude Integration
+**Priority:** 🔴 High
+**Dependencies:** 3.1, 3.3
+**Description:**
+- Implement `AIGatewayService` with Anthropic SDK
+- Methods:
+  - `callClaude(messages, stream, correlationId)`
+  - `countTokens(content)`
+- Handle streaming responses
+- Implement retry logic with exponential backoff
+
+**Reference:** ARCHITECTURE.md Section 11 (Retry Logic)
+
+**Acceptance Criteria:**
+- [ ] Can send messages to Claude API
+- [ ] Streaming responses work
+- [ ] Token counting accurate
+- [ ] Retry 3 times on 5xx errors with exponential backoff (1s, 2s, 4s)
+- [ ] Errors handled gracefully
+- [ ] API key never logged
+- [ ] Correlation ID passed to Claude API
+
+**Effort:** 4 hours
+
+---
+
+### Task 4.7: Chat Service - Message Handling
+**Priority:** 🔴 High
+**Dependencies:** 4.6, 4.5, 2.5
+**Description:**
+- Implement `ChatService` with methods:
+  - `sendMessage(sessionId, message, stream)`
+  - `getHistory(sessionId, limit, offset)`
+  - `streamResponse(sessionId, message)`
+- Store messages in database
+- Track token usage per message
+
+**Acceptance Criteria:**
+- [ ] Messages stored with role (user/assistant)
+- [ ] Chat history paginated correctly
+- [ ] Token usage tracked per message
+- [ ] Streaming works with SSE
+- [ ] All operations include correlationId
+
+**Effort:** 5 hours
+
+---
+
+### Task 4.8: Chat Service - Code Execution Integration
+**Priority:** 🔴 High
+**Dependencies:** 4.7, 4.2, 4.4
+**Description:**
+- Integrate chat with container execution
+- Parse AI responses for code blocks
+- Automatically write code to container filesystem
+- Execute commands suggested by AI (with validation)
+
+**Acceptance Criteria:**
+- [ ] Code blocks from AI written to files
+- [ ] Files created in container workspace
+- [ ] Commands validated before execution (prevent injection)
+- [ ] Command execution results returned to chat
+- [ ] Errors handled gracefully
+
+**Effort:** 6 hours
+
+---
+
+### Task 4.9: Chat Service - Auto-commit After Changes
+**Priority:** 🔴 High
+**Dependencies:** 4.8, 4.5
+**Description:**
+- Automatically create git commit after each AI interaction
+- Generate meaningful commit messages
+- Store commit metadata in database
+- Handle commit failures with rollback
+
+**Acceptance Criteria:**
+- [ ] Git commit created after code changes
+- [ ] Commit message describes changes
+- [ ] Commit hash stored in database
+- [ ] Can rollback to any commit
+- [ ] Failed commits trigger rollback
+
+**Effort:** 3 hours
+
+---
+
+### Task 4.10: Billing Service - Token Tracking
+**Priority:** 🔴 High
+**Dependencies:** 4.7, 2.5
+**Description:**
+- Implement `BillingService` with methods:
+  - `trackTokens(userId, sessionId, tokens, cost)`
+  - `enforceQuota(userId)`
+  - `getUsage(userId, dateRange)`
+  - `generateInvoice(userId, period)`
+- Use database transactions for billing operations
+
+**Reference:** ARCHITECTURE.md Section 11 (Rollback)
+
+**Acceptance Criteria:**
+- [ ] Token usage logged immutably with transactions
+- [ ] Quota enforcement blocks over-usage
+- [ ] Usage reports accurate
+- [ ] Billing logs never deleted or modified
+- [ ] Transaction failures automatically rolled back
+- [ ] All billing operations audited in logs
+
+**Effort:** 4 hours
+
+---
+
+### Task 4.11: Project Import Service
+**Priority:** 🟡 Medium
+**Dependencies:** 4.5, 4.2, 4.4
+**Description:**
+- Implement file upload endpoint
+- Extract .zip/.tar archives
+- Scan for malware (ClamAV or basic)
+- Import files to container workspace
+- Initialize git repository
+
+**Reference:** ARCHITECTURE.md Section 10 (Input Validation)
+
+**Acceptance Criteria:**
+- [ ] Can upload .zip archive
+- [ ] Files extracted to container
+- [ ] File size limited to 100MB
+- [ ] Only zip/tar allowed
+- [ ] Malware scan runs
+- [ ] Git history preserved if present
+- [ ] Upload validation matches ARCHITECTURE.md Section 10
+
+**Effort:** 5 hours
+
+---
+
+### Task 4.12: Project Export Service
+**Priority:** 🟡 Medium
+**Dependencies:** 4.2, 4.5
+**Description:**
+- Export container workspace as .zip
+- Include git history
+- Stream download to user
+
+**Acceptance Criteria:**
+- [ ] GET /project/export returns .zip
+- [ ] Zip contains all workspace files
+- [ ] Git history included
+- [ ] Large files streamed efficiently
+
+**Effort:** 3 hours
+
+---
+
+## Module 5: Backend - API Endpoints
+
+### Task 5.1: Session Endpoints
+**Priority:** 🔴 High
+**Dependencies:** 4.1, 3.5, 4.4
+**Description:**
+- POST /api/sessions - create session
+- GET /api/sessions/:id - get session details
+- GET /api/sessions - list user sessions
+- DELETE /api/sessions/:id - delete session
+- Add authorization checks
+
+**Reference:** ARCHITECTURE.md Section 5 & 10
+
+**Acceptance Criteria:**
+- [ ] All endpoints respond correctly
+- [ ] DTO validation for required fields
+- [ ] Authorization checks (user owns session)
+- [ ] Proper HTTP status codes
+- [ ] Rate limiting applied
+- [ ] Standard error format (ARCHITECTURE.md Section 11)
+- [ ] Correlation IDs in responses
+
+**Effort:** 3 hours
+
+---
+
+### Task 5.2: Chat Endpoints
+**Priority:** 🔴 High
+**Dependencies:** 4.7, 3.5, 4.4
+**Description:**
+- POST /api/chat/send - send message
+- GET /api/chat/history/:sessionId - get history
+- Add authorization and rate limiting
+
+**Acceptance Criteria:**
+- [ ] Messages sent and stored
+- [ ] Streaming works with SSE
+- [ ] History paginated with limit/offset
+- [ ] Only session owner can access
+- [ ] Rate limiting: 60 req/minute
+- [ ] Standard error format
+
+**Effort:** 3 hours
+
+---
+
+### Task 5.3: Git Endpoints
+**Priority:** 🔴 High
+**Dependencies:** 4.5, 3.5, 4.4
+**Description:**
+- POST /api/git/commit - manual commit
+- GET /api/git/history/:sessionId - commit history
+- POST /api/git/rollback - rollback to commit
+- Add authorization
+
+**Acceptance Criteria:**
+- [ ] Commits created successfully
+- [ ] History shows all commits
+- [ ] Rollback restores previous state
+- [ ] Only session owner can modify
+- [ ] Rollback failures handled gracefully
+- [ ] Standard error format
+
+**Effort:** 3 hours
+
+---
+
+### Task 5.4: Container Endpoints
+**Priority:** 🔴 High
+**Dependencies:** 4.2, 3.5, 4.4
+**Description:**
+- POST /api/container/exec - execute command
+- GET /api/container/logs/:sessionId - get logs
+- GET /api/container/preview/:sessionId - preview proxy
+- Add security checks
+
+**Acceptance Criteria:**
+- [ ] Commands execute in container (validated for injection)
+- [ ] Logs streamed in real-time
+- [ ] Preview proxies to port 3000
+- [ ] Security checks prevent abuse
+- [ ] Rate limiting: 120 req/minute for exec
+- [ ] Standard error format
+
+**Effort:** 4 hours
+
+---
+
+### Task 5.5: Billing Endpoints
+**Priority:** 🟡 Medium
+**Dependencies:** 4.10, 3.5
+**Description:**
+- GET /api/billing/usage/:userId - get usage stats
+- GET /api/billing/quota/:userId - check quota
+- Add authorization
+
+**Acceptance Criteria:**
+- [ ] Usage data returned correctly
+- [ ] Date range filtering works
+- [ ] Quota shows limit/used/remaining
+- [ ] Only user can see their own data
+- [ ] Standard error format
+
+**Effort:** 2 hours
+
+---
+
+### Task 5.6: Import/Export Endpoints
+**Priority:** 🟡 Medium
+**Dependencies:** 4.11, 4.12, 3.5
+**Description:**
+- POST /api/project/import - upload project
+- GET /api/project/export/:sessionId - download project
+- Add authorization and validation
+
+**Acceptance Criteria:**
+- [ ] File upload works (multipart)
+- [ ] Export streams .zip file
+- [ ] Progress feedback for uploads
+- [ ] File size limits enforced (100MB)
+- [ ] Standard error format
+
+**Effort:** 3 hours
+
+---
+
+## Module 6: Backend - WebSocket & Real-time
+
+### Task 6.1: WebSocket Gateway Setup
+**Priority:** 🔴 High
+**Dependencies:** 3.1, 3.4
+**Description:**
+- Configure WebSocket gateway in NestJS
+- Implement authentication for WebSocket connections
+- Set up event handlers
+- Add correlation ID to WebSocket messages
+
+**Acceptance Criteria:**
+- [ ] WebSocket server running
+- [ ] Clients can connect with JWT
+- [ ] Events can be sent/received
+- [ ] Disconnection handled gracefully
+- [ ] Correlation IDs in WebSocket messages
+
+**Effort:** 4 hours
+
+---
+
+### Task 6.2: Real-time Chat Events
+**Priority:** 🔴 High
+**Dependencies:** 6.1, 4.7
+**Description:**
+- Implement WebSocket events for chat:
+  - `chat.message` (client -> server)
+  - `chat.response` (server -> client)
+  - `chat.error` (server -> client)
+- Use standard error format for WebSocket errors
+
+**Acceptance Criteria:**
+- [ ] Messages sent via WebSocket
+- [ ] Responses streamed in real-time
+- [ ] Errors communicated to client (standard format)
+- [ ] Lower latency than HTTP polling
+
+**Effort:** 3 hours
+
+---
+
+### Task 6.3: Container Status Events
+**Priority:** 🟡 Medium
+**Dependencies:** 6.1, 4.2
+**Description:**
+- Broadcast container status changes:
+  - `container.status` (starting, ready, stopped, error)
+  - `container.output` (stdout/stderr)
+
+**Acceptance Criteria:**
+- [ ] Status updates pushed to client
+- [ ] Container logs streamed in real-time
+- [ ] Only session owner receives events
+
+**Effort:** 3 hours
+
+---
+
+### Task 6.4: Editor Sync Events
+**Priority:** 🟢 Low
+**Dependencies:** 6.1
+**Description:**
+- Implement file sync events:
+  - `editor.change` (client -> server)
+  - `editor.sync` (server -> client)
+- Allow real-time collaborative editing (future)
+
+**Acceptance Criteria:**
+- [ ] File changes pushed to server
+- [ ] Changes broadcasted to other clients (if multiple)
+- [ ] Conflict resolution strategy defined
+
+**Effort:** 4 hours
+
+---
+
+## Module 7: Frontend - Project Setup
+
+### Task 7.1: Next.js Project Initialization
+**Priority:** 🔴 High
+**Dependencies:** 1.2
+**Description:**
+- Initialize Next.js 14+ app in `/frontend`
+- Configure TypeScript
+- Set up app router structure
+- Install core dependencies (React, TailwindCSS, etc.)
+
+**Acceptance Criteria:**
+- [ ] Next.js dev server runs on port 3001
+- [ ] TypeScript configured
+- [ ] App router with basic pages
+- [ ] TailwindCSS working
+
+**Effort:** 2 hours
+
+---
+
+### Task 7.2: UI Component Library Setup
+**Priority:** 🟡 Medium
+**Dependencies:** 7.1
+**Description:**
+- Install UI library (shadcn/ui, Radix, or similar)
+- Create base components: Button, Input, Card, Modal
+- Set up theming system
+
+**Acceptance Criteria:**
+- [ ] Component library installed
+- [ ] Base components created and styled
+- [ ] Theming works (light/dark mode optional)
+- [ ] Components documented in Storybook (optional)
+
+**Effort:** 4 hours
+
+---
+
+### Task 7.3: API Client Layer
+**Priority:** 🔴 High
+**Dependencies:** 7.1
+**Description:**
+- Create API client wrapper using fetch/axios
+- Implement authentication interceptor (JWT)
+- Add error handling (parse standard error format)
+- Configure base URL and endpoints
+- Add correlation ID to all requests
+
+**Reference:** ARCHITECTURE.md Section 11 (Error Format)
+
+**Acceptance Criteria:**
+- [ ] API client connects to backend
+- [ ] JWT token automatically attached
+- [ ] Errors parsed using standard format
+- [ ] Correlation IDs added to requests
+- [ ] TypeScript types for requests/responses
+
+**Effort:** 3 hours
+
+---
+
+### Task 7.4: WebSocket Client Setup
+**Priority:** 🔴 High
+**Dependencies:** 7.3
+**Description:**
+- Create WebSocket client wrapper
+- Handle connection/disconnection
+- Implement event listeners
+- Auto-reconnect logic
+- Add correlation ID to messages
+
+**Acceptance Criteria:**
+- [ ] WebSocket connects to backend
+- [ ] Events sent and received
+- [ ] Reconnects on disconnection
+- [ ] Authentication with JWT
+- [ ] Correlation IDs in messages
+
+**Effort:** 3 hours
+
+---
+
+### Task 7.5: State Management Setup
+**Priority:** 🔴 High
+**Dependencies:** 7.1
+**Description:**
+- Choose and install state management (Zustand/Redux)
+- Create stores for:
+  - Auth state
+  - Session state
+  - Chat state
+  - Editor state
+
+**Acceptance Criteria:**
+- [ ] State management library installed
+- [ ] Stores created and working
+- [ ] State persists across page reloads (where needed)
+- [ ] DevTools configured
+
+**Effort:** 4 hours
+
+---
+
+## Module 8: Frontend - Authentication & Dashboard
+
+### Task 8.1: Login/Register Pages
+**Priority:** 🔴 High
+**Dependencies:** 7.2, 7.3
+**Description:**
+- Create login page with form
+- Create register page with form
+- Form validation (client-side)
+- Connect to auth endpoints
+- Display errors using standard format
+
+**Acceptance Criteria:**
+- [ ] Login form submits and stores JWT
+- [ ] Register form creates new user
+- [ ] Validation shows errors
+- [ ] Redirects to dashboard on success
+- [ ] Error messages from standard format displayed
+
+**Effort:** 4 hours
+
+---
+
+### Task 8.2: Protected Route Wrapper
+**Priority:** 🔴 High
+**Dependencies:** 8.1, 7.5
+**Description:**
+- Create auth middleware for Next.js
+- Redirect to login if not authenticated
+- Store user info in state
+
+**Acceptance Criteria:**
+- [ ] Protected routes check authentication
+- [ ] Unauthenticated users redirected
+- [ ] User info available in components
+
+**Effort:** 2 hours
+
+---
+
+### Task 8.3: Dashboard Page
+**Priority:** 🔴 High
+**Dependencies:** 8.2, 7.2
+**Description:**
+- Create dashboard layout
+- List user's sessions
+- Show session status (active/expired)
+- "New Session" button
+
+**Acceptance Criteria:**
+- [ ] Dashboard shows user's sessions
+- [ ] Can create new session
+- [ ] Can open existing session
+- [ ] Can delete session
+
+**Effort:** 5 hours
+
+---
+
+## Module 9: Frontend - Session View
+
+### Task 9.1: Session Layout
+**Priority:** 🔴 High
+**Dependencies:** 8.3
+**Description:**
+- Create 3-column layout:
+  - Left: Chat window
+  - Center: Code editor
+  - Right: Preview (collapsible)
+- Responsive design
+- Resizable panels
+
+**Acceptance Criteria:**
+- [ ] Layout renders correctly
+- [ ] Panels resizable with drag handles
+- [ ] Responsive on mobile/tablet
+- [ ] Preview can be collapsed
+
+**Effort:** 5 hours
+
+---
+
+### Task 9.2: Chat Window Component
+**Priority:** 🔴 High
+**Dependencies:** 9.1, 7.4, 7.5
+**Description:**
+- Create chat UI with message list
+- User input box with send button
+- Display user and AI messages
+- Show typing indicator
+- Markdown rendering for AI responses
+- Error display using standard format
+
+**Acceptance Criteria:**
+- [ ] Messages displayed in order
+- [ ] User can send messages
+- [ ] AI responses streamed in real-time
+- [ ] Code blocks syntax-highlighted
+- [ ] Auto-scroll to bottom
+- [ ] Errors displayed properly
+
+**Effort:** 6 hours
+
+---
+
+### Task 9.3: Monaco Editor Integration
+**Priority:** 🔴 High
+**Dependencies:** 9.1
+**Description:**
+- Install Monaco editor
+- Create editor component wrapper
+- Configure for multiple languages
+- Add file tree navigation
+
+**Acceptance Criteria:**
+- [ ] Monaco editor renders
+- [ ] Syntax highlighting works
+- [ ] File tree shows workspace files
+- [ ] Can switch between files
+- [ ] Save triggers update to backend
+
+**Effort:** 6 hours
+
+---
+
+### Task 9.4: File Tree Component
+**Priority:** 🟡 Medium
+**Dependencies:** 9.3
+**Description:**
+- Display container filesystem as tree
+- Expandable folders
+- Click to open file in editor
+- Icons for file types
+
+**Acceptance Criteria:**
+- [ ] File tree shows all workspace files
+- [ ] Folders expandable/collapsible
+- [ ] Clicking file opens in editor
+- [ ] Updates when files added/removed
+
+**Effort:** 4 hours
+
+---
+
+### Task 9.5: Preview Component (iframe)
+**Priority:** 🔴 High
+**Dependencies:** 9.1, 5.4
+**Description:**
+- Create iframe component for preview
+- Proxy to container port 3000
+- Refresh button
+- Show loading state
+- Secure sandbox attributes
+
+**Acceptance Criteria:**
+- [ ] iframe loads preview from backend proxy
+- [ ] Refresh reloads preview
+- [ ] Loading spinner shown while loading
+- [ ] Secure sandbox attributes on iframe
+
+**Effort:** 3 hours
+
+---
+
+### Task 9.6: Git History UI
+**Priority:** 🟡 Medium
+**Dependencies:** 9.1, 5.3
+**Description:**
+- Display commit history in sidebar/modal
+- Show commit message, timestamp, hash
+- Rollback button for each commit
+- Confirm before rollback
+
+**Acceptance Criteria:**
+- [ ] Commit history displayed
+- [ ] Can rollback to any commit
+- [ ] Confirmation dialog before rollback
+- [ ] Editor updates after rollback
+
+**Effort:** 4 hours
+
+---
+
+## Module 10: Frontend - Advanced Features
+
+### Task 10.1: Terminal Component
+**Priority:** 🟢 Low
+**Dependencies:** 9.1, 7.4
+**Description:**
+- Create terminal UI using xterm.js
+- Connect to container via WebSocket
+- Allow command execution
+- Show stdout/stderr
+
+**Acceptance Criteria:**
+- [ ] Terminal renders and accepts input
+- [ ] Commands executed in container
+- [ ] Output displayed in real-time
+- [ ] Command history with up/down arrows
+
+**Effort:** 5 hours
+
+---
+
+### Task 10.2: File Upload/Download UI
+**Priority:** 🟡 Medium
+**Dependencies:** 5.6
+**Description:**
+- Upload files to container
+- Download files from container
+- Drag-and-drop support
+- Progress indicators
+
+**Acceptance Criteria:**
+- [ ] Can upload files via drag-drop or button
+- [ ] Progress bar shows upload status
+- [ ] Can download individual files
+- [ ] File size limits enforced (100MB)
+
+**Effort:** 4 hours
+
+---
+
+### Task 10.3: Usage & Billing Dashboard
+**Priority:** 🟡 Medium
+**Dependencies:** 8.3, 5.5
+**Description:**
+- Show token usage stats
+- Display quota remaining
+- Cost breakdown by session
+- Charts/graphs for visualization
+
+**Acceptance Criteria:**
+- [ ] Current usage displayed
+- [ ] Quota progress bar shown
+- [ ] Historical usage viewable
+- [ ] Charts render correctly
+
+**Effort:** 5 hours
+
+---
+
+## Module 11: Security Implementation
+
+### Task 11.1: Security Headers & CORS
+**Priority:** 🔴 High
+**Dependencies:** 3.1
+**Description:**
+- Install and configure Helmet.js
+- Configure CORS for specific origins
+- Set up Content Security Policy
+- Enable HSTS
+
+**Reference:** ARCHITECTURE.md Section 10
+
+**Acceptance Criteria:**
+- [ ] Helmet.js configured with CSP
+- [ ] CORS limited to specific origins
+- [ ] HSTS enabled (max-age: 31536000)
+- [ ] TLS 1.2 minimum enforced
+
+**Effort:** 2 hours
+
+---
+
+### Task 11.2: Secrets Management
+**Priority:** 🔴 High
+**Dependencies:** 1.1, 3.1
+**Description:**
+- Create .env.example template
+- Implement secret validation at startup
+- Document all required secrets
+- Set up Docker secrets (Phase 1)
+- Plan cloud secrets management (Phase 2)
+
+**Reference:** ARCHITECTURE.md Section 10
+
+**Acceptance Criteria:**
+- [ ] .env.example lists all secrets
+- [ ] Missing secrets throw error at startup
+- [ ] Secrets never logged
+- [ ] Docker secrets configured
+- [ ] Rotation policy documented
+
+**Effort:** 3 hours
+
+---
+
+### Task 11.3: Container Security Hardening
+**Priority:** 🔴 High
+**Dependencies:** 4.3
+**Description:**
+- Configure AppArmor/SELinux profiles
+- Ensure non-root user in containers
+- Drop all capabilities
+- Audit container security settings
+
+**Reference:** ARCHITECTURE.md Section 10
+
+**Acceptance Criteria:**
+- [ ] Containers run as non-root
+- [ ] All capabilities dropped
+- [ ] AppArmor/SELinux profiles active
+- [ ] No privileged mode
+- [ ] Security audit passes
+
+**Effort:** 4 hours
+
+---
+
+### Task 11.4: Dependency Security Scanning
+**Priority:** 🟡 Medium
+**Dependencies:** 1.3
+**Description:**
+- Set up npm audit in CI/CD
+- Configure Dependabot
+- Document update policy
+- Lock dependency versions for production
+
+**Reference:** ARCHITECTURE.md Section 10
+
+**Acceptance Criteria:**
+- [ ] npm audit runs on every commit
+- [ ] Dependabot enabled
+- [ ] Monthly update schedule documented
+- [ ] Production dependencies locked
+
+**Effort:** 2 hours
+
+---
+
+## Module 12: Testing
+
+### Task 12.1: Backend Unit Tests
+**Priority:** 🟡 Medium
+**Dependencies:** Module 4 complete
+**Description:**
+- Write unit tests for all services
+- Mock database and external APIs
+- Aim for 70%+ code coverage
+- Test error handling paths
+
+**Acceptance Criteria:**
+- [ ] All services have unit tests
+- [ ] Tests pass with `npm test`
+- [ ] Coverage report generated
+- [ ] 70%+ coverage achieved
+- [ ] Error handling tested
+
+**Effort:** 10 hours
+
+---
+
+### Task 12.2: Backend Integration Tests
+**Priority:** 🟡 Medium
+**Dependencies:** Module 5 complete
+**Description:**
+- Write integration tests for API endpoints
+- Use test database
+- Test with actual Docker containers
+- Test error responses match standard format
+
+**Acceptance Criteria:**
+- [ ] All endpoints tested
+- [ ] Tests run in CI/CD pipeline
+- [ ] Test database cleaned between runs
+- [ ] Container creation/deletion tested
+- [ ] Error format validated
+
+**Effort:** 8 hours
+
+---
+
+### Task 12.3: Frontend Component Tests
+**Priority:** 🟢 Low
+**Dependencies:** Module 9 complete
+**Description:**
+- Write tests for React components
+- Use React Testing Library
+- Mock API calls
+
+**Acceptance Criteria:**
+- [ ] Key components tested
+- [ ] Tests run with `npm test`
+- [ ] Mock data used
+- [ ] User interactions tested
+
+**Effort:** 8 hours
+
+---
+
+### Task 12.4: End-to-End Tests
+**Priority:** 🟢 Low
+**Dependencies:** Modules 4, 5, 9 complete
+**Description:**
+- Write E2E tests with Playwright/Cypress
+- Test complete user flows:
+  - Login -> Create session -> Chat -> Preview
+  - Git commit -> Rollback
+- Test error scenarios
+
+**Acceptance Criteria:**
+- [ ] E2E tests cover main user flows
+- [ ] Tests run in CI/CD
+- [ ] Screenshots on failure
+- [ ] Tests stable and not flaky
+- [ ] Error handling tested
+
+**Effort:** 10 hours
+
+---
+
+## Module 13: Documentation
+
+### Task 13.1: API Documentation
+**Priority:** 🟡 Medium
+**Dependencies:** Module 5 complete
+**Description:**
+- Document all API endpoints
+- Use Swagger/OpenAPI
+- Include request/response examples
+- Document standard error format
+- Authentication requirements
+
+**Acceptance Criteria:**
+- [ ] Swagger UI accessible at /api/docs
+- [ ] All endpoints documented
+- [ ] Error format documented
+- [ ] Examples provided
+- [ ] Try-it-out feature works
+
+**Effort:** 4 hours
+
+---
+
+### Task 13.2: Developer Guide
+**Priority:** 🟢 Low
+**Dependencies:** All modules
+**Description:**
+- Write setup instructions
+- Explain architecture (reference ARCHITECTURE.md sections)
+- Code examples for common tasks
+- Troubleshooting guide
+- Document ARCHITECTURE.md loading rules
+
+**Acceptance Criteria:**
+- [ ] README.md updated with setup steps
+- [ ] Developer guide in /docs/DEVELOPER.md
+- [ ] Examples for extending platform
+- [ ] Common issues documented
+- [ ] References to ARCHITECTURE.md sections
+
+**Effort:** 6 hours
+
+---
+
+### Task 13.3: User Guide
+**Priority:** 🟢 Low
+**Dependencies:** Module 9 complete
+**Description:**
+- Create user-facing documentation
+- How to create sessions
+- How to use chat interface
+- Tips for effective AI prompts
+
+**Acceptance Criteria:**
+- [ ] User guide published
+- [ ] Screenshots included
+- [ ] Video tutorials (optional)
+- [ ] FAQ section
+
+**Effort:** 4 hours
+
+---
+
+## Module 14: Deployment
+
+### Task 14.1: Docker Images for Production
+**Priority:** 🔴 High
+**Dependencies:** Modules 4, 7 complete
+**Description:**
+- Create production Dockerfiles for frontend and backend
+- Multi-stage builds for smaller images
+- Optimize for security and performance
+- Non-root user in containers
+
+**Acceptance Criteria:**
+- [ ] Frontend Docker image builds
+- [ ] Backend Docker image builds
+- [ ] Images under 500MB each
+- [ ] Non-root user in containers
+- [ ] Security best practices followed
+
+**Effort:** 4 hours
+
+---
+
+### Task 14.2: Docker Compose for QNAP
+**Priority:** 🔴 High
+**Dependencies:** 14.1, 2.1, 2.2
+**Description:**
+- Create production docker-compose.yml
+- Configure Nginx reverse proxy
+- Set up SSL/TLS certificates
+- Configure volumes for persistence
+- Set up Docker secrets
+
+**Reference:** ARCHITECTURE.md Section 7
+
+**Acceptance Criteria:**
+- [ ] `docker-compose up` starts all services
+- [ ] Nginx proxies to frontend/backend
+- [ ] HTTPS working with Let's Encrypt
+- [ ] Data persists across restarts
+- [ ] Secrets managed with Docker secrets
+
+**Effort:** 5 hours
+
+---
+
+### Task 14.3: Environment Configuration
+**Priority:** 🔴 High
+**Dependencies:** 14.2, 11.2
+**Description:**
+- Create .env templates
+- Document all environment variables
+- Set up secrets management
+- Configure for different environments (dev/prod)
+
+**Acceptance Criteria:**
+- [ ] .env.example provided
+- [ ] All required vars documented
+- [ ] Secrets not committed to git
+- [ ] Different configs for dev/prod
+
+**Effort:** 2 hours
+
+---
+
+### Task 14.4: Database Migration Strategy
+**Priority:** 🟡 Medium
+**Dependencies:** 2.4
+**Description:**
+- Set up migration scripts
+- Create backup strategy
+- Document rollback procedure
+- Test migrations in staging
+
+**Acceptance Criteria:**
+- [ ] Migrations run automatically on deploy
+- [ ] Backups created before migrations
+- [ ] Rollback procedure documented
+- [ ] Tested on staging environment
+
+**Effort:** 3 hours
+
+---
+
+### Task 14.5: Monitoring & Logging Setup
+**Priority:** 🟡 Medium
+**Dependencies:** 14.2, 3.3
+**Description:**
+- Configure log aggregation (ELK stack or similar)
+- Set up basic monitoring (CPU, memory, disk)
+- Create health check endpoints
+- Set up alerts for critical issues
+
+**Reference:** ARCHITECTURE.md Section 11
+
+**Acceptance Criteria:**
+- [ ] Logs centralized and searchable
+- [ ] Monitoring dashboard shows system health
+- [ ] Alerts configured for critical issues
+- [ ] Health checks return proper status
+- [ ] 90-day log retention
+
+**Effort:** 5 hours
+
+---
+
+### Task 14.6: CI/CD Pipeline
+**Priority:** 🟡 Medium
+**Dependencies:** 14.1, 12.1, 12.2
+**Description:**
+- Set up GitHub Actions / GitLab CI
+- Automate tests on PR
+- Build Docker images
+- Deploy to staging/production
+- Run security scans
+
+**Acceptance Criteria:**
+- [ ] Tests run on every commit
+- [ ] Docker images built and pushed
+- [ ] Deployment automated
+- [ ] Rollback possible
+- [ ] Security scans in pipeline
+
+**Effort:** 6 hours
+
+---
+
+### Task 14.7: QNAP Deployment & Testing
+**Priority:** 🔴 High
+**Dependencies:** 14.2, 14.3, 14.5
+**Description:**
+- Deploy to QNAP NAS
+- Configure port forwarding
+- Set up domain and SSL
+- Load testing with 10-20 concurrent users
+
+**Acceptance Criteria:**
+- [ ] Application accessible via public URL
+- [ ] HTTPS working
+- [ ] Can handle 10+ concurrent sessions
+- [ ] Performance meets requirements (<300ms API, <5s container start)
+
+**Effort:** 8 hours
+
+---
+
+## Module 15: Performance Optimization
+
+### Task 15.1: Backend Performance Tuning
+**Priority:** 🟢 Low
+**Dependencies:** Module 4 complete
+**Description:**
+- Profile slow endpoints
+- Add database indexes
+- Implement caching strategy
+- Optimize queries
+
+**Acceptance Criteria:**
+- [ ] API responses < 300ms (p95)
+- [ ] Database queries optimized
+- [ ] Redis caching implemented
+- [ ] Load testing passes
+
+**Effort:** 6 hours
+
+---
+
+### Task 15.2: Frontend Performance Optimization
+**Priority:** 🟢 Low
+**Dependencies:** Module 9 complete
+**Description:**
+- Code splitting and lazy loading
+- Image optimization
+- Minimize bundle size
+- Implement service worker (PWA)
+
+**Acceptance Criteria:**
+- [ ] Initial load < 3 seconds
+- [ ] Lighthouse score > 90
+- [ ] Bundle size optimized
+- [ ] Images lazy-loaded
+
+**Effort:** 5 hours
+
+---
+
+### Task 15.3: Container Startup Optimization
+**Priority:** 🟡 Medium
+**Dependencies:** 4.2
+**Description:**
+- Optimize Docker image size
+- Pre-pull common images
+- Implement container pooling
+- Reduce startup time
+
+**Acceptance Criteria:**
+- [ ] Container starts in < 5 seconds
+- [ ] Image size minimized
+- [ ] Common images pre-cached
+- [ ] Startup time consistent
+
+**Effort:** 4 hours
+
+---
+
+## Summary
+
+### Task Count by Priority
+- 🔴 **High**: 53 tasks (MVP critical)
+- 🟡 **Medium**: 26 tasks (Important for production)
+- 🟢 **Low**: 9 tasks (Polish and future)
+
+**Total**: 88 tasks
+
+### Key Changes from Original
+
+**Added Tasks:**
+1. **Task 3.2**: Error Handling Infrastructure (implements Section 11)
+2. **Task 3.3**: Centralized Logging Setup (implements Section 11)
+3. **Task 3.5**: Rate Limiting Service (implements Section 10)
+4. **Task 4.4**: Input Validation Service (implements Section 10)
+5. **Module 11**: Security Implementation (4 tasks for Section 10)
+
+**Enhanced Tasks:**
+- Added security references to container, auth, and API tasks
+- Added retry logic references to Claude API and container tasks
+- Added rollback references to git and billing tasks
+- Added correlation ID requirements throughout
+- Added standard error format requirements
+- Added validation requirements per ARCHITECTURE.md Section 10
+
+### Estimated Timeline (MVP - High Priority Only)
+
+- **Module 1-2** (Infrastructure & DB): ~20 hours
+- **Module 3** (Backend Infrastructure): ~19 hours
+- **Module 4** (Backend Services): ~51 hours
+- **Module 5** (API Endpoints): ~18 hours
+- **Module 6** (WebSocket): ~7 hours
+- **Module 7-9** (Frontend): ~51 hours
+- **Module 11** (Security): ~9 hours
+- **Module 14** (Deployment): ~19 hours
+
+**Total MVP Effort**: ~194 hours (~5 weeks for 1 developer, ~2.5 weeks for 2 developers)
+
+### Recommended Execution Order
+
+**Phase 1: Foundation (Week 1)**
+- Module 1: Project setup
+- Module 2: Database setup
+- Tasks 3.1-3.3: Backend infrastructure with logging/error handling
+
+**Phase 2: Core Backend (Week 2-3)**
+- Task 3.4-3.5: Auth & rate limiting
+- Tasks 4.1-4.6: Core services (Session, Container, Git, AI)
+- Task 4.4: Input validation
+
+**Phase 3: API & Frontend (Week 3-4)**
+- Tasks 4.7-4.10: Chat & Billing services
+- Module 5: API endpoints
+- Module 6: WebSocket
+- Module 7-8: Frontend setup & auth
+
+**Phase 4: UI & Security (Week 4-5)**
+- Module 9: Session view
+- Module 11: Security implementation
+- Module 14: Deployment
+
+**Phase 5: Testing & Deploy (Week 5)**
+- Integration testing
+- Security audit
+- QNAP deployment
+- Bug fixes
+
+---
+
+## Notes
+
+- All file paths should follow lowercase-with-hyphens convention per CLAUDE.md
+- Each service must have minimal unit tests
+- Functions should be kept under 120 lines per CLAUDE.md
+- Always ask before adding new dependencies per CLAUDE.md
+- Follow ARCHITECTURE.md loading rules: ask user which section to load before reading
+- Reference specific ARCHITECTURE.md sections in task descriptions
+- Implement standard error format from ARCHITECTURE.md Section 11
+- Implement security measures from ARCHITECTURE.md Section 10
+- All tasks should include correlation ID logging
