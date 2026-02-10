@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import ConfigurationControl from './ConfigurationControl';
 
 /**
  * System Readiness Component
  * 
  * Phase 35B-1: System Readiness Surface
+ * Phase 35B-3: Configuration Control Surface (Integration)
  * 
  * Purpose: Solve Problem 1 (Environment Setup Friction) and Problem 6 (No System State Visibility)
  * 
@@ -14,11 +16,13 @@ import axios from 'axios';
  * - User knows if system is ready to use
  * - User knows what's wrong if system is not ready
  * - User can fix problems without reading logs
+ * - User can view and understand runtime configuration (Phase 35B-3)
  * 
  * Interaction Model:
  * - Always visible when system is not ready
  * - Gets out of the way when system is ready
  * - Actionable — every error has remediation guidance
+ * - Configuration panel accessible via button
  */
 
 interface HealthCheck {
@@ -43,6 +47,7 @@ export default function SystemReadiness() {
   });
   const [collapsed, setCollapsed] = useState(false);
   const [lastCheck, setLastCheck] = useState<Date | null>(null);
+  const [showConfiguration, setShowConfiguration] = useState(false);
 
   const checkSystemReadiness = async () => {
     try {
@@ -164,16 +169,33 @@ export default function SystemReadiness() {
   // If system is ready and collapsed, show minimal indicator
   if (status.overall === 'ready' && collapsed) {
     return (
-      <div className="fixed top-4 right-4 z-50">
-        <button
-          onClick={() => setCollapsed(false)}
-          className="bg-green-600 text-white px-3 py-2 rounded-lg shadow-lg hover:bg-green-700 transition-colors flex items-center space-x-2 text-sm"
-          title="System Ready - Click to expand"
-        >
-          <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
-          <span>System Ready</span>
-        </button>
-      </div>
+      <>
+        <div className="fixed top-4 right-4 z-50 flex space-x-2">
+          <button
+            onClick={() => setShowConfiguration(true)}
+            className="bg-blue-600 text-white px-3 py-2 rounded-lg shadow-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 text-sm"
+            title="View Configuration"
+          >
+            <span>⚙️</span>
+            <span>Config</span>
+          </button>
+          <button
+            onClick={() => setCollapsed(false)}
+            className="bg-green-600 text-white px-3 py-2 rounded-lg shadow-lg hover:bg-green-700 transition-colors flex items-center space-x-2 text-sm"
+            title="System Ready - Click to expand"
+          >
+            <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+            <span>System Ready</span>
+          </button>
+        </div>
+
+        {/* Configuration Modal */}
+        {showConfiguration && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <ConfigurationControl onClose={() => setShowConfiguration(false)} />
+          </div>
+        )}
+      </>
     );
   }
 
@@ -299,15 +321,29 @@ export default function SystemReadiness() {
       </div>
 
       {/* Actions */}
-      <div className="p-4 border-t border-gray-200 bg-gray-50 rounded-b-lg">
+      <div className="p-4 border-t border-gray-200 bg-gray-50 rounded-b-lg space-y-2">
+        <button
+          onClick={() => setShowConfiguration(true)}
+          className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors text-sm font-medium flex items-center justify-center space-x-2"
+        >
+          <span>⚙️</span>
+          <span>View Configuration</span>
+        </button>
         <button
           onClick={checkSystemReadiness}
           disabled={status.overall === 'checking'}
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 disabled:bg-blue-300 transition-colors text-sm font-medium"
+          className="w-full bg-gray-600 text-white py-2 px-4 rounded hover:bg-gray-700 disabled:bg-gray-300 transition-colors text-sm font-medium"
         >
           {status.overall === 'checking' ? 'Checking...' : 'Recheck Now'}
         </button>
       </div>
+
+      {/* Configuration Modal */}
+      {showConfiguration && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <ConfigurationControl onClose={() => setShowConfiguration(false)} />
+        </div>
+      )}
     </div>
   );
 }
