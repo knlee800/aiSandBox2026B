@@ -172,7 +172,7 @@ export default function DriverPage() {
             onChange={(e) => setPrompt(e.target.value)}
             disabled={loading}
             rows={6}
-            placeholder="Example: Write a hello world function in Python"
+            placeholder="Try asking: 'Write a hello world function in Python' or 'Create a simple REST API endpoint' or 'Explain how async/await works'"
             style={{
               width: '100%',
               padding: '8px',
@@ -182,6 +182,9 @@ export default function DriverPage() {
               borderRadius: '4px',
             }}
           />
+          <p style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
+            💡 Ask the AI to write code, explain concepts, or help with debugging.
+          </p>
         </div>
 
         <button

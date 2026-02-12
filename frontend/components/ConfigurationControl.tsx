@@ -373,13 +373,13 @@ export default function ConfigurationControl({ onClose }: ConfigurationControlPr
                 For detailed configuration options and best practices, see these files in the repository root:
               </p>
               <ul className="text-xs text-gray-700 mt-2 space-y-1 list-disc list-inside">
-                <li><code className="bg-white px-1 rounded">ARCHITECTURE.md</code> - Section 12: Environment Variables</li>
-                <li><code className="bg-white px-1 rounded">docs/PHASE-32A-CHECKPOINT.md</code> - Startup Guardrails</li>
-                <li><code className="bg-white px-1 rounded">docs/PHASE-28B-1-FINAL-CHECKPOINT.md</code> - Launch States</li>
-                <li><code className="bg-white px-1 rounded">docs/PHASE-28B-2-FINAL-CHECKPOINT.md</code> - Abort Modes</li>
+                <li><code className="bg-white px-1 rounded">ARCHITECTURE.md</code> (Section 12) - Environment variable reference and configuration patterns</li>
+                <li><code className="bg-white px-1 rounded">docs/PHASE-32A-CHECKPOINT.md</code> - Startup validation rules and guardrails</li>
+                <li><code className="bg-white px-1 rounded">docs/PHASE-28B-1-FINAL-CHECKPOINT.md</code> - Launch state options (CLOSED, INTERNAL, EARLY_ACCESS, PUBLIC)</li>
+                <li><code className="bg-white px-1 rounded">docs/PHASE-28B-2-FINAL-CHECKPOINT.md</code> - Abort mode options (NONE, EXECUTION_BLOCKED, FULL_SHUTDOWN)</li>
               </ul>
               <p className="text-xs text-gray-600 mt-2 italic">
-                💡 These files are located in your project directory and can be opened in any text editor.
+                💡 Open these files in your code editor or text viewer to see full details and examples.
               </p>
             </div>
           </div>
