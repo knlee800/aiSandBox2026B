@@ -1,47 +1,44 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import Database from 'better-sqlite3';
-import * as path from 'path';
 import i18n from '../config/i18n';
+import { User } from '../entities/user.entity';
 
 @Injectable()
 export class AuthService {
-  private db: Database.Database;
-
-  constructor(private jwtService: JwtService) {
-    // Connect to SQLite database
-    const dbPath = path.join(__dirname, '../../../..', 'database', 'aisandbox.db');
-    this.db = new Database(dbPath);
-  }
+  constructor(
+    private jwtService: JwtService,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+  ) {}
 
   async validateUser(email: string, password: string, lang: string = 'en'): Promise<any> {
-    const user = this.db
-      .prepare('SELECT * FROM users WHERE email = ? AND is_active = 1')
-      .get(email);
+    const user = await this.userRepository.findOne({
+      where: { email, isActive: true },
+    });
 
     if (!user) {
       throw new UnauthorizedException(i18n.t('auth:invalidCredentials', { lng: lang }));
     }
 
     // OAuth users don't have passwords - they should use OAuth flow
-    if (!user.password_hash) {
+    if (!user.passwordHash) {
       throw new UnauthorizedException(
-        `This account uses ${user.auth_provider} login. Please sign in with ${user.auth_provider}.`
+        `This account uses ${user.authProvider} login. Please sign in with ${user.authProvider}.`
       );
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordValid) {
       throw new UnauthorizedException(i18n.t('auth:invalidCredentials', { lng: lang }));
     }
 
     // Update last login
-    this.db
-      .prepare("UPDATE users SET last_login_at = datetime('now') WHERE id = ?")
-      .run(user.id);
+    await this.userRepository.update(user.id, { lastLoginAt: new Date() });
 
-    const { password_hash, ...result } = user;
+    const { passwordHash, ...result } = user;
     return result;
   }
 
@@ -52,7 +49,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       role: user.role,
-      plan: user.plan_type,
+      plan: user.planType,
     };
 
     return {
@@ -61,59 +58,60 @@ export class AuthService {
         id: user.id,
         email: user.email,
         role: user.role,
-        plan_type: user.plan_type,
+        plan_type: user.planType,
       },
     };
   }
 
   async register(email: string, password: string) {
     // Check if user already exists
-    const existingUser = this.db
-      .prepare('SELECT id FROM users WHERE email = ?')
-      .get(email);
+    const existingUser = await this.userRepository.findOne({
+      where: { email },
+    });
 
     if (existingUser) {
       throw new UnauthorizedException('User already exists');
     }
 
     // Hash password
-    const password_hash = await bcrypt.hash(password, 12);
+    const passwordHash = await bcrypt.hash(password, 12);
 
-    // Generate UUID (simple version for SQLite)
-    const id = this.generateId();
+    // Create new user with email auth provider
+    const user = this.userRepository.create({
+      email,
+      passwordHash,
+      authProvider: 'email',
+      oauthId: null,
+      role: 'user' as any,
+      planType: 'free',
+      isActive: true,
+    });
 
-    // Insert user with email auth provider
-    const insert = this.db.prepare(`
-      INSERT INTO users (
-        id, email, password_hash, auth_provider, oauth_id,
-        role, plan_type, is_active, created_at
-      )
-      VALUES (?, ?, ?, 'email', NULL, 'user', 'free', 1, datetime('now'))
-    `);
-
-    insert.run(id, email, password_hash);
+    const savedUser = await this.userRepository.save(user);
 
     return {
-      id,
-      email,
-      role: 'user',
-      plan_type: 'free',
+      id: savedUser.id,
+      email: savedUser.email,
+      role: savedUser.role,
+      plan_type: savedUser.planType,
     };
   }
 
   async getUserById(id: string) {
-    const user = this.db
-      .prepare('SELECT id, email, role, plan_type FROM users WHERE id = ? AND is_active = 1')
-      .get(id);
+    const user = await this.userRepository.findOne({
+      where: { id, isActive: true },
+      select: ['id', 'email', 'role', 'planType'],
+    });
 
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
 
-    return user;
-  }
-
-  private generateId(): string {
-    return Date.now().toString(36) + Math.random().toString(36).substring(2);
+    return {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      plan_type: user.planType,
+    };
   }
 }
