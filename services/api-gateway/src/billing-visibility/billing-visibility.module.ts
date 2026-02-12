@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { BillingSnapshot } from '../entities/billing-snapshot.entity';
 import { BillingVisibilityService } from './billing-visibility.service';
 import { BillingVisibilityController } from './billing-visibility.controller';
+import { AuthModule } from '../auth/auth.module';
 
 /**
  * BillingVisibilityModule
@@ -30,7 +31,7 @@ import { BillingVisibilityController } from './billing-visibility.controller';
  * - GET /api/billing/snapshots/:snapshotId/metadata (get metadata)
  */
 @Module({
-  imports: [TypeOrmModule.forFeature([BillingSnapshot])],
+  imports: [TypeOrmModule.forFeature([BillingSnapshot]), AuthModule],
   providers: [BillingVisibilityService],
   controllers: [BillingVisibilityController],
   exports: [BillingVisibilityService],
