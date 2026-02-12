@@ -334,21 +334,75 @@ export function createErrorContext(error: any): ErrorContext {
           technicalDetails: data,
         };
 
+      case 401:
+        return {
+          id,
+          timestamp,
+          title: 'Authentication Failed',
+          problem: 'Your API key is invalid or missing.',
+          cause: data.message || 'The API key provided was not recognized or has been revoked.',
+          remediation: [
+            {
+              type: 'info',
+              description: 'Go to the "API Keys" tab to create a new API key',
+            },
+            {
+              type: 'info',
+              description: 'Make sure you copied the entire API key when it was first displayed',
+            },
+            {
+              type: 'info',
+              description: 'If the key was revoked, create a new one',
+            },
+          ],
+          requestId: data.requestId,
+          technicalDetails: data,
+        };
+
+      case 500:
+        return {
+          id,
+          timestamp,
+          title: 'Internal Server Error',
+          problem: 'The server encountered an unexpected error.',
+          cause: data.message || 'An internal error occurred while processing your request.',
+          remediation: [
+            {
+              type: 'info',
+              description: 'Check the System Readiness panel to verify all services are running correctly',
+            },
+            {
+              type: 'action',
+              description: 'Try the operation again after a moment',
+            },
+            {
+              type: 'info',
+              description: 'If the problem persists, check the Configuration tab for any misconfigured settings',
+            },
+          ],
+          requestId: data.requestId,
+          technicalDetails: data,
+        };
+
       default:
         return {
           id,
           timestamp,
-          title: `Error ${status}`,
+          title: `HTTP ${status} Error`,
           problem: data.message || 'An unexpected error occurred.',
-          cause: 'The server returned an error response.',
+          cause: `The server returned HTTP status ${status}. This may indicate a temporary issue or misconfiguration.`,
           remediation: [
+            {
+              type: 'info',
+              description: 'Check the System Readiness panel at the top of the page',
+            },
             {
               type: 'action',
               description: 'Try the operation again',
             },
             {
               type: 'info',
-              description: 'If the problem persists, check the system status',
+              description: 'If the problem persists, verify your configuration in the Configuration tab',
             },
           ],
           requestId: data.requestId,

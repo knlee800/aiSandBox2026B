@@ -89,14 +89,20 @@ export default function ConfigurationControl({ onClose }: ConfigurationControlPr
       const items: ConfigItem[] = [];
 
       // AI Provider (from environment, shown in health check)
+      // Phase 37C: Clarified that this value may show as 'stub' if not exposed by backend
       // Note: This is READ-ONLY from frontend perspective
       // Provider selection happens at startup via AI_PROVIDER env var
+      const providerValue = getProviderFromHealthCheck(data) || 'stub';
+      const providerDescription = providerValue === 'stub' && !getProviderFromHealthCheck(data)
+        ? 'Active AI provider for chat execution (showing "stub" because backend does not expose this value in health check - check .env file to see actual provider)'
+        : 'Active AI provider for chat execution';
+      
       items.push({
         key: 'AI_PROVIDER',
-        value: getProviderFromHealthCheck(data) || 'stub',
+        value: providerValue,
         source: 'env',
         mutability: 'restart-required',
-        description: 'Active AI provider for chat execution',
+        description: providerDescription,
         allowedValues: ['stub', 'anthropic', 'openai', 'groq', 'xai', 'deepseek'],
         requiresRestart: true,
       });
@@ -149,10 +155,22 @@ export default function ConfigurationControl({ onClose }: ConfigurationControlPr
   };
 
   const getProviderFromHealthCheck = (data: any): string | null => {
-    // Try to infer provider from health check data
-    // This is a best-effort approach since provider info may not be directly exposed
-    // In a real implementation, we'd add a dedicated config endpoint
-    return null; // Placeholder - would need backend support
+    // Phase 37C: Try to infer provider from health check data
+    // The health check may include environment info that hints at the provider
+    // However, this is a best-effort approach since provider info is not directly exposed
+    
+    // Check if environment data includes provider hints
+    if (data.environment && typeof data.environment === 'object') {
+      // Look for provider-related keys in environment
+      const envKeys = Object.keys(data.environment);
+      if (envKeys.includes('AI_PROVIDER')) {
+        return data.environment.AI_PROVIDER;
+      }
+    }
+    
+    // Fallback: return null to indicate unknown
+    // This will display as 'stub' in the UI (see line 96)
+    return null;
   };
 
   const handleEdit = (item: ConfigItem) => {
@@ -352,14 +370,17 @@ export default function ConfigurationControl({ onClose }: ConfigurationControlPr
                 Configuration Documentation
               </h3>
               <p className="text-xs text-gray-700 mt-1">
-                For detailed configuration options and best practices, see:
+                For detailed configuration options and best practices, see these files in the repository root:
               </p>
               <ul className="text-xs text-gray-700 mt-2 space-y-1 list-disc list-inside">
-                <li>Environment Variables: ARCHITECTURE.md Section 12</li>
-                <li>Startup Guardrails: Phase 32A Documentation</li>
-                <li>Launch States: Phase 28B-1 Documentation</li>
-                <li>Abort Modes: Phase 28B-2 Documentation</li>
+                <li><code className="bg-white px-1 rounded">ARCHITECTURE.md</code> - Section 12: Environment Variables</li>
+                <li><code className="bg-white px-1 rounded">docs/PHASE-32A-CHECKPOINT.md</code> - Startup Guardrails</li>
+                <li><code className="bg-white px-1 rounded">docs/PHASE-28B-1-FINAL-CHECKPOINT.md</code> - Launch States</li>
+                <li><code className="bg-white px-1 rounded">docs/PHASE-28B-2-FINAL-CHECKPOINT.md</code> - Abort Modes</li>
               </ul>
+              <p className="text-xs text-gray-600 mt-2 italic">
+                💡 These files are located in your project directory and can be opened in any text editor.
+              </p>
             </div>
           </div>
         </div>

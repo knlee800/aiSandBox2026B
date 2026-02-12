@@ -222,9 +222,18 @@ export default function ApiKeysPage() {
                 className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={creating}
               />
-              <p className="text-xs text-gray-500 mt-1">
-                Example: ai:execute, sessions:read, sessions:write
-              </p>
+              <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded text-xs">
+                <p className="font-semibold text-gray-900 mb-1">Available Scopes:</p>
+                <ul className="space-y-1 text-gray-700">
+                  <li><code className="bg-white px-1 rounded">ai:execute</code> - Execute AI prompts and commands</li>
+                  <li><code className="bg-white px-1 rounded">sessions:read</code> - Read session information and status</li>
+                  <li><code className="bg-white px-1 rounded">sessions:write</code> - Create and modify sessions</li>
+                  <li><code className="bg-white px-1 rounded">sessions:delete</code> - Delete sessions</li>
+                </ul>
+                <p className="mt-2 text-gray-600 italic">
+                  💡 Separate multiple scopes with commas. Example: <code className="bg-white px-1 rounded">ai:execute,sessions:read</code>
+                </p>
+              </div>
             </div>
             <button
               onClick={handleCreateKey}

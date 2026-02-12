@@ -34,6 +34,23 @@ export default function AppPage() {
 
   return (
     <div className="min-h-screen bg-gray-100">
+      {/* Phase 37C: Help Banner */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-200">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <div className="flex items-start space-x-3">
+            <span className="text-xl">💡</span>
+            <div className="flex-1 text-sm">
+              <p className="font-semibold text-gray-900 mb-1">Welcome to the AI Sandbox Platform</p>
+              <p className="text-gray-700">
+                <strong>Getting Started:</strong> First, check the System Readiness panel above to ensure all services are running. 
+                Then create an API key in the "API Keys" tab, and use it in the "Driver" tab to execute AI prompts. 
+                View and understand your configuration in the "Configuration" tab.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Minimal Tab Navigation */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4">
@@ -45,8 +62,9 @@ export default function AppPage() {
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
+              title="Execute AI prompts using your API key"
             >
-              Driver
+              🚀 Driver
             </button>
             <button
               onClick={() => setActiveTab('keys')}
@@ -55,8 +73,9 @@ export default function AppPage() {
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
+              title="Create and manage API keys for authentication"
             >
-              API Keys
+              🔑 API Keys
             </button>
             <button
               onClick={() => setActiveTab('configuration')}
@@ -65,8 +84,9 @@ export default function AppPage() {
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
+              title="View system configuration and environment settings"
             >
-              Configuration
+              ⚙️ Configuration
             </button>
           </nav>
         </div>

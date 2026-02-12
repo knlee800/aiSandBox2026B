@@ -74,13 +74,45 @@ export default function DriverPage() {
     }
   };
 
+  const handleCheckSystemStatus = () => {
+    // Scroll to top to show SystemReadiness panel
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <>
       <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
-        <h1>AI Driver (Phase 37B)</h1>
+        <h1>AI Driver (Phase 37C)</h1>
         <p style={{ fontSize: '14px', color: '#666', marginBottom: '20px' }}>
           Execute AI prompts using your API key. Create an API key in the "API Keys" tab if you don't have one.
         </p>
+
+        {/* Phase 37C: System Status Link */}
+        <div style={{ 
+          marginBottom: '20px', 
+          padding: '12px', 
+          backgroundColor: '#f0f9ff', 
+          border: '1px solid #bfdbfe', 
+          borderRadius: '6px' 
+        }}>
+          <p style={{ fontSize: '13px', color: '#1e40af', marginBottom: '8px' }}>
+            💡 <strong>Having connection issues?</strong> Check the System Readiness panel at the top of this page.
+          </p>
+          <button
+            onClick={handleCheckSystemStatus}
+            style={{
+              padding: '6px 12px',
+              fontSize: '13px',
+              backgroundColor: '#3b82f6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
+            View System Status
+          </button>
+        </div>
 
         {/* Phase 37B: API Key Configuration */}
         <div style={{ marginBottom: '15px' }}>
