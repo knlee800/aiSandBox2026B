@@ -7,18 +7,21 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { ApiKeyConfig, ApiKeyIdentity } from './api-key.config';
+import { ApiKeyService } from './api-key.service';
 
 /**
  * ApiKeyAuthGuard
  *
  * Phase 20A: API key authentication guard
+ * Phase 36A: Updated to use database for API key validation
  *
  * Enforces API key authentication for protected endpoints.
  *
  * Responsibilities:
  * - Extract API key from Authorization header
  * - Validate API key format (Bearer token)
- * - Validate API key against static configuration
+ * - Validate API key against database (Phase 36A)
+ * - Fallback to static configuration for test/dev keys
  * - Resolve API key → userId and apiKeyId
  * - Attach verified identity to request object
  *
@@ -35,6 +38,8 @@ import { ApiKeyConfig, ApiKeyIdentity } from './api-key.config';
  */
 @Injectable()
 export class ApiKeyAuthGuard implements CanActivate {
+  constructor(private readonly apiKeyService: ApiKeyService) {}
+
   /**
    * Validate API key and attach verified identity to request
    *
@@ -43,7 +48,7 @@ export class ApiKeyAuthGuard implements CanActivate {
    * @throws UnauthorizedException if Authorization header missing or malformed
    * @throws ForbiddenException if API key invalid
    */
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
 
     // Extract Authorization header
@@ -65,8 +70,27 @@ export class ApiKeyAuthGuard implements CanActivate {
       throw new UnauthorizedException('Missing API key');
     }
 
-    // Validate API key and resolve identity
-    const identity = ApiKeyConfig.validateApiKey(apiKey);
+    // Phase 36A: Try database validation first
+    let identity: ApiKeyIdentity | null = null;
+
+    try {
+      const dbIdentity = await this.apiKeyService.validateApiKey(apiKey);
+      if (dbIdentity) {
+        identity = {
+          userId: dbIdentity.userId,
+          apiKeyId: dbIdentity.apiKeyId,
+          scopes: dbIdentity.scopes,
+        };
+      }
+    } catch (error) {
+      // If database validation fails, fall through to static config
+      // This ensures test keys still work during development
+    }
+
+    // Fallback to static configuration (for test/dev keys)
+    if (!identity) {
+      identity = ApiKeyConfig.validateApiKey(apiKey);
+    }
 
     if (!identity) {
       throw new ForbiddenException('Invalid API key');

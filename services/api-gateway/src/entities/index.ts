@@ -11,6 +11,7 @@ export { Container } from './container.entity';
 export { TokenUsage } from './token-usage.entity';
 export { UsageRecord } from './usage-record.entity';
 export { BillingSnapshot, BillingLineItem } from './billing-snapshot.entity';
+export { ApiKey } from './api-key.entity';
 export { UserRole } from './user-role.enum';
 export { SessionStatus } from './session-status.enum';
 export { ChatMessageRole } from './chat-message-role.enum';
