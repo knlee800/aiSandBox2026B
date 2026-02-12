@@ -312,6 +312,10 @@ export function createErrorContext(error: any): ErrorContext {
           cause: data.message || 'The AI provider may be unreachable or the API key may be invalid.',
           remediation: [
             {
+              type: 'info',
+              description: 'Check the System Readiness panel and click "View Configuration" to see your AI provider settings',
+            },
+            {
               type: 'command',
               description: 'Check if AI_PROVIDER is set correctly in .env',
               command: 'echo $AI_PROVIDER',
@@ -354,7 +358,7 @@ export function createErrorContext(error: any): ErrorContext {
   }
 
   // Handle network errors
-  if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
+  if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK' || error.message?.includes('fetch')) {
     return {
       id,
       timestamp,
@@ -362,6 +366,10 @@ export function createErrorContext(error: any): ErrorContext {
       problem: 'Could not connect to the backend service.',
       cause: 'The API Gateway or required services may not be running.',
       remediation: [
+        {
+          type: 'info',
+          description: 'Check the System Readiness panel at the top of the page to see which services are down',
+        },
         {
           type: 'command',
           description: 'Start the API Gateway',

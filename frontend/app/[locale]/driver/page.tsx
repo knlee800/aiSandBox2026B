@@ -1,26 +1,50 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import ErrorRemediation, { ErrorContext, createErrorContext } from '@/components/ErrorRemediation';
 
 export default function DriverPage() {
+  const router = useRouter();
+  const params = useParams();
+  const locale = params.locale as string;
+
   const [prompt, setPrompt] = useState('');
   const [output, setOutput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [apiKey, setApiKey] = useState('');
+  const [apiUrl, setApiUrl] = useState('http://localhost:4000/api/ai/execute');
+  const [currentError, setCurrentError] = useState<ErrorContext | null>(null);
+
+  // Phase 37B: Load API key from localStorage on mount
+  useEffect(() => {
+    const savedApiKey = localStorage.getItem('driver_api_key');
+    if (savedApiKey) {
+      setApiKey(savedApiKey);
+    }
+  }, []);
 
   const handleExecute = async () => {
-    if (!prompt.trim()) return;
+    if (!prompt.trim()) {
+      alert('Please enter a prompt');
+      return;
+    }
+
+    if (!apiKey.trim()) {
+      alert('Please enter an API key. Create one in the API Keys tab.');
+      return;
+    }
 
     setLoading(true);
-    setError('');
+    setCurrentError(null);
     setOutput('');
 
     try {
-      const response = await fetch('http://localhost:4000/api/ai/execute', {
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': 'valid-api-key', // Using existing test API key
+          'x-api-key': apiKey.trim(),
         },
         body: JSON.stringify({
           prompt: prompt.trim(),
@@ -29,80 +53,146 @@ export default function DriverPage() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP ${response.status}`);
+        throw {
+          response: {
+            status: response.status,
+            data: errorData,
+          },
+        };
       }
 
       const data = await response.json();
       setOutput(data.output || JSON.stringify(data, null, 2));
+      
+      // Save API key to localStorage for convenience
+      localStorage.setItem('driver_api_key', apiKey.trim());
     } catch (err: any) {
-      setError(err.message || 'Execution failed');
+      console.error('Execution failed:', err);
+      setCurrentError(createErrorContext(err));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
-      <h1>AI Driver (Phase 34A)</h1>
-      
-      <div style={{ marginBottom: '10px' }}>
-        <label htmlFor="prompt" style={{ display: 'block', marginBottom: '5px' }}>
-          Prompt:
-        </label>
-        <textarea
-          id="prompt"
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          disabled={loading}
-          rows={6}
+    <>
+      <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
+        <h1>AI Driver (Phase 37B)</h1>
+        <p style={{ fontSize: '14px', color: '#666', marginBottom: '20px' }}>
+          Execute AI prompts using your API key. Create an API key in the "API Keys" tab if you don't have one.
+        </p>
+
+        {/* Phase 37B: API Key Configuration */}
+        <div style={{ marginBottom: '15px' }}>
+          <label htmlFor="apiKey" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+            API Key: <span style={{ color: 'red' }}>*</span>
+          </label>
+          <input
+            id="apiKey"
+            type="password"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            placeholder="Enter your API key (from API Keys tab)"
+            disabled={loading}
+            style={{
+              width: '100%',
+              padding: '8px',
+              fontFamily: 'monospace',
+              fontSize: '14px',
+              border: '1px solid #ccc',
+              borderRadius: '4px',
+            }}
+          />
+          <p style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
+            💡 Create an API key in the "API Keys" tab, then paste it here.
+          </p>
+        </div>
+
+        {/* Phase 37B: API URL Configuration */}
+        <div style={{ marginBottom: '15px' }}>
+          <label htmlFor="apiUrl" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+            API URL:
+          </label>
+          <input
+            id="apiUrl"
+            type="text"
+            value={apiUrl}
+            onChange={(e) => setApiUrl(e.target.value)}
+            disabled={loading}
+            style={{
+              width: '100%',
+              padding: '8px',
+              fontFamily: 'monospace',
+              fontSize: '14px',
+              border: '1px solid #ccc',
+              borderRadius: '4px',
+            }}
+          />
+        </div>
+        
+        <div style={{ marginBottom: '10px' }}>
+          <label htmlFor="prompt" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+            Prompt: <span style={{ color: 'red' }}>*</span>
+          </label>
+          <textarea
+            id="prompt"
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            disabled={loading}
+            rows={6}
+            placeholder="Example: Write a hello world function in Python"
+            style={{
+              width: '100%',
+              padding: '8px',
+              fontFamily: 'monospace',
+              fontSize: '14px',
+              border: '1px solid #ccc',
+              borderRadius: '4px',
+            }}
+          />
+        </div>
+
+        <button
+          onClick={handleExecute}
+          disabled={loading || !prompt.trim() || !apiKey.trim()}
           style={{
-            width: '100%',
-            padding: '8px',
-            fontFamily: 'monospace',
+            padding: '10px 20px',
             fontSize: '14px',
-            border: '1px solid #ccc',
+            cursor: loading || !prompt.trim() || !apiKey.trim() ? 'not-allowed' : 'pointer',
+            backgroundColor: loading || !prompt.trim() || !apiKey.trim() ? '#ccc' : '#007bff',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
           }}
-        />
+        >
+          {loading ? 'Executing...' : 'Execute'}
+        </button>
+
+        {output && (
+          <div style={{ marginTop: '20px' }}>
+            <strong>Output:</strong>
+            <pre style={{
+              marginTop: '10px',
+              padding: '10px',
+              backgroundColor: '#f5f5f5',
+              border: '1px solid #ddd',
+              whiteSpace: 'pre-wrap',
+              fontFamily: 'monospace',
+              fontSize: '13px',
+              borderRadius: '4px',
+            }}>
+              {output}
+            </pre>
+          </div>
+        )}
       </div>
 
-      <button
-        onClick={handleExecute}
-        disabled={loading || !prompt.trim()}
-        style={{
-          padding: '10px 20px',
-          fontSize: '14px',
-          cursor: loading ? 'wait' : 'pointer',
-          backgroundColor: loading ? '#ccc' : '#007bff',
-          color: 'white',
-          border: 'none',
-          borderRadius: '4px',
-        }}
-      >
-        {loading ? 'Executing...' : 'Execute'}
-      </button>
-
-      {error && (
-        <div style={{ marginTop: '20px', padding: '10px', backgroundColor: '#fee', border: '1px solid #fcc' }}>
-          <strong>Error:</strong> {error}
-        </div>
-      )}
-
-      {output && (
-        <div style={{ marginTop: '20px' }}>
-          <strong>Output:</strong>
-          <pre style={{
-            marginTop: '10px',
-            padding: '10px',
-            backgroundColor: '#f5f5f5',
-            border: '1px solid #ddd',
-            whiteSpace: 'pre-wrap',
-            fontFamily: 'monospace',
-            fontSize: '13px',
-          }}>
-            {output}
-          </pre>
-        </div>
-      )}
-    </div>
+      {/* Phase 37B: ErrorRemediation Integration */}
+      <ErrorRemediation
+        error={currentError}
+        onDismiss={() => setCurrentError(null)}
+        onRetry={handleExecute}
+      />
+    </>
   );
 }

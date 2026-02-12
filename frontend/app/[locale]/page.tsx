@@ -9,10 +9,11 @@ export default function Home() {
   const locale = params.locale as string;
 
   useEffect(() => {
+    // Phase 37B: Redirect to unified product surface at /app
     // Check if user is logged in
     const token = localStorage.getItem('token');
     if (token) {
-      router.push(`/${locale}/sandbox`);
+      router.push(`/${locale}/app`);
     } else {
       router.push(`/${locale}/login`);
     }

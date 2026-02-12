@@ -50,6 +50,17 @@ export default function LoginPage() {
       <div className="bg-white p-8 rounded-lg shadow-md w-96">
         <h1 className="text-2xl font-bold mb-6 text-center">{t('title')}</h1>
 
+        {/* Phase 37B: Make test credentials prominent */}
+        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
+          <p className="text-sm font-semibold text-blue-900 mb-2">
+            🔑 {t('testCredentials')}:
+          </p>
+          <div className="text-sm text-blue-800 space-y-1">
+            <p><strong>{t('email')}:</strong> demo@aisandbox.com</p>
+            <p><strong>{t('password')}:</strong> demo123</p>
+          </div>
+        </div>
+
         <form onSubmit={handleLogin}>
           <div className="mb-4">
             <label className="block text-sm font-medium mb-2" htmlFor="email">
@@ -95,12 +106,6 @@ export default function LoginPage() {
             {loading ? t('loggingIn') : t('loginButton')}
           </button>
         </form>
-
-        <div className="mt-4 text-sm text-gray-600 text-center">
-          <p>{t('testCredentials')}:</p>
-          <p>{t('email')}: demo@aisandbox.com</p>
-          <p>{t('password')}: demo123</p>
-        </div>
       </div>
     </div>
   );
