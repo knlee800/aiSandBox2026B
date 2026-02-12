@@ -21,6 +21,14 @@ const nextConfig = {
         destination: 'http://localhost:4000/api/auth/:path*',
       },
       {
+        source: '/api/keys/:path*',
+        destination: 'http://localhost:4000/api/keys/:path*',
+      },
+      {
+        source: '/api/keys',
+        destination: 'http://localhost:4000/api/keys',
+      },
+      {
         source: '/api/sessions/:path*',
         destination: 'http://localhost:4001/api/sessions/:path*',
       },
