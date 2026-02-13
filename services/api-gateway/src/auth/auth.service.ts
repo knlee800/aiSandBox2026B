@@ -23,11 +23,16 @@ export class AuthService {
       throw new UnauthorizedException(i18n.t('auth:invalidCredentials', { lng: lang }));
     }
 
-    // OAuth users don't have passwords - they should use OAuth flow
-    if (!user.passwordHash) {
+    // OAuth users should use OAuth flow, not email/password
+    if (user.authProvider !== 'email') {
       throw new UnauthorizedException(
         `This account uses ${user.authProvider} login. Please sign in with ${user.authProvider}.`
       );
+    }
+
+    // Email users must have a password hash
+    if (!user.passwordHash) {
+      throw new UnauthorizedException(i18n.t('auth:invalidCredentials', { lng: lang }));
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
