@@ -13,7 +13,7 @@ export default function DriverPage() {
   const [output, setOutput] = useState('');
   const [loading, setLoading] = useState(false);
   const [apiKey, setApiKey] = useState('');
-  const [apiUrl, setApiUrl] = useState('http://localhost:4000/api/ai/execute');
+  const [apiUrl, setApiUrl] = useState('/api/ai/execute');
   const [currentError, setCurrentError] = useState<ErrorContext | null>(null);
 
   // Phase 37B: Load API key from localStorage on mount
@@ -44,10 +44,13 @@ export default function DriverPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': apiKey.trim(),
+          Authorization: `Bearer ${apiKey.trim()}`,
         },
         body: JSON.stringify({
           prompt: prompt.trim(),
+          provider: 'xai',
+          sessionId: crypto.randomUUID(),
+          conversationId: crypto.randomUUID(),
         }),
       });
 

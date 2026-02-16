@@ -72,6 +72,8 @@ export class KillSwitchConfig {
         return this.PROVIDER_XAI_ENABLED;
       case 'deepseek':
         return this.PROVIDER_DEEPSEEK_ENABLED;
+      case 'stub':
+        return true;
       default:
         // Unknown providers disabled by default (fail-safe)
         return false;

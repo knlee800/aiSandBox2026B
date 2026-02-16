@@ -33,7 +33,7 @@ export class ExecutionSafetyGuard implements CanActivate {
 
     // Extract provider and max_tokens from request body
     const body = request.body || {};
-    const provider = body.provider?.toLowerCase() || 'unknown';
+    const provider = (process.env.AI_PROVIDER || 'stub').toLowerCase();
     const maxTokens = body.max_tokens;
 
     try {
