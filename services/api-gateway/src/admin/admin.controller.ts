@@ -50,7 +50,7 @@ import {
  * - Safe to call repeatedly (idempotent-safe)
  * - Deterministic responses
  */
-@Controller('api/internal/admin')
+@Controller('internal/admin')
 export class AdminController {
   constructor(private adminService: AdminService) {}
 

@@ -38,7 +38,7 @@ import {
  * 2. GET /users/:userId/period - User period reconciliation summary
  * 3. GET /ready-to-charge - System ready-to-charge gate (advisory)
  */
-@Controller('api/internal/admin/reconciliation')
+@Controller('internal/admin/reconciliation')
 export class ReconciliationController {
   constructor(private reconciliationService: ReconciliationService) {}
 

@@ -30,7 +30,7 @@ import {
  * All endpoints require JWT authentication.
  * Users can only manage their own API keys.
  */
-@Controller('api/keys')
+@Controller('keys')
 @UseGuards(JwtAuthGuard)
 export class ApiKeyController {
   constructor(private readonly apiKeyService: ApiKeyService) {}

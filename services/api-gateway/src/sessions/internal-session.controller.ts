@@ -6,7 +6,7 @@ import { SessionService } from './session.service';
  * HTTP endpoints for container-manager → api-gateway communication
  * NOT exposed to public API (use /api/internal/* routes)
  */
-@Controller('api/internal/sessions')
+@Controller('internal/sessions')
 export class InternalSessionController {
   constructor(private readonly sessionService: SessionService) {}
 

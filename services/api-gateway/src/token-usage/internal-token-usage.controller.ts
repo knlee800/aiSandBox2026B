@@ -7,7 +7,7 @@ import { TokenUsageService } from './token-usage.service';
  * READ-ONLY endpoints for quota enforcement (Task 5.1A)
  * NOT exposed to public API (use /api/internal/* routes)
  */
-@Controller('api/internal/token-usage')
+@Controller('internal/token-usage')
 export class InternalTokenUsageController {
   constructor(private readonly tokenUsageService: TokenUsageService) {}
 

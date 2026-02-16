@@ -25,7 +25,7 @@ import { InvoicesService, Invoice } from './invoices.service';
  * - GET /api/internal/invoices/:invoiceId - Get invoice by ID
  * - GET /api/internal/invoices/by-key/:invoiceKey - Get invoice by key
  */
-@Controller('api/internal/invoices')
+@Controller('internal/invoices')
 export class InvoicesController {
   constructor(private invoicesService: InvoicesService) {}
 

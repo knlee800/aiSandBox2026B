@@ -70,7 +70,7 @@ export default function ApiKeysPage() {
       const response = await fetch('/api/keys', {
         method: 'GET',
         headers: {
-          'x-api-key': token || '',
+          'Authorization': `Bearer ${token}`,
         },
       });
 
@@ -109,7 +109,7 @@ export default function ApiKeysPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': token || '',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ scopes }),
       });
@@ -145,7 +145,7 @@ export default function ApiKeysPage() {
       const response = await fetch(`/api/keys/${keyId}`, {
         method: 'DELETE',
         headers: {
-          'x-api-key': token || '',
+          'Authorization': `Bearer ${token}`,
         },
       });
 

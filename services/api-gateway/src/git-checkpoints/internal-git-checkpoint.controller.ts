@@ -17,7 +17,7 @@ class RecordCheckpointDto {
  * HTTP endpoints for container-manager → api-gateway communication
  * NOT exposed to public API (use /api/internal/* routes)
  */
-@Controller('api/internal/git-checkpoints')
+@Controller('internal/git-checkpoints')
 export class InternalGitCheckpointController {
   constructor(private readonly gitCheckpointService: GitCheckpointService) {}
 
