@@ -106,7 +106,7 @@ export default function SandboxPage() {
       loadFiles(sessionId);
       // If the changed file is currently open, reload it
       if (selectedFile && data.file.path === selectedFile.path) {
-        loadFileContent(sessionId, selectedFile.path);
+        reloadCurrentFile();
       }
     });
 
@@ -120,9 +120,21 @@ export default function SandboxPage() {
 
   const initializeSession = async (uid: string) => {
     try {
-      const response = await axios.post('/api/sessions', {
-        userId: uid,
-      });
+      const token = localStorage.getItem('token');
+
+      if (!token) {
+        throw new Error('Missing JWT token');
+      }
+
+      const response = await axios.post(
+        '/api/sessions',
+        { userId: uid },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       const newSessionId = response.data.sessionId;
       setSessionId(newSessionId);
       localStorage.setItem('sessionId', newSessionId);

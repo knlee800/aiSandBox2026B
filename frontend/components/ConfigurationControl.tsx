@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ReactElement } from 'react';
 
 /**
  * Configuration Control Surface
@@ -397,8 +397,8 @@ interface ConfigurationItemProps {
   onSave: (item: ConfigItem) => void;
   onCancel: () => void;
   onEditValueChange: (value: string) => void;
-  getMutabilityBadge: (mutability: ConfigMutability) => JSX.Element;
-  getSourceBadge: (source: ConfigSource) => JSX.Element;
+  getMutabilityBadge: (mutability: ConfigMutability) => ReactElement;
+  getSourceBadge: (source: ConfigSource) => ReactElement;
 }
 
 function ConfigurationItem({

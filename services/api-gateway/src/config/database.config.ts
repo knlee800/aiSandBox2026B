@@ -19,7 +19,7 @@ export const databaseConfig = (): TypeOrmModuleOptions => {
       type: 'postgres',
       url: databaseUrl,
       entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-      synchronize: false,
+      synchronize: true,
       logging: !isProduction,
       extra: {
         max: 10,
