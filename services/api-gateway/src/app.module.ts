@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { StartupModule } from './startup/startup.module';
 import { AuthModule } from './auth/auth.module';
@@ -23,7 +24,13 @@ import { InternalServiceAuthGuard } from './guards/internal-service-auth.guard';
 
 @Module({
   imports: [
-    // Phase 27B: Startup guard (MUST be first)
+    // Phase 38: Environment bootstrap (MUST be first)
+    // Loads .env variables before any module, guard, or service executes
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+
+    // Phase 27B: Startup guard (MUST be second)
     // Performs all mandatory startup checks before serving traffic
     StartupModule,
 
