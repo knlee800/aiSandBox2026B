@@ -197,11 +197,12 @@ export class InternalQuotaEvaluationController {
    * Get configured quota limits (for transparency/debugging)
    * Task 9.4A: Expose current quota configuration
    *
-   * @returns Current quota limits
+   * @param userId - User UUID
+   * @returns Current quota limits for user
    */
-  @Get('limits')
-  getQuotaLimits() {
-    return this.quotaEvaluationService.getQuotaLimits();
+  @Get('limits/:userId')
+  getQuotaLimits(@Param('userId') userId: string) {
+    return this.quotaEvaluationService.getQuotaLimits(userId);
   }
 
   /**

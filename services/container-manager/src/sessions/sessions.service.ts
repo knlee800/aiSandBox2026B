@@ -1,7 +1,8 @@
 import {
   Injectable,
   NotFoundException,
-  TooManyRequestsException,
+  HttpException,
+  HttpStatus,
   GoneException,
   BadRequestException,
   InternalServerErrorException,
@@ -347,8 +348,9 @@ export class SessionsService {
     const maxAllowed = this.governanceConfig.maxConcurrentExecsPerSession;
 
     if (currentActive >= maxAllowed) {
-      throw new TooManyRequestsException(
+      throw new HttpException(
         `Concurrent exec limit exceeded for session ${sessionId}: ${currentActive}/${maxAllowed} active`,
+        HttpStatus.TOO_MANY_REQUESTS,
       );
     }
 
@@ -798,22 +800,25 @@ export class SessionsService {
 
       if (exceeded) {
         // Reject request with HTTP 429
-        throw new TooManyRequestsException({
-          statusCode: 429,
-          error: 'Too Many Requests',
-          message: 'Quota exceeded',
-          details: {
-            userId: session.user_id,
-            periodStart: startDate,
-            periodEnd: endDate,
+        throw new HttpException(
+          {
+            statusCode: 429,
+            error: 'Too Many Requests',
+            message: 'Quota exceeded',
+            details: {
+              userId: session.user_id,
+              periodStart: startDate,
+              periodEnd: endDate,
+            },
           },
-        });
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
       }
 
       // Quota OK - allow request
     } catch (error) {
-      // If error is TooManyRequestsException, re-throw it
-      if (error instanceof TooManyRequestsException) {
+      // If error is HttpException with 429 status, re-throw it
+      if (error instanceof HttpException && error.getStatus() === HttpStatus.TOO_MANY_REQUESTS) {
         throw error;
       }
 

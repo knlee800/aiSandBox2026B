@@ -15,14 +15,11 @@ export class DockerRuntimeService implements OnModuleInit {
   private docker: Docker;
 
   constructor(private governanceConfig: GovernanceConfig) {
-    // Initialize Docker client with DOCKER_HOST from environment
-    const dockerHost = process.env.DOCKER_HOST || 'unix:///var/run/docker.sock';
-
+    // Initialize Docker client with platform-aware socket path
     this.docker = new Docker({
-      socketPath: dockerHost.startsWith('unix://')
-        ? dockerHost.replace('unix://', '')
-        : undefined,
-      host: dockerHost.startsWith('tcp://') ? dockerHost.replace('tcp://', '') : undefined,
+      socketPath: process.platform === 'win32'
+        ? '//./pipe/docker_engine'
+        : '/var/run/docker.sock',
     });
   }
 

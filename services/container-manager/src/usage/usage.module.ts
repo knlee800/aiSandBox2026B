@@ -18,6 +18,6 @@ import { PlanQuotaConfig } from '../config/plan-quota.config';
     InternalQuotaVisibilityController,
   ],
   providers: [UsageAggregationService, QuotaEvaluationService, PlanQuotaConfig],
-  exports: [UsageAggregationService, QuotaEvaluationService],
+  exports: [UsageAggregationService, QuotaEvaluationService, PlanQuotaConfig],
 })
 export class UsageModule {}
