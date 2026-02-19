@@ -38,7 +38,7 @@ export default function LoginPage() {
 
       localStorage.setItem('access_token', response.data.access_token);
       localStorage.setItem('userId', response.data.user.id);
-      router.push(`/${locale}/sandbox`);
+      router.push(`/${locale}/app`);
     } catch (err: any) {
       setError(err.response?.data?.message || t('loginFailed'));
     } finally {
