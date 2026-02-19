@@ -229,6 +229,18 @@ export class SessionsService {
   }
 
   async deleteSession(sessionId: string) {
+    // Task 40B-1: Remove container BEFORE deleting session data
+    // Best-effort container cleanup (log errors but continue with deletion)
+    try {
+      await this.removeSessionContainer(sessionId);
+    } catch (error) {
+      console.error(
+        `Failed to remove container for session ${sessionId} during deletion:`,
+        error.message,
+      );
+      // Continue with session deletion even if container removal fails
+    }
+
     // Delete workspace directory
     const workspacePath = path.join(this.workspacesRoot, sessionId);
     try {

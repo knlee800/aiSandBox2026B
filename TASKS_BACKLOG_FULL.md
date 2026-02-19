@@ -1686,3 +1686,144 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 - Implement standard error format from ARCHITECTURE.md Section 11
 - Implement security measures from ARCHITECTURE.md Section 10
 - All tasks should include correlation ID logging
+
+---
+
+## Phase 40: Runtime Hardening & Verification
+
+### TASK-40B-1: Runtime Hardening — Container Lifecycle & Cleanup Verification
+**Task ID:** TASK-40B-1  
+**Phase:** 40B  
+**Stage:** 40B-1  
+**Priority:** 🔴 High  
+**Nature:** DIAGNOSTIC + FIX-IF-REQUIRED  
+**Dependencies:** PHASE-8.3, PHASE-8.4, PHASE-40A-3  
+**Checkpoint:** `docs/PHASE-40B-1-CHECKPOINT.md`
+
+**Objective:**
+
+Verify container lifecycle correctness and cleanup guarantees under normal and failure conditions on Windows runtime. Ensure that session creation, termination, and container cleanup behave deterministically and leave no orphaned resources.
+
+**Scope:**
+
+This task is limited to **runtime verification and minimal fixes** in:
+- `services/api-gateway` (session lifecycle behavior)
+- `services/container-manager` (container lifecycle behavior)
+
+**In Scope:**
+1. **Session → Container Creation Verification**
+   - Verify container creation during session start
+   - Verify container naming and labeling consistency
+   - Verify workspace mount behavior
+
+2. **Session Termination → Container Cleanup Verification**
+   - Verify container stop on session termination
+   - Verify container removal after stop
+   - Verify cleanup on max lifetime violation
+   - Verify cleanup on idle timeout violation
+   - Verify cleanup on explicit DELETE /api/sessions/:id
+
+3. **Restart Scenarios**
+   - Verify behavior when api-gateway restarts (container state)
+   - Verify behavior when container-manager restarts (container state)
+   - Verify termination state survives restarts (DB-backed)
+
+4. **Docker Engine Failure Scenarios**
+   - Verify behavior when Docker daemon is unavailable
+   - Verify error handling when container stop fails
+   - Verify error handling when container remove fails
+
+5. **Orphan Container Detection**
+   - Verify no orphaned containers after repeated create/terminate cycles
+   - Document any edge cases where containers may remain
+
+6. **Documentation**
+   - Explicit documentation of current cleanup behavior
+   - Document any gaps or known limitations
+   - Document Windows-specific considerations
+
+**Explicitly Out of Scope:**
+- ❌ No background cleanup workers (violates ARCHITECTURE.md Section 11)
+- ❌ No scheduled jobs or cron tasks
+- ❌ No distributed coordination or clustering
+- ❌ No database schema changes
+- ❌ No authentication or authorization changes
+- ❌ No preview system modifications
+- ❌ No billing or quota logic changes
+- ❌ No architectural refactors
+- ❌ No new features or capabilities
+- ❌ No multi-node orchestration
+
+**Acceptance Criteria:**
+
+**Verification Requirements:**
+- [ ] Session creation consistently creates exactly one container
+- [ ] Session termination (all paths) stops and removes container
+- [ ] No orphaned containers after 10+ create/terminate cycles
+- [ ] Termination state survives api-gateway restart
+- [ ] Termination state survives container-manager restart
+- [ ] Docker daemon failure returns appropriate HTTP errors
+- [ ] Container stop failure is handled gracefully
+- [ ] Container remove failure is logged but doesn't block termination state write
+
+**Documentation Requirements:**
+- [ ] Current cleanup behavior explicitly documented
+- [ ] Edge cases and failure modes documented
+- [ ] Windows-specific behavior documented
+- [ ] Known limitations documented
+
+**Fix Requirements (If Defect Found):**
+- [ ] Minimal fix applied to smallest possible file set
+- [ ] Fix preserves existing governance guarantees
+- [ ] Fix does not introduce new dependencies
+- [ ] Fix does not violate ARCHITECTURE.md principles
+- [ ] Linter passes on modified files
+- [ ] No regressions introduced
+
+**Stop Conditions:**
+
+This task MUST stop when:
+1. ✅ All verification checklist items completed
+2. ✅ Any necessary minimal fix applied and verified
+3. ✅ Checkpoint written to `docs/PHASE-40B-1-CHECKPOINT.md`
+4. ✅ No scope expansion occurred
+
+**References:**
+- ARCHITECTURE.md Section 4 (Session Lifecycle)
+- ARCHITECTURE.md Section 9 (Container Isolation)
+- ARCHITECTURE.md Section 11 (Explicit Non-Goals)
+- PRD.md Section 3.A (Session Management)
+- PRD.md Section 3.A (Termination Semantics)
+- PHASE-8.3-CHECKPOINT.md (Idle Timeout + Max Lifetime)
+- PHASE-8.4-CHECKPOINT.md (Session Termination Semantics)
+
+**Known Context:**
+
+From PHASE-8.4-CHECKPOINT.md (Line 130):
+> "No container cleanup automation (containers remain running after termination)"
+
+This task verifies whether this statement is still accurate and whether cleanup is correctly triggered on all termination paths.
+
+**Effort Estimate:** 2-4 hours (verification + minimal fixes if needed)
+
+**Test Strategy:**
+1. Manual verification on Windows runtime
+2. Repeated create/terminate cycles
+3. Service restart testing
+4. Docker daemon failure simulation
+5. Orphan container detection via `docker ps -a`
+
+**Rollback Plan:**
+
+If fixes are required and introduce regressions:
+- Revert code changes via git
+- Restore previous checkpoint state
+- Document issue for future phase
+
+**Invariants That MUST Be Preserved:**
+- Request-driven enforcement only (no background workers)
+- DB-backed termination state
+- HTTP 410 Gone on terminated sessions
+- Single-process enforcement model
+- No WebSocket control plane
+- Idempotent termination writes
