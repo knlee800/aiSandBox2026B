@@ -57,7 +57,7 @@ export default function SandboxPage() {
   const [currentError, setCurrentError] = useState<ErrorContext | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token');
     const storedUserId = localStorage.getItem('userId');
     const storedSessionId = localStorage.getItem('sessionId');
 
@@ -120,7 +120,7 @@ export default function SandboxPage() {
 
   const initializeSession = async (uid: string) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('access_token');
 
       if (!token) {
         throw new Error('Missing JWT token');
@@ -352,7 +352,7 @@ export default function SandboxPage() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem('access_token');
     localStorage.removeItem('userId');
     // Keep sessionId so user can continue with same workspace after login
     router.push(`/${locale}/login`);

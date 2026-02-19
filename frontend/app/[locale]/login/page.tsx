@@ -36,7 +36,7 @@ export default function LoginPage() {
         throw new Error('Login response missing access_token');
       }
 
-      localStorage.setItem('token', response.data.access_token);
+      localStorage.setItem('access_token', response.data.access_token);
       localStorage.setItem('userId', response.data.user.id);
       router.push(`/${locale}/sandbox`);
     } catch (err: any) {

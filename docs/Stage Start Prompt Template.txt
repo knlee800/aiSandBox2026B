@@ -1,0 +1,19 @@
+Stage start.
+
+Reset context. Read and obey CLAUDE.md first.
+Treat PRD.md and ARCHITECTURE.md as higher authority.
+Consult TASKS.md to confirm allowed scope.
+
+Phase: PHASE-33A
+Stage: STAGE-33A
+Active Task(s): TASK-33A
+
+Rules:
+- Do not write or modify code until scope is confirmed.
+- No refactors or scope expansion.
+- api-gateway ONLY (scripts/docs/tests allowed).
+- ai-service must remain unchanged.
+- Focus strictly on release smoke validation.
+- Stop after Phase 33A completion and summary.
+
+Acknowledge readiness before proceeding.

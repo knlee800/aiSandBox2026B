@@ -47,26 +47,21 @@ export default function ApiKeysPage() {
   const [newKey, setNewKey] = useState<NewKeyResponse | null>(null);
   const [currentError, setCurrentError] = useState<ErrorContext | null>(null);
   const [scopesInput, setScopesInput] = useState('ai:execute,sessions:read');
-  const [showAuthNotice, setShowAuthNotice] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token');
     if (!token) {
-      // Phase 37B: Show notice before redirect
-      setShowAuthNotice(true);
-      setTimeout(() => {
-        router.push(`/${locale}/login`);
-      }, 2000);
+      router.push(`/${locale}/login`);
       return;
     }
 
     loadKeys();
-  }, [router, locale]);
+  }, []);
 
   const loadKeys = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('access_token');
       const response = await fetch('/api/keys', {
         method: 'GET',
         headers: {
@@ -102,7 +97,7 @@ export default function ApiKeysPage() {
 
     setCreating(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('access_token');
       const scopes = scopesInput.split(',').map(s => s.trim()).filter(s => s);
 
       const response = await fetch('/api/keys', {
@@ -141,7 +136,7 @@ export default function ApiKeysPage() {
     }
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('access_token');
       const response = await fetch(`/api/keys/${keyId}`, {
         method: 'DELETE',
         headers: {
@@ -174,26 +169,6 @@ export default function ApiKeysPage() {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString();
   };
-
-  // Phase 37B: Show auth notice if not authenticated
-  if (showAuthNotice) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md">
-          <div className="text-center">
-            <div className="text-4xl mb-4">🔒</div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Authentication Required</h2>
-            <p className="text-gray-600 mb-4">
-              You need to be logged in to manage API keys.
-            </p>
-            <p className="text-sm text-gray-500">
-              Redirecting to login page...
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
