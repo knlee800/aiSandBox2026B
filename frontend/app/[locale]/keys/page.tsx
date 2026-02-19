@@ -287,13 +287,13 @@ export default function ApiKeysPage() {
           )}
         </div>
 
-        {/* Back to Sandbox */}
+        {/* Back to App */}
         <div className="mt-6 text-center">
           <button
-            onClick={() => router.push(`/${locale}/sandbox`)}
+            onClick={() => router.push(`/${locale}/app`)}
             className="text-blue-600 hover:text-blue-700 font-medium"
           >
-            ← Back to Sandbox
+            ← Back to App
           </button>
         </div>
       </div>
