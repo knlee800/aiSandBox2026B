@@ -77,4 +77,26 @@ export class Session {
   @Index('idx_session_user_id')
   @Column({ type: 'uuid', name: 'user_id' })
   userId: string;
+
+  /**
+   * Termination timestamp (nullable)
+   * Set when session is terminated by governance violation or manual action
+   * Once set, session is irreversibly terminated (HTTP 410 Gone)
+   * 
+   * PHASE-40B-3A: Added for unified session persistence
+   */
+  @Index('idx_sessions_terminated_at')
+  @Column({ type: 'timestamp', nullable: true, name: 'terminated_at' })
+  terminatedAt: Date | null;
+
+  /**
+   * Termination reason (nullable)
+   * Examples: 'max_lifetime', 'idle_timeout', 'manual', 'error'
+   * Provides context for why session was terminated
+   * 
+   * PHASE-40B-3A: Added for unified session persistence
+   */
+  @Index('idx_sessions_termination_reason')
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'termination_reason' })
+  terminationReason: string | null;
 }

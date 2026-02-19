@@ -1827,3 +1827,341 @@ If fixes are required and introduce regressions:
 - Single-process enforcement model
 - No WebSocket control plane
 - Idempotent termination writes
+
+---
+
+### TASK-40B-2: Runtime Hardening — Session State Transitions & Expiry Semantics Verification
+**Task ID:** TASK-40B-2  
+**Phase:** 40B  
+**Stage:** 40B-2  
+**Priority:** 🔴 High  
+**Nature:** DIAGNOSTIC + FIX-IF-REQUIRED  
+**Dependencies:** PHASE-8.3, PHASE-8.4, TASK-40B-1  
+**Checkpoint:** `docs/PHASE-40B-2-CHECKPOINT.md`
+
+**Objective:**
+
+Verify correctness of session state transitions and expiry semantics on Windows runtime. Ensure that session lifecycle state management, activity tracking, and timeout enforcement behave deterministically and consistently with PRD and ARCHITECTURE specifications.
+
+**Scope:**
+
+This task is limited to **runtime verification and minimal fixes** in:
+- `services/api-gateway` (session state management)
+- `services/container-manager` (session activity tracking)
+
+**In Scope:**
+1. **Session State Transitions**
+   - Verify pending → active transition (if implemented)
+   - Verify state persistence in database
+   - Verify state consistency across service restarts
+   - Verify container_id assignment and persistence
+
+2. **Activity Tracking**
+   - Verify last_activity_at updates on message send
+   - Verify last_activity_at updates on command execution
+   - Verify last_activity_at updates on file operations
+   - Verify activity tracking survives restarts
+
+3. **Idle Timeout Enforcement**
+   - Verify idle timeout calculation correctness
+   - Verify termination triggered when idle timeout exceeded
+   - Verify HTTP 410 Gone returned after idle timeout
+   - Verify termination_reason = 'idle_timeout' persisted
+
+4. **Max Lifetime Enforcement**
+   - Verify max lifetime calculation from created_at
+   - Verify termination triggered when max lifetime exceeded
+   - Verify HTTP 410 Gone returned after max lifetime
+   - Verify termination_reason = 'max_lifetime' persisted
+
+5. **Termination State Determinism**
+   - Verify terminated_at timestamp written atomically
+   - Verify termination state survives restarts
+   - Verify termination is irreversible
+   - Verify all subsequent requests return 410 Gone
+
+6. **Database State Consistency**
+   - Verify session record reflects current state
+   - Verify no orphaned session records
+   - Verify state transitions are atomic
+   - Verify concurrent request handling
+
+7. **Documentation**
+   - Document current state transition behavior
+   - Document activity tracking trigger points
+   - Document timeout calculation logic
+   - Document any edge cases or limitations
+
+**Explicitly Out of Scope:**
+- ❌ No container cleanup logic (handled in TASK-40B-1)
+- ❌ No background workers or scheduled jobs
+- ❌ No database schema changes
+- ❌ No authentication or authorization changes
+- ❌ No routing or endpoint changes
+- ❌ No preview system modifications
+- ❌ No billing or quota logic changes
+- ❌ No architectural refactors
+- ❌ No new features or capabilities
+- ❌ No multi-node orchestration
+- ❌ No UI or frontend changes
+
+**Acceptance Criteria:**
+
+**Verification Requirements:**
+- [ ] Session state transitions documented and verified
+- [ ] container_id persistence behavior verified
+- [ ] last_activity_at updates correctly on all activity types
+- [ ] Idle timeout enforcement verified with test scenarios
+- [ ] Max lifetime enforcement verified with test scenarios
+- [ ] Termination state persists across api-gateway restart
+- [ ] Termination state persists across container-manager restart
+- [ ] HTTP 410 Gone consistently returned for terminated sessions
+- [ ] termination_reason correctly set for each termination path
+- [ ] Database state remains consistent under concurrent requests
+
+**Documentation Requirements:**
+- [ ] State transition diagram or description provided
+- [ ] Activity tracking trigger points documented
+- [ ] Timeout calculation formulas documented
+- [ ] Edge cases and failure modes documented
+- [ ] Windows-specific behavior documented (if any)
+
+**Fix Requirements (If Defect Found):**
+- [ ] Minimal fix applied to smallest possible file set
+- [ ] Fix preserves existing governance guarantees
+- [ ] Fix does not introduce new dependencies
+- [ ] Fix does not violate ARCHITECTURE.md principles
+- [ ] Linter passes on modified files
+- [ ] No regressions introduced
+
+**Stop Conditions:**
+
+This task MUST stop when:
+1. ✅ All verification checklist items completed
+2. ✅ Any necessary minimal fix applied and verified
+3. ✅ Checkpoint written to `docs/PHASE-40B-2-CHECKPOINT.md`
+4. ✅ No scope expansion occurred
+
+**References:**
+- ARCHITECTURE.md Section 4 (Session Lifecycle)
+- ARCHITECTURE.md Section 5 (Governance Model)
+- ARCHITECTURE.md Section 11 (Explicit Non-Goals)
+- PRD.md Section 3.A (Session Management)
+- PRD.md Section 3.A (Governance & Lifecycle Guarantees)
+- PRD.md Section 5 (Governance Model)
+- PRD.md Section 6 (Error & Status Semantics)
+- PHASE-8.3-CHECKPOINT.md (Idle Timeout + Max Lifetime)
+- PHASE-8.4-CHECKPOINT.md (Session Termination Semantics)
+
+**Known Context:**
+
+From PRD.md Section 3.A (Lines 40-62):
+> "Each session has:
+> - Idle timeout (activity-based)
+> - Maximum lifetime (absolute, from creation time)
+> - Governance limits are config-driven and enforced by the system
+> - Enforcement is request-driven (no background workers)"
+
+From ARCHITECTURE.md Section 4 (Lines 172-182):
+> "States: CREATED → ACTIVE → TERMINATED
+> TERMINATED is final. No resurrection."
+
+From PRD.md Section 6 (Lines 217-223):
+> "Session terminated → 410 Gone
+> Idle timeout exceeded → 410 Gone
+> Max lifetime exceeded → 410 Gone"
+
+**Effort Estimate:** 2-4 hours (verification + minimal fixes if needed)
+
+**Test Strategy:**
+1. Manual verification on Windows runtime
+2. Test idle timeout with controlled activity gaps
+3. Test max lifetime with controlled session duration
+4. Test concurrent request handling
+5. Test service restart scenarios
+6. Verify database state consistency
+
+**Rollback Plan:**
+
+If fixes are required and introduce regressions:
+- Revert code changes via git
+- Restore previous checkpoint state
+- Document issue for future phase
+
+**Invariants That MUST Be Preserved:**
+- Request-driven enforcement only (no background workers)
+- DB-backed session state
+- HTTP 410 Gone on terminated sessions
+- Single-process enforcement model
+- Deterministic state transitions
+- Idempotent termination writes
+- No resurrection of terminated sessions
+
+---
+
+### TASK-40B-3: Runtime Hardening — Session Database Unification (PostgreSQL Single Source of Truth)
+**Task ID:** TASK-40B-3  
+**Phase:** 40B  
+**Stage:** 40B-3  
+**Priority:** 🔴 High  
+**Nature:** IMPLEMENTATION  
+**Dependencies:** PHASE-8.3, PHASE-8.4, TASK-40B-1, TASK-40B-2  
+**Checkpoint:** `docs/PHASE-40B-3-CHECKPOINT.md`
+
+**Objective:**
+
+Unify session persistence across services by eliminating SQLite usage in container-manager and consolidating all session state into PostgreSQL. Ensure a single authoritative session record per session.
+
+**Scope:**
+
+This task is limited to **database layer unification** in:
+- `services/api-gateway` (PostgreSQL schema addition)
+- `services/container-manager` (database client replacement)
+
+**In Scope:**
+1. **PostgreSQL Schema Addition**
+   - Add `terminated_at` TIMESTAMP NULL column to sessions table
+   - Add `termination_reason` VARCHAR(255) NULL column to sessions table
+   - Add indexes: `idx_sessions_terminated_at`, `idx_sessions_termination_reason`
+   - Update Session entity in api-gateway
+
+2. **container-manager Database Client Replacement**
+   - Replace `better-sqlite3` with `pg` (PostgreSQL client)
+   - Update all database queries to use PostgreSQL syntax
+   - Replace synchronous queries with async/await
+   - Update parameterized query syntax (? → $1, $2, ...)
+   - Configure PostgreSQL connection pool
+
+3. **Session Persistence Unification**
+   - Remove duplicate session creation in container-manager
+   - Ensure container-manager writes termination fields to PostgreSQL
+   - Ensure api-gateway reads termination fields correctly
+   - Verify single session record per session
+
+4. **Termination Semantics Preservation**
+   - Preserve HTTP 410 Gone enforcement
+   - Preserve idempotent termination writes (WHERE terminated_at IS NULL)
+   - Preserve termination reasons (max_lifetime, idle_timeout, manual, etc.)
+   - Preserve enforcement ordering (termination check → max lifetime → idle timeout)
+
+5. **Data Migration (If Needed)**
+   - Export existing SQLite session data
+   - Import to PostgreSQL
+   - Verify data integrity
+
+6. **Cleanup**
+   - Remove SQLite database files
+   - Remove SQLite dependencies from package.json
+   - Update documentation
+
+**Explicitly Out of Scope:**
+- ❌ No background workers or scheduled jobs
+- ❌ No authentication or authorization changes
+- ❌ No billing or quota logic changes
+- ❌ No preview system modifications
+- ❌ No architectural refactor beyond database layer
+- ❌ No new lifecycle states or status values
+- ❌ No schema additions beyond termination columns
+- ❌ No concurrency model changes
+- ❌ No feature expansion
+- ❌ No API endpoint changes
+- ❌ No WebSocket changes
+
+**Acceptance Criteria:**
+
+**Schema Requirements:**
+- [ ] PostgreSQL sessions table has `terminated_at` column (TIMESTAMP NULL)
+- [ ] PostgreSQL sessions table has `termination_reason` column (VARCHAR(255) NULL)
+- [ ] Indexes created: `idx_sessions_terminated_at`, `idx_sessions_termination_reason`
+- [ ] TypeORM migration generated and applied successfully
+- [ ] Session entity updated with new fields
+
+**Database Client Requirements:**
+- [ ] container-manager uses `pg` instead of `better-sqlite3`
+- [ ] All queries use PostgreSQL syntax
+- [ ] All queries use async/await pattern
+- [ ] Connection pool configured (max 20 connections)
+- [ ] DATABASE_URL environment variable used
+
+**Data Integrity Requirements:**
+- [ ] Only one session record exists per session (no duplicates)
+- [ ] All existing sessions migrated successfully (if applicable)
+- [ ] No data loss during migration
+- [ ] Record counts match before/after migration
+
+**Functional Requirements:**
+- [ ] Idle timeout enforcement continues to work
+- [ ] Max lifetime enforcement continues to work
+- [ ] Termination writes are idempotent (WHERE terminated_at IS NULL)
+- [ ] HTTP 410 Gone returned for terminated sessions
+- [ ] Termination reasons persisted correctly
+- [ ] Container lifecycle unchanged
+
+**Cleanup Requirements:**
+- [ ] SQLite database files removed
+- [ ] better-sqlite3 dependency removed from package.json
+- [ ] No SQLite references in code
+- [ ] Documentation updated
+
+**Quality Requirements:**
+- [ ] Linter passes on all modified files
+- [ ] No regressions in existing tests
+- [ ] No scope expansion beyond database unification
+- [ ] Rollback plan documented and tested
+
+**Stop Conditions:**
+
+This task MUST stop when:
+1. ✅ All acceptance criteria met
+2. ✅ Checkpoint written to `docs/PHASE-40B-3-CHECKPOINT.md`
+3. ✅ No scope expansion occurred
+4. ✅ Rollback plan documented
+
+**References:**
+- ARCHITECTURE.md Section 4 (Session Lifecycle)
+- ARCHITECTURE.md Section 7 (Data Model)
+- PRD.md Section 3.A (Session Management)
+- PRD.md Section 3.A (Termination Semantics)
+- PHASE-8.3-CHECKPOINT.md (Idle Timeout + Max Lifetime)
+- PHASE-8.4-CHECKPOINT.md (Session Termination Semantics)
+- PHASE-40B-2-CHECKPOINT-CORRECTED.md (Architecture Divergence Analysis)
+- PHASE-40B-2-UNIFICATION-DESIGN.md (Implementation Design)
+
+**Known Context:**
+
+From PHASE-40B-2-CHECKPOINT-CORRECTED.md:
+> "Architecture split between PostgreSQL (api-gateway) and SQLite (container-manager) creates schema divergence and prevents unified termination enforcement."
+
+From PHASE-40B-2-UNIFICATION-DESIGN.md:
+> "PostgreSQL becomes single source of truth for all session state."
+
+**Effort Estimate:** 6-8 hours (schema migration + code changes + testing + verification)
+
+**Implementation Strategy:**
+1. Add termination columns to PostgreSQL (zero downtime)
+2. Update api-gateway entity
+3. Replace container-manager database client
+4. Update all database queries
+5. Test in staging environment
+6. Deploy to production with rollback plan
+7. Verify functionality
+8. Remove SQLite files and dependencies
+
+**Rollback Plan:**
+
+If implementation fails:
+1. Revert api-gateway migration: `npm run typeorm migration:revert`
+2. Revert container-manager code changes
+3. Restore SQLite database from backup
+4. Restart both services
+5. Document issue for future attempt
+
+**Invariants That MUST Be Preserved:**
+- Request-driven enforcement only (no background workers)
+- DB-backed termination state
+- HTTP 410 Gone on terminated sessions
+- Single-process enforcement model
+- Idempotent termination writes (WHERE terminated_at IS NULL)
+- Termination is irreversible
+- No resurrection of terminated sessions
+- Enforcement ordering: termination check → max lifetime → idle timeout
