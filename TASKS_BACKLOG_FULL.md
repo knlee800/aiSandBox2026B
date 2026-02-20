@@ -2213,3 +2213,218 @@ If fixes are required and introduce regressions:
 - Deterministic state transitions
 - Idempotent termination writes
 - No resurrection of terminated sessions
+
+---
+
+## Phase 41: Observability & Runtime Metrics Foundation
+
+### TASK-41A: Observability & Runtime Metrics Foundation
+
+**Task ID:** TASK-41A  
+**Phase:** 41  
+**Stage:** 41A  
+**Priority:** 🟡 Medium  
+**Nature:** IMPLEMENTATION (ADDITIVE ONLY)  
+**Dependencies:** PHASE-8.3, PHASE-8.4, TASK-40B-3R  
+**Checkpoint:** `docs/PHASE-41A-CHECKPOINT.md`
+
+**Objective:**
+
+Introduce minimal runtime observability for diagnostic visibility into session and container runtime state. Provide lightweight metrics endpoint for active session count, running container count, termination reason distribution, and basic error counters without external monitoring system integration.
+
+**Scope:**
+
+This task is limited to **additive implementation only** in:
+- `services/api-gateway` (metrics endpoint + session stats)
+- `services/container-manager` (container stats method)
+
+**In Scope:**
+
+1. **Metrics Endpoint in API Gateway**
+   - Add `GET /api/runtime/metrics` endpoint (internal-only or admin-only)
+   - Return JSON with runtime statistics
+   - No authentication required (internal endpoint)
+   - Deterministic response format
+
+2. **Session Statistics**
+   - Active session count (non-terminated)
+   - Terminated session count
+   - Termination reason distribution (idle_timeout, max_lifetime, explicit_delete, error)
+   - Sessions by state (if state field exists)
+
+3. **Container Statistics (via Container Manager)**
+   - Running container count (from Docker API)
+   - Stopped container count (if applicable)
+   - Container creation success/failure counters (if tracked)
+
+4. **Basic Error Counters**
+   - Session creation failures (if tracked)
+   - Container creation failures (if tracked)
+   - Termination errors (if tracked)
+   - Optional: aggregate from logs or add minimal tracking
+
+5. **Health Diagnostics Enhancement**
+   - Extend existing health check endpoint (if exists)
+   - Add diagnostic fields: database connectivity, Docker daemon connectivity
+   - Return detailed status beyond 200 OK
+
+6. **Structured Logging Improvements (Minimal)**
+   - Add log messages for metrics endpoint access
+   - Ensure termination events are logged with reason
+   - No major logging refactor
+
+7. **Documentation**
+   - Document metrics endpoint response format
+   - Document manual verification steps
+   - Document how to interpret metrics
+
+**Explicitly Out of Scope:**
+
+- ❌ No external monitoring systems (Prometheus, Grafana, Datadog, etc.)
+- ❌ No Prometheus exposition format
+- ❌ No alerting systems
+- ❌ No background workers or scheduled jobs
+- ❌ No database schema changes or migrations
+- ❌ No performance optimization
+- ❌ No tracing systems (OpenTelemetry, Jaeger, etc.)
+- ❌ No rate limiting changes
+- ❌ No authentication or authorization changes (unless endpoint requires admin access)
+- ❌ No architectural refactors
+- ❌ No preview system modifications
+- ❌ No billing or quota logic changes
+- ❌ No UI or frontend changes
+- ❌ No WebSocket changes
+- ❌ No container isolation changes
+
+**Acceptance Criteria:**
+
+**Implementation Requirements:**
+- [ ] `GET /api/runtime/metrics` endpoint implemented in api-gateway
+- [ ] Endpoint returns deterministic JSON response
+- [ ] Active session count accurate (query from database)
+- [ ] Terminated session count accurate (query from database)
+- [ ] Termination reason distribution accurate (group by termination_reason)
+- [ ] Running container count accurate (query from Docker API)
+- [ ] Health check endpoint enhanced with diagnostic fields
+- [ ] Database connectivity status included in health check
+- [ ] Docker daemon connectivity status included in health check
+
+**Quality Requirements:**
+- [ ] No change to existing session lifecycle behavior
+- [ ] No change to existing termination enforcement
+- [ ] No change to existing container lifecycle behavior
+- [ ] Build passes (linter + TypeScript compilation)
+- [ ] No regressions in existing tests (if any)
+- [ ] Metrics endpoint does not block or slow down critical paths
+
+**Documentation Requirements:**
+- [ ] Metrics endpoint response format documented
+- [ ] Example response provided
+- [ ] Manual verification steps documented
+- [ ] Interpretation guide provided
+
+**Stop Conditions:**
+
+This task MUST stop when:
+1. ✅ Metrics endpoint implemented and tested
+2. ✅ Health diagnostics enhanced
+3. ✅ Manual verification completed
+4. ✅ Checkpoint written to `docs/PHASE-41A-CHECKPOINT.md`
+5. ✅ No scope expansion occurred
+
+**References:**
+- ARCHITECTURE.md Section 4 (Session Lifecycle)
+- ARCHITECTURE.md Section 9 (Container Isolation)
+- ARCHITECTURE.md Section 11 (Explicit Non-Goals)
+- PRD.md Section 3.A (Session Management)
+- PRD.md Section 7 (Non-Functional Requirements - Reliability)
+- PHASE-8.3-CHECKPOINT.md (Idle Timeout + Max Lifetime)
+- PHASE-8.4-CHECKPOINT.md (Session Termination Semantics)
+- TASK-40B-3R (Concurrency & Stress Verification)
+
+**Known Context:**
+
+From ARCHITECTURE.md Section 11:
+> "No background workers. No event buses. No cron."
+
+From PRD.md Section 7:
+> "Deterministic failure modes. Persistent termination state. Safe restart behavior."
+
+This task provides visibility into runtime state without violating architectural principles.
+
+**Effort Estimate:** 3-5 hours (implementation + verification + documentation)
+
+**Example Metrics Response Format:**
+
+```json
+{
+  "timestamp": "2026-02-20T10:30:00.000Z",
+  "uptime_seconds": 86400,
+  "sessions": {
+    "active": 12,
+    "terminated": 145,
+    "total": 157,
+    "termination_reasons": {
+      "idle_timeout": 78,
+      "max_lifetime": 34,
+      "explicit_delete": 28,
+      "error": 5
+    }
+  },
+  "containers": {
+    "running": 12,
+    "stopped": 0
+  },
+  "errors": {
+    "session_creation_failures": 2,
+    "container_creation_failures": 1,
+    "termination_errors": 0
+  },
+  "health": {
+    "database": "connected",
+    "docker": "connected"
+  }
+}
+```
+
+**Manual Verification Steps:**
+
+1. Start api-gateway and container-manager
+2. Create 3 sessions
+3. Call `GET /api/runtime/metrics`
+4. Verify `sessions.active = 3`
+5. Verify `containers.running = 3`
+6. Terminate 1 session (DELETE)
+7. Call `GET /api/runtime/metrics`
+8. Verify `sessions.active = 2`
+9. Verify `sessions.terminated = 1`
+10. Verify `sessions.termination_reasons.explicit_delete = 1`
+11. Wait for idle timeout on 1 session
+12. Call `GET /api/runtime/metrics`
+13. Verify `sessions.termination_reasons.idle_timeout = 1`
+14. Verify health fields show "connected"
+15. Stop Docker daemon
+16. Call `GET /api/runtime/metrics`
+17. Verify `health.docker = "disconnected"` or similar
+18. Restart Docker daemon
+19. Verify metrics return to normal
+
+**Rollback Plan:**
+
+If implementation introduces regressions:
+- Revert code changes via git
+- Remove metrics endpoint
+- Restore previous checkpoint state
+- Document issue for future phase
+
+**Invariants That MUST Be Preserved:**
+- Request-driven enforcement only (no background workers)
+- DB-backed termination state
+- HTTP 410 Gone on terminated sessions
+- Single-process enforcement model
+- Deterministic state transitions
+- Idempotent termination writes
+- No resurrection of terminated sessions
+- No performance degradation on critical paths
+
+---
