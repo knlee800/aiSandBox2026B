@@ -241,12 +241,26 @@ export class SessionsService {
       // Continue with session deletion even if container removal fails
     }
 
-    // Delete workspace directory
+    // Delete workspace directory (time-bounded best-effort)
+    // Task 40B-3R: Prevent Windows workspace deletion from blocking HTTP response
     const workspacePath = path.join(this.workspacesRoot, sessionId);
     try {
-      await fs.rm(workspacePath, { recursive: true, force: true });
+      const workspaceDeleteTimeout = 3000; // 3 seconds max
+      await Promise.race([
+        fs.rm(workspacePath, { recursive: true, force: true }),
+        new Promise((_, reject) =>
+          setTimeout(
+            () => reject(new Error('Workspace deletion timeout')),
+            workspaceDeleteTimeout,
+          ),
+        ),
+      ]);
     } catch (error) {
-      // Ignore if directory doesn't exist
+      // Best-effort: log warning but continue with DB deletion
+      console.warn(
+        `Workspace deletion for session ${sessionId} failed or timed out (continuing):`,
+        error.message,
+      );
     }
 
     // Delete from database

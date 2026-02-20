@@ -107,4 +107,13 @@ export class SessionService {
   async markSessionError(sessionId: string): Promise<void> {
     await this.updateSessionStatus(sessionId, SessionStatus.ERROR);
   }
+
+  /**
+   * Delete a session (permanent removal)
+   * Removes session record from database
+   * @param sessionId - Session UUID
+   */
+  async deleteSession(sessionId: string): Promise<void> {
+    await this.sessionRepository.deleteSession(sessionId);
+  }
 }

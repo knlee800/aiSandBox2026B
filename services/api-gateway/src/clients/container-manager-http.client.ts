@@ -133,6 +133,47 @@ export class ContainerManagerHttpClient implements OnModuleInit {
   }
 
   /**
+   * Delete a session in container-manager
+   * Calls DELETE /api/sessions/:sessionId
+   * Triggers container cleanup and database deletion
+   * @param sessionId - Session UUID to delete
+   * @throws Error on HTTP failure (fail-fast, no retries)
+   */
+  async deleteSession(sessionId: string): Promise<void> {
+    if (this.isDisabled) {
+      throw new Error(
+        'ContainerManagerHttpClient is disabled (development mode, no INTERNAL_SERVICE_KEY)',
+      );
+    }
+
+    try {
+      // NOTE: Windows Docker stop/remove may exceed default 10s timeout.
+      // DELETE uses 30s override to avoid false timeouts.
+      await this.axiosInstance.delete(
+       `/api/sessions/${sessionId}`,
+       {
+        timeout: 30000, // 30s override for Windows Docker cleanup latency
+        headers: {
+        'X-Internal-Service-Key': this.internalServiceKey,
+        },
+       },
+      );
+    } catch (error) {
+      // Fail-fast: re-throw without logging secrets
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status || 'unknown';
+        const message = error.response?.data?.message || error.message;
+        throw new Error(
+          `Failed to delete session ${sessionId} in container-manager: HTTP ${status} - ${message}`,
+        );
+      }
+      throw new Error(
+        `Failed to delete session ${sessionId} in container-manager: ${error}`,
+      );
+    }
+  }
+
+  /**
    * Get billing usage export from container-manager
    * Task 10B1: Call billing export endpoint
    * Calls GET /api/internal/billing-export/user/:userId/usage?startDate=...&endDate=...

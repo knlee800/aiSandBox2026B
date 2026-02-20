@@ -94,4 +94,16 @@ export class SessionRepository {
 
     return { affected: result.affected || 0 };
   }
+
+  /**
+   * Delete a session by ID
+   * Permanently removes the session record from the database
+   * @param sessionId - Session UUID
+   * @returns Delete result with affected rows count
+   */
+  async deleteSession(sessionId: string): Promise<{ affected: number }> {
+    const result = await this.repository.delete({ id: sessionId });
+
+    return { affected: result.affected || 0 };
+  }
 }

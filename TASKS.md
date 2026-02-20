@@ -374,3 +374,46 @@ No exceptions.
 
 
 
+---
+
+
+
+\## Active Tasks
+
+
+
+\### Phase 40B: Runtime Hardening
+
+
+
+**Current Stage:** 40B-3
+
+
+
+**Active Task:** TASK-40B-3R
+
+
+
+\#### TASK-40B-3R: Runtime Hardening — Concurrency & Stress Verification
+
+**Status:** ACTIVE  
+**Nature:** DIAGNOSTIC + FIX-IF-REQUIRED  
+**Checkpoint:** `docs/PHASE-40B-3R-CHECKPOINT.md`
+
+**Objective:**  
+Validate session and container runtime correctness under concurrency and stress conditions on Windows.
+
+**Scope:**
+- Rapid session create/delete cycles
+- Multiple sessions per user behavior
+- Concurrent requests during lifecycle changes
+- Service restart during active sessions
+- Orphan resource detection (containers, volumes, networks)
+- Deterministic error behavior under load**Non-Goals:**
+- ❌ No database schema changes or migrations
+- ❌ No architectural refactors
+- ❌ No performance optimization (unless fixing correctness bugs)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-40B-3R for full details
+
+---

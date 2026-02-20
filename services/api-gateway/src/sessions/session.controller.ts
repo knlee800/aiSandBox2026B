@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Get,
+  Delete,
   Param,
   UseGuards,
   Request,
@@ -117,5 +118,39 @@ export class SessionController {
     await this.sessionService.stopSession(id);
 
     return { message: 'Session stopped successfully' };
+  }
+
+  /**
+   * Delete a session owned by the authenticated user
+   * DELETE /api/sessions/:id
+   * Returns 404 if session not found or not owned by user
+   * Flow: Delete container → Delete DB record
+   * Allowed on terminated sessions (cleanup operation)
+   * @param id - Session UUID
+   * @param req - Request object with authenticated user
+   * @returns Success message
+   */
+  @Delete(':id')
+  @HttpCode(HttpStatus.OK)
+  async deleteSession(
+    @Param('id') id: string,
+    @Request() req,
+  ): Promise<{ message: string }> {
+    const userId = req.user.userId;
+    const session = await this.sessionService.getSessionById(id);
+
+    // Validate ownership - return 404 to avoid leaking session existence
+    if (session.userId !== userId) {
+      throw new NotFoundException(`Session with ID ${id} not found`);
+    }
+
+    // Delete session in container-manager first (includes container cleanup)
+    // Fail-fast: if container-manager fails, do NOT delete DB record
+    await this.containerManagerHttpClient.deleteSession(id);
+
+    // Delete from api-gateway database after successful container deletion
+    await this.sessionService.deleteSession(id);
+
+    return { message: 'Session deleted successfully' };
   }
 }

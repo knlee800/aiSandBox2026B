@@ -1999,169 +1999,217 @@ If fixes are required and introduce regressions:
 
 ---
 
-### TASK-40B-3: Runtime Hardening — Session Database Unification (PostgreSQL Single Source of Truth)
-**Task ID:** TASK-40B-3  
-**Phase:** 40B  
-**Stage:** 40B-3  
-**Priority:** 🔴 High  
-**Nature:** IMPLEMENTATION  
-**Dependencies:** PHASE-8.3, PHASE-8.4, TASK-40B-1, TASK-40B-2  
-**Checkpoint:** `docs/PHASE-40B-3-CHECKPOINT.md`
+### ~~TASK-40B-3: Runtime Hardening — Session Database Unification (PostgreSQL Single Source of Truth)~~ [DEPRECATED]
 
-**Objective:**
+**⚠️ DEPRECATED — INVALID FOR PHASE 40B**
+
+**Task ID:** TASK-40B-3 (DEPRECATED)  
+**Status:** ❌ **NOT AUTHORIZED UNDER RUNTIME HARDENING**  
+**Reason:** This task is an architectural refactor (SQLite → PostgreSQL migration) and exceeds the scope of Phase 40B Runtime Hardening, which is limited to diagnostic verification and minimal correctness fixes only.
+
+**Moved to:** Future Architecture Phase (TBD)
+
+**Original Objective (Invalid for Phase 40B):**
 
 Unify session persistence across services by eliminating SQLite usage in container-manager and consolidating all session state into PostgreSQL. Ensure a single authoritative session record per session.
 
+**Why This Is Not Runtime Hardening:**
+- ❌ Architectural refactor (database layer redesign)
+- ❌ Cross-service persistence changes
+- ❌ Schema migrations and data migrations
+- ❌ Not a minimal fix for runtime correctness
+- ❌ Exceeds diagnostic + fix-if-required boundary
+
+**Note:** Not authorized under Runtime Hardening. Moved to future Architecture phase.
+
+---
+
+### TASK-40B-3R: Runtime Hardening — Concurrency & Stress Verification
+
+**Task ID:** TASK-40B-3R  
+**Phase:** 40B  
+**Stage:** 40B-3  
+**Priority:** 🔴 High  
+**Nature:** DIAGNOSTIC + FIX-IF-REQUIRED  
+**Dependencies:** PHASE-8.3, PHASE-8.4, TASK-40B-1, TASK-40B-2  
+**Checkpoint:** `docs/PHASE-40B-3R-CHECKPOINT.md`
+
+**Objective:**
+
+Validate session and container runtime correctness under concurrency and stress conditions on Windows. Ensure deterministic behavior under rapid create/delete cycles, concurrent requests, and service restarts. Document observed limits and fix only verified correctness defects.
+
 **Scope:**
 
-This task is limited to **database layer unification** in:
-- `services/api-gateway` (PostgreSQL schema addition)
-- `services/container-manager` (database client replacement)
+This task is limited to **runtime verification and minimal fixes** in:
+- `services/api-gateway` (session concurrency behavior)
+- `services/container-manager` (container lifecycle under stress)
 
 **In Scope:**
-1. **PostgreSQL Schema Addition**
-   - Add `terminated_at` TIMESTAMP NULL column to sessions table
-   - Add `termination_reason` VARCHAR(255) NULL column to sessions table
-   - Add indexes: `idx_sessions_terminated_at`, `idx_sessions_termination_reason`
-   - Update Session entity in api-gateway
 
-2. **container-manager Database Client Replacement**
-   - Replace `better-sqlite3` with `pg` (PostgreSQL client)
-   - Update all database queries to use PostgreSQL syntax
-   - Replace synchronous queries with async/await
-   - Update parameterized query syntax (? → $1, $2, ...)
-   - Configure PostgreSQL connection pool
+1. **Rapid Session Create/Delete Cycles**
+   - Verify session creation under rapid sequential requests
+   - Verify session deletion under rapid sequential requests
+   - Verify no orphaned database records after cycles
+   - Verify no orphaned Docker containers after cycles
+   - Verify no orphaned Docker volumes after cycles
+   - Verify no orphaned Docker networks after cycles
 
-3. **Session Persistence Unification**
-   - Remove duplicate session creation in container-manager
-   - Ensure container-manager writes termination fields to PostgreSQL
-   - Ensure api-gateway reads termination fields correctly
-   - Verify single session record per session
+2. **Multiple Sessions Per User**
+   - Verify behavior when user creates multiple concurrent sessions
+   - Document whether multiple sessions per user are allowed or rejected
+   - Verify deterministic error responses if rejected
+   - Verify session isolation if allowed
 
-4. **Termination Semantics Preservation**
-   - Preserve HTTP 410 Gone enforcement
-   - Preserve idempotent termination writes (WHERE terminated_at IS NULL)
-   - Preserve termination reasons (max_lifetime, idle_timeout, manual, etc.)
-   - Preserve enforcement ordering (termination check → max lifetime → idle timeout)
+3. **Concurrent Requests During Lifecycle Changes**
+   - Verify concurrent exec requests during session creation
+   - Verify concurrent exec requests during session termination
+   - Verify concurrent file operations during container lifecycle changes
+   - Verify deterministic error responses (410 Gone, 404, 429)
+   - Verify no race conditions in termination state writes
 
-5. **Data Migration (If Needed)**
-   - Export existing SQLite session data
-   - Import to PostgreSQL
-   - Verify data integrity
+4. **Service Restart During Active Sessions**
+   - Verify api-gateway restart with active sessions
+   - Verify container-manager restart with active sessions
+   - Verify termination state survives restarts (DB-backed)
+   - Verify in-memory tracking (idle timeout, exec concurrency) resets correctly
+   - Document expected behavior after restart
 
-6. **Cleanup**
-   - Remove SQLite database files
-   - Remove SQLite dependencies from package.json
-   - Update documentation
+5. **Orphan Resource Detection**
+   - Run stress test: 20+ rapid create/delete cycles
+   - Verify no orphaned containers (`docker ps -a`)
+   - Verify no orphaned volumes (`docker volume ls`)
+   - Verify no orphaned networks (`docker network ls`)
+   - Document any edge cases where resources may remain
+
+6. **Deterministic Error Behavior Under Load**
+   - Verify HTTP status codes under concurrent requests
+   - Verify error messages are consistent
+   - Verify no crash loops or unhandled exceptions
+   - Verify graceful degradation under resource exhaustion
+
+7. **Documentation**
+   - Document observed concurrency limits
+   - Document restart behavior
+   - Document any known edge cases
+   - Document Windows-specific considerations
 
 **Explicitly Out of Scope:**
-- ❌ No background workers or scheduled jobs
+
+- ❌ No database schema changes or migrations
 - ❌ No authentication or authorization changes
-- ❌ No billing or quota logic changes
+- ❌ No background workers or scheduled jobs
 - ❌ No preview system modifications
-- ❌ No architectural refactor beyond database layer
-- ❌ No new lifecycle states or status values
-- ❌ No schema additions beyond termination columns
-- ❌ No concurrency model changes
-- ❌ No feature expansion
-- ❌ No API endpoint changes
-- ❌ No WebSocket changes
+- ❌ No billing or quota logic changes
+- ❌ No architectural refactors
+- ❌ No performance optimization (unless fixing correctness bugs)
+- ❌ No new features or capabilities
+- ❌ No multi-node orchestration
+- ❌ No UI or frontend changes
 
 **Acceptance Criteria:**
 
-**Schema Requirements:**
-- [ ] PostgreSQL sessions table has `terminated_at` column (TIMESTAMP NULL)
-- [ ] PostgreSQL sessions table has `termination_reason` column (VARCHAR(255) NULL)
-- [ ] Indexes created: `idx_sessions_terminated_at`, `idx_sessions_termination_reason`
-- [ ] TypeORM migration generated and applied successfully
-- [ ] Session entity updated with new fields
+**Verification Requirements:**
+- [ ] No orphaned containers after 20+ create/delete cycles
+- [ ] No orphaned volumes after stress runs
+- [ ] No orphaned networks after stress runs
+- [ ] No orphaned database records after stress runs
+- [ ] Deterministic behavior on concurrent create/delete
+- [ ] Deterministic error responses (410, 404, 429) under concurrency
+- [ ] No crash loops or unhandled exceptions
+- [ ] Termination state survives api-gateway restart
+- [ ] Termination state survives container-manager restart
+- [ ] In-memory tracking resets correctly after restart
 
-**Database Client Requirements:**
-- [ ] container-manager uses `pg` instead of `better-sqlite3`
-- [ ] All queries use PostgreSQL syntax
-- [ ] All queries use async/await pattern
-- [ ] Connection pool configured (max 20 connections)
-- [ ] DATABASE_URL environment variable used
+**Documentation Requirements:**
+- [ ] Concurrency behavior explicitly documented
+- [ ] Multiple sessions per user policy documented
+- [ ] Restart behavior documented
+- [ ] Edge cases and failure modes documented
+- [ ] Windows-specific behavior documented (if any)
+- [ ] Observed limits documented (max concurrent sessions, etc.)
 
-**Data Integrity Requirements:**
-- [ ] Only one session record exists per session (no duplicates)
-- [ ] All existing sessions migrated successfully (if applicable)
-- [ ] No data loss during migration
-- [ ] Record counts match before/after migration
-
-**Functional Requirements:**
-- [ ] Idle timeout enforcement continues to work
-- [ ] Max lifetime enforcement continues to work
-- [ ] Termination writes are idempotent (WHERE terminated_at IS NULL)
-- [ ] HTTP 410 Gone returned for terminated sessions
-- [ ] Termination reasons persisted correctly
-- [ ] Container lifecycle unchanged
-
-**Cleanup Requirements:**
-- [ ] SQLite database files removed
-- [ ] better-sqlite3 dependency removed from package.json
-- [ ] No SQLite references in code
-- [ ] Documentation updated
-
-**Quality Requirements:**
-- [ ] Linter passes on all modified files
-- [ ] No regressions in existing tests
-- [ ] No scope expansion beyond database unification
-- [ ] Rollback plan documented and tested
+**Fix Requirements (If Defect Found):**
+- [ ] Minimal fix applied to smallest possible file set
+- [ ] Fix preserves existing governance guarantees
+- [ ] Fix does not introduce new dependencies
+- [ ] Fix does not violate ARCHITECTURE.md principles
+- [ ] Linter passes on modified files
+- [ ] No regressions introduced
 
 **Stop Conditions:**
 
 This task MUST stop when:
-1. ✅ All acceptance criteria met
-2. ✅ Checkpoint written to `docs/PHASE-40B-3-CHECKPOINT.md`
-3. ✅ No scope expansion occurred
-4. ✅ Rollback plan documented
+1. ✅ All verification checklist items completed
+2. ✅ Any necessary minimal fix applied and verified
+3. ✅ Checkpoint written to `docs/PHASE-40B-3R-CHECKPOINT.md`
+4. ✅ No scope expansion occurred
 
 **References:**
 - ARCHITECTURE.md Section 4 (Session Lifecycle)
-- ARCHITECTURE.md Section 7 (Data Model)
+- ARCHITECTURE.md Section 5 (Governance Model)
+- ARCHITECTURE.md Section 9 (Container Isolation)
+- ARCHITECTURE.md Section 11 (Explicit Non-Goals)
 - PRD.md Section 3.A (Session Management)
-- PRD.md Section 3.A (Termination Semantics)
+- PRD.md Section 5 (Governance Model)
+- PRD.md Section 6 (Error & Status Semantics)
 - PHASE-8.3-CHECKPOINT.md (Idle Timeout + Max Lifetime)
 - PHASE-8.4-CHECKPOINT.md (Session Termination Semantics)
-- PHASE-40B-2-CHECKPOINT-CORRECTED.md (Architecture Divergence Analysis)
-- PHASE-40B-2-UNIFICATION-DESIGN.md (Implementation Design)
+- TASK-40B-1 (Container Lifecycle & Cleanup Verification)
+- TASK-40B-2 (Session State Transitions & Expiry Semantics)
 
 **Known Context:**
 
-From PHASE-40B-2-CHECKPOINT-CORRECTED.md:
-> "Architecture split between PostgreSQL (api-gateway) and SQLite (container-manager) creates schema divergence and prevents unified termination enforcement."
+From PRD.md Section 3.A:
+> "Enforcement is request-driven (no background workers)"
 
-From PHASE-40B-2-UNIFICATION-DESIGN.md:
-> "PostgreSQL becomes single source of truth for all session state."
+From ARCHITECTURE.md Section 4:
+> "States: CREATED → ACTIVE → TERMINATED. TERMINATED is final. No resurrection."
 
-**Effort Estimate:** 6-8 hours (schema migration + code changes + testing + verification)
+From PRD.md Section 6:
+> "Session terminated → 410 Gone. Idle timeout exceeded → 410 Gone. Max lifetime exceeded → 410 Gone."
 
-**Implementation Strategy:**
-1. Add termination columns to PostgreSQL (zero downtime)
-2. Update api-gateway entity
-3. Replace container-manager database client
-4. Update all database queries
-5. Test in staging environment
-6. Deploy to production with rollback plan
-7. Verify functionality
-8. Remove SQLite files and dependencies
+**Effort Estimate:** 3-5 hours (stress testing + verification + minimal fixes if needed)
+
+**Test Strategy:**
+
+1. **Stress Test Script:**
+   - Create 20 sessions rapidly (sequential)
+   - Delete all 20 sessions rapidly (sequential)
+   - Verify no orphans after each cycle
+   - Repeat 3 times
+
+2. **Concurrency Test:**
+   - Create 5 sessions concurrently (parallel requests)
+   - Execute commands in all 5 sessions concurrently
+   - Terminate all 5 sessions concurrently
+   - Verify deterministic responses
+
+3. **Restart Test:**
+   - Create 3 active sessions
+   - Restart api-gateway
+   - Verify sessions still accessible
+   - Restart container-manager
+   - Verify containers still running
+   - Verify termination enforcement still works
+
+4. **Orphan Detection:**
+   - Run `docker ps -a` before and after stress test
+   - Run `docker volume ls` before and after stress test
+   - Run `docker network ls` before and after stress test
+   - Query database for session count before and after
 
 **Rollback Plan:**
 
-If implementation fails:
-1. Revert api-gateway migration: `npm run typeorm migration:revert`
-2. Revert container-manager code changes
-3. Restore SQLite database from backup
-4. Restart both services
-5. Document issue for future attempt
+If fixes are required and introduce regressions:
+- Revert code changes via git
+- Restore previous checkpoint state
+- Document issue for future phase
 
 **Invariants That MUST Be Preserved:**
 - Request-driven enforcement only (no background workers)
 - DB-backed termination state
 - HTTP 410 Gone on terminated sessions
 - Single-process enforcement model
-- Idempotent termination writes (WHERE terminated_at IS NULL)
-- Termination is irreversible
+- Deterministic state transitions
+- Idempotent termination writes
 - No resurrection of terminated sessions
-- Enforcement ordering: termination check → max lifetime → idle timeout
