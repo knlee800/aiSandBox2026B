@@ -8,12 +8,14 @@ import { Session } from '../entities/session.entity';
  * QuotaService
  *
  * Phase 21B: In-memory quota state management
- * Phase 42A-1: Added database-backed session quota check
+ * Phase 42A-1: Added database-backed session quota check (max active sessions)
+ * Phase 42A-2: Added database-backed rolling 24h session quota check
  *
  * Tracks quota usage per apiKeyId with fixed time windows:
  * - Request count: per-minute window
  * - Token usage: per-day window
  * - Active sessions: database-backed (PHASE-42A-1)
+ * - Rolling 24h sessions: database-backed (PHASE-42A-2)
  *
  * IMPORTANT: In-memory state only (no Redis, no database) for rate limits
  * State is lost on service restart (acceptable for Phase 21B)
@@ -22,7 +24,7 @@ import { Session } from '../entities/session.entity';
  * Deterministic behavior:
  * - Same inputs → same decision (within same window)
  * - Window boundaries based on clock time
- * - No sliding windows
+ * - No sliding windows (except rolling 24h session count)
  */
 
 interface QuotaUsage {
@@ -79,6 +81,63 @@ export class QuotaService {
         terminatedAt: IsNull(),
       },
     });
+  }
+
+  /**
+   * PHASE-42A-2: Check if user has exceeded max sessions per rolling 24h
+   * Database-backed quota check (survives restarts)
+   * Query: COUNT(*) WHERE user_id = ? AND created_at > NOW() - INTERVAL 24 HOURS
+   *
+   * @param userId - User ID to check quota for
+   * @returns Promise<boolean> - true if quota available, false if exceeded
+   */
+  async checkRolling24hSessionQuota(userId: string): Promise<boolean> {
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    const count = await this.sessionRepository
+      .createQueryBuilder('session')
+      .where('session.userId = :userId', { userId })
+      .andWhere('session.createdAt > :twentyFourHoursAgo', { twentyFourHoursAgo })
+      .getCount();
+
+    return count < QuotaConfig.MAX_SESSIONS_PER_24H;
+  }
+
+  /**
+   * PHASE-42A-2: Get session count for user in rolling 24h window
+   * Used for error response details
+   *
+   * @param userId - User ID to get count for
+   * @returns Promise<number> - Session count in last 24h
+   */
+  async getRolling24hSessionCount(userId: string): Promise<number> {
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    return await this.sessionRepository
+      .createQueryBuilder('session')
+      .where('session.userId = :userId', { userId })
+      .andWhere('session.createdAt > :twentyFourHoursAgo', { twentyFourHoursAgo })
+      .getCount();
+  }
+
+  /**
+   * PHASE-42A-2: Get oldest session timestamp in rolling 24h window
+   * Used to calculate reset_at timestamp for error response
+   *
+   * @param userId - User ID to get oldest session for
+   * @returns Promise<Date | null> - Oldest session created_at, or null if no sessions
+   */
+  async getOldestSessionIn24h(userId: string): Promise<Date | null> {
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    const oldestSession = await this.sessionRepository
+      .createQueryBuilder('session')
+      .where('session.userId = :userId', { userId })
+      .andWhere('session.createdAt > :twentyFourHoursAgo', { twentyFourHoursAgo })
+      .orderBy('session.createdAt', 'ASC')
+      .getOne();
+
+    return oldestSession ? oldestSession.createdAt : null;
   }
 
   /**

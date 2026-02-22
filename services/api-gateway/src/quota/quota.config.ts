@@ -28,6 +28,13 @@ export class QuotaConfig {
   static readonly MAX_ACTIVE_SESSIONS_PER_USER = 5;
 
   /**
+   * PHASE-42A-2: Max sessions per rolling 24h window
+   * Enforced before container creation in POST /api/sessions
+   * Hard limit: no container started if exceeded
+   */
+  static readonly MAX_SESSIONS_PER_24H = 20;
+
+  /**
    * Default quota limits applied to all API keys
    * unless overridden in API_KEY_QUOTAS
    */
