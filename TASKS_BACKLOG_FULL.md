@@ -2635,3 +2635,267 @@ If implementation introduces regressions:
 - Internal endpoints remain internal-only
 
 ---
+
+### TASK-41C: Abuse Hardening — Proxy-Aware IP Normalization
+
+**Task ID:** TASK-41C  
+**Phase:** 41  
+**Stage:** 41C  
+**Priority:** 🟡 Medium  
+**Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE ONLY)  
+**Dependencies:** PHASE-41B  
+**Checkpoint:** `docs/PHASE-41C-CHECKPOINT.md`
+
+**Objective:**
+
+Improve rate limiting accuracy by correctly parsing client IP addresses from proxy headers, preventing rate limit bypass via proxy manipulation while maintaining deterministic behavior.
+
+**Scope:**
+
+This task is limited to **minimal changes inside existing RateLimitGuard only** in:
+- `services/api-gateway/src/guards/rate-limit.guard.ts`
+
+**In Scope:**
+
+1. **X-Forwarded-For Header Parsing**
+   - Parse `X-Forwarded-For` header correctly
+   - Extract first public IP only (ignore private/internal IPs)
+   - Handle comma-separated IP lists (e.g., "client, proxy1, proxy2")
+   - Take leftmost public IP as true client IP
+
+2. **Fallback Chain**
+   - Primary: First public IP from `X-Forwarded-For`
+   - Secondary: `request.ip` (Express/NestJS property)
+   - Tertiary: `request.socket.remoteAddress`
+   - Final: `'unknown'` (safe default)
+
+3. **IP Format Normalization**
+   - Normalize IPv6 formats (e.g., `::ffff:127.0.0.1` → `127.0.0.1`)
+   - Trim whitespace from parsed IPs
+   - Handle IPv4-mapped IPv6 addresses
+   - Consistent string format for Map keys
+
+4. **Private IP Detection**
+   - Skip private IP ranges in `X-Forwarded-For`:
+     - `10.0.0.0/8`
+     - `172.16.0.0/12`
+     - `192.168.0.0/16`
+     - `127.0.0.0/8` (localhost)
+     - `::1` (IPv6 localhost)
+     - `fc00::/7` (IPv6 private)
+   - Use first public IP found in chain
+
+5. **Safe Behavior**
+   - If header missing: fall back to `request.ip`
+   - If header malformed: fall back to `request.ip`
+   - If all IPs are private: use last IP in chain (closest to server)
+   - Never throw exceptions during IP extraction
+
+6. **Deterministic Behavior**
+   - Same header value → same extracted IP
+   - Same IP → same rate limit bucket
+   - No randomness or time-based logic
+   - Consistent across requests
+
+**Explicitly Out of Scope:**
+
+- ❌ No external IP geolocation services
+- ❌ No IP reputation checking
+- ❌ No IP blacklist/whitelist
+- ❌ No database schema changes
+- ❌ No Redis or distributed storage
+- ❌ No background workers
+- ❌ No architectural refactors
+- ❌ No changes to rate limit logic (maxRequests, windowMs)
+- ❌ No changes to other guards or controllers
+- ❌ No logging changes (beyond minimal debug logs)
+- ❌ No environment variable configuration
+- ❌ No UI changes
+
+**Acceptance Criteria:**
+
+**Implementation Requirements:**
+- [ ] `getClientIp()` method updated to parse `X-Forwarded-For` correctly
+- [ ] Private IP ranges detected and skipped
+- [ ] IPv6 formats normalized to IPv4 when possible
+- [ ] Fallback chain implemented (X-Forwarded-For → request.ip → socket.remoteAddress → 'unknown')
+- [ ] Deterministic IP extraction (same input → same output)
+- [ ] No exceptions thrown during IP parsing
+- [ ] Whitespace trimmed from parsed IPs
+
+**Quality Requirements:**
+- [ ] No change to rate limit logic (maxRequests, windowMs, window reset)
+- [ ] No change to 429 response format
+- [ ] No change to Retry-After header behavior
+- [ ] Build passes (linter + TypeScript compilation)
+- [ ] No regressions in existing rate limiting
+- [ ] Rate limiting still works when X-Forwarded-For is missing
+
+**Documentation Requirements:**
+- [ ] IP extraction logic documented in code comments
+- [ ] Private IP ranges documented
+- [ ] Fallback chain documented
+- [ ] PowerShell verification steps updated
+
+**Stop Conditions:**
+
+This task MUST stop when:
+1. ✅ IP extraction logic updated in `getClientIp()` method
+2. ✅ Private IP detection implemented
+3. ✅ IPv6 normalization implemented
+4. ✅ Fallback chain implemented
+5. ✅ Manual verification completed (PowerShell)
+6. ✅ Checkpoint written to `docs/PHASE-41C-CHECKPOINT.md`
+7. ✅ No scope expansion occurred
+
+**Implementation Guidance:**
+
+**Private IP Detection Function:**
+```typescript
+private isPrivateIp(ip: string): boolean {
+  // IPv4 private ranges
+  if (ip.startsWith('10.')) return true;
+  if (ip.startsWith('192.168.')) return true;
+  if (ip.startsWith('172.')) {
+    const second = parseInt(ip.split('.')[1], 10);
+    if (second >= 16 && second <= 31) return true;
+  }
+  if (ip.startsWith('127.')) return true;
+  
+  // IPv6 private ranges
+  if (ip === '::1') return true;
+  if (ip.startsWith('fc') || ip.startsWith('fd')) return true;
+  
+  return false;
+}
+```
+
+**IPv6 Normalization:**
+```typescript
+private normalizeIp(ip: string): string {
+  // Remove IPv4-mapped IPv6 prefix
+  if (ip.startsWith('::ffff:')) {
+    return ip.substring(7);
+  }
+  return ip;
+}
+```
+
+**Updated getClientIp() Logic:**
+```typescript
+private getClientIp(request: Request): string {
+  // 1. Try X-Forwarded-For (first public IP)
+  const forwardedFor = request.headers['x-forwarded-for'];
+  if (forwardedFor) {
+    const ips = Array.isArray(forwardedFor)
+      ? forwardedFor[0].split(',')
+      : forwardedFor.split(',');
+    
+    for (const ip of ips) {
+      const normalized = this.normalizeIp(ip.trim());
+      if (!this.isPrivateIp(normalized)) {
+        return normalized;
+      }
+    }
+    // All IPs are private, use last one (closest to server)
+    if (ips.length > 0) {
+      return this.normalizeIp(ips[ips.length - 1].trim());
+    }
+  }
+  
+  // 2. Fallback to request.ip
+  if (request.ip) {
+    return this.normalizeIp(request.ip);
+  }
+  
+  // 3. Fallback to socket.remoteAddress
+  if (request.socket.remoteAddress) {
+    return this.normalizeIp(request.socket.remoteAddress);
+  }
+  
+  // 4. Final fallback
+  return 'unknown';
+}
+```
+
+**PowerShell Verification Steps:**
+
+```powershell
+# Test 1: Rate limiting with X-Forwarded-For
+$headers = @{
+    "Authorization" = "Bearer <token>"
+    "X-Forwarded-For" = "203.0.113.1"
+    "Content-Type" = "application/json"
+}
+for ($i = 1; $i -le 12; $i++) {
+    $response = Invoke-WebRequest -Uri http://localhost:4000/api/sessions -Method POST -Headers $headers -Body '{"userId":"test"}' -SkipHttpErrorCheck
+    Write-Host "Request $i : $($response.StatusCode)"
+}
+# Expected: First 10 succeed, next 2 return 429
+
+# Test 2: Rate limiting with multiple proxies
+$headers = @{
+    "Authorization" = "Bearer <token>"
+    "X-Forwarded-For" = "203.0.113.1, 10.0.0.1, 192.168.1.1"
+    "Content-Type" = "application/json"
+}
+# Should use 203.0.113.1 (first public IP)
+
+# Test 3: Rate limiting with all private IPs
+$headers = @{
+    "Authorization" = "Bearer <token>"
+    "X-Forwarded-For" = "10.0.0.1, 192.168.1.1"
+    "Content-Type" = "application/json"
+}
+# Should use 192.168.1.1 (last IP, closest to server)
+
+# Test 4: Rate limiting without X-Forwarded-For
+$headers = @{
+    "Authorization" = "Bearer <token>"
+    "Content-Type" = "application/json"
+}
+# Should fall back to request.ip or socket.remoteAddress
+
+# Test 5: IPv6 normalization
+$headers = @{
+    "Authorization" = "Bearer <token>"
+    "X-Forwarded-For" = "::ffff:203.0.113.1"
+    "Content-Type" = "application/json"
+}
+# Should normalize to 203.0.113.1
+```
+
+**References:**
+- ARCHITECTURE.md Section 2 (Architecture Principles - Determinism)
+- PHASE-41B-CHECKPOINT.md (Rate Limiting Implementation)
+- RFC 7239 (Forwarded HTTP Extension)
+- RFC 1918 (Private IPv4 Address Space)
+- RFC 4193 (IPv6 Unique Local Addresses)
+
+**Known Context:**
+
+From ARCHITECTURE.md Section 2:
+> "Determinism: Same input → same output. No background state mutation."
+
+This task improves rate limiting accuracy without changing its deterministic behavior. IP extraction remains deterministic: same headers → same extracted IP → same rate limit bucket.
+
+**Effort Estimate:** 2-3 hours (implementation + verification + documentation)
+
+**Rollback Plan:**
+
+If implementation introduces regressions:
+- Revert `getClientIp()` method to original implementation
+- Remove `isPrivateIp()` and `normalizeIp()` helper methods
+- Restore previous checkpoint state
+- Document issue for future phase
+
+**Invariants That MUST Be Preserved:**
+- Request-driven enforcement only (no background workers)
+- Deterministic state transitions
+- No external dependencies for rate limiting (in-memory only)
+- No performance degradation on critical paths
+- Rate limit logic unchanged (maxRequests, windowMs, window reset)
+- 429 response format unchanged
+- Retry-After header behavior unchanged
+
+---

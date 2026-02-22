@@ -115,18 +115,95 @@ export class RateLimitGuard implements CanActivate {
 
   /**
    * Extract client IP from request
-   * Checks X-Forwarded-For header first (for proxies), then falls back to socket IP
+   * PHASE-41C: Proxy-aware IP normalization
+   * - Parses X-Forwarded-For header (first public IP only)
+   * - Skips private IP ranges
+   * - Normalizes IPv6 formats
+   * - Fallback chain: X-Forwarded-For → request.ip → socket.remoteAddress → 'unknown'
    */
   private getClientIp(request: Request): string {
-    const forwardedFor = request.headers['x-forwarded-for'];
-    if (forwardedFor) {
-      // X-Forwarded-For can contain multiple IPs, take the first one
-      const ips = Array.isArray(forwardedFor)
-        ? forwardedFor[0]
-        : forwardedFor.split(',')[0];
-      return ips.trim();
+    try {
+      // 1. Try X-Forwarded-For (first public IP)
+      const forwardedFor = request.headers['x-forwarded-for'];
+      if (forwardedFor) {
+        const ips = Array.isArray(forwardedFor)
+          ? forwardedFor[0].split(',')
+          : forwardedFor.split(',');
+
+        // Find first public IP
+        for (const ip of ips) {
+          const normalized = this.normalizeIp(ip.trim());
+          if (!this.isPrivateIp(normalized)) {
+            return normalized;
+          }
+        }
+
+        // All IPs are private, use last one (closest to server)
+        if (ips.length > 0) {
+          return this.normalizeIp(ips[ips.length - 1].trim());
+        }
+      }
+
+      // 2. Fallback to request.ip
+      if ((request as any).ip) {
+        return this.normalizeIp((request as any).ip);
+      }
+
+      // 3. Fallback to socket.remoteAddress
+      if (request.socket.remoteAddress) {
+        return this.normalizeIp(request.socket.remoteAddress);
+      }
+
+      // 4. Final fallback
+      return 'unknown';
+    } catch (error) {
+      // Never throw during IP extraction
+      return 'unknown';
     }
-    return request.socket.remoteAddress || 'unknown';
+  }
+
+  /**
+   * Normalize IP address format
+   * PHASE-41C: Converts IPv4-mapped IPv6 to IPv4
+   */
+  private normalizeIp(ip: string): string {
+    if (!ip) return 'unknown';
+
+    // Remove IPv4-mapped IPv6 prefix (::ffff:x.x.x.x → x.x.x.x)
+    if (ip.startsWith('::ffff:')) {
+      return ip.substring(7);
+    }
+
+    return ip;
+  }
+
+  /**
+   * Check if IP is in private range
+   * PHASE-41C: Detects RFC 1918 and RFC 4193 private addresses
+   */
+  private isPrivateIp(ip: string): boolean {
+    if (!ip || ip === 'unknown') return false;
+
+    // IPv4 private ranges
+    if (ip.startsWith('10.')) return true;
+    if (ip.startsWith('192.168.')) return true;
+    if (ip.startsWith('127.')) return true;
+
+    // 172.16.0.0/12 (172.16.0.0 - 172.31.255.255)
+    if (ip.startsWith('172.')) {
+      const parts = ip.split('.');
+      if (parts.length >= 2) {
+        const second = parseInt(parts[1], 10);
+        if (second >= 16 && second <= 31) return true;
+      }
+    }
+
+    // IPv6 private ranges
+    if (ip === '::1') return true;
+    if (ip.startsWith('fc') || ip.startsWith('fd')) return true;
+    if (ip.startsWith('fe80:')) return true; // Link-local
+
+    return false;
   }
 
   /**

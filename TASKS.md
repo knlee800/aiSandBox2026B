@@ -422,11 +422,11 @@ Validate session and container runtime correctness under concurrency and stress 
 
 
 
-**Current Stage:** 41B
+**Current Stage:** 41C
 
 
 
-**Active Task:** TASK-41B
+**Active Task:** TASK-41C
 
 
 
@@ -458,9 +458,9 @@ Introduce minimal runtime observability for diagnostic visibility into session a
 ---
 
 
-#### TASK-41B: Security Hardening ??Rate Limits + Internal Endpoint Protection
+#### TASK-41B: Security Hardening �X Rate Limits + Internal Endpoint Protection
 
-**Status:** ACTIVE  
+**Status:** COMPLETE and LOCKED  
 **Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE ONLY)  
 **Checkpoint:** `docs/PHASE-41B-CHECKPOINT.md`
 
@@ -486,5 +486,35 @@ Add minimal rate limiting to high-risk endpoints and harden internal endpoint pr
 - ??No UI changes
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-41B for full details
+
+---
+
+
+#### TASK-41C: Abuse Hardening — Proxy-Aware IP Normalization
+
+**Status:** ACTIVE  
+**Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE ONLY)  
+**Checkpoint:** `docs/PHASE-41C-CHECKPOINT.md`
+
+**Objective:**  
+Improve rate limiting accuracy by correctly parsing client IP addresses from proxy headers.
+
+**Scope:**
+- Parse X-Forwarded-For header correctly (first public IP only)
+- Skip private IP ranges (10.x, 192.168.x, 172.16-31.x, 127.x)
+- Normalize IPv6 formats (::ffff:x.x.x.x → x.x.x.x)
+- Fallback chain: X-Forwarded-For → request.ip → socket.remoteAddress → 'unknown'
+- Deterministic behavior (same input → same output)
+- Minimal change inside RateLimitGuard only
+
+**Non-Goals:**
+- ❌ No external IP services
+- ❌ No IP reputation checking
+- ❌ No blacklist/whitelist
+- ❌ No schema changes
+- ❌ No refactors outside RateLimitGuard
+- ❌ No changes to rate limit logic
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-41C for full details
 
 ---
