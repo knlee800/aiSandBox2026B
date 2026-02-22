@@ -715,4 +715,25 @@ export class DockerRuntimeService implements OnModuleInit {
       throw new BadRequestException('Path must be relative to /workspace');
     }
   }
+
+  /**
+   * Ping Docker daemon to check connectivity
+   * PHASE-41A: Added for runtime metrics
+   * @returns Promise that resolves if Docker is reachable
+   * @throws Error if Docker is unreachable
+   */
+  async pingDocker(): Promise<void> {
+    await this.docker.ping();
+  }
+
+  /**
+   * List all running containers
+   * PHASE-41A: Added for runtime metrics
+   * @returns Array of running container info
+   */
+  async listRunningContainers(): Promise<Docker.ContainerInfo[]> {
+    return await this.docker.listContainers({
+      filters: { status: ['running'] },
+    });
+  }
 }

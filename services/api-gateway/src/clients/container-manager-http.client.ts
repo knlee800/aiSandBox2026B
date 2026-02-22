@@ -174,6 +174,46 @@ export class ContainerManagerHttpClient implements OnModuleInit {
   }
 
   /**
+   * Get container statistics from container-manager
+   * PHASE-41A: Call internal stats endpoint
+   * Calls GET /api/internal/stats
+   * @returns Container statistics (Docker connectivity, running container count)
+   * @throws Error on HTTP failure (fail-soft, returns safe defaults)
+   */
+  async getContainerStats(): Promise<ContainerStats> {
+    if (this.isDisabled) {
+      console.warn(
+        '[DEV MODE] ContainerManagerHttpClient is disabled, getContainerStats returning safe defaults',
+      );
+      return {
+        dockerConnectivity: false,
+        runningContainerCount: 0,
+        timestamp: new Date().toISOString(),
+      };
+    }
+
+    try {
+      const response = await this.axiosInstance.get('/api/internal/stats', {
+        headers: {
+          'X-Internal-Service-Key': this.internalServiceKey,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      // Fail-soft: log error and return safe defaults
+      console.error(
+        '[PHASE-41A] Failed to get container stats:',
+        axios.isAxiosError(error) ? error.response?.status : error,
+      );
+      return {
+        dockerConnectivity: false,
+        runningContainerCount: 0,
+        timestamp: new Date().toISOString(),
+      };
+    }
+  }
+
+  /**
    * Get billing usage export from container-manager
    * Task 10B1: Call billing export endpoint
    * Calls GET /api/internal/billing-export/user/:userId/usage?startDate=...&endDate=...
@@ -219,6 +259,16 @@ export class ContainerManagerHttpClient implements OnModuleInit {
       return null;
     }
   }
+}
+
+/**
+ * ContainerStats interface
+ * PHASE-41A: Type definition for container stats response
+ */
+export interface ContainerStats {
+  dockerConnectivity: boolean;
+  runningContainerCount: number;
+  timestamp: string;
 }
 
 /**

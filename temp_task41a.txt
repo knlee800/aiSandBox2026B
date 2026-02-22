@@ -1,0 +1,39 @@
+
+### Phase 41: Observability & Runtime Metrics Foundation
+
+
+
+**Current Stage:** 41A
+
+
+
+**Active Task:** TASK-41A
+
+
+
+#### TASK-41A: Observability & Runtime Metrics Foundation
+
+**Status:** ACTIVE  
+**Nature:** IMPLEMENTATION (ADDITIVE ONLY)  
+**Checkpoint:** `docs/PHASE-41A-CHECKPOINT.md`
+
+**Objective:**  
+Introduce minimal runtime observability for diagnostic visibility into session and container runtime state.
+
+**Scope:**
+- Lightweight `/api/runtime/metrics` endpoint in api-gateway
+- Session statistics (active count, terminated count, termination reasons)
+- Container statistics (running count via Docker API)
+- Health diagnostics enhancement (database + Docker connectivity)
+- Structured logging improvements (minimal)
+
+**Non-Goals:**
+- ❌ No external monitoring systems (Prometheus, Grafana, etc.)
+- ❌ No database schema changes
+- ❌ No background workers
+- ❌ No architectural refactors
+- ❌ No performance optimization
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-41A for full details
+
+---

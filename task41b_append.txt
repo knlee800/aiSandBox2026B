@@ -1,0 +1,32 @@
+
+
+#### TASK-41B: Security Hardening — Rate Limits + Internal Endpoint Protection
+
+**Status:** ACTIVE  
+**Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE ONLY)  
+**Checkpoint:** `docs/PHASE-41B-CHECKPOINT.md`
+
+**Objective:**  
+Add minimal rate limiting to high-risk endpoints and harden internal endpoint protection to prevent abuse.
+
+**Scope:**
+- Rate limiting for `POST /api/sessions` (10 per minute per IP)
+- Rate limiting for `DELETE /api/sessions/:id` (5 per minute per IP)
+- Rate limiting for `POST /api/ai/execute` (20 per minute per IP)
+- Verify all `/api/internal/*` routes require InternalServiceAuthGuard
+- Tighten auth checks if any endpoint bypasses guard
+- HTTP 429 Too Many Requests with Retry-After header
+- In-memory rate limiter (no Redis/external dependencies)
+
+**Non-Goals:**
+- ❌ No external WAF/CDN
+- ❌ No database schema changes
+- ❌ No new authentication system
+- ❌ No background workers
+- ❌ No architectural refactors
+- ❌ No dependency-heavy security frameworks
+- ❌ No UI changes
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-41B for full details
+
+---

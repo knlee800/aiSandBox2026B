@@ -16,7 +16,7 @@ Rules:
 If conflicts exist, TASKS_BACKLOG_FULL.md takes precedence.
 
 
-\# TASKS.md — Master Task Index
+\# TASKS.md ??Master Task Index
 
 
 
@@ -94,25 +94,25 @@ No cross-ownership.
 
 \- Session Management  
 
-&nbsp; → `TASKS/session\_management.md`
+&nbsp; ??`TASKS/session\_management.md`
 
 
 
 \- Chat System  
 
-&nbsp; → `TASKS/chat\_system.md`
+&nbsp; ??`TASKS/chat\_system.md`
 
 
 
 \- Container Manager  
 
-&nbsp; → `TASKS/container\_manager.md`
+&nbsp; ??`TASKS/container\_manager.md`
 
 
 
 \- AI Execution  
 
-&nbsp; → `TASKS/ai\_execution.md`
+&nbsp; ??`TASKS/ai\_execution.md`
 
 
 
@@ -126,25 +126,25 @@ No cross-ownership.
 
 \- Git \& Checkpoints  
 
-&nbsp; → `TASKS/git\_checkpoint.md`
+&nbsp; ??`TASKS/git\_checkpoint.md`
 
 
 
 \- Preview System  
 
-&nbsp; → `TASKS/preview\_system.md`
+&nbsp; ??`TASKS/preview\_system.md`
 
 
 
 \- Import \& Export  
 
-&nbsp; → `TASKS/import\_export.md`
+&nbsp; ??`TASKS/import\_export.md`
 
 
 
 \- Deployment  
 
-&nbsp; → `TASKS/deployment.md`
+&nbsp; ??`TASKS/deployment.md`
 
 
 
@@ -158,19 +158,19 @@ No cross-ownership.
 
 \- Billing  
 
-&nbsp; → `TASKS/billing.md`
+&nbsp; ??`TASKS/billing.md`
 
 
 
 \- Quota \& Usage  
 
-&nbsp; → `TASKS/quota.md`
+&nbsp; ??`TASKS/quota.md`
 
 
 
 \- Accounts  
 
-&nbsp; → `TASKS/accounts.md`
+&nbsp; ??`TASKS/accounts.md`
 
 
 
@@ -394,7 +394,7 @@ No exceptions.
 
 
 
-\#### TASK-40B-3R: Runtime Hardening — Concurrency & Stress Verification
+\#### TASK-40B-3R: Runtime Hardening ??Concurrency & Stress Verification
 
 **Status:** ACTIVE  
 **Nature:** DIAGNOSTIC + FIX-IF-REQUIRED  
@@ -410,10 +410,81 @@ Validate session and container runtime correctness under concurrency and stress 
 - Service restart during active sessions
 - Orphan resource detection (containers, volumes, networks)
 - Deterministic error behavior under load**Non-Goals:**
-- ❌ No database schema changes or migrations
-- ❌ No architectural refactors
-- ❌ No performance optimization (unless fixing correctness bugs)
+- ??No database schema changes or migrations
+- ??No architectural refactors
+- ??No performance optimization (unless fixing correctness bugs)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-40B-3R for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-40B-3R for full details
+
+---
+
+### Phase 41: Observability & Runtime Metrics Foundation
+
+
+
+**Current Stage:** 41B
+
+
+
+**Active Task:** TASK-41B
+
+
+
+#### TASK-41A: Observability & Runtime Metrics Foundation
+
+**Status:** COMPLETE and LOCKED  
+**Nature:** IMPLEMENTATION (ADDITIVE ONLY)  
+**Checkpoint:** `docs/PHASE-41A-CHECKPOINT.md`
+
+**Objective:**  
+Introduce minimal runtime observability for diagnostic visibility into session and container runtime state.
+
+**Scope:**
+- Lightweight `/api/runtime/metrics` endpoint in api-gateway
+- Session statistics (active count, terminated count, termination reasons)
+- Container statistics (running count via Docker API)
+- Health diagnostics enhancement (database + Docker connectivity)
+- Structured logging improvements (minimal)
+
+**Non-Goals:**
+- ??No external monitoring systems (Prometheus, Grafana, etc.)
+- ??No database schema changes
+- ??No background workers
+- ??No architectural refactors
+- ??No performance optimization
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-41A for full details
+
+---
+
+
+#### TASK-41B: Security Hardening ??Rate Limits + Internal Endpoint Protection
+
+**Status:** ACTIVE  
+**Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE ONLY)  
+**Checkpoint:** `docs/PHASE-41B-CHECKPOINT.md`
+
+**Objective:**  
+Add minimal rate limiting to high-risk endpoints and harden internal endpoint protection to prevent abuse.
+
+**Scope:**
+- Rate limiting for `POST /api/sessions` (10 per minute per IP)
+- Rate limiting for `DELETE /api/sessions/:id` (5 per minute per IP)
+- Rate limiting for `POST /api/ai/execute` (20 per minute per IP)
+- Verify all `/api/internal/*` routes require InternalServiceAuthGuard
+- Tighten auth checks if any endpoint bypasses guard
+- HTTP 429 Too Many Requests with Retry-After header
+- In-memory rate limiter (no Redis/external dependencies)
+
+**Non-Goals:**
+- ??No external WAF/CDN
+- ??No database schema changes
+- ??No new authentication system
+- ??No background workers
+- ??No architectural refactors
+- ??No dependency-heavy security frameworks
+- ??No UI changes
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-41B for full details
 
 ---

@@ -2428,3 +2428,210 @@ If implementation introduces regressions:
 - No performance degradation on critical paths
 
 ---
+
+### TASK-41B: Security Hardening — Rate Limits + Internal Endpoint Protection
+
+**Task ID:** TASK-41B  
+**Phase:** 41  
+**Stage:** 41B  
+**Priority:** 🔴 High  
+**Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE ONLY)  
+**Dependencies:** PHASE-41A  
+**Checkpoint:** `docs/PHASE-41B-CHECKPOINT.md`
+
+**Objective:**
+
+Add minimal rate limiting to high-risk endpoints and harden internal endpoint protection to prevent abuse and ensure internal routes are properly secured.
+
+**Scope:**
+
+This task is limited to **minimal, additive implementation only** in:
+- `services/api-gateway` (rate limiting + internal endpoint hardening)
+
+**In Scope:**
+
+1. **Rate Limiting for High-Risk Endpoints**
+   - Add rate limiting to `POST /api/sessions` (session creation)
+   - Add rate limiting to `DELETE /api/sessions/:id` (session deletion)
+   - Add rate limiting to `POST /api/ai/execute` (AI execution)
+   - Use simple in-memory rate limiter (no Redis/external dependencies)
+   - Return HTTP 429 Too Many Requests when limit exceeded
+   - Deterministic behavior (same request rate → same response)
+
+2. **Internal Endpoint Protection Hardening**
+   - Verify all `/api/internal/*` routes require `InternalServiceAuthGuard`
+   - Ensure no internal endpoint bypasses guard
+   - Tighten auth checks if any endpoint currently allows unauthenticated access
+   - Verify `X-Internal-Service-Key` header validation is consistent
+
+3. **Rate Limit Configuration**
+   - Define rate limits as constants (no environment variables)
+   - Example: 10 sessions per minute per IP
+   - Example: 5 session deletions per minute per IP
+   - Example: 20 AI executions per minute per IP
+   - Conservative defaults (can be tuned later)
+
+4. **Error Response Format**
+   - HTTP 429 with JSON body: `{ "statusCode": 429, "message": "Too Many Requests", "retryAfter": <seconds> }`
+   - Include `Retry-After` header
+   - Deterministic error messages
+
+5. **Documentation**
+   - Document rate limits per endpoint
+   - Document 429 response format
+   - Document PowerShell 5.x verification steps
+   - Document how to test rate limiting manually
+
+**Explicitly Out of Scope:**
+
+- ❌ No external WAF or CDN integration
+- ❌ No Redis or distributed rate limiting
+- ❌ No database schema changes
+- ❌ No new authentication system
+- ❌ No background workers or cleanup jobs
+- ❌ No architectural refactors
+- ❌ No UI changes or user-facing messaging
+- ❌ No dependency-heavy security frameworks (helmet, express-rate-limit with Redis, etc.)
+- ❌ No IP-based blocking or blacklisting
+- ❌ No CAPTCHA or challenge-response systems
+- ❌ No logging changes (beyond rate limit events)
+- ❌ No performance optimization
+- ❌ No WebSocket rate limiting
+- ❌ No preview endpoint rate limiting
+
+**Acceptance Criteria:**
+
+**Implementation Requirements:**
+- [ ] Rate limiting applied to `POST /api/sessions`
+- [ ] Rate limiting applied to `DELETE /api/sessions/:id`
+- [ ] Rate limiting applied to `POST /api/ai/execute`
+- [ ] HTTP 429 returned when rate limit exceeded
+- [ ] `Retry-After` header included in 429 responses
+- [ ] All `/api/internal/*` routes protected by `InternalServiceAuthGuard`
+- [ ] No internal endpoint bypasses guard
+- [ ] Rate limiter uses in-memory storage (no external dependencies)
+- [ ] Rate limits are per-IP address
+- [ ] Rate limits reset after time window expires
+
+**Quality Requirements:**
+- [ ] No change to existing session lifecycle behavior
+- [ ] No change to existing termination enforcement
+- [ ] No change to existing authentication logic (except internal endpoint hardening)
+- [ ] Build passes (linter + TypeScript compilation)
+- [ ] No regressions in existing functionality
+- [ ] Rate limiting does not block legitimate traffic under normal load
+- [ ] Deterministic 429 behavior (same rate → same response)
+
+**Documentation Requirements:**
+- [ ] Rate limits documented per endpoint
+- [ ] 429 response format documented
+- [ ] PowerShell 5.x verification steps provided
+- [ ] Manual testing procedure documented
+
+**Stop Conditions:**
+
+This task MUST stop when:
+1. ✅ Rate limiting implemented for 3 specified endpoints
+2. ✅ Internal endpoint protection verified and hardened
+3. ✅ Manual verification completed (PowerShell 5.x)
+4. ✅ Checkpoint written to `docs/PHASE-41B-CHECKPOINT.md`
+5. ✅ No scope expansion occurred
+
+**Rate Limit Defaults:**
+
+```typescript
+// Conservative defaults (can be tuned later)
+const RATE_LIMITS = {
+  SESSION_CREATE: { maxRequests: 10, windowMs: 60000 },  // 10 per minute
+  SESSION_DELETE: { maxRequests: 5, windowMs: 60000 },   // 5 per minute
+  AI_EXECUTE: { maxRequests: 20, windowMs: 60000 },      // 20 per minute
+};
+```
+
+**Expected 429 Response:**
+
+```json
+{
+  "statusCode": 429,
+  "message": "Too Many Requests",
+  "error": "Rate limit exceeded for POST /api/sessions",
+  "retryAfter": 45
+}
+```
+
+**Headers:**
+```
+HTTP/1.1 429 Too Many Requests
+Retry-After: 45
+Content-Type: application/json
+```
+
+**PowerShell Verification Steps:**
+
+```powershell
+# Test 1: Session creation rate limit
+for ($i = 1; $i -le 15; $i++) {
+    $response = Invoke-WebRequest -Uri http://localhost:4000/api/sessions -Method POST -Body '{"userId":"test"}' -ContentType "application/json" -SkipHttpErrorCheck
+    Write-Host "Request $i: $($response.StatusCode)"
+}
+# Expected: First 10 return 200/201, next 5 return 429
+
+# Test 2: Verify Retry-After header
+$response = Invoke-WebRequest -Uri http://localhost:4000/api/sessions -Method POST -Body '{"userId":"test"}' -ContentType "application/json" -SkipHttpErrorCheck
+$response.Headers['Retry-After']
+# Expected: Number of seconds until rate limit resets
+
+# Test 3: Internal endpoint without key
+$response = Invoke-WebRequest -Uri http://localhost:4000/api/internal/stats -Method GET -SkipHttpErrorCheck
+Write-Host $response.StatusCode
+# Expected: 403 Forbidden
+
+# Test 4: Internal endpoint with invalid key
+$response = Invoke-WebRequest -Uri http://localhost:4000/api/internal/stats -Method GET -Headers @{"X-Internal-Service-Key"="invalid"} -SkipHttpErrorCheck
+Write-Host $response.StatusCode
+# Expected: 403 Forbidden
+
+# Test 5: Internal endpoint with valid key
+$response = Invoke-WebRequest -Uri http://localhost:4000/api/internal/stats -Method GET -Headers @{"X-Internal-Service-Key"=$env:INTERNAL_SERVICE_KEY} -SkipHttpErrorCheck
+Write-Host $response.StatusCode
+# Expected: 200 OK
+```
+
+**References:**
+- ARCHITECTURE.md Section 2 (Architecture Principles - Determinism)
+- ARCHITECTURE.md Section 11 (Explicit Non-Goals)
+- PRD.md Section 7 (Non-Functional Requirements - Security)
+- PHASE-41A-CHECKPOINT.md (Runtime Metrics Foundation)
+- CLAUDE.md (Internal API Rules)
+
+**Known Context:**
+
+From ARCHITECTURE.md Section 11:
+> "No background workers. No event buses. No cron."
+
+From CLAUDE.md Internal API Rules:
+> "These endpoints are ONLY called by internal services. They are NOT exposed to frontend or external clients."
+
+This task adds minimal security hardening without introducing external dependencies or architectural changes.
+
+**Effort Estimate:** 3-4 hours (implementation + verification + documentation)
+
+**Rollback Plan:**
+
+If implementation introduces regressions:
+- Revert rate limiting middleware
+- Revert internal endpoint hardening changes
+- Restore previous checkpoint state
+- Document issue for future phase
+
+**Invariants That MUST Be Preserved:**
+- Request-driven enforcement only (no background workers)
+- DB-backed termination state
+- HTTP 410 Gone on terminated sessions
+- Single-process enforcement model
+- Deterministic state transitions
+- No external dependencies for rate limiting (in-memory only)
+- No performance degradation on critical paths
+- Internal endpoints remain internal-only
+
+---

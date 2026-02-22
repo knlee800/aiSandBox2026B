@@ -6,6 +6,7 @@ import { ExecutorModule } from './executor/executor.module';
 import { PreviewModule } from './preview/preview.module';
 import { UsageModule } from './usage/usage.module';
 import { BillingModule } from './billing/billing.module';
+import { StatsModule } from './stats/stats.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { BillingModule } from './billing/billing.module';
     PreviewModule,
     UsageModule,
     BillingModule,
+    StatsModule, // Phase 41A: Runtime statistics
   ],
   controllers: [],
   providers: [],

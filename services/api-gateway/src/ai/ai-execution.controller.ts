@@ -22,6 +22,7 @@ import { ExecutionSafetyGuard } from '../safety/execution-safety.guard';
 import { GlobalSafetyLimitService } from '../safety/global-safety-limit.service';
 import { LaunchGuard } from '../launch/launch.guard';
 import { AbortGuard } from '../abort/abort.guard';
+import { RateLimitGuard, RateLimit } from '../guards/rate-limit.guard';
 
 /**
  * AIExecutionController
@@ -68,6 +69,7 @@ export class AIExecutionController {
    * Phase 28B-2: Enforces abort mode restrictions
    * Phase 21B: Requires quota availability
    * Phase 22B: Records usage to ledger on success
+   * Phase 41B: Rate limited to 20 requests per minute per IP
    * - Authorization header: Bearer <api-key>
    * - API key validated by ApiKeyAuthGuard
    * - Scope validated by AuthorizationGuard
@@ -75,6 +77,7 @@ export class AIExecutionController {
    * - Launch state enforced by LaunchGuard
    * - Abort mode enforced by AbortGuard
    * - Quota validated by QuotaGuard
+   * - Rate limit enforced by RateLimitGuard
    * - Verified userId injected into request
    * - apiKeyId added to metadata
    * - Usage recorded to ledger after success
@@ -91,8 +94,9 @@ export class AIExecutionController {
    */
   @Post('execute')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(ApiKeyAuthGuard, AuthorizationGuard, ExecutionSafetyGuard, LaunchGuard, AbortGuard, QuotaGuard)
+  @UseGuards(ApiKeyAuthGuard, AuthorizationGuard, ExecutionSafetyGuard, LaunchGuard, AbortGuard, QuotaGuard, RateLimitGuard)
   @RequireScope('ai:execute')
+  @RateLimit({ maxRequests: 20, windowMs: 60000 })
   async execute(
     @Body() request: AIExecutionRequest,
     @AuthenticatedUser() identity: ApiKeyIdentity,

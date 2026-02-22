@@ -19,6 +19,7 @@ import { AIModule } from './ai/ai.module';
 import { BillingModule } from './billing/billing.module';
 import { BillingVisibilityModule } from './billing-visibility/billing-visibility.module';
 import { InvoiceModule } from './invoice/invoice.module';
+import { RuntimeModule } from './runtime/runtime.module';
 import { databaseConfig } from './config/database.config';
 import { InternalServiceAuthGuard } from './guards/internal-service-auth.guard';
 
@@ -55,6 +56,7 @@ import { InternalServiceAuthGuard } from './guards/internal-service-auth.guard';
     BillingModule, // Phase 23B-4: Billing snapshot writer
     BillingVisibilityModule, // Phase 24B: Billing visibility (read-only)
     InvoiceModule, // Phase 25B-1: Invoice persistence infrastructure
+    RuntimeModule, // Phase 41A: Runtime metrics and observability
   ],
   controllers: [],
   providers: [
