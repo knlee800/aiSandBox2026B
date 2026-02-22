@@ -2,6 +2,7 @@
  * QuotaConfig
  *
  * Phase 21B: Quota and Rate-Limiting Configuration
+ * Phase 42A-1: Added MAX_ACTIVE_SESSIONS_PER_USER
  *
  * Defines static quota limits for API keys.
  * Two independent quota types:
@@ -19,6 +20,13 @@ export interface QuotaLimits {
 }
 
 export class QuotaConfig {
+  /**
+   * PHASE-42A-1: Max active sessions per user
+   * Enforced before container creation in POST /api/sessions
+   * Hard limit: no container started if exceeded
+   */
+  static readonly MAX_ACTIVE_SESSIONS_PER_USER = 5;
+
   /**
    * Default quota limits applied to all API keys
    * unless overridden in API_KEY_QUOTAS

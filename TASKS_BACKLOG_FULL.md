@@ -2899,3 +2899,405 @@ If implementation introduces regressions:
 - Retry-After header behavior unchanged
 
 ---
+
+## Phase 42: Hard Quota Enforcement
+
+### TASK-42A-1: Hard Quota Enforcement — Max Active Sessions Per User
+
+**Task ID:** TASK-42A-1  
+**Phase:** 42  
+**Stage:** 42A  
+**Priority:** 🔴 High  
+**Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE ONLY)  
+**Dependencies:** PHASE-41C  
+**Checkpoint:** `docs/PHASE-42A-1-CHECKPOINT.md`
+
+**Objective:**
+
+Implement deterministic, database-backed hard quota enforcement for maximum concurrent active sessions per user. Enforce ceiling at request time in `POST /api/sessions` with hard stop behavior and no background workers.
+
+**Core Requirements:**
+- Must enforce ceiling at request time (before container creation)
+- No background workers or reconciliation jobs
+- No probabilistic logic (deterministic only)
+- Database-backed quota tracking
+- Idempotent enforcement across restarts
+
+**Scope:**
+
+This task is limited to **minimal, additive implementation only** in:
+- `services/api-gateway` (quota guard for session creation only)
+
+**In Scope:**
+
+1. **Max Active Sessions Per User Enforcement**
+   - Enforce ceiling on concurrent active (non-terminated) sessions
+   - Check before container creation in `POST /api/sessions`
+   - Query database: `COUNT(*) WHERE user_id = ? AND terminated_at IS NULL`
+   - Return HTTP 403 Forbidden if limit exceeded
+   - Deterministic error response with quota details
+
+2. **Hard Stop Behavior**
+   - No partial execution (all-or-nothing)
+   - No container started if quota exceeded
+   - Fail fast with clear error message
+
+3. **Deterministic DB-Backed Enforcement**
+   - All quota state stored in database (no in-memory only)
+   - Quota checks survive service restarts
+   - Idempotent enforcement (same request → same result)
+
+4. **Enforcement at Request Entry**
+   - Quota check occurs before side effects
+   - Check before `ContainerService.startContainer()`
+   - Fail fast with clear error message
+
+**Quota Configuration:**
+```typescript
+const QUOTA_LIMITS = {
+  MAX_ACTIVE_SESSIONS_PER_USER: 5,
+};
+```
+
+**Enforcement Logic:**
+```
+IF (active_sessions_count >= MAX_ACTIVE_SESSIONS_PER_USER) THEN
+  RETURN HTTP 403 Forbidden
+  { "error": "quota_exceeded", "quota_type": "max_active_sessions", "limit": 5, "current": N }
+ELSE
+  PROCEED with session creation
+```
+
+**Explicitly Out of Scope:**
+- ❌ No rolling 24h session limit (TASK-42A-2)
+- ❌ No token quota enforcement (TASK-42A-3)
+- ❌ No billing system redesign
+- ❌ No background workers
+- ❌ No schema changes
+- ❌ No Redis or distributed caching
+- ❌ No soft warnings or grace periods
+
+**Acceptance Criteria:**
+- [ ] `QuotaGuard` implemented for `POST /api/sessions`
+- [ ] Active session count queried from database
+- [ ] HTTP 403 returned if limit exceeded
+- [ ] Error response includes quota_type, limit, current
+- [ ] No container started if quota exceeded
+- [ ] Works across api-gateway restarts (DB-backed)
+- [ ] Build passes (linter + TypeScript)
+- [ ] No regressions to PHASE-41A/41B/41C
+
+**Stop Conditions:**
+1. ✅ Max active sessions enforcement implemented
+2. ✅ Manual PowerShell verification completed
+3. ✅ Checkpoint written to `docs/PHASE-42A-1-CHECKPOINT.md`
+4. ✅ No scope expansion occurred
+
+**Effort Estimate:** 1-2 hours
+
+---
+
+### TASK-42A-2: Hard Quota Enforcement — Max Sessions Per Rolling 24h
+
+**Task ID:** TASK-42A-2  
+**Phase:** 42  
+**Stage:** 42A  
+**Priority:** 🔴 High  
+**Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE ONLY)  
+**Dependencies:** TASK-42A-1  
+**Checkpoint:** `docs/PHASE-42A-2-CHECKPOINT.md`
+
+**Objective:**
+
+Implement deterministic, database-backed hard quota enforcement for maximum total sessions created per rolling 24-hour window. Enforce ceiling at request time in `POST /api/sessions` with hard stop behavior.
+
+**Core Requirements:**
+- Must enforce ceiling at request time (before container creation)
+- No background workers or reconciliation jobs
+- Database-backed quota tracking
+- Idempotent enforcement across restarts
+
+**Scope:**
+
+This task is limited to **minimal, additive implementation only** in:
+- `services/api-gateway` (extend existing QuotaGuard from TASK-42A-1)
+
+**In Scope:**
+
+1. **Max Sessions Per Rolling 24h Enforcement**
+   - Enforce ceiling on session creation rate (rolling 24h)
+   - Query database: `COUNT(*) WHERE user_id = ? AND created_at > NOW() - INTERVAL 24 HOUR`
+   - Return HTTP 403 Forbidden if limit exceeded
+   - Deterministic error response with quota details and reset_at timestamp
+
+2. **Hard Stop Behavior**
+   - No container started if quota exceeded
+   - Fail fast with clear error message
+
+3. **Rolling Window Calculation**
+   - Use `created_at` timestamp for rolling window
+   - Window resets continuously (not fixed daily)
+   - Deterministic calculation (same time → same result)
+
+**Quota Configuration:**
+```typescript
+const QUOTA_LIMITS = {
+  MAX_SESSIONS_PER_24H: 20,
+};
+```
+
+**Enforcement Logic:**
+```
+IF (sessions_created_last_24h >= MAX_SESSIONS_PER_24H) THEN
+  RETURN HTTP 403 Forbidden
+  { "error": "quota_exceeded", "quota_type": "max_sessions_per_day", "limit": 20, "current": N, "reset_at": "<timestamp>" }
+ELSE
+  PROCEED with session creation
+```
+
+**Explicitly Out of Scope:**
+- ❌ No token quota enforcement (TASK-42A-3)
+- ❌ No billing system redesign
+- ❌ No background workers
+- ❌ No schema changes
+- ❌ No Redis or distributed caching
+
+**Acceptance Criteria:**
+- [ ] Rolling 24h session count queried from database
+- [ ] HTTP 403 returned if limit exceeded
+- [ ] Error response includes reset_at timestamp
+- [ ] Works across api-gateway restarts (DB-backed)
+- [ ] Build passes (linter + TypeScript)
+- [ ] No regressions to TASK-42A-1
+
+**Stop Conditions:**
+1. ✅ Rolling 24h session limit enforcement implemented
+2. ✅ Manual PowerShell verification completed
+3. ✅ Checkpoint written to `docs/PHASE-42A-2-CHECKPOINT.md`
+4. ✅ No scope expansion occurred
+
+**Effort Estimate:** 1-2 hours
+
+---
+
+### TASK-42A-3: Hard Quota Enforcement — Max Tokens Per Rolling 24h
+
+**Task ID:** TASK-42A-3  
+**Phase:** 42  
+**Stage:** 42A  
+**Priority:** 🔴 High  
+**Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE ONLY)  
+**Dependencies:** TASK-42A-2  
+**Checkpoint:** `docs/PHASE-42A-3-CHECKPOINT.md`
+
+**Objective:**
+
+Implement deterministic, database-backed hard quota enforcement for maximum AI tokens consumed per rolling 24-hour window. Enforce ceiling at request time in `POST /api/ai/execute` with hard stop behavior.
+
+**Core Requirements:**
+- Must enforce ceiling at request time (before AI provider call)
+- No background workers or reconciliation jobs
+- Database-backed quota tracking
+- Idempotent enforcement across restarts
+
+**Scope:**
+
+This task is limited to **minimal, additive implementation only** in:
+- `services/api-gateway` (quota guard for AI execution)
+
+**In Scope:**
+
+1. **Max Tokens Per Rolling 24h Enforcement**
+   - Enforce ceiling on AI token consumption (rolling 24h)
+   - Query database: `SUM(tokens_used) WHERE user_id = ? AND created_at > NOW() - INTERVAL 24 HOUR`
+   - Estimate tokens for current request (use token counter)
+   - Return HTTP 403 Forbidden if limit would be exceeded
+   - Deterministic error response with quota details
+
+2. **Hard Stop Behavior**
+   - No AI provider called if quota exceeded
+   - Fail fast with clear error message
+
+3. **Rolling Window Calculation**
+   - Use `created_at` timestamp for rolling window
+   - Window resets continuously (not fixed daily)
+   - Deterministic calculation (same time → same result)
+
+**Quota Configuration:**
+```typescript
+const QUOTA_LIMITS = {
+  MAX_TOKENS_PER_24H: 100000,
+};
+```
+
+**Enforcement Logic:**
+```
+IF (tokens_used_last_24h + estimated_tokens >= MAX_TOKENS_PER_24H) THEN
+  RETURN HTTP 403 Forbidden
+  { "error": "quota_exceeded", "quota_type": "max_tokens_per_day", "limit": 100000, "used": N, "reset_at": "<timestamp>" }
+ELSE
+  PROCEED with AI execution
+```
+
+**Explicitly Out of Scope:**
+- ❌ No billing system redesign
+- ❌ No background workers
+- ❌ No schema changes
+- ❌ No Redis or distributed caching
+
+**Acceptance Criteria:**
+- [ ] `QuotaGuard` implemented for `POST /api/ai/execute`
+- [ ] Token usage queried from database (rolling 24h)
+- [ ] Token estimation performed before enforcement
+- [ ] HTTP 403 returned if limit would be exceeded
+- [ ] Error response includes used, limit, reset_at
+- [ ] No AI provider called if quota exceeded
+- [ ] Works across api-gateway restarts (DB-backed)
+- [ ] Build passes (linter + TypeScript)
+- [ ] No regressions to TASK-42A-1, TASK-42A-2
+
+**Stop Conditions:**
+1. ✅ Token quota enforcement implemented
+2. ✅ Manual PowerShell verification completed
+3. ✅ Checkpoint written to `docs/PHASE-42A-3-CHECKPOINT.md`
+4. ✅ No scope expansion occurred
+
+**Effort Estimate:** 1-2 hours
+
+---
+
+### TASK-42A-4: Hard Quota Enforcement — PS 5.x Verification + PHASE-42A Finalization
+
+**Task ID:** TASK-42A-4  
+**Phase:** 42  
+**Stage:** 42A  
+**Priority:** 🔴 High  
+**Nature:** VERIFICATION + DOCUMENTATION  
+**Dependencies:** TASK-42A-1, TASK-42A-2, TASK-42A-3  
+**Checkpoint:** `docs/PHASE-42A-CHECKPOINT.md`
+
+**Objective:**
+
+Comprehensive verification of all PHASE-42A quota enforcement mechanisms using PowerShell 5.x scripts. Finalize PHASE-42A checkpoint with complete documentation and rollback procedures.
+
+**Scope:**
+
+This task is limited to **verification and documentation only**:
+- No code changes
+- PowerShell 5.x verification scripts
+- Comprehensive checkpoint documentation
+
+**In Scope:**
+
+1. **PowerShell 5.x Verification Scripts**
+   - Test max active sessions enforcement (TASK-42A-1)
+   - Test rolling 24h session limit enforcement (TASK-42A-2)
+   - Test rolling 24h token limit enforcement (TASK-42A-3)
+   - Test error response formats
+   - Test restart persistence
+   - Test concurrent request behavior
+
+2. **Integration Verification**
+   - Verify all three quota types work together
+   - Verify no interference with rate limiting (PHASE-41B)
+   - Verify no interference with metrics (PHASE-41A)
+   - Verify deterministic behavior across restarts
+
+3. **PHASE-42A Checkpoint Finalization**
+   - Consolidate all TASK-42A-1/2/3 checkpoints
+   - Document complete quota enforcement system
+   - Document rollback procedures
+   - Document known limitations
+   - Document future work (if any)
+
+**Explicitly Out of Scope:**
+- ❌ No code changes
+- ❌ No new features
+- ❌ No refactors
+
+**Acceptance Criteria:**
+- [ ] PowerShell 5.x scripts execute successfully on Windows
+- [ ] All quota enforcement mechanisms verified
+- [ ] Error response formats verified
+- [ ] Restart persistence verified
+- [ ] Concurrent request behavior verified
+- [ ] No regressions to PHASE-41A/41B/41C
+- [ ] PHASE-42A checkpoint written to `docs/PHASE-42A-CHECKPOINT.md`
+- [ ] Rollback procedures documented
+
+**Stop Conditions:**
+1. ✅ All PowerShell verification scripts completed
+2. ✅ PHASE-42A checkpoint finalized
+3. ✅ No scope expansion occurred
+
+**Effort Estimate:** 1-2 hours
+
+---
+
+### ~~TASK-42A (ORIGINAL)~~ [DEPRECATED - SPLIT INTO TASK-42A-1/2/3/4]
+
+**⚠️ DEPRECATED — REPLACED BY TASK-42A-1, TASK-42A-2, TASK-42A-3, TASK-42A-4**
+
+**Task ID:** TASK-42A (DEPRECATED)  
+**Status:** ❌ **SPLIT INTO 4 SUBTASKS**  
+**Reason:** Original task scope too broad for single implementation phase. Split into focused subtasks for tighter scope control and incremental verification.
+
+**Replaced By:**
+- TASK-42A-1: Max Active Sessions Per User
+- TASK-42A-2: Max Sessions Per Rolling 24h
+- TASK-42A-3: Max Tokens Per Rolling 24h
+- TASK-42A-4: PS 5.x Verification + PHASE-42A Finalization
+
+**Original Objective (Preserved for Reference):**
+
+Implement deterministic, database-backed hard quota enforcement to prevent resource abuse beyond authenticated rate limits. Enforce resource ceilings at request time with hard stop behavior and no background workers.
+
+**Core Requirements:**
+- Must enforce ceilings at request time (before side effects)
+- No background workers or reconciliation jobs
+- No probabilistic logic (deterministic only)
+- Database-backed quota tracking
+- Idempotent enforcement across restarts
+
+**Scope:**
+
+This task is limited to **minimal, additive implementation only** in:
+- `services/api-gateway` (quota guard + enforcement logic)
+
+**In Scope:**
+
+1. **Max Active Sessions Per User**
+   - Enforce ceiling on concurrent active (non-terminated) sessions
+   - Check before container creation
+   - Return HTTP 403 Forbidden if limit exceeded
+
+2. **Max Total Sessions Per Rolling 24h Window**
+   - Enforce ceiling on session creation rate (rolling 24h)
+   - Query database for session count in last 24 hours
+   - Return HTTP 403 Forbidden if limit exceeded
+
+3. **Max AI Tokens Per Rolling 24h Window**
+   - Enforce ceiling on AI token consumption (rolling 24h)
+   - Query database for token usage in last 24 hours
+   - Return HTTP 403 Forbidden or 402 Payment Required if limit exceeded
+
+4. **Hard Stop Behavior**
+   - No partial execution (all-or-nothing)
+   - Deterministic error responses
+   - No container started if quota exceeded
+   - No AI provider called if quota exceeded
+
+5. **Deterministic DB-Backed Enforcement**
+   - All quota state stored in database (no in-memory only)
+   - Quota checks survive service restarts
+   - Idempotent enforcement (same request → same result)
+
+6. **Enforcement at Request Entry**
+   - Quota checks occur before side effects
+   - Check before `ContainerService.startContainer()`
+   - Check before `AIGatewayService.callClaude()`
+   - Fail fast with clear error message
+
+**Note:** This task was split into TASK-42A-1, TASK-42A-2, TASK-42A-3, TASK-42A-4 for tighter scope control and incremental verification. See above for replacement tasks.
+
+---

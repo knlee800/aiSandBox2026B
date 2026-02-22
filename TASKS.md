@@ -458,7 +458,7 @@ Introduce minimal runtime observability for diagnostic visibility into session a
 ---
 
 
-#### TASK-41B: Security Hardening �X Rate Limits + Internal Endpoint Protection
+#### TASK-41B: Security Hardening �X Rate Limits + Internal Endpoint Protection
 
 **Status:** COMPLETE and LOCKED  
 **Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE ONLY)  
@@ -492,7 +492,7 @@ Add minimal rate limiting to high-risk endpoints and harden internal endpoint pr
 
 #### TASK-41C: Abuse Hardening — Proxy-Aware IP Normalization
 
-**Status:** ACTIVE  
+**Status:** COMPLETE and LOCKED  
 **Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE ONLY)  
 **Checkpoint:** `docs/PHASE-41C-CHECKPOINT.md`
 
@@ -516,5 +516,103 @@ Improve rate limiting accuracy by correctly parsing client IP addresses from pro
 - ❌ No changes to rate limit logic
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-41C for full details
+
+---
+
+### Phase 42: Hard Quota Enforcement
+
+**Current Stage:** 42A
+
+**Active Task:** TASK-42A-1
+
+#### TASK-42A-1: Hard Quota Enforcement — Max Active Sessions Per User
+
+**Status:** ACTIVE  
+**Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE ONLY)  
+**Checkpoint:** `docs/PHASE-42A-1-CHECKPOINT.md`
+
+**Objective:**  
+Implement deterministic, database-backed hard quota enforcement for maximum concurrent active sessions per user.
+
+**Scope:**
+- Enforce ceiling on concurrent active (non-terminated) sessions
+- Check before container creation in `POST /api/sessions`
+- Query database: `COUNT(*) WHERE user_id = ? AND terminated_at IS NULL`
+- Return HTTP 403 Forbidden if limit exceeded (limit: 5)
+- Deterministic error response with quota details
+- Hard stop behavior (no container started if quota exceeded)
+
+**Non-Goals:**
+- ❌ No rolling 24h session limit (TASK-42A-2)
+- ❌ No token quota enforcement (TASK-42A-3)
+- ❌ No billing system redesign
+- ❌ No background workers
+- ❌ No schema changes
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-42A-1 for full details
+
+---
+
+#### TASK-42A-2: Hard Quota Enforcement — Max Sessions Per Rolling 24h
+
+**Status:** PLANNED  
+**Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE ONLY)  
+**Checkpoint:** `docs/PHASE-42A-2-CHECKPOINT.md`
+
+**Objective:**  
+Implement deterministic, database-backed hard quota enforcement for maximum total sessions created per rolling 24-hour window.
+
+**Scope:**
+- Enforce ceiling on session creation rate (rolling 24h, limit: 20)
+- Query database: `COUNT(*) WHERE user_id = ? AND created_at > NOW() - INTERVAL 24 HOUR`
+- Return HTTP 403 Forbidden if limit exceeded
+- Deterministic error response with reset_at timestamp
+
+**Dependencies:** TASK-42A-1
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-42A-2 for full details
+
+---
+
+#### TASK-42A-3: Hard Quota Enforcement — Max Tokens Per Rolling 24h
+
+**Status:** PLANNED  
+**Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE ONLY)  
+**Checkpoint:** `docs/PHASE-42A-3-CHECKPOINT.md`
+
+**Objective:**  
+Implement deterministic, database-backed hard quota enforcement for maximum AI tokens consumed per rolling 24-hour window.
+
+**Scope:**
+- Enforce ceiling on AI token consumption (rolling 24h, limit: 100000)
+- Query database: `SUM(tokens_used) WHERE user_id = ? AND created_at > NOW() - INTERVAL 24 HOUR`
+- Estimate tokens for current request before enforcement
+- Return HTTP 403 Forbidden if limit would be exceeded
+- Hard stop behavior (no AI provider called if quota exceeded)
+
+**Dependencies:** TASK-42A-2
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-42A-3 for full details
+
+---
+
+#### TASK-42A-4: Hard Quota Enforcement — PS 5.x Verification + PHASE-42A Finalization
+
+**Status:** PLANNED  
+**Nature:** VERIFICATION + DOCUMENTATION  
+**Checkpoint:** `docs/PHASE-42A-CHECKPOINT.md`
+
+**Objective:**  
+Comprehensive verification of all PHASE-42A quota enforcement mechanisms using PowerShell 5.x scripts. Finalize PHASE-42A checkpoint.
+
+**Scope:**
+- PowerShell 5.x verification scripts for all quota types
+- Integration verification (all three quota types work together)
+- No interference with rate limiting (PHASE-41B) or metrics (PHASE-41A)
+- PHASE-42A checkpoint finalization with rollback procedures
+
+**Dependencies:** TASK-42A-1, TASK-42A-2, TASK-42A-3
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-42A-4 for full details
 
 ---

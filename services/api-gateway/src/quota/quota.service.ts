@@ -1,16 +1,21 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, IsNull } from 'typeorm';
 import { QuotaConfig } from './quota.config';
+import { Session } from '../entities/session.entity';
 
 /**
  * QuotaService
  *
  * Phase 21B: In-memory quota state management
+ * Phase 42A-1: Added database-backed session quota check
  *
  * Tracks quota usage per apiKeyId with fixed time windows:
  * - Request count: per-minute window
  * - Token usage: per-day window
+ * - Active sessions: database-backed (PHASE-42A-1)
  *
- * IMPORTANT: In-memory state only (no Redis, no database)
+ * IMPORTANT: In-memory state only (no Redis, no database) for rate limits
  * State is lost on service restart (acceptable for Phase 21B)
  * Single-instance deployment only (no distributed coordination)
  *
@@ -29,12 +34,52 @@ interface QuotaUsage {
 
 @Injectable()
 export class QuotaService {
+  constructor(
+    @InjectRepository(Session)
+    private readonly sessionRepository: Repository<Session>,
+  ) {}
+
   /**
    * In-memory quota usage state
    * Key: apiKeyId
    * Value: QuotaUsage
    */
   private readonly usageMap: Map<string, QuotaUsage> = new Map();
+
+  /**
+   * PHASE-42A-1: Check if user has exceeded max active sessions
+   * Database-backed quota check (survives restarts)
+   * Query: COUNT(*) WHERE user_id = ? AND terminated_at IS NULL
+   *
+   * @param userId - User ID to check quota for
+   * @returns Promise<boolean> - true if quota available, false if exceeded
+   */
+  async checkSessionQuota(userId: string): Promise<boolean> {
+    const activeCount = await this.sessionRepository.count({
+      where: {
+        userId,
+        terminatedAt: IsNull(),
+      },
+    });
+
+    return activeCount < QuotaConfig.MAX_ACTIVE_SESSIONS_PER_USER;
+  }
+
+  /**
+   * PHASE-42A-1: Get current active session count for user
+   * Used for error response details
+   *
+   * @param userId - User ID to get count for
+   * @returns Promise<number> - Current active session count
+   */
+  async getActiveSessionCount(userId: string): Promise<number> {
+    return await this.sessionRepository.count({
+      where: {
+        userId,
+        terminatedAt: IsNull(),
+      },
+    });
+  }
 
   /**
    * Check if request count quota is available

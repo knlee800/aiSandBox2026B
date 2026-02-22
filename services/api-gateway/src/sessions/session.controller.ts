@@ -15,6 +15,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Session } from '../entities/session.entity';
 import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
 import { RateLimitGuard, RateLimit } from '../guards/rate-limit.guard';
+import { SessionQuotaGuard } from '../quota/session-quota.guard';
 
 /**
  * SessionController
@@ -33,14 +34,15 @@ export class SessionController {
   /**
    * Create a new sandbox session for the authenticated user
    * POST /api/sessions
-   * Flow: Create session record → Start container → Return session
+   * Flow: Quota check → Create session record → Start container → Return session
    * PHASE-41B: Rate limited to 10 requests per minute per IP
+   * PHASE-42A-1: Quota limited to 5 active sessions per user
    * @param req - Request object with authenticated user
    * @returns Created session data
    */
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @UseGuards(RateLimitGuard)
+  @UseGuards(RateLimitGuard, SessionQuotaGuard)
   @RateLimit({ maxRequests: 10, windowMs: 60000 })
   async createSession(@Request() req): Promise<Session> {
     const userId = req.user.userId;
