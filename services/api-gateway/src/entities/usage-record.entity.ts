@@ -10,6 +10,7 @@ import {
  * UsageRecord Entity
  *
  * Phase 22B: Usage Ledger
+ * Phase 43A-2A: Idempotency via request_id
  *
  * Immutable ledger for recording successful AI executions.
  * Used for future billing, analytics, and reporting.
@@ -19,11 +20,16 @@ import {
  * - Success-only recording (no failed executions)
  * - Written by api-gateway after successful ai-service execution
  * - NO prompt or response content (privacy policy Phase 15B)
+ * - Idempotent retries via request_id (Phase 43A-2A)
  */
 @Entity('usage_records')
 @Index('idx_usage_records_api_key_timestamp', ['apiKeyId', 'timestamp'])
 @Index('idx_usage_records_user_timestamp', ['userId', 'timestamp'])
 @Index('idx_usage_records_timestamp', ['timestamp'])
+@Index('idx_usage_records_user_request_id', ['userId', 'requestId'], {
+  unique: true,
+  where: 'request_id IS NOT NULL',
+})
 export class UsageRecord {
   /**
    * Unique execution identifier (UUID v4)
@@ -31,6 +37,15 @@ export class UsageRecord {
    */
   @PrimaryColumn({ type: 'uuid', name: 'execution_id' })
   executionId: string;
+
+  /**
+   * Client-provided idempotency key (Phase 43A-2A)
+   * Optional - enables idempotent retries to prevent duplicate billing
+   * UNIQUE constraint: (user_id, request_id) WHERE request_id IS NOT NULL
+   * Source: Client-generated UUID or request identifier
+   */
+  @Column({ type: 'varchar', length: 100, name: 'request_id', nullable: true })
+  requestId?: string;
 
   /**
    * API key identifier (NOT the key value)
