@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
  *
  * Data required to create a usage record
  * All fields sourced from api-gateway execution context
+ * Phase 43A-2B: Added requestId for idempotent retries
  */
 export interface CreateUsageRecordDto {
   apiKeyId: string;
@@ -21,18 +22,21 @@ export interface CreateUsageRecordDto {
   tokensUsed: number;
   executionDurationMs: number;
   metadata?: Record<string, unknown>;
+  requestId?: string; // Phase 43A-2B: Optional idempotency key from client
 }
 
 /**
  * UsageLedgerService
  *
  * Phase 22B: Usage Ledger Write Service
+ * Phase 43A-2B: Idempotent write via requestId
  *
  * Responsibilities:
  * - Write immutable usage records to ledger
  * - Enforce success-only recording
  * - Ensure write-before-response semantics
  * - Provide deterministic failure behavior
+ * - Handle idempotent retries via requestId (Phase 43A-2B)
  *
  * IMPORTANT:
  * - Write-only service (no read/query methods in Phase 22B)
@@ -40,6 +44,7 @@ export interface CreateUsageRecordDto {
  * - Records written BEFORE client response
  * - Write failures cause request to fail (throw)
  * - No retries, no fallback, deterministic
+ * - Duplicate requestId returns existing record (Phase 43A-2B)
  */
 @Injectable()
 export class UsageLedgerService {
@@ -54,14 +59,16 @@ export class UsageLedgerService {
    * Write a usage record to the ledger
    *
    * Phase 22B: Success-only, synchronous write
+   * Phase 43A-2B: Idempotent via requestId
    *
    * @param dto - Usage record data
-   * @returns Promise<UsageRecord> - Written record
+   * @returns Promise<UsageRecord> - Written record (new or existing if duplicate requestId)
    * @throws Error if write fails (propagates to caller)
    *
    * Semantics:
    * - Generates unique executionId
    * - Writes record to database
+   * - If requestId provided and duplicate detected (unique violation), fetches existing record
    * - Throws on any failure (no retries)
    * - Deterministic behavior
    */
@@ -82,6 +89,7 @@ export class UsageLedgerService {
       tokensUsed: dto.tokensUsed,
       executionDurationMs: dto.executionDurationMs,
       metadata: dto.metadata,
+      requestId: dto.requestId, // Phase 43A-2B: Optional idempotency key
     });
 
     try {
@@ -91,11 +99,43 @@ export class UsageLedgerService {
       // Log success (no sensitive data)
       this.logger.log(
         `Usage record written: executionId=${executionId}, ` +
-          `apiKeyId=${dto.apiKeyId}, model=${dto.model}, tokens=${dto.tokensUsed}`,
+          `apiKeyId=${dto.apiKeyId}, model=${dto.model}, tokens=${dto.tokensUsed}` +
+          (dto.requestId ? `, requestId=${dto.requestId}` : ''),
       );
 
       return savedRecord;
     } catch (error) {
+      // Phase 43A-2B: Handle idempotent retry (unique violation on user_id + request_id)
+      if (dto.requestId && this.isUniqueViolation(error)) {
+        this.logger.log(
+          `Idempotent retry detected: userId=${dto.userId}, requestId=${dto.requestId}. ` +
+            `Fetching existing record.`,
+        );
+
+        // Fetch and return existing record for this (userId, requestId)
+        const existingRecord = await this.usageRecordRepository.findOne({
+          where: {
+            userId: dto.userId,
+            requestId: dto.requestId,
+          },
+        });
+
+        if (existingRecord) {
+          this.logger.log(
+            `Returning existing record: executionId=${existingRecord.executionId}, ` +
+              `userId=${dto.userId}, requestId=${dto.requestId}`,
+          );
+          return existingRecord;
+        }
+
+        // Should not happen (unique violation but no record found)
+        this.logger.error(
+          `Unique violation detected but no existing record found: ` +
+            `userId=${dto.userId}, requestId=${dto.requestId}`,
+        );
+        throw new Error('Idempotency conflict: unique violation but no existing record found');
+      }
+
       // Log failure (no sensitive data)
       this.logger.error(
         `Failed to write usage record: executionId=${executionId}, ` +
@@ -106,6 +146,21 @@ export class UsageLedgerService {
       // This will cause the request to fail (Phase 22B semantics)
       throw error;
     }
+  }
+
+  /**
+   * Check if error is a unique constraint violation
+   * Phase 43A-2B: Detect Postgres unique violation (code 23505)
+   *
+   * @param error - Error from database operation
+   * @returns true if unique violation, false otherwise
+   */
+  private isUniqueViolation(error: any): boolean {
+    // TypeORM QueryFailedError with Postgres error code 23505
+    return (
+      error.code === '23505' ||
+      (error.constraint && error.constraint.includes('idx_usage_records_user_request_id'))
+    );
   }
 
   /**

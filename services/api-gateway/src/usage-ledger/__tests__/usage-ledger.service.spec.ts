@@ -13,6 +13,7 @@ describe('UsageLedgerService', () => {
     const mockRepository = {
       create: jest.fn(),
       save: jest.fn(),
+      findOne: jest.fn(), // Phase 43A-2B: For idempotent retry lookup
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -134,6 +135,146 @@ describe('UsageLedgerService', () => {
       await expect(service.writeRecord(validDto)).rejects.toThrow(
         'Duplicate executionId',
       );
+    });
+
+    // Phase 43A-2B: Idempotency tests
+    describe('idempotency via requestId', () => {
+      it('should include requestId when provided', async () => {
+        const dtoWithRequestId: CreateUsageRecordDto = {
+          ...validDto,
+          requestId: 'req-abc-123',
+        };
+
+        repository.create.mockReturnValue({} as any);
+        repository.save.mockResolvedValue({} as any);
+
+        await service.writeRecord(dtoWithRequestId);
+
+        const createCall = repository.create.mock.calls[0][0];
+        expect(createCall.requestId).toBe('req-abc-123');
+      });
+
+      it('should omit requestId when not provided', async () => {
+        repository.create.mockReturnValue({} as any);
+        repository.save.mockResolvedValue({} as any);
+
+        await service.writeRecord(validDto);
+
+        const createCall = repository.create.mock.calls[0][0];
+        expect(createCall.requestId).toBeUndefined();
+      });
+
+      it('should return existing record on unique violation with requestId', async () => {
+        const dtoWithRequestId: CreateUsageRecordDto = {
+          ...validDto,
+          requestId: 'req-duplicate-123',
+        };
+
+        const existingRecord = {
+          executionId: 'existing-exec-id',
+          ...dtoWithRequestId,
+          timestamp: new Date(),
+        };
+
+        // Simulate unique violation (Postgres error code 23505)
+        const uniqueViolationError: any = new Error('duplicate key value');
+        uniqueViolationError.code = '23505';
+
+        repository.create.mockReturnValue({} as any);
+        repository.save.mockRejectedValue(uniqueViolationError);
+        repository.findOne.mockResolvedValue(existingRecord as any);
+
+        const result = await service.writeRecord(dtoWithRequestId);
+
+        expect(repository.findOne).toHaveBeenCalledWith({
+          where: {
+            userId: 'user-123',
+            requestId: 'req-duplicate-123',
+          },
+        });
+        expect(result).toEqual(existingRecord);
+      });
+
+      it('should return existing record on unique violation with constraint name', async () => {
+        const dtoWithRequestId: CreateUsageRecordDto = {
+          ...validDto,
+          requestId: 'req-duplicate-456',
+        };
+
+        const existingRecord = {
+          executionId: 'existing-exec-id-2',
+          ...dtoWithRequestId,
+          timestamp: new Date(),
+        };
+
+        // Simulate unique violation with constraint name
+        const uniqueViolationError: any = new Error('duplicate key value');
+        uniqueViolationError.constraint = 'idx_usage_records_user_request_id';
+
+        repository.create.mockReturnValue({} as any);
+        repository.save.mockRejectedValue(uniqueViolationError);
+        repository.findOne.mockResolvedValue(existingRecord as any);
+
+        const result = await service.writeRecord(dtoWithRequestId);
+
+        expect(repository.findOne).toHaveBeenCalledWith({
+          where: {
+            userId: 'user-123',
+            requestId: 'req-duplicate-456',
+          },
+        });
+        expect(result).toEqual(existingRecord);
+      });
+
+      it('should throw error if unique violation but no existing record found', async () => {
+        const dtoWithRequestId: CreateUsageRecordDto = {
+          ...validDto,
+          requestId: 'req-orphan-123',
+        };
+
+        const uniqueViolationError: any = new Error('duplicate key value');
+        uniqueViolationError.code = '23505';
+
+        repository.create.mockReturnValue({} as any);
+        repository.save.mockRejectedValue(uniqueViolationError);
+        repository.findOne.mockResolvedValue(null); // No record found
+
+        await expect(service.writeRecord(dtoWithRequestId)).rejects.toThrow(
+          'Idempotency conflict: unique violation but no existing record found',
+        );
+      });
+
+      it('should throw error on unique violation without requestId', async () => {
+        // Unique violation on different constraint (e.g., executionId)
+        const uniqueViolationError: any = new Error('duplicate key value');
+        uniqueViolationError.code = '23505';
+
+        repository.create.mockReturnValue({} as any);
+        repository.save.mockRejectedValue(uniqueViolationError);
+
+        // Should NOT call findOne (no requestId provided)
+        await expect(service.writeRecord(validDto)).rejects.toThrow(
+          'duplicate key value',
+        );
+        expect(repository.findOne).not.toHaveBeenCalled();
+      });
+
+      it('should throw error on non-unique-violation database error with requestId', async () => {
+        const dtoWithRequestId: CreateUsageRecordDto = {
+          ...validDto,
+          requestId: 'req-other-error',
+        };
+
+        const otherError = new Error('Connection timeout');
+        repository.create.mockReturnValue({} as any);
+        repository.save.mockRejectedValue(otherError);
+
+        // Should NOT call findOne (not a unique violation)
+        await expect(service.writeRecord(dtoWithRequestId)).rejects.toThrow(
+          'Connection timeout',
+        );
+        expect(repository.findOne).not.toHaveBeenCalled();
+      });
     });
   });
 

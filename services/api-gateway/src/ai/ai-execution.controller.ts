@@ -5,6 +5,8 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  Headers,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   AIServiceHttpClient,
@@ -37,6 +39,7 @@ import { RateLimitGuard, RateLimit } from '../guards/rate-limit.guard';
  * Phase 28B-1: Launch state enforcement
  * Phase 28B-2: Abort mode enforcement
  * Phase 42A-3: Token quota enforcement (rolling 24h)
+ * Phase 43A-2B: Idempotency via Idempotency-Key header
  *
  * Exposes POST /api/ai/execute endpoint.
  * Requires API key authentication (Phase 20A).
@@ -74,7 +77,9 @@ export class AIExecutionController {
    * Phase 42A-3: Enforces token quota (rolling 24h)
    * Phase 22B: Records usage to ledger on success
    * Phase 41B: Rate limited to 20 requests per minute per IP
+   * Phase 43A-2B: Accepts optional Idempotency-Key header for idempotent retries
    * - Authorization header: Bearer <api-key>
+   * - Idempotency-Key header (optional): Client-provided idempotency key (max 100 chars)
    * - API key validated by ApiKeyAuthGuard
    * - Scope validated by AuthorizationGuard
    * - Kill switches and safety limits enforced by ExecutionSafetyGuard
@@ -91,7 +96,7 @@ export class AIExecutionController {
    * Returns AIExecutionResult on success
    * Throws 401 on authentication failure
    * Throws 403 on authorization failure, launch state restriction, or token quota exceeded
-   * Throws 400 on invalid request (e.g., max_tokens too high)
+   * Throws 400 on invalid request (e.g., max_tokens too high, invalid Idempotency-Key)
    * Throws 429 on rate limit exceeded
    * Throws 503 on kill switch disabled, safety limit reached, or abort mode active
    * Throws 500 on ledger write failure
@@ -105,7 +110,27 @@ export class AIExecutionController {
   async execute(
     @Body() request: AIExecutionRequest,
     @AuthenticatedUser() identity: ApiKeyIdentity,
+    @Headers('idempotency-key') idempotencyKey?: string,
   ): Promise<AIExecutionResult> {
+    // Phase 43A-2B: Validate and normalize idempotency key
+    let requestId: string | undefined;
+    if (idempotencyKey !== undefined) {
+      // Normalize: trim whitespace
+      const normalized = idempotencyKey.trim();
+      
+      // Validate: must not be empty
+      if (normalized.length === 0) {
+        throw new BadRequestException('Idempotency-Key must not be empty');
+      }
+      
+      // Validate: must not exceed 100 characters (matches DB constraint)
+      if (normalized.length > 100) {
+        throw new BadRequestException('Idempotency-Key must not exceed 100 characters');
+      }
+      
+      requestId = normalized;
+    }
+
     // Phase 22B: Start timing execution
     const startTime = Date.now();
 
@@ -131,6 +156,7 @@ export class AIExecutionController {
     const executionDurationMs = Date.now() - startTime;
 
     // Phase 22B: Write usage record to ledger (success-only)
+    // Phase 43A-2B: Include requestId for idempotent retries
     // Write occurs AFTER ai-service success, BEFORE client response
     // If write fails, entire request fails (throw)
     await this.usageLedgerService.writeRecord({
@@ -143,6 +169,7 @@ export class AIExecutionController {
       model: result.model,
       tokensUsed: result.tokensUsed,
       executionDurationMs,
+      requestId, // Phase 43A-2B: Optional idempotency key
     });
 
     // Phase 26B: Track execution cost for daily spend limit

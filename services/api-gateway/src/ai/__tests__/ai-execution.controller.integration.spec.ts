@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UnauthorizedException, ForbiddenException, HttpException } from '@nestjs/common';
+import { UnauthorizedException, ForbiddenException, HttpException, BadRequestException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AIExecutionController } from '../ai-execution.controller';
 import { AIServiceHttpClient, AIExecutionRequest, AIExecutionResult } from '../../clients/ai-service-http.client';
@@ -10,6 +10,11 @@ import { QuotaService } from '../../quota/quota.service';
 import { UsageLedgerService } from '../../usage-ledger/usage-ledger.service';
 import { GlobalSafetyLimitService } from '../../safety/global-safety-limit.service';
 import { ApiKeyIdentity } from '../../auth/api-key.config';
+import { ExecutionSafetyGuard } from '../../safety/execution-safety.guard';
+import { LaunchGuard } from '../../launch/launch.guard';
+import { AbortGuard } from '../../abort/abort.guard';
+import { TokenQuotaGuard } from '../../quota/token-quota.guard';
+import { RateLimitGuard } from '../../guards/rate-limit.guard';
 
 describe('AIExecutionController (Phase 20A+20B+21B+22B Integration)', () => {
   let controller: AIExecutionController;
@@ -32,6 +37,10 @@ describe('AIExecutionController (Phase 20A+20B+21B+22B Integration)', () => {
       recordExecutionCost: jest.fn().mockResolvedValue(undefined),
     };
 
+    const mockQuotaService = {
+      clearAll: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AIExecutionController],
       providers: [
@@ -47,13 +56,30 @@ describe('AIExecutionController (Phase 20A+20B+21B+22B Integration)', () => {
           provide: GlobalSafetyLimitService,
           useValue: mockGlobalSafetyLimitService,
         },
-        ApiKeyAuthGuard,
-        AuthorizationGuard,
-        QuotaGuard,
-        QuotaService,
+        {
+          provide: QuotaService,
+          useValue: mockQuotaService,
+        },
         Reflector,
       ],
-    }).compile();
+    })
+      .overrideGuard(ApiKeyAuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(AuthorizationGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(ExecutionSafetyGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(LaunchGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(AbortGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(QuotaGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(TokenQuotaGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(RateLimitGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get<AIExecutionController>(AIExecutionController);
     httpClient = module.get(AIServiceHttpClient);
@@ -63,7 +89,9 @@ describe('AIExecutionController (Phase 20A+20B+21B+22B Integration)', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
-    quotaService.clearAll();
+    if (quotaService && quotaService.clearAll) {
+      quotaService.clearAll();
+    }
   });
 
   describe('POST /ai/execute with authentication and authorization', () => {
@@ -477,6 +505,144 @@ describe('AIExecutionController (Phase 20A+20B+21B+22B Integration)', () => {
     it('should verify UsageLedgerService is registered', async () => {
       expect(usageLedgerService).toBeDefined();
       expect(usageLedgerService.writeRecord).toBeDefined();
+    });
+  });
+
+  // Phase 43A-2B: Idempotency tests
+  describe('POST /ai/execute with Idempotency-Key header', () => {
+    const validRequest: AIExecutionRequest = {
+      sessionId: 'session-123',
+      conversationId: 'conv-456',
+      userId: 'untrusted-user',
+      prompt: 'Test prompt',
+      provider: 'stub',
+    };
+
+    const mockResponse: AIExecutionResult = {
+      output: 'Test response',
+      tokensUsed: 100,
+      model: 'stub',
+    };
+
+    const identity: ApiKeyIdentity = {
+      userId: 'test-user',
+      apiKeyId: 'key-test',
+      scopes: ['ai:execute'],
+    };
+
+    it('should accept valid Idempotency-Key header', async () => {
+      httpClient.execute.mockResolvedValue(mockResponse);
+      usageLedgerService.writeRecord.mockResolvedValue({} as any);
+
+      const result = await controller.execute(validRequest, identity, 'req-abc-123');
+
+      expect(result).toEqual(mockResponse);
+      expect(usageLedgerService.writeRecord).toHaveBeenCalledWith(
+        expect.objectContaining({
+          requestId: 'req-abc-123',
+        }),
+      );
+    });
+
+    it('should trim whitespace from Idempotency-Key', async () => {
+      httpClient.execute.mockResolvedValue(mockResponse);
+      usageLedgerService.writeRecord.mockResolvedValue({} as any);
+
+      await controller.execute(validRequest, identity, '  req-trimmed-123  ');
+
+      expect(usageLedgerService.writeRecord).toHaveBeenCalledWith(
+        expect.objectContaining({
+          requestId: 'req-trimmed-123',
+        }),
+      );
+    });
+
+    it('should reject empty Idempotency-Key', async () => {
+      await expect(
+        controller.execute(validRequest, identity, ''),
+      ).rejects.toThrow('Idempotency-Key must not be empty');
+
+      expect(httpClient.execute).not.toHaveBeenCalled();
+      expect(usageLedgerService.writeRecord).not.toHaveBeenCalled();
+    });
+
+    it('should reject whitespace-only Idempotency-Key', async () => {
+      await expect(
+        controller.execute(validRequest, identity, '   '),
+      ).rejects.toThrow('Idempotency-Key must not be empty');
+
+      expect(httpClient.execute).not.toHaveBeenCalled();
+      expect(usageLedgerService.writeRecord).not.toHaveBeenCalled();
+    });
+
+    it('should reject Idempotency-Key longer than 100 characters', async () => {
+      const longKey = 'x'.repeat(101);
+
+      await expect(
+        controller.execute(validRequest, identity, longKey),
+      ).rejects.toThrow('Idempotency-Key must not exceed 100 characters');
+
+      expect(httpClient.execute).not.toHaveBeenCalled();
+      expect(usageLedgerService.writeRecord).not.toHaveBeenCalled();
+    });
+
+    it('should accept Idempotency-Key exactly 100 characters', async () => {
+      const maxKey = 'x'.repeat(100);
+      httpClient.execute.mockResolvedValue(mockResponse);
+      usageLedgerService.writeRecord.mockResolvedValue({} as any);
+
+      await controller.execute(validRequest, identity, maxKey);
+
+      expect(usageLedgerService.writeRecord).toHaveBeenCalledWith(
+        expect.objectContaining({
+          requestId: maxKey,
+        }),
+      );
+    });
+
+    it('should omit requestId when Idempotency-Key not provided', async () => {
+      httpClient.execute.mockResolvedValue(mockResponse);
+      usageLedgerService.writeRecord.mockResolvedValue({} as any);
+
+      await controller.execute(validRequest, identity, undefined);
+
+      expect(usageLedgerService.writeRecord).toHaveBeenCalledWith(
+        expect.objectContaining({
+          requestId: undefined,
+        }),
+      );
+    });
+
+    it('should validate Idempotency-Key before calling ai-service', async () => {
+      const callOrder: string[] = [];
+
+      httpClient.execute.mockImplementation(async () => {
+        callOrder.push('ai-service');
+        return mockResponse;
+      });
+
+      await expect(
+        controller.execute(validRequest, identity, ''),
+      ).rejects.toThrow('Idempotency-Key must not be empty');
+
+      // ai-service should NOT be called if validation fails
+      expect(callOrder).toEqual([]);
+    });
+
+    it('should maintain backward compatibility when Idempotency-Key not used', async () => {
+      httpClient.execute.mockResolvedValue(mockResponse);
+      usageLedgerService.writeRecord.mockResolvedValue({} as any);
+
+      const result = await controller.execute(validRequest, identity);
+
+      expect(result).toEqual(mockResponse);
+      expect(usageLedgerService.writeRecord).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: 'test-user',
+          apiKeyId: 'key-test',
+          requestId: undefined,
+        }),
+      );
     });
   });
 });
