@@ -73,9 +73,14 @@ export class TokenQuotaGuard implements CanActivate {
     // Create query runner for explicit transaction control
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
-    await queryRunner.startTransaction();
+    
+    // Track transaction state to prevent rollback/commit on non-started transaction
+    let transactionStarted = false;
 
     try {
+      await queryRunner.startTransaction();
+      transactionStarted = true;
+
       // STEP 1: Acquire transaction-scoped advisory lock
       // Lock key: hashtext('quota:token:' || userId)
       // This blocks if another transaction holds the lock for this user
@@ -120,6 +125,7 @@ export class TokenQuotaGuard implements CanActivate {
 
         // ROLLBACK transaction (releases lock automatically)
         await queryRunner.rollbackTransaction();
+        transactionStarted = false; // Mark as no longer active
 
         // Throw HTTP 429 with quota-specific error structure
         // IMPORTANT: Use 429 (not 403) to indicate temporary resource exhaustion
@@ -142,15 +148,19 @@ export class TokenQuotaGuard implements CanActivate {
 
       // STEP 5: Quota available - COMMIT transaction (releases lock)
       await queryRunner.commitTransaction();
+      transactionStarted = false; // Mark as no longer active
 
       // Lock is now released, AI execution can proceed
       return true;
     } catch (error) {
-      // Rollback on any error (releases lock)
-      await queryRunner.rollbackTransaction();
+      // Rollback ONLY if transaction was started and not yet committed/rolled back
+      if (transactionStarted) {
+        await queryRunner.rollbackTransaction();
+        transactionStarted = false;
+      }
       throw error;
     } finally {
-      // Always release query runner
+      // Always release query runner (safe even if already released)
       await queryRunner.release();
     }
   }

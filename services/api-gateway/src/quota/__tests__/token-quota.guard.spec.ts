@@ -247,6 +247,7 @@ describe('TokenQuotaGuard (PHASE-42B-2)', () => {
 
       expect(mockQueryRunner.startTransaction).toHaveBeenCalled();
       expect(mockQueryRunner.commitTransaction).toHaveBeenCalled();
+      expect(mockQueryRunner.rollbackTransaction).not.toHaveBeenCalled();
       expect(mockQueryRunner.release).toHaveBeenCalled();
     });
 
@@ -263,12 +264,13 @@ describe('TokenQuotaGuard (PHASE-42B-2)', () => {
       ).rejects.toThrow();
 
       expect(mockQueryRunner.startTransaction).toHaveBeenCalled();
-      expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalled();
+      expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalledTimes(1); // Only once
+      expect(mockQueryRunner.commitTransaction).not.toHaveBeenCalled();
       expect(mockQueryRunner.release).toHaveBeenCalled();
     });
 
     it('should rollback and release on unexpected errors', async () => {
-      // Mock query failure
+      // Mock query failure after transaction started
       mockQueryRunner.query.mockRejectedValueOnce(
         new Error('Database connection lost'),
       );
@@ -277,7 +279,8 @@ describe('TokenQuotaGuard (PHASE-42B-2)', () => {
         tokenQuotaGuard.canActivate(mockContext),
       ).rejects.toThrow('Database connection lost');
 
-      expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalled();
+      expect(mockQueryRunner.startTransaction).toHaveBeenCalled();
+      expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalledTimes(1); // Only once
       expect(mockQueryRunner.release).toHaveBeenCalled();
     });
 
@@ -290,6 +293,38 @@ describe('TokenQuotaGuard (PHASE-42B-2)', () => {
 
       // Verify release is called in finally block
       expect(mockQueryRunner.release).toHaveBeenCalled();
+    });
+
+    it('should NOT rollback if transaction never started', async () => {
+      // Mock startTransaction failure
+      mockQueryRunner.startTransaction.mockRejectedValueOnce(
+        new Error('Failed to start transaction'),
+      );
+
+      await expect(
+        tokenQuotaGuard.canActivate(mockContext),
+      ).rejects.toThrow('Failed to start transaction');
+
+      expect(mockQueryRunner.startTransaction).toHaveBeenCalled();
+      expect(mockQueryRunner.rollbackTransaction).not.toHaveBeenCalled(); // CRITICAL: No rollback attempt
+      expect(mockQueryRunner.release).toHaveBeenCalled();
+    });
+
+    it('should NOT double-rollback on quota exceeded path', async () => {
+      // Mock quota exceeded scenario
+      mockQueryRunner.query
+        .mockResolvedValueOnce(undefined) // pg_advisory_xact_lock
+        .mockResolvedValueOnce([{ total: 95000 }]) // SUM(tokens_used)
+        .mockResolvedValueOnce([
+          { timestamp: new Date('2026-02-23T12:00:00Z') },
+        ]); // oldest usage
+
+      await expect(
+        tokenQuotaGuard.canActivate(mockContext),
+      ).rejects.toThrow(HttpException);
+
+      // Verify rollback called exactly once (not in catch block after quota exceeded)
+      expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalledTimes(1);
     });
   });
 

@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import { HttpExceptionFilter } from './filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -12,6 +13,9 @@ async function bootstrap() {
     origin: true,
     credentials: true,
   });
+
+  // Enable global exception filter (PHASE-42A-4: Preserve quota error body shape)
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   // Enable validation
   app.useGlobalPipes(
