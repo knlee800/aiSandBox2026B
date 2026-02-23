@@ -576,7 +576,7 @@ Implement deterministic, database-backed hard quota enforcement for maximum tota
 
 #### TASK-42A-3: Hard Quota Enforcement — Max Tokens Per Rolling 24h
 
-**Status:** PLANNED  
+**Status:** COMPLETE and LOCKED  
 **Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE ONLY)  
 **Checkpoint:** `docs/PHASE-42A-3-CHECKPOINT.md`
 
@@ -585,9 +585,9 @@ Implement deterministic, database-backed hard quota enforcement for maximum AI t
 
 **Scope:**
 - Enforce ceiling on AI token consumption (rolling 24h, limit: 100000)
-- Query database: `SUM(tokens_used) WHERE user_id = ? AND created_at > NOW() - INTERVAL 24 HOUR`
-- Estimate tokens for current request before enforcement
-- Return HTTP 403 Forbidden if limit would be exceeded
+- Query database: `SUM(tokens_used) WHERE user_id = ? AND timestamp > NOW() - INTERVAL 24 HOUR`
+- Enforce based on current usage (tokens recorded after execution)
+- Return HTTP 403 Forbidden if limit exceeded
 - Hard stop behavior (no AI provider called if quota exceeded)
 
 **Dependencies:** TASK-42A-2
@@ -598,7 +598,7 @@ Implement deterministic, database-backed hard quota enforcement for maximum AI t
 
 #### TASK-42A-4: Hard Quota Enforcement — PS 5.x Verification + PHASE-42A Finalization
 
-**Status:** PLANNED  
+**Status:** ACTIVE  
 **Nature:** VERIFICATION + DOCUMENTATION  
 **Checkpoint:** `docs/PHASE-42A-CHECKPOINT.md`
 

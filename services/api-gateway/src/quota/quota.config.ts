@@ -35,6 +35,13 @@ export class QuotaConfig {
   static readonly MAX_SESSIONS_PER_24H = 20;
 
   /**
+   * PHASE-42A-3: Max tokens per rolling 24h window
+   * Enforced before AI provider call in POST /api/ai/execute
+   * Hard limit: no AI provider called if exceeded
+   */
+  static readonly MAX_TOKENS_PER_24H = 100000;
+
+  /**
    * Default quota limits applied to all API keys
    * unless overridden in API_KEY_QUOTAS
    */

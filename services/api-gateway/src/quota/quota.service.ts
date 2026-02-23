@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, IsNull } from 'typeorm';
+import { Repository, IsNull, MoreThan } from 'typeorm';
 import { QuotaConfig } from './quota.config';
 import { Session } from '../entities/session.entity';
+import { UsageRecord } from '../entities/usage-record.entity';
 
 /**
  * QuotaService
@@ -39,6 +40,8 @@ export class QuotaService {
   constructor(
     @InjectRepository(Session)
     private readonly sessionRepository: Repository<Session>,
+    @InjectRepository(UsageRecord)
+    private readonly usageRecordRepository: Repository<UsageRecord>,
   ) {}
 
   /**
@@ -138,6 +141,68 @@ export class QuotaService {
       .getOne();
 
     return oldestSession ? oldestSession.createdAt : null;
+  }
+
+  /**
+   * PHASE-42A-3: Check if user has exceeded max tokens per rolling 24h
+   * Database-backed quota check (survives restarts)
+   * Query: SUM(tokens_used) WHERE user_id = ? AND timestamp > NOW() - INTERVAL 24 HOURS
+   *
+   * @param userId - User ID to check quota for
+   * @returns Promise<boolean> - true if quota available, false if exceeded
+   */
+  async checkRolling24hTokenQuota(userId: string): Promise<boolean> {
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    const result = await this.usageRecordRepository
+      .createQueryBuilder('usage_record')
+      .select('SUM(usage_record.tokensUsed)', 'total')
+      .where('usage_record.userId = :userId', { userId })
+      .andWhere('usage_record.timestamp > :twentyFourHoursAgo', { twentyFourHoursAgo })
+      .getRawOne();
+
+    const totalTokens = parseInt(result?.total || '0', 10);
+    return totalTokens < QuotaConfig.MAX_TOKENS_PER_24H;
+  }
+
+  /**
+   * PHASE-42A-3: Get token usage for user in rolling 24h window
+   * Used for error response details
+   *
+   * @param userId - User ID to get token usage for
+   * @returns Promise<number> - Total tokens used in last 24h
+   */
+  async getRolling24hTokenUsage(userId: string): Promise<number> {
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    const result = await this.usageRecordRepository
+      .createQueryBuilder('usage_record')
+      .select('SUM(usage_record.tokensUsed)', 'total')
+      .where('usage_record.userId = :userId', { userId })
+      .andWhere('usage_record.timestamp > :twentyFourHoursAgo', { twentyFourHoursAgo })
+      .getRawOne();
+
+    return parseInt(result?.total || '0', 10);
+  }
+
+  /**
+   * PHASE-42A-3: Get oldest usage record timestamp in rolling 24h window
+   * Used to calculate reset_at timestamp for error response
+   *
+   * @param userId - User ID to get oldest usage for
+   * @returns Promise<Date | null> - Oldest usage record timestamp, or null if no usage
+   */
+  async getOldestUsageIn24h(userId: string): Promise<Date | null> {
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    const oldestUsage = await this.usageRecordRepository
+      .createQueryBuilder('usage_record')
+      .where('usage_record.userId = :userId', { userId })
+      .andWhere('usage_record.timestamp > :twentyFourHoursAgo', { twentyFourHoursAgo })
+      .orderBy('usage_record.timestamp', 'ASC')
+      .getOne();
+
+    return oldestUsage ? oldestUsage.timestamp : null;
   }
 
   /**

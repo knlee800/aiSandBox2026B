@@ -14,6 +14,7 @@ import {
 import { ApiKeyAuthGuard } from '../auth/api-key-auth.guard';
 import { AuthorizationGuard } from '../auth/authorization.guard';
 import { QuotaGuard } from '../quota/quota.guard';
+import { TokenQuotaGuard } from '../quota/token-quota.guard';
 import { AuthenticatedUser } from '../auth/authenticated-user.decorator';
 import { RequireScope } from '../auth/decorators/require-scope.decorator';
 import { ApiKeyIdentity } from '../auth/api-key.config';
@@ -35,6 +36,7 @@ import { RateLimitGuard, RateLimit } from '../guards/rate-limit.guard';
  * Phase 26B: Production readiness (kill switches + safety limits)
  * Phase 28B-1: Launch state enforcement
  * Phase 28B-2: Abort mode enforcement
+ * Phase 42A-3: Token quota enforcement (rolling 24h)
  *
  * Exposes POST /api/ai/execute endpoint.
  * Requires API key authentication (Phase 20A).
@@ -43,6 +45,7 @@ import { RateLimitGuard, RateLimit } from '../guards/rate-limit.guard';
  * Enforces launch state restrictions (Phase 28B-1).
  * Enforces abort mode restrictions (Phase 28B-2).
  * Requires quota availability (Phase 21B).
+ * Enforces token quota (Phase 42A-3).
  * Records usage to ledger on success (Phase 22B).
  * Forwards requests to ai-service with verified identity.
  *
@@ -68,6 +71,7 @@ export class AIExecutionController {
    * Phase 28B-1: Enforces launch state restrictions
    * Phase 28B-2: Enforces abort mode restrictions
    * Phase 21B: Requires quota availability
+   * Phase 42A-3: Enforces token quota (rolling 24h)
    * Phase 22B: Records usage to ledger on success
    * Phase 41B: Rate limited to 20 requests per minute per IP
    * - Authorization header: Bearer <api-key>
@@ -76,7 +80,8 @@ export class AIExecutionController {
    * - Kill switches and safety limits enforced by ExecutionSafetyGuard
    * - Launch state enforced by LaunchGuard
    * - Abort mode enforced by AbortGuard
-   * - Quota validated by QuotaGuard
+   * - Quota validated by QuotaGuard (legacy Phase 21B)
+   * - Token quota validated by TokenQuotaGuard (Phase 42A-3)
    * - Rate limit enforced by RateLimitGuard
    * - Verified userId injected into request
    * - apiKeyId added to metadata
@@ -85,7 +90,7 @@ export class AIExecutionController {
    * Accepts AIExecutionRequest (userId will be replaced)
    * Returns AIExecutionResult on success
    * Throws 401 on authentication failure
-   * Throws 403 on authorization failure or launch state restriction
+   * Throws 403 on authorization failure, launch state restriction, or token quota exceeded
    * Throws 400 on invalid request (e.g., max_tokens too high)
    * Throws 429 on rate limit exceeded
    * Throws 503 on kill switch disabled, safety limit reached, or abort mode active
@@ -94,7 +99,7 @@ export class AIExecutionController {
    */
   @Post('execute')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(ApiKeyAuthGuard, AuthorizationGuard, ExecutionSafetyGuard, LaunchGuard, AbortGuard, QuotaGuard, RateLimitGuard)
+  @UseGuards(ApiKeyAuthGuard, AuthorizationGuard, ExecutionSafetyGuard, LaunchGuard, AbortGuard, QuotaGuard, TokenQuotaGuard, RateLimitGuard)
   @RequireScope('ai:execute')
   @RateLimit({ maxRequests: 20, windowMs: 60000 })
   async execute(
