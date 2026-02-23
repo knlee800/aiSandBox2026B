@@ -94,12 +94,33 @@ export class QuotaConfig {
    * Conservative token estimate for pre-execution quota check
    * Used when actual token count is unknown before execution
    *
+   * PHASE-42B-2: Enhanced estimation for advisory lock quota enforcement
+   * - Conservative estimate prevents under-quota violations
+   * - Includes prompt, context, response, and buffer
+   * - Pessimistic approach: better to over-estimate than under-estimate
+   *
    * @param prompt - User prompt (optional, for length-based estimation)
    * @returns Estimated token count
    */
   static estimateTokens(prompt?: string): number {
-    // Conservative fixed estimate (Phase 21B)
-    // Future: could use prompt.length * multiplier
-    return 1000;
+    // Base estimate: typical AI execution
+    // - User prompt: ~200 tokens
+    // - Context/history: ~2000 tokens
+    // - AI response: ~1000 tokens
+    // - Buffer (safety margin): ~4800 tokens
+    // Total: ~8000 tokens (conservative)
+    const baseEstimate = 8000;
+
+    // If prompt provided, adjust based on length
+    if (prompt && typeof prompt === 'string') {
+      // Rough approximation: 1 token ≈ 4 characters
+      const promptTokens = Math.ceil(prompt.length / 4);
+      
+      // Use max(baseEstimate, promptTokens * 2) to be conservative
+      // Multiply by 2 to account for context + response
+      return Math.max(baseEstimate, promptTokens * 2);
+    }
+
+    return baseEstimate;
   }
 }
