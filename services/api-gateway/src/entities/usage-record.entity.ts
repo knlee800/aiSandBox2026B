@@ -11,14 +11,16 @@ import {
  *
  * Phase 22B: Usage Ledger
  * Phase 43A-2A: Idempotency via request_id
+ * Phase 43B-2A: Two-phase execution record (execution_status)
  *
- * Immutable ledger for recording successful AI executions.
+ * Immutable ledger for recording AI executions.
  * Used for future billing, analytics, and reporting.
  *
  * IMPORTANT:
  * - Append-only ledger (records never updated or deleted)
- * - Success-only recording (no failed executions)
- * - Written by api-gateway after successful ai-service execution
+ * - Two-phase recording: 'pending' → 'completed' (Phase 43B-2A)
+ * - Written by api-gateway BEFORE ai-service call (intent)
+ * - Updated by api-gateway AFTER ai-service success (result)
  * - NO prompt or response content (privacy policy Phase 15B)
  * - Idempotent retries via request_id (Phase 43A-2A)
  */
@@ -100,25 +102,40 @@ export class UsageRecord {
    * Examples: 'claude-3-5-sonnet-20241022', 'gpt-4', 'stub'
    * Source: AIExecutionResult.model from ai-service
    * Used for model-based billing
+   * Phase 43B-2A: Nullable (not known until AI execution completes)
    */
-  @Column({ type: 'varchar', length: 100 })
-  model: string;
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  model?: string;
 
   /**
    * Actual tokens consumed
    * Source: AIExecutionResult.tokensUsed from ai-service
    * Basis for billing calculations (future)
+   * Phase 43B-2A: Nullable (not known until AI execution completes)
    */
-  @Column({ type: 'integer', name: 'tokens_used' })
-  tokensUsed: number;
+  @Column({ type: 'integer', name: 'tokens_used', nullable: true })
+  tokensUsed?: number;
 
   /**
    * Execution duration in milliseconds
    * Measured by api-gateway (time between request and response)
    * Used for performance analytics
+   * Phase 43B-2A: Nullable (not known until AI execution completes)
    */
-  @Column({ type: 'integer', name: 'execution_duration_ms' })
-  executionDurationMs: number;
+  @Column({ type: 'integer', name: 'execution_duration_ms', nullable: true })
+  executionDurationMs?: number;
+
+  /**
+   * Execution status (Phase 43B-2A: Two-phase execution record)
+   * Values: 'pending', 'completed', 'failed', 'timeout'
+   * - 'pending': Execution intent written, AI call in progress
+   * - 'completed': AI execution succeeded, result recorded
+   * - 'failed': AI execution failed (reserved for future use)
+   * - 'timeout': Execution abandoned (cleanup job marks orphaned records)
+   * Default: 'pending' (write-before-call)
+   */
+  @Column({ type: 'varchar', length: 20, name: 'execution_status', default: 'pending' })
+  executionStatus: string;
 
   /**
    * Execution completion timestamp (UTC)

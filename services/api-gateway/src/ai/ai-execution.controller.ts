@@ -29,6 +29,7 @@ import { LaunchGuard } from '../launch/launch.guard';
 import { AbortGuard } from '../abort/abort.guard';
 import { RateLimitGuard, RateLimit } from '../guards/rate-limit.guard';
 import { IdempotencyGuard } from './idempotency.guard';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * AIExecutionController
@@ -44,6 +45,7 @@ import { IdempotencyGuard } from './idempotency.guard';
  * Phase 42A-3: Token quota enforcement (rolling 24h)
  * Phase 43A-2B: Idempotency via Idempotency-Key header
  * Phase 43A-2C: Idempotency short-circuit BEFORE quota (retry-safe)
+ * Phase 43B-2: Two-phase execution record (write-before-call)
  *
  * Exposes POST /api/ai/execute endpoint.
  * Requires API key authentication (Phase 20A).
@@ -54,11 +56,12 @@ import { IdempotencyGuard } from './idempotency.guard';
  * Checks idempotency BEFORE quota (Phase 43A-2C).
  * Requires quota availability (Phase 21B).
  * Enforces token quota (Phase 42A-3).
- * Records usage to ledger on success (Phase 22B).
+ * Records execution intent BEFORE ai-service call (Phase 43B-2B).
+ * Updates execution result AFTER ai-service success (Phase 43B-2C).
  * Forwards requests to ai-service with verified identity.
  *
  * NO business logic, NO retries, NO transformations.
- * Pure passthrough to ai-service with identity injection and usage recording.
+ * Pure passthrough to ai-service with identity injection and two-phase usage recording.
  */
 @Controller('ai')
 export class AIExecutionController {
@@ -82,6 +85,8 @@ export class AIExecutionController {
    * Phase 21B: Requires quota availability
    * Phase 42A-3: Enforces token quota (rolling 24h)
    * Phase 22B: Records usage to ledger on success
+   * Phase 43B-2B: Writes execution intent BEFORE ai-service call
+   * Phase 43B-2C: Updates execution result AFTER ai-service success
    * Phase 41B: Rate limited to 20 requests per minute per IP
    * Phase 43A-2B: Accepts optional Idempotency-Key header for idempotent retries
    * - Authorization header: Bearer <api-key>
@@ -97,16 +102,18 @@ export class AIExecutionController {
    * - Rate limit enforced by RateLimitGuard
    * - Verified userId injected into request
    * - apiKeyId added to metadata
-   * - Usage recorded to ledger after success (unless idempotent retry)
+   * - Execution intent written BEFORE ai-service call (Phase 43B-2B)
+   * - Execution result updated AFTER ai-service success (Phase 43B-2C)
    *
    * Accepts AIExecutionRequest (userId will be replaced)
    * Returns AIExecutionResult on success
    * Throws 401 on authentication failure
    * Throws 403 on authorization failure, launch state restriction, or token quota exceeded
    * Throws 400 on invalid request (e.g., max_tokens too high, invalid Idempotency-Key)
+   * Throws 409 on concurrent execution with same Idempotency-Key (Phase 43B-2C)
    * Throws 429 on rate limit exceeded
    * Throws 503 on kill switch disabled, safety limit reached, or abort mode active
-   * Throws 500 on ledger write failure
+   * Throws 500 on ledger write failure or execution intent write failure
    * Propagates ai-service exceptions unchanged on execution failure
    */
   @Post('execute')
@@ -120,11 +127,9 @@ export class AIExecutionController {
     @Headers('idempotency-key') idempotencyKey?: string,
     @Req() req?: Request,
   ): Promise<AIExecutionResult> {
-    // Phase 43A-2C: Check for idempotent result (set by IdempotencyGuard)
-    // If present, return immediately without calling AI provider or writing ledger
-    if (req && (req as any).idempotentResult) {
-      return (req as any).idempotentResult as AIExecutionResult;
-    }
+    // Phase 43B-2-HOTFIX: IdempotencyGuard now throws IdempotentReplayException
+    // instead of attaching to request. No need to check req.idempotentResult.
+    // If we reach here, it's NOT a replay (or replay was for 'timeout'/'failed' status).
 
     // Phase 43A-2B: Validate and normalize idempotency key
     let requestId: string | undefined;
@@ -152,6 +157,27 @@ export class AIExecutionController {
     // api-gateway owns provider selection; ai-service MUST NOT guess
     const provider = (process.env.AI_PROVIDER || 'stub') as AIExecutionRequest['provider'];
 
+    // Phase 43B-2B: Generate execution ID (for two-phase write)
+    const executionId = uuidv4();
+
+    // Phase 43B-2B: Write execution intent BEFORE ai-service call
+    // This ensures we have a record even if network/DB fails after AI success
+    // Status: 'pending' (model, tokensUsed, executionDurationMs are NULL)
+    await this.usageLedgerService.writeExecutionIntent({
+      executionId,
+      apiKeyId: identity.apiKeyId,
+      userId: identity.userId,
+      sessionId: request.sessionId,
+      conversationId: request.conversationId,
+      provider,
+      adapter: provider, // Phase 28: Adapter matches provider
+      requestId, // Phase 43A-2B: Optional idempotency key
+      metadata: {
+        ...request.metadata,
+        apiKeyId: identity.apiKeyId, // INJECTED for audit
+      },
+    });
+
     // Phase 20A: Replace untrusted userId with verified userId
     const verifiedRequest: AIExecutionRequest = {
       ...request,
@@ -164,26 +190,24 @@ export class AIExecutionController {
     };
 
     // Forward to ai-service with verified identity
+    // If this fails, execution intent remains 'pending' (will be cleaned up by cron)
     const result = await this.aiServiceHttpClient.execute(verifiedRequest);
 
     // Phase 22B: Calculate execution duration
     const executionDurationMs = Date.now() - startTime;
 
-    // Phase 22B: Write usage record to ledger (success-only)
-    // Phase 43A-2B: Include requestId for idempotent retries
-    // Write occurs AFTER ai-service success, BEFORE client response
-    // If write fails, entire request fails (throw)
-    await this.usageLedgerService.writeRecord({
-      apiKeyId: identity.apiKeyId,
-      userId: identity.userId,
-      sessionId: request.sessionId,
-      conversationId: request.conversationId,
-      provider: verifiedRequest.provider, // Phase 28: Use explicit provider
-      adapter: verifiedRequest.provider, // Phase 28: Adapter matches provider
+    // Phase 43B-2C: Update execution record with result (status: 'completed')
+    // Phase 43B-3: Store full AIExecutionResult in metadata for deterministic replay
+    // This transitions from 'pending' → 'completed'
+    // If this fails, execution intent remains 'pending' but AI execution succeeded
+    // (CRITICAL: This is the failure mode we're protecting against)
+    await this.usageLedgerService.updateExecutionResult({
+      executionId,
       model: result.model,
       tokensUsed: result.tokensUsed,
       executionDurationMs,
-      requestId, // Phase 43A-2B: Optional idempotency key
+      executionStatus: 'completed',
+      output: result.output, // Phase 43B-3: Store output for deterministic replay
     });
 
     // Phase 26B: Track execution cost for daily spend limit
@@ -191,7 +215,7 @@ export class AIExecutionController {
     const estimatedCostUSD = (result.tokensUsed / 1000) * 0.01;
     this.globalSafetyLimitService.recordExecutionCost(estimatedCostUSD);
 
-    // Return result to client (after ledger write succeeds)
+    // Return result to client (after execution result update succeeds)
     return result;
   }
 }

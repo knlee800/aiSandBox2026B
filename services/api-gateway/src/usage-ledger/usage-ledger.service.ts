@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
  * Data required to create a usage record
  * All fields sourced from api-gateway execution context
  * Phase 43A-2B: Added requestId for idempotent retries
+ * Phase 43B-2A: Made execution result fields optional (two-phase write)
  */
 export interface CreateUsageRecordDto {
   apiKeyId: string;
@@ -18,11 +19,46 @@ export interface CreateUsageRecordDto {
   conversationId: string;
   provider: string;
   adapter: string;
-  model: string;
-  tokensUsed: number;
-  executionDurationMs: number;
+  model?: string; // Phase 43B-2A: Optional (not known until AI completes)
+  tokensUsed?: number; // Phase 43B-2A: Optional (not known until AI completes)
+  executionDurationMs?: number; // Phase 43B-2A: Optional (not known until AI completes)
   metadata?: Record<string, unknown>;
   requestId?: string; // Phase 43A-2B: Optional idempotency key from client
+  executionStatus?: string; // Phase 43B-2A: Execution status ('pending' | 'completed' | 'failed' | 'timeout')
+}
+
+/**
+ * WriteExecutionIntentDto
+ *
+ * Phase 43B-2B: Data required to write execution intent BEFORE ai-service call
+ * Minimal fields known before AI execution
+ */
+export interface WriteExecutionIntentDto {
+  executionId: string; // Pre-generated UUID for this execution
+  apiKeyId: string;
+  userId: string;
+  sessionId: string;
+  conversationId: string;
+  provider: string;
+  adapter: string;
+  requestId?: string; // Optional idempotency key from client
+  metadata?: Record<string, unknown>;
+}
+
+/**
+ * UpdateExecutionResultDto
+ *
+ * Phase 43B-2C: Data required to update execution record AFTER ai-service success
+ * Phase 43B-3: Added output for deterministic replay
+ * Fields populated after AI execution completes
+ */
+export interface UpdateExecutionResultDto {
+  executionId: string; // UUID of the execution intent record
+  model: string; // AI model used
+  tokensUsed: number; // Actual tokens consumed
+  executionDurationMs: number; // Total execution time
+  executionStatus: string; // 'completed' (or 'failed' for future use)
+  output: string; // Phase 43B-3: AI output for deterministic replay
 }
 
 /**
@@ -31,19 +67,19 @@ export interface CreateUsageRecordDto {
  * Phase 22B: Usage Ledger Write Service
  * Phase 43A-2B: Idempotent write via requestId
  * Phase 43A-2C: Idempotency lookup for retry short-circuit
+ * Phase 43B-2: Two-phase execution record (write-before-call)
  *
  * Responsibilities:
  * - Write immutable usage records to ledger
- * - Enforce success-only recording
- * - Ensure write-before-response semantics
+ * - Support two-phase execution: intent (pending) → result (completed)
+ * - Ensure write-before-call semantics (Phase 43B-2B)
  * - Provide deterministic failure behavior
  * - Handle idempotent retries via requestId (Phase 43A-2B)
  * - Lookup existing records for idempotency short-circuit (Phase 43A-2C)
  *
  * IMPORTANT:
- * - Primarily write-only service (minimal read for idempotency only)
- * - Records written AFTER ai-service success
- * - Records written BEFORE client response
+ * - Two-phase write: writeExecutionIntent() BEFORE ai-service call
+ * - Update: updateExecutionResult() AFTER ai-service success
  * - Write failures cause request to fail (throw)
  * - No retries, no fallback, deterministic
  * - Duplicate requestId returns existing record (Phase 43A-2B)
@@ -58,27 +94,202 @@ export class UsageLedgerService {
   ) {}
 
   /**
+   * Write execution intent BEFORE ai-service call
+   *
+   * Phase 43B-2B: Two-phase execution record (write-before-call)
+   *
+   * @param dto - Execution intent data (minimal fields known before AI call)
+   * @returns Promise<UsageRecord> - Written intent record (status: 'pending')
+   * @throws Error if write fails (propagates to caller)
+   *
+   * Semantics:
+   * - Writes record with execution_status = 'pending'
+   * - model, tokensUsed, executionDurationMs are NULL (not known yet)
+   * - If requestId provided and duplicate detected, returns existing record
+   * - Throws on any failure (no retries)
+   * - Deterministic behavior
+   *
+   * Purpose:
+   * - Capture execution intent even if ai-service fails
+   * - Prevent lost revenue if network/DB fails after AI success
+   * - Enable idempotency check for concurrent requests
+   */
+  async writeExecutionIntent(
+    dto: WriteExecutionIntentDto,
+  ): Promise<UsageRecord> {
+    // Construct intent record (status: 'pending')
+    const record = this.usageRecordRepository.create({
+      executionId: dto.executionId,
+      apiKeyId: dto.apiKeyId,
+      userId: dto.userId,
+      sessionId: dto.sessionId,
+      conversationId: dto.conversationId,
+      provider: dto.provider,
+      adapter: dto.adapter,
+      requestId: dto.requestId,
+      metadata: dto.metadata,
+      executionStatus: 'pending',
+      // model, tokensUsed, executionDurationMs are NULL (not known yet)
+    });
+
+    try {
+      // Write to database (synchronous, no retries)
+      const savedRecord = await this.usageRecordRepository.save(record);
+
+      // Log success (no sensitive data)
+      this.logger.log(
+        `Execution intent written: executionId=${dto.executionId}, ` +
+          `apiKeyId=${dto.apiKeyId}, status=pending` +
+          (dto.requestId ? `, requestId=${dto.requestId}` : ''),
+      );
+
+      return savedRecord;
+    } catch (error) {
+      // Phase 43A-2B: Handle idempotent retry (unique violation on user_id + request_id)
+      if (dto.requestId && this.isUniqueViolation(error)) {
+        this.logger.log(
+          `Idempotent retry detected: userId=${dto.userId}, requestId=${dto.requestId}. ` +
+            `Fetching existing record.`,
+        );
+
+        // Fetch and return existing record for this (userId, requestId)
+        const existingRecord = await this.usageRecordRepository.findOne({
+          where: {
+            userId: dto.userId,
+            requestId: dto.requestId,
+          },
+        });
+
+        if (existingRecord) {
+          this.logger.log(
+            `Returning existing record: executionId=${existingRecord.executionId}, ` +
+              `userId=${dto.userId}, requestId=${dto.requestId}, status=${existingRecord.executionStatus}`,
+          );
+          return existingRecord;
+        }
+
+        // Should not happen (unique violation but no record found)
+        this.logger.error(
+          `Unique violation detected but no existing record found: ` +
+            `userId=${dto.userId}, requestId=${dto.requestId}`,
+        );
+        throw new Error('Idempotency conflict: unique violation but no existing record found');
+      }
+
+      // Log failure (no sensitive data)
+      this.logger.error(
+        `Failed to write execution intent: executionId=${dto.executionId}, ` +
+          `apiKeyId=${dto.apiKeyId}, error=${error.message}`,
+      );
+
+      // Rethrow to propagate failure to caller
+      throw error;
+    }
+  }
+
+  /**
+   * Update execution record AFTER ai-service success
+   *
+   * Phase 43B-2C: Two-phase execution record (update after success)
+   * Phase 43B-3: Store full AIExecutionResult in metadata for deterministic replay
+   *
+   * @param dto - Execution result data (fields populated after AI call)
+   * @returns Promise<UsageRecord> - Updated record (status: 'completed')
+   * @throws Error if update fails (propagates to caller)
+   *
+   * Semantics:
+   * - Updates existing record with execution_status = 'completed'
+   * - Populates model, tokensUsed, executionDurationMs
+   * - Stores full AIExecutionResult in metadata (Phase 43B-3)
+   * - Throws if record not found (should never happen)
+   * - Throws on any failure (no retries)
+   * - Deterministic behavior
+   *
+   * Purpose:
+   * - Record AI execution result after success
+   * - Transition from 'pending' to 'completed'
+   * - Enable billing based on actual token usage
+   * - Enable deterministic replay (exact output match)
+   */
+  async updateExecutionResult(
+    dto: UpdateExecutionResultDto,
+  ): Promise<UsageRecord> {
+    try {
+      // Fetch existing record by executionId
+      const record = await this.usageRecordRepository.findOne({
+        where: { executionId: dto.executionId },
+      });
+
+      if (!record) {
+        throw new Error(`Execution record not found: executionId=${dto.executionId}`);
+      }
+
+      // Update record with execution result
+      record.model = dto.model;
+      record.tokensUsed = dto.tokensUsed;
+      record.executionDurationMs = dto.executionDurationMs;
+      record.executionStatus = dto.executionStatus;
+
+      // Phase 43B-3: Store full AIExecutionResult in metadata for deterministic replay
+      // This enables replay to return the EXACT original response body
+      record.metadata = {
+        ...record.metadata,
+        aiExecutionResult: {
+          output: dto.output,
+          tokensUsed: dto.tokensUsed,
+          model: dto.model,
+        },
+      };
+
+      // Save updated record
+      const updatedRecord = await this.usageRecordRepository.save(record);
+
+      // Log success (no sensitive data)
+      this.logger.log(
+        `Execution result recorded: executionId=${dto.executionId}, ` +
+          `model=${dto.model}, tokens=${dto.tokensUsed}, status=${dto.executionStatus}`,
+      );
+
+      return updatedRecord;
+    } catch (error) {
+      // Log failure (no sensitive data)
+      this.logger.error(
+        `Failed to update execution result: executionId=${dto.executionId}, ` +
+          `error=${error.message}`,
+      );
+
+      // Rethrow to propagate failure to caller
+      throw error;
+    }
+  }
+
+  /**
    * Write a usage record to the ledger
    *
    * Phase 22B: Success-only, synchronous write
    * Phase 43A-2B: Idempotent via requestId
+   * Phase 43B-2: LEGACY METHOD - Use writeExecutionIntent() + updateExecutionResult() instead
    *
+   * @deprecated Use two-phase write pattern: writeExecutionIntent() + updateExecutionResult()
    * @param dto - Usage record data
    * @returns Promise<UsageRecord> - Written record (new or existing if duplicate requestId)
    * @throws Error if write fails (propagates to caller)
    *
    * Semantics:
    * - Generates unique executionId
-   * - Writes record to database
+   * - Writes record to database with status 'completed' (single-phase)
    * - If requestId provided and duplicate detected (unique violation), fetches existing record
    * - Throws on any failure (no retries)
    * - Deterministic behavior
+   *
+   * IMPORTANT: This method is retained for backward compatibility only.
+   * New code should use writeExecutionIntent() + updateExecutionResult().
    */
   async writeRecord(dto: CreateUsageRecordDto): Promise<UsageRecord> {
     // Generate unique execution ID
     const executionId = uuidv4();
 
-    // Construct record
+    // Construct record (single-phase write with status 'completed')
     const record = this.usageRecordRepository.create({
       executionId,
       apiKeyId: dto.apiKeyId,
@@ -92,6 +303,7 @@ export class UsageLedgerService {
       executionDurationMs: dto.executionDurationMs,
       metadata: dto.metadata,
       requestId: dto.requestId, // Phase 43A-2B: Optional idempotency key
+      executionStatus: dto.executionStatus || 'completed', // Phase 43B-2: Default to 'completed' for legacy writes
     });
 
     try {

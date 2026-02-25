@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_FILTER } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { StartupModule } from './startup/startup.module';
@@ -22,6 +22,7 @@ import { InvoiceModule } from './invoice/invoice.module';
 import { RuntimeModule } from './runtime/runtime.module';
 import { databaseConfig } from './config/database.config';
 import { InternalServiceAuthGuard } from './guards/internal-service-auth.guard';
+import { IdempotentReplayExceptionFilter } from './filters/idempotent-replay-exception.filter';
 
 @Module({
   imports: [
@@ -66,6 +67,13 @@ import { InternalServiceAuthGuard } from './guards/internal-service-auth.guard';
     {
       provide: APP_GUARD,
       useClass: InternalServiceAuthGuard,
+    },
+    // Global exception filter for idempotent replay
+    // Catches IdempotentReplayException and returns HTTP 200 with cached result
+    // Phase 43B-2-HOTFIX: Idempotent Replay Must Bypass Quota Guards
+    {
+      provide: APP_FILTER,
+      useClass: IdempotentReplayExceptionFilter,
     },
   ],
 })
