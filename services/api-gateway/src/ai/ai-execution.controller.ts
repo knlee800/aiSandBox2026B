@@ -7,7 +7,9 @@ import {
   UseGuards,
   Headers,
   BadRequestException,
+  Req,
 } from '@nestjs/common';
+import { Request } from 'express';
 import {
   AIServiceHttpClient,
   AIExecutionRequest,
@@ -26,6 +28,7 @@ import { GlobalSafetyLimitService } from '../safety/global-safety-limit.service'
 import { LaunchGuard } from '../launch/launch.guard';
 import { AbortGuard } from '../abort/abort.guard';
 import { RateLimitGuard, RateLimit } from '../guards/rate-limit.guard';
+import { IdempotencyGuard } from './idempotency.guard';
 
 /**
  * AIExecutionController
@@ -40,6 +43,7 @@ import { RateLimitGuard, RateLimit } from '../guards/rate-limit.guard';
  * Phase 28B-2: Abort mode enforcement
  * Phase 42A-3: Token quota enforcement (rolling 24h)
  * Phase 43A-2B: Idempotency via Idempotency-Key header
+ * Phase 43A-2C: Idempotency short-circuit BEFORE quota (retry-safe)
  *
  * Exposes POST /api/ai/execute endpoint.
  * Requires API key authentication (Phase 20A).
@@ -47,6 +51,7 @@ import { RateLimitGuard, RateLimit } from '../guards/rate-limit.guard';
  * Enforces kill switches and global safety limits (Phase 26B).
  * Enforces launch state restrictions (Phase 28B-1).
  * Enforces abort mode restrictions (Phase 28B-2).
+ * Checks idempotency BEFORE quota (Phase 43A-2C).
  * Requires quota availability (Phase 21B).
  * Enforces token quota (Phase 42A-3).
  * Records usage to ledger on success (Phase 22B).
@@ -73,6 +78,7 @@ export class AIExecutionController {
    * Phase 26B: Enforces kill switches and global safety limits
    * Phase 28B-1: Enforces launch state restrictions
    * Phase 28B-2: Enforces abort mode restrictions
+   * Phase 43A-2C: Checks idempotency BEFORE quota (retry-safe)
    * Phase 21B: Requires quota availability
    * Phase 42A-3: Enforces token quota (rolling 24h)
    * Phase 22B: Records usage to ledger on success
@@ -85,12 +91,13 @@ export class AIExecutionController {
    * - Kill switches and safety limits enforced by ExecutionSafetyGuard
    * - Launch state enforced by LaunchGuard
    * - Abort mode enforced by AbortGuard
+   * - Idempotency checked by IdempotencyGuard (Phase 43A-2C) - BEFORE quota
    * - Quota validated by QuotaGuard (legacy Phase 21B)
    * - Token quota validated by TokenQuotaGuard (Phase 42A-3)
    * - Rate limit enforced by RateLimitGuard
    * - Verified userId injected into request
    * - apiKeyId added to metadata
-   * - Usage recorded to ledger after success
+   * - Usage recorded to ledger after success (unless idempotent retry)
    *
    * Accepts AIExecutionRequest (userId will be replaced)
    * Returns AIExecutionResult on success
@@ -104,14 +111,21 @@ export class AIExecutionController {
    */
   @Post('execute')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(ApiKeyAuthGuard, AuthorizationGuard, ExecutionSafetyGuard, LaunchGuard, AbortGuard, QuotaGuard, TokenQuotaGuard, RateLimitGuard)
+  @UseGuards(ApiKeyAuthGuard, AuthorizationGuard, ExecutionSafetyGuard, LaunchGuard, AbortGuard, IdempotencyGuard, QuotaGuard, TokenQuotaGuard, RateLimitGuard)
   @RequireScope('ai:execute')
   @RateLimit({ maxRequests: 20, windowMs: 60000 })
   async execute(
     @Body() request: AIExecutionRequest,
     @AuthenticatedUser() identity: ApiKeyIdentity,
     @Headers('idempotency-key') idempotencyKey?: string,
+    @Req() req?: Request,
   ): Promise<AIExecutionResult> {
+    // Phase 43A-2C: Check for idempotent result (set by IdempotencyGuard)
+    // If present, return immediately without calling AI provider or writing ledger
+    if (req && (req as any).idempotentResult) {
+      return (req as any).idempotentResult as AIExecutionResult;
+    }
+
     // Phase 43A-2B: Validate and normalize idempotency key
     let requestId: string | undefined;
     if (idempotencyKey !== undefined) {

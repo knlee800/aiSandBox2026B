@@ -30,6 +30,7 @@ export interface CreateUsageRecordDto {
  *
  * Phase 22B: Usage Ledger Write Service
  * Phase 43A-2B: Idempotent write via requestId
+ * Phase 43A-2C: Idempotency lookup for retry short-circuit
  *
  * Responsibilities:
  * - Write immutable usage records to ledger
@@ -37,9 +38,10 @@ export interface CreateUsageRecordDto {
  * - Ensure write-before-response semantics
  * - Provide deterministic failure behavior
  * - Handle idempotent retries via requestId (Phase 43A-2B)
+ * - Lookup existing records for idempotency short-circuit (Phase 43A-2C)
  *
  * IMPORTANT:
- * - Write-only service (no read/query methods in Phase 22B)
+ * - Primarily write-only service (minimal read for idempotency only)
  * - Records written AFTER ai-service success
  * - Records written BEFORE client response
  * - Write failures cause request to fail (throw)
@@ -161,6 +163,30 @@ export class UsageLedgerService {
       error.code === '23505' ||
       (error.constraint && error.constraint.includes('idx_usage_records_user_request_id'))
     );
+  }
+
+  /**
+   * Find existing usage record by requestId
+   *
+   * Phase 43A-2C: Idempotency lookup for retry short-circuit
+   *
+   * @param userId - Verified user identifier
+   * @param requestId - Client-provided idempotency key
+   * @returns Promise<UsageRecord | null> - Existing record or null if not found
+   *
+   * Used by IdempotencyGuard to check if a request was already processed.
+   * Enables retry-safe behavior: same (userId, requestId) → same response.
+   */
+  async findByRequestId(
+    userId: string,
+    requestId: string,
+  ): Promise<UsageRecord | null> {
+    return this.usageRecordRepository.findOne({
+      where: {
+        userId,
+        requestId,
+      },
+    });
   }
 
   /**

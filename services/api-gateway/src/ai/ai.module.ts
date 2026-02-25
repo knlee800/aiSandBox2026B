@@ -7,6 +7,7 @@ import { UsageLedgerModule } from '../usage-ledger/usage-ledger.module';
 import { SafetyModule } from '../safety/safety.module';
 import { LaunchModule } from '../launch/launch.module';
 import { AbortModule } from '../abort/abort.module';
+import { IdempotencyGuard } from './idempotency.guard';
 
 /**
  * AIModule
@@ -18,10 +19,12 @@ import { AbortModule } from '../abort/abort.module';
  * Phase 26B: Production readiness (kill switches + safety limits)
  * Phase 28B-1: Launch state enforcement
  * Phase 28B-2: Abort mode enforcement
+ * Phase 43A-2C: Idempotency short-circuit BEFORE quota
  *
  * Provides:
- * - AIExecutionController (POST /api/ai/execute with auth, safety, launch state, abort mode, quota, and ledger)
+ * - AIExecutionController (POST /api/ai/execute with auth, safety, launch state, abort mode, idempotency, quota, and ledger)
  * - AIServiceHttpClient (HTTP client for ai-service)
+ * - IdempotencyGuard (Phase 43A-2C: retry-safe idempotency)
  */
 @Module({
   imports: [
@@ -33,7 +36,7 @@ import { AbortModule } from '../abort/abort.module';
     UsageLedgerModule, // Phase 22B: Usage ledger
   ],
   controllers: [AIExecutionController],
-  providers: [AIServiceHttpClient],
+  providers: [AIServiceHttpClient, IdempotencyGuard],
   exports: [AIServiceHttpClient],
 })
 export class AIModule {}
