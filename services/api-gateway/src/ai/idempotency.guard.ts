@@ -17,6 +17,7 @@ import { IdempotentReplayException } from './idempotent-replay.exception';
  * PHASE-43B-2C: Handle 'pending' status records (execution in progress)
  * PHASE-43B-2-HOTFIX: Throw IdempotentReplayException to bypass quota guards
  * PHASE-43B-3: Deterministic replay body persistence (read from metadata)
+ * PHASE-43B-4: Orphan Execution Cleanup & Reconciliation
  *
  * Ensures that retrying a completed AI execution with the same Idempotency-Key
  * returns the prior response WITHOUT consuming quota or calling the AI provider.
@@ -33,7 +34,8 @@ import { IdempotentReplayException } from './idempotent-replay.exception';
  *    b. Query usage_records for existing record: (user_id, request_id)
  *    c. If existing record found:
  *       - If status = 'completed': THROW IdempotentReplayException (short-circuit)
- *       - If status = 'pending': Return 409 Conflict (execution in progress)
+ *       - If status = 'pending' AND age > 5min: Transition to 'timeout', allow retry
+ *       - If status = 'pending' AND age <= 5min: Return 409 Conflict (execution in progress)
  *       - If status = 'timeout': Allow retry (original execution abandoned)
  *       - If status = 'failed': Allow retry (original execution failed)
  *    d. If no existing record:
@@ -41,7 +43,8 @@ import { IdempotentReplayException } from './idempotent-replay.exception';
  *
  * Deterministic Behavior:
  * - Same (userId, requestId) with status 'completed' → IdempotentReplayException → HTTP 200
- * - Same (userId, requestId) with status 'pending' → 409 Conflict
+ * - Same (userId, requestId) with status 'pending' (age > 5min) → transition to 'timeout', allow retry
+ * - Same (userId, requestId) with status 'pending' (age <= 5min) → 409 Conflict
  * - No quota consumed on replay (QuotaGuard/TokenQuotaGuard NOT invoked)
  * - No second ledger write on replay
  * - No AI provider call on replay
@@ -61,6 +64,12 @@ import { IdempotentReplayException } from './idempotent-replay.exception';
  *   model: <from usage_records>
  * }
  *
+ * Orphan Reconciliation (Phase 43B-4):
+ * - Orphan: execution_status='pending' AND age > 5 minutes
+ * - Lazy reconciliation: Detect orphan on retry, transition to 'timeout'
+ * - Allow retry with same request_id (unblock client)
+ * - No background workers (on-demand reconciliation only)
+ *
  * HOTFIX (Phase 43B-2):
  * - Throws IdempotentReplayException instead of attaching to request
  * - Exception terminates guard pipeline (QuotaGuard/TokenQuotaGuard NOT invoked)
@@ -72,6 +81,7 @@ import { IdempotentReplayException } from './idempotent-replay.exception';
  * - Phase 43B-2C: Handles 'pending' status (execution in progress)
  * - Phase 43B-2-HOTFIX: Throws exception to bypass quota guards
  * - Phase 43B-3: Reads full result from metadata for deterministic replay
+ * - Phase 43B-4: Detects and transitions orphaned 'pending' records
  * - Minimal/additive only (no refactors)
  */
 @Injectable()
@@ -131,14 +141,21 @@ export class IdempotencyGuard implements CanActivate {
       // Existing completed record found - reconstruct response and short-circuit
       
       // Phase 43B-3: Read full AIExecutionResult from metadata for deterministic replay
+      // Phase 43B-4: Safe type narrowing for metadata (unknown → typed structure)
+      const metadata = existingRecord.metadata as
+        | { aiExecutionResult?: { output: string; tokensUsed: number; model: string } }
+        | undefined;
+
+      const aiResult = metadata?.aiExecutionResult;
+
       let reconstructedResult: AIExecutionResult;
       
-      if (existingRecord.metadata?.aiExecutionResult) {
+      if (aiResult && typeof aiResult.output === 'string') {
         // Deterministic replay: return EXACT original response
         reconstructedResult = {
-          output: existingRecord.metadata.aiExecutionResult.output,
-          tokensUsed: existingRecord.metadata.aiExecutionResult.tokensUsed,
-          model: existingRecord.metadata.aiExecutionResult.model,
+          output: aiResult.output,
+          tokensUsed: aiResult.tokensUsed,
+          model: aiResult.model,
         };
       } else {
         // Fallback for records created before Phase 43B-3
@@ -155,22 +172,37 @@ export class IdempotencyGuard implements CanActivate {
       // from running. IdempotentReplayExceptionFilter catches this and returns HTTP 200.
       throw new IdempotentReplayException(reconstructedResult);
     } else if (status === 'pending') {
-      // Execution in progress - return 409 Conflict
-      // Client should retry later or poll for completion
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.CONFLICT,
-          message: 'Execution in progress',
-          error: 'Conflict',
-          details: {
-            executionId: existingRecord.executionId,
-            requestId: normalized,
-            status: 'pending',
-            hint: 'Another request with the same Idempotency-Key is currently being processed. Please retry in a few seconds.',
+      // Phase 43B-4: Check if execution is orphaned (abandoned/crashed)
+      const age = Date.now() - existingRecord.timestamp.getTime();
+      const ORPHAN_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
+
+      if (age > ORPHAN_TIMEOUT_MS) {
+        // Orphan detected: transition to 'timeout' and allow retry
+        await this.usageLedgerService.transitionOrphanToTimeout(
+          existingRecord.executionId,
+        );
+
+        // Allow retry (new execution with same request_id)
+        return true;
+      } else {
+        // Execution still in progress - return 409 Conflict
+        // Client should retry later or poll for completion
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.CONFLICT,
+            message: 'Execution in progress',
+            error: 'Conflict',
+            details: {
+              executionId: existingRecord.executionId,
+              requestId: normalized,
+              status: 'pending',
+              age: Math.floor(age / 1000), // age in seconds
+              hint: 'Another request with the same Idempotency-Key is currently being processed. Please retry in a few seconds.',
+            },
           },
-        },
-        HttpStatus.CONFLICT,
-      );
+          HttpStatus.CONFLICT,
+        );
+      }
     } else if (status === 'timeout' || status === 'failed') {
       // Original execution abandoned or failed - allow retry
       // Client can retry with same Idempotency-Key (will create new execution)

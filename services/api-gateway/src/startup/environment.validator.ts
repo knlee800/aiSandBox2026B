@@ -38,6 +38,12 @@ export class EnvironmentValidator {
       );
     }
 
+    // Phase 43B-4: Allow NODE_ENV=test ONLY during Jest execution
+    if (nodeEnv === 'test' && process.env.JEST_WORKER_ID) {
+      // Jest execution environment - treat as development for startup validation
+      return 'development' as ValidEnvironment;
+    }
+
     // Phase 27A Rule: NODE_ENV must be valid
     const validEnvironments: ValidEnvironment[] = [
       'development',

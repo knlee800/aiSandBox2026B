@@ -157,26 +157,70 @@ export class AIExecutionController {
     // api-gateway owns provider selection; ai-service MUST NOT guess
     const provider = (process.env.AI_PROVIDER || 'stub') as AIExecutionRequest['provider'];
 
-    // Phase 43B-2B: Generate execution ID (for two-phase write)
-    const executionId = uuidv4();
-
-    // Phase 43B-2B: Write execution intent BEFORE ai-service call
-    // This ensures we have a record even if network/DB fails after AI success
-    // Status: 'pending' (model, tokensUsed, executionDurationMs are NULL)
-    await this.usageLedgerService.writeExecutionIntent({
-      executionId,
-      apiKeyId: identity.apiKeyId,
-      userId: identity.userId,
-      sessionId: request.sessionId,
-      conversationId: request.conversationId,
-      provider,
-      adapter: provider, // Phase 28: Adapter matches provider
-      requestId, // Phase 43A-2B: Optional idempotency key
-      metadata: {
-        ...request.metadata,
-        apiKeyId: identity.apiKeyId, // INJECTED for audit
-      },
-    });
+    // Phase 43B-4 HOTFIX: Check if retry after timeout/failed
+    // If existing record is timeout/failed, reuse the row instead of inserting new
+    let executionId: string;
+    if (requestId) {
+      const existingRecord = await this.usageLedgerService.findByRequestId(
+        identity.userId,
+        requestId,
+      );
+      
+      if (
+        existingRecord &&
+        (existingRecord.executionStatus === 'timeout' ||
+          existingRecord.executionStatus === 'failed')
+      ) {
+        // Reuse existing row (UPDATE, not INSERT) to avoid UNIQUE constraint violation
+        executionId = await this.usageLedgerService.reuseExecutionIntent({
+          requestId,
+          userId: identity.userId,
+          apiKeyId: identity.apiKeyId,
+          sessionId: request.sessionId,
+          conversationId: request.conversationId,
+          provider,
+          adapter: provider,
+          metadata: {
+            ...request.metadata,
+            apiKeyId: identity.apiKeyId, // INJECTED for audit
+          },
+        });
+      } else {
+        // Normal flow: create new execution intent
+        executionId = uuidv4();
+        await this.usageLedgerService.writeExecutionIntent({
+          executionId,
+          apiKeyId: identity.apiKeyId,
+          userId: identity.userId,
+          sessionId: request.sessionId,
+          conversationId: request.conversationId,
+          provider,
+          adapter: provider,
+          requestId,
+          metadata: {
+            ...request.metadata,
+            apiKeyId: identity.apiKeyId, // INJECTED for audit
+          },
+        });
+      }
+    } else {
+      // No requestId: normal flow
+      executionId = uuidv4();
+      await this.usageLedgerService.writeExecutionIntent({
+        executionId,
+        apiKeyId: identity.apiKeyId,
+        userId: identity.userId,
+        sessionId: request.sessionId,
+        conversationId: request.conversationId,
+        provider,
+        adapter: provider,
+        requestId,
+        metadata: {
+          ...request.metadata,
+          apiKeyId: identity.apiKeyId, // INJECTED for audit
+        },
+      });
+    }
 
     // Phase 20A: Replace untrusted userId with verified userId
     const verifiedRequest: AIExecutionRequest = {

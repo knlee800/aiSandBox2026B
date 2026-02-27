@@ -378,6 +378,147 @@ export class UsageLedgerService {
   }
 
   /**
+   * Transition orphaned 'pending' execution to 'timeout'
+   *
+   * Phase 43B-4: Orphan Execution Cleanup & Reconciliation
+   *
+   * @param executionId - UUID of the orphaned execution
+   * @returns Promise<void>
+   * @throws Error if update fails
+   *
+   * Semantics:
+   * - Updates execution_status from 'pending' to 'timeout'
+   * - Does NOT change tokens_used (remains NULL)
+   * - Does NOT change model, executionDurationMs (remain NULL)
+   * - Idempotent: If already 'timeout', no-op
+   * - Deterministic: Same executionId → same outcome
+   *
+   * Purpose:
+   * - Mark abandoned executions as 'timeout' (crashed/timed out)
+   * - Allow retry with same request_id (unblock client)
+   * - Preserve audit trail (no deletions)
+   */
+  async transitionOrphanToTimeout(executionId: string): Promise<void> {
+    const result = await this.usageRecordRepository.update(
+      { executionId, executionStatus: 'pending' },
+      { executionStatus: 'timeout' },
+    );
+
+    if (result.affected === 0) {
+      // Already transitioned (idempotent) or not found
+      this.logger.warn(
+        `Orphan transition failed: executionId=${executionId} (already transitioned or not found)`,
+      );
+    } else {
+      this.logger.log(
+        `Orphan transitioned to timeout: executionId=${executionId}`,
+      );
+    }
+  }
+
+  /**
+   * Reuse existing execution row for retry after timeout/failed
+   *
+   * Phase 43B-4 HOTFIX: Reuse Execution Row on Retry After Timeout
+   *
+   * @param params - Execution intent data for retry
+   * @returns Promise<string> - New executionId for the retry
+   * @throws Error if existing record not found or not in retryable state
+   *
+   * Semantics:
+   * - Find existing row by (userId, requestId)
+   * - Ensure status is 'timeout' or 'failed' (retryable states)
+   * - Generate new executionId
+   * - UPDATE row (not INSERT) to avoid UNIQUE constraint violation
+   * - Reset execution result fields (model, tokensUsed, executionDurationMs)
+   * - Clear aiExecutionResult from metadata
+   * - Set status back to 'pending'
+   * - Update timestamp to NOW()
+   * - Return new executionId for controller to use
+   *
+   * Purpose:
+   * - Enable retry after orphan timeout without UNIQUE constraint violation
+   * - Reuse existing row instead of creating duplicate
+   * - Preserve audit trail (no deletions)
+   * - Allow normal two-phase update flow to proceed
+   */
+  async reuseExecutionIntent(params: {
+    requestId: string;
+    userId: string;
+    apiKeyId: string;
+    sessionId: string;
+    conversationId: string;
+    provider: string;
+    adapter: string;
+    metadata?: any;
+  }): Promise<string> {
+    // Find existing row by (userId, requestId)
+    const existingRecord = await this.usageRecordRepository.findOne({
+      where: {
+        userId: params.userId,
+        requestId: params.requestId,
+      },
+    });
+
+    if (!existingRecord) {
+      throw new Error(
+        `Cannot reuse execution intent: no existing record found for userId=${params.userId}, requestId=${params.requestId}`,
+      );
+    }
+
+    // Ensure status is retryable (timeout or failed)
+    if (
+      existingRecord.executionStatus !== 'timeout' &&
+      existingRecord.executionStatus !== 'failed'
+    ) {
+      throw new Error(
+        `Cannot reuse execution intent: existing record has non-retryable status=${existingRecord.executionStatus}`,
+      );
+    }
+
+    // Generate new executionId for retry
+    const newExecutionId = uuidv4();
+
+    // Strip aiExecutionResult from metadata (if present)
+    const cleanMetadata = params.metadata ? { ...params.metadata } : {};
+    if (cleanMetadata.aiExecutionResult) {
+      delete cleanMetadata.aiExecutionResult;
+    }
+
+    // Update existing row (not INSERT) using old executionId as WHERE clause
+    const previousStatus = existingRecord.executionStatus;
+    const oldExecutionId = existingRecord.executionId;
+    
+    await this.usageRecordRepository.update(
+      { executionId: oldExecutionId }, // Use old executionId to find the row
+      {
+        executionId: newExecutionId, // Update to new executionId
+        executionStatus: 'pending',
+        timestamp: new Date(),
+        apiKeyId: params.apiKeyId,
+        sessionId: params.sessionId,
+        conversationId: params.conversationId,
+        provider: params.provider,
+        adapter: params.adapter,
+        metadata: cleanMetadata,
+        // Clear execution result fields
+        model: null,
+        tokensUsed: null,
+        executionDurationMs: null,
+      },
+    );
+
+    this.logger.log(
+      `Execution intent reused: oldExecutionId=${oldExecutionId}, ` +
+        `newExecutionId=${newExecutionId}, ` +
+        `userId=${params.userId}, requestId=${params.requestId}, ` +
+        `previousStatus=${previousStatus}`,
+    );
+
+    return newExecutionId;
+  }
+
+  /**
    * Find existing usage record by requestId
    *
    * Phase 43A-2C: Idempotency lookup for retry short-circuit
