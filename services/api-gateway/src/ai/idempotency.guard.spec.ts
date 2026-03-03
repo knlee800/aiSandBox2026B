@@ -1,5 +1,6 @@
 import { ExecutionContext, HttpException, HttpStatus } from '@nestjs/common';
 import { IdempotencyGuard } from './idempotency.guard';
+import { IdempotentReplayException } from './idempotent-replay.exception';
 import { UsageLedgerService } from '../usage-ledger/usage-ledger.service';
 import { UsageRecord } from '../entities/usage-record.entity';
 import { ApiKeyIdentity } from '../auth/api-key.config';
@@ -150,6 +151,7 @@ describe('IdempotencyGuard (Phase 43A-2C)', () => {
         model: 'claude-3-5-sonnet-20241022',
         tokensUsed: 500,
         executionDurationMs: 1000,
+        executionStatus: 'completed',
         timestamp: new Date(),
       };
 
@@ -164,20 +166,8 @@ describe('IdempotencyGuard (Phase 43A-2C)', () => {
 
       usageLedgerService.findByRequestId.mockResolvedValue(existingRecord);
 
-      const result = await guard.canActivate(context);
-
-      expect(result).toBe(true);
-      expect(usageLedgerService.findByRequestId).toHaveBeenCalledWith(
-        'user-123',
-        'req-duplicate-123',
-      );
-
-      const request = context.switchToHttp().getRequest();
-      expect((request as any).idempotentResult).toEqual({
-        output: '[Duplicate request - original response not stored]',
-        tokensUsed: 500,
-        model: 'claude-3-5-sonnet-20241022',
-      });
+      await expect(guard.canActivate(context))
+        .rejects.toThrow(IdempotentReplayException);
     });
 
     it('should trim whitespace from Idempotency-Key before lookup', async () => {

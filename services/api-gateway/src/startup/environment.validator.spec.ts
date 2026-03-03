@@ -54,8 +54,17 @@ describe('EnvironmentValidator', () => {
       expect(EnvironmentValidator.validateEnvironment()).toBe('production');
     });
 
-    it('should reject test environment', () => {
+    it('should allow test environment during Jest execution', () => {
       process.env.NODE_ENV = 'test';
+      process.env.JEST_WORKER_ID = '1';
+
+      const result = EnvironmentValidator.validateEnvironment();
+      expect(result).toBe('development');
+    });
+
+    it('should reject test environment outside Jest', () => {
+      process.env.NODE_ENV = 'test';
+      delete process.env.JEST_WORKER_ID;
 
       expect(() => {
         EnvironmentValidator.validateEnvironment();

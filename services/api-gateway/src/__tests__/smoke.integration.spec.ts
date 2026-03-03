@@ -89,21 +89,21 @@ describe('Release Candidate Smoke Pack (Phase 33A)', () => {
         SELECT table_name 
         FROM information_schema.tables 
         WHERE table_schema = 'public' 
-        AND table_name IN ('api_keys', 'usage_ledger', 'billing_snapshots', 'quota_state')
+        AND table_name IN ('api_keys', 'usage_records', 'billing_snapshots', 'quota_state')
         ORDER BY table_name
       `);
 
       const tableNames = tables.map((t: any) => t.table_name);
       expect(tableNames).toContain('api_keys');
-      expect(tableNames).toContain('usage_ledger');
+      expect(tableNames).toContain('usage_records');
       expect(tableNames).toContain('billing_snapshots');
       expect(tableNames).toContain('quota_state');
     });
   });
 
   describe('Health & Readiness Layer', () => {
-    it('GET /health should return ok', async () => {
-      const response = await request(app.getHttpServer()).get('/health');
+    it('GET /api/health should return ok', async () => {
+      const response = await request(app.getHttpServer()).get('/api/health');
 
       expect(response.status).toBe(200);
       expect(response.body).toMatchObject({
@@ -114,8 +114,8 @@ describe('Release Candidate Smoke Pack (Phase 33A)', () => {
       expect(response.body.timestamp).toBeDefined();
     });
 
-    it('GET /health/db should return connected', async () => {
-      const response = await request(app.getHttpServer()).get('/health/db');
+    it('GET /api/health/db should return connected', async () => {
+      const response = await request(app.getHttpServer()).get('/api/health/db');
 
       expect(response.status).toBe(200);
       expect(response.body).toMatchObject({
@@ -125,8 +125,8 @@ describe('Release Candidate Smoke Pack (Phase 33A)', () => {
       expect(response.body.timestamp).toBeDefined();
     });
 
-    it('GET /health/ready should validate startup guards', async () => {
-      const response = await request(app.getHttpServer()).get('/health/ready');
+    it('GET /api/health/ready should validate startup guards', async () => {
+      const response = await request(app.getHttpServer()).get('/api/health/ready');
 
       expect(response.status).toBe(200);
       expect(response.body).toMatchObject({
@@ -168,7 +168,7 @@ describe('Release Candidate Smoke Pack (Phase 33A)', () => {
       expect(response.status).toBe(401);
     });
 
-    it('POST /api/ai/execute should reject invalid API key (401)', async () => {
+    it('POST /api/ai/execute should reject invalid API key (403)', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/ai/execute')
         .set('Authorization', 'Bearer invalid-key')
@@ -179,7 +179,7 @@ describe('Release Candidate Smoke Pack (Phase 33A)', () => {
           prompt: 'What is 2+2?',
         });
 
-      expect(response.status).toBe(401);
+      expect(response.status).toBe(403);
     });
   });
 
@@ -236,7 +236,7 @@ describe('Release Candidate Smoke Pack (Phase 33A)', () => {
         expect(snapshot).toHaveProperty('apiKeyId');
         expect(snapshot).toHaveProperty('periodStart');
         expect(snapshot).toHaveProperty('periodEnd');
-        expect(snapshot).toHaveProperty('totalCost');
+        expect(snapshot).toHaveProperty('totalCostUSD');
         expect(snapshot).toHaveProperty('totalTokens');
       }
     });
@@ -261,19 +261,19 @@ describe('Release Candidate Smoke Pack (Phase 33A)', () => {
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('periodStart');
       expect(response.body).toHaveProperty('periodEnd');
-      expect(response.body).toHaveProperty('totalCost');
+      expect(response.body).toHaveProperty('totalCostUSD');
       expect(response.body).toHaveProperty('totalTokens');
       expect(response.body).toHaveProperty('snapshotCount');
-      expect(response.body).toHaveProperty('providers');
+      expect(response.body).toHaveProperty('byProvider');
 
       // Validate types
-      expect(typeof response.body.totalCost).toBe('number');
+      expect(typeof response.body.totalCostUSD).toBe('number');
       expect(typeof response.body.totalTokens).toBe('number');
       expect(typeof response.body.snapshotCount).toBe('number');
-      expect(typeof response.body.providers).toBe('object');
+      expect(typeof response.body.byProvider).toBe('object');
 
       // Zero values are valid if no usage in time window
-      expect(response.body.totalCost).toBeGreaterThanOrEqual(0);
+      expect(response.body.totalCostUSD).toBeGreaterThanOrEqual(0);
       expect(response.body.totalTokens).toBeGreaterThanOrEqual(0);
       expect(response.body.snapshotCount).toBeGreaterThanOrEqual(0);
     });
@@ -296,8 +296,8 @@ describe('Release Candidate Smoke Pack (Phase 33A)', () => {
       const startTime = Date.now();
 
       // Run minimal validation sequence
-      await request(app.getHttpServer()).get('/health');
-      await request(app.getHttpServer()).get('/health/ready');
+      await request(app.getHttpServer()).get('/api/health');
+      await request(app.getHttpServer()).get('/api/health/ready');
       await request(app.getHttpServer())
         .post('/api/ai/execute')
         .set('Authorization', `Bearer ${API_KEY}`)

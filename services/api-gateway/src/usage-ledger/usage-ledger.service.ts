@@ -136,12 +136,17 @@ export class UsageLedgerService {
       // Write to database (synchronous, no retries)
       const savedRecord = await this.usageRecordRepository.save(record);
 
-      // Log success (no sensitive data)
-      this.logger.log(
-        `Execution intent written: executionId=${dto.executionId}, ` +
-          `apiKeyId=${dto.apiKeyId}, status=pending` +
-          (dto.requestId ? `, requestId=${dto.requestId}` : ''),
-      );
+      // PHASE-43C-1: Structured JSON log — execution.intent_written
+      this.logger.log(JSON.stringify({
+        event: 'execution.intent_written',
+        timestamp: new Date().toISOString(),
+        userId: dto.userId,
+        apiKeyId: dto.apiKeyId,
+        requestId: dto.requestId ?? null,
+        executionId: dto.executionId,
+        status: 'pending',
+        flow: 'new',
+      }));
 
       return savedRecord;
     } catch (error) {
@@ -244,19 +249,29 @@ export class UsageLedgerService {
       // Save updated record
       const updatedRecord = await this.usageRecordRepository.save(record);
 
-      // Log success (no sensitive data)
-      this.logger.log(
-        `Execution result recorded: executionId=${dto.executionId}, ` +
-          `model=${dto.model}, tokens=${dto.tokensUsed}, status=${dto.executionStatus}`,
-      );
+      // PHASE-43C-1: Structured JSON log — execution.result_updated
+      this.logger.log(JSON.stringify({
+        event: 'execution.result_updated',
+        timestamp: new Date().toISOString(),
+        userId: record.userId,
+        apiKeyId: record.apiKeyId,
+        requestId: record.requestId ?? null,
+        executionId: dto.executionId,
+        model: dto.model,
+        tokensUsed: dto.tokensUsed,
+        status: dto.executionStatus,
+      }));
 
       return updatedRecord;
     } catch (error) {
-      // Log failure (no sensitive data)
-      this.logger.error(
-        `Failed to update execution result: executionId=${dto.executionId}, ` +
-          `error=${error.message}`,
-      );
+      // PHASE-43C-1: Structured JSON log — execution.result_update_failed
+      this.logger.error(JSON.stringify({
+        event: 'execution.result_update_failed',
+        timestamp: new Date().toISOString(),
+        executionId: dto.executionId,
+        errorClass: error?.constructor?.name ?? 'Error',
+        errorMessage: error?.message ?? String(error),
+      }));
 
       // Rethrow to propagate failure to caller
       throw error;
@@ -406,13 +421,19 @@ export class UsageLedgerService {
 
     if (result.affected === 0) {
       // Already transitioned (idempotent) or not found
-      this.logger.warn(
-        `Orphan transition failed: executionId=${executionId} (already transitioned or not found)`,
-      );
+      // PHASE-43C-1: Structured JSON log — idempotency.orphan_transition_noop
+      this.logger.warn(JSON.stringify({
+        event: 'idempotency.orphan_transition_noop',
+        timestamp: new Date().toISOString(),
+        executionId: executionId,
+      }));
     } else {
-      this.logger.log(
-        `Orphan transitioned to timeout: executionId=${executionId}`,
-      );
+      // PHASE-43C-1: Structured JSON log — idempotency.orphan_transitioned
+      this.logger.log(JSON.stringify({
+        event: 'idempotency.orphan_transitioned',
+        timestamp: new Date().toISOString(),
+        executionId: executionId,
+      }));
     }
   }
 
@@ -508,12 +529,18 @@ export class UsageLedgerService {
       },
     );
 
-    this.logger.log(
-      `Execution intent reused: oldExecutionId=${oldExecutionId}, ` +
-        `newExecutionId=${newExecutionId}, ` +
-        `userId=${params.userId}, requestId=${params.requestId}, ` +
-        `previousStatus=${previousStatus}`,
-    );
+    // PHASE-43C-1: Structured JSON log — execution.intent_reused
+    this.logger.log(JSON.stringify({
+      event: 'execution.intent_reused',
+      timestamp: new Date().toISOString(),
+      userId: params.userId,
+      apiKeyId: params.apiKeyId,
+      requestId: params.requestId,
+      oldExecutionId: oldExecutionId,
+      executionId: newExecutionId,
+      previousStatus: previousStatus,
+      flow: 'reuse',
+    }));
 
     return newExecutionId;
   }

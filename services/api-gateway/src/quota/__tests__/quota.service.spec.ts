@@ -6,7 +6,19 @@ describe('QuotaService', () => {
   let originalDateNow: () => number;
 
   beforeEach(() => {
-    quotaService = new QuotaService();
+    const mockSessionRepository = {
+      findOne: jest.fn(),
+      save: jest.fn(),
+      update: jest.fn(),
+    };
+
+    const mockUsageRecordRepository = {
+      findOne: jest.fn(),
+      save: jest.fn(),
+      update: jest.fn(),
+    };
+
+    quotaService = new QuotaService(mockSessionRepository as any, mockUsageRecordRepository as any);
     // Save original Date.now
     originalDateNow = Date.now;
   });

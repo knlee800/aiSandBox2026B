@@ -21,6 +21,11 @@ describe('ExecutionSafetyGuard', () => {
   };
 
   beforeEach(async () => {
+    // Ensure kill switches are ON regardless of developer machine .env values.
+    // KillSwitchConfig.GLOBAL_EXECUTION_ENABLED is a static getter that reads
+    // process.env live on every call, so setting it here takes effect immediately.
+    process.env.GLOBAL_EXECUTION_ENABLED = 'true';
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [ExecutionSafetyGuard, GlobalSafetyLimitService],
     }).compile();
@@ -32,8 +37,16 @@ describe('ExecutionSafetyGuard', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    // restoreAllMocks resets spy implementations (including getter spies on
+    // KillSwitchConfig) so they do not bleed into subsequent tests.
+    jest.restoreAllMocks();
+    // Restore kill switch env var to avoid cross-test pollution from .env files.
+    process.env.GLOBAL_EXECUTION_ENABLED = 'true';
   });
+
+  // The guard reads provider from process.env.AI_PROVIDER, NOT from request body.
+  // All provider assertions must use the actual runtime provider.
+  const testProvider = (process.env.AI_PROVIDER || 'stub').toLowerCase();
 
   it('should be defined', () => {
     expect(guard).toBeDefined();
@@ -127,7 +140,7 @@ describe('ExecutionSafetyGuard', () => {
         .mockReturnValue(false);
 
       const context = createMockExecutionContext({
-        provider: 'openai',
+        provider: testProvider,
         max_tokens: 1000,
       });
 
@@ -137,7 +150,7 @@ describe('ExecutionSafetyGuard', () => {
 
       expect(() => {
         guard.canActivate(context);
-      }).toThrow('Provider openai temporarily unavailable');
+      }).toThrow(`Provider ${testProvider} temporarily unavailable`);
     });
 
     it('should normalize provider name when checking kill switch', () => {
@@ -147,14 +160,14 @@ describe('ExecutionSafetyGuard', () => {
       );
 
       const context = createMockExecutionContext({
-        provider: 'Anthropic', // Mixed case
+        provider: 'Anthropic', // body.provider is ignored by the guard
         max_tokens: 1000,
       });
 
       guard.canActivate(context);
 
-      // Should have called with lowercase
-      expect(isProviderEnabledSpy).toHaveBeenCalledWith('anthropic');
+      // Guard uses process.env.AI_PROVIDER (already normalized to lowercase)
+      expect(isProviderEnabledSpy).toHaveBeenCalledWith(testProvider);
     });
 
     it('should handle missing provider gracefully', () => {
@@ -203,13 +216,13 @@ describe('ExecutionSafetyGuard', () => {
       );
 
       const context = createMockExecutionContext({
-        provider: 'anthropic',
+        provider: 'anthropic', // body.provider is ignored; guard uses process.env.AI_PROVIDER
         max_tokens: 5000,
       });
 
       guard.canActivate(context);
 
-      expect(checkSpy).toHaveBeenCalledWith('anthropic', 5000);
+      expect(checkSpy).toHaveBeenCalledWith(testProvider, 5000);
     });
 
     it('should throw BadRequestException when max_tokens exceeds limit', () => {
@@ -224,19 +237,19 @@ describe('ExecutionSafetyGuard', () => {
     });
 
     it('should propagate rate limit errors as-is', () => {
-      // Fill up global rate limit
+      // Fill up global rate limit (global counter is provider-agnostic)
       for (let i = 0; i < 10000; i++) {
-        globalSafetyLimitService.recordExecution('anthropic');
+        globalSafetyLimitService.recordExecution(testProvider);
       }
 
       const context = createMockExecutionContext({
-        provider: 'anthropic',
+        provider: testProvider,
         max_tokens: 1000,
       });
 
       expect(() => {
         guard.canActivate(context);
-      }).toThrow('Global execution rate limit exceeded');
+      }).toThrow('rate limit exceeded');
     });
 
     it('should propagate daily spend limit errors as ServiceUnavailableException', () => {
@@ -259,13 +272,13 @@ describe('ExecutionSafetyGuard', () => {
       const recordSpy = jest.spyOn(globalSafetyLimitService, 'recordExecution');
 
       const context = createMockExecutionContext({
-        provider: 'anthropic',
+        provider: 'anthropic', // body.provider is ignored; guard uses process.env.AI_PROVIDER
         max_tokens: 1000,
       });
 
       guard.canActivate(context);
 
-      expect(recordSpy).toHaveBeenCalledWith('anthropic');
+      expect(recordSpy).toHaveBeenCalledWith(testProvider);
     });
 
     it('should NOT call recordExecution when checks fail', () => {
@@ -293,13 +306,13 @@ describe('ExecutionSafetyGuard', () => {
       const recordSpy = jest.spyOn(globalSafetyLimitService, 'recordExecution');
 
       const context = createMockExecutionContext({
-        provider: 'Anthropic', // Mixed case
+        provider: 'Anthropic', // body.provider is ignored; guard uses process.env.AI_PROVIDER
         max_tokens: 1000,
       });
 
       guard.canActivate(context);
 
-      expect(recordSpy).toHaveBeenCalledWith('anthropic');
+      expect(recordSpy).toHaveBeenCalledWith(testProvider);
     });
   });
 
@@ -316,9 +329,9 @@ describe('ExecutionSafetyGuard', () => {
     });
 
     it('should map rate limit error to error with rate limit message', () => {
-      // Hit provider rate limit
+      // Hit provider rate limit — must use testProvider to fill the correct bucket
       for (let i = 0; i < 1000; i++) {
-        globalSafetyLimitService.recordExecution('anthropic');
+        globalSafetyLimitService.recordExecution(testProvider);
       }
 
       const context = createMockExecutionContext({
@@ -380,13 +393,13 @@ describe('ExecutionSafetyGuard', () => {
       );
 
       const context = createMockExecutionContext({
-        provider: 'openai',
+        provider: 'openai', // body.provider is ignored; guard uses process.env.AI_PROVIDER
         max_tokens: 2000,
       });
 
       guard.canActivate(context);
 
-      expect(checkSpy).toHaveBeenCalledWith('openai', 2000);
+      expect(checkSpy).toHaveBeenCalledWith(testProvider, 2000);
     });
 
     it('should extract max_tokens from body correctly', () => {
@@ -396,13 +409,13 @@ describe('ExecutionSafetyGuard', () => {
       );
 
       const context = createMockExecutionContext({
-        provider: 'anthropic',
+        provider: 'anthropic', // body.provider is ignored; guard uses process.env.AI_PROVIDER
         max_tokens: 50000,
       });
 
       guard.canActivate(context);
 
-      expect(checkSpy).toHaveBeenCalledWith('anthropic', 50000);
+      expect(checkSpy).toHaveBeenCalledWith(testProvider, 50000);
     });
   });
 

@@ -5,6 +5,7 @@ import { ApiKeyIdentity } from '../auth/api-key.config';
 import { ApiKeyAuthGuard } from '../auth/api-key-auth.guard';
 import { AuthorizationGuard } from '../auth/authorization.guard';
 import { QuotaGuard } from '../quota/quota.guard';
+import { TokenQuotaGuard } from '../quota/token-quota.guard';
 import { UsageLedgerService } from '../usage-ledger/usage-ledger.service';
 import { GlobalSafetyLimitService } from '../safety/global-safety-limit.service';
 
@@ -21,8 +22,10 @@ describe('AIExecutionController (Phase 18A + Phase 20A + Phase 20B + Phase 21B +
 
     // Create mock usage ledger service
     const mockUsageLedgerService = {
-      writeRecord: jest.fn().mockResolvedValue({}),
-      validateUsageRecord: jest.fn(),
+      findByRequestId: jest.fn().mockResolvedValue(null),
+      reuseExecutionIntent: jest.fn().mockResolvedValue('execution-id'),
+      writeExecutionIntent: jest.fn().mockResolvedValue(undefined),
+      updateExecutionResult: jest.fn().mockResolvedValue(undefined),
     };
 
     // Create mock global safety limit service
@@ -58,6 +61,8 @@ describe('AIExecutionController (Phase 18A + Phase 20A + Phase 20B + Phase 21B +
       .overrideGuard(AuthorizationGuard)
       .useValue(mockGuard)
       .overrideGuard(QuotaGuard)
+      .useValue(mockGuard)
+      .overrideGuard(TokenQuotaGuard)
       .useValue(mockGuard)
       .compile();
 

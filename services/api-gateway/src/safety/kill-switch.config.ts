@@ -11,9 +11,12 @@ export class KillSwitchConfig {
   /**
    * Global execution kill switch
    * When false: All AI execution requests return 503
+   *
+   * Implemented as a static getter so jest.spyOn(..., 'get') works in tests.
    */
-  static readonly GLOBAL_EXECUTION_ENABLED =
-    process.env.GLOBAL_EXECUTION_ENABLED !== 'false'; // Default: true
+  static get GLOBAL_EXECUTION_ENABLED(): boolean {
+    return process.env.GLOBAL_EXECUTION_ENABLED !== 'false'; // Default: true
+  }
 
   /**
    * Provider-specific kill switches

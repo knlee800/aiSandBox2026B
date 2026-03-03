@@ -8,6 +8,7 @@ import {
   Headers,
   BadRequestException,
   Req,
+  Logger,
 } from '@nestjs/common';
 import { Request } from 'express';
 import {
@@ -65,6 +66,8 @@ import { v4 as uuidv4 } from 'uuid';
  */
 @Controller('ai')
 export class AIExecutionController {
+  private readonly logger = new Logger(AIExecutionController.name);
+
   constructor(
     private readonly aiServiceHttpClient: AIServiceHttpClient,
     private readonly usageLedgerService: UsageLedgerService,
@@ -160,6 +163,7 @@ export class AIExecutionController {
     // Phase 43B-4 HOTFIX: Check if retry after timeout/failed
     // If existing record is timeout/failed, reuse the row instead of inserting new
     let executionId: string;
+    let flow: 'new' | 'reuse'; // PHASE-43C-1: track intent flow for telemetry
     if (requestId) {
       const existingRecord = await this.usageLedgerService.findByRequestId(
         identity.userId,
@@ -185,6 +189,7 @@ export class AIExecutionController {
             apiKeyId: identity.apiKeyId, // INJECTED for audit
           },
         });
+        flow = 'reuse';
       } else {
         // Normal flow: create new execution intent
         executionId = uuidv4();
@@ -202,6 +207,7 @@ export class AIExecutionController {
             apiKeyId: identity.apiKeyId, // INJECTED for audit
           },
         });
+        flow = 'new';
       }
     } else {
       // No requestId: normal flow
@@ -220,7 +226,21 @@ export class AIExecutionController {
           apiKeyId: identity.apiKeyId, // INJECTED for audit
         },
       });
+      flow = 'new';
     }
+
+    // PHASE-43C-1: Emit execution.intent_written after intent record is established
+    this.logger.log(JSON.stringify({
+      event: 'execution.intent_written',
+      timestamp: new Date().toISOString(),
+      userId: identity.userId,
+      apiKeyId: identity.apiKeyId,
+      requestId: requestId ?? null,
+      executionId,
+      status: 'pending',
+      flow,
+      provider,
+    }));
 
     // Phase 20A: Replace untrusted userId with verified userId
     const verifiedRequest: AIExecutionRequest = {
@@ -235,24 +255,85 @@ export class AIExecutionController {
 
     // Forward to ai-service with verified identity
     // If this fails, execution intent remains 'pending' (will be cleaned up by cron)
-    const result = await this.aiServiceHttpClient.execute(verifiedRequest);
+    // PHASE-43C-1: Minimal try/catch/rethrow — log ai_failure event + rethrow (zero semantic change)
+    let result: AIExecutionResult;
+    try {
+      result = await this.aiServiceHttpClient.execute(verifiedRequest);
+    } catch (err: unknown) {
+      const e = err as Error;
+      this.logger.error(JSON.stringify({
+        event: 'execution.ai_failure',
+        timestamp: new Date().toISOString(),
+        userId: identity.userId,
+        apiKeyId: identity.apiKeyId,
+        requestId: requestId ?? null,
+        executionId,
+        errorClass: e?.constructor?.name ?? 'Error',
+        errorMessage: e?.message ?? String(err),
+      }));
+      throw err;
+    }
 
     // Phase 22B: Calculate execution duration
     const executionDurationMs = Date.now() - startTime;
+
+    // PHASE-43C-1: Emit execution.ai_success after AI provider returns successfully
+    this.logger.log(JSON.stringify({
+      event: 'execution.ai_success',
+      timestamp: new Date().toISOString(),
+      userId: identity.userId,
+      apiKeyId: identity.apiKeyId,
+      requestId: requestId ?? null,
+      executionId,
+      provider,
+      model: result.model,
+      tokensUsed: result.tokensUsed,
+      durationMs: executionDurationMs,
+    }));
 
     // Phase 43B-2C: Update execution record with result (status: 'completed')
     // Phase 43B-3: Store full AIExecutionResult in metadata for deterministic replay
     // This transitions from 'pending' → 'completed'
     // If this fails, execution intent remains 'pending' but AI execution succeeded
     // (CRITICAL: This is the failure mode we're protecting against)
-    await this.usageLedgerService.updateExecutionResult({
+    // PHASE-43C-1: Minimal try/catch/rethrow — log result_update_failed event + rethrow (zero semantic change)
+    try {
+      await this.usageLedgerService.updateExecutionResult({
+        executionId,
+        model: result.model,
+        tokensUsed: result.tokensUsed,
+        executionDurationMs,
+        executionStatus: 'completed',
+        output: result.output, // Phase 43B-3: Store output for deterministic replay
+      });
+    } catch (err: unknown) {
+      const e = err as Error;
+      this.logger.error(JSON.stringify({
+        event: 'execution.result_update_failed',
+        timestamp: new Date().toISOString(),
+        userId: identity.userId,
+        apiKeyId: identity.apiKeyId,
+        requestId: requestId ?? null,
+        executionId,
+        errorClass: e?.constructor?.name ?? 'Error',
+        errorMessage: e?.message ?? String(err),
+      }));
+      throw err;
+    }
+
+    // PHASE-43C-1: Emit execution.result_updated after ledger write succeeds
+    this.logger.log(JSON.stringify({
+      event: 'execution.result_updated',
+      timestamp: new Date().toISOString(),
+      userId: identity.userId,
+      apiKeyId: identity.apiKeyId,
+      requestId: requestId ?? null,
       executionId,
+      status: 'completed',
       model: result.model,
       tokensUsed: result.tokensUsed,
-      executionDurationMs,
-      executionStatus: 'completed',
-      output: result.output, // Phase 43B-3: Store output for deterministic replay
-    });
+      durationMs: executionDurationMs,
+    }));
 
     // Phase 26B: Track execution cost for daily spend limit
     // Conservative estimate: $0.01 per 1000 tokens (matches billing pricing)

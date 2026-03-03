@@ -4,6 +4,7 @@ import {
   ExecutionContext,
   HttpException,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import { UsageLedgerService } from '../usage-ledger/usage-ledger.service';
 import { ApiKeyIdentity } from '../auth/api-key.config';
@@ -86,6 +87,8 @@ import { IdempotentReplayException } from './idempotent-replay.exception';
  */
 @Injectable()
 export class IdempotencyGuard implements CanActivate {
+  private readonly logger = new Logger(IdempotencyGuard.name);
+
   constructor(private readonly usageLedgerService: UsageLedgerService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -167,6 +170,19 @@ export class IdempotencyGuard implements CanActivate {
         };
       }
 
+      // PHASE-43C-1: Emit idempotency.replay before short-circuit throw
+      this.logger.log(JSON.stringify({
+        event: 'idempotency.replay',
+        timestamp: new Date().toISOString(),
+        userId: identity.userId,
+        apiKeyId: identity.apiKeyId,
+        requestId: normalized,
+        executionId: existingRecord.executionId,
+        status: 'completed',
+        outcome: (aiResult && typeof aiResult.output === 'string') ? 'cache_hit' : 'fallback_placeholder',
+        quota_bypassed: true,
+      }));
+
       // HOTFIX (Phase 43B-2): Throw IdempotentReplayException to bypass quota guards
       // This terminates the guard pipeline immediately, preventing QuotaGuard/TokenQuotaGuard
       // from running. IdempotentReplayExceptionFilter catches this and returns HTTP 200.
@@ -182,11 +198,35 @@ export class IdempotencyGuard implements CanActivate {
           existingRecord.executionId,
         );
 
+        // PHASE-43C-1: Emit idempotency.orphan_transitioned after transition
+        this.logger.log(JSON.stringify({
+          event: 'idempotency.orphan_transitioned',
+          timestamp: new Date().toISOString(),
+          userId: identity.userId,
+          apiKeyId: identity.apiKeyId,
+          requestId: normalized,
+          executionId: existingRecord.executionId,
+          pendingAgeMs: age,
+          priorStatus: 'pending',
+        }));
+
         // Allow retry (new execution with same request_id)
         return true;
       } else {
         // Execution still in progress - return 409 Conflict
         // Client should retry later or poll for completion
+
+        // PHASE-43C-1: Emit idempotency.conflict_pending before 409 throw
+        this.logger.log(JSON.stringify({
+          event: 'idempotency.conflict_pending',
+          timestamp: new Date().toISOString(),
+          userId: identity.userId,
+          apiKeyId: identity.apiKeyId,
+          requestId: normalized,
+          executionId: existingRecord.executionId,
+          pendingAgeMs: age,
+        }));
+
         throw new HttpException(
           {
             statusCode: HttpStatus.CONFLICT,
@@ -208,6 +248,18 @@ export class IdempotencyGuard implements CanActivate {
       // Client can retry with same Idempotency-Key (will create new execution)
       // Note: This allows retry but does NOT delete the old record
       // The old record remains for audit purposes
+
+      // PHASE-43C-1: Emit idempotency.retry_allowed before passthrough
+      this.logger.log(JSON.stringify({
+        event: 'idempotency.retry_allowed',
+        timestamp: new Date().toISOString(),
+        userId: identity.userId,
+        apiKeyId: identity.apiKeyId,
+        requestId: normalized,
+        executionId: existingRecord.executionId,
+        priorStatus: status,
+      }));
+
       return true;
     } else {
       // Unknown status - fail-safe: allow normal flow
