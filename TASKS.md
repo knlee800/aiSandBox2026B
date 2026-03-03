@@ -616,3 +616,22 @@ Comprehensive verification of all PHASE-42A quota enforcement mechanisms using P
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-42A-4 for full details
 
 ---
+
+### Phase 43C: Execution Reliability — Reconciliation
+
+**Current Stage:** 43C-2
+
+**Active Task:** TASK-43C-2
+
+#### TASK-43C-2: Orphan Cleanup + Reconciliation Worker
+
+**Status:** COMPLETE  
+**Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE ONLY)  
+**Checkpoint:** `docs/PHASE-43C-2-CHECKPOINT.md`
+
+**Objective:**  
+Deterministic background reconciliation of orphaned pending execution records.
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-43C-2
+
+---

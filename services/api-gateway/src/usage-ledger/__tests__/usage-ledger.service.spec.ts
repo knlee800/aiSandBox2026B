@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder, UpdateQueryBuilder } from 'typeorm';
 import { UsageLedgerService, CreateUsageRecordDto } from '../usage-ledger.service';
 import { UsageRecord } from '../../entities/usage-record.entity';
 
@@ -13,7 +13,10 @@ describe('UsageLedgerService', () => {
     const mockRepository = {
       create: jest.fn(),
       save: jest.fn(),
-      findOne: jest.fn(), // Phase 43A-2B: For idempotent retry lookup
+      findOne: jest.fn(),
+      find: jest.fn(),
+      update: jest.fn(),
+      createQueryBuilder: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -423,6 +426,138 @@ describe('UsageLedgerService', () => {
 
       await service.writeRecord(dto);
       expect(loggerSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('findOrphanedPending (Phase 43C-2)', () => {
+    it('should find orphaned pending records older than threshold', async () => {
+      const oldTimestamp = new Date(Date.now() - 10 * 60 * 1000);
+      const orphanRecords = [
+        {
+          executionId: 'orphan-1',
+          userId: 'user-1',
+          executionStatus: 'pending',
+          timestamp: oldTimestamp,
+        },
+        {
+          executionId: 'orphan-2',
+          userId: 'user-2',
+          executionStatus: 'pending',
+          timestamp: oldTimestamp,
+        },
+      ];
+
+      repository.find.mockResolvedValue(orphanRecords as any);
+
+      const result = await service.findOrphanedPending(5 * 60 * 1000, 100);
+
+      expect(repository.find).toHaveBeenCalledWith({
+        where: {
+          executionStatus: 'pending',
+          timestamp: expect.any(Object),
+        },
+        order: { timestamp: 'ASC' },
+        take: 100,
+      });
+      expect(result).toEqual(orphanRecords);
+    });
+
+    it('should return empty array when no orphans found', async () => {
+      repository.find.mockResolvedValue([]);
+
+      const result = await service.findOrphanedPending();
+
+      expect(result).toEqual([]);
+    });
+
+    it('should use default threshold of 5 minutes', async () => {
+      repository.find.mockResolvedValue([]);
+
+      await service.findOrphanedPending();
+
+      expect(repository.find).toHaveBeenCalledTimes(1);
+      const findCall = repository.find.mock.calls[0][0] as any;
+      expect(findCall.where.executionStatus).toBe('pending');
+    });
+
+    it('should respect limit parameter', async () => {
+      repository.find.mockResolvedValue([]);
+
+      await service.findOrphanedPending(5 * 60 * 1000, 25);
+
+      const findCall = repository.find.mock.calls[0][0];
+      expect(findCall.take).toBe(25);
+    });
+  });
+
+  describe('batchTransitionOrphansToTimeout (Phase 43C-2)', () => {
+    it('should return 0 for empty executionIds array', async () => {
+      const result = await service.batchTransitionOrphansToTimeout([]);
+
+      expect(result).toBe(0);
+      expect(repository.createQueryBuilder).not.toHaveBeenCalled();
+    });
+
+    it('should transition multiple orphans to timeout', async () => {
+      const mockQueryBuilder = {
+        update: jest.fn().mockReturnThis(),
+        set: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        execute: jest.fn().mockResolvedValue({ affected: 3 }),
+      };
+
+      repository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
+
+      const result = await service.batchTransitionOrphansToTimeout([
+        'exec-1',
+        'exec-2',
+        'exec-3',
+      ]);
+
+      expect(result).toBe(3);
+      expect(mockQueryBuilder.update).toHaveBeenCalled();
+      expect(mockQueryBuilder.set).toHaveBeenCalledWith({ executionStatus: 'timeout' });
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith(
+        'execution_id IN (:...ids)',
+        { ids: ['exec-1', 'exec-2', 'exec-3'] },
+      );
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'execution_status = :status',
+        { status: 'pending' },
+      );
+    });
+
+    it('should handle partial transitions (some already transitioned)', async () => {
+      const mockQueryBuilder = {
+        update: jest.fn().mockReturnThis(),
+        set: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        execute: jest.fn().mockResolvedValue({ affected: 1 }),
+      };
+
+      repository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
+
+      const result = await service.batchTransitionOrphansToTimeout(['exec-1', 'exec-2']);
+
+      expect(result).toBe(1);
+    });
+
+    it('should handle undefined affected count', async () => {
+      const mockQueryBuilder = {
+        update: jest.fn().mockReturnThis(),
+        set: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        execute: jest.fn().mockResolvedValue({}),
+      };
+
+      repository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
+
+      const result = await service.batchTransitionOrphansToTimeout(['exec-1']);
+
+      expect(result).toBe(0);
     });
   });
 });

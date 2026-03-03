@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, LessThan } from 'typeorm';
 import { UsageRecord } from '../entities/usage-record.entity';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -567,6 +567,74 @@ export class UsageLedgerService {
         requestId,
       },
     });
+  }
+
+  /**
+   * Find orphaned pending executions older than threshold
+   *
+   * Phase 43C-2: Orphan Cleanup & Reconciliation Worker
+   *
+   * @param thresholdMs - Age threshold in milliseconds (default: 5 minutes)
+   * @param limit - Maximum records to return (default: 100)
+   * @returns Promise<UsageRecord[]> - Orphaned pending records
+   *
+   * Semantics:
+   * - Returns records with execution_status = 'pending'
+   * - AND timestamp < (NOW - thresholdMs)
+   * - Ordered by timestamp ASC (oldest first)
+   * - Limited to prevent memory issues
+   *
+   * Purpose:
+   * - Enable background reconciliation worker to find stale pending records
+   * - Conservative batch size for safe processing
+   */
+  async findOrphanedPending(
+    thresholdMs: number = 5 * 60 * 1000,
+    limit: number = 100,
+  ): Promise<UsageRecord[]> {
+    const cutoffTime = new Date(Date.now() - thresholdMs);
+
+    return this.usageRecordRepository.find({
+      where: {
+        executionStatus: 'pending',
+        timestamp: LessThan(cutoffTime),
+      },
+      order: { timestamp: 'ASC' },
+      take: limit,
+    });
+  }
+
+  /**
+   * Batch transition orphaned pending executions to timeout
+   *
+   * Phase 43C-2: Orphan Cleanup & Reconciliation Worker
+   *
+   * @param executionIds - Array of execution IDs to transition
+   * @returns Promise<number> - Count of records transitioned
+   *
+   * Semantics:
+   * - Updates execution_status from 'pending' to 'timeout' for given IDs
+   * - Idempotent: Already transitioned records are no-ops
+   * - Returns count of actually affected rows
+   *
+   * Purpose:
+   * - Efficient batch transition for reconciliation worker
+   * - Single DB round-trip for multiple records
+   */
+  async batchTransitionOrphansToTimeout(executionIds: string[]): Promise<number> {
+    if (executionIds.length === 0) {
+      return 0;
+    }
+
+    const result = await this.usageRecordRepository
+      .createQueryBuilder()
+      .update(UsageRecord)
+      .set({ executionStatus: 'timeout' })
+      .where('execution_id IN (:...ids)', { ids: executionIds })
+      .andWhere('execution_status = :status', { status: 'pending' })
+      .execute();
+
+    return result.affected ?? 0;
   }
 
   /**
