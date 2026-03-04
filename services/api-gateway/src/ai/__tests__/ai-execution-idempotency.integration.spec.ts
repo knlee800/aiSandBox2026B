@@ -173,6 +173,7 @@ describe('AIExecutionController (Phase 43A-2C: Idempotency Short-Circuit)', () =
         model: 'claude-3-5-sonnet-20241022',
         tokensUsed: 500,
         executionDurationMs: 1000,
+        executionStatus: 'completed',
         timestamp: new Date(),
       };
 
@@ -221,6 +222,7 @@ describe('AIExecutionController (Phase 43A-2C: Idempotency Short-Circuit)', () =
         model: 'stub',
         tokensUsed: 200,
         executionDurationMs: 500,
+        executionStatus: 'completed',
         timestamp: new Date(),
       };
 
@@ -261,6 +263,7 @@ describe('AIExecutionController (Phase 43A-2C: Idempotency Short-Circuit)', () =
         model: 'stub',
         tokensUsed: 1000,
         executionDurationMs: 2000,
+        executionStatus: 'completed',
         timestamp: new Date(),
       };
 
@@ -309,6 +312,7 @@ describe('AIExecutionController (Phase 43A-2C: Idempotency Short-Circuit)', () =
         model: 'test-model',
         tokensUsed: 300,
         executionDurationMs: 1500,
+        executionStatus: 'completed',
         timestamp: new Date(),
       };
 
@@ -369,6 +373,7 @@ describe('AIExecutionController (Phase 43A-2C: Idempotency Short-Circuit)', () =
         model: 'stub',
         tokensUsed: 100,
         executionDurationMs: 500,
+        executionStatus: 'completed',
         timestamp: new Date(),
       };
 

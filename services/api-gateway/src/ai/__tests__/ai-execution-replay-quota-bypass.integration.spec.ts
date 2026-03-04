@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, HttpStatus } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import * as request from 'supertest';
+import request from 'supertest';
 import { AIExecutionController } from '../ai-execution.controller';
 import { UsageLedgerService } from '../../usage-ledger/usage-ledger.service';
 import { UsageRecord } from '../../entities/usage-record.entity';
@@ -54,13 +54,11 @@ describe('AIExecutionController - Replay Quota Bypass (Integration)', () => {
       imports: [
         TypeOrmModule.forRoot({
           type: 'postgres',
-          host: process.env.DB_HOST || 'localhost',
-          port: parseInt(process.env.DB_PORT || '5432', 10),
-          username: process.env.DB_USER || 'postgres',
-          password: process.env.DB_PASSWORD || 'postgres',
-          database: process.env.DB_NAME || 'aisandbox_test',
+          url: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/aisandbox_test',
           entities: [UsageRecord],
-          synchronize: true, // Test environment only
+          synchronize: true,
+          retryAttempts: 0,
+          retryDelay: 0,
         }),
         TypeOrmModule.forFeature([UsageRecord]),
       ],
@@ -135,11 +133,13 @@ describe('AIExecutionController - Replay Quota Bypass (Integration)', () => {
     // Get TokenQuotaGuard instance for spying
     const tokenQuotaGuard = moduleFixture.get(TokenQuotaGuard);
     tokenQuotaGuardSpy = jest.spyOn(tokenQuotaGuard, 'canActivate');
-  });
+  }, 30000);
 
   afterAll(async () => {
-    await app.close();
-  });
+    if (app) {
+      await app.close();
+    }
+  }, 10000);
 
   beforeEach(async () => {
     // Clean up usage_records table before each test

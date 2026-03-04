@@ -30,6 +30,9 @@ describe('AIExecutionController (Phase 20A+20B+21B+22B Integration)', () => {
     const mockUsageLedgerService = {
       writeRecord: jest.fn(),
       validateUsageRecord: jest.fn(),
+      writeExecutionIntent: jest.fn(),
+      updateExecutionResult: jest.fn(),
+      findByRequestId: jest.fn(),
     };
 
     const mockGlobalSafetyLimitService = {
@@ -39,6 +42,11 @@ describe('AIExecutionController (Phase 20A+20B+21B+22B Integration)', () => {
 
     const mockQuotaService = {
       clearAll: jest.fn(),
+      recordRequest: jest.fn(),
+      recordTokens: jest.fn(),
+      getCurrentUsage: jest.fn().mockReturnValue({ requests: 0, tokens: 0 }),
+      checkRequestQuota: jest.fn(),
+      checkTokenQuota: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -341,6 +349,16 @@ describe('AIExecutionController (Phase 20A+20B+21B+22B Integration)', () => {
       const apiKeyId1 = 'key-1';
       const apiKeyId2 = 'key-2';
 
+      // Mock getCurrentUsage to return different values for different keys
+      (quotaService.getCurrentUsage as jest.Mock).mockImplementation((apiKeyId: string) => {
+        if (apiKeyId === apiKeyId1) {
+          return { requests: 1, tokens: 100 };
+        } else if (apiKeyId === apiKeyId2) {
+          return { requests: 1, tokens: 200 };
+        }
+        return { requests: 0, tokens: 0 };
+      });
+
       // Manually record usage to demonstrate tracking works
       quotaService.recordRequest(apiKeyId1);
       quotaService.recordTokens(apiKeyId1, 100);
@@ -390,6 +408,9 @@ describe('AIExecutionController (Phase 20A+20B+21B+22B Integration)', () => {
 
     beforeEach(() => {
       usageLedgerService.writeRecord.mockResolvedValue({} as any);
+      usageLedgerService.writeExecutionIntent.mockResolvedValue({} as any);
+      usageLedgerService.updateExecutionResult.mockResolvedValue({} as any);
+      usageLedgerService.findByRequestId.mockResolvedValue(null);
     });
 
     it('should write ledger record on successful execution', async () => {
@@ -397,52 +418,61 @@ describe('AIExecutionController (Phase 20A+20B+21B+22B Integration)', () => {
 
       await controller.execute(validRequest, identity);
 
-      // Verify ledger was written
-      expect(usageLedgerService.writeRecord).toHaveBeenCalledTimes(1);
+      // Verify two-phase write: intent then result
+      expect(usageLedgerService.writeExecutionIntent).toHaveBeenCalledTimes(1);
+      expect(usageLedgerService.updateExecutionResult).toHaveBeenCalledTimes(1);
 
-      // Verify ledger record contains required fields
-      const ledgerCall = usageLedgerService.writeRecord.mock.calls[0][0];
-      expect(ledgerCall.apiKeyId).toBe('key-test');
-      expect(ledgerCall.userId).toBe('test-user');
-      expect(ledgerCall.sessionId).toBe('session-123');
-      expect(ledgerCall.conversationId).toBe('conv-456');
-      expect(ledgerCall.model).toBe('claude-3-5-sonnet-20241022');
-      expect(ledgerCall.tokensUsed).toBe(100);
-      expect(ledgerCall.executionDurationMs).toBeGreaterThanOrEqual(0);
+      // Verify intent record contains required fields
+      const intentCall = usageLedgerService.writeExecutionIntent.mock.calls[0][0];
+      expect(intentCall.apiKeyId).toBe('key-test');
+      expect(intentCall.userId).toBe('test-user');
+      expect(intentCall.sessionId).toBe('session-123');
+      expect(intentCall.conversationId).toBe('conv-456');
+
+      // Verify result update contains execution data
+      const resultCall = usageLedgerService.updateExecutionResult.mock.calls[0][0];
+      expect(resultCall.model).toBe('claude-3-5-sonnet-20241022');
+      expect(resultCall.tokensUsed).toBe(100);
+      expect(resultCall.executionDurationMs).toBeGreaterThanOrEqual(0);
     });
 
     it('should write ledger AFTER ai-service success', async () => {
       const callOrder: string[] = [];
+
+      usageLedgerService.writeExecutionIntent.mockImplementation(async () => {
+        callOrder.push('intent');
+        return {} as any;
+      });
 
       httpClient.execute.mockImplementation(async () => {
         callOrder.push('ai-service');
         return mockResponse;
       });
 
-      usageLedgerService.writeRecord.mockImplementation(async () => {
-        callOrder.push('ledger');
+      usageLedgerService.updateExecutionResult.mockImplementation(async () => {
+        callOrder.push('result');
         return {} as any;
       });
 
       await controller.execute(validRequest, identity);
 
-      // Verify execution order
-      expect(callOrder).toEqual(['ai-service', 'ledger']);
+      // Verify execution order: intent -> ai-service -> result
+      expect(callOrder).toEqual(['intent', 'ai-service', 'result']);
     });
 
     it('should write ledger BEFORE returning response to client', async () => {
-      let ledgerWritten = false;
+      let resultWritten = false;
 
       httpClient.execute.mockResolvedValue(mockResponse);
-      usageLedgerService.writeRecord.mockImplementation(async () => {
-        ledgerWritten = true;
+      usageLedgerService.updateExecutionResult.mockImplementation(async () => {
+        resultWritten = true;
         return {} as any;
       });
 
       const result = await controller.execute(validRequest, identity);
 
-      // Verify ledger was written before result was returned
-      expect(ledgerWritten).toBe(true);
+      // Verify result was written before response was returned
+      expect(resultWritten).toBe(true);
       expect(result).toEqual(mockResponse);
     });
 
@@ -454,15 +484,16 @@ describe('AIExecutionController (Phase 20A+20B+21B+22B Integration)', () => {
         'AI service error',
       );
 
-      // Verify ledger was NOT written
-      expect(usageLedgerService.writeRecord).not.toHaveBeenCalled();
+      // Verify intent was written but result was NOT updated
+      expect(usageLedgerService.writeExecutionIntent).toHaveBeenCalledTimes(1);
+      expect(usageLedgerService.updateExecutionResult).not.toHaveBeenCalled();
     });
 
     it('should fail entire request if ledger write fails', async () => {
       httpClient.execute.mockResolvedValue(mockResponse);
 
       const ledgerError = new Error('Database connection failed');
-      usageLedgerService.writeRecord.mockRejectedValue(ledgerError);
+      usageLedgerService.updateExecutionResult.mockRejectedValue(ledgerError);
 
       await expect(controller.execute(validRequest, identity)).rejects.toThrow(
         'Database connection failed',
@@ -478,9 +509,9 @@ describe('AIExecutionController (Phase 20A+20B+21B+22B Integration)', () => {
 
       await controller.execute(validRequest, identity);
 
-      const ledgerCall = usageLedgerService.writeRecord.mock.calls[0][0];
-      expect(ledgerCall.executionDurationMs).toBeGreaterThan(0);
-      expect(ledgerCall.executionDurationMs).toBeLessThan(1000);
+      const resultCall = usageLedgerService.updateExecutionResult.mock.calls[0][0];
+      expect(resultCall.executionDurationMs).toBeGreaterThan(0);
+      expect(resultCall.executionDurationMs).toBeLessThan(1000);
     });
 
     it('should maintain backward compatibility with Phase 20A/20B/21B', async () => {
@@ -498,13 +529,15 @@ describe('AIExecutionController (Phase 20A+20B+21B+22B Integration)', () => {
       // Verify response is unchanged
       expect(result).toEqual(mockResponse);
 
-      // Verify ledger was written
-      expect(usageLedgerService.writeRecord).toHaveBeenCalledTimes(1);
+      // Verify two-phase ledger write
+      expect(usageLedgerService.writeExecutionIntent).toHaveBeenCalledTimes(1);
+      expect(usageLedgerService.updateExecutionResult).toHaveBeenCalledTimes(1);
     });
 
     it('should verify UsageLedgerService is registered', async () => {
       expect(usageLedgerService).toBeDefined();
-      expect(usageLedgerService.writeRecord).toBeDefined();
+      expect(usageLedgerService.writeExecutionIntent).toBeDefined();
+      expect(usageLedgerService.updateExecutionResult).toBeDefined();
     });
   });
 
@@ -532,12 +565,11 @@ describe('AIExecutionController (Phase 20A+20B+21B+22B Integration)', () => {
 
     it('should accept valid Idempotency-Key header', async () => {
       httpClient.execute.mockResolvedValue(mockResponse);
-      usageLedgerService.writeRecord.mockResolvedValue({} as any);
 
       const result = await controller.execute(validRequest, identity, 'req-abc-123');
 
       expect(result).toEqual(mockResponse);
-      expect(usageLedgerService.writeRecord).toHaveBeenCalledWith(
+      expect(usageLedgerService.writeExecutionIntent).toHaveBeenCalledWith(
         expect.objectContaining({
           requestId: 'req-abc-123',
         }),
@@ -546,11 +578,10 @@ describe('AIExecutionController (Phase 20A+20B+21B+22B Integration)', () => {
 
     it('should trim whitespace from Idempotency-Key', async () => {
       httpClient.execute.mockResolvedValue(mockResponse);
-      usageLedgerService.writeRecord.mockResolvedValue({} as any);
 
       await controller.execute(validRequest, identity, '  req-trimmed-123  ');
 
-      expect(usageLedgerService.writeRecord).toHaveBeenCalledWith(
+      expect(usageLedgerService.writeExecutionIntent).toHaveBeenCalledWith(
         expect.objectContaining({
           requestId: 'req-trimmed-123',
         }),
@@ -563,7 +594,7 @@ describe('AIExecutionController (Phase 20A+20B+21B+22B Integration)', () => {
       ).rejects.toThrow('Idempotency-Key must not be empty');
 
       expect(httpClient.execute).not.toHaveBeenCalled();
-      expect(usageLedgerService.writeRecord).not.toHaveBeenCalled();
+      expect(usageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
     });
 
     it('should reject whitespace-only Idempotency-Key', async () => {
@@ -572,7 +603,7 @@ describe('AIExecutionController (Phase 20A+20B+21B+22B Integration)', () => {
       ).rejects.toThrow('Idempotency-Key must not be empty');
 
       expect(httpClient.execute).not.toHaveBeenCalled();
-      expect(usageLedgerService.writeRecord).not.toHaveBeenCalled();
+      expect(usageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
     });
 
     it('should reject Idempotency-Key longer than 100 characters', async () => {
@@ -583,17 +614,16 @@ describe('AIExecutionController (Phase 20A+20B+21B+22B Integration)', () => {
       ).rejects.toThrow('Idempotency-Key must not exceed 100 characters');
 
       expect(httpClient.execute).not.toHaveBeenCalled();
-      expect(usageLedgerService.writeRecord).not.toHaveBeenCalled();
+      expect(usageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
     });
 
     it('should accept Idempotency-Key exactly 100 characters', async () => {
       const maxKey = 'x'.repeat(100);
       httpClient.execute.mockResolvedValue(mockResponse);
-      usageLedgerService.writeRecord.mockResolvedValue({} as any);
 
       await controller.execute(validRequest, identity, maxKey);
 
-      expect(usageLedgerService.writeRecord).toHaveBeenCalledWith(
+      expect(usageLedgerService.writeExecutionIntent).toHaveBeenCalledWith(
         expect.objectContaining({
           requestId: maxKey,
         }),
@@ -602,11 +632,10 @@ describe('AIExecutionController (Phase 20A+20B+21B+22B Integration)', () => {
 
     it('should omit requestId when Idempotency-Key not provided', async () => {
       httpClient.execute.mockResolvedValue(mockResponse);
-      usageLedgerService.writeRecord.mockResolvedValue({} as any);
 
       await controller.execute(validRequest, identity, undefined);
 
-      expect(usageLedgerService.writeRecord).toHaveBeenCalledWith(
+      expect(usageLedgerService.writeExecutionIntent).toHaveBeenCalledWith(
         expect.objectContaining({
           requestId: undefined,
         }),
@@ -631,12 +660,11 @@ describe('AIExecutionController (Phase 20A+20B+21B+22B Integration)', () => {
 
     it('should maintain backward compatibility when Idempotency-Key not used', async () => {
       httpClient.execute.mockResolvedValue(mockResponse);
-      usageLedgerService.writeRecord.mockResolvedValue({} as any);
 
       const result = await controller.execute(validRequest, identity);
 
       expect(result).toEqual(mockResponse);
-      expect(usageLedgerService.writeRecord).toHaveBeenCalledWith(
+      expect(usageLedgerService.writeExecutionIntent).toHaveBeenCalledWith(
         expect.objectContaining({
           userId: 'test-user',
           apiKeyId: 'key-test',

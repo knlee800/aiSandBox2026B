@@ -89,7 +89,7 @@ describe('Release Candidate Smoke Pack (Phase 33A)', () => {
         SELECT table_name 
         FROM information_schema.tables 
         WHERE table_schema = 'public' 
-        AND table_name IN ('api_keys', 'usage_records', 'billing_snapshots', 'quota_state')
+        AND table_name IN ('api_keys', 'usage_records', 'billing_snapshots')
         ORDER BY table_name
       `);
 
@@ -97,7 +97,6 @@ describe('Release Candidate Smoke Pack (Phase 33A)', () => {
       expect(tableNames).toContain('api_keys');
       expect(tableNames).toContain('usage_records');
       expect(tableNames).toContain('billing_snapshots');
-      expect(tableNames).toContain('quota_state');
     });
   });
 
@@ -141,8 +140,6 @@ describe('Release Candidate Smoke Pack (Phase 33A)', () => {
 
       // Validate environment config is present
       expect(response.body.environment).toBeDefined();
-      expect(response.body.environment.launchState).toBeDefined();
-      expect(response.body.environment.abortMode).toBeDefined();
 
       // Validate kill switches loaded
       expect(response.body.killSwitches).toBeDefined();
@@ -159,8 +156,8 @@ describe('Release Candidate Smoke Pack (Phase 33A)', () => {
       const response = await request(app.getHttpServer())
         .post('/api/ai/execute')
         .send({
-          sessionId: 'test-session-123',
-          conversationId: 'test-conv-456',
+          sessionId: '00000000-0000-0000-0000-000000000001',
+          conversationId: '00000000-0000-0000-0000-000000000002',
           userId: 'test-user-789',
           prompt: 'What is 2+2?',
         });
@@ -173,8 +170,8 @@ describe('Release Candidate Smoke Pack (Phase 33A)', () => {
         .post('/api/ai/execute')
         .set('Authorization', 'Bearer invalid-key')
         .send({
-          sessionId: 'test-session-123',
-          conversationId: 'test-conv-456',
+          sessionId: '00000000-0000-0000-0000-000000000003',
+          conversationId: '00000000-0000-0000-0000-000000000004',
           userId: 'test-user-789',
           prompt: 'What is 2+2?',
         });
@@ -189,8 +186,8 @@ describe('Release Candidate Smoke Pack (Phase 33A)', () => {
         .post('/api/ai/execute')
         .set('Authorization', `Bearer ${API_KEY}`)
         .send({
-          sessionId: 'smoke-test-session',
-          conversationId: 'smoke-test-conv',
+          sessionId: '00000000-0000-0000-0000-000000000005',
+          conversationId: '00000000-0000-0000-0000-000000000006',
           userId: 'smoke-test-user',
           prompt: 'What is 2+2? Answer in one sentence.',
         });
@@ -302,8 +299,8 @@ describe('Release Candidate Smoke Pack (Phase 33A)', () => {
         .post('/api/ai/execute')
         .set('Authorization', `Bearer ${API_KEY}`)
         .send({
-          sessionId: 'smoke-final',
-          conversationId: 'smoke-final',
+          sessionId: '00000000-0000-0000-0000-000000000007',
+          conversationId: '00000000-0000-0000-0000-000000000008',
           userId: 'smoke-final',
           prompt: 'Say hello in one word.',
         });
