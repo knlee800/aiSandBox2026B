@@ -10,6 +10,7 @@ import { AbortModule } from '../abort/abort.module';
 import { IdempotencyGuard } from './idempotency.guard';
 import { QueueModule } from '../queue/queue.module';
 import { ExecutionResultService } from './execution-result.service';
+import { ExecutionStreamService } from '../streaming/execution-stream.service';
 
 /**
  * AIModule
@@ -39,7 +40,12 @@ import { ExecutionResultService } from './execution-result.service';
     UsageLedgerModule, // Phase 22B: Usage ledger
   ],
   controllers: [AIExecutionController],
-  providers: [AIServiceHttpClient, IdempotencyGuard, ExecutionResultService],
+  providers: [
+    AIServiceHttpClient,
+    IdempotencyGuard,
+    ExecutionResultService,
+    ExecutionStreamService,
+  ],
   exports: [AIServiceHttpClient],
 })
 export class AIModule {}

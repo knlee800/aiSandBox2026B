@@ -8,6 +8,7 @@ import { Worker, Job } from 'bullmq';
 import Redis from 'ioredis';
 import { DataSource } from 'typeorm';
 import { AIExecutionService } from '../ai-execution/ai-execution.service';
+import { ExecutionStreamPublisher } from '../streaming/execution-stream.publisher';
 
 @Injectable()
 export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
@@ -19,6 +20,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
   constructor(
     private readonly dataSource: DataSource,
     private readonly aiExecutionService: AIExecutionService,
+    private readonly executionStreamPublisher: ExecutionStreamPublisher,
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -43,9 +45,8 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
 
         const result = await this.dataSource.query(
           `
-          UPDATE usage_ledger
-          SET execution_status = 'running',
-              started_at = NOW()
+          UPDATE usage_records
+          SET execution_status = 'running'
           WHERE execution_id = $1
           AND execution_status = 'pending'
           RETURNING execution_id
@@ -75,17 +76,24 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
             `AI execution completed executionId=${executionId} tokens=${aiResult.tokensUsed}`,
           );
 
+          if (aiResult.output) {
+            this.executionStreamPublisher.publishToken(
+              executionId,
+              aiResult.output,
+            );
+          }
+
           await this.dataSource.query(
             `
-            UPDATE usage_ledger
+            UPDATE usage_records
             SET execution_status = 'completed',
-                completed_at = NOW(),
-                tokens_used = $2,
-                output = $3
+                tokens_used = $2
             WHERE execution_id = $1
             `,
-            [executionId, aiResult.tokensUsed ?? 0, aiResult.output ?? null],
+            [executionId, aiResult.tokensUsed ?? 0],
           );
+
+          this.executionStreamPublisher.publishCompletion(executionId);
 
           this.logger.log(`Ledger finalized executionId=${executionId}`);
         } catch (error) {
@@ -95,14 +103,11 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
 
           await this.dataSource.query(
             `
-            UPDATE usage_ledger
-            SET execution_status = 'failed',
-                completed_at = NOW(),
-                error_code = $2,
-                error_message = $3
+            UPDATE usage_records
+            SET execution_status = 'failed'
             WHERE execution_id = $1
             `,
-            [executionId, 'execution_error', error.message],
+            [executionId],
           );
 
           throw error;

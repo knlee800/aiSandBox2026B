@@ -11,11 +11,8 @@ export class ExecutionResultService {
       SELECT
         execution_id,
         execution_status,
-        tokens_used,
-        output,
-        error_code,
-        error_message
-      FROM usage_ledger
+        tokens_used
+      FROM usage_records
       WHERE execution_id = $1
       `,
       [executionId],

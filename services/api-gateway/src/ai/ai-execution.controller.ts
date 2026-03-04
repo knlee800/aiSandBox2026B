@@ -12,11 +12,15 @@ import {
   Get,
   Param,
   NotFoundException,
+  Sse,
+  MessageEvent,
 } from '@nestjs/common';
 import { Request } from 'express';
+import { Observable } from 'rxjs';
 import {
   AIExecutionRequest,
 } from '../clients/ai-service-http.client';
+import { ExecutionStreamService } from '../streaming/execution-stream.service';
 import { ExecutionResultDto } from './dto/execution-result.dto';
 import { ApiKeyAuthGuard } from '../auth/api-key-auth.guard';
 import { AuthorizationGuard } from '../auth/authorization.guard';
@@ -78,6 +82,7 @@ export class AIExecutionController {
     private readonly globalSafetyLimitService: GlobalSafetyLimitService,
     private readonly queueService: QueueService,
     private readonly executionResultService: ExecutionResultService,
+    private readonly executionStreamService: ExecutionStreamService,
   ) {}
 
   /**
@@ -299,17 +304,40 @@ export class AIExecutionController {
     };
 
     if (status === 'completed') {
-      response.output = execution.output ?? undefined;
       response.tokensUsed = execution.tokens_used ?? undefined;
     }
 
-    if (status === 'failed') {
-      response.error = {
-        code: execution.error_code ?? 'unknown_error',
-        message: execution.error_message ?? 'Unknown error',
-      };
-    }
-
     return response;
+  }
+
+  /**
+   * Stream execution tokens
+   *
+   * GET /api/ai/executions/:executionId/stream
+   *
+   * Phase 46.3: SSE streaming endpoint
+   *
+   * Subscribes to Redis channel ai-execution-stream:{executionId}
+   * and forwards incoming tokens to client via Server-Sent Events.
+   *
+   * Non-blocking. If no client connects, execution completes normally.
+   */
+  @Sse('executions/:executionId/stream')
+  streamExecution(
+    @Param('executionId') executionId: string,
+  ): Observable<MessageEvent> {
+    return new Observable((observer) => {
+
+      this.executionStreamService.subscribe(
+        executionId,
+        (token: string) => {
+          observer.next({ data: token });
+        }
+      );
+
+      return () => {
+        this.executionStreamService.unsubscribe(executionId);
+      };
+    });
   }
 }
