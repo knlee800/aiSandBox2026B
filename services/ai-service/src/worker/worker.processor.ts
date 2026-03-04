@@ -10,9 +10,32 @@ import { DataSource } from 'typeorm';
 import { AIExecutionService } from '../ai-execution/ai-execution.service';
 import { ExecutionStreamPublisher } from '../streaming/execution-stream.publisher';
 
+interface ExecutionCompletionLog {
+  event: string;
+  executionId: string;
+  provider: string;
+  queue_wait_ms?: number;
+  duration_ms: number;
+  tokens?: number;
+  execution_status: string;
+  metrics?: {
+    execution_completed_total: number;
+    execution_failed_total: number;
+    execution_cancelled_total: number;
+    execution_timeout_total: number;
+  };
+}
+
 @Injectable()
 export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(WorkerProcessor.name);
+
+  private metrics = {
+    execution_completed_total: 0,
+    execution_failed_total: 0,
+    execution_cancelled_total: 0,
+    execution_timeout_total: 0,
+  };
 
   private connection: Redis;
   private worker: Worker;
@@ -22,6 +45,22 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
     private readonly aiExecutionService: AIExecutionService,
     private readonly executionStreamPublisher: ExecutionStreamPublisher,
   ) {}
+
+  /**
+   * Phase-49: Expose metrics for internal endpoint.
+   * Returns a copy to prevent external mutation.
+   */
+  getMetrics() {
+    return { ...this.metrics };
+  }
+
+  /**
+   * Phase-49: Emit structured execution completion log.
+   * Non-intrusive, read-only instrumentation.
+   */
+  private logExecutionCompletion(payload: ExecutionCompletionLog): void {
+    this.logger.log(JSON.stringify(payload));
+  }
 
   async onModuleInit(): Promise<void> {
     const redisUrl = process.env.REDIS_URL;
@@ -38,6 +77,8 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
       'ai-execution',
       async (job: Job) => {
         const executionId = job.data.executionId;
+        const provider = job.data.provider ?? 'unknown';
+        const executionStartTime = performance.now();
 
         this.logger.log(
           `Worker received job ${job.id} executionId=${executionId}`,
@@ -61,16 +102,23 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
           return;
         }
 
+        const claimTime = Date.now();
         this.logger.log(`Worker claimed executionId=${executionId}`);
 
         const cancelCheck = await this.dataSource.query(
           `
-          SELECT execution_status
+          SELECT execution_status, created_at
           FROM usage_records
           WHERE execution_id = $1
           `,
           [executionId],
         );
+
+        const intentCreatedAt = cancelCheck[0]?.created_at;
+        const queueWaitMs =
+          intentCreatedAt != null
+            ? Math.round(claimTime - new Date(intentCreatedAt).getTime())
+            : undefined;
 
         if (cancelCheck[0]?.execution_status === 'cancel_requested') {
           await this.dataSource.query(
@@ -83,6 +131,19 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
           );
 
           this.executionStreamPublisher.publishCompletion(executionId);
+
+          this.metrics.execution_cancelled_total++;
+          const durationMs = Math.round(performance.now() - executionStartTime);
+          this.logExecutionCompletion({
+            event: 'execution_completed',
+            executionId,
+            provider,
+            ...(queueWaitMs != null && { queue_wait_ms: queueWaitMs }),
+            duration_ms: durationMs,
+            tokens: 0,
+            execution_status: 'cancelled',
+            metrics: { ...this.metrics },
+          });
 
           this.logger.warn(
             `Execution cancelled before start executionId=${executionId}`,
@@ -125,6 +186,18 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
 
           if (result.length > 0) {
             this.executionStreamPublisher.publishCompletion(executionId);
+            this.metrics.execution_timeout_total++;
+            const durationMs = Math.round(performance.now() - executionStartTime);
+            this.logExecutionCompletion({
+              event: 'execution_completed',
+              executionId,
+              provider,
+              ...(queueWaitMs != null && { queue_wait_ms: queueWaitMs }),
+              duration_ms: durationMs,
+              tokens: 0,
+              execution_status: 'timeout',
+              metrics: { ...this.metrics },
+            });
             this.logger.warn(
               `Execution timed out executionId=${executionId}`,
             );
@@ -191,6 +264,19 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
 
             this.executionStreamPublisher.publishCompletion(executionId);
 
+            this.metrics.execution_cancelled_total++;
+            const durationMs = Math.round(performance.now() - executionStartTime);
+            this.logExecutionCompletion({
+              event: 'execution_completed',
+              executionId,
+              provider,
+              ...(queueWaitMs != null && { queue_wait_ms: queueWaitMs }),
+              duration_ms: durationMs,
+              tokens: aiResult.tokensUsed ?? 0,
+              execution_status: 'cancelled',
+              metrics: { ...this.metrics },
+            });
+
             this.logger.warn(
               `Execution cancelled during run executionId=${executionId}`,
             );
@@ -216,6 +302,19 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
 
           this.executionStreamPublisher.publishCompletion(executionId);
 
+          this.metrics.execution_completed_total++;
+          const durationMs = Math.round(performance.now() - executionStartTime);
+          this.logExecutionCompletion({
+            event: 'execution_completed',
+            executionId,
+            provider,
+            ...(queueWaitMs != null && { queue_wait_ms: queueWaitMs }),
+            duration_ms: durationMs,
+            tokens: aiResult.tokensUsed ?? 0,
+            execution_status: 'completed',
+            metrics: { ...this.metrics },
+          });
+
           this.logger.log(`Ledger finalized executionId=${executionId}`);
         } catch (error) {
           cancelled = true;
@@ -240,6 +339,19 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
 
             this.executionStreamPublisher.publishCompletion(executionId);
 
+            this.metrics.execution_cancelled_total++;
+            const durationMs = Math.round(performance.now() - executionStartTime);
+            this.logExecutionCompletion({
+              event: 'execution_completed',
+              executionId,
+              provider,
+              ...(queueWaitMs != null && { queue_wait_ms: queueWaitMs }),
+              duration_ms: durationMs,
+              tokens: 0,
+              execution_status: 'cancelled',
+              metrics: { ...this.metrics },
+            });
+
             this.logger.warn(
               `Execution aborted executionId=${executionId}`,
             );
@@ -247,6 +359,19 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
           }
 
           clearTimeoutWatchdog();
+
+          this.metrics.execution_failed_total++;
+          const durationMs = Math.round(performance.now() - executionStartTime);
+          this.logExecutionCompletion({
+            event: 'execution_completed',
+            executionId,
+            provider,
+            ...(queueWaitMs != null && { queue_wait_ms: queueWaitMs }),
+            duration_ms: durationMs,
+            tokens: 0,
+            execution_status: 'failed',
+            metrics: { ...this.metrics },
+          });
 
           this.logger.error(
             `AI execution failed executionId=${executionId}: ${error.message}`,

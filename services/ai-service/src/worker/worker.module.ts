@@ -4,8 +4,10 @@ import { QueueModule } from '../queue/queue.module';
 import { AIExecutionModule } from '../ai-execution/ai-execution.module';
 import { WorkerProcessor } from './worker.processor';
 import { ExecutionStreamPublisher } from '../streaming/execution-stream.publisher';
+import { MetricsController } from '../metrics/metrics.controller';
 
 @Module({
+  controllers: [MetricsController],
   imports: [
     TypeOrmModule.forRoot({
       type: 'postgres',
