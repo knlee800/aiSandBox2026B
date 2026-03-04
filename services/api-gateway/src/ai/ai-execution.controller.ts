@@ -9,11 +9,15 @@ import {
   BadRequestException,
   Req,
   Logger,
+  Get,
+  Param,
+  NotFoundException,
 } from '@nestjs/common';
 import { Request } from 'express';
 import {
   AIExecutionRequest,
 } from '../clients/ai-service-http.client';
+import { ExecutionResultDto } from './dto/execution-result.dto';
 import { ApiKeyAuthGuard } from '../auth/api-key-auth.guard';
 import { AuthorizationGuard } from '../auth/authorization.guard';
 import { QuotaGuard } from '../quota/quota.guard';
@@ -30,6 +34,7 @@ import { RateLimitGuard, RateLimit } from '../guards/rate-limit.guard';
 import { IdempotencyGuard } from './idempotency.guard';
 import { QueueService } from '../queue/queue.service';
 import { v4 as uuidv4 } from 'uuid';
+import { ExecutionResultService } from './execution-result.service';
 
 /**
  * AIExecutionController
@@ -72,6 +77,7 @@ export class AIExecutionController {
     private readonly usageLedgerService: UsageLedgerService,
     private readonly globalSafetyLimitService: GlobalSafetyLimitService,
     private readonly queueService: QueueService,
+    private readonly executionResultService: ExecutionResultService,
   ) {}
 
   /**
@@ -245,5 +251,65 @@ export class AIExecutionController {
       executionId,
       status: 'queued',
     };
+  }
+
+  /**
+   * Get execution status
+   *
+   * GET /api/ai/executions/:executionId
+   *
+   * Phase 45.2: Execution status endpoint
+   * Phase 45.4: Execution status mapping to public DTO
+   *
+   * Returns execution status from ledger.
+   * Throws 404 if execution not found.
+   */
+  @Get('executions/:executionId')
+  async getExecution(
+    @Param('executionId') executionId: string,
+  ): Promise<ExecutionResultDto> {
+    const execution = await this.executionResultService.getExecution(executionId);
+
+    if (!execution) {
+      throw new NotFoundException('Execution not found');
+    }
+
+    let status: ExecutionResultDto['status'];
+
+    switch (execution.execution_status) {
+      case 'pending':
+        status = 'queued';
+        break;
+      case 'running':
+        status = 'running';
+        break;
+      case 'completed':
+        status = 'completed';
+        break;
+      case 'failed':
+        status = 'failed';
+        break;
+      default:
+        status = 'queued';
+    }
+
+    const response: ExecutionResultDto = {
+      executionId: execution.execution_id,
+      status,
+    };
+
+    if (status === 'completed') {
+      response.output = execution.output ?? undefined;
+      response.tokensUsed = execution.tokens_used ?? undefined;
+    }
+
+    if (status === 'failed') {
+      response.error = {
+        code: execution.error_code ?? 'unknown_error',
+        message: execution.error_message ?? 'Unknown error',
+      };
+    }
+
+    return response;
   }
 }
