@@ -90,8 +90,46 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
           return;
         }
 
+        const EXECUTION_TIMEOUT_MS = parseInt(
+          process.env.EXECUTION_TIMEOUT_MS ?? '20000',
+          10,
+        );
+
         const abortController = new AbortController();
         let cancelled = false;
+        let timedOut = false;
+        let timeoutHandle: ReturnType<typeof setTimeout> | null = null;
+
+        const clearTimeoutWatchdog = () => {
+          if (timeoutHandle !== null) {
+            clearTimeout(timeoutHandle);
+            timeoutHandle = null;
+          }
+        };
+
+        timeoutHandle = setTimeout(async () => {
+          if (abortController.signal.aborted || cancelled || timedOut) return;
+          timedOut = true;
+          abortController.abort();
+
+          const result = await this.dataSource.query(
+            `
+            UPDATE usage_records
+            SET execution_status = 'timeout'
+            WHERE execution_id = $1
+            AND execution_status = 'running'
+            RETURNING execution_id
+            `,
+            [executionId],
+          );
+
+          if (result.length > 0) {
+            this.executionStreamPublisher.publishCompletion(executionId);
+            this.logger.warn(
+              `Execution timed out executionId=${executionId}`,
+            );
+          }
+        }, EXECUTION_TIMEOUT_MS);
 
         const pollCancel = async () => {
           if (abortController.signal.aborted || cancelled) return;
@@ -122,6 +160,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
           });
 
           cancelled = true;
+          clearTimeoutWatchdog();
 
           this.logger.log(
             `AI execution completed executionId=${executionId} tokens=${aiResult.tokensUsed}`,
@@ -139,6 +178,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
           if (statusCheck[0]?.execution_status === 'cancel_requested') {
             cancelled = true;
             abortController.abort();
+            clearTimeoutWatchdog();
 
             await this.dataSource.query(
               `
@@ -185,6 +225,10 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
             (error.name === 'AbortError' || abortController.signal.aborted);
 
           if (isAbort) {
+            if (timedOut) {
+              return;
+            }
+            clearTimeoutWatchdog();
             await this.dataSource.query(
               `
               UPDATE usage_records
@@ -201,6 +245,8 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
             );
             return;
           }
+
+          clearTimeoutWatchdog();
 
           this.logger.error(
             `AI execution failed executionId=${executionId}: ${error.message}`,

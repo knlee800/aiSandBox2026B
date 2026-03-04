@@ -1,6 +1,6 @@
 export interface ExecutionResultDto {
   executionId: string;
-  status: 'queued' | 'running' | 'completed' | 'failed' | 'cancelled';
+  status: 'queued' | 'running' | 'completed' | 'failed' | 'cancelled' | 'timeout';
 
   output?: string;
   tokensUsed?: number;

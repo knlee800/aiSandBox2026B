@@ -323,6 +323,9 @@ export class AIExecutionController {
       case 'cancelled':
         status = 'cancelled';
         break;
+      case 'timeout':
+        status = 'timeout';
+        break;
       default:
         status = 'queued';
     }
