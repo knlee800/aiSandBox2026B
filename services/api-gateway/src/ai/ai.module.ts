@@ -8,6 +8,7 @@ import { SafetyModule } from '../safety/safety.module';
 import { LaunchModule } from '../launch/launch.module';
 import { AbortModule } from '../abort/abort.module';
 import { IdempotencyGuard } from './idempotency.guard';
+import { QueueModule } from '../queue/queue.module';
 
 /**
  * AIModule
@@ -29,6 +30,7 @@ import { IdempotencyGuard } from './idempotency.guard';
 @Module({
   imports: [
     AuthModule, // Phase 20A/20B: Authentication and authorization
+    QueueModule,
     SafetyModule, // Phase 26B: Kill switches and global safety limits
     LaunchModule, // Phase 28B-1: Launch state enforcement
     AbortModule, // Phase 28B-2: Abort mode enforcement

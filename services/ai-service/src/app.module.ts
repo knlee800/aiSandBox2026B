@@ -4,6 +4,7 @@ import { HttpModule } from '@nestjs/axios';
 import { ConversationsModule } from './conversations/conversations.module';
 import { MessagesModule } from './messages/messages.module';
 import { AIExecutionModule } from './ai-execution/ai-execution.module';
+import { QueueModule } from './queue/queue.module';
 
 /**
  * AppModule
@@ -29,6 +30,7 @@ import { AIExecutionModule } from './ai-execution/ai-execution.module';
     ConversationsModule,
     MessagesModule,
     AIExecutionModule,
+    QueueModule,
   ],
   controllers: [],
   providers: [],
