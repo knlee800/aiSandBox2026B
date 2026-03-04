@@ -38,6 +38,11 @@ export class StubAIAdapter implements AIAdapter {
       `[Stage C2-D] StubAIAdapter.execute() called for session=${request.sessionId}`,
     );
 
+    // Phase 47.5: Delay for cancellation validation when prompt requests it
+    if (request.prompt?.includes('Count slowly')) {
+      await new Promise((r) => setTimeout(r, 3000));
+    }
+
     // Stage C2-D: Deterministic stub response
     return {
       output: '[STUB] AI execution not implemented yet',

@@ -111,8 +111,12 @@ export class DeepSeekAdapter implements AIAdapter {
         ],
       };
 
-      // Execute request via OpenAI SDK with DeepSeek baseURL
-      const response = await this.client.chat.completions.create(deepseekRequest);
+      // Execute request via OpenAI SDK with DeepSeek baseURL (Phase 47.4: forward signal for abort)
+      const createOptions = request.signal ? { signal: request.signal } : {};
+      const response = await this.client.chat.completions.create(
+        deepseekRequest,
+        createOptions,
+      );
 
       // Transform response to AIExecutionResult
       return this.transformResponse(response);

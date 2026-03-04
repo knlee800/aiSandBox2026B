@@ -111,8 +111,12 @@ export class XAIAdapter implements AIAdapter {
         ],
       };
 
-      // Execute request via OpenAI SDK with xAI baseURL
-      const response = await this.client.chat.completions.create(xaiRequest);
+      // Execute request via OpenAI SDK with xAI baseURL (Phase 47.4: forward signal for abort)
+      const createOptions = request.signal ? { signal: request.signal } : {};
+      const response = await this.client.chat.completions.create(
+        xaiRequest,
+        createOptions,
+      );
 
       // Transform response to AIExecutionResult
       return this.transformResponse(response);

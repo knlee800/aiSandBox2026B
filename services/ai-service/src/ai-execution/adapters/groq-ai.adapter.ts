@@ -113,8 +113,12 @@ export class GroqAdapter implements AIAdapter {
         ],
       };
 
-      // Execute request via Groq SDK
-      const response = await this.client.chat.completions.create(groqRequest);
+      // Execute request via Groq SDK (Phase 47.4: forward signal for abort)
+      const createOptions = request.signal ? { signal: request.signal } : {};
+      const response = await this.client.chat.completions.create(
+        groqRequest,
+        createOptions,
+      );
 
       // Transform response to AIExecutionResult
       return this.transformResponse(response);

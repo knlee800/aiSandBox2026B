@@ -127,11 +127,15 @@ export class UsageRecord {
 
   /**
    * Execution status (Phase 43B-2A: Two-phase execution record)
-   * Values: 'pending', 'completed', 'failed', 'timeout'
+   * Phase 47.1: Added cancel_requested, cancelled
+   * Values: 'pending', 'running', 'completed', 'failed', 'timeout', 'cancel_requested', 'cancelled'
    * - 'pending': Execution intent written, AI call in progress
+   * - 'running': Worker claimed job, AI execution in progress
    * - 'completed': AI execution succeeded, result recorded
-   * - 'failed': AI execution failed (reserved for future use)
+   * - 'failed': AI execution failed
    * - 'timeout': Execution abandoned (cleanup job marks orphaned records)
+   * - 'cancel_requested': Client requested cancellation, worker should abort (Phase 47)
+   * - 'cancelled': Execution was aborted by worker (Phase 47)
    * Default: 'pending' (write-before-call)
    */
   @Column({ type: 'varchar', length: 20, name: 'execution_status', default: 'pending' })

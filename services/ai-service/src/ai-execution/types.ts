@@ -20,6 +20,8 @@ export interface AIExecutionRequest {
   prompt: string;
   provider: 'stub' | 'anthropic' | 'openai' | 'groq' | 'xai' | 'deepseek';
   metadata?: Record<string, unknown>;
+  /** Phase 47.4: Optional AbortSignal for cancellation */
+  signal?: AbortSignal;
 }
 
 /**

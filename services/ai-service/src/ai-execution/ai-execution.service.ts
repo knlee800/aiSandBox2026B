@@ -86,7 +86,10 @@ export class AIExecutionService {
     try {
       // Measure adapter execution time
       const adapterStartTime = performance.now();
-      const result = await adapter.execute(request);
+      const result = await adapter.execute({
+        ...request,
+        signal: request.signal,
+      });
       const adapterDurationMs = Math.round(
         performance.now() - adapterStartTime,
       );

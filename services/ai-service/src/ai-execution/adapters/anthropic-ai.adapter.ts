@@ -109,8 +109,12 @@ export class AnthropicAdapter implements AIAdapter {
         ],
       };
 
-      // Execute request via Anthropic SDK
-      const response = await this.client.messages.create(anthropicRequest);
+      // Execute request via Anthropic SDK (Phase 47.4: forward signal for abort)
+      const createOptions = request.signal ? { signal: request.signal } : {};
+      const response = await this.client.messages.create(
+        anthropicRequest,
+        createOptions,
+      );
 
       // Transform response to AIExecutionResult
       return this.transformResponse(response);

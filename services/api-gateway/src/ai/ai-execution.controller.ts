@@ -12,6 +12,7 @@ import {
   Get,
   Param,
   NotFoundException,
+  ConflictException,
   Sse,
   MessageEvent,
 } from '@nestjs/common';
@@ -259,6 +260,30 @@ export class AIExecutionController {
   }
 
   /**
+   * Request cancellation of a running execution (Phase 47.2)
+   *
+   * POST /api/ai/executions/:executionId/cancel
+   *
+   * Updates ledger to cancel_requested when execution is running.
+   * Returns 409 Conflict if execution cannot be cancelled.
+   */
+  @Post('executions/:executionId/cancel')
+  async cancelExecution(
+    @Param('executionId') executionId: string,
+  ): Promise<{ executionId: string; status: string }> {
+    const result = await this.executionResultService.requestCancel(executionId);
+
+    if (!result) {
+      throw new ConflictException('Execution cannot be cancelled');
+    }
+
+    return {
+      executionId,
+      status: 'cancel_requested',
+    };
+  }
+
+  /**
    * Get execution status
    *
    * GET /api/ai/executions/:executionId
@@ -293,6 +318,10 @@ export class AIExecutionController {
         break;
       case 'failed':
         status = 'failed';
+        break;
+      case 'cancel_requested':
+      case 'cancelled':
+        status = 'cancelled';
         break;
       default:
         status = 'queued';

@@ -63,6 +63,54 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
 
         this.logger.log(`Worker claimed executionId=${executionId}`);
 
+        const cancelCheck = await this.dataSource.query(
+          `
+          SELECT execution_status
+          FROM usage_records
+          WHERE execution_id = $1
+          `,
+          [executionId],
+        );
+
+        if (cancelCheck[0]?.execution_status === 'cancel_requested') {
+          await this.dataSource.query(
+            `
+            UPDATE usage_records
+            SET execution_status = 'cancelled'
+            WHERE execution_id = $1
+            `,
+            [executionId],
+          );
+
+          this.executionStreamPublisher.publishCompletion(executionId);
+
+          this.logger.warn(
+            `Execution cancelled before start executionId=${executionId}`,
+          );
+          return;
+        }
+
+        const abortController = new AbortController();
+        let cancelled = false;
+
+        const pollCancel = async () => {
+          if (abortController.signal.aborted || cancelled) return;
+
+          const poll = await this.dataSource.query(
+            `SELECT execution_status FROM usage_records WHERE execution_id = $1`,
+            [executionId],
+          );
+
+          if (poll[0]?.execution_status === 'cancel_requested') {
+            abortController.abort();
+            return;
+          }
+
+          setTimeout(pollCancel, 1000);
+        };
+
+        pollCancel();
+
         try {
           const aiResult = await this.aiExecutionService.execute({
             provider: job.data.provider,
@@ -70,11 +118,44 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
             sessionId: job.data.sessionId,
             conversationId: job.data.conversationId,
             userId: job.data.userId,
+            signal: abortController.signal,
           });
+
+          cancelled = true;
 
           this.logger.log(
             `AI execution completed executionId=${executionId} tokens=${aiResult.tokensUsed}`,
           );
+
+          const statusCheck = await this.dataSource.query(
+            `
+            SELECT execution_status
+            FROM usage_records
+            WHERE execution_id = $1
+            `,
+            [executionId],
+          );
+
+          if (statusCheck[0]?.execution_status === 'cancel_requested') {
+            cancelled = true;
+            abortController.abort();
+
+            await this.dataSource.query(
+              `
+              UPDATE usage_records
+              SET execution_status = 'cancelled'
+              WHERE execution_id = $1
+              `,
+              [executionId],
+            );
+
+            this.executionStreamPublisher.publishCompletion(executionId);
+
+            this.logger.warn(
+              `Execution cancelled during run executionId=${executionId}`,
+            );
+            return;
+          }
 
           if (aiResult.output) {
             this.executionStreamPublisher.publishToken(
@@ -97,6 +178,30 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
 
           this.logger.log(`Ledger finalized executionId=${executionId}`);
         } catch (error) {
+          cancelled = true;
+
+          const isAbort =
+            error instanceof Error &&
+            (error.name === 'AbortError' || abortController.signal.aborted);
+
+          if (isAbort) {
+            await this.dataSource.query(
+              `
+              UPDATE usage_records
+              SET execution_status = 'cancelled'
+              WHERE execution_id = $1
+              `,
+              [executionId],
+            );
+
+            this.executionStreamPublisher.publishCompletion(executionId);
+
+            this.logger.warn(
+              `Execution aborted executionId=${executionId}`,
+            );
+            return;
+          }
+
           this.logger.error(
             `AI execution failed executionId=${executionId}: ${error.message}`,
           );
