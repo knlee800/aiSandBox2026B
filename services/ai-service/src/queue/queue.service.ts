@@ -23,7 +23,7 @@ export class QueueService implements OnModuleDestroy {
 
   createQueue(name: string): Queue {
     return new Queue(name, {
-      connection: this.connection,
+      connection: this.connection as any,
     });
   }
 
