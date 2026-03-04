@@ -27,9 +27,18 @@ export class QueueService implements OnModuleDestroy {
     this.logger.log('QueueService connected to Redis');
   }
 
+  /**
+   * Enqueue AI execution job.
+   *
+   * Phase-51.3: attempts=1 (no BullMQ retries).
+   * Transient failure handling is done in-worker via in-job retry loop.
+   * BullMQ retries would re-run the job after ledger claim, risking
+   * duplicate execution or ledger inconsistency. In-worker retry keeps
+   * exactly-once semantics and ledger as source of truth.
+   */
   async enqueueExecution(jobData: any): Promise<void> {
     await this.queue.add('execute-ai', jobData, {
-      attempts: 3,
+      attempts: 1,
       removeOnComplete: true,
       removeOnFail: false,
     });
