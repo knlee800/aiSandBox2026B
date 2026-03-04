@@ -14,6 +14,7 @@ interface ExecutionCompletionLog {
   event: string;
   executionId: string;
   provider: string;
+  workerId?: number;
   queue_wait_ms?: number;
   duration_ms: number;
   tokens?: number;
@@ -39,6 +40,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
 
   private connection: Redis;
   private worker: Worker;
+  private readonly workerId = process.pid;
 
   constructor(
     private readonly dataSource: DataSource,
@@ -73,6 +75,11 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
       maxRetriesPerRequest: null,
     });
 
+    const concurrency = Math.max(
+      1,
+      parseInt(process.env.EXECUTION_WORKER_CONCURRENCY ?? '4', 10) || 4,
+    );
+
     this.worker = new Worker(
       'ai-execution',
       async (job: Job) => {
@@ -81,7 +88,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
         const executionStartTime = performance.now();
 
         this.logger.log(
-          `Worker received job ${job.id} executionId=${executionId}`,
+          `Worker received job ${job.id} executionId=${executionId} workerId=${this.workerId}`,
         );
 
         const result = await this.dataSource.query(
@@ -103,7 +110,9 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
         }
 
         const claimTime = Date.now();
-        this.logger.log(`Worker claimed executionId=${executionId}`);
+        this.logger.log(
+          `Worker claimed executionId=${executionId} workerId=${this.workerId}`,
+        );
 
         const cancelCheck = await this.dataSource.query(
           `
@@ -138,6 +147,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
             event: 'execution_completed',
             executionId,
             provider,
+            workerId: this.workerId,
             ...(queueWaitMs != null && { queue_wait_ms: queueWaitMs }),
             duration_ms: durationMs,
             tokens: 0,
@@ -192,6 +202,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
               event: 'execution_completed',
               executionId,
               provider,
+              workerId: this.workerId,
               ...(queueWaitMs != null && { queue_wait_ms: queueWaitMs }),
               duration_ms: durationMs,
               tokens: 0,
@@ -270,6 +281,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
               event: 'execution_completed',
               executionId,
               provider,
+              workerId: this.workerId,
               ...(queueWaitMs != null && { queue_wait_ms: queueWaitMs }),
               duration_ms: durationMs,
               tokens: aiResult.tokensUsed ?? 0,
@@ -308,6 +320,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
             event: 'execution_completed',
             executionId,
             provider,
+            workerId: this.workerId,
             ...(queueWaitMs != null && { queue_wait_ms: queueWaitMs }),
             duration_ms: durationMs,
             tokens: aiResult.tokensUsed ?? 0,
@@ -345,6 +358,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
               event: 'execution_completed',
               executionId,
               provider,
+              workerId: this.workerId,
               ...(queueWaitMs != null && { queue_wait_ms: queueWaitMs }),
               duration_ms: durationMs,
               tokens: 0,
@@ -366,6 +380,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
             event: 'execution_completed',
             executionId,
             provider,
+            workerId: this.workerId,
             ...(queueWaitMs != null && { queue_wait_ms: queueWaitMs }),
             duration_ms: durationMs,
             tokens: 0,
@@ -391,6 +406,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
       },
       {
         connection: this.connection as any,
+        concurrency,
       },
     );
 
