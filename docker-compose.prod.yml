@@ -1,6 +1,7 @@
 # Production Docker Compose - AI Sandbox Platform
 # Usage: docker compose -f docker-compose.prod.yml up -d
 # See docs/PRODUCTION-DEPLOYMENT-RUNBOOK.md
+# Security: docs/PRODUCTION-SECURITY.md
 
 services:
   # --- Infrastructure (internal only) ---
@@ -8,6 +9,8 @@ services:
     image: postgres:15-alpine
     container_name: aisandbox-postgres
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -20,6 +23,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2048M
     networks:
       - aisandbox-network
 
@@ -27,6 +35,8 @@ services:
     image: redis:7-alpine
     container_name: aisandbox-redis
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     volumes:
       - redis_data:/data
     command: redis-server --requirepass ${REDIS_PASSWORD}
@@ -35,6 +45,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
     networks:
       - aisandbox-network
 
@@ -45,6 +60,8 @@ services:
       dockerfile: Dockerfile
     container_name: aisandbox-api-gateway
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     ports:
       - "4000:4000"
     environment:
@@ -56,11 +73,22 @@ services:
       INTERNAL_SERVICE_KEY: ${INTERNAL_SERVICE_KEY}
       CONTAINER_MANAGER_URL: http://container-manager:4002
       AI_PROVIDER: ${AI_PROVIDER:-stub}
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:4000/api/health',r=>{r.resume();process.exit(r.statusCode===200?0:1);}).on('error',()=>process.exit(1));\""]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
     networks:
       - aisandbox-network
 
@@ -69,6 +97,8 @@ services:
       context: ./services/ai-service
       dockerfile: Dockerfile
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     environment:
       NODE_ENV: production
       PORT: 4001
@@ -80,6 +110,11 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1024M
     networks:
       - aisandbox-network
     # Scale: docker compose -f docker-compose.prod.yml up -d --scale ai-service=2
@@ -90,6 +125,8 @@ services:
       dockerfile: Dockerfile
     container_name: aisandbox-container-manager
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
@@ -100,6 +137,11 @@ services:
       DOCKER_HOST: unix:///var/run/docker.sock
     depends_on:
       - api-gateway
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
     networks:
       - aisandbox-network
 
@@ -111,12 +153,19 @@ services:
         API_GATEWAY_URL: http://api-gateway:4000
     container_name: aisandbox-frontend
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     ports:
       - "3000:3000"
     environment:
       NODE_ENV: production
     depends_on:
       - api-gateway
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
     networks:
       - aisandbox-network
 
@@ -125,11 +174,23 @@ services:
     image: prom/prometheus:latest
     container_name: aisandbox-prometheus
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     command:
       - --config.file=/etc/prometheus/prometheus.yml
     volumes:
       - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./monitoring/prometheus/alerts:/etc/prometheus/alerts:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://localhost:9090/-/ready || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1024M
     networks:
       - aisandbox-network
 
@@ -137,6 +198,8 @@ services:
     image: grafana/grafana:latest
     container_name: aisandbox-grafana
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     ports:
       - "3001:3000"
     environment:
@@ -146,6 +209,17 @@ services:
     volumes:
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
       - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://localhost:3000/api/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
     networks:
       - aisandbox-network
 
