@@ -7,10 +7,11 @@ const nextConfig = {
     root: path.join(__dirname),
   },
   async rewrites() {
+    const apiBase = process.env.API_GATEWAY_URL || 'http://localhost:4000';
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:4000/api/:path*',
+        destination: `${apiBase}/api/:path*`,
       },
     ];
   },
