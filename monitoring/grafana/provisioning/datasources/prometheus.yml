@@ -1,0 +1,9 @@
+# Phase-53B: Prometheus datasource for Grafana
+apiVersion: 1
+datasources:
+  - name: Prometheus
+    uid: prometheus
+    type: prometheus
+    url: http://prometheus:9090
+    access: proxy
+    isDefault: true

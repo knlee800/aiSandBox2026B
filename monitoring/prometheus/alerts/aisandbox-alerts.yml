@@ -1,0 +1,58 @@
+# Phase-53C: Prometheus alert rules for AI Sandbox Platform
+# Monitors execution, queue, and worker health via ai-service metrics
+
+groups:
+  - name: aisandbox.rules
+    rules:
+      - alert: AIExecutionFailureRateHigh
+        expr: rate(aisandbox_execution_failed_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High AI execution failure rate"
+          description: "Execution failures are occurring at an elevated rate."
+
+      - alert: AIExecutionLatencyHigh
+        expr: |
+          histogram_quantile(
+            0.95,
+            rate(aisandbox_execution_latency_seconds_bucket[5m])
+          ) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "AI execution latency high"
+          description: "P95 execution latency exceeds 10 seconds."
+
+      - alert: AIQueueBacklogHigh
+        expr: aisandbox_queue_waiting_jobs > 50
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "AI queue backlog high"
+          description: "More than 50 jobs waiting in execution queue."
+
+      - alert: AIQueueLagHigh
+        expr: |
+          histogram_quantile(
+            0.95,
+            rate(aisandbox_queue_lag_seconds_bucket[5m])
+          ) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "AI queue lag high"
+          description: "Queue wait time P95 exceeds 5 seconds."
+
+      - alert: AIWorkerStuckRecoverySpike
+        expr: rate(aisandbox_worker_stuck_recovered_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Worker stuck execution recovery spike"
+          description: "Workers are frequently recovering stuck executions."
