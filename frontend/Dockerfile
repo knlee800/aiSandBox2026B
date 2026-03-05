@@ -2,7 +2,7 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 COPY . .
 ARG API_GATEWAY_URL=http://api-gateway:4000
 ENV API_GATEWAY_URL=$API_GATEWAY_URL
@@ -14,5 +14,5 @@ WORKDIR /app
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
-RUN npm ci --omit=dev
+RUN npm install --omit=dev
 CMD ["npm", "run", "start"]

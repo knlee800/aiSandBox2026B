@@ -17,6 +17,8 @@
     "migration:create": "typeorm migration:create"
   },
   "dependencies": {
+    "accept-language-parser": "^1.5.0",
+    "axios": "^1.6.5",
     "@nestjs/common": "^10.3.0",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^10.3.0",
@@ -41,7 +43,8 @@
     "pg": "^8.17.2",
     "reflect-metadata": "^0.2.1",
     "rxjs": "^7.8.1",
-    "typeorm": "^0.3.28"
+    "typeorm": "^0.3.28",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@nestjs/testing": "^10.4.22",

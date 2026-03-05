@@ -1,4 +1,4 @@
-# Phase-56 Final Checkpoint
+# PHASE-56 Final Checkpoint
 
 **Phase:** 56  
 **Nature:** CHECKPOINT  
@@ -19,191 +19,141 @@
 - Distributed execution workers
 - Observability stack (Prometheus + Grafana + alert rules)
 
-**Previous phases:**
-- Phase-55 — Production deployment architecture and secure compose bundle
-- Phase-56 — Validates that the production deployment bundle works end-to-end
+Phase-55 delivered production deployment bundle + security hardening.  
+Phase-56 validates that the production deployment runs end-to-end locally.
 
 ---
 
 ## Phase-56 Objective
 
-Verify that the production deployment configuration is operational and ready for real production environments.
-
-**Validation covers:**
-- container startup
-- internal service connectivity
-- execution pipeline
-- monitoring stack
-- alert system
-- operational readiness
-
-No application code changes were made in this phase.
+Validate the production deployment bundle:
+- builds successfully
+- starts successfully
+- services connect via internal Docker network
+- monitoring stack works (targets, dashboards, alerts)
 
 ---
 
-## Implemented Capabilities
+## Validation Results
 
-### Production Deployment Validation
+The following were validated using `docker-compose.prod.yml`:
 
-Document created: `docs/PRODUCTION-VALIDATION.md`
+### 1) Docker image builds
+- api-gateway image builds
+- ai-service image builds
+- container-manager image builds
+- frontend image builds
 
-This document verifies that the production compose deployment works correctly.
+### 2) Service startup
+- postgres running and healthy
+- redis running and healthy
+- api-gateway running and healthy
+- ai-service running
+- container-manager running
+- prometheus running and healthy
+- grafana running and healthy
+- frontend running
 
-**Validation areas covered:**
-- Service startup verification
-- Service connectivity verification
-- Execution flow verification
-- Queue processing verification
-- Metrics scraping verification
-- Grafana dashboard verification
-- Prometheus alert rule verification
+### 3) Internal connectivity
+- api-gateway connects to redis
+- api-gateway connects to postgres
+- ai-service connects to redis
+- ai-service connects to postgres (DATABASE_URL set)
+- prometheus scrapes ai-service /metrics
+- grafana connects to prometheus datasource
 
----
+### 4) Monitoring verification
+- Prometheus UI reachable at http://localhost:9090
+- Targets page shows aisandbox-ai-service is UP
+- Grafana UI reachable at http://localhost:3001
+- Dashboards auto-provisioned (Execution Overview, Queue Health, Worker Activity, Latency)
+- Alerts visible in Prometheus (aisandbox.rules)
 
-### Service Startup Validation
-
-Validated stack deployment:
-
-```bash
-docker compose -f docker-compose.prod.yml up -d
-```
-
-**Expected services:**
-- api-gateway
-- ai-service
-- container-manager
-- frontend
-- postgres
-- redis
-- prometheus
-- grafana
-
-Healthchecks confirm container readiness.
-
----
-
-### Service Connectivity Validation
-
-Confirmed internal network relationships:
-
-| From | To |
-|------|-----|
-| api-gateway | ai-service |
-| ai-service | redis |
-| ai-service | postgres |
-| prometheus | ai-service metrics endpoint |
-| grafana | prometheus datasource |
-
-All services communicate through the internal `aisandbox-network`.
+### 5) Frontend verification
+- Next.js starts successfully and serves locale-based routes
+- Note: root / may 404 because build includes only app/[locale] routes (expected for current frontend routing)
 
 ---
 
-### Execution Flow Validation
+## Fixes Applied During Phase-56 (TASK-56A)
 
-Validated high-level execution pipeline:
+Minimal deployment/build fixes required to pass production validation:
 
-1. Client request → api-gateway
-2. api-gateway → ai-service
-3. Execution queued → Redis BullMQ
-4. Worker execution → ai-service worker
-5. Execution ledger update → PostgreSQL
-6. Execution result returned to client
+### A) Docker build determinism
+- Dockerfiles updated to use `npm install` instead of `npm ci` due to monorepo root-only `package-lock.json`.
 
----
+### B) Missing runtime dependencies (containerized builds)
+- **api-gateway:** added accept-language-parser, axios, uuid
+- **ai-service:** added @nestjs/typeorm, pg, typeorm
+- **container-manager:** added dotenv; other deps already present
 
-### Monitoring Stack Validation
+### C) Production compose wiring
+- `docker-compose.prod.yml` updated so api-gateway + ai-service use Docker-network PostgreSQL + Redis:
+  - DATABASE_URL uses postgres hostname
+  - REDIS_URL uses redis hostname
 
-**Prometheus metrics verified:** `http://ai-service:4001/metrics`
+### D) SQLite file locations used by legacy services
+- Identified SQLite file paths resolve to `/database/aisandbox.db` in:
+  - api-gateway ReconciliationService
+  - ai-service ConversationsService
+  - container-manager GovernanceEventsService
+- `docker-compose.prod.yml` updated to mount writable volumes to `/database` for:
+  - api-gateway
+  - ai-service
+  - container-manager
 
-**Metrics include:**
-- execution lifecycle counters
-- execution latency histograms
-- queue metrics
-- worker metrics
+### E) Prometheus access for local validation
+- `docker-compose.prod.yml` updated to publish Prometheus port 9090:9090 for local UI access.
 
-**Prometheus UI:** `http://localhost:9090`
-
----
-
-### Grafana Dashboard Validation
-
-Grafana dashboards confirmed operational.
-
-**URL:** `http://localhost:3001`
-
-**Dashboards verified:**
-- Execution Overview
-- Queue Health
-- Worker Activity
-- Latency
+### F) Environment configuration
+- `env_file: ./.env` added to services for variable pass-through
+- AI_PROVIDER and provider keys wired via `${VAR}` (no hardcoded defaults in compose)
+- LAUNCH_STATE, AI_PROVIDER, provider keys configured in `.env` for local validation
 
 ---
 
-### Alert Rules Validation
+## Files Modified (Summary)
 
-Prometheus alerts verified.
-
-**Alert group:** `aisandbox.rules`
-
-**Alerts include:**
-- AIExecutionFailureRateHigh
-- AIExecutionLatencyHigh
-- AIQueueBacklogHigh
-- AIQueueLagHigh
-- AIWorkerStuckRecoverySpike
-
-**Alerts visible at:** `http://localhost:9090/alerts`
-
----
-
-## Files Created
-
-- `docs/PRODUCTION-VALIDATION.md`
+| File | Change |
+|------|--------|
+| `docker-compose.prod.yml` | DATABASE_URL/REDIS_URL, volumes, env_file, ports, AI_PROVIDER pass-through |
+| `services/api-gateway/Dockerfile` | npm ci → npm install, mkdir -p /data && mkdir -p /app/data |
+| `services/ai-service/Dockerfile` | npm ci → npm install, mkdir -p /data && mkdir -p /app/data |
+| `services/container-manager/Dockerfile` | npm ci → npm install, mkdir -p /data && mkdir -p /app/data |
+| `frontend/Dockerfile` | npm ci → npm install |
+| `services/api-gateway/package.json` | Added accept-language-parser, axios, uuid |
+| `services/ai-service/package.json` | Added @nestjs/typeorm, pg, typeorm |
+| `services/container-manager/package.json` | Added dotenv |
+| `.env` | LAUNCH_STATE, AI_PROVIDER, provider keys for local validation |
 
 ---
 
-## Files Modified
+## Validation Commands Used
 
-None
+- `docker compose -f docker-compose.prod.yml up --build`
+- `docker ps`
+- `docker compose -f docker-compose.prod.yml logs <service>`
+- http://localhost:4000/api/health
+- http://localhost:9090/targets
+- http://localhost:3001
 
 ---
 
 ## Preserved Invariants
 
-Phase-56 introduced no runtime changes.
+Phase-56 introduced:
+- **no execution logic changes**
+- **no queue behavior changes**
+- **no schema changes**
+- **no API contract changes**
 
-The following guarantees remain unchanged:
-- Ledger write-before-call
-- Exactly-once execution
-- Deterministic replay protection
-- Atomic worker claim
-- Ledger as source of truth
-- Streaming completion guarantee
+All Phase-51 invariants remain intact.
 
 ---
 
 ## Platform State After Phase-56
 
-The platform now has:
-- Execution engine
-- Observability stack
-- Operational runbook
-- SLO / SLI reliability targets
-- Production deployment architecture
-- Production compose bundle and containerized services
-- Security-hardened deployment configuration
-- Validated deployment runbook
-
-**The system is now ready for production cutover.**
-
----
-
-## Next Phase
-
-**Phase-57 — Production Launch & Post-Launch Safeguards**
-
-Planned work:
-- production go-live checklist
-- rollback plan
-- post-launch monitoring window
-- release governance policy
+Production deployment bundle is validated locally:
+- full stack starts
+- monitoring stack operational
+- ready for production launch governance and controlled go-live procedures

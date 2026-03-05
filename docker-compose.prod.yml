@@ -9,6 +9,8 @@ services:
     image: postgres:15-alpine
     container_name: aisandbox-postgres
     restart: unless-stopped
+    env_file:
+      - ./.env
     security_opt:
       - no-new-privileges:true
     environment:
@@ -35,6 +37,8 @@ services:
     image: redis:7-alpine
     container_name: aisandbox-redis
     restart: unless-stopped
+    env_file:
+      - ./.env
     security_opt:
       - no-new-privileges:true
     volumes:
@@ -60,6 +64,8 @@ services:
       dockerfile: Dockerfile
     container_name: aisandbox-api-gateway
     restart: unless-stopped
+    env_file:
+      - ./.env
     security_opt:
       - no-new-privileges:true
     ports:
@@ -67,12 +73,19 @@ services:
     environment:
       NODE_ENV: production
       PORT: 4000
-      DATABASE_URL: ${DATABASE_URL}
-      REDIS_URL: ${REDIS_URL}
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
       JWT_SECRET: ${JWT_SECRET}
       INTERNAL_SERVICE_KEY: ${INTERNAL_SERVICE_KEY}
       CONTAINER_MANAGER_URL: http://container-manager:4002
-      AI_PROVIDER: ${AI_PROVIDER:-stub}
+      AI_PROVIDER: ${AI_PROVIDER}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GROQ_API_KEY: ${GROQ_API_KEY}
+      XAI_API_KEY: ${XAI_API_KEY}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
+    volumes:
+      - api_gateway_data:/database
     healthcheck:
       test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:4000/api/health',r=>{r.resume();process.exit(r.statusCode===200?0:1);}).on('error',()=>process.exit(1));\""]
       interval: 15s
@@ -97,16 +110,22 @@ services:
       context: ./services/ai-service
       dockerfile: Dockerfile
     restart: unless-stopped
+    env_file:
+      - ./.env
     security_opt:
       - no-new-privileges:true
+    volumes:
+      - ai_service_data:/database
     environment:
       NODE_ENV: production
       PORT: 4001
-      REDIS_URL: ${REDIS_URL}
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
       API_GATEWAY_URL: http://api-gateway:4000
       CONTAINER_MANAGER_URL: http://container-manager:4002
       INTERNAL_SERVICE_KEY: ${INTERNAL_SERVICE_KEY}
-      AI_PROVIDER: ${AI_PROVIDER:-stub}
+      AI_PROVIDER: ${AI_PROVIDER}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
     depends_on:
       redis:
         condition: service_healthy
@@ -125,10 +144,13 @@ services:
       dockerfile: Dockerfile
     container_name: aisandbox-container-manager
     restart: unless-stopped
+    env_file:
+      - ./.env
     security_opt:
       - no-new-privileges:true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - container_manager_data:/database
     environment:
       NODE_ENV: production
       PORT: 4002
@@ -153,6 +175,8 @@ services:
         API_GATEWAY_URL: http://api-gateway:4000
     container_name: aisandbox-frontend
     restart: unless-stopped
+    env_file:
+      - ./.env
     security_opt:
       - no-new-privileges:true
     ports:
@@ -174,8 +198,12 @@ services:
     image: prom/prometheus:latest
     container_name: aisandbox-prometheus
     restart: unless-stopped
+    env_file:
+      - ./.env
     security_opt:
       - no-new-privileges:true
+    ports:
+      - "9090:9090"
     command:
       - --config.file=/etc/prometheus/prometheus.yml
     volumes:
@@ -198,6 +226,8 @@ services:
     image: grafana/grafana:latest
     container_name: aisandbox-grafana
     restart: unless-stopped
+    env_file:
+      - ./.env
     security_opt:
       - no-new-privileges:true
     ports:
@@ -228,6 +258,9 @@ volumes:
     driver: local
   redis_data:
     driver: local
+  api_gateway_data:
+  ai_service_data:
+  container_manager_data:
 
 networks:
   aisandbox-network:
