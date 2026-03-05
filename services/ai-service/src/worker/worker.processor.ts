@@ -9,6 +9,18 @@ import Redis from 'ioredis';
 import { DataSource } from 'typeorm';
 import { AIExecutionService } from '../ai-execution/ai-execution.service';
 import { ExecutionStreamPublisher } from '../streaming/execution-stream.publisher';
+import {
+  incExecutionStarted,
+  incExecutionCompleted,
+  incExecutionFailed,
+  incExecutionCancelled,
+  observeExecutionLatency,
+} from '../observability/execution-metrics';
+import { observeQueueLag } from '../observability/queue-metrics';
+import {
+  incrementWorkerClaim,
+  incrementStuckRecovered,
+} from '../observability/worker-metrics';
 
 /**
  * Phase-51.3: Conservative classifier for transient (retryable) errors.
@@ -118,6 +130,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
           [executionId],
         );
         if (result.length > 0) {
+          incExecutionFailed();
           this.executionStreamPublisher.publishCompletion(executionId);
         }
       }
@@ -187,6 +200,8 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
       );
 
       if (result.length > 0) {
+        incExecutionFailed();
+        incrementStuckRecovered();
         this.executionStreamPublisher.publishCompletion(executionId);
         const runtimeMs = Math.round(
           Date.now() - new Date(row.timestamp).getTime(),
@@ -285,6 +300,8 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
               [executionId],
             );
             if (stalledResult.length > 0) {
+              incExecutionFailed();
+              incrementStuckRecovered();
               this.executionStreamPublisher.publishCompletion(executionId);
               this.logger.warn(
                 `Stalled job recovered, marked failed executionId=${executionId} workerId=${this.workerId}`,
@@ -312,6 +329,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
         }
 
         const claimTime = Date.now();
+        incrementWorkerClaim();
         this.logger.log(
           `Worker claimed executionId=${executionId} workerId=${this.workerId}`,
         );
@@ -331,6 +349,10 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
             ? Math.round(claimTime - new Date(intentCreatedAt).getTime())
             : undefined;
 
+        if (queueWaitMs != null) {
+          observeQueueLag(queueWaitMs / 1000);
+        }
+
         if (cancelCheck[0]?.execution_status === 'cancel_requested') {
           await this.dataSource.query(
             `
@@ -343,6 +365,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
 
           this.executionStreamPublisher.publishCompletion(executionId);
 
+          incExecutionCancelled();
           this.metrics.execution_cancelled_total++;
           const durationMs = Math.round(performance.now() - executionStartTime);
           this.logExecutionCompletion({
@@ -363,6 +386,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
           return;
         }
 
+        incExecutionStarted();
         const abortController = new AbortController();
         let cancelled = false;
         let timedOut = false;
@@ -392,9 +416,11 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
           );
 
           if (result.length > 0) {
+            incExecutionFailed();
             this.executionStreamPublisher.publishCompletion(executionId);
             this.metrics.execution_timeout_total++;
             const durationMs = Math.round(performance.now() - executionStartTime);
+            observeExecutionLatency(durationMs / 1000);
             this.logExecutionCompletion({
               event: 'execution_completed',
               executionId,
@@ -488,8 +514,10 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
 
             this.executionStreamPublisher.publishCompletion(executionId);
 
+            incExecutionCancelled();
             this.metrics.execution_cancelled_total++;
             const durationMs = Math.round(performance.now() - executionStartTime);
+            observeExecutionLatency(durationMs / 1000);
             this.logExecutionCompletion({
               event: 'execution_completed',
               executionId,
@@ -527,8 +555,10 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
 
           this.executionStreamPublisher.publishCompletion(executionId);
 
+          incExecutionCompleted();
           this.metrics.execution_completed_total++;
           const durationMs = Math.round(performance.now() - executionStartTime);
+          observeExecutionLatency(durationMs / 1000);
           this.logExecutionCompletion({
             event: 'execution_completed',
             executionId,
@@ -565,8 +595,10 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
 
             this.executionStreamPublisher.publishCompletion(executionId);
 
+            incExecutionCancelled();
             this.metrics.execution_cancelled_total++;
             const durationMs = Math.round(performance.now() - executionStartTime);
+            observeExecutionLatency(durationMs / 1000);
             this.logExecutionCompletion({
               event: 'execution_completed',
               executionId,
@@ -587,8 +619,10 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
 
           clearTimeoutWatchdog();
 
+          incExecutionFailed();
           this.metrics.execution_failed_total++;
           const durationMs = Math.round(performance.now() - executionStartTime);
+          observeExecutionLatency(durationMs / 1000);
           this.logExecutionCompletion({
             event: 'execution_completed',
             executionId,

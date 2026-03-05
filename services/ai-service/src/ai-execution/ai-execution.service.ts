@@ -14,6 +14,7 @@ import { OpenAIAdapter } from './adapters/openai-ai.adapter';
 import { GroqAdapter } from './adapters/groq-ai.adapter';
 import { XAIAdapter } from './adapters/xai-ai.adapter';
 import { DeepSeekAdapter } from './adapters/deepseek-ai.adapter';
+import { observeProviderLatency } from '../observability/execution-metrics';
 
 /**
  * AIExecutionService
@@ -83,9 +84,8 @@ export class AIExecutionService {
       `Executing AI request via adapter (model=${adapter.model}, provider=${provider}, session=${request.sessionId})`,
     );
 
+    const adapterStartTime = performance.now();
     try {
-      // Measure adapter execution time
-      const adapterStartTime = performance.now();
       const result = await adapter.execute({
         ...request,
         signal: request.signal,
@@ -93,6 +93,7 @@ export class AIExecutionService {
       const adapterDurationMs = Math.round(
         performance.now() - adapterStartTime,
       );
+      observeProviderLatency(adapterDurationMs / 1000);
 
       // Calculate total execution time
       const totalDurationMs = Math.round(performance.now() - executionStartTime);
@@ -116,6 +117,11 @@ export class AIExecutionService {
 
       return result;
     } catch (error) {
+      const adapterDurationMs = Math.round(
+        performance.now() - adapterStartTime,
+      );
+      observeProviderLatency(adapterDurationMs / 1000);
+
       // Calculate total execution time before failure
       const totalDurationMs = Math.round(performance.now() - executionStartTime);
 

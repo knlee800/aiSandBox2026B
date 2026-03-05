@@ -6,6 +6,7 @@ import { MessagesModule } from './messages/messages.module';
 import { AIExecutionModule } from './ai-execution/ai-execution.module';
 import { QueueModule } from './queue/queue.module';
 import { WorkerModule } from './worker/worker.module';
+import { ObservabilityModule } from './observability/metrics.module';
 
 /**
  * AppModule
@@ -33,6 +34,7 @@ import { WorkerModule } from './worker/worker.module';
     AIExecutionModule,
     QueueModule,
     WorkerModule,
+    ObservabilityModule,
   ],
   controllers: [],
   providers: [],

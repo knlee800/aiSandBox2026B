@@ -62,8 +62,8 @@ async function bootstrap() {
     }),
   );
 
-  // Set global prefix
-  app.setGlobalPrefix('api');
+  // Set global prefix (Phase-52A: exclude /metrics for Prometheus scraping)
+  app.setGlobalPrefix('api', { exclude: ['metrics'] });
 
   const port = process.env.PORT || 4001;
   await app.listen(port);

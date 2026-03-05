@@ -7,6 +7,7 @@ import { WorkerProcessor } from './worker.processor';
 import { ExecutionStreamPublisher } from '../streaming/execution-stream.publisher';
 import { MetricsController } from '../metrics/metrics.controller';
 import { QueueController } from '../internal/queue.controller';
+import { QueueMetricsUpdater } from '../observability/queue-metrics-updater';
 
 @Module({
   controllers: [MetricsController, QueueController],
@@ -22,6 +23,7 @@ import { QueueController } from '../internal/queue.controller';
   providers: [
     WorkerProcessor,
     ExecutionStreamPublisher,
+    QueueMetricsUpdater,
     {
       provide: 'AI_EXECUTION_QUEUE',
       useFactory: (queueService: QueueService) =>
