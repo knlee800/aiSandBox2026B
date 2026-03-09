@@ -3804,3 +3804,57 @@ This task is limited to **documentation/design only**—no code changes.
 **Reference:** PHASE-64A-CHECKPOINT.md
 
 ---
+
+### TASK-64B: Legal, Privacy & User Data Rights Operational Documentation
+
+**Task ID:** TASK-64B
+**Phase:** 64
+**Stage:** 64B
+**Priority:** 🟡 Medium
+**Nature:** DOCUMENTATION (NO CODE)
+**Dependencies:** PHASE-64A (Design)
+**Checkpoint:** `docs/PHASE-64B-CHECKPOINT.md`
+
+**Objective:**
+
+Implement operator-ready legal/privacy operational documentation per Phase 64A design. Documentation only—no platform code, schema, or endpoint changes.
+
+**Scope:**
+
+This task is limited to **documentation only**—no code changes.
+
+**In Scope:**
+
+1. **Operator-Ready Legal/Privacy Operational Docs**
+   - Per PHASE-64A-DESIGN.md
+   - Operational procedures for legal/privacy request handling
+
+2. **User Data Access/Export Request Procedure**
+   - Intake, verification, fulfillment, evidence steps
+   - Per PHASE-64A Section 4.1, 5
+
+3. **User Data Deletion Request Procedure**
+   - Intake, verification, cascade deletion, evidence steps
+   - Per PHASE-64A Section 4.2, 5; extends privacy-compliance-request-handling runbook
+
+4. **Identity Verification and Request Intake Handling**
+   - Verification expectations; intake channel; tracking
+   - Per PHASE-64A Section 4.4, 5.1
+
+5. **Evidence / Tracking / Signoff Requirements**
+   - Per PHASE-64A Section 5.2, 5.3
+   - Request log; completion sign-off; escalation rules
+
+6. **Cookie / Consent / Disclosure Operational Checklist**
+   - Where applicable (e.g., policy updates, consent verification)
+   - Per PHASE-64A Section 3.4
+
+**Explicitly Out of Scope:**
+
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+
+**Reference:** PHASE-64A-DESIGN.md, PHASE-64A-CHECKPOINT.md
+
+---
