@@ -1,6 +1,6 @@
--- TASK-56C: Seed TypeORM migrations table for baseline covered by init SQL
--- Runs after 002, 004, 100. Ensures TypeORM skips migrations already applied by init.
--- Only CreateBillingSnapshotsTable1738843300000 will run at api-gateway startup.
+-- TASK-56C/56D: Seed TypeORM migrations table for baseline covered by init SQL
+-- Runs after 002, 004, 100, 101. Ensures TypeORM skips migrations already applied by init.
+-- All billing/usage/invoice tables created by init; no migrations run at api-gateway startup.
 
 CREATE TABLE IF NOT EXISTS migrations (
   id SERIAL PRIMARY KEY,
@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS migrations (
 
 INSERT INTO migrations (timestamp, name) VALUES
   (1738843200000, 'CreateUsageRecordsTable1738843200000'),
+  (1738843300000, 'CreateBillingSnapshotsTable1738843300000'),
   (1740355200000, 'AddRequestIdToUsageRecords1740355200000'),
   (1740355300000, 'AddExecutionStatusToUsageRecords1740355300000'),
   (1738900000000, 'CreateInvoicesTable1738900000000'),

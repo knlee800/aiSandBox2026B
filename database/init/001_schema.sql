@@ -10,6 +10,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 DROP TABLE IF EXISTS orchestrator_conversations CASCADE;
 DROP TABLE IF EXISTS ai_conversations CASCADE;
 DROP TABLE IF EXISTS audit_logs CASCADE;
+DROP TABLE IF EXISTS billing_snapshots CASCADE;
 DROP TABLE IF EXISTS api_keys CASCADE;
 DROP TABLE IF EXISTS invoices CASCADE;
 DROP TABLE IF EXISTS subscriptions CASCADE;
@@ -225,33 +226,63 @@ CREATE TABLE subscriptions (
   cancel_at TIMESTAMPTZ
 );
 
--- Invoices
-CREATE TABLE invoices (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  stripe_invoice_id VARCHAR(255),
-  amount_usd NUMERIC(10,2) NOT NULL,
-  status VARCHAR(50) NOT NULL CHECK (status IN ('draft', 'paid', 'failed')),
-  period_start TIMESTAMPTZ NOT NULL,
-  period_end TIMESTAMPTZ NOT NULL,
-  token_usage_count BIGINT,
-  overage_charges_usd NUMERIC(10,2),
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+-- Billing Snapshots (Phase 23B-4: runtime entity parity)
+CREATE TABLE billing_snapshots (
+  snapshot_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  api_key_id VARCHAR(50) NOT NULL,
+  user_id VARCHAR(50) NOT NULL,
+  period_start TIMESTAMP NOT NULL,
+  period_end TIMESTAMP NOT NULL,
+  period_type VARCHAR(20) NOT NULL,
+  pricing_version VARCHAR(50) NOT NULL,
+  total_tokens INTEGER NOT NULL DEFAULT 0,
+  total_requests INTEGER NOT NULL DEFAULT 0,
+  subtotal_usd NUMERIC(10,3) NOT NULL DEFAULT 0,
+  adjustments_usd NUMERIC(10,3) NOT NULL DEFAULT 0,
+  total_cost_usd NUMERIC(10,3) NOT NULL DEFAULT 0,
+  line_items JSONB NOT NULL DEFAULT '[]',
+  status VARCHAR(20) NOT NULL DEFAULT 'draft',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+CREATE INDEX idx_billing_snapshots_api_key_period ON billing_snapshots(api_key_id, period_start, period_end);
+CREATE INDEX idx_billing_snapshots_user ON billing_snapshots(user_id);
+CREATE INDEX idx_billing_snapshots_created_at ON billing_snapshots(created_at);
+CREATE UNIQUE INDEX idx_billing_snapshots_unique_window ON billing_snapshots(api_key_id, period_start, period_end, pricing_version);
 
--- API Keys
+-- Invoices (Phase 25B-1: runtime entity parity, FK to billing_snapshots)
+CREATE TABLE invoices (
+  invoice_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  snapshot_id UUID NOT NULL UNIQUE REFERENCES billing_snapshots(snapshot_id) ON DELETE RESTRICT,
+  api_key_id VARCHAR(50) NOT NULL,
+  user_id VARCHAR(50) NOT NULL,
+  period_start TIMESTAMP NOT NULL,
+  period_end TIMESTAMP NOT NULL,
+  pricing_version VARCHAR(50) NOT NULL,
+  subtotal_usd NUMERIC(10,3) NOT NULL DEFAULT 0,
+  adjustments_usd NUMERIC(10,3) NOT NULL DEFAULT 0,
+  total_cost_usd NUMERIC(10,3) NOT NULL DEFAULT 0,
+  currency VARCHAR(3) NOT NULL DEFAULT 'USD',
+  line_items JSONB NOT NULL DEFAULT '[]',
+  status VARCHAR(20) NOT NULL DEFAULT 'draft',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_invoices_snapshot_id ON invoices(snapshot_id);
+CREATE INDEX idx_invoices_api_key_period ON invoices(api_key_id, period_start, period_end);
+CREATE INDEX idx_invoices_user ON invoices(user_id);
+CREATE INDEX idx_invoices_created_at ON invoices(created_at);
+
+-- API Keys (Phase 36A: runtime entity parity)
 CREATE TABLE api_keys (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  hashed_key VARCHAR(255) NOT NULL,
+  key_prefix VARCHAR(20) NOT NULL,
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  key_hash VARCHAR(255) UNIQUE NOT NULL,
-  key_prefix VARCHAR(50) NOT NULL,
-  name VARCHAR(255) NOT NULL,
-  rate_limit_per_hour INTEGER DEFAULT 100,
-  last_used_at TIMESTAMPTZ,
+  scopes JSONB NOT NULL DEFAULT '[]',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  expires_at TIMESTAMPTZ,
-  is_active BOOLEAN DEFAULT true
+  revoked_at TIMESTAMPTZ
 );
+CREATE INDEX idx_api_key_hashed ON api_keys(hashed_key);
+CREATE INDEX idx_api_key_user_id ON api_keys(user_id);
 
 -- ======================
 -- MULTI-AI TABLES (Optional)
