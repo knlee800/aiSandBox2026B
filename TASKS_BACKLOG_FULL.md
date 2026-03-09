@@ -3419,3 +3419,70 @@ Implement external monitoring contract and runbook documents to make Phase 60A d
 **Reference:** PHASE-60A-DESIGN.md, PHASE-60A-CHECKPOINT.md
 
 ---
+
+## Phase 61: Backup & Disaster Recovery
+
+### TASK-61A: Backup & Disaster Recovery Design
+
+**Task ID:** TASK-61A  
+**Phase:** 61  
+**Stage:** 61A  
+**Priority:** 🟡 Medium  
+**Nature:** DOCUMENTATION / DESIGN (NO CODE)  
+**Dependencies:** None  
+**Checkpoint:** `docs/PHASE-61A-CHECKPOINT.md`
+
+**Objective:**
+
+Define backup scope, restore priorities, disaster recovery scenarios, recovery objectives (RPO/RTO), and operational restore/runbook requirements. Design must align with current architecture constraints (no background workers, request-driven, single-node focus).
+
+**Scope:**
+
+This task is limited to **documentation and design only**—no code changes.
+
+**In Scope:**
+
+1. **Backup Scope and Backup Targets**
+   - What to back up (database, configuration, workspace data, etc.)
+   - Backup targets and storage considerations
+
+2. **Restore Priorities and Recovery Order**
+   - Order of restore operations
+   - Dependencies between restore steps
+
+3. **Disaster Recovery Scenarios**
+   - Scenario definitions (data loss, node failure, corruption, etc.)
+   - Response procedures per scenario
+
+4. **Recovery Objectives (RPO/RTO)**
+   - Recovery Point Objective where applicable
+   - Recovery Time Objective where applicable
+
+5. **Operational Restore/Runbook Requirements**
+   - Runbook structure for restore operations
+   - Verification and validation steps
+
+6. **Architecture Alignment**
+   - Alignment with ARCHITECTURE.md (no background workers, no cron, single-node)
+   - Preserve governance, session lifecycle, and data integrity guarantees
+
+**Explicitly Out of Scope:**
+
+- ❌ No code changes in 61A
+- ❌ No implementation of backup systems
+- ❌ No database schema changes
+- ❌ No background workers or scheduled jobs
+
+**Acceptance Criteria:**
+
+- [ ] Design document covers backup scope and targets
+- [ ] Restore priorities and recovery order defined
+- [ ] Disaster recovery scenarios documented
+- [ ] RPO/RTO specified where applicable
+- [ ] Operational restore/runbook requirements specified
+- [ ] Architecture constraints respected
+- [ ] Checkpoint written to `docs/PHASE-61A-CHECKPOINT.md`
+
+**Reference:** ARCHITECTURE.md Section 11 (Explicit Non-Goals), Section 12 (Summary)
+
+---

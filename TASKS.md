@@ -689,3 +689,35 @@ Implement external monitoring contract and runbook documents to make Phase 60A d
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-60B for full details
 
 ---
+
+### Phase 61: Backup & Disaster Recovery
+
+**Current Stage:** 61A
+
+**Active Task:** TASK-61A
+
+#### TASK-61A: Backup & Disaster Recovery Design
+
+**Status:** PLANNED  
+**Nature:** DOCUMENTATION / DESIGN (NO CODE)  
+**Checkpoint:** `docs/PHASE-61A-CHECKPOINT.md`
+
+**Objective:**  
+Define backup scope, restore priorities, disaster recovery scenarios, recovery objectives (RPO/RTO), and operational restore/runbook requirements. Design must align with current architecture constraints.
+
+**Scope:**
+- Backup scope and backup targets
+- Restore priorities and recovery order
+- Disaster recovery scenarios
+- Recovery objectives (RPO/RTO) where applicable
+- Operational restore/runbook requirements
+- Alignment with current architecture constraints
+
+**Non-Goals:**
+- ❌ No code changes in 61A
+- ❌ No implementation of backup systems
+- ❌ No schema changes
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-61A for full details
+
+---
