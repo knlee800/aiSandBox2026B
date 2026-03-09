@@ -3486,3 +3486,67 @@ This task is limited to **documentation and design only**—no code changes.
 **Reference:** ARCHITECTURE.md Section 11 (Explicit Non-Goals), Section 12 (Summary)
 
 ---
+
+### TASK-61B: Backup & Restore Runbook Implementation
+
+**Task ID:** TASK-61B  
+**Phase:** 61  
+**Stage:** 61B  
+**Priority:** 🟡 Medium  
+**Nature:** DOCUMENTATION (NO CODE)  
+**Dependencies:** PHASE-61A (Design)  
+**Checkpoint:** `docs/PHASE-61B-CHECKPOINT.md`
+
+**Objective:**
+
+Implement operational backup procedure documents and restore runbooks for the Phase 61A recovery scenarios. Documentation only—no platform code, schema, or endpoint changes.
+
+**Scope:**
+
+This task is limited to **documentation only**—no code changes.
+
+**In Scope:**
+
+1. **Operational Backup Procedure Documents**
+   - Backup procedure for PostgreSQL (pg_dump or equivalent)
+   - Backup procedure for configuration
+   - Verification and integrity checks
+
+2. **Restore Runbooks**
+
+   Per PHASE-61A-DESIGN.md Section 6.2:
+   - PostgreSQL restore from dump
+   - Full stack rebuild (host loss)
+   - Configuration/secrets restore
+
+3. **Recovery Verification Steps**
+   - Per PHASE-61A-DESIGN.md Section 6.3, 6.5
+   - Health checks, smoke tests
+
+4. **Rollback / Retry Guidance**
+   - Per PHASE-61A-DESIGN.md Section 6.4
+
+5. **Operator Prerequisites, Dependencies, and Safety Checks**
+   - Tools required (pg_dump, pg_restore, etc.)
+   - Backup location, credentials
+   - Pre-restore safety checks
+
+**Explicitly Out of Scope:**
+
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No background workers, cron, or event bus
+
+**Acceptance Criteria:**
+
+- [ ] Operational backup procedure documents created
+- [ ] Restore runbooks created for all Phase 61A scenarios
+- [ ] Recovery verification steps documented
+- [ ] Rollback/retry guidance documented
+- [ ] Operator prerequisites and safety checks documented
+- [ ] Checkpoint written to `docs/PHASE-61B-CHECKPOINT.md`
+
+**Reference:** PHASE-61A-DESIGN.md, PHASE-61A-CHECKPOINT.md
+
+---

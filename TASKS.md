@@ -692,9 +692,9 @@ Implement external monitoring contract and runbook documents to make Phase 60A d
 
 ### Phase 61: Backup & Disaster Recovery
 
-**Current Stage:** 61A
+**Current Stage:** 61B
 
-**Active Task:** TASK-61A
+**Active Task:** TASK-61B
 
 #### TASK-61A: Backup & Disaster Recovery Design
 
@@ -719,5 +719,30 @@ Define backup scope, restore priorities, disaster recovery scenarios, recovery o
 - ❌ No schema changes
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-61A for full details
+
+---
+
+#### TASK-61B: Backup & Restore Runbook Implementation
+
+**Status:** PLANNED  
+**Nature:** DOCUMENTATION (NO CODE)  
+**Checkpoint:** `docs/PHASE-61B-CHECKPOINT.md`
+
+**Objective:**  
+Implement operational backup procedure documents and restore runbooks for the Phase 61A recovery scenarios. Documentation only—no platform code, schema, or endpoint changes.
+
+**Scope:**
+- Operational backup procedure documents
+- Restore runbooks for Phase 61A recovery scenarios
+- Recovery verification steps
+- Rollback / retry guidance
+- Operator prerequisites, dependencies, and safety checks
+
+**Non-Goals:**
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-61B for full details
 
 ---
