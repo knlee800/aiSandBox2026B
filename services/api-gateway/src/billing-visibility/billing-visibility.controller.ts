@@ -10,6 +10,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { BillingVisibilityService } from './billing-visibility.service';
+import { EfficiencySummaryService } from './efficiency-summary.service';
 import { ApiKeyAuthGuard } from '../auth/api-key-auth.guard';
 import { AuthorizationGuard } from '../auth/authorization.guard';
 import { AuthenticatedUser } from '../auth/authenticated-user.decorator';
@@ -45,6 +46,7 @@ import {
 export class BillingVisibilityController {
   constructor(
     private readonly billingVisibilityService: BillingVisibilityService,
+    private readonly efficiencySummaryService: EfficiencySummaryService,
   ) {}
 
   /**
@@ -217,6 +219,70 @@ export class BillingVisibilityController {
     return this.billingVisibilityService.getMetadata(
       snapshotId,
       identity.apiKeyId,
+    );
+  }
+
+  /**
+   * Get efficiency summary for time window (Phase 59B)
+   *
+   * GET /api/billing/efficiency-summary?periodStart=2026-02-01&periodEnd=2026-02-28
+   *
+   * Returns EfficiencySummary with execution counts, token/cost averages,
+   * and provider breakdown. Read-only, ledger-based aggregation.
+   */
+  @Get('efficiency-summary')
+  @HttpCode(HttpStatus.OK)
+  async getEfficiencySummary(
+    @AuthenticatedUser() identity: ApiKeyIdentity,
+    @Query('periodStart') periodStart: string,
+    @Query('periodEnd') periodEnd: string,
+  ) {
+    if (!periodStart || !periodEnd) {
+      throw new BadRequestException(
+        'periodStart and periodEnd are required',
+      );
+    }
+    const parsedStart = new Date(periodStart);
+    const parsedEnd = new Date(periodEnd);
+    if (isNaN(parsedStart.getTime()) || isNaN(parsedEnd.getTime())) {
+      throw new BadRequestException('Invalid periodStart or periodEnd format');
+    }
+    return this.efficiencySummaryService.getEfficiencySummary(
+      identity.apiKeyId,
+      parsedStart,
+      parsedEnd,
+    );
+  }
+
+  /**
+   * Get provider cost trends by day (Phase 59B)
+   *
+   * GET /api/billing/provider-trends?periodStart=2026-02-01&periodEnd=2026-02-28
+   *
+   * Returns ProviderTrendsResponse with daily cost by provider.
+   * Read-only, ledger-based aggregation.
+   */
+  @Get('provider-trends')
+  @HttpCode(HttpStatus.OK)
+  async getProviderTrends(
+    @AuthenticatedUser() identity: ApiKeyIdentity,
+    @Query('periodStart') periodStart: string,
+    @Query('periodEnd') periodEnd: string,
+  ) {
+    if (!periodStart || !periodEnd) {
+      throw new BadRequestException(
+        'periodStart and periodEnd are required',
+      );
+    }
+    const parsedStart = new Date(periodStart);
+    const parsedEnd = new Date(periodEnd);
+    if (isNaN(parsedStart.getTime()) || isNaN(parsedEnd.getTime())) {
+      throw new BadRequestException('Invalid periodStart or periodEnd format');
+    }
+    return this.efficiencySummaryService.getProviderTrends(
+      identity.apiKeyId,
+      parsedStart,
+      parsedEnd,
     );
   }
 }

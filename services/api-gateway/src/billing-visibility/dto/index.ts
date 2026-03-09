@@ -17,3 +17,11 @@ export {
   ProviderCostSummary,
 } from './time-window-cost-summary.dto';
 export { SnapshotMetadata } from './snapshot-metadata.dto';
+export {
+  EfficiencySummary,
+  ProviderEfficiencySummary,
+} from './efficiency-summary.dto';
+export {
+  ProviderTrendsResponse,
+  ProviderTrendsDay,
+} from './provider-trends.dto';
