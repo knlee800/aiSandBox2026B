@@ -4003,3 +4003,51 @@ Final validation of Phase 65A design and Phase 65B operator documentation, with 
 **Reference:** PHASE-65A-CHECKPOINT.md, PHASE-65B-CHECKPOINT.md
 
 ---
+
+## Phase 66: Analytics & Growth Visibility
+
+### TASK-66A: Analytics & Growth Visibility Design
+
+**Task ID:** TASK-66A
+**Phase:** 66
+**Stage:** 66A
+**Priority:** 🟡 Medium
+**Nature:** DOCUMENTATION / DESIGN (NO CODE)
+**Dependencies:** None
+**Checkpoint:** `docs/PHASE-66A-CHECKPOINT.md`
+
+**Objective:**
+
+Define launch-ready analytics and growth visibility scope, product usage/retention/feature adoption visibility requirements, error/reliability/cost-per-user visibility requirements, operator/stakeholder dashboard requirements, evidence/review/signoff expectations, aligned with current architecture constraints.
+
+**Scope:**
+
+This task is limited to **documentation and design only**—no code changes.
+
+**In Scope:**
+
+1. **Launch-Ready Analytics and Growth Visibility Scope**
+   - What analytics and growth visibility capabilities are required before production launch
+
+2. **Product Usage / Retention / Feature Adoption Visibility Requirements**
+   - Usage metrics, retention signals, feature adoption tracking requirements
+
+3. **Error / Reliability / Cost-Per-User Visibility Requirements**
+   - Error rate visibility, reliability metrics, cost-per-user visibility requirements
+
+4. **Operator / Stakeholder Dashboard Requirements**
+   - Dashboard scope for operators and stakeholders; data sources and refresh model
+
+5. **Evidence / Review / Signoff Expectations**
+   - Evidence capture, review cadence, signoff requirements for analytics deliverables
+
+6. **Alignment with Current Architecture Constraints**
+   - No background workers, request-driven, stateless API; existing metrics endpoints only
+
+**Explicitly Out of Scope:**
+
+- ❌ No code changes in 66A
+
+**Reference:** PHASE-66A-CHECKPOINT.md
+
+---

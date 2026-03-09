@@ -991,3 +991,33 @@ Final validation of Phase 65A design and Phase 65B operator documentation, with 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-65C for full details
 
 ---
+
+### Phase 66: Analytics & Growth Visibility
+
+**Current Stage:** 66A
+
+**Active Task:** TASK-66A
+
+#### TASK-66A: Analytics & Growth Visibility Design
+
+**Status:** PLANNED
+**Nature:** DOCUMENTATION / DESIGN (NO CODE)
+**Checkpoint:** `docs/PHASE-66A-CHECKPOINT.md`
+
+**Objective:**
+Define launch-ready analytics and growth visibility scope, product usage/retention/feature adoption visibility requirements, error/reliability/cost-per-user visibility requirements, operator/stakeholder dashboard requirements, evidence/review/signoff expectations, aligned with current architecture constraints.
+
+**Scope:**
+- Launch-ready analytics and growth visibility scope
+- Product usage / retention / feature adoption visibility requirements
+- Error / reliability / cost-per-user visibility requirements
+- Operator / stakeholder dashboard requirements
+- Evidence / review / signoff expectations
+- Alignment with current architecture constraints
+
+**Non-Goals:**
+- ❌ No code changes in 66A
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-66A for full details
+
+---
