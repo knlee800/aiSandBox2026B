@@ -16,5 +16,6 @@ INSERT INTO migrations (timestamp, name) VALUES
   (1738900000000, 'CreateInvoicesTable1738900000000'),
   (1769160618009, 'InitSchema202601231769160618009'),
   (1771494478022, 'AddSessionTermination1771494478022'),
-  (1771495000000, 'AddExecutionStatusCancelStates1771495000000')
+  (1771495000000, 'AddExecutionStatusCancelStates1771495000000'),
+  (1771495100000, 'AddChatMessagesAndAlignConversations1771495100000')
 ON CONFLICT (name) DO NOTHING;

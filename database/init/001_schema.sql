@@ -22,6 +22,7 @@ DROP TABLE IF EXISTS downloads CASCADE;
 DROP TABLE IF EXISTS projects CASCADE;
 DROP TABLE IF EXISTS token_usage CASCADE;
 DROP TABLE IF EXISTS checkpoints CASCADE;
+DROP TABLE IF EXISTS chat_messages CASCADE;
 DROP TABLE IF EXISTS conversations CASCADE;
 DROP TABLE IF EXISTS sessions CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
@@ -70,16 +71,28 @@ CREATE TABLE sessions (
   orchestrator_mode VARCHAR(50) DEFAULT 'off' CHECK (orchestrator_mode IN ('off', 'lite', 'full'))
 );
 
--- Conversations (full chat history)
+-- Conversations (runtime entity parity: session_id, messages_count only)
 CREATE TABLE conversations (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   session_id UUID UNIQUE NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  messages JSONB NOT NULL DEFAULT '[]',
-  current_message_number INTEGER NOT NULL DEFAULT 0,
+  messages_count INTEGER NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Chat messages (runtime entity parity: ChatMessageRepository.createMessage)
+DROP TYPE IF EXISTS chat_message_role CASCADE;
+CREATE TYPE chat_message_role AS ENUM ('user', 'assistant', 'system');
+CREATE TABLE chat_messages (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  conversation_id UUID NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+  role chat_message_role NOT NULL,
+  content TEXT NOT NULL,
+  tokens_used INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_chat_message_conversation_id ON chat_messages(conversation_id);
+CREATE INDEX idx_chat_message_created_at ON chat_messages(created_at);
 
 -- Checkpoints (version control snapshots)
 CREATE TABLE checkpoints (
