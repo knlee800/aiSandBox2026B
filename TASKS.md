@@ -638,13 +638,13 @@ Deterministic background reconciliation of orphaned pending execution records.
 
 ### Phase 60: Alerting & Incident Readiness
 
-**Current Stage:** 60A
+**Current Stage:** 60B
 
-**Active Task:** TASK-60A
+**Active Task:** TASK-60B
 
 #### TASK-60A: Alerting & Incident Readiness Design
 
-**Status:** ACTIVE  
+**Status:** COMPLETE and LOCKED  
 **Nature:** DOCUMENTATION / DESIGN (NO CODE)  
 **Checkpoint:** `docs/PHASE-60A-CHECKPOINT.md`
 
@@ -664,5 +664,28 @@ Define production alerting scope, alert thresholds, incident signal definitions,
 - ❌ No schema changes
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-60A for full details
+
+---
+
+#### TASK-60B: External Monitoring Contract & Runbook Implementation
+
+**Status:** ACTIVE  
+**Nature:** DOCUMENTATION (NO CODE)  
+**Checkpoint:** `docs/PHASE-60B-CHECKPOINT.md`
+
+**Objective:**  
+Implement external monitoring contract and runbook documents to make Phase 60A design operationally usable.
+
+**Scope:**
+- External monitoring contract for existing endpoints
+- Polling/evaluation rules based on Phase 60A design
+- Runbook implementation documents for the 5 defined incident categories
+
+**Non-Goals:**
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-60B for full details
 
 ---

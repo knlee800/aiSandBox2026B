@@ -3374,3 +3374,48 @@ This task is limited to **documentation and design only**—no code changes.
 **Reference:** ARCHITECTURE.md Section 11 (Explicit Non-Goals), PHASE-41A-CHECKPOINT.md (Runtime Metrics)
 
 ---
+
+### TASK-60B: External Monitoring Contract & Runbook Implementation
+
+**Task ID:** TASK-60B  
+**Phase:** 60  
+**Stage:** 60B  
+**Priority:** 🟡 Medium  
+**Nature:** DOCUMENTATION (NO CODE)  
+**Dependencies:** PHASE-60A (Design)  
+**Checkpoint:** `docs/PHASE-60B-CHECKPOINT.md`
+
+**Objective:**
+
+Implement external monitoring contract and runbook documents to make Phase 60A design operationally usable. Documentation only—no platform code, schema, or endpoint changes.
+
+**Scope:**
+
+1. **External Monitoring Contract**
+   - Contract for existing endpoints (`/api/runtime/metrics`, `/api/health`, `/api/health/ready`, `/api/health/db`)
+   - Polling/evaluation rules based on Phase 60A design
+   - Response format, thresholds, debounce/cooldown guidance
+
+2. **Runbook Implementation**
+   - Five runbook documents for the 5 defined incident categories
+   - Connectivity: Docker connectivity lost, Database connectivity lost, API Gateway unreachable
+   - Session/Container: Session–container drift
+   - Termination: Elevated error termination rate
+   - Per PHASE-60A-DESIGN.md section 5 (structure, verification, remediation, escalation)
+
+**Explicitly Out of Scope:**
+
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No background workers, cron, or event bus
+
+**Acceptance Criteria:**
+
+- [ ] External monitoring contract document created
+- [ ] Five runbook documents created per Phase 60A design
+- [ ] Checkpoint written to `docs/PHASE-60B-CHECKPOINT.md`
+
+**Reference:** PHASE-60A-DESIGN.md, PHASE-60A-CHECKPOINT.md
+
+---
