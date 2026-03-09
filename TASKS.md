@@ -635,3 +635,34 @@ Deterministic background reconciliation of orphaned pending execution records.
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-43C-2
 
 ---
+
+### Phase 60: Alerting & Incident Readiness
+
+**Current Stage:** 60A
+
+**Active Task:** TASK-60A
+
+#### TASK-60A: Alerting & Incident Readiness Design
+
+**Status:** ACTIVE  
+**Nature:** DOCUMENTATION / DESIGN (NO CODE)  
+**Checkpoint:** `docs/PHASE-60A-CHECKPOINT.md`
+
+**Objective:**  
+Define production alerting scope, alert thresholds, incident signal definitions, and runbook requirements aligned with current architecture constraints.
+
+**Scope:**
+- Production alerting scope
+- Alert thresholds
+- Incident signal definitions
+- Runbook requirements
+- Alignment with architecture constraints (no background workers, request-driven)
+
+**Non-Goals:**
+- ❌ No code changes in 60A
+- ❌ No implementation of alerting systems
+- ❌ No schema changes
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-60A for full details
+
+---

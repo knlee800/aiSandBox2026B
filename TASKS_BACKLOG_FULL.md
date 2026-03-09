@@ -3301,3 +3301,76 @@ This task is limited to **minimal, additive implementation only** in:
 **Note:** This task was split into TASK-42A-1, TASK-42A-2, TASK-42A-3, TASK-42A-4 for tighter scope control and incremental verification. See above for replacement tasks.
 
 ---
+
+## Phase 60: Alerting & Incident Readiness
+
+### TASK-60A: Alerting & Incident Readiness Design
+
+**Task ID:** TASK-60A  
+**Phase:** 60  
+**Stage:** 60A  
+**Priority:** 🟡 Medium  
+**Nature:** DOCUMENTATION / DESIGN (NO CODE)  
+**Dependencies:** PHASE-41A (Runtime Metrics)  
+**Checkpoint:** `docs/PHASE-60A-CHECKPOINT.md`
+
+**Objective:**
+
+Define production alerting scope, alert thresholds, incident signal definitions, and runbook requirements. Design must align with current architecture constraints (no background workers, request-driven enforcement, no event bus).
+
+**Scope:**
+
+This task is limited to **documentation and design only**—no code changes.
+
+**In Scope:**
+
+1. **Production Alerting Scope**
+   - What to alert on (connectivity, session drift, error rates, etc.)
+   - How alerting integrates with existing `/api/runtime/metrics` (external polling)
+   - Boundaries: no in-process alerting agents, no background workers
+
+2. **Alert Thresholds**
+   - Numeric thresholds for alert conditions
+   - Severity levels (warning, critical)
+   - Threshold rationale
+
+3. **Incident Signal Definitions**
+   - What constitutes an incident
+   - Incident severity classification
+   - Signal-to-incident mapping
+
+4. **Runbook Requirements**
+   - Runbook structure and content
+   - Required runbooks (connectivity, session drift, etc.)
+   - Escalation paths
+
+5. **Architecture Alignment**
+   - Alignment with ARCHITECTURE.md (no background workers, no cron, no event bus)
+   - Preserve execution, quota, billing, ledger, observability behavior
+
+**Explicitly Out of Scope:**
+
+- ❌ No code changes in 60A
+- ❌ No implementation of alerting systems (Prometheus, Grafana, etc.)
+- ❌ No database schema changes
+- ❌ No background workers or scheduled jobs
+- ❌ No modifications to existing metrics endpoint
+
+**Acceptance Criteria:**
+
+- [ ] Design document covers production alerting scope
+- [ ] Alert thresholds defined with rationale
+- [ ] Incident signal definitions documented
+- [ ] Runbook requirements specified
+- [ ] Architecture constraints respected
+- [ ] Checkpoint written to `docs/PHASE-60A-CHECKPOINT.md`
+
+**Stop Conditions:**
+
+1. ✅ Design document complete
+2. ✅ Checkpoint written
+3. ✅ No scope expansion occurred
+
+**Reference:** ARCHITECTURE.md Section 11 (Explicit Non-Goals), PHASE-41A-CHECKPOINT.md (Runtime Metrics)
+
+---
