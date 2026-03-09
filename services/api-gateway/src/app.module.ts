@@ -12,6 +12,7 @@ import { ConversationModule } from './conversations/conversation.module';
 import { ChatMessageModule } from './chat-messages/chat-message.module';
 import { TokenUsageModule } from './token-usage/token-usage.module';
 import { GitCheckpointModule } from './git-checkpoints/git-checkpoint.module';
+import { CheckpointsModule } from './checkpoints/checkpoints.module';
 import { InvoicesModule } from './invoices/invoices.module';
 import { PaymentsModule } from './payments/payments.module';
 import { AdminModule } from './admin/admin.module';
@@ -50,6 +51,7 @@ import { IdempotentReplayExceptionFilter } from './filters/idempotent-replay-exc
     ChatMessageModule,
     TokenUsageModule,
     GitCheckpointModule,
+    CheckpointsModule, // Phase 68B: Public checkpoint history/control endpoints
     InvoicesModule,
     PaymentsModule, // Task 10B2: Payment provider abstraction
     AdminModule, // Task 11A: Admin visibility endpoints

@@ -259,6 +259,93 @@ export class ContainerManagerHttpClient implements OnModuleInit {
       return null;
     }
   }
+
+  /**
+   * Get git diff for a checkpoint from container-manager
+   * PHASE-68B: Call git diff endpoint
+   * Calls GET /api/git/:sessionId/diff/:commitHash
+   * @param sessionId - Session UUID
+   * @param commitHash - Commit hash to get diff for
+   * @returns Diff data (commitHash, parentHash, files array)
+   * @throws Error on HTTP failure (fail-fast)
+   */
+  async getGitDiff(
+    sessionId: string,
+    commitHash: string,
+  ): Promise<GitDiffResult> {
+    if (this.isDisabled) {
+      throw new Error(
+        'ContainerManagerHttpClient is disabled (development mode, no INTERNAL_SERVICE_KEY)',
+      );
+    }
+
+    try {
+      const response = await this.axiosInstance.get(
+        `/api/git/${sessionId}/diff/${commitHash}`,
+        {
+          headers: {
+            'X-Internal-Service-Key': this.internalServiceKey,
+          },
+        },
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status || 'unknown';
+        const message = error.response?.data?.message || error.message;
+        throw new Error(
+          `Failed to get git diff for session ${sessionId}, commit ${commitHash}: HTTP ${status} - ${message}`,
+        );
+      }
+      throw new Error(
+        `Failed to get git diff for session ${sessionId}, commit ${commitHash}: ${error}`,
+      );
+    }
+  }
+
+  /**
+   * Revert session to a checkpoint in container-manager
+   * PHASE-68B: Call git revert endpoint
+   * Calls POST /api/git/:sessionId/revert
+   * @param sessionId - Session UUID
+   * @param commitHash - Commit hash to revert to
+   * @returns Revert result (message, commitHash)
+   * @throws Error on HTTP failure (fail-fast)
+   */
+  async revertToCheckpoint(
+    sessionId: string,
+    commitHash: string,
+  ): Promise<GitRevertResult> {
+    if (this.isDisabled) {
+      throw new Error(
+        'ContainerManagerHttpClient is disabled (development mode, no INTERNAL_SERVICE_KEY)',
+      );
+    }
+
+    try {
+      const response = await this.axiosInstance.post(
+        `/api/git/${sessionId}/revert`,
+        { commitHash },
+        {
+          headers: {
+            'X-Internal-Service-Key': this.internalServiceKey,
+          },
+        },
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status || 'unknown';
+        const message = error.response?.data?.message || error.message;
+        throw new Error(
+          `Failed to revert session ${sessionId} to commit ${commitHash}: HTTP ${status} - ${message}`,
+        );
+      }
+      throw new Error(
+        `Failed to revert session ${sessionId} to commit ${commitHash}: ${error}`,
+      );
+    }
+  }
 }
 
 /**
@@ -312,4 +399,27 @@ export interface BillingUsageExport {
     }>;
   };
   status: 'COMPLETE' | 'INCOMPLETE';
+}
+
+/**
+ * GitDiffResult interface
+ * PHASE-68B: Type definition for git diff response
+ */
+export interface GitDiffResult {
+  commitHash: string;
+  parentHash: string | null;
+  files: Array<{
+    path: string;
+    status: 'added' | 'modified' | 'deleted';
+    diff: string;
+  }>;
+}
+
+/**
+ * GitRevertResult interface
+ * PHASE-68B: Type definition for git revert response
+ */
+export interface GitRevertResult {
+  message: string;
+  commitHash: string;
 }

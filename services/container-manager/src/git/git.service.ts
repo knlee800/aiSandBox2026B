@@ -106,10 +106,87 @@ export class GitService {
     // Reset to commit
     await git.reset(['--hard', commitHash]);
 
+    // Create checkpoint for the revert operation
+    const revertDescription = `Reverted to ${commitHash.substring(0, 7)}`;
+    await this.createCheckpoint(sessionId, userId, 0, commitHash, revertDescription, 0);
+
     return {
       message: 'Reverted to commit successfully',
       commitHash,
     };
+  }
+
+  async getDiff(sessionId: string, commitHash: string) {
+    const workspacePath = this.sessionsService.getWorkspacePath(sessionId);
+    const git: SimpleGit = simpleGit(workspacePath);
+
+    try {
+      // Get parent commit hash
+      const parents = await git.raw(['rev-list', '--parents', '-n', '1', commitHash]);
+      const parentHash = parents.trim().split(' ')[1] || null;
+
+      // Get diff between parent and commit (or initial commit if no parent)
+      let diffOutput: string;
+      if (parentHash) {
+        diffOutput = await git.diff([`${parentHash}..${commitHash}`]);
+      } else {
+        // Initial commit: show all files as added
+        diffOutput = await git.show([commitHash]);
+      }
+
+      // Parse diff output into structured format
+      const files = this.parseDiffOutput(diffOutput);
+
+      return {
+        commitHash,
+        parentHash,
+        files,
+      };
+    } catch (error) {
+      console.error(`Failed to get diff for commit ${commitHash}:`, error);
+      throw error;
+    }
+  }
+
+  private parseDiffOutput(diffOutput: string): Array<{
+    path: string;
+    status: 'added' | 'modified' | 'deleted';
+    diff: string;
+  }> {
+    const files: Array<{
+      path: string;
+      status: 'added' | 'modified' | 'deleted';
+      diff: string;
+    }> = [];
+
+    // Split diff by file boundaries (diff --git lines)
+    const fileDiffs = diffOutput.split(/(?=diff --git)/);
+
+    for (const fileDiff of fileDiffs) {
+      if (!fileDiff.trim()) continue;
+
+      // Extract file path
+      const pathMatch = fileDiff.match(/diff --git a\/(.*?) b\/(.*?)$/m);
+      if (!pathMatch) continue;
+
+      const path = pathMatch[2];
+
+      // Determine status
+      let status: 'added' | 'modified' | 'deleted' = 'modified';
+      if (fileDiff.includes('new file mode')) {
+        status = 'added';
+      } else if (fileDiff.includes('deleted file mode')) {
+        status = 'deleted';
+      }
+
+      files.push({
+        path,
+        status,
+        diff: fileDiff,
+      });
+    }
+
+    return files;
   }
 
   async getCheckpoints(sessionId: string, limit: number = 10) {

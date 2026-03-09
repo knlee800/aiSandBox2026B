@@ -4379,3 +4379,172 @@ This task is limited to **documentation only**—no code changes.
 **Reference:** PHASE-67-FINAL-CHECKPOINT.md
 
 ---
+
+### TASK-68B: Backend UX/UI Support Endpoints — History/Control Slice
+
+**Task ID:** TASK-68B
+**Phase:** 68
+**Stage:** 68B
+**Priority:** 🔴 High
+**Nature:** IMPLEMENTATION (BACKEND ONLY, ADDITIVE)
+**Dependencies:** PHASE-68A (Complete), Existing git_checkpoints table, Existing git auto-commit system
+**Checkpoint:** `docs/PHASE-68B-CHECKPOINT.md`
+
+**Objective:**
+
+Implement the first minimal backend endpoint slice to unblock frontend history/control UX implementation (PHASE-67A-2). This task implements only the three history/control endpoints identified as highest priority in Phase 68A implementation plan. These endpoints expose the existing git checkpoint system to the frontend via public REST APIs.
+
+**Scope:**
+
+This task is limited to **backend implementation only**—no frontend, no schema changes.
+
+**In Scope:**
+
+1. **GET /api/sessions/:id/checkpoints**
+   - List all checkpoints for a session
+   - Query git_checkpoints table WHERE session_id = :id
+   - Order by created_at DESC (newest first)
+   - Return array of checkpoints (id, commitHash, messageNumber, description, filesChanged, createdAt)
+   - Enforce JWT auth, session ownership
+   - Handle 404 (session not found), 410 (session terminated, but still return checkpoints), 403 (not owned)
+   - Response format:
+     ```json
+     [
+       {
+         "id": "uuid",
+         "commitHash": "abc123def456...",
+         "messageNumber": 1,
+         "description": "Created Flask app",
+         "filesChanged": 2,
+         "createdAt": "2026-03-09T14:32:15Z"
+       }
+     ]
+     ```
+
+2. **GET /api/sessions/:id/checkpoints/:hash/diff**
+   - Get diff for a specific checkpoint (vs parent commit)
+   - Execute git diff inside session container (or via git CLI)
+   - Parse diff output, structure as JSON
+   - Return files array with path, status, diff content
+   - Enforce JWT auth, session ownership
+   - Handle 404 (checkpoint not found), 403 (not owned), 410 (terminated, but still return diff)
+   - Response format:
+     ```json
+     {
+       "commitHash": "abc123def456...",
+       "parentHash": "parent123...",
+       "files": [
+         {
+           "path": "app.py",
+           "status": "added",
+           "diff": "unified diff content..."
+         }
+       ]
+     }
+     ```
+
+3. **POST /api/sessions/:id/revert**
+   - Revert session to a specific checkpoint
+   - Validate request body (commitHash required)
+   - Verify session active (not terminated) → 410 if terminated
+   - Execute git revert or git reset inside container
+   - Create new checkpoint via existing internal checkpoint system
+   - Return new checkpoint info
+   - Enforce JWT auth, session ownership
+   - Handle 410 (session terminated), 404 (checkpoint not found), 403 (not owned)
+   - Request body:
+     ```json
+     {
+       "commitHash": "abc123def456..."
+     }
+     ```
+   - Response format:
+     ```json
+     {
+       "message": "Reverted successfully",
+       "newCheckpoint": {
+         "id": "uuid",
+         "commitHash": "new123...",
+         "description": "Reverted to abc123"
+       }
+     }
+     ```
+
+4. **Endpoint Tests**
+   - Unit tests (controller, service methods)
+   - Integration tests (E2E endpoint behavior, auth, ownership, error handling)
+   - Test coverage target: 80%+
+
+5. **API Documentation**
+   - OpenAPI/Swagger documentation for all 3 endpoints
+   - Request/response schemas
+   - Error response documentation (404, 410, 429, 403, 500)
+
+**Explicitly Out of Scope:**
+
+- ❌ No user dashboard endpoints (deferred to TASK-68B-2)
+- ❌ No admin dashboard endpoints (deferred to TASK-68B-3)
+- ❌ No schema changes (use existing git_checkpoints table)
+- ❌ No git_checkpoints table modifications
+- ❌ No frontend work
+- ❌ No frontend components
+- ❌ No refactors outside endpoint implementation
+- ❌ No architectural changes
+- ❌ No scope expansion beyond history/control endpoints
+
+**Deliverables:**
+
+1. **Controller Implementation**
+   - New controller: `checkpoints.controller.ts` (or extend `sessions.controller.ts`)
+   - 3 new controller methods (GET checkpoints, GET diff, POST revert)
+   - JWT auth guards applied
+   - Session ownership guards applied
+
+2. **Service Implementation**
+   - New service: `checkpoints.service.ts` (or extend `sessions.service.ts`)
+   - 3 new service methods (list checkpoints, get diff, execute revert)
+   - Git operations (query git_checkpoints table, execute git diff/revert inside container)
+   - Checkpoint creation integration (use existing internal checkpoint system)
+
+3. **Tests**
+   - Unit tests (controller methods, service methods)
+   - Integration tests (E2E endpoint behavior)
+   - Test coverage: 80%+ for new code
+
+4. **API Documentation**
+   - OpenAPI/Swagger specs for 3 endpoints
+   - Request/response schemas
+   - Error documentation
+
+5. **Checkpoint**
+   - `docs/PHASE-68B-CHECKPOINT.md`
+   - Implementation summary
+   - Test results
+   - API documentation references
+
+**Acceptance Criteria:**
+
+- ✅ GET /api/sessions/:id/checkpoints returns correct data format
+- ✅ GET /api/sessions/:id/checkpoints/:hash/diff returns valid diff content
+- ✅ POST /api/sessions/:id/revert creates new checkpoint and reverts workspace
+- ✅ All endpoints enforce JWT auth
+- ✅ All endpoints enforce session ownership (403 if not owned, 404 if not found)
+- ✅ All endpoints handle termination correctly (410 for revert, but allow read for checkpoints/diff)
+- ✅ All endpoints tested (80%+ coverage)
+- ✅ API documentation complete (OpenAPI/Swagger)
+- ✅ No schema changes occurred
+- ✅ No frontend changes occurred
+
+**Preserved Invariants:**
+
+- No schema changes (use existing git_checkpoints table)
+- No API contract changes to existing endpoints
+- New endpoints additive only (no breaking changes)
+- Request-driven enforcement (no background workers)
+- Deterministic error semantics (404, 410, 429, 403, 500)
+- Session lifecycle respected (CREATED → ACTIVE → TERMINATED)
+- Termination permanent (revert returns 410 for terminated sessions)
+
+**Reference:** PHASE-68A-CHECKPOINT.md (Section 8: Backend Dependency Mapping, Section 16: Implementation Task Breakdown)
+
+---

@@ -1194,3 +1194,42 @@ Convert completed Phase 67 UX/UI design outputs into an implementation-ready exe
 - ✅ Checkpoint created: `docs/PHASE-68A-CHECKPOINT.md`
 
 ---
+
+**Current Stage:** 68B
+
+**Active Task:** TASK-68B
+
+#### TASK-68B: Backend UX/UI Support Endpoints — History/Control Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (BACKEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-68B-CHECKPOINT.md`
+
+**Objective:**
+Implement the first minimal backend endpoint slice to unblock frontend history/control UX implementation. This task implements only the three history/control endpoints identified as highest priority in Phase 68A.
+
+**Scope:**
+- Implement GET /api/sessions/:id/checkpoints (list checkpoints)
+- Implement GET /api/sessions/:id/checkpoints/:hash/diff (get diff)
+- Implement POST /api/sessions/:id/revert (revert to checkpoint)
+- Endpoint tests (unit, integration, E2E)
+- API documentation (OpenAPI/Swagger)
+
+**Non-Goals:**
+- ❌ No user dashboard endpoints (deferred to TASK-68B-2)
+- ❌ No admin dashboard endpoints (deferred to TASK-68B-3)
+- ❌ No schema changes (use existing git_checkpoints table)
+- ❌ No frontend work
+- ❌ No refactors
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-68B for full details
+
+**Completion Summary:**
+- ✅ All 3 endpoints implemented (checkpoints list, diff, revert)
+- ✅ All tests passing (37 tests: 10 controller, 9 service, 18 integration)
+- ✅ No schema changes
+- ✅ No frontend changes
+- ✅ Scope remained narrow
+- ✅ Checkpoint created: `docs/PHASE-68B-CHECKPOINT.md`
+
+---

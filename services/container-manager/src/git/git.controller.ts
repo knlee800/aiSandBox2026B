@@ -47,4 +47,12 @@ export class GitController {
   ) {
     return this.gitService.getCheckpoints(sessionId, limit ? parseInt(limit.toString()) : 10);
   }
+
+  @Get(':sessionId/diff/:commitHash')
+  async diff(
+    @Param('sessionId') sessionId: string,
+    @Param('commitHash') commitHash: string
+  ) {
+    return this.gitService.getDiff(sessionId, commitHash);
+  }
 }
