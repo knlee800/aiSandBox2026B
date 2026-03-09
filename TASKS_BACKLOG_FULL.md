@@ -4165,3 +4165,59 @@ This task is limited to **documentation/design only**—no code changes.
 **Reference:** PHASE-67A-CHECKPOINT.md
 
 ---
+
+### TASK-67B: UX/UI Final Consolidation + Validation
+
+**Task ID:** TASK-67B
+**Phase:** 67
+**Stage:** 67B
+**Priority:** 🟡 Medium
+**Nature:** DOCUMENTATION / VALIDATION (NO CODE)
+**Dependencies:** PHASE-67A (Design)
+**Checkpoint:** `docs/PHASE-67B-CHECKPOINT.md`
+
+**Objective:**
+
+Final consolidation and validation of all Phase 67A UX/UI design documentation to ensure consistency, completeness, and launch readiness. Documentation only—no platform code, schema, or endpoint changes.
+
+**Scope:**
+
+This task is limited to **documentation and validation only**—no code changes.
+
+**In Scope:**
+
+1. **Validation of PHASE-67A-1, PHASE-67A-2, and PHASE-67A-3 Checkpoint Consistency**
+   - Verify all Phase 67A checkpoint slices are internally consistent
+   - Verify no contradictions across checkpoint documents
+
+2. **Consolidation of Core Product UX/UI Design Coverage**
+   - Consolidate coverage across all Phase 67A slices
+   - Verify workspace UX, history/control UX, dashboards, and public-facing surfaces are fully covered
+
+3. **Conflict/Gap Review**
+   - Identify conflicts across workspace UX, history/control UX, dashboards, and public-facing surfaces
+   - Identify gaps in UX/UI design documentation
+
+4. **PRD / ARCHITECTURE Alignment Review**
+   - Verify UX/UI design aligns with PRD.md and ARCHITECTURE.md
+   - Verify no architectural violations
+
+5. **Launch-Readiness Validation for UX/UI Documentation Scope**
+   - Verify UX/UI documentation scope is sufficient for launch readiness
+   - Verify no blocking UX/UI design gaps remain
+
+6. **Final Phase 67 Checkpoint Creation Readiness**
+   - Produce `docs/PHASE-67B-CHECKPOINT.md`
+
+**Explicitly Out of Scope:**
+
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No implementation
+- ❌ No frontend code changes
+- ❌ No backend code changes
+
+**Reference:** PHASE-67A-CHECKPOINT.md
+
+---
