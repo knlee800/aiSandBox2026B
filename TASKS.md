@@ -791,3 +791,37 @@ Implement operator-ready validation drill runbooks for Phase 62A scenarios. Docu
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-62B for full details
 
 ---
+
+### Phase 63: Security Operations & Compliance Readiness
+
+**Current Stage:** 63A
+
+**Active Task:** TASK-63A
+
+#### TASK-63A: Security Operations & Compliance Readiness Design
+
+**Status:** PLANNED  
+**Nature:** DOCUMENTATION / DESIGN (NO CODE)  
+**Checkpoint:** `docs/PHASE-63A-CHECKPOINT.md`
+
+**Objective:**  
+Define security operations scope for launch readiness, including audit logging, incident response, access control, backup encryption, privacy/compliance, and security runbook requirements. Design must align with current architecture constraints.
+
+**Scope:**
+- Security operations scope for launch readiness
+- Audit logging and audit review requirements
+- Incident response / security event handling requirements
+- Access control / secrets handling operational requirements
+- Backup encryption / sensitive data protection requirements
+- Privacy / compliance readiness requirements where applicable
+- Security runbook / review requirements
+- Alignment with current architecture constraints
+
+**Non-Goals:**
+- ❌ No code changes in 63A
+- ❌ No implementation of security systems
+- ❌ No schema changes
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-63A for full details
+
+---
