@@ -4276,3 +4276,106 @@ This task is limited to **documentation only**—no code changes.
 **Reference:** PHASE-67A-CHECKPOINT.md, PHASE-67B-CHECKPOINT.md
 
 ---
+
+### TASK-68A: UX/UI Implementation Planning
+
+**Task ID:** TASK-68A
+**Phase:** 68
+**Stage:** 68A
+**Priority:** 🟡 Medium
+**Nature:** DOCUMENTATION / PLANNING (NO CODE)
+**Dependencies:** PHASE-67 (Complete)
+**Checkpoint:** `docs/PHASE-68A-CHECKPOINT.md`
+
+**Objective:**
+
+Convert completed Phase 67 UX/UI design outputs into an implementation-ready execution plan for launch-priority UX/UI work. This task produces a structured implementation roadmap that sequences backend and frontend work, identifies dependencies, and defines controlled implementation stages. Documentation only—no platform code, schema, or endpoint changes.
+
+**Scope:**
+
+This task is limited to **documentation only**—no code changes.
+
+**In Scope:**
+
+1. **Recommended Implementation Sequence for Launch-Priority UX/UI Work**
+   - Define implementation order (backend endpoints first, then frontend components)
+   - Identify critical path for launch readiness
+   - Define parallel vs sequential work streams
+
+2. **Backend Dependency Mapping for UX/UI Implementation**
+   - Map Phase 67 UX requirements to required backend endpoints
+   - Identify existing endpoints (already implemented)
+   - Identify missing endpoints (not yet implemented)
+   - Define endpoint implementation priority
+
+3. **Frontend Dependency Mapping for UX/UI Implementation**
+   - Map Phase 67 UX designs to frontend components
+   - Identify component dependencies
+   - Define component implementation order
+
+4. **Slicing of Implementation into Controlled Stages**
+   - Break implementation into manageable stages
+   - Define stage boundaries (backend vs frontend, workspace vs dashboard, etc.)
+   - Define stage dependencies and prerequisites
+
+5. **Validation of What Can Be Implemented Immediately vs What Depends on Missing Backend/Product Surfaces**
+   - Identify blockers (missing endpoints, missing product features)
+   - Identify ready-to-implement surfaces (no blockers)
+   - Define workarounds or stubs for blocked work (if applicable)
+
+6. **Implementation Task Breakdown and Sequencing**
+   - Define specific implementation tasks (backend endpoint tasks, frontend component tasks)
+   - Sequence tasks by dependency order
+   - Estimate complexity/scope per task (high-level)
+
+**Explicitly Out of Scope:**
+
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No implementation
+- ❌ No frontend code changes
+- ❌ No backend code changes
+- ❌ No architecture changes
+- ❌ No scope expansion beyond Phase 67 design outputs
+
+**Deliverables:**
+
+1. **Implementation Plan Document**
+   - Checkpoint: `docs/PHASE-68A-CHECKPOINT.md`
+   - Contents:
+     - Implementation sequence (backend → frontend)
+     - Backend endpoint task breakdown
+     - Frontend component task breakdown
+     - Dependency mapping (Phase 67 UX → backend endpoints → frontend components)
+     - Stage definitions (controlled slicing)
+     - Blocker identification (missing endpoints, missing features)
+     - Ready-to-implement identification
+     - Implementation task registry (task IDs, scope, dependencies)
+
+2. **Task Status Update**
+   - Mark TASK-68A as COMPLETE in `TASKS.md`
+   - Lock TASK-68A after checkpoint creation
+
+**Acceptance Criteria:**
+
+- ✅ Implementation sequence clearly defined
+- ✅ Backend dependencies mapped (Phase 67 UX → required endpoints)
+- ✅ Frontend dependencies mapped (Phase 67 UX → required components)
+- ✅ Implementation sliced into controlled stages
+- ✅ Blockers identified (missing endpoints/features)
+- ✅ Ready-to-implement work identified
+- ✅ Implementation tasks defined with IDs and dependencies
+- ✅ Checkpoint created: `docs/PHASE-68A-CHECKPOINT.md`
+
+**Preserved Invariants:**
+
+- No code changes (documentation only)
+- No schema changes
+- No endpoint changes
+- No architecture changes
+- No scope expansion beyond Phase 67 outputs
+
+**Reference:** PHASE-67-FINAL-CHECKPOINT.md
+
+---
