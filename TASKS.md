@@ -912,9 +912,9 @@ Implement operator-ready legal/privacy operational documentation per Phase 64A d
 
 ### Phase 65: Admin Tools & Launch Operations
 
-**Current Stage:** 65A
+**Current Stage:** 65B
 
-**Active Task:** TASK-65A
+**Active Task:** TASK-65B
 
 #### TASK-65A: Admin Tools & Launch Operations Design
 
@@ -938,5 +938,31 @@ Define launch-ready admin tool scope, admin actions and operator permissions, ab
 - ❌ No code changes in 65A
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-65A for full details
+
+---
+
+#### TASK-65B: Admin Operations & Operator Procedure Documentation
+
+**Status:** PLANNED  
+**Nature:** DOCUMENTATION (NO CODE)  
+**Checkpoint:** `docs/PHASE-65B-CHECKPOINT.md`
+
+**Objective:**  
+Implement operator-ready admin procedures per Phase 65A design. Documentation only—no platform code, schema, or endpoint changes.
+
+**Scope:**
+- Operator-ready admin procedures
+- Abuse / suspension / ban handling procedures
+- Refund / credit / manual quota adjustment procedures
+- Launch-day admin health / visibility checklist
+- Audit / evidence / signoff requirements for admin actions
+- Operator permissions / approval workflow guidance
+
+**Non-Goals:**
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-65B for full details
 
 ---

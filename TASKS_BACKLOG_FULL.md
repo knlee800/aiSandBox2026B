@@ -3909,3 +3909,56 @@ This task is limited to **documentation/design only**—no code changes.
 **Reference:** PHASE-65A-CHECKPOINT.md
 
 ---
+
+### TASK-65B: Admin Operations & Operator Procedure Documentation
+
+**Task ID:** TASK-65B  
+**Phase:** 65  
+**Stage:** 65B  
+**Priority:** 🟡 Medium  
+**Nature:** DOCUMENTATION (NO CODE)  
+**Dependencies:** PHASE-65A (Design)  
+**Checkpoint:** `docs/PHASE-65B-CHECKPOINT.md`
+
+**Objective:**
+
+Implement operator-ready admin procedures per Phase 65A design. Documentation only—no platform code, schema, or endpoint changes.
+
+**Scope:**
+
+This task is limited to **documentation only**—no code changes.
+
+**In Scope:**
+
+1. **Operator-Ready Admin Procedures**
+   - Per PHASE-65A-DESIGN.md
+   - Operational procedures for admin actions
+
+2. **Abuse / Suspension / Ban Handling Procedures**
+   - Intake, evidence, decision, escalation steps
+   - Per PHASE-65A Section 4
+
+3. **Refund / Credit / Manual Quota Adjustment Procedures**
+   - When to act; checks; audit; rollback
+   - Per PHASE-65A Section 5
+
+4. **Launch-Day Admin Health / Visibility Checklist**
+   - Per PHASE-65A Section 6; PHASE-57, PHASE-60
+
+5. **Audit / Evidence / Signoff Requirements for Admin Actions**
+   - Per PHASE-65A Section 7
+   - Required records; review expectations; retention
+
+6. **Operator Permissions / Approval Workflow Guidance**
+   - Per PHASE-65A Section 3
+   - Role expectations; approval for sensitive actions
+
+**Explicitly Out of Scope:**
+
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+
+**Reference:** PHASE-65A-DESIGN.md, PHASE-65A-CHECKPOINT.md
+
+---
