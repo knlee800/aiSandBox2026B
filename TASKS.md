@@ -746,3 +746,48 @@ Implement operational backup procedure documents and restore runbooks for the Ph
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-61B for full details
 
 ---
+
+### Phase 62: Backup & Restore Validation Drill
+
+**Current Stage:** 62B
+
+**Active Task:** TASK-62B
+
+#### TASK-62A: Backup & Restore Validation Drill Design
+
+**Status:** COMPLETE and LOCKED  
+**Nature:** DOCUMENTATION / DESIGN (NO CODE)  
+**Checkpoint:** `docs/PHASE-62A-CHECKPOINT.md`
+
+**Objective:**  
+Produce the Phase 62A design for backup and restore validation drills so the platform can regularly prove that Phase 61 backup and disaster recovery procedures actually work in practice.
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-62A for full details
+
+---
+
+#### TASK-62B: Backup & Restore Validation Drill Runbook Implementation
+
+**Status:** PLANNED  
+**Nature:** DOCUMENTATION (NO CODE)  
+**Checkpoint:** `docs/PHASE-62B-CHECKPOINT.md`
+
+**Objective:**  
+Implement operator-ready validation drill runbooks for Phase 62A scenarios. Documentation only—no platform code, schema, or endpoint changes.
+
+**Scope:**
+- Operator-ready validation drill runbooks
+- Drill execution steps for Phase 62A scenarios (database, config, full stack, backup integrity, corrupted deployment)
+- Evidence capture requirements
+- Pass/fail recording requirements
+- Abort / rollback conditions
+- Post-drill cleanup and signoff
+
+**Non-Goals:**
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-62B for full details
+
+---

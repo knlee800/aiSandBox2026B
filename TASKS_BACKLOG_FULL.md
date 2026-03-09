@@ -3550,3 +3550,90 @@ This task is limited to **documentation only**—no code changes.
 **Reference:** PHASE-61A-DESIGN.md, PHASE-61A-CHECKPOINT.md
 
 ---
+
+## Phase 62: Backup & Restore Validation Drill
+
+### TASK-62A: Backup & Restore Validation Drill Design
+
+**Task ID:** TASK-62A  
+**Phase:** 62  
+**Stage:** 62A  
+**Priority:** 🟡 Medium  
+**Nature:** DOCUMENTATION / DESIGN (NO CODE)  
+**Dependencies:** PHASE-61 COMPLETE  
+**Checkpoint:** `docs/PHASE-62A-CHECKPOINT.md`
+
+**Objective:**
+
+Produce the Phase 62A design for backup and restore validation drills so the platform can regularly prove that Phase 61 backup and disaster recovery procedures actually work in practice.
+
+**Reference:** PHASE-62A-DESIGN.md, PHASE-62A-CHECKPOINT.md
+
+---
+
+### TASK-62B: Backup & Restore Validation Drill Runbook Implementation
+
+**Task ID:** TASK-62B  
+**Phase:** 62  
+**Stage:** 62B  
+**Priority:** 🟡 Medium  
+**Nature:** DOCUMENTATION (NO CODE)  
+**Dependencies:** PHASE-62A (Design)  
+**Checkpoint:** `docs/PHASE-62B-CHECKPOINT.md`
+
+**Objective:**
+
+Implement operator-ready validation drill runbooks for Phase 62A scenarios. Documentation only—no platform code, schema, or endpoint changes.
+
+**Scope:**
+
+This task is limited to **documentation only**—no code changes.
+
+**In Scope:**
+
+1. **Operator-Ready Validation Drill Runbooks**
+   - Per PHASE-62A-DESIGN.md Section 6.1
+   - Database restore validation drill
+   - Configuration/secrets restore validation drill
+   - Full stack rebuild validation drill
+   - Backup integrity verification drill
+   - Corrupted deployment recovery drill (optional)
+
+2. **Drill Execution Steps**
+   - Ordered steps for each Phase 62A scenario
+   - Reference to Phase 61 runbooks where applicable
+
+3. **Evidence Capture Requirements**
+   - Drill log (date, operator, environment, duration)
+   - Pass/fail recording requirements
+   - RTO measurement where applicable
+   - Checksum verification output (backup integrity)
+
+4. **Abort / Rollback Conditions**
+   - Per PHASE-62A-DESIGN.md Section 6.4
+   - When to stop, how to clean up
+
+5. **Post-Drill Cleanup and Signoff**
+   - Per PHASE-62A-DESIGN.md Section 6.5
+   - Restore staging to normal state
+   - Signoff expectations
+
+**Explicitly Out of Scope:**
+
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No background workers, cron, or event bus
+
+**Acceptance Criteria:**
+
+- [ ] Validation drill runbooks created for all Phase 62A mandatory scenarios
+- [ ] Drill execution steps documented
+- [ ] Evidence capture and pass/fail recording documented
+- [ ] Abort/rollback conditions documented
+- [ ] Post-drill cleanup and signoff documented
+- [ ] Checkpoint written to `docs/PHASE-62B-CHECKPOINT.md`
+
+**Reference:** PHASE-62A-DESIGN.md, PHASE-62A-CHECKPOINT.md
+
+---
