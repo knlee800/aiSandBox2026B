@@ -3693,3 +3693,63 @@ This task is limited to **documentation/design only**—no code changes.
 **Reference:** PHASE-63A-CHECKPOINT.md
 
 ---
+
+### TASK-63B: Security Runbooks & Compliance Operational Documentation
+
+**Task ID:** TASK-63B  
+**Phase:** 63  
+**Stage:** 63B  
+**Priority:** 🟡 Medium  
+**Nature:** DOCUMENTATION (NO CODE)  
+**Dependencies:** PHASE-63A (Design)  
+**Checkpoint:** `docs/PHASE-63B-CHECKPOINT.md`
+
+**Objective:**
+
+Implement operator-ready security runbooks and compliance operational documentation per Phase 63A design. Documentation only—no platform code, schema, or endpoint changes.
+
+**Scope:**
+
+This task is limited to **documentation only**—no code changes.
+
+**In Scope:**
+
+1. **Operator-Ready Security Runbooks**
+   - Per PHASE-63A-DESIGN.md Section 8.1
+   - Incident response (extends PHASE-60 runbooks with security extensions)
+   - Security incidents (credential compromise, unauthorized access, backup exposure)
+   - Secrets rotation procedure, emergency rotation
+   - Access revocation, emergency access
+
+2. **Audit Review Procedures**
+   - Monthly audit log review procedure
+   - Quarterly access control review procedure
+   - Security runbook review procedure
+
+3. **Security Incident Handling Procedures**
+   - Triage, escalation, containment, recovery, post-incident per PHASE-63A Section 4
+
+4. **Secrets / Credential Handling Procedures**
+   - Rotation procedure for INTERNAL_SERVICE_KEY, JWT_SECRET, DB passwords
+   - Storage and access expectations
+
+5. **Backup Protection / Restore-Time Sensitive Data Handling Procedures**
+   - Encryption verification, off-host storage, restore-time protection
+
+6. **Privacy / Compliance Operational Checklists**
+   - Data handling, retention, deletion readiness
+   - GDPR operational readiness where applicable
+
+7. **Evidence / Signoff Requirements**
+   - Per PHASE-63A Section 8.3
+   - Audit log review, access control review, security runbook review signoff
+
+**Explicitly Out of Scope:**
+
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+
+**Reference:** PHASE-63A-DESIGN.md, PHASE-63A-CHECKPOINT.md
+
+---
