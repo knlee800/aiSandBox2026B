@@ -4098,3 +4098,70 @@ This task is limited to **documentation only**—no code changes.
 **Reference:** PHASE-66A-DESIGN.md, PHASE-66A-CHECKPOINT.md
 
 ---
+
+## Phase 67: Core Product UX/UI Design
+
+### TASK-67A: Core Product UX/UI Design
+
+**Task ID:** TASK-67A
+**Phase:** 67
+**Stage:** 67A
+**Priority:** 🟡 Medium
+**Nature:** DOCUMENTATION / DESIGN (NO CODE)
+**Dependencies:** None
+**Checkpoint:** `docs/PHASE-67A-CHECKPOINT.md`
+
+**Objective:**
+
+Define launch-ready core product UX/UI requirements for the AI Sandbox Platform, focused on the main authenticated product experience and highest-priority user-facing surfaces still blocking launch readiness.
+
+**Scope:**
+
+This task is limited to **documentation/design only**—no code changes.
+
+**In Scope:**
+
+1. **Main App UX/UI Scope**
+   - Core product UX/UI boundaries and requirements
+
+2. **Chat / Editor / Preview Workspace UX**
+   - Workspace layout, interaction patterns, and UX expectations
+
+3. **Session Layout and Navigation UX**
+   - Session layout, navigation patterns, and UX requirements
+
+4. **History / Timeline UX**
+   - History and timeline UX expectations
+
+5. **Checkpoint / Revert / Diff / Git-Log UX Expectations**
+   - Checkpoint, revert, diff, and git-log UX requirements
+
+6. **User Dashboard UX Requirements**
+   - User-facing dashboard UX requirements
+
+7. **Admin Dashboard UX Requirements**
+   - Admin dashboard UX requirements at high level only
+
+8. **Public-Facing Product Surface Requirements**
+   - Public-facing product surface requirements at high level only where needed for launch coherence
+
+9. **Responsive / Launch-Polish Requirements**
+   - Responsive and launch-polish requirements
+
+10. **Alignment with Current Architecture and Existing Backend Constraints**
+    - Alignment with current architecture and existing backend constraints
+
+**Explicitly Out of Scope:**
+
+- ❌ No implementation
+- ❌ No frontend code changes
+- ❌ No backend code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No design system refactor
+- ❌ No visual asset production
+- ❌ No copywriting expansion beyond task registration text
+
+**Reference:** PHASE-67A-CHECKPOINT.md
+
+---

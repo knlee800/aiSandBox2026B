@@ -1046,3 +1046,41 @@ Implement operator-ready analytics review procedures and stakeholder/founder rep
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-66B for full details
 
 ---
+
+### Phase 67: Core Product UX/UI Design
+
+**Current Stage:** 67A
+
+**Active Task:** TASK-67A
+
+#### TASK-67A: Core Product UX/UI Design
+
+**Status:** PLANNED
+**Nature:** DOCUMENTATION / DESIGN (NO CODE)
+**Checkpoint:** `docs/PHASE-67A-CHECKPOINT.md`
+
+**Objective:**
+Define launch-ready core product UX/UI requirements for the AI Sandbox Platform, focused on the main authenticated product experience and highest-priority user-facing surfaces still blocking launch readiness.
+
+**Scope:**
+- Main app UX/UI scope
+- Chat / editor / preview workspace UX
+- Session layout and navigation UX
+- History / timeline UX
+- Checkpoint / revert / diff / git-log UX expectations
+- User dashboard UX requirements
+- Admin dashboard UX requirements at high level only
+- Public-facing product surface requirements at high level only where needed for launch coherence
+- Responsive / launch-polish requirements
+- Alignment with current architecture and existing backend constraints
+
+**Non-Goals:**
+- ❌ No implementation
+- ❌ No frontend code changes
+- ❌ No backend code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-67A for full details
+
+---
