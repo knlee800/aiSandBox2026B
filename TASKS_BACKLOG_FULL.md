@@ -3858,3 +3858,54 @@ This task is limited to **documentation only**—no code changes.
 **Reference:** PHASE-64A-DESIGN.md, PHASE-64A-CHECKPOINT.md
 
 ---
+
+## Phase 65: Admin Tools & Launch Operations
+
+### TASK-65A: Admin Tools & Launch Operations Design
+
+**Task ID:** TASK-65A  
+**Phase:** 65  
+**Stage:** 65A  
+**Priority:** 🟡 Medium  
+**Nature:** DOCUMENTATION / DESIGN (NO CODE)  
+**Dependencies:** None  
+**Checkpoint:** `docs/PHASE-65A-CHECKPOINT.md`
+
+**Objective:**
+
+Define launch-ready admin tool scope, admin actions and operator permissions, abuse/ban/suspension operational requirements, refund/credit/manual quota adjustment operational requirements, admin health/visibility requirements, audit/evidence/signoff requirements for admin actions, aligned with current architecture constraints.
+
+**Scope:**
+
+This task is limited to **documentation/design only**—no code changes.
+
+**In Scope:**
+
+1. **Launch-Ready Admin Tool Scope**
+   - What admin tools and capabilities are required before production launch
+
+2. **Admin Actions and Operator Permissions**
+   - Admin action catalog; operator roles and permission boundaries
+
+3. **Abuse / Ban / Suspension Operational Requirements**
+   - Operational procedures for abuse handling, user ban, account suspension
+
+4. **Refund / Credit / Manual Quota Adjustment Operational Requirements**
+   - Operational procedures for refunds, credits, manual quota overrides
+
+5. **Admin Health / Visibility Requirements**
+   - Admin-facing health checks, visibility into runtime state, diagnostic access
+
+6. **Audit / Evidence / Signoff Requirements for Admin Actions**
+   - Audit trail expectations, evidence capture, signoff requirements for admin mutations
+
+7. **Alignment with Current Architecture Constraints**
+   - No background workers, request-driven, stateless API; internal endpoints only
+
+**Explicitly Out of Scope:**
+
+- ❌ No code changes in 65A
+
+**Reference:** PHASE-65A-CHECKPOINT.md
+
+---
