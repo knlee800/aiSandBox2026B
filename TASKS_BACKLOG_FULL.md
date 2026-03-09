@@ -4051,3 +4051,50 @@ This task is limited to **documentation and design only**—no code changes.
 **Reference:** PHASE-66A-CHECKPOINT.md
 
 ---
+
+### TASK-66B: Analytics & Growth Visibility Operational Documentation
+
+**Task ID:** TASK-66B
+**Phase:** 66
+**Stage:** 66B
+**Priority:** 🟡 Medium
+**Nature:** DOCUMENTATION (NO CODE)
+**Dependencies:** PHASE-66A (Design)
+**Checkpoint:** `docs/PHASE-66B-CHECKPOINT.md`
+
+**Objective:**
+
+Implement operator-ready analytics review procedures and stakeholder/founder reporting procedures per Phase 66A design. Documentation only—no platform code, schema, or endpoint changes.
+
+**Scope:**
+
+This task is limited to **documentation only**—no code changes.
+
+**In Scope:**
+
+1. **Operator-Ready Analytics Review Procedures**
+   - Per PHASE-66A-DESIGN.md
+   - Operational procedures for analytics review
+
+2. **Stakeholder / Founder Reporting Procedures**
+   - Report structure; data sources; delivery cadence
+
+3. **Metric Review Cadence and Ownership**
+   - Review frequency; owner assignment; escalation
+
+4. **Evidence / Signoff / Interpretation Guidance**
+   - Evidence capture; signoff requirements; metric interpretation
+
+5. **Dashboard Usage Guidance**
+   - Product, cost, reliability, and growth visibility
+   - How to obtain each view from existing endpoints
+
+**Explicitly Out of Scope:**
+
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+
+**Reference:** PHASE-66A-DESIGN.md, PHASE-66A-CHECKPOINT.md
+
+---
