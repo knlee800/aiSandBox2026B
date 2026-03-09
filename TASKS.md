@@ -852,3 +852,34 @@ Implement operator-ready security runbooks and compliance operational documentat
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-63B for full details
 
 ---
+
+### Phase 64: Legal, Privacy & User Data Rights Readiness
+
+**Current Stage:** 64A
+
+**Active Task:** TASK-64A
+
+#### TASK-64A: Legal, Privacy & User Data Rights Readiness Design
+
+**Status:** PLANNED  
+**Nature:** DOCUMENTATION / DESIGN (NO CODE)  
+**Checkpoint:** `docs/PHASE-64A-CHECKPOINT.md`
+
+**Objective:**  
+Define launch-ready legal/privacy document scope, privacy policy/terms/cookie notice requirements, user data rights handling, export/deletion request operational requirements, consent/disclosure requirements, evidence/signoff requirements, aligned with current architecture constraints.
+
+**Scope:**
+- Launch-ready legal/privacy document scope
+- Privacy policy / terms / cookie notice requirements at platform level
+- User data rights handling requirements
+- Export / deletion request operational requirements
+- Consent / disclosure requirements where applicable
+- Evidence / signoff requirements
+- Alignment with current architecture constraints
+
+**Non-Goals:**
+- ❌ No code changes in 64A
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-64A for full details
+
+---

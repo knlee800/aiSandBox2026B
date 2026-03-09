@@ -3753,3 +3753,54 @@ This task is limited to **documentation only**—no code changes.
 **Reference:** PHASE-63A-DESIGN.md, PHASE-63A-CHECKPOINT.md
 
 ---
+
+## Phase 64: Legal, Privacy & User Data Rights Readiness
+
+### TASK-64A: Legal, Privacy & User Data Rights Readiness Design
+
+**Task ID:** TASK-64A  
+**Phase:** 64  
+**Stage:** 64A  
+**Priority:** 🟡 Medium  
+**Nature:** DOCUMENTATION / DESIGN (NO CODE)  
+**Dependencies:** None  
+**Checkpoint:** `docs/PHASE-64A-CHECKPOINT.md`
+
+**Objective:**
+
+Define launch-ready legal/privacy document scope, privacy policy/terms/cookie notice requirements at platform level, user data rights handling requirements, export/deletion request operational requirements, consent/disclosure requirements where applicable, evidence/signoff requirements, aligned with current architecture constraints.
+
+**Scope:**
+
+This task is limited to **documentation/design only**—no code changes.
+
+**In Scope:**
+
+1. **Launch-Ready Legal/Privacy Document Scope**
+   - What legal and privacy documents are required before production launch
+
+2. **Privacy Policy / Terms / Cookie Notice Requirements**
+   - Platform-level requirements for privacy policy, terms of service, cookie notice
+
+3. **User Data Rights Handling Requirements**
+   - How user data rights (access, rectification, deletion, portability) are addressed
+
+4. **Export / Deletion Request Operational Requirements**
+   - Operational procedures for handling export and deletion requests
+
+5. **Consent / Disclosure Requirements**
+   - Where applicable (e.g., data collection, processing, third-party sharing)
+
+6. **Evidence / Signoff Requirements**
+   - Documentation and signoff expectations for legal/privacy readiness
+
+7. **Alignment with Current Architecture Constraints**
+   - No background workers, request-driven, stateless API
+
+**Explicitly Out of Scope:**
+
+- ❌ No code changes in 64A
+
+**Reference:** PHASE-64A-CHECKPOINT.md
+
+---
