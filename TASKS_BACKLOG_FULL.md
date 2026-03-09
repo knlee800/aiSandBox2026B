@@ -3962,3 +3962,44 @@ This task is limited to **documentation only**—no code changes.
 **Reference:** PHASE-65A-DESIGN.md, PHASE-65A-CHECKPOINT.md
 
 ---
+
+### TASK-65C: Admin Tools & Launch Operations Final Validation + Checkpoint
+
+**Task ID:** TASK-65C  
+**Phase:** 65  
+**Stage:** 65C  
+**Priority:** 🟡 Medium  
+**Nature:** VALIDATION / DOCUMENTATION (NO CODE)  
+**Dependencies:** PHASE-65A (Design), PHASE-65B (Operator Procedures)  
+**Checkpoint:** `docs/PHASE-65C-CHECKPOINT.md`
+
+**Objective:**
+
+Final validation of Phase 65A design and Phase 65B operator documentation, with checkpoint creation. No platform code, schema, or endpoint changes.
+
+**Scope:**
+
+1. **Validation of Phase 65A Design and Phase 65B Operator Docs**
+   - Verify design completeness and operator doc alignment
+
+2. **Verification of Required Admin Procedure Docs**
+   - Confirm all required admin procedure documents exist
+
+3. **Verification of Admin Action Coverage, Evidence/Signoff, and Approval Workflow Guidance**
+   - Admin action coverage; evidence/signoff requirements; approval workflow guidance
+
+4. **Verification That Architecture Constraints Remain Preserved**
+   - No background workers; request-driven; stateless API; internal endpoints only
+
+5. **Final Checkpoint Creation**
+   - Produce `docs/PHASE-65C-CHECKPOINT.md`
+
+**Explicitly Out of Scope:**
+
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+
+**Reference:** PHASE-65A-CHECKPOINT.md, PHASE-65B-CHECKPOINT.md
+
+---

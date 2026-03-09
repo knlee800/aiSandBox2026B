@@ -912,9 +912,9 @@ Implement operator-ready legal/privacy operational documentation per Phase 64A d
 
 ### Phase 65: Admin Tools & Launch Operations
 
-**Current Stage:** 65B
+**Current Stage:** 65C
 
-**Active Task:** TASK-65B
+**Active Task:** TASK-65C
 
 #### TASK-65A: Admin Tools & Launch Operations Design
 
@@ -964,5 +964,30 @@ Implement operator-ready admin procedures per Phase 65A design. Documentation on
 - ❌ No endpoint changes
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-65B for full details
+
+---
+
+#### TASK-65C: Admin Tools & Launch Operations Final Validation + Checkpoint
+
+**Status:** ACTIVE  
+**Nature:** VALIDATION / DOCUMENTATION (NO CODE)  
+**Checkpoint:** `docs/PHASE-65C-CHECKPOINT.md`
+
+**Objective:**  
+Final validation of Phase 65A design and Phase 65B operator documentation, with checkpoint creation.
+
+**Scope:**
+- Validation of Phase 65A design and Phase 65B operator docs
+- Verification that required admin procedure docs exist
+- Verification of admin action coverage, evidence/signoff, and approval workflow guidance
+- Verification that architecture constraints remain preserved
+- Final checkpoint creation
+
+**Non-Goals:**
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-65C for full details
 
 ---

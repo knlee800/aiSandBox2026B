@@ -102,9 +102,9 @@ All above are **existing** endpoints. No new endpoints in 65A.
 |--------|----------|----------|
 | **Invoice void** | Operator discretion; document reason in ticket or runbook | X-Admin-Actor in response; voidedBy in DB |
 | **Invoice finalize** | Operator discretion; reconciliation check enforced by endpoint | X-Admin-Actor in response; finalizedBy in DB |
-| **Refund (out-of-band)** | Platform owner or delegate; per Section 4 | Ticket; sign-off; audit log |
-| **Manual quota adjustment (out-of-band)** | Platform owner or delegate; per Section 4 | Ticket; sign-off; audit log |
-| **User ban/suspension (out-of-band)** | Platform owner or delegate; per Section 5 | Ticket; evidence; sign-off |
+| **Refund (out-of-band)** | Platform owner or delegate; per Section 5 | Ticket; sign-off; audit log |
+| **Manual quota adjustment (out-of-band)** | Platform owner or delegate; per Section 5 | Ticket; sign-off; audit log |
+| **User ban/suspension (out-of-band)** | Platform owner or delegate; per Section 4 | Ticket; evidence; sign-off |
 
 **Sensitive = financial impact or user restriction.** Approval is operational, not automated.
 
