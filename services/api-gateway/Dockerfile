@@ -13,4 +13,4 @@ RUN mkdir -p /data && mkdir -p /app/data
 COPY package*.json ./
 RUN npm install --omit=dev
 COPY --from=builder /app/dist ./dist
-CMD ["node", "dist/main.js"]
+CMD ["sh", "-c", "npm run migration:run:prod && exec node dist/src/main.js"]

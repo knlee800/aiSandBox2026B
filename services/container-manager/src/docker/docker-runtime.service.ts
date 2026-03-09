@@ -3,12 +3,15 @@ import { BadRequestException } from '@nestjs/common';
 import Docker from 'dockerode';
 import { GovernanceConfig } from '../config/governance.config';
 
+const SANDBOX_IMAGE = 'node:20-alpine';
+
 /**
  * DockerRuntimeService
  * Manages Docker container lifecycle for sandbox sessions
  * Each session gets one isolated Docker container
  *
  * Task 8.1B: Enforces Docker resource limits at container creation
+ * TASK-56B: Auto-pulls missing image before retry on fresh hosts
  */
 @Injectable()
 export class DockerRuntimeService implements OnModuleInit {
@@ -43,9 +46,7 @@ export class DockerRuntimeService implements OnModuleInit {
    * Does NOT start the container - use startContainer() separately
    *
    * Task 8.1B: Enforces resource limits from GovernanceConfig
-   * - Memory limit (bytes)
-   * - CPU limit (NanoCpus)
-   * - PIDs limit (max processes)
+   * TASK-56B: On missing image, pulls then retries once
    *
    * @param sessionId - Unique session identifier
    * @param workspacePath - Absolute path to session workspace on host
@@ -55,29 +56,26 @@ export class DockerRuntimeService implements OnModuleInit {
     sessionId: string,
     workspacePath: string,
   ): Promise<string> {
-    try {
-      const containerName = `sandbox-session-${sessionId}`;
+    const containerName = `sandbox-session-${sessionId}`;
+    const imageName = SANDBOX_IMAGE;
 
-      // Get resource limits from governance config (Task 8.1B)
+    const doCreate = async (): Promise<string> => {
       const memoryBytes = this.governanceConfig.getContainerMemoryLimitBytes();
       const cpuLimit = this.governanceConfig.containerCpuLimit;
       const pidsLimit = this.governanceConfig.containerPidsLimit;
-
-      // Convert CPU limit to NanoCpus (Docker API format)
-      // Example: 0.5 CPU cores = 0.5 * 1e9 = 500000000 nanoseconds
       const nanoCpus = Math.floor(cpuLimit * 1e9);
 
       const container = await this.docker.createContainer({
         name: containerName,
-        Image: 'node:20-alpine',
+        Image: imageName,
         WorkingDir: '/workspace',
-        Cmd: ['/bin/sh', '-c', 'while true; do sleep 3600; done'], // Keep container alive
+        Cmd: ['/bin/sh', '-c', 'while true; do sleep 3600; done'],
         HostConfig: {
-          Binds: [`${workspacePath}:/workspace:rw`], // Mount session workspace as read-write
-          AutoRemove: false, // Explicit removal only
-          Memory: memoryBytes, // Task 8.1B: Memory limit
-          NanoCpus: nanoCpus, // Task 8.1B: CPU limit
-          PidsLimit: pidsLimit, // Task 8.1B: PIDs limit
+          Binds: [`${workspacePath}:/workspace:rw`],
+          AutoRemove: false,
+          Memory: memoryBytes,
+          NanoCpus: nanoCpus,
+          PidsLimit: pidsLimit,
         },
         AttachStdin: false,
         AttachStdout: false,
@@ -91,11 +89,59 @@ export class DockerRuntimeService implements OnModuleInit {
       console.log(`  - CPU limit: ${cpuLimit} cores (${nanoCpus} nanocpus)`);
       console.log(`  - PIDs limit: ${pidsLimit}`);
       return container.id;
+    };
+
+    try {
+      return await doCreate();
     } catch (error) {
-      throw new Error(
-        `Failed to create container for session ${sessionId}: ${error.message}`,
-      );
+      if (!this.isMissingImageError(error)) {
+        throw new Error(
+          `Failed to create container for session ${sessionId}: ${error.message}`,
+        );
+      }
+      await this.ensureImagePresent(imageName);
+      try {
+        return await doCreate();
+      } catch (retryError) {
+        throw new Error(
+          `Failed to create container for session ${sessionId} after pulling image: ${retryError.message}`,
+        );
+      }
     }
+  }
+
+  /**
+   * TASK-56B/56C: Detect missing image error from Docker API.
+   * Excludes "pull access denied" so it surfaces as failure.
+   */
+  private isMissingImageError(err: unknown): boolean {
+    if (!err || typeof err !== 'object') return false;
+    const e = err as { statusCode?: number; message?: string };
+    const msg = (e.message || '').toLowerCase();
+    if (msg.includes('pull access denied')) return false;
+    const is404 = e.statusCode === 404;
+    const isMissing =
+      msg.includes('no such image') ||
+      msg.includes('not found') ||
+      msg.includes('image not found') ||
+      msg.includes('does not exist');
+    return is404 && isMissing;
+  }
+
+  /**
+   * TASK-56B: Pull image via Docker API; logs once.
+   * Uses dockerode pull + followProgress.
+   */
+  private async ensureImagePresent(imageName: string): Promise<void> {
+    console.log(`pulling missing image ${imageName}`);
+    await new Promise<void>((resolve, reject) => {
+      this.docker.pull(imageName, (err, stream) => {
+        if (err) return reject(err);
+        this.docker.modem.followProgress(stream, (e: Error | null) =>
+          e ? reject(e) : resolve(),
+        );
+      });
+    });
   }
 
   /**

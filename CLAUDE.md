@@ -293,6 +293,22 @@ Do NOT implement these unless explicitly authorized.
 
 ---
 
+## Diff Output Rule
+
+When showing code changes, always use standard unified diff format.
+
+Requirements:
+- Use `git diff` style
+- Start with `diff --git a/... b/...`
+- Include `---` and `+++`
+- Include `@@` hunk headers
+- Keep context to about 3 lines
+- Do not reprint whole files
+- Do not describe changes as separate “deleted” / “added” blocks
+- Do not add prose before or after the diff unless explicitly asked
+
+---
+
 ## Final Authority Clause
 
 This file defines architectural intent.

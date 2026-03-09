@@ -115,6 +115,29 @@ describe('XAIAdapter', () => {
         });
       });
 
+      it('should include content field when prompt is undefined (TASK-56A)', async () => {
+        const mockResponse = {
+          choices: [{ message: { content: 'Empty' } }],
+          usage: { total_tokens: 10 },
+          model: 'grok-beta',
+        };
+        mockClient.chat.completions.create.mockResolvedValue(mockResponse);
+
+        const request = {
+          sessionId: 'session-1',
+          conversationId: 'conv-1',
+          userId: 'user-1',
+          prompt: undefined as unknown as string,
+          provider: 'stub' as const,
+        };
+
+        await adapter.execute(request);
+
+        const call = mockClient.chat.completions.create.mock.calls[0][0];
+        expect(call.messages[0]).toHaveProperty('content');
+        expect(call.messages[0].content).toBe('');
+      });
+
       it('should extract text content from response.choices[0].message.content', async () => {
         const mockResponse = {
           choices: [{ message: { content: 'Test output from xAI' } }],

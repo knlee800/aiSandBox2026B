@@ -99,6 +99,7 @@ export class XAIAdapter implements AIAdapter {
 
     try {
       // Transform AIExecutionRequest to xAI Chat Completions API format
+      // TASK-56A: content must be string (xAI 422 if missing); coerce undefined/null to ''
       const xaiRequest: OpenAI.Chat.ChatCompletionCreateParams = {
         model: this.model,
         max_tokens: this.defaultMaxTokens,
@@ -106,7 +107,7 @@ export class XAIAdapter implements AIAdapter {
         messages: [
           {
             role: 'user',
-            content: request.prompt,
+            content: request.prompt ?? '',
           },
         ],
       };

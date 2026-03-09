@@ -54,20 +54,19 @@ docker compose -f docker-compose.prod.yml up -d --build
 docker compose -f docker-compose.prod.yml up --build
 ```
 
-### 3.3 First-Time Database Setup
+### 3.3 Fresh Boot (TASK-56C)
 
-**WARNING:** `schema.sql` drops existing tables. Run only on a fresh database.
+**Fresh boot:** A wiped Docker environment (`docker compose down -v`) must boot and run one real execution without manual intervention.
 
-After the first start, apply the schema and migrations:
+**Assumptions:**
+- Postgres init runs `database/init/*.sql` in alphabetical order (001_schema → 002_usage_records → 100_usage_records_created_at)
+- `usage_records.created_at` exists with default `now()`, NOT NULL, after init
+- container-manager auto-pulls `node:20-alpine` if missing (no manual `docker pull` required)
+
+**Manual schema apply** (only if needed for non-docker init):
 
 ```bash
-# Set POSTGRES_USER and POSTGRES_DB (or ensure .env is loaded)
-# Apply base schema (destructive on existing data)
 docker compose -f docker-compose.prod.yml exec -T postgres psql -U aisandbox -d aisandbox -f /schema/schema.sql
-
-# Apply migrations (if any)
-# docker compose -f docker-compose.prod.yml exec -T postgres psql -U aisandbox -d aisandbox -f /schema/migrations/001_add_oauth_support.sql
-# docker compose -f docker-compose.prod.yml exec -T postgres psql -U aisandbox -d aisandbox -f /schema/migrations/002_add_session_termination.sql
 ```
 
 ### 3.4 Verify Deployment
