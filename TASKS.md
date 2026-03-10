@@ -1000,7 +1000,7 @@ Final validation of Phase 65A design and Phase 65B operator documentation, with 
 
 #### TASK-66A: Analytics & Growth Visibility Design
 
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED
 **Nature:** DOCUMENTATION / DESIGN (NO CODE)
 **Checkpoint:** `docs/PHASE-66A-CHECKPOINT.md`
 
@@ -1231,5 +1231,72 @@ Implement the first minimal backend endpoint slice to unblock frontend history/c
 - ✅ No frontend changes
 - ✅ Scope remained narrow
 - ✅ Checkpoint created: `docs/PHASE-68B-CHECKPOINT.md`
+
+---
+
+#### TASK-68B-2: Backend UX/UI Support Endpoints — User Dashboard Slice
+
+**Status:** PLANNED
+**Nature:** IMPLEMENTATION (BACKEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-68B-2-CHECKPOINT.md`
+
+**Objective:**
+Implement the second minimal backend endpoint slice to unblock frontend user dashboard UX implementation. This task implements only the four user dashboard endpoints identified as high priority in Phase 68A.
+
+**Scope:**
+- Implement GET /api/users/me (current user info)
+- Implement GET /api/users/me/usage (usage statistics)
+- Implement GET /api/users/me/quotas (quota limits + usage)
+- Extend GET /api/sessions?includeTerminated=true (session list with terminated)
+- Endpoint tests (unit, integration)
+- API documentation
+
+**Non-Goals:**
+- ❌ No admin dashboard endpoints (deferred to TASK-68B-3)
+- ❌ No history/control endpoints (already complete in TASK-68B)
+- ❌ No schema changes (use existing tables)
+- ❌ No frontend work
+- ❌ No refactors
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-68B-2 for full details
+
+**Completion Summary:**
+- ✅ Implemented `GET /api/users/me`
+- ✅ Implemented `GET /api/users/me/usage`
+- ✅ Implemented `GET /api/users/me/quotas`
+- ✅ Extended `GET /api/sessions` with `includeTerminated=true`
+- ✅ Added focused tests (17 passing across user/session slice specs)
+- ✅ No schema changes
+- ✅ No frontend changes
+- ✅ Scope remained narrow
+- ✅ Checkpoint created: `docs/PHASE-68B-2-CHECKPOINT.md`
+
+---
+
+#### TASK-68B-3: Backend UX/UI Support Endpoints — Admin Dashboard Slice
+
+**Status:** PLANNED  
+**Nature:** IMPLEMENTATION (BACKEND ONLY, ADDITIVE)  
+**Checkpoint:** `docs/PHASE-68B-3-CHECKPOINT.md`
+
+**Objective:**  
+Implement the third minimal backend endpoint slice to unblock frontend admin dashboard UX implementation. This task implements only the admin dashboard endpoints identified in Phase 68A and keeps scope limited to launch-priority admin visibility.
+
+**Scope:**
+- Implement `GET /api/internal/admin/users` (admin user visibility summary)
+- Implement `GET /api/internal/admin/sessions` (admin session visibility across users)
+- Support admin visibility for users, sessions, usage/cost summary signals, and operational/session status using existing architecture-approved data sources
+- Endpoint tests (unit, integration)
+- API documentation (internal endpoint contracts only)
+
+**Non-Goals:**
+- ❌ No user dashboard endpoints (already complete in TASK-68B-2)
+- ❌ No history/control endpoints (already complete in TASK-68B)
+- ❌ No public-facing endpoints
+- ❌ No frontend work
+- ❌ No schema changes unless explicitly approved by existing design authority
+- ❌ No refactors
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-68B-3 for full details
 
 ---

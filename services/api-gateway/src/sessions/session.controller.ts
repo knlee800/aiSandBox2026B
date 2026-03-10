@@ -4,6 +4,7 @@ import {
   Get,
   Delete,
   Param,
+  Query,
   UseGuards,
   Request,
   HttpCode,
@@ -59,14 +60,23 @@ export class SessionController {
   /**
    * List all active sessions belonging to the authenticated user
    * GET /api/sessions
+   * Optional query:
+   * - includeTerminated=true: include terminated sessions
    * @param req - Request object with authenticated user
    * @returns Array of user's active sessions
    */
   @Get()
   @HttpCode(HttpStatus.OK)
-  async listSessions(@Request() req): Promise<Session[]> {
+  async listSessions(
+    @Request() req,
+    @Query('includeTerminated') includeTerminated?: string,
+  ): Promise<Session[]> {
     const userId = req.user.userId;
-    return await this.sessionService.getActiveSessionsByUser(userId);
+    const shouldIncludeTerminated = includeTerminated === 'true';
+    return await this.sessionService.getSessionsByUser(
+      userId,
+      shouldIncludeTerminated,
+    );
   }
 
   /**

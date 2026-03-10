@@ -4548,3 +4548,279 @@ This task is limited to **backend implementation only**—no frontend, no schema
 **Reference:** PHASE-68A-CHECKPOINT.md (Section 8: Backend Dependency Mapping, Section 16: Implementation Task Breakdown)
 
 ---
+
+### TASK-68B-2: Backend UX/UI Support Endpoints — User Dashboard Slice
+
+**Task ID:** TASK-68B-2
+**Phase:** 68
+**Stage:** 68B-2
+**Priority:** 🔴 High
+**Nature:** IMPLEMENTATION (BACKEND ONLY, ADDITIVE)
+**Dependencies:** PHASE-68B (Complete), Existing users table, Existing sessions table, Existing quota enforcement
+**Checkpoint:** `docs/PHASE-68B-2-CHECKPOINT.md`
+
+**Objective:**
+
+Implement the second minimal backend endpoint slice to unblock frontend user dashboard UX implementation (PHASE-67A-3). This task implements only the four user dashboard endpoints identified as high priority in Phase 68A implementation plan. These endpoints expose user account info, usage statistics, and quota visibility to the authenticated user dashboard.
+
+**Scope:**
+
+This task is limited to **backend implementation only**—no frontend, no schema changes.
+
+**In Scope:**
+
+1. **GET /api/users/me**
+   - Get current user info
+   - Extract user from JWT
+   - Query users table WHERE id = userId
+   - Return user info (userId, email, createdAt)
+   - Enforce JWT auth
+   - Handle 401 (not authenticated)
+   - Response format:
+     ```json
+     {
+       "userId": "uuid",
+       "email": "user@example.com",
+       "createdAt": "2026-01-15T10:00:00Z"
+     }
+     ```
+
+2. **GET /api/users/me/usage**
+   - Get current user usage statistics
+   - Extract user from JWT
+   - Query sessions table: COUNT WHERE user_id = userId AND terminated_at IS NULL (active sessions)
+   - Query sessions table: COUNT WHERE user_id = userId AND created_at > NOW() - INTERVAL 24 HOUR (sessions created 24h)
+   - Query token_usage table: SUM WHERE user_id = userId AND timestamp > NOW() - INTERVAL 24 HOUR (tokens used 24h)
+   - Calculate estimated cost (tokens * rate)
+   - Calculate resetAt (rolling 24h window)
+   - Return usage summary
+   - Enforce JWT auth
+   - Handle 401 (not authenticated)
+   - Response format:
+     ```json
+     {
+       "activeSessions": 3,
+       "sessionsCreated24h": 8,
+       "tokensUsed24h": 45230,
+       "estimatedCost": 2.45,
+       "resetAt": "2026-03-09T20:00:00Z"
+     }
+     ```
+
+3. **GET /api/users/me/quotas**
+   - Get quota limits and current usage
+   - Extract user from JWT
+   - Get quota limits from config (5 concurrent, 20/24h, 100k tokens/24h)
+   - Query current usage (same as GET /api/users/me/usage)
+   - Return quota limits + current usage
+   - Enforce JWT auth
+   - Handle 401 (not authenticated)
+   - Response format:
+     ```json
+     {
+       "maxActiveSessions": 5,
+       "currentActiveSessions": 3,
+       "maxSessions24h": 20,
+       "currentSessions24h": 8,
+       "maxTokens24h": 100000,
+       "currentTokens24h": 45230,
+       "resetAt": "2026-03-09T20:00:00Z"
+     }
+     ```
+
+4. **GET /api/sessions?includeTerminated=true**
+   - List all sessions (active and terminated)
+   - Extend existing GET /api/sessions endpoint
+   - Add query param: includeTerminated (boolean, default false)
+   - If includeTerminated=true, return all sessions (active and terminated)
+   - If includeTerminated=false, return only active sessions (existing behavior)
+   - Enforce JWT auth, user ownership
+   - Handle 401 (not authenticated)
+   - Response format: Array of sessions (same format as existing GET /api/sessions)
+
+5. **Endpoint Tests**
+   - Unit tests (controller, service methods)
+   - Integration tests (E2E endpoint behavior, auth enforcement)
+   - Test coverage target: 80%+
+
+6. **API Documentation**
+   - JSDoc comments for all 4 endpoints
+   - Request/response type definitions
+   - Error response documentation (401, 404, 500)
+
+**Explicitly Out of Scope:**
+
+- ❌ No admin dashboard endpoints (deferred to TASK-68B-3)
+- ❌ No history/control endpoints (already complete in TASK-68B)
+- ❌ No schema changes (use existing users, sessions, token_usage tables)
+- ❌ No table modifications
+- ❌ No frontend work
+- ❌ No frontend components
+- ❌ No refactors outside endpoint implementation
+- ❌ No architectural changes
+- ❌ No scope expansion beyond user dashboard endpoints
+
+**Deliverables:**
+
+1. **Controller Implementation**
+   - New controller: `users.controller.ts` (or extend existing auth.controller.ts)
+   - 3 new controller methods (GET /api/users/me, GET /api/users/me/usage, GET /api/users/me/quotas)
+   - 1 modified controller method (GET /api/sessions, add includeTerminated query param)
+   - JWT auth guards applied
+   - User identity extraction from JWT
+
+2. **Service Implementation**
+   - New service: `users.service.ts` (or extend existing auth.service.ts)
+   - 3 new service methods (get user info, get usage, get quotas)
+   - Usage aggregation logic (rolling 24h window calculations)
+   - Quota visibility logic (limits + current usage)
+   - Session query extension (include terminated sessions)
+
+3. **Tests**
+   - Unit tests (controller methods, service methods)
+   - Integration tests (E2E endpoint behavior)
+   - Test coverage: 80%+ for new code
+
+4. **API Documentation**
+   - JSDoc comments for 4 endpoints
+   - Request/response type definitions
+   - Error documentation
+
+5. **Checkpoint**
+   - `docs/PHASE-68B-2-CHECKPOINT.md`
+   - Implementation summary
+   - Test results
+   - API documentation references
+
+**Acceptance Criteria:**
+
+- ✅ GET /api/users/me returns correct user info
+- ✅ GET /api/users/me/usage returns correct usage (rolling 24h calculations correct)
+- ✅ GET /api/users/me/quotas returns correct quota limits + usage
+- ✅ GET /api/sessions?includeTerminated=true returns all sessions
+- ✅ All endpoints enforce JWT auth
+- ✅ All endpoints tested (80%+ coverage)
+- ✅ API documentation complete
+- ✅ No schema changes occurred
+- ✅ No frontend changes occurred
+
+**Preserved Invariants:**
+
+- No schema changes (use existing users, sessions, token_usage tables)
+- No API contract changes to existing endpoints (except GET /api/sessions query param extension)
+- New endpoints additive only (no breaking changes)
+- Request-driven enforcement (no background workers)
+- Deterministic error semantics (401, 404, 500)
+- Quota enforcement preserved (existing quota guards unchanged)
+
+**Reference:** PHASE-68A-CHECKPOINT.md (Section 9: Backend Dependency Mapping, Task 68B-2 definition)
+
+---
+
+### TASK-68B-3: Backend UX/UI Support Endpoints — Admin Dashboard Slice
+
+**Task ID:** TASK-68B-3  
+**Phase:** 68  
+**Stage:** 68B-3  
+**Priority:** 🟡 Medium  
+**Nature:** IMPLEMENTATION (BACKEND ONLY, ADDITIVE)  
+**Dependencies:** PHASE-68B (Complete), TASK-68B-2 (Complete), Existing users table, Existing sessions table, Existing internal auth guards, Existing runtime metrics endpoint  
+**Checkpoint:** `docs/PHASE-68B-3-CHECKPOINT.md`
+
+**Objective:**
+
+Implement the third minimal backend endpoint slice to unblock admin dashboard UX implementation from Phase 68A planning. This task is limited to admin dashboard visibility endpoints and must remain launch-priority and narrowly scoped.
+
+**Scope:**
+
+This task is limited to **backend implementation only**—no frontend and no scope expansion beyond admin dashboard endpoint needs.
+
+**In Scope:**
+
+1. **`GET /api/internal/admin/users`**
+   - Implement admin users visibility endpoint for dashboard list/summary
+   - Return user-level operational summary using existing data sources (users/sessions/usage/cost visibility already available in architecture)
+   - Support search/filter parameters defined in Phase 68A planning
+   - Enforce internal-only auth conventions already used for `/api/internal/*`
+   - Document deterministic error behavior
+
+2. **`GET /api/internal/admin/sessions`**
+   - Implement admin sessions visibility endpoint across users
+   - Return session-level visibility including status/state and user linkage needed by admin dashboard
+   - Support status/user/date filtering defined in Phase 68A planning
+   - Enforce internal-only auth conventions already used for `/api/internal/*`
+   - Document deterministic error behavior
+
+3. **Admin visibility boundaries for this slice**
+   - Include admin-facing visibility for users, sessions, usage/cost summaries, and operational/system status signals only where already supported by approved architecture/planning
+   - Reuse existing runtime/system visibility endpoints where applicable (no redesign)
+
+4. **Endpoint Tests**
+   - Unit tests (controller/service)
+   - Integration tests (endpoint behavior, internal auth enforcement, filters, error cases)
+   - Test coverage target: 80%+ for new/changed code
+
+5. **API Documentation**
+   - Internal endpoint JSDoc/contracts for this slice only
+   - Request query contract and response shape definitions
+   - Error response documentation
+
+**Explicitly Out of Scope:**
+
+- ❌ No user dashboard endpoints (already complete in TASK-68B-2)
+- ❌ No history/control endpoints (already complete in TASK-68B)
+- ❌ No public-facing endpoints
+- ❌ No frontend work
+- ❌ No schema changes unless already explicitly justified and allowed by approved design
+- ❌ No auth redesign
+- ❌ No refactors outside endpoint implementation
+- ❌ No scope expansion beyond this admin dashboard endpoint slice
+
+**Deliverables:**
+
+1. **Controller Implementation**
+   - Admin dashboard endpoint methods for:
+     - `GET /api/internal/admin/users`
+     - `GET /api/internal/admin/sessions`
+   - Existing internal guard/auth conventions reused
+   - Query/filter handling aligned with Phase 68A task definition
+
+2. **Service Implementation**
+   - Minimal service/query logic required for endpoint responses
+   - Aggregation/filter logic for users/sessions visibility only
+   - Reuse existing usage/cost/runtime visibility sources where available
+
+3. **Tests**
+   - Unit tests for controller/service behavior
+   - Integration tests for internal auth, filters, and response/error contracts
+
+4. **API Documentation**
+   - Internal endpoint contracts documented in code for this slice only
+
+5. **Checkpoint**
+   - `docs/PHASE-68B-3-CHECKPOINT.md`
+   - Implementation summary, test results, and scope validation
+
+**Acceptance Criteria:**
+
+- ✅ `GET /api/internal/admin/users` returns admin user visibility summary per defined contract
+- ✅ `GET /api/internal/admin/sessions` returns admin session visibility with required filters
+- ✅ Admin-facing visibility needs for users/sessions/usage/cost/ops-status are covered within approved architecture constraints
+- ✅ Internal auth conventions enforced on both endpoints
+- ✅ Tests added and passing for this slice
+- ✅ API documentation updated for this slice
+- ✅ No frontend changes occurred
+- ✅ No schema changes occurred (unless explicitly approved by existing design authority)
+
+**Preserved Invariants:**
+
+- No schema changes by default
+- No public API surface expansion for admin slice endpoints
+- No endpoint work beyond this slice
+- Request-driven behavior only
+- Deterministic error semantics
+- No refactors
+
+**Reference:** PHASE-68A-CHECKPOINT.md (Section 9: Backend Dependency Mapping, Task 68B-3 definition)
+
+---

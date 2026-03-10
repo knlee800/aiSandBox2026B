@@ -54,6 +54,19 @@ export class SessionService {
   }
 
   /**
+   * Get sessions for a user with optional terminated inclusion.
+   * @param userId - User UUID
+   * @param includeTerminated - If true, include terminated sessions
+   * @returns Array of sessions
+   */
+  async getSessionsByUser(
+    userId: string,
+    includeTerminated: boolean = false,
+  ): Promise<Session[]> {
+    return await this.sessionRepository.findByUser(userId, includeTerminated);
+  }
+
+  /**
    * Update session status
    * @param sessionId - Session UUID
    * @param status - New status

@@ -63,6 +63,28 @@ export class SessionRepository {
   }
 
   /**
+   * Find sessions for a user with optional terminated inclusion.
+   * @param userId - User UUID
+   * @param includeTerminated - If true, return all sessions including terminated
+   * @returns Array of session entities ordered by createdAt DESC
+   */
+  async findByUser(
+    userId: string,
+    includeTerminated: boolean,
+  ): Promise<Session[]> {
+    if (includeTerminated) {
+      return await this.repository.find({
+        where: { userId },
+        order: {
+          createdAt: 'DESC',
+        },
+      });
+    }
+
+    return await this.findActiveByUser(userId);
+  }
+
+  /**
    * Update the status of a session
    * @param sessionId - Session UUID
    * @param status - New session status
