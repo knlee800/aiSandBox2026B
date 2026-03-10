@@ -2,9 +2,11 @@
 
 import React from 'react';
 import {
+  computeHistorySliceState,
   computeWorkspaceShellState,
   countActiveSessions,
   getSessionLabel,
+  type WorkspaceCheckpoint,
   type WorkspaceShellSession,
 } from './workspace-shell.logic';
 
@@ -17,6 +19,9 @@ interface WorkspaceShellProps {
   onCreateSession: () => Promise<void>;
   isCreatingSession: boolean;
   userId: string | null;
+  checkpoints: WorkspaceCheckpoint[];
+  isLoadingHistory: boolean;
+  historyError: string | null;
 }
 
 export default function WorkspaceShell(props: WorkspaceShellProps) {
@@ -27,6 +32,12 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     selectedSessionId: props.selectedSessionId,
   });
   const activeSessions = countActiveSessions(props.sessions);
+  const historyState = computeHistorySliceState({
+    selectedSessionId: props.selectedSessionId,
+    isLoadingHistory: props.isLoadingHistory,
+    historyError: props.historyError,
+    checkpoints: props.checkpoints,
+  });
 
   return (
     <div className="h-screen bg-gray-100 flex flex-col" data-testid="workspace-shell">
@@ -91,6 +102,11 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
               <ShellStateMessage state={shellState} />
             </section>
           </div>
+          <section className="mx-2 mb-2 bg-white border border-gray-200 rounded p-3" data-testid="history-control-slice">
+            <p className="text-xs font-semibold text-gray-700 mb-2">History / Control (Slice 1)</p>
+            <HistorySliceMessage state={historyState} />
+            {historyState === 'ready' ? <HistoryCheckpointList checkpoints={props.checkpoints} /> : null}
+          </section>
         </main>
       </div>
 
@@ -99,6 +115,37 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
         <span>Sessions: {props.sessions.length}</span>
       </footer>
     </div>
+  );
+}
+
+function HistorySliceMessage({ state }: { state: 'loading' | 'error' | 'empty' | 'ready' }) {
+  if (state === 'loading') {
+    return <p className="text-sm text-gray-500">Loading checkpoint history...</p>;
+  }
+
+  if (state === 'error') {
+    return <p className="text-sm text-red-600">Unable to load checkpoint history.</p>;
+  }
+
+  if (state === 'empty') {
+    return <p className="text-sm text-gray-500">No checkpoint history available for the selected session.</p>;
+  }
+
+  return <p className="text-sm text-gray-700">Checkpoint history loaded.</p>;
+}
+
+function HistoryCheckpointList({ checkpoints }: { checkpoints: WorkspaceCheckpoint[] }) {
+  return (
+    <ul className="mt-2 space-y-2" data-testid="history-checkpoint-list">
+      {checkpoints.slice(0, 5).map((checkpoint) => (
+        <li key={checkpoint.id} className="rounded border border-gray-200 px-2 py-2">
+          <p className="text-xs font-medium text-gray-900 truncate">
+            {checkpoint.description || `Checkpoint ${checkpoint.commitHash.slice(0, 7)}`}
+          </p>
+          <p className="text-xs text-gray-500 font-mono">{checkpoint.commitHash.slice(0, 12)}</p>
+        </li>
+      ))}
+    </ul>
   );
 }
 

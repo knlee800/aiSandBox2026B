@@ -3,7 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import WorkspaceShell from '@/components/workspace/workspace-shell';
-import type { WorkspaceShellSession } from '@/components/workspace/workspace-shell.logic';
+import type {
+  WorkspaceCheckpoint,
+  WorkspaceShellSession,
+} from '@/components/workspace/workspace-shell.logic';
 
 export default function AppPage() {
   const router = useRouter();
@@ -17,6 +20,9 @@ export default function AppPage() {
   const [isLoadingSessions, setIsLoadingSessions] = useState(true);
   const [sessionError, setSessionError] = useState<string | null>(null);
   const [isCreatingSession, setIsCreatingSession] = useState(false);
+  const [checkpoints, setCheckpoints] = useState<WorkspaceCheckpoint[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [historyError, setHistoryError] = useState<string | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -31,6 +37,22 @@ export default function AppPage() {
     setAuthLoading(false);
     void loadSessions(token);
   }, [locale, router]);
+
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      return;
+    }
+
+    if (!selectedSessionId) {
+      setCheckpoints([]);
+      setHistoryError(null);
+      setIsLoadingHistory(false);
+      return;
+    }
+
+    void loadCheckpoints(token, selectedSessionId);
+  }, [selectedSessionId]);
 
   async function loadSessions(token: string): Promise<void> {
     setIsLoadingSessions(true);
@@ -97,6 +119,33 @@ export default function AppPage() {
     }
   }
 
+  async function loadCheckpoints(token: string, sessionId: string): Promise<void> {
+    setIsLoadingHistory(true);
+    setHistoryError(null);
+
+    try {
+      const response = await fetch(`/api/sessions/${sessionId}/checkpoints`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Checkpoint load failed (${response.status})`);
+      }
+
+      const data = (await response.json()) as WorkspaceCheckpoint[];
+      setCheckpoints(data);
+    } catch (error) {
+      console.error('Failed to load checkpoints:', error);
+      setHistoryError('Failed to load checkpoints.');
+      setCheckpoints([]);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  }
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -115,6 +164,9 @@ export default function AppPage() {
       onCreateSession={handleCreateSession}
       isCreatingSession={isCreatingSession}
       userId={userId}
+      checkpoints={checkpoints}
+      isLoadingHistory={isLoadingHistory}
+      historyError={historyError}
     />
   );
 }

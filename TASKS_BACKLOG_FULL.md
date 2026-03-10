@@ -4995,3 +4995,82 @@ This task is limited to **frontend implementation only** for the first core work
 **Reference:** PHASE-68A-CHECKPOINT.md (STAGE-68C and immediate unblocked first-slice guidance), PHASE-68B-FINAL-CHECKPOINT.md
 
 ---
+
+### TASK-68D: Frontend History/Control Slice 1
+
+**Task ID:** TASK-68D  
+**Phase:** 68  
+**Stage:** 68D  
+**Priority:** 🔴 High  
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)  
+**Dependencies:** TASK-68A (Complete), TASK-68B-FINAL (Complete), TASK-68C (Complete), Existing backend history/control capabilities only  
+**Checkpoint:** `docs/PHASE-68D-CHECKPOINT.md`
+
+**Objective:**
+
+Implement only the first minimal frontend history/control slice identified as unblocked in PHASE-68A, building directly on the existing workspace shell baseline delivered in TASK-68C.
+
+**Scope:**
+
+This task is limited to **frontend implementation only** for the first history/control slice.
+
+**In Scope:**
+
+1. **History/Control Shell Integration (First Slice Only)**
+   - Implement only the smallest launch-priority history/control UI slice
+   - Integrate at shell level with the existing TASK-68C workspace baseline
+   - Keep scope intentionally narrow for first-slice validation
+
+2. **Minimal Backend Capability Usage (Existing Only)**
+   - Use only already available backend history/control capabilities completed in Phase 68B
+   - No new endpoint dependencies or backend contract expansion
+   - No backend-side changes
+
+3. **Slice-Specific Validation**
+   - Add focused frontend tests for this slice only
+   - Document slice outputs and constraints in checkpoint
+
+**Explicitly Out of Scope:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No dashboard UI in this task
+- ❌ No public-facing UI in this task
+- ❌ No broader workspace redesign outside this history/control slice
+- ❌ No 68E / 68F / 68G scope in this task
+
+**Deliverables:**
+
+1. **Frontend History/Control Slice 1 Implementation**
+   - Minimal first-slice history/control UI baseline integrated with TASK-68C workspace shell
+
+2. **Tests**
+   - Focused frontend tests for this slice only
+
+3. **Checkpoint**
+   - `docs/PHASE-68D-CHECKPOINT.md`
+   - Slice summary, scope validation, and preserved invariants
+
+**Acceptance Criteria:**
+
+- ✅ First minimal unblocked frontend history/control slice is implemented
+- ✅ Scope remains limited to history/control slice 1 only
+- ✅ Uses already available backend history/control capabilities only
+- ✅ Builds on existing TASK-68C workspace shell baseline
+- ✅ No backend changes and no schema changes
+- ✅ No dashboard/public-facing UI work included
+- ✅ Focused tests for this slice are included
+- ✅ Checkpoint created for this slice
+
+**Preserved Invariants:**
+
+- No backend changes
+- No schema changes
+- No refactors
+- Frontend-only additive scope
+- Request-driven and deterministic platform behavior assumptions preserved
+
+**Reference:** PHASE-68A-CHECKPOINT.md (STAGE-68D sequencing and dependencies), PHASE-68B-FINAL-CHECKPOINT.md, PHASE-68C-CHECKPOINT.md
+
+---
