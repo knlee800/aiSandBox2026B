@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "npx tsx --test components/workspace/*.test.ts*"
+    "test": "npx tsx --test components/workspace/*.test.ts* components/public/*.test.ts*"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.6.0",

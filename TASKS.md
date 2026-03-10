@@ -1195,9 +1195,9 @@ Convert completed Phase 67 UX/UI design outputs into an implementation-ready exe
 
 ---
 
-**Current Stage:** 68D-0
+**Current Stage:** 68F-0
 
-**Active Task:** TASK-68D
+**Active Task:** TASK-68F
 
 #### TASK-68B: Backend UX/UI Support Endpoints — History/Control Slice
 
@@ -1407,5 +1407,32 @@ Implement only the first minimal, unblocked frontend dashboard slice from Phase 
 - ❌ No broader workspace redesign outside this dashboard slice
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-68E for full details
+
+---
+
+#### TASK-68F: Frontend Public-Facing Slice 1
+
+**Status:** PLANNED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-68F-CHECKPOINT.md`
+
+**Objective:**
+Implement only the first minimal, unblocked frontend public-facing slice from Phase 68A, with narrow launch-priority scope.
+
+**Scope:**
+- First smallest public-facing UI slice only (launch-priority, narrow scope)
+- Focus on the core public product surface for this first slice
+- Keep backend dependency to none unless already available and clearly required
+- Focused frontend tests for this slice
+- Slice-specific documentation/checkpoint output
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No authenticated workspace/dashboard/history-control scope
+- ❌ No broader marketing/docs-site expansion outside this first slice
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-68F for full details
 
 ---

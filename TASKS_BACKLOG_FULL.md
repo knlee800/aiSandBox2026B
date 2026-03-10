@@ -5153,3 +5153,80 @@ This task is limited to **frontend implementation only** for the first dashboard
 **Reference:** PHASE-68A-CHECKPOINT.md (STAGE-68E sequencing and first-slice dashboard scope), PHASE-68B-FINAL-CHECKPOINT.md, PHASE-68C-CHECKPOINT.md, PHASE-68D-CHECKPOINT.md
 
 ---
+
+### TASK-68F: Frontend Public-Facing Slice 1
+
+**Task ID:** TASK-68F  
+**Phase:** 68  
+**Stage:** 68F  
+**Priority:** 🔴 High  
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)  
+**Dependencies:** TASK-68A (Complete), Existing frontend baseline only  
+**Checkpoint:** `docs/PHASE-68F-CHECKPOINT.md`
+
+**Objective:**
+
+Implement only the first minimal frontend public-facing slice identified as unblocked in PHASE-68A, with narrow launch-priority scope for core public product visibility.
+
+**Scope:**
+
+This task is limited to **frontend implementation only** for the first public-facing slice.
+
+**In Scope:**
+
+1. **Public Surface Integration (First Slice Only)**
+   - Implement only the smallest launch-priority public-facing UI slice
+   - Focus only on the core public product surface for this first slice
+   - Keep scope intentionally narrow for first-slice validation
+
+2. **Minimal Dependency Usage**
+   - Prefer no backend dependency unless already available and clearly required
+   - No new endpoint dependencies or backend contract expansion
+   - No backend-side changes
+
+3. **Slice-Specific Validation**
+   - Add focused frontend tests for this slice only
+   - Document slice outputs and constraints in checkpoint
+
+**Explicitly Out of Scope:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No authenticated workspace/dashboard/history-control scope in this task
+- ❌ No broader marketing/docs-site expansion outside this first slice
+- ❌ No 68G scope in this task
+
+**Deliverables:**
+
+1. **Frontend Public-Facing Slice 1 Implementation**
+   - Minimal first-slice public-facing UI baseline for launch-priority product surface
+
+2. **Tests**
+   - Focused frontend tests for this slice only
+
+3. **Checkpoint**
+   - `docs/PHASE-68F-CHECKPOINT.md`
+   - Slice summary, scope validation, and preserved invariants
+
+**Acceptance Criteria:**
+
+- ✅ First minimal unblocked frontend public-facing slice is implemented
+- ✅ Scope remains limited to public-facing slice 1 only
+- ✅ No backend changes and no schema changes
+- ✅ No authenticated dashboard/workspace/history-control scope included
+- ✅ No broader marketing/docs-site expansion included
+- ✅ Focused tests for this slice are included
+- ✅ Checkpoint created for this slice
+
+**Preserved Invariants:**
+
+- No backend changes
+- No schema changes
+- No refactors
+- Frontend-only additive scope
+- Request-driven and deterministic platform behavior assumptions preserved
+
+**Reference:** PHASE-68A-CHECKPOINT.md (STAGE-68F sequencing and first-slice public-facing scope), PHASE-68B-FINAL-CHECKPOINT.md, PHASE-68C-CHECKPOINT.md, PHASE-68D-CHECKPOINT.md, PHASE-68E-CHECKPOINT.md
+
+---
