@@ -5405,3 +5405,96 @@ This task is limited to **documentation and validation only** for completed Phas
 **Reference:** PHASE-68A-CHECKPOINT.md, PHASE-68B-FINAL-CHECKPOINT.md, PHASE-68C-CHECKPOINT.md, PHASE-68D-CHECKPOINT.md, PHASE-68E-CHECKPOINT.md, PHASE-68F-CHECKPOINT.md, PHASE-68G-CHECKPOINT.md
 
 ---
+
+### TASK-69A: UX/UI Validation and End-to-End Readiness Planning
+
+**Task ID:** TASK-69A  
+**Phase:** 69  
+**Stage:** 69A  
+**Priority:** 🟡 Medium  
+**Nature:** DOCUMENTATION / PLANNING (NO CODE)  
+**Dependencies:** PHASE-67-FINAL (Complete), PHASE-68-FINAL (Complete)  
+**Checkpoint:** `docs/PHASE-69A-CHECKPOINT.md`
+
+**Objective:**
+
+Plan the validation and end-to-end readiness review approach for completed Phase 67 and Phase 68 UX/UI outputs, including targeted regression validation planning and sequencing for any remaining UX/UI validation/fix slices if needed.
+
+**Scope:**
+
+This task is limited to **documentation and planning only**.
+
+**In Scope:**
+
+1. **Validation Planning for Completed Phase 67 and Phase 68 UX/UI Outputs**
+   - Plan structured validation coverage across completed UX/UI design and implementation outputs
+   - Confirm validation scope references final outputs from Phase 67 and Phase 68 checkpoints
+
+2. **End-to-End Readiness Review Planning**
+   - Plan end-to-end readiness review coverage across:
+     - authenticated workspace shell
+     - history/control slice
+     - dashboard slice
+     - public-facing slice
+     - launch-polish slice
+
+3. **Remaining Validation Gap Identification Planning**
+   - Plan method for identifying remaining UX/UI validation gaps before wider release-readiness work
+   - Define how gaps will be categorized and prioritized for follow-up
+
+4. **Targeted Regression Validation Planning**
+   - Plan targeted regression validation for newly implemented frontend/backend UX-support slices
+   - Define planned regression areas and expected verification boundaries
+
+5. **Validation/Fix Slice Sequencing Planning (If Needed)**
+   - Plan sequencing for any remaining UX/UI validation/fix slices required after validation findings
+   - Keep sequencing constrained to readiness-focused validation/fix scope
+
+6. **Checkpoint**
+   - Create `docs/PHASE-69A-CHECKPOINT.md`
+   - Include planning scope, validation approach, gap strategy, and sequencing guidance
+
+**Explicitly Out of Scope:**
+
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No implementation
+- ❌ No refactors
+
+**Deliverables:**
+
+1. **Phase 69A Validation Planning Output**
+   - Validation planning for completed 67/68 UX/UI outputs
+   - End-to-end readiness review planning coverage map
+
+2. **Gap and Regression Planning Output**
+   - Planned method for gap identification
+   - Targeted regression validation planning boundaries
+   - Sequencing proposal for potential validation/fix slices (if needed)
+
+3. **Checkpoint**
+   - `docs/PHASE-69A-CHECKPOINT.md`
+   - Planning summary and preserved invariants
+
+**Acceptance Criteria:**
+
+- ✅ Validation planning for completed Phase 67 and Phase 68 UX/UI outputs is documented
+- ✅ End-to-end readiness review planning covers workspace/history-control/dashboard/public/polish slices
+- ✅ Approach for identifying remaining UX/UI validation gaps is documented
+- ✅ Targeted regression validation planning for newly implemented frontend/backend UX-support slices is documented
+- ✅ Sequencing plan for potential remaining validation/fix slices is documented (if needed)
+- ✅ No platform code/schema/endpoint changes occurred
+- ✅ Checkpoint created for Phase 69A
+
+**Preserved Invariants:**
+
+- No platform code changes
+- No schema changes
+- No endpoint changes
+- No refactors
+- Documentation/planning-only scope
+
+**Reference:** PHASE-67-FINAL-CHECKPOINT.md, PHASE-68-FINAL-CHECKPOINT.md, PRD.md, ARCHITECTURE.md
+
+---
