@@ -2,12 +2,16 @@
 
 import React from 'react';
 import {
+  computeDashboardSliceState,
   computeHistorySliceState,
   computeWorkspaceShellState,
   countActiveSessions,
   getSessionLabel,
   type WorkspaceCheckpoint,
+  type WorkspaceQuotaSummary,
   type WorkspaceShellSession,
+  type WorkspaceUsageSummary,
+  type WorkspaceUserSummary,
 } from './workspace-shell.logic';
 
 interface WorkspaceShellProps {
@@ -22,6 +26,11 @@ interface WorkspaceShellProps {
   checkpoints: WorkspaceCheckpoint[];
   isLoadingHistory: boolean;
   historyError: string | null;
+  userSummary: WorkspaceUserSummary | null;
+  usageSummary: WorkspaceUsageSummary | null;
+  quotaSummary: WorkspaceQuotaSummary | null;
+  isLoadingDashboard: boolean;
+  dashboardError: string | null;
 }
 
 export default function WorkspaceShell(props: WorkspaceShellProps) {
@@ -37,6 +46,13 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     isLoadingHistory: props.isLoadingHistory,
     historyError: props.historyError,
     checkpoints: props.checkpoints,
+  });
+  const dashboardState = computeDashboardSliceState({
+    isLoadingDashboard: props.isLoadingDashboard,
+    dashboardError: props.dashboardError,
+    userSummary: props.userSummary,
+    usageSummary: props.usageSummary,
+    quotaSummary: props.quotaSummary,
   });
 
   return (
@@ -107,6 +123,17 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
             <HistorySliceMessage state={historyState} />
             {historyState === 'ready' ? <HistoryCheckpointList checkpoints={props.checkpoints} /> : null}
           </section>
+          <section className="mx-2 mb-2 bg-white border border-gray-200 rounded p-3" data-testid="dashboard-slice">
+            <p className="text-xs font-semibold text-gray-700 mb-2">Dashboard (Slice 1)</p>
+            <DashboardSliceMessage state={dashboardState} />
+            {dashboardState === 'ready' && props.userSummary && props.usageSummary && props.quotaSummary ? (
+              <DashboardSummary
+                userSummary={props.userSummary}
+                usageSummary={props.usageSummary}
+                quotaSummary={props.quotaSummary}
+              />
+            ) : null}
+          </section>
         </main>
       </div>
 
@@ -146,6 +173,57 @@ function HistoryCheckpointList({ checkpoints }: { checkpoints: WorkspaceCheckpoi
         </li>
       ))}
     </ul>
+  );
+}
+
+function DashboardSliceMessage({ state }: { state: 'loading' | 'error' | 'empty' | 'ready' }) {
+  if (state === 'loading') {
+    return <p className="text-sm text-gray-500">Loading dashboard summary...</p>;
+  }
+
+  if (state === 'error') {
+    return <p className="text-sm text-red-600">Unable to load dashboard summary.</p>;
+  }
+
+  if (state === 'empty') {
+    return <p className="text-sm text-gray-500">No dashboard data available for this user.</p>;
+  }
+
+  return <p className="text-sm text-gray-700">Dashboard summary loaded.</p>;
+}
+
+function DashboardSummary(props: {
+  userSummary: WorkspaceUserSummary;
+  usageSummary: WorkspaceUsageSummary;
+  quotaSummary: WorkspaceQuotaSummary;
+}) {
+  return (
+    <div className="mt-2 space-y-2" data-testid="dashboard-summary-cards">
+      <div className="rounded border border-gray-200 px-2 py-2">
+        <p className="text-xs font-medium text-gray-900">Current User</p>
+        <p className="text-xs text-gray-600 truncate">{props.userSummary.email}</p>
+      </div>
+      <div className="grid grid-cols-3 gap-2">
+        <div className="rounded border border-gray-200 px-2 py-2">
+          <p className="text-xs text-gray-500">Active Sessions</p>
+          <p className="text-sm font-semibold text-gray-900">
+            {props.usageSummary.activeSessions}/{props.quotaSummary.maxActiveSessions}
+          </p>
+        </div>
+        <div className="rounded border border-gray-200 px-2 py-2">
+          <p className="text-xs text-gray-500">Sessions (24h)</p>
+          <p className="text-sm font-semibold text-gray-900">
+            {props.usageSummary.sessionsCreated24h}/{props.quotaSummary.maxSessions24h}
+          </p>
+        </div>
+        <div className="rounded border border-gray-200 px-2 py-2">
+          <p className="text-xs text-gray-500">Tokens (24h)</p>
+          <p className="text-sm font-semibold text-gray-900">
+            {props.usageSummary.tokensUsed24h}/{props.quotaSummary.maxTokens24h}
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
 

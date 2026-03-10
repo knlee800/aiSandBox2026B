@@ -1,5 +1,6 @@
 export type WorkspaceShellState = 'loading' | 'error' | 'empty' | 'ready';
 export type HistorySliceState = 'loading' | 'error' | 'empty' | 'ready';
+export type DashboardSliceState = 'loading' | 'error' | 'empty' | 'ready';
 
 export interface WorkspaceShellSession {
   id: string;
@@ -24,11 +25,43 @@ export interface WorkspaceCheckpoint {
   createdAt: string;
 }
 
+export interface WorkspaceUserSummary {
+  userId: string;
+  email: string;
+  createdAt: string;
+}
+
+export interface WorkspaceUsageSummary {
+  activeSessions: number;
+  sessionsCreated24h: number;
+  tokensUsed24h: number;
+  estimatedCost: number;
+  resetAt: string;
+}
+
+export interface WorkspaceQuotaSummary {
+  maxActiveSessions: number;
+  currentActiveSessions: number;
+  maxSessions24h: number;
+  currentSessions24h: number;
+  maxTokens24h: number;
+  currentTokens24h: number;
+  resetAt: string;
+}
+
 export interface HistorySliceStateInput {
   selectedSessionId: string | null;
   isLoadingHistory: boolean;
   historyError: string | null;
   checkpoints: WorkspaceCheckpoint[];
+}
+
+export interface DashboardSliceStateInput {
+  isLoadingDashboard: boolean;
+  dashboardError: string | null;
+  userSummary: WorkspaceUserSummary | null;
+  usageSummary: WorkspaceUsageSummary | null;
+  quotaSummary: WorkspaceQuotaSummary | null;
 }
 
 export function computeWorkspaceShellState(
@@ -69,6 +102,24 @@ export function computeHistorySliceState(
   }
 
   if (!input.checkpoints.length) {
+    return 'empty';
+  }
+
+  return 'ready';
+}
+
+export function computeDashboardSliceState(
+  input: DashboardSliceStateInput,
+): DashboardSliceState {
+  if (input.isLoadingDashboard) {
+    return 'loading';
+  }
+
+  if (input.dashboardError) {
+    return 'error';
+  }
+
+  if (!input.userSummary || !input.usageSummary || !input.quotaSummary) {
     return 'empty';
   }
 

@@ -1382,3 +1382,30 @@ Implement only the first minimal, unblocked frontend history/control slice from 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-68D for full details
 
 ---
+
+#### TASK-68E: Frontend Dashboard Slice 1
+
+**Status:** PLANNED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-68E-CHECKPOINT.md`
+
+**Objective:**
+Implement only the first minimal, unblocked frontend dashboard slice from Phase 68A, building on the existing authenticated frontend baseline.
+
+**Scope:**
+- First smallest dashboard UI slice only (launch-priority, narrow scope)
+- Use only already available backend dashboard capabilities completed in Phase 68B slices
+- Authenticated dashboard UX only for this slice
+- Focused frontend tests for this slice
+- Slice-specific documentation/checkpoint output
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No public-facing UI
+- ❌ No broader workspace redesign outside this dashboard slice
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-68E for full details
+
+---

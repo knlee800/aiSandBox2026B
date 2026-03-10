@@ -5074,3 +5074,82 @@ This task is limited to **frontend implementation only** for the first history/c
 **Reference:** PHASE-68A-CHECKPOINT.md (STAGE-68D sequencing and dependencies), PHASE-68B-FINAL-CHECKPOINT.md, PHASE-68C-CHECKPOINT.md
 
 ---
+
+### TASK-68E: Frontend Dashboard Slice 1
+
+**Task ID:** TASK-68E  
+**Phase:** 68  
+**Stage:** 68E  
+**Priority:** 🔴 High  
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)  
+**Dependencies:** TASK-68A (Complete), TASK-68B-FINAL (Complete), TASK-68C (Complete), Existing backend dashboard capabilities only  
+**Checkpoint:** `docs/PHASE-68E-CHECKPOINT.md`
+
+**Objective:**
+
+Implement only the first minimal frontend dashboard slice identified as unblocked in PHASE-68A, with narrow launch-priority scope for authenticated dashboard UX.
+
+**Scope:**
+
+This task is limited to **frontend implementation only** for the first dashboard slice.
+
+**In Scope:**
+
+1. **Dashboard Shell Integration (First Slice Only)**
+   - Implement only the smallest launch-priority dashboard UI slice
+   - Integrate with the existing authenticated frontend baseline
+   - Keep scope intentionally narrow for first-slice validation
+
+2. **Minimal Backend Capability Usage (Existing Only)**
+   - Use only already available backend dashboard capabilities completed in Phase 68B slices
+   - No new endpoint dependencies or backend contract expansion
+   - No backend-side changes
+
+3. **Slice-Specific Validation**
+   - Add focused frontend tests for this slice only
+   - Document slice outputs and constraints in checkpoint
+
+**Explicitly Out of Scope:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No history/control expansion in this task
+- ❌ No public-facing UI in this task
+- ❌ No broader workspace redesign outside this dashboard slice
+- ❌ No 68F / 68G scope in this task
+
+**Deliverables:**
+
+1. **Frontend Dashboard Slice 1 Implementation**
+   - Minimal first-slice dashboard UI baseline for authenticated dashboard UX
+
+2. **Tests**
+   - Focused frontend tests for this slice only
+
+3. **Checkpoint**
+   - `docs/PHASE-68E-CHECKPOINT.md`
+   - Slice summary, scope validation, and preserved invariants
+
+**Acceptance Criteria:**
+
+- ✅ First minimal unblocked frontend dashboard slice is implemented
+- ✅ Scope remains limited to dashboard slice 1 only
+- ✅ Uses already available backend dashboard capabilities only
+- ✅ Covers authenticated dashboard UX only for this slice
+- ✅ No backend changes and no schema changes
+- ✅ No public-facing UI work included
+- ✅ Focused tests for this slice are included
+- ✅ Checkpoint created for this slice
+
+**Preserved Invariants:**
+
+- No backend changes
+- No schema changes
+- No refactors
+- Frontend-only additive scope
+- Request-driven and deterministic platform behavior assumptions preserved
+
+**Reference:** PHASE-68A-CHECKPOINT.md (STAGE-68E sequencing and first-slice dashboard scope), PHASE-68B-FINAL-CHECKPOINT.md, PHASE-68C-CHECKPOINT.md, PHASE-68D-CHECKPOINT.md
+
+---
