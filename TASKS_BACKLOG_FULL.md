@@ -6007,3 +6007,232 @@ This task is limited to **documentation and planning only**.
 **Reference:** AI-SANDBOX-PLATFORM-PLAN.md, PRD.md, ARCHITECTURE.md, PHASE-70-FINAL-CHECKPOINT.md
 
 ---
+
+### TASK-71B: Deferred Task Closure Planning
+
+**Task ID:** TASK-71B  
+**Phase:** 71  
+**Stage:** 71B  
+**Priority:** 🟡 Medium  
+**Nature:** DOCUMENTATION / PLANNING (NO CODE)  
+**Dependencies:** TASK-71A (Complete)  
+**Checkpoint:** `docs/PHASE-71B-CHECKPOINT.md`
+
+**Objective:**
+
+Review deferred authoritative tasks already present in TASKS/TASKS_BACKLOG, identify the first post-Phase-70 deferred tasks that must be closed before broader master-plan expansion, and produce a prioritized closure sequence.
+
+**Scope:**
+
+This task is limited to **documentation and planning only**.
+
+**In Scope:**
+
+1. **Deferred Task Review**
+   - Review all deferred authoritative tasks already present in current TASKS.md and TASKS_BACKLOG_FULL.md
+   - Identify which deferred tasks are highest priority for closure before broader master-plan expansion
+
+2. **Priority Ordering**
+   - Priority ordering across deferred runbook/documentation/support tasks already recognized by current project governance
+   - Focus on existing deferred task families only (monitoring, backup/restore, security/compliance, legal/privacy, admin operations, analytics operations)
+
+3. **Closure Sequence Selection**
+   - Select the next active closure sequence from existing deferred task families only
+   - Propose high-level sequencing for deferred-task closure
+
+4. **Checkpoint**
+   - Create `docs/PHASE-71B-CHECKPOINT.md`
+   - Include deferred task review findings, priority ordering, and closure sequence proposal
+
+**Explicitly Out of Scope:**
+
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No implementation
+- ❌ No refactors
+- ❌ No new task families beyond what is already present in TASKS/TASKS_BACKLOG
+
+**Deliverables:**
+
+1. **Deferred Task Review Output**
+   - Inventory of deferred authoritative tasks from current TASKS.md and TASKS_BACKLOG_FULL.md
+   - Priority classification for closure ordering
+
+2. **Closure Sequence Output**
+   - Prioritized closure sequence for deferred task families
+   - High-level sequencing proposal
+
+3. **Checkpoint**
+   - `docs/PHASE-71B-CHECKPOINT.md`
+   - Planning summary and preserved invariants
+
+**Acceptance Criteria:**
+
+- ✅ Deferred authoritative tasks reviewed and inventoried
+- ✅ Priority ordering for closure is documented
+- ✅ Next active closure sequence is selected from existing deferred task families
+- ✅ High-level sequencing proposal is documented
+- ✅ No platform code/schema/endpoint changes occurred
+- ✅ Phase 71B checkpoint created
+
+**Preserved Invariants:**
+
+- No platform code changes
+- No schema changes
+- No endpoint changes
+- No refactors
+- Documentation/planning-only scope
+
+**Reference:** PHASE-71A-CHECKPOINT.md, TASKS.md, TASKS_BACKLOG_FULL.md, PRD.md, ARCHITECTURE.md
+
+---
+
+### TASK-71C: TASKS.md Status Reconciliation
+
+**Task ID:** TASK-71C  
+**Phase:** 71  
+**Stage:** 71C  
+**Priority:** 🟡 Medium  
+**Nature:** DOCUMENTATION / VALIDATION (NO CODE)  
+**Dependencies:** TASK-71B (Complete)  
+**Checkpoint:** `docs/PHASE-71C-CHECKPOINT.md`
+
+**Objective:**
+
+Reconcile TASKS.md status markers against checkpoint evidence already present in the repo. Normalize active/completed/locked status tracking based on existing authoritative checkpoint evidence only.
+
+**Scope:**
+
+This task is limited to **documentation and validation only**.
+
+**In Scope:**
+
+1. **Status Reconciliation**
+   - Compare every task status in TASKS.md against checkpoint file evidence in `docs/`
+   - Identify tasks/phases that are complete in substance but not correctly reflected in TASKS.md
+   - Normalize active/completed/locked status tracking based on existing checkpoint evidence only
+
+2. **Bulk Status Update**
+   - Update stale TASKS.md statuses to match checkpoint evidence
+   - Apply only where checkpoint file exists and confirms COMPLETE status
+   - No new deliverables required — status tracking correction only
+
+3. **Checkpoint**
+   - Create `docs/PHASE-71C-CHECKPOINT.md`
+   - Include reconciliation summary, changes made, and preserved invariants
+
+**Explicitly Out of Scope:**
+
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No implementation
+- ❌ No refactors
+- ❌ No new task creation beyond status reconciliation
+
+**Deliverables:**
+
+1. **Reconciliation Output**
+   - Updated TASKS.md with corrected statuses for all tasks where checkpoint evidence confirms completion
+   - Summary of changes made
+
+2. **Checkpoint**
+   - `docs/PHASE-71C-CHECKPOINT.md`
+   - Reconciliation summary and preserved invariants
+
+**Acceptance Criteria:**
+
+- ✅ All tasks in TASKS.md compared against checkpoint evidence
+- ✅ Stale statuses updated to match checkpoint reality
+- ✅ No platform code/schema/endpoint changes occurred
+- ✅ Phase 71C checkpoint created
+- ✅ No new implementation introduced
+
+**Preserved Invariants:**
+
+- No platform code changes
+- No schema changes
+- No endpoint changes
+- No refactors
+- Documentation/validation-only scope
+
+**Reference:** PHASE-71B-CHECKPOINT.md, TASKS.md, docs/*.md checkpoint files
+
+---
+
+### TASK-71-FINAL: Phase 71 Final Consolidation
+
+**Task ID:** TASK-71-FINAL  
+**Phase:** 71  
+**Stage:** 71-FINAL  
+**Priority:** 🟡 Medium  
+**Nature:** DOCUMENTATION / VALIDATION (NO CODE)  
+**Dependencies:** TASK-71C (Complete)  
+**Checkpoint:** `docs/PHASE-71-FINAL-CHECKPOINT.md`
+
+**Objective:**
+
+Validate and consolidate completed Phase 71 planning/validation/reconciliation work (TASK-71A, TASK-71B, TASK-71C) and close Phase 71 with a final checkpoint.
+
+**Scope:**
+
+This task is limited to **documentation and validation only**.
+
+**In Scope:**
+
+1. **Consolidation of Phase 71 Outputs**
+   - Validate coherence across TASK-71A (master-plan reconciliation), TASK-71B (deferred-task closure planning), and TASK-71C (TASKS.md status reconciliation)
+   - Confirm the master-plan reconciliation, deferred-task closure planning, and TASKS.md status reconciliation outputs are consistent and non-contradictory
+
+2. **Reconciliation Exception Recording**
+   - Explicitly record the remaining reconciliation exception for TASK-42A-4 due to missing checkpoint evidence (`docs/PHASE-42A-CHECKPOINT.md` not present in repo)
+
+3. **Scope Containment Confirmation**
+   - Confirm Phase 71 remained documentation/validation-only throughout all stages (71A, 71B, 71C, 71-FINAL)
+   - Confirm no platform code/schema/endpoint changes occurred during Phase 71
+
+4. **Checkpoint**
+   - Create `docs/PHASE-71-FINAL-CHECKPOINT.md`
+   - Include consolidation summary, exception record, scope confirmation, and preserved invariants
+
+**Explicitly Out of Scope:**
+
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No new implementation
+- ❌ No refactors
+- ❌ No broader roadmap expansion
+- ❌ No new task families beyond final consolidation
+
+**Deliverables:**
+
+1. **Consolidation Output**
+   - Validated coherence summary across TASK-71A, TASK-71B, and TASK-71C
+   - Explicit exception record for TASK-42A-4
+
+2. **Checkpoint**
+   - `docs/PHASE-71-FINAL-CHECKPOINT.md`
+   - Consolidation summary, exception record, scope confirmation, and preserved invariants
+
+**Acceptance Criteria:**
+
+- ✅ TASK-71A, TASK-71B, and TASK-71C outputs validated as coherent
+- ✅ Master-plan reconciliation, deferred-task closure planning, and status reconciliation outputs confirmed consistent
+- ✅ TASK-42A-4 reconciliation exception explicitly recorded
+- ✅ Phase 71 confirmed as documentation/validation-only
+- ✅ No platform code/schema/endpoint changes occurred
+- ✅ Phase 71 final checkpoint created
+
+**Preserved Invariants:**
+
+- No platform code changes
+- No schema changes
+- No endpoint changes
+- No refactors
+- Documentation/validation-only scope
+
+**Reference:** PHASE-71A-CHECKPOINT.md, PHASE-71B-CHECKPOINT.md, PHASE-71C-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
+
+---
