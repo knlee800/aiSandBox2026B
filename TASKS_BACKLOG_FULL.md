@@ -5498,3 +5498,174 @@ This task is limited to **documentation and planning only**.
 **Reference:** PHASE-67-FINAL-CHECKPOINT.md, PHASE-68-FINAL-CHECKPOINT.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### TASK-69B: UX/UI Validation Execution
+
+**Task ID:** TASK-69B  
+**Phase:** 69  
+**Stage:** 69B  
+**Priority:** 🟡 Medium  
+**Nature:** VALIDATION / DOCUMENTATION (NO CODE)  
+**Dependencies:** TASK-69A (Complete)  
+**Checkpoint:** `docs/PHASE-69B-CHECKPOINT.md`
+
+**Objective:**
+
+Execute the UX/UI validation plan defined in Phase 69A and produce end-to-end validation findings/readiness results for completed Phase 67 and Phase 68 UX/UI outputs.
+
+**Scope:**
+
+This task is limited to **validation and documentation only**.
+
+**In Scope:**
+
+1. **Phase 69A Plan Execution**
+   - Execute the UX/UI validation approach and sequence defined by TASK-69A
+   - Use Phase 67/68 final outputs as validation baseline authority
+
+2. **End-to-End Validation Coverage**
+   - Validate end-to-end readiness across:
+     - authenticated workspace shell
+     - history/control slice
+     - dashboard slice
+     - public-facing slice
+     - launch-polish outputs
+
+3. **Targeted Regression Validation**
+   - Execute targeted regression validation on completed frontend/backend UX-support slices
+   - Verify critical integration boundaries and status/error-state consistency
+
+4. **Findings and Gap Documentation**
+   - Document validation findings, detected gaps, conflicts, and pass/fail outcomes
+   - Record gap severity/category and readiness impact
+
+5. **Follow-Up Determination**
+   - Confirm whether additional UX/UI validation/fix slices are required
+   - If required, provide constrained sequencing recommendation for follow-up slices
+
+6. **Checkpoint**
+   - Create `docs/PHASE-69B-CHECKPOINT.md`
+   - Include validation coverage, findings, pass/fail conclusions, and follow-up decision
+
+**Explicitly Out of Scope:**
+
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No implementation work
+- ❌ No refactors
+
+**Deliverables:**
+
+1. **Validation Execution Output**
+   - End-to-end validation results across the five Phase 69A coverage slices
+   - Targeted regression validation results for UX-support slices
+
+2. **Findings Output**
+   - Documented validation findings, conflicts, gaps, and pass/fail outcomes
+   - Determination of whether follow-up UX/UI validation/fix slices are required
+
+3. **Checkpoint**
+   - `docs/PHASE-69B-CHECKPOINT.md`
+   - Validation summary, findings register, and preserved invariants
+
+**Acceptance Criteria:**
+
+- ✅ Phase 69A validation plan execution is documented
+- ✅ End-to-end validation covers workspace/history-control/dashboard/public/polish outputs
+- ✅ Targeted regression validation is executed and documented for completed frontend/backend UX-support slices
+- ✅ Validation findings, gaps, conflicts, and pass/fail outcomes are documented
+- ✅ Follow-up UX/UI validation/fix-slice requirement is explicitly confirmed (required/not required)
+- ✅ No platform code/schema/endpoint changes occurred
+- ✅ Phase 69B checkpoint created
+
+**Preserved Invariants:**
+
+- No platform code changes
+- No schema changes
+- No endpoint changes
+- No refactors
+- Validation/documentation-only scope
+
+**Reference:** PHASE-69A-CHECKPOINT.md, PHASE-67-FINAL-CHECKPOINT.md, PHASE-68-FINAL-CHECKPOINT.md, PRD.md, ARCHITECTURE.md
+
+---
+
+### TASK-69-FINAL: Phase 69 Final Consolidation
+
+**Task ID:** TASK-69-FINAL  
+**Phase:** 69  
+**Stage:** 69-FINAL  
+**Priority:** 🟡 Medium  
+**Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)  
+**Dependencies:** TASK-69A (Complete), TASK-69B (Complete)  
+**Checkpoint:** `docs/PHASE-69-FINAL-CHECKPOINT.md`
+
+**Objective:**
+
+Validate and consolidate completed Phase 69 planning and validation outputs (`TASK-69A`, `TASK-69B`) and produce a final Phase 69 checkpoint.
+
+**Scope:**
+
+This task is limited to **documentation and final validation only**.
+
+**In Scope:**
+
+1. **Phase 69 Consolidation Validation**
+   - Validate and consolidate outputs from `TASK-69A` and `TASK-69B`
+   - Confirm completed planning and validation outputs are coherent
+
+2. **Follow-Up Requirement Confirmation**
+   - Confirm no follow-up UX/UI validation/fix slices are required from Phase 69 results
+
+3. **Scope and Invariant Confirmation**
+   - Confirm Phase 69 remained documentation/validation-only
+   - Confirm no platform code/schema/endpoint changes occurred in Phase 69 tasks
+
+4. **Checkpoint**
+   - Create `docs/PHASE-69-FINAL-CHECKPOINT.md`
+   - Include consolidation result, final readiness conclusion, and preserved invariants
+
+**Explicitly Out of Scope:**
+
+- ❌ No new implementation
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+
+**Deliverables:**
+
+1. **Final Consolidation Output**
+   - Consolidated validation of `TASK-69A` and `TASK-69B`
+   - Coherence confirmation for Phase 69 outputs
+
+2. **Follow-Up Determination Output**
+   - Explicit confirmation that follow-up UX/UI fix slices are not required (or required if evidence indicates otherwise)
+
+3. **Checkpoint**
+   - `docs/PHASE-69-FINAL-CHECKPOINT.md`
+   - Final phase-level consolidation summary and preserved invariants
+
+**Acceptance Criteria:**
+
+- ✅ `TASK-69A` and `TASK-69B` outputs are consolidated and validated
+- ✅ Phase 69 outputs are coherent
+- ✅ Follow-up UX/UI fix-slice requirement is explicitly confirmed
+- ✅ Phase 69 documentation/validation-only scope is confirmed preserved
+- ✅ No platform code/schema/endpoint changes occurred
+- ✅ Final Phase 69 checkpoint created
+- ✅ No new implementation introduced
+- ✅ No refactors introduced
+
+**Preserved Invariants:**
+
+- No platform code changes
+- No schema changes
+- No endpoint changes
+- No refactors
+- Documentation/validation-only scope
+
+**Reference:** PHASE-69A-CHECKPOINT.md, PHASE-69B-CHECKPOINT.md, PRD.md, ARCHITECTURE.md
+
+---
