@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
 import { ReconciliationController } from './reconciliation.controller';
@@ -6,6 +7,11 @@ import { ReconciliationService } from './reconciliation.service';
 import { ChargeReadinessService } from './charge-readiness.service';
 import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
 import { PaymentsModule } from '../payments/payments.module';
+import { AdminDashboardController } from './admin-dashboard.controller';
+import { AdminDashboardService } from './admin-dashboard.service';
+import { User } from '../entities/user.entity';
+import { Session } from '../entities/session.entity';
+import { UsageRecord } from '../entities/usage-record.entity';
 
 /**
  * AdminModule (Task 11A + Task 11B + Task 12A + Task 12B1 + Task 12B2)
@@ -36,14 +42,24 @@ import { PaymentsModule } from '../payments/payments.module';
  * - ChargeReadinessService (for future charging logic, MUST be called before any payment operations)
  */
 @Module({
-  imports: [PaymentsModule],
-  controllers: [AdminController, ReconciliationController],
+  imports: [PaymentsModule, TypeOrmModule.forFeature([User, Session, UsageRecord])],
+  controllers: [
+    AdminController,
+    ReconciliationController,
+    AdminDashboardController,
+  ],
   providers: [
     AdminService,
     ReconciliationService,
     ChargeReadinessService,
+    AdminDashboardService,
     ContainerManagerHttpClient,
   ],
-  exports: [AdminService, ReconciliationService, ChargeReadinessService],
+  exports: [
+    AdminService,
+    ReconciliationService,
+    ChargeReadinessService,
+    AdminDashboardService,
+  ],
 })
 export class AdminModule {}
