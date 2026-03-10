@@ -1886,3 +1886,33 @@ Validate and consolidate completed Phase 72 evidence-resolution, activation, and
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-72-FINAL for full details
 
 ---
+
+### Phase 73: Post-Reconciliation Priority Selection
+
+**Current Stage:** 73A-0
+
+**Active Task:** TASK-73A
+
+#### TASK-73A: Post-Reconciliation Priority Selection
+
+**Status:** PLANNED
+**Nature:** DOCUMENTATION / PLANNING (NO CODE)
+**Checkpoint:** `docs/PHASE-73A-CHECKPOINT.md`
+
+**Objective:**
+Select the next authoritative product/workstream priority after closure of the Phase 71 reconciliation track and Phase 72 exception-resolution track, under current PRD/ARCHITECTURE constraints.
+
+**Scope:**
+- Review remaining candidate workstreams already implied by current TASKS/TASKS_BACKLOG and the broader master plan
+- Determine which remaining workstream should become the next active implementation priority under current PRD/ARCHITECTURE constraints
+- Provide a high-level sequencing recommendation for the next immediate work family only
+
+**Non-Goals:**
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-73A for full details
+
+---

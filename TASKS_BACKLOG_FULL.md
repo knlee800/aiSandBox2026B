@@ -6561,3 +6561,80 @@ This task is limited to **documentation and validation only**.
 **Reference:** PHASE-72A-CHECKPOINT.md, PHASE-72B-CHECKPOINT.md, PHASE-72C-CHECKPOINT.md, TASK-42A-4 definitions in TASKS/TASKS_BACKLOG
 
 ---
+
+### TASK-73A: Post-Reconciliation Priority Selection
+
+**Task ID:** TASK-73A  
+**Phase:** 73  
+**Stage:** 73A  
+**Priority:** 🟡 Medium  
+**Nature:** DOCUMENTATION / PLANNING (NO CODE)  
+**Dependencies:** PHASE-72-FINAL (Complete)  
+**Checkpoint:** `docs/PHASE-73A-CHECKPOINT.md`
+
+**Objective:**
+
+Select the next authoritative product/workstream priority after closure of the Phase 71 reconciliation track and Phase 72 exception-resolution track, using current governance sources and current PRD/ARCHITECTURE constraints.
+
+**Scope:**
+
+This task is limited to **documentation and planning only**.
+
+**In Scope:**
+
+1. **Candidate Workstream Review**
+   - Review remaining candidate workstreams implied by current `TASKS.md`, `TASKS_BACKLOG_FULL.md`, and the broader master plan
+   - Limit review to authority-aligned workstream families already represented or implied in current governance context
+
+2. **Priority Selection**
+   - Determine which remaining workstream should become the next active implementation priority
+   - Ensure selection is explicitly constrained by current `PRD.md` and `ARCHITECTURE.md`
+
+3. **Immediate Sequencing Recommendation**
+   - Produce high-level sequencing recommendation for the next immediate work family only
+   - Avoid broader roadmap expansion beyond immediate post-selection activation context
+
+4. **Checkpoint**
+   - Create `docs/PHASE-73A-CHECKPOINT.md`
+   - Document reviewed candidates, selection rationale, and preserved invariants
+
+**Explicitly Out of Scope:**
+
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No implementation work
+- ❌ No refactors
+
+**Deliverables:**
+
+1. **Priority Selection Output**
+   - Selected next authoritative workstream priority with rationale
+   - Candidate review summary aligned to current governance sources
+
+2. **Sequencing Output**
+   - High-level sequencing recommendation for the next immediate work family only
+
+3. **Checkpoint**
+   - `docs/PHASE-73A-CHECKPOINT.md`
+   - Planning summary and preserved invariants
+
+**Acceptance Criteria:**
+
+- ✅ Remaining candidate workstreams reviewed from current governance context
+- ✅ Next authoritative implementation priority selected under PRD/ARCHITECTURE constraints
+- ✅ Immediate work-family sequencing recommendation documented
+- ✅ No platform code/schema/endpoint changes occurred
+- ✅ Phase 73A checkpoint created
+
+**Preserved Invariants:**
+
+- No platform code changes
+- No schema changes
+- No endpoint changes
+- No refactors
+- Documentation/planning-only scope
+
+**Reference:** PHASE-71-FINAL-CHECKPOINT.md, PHASE-72-FINAL-CHECKPOINT.md, AI-SANDBOX-PLATFORM-PLAN (2).md, TASKS.md, TASKS_BACKLOG_FULL.md, PRD.md, ARCHITECTURE.md
+
+---
