@@ -1195,9 +1195,9 @@ Convert completed Phase 67 UX/UI design outputs into an implementation-ready exe
 
 ---
 
-**Current Stage:** 68B
+**Current Stage:** 68C-0
 
-**Active Task:** TASK-68B
+**Active Task:** TASK-68C
 
 #### TASK-68B: Backend UX/UI Support Endpoints — History/Control Slice
 
@@ -1324,5 +1324,33 @@ Validate and consolidate completed backend endpoint slices (`TASK-68B`, `TASK-68
 - ❌ No architecture redesign
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-68B-FINAL for full details
+
+---
+
+#### TASK-68C: Frontend Core Workspace Slice 1
+
+**Status:** ACTIVE
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-68C-CHECKPOINT.md`
+
+**Objective:**
+Implement only the first minimal, unblocked frontend core workspace slice from Phase 68A to establish the authenticated workspace shell foundation for later frontend slices.
+
+**Scope:**
+- Authenticated workspace shell layout only (base panel structure and shell states)
+- Initial workspace chrome required for shell usability (header/footer frame and container states)
+- Minimal session sidebar shell wiring using already available session capabilities only
+- Focused frontend tests for this slice
+- Slice-specific documentation/checkpoint output
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No history/control UI
+- ❌ No dashboard UI
+- ❌ No public-facing UI
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-68C for full details
 
 ---

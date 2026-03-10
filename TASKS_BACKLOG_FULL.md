@@ -4915,3 +4915,83 @@ This task is limited to **documentation and validation only** for completed back
 **Reference:** PHASE-68A-CHECKPOINT.md (Section 9), PHASE-68B-CHECKPOINT.md, PHASE-68B-2-CHECKPOINT.md, PHASE-68B-3-CHECKPOINT.md
 
 ---
+
+### TASK-68C: Frontend Core Workspace Slice 1
+
+**Task ID:** TASK-68C  
+**Phase:** 68  
+**Stage:** 68C  
+**Priority:** 🔴 High  
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)  
+**Dependencies:** TASK-68A (Complete), TASK-68B-FINAL (Complete), Existing backend session capabilities only  
+**Checkpoint:** `docs/PHASE-68C-CHECKPOINT.md`
+
+**Objective:**
+
+Implement the first minimal frontend core workspace slice identified as unblocked in PHASE-68A to establish the authenticated workspace shell baseline before later frontend slices. Scope remains narrow and launch-priority.
+
+**Scope:**
+
+This task is limited to **frontend implementation only** for the first core workspace slice.
+
+**In Scope:**
+
+1. **Authenticated Workspace Shell Foundation (First Slice Only)**
+   - Implement minimal authenticated workspace shell/container structure
+   - Implement base panel shells needed for the core workspace frame
+   - Implement foundational workspace states for shell-level rendering only
+
+2. **Minimal Session Shell Wiring (Existing Backend Capabilities Only)**
+   - Use already available session capabilities required for shell initialization
+   - No new endpoint dependencies or backend contract expansion
+   - No backend-side changes
+
+3. **Slice-Specific Validation**
+   - Add focused frontend tests for this slice only
+   - Document slice outputs and constraints in checkpoint
+
+**Explicitly Out of Scope:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No history/control UI in this task
+- ❌ No dashboard UI in this task
+- ❌ No public-facing UI in this task
+- ❌ No registration of later 68C sub-slices in this task
+- ❌ No 68D / 68E / 68F / 68G scope in this task
+
+**Deliverables:**
+
+1. **Frontend Workspace Slice 1 Implementation**
+   - Minimal authenticated workspace shell baseline
+   - First-slice-only UI foundation required for later workspace slices
+
+2. **Tests**
+   - Focused frontend tests for this slice only
+
+3. **Checkpoint**
+   - `docs/PHASE-68C-CHECKPOINT.md`
+   - Slice summary, scope validation, and preserved invariants
+
+**Acceptance Criteria:**
+
+- ✅ First minimal unblocked frontend workspace slice is implemented
+- ✅ Scope remains limited to core workspace slice 1 only
+- ✅ Uses already available backend capabilities only
+- ✅ No backend changes and no schema changes
+- ✅ No history/control, dashboard, or public-facing UI work included
+- ✅ Focused tests for this slice are included
+- ✅ Checkpoint created for this slice
+
+**Preserved Invariants:**
+
+- No backend changes
+- No schema changes
+- No refactors
+- Frontend-only additive scope
+- Request-driven and deterministic platform behavior assumptions preserved
+
+**Reference:** PHASE-68A-CHECKPOINT.md (STAGE-68C and immediate unblocked first-slice guidance), PHASE-68B-FINAL-CHECKPOINT.md
+
+---
