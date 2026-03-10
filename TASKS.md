@@ -1437,9 +1437,9 @@ Implement only the first minimal, unblocked frontend public-facing slice from Ph
 
 ---
 
-**Current Stage:** 68G-0
+**Current Stage:** 68-FINAL-0
 
-**Active Task:** TASK-68G
+**Active Task:** TASK-68-FINAL
 
 #### TASK-68G: Launch Polish Slice 1
 
@@ -1464,5 +1464,33 @@ Implement only the first minimal, unblocked frontend launch-polish slice from Ph
 - ❌ No major redesign of completed surfaces
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-68G for full details
+
+---
+
+#### TASK-68-FINAL: Phase 68 Final Consolidation
+
+**Status:** PLANNED
+**Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)
+**Checkpoint:** `docs/PHASE-68-FINAL-CHECKPOINT.md`
+
+**Objective:**
+Validate and consolidate completed Phase 68 planning and implementation slices into a final phase-level readiness checkpoint.
+
+**Scope:**
+- Validate and consolidate TASK-68A, TASK-68B, TASK-68B-2, TASK-68B-3, TASK-68B-FINAL, TASK-68C, TASK-68D, TASK-68E, TASK-68F, and TASK-68G
+- Confirm Phase 68 outputs are coherent and aligned with PRD and ARCHITECTURE
+- Confirm approved planning/implementation boundaries were preserved
+- Confirm backend/frontend sequencing consistency across completed slices
+- Confirm no schema changes occurred across Phase 68 work
+- Create final checkpoint: `docs/PHASE-68-FINAL-CHECKPOINT.md`
+
+**Non-Goals:**
+- ❌ No new implementation
+- ❌ No backend changes
+- ❌ No frontend feature expansion
+- ❌ No schema changes
+- ❌ No refactors
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-68-FINAL for full details
 
 ---
