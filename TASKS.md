@@ -598,7 +598,7 @@ Implement deterministic, database-backed hard quota enforcement for maximum AI t
 
 #### TASK-42A-4: Hard Quota Enforcement — PS 5.x Verification + PHASE-42A Finalization
 
-**Status:** PLANNED  
+**Status:** COMPLETE and LOCKED  
 **Nature:** VERIFICATION + DOCUMENTATION  
 **Checkpoint:** `docs/PHASE-42A-CHECKPOINT.md`
 
@@ -1781,9 +1781,9 @@ Validate and consolidate completed Phase 71 planning/validation/reconciliation w
 
 ### Phase 72: TASK-42A-4 Evidence Resolution
 
-**Current Stage:** 72A-0
+**Current Stage:** 72-FINAL-0
 
-**Active Task:** TASK-72A
+**Active Task:** TASK-72-FINAL
 
 #### TASK-72A: TASK-42A-4 Evidence Resolution
 
@@ -1807,5 +1807,82 @@ Resolve the remaining TASK-42A-4 reconciliation exception identified in Phase 71
 - ❌ No new implementation
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-72A for full details
+
+---
+
+#### TASK-72B: Execute TASK-42A-4
+
+**Status:** COMPLETE and LOCKED
+**Nature:** PLANNING / ACTIVATION (NO CODE)
+**Checkpoint:** `docs/PHASE-72B-CHECKPOINT.md`
+
+**Objective:**
+Activate execution of still-incomplete TASK-42A-4 using the existing authoritative TASK-42A-4 objective/scope only, and normalize tracking so TASK-42A-4 is no longer an unresolved reconciliation issue.
+
+**Scope:**
+- Activate execution path for TASK-42A-4 as the next work item
+- Carry forward original TASK-42A-4 scope from TASKS/TASKS_BACKLOG authoritative definitions only
+- Normalize current task tracking for TASK-42A-4 based on Phase 72A evidence conclusion
+
+**Non-Goals:**
+- ❌ No platform code changes in this registration step
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+- ❌ No scope expansion beyond original TASK-42A-4 intent
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-72B for full details
+
+---
+
+#### TASK-72C: Implement Original TASK-42A-4
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (VERIFICATION + DOCUMENTATION ONLY)
+**Checkpoint:** `docs/PHASE-72C-CHECKPOINT.md`
+
+**Objective:**
+Execute the original authoritative TASK-42A-4 work exactly as already defined in current TASKS/TASKS_BACKLOG definitions, and complete the missing Phase 42A finalization work without scope expansion.
+
+**Scope:**
+- Execute original TASK-42A-4 objective/scope exactly as already defined
+- Perform comprehensive PowerShell 5.x verification across TASK-42A-1, TASK-42A-2, and TASK-42A-3
+- Complete missing finalization checkpoint work at `docs/PHASE-42A-CHECKPOINT.md`
+- Normalize project tracking by completing the still-pending original task
+
+**Non-Goals:**
+- ❌ No scope expansion beyond original TASK-42A-4 intent
+- ❌ No replacement/redefinition of original TASK-42A-4 scope
+- ❌ No refactors outside original verification/finalization boundaries
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-72C for full details
+
+---
+
+#### TASK-72-FINAL: Phase 72 Final Consolidation
+
+**Status:** PLANNED
+**Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)
+**Checkpoint:** `docs/PHASE-72-FINAL-CHECKPOINT.md`
+
+**Objective:**
+Validate and consolidate completed Phase 72 evidence-resolution, activation, and implementation outputs (`TASK-72A`, `TASK-72B`, `TASK-72C`) and close Phase 72 with a final checkpoint.
+
+**Scope:**
+- Validate and consolidate TASK-72A, TASK-72B, and TASK-72C
+- Confirm former TASK-42A-4 reconciliation exception is fully resolved
+- Confirm original TASK-42A-4 execution/finalization completed without scope expansion
+- Confirm Phase 72 remained within approved validation/activation/verification boundaries
+- Confirm no schema/endpoint changes occurred
+- Create final Phase 72 checkpoint
+
+**Non-Goals:**
+- ❌ No new implementation
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-72-FINAL for full details
 
 ---
