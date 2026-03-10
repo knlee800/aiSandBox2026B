@@ -1583,7 +1583,7 @@ Validate and consolidate completed Phase 69 planning/validation outputs and clos
 
 **Current Stage:** 70B-0
 
-**Active Task:** TASK-70B
+**Active Task:** TASK-70-FINAL
 
 #### TASK-70A: Launch Readiness Validation Planning
 
@@ -1632,5 +1632,69 @@ Execute the launch-readiness validation plan defined in `TASK-70A` and document 
 - ❌ No refactors
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-70B for full details
+
+---
+
+**Current Stage:** 70-FINAL-0
+
+**Active Task:** TASK-70-FINAL
+
+#### TASK-70-FINAL: Phase 70 Final Consolidation
+
+**Status:** PLANNED
+**Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)
+**Checkpoint:** `docs/PHASE-70-FINAL-CHECKPOINT.md`
+
+**Objective:**
+Validate and consolidate completed Phase 70 planning and validation outputs and close Phase 70 with a final checkpoint.
+
+**Scope:**
+- Validate and consolidate `TASK-70A` and `TASK-70B`
+- Confirm launch-readiness planning and execution outputs are coherent
+- Confirm no blocking issues remain before broader launch sign-off
+- Confirm Phase 70 remained documentation/validation-only
+- Confirm no code/schema/endpoint changes occurred
+- Create final Phase 70 checkpoint
+
+**Non-Goals:**
+- ❌ No new implementation
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-70-FINAL for full details
+
+---
+
+### Phase 71: Master Plan Reconciliation
+
+**Current Stage:** 71A-0
+
+**Active Task:** TASK-71A
+
+#### TASK-71A: Master Plan Gap Analysis
+
+**Status:** PLANNED
+**Nature:** DOCUMENTATION / PLANNING (NO CODE)
+**Checkpoint:** `docs/PHASE-71A-CHECKPOINT.md`
+
+**Objective:**
+Compare the broader master plan against the currently completed/narrowed implementation path and define the next authoritative post-Phase-70 priorities.
+
+**Scope:**
+- Compare master plan vision against current PRD/ARCHITECTURE and completed implementation path
+- Identify what is complete, partially complete, deferred, missing, or incompatible with current constraints
+- Reconcile master plan vision with current PRD, ARCHITECTURE, TASKS, and TASKS_BACKLOG state
+- Identify next authoritative post-Phase-70 product/workstream priorities
+- Propose high-level sequencing for remaining master-plan work only
+
+**Non-Goals:**
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-71A for full details
 
 ---
