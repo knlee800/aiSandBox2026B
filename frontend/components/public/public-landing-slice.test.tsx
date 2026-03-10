@@ -21,9 +21,19 @@ describe('public landing slice component', () => {
     const errorHtml = renderToStaticMarkup(<PublicLandingSliceView locale="en" state="error" />);
     const readyHtml = renderToStaticMarkup(<PublicLandingSliceView locale="en" state="ready" />);
 
-    assert.match(loadingHtml, /Loading public surface\.\.\./);
-    assert.match(errorHtml, /Unable to initialize this public surface\./);
-    assert.match(readyHtml, /Signed-in state detected\./);
+    assert.match(loadingHtml, /Public surface is loading/);
+    assert.match(errorHtml, /Public surface unavailable/);
+    assert.match(readyHtml, /Signed-in state detected/);
+    assert.match(readyHtml, /Action: Use Continue to Workspace\./);
+  });
+
+  test('adds trust note and responsive spacing classes', () => {
+    const html = renderToStaticMarkup(<PublicLandingSliceView locale="en" state="empty" />);
+    assert.match(html, /Trust note: your coding sessions run in isolated containers/);
+    assert.ok(html.includes('px-4'));
+    assert.ok(html.includes('sm:px-6'));
+    assert.ok(html.includes('text-2xl'));
+    assert.ok(html.includes('sm:text-3xl'));
   });
 
   test('keeps authenticated-app scope out of public slice', () => {

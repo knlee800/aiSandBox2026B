@@ -103,9 +103,10 @@ describe('workspace shell component', () => {
       />,
     );
 
-    assert.match(html, /Loading workspace shell\.\.\./);
-    assert.match(html, /Loading checkpoint history\.\.\./);
-    assert.match(html, /Loading dashboard summary\.\.\./);
+    assert.match(html, /Workspace is loading/);
+    assert.match(html, /History is loading/);
+    assert.match(html, /Dashboard is loading/);
+    assert.match(html, /Action: Please wait a moment\./);
   });
 
   test('renders error shell state', () => {
@@ -130,9 +131,10 @@ describe('workspace shell component', () => {
       />,
     );
 
-    assert.match(html, /Unable to load sessions for workspace shell\./);
-    assert.match(html, /Unable to load checkpoint history\./);
-    assert.match(html, /Unable to load dashboard summary\./);
+    assert.match(html, /Workspace unavailable/);
+    assert.match(html, /History unavailable/);
+    assert.match(html, /Dashboard unavailable/);
+    assert.match(html, /Action: Refresh this page to retry\./);
   });
 
   test('renders empty history state for selected session without checkpoints', () => {
@@ -157,8 +159,37 @@ describe('workspace shell component', () => {
       />,
     );
 
-    assert.match(html, /No checkpoint history available for the selected session\./);
-    assert.match(html, /No dashboard data available for this user\./);
+    assert.match(html, /No checkpoints yet/);
+    assert.match(html, /No dashboard data yet/);
+    assert.match(html, /Action: Create or select a session, then retry\./);
+  });
+
+  test('renders trust note and responsive layout classes', () => {
+    const html = renderToStaticMarkup(
+      <WorkspaceShell
+        sessions={[session]}
+        selectedSessionId={session.id}
+        isLoadingSessions={false}
+        sessionError={null}
+        onSelectSession={() => {}}
+        onCreateSession={async () => {}}
+        isCreatingSession={false}
+        userId={null}
+        checkpoints={[checkpoint]}
+        isLoadingHistory={false}
+        historyError={null}
+        userSummary={userSummary}
+        usageSummary={usageSummary}
+        quotaSummary={quotaSummary}
+        isLoadingDashboard={false}
+        dashboardError={null}
+      />,
+    );
+
+    assert.match(html, /Workspace data is session-scoped\./);
+    assert.ok(html.includes('grid-cols-1'));
+    assert.ok(html.includes('md:grid-cols-2'));
+    assert.ok(html.includes('xl:grid-cols-3'));
   });
 
   test('does not render out-of-scope history or dashboard UI', () => {

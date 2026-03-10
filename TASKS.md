@@ -1436,3 +1436,33 @@ Implement only the first minimal, unblocked frontend public-facing slice from Ph
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-68F for full details
 
 ---
+
+**Current Stage:** 68G-0
+
+**Active Task:** TASK-68G
+
+#### TASK-68G: Launch Polish Slice 1
+
+**Status:** PLANNED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-68G-CHECKPOINT.md`
+
+**Objective:**
+Implement only the first minimal, unblocked frontend launch-polish slice from Phase 68A, with narrow launch-priority scope.
+
+**Scope:**
+- First smallest launch-polish slice only (launch-priority, narrow scope)
+- Responsive polish, state polish, and clarity/trust polish for already-implemented frontend surfaces only
+- Focused frontend tests for this slice
+- Slice-specific documentation/checkpoint output
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new product feature scope
+- ❌ No major redesign of completed surfaces
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-68G for full details
+
+---

@@ -5230,3 +5230,80 @@ This task is limited to **frontend implementation only** for the first public-fa
 **Reference:** PHASE-68A-CHECKPOINT.md (STAGE-68F sequencing and first-slice public-facing scope), PHASE-68B-FINAL-CHECKPOINT.md, PHASE-68C-CHECKPOINT.md, PHASE-68D-CHECKPOINT.md, PHASE-68E-CHECKPOINT.md
 
 ---
+
+### TASK-68G: Launch Polish Slice 1
+
+**Task ID:** TASK-68G  
+**Phase:** 68  
+**Stage:** 68G  
+**Priority:** 🔴 High  
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)  
+**Dependencies:** TASK-68A (Complete), TASK-68C (Complete), TASK-68D (Complete), TASK-68E (Complete), TASK-68F (Complete)  
+**Checkpoint:** `docs/PHASE-68G-CHECKPOINT.md`
+
+**Objective:**
+
+Implement only the first minimal frontend launch-polish slice identified in PHASE-68A, with narrow launch-priority scope focused on usability/readiness improvements for already-implemented frontend surfaces.
+
+**Scope:**
+
+This task is limited to **frontend implementation only** for the first launch-polish slice.
+
+**In Scope:**
+
+1. **Launch Polish Integration (First Slice Only)**
+   - Implement only the smallest launch-priority polish slice
+   - Improve usability/readiness only where already covered by completed frontend slices
+   - Keep scope intentionally narrow for first-slice validation
+
+2. **Polish Focus Areas (Narrow Slice)**
+   - Responsive polish for already-implemented surfaces only
+   - State polish (loading/empty/error/ready clarity) for already-implemented surfaces only
+   - Clarity/trust polish for already-implemented surfaces only
+
+3. **Slice-Specific Validation**
+   - Add focused frontend tests for this slice only
+   - Document slice outputs and constraints in checkpoint
+
+**Explicitly Out of Scope:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new product feature scope
+- ❌ No major redesign of completed surfaces
+- ❌ No broader cross-platform polish beyond this first slice
+
+**Deliverables:**
+
+1. **Frontend Launch Polish Slice 1 Implementation**
+   - Minimal first-slice launch polish baseline for already-implemented frontend surfaces
+
+2. **Tests**
+   - Focused frontend tests for this slice only
+
+3. **Checkpoint**
+   - `docs/PHASE-68G-CHECKPOINT.md`
+   - Slice summary, scope validation, and preserved invariants
+
+**Acceptance Criteria:**
+
+- ✅ First minimal unblocked frontend launch-polish slice is implemented
+- ✅ Scope remains limited to launch-polish slice 1 only
+- ✅ Improves responsive/state/clarity-trust polish only for already-implemented surfaces
+- ✅ No backend changes and no schema changes
+- ✅ No refactors and no new product feature scope
+- ✅ Focused tests for this slice are included
+- ✅ Checkpoint created for this slice
+
+**Preserved Invariants:**
+
+- No backend changes
+- No schema changes
+- No refactors
+- Frontend-only additive scope
+- Request-driven and deterministic platform behavior assumptions preserved
+
+**Reference:** PHASE-68A-CHECKPOINT.md (STAGE-68G launch-polish sequencing/scope), PHASE-68C-CHECKPOINT.md, PHASE-68D-CHECKPOINT.md, PHASE-68E-CHECKPOINT.md, PHASE-68F-CHECKPOINT.md
+
+---

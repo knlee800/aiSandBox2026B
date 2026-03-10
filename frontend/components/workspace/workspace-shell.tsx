@@ -62,13 +62,14 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
           <h1 className="text-sm font-semibold text-gray-900">AI Sandbox Workspace</h1>
           <p className="text-xs text-gray-500">Core shell baseline (Slice 1)</p>
         </div>
-        <div className="text-xs text-gray-600">
-          {props.userId ? `User ${props.userId}` : 'Authenticated user'}
+        <div className="text-xs text-gray-600 text-right">
+          <p>{props.userId ? `User ${props.userId}` : 'Authenticated user'}</p>
+          <p className="text-[11px] text-gray-500">Launch polish slice 1: responsive + state clarity</p>
         </div>
       </header>
 
-      <div className="flex-1 min-h-0 flex">
-        <aside className="w-64 bg-white border-r border-gray-200 flex flex-col" data-testid="session-sidebar-shell">
+      <div className="flex-1 min-h-0 flex flex-col md:flex-row">
+        <aside className="w-full md:w-64 bg-white border-b md:border-b-0 md:border-r border-gray-200 flex flex-col" data-testid="session-sidebar-shell">
           <div className="p-3 border-b border-gray-100">
             <button
               type="button"
@@ -104,7 +105,12 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
         </aside>
 
         <main className="flex-1 min-w-0 flex flex-col">
-          <div className="flex-1 min-h-0 grid grid-cols-3 gap-2 p-2">
+          <div className="px-2 pt-2">
+            <p className="rounded border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-blue-800" data-testid="workspace-trust-note">
+              Workspace data is session-scoped. If a state fails, use the suggested retry action below.
+            </p>
+          </div>
+          <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 p-2">
             <section className="bg-white border border-gray-200 rounded p-3" data-testid="chat-panel-shell">
               <p className="text-xs font-semibold text-gray-700 mb-2">Chat Panel</p>
               <ShellStateMessage state={shellState} />
@@ -147,18 +153,46 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
 
 function HistorySliceMessage({ state }: { state: 'loading' | 'error' | 'empty' | 'ready' }) {
   if (state === 'loading') {
-    return <p className="text-sm text-gray-500">Loading checkpoint history...</p>;
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="History is loading"
+        body="Fetching checkpoint history for the selected session."
+        action="Please wait a moment."
+      />
+    );
   }
 
   if (state === 'error') {
-    return <p className="text-sm text-red-600">Unable to load checkpoint history.</p>;
+    return (
+      <StateMessage
+        tone="error"
+        heading="History unavailable"
+        body="Unable to load checkpoint history."
+        action="Try selecting the session again."
+      />
+    );
   }
 
   if (state === 'empty') {
-    return <p className="text-sm text-gray-500">No checkpoint history available for the selected session.</p>;
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="No checkpoints yet"
+        body="No checkpoint history is available for this session."
+        action="Run a workspace action to create the first checkpoint."
+      />
+    );
   }
 
-  return <p className="text-sm text-gray-700">Checkpoint history loaded.</p>;
+  return (
+    <StateMessage
+      tone="success"
+      heading="History ready"
+      body="Checkpoint history loaded."
+      action="Choose a checkpoint to inspect details."
+    />
+  );
 }
 
 function HistoryCheckpointList({ checkpoints }: { checkpoints: WorkspaceCheckpoint[] }) {
@@ -178,18 +212,46 @@ function HistoryCheckpointList({ checkpoints }: { checkpoints: WorkspaceCheckpoi
 
 function DashboardSliceMessage({ state }: { state: 'loading' | 'error' | 'empty' | 'ready' }) {
   if (state === 'loading') {
-    return <p className="text-sm text-gray-500">Loading dashboard summary...</p>;
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="Dashboard is loading"
+        body="Retrieving user, usage, and quota summary data."
+        action="Please wait a moment."
+      />
+    );
   }
 
   if (state === 'error') {
-    return <p className="text-sm text-red-600">Unable to load dashboard summary.</p>;
+    return (
+      <StateMessage
+        tone="error"
+        heading="Dashboard unavailable"
+        body="Unable to load dashboard summary."
+        action="Refresh this page to retry."
+      />
+    );
   }
 
   if (state === 'empty') {
-    return <p className="text-sm text-gray-500">No dashboard data available for this user.</p>;
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="No dashboard data yet"
+        body="Dashboard data is not available for this user."
+        action="Create or select a session, then retry."
+      />
+    );
   }
 
-  return <p className="text-sm text-gray-700">Dashboard summary loaded.</p>;
+  return (
+    <StateMessage
+      tone="success"
+      heading="Dashboard ready"
+      body="Dashboard summary loaded."
+      action="Review active sessions and quota usage."
+    />
+  );
 }
 
 function DashboardSummary(props: {
@@ -229,16 +291,67 @@ function DashboardSummary(props: {
 
 function ShellStateMessage({ state }: { state: 'loading' | 'error' | 'empty' | 'ready' }) {
   if (state === 'loading') {
-    return <p className="text-sm text-gray-500">Loading workspace shell...</p>;
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="Workspace is loading"
+        body="Loading sessions and preparing baseline workspace panels."
+        action="Please wait a moment."
+      />
+    );
   }
 
   if (state === 'error') {
-    return <p className="text-sm text-red-600">Unable to load sessions for workspace shell.</p>;
+    return (
+      <StateMessage
+        tone="error"
+        heading="Workspace unavailable"
+        body="Unable to load sessions for the workspace shell."
+        action="Refresh this page or sign in again."
+      />
+    );
   }
 
   if (state === 'empty') {
-    return <p className="text-sm text-gray-500">No session selected. Create or select a session.</p>;
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="No session selected"
+        body="Create or select a session to start using workspace panels."
+        action="Use New Session in the sidebar."
+      />
+    );
   }
 
-  return <p className="text-sm text-gray-700">Shell ready. Full panel behavior is deferred to later slices.</p>;
+  return (
+    <StateMessage
+      tone="success"
+      heading="Workspace ready"
+      body="Shell ready. Full panel behavior remains deferred to later slices."
+      action="Continue with session selection and checkpoint review."
+    />
+  );
+}
+
+function StateMessage(props: {
+  tone: 'neutral' | 'error' | 'success';
+  heading: string;
+  body: string;
+  action: string;
+}) {
+  const paletteByTone = {
+    neutral: 'border-gray-200 bg-gray-50 text-gray-700',
+    error: 'border-red-200 bg-red-50 text-red-700',
+    success: 'border-green-200 bg-green-50 text-green-700',
+  } as const;
+
+  const palette = paletteByTone[props.tone];
+
+  return (
+    <div className={`rounded border px-3 py-2 text-sm ${palette}`}>
+      <p className="font-semibold">{props.heading}</p>
+      <p className="mt-1">{props.body}</p>
+      <p className="mt-1 text-xs opacity-90">Action: {props.action}</p>
+    </div>
+  );
 }
