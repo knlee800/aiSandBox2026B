@@ -6236,3 +6236,87 @@ This task is limited to **documentation and validation only**.
 **Reference:** PHASE-71A-CHECKPOINT.md, PHASE-71B-CHECKPOINT.md, PHASE-71C-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### TASK-72A: TASK-42A-4 Evidence Resolution
+
+**Task ID:** TASK-72A  
+**Phase:** 72  
+**Stage:** 72A  
+**Priority:** 🟡 Medium  
+**Nature:** DOCUMENTATION / VALIDATION (NO CODE)  
+**Dependencies:** TASK-71-FINAL (Complete)  
+**Checkpoint:** `docs/PHASE-72A-CHECKPOINT.md`
+
+**Objective:**
+
+Resolve the remaining TASK-42A-4 reconciliation exception identified in Phase 71 by investigating missing checkpoint evidence and determining the correct corrective path.
+
+**Scope:**
+
+This task is limited to **documentation and validation only**.
+
+**In Scope:**
+
+1. **Evidence Investigation**
+   - Investigate the missing checkpoint file for TASK-42A-4 (`docs/PHASE-42A-CHECKPOINT.md` not present in repo)
+   - Search for any partial evidence of TASK-42A-4 completion (git history, related checkpoint files, verification script artifacts, session logs)
+   - Review TASK-42A-4 scope definition in TASKS.md and TASKS_BACKLOG_FULL.md
+
+2. **Status Determination**
+   - Determine whether TASK-42A-4 is:
+     - Complete but missing checkpoint evidence (checkpoint was never created despite work being done)
+     - Incomplete and still legitimately active (verification work was never executed)
+     - Mis-tracked in TASKS.md (status or checkpoint path is incorrect)
+
+3. **Corrective Path Planning**
+   - Plan the minimum corrective path based on evidence findings only
+   - If complete: define checkpoint creation requirements
+   - If incomplete: define minimum remaining verification scope
+   - If mis-tracked: define the corrective status update
+
+4. **Checkpoint**
+   - Create `docs/PHASE-72A-CHECKPOINT.md`
+   - Include investigation findings, status determination, corrective path, and preserved invariants
+
+**Explicitly Out of Scope:**
+
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No new implementation
+- ❌ No refactors
+- ❌ No broader roadmap expansion
+- ❌ No execution of the corrective path (planning only)
+
+**Deliverables:**
+
+1. **Investigation Output**
+   - Evidence inventory for TASK-42A-4 completion state
+   - Status determination with rationale
+
+2. **Corrective Path Output**
+   - Minimum corrective action plan based on evidence
+
+3. **Checkpoint**
+   - `docs/PHASE-72A-CHECKPOINT.md`
+   - Investigation findings, determination, corrective path, and preserved invariants
+
+**Acceptance Criteria:**
+
+- ✅ Missing checkpoint evidence for TASK-42A-4 investigated
+- ✅ TASK-42A-4 completion state determined (complete/incomplete/mis-tracked)
+- ✅ Minimum corrective path planned based on evidence
+- ✅ No platform code/schema/endpoint changes occurred
+- ✅ Phase 72A checkpoint created
+
+**Preserved Invariants:**
+
+- No platform code changes
+- No schema changes
+- No endpoint changes
+- No refactors
+- Documentation/validation-only scope
+
+**Reference:** PHASE-71-FINAL-CHECKPOINT.md, PHASE-71C-CHECKPOINT.md, TASKS.md, TASKS_BACKLOG_FULL.md
+
+---

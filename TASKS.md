@@ -598,7 +598,7 @@ Implement deterministic, database-backed hard quota enforcement for maximum AI t
 
 #### TASK-42A-4: Hard Quota Enforcement — PS 5.x Verification + PHASE-42A Finalization
 
-**Status:** ACTIVE  
+**Status:** PLANNED  
 **Nature:** VERIFICATION + DOCUMENTATION  
 **Checkpoint:** `docs/PHASE-42A-CHECKPOINT.md`
 
@@ -1776,5 +1776,36 @@ Validate and consolidate completed Phase 71 planning/validation/reconciliation w
 - ❌ No refactors
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-71-FINAL for full details
+
+---
+
+### Phase 72: TASK-42A-4 Evidence Resolution
+
+**Current Stage:** 72A-0
+
+**Active Task:** TASK-72A
+
+#### TASK-72A: TASK-42A-4 Evidence Resolution
+
+**Status:** COMPLETE and LOCKED
+**Nature:** DOCUMENTATION / VALIDATION (NO CODE)
+**Checkpoint:** `docs/PHASE-72A-CHECKPOINT.md`
+
+**Objective:**
+Resolve the remaining TASK-42A-4 reconciliation exception identified in Phase 71 by investigating missing checkpoint evidence and determining the correct corrective path.
+
+**Scope:**
+- Investigate the missing checkpoint evidence for TASK-42A-4 (`docs/PHASE-42A-CHECKPOINT.md` not present in repo)
+- Determine whether TASK-42A-4 is complete but missing checkpoint evidence, incomplete and still legitimately active, or mis-tracked in TASKS.md
+- Plan the minimum corrective path based on evidence only
+
+**Non-Goals:**
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+- ❌ No new implementation
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-72A for full details
 
 ---
