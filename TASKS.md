@@ -1889,9 +1889,9 @@ Validate and consolidate completed Phase 72 evidence-resolution, activation, and
 
 ### Phase 73: Post-Reconciliation Priority Selection
 
-**Current Stage:** 73C-2-0
+**Current Stage:** 73C-FINAL-0
 
-**Active Task:** TASK-73C-2
+**Active Task:** TASK-73C-FINAL
 
 #### TASK-73A: Post-Reconciliation Priority Selection
 
@@ -1997,5 +1997,34 @@ Validate the bounded non-monetary commercial-readiness contract baseline complet
 - ❌ No schema changes unless explicitly authorized by current PRD/ARCHITECTURE constraints and absolutely required by bounded validation scope
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-73C-2 for full details
+
+---
+
+#### TASK-73C-FINAL: Commercial Readiness Family Consolidation
+
+**Status:** PLANNED
+**Nature:** VALIDATION / DOCUMENTATION (NO NEW IMPLEMENTATION)
+**Checkpoint:** `docs/PHASE-73C-FINAL-CHECKPOINT.md`
+
+**Objective:**
+Validate and consolidate completed bounded commercial-readiness outputs (`TASK-73C-1`, `TASK-73C-2`) and confirm the non-monetary usage/quota family is coherent and packaging-ready on existing surfaces only.
+
+**Scope:**
+- Validate and consolidate `TASK-73C-1` and `TASK-73C-2`
+- Confirm bounded non-monetary commercial-readiness coherence and packaging-readiness on existing surfaces only
+- Confirm no monetary billing/subscription/invoicing/tax scope was introduced
+- Confirm no architecture expansion, new service boundaries, or background-worker patterns were introduced
+- Confirm no schema changes occurred unless explicitly authorized and actually required by bounded family scope
+- Create final 73C family checkpoint
+
+**Non-Goals:**
+- ❌ No new implementation
+- ❌ No refactors
+- ❌ No monetary billing/subscription/invoicing/tax scope expansion
+- ❌ No architecture expansion or new service boundaries
+- ❌ No background-worker patterns
+- ❌ No scope expansion beyond selected bounded commercial family
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-73C-FINAL for full details
 
 ---
