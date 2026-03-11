@@ -7223,3 +7223,89 @@ This task is limited to **documentation and planning only**.
 **Reference:** PHASE-74A-CHECKPOINT.md, PHASE-73-FINAL-CHECKPOINT.md, TASKS.md, TASKS_BACKLOG_FULL.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### TASK-74C-1: Cross-Surface Visibility Coherence Baseline
+
+**Task ID:** TASK-74C-1
+**Phase:** 74
+**Stage:** 74C-1
+**Priority:** 🟡 Medium
+**Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE, BOUNDED)
+**Dependencies:** TASK-74B (Complete)
+**Checkpoint:** `docs/PHASE-74C-1-CHECKPOINT.md`
+
+**Objective:**
+
+Verify and normalize cross-surface coherence between user-facing usage/quota surfaces and admin-facing visibility surfaces on existing endpoints only, establishing a coherent visibility baseline for non-monetary commercial reporting readiness.
+
+**Scope:**
+
+This task is limited to **bounded implementation or validation on existing surfaces only**.
+
+**In Scope:**
+
+1. **Cross-Surface Usage/Quota Coherence**
+   - Verify that `GET /api/users/me/usage` and `GET /api/users/me/quotas` return data consistent with what `GET /api/internal/admin/users` reports for the same user's usage/quota signals
+   - Verify that `GET /api/sessions?includeTerminated=true` session data is coherent with `GET /api/internal/admin/sessions` session data for the same user
+   - If cross-surface inconsistency is found, apply minimal normalization to align existing surface contracts
+   - If no inconsistency is found, document findings as validation-only
+
+2. **Bounded Constraints**
+   - Bounded to existing endpoints listed in PHASE-74B-CHECKPOINT.md Section 5 only
+   - Keep scope additive, architecture-neutral
+   - No new endpoints or surfaces
+
+3. **Checkpoint**
+   - Create `docs/PHASE-74C-1-CHECKPOINT.md`
+   - Document cross-surface coherence findings, any normalization applied, and preserved invariants
+
+**Explicitly Out of Scope:**
+
+- ❌ No monetary billing
+- ❌ No subscriptions
+- ❌ No invoicing
+- ❌ No tax/accounting scope
+- ❌ No new service boundaries
+- ❌ No background-worker patterns
+- ❌ No schema changes unless explicitly authorized by current PRD/ARCHITECTURE constraints and absolutely required by this bounded slice
+- ❌ No scope expansion beyond selected bounded family
+- ❌ No new endpoints or surfaces
+- ❌ No broader architectural expansion
+- ❌ No frontend changes (unless minimal and strictly required for existing surface coherence)
+
+**Deliverables:**
+
+1. **Coherence Findings**
+   - Cross-surface coherence analysis between user-facing and admin-facing usage/quota/session surfaces
+   - Documentation of any inconsistencies found
+
+2. **Normalization (if needed)**
+   - Minimal, additive normalization to align existing surface contracts (only if cross-surface inconsistency is found)
+   - Focused tests for any normalization changes
+
+3. **Checkpoint**
+   - `docs/PHASE-74C-1-CHECKPOINT.md`
+   - Findings summary with preserved invariants and explicit out-of-scope confirmation
+
+**Acceptance Criteria:**
+
+- ✅ Cross-surface coherence between user-facing and admin-facing usage/quota surfaces is verified on existing endpoints
+- ✅ Cross-surface coherence between user-facing and admin-facing session surfaces is verified on existing endpoints
+- ✅ Any inconsistencies are either normalized (minimal, additive) or documented for future resolution
+- ✅ No monetization or broader architecture expansion occurred
+- ✅ Scope remained bounded to existing surfaces only
+- ✅ Phase 74C-1 checkpoint created
+
+**Preserved Invariants:**
+
+- No new endpoints or surfaces
+- No new service boundaries
+- No background-worker patterns
+- No schema changes (unless explicitly authorized and absolutely required)
+- No monetization scope expansion beyond current authority constraints
+- No broader architectural expansion
+- `PRD.md` and `ARCHITECTURE.md` remain higher authority
+
+**Reference:** PHASE-74B-CHECKPOINT.md, PHASE-74A-CHECKPOINT.md, PHASE-73-FINAL-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
+
+---

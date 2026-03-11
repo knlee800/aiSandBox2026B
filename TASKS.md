@@ -2058,9 +2058,9 @@ Validate and consolidate completed Phase 73 planning and bounded commercial-foun
 
 ### Phase 74: Next Bounded Commercial Family Selection
 
-**Current Stage:** 74B-0
+**Current Stage:** 74C-1-0
 
-**Active Task:** TASK-74B
+**Active Task:** TASK-74C-1
 
 #### TASK-74A: Next Bounded Commercial Family Selection
 
@@ -2113,5 +2113,38 @@ Plan the selected bounded family from Phase 74A (`Non-Monetary Commercial Visibi
 - ❌ No monetization scope expansion beyond current authority constraints
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-74B for full details
+
+---
+
+#### TASK-74C-1: Cross-Surface Visibility Coherence Baseline
+
+**Status:** PLANNED
+**Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE, BOUNDED)
+**Checkpoint:** `docs/PHASE-74C-1-CHECKPOINT.md`
+
+**Objective:**
+Verify and normalize cross-surface coherence between user-facing usage/quota surfaces and admin-facing visibility surfaces on existing endpoints only, establishing a coherent visibility baseline for non-monetary commercial reporting readiness.
+
+**Scope:**
+- Verify that user-facing usage/quota data (`GET /api/users/me/usage`, `GET /api/users/me/quotas`) is coherent with admin-facing visibility data (`GET /api/internal/admin/users`) for the same underlying state
+- Verify that user-facing session data (`GET /api/sessions?includeTerminated=true`) is coherent with admin-facing session data (`GET /api/internal/admin/sessions`) for the same user
+- If cross-surface inconsistency is found, apply minimal normalization to align existing surface contracts
+- If no inconsistency is found, document findings as validation-only
+- Keep scope additive, bounded, and architecture-neutral
+- Bounded to existing endpoints only — no new endpoints
+
+**Non-Goals:**
+- ❌ No monetary billing
+- ❌ No subscriptions
+- ❌ No invoicing
+- ❌ No tax/accounting scope
+- ❌ No new service boundaries
+- ❌ No background-worker patterns
+- ❌ No schema changes unless explicitly authorized by current PRD/ARCHITECTURE constraints and absolutely required by this bounded slice
+- ❌ No scope expansion beyond selected bounded family
+- ❌ No new endpoints or surfaces
+- ❌ No broader architectural expansion
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-74C-1 for full details
 
 ---
