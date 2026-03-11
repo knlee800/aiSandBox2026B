@@ -7132,3 +7132,94 @@ This task is limited to **documentation and planning only**.
 **Reference:** PHASE-73-FINAL-CHECKPOINT.md, PHASE-73B-CHECKPOINT.md, TASKS.md, TASKS_BACKLOG_FULL.md, AI-SANDBOX-PLATFORM-PLAN (2).md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### TASK-74B: Commercial Visibility and Usage Reporting Family Planning
+
+**Task ID:** TASK-74B  
+**Phase:** 74  
+**Stage:** 74B  
+**Priority:** 🟡 Medium  
+**Nature:** PLANNING / TASK REGISTRATION (NO CODE)  
+**Dependencies:** TASK-74A (Complete)  
+**Checkpoint:** `docs/PHASE-74B-CHECKPOINT.md`
+
+**Objective:**
+
+Plan the selected bounded family from `TASK-74A` (`Non-Monetary Commercial Visibility and Usage Reporting Readiness`) and define the immediate execution-ready family boundary under current `PRD.md` / `ARCHITECTURE.md` constraints.
+
+**Scope:**
+
+This task is limited to **documentation and planning only**.
+
+**In Scope:**
+
+1. **Selected Family Planning Boundary**
+   - Plan the selected bounded family: non-monetary commercial visibility and usage reporting readiness
+   - Define immediate allowed scope for this family under current `PRD.md` / `ARCHITECTURE.md` constraints
+
+2. **Minimum Slice Identification**
+   - Identify minimum implementation and validation slices required for this family
+   - Keep slices bounded to existing usage/quota visibility/reporting surfaces only
+
+3. **Explicit Exclusions**
+   - Exclude monetization scope: billing, subscriptions, invoicing, tax/accounting
+   - Exclude broader architectural expansion and any new service-boundary expansion
+
+4. **Immediate Sequencing Recommendation**
+   - Provide high-level sequencing recommendation for immediate family sub-stages only
+   - Avoid broader roadmap expansion beyond this immediate family planning boundary
+
+5. **Checkpoint**
+   - Create `docs/PHASE-74B-CHECKPOINT.md`
+   - Document selected-family boundary, minimum slices, exclusions, sequencing recommendation, and preserved invariants
+
+**Explicitly Out of Scope:**
+
+- ❌ No platform code changes
+- ❌ No frontend changes
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No implementation work
+- ❌ No refactors
+- ❌ No broader architectural expansion
+- ❌ No monetization scope expansion beyond current authority constraints
+
+**Deliverables:**
+
+1. **Planning Output**
+   - Immediate allowed planning boundary for selected bounded family (`TASK-74A` output)
+   - Minimum implementation/validation slice map for this family only
+
+2. **Exclusion Output**
+   - Explicit excluded candidate categories with authority-based rationale
+
+3. **Sequencing Output**
+   - High-level sequencing recommendation for immediate family sub-stages only
+
+4. **Checkpoint**
+   - `docs/PHASE-74B-CHECKPOINT.md`
+   - Planning summary with preserved invariants and explicit out-of-scope confirmation
+
+**Acceptance Criteria:**
+
+- ✅ Selected bounded family from `TASK-74A` is planned with immediate allowed scope under current authority constraints
+- ✅ Minimum implementation and validation slices are identified for the selected family only
+- ✅ Monetization and broader architecture expansion candidates are explicitly excluded
+- ✅ Immediate family sub-stage sequencing recommendation is documented
+- ✅ No platform code/schema/endpoint changes occurred
+- ✅ Phase 74B checkpoint created
+
+**Preserved Invariants:**
+
+- No platform code changes
+- No schema changes
+- No endpoint changes
+- No refactors
+- No broader architectural expansion
+- No monetization scope expansion beyond current authority constraints
+- Documentation/planning-only scope
+
+**Reference:** PHASE-74A-CHECKPOINT.md, PHASE-73-FINAL-CHECKPOINT.md, TASKS.md, TASKS_BACKLOG_FULL.md, PRD.md, ARCHITECTURE.md
+
+---

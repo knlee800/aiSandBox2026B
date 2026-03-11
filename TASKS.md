@@ -2058,13 +2058,13 @@ Validate and consolidate completed Phase 73 planning and bounded commercial-foun
 
 ### Phase 74: Next Bounded Commercial Family Selection
 
-**Current Stage:** 74A-0
+**Current Stage:** 74B-0
 
-**Active Task:** TASK-74A
+**Active Task:** TASK-74B
 
 #### TASK-74A: Next Bounded Commercial Family Selection
 
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED
 **Nature:** PLANNING / TASK REGISTRATION (NO CODE)
 **Checkpoint:** `docs/PHASE-74A-CHECKPOINT.md`
 
@@ -2084,5 +2084,34 @@ Select the next bounded commercial-foundation family after completion of the Pha
 - ❌ No refactors
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-74A for full details
+
+---
+
+#### TASK-74B: Commercial Visibility and Usage Reporting Family Planning
+
+**Status:** COMPLETE and LOCKED
+**Nature:** PLANNING / TASK REGISTRATION (NO CODE)
+**Checkpoint:** `docs/PHASE-74B-CHECKPOINT.md`
+
+**Objective:**
+Plan the selected bounded family from Phase 74A (`Non-Monetary Commercial Visibility and Usage Reporting Readiness`) under current `PRD.md` / `ARCHITECTURE.md` constraints.
+
+**Scope:**
+- Define immediate allowed bounded scope for this selected family under current authority constraints
+- Identify minimum implementation and validation slices required for this family
+- Exclude monetization/billing/subscription/invoicing/tax/accounting scope and broader architecture expansion
+- Provide immediate sub-stage sequencing recommendation for this family only
+- Keep planning documentation-only with no platform code/schema/endpoint changes
+
+**Non-Goals:**
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No implementation work
+- ❌ No refactors
+- ❌ No broader architectural expansion
+- ❌ No monetization scope expansion beyond current authority constraints
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-74B for full details
 
 ---
