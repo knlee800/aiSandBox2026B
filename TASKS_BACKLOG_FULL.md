@@ -7395,3 +7395,85 @@ This task is limited to **bounded validation and documentation on existing surfa
 **Reference:** PHASE-74C-1-CHECKPOINT.md, PHASE-74B-CHECKPOINT.md, PHASE-74A-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### TASK-74C-FINAL: Visibility and Usage Reporting Family Consolidation
+
+**Task ID:** TASK-74C-FINAL
+**Phase:** 74
+**Stage:** 74C-FINAL
+**Priority:** 🟡 Medium
+**Nature:** VALIDATION / DOCUMENTATION (NO NEW IMPLEMENTATION)
+**Dependencies:** TASK-74C-1 (Complete), TASK-74C-2 (Complete)
+**Checkpoint:** `docs/PHASE-74C-FINAL-CHECKPOINT.md`
+
+**Objective:**
+
+Validate and consolidate completed bounded visibility/reporting family outputs (`TASK-74C-1`, `TASK-74C-2`) and confirm the non-monetary family is coherent and packaging-ready on existing surfaces only.
+
+**Scope:**
+
+This task is limited to **final bounded-family consolidation and validation only**.
+
+**In Scope:**
+
+1. **Final Consolidation**
+   - Validate and consolidate `TASK-74C-1` and `TASK-74C-2`
+   - Confirm bounded non-monetary visibility/reporting family coherence and packaging-readiness on existing surfaces only
+   - Confirm no billing/subscription/invoicing/tax scope was introduced
+   - Confirm no architecture expansion, new service boundaries, or background-worker patterns were introduced
+   - Confirm no schema changes occurred unless explicitly authorized and actually required
+
+2. **Checkpoint**
+   - Create `docs/PHASE-74C-FINAL-CHECKPOINT.md`
+   - Document consolidation findings, preserved invariants, and out-of-scope confirmations
+
+**Explicitly Out of Scope:**
+
+- ❌ No new implementation
+- ❌ No refactors
+- ❌ No monetary billing
+- ❌ No subscriptions
+- ❌ No invoicing
+- ❌ No tax/accounting scope
+- ❌ No new service boundaries
+- ❌ No background-worker patterns
+- ❌ No schema changes unless explicitly authorized by current PRD/ARCHITECTURE constraints and absolutely required
+- ❌ No scope expansion beyond selected bounded family
+- ❌ No new endpoints or surfaces
+- ❌ No broader architectural expansion
+
+**Deliverables:**
+
+1. **Consolidation Validation Findings**
+   - Consolidated validation summary for `TASK-74C-1` and `TASK-74C-2`
+   - Explicit confirmation of bounded-family coherence and packaging-readiness on existing surfaces only
+   - Explicit confirmation that monetization and architecture-expansion scope remained excluded
+
+2. **Checkpoint**
+   - `docs/PHASE-74C-FINAL-CHECKPOINT.md`
+   - Final family-level validation summary with preserved invariants and explicit out-of-scope confirmation
+
+**Acceptance Criteria:**
+
+- ✅ `TASK-74C-1` and `TASK-74C-2` are validated and consolidated
+- ✅ Bounded non-monetary visibility/reporting family coherence and packaging-readiness are confirmed on existing surfaces only
+- ✅ No billing/subscription/invoicing/tax scope was introduced
+- ✅ No architecture expansion, new service boundaries, or background-worker patterns were introduced
+- ✅ No schema changes occurred unless explicitly authorized and actually required
+- ✅ No new implementation introduced
+- ✅ No refactors performed
+- ✅ Phase 74C-FINAL checkpoint created
+
+**Preserved Invariants:**
+
+- No new endpoints or surfaces
+- No new service boundaries
+- No background-worker patterns
+- No schema changes unless explicitly authorized and actually required
+- No monetization scope expansion beyond current authority constraints
+- No broader architectural expansion
+- `PRD.md` and `ARCHITECTURE.md` remain higher authority
+
+**Reference:** PHASE-74C-2-CHECKPOINT.md, PHASE-74C-1-CHECKPOINT.md, PHASE-74B-CHECKPOINT.md, PHASE-74A-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
+
+---

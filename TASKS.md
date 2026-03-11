@@ -2058,9 +2058,9 @@ Validate and consolidate completed Phase 73 planning and bounded commercial-foun
 
 ### Phase 74: Next Bounded Commercial Family Selection
 
-**Current Stage:** 74C-2-0
+**Current Stage:** 74C-FINAL-0
 
-**Active Task:** TASK-74C-2
+**Active Task:** TASK-74C-FINAL
 
 #### TASK-74A: Next Bounded Commercial Family Selection
 
@@ -2178,5 +2178,34 @@ Validate that existing visibility/reporting surfaces produce deterministic, repr
 - ❌ No broader architectural expansion
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-74C-2 for full details
+
+---
+
+#### TASK-74C-FINAL: Visibility and Usage Reporting Family Consolidation
+
+**Status:** PLANNED
+**Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)
+**Checkpoint:** `docs/PHASE-74C-FINAL-CHECKPOINT.md`
+
+**Objective:**
+Validate and consolidate completed bounded visibility/reporting family outputs (`TASK-74C-1`, `TASK-74C-2`) and confirm the non-monetary family is coherent and packaging-ready on existing surfaces only.
+
+**Scope:**
+- Validate and consolidate `TASK-74C-1` and `TASK-74C-2`
+- Confirm bounded non-monetary visibility/reporting family coherence and packaging-readiness on existing surfaces only
+- Confirm no billing/subscription/invoicing/tax scope was introduced
+- Confirm no architecture expansion, new service boundaries, or background-worker patterns were introduced
+- Confirm no schema changes occurred unless explicitly authorized and actually required
+- Create final 74C family checkpoint
+
+**Non-Goals:**
+- ❌ No new implementation
+- ❌ No refactors
+- ❌ No monetary billing/subscription/invoicing/tax scope expansion
+- ❌ No architecture expansion or new service boundaries
+- ❌ No background-worker patterns
+- ❌ No scope expansion beyond selected bounded family
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-74C-FINAL for full details
 
 ---
