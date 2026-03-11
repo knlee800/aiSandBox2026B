@@ -1889,13 +1889,13 @@ Validate and consolidate completed Phase 72 evidence-resolution, activation, and
 
 ### Phase 73: Post-Reconciliation Priority Selection
 
-**Current Stage:** 73A-0
+**Current Stage:** 73B-0
 
-**Active Task:** TASK-73A
+**Active Task:** TASK-73B
 
 #### TASK-73A: Post-Reconciliation Priority Selection
 
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED
 **Nature:** DOCUMENTATION / PLANNING (NO CODE)
 **Checkpoint:** `docs/PHASE-73A-CHECKPOINT.md`
 
@@ -1914,5 +1914,30 @@ Select the next authoritative product/workstream priority after closure of the P
 - ❌ No refactors
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-73A for full details
+
+---
+
+#### TASK-73B: Bounded Commercial Foundation Planning
+
+**Status:** PLANNED
+**Nature:** PLANNING / TASK REGISTRATION (NO CODE)
+**Checkpoint:** `docs/PHASE-73B-CHECKPOINT.md`
+
+**Objective:**
+Plan the first bounded commercial-foundation work family selected in Phase 73A under current PRD/ARCHITECTURE constraints.
+
+**Scope:**
+- Define immediate commercial-foundation scope allowed under current PRD/ARCHITECTURE constraints
+- Identify minimum implementation slices required for that bounded commercial foundation
+- Exclude broader commercial expansion beyond the first bounded family
+- Provide sequencing recommendation for immediate commercial-foundation sub-stages only
+
+**Non-Goals:**
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-73B for full details
 
 ---

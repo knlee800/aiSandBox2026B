@@ -6638,3 +6638,90 @@ This task is limited to **documentation and planning only**.
 **Reference:** PHASE-71-FINAL-CHECKPOINT.md, PHASE-72-FINAL-CHECKPOINT.md, AI-SANDBOX-PLATFORM-PLAN (2).md, TASKS.md, TASKS_BACKLOG_FULL.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### TASK-73B: Bounded Commercial Foundation Planning
+
+**Task ID:** TASK-73B  
+**Phase:** 73  
+**Stage:** 73B  
+**Priority:** 🟡 Medium  
+**Nature:** PLANNING / TASK REGISTRATION (NO CODE)  
+**Dependencies:** TASK-73A (Complete)  
+**Checkpoint:** `docs/PHASE-73B-CHECKPOINT.md`
+
+**Objective:**
+
+Plan the first bounded commercial-foundation work family selected in Phase 73A under current `PRD.md` and `ARCHITECTURE.md` constraints.
+
+**Scope:**
+
+This task is limited to **documentation and planning only**.
+
+**In Scope:**
+
+1. **Bounded Commercial Foundation Planning**
+   - Plan the first bounded commercial-foundation work family selected in Phase 73A
+   - Keep scope constrained to currently authority-aligned workstream boundaries
+
+2. **Allowed Scope Definition**
+   - Define immediate commercial-foundation scope that is allowed under current `PRD.md` / `ARCHITECTURE.md` constraints
+   - Explicitly exclude items that require architectural expansion not currently authorized
+
+3. **Minimum Implementation Slice Identification**
+   - Identify minimum implementation slices required for the bounded commercial foundation
+   - Keep slices narrow, checkpoint-gated, and sequencing-ready
+
+4. **Immediate Sub-Stage Sequencing**
+   - Provide sequencing recommendation for immediate commercial-foundation sub-stages only
+   - Avoid broader roadmap expansion beyond this first bounded family
+
+5. **Checkpoint**
+   - Create `docs/PHASE-73B-CHECKPOINT.md`
+   - Document selected bounded scope, minimum slices, sequencing recommendation, and preserved invariants
+
+**Explicitly Out of Scope:**
+
+- ❌ No platform code changes
+- ❌ No frontend changes
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No implementation work
+- ❌ No refactors
+- ❌ No broader commercial expansion beyond the first bounded family
+
+**Deliverables:**
+
+1. **Planning Output**
+   - Immediate bounded commercial-foundation scope definition under current authority constraints
+   - Minimum implementation slices list for this bounded family
+
+2. **Sequencing Output**
+   - Immediate sub-stage sequencing recommendation for this family only
+
+3. **Checkpoint**
+   - `docs/PHASE-73B-CHECKPOINT.md`
+   - Planning summary with preserved invariants and explicit out-of-scope
+
+**Acceptance Criteria:**
+
+- ✅ First bounded commercial-foundation work family planned from current governance context
+- ✅ Allowed immediate scope explicitly constrained by current `PRD.md` / `ARCHITECTURE.md`
+- ✅ Minimum implementation slices identified for bounded family only
+- ✅ Immediate commercial-foundation sub-stage sequencing recommendation documented
+- ✅ No platform code/frontend/backend/schema/endpoint changes occurred
+- ✅ Phase 73B checkpoint created
+
+**Preserved Invariants:**
+
+- No platform code changes
+- No frontend changes
+- No backend changes
+- No schema changes
+- No endpoint changes
+- No refactors
+- Documentation/planning-only scope
+
+**Reference:** PHASE-73A-CHECKPOINT.md, PHASE-71-FINAL-CHECKPOINT.md, PHASE-72-FINAL-CHECKPOINT.md, TASKS.md, TASKS_BACKLOG_FULL.md, PRD.md, ARCHITECTURE.md
+
+---
