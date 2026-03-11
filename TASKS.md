@@ -1889,9 +1889,9 @@ Validate and consolidate completed Phase 72 evidence-resolution, activation, and
 
 ### Phase 73: Post-Reconciliation Priority Selection
 
-**Current Stage:** 73C-FINAL-0
+**Current Stage:** 73-FINAL-0
 
-**Active Task:** TASK-73C-FINAL
+**Active Task:** TASK-73-FINAL
 
 #### TASK-73A: Post-Reconciliation Priority Selection
 
@@ -2026,5 +2026,32 @@ Validate and consolidate completed bounded commercial-readiness outputs (`TASK-7
 - ❌ No scope expansion beyond selected bounded commercial family
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-73C-FINAL for full details
+
+---
+
+#### TASK-73-FINAL: Phase 73 Final Consolidation
+
+**Status:** PLANNED
+**Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)
+**Checkpoint:** `docs/PHASE-73-FINAL-CHECKPOINT.md`
+
+**Objective:**
+Validate and consolidate completed Phase 73 planning and bounded commercial-foundation outputs, and close Phase 73 with a final checkpoint.
+
+**Scope:**
+- Validate and consolidate `TASK-73A`, `TASK-73B`, `TASK-73C-1`, `TASK-73C-2`, and `TASK-73C-FINAL`
+- Confirm selected bounded commercial foundation was the correct post-reconciliation next priority under current `PRD.md` / `ARCHITECTURE.md` constraints
+- Confirm bounded non-monetary commercial-readiness family completed without monetary scope or architecture expansion
+- Confirm no schema changes occurred
+- Create final Phase 73 checkpoint: `docs/PHASE-73-FINAL-CHECKPOINT.md`
+
+**Non-Goals:**
+- ❌ No new implementation
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-73-FINAL for full details
 
 ---
