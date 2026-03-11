@@ -7309,3 +7309,89 @@ This task is limited to **bounded implementation or validation on existing surfa
 **Reference:** PHASE-74B-CHECKPOINT.md, PHASE-74A-CHECKPOINT.md, PHASE-73-FINAL-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### TASK-74C-2: Reporting Contract Determinism Validation
+
+**Task ID:** TASK-74C-2
+**Phase:** 74
+**Stage:** 74C-2
+**Priority:** 🟡 Medium
+**Nature:** VALIDATION / DOCUMENTATION (NO NEW IMPLEMENTATION)
+**Dependencies:** TASK-74C-1 (Complete)
+**Checkpoint:** `docs/PHASE-74C-2-CHECKPOINT.md`
+
+**Objective:**
+
+Validate that existing visibility/reporting surfaces produce deterministic, reproducible, ordering-stable outputs suitable for commercial reporting use cases, within the bounded non-monetary family scope. Confirm reporting-oriented contract behavior is coherent, stable, and packaging-ready on existing surfaces only.
+
+**Scope:**
+
+This task is limited to **bounded validation and documentation on existing surfaces only**.
+
+**In Scope:**
+
+1. **Reporting Contract Determinism**
+   - Validate response ordering stability on admin visibility surfaces (`GET /api/internal/admin/users` user list ordering, `GET /api/internal/admin/sessions` session list ordering)
+   - Validate field completeness and absence of time-of-request variability (beyond expected timestamps) on user-facing and admin-facing surfaces
+   - Validate consistent failure semantics across user-facing and admin-facing reporting surfaces
+   - Document bounded-family validation findings and readiness conclusions
+   - If a blocking gap is found, scope it for a subsequent bounded slice (do not fix inline)
+
+2. **Bounded Constraints**
+   - Bounded to existing endpoints listed in PHASE-74B-CHECKPOINT.md Section 5 only
+   - No new implementation expected
+   - Validation and documentation only
+
+3. **Checkpoint**
+   - Create `docs/PHASE-74C-2-CHECKPOINT.md`
+   - Document reporting contract determinism findings, any gaps noted, and preserved invariants
+
+**Explicitly Out of Scope:**
+
+- ❌ No monetary billing
+- ❌ No subscriptions
+- ❌ No invoicing
+- ❌ No tax/accounting scope
+- ❌ No new service boundaries
+- ❌ No background-worker patterns
+- ❌ No schema changes unless explicitly authorized by current PRD/ARCHITECTURE constraints and absolutely required by this bounded validation scope
+- ❌ No scope expansion beyond selected bounded family
+- ❌ No new endpoints or surfaces
+- ❌ No broader architectural expansion
+- ❌ No frontend changes
+
+**Deliverables:**
+
+1. **Validation Findings**
+   - Reporting contract determinism analysis across existing visibility/reporting surfaces
+   - Documentation of ordering stability, field completeness, and failure semantic consistency
+   - Any gaps noted for future resolution
+
+2. **Checkpoint**
+   - `docs/PHASE-74C-2-CHECKPOINT.md`
+   - Validation findings summary with preserved invariants and explicit out-of-scope confirmation
+
+**Acceptance Criteria:**
+
+- ✅ Reporting contract determinism validated on existing admin visibility surfaces
+- ✅ Field completeness and time-of-request variability validated on existing surfaces
+- ✅ Failure semantic consistency validated across user-facing and admin-facing surfaces
+- ✅ Validation findings and readiness conclusions documented
+- ✅ No new implementation introduced
+- ✅ No monetization or broader architecture expansion occurred
+- ✅ Scope remained bounded to existing surfaces only
+- ✅ Phase 74C-2 checkpoint created
+
+**Preserved Invariants:**
+
+- No new endpoints or surfaces
+- No new service boundaries
+- No background-worker patterns
+- No schema changes
+- No monetization scope expansion beyond current authority constraints
+- No broader architectural expansion
+- `PRD.md` and `ARCHITECTURE.md` remain higher authority
+
+**Reference:** PHASE-74C-1-CHECKPOINT.md, PHASE-74B-CHECKPOINT.md, PHASE-74A-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
+
+---

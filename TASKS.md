@@ -2058,9 +2058,9 @@ Validate and consolidate completed Phase 73 planning and bounded commercial-foun
 
 ### Phase 74: Next Bounded Commercial Family Selection
 
-**Current Stage:** 74C-1-0
+**Current Stage:** 74C-2-0
 
-**Active Task:** TASK-74C-1
+**Active Task:** TASK-74C-2
 
 #### TASK-74A: Next Bounded Commercial Family Selection
 
@@ -2118,7 +2118,7 @@ Plan the selected bounded family from Phase 74A (`Non-Monetary Commercial Visibi
 
 #### TASK-74C-1: Cross-Surface Visibility Coherence Baseline
 
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE, BOUNDED)
 **Checkpoint:** `docs/PHASE-74C-1-CHECKPOINT.md`
 
@@ -2146,5 +2146,37 @@ Verify and normalize cross-surface coherence between user-facing usage/quota sur
 - ❌ No broader architectural expansion
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-74C-1 for full details
+
+---
+
+#### TASK-74C-2: Reporting Contract Determinism Validation
+
+**Status:** PLANNED
+**Nature:** VALIDATION / DOCUMENTATION (NO NEW IMPLEMENTATION)
+**Checkpoint:** `docs/PHASE-74C-2-CHECKPOINT.md`
+
+**Objective:**
+Validate that existing visibility/reporting surfaces produce deterministic, reproducible, ordering-stable outputs suitable for commercial reporting use cases, within the bounded non-monetary family scope.
+
+**Scope:**
+- Validate response ordering stability on admin visibility surfaces (user list ordering, session list ordering)
+- Validate field completeness and absence of time-of-request variability (beyond expected timestamps)
+- Validate consistent failure semantics across user-facing and admin-facing reporting surfaces
+- Document bounded-family validation findings and readiness conclusions
+- No new implementation expected; if a blocking gap is found, scope it for a subsequent bounded slice
+
+**Non-Goals:**
+- ❌ No monetary billing
+- ❌ No subscriptions
+- ❌ No invoicing
+- ❌ No tax/accounting scope
+- ❌ No new service boundaries
+- ❌ No background-worker patterns
+- ❌ No schema changes unless explicitly authorized by current PRD/ARCHITECTURE constraints and absolutely required by this bounded validation scope
+- ❌ No scope expansion beyond selected bounded family
+- ❌ No new endpoints or surfaces
+- ❌ No broader architectural expansion
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-74C-2 for full details
 
 ---
