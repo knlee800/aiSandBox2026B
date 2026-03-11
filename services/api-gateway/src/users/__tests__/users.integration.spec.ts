@@ -67,6 +67,11 @@ describe('UsersController Integration (TASK-68B-2)', () => {
   });
 
   it('supports GET /api/users/me/usage success path', async () => {
+    userRepository.findOne.mockResolvedValue({
+      id: 'user-1',
+      email: 'user@example.com',
+      createdAt: new Date('2026-03-10T10:00:00.000Z'),
+    } as User);
     quotaService.getActiveSessionCount.mockResolvedValue(3);
     quotaService.getRolling24hSessionCount.mockResolvedValue(8);
     quotaService.getRolling24hTokenUsage.mockResolvedValue(45230);
@@ -85,6 +90,11 @@ describe('UsersController Integration (TASK-68B-2)', () => {
   });
 
   it('supports GET /api/users/me/quotas success path', async () => {
+    userRepository.findOne.mockResolvedValue({
+      id: 'user-1',
+      email: 'user@example.com',
+      createdAt: new Date('2026-03-10T10:00:00.000Z'),
+    } as User);
     quotaService.getActiveSessionCount.mockResolvedValue(2);
     quotaService.getRolling24hSessionCount.mockResolvedValue(5);
     quotaService.getRolling24hTokenUsage.mockResolvedValue(10000);
@@ -109,6 +119,40 @@ describe('UsersController Integration (TASK-68B-2)', () => {
 
     await expect(
       controller.getCurrentUser({ user: { userId: 'missing-user' } }),
+    ).rejects.toThrow(UnauthorizedException);
+  });
+
+  it('returns resetAt null when no 24h usage exists', async () => {
+    userRepository.findOne.mockResolvedValue({
+      id: 'user-1',
+      email: 'user@example.com',
+      createdAt: new Date('2026-03-10T10:00:00.000Z'),
+    } as User);
+    quotaService.getActiveSessionCount.mockResolvedValue(0);
+    quotaService.getRolling24hSessionCount.mockResolvedValue(0);
+    quotaService.getRolling24hTokenUsage.mockResolvedValue(0);
+    quotaService.getOldestUsageIn24h.mockResolvedValue(null);
+
+    const usage = await controller.getUsage({
+      user: { userId: 'user-1' },
+    });
+    const quotas = await controller.getQuotas({
+      user: { userId: 'user-1' },
+    });
+
+    expect(usage.resetAt).toBeNull();
+    expect(quotas.resetAt).toBeNull();
+  });
+
+  it('enforces same unauthorized behavior on usage/quota endpoints', async () => {
+    userRepository.findOne.mockResolvedValue(null);
+
+    await expect(
+      controller.getUsage({ user: { userId: 'missing-user' } }),
+    ).rejects.toThrow(UnauthorizedException);
+
+    await expect(
+      controller.getQuotas({ user: { userId: 'missing-user' } }),
     ).rejects.toThrow(UnauthorizedException);
   });
 });

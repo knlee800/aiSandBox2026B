@@ -7,5 +7,5 @@ export class UserUsageResponseDto {
   sessionsCreated24h: number;
   tokensUsed24h: number;
   estimatedCost: number;
-  resetAt: string;
+  resetAt: string | null;
 }

@@ -6725,3 +6725,82 @@ This task is limited to **documentation and planning only**.
 **Reference:** PHASE-73A-CHECKPOINT.md, PHASE-71-FINAL-CHECKPOINT.md, PHASE-72-FINAL-CHECKPOINT.md, TASKS.md, TASKS_BACKLOG_FULL.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### TASK-73C-1: Commercial Readiness Contract Baseline
+
+**Task ID:** TASK-73C-1  
+**Phase:** 73  
+**Stage:** 73C-1  
+**Priority:** 🟡 Medium  
+**Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE, BOUNDED)  
+**Dependencies:** TASK-73B (Complete)  
+**Checkpoint:** `docs/PHASE-73C-1-CHECKPOINT.md`
+
+**Objective:**
+
+Implement the first non-monetary, architecture-neutral commercial-readiness slice by normalizing and locking deterministic usage/quota contract behavior on existing surfaces only.
+
+**Scope:**
+
+This task is limited to the first bounded commercial-foundation implementation slice only.
+
+**In Scope:**
+
+1. **Usage/Quota Contract Baseline Normalization**
+   - Normalize deterministic usage/quota contract behavior on existing surfaces only
+   - Lock consistent contract semantics for existing usage/quota responses and failure behavior
+
+2. **Architecture-Neutral Additive Hardening**
+   - Keep implementation additive and architecture-neutral
+   - Preserve request-driven governance and deterministic behavior constraints
+
+3. **Bounded Commercial Readiness Improvement**
+   - Improve readiness of existing usage/quota surfaces for future commercial packaging
+   - Keep scope strictly inside the selected bounded family
+
+4. **Checkpoint**
+   - Create `docs/PHASE-73C-1-CHECKPOINT.md`
+   - Document bounded-slice completion and preserved invariants
+
+**Explicitly Out of Scope:**
+
+- ❌ No monetary billing
+- ❌ No subscriptions
+- ❌ No invoicing
+- ❌ No tax/accounting scope
+- ❌ No new service boundaries
+- ❌ No background-worker patterns
+- ❌ No scope expansion beyond selected bounded family
+- ❌ No schema changes unless explicitly authorized by current PRD/ARCHITECTURE constraints and absolutely required by bounded-family scope
+- ❌ No refactors
+
+**Deliverables:**
+
+1. **Implementation Output**
+   - First bounded non-monetary commercial-readiness slice on existing usage/quota surfaces only
+
+2. **Checkpoint**
+   - `docs/PHASE-73C-1-CHECKPOINT.md`
+   - Completion summary with bounded-scope confirmation and preserved invariants
+
+**Acceptance Criteria:**
+
+- ✅ Deterministic usage/quota contract behavior normalized on existing surfaces only
+- ✅ Scope remained additive and architecture-neutral
+- ✅ No monetary billing/subscription/invoicing/tax scope introduced
+- ✅ No new service boundaries or background-worker patterns introduced
+- ✅ No scope expansion beyond selected bounded commercial family
+- ✅ Phase 73C-1 checkpoint created
+
+**Preserved Invariants:**
+
+- No frontend changes outside bounded slice intent
+- No backend architecture expansion
+- No new service boundaries
+- No background workers
+- No refactors
+- PRD/ARCHITECTURE authority constraints preserved
+
+**Reference:** PHASE-73B-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
+
+---

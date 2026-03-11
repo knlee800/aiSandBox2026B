@@ -26,14 +26,7 @@ export class UsersService {
    * Get current user profile summary for dashboard account section.
    */
   async getCurrentUser(userId: string): Promise<UserMeResponseDto> {
-    const user = await this.userRepository.findOne({
-      where: { id: userId, isActive: true },
-      select: ['id', 'email', 'createdAt'],
-    });
-
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
+    const user = await this.findActiveUserOrThrow(userId);
 
     return {
       userId: user.id,
@@ -46,6 +39,8 @@ export class UsersService {
    * Get rolling 24h usage summary for current user.
    */
   async getUsage(userId: string): Promise<UserUsageResponseDto> {
+    await this.ensureActiveUserExists(userId);
+
     const [activeSessions, sessionsCreated24h, tokensUsed24h, oldestUsageIn24h] =
       await Promise.all([
         this.quotaService.getActiveSessionCount(userId),
@@ -56,7 +51,7 @@ export class UsersService {
 
     const resetAt = oldestUsageIn24h
       ? new Date(oldestUsageIn24h.getTime() + 24 * 60 * 60 * 1000).toISOString()
-      : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+      : null;
 
     const estimatedCost = this.round3(
       (tokensUsed24h / 1000) * UsersService.ESTIMATED_COST_PER_1K_TOKENS,
@@ -90,5 +85,22 @@ export class UsersService {
 
   private round3(value: number): number {
     return Math.round(value * 1000) / 1000;
+  }
+
+  private async ensureActiveUserExists(userId: string): Promise<void> {
+    await this.findActiveUserOrThrow(userId);
+  }
+
+  private async findActiveUserOrThrow(userId: string): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId, isActive: true },
+      select: ['id', 'email', 'createdAt'],
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    return user;
   }
 }

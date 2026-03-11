@@ -1889,9 +1889,9 @@ Validate and consolidate completed Phase 72 evidence-resolution, activation, and
 
 ### Phase 73: Post-Reconciliation Priority Selection
 
-**Current Stage:** 73B-0
+**Current Stage:** 73C-1-0
 
-**Active Task:** TASK-73B
+**Active Task:** TASK-73C-1
 
 #### TASK-73A: Post-Reconciliation Priority Selection
 
@@ -1919,7 +1919,7 @@ Select the next authoritative product/workstream priority after closure of the P
 
 #### TASK-73B: Bounded Commercial Foundation Planning
 
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED
 **Nature:** PLANNING / TASK REGISTRATION (NO CODE)
 **Checkpoint:** `docs/PHASE-73B-CHECKPOINT.md`
 
@@ -1939,5 +1939,34 @@ Plan the first bounded commercial-foundation work family selected in Phase 73A u
 - ❌ No refactors
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-73B for full details
+
+---
+
+#### TASK-73C-1: Commercial Readiness Contract Baseline
+
+**Status:** PLANNED
+**Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE, BOUNDED)
+**Checkpoint:** `docs/PHASE-73C-1-CHECKPOINT.md`
+
+**Objective:**
+Implement the first non-monetary, architecture-neutral commercial-readiness slice by normalizing and locking deterministic usage/quota contract behavior on existing surfaces only.
+
+**Scope:**
+- Normalize deterministic usage/quota contract behavior on existing surfaces only
+- Keep implementation additive and architecture-neutral
+- Improve readiness of existing usage/quota surfaces for future commercial packaging
+- Preserve current request-driven governance and deterministic error semantics
+
+**Non-Goals:**
+- ❌ No monetary billing
+- ❌ No subscriptions
+- ❌ No invoicing
+- ❌ No tax/accounting scope
+- ❌ No new service boundaries
+- ❌ No background-worker patterns
+- ❌ No scope expansion beyond selected bounded family
+- ❌ No schema changes unless explicitly authorized by current PRD/ARCHITECTURE constraints and absolutely required by bounded-family scope
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-73C-1 for full details
 
 ---

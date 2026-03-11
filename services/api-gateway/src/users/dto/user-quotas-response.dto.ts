@@ -9,5 +9,5 @@ export class UserQuotasResponseDto {
   currentSessions24h: number;
   maxTokens24h: number;
   currentTokens24h: number;
-  resetAt: string;
+  resetAt: string | null;
 }

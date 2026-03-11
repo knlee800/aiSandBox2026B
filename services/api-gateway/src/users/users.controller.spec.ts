@@ -94,4 +94,21 @@ describe('UsersController (TASK-68B-2)', () => {
       controller.getCurrentUser({ user: { userId: 'missing-user' } }),
     ).rejects.toThrow(UnauthorizedException);
   });
+
+  it('propagates service errors for usage/quota endpoints', async () => {
+    usersService.getUsage.mockRejectedValue(
+      new UnauthorizedException('User not found'),
+    );
+    usersService.getQuotas.mockRejectedValue(
+      new UnauthorizedException('User not found'),
+    );
+
+    await expect(
+      controller.getUsage({ user: { userId: 'missing-user' } }),
+    ).rejects.toThrow(UnauthorizedException);
+
+    await expect(
+      controller.getQuotas({ user: { userId: 'missing-user' } }),
+    ).rejects.toThrow(UnauthorizedException);
+  });
 });

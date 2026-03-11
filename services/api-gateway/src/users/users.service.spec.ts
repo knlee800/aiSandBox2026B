@@ -75,6 +75,11 @@ describe('UsersService (TASK-68B-2)', () => {
 
   describe('getUsage', () => {
     it('returns rolling 24h usage summary with resetAt and estimated cost', async () => {
+      userRepository.findOne.mockResolvedValue({
+        id: 'user-1',
+        email: 'user@example.com',
+        createdAt: new Date('2026-03-10T10:00:00.000Z'),
+      } as User);
       quotaService.getActiveSessionCount.mockResolvedValue(3);
       quotaService.getRolling24hSessionCount.mockResolvedValue(8);
       quotaService.getRolling24hTokenUsage.mockResolvedValue(45230);
@@ -91,6 +96,36 @@ describe('UsersService (TASK-68B-2)', () => {
         estimatedCost: 0.452,
         resetAt: '2026-03-10T20:00:00.000Z',
       });
+    });
+
+    it('returns resetAt as null when there is no usage in rolling window', async () => {
+      userRepository.findOne.mockResolvedValue({
+        id: 'user-1',
+        email: 'user@example.com',
+        createdAt: new Date('2026-03-10T10:00:00.000Z'),
+      } as User);
+      quotaService.getActiveSessionCount.mockResolvedValue(0);
+      quotaService.getRolling24hSessionCount.mockResolvedValue(0);
+      quotaService.getRolling24hTokenUsage.mockResolvedValue(0);
+      quotaService.getOldestUsageIn24h.mockResolvedValue(null);
+
+      const result = await service.getUsage('user-1');
+
+      expect(result).toEqual({
+        activeSessions: 0,
+        sessionsCreated24h: 0,
+        tokensUsed24h: 0,
+        estimatedCost: 0,
+        resetAt: null,
+      });
+    });
+
+    it('throws UnauthorizedException for inactive/missing user', async () => {
+      userRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.getUsage('missing-user')).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
   });
 
@@ -115,6 +150,18 @@ describe('UsersService (TASK-68B-2)', () => {
         currentTokens24h: 12000,
         resetAt: '2026-03-11T12:00:00.000Z',
       });
+    });
+
+    it('throws UnauthorizedException for inactive/missing user', async () => {
+      userRepository.findOne.mockResolvedValue(null);
+      quotaService.getActiveSessionCount.mockResolvedValue(0);
+      quotaService.getRolling24hSessionCount.mockResolvedValue(0);
+      quotaService.getRolling24hTokenUsage.mockResolvedValue(0);
+      quotaService.getOldestUsageIn24h.mockResolvedValue(null);
+
+      await expect(service.getQuotas('missing-user')).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
   });
 });
