@@ -2055,3 +2055,34 @@ Validate and consolidate completed Phase 73 planning and bounded commercial-foun
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-73-FINAL for full details
 
 ---
+
+### Phase 74: Next Bounded Commercial Family Selection
+
+**Current Stage:** 74A-0
+
+**Active Task:** TASK-74A
+
+#### TASK-74A: Next Bounded Commercial Family Selection
+
+**Status:** PLANNED
+**Nature:** PLANNING / TASK REGISTRATION (NO CODE)
+**Checkpoint:** `docs/PHASE-74A-CHECKPOINT.md`
+
+**Objective:**
+Select the next bounded commercial-foundation family after completion of the Phase 73 non-monetary usage/quota readiness family, under current PRD/ARCHITECTURE constraints.
+
+**Scope:**
+- Review remaining deferred commercial candidates already implied by current governance sources and the broader master plan
+- Determine which next bounded commercial family is allowed under current PRD/ARCHITECTURE constraints
+- Exclude commercial candidates that still require broader architectural expansion or monetization scope not yet authorized
+- Provide a high-level sequencing recommendation for the next immediate bounded commercial family only
+
+**Non-Goals:**
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-74A for full details
+
+---
