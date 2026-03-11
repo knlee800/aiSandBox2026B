@@ -1889,9 +1889,9 @@ Validate and consolidate completed Phase 72 evidence-resolution, activation, and
 
 ### Phase 73: Post-Reconciliation Priority Selection
 
-**Current Stage:** 73C-1-0
+**Current Stage:** 73C-2-0
 
-**Active Task:** TASK-73C-1
+**Active Task:** TASK-73C-2
 
 #### TASK-73A: Post-Reconciliation Priority Selection
 
@@ -1968,5 +1968,34 @@ Implement the first non-monetary, architecture-neutral commercial-readiness slic
 - ❌ No schema changes unless explicitly authorized by current PRD/ARCHITECTURE constraints and absolutely required by bounded-family scope
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-73C-1 for full details
+
+---
+
+#### TASK-73C-2: Commercial Readiness Validation Path
+
+**Status:** PLANNED
+**Nature:** VALIDATION / DOCUMENTATION (NO NEW IMPLEMENTATION)
+**Checkpoint:** `docs/PHASE-73C-2-CHECKPOINT.md`
+
+**Objective:**
+Validate the bounded non-monetary commercial-readiness contract baseline completed in TASK-73C-1 and confirm deterministic usage/quota behavior is coherent, stable, and packaging-ready on existing surfaces only.
+
+**Scope:**
+- Validate bounded usage/quota contract consistency on existing surfaces only
+- Confirm deterministic usage/quota behavior and failure semantics remain coherent and stable
+- Document bounded-family validation findings and readiness conclusions
+- Preserve architecture-neutral, request-driven constraints while validating existing behavior
+
+**Non-Goals:**
+- ❌ No monetary billing
+- ❌ No subscriptions
+- ❌ No invoicing
+- ❌ No tax/accounting scope
+- ❌ No new service boundaries
+- ❌ No background-worker patterns
+- ❌ No scope expansion beyond selected bounded family
+- ❌ No schema changes unless explicitly authorized by current PRD/ARCHITECTURE constraints and absolutely required by bounded validation scope
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-73C-2 for full details
 
 ---

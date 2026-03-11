@@ -6804,3 +6804,83 @@ This task is limited to the first bounded commercial-foundation implementation s
 **Reference:** PHASE-73B-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### TASK-73C-2: Commercial Readiness Validation Path
+
+**Task ID:** TASK-73C-2  
+**Phase:** 73  
+**Stage:** 73C-2  
+**Priority:** 🟡 Medium  
+**Nature:** VALIDATION / DOCUMENTATION (NO NEW IMPLEMENTATION)  
+**Dependencies:** TASK-73C-1 (Complete)  
+**Checkpoint:** `docs/PHASE-73C-2-CHECKPOINT.md`
+
+**Objective:**
+
+Validate the bounded non-monetary commercial-readiness contract baseline completed in `TASK-73C-1` and confirm deterministic usage/quota behavior is coherent, stable, and packaging-ready on existing surfaces only.
+
+**Scope:**
+
+This task is limited to the second bounded commercial-foundation validation slice only.
+
+**In Scope:**
+
+1. **Bounded Usage/Quota Contract Validation**
+   - Validate deterministic usage/quota contract behavior on existing surfaces only
+   - Validate consistency of bounded usage/quota response semantics and failure behavior
+
+2. **Deterministic Readiness Confirmation**
+   - Confirm bounded commercial-readiness baseline behavior remains coherent and stable
+   - Confirm packaging-readiness conclusions for existing usage/quota surfaces only
+
+3. **Validation Documentation**
+   - Document bounded-family validation findings and readiness conclusions
+   - Preserve request-driven, architecture-neutral constraints in validation outputs
+
+4. **Checkpoint**
+   - Create `docs/PHASE-73C-2-CHECKPOINT.md`
+   - Document bounded validation completion and preserved invariants
+
+**Explicitly Out of Scope:**
+
+- ❌ No monetary billing
+- ❌ No subscriptions
+- ❌ No invoicing
+- ❌ No tax/accounting scope
+- ❌ No new service boundaries
+- ❌ No background-worker patterns
+- ❌ No scope expansion beyond selected bounded family
+- ❌ No schema changes unless explicitly authorized by current PRD/ARCHITECTURE constraints and absolutely required by bounded validation scope
+- ❌ No refactors
+
+**Deliverables:**
+
+1. **Validation Output**
+   - Bounded validation record confirming deterministic usage/quota contract coherence and stability on existing surfaces only
+
+2. **Checkpoint**
+   - `docs/PHASE-73C-2-CHECKPOINT.md`
+   - Validation summary with bounded-scope confirmation and readiness conclusions
+
+**Acceptance Criteria:**
+
+- ✅ Bounded non-monetary commercial-readiness baseline from `TASK-73C-1` validated on existing usage/quota surfaces only
+- ✅ Deterministic usage/quota contract and failure behavior validated as coherent and stable
+- ✅ Scope remained validation/documentation-only with no new implementation
+- ✅ No monetary billing/subscription/invoicing/tax scope introduced
+- ✅ No new service boundaries or background-worker patterns introduced
+- ✅ No scope expansion beyond selected bounded commercial family
+- ✅ Phase 73C-2 checkpoint created
+
+**Preserved Invariants:**
+
+- No frontend architecture expansion
+- No backend architecture expansion
+- No new service boundaries
+- No background workers
+- No scope expansion beyond selected bounded family
+- PRD/ARCHITECTURE authority constraints preserved
+
+**Reference:** PHASE-73B-CHECKPOINT.md, PHASE-73C-1-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
+
+---
