@@ -7740,3 +7740,98 @@ This task is limited to **documentation and planning only**.
 **Reference:** PHASE-75A-CHECKPOINT.md, PHASE-68-FINAL-CHECKPOINT.md, PHASE-69-FINAL-CHECKPOINT.md, PHASE-70-FINAL-CHECKPOINT.md, PHASE-74-FINAL-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### TASK-76B: End-to-End Manual App Validation Execution
+
+**Task ID:** TASK-76B
+**Phase:** 76
+**Stage:** 76B
+**Priority:** 🔴 High
+**Nature:** VALIDATION / DOCUMENTATION (NO CODE)
+**Dependencies:** TASK-76A (Complete)
+**Checkpoint:** `docs/PHASE-76B-CHECKPOINT.md`
+
+**Objective:**
+
+Execute the manual end-to-end app validation plan defined in Phase 76A against the running app. Capture evidence, determine pass/fail per area and overall, log discovered issues, and determine whether the current app is ready to resume paused readiness/commercial-readiness work.
+
+**Scope:**
+
+This task is limited to **validation and documentation only**.
+
+**In Scope:**
+
+1. **Manual Validation Execution**
+   - Execute the Phase 76A manual validation plan across all 9 defined areas:
+     - Area 1: Public-facing flow
+     - Area 2: Authenticated workspace
+     - Area 3: Session lifecycle flow
+     - Area 4: Session history/checkpoint flow
+     - Area 5: Dashboard flow
+     - Area 6: Quota & rate limiting enforcement
+     - Area 7: Admin visibility (internal endpoints)
+     - Area 8: Responsive & cross-state behavior
+     - Area 9: Runtime metrics & health
+   - Follow the recommended validation execution order from Phase 76A
+
+2. **Evidence Capture**
+   - Capture evidence per Phase 76A evidence capture requirements (API responses, screenshots, HTTP status codes, console errors)
+   - Store evidence per Phase 76A storage recommendations
+
+3. **Pass/Fail Determination**
+   - Determine pass/fail per step, per area, and overall per Phase 76A criteria
+   - Record overall validation result: PASS, CONDITIONAL PASS, or FAIL
+
+4. **Issue Logging and Prioritization**
+   - Log discovered issues using the Phase 76A issue recording format (ISSUE-76-NNN)
+   - Classify severity: BLOCKING, NON-BLOCKING, COSMETIC
+   - Prioritize one issue at a time per Phase 76A prioritization rule
+
+5. **Readiness Determination**
+   - Explicitly determine whether the current app is ready to resume paused readiness/commercial-readiness family execution based on validation results
+   - If PASS or CONDITIONAL PASS with no BLOCKING/NON-BLOCKING issues: ready to resume
+   - If FAIL or unresolved BLOCKING/NON-BLOCKING issues: not ready; issue resolution tasks required first
+
+**Explicitly Out of Scope:**
+
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No implementation work
+- ❌ No refactors
+- ❌ No broader architectural expansion
+- ❌ No commercial-readiness work until validation result is determined
+
+**Deliverables:**
+
+1. **Validation Output**
+   - Per-area validation results with evidence
+   - Overall pass/fail determination
+   - Issue log (if issues found)
+
+2. **Checkpoint**
+   - `docs/PHASE-76B-CHECKPOINT.md`
+   - Validation results summary with preserved invariants and explicit out-of-scope confirmation
+
+**Acceptance Criteria:**
+
+- ✅ All 9 validation areas executed per Phase 76A plan
+- ✅ Evidence captured per Phase 76A evidence capture requirements
+- ✅ Per-step, per-area, and overall pass/fail determined
+- ✅ Any discovered issues logged and classified per Phase 76A format
+- ✅ Explicit readiness determination recorded for resuming commercial-readiness work
+- ✅ No platform code/schema/endpoint changes occurred
+- ✅ Phase 76B checkpoint created
+
+**Preserved Invariants:**
+
+- No platform code changes
+- No schema changes
+- No endpoint changes
+- No refactors
+- No broader architectural expansion
+- Validation/documentation-only scope
+
+**Reference:** PHASE-76A-CHECKPOINT.md, PHASE-68-FINAL-CHECKPOINT.md, PHASE-69-FINAL-CHECKPOINT.md, PHASE-70-FINAL-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
+
+---

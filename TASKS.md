@@ -2270,13 +2270,13 @@ Select the next bounded commercial-foundation family after completion of the Pha
 
 ### Phase 76: End-to-End Manual App Validation
 
-**Current Stage:** 76A-0
+**Current Stage:** 76B-0
 
-**Active Task:** TASK-76A
+**Active Task:** TASK-76B
 
 #### TASK-76A: End-to-End Manual App Validation Planning
 
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED
 **Nature:** DOCUMENTATION / PLANNING (NO CODE)
 **Checkpoint:** `docs/PHASE-76A-CHECKPOINT.md`
 
@@ -2297,5 +2297,31 @@ Pause further readiness/commercial-readiness family execution until the current 
 - ❌ No refactors
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-76A for full details
+
+---
+
+#### TASK-76B: End-to-End Manual App Validation Execution
+
+**Status:** PLANNED
+**Nature:** VALIDATION / DOCUMENTATION (NO CODE)
+**Checkpoint:** `docs/PHASE-76B-CHECKPOINT.md`
+
+**Objective:**
+Execute the manual end-to-end app validation plan defined in Phase 76A against the running app. Capture evidence, determine pass/fail per area and overall, log discovered issues, and determine whether the current app is ready to resume paused readiness/commercial-readiness work.
+
+**Scope:**
+- Execute Phase 76A manual validation plan across all 9 defined areas in recommended order
+- Capture evidence per Phase 76A evidence capture requirements
+- Determine per-step, per-area, and overall pass/fail per Phase 76A criteria
+- Log discovered issues using Phase 76A issue format (ISSUE-76-NNN) and prioritize one at a time
+- Explicitly determine readiness to resume paused commercial-readiness family execution
+
+**Non-Goals:**
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-76B for full details
 
 ---
