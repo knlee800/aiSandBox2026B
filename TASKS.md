@@ -2270,9 +2270,9 @@ Select the next bounded commercial-foundation family after completion of the Pha
 
 ### Phase 76: End-to-End Manual App Validation
 
-**Current Stage:** 76H-COMPLETE
+**Current Stage:** 76-FINAL-COMPLETE
 
-**Active Task:** TASK-76H (COMPLETE)
+**Active Task:** TASK-76-FINAL (COMPLETE and LOCKED)
 
 #### TASK-76A: End-to-End Manual App Validation Planning
 
@@ -2513,5 +2513,36 @@ Execute a full rerun of the Phase 76A manual end-to-end app validation plan afte
 **Dependencies:** TASK-76G (Complete)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-76H for full details
+
+---
+
+#### TASK-76-FINAL: Phase 76 Final Consolidation
+
+**Status:** COMPLETE and LOCKED
+**Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)
+**Checkpoint:** `docs/PHASE-76-FINAL-CHECKPOINT.md`
+
+**Objective:**
+Validate and consolidate completed Phase 76 manual-validation planning, execution, issue-resolution, and rerun work (TASK-76A through TASK-76H) and close Phase 76 with a final checkpoint.
+
+**Scope:**
+- Validate and consolidate TASK-76A, TASK-76B, TASK-76C, TASK-76D, TASK-76E, TASK-76F, TASK-76G, and TASK-76H
+- Confirm the manual validation gate process was executed correctly end-to-end
+- Confirm ISSUE-76-001, ISSUE-76-002, ISSUE-76-003, and ISSUE-76-004 were each resolved within bounded one-issue-at-a-time scope
+- Confirm the final rerun (TASK-76H) produced CONDITIONAL PASS and opened the gate for readiness/commercial-readiness work to resume
+- Explicitly record ISSUE-76-005 (exec route gap) as NON-BLOCKING carry-forward only — not a gate blocker
+- Confirm no unauthorized scope expansion or refactors occurred across Phase 76
+- Create final checkpoint: `docs/PHASE-76-FINAL-CHECKPOINT.md`
+
+**Non-Goals:**
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+- ❌ No new implementation
+
+**Dependencies:** TASK-76H (Complete)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-76-FINAL for full details
 
 ---
