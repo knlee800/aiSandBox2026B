@@ -309,8 +309,8 @@ else {
 # Step 5: Start Frontend
 Write-Header "Step 5: Starting Frontend"
 
-if (Test-Port 3000) {
-    Write-Info "Port 3000 is already in use (Frontend may already be running)"
+if (Test-Port 3002) {
+    Write-Info "Port 3002 is already in use (Frontend may already be running)"
     Write-Success "All services are running!"
 }
 else {
@@ -330,13 +330,13 @@ else {
         # Wait for Frontend to be ready
         Start-Sleep -Seconds 5
         
-        if (Test-Port 3000) {
+        if (Test-Port 3002) {
             Write-Success "Frontend is ready!"
         }
         else {
             Write-Failure "Frontend failed to start"
             Write-Info "Remediation:"
-            Write-Info "  1. Check if port 3000 is available"
+            Write-Info "  1. Check if port 3002 is available"
             Write-Info "  2. Run manually: cd frontend && npm run dev"
             Stop-Process -Id $frontendProcess.Id -Force -ErrorAction SilentlyContinue
             exit 1
@@ -360,8 +360,8 @@ Write-Host "http://localhost:4000" -ForegroundColor Cyan
 Write-Host "  🤖 AI Service:   " -NoNewline -ForegroundColor White
 Write-Host "http://localhost:4001" -ForegroundColor Cyan
 Write-Host "  💻 Frontend:     " -NoNewline -ForegroundColor White
-Write-Host "http://localhost:3000" -ForegroundColor Cyan
+Write-Host "http://localhost:3002" -ForegroundColor Cyan
 Write-Host ""
-Write-Info "Open your browser to http://localhost:3000 to start using the platform"
+Write-Info "Open your browser to http://localhost:3002 to start using the platform"
 Write-Info "Press Ctrl+C in each terminal to stop services"
 Write-Host ""

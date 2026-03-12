@@ -7835,3 +7835,82 @@ This task is limited to **validation and documentation only**.
 **Reference:** PHASE-76A-CHECKPOINT.md, PHASE-68-FINAL-CHECKPOINT.md, PHASE-69-FINAL-CHECKPOINT.md, PHASE-70-FINAL-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### TASK-76C: Resolve ISSUE-76-001 — Validation Environment Readiness
+
+**Task ID:** TASK-76C
+**Phase:** 76
+**Stage:** 76C
+**Priority:** 🔴 High
+**Nature:** IMPLEMENTATION (MINIMAL, TARGETED FIX)
+**Dependencies:** TASK-76B (Complete)
+**Checkpoint:** `docs/PHASE-76C-CHECKPOINT.md`
+
+**Objective:**
+
+Resolve the BLOCKING issue ISSUE-76-001 identified during Phase 76B manual validation: the validation environment is not fully runnable for end-to-end manual app validation.
+
+**Background (from ISSUE-76-001):**
+
+- Frontend not reachable at `http://localhost:3002` (connection refused)
+- Authenticated and internal positive-path validations blocked by missing validation credentials/keys (HTTP 401 responses on all auth-protected and internal routes)
+- This blocks completion of Phase 76A validation Areas 1, 2, 3, 4, 5, 6, 7, and 8
+
+**Scope:**
+
+This task is limited to **one-issue-at-a-time product correction** for ISSUE-76-001 only.
+
+**In Scope:**
+
+1. **Frontend Reachability**
+   - Ensure the frontend (Next.js) dev server is startable and reachable at the expected port (`http://localhost:3002` or configured equivalent)
+   - Diagnose and resolve any configuration, dependency, or startup issue preventing the frontend from serving
+
+2. **Authenticated API Validation Path**
+   - Ensure at least one test user with a valid JWT is available for authenticated API endpoint validation
+   - Document the test credential or generation method so manual validation can proceed
+
+3. **Internal Endpoint Validation Path**
+   - Ensure the `X-Internal-Service-Key` value is known/documented so admin endpoint validation can proceed
+   - Verify internal endpoints respond correctly when the correct key is provided
+
+4. **Verification**
+   - Confirm frontend serves `http://localhost:3002/en/` and `http://localhost:3002/en/app`
+   - Confirm at least one authenticated API call succeeds (e.g., `GET /api/sessions` with valid JWT returns 200)
+   - Confirm at least one internal admin call succeeds (e.g., `GET /api/internal/admin/users` with valid key returns 200)
+
+5. **Checkpoint**
+   - `docs/PHASE-76C-CHECKPOINT.md`
+   - Document what was fixed, verification evidence, and preserved invariants
+
+**Explicitly Out of Scope:**
+
+- ❌ No unrelated fixes
+- ❌ No scope expansion beyond ISSUE-76-001
+- ❌ No refactors unless absolutely required for the minimum safe fix
+- ❌ No schema changes unless absolutely required
+- ❌ No broader architectural expansion
+- ❌ No commercial-readiness work (still paused pending re-validation after this fix)
+- ❌ No full Phase 76B re-validation execution (that is a separate subsequent task)
+
+**Acceptance Criteria:**
+
+- ✅ Frontend reachable at expected port
+- ✅ At least one authenticated API positive-path call succeeds
+- ✅ At least one internal admin positive-path call succeeds
+- ✅ ISSUE-76-001 resolved with evidence
+- ✅ No unrelated changes
+- ✅ Phase 76C checkpoint created
+
+**Preserved Invariants:**
+
+- No unrelated code changes
+- No scope expansion
+- No refactors unless minimum-required
+- No schema changes unless minimum-required
+- No broader architectural expansion
+- One-issue-at-a-time resolution model preserved
+
+**Reference:** PHASE-76B-CHECKPOINT.md (ISSUE-76-001), PHASE-76A-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
+
+---

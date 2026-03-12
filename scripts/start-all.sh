@@ -292,8 +292,8 @@ fi
 # Step 5: Start Frontend
 write_header "Step 5: Starting Frontend"
 
-if test_port 3000; then
-    write_info "Port 3000 is already in use (Frontend may already be running)"
+if test_port 3002; then
+    write_info "Port 3002 is already in use (Frontend may already be running)"
     write_success "All services are running!"
 else
     write_step "Starting Frontend..."
@@ -315,12 +315,12 @@ else
     # Wait for Frontend to be ready
     sleep 5
     
-    if test_port 3000; then
+    if test_port 3002; then
         write_success "Frontend is ready!"
     else
         write_failure "Frontend failed to start"
         write_info "Remediation:"
-        write_info "  1. Check if port 3000 is available"
+        write_info "  1. Check if port 3002 is available"
         write_info "  2. Run manually: cd frontend && npm run dev"
         kill $frontend_pid 2>/dev/null || true
         exit 1
@@ -335,8 +335,8 @@ echo ""
 echo -e "${WHITE}  🗄️  PostgreSQL:   ${CYAN}localhost:5432${NC}"
 echo -e "${WHITE}  🌐 API Gateway:  ${CYAN}http://localhost:4000${NC}"
 echo -e "${WHITE}  🤖 AI Service:   ${CYAN}http://localhost:4001${NC}"
-echo -e "${WHITE}  💻 Frontend:     ${CYAN}http://localhost:3000${NC}"
+echo -e "${WHITE}  💻 Frontend:     ${CYAN}http://localhost:3002${NC}"
 echo ""
-write_info "Open your browser to http://localhost:3000 to start using the platform"
+write_info "Open your browser to http://localhost:3002 to start using the platform"
 write_info "Press Ctrl+C in each terminal to stop services"
 echo ""

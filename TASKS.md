@@ -2270,9 +2270,9 @@ Select the next bounded commercial-foundation family after completion of the Pha
 
 ### Phase 76: End-to-End Manual App Validation
 
-**Current Stage:** 76B-0
+**Current Stage:** 76C-0
 
-**Active Task:** TASK-76B
+**Active Task:** TASK-76C
 
 #### TASK-76A: End-to-End Manual App Validation Planning
 
@@ -2302,7 +2302,7 @@ Pause further readiness/commercial-readiness family execution until the current 
 
 #### TASK-76B: End-to-End Manual App Validation Execution
 
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED
 **Nature:** VALIDATION / DOCUMENTATION (NO CODE)
 **Checkpoint:** `docs/PHASE-76B-CHECKPOINT.md`
 
@@ -2323,5 +2323,39 @@ Execute the manual end-to-end app validation plan defined in Phase 76A against t
 - ❌ No refactors
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-76B for full details
+
+**Validation Result:** FAIL — ISSUE-76-001 (BLOCKING). Readiness/commercial-readiness work remains paused.
+
+---
+
+#### TASK-76C: Resolve ISSUE-76-001 — Validation Environment Readiness
+
+**Status:** PLANNED
+**Nature:** IMPLEMENTATION (MINIMAL, TARGETED FIX)
+**Checkpoint:** `docs/PHASE-76C-CHECKPOINT.md`
+
+**Objective:**
+Resolve the BLOCKING issue ISSUE-76-001 identified during Phase 76B manual validation: the validation environment is not fully runnable for end-to-end manual app validation. Frontend is unreachable at expected port. Authenticated and internal positive-path validations are blocked by missing validation credentials/keys.
+
+**Scope:**
+- Resolve ISSUE-76-001 only (one-issue-at-a-time product correction)
+- Ensure frontend dev server is startable and reachable at expected port for UI/responsive validation
+- Ensure at least one test user JWT is available for authenticated API endpoint validation
+- Ensure internal service key (`X-Internal-Service-Key`) is available for admin endpoint validation
+- Minimum required fix path only — no unrelated improvements
+- Verification/tests for ISSUE-76-001 resolution only
+- Checkpoint/evidence update for this issue-resolution task only
+
+**Non-Goals:**
+- ❌ No unrelated fixes
+- ❌ No scope expansion beyond ISSUE-76-001
+- ❌ No refactors unless absolutely required for the minimum safe fix
+- ❌ No schema changes unless absolutely required
+- ❌ No broader architectural expansion
+- ❌ No commercial-readiness work (still paused pending re-validation)
+
+**Dependencies:** TASK-76B (Complete)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-76C for full details
 
 ---
