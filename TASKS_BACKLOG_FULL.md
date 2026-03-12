@@ -8195,3 +8195,100 @@ This task is limited to **ISSUE-76-002 resolution only** (one-issue-at-a-time pr
 **Reference:** PHASE-76D-CHECKPOINT.md, PHASE-76A-CHECKPOINT.md, PHASE-76E-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### TASK-76G: Resolve ISSUE-76-003 — GET Checkpoints Returns HTTP 500
+
+**Task ID:** TASK-76G
+**Phase:** 76
+**Stage:** 76G
+**Priority:** 🔴 High
+**Nature:** IMPLEMENTATION (MINIMAL, TARGETED FIX)
+**Dependencies:** TASK-76F (Complete)
+**Checkpoint:** `docs/PHASE-76G-CHECKPOINT.md`
+
+**Objective:**
+
+Resolve the BLOCKING issue `ISSUE-76-003` identified during Phase 76D post-fix manual validation recheck: `GET /api/sessions/:id/checkpoints` returns HTTP 500 with an empty body for a valid active session. Expected behavior is HTTP 200 with a checkpoint list (empty array acceptable if no checkpoints yet). This blocks Area 4 (Session History/Checkpoint Flow) completion.
+
+**Background (from Phase 76D artifacts):**
+
+During the Phase 76D post-fix manual validation recheck (Step 4.2), the following was observed:
+
+- **Request:** `GET /api/sessions/:id/checkpoints` with valid JWT and valid active session ID
+- **Observed:** HTTP 500, empty body
+- **Expected:** HTTP 200 with checkpoint list (empty array acceptable if no checkpoints yet)
+- **Evidence:** PowerShell `Invoke-RestMethod` GET to `http://localhost:3000/api/sessions/a7470c96-d13e-4589-9ea3-a43bba4030f3/checkpoints` → 500
+
+This issue was classified as BLOCKING and assigned to Area 4 (Session History/Checkpoint Flow).
+
+**Scope:**
+
+This task is limited to **ISSUE-76-003 resolution only** (one-issue-at-a-time product correction).
+
+**In Scope:**
+
+1. **Root Cause Diagnosis**
+   - Determine why `GET /api/sessions/:id/checkpoints` returns HTTP 500
+   - Investigate whether the issue is in the API Gateway session/checkpoint controller, checkpoint service, repository layer, or database schema
+
+2. **Minimum Required Fix**
+   - Apply the minimum fix to restore correct `GET /api/sessions/:id/checkpoints` behavior
+   - Ensure endpoint returns HTTP 200 with checkpoint list (empty array acceptable if no checkpoints yet)
+
+3. **Verification**
+   - Confirm `GET /api/sessions/:id/checkpoints` returns HTTP 200 (not 500)
+   - Confirm response body contains a checkpoint list (empty array acceptable)
+   - Add or update minimal regression test coverage for the checkpoints endpoint path
+
+4. **Checkpoint**
+   - `docs/PHASE-76G-CHECKPOINT.md`
+   - Document root cause, fix applied, verification evidence, and preserved invariants
+
+**Explicitly Out of Scope:**
+
+- ❌ No unrelated fixes (other issues are separate subsequent tasks)
+- ❌ No scope expansion beyond ISSUE-76-003
+- ❌ No refactors unless absolutely required for the minimum safe fix
+- ❌ No schema changes unless absolutely required and clearly justified by the documented issue scope
+- ❌ No endpoint changes unless absolutely required and clearly justified by the documented issue scope
+- ❌ No broader architectural expansion
+- ❌ No commercial-readiness work (still paused pending re-validation)
+
+**Deliverables:**
+
+1. **Fix Implementation**
+   - Minimum required fix to restore correct checkpoints endpoint behavior
+   - Root cause documented in checkpoint
+
+2. **Verification Evidence**
+   - `GET /api/sessions/:id/checkpoints` returns correct status (HTTP 200)
+   - Response body contains checkpoint list
+   - Regression test(s) pass
+
+3. **Checkpoint**
+   - `docs/PHASE-76G-CHECKPOINT.md`
+   - Root cause, fix, evidence, preserved invariants, out-of-scope confirmation
+
+**Acceptance Criteria:**
+
+- ✅ `GET /api/sessions/:id/checkpoints` returns HTTP 200 (not 500)
+- ✅ Response body contains a checkpoint list (empty array acceptable if no checkpoints yet)
+- ✅ Root cause identified and documented
+- ✅ Fix is bounded to ISSUE-76-003 only
+- ✅ No unrelated fixes applied
+- ✅ Phase 76G checkpoint created
+
+**Preserved Invariants:**
+
+- One issue at a time (ISSUE-76-003 only)
+- No scope expansion
+- No unrelated fixes
+- No refactors beyond minimum bounded path
+- No schema changes unless absolutely required
+- No endpoint changes unless absolutely required
+- No broader architectural expansion
+- `PRD.md` and `ARCHITECTURE.md` remain higher authority
+
+**Reference:** PHASE-76D-CHECKPOINT.md, PHASE-76F-CHECKPOINT.md, PHASE-76A-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
+
+---

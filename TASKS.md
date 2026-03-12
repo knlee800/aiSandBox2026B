@@ -2270,9 +2270,9 @@ Select the next bounded commercial-foundation family after completion of the Pha
 
 ### Phase 76: End-to-End Manual App Validation
 
-**Current Stage:** 76F-0
+**Current Stage:** 76G-0
 
-**Active Task:** TASK-76F
+**Active Task:** TASK-76G
 
 #### TASK-76A: End-to-End Manual App Validation Planning
 
@@ -2424,7 +2424,7 @@ Resolve the BLOCKING issue ISSUE-76-004 identified during Phase 76D post-fix man
 
 #### TASK-76F: Resolve ISSUE-76-002 — DELETE Session Returns HTTP 500
 
-**Status:** PLANNED
+**Status:** COMPLETE
 **Nature:** IMPLEMENTATION (MINIMAL, TARGETED FIX)
 **Checkpoint:** `docs/PHASE-76F-CHECKPOINT.md`
 
@@ -2450,5 +2450,36 @@ Resolve the BLOCKING issue ISSUE-76-002 identified during Phase 76D post-fix man
 **Dependencies:** TASK-76E (Complete)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-76F for full details
+
+---
+
+#### TASK-76G: Resolve ISSUE-76-003 — GET Checkpoints Returns HTTP 500
+
+**Status:** PLANNED
+**Nature:** IMPLEMENTATION (MINIMAL, TARGETED FIX)
+**Checkpoint:** `docs/PHASE-76G-CHECKPOINT.md`
+
+**Objective:**
+Resolve the BLOCKING issue ISSUE-76-003 identified during Phase 76D post-fix manual validation recheck: `GET /api/sessions/:id/checkpoints` returns HTTP 500 with an empty body for a valid active session. Expected behavior is HTTP 200 with a checkpoint list (empty array acceptable if no checkpoints yet). This blocks Area 4 (Session History/Checkpoint Flow) completion.
+
+**Scope:**
+- Resolve ISSUE-76-003 only (one-issue-at-a-time product correction)
+- Diagnose why `GET /api/sessions/:id/checkpoints` returns HTTP 500
+- Apply minimum required fix to restore correct checkpoints endpoint behavior
+- Verification/tests for ISSUE-76-003 resolution only
+- Checkpoint/evidence update for this issue-resolution task only
+
+**Non-Goals:**
+- ❌ No unrelated fixes
+- ❌ No scope expansion beyond ISSUE-76-003
+- ❌ No refactors unless absolutely required for the minimum safe fix
+- ❌ No schema changes unless absolutely required and clearly justified by the documented issue scope
+- ❌ No endpoint changes unless absolutely required and clearly justified by the documented issue scope
+- ❌ No broader architectural expansion
+- ❌ No commercial-readiness work (still paused pending re-validation)
+
+**Dependencies:** TASK-76F (Complete)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-76G for full details
 
 ---
