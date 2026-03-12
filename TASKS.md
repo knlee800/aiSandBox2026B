@@ -2270,9 +2270,9 @@ Select the next bounded commercial-foundation family after completion of the Pha
 
 ### Phase 76: End-to-End Manual App Validation
 
-**Current Stage:** 76D-COMPLETE
+**Current Stage:** 76E-0
 
-**Active Task:** TASK-76D (COMPLETE)
+**Active Task:** TASK-76E
 
 #### TASK-76A: End-to-End Manual App Validation Planning
 
@@ -2386,5 +2386,38 @@ Re-execute the manual validation gate after the Phase 76C fix for `ISSUE-76-001`
 **Dependencies:** TASK-76C (Complete)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-76D for full details
+
+**Validation Result:** FAIL — ISSUE-76-002, ISSUE-76-003, ISSUE-76-004 (all BLOCKING). Readiness/commercial-readiness work remains paused.
+
+---
+
+#### TASK-76E: Resolve ISSUE-76-004 — Frontend Process Degraded/Hung
+
+**Status:** PLANNED
+**Nature:** IMPLEMENTATION (MINIMAL, TARGETED FIX)
+**Checkpoint:** `docs/PHASE-76E-CHECKPOINT.md`
+
+**Objective:**
+Resolve the BLOCKING issue ISSUE-76-004 identified during Phase 76D post-fix manual validation recheck: the frontend process on port 3002 is in a degraded/hung state — accepts TCP connections but does not serve HTTP responses, blocking UI validation for Areas 1, 2, and 8.
+
+**Scope:**
+- Resolve ISSUE-76-004 only (one-issue-at-a-time product correction)
+- Diagnose why the frontend Node.js process on port 3002 accepts connections but hangs serving HTTP responses
+- Apply minimum required fix to restore frontend HTTP response serving at expected validation port
+- Verification/tests for ISSUE-76-004 resolution only
+- Checkpoint/evidence update for this issue-resolution task only
+
+**Non-Goals:**
+- ❌ No unrelated fixes
+- ❌ No scope expansion beyond ISSUE-76-004
+- ❌ No refactors unless absolutely required for the minimum safe fix
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No broader architectural expansion
+- ❌ No commercial-readiness work (still paused pending re-validation)
+
+**Dependencies:** TASK-76D (Complete)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-76E for full details
 
 ---

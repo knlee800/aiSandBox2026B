@@ -292,32 +292,76 @@ fi
 # Step 5: Start Frontend
 write_header "Step 5: Starting Frontend"
 
-if test_port 3002; then
-    write_info "Port 3002 is already in use (Frontend may already be running)"
-    write_success "All services are running!"
-else
-    write_step "Starting Frontend..."
-    
-    # Check if frontend directory exists
-    if [ ! -d "frontend" ]; then
-        write_failure "frontend directory not found"
-        exit 1
+test_frontend_http() {
+    local timeout=${1:-5}
+    local status
+    status=$(curl -s -o /dev/null -w "%{http_code}" --max-time "$timeout" "http://localhost:3002/" 2>/dev/null)
+    [ -n "$status" ] && [ "$status" -ge 200 ] && [ "$status" -lt 600 ]
+}
+
+start_frontend_fresh() {
+    if [ -d "frontend/.next" ]; then
+        write_step "Cleaning stale .next cache..."
+        rm -rf "frontend/.next"
     fi
-    
-    # Start Frontend in background
     cd frontend
     npm run dev > /dev/null 2>&1 &
     frontend_pid=$!
     cd ..
-    
     write_info "Frontend process started (PID: $frontend_pid)"
-    
-    # Wait for Frontend to be ready
-    sleep 5
-    
-    if test_port 3002; then
-        write_success "Frontend is ready!"
+}
+
+wait_for_frontend_http() {
+    local timeout=${1:-30}
+    local interval=${2:-2}
+    local elapsed=0
+    write_step "Waiting for Frontend HTTP readiness..."
+    while [ $elapsed -lt $timeout ]; do
+        if test_frontend_http 3; then
+            echo ""
+            write_success "Frontend is serving HTTP responses!"
+            return 0
+        fi
+        sleep $interval
+        elapsed=$((elapsed + interval))
+        echo -n "."
+    done
+    echo ""
+    write_failure "Frontend did not become HTTP-ready within $timeout seconds"
+    return 1
+}
+
+if test_port 3002; then
+    write_info "Port 3002 is in use — verifying Frontend HTTP health..."
+    if test_frontend_http 5; then
+        write_success "Frontend is healthy and serving HTTP responses!"
     else
+        write_failure "Frontend process is degraded (port open but not serving HTTP)"
+        write_step "Killing stale Frontend process on port 3002..."
+        stale_pid=$(lsof -ti :3002 2>/dev/null || ss -tlnp 'sport = :3002' 2>/dev/null | grep -oP 'pid=\K[0-9]+' | head -1)
+        if [ -n "$stale_pid" ]; then
+            kill -9 "$stale_pid" 2>/dev/null || true
+            write_info "Killed stale process (PID: $stale_pid)"
+            sleep 2
+        fi
+        start_frontend_fresh
+        if ! wait_for_frontend_http "$HEALTH_CHECK_TIMEOUT" "$HEALTH_CHECK_INTERVAL"; then
+            write_failure "Frontend failed to recover"
+            write_info "Remediation:"
+            write_info "  1. Check frontend logs"
+            write_info "  2. Run manually: cd frontend && npm run dev"
+            kill $frontend_pid 2>/dev/null || true
+            exit 1
+        fi
+    fi
+else
+    write_step "Starting Frontend..."
+    if [ ! -d "frontend" ]; then
+        write_failure "frontend directory not found"
+        exit 1
+    fi
+    start_frontend_fresh
+    if ! wait_for_frontend_http "$HEALTH_CHECK_TIMEOUT" "$HEALTH_CHECK_INTERVAL"; then
         write_failure "Frontend failed to start"
         write_info "Remediation:"
         write_info "  1. Check if port 3002 is available"

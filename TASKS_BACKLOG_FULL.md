@@ -7998,3 +7998,97 @@ This task is limited to **post-fix manual validation recheck and gate decisionin
 **Reference:** PHASE-76A-CHECKPOINT.md, PHASE-76B-CHECKPOINT.md, PHASE-76C-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### TASK-76E: Resolve ISSUE-76-004 — Frontend Process Degraded/Hung
+
+**Task ID:** TASK-76E
+**Phase:** 76
+**Stage:** 76E
+**Priority:** 🔴 High
+**Nature:** IMPLEMENTATION (MINIMAL, TARGETED FIX)
+**Dependencies:** TASK-76D (Complete)
+**Checkpoint:** `docs/PHASE-76E-CHECKPOINT.md`
+
+**Objective:**
+
+Resolve the BLOCKING issue `ISSUE-76-004` identified during Phase 76D post-fix manual validation recheck: the frontend process on port 3002 is in a degraded/hung state — accepts TCP connections but does not serve HTTP responses, blocking UI validation for Areas 1, 2, and 8.
+
+**Background (from Phase 76D artifacts):**
+
+- Phase 76D manual validation recheck discovered that the frontend Node.js process (PID 27880) on port 3002 is LISTENING and accepts TCP connections, but does not serve HTTP response bodies
+- Initial probe received HTTP 308 (Next.js trailing-slash redirect), but all subsequent full-page requests hang indefinitely (no response within 30+ seconds)
+- The Phase 76C verifier script stuck at Step 1 (frontend reachability) for 60+ seconds
+- Multiple CLOSE_WAIT connections observed on port 3002, indicating the server accepted connections but never completed HTTP responses
+- This blocks all frontend UI validation: Area 1 (public-facing flow), Area 2 (authenticated workspace), Area 8 (responsive/cross-state behavior)
+
+**Scope:**
+
+This task is limited to **ISSUE-76-004 resolution only** (one-issue-at-a-time product correction).
+
+**In Scope:**
+
+1. **Root Cause Diagnosis**
+   - Determine why the frontend process on port 3002 accepts TCP connections but does not serve HTTP responses
+   - Investigate whether the issue is a hung Next.js dev server, resource exhaustion, configuration error, or other bounded root cause
+
+2. **Minimum Required Fix**
+   - Apply the minimum fix to restore frontend HTTP response serving at the expected validation port (3002)
+   - Ensure `/en/` and `/en/app` routes serve HTTP responses within normal response time after fix
+
+3. **Verification**
+   - Confirm frontend serves HTTP responses at `http://localhost:3002/en/` and `http://localhost:3002/en/app` after fix
+   - Confirm Phase 76C verifier script (`scripts/verify-phase-76c-readiness.ps1`) can complete Step 1 (frontend reachability)
+   - Add or update minimal regression test coverage if applicable
+
+4. **Checkpoint**
+   - `docs/PHASE-76E-CHECKPOINT.md`
+   - Document root cause, fix applied, verification evidence, and preserved invariants
+
+**Explicitly Out of Scope:**
+
+- ❌ No unrelated fixes (ISSUE-76-002, ISSUE-76-003 are separate subsequent tasks)
+- ❌ No scope expansion beyond ISSUE-76-004
+- ❌ No refactors unless absolutely required for the minimum safe fix
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No broader architectural expansion
+- ❌ No commercial-readiness work (still paused pending re-validation)
+
+**Deliverables:**
+
+1. **Fix Implementation**
+   - Minimum required fix to restore frontend HTTP response serving on port 3002
+   - Root cause documented in checkpoint
+
+2. **Verification Evidence**
+   - Frontend serves HTTP responses at `/en/` and `/en/app` after fix
+   - Phase 76C verifier Step 1 passes after fix
+
+3. **Checkpoint**
+   - `docs/PHASE-76E-CHECKPOINT.md`
+   - Root cause, fix, evidence, preserved invariants, out-of-scope confirmation
+
+**Acceptance Criteria:**
+
+- ✅ Frontend process on port 3002 serves HTTP responses for `/en/` and `/en/app` within normal response time
+- ✅ Phase 76C verifier script completes Step 1 (frontend reachability) successfully
+- ✅ Root cause identified and documented
+- ✅ Fix is bounded to ISSUE-76-004 only
+- ✅ No unrelated fixes applied
+- ✅ No schema/endpoint changes
+- ✅ Phase 76E checkpoint created
+
+**Preserved Invariants:**
+
+- One issue at a time (ISSUE-76-004 only)
+- No scope expansion
+- No unrelated fixes
+- No refactors beyond minimum bounded path
+- No schema changes
+- No endpoint changes
+- No broader architectural expansion
+- `PRD.md` and `ARCHITECTURE.md` remain higher authority
+
+**Reference:** PHASE-76D-CHECKPOINT.md, PHASE-76A-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
+
+---

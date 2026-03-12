@@ -309,31 +309,83 @@ else {
 # Step 5: Start Frontend
 Write-Header "Step 5: Starting Frontend"
 
+function Test-FrontendHttp {
+    param([int]$Timeout = 5)
+    try {
+        $resp = Invoke-WebRequest -Uri "http://localhost:3002/" -UseBasicParsing -TimeoutSec $Timeout -ErrorAction Stop
+        return $resp.StatusCode -ge 200 -and $resp.StatusCode -lt 600
+    }
+    catch {
+        $status = $_.Exception.Response.StatusCode.value__
+        if ($status -and $status -ge 200 -and $status -lt 600) {
+            return $true
+        }
+        return $false
+    }
+}
+
+function Start-FrontendFresh {
+    if (Test-Path "frontend/.next") {
+        Write-Step "Cleaning stale .next cache..."
+        Remove-Item -Recurse -Force "frontend/.next" -ErrorAction SilentlyContinue
+    }
+    $proc = Start-Process -FilePath "npm" -ArgumentList "run", "dev" -WorkingDirectory "frontend" -PassThru -WindowStyle Hidden
+    Write-Info "Frontend process started (PID: $($proc.Id))"
+    return $proc
+}
+
+function Wait-ForFrontendHttp {
+    param([int]$Timeout = 30, [int]$Interval = 2)
+    $elapsed = 0
+    Write-Step "Waiting for Frontend HTTP readiness..."
+    while ($elapsed -lt $Timeout) {
+        if (Test-FrontendHttp -Timeout 3) {
+            Write-Success "Frontend is serving HTTP responses!"
+            return $true
+        }
+        Start-Sleep -Seconds $Interval
+        $elapsed += $Interval
+        Write-Host "." -NoNewline
+    }
+    Write-Host ""
+    Write-Failure "Frontend did not become HTTP-ready within $Timeout seconds"
+    return $false
+}
+
 if (Test-Port 3002) {
-    Write-Info "Port 3002 is already in use (Frontend may already be running)"
-    Write-Success "All services are running!"
+    Write-Info "Port 3002 is in use — verifying Frontend HTTP health..."
+    if (Test-FrontendHttp -Timeout 5) {
+        Write-Success "Frontend is healthy and serving HTTP responses!"
+    }
+    else {
+        Write-Failure "Frontend process is degraded (port open but not serving HTTP)"
+        Write-Step "Killing stale Frontend process on port 3002..."
+        $stalePid = (netstat -ano | Select-String "LISTENING.*:3002" | ForEach-Object { ($_ -split '\s+')[-1] } | Select-Object -First 1)
+        if ($stalePid) {
+            Stop-Process -Id $stalePid -Force -ErrorAction SilentlyContinue
+            Write-Info "Killed stale process (PID: $stalePid)"
+            Start-Sleep -Seconds 2
+        }
+        $frontendProcess = Start-FrontendFresh
+        if (-not (Wait-ForFrontendHttp -Timeout $HealthCheckTimeout)) {
+            Write-Failure "Frontend failed to recover"
+            Write-Info "Remediation:"
+            Write-Info "  1. Check frontend logs"
+            Write-Info "  2. Run manually: cd frontend && npm run dev"
+            Stop-Process -Id $frontendProcess.Id -Force -ErrorAction SilentlyContinue
+            exit 1
+        }
+    }
 }
 else {
     Write-Step "Starting Frontend..."
-    
-    # Check if frontend directory exists
     if (-not (Test-Path "frontend")) {
         Write-Failure "frontend directory not found"
         exit 1
     }
-    
-    # Start Frontend in background
     try {
-        $frontendProcess = Start-Process -FilePath "npm" -ArgumentList "run", "dev" -WorkingDirectory "frontend" -PassThru -WindowStyle Hidden
-        Write-Info "Frontend process started (PID: $($frontendProcess.Id))"
-        
-        # Wait for Frontend to be ready
-        Start-Sleep -Seconds 5
-        
-        if (Test-Port 3002) {
-            Write-Success "Frontend is ready!"
-        }
-        else {
+        $frontendProcess = Start-FrontendFresh
+        if (-not (Wait-ForFrontendHttp -Timeout $HealthCheckTimeout)) {
             Write-Failure "Frontend failed to start"
             Write-Info "Remediation:"
             Write-Info "  1. Check if port 3002 is available"
