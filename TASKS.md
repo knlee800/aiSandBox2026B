@@ -2267,3 +2267,35 @@ Select the next bounded commercial-foundation family after completion of the Pha
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-75A for full details
 
 ---
+
+### Phase 76: End-to-End Manual App Validation
+
+**Current Stage:** 76A-0
+
+**Active Task:** TASK-76A
+
+#### TASK-76A: End-to-End Manual App Validation Planning
+
+**Status:** PLANNED
+**Nature:** DOCUMENTATION / PLANNING (NO CODE)
+**Checkpoint:** `docs/PHASE-76A-CHECKPOINT.md`
+
+**Objective:**
+Pause further readiness/commercial-readiness family execution until the current app is manually validated end to end. Define a manual validation/UAT plan for the current app using already implemented product surfaces.
+
+**Scope:**
+- Define manual validation/UAT plan covering all implemented product surfaces
+- Plan validation coverage across: authenticated workspace, session/history flow, dashboard flow, public-facing flow, loading/empty/error states, responsive behavior, key user-critical flows
+- Define evidence capture and pass/fail criteria for manual validation
+- Define how discovered product issues should be recorded and prioritized one at a time
+- Pause commercial-readiness family progression until manual validation is complete
+
+**Non-Goals:**
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-76A for full details
+
+---

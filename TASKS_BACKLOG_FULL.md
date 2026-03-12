@@ -7647,3 +7647,96 @@ This task is limited to **documentation and planning only**.
 **Reference:** PHASE-74-FINAL-CHECKPOINT.md, PHASE-74A-CHECKPOINT.md, PHASE-74B-CHECKPOINT.md, TASKS.md, TASKS_BACKLOG_FULL.md, AI-SANDBOX-PLATFORM-PLAN (2).md, PRD.md, ARCHITECTURE.md
 
 ---
+
+## Phase 76: End-to-End Manual App Validation
+
+---
+
+### TASK-76A: End-to-End Manual App Validation Planning
+
+**Task ID:** TASK-76A
+**Phase:** 76
+**Stage:** 76A
+**Priority:** 🔴 High
+**Nature:** DOCUMENTATION / PLANNING (NO CODE)
+**Dependencies:** TASK-75A (Complete)
+**Checkpoint:** `docs/PHASE-76A-CHECKPOINT.md`
+
+**Objective:**
+
+Pause further readiness/commercial-readiness family execution until the current app is manually validated end to end. Define a manual validation/UAT plan for the current app using already implemented product surfaces.
+
+**Scope:**
+
+This task is limited to **documentation and planning only**.
+
+**In Scope:**
+
+1. **Commercial-Readiness Pause Gate**
+   - Explicitly pause further commercial-readiness family execution (Phase 75 bounded family and beyond) until the current app passes end-to-end manual validation
+   - Rationale: readiness/commercial work should not advance further until the implemented product surfaces are confirmed working in practice
+
+2. **Manual Validation/UAT Plan Definition**
+   - Define manual validation plan covering all already-implemented product surfaces
+   - Plan validation coverage across:
+     - Authenticated workspace (chat, editor, preview panels, session lifecycle)
+     - Session/history flow (checkpoint list, diff viewing, revert operations)
+     - Dashboard flow (user dashboard: usage, quotas, session list)
+     - Public-facing flow (landing page, public product surfaces)
+     - Loading/empty/error states (across all implemented surfaces)
+     - Responsive behavior (viewport breakpoints, mobile/tablet/desktop)
+     - Key user-critical flows (session create → use → terminate, quota enforcement, rate limiting)
+
+3. **Evidence Capture and Pass/Fail Criteria**
+   - Define evidence capture requirements for each validation area (screenshots, test results, observed behavior)
+   - Define pass/fail criteria per validation area
+   - Define overall validation pass/fail threshold
+
+4. **Issue Recording and Prioritization Model**
+   - Define how discovered product issues should be recorded during manual validation
+   - Define how issues should be prioritized one at a time for resolution
+   - Define issue severity classification (blocking, non-blocking, cosmetic)
+   - Define sequencing rule: fix one issue at a time before proceeding to next
+
+**Explicitly Out of Scope:**
+
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No implementation work
+- ❌ No refactors
+- ❌ No broader architectural expansion
+- ❌ No commercial-readiness work until manual validation passes
+
+**Deliverables:**
+
+1. **Planning Output**
+   - Manual validation/UAT plan with coverage areas, evidence requirements, and pass/fail criteria
+   - Issue recording and prioritization model
+
+2. **Checkpoint**
+   - `docs/PHASE-76A-CHECKPOINT.md`
+   - Planning summary with preserved invariants and explicit out-of-scope confirmation
+
+**Acceptance Criteria:**
+
+- ✅ Commercial-readiness family progression explicitly paused pending manual validation
+- ✅ Manual validation/UAT plan defined covering all implemented product surfaces
+- ✅ Validation coverage planned across authenticated workspace, session/history, dashboard, public-facing, loading/empty/error states, responsive behavior, and user-critical flows
+- ✅ Evidence capture requirements and pass/fail criteria defined
+- ✅ Issue recording and one-at-a-time prioritization model defined
+- ✅ No platform code/schema/endpoint changes occurred
+- ✅ Phase 76A checkpoint created
+
+**Preserved Invariants:**
+
+- No platform code changes
+- No schema changes
+- No endpoint changes
+- No refactors
+- No broader architectural expansion
+- Documentation/planning-only scope
+
+**Reference:** PHASE-75A-CHECKPOINT.md, PHASE-68-FINAL-CHECKPOINT.md, PHASE-69-FINAL-CHECKPOINT.md, PHASE-70-FINAL-CHECKPOINT.md, PHASE-74-FINAL-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
+
+---
