@@ -2270,9 +2270,9 @@ Select the next bounded commercial-foundation family after completion of the Pha
 
 ### Phase 76: End-to-End Manual App Validation
 
-**Current Stage:** 76E-0
+**Current Stage:** 76F-0
 
-**Active Task:** TASK-76E
+**Active Task:** TASK-76F
 
 #### TASK-76A: End-to-End Manual App Validation Planning
 
@@ -2393,7 +2393,7 @@ Re-execute the manual validation gate after the Phase 76C fix for `ISSUE-76-001`
 
 #### TASK-76E: Resolve ISSUE-76-004 — Frontend Process Degraded/Hung
 
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (MINIMAL, TARGETED FIX)
 **Checkpoint:** `docs/PHASE-76E-CHECKPOINT.md`
 
@@ -2419,5 +2419,36 @@ Resolve the BLOCKING issue ISSUE-76-004 identified during Phase 76D post-fix man
 **Dependencies:** TASK-76D (Complete)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-76E for full details
+
+---
+
+#### TASK-76F: Resolve ISSUE-76-002 — DELETE Session Returns HTTP 500
+
+**Status:** PLANNED
+**Nature:** IMPLEMENTATION (MINIMAL, TARGETED FIX)
+**Checkpoint:** `docs/PHASE-76F-CHECKPOINT.md`
+
+**Objective:**
+Resolve the BLOCKING issue ISSUE-76-002 identified during Phase 76D post-fix manual validation recheck: `DELETE /api/sessions/:id` returns HTTP 500 with an empty body. The session is not terminated. Subsequent `GET /api/sessions/:id` shows `terminatedAt: null`. Subsequent `POST /api/sessions/:id/exec` returns HTTP 404 instead of the expected HTTP 410 Gone. This blocks Area 3 (Session Lifecycle Flow) completion and Area 6 (Quota & Rate Limiting) prerequisites.
+
+**Scope:**
+- Resolve ISSUE-76-002 only (one-issue-at-a-time product correction)
+- Diagnose why `DELETE /api/sessions/:id` returns HTTP 500 and fails to terminate the session
+- Apply minimum required fix to restore correct session deletion/termination behavior
+- Verification/tests for ISSUE-76-002 resolution only
+- Checkpoint/evidence update for this issue-resolution task only
+
+**Non-Goals:**
+- ❌ No unrelated fixes
+- ❌ No scope expansion beyond ISSUE-76-002
+- ❌ No refactors unless absolutely required for the minimum safe fix
+- ❌ No schema changes unless absolutely required and clearly justified by the documented issue scope
+- ❌ No endpoint changes unless absolutely required and clearly justified by the documented issue scope
+- ❌ No broader architectural expansion
+- ❌ No commercial-readiness work (still paused pending re-validation)
+
+**Dependencies:** TASK-76E (Complete)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-76F for full details
 
 ---

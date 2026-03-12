@@ -129,4 +129,16 @@ export class SessionService {
   async deleteSession(sessionId: string): Promise<void> {
     await this.sessionRepository.deleteSession(sessionId);
   }
+
+  /**
+   * Terminate a session (permanent, irreversible).
+   * Sets terminated_at and termination_reason in the database.
+   * Idempotent: no-op if session is already terminated.
+   * PHASE-76F: Added for correct DELETE /api/sessions/:id termination semantics.
+   * @param sessionId - Session UUID
+   * @param reason - Termination reason
+   */
+  async terminateSession(sessionId: string, reason: string): Promise<void> {
+    await this.sessionRepository.terminateSession(sessionId, reason);
+  }
 }

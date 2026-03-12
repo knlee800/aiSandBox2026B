@@ -128,4 +128,31 @@ export class SessionRepository {
 
     return { affected: result.affected || 0 };
   }
+
+  /**
+   * Terminate a session by setting terminated_at and termination_reason.
+   * Idempotent: only updates if not already terminated.
+   * Per PRD/ARCHITECTURE: termination is permanent and irreversible.
+   * PHASE-76F: Added for correct DELETE /api/sessions/:id termination semantics.
+   * @param sessionId - Session UUID
+   * @param reason - Termination reason (e.g., 'manual', 'idle_timeout', 'max_lifetime')
+   * @returns Update result with affected rows count
+   */
+  async terminateSession(
+    sessionId: string,
+    reason: string,
+  ): Promise<{ affected: number }> {
+    const result = await this.repository
+      .createQueryBuilder()
+      .update(Session)
+      .set({
+        terminatedAt: new Date(),
+        terminationReason: reason,
+        status: SessionStatus.STOPPED,
+      })
+      .where('id = :id AND terminatedAt IS NULL', { id: sessionId })
+      .execute();
+
+    return { affected: result.affected || 0 };
+  }
 }

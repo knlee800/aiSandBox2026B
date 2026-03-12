@@ -137,12 +137,14 @@ export class SessionController {
   }
 
   /**
-   * Delete a session owned by the authenticated user
+   * Terminate a session owned by the authenticated user
    * DELETE /api/sessions/:id
    * Returns 404 if session not found or not owned by user
-   * Flow: Delete container → Delete DB record
-   * Allowed on terminated sessions (cleanup operation)
+   * Flow: Best-effort stop container → Terminate session in DB
+   * Idempotent: returns 200 if session already terminated
+   * Per PRD/ARCHITECTURE: termination is permanent and irreversible (HTTP 410 on subsequent mutations)
    * PHASE-41B: Rate limited to 5 requests per minute per IP
+   * PHASE-76F: Fixed to terminate (set terminated_at) instead of physical deletion
    * @param id - Session UUID
    * @param req - Request object with authenticated user
    * @returns Success message
@@ -163,13 +165,25 @@ export class SessionController {
       throw new NotFoundException(`Session with ID ${id} not found`);
     }
 
-    // Delete session in container-manager first (includes container cleanup)
-    // Fail-fast: if container-manager fails, do NOT delete DB record
-    await this.containerManagerHttpClient.deleteSession(id);
+    // Idempotent: if session is already terminated, return success
+    if (session.terminatedAt !== null) {
+      return { message: 'Session already terminated' };
+    }
 
-    // Delete from api-gateway database after successful container deletion
-    await this.sessionService.deleteSession(id);
+    // Best-effort stop container in container-manager (tolerates failures)
+    try {
+      await this.containerManagerHttpClient.stopSession(id);
+    } catch (error) {
+      // Best-effort: log but do not block termination
+      console.error(
+        `Best-effort container stop failed for session ${id} during termination:`,
+        error.message,
+      );
+    }
 
-    return { message: 'Session deleted successfully' };
+    // Terminate session in api-gateway database (set terminated_at, termination_reason)
+    await this.sessionService.terminateSession(id, 'manual');
+
+    return { message: 'Session terminated successfully' };
   }
 }

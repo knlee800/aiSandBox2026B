@@ -8092,3 +8092,106 @@ This task is limited to **ISSUE-76-004 resolution only** (one-issue-at-a-time pr
 **Reference:** PHASE-76D-CHECKPOINT.md, PHASE-76A-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### TASK-76F: Resolve ISSUE-76-002 — DELETE Session Returns HTTP 500
+
+**Task ID:** TASK-76F
+**Phase:** 76
+**Stage:** 76F
+**Priority:** 🔴 High
+**Nature:** IMPLEMENTATION (MINIMAL, TARGETED FIX)
+**Dependencies:** TASK-76E (Complete)
+**Checkpoint:** `docs/PHASE-76F-CHECKPOINT.md`
+
+**Objective:**
+
+Resolve the BLOCKING issue `ISSUE-76-002` identified during Phase 76D post-fix manual validation recheck: `DELETE /api/sessions/:id` returns HTTP 500 with an empty body. The session is not terminated. Subsequent `GET /api/sessions/:id` shows `terminatedAt: null`. Subsequent `POST /api/sessions/:id/exec` returns HTTP 404 instead of the expected HTTP 410 Gone. This blocks Area 3 (Session Lifecycle Flow) completion and Area 6 (Quota & Rate Limiting) prerequisites.
+
+**Background (from Phase 76D artifacts):**
+
+- Phase 76D manual validation recheck (Step 3.6) executed `DELETE /api/sessions/a7470c96-d13e-4589-9ea3-a43bba4030f3`
+- Observed: HTTP 500, empty response body
+- Subsequent `GET /api/sessions/:id` returned HTTP 200 with `terminatedAt: null` — session was NOT terminated
+- Subsequent `POST /api/sessions/:id/exec` returned HTTP 404 instead of expected HTTP 410 Gone
+- Expected behavior per PRD: HTTP 200 or 204; session terminated persistently; subsequent requests return HTTP 410 Gone
+- This blocks Area 3 (Session Lifecycle Flow) validation steps 3.6–3.9 and Area 6 prerequisites
+
+**Scope:**
+
+This task is limited to **ISSUE-76-002 resolution only** (one-issue-at-a-time product correction).
+
+**In Scope:**
+
+1. **Root Cause Diagnosis**
+   - Determine why `DELETE /api/sessions/:id` returns HTTP 500
+   - Determine why the session is not terminated after the DELETE call
+   - Investigate whether the issue is in the API Gateway session controller, session service, container manager communication, or Docker lifecycle handling
+
+2. **Minimum Required Fix**
+   - Apply the minimum fix to restore correct `DELETE /api/sessions/:id` behavior
+   - Ensure session is persistently terminated after DELETE (terminatedAt set, termination_reason recorded)
+   - Ensure subsequent requests to a terminated session return HTTP 410 Gone per PRD error semantics
+
+3. **Verification**
+   - Confirm `DELETE /api/sessions/:id` returns HTTP 200 or 204
+   - Confirm `GET /api/sessions/:id` after DELETE shows `terminatedAt` is not null
+   - Confirm `POST /api/sessions/:id/exec` after DELETE returns HTTP 410 Gone
+   - Confirm `DELETE /api/sessions/:id` again (idempotent) returns 410 or success
+   - Add or update minimal regression test coverage for the session deletion path
+
+4. **Checkpoint**
+   - `docs/PHASE-76F-CHECKPOINT.md`
+   - Document root cause, fix applied, verification evidence, and preserved invariants
+
+**Explicitly Out of Scope:**
+
+- ❌ No unrelated fixes (ISSUE-76-003 is a separate subsequent task)
+- ❌ No scope expansion beyond ISSUE-76-002
+- ❌ No refactors unless absolutely required for the minimum safe fix
+- ❌ No schema changes unless absolutely required and clearly justified by the documented issue scope
+- ❌ No endpoint changes unless absolutely required and clearly justified by the documented issue scope
+- ❌ No broader architectural expansion
+- ❌ No commercial-readiness work (still paused pending re-validation)
+
+**Deliverables:**
+
+1. **Fix Implementation**
+   - Minimum required fix to restore correct session deletion/termination behavior
+   - Root cause documented in checkpoint
+
+2. **Verification Evidence**
+   - `DELETE /api/sessions/:id` returns correct status
+   - Session terminatedAt is set after DELETE
+   - Subsequent requests return HTTP 410 Gone
+   - Idempotent DELETE behavior confirmed
+
+3. **Checkpoint**
+   - `docs/PHASE-76F-CHECKPOINT.md`
+   - Root cause, fix, evidence, preserved invariants, out-of-scope confirmation
+
+**Acceptance Criteria:**
+
+- ✅ `DELETE /api/sessions/:id` returns HTTP 200 or 204 (not 500)
+- ✅ Session is persistently terminated after DELETE (`terminatedAt` is not null)
+- ✅ Subsequent `POST /api/sessions/:id/exec` returns HTTP 410 Gone
+- ✅ Subsequent `GET /api/sessions/:id` shows terminated state
+- ✅ Idempotent DELETE returns 410 or success
+- ✅ Root cause identified and documented
+- ✅ Fix is bounded to ISSUE-76-002 only
+- ✅ No unrelated fixes applied
+- ✅ Phase 76F checkpoint created
+
+**Preserved Invariants:**
+
+- One issue at a time (ISSUE-76-002 only)
+- No scope expansion
+- No unrelated fixes
+- No refactors beyond minimum bounded path
+- No schema changes unless absolutely required
+- No endpoint changes unless absolutely required
+- No broader architectural expansion
+- `PRD.md` and `ARCHITECTURE.md` remain higher authority
+
+**Reference:** PHASE-76D-CHECKPOINT.md, PHASE-76A-CHECKPOINT.md, PHASE-76E-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
+
+---
