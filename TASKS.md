@@ -2058,9 +2058,9 @@ Validate and consolidate completed Phase 73 planning and bounded commercial-foun
 
 ### Phase 74: Next Bounded Commercial Family Selection
 
-**Current Stage:** 74C-FINAL-0
+**Current Stage:** 74-FINAL-0
 
-**Active Task:** TASK-74C-FINAL
+**Active Task:** TASK-74-FINAL
 
 #### TASK-74A: Next Bounded Commercial Family Selection
 
@@ -2207,5 +2207,32 @@ Validate and consolidate completed bounded visibility/reporting family outputs (
 - ❌ No scope expansion beyond selected bounded family
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-74C-FINAL for full details
+
+---
+
+#### TASK-74-FINAL: Phase 74 Final Consolidation
+
+**Status:** PLANNED
+**Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)
+**Checkpoint:** `docs/PHASE-74-FINAL-CHECKPOINT.md`
+
+**Objective:**
+Validate and consolidate completed Phase 74 planning and bounded visibility/reporting family outputs, and close Phase 74 with a final checkpoint.
+
+**Scope:**
+- Validate and consolidate `TASK-74A`, `TASK-74B`, `TASK-74C-1`, `TASK-74C-2`, and `TASK-74C-FINAL`
+- Confirm selected bounded visibility/reporting family was the correct next bounded commercial family under current `PRD.md` / `ARCHITECTURE.md` constraints
+- Confirm bounded non-monetary visibility and usage reporting family completed without billing/subscription/invoicing/tax scope or architecture expansion
+- Confirm no schema changes occurred
+- Create final Phase 74 checkpoint: `docs/PHASE-74-FINAL-CHECKPOINT.md`
+
+**Non-Goals:**
+- ❌ No new implementation
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-74-FINAL for full details
 
 ---
