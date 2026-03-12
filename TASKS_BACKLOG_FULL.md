@@ -7914,3 +7914,87 @@ This task is limited to **one-issue-at-a-time product correction** for ISSUE-76-
 **Reference:** PHASE-76B-CHECKPOINT.md (ISSUE-76-001), PHASE-76A-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### TASK-76D: Post-Fix Manual Validation Recheck
+
+**Task ID:** TASK-76D
+**Phase:** 76
+**Stage:** 76D
+**Priority:** 🔴 High
+**Nature:** VALIDATION / DOCUMENTATION (NO CODE)
+**Dependencies:** TASK-76C (Complete)
+**Checkpoint:** `docs/PHASE-76D-CHECKPOINT.md`
+
+**Objective:**
+
+Re-execute the Phase 76 manual validation gate after completion of the `ISSUE-76-001` fix in Phase 76C, and produce an explicit evidence-based gate decision for whether paused readiness/commercial-readiness work may resume.
+
+**Background (from Phase 76 artifacts):**
+
+- Phase 76B failed due to `ISSUE-76-001` (frontend unreachable at expected port, missing validation credential/key path for authenticated/internal positive-path checks)
+- Phase 76C implemented a bounded fix and produced `docs/PHASE-76C-CHECKPOINT.md` with fix verification evidence
+- A post-fix manual validation recheck is required before any paused readiness/commercial-readiness progression can continue
+
+**Scope:**
+
+This task is limited to **post-fix manual validation recheck and gate decisioning only**.
+
+**In Scope:**
+
+1. **Post-Fix Manual Validation Recheck**
+   - Re-execute the relevant manual validation gate steps that were previously blocked by `ISSUE-76-001`
+   - Use Phase 76A plan and Phase 76B/76C evidence as authority for expected behavior
+
+2. **Gate Outcome Determination**
+   - Determine whether the app now passes the previously failed manual validation gate
+   - Determine whether paused readiness/commercial-readiness work may resume
+
+3. **Issue Status Confirmation**
+   - Confirm status of `ISSUE-76-001` from recheck evidence (`RESOLVED` or `NOT RESOLVED`)
+   - If not resolved, keep gate closed and record remaining blocker evidence
+
+4. **Checkpoint**
+   - `docs/PHASE-76D-CHECKPOINT.md`
+   - Document recheck evidence, gate decision, and preserved invariants
+
+**Explicitly Out of Scope:**
+
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+- ❌ No unrelated issue fixes
+- ❌ No scope expansion beyond post-fix manual validation recheck
+
+**Deliverables:**
+
+1. **Validation Recheck Output**
+   - Post-fix recheck results for the relevant previously blocked gate
+   - Pass/fail determination and issue-status determination for `ISSUE-76-001`
+   - Explicit resume/not-resume decision for paused readiness/commercial-readiness work
+
+2. **Checkpoint**
+   - `docs/PHASE-76D-CHECKPOINT.md`
+   - Evidence summary and gate decision with preserved invariants and out-of-scope confirmation
+
+**Acceptance Criteria:**
+
+- ✅ Relevant manual validation gate is re-executed after Phase 76C fix
+- ✅ Evidence captured for post-fix outcome
+- ✅ `ISSUE-76-001` status explicitly confirmed from recheck evidence
+- ✅ Explicit decision recorded on whether readiness/commercial-readiness work may resume
+- ✅ No platform code/schema/endpoint changes occurred
+- ✅ Phase 76D checkpoint created
+
+**Preserved Invariants:**
+
+- No platform code changes
+- No schema changes
+- No endpoint changes
+- No refactors
+- No broader architectural expansion
+- Validation/documentation-only scope
+
+**Reference:** PHASE-76A-CHECKPOINT.md, PHASE-76B-CHECKPOINT.md, PHASE-76C-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
+
+---

@@ -2270,9 +2270,9 @@ Select the next bounded commercial-foundation family after completion of the Pha
 
 ### Phase 76: End-to-End Manual App Validation
 
-**Current Stage:** 76C-0
+**Current Stage:** 76D-COMPLETE
 
-**Active Task:** TASK-76C
+**Active Task:** TASK-76D (COMPLETE)
 
 #### TASK-76A: End-to-End Manual App Validation Planning
 
@@ -2330,7 +2330,7 @@ Execute the manual end-to-end app validation plan defined in Phase 76A against t
 
 #### TASK-76C: Resolve ISSUE-76-001 — Validation Environment Readiness
 
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (MINIMAL, TARGETED FIX)
 **Checkpoint:** `docs/PHASE-76C-CHECKPOINT.md`
 
@@ -2357,5 +2357,34 @@ Resolve the BLOCKING issue ISSUE-76-001 identified during Phase 76B manual valid
 **Dependencies:** TASK-76B (Complete)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-76C for full details
+
+---
+
+#### TASK-76D: Post-Fix Manual Validation Recheck
+
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION / DOCUMENTATION (NO CODE)
+**Checkpoint:** `docs/PHASE-76D-CHECKPOINT.md`
+
+**Objective:**  
+Re-execute the manual validation gate after the Phase 76C fix for `ISSUE-76-001` and determine whether the app now passes the previously failed gate and whether readiness/commercial-readiness work may resume.
+
+**Scope:**
+- Re-execute the relevant manual validation gate previously blocked by `ISSUE-76-001`
+- Confirm pass/fail outcome for the post-fix manual validation recheck
+- Confirm whether readiness/commercial-readiness work may resume
+- Confirm `ISSUE-76-001` status based on recheck evidence (resolved or not resolved)
+- Capture validation evidence and produce task checkpoint output
+
+**Non-Goals:**
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+- ❌ No unrelated issue work
+
+**Dependencies:** TASK-76C (Complete)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-76D for full details
 
 ---
