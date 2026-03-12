@@ -2270,9 +2270,9 @@ Select the next bounded commercial-foundation family after completion of the Pha
 
 ### Phase 76: End-to-End Manual App Validation
 
-**Current Stage:** 76G-0
+**Current Stage:** 76H-COMPLETE
 
-**Active Task:** TASK-76G
+**Active Task:** TASK-76H (COMPLETE)
 
 #### TASK-76A: End-to-End Manual App Validation Planning
 
@@ -2455,7 +2455,7 @@ Resolve the BLOCKING issue ISSUE-76-002 identified during Phase 76D post-fix man
 
 #### TASK-76G: Resolve ISSUE-76-003 — GET Checkpoints Returns HTTP 500
 
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (MINIMAL, TARGETED FIX)
 **Checkpoint:** `docs/PHASE-76G-CHECKPOINT.md`
 
@@ -2481,5 +2481,37 @@ Resolve the BLOCKING issue ISSUE-76-003 identified during Phase 76D post-fix man
 **Dependencies:** TASK-76F (Complete)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-76G for full details
+
+---
+
+#### TASK-76H: Full Post-Fix Manual Validation Rerun
+
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION / DOCUMENTATION (NO CODE)
+**Checkpoint:** `docs/PHASE-76H-CHECKPOINT.md`
+
+**Objective:**
+Execute a full rerun of the Phase 76A manual end-to-end app validation plan after completion of all known blocking fixes (TASK-76E, TASK-76F, TASK-76G). Capture evidence across all 9 validation areas, determine overall pass/fail for the current app state, and make an explicit gate decision on whether paused readiness/commercial-readiness work may resume.
+
+**Scope:**
+- Full rerun of the Phase 76A manual validation plan across all 9 areas
+- Evidence capture per Phase 76A evidence capture requirements
+- Per-step, per-area, and overall pass/fail determination
+- Explicit gate decision: readiness/commercial-readiness work may or may not resume
+- No platform code changes
+- No schema changes beyond already-completed approved changes
+- No endpoint changes
+
+**Non-Goals:**
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+- ❌ No unrelated issue work
+- ❌ No commercial-readiness work (gate decision produced by this task, not assumed)
+
+**Dependencies:** TASK-76G (Complete)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-76H for full details
 
 ---

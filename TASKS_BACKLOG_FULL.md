@@ -8292,3 +8292,102 @@ This task is limited to **ISSUE-76-003 resolution only** (one-issue-at-a-time pr
 **Reference:** PHASE-76D-CHECKPOINT.md, PHASE-76F-CHECKPOINT.md, PHASE-76A-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### TASK-76H: Full Post-Fix Manual Validation Rerun
+
+**Task ID:** TASK-76H
+**Phase:** 76
+**Stage:** 76H
+**Priority:** 🔴 High
+**Nature:** VALIDATION / DOCUMENTATION (NO CODE)
+**Dependencies:** TASK-76G (Complete)
+**Checkpoint:** `docs/PHASE-76H-CHECKPOINT.md`
+
+**Objective:**
+
+Execute a full rerun of the Phase 76A manual end-to-end app validation plan after completion of all three bounded blocking-issue fixes (TASK-76E, TASK-76F, TASK-76G). Capture evidence across all 9 validation areas, determine overall pass/fail for the current app state, and make an explicit gate decision on whether paused readiness/commercial-readiness work may resume.
+
+**Background:**
+
+Phase 76D post-fix recheck identified three BLOCKING issues: ISSUE-76-004 (frontend degraded), ISSUE-76-002 (DELETE session returns 500), and ISSUE-76-003 (GET checkpoints returns 500). These were resolved in TASK-76E, TASK-76F, and TASK-76G respectively. This task re-executes the full validation plan with all fixes in place to produce a definitive gate decision.
+
+**Scope:**
+
+This task is limited to **validation and documentation only**.
+
+**In Scope:**
+
+1. **Full Manual Validation Execution**
+   - Execute the Phase 76A manual validation plan across all 9 defined areas in recommended order:
+     - Area 9: Runtime metrics & health
+     - Area 1: Public-facing flow
+     - Area 3: Session lifecycle flow
+     - Area 4: Session history/checkpoint flow
+     - Area 6: Quota & rate limiting enforcement
+     - Area 5: Dashboard flow
+     - Area 2: Authenticated workspace
+     - Area 7: Admin visibility (internal endpoints)
+     - Area 8: Responsive & cross-state behavior
+
+2. **Evidence Capture**
+   - Capture evidence per Phase 76A evidence capture requirements (API responses, HTTP status codes, screenshots, console errors)
+   - Store evidence per Phase 76A storage recommendations
+
+3. **Pass/Fail Determination**
+   - Determine pass/fail per step, per area, and overall per Phase 76A criteria
+   - Record overall validation result: PASS, CONDITIONAL PASS, or FAIL
+
+4. **Issue Logging (If Any)**
+   - Log any newly discovered issues using the Phase 76A issue recording format (ISSUE-76-NNN)
+   - Classify severity: BLOCKING, NON-BLOCKING, COSMETIC
+   - Apply one-issue-at-a-time prioritization per Phase 76A prioritization rules if new issues found
+
+5. **Readiness Gate Decision**
+   - Explicitly determine whether the current app is ready to resume paused readiness/commercial-readiness family execution
+   - PASS or CONDITIONAL PASS with no BLOCKING/NON-BLOCKING issues: resume is permitted
+   - FAIL or unresolved BLOCKING/NON-BLOCKING issues: resume remains paused
+
+**Explicitly Out of Scope:**
+
+- ❌ No platform code changes
+- ❌ No schema changes beyond already-completed approved changes
+- ❌ No endpoint changes
+- ❌ No implementation work
+- ❌ No refactors
+- ❌ No broader architectural expansion
+- ❌ No commercial-readiness work (gate decision produced by this task, not assumed)
+
+**Deliverables:**
+
+1. **Validation Output**
+   - Per-area validation results with evidence
+   - Overall pass/fail determination
+   - Issue log (if any new issues found)
+
+2. **Checkpoint**
+   - `docs/PHASE-76H-CHECKPOINT.md`
+   - Full validation results summary, evidence references, gate decision, preserved invariants, out-of-scope confirmation
+
+**Acceptance Criteria:**
+
+- ✅ All 9 validation areas executed per Phase 76A plan
+- ✅ Evidence captured per Phase 76A evidence capture requirements
+- ✅ Per-step, per-area, and overall pass/fail determined
+- ✅ Any newly discovered issues logged and classified per Phase 76A format
+- ✅ Explicit gate decision recorded for resuming commercial-readiness work
+- ✅ No platform code/schema/endpoint changes occurred
+- ✅ Phase 76H checkpoint created
+
+**Preserved Invariants:**
+
+- No platform code changes
+- No schema changes beyond already-completed approved changes
+- No endpoint changes
+- No refactors
+- No broader architectural expansion
+- Validation/documentation-only scope
+- One-issue-at-a-time prioritization preserved if new issues found
+
+**Reference:** PHASE-76A-CHECKPOINT.md, PHASE-76D-CHECKPOINT.md, PHASE-76E-CHECKPOINT.md, PHASE-76F-CHECKPOINT.md, PHASE-76G-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
+
+---
