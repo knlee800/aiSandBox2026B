@@ -7557,3 +7557,93 @@ This task is limited to final consolidation validation for completed Phase 74 ou
 **Reference:** PHASE-74A-CHECKPOINT.md, PHASE-74B-CHECKPOINT.md, PHASE-74C-1-CHECKPOINT.md, PHASE-74C-2-CHECKPOINT.md, PHASE-74C-FINAL-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+## Phase 75: Next Bounded Commercial Family Selection
+
+---
+
+### TASK-75A: Next Bounded Commercial Family Selection
+
+**Task ID:** TASK-75A  
+**Phase:** 75  
+**Stage:** 75A  
+**Priority:** 🟡 Medium  
+**Nature:** DOCUMENTATION / PLANNING (NO CODE)  
+**Dependencies:** TASK-74-FINAL (Complete)  
+**Checkpoint:** `docs/PHASE-75A-CHECKPOINT.md`
+
+**Objective:**
+
+Select the next bounded commercial-foundation family after completion of the Phase 74 non-monetary visibility and usage reporting readiness family, using current governance sources and current PRD/ARCHITECTURE constraints.
+
+**Scope:**
+
+This task is limited to **documentation and planning only**.
+
+**In Scope:**
+
+1. **Deferred Commercial Candidate Review**
+   - Review remaining deferred commercial candidates already implied by current `TASKS.md`, `TASKS_BACKLOG_FULL.md`, and the broader master plan
+   - Limit review to candidates consistent with current governance context and bounded-family selection intent
+
+2. **Allowed Next Bounded Family Determination**
+   - Determine which next bounded commercial family is allowed under current `PRD.md` / `ARCHITECTURE.md` constraints
+   - Keep selection limited to the next immediate bounded commercial family only
+
+3. **Exclusion of Non-Authorized Candidates**
+   - Explicitly exclude commercial candidates that still require broader architectural expansion not currently authorized
+   - Explicitly exclude commercial candidates that still require monetization scope not yet authorized
+
+4. **Immediate Sequencing Recommendation**
+   - Provide a high-level sequencing recommendation for the next immediate bounded commercial family only
+   - Avoid broader roadmap expansion beyond this immediate bounded family selection
+
+5. **Checkpoint**
+   - Create `docs/PHASE-75A-CHECKPOINT.md`
+   - Document reviewed candidates, selected next bounded family, exclusion rationale, sequencing recommendation, and preserved invariants
+
+**Explicitly Out of Scope:**
+
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No implementation work
+- ❌ No refactors
+- ❌ No broader architectural expansion
+- ❌ No monetization expansion beyond currently authorized constraints
+
+**Deliverables:**
+
+1. **Selection Output**
+   - Selected next bounded commercial family under current authority constraints
+   - Deferred-candidate review summary and exclusion rationale
+
+2. **Sequencing Output**
+   - High-level sequencing recommendation for the next immediate bounded commercial family only
+
+3. **Checkpoint**
+   - `docs/PHASE-75A-CHECKPOINT.md`
+   - Planning summary with preserved invariants and explicit out-of-scope confirmation
+
+**Acceptance Criteria:**
+
+- ✅ Remaining deferred commercial candidates reviewed from current governance context and broader master plan
+- ✅ Next bounded commercial family selected under current `PRD.md` / `ARCHITECTURE.md` constraints
+- ✅ Candidates requiring broader architectural expansion or unauthorized monetization scope explicitly excluded
+- ✅ High-level sequencing recommendation documented for next immediate bounded commercial family only
+- ✅ No platform code/schema/endpoint changes occurred
+- ✅ Phase 75A checkpoint created
+
+**Preserved Invariants:**
+
+- No platform code changes
+- No schema changes
+- No endpoint changes
+- No refactors
+- No broader architectural expansion
+- No monetization scope expansion beyond current authority constraints
+- Documentation/planning-only scope
+
+**Reference:** PHASE-74-FINAL-CHECKPOINT.md, PHASE-74A-CHECKPOINT.md, PHASE-74B-CHECKPOINT.md, TASKS.md, TASKS_BACKLOG_FULL.md, AI-SANDBOX-PLATFORM-PLAN (2).md, PRD.md, ARCHITECTURE.md
+
+---

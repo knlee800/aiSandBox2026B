@@ -2236,3 +2236,34 @@ Validate and consolidate completed Phase 74 planning and bounded visibility/repo
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-74-FINAL for full details
 
 ---
+
+### Phase 75: Next Bounded Commercial Family Selection
+
+**Current Stage:** 75A-0
+
+**Active Task:** TASK-75A
+
+#### TASK-75A: Next Bounded Commercial Family Selection
+
+**Status:** PLANNED
+**Nature:** DOCUMENTATION / PLANNING (NO CODE)
+**Checkpoint:** `docs/PHASE-75A-CHECKPOINT.md`
+
+**Objective:**
+Select the next bounded commercial-foundation family after completion of the Phase 74 non-monetary visibility and usage reporting readiness family, under current PRD/ARCHITECTURE constraints.
+
+**Scope:**
+- Review remaining deferred commercial candidates already implied by current governance sources and the broader master plan
+- Determine which next bounded commercial family is allowed under current PRD/ARCHITECTURE constraints
+- Exclude commercial candidates that still require broader architectural expansion or monetization scope not yet authorized
+- Provide a high-level sequencing recommendation for the next immediate bounded commercial family only
+
+**Non-Goals:**
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-75A for full details
+
+---
