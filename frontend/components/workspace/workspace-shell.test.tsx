@@ -103,8 +103,12 @@ function renderWorkspaceShell(
     workspaceFileTree,
     selectedFilePath: 'src/app.ts',
     selectedFileContent: 'console.log("hello");',
+    fileSaveState: 'clean',
+    fileSaveError: null,
     fileSurfaceError: null,
     onSelectWorkspaceFile: async () => {},
+    onEditorContentChange: () => {},
+    onSaveWorkspaceFile: async () => {},
   };
 
   return renderToStaticMarkup(<WorkspaceShell {...defaultProps} {...overrides} />);
@@ -119,6 +123,7 @@ describe('workspace shell component', () => {
     assert.match(html, /Command Input \(Exec Slice\)/);
     assert.match(html, /Editor Panel/);
     assert.match(html, /Editor ready/);
+    assert.match(html, /Editor clean/);
     assert.match(html, /src\/app\.ts/);
     assert.match(html, /console\.log\(&quot;hello&quot;\);/);
     assert.match(html, /Preview Panel/);
@@ -153,6 +158,29 @@ describe('workspace shell component', () => {
     assert.match(html, /Dashboard is loading/);
     assert.match(html, /Editor loading/);
     assert.match(html, /Action: Please wait a moment\./);
+  });
+
+  test('renders distinct editor save states', () => {
+    const dirtyHtml = renderWorkspaceShell({
+      fileSaveState: 'dirty',
+    });
+    const savingHtml = renderWorkspaceShell({
+      fileSaveState: 'saving',
+    });
+    const savedHtml = renderWorkspaceShell({
+      fileSaveState: 'saved',
+    });
+    const saveErrorHtml = renderWorkspaceShell({
+      fileSaveState: 'save-error',
+      fileSaveError: 'Failed to save file changes.',
+    });
+
+    assert.match(dirtyHtml, /Editor dirty/);
+    assert.match(savingHtml, /Saving file/);
+    assert.match(savingHtml, /data-testid="workspace-selected-file-content"[^>]*disabled/);
+    assert.match(savedHtml, /File saved/);
+    assert.match(saveErrorHtml, /Save failed/);
+    assert.match(saveErrorHtml, /Failed to save file changes\./);
   });
 
   test('renders error shell state', () => {

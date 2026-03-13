@@ -26,7 +26,9 @@ import {
   findFirstFilePath,
   loadWorkspaceFileTree,
   readWorkspaceFile,
+  writeWorkspaceFile,
   type WorkspaceFileNode,
+  type WorkspaceFileSaveState,
   type WorkspaceFileSurfaceState,
 } from '@/components/workspace/workspace-file-navigation.logic';
 
@@ -62,9 +64,13 @@ export default function AppPage() {
   const [workspaceFileTree, setWorkspaceFileTree] = useState<WorkspaceFileNode[]>([]);
   const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
   const [selectedFileContent, setSelectedFileContent] = useState('');
+  const [savedFileContent, setSavedFileContent] = useState('');
+  const [fileSaveState, setFileSaveState] = useState<WorkspaceFileSaveState>('clean');
+  const [fileSaveError, setFileSaveError] = useState<string | null>(null);
   const [fileSurfaceError, setFileSurfaceError] = useState<string | null>(null);
   const fileNavigationRequestIdRef = useRef(0);
   const fileContentRequestIdRef = useRef(0);
+  const fileSaveRequestIdRef = useRef(0);
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -351,10 +357,14 @@ export default function AppPage() {
   function resetWorkspaceFileSurface(): void {
     fileNavigationRequestIdRef.current += 1;
     fileContentRequestIdRef.current += 1;
+    fileSaveRequestIdRef.current += 1;
     setFileSurfaceState('empty');
     setWorkspaceFileTree([]);
     setSelectedFilePath(null);
     setSelectedFileContent('');
+    setSavedFileContent('');
+    setFileSaveState('clean');
+    setFileSaveError(null);
     setFileSurfaceError(null);
   }
 
@@ -362,11 +372,15 @@ export default function AppPage() {
     const requestId = fileNavigationRequestIdRef.current + 1;
     fileNavigationRequestIdRef.current = requestId;
     fileContentRequestIdRef.current += 1;
+    fileSaveRequestIdRef.current += 1;
 
     setFileSurfaceState('loading');
     setWorkspaceFileTree([]);
     setSelectedFilePath(null);
     setSelectedFileContent('');
+    setSavedFileContent('');
+    setFileSaveState('clean');
+    setFileSaveError(null);
     setFileSurfaceError(null);
 
     try {
@@ -384,6 +398,9 @@ export default function AppPage() {
         setWorkspaceFileTree(tree);
         setSelectedFilePath(null);
         setSelectedFileContent('');
+        setSavedFileContent('');
+        setFileSaveState('clean');
+        setFileSaveError(null);
         setFileSurfaceState('empty');
         return;
       }
@@ -398,6 +415,9 @@ export default function AppPage() {
       setWorkspaceFileTree([]);
       setSelectedFilePath(null);
       setSelectedFileContent('');
+      setSavedFileContent('');
+      setFileSaveState('clean');
+      setFileSaveError(null);
       setFileSurfaceState('error');
       setFileSurfaceError('Failed to load workspace files.');
     }
@@ -410,10 +430,13 @@ export default function AppPage() {
   ): Promise<void> {
     const requestId = fileContentRequestIdRef.current + 1;
     fileContentRequestIdRef.current = requestId;
+    fileSaveRequestIdRef.current += 1;
 
     setFileSurfaceState('loading');
     setFileSurfaceError(null);
     setSelectedFilePath(filePath);
+    setFileSaveState('clean');
+    setFileSaveError(null);
 
     try {
       const fileResponse = await readWorkspaceFile({
@@ -428,6 +451,9 @@ export default function AppPage() {
 
       setSelectedFilePath(fileResponse.path);
       setSelectedFileContent(fileResponse.content);
+      setSavedFileContent(fileResponse.content);
+      setFileSaveState('clean');
+      setFileSaveError(null);
       setFileSurfaceState('ready');
     } catch (error) {
       console.error('Failed to load workspace file content:', error);
@@ -435,8 +461,60 @@ export default function AppPage() {
         return;
       }
       setSelectedFileContent('');
+      setSavedFileContent('');
+      setFileSaveState('clean');
+      setFileSaveError(null);
       setFileSurfaceState('error');
       setFileSurfaceError('Failed to load selected file content.');
+    }
+  }
+
+  function handleWorkspaceEditorContentChange(nextContent: string): void {
+    setSelectedFileContent(nextContent);
+    setFileSaveError(null);
+    setFileSaveState(nextContent === savedFileContent ? 'clean' : 'dirty');
+  }
+
+  async function handleSaveWorkspaceFile(): Promise<void> {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+
+    if (!selectedSessionId || !selectedFilePath || fileSurfaceState !== 'ready') {
+      setFileSaveState('save-error');
+      setFileSaveError('Cannot save without an active session and selected file.');
+      return;
+    }
+
+    const requestId = fileSaveRequestIdRef.current + 1;
+    fileSaveRequestIdRef.current = requestId;
+    setFileSaveState('saving');
+    setFileSaveError(null);
+
+    try {
+      await writeWorkspaceFile({
+        token,
+        sessionId: selectedSessionId,
+        filePath: selectedFilePath,
+        content: selectedFileContent,
+      });
+
+      if (fileSaveRequestIdRef.current !== requestId) {
+        return;
+      }
+
+      setSavedFileContent(selectedFileContent);
+      setFileSaveState('saved');
+      setFileSaveError(null);
+    } catch (error) {
+      console.error('Failed to save workspace file:', error);
+      if (fileSaveRequestIdRef.current !== requestId) {
+        return;
+      }
+      setFileSaveState('save-error');
+      setFileSaveError('Failed to save file changes.');
     }
   }
 
@@ -451,6 +529,9 @@ export default function AppPage() {
       setFileSurfaceState('empty');
       setSelectedFilePath(null);
       setSelectedFileContent('');
+      setSavedFileContent('');
+      setFileSaveState('clean');
+      setFileSaveError(null);
       setFileSurfaceError(null);
       return;
     }
@@ -567,8 +648,12 @@ export default function AppPage() {
       workspaceFileTree={workspaceFileTree}
       selectedFilePath={selectedFilePath}
       selectedFileContent={selectedFileContent}
+      fileSaveState={fileSaveState}
+      fileSaveError={fileSaveError}
       fileSurfaceError={fileSurfaceError}
       onSelectWorkspaceFile={handleSelectWorkspaceFile}
+      onEditorContentChange={handleWorkspaceEditorContentChange}
+      onSaveWorkspaceFile={handleSaveWorkspaceFile}
     />
   );
 }

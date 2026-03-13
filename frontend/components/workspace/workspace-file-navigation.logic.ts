@@ -20,6 +20,8 @@ export interface WorkspaceReadFileResponse {
   content: string;
 }
 
+export type WorkspaceFileSaveState = 'clean' | 'dirty' | 'saving' | 'saved' | 'save-error';
+
 interface SessionFileRequestArgs {
   token: string;
   sessionId: string;
@@ -67,6 +69,27 @@ export async function readWorkspaceFile(
   }
 
   return (await response.json()) as WorkspaceReadFileResponse;
+}
+
+export async function writeWorkspaceFile(
+  args: SessionFileRequestArgs & { filePath: string; content: string },
+): Promise<void> {
+  const fetchImpl = args.fetchImpl ?? fetch;
+  const response = await fetchImpl(`/api/files/${encodeURIComponent(args.sessionId)}/write`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${args.token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      path: args.filePath,
+      content: args.content,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`File write failed (${response.status})`);
+  }
 }
 
 export async function loadWorkspaceFileTree(

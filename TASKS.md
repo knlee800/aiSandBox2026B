@@ -2865,3 +2865,59 @@ Validate and consolidate completed Phase 79 slices (`TASK-79A`, `TASK-79B`) and 
 - ✅ Final checkpoint created: `docs/PHASE-79-FINAL-CHECKPOINT.md`
 
 ---
+
+### Phase 80: Core Editor Save Slice
+
+**Current Stage:** 80A-COMPLETE
+
+**Active Task:** TASK-80A (COMPLETE and LOCKED)
+
+#### TASK-80A: Core Editor Save Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-80A-CHECKPOINT.md`
+
+**Objective:**
+Make the workspace editor meaningfully usable for actual code changes by wiring the existing editor surface to already-available file write capability, so the user can edit the active file and save it from the main workspace.
+
+**Scope:**
+- Reuse the existing active-session file-navigation/editor surface from TASK-79B
+- Allow editing of the currently selected file content inside the existing editor area
+- Add save action for the active file using already-available file write capability only
+- Add localized save-related UI states: clean, dirty, saving, saved, save-error
+- Keep editing/saving strictly tied to the active session and selected file only
+- Preserve session-switch safety and stale-request guards
+- Keep integration localized to the existing workspace shell/editor panel
+- Frontend-only changes — additive only
+- Focused frontend tests for this slice
+- Slice-specific checkpoint output
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No create/delete/rename/upload in this task
+- ❌ No diff viewer in this task
+- ❌ No autosave in this task
+- ❌ No collaborative editing
+- ❌ No terminal/streaming work
+- ❌ No broader workspace redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Dependencies:** Phase 79 (Complete and Closed), TASK-79B (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-80A for full details
+
+**Completion Summary:**
+- ✅ Editor content made editable in existing editor area
+- ✅ Save action wired to existing `POST /api/files/:sessionId/write` capability only
+- ✅ Five distinct save states rendered: clean, dirty, saving, saved, save-error
+- ✅ Session-switch and file-change safety preserved; stale-request guards in place
+- ✅ No backend, schema, endpoint, refactor, or polling changes
+- ✅ 51/51 frontend tests pass; 0 regressions
+- ✅ Checkpoint created: `docs/PHASE-80A-CHECKPOINT.md`
+
+---

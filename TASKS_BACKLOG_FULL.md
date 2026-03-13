@@ -9191,3 +9191,101 @@ Validate and consolidate completed Phase 79 slices (`TASK-79A`, `TASK-79B`) and 
 **Reference:** PHASE-79A-CHECKPOINT.md, PHASE-79B-CHECKPOINT.md, PHASE-78-FINAL-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+## Phase 80: Core Editor Save Slice
+
+---
+
+### TASK-80A: Core Editor Save Slice
+
+**Task ID:** TASK-80A
+**Phase:** 80
+**Stage:** 80A
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** Phase 79 (Complete and Closed), TASK-79B (Complete and Locked)
+**Checkpoint:** `docs/PHASE-80A-CHECKPOINT.md`
+
+**Objective:**
+
+Make the workspace editor meaningfully usable for actual code changes by wiring the existing editor surface to already-available file write capability, so the user can edit the active file and save it from the main workspace.
+
+**Scope:**
+
+1. **Editor Content Editing**
+   - Reuse the existing active-session file-navigation/editor surface from TASK-79B
+   - Allow editing of the currently selected file content inside the existing editor area
+   - Track in-memory edits separately from the last-loaded file content
+
+2. **Save Action**
+   - Add save action for the active file using already-available file write capability only (`POST /api/files/:sessionId/write` or equivalent existing endpoint)
+   - Save must target the active session and currently selected file only
+   - Preserve stale-request guards for in-flight save requests
+
+3. **Save-Related UI States**
+   - `clean` — loaded content matches saved content; no pending changes
+   - `dirty` — in-memory edits differ from last-saved content
+   - `saving` — save request in flight; save action disabled
+   - `saved` — save confirmed by backend response
+   - `save-error` — save request failed; distinct error messaging
+
+4. **Session-Switch Safety**
+   - On active session change: reset editor content, discard unsaved edits, clear save state
+   - Stale-request guards prevent in-flight responses from old sessions overwriting current state
+
+5. **Integration Boundary**
+   - Keep integration localized to the existing workspace shell and editor panel only
+   - No broader workspace redesign
+
+6. **Tests and Checkpoint**
+   - Focused frontend tests for this slice
+   - Slice-specific checkpoint output at `docs/PHASE-80A-CHECKPOINT.md`
+
+**Explicitly Out of Scope:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No file create/delete/rename/upload in this task
+- ❌ No diff viewer in this task
+- ❌ No autosave in this task
+- ❌ No collaborative editing
+- ❌ No terminal/streaming work
+- ❌ No broader workspace redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Deliverables:**
+
+1. Editable file content surface wired to existing editor area
+2. Save action wired to existing file write capability for active session/file only
+3. Five distinct save-related UI states rendered (clean, dirty, saving, saved, save-error)
+4. Session-switch safety preserved
+5. Focused frontend tests passing
+6. Checkpoint: `docs/PHASE-80A-CHECKPOINT.md`
+
+**Acceptance Criteria:**
+
+- User can modify the selected file content in the existing editor area
+- User can save the active file using existing file capability only
+- Editor shows distinct clean / dirty / saving / saved / save-error states
+- Editing/saving remains tied to the active session and selected file only
+- Session switch correctly resets or isolates file editing state
+- No backend changes occurred
+- No schema changes occurred
+- No refactors occurred
+- No regressions in workspace shell, session sidebar, exec interaction, preview panel, file navigation, or history/control surfaces
+
+**Preserved Invariants:**
+
+- Frontend-only implementation
+- Additive-only changes
+- Request-driven behavior only (user-triggered save; no autosave/timers)
+- Editing/saving scoped to active session and selected file only
+- PRD.md and ARCHITECTURE.md remain higher authority
+
+**Reference:** TASKS.md, PRD.md §3C (File System Operations), ARCHITECTURE.md §8 (API Design), PHASE-79B-CHECKPOINT.md, PHASE-79-FINAL-CHECKPOINT.md
+
+---

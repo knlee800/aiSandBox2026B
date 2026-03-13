@@ -5,6 +5,7 @@ import {
   listWorkspaceDirectory,
   loadWorkspaceFileTree,
   readWorkspaceFile,
+  writeWorkspaceFile,
   type WorkspaceFileEntry,
   type WorkspaceFileNode,
 } from './workspace-file-navigation.logic';
@@ -67,6 +68,36 @@ describe('workspace file navigation logic', () => {
     assert.equal(fetchCalls[0].init?.body, JSON.stringify({ path: 'src/app.ts' }));
     assert.equal(result.path, 'src/app.ts');
     assert.equal(result.content, 'console.log("ok");');
+  });
+
+  test('writes selected file content using existing session-scoped file endpoint', async () => {
+    const fetchCalls: Array<{ url: string; init?: RequestInit }> = [];
+    const fakeFetch = async (url: string | URL, init?: RequestInit) => {
+      fetchCalls.push({ url: String(url), init });
+      return {
+        ok: true,
+      } as Response;
+    };
+
+    await writeWorkspaceFile({
+      token: 'token-789',
+      sessionId: 'session-789',
+      filePath: 'src/app.ts',
+      content: 'console.log("saved");',
+      fetchImpl: fakeFetch as typeof fetch,
+    });
+
+    assert.equal(fetchCalls.length, 1);
+    assert.equal(fetchCalls[0].url, '/api/files/session-789/write');
+    assert.equal(fetchCalls[0].init?.method, 'POST');
+    assert.equal(
+      (fetchCalls[0].init?.headers as Record<string, string>)['Content-Type'],
+      'application/json',
+    );
+    assert.equal(
+      fetchCalls[0].init?.body,
+      JSON.stringify({ path: 'src/app.ts', content: 'console.log("saved");' }),
+    );
   });
 
   test('builds recursive file tree and returns first file path deterministically', async () => {

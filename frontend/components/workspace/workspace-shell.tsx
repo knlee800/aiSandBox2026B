@@ -16,6 +16,7 @@ import {
 import type { WorkspaceExecState } from './workspace-exec.logic';
 import type { WorkspacePreviewState } from './workspace-preview.logic';
 import type {
+  WorkspaceFileSaveState,
   WorkspaceFileNode,
   WorkspaceFileSurfaceState,
 } from './workspace-file-navigation.logic';
@@ -50,8 +51,12 @@ interface WorkspaceShellProps {
   workspaceFileTree: WorkspaceFileNode[];
   selectedFilePath: string | null;
   selectedFileContent: string;
+  fileSaveState: WorkspaceFileSaveState;
+  fileSaveError: string | null;
   fileSurfaceError: string | null;
   onSelectWorkspaceFile: (filePath: string) => Promise<void>;
+  onEditorContentChange: (content: string) => void;
+  onSaveWorkspaceFile: () => Promise<void>;
 }
 
 export default function WorkspaceShell(props: WorkspaceShellProps) {
@@ -153,8 +158,12 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                 fileTree={props.workspaceFileTree}
                 selectedFilePath={props.selectedFilePath}
                 selectedFileContent={props.selectedFileContent}
+                saveState={props.fileSaveState}
+                saveErrorMessage={props.fileSaveError}
                 errorMessage={props.fileSurfaceError}
                 onSelectFile={props.onSelectWorkspaceFile}
+                onEditorContentChange={props.onEditorContentChange}
+                onSaveFile={props.onSaveWorkspaceFile}
               />
             </section>
             <section className="bg-white border border-gray-200 rounded p-3" data-testid="preview-panel-shell">
@@ -295,9 +304,15 @@ function WorkspaceEditorPanel(props: {
   fileTree: WorkspaceFileNode[];
   selectedFilePath: string | null;
   selectedFileContent: string;
+  saveState: WorkspaceFileSaveState;
+  saveErrorMessage: string | null;
   errorMessage: string | null;
   onSelectFile: (filePath: string) => Promise<void>;
+  onEditorContentChange: (content: string) => void;
+  onSaveFile: () => Promise<void>;
 }) {
+  const canSave = props.saveState === 'dirty' || props.saveState === 'save-error';
+
   return (
     <div className="rounded border border-gray-200 bg-gray-50 p-2" data-testid="workspace-editor-panel">
       <EditorStateMessage state={props.state} errorMessage={props.errorMessage} />
@@ -318,17 +333,97 @@ function WorkspaceEditorPanel(props: {
             </ul>
           </div>
           <div className="rounded border border-gray-200 bg-white p-2">
-            <p className="text-[11px] font-semibold text-gray-700">File Content</p>
-            <p className="mt-1 truncate font-mono text-[11px] text-gray-500" data-testid="workspace-selected-file-path">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-[11px] font-semibold text-gray-700">File Content</p>
+              <button
+                type="button"
+                data-testid="workspace-save-file"
+                disabled={!canSave || props.saveState === 'saving'}
+                onClick={() => void props.onSaveFile()}
+                className="rounded bg-blue-600 px-3 py-1 text-xs text-white disabled:bg-blue-300"
+              >
+                {props.saveState === 'saving' ? 'Saving...' : 'Save'}
+              </button>
+            </div>
+            <p
+              className="mt-1 truncate font-mono text-[11px] text-gray-500"
+              data-testid="workspace-selected-file-path"
+            >
               {props.selectedFilePath ?? '(no file selected)'}
             </p>
-            <pre className="mt-2 h-56 overflow-auto rounded border border-gray-200 bg-gray-50 p-2 text-[11px] text-gray-800" data-testid="workspace-selected-file-content">
-              {props.selectedFileContent || '(empty file)'}
-            </pre>
+            <div className="mt-2" data-testid="workspace-editor-save-state">
+              <EditorSaveStateMessage state={props.saveState} errorMessage={props.saveErrorMessage} />
+            </div>
+            <textarea
+              data-testid="workspace-selected-file-content"
+              value={props.selectedFileContent}
+              onChange={(event) => props.onEditorContentChange(event.target.value)}
+              disabled={props.saveState === 'saving'}
+              className="mt-2 h-56 w-full resize-none overflow-auto rounded border border-gray-200 bg-gray-50 p-2 font-mono text-[11px] text-gray-800 disabled:bg-gray-100 disabled:text-gray-500"
+              spellCheck={false}
+            />
           </div>
         </div>
       ) : null}
     </div>
+  );
+}
+
+function EditorSaveStateMessage(props: {
+  state: WorkspaceFileSaveState;
+  errorMessage: string | null;
+}) {
+  if (props.state === 'clean') {
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="Editor clean"
+        body="No unsaved file changes."
+        action="Edit content to create pending changes."
+      />
+    );
+  }
+
+  if (props.state === 'dirty') {
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="Editor dirty"
+        body="Unsaved changes are present for this file."
+        action="Choose Save to write changes."
+      />
+    );
+  }
+
+  if (props.state === 'saving') {
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="Saving file"
+        body="Save request is in flight for this file."
+        action="Wait for save to complete."
+      />
+    );
+  }
+
+  if (props.state === 'saved') {
+    return (
+      <StateMessage
+        tone="success"
+        heading="File saved"
+        body="File changes were saved successfully."
+        action="Continue editing or select another file."
+      />
+    );
+  }
+
+  return (
+    <StateMessage
+      tone="error"
+      heading="Save failed"
+      body={props.errorMessage ?? 'File save request failed.'}
+      action="Retry save for this file."
+    />
   );
 }
 
