@@ -9289,3 +9289,94 @@ Make the workspace editor meaningfully usable for actual code changes by wiring 
 **Reference:** TASKS.md, PRD.md §3C (File System Operations), ARCHITECTURE.md §8 (API Design), PHASE-79B-CHECKPOINT.md, PHASE-79-FINAL-CHECKPOINT.md
 
 ---
+
+### TASK-80B: Core Manual Checkpoint Slice
+
+**Task ID:** TASK-80B
+**Phase:** 80
+**Stage:** 80B
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** Phase 78 (Complete and Closed), Phase 79 (Complete and Closed), TASK-80A (Complete and Locked), TASK-68D (Complete)
+**Checkpoint:** `docs/PHASE-80B-CHECKPOINT.md`
+
+**Objective:**
+
+Make workspace version-control usability meaningfully better by wiring the existing history/control surface to already-available checkpoint creation capability, so the user can create a manual checkpoint ("Save Point") for the active session from the main workspace.
+
+**Scope:**
+
+1. **Manual Checkpoint Creation Action**
+   - Reuse the existing history/control surface from TASK-68D and existing active-session wiring
+   - Add a manual checkpoint creation action for the active session only using already-available checkpoint capability
+   - Support optional short description input if already supported by the existing checkpoint capability; otherwise use the minimal request shape already supported
+
+2. **Post-Creation Refresh**
+   - Refresh the checkpoint list after successful manual checkpoint creation using existing checkpoint fetch patterns
+   - New checkpoint must appear in the list without requiring a full page reload
+
+3. **Checkpoint-Creation UI States**
+   - `idle` — no creation in progress; creation action available
+   - `creating` — creation request in flight; action disabled
+   - `created` — creation confirmed by backend response
+   - `create-error` — creation request failed; distinct error messaging
+
+4. **Session Scoping**
+   - Checkpoint creation strictly tied to the active session only
+   - No cross-session state leakage
+
+5. **Integration Boundary**
+   - Keep integration localized to the existing workspace shell and history/control surface only
+   - No broader workspace redesign
+
+6. **Tests and Checkpoint**
+   - Focused frontend tests for this slice
+   - Slice-specific checkpoint output at `docs/PHASE-80B-CHECKPOINT.md`
+
+**Explicitly Out of Scope:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No diff viewer in this task
+- ❌ No revert flow in this task
+- ❌ No branching/star/filter/search in this task
+- ❌ No autosave checkpointing
+- ❌ No polling/websocket behavior
+- ❌ No broader workspace redesign
+- ❌ No multi-task work
+
+**Deliverables:**
+
+1. Manual checkpoint creation action wired to existing history/control surface
+2. Optional short description input surfaced where already supported by existing capability
+3. Checkpoint list refreshed after successful creation using existing fetch patterns
+4. Four distinct checkpoint-creation UI states rendered (idle, creating, created, create-error)
+5. Active-session scoping preserved
+6. Focused frontend tests passing
+7. Checkpoint: `docs/PHASE-80B-CHECKPOINT.md`
+
+**Acceptance Criteria:**
+
+- User can trigger manual checkpoint creation from the existing workspace/history-control surface
+- Manual checkpoint creation is scoped to the active session only
+- Checkpoint list refreshes after successful creation and shows the new checkpoint
+- UI shows distinct idle / creating / created / create-error states
+- No backend changes occurred
+- No schema changes occurred
+- No refactors occurred
+- No regressions in workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, or existing history/control surfaces
+
+**Preserved Invariants:**
+
+- Frontend-only implementation
+- Additive-only changes
+- Request-driven behavior only (user-triggered creation; no autosave/timers)
+- Checkpoint creation scoped to active session only
+- PRD.md and ARCHITECTURE.md remain higher authority
+
+**Reference:** TASKS.md, PRD.md §3D (Version Control / Checkpoints), ARCHITECTURE.md §8 (API Design), PHASE-80A-CHECKPOINT.md, PHASE-68D-CHECKPOINT.md (or equivalent history/control checkpoint)
+
+---

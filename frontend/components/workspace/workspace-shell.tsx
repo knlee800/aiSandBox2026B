@@ -20,6 +20,7 @@ import type {
   WorkspaceFileNode,
   WorkspaceFileSurfaceState,
 } from './workspace-file-navigation.logic';
+import type { WorkspaceCheckpointCreateState } from './workspace-checkpoint-create.logic';
 
 interface WorkspaceShellProps {
   sessions: WorkspaceShellSession[];
@@ -33,6 +34,11 @@ interface WorkspaceShellProps {
   checkpoints: WorkspaceCheckpoint[];
   isLoadingHistory: boolean;
   historyError: string | null;
+  checkpointCreateState: WorkspaceCheckpointCreateState;
+  checkpointCreateError: string | null;
+  checkpointDescriptionInput: string;
+  onCheckpointDescriptionChange: (value: string) => void;
+  onCreateManualCheckpoint: () => Promise<void>;
   userSummary: WorkspaceUserSummary | null;
   usageSummary: WorkspaceUsageSummary | null;
   quotaSummary: WorkspaceQuotaSummary | null;
@@ -181,6 +187,14 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
           <section className="mx-2 mb-2 bg-white border border-gray-200 rounded p-3" data-testid="history-control-slice">
             <p className="text-xs font-semibold text-gray-700 mb-2">History / Control (Slice 1)</p>
             <HistorySliceMessage state={historyState} />
+            <HistoryCreateCheckpointPanel
+              selectedSessionId={props.selectedSessionId}
+              createState={props.checkpointCreateState}
+              createErrorMessage={props.checkpointCreateError}
+              descriptionValue={props.checkpointDescriptionInput}
+              onDescriptionChange={props.onCheckpointDescriptionChange}
+              onCreateCheckpoint={props.onCreateManualCheckpoint}
+            />
             {historyState === 'ready' ? <HistoryCheckpointList checkpoints={props.checkpoints} /> : null}
           </section>
           <section className="mx-2 mb-2 bg-white border border-gray-200 rounded p-3" data-testid="dashboard-slice">
@@ -736,6 +750,104 @@ function HistorySliceMessage({ state }: { state: 'loading' | 'error' | 'empty' |
       heading="History ready"
       body="Checkpoint history loaded."
       action="Choose a checkpoint to inspect details."
+    />
+  );
+}
+
+function HistoryCreateCheckpointPanel(props: {
+  selectedSessionId: string | null;
+  createState: WorkspaceCheckpointCreateState;
+  createErrorMessage: string | null;
+  descriptionValue: string;
+  onDescriptionChange: (value: string) => void;
+  onCreateCheckpoint: () => Promise<void>;
+}) {
+  const isCreating = props.createState === 'creating';
+  const canCreate = Boolean(props.selectedSessionId) && !isCreating;
+
+  return (
+    <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="history-create-checkpoint">
+      <p className="text-[11px] font-semibold text-gray-700">Save Point</p>
+      <div className="mt-2 flex gap-2">
+        <input
+          type="text"
+          data-testid="history-checkpoint-description-input"
+          value={props.descriptionValue}
+          onChange={(event) => props.onDescriptionChange(event.target.value)}
+          placeholder="Optional short description"
+          maxLength={120}
+          disabled={isCreating || !props.selectedSessionId}
+          className="flex-1 rounded border border-gray-300 px-2 py-1 text-xs disabled:bg-gray-100 disabled:text-gray-500"
+        />
+        <button
+          type="button"
+          data-testid="history-create-checkpoint-button"
+          disabled={!canCreate}
+          onClick={() => void props.onCreateCheckpoint()}
+          className="rounded bg-blue-600 px-3 py-1 text-xs text-white disabled:bg-blue-300"
+        >
+          {isCreating ? 'Creating...' : 'Save Point'}
+        </button>
+      </div>
+      <div className="mt-2">
+        <HistoryCreateStateMessage
+          state={props.createState}
+          errorMessage={props.createErrorMessage}
+          hasSelectedSession={Boolean(props.selectedSessionId)}
+        />
+      </div>
+    </div>
+  );
+}
+
+function HistoryCreateStateMessage(props: {
+  state: WorkspaceCheckpointCreateState;
+  errorMessage: string | null;
+  hasSelectedSession: boolean;
+}) {
+  if (props.state === 'idle') {
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="Save point idle"
+        body={
+          props.hasSelectedSession
+            ? 'Create a manual checkpoint for the active session.'
+            : 'Select an active session to create a save point.'
+        }
+        action="Optionally add a short description, then choose Save Point."
+      />
+    );
+  }
+
+  if (props.state === 'creating') {
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="Creating save point"
+        body="Checkpoint creation request is in flight for the active session."
+        action="Wait for completion."
+      />
+    );
+  }
+
+  if (props.state === 'created') {
+    return (
+      <StateMessage
+        tone="success"
+        heading="Save point created"
+        body="Manual checkpoint created successfully."
+        action="History list is refreshed for this session."
+      />
+    );
+  }
+
+  return (
+    <StateMessage
+      tone="error"
+      heading="Save point failed"
+      body={props.errorMessage ?? 'Manual checkpoint creation failed.'}
+      action="Retry Save Point for the active session."
     />
   );
 }

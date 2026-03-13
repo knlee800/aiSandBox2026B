@@ -2866,11 +2866,11 @@ Validate and consolidate completed Phase 79 slices (`TASK-79A`, `TASK-79B`) and 
 
 ---
 
-### Phase 80: Core Editor Save Slice
+### Phase 80: Core Manual Workspace Slices
 
-**Current Stage:** 80A-COMPLETE
+**Current Stage:** 80A-COMPLETE → 80B-PLANNED
 
-**Active Task:** TASK-80A (COMPLETE and LOCKED)
+**Active Task:** TASK-80B
 
 #### TASK-80A: Core Editor Save Slice
 
@@ -2919,5 +2919,45 @@ Make the workspace editor meaningfully usable for actual code changes by wiring 
 - ✅ No backend, schema, endpoint, refactor, or polling changes
 - ✅ 51/51 frontend tests pass; 0 regressions
 - ✅ Checkpoint created: `docs/PHASE-80A-CHECKPOINT.md`
+
+---
+
+#### TASK-80B: Core Manual Checkpoint Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-80B-CHECKPOINT.md`
+
+**Objective:**
+Make workspace version-control usability meaningfully better by wiring the existing history/control surface to already-available checkpoint creation capability, so the user can create a manual checkpoint ("Save Point") for the active session from the main workspace.
+
+**Scope:**
+- Reuse the existing history/control surface from TASK-68D and existing active-session wiring
+- Add manual checkpoint creation action for the active session only using already-available checkpoint capability
+- Support optional short description input if already supported by the existing checkpoint capability; otherwise use minimal request shape already supported
+- Refresh the checkpoint list after successful manual checkpoint creation using existing checkpoint fetch patterns
+- Add localized checkpoint-creation UI states: idle, creating, created, create-error
+- Keep checkpoint creation strictly tied to the active session only
+- Keep integration localized to the existing workspace shell and history/control surface
+- Frontend-only changes — additive only
+- Focused frontend tests for this slice
+- Slice-specific checkpoint output
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No diff viewer in this task
+- ❌ No revert flow in this task
+- ❌ No branching/star/filter/search in this task
+- ❌ No autosave checkpointing
+- ❌ No polling/websocket behavior
+- ❌ No broader workspace redesign
+- ❌ No multi-task work
+
+**Dependencies:** Phase 78 (Complete and Closed), Phase 79 (Complete and Closed), TASK-80A (Complete and Locked), TASK-68D (Complete)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-80B for full details
 
 ---

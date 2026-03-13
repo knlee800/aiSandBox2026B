@@ -85,6 +85,11 @@ function renderWorkspaceShell(
     checkpoints: [checkpoint],
     isLoadingHistory: false,
     historyError: null,
+    checkpointCreateState: 'idle',
+    checkpointCreateError: null,
+    checkpointDescriptionInput: '',
+    onCheckpointDescriptionChange: () => {},
+    onCreateManualCheckpoint: async () => {},
     userSummary,
     usageSummary,
     quotaSummary,
@@ -221,6 +226,7 @@ describe('workspace shell component', () => {
     });
 
     assert.match(html, /No checkpoints yet/);
+    assert.match(html, /Save point idle/);
     assert.match(html, /No dashboard data yet/);
     assert.match(html, /No file available/);
     assert.match(html, /Action: Create or select a session, then retry\./);
@@ -282,6 +288,33 @@ describe('workspace shell component', () => {
     assert.ok(!html.includes('Diff'));
     assert.ok(!html.includes('Revert'));
     assert.ok(!html.includes('Export Data'));
+  });
+
+  test('renders distinct manual checkpoint create states', () => {
+    const idleHtml = renderWorkspaceShell({
+      checkpointCreateState: 'idle',
+      selectedSessionId: session.id,
+    });
+    const creatingHtml = renderWorkspaceShell({
+      checkpointCreateState: 'creating',
+      selectedSessionId: session.id,
+    });
+    const createdHtml = renderWorkspaceShell({
+      checkpointCreateState: 'created',
+      selectedSessionId: session.id,
+    });
+    const createErrorHtml = renderWorkspaceShell({
+      checkpointCreateState: 'create-error',
+      checkpointCreateError: 'Failed to create save point.',
+      selectedSessionId: session.id,
+    });
+
+    assert.match(idleHtml, /Save point idle/);
+    assert.match(creatingHtml, /Creating save point/);
+    assert.match(creatingHtml, /Creating\.\.\./);
+    assert.match(createdHtml, /Save point created/);
+    assert.match(createErrorHtml, /Save point failed/);
+    assert.match(createErrorHtml, /Failed to create save point\./);
   });
 
   test('renders successful exec result with stdout, stderr, and success status', () => {

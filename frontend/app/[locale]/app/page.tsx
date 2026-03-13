@@ -17,6 +17,10 @@ import {
 import { refreshPostExecSurfaces } from '@/components/workspace/workspace-post-exec.logic';
 import { areCheckpointListsEqual } from '@/components/workspace/workspace-shell.logic';
 import {
+  createWorkspaceCheckpoint,
+  type WorkspaceCheckpointCreateState,
+} from '@/components/workspace/workspace-checkpoint-create.logic';
+import {
   buildPreviewProxyUrl,
   isPreviewRunning,
   type WorkspacePreviewStatusResponse,
@@ -47,6 +51,10 @@ export default function AppPage() {
   const [checkpoints, setCheckpoints] = useState<WorkspaceCheckpoint[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [historyError, setHistoryError] = useState<string | null>(null);
+  const [checkpointCreateState, setCheckpointCreateState] =
+    useState<WorkspaceCheckpointCreateState>('idle');
+  const [checkpointCreateError, setCheckpointCreateError] = useState<string | null>(null);
+  const [checkpointDescriptionInput, setCheckpointDescriptionInput] = useState('');
   const [userSummary, setUserSummary] = useState<WorkspaceUserSummary | null>(null);
   const [usageSummary, setUsageSummary] = useState<WorkspaceUsageSummary | null>(null);
   const [quotaSummary, setQuotaSummary] = useState<WorkspaceQuotaSummary | null>(null);
@@ -71,6 +79,7 @@ export default function AppPage() {
   const fileNavigationRequestIdRef = useRef(0);
   const fileContentRequestIdRef = useRef(0);
   const fileSaveRequestIdRef = useRef(0);
+  const checkpointCreateRequestIdRef = useRef(0);
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -92,6 +101,11 @@ export default function AppPage() {
     if (!token) {
       return;
     }
+
+    checkpointCreateRequestIdRef.current += 1;
+    setCheckpointCreateState('idle');
+    setCheckpointCreateError(null);
+    setCheckpointDescriptionInput('');
 
     if (!selectedSessionId) {
       setCheckpoints([]);
@@ -231,6 +245,61 @@ export default function AppPage() {
       setCheckpoints([]);
     } finally {
       setIsLoadingHistory(false);
+    }
+  }
+
+  function handleCheckpointDescriptionChange(value: string): void {
+    setCheckpointDescriptionInput(value);
+    setCheckpointCreateError(null);
+    setCheckpointCreateState('idle');
+  }
+
+  async function handleCreateManualCheckpoint(): Promise<void> {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+
+    if (!selectedSessionId || !userId) {
+      setCheckpointCreateState('create-error');
+      setCheckpointCreateError('Cannot create a save point without an active session.');
+      return;
+    }
+
+    const selectedSession = sessions.find((session) => session.id === selectedSessionId);
+    if (!selectedSession || selectedSession.terminatedAt) {
+      setCheckpointCreateState('create-error');
+      setCheckpointCreateError('Cannot create a save point for a terminated session.');
+      return;
+    }
+
+    const requestId = checkpointCreateRequestIdRef.current + 1;
+    checkpointCreateRequestIdRef.current = requestId;
+    setCheckpointCreateState('creating');
+    setCheckpointCreateError(null);
+
+    try {
+      await createWorkspaceCheckpoint({
+        token,
+        sessionId: selectedSessionId,
+        userId,
+        description: checkpointDescriptionInput,
+      });
+
+      if (checkpointCreateRequestIdRef.current !== requestId) {
+        return;
+      }
+
+      setCheckpointCreateState('created');
+      await loadCheckpoints(token, selectedSessionId);
+    } catch (error) {
+      console.error('Failed to create manual checkpoint:', error);
+      if (checkpointCreateRequestIdRef.current !== requestId) {
+        return;
+      }
+      setCheckpointCreateState('create-error');
+      setCheckpointCreateError('Failed to create save point.');
     }
   }
 
@@ -630,6 +699,11 @@ export default function AppPage() {
       checkpoints={checkpoints}
       isLoadingHistory={isLoadingHistory}
       historyError={historyError}
+      checkpointCreateState={checkpointCreateState}
+      checkpointCreateError={checkpointCreateError}
+      checkpointDescriptionInput={checkpointDescriptionInput}
+      onCheckpointDescriptionChange={handleCheckpointDescriptionChange}
+      onCreateManualCheckpoint={handleCreateManualCheckpoint}
       userSummary={userSummary}
       usageSummary={usageSummary}
       quotaSummary={quotaSummary}
