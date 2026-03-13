@@ -8574,3 +8574,69 @@ This task is limited to **ISSUE-76-005 resolution only** (one-issue-at-a-time pr
 **Reference:** PHASE-76H-CHECKPOINT.md (ISSUE-76-005), PHASE-76F-CHECKPOINT.md (Section 9), PHASE-76-FINAL-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### TASK-77-FINAL: Phase 77 Final Consolidation
+
+**Task ID:** TASK-77-FINAL
+**Phase:** 77
+**Stage:** 77-FINAL
+**Priority:** 🟢 Low
+**Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)
+**Dependencies:** TASK-77A (Complete)
+**Checkpoint:** `docs/PHASE-77-FINAL-CHECKPOINT.md`
+
+**Objective:**
+
+Validate and consolidate completed Phase 77 bounded fix outputs (`TASK-77A`) and close Phase 77 with a final checkpoint.
+
+**Scope:**
+
+1. **Consolidation of TASK-77A**
+   - Confirm TASK-77A is complete and checkpoint evidence exists at `docs/PHASE-77A-CHECKPOINT.md`
+   - Confirm ISSUE-76-005 root cause was correctly diagnosed (missing `POST /api/sessions/:id/exec` route in API Gateway `SessionController`)
+   - Confirm the chosen fix path (Option A: implement missing route) was correct per PRD/ARCHITECTURE authority
+
+2. **Contract Correctness Confirmation**
+   - Confirm `POST /api/sessions/:id/exec` now matches the intended public API contract per PRD Section 3B and ARCHITECTURE Section 8
+   - Confirm JWT authentication, ownership enforcement, and HTTP 410 termination semantics are preserved
+   - Confirm no unauthorized scope expansion beyond ISSUE-76-005
+
+3. **Scope Integrity Confirmation**
+   - Confirm no schema changes occurred
+   - Confirm no refactors occurred outside the minimum required for the fix
+   - Confirm no commercial-readiness or unrelated work was introduced
+   - Confirm one-issue-at-a-time model was respected
+
+4. **Final Checkpoint**
+   - Create `docs/PHASE-77-FINAL-CHECKPOINT.md`
+
+**Explicitly Out of Scope:**
+
+- ❌ No new implementation
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+
+**Deliverables:**
+
+1. **Final Checkpoint**
+   - `docs/PHASE-77-FINAL-CHECKPOINT.md`
+
+**Acceptance Criteria:**
+
+- ✅ TASK-77A consolidated and confirmed complete
+- ✅ ISSUE-76-005 resolution confirmed correct per PRD/ARCHITECTURE authority
+- ✅ `POST /api/sessions/:id/exec` public API contract confirmed
+- ✅ Scope integrity confirmed (no schema changes, no unauthorized expansion)
+- ✅ Final checkpoint created
+
+**Preserved Invariants:**
+
+- Documentation/validation-only scope for this final consolidation task
+- No new implementation
+- PRD.md and ARCHITECTURE.md remain higher authority
+
+**Reference:** PHASE-77A-CHECKPOINT.md, PHASE-76-FINAL-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
+
+---

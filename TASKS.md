@@ -2549,13 +2549,13 @@ Validate and consolidate completed Phase 76 manual-validation planning, executio
 
 ### Phase 77: Resolve ISSUE-76-005 — Exec Route Gap
 
-**Current Stage:** 77A-0
+**Current Stage:** 77-FINAL-COMPLETE
 
-**Active Task:** TASK-77A
+**Active Task:** TASK-77-FINAL (COMPLETE and LOCKED)
 
 #### TASK-77A: Resolve ISSUE-76-005 — POST /api/sessions/:id/exec Route Gap
 
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (MINIMAL, TARGETED FIX)
 **Checkpoint:** `docs/PHASE-77A-CHECKPOINT.md`
 
@@ -2580,5 +2580,39 @@ Resolve ISSUE-76-005 identified during Phase 76H full post-fix manual validation
 **Dependencies:** TASK-76-FINAL (Complete)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-77A for full details
+
+---
+
+**Current Stage:** 77-FINAL-COMPLETE
+
+**Active Task:** TASK-77-FINAL (COMPLETE and LOCKED)
+
+#### TASK-77-FINAL: Phase 77 Final Consolidation
+
+**Status:** COMPLETE and LOCKED
+**Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)
+**Checkpoint:** `docs/PHASE-77-FINAL-CHECKPOINT.md`
+
+**Objective:**
+Validate and consolidate completed Phase 77 bounded fix outputs (`TASK-77A`) and close Phase 77 with a final checkpoint.
+
+**Scope:**
+- Validate and consolidate `TASK-77A`
+- Confirm ISSUE-76-005 was resolved within bounded one-issue-at-a-time scope
+- Confirm `POST /api/sessions/:id/exec` now matches the intended public API contract per PRD.md / ARCHITECTURE.md
+- Confirm no unauthorized scope expansion or refactors occurred
+- Confirm no schema changes occurred
+- Create final Phase 77 checkpoint: `docs/PHASE-77-FINAL-CHECKPOINT.md`
+
+**Non-Goals:**
+- ❌ No new implementation
+- ❌ No platform code changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+
+**Dependencies:** TASK-77A (Complete)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-77-FINAL for full details
 
 ---
