@@ -8741,3 +8741,92 @@ Wire the workspace's existing command input surface to `POST /api/sessions/:id/e
 **Reference:** PHASE-77A-CHECKPOINT.md, PHASE-77-FINAL-CHECKPOINT.md, PHASE-76-FINAL-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### TASK-78B: Post-Exec Surface Coherence
+
+**Task ID:** TASK-78B
+**Phase:** 78
+**Stage:** 78B
+**Priority:** 🟡 Medium
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** TASK-78A (Complete and Locked), TASK-68D (Complete and Locked)
+**Checkpoint:** `docs/PHASE-78B-CHECKPOINT.md`
+
+**Objective:**
+
+After a successful exec, refresh the checkpoint list and session-state indicators in the workspace using already-available backend capabilities only, so workspace surfaces stay coherent with actual session state.
+
+**Background:**
+
+- TASK-78A wired `POST /api/sessions/:id/exec` and renders exec results; exec interaction is now live
+- After a successful exec, the backend may create a new git checkpoint, but the frontend history/control surface does not yet auto-refresh to reflect it
+- `GET /api/sessions/:id/checkpoints` is already implemented and used by the existing history/control surface (TASK-68B / TASK-68D)
+- The goal of this slice is to re-use that already-wired fetch path after a successful exec, keeping the workspace surface coherent with real session state
+- No new backend capabilities are required
+
+**Scope:**
+
+1. **Post-Exec Checkpoint Refresh**
+   - After each successful exec response (`exitCode` returned, `status === 'result'`), trigger a re-fetch of `GET /api/sessions/:id/checkpoints` for the active session
+   - Route this through the existing checkpoint-loading path already present in the workspace page
+   - Reflect the refreshed checkpoint list in the existing history/control surface
+
+2. **Session Status Refresh**
+   - Where session status/activity indicators are already wired in the existing workspace shell, trigger a lightweight refresh after successful exec
+   - Use only already-supported frontend/backend capabilities — no new endpoints
+
+3. **Tests**
+   - Focused frontend tests for this slice only
+   - Cover: post-exec checkpoint refresh is triggered on success, not triggered on error states, no false-update behavior when checkpoint list is unchanged
+
+4. **Checkpoint**
+   - `docs/PHASE-78B-CHECKPOINT.md`
+
+**Explicitly Out of Scope:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors of existing workspace surfaces
+- ❌ No new endpoints
+- ❌ No polling or timer-based refresh
+- ❌ No websocket or realtime work
+- ❌ No diff/revert UI changes
+- ❌ No multi-task work
+
+**Deliverables:**
+
+1. **Frontend Implementation**
+   - Post-exec checkpoint refresh wired into the existing history/control surface
+   - Session status/activity indicator refresh where already wired
+   - Additive-only changes — no refactors
+
+2. **Tests**
+   - Focused frontend tests for this slice
+
+3. **Checkpoint**
+   - `docs/PHASE-78B-CHECKPOINT.md`
+
+**Acceptance Criteria:**
+
+- ✅ After each successful exec, the frontend re-fetches `GET /api/sessions/:id/checkpoints`
+- ✅ The existing checkpoint/history surface reflects the refreshed data correctly
+- ✅ If checkpoint list does not change, unchanged state is shown correctly with no false-update behavior
+- ✅ Existing session status/activity indicator refreshes where already supported
+- ✅ No new backend calls beyond already-supported capabilities required for this slice
+- ✅ No regressions in exec interaction, workspace shell, session sidebar, or history/control surfaces
+- ✅ No backend changes occurred
+- ✅ No schema changes occurred
+- ✅ No refactors occurred
+- ✅ Checkpoint created
+
+**Preserved Invariants:**
+
+- Frontend-only — no backend, no schema, no endpoint changes
+- Additive only — no refactors of existing workspace surfaces
+- One-slice-at-a-time — no bundling with TASK-78-FINAL
+- PRD.md and ARCHITECTURE.md remain higher authority
+
+**Reference:** PHASE-78A-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
+
+---

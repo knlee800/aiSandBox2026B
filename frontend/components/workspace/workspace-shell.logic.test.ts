@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import {
+  areCheckpointListsEqual,
   computeDashboardSliceState,
   computeHistorySliceState,
   computeWorkspaceShellState,
@@ -199,5 +200,28 @@ describe('workspace shell logic', () => {
     });
 
     assert.equal(state, 'ready');
+  });
+
+  test('checkpoint list equality returns true when lists are identical', () => {
+    const left: WorkspaceCheckpoint[] = [checkpoint];
+    const right: WorkspaceCheckpoint[] = [
+      {
+        ...checkpoint,
+      },
+    ];
+
+    assert.equal(areCheckpointListsEqual(left, right), true);
+  });
+
+  test('checkpoint list equality returns false when lists differ', () => {
+    const left: WorkspaceCheckpoint[] = [checkpoint];
+    const right: WorkspaceCheckpoint[] = [
+      {
+        ...checkpoint,
+        commitHash: 'ffffffffffff789012345678901234567890abcd',
+      },
+    ];
+
+    assert.equal(areCheckpointListsEqual(left, right), false);
   });
 });

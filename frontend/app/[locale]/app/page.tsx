@@ -14,6 +14,8 @@ import {
   executeSessionCommand,
   type WorkspaceExecState,
 } from '@/components/workspace/workspace-exec.logic';
+import { refreshPostExecSurfaces } from '@/components/workspace/workspace-post-exec.logic';
+import { areCheckpointListsEqual } from '@/components/workspace/workspace-shell.logic';
 
 export default function AppPage() {
   const router = useRouter();
@@ -162,7 +164,9 @@ export default function AppPage() {
       }
 
       const data = (await response.json()) as WorkspaceCheckpoint[];
-      setCheckpoints(data);
+      setCheckpoints((currentCheckpoints) =>
+        areCheckpointListsEqual(currentCheckpoints, data) ? currentCheckpoints : data,
+      );
     } catch (error) {
       console.error('Failed to load checkpoints:', error);
       setHistoryError('Failed to load checkpoints.');
@@ -277,6 +281,19 @@ export default function AppPage() {
     });
 
     setExecState(nextState);
+
+    await refreshPostExecSurfaces({
+      execState: nextState,
+      refreshCheckpoints: async () => {
+        await loadCheckpoints(token, selectedSessionId);
+      },
+      refreshSessions: async () => {
+        await loadSessions(token);
+      },
+      refreshDashboard: async () => {
+        await loadDashboardSlice(token);
+      },
+    });
   }
 
   if (authLoading) {

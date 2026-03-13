@@ -133,3 +133,29 @@ export function getSessionLabel(session: WorkspaceShellSession): string {
 
   return session.status || 'pending';
 }
+
+export function areCheckpointListsEqual(
+  left: WorkspaceCheckpoint[],
+  right: WorkspaceCheckpoint[],
+): boolean {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  for (let index = 0; index < left.length; index += 1) {
+    const leftCheckpoint = left[index];
+    const rightCheckpoint = right[index];
+    if (
+      leftCheckpoint.id !== rightCheckpoint.id ||
+      leftCheckpoint.commitHash !== rightCheckpoint.commitHash ||
+      leftCheckpoint.messageNumber !== rightCheckpoint.messageNumber ||
+      leftCheckpoint.description !== rightCheckpoint.description ||
+      leftCheckpoint.filesChanged !== rightCheckpoint.filesChanged ||
+      leftCheckpoint.createdAt !== rightCheckpoint.createdAt
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+}

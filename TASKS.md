@@ -2619,9 +2619,9 @@ Validate and consolidate completed Phase 77 bounded fix outputs (`TASK-77A`) and
 
 ### Phase 78: Real Workspace Exec Interaction Slice
 
-**Current Stage:** 78A-COMPLETE
+**Current Stage:** 78B-0
 
-**Active Task:** TASK-78A (COMPLETE and LOCKED)
+**Active Task:** TASK-78B
 
 #### TASK-78A: Core Exec Interaction Slice
 
@@ -2654,5 +2654,37 @@ Wire the workspace's existing command input surface to `POST /api/sessions/:id/e
 **Dependencies:** TASK-77A (Complete), TASK-68C (Complete), TASK-68D (Complete), Phase 76 gate OPEN
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-78A for full details
+
+---
+
+#### TASK-78B: Post-Exec Surface Coherence
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-78B-CHECKPOINT.md`
+
+**Objective:**
+After a successful exec, refresh the checkpoint list and session-state indicators in the workspace using already-available backend capabilities only, so workspace surfaces stay coherent with actual session state.
+
+**Scope:**
+- After a successful exec response, trigger refresh of `GET /api/sessions/:id/checkpoints`
+- Reflect updated checkpoint list in the existing history/control surface
+- Refresh session status/activity indicator in the existing workspace shell where already wired
+- Use only already-available backend capabilities
+- Frontend-only changes — additive only
+- Focused frontend tests for this slice
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No polling or timer-based refresh
+- ❌ No websocket/realtime work
+- ❌ No diff/revert UI changes
+
+**Dependencies:** TASK-78A (Complete and Locked), TASK-68D (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-78B for full details
 
 ---
