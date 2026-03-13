@@ -2868,9 +2868,9 @@ Validate and consolidate completed Phase 79 slices (`TASK-79A`, `TASK-79B`) and 
 
 ### Phase 80: Core Manual Workspace Slices
 
-**Current Stage:** 80A-COMPLETE → 80B-PLANNED
+**Current Stage:** 80-FINAL-COMPLETE
 
-**Active Task:** TASK-80B
+**Active Task:** TASK-80-FINAL (COMPLETE and LOCKED)
 
 #### TASK-80A: Core Editor Save Slice
 
@@ -2959,5 +2959,49 @@ Make workspace version-control usability meaningfully better by wiring the exist
 **Dependencies:** Phase 78 (Complete and Closed), Phase 79 (Complete and Closed), TASK-80A (Complete and Locked), TASK-68D (Complete)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-80B for full details
+
+---
+
+#### TASK-80-FINAL: Phase 80 Final Consolidation
+
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)
+**Checkpoint:** `docs/PHASE-80-FINAL-CHECKPOINT.md`
+
+**Objective:**
+Validate and consolidate completed Phase 80 slices (`TASK-80A`, `TASK-80B`) and close Phase 80 with a final checkpoint confirming the editor save and manual checkpoint workspace usability slice is complete, bounded, and coherent.
+
+**Scope:**
+- Validate and consolidate `TASK-80A` and `TASK-80B`
+- Confirm end-to-end workspace usability for editor save and manual checkpoint creation
+- Confirm scope remained frontend-only and additive
+- Confirm no backend, schema, or refactor changes occurred
+- Confirm PRD / ARCHITECTURE alignment
+- Confirm no regressions across all workspace surfaces
+- Create final checkpoint: `docs/PHASE-80-FINAL-CHECKPOINT.md`
+
+**Non-Goals:**
+- ❌ No new implementation
+- ❌ No platform code changes
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+- ❌ No new product scope
+- ❌ No TASK-81 work
+
+**Dependencies:** TASK-80A (Complete and Locked), TASK-80B (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-80-FINAL for full details
+
+**Completion Summary:**
+- ✅ TASK-80A validated — core editor save slice complete and locked
+- ✅ TASK-80B validated — core manual checkpoint slice complete and locked
+- ✅ End-to-end editor save and manual checkpoint creation confirmed
+- ✅ Scope confirmed frontend-only and additive across all Phase 80 work
+- ✅ No backend changes, schema changes, endpoint changes, or refactors
+- ✅ PRD/ARCHITECTURE alignment confirmed (file write reuse, checkpoint reuse, session scoping, request-driven behavior)
+- ✅ 55/55 tests pass; 0 regressions
+- ✅ Final checkpoint created: `docs/PHASE-80-FINAL-CHECKPOINT.md`
 
 ---

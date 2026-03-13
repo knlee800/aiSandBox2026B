@@ -9380,3 +9380,94 @@ Make workspace version-control usability meaningfully better by wiring the exist
 **Reference:** TASKS.md, PRD.md §3D (Version Control / Checkpoints), ARCHITECTURE.md §8 (API Design), PHASE-80A-CHECKPOINT.md, PHASE-68D-CHECKPOINT.md (or equivalent history/control checkpoint)
 
 ---
+
+### TASK-80-FINAL: Phase 80 Final Consolidation
+
+**Task ID:** TASK-80-FINAL
+**Phase:** 80
+**Stage:** 80-FINAL
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)
+**Dependencies:** TASK-80A (Complete and Locked), TASK-80B (Complete and Locked)
+**Checkpoint:** `docs/PHASE-80-FINAL-CHECKPOINT.md`
+
+**Objective:**
+
+Validate and consolidate completed Phase 80 slices (`TASK-80A`, `TASK-80B`) and close Phase 80 with a final checkpoint confirming the editor save and manual checkpoint workspace usability slice is complete, bounded, and coherent.
+
+**Scope:**
+
+1. **Slice Consolidation**
+   - Validate and consolidate `TASK-80A` and `TASK-80B`
+   - Confirm both slices are complete, locked, and checkpoint evidence exists
+
+2. **End-to-End Workspace Usability Confirmation**
+   - Active file editing in the existing editor area
+   - Manual save of active file using existing file write capability
+   - Clean / dirty / saving / saved / save-error editor states
+   - Manual checkpoint creation ("Save Point") from the existing history/control surface
+   - Optional short description handling if supported by existing checkpoint capability
+   - Checkpoint list refresh after successful checkpoint creation
+   - Idle / creating / created / create-error checkpoint-create states
+
+3. **Scope Integrity Confirmation**
+   - Confirm scope remained frontend-only and additive across all Phase 80 work
+   - Confirm no backend changes occurred
+   - Confirm no schema changes occurred
+   - Confirm no refactors occurred
+   - Confirm no new endpoints were introduced
+
+4. **PRD / ARCHITECTURE Alignment**
+   - Existing file capability reuse (`POST /api/files/:sessionId/write`)
+   - Existing checkpoint capability reuse (`POST /api/git/:sessionId/commit`)
+   - Active-session scoping across both slices
+   - Request-driven behavior (no autosave, timers, polling, or websocket)
+
+5. **Regression Confirmation**
+   - Confirm no regressions across workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, history/control surfaces, and public landing
+
+6. **Final Checkpoint**
+   - Create final Phase 80 checkpoint: `docs/PHASE-80-FINAL-CHECKPOINT.md`
+
+**Explicitly Out of Scope:**
+
+- ❌ No new implementation
+- ❌ No platform code changes
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+- ❌ No new product scope
+- ❌ No TASK-81 work
+
+**Deliverables:**
+
+1. Validation of TASK-80A and TASK-80B outputs
+2. End-to-end workspace usability confirmation for editor save and manual checkpoint creation
+3. Scope integrity confirmation (frontend-only, additive, no backend/schema/refactor changes)
+4. PRD / ARCHITECTURE alignment confirmation
+5. Regression confirmation (all tests pass)
+6. Final checkpoint: `docs/PHASE-80-FINAL-CHECKPOINT.md`
+
+**Acceptance Criteria:**
+
+- TASK-80A confirmed COMPLETE and LOCKED with checkpoint evidence
+- TASK-80B confirmed COMPLETE and LOCKED with checkpoint evidence
+- Workspace editor save slice confirmed functional and bounded
+- Workspace manual checkpoint slice confirmed functional and bounded
+- No regressions confirmed (full test suite passes)
+- No scope violations confirmed
+- Final checkpoint created at `docs/PHASE-80-FINAL-CHECKPOINT.md`
+
+**Preserved Invariants:**
+
+- No platform code changes in this final consolidation stage
+- Validation/documentation-only scope preserved for TASK-80-FINAL
+- PRD.md and ARCHITECTURE.md remain higher authority throughout Phase 80
+- CLAUDE.md governance loop respected at every stage
+- All Phase 80 work traceable to authoritative task definitions in TASKS.md and TASKS_BACKLOG_FULL.md
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-80A-CHECKPOINT.md, PHASE-80B-CHECKPOINT.md
+
+---
