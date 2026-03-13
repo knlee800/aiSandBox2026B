@@ -2616,3 +2616,43 @@ Validate and consolidate completed Phase 77 bounded fix outputs (`TASK-77A`) and
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-77-FINAL for full details
 
 ---
+
+### Phase 78: Real Workspace Exec Interaction Slice
+
+**Current Stage:** 78A-COMPLETE
+
+**Active Task:** TASK-78A (COMPLETE and LOCKED)
+
+#### TASK-78A: Core Exec Interaction Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-78A-CHECKPOINT.md`
+
+**Objective:**
+Wire the workspace's existing command input surface to `POST /api/sessions/:id/exec` and display real exec results (`exitCode`, `stdout`, `stderr`) in the workspace, with correct busy / success / error state feedback.
+
+**Scope:**
+- Connect the workspace command input UI to `POST /api/sessions/:id/exec`
+- Manage exec lifecycle state: idle → sending → result
+- Disable input while request is in flight
+- Display `exitCode`, `stdout`, `stderr` in the workspace result/output area
+- Visually distinguish success (`exitCode === 0`) from failure (`exitCode !== 0`)
+- Handle HTTP 400, 404, 410, and network/unexpected error as distinct frontend states
+- Frontend-only changes — additive only
+- Focused frontend tests for this slice
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No checkpoint/history refresh (deferred to TASK-78B)
+- ❌ No terminal emulation or streaming
+- ❌ No broader workspace redesign
+- ❌ No new endpoints
+
+**Dependencies:** TASK-77A (Complete), TASK-68C (Complete), TASK-68D (Complete), Phase 76 gate OPEN
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-78A for full details
+
+---

@@ -4,6 +4,7 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import WorkspaceShell from './workspace-shell';
 import type { WorkspaceCheckpoint, WorkspaceShellSession } from './workspace-shell.logic';
+import type { WorkspaceExecState } from './workspace-exec.logic';
 
 const session: WorkspaceShellSession = {
   id: '12345678-test-session',
@@ -45,31 +46,47 @@ const quotaSummary = {
   resetAt: '2026-03-11T12:00:00.000Z',
 };
 
+const idleExecState: WorkspaceExecState = {
+  status: 'idle',
+  result: null,
+};
+
+function renderWorkspaceShell(
+  overrides: Partial<React.ComponentProps<typeof WorkspaceShell>> = {},
+): string {
+  const defaultProps: React.ComponentProps<typeof WorkspaceShell> = {
+    sessions: [session],
+    selectedSessionId: session.id,
+    isLoadingSessions: false,
+    sessionError: null,
+    onSelectSession: () => {},
+    onCreateSession: async () => {},
+    isCreatingSession: false,
+    userId: 'user-123',
+    checkpoints: [checkpoint],
+    isLoadingHistory: false,
+    historyError: null,
+    userSummary,
+    usageSummary,
+    quotaSummary,
+    isLoadingDashboard: false,
+    dashboardError: null,
+    commandInput: '',
+    onCommandInputChange: () => {},
+    onExecuteCommand: async () => {},
+    execState: idleExecState,
+  };
+
+  return renderToStaticMarkup(<WorkspaceShell {...defaultProps} {...overrides} />);
+}
+
 describe('workspace shell component', () => {
   test('renders authenticated workspace shell layout', () => {
-    const html = renderToStaticMarkup(
-      <WorkspaceShell
-        sessions={[session]}
-        selectedSessionId={session.id}
-        isLoadingSessions={false}
-        sessionError={null}
-        onSelectSession={() => {}}
-        onCreateSession={async () => {}}
-        isCreatingSession={false}
-        userId="user-123"
-        checkpoints={[checkpoint]}
-        isLoadingHistory={false}
-        historyError={null}
-        userSummary={userSummary}
-        usageSummary={usageSummary}
-        quotaSummary={quotaSummary}
-        isLoadingDashboard={false}
-        dashboardError={null}
-      />,
-    );
+    const html = renderWorkspaceShell();
 
     assert.match(html, /AI Sandbox Workspace/);
     assert.match(html, /Chat Panel/);
+    assert.match(html, /Command Input \(Exec Slice\)/);
     assert.match(html, /Editor Panel/);
     assert.match(html, /Preview Panel/);
     assert.match(html, /History \/ Control \(Slice 1\)/);
@@ -82,26 +99,16 @@ describe('workspace shell component', () => {
   });
 
   test('renders loading shell state', () => {
-    const html = renderToStaticMarkup(
-      <WorkspaceShell
-        sessions={[session]}
-        selectedSessionId={session.id}
-        isLoadingSessions={true}
-        sessionError={null}
-        onSelectSession={() => {}}
-        onCreateSession={async () => {}}
-        isCreatingSession={false}
-        userId={null}
-        checkpoints={[]}
-        isLoadingHistory={true}
-        historyError={null}
-        userSummary={null}
-        usageSummary={null}
-        quotaSummary={null}
-        isLoadingDashboard={true}
-        dashboardError={null}
-      />,
-    );
+    const html = renderWorkspaceShell({
+      isLoadingSessions: true,
+      userId: null,
+      checkpoints: [],
+      isLoadingHistory: true,
+      userSummary: null,
+      usageSummary: null,
+      quotaSummary: null,
+      isLoadingDashboard: true,
+    });
 
     assert.match(html, /Workspace is loading/);
     assert.match(html, /History is loading/);
@@ -110,26 +117,16 @@ describe('workspace shell component', () => {
   });
 
   test('renders error shell state', () => {
-    const html = renderToStaticMarkup(
-      <WorkspaceShell
-        sessions={[session]}
-        selectedSessionId={session.id}
-        isLoadingSessions={false}
-        sessionError="Failed to load sessions."
-        onSelectSession={() => {}}
-        onCreateSession={async () => {}}
-        isCreatingSession={false}
-        userId={null}
-        checkpoints={[]}
-        isLoadingHistory={false}
-        historyError="Failed to load checkpoints."
-        userSummary={null}
-        usageSummary={null}
-        quotaSummary={null}
-        isLoadingDashboard={false}
-        dashboardError="Failed to load dashboard summary."
-      />,
-    );
+    const html = renderWorkspaceShell({
+      sessionError: 'Failed to load sessions.',
+      userId: null,
+      checkpoints: [],
+      historyError: 'Failed to load checkpoints.',
+      userSummary: null,
+      usageSummary: null,
+      quotaSummary: null,
+      dashboardError: 'Failed to load dashboard summary.',
+    });
 
     assert.match(html, /Workspace unavailable/);
     assert.match(html, /History unavailable/);
@@ -138,26 +135,13 @@ describe('workspace shell component', () => {
   });
 
   test('renders empty history state for selected session without checkpoints', () => {
-    const html = renderToStaticMarkup(
-      <WorkspaceShell
-        sessions={[session]}
-        selectedSessionId={session.id}
-        isLoadingSessions={false}
-        sessionError={null}
-        onSelectSession={() => {}}
-        onCreateSession={async () => {}}
-        isCreatingSession={false}
-        userId={null}
-        checkpoints={[]}
-        isLoadingHistory={false}
-        historyError={null}
-        userSummary={null}
-        usageSummary={null}
-        quotaSummary={null}
-        isLoadingDashboard={false}
-        dashboardError={null}
-      />,
-    );
+    const html = renderWorkspaceShell({
+      userId: null,
+      checkpoints: [],
+      userSummary: null,
+      usageSummary: null,
+      quotaSummary: null,
+    });
 
     assert.match(html, /No checkpoints yet/);
     assert.match(html, /No dashboard data yet/);
@@ -165,26 +149,9 @@ describe('workspace shell component', () => {
   });
 
   test('renders trust note and responsive layout classes', () => {
-    const html = renderToStaticMarkup(
-      <WorkspaceShell
-        sessions={[session]}
-        selectedSessionId={session.id}
-        isLoadingSessions={false}
-        sessionError={null}
-        onSelectSession={() => {}}
-        onCreateSession={async () => {}}
-        isCreatingSession={false}
-        userId={null}
-        checkpoints={[checkpoint]}
-        isLoadingHistory={false}
-        historyError={null}
-        userSummary={userSummary}
-        usageSummary={usageSummary}
-        quotaSummary={quotaSummary}
-        isLoadingDashboard={false}
-        dashboardError={null}
-      />,
-    );
+    const html = renderWorkspaceShell({
+      userId: null,
+    });
 
     assert.match(html, /Workspace data is session-scoped\./);
     assert.ok(html.includes('grid-cols-1'));
@@ -193,31 +160,108 @@ describe('workspace shell component', () => {
   });
 
   test('does not render out-of-scope history or dashboard UI', () => {
-    const html = renderToStaticMarkup(
-      <WorkspaceShell
-        sessions={[session]}
-        selectedSessionId={session.id}
-        isLoadingSessions={false}
-        sessionError={null}
-        onSelectSession={() => {}}
-        onCreateSession={async () => {}}
-        isCreatingSession={false}
-        userId={null}
-        checkpoints={[checkpoint]}
-        isLoadingHistory={false}
-        historyError={null}
-        userSummary={userSummary}
-        usageSummary={usageSummary}
-        quotaSummary={quotaSummary}
-        isLoadingDashboard={false}
-        dashboardError={null}
-      />,
-    );
+    const html = renderWorkspaceShell({
+      userId: null,
+    });
 
     assert.ok(!html.includes('Timeline'));
     assert.ok(!html.includes('Admin Dashboard'));
     assert.ok(!html.includes('Diff'));
     assert.ok(!html.includes('Revert'));
     assert.ok(!html.includes('Export Data'));
+  });
+
+  test('renders successful exec result with stdout, stderr, and success status', () => {
+    const html = renderWorkspaceShell({
+      commandInput: 'echo hello',
+      execState: {
+        status: 'result',
+        result: {
+          exitCode: 0,
+          stdout: 'hello',
+          stderr: '',
+        },
+      },
+    });
+
+    assert.match(html, /Command succeeded/);
+    assert.match(html, /Exec Result/);
+    assert.match(html, /SUCCESS/);
+    assert.match(html, /exitCode: <span class="font-mono">0<\/span>/);
+    assert.match(html, /hello/);
+    assert.match(html, /\(empty\)/);
+  });
+
+  test('renders failed exec result with failure status', () => {
+    const html = renderWorkspaceShell({
+      commandInput: 'badcmd',
+      execState: {
+        status: 'result',
+        result: {
+          exitCode: 127,
+          stdout: '',
+          stderr: 'command not found',
+        },
+      },
+    });
+
+    assert.match(html, /Command failed/);
+    assert.match(html, /FAILURE/);
+    assert.match(html, /127/);
+    assert.match(html, /command not found/);
+  });
+
+  test('renders distinct HTTP and network exec error states', () => {
+    const http400Html = renderWorkspaceShell({
+      execState: {
+        status: 'http-400',
+        result: null,
+      },
+    });
+    const http404Html = renderWorkspaceShell({
+      execState: {
+        status: 'http-404',
+        result: null,
+      },
+    });
+    const http410Html = renderWorkspaceShell({
+      execState: {
+        status: 'http-410',
+        result: null,
+      },
+    });
+    const networkHtml = renderWorkspaceShell({
+      execState: {
+        status: 'network-error',
+        result: null,
+      },
+    });
+
+    assert.match(http400Html, /Invalid command \(400\)/);
+    assert.match(http404Html, /Session not found \(404\)/);
+    assert.match(http410Html, /Session terminated \(410\)/);
+    assert.match(networkHtml, /Exec request failed/);
+  });
+
+  test('disables exec input while sending and after 410 state', () => {
+    const sendingHtml = renderWorkspaceShell({
+      commandInput: 'echo hello',
+      execState: {
+        status: 'sending',
+        result: null,
+      },
+    });
+    const terminatedHtml = renderWorkspaceShell({
+      commandInput: 'echo hello',
+      execState: {
+        status: 'http-410',
+        result: null,
+      },
+    });
+
+    assert.match(sendingHtml, /data-testid="workspace-exec-input"[^>]*disabled/);
+    assert.match(sendingHtml, /Running\.\.\./);
+    assert.match(terminatedHtml, /data-testid="workspace-exec-input"[^>]*disabled/);
+    assert.match(terminatedHtml, /Session terminated \(410\)/);
   });
 });

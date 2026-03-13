@@ -8640,3 +8640,104 @@ Validate and consolidate completed Phase 77 bounded fix outputs (`TASK-77A`) and
 **Reference:** PHASE-77A-CHECKPOINT.md, PHASE-76-FINAL-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### TASK-78A: Core Exec Interaction Slice
+
+**Task ID:** TASK-78A
+**Phase:** 78
+**Stage:** 78A
+**Priority:** 🟡 Medium
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** TASK-77A (Complete), TASK-68C (Complete), TASK-68D (Complete), Phase 76 gate OPEN
+**Checkpoint:** `docs/PHASE-78A-CHECKPOINT.md`
+
+**Objective:**
+
+Wire the workspace's existing command input surface to `POST /api/sessions/:id/exec` and display real exec results (`exitCode`, `stdout`, `stderr`) in the workspace, with correct busy / success / error state feedback.
+
+**Background:**
+
+- Phase 76 manual validation gate is OPEN (CONDITIONAL PASS per TASK-76H)
+- Phase 77 resolved ISSUE-76-005: `POST /api/sessions/:id/exec` now exists with the correct public API contract (JWT required, ownership enforced, HTTP 410 on terminated session, returns `{ exitCode, stdout, stderr }`)
+- Phase 68C implemented the authenticated workspace shell with session sidebar
+- Phase 68D implemented the history/control surface
+- The workspace interaction path currently uses placeholder exec behavior; no real exec calls are wired
+- The highest-value next product-usability gap is connecting the visible workspace to the real session-scoped exec flow
+
+**Scope:**
+
+1. **Exec Input Wiring**
+   - Connect the workspace command input UI to `POST /api/sessions/:id/exec`
+   - Pass the active session ID and JWT in the request
+   - Disable the command input while a request is in flight (busy state)
+
+2. **Exec Lifecycle State Management**
+   - Idle state: input enabled, no result shown
+   - Sending state: input disabled, busy/loading indicator visible
+   - Success state: result displayed, input re-enabled
+   - Error state: error message displayed per error type, input re-enabled
+
+3. **Exec Result Display**
+   - Display `exitCode`, `stdout`, and `stderr` in the workspace result/output area
+   - Visually distinguish success (`exitCode === 0`) from failure (`exitCode !== 0`)
+
+4. **Error State Handling**
+   - HTTP 400 — surface input validation error (missing/empty command)
+   - HTTP 404 — surface session-lost/not-found state
+   - HTTP 410 Gone — surface session-terminated state; disable further exec attempts
+   - Network/unexpected error — surface generic error with retry affordance
+
+5. **Tests**
+   - Focused frontend tests for this slice only
+   - Cover: successful exec display, each of the four error states, busy-state input disabling
+
+6. **Checkpoint**
+   - `docs/PHASE-78A-CHECKPOINT.md`
+
+**Explicitly Out of Scope:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors of unrelated workspace surfaces
+- ❌ No post-exec checkpoint/history surface refresh (deferred to TASK-78B)
+- ❌ No terminal emulation or streaming — single-shot request/response only
+- ❌ No broader editor or preview redesign
+- ❌ No new endpoints
+- ❌ No multi-task work
+
+**Deliverables:**
+
+1. **Frontend Implementation**
+   - Updated workspace frontend files wiring exec input to `POST /api/sessions/:id/exec`
+   - Exec result display within existing workspace shell
+   - State management for exec lifecycle (idle, sending, success, error)
+
+2. **Tests**
+   - Focused frontend tests for this slice
+
+3. **Checkpoint**
+   - `docs/PHASE-78A-CHECKPOINT.md`
+
+**Acceptance Criteria:**
+
+- ✅ Submitting a command in the workspace sends `POST /api/sessions/:id/exec` with the correct session ID and JWT
+- ✅ `stdout`, `stderr`, and `exitCode` are displayed after a successful exec
+- ✅ Workspace input is disabled while exec is in flight
+- ✅ HTTP 400, 404, 410, and network/unexpected error each render a distinct appropriate UI state
+- ✅ No regressions in existing workspace shell, session sidebar, or history/control surfaces
+- ✅ No backend changes occurred
+- ✅ No schema changes occurred
+- ✅ No refactors occurred
+- ✅ Checkpoint created
+
+**Preserved Invariants:**
+
+- Frontend-only — no backend, no schema, no endpoint changes
+- Additive only — no refactors of existing workspace surfaces
+- One-slice-at-a-time — no bundling with TASK-78B or TASK-78-FINAL
+- PRD.md and ARCHITECTURE.md remain higher authority
+
+**Reference:** PHASE-77A-CHECKPOINT.md, PHASE-77-FINAL-CHECKPOINT.md, PHASE-76-FINAL-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
+
+---

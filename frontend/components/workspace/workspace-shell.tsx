@@ -13,6 +13,7 @@ import {
   type WorkspaceUsageSummary,
   type WorkspaceUserSummary,
 } from './workspace-shell.logic';
+import type { WorkspaceExecState } from './workspace-exec.logic';
 
 interface WorkspaceShellProps {
   sessions: WorkspaceShellSession[];
@@ -31,6 +32,10 @@ interface WorkspaceShellProps {
   quotaSummary: WorkspaceQuotaSummary | null;
   isLoadingDashboard: boolean;
   dashboardError: string | null;
+  commandInput: string;
+  onCommandInputChange: (value: string) => void;
+  onExecuteCommand: () => Promise<void>;
+  execState: WorkspaceExecState;
 }
 
 export default function WorkspaceShell(props: WorkspaceShellProps) {
@@ -113,7 +118,17 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
           <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 p-2">
             <section className="bg-white border border-gray-200 rounded p-3" data-testid="chat-panel-shell">
               <p className="text-xs font-semibold text-gray-700 mb-2">Chat Panel</p>
-              <ShellStateMessage state={shellState} />
+              <p className="text-xs font-semibold text-gray-700 mb-2">Command Input (Exec Slice)</p>
+              <WorkspaceExecPanel
+                selectedSessionId={props.selectedSessionId}
+                commandInput={props.commandInput}
+                onCommandInputChange={props.onCommandInputChange}
+                onExecuteCommand={props.onExecuteCommand}
+                execState={props.execState}
+              />
+              <div className="mt-3">
+                <ShellStateMessage state={shellState} />
+              </div>
             </section>
             <section className="bg-white border border-gray-200 rounded p-3" data-testid="editor-panel-shell">
               <p className="text-xs font-semibold text-gray-700 mb-2">Editor Panel</p>
@@ -147,6 +162,192 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
         <span>Workspace shell state: {shellState}</span>
         <span>Sessions: {props.sessions.length}</span>
       </footer>
+    </div>
+  );
+}
+
+function WorkspaceExecPanel(props: {
+  selectedSessionId: string | null;
+  commandInput: string;
+  onCommandInputChange: (value: string) => void;
+  onExecuteCommand: () => Promise<void>;
+  execState: WorkspaceExecState;
+}) {
+  const isLocked = props.execState.status === 'http-410';
+  const isSending = props.execState.status === 'sending';
+  const isInputDisabled = isSending || isLocked || !props.selectedSessionId;
+  const canSubmit = !isInputDisabled && props.commandInput.trim().length > 0;
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!canSubmit) {
+      return;
+    }
+    void props.onExecuteCommand();
+  };
+
+  return (
+    <div className="rounded border border-gray-200 bg-gray-50 p-2" data-testid="workspace-exec-panel">
+      <form onSubmit={handleSubmit} className="flex gap-2">
+        <input
+          data-testid="workspace-exec-input"
+          type="text"
+          value={props.commandInput}
+          onChange={(event) => props.onCommandInputChange(event.target.value)}
+          disabled={isInputDisabled}
+          placeholder="Enter shell command (e.g. ls -la)"
+          className="flex-1 rounded border border-gray-300 px-2 py-1 text-xs disabled:bg-gray-100 disabled:text-gray-500"
+        />
+        <button
+          data-testid="workspace-exec-submit"
+          type="submit"
+          disabled={!canSubmit}
+          className="rounded bg-blue-600 px-3 py-1 text-xs text-white disabled:bg-blue-300"
+        >
+          {isSending ? 'Running...' : 'Run'}
+        </button>
+      </form>
+
+      <div className="mt-2">
+        <ExecStateMessage execState={props.execState} />
+      </div>
+
+      {props.execState.status === 'result' && props.execState.result ? (
+        <ExecResultOutput result={props.execState.result} />
+      ) : null}
+    </div>
+  );
+}
+
+function ExecStateMessage({ execState }: { execState: WorkspaceExecState }) {
+  if (execState.status === 'idle') {
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="Exec idle"
+        body="Submit a command for the selected active session."
+        action="Enter a command and choose Run."
+      />
+    );
+  }
+
+  if (execState.status === 'sending') {
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="Command running"
+        body="Sending command to session exec endpoint."
+        action="Wait for exec result."
+      />
+    );
+  }
+
+  if (execState.status === 'http-400') {
+    return (
+      <StateMessage
+        tone="error"
+        heading="Invalid command (400)"
+        body="The command was rejected as empty or invalid."
+        action="Update the command and retry."
+      />
+    );
+  }
+
+  if (execState.status === 'http-404') {
+    return (
+      <StateMessage
+        tone="error"
+        heading="Session not found (404)"
+        body="The selected session is no longer available."
+        action="Select or create a session, then retry."
+      />
+    );
+  }
+
+  if (execState.status === 'http-410') {
+    return (
+      <StateMessage
+        tone="error"
+        heading="Session terminated (410)"
+        body="This session is terminated and cannot execute commands."
+        action="Create or select an active session to continue."
+      />
+    );
+  }
+
+  if (execState.status === 'network-error') {
+    return (
+      <StateMessage
+        tone="error"
+        heading="Exec request failed"
+        body="Network or unexpected error prevented command execution."
+        action="Retry this command."
+      />
+    );
+  }
+
+  if (!execState.result) {
+    return (
+      <StateMessage
+        tone="error"
+        heading="Exec result unavailable"
+        body="Command response could not be read."
+        action="Retry this command."
+      />
+    );
+  }
+
+  if (execState.result.exitCode === 0) {
+    return (
+      <StateMessage
+        tone="success"
+        heading="Command succeeded"
+        body={`exitCode: ${execState.result.exitCode}`}
+        action="Review stdout and stderr below."
+      />
+    );
+  }
+
+  return (
+    <StateMessage
+      tone="error"
+      heading="Command failed"
+      body={`exitCode: ${execState.result.exitCode}`}
+      action="Review stderr and retry if needed."
+    />
+  );
+}
+
+function ExecResultOutput(props: { result: NonNullable<WorkspaceExecState['result']> }) {
+  const isSuccess = props.result.exitCode === 0;
+  const borderTone = isSuccess ? 'border-green-200' : 'border-red-200';
+  const badgeTone = isSuccess ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
+
+  return (
+    <div className={`mt-2 rounded border p-2 ${borderTone}`} data-testid="workspace-exec-output">
+      <p className="text-xs font-semibold text-gray-700">
+        Exec Result{' '}
+        <span className={`ml-1 rounded px-1 py-0.5 text-[10px] ${badgeTone}`}>
+          {isSuccess ? 'SUCCESS' : 'FAILURE'}
+        </span>
+      </p>
+      <p className="mt-1 text-xs text-gray-600">
+        exitCode: <span className="font-mono">{props.result.exitCode}</span>
+      </p>
+      <div className="mt-2 grid gap-2 md:grid-cols-2">
+        <div>
+          <p className="text-[11px] font-semibold text-gray-600">stdout</p>
+          <pre className="mt-1 max-h-28 overflow-auto rounded border border-gray-200 bg-white p-2 text-[11px] text-gray-800">
+            {props.result.stdout || '(empty)'}
+          </pre>
+        </div>
+        <div>
+          <p className="text-[11px] font-semibold text-gray-600">stderr</p>
+          <pre className="mt-1 max-h-28 overflow-auto rounded border border-gray-200 bg-white p-2 text-[11px] text-gray-800">
+            {props.result.stderr || '(empty)'}
+          </pre>
+        </div>
+      </div>
     </div>
   );
 }

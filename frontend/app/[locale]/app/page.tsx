@@ -10,6 +10,10 @@ import type {
   WorkspaceUsageSummary,
   WorkspaceUserSummary,
 } from '@/components/workspace/workspace-shell.logic';
+import {
+  executeSessionCommand,
+  type WorkspaceExecState,
+} from '@/components/workspace/workspace-exec.logic';
 
 export default function AppPage() {
   const router = useRouter();
@@ -31,6 +35,11 @@ export default function AppPage() {
   const [quotaSummary, setQuotaSummary] = useState<WorkspaceQuotaSummary | null>(null);
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(true);
   const [dashboardError, setDashboardError] = useState<string | null>(null);
+  const [commandInput, setCommandInput] = useState('');
+  const [execState, setExecState] = useState<WorkspaceExecState>({
+    status: 'idle',
+    result: null,
+  });
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -61,6 +70,14 @@ export default function AppPage() {
     }
 
     void loadCheckpoints(token, selectedSessionId);
+  }, [selectedSessionId]);
+
+  useEffect(() => {
+    setCommandInput('');
+    setExecState({
+      status: 'idle',
+      result: null,
+    });
   }, [selectedSessionId]);
 
   async function loadSessions(token: string): Promise<void> {
@@ -207,6 +224,61 @@ export default function AppPage() {
     }
   }
 
+  async function handleExecuteCommand(): Promise<void> {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+
+    const trimmedCommand = commandInput.trim();
+    if (!trimmedCommand) {
+      setExecState({
+        status: 'http-400',
+        result: null,
+      });
+      return;
+    }
+
+    if (!selectedSessionId) {
+      setExecState({
+        status: 'http-404',
+        result: null,
+      });
+      return;
+    }
+
+    const selectedSession = sessions.find((session) => session.id === selectedSessionId);
+    if (!selectedSession) {
+      setExecState({
+        status: 'http-404',
+        result: null,
+      });
+      return;
+    }
+
+    if (selectedSession.terminatedAt) {
+      setExecState({
+        status: 'http-410',
+        result: null,
+      });
+      return;
+    }
+
+    setExecState({
+      status: 'sending',
+      result: null,
+    });
+
+    const nextState = await executeSessionCommand({
+      token,
+      sessionId: selectedSessionId,
+      command: trimmedCommand,
+    });
+
+    setExecState(nextState);
+  }
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -233,6 +305,10 @@ export default function AppPage() {
       quotaSummary={quotaSummary}
       isLoadingDashboard={isLoadingDashboard}
       dashboardError={dashboardError}
+      commandInput={commandInput}
+      onCommandInputChange={setCommandInput}
+      onExecuteCommand={handleExecuteCommand}
+      execState={execState}
     />
   );
 }
