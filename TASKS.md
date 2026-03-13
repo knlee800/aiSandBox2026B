@@ -2735,9 +2735,9 @@ Validate and consolidate completed Phase 78 slices (`TASK-78A`, `TASK-78B`) and 
 
 ### Phase 79: Core Preview Interaction Slice
 
-**Current Stage:** 79A-COMPLETE
+**Current Stage:** 79B-0
 
-**Active Task:** TASK-79A (COMPLETE and LOCKED)
+**Active Task:** TASK-79B
 
 #### TASK-79A: Core Preview Interaction Slice
 
@@ -2781,5 +2781,44 @@ Make the workspace preview panel meaningfully usable by wiring the existing prev
 - ✅ Frontend-only and additive — no backend, schema, endpoint, or refactor changes
 - ✅ 45/45 tests pass; 0 regressions
 - ✅ Checkpoint created: `docs/PHASE-79A-CHECKPOINT.md`
+
+---
+
+#### TASK-79B: Core Editor File Navigation Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-79B-CHECKPOINT.md`
+
+**Objective:**
+Make the workspace editor area meaningfully usable by wiring the existing editor/file-navigation surface to already-available workspace file capabilities, so the user can browse files and switch the active file inside the main workspace.
+
+**Scope:**
+- Connect the existing workspace editor/file-navigation surface to already-available file listing / file-content capabilities only
+- Render a real file list/tree surface for the active session only
+- Allow selecting a file from that surface
+- Load and display the selected file in the existing editor area
+- Add clear localized UI states: loading, ready, empty / no file available, error
+- Keep file-navigation state tied to the active session only
+- Keep integration localized to the existing workspace shell, editor panel, and file-navigation surface
+- Frontend-only changes — additive only
+- Focused frontend tests for this slice
+- Slice-specific checkpoint output
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No file editing/save behavior in this task
+- ❌ No file create/delete/rename/upload in this task
+- ❌ No terminal/streaming work
+- ❌ No broader workspace redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Dependencies:** Phase 78 (Complete and Locked), TASK-79A (Complete and Locked), TASK-68C (Complete)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-79B for full details
 
 ---

@@ -15,6 +15,10 @@ import {
 } from './workspace-shell.logic';
 import type { WorkspaceExecState } from './workspace-exec.logic';
 import type { WorkspacePreviewState } from './workspace-preview.logic';
+import type {
+  WorkspaceFileNode,
+  WorkspaceFileSurfaceState,
+} from './workspace-file-navigation.logic';
 
 interface WorkspaceShellProps {
   sessions: WorkspaceShellSession[];
@@ -42,6 +46,12 @@ interface WorkspaceShellProps {
   onRefreshPreview: () => Promise<void>;
   onPreviewLoad: () => void;
   onPreviewError: () => void;
+  fileSurfaceState: WorkspaceFileSurfaceState;
+  workspaceFileTree: WorkspaceFileNode[];
+  selectedFilePath: string | null;
+  selectedFileContent: string;
+  fileSurfaceError: string | null;
+  onSelectWorkspaceFile: (filePath: string) => Promise<void>;
 }
 
 export default function WorkspaceShell(props: WorkspaceShellProps) {
@@ -138,7 +148,14 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
             </section>
             <section className="bg-white border border-gray-200 rounded p-3" data-testid="editor-panel-shell">
               <p className="text-xs font-semibold text-gray-700 mb-2">Editor Panel</p>
-              <ShellStateMessage state={shellState} />
+              <WorkspaceEditorPanel
+                state={props.fileSurfaceState}
+                fileTree={props.workspaceFileTree}
+                selectedFilePath={props.selectedFilePath}
+                selectedFileContent={props.selectedFileContent}
+                errorMessage={props.fileSurfaceError}
+                onSelectFile={props.onSelectWorkspaceFile}
+              />
             </section>
             <section className="bg-white border border-gray-200 rounded p-3" data-testid="preview-panel-shell">
               <p className="text-xs font-semibold text-gray-700 mb-2">Preview Panel</p>
@@ -270,6 +287,140 @@ function WorkspacePreviewPanel(props: {
         />
       ) : null}
     </div>
+  );
+}
+
+function WorkspaceEditorPanel(props: {
+  state: WorkspaceFileSurfaceState;
+  fileTree: WorkspaceFileNode[];
+  selectedFilePath: string | null;
+  selectedFileContent: string;
+  errorMessage: string | null;
+  onSelectFile: (filePath: string) => Promise<void>;
+}) {
+  return (
+    <div className="rounded border border-gray-200 bg-gray-50 p-2" data-testid="workspace-editor-panel">
+      <EditorStateMessage state={props.state} errorMessage={props.errorMessage} />
+      {props.state === 'ready' ? (
+        <div className="mt-2 grid gap-2 md:grid-cols-[14rem_1fr]">
+          <div className="rounded border border-gray-200 bg-white p-2">
+            <p className="text-[11px] font-semibold text-gray-700">Files</p>
+            <ul className="mt-2 space-y-1" data-testid="workspace-file-tree">
+              {props.fileTree.map((node) => (
+                <FileTreeNode
+                  key={node.path}
+                  node={node}
+                  depth={0}
+                  selectedFilePath={props.selectedFilePath}
+                  onSelectFile={props.onSelectFile}
+                />
+              ))}
+            </ul>
+          </div>
+          <div className="rounded border border-gray-200 bg-white p-2">
+            <p className="text-[11px] font-semibold text-gray-700">File Content</p>
+            <p className="mt-1 truncate font-mono text-[11px] text-gray-500" data-testid="workspace-selected-file-path">
+              {props.selectedFilePath ?? '(no file selected)'}
+            </p>
+            <pre className="mt-2 h-56 overflow-auto rounded border border-gray-200 bg-gray-50 p-2 text-[11px] text-gray-800" data-testid="workspace-selected-file-content">
+              {props.selectedFileContent || '(empty file)'}
+            </pre>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function FileTreeNode(props: {
+  node: WorkspaceFileNode;
+  depth: number;
+  selectedFilePath: string | null;
+  onSelectFile: (filePath: string) => Promise<void>;
+}) {
+  const leftPadding = `${props.depth * 0.75}rem`;
+  const isFile = props.node.type === 'file';
+  const isSelected = isFile && props.selectedFilePath === props.node.path;
+
+  return (
+    <li style={{ paddingLeft: leftPadding }}>
+      {isFile ? (
+        <button
+          type="button"
+          data-testid={`workspace-file-node-${props.node.path}`}
+          onClick={() => void props.onSelectFile(props.node.path)}
+          className={`w-full truncate rounded border px-2 py-1 text-left text-xs ${
+            isSelected
+              ? 'border-blue-400 bg-blue-50 text-blue-800'
+              : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+          }`}
+        >
+          {props.node.name}
+        </button>
+      ) : (
+        <p className="truncate px-2 py-1 text-xs font-semibold text-gray-600">{props.node.name}/</p>
+      )}
+      {props.node.children.length ? (
+        <ul className="space-y-1">
+          {props.node.children.map((childNode) => (
+            <FileTreeNode
+              key={childNode.path}
+              node={childNode}
+              depth={props.depth + 1}
+              selectedFilePath={props.selectedFilePath}
+              onSelectFile={props.onSelectFile}
+            />
+          ))}
+        </ul>
+      ) : null}
+    </li>
+  );
+}
+
+function EditorStateMessage(props: {
+  state: WorkspaceFileSurfaceState;
+  errorMessage: string | null;
+}) {
+  if (props.state === 'loading') {
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="Editor loading"
+        body="Loading workspace files for the active session."
+        action="Wait for file navigation to finish loading."
+      />
+    );
+  }
+
+  if (props.state === 'empty') {
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="No file available"
+        body="No files were found for the active session workspace."
+        action="Run a command that creates files, then select the session again."
+      />
+    );
+  }
+
+  if (props.state === 'error') {
+    return (
+      <StateMessage
+        tone="error"
+        heading="Editor unavailable"
+        body={props.errorMessage ?? 'Workspace file navigation failed to load.'}
+        action="Select the session again to retry."
+      />
+    );
+  }
+
+  return (
+    <StateMessage
+      tone="success"
+      heading="Editor ready"
+      body="Workspace file navigation is ready for this active session."
+      action="Choose a file from the list to view content."
+    />
   );
 }
 

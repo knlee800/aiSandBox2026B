@@ -22,6 +22,13 @@ import {
   type WorkspacePreviewStatusResponse,
   type WorkspacePreviewState,
 } from '@/components/workspace/workspace-preview.logic';
+import {
+  findFirstFilePath,
+  loadWorkspaceFileTree,
+  readWorkspaceFile,
+  type WorkspaceFileNode,
+  type WorkspaceFileSurfaceState,
+} from '@/components/workspace/workspace-file-navigation.logic';
 
 export default function AppPage() {
   const router = useRouter();
@@ -51,6 +58,13 @@ export default function AppPage() {
   const [previewState, setPreviewState] = useState<WorkspacePreviewState>('unavailable');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const previewRequestIdRef = useRef(0);
+  const [fileSurfaceState, setFileSurfaceState] = useState<WorkspaceFileSurfaceState>('empty');
+  const [workspaceFileTree, setWorkspaceFileTree] = useState<WorkspaceFileNode[]>([]);
+  const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
+  const [selectedFileContent, setSelectedFileContent] = useState('');
+  const [fileSurfaceError, setFileSurfaceError] = useState<string | null>(null);
+  const fileNavigationRequestIdRef = useRef(0);
+  const fileContentRequestIdRef = useRef(0);
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -104,6 +118,20 @@ export default function AppPage() {
     }
 
     void refreshPreviewForSession(token, selectedSessionId);
+  }, [selectedSessionId]);
+
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      return;
+    }
+
+    if (!selectedSessionId) {
+      resetWorkspaceFileSurface();
+      return;
+    }
+
+    void loadWorkspaceFilesForSession(token, selectedSessionId);
   }, [selectedSessionId]);
 
   async function loadSessions(token: string): Promise<void> {
@@ -320,6 +348,116 @@ export default function AppPage() {
     });
   }
 
+  function resetWorkspaceFileSurface(): void {
+    fileNavigationRequestIdRef.current += 1;
+    fileContentRequestIdRef.current += 1;
+    setFileSurfaceState('empty');
+    setWorkspaceFileTree([]);
+    setSelectedFilePath(null);
+    setSelectedFileContent('');
+    setFileSurfaceError(null);
+  }
+
+  async function loadWorkspaceFilesForSession(token: string, sessionId: string): Promise<void> {
+    const requestId = fileNavigationRequestIdRef.current + 1;
+    fileNavigationRequestIdRef.current = requestId;
+    fileContentRequestIdRef.current += 1;
+
+    setFileSurfaceState('loading');
+    setWorkspaceFileTree([]);
+    setSelectedFilePath(null);
+    setSelectedFileContent('');
+    setFileSurfaceError(null);
+
+    try {
+      const tree = await loadWorkspaceFileTree({
+        token,
+        sessionId,
+      });
+
+      if (fileNavigationRequestIdRef.current !== requestId) {
+        return;
+      }
+
+      const firstFilePath = findFirstFilePath(tree);
+      if (!firstFilePath) {
+        setWorkspaceFileTree(tree);
+        setSelectedFilePath(null);
+        setSelectedFileContent('');
+        setFileSurfaceState('empty');
+        return;
+      }
+
+      setWorkspaceFileTree(tree);
+      await loadWorkspaceFileContent(token, sessionId, firstFilePath);
+    } catch (error) {
+      console.error('Failed to load workspace files:', error);
+      if (fileNavigationRequestIdRef.current !== requestId) {
+        return;
+      }
+      setWorkspaceFileTree([]);
+      setSelectedFilePath(null);
+      setSelectedFileContent('');
+      setFileSurfaceState('error');
+      setFileSurfaceError('Failed to load workspace files.');
+    }
+  }
+
+  async function loadWorkspaceFileContent(
+    token: string,
+    sessionId: string,
+    filePath: string,
+  ): Promise<void> {
+    const requestId = fileContentRequestIdRef.current + 1;
+    fileContentRequestIdRef.current = requestId;
+
+    setFileSurfaceState('loading');
+    setFileSurfaceError(null);
+    setSelectedFilePath(filePath);
+
+    try {
+      const fileResponse = await readWorkspaceFile({
+        token,
+        sessionId,
+        filePath,
+      });
+
+      if (fileContentRequestIdRef.current !== requestId) {
+        return;
+      }
+
+      setSelectedFilePath(fileResponse.path);
+      setSelectedFileContent(fileResponse.content);
+      setFileSurfaceState('ready');
+    } catch (error) {
+      console.error('Failed to load workspace file content:', error);
+      if (fileContentRequestIdRef.current !== requestId) {
+        return;
+      }
+      setSelectedFileContent('');
+      setFileSurfaceState('error');
+      setFileSurfaceError('Failed to load selected file content.');
+    }
+  }
+
+  async function handleSelectWorkspaceFile(filePath: string): Promise<void> {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+
+    if (!selectedSessionId) {
+      setFileSurfaceState('empty');
+      setSelectedFilePath(null);
+      setSelectedFileContent('');
+      setFileSurfaceError(null);
+      return;
+    }
+
+    await loadWorkspaceFileContent(token, selectedSessionId, filePath);
+  }
+
   async function refreshPreviewForSession(token: string, sessionId: string): Promise<void> {
     const requestId = previewRequestIdRef.current + 1;
     previewRequestIdRef.current = requestId;
@@ -425,6 +563,12 @@ export default function AppPage() {
       onRefreshPreview={handleRefreshPreview}
       onPreviewLoad={handlePreviewLoad}
       onPreviewError={handlePreviewError}
+      fileSurfaceState={fileSurfaceState}
+      workspaceFileTree={workspaceFileTree}
+      selectedFilePath={selectedFilePath}
+      selectedFileContent={selectedFileContent}
+      fileSurfaceError={fileSurfaceError}
+      onSelectWorkspaceFile={handleSelectWorkspaceFile}
     />
   );
 }

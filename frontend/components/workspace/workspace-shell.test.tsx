@@ -6,6 +6,7 @@ import WorkspaceShell from './workspace-shell';
 import type { WorkspaceCheckpoint, WorkspaceShellSession } from './workspace-shell.logic';
 import type { WorkspaceExecState } from './workspace-exec.logic';
 import type { WorkspacePreviewState } from './workspace-preview.logic';
+import type { WorkspaceFileNode } from './workspace-file-navigation.logic';
 
 const session: WorkspaceShellSession = {
   id: '12345678-test-session',
@@ -53,6 +54,21 @@ const idleExecState: WorkspaceExecState = {
 };
 
 const unavailablePreviewState: WorkspacePreviewState = 'unavailable';
+const workspaceFileTree: WorkspaceFileNode[] = [
+  {
+    name: 'src',
+    path: 'src',
+    type: 'directory',
+    children: [
+      {
+        name: 'app.ts',
+        path: 'src/app.ts',
+        type: 'file',
+        children: [],
+      },
+    ],
+  },
+];
 
 function renderWorkspaceShell(
   overrides: Partial<React.ComponentProps<typeof WorkspaceShell>> = {},
@@ -83,6 +99,12 @@ function renderWorkspaceShell(
     onRefreshPreview: async () => {},
     onPreviewLoad: () => {},
     onPreviewError: () => {},
+    fileSurfaceState: 'ready',
+    workspaceFileTree,
+    selectedFilePath: 'src/app.ts',
+    selectedFileContent: 'console.log("hello");',
+    fileSurfaceError: null,
+    onSelectWorkspaceFile: async () => {},
   };
 
   return renderToStaticMarkup(<WorkspaceShell {...defaultProps} {...overrides} />);
@@ -96,6 +118,9 @@ describe('workspace shell component', () => {
     assert.match(html, /Chat Panel/);
     assert.match(html, /Command Input \(Exec Slice\)/);
     assert.match(html, /Editor Panel/);
+    assert.match(html, /Editor ready/);
+    assert.match(html, /src\/app\.ts/);
+    assert.match(html, /console\.log\(&quot;hello&quot;\);/);
     assert.match(html, /Preview Panel/);
     assert.match(html, /Preview unavailable/);
     assert.match(html, /History \/ Control \(Slice 1\)/);
@@ -117,11 +142,16 @@ describe('workspace shell component', () => {
       usageSummary: null,
       quotaSummary: null,
       isLoadingDashboard: true,
+      fileSurfaceState: 'loading',
+      workspaceFileTree: [],
+      selectedFilePath: null,
+      selectedFileContent: '',
     });
 
     assert.match(html, /Workspace is loading/);
     assert.match(html, /History is loading/);
     assert.match(html, /Dashboard is loading/);
+    assert.match(html, /Editor loading/);
     assert.match(html, /Action: Please wait a moment\./);
   });
 
@@ -135,11 +165,17 @@ describe('workspace shell component', () => {
       usageSummary: null,
       quotaSummary: null,
       dashboardError: 'Failed to load dashboard summary.',
+      fileSurfaceState: 'error',
+      workspaceFileTree: [],
+      selectedFilePath: null,
+      selectedFileContent: '',
+      fileSurfaceError: 'Failed to load workspace files.',
     });
 
     assert.match(html, /Workspace unavailable/);
     assert.match(html, /History unavailable/);
     assert.match(html, /Dashboard unavailable/);
+    assert.match(html, /Editor unavailable/);
     assert.match(html, /Action: Refresh this page to retry\./);
   });
 
@@ -150,10 +186,15 @@ describe('workspace shell component', () => {
       userSummary: null,
       usageSummary: null,
       quotaSummary: null,
+      fileSurfaceState: 'empty',
+      workspaceFileTree: [],
+      selectedFilePath: null,
+      selectedFileContent: '',
     });
 
     assert.match(html, /No checkpoints yet/);
     assert.match(html, /No dashboard data yet/);
+    assert.match(html, /No file available/);
     assert.match(html, /Action: Create or select a session, then retry\./);
   });
 

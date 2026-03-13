@@ -9006,3 +9006,98 @@ Make the workspace preview panel meaningfully usable by wiring the existing prev
 **Reference:** PHASE-78-FINAL-CHECKPOINT.md, PHASE-78A-CHECKPOINT.md, PHASE-78B-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### TASK-79B: Core Editor File Navigation Slice
+
+**Task ID:** TASK-79B
+**Phase:** 79
+**Stage:** 79B
+**Priority:** 🟡 Medium
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** Phase 78 (Complete and Locked), TASK-79A (Complete and Locked), TASK-68C (Complete)
+**Checkpoint:** `docs/PHASE-79B-CHECKPOINT.md`
+
+**Objective:**
+
+Make the workspace editor area meaningfully usable by wiring the existing editor/file-navigation surface to already-available workspace file capabilities, so the user can browse files and switch the active file inside the main workspace.
+
+**Background:**
+
+- Phase 78 delivered end-to-end real workspace exec interaction.
+- TASK-79A delivered a usable preview panel wired to the existing preview proxy path.
+- The remaining highest-value core workspace gap is editor/file navigation usability — the editor panel surface exists but is not wired to any file listing or file-content capability.
+- The broader product/task plan treats Monaco editor integration and file-tree navigation as core session-view surfaces immediately adjacent to preview in the workspace stack.
+- This task wires only the file-navigation and file-content display; file editing/save behavior is a separate deferred task.
+
+**Scope:**
+
+1. **File Navigation Wiring**
+   - Connect the existing workspace editor/file-navigation surface to already-available file listing / file-content capabilities for the active session only
+   - Render a real file list/tree surface for the active session
+
+2. **File Selection and Content Load**
+   - Allow selecting a file from the file-navigation surface
+   - Load and display the selected file's content in the existing editor area
+
+3. **File Navigation Lifecycle States**
+   - `loading` — file list or file content is being fetched
+   - `ready` — file list loaded and/or selected file content displayed
+   - `empty` / `no file available` — no files present in the active session workspace
+   - `error` — file list or file content fetch failed
+
+4. **Integration Boundary**
+   - Keep file-navigation state tied to the active session only
+   - Keep integration localized to existing workspace shell, editor panel, and file-navigation surface
+   - No broader workspace redesign or refactor of other surfaces
+
+5. **Tests and Checkpoint**
+   - Focused frontend tests for this slice only
+   - Slice-specific checkpoint output: `docs/PHASE-79B-CHECKPOINT.md`
+
+**Explicitly Out of Scope:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No file editing / save behavior in this task
+- ❌ No file create / delete / rename / upload in this task
+- ❌ No terminal/streaming work
+- ❌ No broader workspace redesign
+- ❌ No polling or timer-based refresh
+- ❌ No websocket/realtime behavior
+- ❌ No multi-task work
+
+**Deliverables:**
+
+1. File-navigation surface wired to existing file listing capability for the active session
+2. File selection loads content into the existing editor area
+3. File-navigation/editor surface shows distinct loading / ready / empty / error states
+4. Focused frontend tests for this slice
+5. Checkpoint: `docs/PHASE-79B-CHECKPOINT.md`
+
+**Acceptance Criteria:**
+
+- ✅ Active session file-navigation surface loads using already-available file capability only
+- ✅ User can select a file from the workspace file-navigation surface
+- ✅ Selected file content loads into the existing editor area
+- ✅ Editor/file-navigation surface shows distinct loading / ready / empty / error states
+- ✅ File-navigation remains tied to the active session only
+- ✅ No backend changes occurred
+- ✅ No schema changes occurred
+- ✅ No refactors occurred
+- ✅ No regressions in workspace shell, session sidebar, exec interaction, preview panel, or history/control surfaces
+- ✅ Checkpoint created at `docs/PHASE-79B-CHECKPOINT.md`
+
+**Preserved Invariants:**
+
+- Frontend-only — no backend, no schema, no endpoint changes
+- Additive only — no refactors of existing workspace surfaces
+- No polling, timers, websocket, or realtime behavior
+- File-navigation scoped to active session only
+- PRD.md and ARCHITECTURE.md remain higher authority
+
+**Reference:** PHASE-79A-CHECKPOINT.md, PHASE-78-FINAL-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
+
+---
