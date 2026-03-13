@@ -2619,9 +2619,9 @@ Validate and consolidate completed Phase 77 bounded fix outputs (`TASK-77A`) and
 
 ### Phase 78: Real Workspace Exec Interaction Slice
 
-**Current Stage:** 78B-0
+**Current Stage:** 78-FINAL-COMPLETE
 
-**Active Task:** TASK-78B
+**Active Task:** TASK-78-FINAL (COMPLETE and LOCKED)
 
 #### TASK-78A: Core Exec Interaction Slice
 
@@ -2686,5 +2686,49 @@ After a successful exec, refresh the checkpoint list and session-state indicator
 **Dependencies:** TASK-78A (Complete and Locked), TASK-68D (Complete and Locked)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-78B for full details
+
+---
+
+#### TASK-78-FINAL: Phase 78 Final Consolidation
+
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)
+**Checkpoint:** `docs/PHASE-78-FINAL-CHECKPOINT.md`
+
+**Objective:**
+Validate and consolidate completed Phase 78 slices (`TASK-78A`, `TASK-78B`) and close Phase 78 with a final checkpoint confirming the real workspace exec interaction slice is complete, bounded, and coherent.
+
+**Scope:**
+- Validate and consolidate `TASK-78A` and `TASK-78B` outputs
+- Confirm exec interaction end-to-end (workspace input → exec request → result rendering → post-exec surface refresh)
+- Confirm scope remained frontend-only and additive
+- Confirm no backend changes, no schema changes, no refactors
+- Confirm PRD / ARCHITECTURE alignment (exec contract, HTTP semantics, JWT/ownership)
+- Confirm no regressions across workspace shell, session sidebar, and history/control surfaces
+- Create final Phase 78 checkpoint
+
+**Non-Goals:**
+- ❌ No new implementation
+- ❌ No platform code changes
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+- ❌ No new product scope
+- ❌ No TASK-79 work
+
+**Dependencies:** TASK-78A (Complete and Locked), TASK-78B (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-78-FINAL for full details
+
+**Completion Summary:**
+- ✅ TASK-78A validated — core exec interaction slice complete and locked
+- ✅ TASK-78B validated — post-exec surface coherence complete and locked
+- ✅ End-to-end exec interaction confirmed (workspace input → exec request → result rendering → post-exec refresh)
+- ✅ Scope confirmed frontend-only and additive across all Phase 78 work
+- ✅ No backend changes, schema changes, endpoint changes, or refactors
+- ✅ PRD/ARCHITECTURE alignment confirmed (`exitCode`/`stdout`/`stderr`, HTTP 400/404/410, JWT/ownership)
+- ✅ 39/39 tests pass; 0 regressions
+- ✅ Final checkpoint created: `docs/PHASE-78-FINAL-CHECKPOINT.md`
 
 ---

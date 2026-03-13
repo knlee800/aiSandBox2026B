@@ -8830,3 +8830,89 @@ After a successful exec, refresh the checkpoint list and session-state indicator
 **Reference:** PHASE-78A-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### TASK-78-FINAL: Phase 78 Final Consolidation
+
+**Task ID:** TASK-78-FINAL
+**Phase:** 78
+**Stage:** 78-FINAL
+**Priority:** 🟡 Medium
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)
+**Dependencies:** TASK-78A (Complete and Locked), TASK-78B (Complete and Locked)
+**Checkpoint:** `docs/PHASE-78-FINAL-CHECKPOINT.md`
+
+**Objective:**
+
+Validate and consolidate completed Phase 78 slices (`TASK-78A`, `TASK-78B`) and close Phase 78 with a final checkpoint confirming the real workspace exec interaction slice is complete, bounded, and coherent.
+
+**Background:**
+
+- TASK-78A wired `POST /api/sessions/:id/exec` in the workspace and rendered real exec results with correct lifecycle state feedback
+- TASK-78B added success-only post-exec refresh of the checkpoint list, session status, and dashboard surfaces
+- Both slices are COMPLETE and LOCKED with checkpoint evidence
+- This final consolidation closes Phase 78 and confirms end-to-end coherence without introducing any new implementation
+
+**Scope:**
+
+1. **Consolidation**
+   - Validate and consolidate `TASK-78A` and `TASK-78B` checkpoint outputs
+   - Confirm exec interaction end-to-end:
+     - workspace command input
+     - exec request to `POST /api/sessions/:id/exec`
+     - result rendering (`exitCode`, `stdout`, `stderr`, SUCCESS/FAILURE states)
+     - post-exec surface refresh (checkpoints, sessions, dashboard)
+
+2. **Scope Compliance Confirmation**
+   - Confirm scope remained frontend-only and additive across both slices
+   - Confirm no backend changes occurred
+   - Confirm no schema changes occurred
+   - Confirm no refactors occurred
+   - Confirm no polling/timers/websocket/realtime behavior was introduced
+
+3. **PRD / ARCHITECTURE Alignment**
+   - Confirm exec contract preserved: `{ exitCode, stdout, stderr }` response shape
+   - Confirm HTTP 400 / 404 / 410 semantics preserved per PRD Section 3B and ARCHITECTURE Section 4
+   - Confirm JWT / ownership assumptions preserved per ARCHITECTURE Section 8
+   - Confirm no internal endpoints were exposed or repurposed
+
+4. **Regression Check**
+   - Confirm no regressions across existing workspace shell, session sidebar, and history/control surfaces
+
+5. **Checkpoint**
+   - Create final Phase 78 checkpoint: `docs/PHASE-78-FINAL-CHECKPOINT.md`
+
+**Explicitly Out of Scope:**
+
+- ❌ No new implementation
+- ❌ No platform code changes
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+- ❌ No new product scope
+- ❌ No TASK-79 work
+
+**Deliverables:**
+
+1. Validation and consolidation findings for TASK-78A and TASK-78B
+2. Final Phase 78 checkpoint: `docs/PHASE-78-FINAL-CHECKPOINT.md`
+
+**Acceptance Criteria:**
+
+- ✅ TASK-78A confirmed COMPLETE and LOCKED with checkpoint evidence
+- ✅ TASK-78B confirmed COMPLETE and LOCKED with checkpoint evidence
+- ✅ Real workspace exec interaction slice confirmed functional end-to-end
+- ✅ Post-exec surface coherence confirmed functional
+- ✅ No regressions confirmed
+- ✅ No scope violations confirmed
+- ✅ Final checkpoint created at `docs/PHASE-78-FINAL-CHECKPOINT.md`
+
+**Preserved Invariants:**
+
+- Validation/documentation-only — no platform code, schema, or endpoint changes
+- PRD.md and ARCHITECTURE.md remain higher authority
+
+**Reference:** PHASE-78A-CHECKPOINT.md, PHASE-78B-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
+
+---
