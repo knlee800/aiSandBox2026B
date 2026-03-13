@@ -9101,3 +9101,93 @@ Make the workspace editor area meaningfully usable by wiring the existing editor
 **Reference:** PHASE-79A-CHECKPOINT.md, PHASE-78-FINAL-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### TASK-79-FINAL: Phase 79 Final Consolidation
+
+**Task ID:** TASK-79-FINAL
+**Phase:** 79
+**Stage:** 79-FINAL
+**Priority:** 🟡 Medium
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)
+**Dependencies:** TASK-79A (Complete and Locked), TASK-79B (Complete and Locked)
+**Checkpoint:** `docs/PHASE-79-FINAL-CHECKPOINT.md`
+
+**Objective:**
+
+Validate and consolidate completed Phase 79 slices (`TASK-79A`, `TASK-79B`) and close Phase 79 with a final checkpoint confirming the workspace preview and editor/file-navigation usability slice is complete, bounded, and coherent.
+
+**Scope:**
+
+1. **Task Sequence Consolidation**
+   - Validate and consolidate `TASK-79A` and `TASK-79B` outputs
+   - Confirm both tasks are complete and locked with checkpoint evidence
+
+2. **End-to-End Workspace Usability Confirmation**
+   - Active-session preview loading
+   - Preview ready / unavailable / error handling
+   - Manual preview refresh
+   - Active-session file navigation
+   - File selection
+   - Selected file content rendering in the editor area
+
+3. **Scope Integrity Verification**
+   - Confirm scope remained frontend-only and additive across all Phase 79 work
+   - Confirm no backend changes, no schema changes, no refactors occurred
+   - Confirm no polling, timers, websocket, or realtime behavior was introduced
+
+4. **PRD / ARCHITECTURE Alignment**
+   - Preview panel behavior (PRD Section 3D — Preview & Run)
+   - Active-session scoping for both preview and file-navigation surfaces
+   - Existing file capability reuse only
+
+5. **Regression Confirmation**
+   - Confirm no regressions across workspace shell, session sidebar, exec interaction, preview panel, history/control surfaces, and public landing
+   - Full frontend test suite passes
+
+6. **Checkpoint Creation**
+   - Create final Phase 79 checkpoint at `docs/PHASE-79-FINAL-CHECKPOINT.md`
+
+**Explicitly Out of Scope:**
+
+- ❌ No new implementation
+- ❌ No platform code changes
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+- ❌ No new product scope
+- ❌ No TASK-80 work
+
+**Deliverables:**
+
+1. Validated and consolidated `TASK-79A` and `TASK-79B` outputs
+2. Confirmed scope integrity (frontend-only, additive, no backend/schema/refactor)
+3. Confirmed PRD / ARCHITECTURE alignment
+4. Confirmed 0 regressions
+5. Final checkpoint: `docs/PHASE-79-FINAL-CHECKPOINT.md`
+
+**Acceptance Criteria:**
+
+- ✅ TASK-79A confirmed COMPLETE and LOCKED with checkpoint evidence
+- ✅ TASK-79B confirmed COMPLETE and LOCKED with checkpoint evidence
+- ✅ Workspace preview slice confirmed functional and bounded
+- ✅ Workspace editor/file-navigation slice confirmed functional and bounded
+- ✅ No regressions confirmed (full frontend test suite passes)
+- ✅ No scope violations confirmed
+- ✅ Final checkpoint created at `docs/PHASE-79-FINAL-CHECKPOINT.md`
+
+**Preserved Invariants:**
+
+- No platform code changes in this final consolidation stage
+- No frontend changes
+- No backend changes
+- No schema changes
+- No endpoint changes
+- No refactors
+- Validation/documentation-only scope preserved
+- PRD.md and ARCHITECTURE.md remain higher authority
+
+**Reference:** PHASE-79A-CHECKPOINT.md, PHASE-79B-CHECKPOINT.md, PHASE-78-FINAL-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
+
+---

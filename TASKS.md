@@ -2735,9 +2735,9 @@ Validate and consolidate completed Phase 78 slices (`TASK-78A`, `TASK-78B`) and 
 
 ### Phase 79: Core Preview Interaction Slice
 
-**Current Stage:** 79B-0
+**Current Stage:** 79-FINAL-0
 
-**Active Task:** TASK-79B
+**Active Task:** TASK-79-FINAL
 
 #### TASK-79A: Core Preview Interaction Slice
 
@@ -2820,5 +2820,48 @@ Make the workspace editor area meaningfully usable by wiring the existing editor
 **Dependencies:** Phase 78 (Complete and Locked), TASK-79A (Complete and Locked), TASK-68C (Complete)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-79B for full details
+
+---
+
+#### TASK-79-FINAL: Phase 79 Final Consolidation
+
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)
+**Checkpoint:** `docs/PHASE-79-FINAL-CHECKPOINT.md`
+
+**Objective:**
+Validate and consolidate completed Phase 79 slices (`TASK-79A`, `TASK-79B`) and close Phase 79 with a final checkpoint confirming the workspace preview and editor/file-navigation usability slice is complete, bounded, and coherent.
+
+**Scope:**
+- Validate and consolidate `TASK-79A` and `TASK-79B`
+- Confirm scope remained frontend-only and additive
+- Confirm no backend, schema, or refactor changes occurred
+- Confirm PRD / ARCHITECTURE alignment for preview panel, active-session scoping, and file capability reuse
+- Confirm no regressions across all workspace surfaces
+- Create final Phase 79 checkpoint
+
+**Non-Goals:**
+- ❌ No new implementation
+- ❌ No platform code changes
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+- ❌ No new product scope
+- ❌ No TASK-80 work
+
+**Dependencies:** TASK-79A (Complete and Locked), TASK-79B (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-79-FINAL for full details
+
+**Completion Summary:**
+- ✅ TASK-79A validated — core preview interaction slice complete and locked
+- ✅ TASK-79B validated — core editor file navigation slice complete and locked
+- ✅ End-to-end preview and file-navigation usability confirmed
+- ✅ Scope confirmed frontend-only and additive across all Phase 79 work
+- ✅ No backend changes, schema changes, endpoint changes, or refactors
+- ✅ PRD/ARCHITECTURE alignment confirmed (preview proxy, session scoping, file capability reuse)
+- ✅ 49/49 tests pass; 0 regressions
+- ✅ Final checkpoint created: `docs/PHASE-79-FINAL-CHECKPOINT.md`
 
 ---
