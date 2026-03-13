@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import WorkspaceShell from '@/components/workspace/workspace-shell';
 import type {
@@ -16,6 +16,12 @@ import {
 } from '@/components/workspace/workspace-exec.logic';
 import { refreshPostExecSurfaces } from '@/components/workspace/workspace-post-exec.logic';
 import { areCheckpointListsEqual } from '@/components/workspace/workspace-shell.logic';
+import {
+  buildPreviewProxyUrl,
+  isPreviewRunning,
+  type WorkspacePreviewStatusResponse,
+  type WorkspacePreviewState,
+} from '@/components/workspace/workspace-preview.logic';
 
 export default function AppPage() {
   const router = useRouter();
@@ -42,6 +48,9 @@ export default function AppPage() {
     status: 'idle',
     result: null,
   });
+  const [previewState, setPreviewState] = useState<WorkspacePreviewState>('unavailable');
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const previewRequestIdRef = useRef(0);
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -80,6 +89,21 @@ export default function AppPage() {
       status: 'idle',
       result: null,
     });
+  }, [selectedSessionId]);
+
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      return;
+    }
+
+    if (!selectedSessionId) {
+      setPreviewState('unavailable');
+      setPreviewUrl(null);
+      return;
+    }
+
+    void refreshPreviewForSession(token, selectedSessionId);
   }, [selectedSessionId]);
 
   async function loadSessions(token: string): Promise<void> {
@@ -296,6 +320,76 @@ export default function AppPage() {
     });
   }
 
+  async function refreshPreviewForSession(token: string, sessionId: string): Promise<void> {
+    const requestId = previewRequestIdRef.current + 1;
+    previewRequestIdRef.current = requestId;
+    setPreviewState('loading');
+    setPreviewUrl(null);
+
+    try {
+      const statusResponse = await fetch(`/api/preview/${sessionId}/status`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!statusResponse.ok) {
+        throw new Error(`Preview status failed (${statusResponse.status})`);
+      }
+
+      const statusData = (await statusResponse.json()) as WorkspacePreviewStatusResponse;
+
+      if (previewRequestIdRef.current !== requestId) {
+        return;
+      }
+
+      if (!isPreviewRunning(statusData)) {
+        setPreviewState('unavailable');
+        setPreviewUrl(null);
+        return;
+      }
+
+      setPreviewUrl(buildPreviewProxyUrl(sessionId, Date.now()));
+    } catch (error) {
+      console.error('Failed to load preview state:', error);
+      if (previewRequestIdRef.current !== requestId) {
+        return;
+      }
+      setPreviewState('error');
+      setPreviewUrl(null);
+    }
+  }
+
+  async function handleRefreshPreview(): Promise<void> {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+
+    if (!selectedSessionId) {
+      setPreviewState('unavailable');
+      setPreviewUrl(null);
+      return;
+    }
+
+    await refreshPreviewForSession(token, selectedSessionId);
+  }
+
+  function handlePreviewLoad(): void {
+    setPreviewState((currentState) => {
+      if (currentState !== 'loading') {
+        return currentState;
+      }
+      return 'ready';
+    });
+  }
+
+  function handlePreviewError(): void {
+    setPreviewState('error');
+  }
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -326,6 +420,11 @@ export default function AppPage() {
       onCommandInputChange={setCommandInput}
       onExecuteCommand={handleExecuteCommand}
       execState={execState}
+      previewState={previewState}
+      previewUrl={previewUrl}
+      onRefreshPreview={handleRefreshPreview}
+      onPreviewLoad={handlePreviewLoad}
+      onPreviewError={handlePreviewError}
     />
   );
 }

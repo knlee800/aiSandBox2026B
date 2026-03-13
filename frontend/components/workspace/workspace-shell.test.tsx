@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import WorkspaceShell from './workspace-shell';
 import type { WorkspaceCheckpoint, WorkspaceShellSession } from './workspace-shell.logic';
 import type { WorkspaceExecState } from './workspace-exec.logic';
+import type { WorkspacePreviewState } from './workspace-preview.logic';
 
 const session: WorkspaceShellSession = {
   id: '12345678-test-session',
@@ -51,6 +52,8 @@ const idleExecState: WorkspaceExecState = {
   result: null,
 };
 
+const unavailablePreviewState: WorkspacePreviewState = 'unavailable';
+
 function renderWorkspaceShell(
   overrides: Partial<React.ComponentProps<typeof WorkspaceShell>> = {},
 ): string {
@@ -75,6 +78,11 @@ function renderWorkspaceShell(
     onCommandInputChange: () => {},
     onExecuteCommand: async () => {},
     execState: idleExecState,
+    previewState: unavailablePreviewState,
+    previewUrl: null,
+    onRefreshPreview: async () => {},
+    onPreviewLoad: () => {},
+    onPreviewError: () => {},
   };
 
   return renderToStaticMarkup(<WorkspaceShell {...defaultProps} {...overrides} />);
@@ -89,6 +97,7 @@ describe('workspace shell component', () => {
     assert.match(html, /Command Input \(Exec Slice\)/);
     assert.match(html, /Editor Panel/);
     assert.match(html, /Preview Panel/);
+    assert.match(html, /Preview unavailable/);
     assert.match(html, /History \/ Control \(Slice 1\)/);
     assert.match(html, /Dashboard \(Slice 1\)/);
     assert.match(html, /Session 12345678/);
@@ -157,6 +166,41 @@ describe('workspace shell component', () => {
     assert.ok(html.includes('grid-cols-1'));
     assert.ok(html.includes('md:grid-cols-2'));
     assert.ok(html.includes('xl:grid-cols-3'));
+  });
+
+  test('renders loading preview state and refresh button', () => {
+    const html = renderWorkspaceShell({
+      selectedSessionId: session.id,
+      previewState: 'loading',
+      previewUrl: `/api/preview/${session.id}/proxy?refresh=1`,
+    });
+
+    assert.match(html, /Preview loading/);
+    assert.match(html, /Refreshing\.\.\./);
+    assert.match(html, /data-testid="workspace-preview-iframe"/);
+  });
+
+  test('renders ready preview state with iframe', () => {
+    const html = renderWorkspaceShell({
+      selectedSessionId: session.id,
+      previewState: 'ready',
+      previewUrl: `/api/preview/${session.id}/proxy?refresh=2`,
+    });
+
+    assert.match(html, /Preview ready/);
+    assert.match(html, /workspace-preview-iframe/);
+    assert.match(html, /Use Refresh to reload only this preview\./);
+  });
+
+  test('renders preview error state', () => {
+    const html = renderWorkspaceShell({
+      selectedSessionId: session.id,
+      previewState: 'error',
+      previewUrl: null,
+    });
+
+    assert.match(html, /Preview error/);
+    assert.match(html, /Choose Refresh to retry the preview surface\./);
   });
 
   test('does not render out-of-scope history or dashboard UI', () => {

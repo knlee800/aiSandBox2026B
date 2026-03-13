@@ -8916,3 +8916,93 @@ Validate and consolidate completed Phase 78 slices (`TASK-78A`, `TASK-78B`) and 
 **Reference:** PHASE-78A-CHECKPOINT.md, PHASE-78B-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### TASK-79A: Core Preview Interaction Slice
+
+**Task ID:** TASK-79A
+**Phase:** 79
+**Stage:** 79A
+**Priority:** 🟡 Medium
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** TASK-78-FINAL (Complete and Locked), TASK-68C (Complete), TASK-78A (Complete and Locked), TASK-78B (Complete and Locked)
+**Checkpoint:** `docs/PHASE-79A-CHECKPOINT.md`
+
+**Objective:**
+
+Make the workspace preview panel meaningfully usable by wiring the existing preview surface to the already-available preview route/proxy path, with clear loading / ready / error / unavailable states.
+
+**Background:**
+
+- Phase 78 delivered end-to-end real workspace exec interaction (command input → exec → result rendering → post-exec coherence refresh)
+- The next highest-value product gap is workspace preview usability — the preview panel surface exists but is not wired to the already-available preview route/proxy capability
+- The original workspace/product plan treats the preview panel as a core session-view surface alongside exec interaction and editor/file navigation
+- This task wires only the preview panel; editor/file-tree work is a separate deferred task
+
+**Scope:**
+
+1. **Preview Panel Wiring**
+   - Connect the existing workspace preview panel to the already-available preview URL/path for the active session only
+   - Render the real preview surface inside the existing workspace panel (e.g., using an `<iframe>` or equivalent contained rendering)
+
+2. **Preview Lifecycle States**
+   - `loading` — preview is being fetched/initializing
+   - `ready` — preview surface is reachable and rendering
+   - `unavailable` / `not yet running` — no running preview for the active session (normal state when no dev server is running)
+   - `error` — preview failed to load or returned an error
+
+3. **Manual Refresh Control**
+   - Add a manual refresh button/control scoped to the preview panel only
+   - Refresh reloads the preview surface without a page-level reload
+
+4. **Integration Boundary**
+   - Keep integration localized to the existing workspace shell and existing preview panel component
+   - No broader workspace redesign or refactor of other surfaces
+
+5. **Tests and Checkpoint**
+   - Focused frontend tests for this slice only
+   - Slice-specific checkpoint output: `docs/PHASE-79A-CHECKPOINT.md`
+
+**Explicitly Out of Scope:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No terminal/streaming work
+- ❌ No editor/file-tree work in this task
+- ❌ No broader workspace redesign
+- ❌ No polling or timer-based refresh
+- ❌ No websocket/realtime behavior
+- ❌ No multi-task work
+
+**Deliverables:**
+
+1. Preview panel wired to existing preview URL/path for the active session
+2. Preview lifecycle states rendered correctly (loading, ready, unavailable, error)
+3. Manual refresh control for preview panel
+4. Focused frontend tests for this slice
+5. Checkpoint: `docs/PHASE-79A-CHECKPOINT.md`
+
+**Acceptance Criteria:**
+
+- ✅ Active session preview surface loads in the workspace panel using existing preview capability only
+- ✅ Preview panel shows distinct loading / ready / unavailable / error states
+- ✅ Manual refresh reloads preview without page-level reload
+- ✅ Preview remains scoped to the active session only
+- ✅ No backend changes occurred
+- ✅ No schema changes occurred
+- ✅ No refactors occurred
+- ✅ No regressions in workspace shell, session sidebar, exec interaction, or history/control surfaces
+- ✅ Checkpoint created at `docs/PHASE-79A-CHECKPOINT.md`
+
+**Preserved Invariants:**
+
+- Frontend-only — no backend, no schema, no endpoint changes
+- Additive only — no refactors of existing workspace surfaces
+- No polling, timers, websocket, or realtime behavior
+- PRD.md and ARCHITECTURE.md remain higher authority
+
+**Reference:** PHASE-78-FINAL-CHECKPOINT.md, PHASE-78A-CHECKPOINT.md, PHASE-78B-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
+
+---

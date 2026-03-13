@@ -14,6 +14,7 @@ import {
   type WorkspaceUserSummary,
 } from './workspace-shell.logic';
 import type { WorkspaceExecState } from './workspace-exec.logic';
+import type { WorkspacePreviewState } from './workspace-preview.logic';
 
 interface WorkspaceShellProps {
   sessions: WorkspaceShellSession[];
@@ -36,6 +37,11 @@ interface WorkspaceShellProps {
   onCommandInputChange: (value: string) => void;
   onExecuteCommand: () => Promise<void>;
   execState: WorkspaceExecState;
+  previewState: WorkspacePreviewState;
+  previewUrl: string | null;
+  onRefreshPreview: () => Promise<void>;
+  onPreviewLoad: () => void;
+  onPreviewError: () => void;
 }
 
 export default function WorkspaceShell(props: WorkspaceShellProps) {
@@ -136,7 +142,14 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
             </section>
             <section className="bg-white border border-gray-200 rounded p-3" data-testid="preview-panel-shell">
               <p className="text-xs font-semibold text-gray-700 mb-2">Preview Panel</p>
-              <ShellStateMessage state={shellState} />
+              <WorkspacePreviewPanel
+                selectedSessionId={props.selectedSessionId}
+                previewState={props.previewState}
+                previewUrl={props.previewUrl}
+                onRefreshPreview={props.onRefreshPreview}
+                onPreviewLoad={props.onPreviewLoad}
+                onPreviewError={props.onPreviewError}
+              />
             </section>
           </div>
           <section className="mx-2 mb-2 bg-white border border-gray-200 rounded p-3" data-testid="history-control-slice">
@@ -214,6 +227,47 @@ function WorkspaceExecPanel(props: {
 
       {props.execState.status === 'result' && props.execState.result ? (
         <ExecResultOutput result={props.execState.result} />
+      ) : null}
+    </div>
+  );
+}
+
+function WorkspacePreviewPanel(props: {
+  selectedSessionId: string | null;
+  previewState: WorkspacePreviewState;
+  previewUrl: string | null;
+  onRefreshPreview: () => Promise<void>;
+  onPreviewLoad: () => void;
+  onPreviewError: () => void;
+}) {
+  const canRefresh = Boolean(props.selectedSessionId) && props.previewState !== 'loading';
+
+  return (
+    <div className="rounded border border-gray-200 bg-gray-50 p-2" data-testid="workspace-preview-panel">
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <p className="text-xs font-semibold text-gray-700">Live Preview</p>
+        <button
+          type="button"
+          data-testid="workspace-preview-refresh"
+          disabled={!canRefresh}
+          onClick={() => void props.onRefreshPreview()}
+          className="rounded bg-blue-600 px-3 py-1 text-xs text-white disabled:bg-blue-300"
+        >
+          {props.previewState === 'loading' ? 'Refreshing...' : 'Refresh'}
+        </button>
+      </div>
+
+      <PreviewStateMessage state={props.previewState} />
+
+      {props.previewUrl ? (
+        <iframe
+          title="Session Preview"
+          data-testid="workspace-preview-iframe"
+          src={props.previewUrl}
+          onLoad={props.onPreviewLoad}
+          onError={props.onPreviewError}
+          className="mt-2 h-56 w-full rounded border border-gray-200 bg-white"
+        />
       ) : null}
     </div>
   );
@@ -349,6 +403,50 @@ function ExecResultOutput(props: { result: NonNullable<WorkspaceExecState['resul
         </div>
       </div>
     </div>
+  );
+}
+
+function PreviewStateMessage({ state }: { state: WorkspacePreviewState }) {
+  if (state === 'loading') {
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="Preview loading"
+        body="Checking and loading the active session preview."
+        action="Wait for preview to finish loading."
+      />
+    );
+  }
+
+  if (state === 'ready') {
+    return (
+      <StateMessage
+        tone="success"
+        heading="Preview ready"
+        body="The active session preview is rendering."
+        action="Use Refresh to reload only this preview."
+      />
+    );
+  }
+
+  if (state === 'unavailable') {
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="Preview unavailable"
+        body="No running preview is available for this active session yet."
+        action="Start a dev server in the session, then choose Refresh."
+      />
+    );
+  }
+
+  return (
+    <StateMessage
+      tone="error"
+      heading="Preview error"
+      body="The preview failed to load for this active session."
+      action="Choose Refresh to retry the preview surface."
+    />
   );
 }
 

@@ -2732,3 +2732,54 @@ Validate and consolidate completed Phase 78 slices (`TASK-78A`, `TASK-78B`) and 
 - ✅ Final checkpoint created: `docs/PHASE-78-FINAL-CHECKPOINT.md`
 
 ---
+
+### Phase 79: Core Preview Interaction Slice
+
+**Current Stage:** 79A-COMPLETE
+
+**Active Task:** TASK-79A (COMPLETE and LOCKED)
+
+#### TASK-79A: Core Preview Interaction Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-79A-CHECKPOINT.md`
+
+**Objective:**
+Make the workspace preview panel meaningfully usable by wiring the existing preview surface to the already-available preview route/proxy path, with clear loading / ready / error / unavailable states.
+
+**Scope:**
+- Connect the existing workspace preview panel to the already-available preview URL/path for the active session only
+- Render the real preview surface inside the existing workspace panel
+- Add clear preview lifecycle states: loading, ready, unavailable / not yet running, error
+- Add manual refresh control for the preview surface only
+- Keep integration localized to the existing workspace shell and preview panel
+- Frontend-only changes — additive only
+- Focused frontend tests for this slice
+- Slice-specific checkpoint output
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No terminal/streaming work
+- ❌ No editor/file-tree work in this task
+- ❌ No broader workspace redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Dependencies:** TASK-78-FINAL (Complete and Locked), TASK-68C (Complete), TASK-78A (Complete and Locked), TASK-78B (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-79A for full details
+
+**Completion Summary:**
+- ✅ Preview panel wired to existing preview proxy path for the active session only
+- ✅ All four preview lifecycle states rendered (loading, ready, unavailable, error)
+- ✅ Manual refresh control scoped to preview panel only — no full page reload
+- ✅ Preview tied strictly to active session; resets on session switch
+- ✅ Frontend-only and additive — no backend, schema, endpoint, or refactor changes
+- ✅ 45/45 tests pass; 0 regressions
+- ✅ Checkpoint created: `docs/PHASE-79A-CHECKPOINT.md`
+
+---
