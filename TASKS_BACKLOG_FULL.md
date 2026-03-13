@@ -8483,3 +8483,94 @@ This task is limited to final consolidation validation for completed Phase 76 ou
 **Reference:** PHASE-76A-CHECKPOINT.md through PHASE-76H-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### TASK-77A: Resolve ISSUE-76-005 — POST /api/sessions/:id/exec Route Gap
+
+**Task ID:** TASK-77A
+**Phase:** 77
+**Stage:** 77A
+**Priority:** 🟡 Medium
+**Nature:** IMPLEMENTATION (MINIMAL, TARGETED FIX)
+**Dependencies:** TASK-76-FINAL (Complete)
+**Checkpoint:** `docs/PHASE-77A-CHECKPOINT.md`
+
+**Objective:**
+
+Resolve ISSUE-76-005 identified during Phase 76H full post-fix manual validation rerun: `POST /api/sessions/:id/exec` returns HTTP 404 because the route does not exist in the API Gateway. AI execution is implemented at `POST /api/ai/execute`. Resolve the gap with the minimum required fix path only.
+
+**Background (from Phase 76 artifacts):**
+
+- Phase 76A validation plan included steps 3.3 (`POST /api/sessions/:id/exec` on active session, expected HTTP 200 with stdout/exit-code) and 3.8 (`POST /api/sessions/:id/exec` after DELETE, expected HTTP 410 Gone)
+- During Phase 76H full rerun, both steps returned HTTP 404 — a route-not-found response, not a session-not-found response
+- Root cause confirmed: no `exec` route exists on `SessionController`; AI execution is handled by `POST /api/ai/execute` in `AiExecutionController`
+- First documented in PHASE-76F-CHECKPOINT (Section 9) as a pre-existing gap, out of scope for the ISSUE-76-002 fix
+- Recorded in PHASE-76H as ISSUE-76-005 with severity NON-BLOCKING (pre-existing), explicitly not a gate blocker for commercial-readiness resumption
+
+**Scope:**
+
+This task is limited to **ISSUE-76-005 resolution only** (one-issue-at-a-time product correction).
+
+**In Scope:**
+
+1. **Root Cause Confirmation**
+   - Confirm that `POST /api/sessions/:id/exec` is not implemented in the API Gateway `SessionController`
+   - Confirm that AI execution is at `POST /api/ai/execute` in `AiExecutionController`
+   - Determine per PRD/ARCHITECTURE authority whether a session-scoped exec route should exist
+
+2. **Minimum Required Fix (one of the following, whichever is minimum safe resolution):**
+   - Option A: Implement `POST /api/sessions/:id/exec` as a minimal session-scoped route that validates the session is active (HTTP 410 if terminated) and delegates to the AI execution path
+   - Option B: If PRD/ARCHITECTURE do not require a session-scoped exec route, document the correct validated route (`POST /api/ai/execute`) and update the Phase 76A validation plan reference to reflect actual platform behavior
+
+3. **Verification**
+   - Confirm ISSUE-76-005 behavior is resolved under the chosen fix path
+   - Add or update minimal regression test coverage for the fix
+   - Confirm no regression in existing session lifecycle, exec, or AI execution tests
+
+4. **Checkpoint**
+   - `docs/PHASE-77A-CHECKPOINT.md`
+   - Document root cause confirmation, fix path chosen, verification evidence, and preserved invariants
+
+**Explicitly Out of Scope:**
+
+- ❌ No unrelated fixes
+- ❌ No scope expansion beyond ISSUE-76-005
+- ❌ No refactors unless absolutely required for the minimum safe fix
+- ❌ No schema changes unless absolutely required and clearly justified
+- ❌ No endpoint changes beyond the minimum required for ISSUE-76-005 resolution
+- ❌ No broader architectural expansion
+- ❌ No commercial-readiness work
+
+**Deliverables:**
+
+1. **Fix Implementation or Documentation Update**
+   - Minimum required fix for ISSUE-76-005 under chosen resolution path
+   - Root cause and fix path documented in checkpoint
+
+2. **Tests**
+   - Minimal regression tests for ISSUE-76-005 fix only
+
+3. **Checkpoint**
+   - `docs/PHASE-77A-CHECKPOINT.md`
+
+**Acceptance Criteria:**
+
+- ✅ ISSUE-76-005 root cause confirmed
+- ✅ Minimum required fix applied (Option A or Option B per PRD/ARCHITECTURE authority)
+- ✅ `POST /api/sessions/:id/exec` behavior (or validated alternative) is consistent with platform contracts
+- ✅ Terminated-session HTTP 410 semantics preserved if exec route is implemented
+- ✅ No unrelated fixes introduced
+- ✅ No scope expansion beyond ISSUE-76-005
+- ✅ Regression tests pass
+- ✅ Checkpoint created
+
+**Preserved Invariants:**
+
+- One issue at a time (ISSUE-76-005 only)
+- No schema changes unless absolutely required
+- No broader architectural expansion
+- No commercial-readiness work
+- PRD.md and ARCHITECTURE.md remain higher authority
+
+**Reference:** PHASE-76H-CHECKPOINT.md (ISSUE-76-005), PHASE-76F-CHECKPOINT.md (Section 9), PHASE-76-FINAL-CHECKPOINT.md, TASKS.md, PRD.md, ARCHITECTURE.md
+
+---

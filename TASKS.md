@@ -2546,3 +2546,39 @@ Validate and consolidate completed Phase 76 manual-validation planning, executio
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-76-FINAL for full details
 
 ---
+
+### Phase 77: Resolve ISSUE-76-005 — Exec Route Gap
+
+**Current Stage:** 77A-0
+
+**Active Task:** TASK-77A
+
+#### TASK-77A: Resolve ISSUE-76-005 — POST /api/sessions/:id/exec Route Gap
+
+**Status:** PLANNED
+**Nature:** IMPLEMENTATION (MINIMAL, TARGETED FIX)
+**Checkpoint:** `docs/PHASE-77A-CHECKPOINT.md`
+
+**Objective:**
+Resolve ISSUE-76-005 identified during Phase 76H full post-fix manual validation rerun: `POST /api/sessions/:id/exec` returns HTTP 404 because the route does not exist in the API Gateway. AI execution is implemented at `POST /api/ai/execute`. Resolve the gap with the minimum required fix path only.
+
+**Scope:**
+- Resolve ISSUE-76-005 only (one-issue-at-a-time product correction)
+- Diagnose whether `POST /api/sessions/:id/exec` should exist per PRD/ARCHITECTURE authority
+- Apply minimum required fix: either (a) implement the missing session-scoped exec route delegating to the AI execution path, or (b) document the correct validated route path and update the Phase 76A validation plan reference, whichever is the minimum safe resolution
+- Verification/tests for ISSUE-76-005 resolution only
+- Checkpoint/evidence update for this issue-resolution task only
+
+**Non-Goals:**
+- ❌ No unrelated fixes
+- ❌ No scope expansion beyond ISSUE-76-005
+- ❌ No refactors unless absolutely required for the minimum safe fix
+- ❌ No schema changes unless absolutely required
+- ❌ No broader architectural expansion
+- ❌ No commercial-readiness work
+
+**Dependencies:** TASK-76-FINAL (Complete)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-77A for full details
+
+---

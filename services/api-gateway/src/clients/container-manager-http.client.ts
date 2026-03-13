@@ -261,6 +261,57 @@ export class ContainerManagerHttpClient implements OnModuleInit {
   }
 
   /**
+   * Execute a command inside a session's container
+   * PHASE-77A: Public exec route support
+   * Calls POST /api/internal/sessions/:sessionId/exec
+   * @param sessionId - Session UUID
+   * @param cmd - Command array (e.g., ['sh', '-c', 'ls -la'])
+   * @param cwd - Working directory (default: /workspace)
+   * @param env - Environment variables
+   * @param timeoutMs - Execution timeout in milliseconds (default: 30000)
+   * @returns Execution result with exitCode, stdout, stderr
+   * @throws Error on HTTP failure (fail-fast)
+   */
+  async execInSession(
+    sessionId: string,
+    cmd: string[],
+    cwd: string = '/workspace',
+    env?: Record<string, string>,
+    timeoutMs: number = 30000,
+  ): Promise<ExecResult> {
+    if (this.isDisabled) {
+      throw new Error(
+        'ContainerManagerHttpClient is disabled (development mode, no INTERNAL_SERVICE_KEY)',
+      );
+    }
+
+    try {
+      const response = await this.axiosInstance.post(
+        `/api/internal/sessions/${sessionId}/exec`,
+        { cmd, cwd, env, timeoutMs },
+        {
+          timeout: timeoutMs + 5000,
+          headers: {
+            'X-Internal-Service-Key': this.internalServiceKey,
+          },
+        },
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status || 'unknown';
+        const message = error.response?.data?.message || error.message;
+        throw new Error(
+          `Failed to execute command in session ${sessionId}: HTTP ${status} - ${message}`,
+        );
+      }
+      throw new Error(
+        `Failed to execute command in session ${sessionId}: ${error}`,
+      );
+    }
+  }
+
+  /**
    * Get git diff for a checkpoint from container-manager
    * PHASE-68B: Call git diff endpoint
    * Calls GET /api/git/:sessionId/diff/:commitHash
@@ -399,6 +450,16 @@ export interface BillingUsageExport {
     }>;
   };
   status: 'COMPLETE' | 'INCOMPLETE';
+}
+
+/**
+ * ExecResult interface
+ * PHASE-77A: Type definition for container exec response
+ */
+export interface ExecResult {
+  exitCode: number;
+  stdout: string;
+  stderr: string;
 }
 
 /**

@@ -4,12 +4,15 @@ import {
   Get,
   Delete,
   Param,
+  Body,
   Query,
   UseGuards,
   Request,
   HttpCode,
   HttpStatus,
   NotFoundException,
+  GoneException,
+  BadRequestException,
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -134,6 +137,52 @@ export class SessionController {
     await this.sessionService.stopSession(id);
 
     return { message: 'Session stopped successfully' };
+  }
+
+  /**
+   * Execute a command inside a session's container
+   * POST /api/sessions/:id/exec
+   * Per ARCHITECTURE Section 8: JWT required, ownership enforced
+   * Per PRD Section 3B: Output includes exit code, stdout, stderr
+   * Per ARCHITECTURE Section 4 enforcement order: Exists? → Terminated? → Execute
+   * PHASE-77A: Added to resolve ISSUE-76-005
+   * @param id - Session UUID
+   * @param command - Command string to execute
+   * @param req - Request object with authenticated user
+   * @returns Execution result with exitCode, stdout, stderr
+   */
+  @Post(':id/exec')
+  @HttpCode(HttpStatus.OK)
+  async execInSession(
+    @Param('id') id: string,
+    @Body('command') command: string,
+    @Request() req,
+  ): Promise<{ exitCode: number; stdout: string; stderr: string }> {
+    const userId = req.user.userId;
+    const session = await this.sessionService.getSessionById(id);
+
+    if (session.userId !== userId) {
+      throw new NotFoundException(`Session with ID ${id} not found`);
+    }
+
+    if (session.terminatedAt !== null) {
+      throw new GoneException(`Session ${id} is terminated`);
+    }
+
+    if (!command || command.trim().length === 0) {
+      throw new BadRequestException('command is required');
+    }
+
+    const result = await this.containerManagerHttpClient.execInSession(
+      id,
+      ['sh', '-c', command],
+    );
+
+    return {
+      exitCode: result.exitCode,
+      stdout: result.stdout,
+      stderr: result.stderr,
+    };
   }
 
   /**
