@@ -3375,3 +3375,47 @@ Re-validate and re-consolidate Phase 81 so the final Phase 81 closure correctly 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81-RECONSOLIDATE for full details
 
 ---
+
+#### TASK-81E: Checkpoint Search and Filter Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-81E-CHECKPOINT.md`
+
+**Objective:**
+Make checkpoint history easier to use by adding bounded client-side search and filter controls to the existing history/control surface, using the already-loaded checkpoint list only.
+
+**Scope:**
+- Add bounded client-side text search over visible checkpoint metadata/description within the existing history/control area
+- Add bounded client-side filter controls using already-available checkpoint metadata only
+- Keep diff viewer, compare mode, manual checkpoint, and manual revert surfaces intact
+- Preserve active-session-scoped history behavior
+- Frontend-only, additive changes
+- Focused frontend tests for this slice
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No new endpoints
+- ❌ No refactors
+- ❌ No persistence of saved filters
+- ❌ No starred/favorited checkpoints
+- ❌ No timeline redesign
+- ❌ No fuzzy-search library or dependency expansion if avoidable
+- ❌ No polling/websocket behavior
+- ❌ No broader workspace redesign
+- ❌ No multi-task work
+
+**Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked); existing history/control surface and checkpoint list load path already present
+
+**Completion evidence:**
+- ✅ Bounded text search input (`history-search-input`) and description filter (`history-description-filter`) added inside existing `data-testid="history-control-slice"` boundary
+- ✅ `filterVisibleWorkspaceCheckpoints()` pure helper added to `workspace-shell.logic.ts` — no backend/endpoint/schema changes
+- ✅ Search/filter state resets on session switch via `useEffect([selectedSessionId])`
+- ✅ Compare run gating aligned to visible filtered checkpoint subset
+- ✅ `services/` and `backend/` untouched — confirmed by `git diff --name-only -- services/ backend/` → empty
+- ✅ 67/67 tests pass; +4 net new tests for this slice; 0 regressions
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81E for full details
+
+---

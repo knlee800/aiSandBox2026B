@@ -4,6 +4,7 @@ import {
   areCheckpointListsEqual,
   computeDashboardSliceState,
   computeHistorySliceState,
+  filterVisibleWorkspaceCheckpoints,
   computeWorkspaceShellState,
   countActiveSessions,
   getSessionLabel,
@@ -32,6 +33,15 @@ const checkpoint: WorkspaceCheckpoint = {
   description: 'Auto-commit: Message 7',
   filesChanged: 2,
   createdAt: '2026-03-10T10:00:00.000Z',
+};
+
+const secondaryCheckpoint: WorkspaceCheckpoint = {
+  id: 'checkpoint-2',
+  commitHash: 'f0f0f0f0f0f0789012345678901234567890abcd',
+  messageNumber: 8,
+  description: null,
+  filesChanged: 1,
+  createdAt: '2026-03-10T10:10:00.000Z',
 };
 
 describe('workspace shell logic', () => {
@@ -223,5 +233,62 @@ describe('workspace shell logic', () => {
     ];
 
     assert.equal(areCheckpointListsEqual(left, right), false);
+  });
+
+  test('filters visible checkpoints by bounded text search over label and hash', () => {
+    const { visibleCheckpoints, totalMatches } = filterVisibleWorkspaceCheckpoints({
+      checkpoints: [checkpoint, secondaryCheckpoint],
+      searchQuery: 'f0f0f0f',
+      descriptionFilter: 'all',
+      maxVisible: 5,
+    });
+
+    assert.equal(totalMatches, 1);
+    assert.deepEqual(
+      visibleCheckpoints.map((item) => item.id),
+      ['checkpoint-2'],
+    );
+  });
+
+  test('filters visible checkpoints by description presence metadata', () => {
+    const withDescription = filterVisibleWorkspaceCheckpoints({
+      checkpoints: [checkpoint, secondaryCheckpoint],
+      searchQuery: '',
+      descriptionFilter: 'with-description',
+      maxVisible: 5,
+    });
+    const withoutDescription = filterVisibleWorkspaceCheckpoints({
+      checkpoints: [checkpoint, secondaryCheckpoint],
+      searchQuery: '',
+      descriptionFilter: 'without-description',
+      maxVisible: 5,
+    });
+
+    assert.deepEqual(
+      withDescription.visibleCheckpoints.map((item) => item.id),
+      ['checkpoint-1'],
+    );
+    assert.equal(withDescription.totalMatches, 1);
+    assert.deepEqual(
+      withoutDescription.visibleCheckpoints.map((item) => item.id),
+      ['checkpoint-2'],
+    );
+    assert.equal(withoutDescription.totalMatches, 1);
+  });
+
+  test('applies maxVisible bound after matching checkpoints', () => {
+    const { visibleCheckpoints, totalMatches } = filterVisibleWorkspaceCheckpoints({
+      checkpoints: [checkpoint, secondaryCheckpoint, { ...checkpoint, id: 'checkpoint-3' }],
+      searchQuery: '',
+      descriptionFilter: 'all',
+      maxVisible: 2,
+    });
+
+    assert.equal(totalMatches, 3);
+    assert.equal(visibleCheckpoints.length, 2);
+    assert.deepEqual(
+      visibleCheckpoints.map((item) => item.id),
+      ['checkpoint-1', 'checkpoint-2'],
+    );
   });
 });

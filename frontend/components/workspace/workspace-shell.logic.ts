@@ -25,6 +25,8 @@ export interface WorkspaceCheckpoint {
   createdAt: string;
 }
 
+export type CheckpointDescriptionFilter = 'all' | 'with-description' | 'without-description';
+
 export interface WorkspaceUserSummary {
   userId: string;
   email: string;
@@ -158,4 +160,37 @@ export function areCheckpointListsEqual(
   }
 
   return true;
+}
+
+export function filterVisibleWorkspaceCheckpoints(input: {
+  checkpoints: WorkspaceCheckpoint[];
+  searchQuery: string;
+  descriptionFilter: CheckpointDescriptionFilter;
+  maxVisible: number;
+}): { visibleCheckpoints: WorkspaceCheckpoint[]; totalMatches: number } {
+  const normalizedQuery = input.searchQuery.trim().toLowerCase();
+  const matchingCheckpoints = input.checkpoints.filter((checkpoint) => {
+    const hasDescription = Boolean(checkpoint.description?.trim());
+    if (input.descriptionFilter === 'with-description' && !hasDescription) {
+      return false;
+    }
+    if (input.descriptionFilter === 'without-description' && hasDescription) {
+      return false;
+    }
+
+    if (!normalizedQuery) {
+      return true;
+    }
+
+    const visibleLabel = checkpoint.description?.trim()
+      ? checkpoint.description.trim()
+      : `Checkpoint ${checkpoint.commitHash.slice(0, 7)}`;
+    const searchableMetadata = [visibleLabel, checkpoint.commitHash].join(' ').toLowerCase();
+    return searchableMetadata.includes(normalizedQuery);
+  });
+
+  return {
+    visibleCheckpoints: matchingCheckpoints.slice(0, Math.max(0, input.maxVisible)),
+    totalMatches: matchingCheckpoints.length,
+  };
 }

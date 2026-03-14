@@ -4,9 +4,11 @@ import React from 'react';
 import {
   computeDashboardSliceState,
   computeHistorySliceState,
+  filterVisibleWorkspaceCheckpoints,
   computeWorkspaceShellState,
   countActiveSessions,
   getSessionLabel,
+  type CheckpointDescriptionFilter,
   type WorkspaceCheckpoint,
   type WorkspaceQuotaSummary,
   type WorkspaceShellSession,
@@ -223,6 +225,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
             />
             {historyState === 'ready' ? (
               <HistoryCheckpointList
+                selectedSessionId={props.selectedSessionId}
                 checkpoints={props.checkpoints}
                 hasSelectedSession={Boolean(props.selectedSessionId)}
                 revertState={props.checkpointRevertState}
@@ -905,6 +908,7 @@ function HistoryCreateStateMessage(props: {
 }
 
 function HistoryCheckpointList(props: {
+  selectedSessionId: string | null;
   checkpoints: WorkspaceCheckpoint[];
   hasSelectedSession: boolean;
   revertState: WorkspaceCheckpointRevertState;
@@ -929,12 +933,39 @@ function HistoryCheckpointList(props: {
   onSelectCompareTarget: (checkpointId: string) => void;
   onRunCompare: () => Promise<void>;
 }) {
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [descriptionFilter, setDescriptionFilter] =
+    React.useState<CheckpointDescriptionFilter>('all');
+  const { visibleCheckpoints, totalMatches } = React.useMemo(
+    () =>
+      filterVisibleWorkspaceCheckpoints({
+        checkpoints: props.checkpoints,
+        searchQuery,
+        descriptionFilter,
+        maxVisible: 5,
+      }),
+    [props.checkpoints, searchQuery, descriptionFilter],
+  );
+  const visibleCheckpointIdSet = React.useMemo(
+    () => new Set(visibleCheckpoints.map((checkpoint) => checkpoint.id)),
+    [visibleCheckpoints],
+  );
+  const hasVisibleBaseSelection =
+    Boolean(props.compareBaseCheckpointId) && visibleCheckpointIdSet.has(props.compareBaseCheckpointId);
+  const hasVisibleTargetSelection =
+    Boolean(props.compareTargetCheckpointId) && visibleCheckpointIdSet.has(props.compareTargetCheckpointId);
+
+  React.useEffect(() => {
+    setSearchQuery('');
+    setDescriptionFilter('all');
+  }, [props.selectedSessionId]);
+
   const isReverting = props.revertState === 'reverting';
   const isConfirming = props.revertState === 'confirming';
   const isCompareModeActive = props.compareState !== 'idle';
   const canRunCompare =
-    Boolean(props.compareBaseCheckpointId) &&
-    Boolean(props.compareTargetCheckpointId) &&
+    hasVisibleBaseSelection &&
+    hasVisibleTargetSelection &&
     props.compareBaseCheckpointId !== props.compareTargetCheckpointId &&
     props.compareState !== 'loading';
 
@@ -946,6 +977,33 @@ function HistoryCheckpointList(props: {
           errorMessage={props.revertErrorMessage}
           hasSelectedSession={props.hasSelectedSession}
         />
+      </div>
+      <div className="mb-2 rounded border border-gray-200 bg-white p-2" data-testid="history-search-filter-controls">
+        <p className="text-[11px] font-semibold text-gray-700">Checkpoint Search and Filter</p>
+        <div className="mt-2 flex flex-col gap-2 md:flex-row">
+          <input
+            type="text"
+            data-testid="history-search-input"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="Search by description or commit hash"
+            maxLength={120}
+            className="flex-1 rounded border border-gray-300 px-2 py-1 text-xs"
+          />
+          <select
+            data-testid="history-description-filter"
+            value={descriptionFilter}
+            onChange={(event) => setDescriptionFilter(event.target.value as CheckpointDescriptionFilter)}
+            className="rounded border border-gray-300 px-2 py-1 text-xs text-gray-700"
+          >
+            <option value="all">All checkpoints</option>
+            <option value="with-description">With description</option>
+            <option value="without-description">Without description</option>
+          </select>
+        </div>
+        <p className="mt-2 text-[11px] text-gray-600" data-testid="history-search-results-count">
+          Showing {visibleCheckpoints.length} of {totalMatches} matching checkpoints
+        </p>
       </div>
       <div className="mb-2 rounded border border-gray-200 bg-white p-2" data-testid="history-compare-controls">
         <div className="flex flex-wrap items-center gap-2">
@@ -987,13 +1045,13 @@ function HistoryCheckpointList(props: {
             state={props.compareState}
             errorMessage={props.compareErrorMessage}
             hasSelectedSession={props.hasSelectedSession}
-            hasBaseSelection={Boolean(props.compareBaseCheckpointId)}
-            hasTargetSelection={Boolean(props.compareTargetCheckpointId)}
+            hasBaseSelection={hasVisibleBaseSelection}
+            hasTargetSelection={hasVisibleTargetSelection}
           />
         </div>
       </div>
       <ul className="space-y-2" data-testid="history-checkpoint-list">
-        {props.checkpoints.slice(0, 5).map((checkpoint) => {
+        {visibleCheckpoints.map((checkpoint) => {
           const isSelected = props.selectedCheckpointId === checkpoint.id;
           const canInitiateRevert = props.hasSelectedSession && !isReverting;
           const canConfirm = isSelected && isConfirming && !isReverting;
@@ -1096,6 +1154,11 @@ function HistoryCheckpointList(props: {
           );
         })}
       </ul>
+      {!visibleCheckpoints.length ? (
+        <p className="mt-2 text-xs text-gray-500" data-testid="history-search-empty">
+          No checkpoints match the current search/filter.
+        </p>
+      ) : null}
       <div className="mt-2" data-testid="history-diff-state">
         <HistoryDiffStateMessage
           state={props.diffState}

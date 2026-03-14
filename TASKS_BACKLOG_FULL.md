@@ -10192,3 +10192,86 @@ Re-validate and re-consolidate Phase 81 so the final Phase 81 closure correctly 
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81A-CHECKPOINT.md, PHASE-81B-CHECKPOINT.md, PHASE-81C-CHECKPOINT.md, PHASE-81D-CHECKPOINT.md, PHASE-81-FINAL-CHECKPOINT.md
 
 ---
+
+### TASK-81E: Checkpoint Search and Filter Slice
+
+**Task ID:** TASK-81E
+**Phase:** 81
+**Stage:** 81E
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked)
+**Checkpoint:** `docs/PHASE-81E-CHECKPOINT.md`
+
+**Objective:**
+
+Make checkpoint history easier to use by adding bounded client-side search and filter controls to the existing history/control surface, using the already-loaded checkpoint list only. No backend changes, no new endpoints, no schema changes.
+
+**Scope:**
+
+1. Reuse the existing history/control surface and already-loaded checkpoint list only
+2. Add bounded client-side search for checkpoint history using already-available checkpoint fields only (e.g. description, commit hash, message)
+3. Add bounded client-side filter controls using already-available checkpoint metadata only (e.g. type/origin if derivable from loaded data)
+4. Support at minimum:
+   - Text search over visible checkpoint metadata/description
+   - Simple type/status filtering only if already derivable from loaded checkpoint data
+5. Show search/filter controls only inside the existing `data-testid="history-control-slice"` boundary
+6. Keep diff viewer (`handleViewCheckpointDiff`, `HistoryCheckpointDiffViewer`), compare mode, manual checkpoint creation, and manual revert surfaces fully intact
+7. Preserve active-session-scoped history behavior — search/filter operates on the already-loaded list; no additional fetch triggered
+8. Keep all integration localized to the existing workspace shell and history/control surface
+9. Frontend-only changes
+10. Additive only — no existing logic restructured or deleted
+11. Focused frontend tests for this slice
+12. Slice-specific checkpoint output at `docs/PHASE-81E-CHECKPOINT.md`
+
+**Non-Goals:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No new endpoints
+- ❌ No refactors
+- ❌ No persistence of saved filters
+- ❌ No starred/favorited checkpoints
+- ❌ No timeline redesign
+- ❌ No pagination redesign
+- ❌ No fuzzy-search library or dependency expansion if avoidable
+- ❌ No polling/websocket behavior
+- ❌ No broader workspace redesign
+- ❌ No multi-task work
+
+**Acceptance Criteria:**
+
+- User can search the loaded checkpoint list from the existing history/control surface
+- User can apply bounded client-side filters to the loaded checkpoint list using already-available data only
+- Search/filter state is scoped to the active session only; resets on session switch
+- Existing diff viewer and compare mode continue to work correctly against the visible/selected checkpoints
+- No backend changes occurred
+- No schema changes occurred
+- No new endpoints introduced
+- No refactors occurred
+- No regressions in workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, or existing history/control surfaces
+
+**Preserved Invariants:**
+
+- Frontend-only implementation
+- Additive-only changes; no deletions or restructuring of existing logic
+- Request-driven behavior only — search/filter is purely local UI state on already-loaded data; no new fetch
+- Active-session scoping preserved — search/filter state resets on session switch
+- All existing diff viewer, compare mode, revert, and create-checkpoint surfaces preserved unchanged
+- PRD.md and ARCHITECTURE.md remain higher authority throughout
+- CLAUDE.md governance loop respected at every stage
+- All TASK-81E work traceable to authoritative task definitions in TASKS.md and TASKS_BACKLOG_FULL.md
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81A-CHECKPOINT.md through PHASE-81D-CHECKPOINT.md, PHASE-81-RECONSOLIDATED-FINAL-CHECKPOINT.md, PHASE-81E-CHECKPOINT.md
+
+**Completion evidence:**
+- ✅ `history-search-input` and `history-description-filter` controls added inside `data-testid="history-control-slice"` boundary
+- ✅ `filterVisibleWorkspaceCheckpoints()` pure helper added to `workspace-shell.logic.ts`; `CheckpointDescriptionFilter` type exported
+- ✅ Search/filter state (`searchQuery`, `descriptionFilter`) local to `HistoryCheckpointList`; reset via `useEffect([selectedSessionId])`
+- ✅ Compare run safety aligned to visible filtered subset
+- ✅ `services/` and `backend/` untouched — confirmed by `git diff --name-only -- services/ backend/` → empty
+- ✅ 67/67 tests pass (+4 net new tests); 0 regressions; 0 linter errors
+- ✅ Checkpoint: `docs/PHASE-81E-CHECKPOINT.md`
+
+---

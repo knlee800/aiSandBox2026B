@@ -464,6 +464,23 @@ describe('workspace shell component', () => {
     assert.match(errorHtml, /Failed to compare selected checkpoints\./);
   });
 
+  test('renders checkpoint history search and filter controls', () => {
+    const html = renderWorkspaceShell({
+      checkpoints: [checkpoint],
+      selectedSessionId: session.id,
+    });
+
+    assert.match(html, /data-testid="history-search-filter-controls"/);
+    assert.match(html, /Checkpoint Search and Filter/);
+    assert.match(html, /data-testid="history-search-input"/);
+    assert.match(html, /Search by description or commit hash/);
+    assert.match(html, /data-testid="history-description-filter"/);
+    assert.match(html, />All checkpoints</);
+    assert.match(html, />With description</);
+    assert.match(html, />Without description</);
+    assert.match(html, /Showing 1 of 1 matching checkpoints/);
+  });
+
   test('renders distinct manual checkpoint create states', () => {
     const idleHtml = renderWorkspaceShell({
       checkpointCreateState: 'idle',
