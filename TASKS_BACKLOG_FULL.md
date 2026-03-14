@@ -10450,3 +10450,69 @@ Make checkpoint history easier to scan by adding a bounded visual timeline prese
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81E-CHECKPOINT.md, PHASE-81-RERECONSOLIDATED-FINAL-CHECKPOINT.md
 
 ---
+
+### TASK-81-RERERECONSOLIDATE: Phase 81 Final Re-Re-Re-Consolidation
+
+**Task ID:** TASK-81-RERERECONSOLIDATE
+**Phase:** 81
+**Stage:** 81-RERERECONSOLIDATE
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)
+**Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked); prior `TASK-81-FINAL`, `TASK-81-RECONSOLIDATE`, and `TASK-81-RERECONSOLIDATE` exist but are outdated (written before TASK-81F)
+**Checkpoint:** `docs/PHASE-81-RERERECONSOLIDATED-FINAL-CHECKPOINT.md`
+
+**Supersession Notice:**
+
+This task supersedes the earlier `TASK-81-FINAL`, `TASK-81-RECONSOLIDATE`, and `TASK-81-RERECONSOLIDATE` closures. Those closures were written before `TASK-81F` (Visual Checkpoint Timeline Slice) was scoped, implemented, or locked. They do not include TASK-81F. This re-re-re-consolidation produces the authoritative and complete Phase 81 closure across all six slices.
+
+**Objective:**
+
+Re-validate and re-re-re-consolidate Phase 81 so the final Phase 81 closure correctly includes `TASK-81A`, `TASK-81B`, `TASK-81C`, `TASK-81D`, `TASK-81E`, and `TASK-81F`, replacing the now-outdated earlier final consolidation states.
+
+**Scope:**
+
+1. Validate and consolidate `TASK-81A`, `TASK-81B`, `TASK-81C`, `TASK-81D`, `TASK-81E`, and `TASK-81F`
+2. Confirm end-to-end checkpoint diff/history usability improvement for:
+   - Opening diff view from the existing history/control surface
+   - Active-session + selected-checkpoint diff scoping
+   - Diff viewer state handling: idle / loading / ready / empty / diff-error
+   - Changed-file summary: added / modified / deleted
+   - Grouped changed-file visibility and per-file diff navigation within the loaded diff result
+   - Structured readable unified diff rendering; visual distinction for hunk headers, added lines, removed lines, context lines
+   - Bounded compare mode for two checkpoints (base/target); compare-mode states: idle / selecting / loading / ready / compare-error; bounded pair validation behavior
+   - Bounded checkpoint history search/filter: client-side text search over loaded metadata; client-side description-based filtering from already-loaded data; active-session-scoped search/filter state
+   - Bounded visual checkpoint timeline: already-loaded checkpoint metadata only; order scanability; current/acted-on item emphasis; timestamps/descriptions already present in loaded data
+3. Confirm scope remained frontend-only and additive across all six slices
+4. Confirm no backend changes, no schema changes, no refactors
+5. Confirm PRD/ARCHITECTURE alignment for existing checkpoint diff capability reuse, active-session scoping, selected-checkpoint scoping, request-driven behavior, already-loaded checkpoint-list-only search/filter and visual timeline behavior
+6. Confirm no regressions across workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, or existing history/control surfaces
+7. Supersede the earlier `TASK-81-FINAL`, `TASK-81-RECONSOLIDATE`, and `TASK-81-RERECONSOLIDATE` closures with an updated final Phase 81 checkpoint at `docs/PHASE-81-RERERECONSOLIDATED-FINAL-CHECKPOINT.md`
+
+**Non-Goals:**
+
+- ❌ No new implementation
+- ❌ No platform code changes
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+- ❌ No new product scope
+- ❌ No TASK-82 work
+
+**Acceptance Criteria:**
+
+- TASK-81A confirmed COMPLETE and LOCKED
+- TASK-81B confirmed COMPLETE and LOCKED
+- TASK-81C confirmed COMPLETE and LOCKED
+- TASK-81D confirmed COMPLETE and LOCKED
+- TASK-81E confirmed COMPLETE and LOCKED
+- TASK-81F confirmed COMPLETE and LOCKED
+- Updated final Phase 81 closure correctly includes all six slices
+- No regressions confirmed
+- No scope violations confirmed
+- Updated final checkpoint created at `docs/PHASE-81-RERERECONSOLIDATED-FINAL-CHECKPOINT.md`
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81A-CHECKPOINT.md through PHASE-81F-CHECKPOINT.md, PHASE-81-RERECONSOLIDATED-FINAL-CHECKPOINT.md
+
+---

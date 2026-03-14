@@ -3094,7 +3094,7 @@ Re-validate and re-consolidate Phase 80 so the final Phase 80 closure correctly 
 
 ## Phase 81 — Checkpoint Diff Viewer
 
-**Current stage:** TASK-81-RERECONSOLIDATE (COMPLETE and LOCKED)
+**Current stage:** TASK-81-RERERECONSOLIDATE (COMPLETE and LOCKED)
 
 ---
 
@@ -3482,5 +3482,29 @@ Make checkpoint history easier to scan by adding a bounded visual timeline prese
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked); existing history/control surface and checkpoint list load path already present
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81F for full details
+
+---
+
+#### TASK-81-RERERECONSOLIDATE: Phase 81 Final Re-Re-Re-Consolidation
+
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)
+**Checkpoint:** `docs/PHASE-81-RERERECONSOLIDATED-FINAL-CHECKPOINT.md`
+
+**Objective:**
+Re-validate and re-re-re-consolidate Phase 81 so the final Phase 81 closure correctly includes `TASK-81A`, `TASK-81B`, `TASK-81C`, `TASK-81D`, `TASK-81E`, and `TASK-81F`, replacing the now-outdated earlier final consolidation states (`TASK-81-FINAL`, `TASK-81-RECONSOLIDATE`, `TASK-81-RERECONSOLIDATE`).
+
+**Scope:**
+- Validate and consolidate all six slices (81A through 81F)
+- Confirm end-to-end checkpoint diff/history usability including visual timeline
+- Confirm frontend-only additive scope; no backend/schema/endpoint/refactor changes
+- Confirm PRD/ARCHITECTURE alignment and no regressions
+- Supersede earlier final consolidation checkpoints with updated closure
+
+**Non-Goals:** No new implementation; no platform code changes; no TASK-82 work
+
+**Dependencies:** TASK-81A through TASK-81F (all Complete and Locked); prior `TASK-81-FINAL`, `TASK-81-RECONSOLIDATE`, and `TASK-81-RERECONSOLIDATE` exist but are outdated (written before TASK-81F)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81-RERERECONSOLIDATE for full details
 
 ---
