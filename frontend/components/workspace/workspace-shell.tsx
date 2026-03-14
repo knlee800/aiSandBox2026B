@@ -1054,6 +1054,10 @@ function HistoryCheckpointList(props: {
         <p className="text-[11px] font-semibold text-gray-700">Checkpoint Timeline</p>
         <p className="text-[11px] text-gray-500">Order and focus for visible checkpoints</p>
       </div>
+      <div className="mb-2 rounded border border-gray-200 bg-white p-2" data-testid="history-gitlog-header">
+        <p className="text-[11px] font-semibold text-gray-700">Checkpoint Git Log</p>
+        <p className="text-[11px] text-gray-500">Bounded commit-style view for visible checkpoints</p>
+      </div>
       <ul className="space-y-2" data-testid="history-checkpoint-list">
         {visibleCheckpoints.map((checkpoint, index) => {
           const isSelected = props.selectedCheckpointId === checkpoint.id;
@@ -1065,6 +1069,17 @@ function HistoryCheckpointList(props: {
           const isCompareTarget = props.compareTargetCheckpointId === checkpoint.id;
           const isTimelineActive = isSelected || isDiffTarget || isCompareBase || isCompareTarget;
           const timelineLabel = checkpoint.description || `Checkpoint ${checkpoint.commitHash.slice(0, 7)}`;
+          const focusLabel = isDiffTarget
+            ? 'selected for diff'
+            : isSelected
+              ? 'selected for revert'
+              : isCompareBase && isCompareTarget
+                ? 'compare base and target'
+                : isCompareBase
+                  ? 'compare base'
+                  : isCompareTarget
+                    ? 'compare target'
+                    : 'checkpoint available';
 
           return (
             <li
@@ -1109,17 +1124,24 @@ function HistoryCheckpointList(props: {
                   </div>
                   <div className="mt-1 pl-8" data-testid={`history-timeline-emphasis-${checkpoint.id}`}>
                     <p className="text-[11px] text-gray-600">
-                      {isDiffTarget
-                        ? 'Timeline focus: selected for diff'
-                        : isSelected
-                          ? 'Timeline focus: selected for revert'
-                          : isCompareBase && isCompareTarget
-                            ? 'Timeline focus: compare base and target'
-                            : isCompareBase
-                              ? 'Timeline focus: compare base'
-                              : isCompareTarget
-                                ? 'Timeline focus: compare target'
-                                : 'Timeline focus: checkpoint available'}
+                      Timeline focus: {focusLabel}
+                    </p>
+                  </div>
+                  <div
+                    className="mt-2 rounded border border-gray-200 bg-gray-50 px-2 py-2 font-mono text-[11px]"
+                    data-testid={`history-gitlog-entry-${checkpoint.id}`}
+                  >
+                    <p className="text-gray-800" data-testid={`history-gitlog-order-${checkpoint.id}`}>
+                      * [{index + 1}] {timelineLabel}
+                    </p>
+                    <p className="mt-1 text-gray-700" data-testid={`history-gitlog-hash-${checkpoint.id}`}>
+                      commit {checkpoint.commitHash}
+                    </p>
+                    <p className="mt-1 text-gray-600" data-testid={`history-gitlog-date-${checkpoint.id}`}>
+                      Date: {checkpoint.createdAt}
+                    </p>
+                    <p className="mt-1 text-gray-600" data-testid={`history-gitlog-focus-${checkpoint.id}`}>
+                      Focus: {focusLabel}
                     </p>
                   </div>
                 </div>

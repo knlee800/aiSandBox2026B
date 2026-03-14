@@ -3094,7 +3094,7 @@ Re-validate and re-consolidate Phase 80 so the final Phase 80 closure correctly 
 
 ## Phase 81 — Checkpoint Diff Viewer
 
-**Current stage:** TASK-81-RERERECONSOLIDATE (COMPLETE and LOCKED)
+**Current stage:** TASK-81G (COMPLETE and LOCKED)
 
 ---
 
@@ -3506,5 +3506,44 @@ Re-validate and re-re-re-consolidate Phase 81 so the final Phase 81 closure corr
 **Dependencies:** TASK-81A through TASK-81F (all Complete and Locked); prior `TASK-81-FINAL`, `TASK-81-RECONSOLIDATE`, and `TASK-81-RERECONSOLIDATE` exist but are outdated (written before TASK-81F)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81-RERERECONSOLIDATE for full details
+
+---
+
+#### TASK-81G: Git-Log Style Checkpoint Browser Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-81G-CHECKPOINT.md`
+
+**Objective:**
+Make checkpoint history easier to inspect by adding a bounded git-log-style browser inside the existing history/control surface, using the already-loaded checkpoint list and existing history metadata only.
+
+**Scope:**
+- Add bounded git-log-style presentation for checkpoints inside the existing history/control area
+- Use only already-available checkpoint metadata (ordering, hash visibility, timestamps, descriptions)
+- Improve inspectability: commit/checkpoint ordering, hash visibility, timestamps/descriptions, currently selected/acted-on item emphasis
+- Keep existing search/filter, visual timeline, diff viewer, compare mode, manual checkpoint, and manual revert surfaces intact
+- Active-session-scoped; localized to existing workspace shell and history/control surface
+- Frontend-only, additive changes
+- Focused frontend tests for this slice
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No new endpoints
+- ❌ No refactors
+- ❌ No export/history markdown in this task
+- ❌ No full code-at-that-point restoration flow in this task
+- ❌ No branching visualization
+- ❌ No persistence of browser view preferences
+- ❌ No timeline redesign outside existing history/control slice boundary
+- ❌ No fuzzy-search/dependency expansion
+- ❌ No polling/websocket behavior
+- ❌ No broader workspace redesign
+- ❌ No multi-task work
+
+**Dependencies:** TASK-81A through TASK-81F (all Complete and Locked); existing history/control surface and checkpoint list load path already present
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81G for full details
 
 ---

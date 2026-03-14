@@ -10516,3 +10516,68 @@ Re-validate and re-re-re-consolidate Phase 81 so the final Phase 81 closure corr
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81A-CHECKPOINT.md through PHASE-81F-CHECKPOINT.md, PHASE-81-RERECONSOLIDATED-FINAL-CHECKPOINT.md
 
 ---
+
+### TASK-81G: Git-Log Style Checkpoint Browser Slice
+
+**Task ID:** TASK-81G
+**Phase:** 81
+**Stage:** 81G
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked); existing history/control surface and checkpoint list load path already present
+**Checkpoint:** `docs/PHASE-81G-CHECKPOINT.md`
+
+**Objective:**
+
+Make checkpoint history easier to inspect by adding a bounded git-log-style browser inside the existing history/control surface, using the already-loaded checkpoint list and existing history metadata only.
+
+**Scope:**
+
+1. Reuse the existing history/control surface and already-loaded checkpoint list only
+2. Add a bounded git-log-style presentation for checkpoints inside the existing history/control area
+3. Use only already-available checkpoint metadata already present in loaded data
+4. Improve inspectability for:
+   - Commit/checkpoint ordering
+   - Hash visibility
+   - Timestamps/descriptions already present in loaded data
+   - Currently selected / currently acted-on item emphasis
+5. Keep existing search/filter, visual timeline, diff viewer, compare mode, manual checkpoint, and manual revert surfaces intact
+6. Preserve active-session-scoped history behavior only
+7. Keep integration localized to the existing workspace shell and history/control surface
+8. Frontend-only changes
+9. Additive only
+10. Focused frontend tests for this slice
+11. Slice-specific checkpoint output at `docs/PHASE-81G-CHECKPOINT.md`
+
+**Non-Goals:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No export/history markdown in this task
+- ❌ No full code-at-that-point restoration flow in this task
+- ❌ No branching visualization in this task
+- ❌ No persistence of browser view preferences in this task
+- ❌ No timeline redesign outside the existing history/control slice boundary
+- ❌ No fuzzy-search/dependency expansion
+- ❌ No polling/websocket behavior
+- ❌ No broader workspace redesign
+- ❌ No multi-task work
+
+**Acceptance Criteria:**
+
+- User can inspect checkpoints in a bounded git-log-style presentation inside the existing history/control surface
+- Presentation uses only already-loaded checkpoint data
+- Existing search/filter and visual timeline behavior remain functional with the git-log-style presentation
+- Existing diff viewer and compare mode continue to work correctly against visible/selected checkpoints
+- Existing manual checkpoint and revert controls remain functional
+- No backend changes occurred
+- No schema changes occurred
+- No refactors occurred
+- No regressions in workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, or existing history/control surfaces
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81F-CHECKPOINT.md, PHASE-81-RERERECONSOLIDATED-FINAL-CHECKPOINT.md
+
+---

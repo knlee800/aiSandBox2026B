@@ -510,6 +510,32 @@ describe('workspace shell component', () => {
     assert.match(html, /Timeline focus: compare target/);
   });
 
+  test('renders bounded git-log style checkpoint browser entries', () => {
+    const html = renderWorkspaceShell({
+      checkpoints: [checkpoint, checkpointTwo],
+      selectedSessionId: session.id,
+      checkpointRevertTargetId: checkpoint.id,
+      checkpointCompareState: 'selecting',
+      checkpointCompareBaseId: checkpoint.id,
+      checkpointCompareTargetId: checkpointTwo.id,
+      checkpointDiffTargetId: checkpoint.id,
+    });
+
+    assert.match(html, /data-testid="history-gitlog-header"/);
+    assert.match(html, /Checkpoint Git Log/);
+    assert.match(html, /Bounded commit-style view for visible checkpoints/);
+    assert.match(html, /data-testid="history-gitlog-entry-checkpoint-1"/);
+    assert.match(html, /data-testid="history-gitlog-entry-checkpoint-2"/);
+    assert.match(html, /\* \[1\] Auto-commit: Message 10/);
+    assert.match(html, /\* \[2\] Checkpoint 7890abc/);
+    assert.match(html, /commit abc123def456789012345678901234567890abcd/);
+    assert.match(html, /commit 7890abcedf1234567890abcedf1234567890abce/);
+    assert.match(html, /Date: 2026-03-10T12:00:00\.000Z/);
+    assert.match(html, /Date: 2026-03-10T12:05:00\.000Z/);
+    assert.match(html, /Focus: selected for diff/);
+    assert.match(html, /Focus: compare target/);
+  });
+
   test('renders distinct manual checkpoint create states', () => {
     const idleHtml = renderWorkspaceShell({
       checkpointCreateState: 'idle',
