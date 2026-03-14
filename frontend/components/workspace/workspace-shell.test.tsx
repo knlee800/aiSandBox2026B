@@ -76,6 +76,18 @@ const checkpointDiffResponse: WorkspaceCheckpointDiffResponse = {
     },
   ],
 };
+
+const structuredDiffResponse: WorkspaceCheckpointDiffResponse = {
+  commitHash: '1234567890abcdef1234567890abcdef12345678',
+  parentHash: 'abcdef1234567890abcdef1234567890abcdef12',
+  files: [
+    {
+      path: 'src/structured.ts',
+      status: 'modified',
+      diff: '@@ -1,3 +1,3 @@\n const keep = true;\n-const oldValue = 1;\n+const newValue = 2;',
+    },
+  ],
+};
 const workspaceFileTree: WorkspaceFileNode[] = [
   {
     name: 'src',
@@ -368,10 +380,32 @@ describe('workspace shell component', () => {
     assert.match(readyHtml, /modified/);
     assert.match(readyHtml, /added/);
     assert.match(readyHtml, /export const created = true/);
+    assert.match(readyHtml, /data-testid="history-diff-lines"/);
+    assert.match(readyHtml, /data-testid="history-diff-line-hunk"/);
+    assert.match(readyHtml, /data-testid="history-diff-line-added"/);
     assert.ok(!readyHtml.includes('console.log(&quot;new&quot;)'));
     assert.match(emptyHtml, /No diff changes/);
     assert.match(errorHtml, /Checkpoint diff failed/);
     assert.match(errorHtml, /Failed to load checkpoint diff\./);
+  });
+
+  test('renders unified diff line types for selected file', () => {
+    const html = renderWorkspaceShell({
+      checkpointDiffState: 'ready',
+      checkpointDiffTargetId: checkpoint.id,
+      checkpointDiffResponse: structuredDiffResponse,
+      selectedSessionId: session.id,
+    });
+
+    assert.match(html, /Checkpoint diff ready/);
+    assert.match(html, /data-testid="history-diff-line-hunk"/);
+    assert.match(html, /data-testid="history-diff-line-context"/);
+    assert.match(html, /data-testid="history-diff-line-removed"/);
+    assert.match(html, /data-testid="history-diff-line-added"/);
+    assert.match(html, /@@ -1,3 \+1,3 @@/);
+    assert.match(html, /const keep = true/);
+    assert.match(html, /const oldValue = 1/);
+    assert.match(html, /const newValue = 2/);
   });
 
   test('renders distinct manual checkpoint create states', () => {

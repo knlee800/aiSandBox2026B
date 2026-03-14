@@ -3094,7 +3094,7 @@ Re-validate and re-consolidate Phase 80 so the final Phase 80 closure correctly 
 
 ## Phase 81 — Checkpoint Diff Viewer
 
-**Current stage:** TASK-81B (COMPLETE and LOCKED)
+**Current stage:** TASK-81C (COMPLETE and LOCKED)
 
 ---
 
@@ -3179,5 +3179,57 @@ Make checkpoint comparison more usable by enhancing the existing diff viewer wit
 - ✅ Checkpoint created: `docs/PHASE-81B-CHECKPOINT.md`
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81B for full details
+
+---
+
+#### TASK-81C: Readable Checkpoint Diff Rendering Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-81C-CHECKPOINT.md`
+
+**Objective:**
+Make checkpoint diff inspection more usable by upgrading the existing diff viewer from raw preformatted text to structured, readable unified-diff rendering, using the already-available checkpoint diff response only.
+
+**Scope:**
+- Reuse the existing TASK-81A / TASK-81B diff viewer and existing diff endpoint only
+- Parse and render the existing unified diff text from the already-loaded diff response only
+- Show diff hunks and changed lines in a more readable structured view inside the existing history/control area
+- Visually distinguish added lines, removed lines, context lines, and hunk headers
+- Keep file summary and per-file navigation from TASK-81B intact
+- Preserve active-session-scoped and selected-checkpoint-scoped diff viewing
+- Keep rendering bounded to the existing workspace/history/control area
+- Frontend-only, additive changes
+- Focused frontend tests for this slice
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No new endpoints
+- ❌ No refactors
+- ❌ No compare-any-two-checkpoints flow in this task
+- ❌ No side-by-side Monaco diff editor in this task
+- ❌ No syntax-highlighting engine integration if that expands scope
+- ❌ No revert or manual checkpoint changes in this task
+- ❌ No search/filter/star/timeline enhancements in this task
+- ❌ No polling/websocket behavior
+- ❌ No broader workspace redesign
+
+**Dependencies:** TASK-81A and TASK-81B complete and locked; existing diff capability at `GET /api/sessions/:id/checkpoints/:hash/diff`
+
+**Completion Summary:**
+- ✅ Structured unified-diff rendering added for selected-file diff content inside existing `HistoryCheckpointDiffViewer`
+- ✅ Line parser classifies lines as `hunk` / `added` / `removed` / `context`
+- ✅ Distinct per-line visual styling and `data-testid` hooks for all four line types
+- ✅ Empty diff fallback preserved
+- ✅ Existing TASK-81B changed-file summary and per-file navigation unchanged
+- ✅ Existing TASK-81A five diff states (`idle` / `loading` / `ready` / `empty` / `diff-error`) unchanged
+- ✅ Session-switch and checkpoint-switch scoping preserved unchanged
+- ✅ Scope confirmed frontend-only and additive; no existing logic restructured
+- ✅ No backend changes, schema changes, endpoint changes, or refactors
+- ✅ 62/62 tests pass; 0 regressions
+- ✅ Checkpoint created: `docs/PHASE-81C-CHECKPOINT.md`
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81C for full details
 
 ---

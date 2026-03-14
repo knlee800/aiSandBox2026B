@@ -1092,6 +1092,10 @@ function HistoryCheckpointDiffViewer(props: {
     diffFiles.find(
       (file) => `${file.path}::${file.status}` === selectedFileId,
     ) ?? diffFiles[0];
+  const selectedFileDiffLines = React.useMemo(
+    () => parseUnifiedDiffLines(selectedFile?.diff ?? ''),
+    [selectedFile?.diff],
+  );
 
   if (props.state !== 'ready' || !props.diffResponse) {
     return null;
@@ -1168,16 +1172,69 @@ function HistoryCheckpointDiffViewer(props: {
             </span>
             <span className="truncate font-mono text-[11px] text-gray-700">{selectedFile.path}</span>
           </div>
-          <pre
-            className="mt-2 max-h-48 overflow-auto rounded border border-gray-200 bg-white p-2 font-mono text-[11px] text-gray-800"
+          <div
+            className="mt-2 max-h-48 overflow-auto rounded border border-gray-200 bg-white p-2 font-mono text-[11px]"
             data-testid="history-diff-file-content"
           >
-            {selectedFile.diff || '(empty diff)'}
-          </pre>
+            {selectedFileDiffLines.length ? (
+              <div className="space-y-0.5" data-testid="history-diff-lines">
+                {selectedFileDiffLines.map((line, index) => (
+                  <div
+                    key={`${line.type}-${index}-${line.content}`}
+                    data-testid={`history-diff-line-${line.type}`}
+                    className={`whitespace-pre rounded px-1 py-0.5 ${
+                      line.type === 'hunk'
+                        ? 'border border-amber-200 bg-amber-50 text-amber-800'
+                        : line.type === 'added'
+                          ? 'border border-green-200 bg-green-50 text-green-800'
+                          : line.type === 'removed'
+                            ? 'border border-red-200 bg-red-50 text-red-800'
+                            : 'text-gray-700'
+                    }`}
+                  >
+                    {line.content || ' '}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500">(empty diff)</p>
+            )}
+          </div>
         </div>
       ) : null}
     </div>
   );
+}
+
+type UnifiedDiffLineType = 'hunk' | 'added' | 'removed' | 'context';
+
+interface UnifiedDiffLine {
+  type: UnifiedDiffLineType;
+  content: string;
+}
+
+function parseUnifiedDiffLines(diffText: string): UnifiedDiffLine[] {
+  if (!diffText) {
+    return [];
+  }
+
+  return diffText.split(/\r?\n/).map((line) => ({
+    type: getUnifiedDiffLineType(line),
+    content: line,
+  }));
+}
+
+function getUnifiedDiffLineType(line: string): UnifiedDiffLineType {
+  if (line.startsWith('@@')) {
+    return 'hunk';
+  }
+  if (line.startsWith('+') && !line.startsWith('+++')) {
+    return 'added';
+  }
+  if (line.startsWith('-') && !line.startsWith('---')) {
+    return 'removed';
+  }
+  return 'context';
 }
 
 function HistoryRevertStateMessage(props: {
