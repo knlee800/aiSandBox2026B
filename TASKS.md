@@ -3094,7 +3094,7 @@ Re-validate and re-consolidate Phase 80 so the final Phase 80 closure correctly 
 
 ## Phase 81 — Checkpoint Diff Viewer
 
-**Current stage:** TASK-81-FINAL (COMPLETE and LOCKED)
+**Current stage:** TASK-81D (COMPLETE and LOCKED)
 
 ---
 
@@ -3275,5 +3275,58 @@ Validate and consolidate completed Phase 81 slices (`TASK-81A`, `TASK-81B`, `TAS
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81-FINAL for full details
+
+---
+
+#### TASK-81D: Compare Two Checkpoints Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-81D-CHECKPOINT.md`
+
+**Objective:**
+Make checkpoint history comparison more usable by allowing the user to choose two checkpoints from the existing history/control surface and inspect the diff between them, using already-available checkpoint diff capability only.
+
+**Scope:**
+- Reuse the existing history/control surface and existing diff viewer family from TASK-81A / 81B / 81C
+- Add a bounded compare mode: choose a base checkpoint + a target checkpoint from the active session
+- Show compare mode only inside the existing history/control area
+- Use existing checkpoint diff capability only — no new endpoints
+- Support active-session-scoped comparison only
+- Add localized compare-mode UI states: idle / selecting / loading / ready / compare-error
+- Reuse existing changed-file summary, per-file navigation, and readable diff rendering for the compared result
+- Frontend-only, additive changes
+- Focused frontend tests for this slice
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No new endpoints
+- ❌ No refactors
+- ❌ No side-by-side Monaco diff editor in this task
+- ❌ No branching in this task
+- ❌ No revert / manual-checkpoint changes in this task
+- ❌ No timeline / search / filter / star enhancements in this task
+- ❌ No polling/websocket behavior
+- ❌ No broader workspace redesign
+
+**Dependencies:** TASK-81A, TASK-81B, and TASK-81C complete and locked; existing history/control surface, checkpoint diff capability, changed-file summary, and readable diff rendering all present
+
+**Completion Summary:**
+
+- ✅ Compare mode added inside existing `history-control-slice` boundary — no new panels or routes
+- ✅ Base + target checkpoint selection with `Set Base` / `Set Target` buttons per checkpoint entry
+- ✅ Five compare-mode states implemented: idle / selecting / loading / ready / compare-error
+- ✅ Existing diff capability (`GET /api/sessions/:id/checkpoints/:hash/diff`) reused — no new endpoint
+- ✅ Bounded pair validation: `compare-error` when pair is incomplete, duplicate, or non-adjacent (parentHash mismatch)
+- ✅ Compare-ready result rendered via existing `HistoryCheckpointDiffViewer` — changed-file summary, file navigation, and structured diff lines all reused intact
+- ✅ Active-session scoping and stale-request guard pattern applied (`checkpointCompareRequestIdRef`)
+- ✅ Session-switch compare-state reset added to existing `useEffect([selectedSessionId])`
+- ✅ Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes
+- ✅ PRD/ARCHITECTURE alignment confirmed (request-driven, session-scoped, existing diff endpoint reused)
+- ✅ 63/63 tests pass; 0 regressions across all workspace surfaces
+- ✅ Checkpoint created: `docs/PHASE-81D-CHECKPOINT.md`
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81D for full details
 
 ---

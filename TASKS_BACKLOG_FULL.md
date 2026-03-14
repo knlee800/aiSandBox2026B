@@ -10014,3 +10014,96 @@ Validate and consolidate completed Phase 81 slices (`TASK-81A`, `TASK-81B`, `TAS
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81A-CHECKPOINT.md, PHASE-81B-CHECKPOINT.md, PHASE-81C-CHECKPOINT.md
 
 ---
+
+### TASK-81D: Compare Two Checkpoints Slice
+
+**Task ID:** TASK-81D
+**Phase:** 81
+**Stage:** 81D
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked)
+**Checkpoint:** `docs/PHASE-81D-CHECKPOINT.md`
+
+**Objective:**
+
+Make checkpoint history comparison more usable by allowing the user to choose two checkpoints from the existing history/control surface and inspect the diff between them, using already-available checkpoint diff capability only and without expanding into a broader version-control redesign.
+
+**Scope:**
+
+1. Reuse the existing checkpoint history/control surface and existing diff viewer family from TASK-81A / TASK-81B / TASK-81C — no new panels or routes
+2. Add a bounded compare mode that allows choosing a base checkpoint and a target checkpoint from the active session's existing checkpoint list
+3. Render compare mode only inside the existing `data-testid="history-control-slice"` boundary
+4. Use already-available checkpoint diff capability (`GET /api/sessions/:id/checkpoints/:hash/diff`) only — no new endpoint
+5. Support active-session-scoped comparison only; scoping and session-switch reset to follow same pattern as existing TASK-81A diff state machine
+6. Add localized compare-mode UI states: `idle` / `selecting` / `loading` / `ready` / `compare-error`
+7. Reuse the existing changed-file summary, per-file navigation, and readable unified-diff line rendering from TASK-81B / TASK-81C once the compared diff result is loaded
+8. Keep all integration localized to the existing workspace shell and history/control surface; no new sub-routes or full-page panels
+9. Frontend-only changes
+10. Additive only; no restructuring of existing TASK-81A / 81B / 81C diff viewer behavior
+11. Focused frontend tests for this slice
+12. Produce slice-specific checkpoint output at `docs/PHASE-81D-CHECKPOINT.md`
+
+**Non-Goals:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No new endpoints
+- ❌ No refactors
+- ❌ No side-by-side Monaco diff editor in this task
+- ❌ No branching in this task
+- ❌ No revert or manual-checkpoint changes in this task
+- ❌ No timeline / search / filter / star enhancements in this task
+- ❌ No polling/websocket behavior
+- ❌ No broader workspace redesign
+- ❌ No multi-task work
+
+**Dependencies:**
+
+- TASK-81A complete and locked — existing core diff viewer, five diff states, stale-request guard pattern, session-scoped diff handling
+- TASK-81B complete and locked — existing changed-file summary and per-file navigation
+- TASK-81C complete and locked — existing structured unified-diff line rendering
+- Existing history/control surface already present in `workspace-shell.tsx`
+- Existing checkpoint diff capability already available at `GET /api/sessions/:id/checkpoints/:hash/diff`
+
+**Acceptance Criteria:**
+
+- User can enter a bounded compare mode from the existing history/control surface
+- User can choose two checkpoints (base + target) in the active session for comparison
+- Compared diff result renders inside the existing diff viewer area using existing summary, file navigation, and readable diff rendering
+- Compare mode remains scoped to the active session only; session switch resets compare state
+- UI shows distinct `idle` / `selecting` / `loading` / `ready` / `compare-error` states for the compare flow
+- No backend changes occurred
+- No schema changes occurred
+- No new endpoints introduced — existing `GET /api/sessions/:id/checkpoints/:hash/diff` reused only
+- No refactors occurred
+- No regressions in workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, or existing history/control surfaces
+
+**Preserved Invariants:**
+
+- Frontend-only implementation
+- Additive-only changes; no deletions or restructuring of existing TASK-81A / 81B / 81C diff viewer behavior
+- Request-driven behavior only (user-triggered compare load; no autofetch/timers/polling)
+- Active-session scoping preserved — compare handler guarded by `selectedSessionId`; all compare state reset on session switch
+- Stale async request guard pattern from TASK-81A preserved and extended to compare flow
+- PRD.md and ARCHITECTURE.md remain higher authority throughout
+- CLAUDE.md governance loop respected at every stage
+- All TASK-81D work traceable to authoritative task definitions in TASKS.md and TASKS_BACKLOG_FULL.md
+
+**Completion Summary:**
+
+- ✅ Compare mode added inside existing `history-control-slice` boundary — `Compare Checkpoints` / `Exit Compare` / `Run Compare` controls; `Set Base` / `Set Target` per checkpoint entry
+- ✅ Five compare-mode states implemented: `idle` / `selecting` / `loading` / `ready` / `compare-error`
+- ✅ Existing diff capability (`GET /api/sessions/:id/checkpoints/:hash/diff`) reused — no new endpoint
+- ✅ Bounded pair validation: `compare-error` when pair is incomplete, duplicate, or non-adjacent (parentHash mismatch against existing backend diff contract)
+- ✅ Compare-ready result rendered via existing `HistoryCheckpointDiffViewer` — TASK-81B/81C changed-file summary, file navigation, structured diff lines all reused intact
+- ✅ Active-session scoping preserved — compare handler guarded by `selectedSessionId`; stale-request guard via `checkpointCompareRequestIdRef`; session-switch reset added
+- ✅ Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes
+- ✅ PRD/ARCHITECTURE alignment confirmed (request-driven, session-scoped, existing `GET /api/sessions/:id/checkpoints/:hash/diff` reused only)
+- ✅ 63/63 tests pass; 0 regressions across all workspace surfaces
+- ✅ Checkpoint created: `docs/PHASE-81D-CHECKPOINT.md`
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81A-CHECKPOINT.md, PHASE-81B-CHECKPOINT.md, PHASE-81C-CHECKPOINT.md, PHASE-81D-CHECKPOINT.md
+
+---

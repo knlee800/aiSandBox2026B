@@ -27,12 +27,7 @@ import {
 import {
   loadWorkspaceCheckpointDiff,
   type WorkspaceCheckpointDiffState,
-  type WorkspaceCheckpointDiffFile,
-} from '@/components/workspace/workspace-checkpoint-diff.logic';
-import {
-  loadWorkspaceCheckpointDiff,
   type WorkspaceCheckpointDiffResponse,
-  type WorkspaceCheckpointDiffState,
 } from '@/components/workspace/workspace-checkpoint-diff.logic';
 import {
   buildPreviewProxyUrl,
@@ -51,6 +46,13 @@ import {
 } from '@/components/workspace/workspace-file-navigation.logic';
 
 export default function AppPage() {
+  type WorkspaceCheckpointCompareState =
+    | 'idle'
+    | 'selecting'
+    | 'loading'
+    | 'ready'
+    | 'compare-error';
+
   const router = useRouter();
   const params = useParams();
   const locale = params.locale as string;
@@ -77,6 +79,13 @@ export default function AppPage() {
   const [checkpointDiffError, setCheckpointDiffError] = useState<string | null>(null);
   const [checkpointDiffTargetId, setCheckpointDiffTargetId] = useState<string | null>(null);
   const [checkpointDiffResponse, setCheckpointDiffResponse] =
+    useState<WorkspaceCheckpointDiffResponse | null>(null);
+  const [checkpointCompareState, setCheckpointCompareState] =
+    useState<WorkspaceCheckpointCompareState>('idle');
+  const [checkpointCompareError, setCheckpointCompareError] = useState<string | null>(null);
+  const [checkpointCompareBaseId, setCheckpointCompareBaseId] = useState<string | null>(null);
+  const [checkpointCompareTargetId, setCheckpointCompareTargetId] = useState<string | null>(null);
+  const [checkpointCompareResponse, setCheckpointCompareResponse] =
     useState<WorkspaceCheckpointDiffResponse | null>(null);
   const [userSummary, setUserSummary] = useState<WorkspaceUserSummary | null>(null);
   const [usageSummary, setUsageSummary] = useState<WorkspaceUsageSummary | null>(null);
@@ -105,6 +114,7 @@ export default function AppPage() {
   const checkpointCreateRequestIdRef = useRef(0);
   const checkpointRevertRequestIdRef = useRef(0);
   const checkpointDiffRequestIdRef = useRef(0);
+  const checkpointCompareRequestIdRef = useRef(0);
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -140,6 +150,12 @@ export default function AppPage() {
     setCheckpointDiffError(null);
     setCheckpointDiffTargetId(null);
     setCheckpointDiffResponse(null);
+    checkpointCompareRequestIdRef.current += 1;
+    setCheckpointCompareState('idle');
+    setCheckpointCompareError(null);
+    setCheckpointCompareBaseId(null);
+    setCheckpointCompareTargetId(null);
+    setCheckpointCompareResponse(null);
 
     if (!selectedSessionId) {
       setCheckpoints([]);
@@ -511,6 +527,141 @@ export default function AppPage() {
       setCheckpointDiffState('diff-error');
       setCheckpointDiffError('Failed to load checkpoint diff.');
       setCheckpointDiffResponse(null);
+    }
+  }
+
+  function handleStartCheckpointCompare(): void {
+    if (!selectedSessionId) {
+      setCheckpointCompareState('compare-error');
+      setCheckpointCompareError('Select an active session to compare checkpoints.');
+      setCheckpointCompareBaseId(null);
+      setCheckpointCompareTargetId(null);
+      setCheckpointCompareResponse(null);
+      return;
+    }
+
+    setCheckpointCompareState('selecting');
+    setCheckpointCompareError(null);
+    setCheckpointCompareBaseId(null);
+    setCheckpointCompareTargetId(null);
+    setCheckpointCompareResponse(null);
+  }
+
+  function handleCancelCheckpointCompare(): void {
+    if (checkpointCompareState === 'loading') {
+      return;
+    }
+
+    setCheckpointCompareState('idle');
+    setCheckpointCompareError(null);
+    setCheckpointCompareBaseId(null);
+    setCheckpointCompareTargetId(null);
+    setCheckpointCompareResponse(null);
+  }
+
+  function handleSelectCheckpointCompareBase(checkpointId: string): void {
+    if (checkpointCompareState === 'loading') {
+      return;
+    }
+    setCheckpointCompareState('selecting');
+    setCheckpointCompareError(null);
+    setCheckpointCompareResponse(null);
+    setCheckpointCompareBaseId(checkpointId);
+  }
+
+  function handleSelectCheckpointCompareTarget(checkpointId: string): void {
+    if (checkpointCompareState === 'loading') {
+      return;
+    }
+    setCheckpointCompareState('selecting');
+    setCheckpointCompareError(null);
+    setCheckpointCompareResponse(null);
+    setCheckpointCompareTargetId(checkpointId);
+  }
+
+  async function handleRunCheckpointCompare(): Promise<void> {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+
+    if (!selectedSessionId) {
+      setCheckpointCompareState('compare-error');
+      setCheckpointCompareError('Cannot compare checkpoints without an active session.');
+      setCheckpointCompareResponse(null);
+      return;
+    }
+
+    const selectedSession = sessions.find((session) => session.id === selectedSessionId);
+    if (!selectedSession || selectedSession.terminatedAt) {
+      setCheckpointCompareState('compare-error');
+      setCheckpointCompareError('Cannot compare checkpoints for a terminated session.');
+      setCheckpointCompareResponse(null);
+      return;
+    }
+
+    if (!checkpointCompareBaseId || !checkpointCompareTargetId) {
+      setCheckpointCompareState('compare-error');
+      setCheckpointCompareError('Select both base and target checkpoints to compare.');
+      setCheckpointCompareResponse(null);
+      return;
+    }
+
+    if (checkpointCompareBaseId === checkpointCompareTargetId) {
+      setCheckpointCompareState('compare-error');
+      setCheckpointCompareError('Base and target checkpoints must be different.');
+      setCheckpointCompareResponse(null);
+      return;
+    }
+
+    const baseCheckpoint = checkpoints.find((checkpoint) => checkpoint.id === checkpointCompareBaseId);
+    const targetCheckpoint = checkpoints.find((checkpoint) => checkpoint.id === checkpointCompareTargetId);
+    if (!baseCheckpoint || !targetCheckpoint) {
+      setCheckpointCompareState('compare-error');
+      setCheckpointCompareError('Selected checkpoint pair is no longer available.');
+      setCheckpointCompareResponse(null);
+      return;
+    }
+
+    const requestId = checkpointCompareRequestIdRef.current + 1;
+    checkpointCompareRequestIdRef.current = requestId;
+    const sessionId = selectedSessionId;
+    setCheckpointCompareState('loading');
+    setCheckpointCompareError(null);
+    setCheckpointCompareResponse(null);
+
+    try {
+      const response = await loadWorkspaceCheckpointDiff({
+        token,
+        sessionId,
+        commitHash: targetCheckpoint.commitHash,
+      });
+
+      if (checkpointCompareRequestIdRef.current !== requestId) {
+        return;
+      }
+
+      if (response.parentHash !== baseCheckpoint.commitHash) {
+        setCheckpointCompareState('compare-error');
+        setCheckpointCompareError(
+          'Selected pair is not directly comparable. Choose a target checkpoint whose parent matches the selected base checkpoint.',
+        );
+        setCheckpointCompareResponse(null);
+        return;
+      }
+
+      setCheckpointCompareState('ready');
+      setCheckpointCompareError(null);
+      setCheckpointCompareResponse(response);
+    } catch (error) {
+      console.error('Failed to compare checkpoints:', error);
+      if (checkpointCompareRequestIdRef.current !== requestId) {
+        return;
+      }
+      setCheckpointCompareState('compare-error');
+      setCheckpointCompareError('Failed to compare selected checkpoints.');
+      setCheckpointCompareResponse(null);
     }
   }
 
@@ -926,6 +1077,16 @@ export default function AppPage() {
       checkpointDiffTargetId={checkpointDiffTargetId}
       checkpointDiffResponse={checkpointDiffResponse}
       onViewCheckpointDiff={handleViewCheckpointDiff}
+      checkpointCompareState={checkpointCompareState}
+      checkpointCompareError={checkpointCompareError}
+      checkpointCompareBaseId={checkpointCompareBaseId}
+      checkpointCompareTargetId={checkpointCompareTargetId}
+      checkpointCompareResponse={checkpointCompareResponse}
+      onStartCheckpointCompare={handleStartCheckpointCompare}
+      onCancelCheckpointCompare={handleCancelCheckpointCompare}
+      onSelectCheckpointCompareBase={handleSelectCheckpointCompareBase}
+      onSelectCheckpointCompareTarget={handleSelectCheckpointCompareTarget}
+      onRunCheckpointCompare={handleRunCheckpointCompare}
       userSummary={userSummary}
       usageSummary={usageSummary}
       quotaSummary={quotaSummary}

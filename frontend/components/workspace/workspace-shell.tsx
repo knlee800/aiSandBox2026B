@@ -55,6 +55,16 @@ interface WorkspaceShellProps {
   checkpointDiffTargetId: string | null;
   checkpointDiffResponse: WorkspaceCheckpointDiffResponse | null;
   onViewCheckpointDiff: (checkpointId: string) => Promise<void>;
+  checkpointCompareState: 'idle' | 'selecting' | 'loading' | 'ready' | 'compare-error';
+  checkpointCompareError: string | null;
+  checkpointCompareBaseId: string | null;
+  checkpointCompareTargetId: string | null;
+  checkpointCompareResponse: WorkspaceCheckpointDiffResponse | null;
+  onStartCheckpointCompare: () => void;
+  onCancelCheckpointCompare: () => void;
+  onSelectCheckpointCompareBase: (checkpointId: string) => void;
+  onSelectCheckpointCompareTarget: (checkpointId: string) => void;
+  onRunCheckpointCompare: () => Promise<void>;
   userSummary: WorkspaceUserSummary | null;
   usageSummary: WorkspaceUsageSummary | null;
   quotaSummary: WorkspaceQuotaSummary | null;
@@ -226,6 +236,16 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                 diffTargetCheckpointId={props.checkpointDiffTargetId}
                 diffResponse={props.checkpointDiffResponse}
                 onViewDiff={props.onViewCheckpointDiff}
+                compareState={props.checkpointCompareState}
+                compareErrorMessage={props.checkpointCompareError}
+                compareBaseCheckpointId={props.checkpointCompareBaseId}
+                compareTargetCheckpointId={props.checkpointCompareTargetId}
+                compareResponse={props.checkpointCompareResponse}
+                onStartCompare={props.onStartCheckpointCompare}
+                onCancelCompare={props.onCancelCheckpointCompare}
+                onSelectCompareBase={props.onSelectCheckpointCompareBase}
+                onSelectCompareTarget={props.onSelectCheckpointCompareTarget}
+                onRunCompare={props.onRunCheckpointCompare}
               />
             ) : null}
           </section>
@@ -898,9 +918,25 @@ function HistoryCheckpointList(props: {
   diffTargetCheckpointId: string | null;
   diffResponse: WorkspaceCheckpointDiffResponse | null;
   onViewDiff: (checkpointId: string) => Promise<void>;
+  compareState: 'idle' | 'selecting' | 'loading' | 'ready' | 'compare-error';
+  compareErrorMessage: string | null;
+  compareBaseCheckpointId: string | null;
+  compareTargetCheckpointId: string | null;
+  compareResponse: WorkspaceCheckpointDiffResponse | null;
+  onStartCompare: () => void;
+  onCancelCompare: () => void;
+  onSelectCompareBase: (checkpointId: string) => void;
+  onSelectCompareTarget: (checkpointId: string) => void;
+  onRunCompare: () => Promise<void>;
 }) {
   const isReverting = props.revertState === 'reverting';
   const isConfirming = props.revertState === 'confirming';
+  const isCompareModeActive = props.compareState !== 'idle';
+  const canRunCompare =
+    Boolean(props.compareBaseCheckpointId) &&
+    Boolean(props.compareTargetCheckpointId) &&
+    props.compareBaseCheckpointId !== props.compareTargetCheckpointId &&
+    props.compareState !== 'loading';
 
   return (
     <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="history-checkpoint-list-surface">
@@ -911,6 +947,51 @@ function HistoryCheckpointList(props: {
           hasSelectedSession={props.hasSelectedSession}
         />
       </div>
+      <div className="mb-2 rounded border border-gray-200 bg-white p-2" data-testid="history-compare-controls">
+        <div className="flex flex-wrap items-center gap-2">
+          {isCompareModeActive ? (
+            <button
+              type="button"
+              data-testid="history-compare-cancel"
+              disabled={props.compareState === 'loading'}
+              onClick={props.onCancelCompare}
+              className="rounded border border-gray-300 bg-white px-3 py-1 text-xs text-gray-700 disabled:border-gray-200 disabled:text-gray-400"
+            >
+              Exit Compare
+            </button>
+          ) : (
+            <button
+              type="button"
+              data-testid="history-compare-start"
+              disabled={!props.hasSelectedSession}
+              onClick={props.onStartCompare}
+              className="rounded border border-blue-300 bg-white px-3 py-1 text-xs text-blue-700 disabled:border-gray-200 disabled:text-gray-400"
+            >
+              Compare Checkpoints
+            </button>
+          )}
+          {isCompareModeActive ? (
+            <button
+              type="button"
+              data-testid="history-compare-run"
+              disabled={!canRunCompare}
+              onClick={() => void props.onRunCompare()}
+              className="rounded bg-blue-600 px-3 py-1 text-xs text-white disabled:bg-blue-300"
+            >
+              {props.compareState === 'loading' ? 'Comparing...' : 'Run Compare'}
+            </button>
+          ) : null}
+        </div>
+        <div className="mt-2" data-testid="history-compare-state">
+          <HistoryCompareStateMessage
+            state={props.compareState}
+            errorMessage={props.compareErrorMessage}
+            hasSelectedSession={props.hasSelectedSession}
+            hasBaseSelection={Boolean(props.compareBaseCheckpointId)}
+            hasTargetSelection={Boolean(props.compareTargetCheckpointId)}
+          />
+        </div>
+      </div>
       <ul className="space-y-2" data-testid="history-checkpoint-list">
         {props.checkpoints.slice(0, 5).map((checkpoint) => {
           const isSelected = props.selectedCheckpointId === checkpoint.id;
@@ -918,6 +999,8 @@ function HistoryCheckpointList(props: {
           const canConfirm = isSelected && isConfirming && !isReverting;
           const isDiffTarget = props.diffTargetCheckpointId === checkpoint.id;
           const isDiffLoading = props.diffState === 'loading' && isDiffTarget;
+          const isCompareBase = props.compareBaseCheckpointId === checkpoint.id;
+          const isCompareTarget = props.compareTargetCheckpointId === checkpoint.id;
 
           return (
             <li key={checkpoint.id} className="rounded border border-gray-200 bg-white px-2 py-2">
@@ -929,6 +1012,36 @@ function HistoryCheckpointList(props: {
                   <p className="text-xs text-gray-500 font-mono">{checkpoint.commitHash.slice(0, 12)}</p>
                 </div>
                 <div className="flex gap-2">
+                  {isCompareModeActive ? (
+                    <>
+                      <button
+                        type="button"
+                        data-testid={`history-compare-base-button-${checkpoint.id}`}
+                        disabled={props.compareState === 'loading'}
+                        onClick={() => props.onSelectCompareBase(checkpoint.id)}
+                        className={`rounded border px-3 py-1 text-xs ${
+                          isCompareBase
+                            ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
+                            : 'border-gray-300 bg-white text-gray-700 disabled:border-gray-200 disabled:text-gray-400'
+                        }`}
+                      >
+                        {isCompareBase ? 'Base Selected' : 'Set Base'}
+                      </button>
+                      <button
+                        type="button"
+                        data-testid={`history-compare-target-button-${checkpoint.id}`}
+                        disabled={props.compareState === 'loading'}
+                        onClick={() => props.onSelectCompareTarget(checkpoint.id)}
+                        className={`rounded border px-3 py-1 text-xs ${
+                          isCompareTarget
+                            ? 'border-violet-300 bg-violet-50 text-violet-700'
+                            : 'border-gray-300 bg-white text-gray-700 disabled:border-gray-200 disabled:text-gray-400'
+                        }`}
+                      >
+                        {isCompareTarget ? 'Target Selected' : 'Set Target'}
+                      </button>
+                    </>
+                  ) : null}
                   <button
                     type="button"
                     data-testid={`history-diff-button-${checkpoint.id}`}
@@ -991,7 +1104,78 @@ function HistoryCheckpointList(props: {
         />
       </div>
       <HistoryCheckpointDiffViewer state={props.diffState} diffResponse={props.diffResponse} />
+      <HistoryCheckpointDiffViewer
+        state={props.compareState === 'ready' ? 'ready' : 'idle'}
+        diffResponse={props.compareState === 'ready' ? props.compareResponse : null}
+      />
     </div>
+  );
+}
+
+function HistoryCompareStateMessage(props: {
+  state: 'idle' | 'selecting' | 'loading' | 'ready' | 'compare-error';
+  errorMessage: string | null;
+  hasSelectedSession: boolean;
+  hasBaseSelection: boolean;
+  hasTargetSelection: boolean;
+}) {
+  if (props.state === 'idle') {
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="Compare mode idle"
+        body={
+          props.hasSelectedSession
+            ? 'Enter compare mode to select base and target checkpoints.'
+            : 'Select an active session before entering compare mode.'
+        }
+        action="Compare mode runs only inside this history surface."
+      />
+    );
+  }
+
+  if (props.state === 'selecting') {
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="Compare mode selecting"
+        body={`Base: ${props.hasBaseSelection ? 'selected' : 'not selected'}; Target: ${
+          props.hasTargetSelection ? 'selected' : 'not selected'
+        }.`}
+        action="Choose both checkpoints, then run compare."
+      />
+    );
+  }
+
+  if (props.state === 'loading') {
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="Compare mode loading"
+        body="Compare request is in flight for selected checkpoint pair."
+        action="Wait for compared diff result."
+      />
+    );
+  }
+
+  if (props.state === 'ready') {
+    return (
+      <StateMessage
+        tone="success"
+        heading="Compare mode ready"
+        body="Compared checkpoint diff is loaded."
+        action="Use changed-file summary and diff navigation below."
+      />
+    );
+  }
+
+  return (
+    <StateMessage
+      tone="error"
+      heading="Compare mode failed"
+      body={props.errorMessage ?? 'Checkpoint compare request failed.'}
+      action="Update base/target selections and retry."
+    />
   );
 }
 

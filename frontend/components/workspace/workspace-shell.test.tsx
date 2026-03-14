@@ -135,6 +135,16 @@ function renderWorkspaceShell(
     checkpointDiffTargetId: null,
     checkpointDiffResponse: null,
     onViewCheckpointDiff: async () => {},
+    checkpointCompareState: 'idle',
+    checkpointCompareError: null,
+    checkpointCompareBaseId: null,
+    checkpointCompareTargetId: null,
+    checkpointCompareResponse: null,
+    onStartCheckpointCompare: () => {},
+    onCancelCheckpointCompare: () => {},
+    onSelectCheckpointCompareBase: () => {},
+    onSelectCheckpointCompareTarget: () => {},
+    onRunCheckpointCompare: async () => {},
     userSummary,
     usageSummary,
     quotaSummary,
@@ -406,6 +416,52 @@ describe('workspace shell component', () => {
     assert.match(html, /const keep = true/);
     assert.match(html, /const oldValue = 1/);
     assert.match(html, /const newValue = 2/);
+  });
+
+  test('renders distinct compare mode states and controls', () => {
+    const idleHtml = renderWorkspaceShell({
+      checkpointCompareState: 'idle',
+      selectedSessionId: session.id,
+    });
+    const selectingHtml = renderWorkspaceShell({
+      checkpointCompareState: 'selecting',
+      checkpointCompareBaseId: checkpoint.id,
+      selectedSessionId: session.id,
+    });
+    const loadingHtml = renderWorkspaceShell({
+      checkpointCompareState: 'loading',
+      checkpointCompareBaseId: checkpoint.id,
+      checkpointCompareTargetId: 'checkpoint-2',
+      selectedSessionId: session.id,
+    });
+    const readyHtml = renderWorkspaceShell({
+      checkpointCompareState: 'ready',
+      checkpointCompareBaseId: checkpoint.id,
+      checkpointCompareTargetId: 'checkpoint-2',
+      checkpointCompareResponse: structuredDiffResponse,
+      selectedSessionId: session.id,
+    });
+    const errorHtml = renderWorkspaceShell({
+      checkpointCompareState: 'compare-error',
+      checkpointCompareError: 'Failed to compare selected checkpoints.',
+      checkpointCompareBaseId: checkpoint.id,
+      checkpointCompareTargetId: 'checkpoint-2',
+      selectedSessionId: session.id,
+    });
+
+    assert.match(idleHtml, /Compare mode idle/);
+    assert.match(idleHtml, /Compare Checkpoints/);
+    assert.match(selectingHtml, /Compare mode selecting/);
+    assert.match(selectingHtml, /Exit Compare/);
+    assert.match(selectingHtml, /Base: selected; Target: not selected\./);
+    assert.match(selectingHtml, /Set Target/);
+    assert.match(loadingHtml, /Compare mode loading/);
+    assert.match(loadingHtml, /Comparing\.\.\./);
+    assert.match(readyHtml, /Compare mode ready/);
+    assert.match(readyHtml, /Checkpoint Diff/);
+    assert.match(readyHtml, /const keep = true/);
+    assert.match(errorHtml, /Compare mode failed/);
+    assert.match(errorHtml, /Failed to compare selected checkpoints\./);
   });
 
   test('renders distinct manual checkpoint create states', () => {
