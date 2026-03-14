@@ -3042,5 +3042,52 @@ Validate and consolidate completed Phase 80 slices (`TASK-80A`, `TASK-80B`) and 
 - ✅ PRD/ARCHITECTURE alignment confirmed (file write reuse, checkpoint reuse, session scoping, request-driven behavior)
 - ✅ 55/55 tests pass; 0 regressions
 - ✅ Final checkpoint created: `docs/PHASE-80-FINAL-CHECKPOINT.md`
+- ⚠️ NOTE: This closure predates TASK-80C. Superseded by TASK-80-RECONSOLIDATE.
+
+---
+
+#### TASK-80-RECONSOLIDATE: Phase 80 Final Re-Consolidation
+
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)
+**Checkpoint:** `docs/PHASE-80-RECONSOLIDATED-FINAL-CHECKPOINT.md`
+
+**Objective:**
+Re-validate and re-consolidate Phase 80 so the final Phase 80 closure correctly includes `TASK-80A`, `TASK-80B`, and `TASK-80C`, replacing the now-outdated earlier `TASK-80-FINAL` closure which only covered `TASK-80A` and `TASK-80B`.
+
+**Scope:**
+- Validate and consolidate `TASK-80A`, `TASK-80B`, and `TASK-80C`
+- Confirm end-to-end workspace usability for editor save, manual checkpoint creation, and manual checkpoint revert
+- Confirm scope remained frontend-only and additive across all three slices
+- Confirm no backend, schema, or refactor changes occurred
+- Confirm PRD / ARCHITECTURE alignment
+- Confirm no regressions across all workspace surfaces
+- Supersede the earlier `TASK-80-FINAL` closure with an updated final Phase 80 checkpoint
+
+**Non-Goals:**
+- ❌ No new implementation
+- ❌ No platform code changes
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+- ❌ No new product scope
+- ❌ No TASK-81 work
+
+**Dependencies:** TASK-80A (Complete and Locked), TASK-80B (Complete and Locked), TASK-80C (Complete and Locked)
+
+**Completion Summary:**
+- ✅ TASK-80A validated — core editor save slice complete and locked
+- ✅ TASK-80B validated — core manual checkpoint slice complete and locked
+- ✅ TASK-80C validated — core manual revert slice complete and locked
+- ✅ End-to-end editor save, manual checkpoint creation, and manual checkpoint revert confirmed
+- ✅ Scope confirmed frontend-only and additive across all three Phase 80 slices
+- ✅ No backend changes, schema changes, endpoint changes, or refactors
+- ✅ PRD/ARCHITECTURE alignment confirmed (file write reuse, checkpoint reuse, revert reuse, session scoping, request-driven behavior)
+- ✅ 58/58 tests pass; 0 regressions
+- ✅ Earlier PHASE-80-FINAL-CHECKPOINT.md superseded
+- ✅ Final reconsolidated checkpoint created: `docs/PHASE-80-RECONSOLIDATED-FINAL-CHECKPOINT.md`
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-80-RECONSOLIDATE for full details
 
 ---

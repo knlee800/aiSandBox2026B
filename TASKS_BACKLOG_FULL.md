@@ -9577,3 +9577,78 @@ Validate and consolidate completed Phase 80 slices (`TASK-80A`, `TASK-80B`) and 
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-80A-CHECKPOINT.md, PHASE-80B-CHECKPOINT.md
 
 ---
+
+### TASK-80-RECONSOLIDATE: Phase 80 Final Re-Consolidation
+
+**Task ID:** TASK-80-RECONSOLIDATE
+**Phase:** 80
+**Stage:** 80-RECONSOLIDATE
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)
+**Dependencies:** TASK-80A (Complete and Locked), TASK-80B (Complete and Locked), TASK-80C (Complete and Locked)
+**Checkpoint:** `docs/PHASE-80-RECONSOLIDATED-FINAL-CHECKPOINT.md`
+
+**Supersedes:** TASK-80-FINAL — the earlier final consolidation only covered TASK-80A and TASK-80B. TASK-80C was added afterward and was not included. This task replaces that closure with a complete and accurate final Phase 80 consolidation.
+
+**Objective:**
+
+Re-validate and re-consolidate Phase 80 so the final Phase 80 closure correctly includes `TASK-80A`, `TASK-80B`, and `TASK-80C`, replacing the now-outdated earlier `TASK-80-FINAL` closure.
+
+**Scope:**
+
+1. Validate and consolidate `TASK-80A`, `TASK-80B`, and `TASK-80C`
+2. Confirm end-to-end workspace usability improvement for:
+   - Active file editing in the existing editor area
+   - Manual save of active file using existing file write capability
+   - clean / dirty / saving / saved / save-error editor states
+   - Manual checkpoint creation ("Save Point") from the existing history/control surface
+   - Optional short description handling for checkpoint creation
+   - Checkpoint list refresh after successful checkpoint creation
+   - idle / creating / created / create-error checkpoint-create states
+   - Manual revert from a selected checkpoint
+   - Explicit revert confirmation step
+   - idle / confirming / reverting / reverted / revert-error revert states
+   - Post-revert refresh of checkpoint/history, file/editor, and preview surfaces through existing request-driven paths
+3. Confirm scope remained frontend-only and additive across all three slices
+4. Confirm no backend changes, no schema changes, no new endpoints, and no refactors occurred
+5. Confirm PRD / ARCHITECTURE alignment for:
+   - Existing file capability reuse
+   - Existing checkpoint capability reuse
+   - Existing revert capability reuse
+   - Active-session scoping
+   - Request-driven behavior only
+6. Confirm no regressions across workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, history/control surfaces, and public landing
+7. Supersede the earlier `TASK-80-FINAL` closure with an updated final Phase 80 checkpoint
+
+**Non-Goals:**
+
+- ❌ No new implementation
+- ❌ No platform code changes
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+- ❌ No new product scope
+- ❌ No TASK-81 work
+
+**Acceptance Criteria:**
+
+- TASK-80A confirmed COMPLETE and LOCKED
+- TASK-80B confirmed COMPLETE and LOCKED
+- TASK-80C confirmed COMPLETE and LOCKED
+- Updated final Phase 80 closure correctly includes all three slices
+- No regressions confirmed
+- No scope violations confirmed
+- Updated final checkpoint created at `docs/PHASE-80-RECONSOLIDATED-FINAL-CHECKPOINT.md`
+
+**Preserved Invariants:**
+
+- Validation/documentation-only scope — no code changes
+- PRD.md and ARCHITECTURE.md remain higher authority throughout
+- CLAUDE.md governance loop respected at every stage
+- All Phase 80 work traceable to authoritative task definitions in TASKS.md and TASKS_BACKLOG_FULL.md
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-80A-CHECKPOINT.md, PHASE-80B-CHECKPOINT.md, PHASE-80C-CHECKPOINT.md, PHASE-80-FINAL-CHECKPOINT.md
+
+---
