@@ -21,6 +21,7 @@ import type {
   WorkspaceFileSurfaceState,
 } from './workspace-file-navigation.logic';
 import type { WorkspaceCheckpointCreateState } from './workspace-checkpoint-create.logic';
+import type { WorkspaceCheckpointRevertState } from './workspace-checkpoint-revert.logic';
 
 interface WorkspaceShellProps {
   sessions: WorkspaceShellSession[];
@@ -39,6 +40,12 @@ interface WorkspaceShellProps {
   checkpointDescriptionInput: string;
   onCheckpointDescriptionChange: (value: string) => void;
   onCreateManualCheckpoint: () => Promise<void>;
+  checkpointRevertState: WorkspaceCheckpointRevertState;
+  checkpointRevertError: string | null;
+  checkpointRevertTargetId: string | null;
+  onInitiateCheckpointRevert: (checkpointId: string) => void;
+  onCancelCheckpointRevert: () => void;
+  onConfirmCheckpointRevert: () => Promise<void>;
   userSummary: WorkspaceUserSummary | null;
   usageSummary: WorkspaceUsageSummary | null;
   quotaSummary: WorkspaceQuotaSummary | null;
@@ -195,7 +202,18 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
               onDescriptionChange={props.onCheckpointDescriptionChange}
               onCreateCheckpoint={props.onCreateManualCheckpoint}
             />
-            {historyState === 'ready' ? <HistoryCheckpointList checkpoints={props.checkpoints} /> : null}
+            {historyState === 'ready' ? (
+              <HistoryCheckpointList
+                checkpoints={props.checkpoints}
+                hasSelectedSession={Boolean(props.selectedSessionId)}
+                revertState={props.checkpointRevertState}
+                revertErrorMessage={props.checkpointRevertError}
+                selectedCheckpointId={props.checkpointRevertTargetId}
+                onInitiateRevert={props.onInitiateCheckpointRevert}
+                onCancelRevert={props.onCancelCheckpointRevert}
+                onConfirmRevert={props.onConfirmCheckpointRevert}
+              />
+            ) : null}
           </section>
           <section className="mx-2 mb-2 bg-white border border-gray-200 rounded p-3" data-testid="dashboard-slice">
             <p className="text-xs font-semibold text-gray-700 mb-2">Dashboard (Slice 1)</p>
@@ -852,18 +870,151 @@ function HistoryCreateStateMessage(props: {
   );
 }
 
-function HistoryCheckpointList({ checkpoints }: { checkpoints: WorkspaceCheckpoint[] }) {
+function HistoryCheckpointList(props: {
+  checkpoints: WorkspaceCheckpoint[];
+  hasSelectedSession: boolean;
+  revertState: WorkspaceCheckpointRevertState;
+  revertErrorMessage: string | null;
+  selectedCheckpointId: string | null;
+  onInitiateRevert: (checkpointId: string) => void;
+  onCancelRevert: () => void;
+  onConfirmRevert: () => Promise<void>;
+}) {
+  const isReverting = props.revertState === 'reverting';
+  const isConfirming = props.revertState === 'confirming';
+
   return (
-    <ul className="mt-2 space-y-2" data-testid="history-checkpoint-list">
-      {checkpoints.slice(0, 5).map((checkpoint) => (
-        <li key={checkpoint.id} className="rounded border border-gray-200 px-2 py-2">
-          <p className="text-xs font-medium text-gray-900 truncate">
-            {checkpoint.description || `Checkpoint ${checkpoint.commitHash.slice(0, 7)}`}
-          </p>
-          <p className="text-xs text-gray-500 font-mono">{checkpoint.commitHash.slice(0, 12)}</p>
-        </li>
-      ))}
-    </ul>
+    <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="history-checkpoint-list-surface">
+      <div className="mb-2" data-testid="history-revert-state">
+        <HistoryRevertStateMessage
+          state={props.revertState}
+          errorMessage={props.revertErrorMessage}
+          hasSelectedSession={props.hasSelectedSession}
+        />
+      </div>
+      <ul className="space-y-2" data-testid="history-checkpoint-list">
+        {props.checkpoints.slice(0, 5).map((checkpoint) => {
+          const isSelected = props.selectedCheckpointId === checkpoint.id;
+          const canInitiateRevert = props.hasSelectedSession && !isReverting;
+          const canConfirm = isSelected && isConfirming && !isReverting;
+
+          return (
+            <li key={checkpoint.id} className="rounded border border-gray-200 bg-white px-2 py-2">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-gray-900 truncate">
+                    {checkpoint.description || `Checkpoint ${checkpoint.commitHash.slice(0, 7)}`}
+                  </p>
+                  <p className="text-xs text-gray-500 font-mono">{checkpoint.commitHash.slice(0, 12)}</p>
+                </div>
+                <button
+                  type="button"
+                  data-testid={`history-revert-button-${checkpoint.id}`}
+                  disabled={!canInitiateRevert}
+                  onClick={() => props.onInitiateRevert(checkpoint.id)}
+                  className="rounded bg-blue-600 px-3 py-1 text-xs text-white disabled:bg-blue-300"
+                >
+                  {isReverting && isSelected ? 'Reverting...' : 'Revert'}
+                </button>
+              </div>
+              {isSelected && isConfirming ? (
+                <div
+                  className="mt-2 rounded border border-amber-200 bg-amber-50 p-2"
+                  data-testid={`history-revert-confirm-${checkpoint.id}`}
+                >
+                  <p className="text-xs font-semibold text-amber-800">Confirm revert?</p>
+                  <p className="mt-1 text-xs text-amber-700">
+                    Restore the active session workspace to this checkpoint.
+                  </p>
+                  <div className="mt-2 flex gap-2">
+                    <button
+                      type="button"
+                      data-testid="history-revert-cancel"
+                      onClick={props.onCancelRevert}
+                      className="rounded border border-gray-300 bg-white px-3 py-1 text-xs text-gray-700"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="history-revert-confirm"
+                      disabled={!canConfirm}
+                      onClick={() => void props.onConfirmRevert()}
+                      className="rounded bg-red-600 px-3 py-1 text-xs text-white disabled:bg-red-300"
+                    >
+                      Confirm Revert
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+function HistoryRevertStateMessage(props: {
+  state: WorkspaceCheckpointRevertState;
+  errorMessage: string | null;
+  hasSelectedSession: boolean;
+}) {
+  if (props.state === 'idle') {
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="Revert idle"
+        body={
+          props.hasSelectedSession
+            ? 'Choose a checkpoint entry and use Revert.'
+            : 'Select an active session to enable checkpoint revert.'
+        }
+        action="Revert requests require confirmation before submission."
+      />
+    );
+  }
+
+  if (props.state === 'confirming') {
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="Revert confirming"
+        body="Revert confirmation is required before request submission."
+        action="Choose Confirm Revert to proceed or Cancel to keep current state."
+      />
+    );
+  }
+
+  if (props.state === 'reverting') {
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="Reverting workspace"
+        body="Revert request is in flight for the selected checkpoint."
+        action="Wait for checkpoint, editor, and preview surfaces to refresh."
+      />
+    );
+  }
+
+  if (props.state === 'reverted') {
+    return (
+      <StateMessage
+        tone="success"
+        heading="Workspace reverted"
+        body="Active session workspace was restored to the selected checkpoint."
+        action="Continue from the updated checkpoint state."
+      />
+    );
+  }
+
+  return (
+    <StateMessage
+      tone="error"
+      heading="Revert failed"
+      body={props.errorMessage ?? 'Manual checkpoint revert failed.'}
+      action="Retry revert from a checkpoint entry."
+    />
   );
 }
 

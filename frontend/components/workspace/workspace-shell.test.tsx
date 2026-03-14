@@ -90,6 +90,12 @@ function renderWorkspaceShell(
     checkpointDescriptionInput: '',
     onCheckpointDescriptionChange: () => {},
     onCreateManualCheckpoint: async () => {},
+    checkpointRevertState: 'idle',
+    checkpointRevertError: null,
+    checkpointRevertTargetId: null,
+    onInitiateCheckpointRevert: () => {},
+    onCancelCheckpointRevert: () => {},
+    onConfirmCheckpointRevert: async () => {},
     userSummary,
     usageSummary,
     quotaSummary,
@@ -286,7 +292,6 @@ describe('workspace shell component', () => {
     assert.ok(!html.includes('Timeline'));
     assert.ok(!html.includes('Admin Dashboard'));
     assert.ok(!html.includes('Diff'));
-    assert.ok(!html.includes('Revert'));
     assert.ok(!html.includes('Export Data'));
   });
 
@@ -315,6 +320,42 @@ describe('workspace shell component', () => {
     assert.match(createdHtml, /Save point created/);
     assert.match(createErrorHtml, /Save point failed/);
     assert.match(createErrorHtml, /Failed to create save point\./);
+  });
+
+  test('renders distinct manual checkpoint revert states', () => {
+    const idleHtml = renderWorkspaceShell({
+      checkpointRevertState: 'idle',
+      selectedSessionId: session.id,
+    });
+    const confirmingHtml = renderWorkspaceShell({
+      checkpointRevertState: 'confirming',
+      checkpointRevertTargetId: checkpoint.id,
+      selectedSessionId: session.id,
+    });
+    const revertingHtml = renderWorkspaceShell({
+      checkpointRevertState: 'reverting',
+      checkpointRevertTargetId: checkpoint.id,
+      selectedSessionId: session.id,
+    });
+    const revertedHtml = renderWorkspaceShell({
+      checkpointRevertState: 'reverted',
+      selectedSessionId: session.id,
+    });
+    const revertErrorHtml = renderWorkspaceShell({
+      checkpointRevertState: 'revert-error',
+      checkpointRevertError: 'Failed to revert workspace to selected checkpoint.',
+      selectedSessionId: session.id,
+    });
+
+    assert.match(idleHtml, /Revert idle/);
+    assert.match(confirmingHtml, /Revert confirming/);
+    assert.match(confirmingHtml, /Confirm revert\?/);
+    assert.match(confirmingHtml, /Confirm Revert/);
+    assert.match(revertingHtml, /Reverting workspace/);
+    assert.match(revertingHtml, /Reverting\.\.\./);
+    assert.match(revertedHtml, /Workspace reverted/);
+    assert.match(revertErrorHtml, /Revert failed/);
+    assert.match(revertErrorHtml, /Failed to revert workspace to selected checkpoint\./);
   });
 
   test('renders successful exec result with stdout, stderr, and success status', () => {

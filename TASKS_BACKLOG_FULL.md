@@ -9381,6 +9381,112 @@ Make workspace version-control usability meaningfully better by wiring the exist
 
 ---
 
+### TASK-80C: Core Manual Revert Slice
+
+**Task ID:** TASK-80C
+**Phase:** 80
+**Stage:** 80C
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** Phase 78 (Complete and Closed), Phase 79 (Complete and Closed), TASK-80A (Complete and Locked), TASK-80B (Complete and Locked)
+**Checkpoint:** `docs/PHASE-80C-CHECKPOINT.md`
+
+**Objective:**
+
+Make workspace version-control usability meaningfully better by wiring the existing history/control surface to already-available checkpoint revert capability, so the user can restore the active session to a chosen checkpoint from the main workspace.
+
+**Scope:**
+
+1. **Reuse Existing History/Control Surface**
+   - Reuse the existing history/control surface and active-session checkpoint list already present from TASK-68D and TASK-80B
+   - No new surface or panel created; all integration localized to existing history-control boundary
+
+2. **Manual Revert Action**
+   - Add revert action for a selected checkpoint entry using already-available revert capability only
+   - Revert scoped strictly to the active session and the explicitly selected checkpoint only
+   - No new endpoint; reuse existing revert endpoint already available in current platform architecture
+
+3. **Explicit Confirmation Step**
+   - Require an explicit user confirmation before the revert request is submitted
+   - UI must present confirming state allowing user to cancel or proceed
+   - Revert is not triggered on single click; confirmation is mandatory
+
+4. **Post-Revert Surface Refresh**
+   - After successful revert, refresh relevant workspace surfaces using existing fetch patterns only:
+     - Checkpoint/history surface (existing `GET /api/sessions/:id/checkpoints` pattern)
+     - File navigation/editor surface (existing file list/content fetch pattern from TASK-79B/80A)
+     - Preview surface where already supported by current request-driven refresh paths
+   - No new fetch patterns introduced
+
+5. **Localized Revert UI States**
+   - `idle` — ready; revert action available per checkpoint entry
+   - `confirming` — user has initiated revert; confirmation prompt visible; can cancel
+   - `reverting` — revert request in-flight; UI locked
+   - `reverted` — revert completed successfully
+   - `revert-error` — revert failed; error message shown; retry available
+
+6. **Implementation Constraints**
+   - Frontend-only changes — additive only
+   - Active-session scoping enforced throughout
+   - Stale-request guard for the revert async call
+   - Session-switch resets all revert state (including confirming state)
+   - Terminated session guard prevents revert attempt on a terminated session
+
+**Non-Goals:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No diff viewer in this task
+- ❌ No partial/file-level revert in this task
+- ❌ No branching in this task
+- ❌ No search/filter/star enhancements in this task
+- ❌ No autosave checkpointing
+- ❌ No polling/websocket behavior
+- ❌ No broader workspace redesign
+- ❌ No multi-task work
+
+**Deliverables:**
+
+1. `createWorkspaceRevert()` (or equivalent) helper using existing revert endpoint
+2. Revert state machine integrated into existing workspace page component
+3. `HistoryRevertPanel` (or equivalent) sub-component inside existing history/control surface
+4. Five distinct localized revert UI states rendered
+5. Explicit confirmation step before revert submission
+6. Post-revert surface refresh using existing fetch patterns only
+7. Stale-request guard and session-switch reset for revert state
+8. Focused frontend tests for this slice
+9. `docs/PHASE-80C-CHECKPOINT.md`
+
+**Acceptance Criteria:**
+
+- User can initiate revert for a chosen checkpoint from the existing workspace/history-control surface
+- Revert requires an explicit confirmation step before request submission
+- Revert is scoped to the active session and selected checkpoint only
+- Relevant workspace surfaces refresh correctly after successful revert using existing request-driven patterns only
+- UI shows distinct `idle` / `confirming` / `reverting` / `reverted` / `revert-error` states
+- No backend changes occurred
+- No schema changes occurred
+- No refactors occurred
+- No regressions in workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, or existing history/control surfaces
+
+**Preserved Invariants:**
+
+- Frontend-only implementation
+- Additive-only changes
+- Request-driven behavior only (user-triggered revert with explicit confirmation; no auto-revert/timers)
+- Active-session scoping enforced throughout
+- Stale async request guard maintained for revert flow
+- Session-switch safety preserved (revert state reset on session change)
+- PRD.md and ARCHITECTURE.md remain higher authority
+- CLAUDE.md governance loop respected at every stage
+
+**Reference:** TASKS.md, PRD.md §3C (File System Operations), ARCHITECTURE.md §8 (API Design), PHASE-80B-CHECKPOINT.md, PHASE-80-FINAL-CHECKPOINT.md
+
+---
+
 ### TASK-80-FINAL: Phase 80 Final Consolidation
 
 **Task ID:** TASK-80-FINAL

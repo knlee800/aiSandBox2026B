@@ -21,6 +21,10 @@ import {
   type WorkspaceCheckpointCreateState,
 } from '@/components/workspace/workspace-checkpoint-create.logic';
 import {
+  revertWorkspaceCheckpoint,
+  type WorkspaceCheckpointRevertState,
+} from '@/components/workspace/workspace-checkpoint-revert.logic';
+import {
   buildPreviewProxyUrl,
   isPreviewRunning,
   type WorkspacePreviewStatusResponse,
@@ -55,6 +59,10 @@ export default function AppPage() {
     useState<WorkspaceCheckpointCreateState>('idle');
   const [checkpointCreateError, setCheckpointCreateError] = useState<string | null>(null);
   const [checkpointDescriptionInput, setCheckpointDescriptionInput] = useState('');
+  const [checkpointRevertState, setCheckpointRevertState] =
+    useState<WorkspaceCheckpointRevertState>('idle');
+  const [checkpointRevertError, setCheckpointRevertError] = useState<string | null>(null);
+  const [checkpointRevertTargetId, setCheckpointRevertTargetId] = useState<string | null>(null);
   const [userSummary, setUserSummary] = useState<WorkspaceUserSummary | null>(null);
   const [usageSummary, setUsageSummary] = useState<WorkspaceUsageSummary | null>(null);
   const [quotaSummary, setQuotaSummary] = useState<WorkspaceQuotaSummary | null>(null);
@@ -80,6 +88,7 @@ export default function AppPage() {
   const fileContentRequestIdRef = useRef(0);
   const fileSaveRequestIdRef = useRef(0);
   const checkpointCreateRequestIdRef = useRef(0);
+  const checkpointRevertRequestIdRef = useRef(0);
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -106,6 +115,10 @@ export default function AppPage() {
     setCheckpointCreateState('idle');
     setCheckpointCreateError(null);
     setCheckpointDescriptionInput('');
+    checkpointRevertRequestIdRef.current += 1;
+    setCheckpointRevertState('idle');
+    setCheckpointRevertError(null);
+    setCheckpointRevertTargetId(null);
 
     if (!selectedSessionId) {
       setCheckpoints([]);
@@ -300,6 +313,110 @@ export default function AppPage() {
       }
       setCheckpointCreateState('create-error');
       setCheckpointCreateError('Failed to create save point.');
+    }
+  }
+
+  function handleInitiateCheckpointRevert(checkpointId: string): void {
+    const selectedSession = sessions.find((session) => session.id === selectedSessionId);
+    if (!selectedSessionId || !selectedSession || selectedSession.terminatedAt) {
+      setCheckpointRevertState('revert-error');
+      setCheckpointRevertError('Cannot revert without an active session.');
+      setCheckpointRevertTargetId(null);
+      return;
+    }
+
+    if (!checkpoints.some((checkpoint) => checkpoint.id === checkpointId)) {
+      setCheckpointRevertState('revert-error');
+      setCheckpointRevertError('Selected checkpoint is no longer available.');
+      setCheckpointRevertTargetId(null);
+      return;
+    }
+
+    setCheckpointRevertTargetId(checkpointId);
+    setCheckpointRevertError(null);
+    setCheckpointRevertState('confirming');
+  }
+
+  function handleCancelCheckpointRevert(): void {
+    if (checkpointRevertState === 'reverting') {
+      return;
+    }
+    setCheckpointRevertTargetId(null);
+    setCheckpointRevertError(null);
+    setCheckpointRevertState('idle');
+  }
+
+  async function handleConfirmCheckpointRevert(): Promise<void> {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+
+    if (!selectedSessionId || !userId || !checkpointRevertTargetId) {
+      setCheckpointRevertState('revert-error');
+      setCheckpointRevertError('Cannot revert without an active session and selected checkpoint.');
+      return;
+    }
+
+    const selectedSession = sessions.find((session) => session.id === selectedSessionId);
+    if (!selectedSession || selectedSession.terminatedAt) {
+      setCheckpointRevertState('revert-error');
+      setCheckpointRevertError('Cannot revert a terminated session.');
+      return;
+    }
+
+    const targetCheckpoint = checkpoints.find((checkpoint) => checkpoint.id === checkpointRevertTargetId);
+    if (!targetCheckpoint) {
+      setCheckpointRevertState('revert-error');
+      setCheckpointRevertError('Selected checkpoint is no longer available.');
+      setCheckpointRevertTargetId(null);
+      return;
+    }
+
+    const requestId = checkpointRevertRequestIdRef.current + 1;
+    checkpointRevertRequestIdRef.current = requestId;
+    const sessionId = selectedSessionId;
+    setCheckpointRevertState('reverting');
+    setCheckpointRevertError(null);
+
+    try {
+      await revertWorkspaceCheckpoint({
+        token,
+        sessionId,
+        userId,
+        commitHash: targetCheckpoint.commitHash,
+      });
+
+      if (checkpointRevertRequestIdRef.current !== requestId) {
+        return;
+      }
+
+      await loadCheckpoints(token, sessionId);
+      if (checkpointRevertRequestIdRef.current !== requestId) {
+        return;
+      }
+
+      await loadWorkspaceFilesForSession(token, sessionId);
+      if (checkpointRevertRequestIdRef.current !== requestId) {
+        return;
+      }
+
+      await refreshPreviewForSession(token, sessionId);
+      if (checkpointRevertRequestIdRef.current !== requestId) {
+        return;
+      }
+
+      setCheckpointRevertState('reverted');
+      setCheckpointRevertError(null);
+      setCheckpointRevertTargetId(null);
+    } catch (error) {
+      console.error('Failed to revert checkpoint:', error);
+      if (checkpointRevertRequestIdRef.current !== requestId) {
+        return;
+      }
+      setCheckpointRevertState('revert-error');
+      setCheckpointRevertError('Failed to revert workspace to selected checkpoint.');
     }
   }
 
@@ -704,6 +821,12 @@ export default function AppPage() {
       checkpointDescriptionInput={checkpointDescriptionInput}
       onCheckpointDescriptionChange={handleCheckpointDescriptionChange}
       onCreateManualCheckpoint={handleCreateManualCheckpoint}
+      checkpointRevertState={checkpointRevertState}
+      checkpointRevertError={checkpointRevertError}
+      checkpointRevertTargetId={checkpointRevertTargetId}
+      onInitiateCheckpointRevert={handleInitiateCheckpointRevert}
+      onCancelCheckpointRevert={handleCancelCheckpointRevert}
+      onConfirmCheckpointRevert={handleConfirmCheckpointRevert}
       userSummary={userSummary}
       usageSummary={usageSummary}
       quotaSummary={quotaSummary}

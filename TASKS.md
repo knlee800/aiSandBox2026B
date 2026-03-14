@@ -2868,9 +2868,9 @@ Validate and consolidate completed Phase 79 slices (`TASK-79A`, `TASK-79B`) and 
 
 ### Phase 80: Core Manual Workspace Slices
 
-**Current Stage:** 80-FINAL-COMPLETE
+**Current Stage:** 80C-COMPLETE
 
-**Active Task:** TASK-80-FINAL (COMPLETE and LOCKED)
+**Active Task:** TASK-80C (COMPLETE and LOCKED)
 
 #### TASK-80A: Core Editor Save Slice
 
@@ -2959,6 +2959,45 @@ Make workspace version-control usability meaningfully better by wiring the exist
 **Dependencies:** Phase 78 (Complete and Closed), Phase 79 (Complete and Closed), TASK-80A (Complete and Locked), TASK-68D (Complete)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-80B for full details
+
+---
+
+#### TASK-80C: Core Manual Revert Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-80C-CHECKPOINT.md`
+
+**Objective:**
+Make workspace version-control usability meaningfully better by wiring the existing history/control surface to already-available checkpoint revert capability, so the user can restore the active session to a chosen checkpoint from the main workspace.
+
+**Scope:**
+- Reuse the existing history/control surface and active-session checkpoint list from TASK-68D / TASK-80B
+- Add manual revert action for a selected checkpoint using already-available revert capability only
+- Add explicit confirmation step before revert is submitted
+- Scope revert strictly to the active session and the selected checkpoint only
+- Refresh relevant workspace surfaces after successful revert using existing fetch patterns only (checkpoint/history, file navigation/editor, preview where supported by existing request-driven paths)
+- Add localized revert UI states: idle, confirming, reverting, reverted, revert-error
+- Keep integration localized to the existing workspace shell and history/control surface
+- Frontend-only changes — additive only
+- Focused frontend tests for this slice
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No diff viewer in this task
+- ❌ No partial/file-level revert in this task
+- ❌ No branching/star/filter/search in this task
+- ❌ No autosave checkpointing
+- ❌ No polling/websocket behavior
+- ❌ No broader workspace redesign
+- ❌ No multi-task work
+
+**Dependencies:** Phase 78 (Complete and Closed), Phase 79 (Complete and Closed), TASK-80A (Complete and Locked), TASK-80B (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-80C for full details
 
 ---
 
