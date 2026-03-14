@@ -3094,7 +3094,7 @@ Re-validate and re-consolidate Phase 80 so the final Phase 80 closure correctly 
 
 ## Phase 81 — Checkpoint Diff Viewer
 
-**Current stage:** TASK-81C (COMPLETE and LOCKED)
+**Current stage:** TASK-81-FINAL (COMPLETE and LOCKED)
 
 ---
 
@@ -3231,5 +3231,49 @@ Make checkpoint diff inspection more usable by upgrading the existing diff viewe
 - ✅ Checkpoint created: `docs/PHASE-81C-CHECKPOINT.md`
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81C for full details
+
+---
+
+#### TASK-81-FINAL: Phase 81 Final Consolidation
+
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)
+**Checkpoint:** `docs/PHASE-81-FINAL-CHECKPOINT.md`
+
+**Objective:**
+Validate and consolidate completed Phase 81 slices (`TASK-81A`, `TASK-81B`, `TASK-81C`) and close Phase 81 with a final checkpoint confirming the checkpoint diff viewer usability family is complete, bounded, and coherent.
+
+**Scope:**
+- Validate and consolidate `TASK-81A`, `TASK-81B`, and `TASK-81C`
+- Confirm end-to-end checkpoint diff usability improvement across all three slices
+- Confirm scope remained frontend-only and additive
+- Confirm no backend, schema, or refactor changes occurred
+- Confirm PRD / ARCHITECTURE alignment
+- Confirm no regressions across all workspace surfaces
+- Create final checkpoint: `docs/PHASE-81-FINAL-CHECKPOINT.md`
+
+**Non-Goals:**
+- ❌ No new implementation
+- ❌ No platform code changes
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+- ❌ No new product scope
+- ❌ No TASK-82 work
+
+**Completion Summary:**
+- ✅ TASK-81A confirmed COMPLETE and LOCKED — core checkpoint diff viewer wiring, five diff states, stale-request guard, session-scoped diff handling
+- ✅ TASK-81B confirmed COMPLETE and LOCKED — changed-file summary (added/modified/deleted counts), grouped file paths, per-file diff navigation
+- ✅ TASK-81C confirmed COMPLETE and LOCKED — structured unified-diff line rendering, visual distinction for hunk/added/removed/context lines
+- ✅ End-to-end checkpoint diff usability confirmed across all three slices
+- ✅ Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes
+- ✅ PRD/ARCHITECTURE alignment confirmed (request-driven, session-scoped, existing diff endpoint reused)
+- ✅ 62/62 tests pass; 0 regressions across all surfaces
+- ✅ Checkpoint created: `docs/PHASE-81-FINAL-CHECKPOINT.md`
+
+**Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81-FINAL for full details
 
 ---

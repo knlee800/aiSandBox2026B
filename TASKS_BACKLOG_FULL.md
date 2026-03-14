@@ -9931,3 +9931,86 @@ Make checkpoint diff inspection more usable by upgrading the existing diff viewe
 - ✅ Checkpoint: `docs/PHASE-81C-CHECKPOINT.md`
 
 ---
+
+### TASK-81-FINAL: Phase 81 Final Consolidation
+
+**Task ID:** TASK-81-FINAL
+**Phase:** 81
+**Stage:** 81-FINAL
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)
+**Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked)
+**Checkpoint:** `docs/PHASE-81-FINAL-CHECKPOINT.md`
+
+**Objective:**
+
+Validate and consolidate completed Phase 81 slices (`TASK-81A`, `TASK-81B`, `TASK-81C`) and close Phase 81 with a final checkpoint confirming the checkpoint diff viewer usability family is complete, bounded, and coherent.
+
+**Scope:**
+
+1. Validate and consolidate `TASK-81A`, `TASK-81B`, and `TASK-81C`
+2. Confirm end-to-end checkpoint diff usability improvement for:
+   - Opening diff view from the existing history/control surface
+   - Active-session + selected-checkpoint diff scoping
+   - Diff viewer state handling: idle / loading / ready / empty / diff-error
+   - Changed-file summary: added / modified / deleted counts and grouped file paths
+   - Per-file diff navigation within the loaded diff result
+   - Structured readable unified diff rendering
+   - Visual distinction for: hunk headers / added lines / removed lines / context lines
+3. Confirm scope remained frontend-only and additive across all three slices
+4. Confirm no backend changes occurred
+5. Confirm no schema changes occurred
+6. Confirm no refactors occurred
+7. Confirm PRD / ARCHITECTURE alignment for: existing checkpoint diff capability reuse, active-session scoping, selected-checkpoint scoping, request-driven behavior
+8. Confirm no regressions across workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, or existing history/control surfaces
+9. Create final Phase 81 checkpoint at `docs/PHASE-81-FINAL-CHECKPOINT.md`
+
+**Non-Goals:**
+
+- ❌ No new implementation
+- ❌ No platform code changes
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+- ❌ No new product scope
+- ❌ No TASK-82 work
+
+**Dependencies:**
+
+- TASK-81A complete and locked — core diff viewer baseline
+- TASK-81B complete and locked — changed-file summary and per-file navigation
+- TASK-81C complete and locked — structured unified-diff line rendering
+
+**Acceptance Criteria:**
+
+- TASK-81A confirmed COMPLETE and LOCKED
+- TASK-81B confirmed COMPLETE and LOCKED
+- TASK-81C confirmed COMPLETE and LOCKED
+- Checkpoint diff viewer family confirmed functional and bounded
+- No regressions confirmed
+- No scope violations confirmed
+- Final checkpoint created at `docs/PHASE-81-FINAL-CHECKPOINT.md`
+
+**Preserved Invariants:**
+
+- Documentation/validation only — no code produced
+- PRD.md and ARCHITECTURE.md remain higher authority throughout
+- CLAUDE.md governance loop respected at every stage
+- All TASK-81-FINAL work traceable to authoritative task definitions in TASKS.md and TASKS_BACKLOG_FULL.md
+
+**Completion Summary:**
+
+- ✅ TASK-81A confirmed COMPLETE and LOCKED — core checkpoint diff viewer wiring, five diff states (idle/loading/ready/empty/diff-error), stale-request guard, active-session and selected-checkpoint scoping
+- ✅ TASK-81B confirmed COMPLETE and LOCKED — changed-file summary (added/modified/deleted counts and grouped paths), per-file diff navigation, local file selection with safe reset on diff/session change
+- ✅ TASK-81C confirmed COMPLETE and LOCKED — structured unified-diff line rendering, visual distinction for hunk headers/added/removed/context lines, `parseUnifiedDiffLines` / `getUnifiedDiffLineType` helpers
+- ✅ End-to-end checkpoint diff usability confirmed complete and bounded across all three slices
+- ✅ Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes across all three slices
+- ✅ PRD/ARCHITECTURE alignment confirmed (request-driven, session-scoped, existing `GET /api/sessions/:id/checkpoints/:hash/diff` reused only)
+- ✅ 62/62 tests pass; 0 regressions across all workspace surfaces
+- ✅ Final checkpoint created: `docs/PHASE-81-FINAL-CHECKPOINT.md`
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81A-CHECKPOINT.md, PHASE-81B-CHECKPOINT.md, PHASE-81C-CHECKPOINT.md
+
+---
