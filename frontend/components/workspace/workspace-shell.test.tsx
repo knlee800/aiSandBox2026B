@@ -24,6 +24,14 @@ const checkpoint: WorkspaceCheckpoint = {
   filesChanged: 1,
   createdAt: '2026-03-10T12:00:00.000Z',
 };
+const checkpointTwo: WorkspaceCheckpoint = {
+  id: 'checkpoint-2',
+  commitHash: '7890abcedf1234567890abcedf1234567890abce',
+  messageNumber: 11,
+  description: null,
+  filesChanged: 2,
+  createdAt: '2026-03-10T12:05:00.000Z',
+};
 
 const userSummary = {
   userId: 'user-123',
@@ -339,7 +347,6 @@ describe('workspace shell component', () => {
       userId: null,
     });
 
-    assert.ok(!html.includes('Timeline'));
     assert.ok(!html.includes('Admin Dashboard'));
     assert.ok(!html.includes('Export Data'));
   });
@@ -479,6 +486,28 @@ describe('workspace shell component', () => {
     assert.match(html, />With description</);
     assert.match(html, />Without description</);
     assert.match(html, /Showing 1 of 1 matching checkpoints/);
+  });
+
+  test('renders visual checkpoint timeline metadata and emphasis states', () => {
+    const html = renderWorkspaceShell({
+      checkpoints: [checkpoint, checkpointTwo],
+      selectedSessionId: session.id,
+      checkpointRevertTargetId: checkpoint.id,
+      checkpointCompareState: 'selecting',
+      checkpointCompareTargetId: checkpointTwo.id,
+      checkpointDiffTargetId: checkpoint.id,
+    });
+
+    assert.match(html, /data-testid="history-timeline-item-checkpoint-1"/);
+    assert.match(html, /data-testid="history-timeline-item-checkpoint-2"/);
+    assert.match(html, /Checkpoint Timeline/);
+    assert.match(html, /data-testid="history-timeline-time-checkpoint-1"/);
+    assert.match(html, /data-testid="history-timeline-time-checkpoint-2"/);
+    assert.match(html, /2026-03-10T12:00:00.000Z/);
+    assert.match(html, /2026-03-10T12:05:00.000Z/);
+    assert.match(html, /Checkpoint 7890abc/);
+    assert.match(html, /Timeline focus: selected for diff/);
+    assert.match(html, /Timeline focus: compare target/);
   });
 
   test('renders distinct manual checkpoint create states', () => {

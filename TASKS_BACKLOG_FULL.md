@@ -10360,3 +10360,93 @@ Re-validate and re-re-consolidate Phase 81 so the final Phase 81 closure correct
 - **Date:** 2026-03-14
 
 ---
+
+### TASK-81F: Visual Checkpoint Timeline Slice
+
+**Task ID:** TASK-81F
+**Phase:** 81
+**Stage:** 81F
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked); existing history/control surface and checkpoint list load path already present
+**Checkpoint:** `docs/PHASE-81F-CHECKPOINT.md`
+
+**Objective:**
+
+Make checkpoint history easier to scan by adding a bounded visual timeline presentation to the existing history/control surface, using the already-loaded checkpoint list only. No backend changes, no new endpoints, no schema changes.
+
+**Scope:**
+
+1. Reuse the existing history/control surface and already-loaded checkpoint list only
+2. Add a bounded visual timeline presentation for checkpoints inside the existing `data-testid="history-control-slice"` area
+3. Use already-available checkpoint metadata only:
+   - Checkpoint order (position in loaded list)
+   - Timestamps already present in loaded data
+   - Descriptions already present in loaded data
+   - Current/selected item state
+4. Improve scanability for:
+   - Checkpoint order
+   - Current/selected item emphasis (visual highlight on selected/active checkpoint)
+   - Timestamps and descriptions already present in loaded data
+5. Keep existing search/filter controls (`history-search-input`, `history-description-filter`) intact and functional with the timeline presentation
+6. Keep existing diff viewer and compare mode controls intact and functional
+7. Keep existing manual checkpoint creation and manual revert surfaces intact
+8. Preserve active-session-scoped history behavior — no state leaks across session switches
+9. Keep integration localized to the existing workspace shell and history/control surface
+10. Frontend-only changes
+11. Additive only — no existing logic restructured or deleted
+12. Focused frontend tests for this slice
+13. Slice-specific checkpoint output at `docs/PHASE-81F-CHECKPOINT.md`
+
+**Non-Goals:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No new endpoints
+- ❌ No refactors
+- ❌ No branching visualization in this task
+- ❌ No drag/drop reorder in this task
+- ❌ No persistence of timeline preferences in this task
+- ❌ No timeline redesign outside the existing history/control slice boundary
+- ❌ No fuzzy-search library or dependency expansion
+- ❌ No polling/websocket behavior
+- ❌ No broader workspace redesign
+- ❌ No multi-task work
+
+**Acceptance Criteria:**
+
+- User can view checkpoints in a clearer visual timeline presentation inside the existing history/control surface
+- Timeline presentation uses only already-loaded checkpoint data (order, timestamps, descriptions)
+- Selected/current checkpoint item is visually emphasized within the timeline
+- Existing search/filter behavior (`history-search-input`, `history-description-filter`, `history-search-results-count`, `history-search-empty`) remains functional with the timeline presentation
+- Existing diff viewer and compare mode continue to work correctly against visible/selected checkpoints
+- Existing manual checkpoint creation and revert controls remain functional
+- No backend changes occurred
+- No schema changes occurred
+- No new endpoints introduced
+- No refactors occurred
+- No polling/websocket/timer behavior introduced
+- No regressions in workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, or existing history/control surfaces
+
+**Preserved Invariants:**
+
+- Frontend-only implementation
+- Additive-only changes; no deletions or restructuring of existing logic
+- Request-driven behavior only — no autofetch, polling, or timers
+- Active-session scoping preserved — all timeline state scoped to `selectedSessionId`; resets on session switch
+- Existing stale async request guards from TASK-81A (`checkpointDiffRequestIdRef`) and TASK-81D (`checkpointCompareRequestIdRef`) preserved unchanged
+- TASK-81A diff state machine and `handleViewCheckpointDiff` preserved unchanged
+- TASK-81B changed-file summary and per-file navigation preserved unchanged
+- TASK-81C structured unified diff rendering preserved unchanged
+- TASK-81D compare mode state machine and controls preserved unchanged
+- TASK-81E search/filter controls and `filterVisibleWorkspaceCheckpoints` helper preserved unchanged
+- TASK-80B manual checkpoint creation surface preserved unchanged
+- TASK-80C manual revert surface preserved unchanged
+- `PRD.md` and `ARCHITECTURE.md` remain higher authority throughout
+- `CLAUDE.md` governance loop respected at every stage
+- All work traceable to authoritative task definitions in `TASKS.md` and `TASKS_BACKLOG_FULL.md`
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81E-CHECKPOINT.md, PHASE-81-RERECONSOLIDATED-FINAL-CHECKPOINT.md
+
+---

@@ -1050,8 +1050,12 @@ function HistoryCheckpointList(props: {
           />
         </div>
       </div>
+      <div className="mb-1 flex items-center justify-between" data-testid="history-checkpoint-timeline-header">
+        <p className="text-[11px] font-semibold text-gray-700">Checkpoint Timeline</p>
+        <p className="text-[11px] text-gray-500">Order and focus for visible checkpoints</p>
+      </div>
       <ul className="space-y-2" data-testid="history-checkpoint-list">
-        {visibleCheckpoints.map((checkpoint) => {
+        {visibleCheckpoints.map((checkpoint, index) => {
           const isSelected = props.selectedCheckpointId === checkpoint.id;
           const canInitiateRevert = props.hasSelectedSession && !isReverting;
           const canConfirm = isSelected && isConfirming && !isReverting;
@@ -1059,15 +1063,65 @@ function HistoryCheckpointList(props: {
           const isDiffLoading = props.diffState === 'loading' && isDiffTarget;
           const isCompareBase = props.compareBaseCheckpointId === checkpoint.id;
           const isCompareTarget = props.compareTargetCheckpointId === checkpoint.id;
+          const isTimelineActive = isSelected || isDiffTarget || isCompareBase || isCompareTarget;
+          const timelineLabel = checkpoint.description || `Checkpoint ${checkpoint.commitHash.slice(0, 7)}`;
 
           return (
-            <li key={checkpoint.id} className="rounded border border-gray-200 bg-white px-2 py-2">
+            <li
+              key={checkpoint.id}
+              className={`relative rounded border px-2 py-2 ${
+                isTimelineActive ? 'border-blue-300 bg-blue-50/40' : 'border-gray-200 bg-white'
+              }`}
+              data-testid={`history-timeline-item-${checkpoint.id}`}
+            >
+              {index < visibleCheckpoints.length - 1 ? (
+                <span
+                  aria-hidden
+                  className="absolute left-[17px] top-8 h-[calc(100%-1.75rem)] w-px bg-gray-200"
+                />
+              ) : null}
               <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="text-xs font-medium text-gray-900 truncate">
-                    {checkpoint.description || `Checkpoint ${checkpoint.commitHash.slice(0, 7)}`}
-                  </p>
-                  <p className="text-xs text-gray-500 font-mono">{checkpoint.commitHash.slice(0, 12)}</p>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start gap-2">
+                    <span
+                      aria-hidden
+                      className={`mt-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full border text-[10px] font-semibold ${
+                        isTimelineActive
+                          ? 'border-blue-300 bg-blue-100 text-blue-700'
+                          : 'border-gray-300 bg-gray-100 text-gray-600'
+                      }`}
+                    >
+                      {index + 1}
+                    </span>
+                    <span
+                      aria-hidden
+                      className={`mt-1 h-2.5 w-2.5 rounded-full ${
+                        isTimelineActive ? 'bg-blue-500' : 'bg-gray-300'
+                      }`}
+                    />
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium text-gray-900 truncate">{timelineLabel}</p>
+                      <p className="text-xs text-gray-500 font-mono">{checkpoint.commitHash.slice(0, 12)}</p>
+                      <p className="text-[11px] text-gray-500" data-testid={`history-timeline-time-${checkpoint.id}`}>
+                        {checkpoint.createdAt}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-1 pl-8" data-testid={`history-timeline-emphasis-${checkpoint.id}`}>
+                    <p className="text-[11px] text-gray-600">
+                      {isDiffTarget
+                        ? 'Timeline focus: selected for diff'
+                        : isSelected
+                          ? 'Timeline focus: selected for revert'
+                          : isCompareBase && isCompareTarget
+                            ? 'Timeline focus: compare base and target'
+                            : isCompareBase
+                              ? 'Timeline focus: compare base'
+                              : isCompareTarget
+                                ? 'Timeline focus: compare target'
+                                : 'Timeline focus: checkpoint available'}
+                    </p>
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   {isCompareModeActive ? (
@@ -1122,7 +1176,7 @@ function HistoryCheckpointList(props: {
               </div>
               {isSelected && isConfirming ? (
                 <div
-                  className="mt-2 rounded border border-amber-200 bg-amber-50 p-2"
+                  className="mt-2 ml-8 rounded border border-amber-200 bg-amber-50 p-2"
                   data-testid={`history-revert-confirm-${checkpoint.id}`}
                 >
                   <p className="text-xs font-semibold text-amber-800">Confirm revert?</p>

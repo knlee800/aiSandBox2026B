@@ -3446,3 +3446,41 @@ Re-validate and re-re-consolidate Phase 81 so the final Phase 81 closure correct
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81-RERECONSOLIDATE for full details
 
 ---
+
+#### TASK-81F: Visual Checkpoint Timeline Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-81F-CHECKPOINT.md`
+
+**Objective:**
+Make checkpoint history easier to scan by adding a bounded visual timeline presentation to the existing history/control surface, using the already-loaded checkpoint list only.
+
+**Scope:**
+- Add bounded visual timeline presentation for checkpoints inside the existing history/control area
+- Use already-available checkpoint metadata only (order, timestamps, descriptions)
+- Improve scanability: checkpoint order, current/selected item emphasis, timestamps/descriptions
+- Keep existing search/filter, diff viewer, compare mode, manual checkpoint, and manual revert surfaces intact
+- Active-session-scoped; localized to existing workspace shell and history/control surface
+- Frontend-only, additive changes
+- Focused frontend tests for this slice
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No new endpoints
+- ❌ No refactors
+- ❌ No branching visualization
+- ❌ No drag/drop reorder
+- ❌ No persistence of timeline preferences
+- ❌ No timeline redesign outside existing history/control slice boundary
+- ❌ No fuzzy-search/dependency expansion
+- ❌ No polling/websocket behavior
+- ❌ No broader workspace redesign
+- ❌ No multi-task work
+
+**Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked); existing history/control surface and checkpoint list load path already present
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81F for full details
+
+---
