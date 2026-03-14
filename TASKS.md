@@ -3094,7 +3094,7 @@ Re-validate and re-consolidate Phase 80 so the final Phase 80 closure correctly 
 
 ## Phase 81 — Checkpoint Diff Viewer
 
-**Current stage:** TASK-81D (COMPLETE and LOCKED)
+**Current stage:** TASK-81-RECONSOLIDATE (COMPLETE and LOCKED)
 
 ---
 
@@ -3328,5 +3328,50 @@ Make checkpoint history comparison more usable by allowing the user to choose tw
 - ✅ Checkpoint created: `docs/PHASE-81D-CHECKPOINT.md`
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81D for full details
+
+---
+
+#### TASK-81-RECONSOLIDATE: Phase 81 Final Re-Consolidation
+
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)
+**Checkpoint:** `docs/PHASE-81-RECONSOLIDATED-FINAL-CHECKPOINT.md`
+
+**Objective:**
+Re-validate and re-consolidate Phase 81 so the final Phase 81 closure correctly includes `TASK-81A`, `TASK-81B`, `TASK-81C`, and `TASK-81D`, replacing the now-outdated earlier `TASK-81-FINAL` closure which was written before `TASK-81D` existed.
+
+**Scope:**
+- Validate and consolidate `TASK-81A`, `TASK-81B`, `TASK-81C`, and `TASK-81D`
+- Confirm end-to-end checkpoint diff usability improvement across all four slices (diff viewer, summary, readable rendering, compare mode)
+- Confirm scope remained frontend-only and additive across all four slices
+- Confirm no backend, schema, endpoint, or refactor changes occurred across any slice
+- Confirm PRD / ARCHITECTURE alignment
+- Confirm no regressions across all workspace surfaces
+- Supersede the earlier `TASK-81-FINAL` closure with an updated final checkpoint at `docs/PHASE-81-RECONSOLIDATED-FINAL-CHECKPOINT.md`
+
+**Non-Goals:**
+- ❌ No new implementation
+- ❌ No platform code changes
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+- ❌ No new product scope
+- ❌ No TASK-82 work
+
+**Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked); prior `TASK-81-FINAL` exists but is now outdated
+
+**Completion Summary:**
+- ✅ TASK-81A confirmed COMPLETE and LOCKED — core checkpoint diff viewer wiring, five diff states (`idle` / `loading` / `ready` / `empty` / `diff-error`), stale-request guard, active-session and selected-checkpoint scoping
+- ✅ TASK-81B confirmed COMPLETE and LOCKED — changed-file summary (added/modified/deleted counts and grouped paths), per-file diff navigation, local file selection with safe reset on diff/session change
+- ✅ TASK-81C confirmed COMPLETE and LOCKED — structured unified-diff line rendering, visual distinction for hunk headers/added/removed/context lines, `parseUnifiedDiffLines` / `getUnifiedDiffLineType` helpers
+- ✅ TASK-81D confirmed COMPLETE and LOCKED — bounded compare mode with five compare states, base/target selection, bounded pair validation, existing diff capability and diff viewer reused for compare result
+- ✅ End-to-end checkpoint diff usability confirmed across all four slices
+- ✅ Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes
+- ✅ PRD/ARCHITECTURE alignment confirmed (request-driven, session-scoped, existing diff endpoint reused)
+- ✅ 63/63 tests pass; 0 regressions across all surfaces
+- ✅ `docs/PHASE-81-RECONSOLIDATED-FINAL-CHECKPOINT.md` created; supersedes `docs/PHASE-81-FINAL-CHECKPOINT.md`
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81-RECONSOLIDATE for full details
 
 ---
