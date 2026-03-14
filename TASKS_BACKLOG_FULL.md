@@ -9652,3 +9652,91 @@ Re-validate and re-consolidate Phase 80 so the final Phase 80 closure correctly 
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-80A-CHECKPOINT.md, PHASE-80B-CHECKPOINT.md, PHASE-80C-CHECKPOINT.md, PHASE-80-FINAL-CHECKPOINT.md
 
 ---
+
+## Phase 81 — Checkpoint Diff Viewer
+
+---
+
+### TASK-81A: Core Checkpoint Diff Viewer Slice
+
+**Task ID:** TASK-81A
+**Phase:** 81
+**Stage:** 81A
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** TASK-80A (Complete and Locked), TASK-80B (Complete and Locked), TASK-80C (Complete and Locked), TASK-80-RECONSOLIDATE (Complete and Locked)
+**Checkpoint:** `docs/PHASE-81A-CHECKPOINT.md`
+
+**Objective:**
+
+Make workspace history/version-control usability meaningfully better by wiring the existing history/control surface to already-available checkpoint diff capability, so the user can inspect what changed at a chosen checkpoint from the main workspace.
+
+**Scope:**
+
+1. Reuse the existing history/control surface and active-session checkpoint list already present (from TASK-78B / Phase 79–80 preserved behavior)
+2. Add a diff-view action for a selected checkpoint using already-available checkpoint diff capability only — no new backend capability required
+3. Render a localized diff viewer inside the existing workspace/history-control area only; no new panels or workspace redesign
+4. Show distinct diff-viewer UI states:
+   - `idle` — no checkpoint selected for diff
+   - `loading` — diff fetch in-flight
+   - `ready` — diff content rendered
+   - `empty` — diff fetch succeeded but no changes recorded at this checkpoint
+   - `diff-error` — diff fetch failed
+5. Support active-session-scoped diff viewing only; diff state resets on session switch
+6. Selecting a different checkpoint replaces the visible diff content; stale-response guard prevents old async responses from corrupting current state
+7. Frontend-only changes; no backend, schema, or endpoint changes
+8. Additive only; no restructuring of existing workspace or history/control behavior
+9. Focused frontend tests covering: diff API wiring, all five UI states, and session-switch reset
+
+**Non-Goals:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No new endpoints — existing checkpoint diff capability reused only
+- ❌ No refactors
+- ❌ No changes to the existing revert flow (TASK-80C)
+- ❌ No changes to the existing manual checkpoint creation flow (TASK-80B)
+- ❌ No advanced compare-any-two-checkpoints flow in this task
+- ❌ No side-by-side rich Monaco diff editor if that would expand scope beyond a bounded first slice
+- ❌ No search / filter / star / timeline enhancements
+- ❌ No polling / websocket / timer-based behavior
+- ❌ No broader workspace redesign
+- ❌ No multi-task work
+
+**Dependencies:**
+
+- Phase 78 complete and closed — exec interaction surface preserved
+- Phase 79 complete and closed — preview and file-navigation surface preserved
+- TASK-80A complete and locked — file editing/save surface preserved
+- TASK-80B complete and locked — manual checkpoint creation surface preserved
+- TASK-80C complete and locked — manual revert surface preserved
+- Existing history/control surface and checkpoint list fetch pattern already present
+- Existing checkpoint diff capability already available in the current platform architecture (Phase 68 backend work)
+
+**Acceptance Criteria:**
+
+- User can open diff view for a chosen checkpoint from the existing workspace/history-control surface
+- Diff view is scoped to the active session and selected checkpoint only
+- Diff viewer shows distinct `idle` / `loading` / `ready` / `empty` / `diff-error` states
+- Selecting a different checkpoint correctly replaces diff content; stale-response guard applied
+- Session switch resets diff state
+- No backend changes occurred
+- No schema changes occurred
+- No new endpoints introduced
+- No refactors occurred
+- No regressions in workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, or existing history/control surfaces
+
+**Preserved Invariants:**
+
+- Frontend-only implementation
+- Additive-only changes
+- Request-driven behavior only (user-triggered diff load; no polling/timers)
+- Active-session scoping preserved
+- PRD.md and ARCHITECTURE.md remain higher authority throughout
+- CLAUDE.md governance loop respected at every stage
+- All TASK-81A work traceable to authoritative task definitions in TASKS.md and TASKS_BACKLOG_FULL.md
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-80-RECONSOLIDATED-FINAL-CHECKPOINT.md
+
+---

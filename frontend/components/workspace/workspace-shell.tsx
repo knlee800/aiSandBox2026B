@@ -22,6 +22,14 @@ import type {
 } from './workspace-file-navigation.logic';
 import type { WorkspaceCheckpointCreateState } from './workspace-checkpoint-create.logic';
 import type { WorkspaceCheckpointRevertState } from './workspace-checkpoint-revert.logic';
+import type {
+  WorkspaceCheckpointDiffState,
+  WorkspaceCheckpointDiffResponse,
+} from './workspace-checkpoint-diff.logic';
+import type {
+  WorkspaceCheckpointDiffResponse,
+  WorkspaceCheckpointDiffState,
+} from './workspace-checkpoint-diff.logic';
 
 interface WorkspaceShellProps {
   sessions: WorkspaceShellSession[];
@@ -46,6 +54,11 @@ interface WorkspaceShellProps {
   onInitiateCheckpointRevert: (checkpointId: string) => void;
   onCancelCheckpointRevert: () => void;
   onConfirmCheckpointRevert: () => Promise<void>;
+  checkpointDiffState: WorkspaceCheckpointDiffState;
+  checkpointDiffError: string | null;
+  checkpointDiffTargetId: string | null;
+  checkpointDiffResponse: WorkspaceCheckpointDiffResponse | null;
+  onViewCheckpointDiff: (checkpointId: string) => Promise<void>;
   userSummary: WorkspaceUserSummary | null;
   usageSummary: WorkspaceUsageSummary | null;
   quotaSummary: WorkspaceQuotaSummary | null;
@@ -212,6 +225,11 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                 onInitiateRevert={props.onInitiateCheckpointRevert}
                 onCancelRevert={props.onCancelCheckpointRevert}
                 onConfirmRevert={props.onConfirmCheckpointRevert}
+                diffState={props.checkpointDiffState}
+                diffErrorMessage={props.checkpointDiffError}
+                diffTargetCheckpointId={props.checkpointDiffTargetId}
+                diffResponse={props.checkpointDiffResponse}
+                onViewDiff={props.onViewCheckpointDiff}
               />
             ) : null}
           </section>
@@ -879,6 +897,11 @@ function HistoryCheckpointList(props: {
   onInitiateRevert: (checkpointId: string) => void;
   onCancelRevert: () => void;
   onConfirmRevert: () => Promise<void>;
+  diffState: WorkspaceCheckpointDiffState;
+  diffErrorMessage: string | null;
+  diffTargetCheckpointId: string | null;
+  diffResponse: WorkspaceCheckpointDiffResponse | null;
+  onViewDiff: (checkpointId: string) => Promise<void>;
 }) {
   const isReverting = props.revertState === 'reverting';
   const isConfirming = props.revertState === 'confirming';
@@ -897,6 +920,8 @@ function HistoryCheckpointList(props: {
           const isSelected = props.selectedCheckpointId === checkpoint.id;
           const canInitiateRevert = props.hasSelectedSession && !isReverting;
           const canConfirm = isSelected && isConfirming && !isReverting;
+          const isDiffTarget = props.diffTargetCheckpointId === checkpoint.id;
+          const isDiffLoading = props.diffState === 'loading' && isDiffTarget;
 
           return (
             <li key={checkpoint.id} className="rounded border border-gray-200 bg-white px-2 py-2">
@@ -907,15 +932,26 @@ function HistoryCheckpointList(props: {
                   </p>
                   <p className="text-xs text-gray-500 font-mono">{checkpoint.commitHash.slice(0, 12)}</p>
                 </div>
-                <button
-                  type="button"
-                  data-testid={`history-revert-button-${checkpoint.id}`}
-                  disabled={!canInitiateRevert}
-                  onClick={() => props.onInitiateRevert(checkpoint.id)}
-                  className="rounded bg-blue-600 px-3 py-1 text-xs text-white disabled:bg-blue-300"
-                >
-                  {isReverting && isSelected ? 'Reverting...' : 'Revert'}
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    data-testid={`history-diff-button-${checkpoint.id}`}
+                    disabled={!props.hasSelectedSession}
+                    onClick={() => void props.onViewDiff(checkpoint.id)}
+                    className="rounded border border-blue-300 bg-white px-3 py-1 text-xs text-blue-700 disabled:border-gray-200 disabled:text-gray-400"
+                  >
+                    {isDiffLoading ? 'Loading diff...' : 'View Diff'}
+                  </button>
+                  <button
+                    type="button"
+                    data-testid={`history-revert-button-${checkpoint.id}`}
+                    disabled={!canInitiateRevert}
+                    onClick={() => props.onInitiateRevert(checkpoint.id)}
+                    className="rounded bg-blue-600 px-3 py-1 text-xs text-white disabled:bg-blue-300"
+                  >
+                    {isReverting && isSelected ? 'Reverting...' : 'Revert'}
+                  </button>
+                </div>
               </div>
               {isSelected && isConfirming ? (
                 <div
@@ -947,6 +983,123 @@ function HistoryCheckpointList(props: {
                   </div>
                 </div>
               ) : null}
+            </li>
+          );
+        })}
+      </ul>
+      <div className="mt-2" data-testid="history-diff-state">
+        <HistoryDiffStateMessage
+          state={props.diffState}
+          errorMessage={props.diffErrorMessage}
+          hasSelectedSession={props.hasSelectedSession}
+        />
+      </div>
+      <HistoryCheckpointDiffViewer state={props.diffState} diffResponse={props.diffResponse} />
+    </div>
+  );
+}
+
+function HistoryDiffStateMessage(props: {
+  state: WorkspaceCheckpointDiffState;
+  errorMessage: string | null;
+  hasSelectedSession: boolean;
+}) {
+  if (props.state === 'idle') {
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="Diff viewer idle"
+        body={
+          props.hasSelectedSession
+            ? 'Select a checkpoint and choose View Diff.'
+            : 'Select an active session to inspect checkpoint diffs.'
+        }
+        action="Diff fetch is request-driven and scoped to selected session checkpoint."
+      />
+    );
+  }
+
+  if (props.state === 'loading') {
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="Loading checkpoint diff"
+        body="Diff request is in flight for the selected checkpoint."
+        action="Wait for diff content to load."
+      />
+    );
+  }
+
+  if (props.state === 'ready') {
+    return (
+      <StateMessage
+        tone="success"
+        heading="Checkpoint diff ready"
+        body="Diff content loaded for the selected checkpoint."
+        action="Review changed files and patch text below."
+      />
+    );
+  }
+
+  if (props.state === 'empty') {
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="No diff changes"
+        body="Selected checkpoint has no file diff entries."
+        action="Choose another checkpoint to inspect."
+      />
+    );
+  }
+
+  return (
+    <StateMessage
+      tone="error"
+      heading="Checkpoint diff failed"
+      body={props.errorMessage ?? 'Checkpoint diff request failed.'}
+      action="Retry View Diff for this checkpoint."
+    />
+  );
+}
+
+function HistoryCheckpointDiffViewer(props: {
+  state: WorkspaceCheckpointDiffState;
+  diffResponse: WorkspaceCheckpointDiffResponse | null;
+}) {
+  if (props.state !== 'ready' || !props.diffResponse) {
+    return null;
+  }
+
+  return (
+    <div className="mt-2 rounded border border-gray-200 bg-white p-2" data-testid="history-diff-viewer">
+      <p className="text-[11px] font-semibold text-gray-700">Checkpoint Diff</p>
+      <p className="mt-1 text-[11px] text-gray-500 font-mono" data-testid="history-diff-commit-hash">
+        commit {props.diffResponse.commitHash.slice(0, 12)}{' '}
+        {props.diffResponse.parentHash ? `← parent ${props.diffResponse.parentHash.slice(0, 12)}` : '(root commit)'}
+      </p>
+      <ul className="mt-2 space-y-2" data-testid="history-diff-file-list">
+        {props.diffResponse.files.map((file) => {
+          const statusToneClass =
+            file.status === 'added'
+              ? 'bg-green-100 text-green-700'
+              : file.status === 'deleted'
+                ? 'bg-red-100 text-red-700'
+                : 'bg-blue-100 text-blue-700';
+
+          return (
+            <li key={`${file.path}-${file.status}`} className="rounded border border-gray-200 bg-gray-50 p-2">
+              <div className="flex items-center gap-2">
+                <span className={`rounded px-2 py-0.5 text-[10px] font-semibold ${statusToneClass}`}>
+                  {file.status}
+                </span>
+                <span className="truncate font-mono text-[11px] text-gray-700">{file.path}</span>
+              </div>
+              <pre
+                className="mt-2 max-h-48 overflow-auto rounded border border-gray-200 bg-white p-2 font-mono text-[11px] text-gray-800"
+                data-testid="history-diff-file-content"
+              >
+                {file.diff || '(empty diff)'}
+              </pre>
             </li>
           );
         })}

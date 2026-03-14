@@ -7,6 +7,7 @@ import type { WorkspaceCheckpoint, WorkspaceShellSession } from './workspace-she
 import type { WorkspaceExecState } from './workspace-exec.logic';
 import type { WorkspacePreviewState } from './workspace-preview.logic';
 import type { WorkspaceFileNode } from './workspace-file-navigation.logic';
+import type { WorkspaceCheckpointDiffResponse } from './workspace-checkpoint-diff.logic';
 
 const session: WorkspaceShellSession = {
   id: '12345678-test-session',
@@ -54,6 +55,17 @@ const idleExecState: WorkspaceExecState = {
 };
 
 const unavailablePreviewState: WorkspacePreviewState = 'unavailable';
+const checkpointDiffResponse: WorkspaceCheckpointDiffResponse = {
+  commitHash: 'abc123def456789012345678901234567890abcd',
+  parentHash: 'def456abc123789012345678901234567890abcd',
+  files: [
+    {
+      path: 'src/app.ts',
+      status: 'modified',
+      diff: '@@ -1 +1 @@\n-console.log("old")\n+console.log("new")',
+    },
+  ],
+};
 const workspaceFileTree: WorkspaceFileNode[] = [
   {
     name: 'src',
@@ -96,6 +108,11 @@ function renderWorkspaceShell(
     onInitiateCheckpointRevert: () => {},
     onCancelCheckpointRevert: () => {},
     onConfirmCheckpointRevert: async () => {},
+    checkpointDiffState: 'idle',
+    checkpointDiffError: null,
+    checkpointDiffTargetId: null,
+    checkpointDiffResponse: null,
+    onViewCheckpointDiff: async () => {},
     userSummary,
     usageSummary,
     quotaSummary,
@@ -143,6 +160,7 @@ describe('workspace shell component', () => {
     assert.match(html, /Dashboard \(Slice 1\)/);
     assert.match(html, /Session 12345678/);
     assert.match(html, /Auto-commit: Message 10/);
+    assert.match(html, /View Diff/);
     assert.match(html, /Current User/);
     assert.match(html, /user@example\.com/);
     assert.match(html, /Active Sessions/);
@@ -291,8 +309,51 @@ describe('workspace shell component', () => {
 
     assert.ok(!html.includes('Timeline'));
     assert.ok(!html.includes('Admin Dashboard'));
-    assert.ok(!html.includes('Diff'));
     assert.ok(!html.includes('Export Data'));
+  });
+
+  test('renders distinct checkpoint diff states and diff content', () => {
+    const idleHtml = renderWorkspaceShell({
+      checkpointDiffState: 'idle',
+      selectedSessionId: session.id,
+    });
+    const loadingHtml = renderWorkspaceShell({
+      checkpointDiffState: 'loading',
+      checkpointDiffTargetId: checkpoint.id,
+      selectedSessionId: session.id,
+    });
+    const readyHtml = renderWorkspaceShell({
+      checkpointDiffState: 'ready',
+      checkpointDiffTargetId: checkpoint.id,
+      checkpointDiffResponse,
+      selectedSessionId: session.id,
+    });
+    const emptyHtml = renderWorkspaceShell({
+      checkpointDiffState: 'empty',
+      checkpointDiffTargetId: checkpoint.id,
+      checkpointDiffResponse: {
+        ...checkpointDiffResponse,
+        files: [],
+      },
+      selectedSessionId: session.id,
+    });
+    const errorHtml = renderWorkspaceShell({
+      checkpointDiffState: 'diff-error',
+      checkpointDiffError: 'Failed to load checkpoint diff.',
+      selectedSessionId: session.id,
+    });
+
+    assert.match(idleHtml, /Diff viewer idle/);
+    assert.match(loadingHtml, /Loading checkpoint diff/);
+    assert.match(loadingHtml, /Loading diff\.\.\./);
+    assert.match(readyHtml, /Checkpoint diff ready/);
+    assert.match(readyHtml, /Checkpoint Diff/);
+    assert.match(readyHtml, /src\/app\.ts/);
+    assert.match(readyHtml, /modified/);
+    assert.match(readyHtml, /console\.log\(&quot;new&quot;\)/);
+    assert.match(emptyHtml, /No diff changes/);
+    assert.match(errorHtml, /Checkpoint diff failed/);
+    assert.match(errorHtml, /Failed to load checkpoint diff\./);
   });
 
   test('renders distinct manual checkpoint create states', () => {

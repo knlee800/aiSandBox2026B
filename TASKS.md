@@ -3091,3 +3091,44 @@ Re-validate and re-consolidate Phase 80 so the final Phase 80 closure correctly 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-80-RECONSOLIDATE for full details
 
 ---
+
+## Phase 81 — Checkpoint Diff Viewer
+
+**Current stage:** TASK-81A (COMPLETE and LOCKED)
+
+---
+
+#### TASK-81A: Core Checkpoint Diff Viewer Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-81A-CHECKPOINT.md`
+
+**Objective:**
+Make workspace history/version-control usability meaningfully better by wiring the existing history/control surface to already-available checkpoint diff capability, so the user can inspect what changed at a chosen checkpoint from the main workspace.
+
+**Scope:**
+- Reuse the existing history/control surface and active-session checkpoint list
+- Add a diff-view action for a selected checkpoint using existing checkpoint diff capability only
+- Render a localized diff viewer inside the existing workspace/history-control area only
+- Show distinct diff-viewer UI states: idle / loading / ready / empty / diff-error
+- Active-session-scoped diff viewing only
+- Refresh diff content when a different checkpoint is selected
+- Frontend-only, additive changes
+- Focused frontend tests for this slice
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No new endpoints
+- ❌ No refactors
+- ❌ No revert or manual checkpoint changes in this task
+- ❌ No advanced compare-any-two-checkpoints flow
+- ❌ No polling/websocket behavior
+- ❌ No broader workspace redesign
+
+**Dependencies:** Phase 78–80 complete and closed; existing history/control surface and checkpoint list fetch pattern present; existing checkpoint diff capability already available
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81A for full details
+
+---

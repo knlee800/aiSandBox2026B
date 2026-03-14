@@ -25,6 +25,16 @@ import {
   type WorkspaceCheckpointRevertState,
 } from '@/components/workspace/workspace-checkpoint-revert.logic';
 import {
+  loadWorkspaceCheckpointDiff,
+  type WorkspaceCheckpointDiffState,
+  type WorkspaceCheckpointDiffFile,
+} from '@/components/workspace/workspace-checkpoint-diff.logic';
+import {
+  loadWorkspaceCheckpointDiff,
+  type WorkspaceCheckpointDiffResponse,
+  type WorkspaceCheckpointDiffState,
+} from '@/components/workspace/workspace-checkpoint-diff.logic';
+import {
   buildPreviewProxyUrl,
   isPreviewRunning,
   type WorkspacePreviewStatusResponse,
@@ -63,6 +73,11 @@ export default function AppPage() {
     useState<WorkspaceCheckpointRevertState>('idle');
   const [checkpointRevertError, setCheckpointRevertError] = useState<string | null>(null);
   const [checkpointRevertTargetId, setCheckpointRevertTargetId] = useState<string | null>(null);
+  const [checkpointDiffState, setCheckpointDiffState] = useState<WorkspaceCheckpointDiffState>('idle');
+  const [checkpointDiffError, setCheckpointDiffError] = useState<string | null>(null);
+  const [checkpointDiffTargetId, setCheckpointDiffTargetId] = useState<string | null>(null);
+  const [checkpointDiffResponse, setCheckpointDiffResponse] =
+    useState<WorkspaceCheckpointDiffResponse | null>(null);
   const [userSummary, setUserSummary] = useState<WorkspaceUserSummary | null>(null);
   const [usageSummary, setUsageSummary] = useState<WorkspaceUsageSummary | null>(null);
   const [quotaSummary, setQuotaSummary] = useState<WorkspaceQuotaSummary | null>(null);
@@ -89,6 +104,7 @@ export default function AppPage() {
   const fileSaveRequestIdRef = useRef(0);
   const checkpointCreateRequestIdRef = useRef(0);
   const checkpointRevertRequestIdRef = useRef(0);
+  const checkpointDiffRequestIdRef = useRef(0);
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -119,6 +135,11 @@ export default function AppPage() {
     setCheckpointRevertState('idle');
     setCheckpointRevertError(null);
     setCheckpointRevertTargetId(null);
+    checkpointDiffRequestIdRef.current += 1;
+    setCheckpointDiffState('idle');
+    setCheckpointDiffError(null);
+    setCheckpointDiffTargetId(null);
+    setCheckpointDiffResponse(null);
 
     if (!selectedSessionId) {
       setCheckpoints([]);
@@ -417,6 +438,79 @@ export default function AppPage() {
       }
       setCheckpointRevertState('revert-error');
       setCheckpointRevertError('Failed to revert workspace to selected checkpoint.');
+    }
+  }
+
+  async function handleViewCheckpointDiff(checkpointId: string): Promise<void> {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+
+    if (!selectedSessionId) {
+      setCheckpointDiffState('diff-error');
+      setCheckpointDiffError('Cannot load diff without an active session.');
+      setCheckpointDiffTargetId(null);
+      setCheckpointDiffResponse(null);
+      return;
+    }
+
+    const selectedSession = sessions.find((session) => session.id === selectedSessionId);
+    if (!selectedSession || selectedSession.terminatedAt) {
+      setCheckpointDiffState('diff-error');
+      setCheckpointDiffError('Cannot load diff for a terminated session.');
+      setCheckpointDiffTargetId(null);
+      setCheckpointDiffResponse(null);
+      return;
+    }
+
+    const targetCheckpoint = checkpoints.find((checkpoint) => checkpoint.id === checkpointId);
+    if (!targetCheckpoint) {
+      setCheckpointDiffState('diff-error');
+      setCheckpointDiffError('Selected checkpoint is no longer available.');
+      setCheckpointDiffTargetId(null);
+      setCheckpointDiffResponse(null);
+      return;
+    }
+
+    const requestId = checkpointDiffRequestIdRef.current + 1;
+    checkpointDiffRequestIdRef.current = requestId;
+    const sessionId = selectedSessionId;
+    setCheckpointDiffState('loading');
+    setCheckpointDiffError(null);
+    setCheckpointDiffTargetId(checkpointId);
+    setCheckpointDiffResponse(null);
+
+    try {
+      const response = await loadWorkspaceCheckpointDiff({
+        token,
+        sessionId,
+        commitHash: targetCheckpoint.commitHash,
+      });
+
+      if (checkpointDiffRequestIdRef.current !== requestId) {
+        return;
+      }
+
+      if (!response.files.length) {
+        setCheckpointDiffState('empty');
+        setCheckpointDiffError(null);
+        setCheckpointDiffResponse(response);
+        return;
+      }
+
+      setCheckpointDiffState('ready');
+      setCheckpointDiffError(null);
+      setCheckpointDiffResponse(response);
+    } catch (error) {
+      console.error('Failed to load checkpoint diff:', error);
+      if (checkpointDiffRequestIdRef.current !== requestId) {
+        return;
+      }
+      setCheckpointDiffState('diff-error');
+      setCheckpointDiffError('Failed to load checkpoint diff.');
+      setCheckpointDiffResponse(null);
     }
   }
 
@@ -827,6 +921,11 @@ export default function AppPage() {
       onInitiateCheckpointRevert={handleInitiateCheckpointRevert}
       onCancelCheckpointRevert={handleCancelCheckpointRevert}
       onConfirmCheckpointRevert={handleConfirmCheckpointRevert}
+      checkpointDiffState={checkpointDiffState}
+      checkpointDiffError={checkpointDiffError}
+      checkpointDiffTargetId={checkpointDiffTargetId}
+      checkpointDiffResponse={checkpointDiffResponse}
+      onViewCheckpointDiff={handleViewCheckpointDiff}
       userSummary={userSummary}
       usageSummary={usageSummary}
       quotaSummary={quotaSummary}
