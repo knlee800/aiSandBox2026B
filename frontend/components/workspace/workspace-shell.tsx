@@ -26,10 +26,6 @@ import type {
   WorkspaceCheckpointDiffState,
   WorkspaceCheckpointDiffResponse,
 } from './workspace-checkpoint-diff.logic';
-import type {
-  WorkspaceCheckpointDiffResponse,
-  WorkspaceCheckpointDiffState,
-} from './workspace-checkpoint-diff.logic';
 
 interface WorkspaceShellProps {
   sessions: WorkspaceShellSession[];
@@ -1066,6 +1062,37 @@ function HistoryCheckpointDiffViewer(props: {
   state: WorkspaceCheckpointDiffState;
   diffResponse: WorkspaceCheckpointDiffResponse | null;
 }) {
+  const diffFiles = props.state === 'ready' && props.diffResponse ? props.diffResponse.files : [];
+
+  const filesByStatus = React.useMemo(
+    () => ({
+      added: diffFiles.filter((file) => file.status === 'added'),
+      modified: diffFiles.filter((file) => file.status === 'modified'),
+      deleted: diffFiles.filter((file) => file.status === 'deleted'),
+    }),
+    [diffFiles],
+  );
+  const fileIds = React.useMemo(
+    () => diffFiles.map((file) => `${file.path}::${file.status}`),
+    [diffFiles],
+  );
+  const [selectedFileId, setSelectedFileId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (!fileIds.length) {
+      setSelectedFileId(null);
+      return;
+    }
+    setSelectedFileId((currentSelection) =>
+      currentSelection && fileIds.includes(currentSelection) ? currentSelection : fileIds[0],
+    );
+  }, [fileIds]);
+
+  const selectedFile =
+    diffFiles.find(
+      (file) => `${file.path}::${file.status}` === selectedFileId,
+    ) ?? diffFiles[0];
+
   if (props.state !== 'ready' || !props.diffResponse) {
     return null;
   }
@@ -1077,33 +1104,78 @@ function HistoryCheckpointDiffViewer(props: {
         commit {props.diffResponse.commitHash.slice(0, 12)}{' '}
         {props.diffResponse.parentHash ? `← parent ${props.diffResponse.parentHash.slice(0, 12)}` : '(root commit)'}
       </p>
-      <ul className="mt-2 space-y-2" data-testid="history-diff-file-list">
-        {props.diffResponse.files.map((file) => {
-          const statusToneClass =
-            file.status === 'added'
-              ? 'bg-green-100 text-green-700'
-              : file.status === 'deleted'
-                ? 'bg-red-100 text-red-700'
-                : 'bg-blue-100 text-blue-700';
-
-          return (
-            <li key={`${file.path}-${file.status}`} className="rounded border border-gray-200 bg-gray-50 p-2">
-              <div className="flex items-center gap-2">
-                <span className={`rounded px-2 py-0.5 text-[10px] font-semibold ${statusToneClass}`}>
-                  {file.status}
-                </span>
-                <span className="truncate font-mono text-[11px] text-gray-700">{file.path}</span>
+      <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="history-diff-summary">
+        <p className="text-[11px] font-semibold text-gray-700">Changed Files Summary</p>
+        <p className="mt-1 text-[11px] text-gray-600" data-testid="history-diff-count-added">
+          Added: {filesByStatus.added.length}
+        </p>
+        <p className="text-[11px] text-gray-600" data-testid="history-diff-count-modified">
+          Modified: {filesByStatus.modified.length}
+        </p>
+        <p className="text-[11px] text-gray-600" data-testid="history-diff-count-deleted">
+          Deleted: {filesByStatus.deleted.length}
+        </p>
+        <div className="mt-2 space-y-2" data-testid="history-diff-file-list">
+          {(['added', 'modified', 'deleted'] as const).map((statusGroup) => {
+            const groupedFiles = filesByStatus[statusGroup];
+            if (!groupedFiles.length) {
+              return null;
+            }
+            return (
+              <div key={statusGroup}>
+                <p className="text-[11px] font-semibold capitalize text-gray-700">{statusGroup}</p>
+                <ul className="mt-1 space-y-1">
+                  {groupedFiles.map((file) => {
+                    const fileId = `${file.path}::${file.status}`;
+                    const isSelected = selectedFile && fileId === `${selectedFile.path}::${selectedFile.status}`;
+                    return (
+                      <li key={fileId}>
+                        <button
+                          type="button"
+                          data-testid={`history-diff-file-select-${fileId}`}
+                          aria-pressed={isSelected}
+                          onClick={() => setSelectedFileId(fileId)}
+                          className={`w-full truncate rounded border px-2 py-1 text-left font-mono text-[11px] ${
+                            isSelected
+                              ? 'border-blue-400 bg-blue-50 text-blue-800'
+                              : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                          }`}
+                        >
+                          {file.path}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
               </div>
-              <pre
-                className="mt-2 max-h-48 overflow-auto rounded border border-gray-200 bg-white p-2 font-mono text-[11px] text-gray-800"
-                data-testid="history-diff-file-content"
-              >
-                {file.diff || '(empty diff)'}
-              </pre>
-            </li>
-          );
-        })}
-      </ul>
+            );
+          })}
+        </div>
+      </div>
+      {selectedFile ? (
+        <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2">
+          <div className="flex items-center gap-2">
+            <span
+              className={`rounded px-2 py-0.5 text-[10px] font-semibold ${
+                selectedFile.status === 'added'
+                  ? 'bg-green-100 text-green-700'
+                  : selectedFile.status === 'deleted'
+                    ? 'bg-red-100 text-red-700'
+                    : 'bg-blue-100 text-blue-700'
+              }`}
+            >
+              {selectedFile.status}
+            </span>
+            <span className="truncate font-mono text-[11px] text-gray-700">{selectedFile.path}</span>
+          </div>
+          <pre
+            className="mt-2 max-h-48 overflow-auto rounded border border-gray-200 bg-white p-2 font-mono text-[11px] text-gray-800"
+            data-testid="history-diff-file-content"
+          >
+            {selectedFile.diff || '(empty diff)'}
+          </pre>
+        </div>
+      ) : null}
     </div>
   );
 }

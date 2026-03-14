@@ -60,9 +60,19 @@ const checkpointDiffResponse: WorkspaceCheckpointDiffResponse = {
   parentHash: 'def456abc123789012345678901234567890abcd',
   files: [
     {
+      path: 'src/new-file.ts',
+      status: 'added',
+      diff: '@@ -0,0 +1 @@\n+export const created = true;',
+    },
+    {
       path: 'src/app.ts',
       status: 'modified',
       diff: '@@ -1 +1 @@\n-console.log("old")\n+console.log("new")',
+    },
+    {
+      path: 'src/old-file.ts',
+      status: 'deleted',
+      diff: '@@ -1 +0,0 @@\n-export const removed = true;',
     },
   ],
 };
@@ -348,9 +358,17 @@ describe('workspace shell component', () => {
     assert.match(loadingHtml, /Loading diff\.\.\./);
     assert.match(readyHtml, /Checkpoint diff ready/);
     assert.match(readyHtml, /Checkpoint Diff/);
+    assert.match(readyHtml, /Changed Files Summary/);
+    assert.match(readyHtml, /Added: 1/);
+    assert.match(readyHtml, /Modified: 1/);
+    assert.match(readyHtml, /Deleted: 1/);
+    assert.match(readyHtml, /src\/new-file\.ts/);
     assert.match(readyHtml, /src\/app\.ts/);
+    assert.match(readyHtml, /src\/old-file\.ts/);
     assert.match(readyHtml, /modified/);
-    assert.match(readyHtml, /console\.log\(&quot;new&quot;\)/);
+    assert.match(readyHtml, /added/);
+    assert.match(readyHtml, /export const created = true/);
+    assert.ok(!readyHtml.includes('console.log(&quot;new&quot;)'));
     assert.match(emptyHtml, /No diff changes/);
     assert.match(errorHtml, /Checkpoint diff failed/);
     assert.match(errorHtml, /Failed to load checkpoint diff\./);

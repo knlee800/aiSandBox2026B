@@ -9740,3 +9740,96 @@ Make workspace history/version-control usability meaningfully better by wiring t
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-80-RECONSOLIDATED-FINAL-CHECKPOINT.md
 
 ---
+
+### TASK-81B: Enhanced Checkpoint Diff Summary Slice
+
+**Task ID:** TASK-81B
+**Phase:** 81
+**Stage:** 81B
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** TASK-81A (Complete and Locked)
+**Checkpoint:** `docs/PHASE-81B-CHECKPOINT.md`
+
+**Objective:**
+
+Make checkpoint comparison more usable by enhancing the existing diff viewer with clear file-change summary and easier file-by-file diff navigation, using the already-available checkpoint diff capability only.
+
+**Scope:**
+
+1. Reuse the existing TASK-81A checkpoint diff viewer and existing diff endpoint only — no new backend capability required
+2. Add a clear changed-files summary for the selected checkpoint diff:
+   - count and list of files added
+   - count and list of files modified
+   - count and list of files deleted
+3. Add localized file-by-file navigation within the existing diff viewer area:
+   - allow user to select a specific changed file from the summary
+   - show the diff text for the selected file only
+4. Keep rendering bounded to the existing workspace/history/control area; no new panels
+5. Preserve active-session-scoped diff viewing only; diff state resets on session switch
+6. Preserve selected-checkpoint-scoped diff viewing only
+7. Frontend-only changes; no backend, schema, or endpoint changes
+8. Additive only; no restructuring of existing TASK-81A diff viewer behavior
+9. Focused frontend tests covering: summary rendering, file navigation, all relevant UI states
+
+**Non-Goals:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No new endpoints — existing checkpoint diff capability reused only
+- ❌ No refactors
+- ❌ No changes to the existing revert flow (TASK-80C)
+- ❌ No changes to the existing manual checkpoint creation flow (TASK-80B)
+- ❌ No compare-any-two-checkpoints flow in this task
+- ❌ No side-by-side Monaco diff editor in this task
+- ❌ No search / filter / star / timeline enhancements
+- ❌ No polling / websocket / timer-based behavior
+- ❌ No broader workspace redesign
+- ❌ No multi-task work
+
+**Dependencies:**
+
+- TASK-81A complete and locked — existing checkpoint diff viewer baseline present
+- Existing history/control surface and checkpoint list already present
+- Existing checkpoint diff capability already available at `GET /api/sessions/:id/checkpoints/:hash/diff`
+- Existing `WorkspaceCheckpointDiffResponse` type with `files[]` (`path`, `status`, `diff`) already available
+
+**Acceptance Criteria:**
+
+- User can see a clear summary of changed files (added / modified / deleted counts and paths) for the selected checkpoint diff
+- User can switch between changed files within the currently loaded diff result
+- Summary and file navigation remain scoped to the active session and selected checkpoint only
+- Existing TASK-81A diff viewer behavior remains functional
+- No backend changes occurred
+- No schema changes occurred
+- No new endpoints introduced
+- No refactors occurred
+- No regressions in workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, or existing history/control surfaces
+
+**Preserved Invariants:**
+
+- Frontend-only implementation
+- Additive-only changes
+- Request-driven behavior only (no polling/timers; diff data already loaded by TASK-81A)
+- Active-session scoping preserved
+- Selected-checkpoint scoping preserved
+- PRD.md and ARCHITECTURE.md remain higher authority throughout
+- CLAUDE.md governance loop respected at every stage
+- All TASK-81B work traceable to authoritative task definitions in TASKS.md and TASKS_BACKLOG_FULL.md
+
+**Completion Summary:**
+
+- ✅ Changed-files summary (added/modified/deleted counts and grouped file paths) added inside existing diff viewer
+- ✅ Localized file-by-file navigation added inside existing diff viewer area
+- ✅ Selection defaults to first file; resets safely when checkpoint or session changes
+- ✅ Selected-file detail pane renders status badge, file path, and diff text
+- ✅ Existing TASK-81A diff viewer behavior (all five states: idle/loading/ready/empty/diff-error) preserved
+- ✅ Scope confirmed frontend-only and additive; no existing logic restructured
+- ✅ No backend changes, schema changes, endpoint changes, or refactors
+- ✅ PRD/ARCHITECTURE alignment confirmed (request-driven, session-scoped, existing diff endpoint reused)
+- ✅ 61/61 tests pass; 0 regressions
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81A-CHECKPOINT.md, PHASE-81B-CHECKPOINT.md
+
+---
