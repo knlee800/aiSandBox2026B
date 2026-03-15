@@ -3094,7 +3094,7 @@ Re-validate and re-consolidate Phase 80 so the final Phase 80 closure correctly 
 
 ## Phase 81 — Checkpoint Diff Viewer
 
-**Current stage:** TASK-81L (COMPLETE and LOCKED)
+**Current stage:** TASK-81M (COMPLETE and LOCKED)
 
 ---
 
@@ -3759,5 +3759,44 @@ Make revert workflows safer and easier to understand by adding a bounded revert 
 **Dependencies:** TASK-80C, TASK-81A through TASK-81K (all Complete and Locked); existing history/control surface, revert flow, and diff/snapshot surfaces already present
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81L for full details
+
+---
+
+#### TASK-81M: Checkpoint Changed Files Inspector Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-81M-CHECKPOINT.md`
+
+**Objective:**
+Make checkpoint history easier to inspect by adding a bounded changed-files inspector for the currently selected checkpoint inside the existing history/control surface, using already-available loaded diff/snapshot metadata only.
+
+**Scope:**
+- Reuse the existing history/control surface and existing checkpoint selection patterns only
+- Add a bounded changed-files inspector inside the existing history/control area
+- Show a stable file list for the currently selected checkpoint using already-available data only
+- Improve inspectability for changed file paths, file status where already derivable, and quick switching between changed files inside the selected checkpoint context
+- Keep existing diff viewer, compare mode, search/filter, visual timeline, git-log browser, snapshot viewer, jump-to-live-file, pinned comparison reference, details inspector, revert preview, manual checkpoint, and manual revert surfaces intact
+- Preserve active-session-scoped behavior only
+- Frontend-only changes
+- Additive only
+- Focused frontend tests for this slice
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No automatic diff opening in this task
+- ❌ No restore/revert action in this task
+- ❌ No editing/saving from changed-files inspector in this task
+- ❌ No branching visualization
+- ❌ No broader workspace redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Dependencies:** TASK-81A through TASK-81L (all Complete and Locked); existing history/control surface and diff/snapshot surfaces already present
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81M for full details
 
 ---

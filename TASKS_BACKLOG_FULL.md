@@ -10947,3 +10947,64 @@ Make revert workflows safer and easier to understand by adding a bounded revert 
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81K-CHECKPOINT.md
 
 ---
+
+### TASK-81M: Checkpoint Changed Files Inspector Slice
+
+**Task ID:** TASK-81M
+**Phase:** 81
+**Stage:** 81M
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked), TASK-81I (Complete and Locked), TASK-81J (Complete and Locked), TASK-81K (Complete and Locked), TASK-81L (Complete and Locked); existing history/control surface already present; existing diff/snapshot surfaces already present
+**Checkpoint:** `docs/PHASE-81M-CHECKPOINT.md`
+
+**Objective:**
+
+Make checkpoint history easier to inspect by adding a bounded changed-files inspector for the currently selected checkpoint inside the existing history/control surface, using already-available loaded diff/snapshot metadata only.
+
+**Scope:**
+
+1. Reuse the existing history/control surface and existing checkpoint selection patterns only
+2. Add a bounded changed-files inspector inside the existing history/control area
+3. Show a stable file list for the currently selected checkpoint using already-available data only
+4. Improve inspectability for:
+   - changed file paths
+   - file status where already derivable
+   - quick switching between changed files inside the selected checkpoint context
+5. Keep existing diff viewer, compare mode, search/filter, visual timeline, git-log browser, snapshot viewer, jump-to-live-file, pinned comparison reference, details inspector, revert preview, manual checkpoint, and manual revert surfaces intact
+6. Preserve active-session-scoped behavior only
+7. Keep integration localized to the existing workspace shell and history/control surface
+8. Frontend-only changes
+9. Additive only
+10. Focused frontend tests for this slice
+11. Slice-specific checkpoint output at `docs/PHASE-81M-CHECKPOINT.md`
+
+**Non-Goals:**
+
+- No backend changes
+- No schema changes
+- No refactors
+- No new endpoints
+- No automatic diff opening in this task
+- No restore/revert action in this task
+- No editing/saving from changed-files inspector in this task
+- No branching visualization in this task
+- No broader workspace redesign
+- No polling/websocket behavior
+- No multi-task work
+
+**Acceptance Criteria:**
+
+- User can inspect a stable changed-files panel for the currently selected checkpoint inside the existing history/control surface
+- Changed-files inspector uses only already-available data
+- Existing diff viewer, compare mode, search/filter, visual timeline, git-log browser, snapshot viewer, jump-to-live-file, pinned comparison reference, details inspector, revert preview, manual checkpoint, and manual revert continue to work correctly
+- Behavior remains scoped to the active session only
+- No backend changes occurred
+- No schema changes occurred
+- No refactors occurred
+- No regressions in workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, or existing history/control surfaces
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81L-CHECKPOINT.md
+
+---

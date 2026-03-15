@@ -1091,6 +1091,85 @@ function HistoryCheckpointList(props: {
     props.compareTargetCheckpointId,
     props.pinnedCompareReferenceCheckpointId,
   ]);
+  const inspectorChangedFiles = React.useMemo(() => {
+    if (!inspectorCheckpoint) {
+      return {
+        source: 'none' as 'none' | 'diff' | 'snapshot',
+        files: [] as Array<{ id: string; path: string; status: 'added' | 'modified' | 'deleted' | null }>,
+      };
+    }
+
+    if (
+      props.diffState === 'ready' &&
+      props.diffResponse &&
+      props.diffTargetCheckpointId === inspectorCheckpoint.id
+    ) {
+      const stableFiles = props.diffResponse.files
+        .map((file) => ({
+          id: `${file.path}::${file.status}`,
+          path: file.path,
+          status: file.status,
+        }))
+        .sort((leftFile, rightFile) => leftFile.id.localeCompare(rightFile.id));
+      return { source: 'diff' as const, files: stableFiles };
+    }
+
+    if (
+      props.snapshotState === 'ready' &&
+      props.snapshotResponse &&
+      props.snapshotTargetCheckpointId === inspectorCheckpoint.id
+    ) {
+      const stableFiles = props.snapshotResponse.files
+        .map((file) => ({
+          id: `${file.path}::${file.status}`,
+          path: file.path,
+          status: file.status,
+        }))
+        .sort((leftFile, rightFile) => leftFile.id.localeCompare(rightFile.id));
+      return { source: 'snapshot' as const, files: stableFiles };
+    }
+
+    return {
+      source: 'none' as const,
+      files: [] as Array<{ id: string; path: string; status: 'added' | 'modified' | 'deleted' | null }>,
+    };
+  }, [
+    inspectorCheckpoint,
+    props.diffState,
+    props.diffResponse,
+    props.diffTargetCheckpointId,
+    props.snapshotState,
+    props.snapshotResponse,
+    props.snapshotTargetCheckpointId,
+  ]);
+  const [selectedInspectorFileId, setSelectedInspectorFileId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    setSelectedInspectorFileId(null);
+  }, [props.selectedSessionId]);
+
+  React.useEffect(() => {
+    if (!inspectorChangedFiles.files.length) {
+      setSelectedInspectorFileId(null);
+      return;
+    }
+    setSelectedInspectorFileId((currentSelection) =>
+      currentSelection && inspectorChangedFiles.files.some((file) => file.id === currentSelection)
+        ? currentSelection
+        : inspectorChangedFiles.files[0]?.id ?? null,
+    );
+  }, [inspectorChangedFiles]);
+
+  const selectedInspectorFile =
+    inspectorChangedFiles.files.find((file) => file.id === selectedInspectorFileId) ??
+    inspectorChangedFiles.files[0] ??
+    null;
+  const inspectorChangedFilesSourceLabel =
+    inspectorChangedFiles.source === 'diff'
+      ? 'loaded checkpoint diff metadata'
+      : inspectorChangedFiles.source === 'snapshot'
+        ? 'loaded checkpoint snapshot metadata'
+        : 'none';
 
   return (
     <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="history-checkpoint-list-surface">
@@ -1267,6 +1346,79 @@ function HistoryCheckpointList(props: {
           <p className="mt-2 text-[11px] text-gray-500" data-testid="history-checkpoint-details-empty">
             No selected checkpoint details yet. Choose a checkpoint action (diff, snapshot, compare, revert, or pin) to
             inspect it here.
+          </p>
+        )}
+      </div>
+      <div className="mb-2 rounded border border-gray-200 bg-white p-2" data-testid="history-checkpoint-changed-files-inspector">
+        <p className="text-[11px] font-semibold text-gray-700">Checkpoint Changed Files Inspector</p>
+        {inspectorCheckpoint ? (
+          <>
+            <p className="mt-2 text-[11px] text-gray-700" data-testid="history-changed-files-target">
+              Target:{' '}
+              <span className="font-medium text-gray-900">
+                {inspectorLabel} ({inspectorCheckpoint.commitHash.slice(0, 12)})
+              </span>
+            </p>
+            <p className="mt-1 text-[11px] text-gray-600" data-testid="history-changed-files-source">
+              Source: {inspectorChangedFilesSourceLabel}
+            </p>
+            {inspectorChangedFiles.files.length ? (
+              <>
+                <ul className="mt-2 space-y-1" data-testid="history-changed-files-list">
+                  {inspectorChangedFiles.files.map((file) => {
+                    const isSelected = selectedInspectorFile ? selectedInspectorFile.id === file.id : false;
+                    return (
+                      <li key={file.id}>
+                        <button
+                          type="button"
+                          data-testid={`history-changed-file-select-${file.id}`}
+                          aria-pressed={isSelected}
+                          onClick={() => setSelectedInspectorFileId(file.id)}
+                          className={`flex w-full items-center gap-2 rounded border px-2 py-1 text-left text-[11px] ${
+                            isSelected
+                              ? 'border-blue-400 bg-blue-50 text-blue-800'
+                              : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                          }`}
+                        >
+                          {file.status ? (
+                            <span
+                              className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${
+                                file.status === 'added'
+                                  ? 'bg-green-100 text-green-700'
+                                  : file.status === 'deleted'
+                                    ? 'bg-red-100 text-red-700'
+                                    : 'bg-blue-100 text-blue-700'
+                              }`}
+                            >
+                              {file.status}
+                            </span>
+                          ) : null}
+                          <span className="truncate font-mono">{file.path}</span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+                <p className="mt-2 text-[11px] text-gray-600" data-testid="history-changed-files-selected">
+                  Selected file:{' '}
+                  <span className="font-mono text-gray-700">
+                    {selectedInspectorFile?.path ?? '(none)'}
+                  </span>
+                  {'; '}Status:{' '}
+                  <span className="text-gray-700">{selectedInspectorFile?.status ?? '(unavailable)'}</span>
+                </p>
+              </>
+            ) : (
+              <p className="mt-2 text-[11px] text-gray-500" data-testid="history-changed-files-unavailable">
+                No loaded changed-file metadata for this checkpoint yet. Use View Diff or View Snapshot on this
+                checkpoint to load inspectable file entries.
+              </p>
+            )}
+          </>
+        ) : (
+          <p className="mt-2 text-[11px] text-gray-500" data-testid="history-changed-files-empty">
+            No selected checkpoint changed files yet. Choose a checkpoint action (diff, snapshot, compare, revert, or
+            pin) to inspect changed files here.
           </p>
         )}
       </div>

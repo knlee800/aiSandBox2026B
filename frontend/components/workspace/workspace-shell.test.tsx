@@ -557,6 +557,63 @@ describe('workspace shell component', () => {
     assert.match(html, /No selected checkpoint details yet\./);
   });
 
+  test('renders changed-files inspector from loaded diff metadata for selected checkpoint', () => {
+    const html = renderWorkspaceShell({
+      checkpoints: [checkpoint, checkpointTwo],
+      selectedSessionId: session.id,
+      checkpointDiffState: 'ready',
+      checkpointDiffTargetId: checkpoint.id,
+      checkpointDiffResponse,
+    });
+
+    assert.match(html, /data-testid="history-checkpoint-changed-files-inspector"/);
+    assert.match(html, /Checkpoint Changed Files Inspector/);
+    assert.match(html, /data-testid="history-changed-files-target"/);
+    assert.match(html, /Auto-commit: Message 10 \(abc123def456\)/);
+    assert.match(html, /data-testid="history-changed-files-source"/);
+    assert.match(html, /Source: loaded checkpoint diff metadata/);
+    assert.match(html, /data-testid="history-changed-files-list"/);
+    assert.match(html, /data-testid="history-changed-file-select-src\/app\.ts::modified"/);
+    assert.match(html, /data-testid="history-changed-file-select-src\/new-file\.ts::added"/);
+    assert.match(html, /data-testid="history-changed-file-select-src\/old-file\.ts::deleted"/);
+    assert.match(
+      html,
+      /Selected file: <span class="font-mono text-gray-700">src\/app\.ts<\/span>; Status: <span class="text-gray-700">modified<\/span>/,
+    );
+  });
+
+  test('renders changed-files inspector from loaded snapshot metadata fallback', () => {
+    const html = renderWorkspaceShell({
+      checkpoints: [checkpoint, checkpointTwo],
+      selectedSessionId: session.id,
+      checkpointDiffState: 'idle',
+      checkpointDiffTargetId: null,
+      checkpointDiffResponse: null,
+      checkpointSnapshotState: 'ready',
+      checkpointSnapshotTargetId: checkpoint.id,
+      checkpointSnapshotResponse: checkpointDiffResponse,
+    });
+
+    assert.match(html, /data-testid="history-changed-files-source"/);
+    assert.match(html, /Source: loaded checkpoint snapshot metadata/);
+    assert.match(html, /data-testid="history-changed-file-select-src\/app\.ts::modified"/);
+  });
+
+  test('renders changed-files inspector unavailable state without loaded file metadata', () => {
+    const html = renderWorkspaceShell({
+      checkpoints: [checkpoint, checkpointTwo],
+      selectedSessionId: session.id,
+      checkpointDiffState: 'loading',
+      checkpointDiffTargetId: checkpoint.id,
+      checkpointSnapshotState: 'idle',
+      checkpointSnapshotTargetId: null,
+      checkpointSnapshotResponse: null,
+    });
+
+    assert.match(html, /data-testid="history-changed-files-unavailable"/);
+    assert.match(html, /No loaded changed-file metadata for this checkpoint yet\./);
+  });
+
   test('renders distinct checkpoint snapshot states and read-only snapshot viewer', () => {
     const idleHtml = renderWorkspaceShell({
       checkpointSnapshotState: 'idle',
