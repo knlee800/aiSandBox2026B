@@ -109,6 +109,7 @@ export default function AppPage() {
     useState<WorkspaceCheckpointLiveOpenState>('idle');
   const [checkpointLiveOpenError, setCheckpointLiveOpenError] = useState<string | null>(null);
   const [checkpointLiveOpenTargetPath, setCheckpointLiveOpenTargetPath] = useState<string | null>(null);
+  const [checkpointPinnedReferenceId, setCheckpointPinnedReferenceId] = useState<string | null>(null);
   const [userSummary, setUserSummary] = useState<WorkspaceUserSummary | null>(null);
   const [usageSummary, setUsageSummary] = useState<WorkspaceUsageSummary | null>(null);
   const [quotaSummary, setQuotaSummary] = useState<WorkspaceQuotaSummary | null>(null);
@@ -189,6 +190,7 @@ export default function AppPage() {
     setCheckpointLiveOpenState('idle');
     setCheckpointLiveOpenError(null);
     setCheckpointLiveOpenTargetPath(null);
+    setCheckpointPinnedReferenceId(null);
 
     if (!selectedSessionId) {
       setCheckpoints([]);
@@ -199,6 +201,19 @@ export default function AppPage() {
 
     void loadCheckpoints(token, selectedSessionId);
   }, [selectedSessionId]);
+
+  useEffect(() => {
+    if (!checkpointPinnedReferenceId) {
+      return;
+    }
+
+    const isPinnedCheckpointPresent = checkpoints.some(
+      (checkpoint) => checkpoint.id === checkpointPinnedReferenceId,
+    );
+    if (!isPinnedCheckpointPresent) {
+      setCheckpointPinnedReferenceId(null);
+    }
+  }, [checkpoints, checkpointPinnedReferenceId]);
 
   useEffect(() => {
     setCommandInput('');
@@ -870,6 +885,27 @@ export default function AppPage() {
     }
   }
 
+  function handlePinCheckpointCompareReference(checkpointId: string): void {
+    if (!selectedSessionId) {
+      return;
+    }
+
+    const selectedSession = sessions.find((session) => session.id === selectedSessionId);
+    if (!selectedSession || selectedSession.terminatedAt) {
+      return;
+    }
+
+    if (!checkpoints.some((checkpoint) => checkpoint.id === checkpointId)) {
+      return;
+    }
+
+    setCheckpointPinnedReferenceId(checkpointId);
+  }
+
+  function handleClearPinnedCheckpointCompareReference(): void {
+    setCheckpointPinnedReferenceId(null);
+  }
+
   async function loadDashboardSlice(token: string): Promise<void> {
     setIsLoadingDashboard(true);
     setDashboardError(null);
@@ -1294,6 +1330,9 @@ export default function AppPage() {
       onSelectCheckpointCompareBase={handleSelectCheckpointCompareBase}
       onSelectCheckpointCompareTarget={handleSelectCheckpointCompareTarget}
       onRunCheckpointCompare={handleRunCheckpointCompare}
+      pinnedCompareReferenceCheckpointId={checkpointPinnedReferenceId}
+      onPinCheckpointCompareReference={handlePinCheckpointCompareReference}
+      onClearPinnedCheckpointCompareReference={handleClearPinnedCheckpointCompareReference}
       checkpointSnapshotState={checkpointSnapshotState}
       checkpointSnapshotError={checkpointSnapshotError}
       checkpointSnapshotTargetId={checkpointSnapshotTargetId}

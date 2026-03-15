@@ -10770,3 +10770,60 @@ Make checkpoint history more actionable by allowing the user to jump from a sele
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81H-CHECKPOINT.md
 
 ---
+
+### TASK-81J: Pinned Comparison Reference Slice
+
+**Task ID:** TASK-81J
+**Phase:** 81
+**Stage:** 81J
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked), TASK-81I (Complete and Locked); existing history/control surface already present; existing compare/diff flows already present
+**Checkpoint:** `docs/PHASE-81J-CHECKPOINT.md`
+
+**Objective:**
+
+Make checkpoint history workflows faster by allowing the user to pin one checkpoint as the active comparison reference inside the existing history/control surface, so later diff/compare actions can reuse that reference without repeated re-selection.
+
+**Scope:**
+
+1. Reuse the existing history/control surface and already-loaded checkpoint list only
+2. Add a bounded "pin as compare reference" action for checkpoint items inside the existing history/control area
+3. Keep the pinned reference frontend-only and session-scoped
+4. Allow existing compare/diff actions to reuse the pinned checkpoint where appropriate without introducing new backend contracts
+5. Make pinned state clearly visible in the existing history/control surface
+6. Preserve existing manual compare mode, diff viewer, search/filter, timeline, git-log browser, snapshot viewer, jump-to-live-file, manual checkpoint, and manual revert surfaces
+7. Keep integration localized to the existing workspace shell and history/control surface
+8. Frontend-only changes
+9. Additive only
+10. Focused frontend tests for this slice
+11. Slice-specific checkpoint output at `docs/PHASE-81J-CHECKPOINT.md`
+
+**Non-Goals:**
+
+- No backend changes
+- No schema changes
+- No refactors
+- No new endpoints
+- No persistence of pinned state beyond current session/view
+- No automatic compare execution without explicit user action
+- No broader workflow redesign
+- No branching visualization in this task
+- No polling/websocket behavior
+- No multi-task work
+
+**Acceptance Criteria:**
+
+- User can pin a checkpoint as the active comparison reference from the existing history/control surface
+- Pinned state is clearly visible and scoped to the active session only
+- Existing compare/diff flows can reuse the pinned reference where appropriate without backend changes
+- Existing search/filter, timeline, git-log browser, snapshot viewer, jump-to-live-file, manual checkpoint, and manual revert continue to work correctly
+- No backend changes occurred
+- No schema changes occurred
+- No refactors occurred
+- No regressions in workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, or existing history/control surfaces
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81I-CHECKPOINT.md
+
+---

@@ -153,6 +153,9 @@ function renderWorkspaceShell(
     onSelectCheckpointCompareBase: () => {},
     onSelectCheckpointCompareTarget: () => {},
     onRunCheckpointCompare: async () => {},
+    pinnedCompareReferenceCheckpointId: null,
+    onPinCheckpointCompareReference: () => {},
+    onClearPinnedCheckpointCompareReference: () => {},
     checkpointSnapshotState: 'idle',
     checkpointSnapshotError: null,
     checkpointSnapshotTargetId: null,
@@ -480,6 +483,31 @@ describe('workspace shell component', () => {
     assert.match(readyHtml, /const keep = true/);
     assert.match(errorHtml, /Compare mode failed/);
     assert.match(errorHtml, /Failed to compare selected checkpoints\./);
+  });
+
+  test('renders pinned comparison reference controls and explicit reuse actions', () => {
+    const pinnedReadyHtml = renderWorkspaceShell({
+      checkpoints: [checkpoint, checkpointTwo],
+      selectedSessionId: session.id,
+      checkpointCompareState: 'selecting',
+      pinnedCompareReferenceCheckpointId: checkpoint.id,
+    });
+    const emptyHtml = renderWorkspaceShell({
+      checkpoints: [checkpoint],
+      selectedSessionId: session.id,
+      pinnedCompareReferenceCheckpointId: null,
+    });
+
+    assert.match(pinnedReadyHtml, /data-testid="history-pinned-reference-state"/);
+    assert.match(pinnedReadyHtml, /Pinned Comparison Reference/);
+    assert.match(pinnedReadyHtml, /data-testid="history-pinned-reference-label"/);
+    assert.match(pinnedReadyHtml, /Auto-commit: Message 10/);
+    assert.match(pinnedReadyHtml, /data-testid="history-pinned-reference-view-diff"/);
+    assert.match(pinnedReadyHtml, /data-testid="history-pinned-reference-use-base"/);
+    assert.match(pinnedReadyHtml, /data-testid="history-pinned-reference-use-target"/);
+    assert.match(pinnedReadyHtml, /data-testid="history-pin-button-checkpoint-1"/);
+    assert.match(pinnedReadyHtml, /Pinned Ref/);
+    assert.match(emptyHtml, /No pinned comparison reference\./);
   });
 
   test('renders distinct checkpoint snapshot states and read-only snapshot viewer', () => {

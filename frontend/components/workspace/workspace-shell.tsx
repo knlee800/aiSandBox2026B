@@ -67,6 +67,9 @@ interface WorkspaceShellProps {
   onSelectCheckpointCompareBase: (checkpointId: string) => void;
   onSelectCheckpointCompareTarget: (checkpointId: string) => void;
   onRunCheckpointCompare: () => Promise<void>;
+  pinnedCompareReferenceCheckpointId: string | null;
+  onPinCheckpointCompareReference: (checkpointId: string) => void;
+  onClearPinnedCheckpointCompareReference: () => void;
   checkpointSnapshotState: 'idle' | 'loading' | 'ready' | 'empty' | 'snapshot-error';
   checkpointSnapshotError: string | null;
   checkpointSnapshotTargetId: string | null;
@@ -259,6 +262,9 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                 onSelectCompareBase={props.onSelectCheckpointCompareBase}
                 onSelectCompareTarget={props.onSelectCheckpointCompareTarget}
                 onRunCompare={props.onRunCheckpointCompare}
+                pinnedCompareReferenceCheckpointId={props.pinnedCompareReferenceCheckpointId}
+                onPinCheckpointCompareReference={props.onPinCheckpointCompareReference}
+                onClearPinnedCheckpointCompareReference={props.onClearPinnedCheckpointCompareReference}
                 snapshotState={props.checkpointSnapshotState}
                 snapshotErrorMessage={props.checkpointSnapshotError}
                 snapshotTargetCheckpointId={props.checkpointSnapshotTargetId}
@@ -952,6 +958,9 @@ function HistoryCheckpointList(props: {
   onSelectCompareBase: (checkpointId: string) => void;
   onSelectCompareTarget: (checkpointId: string) => void;
   onRunCompare: () => Promise<void>;
+  pinnedCompareReferenceCheckpointId: string | null;
+  onPinCheckpointCompareReference: (checkpointId: string) => void;
+  onClearPinnedCheckpointCompareReference: () => void;
   snapshotState: 'idle' | 'loading' | 'ready' | 'empty' | 'snapshot-error';
   snapshotErrorMessage: string | null;
   snapshotTargetCheckpointId: string | null;
@@ -984,6 +993,17 @@ function HistoryCheckpointList(props: {
     Boolean(props.compareBaseCheckpointId) && visibleCheckpointIdSet.has(props.compareBaseCheckpointId);
   const hasVisibleTargetSelection =
     Boolean(props.compareTargetCheckpointId) && visibleCheckpointIdSet.has(props.compareTargetCheckpointId);
+  const pinnedReferenceCheckpoint = props.pinnedCompareReferenceCheckpointId
+    ? props.checkpoints.find((checkpoint) => checkpoint.id === props.pinnedCompareReferenceCheckpointId) ?? null
+    : null;
+  const isPinnedReferenceVisible = Boolean(
+    pinnedReferenceCheckpoint && visibleCheckpointIdSet.has(pinnedReferenceCheckpoint.id),
+  );
+  const canUsePinnedAsCompareSelection =
+    Boolean(pinnedReferenceCheckpoint) &&
+    isPinnedReferenceVisible &&
+    props.compareState !== 'loading' &&
+    props.compareState !== 'idle';
 
   React.useEffect(() => {
     setSearchQuery('');
@@ -1080,6 +1100,68 @@ function HistoryCheckpointList(props: {
           />
         </div>
       </div>
+      <div className="mb-2 rounded border border-amber-200 bg-amber-50 p-2" data-testid="history-pinned-reference-state">
+        <p className="text-[11px] font-semibold text-amber-800">Pinned Comparison Reference</p>
+        {pinnedReferenceCheckpoint ? (
+          <>
+            <p className="mt-1 text-[11px] text-amber-700" data-testid="history-pinned-reference-label">
+              {pinnedReferenceCheckpoint.description ||
+                `Checkpoint ${pinnedReferenceCheckpoint.commitHash.slice(0, 7)}`}{' '}
+              ({pinnedReferenceCheckpoint.commitHash.slice(0, 12)})
+            </p>
+            {!isPinnedReferenceVisible ? (
+              <p className="mt-1 text-[11px] text-amber-700" data-testid="history-pinned-reference-hidden">
+                Pinned reference is currently hidden by the active search/filter.
+              </p>
+            ) : null}
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                data-testid="history-pinned-reference-clear"
+                onClick={props.onClearPinnedCheckpointCompareReference}
+                className="rounded border border-amber-300 bg-white px-3 py-1 text-xs text-amber-700"
+              >
+                Clear Pinned Ref
+              </button>
+              <button
+                type="button"
+                data-testid="history-pinned-reference-view-diff"
+                disabled={!props.hasSelectedSession}
+                onClick={() => void props.onViewDiff(pinnedReferenceCheckpoint.id)}
+                className="rounded border border-blue-300 bg-white px-3 py-1 text-xs text-blue-700 disabled:border-gray-200 disabled:text-gray-400"
+              >
+                View Diff for Pinned
+              </button>
+              {isCompareModeActive ? (
+                <>
+                  <button
+                    type="button"
+                    data-testid="history-pinned-reference-use-base"
+                    disabled={!canUsePinnedAsCompareSelection}
+                    onClick={() => props.onSelectCompareBase(pinnedReferenceCheckpoint.id)}
+                    className="rounded border border-emerald-300 bg-white px-3 py-1 text-xs text-emerald-700 disabled:border-gray-200 disabled:text-gray-400"
+                  >
+                    Use Pinned as Base
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="history-pinned-reference-use-target"
+                    disabled={!canUsePinnedAsCompareSelection}
+                    onClick={() => props.onSelectCompareTarget(pinnedReferenceCheckpoint.id)}
+                    className="rounded border border-violet-300 bg-white px-3 py-1 text-xs text-violet-700 disabled:border-gray-200 disabled:text-gray-400"
+                  >
+                    Use Pinned as Target
+                  </button>
+                </>
+              ) : null}
+            </div>
+          </>
+        ) : (
+          <p className="mt-1 text-[11px] text-amber-700" data-testid="history-pinned-reference-empty">
+            No pinned comparison reference. Pin a checkpoint below to reuse it in diff/compare flows.
+          </p>
+        )}
+      </div>
       <div className="mb-1 flex items-center justify-between" data-testid="history-checkpoint-timeline-header">
         <p className="text-[11px] font-semibold text-gray-700">Checkpoint Timeline</p>
         <p className="text-[11px] text-gray-500">Order and focus for visible checkpoints</p>
@@ -1099,6 +1181,7 @@ function HistoryCheckpointList(props: {
           const isSnapshotLoading = props.snapshotState === 'loading' && isSnapshotTarget;
           const isCompareBase = props.compareBaseCheckpointId === checkpoint.id;
           const isCompareTarget = props.compareTargetCheckpointId === checkpoint.id;
+          const isPinnedReference = props.pinnedCompareReferenceCheckpointId === checkpoint.id;
           const isTimelineActive = isSelected || isDiffTarget || isCompareBase || isCompareTarget;
           const timelineLabel = checkpoint.description || `Checkpoint ${checkpoint.commitHash.slice(0, 7)}`;
           const focusLabel = isDiffTarget
@@ -1111,6 +1194,8 @@ function HistoryCheckpointList(props: {
                   ? 'compare base'
                   : isCompareTarget
                     ? 'compare target'
+                    : isPinnedReference
+                      ? 'pinned compare reference'
                     : 'checkpoint available';
 
           return (
@@ -1178,6 +1263,23 @@ function HistoryCheckpointList(props: {
                   </div>
                 </div>
                 <div className="flex gap-2">
+                  <button
+                    type="button"
+                    data-testid={`history-pin-button-${checkpoint.id}`}
+                    disabled={!props.hasSelectedSession}
+                    onClick={() =>
+                      isPinnedReference
+                        ? props.onClearPinnedCheckpointCompareReference()
+                        : props.onPinCheckpointCompareReference(checkpoint.id)
+                    }
+                    className={`rounded border px-3 py-1 text-xs ${
+                      isPinnedReference
+                        ? 'border-amber-300 bg-amber-50 text-amber-700'
+                        : 'border-amber-300 bg-white text-amber-700 disabled:border-gray-200 disabled:text-gray-400'
+                    }`}
+                  >
+                    {isPinnedReference ? 'Pinned Ref' : 'Pin Ref'}
+                  </button>
                   {isCompareModeActive ? (
                     <>
                       <button
