@@ -10581,3 +10581,132 @@ Make checkpoint history easier to inspect by adding a bounded git-log-style brow
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81F-CHECKPOINT.md, PHASE-81-RERERECONSOLIDATED-FINAL-CHECKPOINT.md
 
 ---
+
+### TASK-81-RERERERECONSOLIDATE: Phase 81 Final Re-Re-Re-Re-Consolidation
+
+**Task ID:** TASK-81-RERERERECONSOLIDATE
+**Phase:** 81
+**Stage:** 81-RERERERECONSOLIDATE
+**Priority:** 🔴 High
+**Status:** PLANNED
+**Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)
+**Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked); prior `TASK-81-FINAL`, `TASK-81-RECONSOLIDATE`, `TASK-81-RERECONSOLIDATE`, and `TASK-81-RERERECONSOLIDATE` exist but are outdated (each was written before `TASK-81G` was scoped, implemented, or locked)
+**Checkpoint:** `docs/PHASE-81-RERERERECONSOLIDATED-FINAL-CHECKPOINT.md`
+
+**Supersession Notice:**
+
+This task supersedes `TASK-81-FINAL`, `TASK-81-RECONSOLIDATE`, `TASK-81-RERECONSOLIDATE`, and `TASK-81-RERERECONSOLIDATE`. Each prior consolidation was written before `TASK-81G` (Git-Log Style Checkpoint Browser Slice) existed. None of them include the bounded git-log-style browser, the `history-gitlog-*` test hooks, or the correct 69/69 test count. This re-re-re-re-consolidation produces the authoritative and complete Phase 81 closure.
+
+**Objective:**
+
+Re-validate and re-re-re-re-consolidate Phase 81 so the final Phase 81 closure correctly includes `TASK-81A`, `TASK-81B`, `TASK-81C`, `TASK-81D`, `TASK-81E`, `TASK-81F`, and `TASK-81G`, replacing all earlier outdated final closure states.
+
+**Scope:**
+
+1. Validate and consolidate all seven implementation slices (TASK-81A through TASK-81G)
+2. Confirm end-to-end checkpoint diff/history usability improvement for:
+   - Opening diff view from the existing history/control surface (TASK-81A)
+   - Active-session + selected-checkpoint diff scoping (TASK-81A)
+   - Diff viewer state handling: idle / loading / ready / empty / diff-error (TASK-81A)
+   - Changed-file summary: added / modified / deleted (TASK-81B)
+   - Grouped changed-file visibility and per-file diff navigation (TASK-81B)
+   - Structured readable unified diff rendering (TASK-81C)
+   - Visual distinction for hunk headers / added / removed / context lines (TASK-81C)
+   - Bounded compare mode for two checkpoints: idle / selecting / loading / ready / compare-error (TASK-81D)
+   - Bounded pair validation behavior (TASK-81D)
+   - Bounded checkpoint history search/filter: text search, description filter, active-session-scoped state (TASK-81E)
+   - Bounded visual checkpoint timeline: order scanability, acted-on emphasis, timestamps/descriptions (TASK-81F)
+   - Bounded git-log-style checkpoint browser: ordering, hash visibility, timestamps/descriptions, acted-on emphasis (TASK-81G)
+3. Confirm scope remained frontend-only and additive across all seven slices
+4. Confirm no backend changes, no schema changes, no refactors across all seven slices
+5. Confirm PRD / ARCHITECTURE alignment for all seven slices
+6. Confirm no regressions across workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, or existing history/control surfaces
+7. Produce updated final Phase 81 checkpoint at `docs/PHASE-81-RERERERECONSOLIDATED-FINAL-CHECKPOINT.md`
+
+**Non-Goals:**
+
+- No new implementation
+- No platform code changes
+- No backend changes
+- No schema changes
+- No endpoint changes
+- No refactors
+- No new product scope
+- No TASK-82 work
+
+**Acceptance Criteria:**
+
+- TASK-81A confirmed COMPLETE and LOCKED
+- TASK-81B confirmed COMPLETE and LOCKED
+- TASK-81C confirmed COMPLETE and LOCKED
+- TASK-81D confirmed COMPLETE and LOCKED
+- TASK-81E confirmed COMPLETE and LOCKED
+- TASK-81F confirmed COMPLETE and LOCKED
+- TASK-81G confirmed COMPLETE and LOCKED
+- Updated final Phase 81 closure correctly includes all seven slices
+- 69/69 tests confirmed passing
+- No regressions confirmed
+- No scope violations confirmed
+- Updated final checkpoint created at `docs/PHASE-81-RERERERECONSOLIDATED-FINAL-CHECKPOINT.md`
+- Earlier `TASK-81-FINAL`, `TASK-81-RECONSOLIDATE`, `TASK-81-RERECONSOLIDATE`, and `TASK-81-RERERECONSOLIDATE` closures explicitly superseded
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81G-CHECKPOINT.md, PHASE-81-RERERECONSOLIDATED-FINAL-CHECKPOINT.md
+
+---
+
+### TASK-81H: Checkpoint File Snapshot Viewer Slice
+
+**Task ID:** TASK-81H
+**Phase:** 81
+**Stage:** 81H
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked); existing history/control surface already present; existing checkpoint/history capability already present
+**Checkpoint:** `docs/PHASE-81H-CHECKPOINT.md`
+
+**Objective:**
+
+Make checkpoint history more useful by allowing the user to inspect file content at a selected checkpoint from the existing history/control surface, without restoring the workspace.
+
+**Scope:**
+
+1. Reuse the existing history/control surface and existing checkpoint selection patterns only
+2. Add a bounded checkpoint snapshot viewer inside the existing history/control area
+3. Allow the user to inspect file content for a selected checkpoint using already-available history/file capability only
+4. Keep this strictly read-only — no restore/revert action in this task
+5. Support active-session-scoped behavior only
+6. Keep existing diff viewer, compare mode, search/filter, visual timeline, git-log browser, manual checkpoint, and manual revert surfaces intact
+7. Keep integration localized to the existing workspace shell and history/control surface
+8. Frontend-only changes
+9. Additive only
+10. Focused frontend tests for this slice
+11. Slice-specific checkpoint output at `docs/PHASE-81H-CHECKPOINT.md`
+
+**Non-Goals:**
+
+- No backend changes
+- No schema changes
+- No refactors
+- No new endpoints unless already required by existing architecture and already available
+- No restore/revert action in this task
+- No editing/saving from checkpoint snapshot in this task
+- No branching visualization in this task
+- No broader workspace redesign
+- No polling/websocket behavior
+- No multi-task work
+
+**Acceptance Criteria:**
+
+- User can inspect file content for a selected checkpoint from the existing history/control surface
+- Snapshot viewing is clearly read-only
+- Snapshot behavior remains scoped to the active session and selected checkpoint only
+- Existing diff viewer, compare mode, search/filter, visual timeline, git-log browser, manual checkpoint, and manual revert continue to work correctly
+- No backend changes occurred
+- No schema changes occurred
+- No refactors occurred
+- No regressions in workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, or existing history/control surfaces
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81G-CHECKPOINT.md, PHASE-81-RERERERECONSOLIDATED-FINAL-CHECKPOINT.md
+
+---

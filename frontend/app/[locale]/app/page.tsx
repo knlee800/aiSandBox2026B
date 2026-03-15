@@ -52,6 +52,12 @@ export default function AppPage() {
     | 'loading'
     | 'ready'
     | 'compare-error';
+  type WorkspaceCheckpointSnapshotState =
+    | 'idle'
+    | 'loading'
+    | 'ready'
+    | 'empty'
+    | 'snapshot-error';
 
   const router = useRouter();
   const params = useParams();
@@ -87,6 +93,12 @@ export default function AppPage() {
   const [checkpointCompareTargetId, setCheckpointCompareTargetId] = useState<string | null>(null);
   const [checkpointCompareResponse, setCheckpointCompareResponse] =
     useState<WorkspaceCheckpointDiffResponse | null>(null);
+  const [checkpointSnapshotState, setCheckpointSnapshotState] =
+    useState<WorkspaceCheckpointSnapshotState>('idle');
+  const [checkpointSnapshotError, setCheckpointSnapshotError] = useState<string | null>(null);
+  const [checkpointSnapshotTargetId, setCheckpointSnapshotTargetId] = useState<string | null>(null);
+  const [checkpointSnapshotResponse, setCheckpointSnapshotResponse] =
+    useState<WorkspaceCheckpointDiffResponse | null>(null);
   const [userSummary, setUserSummary] = useState<WorkspaceUserSummary | null>(null);
   const [usageSummary, setUsageSummary] = useState<WorkspaceUsageSummary | null>(null);
   const [quotaSummary, setQuotaSummary] = useState<WorkspaceQuotaSummary | null>(null);
@@ -115,6 +127,7 @@ export default function AppPage() {
   const checkpointRevertRequestIdRef = useRef(0);
   const checkpointDiffRequestIdRef = useRef(0);
   const checkpointCompareRequestIdRef = useRef(0);
+  const checkpointSnapshotRequestIdRef = useRef(0);
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -156,6 +169,11 @@ export default function AppPage() {
     setCheckpointCompareBaseId(null);
     setCheckpointCompareTargetId(null);
     setCheckpointCompareResponse(null);
+    checkpointSnapshotRequestIdRef.current += 1;
+    setCheckpointSnapshotState('idle');
+    setCheckpointSnapshotError(null);
+    setCheckpointSnapshotTargetId(null);
+    setCheckpointSnapshotResponse(null);
 
     if (!selectedSessionId) {
       setCheckpoints([]);
@@ -527,6 +545,79 @@ export default function AppPage() {
       setCheckpointDiffState('diff-error');
       setCheckpointDiffError('Failed to load checkpoint diff.');
       setCheckpointDiffResponse(null);
+    }
+  }
+
+  async function handleViewCheckpointSnapshot(checkpointId: string): Promise<void> {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+
+    if (!selectedSessionId) {
+      setCheckpointSnapshotState('snapshot-error');
+      setCheckpointSnapshotError('Cannot load snapshot without an active session.');
+      setCheckpointSnapshotTargetId(null);
+      setCheckpointSnapshotResponse(null);
+      return;
+    }
+
+    const selectedSession = sessions.find((session) => session.id === selectedSessionId);
+    if (!selectedSession || selectedSession.terminatedAt) {
+      setCheckpointSnapshotState('snapshot-error');
+      setCheckpointSnapshotError('Cannot load snapshot for a terminated session.');
+      setCheckpointSnapshotTargetId(null);
+      setCheckpointSnapshotResponse(null);
+      return;
+    }
+
+    const targetCheckpoint = checkpoints.find((checkpoint) => checkpoint.id === checkpointId);
+    if (!targetCheckpoint) {
+      setCheckpointSnapshotState('snapshot-error');
+      setCheckpointSnapshotError('Selected checkpoint is no longer available.');
+      setCheckpointSnapshotTargetId(null);
+      setCheckpointSnapshotResponse(null);
+      return;
+    }
+
+    const requestId = checkpointSnapshotRequestIdRef.current + 1;
+    checkpointSnapshotRequestIdRef.current = requestId;
+    const sessionId = selectedSessionId;
+    setCheckpointSnapshotState('loading');
+    setCheckpointSnapshotError(null);
+    setCheckpointSnapshotTargetId(checkpointId);
+    setCheckpointSnapshotResponse(null);
+
+    try {
+      const response = await loadWorkspaceCheckpointDiff({
+        token,
+        sessionId,
+        commitHash: targetCheckpoint.commitHash,
+      });
+
+      if (checkpointSnapshotRequestIdRef.current !== requestId) {
+        return;
+      }
+
+      if (!response.files.length) {
+        setCheckpointSnapshotState('empty');
+        setCheckpointSnapshotError(null);
+        setCheckpointSnapshotResponse(response);
+        return;
+      }
+
+      setCheckpointSnapshotState('ready');
+      setCheckpointSnapshotError(null);
+      setCheckpointSnapshotResponse(response);
+    } catch (error) {
+      console.error('Failed to load checkpoint snapshot:', error);
+      if (checkpointSnapshotRequestIdRef.current !== requestId) {
+        return;
+      }
+      setCheckpointSnapshotState('snapshot-error');
+      setCheckpointSnapshotError('Failed to load checkpoint snapshot.');
+      setCheckpointSnapshotResponse(null);
     }
   }
 
@@ -1087,6 +1178,11 @@ export default function AppPage() {
       onSelectCheckpointCompareBase={handleSelectCheckpointCompareBase}
       onSelectCheckpointCompareTarget={handleSelectCheckpointCompareTarget}
       onRunCheckpointCompare={handleRunCheckpointCompare}
+      checkpointSnapshotState={checkpointSnapshotState}
+      checkpointSnapshotError={checkpointSnapshotError}
+      checkpointSnapshotTargetId={checkpointSnapshotTargetId}
+      checkpointSnapshotResponse={checkpointSnapshotResponse}
+      onViewCheckpointSnapshot={handleViewCheckpointSnapshot}
       userSummary={userSummary}
       usageSummary={usageSummary}
       quotaSummary={quotaSummary}

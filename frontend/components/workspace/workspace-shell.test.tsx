@@ -153,6 +153,11 @@ function renderWorkspaceShell(
     onSelectCheckpointCompareBase: () => {},
     onSelectCheckpointCompareTarget: () => {},
     onRunCheckpointCompare: async () => {},
+    checkpointSnapshotState: 'idle',
+    checkpointSnapshotError: null,
+    checkpointSnapshotTargetId: null,
+    checkpointSnapshotResponse: null,
+    onViewCheckpointSnapshot: async () => {},
     userSummary,
     usageSummary,
     quotaSummary,
@@ -200,6 +205,7 @@ describe('workspace shell component', () => {
     assert.match(html, /Dashboard \(Slice 1\)/);
     assert.match(html, /Session 12345678/);
     assert.match(html, /Auto-commit: Message 10/);
+    assert.match(html, /View Snapshot/);
     assert.match(html, /View Diff/);
     assert.match(html, /Current User/);
     assert.match(html, /user@example\.com/);
@@ -469,6 +475,71 @@ describe('workspace shell component', () => {
     assert.match(readyHtml, /const keep = true/);
     assert.match(errorHtml, /Compare mode failed/);
     assert.match(errorHtml, /Failed to compare selected checkpoints\./);
+  });
+
+  test('renders distinct checkpoint snapshot states and read-only snapshot viewer', () => {
+    const idleHtml = renderWorkspaceShell({
+      checkpointSnapshotState: 'idle',
+      selectedSessionId: session.id,
+    });
+    const loadingHtml = renderWorkspaceShell({
+      checkpointSnapshotState: 'loading',
+      checkpointSnapshotTargetId: checkpoint.id,
+      selectedSessionId: session.id,
+    });
+    const readyHtml = renderWorkspaceShell({
+      checkpointSnapshotState: 'ready',
+      checkpointSnapshotTargetId: checkpoint.id,
+      checkpointSnapshotResponse: checkpointDiffResponse,
+      selectedSessionId: session.id,
+    });
+    const emptyHtml = renderWorkspaceShell({
+      checkpointSnapshotState: 'empty',
+      checkpointSnapshotTargetId: checkpoint.id,
+      checkpointSnapshotResponse: {
+        ...checkpointDiffResponse,
+        files: [],
+      },
+      selectedSessionId: session.id,
+    });
+    const errorHtml = renderWorkspaceShell({
+      checkpointSnapshotState: 'snapshot-error',
+      checkpointSnapshotError: 'Failed to load checkpoint snapshot.',
+      selectedSessionId: session.id,
+    });
+    const deletedFileHtml = renderWorkspaceShell({
+      checkpointSnapshotState: 'ready',
+      checkpointSnapshotTargetId: checkpoint.id,
+      checkpointSnapshotResponse: {
+        ...checkpointDiffResponse,
+        files: [
+          {
+            path: 'src/old-file.ts',
+            status: 'deleted',
+            diff: '@@ -1 +0,0 @@\n-export const removed = true;',
+          },
+        ],
+      },
+      selectedSessionId: session.id,
+    });
+
+    assert.match(idleHtml, /Snapshot viewer idle/);
+    assert.match(loadingHtml, /Loading checkpoint snapshot/);
+    assert.match(loadingHtml, /Loading snapshot\.\.\./);
+    assert.match(readyHtml, /Checkpoint snapshot ready/);
+    assert.match(readyHtml, /Checkpoint File Snapshot \(Read-only\)/);
+    assert.match(
+      readyHtml,
+      /This is not the live workspace editor file and cannot be edited or saved\./,
+    );
+    assert.match(readyHtml, /Snapshot content is a bounded read-only excerpt derived from checkpoint diff hunks\./);
+    assert.match(readyHtml, /export const created = true;/);
+    assert.match(readyHtml, /data-testid="history-snapshot-lines"/);
+    assert.match(readyHtml, /data-testid="history-snapshot-line"/);
+    assert.match(emptyHtml, /No snapshot content/);
+    assert.match(errorHtml, /Checkpoint snapshot failed/);
+    assert.match(errorHtml, /Failed to load checkpoint snapshot\./);
+    assert.match(deletedFileHtml, /\(file deleted at selected checkpoint\)/);
   });
 
   test('renders checkpoint history search and filter controls', () => {

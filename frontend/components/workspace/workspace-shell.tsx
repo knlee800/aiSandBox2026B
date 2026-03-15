@@ -67,6 +67,11 @@ interface WorkspaceShellProps {
   onSelectCheckpointCompareBase: (checkpointId: string) => void;
   onSelectCheckpointCompareTarget: (checkpointId: string) => void;
   onRunCheckpointCompare: () => Promise<void>;
+  checkpointSnapshotState: 'idle' | 'loading' | 'ready' | 'empty' | 'snapshot-error';
+  checkpointSnapshotError: string | null;
+  checkpointSnapshotTargetId: string | null;
+  checkpointSnapshotResponse: WorkspaceCheckpointDiffResponse | null;
+  onViewCheckpointSnapshot: (checkpointId: string) => Promise<void>;
   userSummary: WorkspaceUserSummary | null;
   usageSummary: WorkspaceUsageSummary | null;
   quotaSummary: WorkspaceQuotaSummary | null;
@@ -249,6 +254,11 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                 onSelectCompareBase={props.onSelectCheckpointCompareBase}
                 onSelectCompareTarget={props.onSelectCheckpointCompareTarget}
                 onRunCompare={props.onRunCheckpointCompare}
+                snapshotState={props.checkpointSnapshotState}
+                snapshotErrorMessage={props.checkpointSnapshotError}
+                snapshotTargetCheckpointId={props.checkpointSnapshotTargetId}
+                snapshotResponse={props.checkpointSnapshotResponse}
+                onViewSnapshot={props.onViewCheckpointSnapshot}
               />
             ) : null}
           </section>
@@ -932,6 +942,11 @@ function HistoryCheckpointList(props: {
   onSelectCompareBase: (checkpointId: string) => void;
   onSelectCompareTarget: (checkpointId: string) => void;
   onRunCompare: () => Promise<void>;
+  snapshotState: 'idle' | 'loading' | 'ready' | 'empty' | 'snapshot-error';
+  snapshotErrorMessage: string | null;
+  snapshotTargetCheckpointId: string | null;
+  snapshotResponse: WorkspaceCheckpointDiffResponse | null;
+  onViewSnapshot: (checkpointId: string) => Promise<void>;
 }) {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [descriptionFilter, setDescriptionFilter] =
@@ -1065,6 +1080,8 @@ function HistoryCheckpointList(props: {
           const canConfirm = isSelected && isConfirming && !isReverting;
           const isDiffTarget = props.diffTargetCheckpointId === checkpoint.id;
           const isDiffLoading = props.diffState === 'loading' && isDiffTarget;
+          const isSnapshotTarget = props.snapshotTargetCheckpointId === checkpoint.id;
+          const isSnapshotLoading = props.snapshotState === 'loading' && isSnapshotTarget;
           const isCompareBase = props.compareBaseCheckpointId === checkpoint.id;
           const isCompareTarget = props.compareTargetCheckpointId === checkpoint.id;
           const isTimelineActive = isSelected || isDiffTarget || isCompareBase || isCompareTarget;
@@ -1178,6 +1195,15 @@ function HistoryCheckpointList(props: {
                   ) : null}
                   <button
                     type="button"
+                    data-testid={`history-snapshot-button-${checkpoint.id}`}
+                    disabled={!props.hasSelectedSession}
+                    onClick={() => void props.onViewSnapshot(checkpoint.id)}
+                    className="rounded border border-indigo-300 bg-white px-3 py-1 text-xs text-indigo-700 disabled:border-gray-200 disabled:text-gray-400"
+                  >
+                    {isSnapshotLoading ? 'Loading snapshot...' : 'View Snapshot'}
+                  </button>
+                  <button
+                    type="button"
                     data-testid={`history-diff-button-${checkpoint.id}`}
                     disabled={!props.hasSelectedSession}
                     onClick={() => void props.onViewDiff(checkpoint.id)}
@@ -1242,10 +1268,21 @@ function HistoryCheckpointList(props: {
           hasSelectedSession={props.hasSelectedSession}
         />
       </div>
+      <div className="mt-2" data-testid="history-snapshot-state">
+        <HistorySnapshotStateMessage
+          state={props.snapshotState}
+          errorMessage={props.snapshotErrorMessage}
+          hasSelectedSession={props.hasSelectedSession}
+        />
+      </div>
       <HistoryCheckpointDiffViewer state={props.diffState} diffResponse={props.diffResponse} />
       <HistoryCheckpointDiffViewer
         state={props.compareState === 'ready' ? 'ready' : 'idle'}
         diffResponse={props.compareState === 'ready' ? props.compareResponse : null}
+      />
+      <HistoryCheckpointSnapshotViewer
+        state={props.snapshotState}
+        snapshotResponse={props.snapshotResponse}
       />
     </div>
   );
@@ -1377,6 +1414,69 @@ function HistoryDiffStateMessage(props: {
       heading="Checkpoint diff failed"
       body={props.errorMessage ?? 'Checkpoint diff request failed.'}
       action="Retry View Diff for this checkpoint."
+    />
+  );
+}
+
+function HistorySnapshotStateMessage(props: {
+  state: 'idle' | 'loading' | 'ready' | 'empty' | 'snapshot-error';
+  errorMessage: string | null;
+  hasSelectedSession: boolean;
+}) {
+  if (props.state === 'idle') {
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="Snapshot viewer idle"
+        body={
+          props.hasSelectedSession
+            ? 'Select a checkpoint and choose View Snapshot.'
+            : 'Select an active session to inspect checkpoint snapshots.'
+        }
+        action="Snapshot view is read-only and never edits workspace files."
+      />
+    );
+  }
+
+  if (props.state === 'loading') {
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="Loading checkpoint snapshot"
+        body="Snapshot request is in flight for the selected checkpoint."
+        action="Wait for read-only snapshot content."
+      />
+    );
+  }
+
+  if (props.state === 'ready') {
+    return (
+      <StateMessage
+        tone="success"
+        heading="Checkpoint snapshot ready"
+        body="Read-only snapshot content loaded for changed files in selected checkpoint."
+        action="Review snapshot excerpt below without restoring workspace."
+      />
+    );
+  }
+
+  if (props.state === 'empty') {
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="No snapshot content"
+        body="Selected checkpoint has no changed files available for snapshot inspection."
+        action="Choose another checkpoint to inspect."
+      />
+    );
+  }
+
+  return (
+    <StateMessage
+      tone="error"
+      heading="Checkpoint snapshot failed"
+      body={props.errorMessage ?? 'Checkpoint snapshot request failed.'}
+      action="Retry View Snapshot for this checkpoint."
     />
   );
 }
@@ -1529,6 +1629,116 @@ function HistoryCheckpointDiffViewer(props: {
   );
 }
 
+function HistoryCheckpointSnapshotViewer(props: {
+  state: 'idle' | 'loading' | 'ready' | 'empty' | 'snapshot-error';
+  snapshotResponse: WorkspaceCheckpointDiffResponse | null;
+}) {
+  const snapshotFiles = props.state === 'ready' && props.snapshotResponse ? props.snapshotResponse.files : [];
+  const fileIds = React.useMemo(
+    () => snapshotFiles.map((file) => `${file.path}::${file.status}`),
+    [snapshotFiles],
+  );
+  const [selectedFileId, setSelectedFileId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (!fileIds.length) {
+      setSelectedFileId(null);
+      return;
+    }
+    setSelectedFileId((currentSelection) =>
+      currentSelection && fileIds.includes(currentSelection) ? currentSelection : fileIds[0],
+    );
+  }, [fileIds]);
+
+  const selectedFile =
+    snapshotFiles.find(
+      (file) => `${file.path}::${file.status}` === selectedFileId,
+    ) ?? snapshotFiles[0];
+  const snapshotLines = React.useMemo(
+    () => extractCheckpointSnapshotLines(selectedFile?.diff ?? ''),
+    [selectedFile?.diff],
+  );
+
+  if (props.state !== 'ready' || !props.snapshotResponse) {
+    return null;
+  }
+
+  return (
+    <div className="mt-2 rounded border border-indigo-200 bg-white p-2" data-testid="history-snapshot-viewer">
+      <p className="text-[11px] font-semibold text-indigo-700">Checkpoint File Snapshot (Read-only)</p>
+      <p className="mt-1 text-[11px] text-gray-500" data-testid="history-snapshot-readonly-note">
+        This is not the live workspace editor file and cannot be edited or saved.
+      </p>
+      <p className="mt-1 text-[11px] text-gray-500 font-mono" data-testid="history-snapshot-commit-hash">
+        commit {props.snapshotResponse.commitHash.slice(0, 12)}{' '}
+        {props.snapshotResponse.parentHash
+          ? `← parent ${props.snapshotResponse.parentHash.slice(0, 12)}`
+          : '(root commit)'}
+      </p>
+      <div className="mt-2 rounded border border-indigo-100 bg-indigo-50 p-2">
+        <p className="text-[11px] font-semibold text-indigo-700">Changed Files</p>
+        <ul className="mt-1 space-y-1" data-testid="history-snapshot-file-list">
+          {snapshotFiles.map((file) => {
+            const fileId = `${file.path}::${file.status}`;
+            const isSelected = selectedFile && fileId === `${selectedFile.path}::${selectedFile.status}`;
+            return (
+              <li key={fileId}>
+                <button
+                  type="button"
+                  data-testid={`history-snapshot-file-select-${fileId}`}
+                  aria-pressed={isSelected}
+                  onClick={() => setSelectedFileId(fileId)}
+                  className={`w-full truncate rounded border px-2 py-1 text-left font-mono text-[11px] ${
+                    isSelected
+                      ? 'border-indigo-400 bg-indigo-100 text-indigo-800'
+                      : 'border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50'
+                  }`}
+                >
+                  {file.path} ({file.status})
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+      {selectedFile ? (
+        <div className="mt-2 rounded border border-indigo-100 bg-indigo-50 p-2">
+          <p className="truncate font-mono text-[11px] text-indigo-700" data-testid="history-snapshot-selected-file">
+            {selectedFile.path}
+          </p>
+          <div
+            className="mt-2 max-h-48 overflow-auto rounded border border-indigo-200 bg-white p-2 font-mono text-[11px]"
+            data-testid="history-snapshot-file-content"
+          >
+            {selectedFile.status === 'deleted' ? (
+              <p className="text-gray-600" data-testid="history-snapshot-file-deleted">
+                (file deleted at selected checkpoint)
+              </p>
+            ) : snapshotLines.length ? (
+              <div className="space-y-0.5" data-testid="history-snapshot-lines">
+                {snapshotLines.map((line, index) => (
+                  <div
+                    key={`snapshot-${index}-${line}`}
+                    className="whitespace-pre text-gray-800"
+                    data-testid="history-snapshot-line"
+                  >
+                    {line || ' '}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-600">(no snapshot lines available)</p>
+            )}
+          </div>
+          <p className="mt-1 text-[11px] text-gray-500" data-testid="history-snapshot-excerpt-note">
+            Snapshot content is a bounded read-only excerpt derived from checkpoint diff hunks.
+          </p>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 type UnifiedDiffLineType = 'hunk' | 'added' | 'removed' | 'context';
 
 interface UnifiedDiffLine {
@@ -1558,6 +1768,38 @@ function getUnifiedDiffLineType(line: string): UnifiedDiffLineType {
     return 'removed';
   }
   return 'context';
+}
+
+function extractCheckpointSnapshotLines(diffText: string): string[] {
+  if (!diffText) {
+    return [];
+  }
+
+  const lines = diffText.split(/\r?\n/);
+  const snapshotLines: string[] = [];
+
+  for (const line of lines) {
+    if (
+      line.startsWith('diff --git') ||
+      line.startsWith('index ') ||
+      line.startsWith('@@') ||
+      line.startsWith('---') ||
+      line.startsWith('+++')
+    ) {
+      continue;
+    }
+
+    if (line.startsWith('+')) {
+      snapshotLines.push(line.slice(1));
+      continue;
+    }
+
+    if (line.startsWith(' ')) {
+      snapshotLines.push(line.slice(1));
+    }
+  }
+
+  return snapshotLines;
 }
 
 function HistoryRevertStateMessage(props: {
