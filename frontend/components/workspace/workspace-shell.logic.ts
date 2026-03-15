@@ -26,6 +26,7 @@ export interface WorkspaceCheckpoint {
 }
 
 export type CheckpointDescriptionFilter = 'all' | 'with-description' | 'without-description';
+export const HISTORY_WORKING_SET_MAX_ITEMS = 5;
 
 export interface WorkspaceUserSummary {
   userId: string;
@@ -193,4 +194,41 @@ export function filterVisibleWorkspaceCheckpoints(input: {
     visibleCheckpoints: matchingCheckpoints.slice(0, Math.max(0, input.maxVisible)),
     totalMatches: matchingCheckpoints.length,
   };
+}
+
+export function toggleWorkspaceCheckpointWorkingSetId(input: {
+  currentWorkingSetIds: string[];
+  checkpointId: string;
+  maxItems: number;
+}): string[] {
+  const nextWorkingSet = Array.from(new Set(input.currentWorkingSetIds));
+  const existingIndex = nextWorkingSet.indexOf(input.checkpointId);
+  if (existingIndex >= 0) {
+    nextWorkingSet.splice(existingIndex, 1);
+    return nextWorkingSet;
+  }
+
+  if (input.maxItems <= 0 || nextWorkingSet.length >= input.maxItems) {
+    return nextWorkingSet;
+  }
+
+  nextWorkingSet.push(input.checkpointId);
+  return nextWorkingSet;
+}
+
+export function reconcileWorkspaceCheckpointWorkingSetIds(input: {
+  currentWorkingSetIds: string[];
+  checkpoints: WorkspaceCheckpoint[];
+  maxItems: number;
+}): string[] {
+  if (input.maxItems <= 0) {
+    return [];
+  }
+
+  const validCheckpointIdSet = new Set(input.checkpoints.map((checkpoint) => checkpoint.id));
+  const normalizedWorkingSet = Array.from(new Set(input.currentWorkingSetIds)).filter((checkpointId) =>
+    validCheckpointIdSet.has(checkpointId),
+  );
+
+  return normalizedWorkingSet.slice(0, input.maxItems);
 }

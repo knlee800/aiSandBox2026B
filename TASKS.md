@@ -3094,7 +3094,7 @@ Re-validate and re-consolidate Phase 80 so the final Phase 80 closure correctly 
 
 ## Phase 81 — Checkpoint Diff Viewer
 
-**Current stage:** TASK-81M (COMPLETE and LOCKED)
+**Current stage:** TASK-81N (COMPLETE and LOCKED)
 
 ---
 
@@ -3798,5 +3798,44 @@ Make checkpoint history easier to inspect by adding a bounded changed-files insp
 **Dependencies:** TASK-81A through TASK-81L (all Complete and Locked); existing history/control surface and diff/snapshot surfaces already present
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81M for full details
+
+---
+
+#### TASK-81N: History Working Set Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-81N-CHECKPOINT.md`
+
+**Objective:**
+Make checkpoint history workflows easier to manage by allowing the user to temporarily add checkpoint items to a bounded frontend-only working set inside the existing history/control surface for short-term review.
+
+**Scope:**
+- Reuse the existing history/control surface and already-loaded checkpoint list only
+- Add a bounded working-set feature inside the existing history/control area
+- Allow the user to add/remove checkpoint items to/from the working set using already-loaded checkpoint metadata only
+- Keep the working set frontend-only, temporary, and session-scoped
+- Make working-set membership clearly visible in the existing history/control surface
+- Allow the working set to coexist with all existing history surface flows
+- Keep integration localized to the existing workspace shell and history/control surface
+- Frontend-only changes
+- Additive only
+- Focused frontend tests for this slice
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No persistence of working-set state beyond current session/view
+- ❌ No bulk actions in this task
+- ❌ No export/share in this task
+- ❌ No broader workspace redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Dependencies:** TASK-81A through TASK-81M (all Complete and Locked); existing history/control surface and checkpoint list load path already present
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81N for full details
 
 ---

@@ -3,11 +3,14 @@ import { describe, test } from 'node:test';
 import {
   areCheckpointListsEqual,
   computeDashboardSliceState,
+  HISTORY_WORKING_SET_MAX_ITEMS,
   computeHistorySliceState,
   filterVisibleWorkspaceCheckpoints,
   computeWorkspaceShellState,
   countActiveSessions,
   getSessionLabel,
+  reconcileWorkspaceCheckpointWorkingSetIds,
+  toggleWorkspaceCheckpointWorkingSetId,
   type WorkspaceCheckpoint,
   type WorkspaceShellSession,
 } from './workspace-shell.logic';
@@ -290,5 +293,43 @@ describe('workspace shell logic', () => {
       visibleCheckpoints.map((item) => item.id),
       ['checkpoint-1', 'checkpoint-2'],
     );
+  });
+
+  test('toggles checkpoint ids in bounded working set', () => {
+    const afterAddFirst = toggleWorkspaceCheckpointWorkingSetId({
+      currentWorkingSetIds: [],
+      checkpointId: 'checkpoint-1',
+      maxItems: HISTORY_WORKING_SET_MAX_ITEMS,
+    });
+    const afterAddSecond = toggleWorkspaceCheckpointWorkingSetId({
+      currentWorkingSetIds: afterAddFirst,
+      checkpointId: 'checkpoint-2',
+      maxItems: HISTORY_WORKING_SET_MAX_ITEMS,
+    });
+    const afterRemoveFirst = toggleWorkspaceCheckpointWorkingSetId({
+      currentWorkingSetIds: afterAddSecond,
+      checkpointId: 'checkpoint-1',
+      maxItems: HISTORY_WORKING_SET_MAX_ITEMS,
+    });
+
+    assert.deepEqual(afterAddFirst, ['checkpoint-1']);
+    assert.deepEqual(afterAddSecond, ['checkpoint-1', 'checkpoint-2']);
+    assert.deepEqual(afterRemoveFirst, ['checkpoint-2']);
+  });
+
+  test('enforces max bound and reconciles stale working-set ids', () => {
+    const cappedWorkingSet = toggleWorkspaceCheckpointWorkingSetId({
+      currentWorkingSetIds: ['checkpoint-1', 'checkpoint-2'],
+      checkpointId: 'checkpoint-3',
+      maxItems: 2,
+    });
+    const reconciledWorkingSet = reconcileWorkspaceCheckpointWorkingSetIds({
+      currentWorkingSetIds: ['checkpoint-1', 'checkpoint-2', 'checkpoint-2', 'missing-checkpoint'],
+      checkpoints: [checkpoint],
+      maxItems: HISTORY_WORKING_SET_MAX_ITEMS,
+    });
+
+    assert.deepEqual(cappedWorkingSet, ['checkpoint-1', 'checkpoint-2']);
+    assert.deepEqual(reconciledWorkingSet, ['checkpoint-1']);
   });
 });

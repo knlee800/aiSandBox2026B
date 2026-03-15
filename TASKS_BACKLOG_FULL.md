@@ -11008,3 +11008,59 @@ Make checkpoint history easier to inspect by adding a bounded changed-files insp
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81L-CHECKPOINT.md
 
 ---
+
+### TASK-81N: History Working Set Slice
+
+**Task ID:** TASK-81N
+**Phase:** 81
+**Stage:** 81N
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked), TASK-81I (Complete and Locked), TASK-81J (Complete and Locked), TASK-81K (Complete and Locked), TASK-81L (Complete and Locked), TASK-81M (Complete and Locked); existing history/control surface already present; existing checkpoint list load path already present
+**Checkpoint:** `docs/PHASE-81N-CHECKPOINT.md`
+
+**Objective:**
+
+Make checkpoint history workflows easier to manage by allowing the user to temporarily add checkpoint items to a bounded frontend-only working set inside the existing history/control surface for short-term review.
+
+**Scope:**
+
+1. Reuse the existing history/control surface and already-loaded checkpoint list only
+2. Add a bounded working-set feature inside the existing history/control area
+3. Allow the user to add/remove checkpoint items to/from the working set using already-loaded checkpoint metadata only
+4. Keep the working set frontend-only, temporary, and session-scoped
+5. Make working-set membership clearly visible in the existing history/control surface
+6. Allow the working set to coexist with existing search/filter, timeline, git-log, diff, compare, snapshot, jump-to-live-file, pinned reference, details inspector, revert preview, and changed-files inspector flows
+7. Keep integration localized to the existing workspace shell and history/control surface
+8. Frontend-only changes
+9. Additive only
+10. Focused frontend tests for this slice
+11. Slice-specific checkpoint output at `docs/PHASE-81N-CHECKPOINT.md`
+
+**Non-Goals:**
+
+- No backend changes
+- No schema changes
+- No refactors
+- No new endpoints
+- No persistence of working-set state beyond current session/view
+- No bulk actions in this task
+- No export/share in this task
+- No broader workspace redesign
+- No polling/websocket behavior
+- No multi-task work
+
+**Acceptance Criteria:**
+
+- User can add/remove checkpoint items to/from a bounded working set inside the existing history/control surface
+- Working-set state is clearly visible and scoped to the active session only
+- Existing diff viewer, compare mode, search/filter, visual timeline, git-log browser, snapshot viewer, jump-to-live-file, pinned comparison reference, details inspector, revert preview, changed-files inspector, manual checkpoint, and manual revert continue to work correctly
+- No backend changes occurred
+- No schema changes occurred
+- No refactors occurred
+- No regressions in workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, or existing history/control surfaces
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81M-CHECKPOINT.md
+
+---

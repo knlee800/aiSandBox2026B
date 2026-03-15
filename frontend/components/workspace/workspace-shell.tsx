@@ -5,9 +5,12 @@ import {
   computeDashboardSliceState,
   computeHistorySliceState,
   filterVisibleWorkspaceCheckpoints,
+  HISTORY_WORKING_SET_MAX_ITEMS,
+  reconcileWorkspaceCheckpointWorkingSetIds,
   computeWorkspaceShellState,
   countActiveSessions,
   getSessionLabel,
+  toggleWorkspaceCheckpointWorkingSetId,
   type CheckpointDescriptionFilter,
   type WorkspaceCheckpoint,
   type WorkspaceQuotaSummary,
@@ -1143,9 +1146,11 @@ function HistoryCheckpointList(props: {
     props.snapshotTargetCheckpointId,
   ]);
   const [selectedInspectorFileId, setSelectedInspectorFileId] = React.useState<string | null>(null);
+  const [workingSetCheckpointIds, setWorkingSetCheckpointIds] = React.useState<string[]>([]);
 
   React.useEffect(() => {
     setSelectedInspectorFileId(null);
+    setWorkingSetCheckpointIds([]);
   }, [props.selectedSessionId]);
 
   React.useEffect(() => {
@@ -1159,6 +1164,15 @@ function HistoryCheckpointList(props: {
         : inspectorChangedFiles.files[0]?.id ?? null,
     );
   }, [inspectorChangedFiles]);
+  React.useEffect(() => {
+    setWorkingSetCheckpointIds((currentWorkingSetIds) =>
+      reconcileWorkspaceCheckpointWorkingSetIds({
+        currentWorkingSetIds,
+        checkpoints: props.checkpoints,
+        maxItems: HISTORY_WORKING_SET_MAX_ITEMS,
+      }),
+    );
+  }, [props.checkpoints]);
 
   const selectedInspectorFile =
     inspectorChangedFiles.files.find((file) => file.id === selectedInspectorFileId) ??
@@ -1170,6 +1184,21 @@ function HistoryCheckpointList(props: {
       : inspectorChangedFiles.source === 'snapshot'
         ? 'loaded checkpoint snapshot metadata'
         : 'none';
+  const workingSetIdSet = React.useMemo(
+    () => new Set(workingSetCheckpointIds),
+    [workingSetCheckpointIds],
+  );
+  const checkpointById = React.useMemo(
+    () => new Map(props.checkpoints.map((checkpoint) => [checkpoint.id, checkpoint])),
+    [props.checkpoints],
+  );
+  const workingSetCheckpoints = React.useMemo(
+    () =>
+      workingSetCheckpointIds
+        .map((checkpointId) => checkpointById.get(checkpointId))
+        .filter((checkpoint): checkpoint is WorkspaceCheckpoint => Boolean(checkpoint)),
+    [workingSetCheckpointIds, checkpointById],
+  );
 
   return (
     <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="history-checkpoint-list-surface">
@@ -1422,6 +1451,61 @@ function HistoryCheckpointList(props: {
           </p>
         )}
       </div>
+      <div className="mb-2 rounded border border-sky-200 bg-sky-50 p-2" data-testid="history-working-set-state">
+        <p className="text-[11px] font-semibold text-sky-800">History Working Set</p>
+        <p className="mt-1 text-[11px] text-sky-700" data-testid="history-working-set-count">
+          Working set size: {workingSetCheckpoints.length}/{HISTORY_WORKING_SET_MAX_ITEMS}
+        </p>
+        <p className="mt-1 text-[11px] text-sky-700">
+          Temporary session-only review list. Items clear when session context changes.
+        </p>
+        {workingSetCheckpoints.length ? (
+          <ul className="mt-2 space-y-1" data-testid="history-working-set-list">
+            {workingSetCheckpoints.map((checkpoint) => {
+              const isVisible = visibleCheckpointIdSet.has(checkpoint.id);
+              const label = checkpoint.description || `Checkpoint ${checkpoint.commitHash.slice(0, 7)}`;
+              return (
+                <li
+                  key={checkpoint.id}
+                  className="flex items-center justify-between gap-2 rounded border border-sky-200 bg-white px-2 py-1"
+                  data-testid={`history-working-set-item-${checkpoint.id}`}
+                >
+                  <p className="min-w-0 truncate text-[11px] text-sky-900">
+                    {label} <span className="font-mono text-sky-700">({checkpoint.commitHash.slice(0, 12)})</span>
+                  </p>
+                  <div className="flex items-center gap-2">
+                    {!isVisible ? (
+                      <span className="text-[10px] text-sky-700" data-testid={`history-working-set-hidden-${checkpoint.id}`}>
+                        Hidden by search/filter
+                      </span>
+                    ) : null}
+                    <button
+                      type="button"
+                      data-testid={`history-working-set-remove-${checkpoint.id}`}
+                      onClick={() =>
+                        setWorkingSetCheckpointIds((currentWorkingSetIds) =>
+                          toggleWorkspaceCheckpointWorkingSetId({
+                            currentWorkingSetIds,
+                            checkpointId: checkpoint.id,
+                            maxItems: HISTORY_WORKING_SET_MAX_ITEMS,
+                          }),
+                        )
+                      }
+                      className="rounded border border-sky-300 bg-white px-2 py-1 text-[11px] text-sky-700"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p className="mt-2 text-[11px] text-sky-700" data-testid="history-working-set-empty">
+            No checkpoints in the working set. Use Add to Set on checkpoint entries below.
+          </p>
+        )}
+      </div>
       <div className="mb-1 flex items-center justify-between" data-testid="history-checkpoint-timeline-header">
         <p className="text-[11px] font-semibold text-gray-700">Checkpoint Timeline</p>
         <p className="text-[11px] text-gray-500">Order and focus for visible checkpoints</p>
@@ -1444,6 +1528,9 @@ function HistoryCheckpointList(props: {
           const isCompareBase = props.compareBaseCheckpointId === checkpoint.id;
           const isCompareTarget = props.compareTargetCheckpointId === checkpoint.id;
           const isPinnedReference = props.pinnedCompareReferenceCheckpointId === checkpoint.id;
+          const isInWorkingSet = workingSetIdSet.has(checkpoint.id);
+          const canAddToWorkingSet =
+            !isInWorkingSet && workingSetCheckpointIds.length < HISTORY_WORKING_SET_MAX_ITEMS;
           const isTimelineActive = isSelected || isDiffTarget || isCompareBase || isCompareTarget;
           const timelineLabel = checkpoint.description || `Checkpoint ${checkpoint.commitHash.slice(0, 7)}`;
           const focusLabel = isDiffTarget
@@ -1505,6 +1592,11 @@ function HistoryCheckpointList(props: {
                     <p className="text-[11px] text-gray-600">
                       Timeline focus: {focusLabel}
                     </p>
+                    {isInWorkingSet ? (
+                      <p className="text-[11px] text-sky-700" data-testid={`history-working-set-member-${checkpoint.id}`}>
+                        Working set member
+                      </p>
+                    ) : null}
                   </div>
                   <div
                     className="mt-2 rounded border border-gray-200 bg-gray-50 px-2 py-2 font-mono text-[11px]"
@@ -1525,6 +1617,27 @@ function HistoryCheckpointList(props: {
                   </div>
                 </div>
                 <div className="flex gap-2">
+                  <button
+                    type="button"
+                    data-testid={`history-working-set-toggle-${checkpoint.id}`}
+                    disabled={!props.hasSelectedSession || (!isInWorkingSet && !canAddToWorkingSet)}
+                    onClick={() =>
+                      setWorkingSetCheckpointIds((currentWorkingSetIds) =>
+                        toggleWorkspaceCheckpointWorkingSetId({
+                          currentWorkingSetIds,
+                          checkpointId: checkpoint.id,
+                          maxItems: HISTORY_WORKING_SET_MAX_ITEMS,
+                        }),
+                      )
+                    }
+                    className={`rounded border px-3 py-1 text-xs ${
+                      isInWorkingSet
+                        ? 'border-sky-300 bg-sky-50 text-sky-700'
+                        : 'border-sky-300 bg-white text-sky-700 disabled:border-gray-200 disabled:text-gray-400'
+                    }`}
+                  >
+                    {isInWorkingSet ? 'Remove from Set' : 'Add to Set'}
+                  </button>
                   <button
                     type="button"
                     data-testid={`history-pin-button-${checkpoint.id}`}

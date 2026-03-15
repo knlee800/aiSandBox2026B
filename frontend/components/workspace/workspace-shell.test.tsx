@@ -614,6 +614,23 @@ describe('workspace shell component', () => {
     assert.match(html, /No loaded changed-file metadata for this checkpoint yet\./);
   });
 
+  test('renders bounded history working-set controls and empty state', () => {
+    const html = renderWorkspaceShell({
+      checkpoints: [checkpoint, checkpointTwo],
+      selectedSessionId: session.id,
+    });
+
+    assert.match(html, /data-testid="history-working-set-state"/);
+    assert.match(html, /History Working Set/);
+    assert.match(html, /data-testid="history-working-set-count"/);
+    assert.match(html, /Working set size: 0\/5/);
+    assert.match(html, /data-testid="history-working-set-empty"/);
+    assert.match(html, /No checkpoints in the working set\./);
+    assert.match(html, /data-testid="history-working-set-toggle-checkpoint-1"/);
+    assert.match(html, /data-testid="history-working-set-toggle-checkpoint-2"/);
+    assert.match(html, /Add to Set/);
+  });
+
   test('renders distinct checkpoint snapshot states and read-only snapshot viewer', () => {
     const idleHtml = renderWorkspaceShell({
       checkpointSnapshotState: 'idle',
