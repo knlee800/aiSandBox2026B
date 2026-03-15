@@ -136,6 +136,7 @@ function renderWorkspaceShell(
     checkpointRevertError: null,
     checkpointRevertTargetId: null,
     onInitiateCheckpointRevert: () => {},
+    onAdvanceCheckpointRevertPreview: () => {},
     onCancelCheckpointRevert: () => {},
     onConfirmCheckpointRevert: async () => {},
     checkpointDiffState: 'idle',
@@ -748,6 +749,17 @@ describe('workspace shell component', () => {
       checkpointRevertState: 'idle',
       selectedSessionId: session.id,
     });
+    const previewingHtml = renderWorkspaceShell({
+      checkpointRevertState: 'previewing',
+      checkpointRevertTargetId: checkpoint.id,
+      checkpointDiffState: 'ready',
+      checkpointDiffTargetId: checkpoint.id,
+      checkpointDiffResponse,
+      checkpointSnapshotState: 'ready',
+      checkpointSnapshotTargetId: checkpoint.id,
+      checkpointSnapshotResponse: checkpointDiffResponse,
+      selectedSessionId: session.id,
+    });
     const confirmingHtml = renderWorkspaceShell({
       checkpointRevertState: 'confirming',
       checkpointRevertTargetId: checkpoint.id,
@@ -769,6 +781,14 @@ describe('workspace shell component', () => {
     });
 
     assert.match(idleHtml, /Revert idle/);
+    assert.match(previewingHtml, /Revert previewing/);
+    assert.match(previewingHtml, /data-testid="history-revert-preview-checkpoint-1"/);
+    assert.match(previewingHtml, /data-testid="history-revert-preview-target"/);
+    assert.match(previewingHtml, /Preview Target Diff/);
+    assert.match(previewingHtml, /Preview Target Snapshot/);
+    assert.match(previewingHtml, /data-testid="history-revert-preview-continue"/);
+    assert.match(previewingHtml, /Diff preview status for target: ready/);
+    assert.match(previewingHtml, /Snapshot preview status for target: ready/);
     assert.match(confirmingHtml, /Revert confirming/);
     assert.match(confirmingHtml, /Confirm revert\?/);
     assert.match(confirmingHtml, /Confirm Revert/);

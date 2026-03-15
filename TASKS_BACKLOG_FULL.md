@@ -10888,3 +10888,62 @@ Make checkpoint history easier to inspect by adding a bounded checkpoint details
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81J-CHECKPOINT.md
 
 ---
+
+### TASK-81L: Revert Preview Slice
+
+**Task ID:** TASK-81L
+**Phase:** 81
+**Stage:** 81L
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** TASK-80C (Complete and Locked), TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked), TASK-81I (Complete and Locked), TASK-81J (Complete and Locked), TASK-81K (Complete and Locked); existing history/control surface already present; existing revert flow already present; existing diff/snapshot surfaces already present
+**Checkpoint:** `docs/PHASE-81L-CHECKPOINT.md`
+
+**Objective:**
+
+Make revert workflows safer and easier to understand by adding a bounded revert preview inside the existing history/control surface before the user confirms a revert, using already-loaded checkpoint metadata and existing diff/snapshot capabilities only.
+
+**Scope:**
+
+1. Reuse the existing history/control surface, existing revert flow, and existing diff/snapshot viewer surfaces only
+2. Add a bounded revert-preview state inside the existing history/control area before final revert confirmation
+3. Show the user which checkpoint is about to be reverted to using already-loaded checkpoint metadata
+4. Reuse existing diff/snapshot capability where already available to help preview the target checkpoint
+5. Keep final revert execution explicitly user-confirmed
+6. Preserve active-session-scoped behavior only
+7. Keep diff viewer, compare mode, search/filter, timeline, git-log browser, snapshot viewer, jump-to-live-file, pinned comparison reference, details inspector, manual checkpoint, and manual revert surfaces intact
+8. Keep integration localized to the existing workspace shell and history/control surface
+9. Frontend-only changes
+10. Additive only
+11. Focused frontend tests for this slice
+12. Slice-specific checkpoint output at `docs/PHASE-81L-CHECKPOINT.md`
+
+**Non-Goals:**
+
+- No backend changes
+- No schema changes
+- No refactors
+- No new endpoints
+- No automatic revert in this task
+- No partial/file-level revert in this task
+- No restore/rewrite of live files outside the existing revert endpoint
+- No branching visualization in this task
+- No broader workspace redesign
+- No polling/websocket behavior
+- No multi-task work
+
+**Acceptance Criteria:**
+
+- User can inspect a bounded revert preview from the existing history/control surface before final revert confirmation
+- Revert preview is scoped to the active session and selected checkpoint only
+- Final revert still requires explicit user confirmation
+- Existing diff viewer, compare mode, search/filter, visual timeline, git-log browser, snapshot viewer, jump-to-live-file, pinned comparison reference, details inspector, manual checkpoint, and manual revert continue to work correctly
+- No backend changes occurred
+- No schema changes occurred
+- No refactors occurred
+- No regressions in workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, or existing history/control surfaces
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81K-CHECKPOINT.md
+
+---

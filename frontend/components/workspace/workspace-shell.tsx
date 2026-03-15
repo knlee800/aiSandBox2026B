@@ -50,6 +50,7 @@ interface WorkspaceShellProps {
   checkpointRevertError: string | null;
   checkpointRevertTargetId: string | null;
   onInitiateCheckpointRevert: (checkpointId: string) => void;
+  onAdvanceCheckpointRevertPreview: () => void;
   onCancelCheckpointRevert: () => void;
   onConfirmCheckpointRevert: () => Promise<void>;
   checkpointDiffState: WorkspaceCheckpointDiffState;
@@ -245,6 +246,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                 revertErrorMessage={props.checkpointRevertError}
                 selectedCheckpointId={props.checkpointRevertTargetId}
                 onInitiateRevert={props.onInitiateCheckpointRevert}
+                onAdvanceRevertPreview={props.onAdvanceCheckpointRevertPreview}
                 onCancelRevert={props.onCancelCheckpointRevert}
                 onConfirmRevert={props.onConfirmCheckpointRevert}
                 diffState={props.checkpointDiffState}
@@ -941,6 +943,7 @@ function HistoryCheckpointList(props: {
   revertErrorMessage: string | null;
   selectedCheckpointId: string | null;
   onInitiateRevert: (checkpointId: string) => void;
+  onAdvanceRevertPreview: () => void;
   onCancelRevert: () => void;
   onConfirmRevert: () => Promise<void>;
   diffState: WorkspaceCheckpointDiffState;
@@ -1011,6 +1014,7 @@ function HistoryCheckpointList(props: {
   }, [props.selectedSessionId]);
 
   const isReverting = props.revertState === 'reverting';
+  const isPreviewing = props.revertState === 'previewing';
   const isConfirming = props.revertState === 'confirming';
   const isCompareModeActive = props.compareState !== 'idle';
   const canRunCompare =
@@ -1279,6 +1283,8 @@ function HistoryCheckpointList(props: {
           const isSelected = props.selectedCheckpointId === checkpoint.id;
           const canInitiateRevert = props.hasSelectedSession && !isReverting;
           const canConfirm = isSelected && isConfirming && !isReverting;
+          const isSelectedForPreview = isSelected && isPreviewing;
+          const isSelectedForConfirm = isSelected && isConfirming;
           const isDiffTarget = props.diffTargetCheckpointId === checkpoint.id;
           const isDiffLoading = props.diffState === 'loading' && isDiffTarget;
           const isSnapshotTarget = props.snapshotTargetCheckpointId === checkpoint.id;
@@ -1443,7 +1449,64 @@ function HistoryCheckpointList(props: {
                   </button>
                 </div>
               </div>
-              {isSelected && isConfirming ? (
+              {isSelectedForPreview ? (
+                <div
+                  className="mt-2 ml-8 rounded border border-indigo-200 bg-indigo-50 p-2"
+                  data-testid={`history-revert-preview-${checkpoint.id}`}
+                >
+                  <p className="text-xs font-semibold text-indigo-800" data-testid="history-revert-preview-target">
+                    Revert preview target: {timelineLabel} ({checkpoint.commitHash.slice(0, 12)})
+                  </p>
+                  <p className="mt-1 text-xs text-indigo-700">
+                    Confirming will restore the active session workspace to this checkpoint. Use diff/snapshot preview
+                    buttons below to inspect target context first.
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      data-testid="history-revert-preview-view-diff"
+                      disabled={!props.hasSelectedSession}
+                      onClick={() => void props.onViewDiff(checkpoint.id)}
+                      className="rounded border border-blue-300 bg-white px-3 py-1 text-xs text-blue-700 disabled:border-gray-200 disabled:text-gray-400"
+                    >
+                      {isDiffLoading ? 'Loading diff...' : 'Preview Target Diff'}
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="history-revert-preview-view-snapshot"
+                      disabled={!props.hasSelectedSession}
+                      onClick={() => void props.onViewSnapshot(checkpoint.id)}
+                      className="rounded border border-indigo-300 bg-white px-3 py-1 text-xs text-indigo-700 disabled:border-gray-200 disabled:text-gray-400"
+                    >
+                      {isSnapshotLoading ? 'Loading snapshot...' : 'Preview Target Snapshot'}
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="history-revert-preview-cancel"
+                      onClick={props.onCancelRevert}
+                      className="rounded border border-gray-300 bg-white px-3 py-1 text-xs text-gray-700"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="history-revert-preview-continue"
+                      disabled={!props.hasSelectedSession}
+                      onClick={props.onAdvanceRevertPreview}
+                      className="rounded bg-amber-600 px-3 py-1 text-xs text-white disabled:bg-amber-300"
+                    >
+                      Continue to Confirm
+                    </button>
+                  </div>
+                  <p className="mt-2 text-[11px] text-indigo-700" data-testid="history-revert-preview-diff-state">
+                    Diff preview status for target: {isDiffTarget ? props.diffState : 'idle'}
+                  </p>
+                  <p className="mt-1 text-[11px] text-indigo-700" data-testid="history-revert-preview-snapshot-state">
+                    Snapshot preview status for target: {isSnapshotTarget ? props.snapshotState : 'idle'}
+                  </p>
+                </div>
+              ) : null}
+              {isSelectedForConfirm ? (
                 <div
                   className="mt-2 ml-8 rounded border border-amber-200 bg-amber-50 p-2"
                   data-testid={`history-revert-confirm-${checkpoint.id}`}
@@ -2189,6 +2252,17 @@ function HistoryRevertStateMessage(props: {
         heading="Revert confirming"
         body="Revert confirmation is required before request submission."
         action="Choose Confirm Revert to proceed or Cancel to keep current state."
+      />
+    );
+  }
+
+  if (props.state === 'previewing') {
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="Revert previewing"
+        body="Review target checkpoint metadata and optional diff/snapshot previews before confirmation."
+        action="Use Continue to Confirm, then Confirm Revert to execute."
       />
     );
   }

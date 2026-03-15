@@ -419,6 +419,14 @@ export default function AppPage() {
 
     setCheckpointRevertTargetId(checkpointId);
     setCheckpointRevertError(null);
+    setCheckpointRevertState('previewing');
+  }
+
+  function handleAdvanceCheckpointRevertPreview(): void {
+    if (checkpointRevertState !== 'previewing' || !checkpointRevertTargetId) {
+      return;
+    }
+    setCheckpointRevertError(null);
     setCheckpointRevertState('confirming');
   }
 
@@ -441,6 +449,11 @@ export default function AppPage() {
     if (!selectedSessionId || !userId || !checkpointRevertTargetId) {
       setCheckpointRevertState('revert-error');
       setCheckpointRevertError('Cannot revert without an active session and selected checkpoint.');
+      return;
+    }
+    if (checkpointRevertState !== 'confirming') {
+      setCheckpointRevertState('revert-error');
+      setCheckpointRevertError('Revert confirmation step is required before submission.');
       return;
     }
 
@@ -1313,6 +1326,7 @@ export default function AppPage() {
       checkpointRevertError={checkpointRevertError}
       checkpointRevertTargetId={checkpointRevertTargetId}
       onInitiateCheckpointRevert={handleInitiateCheckpointRevert}
+      onAdvanceCheckpointRevertPreview={handleAdvanceCheckpointRevertPreview}
       onCancelCheckpointRevert={handleCancelCheckpointRevert}
       onConfirmCheckpointRevert={handleConfirmCheckpointRevert}
       checkpointDiffState={checkpointDiffState}

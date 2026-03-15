@@ -3094,7 +3094,7 @@ Re-validate and re-consolidate Phase 80 so the final Phase 80 closure correctly 
 
 ## Phase 81 — Checkpoint Diff Viewer
 
-**Current stage:** TASK-81K (COMPLETE and LOCKED)
+**Current stage:** TASK-81L (COMPLETE and LOCKED)
 
 ---
 
@@ -3719,5 +3719,45 @@ Make checkpoint history easier to inspect by adding a bounded checkpoint details
 **Dependencies:** TASK-81A through TASK-81J (all Complete and Locked); existing history/control surface and checkpoint list load path already present
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81K for full details
+
+---
+
+#### TASK-81L: Revert Preview Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-81L-CHECKPOINT.md`
+
+**Objective:**
+Make revert workflows safer and easier to understand by adding a bounded revert preview inside the existing history/control surface before the user confirms a revert, using already-loaded checkpoint metadata and existing diff/snapshot capabilities only.
+
+**Scope:**
+- Reuse the existing history/control surface, existing revert flow, and existing diff/snapshot viewer surfaces only
+- Add a bounded revert-preview state inside the existing history/control area before final revert confirmation
+- Show the user which checkpoint is about to be reverted to using already-loaded checkpoint metadata
+- Reuse existing diff/snapshot capability where already available to help preview the target checkpoint
+- Keep final revert execution explicitly user-confirmed
+- Preserve active-session-scoped behavior only
+- Keep diff viewer, compare mode, search/filter, timeline, git-log browser, snapshot viewer, jump-to-live-file, pinned comparison reference, details inspector, manual checkpoint, and manual revert surfaces intact
+- Frontend-only changes
+- Additive only
+- Focused frontend tests for this slice
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No automatic revert in this task
+- ❌ No partial/file-level revert in this task
+- ❌ No restore/rewrite of live files outside the existing revert endpoint
+- ❌ No branching visualization
+- ❌ No broader workspace redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Dependencies:** TASK-80C, TASK-81A through TASK-81K (all Complete and Locked); existing history/control surface, revert flow, and diff/snapshot surfaces already present
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81L for full details
 
 ---

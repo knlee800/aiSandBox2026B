@@ -1,5 +1,6 @@
 export type WorkspaceCheckpointRevertState =
   | 'idle'
+  | 'previewing'
   | 'confirming'
   | 'reverting'
   | 'reverted'
