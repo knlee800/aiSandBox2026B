@@ -10588,7 +10588,7 @@ Make checkpoint history easier to inspect by adding a bounded git-log-style brow
 **Phase:** 81
 **Stage:** 81-RERERERECONSOLIDATE
 **Priority:** 🔴 High
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED
 **Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked); prior `TASK-81-FINAL`, `TASK-81-RECONSOLIDATE`, `TASK-81-RERECONSOLIDATE`, and `TASK-81-RERERECONSOLIDATE` exist but are outdated (each was written before `TASK-81G` was scoped, implemented, or locked)
 **Checkpoint:** `docs/PHASE-81-RERERERECONSOLIDATED-FINAL-CHECKPOINT.md`
@@ -10708,5 +10708,65 @@ Make checkpoint history more useful by allowing the user to inspect file content
 - No regressions in workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, or existing history/control surfaces
 
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81G-CHECKPOINT.md, PHASE-81-RERERERECONSOLIDATED-FINAL-CHECKPOINT.md
+
+---
+
+### TASK-81I: Jump From History To Live File Slice
+
+**Task ID:** TASK-81I
+**Phase:** 81
+**Stage:** 81I
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** TASK-79B (Complete and Locked), TASK-80A (Complete and Locked), TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked); existing live file-navigation/editor surface already present; existing history/control surface already present
+**Checkpoint:** `docs/PHASE-81I-CHECKPOINT.md`
+
+**Objective:**
+
+Make checkpoint history more actionable by allowing the user to jump from a selected checkpoint file item in the existing history/control surface to the corresponding live file in the current workspace, without restoring the checkpoint.
+
+**Scope:**
+
+1. Reuse the existing history/control surface, diff viewer, snapshot viewer, and live workspace file-navigation/editor surfaces only
+2. Add a bounded "open in live workspace" action from history-derived file items only
+3. Support this action only when the corresponding file exists in the active live workspace
+4. Switch the workspace focus to the corresponding live file using existing live file-navigation/editor capabilities only
+5. Keep this strictly non-restorative: no revert, no restore, no writing checkpoint content into the live file
+6. Support active-session-scoped behavior only
+7. Keep existing diff viewer, compare mode, search/filter, visual timeline, git-log browser, snapshot viewer, manual checkpoint, and manual revert surfaces intact
+8. Keep integration localized to the existing workspace shell, history/control surface, and existing live file-navigation/editor wiring
+9. Frontend-only changes
+10. Additive only
+11. Focused frontend tests for this slice
+12. Slice-specific checkpoint output at `docs/PHASE-81I-CHECKPOINT.md`
+
+**Non-Goals:**
+
+- No backend changes
+- No schema changes
+- No refactors
+- No new endpoints
+- No auto-open if the live file is missing
+- No restore/revert action in this task
+- No editing/saving of checkpoint snapshot content in this task
+- No branching visualization in this task
+- No broader workspace redesign
+- No polling/websocket behavior
+- No multi-task work
+
+**Acceptance Criteria:**
+
+- User can trigger "open in live workspace" from relevant history-derived file items in the existing history/control surface
+- Action is scoped to the active session only
+- When the live file exists, the workspace switches to that file using existing live file-navigation/editor behavior
+- When the live file does not exist, the UI handles it safely without restore/revert side effects
+- Existing diff viewer, compare mode, search/filter, visual timeline, git-log browser, snapshot viewer, manual checkpoint, and manual revert continue to work correctly
+- No backend changes occurred
+- No schema changes occurred
+- No refactors occurred
+- No regressions in workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, or existing history/control surfaces
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81H-CHECKPOINT.md
 
 ---

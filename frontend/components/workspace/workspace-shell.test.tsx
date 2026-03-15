@@ -158,6 +158,11 @@ function renderWorkspaceShell(
     checkpointSnapshotTargetId: null,
     checkpointSnapshotResponse: null,
     onViewCheckpointSnapshot: async () => {},
+    checkpointLiveOpenState: 'idle',
+    checkpointLiveOpenError: null,
+    checkpointLiveOpenTargetPath: null,
+    canOpenCheckpointFileInLiveWorkspace: (filePath) => filePath === 'src/app.ts',
+    onOpenCheckpointFileInLiveWorkspace: async () => {},
     userSummary,
     usageSummary,
     quotaSummary,
@@ -540,6 +545,36 @@ describe('workspace shell component', () => {
     assert.match(errorHtml, /Checkpoint snapshot failed/);
     assert.match(errorHtml, /Failed to load checkpoint snapshot\./);
     assert.match(deletedFileHtml, /\(file deleted at selected checkpoint\)/);
+  });
+
+  test('renders open-in-live workspace state and per-file availability from history viewers', () => {
+    const openedHtml = renderWorkspaceShell({
+      checkpointDiffState: 'ready',
+      checkpointDiffTargetId: checkpoint.id,
+      checkpointDiffResponse,
+      checkpointSnapshotState: 'ready',
+      checkpointSnapshotTargetId: checkpoint.id,
+      checkpointSnapshotResponse: checkpointDiffResponse,
+      checkpointLiveOpenState: 'opened',
+      checkpointLiveOpenTargetPath: 'src/app.ts',
+      selectedSessionId: session.id,
+    });
+    const missingHtml = renderWorkspaceShell({
+      checkpointLiveOpenState: 'missing',
+      checkpointLiveOpenTargetPath: 'src/missing.ts',
+      selectedSessionId: session.id,
+    });
+
+    assert.match(openedHtml, /data-testid="history-open-live-state"/);
+    assert.match(openedHtml, /Live workspace file opened/);
+    assert.match(openedHtml, /Editor focus switched to src\/app\.ts using live workspace navigation\./);
+    assert.match(openedHtml, /data-testid="history-diff-open-live-src\/app\.ts::modified"/);
+    assert.match(openedHtml, /data-testid="history-snapshot-open-live-src\/app\.ts::modified"/);
+    assert.match(openedHtml, /data-testid="history-diff-open-live-src\/new-file\.ts::added"[^>]*disabled/);
+    assert.match(openedHtml, /data-testid="history-snapshot-open-live-src\/new-file\.ts::added"[^>]*disabled/);
+    assert.match(missingHtml, /Live file unavailable/);
+    assert.match(missingHtml, /does not exist in the active live workspace/);
+    assert.match(missingHtml, /No restore, revert, or file write was performed\./);
   });
 
   test('renders checkpoint history search and filter controls', () => {

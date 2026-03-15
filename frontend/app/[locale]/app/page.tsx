@@ -58,6 +58,12 @@ export default function AppPage() {
     | 'ready'
     | 'empty'
     | 'snapshot-error';
+  type WorkspaceCheckpointLiveOpenState =
+    | 'idle'
+    | 'opening'
+    | 'opened'
+    | 'missing'
+    | 'open-error';
 
   const router = useRouter();
   const params = useParams();
@@ -99,6 +105,10 @@ export default function AppPage() {
   const [checkpointSnapshotTargetId, setCheckpointSnapshotTargetId] = useState<string | null>(null);
   const [checkpointSnapshotResponse, setCheckpointSnapshotResponse] =
     useState<WorkspaceCheckpointDiffResponse | null>(null);
+  const [checkpointLiveOpenState, setCheckpointLiveOpenState] =
+    useState<WorkspaceCheckpointLiveOpenState>('idle');
+  const [checkpointLiveOpenError, setCheckpointLiveOpenError] = useState<string | null>(null);
+  const [checkpointLiveOpenTargetPath, setCheckpointLiveOpenTargetPath] = useState<string | null>(null);
   const [userSummary, setUserSummary] = useState<WorkspaceUserSummary | null>(null);
   const [usageSummary, setUsageSummary] = useState<WorkspaceUsageSummary | null>(null);
   const [quotaSummary, setQuotaSummary] = useState<WorkspaceQuotaSummary | null>(null);
@@ -128,6 +138,7 @@ export default function AppPage() {
   const checkpointDiffRequestIdRef = useRef(0);
   const checkpointCompareRequestIdRef = useRef(0);
   const checkpointSnapshotRequestIdRef = useRef(0);
+  const checkpointLiveOpenRequestIdRef = useRef(0);
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -174,6 +185,10 @@ export default function AppPage() {
     setCheckpointSnapshotError(null);
     setCheckpointSnapshotTargetId(null);
     setCheckpointSnapshotResponse(null);
+    checkpointLiveOpenRequestIdRef.current += 1;
+    setCheckpointLiveOpenState('idle');
+    setCheckpointLiveOpenError(null);
+    setCheckpointLiveOpenTargetPath(null);
 
     if (!selectedSessionId) {
       setCheckpoints([]);
@@ -621,6 +636,105 @@ export default function AppPage() {
     }
   }
 
+  function workspaceTreeContainsFilePath(nodes: WorkspaceFileNode[], filePath: string): boolean {
+    for (const node of nodes) {
+      if (node.type === 'file' && node.path === filePath) {
+        return true;
+      }
+      if (node.children.length && workspaceTreeContainsFilePath(node.children, filePath)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function canOpenCheckpointFileInLiveWorkspace(filePath: string): boolean {
+    const normalizedPath = filePath.trim();
+    if (!normalizedPath || !selectedSessionId || fileSurfaceState !== 'ready') {
+      return false;
+    }
+    return workspaceTreeContainsFilePath(workspaceFileTree, normalizedPath);
+  }
+
+  async function handleOpenCheckpointFileInLiveWorkspace(filePath: string): Promise<void> {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+
+    const normalizedPath = filePath.trim();
+    if (!normalizedPath) {
+      setCheckpointLiveOpenState('open-error');
+      setCheckpointLiveOpenError('Cannot open an empty file path.');
+      setCheckpointLiveOpenTargetPath(null);
+      return;
+    }
+
+    if (!selectedSessionId) {
+      setCheckpointLiveOpenState('open-error');
+      setCheckpointLiveOpenError('Cannot open live workspace file without an active session.');
+      setCheckpointLiveOpenTargetPath(normalizedPath);
+      return;
+    }
+
+    const selectedSession = sessions.find((session) => session.id === selectedSessionId);
+    if (!selectedSession || selectedSession.terminatedAt) {
+      setCheckpointLiveOpenState('open-error');
+      setCheckpointLiveOpenError('Cannot open live workspace file for a terminated session.');
+      setCheckpointLiveOpenTargetPath(normalizedPath);
+      return;
+    }
+
+    if (fileSurfaceState !== 'ready') {
+      setCheckpointLiveOpenState('open-error');
+      setCheckpointLiveOpenError('Live workspace file tree is not ready.');
+      setCheckpointLiveOpenTargetPath(normalizedPath);
+      return;
+    }
+
+    if (!workspaceTreeContainsFilePath(workspaceFileTree, normalizedPath)) {
+      setCheckpointLiveOpenState('missing');
+      setCheckpointLiveOpenError(null);
+      setCheckpointLiveOpenTargetPath(normalizedPath);
+      return;
+    }
+
+    const requestId = checkpointLiveOpenRequestIdRef.current + 1;
+    checkpointLiveOpenRequestIdRef.current = requestId;
+    const sessionId = selectedSessionId;
+    setCheckpointLiveOpenState('opening');
+    setCheckpointLiveOpenError(null);
+    setCheckpointLiveOpenTargetPath(normalizedPath);
+
+    try {
+      const opened = await loadWorkspaceFileContent(token, sessionId, normalizedPath);
+
+      if (checkpointLiveOpenRequestIdRef.current !== requestId) {
+        return;
+      }
+
+      if (!opened) {
+        setCheckpointLiveOpenState('open-error');
+        setCheckpointLiveOpenError('Failed to open selected file in live workspace.');
+        setCheckpointLiveOpenTargetPath(normalizedPath);
+        return;
+      }
+
+      setCheckpointLiveOpenState('opened');
+      setCheckpointLiveOpenError(null);
+      setCheckpointLiveOpenTargetPath(normalizedPath);
+    } catch (error) {
+      console.error('Failed to open history file in live workspace:', error);
+      if (checkpointLiveOpenRequestIdRef.current !== requestId) {
+        return;
+      }
+      setCheckpointLiveOpenState('open-error');
+      setCheckpointLiveOpenError('Failed to open selected file in live workspace.');
+      setCheckpointLiveOpenTargetPath(normalizedPath);
+    }
+  }
+
   function handleStartCheckpointCompare(): void {
     if (!selectedSessionId) {
       setCheckpointCompareState('compare-error');
@@ -949,7 +1063,7 @@ export default function AppPage() {
     token: string,
     sessionId: string,
     filePath: string,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const requestId = fileContentRequestIdRef.current + 1;
     fileContentRequestIdRef.current = requestId;
     fileSaveRequestIdRef.current += 1;
@@ -968,7 +1082,7 @@ export default function AppPage() {
       });
 
       if (fileContentRequestIdRef.current !== requestId) {
-        return;
+        return false;
       }
 
       setSelectedFilePath(fileResponse.path);
@@ -977,10 +1091,11 @@ export default function AppPage() {
       setFileSaveState('clean');
       setFileSaveError(null);
       setFileSurfaceState('ready');
+      return true;
     } catch (error) {
       console.error('Failed to load workspace file content:', error);
       if (fileContentRequestIdRef.current !== requestId) {
-        return;
+        return false;
       }
       setSelectedFileContent('');
       setSavedFileContent('');
@@ -988,6 +1103,7 @@ export default function AppPage() {
       setFileSaveError(null);
       setFileSurfaceState('error');
       setFileSurfaceError('Failed to load selected file content.');
+      return false;
     }
   }
 
@@ -1183,6 +1299,11 @@ export default function AppPage() {
       checkpointSnapshotTargetId={checkpointSnapshotTargetId}
       checkpointSnapshotResponse={checkpointSnapshotResponse}
       onViewCheckpointSnapshot={handleViewCheckpointSnapshot}
+      checkpointLiveOpenState={checkpointLiveOpenState}
+      checkpointLiveOpenError={checkpointLiveOpenError}
+      checkpointLiveOpenTargetPath={checkpointLiveOpenTargetPath}
+      canOpenCheckpointFileInLiveWorkspace={canOpenCheckpointFileInLiveWorkspace}
+      onOpenCheckpointFileInLiveWorkspace={handleOpenCheckpointFileInLiveWorkspace}
       userSummary={userSummary}
       usageSummary={usageSummary}
       quotaSummary={quotaSummary}

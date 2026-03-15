@@ -1861,7 +1861,7 @@ Execute the original authoritative TASK-42A-4 work exactly as already defined in
 
 #### TASK-72-FINAL: Phase 72 Final Consolidation
 
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED
 **Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)
 **Checkpoint:** `docs/PHASE-72-FINAL-CHECKPOINT.md`
 
@@ -3605,5 +3605,44 @@ Make checkpoint history more useful by allowing the user to inspect file content
 **Dependencies:** TASK-81A through TASK-81G (all Complete and Locked); existing history/control surface and checkpoint/history capability already present
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81H for full details
+
+---
+
+#### TASK-81I: Jump From History To Live File Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-81I-CHECKPOINT.md`
+
+**Objective:**
+Make checkpoint history more actionable by allowing the user to jump from a selected checkpoint file item in the existing history/control surface to the corresponding live file in the current workspace, without restoring the checkpoint.
+
+**Scope:**
+- Reuse existing history/control surface, diff viewer, snapshot viewer, and live file-navigation/editor surfaces only
+- Add a bounded "open in live workspace" action from history-derived file items only
+- Support action only when the corresponding file exists in the active live workspace
+- Switch workspace focus to corresponding live file using existing file-navigation/editor capabilities only
+- Keep strictly non-restorative: no revert, no restore, no writing checkpoint content into the live file
+- Active-session-scoped behavior only
+- Keep diff viewer, compare mode, search/filter, timeline, git-log browser, snapshot viewer, manual checkpoint, and manual revert surfaces intact
+- Frontend-only, additive changes
+- Focused frontend tests for this slice
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No auto-open if the live file is missing
+- ❌ No restore/revert action in this task
+- ❌ No editing/saving of checkpoint snapshot content in this task
+- ❌ No branching visualization
+- ❌ No broader workspace redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Dependencies:** TASK-79B, TASK-80A, TASK-81A through TASK-81H (all Complete and Locked); existing live file-navigation/editor surface and history/control surface already present
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81I for full details
 
 ---

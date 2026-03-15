@@ -72,6 +72,11 @@ interface WorkspaceShellProps {
   checkpointSnapshotTargetId: string | null;
   checkpointSnapshotResponse: WorkspaceCheckpointDiffResponse | null;
   onViewCheckpointSnapshot: (checkpointId: string) => Promise<void>;
+  checkpointLiveOpenState: 'idle' | 'opening' | 'opened' | 'missing' | 'open-error';
+  checkpointLiveOpenError: string | null;
+  checkpointLiveOpenTargetPath: string | null;
+  canOpenCheckpointFileInLiveWorkspace: (filePath: string) => boolean;
+  onOpenCheckpointFileInLiveWorkspace: (filePath: string) => Promise<void>;
   userSummary: WorkspaceUserSummary | null;
   usageSummary: WorkspaceUsageSummary | null;
   quotaSummary: WorkspaceQuotaSummary | null;
@@ -259,6 +264,11 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                 snapshotTargetCheckpointId={props.checkpointSnapshotTargetId}
                 snapshotResponse={props.checkpointSnapshotResponse}
                 onViewSnapshot={props.onViewCheckpointSnapshot}
+                liveOpenState={props.checkpointLiveOpenState}
+                liveOpenErrorMessage={props.checkpointLiveOpenError}
+                liveOpenTargetPath={props.checkpointLiveOpenTargetPath}
+                canOpenInLiveWorkspace={props.canOpenCheckpointFileInLiveWorkspace}
+                onOpenInLiveWorkspace={props.onOpenCheckpointFileInLiveWorkspace}
               />
             ) : null}
           </section>
@@ -947,6 +957,11 @@ function HistoryCheckpointList(props: {
   snapshotTargetCheckpointId: string | null;
   snapshotResponse: WorkspaceCheckpointDiffResponse | null;
   onViewSnapshot: (checkpointId: string) => Promise<void>;
+  liveOpenState: 'idle' | 'opening' | 'opened' | 'missing' | 'open-error';
+  liveOpenErrorMessage: string | null;
+  liveOpenTargetPath: string | null;
+  canOpenInLiveWorkspace: (filePath: string) => boolean;
+  onOpenInLiveWorkspace: (filePath: string) => Promise<void>;
 }) {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [descriptionFilter, setDescriptionFilter] =
@@ -1275,14 +1290,37 @@ function HistoryCheckpointList(props: {
           hasSelectedSession={props.hasSelectedSession}
         />
       </div>
-      <HistoryCheckpointDiffViewer state={props.diffState} diffResponse={props.diffResponse} />
+      <div className="mt-2" data-testid="history-open-live-state">
+        <HistoryOpenLiveStateMessage
+          state={props.liveOpenState}
+          errorMessage={props.liveOpenErrorMessage}
+          targetPath={props.liveOpenTargetPath}
+          hasSelectedSession={props.hasSelectedSession}
+        />
+      </div>
+      <HistoryCheckpointDiffViewer
+        state={props.diffState}
+        diffResponse={props.diffResponse}
+        openLiveState={props.liveOpenState}
+        openLiveTargetPath={props.liveOpenTargetPath}
+        canOpenInLiveWorkspace={props.canOpenInLiveWorkspace}
+        onOpenInLiveWorkspace={props.onOpenInLiveWorkspace}
+      />
       <HistoryCheckpointDiffViewer
         state={props.compareState === 'ready' ? 'ready' : 'idle'}
         diffResponse={props.compareState === 'ready' ? props.compareResponse : null}
+        openLiveState={props.liveOpenState}
+        openLiveTargetPath={props.liveOpenTargetPath}
+        canOpenInLiveWorkspace={props.canOpenInLiveWorkspace}
+        onOpenInLiveWorkspace={props.onOpenInLiveWorkspace}
       />
       <HistoryCheckpointSnapshotViewer
         state={props.snapshotState}
         snapshotResponse={props.snapshotResponse}
+        openLiveState={props.liveOpenState}
+        openLiveTargetPath={props.liveOpenTargetPath}
+        canOpenInLiveWorkspace={props.canOpenInLiveWorkspace}
+        onOpenInLiveWorkspace={props.onOpenInLiveWorkspace}
       />
     </div>
   );
@@ -1481,9 +1519,85 @@ function HistorySnapshotStateMessage(props: {
   );
 }
 
+function HistoryOpenLiveStateMessage(props: {
+  state: 'idle' | 'opening' | 'opened' | 'missing' | 'open-error';
+  errorMessage: string | null;
+  targetPath: string | null;
+  hasSelectedSession: boolean;
+}) {
+  if (props.state === 'idle') {
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="Open in live workspace idle"
+        body={
+          props.hasSelectedSession
+            ? 'Choose a history file item and use Open in Live Workspace when available.'
+            : 'Select an active session to jump from history file items to live workspace files.'
+        }
+        action="This action only switches focus to an existing live file and never restores checkpoint content."
+      />
+    );
+  }
+
+  if (props.state === 'opening') {
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="Opening live workspace file"
+        body={props.targetPath ? `Switching editor focus to ${props.targetPath}.` : 'Switching editor focus.'}
+        action="Wait for live file content to load in the existing editor surface."
+      />
+    );
+  }
+
+  if (props.state === 'opened') {
+    return (
+      <StateMessage
+        tone="success"
+        heading="Live workspace file opened"
+        body={
+          props.targetPath
+            ? `Editor focus switched to ${props.targetPath} using live workspace navigation.`
+            : 'Editor focus switched to the selected live workspace file.'
+        }
+        action="Continue editing in the live workspace editor."
+      />
+    );
+  }
+
+  if (props.state === 'missing') {
+    return (
+      <StateMessage
+        tone="neutral"
+        heading="Live file unavailable"
+        body={
+          props.targetPath
+            ? `The file ${props.targetPath} does not exist in the active live workspace.`
+            : 'Selected history file does not exist in the active live workspace.'
+        }
+        action="No restore, revert, or file write was performed."
+      />
+    );
+  }
+
+  return (
+    <StateMessage
+      tone="error"
+      heading="Open in live workspace failed"
+      body={props.errorMessage ?? 'Failed to open selected history file in the live workspace.'}
+      action="Select an active session and retry with a file that exists in the live workspace tree."
+    />
+  );
+}
+
 function HistoryCheckpointDiffViewer(props: {
   state: WorkspaceCheckpointDiffState;
   diffResponse: WorkspaceCheckpointDiffResponse | null;
+  openLiveState: 'idle' | 'opening' | 'opened' | 'missing' | 'open-error';
+  openLiveTargetPath: string | null;
+  canOpenInLiveWorkspace: (filePath: string) => boolean;
+  onOpenInLiveWorkspace: (filePath: string) => Promise<void>;
 }) {
   const diffFiles = props.state === 'ready' && props.diffResponse ? props.diffResponse.files : [];
 
@@ -1555,21 +1669,39 @@ function HistoryCheckpointDiffViewer(props: {
                   {groupedFiles.map((file) => {
                     const fileId = `${file.path}::${file.status}`;
                     const isSelected = selectedFile && fileId === `${selectedFile.path}::${selectedFile.status}`;
+                    const canOpenInLiveWorkspace = props.canOpenInLiveWorkspace(file.path);
+                    const isOpeningThisFile =
+                      props.openLiveState === 'opening' && props.openLiveTargetPath === file.path;
                     return (
                       <li key={fileId}>
-                        <button
-                          type="button"
-                          data-testid={`history-diff-file-select-${fileId}`}
-                          aria-pressed={isSelected}
-                          onClick={() => setSelectedFileId(fileId)}
-                          className={`w-full truncate rounded border px-2 py-1 text-left font-mono text-[11px] ${
-                            isSelected
-                              ? 'border-blue-400 bg-blue-50 text-blue-800'
-                              : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
-                          }`}
-                        >
-                          {file.path}
-                        </button>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            data-testid={`history-diff-file-select-${fileId}`}
+                            aria-pressed={isSelected}
+                            onClick={() => setSelectedFileId(fileId)}
+                            className={`min-w-0 flex-1 truncate rounded border px-2 py-1 text-left font-mono text-[11px] ${
+                              isSelected
+                                ? 'border-blue-400 bg-blue-50 text-blue-800'
+                                : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                            }`}
+                          >
+                            {file.path}
+                          </button>
+                          <button
+                            type="button"
+                            data-testid={`history-diff-open-live-${fileId}`}
+                            disabled={!canOpenInLiveWorkspace || props.openLiveState === 'opening'}
+                            onClick={() => void props.onOpenInLiveWorkspace(file.path)}
+                            className="shrink-0 rounded border border-blue-300 bg-white px-2 py-1 text-[10px] text-blue-700 disabled:border-gray-200 disabled:text-gray-400"
+                          >
+                            {isOpeningThisFile
+                              ? 'Opening...'
+                              : canOpenInLiveWorkspace
+                                ? 'Open in Live'
+                                : 'Live Missing'}
+                          </button>
+                        </div>
                       </li>
                     );
                   })}
@@ -1632,6 +1764,10 @@ function HistoryCheckpointDiffViewer(props: {
 function HistoryCheckpointSnapshotViewer(props: {
   state: 'idle' | 'loading' | 'ready' | 'empty' | 'snapshot-error';
   snapshotResponse: WorkspaceCheckpointDiffResponse | null;
+  openLiveState: 'idle' | 'opening' | 'opened' | 'missing' | 'open-error';
+  openLiveTargetPath: string | null;
+  canOpenInLiveWorkspace: (filePath: string) => boolean;
+  onOpenInLiveWorkspace: (filePath: string) => Promise<void>;
 }) {
   const snapshotFiles = props.state === 'ready' && props.snapshotResponse ? props.snapshotResponse.files : [];
   const fileIds = React.useMemo(
@@ -1681,21 +1817,39 @@ function HistoryCheckpointSnapshotViewer(props: {
           {snapshotFiles.map((file) => {
             const fileId = `${file.path}::${file.status}`;
             const isSelected = selectedFile && fileId === `${selectedFile.path}::${selectedFile.status}`;
+            const canOpenInLiveWorkspace = props.canOpenInLiveWorkspace(file.path);
+            const isOpeningThisFile =
+              props.openLiveState === 'opening' && props.openLiveTargetPath === file.path;
             return (
               <li key={fileId}>
-                <button
-                  type="button"
-                  data-testid={`history-snapshot-file-select-${fileId}`}
-                  aria-pressed={isSelected}
-                  onClick={() => setSelectedFileId(fileId)}
-                  className={`w-full truncate rounded border px-2 py-1 text-left font-mono text-[11px] ${
-                    isSelected
-                      ? 'border-indigo-400 bg-indigo-100 text-indigo-800'
-                      : 'border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50'
-                  }`}
-                >
-                  {file.path} ({file.status})
-                </button>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    data-testid={`history-snapshot-file-select-${fileId}`}
+                    aria-pressed={isSelected}
+                    onClick={() => setSelectedFileId(fileId)}
+                    className={`min-w-0 flex-1 truncate rounded border px-2 py-1 text-left font-mono text-[11px] ${
+                      isSelected
+                        ? 'border-indigo-400 bg-indigo-100 text-indigo-800'
+                        : 'border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50'
+                    }`}
+                  >
+                    {file.path} ({file.status})
+                  </button>
+                  <button
+                    type="button"
+                    data-testid={`history-snapshot-open-live-${fileId}`}
+                    disabled={!canOpenInLiveWorkspace || props.openLiveState === 'opening'}
+                    onClick={() => void props.onOpenInLiveWorkspace(file.path)}
+                    className="shrink-0 rounded border border-indigo-300 bg-white px-2 py-1 text-[10px] text-indigo-700 disabled:border-gray-200 disabled:text-gray-400"
+                  >
+                    {isOpeningThisFile
+                      ? 'Opening...'
+                      : canOpenInLiveWorkspace
+                        ? 'Open in Live'
+                        : 'Live Missing'}
+                  </button>
+                </div>
               </li>
             );
           })}
