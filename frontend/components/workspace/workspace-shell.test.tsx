@@ -510,6 +510,52 @@ describe('workspace shell component', () => {
     assert.match(emptyHtml, /No pinned comparison reference\./);
   });
 
+  test('renders checkpoint details inspector for current acted-on checkpoint', () => {
+    const html = renderWorkspaceShell({
+      checkpoints: [checkpoint, checkpointTwo],
+      selectedSessionId: session.id,
+      checkpointDiffTargetId: checkpoint.id,
+      checkpointSnapshotTargetId: checkpoint.id,
+      checkpointCompareState: 'selecting',
+      checkpointCompareBaseId: checkpoint.id,
+      checkpointCompareTargetId: checkpoint.id,
+      pinnedCompareReferenceCheckpointId: checkpoint.id,
+    });
+
+    assert.match(html, /data-testid="history-checkpoint-details-inspector"/);
+    assert.match(html, /Checkpoint Details Inspector/);
+    assert.match(html, /data-testid="history-checkpoint-details-label"/);
+    assert.match(html, /Label: <span class="font-medium text-gray-900">Auto-commit: Message 10<\/span>/);
+    assert.match(html, /data-testid="history-checkpoint-details-hash"/);
+    assert.match(html, /Full hash: abc123def456789012345678901234567890abcd/);
+    assert.match(html, /data-testid="history-checkpoint-details-timestamp"/);
+    assert.match(html, /Timestamp: <span class="font-mono text-gray-700">2026-03-10T12:00:00.000Z<\/span>/);
+    assert.match(html, /data-testid="history-checkpoint-details-description"/);
+    assert.match(html, /Description: <span class="text-gray-800">Auto-commit: Message 10<\/span>/);
+    assert.match(html, /data-testid="history-checkpoint-details-acted-on"/);
+    assert.match(
+      html,
+      /Acted-on states: <span class="text-gray-800">selected for diff, selected for snapshot, selected as compare base, selected as compare target, pinned comparison reference<\/span>/,
+    );
+  });
+
+  test('renders empty checkpoint details inspector when no checkpoint is currently selected', () => {
+    const html = renderWorkspaceShell({
+      checkpoints: [checkpoint, checkpointTwo],
+      selectedSessionId: session.id,
+      checkpointRevertTargetId: null,
+      checkpointDiffTargetId: null,
+      checkpointSnapshotTargetId: null,
+      checkpointCompareState: 'idle',
+      checkpointCompareBaseId: null,
+      checkpointCompareTargetId: null,
+      pinnedCompareReferenceCheckpointId: null,
+    });
+
+    assert.match(html, /data-testid="history-checkpoint-details-empty"/);
+    assert.match(html, /No selected checkpoint details yet\./);
+  });
+
   test('renders distinct checkpoint snapshot states and read-only snapshot viewer', () => {
     const idleHtml = renderWorkspaceShell({
       checkpointSnapshotState: 'idle',

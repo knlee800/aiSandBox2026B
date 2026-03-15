@@ -3094,7 +3094,7 @@ Re-validate and re-consolidate Phase 80 so the final Phase 80 closure correctly 
 
 ## Phase 81 — Checkpoint Diff Viewer
 
-**Current stage:** TASK-81G (COMPLETE and LOCKED)
+**Current stage:** TASK-81K (COMPLETE and LOCKED)
 
 ---
 
@@ -3511,7 +3511,7 @@ Re-validate and re-re-re-consolidate Phase 81 so the final Phase 81 closure corr
 
 #### TASK-81-RERERERECONSOLIDATE: Phase 81 Final Re-Re-Re-Re-Consolidation
 
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED
 **Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)
 **Checkpoint:** `docs/PHASE-81-RERERERECONSOLIDATED-FINAL-CHECKPOINT.md`
 
@@ -3682,5 +3682,42 @@ Make checkpoint history workflows faster by allowing the user to pin one checkpo
 **Dependencies:** TASK-81A through TASK-81I (all Complete and Locked); existing history/control surface and compare/diff flows already present
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81J for full details
+
+---
+
+#### TASK-81K: Checkpoint Details Inspector Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-81K-CHECKPOINT.md`
+
+**Objective:**
+Make checkpoint history easier to inspect by adding a bounded checkpoint details inspector inside the existing history/control surface for the currently selected checkpoint, using already-loaded checkpoint metadata only.
+
+**Scope:**
+- Reuse the existing history/control surface and already-loaded checkpoint list only
+- Add a bounded checkpoint details inspector inside the existing history/control area
+- Show details for the currently selected checkpoint using already-available loaded metadata only
+- Improve inspectability for full hash, timestamp, description/label, and current acted-on states already derived in the UI
+- Keep existing diff viewer, compare mode, search/filter, visual timeline, git-log browser, snapshot viewer, jump-to-live-file, pinned comparison reference, manual checkpoint, and manual revert surfaces intact
+- Frontend-only changes
+- Additive only
+- Focused frontend tests for this slice
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No editing of checkpoint metadata in this task
+- ❌ No export/share action in this task
+- ❌ No branching visualization
+- ❌ No broader workspace redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Dependencies:** TASK-81A through TASK-81J (all Complete and Locked); existing history/control surface and checkpoint list load path already present
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81K for full details
 
 ---

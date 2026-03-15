@@ -10827,3 +10827,64 @@ Make checkpoint history workflows faster by allowing the user to pin one checkpo
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81I-CHECKPOINT.md
 
 ---
+
+### TASK-81K: Checkpoint Details Inspector Slice
+
+**Task ID:** TASK-81K
+**Phase:** 81
+**Stage:** 81K
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked), TASK-81I (Complete and Locked), TASK-81J (Complete and Locked); existing history/control surface already present; existing checkpoint list load path already present
+**Checkpoint:** `docs/PHASE-81K-CHECKPOINT.md`
+
+**Objective:**
+
+Make checkpoint history easier to inspect by adding a bounded checkpoint details inspector inside the existing history/control surface for the currently selected checkpoint, using already-loaded checkpoint metadata only.
+
+**Scope:**
+
+1. Reuse the existing history/control surface and already-loaded checkpoint list only
+2. Add a bounded checkpoint details inspector inside the existing history/control area
+3. Show details for the currently selected checkpoint using already-available loaded metadata only
+4. Improve inspectability for:
+   - full hash visibility
+   - timestamp visibility
+   - description/label visibility
+   - current acted-on states already derived in the UI
+5. Keep existing diff viewer, compare mode, search/filter, visual timeline, git-log browser, snapshot viewer, jump-to-live-file, pinned comparison reference, manual checkpoint, and manual revert surfaces intact
+6. Preserve active-session-scoped behavior only
+7. Keep integration localized to the existing workspace shell and history/control surface
+8. Frontend-only changes
+9. Additive only
+10. Focused frontend tests for this slice
+11. Slice-specific checkpoint output at `docs/PHASE-81K-CHECKPOINT.md`
+
+**Non-Goals:**
+
+- No backend changes
+- No schema changes
+- No refactors
+- No new endpoints
+- No editing of checkpoint metadata in this task
+- No export/share action in this task
+- No branching visualization in this task
+- No broader workspace redesign
+- No polling/websocket behavior
+- No multi-task work
+
+**Acceptance Criteria:**
+
+- User can inspect a stable details panel for the currently selected checkpoint inside the existing history/control surface
+- Details inspector uses only already-loaded checkpoint data
+- Existing diff viewer, compare mode, search/filter, visual timeline, git-log browser, snapshot viewer, jump-to-live-file, pinned comparison reference, manual checkpoint, and manual revert continue to work correctly
+- Behavior remains scoped to the active session only
+- No backend changes occurred
+- No schema changes occurred
+- No refactors occurred
+- No regressions in workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, or existing history/control surfaces
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81J-CHECKPOINT.md
+
+---

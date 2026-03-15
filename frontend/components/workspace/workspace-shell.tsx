@@ -1018,6 +1018,75 @@ function HistoryCheckpointList(props: {
     hasVisibleTargetSelection &&
     props.compareBaseCheckpointId !== props.compareTargetCheckpointId &&
     props.compareState !== 'loading';
+  const inspectorCheckpoint = React.useMemo(() => {
+    const checkpointById = new Map(props.checkpoints.map((checkpoint) => [checkpoint.id, checkpoint]));
+    const prioritizedCheckpointIds = [
+      props.selectedCheckpointId,
+      props.diffTargetCheckpointId,
+      props.snapshotTargetCheckpointId,
+      props.compareTargetCheckpointId,
+      props.compareBaseCheckpointId,
+      props.pinnedCompareReferenceCheckpointId,
+    ];
+
+    for (const checkpointId of prioritizedCheckpointIds) {
+      if (!checkpointId) {
+        continue;
+      }
+      const checkpoint = checkpointById.get(checkpointId);
+      if (checkpoint) {
+        return checkpoint;
+      }
+    }
+
+    return null;
+  }, [
+    props.checkpoints,
+    props.selectedCheckpointId,
+    props.diffTargetCheckpointId,
+    props.snapshotTargetCheckpointId,
+    props.compareTargetCheckpointId,
+    props.compareBaseCheckpointId,
+    props.pinnedCompareReferenceCheckpointId,
+  ]);
+  const inspectorLabel = inspectorCheckpoint
+    ? inspectorCheckpoint.description || `Checkpoint ${inspectorCheckpoint.commitHash.slice(0, 7)}`
+    : null;
+  const inspectorActedOnStates = React.useMemo(() => {
+    if (!inspectorCheckpoint) {
+      return [] as string[];
+    }
+
+    const actedOnStates: string[] = [];
+    if (props.selectedCheckpointId === inspectorCheckpoint.id) {
+      actedOnStates.push('selected for revert');
+    }
+    if (props.diffTargetCheckpointId === inspectorCheckpoint.id) {
+      actedOnStates.push('selected for diff');
+    }
+    if (props.snapshotTargetCheckpointId === inspectorCheckpoint.id) {
+      actedOnStates.push('selected for snapshot');
+    }
+    if (props.compareBaseCheckpointId === inspectorCheckpoint.id) {
+      actedOnStates.push('selected as compare base');
+    }
+    if (props.compareTargetCheckpointId === inspectorCheckpoint.id) {
+      actedOnStates.push('selected as compare target');
+    }
+    if (props.pinnedCompareReferenceCheckpointId === inspectorCheckpoint.id) {
+      actedOnStates.push('pinned comparison reference');
+    }
+
+    return actedOnStates;
+  }, [
+    inspectorCheckpoint,
+    props.selectedCheckpointId,
+    props.diffTargetCheckpointId,
+    props.snapshotTargetCheckpointId,
+    props.compareBaseCheckpointId,
+    props.compareTargetCheckpointId,
+    props.pinnedCompareReferenceCheckpointId,
+  ]);
 
   return (
     <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="history-checkpoint-list-surface">
@@ -1159,6 +1228,41 @@ function HistoryCheckpointList(props: {
         ) : (
           <p className="mt-1 text-[11px] text-amber-700" data-testid="history-pinned-reference-empty">
             No pinned comparison reference. Pin a checkpoint below to reuse it in diff/compare flows.
+          </p>
+        )}
+      </div>
+      <div className="mb-2 rounded border border-gray-200 bg-white p-2" data-testid="history-checkpoint-details-inspector">
+        <p className="text-[11px] font-semibold text-gray-700">Checkpoint Details Inspector</p>
+        {inspectorCheckpoint ? (
+          <div className="mt-2 space-y-1 text-[11px] text-gray-700">
+            <p data-testid="history-checkpoint-details-label">
+              Label: <span className="font-medium text-gray-900">{inspectorLabel}</span>
+            </p>
+            <p className="font-mono text-gray-700 break-all" data-testid="history-checkpoint-details-hash">
+              Full hash: {inspectorCheckpoint.commitHash}
+            </p>
+            <p data-testid="history-checkpoint-details-timestamp">
+              Timestamp: <span className="font-mono text-gray-700">{inspectorCheckpoint.createdAt}</span>
+            </p>
+            <p data-testid="history-checkpoint-details-description">
+              Description:{' '}
+              <span className="text-gray-800">
+                {inspectorCheckpoint.description && inspectorCheckpoint.description.trim().length
+                  ? inspectorCheckpoint.description
+                  : '(none)'}
+              </span>
+            </p>
+            <p data-testid="history-checkpoint-details-acted-on">
+              Acted-on states:{' '}
+              <span className="text-gray-800">
+                {inspectorActedOnStates.length ? inspectorActedOnStates.join(', ') : 'checkpoint available'}
+              </span>
+            </p>
+          </div>
+        ) : (
+          <p className="mt-2 text-[11px] text-gray-500" data-testid="history-checkpoint-details-empty">
+            No selected checkpoint details yet. Choose a checkpoint action (diff, snapshot, compare, revert, or pin) to
+            inspect it here.
           </p>
         )}
       </div>
