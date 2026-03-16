@@ -3094,7 +3094,7 @@ Re-validate and re-consolidate Phase 80 so the final Phase 80 closure correctly 
 
 ## Phase 81 — Checkpoint Diff Viewer
 
-**Current stage:** TASK-81N (COMPLETE and LOCKED)
+**Current stage:** TASK-81P (COMPLETE and LOCKED)
 
 ---
 
@@ -3875,5 +3875,42 @@ Make the history workflow easier to manage by adding bounded reset/clear control
 **Dependencies:** TASK-81A through TASK-81N (all Complete and Locked); existing history/control surface already present
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81O for full details
+
+---
+
+#### TASK-81P: Unified Active Checkpoint Highlight Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-81P-CHECKPOINT.md`
+
+**Objective:**
+Make the history workflow easier to read by adding a bounded unified active-checkpoint highlight inside the existing history/control surface, so the user can immediately tell which checkpoint is currently active across existing history interactions.
+
+**Scope:**
+- Reuse the existing history/control surface and already-loaded checkpoint list only
+- Add a bounded unified active-checkpoint highlight system inside the existing history/control area
+- Reflect already-existing active/acted-on checkpoint state only (diff target, compare base/target, pinned reference, revert/preview target, snapshot target, inspector target)
+- Make active state clearer and more consistent across the existing checkpoint list presentation
+- Keep all existing history surface flows intact
+- Keep integration localized to the existing workspace shell and history/control surface
+- Frontend-only changes
+- Additive only
+- Focused frontend tests for this slice
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No new durable state
+- ❌ No automatic history actions
+- ❌ No broader workspace redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Dependencies:** TASK-81A through TASK-81O (all Complete and Locked); existing history/control surface already present
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81P for full details
 
 ---

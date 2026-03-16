@@ -631,6 +631,37 @@ describe('workspace shell component', () => {
     assert.match(html, /Add to Set/);
   });
 
+  test('renders unified active checkpoint highlight roles across existing history interactions', () => {
+    const html = renderWorkspaceShell({
+      checkpoints: [checkpoint, checkpointTwo],
+      selectedSessionId: session.id,
+      checkpointRevertTargetId: checkpoint.id,
+      checkpointDiffTargetId: checkpoint.id,
+      checkpointSnapshotTargetId: checkpoint.id,
+      checkpointCompareState: 'selecting',
+      checkpointCompareBaseId: checkpoint.id,
+      checkpointCompareTargetId: checkpointTwo.id,
+      pinnedCompareReferenceCheckpointId: checkpoint.id,
+      checkpointDiffState: 'ready',
+      checkpointDiffResponse,
+    });
+
+    assert.match(html, /data-testid="history-unified-active-highlight"/);
+    assert.match(html, /Unified Active Checkpoint Highlight/);
+    assert.match(html, /data-testid="history-unified-active-summary"/);
+    assert.match(html, /Active checkpoints in visible list: 2\/2/);
+    assert.match(html, /data-testid="history-active-highlight-checkpoint-1"/);
+    assert.match(html, /revert target/);
+    assert.match(html, /diff target/);
+    assert.match(html, /snapshot target/);
+    assert.match(html, /compare base/);
+    assert.match(html, /pinned reference/);
+    assert.match(html, /details inspector target/);
+    assert.match(html, /changed-files inspector target/);
+    assert.match(html, /data-testid="history-active-highlight-checkpoint-2"/);
+    assert.match(html, /compare target/);
+  });
+
   test('renders distinct checkpoint snapshot states and read-only snapshot viewer', () => {
     const idleHtml = renderWorkspaceShell({
       checkpointSnapshotState: 'idle',

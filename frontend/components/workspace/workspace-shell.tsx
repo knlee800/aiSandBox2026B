@@ -1221,6 +1221,29 @@ function HistoryCheckpointList(props: {
         .filter((checkpoint): checkpoint is WorkspaceCheckpoint => Boolean(checkpoint)),
     [workingSetCheckpointIds, checkpointById],
   );
+  const isCheckpointUnifiedActive = React.useCallback(
+    (checkpointId: string): boolean =>
+      props.selectedCheckpointId === checkpointId ||
+      props.diffTargetCheckpointId === checkpointId ||
+      props.snapshotTargetCheckpointId === checkpointId ||
+      props.compareBaseCheckpointId === checkpointId ||
+      props.compareTargetCheckpointId === checkpointId ||
+      props.pinnedCompareReferenceCheckpointId === checkpointId ||
+      inspectorCheckpoint?.id === checkpointId,
+    [
+      props.selectedCheckpointId,
+      props.diffTargetCheckpointId,
+      props.snapshotTargetCheckpointId,
+      props.compareBaseCheckpointId,
+      props.compareTargetCheckpointId,
+      props.pinnedCompareReferenceCheckpointId,
+      inspectorCheckpoint,
+    ],
+  );
+  const activeVisibleCheckpointCount = React.useMemo(
+    () => visibleCheckpoints.filter((checkpoint) => isCheckpointUnifiedActive(checkpoint.id)).length,
+    [visibleCheckpoints, isCheckpointUnifiedActive],
+  );
 
   return (
     <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="history-checkpoint-list-surface">
@@ -1581,6 +1604,16 @@ function HistoryCheckpointList(props: {
           </p>
         )}
       </div>
+      <div className="mb-2 rounded border border-indigo-200 bg-indigo-50 p-2" data-testid="history-unified-active-highlight">
+        <p className="text-[11px] font-semibold text-indigo-800">Unified Active Checkpoint Highlight</p>
+        <p className="mt-1 text-[11px] text-indigo-700" data-testid="history-unified-active-summary">
+          Active checkpoints in visible list: {activeVisibleCheckpointCount}/{visibleCheckpoints.length}
+        </p>
+        <p className="mt-1 text-[11px] text-indigo-700">
+          Active roles are consistently highlighted for diff, compare, pinned reference, revert, snapshot, and
+          inspector targets.
+        </p>
+      </div>
       <div className="mb-1 flex items-center justify-between" data-testid="history-checkpoint-timeline-header">
         <p className="text-[11px] font-semibold text-gray-700">Checkpoint Timeline</p>
         <p className="text-[11px] text-gray-500">Order and focus for visible checkpoints</p>
@@ -1603,11 +1636,23 @@ function HistoryCheckpointList(props: {
           const isCompareBase = props.compareBaseCheckpointId === checkpoint.id;
           const isCompareTarget = props.compareTargetCheckpointId === checkpoint.id;
           const isPinnedReference = props.pinnedCompareReferenceCheckpointId === checkpoint.id;
+          const isDetailsInspectorTarget = inspectorCheckpoint?.id === checkpoint.id;
+          const isChangedFilesInspectorTarget = inspectorCheckpoint?.id === checkpoint.id;
           const isInWorkingSet = workingSetIdSet.has(checkpoint.id);
           const canAddToWorkingSet =
             !isInWorkingSet && workingSetCheckpointIds.length < HISTORY_WORKING_SET_MAX_ITEMS;
-          const isTimelineActive = isSelected || isDiffTarget || isCompareBase || isCompareTarget;
+          const isTimelineActive = isCheckpointUnifiedActive(checkpoint.id);
           const timelineLabel = checkpoint.description || `Checkpoint ${checkpoint.commitHash.slice(0, 7)}`;
+          const activeRoleLabels = [
+            isSelected ? 'revert target' : null,
+            isDiffTarget ? 'diff target' : null,
+            isSnapshotTarget ? 'snapshot target' : null,
+            isCompareBase ? 'compare base' : null,
+            isCompareTarget ? 'compare target' : null,
+            isPinnedReference ? 'pinned reference' : null,
+            isDetailsInspectorTarget ? 'details inspector target' : null,
+            isChangedFilesInspectorTarget ? 'changed-files inspector target' : null,
+          ].filter((roleLabel): roleLabel is string => Boolean(roleLabel));
           const focusLabel = isDiffTarget
             ? 'selected for diff'
             : isSelected
@@ -1671,6 +1716,21 @@ function HistoryCheckpointList(props: {
                       <p className="text-[11px] text-sky-700" data-testid={`history-working-set-member-${checkpoint.id}`}>
                         Working set member
                       </p>
+                    ) : null}
+                    {activeRoleLabels.length ? (
+                      <div
+                        className="mt-1 flex flex-wrap gap-1"
+                        data-testid={`history-active-highlight-${checkpoint.id}`}
+                      >
+                        {activeRoleLabels.map((roleLabel) => (
+                          <span
+                            key={roleLabel}
+                            className="rounded border border-indigo-300 bg-indigo-100 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-800"
+                          >
+                            {roleLabel}
+                          </span>
+                        ))}
+                      </div>
                     ) : null}
                   </div>
                   <div
