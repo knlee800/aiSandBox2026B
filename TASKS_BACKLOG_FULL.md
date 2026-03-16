@@ -11380,3 +11380,66 @@ Make checkpoint inspection smoother by adding a bounded readiness/status surface
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81R-CHECKPOINT.md
 
 ---
+
+### TASK-81T: Current Checkpoint Summary Card Slice
+
+**Task ID:** TASK-81T
+**Phase:** 81
+**Stage:** 81T
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked), TASK-81I (Complete and Locked), TASK-81J (Complete and Locked), TASK-81K (Complete and Locked), TASK-81L (Complete and Locked), TASK-81M (Complete and Locked), TASK-81N (Complete and Locked), TASK-81O (Complete and Locked), TASK-81P (Complete and Locked), TASK-81Q (Complete and Locked), TASK-81R (Complete and Locked), TASK-81S (Complete and Locked); existing history/control surface already present
+**Checkpoint:** `docs/PHASE-81T-CHECKPOINT.md`
+
+**Objective:**
+
+Make checkpoint inspection easier at a glance by adding a bounded current-checkpoint summary card inside the existing history/control surface, using already-available frontend state and already-loaded checkpoint data only.
+
+**Scope:**
+
+1. Reuse the existing history/control surface, already-loaded checkpoint list, and already-derived current checkpoint context only
+2. Add a bounded current-checkpoint summary card inside the existing history/control area
+3. Show a compact read-only summary for the current checkpoint context using already-loaded checkpoint metadata only, covering:
+   - current checkpoint identity
+   - full hash visibility
+   - timestamp visibility
+   - description/label visibility
+   - currently active roles already derived in the UI
+4. Use only already-derived frontend state and already-loaded checkpoint data
+5. Keep the summary read-only and informational
+6. Do not add any new fetches or backend concepts
+7. Keep existing diff viewer, compare mode, search/filter, visual timeline, git-log browser, snapshot viewer, jump-to-live-file, pinned comparison reference, details inspector, revert preview, changed-files inspector, manual checkpoint, manual revert, working set, reset controls, unified active checkpoint highlight, history state summary bar, compare metadata summary, and inspection readiness surface intact
+8. Preserve active-session-scoped behavior only
+9. Keep integration localized to the existing workspace shell and history/control surface
+10. Frontend-only changes
+11. Additive only
+12. Focused frontend tests for this slice
+13. Slice-specific checkpoint output at `docs/PHASE-81T-CHECKPOINT.md`
+
+**Non-Goals:**
+
+- No backend changes
+- No schema changes
+- No refactors
+- No new endpoints
+- No automatic action triggering in this task
+- No new durable state in this task
+- No broader workspace redesign
+- No polling/websocket behavior
+- No multi-task work
+
+**Acceptance Criteria:**
+
+- User can see a compact current-checkpoint summary card inside the existing history/control surface
+- Summary uses only already-available frontend state and already-loaded checkpoint data
+- Behavior remains scoped to the active session only
+- Existing diff viewer, compare mode, search/filter, visual timeline, git-log browser, snapshot viewer, jump-to-live-file, pinned comparison reference, details inspector, revert preview, changed-files inspector, manual checkpoint, manual revert, working set, reset controls, unified active checkpoint highlight, history state summary bar, compare metadata summary, and inspection readiness surface continue to work correctly
+- No backend changes occurred
+- No schema changes occurred
+- No refactors occurred
+- No regressions in workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, or existing history/control surfaces
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81S-CHECKPOINT.md
+
+---

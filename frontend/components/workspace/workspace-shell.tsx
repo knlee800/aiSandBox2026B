@@ -1442,6 +1442,24 @@ function HistoryCheckpointList(props: {
       selectedInspectorFileCanOpenLive,
     ],
   );
+  const currentCheckpointSummary = React.useMemo(
+    () => ({
+      identity: inspectorCheckpoint ? inspectorLabel ?? `Checkpoint ${inspectorCheckpoint.commitHash.slice(0, 7)}` : 'none',
+      fullHash: inspectorCheckpoint ? inspectorCheckpoint.commitHash : 'none',
+      timestamp: inspectorCheckpoint ? inspectorCheckpoint.createdAt : 'none',
+      description: inspectorCheckpoint
+        ? inspectorCheckpoint.description && inspectorCheckpoint.description.trim().length
+          ? inspectorCheckpoint.description
+          : '(none)'
+        : 'none',
+      activeRoles: inspectorCheckpoint
+        ? inspectorActedOnStates.length
+          ? inspectorActedOnStates.join(', ')
+          : 'checkpoint available'
+        : 'none',
+    }),
+    [inspectorActedOnStates, inspectorCheckpoint, inspectorLabel],
+  );
 
   return (
     <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="history-checkpoint-list-surface">
@@ -1649,6 +1667,32 @@ function HistoryCheckpointList(props: {
               <span className="font-mono text-teal-700 break-all">{readinessItem.value}</span>
             </p>
           ))}
+        </div>
+      </div>
+      <div
+        className="mb-2 rounded border border-slate-200 bg-slate-50 p-2"
+        data-testid="history-current-checkpoint-summary-card"
+      >
+        <p className="text-[11px] font-semibold text-slate-800">Current Checkpoint Summary</p>
+        <p className="mt-1 text-[11px] text-slate-700" data-testid="history-current-checkpoint-summary-caption">
+          Read-only current checkpoint context from already-loaded session checkpoint metadata.
+        </p>
+        <div className="mt-2 space-y-1 text-[11px] text-slate-800">
+          <p data-testid="history-current-checkpoint-summary-identity">
+            Identity: <span className="font-medium text-slate-900">{currentCheckpointSummary.identity}</span>
+          </p>
+          <p className="font-mono break-all" data-testid="history-current-checkpoint-summary-hash">
+            Full hash: <span className="text-slate-700">{currentCheckpointSummary.fullHash}</span>
+          </p>
+          <p data-testid="history-current-checkpoint-summary-timestamp">
+            Timestamp: <span className="font-mono text-slate-700">{currentCheckpointSummary.timestamp}</span>
+          </p>
+          <p data-testid="history-current-checkpoint-summary-description">
+            Description: <span className="text-slate-800">{currentCheckpointSummary.description}</span>
+          </p>
+          <p data-testid="history-current-checkpoint-summary-active-roles">
+            Active roles: <span className="text-slate-800">{currentCheckpointSummary.activeRoles}</span>
+          </p>
         </div>
       </div>
       <div className="mb-2 rounded border border-amber-200 bg-amber-50 p-2" data-testid="history-pinned-reference-state">

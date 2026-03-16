@@ -785,6 +785,36 @@ describe('workspace shell component', () => {
     );
   });
 
+  test('renders compact current checkpoint summary card from current checkpoint context', () => {
+    const html = renderWorkspaceShell({
+      checkpoints: [checkpoint, checkpointTwo],
+      selectedSessionId: session.id,
+      checkpointRevertTargetId: checkpoint.id,
+      checkpointDiffTargetId: checkpoint.id,
+      checkpointSnapshotTargetId: checkpoint.id,
+      checkpointCompareState: 'selecting',
+      checkpointCompareBaseId: checkpoint.id,
+      pinnedCompareReferenceCheckpointId: checkpoint.id,
+    });
+
+    assert.match(html, /data-testid="history-current-checkpoint-summary-card"/);
+    assert.match(html, /Current Checkpoint Summary/);
+    assert.match(
+      html,
+      /Read-only current checkpoint context from already-loaded session checkpoint metadata\./,
+    );
+    assert.match(html, /data-testid="history-current-checkpoint-summary-identity"/);
+    assert.match(html, /Identity: <span class="font-medium text-slate-900">Auto-commit: Message 10<\/span>/);
+    assert.match(html, /data-testid="history-current-checkpoint-summary-hash"/);
+    assert.match(html, /Full hash:.*abc123def456789012345678901234567890abcd/);
+    assert.match(html, /data-testid="history-current-checkpoint-summary-timestamp"/);
+    assert.match(html, /Timestamp:.*2026-03-10T12:00:00.000Z/);
+    assert.match(html, /data-testid="history-current-checkpoint-summary-description"/);
+    assert.match(html, /Description: <span class="text-slate-800">Auto-commit: Message 10<\/span>/);
+    assert.match(html, /data-testid="history-current-checkpoint-summary-active-roles"/);
+    assert.match(html, /Active roles:.*selected for revert, selected for diff, selected for snapshot, selected as compare base, pinned comparison reference/);
+  });
+
   test('renders distinct checkpoint snapshot states and read-only snapshot viewer', () => {
     const idleHtml = renderWorkspaceShell({
       checkpointSnapshotState: 'idle',

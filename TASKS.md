@@ -4026,3 +4026,40 @@ Make checkpoint inspection smoother by adding a bounded readiness/status surface
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81S for full details
 
 ---
+
+#### TASK-81T: Current Checkpoint Summary Card Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-81T-CHECKPOINT.md`
+
+**Objective:**
+Make checkpoint inspection easier at a glance by adding a bounded current-checkpoint summary card inside the existing history/control surface, using already-available frontend state and already-loaded checkpoint data only.
+
+**Scope:**
+- Reuse the existing history/control surface, already-loaded checkpoint list, and already-derived current checkpoint context only
+- Add a bounded current-checkpoint summary card inside the existing history/control area
+- Show a compact read-only summary for the current checkpoint context (identity, full hash, timestamp, description/label, currently active roles) using already-loaded checkpoint metadata only
+- Keep the summary read-only and informational
+- Keep all existing history surface flows intact
+- Keep integration localized to the existing workspace shell and history/control surface
+- Frontend-only changes
+- Additive only
+- Focused frontend tests for this slice
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No automatic action triggering in this task
+- ❌ No new durable state
+- ❌ No broader workspace redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Dependencies:** TASK-81A through TASK-81S (all Complete and Locked); existing history/control surface already present
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81T for full details
+
+---
