@@ -4338,7 +4338,7 @@ Perform the true final consolidation for Phase 81 and close the Phase 81 history
 
 ## Phase 82 — History Surface Usability Continued
 
-**Current stage:** TASK-82E (COMPLETE and LOCKED)
+**Current stage:** TASK-82F (COMPLETE and LOCKED)
 
 ---
 
@@ -4574,5 +4574,52 @@ Make the history workflow easier to recover from temporary layout changes by add
 - ✅ Checkpoint created: `docs/PHASE-82E-CHECKPOINT.md`
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82E for full details
+
+---
+
+#### TASK-82F: History Surface Section Visibility Preset Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-82F-CHECKPOINT.md`
+
+**Objective:**
+Make the history workflow easier to manage by adding bounded frontend-only section-visibility presets for the existing history surface, building on the section-collapse family without changing underlying behavior.
+
+**Scope:**
+- Reuse existing history/control surface only
+- Build on TASK-82A through TASK-82E section organization behavior
+- Add compact visibility presets for existing history sections (e.g. overview-oriented and inspection-oriented presets)
+- Affect presentation/visibility only for already-existing history UI sections
+- Use only already-derived frontend state and already-loaded checkpoint data
+- Keep all existing history actions and behaviors unchanged
+- Keep preset behavior frontend-only, temporary, and active-session scoped
+- Preserve all closed Phase 81 history/control capabilities and TASK-82A/TASK-82E behavior
+- Frontend-only, additive only
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No automatic actions beyond explicit preset selection
+- ❌ No durable state outside current session
+- ❌ No broader redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Dependencies:** TASK-82A, TASK-82B, TASK-82C, TASK-82D, and TASK-82E (Complete and Locked); existing history/control surface already present
+
+**Completion Summary:**
+- ✅ Bounded section-visibility preset controls added inside existing `history-section-collapse-controls` strip
+- ✅ Two presets: `overview-oriented` (collapses Inspectors) and `inspection-oriented` (collapses Controls and Summaries)
+- ✅ Active-preset indicator reports `Overview-Oriented`, `Inspection-Oriented`, or `Custom`
+- ✅ Presets operate only on existing `collapsedHistorySections` frontend state from TASK-82A; session-scoped
+- ✅ All Phase 81 and TASK-82A/TASK-82E history/control surfaces preserved and unchanged in behavior
+- ✅ Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes
+- ✅ 99/99 tests pass; 0 regressions (baseline 98; net +1)
+- ✅ Checkpoint created: `docs/PHASE-82F-CHECKPOINT.md`
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82F for full details
 
 ---

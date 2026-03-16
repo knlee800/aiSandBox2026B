@@ -12203,3 +12203,56 @@ Make the history workflow easier to recover from temporary layout changes by add
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-82A-CHECKPOINT.md, PHASE-82B-CHECKPOINT.md, PHASE-82C-CHECKPOINT.md, PHASE-82D-CHECKPOINT.md, PHASE-82E-CHECKPOINT.md
 
 ---
+
+### TASK-82F: History Surface Section Visibility Preset Slice
+
+**Task ID:** TASK-82F
+**Phase:** 82
+**Stage:** 82F
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** TASK-82A, TASK-82B, TASK-82C, TASK-82D, and TASK-82E (Complete and Locked); existing history/control surface already present
+**Checkpoint:** `docs/PHASE-82F-CHECKPOINT.md`
+
+**Objective:**
+
+Make the history workflow easier to manage by adding bounded frontend-only section-visibility presets for the existing history surface, building on the section-collapse family without changing underlying behavior.
+
+**Scope:**
+
+1. Reuse the existing history/control surface only — no new panels, routes, or sub-routes
+2. Build on the section-collapse and section-order state from TASK-82A through TASK-82E
+3. Add compact visibility presets for existing history sections (e.g. overview-oriented and inspection-oriented presets)
+4. Affect presentation/visibility only for already-existing history UI sections
+5. Use only already-derived frontend state and already-loaded checkpoint data
+6. Keep all existing history actions and behaviors unchanged
+7. Keep preset behavior frontend-only, temporary, and active-session scoped
+8. Preserve all closed Phase 81 history/control capabilities and TASK-82A/TASK-82E behavior
+9. Frontend-only, additive changes
+10. Focused frontend tests for this slice
+
+**Non-Goals:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No automatic actions beyond explicit preset selection
+- ❌ No durable state outside current session
+- ❌ No broader redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Acceptance Criteria:**
+
+- User can apply bounded section-visibility presets inside the existing history/control surface
+- Behavior uses only already-available frontend state and already-loaded checkpoint data
+- Active-session scoping preserved
+- All closed Phase 81 surfaces and TASK-82A/TASK-82E behavior remain intact and functional
+- No backend/schema/endpoint/refactor changes
+- No regressions across workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, and all history/control surfaces
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-82A-CHECKPOINT.md, PHASE-82B-CHECKPOINT.md, PHASE-82C-CHECKPOINT.md, PHASE-82D-CHECKPOINT.md, PHASE-82E-CHECKPOINT.md
+
+---

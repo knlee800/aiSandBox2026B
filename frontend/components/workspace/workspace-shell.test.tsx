@@ -3,6 +3,7 @@ import { describe, test } from 'node:test';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import WorkspaceShell, {
+  getHistorySectionVisibilityPresetState,
   moveHistoryCollapsibleSectionOrderItem,
   resetHistoryCollapsibleSectionOrderToDefault,
 } from './workspace-shell';
@@ -1027,6 +1028,11 @@ describe('workspace shell component', () => {
     assert.match(html, /data-testid="history-section-order-reset-default" disabled/);
     assert.match(html, /data-testid="history-section-order-reset-state"/);
     assert.match(html, /Default: Controls &gt; Summaries &gt; Inspectors &gt; Checkpoint Browser/);
+    assert.match(html, /data-testid="history-section-visibility-preset-controls"/);
+    assert.match(html, /data-testid="history-section-visibility-preset-overview-oriented"/);
+    assert.match(html, /data-testid="history-section-visibility-preset-inspection-oriented"/);
+    assert.match(html, /data-testid="history-section-visibility-preset-active-state"/);
+    assert.match(html, /Active preset: Custom/);
     assert.match(html, /data-testid="history-section-toggle-quick-controls"/);
     assert.match(html, /data-testid="history-section-expand-all" disabled/);
     assert.match(html, /data-testid="history-section-collapse-all"/);
@@ -1119,6 +1125,24 @@ describe('workspace shell component', () => {
     const resetOrder = resetHistoryCollapsibleSectionOrderToDefault();
 
     assert.deepEqual(resetOrder, ['controls', 'summaries', 'inspectors', 'checkpoint-browser']);
+  });
+
+  test('returns bounded history section visibility preset state for overview and inspection modes', () => {
+    const overviewPreset = getHistorySectionVisibilityPresetState('overview-oriented');
+    const inspectionPreset = getHistorySectionVisibilityPresetState('inspection-oriented');
+
+    assert.deepEqual(overviewPreset, {
+      controls: false,
+      summaries: false,
+      inspectors: true,
+      'checkpoint-browser': false,
+    });
+    assert.deepEqual(inspectionPreset, {
+      controls: true,
+      summaries: true,
+      inspectors: false,
+      'checkpoint-browser': false,
+    });
   });
 
   test('renders distinct checkpoint snapshot states and read-only snapshot viewer', () => {

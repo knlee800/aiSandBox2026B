@@ -940,6 +940,7 @@ function HistoryCreateStateMessage(props: {
 
 type HistoryCollapsibleSectionKey = 'controls' | 'summaries' | 'inspectors' | 'checkpoint-browser';
 type HistorySectionOrderDirection = 'earlier' | 'later';
+type HistorySectionVisibilityPresetKey = 'overview-oriented' | 'inspection-oriented';
 
 const HISTORY_COLLAPSIBLE_SECTION_LABELS: Record<HistoryCollapsibleSectionKey, string> = {
   controls: 'Controls',
@@ -959,6 +960,10 @@ const DEFAULT_HISTORY_COLLAPSIBLE_SECTION_STATE: Record<HistoryCollapsibleSectio
   summaries: false,
   inspectors: false,
   'checkpoint-browser': false,
+};
+const HISTORY_SECTION_VISIBILITY_PRESET_LABELS: Record<HistorySectionVisibilityPresetKey, string> = {
+  'overview-oriented': 'Overview-Oriented',
+  'inspection-oriented': 'Inspection-Oriented',
 };
 
 export function moveHistoryCollapsibleSectionOrderItem(args: {
@@ -994,6 +999,25 @@ export function moveHistoryCollapsibleSectionOrderItem(args: {
 
 export function resetHistoryCollapsibleSectionOrderToDefault(): HistoryCollapsibleSectionKey[] {
   return [...DEFAULT_HISTORY_COLLAPSIBLE_SECTION_ORDER];
+}
+
+export function getHistorySectionVisibilityPresetState(
+  presetKey: HistorySectionVisibilityPresetKey,
+): Record<HistoryCollapsibleSectionKey, boolean> {
+  if (presetKey === 'overview-oriented') {
+    return {
+      controls: false,
+      summaries: false,
+      inspectors: true,
+      'checkpoint-browser': false,
+    };
+  }
+  return {
+    controls: true,
+    summaries: true,
+    inspectors: false,
+    'checkpoint-browser': false,
+  };
 }
 
 function HistoryCheckpointList(props: {
@@ -1311,6 +1335,22 @@ function HistoryCheckpointList(props: {
   );
   const isEveryHistorySectionCollapsed = collapsedSectionCount === collapsibleSectionKeys.length;
   const isEveryHistorySectionExpanded = collapsedSectionCount === 0;
+  const isVisibilityPresetActive = React.useCallback(
+    (presetKey: HistorySectionVisibilityPresetKey): boolean => {
+      const presetState = getHistorySectionVisibilityPresetState(presetKey);
+      return collapsibleSectionKeys.every((sectionKey) => collapsedHistorySections[sectionKey] === presetState[sectionKey]);
+    },
+    [collapsedHistorySections, collapsibleSectionKeys],
+  );
+  const activeVisibilityPresetLabel = React.useMemo(() => {
+    if (isVisibilityPresetActive('overview-oriented')) {
+      return HISTORY_SECTION_VISIBILITY_PRESET_LABELS['overview-oriented'];
+    }
+    if (isVisibilityPresetActive('inspection-oriented')) {
+      return HISTORY_SECTION_VISIBILITY_PRESET_LABELS['inspection-oriented'];
+    }
+    return 'Custom';
+  }, [isVisibilityPresetActive]);
   const toggleCollapsedHistorySection = React.useCallback((sectionKey: HistoryCollapsibleSectionKey): void => {
     setCollapsedHistorySections((currentState) => ({
       ...currentState,
@@ -1338,6 +1378,9 @@ function HistoryCheckpointList(props: {
   );
   const resetHistorySectionOrder = React.useCallback((): void => {
     setHistoryCollapsibleSectionOrder(resetHistoryCollapsibleSectionOrderToDefault());
+  }, []);
+  const applyHistorySectionVisibilityPreset = React.useCallback((presetKey: HistorySectionVisibilityPresetKey): void => {
+    setCollapsedHistorySections(getHistorySectionVisibilityPresetState(presetKey));
   }, []);
   const checkpointListSpacingClass = isHistoryFocusModeActive
     ? isExpandedHistoryContextDensity
@@ -1965,6 +2008,29 @@ function HistoryCheckpointList(props: {
           </button>
           <span className="text-[11px] text-gray-600" data-testid="history-section-order-reset-state">
             Default: Controls &gt; Summaries &gt; Inspectors &gt; Checkpoint Browser
+          </span>
+        </div>
+        <div className="mt-2 flex flex-wrap items-center gap-2" data-testid="history-section-visibility-preset-controls">
+          <button
+            type="button"
+            data-testid="history-section-visibility-preset-overview-oriented"
+            disabled={isVisibilityPresetActive('overview-oriented')}
+            onClick={() => applyHistorySectionVisibilityPreset('overview-oriented')}
+            className="rounded border border-gray-300 bg-white px-2 py-0.5 text-[11px] text-gray-700 disabled:border-gray-200 disabled:text-gray-400"
+          >
+            Overview Preset
+          </button>
+          <button
+            type="button"
+            data-testid="history-section-visibility-preset-inspection-oriented"
+            disabled={isVisibilityPresetActive('inspection-oriented')}
+            onClick={() => applyHistorySectionVisibilityPreset('inspection-oriented')}
+            className="rounded border border-gray-300 bg-white px-2 py-0.5 text-[11px] text-gray-700 disabled:border-gray-200 disabled:text-gray-400"
+          >
+            Inspection Preset
+          </button>
+          <span className="text-[11px] text-gray-600" data-testid="history-section-visibility-preset-active-state">
+            Active preset: {activeVisibilityPresetLabel}
           </span>
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-2" data-testid="history-section-toggle-quick-controls">
