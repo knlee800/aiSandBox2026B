@@ -1605,6 +1605,60 @@ function HistoryCheckpointList(props: {
       snapshotActionAvailabilityHint,
     ],
   );
+  const checkpointRoleLegendItems = React.useMemo(
+    () => [
+      {
+        key: 'diff-target',
+        title: 'Diff target',
+        value: getCheckpointSummaryLabel(props.diffTargetCheckpointId),
+      },
+      {
+        key: 'compare-base',
+        title: 'Compare base',
+        value: getCheckpointSummaryLabel(props.compareBaseCheckpointId),
+      },
+      {
+        key: 'compare-target',
+        title: 'Compare target',
+        value: getCheckpointSummaryLabel(props.compareTargetCheckpointId),
+      },
+      {
+        key: 'pinned-reference',
+        title: 'Pinned reference',
+        value: getCheckpointSummaryLabel(props.pinnedCompareReferenceCheckpointId),
+      },
+      {
+        key: 'revert-target',
+        title: 'Revert target / preview target',
+        value: revertSummary,
+      },
+      {
+        key: 'snapshot-target',
+        title: 'Snapshot target',
+        value: getCheckpointSummaryLabel(props.snapshotTargetCheckpointId),
+      },
+      {
+        key: 'details-inspector-target',
+        title: 'Details inspector target',
+        value: inspectorCheckpoint ? getCheckpointSummaryLabel(inspectorCheckpoint.id) : 'none',
+      },
+      {
+        key: 'changed-files-inspector-target',
+        title: 'Changed-files inspector target',
+        value: inspectorCheckpoint ? getCheckpointSummaryLabel(inspectorCheckpoint.id) : 'none',
+      },
+    ],
+    [
+      getCheckpointSummaryLabel,
+      inspectorCheckpoint,
+      props.compareBaseCheckpointId,
+      props.compareTargetCheckpointId,
+      props.diffTargetCheckpointId,
+      props.pinnedCompareReferenceCheckpointId,
+      props.snapshotTargetCheckpointId,
+      revertSummary,
+    ],
+  );
 
   return (
     <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="history-checkpoint-list-surface">
@@ -1857,6 +1911,28 @@ function HistoryCheckpointList(props: {
             >
               <span className="font-semibold">{hintItem.title}:</span>{' '}
               <span className="font-mono text-fuchsia-700 break-all">{hintItem.value}</span>
+            </p>
+          ))}
+        </div>
+      </div>
+      <div
+        className="mb-2 rounded border border-rose-200 bg-rose-50 p-2"
+        data-testid="history-checkpoint-role-legend"
+      >
+        <p className="text-[11px] font-semibold text-rose-800">Checkpoint Role Legend</p>
+        <p className="mt-1 text-[11px] text-rose-700" data-testid="history-checkpoint-role-legend-caption">
+          Read-only legend for existing role labels/highlights from already-derived state and loaded checkpoint
+          metadata.
+        </p>
+        <div className="mt-2 grid gap-1 sm:grid-cols-2" data-testid="history-checkpoint-role-legend-items">
+          {checkpointRoleLegendItems.map((legendItem) => (
+            <p
+              key={legendItem.key}
+              className="rounded border border-rose-200 bg-white px-2 py-1 text-[11px] text-rose-800"
+              data-testid={`history-checkpoint-role-legend-${legendItem.key}`}
+            >
+              <span className="font-semibold">{legendItem.title}:</span>{' '}
+              <span className="font-mono text-rose-700 break-all">{legendItem.value}</span>
             </p>
           ))}
         </div>
