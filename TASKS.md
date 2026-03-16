@@ -3914,3 +3914,40 @@ Make the history workflow easier to read by adding a bounded unified active-chec
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81P for full details
 
 ---
+
+#### TASK-81Q: History State Summary Bar Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-81Q-CHECKPOINT.md`
+
+**Objective:**
+Make the history workflow easier to understand at a glance by adding a bounded history-state summary bar inside the existing history/control surface, using already-available frontend state and already-loaded checkpoint data only.
+
+**Scope:**
+- Reuse the existing history/control surface and already-loaded checkpoint list only
+- Add a bounded summary bar inside the existing history/control area
+- Surface already-existing active history state in one compact area (diff target, compare base/target, pinned reference, snapshot target, revert preview/revert target, inspector target, working-set count, search/filter status)
+- Keep the summary read-only and informational
+- Keep all existing history surface flows intact
+- Keep integration localized to the existing workspace shell and history/control surface
+- Frontend-only changes
+- Additive only
+- Focused frontend tests for this slice
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No new durable state
+- ❌ No automatic history actions
+- ❌ No broader workspace redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Dependencies:** TASK-81A through TASK-81P (all Complete and Locked); existing history/control surface already present
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81Q for full details
+
+---

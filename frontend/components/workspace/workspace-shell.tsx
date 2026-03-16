@@ -1244,6 +1244,102 @@ function HistoryCheckpointList(props: {
     () => visibleCheckpoints.filter((checkpoint) => isCheckpointUnifiedActive(checkpoint.id)).length,
     [visibleCheckpoints, isCheckpointUnifiedActive],
   );
+  const getCheckpointSummaryLabel = React.useCallback(
+    (checkpointId: string | null): string => {
+      if (!checkpointId) {
+        return 'none';
+      }
+      const checkpoint = checkpointById.get(checkpointId);
+      if (!checkpoint) {
+        return 'none (not in loaded list)';
+      }
+      return `${checkpoint.description || `Checkpoint ${checkpoint.commitHash.slice(0, 7)}`} (${checkpoint.commitHash.slice(0, 12)})`;
+    },
+    [checkpointById],
+  );
+  const searchSummary = React.useMemo(() => {
+    const querySummary = searchQuery.trim().length ? `"${searchQuery.trim()}"` : 'none';
+    const descriptionSummary =
+      descriptionFilter === 'all'
+        ? 'all'
+        : descriptionFilter === 'with-description'
+          ? 'with description'
+          : 'without description';
+    return `query ${querySummary}; description ${descriptionSummary}; visible ${visibleCheckpoints.length}/${totalMatches}`;
+  }, [descriptionFilter, searchQuery, totalMatches, visibleCheckpoints.length]);
+  const revertSummary = React.useMemo(() => {
+    if (!props.selectedCheckpointId) {
+      return 'none';
+    }
+    const targetLabel = getCheckpointSummaryLabel(props.selectedCheckpointId);
+    return `${props.revertState} -> ${targetLabel}`;
+  }, [getCheckpointSummaryLabel, props.revertState, props.selectedCheckpointId]);
+  const stateSummaryItems = React.useMemo(
+    () => [
+      {
+        key: 'diff-target',
+        title: 'Diff target',
+        value: getCheckpointSummaryLabel(props.diffTargetCheckpointId),
+      },
+      {
+        key: 'compare-base',
+        title: 'Compare base',
+        value: getCheckpointSummaryLabel(props.compareBaseCheckpointId),
+      },
+      {
+        key: 'compare-target',
+        title: 'Compare target',
+        value: getCheckpointSummaryLabel(props.compareTargetCheckpointId),
+      },
+      {
+        key: 'pinned-reference',
+        title: 'Pinned reference',
+        value: getCheckpointSummaryLabel(props.pinnedCompareReferenceCheckpointId),
+      },
+      {
+        key: 'snapshot-target',
+        title: 'Snapshot target',
+        value: getCheckpointSummaryLabel(props.snapshotTargetCheckpointId),
+      },
+      {
+        key: 'revert-target',
+        title: 'Revert preview/target',
+        value: revertSummary,
+      },
+      {
+        key: 'details-inspector-target',
+        title: 'Details inspector target',
+        value: inspectorCheckpoint ? getCheckpointSummaryLabel(inspectorCheckpoint.id) : 'none',
+      },
+      {
+        key: 'changed-files-inspector-target',
+        title: 'Changed-files inspector target',
+        value: inspectorCheckpoint ? getCheckpointSummaryLabel(inspectorCheckpoint.id) : 'none',
+      },
+      {
+        key: 'working-set-count',
+        title: 'Working set count',
+        value: `${workingSetCheckpoints.length}/${HISTORY_WORKING_SET_MAX_ITEMS}`,
+      },
+      {
+        key: 'search-filter-status',
+        title: 'Search/filter status',
+        value: searchSummary,
+      },
+    ],
+    [
+      getCheckpointSummaryLabel,
+      inspectorCheckpoint,
+      props.compareBaseCheckpointId,
+      props.compareTargetCheckpointId,
+      props.diffTargetCheckpointId,
+      props.pinnedCompareReferenceCheckpointId,
+      props.snapshotTargetCheckpointId,
+      revertSummary,
+      searchSummary,
+      workingSetCheckpoints.length,
+    ],
+  );
 
   return (
     <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="history-checkpoint-list-surface">
@@ -1613,6 +1709,24 @@ function HistoryCheckpointList(props: {
           Active roles are consistently highlighted for diff, compare, pinned reference, revert, snapshot, and
           inspector targets.
         </p>
+      </div>
+      <div className="mb-2 rounded border border-violet-200 bg-violet-50 p-2" data-testid="history-state-summary-bar">
+        <p className="text-[11px] font-semibold text-violet-800">History State Summary</p>
+        <p className="mt-1 text-[11px] text-violet-700" data-testid="history-state-summary-caption">
+          Compact read-only state for the active session history surface.
+        </p>
+        <div className="mt-2 grid gap-1 sm:grid-cols-2" data-testid="history-state-summary-items">
+          {stateSummaryItems.map((summaryItem) => (
+            <p
+              key={summaryItem.key}
+              className="rounded border border-violet-200 bg-white px-2 py-1 text-[11px] text-violet-800"
+              data-testid={`history-state-summary-${summaryItem.key}`}
+            >
+              <span className="font-semibold">{summaryItem.title}:</span>{' '}
+              <span className="font-mono text-violet-700 break-all">{summaryItem.value}</span>
+            </p>
+          ))}
+        </div>
       </div>
       <div className="mb-1 flex items-center justify-between" data-testid="history-checkpoint-timeline-header">
         <p className="text-[11px] font-semibold text-gray-700">Checkpoint Timeline</p>

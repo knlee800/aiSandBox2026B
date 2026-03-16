@@ -11187,3 +11187,70 @@ Make the history workflow easier to read by adding a bounded unified active-chec
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81O-CHECKPOINT.md
 
 ---
+
+### TASK-81Q: History State Summary Bar Slice
+
+**Task ID:** TASK-81Q
+**Phase:** 81
+**Stage:** 81Q
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked), TASK-81I (Complete and Locked), TASK-81J (Complete and Locked), TASK-81K (Complete and Locked), TASK-81L (Complete and Locked), TASK-81M (Complete and Locked), TASK-81N (Complete and Locked), TASK-81O (Complete and Locked), TASK-81P (Complete and Locked); existing history/control surface already present
+**Checkpoint:** `docs/PHASE-81Q-CHECKPOINT.md`
+
+**Objective:**
+
+Make the history workflow easier to understand at a glance by adding a bounded history-state summary bar inside the existing history/control surface, using already-available frontend state and already-loaded checkpoint data only.
+
+**Scope:**
+
+1. Reuse the existing history/control surface and already-loaded checkpoint list only
+2. Add a bounded summary bar inside the existing history/control area
+3. Surface already-existing active history state in one compact area, where relevant, such as:
+   - current diff target
+   - compare base / compare target
+   - pinned comparison reference
+   - current snapshot target
+   - current revert preview / revert target
+   - current details inspector target
+   - current changed-files inspector target
+   - current working-set count
+   - current search/filter status
+4. Use only already-derived frontend state and already-loaded checkpoint data
+5. Keep the summary read-only and informational
+6. Do not invent new backend concepts
+7. Keep existing diff viewer, compare mode, search/filter, visual timeline, git-log browser, snapshot viewer, jump-to-live-file, pinned comparison reference, details inspector, revert preview, changed-files inspector, manual checkpoint, manual revert, working set, reset controls, and unified active checkpoint highlight intact
+8. Preserve active-session-scoped behavior only
+9. Keep integration localized to the existing workspace shell and history/control surface
+10. Frontend-only changes
+11. Additive only
+12. Focused frontend tests for this slice
+13. Slice-specific checkpoint output at `docs/PHASE-81Q-CHECKPOINT.md`
+
+**Non-Goals:**
+
+- No backend changes
+- No schema changes
+- No refactors
+- No new endpoints
+- No new durable state in this task
+- No automatic history actions in this task
+- No broader workspace redesign
+- No polling/websocket behavior
+- No multi-task work
+
+**Acceptance Criteria:**
+
+- User can see a compact history-state summary bar inside the existing history/control surface
+- Summary uses only already-available frontend state and already-loaded checkpoint data
+- Behavior remains scoped to the active session only
+- Existing diff viewer, compare mode, search/filter, visual timeline, git-log browser, snapshot viewer, jump-to-live-file, pinned comparison reference, details inspector, revert preview, changed-files inspector, manual checkpoint, manual revert, working set, reset controls, and unified active checkpoint highlight continue to work correctly
+- No backend changes occurred
+- No schema changes occurred
+- No refactors occurred
+- No regressions in workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, or existing history/control surfaces
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81P-CHECKPOINT.md
+
+---

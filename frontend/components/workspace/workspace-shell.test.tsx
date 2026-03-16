@@ -662,6 +662,47 @@ describe('workspace shell component', () => {
     assert.match(html, /compare target/);
   });
 
+  test('renders compact history state summary bar using existing in-surface state', () => {
+    const html = renderWorkspaceShell({
+      checkpoints: [checkpoint, checkpointTwo],
+      selectedSessionId: session.id,
+      checkpointRevertState: 'previewing',
+      checkpointRevertTargetId: checkpoint.id,
+      checkpointDiffTargetId: checkpoint.id,
+      checkpointCompareState: 'selecting',
+      checkpointCompareBaseId: checkpoint.id,
+      checkpointCompareTargetId: checkpointTwo.id,
+      pinnedCompareReferenceCheckpointId: checkpoint.id,
+      checkpointSnapshotTargetId: checkpointTwo.id,
+      checkpointDiffState: 'ready',
+      checkpointDiffResponse,
+    });
+
+    assert.match(html, /data-testid="history-state-summary-bar"/);
+    assert.match(html, /History State Summary/);
+    assert.match(html, /Compact read-only state for the active session history surface\./);
+    assert.match(html, /data-testid="history-state-summary-diff-target"/);
+    assert.match(html, /Diff target:.*Auto-commit: Message 10 \(abc123def456\)/);
+    assert.match(html, /data-testid="history-state-summary-compare-base"/);
+    assert.match(html, /Compare base:.*Auto-commit: Message 10 \(abc123def456\)/);
+    assert.match(html, /data-testid="history-state-summary-compare-target"/);
+    assert.match(html, /Compare target:.*Checkpoint 7890abc \(7890abcedf12\)/);
+    assert.match(html, /data-testid="history-state-summary-pinned-reference"/);
+    assert.match(html, /Pinned reference:.*Auto-commit: Message 10 \(abc123def456\)/);
+    assert.match(html, /data-testid="history-state-summary-snapshot-target"/);
+    assert.match(html, /Snapshot target:.*Checkpoint 7890abc \(7890abcedf12\)/);
+    assert.match(html, /data-testid="history-state-summary-revert-target"/);
+    assert.match(html, /Revert preview\/target:.*previewing -&gt; Auto-commit: Message 10 \(abc123def456\)/);
+    assert.match(html, /data-testid="history-state-summary-details-inspector-target"/);
+    assert.match(html, /Details inspector target:.*Auto-commit: Message 10 \(abc123def456\)/);
+    assert.match(html, /data-testid="history-state-summary-changed-files-inspector-target"/);
+    assert.match(html, /Changed-files inspector target:.*Auto-commit: Message 10 \(abc123def456\)/);
+    assert.match(html, /data-testid="history-state-summary-working-set-count"/);
+    assert.match(html, /Working set count:.*0\/5/);
+    assert.match(html, /data-testid="history-state-summary-search-filter-status"/);
+    assert.match(html, /Search\/filter status:.*query none; description all; visible 2\/2/);
+  });
+
   test('renders distinct checkpoint snapshot states and read-only snapshot viewer', () => {
     const idleHtml = renderWorkspaceShell({
       checkpointSnapshotState: 'idle',
