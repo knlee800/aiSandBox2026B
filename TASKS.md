@@ -3988,3 +3988,41 @@ Make checkpoint comparison easier to understand at a glance by adding a bounded 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81R for full details
 
 ---
+
+#### TASK-81S: Checkpoint Inspection Readiness Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-81S-CHECKPOINT.md`
+
+**Objective:**
+Make checkpoint inspection smoother by adding a bounded readiness/status surface inside the existing history/control area that shows whether the current checkpoint has loaded context available for downstream inspection tools, using only already-available frontend state and already-loaded checkpoint data.
+
+**Scope:**
+- Reuse the existing history/control surface, already-loaded checkpoint list, and already-derived in-surface frontend state only
+- Add a bounded checkpoint inspection readiness surface inside the existing history/control area
+- Show compact readiness/status indicators for the current checkpoint context (diff metadata available, snapshot metadata available, changed-files metadata available, compare selection readiness, live-file jump availability) where already derivable from loaded state
+- Keep the surface read-only and informational
+- Keep all existing history surface flows intact
+- Keep integration localized to the existing workspace shell and history/control surface
+- Frontend-only changes
+- Additive only
+- Focused frontend tests for this slice
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No automatic loading in this task
+- ❌ No automatic action triggering in this task
+- ❌ No new durable state
+- ❌ No broader workspace redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Dependencies:** TASK-81A through TASK-81R (all Complete and Locked); existing history/control surface already present
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81S for full details
+
+---

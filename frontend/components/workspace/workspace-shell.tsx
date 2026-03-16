@@ -1359,6 +1359,89 @@ function HistoryCheckpointList(props: {
     ],
     [checkpointById, props.compareBaseCheckpointId, props.compareTargetCheckpointId],
   );
+  const isDiffMetadataReadyForInspector = Boolean(
+    inspectorCheckpoint &&
+      props.diffState === 'ready' &&
+      props.diffResponse &&
+      props.diffTargetCheckpointId === inspectorCheckpoint.id,
+  );
+  const isSnapshotMetadataReadyForInspector = Boolean(
+    inspectorCheckpoint &&
+      props.snapshotState === 'ready' &&
+      props.snapshotResponse &&
+      props.snapshotTargetCheckpointId === inspectorCheckpoint.id,
+  );
+  const openableInspectorFileCount = React.useMemo(
+    () => inspectorChangedFiles.files.filter((file) => props.canOpenInLiveWorkspace(file.path)).length,
+    [inspectorChangedFiles.files, props.canOpenInLiveWorkspace],
+  );
+  const selectedInspectorFileCanOpenLive = Boolean(
+    selectedInspectorFile && props.canOpenInLiveWorkspace(selectedInspectorFile.path),
+  );
+  const compareReadinessSummary = React.useMemo(() => {
+    if (props.compareState === 'idle') {
+      return 'compare mode idle';
+    }
+    if (!hasVisibleBaseSelection || !hasVisibleTargetSelection) {
+      return `base ${hasVisibleBaseSelection ? 'selected' : 'missing'}; target ${
+        hasVisibleTargetSelection ? 'selected' : 'missing'
+      }`;
+    }
+    if (props.compareBaseCheckpointId === props.compareTargetCheckpointId) {
+      return 'base/target must differ';
+    }
+    return 'pair ready';
+  }, [
+    hasVisibleBaseSelection,
+    hasVisibleTargetSelection,
+    props.compareBaseCheckpointId,
+    props.compareState,
+    props.compareTargetCheckpointId,
+  ]);
+  const inspectionReadinessItems = React.useMemo(
+    () => [
+      {
+        key: 'diff-metadata',
+        title: 'Diff metadata',
+        value: isDiffMetadataReadyForInspector ? 'available' : 'not available',
+      },
+      {
+        key: 'snapshot-metadata',
+        title: 'Snapshot metadata',
+        value: isSnapshotMetadataReadyForInspector ? 'available' : 'not available',
+      },
+      {
+        key: 'changed-files-metadata',
+        title: 'Changed-files metadata',
+        value: inspectorChangedFiles.files.length
+          ? `available via ${inspectorChangedFiles.source}; ${inspectorChangedFiles.files.length} file entries`
+          : 'not available',
+      },
+      {
+        key: 'compare-selection-readiness',
+        title: 'Compare selection readiness',
+        value: compareReadinessSummary,
+      },
+      {
+        key: 'live-file-jump',
+        title: 'Live-file jump availability',
+        value: inspectorChangedFiles.files.length
+          ? `openable ${openableInspectorFileCount}/${inspectorChangedFiles.files.length}; selected ${
+              selectedInspectorFileCanOpenLive ? 'openable' : 'not openable'
+            }`
+          : 'unavailable (no loaded file entries)',
+      },
+    ],
+    [
+      compareReadinessSummary,
+      inspectorChangedFiles.files.length,
+      inspectorChangedFiles.source,
+      isDiffMetadataReadyForInspector,
+      isSnapshotMetadataReadyForInspector,
+      openableInspectorFileCount,
+      selectedInspectorFileCanOpenLive,
+    ],
+  );
 
   return (
     <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="history-checkpoint-list-surface">
@@ -1541,6 +1624,31 @@ function HistoryCheckpointList(props: {
               </div>
             );
           })}
+        </div>
+      </div>
+      <div
+        className="mb-2 rounded border border-teal-200 bg-teal-50 p-2"
+        data-testid="history-inspection-readiness-summary"
+      >
+        <p className="text-[11px] font-semibold text-teal-800">Checkpoint Inspection Readiness</p>
+        <p className="mt-1 text-[11px] text-teal-700" data-testid="history-inspection-readiness-caption">
+          Read-only readiness for the current checkpoint context from already-loaded metadata and in-surface state.
+        </p>
+        <p className="mt-1 text-[11px] text-teal-700" data-testid="history-inspection-readiness-target">
+          Current context:{' '}
+          <span className="font-medium text-teal-900">{inspectorCheckpoint ? inspectorLabel : 'none selected'}</span>
+        </p>
+        <div className="mt-2 grid gap-1 sm:grid-cols-2" data-testid="history-inspection-readiness-items">
+          {inspectionReadinessItems.map((readinessItem) => (
+            <p
+              key={readinessItem.key}
+              className="rounded border border-teal-200 bg-white px-2 py-1 text-[11px] text-teal-800"
+              data-testid={`history-inspection-readiness-${readinessItem.key}`}
+            >
+              <span className="font-semibold">{readinessItem.title}:</span>{' '}
+              <span className="font-mono text-teal-700 break-all">{readinessItem.value}</span>
+            </p>
+          ))}
         </div>
       </div>
       <div className="mb-2 rounded border border-amber-200 bg-amber-50 p-2" data-testid="history-pinned-reference-state">

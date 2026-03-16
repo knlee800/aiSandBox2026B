@@ -744,6 +744,47 @@ describe('workspace shell component', () => {
     assert.match(html, /Description: <span class="text-cyan-800">\(none\)<\/span>/);
   });
 
+  test('renders checkpoint inspection readiness summary from loaded checkpoint context', () => {
+    const html = renderWorkspaceShell({
+      checkpoints: [checkpoint, checkpointTwo],
+      selectedSessionId: session.id,
+      checkpointDiffState: 'ready',
+      checkpointDiffTargetId: checkpoint.id,
+      checkpointDiffResponse,
+      checkpointSnapshotState: 'ready',
+      checkpointSnapshotTargetId: checkpoint.id,
+      checkpointSnapshotResponse: checkpointDiffResponse,
+      checkpointCompareState: 'selecting',
+      checkpointCompareBaseId: checkpoint.id,
+      checkpointCompareTargetId: checkpointTwo.id,
+    });
+
+    assert.match(html, /data-testid="history-inspection-readiness-summary"/);
+    assert.match(html, /Checkpoint Inspection Readiness/);
+    assert.match(
+      html,
+      /Read-only readiness for the current checkpoint context from already-loaded metadata and in-surface state\./,
+    );
+    assert.match(html, /data-testid="history-inspection-readiness-target"/);
+    assert.match(html, /Current context: <span class="font-medium text-teal-900">Auto-commit: Message 10<\/span>/);
+    assert.match(html, /data-testid="history-inspection-readiness-diff-metadata"/);
+    assert.match(html, /Diff metadata:.*available/);
+    assert.match(html, /data-testid="history-inspection-readiness-snapshot-metadata"/);
+    assert.match(html, /Snapshot metadata:.*available/);
+    assert.match(html, /data-testid="history-inspection-readiness-changed-files-metadata"/);
+    assert.match(
+      html,
+      /Changed-files metadata:.*available via diff; 3 file entries/,
+    );
+    assert.match(html, /data-testid="history-inspection-readiness-compare-selection-readiness"/);
+    assert.match(html, /Compare selection readiness:.*pair ready/);
+    assert.match(html, /data-testid="history-inspection-readiness-live-file-jump"/);
+    assert.match(
+      html,
+      /Live-file jump availability:.*openable 1\/3; selected openable/,
+    );
+  });
+
   test('renders distinct checkpoint snapshot states and read-only snapshot viewer', () => {
     const idleHtml = renderWorkspaceShell({
       checkpointSnapshotState: 'idle',
