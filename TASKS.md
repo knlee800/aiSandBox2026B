@@ -4335,3 +4335,54 @@ Perform the true final consolidation for Phase 81 and close the Phase 81 history
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81-FINAL-CLOSE for full details
 
 ---
+
+## Phase 82 — History Surface Usability Continued
+
+**Current stage:** TASK-82A (COMPLETE and LOCKED)
+
+---
+
+#### TASK-82A: History Surface Section Collapse Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-82A-CHECKPOINT.md`
+
+**Objective:**
+Make the history workflow easier to manage at larger scale by adding bounded section collapse/expand controls inside the existing history/control surface, using only already-derived frontend state and already-loaded checkpoint data.
+
+**Scope:**
+- Reuse existing history/control surface only
+- Add compact collapse/expand controls for major existing history surface sections where relevant
+- Affect presentation/visibility only for already-existing history UI sections
+- Use only already-derived frontend state and already-loaded checkpoint data
+- Keep all existing history actions and behaviors unchanged
+- Keep collapse state frontend-only, temporary, and active-session scoped
+- Preserve all closed Phase 81 history/control capabilities
+- Frontend-only, additive only
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No automatic actions
+- ❌ No durable state
+- ❌ No broader redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Dependencies:** TASK-81A through TASK-81Z and TASK-81-FINAL-CLOSE (all Complete and Locked); existing history/control surface already present
+
+**Completion Summary:**
+- ✅ Bounded collapse/expand control strip added inside existing `history-control-slice`
+- ✅ Four collapsible sections: Controls, Summaries, Inspectors, Checkpoint Browser
+- ✅ Session-scoped local state (`collapsedHistorySections`); resets to all-expanded on session change
+- ✅ All existing Phase 81 history/control surfaces preserved and unchanged in behavior
+- ✅ Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes
+- ✅ 95/95 tests pass; 0 regressions (baseline 93; net +2)
+- ✅ Checkpoint created: `docs/PHASE-82A-CHECKPOINT.md`
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82A for full details
+
+---

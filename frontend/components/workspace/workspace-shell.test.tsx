@@ -1006,6 +1006,40 @@ describe('workspace shell component', () => {
     assert.match(html, /data-testid="history-checkpoint-list" data-focus-mode="off"/);
   });
 
+  test('renders bounded history section collapse controls for major existing sections', () => {
+    const html = renderWorkspaceShell({
+      checkpoints: [checkpoint, checkpointTwo],
+      selectedSessionId: session.id,
+    });
+
+    assert.match(html, /data-testid="history-section-collapse-controls"/);
+    assert.match(html, /History Section Collapse/);
+    assert.match(
+      html,
+      /Presentation-only collapse\/expand controls for major existing history sections in this active session\./,
+    );
+    assert.match(html, /data-testid="history-section-toggle-controls" aria-expanded="true"/);
+    assert.match(html, /data-testid="history-section-toggle-summaries" aria-expanded="true"/);
+    assert.match(html, /data-testid="history-section-toggle-inspectors" aria-expanded="true"/);
+    assert.match(html, /data-testid="history-section-toggle-checkpoint-browser" aria-expanded="true"/);
+  });
+
+  test('keeps major history section groups expanded by default in active session scope', () => {
+    const html = renderWorkspaceShell({
+      checkpoints: [checkpoint, checkpointTwo],
+      selectedSessionId: session.id,
+    });
+
+    assert.match(html, /data-testid="history-section-controls-group" data-collapsed="false"/);
+    assert.match(html, /data-testid="history-section-summaries-group" data-collapsed="false"/);
+    assert.match(html, /data-testid="history-section-inspectors-group" data-collapsed="false"/);
+    assert.match(html, /data-testid="history-section-checkpoint-browser-group" data-collapsed="false"/);
+    assert.match(html, /data-testid="history-search-filter-controls"/);
+    assert.match(html, /data-testid="history-state-summary-bar"/);
+    assert.match(html, /data-testid="history-checkpoint-details-inspector"/);
+    assert.match(html, /data-testid="history-checkpoint-list"/);
+  });
+
   test('renders distinct checkpoint snapshot states and read-only snapshot viewer', () => {
     const idleHtml = renderWorkspaceShell({
       checkpointSnapshotState: 'idle',

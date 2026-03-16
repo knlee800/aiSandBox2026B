@@ -938,6 +938,22 @@ function HistoryCreateStateMessage(props: {
   );
 }
 
+type HistoryCollapsibleSectionKey = 'controls' | 'summaries' | 'inspectors' | 'checkpoint-browser';
+
+const HISTORY_COLLAPSIBLE_SECTION_LABELS: Record<HistoryCollapsibleSectionKey, string> = {
+  controls: 'Controls',
+  summaries: 'Summaries',
+  inspectors: 'Inspectors',
+  'checkpoint-browser': 'Checkpoint Browser',
+};
+
+const DEFAULT_HISTORY_COLLAPSIBLE_SECTION_STATE: Record<HistoryCollapsibleSectionKey, boolean> = {
+  controls: false,
+  summaries: false,
+  inspectors: false,
+  'checkpoint-browser': false,
+};
+
 function HistoryCheckpointList(props: {
   selectedSessionId: string | null;
   checkpoints: WorkspaceCheckpoint[];
@@ -983,6 +999,9 @@ function HistoryCheckpointList(props: {
     React.useState<CheckpointDescriptionFilter>('all');
   const [historyContextDensity, setHistoryContextDensity] = React.useState<'compact' | 'expanded'>('compact');
   const [historyFocusMode, setHistoryFocusMode] = React.useState<'off' | 'on'>('off');
+  const [collapsedHistorySections, setCollapsedHistorySections] = React.useState<
+    Record<HistoryCollapsibleSectionKey, boolean>
+  >(DEFAULT_HISTORY_COLLAPSIBLE_SECTION_STATE);
   const { visibleCheckpoints, totalMatches } = React.useMemo(
     () =>
       filterVisibleWorkspaceCheckpoints({
@@ -1161,6 +1180,7 @@ function HistoryCheckpointList(props: {
     setWorkingSetCheckpointIds([]);
     setHistoryContextDensity('compact');
     setHistoryFocusMode('off');
+    setCollapsedHistorySections(DEFAULT_HISTORY_COLLAPSIBLE_SECTION_STATE);
   }, [props.selectedSessionId]);
 
   React.useEffect(() => {
@@ -1206,6 +1226,12 @@ function HistoryCheckpointList(props: {
   };
   const isExpandedHistoryContextDensity = historyContextDensity === 'expanded';
   const isHistoryFocusModeActive = historyFocusMode === 'on';
+  const toggleCollapsedHistorySection = React.useCallback((sectionKey: HistoryCollapsibleSectionKey): void => {
+    setCollapsedHistorySections((currentState) => ({
+      ...currentState,
+      [sectionKey]: !currentState[sectionKey],
+    }));
+  }, []);
   const checkpointListSpacingClass = isHistoryFocusModeActive
     ? isExpandedHistoryContextDensity
       ? 'space-y-2'
@@ -1812,6 +1838,46 @@ function HistoryCheckpointList(props: {
           hasSelectedSession={props.hasSelectedSession}
         />
       </div>
+      <div className="mb-2 rounded border border-gray-200 bg-white p-2" data-testid="history-section-collapse-controls">
+        <p className="text-[11px] font-semibold text-gray-700">History Section Collapse</p>
+        <p className="mt-1 text-[11px] text-gray-600">
+          Presentation-only collapse/expand controls for major existing history sections in this active session.
+        </p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {(Object.keys(HISTORY_COLLAPSIBLE_SECTION_LABELS) as HistoryCollapsibleSectionKey[]).map((sectionKey) => {
+            const isCollapsed = collapsedHistorySections[sectionKey];
+            const sectionLabel = HISTORY_COLLAPSIBLE_SECTION_LABELS[sectionKey];
+            return (
+              <button
+                key={sectionKey}
+                type="button"
+                data-testid={`history-section-toggle-${sectionKey}`}
+                aria-expanded={!isCollapsed}
+                onClick={() => toggleCollapsedHistorySection(sectionKey)}
+                className={`rounded border px-3 py-1 text-xs ${
+                  isCollapsed
+                    ? 'border-gray-300 bg-white text-gray-700'
+                    : 'border-gray-400 bg-gray-100 text-gray-900'
+                }`}
+              >
+                {isCollapsed ? 'Expand' : 'Collapse'} {sectionLabel}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div className="mb-2" data-testid="history-section-controls-group" data-collapsed={collapsedHistorySections.controls}>
+        {collapsedHistorySections.controls ? (
+          <p
+            className="rounded border border-gray-200 bg-white px-2 py-2 text-[11px] text-gray-600"
+            data-testid="history-section-controls-collapsed"
+          >
+            Controls collapsed. Expand to access search/filter, reset, compare, density, and focus controls.
+          </p>
+        ) : null}
+      </div>
+      {!collapsedHistorySections.controls ? (
+        <>
       <div className="mb-2 rounded border border-gray-200 bg-white p-2" data-testid="history-search-filter-controls">
         <p className="text-[11px] font-semibold text-gray-700">Checkpoint Search and Filter</p>
         <div className="mt-2 flex flex-col gap-2 md:flex-row">
@@ -2014,6 +2080,20 @@ function HistoryCheckpointList(props: {
           </span>
         </div>
       </div>
+        </>
+      ) : null}
+      <div className="mb-2" data-testid="history-section-summaries-group" data-collapsed={collapsedHistorySections.summaries}>
+        {collapsedHistorySections.summaries ? (
+          <p
+            className="rounded border border-gray-200 bg-white px-2 py-2 text-[11px] text-gray-600"
+            data-testid="history-section-summaries-collapsed"
+          >
+            Summaries collapsed. Expand to view metadata summaries, readiness, legends, breadcrumb, and guidance.
+          </p>
+        ) : null}
+      </div>
+      {!collapsedHistorySections.summaries ? (
+        <>
       <div
         className={`mb-2 rounded border p-2 ${
           isHistoryFocusModeActive ? 'border-gray-200 bg-white' : 'border-cyan-200 bg-cyan-50'
@@ -2288,6 +2368,20 @@ function HistoryCheckpointList(props: {
           ))}
         </ul>
       </div>
+        </>
+      ) : null}
+      <div className="mb-2" data-testid="history-section-inspectors-group" data-collapsed={collapsedHistorySections.inspectors}>
+        {collapsedHistorySections.inspectors ? (
+          <p
+            className="rounded border border-gray-200 bg-white px-2 py-2 text-[11px] text-gray-600"
+            data-testid="history-section-inspectors-collapsed"
+          >
+            Inspectors collapsed. Expand to view pinned reference, details, changed-files, and working-set surfaces.
+          </p>
+        ) : null}
+      </div>
+      {!collapsedHistorySections.inspectors ? (
+        <>
       <div className="mb-2 rounded border border-amber-200 bg-amber-50 p-2" data-testid="history-pinned-reference-state">
         <p className="text-[11px] font-semibold text-amber-800">Pinned Comparison Reference</p>
         {pinnedReferenceCheckpoint ? (
@@ -2513,6 +2607,8 @@ function HistoryCheckpointList(props: {
           </p>
         )}
       </div>
+        </>
+      ) : null}
       <div className="mb-2 rounded border border-indigo-200 bg-indigo-50 p-2" data-testid="history-unified-active-highlight">
         <p className="text-[11px] font-semibold text-indigo-800">Unified Active Checkpoint Highlight</p>
         <p className="mt-1 text-[11px] text-indigo-700" data-testid="history-unified-active-summary">
@@ -2556,6 +2652,22 @@ function HistoryCheckpointList(props: {
           ))}
         </div>
       </div>
+      <div
+        className="mb-2"
+        data-testid="history-section-checkpoint-browser-group"
+        data-collapsed={collapsedHistorySections['checkpoint-browser']}
+      >
+        {collapsedHistorySections['checkpoint-browser'] ? (
+          <p
+            className="rounded border border-gray-200 bg-white px-2 py-2 text-[11px] text-gray-600"
+            data-testid="history-section-checkpoint-browser-collapsed"
+          >
+            Checkpoint browser collapsed. Expand to view timeline, git-log entries, and checkpoint action list.
+          </p>
+        ) : null}
+      </div>
+      {!collapsedHistorySections['checkpoint-browser'] ? (
+        <>
       <div className="mb-1 flex items-center justify-between" data-testid="history-checkpoint-timeline-header">
         <p className="text-[11px] font-semibold text-gray-700">Checkpoint Timeline</p>
         <p className="text-[11px] text-gray-500">Order and focus for visible checkpoints</p>
@@ -2892,6 +3004,8 @@ function HistoryCheckpointList(props: {
         <p className="mt-2 text-xs text-gray-500" data-testid="history-search-empty">
           No checkpoints match the current search/filter.
         </p>
+      ) : null}
+        </>
       ) : null}
       <div className="mt-2" data-testid="history-diff-state">
         <HistoryDiffStateMessage
