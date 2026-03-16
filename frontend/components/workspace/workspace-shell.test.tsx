@@ -1023,6 +1023,15 @@ describe('workspace shell component', () => {
     assert.match(html, /data-testid="history-section-collapse-all"/);
     assert.match(html, /data-testid="history-section-toggle-all-state"/);
     assert.match(html, /Collapsed 0\/4 sections/);
+    assert.match(html, /data-testid="history-section-collapsed-state-summary"/);
+    assert.match(html, /data-testid="history-section-state-controls"/);
+    assert.match(html, /data-testid="history-section-state-summaries"/);
+    assert.match(html, /data-testid="history-section-state-inspectors"/);
+    assert.match(html, /data-testid="history-section-state-checkpoint-browser"/);
+    assert.match(html, /Controls: expanded/);
+    assert.match(html, /Summaries: expanded/);
+    assert.match(html, /Inspectors: expanded/);
+    assert.match(html, /Checkpoint Browser: expanded/);
     assert.match(html, /data-testid="history-section-toggle-controls" aria-expanded="true"/);
     assert.match(html, /data-testid="history-section-toggle-summaries" aria-expanded="true"/);
     assert.match(html, /data-testid="history-section-toggle-inspectors" aria-expanded="true"/);

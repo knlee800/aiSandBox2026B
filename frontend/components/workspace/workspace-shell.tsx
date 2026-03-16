@@ -1238,6 +1238,16 @@ function HistoryCheckpointList(props: {
       ),
     [collapsedHistorySections, collapsibleSectionKeys],
   );
+  const collapsedSectionSummaryItems = React.useMemo(
+    () =>
+      collapsibleSectionKeys.map((sectionKey) => ({
+        sectionKey,
+        sectionLabel: HISTORY_COLLAPSIBLE_SECTION_LABELS[sectionKey],
+        stateLabel: collapsedHistorySections[sectionKey] ? 'collapsed' : 'expanded',
+        isCollapsed: collapsedHistorySections[sectionKey],
+      })),
+    [collapsedHistorySections, collapsibleSectionKeys],
+  );
   const isEveryHistorySectionCollapsed = collapsedSectionCount === collapsibleSectionKeys.length;
   const isEveryHistorySectionExpanded = collapsedSectionCount === 0;
   const toggleCollapsedHistorySection = React.useCallback((sectionKey: HistoryCollapsibleSectionKey): void => {
@@ -1890,6 +1900,21 @@ function HistoryCheckpointList(props: {
           <span className="text-[11px] text-gray-600" data-testid="history-section-toggle-all-state">
             Collapsed {collapsedSectionCount}/{collapsibleSectionKeys.length} sections
           </span>
+        </div>
+        <div className="mt-2 flex flex-wrap items-center gap-2" data-testid="history-section-collapsed-state-summary">
+          {collapsedSectionSummaryItems.map((summaryItem) => (
+            <span
+              key={summaryItem.sectionKey}
+              data-testid={`history-section-state-${summaryItem.sectionKey}`}
+              className={`rounded border px-2 py-0.5 text-[11px] ${
+                summaryItem.isCollapsed
+                  ? 'border-amber-200 bg-amber-50 text-amber-800'
+                  : 'border-emerald-200 bg-emerald-50 text-emerald-800'
+              }`}
+            >
+              {summaryItem.sectionLabel}: {summaryItem.stateLabel}
+            </span>
+          ))}
         </div>
         <div className="mt-2 flex flex-wrap gap-2">
           {collapsibleSectionKeys.map((sectionKey) => {
