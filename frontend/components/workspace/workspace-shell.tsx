@@ -939,6 +939,7 @@ function HistoryCreateStateMessage(props: {
 }
 
 type HistoryCollapsibleSectionKey = 'controls' | 'summaries' | 'inspectors' | 'checkpoint-browser';
+type HistorySectionOrderDirection = 'earlier' | 'later';
 
 const HISTORY_COLLAPSIBLE_SECTION_LABELS: Record<HistoryCollapsibleSectionKey, string> = {
   controls: 'Controls',
@@ -946,6 +947,12 @@ const HISTORY_COLLAPSIBLE_SECTION_LABELS: Record<HistoryCollapsibleSectionKey, s
   inspectors: 'Inspectors',
   'checkpoint-browser': 'Checkpoint Browser',
 };
+const DEFAULT_HISTORY_COLLAPSIBLE_SECTION_ORDER: readonly HistoryCollapsibleSectionKey[] = [
+  'controls',
+  'summaries',
+  'inspectors',
+  'checkpoint-browser',
+];
 
 const DEFAULT_HISTORY_COLLAPSIBLE_SECTION_STATE: Record<HistoryCollapsibleSectionKey, boolean> = {
   controls: false,
@@ -953,6 +960,37 @@ const DEFAULT_HISTORY_COLLAPSIBLE_SECTION_STATE: Record<HistoryCollapsibleSectio
   inspectors: false,
   'checkpoint-browser': false,
 };
+
+export function moveHistoryCollapsibleSectionOrderItem(args: {
+  currentOrder: HistoryCollapsibleSectionKey[];
+  sectionKey: HistoryCollapsibleSectionKey;
+  direction: HistorySectionOrderDirection;
+}): HistoryCollapsibleSectionKey[] {
+  const normalizedOrder = Array.from(
+    new Set(
+      args.currentOrder.filter((sectionKey): sectionKey is HistoryCollapsibleSectionKey =>
+        DEFAULT_HISTORY_COLLAPSIBLE_SECTION_ORDER.includes(sectionKey),
+      ),
+    ),
+  );
+  for (const sectionKey of DEFAULT_HISTORY_COLLAPSIBLE_SECTION_ORDER) {
+    if (!normalizedOrder.includes(sectionKey)) {
+      normalizedOrder.push(sectionKey);
+    }
+  }
+  const currentIndex = normalizedOrder.indexOf(args.sectionKey);
+  if (currentIndex < 0) {
+    return normalizedOrder;
+  }
+  const nextIndex = args.direction === 'earlier' ? currentIndex - 1 : currentIndex + 1;
+  if (nextIndex < 0 || nextIndex >= normalizedOrder.length) {
+    return normalizedOrder;
+  }
+  const nextOrder = [...normalizedOrder];
+  const [movedSection] = nextOrder.splice(currentIndex, 1);
+  nextOrder.splice(nextIndex, 0, movedSection);
+  return nextOrder;
+}
 
 function HistoryCheckpointList(props: {
   selectedSessionId: string | null;
@@ -999,6 +1037,9 @@ function HistoryCheckpointList(props: {
     React.useState<CheckpointDescriptionFilter>('all');
   const [historyContextDensity, setHistoryContextDensity] = React.useState<'compact' | 'expanded'>('compact');
   const [historyFocusMode, setHistoryFocusMode] = React.useState<'off' | 'on'>('off');
+  const [historyCollapsibleSectionOrder, setHistoryCollapsibleSectionOrder] = React.useState<
+    HistoryCollapsibleSectionKey[]
+  >([...DEFAULT_HISTORY_COLLAPSIBLE_SECTION_ORDER]);
   const [collapsedHistorySections, setCollapsedHistorySections] = React.useState<
     Record<HistoryCollapsibleSectionKey, boolean>
   >(DEFAULT_HISTORY_COLLAPSIBLE_SECTION_STATE);
@@ -1180,6 +1221,7 @@ function HistoryCheckpointList(props: {
     setWorkingSetCheckpointIds([]);
     setHistoryContextDensity('compact');
     setHistoryFocusMode('off');
+    setHistoryCollapsibleSectionOrder([...DEFAULT_HISTORY_COLLAPSIBLE_SECTION_ORDER]);
     setCollapsedHistorySections(DEFAULT_HISTORY_COLLAPSIBLE_SECTION_STATE);
   }, [props.selectedSessionId]);
 
@@ -1227,7 +1269,7 @@ function HistoryCheckpointList(props: {
   const isExpandedHistoryContextDensity = historyContextDensity === 'expanded';
   const isHistoryFocusModeActive = historyFocusMode === 'on';
   const collapsibleSectionKeys = React.useMemo(
-    () => Object.keys(HISTORY_COLLAPSIBLE_SECTION_LABELS) as HistoryCollapsibleSectionKey[],
+    () => [...DEFAULT_HISTORY_COLLAPSIBLE_SECTION_ORDER],
     [],
   );
   const collapsedSectionCount = React.useMemo(
@@ -1240,13 +1282,20 @@ function HistoryCheckpointList(props: {
   );
   const collapsedSectionSummaryItems = React.useMemo(
     () =>
-      collapsibleSectionKeys.map((sectionKey) => ({
+      historyCollapsibleSectionOrder.map((sectionKey) => ({
         sectionKey,
         sectionLabel: HISTORY_COLLAPSIBLE_SECTION_LABELS[sectionKey],
         stateLabel: collapsedHistorySections[sectionKey] ? 'collapsed' : 'expanded',
         isCollapsed: collapsedHistorySections[sectionKey],
       })),
-    [collapsedHistorySections, collapsibleSectionKeys],
+    [collapsedHistorySections, historyCollapsibleSectionOrder],
+  );
+  const historyCollapsibleSectionOrderSummary = React.useMemo(
+    () =>
+      historyCollapsibleSectionOrder
+        .map((sectionKey) => HISTORY_COLLAPSIBLE_SECTION_LABELS[sectionKey])
+        .join(' > '),
+    [historyCollapsibleSectionOrder],
   );
   const isEveryHistorySectionCollapsed = collapsedSectionCount === collapsibleSectionKeys.length;
   const isEveryHistorySectionExpanded = collapsedSectionCount === 0;
@@ -1267,6 +1316,14 @@ function HistoryCheckpointList(props: {
   const expandAllHistorySections = React.useCallback((): void => {
     setCollapsedHistorySections(DEFAULT_HISTORY_COLLAPSIBLE_SECTION_STATE);
   }, []);
+  const moveHistorySectionOrderItem = React.useCallback(
+    (sectionKey: HistoryCollapsibleSectionKey, direction: HistorySectionOrderDirection): void => {
+      setHistoryCollapsibleSectionOrder((currentOrder) =>
+        moveHistoryCollapsibleSectionOrderItem({ currentOrder, sectionKey, direction }),
+      );
+    },
+    [],
+  );
   const checkpointListSpacingClass = isHistoryFocusModeActive
     ? isExpandedHistoryContextDensity
       ? 'space-y-2'
@@ -1878,6 +1935,9 @@ function HistoryCheckpointList(props: {
         <p className="mt-1 text-[11px] text-gray-600">
           Presentation-only collapse/expand controls for major existing history sections in this active session.
         </p>
+        <p className="mt-1 text-[11px] text-gray-600" data-testid="history-section-order-summary">
+          Current section order: {historyCollapsibleSectionOrderSummary}
+        </p>
         <div className="mt-2 flex flex-wrap items-center gap-2" data-testid="history-section-toggle-quick-controls">
           <button
             type="button"
@@ -1916,8 +1976,47 @@ function HistoryCheckpointList(props: {
             </span>
           ))}
         </div>
+        <div className="mt-2 space-y-1" data-testid="history-section-order-controls">
+          {historyCollapsibleSectionOrder.map((sectionKey, sectionIndex) => {
+            const sectionLabel = HISTORY_COLLAPSIBLE_SECTION_LABELS[sectionKey];
+            const canMoveEarlier = sectionIndex > 0;
+            const canMoveLater = sectionIndex < historyCollapsibleSectionOrder.length - 1;
+            return (
+              <div
+                key={sectionKey}
+                className="flex flex-wrap items-center gap-2 rounded border border-gray-200 bg-gray-50 px-2 py-1"
+                data-testid={`history-section-order-row-${sectionKey}`}
+              >
+                <span className="text-[11px] font-medium text-gray-700" data-testid={`history-section-order-label-${sectionKey}`}>
+                  {sectionLabel}
+                </span>
+                <span className="text-[11px] text-gray-500" data-testid={`history-section-order-position-${sectionKey}`}>
+                  Position {sectionIndex + 1}/{historyCollapsibleSectionOrder.length}
+                </span>
+                <button
+                  type="button"
+                  data-testid={`history-section-order-move-earlier-${sectionKey}`}
+                  disabled={!canMoveEarlier}
+                  onClick={() => moveHistorySectionOrderItem(sectionKey, 'earlier')}
+                  className="rounded border border-gray-300 bg-white px-2 py-0.5 text-[11px] text-gray-700 disabled:border-gray-200 disabled:text-gray-400"
+                >
+                  Move Earlier
+                </button>
+                <button
+                  type="button"
+                  data-testid={`history-section-order-move-later-${sectionKey}`}
+                  disabled={!canMoveLater}
+                  onClick={() => moveHistorySectionOrderItem(sectionKey, 'later')}
+                  className="rounded border border-gray-300 bg-white px-2 py-0.5 text-[11px] text-gray-700 disabled:border-gray-200 disabled:text-gray-400"
+                >
+                  Move Later
+                </button>
+              </div>
+            );
+          })}
+        </div>
         <div className="mt-2 flex flex-wrap gap-2">
-          {collapsibleSectionKeys.map((sectionKey) => {
+          {historyCollapsibleSectionOrder.map((sectionKey) => {
             const isCollapsed = collapsedHistorySections[sectionKey];
             const sectionLabel = HISTORY_COLLAPSIBLE_SECTION_LABELS[sectionKey];
             return (

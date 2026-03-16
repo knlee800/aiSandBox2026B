@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import WorkspaceShell from './workspace-shell';
+import WorkspaceShell, { moveHistoryCollapsibleSectionOrderItem } from './workspace-shell';
 import type { WorkspaceCheckpoint, WorkspaceShellSession } from './workspace-shell.logic';
 import type { WorkspaceExecState } from './workspace-exec.logic';
 import type { WorkspacePreviewState } from './workspace-preview.logic';
@@ -1018,6 +1018,8 @@ describe('workspace shell component', () => {
       html,
       /Presentation-only collapse\/expand controls for major existing history sections in this active session\./,
     );
+    assert.match(html, /data-testid="history-section-order-summary"/);
+    assert.match(html, /Current section order: Controls &gt; Summaries &gt; Inspectors &gt; Checkpoint Browser/);
     assert.match(html, /data-testid="history-section-toggle-quick-controls"/);
     assert.match(html, /data-testid="history-section-expand-all" disabled/);
     assert.match(html, /data-testid="history-section-collapse-all"/);
@@ -1028,6 +1030,19 @@ describe('workspace shell component', () => {
     assert.match(html, /data-testid="history-section-state-summaries"/);
     assert.match(html, /data-testid="history-section-state-inspectors"/);
     assert.match(html, /data-testid="history-section-state-checkpoint-browser"/);
+    assert.match(html, /data-testid="history-section-order-controls"/);
+    assert.match(html, /data-testid="history-section-order-row-controls"/);
+    assert.match(html, /data-testid="history-section-order-row-summaries"/);
+    assert.match(html, /data-testid="history-section-order-row-inspectors"/);
+    assert.match(html, /data-testid="history-section-order-row-checkpoint-browser"/);
+    assert.match(html, /data-testid="history-section-order-move-earlier-controls" disabled/);
+    assert.match(html, /data-testid="history-section-order-move-later-controls"/);
+    assert.match(html, /data-testid="history-section-order-move-earlier-summaries"/);
+    assert.match(html, /data-testid="history-section-order-move-later-summaries"/);
+    assert.match(html, /data-testid="history-section-order-move-earlier-inspectors"/);
+    assert.match(html, /data-testid="history-section-order-move-later-inspectors"/);
+    assert.match(html, /data-testid="history-section-order-move-earlier-checkpoint-browser"/);
+    assert.match(html, /data-testid="history-section-order-move-later-checkpoint-browser" disabled/);
     assert.match(html, /Controls: expanded/);
     assert.match(html, /Summaries: expanded/);
     assert.match(html, /Inspectors: expanded/);
@@ -1052,6 +1067,45 @@ describe('workspace shell component', () => {
     assert.match(html, /data-testid="history-state-summary-bar"/);
     assert.match(html, /data-testid="history-checkpoint-details-inspector"/);
     assert.match(html, /data-testid="history-checkpoint-list"/);
+  });
+
+  test('reorders history section presentation order within bounded earlier/later moves', () => {
+    const defaultOrder = ['controls', 'summaries', 'inspectors', 'checkpoint-browser'] as const;
+    const summariesMovedEarlier = moveHistoryCollapsibleSectionOrderItem({
+      currentOrder: [...defaultOrder],
+      sectionKey: 'summaries',
+      direction: 'earlier',
+    });
+    const summariesMovedLater = moveHistoryCollapsibleSectionOrderItem({
+      currentOrder: [...defaultOrder],
+      sectionKey: 'summaries',
+      direction: 'later',
+    });
+    const controlsAtStartStays = moveHistoryCollapsibleSectionOrderItem({
+      currentOrder: [...defaultOrder],
+      sectionKey: 'controls',
+      direction: 'earlier',
+    });
+    const browserAtEndStays = moveHistoryCollapsibleSectionOrderItem({
+      currentOrder: [...defaultOrder],
+      sectionKey: 'checkpoint-browser',
+      direction: 'later',
+    });
+
+    assert.deepEqual(summariesMovedEarlier, ['summaries', 'controls', 'inspectors', 'checkpoint-browser']);
+    assert.deepEqual(summariesMovedLater, ['controls', 'inspectors', 'summaries', 'checkpoint-browser']);
+    assert.deepEqual(controlsAtStartStays, [...defaultOrder]);
+    assert.deepEqual(browserAtEndStays, [...defaultOrder]);
+  });
+
+  test('normalizes bounded section order to keep all major history sections present', () => {
+    const normalizedOrder = moveHistoryCollapsibleSectionOrderItem({
+      currentOrder: ['summaries', 'summaries'],
+      sectionKey: 'summaries',
+      direction: 'later',
+    });
+
+    assert.deepEqual(normalizedOrder, ['controls', 'summaries', 'inspectors', 'checkpoint-browser']);
   });
 
   test('renders distinct checkpoint snapshot states and read-only snapshot viewer', () => {

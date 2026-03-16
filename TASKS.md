@@ -4338,7 +4338,7 @@ Perform the true final consolidation for Phase 81 and close the Phase 81 history
 
 ## Phase 82 — History Surface Usability Continued
 
-**Current stage:** TASK-82C (COMPLETE and LOCKED)
+**Current stage:** TASK-82D (COMPLETE and LOCKED)
 
 ---
 
@@ -4478,5 +4478,53 @@ Make the collapsed history workflow easier to understand by adding a bounded com
 - ✅ Checkpoint created: `docs/PHASE-82C-CHECKPOINT.md`
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82C for full details
+
+---
+
+#### TASK-82D: History Surface Section Order Persistence Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-82D-CHECKPOINT.md`
+
+**Objective:**
+Make the history workflow easier to manage by adding bounded frontend-only section-order persistence within the active session for existing history surface sections, building on the section-collapse family without changing underlying behavior.
+
+**Scope:**
+- Reuse existing history/control surface only
+- Build on TASK-82A through TASK-82C section organization behavior
+- Add bounded frontend-only persistence of the current section presentation order within the active session
+- Affect presentation/order only for already-existing history UI sections
+- Use only already-derived frontend state and already-loaded checkpoint data
+- Keep all existing history actions and behaviors unchanged
+- Keep ordering state temporary and active-session scoped
+- Preserve all closed Phase 81 history/control capabilities and TASK-82A/TASK-82C behavior
+- Frontend-only, additive only
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No automatic actions
+- ❌ No durable state outside current session
+- ❌ No broader redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Dependencies:** TASK-82A, TASK-82B, and TASK-82C (Complete and Locked); existing history/control surface already present
+
+**Completion Evidence:**
+- ✅ Bounded in-session section-order state added to `HistoryCheckpointList`; resets on `selectedSessionId` change
+- ✅ `moveHistoryCollapsibleSectionOrderItem` helper added for bounded earlier/later moves
+- ✅ Presentation-only section-order controls added inside existing `history-section-collapse-controls` surface
+- ✅ Section-order uses only existing `collapsedHistorySections` and in-surface state; no new data sources
+- ✅ Active-session scoping preserved; order resets on session change
+- ✅ All Phase 81, TASK-82A, TASK-82B, and TASK-82C history/control behaviors remain unchanged
+- ✅ Scope confirmed frontend-only and additive; no backend, schema, endpoint, refactor, fetch, polling, or websocket changes
+- ✅ 97/97 tests pass; 0 regressions
+- ✅ Checkpoint created: `docs/PHASE-82D-CHECKPOINT.md`
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82D for full details
 
 ---
