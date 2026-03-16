@@ -3092,9 +3092,12 @@ Re-validate and re-consolidate Phase 80 so the final Phase 80 closure correctly 
 
 ---
 
-## Phase 81 — Checkpoint Diff Viewer
+## Phase 81 — History/Control-Surface Usability Family
 
-**Current stage:** TASK-81P (COMPLETE and LOCKED)
+**Status:** CLOSED  
+**Final stage:** TASK-81-FINAL-CLOSE (COMPLETE and LOCKED)  
+**Final test baseline:** 93/93 passing, 0 failures, 0 regressions  
+**Authoritative closure:** `docs/PHASE-81-FINAL-CHECKPOINT.md`
 
 ---
 
@@ -4287,5 +4290,48 @@ Make the history workflow easier to focus on by adding a bounded frontend-only f
 **Dependencies:** TASK-81A through TASK-81Y (all Complete and Locked); existing history/control surface already present
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81Z for full details
+
+---
+
+#### TASK-81-FINAL-CLOSE: Phase 81 Final Consolidation and Closure
+
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)
+**Checkpoint:** `docs/PHASE-81-FINAL-CHECKPOINT.md`
+
+**Objective:**
+Perform the true final consolidation for Phase 81 and close the Phase 81 history/control-surface usability family after TASK-81A through TASK-81Z.
+
+**Scope:**
+- Validate and consolidate TASK-81A through TASK-81Z
+- Confirm final Phase 81 baseline is 93/93 tests
+- Confirm the whole family remained frontend-only and additive
+- Confirm no backend/schema/endpoint/refactor changes across the family
+- Confirm no regressions across workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, and all history/control surfaces
+- Produce the authoritative final Phase 81 checkpoint at `docs/PHASE-81-FINAL-CHECKPOINT.md`
+- Mark Phase 81 closed so the next bounded slice starts under Phase 82, not Phase 81
+
+**Non-Goals:**
+- ❌ No new implementation
+- ❌ No product code changes
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No endpoint changes
+- ❌ No refactors
+- ❌ No Phase 82 implementation in this task
+
+**Dependencies:** TASK-81A through TASK-81Z (all Complete and Locked)
+
+**Completion Summary:**
+- ✅ TASK-81A through TASK-81Z confirmed COMPLETE and LOCKED (all 26 implementation slices)
+- ✅ All 5 prior consolidation documents (TASK-81-FINAL, TASK-81-RECONSOLIDATE, TASK-81-RERECONSOLIDATE, TASK-81-RERERECONSOLIDATE, TASK-81-RERERERECONSOLIDATE) superseded by `docs/PHASE-81-FINAL-CHECKPOINT.md`
+- ✅ Final test baseline confirmed: 93/93 passing, 0 failures, 0 regressions
+- ✅ Whole family confirmed frontend-only and additive across all 26 slices
+- ✅ No backend/schema/endpoint/refactor changes confirmed across all 26 slices
+- ✅ No regressions confirmed across workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, and all history/control surfaces
+- ✅ Authoritative final Phase 81 checkpoint produced at `docs/PHASE-81-FINAL-CHECKPOINT.md`
+- ✅ Phase 81 marked CLOSED; next bounded work starts under Phase 82
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81-FINAL-CLOSE for full details
 
 ---

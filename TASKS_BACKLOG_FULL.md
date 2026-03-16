@@ -9653,7 +9653,12 @@ Re-validate and re-consolidate Phase 80 so the final Phase 80 closure correctly 
 
 ---
 
-## Phase 81 — Checkpoint Diff Viewer
+## Phase 81 — History/Control-Surface Usability Family
+
+**Status:** CLOSED  
+**Final stage:** TASK-81-FINAL-CLOSE (COMPLETE and LOCKED)  
+**Final test baseline:** 93/93 passing, 0 failures, 0 regressions  
+**Authoritative closure:** `docs/PHASE-81-FINAL-CHECKPOINT.md`
 
 ---
 
@@ -11814,5 +11819,63 @@ Make the history workflow easier to focus on by adding a bounded frontend-only f
 - No regressions in workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, or existing history/control surfaces
 
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81Y-CHECKPOINT.md
+
+---
+
+### TASK-81-FINAL-CLOSE: Phase 81 Final Consolidation and Closure
+
+**Task ID:** TASK-81-FINAL-CLOSE
+**Phase:** 81
+**Stage:** 81-FINAL-CLOSE
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)
+**Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked), TASK-81I (Complete and Locked), TASK-81J (Complete and Locked), TASK-81K (Complete and Locked), TASK-81L (Complete and Locked), TASK-81M (Complete and Locked), TASK-81N (Complete and Locked), TASK-81O (Complete and Locked), TASK-81P (Complete and Locked), TASK-81Q (Complete and Locked), TASK-81R (Complete and Locked), TASK-81S (Complete and Locked), TASK-81T (Complete and Locked), TASK-81U (Complete and Locked), TASK-81V (Complete and Locked), TASK-81W (Complete and Locked), TASK-81X (Complete and Locked), TASK-81Y (Complete and Locked), TASK-81Z (Complete and Locked)
+**Checkpoint:** `docs/PHASE-81-FINAL-CHECKPOINT.md`
+
+**Objective:**
+
+Perform the true final consolidation for Phase 81 and close the Phase 81 history/control-surface usability family after TASK-81A through TASK-81Z.
+
+**Scope:**
+
+1. Validate and consolidate TASK-81A through TASK-81Z
+2. Confirm final Phase 81 baseline is 93/93 tests
+3. Confirm the whole family remained frontend-only and additive
+4. Confirm no backend/schema/endpoint/refactor changes across the family
+5. Confirm no regressions across workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, and all history/control surfaces
+6. Produce the authoritative final Phase 81 checkpoint at `docs/PHASE-81-FINAL-CHECKPOINT.md`
+7. Mark Phase 81 closed so the next bounded slice starts under Phase 82, not Phase 81
+
+**Non-Goals:**
+
+- No new implementation
+- No product code changes
+- No backend changes
+- No schema changes
+- No endpoint changes
+- No refactors
+- No Phase 82 implementation in this task
+
+**Acceptance Criteria:**
+
+- TASK-81A through TASK-81Z confirmed COMPLETE and LOCKED
+- Final Phase 81 checkpoint created at `docs/PHASE-81-FINAL-CHECKPOINT.md`
+- Phase 81 explicitly marked CLOSED
+- Next work can start under Phase 82
+- No code changes made
+
+**Completion Summary:**
+
+- ✅ TASK-81A through TASK-81Z confirmed COMPLETE and LOCKED (all 26 implementation slices)
+- ✅ All 5 prior consolidation documents (TASK-81-FINAL, TASK-81-RECONSOLIDATE, TASK-81-RERECONSOLIDATE, TASK-81-RERERECONSOLIDATE, TASK-81-RERERERECONSOLIDATE) superseded by `docs/PHASE-81-FINAL-CHECKPOINT.md`
+- ✅ Final test baseline confirmed: 93/93 passing, 0 failures, 0 regressions
+- ✅ Whole family confirmed frontend-only and additive across all 26 slices
+- ✅ No backend/schema/endpoint/refactor changes confirmed across all 26 slices
+- ✅ No regressions confirmed across all checked surfaces
+- ✅ Authoritative final Phase 81 checkpoint produced at `docs/PHASE-81-FINAL-CHECKPOINT.md`
+- ✅ Phase 81 marked CLOSED; next bounded work starts under Phase 82
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81Z-CHECKPOINT.md
 
 ---
