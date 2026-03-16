@@ -4063,3 +4063,40 @@ Make checkpoint inspection easier at a glance by adding a bounded current-checkp
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81T for full details
 
 ---
+
+#### TASK-81U: History Action Availability Hints Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-81U-CHECKPOINT.md`
+
+**Objective:**
+Make the history workflow easier to understand by showing bounded inline availability hints for existing history actions, using only already-derived frontend state and already-loaded checkpoint data.
+
+**Scope:**
+- Reuse the existing history/control surface only
+- Add bounded inline hints indicating when existing history actions are available/unavailable
+- Cover relevant existing actions (compare, diff, snapshot, jump-to-live-file, revert) where derivable from already-loaded state
+- Keep hints read-only and informational
+- Keep all existing history surface flows intact
+- Active-session scoped only
+- Frontend-only changes
+- Additive only
+- Focused frontend tests for this slice
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No automatic actions
+- ❌ No new durable state
+- ❌ No broader workspace redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Dependencies:** TASK-81A through TASK-81T (all Complete and Locked); existing history/control surface already present
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81U for full details
+
+---

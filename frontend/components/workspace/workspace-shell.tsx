@@ -1460,6 +1460,151 @@ function HistoryCheckpointList(props: {
     }),
     [inspectorActedOnStates, inspectorCheckpoint, inspectorLabel],
   );
+  const compareActionAvailabilityHint = React.useMemo(() => {
+    if (!props.hasSelectedSession) {
+      return 'unavailable (no active session)';
+    }
+    if (props.compareState === 'loading') {
+      return 'selection locked while compare is running';
+    }
+    if (props.compareState === 'idle') {
+      return 'start compare available';
+    }
+    if (!hasVisibleBaseSelection || !hasVisibleTargetSelection) {
+      return `set base/target available; run compare unavailable (${hasVisibleBaseSelection ? 'target missing' : 'base missing'})`;
+    }
+    if (props.compareBaseCheckpointId === props.compareTargetCheckpointId) {
+      return 'set base/target available; run compare unavailable (base and target must differ)';
+    }
+    if (canRunCompare) {
+      return 'set base/target available; run compare available';
+    }
+    return 'set base/target available; run compare unavailable';
+  }, [
+    canRunCompare,
+    hasVisibleBaseSelection,
+    hasVisibleTargetSelection,
+    props.compareBaseCheckpointId,
+    props.compareState,
+    props.compareTargetCheckpointId,
+    props.hasSelectedSession,
+  ]);
+  const diffActionAvailabilityHint = React.useMemo(() => {
+    if (!props.hasSelectedSession) {
+      return 'unavailable (no active session)';
+    }
+    if (!inspectorCheckpoint) {
+      return 'available from checkpoint list; no current context selected';
+    }
+    if (props.diffState === 'loading' && props.diffTargetCheckpointId === inspectorCheckpoint.id) {
+      return 'available; loading for current context';
+    }
+    return `available; metadata ${isDiffMetadataReadyForInspector ? 'loaded' : 'not loaded yet'}`;
+  }, [
+    inspectorCheckpoint,
+    isDiffMetadataReadyForInspector,
+    props.diffState,
+    props.diffTargetCheckpointId,
+    props.hasSelectedSession,
+  ]);
+  const snapshotActionAvailabilityHint = React.useMemo(() => {
+    if (!props.hasSelectedSession) {
+      return 'unavailable (no active session)';
+    }
+    if (!inspectorCheckpoint) {
+      return 'available from checkpoint list; no current context selected';
+    }
+    if (props.snapshotState === 'loading' && props.snapshotTargetCheckpointId === inspectorCheckpoint.id) {
+      return 'available; loading for current context';
+    }
+    return `available; metadata ${isSnapshotMetadataReadyForInspector ? 'loaded' : 'not loaded yet'}`;
+  }, [
+    inspectorCheckpoint,
+    isSnapshotMetadataReadyForInspector,
+    props.hasSelectedSession,
+    props.snapshotState,
+    props.snapshotTargetCheckpointId,
+  ]);
+  const liveFileJumpActionAvailabilityHint = React.useMemo(() => {
+    if (!props.hasSelectedSession) {
+      return 'unavailable (no active session)';
+    }
+    if (!inspectorChangedFiles.files.length) {
+      return 'unavailable (no loaded changed-file metadata)';
+    }
+    return `available for ${openableInspectorFileCount}/${inspectorChangedFiles.files.length} files; selected ${
+      selectedInspectorFileCanOpenLive ? 'openable' : 'not openable'
+    }`;
+  }, [
+    inspectorChangedFiles.files.length,
+    openableInspectorFileCount,
+    props.hasSelectedSession,
+    selectedInspectorFileCanOpenLive,
+  ]);
+  const revertActionAvailabilityHint = React.useMemo(() => {
+    if (!props.hasSelectedSession) {
+      return 'unavailable (no active session)';
+    }
+    if (isReverting) {
+      return 'unavailable while revert is running';
+    }
+    if (!inspectorCheckpoint) {
+      return 'available from checkpoint list';
+    }
+    if (props.selectedCheckpointId === inspectorCheckpoint.id) {
+      if (isConfirming) {
+        return 'confirm/cancel available for selected checkpoint';
+      }
+      if (isPreviewing) {
+        return 'preview continue/cancel available for selected checkpoint';
+      }
+      return 'start revert available for selected checkpoint';
+    }
+    return 'start revert available from checkpoint list';
+  }, [
+    inspectorCheckpoint,
+    isConfirming,
+    isPreviewing,
+    isReverting,
+    props.hasSelectedSession,
+    props.selectedCheckpointId,
+  ]);
+  const actionAvailabilityHintItems = React.useMemo(
+    () => [
+      {
+        key: 'compare-actions',
+        title: 'Compare actions',
+        value: compareActionAvailabilityHint,
+      },
+      {
+        key: 'diff-actions',
+        title: 'Diff actions',
+        value: diffActionAvailabilityHint,
+      },
+      {
+        key: 'snapshot-actions',
+        title: 'Snapshot actions',
+        value: snapshotActionAvailabilityHint,
+      },
+      {
+        key: 'jump-live-file-action',
+        title: 'Jump-to-live-file action',
+        value: liveFileJumpActionAvailabilityHint,
+      },
+      {
+        key: 'revert-actions',
+        title: 'Revert actions',
+        value: revertActionAvailabilityHint,
+      },
+    ],
+    [
+      compareActionAvailabilityHint,
+      diffActionAvailabilityHint,
+      liveFileJumpActionAvailabilityHint,
+      revertActionAvailabilityHint,
+      snapshotActionAvailabilityHint,
+    ],
+  );
 
   return (
     <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="history-checkpoint-list-surface">
@@ -1693,6 +1838,27 @@ function HistoryCheckpointList(props: {
           <p data-testid="history-current-checkpoint-summary-active-roles">
             Active roles: <span className="text-slate-800">{currentCheckpointSummary.activeRoles}</span>
           </p>
+        </div>
+      </div>
+      <div
+        className="mb-2 rounded border border-fuchsia-200 bg-fuchsia-50 p-2"
+        data-testid="history-action-availability-hints"
+      >
+        <p className="text-[11px] font-semibold text-fuchsia-800">History Action Availability Hints</p>
+        <p className="mt-1 text-[11px] text-fuchsia-700" data-testid="history-action-availability-hints-caption">
+          Read-only availability hints from already-derived history state and loaded checkpoint metadata.
+        </p>
+        <div className="mt-2 grid gap-1 sm:grid-cols-2" data-testid="history-action-availability-hints-items">
+          {actionAvailabilityHintItems.map((hintItem) => (
+            <p
+              key={hintItem.key}
+              className="rounded border border-fuchsia-200 bg-white px-2 py-1 text-[11px] text-fuchsia-800"
+              data-testid={`history-action-availability-hint-${hintItem.key}`}
+            >
+              <span className="font-semibold">{hintItem.title}:</span>{' '}
+              <span className="font-mono text-fuchsia-700 break-all">{hintItem.value}</span>
+            </p>
+          ))}
         </div>
       </div>
       <div className="mb-2 rounded border border-amber-200 bg-amber-50 p-2" data-testid="history-pinned-reference-state">

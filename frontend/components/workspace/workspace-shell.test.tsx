@@ -815,6 +815,41 @@ describe('workspace shell component', () => {
     assert.match(html, /Active roles:.*selected for revert, selected for diff, selected for snapshot, selected as compare base, pinned comparison reference/);
   });
 
+  test('renders bounded history action availability hints from existing derived state', () => {
+    const html = renderWorkspaceShell({
+      checkpoints: [checkpoint, checkpointTwo],
+      selectedSessionId: session.id,
+      checkpointRevertState: 'previewing',
+      checkpointRevertTargetId: checkpoint.id,
+      checkpointDiffState: 'ready',
+      checkpointDiffTargetId: checkpoint.id,
+      checkpointDiffResponse,
+      checkpointSnapshotState: 'ready',
+      checkpointSnapshotTargetId: checkpoint.id,
+      checkpointSnapshotResponse: checkpointDiffResponse,
+      checkpointCompareState: 'selecting',
+      checkpointCompareBaseId: checkpoint.id,
+      checkpointCompareTargetId: checkpointTwo.id,
+    });
+
+    assert.match(html, /data-testid="history-action-availability-hints"/);
+    assert.match(html, /History Action Availability Hints/);
+    assert.match(
+      html,
+      /Read-only availability hints from already-derived history state and loaded checkpoint metadata\./,
+    );
+    assert.match(html, /data-testid="history-action-availability-hint-compare-actions"/);
+    assert.match(html, /Compare actions:.*run compare available/);
+    assert.match(html, /data-testid="history-action-availability-hint-diff-actions"/);
+    assert.match(html, /Diff actions:.*metadata loaded/);
+    assert.match(html, /data-testid="history-action-availability-hint-snapshot-actions"/);
+    assert.match(html, /Snapshot actions:.*metadata loaded/);
+    assert.match(html, /data-testid="history-action-availability-hint-jump-live-file-action"/);
+    assert.match(html, /Jump-to-live-file action:.*available for 1\/3 files; selected openable/);
+    assert.match(html, /data-testid="history-action-availability-hint-revert-actions"/);
+    assert.match(html, /Revert actions:.*preview continue\/cancel available for selected checkpoint/);
+  });
+
   test('renders distinct checkpoint snapshot states and read-only snapshot viewer', () => {
     const idleHtml = renderWorkspaceShell({
       checkpointSnapshotState: 'idle',
