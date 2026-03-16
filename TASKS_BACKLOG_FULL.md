@@ -11570,3 +11570,68 @@ Make the history workflow easier to understand by adding a bounded legend for ex
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81U-CHECKPOINT.md
 
 ---
+
+### TASK-81W: History Selection Breadcrumb Slice
+
+**Task ID:** TASK-81W
+**Phase:** 81
+**Stage:** 81W
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked), TASK-81I (Complete and Locked), TASK-81J (Complete and Locked), TASK-81K (Complete and Locked), TASK-81L (Complete and Locked), TASK-81M (Complete and Locked), TASK-81N (Complete and Locked), TASK-81O (Complete and Locked), TASK-81P (Complete and Locked), TASK-81Q (Complete and Locked), TASK-81R (Complete and Locked), TASK-81S (Complete and Locked), TASK-81T (Complete and Locked), TASK-81U (Complete and Locked), TASK-81V (Complete and Locked); existing history/control surface already present
+**Checkpoint:** `docs/PHASE-81W-CHECKPOINT.md`
+
+**Objective:**
+
+Make the history workflow easier to follow by adding a bounded breadcrumb-style selection trail inside the existing history/control surface, using only already-derived frontend state and already-loaded checkpoint data.
+
+**Scope:**
+
+1. Reuse the existing history/control surface only
+2. Add a compact read-only breadcrumb trail for the current history selection context, showing already-present selection context where relevant, such as:
+   - current checkpoint context
+   - compare base
+   - compare target
+   - pinned reference
+   - snapshot target
+   - revert target / preview target
+   - details inspector target
+   - changed-files inspector target
+3. Use only already-derived frontend state and already-loaded checkpoint data — no new fetches
+4. Keep the breadcrumb read-only and informational only
+5. Do not add any new fetches or backend concepts
+6. Keep existing diff viewer, compare mode, search/filter, visual timeline, git-log browser, snapshot viewer, jump-to-live-file, pinned comparison reference, details inspector, revert preview, changed-files inspector, manual checkpoint, manual revert, working set, reset controls, unified active checkpoint highlight, history state summary bar, compare metadata summary, inspection readiness surface, current checkpoint summary card, action availability hints, and role legend intact
+7. Preserve active-session-scoped behavior only
+8. Keep integration localized to the existing workspace shell and history/control surface
+9. Frontend-only changes
+10. Additive only
+11. Focused frontend tests for this slice
+12. Slice-specific checkpoint output at `docs/PHASE-81W-CHECKPOINT.md`
+
+**Non-Goals:**
+
+- No backend changes
+- No schema changes
+- No refactors
+- No new endpoints
+- No automatic actions
+- No new durable state
+- No broader workspace redesign
+- No polling/websocket behavior
+- No multi-task work
+
+**Acceptance Criteria:**
+
+- User can see a compact breadcrumb-style selection trail inside the existing history/control surface
+- Breadcrumb uses only already-available frontend state and already-loaded checkpoint data
+- Behavior remains scoped to the active session only
+- Existing diff viewer, compare mode, search/filter, visual timeline, git-log browser, snapshot viewer, jump-to-live-file, pinned comparison reference, details inspector, revert preview, changed-files inspector, manual checkpoint, manual revert, working set, reset controls, unified active checkpoint highlight, history state summary bar, compare metadata summary, inspection readiness surface, current checkpoint summary card, action availability hints, and role legend continue to work correctly
+- No backend changes occurred
+- No schema changes occurred
+- No refactors occurred
+- No regressions in workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, or existing history/control surfaces
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81V-CHECKPOINT.md
+
+---

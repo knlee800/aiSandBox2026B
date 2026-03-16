@@ -4137,3 +4137,40 @@ Make the history workflow easier to understand by adding a bounded legend for ex
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81V for full details
 
 ---
+
+#### TASK-81W: History Selection Breadcrumb Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-81W-CHECKPOINT.md`
+
+**Objective:**
+Make the history workflow easier to follow by adding a bounded breadcrumb-style selection trail inside the existing history/control surface, using only already-derived frontend state and already-loaded checkpoint data.
+
+**Scope:**
+- Reuse the existing history/control surface only
+- Add a compact read-only breadcrumb trail for the current history selection context (current checkpoint context, compare base/target, pinned reference, snapshot target, revert target/preview target, details inspector target, changed-files inspector target)
+- Use only already-derived frontend state and already-loaded checkpoint data
+- Keep it informational only
+- Keep all existing history surface flows intact
+- Active-session scoped only
+- Frontend-only changes
+- Additive only
+- Focused frontend tests for this slice
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No automatic actions
+- ❌ No new durable state
+- ❌ No broader workspace redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Dependencies:** TASK-81A through TASK-81V (all Complete and Locked); existing history/control surface already present
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81W for full details
+
+---

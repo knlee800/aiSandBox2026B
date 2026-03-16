@@ -1659,6 +1659,59 @@ function HistoryCheckpointList(props: {
       revertSummary,
     ],
   );
+  const historySelectionBreadcrumbItems = React.useMemo(
+    () => [
+      {
+        key: 'current-checkpoint-context',
+        title: 'Current checkpoint context',
+        value: inspectorCheckpoint ? getCheckpointSummaryLabel(inspectorCheckpoint.id) : 'none',
+      },
+      {
+        key: 'compare-base',
+        title: 'Compare base',
+        value: getCheckpointSummaryLabel(props.compareBaseCheckpointId),
+      },
+      {
+        key: 'compare-target',
+        title: 'Compare target',
+        value: getCheckpointSummaryLabel(props.compareTargetCheckpointId),
+      },
+      {
+        key: 'pinned-reference',
+        title: 'Pinned reference',
+        value: getCheckpointSummaryLabel(props.pinnedCompareReferenceCheckpointId),
+      },
+      {
+        key: 'snapshot-target',
+        title: 'Snapshot target',
+        value: getCheckpointSummaryLabel(props.snapshotTargetCheckpointId),
+      },
+      {
+        key: 'revert-target',
+        title: 'Revert target / preview target',
+        value: revertSummary,
+      },
+      {
+        key: 'details-inspector-target',
+        title: 'Details inspector target',
+        value: inspectorCheckpoint ? getCheckpointSummaryLabel(inspectorCheckpoint.id) : 'none',
+      },
+      {
+        key: 'changed-files-inspector-target',
+        title: 'Changed-files inspector target',
+        value: inspectorCheckpoint ? getCheckpointSummaryLabel(inspectorCheckpoint.id) : 'none',
+      },
+    ],
+    [
+      getCheckpointSummaryLabel,
+      inspectorCheckpoint,
+      props.compareBaseCheckpointId,
+      props.compareTargetCheckpointId,
+      props.pinnedCompareReferenceCheckpointId,
+      props.snapshotTargetCheckpointId,
+      revertSummary,
+    ],
+  );
 
   return (
     <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="history-checkpoint-list-surface">
@@ -1936,6 +1989,33 @@ function HistoryCheckpointList(props: {
             </p>
           ))}
         </div>
+      </div>
+      <div
+        className="mb-2 rounded border border-lime-200 bg-lime-50 p-2"
+        data-testid="history-selection-breadcrumb"
+      >
+        <p className="text-[11px] font-semibold text-lime-800">History Selection Breadcrumb</p>
+        <p className="mt-1 text-[11px] text-lime-700" data-testid="history-selection-breadcrumb-caption">
+          Compact read-only selection trail from already-derived state and loaded checkpoint metadata.
+        </p>
+        <ol className="mt-2 flex flex-wrap items-center gap-1" data-testid="history-selection-breadcrumb-trail">
+          {historySelectionBreadcrumbItems.map((breadcrumbItem, index) => (
+            <li key={breadcrumbItem.key} className="flex items-center gap-1">
+              {index > 0 ? (
+                <span className="text-[11px] text-lime-600" aria-hidden="true">
+                  {'>'}
+                </span>
+              ) : null}
+              <span
+                className="rounded border border-lime-200 bg-white px-2 py-1 text-[11px] text-lime-800"
+                data-testid={`history-selection-breadcrumb-${breadcrumbItem.key}`}
+              >
+                <span className="font-semibold">{breadcrumbItem.title}:</span>{' '}
+                <span className="font-mono text-lime-700 break-all">{breadcrumbItem.value}</span>
+              </span>
+            </li>
+          ))}
+        </ol>
       </div>
       <div className="mb-2 rounded border border-amber-200 bg-amber-50 p-2" data-testid="history-pinned-reference-state">
         <p className="text-[11px] font-semibold text-amber-800">Pinned Comparison Reference</p>

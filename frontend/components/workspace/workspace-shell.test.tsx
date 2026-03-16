@@ -890,6 +890,47 @@ describe('workspace shell component', () => {
     assert.match(html, /data-testid="history-checkpoint-role-legend-changed-files-inspector-target"/);
     assert.match(html, /Changed-files inspector target:.*Auto-commit: Message 10/);
   });
+  test('renders compact history selection breadcrumb trail from existing selection context', () => {
+    const html = renderWorkspaceShell({
+      checkpoints: [checkpoint, checkpointTwo],
+      selectedSessionId: session.id,
+      checkpointRevertState: 'previewing',
+      checkpointRevertTargetId: checkpoint.id,
+      checkpointDiffState: 'ready',
+      checkpointDiffTargetId: checkpoint.id,
+      checkpointDiffResponse,
+      checkpointSnapshotState: 'ready',
+      checkpointSnapshotTargetId: checkpoint.id,
+      checkpointSnapshotResponse: checkpointDiffResponse,
+      checkpointCompareState: 'selecting',
+      checkpointCompareBaseId: checkpoint.id,
+      checkpointCompareTargetId: checkpointTwo.id,
+      pinnedCompareReferenceCheckpointId: checkpoint.id,
+    });
+
+    assert.match(html, /data-testid="history-selection-breadcrumb"/);
+    assert.match(html, /History Selection Breadcrumb/);
+    assert.match(
+      html,
+      /Compact read-only selection trail from already-derived state and loaded checkpoint metadata\./,
+    );
+    assert.match(html, /data-testid="history-selection-breadcrumb-current-checkpoint-context"/);
+    assert.match(html, /Current checkpoint context:.*Auto-commit: Message 10/);
+    assert.match(html, /data-testid="history-selection-breadcrumb-compare-base"/);
+    assert.match(html, /Compare base:.*Auto-commit: Message 10/);
+    assert.match(html, /data-testid="history-selection-breadcrumb-compare-target"/);
+    assert.match(html, /Compare target:.*Checkpoint 7890abc/);
+    assert.match(html, /data-testid="history-selection-breadcrumb-pinned-reference"/);
+    assert.match(html, /Pinned reference:.*Auto-commit: Message 10/);
+    assert.match(html, /data-testid="history-selection-breadcrumb-snapshot-target"/);
+    assert.match(html, /Snapshot target:.*Auto-commit: Message 10/);
+    assert.match(html, /data-testid="history-selection-breadcrumb-revert-target"/);
+    assert.match(html, /Revert target \/ preview target:/);
+    assert.match(html, /data-testid="history-selection-breadcrumb-details-inspector-target"/);
+    assert.match(html, /Details inspector target:.*Auto-commit: Message 10/);
+    assert.match(html, /data-testid="history-selection-breadcrumb-changed-files-inspector-target"/);
+    assert.match(html, /Changed-files inspector target:.*Auto-commit: Message 10/);
+  });
 
   test('renders distinct checkpoint snapshot states and read-only snapshot viewer', () => {
     const idleHtml = renderWorkspaceShell({
