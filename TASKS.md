@@ -4338,7 +4338,7 @@ Perform the true final consolidation for Phase 81 and close the Phase 81 history
 
 ## Phase 82 — History Surface Usability Continued
 
-**Current stage:** TASK-82D (COMPLETE and LOCKED)
+**Current stage:** TASK-82E (COMPLETE and LOCKED)
 
 ---
 
@@ -4526,5 +4526,53 @@ Make the history workflow easier to manage by adding bounded frontend-only secti
 - ✅ Checkpoint created: `docs/PHASE-82D-CHECKPOINT.md`
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82D for full details
+
+---
+
+#### TASK-82E: History Surface Section Order Reset Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-82E-CHECKPOINT.md`
+
+**Objective:**
+Make the history workflow easier to recover from temporary layout changes by adding a bounded reset-to-default order control for existing history sections, building on the section-order family without changing underlying behavior.
+
+**Scope:**
+- Reuse existing history/control surface only
+- Build on TASK-82A through TASK-82D section organization behavior
+- Add a compact reset-to-default order control for existing history sections
+- Affect presentation/order only for already-existing history UI sections
+- Use only already-derived frontend state and already-loaded checkpoint data
+- Keep all existing history actions and behaviors unchanged
+- Keep reset behavior frontend-only, temporary, and active-session scoped
+- Preserve all closed Phase 81 history/control capabilities and TASK-82A/TASK-82D behavior
+- Frontend-only, additive only
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No automatic actions
+- ❌ No durable state outside current session
+- ❌ No broader redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Dependencies:** TASK-82A, TASK-82B, TASK-82C, and TASK-82D (Complete and Locked); existing history/control surface already present
+
+**Completion Evidence:**
+- ✅ Compact reset-to-default section order control added inside existing `history-section-collapse-controls` surface
+- ✅ `resetHistoryCollapsibleSectionOrderToDefault()` helper added for bounded default order return
+- ✅ Reset control is disabled when order already matches default; enabled only after moves are applied
+- ✅ Reset uses only existing in-session `historyCollapsibleSectionOrder` state; no new data sources, fetches, endpoints, polling, or websocket behavior
+- ✅ Active-session scoping preserved; resets on session change (consistent with TASK-82A through TASK-82D)
+- ✅ All Phase 81, TASK-82A, TASK-82B, TASK-82C, and TASK-82D history/control behaviors remain unchanged
+- ✅ Scope confirmed frontend-only and additive; no backend, schema, endpoint, refactor, fetch, polling, or websocket changes
+- ✅ 98/98 tests pass; 0 regressions
+- ✅ Checkpoint created: `docs/PHASE-82E-CHECKPOINT.md`
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82E for full details
 
 ---

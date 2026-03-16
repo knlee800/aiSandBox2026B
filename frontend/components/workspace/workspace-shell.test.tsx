@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import WorkspaceShell, { moveHistoryCollapsibleSectionOrderItem } from './workspace-shell';
+import WorkspaceShell, {
+  moveHistoryCollapsibleSectionOrderItem,
+  resetHistoryCollapsibleSectionOrderToDefault,
+} from './workspace-shell';
 import type { WorkspaceCheckpoint, WorkspaceShellSession } from './workspace-shell.logic';
 import type { WorkspaceExecState } from './workspace-exec.logic';
 import type { WorkspacePreviewState } from './workspace-preview.logic';
@@ -1020,6 +1023,10 @@ describe('workspace shell component', () => {
     );
     assert.match(html, /data-testid="history-section-order-summary"/);
     assert.match(html, /Current section order: Controls &gt; Summaries &gt; Inspectors &gt; Checkpoint Browser/);
+    assert.match(html, /data-testid="history-section-order-reset-controls"/);
+    assert.match(html, /data-testid="history-section-order-reset-default" disabled/);
+    assert.match(html, /data-testid="history-section-order-reset-state"/);
+    assert.match(html, /Default: Controls &gt; Summaries &gt; Inspectors &gt; Checkpoint Browser/);
     assert.match(html, /data-testid="history-section-toggle-quick-controls"/);
     assert.match(html, /data-testid="history-section-expand-all" disabled/);
     assert.match(html, /data-testid="history-section-collapse-all"/);
@@ -1106,6 +1113,12 @@ describe('workspace shell component', () => {
     });
 
     assert.deepEqual(normalizedOrder, ['controls', 'summaries', 'inspectors', 'checkpoint-browser']);
+  });
+
+  test('resets history section order to bounded default presentation order', () => {
+    const resetOrder = resetHistoryCollapsibleSectionOrderToDefault();
+
+    assert.deepEqual(resetOrder, ['controls', 'summaries', 'inspectors', 'checkpoint-browser']);
   });
 
   test('renders distinct checkpoint snapshot states and read-only snapshot viewer', () => {

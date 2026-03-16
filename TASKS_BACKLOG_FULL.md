@@ -12138,3 +12138,68 @@ Make the history workflow easier to manage by adding bounded frontend-only secti
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-82A-CHECKPOINT.md, PHASE-82B-CHECKPOINT.md, PHASE-82C-CHECKPOINT.md, PHASE-82D-CHECKPOINT.md
 
 ---
+
+### TASK-82E: History Surface Section Order Reset Slice
+
+**Task ID:** TASK-82E
+**Phase:** 82
+**Stage:** 82E
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** TASK-82A, TASK-82B, TASK-82C, and TASK-82D (Complete and Locked); existing history/control surface already present
+**Checkpoint:** `docs/PHASE-82E-CHECKPOINT.md`
+
+**Objective:**
+
+Make the history workflow easier to recover from temporary layout changes by adding a bounded reset-to-default order control for existing history sections, building on the section-order family without changing underlying behavior.
+
+**Scope:**
+
+1. Reuse the existing history/control surface only — no new panels, routes, or sub-routes
+2. Build on the section-order state from TASK-82A through TASK-82D
+3. Add a compact reset-to-default order control for existing history sections
+4. Affect presentation/order only for already-existing history UI sections
+5. Use only already-derived frontend state and already-loaded checkpoint data
+6. Keep all existing history actions and behaviors unchanged
+7. Keep reset behavior frontend-only, temporary, and active-session scoped
+8. Preserve all closed Phase 81 history/control capabilities and TASK-82A/TASK-82D behavior
+9. Frontend-only, additive changes
+10. Focused frontend tests for this slice
+
+**Non-Goals:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No automatic actions
+- ❌ No durable state outside current session
+- ❌ No broader redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Acceptance Criteria:**
+
+- User can reset section order back to default inside the existing history/control surface
+- Behavior uses only already-available frontend state and already-loaded checkpoint data
+- Active-session scoping preserved
+- All closed Phase 81 surfaces and TASK-82A/TASK-82D behavior remain intact and functional
+- No backend/schema/endpoint/refactor changes
+- No regressions across workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, and all history/control surfaces
+
+**Completion Evidence:**
+
+- ✅ Compact reset-to-default section order control added inside existing `history-section-collapse-controls` surface
+- ✅ `resetHistoryCollapsibleSectionOrderToDefault()` helper added for bounded default order return
+- ✅ Reset control is disabled when order already matches default; enabled only after moves are applied
+- ✅ Reset uses only existing in-session `historyCollapsibleSectionOrder` state; no new data sources, fetches, endpoints, polling, or websocket behavior
+- ✅ Active-session scoping preserved; resets on session change (consistent with TASK-82A through TASK-82D)
+- ✅ All Phase 81, TASK-82A, TASK-82B, TASK-82C, and TASK-82D history/control behaviors remain unchanged
+- ✅ Scope confirmed frontend-only and additive; no backend, schema, endpoint, refactor, fetch, polling, or websocket changes
+- ✅ 98/98 tests pass; 0 regressions
+- ✅ Checkpoint created: `docs/PHASE-82E-CHECKPOINT.md`
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-82A-CHECKPOINT.md, PHASE-82B-CHECKPOINT.md, PHASE-82C-CHECKPOINT.md, PHASE-82D-CHECKPOINT.md, PHASE-82E-CHECKPOINT.md
+
+---

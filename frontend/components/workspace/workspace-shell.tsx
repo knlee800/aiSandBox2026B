@@ -992,6 +992,10 @@ export function moveHistoryCollapsibleSectionOrderItem(args: {
   return nextOrder;
 }
 
+export function resetHistoryCollapsibleSectionOrderToDefault(): HistoryCollapsibleSectionKey[] {
+  return [...DEFAULT_HISTORY_COLLAPSIBLE_SECTION_ORDER];
+}
+
 function HistoryCheckpointList(props: {
   selectedSessionId: string | null;
   checkpoints: WorkspaceCheckpoint[];
@@ -1297,6 +1301,14 @@ function HistoryCheckpointList(props: {
         .join(' > '),
     [historyCollapsibleSectionOrder],
   );
+  const canResetHistorySectionOrder = React.useMemo(
+    () =>
+      historyCollapsibleSectionOrder.length !== DEFAULT_HISTORY_COLLAPSIBLE_SECTION_ORDER.length ||
+      historyCollapsibleSectionOrder.some(
+        (sectionKey, sectionIndex) => sectionKey !== DEFAULT_HISTORY_COLLAPSIBLE_SECTION_ORDER[sectionIndex],
+      ),
+    [historyCollapsibleSectionOrder],
+  );
   const isEveryHistorySectionCollapsed = collapsedSectionCount === collapsibleSectionKeys.length;
   const isEveryHistorySectionExpanded = collapsedSectionCount === 0;
   const toggleCollapsedHistorySection = React.useCallback((sectionKey: HistoryCollapsibleSectionKey): void => {
@@ -1324,6 +1336,9 @@ function HistoryCheckpointList(props: {
     },
     [],
   );
+  const resetHistorySectionOrder = React.useCallback((): void => {
+    setHistoryCollapsibleSectionOrder(resetHistoryCollapsibleSectionOrderToDefault());
+  }, []);
   const checkpointListSpacingClass = isHistoryFocusModeActive
     ? isExpandedHistoryContextDensity
       ? 'space-y-2'
@@ -1938,6 +1953,20 @@ function HistoryCheckpointList(props: {
         <p className="mt-1 text-[11px] text-gray-600" data-testid="history-section-order-summary">
           Current section order: {historyCollapsibleSectionOrderSummary}
         </p>
+        <div className="mt-2 flex flex-wrap items-center gap-2" data-testid="history-section-order-reset-controls">
+          <button
+            type="button"
+            data-testid="history-section-order-reset-default"
+            disabled={!canResetHistorySectionOrder}
+            onClick={resetHistorySectionOrder}
+            className="rounded border border-gray-300 bg-white px-2 py-0.5 text-[11px] text-gray-700 disabled:border-gray-200 disabled:text-gray-400"
+          >
+            Reset Order
+          </button>
+          <span className="text-[11px] text-gray-600" data-testid="history-section-order-reset-state">
+            Default: Controls &gt; Summaries &gt; Inspectors &gt; Checkpoint Browser
+          </span>
+        </div>
         <div className="mt-2 flex flex-wrap items-center gap-2" data-testid="history-section-toggle-quick-controls">
           <button
             type="button"
