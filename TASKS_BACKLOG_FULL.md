@@ -11945,3 +11945,67 @@ Make the history workflow easier to manage at larger scale by adding bounded sec
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81-FINAL-CHECKPOINT.md, PHASE-82A-CHECKPOINT.md
 
 ---
+
+### TASK-82B: History Surface Quick Expand/Collapse All Slice
+
+**Task ID:** TASK-82B
+**Phase:** 82
+**Stage:** 82B
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** TASK-82A (Complete and Locked); existing `collapsedHistorySections` state already present
+**Checkpoint:** `docs/PHASE-82B-CHECKPOINT.md`
+
+**Objective:**
+
+Make the history workflow faster to manage by adding bounded quick expand-all / collapse-all controls for the existing history surface sections, using only already-derived frontend state and already-loaded checkpoint data.
+
+**Scope:**
+
+1. Reuse the existing history/control surface only — no new panels, routes, or sub-routes
+2. Build on the existing section-collapse capability introduced in TASK-82A
+3. Add compact expand-all / collapse-all controls for existing history sections
+4. Affect presentation/visibility only — no behavioral changes to any existing action handlers, data flows, or state machines
+5. Use only already-derived frontend state and already-loaded checkpoint data
+6. Keep all existing history actions and behaviors unchanged
+7. Keep controls frontend-only, temporary, and active-session scoped
+8. Preserve all closed Phase 81 history/control capabilities and TASK-82A section-collapse behavior
+9. Frontend-only, additive changes
+10. Focused frontend tests for this slice
+
+**Non-Goals:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No automatic actions
+- ❌ No durable state
+- ❌ No broader redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Acceptance Criteria:**
+
+- User can expand all / collapse all relevant existing history sections inside the existing history/control surface
+- Controls use only already-available frontend state and already-loaded checkpoint data
+- Active-session scoping preserved
+- All closed Phase 81 surfaces and TASK-82A section-collapse behavior remain intact and functional
+- No backend/schema/endpoint/refactor changes
+- No regressions across workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, and all history/control surfaces
+
+**Completion Summary:**
+
+- ✅ Quick `Expand All` / `Collapse All` controls added inside existing `history-section-collapse-controls` strip
+- ✅ Read-only collapsed-section count indicator (`Collapsed X/4 sections`) added
+- ✅ Controls operate only on existing `collapsedHistorySections` frontend state from TASK-82A
+- ✅ Session-scoped; resets to all-expanded on session change (inherited from TASK-82A)
+- ✅ All Phase 81 and TASK-82A history/control surfaces preserved and unchanged in behavior
+- ✅ Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes
+- ✅ 95/95 tests pass; 0 regressions
+- ✅ Checkpoint created: `docs/PHASE-82B-CHECKPOINT.md`
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-82A-CHECKPOINT.md, PHASE-82B-CHECKPOINT.md
+
+---

@@ -1018,6 +1018,11 @@ describe('workspace shell component', () => {
       html,
       /Presentation-only collapse\/expand controls for major existing history sections in this active session\./,
     );
+    assert.match(html, /data-testid="history-section-toggle-quick-controls"/);
+    assert.match(html, /data-testid="history-section-expand-all" disabled/);
+    assert.match(html, /data-testid="history-section-collapse-all"/);
+    assert.match(html, /data-testid="history-section-toggle-all-state"/);
+    assert.match(html, /Collapsed 0\/4 sections/);
     assert.match(html, /data-testid="history-section-toggle-controls" aria-expanded="true"/);
     assert.match(html, /data-testid="history-section-toggle-summaries" aria-expanded="true"/);
     assert.match(html, /data-testid="history-section-toggle-inspectors" aria-expanded="true"/);

@@ -1226,11 +1226,36 @@ function HistoryCheckpointList(props: {
   };
   const isExpandedHistoryContextDensity = historyContextDensity === 'expanded';
   const isHistoryFocusModeActive = historyFocusMode === 'on';
+  const collapsibleSectionKeys = React.useMemo(
+    () => Object.keys(HISTORY_COLLAPSIBLE_SECTION_LABELS) as HistoryCollapsibleSectionKey[],
+    [],
+  );
+  const collapsedSectionCount = React.useMemo(
+    () =>
+      collapsibleSectionKeys.reduce(
+        (count, sectionKey) => (collapsedHistorySections[sectionKey] ? count + 1 : count),
+        0,
+      ),
+    [collapsedHistorySections, collapsibleSectionKeys],
+  );
+  const isEveryHistorySectionCollapsed = collapsedSectionCount === collapsibleSectionKeys.length;
+  const isEveryHistorySectionExpanded = collapsedSectionCount === 0;
   const toggleCollapsedHistorySection = React.useCallback((sectionKey: HistoryCollapsibleSectionKey): void => {
     setCollapsedHistorySections((currentState) => ({
       ...currentState,
       [sectionKey]: !currentState[sectionKey],
     }));
+  }, []);
+  const collapseAllHistorySections = React.useCallback((): void => {
+    setCollapsedHistorySections({
+      controls: true,
+      summaries: true,
+      inspectors: true,
+      'checkpoint-browser': true,
+    });
+  }, []);
+  const expandAllHistorySections = React.useCallback((): void => {
+    setCollapsedHistorySections(DEFAULT_HISTORY_COLLAPSIBLE_SECTION_STATE);
   }, []);
   const checkpointListSpacingClass = isHistoryFocusModeActive
     ? isExpandedHistoryContextDensity
@@ -1843,8 +1868,31 @@ function HistoryCheckpointList(props: {
         <p className="mt-1 text-[11px] text-gray-600">
           Presentation-only collapse/expand controls for major existing history sections in this active session.
         </p>
+        <div className="mt-2 flex flex-wrap items-center gap-2" data-testid="history-section-toggle-quick-controls">
+          <button
+            type="button"
+            data-testid="history-section-expand-all"
+            disabled={isEveryHistorySectionExpanded}
+            onClick={expandAllHistorySections}
+            className="rounded border border-gray-300 bg-white px-3 py-1 text-xs text-gray-700 disabled:border-gray-200 disabled:text-gray-400"
+          >
+            Expand All
+          </button>
+          <button
+            type="button"
+            data-testid="history-section-collapse-all"
+            disabled={isEveryHistorySectionCollapsed}
+            onClick={collapseAllHistorySections}
+            className="rounded border border-gray-300 bg-white px-3 py-1 text-xs text-gray-700 disabled:border-gray-200 disabled:text-gray-400"
+          >
+            Collapse All
+          </button>
+          <span className="text-[11px] text-gray-600" data-testid="history-section-toggle-all-state">
+            Collapsed {collapsedSectionCount}/{collapsibleSectionKeys.length} sections
+          </span>
+        </div>
         <div className="mt-2 flex flex-wrap gap-2">
-          {(Object.keys(HISTORY_COLLAPSIBLE_SECTION_LABELS) as HistoryCollapsibleSectionKey[]).map((sectionKey) => {
+          {collapsibleSectionKeys.map((sectionKey) => {
             const isCollapsed = collapsedHistorySections[sectionKey];
             const sectionLabel = HISTORY_COLLAPSIBLE_SECTION_LABELS[sectionKey];
             return (
