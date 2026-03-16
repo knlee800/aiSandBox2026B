@@ -982,6 +982,30 @@ describe('workspace shell component', () => {
     assert.match(html, /data-testid="history-state-summary-items" data-density="compact"/);
   });
 
+  test('renders history focus mode toggle with focus off by default', () => {
+    const html = renderWorkspaceShell({
+      checkpoints: [checkpoint, checkpointTwo],
+      selectedSessionId: session.id,
+    });
+
+    assert.match(html, /data-testid="history-focus-mode-toggle"/);
+    assert.match(html, /History Focus Mode/);
+    assert.match(html, /data-testid="history-focus-mode-caption"/);
+    assert.match(
+      html,
+      /Presentation-only toggle to reduce visual noise in this active session history context surface\./,
+    );
+    assert.match(html, /data-testid="history-focus-mode-off"/);
+    assert.match(html, /data-testid="history-focus-mode-on"/);
+    assert.match(html, /data-testid="history-focus-mode-active-mode"/);
+    assert.match(html, /Active focus mode: off/);
+    assert.match(html, /data-testid="history-focus-mode-off" aria-pressed="true"/);
+    assert.match(html, /data-testid="history-focus-mode-on" aria-pressed="false"/);
+    assert.match(html, /data-testid="history-compare-metadata-summary" data-focus-mode="off"/);
+    assert.match(html, /data-testid="history-state-summary-bar" data-focus-mode="off"/);
+    assert.match(html, /data-testid="history-checkpoint-list" data-focus-mode="off"/);
+  });
+
   test('renders distinct checkpoint snapshot states and read-only snapshot viewer', () => {
     const idleHtml = renderWorkspaceShell({
       checkpointSnapshotState: 'idle',

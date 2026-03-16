@@ -4250,3 +4250,42 @@ Make the history workflow easier to scan by adding a bounded frontend-only densi
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81Y for full details
 
 ---
+
+#### TASK-81Z: History Surface Focus Mode Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-81Z-CHECKPOINT.md`
+
+**Objective:**
+Make the history workflow easier to focus on by adding a bounded frontend-only focus mode inside the existing history/control surface, so users can temporarily reduce visual noise while inspecting checkpoint context.
+
+**Scope:**
+- Reuse the existing history/control surface only
+- Add a compact focus-mode toggle for the existing history presentation
+- Focus mode affects presentation only for already-existing history UI blocks where relevant
+- Use only already-derived frontend state and already-loaded checkpoint data
+- Keep all existing history actions and behaviors unchanged
+- Keep focus mode frontend-only, temporary, and active-session scoped
+- Keep it informational/presentation-only
+- Preserve all existing Phase 81 surfaces
+- Frontend-only changes
+- Additive only
+- Focused frontend tests for this slice
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No automatic actions
+- ❌ No durable state
+- ❌ No broader workspace redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Dependencies:** TASK-81A through TASK-81Y (all Complete and Locked); existing history/control surface already present
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81Z for full details
+
+---

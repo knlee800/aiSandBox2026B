@@ -982,6 +982,7 @@ function HistoryCheckpointList(props: {
   const [descriptionFilter, setDescriptionFilter] =
     React.useState<CheckpointDescriptionFilter>('all');
   const [historyContextDensity, setHistoryContextDensity] = React.useState<'compact' | 'expanded'>('compact');
+  const [historyFocusMode, setHistoryFocusMode] = React.useState<'off' | 'on'>('off');
   const { visibleCheckpoints, totalMatches } = React.useMemo(
     () =>
       filterVisibleWorkspaceCheckpoints({
@@ -1159,6 +1160,7 @@ function HistoryCheckpointList(props: {
     setSelectedInspectorFileId(null);
     setWorkingSetCheckpointIds([]);
     setHistoryContextDensity('compact');
+    setHistoryFocusMode('off');
   }, [props.selectedSessionId]);
 
   React.useEffect(() => {
@@ -1203,6 +1205,14 @@ function HistoryCheckpointList(props: {
     resetInspectorSelection();
   };
   const isExpandedHistoryContextDensity = historyContextDensity === 'expanded';
+  const isHistoryFocusModeActive = historyFocusMode === 'on';
+  const checkpointListSpacingClass = isHistoryFocusModeActive
+    ? isExpandedHistoryContextDensity
+      ? 'space-y-2'
+      : 'space-y-1'
+    : isExpandedHistoryContextDensity
+      ? 'space-y-3'
+      : 'space-y-2';
   const inspectorChangedFilesSourceLabel =
     inspectorChangedFiles.source === 'diff'
       ? 'loaded checkpoint diff metadata'
@@ -1967,9 +1977,55 @@ function HistoryCheckpointList(props: {
           </span>
         </div>
       </div>
-      <div className="mb-2 rounded border border-cyan-200 bg-cyan-50 p-2" data-testid="history-compare-metadata-summary">
+      <div className="mb-2 rounded border border-gray-200 bg-white p-2" data-testid="history-focus-mode-toggle">
+        <p className="text-[11px] font-semibold text-gray-800">History Focus Mode</p>
+        <p className="mt-1 text-[11px] text-gray-700" data-testid="history-focus-mode-caption">
+          Presentation-only toggle to reduce visual noise in this active session history context surface.
+        </p>
+        <div className="mt-2 flex flex-wrap items-center gap-2" data-testid="history-focus-mode-options">
+          <button
+            type="button"
+            data-testid="history-focus-mode-off"
+            aria-pressed={historyFocusMode === 'off'}
+            onClick={() => setHistoryFocusMode('off')}
+            className={`rounded border px-3 py-1 text-xs ${
+              historyFocusMode === 'off'
+                ? 'border-gray-400 bg-gray-200 text-gray-900'
+                : 'border-gray-300 bg-white text-gray-700'
+            }`}
+          >
+            Focus Off
+          </button>
+          <button
+            type="button"
+            data-testid="history-focus-mode-on"
+            aria-pressed={historyFocusMode === 'on'}
+            onClick={() => setHistoryFocusMode('on')}
+            className={`rounded border px-3 py-1 text-xs ${
+              historyFocusMode === 'on'
+                ? 'border-gray-400 bg-gray-200 text-gray-900'
+                : 'border-gray-300 bg-white text-gray-700'
+            }`}
+          >
+            Focus On
+          </button>
+          <span className="text-[11px] text-gray-700" data-testid="history-focus-mode-active-mode">
+            Active focus mode: {historyFocusMode}
+          </span>
+        </div>
+      </div>
+      <div
+        className={`mb-2 rounded border p-2 ${
+          isHistoryFocusModeActive ? 'border-gray-200 bg-white' : 'border-cyan-200 bg-cyan-50'
+        }`}
+        data-testid="history-compare-metadata-summary"
+        data-focus-mode={historyFocusMode}
+      >
         <p className="text-[11px] font-semibold text-cyan-800">Compare Metadata Summary</p>
-        <p className="mt-1 text-[11px] text-cyan-700" data-testid="history-compare-metadata-caption">
+        <p
+          className={`mt-1 text-[11px] text-cyan-700 ${isHistoryFocusModeActive ? 'hidden' : ''}`}
+          data-testid="history-compare-metadata-caption"
+        >
           Read-only compare base/target metadata from the currently loaded session checkpoint list.
         </p>
         <div
@@ -2022,11 +2078,17 @@ function HistoryCheckpointList(props: {
         </div>
       </div>
       <div
-        className="mb-2 rounded border border-teal-200 bg-teal-50 p-2"
+        className={`mb-2 rounded border p-2 ${
+          isHistoryFocusModeActive ? 'border-gray-200 bg-white' : 'border-teal-200 bg-teal-50'
+        }`}
         data-testid="history-inspection-readiness-summary"
+        data-focus-mode={historyFocusMode}
       >
         <p className="text-[11px] font-semibold text-teal-800">Checkpoint Inspection Readiness</p>
-        <p className="mt-1 text-[11px] text-teal-700" data-testid="history-inspection-readiness-caption">
+        <p
+          className={`mt-1 text-[11px] text-teal-700 ${isHistoryFocusModeActive ? 'hidden' : ''}`}
+          data-testid="history-inspection-readiness-caption"
+        >
           Read-only readiness for the current checkpoint context from already-loaded metadata and in-surface state.
         </p>
         <p className="mt-1 text-[11px] text-teal-700" data-testid="history-inspection-readiness-target">
@@ -2053,11 +2115,17 @@ function HistoryCheckpointList(props: {
         </div>
       </div>
       <div
-        className="mb-2 rounded border border-slate-200 bg-slate-50 p-2"
+        className={`mb-2 rounded border p-2 ${
+          isHistoryFocusModeActive ? 'border-gray-200 bg-white' : 'border-slate-200 bg-slate-50'
+        }`}
         data-testid="history-current-checkpoint-summary-card"
+        data-focus-mode={historyFocusMode}
       >
         <p className="text-[11px] font-semibold text-slate-800">Current Checkpoint Summary</p>
-        <p className="mt-1 text-[11px] text-slate-700" data-testid="history-current-checkpoint-summary-caption">
+        <p
+          className={`mt-1 text-[11px] text-slate-700 ${isHistoryFocusModeActive ? 'hidden' : ''}`}
+          data-testid="history-current-checkpoint-summary-caption"
+        >
           Read-only current checkpoint context from already-loaded session checkpoint metadata.
         </p>
         <div
@@ -2082,11 +2150,17 @@ function HistoryCheckpointList(props: {
         </div>
       </div>
       <div
-        className="mb-2 rounded border border-fuchsia-200 bg-fuchsia-50 p-2"
+        className={`mb-2 rounded border p-2 ${
+          isHistoryFocusModeActive ? 'border-gray-200 bg-white' : 'border-fuchsia-200 bg-fuchsia-50'
+        }`}
         data-testid="history-action-availability-hints"
+        data-focus-mode={historyFocusMode}
       >
         <p className="text-[11px] font-semibold text-fuchsia-800">History Action Availability Hints</p>
-        <p className="mt-1 text-[11px] text-fuchsia-700" data-testid="history-action-availability-hints-caption">
+        <p
+          className={`mt-1 text-[11px] text-fuchsia-700 ${isHistoryFocusModeActive ? 'hidden' : ''}`}
+          data-testid="history-action-availability-hints-caption"
+        >
           Read-only availability hints from already-derived history state and loaded checkpoint metadata.
         </p>
         <div
@@ -2109,11 +2183,17 @@ function HistoryCheckpointList(props: {
         </div>
       </div>
       <div
-        className="mb-2 rounded border border-rose-200 bg-rose-50 p-2"
+        className={`mb-2 rounded border p-2 ${
+          isHistoryFocusModeActive ? 'border-gray-200 bg-white' : 'border-rose-200 bg-rose-50'
+        }`}
         data-testid="history-checkpoint-role-legend"
+        data-focus-mode={historyFocusMode}
       >
         <p className="text-[11px] font-semibold text-rose-800">Checkpoint Role Legend</p>
-        <p className="mt-1 text-[11px] text-rose-700" data-testid="history-checkpoint-role-legend-caption">
+        <p
+          className={`mt-1 text-[11px] text-rose-700 ${isHistoryFocusModeActive ? 'hidden' : ''}`}
+          data-testid="history-checkpoint-role-legend-caption"
+        >
           Read-only legend for existing role labels/highlights from already-derived state and loaded checkpoint
           metadata.
         </p>
@@ -2137,11 +2217,17 @@ function HistoryCheckpointList(props: {
         </div>
       </div>
       <div
-        className="mb-2 rounded border border-lime-200 bg-lime-50 p-2"
+        className={`mb-2 rounded border p-2 ${
+          isHistoryFocusModeActive ? 'border-gray-200 bg-white' : 'border-lime-200 bg-lime-50'
+        }`}
         data-testid="history-selection-breadcrumb"
+        data-focus-mode={historyFocusMode}
       >
         <p className="text-[11px] font-semibold text-lime-800">History Selection Breadcrumb</p>
-        <p className="mt-1 text-[11px] text-lime-700" data-testid="history-selection-breadcrumb-caption">
+        <p
+          className={`mt-1 text-[11px] text-lime-700 ${isHistoryFocusModeActive ? 'hidden' : ''}`}
+          data-testid="history-selection-breadcrumb-caption"
+        >
           Compact read-only selection trail from already-derived state and loaded checkpoint metadata.
         </p>
         <ol
@@ -2170,8 +2256,11 @@ function HistoryCheckpointList(props: {
         </ol>
       </div>
       <div
-        className="mb-2 rounded border border-cyan-200 bg-cyan-50 p-2"
+        className={`mb-2 rounded border p-2 ${
+          isHistoryFocusModeActive ? 'border-gray-200 bg-white' : 'border-cyan-200 bg-cyan-50'
+        }`}
         data-testid="history-empty-state-guidance"
+        data-focus-mode={historyFocusMode}
       >
         <p className="text-[11px] font-semibold text-cyan-800">History Empty-State Guidance</p>
         <p className="mt-1 text-[11px] text-cyan-700" data-testid="history-empty-state-guidance-caption">
@@ -2434,9 +2523,18 @@ function HistoryCheckpointList(props: {
           inspector targets.
         </p>
       </div>
-      <div className="mb-2 rounded border border-violet-200 bg-violet-50 p-2" data-testid="history-state-summary-bar">
+      <div
+        className={`mb-2 rounded border p-2 ${
+          isHistoryFocusModeActive ? 'border-gray-200 bg-white' : 'border-violet-200 bg-violet-50'
+        }`}
+        data-testid="history-state-summary-bar"
+        data-focus-mode={historyFocusMode}
+      >
         <p className="text-[11px] font-semibold text-violet-800">History State Summary</p>
-        <p className="mt-1 text-[11px] text-violet-700" data-testid="history-state-summary-caption">
+        <p
+          className={`mt-1 text-[11px] text-violet-700 ${isHistoryFocusModeActive ? 'hidden' : ''}`}
+          data-testid="history-state-summary-caption"
+        >
           Compact read-only state for the active session history surface.
         </p>
         <div
@@ -2466,7 +2564,11 @@ function HistoryCheckpointList(props: {
         <p className="text-[11px] font-semibold text-gray-700">Checkpoint Git Log</p>
         <p className="text-[11px] text-gray-500">Bounded commit-style view for visible checkpoints</p>
       </div>
-      <ul className={isExpandedHistoryContextDensity ? 'space-y-3' : 'space-y-2'} data-testid="history-checkpoint-list">
+      <ul
+        className={checkpointListSpacingClass}
+        data-testid="history-checkpoint-list"
+        data-focus-mode={historyFocusMode}
+      >
         {visibleCheckpoints.map((checkpoint, index) => {
           const isSelected = props.selectedCheckpointId === checkpoint.id;
           const canInitiateRevert = props.hasSelectedSession && !isReverting;
