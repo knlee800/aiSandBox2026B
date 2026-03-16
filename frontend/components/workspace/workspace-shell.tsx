@@ -1340,6 +1340,25 @@ function HistoryCheckpointList(props: {
       workingSetCheckpoints.length,
     ],
   );
+  const compareMetadataSummaryItems = React.useMemo(
+    () => [
+      {
+        key: 'base',
+        title: 'Compare base',
+        checkpointId: props.compareBaseCheckpointId,
+        checkpoint:
+          props.compareBaseCheckpointId !== null ? checkpointById.get(props.compareBaseCheckpointId) ?? null : null,
+      },
+      {
+        key: 'target',
+        title: 'Compare target',
+        checkpointId: props.compareTargetCheckpointId,
+        checkpoint:
+          props.compareTargetCheckpointId !== null ? checkpointById.get(props.compareTargetCheckpointId) ?? null : null,
+      },
+    ],
+    [checkpointById, props.compareBaseCheckpointId, props.compareTargetCheckpointId],
+  );
 
   return (
     <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="history-checkpoint-list-surface">
@@ -1473,6 +1492,55 @@ function HistoryCheckpointList(props: {
             hasBaseSelection={hasVisibleBaseSelection}
             hasTargetSelection={hasVisibleTargetSelection}
           />
+        </div>
+      </div>
+      <div className="mb-2 rounded border border-cyan-200 bg-cyan-50 p-2" data-testid="history-compare-metadata-summary">
+        <p className="text-[11px] font-semibold text-cyan-800">Compare Metadata Summary</p>
+        <p className="mt-1 text-[11px] text-cyan-700" data-testid="history-compare-metadata-caption">
+          Read-only compare base/target metadata from the currently loaded session checkpoint list.
+        </p>
+        <div className="mt-2 grid gap-2 sm:grid-cols-2">
+          {compareMetadataSummaryItems.map((summaryItem) => {
+            const identity = summaryItem.checkpoint
+              ? summaryItem.checkpoint.description || `Checkpoint ${summaryItem.checkpoint.commitHash.slice(0, 7)}`
+              : summaryItem.checkpointId
+                ? 'not in loaded list'
+                : 'not selected';
+            const fullHash = summaryItem.checkpoint
+              ? summaryItem.checkpoint.commitHash
+              : summaryItem.checkpointId
+                ? summaryItem.checkpointId
+                : 'none';
+            const timestamp = summaryItem.checkpoint ? summaryItem.checkpoint.createdAt : 'none';
+            const description = summaryItem.checkpoint
+              ? summaryItem.checkpoint.description && summaryItem.checkpoint.description.trim().length
+                ? summaryItem.checkpoint.description
+                : '(none)'
+              : 'none';
+            return (
+              <div
+                key={summaryItem.key}
+                className="rounded border border-cyan-200 bg-white px-2 py-2 text-[11px] text-cyan-800"
+                data-testid={`history-compare-metadata-${summaryItem.key}`}
+              >
+                <p className="font-semibold" data-testid={`history-compare-metadata-${summaryItem.key}-title`}>
+                  {summaryItem.title}
+                </p>
+                <p className="mt-1" data-testid={`history-compare-metadata-${summaryItem.key}-identity`}>
+                  Identity: <span className="font-medium text-cyan-900">{identity}</span>
+                </p>
+                <p className="mt-1 font-mono break-all" data-testid={`history-compare-metadata-${summaryItem.key}-hash`}>
+                  Full hash: <span className="text-cyan-700">{fullHash}</span>
+                </p>
+                <p className="mt-1" data-testid={`history-compare-metadata-${summaryItem.key}-timestamp`}>
+                  Timestamp: <span className="font-mono text-cyan-700">{timestamp}</span>
+                </p>
+                <p className="mt-1" data-testid={`history-compare-metadata-${summaryItem.key}-description`}>
+                  Description: <span className="text-cyan-800">{description}</span>
+                </p>
+              </div>
+            );
+          })}
         </div>
       </div>
       <div className="mb-2 rounded border border-amber-200 bg-amber-50 p-2" data-testid="history-pinned-reference-state">

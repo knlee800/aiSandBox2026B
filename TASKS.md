@@ -3951,3 +3951,40 @@ Make the history workflow easier to understand at a glance by adding a bounded h
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81Q for full details
 
 ---
+
+#### TASK-81R: Compare Metadata Summary Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-81R-CHECKPOINT.md`
+
+**Objective:**
+Make checkpoint comparison easier to understand at a glance by adding a bounded compare-metadata summary inside the existing history/control surface, using already-loaded checkpoint data and existing compare selection state only.
+
+**Scope:**
+- Reuse the existing history/control surface, already-loaded checkpoint list, and existing compare selection state only
+- Add a bounded compare-metadata summary inside the existing history/control area
+- Show a compact summary for the currently selected compare base and compare target using already-loaded checkpoint metadata only (identity, full hash, timestamp, description/label)
+- Keep the summary read-only and informational
+- Keep all existing history surface flows intact
+- Keep integration localized to the existing workspace shell and history/control surface
+- Frontend-only changes
+- Additive only
+- Focused frontend tests for this slice
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No automatic compare execution in this task
+- ❌ No new durable state
+- ❌ No broader workspace redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Dependencies:** TASK-81A through TASK-81Q (all Complete and Locked); existing history/control surface and compare selection flow already present
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81R for full details
+
+---

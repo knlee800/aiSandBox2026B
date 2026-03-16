@@ -703,6 +703,47 @@ describe('workspace shell component', () => {
     assert.match(html, /Search\/filter status:.*query none; description all; visible 2\/2/);
   });
 
+  test('renders compact compare metadata summary using loaded base and target checkpoint metadata', () => {
+    const html = renderWorkspaceShell({
+      checkpoints: [checkpoint, checkpointTwo],
+      selectedSessionId: session.id,
+      checkpointCompareState: 'selecting',
+      checkpointCompareBaseId: checkpoint.id,
+      checkpointCompareTargetId: checkpointTwo.id,
+    });
+
+    assert.match(html, /data-testid="history-compare-metadata-summary"/);
+    assert.match(html, /Compare Metadata Summary/);
+    assert.match(
+      html,
+      /Read-only compare base\/target metadata from the currently loaded session checkpoint list\./,
+    );
+    assert.match(html, /data-testid="history-compare-metadata-base"/);
+    assert.match(html, /data-testid="history-compare-metadata-target"/);
+    assert.match(html, /data-testid="history-compare-metadata-base-identity"/);
+    assert.match(html, /Identity: <span class="font-medium text-cyan-900">Auto-commit: Message 10<\/span>/);
+    assert.match(html, /data-testid="history-compare-metadata-base-hash"/);
+    assert.match(html, /Full hash: <span class="text-cyan-700">abc123def456789012345678901234567890abcd<\/span>/);
+    assert.match(html, /data-testid="history-compare-metadata-base-timestamp"/);
+    assert.match(
+      html,
+      /Timestamp: <span class="font-mono text-cyan-700">2026-03-10T12:00:00.000Z<\/span>/,
+    );
+    assert.match(html, /data-testid="history-compare-metadata-base-description"/);
+    assert.match(html, /Description: <span class="text-cyan-800">Auto-commit: Message 10<\/span>/);
+    assert.match(html, /data-testid="history-compare-metadata-target-identity"/);
+    assert.match(html, /Identity: <span class="font-medium text-cyan-900">Checkpoint 7890abc<\/span>/);
+    assert.match(html, /data-testid="history-compare-metadata-target-hash"/);
+    assert.match(html, /Full hash: <span class="text-cyan-700">7890abcedf1234567890abcedf1234567890abce<\/span>/);
+    assert.match(html, /data-testid="history-compare-metadata-target-timestamp"/);
+    assert.match(
+      html,
+      /Timestamp: <span class="font-mono text-cyan-700">2026-03-10T12:05:00.000Z<\/span>/,
+    );
+    assert.match(html, /data-testid="history-compare-metadata-target-description"/);
+    assert.match(html, /Description: <span class="text-cyan-800">\(none\)<\/span>/);
+  });
+
   test('renders distinct checkpoint snapshot states and read-only snapshot viewer', () => {
     const idleHtml = renderWorkspaceShell({
       checkpointSnapshotState: 'idle',
