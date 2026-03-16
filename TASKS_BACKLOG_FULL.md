@@ -11064,3 +11064,62 @@ Make checkpoint history workflows easier to manage by allowing the user to tempo
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81M-CHECKPOINT.md
 
 ---
+
+### TASK-81O: History Surface Reset Controls Slice
+
+**Task ID:** TASK-81O
+**Phase:** 81
+**Stage:** 81O
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked), TASK-81I (Complete and Locked), TASK-81J (Complete and Locked), TASK-81K (Complete and Locked), TASK-81L (Complete and Locked), TASK-81M (Complete and Locked), TASK-81N (Complete and Locked); existing history/control surface already present
+**Checkpoint:** `docs/PHASE-81O-CHECKPOINT.md`
+
+**Objective:**
+
+Make the history workflow easier to manage by adding bounded reset/clear controls for temporary frontend-only history state inside the existing history/control surface.
+
+**Scope:**
+
+1. Reuse the existing history/control surface only
+2. Add bounded reset/clear controls for temporary frontend-only history state inside the existing history/control area
+3. Cover only already-existing frontend-only temporary state where relevant, such as:
+   - pinned comparison reference
+   - working set
+   - search/filter inputs
+   - local inspector selections
+4. Keep all reset actions explicitly user-triggered
+5. Keep reset behavior scoped to the active session only
+6. Keep diff viewer, compare mode, search/filter, visual timeline, git-log browser, snapshot viewer, jump-to-live-file, pinned comparison reference, details inspector, revert preview, changed-files inspector, manual checkpoint, manual revert, and working-set surfaces intact
+7. Keep integration localized to the existing workspace shell and history/control surface
+8. Frontend-only changes
+9. Additive only
+10. Focused frontend tests for this slice
+11. Slice-specific checkpoint output at `docs/PHASE-81O-CHECKPOINT.md`
+
+**Non-Goals:**
+
+- No backend changes
+- No schema changes
+- No refactors
+- No new endpoints
+- No automatic resets
+- No persistence of reset preferences
+- No broader workspace redesign
+- No polling/websocket behavior
+- No multi-task work
+
+**Acceptance Criteria:**
+
+- User can explicitly clear/reset relevant temporary frontend-only history state from the existing history/control surface
+- Reset behavior is scoped to the active session only
+- Existing diff viewer, compare mode, search/filter, visual timeline, git-log browser, snapshot viewer, jump-to-live-file, pinned comparison reference, details inspector, revert preview, changed-files inspector, manual checkpoint, manual revert, and working-set flows continue to work correctly
+- No backend changes occurred
+- No schema changes occurred
+- No refactors occurred
+- No regressions in workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, or existing history/control surfaces
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81N-CHECKPOINT.md
+
+---

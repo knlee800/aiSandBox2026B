@@ -743,6 +743,40 @@ describe('workspace shell component', () => {
     assert.match(html, /Showing 1 of 1 matching checkpoints/);
   });
 
+  test('renders explicit history reset controls for temporary frontend-only state', () => {
+    const html = renderWorkspaceShell({
+      checkpoints: [checkpoint, checkpointTwo],
+      selectedSessionId: session.id,
+      pinnedCompareReferenceCheckpointId: checkpoint.id,
+    });
+
+    assert.match(html, /data-testid="history-reset-controls"/);
+    assert.match(html, /History Reset Controls/);
+    assert.match(html, /data-testid="history-reset-search-filter"/);
+    assert.match(html, /data-testid="history-reset-pinned-reference"/);
+    assert.match(html, /data-testid="history-reset-working-set"/);
+    assert.match(html, /data-testid="history-reset-inspector-selection"/);
+    assert.match(html, /data-testid="history-reset-all"/);
+    assert.match(html, /Reset Search\/Filter/);
+    assert.match(html, /Clear Pinned Ref/);
+    assert.match(html, /Clear Working Set/);
+    assert.match(html, /Reset Inspector Selection/);
+    assert.match(html, /Reset All Temporary State/);
+  });
+
+  test('disables history reset controls when no resettable temporary state is active', () => {
+    const html = renderWorkspaceShell({
+      selectedSessionId: session.id,
+      pinnedCompareReferenceCheckpointId: null,
+    });
+
+    assert.match(html, /data-testid="history-reset-search-filter"[^>]*disabled/);
+    assert.match(html, /data-testid="history-reset-pinned-reference"[^>]*disabled/);
+    assert.match(html, /data-testid="history-reset-working-set"[^>]*disabled/);
+    assert.match(html, /data-testid="history-reset-inspector-selection"[^>]*disabled/);
+    assert.match(html, /data-testid="history-reset-all"[^>]*disabled/);
+  });
+
   test('renders visual checkpoint timeline metadata and emphasis states', () => {
     const html = renderWorkspaceShell({
       checkpoints: [checkpoint, checkpointTwo],

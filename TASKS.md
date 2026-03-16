@@ -3839,3 +3839,41 @@ Make checkpoint history workflows easier to manage by allowing the user to tempo
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81N for full details
 
 ---
+
+#### TASK-81O: History Surface Reset Controls Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-81O-CHECKPOINT.md`
+
+**Objective:**
+Make the history workflow easier to manage by adding bounded reset/clear controls for temporary frontend-only history state inside the existing history/control surface.
+
+**Scope:**
+- Reuse the existing history/control surface only
+- Add bounded reset/clear controls for temporary frontend-only history state inside the existing history/control area
+- Cover only already-existing frontend-only temporary state: pinned comparison reference, working set, search/filter inputs, and local inspector selections
+- Keep all reset actions explicitly user-triggered
+- Keep reset behavior scoped to the active session only
+- Keep all existing history surface flows intact
+- Keep integration localized to the existing workspace shell and history/control surface
+- Frontend-only changes
+- Additive only
+- Focused frontend tests for this slice
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No automatic resets
+- ❌ No persistence of reset preferences
+- ❌ No broader workspace redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Dependencies:** TASK-81A through TASK-81N (all Complete and Locked); existing history/control surface already present
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81O for full details
+
+---

@@ -1147,6 +1147,12 @@ function HistoryCheckpointList(props: {
   ]);
   const [selectedInspectorFileId, setSelectedInspectorFileId] = React.useState<string | null>(null);
   const [workingSetCheckpointIds, setWorkingSetCheckpointIds] = React.useState<string[]>([]);
+  const canResetSearchFilter = searchQuery.length > 0 || descriptionFilter !== 'all';
+  const canResetPinnedReference = Boolean(props.pinnedCompareReferenceCheckpointId);
+  const canResetWorkingSet = workingSetCheckpointIds.length > 0;
+  const canResetInspectorSelection = Boolean(selectedInspectorFileId) || inspectorChangedFiles.files.length > 0;
+  const canResetAnyTemporaryHistoryState =
+    canResetSearchFilter || canResetPinnedReference || canResetWorkingSet || canResetInspectorSelection;
 
   React.useEffect(() => {
     setSelectedInspectorFileId(null);
@@ -1178,6 +1184,22 @@ function HistoryCheckpointList(props: {
     inspectorChangedFiles.files.find((file) => file.id === selectedInspectorFileId) ??
     inspectorChangedFiles.files[0] ??
     null;
+  const resetSearchFilterInputs = (): void => {
+    setSearchQuery('');
+    setDescriptionFilter('all');
+  };
+  const resetWorkingSet = (): void => {
+    setWorkingSetCheckpointIds([]);
+  };
+  const resetInspectorSelection = (): void => {
+    setSelectedInspectorFileId(inspectorChangedFiles.files[0]?.id ?? null);
+  };
+  const resetAllTemporaryHistoryState = (): void => {
+    resetSearchFilterInputs();
+    props.onClearPinnedCheckpointCompareReference();
+    resetWorkingSet();
+    resetInspectorSelection();
+  };
   const inspectorChangedFilesSourceLabel =
     inspectorChangedFiles.source === 'diff'
       ? 'loaded checkpoint diff metadata'
@@ -1235,6 +1257,59 @@ function HistoryCheckpointList(props: {
         <p className="mt-2 text-[11px] text-gray-600" data-testid="history-search-results-count">
           Showing {visibleCheckpoints.length} of {totalMatches} matching checkpoints
         </p>
+      </div>
+      <div className="mb-2 rounded border border-emerald-200 bg-emerald-50 p-2" data-testid="history-reset-controls">
+        <p className="text-[11px] font-semibold text-emerald-800">History Reset Controls</p>
+        <p className="mt-1 text-[11px] text-emerald-700">
+          Explicitly clear temporary frontend-only history state for the active session.
+        </p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          <button
+            type="button"
+            data-testid="history-reset-search-filter"
+            disabled={!props.hasSelectedSession || !canResetSearchFilter}
+            onClick={resetSearchFilterInputs}
+            className="rounded border border-emerald-300 bg-white px-3 py-1 text-xs text-emerald-700 disabled:border-gray-200 disabled:text-gray-400"
+          >
+            Reset Search/Filter
+          </button>
+          <button
+            type="button"
+            data-testid="history-reset-pinned-reference"
+            disabled={!props.hasSelectedSession || !canResetPinnedReference}
+            onClick={props.onClearPinnedCheckpointCompareReference}
+            className="rounded border border-emerald-300 bg-white px-3 py-1 text-xs text-emerald-700 disabled:border-gray-200 disabled:text-gray-400"
+          >
+            Clear Pinned Ref
+          </button>
+          <button
+            type="button"
+            data-testid="history-reset-working-set"
+            disabled={!props.hasSelectedSession || !canResetWorkingSet}
+            onClick={resetWorkingSet}
+            className="rounded border border-emerald-300 bg-white px-3 py-1 text-xs text-emerald-700 disabled:border-gray-200 disabled:text-gray-400"
+          >
+            Clear Working Set
+          </button>
+          <button
+            type="button"
+            data-testid="history-reset-inspector-selection"
+            disabled={!props.hasSelectedSession || !canResetInspectorSelection}
+            onClick={resetInspectorSelection}
+            className="rounded border border-emerald-300 bg-white px-3 py-1 text-xs text-emerald-700 disabled:border-gray-200 disabled:text-gray-400"
+          >
+            Reset Inspector Selection
+          </button>
+          <button
+            type="button"
+            data-testid="history-reset-all"
+            disabled={!props.hasSelectedSession || !canResetAnyTemporaryHistoryState}
+            onClick={resetAllTemporaryHistoryState}
+            className="rounded bg-emerald-600 px-3 py-1 text-xs text-white disabled:bg-emerald-300"
+          >
+            Reset All Temporary State
+          </button>
+        </div>
       </div>
       <div className="mb-2 rounded border border-gray-200 bg-white p-2" data-testid="history-compare-controls">
         <div className="flex flex-wrap items-center gap-2">
