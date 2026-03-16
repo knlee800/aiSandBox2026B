@@ -11635,3 +11635,66 @@ Make the history workflow easier to follow by adding a bounded breadcrumb-style 
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81V-CHECKPOINT.md
 
 ---
+
+### TASK-81X: History Empty-State Guidance Slice
+
+**Task ID:** TASK-81X
+**Phase:** 81
+**Stage:** 81X
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked), TASK-81I (Complete and Locked), TASK-81J (Complete and Locked), TASK-81K (Complete and Locked), TASK-81L (Complete and Locked), TASK-81M (Complete and Locked), TASK-81N (Complete and Locked), TASK-81O (Complete and Locked), TASK-81P (Complete and Locked), TASK-81Q (Complete and Locked), TASK-81R (Complete and Locked), TASK-81S (Complete and Locked), TASK-81T (Complete and Locked), TASK-81U (Complete and Locked), TASK-81V (Complete and Locked), TASK-81W (Complete and Locked); existing history/control surface already present
+**Checkpoint:** `docs/PHASE-81X-CHECKPOINT.md`
+
+**Objective:**
+
+Make the history workflow easier to understand by adding bounded empty/unavailable guidance for the existing history/control surface, using only already-derived frontend state and already-loaded checkpoint data.
+
+**Scope:**
+
+1. Reuse the existing history/control surface only
+2. Add compact read-only empty/unavailable guidance where relevant inside the existing history-control area, covering already-existing history contexts where the user may otherwise see a blank or ambiguous state, such as:
+   - no checkpoint selected
+   - no compare base/target selected
+   - no snapshot target context
+   - no changed-files metadata loaded
+   - no working-set members
+   - no active checkpoint context
+3. Use only already-derived frontend state and already-loaded checkpoint data — no new fetches
+4. Keep all guidance read-only and informational only
+5. Do not add any new fetches or backend concepts
+6. Keep existing diff viewer, compare mode, search/filter, visual timeline, git-log browser, snapshot viewer, jump-to-live-file, pinned comparison reference, details inspector, revert preview, changed-files inspector, manual checkpoint, manual revert, working set, reset controls, unified active checkpoint highlight, history state summary bar, compare metadata summary, inspection readiness surface, current checkpoint summary card, action availability hints, role legend, and selection breadcrumb intact
+7. Preserve active-session-scoped behavior only
+8. Keep integration localized to the existing workspace shell and history/control surface
+9. Frontend-only changes
+10. Additive only
+11. Focused frontend tests for this slice
+12. Slice-specific checkpoint output at `docs/PHASE-81X-CHECKPOINT.md`
+
+**Non-Goals:**
+
+- No backend changes
+- No schema changes
+- No refactors
+- No new endpoints
+- No automatic actions
+- No new durable state
+- No broader workspace redesign
+- No polling/websocket behavior
+- No multi-task work
+
+**Acceptance Criteria:**
+
+- User can see compact empty/unavailable guidance inside the existing history/control surface where current history context is absent
+- Guidance uses only already-available frontend state and already-loaded checkpoint data
+- Behavior remains scoped to the active session only
+- Existing diff viewer, compare mode, search/filter, visual timeline, git-log browser, snapshot viewer, jump-to-live-file, pinned comparison reference, details inspector, revert preview, changed-files inspector, manual checkpoint, manual revert, working set, reset controls, unified active checkpoint highlight, history state summary bar, compare metadata summary, inspection readiness surface, current checkpoint summary card, action availability hints, role legend, and selection breadcrumb continue to work correctly
+- No backend changes occurred
+- No schema changes occurred
+- No refactors occurred
+- No regressions in workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, or existing history/control surfaces
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81W-CHECKPOINT.md
+
+---

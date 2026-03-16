@@ -931,6 +931,37 @@ describe('workspace shell component', () => {
     assert.match(html, /data-testid="history-selection-breadcrumb-changed-files-inspector-target"/);
     assert.match(html, /Changed-files inspector target:.*Auto-commit: Message 10/);
   });
+  test('renders compact history empty-state guidance for unavailable history contexts', () => {
+    const html = renderWorkspaceShell({
+      checkpoints: [checkpoint, checkpointTwo],
+      selectedSessionId: session.id,
+    });
+
+    assert.match(html, /data-testid="history-empty-state-guidance"/);
+    assert.match(html, /History Empty-State Guidance/);
+    assert.match(
+      html,
+      /Compact read-only guidance for empty or unavailable history context from already-derived frontend state and loaded checkpoint metadata\./,
+    );
+    assert.match(html, /data-testid="history-empty-state-guidance-selected-checkpoint"/);
+    assert.match(html, /Selected checkpoint:/);
+    assert.match(html, /no checkpoint selected/);
+    assert.match(html, /data-testid="history-empty-state-guidance-compare-selection"/);
+    assert.match(html, /Compare selection:/);
+    assert.match(html, /no compare base\/target selected/);
+    assert.match(html, /data-testid="history-empty-state-guidance-snapshot-target"/);
+    assert.match(html, /Snapshot target context:/);
+    assert.match(html, /no snapshot target context/);
+    assert.match(html, /data-testid="history-empty-state-guidance-changed-files-metadata"/);
+    assert.match(html, /Changed-files metadata:/);
+    assert.match(html, /no changed-files metadata loaded \(no active checkpoint context\)/);
+    assert.match(html, /data-testid="history-empty-state-guidance-working-set-members"/);
+    assert.match(html, /Working-set members:/);
+    assert.match(html, /no working-set members/);
+    assert.match(html, /data-testid="history-empty-state-guidance-active-checkpoint-context"/);
+    assert.match(html, /Active checkpoint context:/);
+    assert.match(html, /no active checkpoint context/);
+  });
 
   test('renders distinct checkpoint snapshot states and read-only snapshot viewer', () => {
     const idleHtml = renderWorkspaceShell({

@@ -1712,6 +1712,83 @@ function HistoryCheckpointList(props: {
       revertSummary,
     ],
   );
+  const historyEmptyStateGuidanceItems = React.useMemo(() => {
+    const hasSelectedCheckpoint = Boolean(props.selectedCheckpointId);
+    const hasCompareBaseSelection = Boolean(props.compareBaseCheckpointId);
+    const hasCompareTargetSelection = Boolean(props.compareTargetCheckpointId);
+    const hasSnapshotTargetContext = Boolean(props.snapshotTargetCheckpointId);
+    const hasActiveCheckpointContext = Boolean(inspectorCheckpoint);
+    const hasChangedFilesMetadata = inspectorChangedFiles.files.length > 0;
+    const hasWorkingSetMembers = workingSetCheckpoints.length > 0;
+    const compareSelectionGuidance =
+      hasCompareBaseSelection && hasCompareTargetSelection
+        ? `ready (${getCheckpointSummaryLabel(props.compareBaseCheckpointId)} -> ${getCheckpointSummaryLabel(props.compareTargetCheckpointId)})`
+        : hasCompareBaseSelection
+          ? `target missing (base: ${getCheckpointSummaryLabel(props.compareBaseCheckpointId)})`
+          : hasCompareTargetSelection
+            ? `base missing (target: ${getCheckpointSummaryLabel(props.compareTargetCheckpointId)})`
+            : 'no compare base/target selected';
+    const changedFilesGuidance = hasChangedFilesMetadata
+      ? `loaded via ${inspectorChangedFiles.source}; ${inspectorChangedFiles.files.length} entries`
+      : hasActiveCheckpointContext
+        ? 'no changed-files metadata loaded'
+        : 'no changed-files metadata loaded (no active checkpoint context)';
+
+    return [
+      {
+        key: 'selected-checkpoint',
+        title: 'Selected checkpoint',
+        status: hasSelectedCheckpoint ? 'available' : 'unavailable',
+        detail: hasSelectedCheckpoint
+          ? getCheckpointSummaryLabel(props.selectedCheckpointId)
+          : 'no checkpoint selected',
+      },
+      {
+        key: 'compare-selection',
+        title: 'Compare selection',
+        status: hasCompareBaseSelection && hasCompareTargetSelection ? 'available' : 'unavailable',
+        detail: compareSelectionGuidance,
+      },
+      {
+        key: 'snapshot-target',
+        title: 'Snapshot target context',
+        status: hasSnapshotTargetContext ? 'available' : 'unavailable',
+        detail: hasSnapshotTargetContext
+          ? getCheckpointSummaryLabel(props.snapshotTargetCheckpointId)
+          : 'no snapshot target context',
+      },
+      {
+        key: 'changed-files-metadata',
+        title: 'Changed-files metadata',
+        status: hasChangedFilesMetadata ? 'available' : 'unavailable',
+        detail: changedFilesGuidance,
+      },
+      {
+        key: 'working-set-members',
+        title: 'Working-set members',
+        status: hasWorkingSetMembers ? 'available' : 'unavailable',
+        detail: hasWorkingSetMembers
+          ? `${workingSetCheckpoints.length}/${HISTORY_WORKING_SET_MAX_ITEMS} members`
+          : 'no working-set members',
+      },
+      {
+        key: 'active-checkpoint-context',
+        title: 'Active checkpoint context',
+        status: hasActiveCheckpointContext ? 'available' : 'unavailable',
+        detail: hasActiveCheckpointContext ? getCheckpointSummaryLabel(inspectorCheckpoint.id) : 'no active checkpoint context',
+      },
+    ];
+  }, [
+    getCheckpointSummaryLabel,
+    inspectorChangedFiles.files.length,
+    inspectorChangedFiles.source,
+    inspectorCheckpoint,
+    props.compareBaseCheckpointId,
+    props.compareTargetCheckpointId,
+    props.selectedCheckpointId,
+    props.snapshotTargetCheckpointId,
+    workingSetCheckpoints.length,
+  ]);
 
   return (
     <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="history-checkpoint-list-surface">
@@ -2016,6 +2093,29 @@ function HistoryCheckpointList(props: {
             </li>
           ))}
         </ol>
+      </div>
+      <div
+        className="mb-2 rounded border border-cyan-200 bg-cyan-50 p-2"
+        data-testid="history-empty-state-guidance"
+      >
+        <p className="text-[11px] font-semibold text-cyan-800">History Empty-State Guidance</p>
+        <p className="mt-1 text-[11px] text-cyan-700" data-testid="history-empty-state-guidance-caption">
+          Compact read-only guidance for empty or unavailable history context from already-derived frontend state and
+          loaded checkpoint metadata.
+        </p>
+        <ul className="mt-2 grid gap-1 sm:grid-cols-2" data-testid="history-empty-state-guidance-items">
+          {historyEmptyStateGuidanceItems.map((guidanceItem) => (
+            <li
+              key={guidanceItem.key}
+              className="rounded border border-cyan-200 bg-white px-2 py-1 text-[11px] text-cyan-800"
+              data-testid={`history-empty-state-guidance-${guidanceItem.key}`}
+            >
+              <span className="font-semibold">{guidanceItem.title}:</span>{' '}
+              <span className="font-mono text-cyan-700">{guidanceItem.status}</span>
+              <span className="text-cyan-700"> - {guidanceItem.detail}</span>
+            </li>
+          ))}
+        </ul>
       </div>
       <div className="mb-2 rounded border border-amber-200 bg-amber-50 p-2" data-testid="history-pinned-reference-state">
         <p className="text-[11px] font-semibold text-amber-800">Pinned Comparison Reference</p>
