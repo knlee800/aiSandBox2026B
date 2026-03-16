@@ -962,6 +962,25 @@ describe('workspace shell component', () => {
     assert.match(html, /Active checkpoint context:/);
     assert.match(html, /no active checkpoint context/);
   });
+  test('renders history context density toggle with compact active by default', () => {
+    const html = renderWorkspaceShell({
+      checkpoints: [checkpoint, checkpointTwo],
+      selectedSessionId: session.id,
+    });
+
+    assert.match(html, /data-testid="history-context-density-toggle"/);
+    assert.match(html, /History Context Density/);
+    assert.match(html, /data-testid="history-context-density-caption"/);
+    assert.match(html, /Presentation-only toggle for context summary density in this active session\./);
+    assert.match(html, /data-testid="history-context-density-compact"/);
+    assert.match(html, /data-testid="history-context-density-expanded"/);
+    assert.match(html, /data-testid="history-context-density-active-mode"/);
+    assert.match(html, /Active density: compact/);
+    assert.match(html, /data-testid="history-context-density-compact" aria-pressed="true"/);
+    assert.match(html, /data-testid="history-context-density-expanded" aria-pressed="false"/);
+    assert.match(html, /data-testid="history-empty-state-guidance-items" data-density="compact"/);
+    assert.match(html, /data-testid="history-state-summary-items" data-density="compact"/);
+  });
 
   test('renders distinct checkpoint snapshot states and read-only snapshot viewer', () => {
     const idleHtml = renderWorkspaceShell({

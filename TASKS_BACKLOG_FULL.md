@@ -11698,3 +11698,62 @@ Make the history workflow easier to understand by adding bounded empty/unavailab
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81W-CHECKPOINT.md
 
 ---
+
+### TASK-81Y: History Context Density Toggle Slice
+
+**Task ID:** TASK-81Y
+**Phase:** 81
+**Stage:** 81Y
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked), TASK-81I (Complete and Locked), TASK-81J (Complete and Locked), TASK-81K (Complete and Locked), TASK-81L (Complete and Locked), TASK-81M (Complete and Locked), TASK-81N (Complete and Locked), TASK-81O (Complete and Locked), TASK-81P (Complete and Locked), TASK-81Q (Complete and Locked), TASK-81R (Complete and Locked), TASK-81S (Complete and Locked), TASK-81T (Complete and Locked), TASK-81U (Complete and Locked), TASK-81V (Complete and Locked), TASK-81W (Complete and Locked), TASK-81X (Complete and Locked); existing history/control surface already present
+**Checkpoint:** `docs/PHASE-81Y-CHECKPOINT.md`
+
+**Objective:**
+
+Make the history workflow easier to scan by adding a bounded frontend-only density toggle inside the existing history/control surface, so users can switch between compact and expanded history context presentation without changing underlying behavior.
+
+**Scope:**
+
+1. Reuse the existing history/control surface only
+2. Add a compact/expanded density toggle for the existing history presentation inside the existing history-control area
+3. Affect presentation only for already-existing history UI blocks where relevant
+4. Use only already-derived frontend state and already-loaded checkpoint data — no new fetches
+5. Keep all existing history actions and behaviors unchanged
+6. Keep the toggle frontend-only, temporary, and active-session scoped
+7. Keep it informational/presentation-only — no new side effects
+8. Keep existing diff viewer, compare mode, search/filter, visual timeline, git-log browser, snapshot viewer, jump-to-live-file, pinned comparison reference, details inspector, revert preview, changed-files inspector, manual checkpoint, manual revert, working set, reset controls, unified active checkpoint highlight, history state summary bar, compare metadata summary, inspection readiness surface, current checkpoint summary card, action availability hints, role legend, selection breadcrumb, and empty-state guidance intact
+9. Preserve active-session-scoped behavior only
+10. Keep integration localized to the existing workspace shell and history/control surface
+11. Frontend-only changes
+12. Additive only
+13. Focused frontend tests for this slice
+14. Slice-specific checkpoint output at `docs/PHASE-81Y-CHECKPOINT.md`
+
+**Non-Goals:**
+
+- No backend changes
+- No schema changes
+- No refactors
+- No new endpoints
+- No automatic actions
+- No durable state
+- No broader workspace redesign
+- No polling/websocket behavior
+- No multi-task work
+
+**Acceptance Criteria:**
+
+- User can switch between compact and expanded history presentation inside the existing history/control surface
+- Toggle uses only already-available frontend state and already-loaded checkpoint data
+- Active-session scoping preserved
+- Existing diff viewer, compare mode, search/filter, visual timeline, git-log browser, snapshot viewer, jump-to-live-file, pinned comparison reference, details inspector, revert preview, changed-files inspector, manual checkpoint, manual revert, working set, reset controls, unified active checkpoint highlight, history state summary bar, compare metadata summary, inspection readiness surface, current checkpoint summary card, action availability hints, role legend, selection breadcrumb, and empty-state guidance continue to work correctly
+- No backend changes occurred
+- No schema changes occurred
+- No refactors occurred
+- No regressions in workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, or existing history/control surfaces
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-81X-CHECKPOINT.md
+
+---

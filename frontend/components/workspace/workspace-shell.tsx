@@ -981,6 +981,7 @@ function HistoryCheckpointList(props: {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [descriptionFilter, setDescriptionFilter] =
     React.useState<CheckpointDescriptionFilter>('all');
+  const [historyContextDensity, setHistoryContextDensity] = React.useState<'compact' | 'expanded'>('compact');
   const { visibleCheckpoints, totalMatches } = React.useMemo(
     () =>
       filterVisibleWorkspaceCheckpoints({
@@ -1157,6 +1158,7 @@ function HistoryCheckpointList(props: {
   React.useEffect(() => {
     setSelectedInspectorFileId(null);
     setWorkingSetCheckpointIds([]);
+    setHistoryContextDensity('compact');
   }, [props.selectedSessionId]);
 
   React.useEffect(() => {
@@ -1200,6 +1202,7 @@ function HistoryCheckpointList(props: {
     resetWorkingSet();
     resetInspectorSelection();
   };
+  const isExpandedHistoryContextDensity = historyContextDensity === 'expanded';
   const inspectorChangedFilesSourceLabel =
     inspectorChangedFiles.source === 'diff'
       ? 'loaded checkpoint diff metadata'
@@ -1924,12 +1927,55 @@ function HistoryCheckpointList(props: {
           />
         </div>
       </div>
+      <div
+        className="mb-2 rounded border border-slate-200 bg-slate-50 p-2"
+        data-testid="history-context-density-toggle"
+      >
+        <p className="text-[11px] font-semibold text-slate-800">History Context Density</p>
+        <p className="mt-1 text-[11px] text-slate-700" data-testid="history-context-density-caption">
+          Presentation-only toggle for context summary density in this active session.
+        </p>
+        <div className="mt-2 flex flex-wrap items-center gap-2" data-testid="history-context-density-options">
+          <button
+            type="button"
+            data-testid="history-context-density-compact"
+            aria-pressed={historyContextDensity === 'compact'}
+            onClick={() => setHistoryContextDensity('compact')}
+            className={`rounded border px-3 py-1 text-xs ${
+              historyContextDensity === 'compact'
+                ? 'border-slate-400 bg-slate-200 text-slate-900'
+                : 'border-slate-300 bg-white text-slate-700'
+            }`}
+          >
+            Compact
+          </button>
+          <button
+            type="button"
+            data-testid="history-context-density-expanded"
+            aria-pressed={historyContextDensity === 'expanded'}
+            onClick={() => setHistoryContextDensity('expanded')}
+            className={`rounded border px-3 py-1 text-xs ${
+              historyContextDensity === 'expanded'
+                ? 'border-slate-400 bg-slate-200 text-slate-900'
+                : 'border-slate-300 bg-white text-slate-700'
+            }`}
+          >
+            Expanded
+          </button>
+          <span className="text-[11px] text-slate-700" data-testid="history-context-density-active-mode">
+            Active density: {historyContextDensity}
+          </span>
+        </div>
+      </div>
       <div className="mb-2 rounded border border-cyan-200 bg-cyan-50 p-2" data-testid="history-compare-metadata-summary">
         <p className="text-[11px] font-semibold text-cyan-800">Compare Metadata Summary</p>
         <p className="mt-1 text-[11px] text-cyan-700" data-testid="history-compare-metadata-caption">
           Read-only compare base/target metadata from the currently loaded session checkpoint list.
         </p>
-        <div className="mt-2 grid gap-2 sm:grid-cols-2">
+        <div
+          className={`mt-2 grid sm:grid-cols-2 ${isExpandedHistoryContextDensity ? 'gap-3' : 'gap-2'}`}
+          data-density={historyContextDensity}
+        >
           {compareMetadataSummaryItems.map((summaryItem) => {
             const identity = summaryItem.checkpoint
               ? summaryItem.checkpoint.description || `Checkpoint ${summaryItem.checkpoint.commitHash.slice(0, 7)}`
@@ -1950,7 +1996,9 @@ function HistoryCheckpointList(props: {
             return (
               <div
                 key={summaryItem.key}
-                className="rounded border border-cyan-200 bg-white px-2 py-2 text-[11px] text-cyan-800"
+                className={`rounded border border-cyan-200 bg-white text-cyan-800 ${
+                  isExpandedHistoryContextDensity ? 'px-3 py-3 text-xs' : 'px-2 py-2 text-[11px]'
+                }`}
                 data-testid={`history-compare-metadata-${summaryItem.key}`}
               >
                 <p className="font-semibold" data-testid={`history-compare-metadata-${summaryItem.key}-title`}>
@@ -1985,11 +2033,17 @@ function HistoryCheckpointList(props: {
           Current context:{' '}
           <span className="font-medium text-teal-900">{inspectorCheckpoint ? inspectorLabel : 'none selected'}</span>
         </p>
-        <div className="mt-2 grid gap-1 sm:grid-cols-2" data-testid="history-inspection-readiness-items">
+        <div
+          className={`mt-2 grid sm:grid-cols-2 ${isExpandedHistoryContextDensity ? 'gap-2' : 'gap-1'}`}
+          data-testid="history-inspection-readiness-items"
+          data-density={historyContextDensity}
+        >
           {inspectionReadinessItems.map((readinessItem) => (
             <p
               key={readinessItem.key}
-              className="rounded border border-teal-200 bg-white px-2 py-1 text-[11px] text-teal-800"
+              className={`rounded border border-teal-200 bg-white text-teal-800 ${
+                isExpandedHistoryContextDensity ? 'px-3 py-2 text-xs' : 'px-2 py-1 text-[11px]'
+              }`}
               data-testid={`history-inspection-readiness-${readinessItem.key}`}
             >
               <span className="font-semibold">{readinessItem.title}:</span>{' '}
@@ -2006,7 +2060,10 @@ function HistoryCheckpointList(props: {
         <p className="mt-1 text-[11px] text-slate-700" data-testid="history-current-checkpoint-summary-caption">
           Read-only current checkpoint context from already-loaded session checkpoint metadata.
         </p>
-        <div className="mt-2 space-y-1 text-[11px] text-slate-800">
+        <div
+          className={`mt-2 text-slate-800 ${isExpandedHistoryContextDensity ? 'space-y-2 text-xs' : 'space-y-1 text-[11px]'}`}
+          data-density={historyContextDensity}
+        >
           <p data-testid="history-current-checkpoint-summary-identity">
             Identity: <span className="font-medium text-slate-900">{currentCheckpointSummary.identity}</span>
           </p>
@@ -2032,11 +2089,17 @@ function HistoryCheckpointList(props: {
         <p className="mt-1 text-[11px] text-fuchsia-700" data-testid="history-action-availability-hints-caption">
           Read-only availability hints from already-derived history state and loaded checkpoint metadata.
         </p>
-        <div className="mt-2 grid gap-1 sm:grid-cols-2" data-testid="history-action-availability-hints-items">
+        <div
+          className={`mt-2 grid sm:grid-cols-2 ${isExpandedHistoryContextDensity ? 'gap-2' : 'gap-1'}`}
+          data-testid="history-action-availability-hints-items"
+          data-density={historyContextDensity}
+        >
           {actionAvailabilityHintItems.map((hintItem) => (
             <p
               key={hintItem.key}
-              className="rounded border border-fuchsia-200 bg-white px-2 py-1 text-[11px] text-fuchsia-800"
+              className={`rounded border border-fuchsia-200 bg-white text-fuchsia-800 ${
+                isExpandedHistoryContextDensity ? 'px-3 py-2 text-xs' : 'px-2 py-1 text-[11px]'
+              }`}
               data-testid={`history-action-availability-hint-${hintItem.key}`}
             >
               <span className="font-semibold">{hintItem.title}:</span>{' '}
@@ -2054,11 +2117,17 @@ function HistoryCheckpointList(props: {
           Read-only legend for existing role labels/highlights from already-derived state and loaded checkpoint
           metadata.
         </p>
-        <div className="mt-2 grid gap-1 sm:grid-cols-2" data-testid="history-checkpoint-role-legend-items">
+        <div
+          className={`mt-2 grid sm:grid-cols-2 ${isExpandedHistoryContextDensity ? 'gap-2' : 'gap-1'}`}
+          data-testid="history-checkpoint-role-legend-items"
+          data-density={historyContextDensity}
+        >
           {checkpointRoleLegendItems.map((legendItem) => (
             <p
               key={legendItem.key}
-              className="rounded border border-rose-200 bg-white px-2 py-1 text-[11px] text-rose-800"
+              className={`rounded border border-rose-200 bg-white text-rose-800 ${
+                isExpandedHistoryContextDensity ? 'px-3 py-2 text-xs' : 'px-2 py-1 text-[11px]'
+              }`}
               data-testid={`history-checkpoint-role-legend-${legendItem.key}`}
             >
               <span className="font-semibold">{legendItem.title}:</span>{' '}
@@ -2075,7 +2144,11 @@ function HistoryCheckpointList(props: {
         <p className="mt-1 text-[11px] text-lime-700" data-testid="history-selection-breadcrumb-caption">
           Compact read-only selection trail from already-derived state and loaded checkpoint metadata.
         </p>
-        <ol className="mt-2 flex flex-wrap items-center gap-1" data-testid="history-selection-breadcrumb-trail">
+        <ol
+          className={`mt-2 flex flex-wrap items-center ${isExpandedHistoryContextDensity ? 'gap-2' : 'gap-1'}`}
+          data-testid="history-selection-breadcrumb-trail"
+          data-density={historyContextDensity}
+        >
           {historySelectionBreadcrumbItems.map((breadcrumbItem, index) => (
             <li key={breadcrumbItem.key} className="flex items-center gap-1">
               {index > 0 ? (
@@ -2084,7 +2157,9 @@ function HistoryCheckpointList(props: {
                 </span>
               ) : null}
               <span
-                className="rounded border border-lime-200 bg-white px-2 py-1 text-[11px] text-lime-800"
+                className={`rounded border border-lime-200 bg-white text-lime-800 ${
+                  isExpandedHistoryContextDensity ? 'px-3 py-2 text-xs' : 'px-2 py-1 text-[11px]'
+                }`}
                 data-testid={`history-selection-breadcrumb-${breadcrumbItem.key}`}
               >
                 <span className="font-semibold">{breadcrumbItem.title}:</span>{' '}
@@ -2100,14 +2175,21 @@ function HistoryCheckpointList(props: {
       >
         <p className="text-[11px] font-semibold text-cyan-800">History Empty-State Guidance</p>
         <p className="mt-1 text-[11px] text-cyan-700" data-testid="history-empty-state-guidance-caption">
-          Compact read-only guidance for empty or unavailable history context from already-derived frontend state and
-          loaded checkpoint metadata.
+          {isExpandedHistoryContextDensity
+            ? 'Expanded read-only guidance for empty or unavailable history context from already-derived frontend state and loaded checkpoint metadata.'
+            : 'Compact read-only guidance for empty or unavailable history context from already-derived frontend state and loaded checkpoint metadata.'}
         </p>
-        <ul className="mt-2 grid gap-1 sm:grid-cols-2" data-testid="history-empty-state-guidance-items">
+        <ul
+          className={`mt-2 grid sm:grid-cols-2 ${isExpandedHistoryContextDensity ? 'gap-2' : 'gap-1'}`}
+          data-testid="history-empty-state-guidance-items"
+          data-density={historyContextDensity}
+        >
           {historyEmptyStateGuidanceItems.map((guidanceItem) => (
             <li
               key={guidanceItem.key}
-              className="rounded border border-cyan-200 bg-white px-2 py-1 text-[11px] text-cyan-800"
+              className={`rounded border border-cyan-200 bg-white text-cyan-800 ${
+                isExpandedHistoryContextDensity ? 'px-3 py-2 text-xs' : 'px-2 py-1 text-[11px]'
+              }`}
               data-testid={`history-empty-state-guidance-${guidanceItem.key}`}
             >
               <span className="font-semibold">{guidanceItem.title}:</span>{' '}
@@ -2357,11 +2439,17 @@ function HistoryCheckpointList(props: {
         <p className="mt-1 text-[11px] text-violet-700" data-testid="history-state-summary-caption">
           Compact read-only state for the active session history surface.
         </p>
-        <div className="mt-2 grid gap-1 sm:grid-cols-2" data-testid="history-state-summary-items">
+        <div
+          className={`mt-2 grid sm:grid-cols-2 ${isExpandedHistoryContextDensity ? 'gap-2' : 'gap-1'}`}
+          data-testid="history-state-summary-items"
+          data-density={historyContextDensity}
+        >
           {stateSummaryItems.map((summaryItem) => (
             <p
               key={summaryItem.key}
-              className="rounded border border-violet-200 bg-white px-2 py-1 text-[11px] text-violet-800"
+              className={`rounded border border-violet-200 bg-white text-violet-800 ${
+                isExpandedHistoryContextDensity ? 'px-3 py-2 text-xs' : 'px-2 py-1 text-[11px]'
+              }`}
               data-testid={`history-state-summary-${summaryItem.key}`}
             >
               <span className="font-semibold">{summaryItem.title}:</span>{' '}
@@ -2378,7 +2466,7 @@ function HistoryCheckpointList(props: {
         <p className="text-[11px] font-semibold text-gray-700">Checkpoint Git Log</p>
         <p className="text-[11px] text-gray-500">Bounded commit-style view for visible checkpoints</p>
       </div>
-      <ul className="space-y-2" data-testid="history-checkpoint-list">
+      <ul className={isExpandedHistoryContextDensity ? 'space-y-3' : 'space-y-2'} data-testid="history-checkpoint-list">
         {visibleCheckpoints.map((checkpoint, index) => {
           const isSelected = props.selectedCheckpointId === checkpoint.id;
           const canInitiateRevert = props.hasSelectedSession && !isReverting;
@@ -2426,7 +2514,9 @@ function HistoryCheckpointList(props: {
           return (
             <li
               key={checkpoint.id}
-              className={`relative rounded border px-2 py-2 ${
+              className={`relative rounded border px-2 ${
+                isExpandedHistoryContextDensity ? 'py-3' : 'py-2'
+              } ${
                 isTimelineActive ? 'border-blue-300 bg-blue-50/40' : 'border-gray-200 bg-white'
               }`}
               data-testid={`history-timeline-item-${checkpoint.id}`}

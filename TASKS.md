@@ -4211,3 +4211,42 @@ Make the history workflow easier to understand by adding bounded empty/unavailab
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81X for full details
 
 ---
+
+#### TASK-81Y: History Context Density Toggle Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-81Y-CHECKPOINT.md`
+
+**Objective:**
+Make the history workflow easier to scan by adding a bounded frontend-only density toggle inside the existing history/control surface, so users can switch between compact and expanded history context presentation without changing underlying behavior.
+
+**Scope:**
+- Reuse the existing history/control surface only
+- Add a compact/expanded density toggle for the existing history presentation
+- Affect presentation only for already-existing history UI blocks where relevant
+- Use only already-derived frontend state and already-loaded checkpoint data
+- Keep all existing history actions and behaviors unchanged
+- Keep the toggle frontend-only, temporary, and active-session scoped
+- Keep it informational/presentation-only
+- Preserve all existing Phase 81 surfaces
+- Frontend-only changes
+- Additive only
+- Focused frontend tests for this slice
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No automatic actions
+- ❌ No durable state
+- ❌ No broader workspace redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Dependencies:** TASK-81A through TASK-81X (all Complete and Locked); existing history/control surface already present
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81Y for full details
+
+---
