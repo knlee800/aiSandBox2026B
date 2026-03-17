@@ -1070,6 +1070,11 @@ describe('workspace shell component', () => {
       html,
       /Visibility summary context \(read-only\): These existing summaries provide quick context for how current in-session section visibility and preset interpretation should be read before using history controls\./,
     );
+    assert.match(html, /data-testid="history-section-visibility-summary-intent-label"/);
+    assert.match(
+      html,
+      /Visibility summary intent \(read-only\): Use these existing summaries as an at-a-glance intent guide for how current in-session section visibility and preset interpretation should inform history-control use\./,
+    );
     assert.match(html, /data-testid="history-section-visibility-status-summary"/);
     assert.match(html, /Visibility status: Preset Default \| Visible 4\/4 \| Collapsed: None/);
     assert.match(html, /data-testid="history-section-visibility-preset-match-status"/);

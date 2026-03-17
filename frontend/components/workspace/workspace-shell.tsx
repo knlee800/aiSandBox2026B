@@ -2243,6 +2243,10 @@ function HistoryCheckpointList(props: {
           Visibility summary context (read-only): These existing summaries provide quick context for how current
           in-session section visibility and preset interpretation should be read before using history controls.
         </p>
+        <p className="mt-1 text-[11px] text-gray-600" data-testid="history-section-visibility-summary-intent-label">
+          Visibility summary intent (read-only): Use these existing summaries as an at-a-glance intent guide for how
+          current in-session section visibility and preset interpretation should inform history-control use.
+        </p>
         <p className="mt-1 text-[11px] text-gray-600" data-testid="history-section-visibility-status-summary">
           Visibility status: Preset {activeVisibilityPresetLabel} | Visible {visibleHistorySectionCount}/
           {collapsibleSectionKeys.length} | Collapsed:{' '}

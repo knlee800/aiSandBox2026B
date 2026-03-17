@@ -4338,7 +4338,7 @@ Perform the true final consolidation for Phase 81 and close the Phase 81 history
 
 ## Phase 82 — History Surface Usability Continued
 
-**Current stage:** TASK-82W (COMPLETE and LOCKED)
+**Current stage:** TASK-82X (COMPLETE and LOCKED)
 
 ---
 
@@ -5292,5 +5292,42 @@ Make the history workflow easier to scan by adding a bounded read-only label tha
 **Dependencies:** TASK-82A through TASK-82V (Complete and Locked); existing history/control surface already present
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82W for full details
+
+---
+
+#### TASK-82X: History Surface Visibility Summary Intent Label Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-82X-CHECKPOINT.md`
+
+**Objective:**
+Make the history workflow easier to scan by adding a bounded read-only label that clarifies the intended use/intent of the existing visibility-related summaries inside the existing history/control surface, building on TASK-82A through TASK-82W without changing underlying behavior.
+
+**Scope:**
+- Reuse existing history/control surface only
+- Build on TASK-82A through TASK-82W section organization, preset behavior, visibility summaries, preset interpretation behavior, comparison-baseline labeling, preset-match explanation behavior, consistency-note behavior, visibility-summary grouping behavior, visibility-summary order labeling, visibility-summary scope labeling, visibility-summary audience labeling, visibility-summary brevity labeling, visibility-summary placement labeling, and visibility-summary context labeling
+- Add a compact read-only intent label for the existing visibility-related summaries
+- Clarify only the intended use/intent of already-existing summaries already present in the frontend
+- Use only already-derived frontend state and already-loaded checkpoint data
+- Keep all existing history actions and behaviors unchanged
+- Keep the intent label frontend-only, temporary, and active-session scoped
+- Preserve all closed Phase 81 history/control capabilities and TASK-82A through TASK-82W behavior
+- Frontend-only, additive only
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No automatic actions
+- ❌ No durable state outside current session
+- ❌ No broader redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Dependencies:** TASK-82A through TASK-82W (Complete and Locked); existing history/control surface already present
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82X for full details
 
 ---
