@@ -4338,7 +4338,30 @@ Perform the true final consolidation for Phase 81 and close the Phase 81 history
 
 ## Phase 82 — History Surface Usability Continued
 
-**Current stage:** TASK-82X (COMPLETE and LOCKED)
+**Status:** CLOSED  
+**Current stage:** TASK-82-FINAL-CLOSE (COMPLETE and LOCKED)
+
+---
+
+#### TASK-82-FINAL-CLOSE: Phase 82 Final Consolidation and Closure
+
+**Status:** COMPLETE and LOCKED  
+**Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)  
+**Checkpoint:** `docs/PHASE-82-FINAL-CHECKPOINT.md`
+
+**Objective:**  
+Close Phase 82 as a complete, bounded history/control-surface usability family covering all 24 slices (TASK-82A through TASK-82X).
+
+**Outcome:**
+- ✅ All 24 slices (TASK-82A through TASK-82X) confirmed COMPLETE and LOCKED
+- ✅ No backend/schema/endpoint/refactor changes confirmed across all 24 slices
+- ✅ No regressions — 100/100 tests passing (baseline preserved)
+- ✅ Authoritative final Phase 82 checkpoint produced at `docs/PHASE-82-FINAL-CHECKPOINT.md`
+- ✅ Phase 82 marked CLOSED
+
+**Reference:** `docs/PHASE-82-FINAL-CHECKPOINT.md`
+
+---
 
 ---
 
