@@ -1055,6 +1055,11 @@ describe('workspace shell component', () => {
       html,
       /Visibility summary audience \(read-only\): For the current active-session user reviewing this session&#x27;s major history-section visibility and preset-interpretation summaries\./,
     );
+    assert.match(html, /data-testid="history-section-visibility-summary-brevity-label"/);
+    assert.match(
+      html,
+      /Visibility summary brevity \(read-only\): These labels are concise, at-a-glance summaries of this active session&#x27;s existing history-section visibility and preset-interpretation state\./,
+    );
     assert.match(html, /data-testid="history-section-visibility-status-summary"/);
     assert.match(html, /Visibility status: Preset Default \| Visible 4\/4 \| Collapsed: None/);
     assert.match(html, /data-testid="history-section-visibility-preset-match-status"/);
