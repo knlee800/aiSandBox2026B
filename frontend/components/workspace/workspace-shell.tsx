@@ -2243,6 +2243,11 @@ function HistoryCheckpointList(props: {
         <p className="mt-1 text-[11px] text-gray-600" data-testid="history-section-visible-sections-summary">
           Visible sections (read-only): {visibleHistorySectionSummary}
         </p>
+        <p className="mt-1 text-[11px] text-gray-600" data-testid="history-section-visibility-state-consistency-note">
+          Visibility consistency note (read-only): Visibility status, hidden/visible summaries, preset interpretation,
+          preset-match explanation, comparison baseline, and visibility delta all derive from the same active in-session
+          section-visibility state.
+        </p>
         <div className="mt-2 flex flex-wrap items-center gap-2" data-testid="history-section-toggle-quick-controls">
           <button
             type="button"
