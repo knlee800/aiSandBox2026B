@@ -1383,6 +1383,13 @@ function HistoryCheckpointList(props: {
         .join(', '),
     [collapsedHistorySections, historyCollapsibleSectionOrder],
   );
+  const hiddenHistorySectionSummary = React.useMemo(
+    () =>
+      collapsedHistorySectionLabelsSummary.length > 0
+        ? collapsedHistorySectionLabelsSummary
+        : 'None (all major history sections currently visible)',
+    [collapsedHistorySectionLabelsSummary],
+  );
   const overviewVisibilityPresetVisibleSections = React.useMemo(
     () => getVisibleHistorySectionLabelsForPreset('overview-oriented'),
     [],
@@ -2094,6 +2101,9 @@ function HistoryCheckpointList(props: {
           Preset guide (read-only): Active {activeVisibilityPresetLabel} | Overview Preset focuses on broad history
           flow ({overviewVisibilityPresetVisibleSections} visible) | Inspection Preset focuses on detailed review (
           {inspectionVisibilityPresetVisibleSections} visible)
+        </p>
+        <p className="mt-1 text-[11px] text-gray-600" data-testid="history-section-hidden-sections-summary">
+          Hidden sections (read-only): {hiddenHistorySectionSummary}
         </p>
         <div className="mt-2 flex flex-wrap items-center gap-2" data-testid="history-section-toggle-quick-controls">
           <button
