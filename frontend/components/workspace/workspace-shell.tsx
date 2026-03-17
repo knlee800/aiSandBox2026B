@@ -1381,6 +1381,51 @@ function HistoryCheckpointList(props: {
         : `Matches ${activeVisibilityPresetLabel} preset`,
     [activeVisibilityPresetLabel],
   );
+  const visibilityComparisonBaselineLabel = React.useMemo(() => {
+    const presetCandidates: ReadonlyArray<{
+      label: string;
+      state: Record<HistoryCollapsibleSectionKey, boolean>;
+    }> = [
+      { label: 'Default', state: DEFAULT_HISTORY_COLLAPSIBLE_SECTION_STATE },
+      {
+        label: HISTORY_SECTION_VISIBILITY_PRESET_LABELS['overview-oriented'],
+        state: getHistorySectionVisibilityPresetState('overview-oriented'),
+      },
+      {
+        label: HISTORY_SECTION_VISIBILITY_PRESET_LABELS['inspection-oriented'],
+        state: getHistorySectionVisibilityPresetState('inspection-oriented'),
+      },
+    ];
+    const defaultCandidate = presetCandidates[0];
+    const defaultDifferenceCount = collapsibleSectionKeys.reduce(
+      (count, sectionKey) => (collapsedHistorySections[sectionKey] === defaultCandidate.state[sectionKey] ? count : count + 1),
+      0,
+    );
+    const nearestPreset = presetCandidates.slice(1).reduce<{
+      label: string;
+      state: Record<HistoryCollapsibleSectionKey, boolean>;
+      differenceCount: number;
+    }>(
+      (bestCandidate, candidate) => {
+        const differenceCount = collapsibleSectionKeys.reduce(
+          (count, sectionKey) => (collapsedHistorySections[sectionKey] === candidate.state[sectionKey] ? count : count + 1),
+          0,
+        );
+        if (!bestCandidate || differenceCount < bestCandidate.differenceCount) {
+          return {
+            ...candidate,
+            differenceCount,
+          };
+        }
+        return bestCandidate;
+      },
+      {
+        ...defaultCandidate,
+        differenceCount: defaultDifferenceCount,
+      },
+    );
+    return nearestPreset.label;
+  }, [collapsedHistorySections, collapsibleSectionKeys]);
   const visibilityDeltaSummary = React.useMemo(() => {
     const presetCandidates: ReadonlyArray<{
       label: string;
@@ -2170,6 +2215,9 @@ function HistoryCheckpointList(props: {
         </p>
         <p className="mt-1 text-[11px] text-gray-600" data-testid="history-section-visibility-preset-match-status">
           Preset match status (read-only): {visibilityPresetMatchStatusSummary}
+        </p>
+        <p className="mt-1 text-[11px] text-gray-600" data-testid="history-section-visibility-comparison-baseline-label">
+          Comparison baseline (read-only): {visibilityComparisonBaselineLabel} preset
         </p>
         <p className="mt-1 text-[11px] text-gray-600" data-testid="history-section-visibility-delta-summary">
           Visibility delta (read-only): {visibilityDeltaSummary}

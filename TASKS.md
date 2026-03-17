@@ -4338,7 +4338,7 @@ Perform the true final consolidation for Phase 81 and close the Phase 81 history
 
 ## Phase 82 — History Surface Usability Continued
 
-**Current stage:** TASK-82M (COMPLETE and LOCKED)
+**Current stage:** TASK-82N (COMPLETE and LOCKED)
 
 ---
 
@@ -4922,5 +4922,42 @@ Make the history workflow easier to interpret by adding a bounded read-only summ
 **Dependencies:** TASK-82A through TASK-82L (Complete and Locked); existing history/control surface already present
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82M for full details
+
+---
+
+#### TASK-82N: History Surface Preset Comparison Baseline Label Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-82N-CHECKPOINT.md`
+
+**Objective:**
+Make the history workflow easier to read by adding a bounded read-only label that identifies which existing preset is currently being used as the comparison baseline for visibility-status interpretation inside the existing history/control surface, building on TASK-82A through TASK-82M without changing underlying behavior.
+
+**Scope:**
+- Reuse existing history/control surface only
+- Build on TASK-82A through TASK-82M section organization, preset behavior, visibility summaries, preset description behavior, preset-match status behavior, and visibility-delta summary behavior
+- Add a compact read-only comparison-baseline label
+- Identify only an already-existing preset already implied by the current frontend visibility interpretation
+- Use only already-derived frontend state and already-loaded checkpoint data
+- Keep all existing history actions and behaviors unchanged
+- Keep the label frontend-only, temporary, and active-session scoped
+- Preserve all closed Phase 81 history/control capabilities and TASK-82A/TASK-82M behavior
+- Frontend-only, additive only
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No automatic actions
+- ❌ No durable state outside current session
+- ❌ No broader redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Dependencies:** TASK-82A through TASK-82M (Complete and Locked); existing history/control surface already present
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82N for full details
 
 ---

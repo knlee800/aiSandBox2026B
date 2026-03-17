@@ -1039,6 +1039,8 @@ describe('workspace shell component', () => {
     assert.match(html, /Visibility status: Preset Default \| Visible 4\/4 \| Collapsed: None/);
     assert.match(html, /data-testid="history-section-visibility-preset-match-status"/);
     assert.match(html, /Preset match status \(read-only\): Matches Default preset/);
+    assert.match(html, /data-testid="history-section-visibility-comparison-baseline-label"/);
+    assert.match(html, /Comparison baseline \(read-only\): Default preset/);
     assert.match(html, /data-testid="history-section-visibility-delta-summary"/);
     assert.match(html, /Visibility delta \(read-only\): Matches Default preset \(no visibility deltas\)/);
     assert.match(html, /data-testid="history-section-visibility-preset-description"/);
