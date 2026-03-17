@@ -2223,6 +2223,10 @@ function HistoryCheckpointList(props: {
           Visibility summary order (read-only): Read in order - status, match, explanation, baseline, delta, guide,
           hidden/visible, then consistency.
         </p>
+        <p className="mt-1 text-[11px] text-gray-600" data-testid="history-section-visibility-summary-scope-label">
+          Visibility summary scope (read-only): Applies only to this active session's major history-section visibility
+          and preset-interpretation summaries; no backend or cross-session state.
+        </p>
         <p className="mt-1 text-[11px] text-gray-600" data-testid="history-section-visibility-status-summary">
           Visibility status: Preset {activeVisibilityPresetLabel} | Visible {visibleHistorySectionCount}/
           {collapsibleSectionKeys.length} | Collapsed:{' '}

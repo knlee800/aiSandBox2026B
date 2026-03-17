@@ -1045,6 +1045,11 @@ describe('workspace shell component', () => {
       html,
       /Visibility summary order \(read-only\): Read in order - status, match, explanation, baseline, delta, guide, hidden\/visible, then consistency\./,
     );
+    assert.match(html, /data-testid="history-section-visibility-summary-scope-label"/);
+    assert.match(
+      html,
+      /Visibility summary scope \(read-only\): Applies only to this active session&#x27;s major history-section visibility and preset-interpretation summaries; no backend or cross-session state\./,
+    );
     assert.match(html, /data-testid="history-section-visibility-status-summary"/);
     assert.match(html, /Visibility status: Preset Default \| Visible 4\/4 \| Collapsed: None/);
     assert.match(html, /data-testid="history-section-visibility-preset-match-status"/);
