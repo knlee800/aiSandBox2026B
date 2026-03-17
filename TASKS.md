@@ -4338,7 +4338,7 @@ Perform the true final consolidation for Phase 81 and close the Phase 81 history
 
 ## Phase 82 — History Surface Usability Continued
 
-**Current stage:** TASK-82G (COMPLETE and LOCKED)
+**Current stage:** TASK-82H (COMPLETE and LOCKED)
 
 ---
 
@@ -4668,5 +4668,50 @@ Make the history workflow easier to recover from temporary preset changes by add
 - ✅ Checkpoint created: `docs/PHASE-82G-CHECKPOINT.md`
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82G for full details
+
+---
+
+#### TASK-82H: History Surface Section Visibility Status Summary Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-82H-CHECKPOINT.md`
+
+**Objective:**
+Make the history workflow easier to understand by adding a bounded read-only summary of the currently active section-visibility preset/state inside the existing history/control surface, building on TASK-82A through TASK-82G without changing underlying behavior.
+
+**Scope:**
+- Reuse existing history/control surface only
+- Build on TASK-82A through TASK-82G section organization and preset behavior
+- Add a compact read-only summary of current section-visibility state
+- Reflect presentation/visibility state only for already-existing history UI sections
+- Use only already-derived frontend state and already-loaded checkpoint data
+- Keep all existing history actions and behaviors unchanged
+- Keep the summary frontend-only, temporary, and active-session scoped
+- Preserve all closed Phase 81 history/control capabilities and TASK-82A/TASK-82G behavior
+- Frontend-only, additive only
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No automatic actions
+- ❌ No durable state outside current session
+- ❌ No broader redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Dependencies:** TASK-82A, TASK-82B, TASK-82C, TASK-82D, TASK-82E, TASK-82F, and TASK-82G (Complete and Locked); existing history/control surface already present
+
+**Completion Summary:**
+- ✅ Compact read-only `history-section-visibility-status-summary` added inside existing `history-section-collapse-controls` surface
+- ✅ Summary reflects active preset label, visible section count, and collapsed section labels from existing in-session state
+- ✅ All existing Phase 81 and TASK-82A through TASK-82G history/control behaviors preserved and unchanged
+- ✅ Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes
+- ✅ 100/100 tests pass; 0 regressions (baseline 100; no net change in count)
+- ✅ Checkpoint created: `docs/PHASE-82H-CHECKPOINT.md`
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82H for full details
 
 ---

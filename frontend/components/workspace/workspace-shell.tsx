@@ -1367,6 +1367,15 @@ function HistoryCheckpointList(props: {
     }
     return 'Custom';
   }, [isDefaultVisibilityPresetActive, isVisibilityPresetActive]);
+  const visibleHistorySectionCount = collapsibleSectionKeys.length - collapsedSectionCount;
+  const collapsedHistorySectionLabelsSummary = React.useMemo(
+    () =>
+      historyCollapsibleSectionOrder
+        .filter((sectionKey) => collapsedHistorySections[sectionKey])
+        .map((sectionKey) => HISTORY_COLLAPSIBLE_SECTION_LABELS[sectionKey])
+        .join(', '),
+    [collapsedHistorySections, historyCollapsibleSectionOrder],
+  );
   const toggleCollapsedHistorySection = React.useCallback((sectionKey: HistoryCollapsibleSectionKey): void => {
     setCollapsedHistorySections((currentState) => ({
       ...currentState,
@@ -2061,6 +2070,11 @@ function HistoryCheckpointList(props: {
             Active preset: {activeVisibilityPresetLabel}
           </span>
         </div>
+        <p className="mt-1 text-[11px] text-gray-600" data-testid="history-section-visibility-status-summary">
+          Visibility status: Preset {activeVisibilityPresetLabel} | Visible {visibleHistorySectionCount}/
+          {collapsibleSectionKeys.length} | Collapsed:{' '}
+          {collapsedHistorySectionLabelsSummary.length > 0 ? collapsedHistorySectionLabelsSummary : 'None'}
+        </p>
         <div className="mt-2 flex flex-wrap items-center gap-2" data-testid="history-section-toggle-quick-controls">
           <button
             type="button"

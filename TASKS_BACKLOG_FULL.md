@@ -12309,3 +12309,56 @@ Make the history workflow easier to recover from temporary preset changes by add
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-82A-CHECKPOINT.md, PHASE-82B-CHECKPOINT.md, PHASE-82C-CHECKPOINT.md, PHASE-82D-CHECKPOINT.md, PHASE-82E-CHECKPOINT.md, PHASE-82F-CHECKPOINT.md
 
 ---
+
+### TASK-82H: History Surface Section Visibility Status Summary Slice
+
+**Task ID:** TASK-82H
+**Phase:** 82
+**Stage:** 82H
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** TASK-82A, TASK-82B, TASK-82C, TASK-82D, TASK-82E, TASK-82F, and TASK-82G (Complete and Locked); existing history/control surface already present
+**Checkpoint:** `docs/PHASE-82H-CHECKPOINT.md`
+
+**Objective:**
+
+Make the history workflow easier to understand by adding a bounded read-only summary of the currently active section-visibility preset/state inside the existing history/control surface, building on TASK-82A through TASK-82G without changing underlying behavior.
+
+**Scope:**
+
+1. Reuse the existing history/control surface only — no new panels, routes, or sub-routes
+2. Build on the section-collapse, section-order, and section-visibility preset/reset state from TASK-82A through TASK-82G
+3. Add a compact read-only summary of current section-visibility state
+4. Reflect presentation/visibility state only for already-existing history UI sections
+5. Use only already-derived frontend state and already-loaded checkpoint data
+6. Keep all existing history actions and behaviors unchanged
+7. Keep the summary frontend-only, temporary, and active-session scoped
+8. Preserve all closed Phase 81 history/control capabilities and TASK-82A/TASK-82G behavior
+9. Frontend-only, additive changes
+10. Focused frontend tests for this slice
+
+**Non-Goals:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No automatic actions
+- ❌ No durable state outside current session
+- ❌ No broader redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Acceptance Criteria:**
+
+- User can see a compact summary of current section-visibility state inside the existing history/control surface
+- Behavior uses only already-available frontend state and already-loaded checkpoint data
+- Active-session scoping preserved
+- All closed Phase 81 surfaces and TASK-82A/TASK-82G behavior remain intact and functional
+- No backend/schema/endpoint/refactor changes
+- No regressions across workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, and all history/control surfaces
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-82A-CHECKPOINT.md, PHASE-82B-CHECKPOINT.md, PHASE-82C-CHECKPOINT.md, PHASE-82D-CHECKPOINT.md, PHASE-82E-CHECKPOINT.md, PHASE-82F-CHECKPOINT.md, PHASE-82G-CHECKPOINT.md
+
+---
