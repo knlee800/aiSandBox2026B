@@ -2239,6 +2239,10 @@ function HistoryCheckpointList(props: {
           Visibility summary placement (read-only): Presented in this controls area before the detailed visibility
           summaries so active-session visibility and preset interpretation state stays easy to scan.
         </p>
+        <p className="mt-1 text-[11px] text-gray-600" data-testid="history-section-visibility-summary-context-label">
+          Visibility summary context (read-only): These existing summaries provide quick context for how current
+          in-session section visibility and preset interpretation should be read before using history controls.
+        </p>
         <p className="mt-1 text-[11px] text-gray-600" data-testid="history-section-visibility-status-summary">
           Visibility status: Preset {activeVisibilityPresetLabel} | Visible {visibleHistorySectionCount}/
           {collapsibleSectionKeys.length} | Collapsed:{' '}

@@ -1065,6 +1065,11 @@ describe('workspace shell component', () => {
       html,
       /Visibility summary placement \(read-only\): Presented in this controls area before the detailed visibility summaries so active-session visibility and preset interpretation state stays easy to scan\./,
     );
+    assert.match(html, /data-testid="history-section-visibility-summary-context-label"/);
+    assert.match(
+      html,
+      /Visibility summary context \(read-only\): These existing summaries provide quick context for how current in-session section visibility and preset interpretation should be read before using history controls\./,
+    );
     assert.match(html, /data-testid="history-section-visibility-status-summary"/);
     assert.match(html, /Visibility status: Preset Default \| Visible 4\/4 \| Collapsed: None/);
     assert.match(html, /data-testid="history-section-visibility-preset-match-status"/);
