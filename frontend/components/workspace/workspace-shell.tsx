@@ -1390,6 +1390,14 @@ function HistoryCheckpointList(props: {
         : 'None (all major history sections currently visible)',
     [collapsedHistorySectionLabelsSummary],
   );
+  const visibleHistorySectionSummary = React.useMemo(
+    () =>
+      historyCollapsibleSectionOrder
+        .filter((sectionKey) => !collapsedHistorySections[sectionKey])
+        .map((sectionKey) => HISTORY_COLLAPSIBLE_SECTION_LABELS[sectionKey])
+        .join(', ') || 'None (all major history sections currently hidden)',
+    [collapsedHistorySections, historyCollapsibleSectionOrder],
+  );
   const overviewVisibilityPresetVisibleSections = React.useMemo(
     () => getVisibleHistorySectionLabelsForPreset('overview-oriented'),
     [],
@@ -2104,6 +2112,9 @@ function HistoryCheckpointList(props: {
         </p>
         <p className="mt-1 text-[11px] text-gray-600" data-testid="history-section-hidden-sections-summary">
           Hidden sections (read-only): {hiddenHistorySectionSummary}
+        </p>
+        <p className="mt-1 text-[11px] text-gray-600" data-testid="history-section-visible-sections-summary">
+          Visible sections (read-only): {visibleHistorySectionSummary}
         </p>
         <div className="mt-2 flex flex-wrap items-center gap-2" data-testid="history-section-toggle-quick-controls">
           <button
