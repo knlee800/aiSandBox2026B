@@ -1020,6 +1020,12 @@ export function getHistorySectionVisibilityPresetState(
   };
 }
 
+export function getDefaultHistorySectionVisibilityPresetState(): Record<HistoryCollapsibleSectionKey, boolean> {
+  return {
+    ...DEFAULT_HISTORY_COLLAPSIBLE_SECTION_STATE,
+  };
+}
+
 function HistoryCheckpointList(props: {
   selectedSessionId: string | null;
   checkpoints: WorkspaceCheckpoint[];
@@ -1342,7 +1348,17 @@ function HistoryCheckpointList(props: {
     },
     [collapsedHistorySections, collapsibleSectionKeys],
   );
+  const isDefaultVisibilityPresetActive = React.useMemo(
+    () =>
+      collapsibleSectionKeys.every(
+        (sectionKey) => collapsedHistorySections[sectionKey] === DEFAULT_HISTORY_COLLAPSIBLE_SECTION_STATE[sectionKey],
+      ),
+    [collapsedHistorySections, collapsibleSectionKeys],
+  );
   const activeVisibilityPresetLabel = React.useMemo(() => {
+    if (isDefaultVisibilityPresetActive) {
+      return 'Default';
+    }
     if (isVisibilityPresetActive('overview-oriented')) {
       return HISTORY_SECTION_VISIBILITY_PRESET_LABELS['overview-oriented'];
     }
@@ -1350,7 +1366,7 @@ function HistoryCheckpointList(props: {
       return HISTORY_SECTION_VISIBILITY_PRESET_LABELS['inspection-oriented'];
     }
     return 'Custom';
-  }, [isVisibilityPresetActive]);
+  }, [isDefaultVisibilityPresetActive, isVisibilityPresetActive]);
   const toggleCollapsedHistorySection = React.useCallback((sectionKey: HistoryCollapsibleSectionKey): void => {
     setCollapsedHistorySections((currentState) => ({
       ...currentState,
@@ -1381,6 +1397,9 @@ function HistoryCheckpointList(props: {
   }, []);
   const applyHistorySectionVisibilityPreset = React.useCallback((presetKey: HistorySectionVisibilityPresetKey): void => {
     setCollapsedHistorySections(getHistorySectionVisibilityPresetState(presetKey));
+  }, []);
+  const resetHistorySectionVisibilityPresetToDefault = React.useCallback((): void => {
+    setCollapsedHistorySections(getDefaultHistorySectionVisibilityPresetState());
   }, []);
   const checkpointListSpacingClass = isHistoryFocusModeActive
     ? isExpandedHistoryContextDensity
@@ -2011,6 +2030,15 @@ function HistoryCheckpointList(props: {
           </span>
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-2" data-testid="history-section-visibility-preset-controls">
+          <button
+            type="button"
+            data-testid="history-section-visibility-preset-reset-default"
+            disabled={isDefaultVisibilityPresetActive}
+            onClick={resetHistorySectionVisibilityPresetToDefault}
+            className="rounded border border-gray-300 bg-white px-2 py-0.5 text-[11px] text-gray-700 disabled:border-gray-200 disabled:text-gray-400"
+          >
+            Reset Visibility Preset
+          </button>
           <button
             type="button"
             data-testid="history-section-visibility-preset-overview-oriented"

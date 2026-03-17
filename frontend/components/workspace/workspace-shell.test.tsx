@@ -3,6 +3,7 @@ import { describe, test } from 'node:test';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import WorkspaceShell, {
+  getDefaultHistorySectionVisibilityPresetState,
   getHistorySectionVisibilityPresetState,
   moveHistoryCollapsibleSectionOrderItem,
   resetHistoryCollapsibleSectionOrderToDefault,
@@ -1029,10 +1030,11 @@ describe('workspace shell component', () => {
     assert.match(html, /data-testid="history-section-order-reset-state"/);
     assert.match(html, /Default: Controls &gt; Summaries &gt; Inspectors &gt; Checkpoint Browser/);
     assert.match(html, /data-testid="history-section-visibility-preset-controls"/);
+    assert.match(html, /data-testid="history-section-visibility-preset-reset-default" disabled/);
     assert.match(html, /data-testid="history-section-visibility-preset-overview-oriented"/);
     assert.match(html, /data-testid="history-section-visibility-preset-inspection-oriented"/);
     assert.match(html, /data-testid="history-section-visibility-preset-active-state"/);
-    assert.match(html, /Active preset: Custom/);
+    assert.match(html, /Active preset: Default/);
     assert.match(html, /data-testid="history-section-toggle-quick-controls"/);
     assert.match(html, /data-testid="history-section-expand-all" disabled/);
     assert.match(html, /data-testid="history-section-collapse-all"/);
@@ -1140,6 +1142,17 @@ describe('workspace shell component', () => {
     assert.deepEqual(inspectionPreset, {
       controls: true,
       summaries: true,
+      inspectors: false,
+      'checkpoint-browser': false,
+    });
+  });
+
+  test('returns bounded default visibility preset state for reset control', () => {
+    const defaultPreset = getDefaultHistorySectionVisibilityPresetState();
+
+    assert.deepEqual(defaultPreset, {
+      controls: false,
+      summaries: false,
       inspectors: false,
       'checkpoint-browser': false,
     });
