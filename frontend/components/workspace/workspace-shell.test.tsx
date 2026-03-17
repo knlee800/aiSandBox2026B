@@ -1037,6 +1037,8 @@ describe('workspace shell component', () => {
     assert.match(html, /Active preset: Default/);
     assert.match(html, /data-testid="history-section-visibility-status-summary"/);
     assert.match(html, /Visibility status: Preset Default \| Visible 4\/4 \| Collapsed: None/);
+    assert.match(html, /data-testid="history-section-visibility-preset-description"/);
+    assert.match(html, /Preset guide \(read-only\): Active Default \| Overview Preset focuses on broad history flow/);
     assert.match(html, /data-testid="history-section-toggle-quick-controls"/);
     assert.match(html, /data-testid="history-section-expand-all" disabled/);
     assert.match(html, /data-testid="history-section-collapse-all"/);

@@ -966,6 +966,13 @@ const HISTORY_SECTION_VISIBILITY_PRESET_LABELS: Record<HistorySectionVisibilityP
   'inspection-oriented': 'Inspection-Oriented',
 };
 
+function getVisibleHistorySectionLabelsForPreset(presetKey: HistorySectionVisibilityPresetKey): string {
+  const presetState = getHistorySectionVisibilityPresetState(presetKey);
+  return DEFAULT_HISTORY_COLLAPSIBLE_SECTION_ORDER.filter((sectionKey) => !presetState[sectionKey])
+    .map((sectionKey) => HISTORY_COLLAPSIBLE_SECTION_LABELS[sectionKey])
+    .join(', ');
+}
+
 export function moveHistoryCollapsibleSectionOrderItem(args: {
   currentOrder: HistoryCollapsibleSectionKey[];
   sectionKey: HistoryCollapsibleSectionKey;
@@ -1375,6 +1382,14 @@ function HistoryCheckpointList(props: {
         .map((sectionKey) => HISTORY_COLLAPSIBLE_SECTION_LABELS[sectionKey])
         .join(', '),
     [collapsedHistorySections, historyCollapsibleSectionOrder],
+  );
+  const overviewVisibilityPresetVisibleSections = React.useMemo(
+    () => getVisibleHistorySectionLabelsForPreset('overview-oriented'),
+    [],
+  );
+  const inspectionVisibilityPresetVisibleSections = React.useMemo(
+    () => getVisibleHistorySectionLabelsForPreset('inspection-oriented'),
+    [],
   );
   const toggleCollapsedHistorySection = React.useCallback((sectionKey: HistoryCollapsibleSectionKey): void => {
     setCollapsedHistorySections((currentState) => ({
@@ -2074,6 +2089,11 @@ function HistoryCheckpointList(props: {
           Visibility status: Preset {activeVisibilityPresetLabel} | Visible {visibleHistorySectionCount}/
           {collapsibleSectionKeys.length} | Collapsed:{' '}
           {collapsedHistorySectionLabelsSummary.length > 0 ? collapsedHistorySectionLabelsSummary : 'None'}
+        </p>
+        <p className="mt-1 text-[11px] text-gray-600" data-testid="history-section-visibility-preset-description">
+          Preset guide (read-only): Active {activeVisibilityPresetLabel} | Overview Preset focuses on broad history
+          flow ({overviewVisibilityPresetVisibleSections} visible) | Inspection Preset focuses on detailed review (
+          {inspectionVisibilityPresetVisibleSections} visible)
         </p>
         <div className="mt-2 flex flex-wrap items-center gap-2" data-testid="history-section-toggle-quick-controls">
           <button
