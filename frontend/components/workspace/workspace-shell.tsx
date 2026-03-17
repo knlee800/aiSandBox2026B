@@ -1374,6 +1374,13 @@ function HistoryCheckpointList(props: {
     }
     return 'Custom';
   }, [isDefaultVisibilityPresetActive, isVisibilityPresetActive]);
+  const visibilityPresetMatchStatusSummary = React.useMemo(
+    () =>
+      activeVisibilityPresetLabel === 'Custom'
+        ? 'Custom/Diverged from existing presets'
+        : `Matches ${activeVisibilityPresetLabel} preset`,
+    [activeVisibilityPresetLabel],
+  );
   const visibleHistorySectionCount = collapsibleSectionKeys.length - collapsedSectionCount;
   const collapsedHistorySectionLabelsSummary = React.useMemo(
     () =>
@@ -2104,6 +2111,9 @@ function HistoryCheckpointList(props: {
           Visibility status: Preset {activeVisibilityPresetLabel} | Visible {visibleHistorySectionCount}/
           {collapsibleSectionKeys.length} | Collapsed:{' '}
           {collapsedHistorySectionLabelsSummary.length > 0 ? collapsedHistorySectionLabelsSummary : 'None'}
+        </p>
+        <p className="mt-1 text-[11px] text-gray-600" data-testid="history-section-visibility-preset-match-status">
+          Preset match status (read-only): {visibilityPresetMatchStatusSummary}
         </p>
         <p className="mt-1 text-[11px] text-gray-600" data-testid="history-section-visibility-preset-description">
           Preset guide (read-only): Active {activeVisibilityPresetLabel} | Overview Preset focuses on broad history
