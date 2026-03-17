@@ -1381,6 +1381,62 @@ function HistoryCheckpointList(props: {
         : `Matches ${activeVisibilityPresetLabel} preset`,
     [activeVisibilityPresetLabel],
   );
+  const visibilityDeltaSummary = React.useMemo(() => {
+    const presetCandidates: ReadonlyArray<{
+      label: string;
+      state: Record<HistoryCollapsibleSectionKey, boolean>;
+    }> = [
+      { label: 'Default', state: DEFAULT_HISTORY_COLLAPSIBLE_SECTION_STATE },
+      {
+        label: HISTORY_SECTION_VISIBILITY_PRESET_LABELS['overview-oriented'],
+        state: getHistorySectionVisibilityPresetState('overview-oriented'),
+      },
+      {
+        label: HISTORY_SECTION_VISIBILITY_PRESET_LABELS['inspection-oriented'],
+        state: getHistorySectionVisibilityPresetState('inspection-oriented'),
+      },
+    ];
+    const defaultCandidate = presetCandidates[0];
+    const defaultDifferenceCount = collapsibleSectionKeys.reduce(
+      (count, sectionKey) => (collapsedHistorySections[sectionKey] === defaultCandidate.state[sectionKey] ? count : count + 1),
+      0,
+    );
+    const nearestPreset = presetCandidates.slice(1).reduce<{
+      label: string;
+      state: Record<HistoryCollapsibleSectionKey, boolean>;
+      differenceCount: number;
+    }>(
+      (bestCandidate, candidate) => {
+      const differenceCount = collapsibleSectionKeys.reduce(
+        (count, sectionKey) => (collapsedHistorySections[sectionKey] === candidate.state[sectionKey] ? count : count + 1),
+        0,
+      );
+      if (!bestCandidate || differenceCount < bestCandidate.differenceCount) {
+        return {
+          ...candidate,
+          differenceCount,
+        };
+      }
+      return bestCandidate;
+      },
+      {
+        ...defaultCandidate,
+        differenceCount: defaultDifferenceCount,
+      },
+    );
+    if (nearestPreset.differenceCount === 0) {
+      return `Matches ${nearestPreset.label} preset (no visibility deltas)`;
+    }
+    const hiddenComparedWithPreset = collapsibleSectionKeys
+      .filter((sectionKey) => collapsedHistorySections[sectionKey] && !nearestPreset.state[sectionKey])
+      .map((sectionKey) => HISTORY_COLLAPSIBLE_SECTION_LABELS[sectionKey]);
+    const visibleComparedWithPreset = collapsibleSectionKeys
+      .filter((sectionKey) => !collapsedHistorySections[sectionKey] && nearestPreset.state[sectionKey])
+      .map((sectionKey) => HISTORY_COLLAPSIBLE_SECTION_LABELS[sectionKey]);
+    return `Nearest ${nearestPreset.label} preset | Hidden vs preset: ${
+      hiddenComparedWithPreset.length ? hiddenComparedWithPreset.join(', ') : 'None'
+    } | Visible vs preset: ${visibleComparedWithPreset.length ? visibleComparedWithPreset.join(', ') : 'None'}`;
+  }, [collapsedHistorySections, collapsibleSectionKeys]);
   const visibleHistorySectionCount = collapsibleSectionKeys.length - collapsedSectionCount;
   const collapsedHistorySectionLabelsSummary = React.useMemo(
     () =>
@@ -2114,6 +2170,9 @@ function HistoryCheckpointList(props: {
         </p>
         <p className="mt-1 text-[11px] text-gray-600" data-testid="history-section-visibility-preset-match-status">
           Preset match status (read-only): {visibilityPresetMatchStatusSummary}
+        </p>
+        <p className="mt-1 text-[11px] text-gray-600" data-testid="history-section-visibility-delta-summary">
+          Visibility delta (read-only): {visibilityDeltaSummary}
         </p>
         <p className="mt-1 text-[11px] text-gray-600" data-testid="history-section-visibility-preset-description">
           Preset guide (read-only): Active {activeVisibilityPresetLabel} | Overview Preset focuses on broad history

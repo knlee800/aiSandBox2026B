@@ -4338,7 +4338,7 @@ Perform the true final consolidation for Phase 81 and close the Phase 81 history
 
 ## Phase 82 — History Surface Usability Continued
 
-**Current stage:** TASK-82L (COMPLETE and LOCKED)
+**Current stage:** TASK-82M (COMPLETE and LOCKED)
 
 ---
 
@@ -4885,5 +4885,42 @@ Make the history workflow easier to understand by adding a bounded read-only ind
 **Dependencies:** TASK-82A, TASK-82B, TASK-82C, TASK-82D, TASK-82E, TASK-82F, TASK-82G, TASK-82H, TASK-82I, TASK-82J, and TASK-82K (Complete and Locked); existing history/control surface already present
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82L for full details
+
+---
+
+#### TASK-82M: History Surface Visibility Delta Summary Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-82M-CHECKPOINT.md`
+
+**Objective:**
+Make the history workflow easier to interpret by adding a bounded read-only summary of how the current section-visibility state differs from the nearest existing preset inside the existing history/control surface, building on TASK-82A through TASK-82L without changing underlying behavior.
+
+**Scope:**
+- Reuse existing history/control surface only
+- Build on TASK-82A through TASK-82L section organization, preset behavior, visibility summaries, preset description behavior, and preset-match status behavior
+- Add a compact read-only summary of the current visibility delta relative to an already-existing preset when applicable
+- Reflect only already-existing history UI sections and already-existing presets
+- Use only already-derived frontend state and already-loaded checkpoint data
+- Keep all existing history actions and behaviors unchanged
+- Keep the summary frontend-only, temporary, and active-session scoped
+- Preserve all closed Phase 81 history/control capabilities and TASK-82A/TASK-82L behavior
+- Frontend-only, additive only
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No automatic actions
+- ❌ No durable state outside current session
+- ❌ No broader redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Dependencies:** TASK-82A through TASK-82L (Complete and Locked); existing history/control surface already present
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82M for full details
 
 ---
