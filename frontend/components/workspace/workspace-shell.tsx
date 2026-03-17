@@ -1426,6 +1426,13 @@ function HistoryCheckpointList(props: {
     );
     return nearestPreset.label;
   }, [collapsedHistorySections, collapsibleSectionKeys]);
+  const visibilityPresetMatchExplanationSummary = React.useMemo(
+    () =>
+      activeVisibilityPresetLabel === 'Custom'
+        ? `Current section visibility differs from the nearest ${visibilityComparisonBaselineLabel} preset state, so this is treated as custom/diverged.`
+        : `Current section visibility exactly matches the ${activeVisibilityPresetLabel} preset state.`,
+    [activeVisibilityPresetLabel, visibilityComparisonBaselineLabel],
+  );
   const visibilityDeltaSummary = React.useMemo(() => {
     const presetCandidates: ReadonlyArray<{
       label: string;
@@ -2215,6 +2222,9 @@ function HistoryCheckpointList(props: {
         </p>
         <p className="mt-1 text-[11px] text-gray-600" data-testid="history-section-visibility-preset-match-status">
           Preset match status (read-only): {visibilityPresetMatchStatusSummary}
+        </p>
+        <p className="mt-1 text-[11px] text-gray-600" data-testid="history-section-visibility-preset-match-explanation">
+          Preset match explanation (read-only): {visibilityPresetMatchExplanationSummary}
         </p>
         <p className="mt-1 text-[11px] text-gray-600" data-testid="history-section-visibility-comparison-baseline-label">
           Comparison baseline (read-only): {visibilityComparisonBaselineLabel} preset

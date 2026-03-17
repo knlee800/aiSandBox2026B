@@ -4338,7 +4338,7 @@ Perform the true final consolidation for Phase 81 and close the Phase 81 history
 
 ## Phase 82 — History Surface Usability Continued
 
-**Current stage:** TASK-82N (COMPLETE and LOCKED)
+**Current stage:** TASK-82O (COMPLETE and LOCKED)
 
 ---
 
@@ -4959,5 +4959,42 @@ Make the history workflow easier to read by adding a bounded read-only label tha
 **Dependencies:** TASK-82A through TASK-82M (Complete and Locked); existing history/control surface already present
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82N for full details
+
+---
+
+#### TASK-82O: History Surface Preset Match Explanation Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-82O-CHECKPOINT.md`
+
+**Objective:**
+Make the history workflow easier to understand by adding a bounded read-only explanation of why the current section-visibility state is considered an exact preset match or a custom/diverged state inside the existing history/control surface, building on TASK-82A through TASK-82N without changing underlying behavior.
+
+**Scope:**
+- Reuse existing history/control surface only
+- Build on TASK-82A through TASK-82N section organization, preset behavior, visibility summaries, preset interpretation behavior, and comparison-baseline labeling
+- Add a compact read-only preset-match explanation
+- Explain only already-existing preset/state interpretation already implied by current frontend visibility logic
+- Use only already-derived frontend state and already-loaded checkpoint data
+- Keep all existing history actions and behaviors unchanged
+- Keep the explanation frontend-only, temporary, and active-session scoped
+- Preserve all closed Phase 81 history/control capabilities and TASK-82A/TASK-82N behavior
+- Frontend-only, additive only
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No automatic actions
+- ❌ No durable state outside current session
+- ❌ No broader redesign
+- ❌ No polling/websocket behavior
+- ❌ No multi-task work
+
+**Dependencies:** TASK-82A through TASK-82N (Complete and Locked); existing history/control surface already present
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82O for full details
 
 ---
