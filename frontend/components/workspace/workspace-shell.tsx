@@ -2227,6 +2227,10 @@ function HistoryCheckpointList(props: {
           Visibility summary scope (read-only): Applies only to this active session's major history-section visibility
           and preset-interpretation summaries; no backend or cross-session state.
         </p>
+        <p className="mt-1 text-[11px] text-gray-600" data-testid="history-section-visibility-summary-audience-label">
+          Visibility summary audience (read-only): For the current active-session user reviewing this session's major
+          history-section visibility and preset-interpretation summaries.
+        </p>
         <p className="mt-1 text-[11px] text-gray-600" data-testid="history-section-visibility-status-summary">
           Visibility status: Preset {activeVisibilityPresetLabel} | Visible {visibleHistorySectionCount}/
           {collapsibleSectionKeys.length} | Collapsed:{' '}

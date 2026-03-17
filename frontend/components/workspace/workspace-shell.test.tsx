@@ -1050,6 +1050,11 @@ describe('workspace shell component', () => {
       html,
       /Visibility summary scope \(read-only\): Applies only to this active session&#x27;s major history-section visibility and preset-interpretation summaries; no backend or cross-session state\./,
     );
+    assert.match(html, /data-testid="history-section-visibility-summary-audience-label"/);
+    assert.match(
+      html,
+      /Visibility summary audience \(read-only\): For the current active-session user reviewing this session&#x27;s major history-section visibility and preset-interpretation summaries\./,
+    );
     assert.match(html, /data-testid="history-section-visibility-status-summary"/);
     assert.match(html, /Visibility status: Preset Default \| Visible 4\/4 \| Collapsed: None/);
     assert.match(html, /data-testid="history-section-visibility-preset-match-status"/);
