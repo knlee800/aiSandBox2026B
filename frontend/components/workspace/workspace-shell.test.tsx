@@ -1035,6 +1035,11 @@ describe('workspace shell component', () => {
     assert.match(html, /data-testid="history-section-visibility-preset-inspection-oriented"/);
     assert.match(html, /data-testid="history-section-visibility-preset-active-state"/);
     assert.match(html, /Active preset: Default/);
+    assert.match(html, /data-testid="history-section-visibility-summary-group-label"/);
+    assert.match(
+      html,
+      /Visibility summary group \(read-only\): Current visibility and preset interpretation summaries \(status, match, explanation, baseline, delta, guide, hidden\/visible, and consistency\) for this active session\./,
+    );
     assert.match(html, /data-testid="history-section-visibility-status-summary"/);
     assert.match(html, /Visibility status: Preset Default \| Visible 4\/4 \| Collapsed: None/);
     assert.match(html, /data-testid="history-section-visibility-preset-match-status"/);

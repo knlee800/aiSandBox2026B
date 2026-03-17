@@ -2215,6 +2215,10 @@ function HistoryCheckpointList(props: {
             Active preset: {activeVisibilityPresetLabel}
           </span>
         </div>
+        <p className="mt-1 text-[11px] text-gray-600" data-testid="history-section-visibility-summary-group-label">
+          Visibility summary group (read-only): Current visibility and preset interpretation summaries (status, match,
+          explanation, baseline, delta, guide, hidden/visible, and consistency) for this active session.
+        </p>
         <p className="mt-1 text-[11px] text-gray-600" data-testid="history-section-visibility-status-summary">
           Visibility status: Preset {activeVisibilityPresetLabel} | Visible {visibleHistorySectionCount}/
           {collapsibleSectionKeys.length} | Collapsed:{' '}
