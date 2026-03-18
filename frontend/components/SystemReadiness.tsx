@@ -191,8 +191,13 @@ export default function SystemReadiness() {
 
         {/* Configuration Modal */}
         {showConfiguration && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <ConfigurationControl onClose={() => setShowConfiguration(false)} />
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
+            onClick={() => setShowConfiguration(false)}
+          >
+            <div onClick={(event) => event.stopPropagation()} className="w-full max-w-4xl">
+              <ConfigurationControl onClose={() => setShowConfiguration(false)} />
+            </div>
           </div>
         )}
       </>
@@ -340,8 +345,13 @@ export default function SystemReadiness() {
 
       {/* Configuration Modal */}
       {showConfiguration && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <ConfigurationControl onClose={() => setShowConfiguration(false)} />
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
+          onClick={() => setShowConfiguration(false)}
+        >
+          <div onClick={(event) => event.stopPropagation()} className="w-full max-w-4xl">
+            <ConfigurationControl onClose={() => setShowConfiguration(false)} />
+          </div>
         </div>
       )}
     </div>

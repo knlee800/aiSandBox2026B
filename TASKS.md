@@ -5354,3 +5354,43 @@ Make the history workflow easier to scan by adding a bounded read-only label tha
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82X for full details
 
 ---
+
+## Phase 83 — Config Surface and UX Fixes
+
+**Current stage:** TASK-83A (COMPLETE and LOCKED)
+
+---
+
+#### TASK-83A: Config Modal Close/Dismiss Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-83A-CHECKPOINT.md`
+
+**Objective:**
+Fix the real UX bug where the Config popup can open from the existing frontend but cannot be cleanly dismissed, by adding bounded close/dismiss behavior without changing unrelated product behavior.
+
+**Scope:**
+- Reuse the existing Config popup/modal only
+- Fix dismiss/close behavior for the existing Config surface
+- Support at least one clear user-controlled close path
+- Preserve existing modal content and existing config-related behavior
+- Keep the fix frontend-only and additive
+- Keep the change bounded to the existing modal/dialog behavior
+- Preserve all closed Phase 81 and Phase 82 behavior
+- Do not expand into unrelated configuration redesign
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No redesign of the config surface
+- ❌ No unrelated modal cleanup
+- ❌ No multi-task work
+
+**Dependencies:** Phase 81 and Phase 82 (Complete and Locked); existing Config popup present in frontend
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-83A for full details
+
+---

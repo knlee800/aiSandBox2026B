@@ -72,6 +72,23 @@ export default function ConfigurationControl({ onClose }: ConfigurationControlPr
     loadConfiguration();
   }, []);
 
+  useEffect(() => {
+    if (!onClose) {
+      return;
+    }
+
+    const handleEscapeClose = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleEscapeClose);
+    return () => {
+      window.removeEventListener('keydown', handleEscapeClose);
+    };
+  }, [onClose]);
+
   const loadConfiguration = async () => {
     try {
       setConfig((prev) => ({ ...prev, status: 'loading' }));
@@ -258,7 +275,17 @@ export default function ConfigurationControl({ onClose }: ConfigurationControlPr
 
   if (config.status === 'loading') {
     return (
-      <div className="bg-white rounded-lg shadow-lg p-6 max-w-4xl w-full">
+      <div className="bg-white rounded-lg shadow-lg p-6 max-w-4xl w-full relative">
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors text-xl"
+            title="Close configuration"
+            aria-label="Close configuration"
+          >
+            ✕
+          </button>
+        )}
         <div className="flex items-center justify-center space-x-2">
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
           <span className="text-gray-600">Loading configuration...</span>
@@ -269,7 +296,17 @@ export default function ConfigurationControl({ onClose }: ConfigurationControlPr
 
   if (config.status === 'error') {
     return (
-      <div className="bg-white rounded-lg shadow-lg p-6 max-w-4xl w-full">
+      <div className="bg-white rounded-lg shadow-lg p-6 max-w-4xl w-full relative">
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors text-xl"
+            title="Close configuration"
+            aria-label="Close configuration"
+          >
+            ✕
+          </button>
+        )}
         <div className="bg-red-50 border border-red-200 rounded p-4">
           <div className="flex items-start space-x-2">
             <span className="text-red-600 text-xl">❌</span>

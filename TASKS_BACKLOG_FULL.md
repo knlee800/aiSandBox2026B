@@ -13233,3 +13233,56 @@ Make the history workflow easier to scan by adding a bounded read-only label tha
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-82A-CHECKPOINT.md, PHASE-82B-CHECKPOINT.md, PHASE-82C-CHECKPOINT.md, PHASE-82D-CHECKPOINT.md, PHASE-82E-CHECKPOINT.md, PHASE-82F-CHECKPOINT.md, PHASE-82G-CHECKPOINT.md, PHASE-82H-CHECKPOINT.md, PHASE-82I-CHECKPOINT.md, PHASE-82J-CHECKPOINT.md, PHASE-82K-CHECKPOINT.md, PHASE-82L-CHECKPOINT.md, PHASE-82M-CHECKPOINT.md, PHASE-82N-CHECKPOINT.md, PHASE-82O-CHECKPOINT.md, PHASE-82P-CHECKPOINT.md, PHASE-82Q-CHECKPOINT.md, PHASE-82R-CHECKPOINT.md, PHASE-82S-CHECKPOINT.md, PHASE-82T-CHECKPOINT.md, PHASE-82U-CHECKPOINT.md, PHASE-82V-CHECKPOINT.md, PHASE-82W-CHECKPOINT.md
 
 ---
+
+## Phase 83 — Config Surface and UX Fixes
+
+---
+
+### TASK-83A: Config Modal Close/Dismiss Slice
+
+**Task ID:** TASK-83A
+**Phase:** 83
+**Stage:** 83A
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** Phase 81 and Phase 82 (Complete and Locked); existing Config popup present in frontend
+**Checkpoint:** `docs/PHASE-83A-CHECKPOINT.md`
+
+**Objective:**
+
+Fix the real UX bug where the Config popup can open from the existing frontend but cannot be cleanly dismissed, by adding bounded close/dismiss behavior without changing unrelated product behavior.
+
+**Scope:**
+
+1. Reuse the existing Config popup/modal only — no new panels, routes, or surfaces
+2. Fix dismiss/close behavior for the existing Config surface
+3. Support at least one clear user-controlled close path (e.g. close button, backdrop click, or keyboard dismiss)
+4. Preserve existing modal content and existing config-related behavior
+5. Keep the fix frontend-only and additive
+6. Keep the change bounded to the existing modal/dialog behavior
+7. Preserve all closed Phase 81 and Phase 82 behavior
+8. Do not expand into unrelated configuration redesign
+9. Focused frontend tests for this slice
+
+**Non-Goals:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No redesign of the config surface
+- ❌ No unrelated modal cleanup
+- ❌ No multi-task work
+
+**Acceptance Criteria:**
+
+- User can open the existing Config popup and dismiss/close it reliably
+- Close/dismiss behavior is clear and usable
+- Existing config popup behavior remains intact aside from the close-path fix
+- No backend/schema/endpoint/refactor changes
+- No regressions
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-82-FINAL-CHECKPOINT.md
+
+---
