@@ -170,7 +170,7 @@ export default function SystemReadiness() {
   if (status.overall === 'ready' && collapsed) {
     return (
       <>
-        <div className="fixed top-4 right-4 z-50 flex space-x-2">
+        <div className="fixed top-16 right-4 z-50 flex space-x-2">
           <button
             onClick={() => setShowConfiguration(true)}
             className="bg-blue-600 text-white px-3 py-2 rounded-lg shadow-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 text-sm"
@@ -206,7 +206,7 @@ export default function SystemReadiness() {
 
   // Show full status panel
   return (
-    <div className="fixed top-4 right-4 z-50 w-96 bg-white rounded-lg shadow-2xl border border-gray-200">
+    <div className="fixed top-16 right-4 z-50 w-96 bg-white rounded-lg shadow-2xl border border-gray-200">
       {/* Header */}
       <div className={`p-4 rounded-t-lg ${
         status.overall === 'ready' 

@@ -13286,3 +13286,52 @@ Fix the real UX bug where the Config popup can open from the existing frontend b
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-82-FINAL-CHECKPOINT.md
 
 ---
+
+### TASK-83B: Top-Right Control Overlap Layout Fix Slice
+
+**Task ID:** TASK-83B
+**Phase:** 83
+**Stage:** 83B
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** Phase 81 and Phase 82 (Complete and Locked); TASK-83A (Complete and Locked)
+**Checkpoint:** `docs/PHASE-83B-CHECKPOINT.md`
+
+**Objective:**
+
+Fix the real UX bug where the top-right control cluster on authenticated frontend pages allows Config and System Ready controls to overlap/block nearby buttons and information, by applying a bounded layout fix without redesigning the surface or changing unrelated behavior.
+
+**Scope:**
+
+1. Reuse the existing authenticated page top-right control area only — no new panels, routes, or surfaces
+2. Fix overlap/blocking behavior involving Config and System Ready controls
+3. Ensure nearby top-right buttons and information remain visible and reachable
+4. Preserve existing control behavior and existing content
+5. Keep the fix frontend-only and additive
+6. Keep the change bounded to layout/stacking/spacing behavior of the current top-right cluster
+7. Preserve all closed Phase 81 and Phase 82 behavior and completed Phase 83A behavior
+8. Do not expand into unrelated header redesign
+9. Focused frontend tests for this slice
+
+**Non-Goals:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No redesign of the authenticated page shell
+- ❌ No unrelated responsive cleanup
+- ❌ No multi-task work
+
+**Acceptance Criteria:**
+
+- User can view and interact with the top-right controls and nearby information without Config or System Ready blocking them
+- Top-right controls remain visible and usable at normal desktop viewport/100% zoom
+- Existing Config and System Ready behavior remains intact aside from layout fix
+- No backend/schema/endpoint/refactor changes
+- No regressions
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-83A-CHECKPOINT.md
+
+---

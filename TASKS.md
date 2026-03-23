@@ -5357,7 +5357,7 @@ Make the history workflow easier to scan by adding a bounded read-only label tha
 
 ## Phase 83 — Config Surface and UX Fixes
 
-**Current stage:** TASK-83A (COMPLETE and LOCKED)
+**Current stage:** TASK-83B (COMPLETE and LOCKED)
 
 ---
 
@@ -5392,5 +5392,39 @@ Fix the real UX bug where the Config popup can open from the existing frontend b
 **Dependencies:** Phase 81 and Phase 82 (Complete and Locked); existing Config popup present in frontend
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-83A for full details
+
+---
+
+#### TASK-83B: Top-Right Control Overlap Layout Fix Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-83B-CHECKPOINT.md`
+
+**Objective:**
+Fix the real UX bug where the top-right control cluster on authenticated frontend pages allows Config and System Ready controls to overlap/block nearby buttons and information, by applying a bounded layout fix without redesigning the surface or changing unrelated behavior.
+
+**Scope:**
+- Reuse the existing authenticated page top-right control area only
+- Fix overlap/blocking behavior involving Config and System Ready controls
+- Ensure nearby top-right buttons and information remain visible and reachable
+- Preserve existing control behavior and existing content
+- Keep the fix frontend-only and additive
+- Keep the change bounded to layout/stacking/spacing behavior of the current top-right cluster
+- Preserve all closed Phase 81 and Phase 82 behavior and completed Phase 83A behavior
+- Do not expand into unrelated header redesign
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new endpoints
+- ❌ No redesign of the authenticated page shell
+- ❌ No unrelated responsive cleanup
+- ❌ No multi-task work
+
+**Dependencies:** Phase 81, Phase 82 (Complete and Locked); TASK-83A (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-83B for full details
 
 ---
