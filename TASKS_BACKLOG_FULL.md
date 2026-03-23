@@ -13335,3 +13335,51 @@ Fix the real UX bug where the top-right control cluster on authenticated fronten
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-83A-CHECKPOINT.md
 
 ---
+
+### TASK-83D: Driver Execution Result Surfacing Slice
+
+**Task ID:** TASK-83D
+**Phase:** 83
+**Stage:** 83D
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, BOUNDED)
+**Dependencies:** Phase 81 and Phase 82 (Complete and Locked); TASK-83A and TASK-83B (Complete and Locked)
+**Checkpoint:** `docs/PHASE-83D-CHECKPOINT.md`
+
+**Objective:**
+
+Fix the real frontend UX gap where the existing `/en/driver` page can submit an execution request but does not surface the final execution result clearly to the user, by applying the smallest bounded result-state/UI fix without redesigning the route or changing unrelated behavior.
+
+**Scope:**
+
+1. Reuse the existing `/en/driver` page only — no new routes, panels, or surfaces
+2. Preserve the current execute request flow
+3. Improve result surfacing/retrieval for the existing execution flow
+4. Address the current UX gap where the page remains at queued and refresh clears visible output
+5. Keep the fix frontend-only and tightly bounded
+6. Preserve all closed Phase 81 and Phase 82 behavior and completed Phase 83A/83B behavior
+7. Do not expand into unrelated driver redesign
+8. Focused frontend tests for this slice
+
+**Non-Goals:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new product surface
+- ❌ No unrelated polling architecture redesign
+- ❌ No multi-task work
+
+**Acceptance Criteria:**
+
+- `/en/driver` clearly surfaces final execution result or a clear retrieval path for the existing execution flow
+- Queued state does not leave the user at a dead end
+- Route behavior is clearer and more usable for the current driver flow
+- Existing routes remain intact
+- No backend/schema/endpoint/refactor changes
+- No regressions
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-83B-CHECKPOINT.md
+
+---

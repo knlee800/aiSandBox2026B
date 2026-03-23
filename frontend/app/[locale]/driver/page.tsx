@@ -1,8 +1,26 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import ErrorRemediation, { ErrorContext, createErrorContext } from '@/components/ErrorRemediation';
+
+const DRIVER_LAST_EXECUTION_STATE_KEY = 'driver_last_execution_state';
+
+interface DriverExecutionStatusResponse {
+  executionId?: string;
+  status?: string;
+  tokensUsed?: number;
+  output?: string;
+}
+
+interface DriverStoredExecutionState {
+  prompt: string;
+  output: string;
+  executionId: string | null;
+  status: string | null;
+  statusDetail: string;
+  lastStatusCheckAt: string | null;
+}
 
 export default function DriverPage() {
   const router = useRouter();
@@ -15,6 +33,11 @@ export default function DriverPage() {
   const [apiKey, setApiKey] = useState('');
   const [apiUrl, setApiUrl] = useState('/api/ai/execute');
   const [currentError, setCurrentError] = useState<ErrorContext | null>(null);
+  const [executionId, setExecutionId] = useState<string | null>(null);
+  const [executionStatus, setExecutionStatus] = useState<string | null>(null);
+  const [statusDetail, setStatusDetail] = useState('');
+  const [lastStatusCheckAt, setLastStatusCheckAt] = useState<string | null>(null);
+  const [statusLoading, setStatusLoading] = useState(false);
 
   // Phase 37B: Load API key from localStorage on mount
   useEffect(() => {
@@ -22,7 +45,133 @@ export default function DriverPage() {
     if (savedApiKey) {
       setApiKey(savedApiKey);
     }
+
+    const savedExecutionStateRaw = localStorage.getItem(DRIVER_LAST_EXECUTION_STATE_KEY);
+    if (!savedExecutionStateRaw) {
+      return;
+    }
+
+    try {
+      const savedExecutionState = JSON.parse(savedExecutionStateRaw) as Partial<DriverStoredExecutionState>;
+      if (typeof savedExecutionState.prompt === 'string') {
+        setPrompt(savedExecutionState.prompt);
+      }
+      if (typeof savedExecutionState.output === 'string') {
+        setOutput(savedExecutionState.output);
+      }
+      if (typeof savedExecutionState.executionId === 'string') {
+        setExecutionId(savedExecutionState.executionId);
+      }
+      if (typeof savedExecutionState.status === 'string') {
+        setExecutionStatus(savedExecutionState.status);
+      }
+      if (typeof savedExecutionState.statusDetail === 'string') {
+        setStatusDetail(savedExecutionState.statusDetail);
+      }
+      if (typeof savedExecutionState.lastStatusCheckAt === 'string') {
+        setLastStatusCheckAt(savedExecutionState.lastStatusCheckAt);
+      }
+    } catch {
+      localStorage.removeItem(DRIVER_LAST_EXECUTION_STATE_KEY);
+    }
   }, []);
+
+  const persistExecutionState = useCallback(
+    (next: {
+      nextPrompt?: string;
+      nextOutput?: string;
+      nextExecutionId?: string | null;
+      nextExecutionStatus?: string | null;
+      nextStatusDetail?: string;
+      nextLastStatusCheckAt?: string | null;
+    }) => {
+      const stateToPersist: DriverStoredExecutionState = {
+        prompt: next.nextPrompt ?? prompt,
+        output: next.nextOutput ?? output,
+        executionId: next.nextExecutionId === undefined ? executionId : next.nextExecutionId,
+        status: next.nextExecutionStatus === undefined ? executionStatus : next.nextExecutionStatus,
+        statusDetail: next.nextStatusDetail ?? statusDetail,
+        lastStatusCheckAt:
+          next.nextLastStatusCheckAt === undefined ? lastStatusCheckAt : next.nextLastStatusCheckAt,
+      };
+
+      localStorage.setItem(DRIVER_LAST_EXECUTION_STATE_KEY, JSON.stringify(stateToPersist));
+    },
+    [executionId, executionStatus, lastStatusCheckAt, output, prompt, statusDetail],
+  );
+
+  const handleRefreshExecutionStatus = useCallback(async () => {
+    if (!executionId || !apiKey.trim()) {
+      return;
+    }
+
+    setStatusLoading(true);
+    try {
+      const response = await fetch(`/api/ai/executions/${encodeURIComponent(executionId)}`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${apiKey.trim()}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Status check failed (${response.status})`);
+      }
+
+      const data = (await response.json()) as DriverExecutionStatusResponse;
+      const refreshedStatus = typeof data.status === 'string' ? data.status : 'queued';
+      const refreshedExecutionId = typeof data.executionId === 'string' ? data.executionId : executionId;
+      const checkedAt = new Date().toLocaleTimeString();
+
+      let nextStatusDetail = '';
+      if (refreshedStatus === 'queued' || refreshedStatus === 'running') {
+        nextStatusDetail = 'Execution is still processing. Status will keep refreshing automatically.';
+      } else if (refreshedStatus === 'completed') {
+        nextStatusDetail =
+          typeof data.tokensUsed === 'number'
+            ? `Execution completed. Tokens used: ${data.tokensUsed}.`
+            : 'Execution completed.';
+      } else if (refreshedStatus === 'failed') {
+        nextStatusDetail = 'Execution finished with failed status.';
+      } else if (refreshedStatus === 'cancelled') {
+        nextStatusDetail = 'Execution was cancelled.';
+      } else if (refreshedStatus === 'timeout') {
+        nextStatusDetail = 'Execution timed out.';
+      }
+
+      setExecutionId(refreshedExecutionId);
+      setExecutionStatus(refreshedStatus);
+      setStatusDetail(nextStatusDetail);
+      setLastStatusCheckAt(checkedAt);
+      setOutput((previousOutput) => previousOutput || JSON.stringify(data, null, 2));
+
+      persistExecutionState({
+        nextExecutionId: refreshedExecutionId,
+        nextExecutionStatus: refreshedStatus,
+        nextStatusDetail,
+        nextLastStatusCheckAt: checkedAt,
+        nextOutput: output || JSON.stringify(data, null, 2),
+      });
+    } catch (error) {
+      console.error('Status refresh failed:', error);
+    } finally {
+      setStatusLoading(false);
+    }
+  }, [apiKey, executionId, output, persistExecutionState]);
+
+  useEffect(() => {
+    if ((executionStatus !== 'queued' && executionStatus !== 'running') || !executionId || !apiKey.trim()) {
+      return;
+    }
+
+    const pollInterval = setInterval(() => {
+      void handleRefreshExecutionStatus();
+    }, 3000);
+
+    return () => {
+      clearInterval(pollInterval);
+    };
+  }, [apiKey, executionId, executionStatus, handleRefreshExecutionStatus]);
 
   const handleExecute = async () => {
     if (!prompt.trim()) {
@@ -38,6 +187,18 @@ export default function DriverPage() {
     setLoading(true);
     setCurrentError(null);
     setOutput('');
+    setExecutionId(null);
+    setExecutionStatus(null);
+    setStatusDetail('');
+    setLastStatusCheckAt(null);
+    persistExecutionState({
+      nextPrompt: prompt,
+      nextOutput: '',
+      nextExecutionId: null,
+      nextExecutionStatus: null,
+      nextStatusDetail: '',
+      nextLastStatusCheckAt: null,
+    });
 
     try {
       const response = await fetch(apiUrl, {
@@ -64,11 +225,32 @@ export default function DriverPage() {
         };
       }
 
-      const data = await response.json();
-      setOutput(data.output || JSON.stringify(data, null, 2));
+      const data = (await response.json()) as DriverExecutionStatusResponse;
+      const nextOutput = data.output || JSON.stringify(data, null, 2);
+      const nextExecutionId = typeof data.executionId === 'string' ? data.executionId : null;
+      const nextExecutionStatus = typeof data.status === 'string' ? data.status : null;
+      const checkedAt = new Date().toLocaleTimeString();
+      const nextStatusDetail =
+        nextExecutionStatus === 'queued'
+          ? 'Execution accepted and queued. Status will refresh automatically below.'
+          : '';
+
+      setOutput(nextOutput);
+      setExecutionId(nextExecutionId);
+      setExecutionStatus(nextExecutionStatus);
+      setStatusDetail(nextStatusDetail);
+      setLastStatusCheckAt(nextExecutionStatus ? checkedAt : null);
       
       // Save API key to localStorage for convenience
       localStorage.setItem('driver_api_key', apiKey.trim());
+      persistExecutionState({
+        nextPrompt: prompt.trim(),
+        nextOutput,
+        nextExecutionId,
+        nextExecutionStatus,
+        nextStatusDetail,
+        nextLastStatusCheckAt: nextExecutionStatus ? checkedAt : null,
+      });
     } catch (err: any) {
       console.error('Execution failed:', err);
       setCurrentError(createErrorContext(err));
@@ -205,6 +387,44 @@ export default function DriverPage() {
         >
           {loading ? 'Executing...' : 'Execute'}
         </button>
+
+        {executionId && (
+          <div style={{ marginTop: '16px', padding: '12px', border: '1px solid #ddd', borderRadius: '6px', backgroundColor: '#fafafa' }}>
+            <p style={{ margin: 0, fontSize: '13px' }}>
+              <strong>Execution ID:</strong> <code>{executionId}</code>
+            </p>
+            <p style={{ margin: '6px 0 0 0', fontSize: '13px' }}>
+              <strong>Status:</strong> {executionStatus || 'queued'}
+            </p>
+            {lastStatusCheckAt && (
+              <p style={{ margin: '6px 0 0 0', fontSize: '12px', color: '#666' }}>
+                Last status check: {lastStatusCheckAt}
+              </p>
+            )}
+            {statusDetail && (
+              <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#1f2937' }}>
+                {statusDetail}
+              </p>
+            )}
+            <button
+              onClick={() => void handleRefreshExecutionStatus()}
+              disabled={loading || statusLoading || !apiKey.trim()}
+              style={{
+                marginTop: '10px',
+                padding: '6px 10px',
+                fontSize: '12px',
+                backgroundColor: '#2563eb',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: loading || statusLoading || !apiKey.trim() ? 'not-allowed' : 'pointer',
+                opacity: loading || statusLoading || !apiKey.trim() ? 0.6 : 1,
+              }}
+            >
+              {statusLoading ? 'Refreshing status...' : 'Refresh Execution Status'}
+            </button>
+          </div>
+        )}
 
         {output && (
           <div style={{ marginTop: '20px' }}>
