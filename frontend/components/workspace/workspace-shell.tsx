@@ -1098,10 +1098,12 @@ function HistoryCheckpointList(props: {
     () => new Set(visibleCheckpoints.map((checkpoint) => checkpoint.id)),
     [visibleCheckpoints],
   );
-  const hasVisibleBaseSelection =
-    Boolean(props.compareBaseCheckpointId) && visibleCheckpointIdSet.has(props.compareBaseCheckpointId);
-  const hasVisibleTargetSelection =
-    Boolean(props.compareTargetCheckpointId) && visibleCheckpointIdSet.has(props.compareTargetCheckpointId);
+  const hasVisibleBaseSelection = props.compareBaseCheckpointId
+    ? visibleCheckpointIdSet.has(props.compareBaseCheckpointId)
+    : false;
+  const hasVisibleTargetSelection = props.compareTargetCheckpointId
+    ? visibleCheckpointIdSet.has(props.compareTargetCheckpointId)
+    : false;
   const pinnedReferenceCheckpoint = props.pinnedCompareReferenceCheckpointId
     ? props.checkpoints.find((checkpoint) => checkpoint.id === props.pinnedCompareReferenceCheckpointId) ?? null
     : null;
@@ -2137,7 +2139,7 @@ function HistoryCheckpointList(props: {
         key: 'active-checkpoint-context',
         title: 'Active checkpoint context',
         status: hasActiveCheckpointContext ? 'available' : 'unavailable',
-        detail: hasActiveCheckpointContext ? getCheckpointSummaryLabel(inspectorCheckpoint.id) : 'no active checkpoint context',
+        detail: hasActiveCheckpointContext ? getCheckpointSummaryLabel(inspectorCheckpoint!.id) : 'no active checkpoint context',
       },
     ];
   }, [
