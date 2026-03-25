@@ -63,11 +63,15 @@ describe('workspace exec logic', () => {
     assert.equal(state410.status, 'http-410');
   });
 
-  test('maps network and unexpected failures to network-error state', async () => {
+  test('maps network and unexpected failures to network-error state with surfaced detail', async () => {
     const fetchReject: typeof fetch = (async () => {
       throw new Error('network down');
     }) as typeof fetch;
-    const fetch500: typeof fetch = (async () => new Response('', { status: 500 })) as typeof fetch;
+    const fetch500: typeof fetch = (async () =>
+      new Response(JSON.stringify({ message: 'exec service unavailable' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      })) as typeof fetch;
 
     const rejectedState = await executeSessionCommand({
       token: 'token',
@@ -83,6 +87,9 @@ describe('workspace exec logic', () => {
     });
 
     assert.equal(rejectedState.status, 'network-error');
+    assert.match(rejectedState.errorMessage ?? '', /network down/);
     assert.equal(status500State.status, 'network-error');
+    assert.match(status500State.errorMessage ?? '', /HTTP 500/);
+    assert.match(status500State.errorMessage ?? '', /exec service unavailable/);
   });
 });

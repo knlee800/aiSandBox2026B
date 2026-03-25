@@ -19,6 +19,7 @@ import { areCheckpointListsEqual } from '@/components/workspace/workspace-shell.
 import {
   createWorkspaceCheckpoint,
   type WorkspaceCheckpointCreateState,
+  type WorkspaceCheckpointCreateResult,
 } from '@/components/workspace/workspace-checkpoint-create.logic';
 import {
   revertWorkspaceCheckpoint,
@@ -378,7 +379,7 @@ export default function AppPage() {
     setCheckpointCreateError(null);
 
     try {
-      await createWorkspaceCheckpoint({
+      const createResult: WorkspaceCheckpointCreateResult = await createWorkspaceCheckpoint({
         token,
         sessionId: selectedSessionId,
         userId,
@@ -389,15 +390,45 @@ export default function AppPage() {
         return;
       }
 
+      if (!createResult.commitHash) {
+        setCheckpointCreateState('create-error');
+        setCheckpointCreateError('No file changes detected. Save point was not created.');
+        return;
+      }
+      const createdCommitHash = createResult.commitHash;
+
       setCheckpointCreateState('created');
       await loadCheckpoints(token, selectedSessionId);
+      setCheckpoints((prev) => {
+        if (prev.some((cp) => cp.commitHash === createdCommitHash)) {
+          return prev;
+        }
+        return [
+          {
+            id: createdCommitHash,
+            commitHash: createdCommitHash,
+            messageNumber: 0,
+            description: checkpointDescriptionInput.trim() || null,
+            filesChanged: createResult.filesChanged ?? 0,
+            createdAt: new Date().toISOString(),
+          },
+          ...prev,
+        ];
+      });
     } catch (error) {
       console.error('Failed to create manual checkpoint:', error);
+      // #region agent log
+      fetch('http://127.0.0.1:7870/ingest/eba94f28-6765-4a01-9905-123e592de80f',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'8262b1'},body:JSON.stringify({sessionId:'8262b1',runId:'save-point-pre-fix',hypothesisId:'SP4',location:'frontend/app/[locale]/app/page.tsx:handleCreateManualCheckpoint',message:'manual checkpoint catch path hit',data:{errorMessage:error instanceof Error ? error.message : String(error),selectedSessionId},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
       if (checkpointCreateRequestIdRef.current !== requestId) {
         return;
       }
       setCheckpointCreateState('create-error');
-      setCheckpointCreateError('Failed to create save point.');
+      setCheckpointCreateError(
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : 'Failed to create save point.',
+      );
     }
   }
 

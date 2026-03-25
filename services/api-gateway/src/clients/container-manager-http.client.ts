@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { HttpException, Injectable, OnModuleInit, ServiceUnavailableException } from '@nestjs/common';
 import axios, { AxiosInstance } from 'axios';
 
 /**
@@ -62,7 +62,7 @@ export class ContainerManagerHttpClient implements OnModuleInit {
    * @param sessionId - Session UUID to start
    * @throws Error on HTTP failure (fail-fast, no retries)
    */
-  async startSession(sessionId: string): Promise<void> {
+  async startSession(sessionId: string, userId?: string): Promise<void> {
     if (this.isDisabled) {
       throw new Error(
         'ContainerManagerHttpClient is disabled (development mode, no INTERNAL_SERVICE_KEY)',
@@ -72,7 +72,7 @@ export class ContainerManagerHttpClient implements OnModuleInit {
     try {
       await this.axiosInstance.post(
         `/api/sessions/${sessionId}/start`,
-        {}, // No request body required
+        userId ? { userId } : {},
         {
           headers: {
             'X-Internal-Service-Key': this.internalServiceKey,
@@ -279,9 +279,13 @@ export class ContainerManagerHttpClient implements OnModuleInit {
     env?: Record<string, string>,
     timeoutMs: number = 30000,
   ): Promise<ExecResult> {
+    // #region agent log
+    fetch('http://127.0.0.1:7870/ingest/eba94f28-6765-4a01-9905-123e592de80f',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'8262b1'},body:JSON.stringify({sessionId:'8262b1',location:'container-manager-http.client.ts:execInSession:entry',message:'execInSession client called',data:{sessionId,cmd,cwd,isDisabled:this.isDisabled,baseUrl:this.baseUrl,hasServiceKey:!!this.internalServiceKey},timestamp:Date.now(),hypothesisId:'H2,H3'})}).catch(()=>{});
+    // #endregion
+
     if (this.isDisabled) {
-      throw new Error(
-        'ContainerManagerHttpClient is disabled (development mode, no INTERNAL_SERVICE_KEY)',
+      throw new ServiceUnavailableException(
+        'ContainerManager exec is unavailable (INTERNAL_SERVICE_KEY not configured in api-gateway)',
       );
     }
 
@@ -298,15 +302,22 @@ export class ContainerManagerHttpClient implements OnModuleInit {
       );
       return response.data;
     } catch (error) {
+      // #region agent log
+      fetch('http://127.0.0.1:7870/ingest/eba94f28-6765-4a01-9905-123e592de80f',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'8262b1'},body:JSON.stringify({sessionId:'8262b1',location:'container-manager-http.client.ts:execInSession:catch',message:'axios call failed',data:{isAxiosError:axios.isAxiosError(error),responseStatus:(error as any)?.response?.status,responseData:(error as any)?.response?.data,errorCode:(error as any)?.code,errorMessage:(error as any)?.message},timestamp:Date.now(),hypothesisId:'H3,H5'})}).catch(()=>{});
+      // #endregion
+
       if (axios.isAxiosError(error)) {
-        const status = error.response?.status || 'unknown';
-        const message = error.response?.data?.message || error.message;
-        throw new Error(
-          `Failed to execute command in session ${sessionId}: HTTP ${status} - ${message}`,
-        );
+        const status = error.response?.status ?? 502;
+        const responseData = error.response?.data as { message?: string; error?: string } | undefined;
+        const message =
+          responseData?.message ||
+          responseData?.error ||
+          error.message ||
+          `Failed to execute command in session ${sessionId}`;
+        throw new HttpException(message, status);
       }
-      throw new Error(
-        `Failed to execute command in session ${sessionId}: ${error}`,
+      throw new ServiceUnavailableException(
+        `Failed to execute command in session ${sessionId}`,
       );
     }
   }
@@ -397,6 +408,59 @@ export class ContainerManagerHttpClient implements OnModuleInit {
       );
     }
   }
+
+  /**
+   * Create a manual checkpoint (save point) in container-manager
+   * Calls POST /api/git/:sessionId/commit
+   */
+  async createManualCheckpoint(
+    sessionId: string,
+    userId: string,
+    messageNumber: number = 0,
+    description?: string,
+  ): Promise<GitCommitResult> {
+    if (this.isDisabled) {
+      throw new Error(
+        'ContainerManagerHttpClient is disabled (development mode, no INTERNAL_SERVICE_KEY)',
+      );
+    }
+
+    const payload: {
+      userId: string;
+      messageNumber: number;
+      description?: string;
+    } = {
+      userId,
+      messageNumber,
+    };
+    if (description && description.trim()) {
+      payload.description = description.trim();
+    }
+
+    try {
+      const response = await this.axiosInstance.post(
+        `/api/git/${sessionId}/commit`,
+        payload,
+        {
+          headers: {
+            'X-Internal-Service-Key': this.internalServiceKey,
+          },
+        },
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status || 'unknown';
+        const message = error.response?.data?.message || error.message;
+        throw new Error(
+          `Failed to create manual checkpoint for session ${sessionId}: HTTP ${status} - ${message}`,
+        );
+      }
+      throw new Error(
+        `Failed to create manual checkpoint for session ${sessionId}: ${error}`,
+      );
+    }
+  }
 }
 
 /**
@@ -483,4 +547,10 @@ export interface GitDiffResult {
 export interface GitRevertResult {
   message: string;
   commitHash: string;
+}
+
+export interface GitCommitResult {
+  message: string;
+  commitHash: string;
+  filesChanged: number;
 }

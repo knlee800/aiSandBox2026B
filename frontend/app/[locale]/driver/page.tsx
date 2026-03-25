@@ -22,6 +22,34 @@ interface DriverStoredExecutionState {
   lastStatusCheckAt: string | null;
 }
 
+function isQuotaOrRateLimitFailure(error: unknown): boolean {
+  const candidate = error as {
+    response?: { status?: number; data?: { message?: string } };
+    message?: string;
+  };
+
+  const status = candidate?.response?.status;
+  if (status === 429) {
+    return true;
+  }
+
+  const backendMessage = candidate?.response?.data?.message;
+  const fallbackMessage = candidate?.message;
+  const combinedMessage = `${typeof backendMessage === 'string' ? backendMessage : ''} ${
+    typeof fallbackMessage === 'string' ? fallbackMessage : ''
+  }`.toLowerCase();
+
+  if (!combinedMessage) {
+    return false;
+  }
+
+  return (
+    combinedMessage.includes('quota') ||
+    combinedMessage.includes('rate limit') ||
+    combinedMessage.includes('too many request')
+  );
+}
+
 export default function DriverPage() {
   const router = useRouter();
   const params = useParams();
@@ -38,6 +66,8 @@ export default function DriverPage() {
   const [statusDetail, setStatusDetail] = useState('');
   const [lastStatusCheckAt, setLastStatusCheckAt] = useState<string | null>(null);
   const [statusLoading, setStatusLoading] = useState(false);
+  const [rateLimitClarityVisible, setRateLimitClarityVisible] = useState(false);
+  const [submittedAtMs, setSubmittedAtMs] = useState<number | null>(null);
 
   // Phase 37B: Load API key from localStorage on mount
   useEffect(() => {
@@ -124,8 +154,16 @@ export default function DriverPage() {
       const checkedAt = new Date().toLocaleTimeString();
 
       let nextStatusDetail = '';
+      const STALE_QUEUE_THRESHOLD_MS = 15_000;
       if (refreshedStatus === 'queued' || refreshedStatus === 'running') {
-        nextStatusDetail = 'Execution is still processing. Status will keep refreshing automatically.';
+        const elapsed = submittedAtMs ? Date.now() - submittedAtMs : 0;
+        if (refreshedStatus === 'queued' && elapsed > STALE_QUEUE_THRESHOLD_MS) {
+          nextStatusDetail =
+            `Execution has been queued for ${Math.round(elapsed / 1000)}s without being picked up. ` +
+            'The AI worker service may not be running or is unreachable. Check that the ai-service is started and connected to Redis.';
+        } else {
+          nextStatusDetail = 'Execution is still processing. Status will keep refreshing automatically.';
+        }
       } else if (refreshedStatus === 'completed') {
         nextStatusDetail =
           typeof data.tokensUsed === 'number'
@@ -139,25 +177,28 @@ export default function DriverPage() {
         nextStatusDetail = 'Execution timed out.';
       }
 
+      const isTerminal = refreshedStatus === 'completed' || refreshedStatus === 'failed' || refreshedStatus === 'cancelled' || refreshedStatus === 'timeout';
+      const nextOutput = isTerminal ? JSON.stringify(data, null, 2) : (output || JSON.stringify(data, null, 2));
+
       setExecutionId(refreshedExecutionId);
       setExecutionStatus(refreshedStatus);
       setStatusDetail(nextStatusDetail);
       setLastStatusCheckAt(checkedAt);
-      setOutput((previousOutput) => previousOutput || JSON.stringify(data, null, 2));
+      setOutput(nextOutput);
 
       persistExecutionState({
         nextExecutionId: refreshedExecutionId,
         nextExecutionStatus: refreshedStatus,
         nextStatusDetail,
         nextLastStatusCheckAt: checkedAt,
-        nextOutput: output || JSON.stringify(data, null, 2),
+        nextOutput,
       });
     } catch (error) {
       console.error('Status refresh failed:', error);
     } finally {
       setStatusLoading(false);
     }
-  }, [apiKey, executionId, output, persistExecutionState]);
+  }, [apiKey, executionId, output, persistExecutionState, submittedAtMs]);
 
   useEffect(() => {
     if ((executionStatus !== 'queued' && executionStatus !== 'running') || !executionId || !apiKey.trim()) {
@@ -191,6 +232,8 @@ export default function DriverPage() {
     setExecutionStatus(null);
     setStatusDetail('');
     setLastStatusCheckAt(null);
+    setRateLimitClarityVisible(false);
+    setSubmittedAtMs(Date.now());
     persistExecutionState({
       nextPrompt: prompt,
       nextOutput: '',
@@ -254,6 +297,7 @@ export default function DriverPage() {
     } catch (err: any) {
       console.error('Execution failed:', err);
       setCurrentError(createErrorContext(err));
+      setRateLimitClarityVisible(isQuotaOrRateLimitFailure(err));
     } finally {
       setLoading(false);
     }
@@ -387,6 +431,24 @@ export default function DriverPage() {
         >
           {loading ? 'Executing...' : 'Execute'}
         </button>
+
+        {rateLimitClarityVisible && (
+          <div
+            style={{
+              marginTop: '12px',
+              padding: '12px',
+              backgroundColor: '#fff7ed',
+              border: '1px solid #fdba74',
+              borderRadius: '6px',
+            }}
+          >
+            <p style={{ margin: 0, fontSize: '13px', color: '#9a3412' }}>
+              <strong>Execution temporarily limited.</strong> Visible remaining token balance does not always
+              mean immediate execution is available. Short-window quota/rate limits can still block a request.
+              Wait briefly and retry.
+            </p>
+          </div>
+        )}
 
         {executionId && (
           <div style={{ marginTop: '16px', padding: '12px', border: '1px solid #ddd', borderRadius: '6px', backgroundColor: '#fafafa' }}>

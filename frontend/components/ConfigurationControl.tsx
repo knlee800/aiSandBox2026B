@@ -327,7 +327,7 @@ export default function ConfigurationControl({ onClose }: ConfigurationControlPr
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-lg max-w-4xl w-full">
+    <div className="bg-white rounded-lg shadow-lg max-w-4xl w-full max-h-[calc(100vh-2rem)] overflow-y-auto">
       {/* Header */}
       <div className="bg-blue-600 text-white p-4 rounded-t-lg">
         <div className="flex items-center justify-between">

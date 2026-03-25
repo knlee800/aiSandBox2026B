@@ -18,6 +18,20 @@ export class GitService {
   ) {
     const dbPath = path.join(__dirname, '../../../..', 'database', 'aisandbox.db');
     this.db = new Database(dbPath);
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS checkpoints (
+        id TEXT PRIMARY KEY,
+        session_id TEXT NOT NULL,
+        user_id TEXT NOT NULL,
+        message_number INTEGER NOT NULL DEFAULT 0,
+        git_commit_hash TEXT NOT NULL,
+        checkpoint_type TEXT NOT NULL DEFAULT 'auto',
+        description TEXT,
+        files_changed INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        is_deleted INTEGER NOT NULL DEFAULT 0
+      );
+    `);
   }
 
   async initializeGit(sessionId: string, userId: string) {
@@ -49,30 +63,60 @@ export class GitService {
   }
 
   async commit(sessionId: string, userId: string, messageNumber: number, description?: string) {
-    const workspacePath = this.sessionsService.getWorkspacePath(sessionId);
-    const git: SimpleGit = simpleGit(workspacePath);
+    await this.ensureGitInitializedInContainer(sessionId);
 
-    // Check if there are changes
-    const status = await git.status();
-    if (status.isClean()) {
+    const statusResult = await this.sessionsService.execInContainer(
+      sessionId,
+      ['sh', '-lc', 'git status --porcelain'],
+      '/workspace',
+    );
+    if (statusResult.exitCode !== 0) {
+      throw new Error(statusResult.stderr || 'Failed to read git status');
+    }
+
+    const changedEntries = statusResult.stdout
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+    if (changedEntries.length === 0) {
       return {
         message: 'No changes to commit',
         commitHash: null,
       };
     }
 
-    // Add all changes
-    await git.add('./*');
-
-    // Commit
     const commitMessage = description || `Auto-commit: Message ${messageNumber}`;
-    await git.commit(commitMessage);
+    const addResult = await this.sessionsService.execInContainer(
+      sessionId,
+      ['sh', '-lc', 'git add -A'],
+      '/workspace',
+    );
+    if (addResult.exitCode !== 0) {
+      throw new Error(addResult.stderr || 'Failed to stage changes');
+    }
 
-    // Get commit hash
-    const commitHash = await git.revparse(['HEAD']);
+    const commitResult = await this.sessionsService.execInContainer(
+      sessionId,
+      ['sh', '-lc', 'git commit -m "$COMMIT_MESSAGE"'],
+      '/workspace',
+      { COMMIT_MESSAGE: commitMessage },
+    );
+    if (commitResult.exitCode !== 0) {
+      throw new Error(commitResult.stderr || 'Failed to create commit');
+    }
+
+    const revParseResult = await this.sessionsService.execInContainer(
+      sessionId,
+      ['sh', '-lc', 'git rev-parse HEAD'],
+      '/workspace',
+    );
+    if (revParseResult.exitCode !== 0) {
+      throw new Error(revParseResult.stderr || 'Failed to resolve commit hash');
+    }
+    const commitHash = revParseResult.stdout.trim();
 
     // Create checkpoint
-    const filesChanged = status.files.length;
+    const filesChanged = changedEntries.length;
     await this.createCheckpoint(sessionId, userId, messageNumber, commitHash, commitMessage, filesChanged);
 
     return {
@@ -250,6 +294,30 @@ export class GitService {
 
   private generateId(): string {
     return Date.now().toString(36) + Math.random().toString(36).substring(2);
+  }
+
+  private async ensureGitInitializedInContainer(sessionId: string): Promise<void> {
+    const checkRepo = await this.sessionsService.execInContainer(
+      sessionId,
+      ['sh', '-lc', 'command -v git >/dev/null 2>&1 || apk add --no-cache git >/dev/null 2>&1; git rev-parse --is-inside-work-tree'],
+      '/workspace',
+    );
+    if (checkRepo.exitCode === 0) {
+      return;
+    }
+
+    const initRepo = await this.sessionsService.execInContainer(
+      sessionId,
+      [
+        'sh',
+        '-lc',
+        'command -v git >/dev/null 2>&1 || apk add --no-cache git >/dev/null 2>&1; git init && git config user.name "AI Sandbox" && git config user.email "sandbox@aisandbox.com"',
+      ],
+      '/workspace',
+    );
+    if (initRepo.exitCode !== 0) {
+      throw new Error(initRepo.stderr || 'Failed to initialize git repository');
+    }
   }
 
   private async emitCheckpointCreated(sessionId: string, checkpoint: any) {

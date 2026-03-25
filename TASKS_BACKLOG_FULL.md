@@ -13383,3 +13383,50 @@ Fix the real frontend UX gap where the existing `/en/driver` page can submit an 
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-83B-CHECKPOINT.md
 
 ---
+
+### TASK-83E: Driver Rate-Limit Explanation Clarity Slice
+
+**Task ID:** TASK-83E
+**Phase:** 83
+**Stage:** 83E
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, BOUNDED)
+**Dependencies:** Phase 81 and Phase 82 (Complete and Locked); TASK-83A, TASK-83B, and TASK-83D (Complete and Locked)
+**Checkpoint:** `docs/PHASE-83E-CHECKPOINT.md`
+
+**Objective:**
+
+Improve the `/en/driver` UX when a rate-limit/quota error occurs by clarifying the meaning of the current error state, especially when visible token balance remains, without changing backend enforcement behavior or redesigning the route.
+
+**Scope:**
+
+1. Reuse the existing `/en/driver` page only — no new routes, panels, or surfaces
+2. Preserve the current execute flow and current error handling flow
+3. Improve user-facing explanation/clarity around the current quota/rate-limit error state
+4. Address the current confusion where users can see remaining tokens but still receive a quota/rate-limit failure
+5. Keep the fix frontend-only and tightly bounded
+6. Preserve all closed Phase 81 and Phase 82 behavior and completed Phase 83A/83B/83D behavior
+7. Do not expand into unrelated driver redesign
+8. Focused frontend tests for this slice
+
+**Non-Goals:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new quota system
+- ❌ No unrelated polling redesign
+- ❌ No multi-task work
+
+**Acceptance Criteria:**
+
+- `/en/driver` explains the current rate-limit/quota failure state more clearly to the user
+- The route no longer strongly implies that visible token balance alone guarantees immediate execution
+- Current driver behavior remains intact aside from the UX clarity improvement
+- No backend/schema/endpoint/refactor changes
+- No regressions
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-83D-CHECKPOINT.md
+
+---

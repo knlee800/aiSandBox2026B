@@ -28,6 +28,27 @@ import { RevertResponseDto } from './dto/revert-response.dto';
 export class CheckpointsController {
   constructor(private readonly checkpointsService: CheckpointsService) {}
 
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  async createManualCheckpoint(
+    @Param('id') id: string,
+    @Body() body: { messageNumber?: number; description?: string },
+    @Request() req,
+  ): Promise<{ message: string; commitHash: string; filesChanged: number }> {
+    const userId = req.user.userId;
+    const session = await this.checkpointsService['sessionService'].getSessionById(id);
+    if (session.userId !== userId) {
+      throw new NotFoundException(`Session with ID ${id} not found`);
+    }
+
+    return await this.checkpointsService.createManualCheckpoint(
+      id,
+      userId,
+      typeof body?.messageNumber === 'number' ? body.messageNumber : 0,
+      body?.description,
+    );
+  }
+
   /**
    * List all checkpoints for a session
    * GET /api/sessions/:id/checkpoints

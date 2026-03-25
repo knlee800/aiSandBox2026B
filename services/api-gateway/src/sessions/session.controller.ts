@@ -55,7 +55,7 @@ export class SessionController {
     const session = await this.sessionService.createSession(userId);
 
     // Start container (fail-fast if container-manager is unreachable)
-    await this.containerManagerHttpClient.startSession(session.id);
+    await this.containerManagerHttpClient.startSession(session.id, userId);
 
     return session;
   }
@@ -158,6 +158,9 @@ export class SessionController {
     @Body('command') command: string,
     @Request() req,
   ): Promise<{ exitCode: number; stdout: string; stderr: string }> {
+    // #region agent log
+    fetch('http://127.0.0.1:7870/ingest/eba94f28-6765-4a01-9905-123e592de80f',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'8262b1'},body:JSON.stringify({sessionId:'8262b1',location:'session.controller.ts:execInSession:entry',message:'execInSession called',data:{sessionId:id,command,hasUser:!!req?.user,userId:req?.user?.userId},timestamp:Date.now(),hypothesisId:'H4'})}).catch(()=>{});
+    // #endregion
     const userId = req.user.userId;
     const session = await this.sessionService.getSessionById(id);
 
@@ -173,16 +176,27 @@ export class SessionController {
       throw new BadRequestException('command is required');
     }
 
-    const result = await this.containerManagerHttpClient.execInSession(
-      id,
-      ['sh', '-c', command],
-    );
+    try {
+      const result = await this.containerManagerHttpClient.execInSession(
+        id,
+        ['sh', '-c', command],
+      );
 
-    return {
-      exitCode: result.exitCode,
-      stdout: result.stdout,
-      stderr: result.stderr,
-    };
+      // #region agent log
+      fetch('http://127.0.0.1:7870/ingest/eba94f28-6765-4a01-9905-123e592de80f',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'8262b1'},body:JSON.stringify({sessionId:'8262b1',location:'session.controller.ts:execInSession:success',message:'exec succeeded',data:{exitCode:result.exitCode,stdoutLen:result.stdout?.length,stderrLen:result.stderr?.length},timestamp:Date.now(),hypothesisId:'H1'})}).catch(()=>{});
+      // #endregion
+
+      return {
+        exitCode: result.exitCode,
+        stdout: result.stdout,
+        stderr: result.stderr,
+      };
+    } catch (execError: any) {
+      // #region agent log
+      fetch('http://127.0.0.1:7870/ingest/eba94f28-6765-4a01-9905-123e592de80f',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'8262b1'},body:JSON.stringify({sessionId:'8262b1',location:'session.controller.ts:execInSession:catch',message:'exec threw',data:{errorName:execError?.constructor?.name,errorMessage:execError?.message,errorStatus:execError?.getStatus?.(),isHttpException:execError?.getStatus!==undefined},timestamp:Date.now(),hypothesisId:'H1,H2,H3'})}).catch(()=>{});
+      // #endregion
+      throw execError;
+    }
   }
 
   /**

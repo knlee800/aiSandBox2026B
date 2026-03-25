@@ -15,8 +15,8 @@ export class SessionsController {
   }
 
   @Post(':id/start')
-  async start(@Param('id') id: string) {
-    await this.sessionsService.startSessionContainer(id);
+  async start(@Param('id') id: string, @Body('userId') userId?: string) {
+    await this.sessionsService.startSessionContainer(id, userId);
     return { message: 'Session container started successfully' };
   }
 

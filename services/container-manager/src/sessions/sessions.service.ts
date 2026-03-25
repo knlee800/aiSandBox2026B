@@ -50,9 +50,41 @@ export class SessionsService {
     private governanceEventsService: GovernanceEventsService,
     private quotaEvaluationService: QuotaEvaluationService,
   ) {
-    // Connect to database
     const dbPath = path.join(__dirname, '../../../..', 'database', 'aisandbox.db');
+    const dbDir = path.dirname(dbPath);
+    if (!fsSync.existsSync(dbDir)) {
+      fsSync.mkdirSync(dbDir, { recursive: true });
+    }
     this.db = new Database(dbPath);
+
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS sessions (
+        id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+        user_id TEXT NOT NULL,
+        project_id TEXT,
+        container_id TEXT UNIQUE,
+        status TEXT NOT NULL DEFAULT 'pending',
+        git_initialized INTEGER DEFAULT 0,
+        resource_limits TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        expires_at TEXT NOT NULL DEFAULT (datetime('now', '+2 hours')),
+        last_activity_at TEXT DEFAULT (datetime('now')),
+        metadata TEXT,
+        orchestrator_enabled INTEGER DEFAULT 0,
+        orchestrator_mode TEXT DEFAULT 'off',
+        terminated_at TEXT,
+        termination_reason TEXT
+      );
+      CREATE TABLE IF NOT EXISTS governance_events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        session_id TEXT NOT NULL,
+        user_id TEXT,
+        termination_reason TEXT NOT NULL,
+        terminated_at TEXT NOT NULL,
+        source TEXT NOT NULL DEFAULT 'container-manager',
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+    `);
 
     // Set workspaces directory
     this.workspacesRoot = path.join(__dirname, '../../../..', 'workspaces');
@@ -140,8 +172,9 @@ export class SessionsService {
 
     // Auto-initialize git via HTTP call to avoid circular dependency
     try {
+      const localApiBaseUrl = `http://localhost:${process.env.PORT || 4002}`;
       await firstValueFrom(
-        this.httpService.post(`http://localhost:4001/api/git/${sessionId}/init`, {
+        this.httpService.post(`${localApiBaseUrl}/api/git/${sessionId}/init`, {
           userId,
         }),
       );
@@ -285,8 +318,30 @@ export class SessionsService {
    * Returns only after container is confirmed running
    * @param sessionId - Session UUID
    */
-  async startSessionContainer(sessionId: string): Promise<void> {
+  async startSessionContainer(sessionId: string, userId?: string): Promise<void> {
+    if (userId) {
+      const existing = this.db
+        .prepare('SELECT id FROM sessions WHERE id = ?')
+        .get(sessionId);
+      if (!existing) {
+        this.db
+          .prepare(
+            `INSERT INTO sessions (id, user_id, status, git_initialized, created_at, expires_at, last_activity_at)
+             VALUES (?, ?, 'active', 0, datetime('now'), datetime('now', '+2 hours'), datetime('now'))`,
+          )
+          .run(sessionId, userId);
+      }
+      // #region agent log
+      fetch('http://127.0.0.1:7870/ingest/eba94f28-6765-4a01-9905-123e592de80f',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'8262b1'},body:JSON.stringify({sessionId:'8262b1',location:'sessions.service.ts:startSessionContainer',message:'session record ensured in SQLite',data:{sessionId,userId,existed:!!existing},timestamp:Date.now(),runId:'post-fix'})}).catch(()=>{});
+      // #endregion
+    }
+
     const workspacePath = this.getWorkspacePath(sessionId);
+
+    if (!fsSync.existsSync(workspacePath)) {
+      fsSync.mkdirSync(workspacePath, { recursive: true });
+    }
+
     const containerId = await this.dockerRuntimeService.createContainer(
       sessionId,
       workspacePath,

@@ -16,6 +16,7 @@ export type WorkspaceExecStatus =
 export interface WorkspaceExecState {
   status: WorkspaceExecStatus;
   result: WorkspaceExecResult | null;
+  errorMessage?: string;
 }
 
 interface ExecuteSessionCommandInput {
@@ -60,8 +61,29 @@ export async function executeSessionCommand(
       return { status: 'http-410', result: null };
     }
 
-    return { status: 'network-error', result: null };
-  } catch {
-    return { status: 'network-error', result: null };
+    let errorMessage = `Exec request failed (HTTP ${response.status})`;
+    try {
+      const rawText = await response.text();
+      if (rawText.trim()) {
+        try {
+          const parsed = JSON.parse(rawText) as { message?: string; error?: string };
+          const serverMessage = parsed.message ?? parsed.error;
+          if (typeof serverMessage === 'string' && serverMessage.trim()) {
+            errorMessage = `Exec request failed (HTTP ${response.status}): ${serverMessage}`;
+          }
+        } catch {
+          errorMessage = `Exec request failed (HTTP ${response.status}): ${rawText.trim()}`;
+        }
+      }
+    } catch {
+      // Keep fallback HTTP status message if response body cannot be read.
+    }
+
+    return { status: 'network-error', result: null, errorMessage };
+  } catch (error) {
+    if (error instanceof Error && error.message.trim()) {
+      return { status: 'network-error', result: null, errorMessage: `Exec request failed: ${error.message}` };
+    }
+    return { status: 'network-error', result: null, errorMessage: 'Exec request failed: network error' };
   }
 }

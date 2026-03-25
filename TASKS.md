@@ -5357,7 +5357,7 @@ Make the history workflow easier to scan by adding a bounded read-only label tha
 
 ## Phase 83 — Config Surface and UX Fixes
 
-**Current stage:** TASK-83D (COMPLETE and LOCKED)
+**Current stage:** TASK-83E (COMPLETE and LOCKED)
 
 ---
 
@@ -5458,5 +5458,37 @@ Fix the real frontend UX gap where the existing `/en/driver` page can submit an 
 **Dependencies:** Phase 81, Phase 82 (Complete and Locked); TASK-83A, TASK-83B (Complete and Locked)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-83D for full details
+
+---
+
+#### TASK-83E: Driver Rate-Limit Explanation Clarity Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, BOUNDED)
+**Checkpoint:** `docs/PHASE-83E-CHECKPOINT.md`
+
+**Objective:**
+Improve the `/en/driver` UX when a rate-limit/quota error occurs by clarifying the meaning of the current error state, especially when visible token balance remains, without changing backend enforcement behavior or redesigning the route.
+
+**Scope:**
+- Reuse the existing `/en/driver` page only
+- Preserve the current execute flow and current error handling flow
+- Improve user-facing explanation/clarity around the current quota/rate-limit error state
+- Address the current confusion where users can see remaining tokens but still receive a quota/rate-limit failure
+- Keep the fix frontend-only and tightly bounded
+- Preserve all closed Phase 81 and Phase 82 behavior and completed Phase 83A/83B/83D behavior
+- Do not expand into unrelated driver redesign
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No new quota system
+- ❌ No unrelated polling redesign
+- ❌ No multi-task work
+
+**Dependencies:** Phase 81, Phase 82 (Complete and Locked); TASK-83A, TASK-83B, TASK-83D (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-83E for full details
 
 ---

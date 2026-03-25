@@ -160,4 +160,40 @@ export class CheckpointsService {
       },
     };
   }
+
+  async createManualCheckpoint(
+    sessionId: string,
+    userId: string,
+    messageNumber: number = 0,
+    description?: string,
+  ): Promise<{ message: string; commitHash: string; filesChanged: number }> {
+    const session = await this.sessionService.getSessionById(sessionId);
+    if (session.terminatedAt !== null) {
+      throw new GoneException(
+        `Session ${sessionId} is terminated and cannot create save points`,
+      );
+    }
+
+    const result = await this.containerManagerHttpClient.createManualCheckpoint(
+      sessionId,
+      userId,
+      messageNumber,
+      description,
+    );
+
+    if (result.commitHash) {
+      const existing = await this.gitCheckpointService.getCheckpointByHash(result.commitHash);
+      if (!existing) {
+        await this.gitCheckpointService.recordCheckpoint({
+          sessionId,
+          commitHash: result.commitHash,
+          filesChanged: result.filesChanged ?? 0,
+          messageNumber,
+          description: description || null,
+        });
+      }
+    }
+
+    return result;
+  }
 }

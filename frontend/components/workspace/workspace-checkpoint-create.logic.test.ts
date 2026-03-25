@@ -20,7 +20,7 @@ describe('workspace checkpoint create logic', () => {
       fetchImpl,
     });
 
-    assert.equal(url, '/api/git/session-abc/commit');
+    assert.equal(url, '/api/sessions/session-abc/checkpoints');
     assert.equal(init?.method, 'POST');
     assert.equal((init?.headers as Record<string, string>).Authorization, 'Bearer token-123');
     assert.equal((init?.headers as Record<string, string>)['Content-Type'], 'application/json');
