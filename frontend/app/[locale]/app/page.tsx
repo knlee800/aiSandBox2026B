@@ -15,7 +15,7 @@ import {
   type WorkspaceExecState,
 } from '@/components/workspace/workspace-exec.logic';
 import { refreshPostExecSurfaces } from '@/components/workspace/workspace-post-exec.logic';
-import { areCheckpointListsEqual } from '@/components/workspace/workspace-shell.logic';
+import { areCheckpointListsEqual, isUsableSession } from '@/components/workspace/workspace-shell.logic';
 import {
   createWorkspaceCheckpoint,
   type WorkspaceCheckpointCreateState,
@@ -77,6 +77,10 @@ export default function AppPage() {
   const [isLoadingSessions, setIsLoadingSessions] = useState(true);
   const [sessionError, setSessionError] = useState<string | null>(null);
   const [isCreatingSession, setIsCreatingSession] = useState(false);
+  const [sessionCreateError, setSessionCreateError] = useState<string | null>(null);
+  const [hiddenSessionIds, setHiddenSessionIds] = useState<string[]>([]);
+  const [stoppingSessionId, setStoppingSessionId] = useState<string | null>(null);
+  const [sessionActionError, setSessionActionError] = useState<string | null>(null);
   const [checkpoints, setCheckpoints] = useState<WorkspaceCheckpoint[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [historyError, setHistoryError] = useState<string | null>(null);
@@ -257,34 +261,80 @@ export default function AppPage() {
     setIsLoadingSessions(true);
     setSessionError(null);
 
+    let data: WorkspaceShellSession[];
     try {
-      const response = await fetch('/api/sessions?includeTerminated=true', {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Session load failed (${response.status})`);
+      let response: Response;
+      try {
+        response = await fetch('/api/sessions?includeTerminated=true', {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      } catch (fetchError) {
+        const detail = fetchError instanceof Error ? fetchError.message : String(fetchError);
+        console.error('[WORKSPACE_BOOTSTRAP_FAIL_SESSIONS_FETCH]', detail);
+        setSessionError(`[FETCH] ${detail}`);
+        setSessions([]);
+        setSelectedSessionId(null);
+        setIsLoadingSessions(false);
+        return;
       }
 
-      const data = (await response.json()) as WorkspaceShellSession[];
-      setSessions(data);
-      setSelectedSessionId((currentSelection) => {
-        if (currentSelection && data.some((session) => session.id === currentSelection)) {
-          return currentSelection;
-        }
-        return data.length ? data[0].id : null;
-      });
+      if (!response.ok) {
+        console.error('[WORKSPACE_BOOTSTRAP_FAIL_SESSIONS_HTTP]', response.status, response.statusText);
+        setSessionError(`[HTTP_${response.status}] ${response.statusText}`);
+        setSessions([]);
+        setSelectedSessionId(null);
+        setIsLoadingSessions(false);
+        return;
+      }
+
+      let payload: unknown;
+      try {
+        payload = await response.json();
+      } catch (parseError) {
+        const detail = parseError instanceof Error ? parseError.message : String(parseError);
+        console.error('[WORKSPACE_BOOTSTRAP_FAIL_SESSIONS_PARSE]', detail);
+        setSessionError(`[PARSE] ${detail}`);
+        setSessions([]);
+        setSelectedSessionId(null);
+        setIsLoadingSessions(false);
+        return;
+      }
+
+      data = Array.isArray(payload)
+        ? (payload as WorkspaceShellSession[])
+        : Array.isArray((payload as { value?: unknown } | null)?.value)
+          ? ((payload as { value: WorkspaceShellSession[] }).value ?? [])
+          : [];
     } catch (error) {
-      console.error('Failed to load sessions:', error);
-      setSessionError('Failed to load sessions.');
+      const detail = error instanceof Error ? error.message : String(error);
+      console.error('[WORKSPACE_BOOTSTRAP_FAIL_SESSIONS_UNEXPECTED]', detail);
+      setSessionError(`[UNEXPECTED] ${detail}`);
       setSessions([]);
       setSelectedSessionId(null);
-    } finally {
       setIsLoadingSessions(false);
+      return;
     }
+
+    setSessions(data);
+    setHiddenSessionIds((currentHiddenSessionIds) =>
+      currentHiddenSessionIds.filter((sessionId) =>
+        data.some((session) => session.id === sessionId && !isUsableSession(session)),
+      ),
+    );
+    setSelectedSessionId((currentSelection) => {
+      if (currentSelection) {
+        const currentSession = data.find((session) => session.id === currentSelection);
+        if (currentSession && isUsableSession(currentSession)) {
+          return currentSelection;
+        }
+      }
+      const fallbackSession = data.find((session) => isUsableSession(session));
+      return fallbackSession ? fallbackSession.id : null;
+    });
+    setIsLoadingSessions(false);
   }
 
   async function handleCreateSession(): Promise<void> {
@@ -295,6 +345,7 @@ export default function AppPage() {
     }
 
     setIsCreatingSession(true);
+    setSessionCreateError(null);
     try {
       const response = await fetch('/api/sessions', {
         method: 'POST',
@@ -304,6 +355,10 @@ export default function AppPage() {
       });
 
       if (!response.ok) {
+        if (response.status === 403) {
+          setSessionCreateError('Session creation blocked by quota limits (403).');
+          return;
+        }
         throw new Error(`Session create failed (${response.status})`);
       }
 
@@ -311,11 +366,73 @@ export default function AppPage() {
       await loadSessions(token);
       setSelectedSessionId(createdSession.id);
     } catch (error) {
-      console.error('Failed to create session:', error);
-      setSessionError('Failed to create session.');
+      const detail = error instanceof Error ? error.message : String(error);
+      console.error('[WORKSPACE_BOOTSTRAP_FAIL_CREATE_SESSION]', detail);
+      setSessionCreateError(detail);
     } finally {
       setIsCreatingSession(false);
     }
+  }
+
+  async function handleStopSession(sessionId: string): Promise<void> {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+
+    const targetSession = sessions.find((session) => session.id === sessionId);
+    if (!targetSession || !isUsableSession(targetSession)) {
+      return;
+    }
+
+    setSessionActionError(null);
+    setStoppingSessionId(sessionId);
+    try {
+      const response = await fetch(`/api/sessions/${sessionId}/stop`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`Session stop failed (${response.status})`);
+      }
+      await loadSessions(token);
+      await loadDashboardSlice(token);
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      setSessionActionError(detail);
+    } finally {
+      setStoppingSessionId((currentStoppingSessionId) =>
+        currentStoppingSessionId === sessionId ? null : currentStoppingSessionId,
+      );
+    }
+  }
+
+  function handleRemoveSession(sessionId: string): void {
+    const targetSession = sessions.find((session) => session.id === sessionId);
+    if (!targetSession || isUsableSession(targetSession)) {
+      return;
+    }
+
+    setSessionActionError(null);
+    const nextHiddenSessionIds = hiddenSessionIds.includes(sessionId)
+      ? hiddenSessionIds
+      : [...hiddenSessionIds, sessionId];
+    setHiddenSessionIds(nextHiddenSessionIds);
+    setSelectedSessionId((currentSelection) => {
+      if (currentSelection !== sessionId) {
+        return currentSelection;
+      }
+      const fallbackSession = sessions.find(
+        (session) =>
+          session.id !== sessionId &&
+          !nextHiddenSessionIds.includes(session.id) &&
+          isUsableSession(session),
+      );
+      return fallbackSession ? fallbackSession.id : null;
+    });
   }
 
   async function loadCheckpoints(token: string, sessionId: string): Promise<void> {
@@ -1128,6 +1245,23 @@ export default function AppPage() {
       if (fileNavigationRequestIdRef.current !== requestId) {
         return;
       }
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes('(410)')) {
+        setSelectedSessionId((currentSelection) => {
+          if (currentSelection !== sessionId) {
+            return currentSelection;
+          }
+          const fallbackSession = sessions.find((session) => {
+            if (session.id === sessionId || !isUsableSession(session)) {
+              return false;
+            }
+            return true;
+          });
+          return fallbackSession ? fallbackSession.id : null;
+        });
+        resetWorkspaceFileSurface();
+        return;
+      }
       setWorkspaceFileTree([]);
       setSelectedFilePath(null);
       setSelectedFileContent('');
@@ -1327,6 +1461,8 @@ export default function AppPage() {
     setPreviewState('error');
   }
 
+  const visibleSessions = sessions.filter((session) => !hiddenSessionIds.includes(session.id));
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -1337,13 +1473,18 @@ export default function AppPage() {
 
   return (
     <WorkspaceShell
-      sessions={sessions}
+      sessions={visibleSessions}
       selectedSessionId={selectedSessionId}
       isLoadingSessions={isLoadingSessions}
       sessionError={sessionError}
+      sessionCreateError={sessionCreateError}
+      sessionActionError={sessionActionError}
       onSelectSession={setSelectedSessionId}
       onCreateSession={handleCreateSession}
+      onStopSession={handleStopSession}
+      onRemoveSession={handleRemoveSession}
       isCreatingSession={isCreatingSession}
+      stoppingSessionId={stoppingSessionId}
       userId={userId}
       checkpoints={checkpoints}
       isLoadingHistory={isLoadingHistory}

@@ -20,6 +20,12 @@ const session: WorkspaceShellSession = {
   terminatedAt: null,
   terminationReason: null,
 };
+const terminatedSession: WorkspaceShellSession = {
+  id: '87654321-term-session',
+  status: 'stopped',
+  terminatedAt: '2026-03-10T12:30:00.000Z',
+  terminationReason: 'manual',
+};
 
 const checkpoint: WorkspaceCheckpoint = {
   id: 'checkpoint-1',
@@ -125,9 +131,14 @@ function renderWorkspaceShell(
     selectedSessionId: session.id,
     isLoadingSessions: false,
     sessionError: null,
+    sessionCreateError: null,
+    sessionActionError: null,
     onSelectSession: () => {},
     onCreateSession: async () => {},
+    onStopSession: async () => {},
+    onRemoveSession: () => {},
     isCreatingSession: false,
+    stoppingSessionId: null,
     userId: 'user-123',
     checkpoints: [checkpoint],
     isLoadingHistory: false,
@@ -224,6 +235,16 @@ describe('workspace shell component', () => {
     assert.match(html, /Current User/);
     assert.match(html, /user@example\.com/);
     assert.match(html, /Active Sessions/);
+  });
+
+  test('renders Stop for usable sessions and Remove for unusable sessions', () => {
+    const html = renderWorkspaceShell({
+      sessions: [session, terminatedSession],
+      selectedSessionId: session.id,
+    });
+
+    assert.match(html, /data-testid="session-stop-12345678-test-session"/);
+    assert.match(html, /data-testid="session-remove-87654321-term-session"/);
   });
 
   test('renders loading shell state', () => {

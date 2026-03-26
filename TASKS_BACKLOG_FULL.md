@@ -13430,3 +13430,53 @@ Improve the `/en/driver` UX when a rate-limit/quota error occurs by clarifying t
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-83D-CHECKPOINT.md
 
 ---
+
+### TASK-83F: Session Stop/Remove Sidebar Action Slice
+
+**Task ID:** TASK-83F
+**Phase:** 83
+**Stage:** 83F
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (BOUNDED UX / SESSION LIFECYCLE)
+**Dependencies:** Phase 81 and Phase 82 (Complete and Locked); TASK-83A, TASK-83B, TASK-83D, and TASK-83E (Complete and Locked)
+**Checkpoint:** `docs/PHASE-83F-CHECKPOINT.md`
+
+**Objective:**
+
+Improve `/en/app` session management by adding bounded sidebar actions that let users clean up unusable sessions safely, without silently destroying checkpoint history or redesigning the workspace shell.
+
+**Scope:**
+
+1. Reuse the existing `/en/app` left session sidebar only — no new routes, panels, or surfaces
+2. Add a Stop action for active/usable sessions if an existing safe stop/terminate path already exists
+3. Add a Remove action only for expired or terminated/unusable sessions
+4. Ensure Remove only removes already-unusable sessions from the visible list, either through an existing safe backend delete path or a bounded frontend hide path if deletion is not safe
+5. Preserve checkpoint/history behavior — do not silently destroy history
+6. If the currently selected session is stopped/removed, auto-switch to another usable session or clear selection cleanly
+7. Keep the change bounded to session list actions and session-list refresh/update behavior
+8. Preserve all closed Phase 81 and Phase 82 behavior and completed Phase 83 behavior
+9. Focused frontend tests for this slice
+
+**Non-Goals:**
+
+- ❌ No session-management redesign
+- ❌ No backend schema changes
+- ❌ No refactors
+- ❌ No new quota system
+- ❌ No destructive delete of active usable sessions
+- ❌ No silent history deletion
+- ❌ No multi-task work
+
+**Acceptance Criteria:**
+
+- Expired/terminated sessions can be removed from the visible sidebar safely
+- Active usable sessions show Stop, not Remove
+- Stopping/removing a currently selected session does not break the workspace shell
+- Session list updates clearly after the action
+- No backend/schema/refactor changes unless strictly required to use an already-existing safe endpoint
+- No regressions
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-83E-CHECKPOINT.md
+
+---

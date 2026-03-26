@@ -5,6 +5,7 @@ export type DashboardSliceState = 'loading' | 'error' | 'empty' | 'ready';
 export interface WorkspaceShellSession {
   id: string;
   status: string;
+  expiresAt?: string;
   terminatedAt: string | null;
   terminationReason: string | null;
 }
@@ -86,7 +87,7 @@ export function computeWorkspaceShellState(
 }
 
 export function countActiveSessions(sessions: WorkspaceShellSession[]): number {
-  return sessions.filter((session) => !session.terminatedAt).length;
+  return sessions.filter((session) => isUsableSession(session)).length;
 }
 
 export function computeHistorySliceState(
@@ -134,7 +135,28 @@ export function getSessionLabel(session: WorkspaceShellSession): string {
     return 'terminated';
   }
 
+  if (isExpiredSession(session)) {
+    return 'expired';
+  }
+
   return session.status || 'pending';
+}
+
+export function isUsableSession(session: WorkspaceShellSession): boolean {
+  return !session.terminatedAt && !isExpiredSession(session);
+}
+
+export function isExpiredSession(session: WorkspaceShellSession): boolean {
+  if (!session.expiresAt) {
+    return false;
+  }
+
+  const expiresAtMs = Date.parse(session.expiresAt);
+  if (Number.isNaN(expiresAtMs)) {
+    return false;
+  }
+
+  return expiresAtMs <= Date.now();
 }
 
 export function areCheckpointListsEqual(

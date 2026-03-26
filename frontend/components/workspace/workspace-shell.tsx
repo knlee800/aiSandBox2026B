@@ -10,6 +10,7 @@ import {
   computeWorkspaceShellState,
   countActiveSessions,
   getSessionLabel,
+  isUsableSession,
   toggleWorkspaceCheckpointWorkingSetId,
   type CheckpointDescriptionFilter,
   type WorkspaceCheckpoint,
@@ -37,9 +38,14 @@ interface WorkspaceShellProps {
   selectedSessionId: string | null;
   isLoadingSessions: boolean;
   sessionError: string | null;
+  sessionCreateError: string | null;
+  sessionActionError: string | null;
   onSelectSession: (sessionId: string) => void;
   onCreateSession: () => Promise<void>;
+  onStopSession: (sessionId: string) => Promise<void>;
+  onRemoveSession: (sessionId: string) => void;
   isCreatingSession: boolean;
+  stoppingSessionId: string | null;
   userId: string | null;
   checkpoints: WorkspaceCheckpoint[];
   isLoadingHistory: boolean;
@@ -157,25 +163,61 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
               {props.isCreatingSession ? 'Creating...' : 'New Session'}
             </button>
             <p className="mt-2 text-xs text-gray-500">Active sessions: {activeSessions}/5</p>
+            {props.sessionCreateError ? (
+              <p className="mt-1 text-xs text-amber-700">{props.sessionCreateError}</p>
+            ) : null}
+            {props.sessionActionError ? (
+              <p className="mt-1 text-xs text-amber-700">{props.sessionActionError}</p>
+            ) : null}
           </div>
 
           <div className="flex-1 overflow-y-auto p-2">
             {props.sessions.map((session) => {
               const selected = session.id === props.selectedSessionId;
+              const isUsable = isUsableSession(session);
+              const isStopping = props.stoppingSessionId === session.id;
               return (
-                <button
+                <div
                   key={session.id}
-                  type="button"
-                  onClick={() => props.onSelectSession(session.id)}
-                  className={`w-full text-left rounded border p-2 mb-2 ${
+                  className={`w-full rounded border p-2 mb-2 ${
                     selected
                       ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 bg-white hover:bg-gray-50'
+                      : 'border-gray-200 bg-white'
                   }`}
                 >
-                  <p className="text-xs font-medium text-gray-900 truncate">Session {session.id.slice(0, 8)}</p>
-                  <p className="text-xs text-gray-500">{getSessionLabel(session)}</p>
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => props.onSelectSession(session.id)}
+                    className={`w-full text-left rounded ${
+                      selected ? '' : 'hover:bg-gray-50'
+                    }`}
+                  >
+                    <p className="text-xs font-medium text-gray-900 truncate">Session {session.id.slice(0, 8)}</p>
+                    <p className="text-xs text-gray-500">{getSessionLabel(session)}</p>
+                  </button>
+                  <div className="mt-2">
+                    {isUsable ? (
+                      <button
+                        type="button"
+                        onClick={() => void props.onStopSession(session.id)}
+                        disabled={isStopping}
+                        className="w-full rounded border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] font-medium text-amber-800 disabled:opacity-60"
+                        data-testid={`session-stop-${session.id}`}
+                      >
+                        {isStopping ? 'Stopping...' : 'Stop'}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => props.onRemoveSession(session.id)}
+                        className="w-full rounded border border-gray-300 bg-gray-50 px-2 py-1 text-[11px] font-medium text-gray-700"
+                        data-testid={`session-remove-${session.id}`}
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                </div>
               );
             })}
           </div>
@@ -199,7 +241,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                 execState={props.execState}
               />
               <div className="mt-3">
-                <ShellStateMessage state={shellState} />
+                <ShellStateMessage state={shellState} sessionError={props.sessionError} />
               </div>
             </section>
             <section className="bg-white border border-gray-200 rounded p-3" data-testid="editor-panel-shell">
@@ -291,6 +333,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                 userSummary={props.userSummary}
                 usageSummary={props.usageSummary}
                 quotaSummary={props.quotaSummary}
+                activeSessions={activeSessions}
               />
             ) : null}
           </section>
@@ -4325,6 +4368,7 @@ function DashboardSummary(props: {
   userSummary: WorkspaceUserSummary;
   usageSummary: WorkspaceUsageSummary;
   quotaSummary: WorkspaceQuotaSummary;
+  activeSessions: number;
 }) {
   return (
     <div className="mt-2 space-y-2" data-testid="dashboard-summary-cards">
@@ -4336,7 +4380,7 @@ function DashboardSummary(props: {
         <div className="rounded border border-gray-200 px-2 py-2">
           <p className="text-xs text-gray-500">Active Sessions</p>
           <p className="text-sm font-semibold text-gray-900">
-            {props.usageSummary.activeSessions}/{props.quotaSummary.maxActiveSessions}
+            {props.activeSessions}/{props.quotaSummary.maxActiveSessions}
           </p>
         </div>
         <div className="rounded border border-gray-200 px-2 py-2">
@@ -4356,7 +4400,7 @@ function DashboardSummary(props: {
   );
 }
 
-function ShellStateMessage({ state }: { state: 'loading' | 'error' | 'empty' | 'ready' }) {
+function ShellStateMessage({ state, sessionError }: { state: 'loading' | 'error' | 'empty' | 'ready'; sessionError?: string | null }) {
   if (state === 'loading') {
     return (
       <StateMessage
@@ -4373,7 +4417,7 @@ function ShellStateMessage({ state }: { state: 'loading' | 'error' | 'empty' | '
       <StateMessage
         tone="error"
         heading="Workspace unavailable"
-        body="Unable to load sessions for the workspace shell."
+        body={sessionError ? `Session load error: ${sessionError}` : 'Unable to load sessions for the workspace shell.'}
         action="Refresh this page or sign in again."
       />
     );

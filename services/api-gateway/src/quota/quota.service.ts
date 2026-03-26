@@ -54,7 +54,7 @@ export class QuotaService {
   /**
    * PHASE-42A-1: Check if user has exceeded max active sessions
    * Database-backed quota check (survives restarts)
-   * Query: COUNT(*) WHERE user_id = ? AND terminated_at IS NULL
+   * Query: COUNT(*) WHERE user_id = ? AND terminated_at IS NULL AND expires_at > NOW()
    *
    * @param userId - User ID to check quota for
    * @returns Promise<boolean> - true if quota available, false if exceeded
@@ -64,6 +64,7 @@ export class QuotaService {
       where: {
         userId,
         terminatedAt: IsNull(),
+        expiresAt: MoreThan(new Date()),
       },
     });
 
@@ -82,6 +83,7 @@ export class QuotaService {
       where: {
         userId,
         terminatedAt: IsNull(),
+        expiresAt: MoreThan(new Date()),
       },
     });
   }

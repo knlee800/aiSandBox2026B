@@ -5357,7 +5357,7 @@ Make the history workflow easier to scan by adding a bounded read-only label tha
 
 ## Phase 83 — Config Surface and UX Fixes
 
-**Current stage:** TASK-83E (COMPLETE and LOCKED)
+**Current stage:** TASK-83F (COMPLETE and LOCKED)
 
 ---
 
@@ -5490,5 +5490,39 @@ Improve the `/en/driver` UX when a rate-limit/quota error occurs by clarifying t
 **Dependencies:** Phase 81, Phase 82 (Complete and Locked); TASK-83A, TASK-83B, TASK-83D (Complete and Locked)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-83E for full details
+
+---
+
+#### TASK-83F: Session Stop/Remove Sidebar Action Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (BOUNDED UX / SESSION LIFECYCLE)
+**Checkpoint:** `docs/PHASE-83F-CHECKPOINT.md`
+
+**Objective:**
+Improve `/en/app` session management by adding bounded sidebar actions that let users clean up unusable sessions safely, without silently destroying checkpoint history or redesigning the workspace shell.
+
+**Scope:**
+- Reuse the existing `/en/app` left session sidebar only
+- Add a Stop action for active/usable sessions using an existing safe stop/terminate path
+- Add a Remove action only for expired or terminated/unusable sessions
+- Remove only removes already-unusable sessions from the visible list (existing safe backend delete path, or bounded frontend hide path if deletion is not safe)
+- Preserve checkpoint/history behavior — do not silently destroy history
+- If the currently selected session is stopped/removed, auto-switch to another usable session or clear selection cleanly
+- Keep change bounded to session list actions and session-list refresh/update behavior
+- Preserve all closed Phase 81 and Phase 82 behavior and completed Phase 83 behavior
+
+**Non-Goals:**
+- ❌ No session-management redesign
+- ❌ No backend schema changes
+- ❌ No refactors
+- ❌ No new quota system
+- ❌ No destructive delete of active usable sessions
+- ❌ No silent history deletion
+- ❌ No multi-task work
+
+**Dependencies:** Phase 81, Phase 82 (Complete and Locked); TASK-83A, TASK-83B, TASK-83D, TASK-83E (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-83F for full details
 
 ---

@@ -18,6 +18,7 @@ import {
 const activeSession: WorkspaceShellSession = {
   id: 'active-session-id',
   status: 'active',
+  expiresAt: '3026-03-10T00:00:00.000Z',
   terminatedAt: null,
   terminationReason: null,
 };
@@ -25,8 +26,17 @@ const activeSession: WorkspaceShellSession = {
 const terminatedSession: WorkspaceShellSession = {
   id: 'terminated-session-id',
   status: 'stopped',
+  expiresAt: '3026-03-10T00:00:00.000Z',
   terminatedAt: '2026-03-10T00:00:00.000Z',
   terminationReason: 'manual',
+};
+
+const expiredSession: WorkspaceShellSession = {
+  id: 'expired-session-id',
+  status: 'pending',
+  expiresAt: '2020-03-10T00:00:00.000Z',
+  terminatedAt: null,
+  terminationReason: null,
 };
 
 const checkpoint: WorkspaceCheckpoint = {
@@ -92,13 +102,14 @@ describe('workspace shell logic', () => {
     assert.equal(state, 'ready');
   });
 
-  test('counts only non-terminated sessions as active', () => {
-    assert.equal(countActiveSessions([activeSession, terminatedSession]), 1);
+  test('counts only usable sessions as active', () => {
+    assert.equal(countActiveSessions([activeSession, terminatedSession, expiredSession]), 1);
   });
 
   test('returns deterministic session labels', () => {
     assert.equal(getSessionLabel(activeSession), 'active');
     assert.equal(getSessionLabel(terminatedSession), 'terminated');
+    assert.equal(getSessionLabel(expiredSession), 'expired');
   });
 
   test('history slice returns empty without selected session', () => {
