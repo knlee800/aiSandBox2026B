@@ -199,6 +199,89 @@ export class SessionController {
     }
   }
 
+  @Get(':id/files/list')
+  @HttpCode(HttpStatus.OK)
+  async listSessionFiles(
+    @Param('id') id: string,
+    @Query('path') path: string = '/',
+    @Request() req,
+  ): Promise<Array<{ name: string; path: string; type: 'file' | 'directory'; size: number; modified: string }>> {
+    const userId = req.user.userId;
+    const session = await this.sessionService.getSessionById(id);
+
+    if (session.userId !== userId) {
+      throw new NotFoundException(`Session with ID ${id} not found`);
+    }
+
+    if (session.terminatedAt !== null) {
+      throw new GoneException(`Session ${id} is terminated`);
+    }
+
+    const result = await this.containerManagerHttpClient.listSessionDirectory(id, path);
+    return result.entries.map((entry) => ({
+      name: entry.name,
+      path: path === '/' || !path ? entry.name : `${path.replace(/\/$/, '')}/${entry.name}`,
+      type: entry.type === 'dir' ? 'directory' : 'file',
+      size: entry.size,
+      modified: entry.modifiedAt,
+    }));
+  }
+
+  @Post(':id/files/read')
+  @HttpCode(HttpStatus.OK)
+  async readSessionFile(
+    @Param('id') id: string,
+    @Body('path') path: string,
+    @Request() req,
+  ): Promise<{ path: string; content: string }> {
+    const userId = req.user.userId;
+    const session = await this.sessionService.getSessionById(id);
+
+    if (session.userId !== userId) {
+      throw new NotFoundException(`Session with ID ${id} not found`);
+    }
+
+    if (session.terminatedAt !== null) {
+      throw new GoneException(`Session ${id} is terminated`);
+    }
+
+    if (!path || path.trim().length === 0) {
+      throw new BadRequestException('path is required');
+    }
+
+    return await this.containerManagerHttpClient.readSessionFile(id, path);
+  }
+
+  @Post(':id/files/write')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async writeSessionFile(
+    @Param('id') id: string,
+    @Body('path') path: string,
+    @Body('content') content: string,
+    @Request() req,
+  ): Promise<void> {
+    const userId = req.user.userId;
+    const session = await this.sessionService.getSessionById(id);
+
+    if (session.userId !== userId) {
+      throw new NotFoundException(`Session with ID ${id} not found`);
+    }
+
+    if (session.terminatedAt !== null) {
+      throw new GoneException(`Session ${id} is terminated`);
+    }
+
+    if (!path || path.trim().length === 0) {
+      throw new BadRequestException('path is required');
+    }
+
+    if (content === undefined || content === null) {
+      throw new BadRequestException('content is required');
+    }
+
+    await this.containerManagerHttpClient.writeSessionFile(id, path, content);
+  }
+
   /**
    * Terminate a session owned by the authenticated user
    * DELETE /api/sessions/:id

@@ -35,7 +35,7 @@ export async function listWorkspaceDirectory(
   const directoryPath = args.directoryPath ?? '/';
   const query = new URLSearchParams({ path: directoryPath });
   const response = await fetchImpl(
-    `/api/files/${encodeURIComponent(args.sessionId)}/list?${query.toString()}`,
+    `/api/sessions/${encodeURIComponent(args.sessionId)}/files/list?${query.toString()}`,
     {
       method: 'GET',
       headers: {
@@ -55,7 +55,7 @@ export async function readWorkspaceFile(
   args: SessionFileRequestArgs & { filePath: string },
 ): Promise<WorkspaceReadFileResponse> {
   const fetchImpl = args.fetchImpl ?? fetch;
-  const response = await fetchImpl(`/api/files/${encodeURIComponent(args.sessionId)}/read`, {
+  const response = await fetchImpl(`/api/sessions/${encodeURIComponent(args.sessionId)}/files/read`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${args.token}`,
@@ -75,7 +75,7 @@ export async function writeWorkspaceFile(
   args: SessionFileRequestArgs & { filePath: string; content: string },
 ): Promise<void> {
   const fetchImpl = args.fetchImpl ?? fetch;
-  const response = await fetchImpl(`/api/files/${encodeURIComponent(args.sessionId)}/write`, {
+  const response = await fetchImpl(`/api/sessions/${encodeURIComponent(args.sessionId)}/files/write`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${args.token}`,

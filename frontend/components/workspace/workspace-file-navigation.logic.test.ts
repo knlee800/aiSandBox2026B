@@ -32,7 +32,7 @@ describe('workspace file navigation logic', () => {
     });
 
     assert.equal(fetchCalls.length, 1);
-    assert.equal(fetchCalls[0].url, '/api/files/session-123/list?path=%2Fsrc');
+    assert.equal(fetchCalls[0].url, '/api/sessions/session-123/files/list?path=%2Fsrc');
     assert.equal(fetchCalls[0].init?.method, 'GET');
     assert.equal(
       (fetchCalls[0].init?.headers as Record<string, string>).Authorization,
@@ -59,7 +59,7 @@ describe('workspace file navigation logic', () => {
     });
 
     assert.equal(fetchCalls.length, 1);
-    assert.equal(fetchCalls[0].url, '/api/files/session-456/read');
+    assert.equal(fetchCalls[0].url, '/api/sessions/session-456/files/read');
     assert.equal(fetchCalls[0].init?.method, 'POST');
     assert.equal(
       (fetchCalls[0].init?.headers as Record<string, string>)['Content-Type'],
@@ -88,7 +88,7 @@ describe('workspace file navigation logic', () => {
     });
 
     assert.equal(fetchCalls.length, 1);
-    assert.equal(fetchCalls[0].url, '/api/files/session-789/write');
+    assert.equal(fetchCalls[0].url, '/api/sessions/session-789/files/write');
     assert.equal(fetchCalls[0].init?.method, 'POST');
     assert.equal(
       (fetchCalls[0].init?.headers as Record<string, string>)['Content-Type'],

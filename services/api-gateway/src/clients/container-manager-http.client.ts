@@ -322,6 +322,119 @@ export class ContainerManagerHttpClient implements OnModuleInit {
     }
   }
 
+  async listSessionDirectory(
+    sessionId: string,
+    path: string = '/',
+  ): Promise<{
+    path: string;
+    entries: Array<{
+      name: string;
+      type: 'file' | 'dir';
+      size: number;
+      modifiedAt: string;
+    }>;
+  }> {
+    if (this.isDisabled) {
+      throw new ServiceUnavailableException(
+        'ContainerManager file listing is unavailable (INTERNAL_SERVICE_KEY not configured in api-gateway)',
+      );
+    }
+
+    try {
+      const response = await this.axiosInstance.get(
+        `/api/internal/sessions/${sessionId}/dirs`,
+        {
+          params: { path },
+          headers: {
+            'X-Internal-Service-Key': this.internalServiceKey,
+          },
+        },
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status ?? 502;
+        const message =
+          (error.response?.data as { message?: string } | undefined)?.message ||
+          error.message;
+        throw new HttpException(message, status);
+      }
+      throw new ServiceUnavailableException(
+        `Failed to list files for session ${sessionId}`,
+      );
+    }
+  }
+
+  async readSessionFile(
+    sessionId: string,
+    path: string,
+  ): Promise<{ path: string; content: string }> {
+    if (this.isDisabled) {
+      throw new ServiceUnavailableException(
+        'ContainerManager file read is unavailable (INTERNAL_SERVICE_KEY not configured in api-gateway)',
+      );
+    }
+
+    try {
+      const response = await this.axiosInstance.get(
+        `/api/internal/sessions/${sessionId}/files`,
+        {
+          params: { path },
+          headers: {
+            'X-Internal-Service-Key': this.internalServiceKey,
+          },
+        },
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status ?? 502;
+        const message =
+          (error.response?.data as { message?: string } | undefined)?.message ||
+          error.message;
+        throw new HttpException(message, status);
+      }
+      throw new ServiceUnavailableException(
+        `Failed to read file for session ${sessionId}`,
+      );
+    }
+  }
+
+  async writeSessionFile(
+    sessionId: string,
+    path: string,
+    content: string,
+  ): Promise<void> {
+    if (this.isDisabled) {
+      throw new ServiceUnavailableException(
+        'ContainerManager file write is unavailable (INTERNAL_SERVICE_KEY not configured in api-gateway)',
+      );
+    }
+
+    try {
+      await this.axiosInstance.post(
+        `/api/internal/sessions/${sessionId}/files`,
+        { path, content },
+        {
+          headers: {
+            'X-Internal-Service-Key': this.internalServiceKey,
+          },
+        },
+      );
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status ?? 502;
+        const message =
+          (error.response?.data as { message?: string } | undefined)?.message ||
+          error.message;
+        throw new HttpException(message, status);
+      }
+      throw new ServiceUnavailableException(
+        `Failed to write file for session ${sessionId}`,
+      );
+    }
+  }
+
   /**
    * Get git diff for a checkpoint from container-manager
    * PHASE-68B: Call git diff endpoint
