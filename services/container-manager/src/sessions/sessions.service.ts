@@ -347,6 +347,13 @@ export class SessionsService {
       workspacePath,
     );
     await this.dockerRuntimeService.startContainer(containerId);
+
+    // Keep API Gateway session status in sync after successful container startup.
+    try {
+      await this.apiGatewayClient.notifySessionStarted(sessionId);
+    } catch (error) {
+      console.error(`Failed to notify api-gateway of session start ${sessionId}:`, error.message);
+    }
   }
 
   /**

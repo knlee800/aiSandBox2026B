@@ -46,6 +46,23 @@ import {
   type WorkspaceFileSurfaceState,
 } from '@/components/workspace/workspace-file-navigation.logic';
 
+const HIDDEN_UNUSABLE_SESSIONS_STORAGE_KEY = 'workspace_hidden_unusable_sessions';
+
+function parseHiddenSessionIds(raw: string | null): string[] {
+  if (!raw) {
+    return [];
+  }
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+    return parsed.filter((value): value is string => typeof value === 'string');
+  } catch {
+    return [];
+  }
+}
+
 export default function AppPage() {
   type WorkspaceCheckpointCompareState =
     | 'idle'
@@ -149,6 +166,9 @@ export default function AppPage() {
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     const storedUserId = localStorage.getItem('userId');
+    const storedHiddenSessionIds = parseHiddenSessionIds(
+      localStorage.getItem(HIDDEN_UNUSABLE_SESSIONS_STORAGE_KEY),
+    );
 
     if (!token) {
       router.push(`/${locale}/login`);
@@ -156,6 +176,7 @@ export default function AppPage() {
     }
 
     setUserId(storedUserId);
+    setHiddenSessionIds(storedHiddenSessionIds);
     setAuthLoading(false);
     void loadSessions(token);
     void loadDashboardSlice(token);
@@ -319,11 +340,16 @@ export default function AppPage() {
     }
 
     setSessions(data);
-    setHiddenSessionIds((currentHiddenSessionIds) =>
-      currentHiddenSessionIds.filter((sessionId) =>
+    setHiddenSessionIds((currentHiddenSessionIds) => {
+      const nextHiddenSessionIds = currentHiddenSessionIds.filter((sessionId) =>
         data.some((session) => session.id === sessionId && !isUsableSession(session)),
-      ),
-    );
+      );
+      localStorage.setItem(
+        HIDDEN_UNUSABLE_SESSIONS_STORAGE_KEY,
+        JSON.stringify(nextHiddenSessionIds),
+      );
+      return nextHiddenSessionIds;
+    });
     setSelectedSessionId((currentSelection) => {
       if (currentSelection) {
         const currentSession = data.find((session) => session.id === currentSelection);
@@ -421,6 +447,10 @@ export default function AppPage() {
       ? hiddenSessionIds
       : [...hiddenSessionIds, sessionId];
     setHiddenSessionIds(nextHiddenSessionIds);
+    localStorage.setItem(
+      HIDDEN_UNUSABLE_SESSIONS_STORAGE_KEY,
+      JSON.stringify(nextHiddenSessionIds),
+    );
     setSelectedSessionId((currentSelection) => {
       if (currentSelection !== sessionId) {
         return currentSelection;
@@ -1160,6 +1190,8 @@ export default function AppPage() {
       return;
     }
 
+    const sessionId = selectedSessionId;
+
     setExecState({
       status: 'sending',
       result: null,
@@ -1167,7 +1199,7 @@ export default function AppPage() {
 
     const nextState = await executeSessionCommand({
       token,
-      sessionId: selectedSessionId,
+      sessionId,
       command: trimmedCommand,
     });
 
@@ -1176,7 +1208,7 @@ export default function AppPage() {
     await refreshPostExecSurfaces({
       execState: nextState,
       refreshCheckpoints: async () => {
-        await loadCheckpoints(token, selectedSessionId);
+        await loadCheckpoints(token, sessionId);
       },
       refreshSessions: async () => {
         await loadSessions(token);
@@ -1185,6 +1217,10 @@ export default function AppPage() {
         await loadDashboardSlice(token);
       },
     });
+
+    if (nextState.status === 'result') {
+      await loadWorkspaceFilesForSession(token, sessionId);
+    }
   }
 
   function resetWorkspaceFileSurface(): void {
