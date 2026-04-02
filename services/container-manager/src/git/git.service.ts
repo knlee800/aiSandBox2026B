@@ -161,26 +161,41 @@ export class GitService {
   }
 
   async getDiff(sessionId: string, commitHash: string) {
-    const workspacePath = this.sessionsService.getWorkspacePath(sessionId);
-    const git: SimpleGit = simpleGit(workspacePath);
-
     try {
-      // Get parent commit hash
-      const parents = await git.raw(['rev-list', '--parents', '-n', '1', commitHash]);
-      const parentHash = parents.trim().split(' ')[1] || null;
+      const parentResult = await this.sessionsService.execInContainer(
+        sessionId,
+        ['sh', '-lc', `git rev-list --parents -n 1 ${commitHash}`],
+        '/workspace',
+      );
+      if (parentResult.exitCode !== 0) {
+        throw new Error(parentResult.stderr || `Failed to resolve parent for commit ${commitHash}`);
+      }
+      const parentHash = parentResult.stdout.trim().split(/\s+/)[1] || null;
 
-      // Get diff between parent and commit (or initial commit if no parent)
       let diffOutput: string;
       if (parentHash) {
-        diffOutput = await git.diff([`${parentHash}..${commitHash}`]);
+        const diffResult = await this.sessionsService.execInContainer(
+          sessionId,
+          ['sh', '-lc', `git diff ${parentHash}..${commitHash}`],
+          '/workspace',
+        );
+        if (diffResult.exitCode !== 0) {
+          throw new Error(diffResult.stderr || `Failed to compute diff for commit ${commitHash}`);
+        }
+        diffOutput = diffResult.stdout;
       } else {
-        // Initial commit: show all files as added
-        diffOutput = await git.show([commitHash]);
+        const showResult = await this.sessionsService.execInContainer(
+          sessionId,
+          ['sh', '-lc', `git show ${commitHash}`],
+          '/workspace',
+        );
+        if (showResult.exitCode !== 0) {
+          throw new Error(showResult.stderr || `Failed to show commit ${commitHash}`);
+        }
+        diffOutput = showResult.stdout;
       }
 
-      // Parse diff output into structured format
       const files = this.parseDiffOutput(diffOutput);
-
       return {
         commitHash,
         parentHash,
