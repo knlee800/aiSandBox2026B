@@ -95,6 +95,14 @@ interface WorkspaceShellProps {
   quotaSummary: WorkspaceQuotaSummary | null;
   isLoadingDashboard: boolean;
   dashboardError: string | null;
+  chatPromptInput?: string;
+  onChatPromptInputChange?: (value: string) => void;
+  onSubmitChatPrompt?: () => Promise<void>;
+  chatRequestState?: 'idle' | 'submitting' | 'queued' | 'running' | 'completed' | 'failed';
+  chatExecutionId?: string | null;
+  chatStatusMessage?: string | null;
+  chatResponseText?: string;
+  chatError?: string | null;
   commandInput: string;
   onCommandInputChange: (value: string) => void;
   onExecuteCommand: () => Promise<void>;
@@ -232,6 +240,17 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
           <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 p-2">
             <section className="bg-white border border-gray-200 rounded p-3" data-testid="chat-panel-shell">
               <p className="text-xs font-semibold text-gray-700 mb-2">Chat Panel</p>
+              <WorkspaceChatPanel
+                selectedSessionId={props.selectedSessionId}
+                promptInput={props.chatPromptInput ?? ''}
+                onPromptInputChange={props.onChatPromptInputChange}
+                onSubmitPrompt={props.onSubmitChatPrompt}
+                requestState={props.chatRequestState ?? 'idle'}
+                executionId={props.chatExecutionId ?? null}
+                statusMessage={props.chatStatusMessage ?? null}
+                responseText={props.chatResponseText ?? ''}
+                errorMessage={props.chatError ?? null}
+              />
               <p className="text-xs font-semibold text-gray-700 mb-2">Command Input (Exec Slice)</p>
               <WorkspaceExecPanel
                 selectedSessionId={props.selectedSessionId}
@@ -344,6 +363,95 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
         <span>Workspace shell state: {shellState}</span>
         <span>Sessions: {props.sessions.length}</span>
       </footer>
+    </div>
+  );
+}
+
+function WorkspaceChatPanel(props: {
+  selectedSessionId: string | null;
+  promptInput: string;
+  onPromptInputChange?: (value: string) => void;
+  onSubmitPrompt?: () => Promise<void>;
+  requestState: 'idle' | 'submitting' | 'queued' | 'running' | 'completed' | 'failed';
+  executionId: string | null;
+  statusMessage: string | null;
+  responseText: string;
+  errorMessage: string | null;
+}) {
+  const isSending =
+    props.requestState === 'submitting' ||
+    props.requestState === 'queued' ||
+    props.requestState === 'running';
+  const canSubmit =
+    Boolean(props.selectedSessionId) &&
+    Boolean(props.onSubmitPrompt) &&
+    Boolean(props.onPromptInputChange) &&
+    props.promptInput.trim().length > 0 &&
+    !isSending;
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!canSubmit || !props.onSubmitPrompt) {
+      return;
+    }
+    void props.onSubmitPrompt();
+  };
+
+  return (
+    <div className="mb-3 rounded border border-gray-200 bg-gray-50 p-2" data-testid="workspace-chat-ai-panel">
+      <form onSubmit={handleSubmit}>
+        <label htmlFor="workspace-chat-prompt" className="text-[11px] font-semibold text-gray-700">
+          AI Prompt
+        </label>
+        <textarea
+          id="workspace-chat-prompt"
+          data-testid="workspace-chat-prompt-input"
+          value={props.promptInput}
+          onChange={(event) => props.onPromptInputChange?.(event.target.value)}
+          disabled={!props.selectedSessionId || !props.onPromptInputChange || isSending}
+          placeholder="Ask the assistant for help with your current workspace task."
+          className="mt-1 h-24 w-full resize-none rounded border border-gray-300 px-2 py-1 text-xs disabled:bg-gray-100 disabled:text-gray-500"
+        />
+        <div className="mt-2 flex items-center justify-between gap-2">
+          <p className="text-[11px] text-gray-500" data-testid="workspace-chat-session-hint">
+            {props.selectedSessionId
+              ? 'Prompt runs through the existing AI execution flow.'
+              : 'Select an active session to send prompts.'}
+          </p>
+          <button
+            type="submit"
+            data-testid="workspace-chat-submit"
+            disabled={!canSubmit}
+            className="rounded bg-blue-600 px-3 py-1 text-xs text-white disabled:bg-blue-300"
+          >
+            {isSending ? 'Sending...' : 'Send'}
+          </button>
+        </div>
+      </form>
+
+      {props.executionId ? (
+        <p className="mt-2 text-[11px] text-gray-500" data-testid="workspace-chat-execution-id">
+          Execution: {props.executionId}
+        </p>
+      ) : null}
+      {props.statusMessage ? (
+        <p className="mt-2 text-[11px] text-blue-700" data-testid="workspace-chat-status">
+          {props.statusMessage}
+        </p>
+      ) : null}
+      {props.errorMessage ? (
+        <p className="mt-2 text-[11px] text-red-700" data-testid="workspace-chat-error">
+          {props.errorMessage}
+        </p>
+      ) : null}
+      {props.responseText.trim().length > 0 ? (
+        <div className="mt-2 rounded border border-gray-200 bg-white p-2" data-testid="workspace-chat-response">
+          <p className="text-[11px] font-semibold text-gray-700">Assistant Response</p>
+          <pre className="mt-1 whitespace-pre-wrap font-mono text-[11px] text-gray-800">
+            {props.responseText}
+          </pre>
+        </div>
+      ) : null}
     </div>
   );
 }

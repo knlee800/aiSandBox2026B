@@ -5526,3 +5526,45 @@ Improve `/en/app` session management by adding bounded sidebar actions that let 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-83F for full details
 
 ---
+
+## Phase 84 — Workspace Chat Panel
+
+**Current stage:** TASK-84A (COMPLETE and LOCKED)
+
+---
+
+#### TASK-84A: Workspace Chat Panel — Basic Prompt Submit and Response Surface Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-84A-CHECKPOINT.md`
+
+**Objective:**
+Turn the current `/en/app` Chat Panel from a placeholder/exec-labeled surface into a bounded real AI prompt/response experience by wiring a basic natural-language prompt input and response display to the existing backend AI execution flow, without redesigning the workspace shell or changing backend behavior.
+
+**Scope:**
+- Reuse the existing `/en/app` Chat Panel area only
+- Add a bounded natural-language prompt input for AI requests
+- Submit prompts to the already-existing AI execution path
+- Surface returned assistant response text in the Chat Panel
+- Keep the slice minimal: single prompt submit + response display
+- Preserve the existing exec panel behavior unless explicitly separated visually within the same shell
+- Keep the change frontend-only and tightly scoped
+- Preserve all closed Phase 81, Phase 82, and Phase 83 behavior
+- Do not expand into full chat-product redesign yet
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No multi-conversation redesign
+- ❌ No full chat-history persistence redesign
+- ❌ No model/provider settings redesign
+- ❌ No streaming redesign unless already trivially available from the current frontend path
+- ❌ No multi-task work
+
+**Dependencies:** Phase 81, Phase 82 (Complete and Locked); Phase 83 (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-84A for full details
+
+---

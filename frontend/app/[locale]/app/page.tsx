@@ -47,6 +47,15 @@ import {
 } from '@/components/workspace/workspace-file-navigation.logic';
 
 const HIDDEN_UNUSABLE_SESSIONS_STORAGE_KEY = 'workspace_hidden_unusable_sessions';
+const CHAT_EXECUTION_POLL_INTERVAL_MS = 3000;
+
+interface WorkspaceChatExecutionResponse {
+  executionId?: string;
+  status?: string;
+  output?: string;
+}
+
+const DRIVER_API_KEY_STORAGE_KEY = 'driver_api_key';
 
 function parseHiddenSessionIds(raw: string | null): string[] {
   if (!raw) {
@@ -138,6 +147,15 @@ export default function AppPage() {
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(true);
   const [dashboardError, setDashboardError] = useState<string | null>(null);
   const [commandInput, setCommandInput] = useState('');
+  const [chatPromptInput, setChatPromptInput] = useState('');
+  const [chatResponseText, setChatResponseText] = useState('');
+  const [chatRequestState, setChatRequestState] = useState<
+    'idle' | 'submitting' | 'queued' | 'running' | 'completed' | 'failed'
+  >('idle');
+  const [chatExecutionId, setChatExecutionId] = useState<string | null>(null);
+  const [chatStatusMessage, setChatStatusMessage] = useState<string | null>(null);
+  const [chatError, setChatError] = useState<string | null>(null);
+  const chatStreamRef = useRef<EventSource | null>(null);
   const [execState, setExecState] = useState<WorkspaceExecState>({
     status: 'idle',
     result: null,
@@ -227,6 +245,27 @@ export default function AppPage() {
 
     void loadCheckpoints(token, selectedSessionId);
   }, [selectedSessionId]);
+
+  useEffect(() => {
+    if (!chatExecutionId || (chatRequestState !== 'queued' && chatRequestState !== 'running')) {
+      return;
+    }
+
+    const pollTimer = setInterval(() => {
+      void refreshChatExecutionStatus(chatExecutionId);
+    }, CHAT_EXECUTION_POLL_INTERVAL_MS);
+
+    return () => {
+      clearInterval(pollTimer);
+    };
+  }, [chatExecutionId, chatRequestState]);
+
+  useEffect(() => {
+    return () => {
+      chatStreamRef.current?.close();
+      chatStreamRef.current = null;
+    };
+  }, []);
 
   useEffect(() => {
     if (!checkpointPinnedReferenceId) {
@@ -1223,6 +1262,199 @@ export default function AppPage() {
     }
   }
 
+  async function refreshChatExecutionStatus(executionId: string): Promise<void> {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+    const apiKey = localStorage.getItem(DRIVER_API_KEY_STORAGE_KEY)?.trim() ?? '';
+    if (!apiKey) {
+      setChatRequestState('failed');
+      setChatStatusMessage(null);
+      setChatError('Missing API key. Add one in /en/driver, then retry.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/ai/executions/${encodeURIComponent(executionId)}`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Chat status check failed (${response.status})`);
+      }
+
+      const data = (await response.json()) as WorkspaceChatExecutionResponse;
+      const nextStatus = typeof data.status === 'string' ? data.status : 'queued';
+      const nextOutput = typeof data.output === 'string' ? data.output.trim() : '';
+
+      if (nextStatus === 'completed') {
+        chatStreamRef.current?.close();
+        chatStreamRef.current = null;
+        setChatRequestState('completed');
+        setChatResponseText((currentValue) =>
+          currentValue.trim().length > 0
+            ? currentValue
+            : nextOutput || 'Execution completed with no response text.',
+        );
+        setChatStatusMessage('Assistant response received.');
+        setChatError(null);
+        return;
+      }
+
+      if (nextStatus === 'failed' || nextStatus === 'cancelled' || nextStatus === 'timeout') {
+        chatStreamRef.current?.close();
+        chatStreamRef.current = null;
+        setChatRequestState('failed');
+        setChatStatusMessage(null);
+        setChatError(nextOutput || `Execution ended with status: ${nextStatus}.`);
+        return;
+      }
+
+      if (nextStatus === 'running' || nextStatus === 'queued') {
+        setChatRequestState(nextStatus);
+        setChatStatusMessage(
+          nextStatus === 'queued'
+            ? 'Request accepted and queued.'
+            : 'Request is running.',
+        );
+        setChatError(null);
+      }
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      setChatRequestState('failed');
+      setChatStatusMessage(null);
+      setChatError(detail);
+    }
+  }
+
+  async function handleSubmitChatPrompt(): Promise<void> {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+    const apiKey = localStorage.getItem(DRIVER_API_KEY_STORAGE_KEY)?.trim() ?? '';
+    if (!apiKey) {
+      setChatRequestState('failed');
+      setChatStatusMessage(null);
+      setChatError('Missing API key. Add one in /en/driver, then retry.');
+      return;
+    }
+
+    const trimmedPrompt = chatPromptInput.trim();
+    if (!trimmedPrompt) {
+      setChatRequestState('failed');
+      setChatStatusMessage(null);
+      setChatError('Enter a prompt before sending.');
+      return;
+    }
+
+    setChatRequestState('submitting');
+    chatStreamRef.current?.close();
+    chatStreamRef.current = null;
+    setChatResponseText('');
+    setChatExecutionId(null);
+    setChatStatusMessage('Submitting prompt...');
+    setChatError(null);
+
+    try {
+      const response = await fetch('/api/ai/execute', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          prompt: trimmedPrompt,
+          provider: 'xai',
+          sessionId: selectedSessionId ?? crypto.randomUUID(),
+          conversationId: selectedSessionId ?? crypto.randomUUID(),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Chat execution failed (${response.status})`);
+      }
+
+      const data = (await response.json()) as WorkspaceChatExecutionResponse;
+      const nextExecutionId = typeof data.executionId === 'string' ? data.executionId : null;
+      const nextStatus = typeof data.status === 'string' ? data.status : null;
+      const nextOutput = typeof data.output === 'string' ? data.output.trim() : '';
+
+      setChatExecutionId(nextExecutionId);
+      if (nextExecutionId) {
+        const stream = new EventSource(
+          `/api/ai/executions/${encodeURIComponent(nextExecutionId)}/stream`,
+        );
+        chatStreamRef.current = stream;
+        stream.onmessage = (event) => {
+          const rawData = typeof event.data === 'string' ? event.data : '';
+          if (!rawData) {
+            return;
+          }
+          try {
+            const parsed = JSON.parse(rawData) as { type?: string; content?: string };
+            if (parsed.type === 'token' && typeof parsed.content === 'string') {
+              setChatResponseText(parsed.content);
+              return;
+            }
+            if (parsed.type === 'complete') {
+              chatStreamRef.current?.close();
+              chatStreamRef.current = null;
+            }
+          } catch {
+            setChatResponseText(rawData);
+          }
+        };
+        stream.onerror = () => {
+          chatStreamRef.current?.close();
+          chatStreamRef.current = null;
+        };
+      }
+
+      if (nextStatus === 'completed') {
+        setChatRequestState('completed');
+        setChatResponseText(nextOutput || 'Execution completed with no response text.');
+        setChatStatusMessage('Assistant response received.');
+        return;
+      }
+
+      if (nextStatus === 'failed' || nextStatus === 'cancelled' || nextStatus === 'timeout') {
+        setChatRequestState('failed');
+        setChatStatusMessage(null);
+        setChatError(nextOutput || `Execution ended with status: ${nextStatus}.`);
+        return;
+      }
+
+      if (nextStatus === 'running' || nextStatus === 'queued') {
+        setChatRequestState(nextStatus);
+        setChatStatusMessage(
+          nextStatus === 'queued'
+            ? 'Request accepted and queued.'
+            : 'Request is running.',
+        );
+        if (nextExecutionId) {
+          await refreshChatExecutionStatus(nextExecutionId);
+        }
+        return;
+      }
+
+      setChatRequestState('failed');
+      setChatStatusMessage(null);
+      setChatError('Execution response did not include a recognized status.');
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      setChatRequestState('failed');
+      setChatStatusMessage(null);
+      setChatError(detail);
+    }
+  }
+
   function resetWorkspaceFileSurface(): void {
     fileNavigationRequestIdRef.current += 1;
     fileContentRequestIdRef.current += 1;
@@ -1570,6 +1802,14 @@ export default function AppPage() {
       quotaSummary={quotaSummary}
       isLoadingDashboard={isLoadingDashboard}
       dashboardError={dashboardError}
+      chatPromptInput={chatPromptInput}
+      onChatPromptInputChange={setChatPromptInput}
+      onSubmitChatPrompt={handleSubmitChatPrompt}
+      chatRequestState={chatRequestState}
+      chatExecutionId={chatExecutionId}
+      chatStatusMessage={chatStatusMessage}
+      chatResponseText={chatResponseText}
+      chatError={chatError}
       commandInput={commandInput}
       onCommandInputChange={setCommandInput}
       onExecuteCommand={handleExecuteCommand}

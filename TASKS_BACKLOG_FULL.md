@@ -13480,3 +13480,56 @@ Improve `/en/app` session management by adding bounded sidebar actions that let 
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-83E-CHECKPOINT.md
 
 ---
+
+### TASK-84A: Workspace Chat Panel — Basic Prompt Submit and Response Surface Slice
+
+**Task ID:** TASK-84A
+**Phase:** 84
+**Stage:** 84A
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** Phase 81 and Phase 82 (Complete and Locked); Phase 83 (Complete and Locked)
+**Checkpoint:** `docs/PHASE-84A-CHECKPOINT.md`
+
+**Objective:**
+
+Turn the current `/en/app` Chat Panel from a placeholder/exec-labeled surface into a bounded real AI prompt/response experience by wiring a basic natural-language prompt input and response display to the existing backend AI execution flow, without redesigning the workspace shell or changing backend behavior.
+
+**Scope:**
+
+1. Reuse the existing `/en/app` Chat Panel area only — no new routes, panels, or surfaces
+2. Add a bounded natural-language prompt input for AI requests
+3. Submit prompts to the already-existing AI execution path (existing backend queue/execution flow)
+4. Surface returned assistant response text in the Chat Panel
+5. Keep the slice minimal: single prompt submit + response display
+6. Preserve the existing exec panel behavior unless explicitly separated visually within the same shell
+7. Keep the change frontend-only and tightly scoped
+8. Preserve all closed Phase 81, Phase 82, and Phase 83 behavior
+9. Do not expand into full chat-product redesign yet
+10. Focused frontend tests for this slice
+
+**Non-Goals:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No multi-conversation redesign
+- ❌ No full chat-history persistence redesign
+- ❌ No model/provider settings redesign
+- ❌ No streaming redesign unless already trivially available from the current frontend path
+- ❌ No multi-task work
+
+**Acceptance Criteria:**
+
+- `/en/app` Chat Panel accepts a natural-language prompt
+- Prompt submission uses the existing backend AI execution flow
+- Assistant response text becomes visible in the Chat Panel
+- Basic request/response UX is understandable and usable
+- Existing workspace behavior remains intact
+- No backend/schema/refactor changes
+- No regressions
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-83F-CHECKPOINT.md
+
+---
