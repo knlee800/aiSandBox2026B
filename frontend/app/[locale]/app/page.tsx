@@ -47,6 +47,7 @@ import {
 } from '@/components/workspace/workspace-file-navigation.logic';
 
 const HIDDEN_UNUSABLE_SESSIONS_STORAGE_KEY = 'workspace_hidden_unusable_sessions';
+const CHAT_THREAD_STORAGE_KEY_PREFIX = 'workspace_chat_thread';
 const CHAT_EXECUTION_POLL_INTERVAL_MS = 3000;
 const CHAT_QUOTA_RATE_LIMIT_GUIDANCE =
   'Request blocked by quota or rate limits. Check quota usage or retry shortly.';
@@ -94,6 +95,39 @@ function parseHiddenSessionIds(raw: string | null): string[] {
       return [];
     }
     return parsed.filter((value): value is string => typeof value === 'string');
+  } catch {
+    return [];
+  }
+}
+
+function getChatThreadStorageKey(sessionId: string): string {
+  return `${CHAT_THREAD_STORAGE_KEY_PREFIX}_${sessionId}`;
+}
+
+function parseStoredChatThreadMessages(raw: string | null): WorkspaceChatThreadMessage[] {
+  if (!raw) {
+    return [];
+  }
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+    return parsed.filter((value): value is WorkspaceChatThreadMessage => {
+      if (!value || typeof value !== 'object') {
+        return false;
+      }
+      const candidate = value as {
+        id?: unknown;
+        role?: unknown;
+        content?: unknown;
+      };
+      return (
+        typeof candidate.id === 'string' &&
+        (candidate.role === 'user' || candidate.role === 'assistant') &&
+        typeof candidate.content === 'string'
+      );
+    });
   } catch {
     return [];
   }
@@ -185,6 +219,7 @@ export default function AppPage() {
   const [chatThreadMessages, setChatThreadMessages] = useState<WorkspaceChatThreadMessage[]>([]);
   const chatStreamRef = useRef<EventSource | null>(null);
   const chatResponseTextRef = useRef('');
+  const skipNextChatThreadPersistRef = useRef(false);
   const pendingAssistantMessageIdRef = useRef<string | null>(null);
   const [execState, setExecState] = useState<WorkspaceExecState>({
     status: 'idle',
@@ -317,6 +352,44 @@ export default function AppPage() {
       result: null,
     });
   }, [selectedSessionId]);
+
+  useEffect(() => {
+    setChatPromptInput('');
+    chatStreamRef.current?.close();
+    chatStreamRef.current = null;
+    pendingAssistantMessageIdRef.current = null;
+    chatResponseTextRef.current = '';
+    setChatResponseText('');
+    setChatExecutionId(null);
+    setChatStatusMessage(null);
+    setChatError(null);
+    setChatRequestState('idle');
+    skipNextChatThreadPersistRef.current = true;
+
+    if (!selectedSessionId) {
+      setChatThreadMessages([]);
+      return;
+    }
+
+    const restoredMessages = parseStoredChatThreadMessages(
+      localStorage.getItem(getChatThreadStorageKey(selectedSessionId)),
+    );
+    setChatThreadMessages(restoredMessages);
+  }, [selectedSessionId]);
+
+  useEffect(() => {
+    if (!selectedSessionId) {
+      return;
+    }
+    if (skipNextChatThreadPersistRef.current) {
+      skipNextChatThreadPersistRef.current = false;
+      return;
+    }
+    localStorage.setItem(
+      getChatThreadStorageKey(selectedSessionId),
+      JSON.stringify(chatThreadMessages),
+    );
+  }, [selectedSessionId, chatThreadMessages]);
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -1477,6 +1550,9 @@ export default function AppPage() {
           try {
             const parsed = JSON.parse(rawData) as { type?: string; content?: string };
             if (parsed.type === 'token' && typeof parsed.content === 'string') {
+              if (chatResponseTextRef.current === parsed.content) {
+                return;
+              }
               chatResponseTextRef.current = parsed.content;
               setChatResponseText(parsed.content);
               const pendingAssistantId = pendingAssistantMessageIdRef.current;
@@ -1484,7 +1560,9 @@ export default function AppPage() {
                 setChatThreadMessages((currentMessages) =>
                   currentMessages.map((message) =>
                     message.id === pendingAssistantId
-                      ? { ...message, content: parsed.content ?? '' }
+                      ? message.content === parsed.content
+                        ? message
+                        : { ...message, content: parsed.content ?? '' }
                       : message,
                   ),
                 );
@@ -1496,6 +1574,9 @@ export default function AppPage() {
               chatStreamRef.current = null;
             }
           } catch {
+            if (chatResponseTextRef.current === rawData) {
+              return;
+            }
             chatResponseTextRef.current = rawData;
             setChatResponseText(rawData);
           }

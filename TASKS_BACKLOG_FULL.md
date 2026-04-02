@@ -13678,3 +13678,103 @@ Fix the remaining `/en/app` Chat Panel message-thread issues where a valid assis
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-84C-CHECKPOINT.md
 
 ---
+
+### TASK-84E: Workspace Chat Panel Refresh Persistence Slice
+
+**Task ID:** TASK-84E
+**Phase:** 84
+**Stage:** 84E
+**Priority:** 🟡 Medium
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** Phase 81 and Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A, TASK-84B, TASK-84C, TASK-84D (Complete and Locked)
+**Checkpoint:** `docs/PHASE-84E-CHECKPOINT.md`
+
+**Objective:**
+
+Improve `/en/app` Chat Panel UX by making the current chat thread persist across page refresh for the active workspace session, without redesigning the chat surface or changing backend behavior.
+
+**Scope:**
+
+1. Reuse the existing `/en/app` Chat Panel only — no new routes, panels, or surfaces
+2. Preserve the working TASK-84A/84B/84C/84D prompt submit, response, thread, and error-handling flow
+3. Persist the current chat thread across refresh
+4. Keep persistence scoped to the active workspace session
+5. Restore the thread cleanly after refresh
+6. Clear or switch cleanly when the active session changes
+7. Keep the change frontend-only and tightly scoped
+8. Preserve all completed Phase 83 and Phase 84 behavior
+9. Do not expand into full conversation-history redesign yet
+10. Focused frontend tests for this slice
+
+**Non-Goals:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No multi-session conversation redesign
+- ❌ No long-term/global chat history system
+- ❌ No cross-device sync
+- ❌ No model/provider settings redesign
+- ❌ No multi-task work
+
+**Acceptance Criteria:**
+
+- Chat Panel thread persists across page refresh for the active session
+- Restored thread belongs to the correct active session
+- Switching sessions does not mix chat threads across sessions
+- Existing chat submit/thread/error behavior remains intact
+- No backend/schema/refactor changes
+- No regressions
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-84D-CHECKPOINT.md
+
+---
+
+### TASK-84F: Chat Panel Session Input Reset and Live Response De-dup Slice
+
+**Task ID:** TASK-84F
+**Phase:** 84
+**Stage:** 84F
+**Priority:** 🟡 Medium
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** Phase 81 and Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A, TASK-84B, TASK-84C, TASK-84D, TASK-84E (Complete and Locked)
+**Checkpoint:** `docs/PHASE-84F-CHECKPOINT.md`
+
+**Objective:**
+
+Fix the remaining `/en/app` Chat Panel session-state/render issues where unsent prompt text carries into a new session and long assistant responses can render twice during live update flow, without redesigning the chat surface or changing backend behavior.
+
+**Scope:**
+
+1. Reuse the existing `/en/app` Chat Panel only — no new routes, panels, or surfaces
+2. Clear/reset AI Prompt input on new-session creation and session switch
+3. Prevent duplicate live rendering of the same assistant response content
+4. Preserve the working TASK-84A–84E submit, thread, error, and refresh-persistence flow
+5. Keep the change frontend-only and tightly scoped
+6. Preserve all completed Phase 83 and Phase 84 behavior
+7. Do not expand into broader chat redesign
+8. Focused frontend tests for this slice
+
+**Non-Goals:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No conversation persistence redesign
+- ❌ No model/provider redesign
+- ❌ No multi-task work
+
+**Acceptance Criteria:**
+
+- Creating or switching to a new session does not carry old unsent AI Prompt text into the new session
+- A single assistant reply is rendered once in the live thread, including long responses
+- Refresh persistence still works correctly per session
+- Existing chat submit/thread/error behavior otherwise remains intact
+- No backend/schema/refactor changes
+- No regressions
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-84E-CHECKPOINT.md
+
+---

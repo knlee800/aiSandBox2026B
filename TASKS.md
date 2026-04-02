@@ -5529,7 +5529,7 @@ Improve `/en/app` session management by adding bounded sidebar actions that let 
 
 ## Phase 84 — Workspace Chat Panel
 
-**Current stage:** TASK-84D (COMPLETE and LOCKED)
+**Current stage:** TASK-84F (COMPLETE and LOCKED)
 
 ---
 
@@ -5664,5 +5664,73 @@ Fix the remaining `/en/app` Chat Panel message-thread issues where a valid assis
 **Dependencies:** Phase 81, Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A, TASK-84B, TASK-84C (Complete and Locked)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-84D for full details
+
+---
+
+#### TASK-84E: Workspace Chat Panel Refresh Persistence Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-84E-CHECKPOINT.md`
+
+**Objective:**
+Improve `/en/app` Chat Panel UX by making the current chat thread persist across page refresh for the active workspace session, without redesigning the chat surface or changing backend behavior.
+
+**Scope:**
+- Reuse the existing `/en/app` Chat Panel only
+- Preserve the working TASK-84A/84B/84C/84D prompt submit, response, thread, and error-handling flow
+- Persist the current chat thread across refresh
+- Keep persistence scoped to the active workspace session
+- Restore the thread cleanly after refresh
+- Clear or switch cleanly when the active session changes
+- Keep the change frontend-only and tightly scoped
+- Preserve all completed Phase 83 and Phase 84 behavior
+- Do not expand into full conversation-history redesign yet
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No multi-session conversation redesign
+- ❌ No long-term/global chat history system
+- ❌ No cross-device sync
+- ❌ No model/provider settings redesign
+- ❌ No multi-task work
+
+**Dependencies:** Phase 81, Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A, TASK-84B, TASK-84C, TASK-84D (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-84E for full details
+
+---
+
+#### TASK-84F: Chat Panel Session Input Reset and Live Response De-dup Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-84F-CHECKPOINT.md`
+
+**Objective:**
+Fix the remaining `/en/app` Chat Panel session-state/render issues where unsent prompt text carries into a new session and long assistant responses can render twice during live update flow, without redesigning the chat surface or changing backend behavior.
+
+**Scope:**
+- Reuse the existing `/en/app` Chat Panel only
+- Clear/reset AI Prompt input on new-session creation and session switch
+- Prevent duplicate live rendering of the same assistant response content
+- Preserve the working TASK-84A–84E submit, thread, error, and refresh-persistence flow
+- Keep the change frontend-only and tightly scoped
+- Preserve all completed Phase 83 and Phase 84 behavior
+- Do not expand into broader chat redesign
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No conversation persistence redesign
+- ❌ No model/provider redesign
+- ❌ No multi-task work
+
+**Dependencies:** Phase 81, Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A, TASK-84B, TASK-84C, TASK-84D, TASK-84E (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-84F for full details
 
 ---
