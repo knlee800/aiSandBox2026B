@@ -5529,7 +5529,7 @@ Improve `/en/app` session management by adding bounded sidebar actions that let 
 
 ## Phase 84 — Workspace Chat Panel
 
-**Current stage:** TASK-84F (COMPLETE and LOCKED)
+**Current stage:** TASK-84G (COMPLETE and LOCKED)
 
 ---
 
@@ -5732,5 +5732,37 @@ Fix the remaining `/en/app` Chat Panel session-state/render issues where unsent 
 **Dependencies:** Phase 81, Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A, TASK-84B, TASK-84C, TASK-84D, TASK-84E (Complete and Locked)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-84F for full details
+
+---
+
+#### TASK-84G: Workspace Route Auth Gate Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (AUTH GATING / FRONTEND-FIRST)
+**Checkpoint:** `docs/PHASE-84G-CHECKPOINT.md`
+
+**Objective:**
+Fix the real product/auth gap where unauthenticated users can still enter `/en/app` and see the workspace shell before hitting HTTP_401 inside it, by applying a bounded auth gate so the workspace route behaves correctly for logged-out users.
+
+**Scope:**
+- Reuse the existing `/en/app` route only
+- Prevent unauthenticated users from entering the workspace shell normally
+- Prefer redirect to login or a dedicated auth-required gate before workspace bootstrap begins
+- Avoid exposing protected workspace UI/state to logged-out users
+- Keep the change bounded to auth gating for the workspace route and its immediate shell bootstrap
+- Preserve current authenticated workspace behavior
+- Preserve all completed Phase 83 and Phase 84 behavior for logged-in users
+
+**Non-Goals:**
+- ❌ No backend changes unless strictly required
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No login flow redesign
+- ❌ No broad auth architecture redesign
+- ❌ No multi-task work
+
+**Dependencies:** Phase 81, Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A through TASK-84F (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-84G for full details
 
 ---

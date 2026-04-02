@@ -246,6 +246,18 @@ export default function AppPage() {
   const checkpointSnapshotRequestIdRef = useRef(0);
   const checkpointLiveOpenRequestIdRef = useRef(0);
 
+  function handleWorkspaceUnauthorizedAccess(): void {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('userId');
+    setAuthLoading(true);
+    setUserId(null);
+    setSessions([]);
+    setSelectedSessionId(null);
+    setSessionError(null);
+    setDashboardError(null);
+    router.push(`/${locale}/login`);
+  }
+
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     const storedUserId = localStorage.getItem('userId');
@@ -445,6 +457,11 @@ export default function AppPage() {
       }
 
       if (!response.ok) {
+        if (response.status === 401) {
+          handleWorkspaceUnauthorizedAccess();
+          setIsLoadingSessions(false);
+          return;
+        }
         console.error('[WORKSPACE_BOOTSTRAP_FAIL_SESSIONS_HTTP]', response.status, response.statusText);
         setSessionError(`[HTTP_${response.status}] ${response.statusText}`);
         setSessions([]);
@@ -1266,6 +1283,14 @@ export default function AppPage() {
       ]);
 
       if (!userResponse.ok || !usageResponse.ok || !quotasResponse.ok) {
+        if (
+          userResponse.status === 401 ||
+          usageResponse.status === 401 ||
+          quotasResponse.status === 401
+        ) {
+          handleWorkspaceUnauthorizedAccess();
+          return;
+        }
         throw new Error(
           `Dashboard load failed (${userResponse.status}/${usageResponse.status}/${quotasResponse.status})`,
         );

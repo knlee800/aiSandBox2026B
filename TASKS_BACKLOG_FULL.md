@@ -13778,3 +13778,50 @@ Fix the remaining `/en/app` Chat Panel session-state/render issues where unsent 
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-84E-CHECKPOINT.md
 
 ---
+
+### TASK-84G: Workspace Route Auth Gate Slice
+
+**Task ID:** TASK-84G
+**Phase:** 84
+**Stage:** 84G
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (AUTH GATING / FRONTEND-FIRST)
+**Dependencies:** Phase 81 and Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A through TASK-84F (Complete and Locked)
+**Checkpoint:** `docs/PHASE-84G-CHECKPOINT.md`
+
+**Objective:**
+
+Fix the real product/auth gap where unauthenticated users can still enter `/en/app` and see the workspace shell before hitting HTTP_401 inside it, by applying a bounded auth gate so the workspace route behaves correctly for logged-out users.
+
+**Scope:**
+
+1. Reuse the existing `/en/app` route only — no new routes or panels
+2. Prevent unauthenticated users from entering the workspace shell normally
+3. Prefer redirect to login or a dedicated auth-required gate before workspace bootstrap begins
+4. Avoid exposing protected workspace UI/state to logged-out users
+5. Keep the change bounded to auth gating for the workspace route and its immediate shell bootstrap
+6. Preserve current authenticated workspace behavior
+7. Preserve all completed Phase 83 and Phase 84 behavior for logged-in users
+
+**Non-Goals:**
+
+- ❌ No backend changes unless strictly required
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No login flow redesign
+- ❌ No broad auth architecture redesign
+- ❌ No multi-task work
+
+**Acceptance Criteria:**
+
+- Logged-out user cannot meaningfully access `/en/app` workspace shell
+- Unauthenticated access is redirected to login or shown a dedicated auth-required gate before normal workspace loading
+- Workspace shell no longer boots into a generic HTTP_401 unavailable state for logged-out users
+- Authenticated users retain current `/en/app` behavior
+- No backend/schema/refactor changes unless strictly required
+- No regressions
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-84F-CHECKPOINT.md
+
+---
