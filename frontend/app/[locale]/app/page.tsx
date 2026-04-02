@@ -55,6 +55,12 @@ interface WorkspaceChatExecutionResponse {
   output?: string;
 }
 
+interface WorkspaceChatThreadMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+}
+
 const DRIVER_API_KEY_STORAGE_KEY = 'driver_api_key';
 
 function parseHiddenSessionIds(raw: string | null): string[] {
@@ -155,7 +161,9 @@ export default function AppPage() {
   const [chatExecutionId, setChatExecutionId] = useState<string | null>(null);
   const [chatStatusMessage, setChatStatusMessage] = useState<string | null>(null);
   const [chatError, setChatError] = useState<string | null>(null);
+  const [chatThreadMessages, setChatThreadMessages] = useState<WorkspaceChatThreadMessage[]>([]);
   const chatStreamRef = useRef<EventSource | null>(null);
+  const pendingAssistantMessageIdRef = useRef<string | null>(null);
   const [execState, setExecState] = useState<WorkspaceExecState>({
     status: 'idle',
     result: null,
@@ -1296,11 +1304,22 @@ export default function AppPage() {
         chatStreamRef.current?.close();
         chatStreamRef.current = null;
         setChatRequestState('completed');
-        setChatResponseText((currentValue) =>
-          currentValue.trim().length > 0
-            ? currentValue
-            : nextOutput || 'Execution completed with no response text.',
-        );
+        const resolvedResponse =
+          chatResponseText.trim().length > 0
+            ? chatResponseText
+            : nextOutput || 'Execution completed with no response text.';
+        setChatResponseText(resolvedResponse);
+        const pendingAssistantId = pendingAssistantMessageIdRef.current;
+        if (pendingAssistantId) {
+          setChatThreadMessages((currentMessages) =>
+            currentMessages.map((message) =>
+              message.id === pendingAssistantId
+                ? { ...message, content: resolvedResponse }
+                : message,
+            ),
+          );
+          pendingAssistantMessageIdRef.current = null;
+        }
         setChatStatusMessage('Assistant response received.');
         setChatError(null);
         return;
@@ -1311,7 +1330,19 @@ export default function AppPage() {
         chatStreamRef.current = null;
         setChatRequestState('failed');
         setChatStatusMessage(null);
-        setChatError(nextOutput || `Execution ended with status: ${nextStatus}.`);
+        const failureMessage = nextOutput || `Execution ended with status: ${nextStatus}.`;
+        setChatError(failureMessage);
+        const pendingAssistantId = pendingAssistantMessageIdRef.current;
+        if (pendingAssistantId) {
+          setChatThreadMessages((currentMessages) =>
+            currentMessages.map((message) =>
+              message.id === pendingAssistantId
+                ? { ...message, content: failureMessage }
+                : message,
+            ),
+          );
+          pendingAssistantMessageIdRef.current = null;
+        }
         return;
       }
 
@@ -1361,6 +1392,22 @@ export default function AppPage() {
     setChatExecutionId(null);
     setChatStatusMessage('Submitting prompt...');
     setChatError(null);
+    const userMessageId = crypto.randomUUID();
+    const assistantMessageId = crypto.randomUUID();
+    pendingAssistantMessageIdRef.current = assistantMessageId;
+    setChatThreadMessages((currentMessages) => [
+      ...currentMessages,
+      {
+        id: userMessageId,
+        role: 'user',
+        content: trimmedPrompt,
+      },
+      {
+        id: assistantMessageId,
+        role: 'assistant',
+        content: '',
+      },
+    ]);
 
     try {
       const response = await fetch('/api/ai/execute', {
@@ -1401,6 +1448,16 @@ export default function AppPage() {
             const parsed = JSON.parse(rawData) as { type?: string; content?: string };
             if (parsed.type === 'token' && typeof parsed.content === 'string') {
               setChatResponseText(parsed.content);
+              const pendingAssistantId = pendingAssistantMessageIdRef.current;
+              if (pendingAssistantId) {
+                setChatThreadMessages((currentMessages) =>
+                  currentMessages.map((message) =>
+                    message.id === pendingAssistantId
+                      ? { ...message, content: parsed.content ?? '' }
+                      : message,
+                  ),
+                );
+              }
               return;
             }
             if (parsed.type === 'complete') {
@@ -1419,7 +1476,19 @@ export default function AppPage() {
 
       if (nextStatus === 'completed') {
         setChatRequestState('completed');
-        setChatResponseText(nextOutput || 'Execution completed with no response text.');
+        const completedResponse = nextOutput || 'Execution completed with no response text.';
+        setChatResponseText(completedResponse);
+        const pendingAssistantId = pendingAssistantMessageIdRef.current;
+        if (pendingAssistantId) {
+          setChatThreadMessages((currentMessages) =>
+            currentMessages.map((message) =>
+              message.id === pendingAssistantId
+                ? { ...message, content: completedResponse }
+                : message,
+            ),
+          );
+          pendingAssistantMessageIdRef.current = null;
+        }
         setChatStatusMessage('Assistant response received.');
         return;
       }
@@ -1427,7 +1496,19 @@ export default function AppPage() {
       if (nextStatus === 'failed' || nextStatus === 'cancelled' || nextStatus === 'timeout') {
         setChatRequestState('failed');
         setChatStatusMessage(null);
-        setChatError(nextOutput || `Execution ended with status: ${nextStatus}.`);
+        const failureMessage = nextOutput || `Execution ended with status: ${nextStatus}.`;
+        setChatError(failureMessage);
+        const pendingAssistantId = pendingAssistantMessageIdRef.current;
+        if (pendingAssistantId) {
+          setChatThreadMessages((currentMessages) =>
+            currentMessages.map((message) =>
+              message.id === pendingAssistantId
+                ? { ...message, content: failureMessage }
+                : message,
+            ),
+          );
+          pendingAssistantMessageIdRef.current = null;
+        }
         return;
       }
 
@@ -1452,6 +1533,17 @@ export default function AppPage() {
       setChatRequestState('failed');
       setChatStatusMessage(null);
       setChatError(detail);
+      const pendingAssistantId = pendingAssistantMessageIdRef.current;
+      if (pendingAssistantId) {
+        setChatThreadMessages((currentMessages) =>
+          currentMessages.map((message) =>
+            message.id === pendingAssistantId
+              ? { ...message, content: detail }
+              : message,
+          ),
+        );
+        pendingAssistantMessageIdRef.current = null;
+      }
     }
   }
 
@@ -1810,6 +1902,7 @@ export default function AppPage() {
       chatStatusMessage={chatStatusMessage}
       chatResponseText={chatResponseText}
       chatError={chatError}
+      chatThreadMessages={chatThreadMessages}
       commandInput={commandInput}
       onCommandInputChange={setCommandInput}
       onExecuteCommand={handleExecuteCommand}

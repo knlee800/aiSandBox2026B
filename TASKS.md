@@ -5529,7 +5529,7 @@ Improve `/en/app` session management by adding bounded sidebar actions that let 
 
 ## Phase 84 — Workspace Chat Panel
 
-**Current stage:** TASK-84A (COMPLETE and LOCKED)
+**Current stage:** TASK-84B (COMPLETE and LOCKED)
 
 ---
 
@@ -5566,5 +5566,39 @@ Turn the current `/en/app` Chat Panel from a placeholder/exec-labeled surface in
 **Dependencies:** Phase 81, Phase 82 (Complete and Locked); Phase 83 (Complete and Locked)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-84A for full details
+
+---
+
+#### TASK-84B: Workspace Chat Panel Message Thread Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-84B-CHECKPOINT.md`
+
+**Objective:**
+Extend the working `/en/app` Chat Panel from a single prompt/response surface into a bounded user/assistant message thread, without redesigning the workspace shell or changing backend behavior.
+
+**Scope:**
+- Reuse the existing `/en/app` Chat Panel only
+- Preserve the working TASK-84A prompt submit + response flow
+- Add a simple visible message thread in the Chat Panel
+- Show at least user prompt entries and assistant response entries
+- Keep the thread bounded to the current in-panel experience
+- Keep the change frontend-only and tightly scoped
+- Preserve all closed Phase 81, Phase 82, Phase 83, and Phase 84A behavior
+- Do not expand into full conversation persistence redesign yet
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No multi-session conversation redesign
+- ❌ No streaming redesign beyond existing behavior
+- ❌ No model/provider settings redesign
+- ❌ No multi-task work
+
+**Dependencies:** Phase 81, Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-84B for full details
 
 ---

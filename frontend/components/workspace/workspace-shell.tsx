@@ -103,6 +103,11 @@ interface WorkspaceShellProps {
   chatStatusMessage?: string | null;
   chatResponseText?: string;
   chatError?: string | null;
+  chatThreadMessages?: Array<{
+    id: string;
+    role: 'user' | 'assistant';
+    content: string;
+  }>;
   commandInput: string;
   onCommandInputChange: (value: string) => void;
   onExecuteCommand: () => Promise<void>;
@@ -250,6 +255,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                 statusMessage={props.chatStatusMessage ?? null}
                 responseText={props.chatResponseText ?? ''}
                 errorMessage={props.chatError ?? null}
+                threadMessages={props.chatThreadMessages ?? []}
               />
               <p className="text-xs font-semibold text-gray-700 mb-2">Command Input (Exec Slice)</p>
               <WorkspaceExecPanel
@@ -377,6 +383,11 @@ function WorkspaceChatPanel(props: {
   statusMessage: string | null;
   responseText: string;
   errorMessage: string | null;
+  threadMessages: Array<{
+    id: string;
+    role: 'user' | 'assistant';
+    content: string;
+  }>;
 }) {
   const isSending =
     props.requestState === 'submitting' ||
@@ -428,6 +439,36 @@ function WorkspaceChatPanel(props: {
           </button>
         </div>
       </form>
+
+      <div className="mt-2 rounded border border-gray-200 bg-white p-2" data-testid="workspace-chat-thread">
+        <p className="text-[11px] font-semibold text-gray-700">Message Thread</p>
+        {props.threadMessages.length === 0 ? (
+          <p className="mt-1 text-[11px] text-gray-500">No messages yet.</p>
+        ) : (
+          <ul className="mt-2 space-y-2" data-testid="workspace-chat-thread-list">
+            {props.threadMessages.map((message) => (
+              <li
+                key={message.id}
+                className={`rounded border px-2 py-1 text-[11px] ${
+                  message.role === 'user'
+                    ? 'border-blue-200 bg-blue-50 text-blue-900'
+                    : 'border-gray-200 bg-gray-50 text-gray-800'
+                }`}
+                data-testid={`workspace-chat-message-${message.role}-${message.id}`}
+              >
+                <p className="font-semibold">{message.role === 'user' ? 'User' : 'Assistant'}</p>
+                <pre className="mt-1 whitespace-pre-wrap font-mono">
+                  {message.content.trim().length > 0
+                    ? message.content
+                    : message.role === 'assistant'
+                      ? '(waiting for response...)'
+                      : ''}
+                </pre>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
       {props.executionId ? (
         <p className="mt-2 text-[11px] text-gray-500" data-testid="workspace-chat-execution-id">

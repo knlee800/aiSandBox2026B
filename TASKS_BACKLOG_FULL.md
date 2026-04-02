@@ -13533,3 +13533,53 @@ Turn the current `/en/app` Chat Panel from a placeholder/exec-labeled surface in
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-83F-CHECKPOINT.md
 
 ---
+
+### TASK-84B: Workspace Chat Panel Message Thread Slice
+
+**Task ID:** TASK-84B
+**Phase:** 84
+**Stage:** 84B
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** Phase 81 and Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A (Complete and Locked)
+**Checkpoint:** `docs/PHASE-84B-CHECKPOINT.md`
+
+**Objective:**
+
+Extend the working `/en/app` Chat Panel from a single prompt/response surface into a bounded user/assistant message thread, without redesigning the workspace shell or changing backend behavior.
+
+**Scope:**
+
+1. Reuse the existing `/en/app` Chat Panel only — no new routes, panels, or surfaces
+2. Preserve the working TASK-84A prompt submit + response flow
+3. Add a simple visible message thread in the Chat Panel
+4. Show at least user prompt entries and assistant response entries
+5. Keep the thread bounded to the current in-panel experience
+6. Keep the change frontend-only and tightly scoped
+7. Preserve all closed Phase 81, Phase 82, Phase 83, and Phase 84A behavior
+8. Do not expand into full conversation persistence redesign yet
+9. Focused frontend tests for this slice
+
+**Non-Goals:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No multi-session conversation redesign
+- ❌ No streaming redesign beyond existing behavior
+- ❌ No model/provider settings redesign
+- ❌ No multi-task work
+
+**Acceptance Criteria:**
+
+- Chat Panel shows a simple visible message thread
+- User prompts appear in the thread
+- Assistant responses appear in the thread
+- Existing TASK-84A submit/response behavior remains intact
+- No backend/schema/refactor changes
+- No regressions
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-84A-CHECKPOINT.md
+
+---
