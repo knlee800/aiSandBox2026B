@@ -5529,7 +5529,7 @@ Improve `/en/app` session management by adding bounded sidebar actions that let 
 
 ## Phase 84 — Workspace Chat Panel
 
-**Current stage:** TASK-84C (COMPLETE and LOCKED)
+**Current stage:** TASK-84D (COMPLETE and LOCKED)
 
 ---
 
@@ -5632,5 +5632,37 @@ Improve `/en/app` Chat Panel UX when chat execution is blocked by quota/rate-lim
 **Dependencies:** Phase 81, Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A, TASK-84B (Complete and Locked)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-84C for full details
+
+---
+
+#### TASK-84D: Chat Panel Final Response Persistence and Error De-dup Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-84D-CHECKPOINT.md`
+
+**Objective:**
+Fix the remaining `/en/app` Chat Panel message-thread issues where a valid assistant reply is overwritten by final "no response text" completion handling, and quota/error messages can be duplicated in the thread, without redesigning the chat surface or changing backend behavior.
+
+**Scope:**
+- Reuse the existing `/en/app` Chat Panel only
+- Preserve the working TASK-84A/84B/84C prompt submit, thread, and error-clarity flow
+- Ensure streamed/received assistant reply text persists after completion
+- Prevent duplicated assistant-side quota/error messages in the thread
+- Keep the change frontend-only and tightly scoped
+- Preserve all completed Phase 83 and Phase 84 behavior
+- Do not expand into broader chat redesign
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No conversation persistence redesign
+- ❌ No streaming redesign beyond fixing current frontend handling
+- ❌ No multi-task work
+
+**Dependencies:** Phase 81, Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A, TASK-84B, TASK-84C (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-84D for full details
 
 ---

@@ -13630,3 +13630,51 @@ Improve `/en/app` Chat Panel UX when chat execution is blocked by quota/rate-lim
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-84B-CHECKPOINT.md
 
 ---
+
+### TASK-84D: Chat Panel Final Response Persistence and Error De-dup Slice
+
+**Task ID:** TASK-84D
+**Phase:** 84
+**Stage:** 84D
+**Priority:** 🟡 Medium
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** Phase 81 and Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A, TASK-84B, TASK-84C (Complete and Locked)
+**Checkpoint:** `docs/PHASE-84D-CHECKPOINT.md`
+
+**Objective:**
+
+Fix the remaining `/en/app` Chat Panel message-thread issues where a valid assistant reply is overwritten by final "no response text" completion handling, and quota/error messages can be duplicated in the thread, without redesigning the chat surface or changing backend behavior.
+
+**Scope:**
+
+1. Reuse the existing `/en/app` Chat Panel only — no new routes, panels, or surfaces
+2. Preserve the working TASK-84A/84B/84C prompt submit, thread, and error-clarity flow
+3. Ensure streamed/received assistant reply text persists after completion
+4. Prevent duplicated assistant-side quota/error messages in the thread
+5. Keep the change frontend-only and tightly scoped
+6. Preserve all completed Phase 83 and Phase 84 behavior
+7. Do not expand into broader chat redesign
+8. Focused frontend tests for this slice
+
+**Non-Goals:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No conversation persistence redesign
+- ❌ No streaming redesign beyond fixing current frontend handling
+- ❌ No multi-task work
+
+**Acceptance Criteria:**
+
+- Assistant reply text remains visible after completion and is not replaced by "Execution completed with no response text." if text was already received
+- Quota/rate-limit assistant error messages do not duplicate in the thread
+- Earlier thread messages remain intact
+- Existing chat submit/thread behavior otherwise remains intact
+- No backend/schema/refactor changes
+- No regressions
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-84C-CHECKPOINT.md
+
+---

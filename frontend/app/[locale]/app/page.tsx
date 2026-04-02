@@ -184,6 +184,7 @@ export default function AppPage() {
   const [chatError, setChatError] = useState<string | null>(null);
   const [chatThreadMessages, setChatThreadMessages] = useState<WorkspaceChatThreadMessage[]>([]);
   const chatStreamRef = useRef<EventSource | null>(null);
+  const chatResponseTextRef = useRef('');
   const pendingAssistantMessageIdRef = useRef<string | null>(null);
   const [execState, setExecState] = useState<WorkspaceExecState>({
     status: 'idle',
@@ -1326,9 +1327,10 @@ export default function AppPage() {
         chatStreamRef.current = null;
         setChatRequestState('completed');
         const resolvedResponse =
-          chatResponseText.trim().length > 0
-            ? chatResponseText
+          chatResponseTextRef.current.trim().length > 0
+            ? chatResponseTextRef.current
             : nextOutput || 'Execution completed with no response text.';
+        chatResponseTextRef.current = resolvedResponse;
         setChatResponseText(resolvedResponse);
         const pendingAssistantId = pendingAssistantMessageIdRef.current;
         if (pendingAssistantId) {
@@ -1361,7 +1363,9 @@ export default function AppPage() {
           setChatThreadMessages((currentMessages) =>
             currentMessages.map((message) =>
               message.id === pendingAssistantId
-                ? { ...message, content: failureMessage }
+                ? message.content === failureMessage
+                  ? message
+                  : { ...message, content: failureMessage }
                 : message,
             ),
           );
@@ -1413,6 +1417,7 @@ export default function AppPage() {
     setChatRequestState('submitting');
     chatStreamRef.current?.close();
     chatStreamRef.current = null;
+    chatResponseTextRef.current = '';
     setChatResponseText('');
     setChatExecutionId(null);
     setChatStatusMessage('Submitting prompt...');
@@ -1472,6 +1477,7 @@ export default function AppPage() {
           try {
             const parsed = JSON.parse(rawData) as { type?: string; content?: string };
             if (parsed.type === 'token' && typeof parsed.content === 'string') {
+              chatResponseTextRef.current = parsed.content;
               setChatResponseText(parsed.content);
               const pendingAssistantId = pendingAssistantMessageIdRef.current;
               if (pendingAssistantId) {
@@ -1490,6 +1496,7 @@ export default function AppPage() {
               chatStreamRef.current = null;
             }
           } catch {
+            chatResponseTextRef.current = rawData;
             setChatResponseText(rawData);
           }
         };
@@ -1501,7 +1508,11 @@ export default function AppPage() {
 
       if (nextStatus === 'completed') {
         setChatRequestState('completed');
-        const completedResponse = nextOutput || 'Execution completed with no response text.';
+        const completedResponse =
+          chatResponseTextRef.current.trim().length > 0
+            ? chatResponseTextRef.current
+            : nextOutput || 'Execution completed with no response text.';
+        chatResponseTextRef.current = completedResponse;
         setChatResponseText(completedResponse);
         const pendingAssistantId = pendingAssistantMessageIdRef.current;
         if (pendingAssistantId) {
@@ -1531,7 +1542,9 @@ export default function AppPage() {
           setChatThreadMessages((currentMessages) =>
             currentMessages.map((message) =>
               message.id === pendingAssistantId
-                ? { ...message, content: failureMessage }
+                ? message.content === failureMessage
+                  ? message
+                  : { ...message, content: failureMessage }
                 : message,
             ),
           );
@@ -1567,7 +1580,9 @@ export default function AppPage() {
         setChatThreadMessages((currentMessages) =>
           currentMessages.map((message) =>
             message.id === pendingAssistantId
-              ? { ...message, content: failureMessage }
+              ? message.content === failureMessage
+                ? message
+                : { ...message, content: failureMessage }
               : message,
           ),
         );
