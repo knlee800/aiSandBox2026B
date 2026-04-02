@@ -5529,7 +5529,7 @@ Improve `/en/app` session management by adding bounded sidebar actions that let 
 
 ## Phase 84 — Workspace Chat Panel
 
-**Current stage:** TASK-84B (COMPLETE and LOCKED)
+**Current stage:** TASK-84C (COMPLETE and LOCKED)
 
 ---
 
@@ -5600,5 +5600,37 @@ Extend the working `/en/app` Chat Panel from a single prompt/response surface in
 **Dependencies:** Phase 81, Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A (Complete and Locked)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-84B for full details
+
+---
+
+#### TASK-84C: Workspace Chat Panel Quota Error Clarity Slice
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Checkpoint:** `docs/PHASE-84C-CHECKPOINT.md`
+
+**Objective:**
+Improve `/en/app` Chat Panel UX when chat execution is blocked by quota/rate-limit errors, by replacing the raw assistant-side failure string with clearer user-facing guidance while preserving the current thread behavior.
+
+**Scope:**
+- Reuse the existing `/en/app` Chat Panel only
+- Preserve the working TASK-84A/84B prompt submit and message thread flow
+- Improve user-facing rendering of quota/rate-limit failures in the assistant message area
+- Keep earlier messages intact
+- Keep the change frontend-only and tightly scoped
+- Preserve all completed Phase 83 and Phase 84 behavior
+- Do not expand into broader quota redesign
+
+**Non-Goals:**
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No model/provider redesign
+- ❌ No conversation persistence redesign
+- ❌ No multi-task work
+
+**Dependencies:** Phase 81, Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A, TASK-84B (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-84C for full details
 
 ---

@@ -48,6 +48,8 @@ import {
 
 const HIDDEN_UNUSABLE_SESSIONS_STORAGE_KEY = 'workspace_hidden_unusable_sessions';
 const CHAT_EXECUTION_POLL_INTERVAL_MS = 3000;
+const CHAT_QUOTA_RATE_LIMIT_GUIDANCE =
+  'Request blocked by quota or rate limits. Check quota usage or retry shortly.';
 
 interface WorkspaceChatExecutionResponse {
   executionId?: string;
@@ -62,6 +64,25 @@ interface WorkspaceChatThreadMessage {
 }
 
 const DRIVER_API_KEY_STORAGE_KEY = 'driver_api_key';
+
+function isQuotaOrRateLimitChatFailure(rawMessage: string): boolean {
+  const normalizedMessage = rawMessage.toLowerCase();
+  return (
+    normalizedMessage.includes('429') ||
+    normalizedMessage.includes('rate limit') ||
+    normalizedMessage.includes('rate-limit') ||
+    normalizedMessage.includes('too many requests') ||
+    normalizedMessage.includes('quota')
+  );
+}
+
+function toChatAssistantFailureMessage(rawMessage: string, fallbackMessage: string): string {
+  const trimmedRawMessage = rawMessage.trim();
+  if (trimmedRawMessage && isQuotaOrRateLimitChatFailure(trimmedRawMessage)) {
+    return CHAT_QUOTA_RATE_LIMIT_GUIDANCE;
+  }
+  return trimmedRawMessage || fallbackMessage;
+}
 
 function parseHiddenSessionIds(raw: string | null): string[] {
   if (!raw) {
@@ -1330,7 +1351,10 @@ export default function AppPage() {
         chatStreamRef.current = null;
         setChatRequestState('failed');
         setChatStatusMessage(null);
-        const failureMessage = nextOutput || `Execution ended with status: ${nextStatus}.`;
+        const failureMessage = toChatAssistantFailureMessage(
+          nextOutput,
+          `Execution ended with status: ${nextStatus}.`,
+        );
         setChatError(failureMessage);
         const pendingAssistantId = pendingAssistantMessageIdRef.current;
         if (pendingAssistantId) {
@@ -1357,9 +1381,10 @@ export default function AppPage() {
       }
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
+      const failureMessage = toChatAssistantFailureMessage(detail, 'Chat status check failed.');
       setChatRequestState('failed');
       setChatStatusMessage(null);
-      setChatError(detail);
+      setChatError(failureMessage);
     }
   }
 
@@ -1496,7 +1521,10 @@ export default function AppPage() {
       if (nextStatus === 'failed' || nextStatus === 'cancelled' || nextStatus === 'timeout') {
         setChatRequestState('failed');
         setChatStatusMessage(null);
-        const failureMessage = nextOutput || `Execution ended with status: ${nextStatus}.`;
+        const failureMessage = toChatAssistantFailureMessage(
+          nextOutput,
+          `Execution ended with status: ${nextStatus}.`,
+        );
         setChatError(failureMessage);
         const pendingAssistantId = pendingAssistantMessageIdRef.current;
         if (pendingAssistantId) {
@@ -1530,15 +1558,16 @@ export default function AppPage() {
       setChatError('Execution response did not include a recognized status.');
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
+      const failureMessage = toChatAssistantFailureMessage(detail, 'Chat execution failed.');
       setChatRequestState('failed');
       setChatStatusMessage(null);
-      setChatError(detail);
+      setChatError(failureMessage);
       const pendingAssistantId = pendingAssistantMessageIdRef.current;
       if (pendingAssistantId) {
         setChatThreadMessages((currentMessages) =>
           currentMessages.map((message) =>
             message.id === pendingAssistantId
-              ? { ...message, content: detail }
+              ? { ...message, content: failureMessage }
               : message,
           ),
         );

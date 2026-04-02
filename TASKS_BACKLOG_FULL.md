@@ -13583,3 +13583,50 @@ Extend the working `/en/app` Chat Panel from a single prompt/response surface in
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-84A-CHECKPOINT.md
 
 ---
+
+### TASK-84C: Workspace Chat Panel Quota Error Clarity Slice
+
+**Task ID:** TASK-84C
+**Phase:** 84
+**Stage:** 84C
+**Priority:** 🟡 Medium
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
+**Dependencies:** Phase 81 and Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A, TASK-84B (Complete and Locked)
+**Checkpoint:** `docs/PHASE-84C-CHECKPOINT.md`
+
+**Objective:**
+
+Improve `/en/app` Chat Panel UX when chat execution is blocked by quota/rate-limit errors, by replacing the raw assistant-side failure string with clearer user-facing guidance while preserving the current thread behavior.
+
+**Scope:**
+
+1. Reuse the existing `/en/app` Chat Panel only — no new routes, panels, or surfaces
+2. Preserve the working TASK-84A/84B prompt submit and message thread flow
+3. Improve user-facing rendering of quota/rate-limit failures in the assistant message area
+4. Keep earlier messages intact
+5. Keep the change frontend-only and tightly scoped
+6. Preserve all completed Phase 83 and Phase 84 behavior
+7. Do not expand into broader quota redesign
+8. Focused frontend tests for this slice
+
+**Non-Goals:**
+
+- ❌ No backend changes
+- ❌ No schema changes
+- ❌ No refactors
+- ❌ No model/provider redesign
+- ❌ No conversation persistence redesign
+- ❌ No multi-task work
+
+**Acceptance Criteria:**
+
+- Quota/rate-limit failures in Chat Panel are explained more clearly than a raw "Chat execution failed (429)"
+- Earlier thread messages remain visible and intact
+- Current prompt/thread behavior remains intact aside from the error clarity improvement
+- No backend/schema/refactor changes
+- No regressions
+
+**Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-84B-CHECKPOINT.md
+
+---
