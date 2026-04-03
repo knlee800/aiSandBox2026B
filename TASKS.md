@@ -5781,7 +5781,7 @@ Fix the real product/auth gap where unauthenticated users can still enter `/en/a
 Implementation of AI-03-01 proceeds through bounded child slices AI-03-01A, AI-03-01B, and AI-03-01C. The parent item remains as the umbrella family entry and is not itself treated as the next executable slice.
 
 **Child slices:**
-- AI-03-01A — Backend File-Action Output Pipeline (PLANNED)
+- AI-03-01A — Backend File-Action Output Pipeline (COMPLETE and LOCKED)
 - AI-03-01B — Frontend File-Action Application (NOT YET REGISTERED)
 - AI-03-01C — Frontend File-Action Chat Result Surfacing (NOT YET REGISTERED)
 
@@ -5793,7 +5793,7 @@ Implementation of AI-03-01 proceeds through bounded child slices AI-03-01A, AI-0
 
 #### AI-03-01A: Backend File-Action Output Pipeline
 
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (CORE PRODUCT LOOP, BACKEND FIRST SLICE)
 **Checkpoint:** `docs/AI-03-01A-CHECKPOINT.md`
 

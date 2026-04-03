@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { AIExecutionRequest, AIExecutionResult } from './types';
+import { extractFileActionsFromOutput } from './file-actions.parser';
 import { AIAdapter } from './adapters/ai-adapter.interface';
 import { StubAIAdapter } from './adapters/stub-ai.adapter';
 import { AnthropicAdapter } from './adapters/anthropic-ai.adapter';
@@ -90,6 +91,12 @@ export class AIExecutionService {
         ...request,
         signal: request.signal,
       });
+      const parsed = extractFileActionsFromOutput(result.output ?? '');
+      const normalizedResult: AIExecutionResult = {
+        ...result,
+        output: parsed.textOutput,
+        fileActions: parsed.fileActions,
+      };
       const adapterDurationMs = Math.round(
         performance.now() - adapterStartTime,
       );
@@ -104,8 +111,8 @@ export class AIExecutionService {
         executionId,
         adapter: provider,
         provider,
-        model: result.model,
-        tokensUsed: result.tokensUsed,
+        model: normalizedResult.model,
+        tokensUsed: normalizedResult.tokensUsed,
         durationMs: totalDurationMs,
         adapterDurationMs,
         outcome: 'success',
@@ -115,7 +122,7 @@ export class AIExecutionService {
         timestamp: new Date().toISOString(),
       });
 
-      return result;
+      return normalizedResult;
     } catch (error) {
       const adapterDurationMs = Math.round(
         performance.now() - adapterStartTime,

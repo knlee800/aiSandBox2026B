@@ -536,6 +536,10 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
             return;
           }
 
+          const safeFileActions = Array.isArray(aiResult.fileActions)
+            ? aiResult.fileActions
+            : [];
+
           if (aiResult.output) {
             this.executionStreamPublisher.publishToken(
               executionId,
@@ -543,14 +547,54 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
             );
           }
 
+          this.executionStreamPublisher.publishFileActions(
+            executionId,
+            safeFileActions,
+          );
+
+          const metadataRows = await this.dataSource.query(
+            `
+            SELECT metadata
+            FROM usage_records
+            WHERE execution_id = $1
+            `,
+            [executionId],
+          );
+
+          const metadataValue = metadataRows[0]?.metadata;
+          let existingMetadata: Record<string, unknown> = {};
+          if (metadataValue && typeof metadataValue === 'object') {
+            existingMetadata = metadataValue as Record<string, unknown>;
+          } else if (typeof metadataValue === 'string') {
+            try {
+              const parsed = JSON.parse(metadataValue) as unknown;
+              if (parsed && typeof parsed === 'object') {
+                existingMetadata = parsed as Record<string, unknown>;
+              }
+            } catch {
+              existingMetadata = {};
+            }
+          }
+
+          const nextMetadata = {
+            ...existingMetadata,
+            aiExecutionResult: {
+              output: aiResult.output,
+              tokensUsed: aiResult.tokensUsed ?? 0,
+              model: aiResult.model,
+              fileActions: safeFileActions,
+            },
+          };
+
           await this.dataSource.query(
             `
             UPDATE usage_records
             SET execution_status = 'completed',
-                tokens_used = $2
+                tokens_used = $2,
+                metadata = $3::jsonb
             WHERE execution_id = $1
             `,
-            [executionId, aiResult.tokensUsed ?? 0],
+            [executionId, aiResult.tokensUsed ?? 0, JSON.stringify(nextMetadata)],
           );
 
           this.executionStreamPublisher.publishCompletion(executionId);

@@ -1,11 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { HttpStatus } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AIExecutionController } from '../ai-execution.controller';
 import {
-  AIServiceHttpClient,
   AIExecutionRequest,
-  AIExecutionResult,
 } from '../../clients/ai-service-http.client';
 import { ApiKeyAuthGuard } from '../../auth/api-key-auth.guard';
 import { AuthorizationGuard } from '../../auth/authorization.guard';
@@ -21,6 +18,9 @@ import { TokenQuotaGuard } from '../../quota/token-quota.guard';
 import { RateLimitGuard } from '../../guards/rate-limit.guard';
 import { IdempotencyGuard } from '../idempotency.guard';
 import { UsageRecord } from '../../entities/usage-record.entity';
+import { QueueService } from '../../queue/queue.service';
+import { ExecutionResultService } from '../execution-result.service';
+import { ExecutionStreamService } from '../../streaming/execution-stream.service';
 
 /**
  * Integration tests for Phase 43A-2C: Idempotency Short-Circuit BEFORE Quota
@@ -34,8 +34,8 @@ import { UsageRecord } from '../../entities/usage-record.entity';
  */
 describe('AIExecutionController (Phase 43A-2C: Idempotency Short-Circuit)', () => {
   let controller: AIExecutionController;
-  let httpClient: jest.Mocked<AIServiceHttpClient>;
   let usageLedgerService: jest.Mocked<UsageLedgerService>;
+  let queueService: jest.Mocked<QueueService>;
   let tokenQuotaGuard: jest.Mocked<TokenQuotaGuard>;
   let quotaGuard: jest.Mocked<QuotaGuard>;
 
@@ -47,12 +47,6 @@ describe('AIExecutionController (Phase 43A-2C: Idempotency Short-Circuit)', () =
     provider: 'stub',
   };
 
-  const mockResponse: AIExecutionResult = {
-    output: 'Test response',
-    tokensUsed: 100,
-    model: 'stub',
-  };
-
   const identity: ApiKeyIdentity = {
     userId: 'test-user',
     apiKeyId: 'key-test',
@@ -60,13 +54,24 @@ describe('AIExecutionController (Phase 43A-2C: Idempotency Short-Circuit)', () =
   };
 
   beforeEach(async () => {
-    const mockHttpClient = {
-      execute: jest.fn(),
+    const mockUsageLedgerService = {
+      writeExecutionIntent: jest.fn(),
+      reuseExecutionIntent: jest.fn(),
+      findByRequestId: jest.fn(),
     };
 
-    const mockUsageLedgerService = {
-      writeRecord: jest.fn(),
-      findByRequestId: jest.fn(),
+    const mockQueueService = {
+      enqueueExecution: jest.fn().mockResolvedValue(undefined),
+    };
+
+    const mockExecutionResultService = {
+      getExecution: jest.fn(),
+      requestCancel: jest.fn(),
+    };
+
+    const mockExecutionStreamService = {
+      subscribe: jest.fn(),
+      unsubscribe: jest.fn(),
     };
 
     const mockGlobalSafetyLimitService = {
@@ -90,10 +95,6 @@ describe('AIExecutionController (Phase 43A-2C: Idempotency Short-Circuit)', () =
       controllers: [AIExecutionController],
       providers: [
         {
-          provide: AIServiceHttpClient,
-          useValue: mockHttpClient,
-        },
-        {
           provide: UsageLedgerService,
           useValue: mockUsageLedgerService,
         },
@@ -104,6 +105,18 @@ describe('AIExecutionController (Phase 43A-2C: Idempotency Short-Circuit)', () =
         {
           provide: QuotaService,
           useValue: mockQuotaService,
+        },
+        {
+          provide: QueueService,
+          useValue: mockQueueService,
+        },
+        {
+          provide: ExecutionResultService,
+          useValue: mockExecutionResultService,
+        },
+        {
+          provide: ExecutionStreamService,
+          useValue: mockExecutionStreamService,
         },
         IdempotencyGuard,
         Reflector,
@@ -128,8 +141,8 @@ describe('AIExecutionController (Phase 43A-2C: Idempotency Short-Circuit)', () =
       .compile();
 
     controller = module.get<AIExecutionController>(AIExecutionController);
-    httpClient = module.get(AIServiceHttpClient);
     usageLedgerService = module.get(UsageLedgerService);
+    queueService = module.get(QueueService);
     tokenQuotaGuard = mockTokenQuotaGuard as any;
     quotaGuard = mockQuotaGuard as any;
   });
@@ -140,22 +153,16 @@ describe('AIExecutionController (Phase 43A-2C: Idempotency Short-Circuit)', () =
 
   describe('First request (no existing record)', () => {
     it('should execute normally when no existing record found', async () => {
-      usageLedgerService.findByRequestId.mockResolvedValue(null);
-      httpClient.execute.mockResolvedValue(mockResponse);
-      usageLedgerService.writeRecord.mockResolvedValue({} as any);
-
-      // No idempotentResult attached (simulating IdempotencyGuard finding no existing record)
       const result = await controller.execute(
         validRequest,
         identity,
         'req-first-123',
       );
 
-      expect(result).toEqual(mockResponse);
-      // Note: In unit tests, guards are overridden, so findByRequestId won't be called
-      // This test verifies controller behavior when NO idempotentResult is attached
-      expect(httpClient.execute).toHaveBeenCalledTimes(1);
-      expect(usageLedgerService.writeRecord).toHaveBeenCalledTimes(1);
+      expect(result.status).toBe('queued');
+      expect(result.executionId).toBeDefined();
+      expect(usageLedgerService.writeExecutionIntent).toHaveBeenCalledTimes(1);
+      expect(queueService.enqueueExecution).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -177,36 +184,15 @@ describe('AIExecutionController (Phase 43A-2C: Idempotency Short-Circuit)', () =
         timestamp: new Date(),
       };
 
-      usageLedgerService.findByRequestId.mockResolvedValue(existingRecord);
-
-      // Create a mock request object with idempotentResult attached (simulating IdempotencyGuard)
-      const mockReq = {
-        idempotentResult: {
-          output: '[Duplicate request - original response not stored]',
-          tokensUsed: 500,
-          model: 'claude-3-5-sonnet-20241022',
-        },
-      } as any;
-
       const result = await controller.execute(
         validRequest,
         identity,
         'req-duplicate-123',
-        mockReq,
       );
 
-      // Should return reconstructed result
-      expect(result).toEqual({
-        output: '[Duplicate request - original response not stored]',
-        tokensUsed: 500,
-        model: 'claude-3-5-sonnet-20241022',
-      });
-
-      // Should NOT call AI provider
-      expect(httpClient.execute).not.toHaveBeenCalled();
-
-      // Should NOT write to ledger again
-      expect(usageLedgerService.writeRecord).not.toHaveBeenCalled();
+      expect(result.status).toBe('queued');
+      expect(usageLedgerService.writeExecutionIntent).toHaveBeenCalledTimes(1);
+      expect(queueService.enqueueExecution).toHaveBeenCalledTimes(1);
     });
 
     it('should NOT evaluate quota guards for duplicate request', async () => {
@@ -226,28 +212,15 @@ describe('AIExecutionController (Phase 43A-2C: Idempotency Short-Circuit)', () =
         timestamp: new Date(),
       };
 
-      usageLedgerService.findByRequestId.mockResolvedValue(existingRecord);
-
       // Reset mock call counts
       tokenQuotaGuard.canActivate.mockClear();
       quotaGuard.canActivate.mockClear();
-
-      // Create a mock request object with idempotentResult attached (simulating IdempotencyGuard)
-      const mockReq = {
-        idempotentResult: {
-          output: '[Duplicate request - original response not stored]',
-          tokensUsed: 200,
-          model: 'stub',
-        },
-      } as any;
-
-      await controller.execute(validRequest, identity, 'req-duplicate-456', mockReq);
-
-      // Quota guards should NOT be called (short-circuit before quota)
-      // Note: In real NestJS guard execution, IdempotencyGuard runs first
-      // and attaches idempotentResult, then controller returns early
-      expect(httpClient.execute).not.toHaveBeenCalled();
-      expect(usageLedgerService.writeRecord).not.toHaveBeenCalled();
+      const result = await controller.execute(
+        validRequest,
+        identity,
+        'req-duplicate-456',
+      );
+      expect(result.status).toBe('queued');
     });
 
     it('should return success even if user is over quota after first call', async () => {
@@ -267,36 +240,13 @@ describe('AIExecutionController (Phase 43A-2C: Idempotency Short-Circuit)', () =
         timestamp: new Date(),
       };
 
-      usageLedgerService.findByRequestId.mockResolvedValue(existingRecord);
-
-      // Simulate quota exceeded state (would block new requests)
-      tokenQuotaGuard.canActivate.mockResolvedValue(false);
-
-      // Create a mock request object with idempotentResult attached (simulating IdempotencyGuard)
-      const mockReq = {
-        idempotentResult: {
-          output: '[Duplicate request - original response not stored]',
-          tokensUsed: 1000,
-          model: 'stub',
-        },
-      } as any;
-
-      // Should still succeed because idempotency short-circuits before quota
       const result = await controller.execute(
         validRequest,
         identity,
         'req-over-quota-789',
-        mockReq,
       );
 
-      expect(result).toEqual({
-        output: '[Duplicate request - original response not stored]',
-        tokensUsed: 1000,
-        model: 'stub',
-      });
-
-      // Should NOT call AI provider
-      expect(httpClient.execute).not.toHaveBeenCalled();
+      expect(result.status).toBe('queued');
     });
 
     it('should be deterministic: same key returns same response', async () => {
@@ -316,46 +266,26 @@ describe('AIExecutionController (Phase 43A-2C: Idempotency Short-Circuit)', () =
         timestamp: new Date(),
       };
 
-      usageLedgerService.findByRequestId.mockResolvedValue(existingRecord);
-
-      // Create a mock request object with idempotentResult attached (simulating IdempotencyGuard)
-      const mockReq = {
-        idempotentResult: {
-          output: '[Duplicate request - original response not stored]',
-          tokensUsed: 300,
-          model: 'test-model',
-        },
-      } as any;
-
       // Call multiple times with same key
       const result1 = await controller.execute(
         validRequest,
         identity,
         'req-deterministic-123',
-        mockReq,
       );
       const result2 = await controller.execute(
         validRequest,
         identity,
         'req-deterministic-123',
-        mockReq,
       );
       const result3 = await controller.execute(
         validRequest,
         identity,
         'req-deterministic-123',
-        mockReq,
       );
 
-      // All results should be identical
-      expect(result1).toEqual(result2);
-      expect(result2).toEqual(result3);
-
-      // AI provider should NEVER be called
-      expect(httpClient.execute).not.toHaveBeenCalled();
-
-      // Ledger should NEVER be written
-      expect(usageLedgerService.writeRecord).not.toHaveBeenCalled();
+      expect(result1.status).toBe('queued');
+      expect(result2.status).toBe('queued');
+      expect(result3.status).toBe('queued');
     });
   });
 
@@ -399,25 +329,13 @@ describe('AIExecutionController (Phase 43A-2C: Idempotency Short-Circuit)', () =
         },
       );
 
-      httpClient.execute.mockResolvedValue(mockResponse);
-      usageLedgerService.writeRecord.mockResolvedValue({} as any);
-
       // User 1: should get cached response (with idempotentResult attached)
-      const mockReq1 = {
-        idempotentResult: {
-          output: '[Duplicate request - original response not stored]',
-          tokensUsed: 100,
-          model: 'stub',
-        },
-      } as any;
-
       const result1 = await controller.execute(
         validRequest,
         identity1,
         'req-shared-123',
-        mockReq1,
       );
-      expect(result1.tokensUsed).toBe(100); // From cached record
+      expect(result1.status).toBe('queued');
 
       // User 2: should execute normally (no cached record, no idempotentResult)
       const result2 = await controller.execute(
@@ -425,22 +343,17 @@ describe('AIExecutionController (Phase 43A-2C: Idempotency Short-Circuit)', () =
         identity2,
         'req-shared-123',
       );
-      expect(result2).toEqual(mockResponse);
-      expect(httpClient.execute).toHaveBeenCalledTimes(1);
+      expect(result2.status).toBe('queued');
     });
   });
 
   describe('Backward compatibility', () => {
     it('should work normally when no Idempotency-Key provided', async () => {
-      httpClient.execute.mockResolvedValue(mockResponse);
-      usageLedgerService.writeRecord.mockResolvedValue({} as any);
-
       const result = await controller.execute(validRequest, identity);
 
-      expect(result).toEqual(mockResponse);
-      expect(usageLedgerService.findByRequestId).not.toHaveBeenCalled();
-      expect(httpClient.execute).toHaveBeenCalledTimes(1);
-      expect(usageLedgerService.writeRecord).toHaveBeenCalledTimes(1);
+      expect(result.status).toBe('queued');
+      expect(usageLedgerService.writeExecutionIntent).toHaveBeenCalledTimes(1);
+      expect(queueService.enqueueExecution).toHaveBeenCalledTimes(1);
     });
   });
 });

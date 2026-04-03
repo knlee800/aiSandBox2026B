@@ -24,6 +24,13 @@ export interface AIExecutionResult {
   output: string;
   tokensUsed: number;
   model: string;
+  fileActions?: FileAction[];
+}
+
+export interface FileAction {
+  action: 'create' | 'write' | 'update';
+  path: string;
+  content: string;
 }
 
 /**

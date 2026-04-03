@@ -146,7 +146,18 @@ export class IdempotencyGuard implements CanActivate {
       // Phase 43B-3: Read full AIExecutionResult from metadata for deterministic replay
       // Phase 43B-4: Safe type narrowing for metadata (unknown → typed structure)
       const metadata = existingRecord.metadata as
-        | { aiExecutionResult?: { output: string; tokensUsed: number; model: string } }
+        | {
+            aiExecutionResult?: {
+              output: string;
+              tokensUsed: number;
+              model: string;
+              fileActions?: Array<{
+                action: 'create' | 'write' | 'update';
+                path: string;
+                content: string;
+              }>;
+            };
+          }
         | undefined;
 
       const aiResult = metadata?.aiExecutionResult;
@@ -159,6 +170,9 @@ export class IdempotencyGuard implements CanActivate {
           output: aiResult.output,
           tokensUsed: aiResult.tokensUsed,
           model: aiResult.model,
+          fileActions: Array.isArray(aiResult.fileActions)
+            ? aiResult.fileActions
+            : [],
         };
       } else {
         // Fallback for records created before Phase 43B-3
@@ -167,6 +181,7 @@ export class IdempotencyGuard implements CanActivate {
           output: '[Duplicate request - original response not stored]',
           tokensUsed: existingRecord.tokensUsed!,
           model: existingRecord.model!,
+          fileActions: [],
         };
       }
 

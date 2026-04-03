@@ -11,14 +11,39 @@ export class ExecutionResultService {
       SELECT
         execution_id,
         execution_status,
-        tokens_used
+        tokens_used,
+        metadata
       FROM usage_records
       WHERE execution_id = $1
       `,
       [executionId],
     );
 
-    return result[0] ?? null;
+    const row = result[0] ?? null;
+    if (!row) {
+      return null;
+    }
+
+    const metadata = row.metadata;
+    let parsedMetadata: Record<string, unknown> | null = null;
+
+    if (metadata && typeof metadata === 'object') {
+      parsedMetadata = metadata as Record<string, unknown>;
+    } else if (typeof metadata === 'string') {
+      try {
+        const parsed = JSON.parse(metadata) as unknown;
+        if (parsed && typeof parsed === 'object') {
+          parsedMetadata = parsed as Record<string, unknown>;
+        }
+      } catch {
+        parsedMetadata = null;
+      }
+    }
+
+    return {
+      ...row,
+      metadata: parsedMetadata,
+    };
   }
 
   /**

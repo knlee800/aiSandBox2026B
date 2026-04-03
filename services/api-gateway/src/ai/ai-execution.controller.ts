@@ -22,7 +22,7 @@ import {
   AIExecutionRequest,
 } from '../clients/ai-service-http.client';
 import { ExecutionStreamService } from '../streaming/execution-stream.service';
-import { ExecutionResultDto } from './dto/execution-result.dto';
+import { ExecutionResultDto, FileActionDto } from './dto/execution-result.dto';
 import { ApiKeyAuthGuard } from '../auth/api-key-auth.guard';
 import { AuthorizationGuard } from '../auth/authorization.guard';
 import { QuotaGuard } from '../quota/quota.guard';
@@ -85,6 +85,51 @@ export class AIExecutionController {
     private readonly executionResultService: ExecutionResultService,
     private readonly executionStreamService: ExecutionStreamService,
   ) {}
+
+  private parseExecutionResultMetadata(
+    metadata: Record<string, unknown> | null | undefined,
+  ): {
+    output?: string;
+    fileActions: ExecutionResultDto['fileActions'];
+  } {
+    if (!metadata || typeof metadata !== 'object') {
+      return { fileActions: [] };
+    }
+
+    const aiExecutionResult = metadata.aiExecutionResult;
+    if (!aiExecutionResult || typeof aiExecutionResult !== 'object') {
+      return { fileActions: [] };
+    }
+
+    const aiResult = aiExecutionResult as Record<string, unknown>;
+    const output =
+      typeof aiResult.output === 'string' ? aiResult.output : undefined;
+
+    const rawActions = Array.isArray(aiResult.fileActions)
+      ? aiResult.fileActions
+      : [];
+
+    const fileActions: FileActionDto[] = [];
+    for (const action of rawActions) {
+      if (!action || typeof action !== 'object') continue;
+      const value = action as Record<string, unknown>;
+      if (
+        (value.action === 'create' ||
+          value.action === 'write' ||
+          value.action === 'update') &&
+        typeof value.path === 'string' &&
+        typeof value.content === 'string'
+      ) {
+        fileActions.push({
+          action: value.action,
+          path: value.path,
+          content: value.content,
+        });
+      }
+    }
+
+    return { output, fileActions };
+  }
 
   /**
    * Execute AI request (async — Phase 44.4D)
@@ -337,6 +382,9 @@ export class AIExecutionController {
 
     if (status === 'completed') {
       response.tokensUsed = execution.tokens_used ?? undefined;
+      const parsed = this.parseExecutionResultMetadata(execution.metadata);
+      response.output = parsed.output;
+      response.fileActions = parsed.fileActions;
     }
 
     return response;

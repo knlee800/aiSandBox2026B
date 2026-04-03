@@ -59,6 +59,11 @@ export interface UpdateExecutionResultDto {
   executionDurationMs: number; // Total execution time
   executionStatus: string; // 'completed' (or 'failed' for future use)
   output: string; // Phase 43B-3: AI output for deterministic replay
+  fileActions?: Array<{
+    action: 'create' | 'write' | 'update';
+    path: string;
+    content: string;
+  }>;
 }
 
 /**
@@ -243,6 +248,7 @@ export class UsageLedgerService {
           output: dto.output,
           tokensUsed: dto.tokensUsed,
           model: dto.model,
+          fileActions: Array.isArray(dto.fileActions) ? dto.fileActions : [],
         },
       };
 

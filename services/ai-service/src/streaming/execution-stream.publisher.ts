@@ -1,5 +1,6 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import Redis from 'ioredis';
+import { FileAction } from '../ai-execution/types';
 
 @Injectable()
 export class ExecutionStreamPublisher implements OnModuleDestroy {
@@ -33,6 +34,15 @@ export class ExecutionStreamPublisher implements OnModuleDestroy {
       type: 'complete'
     });
 
+    return this.redis.publish(channel, payload);
+  }
+
+  publishFileActions(executionId: string, actions: FileAction[]) {
+    const channel = `ai-execution-stream:${executionId}`;
+    const payload = JSON.stringify({
+      type: 'file_actions',
+      actions,
+    });
     return this.redis.publish(channel, payload);
   }
 

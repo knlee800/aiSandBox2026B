@@ -4,9 +4,16 @@ export interface ExecutionResultDto {
 
   output?: string;
   tokensUsed?: number;
+  fileActions?: FileActionDto[];
 
   error?: {
     code: string;
     message: string;
   };
+}
+
+export interface FileActionDto {
+  action: 'create' | 'write' | 'update';
+  path: string;
+  content: string;
 }
