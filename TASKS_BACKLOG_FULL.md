@@ -13825,3 +13825,130 @@ Fix the real product/auth gap where unauthenticated users can still enter `/en/a
 **Reference:** TASKS.md, PRD.md, ARCHITECTURE.md, PHASE-84F-CHECKPOINT.md
 
 ---
+
+## AI-03 — AI-to-Workspace Actions (Core Product Loop)
+
+### AI-03-01: AI-to-Workspace File Actions — Umbrella Parent
+
+**Task ID:** AI-03-01
+**Family:** AI-03 (AI-to-Workspace Actions)
+**Stage:** AI-03-01
+**Priority:** 🔴 High
+**Status:** PLANNED (UMBRELLA)
+**Nature:** UMBRELLA WORK FAMILY (CORE PRODUCT LOOP)
+**Dependencies:** Phase 84 (Complete and Locked); AI execution pipeline (operational); workspace file system (operational)
+
+Implementation of AI-03-01 proceeds through bounded child slices AI-03-01A, AI-03-01B, and AI-03-01C. The parent item remains as the umbrella family entry and is not itself treated as the next executable slice.
+
+**Child slices:**
+- AI-03-01A — Backend File-Action Output Pipeline (PLANNED)
+- AI-03-01B — Frontend File-Action Application (NOT YET REGISTERED)
+- AI-03-01C — Frontend File-Action Chat Result Surfacing (NOT YET REGISTERED)
+
+**Objective:**
+
+Implement the first minimal end-to-end slice where an AI prompt can cause real workspace file/code changes that become visible in the product, so the platform begins fulfilling its core promise: user asks AI → AI changes workspace → user sees the changed files/code.
+
+The revised master plan (`AI_Sandbox_Platform_Master_Plan_Revised.md`) makes AI-to-workspace actions the central product loop. Current Phase 84 work made chat functional in the UI, but the AI still primarily returns text rather than producing workspace file/code changes. This task starts closing that main gap.
+
+**Scope (end-to-end across all child slices):**
+
+1. Support only minimal AI-driven file actions in the workspace:
+   - create a file
+   - overwrite/write a file
+   - update an existing file's content
+2. Wire the resulting file/code change into the visible workspace flow
+3. Keep the slice as small as possible while still being genuinely end-to-end
+4. Preserve current chat panel behavior, editor behavior, file tree behavior, preview behavior, checkpoint/history behavior, and auth/quota behavior
+5. Enough result surfacing so user can understand that AI changed files
+6. Deterministic failure handling if AI file action cannot be applied
+
+**Non-Goals:**
+
+- ❌ No shell/exec-first solution
+- ❌ No broad agent/tool framework
+- ❌ No multi-step orchestration engine
+- ❌ No autonomous command execution expansion
+- ❌ No project save/restore
+- ❌ No import/export
+- ❌ No backend chat persistence redesign
+- ❌ No multi-file transactional engine
+- ❌ No broad checkpoint redesign
+- ❌ No multi-AI features
+- ❌ No conversational orchestrator
+- ❌ No refactors unless strictly required for this bounded slice
+
+**Acceptance Criteria (end-to-end across all child slices):**
+
+- User submits an AI prompt from the workspace chat surface
+- AI execution can cause at least one real file/code change in the active workspace
+- Chat panel indicates which files were changed or created
+- Behavior is bounded to file actions only for this first slice
+- Current workspace UX remains stable
+- Current auth/quota/session behavior remains preserved
+- No scope expansion into shell-first or agent-platform work
+
+**Reference:** TASKS.md, AI_Sandbox_Platform_Master_Plan_Revised.md (Section 4.1, 7.2 AI-03), PRD.md, ARCHITECTURE.md, PHASE-84G-CHECKPOINT.md, docs/specs/AI-03-01-ai-to-workspace-file-actions.md
+
+---
+
+### AI-03-01A: Backend File-Action Output Pipeline
+
+**Task ID:** AI-03-01A
+**Family:** AI-03 (AI-to-Workspace Actions)
+**Parent:** AI-03-01
+**Stage:** AI-03-01A
+**Priority:** 🔴 High
+**Status:** PLANNED
+**Nature:** IMPLEMENTATION (CORE PRODUCT LOOP, BACKEND FIRST SLICE)
+**Dependencies:** Phase 84 (Complete and Locked); AI execution pipeline (operational)
+**Checkpoint:** `docs/AI-03-01A-CHECKPOINT.md`
+
+**Objective:**
+
+Implement the first backend slice of AI-03-01 so AI execution can produce structured file-action instructions, validate them, and expose them through both the execution stream and the durable execution result/status path, without yet applying any file writes to the workspace.
+
+**Why this exists:**
+
+Before frontend can apply AI file actions safely, the backend must produce a reliable structured file-action payload. This slice establishes the contract and dual-channel delivery path needed for later slices while preserving existing text-response behavior.
+
+**Scope:**
+
+1. Define structured file-action contract for AI execution output
+2. Modify AI execution flow so model output can include parseable file-action instructions
+3. Parse file-action instructions from AI output
+4. Preserve pure text response separately from file-action payload
+5. Validate file paths and reject traversal / invalid paths
+6. Publish structured file-actions in execution stream events
+7. Expose structured fileActions through the durable execution result/status path used by GET /api/ai/executions/:id
+8. Keep non-file-action prompts working normally with empty fileActions
+9. Keep existing submit / poll / stream / cancel behavior intact
+
+**Non-Goals:**
+
+- ❌ No file writes to workspace
+- ❌ No frontend behavioral changes beyond minimal type compatibility if absolutely required
+- ❌ No file tree refresh, editor reload, preview refresh, auto-checkpoint
+- ❌ No chat result rendering changes
+- ❌ No multi-step orchestration
+- ❌ No shell-first behavior
+- ❌ No agent framework
+- ❌ No schema redesign unless a tiny bounded persistence change is strictly required
+- ❌ No quota / billing / auth redesign
+
+**Acceptance Criteria:**
+
+- AI execution can produce structured fileActions payload with action, path, content
+- Parser extracts valid file actions from AI output and preserves normal text output
+- Invalid / malformed file-action blocks are ignored or rejected safely
+- Path traversal and invalid paths are rejected safely
+- Execution stream includes file_actions payload before completion
+- GET /api/ai/executions/:id returns fileActions in completed execution result/status
+- Non-file-action prompts still work and return empty fileActions without regressions
+- Existing text response behavior remains intact
+- Existing submit / poll / stream / cancel behavior remains preserved
+- No frontend workspace side effects happen yet
+
+**Reference:** TASKS.md, docs/specs/AI-03-01-ai-to-workspace-file-actions.md, AI_Sandbox_Platform_Master_Plan_Revised.md (Section 4.1, 7.2 AI-03), PRD.md, ARCHITECTURE.md
+
+---

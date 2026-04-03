@@ -5766,3 +5766,67 @@ Fix the real product/auth gap where unauthenticated users can still enter `/en/a
 **Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-84G for full details
 
 ---
+
+## AI-03 — AI-to-Workspace Actions (Core Product Loop)
+
+**Current stage:** AI-03-01A (PLANNED)
+
+---
+
+#### AI-03-01: AI-to-Workspace File Actions — Umbrella Parent
+
+**Status:** PLANNED (UMBRELLA)
+**Nature:** UMBRELLA WORK FAMILY (CORE PRODUCT LOOP)
+
+Implementation of AI-03-01 proceeds through bounded child slices AI-03-01A, AI-03-01B, and AI-03-01C. The parent item remains as the umbrella family entry and is not itself treated as the next executable slice.
+
+**Child slices:**
+- AI-03-01A — Backend File-Action Output Pipeline (PLANNED)
+- AI-03-01B — Frontend File-Action Application (NOT YET REGISTERED)
+- AI-03-01C — Frontend File-Action Chat Result Surfacing (NOT YET REGISTERED)
+
+**Dependencies:** Phase 84 (Complete and Locked); AI execution pipeline (operational); workspace file system (operational)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → AI-03-01 for full details; `docs/specs/AI-03-01-ai-to-workspace-file-actions.md` for spec
+
+---
+
+#### AI-03-01A: Backend File-Action Output Pipeline
+
+**Status:** PLANNED
+**Nature:** IMPLEMENTATION (CORE PRODUCT LOOP, BACKEND FIRST SLICE)
+**Checkpoint:** `docs/AI-03-01A-CHECKPOINT.md`
+
+**Objective:**
+Implement the first backend slice of AI-03-01 so AI execution can produce structured file-action instructions, validate them, and expose them through both the execution stream and the durable execution result/status path, without yet applying any file writes to the workspace.
+
+**Why this exists:**
+Before frontend can apply AI file actions safely, the backend must produce a reliable structured file-action payload. This slice establishes the contract and dual-channel delivery path needed for later slices while preserving existing text-response behavior.
+
+**Scope:**
+- Define structured file-action contract for AI execution output
+- Modify AI execution flow so model output can include parseable file-action instructions
+- Parse file-action instructions from AI output
+- Preserve pure text response separately from file-action payload
+- Validate file paths and reject traversal / invalid paths
+- Publish structured file-actions in execution stream events
+- Expose structured fileActions through the durable execution result/status path used by GET /api/ai/executions/:id
+- Keep non-file-action prompts working normally with empty fileActions
+- Keep existing submit / poll / stream / cancel behavior intact
+
+**Non-Goals:**
+- ❌ No file writes to workspace
+- ❌ No frontend behavioral changes beyond minimal type compatibility if absolutely required
+- ❌ No file tree refresh, editor reload, preview refresh, auto-checkpoint
+- ❌ No chat result rendering changes
+- ❌ No multi-step orchestration
+- ❌ No shell-first behavior
+- ❌ No agent framework
+- ❌ No schema redesign unless a tiny bounded persistence change is strictly required
+- ❌ No quota / billing / auth redesign
+
+**Dependencies:** Phase 84 (Complete and Locked); AI execution pipeline (operational)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → AI-03-01A for full details; `docs/specs/AI-03-01-ai-to-workspace-file-actions.md` for parent spec
+
+---
