@@ -5769,7 +5769,7 @@ Fix the real product/auth gap where unauthenticated users can still enter `/en/a
 
 ## AI-03 — AI-to-Workspace Actions (Core Product Loop)
 
-**Current stage:** AI-03-01B (PLANNED)
+**Current stage:** AI-03-01C (COMPLETE and LOCKED)
 
 ---
 
@@ -5783,7 +5783,7 @@ Implementation of AI-03-01 proceeds through bounded child slices AI-03-01A, AI-0
 **Child slices:**
 - AI-03-01A — Backend File-Action Output Pipeline (COMPLETE and LOCKED)
 - AI-03-01B — Frontend File-Action Application (COMPLETE and LOCKED)
-- AI-03-01C — Frontend File-Action Chat Result Surfacing (NOT YET REGISTERED)
+- AI-03-01C — Frontend Chat File-Action Result Surfacing (COMPLETE and LOCKED)
 
 **Dependencies:** Phase 84 (Complete and Locked); AI execution pipeline (operational); workspace file system (operational)
 
@@ -5869,5 +5869,42 @@ AI-03-01A established the backend fileActions contract and dual-channel delivery
 **Dependencies:** AI-03-01A (COMPLETE and LOCKED); Phase 84 (Complete and Locked)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → AI-03-01B for full details; `docs/specs/AI-03-01-ai-to-workspace-file-actions.md` for parent spec
+
+---
+
+#### AI-03-01C: Frontend Chat File-Action Result Surfacing
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (CORE PRODUCT LOOP, FRONTEND RESULT-SURFACING SLICE)
+**Checkpoint:** `docs/AI-03-01C-CHECKPOINT.md`
+
+**Objective:**
+Implement the third slice of AI-03-01 so the chat thread surfaces the structured per-file success/failure results produced by AI-03-01B, making AI file changes visible to the user without yet introducing broader workspace coherence behavior.
+
+**Why this exists:**
+AI-03-01A established the backend fileActions contract. AI-03-01B safely applied file actions and stored structured per-file results in frontend state. AI-03-01C completes AI-03-01 by making those results visible in the existing assistant message thread, while keeping file tree refresh, editor reload, preview refresh, and auto-checkpoint in AI-03-02.
+
+**Scope:**
+- Surface structured per-file file-action results inside the existing assistant chat thread entry
+- Show per-file action + path + success/failure state
+- Show per-file error message when a write failed
+- Show appropriate message when application was skipped due to stale-session or terminated-session guard
+- Preserve text-only responses when no file actions exist
+- Keep structured file-action result data compatible with existing chat persistence (Phase 84E localStorage)
+- Preserve existing chat submit / stream / poll / cancel behavior
+
+**Non-Goals:**
+- ❌ No file tree refresh, editor reload, preview refresh, auto-checkpoint
+- ❌ No AI-03-02 behavior
+- ❌ No backend contract or file write behavior redesign
+- ❌ No new product endpoints
+- ❌ No diff viewer in chat
+- ❌ No clickable file navigation beyond current surface
+- ❌ No chat layout redesign
+- ❌ No quota / billing / auth redesign
+
+**Dependencies:** AI-03-01B (COMPLETE and LOCKED); Phase 84 (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → AI-03-01C for full details; `docs/specs/AI-03-01-ai-to-workspace-file-actions.md` for parent spec
 
 ---

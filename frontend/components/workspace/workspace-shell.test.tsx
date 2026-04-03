@@ -270,6 +270,104 @@ describe('workspace shell component', () => {
     assert.match(html, /Action: Please wait a moment\./);
   });
 
+  test('renders assistant file-action success entries in chat thread', () => {
+    const html = renderWorkspaceShell({
+      chatThreadMessages: [
+        {
+          id: 'assistant-1',
+          role: 'assistant',
+          content: 'Updated your workspace files.',
+          executionId: 'exec-1',
+          fileActionState: {
+            executionId: 'exec-1',
+            source: 'status',
+            fileActions: [{ action: 'write', path: 'src/app.ts', content: 'next' }],
+            applyStatus: 'applied',
+            skipReason: null,
+            results: [{ action: 'write', path: 'src/app.ts', status: 'success', error: null }],
+          },
+        },
+      ],
+    });
+
+    assert.match(html, /workspace-chat-file-actions/);
+    assert.match(html, /File Action Results/);
+    assert.match(html, /write src\/app\.ts/);
+    assert.match(html, />success</);
+  });
+
+  test('renders assistant file-action failure entries with error text', () => {
+    const html = renderWorkspaceShell({
+      chatThreadMessages: [
+        {
+          id: 'assistant-2',
+          role: 'assistant',
+          content: 'I tried to update files.',
+          executionId: 'exec-2',
+          fileActionState: {
+            executionId: 'exec-2',
+            source: 'stream',
+            fileActions: [{ action: 'update', path: 'src/missing.ts', content: 'x' }],
+            applyStatus: 'applied',
+            skipReason: null,
+            results: [
+              {
+                action: 'update',
+                path: 'src/missing.ts',
+                status: 'failed',
+                error: 'Failed to save file changes.',
+              },
+            ],
+          },
+        },
+      ],
+    });
+
+    assert.match(html, /update src\/missing\.ts/);
+    assert.match(html, />failed</);
+    assert.match(html, /Failed to save file changes\./);
+  });
+
+  test('renders assistant skipped file-action state in chat thread', () => {
+    const html = renderWorkspaceShell({
+      chatThreadMessages: [
+        {
+          id: 'assistant-3',
+          role: 'assistant',
+          content: 'Skipped applying changes.',
+          executionId: 'exec-3',
+          fileActionState: {
+            executionId: 'exec-3',
+            source: 'status',
+            fileActions: [{ action: 'create', path: 'src/new.ts', content: 'ok' }],
+            applyStatus: 'skipped',
+            skipReason: 'stale-session',
+            results: [{ action: 'create', path: 'src/new.ts', status: 'skipped', error: 'stale-session' }],
+          },
+        },
+      ],
+    });
+
+    assert.match(html, /workspace-chat-file-actions-skipped/);
+    assert.match(html, /File action application skipped \(stale-session\)\./);
+    assert.match(html, />skipped</);
+  });
+
+  test('keeps text-only assistant messages unchanged when no file actions exist', () => {
+    const html = renderWorkspaceShell({
+      chatThreadMessages: [
+        {
+          id: 'assistant-4',
+          role: 'assistant',
+          content: 'Here is a text-only response.',
+        },
+      ],
+    });
+
+    assert.match(html, /Here is a text-only response\./);
+    assert.doesNotMatch(html, /workspace-chat-file-actions/);
+  });
+
   test('renders distinct editor save states', () => {
     const dirtyHtml = renderWorkspaceShell({
       fileSaveState: 'dirty',

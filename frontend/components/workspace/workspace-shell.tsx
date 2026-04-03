@@ -32,6 +32,7 @@ import type {
   WorkspaceCheckpointDiffState,
   WorkspaceCheckpointDiffResponse,
 } from './workspace-checkpoint-diff.logic';
+import type { WorkspaceExecutionFileActionState } from './workspace-ai-file-actions.logic';
 
 interface WorkspaceShellProps {
   sessions: WorkspaceShellSession[];
@@ -107,6 +108,8 @@ interface WorkspaceShellProps {
     id: string;
     role: 'user' | 'assistant';
     content: string;
+    executionId?: string;
+    fileActionState?: WorkspaceExecutionFileActionState;
   }>;
   commandInput: string;
   onCommandInputChange: (value: string) => void;
@@ -387,6 +390,8 @@ function WorkspaceChatPanel(props: {
     id: string;
     role: 'user' | 'assistant';
     content: string;
+    executionId?: string;
+    fileActionState?: WorkspaceExecutionFileActionState;
   }>;
 }) {
   const isSending =
@@ -464,6 +469,9 @@ function WorkspaceChatPanel(props: {
                       ? '(waiting for response...)'
                       : ''}
                 </pre>
+                {message.role === 'assistant' && message.fileActionState ? (
+                  <WorkspaceAssistantFileActionSummary fileActionState={message.fileActionState} />
+                ) : null}
               </li>
             ))}
           </ul>
@@ -492,6 +500,53 @@ function WorkspaceChatPanel(props: {
             {props.responseText}
           </pre>
         </div>
+      ) : null}
+    </div>
+  );
+}
+
+function WorkspaceAssistantFileActionSummary(props: {
+  fileActionState: WorkspaceExecutionFileActionState;
+}) {
+  const hasRenderableResults =
+    props.fileActionState.results.length > 0 ||
+    (props.fileActionState.applyStatus === 'skipped' && props.fileActionState.fileActions.length > 0);
+  if (!hasRenderableResults) {
+    return null;
+  }
+  return (
+    <div className="mt-2 rounded border border-gray-200 bg-white p-2" data-testid="workspace-chat-file-actions">
+      <p className="text-[11px] font-semibold text-gray-700">File Action Results</p>
+      {props.fileActionState.applyStatus === 'skipped' ? (
+        <p className="mt-1 text-[11px] text-amber-700" data-testid="workspace-chat-file-actions-skipped">
+          File action application skipped ({props.fileActionState.skipReason ?? 'unknown reason'}).
+        </p>
+      ) : null}
+      {props.fileActionState.results.length > 0 ? (
+        <ul className="mt-1 space-y-1" data-testid="workspace-chat-file-actions-list">
+          {props.fileActionState.results.map((result, index) => (
+            <li
+              key={`${result.path}-${result.action}-${index}`}
+              className="rounded border border-gray-200 bg-gray-50 px-2 py-1 text-[11px]"
+            >
+              <p className="font-mono text-gray-800">
+                {result.action} {result.path}
+              </p>
+              <p
+                className={
+                  result.status === 'success'
+                    ? 'text-emerald-700'
+                    : result.status === 'failed'
+                      ? 'text-red-700'
+                      : 'text-amber-700'
+                }
+              >
+                {result.status}
+              </p>
+              {result.error ? <p className="text-red-700">{result.error}</p> : null}
+            </li>
+          ))}
+        </ul>
       ) : null}
     </div>
   );

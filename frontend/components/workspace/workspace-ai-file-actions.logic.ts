@@ -28,6 +28,80 @@ export interface WorkspaceExecutionFileActionState {
   results: WorkspaceExecutionFileActionResult[];
 }
 
+export function isWorkspaceFileAction(value: unknown): value is WorkspaceFileAction {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+  const candidate = value as {
+    action?: unknown;
+    path?: unknown;
+    content?: unknown;
+  };
+  return (
+    (candidate.action === 'create' ||
+      candidate.action === 'write' ||
+      candidate.action === 'update') &&
+    typeof candidate.path === 'string' &&
+    typeof candidate.content === 'string'
+  );
+}
+
+function isWorkspaceExecutionFileActionResult(
+  value: unknown,
+): value is WorkspaceExecutionFileActionResult {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+  const candidate = value as {
+    action?: unknown;
+    path?: unknown;
+    status?: unknown;
+    error?: unknown;
+  };
+  return (
+    (candidate.action === 'create' ||
+      candidate.action === 'write' ||
+      candidate.action === 'update') &&
+    typeof candidate.path === 'string' &&
+    (candidate.status === 'success' ||
+      candidate.status === 'failed' ||
+      candidate.status === 'skipped') &&
+    (candidate.error === null || typeof candidate.error === 'string')
+  );
+}
+
+export function isWorkspaceExecutionFileActionState(
+  value: unknown,
+): value is WorkspaceExecutionFileActionState {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+  const candidate = value as {
+    executionId?: unknown;
+    source?: unknown;
+    fileActions?: unknown;
+    applyStatus?: unknown;
+    skipReason?: unknown;
+    results?: unknown;
+  };
+  if (
+    typeof candidate.executionId !== 'string' ||
+    (candidate.source !== 'stream' && candidate.source !== 'status') ||
+    !Array.isArray(candidate.fileActions) ||
+    (candidate.applyStatus !== 'pending' &&
+      candidate.applyStatus !== 'applied' &&
+      candidate.applyStatus !== 'skipped') ||
+    (candidate.skipReason !== null && typeof candidate.skipReason !== 'string') ||
+    !Array.isArray(candidate.results)
+  ) {
+    return false;
+  }
+  return (
+    candidate.fileActions.every((item) => isWorkspaceFileAction(item)) &&
+    candidate.results.every((item) => isWorkspaceExecutionFileActionResult(item))
+  );
+}
+
 export function acquireExecutionApplyGuard(
   executionId: string,
   appliedExecutionIds: Set<string>,

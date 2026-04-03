@@ -13843,7 +13843,7 @@ Implementation of AI-03-01 proceeds through bounded child slices AI-03-01A, AI-0
 **Child slices:**
 - AI-03-01A — Backend File-Action Output Pipeline (PLANNED)
 - AI-03-01B — Frontend File-Action Application (COMPLETE and LOCKED)
-- AI-03-01C — Frontend File-Action Chat Result Surfacing (NOT YET REGISTERED)
+- AI-03-01C — Frontend Chat File-Action Result Surfacing (PLANNED)
 
 **Objective:**
 
@@ -14013,5 +14013,63 @@ AI-03-01A established the backend fileActions contract and dual-channel delivery
 - No file tree/editor/preview/checkpoint orchestration is introduced
 
 **Reference:** TASKS.md, docs/specs/AI-03-01-ai-to-workspace-file-actions.md, docs/AI-03-01A-CHECKPOINT.md, AI_Sandbox_Platform_Master_Plan_Revised.md (Section 4.1, 7.2 AI-03), PRD.md, ARCHITECTURE.md
+
+---
+
+### AI-03-01C: Frontend Chat File-Action Result Surfacing
+
+**Task ID:** AI-03-01C
+**Family:** AI-03 (AI-to-Workspace Actions)
+**Parent:** AI-03-01
+**Stage:** AI-03-01C
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (CORE PRODUCT LOOP, FRONTEND RESULT-SURFACING SLICE)
+**Dependencies:** AI-03-01B (COMPLETE and LOCKED); Phase 84 (Complete and Locked)
+**Checkpoint:** `docs/AI-03-01C-CHECKPOINT.md`
+
+**Objective:**
+
+Implement the third slice of AI-03-01 so the chat thread surfaces the structured per-file success/failure results produced by AI-03-01B, making AI file changes visible to the user without yet introducing broader workspace coherence behavior.
+
+**Why this exists:**
+
+AI-03-01A established the backend fileActions contract and dual-channel delivery. AI-03-01B safely applied file actions exactly once and stored structured per-file results in frontend state. AI-03-01C completes AI-03-01 by making those results visible in the existing assistant message thread, while still keeping file tree refresh, editor reload, preview refresh, and auto-checkpoint work in AI-03-02.
+
+**Scope:**
+
+1. Surface structured per-file file-action results inside the existing assistant chat thread entry
+2. Show per-file action + path + success/failure state
+3. Show per-file error message when a write failed
+4. Show appropriate message when application was skipped due to stale-session or terminated-session guard
+5. Preserve text-only responses when no file actions exist
+6. Keep structured file-action result data compatible with existing chat persistence path used in Phase 84E localStorage behavior
+7. Preserve existing chat submit / stream / poll / cancel behavior
+
+**Non-Goals:**
+
+- ❌ No file tree refresh, editor reload, preview refresh (that is AI-03-02)
+- ❌ No auto-checkpoint (that is AI-03-02)
+- ❌ No AI-03-02 behavior of any kind
+- ❌ No backend contract redesign
+- ❌ No file write behavior redesign
+- ❌ No new product endpoints
+- ❌ No diff viewer in chat
+- ❌ No clickable file navigation unless already trivial and clearly within current surface
+- ❌ No chat layout redesign
+- ❌ No quota / billing / auth redesign
+
+**Acceptance Criteria:**
+
+- Assistant thread entry shows file-action results when AI file actions occurred
+- Per-file success/failure is visible
+- Per-file error message is visible when a write failed
+- Skipped application state is visible when stale-session or terminated-session guard blocked writes
+- Text-only responses still render as before when no file actions exist
+- Existing chat persistence remains coherent
+- Existing submit / stream / poll / cancel behavior remains preserved
+- No file tree/editor/preview/checkpoint orchestration is introduced
+
+**Reference:** TASKS.md, docs/specs/AI-03-01-ai-to-workspace-file-actions.md, docs/AI-03-01B-CHECKPOINT.md, AI_Sandbox_Platform_Master_Plan_Revised.md (Section 4.1, 7.2 AI-03), PRD.md, ARCHITECTURE.md
 
 ---
