@@ -13842,7 +13842,7 @@ Implementation of AI-03-01 proceeds through bounded child slices AI-03-01A, AI-0
 
 **Child slices:**
 - AI-03-01A — Backend File-Action Output Pipeline (PLANNED)
-- AI-03-01B — Frontend File-Action Application (NOT YET REGISTERED)
+- AI-03-01B — Frontend File-Action Application (COMPLETE and LOCKED)
 - AI-03-01C — Frontend File-Action Chat Result Surfacing (NOT YET REGISTERED)
 
 **Objective:**
@@ -13950,5 +13950,68 @@ Before frontend can apply AI file actions safely, the backend must produce a rel
 - No frontend workspace side effects happen yet
 
 **Reference:** TASKS.md, docs/specs/AI-03-01-ai-to-workspace-file-actions.md, AI_Sandbox_Platform_Master_Plan_Revised.md (Section 4.1, 7.2 AI-03), PRD.md, ARCHITECTURE.md
+
+---
+
+### AI-03-01B: Frontend File-Action Application
+
+**Task ID:** AI-03-01B
+**Family:** AI-03 (AI-to-Workspace Actions)
+**Parent:** AI-03-01
+**Stage:** AI-03-01B
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (CORE PRODUCT LOOP, FRONTEND SIDE-EFFECT SLICE)
+**Dependencies:** AI-03-01A (COMPLETE and LOCKED); Phase 84 (Complete and Locked)
+**Checkpoint:** `docs/AI-03-01B-CHECKPOINT.md`
+
+**Objective:**
+
+Implement the second slice of AI-03-01 so the frontend can consume backend fileActions from either the execution stream or the durable execution status path, and apply those file actions exactly once to the active session workspace using the existing workspace file write path.
+
+**Why this exists:**
+
+AI-03-01A established the backend fileActions contract and dual-channel delivery. AI-03-01B is the first slice that causes real workspace side effects. It must apply file actions safely, exactly once per execution, without yet doing broader workspace coherence or chat-result rendering.
+
+**Scope:**
+
+1. Consume fileActions from stream event path (`file_actions` event) and `GET /api/ai/executions/:id` fallback path
+2. Store fileActions per execution in frontend state
+3. Apply file actions exactly once per execution ID (once-only apply guard)
+4. Use existing workspace file write capability only
+5. Apply file actions sequentially for the first slice
+6. Enforce active-session guard — skip writes if session is not active
+7. Enforce stale-session guard — skip writes if session context has changed
+8. Enforce terminated-session guard — skip writes if session is terminated
+9. Collect structured per-file success/failure results in frontend state for later slices
+10. Preserve existing chat submit / stream / poll / cancel behavior
+
+**Non-Goals:**
+
+- ❌ No chat result rendering changes (that is AI-03-01C)
+- ❌ No file tree refresh, editor reload, preview refresh (that is AI-03-02)
+- ❌ No auto-checkpoint (that is AI-03-02)
+- ❌ No AI-03-02 behavior of any kind
+- ❌ No backend file-action contract redesign
+- ❌ No new product endpoints
+- ❌ No shell-first behavior
+- ❌ No agent framework
+- ❌ No retry framework beyond current minimal behavior
+- ❌ No quota / billing / auth redesign
+
+**Acceptance Criteria:**
+
+- Frontend can receive fileActions from stream and/or execution status fallback
+- File actions are applied exactly once per execution ID
+- Stream + poll dual delivery does not cause double-apply
+- Existing workspace file write path is reused
+- Writes are skipped for stale session changes
+- Writes are skipped for terminated sessions
+- Per-file success/failure results are collected in state
+- Failed individual writes do not block later writes in the same sequence
+- Existing chat / stream / poll / cancel behavior remains preserved
+- No file tree/editor/preview/checkpoint orchestration is introduced
+
+**Reference:** TASKS.md, docs/specs/AI-03-01-ai-to-workspace-file-actions.md, docs/AI-03-01A-CHECKPOINT.md, AI_Sandbox_Platform_Master_Plan_Revised.md (Section 4.1, 7.2 AI-03), PRD.md, ARCHITECTURE.md
 
 ---

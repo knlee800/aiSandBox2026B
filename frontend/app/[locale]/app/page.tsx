@@ -45,6 +45,12 @@ import {
   type WorkspaceFileSaveState,
   type WorkspaceFileSurfaceState,
 } from '@/components/workspace/workspace-file-navigation.logic';
+import {
+  acquireExecutionApplyGuard,
+  applySequentialFileActions,
+  type WorkspaceExecutionFileActionState,
+  type WorkspaceFileAction,
+} from '@/components/workspace/workspace-ai-file-actions.logic';
 
 const HIDDEN_UNUSABLE_SESSIONS_STORAGE_KEY = 'workspace_hidden_unusable_sessions';
 const CHAT_THREAD_STORAGE_KEY_PREFIX = 'workspace_chat_thread';
@@ -56,6 +62,7 @@ interface WorkspaceChatExecutionResponse {
   executionId?: string;
   status?: string;
   output?: string;
+  fileActions?: WorkspaceFileAction[];
 }
 
 interface WorkspaceChatThreadMessage {
@@ -65,6 +72,31 @@ interface WorkspaceChatThreadMessage {
 }
 
 const DRIVER_API_KEY_STORAGE_KEY = 'driver_api_key';
+
+function normalizeWorkspaceFileActions(rawActions: unknown): WorkspaceFileAction[] {
+  if (!Array.isArray(rawActions)) {
+    return [];
+  }
+  const normalized: WorkspaceFileAction[] = [];
+  for (const item of rawActions) {
+    if (!item || typeof item !== 'object') {
+      continue;
+    }
+    const value = item as { action?: unknown; path?: unknown; content?: unknown };
+    if (
+      (value.action === 'create' || value.action === 'write' || value.action === 'update') &&
+      typeof value.path === 'string' &&
+      typeof value.content === 'string'
+    ) {
+      normalized.push({
+        action: value.action,
+        path: value.path,
+        content: value.content,
+      });
+    }
+  }
+  return normalized;
+}
 
 function isQuotaOrRateLimitChatFailure(rawMessage: string): boolean {
   const normalizedMessage = rawMessage.toLowerCase();
@@ -217,10 +249,18 @@ export default function AppPage() {
   const [chatStatusMessage, setChatStatusMessage] = useState<string | null>(null);
   const [chatError, setChatError] = useState<string | null>(null);
   const [chatThreadMessages, setChatThreadMessages] = useState<WorkspaceChatThreadMessage[]>([]);
+  const [chatExecutionFileActionStates, setChatExecutionFileActionStates] = useState<
+    Record<string, WorkspaceExecutionFileActionState>
+  >({});
   const chatStreamRef = useRef<EventSource | null>(null);
   const chatResponseTextRef = useRef('');
   const skipNextChatThreadPersistRef = useRef(false);
   const pendingAssistantMessageIdRef = useRef<string | null>(null);
+  const selectedSessionIdRef = useRef<string | null>(null);
+  const sessionsRef = useRef<WorkspaceShellSession[]>([]);
+  const executionSessionIdByExecutionIdRef = useRef<Record<string, string>>({});
+  const executionFileActionsByExecutionIdRef = useRef<Record<string, WorkspaceFileAction[]>>({});
+  const appliedFileActionsExecutionIdsRef = useRef<Set<string>>(new Set());
   const [execState, setExecState] = useState<WorkspaceExecState>({
     status: 'idle',
     result: null,
@@ -276,6 +316,14 @@ export default function AppPage() {
     void loadSessions(token);
     void loadDashboardSlice(token);
   }, [locale, router]);
+
+  useEffect(() => {
+    selectedSessionIdRef.current = selectedSessionId;
+  }, [selectedSessionId]);
+
+  useEffect(() => {
+    sessionsRef.current = sessions;
+  }, [sessions]);
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -376,6 +424,10 @@ export default function AppPage() {
     setChatStatusMessage(null);
     setChatError(null);
     setChatRequestState('idle');
+    setChatExecutionFileActionStates({});
+    executionSessionIdByExecutionIdRef.current = {};
+    executionFileActionsByExecutionIdRef.current = {};
+    appliedFileActionsExecutionIdsRef.current = new Set<string>();
     skipNextChatThreadPersistRef.current = true;
 
     if (!selectedSessionId) {
@@ -1419,8 +1471,10 @@ export default function AppPage() {
       const data = (await response.json()) as WorkspaceChatExecutionResponse;
       const nextStatus = typeof data.status === 'string' ? data.status : 'queued';
       const nextOutput = typeof data.output === 'string' ? data.output.trim() : '';
+      const nextFileActions = normalizeWorkspaceFileActions(data.fileActions);
 
       if (nextStatus === 'completed') {
+        consumeExecutionFileActions(executionId, 'status', nextFileActions);
         chatStreamRef.current?.close();
         chatStreamRef.current = null;
         setChatRequestState('completed');
@@ -1560,8 +1614,13 @@ export default function AppPage() {
       const nextExecutionId = typeof data.executionId === 'string' ? data.executionId : null;
       const nextStatus = typeof data.status === 'string' ? data.status : null;
       const nextOutput = typeof data.output === 'string' ? data.output.trim() : '';
+      const nextFileActions = normalizeWorkspaceFileActions(data.fileActions);
+      const executionSessionId = selectedSessionId;
 
       setChatExecutionId(nextExecutionId);
+      if (nextExecutionId && executionSessionId) {
+        executionSessionIdByExecutionIdRef.current[nextExecutionId] = executionSessionId;
+      }
       if (nextExecutionId) {
         const stream = new EventSource(
           `/api/ai/executions/${encodeURIComponent(nextExecutionId)}/stream`,
@@ -1573,7 +1632,11 @@ export default function AppPage() {
             return;
           }
           try {
-            const parsed = JSON.parse(rawData) as { type?: string; content?: string };
+            const parsed = JSON.parse(rawData) as {
+              type?: string;
+              content?: string;
+              actions?: unknown;
+            };
             if (parsed.type === 'token' && typeof parsed.content === 'string') {
               if (chatResponseTextRef.current === parsed.content) {
                 return;
@@ -1592,6 +1655,11 @@ export default function AppPage() {
                   ),
                 );
               }
+              return;
+            }
+            if (parsed.type === 'file_actions') {
+              const streamFileActions = normalizeWorkspaceFileActions(parsed.actions);
+              consumeExecutionFileActions(nextExecutionId, 'stream', streamFileActions);
               return;
             }
             if (parsed.type === 'complete') {
@@ -1613,6 +1681,9 @@ export default function AppPage() {
       }
 
       if (nextStatus === 'completed') {
+        if (nextExecutionId) {
+          consumeExecutionFileActions(nextExecutionId, 'status', nextFileActions);
+        }
         setChatRequestState('completed');
         const completedResponse =
           chatResponseTextRef.current.trim().length > 0
@@ -1695,6 +1766,99 @@ export default function AppPage() {
         pendingAssistantMessageIdRef.current = null;
       }
     }
+  }
+
+  function getSessionByIdForFileActions(sessionId: string): WorkspaceShellSession | null {
+    return sessionsRef.current.find((session) => session.id === sessionId) ?? null;
+  }
+
+  async function maybeApplyExecutionFileActions(
+    executionId: string,
+    source: 'stream' | 'status',
+  ): Promise<void> {
+    if (!acquireExecutionApplyGuard(executionId, appliedFileActionsExecutionIdsRef.current)) {
+      return;
+    }
+    const actions = executionFileActionsByExecutionIdRef.current[executionId] ?? [];
+    const executionSessionId = executionSessionIdByExecutionIdRef.current[executionId] ?? null;
+
+    if (!executionSessionId) {
+      setChatExecutionFileActionStates((currentStates) => ({
+        ...currentStates,
+        [executionId]: {
+          executionId,
+          source,
+          fileActions: actions,
+          applyStatus: 'skipped',
+          skipReason: 'missing-execution-session',
+          results: [],
+        },
+      }));
+      return;
+    }
+
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      setChatExecutionFileActionStates((currentStates) => ({
+        ...currentStates,
+        [executionId]: {
+          executionId,
+          source,
+          fileActions: actions,
+          applyStatus: 'skipped',
+          skipReason: 'missing-auth-token',
+          results: [],
+        },
+      }));
+      return;
+    }
+
+    const applyResult = await applySequentialFileActions({
+      sessionId: executionSessionId,
+      actions,
+      getSelectedSessionId: () => selectedSessionIdRef.current,
+      getSessionById: getSessionByIdForFileActions,
+      writeFile: async (action) => {
+        await writeWorkspaceFile({
+          token,
+          sessionId: executionSessionId,
+          filePath: action.path,
+          content: action.content,
+        });
+      },
+    });
+
+    setChatExecutionFileActionStates((currentStates) => ({
+      ...currentStates,
+      [executionId]: {
+        executionId,
+        source,
+        fileActions: actions,
+        applyStatus: applyResult.applyStatus,
+        skipReason: applyResult.skipReason,
+        results: applyResult.results,
+      },
+    }));
+  }
+
+  function consumeExecutionFileActions(
+    executionId: string,
+    source: 'stream' | 'status',
+    fileActions: WorkspaceFileAction[],
+  ): void {
+    executionFileActionsByExecutionIdRef.current[executionId] = fileActions;
+    setChatExecutionFileActionStates((currentStates) => ({
+      ...currentStates,
+      [executionId]: {
+        executionId,
+        source,
+        fileActions,
+        applyStatus: 'pending',
+        skipReason: null,
+        results: [],
+      },
+    }));
+    void maybeApplyExecutionFileActions(executionId, source);
   }
 
   function resetWorkspaceFileSurface(): void {
@@ -1970,6 +2134,8 @@ export default function AppPage() {
   function handlePreviewError(): void {
     setPreviewState('error');
   }
+
+  void chatExecutionFileActionStates;
 
   const visibleSessions = sessions.filter((session) => !hiddenSessionIds.includes(session.id));
 
