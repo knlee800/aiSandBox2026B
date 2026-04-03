@@ -53,6 +53,10 @@ import {
   type WorkspaceFileAction,
 } from '@/components/workspace/workspace-ai-file-actions.logic';
 import {
+  acquireExecutionCoherenceGuard,
+  runAiActionCoherence,
+} from '@/components/workspace/workspace-ai-coherence.logic';
+import {
   parseStoredChatThreadMessages,
   type WorkspaceChatThreadMessage,
 } from '@/components/workspace/workspace-chat-thread.logic';
@@ -62,6 +66,7 @@ const CHAT_THREAD_STORAGE_KEY_PREFIX = 'workspace_chat_thread';
 const CHAT_EXECUTION_POLL_INTERVAL_MS = 3000;
 const CHAT_QUOTA_RATE_LIMIT_GUIDANCE =
   'Request blocked by quota or rate limits. Check quota usage or retry shortly.';
+const AI_AUTO_CHECKPOINT_DESCRIPTION = 'AI: applied workspace file actions';
 
 interface WorkspaceChatExecutionResponse {
   executionId?: string;
@@ -214,6 +219,7 @@ export default function AppPage() {
   const executionAssistantMessageIdByExecutionIdRef = useRef<Record<string, string>>({});
   const executionFileActionsByExecutionIdRef = useRef<Record<string, WorkspaceFileAction[]>>({});
   const appliedFileActionsExecutionIdsRef = useRef<Set<string>>(new Set());
+  const coheredExecutionIdsRef = useRef<Set<string>>(new Set());
   const [execState, setExecState] = useState<WorkspaceExecState>({
     status: 'idle',
     result: null,
@@ -382,6 +388,7 @@ export default function AppPage() {
     executionAssistantMessageIdByExecutionIdRef.current = {};
     executionFileActionsByExecutionIdRef.current = {};
     appliedFileActionsExecutionIdsRef.current = new Set<string>();
+    coheredExecutionIdsRef.current = new Set<string>();
     skipNextChatThreadPersistRef.current = true;
 
     if (!selectedSessionId) {
@@ -1758,6 +1765,64 @@ export default function AppPage() {
     return sessionsRef.current.find((session) => session.id === sessionId) ?? null;
   }
 
+  async function maybeRunExecutionCoherence(executionId: string): Promise<void> {
+    const fileActionState = chatExecutionFileActionStates[executionId];
+    if (!fileActionState || fileActionState.applyStatus !== 'applied') {
+      return;
+    }
+    if (!fileActionState.results.some((result) => result.status === 'success')) {
+      return;
+    }
+    if (!acquireExecutionCoherenceGuard(executionId, coheredExecutionIdsRef.current)) {
+      return;
+    }
+
+    const token = localStorage.getItem('access_token');
+    const executionSessionId = executionSessionIdByExecutionIdRef.current[executionId] ?? null;
+    if (!token || !userId || !executionSessionId) {
+      return;
+    }
+
+    const executionSession = getSessionByIdForFileActions(executionSessionId);
+    const isExecutionSessionUsable =
+      Boolean(executionSession) &&
+      Boolean(executionSession && isUsableSession(executionSession)) &&
+      !executionSession?.terminatedAt &&
+      executionSession?.status !== 'terminated';
+    const selectedFilePathAtTrigger = selectedFilePath;
+
+    await runAiActionCoherence({
+      executionId,
+      fileActionState,
+      selectedSessionId: selectedSessionIdRef.current,
+      executionSessionId,
+      isExecutionSessionUsable,
+      selectedFilePath: selectedFilePathAtTrigger,
+      checkpointDescription: AI_AUTO_CHECKPOINT_DESCRIPTION,
+      refreshFileTree: async () => {
+        await loadWorkspaceFilesForSession(token, executionSessionId);
+      },
+      reloadEditorFile: async (filePath) => {
+        await loadWorkspaceFileContent(token, executionSessionId, filePath);
+      },
+      refreshPreview: async () => {
+        await refreshPreviewForSession(token, executionSessionId);
+      },
+      createCheckpoint: async (description) => {
+        const checkpointResult: WorkspaceCheckpointCreateResult = await createWorkspaceCheckpoint({
+          token,
+          sessionId: executionSessionId,
+          userId,
+          description,
+        });
+        return { commitHash: checkpointResult.commitHash };
+      },
+      refreshCheckpoints: async () => {
+        await loadCheckpoints(token, executionSessionId);
+      },
+    });
+  }
+
   function attachExecutionFileActionStateToAssistantMessage(
     executionId: string,
     nextState: WorkspaceExecutionFileActionState,
@@ -1866,6 +1931,18 @@ export default function AppPage() {
     });
     void maybeApplyExecutionFileActions(executionId, source);
   }
+
+  useEffect(() => {
+    const executionIds = Object.keys(chatExecutionFileActionStates);
+    if (executionIds.length === 0) {
+      return;
+    }
+    void (async () => {
+      for (const executionId of executionIds) {
+        await maybeRunExecutionCoherence(executionId);
+      }
+    })();
+  }, [chatExecutionFileActionStates, selectedFilePath, userId]);
 
   function resetWorkspaceFileSurface(): void {
     fileNavigationRequestIdRef.current += 1;

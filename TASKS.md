@@ -5769,7 +5769,7 @@ Fix the real product/auth gap where unauthenticated users can still enter `/en/a
 
 ## AI-03 — AI-to-Workspace Actions (Core Product Loop)
 
-**Current stage:** AI-03-01C (COMPLETE and LOCKED)
+**Current stage:** AI-03-02 (COMPLETE and LOCKED)
 
 ---
 
@@ -5906,5 +5906,46 @@ AI-03-01A established the backend fileActions contract. AI-03-01B safely applied
 **Dependencies:** AI-03-01B (COMPLETE and LOCKED); Phase 84 (Complete and Locked)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → AI-03-01C for full details; `docs/specs/AI-03-01-ai-to-workspace-file-actions.md` for parent spec
+
+---
+
+#### AI-03-02: Post-AI-Action Workspace Coherence
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (CORE PRODUCT LOOP, POST-ACTION COHERENCE)
+**Checkpoint:** `docs/AI-03-02-CHECKPOINT.md`
+
+**Objective:**
+After AI file actions complete, update the workspace surfaces coherently using existing request-driven patterns: file tree refresh, active-file editor reload when affected, preview refresh, auto-checkpoint creation through the existing commit path, and checkpoint-list refresh.
+
+**Why this exists:**
+AI-03-01 completed the minimal AI file-action loop. AI-03-02 makes the workspace reflect those AI changes coherently without introducing polling, watchers, websocket orchestration, or broader checkpoint redesign.
+
+**Scope:**
+- Trigger file tree refresh after AI file actions complete using existing file-tree loading pattern
+- Reload editor content if the currently selected file was affected
+- Trigger preview refresh using existing preview refresh path
+- Auto-create checkpoint using existing `POST /api/git/:sessionId/commit` path
+- Use simple AI-oriented checkpoint description string only
+- Refresh checkpoint list after successful AI-triggered checkpoint creation
+- Keep all refresh behavior request-driven only
+- Reuse existing stale-request guard patterns where applicable
+
+**Non-Goals:**
+- ❌ No polling
+- ❌ No filesystem watchers
+- ❌ No websocket push coherence layer
+- ❌ No richer checkpoint metadata
+- ❌ No checkpoint schema redesign
+- ❌ No AI orchestration / agent framework
+- ❌ No project persistence work
+- ❌ No backend chat persistence work
+- ❌ No quota / billing / auth redesign
+- ❌ No shell-first behavior
+- ❌ No broad workspace redesign
+
+**Dependencies:** AI-03-01C (COMPLETE and LOCKED); Phase 79/80 (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → AI-03-02 for full details; `docs/specs/AI-03-02-post-ai-workspace-coherence.md` for spec
 
 ---

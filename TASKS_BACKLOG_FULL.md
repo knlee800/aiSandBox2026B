@@ -14073,3 +14073,60 @@ AI-03-01A established the backend fileActions contract and dual-channel delivery
 **Reference:** TASKS.md, docs/specs/AI-03-01-ai-to-workspace-file-actions.md, docs/AI-03-01B-CHECKPOINT.md, AI_Sandbox_Platform_Master_Plan_Revised.md (Section 4.1, 7.2 AI-03), PRD.md, ARCHITECTURE.md
 
 ---
+
+### AI-03-02: Post-AI-Action Workspace Coherence
+
+**Task ID:** AI-03-02
+**Family:** AI-03 (AI-to-Workspace Actions)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (CORE PRODUCT LOOP, POST-ACTION COHERENCE)
+**Dependencies:** AI-03-01C (COMPLETE and LOCKED); Phase 79/80 (Complete and Locked)
+**Checkpoint:** `docs/AI-03-02-CHECKPOINT.md`
+
+**Objective:**
+
+After AI file actions complete, update the workspace surfaces coherently using existing request-driven patterns: file tree refresh, active-file editor reload when affected, preview refresh, auto-checkpoint creation through the existing commit path, and checkpoint-list refresh.
+
+**Why this exists:**
+
+AI-03-01 completed the minimal AI file-action loop: backend file-action output (AI-03-01A), exactly-once frontend file application (AI-03-01B), and chat-visible result surfacing (AI-03-01C). AI-03-02 now makes the workspace reflect those AI changes coherently without introducing polling, watchers, websocket orchestration, or broader checkpoint redesign.
+
+**Scope:**
+
+1. Trigger file tree refresh after AI file actions complete, using existing file-tree loading pattern
+2. Reload editor content if the currently selected file was one of the files written by AI
+3. Trigger preview refresh using existing preview refresh path
+4. Auto-create a checkpoint using existing `POST /api/git/:sessionId/commit` path with a simple AI-oriented description string
+5. Refresh checkpoint list after successful AI-triggered checkpoint creation
+6. Keep all refresh behavior strictly request-driven
+7. Reuse existing stale-request guard patterns where applicable
+
+**Non-Goals:**
+
+- ❌ No polling
+- ❌ No filesystem watchers
+- ❌ No websocket push coherence layer
+- ❌ No richer checkpoint metadata or schema redesign
+- ❌ No AI orchestration / agent framework
+- ❌ No project persistence work
+- ❌ No backend chat persistence work
+- ❌ No quota / billing / auth redesign
+- ❌ No shell-first behavior
+- ❌ No broad workspace redesign
+- ❌ No new product endpoints beyond what existing patterns already provide
+
+**Acceptance Criteria:**
+
+- After AI writes files, file tree updates without manual user refresh
+- If AI changed the currently selected file, editor reloads that file content automatically
+- Preview refreshes after AI file changes
+- A checkpoint is auto-created via existing commit path after successful AI file actions
+- Checkpoint list refreshes and shows the new AI-triggered checkpoint
+- All behavior is request-driven only — no polling, watchers, or websocket behavior introduced
+- Existing manual checkpoint, revert, chat, auth, and session behavior remains preserved
+- No regressions in Phase 79/80 file tree, editor, preview, or checkpoint surfaces
+
+**Reference:** TASKS.md, docs/specs/AI-03-02-post-ai-workspace-coherence.md, docs/AI-03-01C-CHECKPOINT.md, AI_Sandbox_Platform_Master_Plan_Revised.md, PRD.md, ARCHITECTURE.md
+
+---
