@@ -4883,6 +4883,12 @@ function DashboardSummary(props: {
   quotaSummary: WorkspaceQuotaSummary;
   activeSessions: number;
 }) {
+  const remainingTokens24h = Math.max(
+    0,
+    props.quotaSummary.maxTokens24h - props.usageSummary.tokensUsed24h,
+  );
+  const quotaResetsAt = props.quotaSummary.resetAt || props.usageSummary.resetAt;
+
   return (
     <div className="mt-2 space-y-2" data-testid="dashboard-summary-cards">
       <div className="rounded border border-gray-200 px-2 py-2">
@@ -4908,6 +4914,18 @@ function DashboardSummary(props: {
             {props.usageSummary.tokensUsed24h}/{props.quotaSummary.maxTokens24h}
           </p>
         </div>
+      </div>
+      <div
+        className="rounded border border-blue-200 bg-blue-50 px-2 py-2"
+        data-testid="dashboard-quota-usage-indicator"
+      >
+        <p className="text-xs font-medium text-blue-900">Quota Status</p>
+        <p className="text-xs text-blue-800">
+          {remainingTokens24h} tokens remaining in the current 24h window.
+        </p>
+        <p className="text-[11px] text-blue-700">
+          Usage window resets at: <span className="font-mono">{quotaResetsAt}</span>
+        </p>
       </div>
     </div>
   );

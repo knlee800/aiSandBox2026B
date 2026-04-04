@@ -235,6 +235,9 @@ describe('workspace shell component', () => {
     assert.match(html, /Current User/);
     assert.match(html, /user@example\.com/);
     assert.match(html, /Active Sessions/);
+    assert.match(html, /Quota Status/);
+    assert.match(html, /tokens remaining in the current 24h window/);
+    assert.match(html, /Usage window resets at:/);
   });
 
   test('renders Stop for usable sessions and Remove for unusable sessions', () => {

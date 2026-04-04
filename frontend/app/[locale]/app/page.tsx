@@ -65,6 +65,10 @@ import {
   persistSessionChatMessageToBackend,
 } from '@/components/workspace/workspace-chat-persistence.logic';
 import {
+  shouldRefreshDashboardForChatStatus,
+  toQuotaRateLimitGuidance,
+} from '@/components/workspace/workspace-quota-usage.logic';
+import {
   exportWorkspaceArchive,
   importWorkspaceArchive,
   loadWorkspaceSnapshots,
@@ -82,8 +86,6 @@ import {
 const HIDDEN_UNUSABLE_SESSIONS_STORAGE_KEY = 'workspace_hidden_unusable_sessions';
 const CHAT_THREAD_STORAGE_KEY_PREFIX = 'workspace_chat_thread';
 const CHAT_EXECUTION_POLL_INTERVAL_MS = 3000;
-const CHAT_QUOTA_RATE_LIMIT_GUIDANCE =
-  'Request blocked by quota or rate limits. Check quota usage or retry shortly.';
 const AI_AUTO_CHECKPOINT_DESCRIPTION = 'AI: applied workspace file actions';
 
 interface WorkspaceChatExecutionResponse {
@@ -102,23 +104,35 @@ function normalizeWorkspaceFileActions(rawActions: unknown): WorkspaceFileAction
   return rawActions.filter((item): item is WorkspaceFileAction => isWorkspaceFileAction(item));
 }
 
-function isQuotaOrRateLimitChatFailure(rawMessage: string): boolean {
-  const normalizedMessage = rawMessage.toLowerCase();
-  return (
-    normalizedMessage.includes('429') ||
-    normalizedMessage.includes('rate limit') ||
-    normalizedMessage.includes('rate-limit') ||
-    normalizedMessage.includes('too many requests') ||
-    normalizedMessage.includes('quota')
-  );
+function toChatAssistantFailureMessage(input: {
+  rawMessage?: string;
+  fallbackMessage: string;
+  statusCode?: number;
+  retryAfterHeader?: string | null;
+}): string {
+  return toQuotaRateLimitGuidance(input);
 }
 
-function toChatAssistantFailureMessage(rawMessage: string, fallbackMessage: string): string {
-  const trimmedRawMessage = rawMessage.trim();
-  if (trimmedRawMessage && isQuotaOrRateLimitChatFailure(trimmedRawMessage)) {
-    return CHAT_QUOTA_RATE_LIMIT_GUIDANCE;
+async function readResponseErrorMessage(response: Response): Promise<string> {
+  try {
+    const payload = (await response.json()) as
+      | { message?: string; error?: string; detail?: string }
+      | null;
+    if (payload && typeof payload === 'object') {
+      if (typeof payload.message === 'string' && payload.message.trim()) {
+        return payload.message.trim();
+      }
+      if (typeof payload.error === 'string' && payload.error.trim()) {
+        return payload.error.trim();
+      }
+      if (typeof payload.detail === 'string' && payload.detail.trim()) {
+        return payload.detail.trim();
+      }
+    }
+  } catch {
+    // Ignore parse errors and fallback to empty detail.
   }
-  return trimmedRawMessage || fallbackMessage;
+  return '';
 }
 
 function parseHiddenSessionIds(raw: string | null): string[] {
@@ -382,6 +396,7 @@ export default function AppPage() {
     void loadCheckpoints(token, selectedSessionId);
     void loadWorkspaceSnapshotsForUser(token);
     void loadWorkspaceProjectsForUser(token);
+    void loadDashboardSlice(token);
   }, [selectedSessionId]);
 
   useEffect(() => {
@@ -1823,7 +1838,13 @@ export default function AppPage() {
       });
 
       if (!response.ok) {
-        throw new Error(`Chat status check failed (${response.status})`);
+        const failureMessage = toChatAssistantFailureMessage({
+          rawMessage: await readResponseErrorMessage(response),
+          fallbackMessage: `Chat status check failed (${response.status}).`,
+          statusCode: response.status,
+          retryAfterHeader: response.headers.get('Retry-After'),
+        });
+        throw new Error(failureMessage);
       }
 
       const data = (await response.json()) as WorkspaceChatExecutionResponse;
@@ -1866,6 +1887,9 @@ export default function AppPage() {
         }
         setChatStatusMessage('Assistant response received.');
         setChatError(null);
+        if (shouldRefreshDashboardForChatStatus(nextStatus)) {
+          await loadDashboardSlice(token);
+        }
         return;
       }
 
@@ -1875,8 +1899,10 @@ export default function AppPage() {
         setChatRequestState('failed');
         setChatStatusMessage(null);
         const failureMessage = toChatAssistantFailureMessage(
-          nextOutput,
-          `Execution ended with status: ${nextStatus}.`,
+          {
+            rawMessage: nextOutput,
+            fallbackMessage: `Execution ended with status: ${nextStatus}.`,
+          },
         );
         setChatError(failureMessage);
         const pendingAssistantId = pendingAssistantMessageIdRef.current;
@@ -1903,6 +1929,9 @@ export default function AppPage() {
           }
           pendingAssistantMessageIdRef.current = null;
         }
+        if (shouldRefreshDashboardForChatStatus(nextStatus)) {
+          await loadDashboardSlice(token);
+        }
         return;
       }
 
@@ -1917,10 +1946,14 @@ export default function AppPage() {
       }
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      const failureMessage = toChatAssistantFailureMessage(detail, 'Chat status check failed.');
+      const failureMessage = toChatAssistantFailureMessage({
+        rawMessage: detail,
+        fallbackMessage: 'Chat status check failed.',
+      });
       setChatRequestState('failed');
       setChatStatusMessage(null);
       setChatError(failureMessage);
+      await loadDashboardSlice(token);
     }
   }
 
@@ -1997,7 +2030,13 @@ export default function AppPage() {
       });
 
       if (!response.ok) {
-        throw new Error(`Chat execution failed (${response.status})`);
+        const failureMessage = toChatAssistantFailureMessage({
+          rawMessage: await readResponseErrorMessage(response),
+          fallbackMessage: `Chat execution failed (${response.status}).`,
+          statusCode: response.status,
+          retryAfterHeader: response.headers.get('Retry-After'),
+        });
+        throw new Error(failureMessage);
       }
 
       const data = (await response.json()) as WorkspaceChatExecutionResponse;
@@ -2114,16 +2153,19 @@ export default function AppPage() {
           pendingAssistantMessageIdRef.current = null;
         }
         setChatStatusMessage('Assistant response received.');
+        if (shouldRefreshDashboardForChatStatus(nextStatus)) {
+          await loadDashboardSlice(token);
+        }
         return;
       }
 
       if (nextStatus === 'failed' || nextStatus === 'cancelled' || nextStatus === 'timeout') {
         setChatRequestState('failed');
         setChatStatusMessage(null);
-        const failureMessage = toChatAssistantFailureMessage(
-          nextOutput,
-          `Execution ended with status: ${nextStatus}.`,
-        );
+        const failureMessage = toChatAssistantFailureMessage({
+          rawMessage: nextOutput,
+          fallbackMessage: `Execution ended with status: ${nextStatus}.`,
+        });
         setChatError(failureMessage);
         const pendingAssistantId = pendingAssistantMessageIdRef.current;
         if (pendingAssistantId) {
@@ -2148,6 +2190,9 @@ export default function AppPage() {
           }
           pendingAssistantMessageIdRef.current = null;
         }
+        if (shouldRefreshDashboardForChatStatus(nextStatus)) {
+          await loadDashboardSlice(token);
+        }
         return;
       }
 
@@ -2169,7 +2214,10 @@ export default function AppPage() {
       setChatError('Execution response did not include a recognized status.');
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      const failureMessage = toChatAssistantFailureMessage(detail, 'Chat execution failed.');
+      const failureMessage = toChatAssistantFailureMessage({
+        rawMessage: detail,
+        fallbackMessage: 'Chat execution failed.',
+      });
       setChatRequestState('failed');
       setChatStatusMessage(null);
       setChatError(failureMessage);
@@ -2196,6 +2244,7 @@ export default function AppPage() {
         }
         pendingAssistantMessageIdRef.current = null;
       }
+      await loadDashboardSlice(token);
     }
   }
 
