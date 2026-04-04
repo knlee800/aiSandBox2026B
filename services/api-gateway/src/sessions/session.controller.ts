@@ -13,6 +13,10 @@ import {
   NotFoundException,
   GoneException,
   BadRequestException,
+  UploadedFile,
+  UseInterceptors,
+  StreamableFile,
+  Res,
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -23,6 +27,9 @@ import { SessionQuotaGuard } from '../quota/session-quota.guard';
 import { SaveSnapshotDto } from '../snapshots/dto/save-snapshot.dto';
 import { RestoreSnapshotDto } from '../snapshots/dto/restore-snapshot.dto';
 import { SnapshotPersistenceService } from '../snapshots/snapshot-persistence.service';
+import { WorkspaceArchiveService } from '../snapshots/workspace-archive.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Response } from 'express';
 
 /**
  * SessionController
@@ -37,6 +44,7 @@ export class SessionController {
     private readonly sessionService: SessionService,
     private readonly containerManagerHttpClient: ContainerManagerHttpClient,
     private readonly snapshotPersistenceService: SnapshotPersistenceService,
+    private readonly workspaceArchiveService: WorkspaceArchiveService,
   ) {}
 
   /**
@@ -330,6 +338,69 @@ export class SessionController {
       sessionId: id,
       snapshotId: body.snapshotId,
     });
+  }
+
+  @Get(':id/export')
+  @HttpCode(HttpStatus.OK)
+  async exportSessionWorkspace(
+    @Param('id') id: string,
+    @Request() req,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<StreamableFile> {
+    const userId = req.user.userId;
+    const session = await this.sessionService.getSessionById(id);
+    if (session.userId !== userId) {
+      throw new NotFoundException(`Session with ID ${id} not found`);
+    }
+    if (session.terminatedAt !== null) {
+      throw new GoneException(`Session ${id} is terminated`);
+    }
+
+    const archiveBuffer = await this.workspaceArchiveService.exportWorkspaceArchive(id);
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="session-${id}-workspace.zip"`,
+    );
+    return new StreamableFile(archiveBuffer);
+  }
+
+  @Post(':id/import')
+  @UseInterceptors(
+    FileInterceptor('archive', {
+      limits: { fileSize: 5 * 1024 * 1024 },
+      fileFilter: (_req, file, cb) => {
+        const name = (file.originalname || '').toLowerCase();
+        if (!name.endsWith('.zip')) {
+          cb(new BadRequestException('Only .zip archives are supported.'), false);
+          return;
+        }
+        cb(null, true);
+      },
+    }),
+  )
+  @HttpCode(HttpStatus.OK)
+  async importSessionWorkspace(
+    @Param('id') id: string,
+    @UploadedFile() archiveFile: { buffer: Buffer } | undefined,
+    @Request() req,
+  ): Promise<{ importedFileCount: number }> {
+    const userId = req.user.userId;
+    const session = await this.sessionService.getSessionById(id);
+    if (session.userId !== userId) {
+      throw new NotFoundException(`Session with ID ${id} not found`);
+    }
+    if (session.terminatedAt !== null) {
+      throw new GoneException(`Session ${id} is terminated`);
+    }
+    if (!archiveFile || !archiveFile.buffer || archiveFile.buffer.length === 0) {
+      throw new BadRequestException('archive file is required');
+    }
+
+    return await this.workspaceArchiveService.importWorkspaceArchive(
+      id,
+      archiveFile.buffer,
+    );
   }
 
   /**

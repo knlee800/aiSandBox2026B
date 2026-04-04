@@ -14241,3 +14241,57 @@ The AI-first workspace loop now works end-to-end through AI-03-01/02 and AI-04-0
 **Reference:** TASKS.md, docs/specs/PR-01-01-project-save-restore.md, AI_Sandbox_Platform_Master_Plan_Revised.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### PR-02-01: Project Import and Export
+
+**Task ID:** PR-02-01
+**Family:** PR-01 (Project Persistence)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (PROJECT PORTABILITY, ARCHIVE IMPORT/EXPORT)
+**Dependencies:** PR-01-01 (Complete and Locked)
+**Checkpoint:** `docs/PR-02-01-CHECKPOINT.md`
+
+**Objective:**
+
+Implement the next project-persistence slice so a user can download their current workspace as an archive and upload/import an archive into a session workspace, using bounded files-only behavior built on the existing snapshot/save foundation.
+
+**Why this exists:**
+
+PR-01-01 gave the product durable files-only save/restore within the platform. PR-02-01 adds portability: users can bring work in and take work out as portable archives, without yet introducing persistent project identity or broader external repository workflows.
+
+**Scope:**
+
+1. Backend export endpoint to download current workspace files as an archive
+2. Backend import endpoint to upload/import an archive into a session workspace
+3. Archive validation and bounded safety checks (reject path traversal, reject oversized/malformed archives)
+4. Minimum frontend path for export/download and import/upload
+5. Preserve existing workspace file tree / editor / preview / checkpoint / chat behavior
+6. Keep auth and ownership enforcement on all import/export operations
+7. Deterministic overwrite behavior for first slice
+
+**Non-Goals:**
+
+- ❌ No persistent project entity yet
+- ❌ No GitHub/GitLab integration
+- ❌ No real-time sync with external repositories
+- ❌ No partial/selective import
+- ❌ No binary/media-heavy project workflow beyond basic file handling
+- ❌ No public sharing
+- ❌ No collaborative access
+- ❌ No quota / billing / auth redesign
+- ❌ No background workers
+- ❌ No refactors unless absolutely required
+
+**Acceptance Criteria:**
+
+- User can export current workspace as a downloadable archive
+- User can import a valid archive into a session workspace
+- Archive validation rejects invalid/unsafe input
+- Imported files appear through existing workspace surfaces (file tree, editor)
+- Import/export stays within auth/ownership boundaries
+- Existing workspace behavior remains preserved
+
+**Reference:** TASKS.md, docs/specs/PR-02-01-project-import-export.md, AI_Sandbox_Platform_Master_Plan_Revised.md, PRD.md, ARCHITECTURE.md
+
+---

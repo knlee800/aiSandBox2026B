@@ -65,6 +65,8 @@ import {
   persistSessionChatMessageToBackend,
 } from '@/components/workspace/workspace-chat-persistence.logic';
 import {
+  exportWorkspaceArchive,
+  importWorkspaceArchive,
   loadWorkspaceSnapshots,
   restoreWorkspaceSnapshot,
   saveWorkspaceSnapshot,
@@ -207,7 +209,7 @@ export default function AppPage() {
     'idle',
   );
   const [snapshotActionState, setSnapshotActionState] = useState<
-    'idle' | 'saving' | 'restoring' | 'success' | 'error'
+    'idle' | 'saving' | 'restoring' | 'exporting' | 'importing' | 'success' | 'error'
   >('idle');
   const [snapshotActionMessage, setSnapshotActionMessage] = useState<string | null>(null);
   const [snapshotActionError, setSnapshotActionError] = useState<string | null>(null);
@@ -920,6 +922,88 @@ export default function AppPage() {
         error instanceof Error && error.message.trim()
           ? error.message
           : 'Failed to restore workspace snapshot.',
+      );
+    }
+  }
+
+  async function handleExportWorkspaceArchive(): Promise<void> {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+    if (!selectedSessionId) {
+      setSnapshotActionState('error');
+      setSnapshotActionMessage(null);
+      setSnapshotActionError('Cannot export without an active session.');
+      return;
+    }
+
+    setSnapshotActionState('exporting');
+    setSnapshotActionMessage(null);
+    setSnapshotActionError(null);
+    try {
+      const blob = await exportWorkspaceArchive({
+        token,
+        sessionId: selectedSessionId,
+      });
+      const downloadUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = downloadUrl;
+      anchor.download = `session-${selectedSessionId}-workspace.zip`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(downloadUrl);
+      setSnapshotActionState('success');
+      setSnapshotActionMessage('Workspace archive downloaded.');
+      setSnapshotActionError(null);
+    } catch (error) {
+      setSnapshotActionState('error');
+      setSnapshotActionMessage(null);
+      setSnapshotActionError(
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : 'Failed to export workspace archive.',
+      );
+    }
+  }
+
+  async function handleImportWorkspaceArchive(file: File): Promise<void> {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+    if (!selectedSessionId) {
+      setSnapshotActionState('error');
+      setSnapshotActionMessage(null);
+      setSnapshotActionError('Cannot import without an active session.');
+      return;
+    }
+
+    setSnapshotActionState('importing');
+    setSnapshotActionMessage(null);
+    setSnapshotActionError(null);
+    try {
+      await importWorkspaceArchive({
+        token,
+        sessionId: selectedSessionId,
+        archiveFile: file,
+      });
+      await loadWorkspaceFilesForSession(token, selectedSessionId);
+      await refreshPreviewForSession(token, selectedSessionId);
+      await loadCheckpoints(token, selectedSessionId);
+      setSnapshotActionState('success');
+      setSnapshotActionMessage('Workspace archive imported.');
+      setSnapshotActionError(null);
+    } catch (error) {
+      setSnapshotActionState('error');
+      setSnapshotActionMessage(null);
+      setSnapshotActionError(
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : 'Failed to import workspace archive.',
       );
     }
   }
@@ -2474,6 +2558,8 @@ export default function AppPage() {
       onSelectSnapshotId={handleSnapshotSelection}
       onSaveWorkspaceSnapshot={handleSaveWorkspaceSnapshot}
       onRestoreWorkspaceSnapshot={handleRestoreWorkspaceSnapshot}
+      onExportWorkspaceArchive={handleExportWorkspaceArchive}
+      onImportWorkspaceArchive={handleImportWorkspaceArchive}
       checkpointRevertState={checkpointRevertState}
       checkpointRevertError={checkpointRevertError}
       checkpointRevertTargetId={checkpointRevertTargetId}

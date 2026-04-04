@@ -5997,7 +5997,7 @@ Phase 84 made the workspace chat usable, but chat persistence is still localStor
 
 ## PR-01 — Project Persistence
 
-**Current stage:** PR-01-01 (COMPLETE and LOCKED)
+**Current stage:** PR-02-01 (COMPLETE and LOCKED)
 
 ---
 
@@ -6036,5 +6036,43 @@ The AI-first workspace loop now works, but work is still tied to ephemeral sessi
 **Dependencies:** AI-04-01 (Complete and Locked); Phase 79/80 (Complete and Locked)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → PR-01-01 for full details; `docs/specs/PR-01-01-project-save-restore.md` for spec
+
+---
+
+#### PR-02-01: Project Import and Export
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (PROJECT PORTABILITY, ARCHIVE IMPORT/EXPORT)
+**Checkpoint:** `docs/PR-02-01-CHECKPOINT.md`
+
+**Objective:**
+Implement the next project-persistence slice so a user can download their current workspace as an archive and upload/import an archive into a session workspace, using bounded files-only behavior built on the existing snapshot/save foundation.
+
+**Why this exists:**
+PR-01-01 gave the product durable files-only save/restore. PR-02-01 adds portability: users can bring work in and take work out, without yet introducing persistent project identity or broader external repository workflows.
+
+**Scope:**
+- Backend export endpoint to download current workspace files as an archive
+- Backend import endpoint to upload/import an archive into a session workspace
+- Archive validation and bounded safety checks
+- Minimum frontend path for export/download and import/upload
+- Preserve existing workspace file tree / editor / preview / checkpoint / chat behavior
+- Keep auth and ownership enforcement on all import/export operations
+- Deterministic overwrite behavior for first slice
+
+**Non-Goals:**
+- ❌ No persistent project entity yet
+- ❌ No GitHub/GitLab integration
+- ❌ No real-time sync with external repositories
+- ❌ No partial/selective import
+- ❌ No public sharing
+- ❌ No collaborative access
+- ❌ No quota / billing / auth redesign
+- ❌ No background workers
+- ❌ No refactors unless absolutely required
+
+**Dependencies:** PR-01-01 (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → PR-02-01 for full details; `docs/specs/PR-02-01-project-import-export.md` for spec
 
 ---

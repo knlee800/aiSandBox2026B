@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import {
+  exportWorkspaceArchive,
+  importWorkspaceArchive,
   loadWorkspaceSnapshots,
   restoreWorkspaceSnapshot,
   saveWorkspaceSnapshot,
@@ -76,5 +78,46 @@ describe('workspace-snapshots.logic', () => {
 
     assert.equal(calls.length, 1);
     assert.equal(calls[0].url, '/api/sessions/session-1/restore');
+  });
+
+  test('exportWorkspaceArchive fetches export endpoint and returns blob', async () => {
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    const fetchImpl = async (url: string, init?: RequestInit): Promise<Response> => {
+      calls.push({ url, init });
+      return new Response('zip-content', {
+        status: 200,
+        headers: { 'Content-Type': 'application/zip' },
+      });
+    };
+
+    const blob = await exportWorkspaceArchive({
+      token: 'token',
+      sessionId: 'session-1',
+      fetchImpl: fetchImpl as typeof fetch,
+    });
+
+    assert.equal(calls[0].url, '/api/sessions/session-1/export');
+    assert.equal(blob.size > 0, true);
+  });
+
+  test('importWorkspaceArchive posts multipart archive upload', async () => {
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    const fetchImpl = async (url: string, init?: RequestInit): Promise<Response> => {
+      calls.push({ url, init });
+      return new Response(JSON.stringify({ importedFileCount: 1 }), {
+        status: 200,
+      });
+    };
+
+    const file = new File(['hello'], 'workspace.zip', { type: 'application/zip' });
+    const result = await importWorkspaceArchive({
+      token: 'token',
+      sessionId: 'session-1',
+      archiveFile: file,
+      fetchImpl: fetchImpl as typeof fetch,
+    });
+
+    assert.equal(calls[0].url, '/api/sessions/session-1/import');
+    assert.equal(result.importedFileCount, 1);
   });
 });

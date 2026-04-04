@@ -25,6 +25,19 @@ interface LoadSnapshotsArgs {
   fetchImpl?: typeof fetch;
 }
 
+interface ExportWorkspaceArchiveArgs {
+  token: string;
+  sessionId: string;
+  fetchImpl?: typeof fetch;
+}
+
+interface ImportWorkspaceArchiveArgs {
+  token: string;
+  sessionId: string;
+  archiveFile: File;
+  fetchImpl?: typeof fetch;
+}
+
 function trimMessage(raw: unknown, fallback: string): string {
   if (typeof raw === 'string' && raw.trim().length > 0) {
     return raw.trim();
@@ -108,4 +121,57 @@ export async function restoreWorkspaceSnapshot(
       trimMessage(payload?.message, 'Failed to restore workspace snapshot.'),
     );
   }
+}
+
+export async function exportWorkspaceArchive(
+  args: ExportWorkspaceArchiveArgs,
+): Promise<Blob> {
+  const response = await (args.fetchImpl ?? fetch)(
+    `/api/sessions/${args.sessionId}/export`,
+    {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${args.token}`,
+      },
+    },
+  );
+
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => null)) as
+      | { message?: string }
+      | null;
+    throw new Error(
+      trimMessage(payload?.message, 'Failed to export workspace archive.'),
+    );
+  }
+
+  return await response.blob();
+}
+
+export async function importWorkspaceArchive(
+  args: ImportWorkspaceArchiveArgs,
+): Promise<{ importedFileCount: number }> {
+  const formData = new FormData();
+  formData.append('archive', args.archiveFile);
+  const response = await (args.fetchImpl ?? fetch)(
+    `/api/sessions/${args.sessionId}/import`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${args.token}`,
+      },
+      body: formData,
+    },
+  );
+
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => null)) as
+      | { message?: string }
+      | null;
+    throw new Error(
+      trimMessage(payload?.message, 'Failed to import workspace archive.'),
+    );
+  }
+
+  return (await response.json()) as { importedFileCount: number };
 }

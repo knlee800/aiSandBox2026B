@@ -1727,10 +1727,14 @@ describe('workspace shell snapshot surface', () => {
       onSelectSnapshotId: () => {},
       onSaveWorkspaceSnapshot: async () => {},
       onRestoreWorkspaceSnapshot: async () => {},
+      onExportWorkspaceArchive: async () => {},
+      onImportWorkspaceArchive: async () => {},
     });
 
     assert.match(html, /history-snapshot-surface/);
     assert.match(html, /before changes/);
+    assert.match(html, /Download Project/);
+    assert.match(html, /Import Project/);
   });
 
   test('renders snapshot save\/restore loading states', () => {
@@ -1742,6 +1746,8 @@ describe('workspace shell snapshot surface', () => {
       onSelectSnapshotId: () => {},
       onSaveWorkspaceSnapshot: async () => {},
       onRestoreWorkspaceSnapshot: async () => {},
+      onExportWorkspaceArchive: async () => {},
+      onImportWorkspaceArchive: async () => {},
     });
 
     assert.match(html, /Loading snapshots\.\.\./);

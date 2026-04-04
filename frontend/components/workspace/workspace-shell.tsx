@@ -58,7 +58,14 @@ interface WorkspaceShellProps {
   onCheckpointDescriptionChange: (value: string) => void;
   onCreateManualCheckpoint: () => Promise<void>;
   snapshotListState?: 'idle' | 'loading' | 'ready' | 'error';
-  snapshotActionState?: 'idle' | 'saving' | 'restoring' | 'success' | 'error';
+  snapshotActionState?:
+    | 'idle'
+    | 'saving'
+    | 'restoring'
+    | 'exporting'
+    | 'importing'
+    | 'success'
+    | 'error';
   snapshotActionMessage?: string | null;
   snapshotActionError?: string | null;
   workspaceSnapshots?: WorkspaceSnapshotSummary[];
@@ -66,6 +73,8 @@ interface WorkspaceShellProps {
   onSelectSnapshotId?: (snapshotId: string) => void;
   onSaveWorkspaceSnapshot?: () => Promise<void>;
   onRestoreWorkspaceSnapshot?: () => Promise<void>;
+  onExportWorkspaceArchive?: () => Promise<void>;
+  onImportWorkspaceArchive?: (file: File) => Promise<void>;
   checkpointRevertState: WorkspaceCheckpointRevertState;
   checkpointRevertError: string | null;
   checkpointRevertTargetId: string | null;
@@ -331,6 +340,8 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
               onSelectSnapshotId={props.onSelectSnapshotId}
               onSaveSnapshot={props.onSaveWorkspaceSnapshot}
               onRestoreSnapshot={props.onRestoreWorkspaceSnapshot}
+              onExportArchive={props.onExportWorkspaceArchive}
+              onImportArchive={props.onImportWorkspaceArchive}
             />
             {historyState === 'ready' ? (
               <HistoryCheckpointList
@@ -401,7 +412,14 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
 function HistorySnapshotPanel(props: {
   selectedSessionId: string | null;
   listState: 'idle' | 'loading' | 'ready' | 'error';
-  actionState: 'idle' | 'saving' | 'restoring' | 'success' | 'error';
+  actionState:
+    | 'idle'
+    | 'saving'
+    | 'restoring'
+    | 'exporting'
+    | 'importing'
+    | 'success'
+    | 'error';
   actionMessage: string | null;
   actionError: string | null;
   snapshots: WorkspaceSnapshotSummary[];
@@ -409,8 +427,16 @@ function HistorySnapshotPanel(props: {
   onSelectSnapshotId?: (snapshotId: string) => void;
   onSaveSnapshot?: () => Promise<void>;
   onRestoreSnapshot?: () => Promise<void>;
+  onExportArchive?: () => Promise<void>;
+  onImportArchive?: (file: File) => Promise<void>;
 }) {
-  if (!props.onSaveSnapshot || !props.onRestoreSnapshot || !props.onSelectSnapshotId) {
+  if (
+    !props.onSaveSnapshot ||
+    !props.onRestoreSnapshot ||
+    !props.onSelectSnapshotId ||
+    !props.onExportArchive ||
+    !props.onImportArchive
+  ) {
     return null;
   }
 
@@ -420,7 +446,7 @@ function HistorySnapshotPanel(props: {
     <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="history-snapshot-surface">
       <p className="text-xs font-semibold text-gray-700">Project Snapshots (PR-01-01)</p>
       <p className="mt-1 text-[11px] text-gray-500">
-        Save and restore files-only workspace snapshots for the active session.
+        Save/restore snapshots and import/export workspace archives for the active session.
       </p>
 
       <div className="mt-2 flex gap-2">
@@ -447,6 +473,43 @@ function HistorySnapshotPanel(props: {
         >
           {props.actionState === 'restoring' ? 'Restoring...' : 'Restore Snapshot'}
         </button>
+      </div>
+
+      <div className="mt-2 flex gap-2">
+        <button
+          type="button"
+          className="rounded bg-sky-600 px-2 py-1 text-xs text-white disabled:bg-sky-300"
+          disabled={!canMutate || props.actionState === 'exporting' || props.actionState === 'importing'}
+          onClick={() => void props.onExportArchive?.()}
+          data-testid="history-archive-export-button"
+        >
+          {props.actionState === 'exporting' ? 'Exporting...' : 'Download Project'}
+        </button>
+        <label
+          className={`rounded px-2 py-1 text-xs text-white ${
+            canMutate && props.actionState !== 'exporting' && props.actionState !== 'importing'
+              ? 'bg-amber-600 cursor-pointer'
+              : 'bg-amber-300 cursor-not-allowed'
+          }`}
+          data-testid="history-archive-import-label"
+        >
+          {props.actionState === 'importing' ? 'Importing...' : 'Import Project'}
+          <input
+            type="file"
+            accept=".zip,application/zip"
+            className="hidden"
+            disabled={!canMutate || props.actionState === 'exporting' || props.actionState === 'importing'}
+            data-testid="history-archive-import-input"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (!file) {
+                return;
+              }
+              void props.onImportArchive?.(file);
+              event.currentTarget.value = '';
+            }}
+          />
+        </label>
       </div>
 
       <div className="mt-2">

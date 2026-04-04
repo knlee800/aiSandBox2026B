@@ -7,6 +7,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { SessionQuotaGuard } from '../quota/session-quota.guard';
 import { RateLimitGuard } from '../guards/rate-limit.guard';
 import { SnapshotPersistenceService } from '../snapshots/snapshot-persistence.service';
+import { WorkspaceArchiveService } from '../snapshots/workspace-archive.service';
 
 describe('SessionController (TASK-68B-2 query extension)', () => {
   let controller: SessionController;
@@ -46,6 +47,13 @@ describe('SessionController (TASK-68B-2 query extension)', () => {
             saveSnapshot: jest.fn(),
             restoreSnapshot: jest.fn(),
             listSnapshots: jest.fn(),
+          },
+        },
+        {
+          provide: WorkspaceArchiveService,
+          useValue: {
+            exportWorkspaceArchive: jest.fn(),
+            importWorkspaceArchive: jest.fn(),
           },
         },
       ],
@@ -159,6 +167,13 @@ describe('SessionController (PHASE-76F: ISSUE-76-002 DELETE termination fix)', (
             saveSnapshot: jest.fn(),
             restoreSnapshot: jest.fn(),
             listSnapshots: jest.fn(),
+          },
+        },
+        {
+          provide: WorkspaceArchiveService,
+          useValue: {
+            exportWorkspaceArchive: jest.fn(),
+            importWorkspaceArchive: jest.fn(),
           },
         },
       ],
@@ -311,6 +326,13 @@ describe('SessionController (PHASE-77A: ISSUE-76-005 exec route)', () => {
             saveSnapshot: jest.fn(),
             restoreSnapshot: jest.fn(),
             listSnapshots: jest.fn(),
+          },
+        },
+        {
+          provide: WorkspaceArchiveService,
+          useValue: {
+            exportWorkspaceArchive: jest.fn(),
+            importWorkspaceArchive: jest.fn(),
           },
         },
       ],
@@ -476,6 +498,13 @@ describe('SessionController (PR-01-01 snapshots)', () => {
             listSnapshots: jest.fn(),
           },
         },
+        {
+          provide: WorkspaceArchiveService,
+          useValue: {
+            exportWorkspaceArchive: jest.fn(),
+            importWorkspaceArchive: jest.fn(),
+          },
+        },
       ],
     })
       .overrideGuard(JwtAuthGuard)
@@ -558,6 +587,147 @@ describe('SessionController (PR-01-01 snapshots)', () => {
       controller.restoreSessionSnapshot(
         'session-1',
         { snapshotId: 'snapshot-1' },
+        { user: { userId: 'other-user' } },
+      ),
+    ).rejects.toThrow(NotFoundException);
+  });
+});
+
+describe('SessionController (PR-02-01 import/export)', () => {
+  let controller: SessionController;
+  let sessionService: jest.Mocked<SessionService>;
+  let archiveService: jest.Mocked<WorkspaceArchiveService>;
+
+  const mockActiveSession = {
+    id: 'session-1',
+    userId: 'user-1',
+    status: 'active' as any,
+    containerId: null,
+    createdAt: new Date(),
+    expiresAt: new Date(),
+    lastActivityAt: new Date(),
+    user: {} as any,
+    terminatedAt: null,
+    terminationReason: null,
+  };
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [SessionController],
+      providers: [
+        {
+          provide: SessionService,
+          useValue: {
+            createSession: jest.fn(),
+            getSessionsByUser: jest.fn(),
+            getSessionById: jest.fn(),
+            stopSession: jest.fn(),
+            deleteSession: jest.fn(),
+            terminateSession: jest.fn(),
+          },
+        },
+        {
+          provide: ContainerManagerHttpClient,
+          useValue: {
+            startSession: jest.fn(),
+            stopSession: jest.fn(),
+            deleteSession: jest.fn(),
+          },
+        },
+        {
+          provide: SnapshotPersistenceService,
+          useValue: {
+            saveSnapshot: jest.fn(),
+            restoreSnapshot: jest.fn(),
+            listSnapshots: jest.fn(),
+          },
+        },
+        {
+          provide: WorkspaceArchiveService,
+          useValue: {
+            exportWorkspaceArchive: jest.fn(),
+            importWorkspaceArchive: jest.fn(),
+          },
+        },
+      ],
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(SessionQuotaGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(RateLimitGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
+
+    controller = module.get<SessionController>(SessionController);
+    sessionService = module.get(SessionService);
+    archiveService = module.get(WorkspaceArchiveService);
+  });
+
+  it('GET /api/sessions/:id/export enforces ownership and returns zip stream', async () => {
+    sessionService.getSessionById.mockResolvedValue(mockActiveSession);
+    archiveService.exportWorkspaceArchive.mockResolvedValue(
+      Buffer.from('zip-content'),
+    );
+    const responseHeaders: Record<string, string> = {};
+    const res = {
+      setHeader: (name: string, value: string) => {
+        responseHeaders[name] = value;
+      },
+    } as any;
+
+    const result = await controller.exportSessionWorkspace(
+      'session-1',
+      { user: { userId: 'user-1' } },
+      res,
+    );
+
+    expect(archiveService.exportWorkspaceArchive).toHaveBeenCalledWith('session-1');
+    expect(responseHeaders['Content-Type']).toBe('application/zip');
+    expect(result).toBeDefined();
+  });
+
+  it('GET /api/sessions/:id/export returns 404 for non-owned session', async () => {
+    sessionService.getSessionById.mockResolvedValue(mockActiveSession);
+
+    await expect(
+      controller.exportSessionWorkspace(
+        'session-1',
+        { user: { userId: 'other-user' } },
+        { setHeader: () => undefined } as any,
+      ),
+    ).rejects.toThrow(NotFoundException);
+  });
+
+  it('POST /api/sessions/:id/import enforces ownership and imports archive', async () => {
+    sessionService.getSessionById.mockResolvedValue(mockActiveSession);
+    archiveService.importWorkspaceArchive.mockResolvedValue({
+      importedFileCount: 2,
+    });
+
+    const result = await controller.importSessionWorkspace(
+      'session-1',
+      {
+        originalname: 'workspace.zip',
+        buffer: Buffer.from([1, 2, 3]),
+      } as any,
+      { user: { userId: 'user-1' } },
+    );
+
+    expect(archiveService.importWorkspaceArchive).toHaveBeenCalledWith(
+      'session-1',
+      Buffer.from([1, 2, 3]),
+    );
+    expect(result.importedFileCount).toBe(2);
+  });
+
+  it('POST /api/sessions/:id/import returns 404 for non-owned session', async () => {
+    sessionService.getSessionById.mockResolvedValue(mockActiveSession);
+
+    await expect(
+      controller.importSessionWorkspace(
+        'session-1',
+        { originalname: 'workspace.zip', buffer: Buffer.from([1]) } as any,
         { user: { userId: 'other-user' } },
       ),
     ).rejects.toThrow(NotFoundException);
