@@ -14651,3 +14651,52 @@ The core workspace, persistence, commercial foundation, and bounded advanced AI 
 **Reference:** TASKS.md, docs/specs/ADV-03-01-mobile-mac-ios-build.md, AI_Sandbox_Platform_Master_Plan_Revised.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### ADV-04-01: Public API Platform and Ecosystem
+
+**Task ID:** ADV-04-01
+**Family:** ADV-01 (Advanced Product Expansion)
+**Priority:** 🟡 Medium
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (ADVANCED PRODUCT, EXTERNAL API FOUNDATION)
+**Dependencies:** ADV-03-01 (Complete and Locked)
+**Checkpoint:** `docs/ADV-04-01-CHECKPOINT.md`
+
+**Objective:**
+
+Implement the first bounded public API foundation so external clients can access a controlled subset of platform capabilities through dedicated public API surfaces, without exposing internal-only routes or expanding into a broad integration marketplace.
+
+**Why this exists:**
+
+The core workspace, persistence, commercial foundation, and bounded advanced features are now in place. ADV-04-01 adds the first external API foundation so the product can be used programmatically, while preserving internal/public separation and avoiding broad ecosystem/platform expansion.
+
+**Scope:**
+
+- Add dedicated public API surfaces for a minimal supported capability set
+- Keep public APIs separate from existing internal-only routes
+- Provide bounded external authentication/access model only where needed
+- Preserve existing workspace/project/chat/commercial behavior
+- Keep behavior request-driven only
+
+**Explicitly out of scope:**
+
+- No integration marketplace
+- No broad webhook/event platform
+- No public exposure of internal-only routes
+- No SDK/platform sprawl
+- No billing/quota redesign
+- No broad admin redesign
+- No background workers
+- No refactors unless absolutely required
+
+**Acceptance criteria:**
+
+- Dedicated public API surface exists for the bounded supported capability set
+- Internal-only routes remain internal-only
+- External access model is coherent and bounded
+- Existing workspace/project/chat/commercial behavior remains preserved
+- Request-driven behavior remains preserved
+
+**Reference:** TASKS.md, docs/specs/ADV-04-01-public-api-platform.md, AI_Sandbox_Platform_Master_Plan_Revised.md, PRD.md, ARCHITECTURE.md
+
+---

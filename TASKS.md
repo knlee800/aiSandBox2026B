@@ -6230,7 +6230,7 @@ CO-01-01 aligned quota/usage UX. CO-02-01 added minimal plans foundation. CO-03-
 
 ## ADV-01 — Advanced Product Expansion
 
-**Current stage:** ADV-03-01 (COMPLETE and LOCKED)
+**Current stage:** ADV-04-01 (COMPLETE and LOCKED)
 
 ---
 
@@ -6338,5 +6338,40 @@ The core workspace, persistence, commercial foundation, and bounded advanced AI 
 **Dependencies:** ADV-02-01 (Complete and Locked)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → ADV-03-01 for full details; `docs/specs/ADV-03-01-mobile-mac-ios-build.md` for spec
+
+---
+
+#### ADV-04-01: Public API Platform and Ecosystem
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (ADVANCED PRODUCT, EXTERNAL API FOUNDATION)
+**Checkpoint:** `docs/ADV-04-01-CHECKPOINT.md`
+
+**Objective:**
+Implement the first bounded public API foundation so external clients can access a controlled subset of platform capabilities through dedicated public API surfaces, without exposing internal-only routes or expanding into a broad integration marketplace.
+
+**Why this exists:**
+The core workspace, persistence, commercial foundation, and bounded advanced features are now in place. ADV-04-01 adds the first external API foundation so the product can be used programmatically, while preserving internal/public separation and avoiding broad ecosystem/platform expansion.
+
+**Scope:**
+- Add dedicated public API surfaces for a minimal supported capability set
+- Keep public APIs separate from existing internal-only routes
+- Provide bounded external authentication/access model only where needed
+- Preserve existing workspace/project/chat/commercial behavior
+- Keep behavior request-driven only
+
+**Out of scope:**
+- ❌ No integration marketplace
+- ❌ No broad webhook/event platform
+- ❌ No public exposure of internal-only routes
+- ❌ No SDK/platform sprawl
+- ❌ No billing/quota redesign
+- ❌ No broad admin redesign
+- ❌ No background workers
+- ❌ No refactors unless absolutely required
+
+**Dependencies:** ADV-03-01 (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → ADV-04-01 for full details; `docs/specs/ADV-04-01-public-api-platform.md` for spec
 
 ---
