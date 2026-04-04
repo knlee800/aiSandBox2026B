@@ -11,6 +11,7 @@ import { UsersService } from './users.service';
 import { UserMeResponseDto } from './dto/user-me-response.dto';
 import { UserUsageResponseDto } from './dto/user-usage-response.dto';
 import { UserQuotasResponseDto } from './dto/user-quotas-response.dto';
+import { SnapshotPersistenceService } from '../snapshots/snapshot-persistence.service';
 
 /**
  * UsersController
@@ -19,7 +20,10 @@ import { UserQuotasResponseDto } from './dto/user-quotas-response.dto';
 @Controller('users')
 @UseGuards(JwtAuthGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly snapshotPersistenceService: SnapshotPersistenceService,
+  ) {}
 
   /**
    * Get current user info.
@@ -49,5 +53,11 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   async getQuotas(@Request() req): Promise<UserQuotasResponseDto> {
     return await this.usersService.getQuotas(req.user.userId);
+  }
+
+  @Get('me/snapshots')
+  @HttpCode(HttpStatus.OK)
+  async listSnapshots(@Request() req) {
+    return await this.snapshotPersistenceService.listSnapshots(req.user.userId);
   }
 }

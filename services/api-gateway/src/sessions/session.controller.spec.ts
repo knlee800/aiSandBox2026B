@@ -6,6 +6,7 @@ import { ContainerManagerHttpClient } from '../clients/container-manager-http.cl
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { SessionQuotaGuard } from '../quota/session-quota.guard';
 import { RateLimitGuard } from '../guards/rate-limit.guard';
+import { SnapshotPersistenceService } from '../snapshots/snapshot-persistence.service';
 
 describe('SessionController (TASK-68B-2 query extension)', () => {
   let controller: SessionController;
@@ -38,6 +39,14 @@ describe('SessionController (TASK-68B-2 query extension)', () => {
         {
           provide: ContainerManagerHttpClient,
           useValue: mockContainerManagerHttpClient,
+        },
+        {
+          provide: SnapshotPersistenceService,
+          useValue: {
+            saveSnapshot: jest.fn(),
+            restoreSnapshot: jest.fn(),
+            listSnapshots: jest.fn(),
+          },
         },
       ],
     })
@@ -142,6 +151,14 @@ describe('SessionController (PHASE-76F: ISSUE-76-002 DELETE termination fix)', (
             startSession: jest.fn(),
             stopSession: jest.fn(),
             deleteSession: jest.fn(),
+          },
+        },
+        {
+          provide: SnapshotPersistenceService,
+          useValue: {
+            saveSnapshot: jest.fn(),
+            restoreSnapshot: jest.fn(),
+            listSnapshots: jest.fn(),
           },
         },
       ],
@@ -288,6 +305,14 @@ describe('SessionController (PHASE-77A: ISSUE-76-005 exec route)', () => {
             execInSession: jest.fn(),
           },
         },
+        {
+          provide: SnapshotPersistenceService,
+          useValue: {
+            saveSnapshot: jest.fn(),
+            restoreSnapshot: jest.fn(),
+            listSnapshots: jest.fn(),
+          },
+        },
       ],
     })
       .overrideGuard(JwtAuthGuard)
@@ -399,5 +424,142 @@ describe('SessionController (PHASE-77A: ISSUE-76-005 exec route)', () => {
       stdout: '',
       stderr: 'command not found',
     });
+  });
+});
+
+describe('SessionController (PR-01-01 snapshots)', () => {
+  let controller: SessionController;
+  let sessionService: jest.Mocked<SessionService>;
+  let snapshotService: jest.Mocked<SnapshotPersistenceService>;
+
+  const mockActiveSession = {
+    id: 'session-1',
+    userId: 'user-1',
+    status: 'active' as any,
+    containerId: 'container-abc',
+    createdAt: new Date(),
+    expiresAt: new Date(),
+    lastActivityAt: new Date(),
+    user: {} as any,
+    terminatedAt: null,
+    terminationReason: null,
+  };
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [SessionController],
+      providers: [
+        {
+          provide: SessionService,
+          useValue: {
+            createSession: jest.fn(),
+            getSessionsByUser: jest.fn(),
+            getSessionById: jest.fn(),
+            stopSession: jest.fn(),
+            deleteSession: jest.fn(),
+            terminateSession: jest.fn(),
+          },
+        },
+        {
+          provide: ContainerManagerHttpClient,
+          useValue: {
+            startSession: jest.fn(),
+            stopSession: jest.fn(),
+            deleteSession: jest.fn(),
+          },
+        },
+        {
+          provide: SnapshotPersistenceService,
+          useValue: {
+            saveSnapshot: jest.fn(),
+            restoreSnapshot: jest.fn(),
+            listSnapshots: jest.fn(),
+          },
+        },
+      ],
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(SessionQuotaGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(RateLimitGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
+
+    controller = module.get<SessionController>(SessionController);
+    sessionService = module.get(SessionService);
+    snapshotService = module.get(SnapshotPersistenceService);
+  });
+
+  it('POST /api/sessions/:id/snapshot enforces ownership and saves metadata', async () => {
+    sessionService.getSessionById.mockResolvedValue(mockActiveSession);
+    snapshotService.saveSnapshot.mockResolvedValue({
+      id: 'snapshot-1',
+      userId: 'user-1',
+      label: 'before-restore',
+      createdAt: '2026-04-03T00:00:00.000Z',
+      fileCount: 2,
+    });
+
+    const result = await controller.saveSessionSnapshot(
+      'session-1',
+      { label: 'before-restore' },
+      { user: { userId: 'user-1' } },
+    );
+
+    expect(snapshotService.saveSnapshot).toHaveBeenCalledWith({
+      userId: 'user-1',
+      sessionId: 'session-1',
+      label: 'before-restore',
+    });
+    expect(result.id).toBe('snapshot-1');
+  });
+
+  it('POST /api/sessions/:id/snapshot returns 404 for non-owned session', async () => {
+    sessionService.getSessionById.mockResolvedValue(mockActiveSession);
+
+    await expect(
+      controller.saveSessionSnapshot(
+        'session-1',
+        { label: 'x' },
+        { user: { userId: 'other-user' } },
+      ),
+    ).rejects.toThrow(NotFoundException);
+  });
+
+  it('POST /api/sessions/:id/restore enforces ownership and restores snapshot', async () => {
+    sessionService.getSessionById.mockResolvedValue(mockActiveSession);
+    snapshotService.restoreSnapshot.mockResolvedValue({
+      id: 'snapshot-1',
+      userId: 'user-1',
+      label: null,
+      createdAt: '2026-04-03T00:00:00.000Z',
+      fileCount: 3,
+    });
+
+    const result = await controller.restoreSessionSnapshot(
+      'session-1',
+      { snapshotId: 'snapshot-1' },
+      { user: { userId: 'user-1' } },
+    );
+
+    expect(snapshotService.restoreSnapshot).toHaveBeenCalledWith({
+      userId: 'user-1',
+      sessionId: 'session-1',
+      snapshotId: 'snapshot-1',
+    });
+    expect(result.fileCount).toBe(3);
+  });
+
+  it('POST /api/sessions/:id/restore returns 404 for non-owned session', async () => {
+    sessionService.getSessionById.mockResolvedValue(mockActiveSession);
+
+    await expect(
+      controller.restoreSessionSnapshot(
+        'session-1',
+        { snapshotId: 'snapshot-1' },
+        { user: { userId: 'other-user' } },
+      ),
+    ).rejects.toThrow(NotFoundException);
   });
 });

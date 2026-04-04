@@ -64,6 +64,12 @@ import {
   loadSessionChatMessagesFromBackend,
   persistSessionChatMessageToBackend,
 } from '@/components/workspace/workspace-chat-persistence.logic';
+import {
+  loadWorkspaceSnapshots,
+  restoreWorkspaceSnapshot,
+  saveWorkspaceSnapshot,
+  type WorkspaceSnapshotSummary,
+} from '@/components/workspace/workspace-snapshots.logic';
 
 const HIDDEN_UNUSABLE_SESSIONS_STORAGE_KEY = 'workspace_hidden_unusable_sessions';
 const CHAT_THREAD_STORAGE_KEY_PREFIX = 'workspace_chat_thread';
@@ -195,6 +201,16 @@ export default function AppPage() {
   const [checkpointLiveOpenError, setCheckpointLiveOpenError] = useState<string | null>(null);
   const [checkpointLiveOpenTargetPath, setCheckpointLiveOpenTargetPath] = useState<string | null>(null);
   const [checkpointPinnedReferenceId, setCheckpointPinnedReferenceId] = useState<string | null>(null);
+  const [workspaceSnapshots, setWorkspaceSnapshots] = useState<WorkspaceSnapshotSummary[]>([]);
+  const [selectedSnapshotId, setSelectedSnapshotId] = useState<string | null>(null);
+  const [snapshotListState, setSnapshotListState] = useState<'idle' | 'loading' | 'ready' | 'error'>(
+    'idle',
+  );
+  const [snapshotActionState, setSnapshotActionState] = useState<
+    'idle' | 'saving' | 'restoring' | 'success' | 'error'
+  >('idle');
+  const [snapshotActionMessage, setSnapshotActionMessage] = useState<string | null>(null);
+  const [snapshotActionError, setSnapshotActionError] = useState<string | null>(null);
   const [userSummary, setUserSummary] = useState<WorkspaceUserSummary | null>(null);
   const [usageSummary, setUsageSummary] = useState<WorkspaceUsageSummary | null>(null);
   const [quotaSummary, setQuotaSummary] = useState<WorkspaceQuotaSummary | null>(null);
@@ -323,6 +339,12 @@ export default function AppPage() {
     setCheckpointLiveOpenError(null);
     setCheckpointLiveOpenTargetPath(null);
     setCheckpointPinnedReferenceId(null);
+    setWorkspaceSnapshots([]);
+    setSelectedSnapshotId(null);
+    setSnapshotListState('idle');
+    setSnapshotActionState('idle');
+    setSnapshotActionMessage(null);
+    setSnapshotActionError(null);
 
     if (!selectedSessionId) {
       setCheckpoints([]);
@@ -332,6 +354,7 @@ export default function AppPage() {
     }
 
     void loadCheckpoints(token, selectedSessionId);
+    void loadWorkspaceSnapshotsForUser(token);
   }, [selectedSessionId]);
 
   useEffect(() => {
@@ -710,6 +733,31 @@ export default function AppPage() {
     }
   }
 
+  async function loadWorkspaceSnapshotsForUser(token: string): Promise<void> {
+    setSnapshotListState('loading');
+    setSnapshotActionError(null);
+    try {
+      const snapshots = await loadWorkspaceSnapshots({ token });
+      setWorkspaceSnapshots(snapshots);
+      setSelectedSnapshotId((currentSelectedSnapshotId) => {
+        if (currentSelectedSnapshotId && snapshots.some((snapshot) => snapshot.id === currentSelectedSnapshotId)) {
+          return currentSelectedSnapshotId;
+        }
+        return snapshots.length > 0 ? snapshots[0].id : null;
+      });
+      setSnapshotListState('ready');
+    } catch (error) {
+      setWorkspaceSnapshots([]);
+      setSelectedSnapshotId(null);
+      setSnapshotListState('error');
+      setSnapshotActionError(
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : 'Failed to load workspace snapshots.',
+      );
+    }
+  }
+
   function handleCheckpointDescriptionChange(value: string): void {
     setCheckpointDescriptionInput(value);
     setCheckpointCreateError(null);
@@ -791,6 +839,87 @@ export default function AppPage() {
         error instanceof Error && error.message.trim()
           ? error.message
           : 'Failed to create save point.',
+      );
+    }
+  }
+
+  function handleSnapshotSelection(snapshotId: string): void {
+    setSelectedSnapshotId(snapshotId.trim() ? snapshotId : null);
+  }
+
+  async function handleSaveWorkspaceSnapshot(): Promise<void> {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+    if (!selectedSessionId) {
+      setSnapshotActionState('error');
+      setSnapshotActionMessage(null);
+      setSnapshotActionError('Cannot save snapshot without an active session.');
+      return;
+    }
+
+    setSnapshotActionState('saving');
+    setSnapshotActionMessage(null);
+    setSnapshotActionError(null);
+    try {
+      const savedSnapshot = await saveWorkspaceSnapshot({
+        token,
+        sessionId: selectedSessionId,
+      });
+      await loadWorkspaceSnapshotsForUser(token);
+      setSelectedSnapshotId(savedSnapshot.id);
+      setSnapshotActionState('success');
+      setSnapshotActionMessage('Workspace snapshot saved.');
+      setSnapshotActionError(null);
+    } catch (error) {
+      setSnapshotActionState('error');
+      setSnapshotActionMessage(null);
+      setSnapshotActionError(
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : 'Failed to save workspace snapshot.',
+      );
+    }
+  }
+
+  async function handleRestoreWorkspaceSnapshot(): Promise<void> {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+    if (!selectedSessionId || !selectedSnapshotId) {
+      setSnapshotActionState('error');
+      setSnapshotActionMessage(null);
+      setSnapshotActionError('Select a snapshot to restore.');
+      return;
+    }
+
+    setSnapshotActionState('restoring');
+    setSnapshotActionMessage(null);
+    setSnapshotActionError(null);
+    try {
+      await restoreWorkspaceSnapshot({
+        token,
+        sessionId: selectedSessionId,
+        snapshotId: selectedSnapshotId,
+      });
+      await loadWorkspaceFilesForSession(token, selectedSessionId);
+      await refreshPreviewForSession(token, selectedSessionId);
+      await loadCheckpoints(token, selectedSessionId);
+      await loadWorkspaceSnapshotsForUser(token);
+      setSnapshotActionState('success');
+      setSnapshotActionMessage('Workspace snapshot restored.');
+      setSnapshotActionError(null);
+    } catch (error) {
+      setSnapshotActionState('error');
+      setSnapshotActionMessage(null);
+      setSnapshotActionError(
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : 'Failed to restore workspace snapshot.',
       );
     }
   }
@@ -2336,6 +2465,15 @@ export default function AppPage() {
       checkpointDescriptionInput={checkpointDescriptionInput}
       onCheckpointDescriptionChange={handleCheckpointDescriptionChange}
       onCreateManualCheckpoint={handleCreateManualCheckpoint}
+      snapshotListState={snapshotListState}
+      snapshotActionState={snapshotActionState}
+      snapshotActionMessage={snapshotActionMessage}
+      snapshotActionError={snapshotActionError}
+      workspaceSnapshots={workspaceSnapshots}
+      selectedSnapshotId={selectedSnapshotId}
+      onSelectSnapshotId={handleSnapshotSelection}
+      onSaveWorkspaceSnapshot={handleSaveWorkspaceSnapshot}
+      onRestoreWorkspaceSnapshot={handleRestoreWorkspaceSnapshot}
       checkpointRevertState={checkpointRevertState}
       checkpointRevertError={checkpointRevertError}
       checkpointRevertTargetId={checkpointRevertTargetId}

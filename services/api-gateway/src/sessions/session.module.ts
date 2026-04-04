@@ -7,6 +7,7 @@ import { InternalSessionController } from './internal-session.controller';
 import { SessionController } from './session.controller';
 import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
 import { QuotaModule } from '../quota/quota.module';
+import { SnapshotsModule } from '../snapshots/snapshots.module';
 
 /**
  * SessionModule
@@ -19,6 +20,7 @@ import { QuotaModule } from '../quota/quota.module';
     TypeOrmModule.forFeature([Session]),
     // PHASE-42A-1: Import QuotaModule for SessionQuotaGuard
     QuotaModule,
+    SnapshotsModule,
   ],
   controllers: [InternalSessionController, SessionController],
   providers: [

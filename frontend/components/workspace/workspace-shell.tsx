@@ -33,6 +33,7 @@ import type {
   WorkspaceCheckpointDiffResponse,
 } from './workspace-checkpoint-diff.logic';
 import type { WorkspaceExecutionFileActionState } from './workspace-ai-file-actions.logic';
+import type { WorkspaceSnapshotSummary } from './workspace-snapshots.logic';
 
 interface WorkspaceShellProps {
   sessions: WorkspaceShellSession[];
@@ -56,6 +57,15 @@ interface WorkspaceShellProps {
   checkpointDescriptionInput: string;
   onCheckpointDescriptionChange: (value: string) => void;
   onCreateManualCheckpoint: () => Promise<void>;
+  snapshotListState?: 'idle' | 'loading' | 'ready' | 'error';
+  snapshotActionState?: 'idle' | 'saving' | 'restoring' | 'success' | 'error';
+  snapshotActionMessage?: string | null;
+  snapshotActionError?: string | null;
+  workspaceSnapshots?: WorkspaceSnapshotSummary[];
+  selectedSnapshotId?: string | null;
+  onSelectSnapshotId?: (snapshotId: string) => void;
+  onSaveWorkspaceSnapshot?: () => Promise<void>;
+  onRestoreWorkspaceSnapshot?: () => Promise<void>;
   checkpointRevertState: WorkspaceCheckpointRevertState;
   checkpointRevertError: string | null;
   checkpointRevertTargetId: string | null;
@@ -310,6 +320,18 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
               onDescriptionChange={props.onCheckpointDescriptionChange}
               onCreateCheckpoint={props.onCreateManualCheckpoint}
             />
+            <HistorySnapshotPanel
+              selectedSessionId={props.selectedSessionId}
+              listState={props.snapshotListState ?? 'idle'}
+              actionState={props.snapshotActionState ?? 'idle'}
+              actionMessage={props.snapshotActionMessage ?? null}
+              actionError={props.snapshotActionError ?? null}
+              snapshots={props.workspaceSnapshots ?? []}
+              selectedSnapshotId={props.selectedSnapshotId ?? null}
+              onSelectSnapshotId={props.onSelectSnapshotId}
+              onSaveSnapshot={props.onSaveWorkspaceSnapshot}
+              onRestoreSnapshot={props.onRestoreWorkspaceSnapshot}
+            />
             {historyState === 'ready' ? (
               <HistoryCheckpointList
                 selectedSessionId={props.selectedSessionId}
@@ -372,6 +394,102 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
         <span>Workspace shell state: {shellState}</span>
         <span>Sessions: {props.sessions.length}</span>
       </footer>
+    </div>
+  );
+}
+
+function HistorySnapshotPanel(props: {
+  selectedSessionId: string | null;
+  listState: 'idle' | 'loading' | 'ready' | 'error';
+  actionState: 'idle' | 'saving' | 'restoring' | 'success' | 'error';
+  actionMessage: string | null;
+  actionError: string | null;
+  snapshots: WorkspaceSnapshotSummary[];
+  selectedSnapshotId: string | null;
+  onSelectSnapshotId?: (snapshotId: string) => void;
+  onSaveSnapshot?: () => Promise<void>;
+  onRestoreSnapshot?: () => Promise<void>;
+}) {
+  if (!props.onSaveSnapshot || !props.onRestoreSnapshot || !props.onSelectSnapshotId) {
+    return null;
+  }
+
+  const canMutate = Boolean(props.selectedSessionId);
+
+  return (
+    <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="history-snapshot-surface">
+      <p className="text-xs font-semibold text-gray-700">Project Snapshots (PR-01-01)</p>
+      <p className="mt-1 text-[11px] text-gray-500">
+        Save and restore files-only workspace snapshots for the active session.
+      </p>
+
+      <div className="mt-2 flex gap-2">
+        <button
+          type="button"
+          className="rounded bg-indigo-600 px-2 py-1 text-xs text-white disabled:bg-indigo-300"
+          disabled={!canMutate || props.actionState === 'saving' || props.actionState === 'restoring'}
+          onClick={() => void props.onSaveSnapshot?.()}
+          data-testid="history-snapshot-save-button"
+        >
+          {props.actionState === 'saving' ? 'Saving...' : 'Save Snapshot'}
+        </button>
+        <button
+          type="button"
+          className="rounded bg-emerald-600 px-2 py-1 text-xs text-white disabled:bg-emerald-300"
+          disabled={
+            !canMutate ||
+            !props.selectedSnapshotId ||
+            props.actionState === 'saving' ||
+            props.actionState === 'restoring'
+          }
+          onClick={() => void props.onRestoreSnapshot?.()}
+          data-testid="history-snapshot-restore-button"
+        >
+          {props.actionState === 'restoring' ? 'Restoring...' : 'Restore Snapshot'}
+        </button>
+      </div>
+
+      <div className="mt-2">
+        <label className="mb-1 block text-[11px] text-gray-600" htmlFor="history-snapshot-select">
+          Available snapshots
+        </label>
+        <select
+          id="history-snapshot-select"
+          className="w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs"
+          value={props.selectedSnapshotId ?? ''}
+          onChange={(event) => props.onSelectSnapshotId?.(event.target.value)}
+          disabled={props.listState === 'loading' || props.actionState === 'restoring'}
+          data-testid="history-snapshot-select"
+        >
+          <option value="">Select a snapshot</option>
+          {props.snapshots.map((snapshot) => (
+            <option key={snapshot.id} value={snapshot.id}>
+              {snapshot.label ?? 'Snapshot'} ({new Date(snapshot.createdAt).toLocaleString()}) - {snapshot.fileCount} files
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {props.listState === 'loading' ? (
+        <p className="mt-2 text-[11px] text-gray-500" data-testid="history-snapshot-list-loading">
+          Loading snapshots...
+        </p>
+      ) : null}
+      {props.listState === 'error' ? (
+        <p className="mt-2 text-[11px] text-red-700" data-testid="history-snapshot-list-error">
+          Failed to load snapshots.
+        </p>
+      ) : null}
+      {props.actionMessage ? (
+        <p className="mt-2 text-[11px] text-emerald-700" data-testid="history-snapshot-action-message">
+          {props.actionMessage}
+        </p>
+      ) : null}
+      {props.actionError ? (
+        <p className="mt-2 text-[11px] text-red-700" data-testid="history-snapshot-action-error">
+          {props.actionError}
+        </p>
+      ) : null}
     </div>
   );
 }

@@ -3,16 +3,21 @@ import { UnauthorizedException } from '@nestjs/common';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { SnapshotPersistenceService } from '../snapshots/snapshot-persistence.service';
 
 describe('UsersController (TASK-68B-2)', () => {
   let controller: UsersController;
   let usersService: jest.Mocked<UsersService>;
+  let snapshotPersistenceService: jest.Mocked<SnapshotPersistenceService>;
 
   beforeEach(async () => {
     const mockUsersService = {
       getCurrentUser: jest.fn(),
       getUsage: jest.fn(),
       getQuotas: jest.fn(),
+    };
+    const mockSnapshotPersistenceService = {
+      listSnapshots: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -22,11 +27,16 @@ describe('UsersController (TASK-68B-2)', () => {
           provide: UsersService,
           useValue: mockUsersService,
         },
+        {
+          provide: SnapshotPersistenceService,
+          useValue: mockSnapshotPersistenceService,
+        },
       ],
     }).compile();
 
     controller = module.get<UsersController>(UsersController);
     usersService = module.get(UsersService);
+    snapshotPersistenceService = module.get(SnapshotPersistenceService);
   });
 
   it('applies JwtAuthGuard at controller level', () => {
@@ -110,5 +120,32 @@ describe('UsersController (TASK-68B-2)', () => {
     await expect(
       controller.getQuotas({ user: { userId: 'missing-user' } }),
     ).rejects.toThrow(UnauthorizedException);
+  });
+
+  it('GET /api/users/me/snapshots returns current user snapshots only', async () => {
+    snapshotPersistenceService.listSnapshots.mockResolvedValue([
+      {
+        id: 'snapshot-2',
+        userId: 'user-1',
+        label: null,
+        createdAt: '2026-04-03T13:00:00.000Z',
+        fileCount: 3,
+      },
+      {
+        id: 'snapshot-1',
+        userId: 'user-1',
+        label: 'before-restore',
+        createdAt: '2026-04-03T12:00:00.000Z',
+        fileCount: 2,
+      },
+    ]);
+
+    const result = await controller.listSnapshots({
+      user: { userId: 'user-1' },
+    });
+
+    expect(snapshotPersistenceService.listSnapshots).toHaveBeenCalledWith('user-1');
+    expect(result).toHaveLength(2);
+    expect(result[0].id).toBe('snapshot-2');
   });
 });

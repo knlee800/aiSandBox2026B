@@ -5994,3 +5994,47 @@ Phase 84 made the workspace chat usable, but chat persistence is still localStor
 **Reference:** See `TASKS_BACKLOG_FULL.md` → AI-04-01 for full details; `docs/specs/AI-04-01-backend-chat-persistence.md` for spec
 
 ---
+
+## PR-01 — Project Persistence
+
+**Current stage:** PR-01-01 (COMPLETE and LOCKED)
+
+---
+
+#### PR-01-01: Project Save and Restore
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (PROJECT PERSISTENCE, FILES-ONLY SNAPSHOT FOUNDATION)
+**Checkpoint:** `docs/PR-01-01-CHECKPOINT.md`
+
+**Objective:**
+Implement the first project-persistence slice so a user can save the current workspace state from an active session and later restore that saved files-only snapshot into a session, without yet introducing a persistent project entity.
+
+**Why this exists:**
+The AI-first workspace loop now works, but work is still tied to ephemeral sessions. PR-01-01 is the first durability step: save and restore files-only workspace state so session expiry does not imply work loss, while keeping project identity and broader project management for later work.
+
+**Scope:**
+- Save current workspace files from an active session into durable storage as a files-only snapshot
+- Restore a saved files-only snapshot into a session workspace
+- Allow listing available saved snapshots for the current user
+- Provide minimum frontend path to trigger save and restore
+- Preserve existing workspace file tree / editor / preview / checkpoint / chat behavior
+- Keep auth and ownership enforcement on all save/restore operations
+- Keep restore behavior deterministic and bounded
+
+**Non-Goals:**
+- ❌ No persistent project entity yet
+- ❌ No project list / project naming system beyond minimal snapshot labeling if required
+- ❌ No import/export archive UX beyond this save/restore path
+- ❌ No public sharing
+- ❌ No collaborative access
+- ❌ No real-time sync between sessions
+- ❌ No broad git/history redesign
+- ❌ No quota / billing / auth redesign
+- ❌ No background workers
+
+**Dependencies:** AI-04-01 (Complete and Locked); Phase 79/80 (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → PR-01-01 for full details; `docs/specs/PR-01-01-project-save-restore.md` for spec
+
+---

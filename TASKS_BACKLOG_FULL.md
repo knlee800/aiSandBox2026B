@@ -14186,3 +14186,58 @@ Phase 84 made the workspace chat usable, but chat persistence is still localStor
 **Reference:** TASKS.md, docs/specs/AI-04-01-backend-chat-persistence.md, AI_Sandbox_Platform_Master_Plan_Revised.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### PR-01-01: Project Save and Restore
+
+**Task ID:** PR-01-01
+**Family:** PR-01 (Project Persistence)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (PROJECT PERSISTENCE, FILES-ONLY SNAPSHOT FOUNDATION)
+**Dependencies:** AI-04-01 (Complete and Locked); Phase 79/80 (Complete and Locked)
+**Checkpoint:** `docs/PR-01-01-CHECKPOINT.md`
+
+**Objective:**
+
+Implement the first project-persistence slice so a user can save the current workspace state from an active session and later restore that saved files-only snapshot into a session, without yet introducing a persistent project entity.
+
+**Why this exists:**
+
+The AI-first workspace loop now works end-to-end through AI-03-01/02 and AI-04-01, but all work is still tied to ephemeral sessions. PR-01-01 is the first durability step: save and restore files-only workspace state so session expiry does not imply work loss, while keeping project identity and broader project management for later work.
+
+**Scope:**
+
+1. Save current workspace files from an active session into durable storage as a files-only snapshot
+2. Restore a saved files-only snapshot into a session workspace
+3. Allow listing available saved snapshots for the current user
+4. Provide minimum frontend path to trigger save and restore
+5. Preserve existing workspace file tree / editor / preview / checkpoint / chat behavior
+6. Keep auth and ownership enforcement on all save/restore operations
+7. Keep restore behavior deterministic and bounded
+
+**Non-Goals:**
+
+- ❌ No persistent project entity yet
+- ❌ No project list / project naming system beyond minimal snapshot labeling if required
+- ❌ No import/export archive UX beyond this save/restore path
+- ❌ No public sharing
+- ❌ No collaborative access
+- ❌ No real-time sync between sessions
+- ❌ No broad git/history redesign
+- ❌ No quota / billing / auth redesign
+- ❌ No background workers
+- ❌ No refactors unless absolutely required
+
+**Acceptance Criteria:**
+
+- User can save current workspace state from an active session
+- Saved snapshot persists beyond session lifetime
+- User can list available saved snapshots for their own account
+- User can restore a saved snapshot into a session workspace
+- Restore does not cross user/session ownership boundaries
+- Existing workspace surfaces remain preserved
+- Session expiry no longer implies unavoidable work loss once a snapshot is saved
+
+**Reference:** TASKS.md, docs/specs/PR-01-01-project-save-restore.md, AI_Sandbox_Platform_Master_Plan_Revised.md, PRD.md, ARCHITECTURE.md
+
+---

@@ -1708,3 +1708,43 @@ describe('workspace shell component', () => {
     assert.match(terminatedHtml, /Session terminated \(410\)/);
   });
 });
+
+describe('workspace shell snapshot surface', () => {
+  test('renders snapshot list options in history surface', () => {
+    const html = renderWorkspaceShell({
+      workspaceSnapshots: [
+        {
+          id: 'snapshot-1',
+          userId: 'user-123',
+          label: 'before changes',
+          createdAt: '2026-04-03T10:00:00.000Z',
+          fileCount: 2,
+        },
+      ],
+      selectedSnapshotId: 'snapshot-1',
+      snapshotListState: 'ready',
+      snapshotActionState: 'idle',
+      onSelectSnapshotId: () => {},
+      onSaveWorkspaceSnapshot: async () => {},
+      onRestoreWorkspaceSnapshot: async () => {},
+    });
+
+    assert.match(html, /history-snapshot-surface/);
+    assert.match(html, /before changes/);
+  });
+
+  test('renders snapshot save\/restore loading states', () => {
+    const html = renderWorkspaceShell({
+      workspaceSnapshots: [],
+      selectedSnapshotId: null,
+      snapshotListState: 'loading',
+      snapshotActionState: 'restoring',
+      onSelectSnapshotId: () => {},
+      onSaveWorkspaceSnapshot: async () => {},
+      onRestoreWorkspaceSnapshot: async () => {},
+    });
+
+    assert.match(html, /Loading snapshots\.\.\./);
+    assert.match(html, /Restoring\.\.\./);
+  });
+});

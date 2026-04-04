@@ -20,6 +20,9 @@ import { Session } from '../entities/session.entity';
 import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
 import { RateLimitGuard, RateLimit } from '../guards/rate-limit.guard';
 import { SessionQuotaGuard } from '../quota/session-quota.guard';
+import { SaveSnapshotDto } from '../snapshots/dto/save-snapshot.dto';
+import { RestoreSnapshotDto } from '../snapshots/dto/restore-snapshot.dto';
+import { SnapshotPersistenceService } from '../snapshots/snapshot-persistence.service';
 
 /**
  * SessionController
@@ -33,6 +36,7 @@ export class SessionController {
   constructor(
     private readonly sessionService: SessionService,
     private readonly containerManagerHttpClient: ContainerManagerHttpClient,
+    private readonly snapshotPersistenceService: SnapshotPersistenceService,
   ) {}
 
   /**
@@ -280,6 +284,52 @@ export class SessionController {
     }
 
     await this.containerManagerHttpClient.writeSessionFile(id, path, content);
+  }
+
+  @Post(':id/snapshot')
+  @HttpCode(HttpStatus.CREATED)
+  async saveSessionSnapshot(
+    @Param('id') id: string,
+    @Body() body: SaveSnapshotDto,
+    @Request() req,
+  ) {
+    const userId = req.user.userId;
+    const session = await this.sessionService.getSessionById(id);
+    if (session.userId !== userId) {
+      throw new NotFoundException(`Session with ID ${id} not found`);
+    }
+    if (session.terminatedAt !== null) {
+      throw new GoneException(`Session ${id} is terminated`);
+    }
+
+    return await this.snapshotPersistenceService.saveSnapshot({
+      userId,
+      sessionId: id,
+      label: body.label,
+    });
+  }
+
+  @Post(':id/restore')
+  @HttpCode(HttpStatus.OK)
+  async restoreSessionSnapshot(
+    @Param('id') id: string,
+    @Body() body: RestoreSnapshotDto,
+    @Request() req,
+  ) {
+    const userId = req.user.userId;
+    const session = await this.sessionService.getSessionById(id);
+    if (session.userId !== userId) {
+      throw new NotFoundException(`Session with ID ${id} not found`);
+    }
+    if (session.terminatedAt !== null) {
+      throw new GoneException(`Session ${id} is terminated`);
+    }
+
+    return await this.snapshotPersistenceService.restoreSnapshot({
+      userId,
+      sessionId: id,
+      snapshotId: body.snapshotId,
+    });
   }
 
   /**
