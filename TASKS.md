@@ -5775,10 +5775,10 @@ Fix the real product/auth gap where unauthenticated users can still enter `/en/a
 
 #### AI-03-01: AI-to-Workspace File Actions — Umbrella Parent
 
-**Status:** PLANNED (UMBRELLA)
+**Status:** COMPLETE and LOCKED
 **Nature:** UMBRELLA WORK FAMILY (CORE PRODUCT LOOP)
 
-Implementation of AI-03-01 proceeds through bounded child slices AI-03-01A, AI-03-01B, and AI-03-01C. The parent item remains as the umbrella family entry and is not itself treated as the next executable slice.
+AI-03-01 was completed through its three bounded child slices (AI-03-01A, AI-03-01B, AI-03-01C). Post-action workspace coherence was completed separately in AI-03-02.
 
 **Child slices:**
 - AI-03-01A — Backend File-Action Output Pipeline (COMPLETE and LOCKED)
@@ -5947,5 +5947,50 @@ AI-03-01 completed the minimal AI file-action loop. AI-03-02 makes the workspace
 **Dependencies:** AI-03-01C (COMPLETE and LOCKED); Phase 79/80 (Complete and Locked)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → AI-03-02 for full details; `docs/specs/AI-03-02-post-ai-workspace-coherence.md` for spec
+
+---
+
+## AI-04 — Chat Persistence (Core Product Loop)
+
+**Current stage:** AI-04-01 (COMPLETE and LOCKED)
+
+---
+
+#### AI-04-01: Backend Chat Persistence Wiring
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (CORE PRODUCT LOOP, CHAT PERSISTENCE)
+**Checkpoint:** `docs/AI-04-01-CHECKPOINT.md`
+
+**Objective:**
+Wire the workspace chat panel to backend conversation/message persistence so chat history becomes session-scoped and server-side, while preserving current Phase 84 chat behavior and keeping localStorage only as a compatibility / fallback layer where needed.
+
+**Why this exists:**
+Phase 84 made the workspace chat usable, but chat persistence is still localStorage-first and device-bound. AI-04-01 upgrades the existing chat flow to durable backend persistence without redesigning the chat UI and without coupling this task to new workspace file-action behavior.
+
+**Scope:**
+- Load prior session chat messages from backend on session selection
+- Persist user prompt messages to backend per session
+- Persist assistant response messages to backend per session
+- Maintain correct session-scoped isolation
+- Preserve existing thread rendering and session-switch behavior
+- Keep localStorage only as compatibility / fallback if backend persistence/load is temporarily unavailable
+- Reuse existing conversation / chat-message persistence paths where possible
+- Preserve existing submit / stream / poll / cancel behavior
+
+**Non-Goals:**
+- ❌ No global chat history
+- ❌ No cross-session conversation system
+- ❌ No conversation export or branching
+- ❌ No multi-AI conversation threading
+- ❌ No chat UI redesign
+- ❌ No workspace coherence work
+- ❌ No project persistence work
+- ❌ No quota / billing / auth redesign
+- ❌ No new agent/orchestration behavior
+
+**Dependencies:** Phase 84 (Complete and Locked); AI-03-02 (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → AI-04-01 for full details; `docs/specs/AI-04-01-backend-chat-persistence.md` for spec
 
 ---

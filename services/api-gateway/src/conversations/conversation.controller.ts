@@ -1,6 +1,8 @@
 import {
   Controller,
   Get,
+  Post,
+  Body,
   Param,
   Query,
   UseGuards,
@@ -15,6 +17,7 @@ import { SessionService } from '../sessions/session.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Conversation } from '../entities/conversation.entity';
 import { ChatMessage } from '../entities/chat-message.entity';
+import { AddSessionMessageDto } from './dto/add-session-message.dto';
 
 /**
  * ConversationController
@@ -98,5 +101,28 @@ export class ConversationController {
       effectiveLimit,
       effectiveOffset,
     );
+  }
+
+  @Post('sessions/:id/messages')
+  @HttpCode(HttpStatus.CREATED)
+  async addMessageBySession(
+    @Param('id') id: string,
+    @Body() body: AddSessionMessageDto,
+    @Request() req,
+  ): Promise<{ id: string }> {
+    const userId = req.user.userId;
+
+    const session = await this.sessionService.getSessionById(id);
+    if (session.userId !== userId) {
+      throw new NotFoundException(`Session with ID ${id} not found`);
+    }
+
+    const message = await this.chatMessageService.addMessageBySession({
+      sessionId: id,
+      role: body.role,
+      content: body.content,
+    });
+
+    return { id: message.id };
   }
 }

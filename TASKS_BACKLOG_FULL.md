@@ -13834,16 +13834,16 @@ Fix the real product/auth gap where unauthenticated users can still enter `/en/a
 **Family:** AI-03 (AI-to-Workspace Actions)
 **Stage:** AI-03-01
 **Priority:** 🔴 High
-**Status:** PLANNED (UMBRELLA)
+**Status:** COMPLETE and LOCKED
 **Nature:** UMBRELLA WORK FAMILY (CORE PRODUCT LOOP)
 **Dependencies:** Phase 84 (Complete and Locked); AI execution pipeline (operational); workspace file system (operational)
 
-Implementation of AI-03-01 proceeds through bounded child slices AI-03-01A, AI-03-01B, and AI-03-01C. The parent item remains as the umbrella family entry and is not itself treated as the next executable slice.
+AI-03-01 was completed through its three bounded child slices (AI-03-01A, AI-03-01B, AI-03-01C). Post-action workspace coherence was completed separately in AI-03-02.
 
 **Child slices:**
-- AI-03-01A — Backend File-Action Output Pipeline (PLANNED)
+- AI-03-01A — Backend File-Action Output Pipeline (COMPLETE and LOCKED)
 - AI-03-01B — Frontend File-Action Application (COMPLETE and LOCKED)
-- AI-03-01C — Frontend Chat File-Action Result Surfacing (PLANNED)
+- AI-03-01C — Frontend Chat File-Action Result Surfacing (COMPLETE and LOCKED)
 
 **Objective:**
 
@@ -14128,5 +14128,61 @@ AI-03-01 completed the minimal AI file-action loop: backend file-action output (
 - No regressions in Phase 79/80 file tree, editor, preview, or checkpoint surfaces
 
 **Reference:** TASKS.md, docs/specs/AI-03-02-post-ai-workspace-coherence.md, docs/AI-03-01C-CHECKPOINT.md, AI_Sandbox_Platform_Master_Plan_Revised.md, PRD.md, ARCHITECTURE.md
+
+---
+
+### AI-04-01: Backend Chat Persistence Wiring
+
+**Task ID:** AI-04-01
+**Family:** AI-04 (Chat Persistence)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (CORE PRODUCT LOOP, CHAT PERSISTENCE)
+**Dependencies:** Phase 84 (Complete and Locked); AI-03-02 (Complete and Locked)
+**Checkpoint:** `docs/AI-04-01-CHECKPOINT.md`
+
+**Objective:**
+
+Wire the workspace chat panel to backend conversation/message persistence so chat history becomes session-scoped and server-side, while preserving current Phase 84 chat behavior and keeping localStorage only as a compatibility / fallback layer where needed.
+
+**Why this exists:**
+
+Phase 84 made the workspace chat usable, but chat persistence is still localStorage-first and device-bound. AI-04-01 upgrades the existing chat flow to durable backend persistence without redesigning the chat UI and without coupling this task to new workspace file-action behavior.
+
+**Scope:**
+
+1. Load prior session chat messages from backend on session selection
+2. Persist user prompt messages to backend per session
+3. Persist assistant response messages to backend per session
+4. Maintain correct session-scoped isolation
+5. Preserve existing thread rendering and session-switch behavior
+6. Keep localStorage only as compatibility / fallback if backend persistence/load is temporarily unavailable
+7. Reuse existing conversation / chat-message persistence paths where possible
+8. Preserve existing submit / stream / poll / cancel behavior
+
+**Non-Goals:**
+
+- ❌ No global chat history
+- ❌ No cross-session conversation system
+- ❌ No conversation export
+- ❌ No conversation branching
+- ❌ No multi-AI conversation threading
+- ❌ No chat UI redesign
+- ❌ No workspace coherence work
+- ❌ No project persistence work
+- ❌ No quota / billing / auth redesign
+- ❌ No new agent/orchestration behavior
+
+**Acceptance Criteria:**
+
+- Session chat messages are persisted to backend
+- Selecting a session loads backend chat history for that session
+- Switching away and back restores session chat from backend
+- Clearing localStorage does not lose persisted session chat
+- Session isolation is preserved with no cross-session leakage
+- Existing Phase 84 chat UX remains preserved
+- localStorage fallback/compatibility remains graceful if backend load/save temporarily fails
+
+**Reference:** TASKS.md, docs/specs/AI-04-01-backend-chat-persistence.md, AI_Sandbox_Platform_Master_Plan_Revised.md, PRD.md, ARCHITECTURE.md
 
 ---

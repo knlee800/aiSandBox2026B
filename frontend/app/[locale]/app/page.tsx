@@ -60,6 +60,10 @@ import {
   parseStoredChatThreadMessages,
   type WorkspaceChatThreadMessage,
 } from '@/components/workspace/workspace-chat-thread.logic';
+import {
+  loadSessionChatMessagesFromBackend,
+  persistSessionChatMessageToBackend,
+} from '@/components/workspace/workspace-chat-persistence.logic';
 
 const HIDDEN_UNUSABLE_SESSIONS_STORAGE_KEY = 'workspace_hidden_unusable_sessions';
 const CHAT_THREAD_STORAGE_KEY_PREFIX = 'workspace_chat_thread';
@@ -395,11 +399,30 @@ export default function AppPage() {
       setChatThreadMessages([]);
       return;
     }
-
     const restoredMessages = parseStoredChatThreadMessages(
       localStorage.getItem(getChatThreadStorageKey(selectedSessionId)),
     );
     setChatThreadMessages(restoredMessages);
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      return;
+    }
+    void (async () => {
+      try {
+        const backendMessages = await loadSessionChatMessagesFromBackend({
+          token,
+          sessionId: selectedSessionId,
+        });
+        if (selectedSessionIdRef.current !== selectedSessionId) {
+          return;
+        }
+        if (backendMessages.length > 0 || restoredMessages.length === 0) {
+          setChatThreadMessages(backendMessages);
+        }
+      } catch {
+        // Keep localStorage-backed thread as fallback when backend load fails.
+      }
+    })();
   }, [selectedSessionId]);
 
   useEffect(() => {
@@ -1475,6 +1498,17 @@ export default function AppPage() {
                 : message,
             ),
           );
+          const executionSessionId = executionSessionIdByExecutionIdRef.current[executionId] ?? null;
+          if (executionSessionId) {
+            void persistSessionChatMessageToBackend({
+              token,
+              sessionId: executionSessionId,
+              role: 'assistant',
+              content: resolvedResponse,
+            }).catch(() => {
+              // Keep local thread persistence as compatibility fallback.
+            });
+          }
           pendingAssistantMessageIdRef.current = null;
         }
         setChatStatusMessage('Assistant response received.');
@@ -1503,6 +1537,17 @@ export default function AppPage() {
                 : message,
             ),
           );
+          const executionSessionId = executionSessionIdByExecutionIdRef.current[executionId] ?? null;
+          if (executionSessionId) {
+            void persistSessionChatMessageToBackend({
+              token,
+              sessionId: executionSessionId,
+              role: 'assistant',
+              content: failureMessage,
+            }).catch(() => {
+              // Keep local thread persistence as compatibility fallback.
+            });
+          }
           pendingAssistantMessageIdRef.current = null;
         }
         return;
@@ -1572,6 +1617,16 @@ export default function AppPage() {
         content: '',
       },
     ]);
+    if (selectedSessionId) {
+      void persistSessionChatMessageToBackend({
+        token,
+        sessionId: selectedSessionId,
+        role: 'user',
+        content: trimmedPrompt,
+      }).catch(() => {
+        // Keep local thread persistence as compatibility fallback.
+      });
+    }
 
     try {
       const response = await fetch('/api/ai/execute', {
@@ -1693,6 +1748,16 @@ export default function AppPage() {
                 : message,
             ),
           );
+          if (executionSessionId) {
+            void persistSessionChatMessageToBackend({
+              token,
+              sessionId: executionSessionId,
+              role: 'assistant',
+              content: completedResponse,
+            }).catch(() => {
+              // Keep local thread persistence as compatibility fallback.
+            });
+          }
           pendingAssistantMessageIdRef.current = null;
         }
         setChatStatusMessage('Assistant response received.');
@@ -1718,6 +1783,16 @@ export default function AppPage() {
                 : message,
             ),
           );
+          if (executionSessionId) {
+            void persistSessionChatMessageToBackend({
+              token,
+              sessionId: executionSessionId,
+              role: 'assistant',
+              content: failureMessage,
+            }).catch(() => {
+              // Keep local thread persistence as compatibility fallback.
+            });
+          }
           pendingAssistantMessageIdRef.current = null;
         }
         return;
@@ -1756,6 +1831,16 @@ export default function AppPage() {
               : message,
           ),
         );
+        if (selectedSessionId) {
+          void persistSessionChatMessageToBackend({
+            token,
+            sessionId: selectedSessionId,
+            role: 'assistant',
+            content: failureMessage,
+          }).catch(() => {
+            // Keep local thread persistence as compatibility fallback.
+          });
+        }
         pendingAssistantMessageIdRef.current = null;
       }
     }
