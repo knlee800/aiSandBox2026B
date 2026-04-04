@@ -3,11 +3,13 @@ import { Repository } from 'typeorm';
 import { User } from '../../entities/user.entity';
 import { Session } from '../../entities/session.entity';
 import { UsageRecord } from '../../entities/usage-record.entity';
+import { Plan } from '../../entities/plan.entity';
 import { UsersService } from '../../users/users.service';
 import { QuotaService } from '../../quota/quota.service';
 import { AdminDashboardService } from '../admin-dashboard.service';
 import { SessionService } from '../../sessions/session.service';
 import { SessionRepository } from '../../repositories/session.repository';
+import { ContainerManagerHttpClient } from '../../clients/container-manager-http.client';
 
 describe('Cross-Surface Visibility Coherence (TASK-74C-1)', () => {
   let usersService: UsersService;
@@ -15,16 +17,24 @@ describe('Cross-Surface Visibility Coherence (TASK-74C-1)', () => {
   let sessionService: SessionService;
 
   let userRepository: jest.Mocked<Repository<User>>;
+  let usersPlanRepository: jest.Mocked<Repository<Plan>>;
   let quotaService: jest.Mocked<QuotaService>;
   let adminUserRepository: jest.Mocked<Repository<User>>;
   let adminSessionRepository: jest.Mocked<Repository<Session>>;
   let usageRecordRepository: jest.Mocked<Repository<UsageRecord>>;
+  let planRepository: jest.Mocked<Repository<Plan>>;
   let sessionRepository: jest.Mocked<SessionRepository>;
+  let containerClient: jest.Mocked<ContainerManagerHttpClient>;
+  let adminSessionService: jest.Mocked<SessionService>;
 
   beforeEach(() => {
     userRepository = {
       findOne: jest.fn(),
     } as unknown as jest.Mocked<Repository<User>>;
+    usersPlanRepository = {
+      findOne: jest.fn(),
+      find: jest.fn(),
+    } as unknown as jest.Mocked<Repository<Plan>>;
 
     quotaService = {
       getActiveSessionCount: jest.fn(),
@@ -44,16 +54,28 @@ describe('Cross-Surface Visibility Coherence (TASK-74C-1)', () => {
     usageRecordRepository = {
       createQueryBuilder: jest.fn(),
     } as unknown as jest.Mocked<Repository<UsageRecord>>;
+    planRepository = {
+      find: jest.fn(),
+    } as unknown as jest.Mocked<Repository<Plan>>;
 
     sessionRepository = {
       findByUser: jest.fn(),
     } as unknown as jest.Mocked<SessionRepository>;
+    containerClient = {
+      stopSession: jest.fn(),
+    } as unknown as jest.Mocked<ContainerManagerHttpClient>;
+    adminSessionService = {
+      terminateSession: jest.fn(),
+    } as unknown as jest.Mocked<SessionService>;
 
-    usersService = new UsersService(userRepository, quotaService);
+    usersService = new UsersService(userRepository, usersPlanRepository, quotaService);
     adminDashboardService = new AdminDashboardService(
       adminUserRepository,
       adminSessionRepository,
       usageRecordRepository,
+      planRepository,
+      containerClient,
+      adminSessionService,
     );
     sessionService = new SessionService(sessionRepository);
   });
@@ -79,10 +101,14 @@ describe('Cross-Surface Visibility Coherence (TASK-74C-1)', () => {
         id: 'user-1',
         email: 'user@example.com',
         role: 'user',
+        planStatus: 'active',
         planType: 'free',
         isActive: true,
         createdAt: new Date('2026-03-11T00:00:00.000Z'),
       } as User,
+    ]);
+    planRepository.find.mockResolvedValue([
+      { code: 'free', name: 'Free' } as Plan,
     ]);
 
     const adminUserSessionQb: any = {

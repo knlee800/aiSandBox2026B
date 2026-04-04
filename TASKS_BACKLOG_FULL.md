@@ -14454,3 +14454,52 @@ CO-01-01 aligned visible usage/quota UX with existing enforcement. CO-02-01 now 
 **Reference:** TASKS.md, docs/specs/CO-02-01-billing-plans-foundation.md, AI_Sandbox_Platform_Master_Plan_Revised.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### CO-03-01: Admin and Operational Completeness
+
+**Task ID:** CO-03-01
+**Family:** CO-01 (Commercial Readiness)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (COMMERCIAL READINESS, ADMIN / OPERATIONAL COMPLETENESS)
+**Dependencies:** CO-02-01 (Complete and Locked)
+**Checkpoint:** `docs/CO-03-01-CHECKPOINT.md`
+
+**Objective:**
+
+Implement the next bounded commercial-readiness slice so core admin and operational surfaces are complete enough to support user/account/session visibility and bounded operator actions on the existing platform.
+
+**Why this exists:**
+
+CO-01-01 aligned quota/usage UX. CO-02-01 added minimal plans foundation. CO-03-01 now completes the bounded operational/admin layer needed to manage users, plans, sessions, and key support actions without expanding into a full backoffice platform.
+
+**Scope:**
+
+- Complete minimal admin visibility for users, plans, and sessions on existing admin/internal surfaces
+- Add bounded operator actions only where required for core operational completeness
+- Preserve existing internal/admin endpoint separation
+- Preserve existing workspace/project/chat behavior
+- Keep all admin/operational behavior request-driven only
+
+**Explicitly out of scope:**
+
+- No broad backoffice suite
+- No analytics expansion beyond required admin visibility
+- No payment-provider operations
+- No invoicing/tax/accounting workflows
+- No background workers
+- No auth redesign
+- No broad dashboard redesign
+- No refactors unless absolutely required
+
+**Acceptance criteria:**
+
+- Admin/internal surfaces provide coherent visibility into users, plans, and sessions
+- Bounded operator actions required for core support/operations are available
+- Internal/admin separation remains preserved
+- Existing workspace/project/chat behavior remains preserved
+- Request-driven behavior remains preserved
+
+**Reference:** TASKS.md, docs/specs/CO-03-01-admin-operational.md, AI_Sandbox_Platform_Master_Plan_Revised.md, PRD.md, ARCHITECTURE.md
+
+---

@@ -5,13 +5,15 @@ import { AdminService } from './admin.service';
 import { ReconciliationController } from './reconciliation.controller';
 import { ReconciliationService } from './reconciliation.service';
 import { ChargeReadinessService } from './charge-readiness.service';
-import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
 import { PaymentsModule } from '../payments/payments.module';
 import { AdminDashboardController } from './admin-dashboard.controller';
 import { AdminDashboardService } from './admin-dashboard.service';
 import { User } from '../entities/user.entity';
 import { Session } from '../entities/session.entity';
 import { UsageRecord } from '../entities/usage-record.entity';
+import { Plan } from '../entities/plan.entity';
+import { SessionModule } from '../sessions/session.module';
+import { AdminOperationalController } from './admin-operational.controller';
 
 /**
  * AdminModule (Task 11A + Task 11B + Task 12A + Task 12B1 + Task 12B2)
@@ -42,18 +44,22 @@ import { UsageRecord } from '../entities/usage-record.entity';
  * - ChargeReadinessService (for future charging logic, MUST be called before any payment operations)
  */
 @Module({
-  imports: [PaymentsModule, TypeOrmModule.forFeature([User, Session, UsageRecord])],
+  imports: [
+    PaymentsModule,
+    SessionModule,
+    TypeOrmModule.forFeature([User, Session, UsageRecord, Plan]),
+  ],
   controllers: [
     AdminController,
     ReconciliationController,
     AdminDashboardController,
+    AdminOperationalController,
   ],
   providers: [
     AdminService,
     ReconciliationService,
     ChargeReadinessService,
     AdminDashboardService,
-    ContainerManagerHttpClient,
   ],
   exports: [
     AdminService,

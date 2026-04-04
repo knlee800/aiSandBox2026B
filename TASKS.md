@@ -6118,7 +6118,7 @@ PR-01-01 delivered files-only save/restore. PR-02-01 delivered import/export por
 
 ## CO-01 — Commercial Readiness
 
-**Current stage:** CO-02-01 (COMPLETE and LOCKED)
+**Current stage:** CO-03-01 (COMPLETE and LOCKED)
 
 ---
 
@@ -6190,5 +6190,40 @@ CO-01-01 aligned visible usage/quota UX with existing enforcement. CO-02-01 now 
 **Dependencies:** CO-01-01 (Complete and Locked)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → CO-02-01 for full details; `docs/specs/CO-02-01-billing-plans-foundation.md` for spec
+
+---
+
+#### CO-03-01: Admin and Operational Completeness
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (COMMERCIAL READINESS, ADMIN / OPERATIONAL COMPLETENESS)
+**Checkpoint:** `docs/CO-03-01-CHECKPOINT.md`
+
+**Objective:**
+Implement the next bounded commercial-readiness slice so core admin and operational surfaces are complete enough to support user/account/session visibility and bounded operator actions on the existing platform.
+
+**Why this exists:**
+CO-01-01 aligned quota/usage UX. CO-02-01 added minimal plans foundation. CO-03-01 now completes the bounded operational/admin layer needed to manage users, plans, sessions, and key support actions without expanding into a full backoffice platform.
+
+**Scope:**
+- Complete minimal admin visibility for users, plans, and sessions on existing admin/internal surfaces
+- Add bounded operator actions only where required for core operational completeness
+- Preserve existing internal/admin endpoint separation
+- Preserve existing workspace/project/chat behavior
+- Keep all admin/operational behavior request-driven only
+
+**Out of scope:**
+- ❌ No broad backoffice suite
+- ❌ No analytics expansion beyond required admin visibility
+- ❌ No payment-provider operations
+- ❌ No invoicing/tax/accounting workflows
+- ❌ No background workers
+- ❌ No auth redesign
+- ❌ No broad dashboard redesign
+- ❌ No refactors unless absolutely required
+
+**Dependencies:** CO-02-01 (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → CO-03-01 for full details; `docs/specs/CO-03-01-admin-operational.md` for spec
 
 ---

@@ -5,7 +5,10 @@ export class AdminUserSummaryDto {
   userId: string;
   email: string;
   role: string;
+  planCode: string;
+  planName: string;
   planType: string;
+  planStatus: string;
   isActive: boolean;
   activeSessions: number;
   totalSessions: number;
@@ -18,4 +21,17 @@ export class AdminUserSummaryDto {
 
 export class AdminUsersResponseDto {
   users: AdminUserSummaryDto[];
+}
+
+export class AdminUserQuotaVisibilityDto {
+  maxActiveSessions: number;
+  maxSessions24h: number;
+  maxTokens24h: number;
+  currentActiveSessions: number;
+  currentSessions24h: number;
+  currentTokens24h: number;
+}
+
+export class AdminUserDetailDto extends AdminUserSummaryDto {
+  quotas: AdminUserQuotaVisibilityDto;
 }

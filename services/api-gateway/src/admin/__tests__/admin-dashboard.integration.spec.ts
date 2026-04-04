@@ -4,14 +4,18 @@ import { UnauthorizedException } from '@nestjs/common';
 import { User } from '../../entities/user.entity';
 import { Session } from '../../entities/session.entity';
 import { UsageRecord } from '../../entities/usage-record.entity';
+import { Plan } from '../../entities/plan.entity';
 import { AdminDashboardController } from '../admin-dashboard.controller';
 import { AdminDashboardService } from '../admin-dashboard.service';
 import { InternalServiceAuthGuard } from '../../guards/internal-service-auth.guard';
+import { ContainerManagerHttpClient } from '../../clients/container-manager-http.client';
+import { SessionService } from '../../sessions/session.service';
 
 describe('AdminDashboard Integration (TASK-68B-3)', () => {
   let controller: AdminDashboardController;
   let sessionRepository: any;
   let usageRecordRepository: any;
+  let planRepository: any;
   let originalInternalServiceKey: string | undefined;
 
   beforeEach(async () => {
@@ -50,6 +54,15 @@ describe('AdminDashboard Integration (TASK-68B-3)', () => {
     const mockUsageRecordRepository = {
       createQueryBuilder: jest.fn(() => usageQb),
     };
+    const mockPlanRepository = {
+      find: jest.fn(),
+    };
+    const mockContainerClient = {
+      stopSession: jest.fn(),
+    };
+    const mockSessionService = {
+      terminateSession: jest.fn(),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AdminDashboardController],
@@ -67,12 +80,25 @@ describe('AdminDashboard Integration (TASK-68B-3)', () => {
           provide: getRepositoryToken(UsageRecord),
           useValue: mockUsageRecordRepository,
         },
+        {
+          provide: getRepositoryToken(Plan),
+          useValue: mockPlanRepository,
+        },
+        {
+          provide: ContainerManagerHttpClient,
+          useValue: mockContainerClient,
+        },
+        {
+          provide: SessionService,
+          useValue: mockSessionService,
+        },
       ],
     }).compile();
 
     controller = module.get<AdminDashboardController>(AdminDashboardController);
     sessionRepository = module.get(getRepositoryToken(Session));
     usageRecordRepository = module.get(getRepositoryToken(UsageRecord));
+    planRepository = module.get(getRepositoryToken(Plan));
   });
 
   afterEach(() => {
@@ -90,6 +116,12 @@ describe('AdminDashboard Integration (TASK-68B-3)', () => {
         planType: 'free',
         isActive: true,
         createdAt: new Date('2026-03-10T10:00:00.000Z'),
+      },
+    ]);
+    planRepository.find.mockResolvedValue([
+      {
+        code: 'free',
+        name: 'Free',
       },
     ]);
 
@@ -110,6 +142,7 @@ describe('AdminDashboard Integration (TASK-68B-3)', () => {
 
     expect(result.users).toHaveLength(1);
     expect(result.users[0].userId).toBe('user-1');
+    expect(result.users[0].planCode).toBe('free');
     expect(result.users[0].estimatedCost).toBe(0.015);
   });
 
