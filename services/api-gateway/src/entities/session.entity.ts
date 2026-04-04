@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { SessionStatus } from './session-status.enum';
 import { User } from './user.entity';
+import { Project } from './project.entity';
 
 /**
  * Session Entity
@@ -77,6 +78,23 @@ export class Session {
   @Index('idx_session_user_id')
   @Column({ type: 'uuid', name: 'user_id' })
   userId: string;
+
+  /**
+   * Optional associated project (nullable for backward compatibility).
+   */
+  @ManyToOne(() => Project, (project) => project.sessions, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'project_id' })
+  project: Project | null;
+
+  /**
+   * Optional project ID (foreign key).
+   */
+  @Index('idx_sessions_project_id')
+  @Column({ type: 'uuid', name: 'project_id', nullable: true })
+  projectId: string | null;
 
   /**
    * Termination timestamp (nullable)

@@ -34,6 +34,7 @@ import type {
 } from './workspace-checkpoint-diff.logic';
 import type { WorkspaceExecutionFileActionState } from './workspace-ai-file-actions.logic';
 import type { WorkspaceSnapshotSummary } from './workspace-snapshots.logic';
+import type { WorkspaceProjectSummary } from './workspace-projects.logic';
 
 interface WorkspaceShellProps {
   sessions: WorkspaceShellSession[];
@@ -57,6 +58,17 @@ interface WorkspaceShellProps {
   checkpointDescriptionInput: string;
   onCheckpointDescriptionChange: (value: string) => void;
   onCreateManualCheckpoint: () => Promise<void>;
+  projectListState?: 'idle' | 'loading' | 'ready' | 'error';
+  projectActionState?: 'idle' | 'creating' | 'opening' | 'success' | 'error';
+  projectActionMessage?: string | null;
+  projectActionError?: string | null;
+  workspaceProjects?: WorkspaceProjectSummary[];
+  selectedProjectId?: string | null;
+  projectNameInput?: string;
+  onProjectNameInputChange?: (value: string) => void;
+  onSelectProjectId?: (projectId: string) => void;
+  onCreateWorkspaceProject?: () => Promise<void>;
+  onOpenWorkspaceProject?: () => Promise<void>;
   snapshotListState?: 'idle' | 'loading' | 'ready' | 'error';
   snapshotActionState?:
     | 'idle'
@@ -329,6 +341,20 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
               onDescriptionChange={props.onCheckpointDescriptionChange}
               onCreateCheckpoint={props.onCreateManualCheckpoint}
             />
+            <HistoryProjectPanel
+              selectedSessionId={props.selectedSessionId}
+              listState={props.projectListState ?? 'idle'}
+              actionState={props.projectActionState ?? 'idle'}
+              actionMessage={props.projectActionMessage ?? null}
+              actionError={props.projectActionError ?? null}
+              projects={props.workspaceProjects ?? []}
+              selectedProjectId={props.selectedProjectId ?? null}
+              projectNameInput={props.projectNameInput ?? ''}
+              onProjectNameInputChange={props.onProjectNameInputChange}
+              onSelectProjectId={props.onSelectProjectId}
+              onCreateProject={props.onCreateWorkspaceProject}
+              onOpenProject={props.onOpenWorkspaceProject}
+            />
             <HistorySnapshotPanel
               selectedSessionId={props.selectedSessionId}
               listState={props.snapshotListState ?? 'idle'}
@@ -405,6 +431,108 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
         <span>Workspace shell state: {shellState}</span>
         <span>Sessions: {props.sessions.length}</span>
       </footer>
+    </div>
+  );
+}
+
+function HistoryProjectPanel(props: {
+  selectedSessionId: string | null;
+  listState: 'idle' | 'loading' | 'ready' | 'error';
+  actionState: 'idle' | 'creating' | 'opening' | 'success' | 'error';
+  actionMessage: string | null;
+  actionError: string | null;
+  projects: WorkspaceProjectSummary[];
+  selectedProjectId: string | null;
+  projectNameInput: string;
+  onProjectNameInputChange?: (value: string) => void;
+  onSelectProjectId?: (projectId: string) => void;
+  onCreateProject?: () => Promise<void>;
+  onOpenProject?: () => Promise<void>;
+}) {
+  if (
+    !props.onProjectNameInputChange ||
+    !props.onSelectProjectId ||
+    !props.onCreateProject ||
+    !props.onOpenProject
+  ) {
+    return null;
+  }
+
+  const canMutate = Boolean(props.selectedSessionId);
+
+  return (
+    <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="history-project-surface">
+      <p className="text-xs font-semibold text-gray-700">Projects (PR-03-01)</p>
+      <p className="mt-1 text-[11px] text-gray-500">
+        Create a named project and open it in the active session.
+      </p>
+
+      <div className="mt-2 flex gap-2">
+        <input
+          type="text"
+          value={props.projectNameInput}
+          onChange={(event) => props.onProjectNameInputChange?.(event.target.value)}
+          placeholder="New project name"
+          className="min-w-0 flex-1 rounded border border-gray-300 bg-white px-2 py-1 text-xs"
+          data-testid="history-project-name-input"
+        />
+        <button
+          type="button"
+          className="rounded bg-violet-600 px-2 py-1 text-xs text-white disabled:bg-violet-300"
+          disabled={!canMutate || props.actionState === 'creating' || props.actionState === 'opening'}
+          onClick={() => void props.onCreateProject?.()}
+          data-testid="history-project-create-button"
+        >
+          {props.actionState === 'creating' ? 'Creating...' : 'Create Project'}
+        </button>
+      </div>
+
+      <div className="mt-2 flex gap-2">
+        <select
+          className="min-w-0 flex-1 rounded border border-gray-300 bg-white px-2 py-1 text-xs"
+          value={props.selectedProjectId ?? ''}
+          onChange={(event) => props.onSelectProjectId?.(event.target.value)}
+          disabled={props.listState === 'loading' || props.actionState === 'opening'}
+          data-testid="history-project-select"
+        >
+          <option value="">Select a project</option>
+          {props.projects.map((project) => (
+            <option key={project.id} value={project.id}>
+              {project.name}
+            </option>
+          ))}
+        </select>
+        <button
+          type="button"
+          className="rounded bg-teal-600 px-2 py-1 text-xs text-white disabled:bg-teal-300"
+          disabled={!canMutate || !props.selectedProjectId || props.actionState === 'opening'}
+          onClick={() => void props.onOpenProject?.()}
+          data-testid="history-project-open-button"
+        >
+          {props.actionState === 'opening' ? 'Opening...' : 'Open Project'}
+        </button>
+      </div>
+
+      {props.listState === 'loading' ? (
+        <p className="mt-2 text-[11px] text-gray-500" data-testid="history-project-list-loading">
+          Loading projects...
+        </p>
+      ) : null}
+      {props.listState === 'error' ? (
+        <p className="mt-2 text-[11px] text-red-700" data-testid="history-project-list-error">
+          Failed to load projects.
+        </p>
+      ) : null}
+      {props.actionMessage ? (
+        <p className="mt-2 text-[11px] text-emerald-700" data-testid="history-project-action-message">
+          {props.actionMessage}
+        </p>
+      ) : null}
+      {props.actionError ? (
+        <p className="mt-2 text-[11px] text-red-700" data-testid="history-project-action-error">
+          {props.actionError}
+        </p>
+      ) : null}
     </div>
   );
 }

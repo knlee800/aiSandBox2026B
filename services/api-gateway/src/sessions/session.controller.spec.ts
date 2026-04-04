@@ -130,6 +130,8 @@ describe('SessionController (PHASE-76F: ISSUE-76-002 DELETE termination fix)', (
     user: {} as any,
     terminatedAt: null,
     terminationReason: null,
+    project: null,
+    projectId: null,
   };
 
   const mockTerminatedSession = {
@@ -288,6 +290,8 @@ describe('SessionController (PHASE-77A: ISSUE-76-005 exec route)', () => {
     user: {} as any,
     terminatedAt: null,
     terminationReason: null,
+    project: null,
+    projectId: null,
   };
 
   const mockTerminatedSession = {
@@ -465,6 +469,8 @@ describe('SessionController (PR-01-01 snapshots)', () => {
     user: {} as any,
     terminatedAt: null,
     terminationReason: null,
+    project: null,
+    projectId: null,
   };
 
   beforeEach(async () => {
@@ -609,6 +615,8 @@ describe('SessionController (PR-02-01 import/export)', () => {
     user: {} as any,
     terminatedAt: null,
     terminationReason: null,
+    project: null,
+    projectId: null,
   };
 
   beforeEach(async () => {

@@ -72,6 +72,12 @@ import {
   saveWorkspaceSnapshot,
   type WorkspaceSnapshotSummary,
 } from '@/components/workspace/workspace-snapshots.logic';
+import {
+  createWorkspaceProject,
+  loadWorkspaceProjects,
+  openWorkspaceProject,
+  type WorkspaceProjectSummary,
+} from '@/components/workspace/workspace-projects.logic';
 
 const HIDDEN_UNUSABLE_SESSIONS_STORAGE_KEY = 'workspace_hidden_unusable_sessions';
 const CHAT_THREAD_STORAGE_KEY_PREFIX = 'workspace_chat_thread';
@@ -213,6 +219,17 @@ export default function AppPage() {
   >('idle');
   const [snapshotActionMessage, setSnapshotActionMessage] = useState<string | null>(null);
   const [snapshotActionError, setSnapshotActionError] = useState<string | null>(null);
+  const [workspaceProjects, setWorkspaceProjects] = useState<WorkspaceProjectSummary[]>([]);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [projectNameInput, setProjectNameInput] = useState('');
+  const [projectListState, setProjectListState] = useState<'idle' | 'loading' | 'ready' | 'error'>(
+    'idle',
+  );
+  const [projectActionState, setProjectActionState] = useState<
+    'idle' | 'creating' | 'opening' | 'success' | 'error'
+  >('idle');
+  const [projectActionMessage, setProjectActionMessage] = useState<string | null>(null);
+  const [projectActionError, setProjectActionError] = useState<string | null>(null);
   const [userSummary, setUserSummary] = useState<WorkspaceUserSummary | null>(null);
   const [usageSummary, setUsageSummary] = useState<WorkspaceUsageSummary | null>(null);
   const [quotaSummary, setQuotaSummary] = useState<WorkspaceQuotaSummary | null>(null);
@@ -347,6 +364,13 @@ export default function AppPage() {
     setSnapshotActionState('idle');
     setSnapshotActionMessage(null);
     setSnapshotActionError(null);
+    setWorkspaceProjects([]);
+    setSelectedProjectId(null);
+    setProjectNameInput('');
+    setProjectListState('idle');
+    setProjectActionState('idle');
+    setProjectActionMessage(null);
+    setProjectActionError(null);
 
     if (!selectedSessionId) {
       setCheckpoints([]);
@@ -357,6 +381,7 @@ export default function AppPage() {
 
     void loadCheckpoints(token, selectedSessionId);
     void loadWorkspaceSnapshotsForUser(token);
+    void loadWorkspaceProjectsForUser(token);
   }, [selectedSessionId]);
 
   useEffect(() => {
@@ -756,6 +781,121 @@ export default function AppPage() {
         error instanceof Error && error.message.trim()
           ? error.message
           : 'Failed to load workspace snapshots.',
+      );
+    }
+  }
+
+  async function loadWorkspaceProjectsForUser(token: string): Promise<void> {
+    setProjectListState('loading');
+    setProjectActionError(null);
+    try {
+      const projects = await loadWorkspaceProjects({ token });
+      setWorkspaceProjects(projects);
+      setSelectedProjectId((currentSelectedProjectId) => {
+        if (currentSelectedProjectId && projects.some((project) => project.id === currentSelectedProjectId)) {
+          return currentSelectedProjectId;
+        }
+        return projects.length > 0 ? projects[0].id : null;
+      });
+      setProjectListState('ready');
+    } catch (error) {
+      setWorkspaceProjects([]);
+      setSelectedProjectId(null);
+      setProjectListState('error');
+      setProjectActionError(
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : 'Failed to load projects.',
+      );
+    }
+  }
+
+  function handleProjectNameInputChange(value: string): void {
+    setProjectNameInput(value);
+    setProjectActionError(null);
+    setProjectActionState('idle');
+  }
+
+  function handleProjectSelection(projectId: string): void {
+    setSelectedProjectId(projectId.trim() ? projectId : null);
+  }
+
+  async function handleCreateWorkspaceProject(): Promise<void> {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+    const trimmedName = projectNameInput.trim();
+    if (!trimmedName) {
+      setProjectActionState('error');
+      setProjectActionMessage(null);
+      setProjectActionError('Project name is required.');
+      return;
+    }
+
+    setProjectActionState('creating');
+    setProjectActionMessage(null);
+    setProjectActionError(null);
+    try {
+      const createdProject = await createWorkspaceProject({
+        token,
+        name: trimmedName,
+      });
+      await loadWorkspaceProjectsForUser(token);
+      setSelectedProjectId(createdProject.id);
+      setProjectNameInput('');
+      setProjectActionState('success');
+      setProjectActionMessage('Project created.');
+      setProjectActionError(null);
+    } catch (error) {
+      setProjectActionState('error');
+      setProjectActionMessage(null);
+      setProjectActionError(
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : 'Failed to create project.',
+      );
+    }
+  }
+
+  async function handleOpenWorkspaceProject(): Promise<void> {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+    if (!selectedSessionId || !selectedProjectId) {
+      setProjectActionState('error');
+      setProjectActionMessage(null);
+      setProjectActionError('Select both an active session and a project.');
+      return;
+    }
+
+    setProjectActionState('opening');
+    setProjectActionMessage(null);
+    setProjectActionError(null);
+    try {
+      await openWorkspaceProject({
+        token,
+        projectId: selectedProjectId,
+        sessionId: selectedSessionId,
+        snapshotId: selectedSnapshotId ?? undefined,
+      });
+      await loadSessions(token);
+      await loadWorkspaceFilesForSession(token, selectedSessionId);
+      await refreshPreviewForSession(token, selectedSessionId);
+      await loadCheckpoints(token, selectedSessionId);
+      setProjectActionState('success');
+      setProjectActionMessage('Project opened in selected session.');
+      setProjectActionError(null);
+    } catch (error) {
+      setProjectActionState('error');
+      setProjectActionMessage(null);
+      setProjectActionError(
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : 'Failed to open project.',
       );
     }
   }
@@ -2553,6 +2693,17 @@ export default function AppPage() {
       snapshotActionState={snapshotActionState}
       snapshotActionMessage={snapshotActionMessage}
       snapshotActionError={snapshotActionError}
+      projectListState={projectListState}
+      projectActionState={projectActionState}
+      projectActionMessage={projectActionMessage}
+      projectActionError={projectActionError}
+      workspaceProjects={workspaceProjects}
+      selectedProjectId={selectedProjectId}
+      projectNameInput={projectNameInput}
+      onProjectNameInputChange={handleProjectNameInputChange}
+      onSelectProjectId={handleProjectSelection}
+      onCreateWorkspaceProject={handleCreateWorkspaceProject}
+      onOpenWorkspaceProject={handleOpenWorkspaceProject}
       workspaceSnapshots={workspaceSnapshots}
       selectedSnapshotId={selectedSnapshotId}
       onSelectSnapshotId={handleSnapshotSelection}

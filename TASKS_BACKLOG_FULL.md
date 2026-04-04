@@ -14295,3 +14295,58 @@ PR-01-01 gave the product durable files-only save/restore within the platform. P
 **Reference:** TASKS.md, docs/specs/PR-02-01-project-import-export.md, AI_Sandbox_Platform_Master_Plan_Revised.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### PR-03-01: Project Identity
+
+**Task ID:** PR-03-01
+**Family:** PR-01 (Project Persistence)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (PROJECT PERSISTENCE, PERSISTENT PROJECT ENTITY)
+**Dependencies:** PR-01-01 (Complete and Locked), PR-02-01 (Complete and Locked)
+**Checkpoint:** `docs/PR-03-01-CHECKPOINT.md`
+
+**Objective:**
+
+Introduce a persistent project entity on top of the completed files-only save/restore and import/export foundations, so users have a stable named project handle distinct from ephemeral sessions.
+
+**Why this exists:**
+
+PR-01-01 delivered files-only save/restore within the platform. PR-02-01 delivered import/export portability. PR-03-01 now adds stable project identity so saved work can be organized and reopened through a persistent project concept rather than only through snapshots and session-bound flows.
+
+**Scope:**
+
+- Add persistent project entity with minimal fields (id, user_id, name, created_at, optional description)
+- Allow creating a named project
+- Allow listing user projects
+- Allow associating sessions with a project
+- Allow opening a project into a session using the existing save/restore foundation
+- Provide minimal frontend project list / create / open flow
+- Preserve existing session lifecycle and workspace behavior
+- Keep auth and ownership enforcement on all project operations
+
+**Non-Goals:**
+
+- ❌ No public sharing
+- ❌ No team or collaborative project access
+- ❌ No marketplace/templates
+- ❌ No advanced project settings
+- ❌ No GitHub/GitLab integration
+- ❌ No quota / billing / auth redesign
+- ❌ No background workers
+- ❌ No broad workspace redesign
+- ❌ No refactors unless absolutely required
+
+**Acceptance Criteria:**
+
+- User can create a named project
+- User can list their projects
+- A session can be associated with a project
+- A project persists after session end
+- User can open a project into a session using the existing persistence foundation
+- Auth/ownership boundaries are preserved
+- Existing workspace and session behavior remain preserved
+
+**Reference:** TASKS.md, docs/specs/PR-03-01-project-identity.md, AI_Sandbox_Platform_Master_Plan_Revised.md, PRD.md, ARCHITECTURE.md
+
+---

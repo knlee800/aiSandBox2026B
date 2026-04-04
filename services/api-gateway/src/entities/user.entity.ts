@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { UserRole } from './user-role.enum';
 import { Session } from './session.entity';
+import { Project } from './project.entity';
 
 /**
  * User Entity
@@ -101,4 +102,10 @@ export class User {
    */
   @OneToMany(() => Session, (session) => session.user)
   sessions: Session[];
+
+  /**
+   * User's projects (one-to-many relationship)
+   */
+  @OneToMany(() => Project, (project) => project.user)
+  projects: Project[];
 }

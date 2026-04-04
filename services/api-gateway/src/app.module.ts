@@ -22,6 +22,7 @@ import { BillingVisibilityModule } from './billing-visibility/billing-visibility
 import { InvoiceModule } from './invoice/invoice.module';
 import { RuntimeModule } from './runtime/runtime.module';
 import { UsersModule } from './users/users.module';
+import { ProjectsModule } from './projects/projects.module';
 import { databaseConfig } from './config/database.config';
 import { InternalServiceAuthGuard } from './guards/internal-service-auth.guard';
 import { IdempotentReplayExceptionFilter } from './filters/idempotent-replay-exception.filter';
@@ -62,6 +63,7 @@ import { IdempotentReplayExceptionFilter } from './filters/idempotent-replay-exc
     InvoiceModule, // Phase 25B-1: Invoice persistence infrastructure
     RuntimeModule, // Phase 41A: Runtime metrics and observability
     UsersModule, // TASK-68B-2: User dashboard endpoints
+    ProjectsModule, // PR-03-01: Project identity endpoints
   ],
   controllers: [],
   providers: [

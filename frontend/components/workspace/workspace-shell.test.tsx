@@ -1710,6 +1710,42 @@ describe('workspace shell component', () => {
 });
 
 describe('workspace shell snapshot surface', () => {
+  test('renders project create/list/open surface', () => {
+    const html = renderWorkspaceShell({
+      workspaceProjects: [
+        {
+          id: 'project-1',
+          userId: 'user-123',
+          name: 'My Workspace Project',
+          createdAt: '2026-04-04T10:00:00.000Z',
+          updatedAt: '2026-04-04T10:00:00.000Z',
+        },
+      ],
+      selectedProjectId: 'project-1',
+      projectNameInput: 'Draft Project',
+      projectListState: 'ready',
+      projectActionState: 'idle',
+      onProjectNameInputChange: () => {},
+      onSelectProjectId: () => {},
+      onCreateWorkspaceProject: async () => {},
+      onOpenWorkspaceProject: async () => {},
+      workspaceSnapshots: [],
+      selectedSnapshotId: null,
+      snapshotListState: 'ready',
+      snapshotActionState: 'idle',
+      onSelectSnapshotId: () => {},
+      onSaveWorkspaceSnapshot: async () => {},
+      onRestoreWorkspaceSnapshot: async () => {},
+      onExportWorkspaceArchive: async () => {},
+      onImportWorkspaceArchive: async () => {},
+    });
+
+    assert.match(html, /history-project-surface/);
+    assert.match(html, /My Workspace Project/);
+    assert.match(html, /Create Project/);
+    assert.match(html, /Open Project/);
+  });
+
   test('renders snapshot list options in history surface', () => {
     const html = renderWorkspaceShell({
       workspaceSnapshots: [

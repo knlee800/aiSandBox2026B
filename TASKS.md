@@ -5997,7 +5997,7 @@ Phase 84 made the workspace chat usable, but chat persistence is still localStor
 
 ## PR-01 — Project Persistence
 
-**Current stage:** PR-02-01 (COMPLETE and LOCKED)
+**Current stage:** PR-03-01 (COMPLETE and LOCKED)
 
 ---
 
@@ -6074,5 +6074,44 @@ PR-01-01 gave the product durable files-only save/restore. PR-02-01 adds portabi
 **Dependencies:** PR-01-01 (Complete and Locked)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → PR-02-01 for full details; `docs/specs/PR-02-01-project-import-export.md` for spec
+
+---
+
+#### PR-03-01: Project Identity
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (PROJECT PERSISTENCE, PERSISTENT PROJECT ENTITY)
+**Checkpoint:** `docs/PR-03-01-CHECKPOINT.md`
+
+**Objective:**
+Introduce a persistent project entity on top of the completed files-only save/restore and import/export foundations, so users have a stable named project handle distinct from ephemeral sessions.
+
+**Why this exists:**
+PR-01-01 delivered files-only save/restore. PR-02-01 delivered import/export portability. PR-03-01 now adds stable project identity so saved work can be organized and reopened through a persistent project concept rather than only through snapshots and session-bound flows.
+
+**Scope:**
+- Add persistent project entity with minimal fields
+- Allow creating a named project
+- Allow listing user projects
+- Allow associating sessions with a project
+- Allow opening a project into a session using the existing save/restore foundation
+- Provide minimal frontend project list / create / open flow
+- Preserve existing session lifecycle and workspace behavior
+- Keep auth and ownership enforcement on all project operations
+
+**Non-Goals:**
+- ❌ No public sharing
+- ❌ No team or collaborative project access
+- ❌ No marketplace/templates
+- ❌ No advanced project settings
+- ❌ No GitHub/GitLab integration
+- ❌ No quota / billing / auth redesign
+- ❌ No background workers
+- ❌ No broad workspace redesign
+- ❌ No refactors unless absolutely required
+
+**Dependencies:** PR-01-01 (Complete and Locked), PR-02-01 (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → PR-03-01 for full details; `docs/specs/PR-03-01-project-identity.md` for spec
 
 ---
