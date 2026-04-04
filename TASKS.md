@@ -6230,7 +6230,7 @@ CO-01-01 aligned quota/usage UX. CO-02-01 added minimal plans foundation. CO-03-
 
 ## ADV-01 — Advanced Product Expansion
 
-**Current stage:** ADV-01-01 (COMPLETE and LOCKED)
+**Current stage:** ADV-02-01 (COMPLETE and LOCKED)
 
 ---
 
@@ -6267,5 +6267,40 @@ The core AI workspace loop is now complete and durable. The next bounded advance
 **Dependencies:** CO-03-01 (Complete and Locked)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → ADV-01-01 for full details; `docs/specs/ADV-01-01-multi-ai-collaboration.md` for spec
+
+---
+
+#### ADV-02-01: Conversational Orchestrator
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (ADVANCED PRODUCT, SINGLE-MODEL MULTI-STEP ORCHESTRATION)
+**Checkpoint:** `docs/ADV-02-01-CHECKPOINT.md`
+
+**Objective:**
+Implement the first bounded conversational orchestrator slice so the workspace can execute a controlled multi-step AI workflow within a single user request, while preserving the existing request-driven execution model and without expanding into autonomous agent systems.
+
+**Why this exists:**
+ADV-01-01 added controlled multi-model selection and attribution. ADV-02-01 now adds a bounded single-model multi-step orchestration layer so the product can handle richer conversational workflows without introducing autonomous agents, background processes, or broad orchestration complexity.
+
+**Scope:**
+- Allow a bounded multi-step conversational workflow inside the existing workspace execution loop
+- Keep orchestration single-request and request-driven only
+- Make orchestration state/result visible on existing chat/workspace surfaces where required
+- Preserve existing file-action/workspace semantics and model attribution behavior
+- Preserve existing chat/workspace/project/commercial behavior
+
+**Out of scope:**
+- ❌ No autonomous agents
+- ❌ No long-running background orchestration
+- ❌ No provider marketplace
+- ❌ No debate/planning swarm
+- ❌ No billing/quota redesign
+- ❌ No broad chat/workspace redesign
+- ❌ No background workers
+- ❌ No refactors unless absolutely required
+
+**Dependencies:** ADV-01-01 (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → ADV-02-01 for full details; `docs/specs/ADV-02-01-conversational-orchestrator.md` for spec
 
 ---

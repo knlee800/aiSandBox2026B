@@ -135,6 +135,8 @@ interface WorkspaceShellProps {
     value: string;
     label: string;
   }>;
+  orchestrationEnabled?: boolean;
+  onOrchestrationEnabledChange?: (enabled: boolean) => void;
   onSubmitChatPrompt?: () => Promise<void>;
   chatRequestState?: 'idle' | 'submitting' | 'queued' | 'running' | 'completed' | 'failed';
   chatExecutionId?: string | null;
@@ -296,6 +298,8 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                 selectedModelOption={props.selectedModelOption ?? ''}
                 onSelectedModelOptionChange={props.onSelectedModelOptionChange}
                 availableModelOptions={props.availableModelOptions ?? []}
+                orchestrationEnabled={props.orchestrationEnabled ?? false}
+                onOrchestrationEnabledChange={props.onOrchestrationEnabledChange}
                 onSubmitPrompt={props.onSubmitChatPrompt}
                 requestState={props.chatRequestState ?? 'idle'}
                 executionId={props.chatExecutionId ?? null}
@@ -708,6 +712,8 @@ function WorkspaceChatPanel(props: {
     value: string;
     label: string;
   }>;
+  orchestrationEnabled: boolean;
+  onOrchestrationEnabledChange?: (enabled: boolean) => void;
   onSubmitPrompt?: () => Promise<void>;
   requestState: 'idle' | 'submitting' | 'queued' | 'running' | 'completed' | 'failed';
   executionId: string | null;
@@ -786,6 +792,18 @@ function WorkspaceChatPanel(props: {
               </option>
             ))}
           </select>
+        </div>
+        <div className="mt-2">
+          <label className="inline-flex items-center gap-2 text-[11px] text-gray-700">
+            <input
+              type="checkbox"
+              data-testid="workspace-chat-orchestration-toggle"
+              checked={props.orchestrationEnabled}
+              onChange={(event) => props.onOrchestrationEnabledChange?.(event.target.checked)}
+              disabled={!props.selectedSessionId || !props.onOrchestrationEnabledChange || isSending}
+            />
+            Enable bounded orchestration (up to 3 sequential steps)
+          </label>
         </div>
         <div className="mt-2 flex items-center justify-between gap-2">
           <p className="text-[11px] text-gray-500" data-testid="workspace-chat-session-hint">

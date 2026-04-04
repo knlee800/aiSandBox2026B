@@ -14553,3 +14553,52 @@ The core AI workspace loop is now complete and durable. The next bounded advance
 **Reference:** TASKS.md, docs/specs/ADV-01-01-multi-ai-collaboration.md, AI_Sandbox_Platform_Master_Plan_Revised.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### ADV-02-01: Conversational Orchestrator
+
+**Task ID:** ADV-02-01
+**Family:** ADV-01 (Advanced Product Expansion)
+**Priority:** 🟡 Medium
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (ADVANCED PRODUCT, SINGLE-MODEL MULTI-STEP ORCHESTRATION)
+**Dependencies:** ADV-01-01 (Complete and Locked)
+**Checkpoint:** `docs/ADV-02-01-CHECKPOINT.md`
+
+**Objective:**
+
+Implement the first bounded conversational orchestrator slice so the workspace can execute a controlled multi-step AI workflow within a single user request, while preserving the existing request-driven execution model and without expanding into autonomous agent systems.
+
+**Why this exists:**
+
+ADV-01-01 added controlled multi-model selection and attribution. ADV-02-01 now adds a bounded single-model multi-step orchestration layer so the product can handle richer conversational workflows without introducing autonomous agents, background processes, or broad orchestration complexity.
+
+**Scope:**
+
+- Allow a bounded multi-step conversational workflow inside the existing workspace execution loop
+- Keep orchestration single-request and request-driven only
+- Make orchestration state/result visible on existing chat/workspace surfaces where required
+- Preserve existing file-action/workspace semantics and model attribution behavior
+- Preserve existing chat/workspace/project/commercial behavior
+
+**Explicitly out of scope:**
+
+- No autonomous agents
+- No long-running background orchestration
+- No provider marketplace
+- No debate/planning swarm
+- No billing/quota redesign
+- No broad chat/workspace redesign
+- No background workers
+- No refactors unless absolutely required
+
+**Acceptance criteria:**
+
+- Bounded multi-step orchestration can run within the existing execution flow
+- User-visible behavior remains coherent on existing surfaces
+- Existing file-action/workspace semantics remain preserved
+- Request-driven behavior remains preserved
+- Existing chat/workspace/project/commercial behavior remains preserved
+
+**Reference:** TASKS.md, docs/specs/ADV-02-01-conversational-orchestrator.md, AI_Sandbox_Platform_Master_Plan_Revised.md, PRD.md, ARCHITECTURE.md
+
+---

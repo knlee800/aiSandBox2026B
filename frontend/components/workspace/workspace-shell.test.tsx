@@ -196,6 +196,8 @@ function renderWorkspaceShell(
     onExecuteCommand: async () => {},
     selectedModelOption: 'xai:grok-3',
     onSelectedModelOptionChange: () => {},
+    orchestrationEnabled: false,
+    onOrchestrationEnabledChange: () => {},
     availableModelOptions: [
       { value: 'xai:grok-3', label: 'xAI - grok-3' },
       { value: 'openai:gpt-4o', label: 'OpenAI - gpt-4o' },
@@ -228,6 +230,7 @@ describe('workspace shell component', () => {
     assert.match(html, /AI Sandbox Workspace/);
     assert.match(html, /Chat Panel/);
     assert.match(html, /Model Provider/);
+    assert.match(html, /Enable bounded orchestration \(up to 3 sequential steps\)/);
     assert.match(html, /Command Input \(Exec Slice\)/);
     assert.match(html, /Editor Panel/);
     assert.match(html, /Editor ready/);

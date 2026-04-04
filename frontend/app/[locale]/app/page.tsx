@@ -61,6 +61,12 @@ import {
   type WorkspaceChatThreadMessage,
 } from '@/components/workspace/workspace-chat-thread.logic';
 import {
+  buildWorkspaceChatOrchestrationPlan,
+  CHAT_ORCHESTRATION_MAX_STEPS,
+  formatWorkspaceChatOrchestrationProgress,
+  type WorkspaceChatOrchestrationStepProgress,
+} from '@/components/workspace/workspace-chat-orchestration.logic';
+import {
   loadSessionChatMessagesFromBackend,
   persistSessionChatMessageToBackend,
 } from '@/components/workspace/workspace-chat-persistence.logic';
@@ -308,6 +314,7 @@ export default function AppPage() {
   const [selectedChatModelOption, setSelectedChatModelOption] = useState<string>(
     DEFAULT_CHAT_MODEL_OPTION,
   );
+  const [isChatOrchestrationEnabled, setIsChatOrchestrationEnabled] = useState(false);
   const [chatThreadMessages, setChatThreadMessages] = useState<WorkspaceChatThreadMessage[]>([]);
   const [chatExecutionFileActionStates, setChatExecutionFileActionStates] = useState<
     Record<string, WorkspaceExecutionFileActionState>
@@ -2054,6 +2061,287 @@ export default function AppPage() {
     }
   }
 
+  async function sleepMs(durationMs: number): Promise<void> {
+    await new Promise<void>((resolve) => {
+      window.setTimeout(() => resolve(), durationMs);
+    });
+  }
+
+  function updateAssistantMessageContent(assistantMessageId: string, content: string): void {
+    setChatThreadMessages((currentMessages) =>
+      currentMessages.map((message) =>
+        message.id === assistantMessageId && message.role === 'assistant'
+          ? {
+              ...message,
+              content,
+            }
+          : message,
+      ),
+    );
+  }
+
+  async function submitOrchestratedChatPrompt(input: {
+    token: string;
+    apiKey: string;
+    prompt: string;
+    selectedSessionId: string | null;
+    chosenModel: { provider: string; model: string };
+    assistantMessageId: string;
+  }): Promise<void> {
+    const orchestrationPlan = buildWorkspaceChatOrchestrationPlan(
+      input.prompt,
+      CHAT_ORCHESTRATION_MAX_STEPS,
+    );
+    const progress: WorkspaceChatOrchestrationStepProgress[] = orchestrationPlan.map((step) => ({
+      id: step.id,
+      status: 'pending',
+    }));
+    const executionSessionId = input.selectedSessionId;
+    let combinedStepOutput = '';
+
+    updateAssistantMessageContent(
+      input.assistantMessageId,
+      formatWorkspaceChatOrchestrationProgress({
+        steps: orchestrationPlan,
+        progress,
+      }),
+    );
+
+    for (let index = 0; index < orchestrationPlan.length; index += 1) {
+      const step = orchestrationPlan[index];
+      progress[index] = { ...progress[index], status: 'running' };
+      setChatStatusMessage(`Running orchestration step ${index + 1}/${orchestrationPlan.length}...`);
+      updateAssistantMessageContent(
+        input.assistantMessageId,
+        formatWorkspaceChatOrchestrationProgress({
+          steps: orchestrationPlan,
+          progress,
+        }),
+      );
+
+      const stepPrompt =
+        index === 0
+          ? step.instruction
+          : [
+              `Continue the same user request with this step only: ${step.instruction}`,
+              '',
+              'Prior completed step outputs:',
+              combinedStepOutput.trim().length > 0 ? combinedStepOutput : '(none)',
+              '',
+              `Original user request: ${input.prompt}`,
+            ].join('\n');
+
+      const executeResponse = await fetch('/api/ai/execute', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${input.apiKey}`,
+        },
+        body: JSON.stringify({
+          prompt: stepPrompt,
+          provider: input.chosenModel.provider,
+          model: input.chosenModel.model,
+          sessionId: executionSessionId ?? crypto.randomUUID(),
+          conversationId: executionSessionId ?? crypto.randomUUID(),
+        }),
+      });
+
+      if (!executeResponse.ok) {
+        const failureMessage = toChatAssistantFailureMessage({
+          rawMessage: await readResponseErrorMessage(executeResponse),
+          fallbackMessage: `Orchestration step ${index + 1} failed (${executeResponse.status}).`,
+          statusCode: executeResponse.status,
+          retryAfterHeader: executeResponse.headers.get('Retry-After'),
+        });
+        progress[index] = { ...progress[index], status: 'failed', summary: failureMessage };
+        const finalFailureContent = formatWorkspaceChatOrchestrationProgress({
+          steps: orchestrationPlan,
+          progress,
+        });
+        setChatRequestState('failed');
+        setChatStatusMessage(null);
+        setChatError(failureMessage);
+        updateAssistantMessageContent(input.assistantMessageId, finalFailureContent);
+        if (executionSessionId) {
+          void persistSessionChatMessageToBackend({
+            token: input.token,
+            sessionId: executionSessionId,
+            role: 'assistant',
+            content: finalFailureContent,
+          }).catch(() => {
+            // Keep local thread persistence as compatibility fallback.
+          });
+        }
+        return;
+      }
+
+      const queuedPayload = (await executeResponse.json()) as WorkspaceChatExecutionResponse;
+      const executionId = typeof queuedPayload.executionId === 'string' ? queuedPayload.executionId : null;
+      if (!executionId) {
+        const failureMessage = `Orchestration step ${index + 1} did not return an execution id.`;
+        progress[index] = { ...progress[index], status: 'failed', summary: failureMessage };
+        const finalFailureContent = formatWorkspaceChatOrchestrationProgress({
+          steps: orchestrationPlan,
+          progress,
+        });
+        setChatRequestState('failed');
+        setChatStatusMessage(null);
+        setChatError(failureMessage);
+        updateAssistantMessageContent(input.assistantMessageId, finalFailureContent);
+        if (executionSessionId) {
+          void persistSessionChatMessageToBackend({
+            token: input.token,
+            sessionId: executionSessionId,
+            role: 'assistant',
+            content: finalFailureContent,
+          }).catch(() => {
+            // Keep local thread persistence as compatibility fallback.
+          });
+        }
+        return;
+      }
+
+      if (executionSessionId) {
+        executionSessionIdByExecutionIdRef.current[executionId] = executionSessionId;
+      }
+      executionAssistantMessageIdByExecutionIdRef.current[executionId] = input.assistantMessageId;
+
+      let terminalPayload = queuedPayload;
+      let terminalStatus = typeof terminalPayload.status === 'string' ? terminalPayload.status : 'queued';
+      while (terminalStatus === 'queued' || terminalStatus === 'running') {
+        await sleepMs(CHAT_EXECUTION_POLL_INTERVAL_MS);
+        const statusResponse = await fetch(`/api/ai/executions/${encodeURIComponent(executionId)}`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${input.apiKey}`,
+          },
+        });
+        if (!statusResponse.ok) {
+          const failureMessage = toChatAssistantFailureMessage({
+            rawMessage: await readResponseErrorMessage(statusResponse),
+            fallbackMessage: `Orchestration step ${index + 1} status check failed (${statusResponse.status}).`,
+            statusCode: statusResponse.status,
+            retryAfterHeader: statusResponse.headers.get('Retry-After'),
+          });
+          progress[index] = { ...progress[index], status: 'failed', summary: failureMessage };
+          const finalFailureContent = formatWorkspaceChatOrchestrationProgress({
+            steps: orchestrationPlan,
+            progress,
+          });
+          setChatRequestState('failed');
+          setChatStatusMessage(null);
+          setChatError(failureMessage);
+          updateAssistantMessageContent(input.assistantMessageId, finalFailureContent);
+          if (executionSessionId) {
+            void persistSessionChatMessageToBackend({
+              token: input.token,
+              sessionId: executionSessionId,
+              role: 'assistant',
+              content: finalFailureContent,
+            }).catch(() => {
+              // Keep local thread persistence as compatibility fallback.
+            });
+          }
+          return;
+        }
+        terminalPayload = (await statusResponse.json()) as WorkspaceChatExecutionResponse;
+        terminalStatus =
+          typeof terminalPayload.status === 'string' ? terminalPayload.status : 'queued';
+      }
+
+      const terminalOutput =
+        typeof terminalPayload.output === 'string' && terminalPayload.output.trim().length > 0
+          ? terminalPayload.output.trim()
+          : '';
+      const terminalProvider =
+        typeof terminalPayload.provider === 'string' && terminalPayload.provider.trim().length > 0
+          ? terminalPayload.provider.trim()
+          : input.chosenModel.provider;
+      const terminalModel =
+        typeof terminalPayload.model === 'string' && terminalPayload.model.trim().length > 0
+          ? terminalPayload.model.trim()
+          : input.chosenModel.model;
+      const terminalFileActions = normalizeWorkspaceFileActions(terminalPayload.fileActions);
+
+      applyAssistantAttributionToExecutionMessage(executionId, {
+        provider: terminalProvider,
+        model: terminalModel,
+      });
+      consumeExecutionFileActions(executionId, 'status', terminalFileActions);
+
+      if (terminalStatus !== 'completed') {
+        const failureMessage = toChatAssistantFailureMessage({
+          rawMessage: terminalOutput,
+          fallbackMessage: `Orchestration step ${index + 1} ended with status: ${terminalStatus}.`,
+        });
+        progress[index] = { ...progress[index], status: 'failed', summary: failureMessage };
+        const finalFailureContent = formatWorkspaceChatOrchestrationProgress({
+          steps: orchestrationPlan,
+          progress,
+        });
+        setChatRequestState('failed');
+        setChatStatusMessage(null);
+        setChatError(failureMessage);
+        updateAssistantMessageContent(input.assistantMessageId, finalFailureContent);
+        if (executionSessionId) {
+          void persistSessionChatMessageToBackend({
+            token: input.token,
+            sessionId: executionSessionId,
+            role: 'assistant',
+            content: finalFailureContent,
+          }).catch(() => {
+            // Keep local thread persistence as compatibility fallback.
+          });
+        }
+        return;
+      }
+
+      const summary = terminalOutput.length > 0 ? 'execution complete' : 'completed with no text output';
+      progress[index] = {
+        ...progress[index],
+        status: 'completed',
+        summary,
+      };
+      combinedStepOutput += `\n[Step ${index + 1}] ${terminalOutput || '(no output text)'}`;
+      updateAssistantMessageContent(
+        input.assistantMessageId,
+        formatWorkspaceChatOrchestrationProgress({
+          steps: orchestrationPlan,
+          progress,
+        }),
+      );
+    }
+
+    const finalContent = [
+      formatWorkspaceChatOrchestrationProgress({
+        steps: orchestrationPlan,
+        progress,
+      }),
+      '',
+      'Final combined output:',
+      combinedStepOutput.trim().length > 0 ? combinedStepOutput.trim() : '(no output text)',
+    ].join('\n');
+
+    setChatRequestState('completed');
+    setChatStatusMessage('Orchestration completed.');
+    setChatError(null);
+    setChatResponseText(combinedStepOutput.trim());
+    chatResponseTextRef.current = combinedStepOutput.trim();
+    updateAssistantMessageContent(input.assistantMessageId, finalContent);
+
+    if (executionSessionId) {
+      void persistSessionChatMessageToBackend({
+        token: input.token,
+        sessionId: executionSessionId,
+        role: 'assistant',
+        content: finalContent,
+      }).catch(() => {
+        // Keep local thread persistence as compatibility fallback.
+      });
+    }
+    await loadDashboardSlice(input.token);
+  }
+
   async function handleSubmitChatPrompt(): Promise<void> {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -2087,7 +2375,7 @@ export default function AppPage() {
     const chosenModel = parseSelectedChatModelOption(selectedChatModelOption);
     const userMessageId = crypto.randomUUID();
     const assistantMessageId = crypto.randomUUID();
-    pendingAssistantMessageIdRef.current = assistantMessageId;
+    pendingAssistantMessageIdRef.current = isChatOrchestrationEnabled ? null : assistantMessageId;
     setChatThreadMessages((currentMessages) => [
       ...currentMessages,
       {
@@ -2112,6 +2400,18 @@ export default function AppPage() {
       }).catch(() => {
         // Keep local thread persistence as compatibility fallback.
       });
+    }
+
+    if (isChatOrchestrationEnabled) {
+      await submitOrchestratedChatPrompt({
+        token,
+        apiKey,
+        prompt: trimmedPrompt,
+        selectedSessionId,
+        chosenModel,
+        assistantMessageId,
+      });
+      return;
     }
 
     try {
@@ -2925,6 +3225,8 @@ export default function AppPage() {
       onChatPromptInputChange={setChatPromptInput}
       selectedModelOption={selectedChatModelOption}
       onSelectedModelOptionChange={setSelectedChatModelOption}
+      orchestrationEnabled={isChatOrchestrationEnabled}
+      onOrchestrationEnabledChange={setIsChatOrchestrationEnabled}
       availableModelOptions={CHAT_MODEL_OPTIONS.map((option) => ({
         value: option.value,
         label: option.label,
