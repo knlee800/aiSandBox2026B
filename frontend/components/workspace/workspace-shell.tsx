@@ -129,6 +129,12 @@ interface WorkspaceShellProps {
   dashboardError: string | null;
   chatPromptInput?: string;
   onChatPromptInputChange?: (value: string) => void;
+  selectedModelOption?: string;
+  onSelectedModelOptionChange?: (value: string) => void;
+  availableModelOptions?: Array<{
+    value: string;
+    label: string;
+  }>;
   onSubmitChatPrompt?: () => Promise<void>;
   chatRequestState?: 'idle' | 'submitting' | 'queued' | 'running' | 'completed' | 'failed';
   chatExecutionId?: string | null;
@@ -140,6 +146,8 @@ interface WorkspaceShellProps {
     role: 'user' | 'assistant';
     content: string;
     executionId?: string;
+    provider?: string;
+    model?: string;
     fileActionState?: WorkspaceExecutionFileActionState;
   }>;
   commandInput: string;
@@ -285,6 +293,9 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                 selectedSessionId={props.selectedSessionId}
                 promptInput={props.chatPromptInput ?? ''}
                 onPromptInputChange={props.onChatPromptInputChange}
+                selectedModelOption={props.selectedModelOption ?? ''}
+                onSelectedModelOptionChange={props.onSelectedModelOptionChange}
+                availableModelOptions={props.availableModelOptions ?? []}
                 onSubmitPrompt={props.onSubmitChatPrompt}
                 requestState={props.chatRequestState ?? 'idle'}
                 executionId={props.chatExecutionId ?? null}
@@ -691,6 +702,12 @@ function WorkspaceChatPanel(props: {
   selectedSessionId: string | null;
   promptInput: string;
   onPromptInputChange?: (value: string) => void;
+  selectedModelOption: string;
+  onSelectedModelOptionChange?: (value: string) => void;
+  availableModelOptions: Array<{
+    value: string;
+    label: string;
+  }>;
   onSubmitPrompt?: () => Promise<void>;
   requestState: 'idle' | 'submitting' | 'queued' | 'running' | 'completed' | 'failed';
   executionId: string | null;
@@ -702,6 +719,8 @@ function WorkspaceChatPanel(props: {
     role: 'user' | 'assistant';
     content: string;
     executionId?: string;
+    provider?: string;
+    model?: string;
     fileActionState?: WorkspaceExecutionFileActionState;
   }>;
 }) {
@@ -739,6 +758,35 @@ function WorkspaceChatPanel(props: {
           placeholder="Ask the assistant for help with your current workspace task."
           className="mt-1 h-24 w-full resize-none rounded border border-gray-300 px-2 py-1 text-xs disabled:bg-gray-100 disabled:text-gray-500"
         />
+        <div className="mt-2">
+          <label
+            htmlFor="workspace-chat-model-selector"
+            className="text-[11px] font-semibold text-gray-700"
+          >
+            Model Provider
+          </label>
+          <select
+            id="workspace-chat-model-selector"
+            data-testid="workspace-chat-model-selector"
+            value={props.selectedModelOption}
+            onChange={(event) =>
+              props.onSelectedModelOptionChange?.(event.target.value)
+            }
+            disabled={
+              !props.selectedSessionId ||
+              !props.onSelectedModelOptionChange ||
+              props.availableModelOptions.length === 0 ||
+              isSending
+            }
+            className="mt-1 w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs disabled:bg-gray-100 disabled:text-gray-500"
+          >
+            {props.availableModelOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
         <div className="mt-2 flex items-center justify-between gap-2">
           <p className="text-[11px] text-gray-500" data-testid="workspace-chat-session-hint">
             {props.selectedSessionId
@@ -773,6 +821,14 @@ function WorkspaceChatPanel(props: {
                 data-testid={`workspace-chat-message-${message.role}-${message.id}`}
               >
                 <p className="font-semibold">{message.role === 'user' ? 'User' : 'Assistant'}</p>
+                {message.role === 'assistant' && (message.model || message.provider) ? (
+                  <p
+                    className="mt-1 text-[10px] text-gray-600"
+                    data-testid={`workspace-chat-message-attribution-${message.id}`}
+                  >
+                    Model: {message.model ?? 'unknown'} ({message.provider ?? 'unknown'})
+                  </p>
+                ) : null}
                 <pre className="mt-1 whitespace-pre-wrap font-mono">
                   {message.content.trim().length > 0
                     ? message.content

@@ -582,6 +582,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
               output: aiResult.output,
               tokensUsed: aiResult.tokensUsed ?? 0,
               model: aiResult.model,
+              provider: job.data.provider,
               fileActions: safeFileActions,
             },
           };

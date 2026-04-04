@@ -43,4 +43,23 @@ describe('workspace chat thread logic', () => {
     assert.equal(parsed[0].fileActionState?.applyStatus, 'applied');
     assert.equal(parsed[0].fileActionState?.results[0].status, 'success');
   });
+
+  test('parses persisted assistant message with provider/model attribution', () => {
+    const raw = JSON.stringify([
+      {
+        id: 'm3',
+        role: 'assistant',
+        content: 'Response from selected provider.',
+        executionId: 'exec-2',
+        provider: 'openai',
+        model: 'gpt-4o',
+      },
+    ]);
+
+    const parsed = parseStoredChatThreadMessages(raw);
+    assert.equal(parsed.length, 1);
+    assert.equal(parsed[0].executionId, 'exec-2');
+    assert.equal(parsed[0].provider, 'openai');
+    assert.equal(parsed[0].model, 'gpt-4o');
+  });
 });

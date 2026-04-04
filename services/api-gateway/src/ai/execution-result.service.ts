@@ -11,6 +11,8 @@ export class ExecutionResultService {
       SELECT
         execution_id,
         execution_status,
+        provider,
+        model,
         tokens_used,
         metadata
       FROM usage_records

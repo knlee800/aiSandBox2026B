@@ -94,6 +94,7 @@ export class AIExecutionService {
       const parsed = extractFileActionsFromOutput(result.output ?? '');
       const normalizedResult: AIExecutionResult = {
         ...result,
+        provider,
         output: parsed.textOutput,
         fileActions: parsed.fileActions,
       };

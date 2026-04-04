@@ -15,10 +15,14 @@ describe('AIExecutionController.getExecution fileActions', () => {
       getExecution: jest.fn().mockResolvedValue({
         execution_id: 'exec-1',
         execution_status: 'completed',
+        provider: 'openai',
+        model: 'gpt-4o',
         tokens_used: 12,
         metadata: {
           aiExecutionResult: {
             output: 'text response',
+            provider: 'openai',
+            model: 'gpt-4o',
             fileActions: [
               { action: 'create', path: 'src/a.ts', content: 'a' },
               { action: 'write', path: 'src/b.ts', content: 'b' },
@@ -36,6 +40,8 @@ describe('AIExecutionController.getExecution fileActions', () => {
       status: 'completed',
       tokensUsed: 12,
       output: 'text response',
+      provider: 'openai',
+      model: 'gpt-4o',
       fileActions: [
         { action: 'create', path: 'src/a.ts', content: 'a' },
         { action: 'write', path: 'src/b.ts', content: 'b' },

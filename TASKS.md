@@ -6227,3 +6227,45 @@ CO-01-01 aligned quota/usage UX. CO-02-01 added minimal plans foundation. CO-03-
 **Reference:** See `TASKS_BACKLOG_FULL.md` → CO-03-01 for full details; `docs/specs/CO-03-01-admin-operational.md` for spec
 
 ---
+
+## ADV-01 — Advanced Product Expansion
+
+**Current stage:** ADV-01-01 (COMPLETE and LOCKED)
+
+---
+
+#### ADV-01-01: Multi-AI Collaboration
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (ADVANCED PRODUCT, MULTI-MODEL WORKSPACE SUPPORT)
+**Checkpoint:** `docs/ADV-01-01-CHECKPOINT.md`
+
+**Objective:**
+Implement the first bounded multi-AI slice so a user can choose between supported AI models/providers in the workspace and see which model produced a given result, without yet introducing orchestrated multi-agent workflows.
+
+**Why this exists:**
+The core AI workspace loop is now complete and durable. The next bounded advanced step is to expose controlled multi-model choice/collaboration on top of the existing AI execution path, while keeping the product grounded in the current single-user workspace loop.
+
+**Scope:**
+- Allow choosing among supported AI providers/models on existing workspace AI surfaces
+- Persist/display which model produced each execution/result where relevant
+- Keep execution flow and workspace side effects coherent across supported models
+- Preserve existing chat/workspace/project/commercial behavior
+- Keep behavior request-driven only
+
+**Out of scope:**
+- ❌ No autonomous multi-agent orchestration
+- ❌ No conversational orchestrator
+- ❌ No agent debate/planning system
+- ❌ No provider marketplace
+- ❌ No billing/provider-cost optimization redesign
+- ❌ No quota/billing/auth redesign
+- ❌ No broad chat/workspace redesign
+- ❌ No background workers
+- ❌ No refactors unless absolutely required
+
+**Dependencies:** CO-03-01 (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → ADV-01-01 for full details; `docs/specs/ADV-01-01-multi-ai-collaboration.md` for spec
+
+---

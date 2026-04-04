@@ -8,6 +8,8 @@ export interface WorkspaceChatThreadMessage {
   role: 'user' | 'assistant';
   content: string;
   executionId?: string;
+  provider?: string;
+  model?: string;
   fileActionState?: WorkspaceExecutionFileActionState;
 }
 
@@ -30,6 +32,8 @@ export function parseStoredChatThreadMessages(raw: string | null): WorkspaceChat
         role?: unknown;
         content?: unknown;
         executionId?: unknown;
+        provider?: unknown;
+        model?: unknown;
         fileActionState?: unknown;
       };
       if (
@@ -46,6 +50,12 @@ export function parseStoredChatThreadMessages(raw: string | null): WorkspaceChat
       };
       if (typeof candidate.executionId === 'string') {
         message.executionId = candidate.executionId;
+      }
+      if (typeof candidate.provider === 'string') {
+        message.provider = candidate.provider;
+      }
+      if (typeof candidate.model === 'string') {
+        message.model = candidate.model;
       }
       if (isWorkspaceExecutionFileActionState(candidate.fileActionState)) {
         message.fileActionState = candidate.fileActionState;

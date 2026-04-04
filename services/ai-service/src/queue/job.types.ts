@@ -7,8 +7,8 @@ export interface AiExecutionJob {
   sessionId: string;
   conversationId: string;
 
-  provider: 'openai' | 'anthropic' | 'groq';
-  adapter: 'openai' | 'anthropic' | 'groq';
+  provider: 'openai' | 'anthropic' | 'groq' | 'xai' | 'deepseek' | 'stub';
+  adapter: 'openai' | 'anthropic' | 'groq' | 'xai' | 'deepseek' | 'stub';
 
   prompt: string;
   model?: string;

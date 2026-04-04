@@ -87,15 +87,62 @@ const HIDDEN_UNUSABLE_SESSIONS_STORAGE_KEY = 'workspace_hidden_unusable_sessions
 const CHAT_THREAD_STORAGE_KEY_PREFIX = 'workspace_chat_thread';
 const CHAT_EXECUTION_POLL_INTERVAL_MS = 3000;
 const AI_AUTO_CHECKPOINT_DESCRIPTION = 'AI: applied workspace file actions';
+const DEFAULT_CHAT_MODEL_OPTION = 'xai:grok-3';
+const CHAT_MODEL_OPTIONS = [
+  { value: 'xai:grok-3', provider: 'xai', model: 'grok-3', label: 'xAI - grok-3' },
+  {
+    value: 'anthropic:claude-3-5-sonnet-20241022',
+    provider: 'anthropic',
+    model: 'claude-3-5-sonnet-20241022',
+    label: 'Anthropic - claude-3-5-sonnet-20241022',
+  },
+  { value: 'openai:gpt-4o', provider: 'openai', model: 'gpt-4o', label: 'OpenAI - gpt-4o' },
+  {
+    value: 'groq:mixtral-8x7b-32768',
+    provider: 'groq',
+    model: 'mixtral-8x7b-32768',
+    label: 'Groq - mixtral-8x7b-32768',
+  },
+  {
+    value: 'deepseek:deepseek-chat',
+    provider: 'deepseek',
+    model: 'deepseek-chat',
+    label: 'DeepSeek - deepseek-chat',
+  },
+] as const;
 
 interface WorkspaceChatExecutionResponse {
   executionId?: string;
   status?: string;
   output?: string;
+  provider?: string;
+  model?: string;
   fileActions?: WorkspaceFileAction[];
 }
 
 const DRIVER_API_KEY_STORAGE_KEY = 'driver_api_key';
+
+function parseSelectedChatModelOption(value: string): {
+  provider: string;
+  model: string;
+  optionValue: string;
+} {
+  const matched = CHAT_MODEL_OPTIONS.find((option) => option.value === value);
+  if (matched) {
+    return {
+      provider: matched.provider,
+      model: matched.model,
+      optionValue: matched.value,
+    };
+  }
+
+  const fallback = CHAT_MODEL_OPTIONS[0];
+  return {
+    provider: fallback.provider,
+    model: fallback.model,
+    optionValue: fallback.value,
+  };
+}
 
 function normalizeWorkspaceFileActions(rawActions: unknown): WorkspaceFileAction[] {
   if (!Array.isArray(rawActions)) {
@@ -258,6 +305,9 @@ export default function AppPage() {
   const [chatExecutionId, setChatExecutionId] = useState<string | null>(null);
   const [chatStatusMessage, setChatStatusMessage] = useState<string | null>(null);
   const [chatError, setChatError] = useState<string | null>(null);
+  const [selectedChatModelOption, setSelectedChatModelOption] = useState<string>(
+    DEFAULT_CHAT_MODEL_OPTION,
+  );
   const [chatThreadMessages, setChatThreadMessages] = useState<WorkspaceChatThreadMessage[]>([]);
   const [chatExecutionFileActionStates, setChatExecutionFileActionStates] = useState<
     Record<string, WorkspaceExecutionFileActionState>
@@ -270,6 +320,31 @@ export default function AppPage() {
   const sessionsRef = useRef<WorkspaceShellSession[]>([]);
   const executionSessionIdByExecutionIdRef = useRef<Record<string, string>>({});
   const executionAssistantMessageIdByExecutionIdRef = useRef<Record<string, string>>({});
+
+  const applyAssistantAttributionToExecutionMessage = (
+    executionId: string,
+    attribution: { provider?: string; model?: string },
+  ) => {
+    if (!attribution.provider && !attribution.model) {
+      return;
+    }
+    const assistantMessageId =
+      executionAssistantMessageIdByExecutionIdRef.current[executionId];
+    if (!assistantMessageId) {
+      return;
+    }
+    setChatThreadMessages((currentMessages) =>
+      currentMessages.map((message) =>
+        message.id === assistantMessageId && message.role === 'assistant'
+          ? {
+              ...message,
+              provider: attribution.provider ?? message.provider,
+              model: attribution.model ?? message.model,
+            }
+          : message,
+      ),
+    );
+  };
   const executionFileActionsByExecutionIdRef = useRef<Record<string, WorkspaceFileAction[]>>({});
   const appliedFileActionsExecutionIdsRef = useRef<Set<string>>(new Set());
   const coheredExecutionIdsRef = useRef<Set<string>>(new Set());
@@ -1850,7 +1925,19 @@ export default function AppPage() {
       const data = (await response.json()) as WorkspaceChatExecutionResponse;
       const nextStatus = typeof data.status === 'string' ? data.status : 'queued';
       const nextOutput = typeof data.output === 'string' ? data.output.trim() : '';
+      const nextProvider =
+        typeof data.provider === 'string' && data.provider.trim().length > 0
+          ? data.provider.trim()
+          : undefined;
+      const nextModel =
+        typeof data.model === 'string' && data.model.trim().length > 0
+          ? data.model.trim()
+          : undefined;
       const nextFileActions = normalizeWorkspaceFileActions(data.fileActions);
+      applyAssistantAttributionToExecutionMessage(executionId, {
+        provider: nextProvider,
+        model: nextModel,
+      });
 
       if (nextStatus === 'completed') {
         consumeExecutionFileActions(executionId, 'status', nextFileActions);
@@ -1868,7 +1955,12 @@ export default function AppPage() {
           setChatThreadMessages((currentMessages) =>
             currentMessages.map((message) =>
               message.id === pendingAssistantId
-                ? { ...message, content: resolvedResponse }
+                ? {
+                    ...message,
+                    content: resolvedResponse,
+                    provider: nextProvider ?? message.provider,
+                    model: nextModel ?? message.model,
+                  }
                 : message,
             ),
           );
@@ -1912,7 +2004,12 @@ export default function AppPage() {
               message.id === pendingAssistantId
                 ? message.content === failureMessage
                   ? message
-                  : { ...message, content: failureMessage }
+                  : {
+                      ...message,
+                      content: failureMessage,
+                      provider: nextProvider ?? message.provider,
+                      model: nextModel ?? message.model,
+                    }
                 : message,
             ),
           );
@@ -1987,6 +2084,7 @@ export default function AppPage() {
     setChatExecutionId(null);
     setChatStatusMessage('Submitting prompt...');
     setChatError(null);
+    const chosenModel = parseSelectedChatModelOption(selectedChatModelOption);
     const userMessageId = crypto.randomUUID();
     const assistantMessageId = crypto.randomUUID();
     pendingAssistantMessageIdRef.current = assistantMessageId;
@@ -2001,6 +2099,8 @@ export default function AppPage() {
         id: assistantMessageId,
         role: 'assistant',
         content: '',
+        provider: chosenModel.provider,
+        model: chosenModel.model,
       },
     ]);
     if (selectedSessionId) {
@@ -2023,7 +2123,8 @@ export default function AppPage() {
         },
         body: JSON.stringify({
           prompt: trimmedPrompt,
-          provider: 'xai',
+          provider: chosenModel.provider,
+          model: chosenModel.model,
           sessionId: selectedSessionId ?? crypto.randomUUID(),
           conversationId: selectedSessionId ?? crypto.randomUUID(),
         }),
@@ -2043,6 +2144,14 @@ export default function AppPage() {
       const nextExecutionId = typeof data.executionId === 'string' ? data.executionId : null;
       const nextStatus = typeof data.status === 'string' ? data.status : null;
       const nextOutput = typeof data.output === 'string' ? data.output.trim() : '';
+      const nextProvider =
+        typeof data.provider === 'string' && data.provider.trim().length > 0
+          ? data.provider.trim()
+          : chosenModel.provider;
+      const nextModel =
+        typeof data.model === 'string' && data.model.trim().length > 0
+          ? data.model.trim()
+          : chosenModel.model;
       const nextFileActions = normalizeWorkspaceFileActions(data.fileActions);
       const executionSessionId = selectedSessionId;
 
@@ -2056,6 +2165,8 @@ export default function AppPage() {
               ? {
                   ...message,
                   executionId: nextExecutionId,
+                  provider: nextProvider,
+                  model: nextModel,
                 }
               : message,
           ),
@@ -2136,7 +2247,12 @@ export default function AppPage() {
           setChatThreadMessages((currentMessages) =>
             currentMessages.map((message) =>
               message.id === pendingAssistantId
-                ? { ...message, content: completedResponse }
+                ? {
+                    ...message,
+                    content: completedResponse,
+                    provider: nextProvider ?? message.provider,
+                    model: nextModel ?? message.model,
+                  }
                 : message,
             ),
           );
@@ -2174,7 +2290,12 @@ export default function AppPage() {
               message.id === pendingAssistantId
                 ? message.content === failureMessage
                   ? message
-                  : { ...message, content: failureMessage }
+                  : {
+                      ...message,
+                      content: failureMessage,
+                      provider: nextProvider ?? message.provider,
+                      model: nextModel ?? message.model,
+                    }
                 : message,
             ),
           );
@@ -2802,6 +2923,12 @@ export default function AppPage() {
       dashboardError={dashboardError}
       chatPromptInput={chatPromptInput}
       onChatPromptInputChange={setChatPromptInput}
+      selectedModelOption={selectedChatModelOption}
+      onSelectedModelOptionChange={setSelectedChatModelOption}
+      availableModelOptions={CHAT_MODEL_OPTIONS.map((option) => ({
+        value: option.value,
+        label: option.label,
+      }))}
       onSubmitChatPrompt={handleSubmitChatPrompt}
       chatRequestState={chatRequestState}
       chatExecutionId={chatExecutionId}

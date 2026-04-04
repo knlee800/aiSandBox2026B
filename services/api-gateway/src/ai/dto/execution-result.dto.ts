@@ -4,6 +4,8 @@ export interface ExecutionResultDto {
 
   output?: string;
   tokensUsed?: number;
+  provider?: string;
+  model?: string;
   fileActions?: FileActionDto[];
 
   error?: {

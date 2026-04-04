@@ -19,6 +19,7 @@ export interface AIExecutionRequest {
   userId: string;
   prompt: string;
   provider: 'stub' | 'anthropic' | 'openai' | 'groq' | 'xai' | 'deepseek';
+  model?: string;
   metadata?: Record<string, unknown>;
   /** Phase 47.4: Optional AbortSignal for cancellation */
   signal?: AbortSignal;
@@ -32,6 +33,7 @@ export interface AIExecutionResult {
   output: string;
   tokensUsed: number;
   model: string;
+  provider?: string;
   fileActions?: FileAction[];
 }
 

@@ -14503,3 +14503,53 @@ CO-01-01 aligned quota/usage UX. CO-02-01 added minimal plans foundation. CO-03-
 **Reference:** TASKS.md, docs/specs/CO-03-01-admin-operational.md, AI_Sandbox_Platform_Master_Plan_Revised.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### ADV-01-01: Multi-AI Collaboration
+
+**Task ID:** ADV-01-01
+**Family:** ADV-01 (Advanced Product Expansion)
+**Priority:** 🟡 Medium
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (ADVANCED PRODUCT, MULTI-MODEL WORKSPACE SUPPORT)
+**Dependencies:** CO-03-01 (Complete and Locked)
+**Checkpoint:** `docs/ADV-01-01-CHECKPOINT.md`
+
+**Objective:**
+
+Implement the first bounded multi-AI slice so a user can choose between supported AI models/providers in the workspace and see which model produced a given result, without yet introducing orchestrated multi-agent workflows.
+
+**Why this exists:**
+
+The core AI workspace loop is now complete and durable. The next bounded advanced step is to expose controlled multi-model choice/collaboration on top of the existing AI execution path, while keeping the product grounded in the current single-user workspace loop.
+
+**Scope:**
+
+- Allow choosing among supported AI providers/models on existing workspace AI surfaces
+- Persist/display which model produced each execution/result where relevant
+- Keep execution flow and workspace side effects coherent across supported models
+- Preserve existing chat/workspace/project/commercial behavior
+- Keep behavior request-driven only
+
+**Explicitly out of scope:**
+
+- No autonomous multi-agent orchestration
+- No conversational orchestrator
+- No agent debate/planning system
+- No provider marketplace
+- No billing/provider-cost optimization redesign
+- No quota/billing/auth redesign
+- No broad chat/workspace redesign
+- No background workers
+- No refactors unless absolutely required
+
+**Acceptance criteria:**
+
+- User can choose supported model/provider on the workspace AI surface
+- Chosen model/provider is respected by execution flow
+- Resulting thread/history surfaces clearly reflect which model produced output
+- Existing AI file-action/workspace behavior remains preserved
+- Request-driven behavior remains preserved
+
+**Reference:** TASKS.md, docs/specs/ADV-01-01-multi-ai-collaboration.md, AI_Sandbox_Platform_Master_Plan_Revised.md, PRD.md, ARCHITECTURE.md
+
+---

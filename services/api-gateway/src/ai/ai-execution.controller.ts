@@ -41,6 +41,16 @@ import { QueueService } from '../queue/queue.service';
 import { v4 as uuidv4 } from 'uuid';
 import { ExecutionResultService } from './execution-result.service';
 
+const SUPPORTED_AI_PROVIDERS = [
+  'stub',
+  'anthropic',
+  'openai',
+  'groq',
+  'xai',
+  'deepseek',
+] as const;
+type SupportedAiProvider = (typeof SUPPORTED_AI_PROVIDERS)[number];
+
 /**
  * AIExecutionController
  *
@@ -90,6 +100,8 @@ export class AIExecutionController {
     metadata: Record<string, unknown> | null | undefined,
   ): {
     output?: string;
+    model?: string;
+    provider?: string;
     fileActions: ExecutionResultDto['fileActions'];
   } {
     if (!metadata || typeof metadata !== 'object') {
@@ -104,6 +116,10 @@ export class AIExecutionController {
     const aiResult = aiExecutionResult as Record<string, unknown>;
     const output =
       typeof aiResult.output === 'string' ? aiResult.output : undefined;
+    const model =
+      typeof aiResult.model === 'string' ? aiResult.model : undefined;
+    const provider =
+      typeof aiResult.provider === 'string' ? aiResult.provider : undefined;
 
     const rawActions = Array.isArray(aiResult.fileActions)
       ? aiResult.fileActions
@@ -128,7 +144,27 @@ export class AIExecutionController {
       }
     }
 
-    return { output, fileActions };
+    return { output, model, provider, fileActions };
+  }
+
+  private resolveProvider(
+    requestProvider: string | undefined,
+  ): SupportedAiProvider {
+    if (!requestProvider) {
+      const envProvider = process.env.AI_PROVIDER;
+      if (envProvider && SUPPORTED_AI_PROVIDERS.includes(envProvider as SupportedAiProvider)) {
+        return envProvider as SupportedAiProvider;
+      }
+      return 'stub';
+    }
+
+    if (!SUPPORTED_AI_PROVIDERS.includes(requestProvider as SupportedAiProvider)) {
+      throw new BadRequestException(
+        `provider must be one of: ${SUPPORTED_AI_PROVIDERS.join(', ')}`,
+      );
+    }
+
+    return requestProvider as SupportedAiProvider;
   }
 
   /**
@@ -193,9 +229,12 @@ export class AIExecutionController {
       requestId = normalized;
     }
 
-    // Phase 28: Determine AI provider from environment
-    // api-gateway owns provider selection; ai-service MUST NOT guess
-    const provider = (process.env.AI_PROVIDER || 'stub') as AIExecutionRequest['provider'];
+    // ADV-01-01: Request-level provider selection with bounded allow-list.
+    const provider = this.resolveProvider(request.provider);
+    const requestedModel =
+      typeof request.model === 'string' && request.model.trim().length > 0
+        ? request.model.trim()
+        : undefined;
 
     // Phase 43B-4 HOTFIX: Check if retry after timeout/failed
     // If existing record is timeout/failed, reuse the row instead of inserting new
@@ -224,6 +263,8 @@ export class AIExecutionController {
           metadata: {
             ...request.metadata,
             apiKeyId: identity.apiKeyId, // INJECTED for audit
+            requestedProvider: provider,
+            requestedModel: requestedModel ?? null,
           },
         });
         flow = 'reuse';
@@ -242,6 +283,8 @@ export class AIExecutionController {
           metadata: {
             ...request.metadata,
             apiKeyId: identity.apiKeyId, // INJECTED for audit
+            requestedProvider: provider,
+            requestedModel: requestedModel ?? null,
           },
         });
         flow = 'new';
@@ -261,6 +304,8 @@ export class AIExecutionController {
         metadata: {
           ...request.metadata,
           apiKeyId: identity.apiKeyId, // INJECTED for audit
+          requestedProvider: provider,
+          requestedModel: requestedModel ?? null,
         },
       });
       flow = 'new';
@@ -292,7 +337,7 @@ export class AIExecutionController {
       provider,
       adapter: provider,
       prompt: request.prompt,
-      model: undefined,
+      model: requestedModel,
       requestId,
       submittedAt,
     });
@@ -384,7 +429,25 @@ export class AIExecutionController {
       response.tokensUsed = execution.tokens_used ?? undefined;
       const parsed = this.parseExecutionResultMetadata(execution.metadata);
       response.output = parsed.output;
+      const resolvedModel =
+        parsed.model ?? (typeof execution.model === 'string' ? execution.model : undefined);
+      const resolvedProvider =
+        parsed.provider ??
+        (typeof execution.provider === 'string' ? execution.provider : undefined);
+      if (resolvedModel) {
+        response.model = resolvedModel;
+      }
+      if (resolvedProvider) {
+        response.provider = resolvedProvider;
+      }
       response.fileActions = parsed.fileActions;
+    } else {
+      if (typeof execution.model === 'string') {
+        response.model = execution.model;
+      }
+      if (typeof execution.provider === 'string') {
+        response.provider = execution.provider;
+      }
     }
 
     return response;

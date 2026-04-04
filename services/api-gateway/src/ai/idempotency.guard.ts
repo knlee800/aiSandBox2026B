@@ -151,6 +151,7 @@ export class IdempotencyGuard implements CanActivate {
               output: string;
               tokensUsed: number;
               model: string;
+              provider?: string;
               fileActions?: Array<{
                 action: 'create' | 'write' | 'update';
                 path: string;
@@ -170,6 +171,10 @@ export class IdempotencyGuard implements CanActivate {
           output: aiResult.output,
           tokensUsed: aiResult.tokensUsed,
           model: aiResult.model,
+          provider:
+            typeof aiResult.provider === 'string'
+              ? aiResult.provider
+              : existingRecord.provider,
           fileActions: Array.isArray(aiResult.fileActions)
             ? aiResult.fileActions
             : [],
@@ -181,6 +186,7 @@ export class IdempotencyGuard implements CanActivate {
           output: '[Duplicate request - original response not stored]',
           tokensUsed: existingRecord.tokensUsed!,
           model: existingRecord.model!,
+          provider: existingRecord.provider,
           fileActions: [],
         };
       }
