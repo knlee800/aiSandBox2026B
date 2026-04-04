@@ -156,6 +156,17 @@ interface WorkspaceShellProps {
   onCommandInputChange: (value: string) => void;
   onExecuteCommand: () => Promise<void>;
   execState: WorkspaceExecState;
+  selectedBuildTarget?: string;
+  onSelectedBuildTargetChange?: (value: string) => void;
+  availableBuildTargets?: Array<{
+    value: string;
+    label: string;
+  }>;
+  onRunBuildTarget?: () => Promise<void>;
+  buildRequestState?: 'idle' | 'submitting' | 'completed' | 'failed';
+  buildStatusMessage?: string | null;
+  buildOutput?: string;
+  buildError?: string | null;
   previewState: WorkspacePreviewState;
   previewUrl: string | null;
   onRefreshPreview: () => Promise<void>;
@@ -315,6 +326,17 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                 onCommandInputChange={props.onCommandInputChange}
                 onExecuteCommand={props.onExecuteCommand}
                 execState={props.execState}
+              />
+              <WorkspaceBuildPanel
+                selectedSessionId={props.selectedSessionId}
+                selectedBuildTarget={props.selectedBuildTarget ?? ''}
+                onSelectedBuildTargetChange={props.onSelectedBuildTargetChange}
+                availableBuildTargets={props.availableBuildTargets ?? []}
+                onRunBuildTarget={props.onRunBuildTarget}
+                buildRequestState={props.buildRequestState ?? 'idle'}
+                buildStatusMessage={props.buildStatusMessage ?? null}
+                buildOutput={props.buildOutput ?? ''}
+                buildError={props.buildError ?? null}
               />
               <div className="mt-3">
                 <ShellStateMessage state={shellState} sessionError={props.sessionError} />
@@ -932,6 +954,91 @@ function WorkspaceAssistantFileActionSummary(props: {
             </li>
           ))}
         </ul>
+      ) : null}
+    </div>
+  );
+}
+
+function WorkspaceBuildPanel(props: {
+  selectedSessionId: string | null;
+  selectedBuildTarget: string;
+  onSelectedBuildTargetChange?: (value: string) => void;
+  availableBuildTargets: Array<{
+    value: string;
+    label: string;
+  }>;
+  onRunBuildTarget?: () => Promise<void>;
+  buildRequestState: 'idle' | 'submitting' | 'completed' | 'failed';
+  buildStatusMessage: string | null;
+  buildOutput: string;
+  buildError: string | null;
+}) {
+  const isRunning = props.buildRequestState === 'submitting';
+  const canRun =
+    Boolean(props.selectedSessionId) &&
+    Boolean(props.onRunBuildTarget) &&
+    Boolean(props.onSelectedBuildTargetChange) &&
+    props.availableBuildTargets.length > 0 &&
+    !isRunning;
+
+  return (
+    <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="workspace-build-panel">
+      <p className="text-[11px] font-semibold text-gray-700">Build Targets (ADV-03-01)</p>
+      <label htmlFor="workspace-build-target-selector" className="mt-1 block text-[11px] text-gray-700">
+        Build Target
+      </label>
+      <select
+        id="workspace-build-target-selector"
+        data-testid="workspace-build-target-selector"
+        value={props.selectedBuildTarget}
+        onChange={(event) => props.onSelectedBuildTargetChange?.(event.target.value)}
+        disabled={!canRun}
+        className="mt-1 w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs disabled:bg-gray-100 disabled:text-gray-500"
+      >
+        {props.availableBuildTargets.map((target) => (
+          <option key={target.value} value={target.value}>
+            {target.label}
+          </option>
+        ))}
+      </select>
+      <div className="mt-2 flex items-center justify-between gap-2">
+        <p className="text-[11px] text-gray-500">
+          {props.selectedSessionId
+            ? 'Build runs through the existing session exec path.'
+            : 'Select an active session to run a build target.'}
+        </p>
+        <button
+          type="button"
+          data-testid="workspace-build-trigger"
+          onClick={() => {
+            if (!canRun || !props.onRunBuildTarget) {
+              return;
+            }
+            void props.onRunBuildTarget();
+          }}
+          disabled={!canRun}
+          className="rounded bg-violet-600 px-3 py-1 text-xs text-white disabled:bg-violet-300"
+        >
+          {isRunning ? 'Building...' : 'Run Build'}
+        </button>
+      </div>
+      {props.buildStatusMessage ? (
+        <p className="mt-2 text-[11px] text-blue-700" data-testid="workspace-build-status">
+          {props.buildStatusMessage}
+        </p>
+      ) : null}
+      {props.buildError ? (
+        <p className="mt-2 text-[11px] text-red-700" data-testid="workspace-build-error">
+          {props.buildError}
+        </p>
+      ) : null}
+      {props.buildOutput.trim().length > 0 ? (
+        <pre
+          className="mt-2 max-h-32 overflow-auto rounded border border-gray-200 bg-white p-2 text-[11px]"
+          data-testid="workspace-build-output"
+        >
+          {props.buildOutput}
+        </pre>
       ) : null}
     </div>
   );

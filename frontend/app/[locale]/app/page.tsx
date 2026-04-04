@@ -88,6 +88,12 @@ import {
   openWorkspaceProject,
   type WorkspaceProjectSummary,
 } from '@/components/workspace/workspace-projects.logic';
+import {
+  detectBuildToolchainUnavailable,
+  resolveWorkspaceBuildCommand,
+  WORKSPACE_BUILD_TARGET_OPTIONS,
+  type WorkspaceBuildTarget,
+} from '@/components/workspace/workspace-build-targets.logic';
 
 const HIDDEN_UNUSABLE_SESSIONS_STORAGE_KEY = 'workspace_hidden_unusable_sessions';
 const CHAT_THREAD_STORAGE_KEY_PREFIX = 'workspace_chat_thread';
@@ -303,6 +309,13 @@ export default function AppPage() {
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(true);
   const [dashboardError, setDashboardError] = useState<string | null>(null);
   const [commandInput, setCommandInput] = useState('');
+  const [selectedBuildTarget, setSelectedBuildTarget] = useState<WorkspaceBuildTarget>('mobile');
+  const [buildRequestState, setBuildRequestState] = useState<
+    'idle' | 'submitting' | 'completed' | 'failed'
+  >('idle');
+  const [buildStatusMessage, setBuildStatusMessage] = useState<string | null>(null);
+  const [buildOutput, setBuildOutput] = useState('');
+  const [buildError, setBuildError] = useState<string | null>(null);
   const [chatPromptInput, setChatPromptInput] = useState('');
   const [chatResponseText, setChatResponseText] = useState('');
   const [chatRequestState, setChatRequestState] = useState<
@@ -521,6 +534,10 @@ export default function AppPage() {
       status: 'idle',
       result: null,
     });
+    setBuildRequestState('idle');
+    setBuildStatusMessage(null);
+    setBuildOutput('');
+    setBuildError(null);
   }, [selectedSessionId]);
 
   useEffect(() => {
@@ -1897,6 +1914,92 @@ export default function AppPage() {
     }
   }
 
+  async function handleRunBuildTarget(): Promise<void> {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+
+    if (!selectedSessionId) {
+      setBuildRequestState('failed');
+      setBuildStatusMessage(null);
+      setBuildError('Select an active session to run a build target.');
+      return;
+    }
+
+    const selectedSession = sessions.find((session) => session.id === selectedSessionId);
+    if (!selectedSession) {
+      setBuildRequestState('failed');
+      setBuildStatusMessage(null);
+      setBuildError('Selected session is unavailable.');
+      return;
+    }
+
+    if (selectedSession.terminatedAt || selectedSession.status === 'terminated') {
+      setBuildRequestState('failed');
+      setBuildStatusMessage(null);
+      setBuildError('Cannot run build for a terminated session.');
+      return;
+    }
+
+    const resolved = resolveWorkspaceBuildCommand(selectedBuildTarget);
+    setSelectedBuildTarget(resolved.target);
+    setBuildRequestState('submitting');
+    setBuildStatusMessage(`Running ${resolved.target} build via existing session exec path...`);
+    setBuildError(null);
+    setBuildOutput('');
+
+    const nextState = await executeSessionCommand({
+      token,
+      sessionId: selectedSessionId,
+      command: resolved.command,
+    });
+    setExecState(nextState);
+
+    if (nextState.status !== 'result' || !nextState.result) {
+      setBuildRequestState('failed');
+      setBuildStatusMessage(null);
+      setBuildError(nextState.errorMessage ?? 'Build request failed before execution completed.');
+      await loadDashboardSlice(token);
+      return;
+    }
+
+    const mergedOutput = [nextState.result.stdout, nextState.result.stderr]
+      .filter((value) => value.trim().length > 0)
+      .join('\n')
+      .trim();
+    setBuildOutput(mergedOutput);
+
+    if (nextState.result.exitCode === 0) {
+      setBuildRequestState('completed');
+      setBuildStatusMessage(`${resolved.target} build completed successfully.`);
+      setBuildError(null);
+      await loadWorkspaceFilesForSession(token, selectedSessionId);
+      await loadDashboardSlice(token);
+      return;
+    }
+
+    setBuildRequestState('failed');
+    setBuildStatusMessage(null);
+    if (
+      detectBuildToolchainUnavailable({
+        exitCode: nextState.result.exitCode,
+        stdout: nextState.result.stdout,
+        stderr: nextState.result.stderr,
+      })
+    ) {
+      setBuildError(
+        `${resolved.target} build toolchain is unavailable in this runtime. Use a compatible build agent/session.`,
+      );
+    } else {
+      setBuildError(
+        `${resolved.target} build failed (exit ${nextState.result.exitCode}). Review build output for details.`,
+      );
+    }
+    await loadDashboardSlice(token);
+  }
+
   async function refreshChatExecutionStatus(executionId: string): Promise<void> {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -3242,6 +3345,20 @@ export default function AppPage() {
       onCommandInputChange={setCommandInput}
       onExecuteCommand={handleExecuteCommand}
       execState={execState}
+      selectedBuildTarget={selectedBuildTarget}
+      onSelectedBuildTargetChange={(value) => {
+        const resolved = resolveWorkspaceBuildCommand(value);
+        setSelectedBuildTarget(resolved.target);
+      }}
+      availableBuildTargets={WORKSPACE_BUILD_TARGET_OPTIONS.map((target) => ({
+        value: target.value,
+        label: target.label,
+      }))}
+      onRunBuildTarget={handleRunBuildTarget}
+      buildRequestState={buildRequestState}
+      buildStatusMessage={buildStatusMessage}
+      buildOutput={buildOutput}
+      buildError={buildError}
       previewState={previewState}
       previewUrl={previewUrl}
       onRefreshPreview={handleRefreshPreview}

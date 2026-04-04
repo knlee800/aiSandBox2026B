@@ -194,6 +194,18 @@ function renderWorkspaceShell(
     commandInput: '',
     onCommandInputChange: () => {},
     onExecuteCommand: async () => {},
+    selectedBuildTarget: 'mobile',
+    onSelectedBuildTargetChange: () => {},
+    availableBuildTargets: [
+      { value: 'mobile', label: 'Mobile (generic)' },
+      { value: 'mac', label: 'Mac (xcodebuild)' },
+      { value: 'ios', label: 'iOS (xcodebuild)' },
+    ],
+    onRunBuildTarget: async () => {},
+    buildRequestState: 'idle',
+    buildStatusMessage: null,
+    buildOutput: '',
+    buildError: null,
     selectedModelOption: 'xai:grok-3',
     onSelectedModelOptionChange: () => {},
     orchestrationEnabled: false,
@@ -232,6 +244,9 @@ describe('workspace shell component', () => {
     assert.match(html, /Model Provider/);
     assert.match(html, /Enable bounded orchestration \(up to 3 sequential steps\)/);
     assert.match(html, /Command Input \(Exec Slice\)/);
+    assert.match(html, /Build Targets \(ADV-03-01\)/);
+    assert.match(html, /Build Target/);
+    assert.match(html, /Run Build/);
     assert.match(html, /Editor Panel/);
     assert.match(html, /Editor ready/);
     assert.match(html, /Editor clean/);
@@ -400,6 +415,29 @@ describe('workspace shell component', () => {
 
     assert.match(html, /Model: gpt-4o \(openai\)/);
     assert.match(html, /workspace-chat-message-attribution-assistant-model-1/);
+  });
+
+  test('renders build output and status in bounded build panel', () => {
+    const html = renderWorkspaceShell({
+      buildRequestState: 'completed',
+      buildStatusMessage: 'ios build completed successfully.',
+      buildOutput: 'Build logs\\nArtifact: app.ipa',
+    });
+
+    assert.match(html, /workspace-build-panel/);
+    assert.match(html, /ios build completed successfully\./);
+    assert.match(html, /Build logs/);
+    assert.match(html, /Artifact: app\.ipa/);
+  });
+
+  test('renders bounded build failure message', () => {
+    const html = renderWorkspaceShell({
+      buildRequestState: 'failed',
+      buildError: 'ios build toolchain is unavailable in this runtime.',
+    });
+
+    assert.match(html, /workspace-build-error/);
+    assert.match(html, /toolchain is unavailable in this runtime/);
   });
 
   test('renders distinct editor save states', () => {

@@ -14602,3 +14602,52 @@ ADV-01-01 added controlled multi-model selection and attribution. ADV-02-01 now 
 **Reference:** TASKS.md, docs/specs/ADV-02-01-conversational-orchestrator.md, AI_Sandbox_Platform_Master_Plan_Revised.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+### ADV-03-01: Mobile / Mac / iOS Build Support
+
+**Task ID:** ADV-03-01
+**Family:** ADV-01 (Advanced Product Expansion)
+**Priority:** 🟡 Medium
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (ADVANCED PRODUCT, CROSS-PLATFORM BUILD SUPPORT)
+**Dependencies:** ADV-02-01 (Complete and Locked)
+**Checkpoint:** `docs/ADV-03-01-CHECKPOINT.md`
+
+**Objective:**
+
+Implement the first bounded cross-platform build support slice so the workspace can target mobile / Mac / iOS build flows in a controlled way, without expanding into a broad device-cloud platform.
+
+**Why this exists:**
+
+The core workspace, persistence, commercial foundation, and bounded advanced AI features are now in place. ADV-03-01 adds the first practical cross-platform build capability so supported projects can be prepared and built for mobile / Mac / iOS targets within the existing workspace model.
+
+**Scope:**
+
+- Add bounded build-target support for mobile / Mac / iOS related workflows on existing workspace surfaces
+- Expose target/build selection only where required
+- Keep build execution within existing request-driven workspace patterns
+- Preserve existing chat/workspace/project/commercial behavior
+- Keep behavior request-driven only
+
+**Explicitly out of scope:**
+
+- No full device cloud
+- No remote device farm
+- No app-store submission workflow
+- No broad CI/CD platform
+- No autonomous orchestration
+- No billing/quota redesign
+- No broad workspace redesign
+- No background workers
+- No refactors unless absolutely required
+
+**Acceptance criteria:**
+
+- Supported build targets can be selected or triggered coherently
+- Build-related behavior remains bounded and request-driven
+- Existing workspace/project/chat/commercial behavior remains preserved
+- No broad platform expansion is introduced
+
+**Reference:** TASKS.md, docs/specs/ADV-03-01-mobile-mac-ios-build.md, AI_Sandbox_Platform_Master_Plan_Revised.md, PRD.md, ARCHITECTURE.md
+
+---

@@ -6230,7 +6230,7 @@ CO-01-01 aligned quota/usage UX. CO-02-01 added minimal plans foundation. CO-03-
 
 ## ADV-01 — Advanced Product Expansion
 
-**Current stage:** ADV-02-01 (COMPLETE and LOCKED)
+**Current stage:** ADV-03-01 (COMPLETE and LOCKED)
 
 ---
 
@@ -6302,5 +6302,41 @@ ADV-01-01 added controlled multi-model selection and attribution. ADV-02-01 now 
 **Dependencies:** ADV-01-01 (Complete and Locked)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → ADV-02-01 for full details; `docs/specs/ADV-02-01-conversational-orchestrator.md` for spec
+
+---
+
+#### ADV-03-01: Mobile / Mac / iOS Build Support
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (ADVANCED PRODUCT, CROSS-PLATFORM BUILD SUPPORT)
+**Checkpoint:** `docs/ADV-03-01-CHECKPOINT.md`
+
+**Objective:**
+Implement the first bounded cross-platform build support slice so the workspace can target mobile / Mac / iOS build flows in a controlled way, without expanding into a broad device-cloud platform.
+
+**Why this exists:**
+The core workspace, persistence, commercial foundation, and bounded advanced AI features are now in place. ADV-03-01 adds the first practical cross-platform build capability so supported projects can be prepared and built for mobile / Mac / iOS targets within the existing workspace model.
+
+**Scope:**
+- Add bounded build-target support for mobile / Mac / iOS related workflows on existing workspace surfaces
+- Expose target/build selection only where required
+- Keep build execution within existing request-driven workspace patterns
+- Preserve existing chat/workspace/project/commercial behavior
+- Keep behavior request-driven only
+
+**Out of scope:**
+- ❌ No full device cloud
+- ❌ No remote device farm
+- ❌ No app-store submission workflow
+- ❌ No broad CI/CD platform
+- ❌ No autonomous orchestration
+- ❌ No billing/quota redesign
+- ❌ No broad workspace redesign
+- ❌ No background workers
+- ❌ No refactors unless absolutely required
+
+**Dependencies:** ADV-02-01 (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → ADV-03-01 for full details; `docs/specs/ADV-03-01-mobile-mac-ios-build.md` for spec
 
 ---
