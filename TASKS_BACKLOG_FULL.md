@@ -13828,6 +13828,8 @@ Fix the real product/auth gap where unauthenticated users can still enter `/en/a
 
 ## AI-03 — AI-to-Workspace Actions (Core Product Loop)
 
+**Family status:** COMPLETE and LOCKED — All bounded spec tasks complete (AI-03-01A/B/C, AI-03-02).
+
 ### AI-03-01: AI-to-Workspace File Actions — Umbrella Parent
 
 **Task ID:** AI-03-01
@@ -14131,6 +14133,12 @@ AI-03-01 completed the minimal AI file-action loop: backend file-action output (
 
 ---
 
+## AI-04 — Chat Persistence (Core Product Loop)
+
+**Family status:** COMPLETE and LOCKED — All bounded spec tasks complete (AI-04-01).
+
+---
+
 ### AI-04-01: Backend Chat Persistence Wiring
 
 **Task ID:** AI-04-01
@@ -14184,6 +14192,12 @@ Phase 84 made the workspace chat usable, but chat persistence is still localStor
 - localStorage fallback/compatibility remains graceful if backend load/save temporarily fails
 
 **Reference:** TASKS.md, docs/specs/AI-04-01-backend-chat-persistence.md, AI_Sandbox_Platform_Master_Plan_Revised.md, PRD.md, ARCHITECTURE.md
+
+---
+
+## PR-01 — Project Persistence
+
+**Family status:** COMPLETE and LOCKED — All bounded spec tasks complete (PR-01-01, PR-02-01, PR-03-01).
 
 ---
 
@@ -14353,6 +14367,8 @@ PR-01-01 delivered files-only save/restore within the platform. PR-02-01 deliver
 
 ## CO-01 — Commercial Readiness
 
+**Family status:** COMPLETE and LOCKED — All bounded spec tasks complete (CO-01-01, CO-02-01, CO-03-01).
+
 ---
 
 ### CO-01-01: Quota and Usage UX Alignment
@@ -14501,6 +14517,12 @@ CO-01-01 aligned quota/usage UX. CO-02-01 added minimal plans foundation. CO-03-
 - Request-driven behavior remains preserved
 
 **Reference:** TASKS.md, docs/specs/CO-03-01-admin-operational.md, AI_Sandbox_Platform_Master_Plan_Revised.md, PRD.md, ARCHITECTURE.md
+
+---
+
+## ADV-01 — Advanced Product Expansion
+
+**Family status:** COMPLETE and LOCKED — All bounded spec tasks complete (ADV-01-01 through ADV-05-01).
 
 ---
 
@@ -14698,5 +14720,54 @@ The core workspace, persistence, commercial foundation, and bounded advanced fea
 - Request-driven behavior remains preserved
 
 **Reference:** TASKS.md, docs/specs/ADV-04-01-public-api-platform.md, AI_Sandbox_Platform_Master_Plan_Revised.md, PRD.md, ARCHITECTURE.md
+
+---
+
+### ADV-05-01: Public Sharing and Community Layer
+
+**Task ID:** ADV-05-01
+**Family:** ADV-01 (Advanced Product Expansion)
+**Priority:** 🟡 Medium
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (ADVANCED PRODUCT, PUBLIC SHARING FOUNDATION)
+**Dependencies:** ADV-04-01 (Complete and Locked)
+**Checkpoint:** `docs/ADV-05-01-CHECKPOINT.md`
+
+**Objective:**
+
+Implement the first bounded public-sharing slice so a user can publish a controlled public view of selected project/workspace output, without expanding into a full social/community platform.
+
+**Why this exists:**
+
+The core workspace, persistence, commercial foundation, advanced AI features, and public API foundation are now in place. ADV-05-01 adds the first bounded public-sharing capability so work can be shared outward in a controlled way, while avoiding broad community/platform sprawl.
+
+**Scope:**
+
+- Allow controlled public sharing of selected project/workspace output
+- Add bounded public-view surface only where required
+- Preserve ownership and privacy boundaries
+- Preserve existing workspace/project/chat/commercial behavior
+- Keep behavior request-driven only
+
+**Explicitly out of scope:**
+
+- ❌ No broad social/community feed
+- ❌ No comments/likes/follow systems
+- ❌ No broad moderation platform
+- ❌ No marketplace/templates ecosystem
+- ❌ No billing/quota redesign
+- ❌ No broad admin redesign
+- ❌ No background workers
+- ❌ No refactors unless absolutely required
+
+**Acceptance criteria:**
+
+- User can create a bounded public share for supported content
+- Public view is coherent and privacy-bounded
+- Ownership/privacy boundaries are preserved
+- Existing workspace/project/chat/commercial behavior remains preserved
+- Request-driven behavior remains preserved
+
+**Reference:** TASKS.md, docs/specs/ADV-05-01-public-sharing-community.md, AI_Sandbox_Platform_Master_Plan_Revised.md, PRD.md, ARCHITECTURE.md
 
 ---

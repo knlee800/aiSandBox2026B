@@ -1797,10 +1797,38 @@ describe('workspace shell snapshot surface', () => {
       projectNameInput: 'Draft Project',
       projectListState: 'ready',
       projectActionState: 'idle',
+      selectedProjectVisibility: 'private',
       onProjectNameInputChange: () => {},
       onSelectProjectId: () => {},
       onCreateWorkspaceProject: async () => {},
       onOpenWorkspaceProject: async () => {},
+      onSelectedProjectVisibilityChange: () => {},
+      onUpdateWorkspaceProjectVisibility: async () => {},
+      publicProjectListState: 'ready',
+      publicProjectActionState: 'idle',
+      publicProjectActionMessage: null,
+      publicProjectActionError: null,
+      publicWorkspaceProjects: [
+        {
+          id: 'public-project-1',
+          name: 'Shared Example',
+          visibility: 'public',
+          createdAt: '2026-04-04T10:00:00.000Z',
+          updatedAt: '2026-04-04T10:00:00.000Z',
+        },
+      ],
+      selectedPublicProjectId: 'public-project-1',
+      selectedPublicProjectDetail: {
+        id: 'public-project-1',
+        name: 'Shared Example',
+        visibility: 'public',
+        createdAt: '2026-04-04T10:00:00.000Z',
+        updatedAt: '2026-04-04T10:00:00.000Z',
+        readOnly: true,
+      },
+      onSelectPublicProjectId: () => {},
+      onViewPublicWorkspaceProject: async () => {},
+      onForkPublicWorkspaceProject: async () => {},
       workspaceSnapshots: [],
       selectedSnapshotId: null,
       snapshotListState: 'ready',
@@ -1816,6 +1844,10 @@ describe('workspace shell snapshot surface', () => {
     assert.match(html, /My Workspace Project/);
     assert.match(html, /Create Project/);
     assert.match(html, /Open Project/);
+    assert.match(html, /Update Visibility/);
+    assert.match(html, /Public Browse \(ADV-05-01\)/);
+    assert.match(html, /Read-only public view/);
+    assert.match(html, /Fork/);
   });
 
   test('renders snapshot list options in history surface', () => {

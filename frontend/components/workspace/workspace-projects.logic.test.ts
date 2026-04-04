@@ -2,8 +2,12 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import {
   createWorkspaceProject,
+  forkPublicWorkspaceProject,
+  loadPublicWorkspaceProjectDetail,
+  loadPublicWorkspaceProjects,
   loadWorkspaceProjects,
   openWorkspaceProject,
+  updateWorkspaceProjectVisibility,
 } from './workspace-projects.logic';
 
 describe('workspace-projects.logic', () => {
@@ -44,6 +48,7 @@ describe('workspace-projects.logic', () => {
           id: 'project-2',
           userId: 'user-1',
           name: 'New Project',
+          visibility: 'private',
           createdAt: '2026-04-03T00:00:00.000Z',
           updatedAt: '2026-04-03T00:00:00.000Z',
         }),
@@ -59,6 +64,29 @@ describe('workspace-projects.logic', () => {
 
     assert.equal(calls[0].url, '/api/projects');
     assert.equal(project.id, 'project-2');
+  });
+
+  test('updateWorkspaceProjectVisibility updates project share state', async () => {
+    const fetchImpl = async (): Promise<Response> =>
+      new Response(
+        JSON.stringify({
+          id: 'project-1',
+          userId: 'user-1',
+          name: 'Main Project',
+          visibility: 'public',
+          createdAt: '2026-04-03T00:00:00.000Z',
+          updatedAt: '2026-04-03T00:01:00.000Z',
+        }),
+        { status: 200 },
+      );
+
+    const updated = await updateWorkspaceProjectVisibility({
+      token: 'token',
+      projectId: 'project-1',
+      visibility: 'public',
+      fetchImpl: fetchImpl as typeof fetch,
+    });
+    assert.equal(updated.visibility, 'public');
   });
 
   test('openWorkspaceProject opens into existing session', async () => {
@@ -85,5 +113,69 @@ describe('workspace-projects.logic', () => {
 
     assert.equal(calls[0].url, '/api/projects/project-1/open');
     assert.equal(result.restoredSnapshotId, 'snapshot-1');
+  });
+
+  test('loadPublicWorkspaceProjects returns bounded public list', async () => {
+    const fetchImpl = async (): Promise<Response> =>
+      new Response(
+        JSON.stringify([
+          {
+            id: 'project-public-1',
+            name: 'Shared',
+            visibility: 'public',
+            createdAt: '2026-04-03T00:00:00.000Z',
+            updatedAt: '2026-04-03T00:00:00.000Z',
+          },
+        ]),
+        { status: 200 },
+      );
+
+    const list = await loadPublicWorkspaceProjects(fetchImpl as typeof fetch);
+    assert.equal(list.length, 1);
+    assert.equal(list[0].visibility, 'public');
+  });
+
+  test('loadPublicWorkspaceProjectDetail returns read-only payload', async () => {
+    const fetchImpl = async (): Promise<Response> =>
+      new Response(
+        JSON.stringify({
+          id: 'project-public-1',
+          name: 'Shared',
+          visibility: 'public',
+          createdAt: '2026-04-03T00:00:00.000Z',
+          updatedAt: '2026-04-03T00:00:00.000Z',
+          readOnly: true,
+        }),
+        { status: 200 },
+      );
+
+    const detail = await loadPublicWorkspaceProjectDetail({
+      projectId: 'project-public-1',
+      fetchImpl: fetchImpl as typeof fetch,
+    });
+    assert.equal(detail.readOnly, true);
+  });
+
+  test('forkPublicWorkspaceProject creates requester-owned fork', async () => {
+    const fetchImpl = async (): Promise<Response> =>
+      new Response(
+        JSON.stringify({
+          id: 'fork-1',
+          userId: 'user-2',
+          name: 'Fork of Shared',
+          visibility: 'private',
+          createdAt: '2026-04-03T00:00:00.000Z',
+          updatedAt: '2026-04-03T00:00:00.000Z',
+        }),
+        { status: 201 },
+      );
+
+    const forked = await forkPublicWorkspaceProject({
+      token: 'token',
+      projectId: 'project-public-1',
+      fetchImpl: fetchImpl as typeof fetch,
+    });
+    assert.equal(forked.id, 'fork-1');
+    assert.equal(forked.visibility, 'private');
   });
 });

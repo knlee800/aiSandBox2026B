@@ -1,7 +1,12 @@
-import { GoneException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  GoneException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Project } from '../entities/project.entity';
+import { Project, type ProjectVisibility } from '../entities/project.entity';
 import { Session } from '../entities/session.entity';
 import { SessionService } from '../sessions/session.service';
 import { SnapshotPersistenceService } from '../snapshots/snapshot-persistence.service';
@@ -21,6 +26,7 @@ export class ProjectsService {
     const project = this.projectRepository.create({
       userId,
       name: name.trim(),
+      visibility: 'private',
     });
     return await this.projectRepository.save(project);
   }
@@ -46,6 +52,55 @@ export class ProjectsService {
     const project = await this.getProjectByIdForUser(userId, projectId);
     project.name = name.trim();
     return await this.projectRepository.save(project);
+  }
+
+  async updateProjectVisibility(
+    userId: string,
+    projectId: string,
+    visibility: ProjectVisibility,
+  ): Promise<Project> {
+    const project = await this.getProjectByIdForUser(userId, projectId);
+    project.visibility = visibility;
+    return await this.projectRepository.save(project);
+  }
+
+  async listPublicProjects(): Promise<Project[]> {
+    return await this.projectRepository.find({
+      where: { visibility: 'public' },
+      order: { updatedAt: 'DESC' },
+    });
+  }
+
+  async getPublicProjectById(projectId: string): Promise<Project> {
+    const project = await this.projectRepository.findOne({
+      where: { id: projectId, visibility: 'public' },
+    });
+    if (!project) {
+      throw new NotFoundException(`Public project with ID ${projectId} not found`);
+    }
+    return project;
+  }
+
+  async forkPublicProject(args: {
+    userId: string;
+    projectId: string;
+  }): Promise<Project> {
+    const sourceProject = await this.projectRepository.findOne({
+      where: { id: args.projectId },
+    });
+    if (!sourceProject) {
+      throw new NotFoundException(`Project with ID ${args.projectId} not found`);
+    }
+    if (sourceProject.visibility !== 'public') {
+      throw new ForbiddenException('Project is not publicly shareable');
+    }
+
+    const forkedProject = this.projectRepository.create({
+      userId: args.userId,
+      name: `Fork of ${sourceProject.name}`,
+      visibility: 'private',
+    });
+    return await this.projectRepository.save(forkedProject);
   }
 
   async associateSessionWithProject(args: {

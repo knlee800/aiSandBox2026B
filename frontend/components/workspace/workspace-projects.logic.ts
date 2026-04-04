@@ -2,8 +2,21 @@ export interface WorkspaceProjectSummary {
   id: string;
   userId: string;
   name: string;
+  visibility?: 'private' | 'public';
   createdAt: string;
   updatedAt: string;
+}
+
+export interface WorkspacePublicProjectSummary {
+  id: string;
+  name: string;
+  visibility: 'public';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WorkspacePublicProjectDetail extends WorkspacePublicProjectSummary {
+  readOnly: true;
 }
 
 interface LoadProjectsArgs {
@@ -22,6 +35,19 @@ interface OpenProjectArgs {
   projectId: string;
   sessionId: string;
   snapshotId?: string;
+  fetchImpl?: typeof fetch;
+}
+
+interface UpdateProjectVisibilityArgs {
+  token: string;
+  projectId: string;
+  visibility: 'private' | 'public';
+  fetchImpl?: typeof fetch;
+}
+
+interface ForkPublicProjectArgs {
+  token: string;
+  projectId: string;
   fetchImpl?: typeof fetch;
 }
 
@@ -72,6 +98,79 @@ export async function createWorkspaceProject(
     throw new Error(trimMessage(payload?.message, 'Failed to create project.'));
   }
 
+  return (await response.json()) as WorkspaceProjectSummary;
+}
+
+export async function updateWorkspaceProjectVisibility(
+  args: UpdateProjectVisibilityArgs,
+): Promise<WorkspaceProjectSummary> {
+  const response = await (args.fetchImpl ?? fetch)(`/api/projects/${args.projectId}/visibility`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${args.token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ visibility: args.visibility }),
+  });
+
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => null)) as
+      | { message?: string }
+      | null;
+    throw new Error(trimMessage(payload?.message, 'Failed to update project visibility.'));
+  }
+
+  return (await response.json()) as WorkspaceProjectSummary;
+}
+
+export async function loadPublicWorkspaceProjects(
+  fetchImpl: typeof fetch = fetch,
+): Promise<WorkspacePublicProjectSummary[]> {
+  const response = await fetchImpl('/api/projects/public', {
+    method: 'GET',
+  });
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => null)) as
+      | { message?: string }
+      | null;
+    throw new Error(trimMessage(payload?.message, 'Failed to load public projects.'));
+  }
+  const projects = (await response.json()) as WorkspacePublicProjectSummary[];
+  return Array.isArray(projects) ? projects : [];
+}
+
+export async function loadPublicWorkspaceProjectDetail(args: {
+  projectId: string;
+  fetchImpl?: typeof fetch;
+}): Promise<WorkspacePublicProjectDetail> {
+  const response = await (args.fetchImpl ?? fetch)(`/api/projects/public/${args.projectId}`, {
+    method: 'GET',
+  });
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => null)) as
+      | { message?: string }
+      | null;
+    throw new Error(trimMessage(payload?.message, 'Failed to load public project detail.'));
+  }
+  return (await response.json()) as WorkspacePublicProjectDetail;
+}
+
+export async function forkPublicWorkspaceProject(
+  args: ForkPublicProjectArgs,
+): Promise<WorkspaceProjectSummary> {
+  const response = await (args.fetchImpl ?? fetch)(`/api/projects/public/${args.projectId}/fork`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${args.token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => null)) as
+      | { message?: string }
+      | null;
+    throw new Error(trimMessage(payload?.message, 'Failed to fork public project.'));
+  }
   return (await response.json()) as WorkspaceProjectSummary;
 }
 

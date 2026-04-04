@@ -15,6 +15,8 @@ Rules:
 
 If conflicts exist, TASKS_BACKLOG_FULL.md takes precedence.
 
+**Program status:** none active — spec execution set complete (see `docs/PROGRAM-SPEC-EXECUTION-FINAL-CHECKPOINT.md`)
+
 
 \# TASKS.md ??Master Task Index
 
@@ -5770,6 +5772,7 @@ Fix the real product/auth gap where unauthenticated users can still enter `/en/a
 ## AI-03 — AI-to-Workspace Actions (Core Product Loop)
 
 **Current stage:** AI-03-02 (COMPLETE and LOCKED)
+**Family status:** COMPLETE and LOCKED — All bounded spec tasks complete (AI-03-01A/B/C, AI-03-02).
 
 ---
 
@@ -5953,6 +5956,7 @@ AI-03-01 completed the minimal AI file-action loop. AI-03-02 makes the workspace
 ## AI-04 — Chat Persistence (Core Product Loop)
 
 **Current stage:** AI-04-01 (COMPLETE and LOCKED)
+**Family status:** COMPLETE and LOCKED — All bounded spec tasks complete (AI-04-01).
 
 ---
 
@@ -5998,6 +6002,7 @@ Phase 84 made the workspace chat usable, but chat persistence is still localStor
 ## PR-01 — Project Persistence
 
 **Current stage:** PR-03-01 (COMPLETE and LOCKED)
+**Family status:** COMPLETE and LOCKED — All bounded spec tasks complete (PR-01-01, PR-02-01, PR-03-01).
 
 ---
 
@@ -6119,6 +6124,7 @@ PR-01-01 delivered files-only save/restore. PR-02-01 delivered import/export por
 ## CO-01 — Commercial Readiness
 
 **Current stage:** CO-03-01 (COMPLETE and LOCKED)
+**Family status:** COMPLETE and LOCKED — All bounded spec tasks complete (CO-01-01, CO-02-01, CO-03-01).
 
 ---
 
@@ -6230,7 +6236,8 @@ CO-01-01 aligned quota/usage UX. CO-02-01 added minimal plans foundation. CO-03-
 
 ## ADV-01 — Advanced Product Expansion
 
-**Current stage:** ADV-04-01 (COMPLETE and LOCKED)
+**Current stage:** ADV-05-01 (COMPLETE and LOCKED)
+**Family status:** COMPLETE and LOCKED — All bounded spec tasks complete (ADV-01-01 through ADV-05-01).
 
 ---
 
@@ -6373,5 +6380,40 @@ The core workspace, persistence, commercial foundation, and bounded advanced fea
 **Dependencies:** ADV-03-01 (Complete and Locked)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → ADV-04-01 for full details; `docs/specs/ADV-04-01-public-api-platform.md` for spec
+
+---
+
+#### ADV-05-01: Public Sharing and Community Layer
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (ADVANCED PRODUCT, PUBLIC SHARING FOUNDATION)
+**Checkpoint:** `docs/ADV-05-01-CHECKPOINT.md`
+
+**Objective:**
+Implement the first bounded public-sharing slice so a user can publish a controlled public view of selected project/workspace output, without expanding into a full social/community platform.
+
+**Why this exists:**
+The core workspace, persistence, commercial foundation, advanced AI features, and public API foundation are now in place. ADV-05-01 adds the first bounded public-sharing capability so work can be shared outward in a controlled way, while avoiding broad community/platform sprawl.
+
+**Scope:**
+- Allow controlled public sharing of selected project/workspace output
+- Add bounded public-view surface only where required
+- Preserve ownership and privacy boundaries
+- Preserve existing workspace/project/chat/commercial behavior
+- Keep behavior request-driven only
+
+**Out of scope:**
+- ❌ No broad social/community feed
+- ❌ No comments/likes/follow systems
+- ❌ No broad moderation platform
+- ❌ No marketplace/templates ecosystem
+- ❌ No billing/quota redesign
+- ❌ No broad admin redesign
+- ❌ No background workers
+- ❌ No refactors unless absolutely required
+
+**Dependencies:** ADV-04-01 (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → ADV-05-01 for full details; `docs/specs/ADV-05-01-public-sharing-community.md` for spec
 
 ---

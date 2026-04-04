@@ -34,7 +34,11 @@ import type {
 } from './workspace-checkpoint-diff.logic';
 import type { WorkspaceExecutionFileActionState } from './workspace-ai-file-actions.logic';
 import type { WorkspaceSnapshotSummary } from './workspace-snapshots.logic';
-import type { WorkspaceProjectSummary } from './workspace-projects.logic';
+import type {
+  WorkspaceProjectSummary,
+  WorkspacePublicProjectDetail,
+  WorkspacePublicProjectSummary,
+} from './workspace-projects.logic';
 
 interface WorkspaceShellProps {
   sessions: WorkspaceShellSession[];
@@ -69,6 +73,19 @@ interface WorkspaceShellProps {
   onSelectProjectId?: (projectId: string) => void;
   onCreateWorkspaceProject?: () => Promise<void>;
   onOpenWorkspaceProject?: () => Promise<void>;
+  selectedProjectVisibility?: 'private' | 'public';
+  onSelectedProjectVisibilityChange?: (visibility: 'private' | 'public') => void;
+  onUpdateWorkspaceProjectVisibility?: () => Promise<void>;
+  publicProjectListState?: 'idle' | 'loading' | 'ready' | 'error';
+  publicProjectActionState?: 'idle' | 'viewing' | 'forking' | 'success' | 'error';
+  publicProjectActionMessage?: string | null;
+  publicProjectActionError?: string | null;
+  publicWorkspaceProjects?: WorkspacePublicProjectSummary[];
+  selectedPublicProjectId?: string | null;
+  selectedPublicProjectDetail?: WorkspacePublicProjectDetail | null;
+  onSelectPublicProjectId?: (projectId: string) => void;
+  onViewPublicWorkspaceProject?: () => Promise<void>;
+  onForkPublicWorkspaceProject?: () => Promise<void>;
   snapshotListState?: 'idle' | 'loading' | 'ready' | 'error';
   snapshotActionState?:
     | 'idle'
@@ -393,6 +410,19 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
               onSelectProjectId={props.onSelectProjectId}
               onCreateProject={props.onCreateWorkspaceProject}
               onOpenProject={props.onOpenWorkspaceProject}
+                selectedProjectVisibility={props.selectedProjectVisibility ?? 'private'}
+                onSelectedProjectVisibilityChange={props.onSelectedProjectVisibilityChange}
+                onUpdateProjectVisibility={props.onUpdateWorkspaceProjectVisibility}
+                publicProjectListState={props.publicProjectListState ?? 'idle'}
+                publicProjectActionState={props.publicProjectActionState ?? 'idle'}
+                publicProjectActionMessage={props.publicProjectActionMessage ?? null}
+                publicProjectActionError={props.publicProjectActionError ?? null}
+                publicProjects={props.publicWorkspaceProjects ?? []}
+                selectedPublicProjectId={props.selectedPublicProjectId ?? null}
+                selectedPublicProjectDetail={props.selectedPublicProjectDetail ?? null}
+                onSelectPublicProjectId={props.onSelectPublicProjectId}
+                onViewPublicProject={props.onViewPublicWorkspaceProject}
+                onForkPublicProject={props.onForkPublicWorkspaceProject}
             />
             <HistorySnapshotPanel
               selectedSessionId={props.selectedSessionId}
@@ -487,12 +517,30 @@ function HistoryProjectPanel(props: {
   onSelectProjectId?: (projectId: string) => void;
   onCreateProject?: () => Promise<void>;
   onOpenProject?: () => Promise<void>;
+  selectedProjectVisibility: 'private' | 'public';
+  onSelectedProjectVisibilityChange?: (visibility: 'private' | 'public') => void;
+  onUpdateProjectVisibility?: () => Promise<void>;
+  publicProjectListState: 'idle' | 'loading' | 'ready' | 'error';
+  publicProjectActionState: 'idle' | 'viewing' | 'forking' | 'success' | 'error';
+  publicProjectActionMessage: string | null;
+  publicProjectActionError: string | null;
+  publicProjects: WorkspacePublicProjectSummary[];
+  selectedPublicProjectId: string | null;
+  selectedPublicProjectDetail: WorkspacePublicProjectDetail | null;
+  onSelectPublicProjectId?: (projectId: string) => void;
+  onViewPublicProject?: () => Promise<void>;
+  onForkPublicProject?: () => Promise<void>;
 }) {
   if (
     !props.onProjectNameInputChange ||
     !props.onSelectProjectId ||
     !props.onCreateProject ||
-    !props.onOpenProject
+    !props.onOpenProject ||
+    !props.onSelectedProjectVisibilityChange ||
+    !props.onUpdateProjectVisibility ||
+    !props.onSelectPublicProjectId ||
+    !props.onViewPublicProject ||
+    !props.onForkPublicProject
   ) {
     return null;
   }
@@ -524,6 +572,81 @@ function HistoryProjectPanel(props: {
         >
           {props.actionState === 'creating' ? 'Creating...' : 'Create Project'}
         </button>
+      </div>
+
+      <div className="mt-2 flex gap-2">
+        <select
+          className="min-w-0 flex-1 rounded border border-gray-300 bg-white px-2 py-1 text-xs"
+          value={props.selectedProjectVisibility}
+          onChange={(event) =>
+            props.onSelectedProjectVisibilityChange?.(
+              event.target.value === 'public' ? 'public' : 'private',
+            )
+          }
+          disabled={!props.selectedProjectId || props.actionState === 'creating' || props.actionState === 'opening'}
+          data-testid="history-project-visibility-select"
+        >
+          <option value="private">Private</option>
+          <option value="public">Public</option>
+        </select>
+        <button
+          type="button"
+          className="rounded bg-indigo-600 px-2 py-1 text-xs text-white disabled:bg-indigo-300"
+          disabled={!props.selectedProjectId || props.actionState === 'creating' || props.actionState === 'opening'}
+          onClick={() => void props.onUpdateProjectVisibility?.()}
+          data-testid="history-project-visibility-update-button"
+        >
+          Update Visibility
+        </button>
+      </div>
+
+      <div className="mt-3 rounded border border-gray-200 bg-white p-2" data-testid="history-public-project-surface">
+        <p className="text-xs font-semibold text-gray-700">Public Browse (ADV-05-01)</p>
+        <p className="mt-1 text-[11px] text-gray-500">
+          Browse shared projects, view read-only details, and fork.
+        </p>
+        <div className="mt-2 flex gap-2">
+          <select
+            className="min-w-0 flex-1 rounded border border-gray-300 bg-white px-2 py-1 text-xs"
+            value={props.selectedPublicProjectId ?? ''}
+            onChange={(event) => props.onSelectPublicProjectId?.(event.target.value)}
+            disabled={props.publicProjectListState === 'loading' || props.publicProjectActionState === 'viewing'}
+            data-testid="history-public-project-select"
+          >
+            <option value="">Select a public project</option>
+            {props.publicProjects.map((project) => (
+              <option key={project.id} value={project.id}>
+                {project.name}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            className="rounded bg-sky-600 px-2 py-1 text-xs text-white disabled:bg-sky-300"
+            disabled={!props.selectedPublicProjectId || props.publicProjectActionState === 'viewing'}
+            onClick={() => void props.onViewPublicProject?.()}
+            data-testid="history-public-project-view-button"
+          >
+            {props.publicProjectActionState === 'viewing' ? 'Loading...' : 'View'}
+          </button>
+          <button
+            type="button"
+            className="rounded bg-emerald-600 px-2 py-1 text-xs text-white disabled:bg-emerald-300"
+            disabled={!props.selectedPublicProjectId || props.publicProjectActionState === 'forking'}
+            onClick={() => void props.onForkPublicProject?.()}
+            data-testid="history-public-project-fork-button"
+          >
+            {props.publicProjectActionState === 'forking' ? 'Forking...' : 'Fork'}
+          </button>
+        </div>
+        {props.selectedPublicProjectDetail ? (
+          <div className="mt-2 rounded border border-gray-100 bg-gray-50 p-2 text-[11px] text-gray-700" data-testid="history-public-project-readonly-detail">
+            <p>Read-only public view</p>
+            <p>ID: {props.selectedPublicProjectDetail.id}</p>
+            <p>Name: {props.selectedPublicProjectDetail.name}</p>
+            <p>Visibility: {props.selectedPublicProjectDetail.visibility}</p>
+          </div>
+        ) : null}
       </div>
 
       <div className="mt-2 flex gap-2">
@@ -570,6 +693,26 @@ function HistoryProjectPanel(props: {
       {props.actionError ? (
         <p className="mt-2 text-[11px] text-red-700" data-testid="history-project-action-error">
           {props.actionError}
+        </p>
+      ) : null}
+      {props.publicProjectListState === 'loading' ? (
+        <p className="mt-2 text-[11px] text-gray-500" data-testid="history-public-project-list-loading">
+          Loading public projects...
+        </p>
+      ) : null}
+      {props.publicProjectListState === 'error' ? (
+        <p className="mt-2 text-[11px] text-red-700" data-testid="history-public-project-list-error">
+          Failed to load public projects.
+        </p>
+      ) : null}
+      {props.publicProjectActionMessage ? (
+        <p className="mt-2 text-[11px] text-emerald-700" data-testid="history-public-project-action-message">
+          {props.publicProjectActionMessage}
+        </p>
+      ) : null}
+      {props.publicProjectActionError ? (
+        <p className="mt-2 text-[11px] text-red-700" data-testid="history-public-project-action-error">
+          {props.publicProjectActionError}
         </p>
       ) : null}
     </div>

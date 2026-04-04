@@ -18,6 +18,7 @@ describe('ProjectsController (PR-03-01)', () => {
             listProjects: jest.fn(),
             getProjectByIdForUser: jest.fn(),
             renameProject: jest.fn(),
+            updateProjectVisibility: jest.fn(),
             associateSessionWithProject: jest.fn(),
             openProjectIntoSession: jest.fn(),
           },
@@ -75,6 +76,12 @@ describe('ProjectsController (PR-03-01)', () => {
       projectId: 'project-1',
       sessionId: 'session-1',
     });
+    projectsService.updateProjectVisibility.mockResolvedValue({
+      id: 'project-1',
+      userId: 'user-1',
+      name: 'Project B',
+      visibility: 'public',
+    } as any);
     projectsService.openProjectIntoSession.mockResolvedValue({
       projectId: 'project-1',
       sessionId: 'session-1',
@@ -84,6 +91,11 @@ describe('ProjectsController (PR-03-01)', () => {
     const userReq = { user: { userId: 'user-1' } };
     await controller.getProject('project-1', userReq);
     await controller.renameProject('project-1', { name: 'Project B' }, userReq);
+    await controller.updateProjectVisibility(
+      'project-1',
+      { visibility: 'public' },
+      userReq,
+    );
     await controller.associateSessionWithProject('project-1', 'session-1', userReq);
     await controller.openProjectIntoSession(
       'project-1',
@@ -102,6 +114,11 @@ describe('ProjectsController (PR-03-01)', () => {
       projectId: 'project-1',
       sessionId: 'session-1',
     });
+    expect(projectsService.updateProjectVisibility).toHaveBeenCalledWith(
+      'user-1',
+      'project-1',
+      'public',
+    );
     expect(projectsService.openProjectIntoSession).toHaveBeenCalledWith({
       userId: 'user-1',
       projectId: 'project-1',

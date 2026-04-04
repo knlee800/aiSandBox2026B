@@ -12,6 +12,8 @@ import {
 import { User } from './user.entity';
 import { Session } from './session.entity';
 
+export type ProjectVisibility = 'private' | 'public';
+
 /**
  * Project Entity
  * Stable, user-owned project identity independent from session lifecycle.
@@ -34,6 +36,9 @@ export class Project {
 
   @Column({ type: 'varchar', length: 120 })
   name: string;
+
+  @Column({ type: 'varchar', length: 16, default: 'private' })
+  visibility: ProjectVisibility;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

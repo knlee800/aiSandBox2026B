@@ -16,6 +16,7 @@ import { CreateProjectDto } from './dto/create-project.dto';
 import { RenameProjectDto } from './dto/rename-project.dto';
 import { OpenProjectDto } from './dto/open-project.dto';
 import { Project } from '../entities/project.entity';
+import { UpdateProjectVisibilityDto } from './dto/update-project-visibility.dto';
 
 @Controller('projects')
 @UseGuards(JwtAuthGuard)
@@ -51,6 +52,20 @@ export class ProjectsController {
     @Request() req,
   ): Promise<Project> {
     return await this.projectsService.renameProject(req.user.userId, id, body.name);
+  }
+
+  @Patch(':id/visibility')
+  @HttpCode(HttpStatus.OK)
+  async updateProjectVisibility(
+    @Param('id') id: string,
+    @Body() body: UpdateProjectVisibilityDto,
+    @Request() req,
+  ): Promise<Project> {
+    return await this.projectsService.updateProjectVisibility(
+      req.user.userId,
+      id,
+      body.visibility,
+    );
   }
 
   @Post(':id/sessions/:sessionId')

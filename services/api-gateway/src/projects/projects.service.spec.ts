@@ -72,11 +72,13 @@ describe('ProjectsService (PR-03-01)', () => {
       id: 'project-1',
       userId: 'user-1',
       name: 'My Project',
+      visibility: 'private',
     });
     projectRepository.save.mockResolvedValue({
       id: 'project-1',
       userId: 'user-1',
       name: 'My Project',
+      visibility: 'private',
     });
 
     const result = await service.createProject('user-1', '  My Project  ');
@@ -84,6 +86,7 @@ describe('ProjectsService (PR-03-01)', () => {
     expect(projectRepository.create).toHaveBeenCalledWith({
       userId: 'user-1',
       name: 'My Project',
+      visibility: 'private',
     });
     expect(result.id).toBe('project-1');
   });
@@ -226,5 +229,74 @@ describe('ProjectsService (PR-03-01)', () => {
     });
 
     expect(result.sessionId).toBe('session-legacy');
+  });
+
+  it('updates project visibility for owner and keeps default private behavior', async () => {
+    projectRepository.findOne.mockResolvedValue({
+      id: 'project-1',
+      userId: 'user-1',
+      name: 'Project A',
+      visibility: 'private',
+    });
+    projectRepository.save.mockResolvedValue({
+      id: 'project-1',
+      userId: 'user-1',
+      name: 'Project A',
+      visibility: 'public',
+    });
+
+    const updated = await service.updateProjectVisibility(
+      'user-1',
+      'project-1',
+      'public',
+    );
+    expect(updated.visibility).toBe('public');
+  });
+
+  it('lists only public projects for public surface', async () => {
+    projectRepository.find.mockResolvedValue([
+      { id: 'project-public-1', visibility: 'public' } as any,
+    ]);
+
+    const projects = await service.listPublicProjects();
+    expect(projectRepository.find).toHaveBeenCalledWith({
+      where: { visibility: 'public' },
+      order: { updatedAt: 'DESC' },
+    });
+    expect(projects).toHaveLength(1);
+  });
+
+  it('forks public project into independent private project for requester', async () => {
+    projectRepository.findOne.mockResolvedValueOnce({
+      id: 'project-public-1',
+      userId: 'owner-1',
+      name: 'Shared Project',
+      visibility: 'public',
+    });
+    projectRepository.create.mockReturnValue({
+      id: 'fork-1',
+      userId: 'user-2',
+      name: 'Fork of Shared Project',
+      visibility: 'private',
+    });
+    projectRepository.save.mockResolvedValue({
+      id: 'fork-1',
+      userId: 'user-2',
+      name: 'Fork of Shared Project',
+      visibility: 'private',
+    });
+
+    const forked = await service.forkPublicProject({
+      userId: 'user-2',
+      projectId: 'project-public-1',
+    });
+
+    expect(projectRepository.create).toHaveBeenCalledWith({
+      userId: 'user-2',
+      name: 'Fork of Shared Project',
+      visibility: 'private',
+    });
+    expect(forked.userId).toBe('user-2');
+    expect(forked.visibility).toBe('private');
   });
 });

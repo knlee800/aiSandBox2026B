@@ -84,8 +84,14 @@ import {
 } from '@/components/workspace/workspace-snapshots.logic';
 import {
   createWorkspaceProject,
+  forkPublicWorkspaceProject,
+  loadPublicWorkspaceProjectDetail,
+  loadPublicWorkspaceProjects,
   loadWorkspaceProjects,
   openWorkspaceProject,
+  updateWorkspaceProjectVisibility,
+  type WorkspacePublicProjectDetail,
+  type WorkspacePublicProjectSummary,
   type WorkspaceProjectSummary,
 } from '@/components/workspace/workspace-projects.logic';
 import {
@@ -294,6 +300,9 @@ export default function AppPage() {
   const [snapshotActionError, setSnapshotActionError] = useState<string | null>(null);
   const [workspaceProjects, setWorkspaceProjects] = useState<WorkspaceProjectSummary[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [selectedProjectVisibility, setSelectedProjectVisibility] = useState<'private' | 'public'>(
+    'private',
+  );
   const [projectNameInput, setProjectNameInput] = useState('');
   const [projectListState, setProjectListState] = useState<'idle' | 'loading' | 'ready' | 'error'>(
     'idle',
@@ -303,6 +312,18 @@ export default function AppPage() {
   >('idle');
   const [projectActionMessage, setProjectActionMessage] = useState<string | null>(null);
   const [projectActionError, setProjectActionError] = useState<string | null>(null);
+  const [publicWorkspaceProjects, setPublicWorkspaceProjects] = useState<WorkspacePublicProjectSummary[]>([]);
+  const [selectedPublicProjectId, setSelectedPublicProjectId] = useState<string | null>(null);
+  const [selectedPublicProjectDetail, setSelectedPublicProjectDetail] =
+    useState<WorkspacePublicProjectDetail | null>(null);
+  const [publicProjectListState, setPublicProjectListState] = useState<
+    'idle' | 'loading' | 'ready' | 'error'
+  >('idle');
+  const [publicProjectActionState, setPublicProjectActionState] = useState<
+    'idle' | 'viewing' | 'forking' | 'success' | 'error'
+  >('idle');
+  const [publicProjectActionMessage, setPublicProjectActionMessage] = useState<string | null>(null);
+  const [publicProjectActionError, setPublicProjectActionError] = useState<string | null>(null);
   const [userSummary, setUserSummary] = useState<WorkspaceUserSummary | null>(null);
   const [usageSummary, setUsageSummary] = useState<WorkspaceUsageSummary | null>(null);
   const [quotaSummary, setQuotaSummary] = useState<WorkspaceQuotaSummary | null>(null);
@@ -491,6 +512,7 @@ export default function AppPage() {
     void loadCheckpoints(token, selectedSessionId);
     void loadWorkspaceSnapshotsForUser(token);
     void loadWorkspaceProjectsForUser(token);
+    void loadPublicWorkspaceProjectsList();
     void loadDashboardSlice(token);
   }, [selectedSessionId]);
 
@@ -931,7 +953,18 @@ export default function AppPage() {
   }
 
   function handleProjectSelection(projectId: string): void {
-    setSelectedProjectId(projectId.trim() ? projectId : null);
+    const normalizedProjectId = projectId.trim() ? projectId : null;
+    setSelectedProjectId(normalizedProjectId);
+    if (!normalizedProjectId) {
+      setSelectedProjectVisibility('private');
+      return;
+    }
+    const selected = workspaceProjects.find((project) => project.id === normalizedProjectId);
+    setSelectedProjectVisibility(selected?.visibility === 'public' ? 'public' : 'private');
+  }
+
+  function handleProjectVisibilitySelection(visibility: 'private' | 'public'): void {
+    setSelectedProjectVisibility(visibility);
   }
 
   async function handleCreateWorkspaceProject(): Promise<void> {
@@ -958,6 +991,7 @@ export default function AppPage() {
       });
       await loadWorkspaceProjectsForUser(token);
       setSelectedProjectId(createdProject.id);
+      setSelectedProjectVisibility(createdProject.visibility === 'public' ? 'public' : 'private');
       setProjectNameInput('');
       setProjectActionState('success');
       setProjectActionMessage('Project created.');
@@ -1010,6 +1044,150 @@ export default function AppPage() {
         error instanceof Error && error.message.trim()
           ? error.message
           : 'Failed to open project.',
+      );
+    }
+  }
+
+  async function handleUpdateWorkspaceProjectVisibility(): Promise<void> {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+    if (!selectedProjectId) {
+      setProjectActionState('error');
+      setProjectActionMessage(null);
+      setProjectActionError('Select a project.');
+      return;
+    }
+    setProjectActionState('opening');
+    setProjectActionMessage(null);
+    setProjectActionError(null);
+    try {
+      const updatedProject = await updateWorkspaceProjectVisibility({
+        token,
+        projectId: selectedProjectId,
+        visibility: selectedProjectVisibility,
+      });
+      setSelectedProjectVisibility(updatedProject.visibility === 'public' ? 'public' : 'private');
+      await loadWorkspaceProjectsForUser(token);
+      await loadPublicWorkspaceProjectsList();
+      setProjectActionState('success');
+      setProjectActionMessage(`Project visibility set to ${updatedProject.visibility}.`);
+    } catch (error) {
+      setProjectActionState('error');
+      setProjectActionMessage(null);
+      setProjectActionError(
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : 'Failed to update project visibility.',
+      );
+    }
+  }
+
+  useEffect(() => {
+    if (!selectedProjectId) {
+      setSelectedProjectVisibility('private');
+      return;
+    }
+    const selectedProject = workspaceProjects.find((project) => project.id === selectedProjectId);
+    if (selectedProject) {
+      setSelectedProjectVisibility(
+        selectedProject.visibility === 'public' ? 'public' : 'private',
+      );
+    }
+  }, [selectedProjectId, workspaceProjects]);
+
+  async function loadPublicWorkspaceProjectsList(): Promise<void> {
+    setPublicProjectListState('loading');
+    setPublicProjectActionError(null);
+    try {
+      const projects = await loadPublicWorkspaceProjects();
+      setPublicWorkspaceProjects(projects);
+      setSelectedPublicProjectId((current) => {
+        if (current && projects.some((project) => project.id === current)) {
+          return current;
+        }
+        return projects.length > 0 ? projects[0].id : null;
+      });
+      setPublicProjectListState('ready');
+    } catch (error) {
+      setPublicWorkspaceProjects([]);
+      setSelectedPublicProjectId(null);
+      setPublicProjectListState('error');
+      setPublicProjectActionError(
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : 'Failed to load public projects.',
+      );
+    }
+  }
+
+  function handleSelectPublicProject(projectId: string): void {
+    setSelectedPublicProjectId(projectId.trim() ? projectId : null);
+  }
+
+  async function handleViewPublicWorkspaceProject(): Promise<void> {
+    if (!selectedPublicProjectId) {
+      setPublicProjectActionState('error');
+      setPublicProjectActionMessage(null);
+      setPublicProjectActionError('Select a public project.');
+      return;
+    }
+    setPublicProjectActionState('viewing');
+    setPublicProjectActionMessage(null);
+    setPublicProjectActionError(null);
+    try {
+      const detail = await loadPublicWorkspaceProjectDetail({
+        projectId: selectedPublicProjectId,
+      });
+      setSelectedPublicProjectDetail(detail);
+      setPublicProjectActionState('success');
+      setPublicProjectActionMessage('Loaded read-only public project view.');
+    } catch (error) {
+      setPublicProjectActionState('error');
+      setPublicProjectActionMessage(null);
+      setPublicProjectActionError(
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : 'Failed to load public project.',
+      );
+    }
+  }
+
+  async function handleForkPublicWorkspaceProject(): Promise<void> {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+    if (!selectedPublicProjectId) {
+      setPublicProjectActionState('error');
+      setPublicProjectActionMessage(null);
+      setPublicProjectActionError('Select a public project.');
+      return;
+    }
+    setPublicProjectActionState('forking');
+    setPublicProjectActionMessage(null);
+    setPublicProjectActionError(null);
+    try {
+      const forked = await forkPublicWorkspaceProject({
+        token,
+        projectId: selectedPublicProjectId,
+      });
+      await loadWorkspaceProjectsForUser(token);
+      setSelectedProjectId(forked.id);
+      setSelectedProjectVisibility('private');
+      setPublicProjectActionState('success');
+      setPublicProjectActionMessage('Project forked to your private project list.');
+      setPublicProjectActionError(null);
+    } catch (error) {
+      setPublicProjectActionState('error');
+      setPublicProjectActionMessage(null);
+      setPublicProjectActionError(
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : 'Failed to fork project.',
       );
     }
   }
@@ -3272,11 +3450,24 @@ export default function AppPage() {
       projectActionError={projectActionError}
       workspaceProjects={workspaceProjects}
       selectedProjectId={selectedProjectId}
+      selectedProjectVisibility={selectedProjectVisibility}
       projectNameInput={projectNameInput}
       onProjectNameInputChange={handleProjectNameInputChange}
       onSelectProjectId={handleProjectSelection}
       onCreateWorkspaceProject={handleCreateWorkspaceProject}
       onOpenWorkspaceProject={handleOpenWorkspaceProject}
+      onSelectedProjectVisibilityChange={handleProjectVisibilitySelection}
+      onUpdateWorkspaceProjectVisibility={handleUpdateWorkspaceProjectVisibility}
+      publicProjectListState={publicProjectListState}
+      publicProjectActionState={publicProjectActionState}
+      publicProjectActionMessage={publicProjectActionMessage}
+      publicProjectActionError={publicProjectActionError}
+      publicWorkspaceProjects={publicWorkspaceProjects}
+      selectedPublicProjectId={selectedPublicProjectId}
+      selectedPublicProjectDetail={selectedPublicProjectDetail}
+      onSelectPublicProjectId={handleSelectPublicProject}
+      onViewPublicWorkspaceProject={handleViewPublicWorkspaceProject}
+      onForkPublicWorkspaceProject={handleForkPublicWorkspaceProject}
       workspaceSnapshots={workspaceSnapshots}
       selectedSnapshotId={selectedSnapshotId}
       onSelectSnapshotId={handleSnapshotSelection}
