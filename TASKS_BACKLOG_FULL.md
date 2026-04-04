@@ -14771,3 +14771,160 @@ The core workspace, persistence, commercial foundation, advanced AI features, an
 **Reference:** TASKS.md, docs/specs/ADV-05-01-public-sharing-community.md, AI_Sandbox_Platform_Master_Plan_Revised.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+## REL-01 — Release Readiness
+
+**Family status:** PLANNED
+
+---
+
+### REL-01-01A: Docker PostgreSQL Validation Environment Recovery
+
+**Task ID:** REL-01-01A
+**Family:** REL-01 (Release Readiness)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** BLOCKER RESOLUTION (RELEASE READINESS, VALIDATION PREREQUISITE)
+**Dependencies:** REL-01-01 (BLOCKED — environment prerequisite unmet; see `docs/REL-01-01-CHECKPOINT.md`)
+**Checkpoint:** `docs/REL-01-01A-CHECKPOINT.md`
+
+**Objective:**
+
+Restore a usable Docker/PostgreSQL validation environment so REL-01-01 migration validation can run against a real PostgreSQL instance.
+
+**Why this exists:**
+
+REL-01-01 is blocked by environment prerequisites, not by a confirmed migration defect. Docker daemon was unavailable, `com.docker.service` was stopped, and service start was denied from the current session.
+
+**Scope:**
+
+- Diagnose Docker Desktop / Docker service availability on this machine
+- Restore daemon availability if possible
+- Verify Docker responds normally
+- Verify PostgreSQL container stack can start
+- Document exact blocker resolution steps and outcome
+- Stop once migration-validation prerequisites are restored
+
+**Explicitly out of scope:**
+
+- ❌ No migration validation itself yet
+- ❌ No feature work
+- ❌ No broad environment cleanup
+- ❌ No unrelated bug fixing
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- Docker daemon responds successfully
+- Docker service/Desktop state is confirmed working
+- PostgreSQL validation environment is available for REL-01-01
+- Blocker resolution steps are documented clearly
+
+**Reference:** TASKS.md, docs/REL-01-01-CHECKPOINT.md
+
+---
+
+### REL-01-01B: Fix Plans Foundation Migration Defect
+
+**Task ID:** REL-01-01B
+**Family:** REL-01 (Release Readiness)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (RELEASE READINESS, MIGRATION BLOCKER)
+**Dependencies:** REL-01-01 (FAILED — migration defect found; see `docs/REL-01-01-CHECKPOINT.md`)
+**Checkpoint:** `docs/REL-01-01B-CHECKPOINT.md`
+
+**Objective:**
+
+Fix the concrete migration defect found during REL-01-01 so the plans foundation migration can run successfully on a real PostgreSQL instance.
+
+**Why this exists:**
+
+REL-01-01 validation found a real migration failure in:
+`C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\migrations\1771589000000-AddPlansFoundation.ts`
+
+Observed failure:
+- `UPDATE "users" SET "plan_type" = ... "plan_status" = ...`
+- Error: `column "plan_type" does not exist` (PostgreSQL code `42703`)
+- Impact: migration chain cannot complete on a clean real PostgreSQL database.
+
+**Scope:**
+
+- Inspect the failing migration and the current user/plans schema assumptions
+- Apply the smallest safe fix so the migration works on a clean database
+- Preserve intended plan foundation outcome
+- Rerun the specific migration validation path needed to prove the fix
+- Document exact cause and resolution
+
+**Explicitly out of scope:**
+
+- ❌ No broader billing redesign
+- ❌ No unrelated schema cleanup
+- ❌ No feature work
+- ❌ No broad regression sweep
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- Migration `1771589000000` runs successfully on a clean validation database
+- Intended schema/result remains correct
+- No unrelated migration behavior is changed
+- Fix and validation outcome are documented clearly
+
+**Reference:** TASKS.md, docs/REL-01-01-CHECKPOINT.md
+
+---
+
+### REL-01-01: Migration Validation
+
+**Task ID:** REL-01-01
+**Family:** REL-01 (Release Readiness)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION (RELEASE READINESS, DATABASE SAFETY)
+**Dependencies:** PROGRAM-SPEC-EXECUTION-FINAL-CHECKPOINT (Complete and Locked)
+**Checkpoint:** `docs/REL-01-01-CHECKPOINT.md`
+
+**Objective:**
+
+Validate the migrations introduced during the completed spec-execution wave against a real PostgreSQL instance so release-readiness work starts from a known-correct schema baseline.
+
+**Why this exists:**
+
+The recent delivery wave added multiple schema changes but they have not yet been validated end-to-end against a live database lifecycle. Before broader regression or deployment work, migration safety must be confirmed.
+
+**Scope:**
+
+- Run the relevant migrations against a real PostgreSQL instance
+- Verify clean up path and rollback/down behavior where supported
+- Verify resulting schema shape, defaults, nullable behavior, and key foreign keys/indexes
+- Verify no obvious incompatibility with the current Docker/dev environment
+- Document exact validation steps and outcomes
+
+**Relevant migrations:**
+
+- `services/api-gateway/src/migrations/1771587000000-AddProjectsAndSessionProjectId.ts`
+- `services/api-gateway/src/migrations/1771589000000-AddPlansFoundation.ts`
+- `services/api-gateway/src/migrations/1771592000000-AddProjectVisibility.ts`
+
+**Explicitly out of scope:**
+
+- ❌ No feature work
+- ❌ No broad regression sweep
+- ❌ No environment/doc cleanup beyond what is strictly needed to run validation
+- ❌ No bug-fix sweep unless migration validation itself finds a concrete issue
+- ❌ No release packaging
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- Migrations run successfully on a real PostgreSQL instance
+- Rollback/down path validated where supported
+- Schema shape after migration is verified
+- Key FKs/indexes/defaults/nullability verified
+- Results documented clearly
+- No unrelated product behavior work mixed into this task
+
+**Reference:** TASKS.md, docs/PROGRAM-SPEC-EXECUTION-FINAL-CHECKPOINT.md, ARCHITECTURE.md
+
+---

@@ -21,6 +21,10 @@ export class AddPlansFoundation1771589000000 implements MigrationInterface {
     `);
 
     await queryRunner.query(`
+      ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "plan_type" character varying(50) NOT NULL DEFAULT 'free'
+    `);
+
+    await queryRunner.query(`
       ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "plan_status" character varying(20) NOT NULL DEFAULT 'active'
     `);
 
@@ -45,6 +49,9 @@ export class AddPlansFoundation1771589000000 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`
+      ALTER TABLE "users" DROP COLUMN IF EXISTS "plan_type"
+    `);
     await queryRunner.query(`
       ALTER TABLE "users" DROP COLUMN IF EXISTS "plan_status"
     `);

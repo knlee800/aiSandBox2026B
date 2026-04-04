@@ -15,7 +15,7 @@ Rules:
 
 If conflicts exist, TASKS_BACKLOG_FULL.md takes precedence.
 
-**Program status:** none active — spec execution set complete (see `docs/PROGRAM-SPEC-EXECUTION-FINAL-CHECKPOINT.md`)
+**Program status:** REL-01-01 (PLANNED) — release readiness phase active
 
 
 \# TASKS.md ??Master Task Index
@@ -6415,5 +6415,104 @@ The core workspace, persistence, commercial foundation, advanced AI features, an
 **Dependencies:** ADV-04-01 (Complete and Locked)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → ADV-05-01 for full details; `docs/specs/ADV-05-01-public-sharing-community.md` for spec
+
+---
+
+## REL-01 — Release Readiness
+
+**Current stage:** REL-01-01 (COMPLETE and LOCKED)
+
+---
+
+#### REL-01-01A: Docker PostgreSQL Validation Environment Recovery
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BLOCKER RESOLUTION (RELEASE READINESS, VALIDATION PREREQUISITE)
+**Checkpoint:** `docs/REL-01-01A-CHECKPOINT.md`
+
+**Objective:**
+Restore a usable Docker/PostgreSQL validation environment so REL-01-01 migration validation can run against a real PostgreSQL instance.
+
+**Scope:**
+- Diagnose Docker Desktop / Docker service availability
+- Restore daemon availability if possible
+- Verify Docker responds normally
+- Verify PostgreSQL container stack can start
+- Document exact blocker resolution steps and outcome
+
+**Out of scope:**
+- ❌ No migration validation itself yet
+- ❌ No feature work
+- ❌ No broad environment cleanup
+- ❌ No unrelated bug fixing
+- ❌ No scope expansion
+
+**Dependencies:** REL-01-01 (BLOCKED — environment prerequisite unmet)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → REL-01-01A for full details; `docs/REL-01-01-CHECKPOINT.md` for blocker context
+
+---
+
+#### REL-01-01B: Fix Plans Foundation Migration Defect
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (RELEASE READINESS, MIGRATION BLOCKER)
+**Checkpoint:** `docs/REL-01-01B-CHECKPOINT.md`
+
+**Objective:**
+Fix the concrete migration defect found during REL-01-01 so the plans foundation migration (`1771589000000-AddPlansFoundation.ts`) can run successfully on a real PostgreSQL instance.
+
+**Scope:**
+- Inspect failing migration and current user/plans schema assumptions
+- Apply smallest safe fix for `column "plan_type" does not exist` (42703) failure
+- Preserve intended plan foundation outcome
+- Rerun specific migration validation path to prove the fix
+- Document exact cause and resolution
+
+**Out of scope:**
+- ❌ No broader billing redesign
+- ❌ No unrelated schema cleanup
+- ❌ No feature work
+- ❌ No broad regression sweep
+- ❌ No scope expansion
+
+**Dependencies:** REL-01-01 (FAILED — migration defect; see `docs/REL-01-01-CHECKPOINT.md`)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → REL-01-01B for full details
+
+---
+
+#### REL-01-01: Migration Validation
+
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION (RELEASE READINESS, DATABASE SAFETY)
+**Checkpoint:** `docs/REL-01-01-CHECKPOINT.md`
+
+**Objective:**
+Validate the migrations introduced during the completed spec-execution wave against a real PostgreSQL instance so release-readiness work starts from a known-correct schema baseline.
+
+**Scope:**
+- Run relevant migrations against a real PostgreSQL instance
+- Verify rollback/down path where supported
+- Verify resulting schema shape, defaults, nullable behavior, key FKs/indexes
+- Verify no incompatibility with current Docker/dev environment
+- Document exact validation steps and outcomes
+
+**Relevant migrations:**
+- `services/api-gateway/src/migrations/1771587000000-AddProjectsAndSessionProjectId.ts`
+- `services/api-gateway/src/migrations/1771589000000-AddPlansFoundation.ts`
+- `services/api-gateway/src/migrations/1771592000000-AddProjectVisibility.ts`
+
+**Out of scope:**
+- ❌ No feature work
+- ❌ No broad regression sweep
+- ❌ No environment/doc cleanup beyond what is strictly needed
+- ❌ No bug-fix sweep unless migration validation finds a concrete issue
+- ❌ No release packaging
+- ❌ No scope expansion
+
+**Dependencies:** PROGRAM-SPEC-EXECUTION-FINAL-CHECKPOINT (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → REL-01-01 for full details
 
 ---
