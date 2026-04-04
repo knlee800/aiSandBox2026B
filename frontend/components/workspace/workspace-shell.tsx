@@ -209,7 +209,9 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
             >
               {props.isCreatingSession ? 'Creating...' : 'New Session'}
             </button>
-            <p className="mt-2 text-xs text-gray-500">Active sessions: {activeSessions}/5</p>
+            <p className="mt-2 text-xs text-gray-500">
+              Active sessions: {activeSessions}/{props.quotaSummary?.maxActiveSessions ?? 5}
+            </p>
             {props.sessionCreateError ? (
               <p className="mt-1 text-xs text-amber-700">{props.sessionCreateError}</p>
             ) : null}
@@ -4894,6 +4896,9 @@ function DashboardSummary(props: {
       <div className="rounded border border-gray-200 px-2 py-2">
         <p className="text-xs font-medium text-gray-900">Current User</p>
         <p className="text-xs text-gray-600 truncate">{props.userSummary.email}</p>
+        <p className="mt-1 text-xs text-gray-500">
+          Plan: {props.userSummary.planName} ({props.userSummary.planStatus})
+        </p>
       </div>
       <div className="grid grid-cols-3 gap-2">
         <div className="rounded border border-gray-200 px-2 py-2">

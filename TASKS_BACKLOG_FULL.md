@@ -14350,3 +14350,107 @@ PR-01-01 delivered files-only save/restore within the platform. PR-02-01 deliver
 **Reference:** TASKS.md, docs/specs/PR-03-01-project-identity.md, AI_Sandbox_Platform_Master_Plan_Revised.md, PRD.md, ARCHITECTURE.md
 
 ---
+
+## CO-01 — Commercial Readiness
+
+---
+
+### CO-01-01: Quota and Usage UX Alignment
+
+**Task ID:** CO-01-01
+**Family:** CO-01 (Commercial Readiness)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (COMMERCIAL READINESS, USER-VISIBLE USAGE/QUOTA ALIGNMENT)
+**Dependencies:** PR-03-01 (Complete and Locked)
+**Checkpoint:** `docs/CO-01-01-CHECKPOINT.md`
+
+**Objective:**
+
+Align workspace-visible quota/usage information with existing backend enforcement so users can clearly see current usage/limits and understand rate-limit or quota failures without changing the underlying quota model.
+
+**Why this exists:**
+
+Core product loop and project persistence are now in place. The next bounded commercial-readiness step is to make quota and usage behavior visible and coherent on existing surfaces, using existing backend data rather than inventing frontend-only approximations.
+
+**Scope:**
+
+- Add/request a backend usage/quota status path if needed using existing usage/quota data sources
+- Show current usage/quota information in the workspace UI
+- Align user-visible error messaging for rate-limit / quota failures with backend behavior
+- Keep refresh request-driven only
+- Preserve existing workspace / chat / project behavior
+
+**Explicitly out of scope:**
+
+- No billing/subscription implementation
+- No admin-only tooling
+- No quota model redesign
+- No polling/timers
+- No background workers
+- No auth / billing redesign
+- No broad dashboard redesign
+- No refactors unless absolutely required
+
+**Acceptance criteria:**
+
+- User can see current usage/quota state in workspace
+- Rate-limit failures show clear user guidance
+- Quota exhaustion shows clear explanation
+- Frontend-visible usage/quota data matches backend enforcement source
+- Refresh remains request-driven only
+- Existing workspace/project/chat behavior remains preserved
+
+**Reference:** TASKS.md, docs/specs/CO-01-01-quota-usage-ux.md, AI_Sandbox_Platform_Master_Plan_Revised.md, PRD.md, ARCHITECTURE.md
+
+---
+
+### CO-02-01: Billing and Plans Foundation
+
+**Task ID:** CO-02-01
+**Family:** CO-01 (Commercial Readiness)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (COMMERCIAL READINESS, PLAN/ENTITLEMENT FOUNDATION)
+**Dependencies:** CO-01-01 (Complete and Locked)
+**Checkpoint:** `docs/CO-02-01-CHECKPOINT.md`
+
+**Objective:**
+
+Implement the first bounded billing/plans foundation so the platform has a minimal plan/entitlement model and user-visible plan state, without yet expanding into full payment-provider complexity.
+
+**Why this exists:**
+
+CO-01-01 aligned visible usage/quota UX with existing enforcement. CO-02-01 now adds the minimum foundation for plan-aware product behavior so future billing/commercial work has a stable base.
+
+**Scope:**
+
+- Introduce minimal plan/entitlement model for users
+- Make current plan state visible on existing user-facing surfaces
+- Wire existing usage/quota behavior to plan state where needed in a minimal, deterministic way
+- Keep commercial behavior bounded and request-driven only
+- Preserve existing workspace/project/chat behavior
+
+**Explicitly out of scope:**
+
+- No full payment provider integration unless spec requires only smallest foundation
+- No invoicing/tax/accounting workflows
+- No admin backoffice expansion beyond strictly required
+- No quota model redesign beyond bounded plan-aware foundation
+- No polling/timers
+- No background workers
+- No auth redesign
+- No broad dashboard redesign
+- No refactors unless absolutely required
+
+**Acceptance criteria:**
+
+- User has a clear plan/entitlement state
+- Plan state is reflected coherently on relevant existing surfaces
+- Existing usage/quota behavior remains deterministic
+- Request-driven behavior remains preserved
+- Existing workspace/project/chat behavior remains preserved
+
+**Reference:** TASKS.md, docs/specs/CO-02-01-billing-plans-foundation.md, AI_Sandbox_Platform_Master_Plan_Revised.md, PRD.md, ARCHITECTURE.md
+
+---

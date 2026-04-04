@@ -6115,3 +6115,80 @@ PR-01-01 delivered files-only save/restore. PR-02-01 delivered import/export por
 **Reference:** See `TASKS_BACKLOG_FULL.md` → PR-03-01 for full details; `docs/specs/PR-03-01-project-identity.md` for spec
 
 ---
+
+## CO-01 — Commercial Readiness
+
+**Current stage:** CO-02-01 (COMPLETE and LOCKED)
+
+---
+
+#### CO-01-01: Quota and Usage UX Alignment
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (COMMERCIAL READINESS, USER-VISIBLE USAGE/QUOTA ALIGNMENT)
+**Checkpoint:** `docs/CO-01-01-CHECKPOINT.md`
+
+**Objective:**
+Align workspace-visible quota/usage information with existing backend enforcement so users can clearly see current usage/limits and understand rate-limit or quota failures without changing the underlying quota model.
+
+**Why this exists:**
+Core product loop and project persistence are now in place. The next bounded commercial-readiness step is to make quota and usage behavior visible and coherent on existing surfaces, using existing backend data rather than inventing frontend-only approximations.
+
+**Scope:**
+- Add/request a backend usage/quota status path if needed using existing usage/quota data sources
+- Show current usage/quota information in the workspace UI
+- Align user-visible error messaging for rate-limit / quota failures with backend behavior
+- Keep refresh request-driven only
+- Preserve existing workspace / chat / project behavior
+
+**Out of scope:**
+- ❌ No billing/subscription implementation
+- ❌ No admin-only tooling
+- ❌ No quota model redesign
+- ❌ No polling/timers
+- ❌ No background workers
+- ❌ No auth / billing redesign
+- ❌ No broad dashboard redesign
+- ❌ No refactors unless absolutely required
+
+**Dependencies:** PR-03-01 (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → CO-01-01 for full details; `docs/specs/CO-01-01-quota-usage-ux.md` for spec
+
+---
+
+#### CO-02-01: Billing and Plans Foundation
+
+**Status:** COMPLETE and LOCKED
+**Nature:** IMPLEMENTATION (COMMERCIAL READINESS, PLAN/ENTITLEMENT FOUNDATION)
+**Checkpoint:** `docs/CO-02-01-CHECKPOINT.md`
+
+**Objective:**
+Implement the first bounded billing/plans foundation so the platform has a minimal plan/entitlement model and user-visible plan state, without yet expanding into full payment-provider complexity.
+
+**Why this exists:**
+CO-01-01 aligned visible usage/quota UX with existing enforcement. CO-02-01 now adds the minimum foundation for plan-aware product behavior so future billing/commercial work has a stable base.
+
+**Scope:**
+- Introduce minimal plan/entitlement model for users
+- Make current plan state visible on existing user-facing surfaces
+- Wire existing usage/quota behavior to plan state where needed in a minimal, deterministic way
+- Keep commercial behavior bounded and request-driven only
+- Preserve existing workspace/project/chat behavior
+
+**Out of scope:**
+- ❌ No full payment provider integration unless spec requires only smallest foundation
+- ❌ No invoicing/tax/accounting workflows
+- ❌ No admin backoffice expansion beyond strictly required
+- ❌ No quota model redesign beyond bounded plan-aware foundation
+- ❌ No polling/timers
+- ❌ No background workers
+- ❌ No auth redesign
+- ❌ No broad dashboard redesign
+- ❌ No refactors unless absolutely required
+
+**Dependencies:** CO-01-01 (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → CO-02-01 for full details; `docs/specs/CO-02-01-billing-plans-foundation.md` for spec
+
+---

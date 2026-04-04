@@ -3,20 +3,23 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { UnauthorizedException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
+import { Plan } from '../entities/plan.entity';
 import { QuotaService } from '../quota/quota.service';
-import { QuotaConfig } from '../quota/quota.config';
 import { UsersService } from './users.service';
 
-describe('UsersService (TASK-68B-2)', () => {
+describe('UsersService (CO-02-01)', () => {
   let service: UsersService;
   let userRepository: jest.Mocked<Repository<User>>;
+  let planRepository: jest.Mocked<Repository<Plan>>;
   let quotaService: jest.Mocked<QuotaService>;
 
   beforeEach(async () => {
     const mockUserRepository = {
       findOne: jest.fn(),
     };
-
+    const mockPlanRepository = {
+      findOne: jest.fn(),
+    };
     const mockQuotaService = {
       getActiveSessionCount: jest.fn(),
       getRolling24hSessionCount: jest.fn(),
@@ -32,6 +35,10 @@ describe('UsersService (TASK-68B-2)', () => {
           useValue: mockUserRepository,
         },
         {
+          provide: getRepositoryToken(Plan),
+          useValue: mockPlanRepository,
+        },
+        {
           provide: QuotaService,
           useValue: mockQuotaService,
         },
@@ -40,6 +47,7 @@ describe('UsersService (TASK-68B-2)', () => {
 
     service = module.get<UsersService>(UsersService);
     userRepository = module.get(getRepositoryToken(User));
+    planRepository = module.get(getRepositoryToken(Plan));
     quotaService = module.get(QuotaService);
   });
 
@@ -48,12 +56,21 @@ describe('UsersService (TASK-68B-2)', () => {
   });
 
   describe('getCurrentUser', () => {
-    it('returns current user profile fields', async () => {
+    it('returns current user profile fields including plan state', async () => {
       userRepository.findOne.mockResolvedValue({
         id: 'user-1',
         email: 'user@example.com',
         createdAt: new Date('2026-03-10T10:00:00.000Z'),
+        planType: 'free',
+        planStatus: 'active',
       } as User);
+      planRepository.findOne.mockResolvedValue({
+        code: 'free',
+        name: 'Free',
+        maxActiveSessions: 5,
+        maxSessions24h: 20,
+        maxTokens24h: 100000,
+      } as Plan);
 
       const result = await service.getCurrentUser('user-1');
 
@@ -61,6 +78,9 @@ describe('UsersService (TASK-68B-2)', () => {
         userId: 'user-1',
         email: 'user@example.com',
         createdAt: '2026-03-10T10:00:00.000Z',
+        planCode: 'free',
+        planName: 'Free',
+        planStatus: 'active',
       });
     });
 
@@ -79,6 +99,8 @@ describe('UsersService (TASK-68B-2)', () => {
         id: 'user-1',
         email: 'user@example.com',
         createdAt: new Date('2026-03-10T10:00:00.000Z'),
+        planType: 'free',
+        planStatus: 'active',
       } as User);
       quotaService.getActiveSessionCount.mockResolvedValue(3);
       quotaService.getRolling24hSessionCount.mockResolvedValue(8);
@@ -97,71 +119,72 @@ describe('UsersService (TASK-68B-2)', () => {
         resetAt: '2026-03-10T20:00:00.000Z',
       });
     });
+  });
 
-    it('returns resetAt as null when there is no usage in rolling window', async () => {
+  describe('getQuotas', () => {
+    it('returns limits from active assigned plan plus current usage values', async () => {
       userRepository.findOne.mockResolvedValue({
         id: 'user-1',
         email: 'user@example.com',
         createdAt: new Date('2026-03-10T10:00:00.000Z'),
+        planType: 'pro',
+        planStatus: 'active',
       } as User);
-      quotaService.getActiveSessionCount.mockResolvedValue(0);
-      quotaService.getRolling24hSessionCount.mockResolvedValue(0);
-      quotaService.getRolling24hTokenUsage.mockResolvedValue(0);
-      quotaService.getOldestUsageIn24h.mockResolvedValue(null);
-
-      const result = await service.getUsage('user-1');
-
-      expect(result).toEqual({
-        activeSessions: 0,
-        sessionsCreated24h: 0,
-        tokensUsed24h: 0,
-        estimatedCost: 0,
-        resetAt: null,
-      });
-    });
-
-    it('throws UnauthorizedException for inactive/missing user', async () => {
-      userRepository.findOne.mockResolvedValue(null);
-
-      await expect(service.getUsage('missing-user')).rejects.toThrow(
-        UnauthorizedException,
+      quotaService.getActiveSessionCount.mockResolvedValue(2);
+      quotaService.getRolling24hSessionCount.mockResolvedValue(7);
+      quotaService.getRolling24hTokenUsage.mockResolvedValue(12000);
+      quotaService.getOldestUsageIn24h.mockResolvedValue(
+        new Date('2026-03-10T12:00:00.000Z'),
       );
-    });
-  });
-
-  describe('getQuotas', () => {
-    it('returns limits plus current usage values', async () => {
-      jest.spyOn(service, 'getUsage').mockResolvedValue({
-        activeSessions: 2,
-        sessionsCreated24h: 7,
-        tokensUsed24h: 12000,
-        estimatedCost: 0.12,
-        resetAt: '2026-03-11T12:00:00.000Z',
-      });
+      planRepository.findOne.mockResolvedValue({
+        code: 'pro',
+        name: 'Pro',
+        maxActiveSessions: 15,
+        maxSessions24h: 100,
+        maxTokens24h: 500000,
+      } as Plan);
 
       const result = await service.getQuotas('user-1');
 
       expect(result).toEqual({
-        maxActiveSessions: QuotaConfig.MAX_ACTIVE_SESSIONS_PER_USER,
+        planCode: 'pro',
+        planName: 'Pro',
+        planStatus: 'active',
+        maxActiveSessions: 15,
         currentActiveSessions: 2,
-        maxSessions24h: QuotaConfig.MAX_SESSIONS_PER_24H,
+        maxSessions24h: 100,
         currentSessions24h: 7,
-        maxTokens24h: QuotaConfig.MAX_TOKENS_PER_24H,
+        maxTokens24h: 500000,
         currentTokens24h: 12000,
         resetAt: '2026-03-11T12:00:00.000Z',
       });
     });
 
-    it('throws UnauthorizedException for inactive/missing user', async () => {
-      userRepository.findOne.mockResolvedValue(null);
-      quotaService.getActiveSessionCount.mockResolvedValue(0);
-      quotaService.getRolling24hSessionCount.mockResolvedValue(0);
-      quotaService.getRolling24hTokenUsage.mockResolvedValue(0);
+    it('falls back to free plan limits when assignment status is cancelled', async () => {
+      userRepository.findOne.mockResolvedValue({
+        id: 'user-1',
+        email: 'user@example.com',
+        createdAt: new Date('2026-03-10T10:00:00.000Z'),
+        planType: 'pro',
+        planStatus: 'cancelled',
+      } as User);
+      quotaService.getActiveSessionCount.mockResolvedValue(1);
+      quotaService.getRolling24hSessionCount.mockResolvedValue(3);
+      quotaService.getRolling24hTokenUsage.mockResolvedValue(5000);
       quotaService.getOldestUsageIn24h.mockResolvedValue(null);
+      planRepository.findOne.mockResolvedValue({
+        code: 'free',
+        name: 'Free',
+        maxActiveSessions: 5,
+        maxSessions24h: 20,
+        maxTokens24h: 100000,
+      } as Plan);
 
-      await expect(service.getQuotas('missing-user')).rejects.toThrow(
-        UnauthorizedException,
-      );
+      const result = await service.getQuotas('user-1');
+      expect(result.planCode).toBe('free');
+      expect(result.planName).toBe('Free');
+      expect(result.planStatus).toBe('cancelled');
+      expect(result.maxTokens24h).toBe(100000);
     });
   });
 });

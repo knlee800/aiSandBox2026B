@@ -67,6 +67,12 @@ export class User {
   planType: string;
 
   /**
+   * Plan lifecycle status (active, cancelled, expired)
+   */
+  @Column({ type: 'varchar', length: 20, name: 'plan_status', default: 'active' })
+  planStatus: string;
+
+  /**
    * Stripe customer ID for billing
    */
   @Column({ type: 'varchar', length: 255, name: 'stripe_customer_id', nullable: true })

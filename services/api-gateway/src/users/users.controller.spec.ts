@@ -49,6 +49,9 @@ describe('UsersController (TASK-68B-2)', () => {
       userId: 'user-1',
       email: 'user@example.com',
       createdAt: '2026-03-10T10:00:00.000Z',
+      planCode: 'free',
+      planName: 'Free',
+      planStatus: 'active',
     });
 
     const result = await controller.getCurrentUser({
@@ -78,6 +81,9 @@ describe('UsersController (TASK-68B-2)', () => {
 
   it('GET /api/users/me/quotas returns quota summary', async () => {
     usersService.getQuotas.mockResolvedValue({
+      planCode: 'free',
+      planName: 'Free',
+      planStatus: 'active',
       maxActiveSessions: 5,
       currentActiveSessions: 3,
       maxSessions24h: 20,

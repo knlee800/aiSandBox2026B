@@ -48,6 +48,9 @@ const userSummary = {
   userId: 'user-123',
   email: 'user@example.com',
   createdAt: '2026-03-10T12:00:00.000Z',
+  planCode: 'free',
+  planName: 'Free',
+  planStatus: 'active' as const,
 };
 
 const usageSummary = {
@@ -234,6 +237,7 @@ describe('workspace shell component', () => {
     assert.match(html, /View Diff/);
     assert.match(html, /Current User/);
     assert.match(html, /user@example\.com/);
+    assert.match(html, /Plan: Free \(active\)/);
     assert.match(html, /Active Sessions/);
     assert.match(html, /Quota Status/);
     assert.match(html, /tokens remaining in the current 24h window/);
