@@ -13,6 +13,8 @@ import { SnapshotPersistenceService } from '../snapshots/snapshot-persistence.se
 
 @Injectable()
 export class ProjectsService {
+  private static readonly MAX_SLUG_LENGTH = 120;
+
   constructor(
     @InjectRepository(Project)
     private readonly projectRepository: Repository<Project>,
@@ -22,10 +24,41 @@ export class ProjectsService {
     private readonly snapshotPersistenceService: SnapshotPersistenceService,
   ) {}
 
+  private buildBaseSlug(name: string): string {
+    const collapsed = name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    if (collapsed.length === 0) {
+      return 'project';
+    }
+
+    return collapsed.slice(0, ProjectsService.MAX_SLUG_LENGTH);
+  }
+
+  private async generateUniqueSlug(name: string): Promise<string> {
+    const baseSlug = this.buildBaseSlug(name);
+    let candidate = baseSlug;
+    let sequence = 1;
+
+    while (await this.projectRepository.findOne({ where: { slug: candidate } })) {
+      sequence += 1;
+      const suffix = `-${sequence}`;
+      const maxBaseLength = ProjectsService.MAX_SLUG_LENGTH - suffix.length;
+      candidate = `${baseSlug.slice(0, Math.max(maxBaseLength, 1))}${suffix}`;
+    }
+
+    return candidate;
+  }
+
   async createProject(userId: string, name: string): Promise<Project> {
+    const normalizedName = name.trim();
+    const slug = await this.generateUniqueSlug(normalizedName);
     const project = this.projectRepository.create({
       userId,
-      name: name.trim(),
+      name: normalizedName,
+      slug,
       visibility: 'private',
     });
     return await this.projectRepository.save(project);
@@ -95,9 +128,12 @@ export class ProjectsService {
       throw new ForbiddenException('Project is not publicly shareable');
     }
 
+    const forkName = `Fork of ${sourceProject.name}`;
+    const slug = await this.generateUniqueSlug(forkName);
     const forkedProject = this.projectRepository.create({
       userId: args.userId,
-      name: `Fork of ${sourceProject.name}`,
+      name: forkName,
+      slug,
       visibility: 'private',
     });
     return await this.projectRepository.save(forkedProject);

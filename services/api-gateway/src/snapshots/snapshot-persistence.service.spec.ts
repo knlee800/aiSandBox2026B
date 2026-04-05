@@ -85,4 +85,47 @@ describe('SnapshotPersistenceService (PR-01-01)', () => {
       'a',
     );
   });
+
+  it('saveSnapshot keeps recursive paths workspace-relative after checkpoint-created .git dir', async () => {
+    containerManagerHttpClient.listSessionDirectory
+      .mockResolvedValueOnce({
+        path: '/',
+        entries: [
+          { name: '.git', type: 'dir', size: 0, modifiedAt: new Date().toISOString() },
+          { name: 'README.md', type: 'file', size: 11, modifiedAt: new Date().toISOString() },
+        ],
+      })
+      .mockResolvedValueOnce({
+        path: '.git',
+        entries: [{ name: 'HEAD', type: 'file', size: 21, modifiedAt: new Date().toISOString() }],
+      });
+    containerManagerHttpClient.readSessionFile
+      .mockResolvedValueOnce({ path: '.git/HEAD', content: 'ref: refs/heads/main' })
+      .mockResolvedValueOnce({ path: 'README.md', content: '# hello' });
+
+    await service.saveSnapshot({
+      userId,
+      sessionId: 'session-1',
+      label: 'post-checkpoint',
+    });
+
+    expect(containerManagerHttpClient.listSessionDirectory).toHaveBeenNthCalledWith(
+      1,
+      'session-1',
+      '/',
+    );
+    expect(containerManagerHttpClient.listSessionDirectory).toHaveBeenNthCalledWith(
+      2,
+      'session-1',
+      '.git',
+    );
+    expect(containerManagerHttpClient.readSessionFile).toHaveBeenCalledWith(
+      'session-1',
+      '.git/HEAD',
+    );
+    expect(containerManagerHttpClient.readSessionFile).toHaveBeenCalledWith(
+      'session-1',
+      'README.md',
+    );
+  });
 });

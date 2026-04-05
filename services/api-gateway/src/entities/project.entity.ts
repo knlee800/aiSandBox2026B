@@ -37,6 +37,10 @@ export class Project {
   @Column({ type: 'varchar', length: 120 })
   name: string;
 
+  @Index('idx_projects_slug')
+  @Column({ type: 'varchar' })
+  slug: string;
+
   @Column({ type: 'varchar', length: 16, default: 'private' })
   visibility: ProjectVisibility;
 

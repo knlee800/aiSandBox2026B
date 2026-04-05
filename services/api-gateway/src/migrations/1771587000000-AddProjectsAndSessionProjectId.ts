@@ -18,6 +18,13 @@ export class AddProjectsAndSessionProjectId1771587000000
       )
     `);
 
+    // Defensive compatibility for environments where a pre-existing
+    // "projects" table was created before "updated_at" existed.
+    await queryRunner.query(`
+      ALTER TABLE "projects"
+      ADD COLUMN IF NOT EXISTS "updated_at" TIMESTAMP NOT NULL DEFAULT now()
+    `);
+
     await queryRunner.query(
       `CREATE INDEX IF NOT EXISTS "idx_projects_user_id" ON "projects" ("user_id")`,
     );

@@ -118,7 +118,7 @@ export class SnapshotPersistenceService {
   ): Promise<WorkspaceSnapshotFile[]> {
     const collectedFilePaths = await this.collectFilePathsRecursively(
       sessionId,
-      '/',
+      '',
     );
     const files: WorkspaceSnapshotFile[] = [];
     for (const filePath of collectedFilePaths) {
@@ -138,22 +138,23 @@ export class SnapshotPersistenceService {
     sessionId: string,
     directoryPath: string,
   ): Promise<string[]> {
+    const listPath = directoryPath.length === 0 ? '/' : directoryPath;
     const response = await this.containerManagerHttpClient.listSessionDirectory(
       sessionId,
-      directoryPath,
+      listPath,
     );
     const filePaths: string[] = [];
     for (const entry of response.entries) {
       const nextPath =
-        directoryPath === '/'
-          ? `/${entry.name}`
+        directoryPath.length === 0
+          ? entry.name
           : `${directoryPath.replace(/\/$/, '')}/${entry.name}`;
       if (entry.type === 'dir') {
         filePaths.push(
           ...(await this.collectFilePathsRecursively(sessionId, nextPath)),
         );
       } else {
-        filePaths.push(nextPath.replace(/^\//, ''));
+        filePaths.push(nextPath);
       }
     }
     return filePaths;

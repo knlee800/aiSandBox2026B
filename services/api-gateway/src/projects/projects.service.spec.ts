@@ -68,16 +68,19 @@ describe('ProjectsService (PR-03-01)', () => {
   });
 
   it('creates a named project for the current user', async () => {
+    projectRepository.findOne.mockResolvedValue(null);
     projectRepository.create.mockReturnValue({
       id: 'project-1',
       userId: 'user-1',
       name: 'My Project',
+      slug: 'my-project',
       visibility: 'private',
     });
     projectRepository.save.mockResolvedValue({
       id: 'project-1',
       userId: 'user-1',
       name: 'My Project',
+      slug: 'my-project',
       visibility: 'private',
     });
 
@@ -86,6 +89,7 @@ describe('ProjectsService (PR-03-01)', () => {
     expect(projectRepository.create).toHaveBeenCalledWith({
       userId: 'user-1',
       name: 'My Project',
+      slug: 'my-project',
       visibility: 'private',
     });
     expect(result.id).toBe('project-1');
@@ -273,16 +277,19 @@ describe('ProjectsService (PR-03-01)', () => {
       name: 'Shared Project',
       visibility: 'public',
     });
+    projectRepository.findOne.mockResolvedValueOnce(null);
     projectRepository.create.mockReturnValue({
       id: 'fork-1',
       userId: 'user-2',
       name: 'Fork of Shared Project',
+      slug: 'fork-of-shared-project',
       visibility: 'private',
     });
     projectRepository.save.mockResolvedValue({
       id: 'fork-1',
       userId: 'user-2',
       name: 'Fork of Shared Project',
+      slug: 'fork-of-shared-project',
       visibility: 'private',
     });
 
@@ -294,6 +301,7 @@ describe('ProjectsService (PR-03-01)', () => {
     expect(projectRepository.create).toHaveBeenCalledWith({
       userId: 'user-2',
       name: 'Fork of Shared Project',
+      slug: 'fork-of-shared-project',
       visibility: 'private',
     });
     expect(forked.userId).toBe('user-2');

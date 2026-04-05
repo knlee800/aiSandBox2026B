@@ -10,6 +10,7 @@ export class ExecutionResultService {
       `
       SELECT
         execution_id,
+        user_id,
         execution_status,
         provider,
         model,
