@@ -14928,3 +14928,411 @@ The recent delivery wave added multiple schema changes but they have not yet bee
 **Reference:** TASKS.md, docs/PROGRAM-SPEC-EXECUTION-FINAL-CHECKPOINT.md, ARCHITECTURE.md
 
 ---
+
+### REL-01-02: Integration Smoke Sweep
+
+**Task ID:** REL-01-02
+**Family:** REL-01 (Release Readiness)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION (RELEASE READINESS, CROSS-SURFACE REGRESSION SWEEP)
+**Dependencies:** REL-01-01 (Complete and Locked)
+**Checkpoint:** `docs/REL-01-02-CHECKPOINT.md`
+
+**Objective:**
+
+Run a bounded end-to-end integration smoke sweep across the preserved regression-gate surfaces so release-readiness work can confirm the feature wave still behaves coherently as one system.
+
+**Why this exists:**
+
+REL-01-01 validated schema safety. The next release-readiness step is to validate the key preserved user-facing and system-facing flows together through the running stack.
+
+**Scope:**
+
+- Validate session lifecycle and sidebar actions
+- Validate checkpoint creation/history/diff/snapshot
+- Validate editor file loading/saving
+- Validate preview routing/status
+- Validate chat prompt/response/thread behavior
+- Validate per-session chat persistence
+- Validate auth gating for workspace access
+- Validate quota enforcement and visibility
+- Validate API-key based AI execution flow
+- Validate route bootstrapping and workspace loading behavior
+- Document exact smoke steps and outcomes
+
+**Explicitly out of scope:**
+
+- ❌ No new feature work
+- ❌ No bug-fix sweep unless this task finds a concrete defect
+- ❌ No environment/config audit yet
+- ❌ No release packaging
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- Bounded smoke steps run against the live stack
+- Preserved regression-gate surfaces are validated and documented
+- Any concrete failures are isolated clearly
+- No unrelated work is mixed into this task
+
+**Reference:** TASKS.md, docs/REL-01-01-CHECKPOINT.md, AI_Sandbox_Platform_Master_Plan_Revised.md
+
+---
+
+### REL-01-02A: Fix Projects Migration Startup Defect
+
+**Task ID:** REL-01-02A
+**Family:** REL-01 (Release Readiness)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (RELEASE READINESS, LIVE-STACK BLOCKER)
+**Dependencies:** REL-01-02 (BLOCKED)
+**Checkpoint:** `docs/REL-01-02A-CHECKPOINT.md`
+
+**Objective:**
+
+Fix the concrete migration defect blocking live-stack startup so the api-gateway can boot and REL-01-02 integration smoke validation can resume.
+
+**Why this exists:**
+
+REL-01-02 integration smoke sweep found a live-stack blocker. The `aisandbox-api-gateway` container was in a restart loop due to a migration startup failure in `1771587000000-AddProjectsAndSessionProjectId.ts`. The error was PostgreSQL `42703`: `column "updated_at" does not exist` when creating `idx_projects_updated_at`.
+
+**Observed failure:**
+
+- File: `services/api-gateway/src/migrations/1771587000000-AddProjectsAndSessionProjectId.ts`
+- Statement: `CREATE INDEX IF NOT EXISTS "idx_projects_updated_at" ON "projects" ("updated_at")`
+- Error: PostgreSQL `42703` — `column "updated_at" does not exist`
+
+**Scope:**
+
+- Inspect the failing migration and current `projects` table schema assumptions
+- Apply the smallest safe fix so `updated_at` exists on `projects` before the index is created
+- Preserve intended projects table and `sessions.project_id` migration outcome
+- Rerun only the specific migration validation path needed to prove the fix on a clean validation database
+- Document exact cause and resolution
+
+**Explicitly out of scope:**
+
+- ❌ No broader project persistence redesign
+- ❌ No unrelated schema cleanup
+- ❌ No feature work
+- ❌ No broad regression sweep
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- Migration `1771587000000` runs successfully on a clean validation database
+- `api-gateway` can boot without restart loop from this migration defect
+- Intended schema/result remains correct for `projects` table and `sessions.project_id`
+- No unrelated migration behavior is changed
+- Fix and validation outcome are documented clearly
+
+**Reference:** TASKS.md, docs/REL-01-02-CHECKPOINT.md
+
+---
+
+### REL-01-02B: Fix Project Creation Slug Defect
+
+**Task ID:** REL-01-02B
+**Family:** REL-01 (Release Readiness)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (RELEASE READINESS, LIVE-SMOKE BLOCKER)
+**Dependencies:** REL-01-02 (BLOCKED)
+**Checkpoint:** `docs/REL-01-02B-CHECKPOINT.md`
+
+**Objective:**
+
+Fix the concrete live-stack defect blocking REL-01-02 so authenticated project creation works during the integration smoke sweep.
+
+**Why this exists:**
+
+REL-01-02 integration smoke sweep found a live-stack blocker. Authenticated `POST /api/projects` returns `500` with `QueryFailedError: null value in column "slug" of relation "projects" violates not-null constraint` in `ProjectsService.createProject`.
+
+**Observed failure:**
+
+- Endpoint: `POST /api/projects`
+- HTTP status: `500`
+- Error: `QueryFailedError: null value in column "slug" of relation "projects" violates not-null constraint`
+- Location: `ProjectsService.createProject`
+
+**Scope:**
+
+- Inspect `project.entity.ts` and `projects.service.ts` create flow assumptions around `slug`
+- Apply smallest safe fix so project creation supplies/persists a valid slug
+- Preserve existing project identity behavior
+- Rerun only the specific live-stack validation path needed to prove the fix
+- Document exact cause and resolution
+
+**Explicitly out of scope:**
+
+- ❌ No broader project redesign
+- ❌ No public sharing redesign
+- ❌ No unrelated schema cleanup
+- ❌ No feature work
+- ❌ No broad regression sweep
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- Authenticated `POST /api/projects` succeeds on the live stack
+- Slug persistence is valid and non-null
+- Intended project creation behavior remains correct
+- No unrelated project behavior is changed
+- Fix and validation outcome are documented clearly
+
+**Reference:** TASKS.md, docs/REL-01-02-CHECKPOINT.md
+
+---
+
+### REL-01-02C: Fix Snapshot Path Validation After Checkpoint
+
+**Task ID:** REL-01-02C
+**Family:** REL-01 (Release Readiness)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (RELEASE READINESS, LIVE-SMOKE BLOCKER)
+**Dependencies:** REL-01-02 (BLOCKED)
+**Checkpoint:** `docs/REL-01-02C-CHECKPOINT.md`
+
+**Objective:**
+
+Fix the concrete live-stack defect blocking REL-01-02 so snapshot creation still works after checkpoint creation in the same session.
+
+**Why this exists:**
+
+REL-01-02 integration smoke sweep found a deterministic live-stack blocker. `POST /api/sessions/:id/snapshot` succeeds before checkpoint creation, but fails after checkpoint creation in the same session with `400` and message `Absolute paths outside /workspace not allowed`. Checkpoint create/list/diff surfaces passed. Only snapshot fails when combined with checkpoint creation.
+
+**Observed failure:**
+
+- Endpoint: `POST /api/sessions/:id/snapshot`
+- HTTP status: `400`
+- Error: `Absolute paths outside /workspace not allowed`
+- Pattern: snapshot without prior checkpoint → passes (`201`); snapshot after creating checkpoint → fails (`400`)
+
+**Scope:**
+
+- Inspect snapshot creation flow and any file/path enumeration assumptions after checkpoint creation
+- Identify why checkpoint-created state introduces non-workspace absolute paths into snapshot input
+- Apply the smallest safe fix so snapshot only processes valid workspace-relative paths
+- Preserve existing checkpoint and snapshot behavior
+- Rerun only the specific live-stack validation path needed to prove the fix
+- Document exact cause and resolution
+
+**Explicitly out of scope:**
+
+- ❌ No broader snapshot redesign
+- ❌ No checkpoint redesign
+- ❌ No unrelated path/schema cleanup
+- ❌ No feature work
+- ❌ No broad regression sweep
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- `POST /api/sessions/:id/snapshot` succeeds on live stack before checkpoint creation
+- `POST /api/sessions/:id/snapshot` also succeeds after checkpoint creation in the same session
+- Snapshot continues to reject truly invalid outside-workspace paths
+- Intended checkpoint and snapshot behavior remains correct
+- Fix and validation outcome are documented clearly
+
+**Reference:** TASKS.md, docs/REL-01-02-CHECKPOINT.md
+
+---
+
+### REL-01-02D: Fix Public API Execution Status Lookup
+
+**Task ID:** REL-01-02D
+**Family:** REL-01 (Release Readiness)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (RELEASE READINESS, LIVE-SMOKE BLOCKER)
+**Dependencies:** REL-01-02 (BLOCKED)
+**Checkpoint:** `docs/REL-01-02D-CHECKPOINT.md`
+
+**Objective:**
+
+Fix the concrete live-stack defect blocking REL-01-02 so public API execution status lookup works after successful API-key execution submission.
+
+**Why this exists:**
+
+REL-01-02 integration smoke sweep found a deterministic live-stack blocker on the public API surface. `POST /api/v1/ai/execute` succeeds and returns an `executionId`, but `GET /api/v1/ai/executions/:executionId` returns `404` even after bounded polling (10 attempts, 2s intervals). The API-key based AI execution flow regression gate is therefore incoherent end-to-end.
+
+**Observed failure:**
+
+- Endpoint: `GET /api/v1/ai/executions/:executionId`
+- HTTP status: `404`
+- Pattern: submit execution → receive `executionId` → immediate and polled status reads all return `404`
+
+**Scope:**
+
+- Inspect public AI execute/status flow and storage/lookup assumptions
+- Identify why execution submission succeeds but public execution lookup cannot find the record
+- Apply the smallest safe fix so public execution status lookup resolves correctly
+- Preserve internal/public API separation and existing internal execution behavior
+- Rerun only the specific live-stack validation path needed to prove the fix
+- Document exact cause and resolution
+
+**Explicitly out of scope:**
+
+- ❌ No broader public API redesign
+- ❌ No internal route redesign
+- ❌ No feature work
+- ❌ No broad regression sweep
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- `POST /api/v1/ai/execute` succeeds
+- `GET /api/v1/ai/executions/:executionId` returns coherent execution status/result for the submitted execution
+- Internal/public separation remains preserved
+- No unrelated execution behavior is changed
+- Fix and validation outcome are documented clearly
+
+**Reference:** TASKS.md, docs/REL-01-02-CHECKPOINT.md
+
+---
+
+### REL-01-03: Environment and Config Audit
+
+**Task ID:** REL-01-03
+**Family:** REL-01 (Release Readiness)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION (RELEASE READINESS, ENVIRONMENT / CONFIG CONSISTENCY)
+**Dependencies:** REL-01-02 (Complete and Locked)
+**Checkpoint:** `docs/REL-01-03-CHECKPOINT.md`
+
+**Objective:**
+
+Validate and consolidate the environment/config assumptions required by the now-completed product wave so release-readiness work can proceed from a consistent Docker, env-var, and startup baseline.
+
+**Why this exists:**
+
+REL-01-01 validated migrations and REL-01-02 validated live-stack smoke behavior. The next release-readiness step is to verify the environment/config layer is complete, aligned, and documented enough to support reliable local/prod-style startup.
+
+**Scope:**
+
+- Audit required environment variables across the current stack
+- Verify docker-compose and docker-compose.prod assumptions against current runtime behavior
+- Verify .env / .env.example / startup expectations are coherent where those files exist
+- Identify missing, stale, or inconsistent config entries directly relevant to current features
+- Document exact findings and required corrections
+
+**Explicitly out of scope:**
+
+- ❌ No feature work
+- ❌ No broad deployment redesign
+- ❌ No bug-fix sweep beyond concrete config defects found during this audit
+- ❌ No release packaging
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- Required environment/config assumptions are enumerated clearly
+- Concrete config inconsistencies are identified clearly
+- Docker/startup assumptions are checked against current stack behavior
+- Results are documented clearly
+- No unrelated work is mixed into this task
+
+**Reference:** TASKS.md, docs/REL-01-02-CHECKPOINT.md
+
+---
+
+### REL-01-03A: Fix Environment Template Defects
+
+**Task ID:** REL-01-03A
+**Family:** REL-01 (Release Readiness)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (RELEASE READINESS, CONFIG BLOCKER)
+**Dependencies:** REL-01-03 (BLOCKED)
+**Checkpoint:** `docs/REL-01-03A-CHECKPOINT.md`
+
+**Objective:**
+
+Fix the concrete environment-template defects blocking REL-01-03 so release-readiness config audit can complete with coherent example/template files.
+
+**Why this exists:**
+
+REL-01-03 found concrete blocking config defects:
+- `.env.prod.example` has `AI_PROVIDER=stub`, which is rejected by production startup validation.
+- `.env.prod.example` is missing required `LAUNCH_STATE`, which is a fail-fast startup requirement.
+- `services/ai-service/.env.example` is missing `REDIS_URL`, required by queue/worker runtime.
+- `services/ai-service/.env.example` is missing `DATABASE_URL`, required by worker module.
+
+**Scope:**
+
+- Correct `.env.prod.example`: replace `AI_PROVIDER=stub` with a valid non-stub provider default
+- Correct `.env.prod.example`: add required `LAUNCH_STATE` entry
+- Correct `services/ai-service/.env.example`: add `REDIS_URL`
+- Correct `services/ai-service/.env.example`: add `DATABASE_URL`
+- Rerun only the targeted config-audit checks needed to prove the templates are now coherent
+- Document exact cause and resolution
+
+**Explicitly out of scope:**
+
+- ❌ No feature work
+- ❌ No runtime code changes unless absolutely required (should not be needed)
+- ❌ No broad config redesign
+- ❌ No unrelated env cleanup
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- `.env.prod.example` no longer suggests blocked production provider config
+- `.env.prod.example` includes required `LAUNCH_STATE`
+- `services/ai-service/.env.example` includes required `REDIS_URL` and `DATABASE_URL`
+- Targeted config-audit recheck passes for these defects
+- Fix and validation outcome are documented clearly
+
+**Reference:** TASKS.md, docs/REL-01-03-CHECKPOINT.md
+
+---
+
+### REL-01-03B: Fix Production Provider Template Key Defect
+
+**Task ID:** REL-01-03B
+**Family:** REL-01 (Release Readiness)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (RELEASE READINESS, CONFIG BLOCKER)
+**Dependencies:** REL-01-03 (BLOCKED)
+**Checkpoint:** `docs/REL-01-03B-CHECKPOINT.md`
+
+**Objective:**
+
+Fix the concrete production env-template defect blocking REL-01-03 so the production example config is coherent with provider-validator expectations.
+
+**Why this exists:**
+
+REL-01-03 found a concrete blocking config defect:
+- `C:\Users\knlee\aiSandBox2026B\.env.prod.example` sets `AI_PROVIDER=anthropic`
+- but does not include an active `ANTHROPIC_API_KEY=` template entry
+- this conflicts with production startup validator expectations
+
+**Scope:**
+
+- Correct only the identified production template defect
+- Preserve current runtime behavior
+- Rerun only the specific config-audit checks needed to prove the template is now coherent
+- Document exact cause and resolution
+
+**Explicitly out of scope:**
+
+- ❌ No feature work
+- ❌ No runtime code changes
+- ❌ No broad config redesign
+- ❌ No unrelated env cleanup
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- `.env.prod.example` includes a coherent active provider-key template entry matching `AI_PROVIDER`
+- Targeted config-audit recheck passes for this defect
+- Fix and validation outcome are documented clearly
+
+**Reference:** TASKS.md, docs/REL-01-03-CHECKPOINT.md
+
+---

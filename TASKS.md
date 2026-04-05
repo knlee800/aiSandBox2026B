@@ -6420,7 +6420,7 @@ The core workspace, persistence, commercial foundation, advanced AI features, an
 
 ## REL-01 — Release Readiness
 
-**Current stage:** REL-01-01 (COMPLETE and LOCKED)
+**Current stage:** REL-01-03B (PLANNED)
 
 ---
 
@@ -6514,5 +6514,195 @@ Validate the migrations introduced during the completed spec-execution wave agai
 **Dependencies:** PROGRAM-SPEC-EXECUTION-FINAL-CHECKPOINT (Complete and Locked)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → REL-01-01 for full details
+
+---
+
+#### REL-01-02: Integration Smoke Sweep
+
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION (RELEASE READINESS, CROSS-SURFACE REGRESSION SWEEP)
+**Checkpoint:** `docs/REL-01-02-CHECKPOINT.md`
+
+**Objective:**
+Run a bounded end-to-end integration smoke sweep across the preserved regression-gate surfaces so release-readiness work can confirm the feature wave still behaves coherently as one system.
+
+**Scope:**
+- Session lifecycle and sidebar actions
+- Checkpoint creation/history/diff/snapshot
+- Editor file loading/saving
+- Preview routing/status
+- Chat prompt/response/thread behavior
+- Per-session chat persistence
+- Auth gating for workspace access
+- Quota enforcement and visibility
+- API-key based AI execution flow
+- Route bootstrapping and workspace loading behavior
+
+**Out of scope:**
+- ❌ No new feature work
+- ❌ No bug-fix sweep unless this task finds a concrete defect
+- ❌ No environment/config audit yet
+- ❌ No release packaging
+- ❌ No scope expansion
+
+**Dependencies:** REL-01-01 (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → REL-01-02 for full details
+
+#### REL-01-02A: Fix Projects Migration Startup Defect
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (RELEASE READINESS, LIVE-STACK BLOCKER)
+**Checkpoint:** `docs/REL-01-02A-CHECKPOINT.md`
+
+**Objective:**
+Fix the concrete migration defect blocking live-stack startup so api-gateway can boot and REL-01-02 integration smoke validation can resume.
+
+**Scope:**
+- Inspect failing migration `1771587000000-AddProjectsAndSessionProjectId.ts`
+- Apply smallest safe fix so `updated_at` column exists before index creation
+- Rerun migration validation path to prove fix on clean database
+- Document cause and resolution
+
+**Out of scope:** ❌ No broader project redesign, unrelated schema cleanup, feature work, broad regression sweep, or scope expansion
+
+**Dependencies:** REL-01-02 (BLOCKED)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → REL-01-02A for full details
+
+#### REL-01-02B: Fix Project Creation Slug Defect
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (RELEASE READINESS, LIVE-SMOKE BLOCKER)
+**Checkpoint:** `docs/REL-01-02B-CHECKPOINT.md`
+
+**Objective:**
+Fix the concrete live-stack defect blocking REL-01-02 so authenticated project creation works during the integration smoke sweep.
+
+**Scope:**
+- Inspect project entity + create flow assumptions around `slug`
+- Apply smallest safe fix so project creation supplies/persists a valid slug
+- Rerun specific live-stack validation path to prove fix
+- Document cause and resolution
+
+**Out of scope:** ❌ No broader project redesign, public sharing redesign, unrelated schema cleanup, feature work, broad regression sweep, or scope expansion
+
+**Dependencies:** REL-01-02 (BLOCKED)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → REL-01-02B for full details
+
+#### REL-01-02C: Fix Snapshot Path Validation After Checkpoint
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (RELEASE READINESS, LIVE-SMOKE BLOCKER)
+**Checkpoint:** `docs/REL-01-02C-CHECKPOINT.md`
+
+**Objective:**
+Fix the concrete live-stack defect blocking REL-01-02 so snapshot creation still works after checkpoint creation in the same session.
+
+**Scope:**
+- Inspect snapshot creation flow and path enumeration assumptions after checkpoint
+- Identify why checkpoint-created state introduces non-workspace absolute paths into snapshot input
+- Apply smallest safe fix so snapshot only processes valid workspace-relative paths
+- Preserve existing checkpoint and snapshot behavior
+- Rerun specific live-stack validation path to prove fix
+- Document cause and resolution
+
+**Out of scope:** ❌ No broader snapshot redesign, checkpoint redesign, unrelated path/schema cleanup, feature work, broad regression sweep, or scope expansion
+
+**Dependencies:** REL-01-02 (BLOCKED)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → REL-01-02C for full details
+
+#### REL-01-02D: Fix Public API Execution Status Lookup
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (RELEASE READINESS, LIVE-SMOKE BLOCKER)
+**Checkpoint:** `docs/REL-01-02D-CHECKPOINT.md`
+
+**Objective:**
+Fix the concrete live-stack defect blocking REL-01-02 so public API execution status lookup works after successful API-key execution submission.
+
+**Scope:**
+- Inspect public AI execute/status flow assumptions
+- Identify why execution submission succeeds but public execution lookup returns 404
+- Apply smallest safe fix so public execution status lookup resolves correctly
+- Preserve internal/public separation and existing internal execution behavior
+- Rerun specific live-stack validation path to prove fix
+- Document cause and resolution
+
+**Out of scope:** ❌ No broader public API redesign, internal route redesign, feature work, broad regression sweep, or scope expansion
+
+**Dependencies:** REL-01-02 (BLOCKED)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → REL-01-02D for full details
+
+---
+
+#### REL-01-03: Environment and Config Audit
+
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION (RELEASE READINESS, ENVIRONMENT / CONFIG CONSISTENCY)
+**Checkpoint:** `docs/REL-01-03-CHECKPOINT.md`
+
+**Objective:**
+Validate and consolidate the environment/config assumptions required by the now-completed product wave so release-readiness work can proceed from a consistent Docker, env-var, and startup baseline.
+
+**Scope:**
+- Audit required environment variables across the current stack
+- Verify docker-compose and docker-compose.prod assumptions against current runtime behavior
+- Verify .env / .env.example / startup expectations are coherent where those files exist
+- Identify missing, stale, or inconsistent config entries directly relevant to current features
+- Document exact findings and required corrections
+
+**Out of scope:** ❌ No feature work, no broad deployment redesign, no bug-fix sweep beyond concrete config defects found during this audit, no release packaging, no scope expansion
+
+**Dependencies:** REL-01-02 (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → REL-01-03 for full details
+
+#### REL-01-03A: Fix Environment Template Defects
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (RELEASE READINESS, CONFIG BLOCKER)
+**Checkpoint:** `docs/REL-01-03A-CHECKPOINT.md`
+
+**Objective:**
+Fix the concrete environment-template defects blocking REL-01-03 so release-readiness config audit can complete with coherent example/template files.
+
+**Scope:**
+- Correct `.env.prod.example`: replace `AI_PROVIDER=stub` with a valid non-stub provider default
+- Correct `.env.prod.example`: add required `LAUNCH_STATE` entry
+- Correct `services/ai-service/.env.example`: add `REDIS_URL`
+- Correct `services/ai-service/.env.example`: add `DATABASE_URL`
+- Rerun targeted config-audit checks to prove templates are now coherent
+- Document exact cause and resolution
+
+**Out of scope:** ❌ No feature work, no runtime code changes, no broad config redesign, no unrelated env cleanup, no scope expansion
+
+**Dependencies:** REL-01-03 (BLOCKED)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → REL-01-03A for full details
+
+#### REL-01-03B: Fix Production Provider Template Key Defect
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (RELEASE READINESS, CONFIG BLOCKER)
+**Checkpoint:** `docs/REL-01-03B-CHECKPOINT.md`
+
+**Objective:**
+Fix the concrete production env-template defect blocking REL-01-03 so the production example config is coherent with provider-validator expectations.
+
+**Scope:**
+- Correct only the identified production template defect in `.env.prod.example`
+- Preserve current runtime behavior
+- Rerun only targeted config-audit checks for this defect
+- Document exact cause and resolution
+
+**Out of scope:** ❌ No feature work, no runtime code changes, no broad config redesign, no unrelated env cleanup, no scope expansion
+
+**Dependencies:** REL-01-03 (BLOCKED)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → REL-01-03B for full details
 
 ---
