@@ -6424,6 +6424,43 @@ The core workspace, persistence, commercial foundation, advanced AI features, an
 
 **Current stage:** none active (release-readiness wave complete)
 
+---
+
+## REL-02 — Deployment Rehearsal
+
+**Current stage:** REL-02-01 (COMPLETE and LOCKED)
+
+---
+
+#### REL-02-01: Deployment Rehearsal and Packaging
+
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION (RELEASE READINESS, DEPLOYMENT REHEARSAL)
+**Checkpoint:** `docs/REL-02-01-CHECKPOINT.md`
+
+**Objective:**
+Run one bounded deployment rehearsal from the validated runbook so the stack can be brought up, migrated, checked, and shut down in a reproducible prod-style flow.
+
+**Scope:**
+- Rehearse prod-style stack startup from documented prerequisites
+- Run migration/app startup in the intended order
+- Run bounded health and smoke checks from the runbook
+- Verify shutdown/restart behavior is clean
+- Verify packaging/startup assumptions are reproducible
+- Document exact rehearsal steps and outcome
+
+**Out of scope:**
+- ❌ No new feature work
+- ❌ No roadmap expansion
+- ❌ No broad infra redesign
+- ❌ No CI/CD platform work
+- ❌ No release automation platform
+- ❌ No scope expansion
+
+**Dependencies:** REL-01-05 (Complete and Locked), `docs/REL-01-05-CHECKPOINT.md` (operational runbook)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → REL-02-01 for full details
+
 **Completed validation/hardening tasks:**
 - REL-01-01 (Migration Validation) — COMPLETE and LOCKED
 - REL-01-02 (Integration Smoke Sweep) — COMPLETE and LOCKED

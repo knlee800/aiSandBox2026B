@@ -15395,3 +15395,57 @@ REL-01-01 validated migrations. REL-01-02 validated bounded live-stack smoke beh
 **Reference:** TASKS.md, docs/REL-01-01-CHECKPOINT.md, docs/REL-01-02-CHECKPOINT.md, docs/REL-01-03-CHECKPOINT.md
 
 ---
+
+## REL-02 — Deployment Rehearsal
+
+**Family status:** COMPLETE and LOCKED
+
+---
+
+### REL-02-01: Deployment Rehearsal and Packaging
+
+**Task ID:** REL-02-01
+**Family:** REL-02 (Deployment Rehearsal)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION (RELEASE READINESS, DEPLOYMENT REHEARSAL)
+**Dependencies:** REL-01-05 (Complete and Locked)
+**Checkpoint:** `docs/REL-02-01-CHECKPOINT.md`
+
+**Objective:**
+
+Run one bounded deployment rehearsal from the validated runbook so the stack can be brought up, migrated, checked, and shut down in a reproducible prod-style flow.
+
+**Why this exists:**
+
+The feature/spec wave is complete. The release-readiness wave is complete. The next practical step is to prove the stack can be deployed and operated from the documented runbook, rather than only from incremental dev recovery steps.
+
+**Scope:**
+
+- Rehearse prod-style stack startup from documented prerequisites
+- Run migration/app startup in the intended order
+- Run bounded health and smoke checks from the runbook
+- Verify shutdown/restart behavior is clean
+- Verify packaging/startup assumptions are reproducible
+- Document exact rehearsal steps and outcome
+
+**Explicitly out of scope:**
+
+- ❌ No new feature work
+- ❌ No roadmap expansion
+- ❌ No broad infra redesign
+- ❌ No CI/CD platform work
+- ❌ No release automation platform
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- Stack can be brought up from the documented runbook in a reproducible way
+- Migration/startup order works as documented
+- Bounded smoke checks pass in the rehearsed environment
+- Shutdown/restart behavior is coherent
+- Results are documented clearly
+
+**Reference:** TASKS.md, docs/REL-01-05-CHECKPOINT.md, docs/REL-01-FINAL-CHECKPOINT.md
+
+---
