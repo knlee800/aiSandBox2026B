@@ -14774,7 +14774,20 @@ The core workspace, persistence, commercial foundation, advanced AI features, an
 
 ## REL-01 — Release Readiness
 
-**Family status:** PLANNED
+**Family status:** COMPLETE and LOCKED
+
+**Completed validation/hardening tasks:**
+- REL-01-01 (Migration Validation) — COMPLETE and LOCKED
+- REL-01-02 (Integration Smoke Sweep) — COMPLETE and LOCKED
+- REL-01-03 (Environment and Config Audit) — COMPLETE and LOCKED
+- REL-01-05 (Operational Runbook Update) — COMPLETE and LOCKED
+
+**Concrete blockers resolved:**
+- REL-01-01A/B (Docker recovery; plans migration defect)
+- REL-01-02A/B/C/D (startup migration; slug; snapshot path; public API status lookup)
+- REL-01-03A/B (env template defects; production provider key coherence)
+
+**Final checkpoint:** `docs/REL-01-FINAL-CHECKPOINT.md`
 
 ---
 
@@ -15334,5 +15347,51 @@ REL-01-03 found a concrete blocking config defect:
 - Fix and validation outcome are documented clearly
 
 **Reference:** TASKS.md, docs/REL-01-03-CHECKPOINT.md
+
+---
+
+### REL-01-05: Operational Runbook Update
+
+**Task ID:** REL-01-05
+**Family:** REL-01 (Release Readiness)
+**Priority:** 🟡 Medium
+**Status:** COMPLETE and LOCKED
+**Nature:** DOCUMENTATION (RELEASE READINESS, OPERATIONAL RUNBOOK)
+**Dependencies:** REL-01-01 (Complete and Locked), REL-01-02 (Complete and Locked), REL-01-03 (Complete and Locked)
+**Checkpoint:** `docs/REL-01-05-CHECKPOINT.md`
+
+**Objective:**
+
+Create/update a minimal operational runbook so the now-validated stack can be started, migrated, checked, and recovered consistently for release-readiness and handoff.
+
+**Why this exists:**
+
+REL-01-01 validated migrations. REL-01-02 validated bounded live-stack smoke behavior. REL-01-03 validated environment/config coherence. The next bounded release-readiness step is to consolidate those validated assumptions into a short practical runbook.
+
+**Scope:**
+
+- Document startup order and stack prerequisites
+- Document migration/run order and validation order
+- Document key health checks and smoke checks
+- Document core recovery steps for the blockers already encountered
+- Document required env/config assumptions at a concise operational level
+- Preserve existing product behavior and architecture
+
+**Explicitly out of scope:**
+
+- ❌ No feature work
+- ❌ No deployment redesign
+- ❌ No packaging/release automation
+- ❌ No broad ops platform work
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- Runbook clearly covers startup, migrations, health checks, smoke checks, and basic recovery
+- Instructions align with validated local/prod-style behavior from REL-01-01/02/03
+- Documentation is concise and practical
+- No unrelated work is mixed into this task
+
+**Reference:** TASKS.md, docs/REL-01-01-CHECKPOINT.md, docs/REL-01-02-CHECKPOINT.md, docs/REL-01-03-CHECKPOINT.md
 
 ---
