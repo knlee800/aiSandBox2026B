@@ -6428,7 +6428,17 @@ The core workspace, persistence, commercial foundation, advanced AI features, an
 
 ## REL-02 — Deployment Rehearsal
 
-**Current stage:** REL-02-02 (COMPLETE and LOCKED)
+**Family status:** COMPLETE and LOCKED
+
+**Current stage:** none active (deployment-readiness wave complete)
+
+**Completed deployment-readiness tasks:**
+- REL-02-01 (Deployment Rehearsal and Packaging) — COMPLETE and LOCKED
+- REL-02-02 (Runbook Reconciliation After Deployment Rehearsal) — COMPLETE and LOCKED
+
+**Final deployment smoke:** PASS — runbook now matches validated live-stack behavior.
+
+**Final checkpoint:** `docs/REL-02-FINAL-CHECKPOINT.md`
 
 ---
 

@@ -15400,6 +15400,14 @@ REL-01-01 validated migrations. REL-01-02 validated bounded live-stack smoke beh
 
 **Family status:** COMPLETE and LOCKED
 
+**Completed deployment-readiness tasks:**
+- REL-02-01 (Deployment Rehearsal and Packaging) — COMPLETE and LOCKED
+- REL-02-02 (Runbook Reconciliation After Deployment Rehearsal) — COMPLETE and LOCKED
+
+**Final deployment smoke:** PASS — runbook now matches validated live-stack behavior.
+
+**Final checkpoint:** `docs/REL-02-FINAL-CHECKPOINT.md`
+
 ---
 
 ### REL-02-01: Deployment Rehearsal and Packaging
