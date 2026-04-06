@@ -6428,7 +6428,7 @@ The core workspace, persistence, commercial foundation, advanced AI features, an
 
 ## REL-02 — Deployment Rehearsal
 
-**Current stage:** REL-02-01 (COMPLETE and LOCKED)
+**Current stage:** REL-02-02 (COMPLETE and LOCKED)
 
 ---
 
@@ -6460,6 +6460,35 @@ Run one bounded deployment rehearsal from the validated runbook so the stack can
 **Dependencies:** REL-01-05 (Complete and Locked), `docs/REL-01-05-CHECKPOINT.md` (operational runbook)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → REL-02-01 for full details
+
+---
+
+#### REL-02-02: Runbook Reconciliation After Deployment Rehearsal
+
+**Status:** COMPLETE and LOCKED
+**Nature:** DOCUMENTATION (RELEASE READINESS, RUNBOOK ALIGNMENT)
+**Checkpoint:** `docs/REL-02-02-CHECKPOINT.md`
+
+**Objective:**
+Reconcile the operational runbook with the concrete mismatches discovered during REL-02-01 so the documented deployment procedure matches validated reality.
+
+**Scope:**
+- Update operational runbook to match validated rehearsal behavior
+- Correct: migration CLI prerequisites; auth token field; API-key request/response shape; public API auth header; execute payload (conversationId required)
+- Documentation-only changes only
+
+**Out of scope:**
+- ❌ No product code changes
+- ❌ No feature work
+- ❌ No deployment redesign
+- ❌ No release automation
+- ❌ No scope expansion
+
+**Dependencies:** REL-02-01 (Complete and Locked), `docs/REL-02-01-CHECKPOINT.md`
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → REL-02-02 for full details
+
+---
 
 **Completed validation/hardening tasks:**
 - REL-01-01 (Migration Validation) — COMPLETE and LOCKED

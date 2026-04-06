@@ -103,7 +103,23 @@ Invoke-WebRequest -Uri "http://localhost:4000/api/health/ready" -UseBasicParsing
 
 ### Run Migrations
 
-Migrations are run automatically on `api-gateway` startup via TypeORM. For manual validation or clean-DB scenarios:
+Migrations are run automatically on `api-gateway` startup via TypeORM.
+
+**Preferred: containerized migration run (validated during REL-02-01)**
+
+The host cannot directly reach the PostgreSQL container via `localhost:5432`. Use the
+compose-based run path instead:
+
+```powershell
+# Run all pending migrations via api-gateway container (uses internal compose network)
+docker compose -f "C:\Users\knlee\aiSandBox2026B\docker-compose.prod.yml" run --rm `
+  -e DATABASE_URL="postgresql://aisandbox:<password>@postgres:5432/<db>" `
+  api-gateway npm run migration:run:prod
+```
+
+**Alternative: local TypeORM CLI (only when PostgreSQL is reachable on localhost)**
+
+Requires PostgreSQL to be port-forwarded or running directly on the host:
 
 ```powershell
 # 1. Build api-gateway (required before using dist/data-source.js)
@@ -169,7 +185,7 @@ Invoke-WebRequest -Uri "$base/api/sessions" -UseBasicParsing | Select-Object Sta
 # Auth flow
 $register = Invoke-WebRequest -Uri "$base/api/auth/register" -Method POST -ContentType "application/json" -Body '{"email":"test@example.com","password":"testpass123"}' -UseBasicParsing
 $login    = Invoke-WebRequest -Uri "$base/api/auth/login"    -Method POST -ContentType "application/json" -Body '{"email":"test@example.com","password":"testpass123"}' -UseBasicParsing
-$token    = ($login.Content | ConvertFrom-Json).accessToken
+$token    = ($login.Content | ConvertFrom-Json).access_token   # field is access_token (not accessToken)
 ```
 
 ### Core Workspace Smoke
@@ -200,16 +216,22 @@ Invoke-WebRequest -Uri "$base/api/users/me/quotas" -Headers $authHeader -UseBasi
 ### Public API Smoke
 
 ```powershell
-# Create API key
-$keyResp  = Invoke-WebRequest -Uri "$base/api/keys" -Method POST -Headers $authHeader -ContentType "application/json" -Body '{"name":"smoke"}' -UseBasicParsing
-$apiKey   = ($keyResp.Content | ConvertFrom-Json).key
+# Create API key — scopes array is required; response field is apiKey (not key)
+$keyResp  = Invoke-WebRequest -Uri "$base/api/keys" -Method POST -Headers $authHeader -ContentType "application/json" -Body '{"name":"smoke","scopes":["ai:execute"]}' -UseBasicParsing
+$apiKey   = ($keyResp.Content | ConvertFrom-Json).apiKey
 
-# Submit execution
-$execResp = Invoke-WebRequest -Uri "$base/api/v1/ai/execute" -Method POST -Headers @{ "X-API-Key" = $apiKey } -ContentType "application/json" -Body '{"sessionId":"'+"$sessionId"+'","prompt":"ping"}' -UseBasicParsing
+# Retrieve conversationId (required by execute endpoint)
+$conv        = Invoke-WebRequest -Uri "$base/api/sessions/$sessionId/conversation" -Method GET -Headers $authHeader -UseBasicParsing
+$conversationId = ($conv.Content | ConvertFrom-Json).id
+
+# Submit execution — auth uses Authorization: Bearer <apiKey> (not X-API-Key header)
+# conversationId is required alongside sessionId and prompt
+$execBody = '{"sessionId":"' + $sessionId + '","conversationId":"' + $conversationId + '","prompt":"ping"}'
+$execResp = Invoke-WebRequest -Uri "$base/api/v1/ai/execute" -Method POST -Headers @{ Authorization = "Bearer $apiKey" } -ContentType "application/json" -Body $execBody -UseBasicParsing
 $execId   = ($execResp.Content | ConvertFrom-Json).executionId
 
-# Poll status (expect 200 with coherent status)
-Invoke-WebRequest -Uri "$base/api/v1/ai/executions/$execId" -Headers @{ "X-API-Key" = $apiKey } -UseBasicParsing | Select-Object StatusCode  # 200
+# Poll status (expect 200 with coherent status) — same Bearer auth
+Invoke-WebRequest -Uri "$base/api/v1/ai/executions/$execId" -Headers @{ Authorization = "Bearer $apiKey" } -UseBasicParsing | Select-Object StatusCode  # 200
 ```
 
 ---

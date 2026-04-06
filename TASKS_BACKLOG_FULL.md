@@ -15449,3 +15449,54 @@ The feature/spec wave is complete. The release-readiness wave is complete. The n
 **Reference:** TASKS.md, docs/REL-01-05-CHECKPOINT.md, docs/REL-01-FINAL-CHECKPOINT.md
 
 ---
+
+### REL-02-02: Runbook Reconciliation After Deployment Rehearsal
+
+**Task ID:** REL-02-02
+**Family:** REL-02 (Deployment Rehearsal)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** DOCUMENTATION (RELEASE READINESS, RUNBOOK ALIGNMENT)
+**Dependencies:** REL-02-01 (Complete and Locked)
+**Checkpoint:** `docs/REL-02-02-CHECKPOINT.md`
+
+**Objective:**
+
+Reconcile the operational runbook with the concrete mismatches discovered during REL-02-01 so the documented deployment procedure matches validated reality.
+
+**Why this exists:**
+
+REL-02-01 deployment rehearsal passed, but concrete runbook mismatches were found that would cause a fresh operator following the runbook to fail:
+- Local TypeORM CLI prerequisites / host DB reachability not covered
+- Auth token field name in runbook examples (`accessToken`) differs from actual response (`access_token`)
+- API-key creation requires `scopes` array; response field is `apiKey` not `key`
+- Public API auth uses `Authorization: Bearer <apiKey>` not `X-API-Key` header
+- `POST /api/v1/ai/execute` requires `conversationId` alongside `sessionId` and `prompt`
+
+**Scope:**
+
+- Update `docs/REL-01-05-CHECKPOINT.md` runbook examples to match validated behavior
+- Correct migration CLI section to document containerized run path
+- Correct auth token field name in runbook examples
+- Correct API-key creation/usage examples
+- Correct public API execute payload example
+- Documentation-only changes only
+
+**Explicitly out of scope:**
+
+- ❌ No product code changes
+- ❌ No feature work
+- ❌ No deployment redesign
+- ❌ No release automation
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- Runbook reflects actual validated rehearsal flow
+- Documented auth/API/migration steps match real behavior
+- No code changes are introduced
+- Results are documented clearly
+
+**Reference:** TASKS.md, docs/REL-02-01-CHECKPOINT.md, docs/REL-01-05-CHECKPOINT.md
+
+---
