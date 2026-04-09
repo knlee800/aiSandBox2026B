@@ -6438,7 +6438,7 @@ The core workspace, persistence, commercial foundation, advanced AI features, an
 
 **Family status:** ACTIVE
 
-**Current stage:** UX-01-07 (PLANNED)
+**Current stage:** UX-01-08 (PLANNED)
 
 ---
 
@@ -6560,6 +6560,36 @@ Replace the raw user UUID shown in the workspace header with a more human-readab
 - Raw UUID no longer appears as the primary user label in the workspace header
 - Header shows a human-readable user identity label
 - Existing behavior remains intact
+
+**Dependencies:** UX-01 (Complete and Locked)
+
+---
+
+#### UX-01-08: Replace API Keys Page Alert Confirm With Inline Feedback
+
+**Status:** COMPLETE and LOCKED
+**Nature:** UX FIX (IMPORTANT, API KEYS FEEDBACK)
+**Checkpoint:** `docs/UX-01-08-CHECKPOINT.md`
+
+**Objective:**
+Replace jarring browser alert()/confirm() usage on the API Keys page with calmer inline feedback/confirmation so the page feels consistent with the rest of the product.
+
+**Scope:**
+- Inspect the API Keys page feedback/confirmation path
+- Replace alert()/confirm() with small in-page feedback/confirmation handling
+- Preserve existing copy/revoke behavior
+- Keep the fix tightly scoped to this page only
+
+**Out of scope:**
+- ❌ No broader modal/toast framework
+- ❌ No API keys flow redesign
+- ❌ No unrelated page redesign
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+- Copy/revoke feedback no longer depends on native alert()/confirm()
+- API key actions still work normally
+- Page behavior remains intact
 
 **Dependencies:** UX-01 (Complete and Locked)
 

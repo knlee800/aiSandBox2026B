@@ -47,6 +47,10 @@ export default function ApiKeysPage() {
   const [newKey, setNewKey] = useState<NewKeyResponse | null>(null);
   const [currentError, setCurrentError] = useState<ErrorContext | null>(null);
   const [scopesInput, setScopesInput] = useState('ai:execute,sessions:read');
+  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+  const [feedbackTone, setFeedbackTone] = useState<'success' | 'error'>('success');
+  const [confirmingRevokeKeyId, setConfirmingRevokeKeyId] = useState<string | null>(null);
+  const [revokingKeyId, setRevokingKeyId] = useState<string | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -91,7 +95,8 @@ export default function ApiKeysPage() {
 
   const handleCreateKey = async () => {
     if (!scopesInput.trim()) {
-      alert('Please enter at least one scope');
+      setFeedbackTone('error');
+      setFeedbackMessage('Please enter at least one scope.');
       return;
     }
 
@@ -121,20 +126,21 @@ export default function ApiKeysPage() {
 
       const data = await response.json();
       setNewKey(data);
+      setFeedbackTone('success');
+      setFeedbackMessage('API key created. Save it now before closing the dialog.');
       loadKeys(); // Refresh the list
     } catch (error) {
       console.error('Failed to create API key:', error);
       setCurrentError(createErrorContext(error));
+      setFeedbackTone('error');
+      setFeedbackMessage('Failed to create API key. Please try again.');
     } finally {
       setCreating(false);
     }
   };
 
   const handleRevokeKey = async (keyId: string) => {
-    if (!confirm('Are you sure you want to revoke this API key? This action cannot be undone.')) {
-      return;
-    }
-
+    setRevokingKeyId(keyId);
     try {
       const token = localStorage.getItem('access_token');
       const response = await fetch(`/api/keys/${keyId}`, {
@@ -155,15 +161,28 @@ export default function ApiKeysPage() {
       }
 
       loadKeys(); // Refresh the list
+      setConfirmingRevokeKeyId(null);
+      setFeedbackTone('success');
+      setFeedbackMessage('API key revoked.');
     } catch (error) {
       console.error('Failed to revoke API key:', error);
       setCurrentError(createErrorContext(error));
+      setFeedbackTone('error');
+      setFeedbackMessage('Failed to revoke API key. Please try again.');
+    } finally {
+      setRevokingKeyId(null);
     }
   };
 
-  const handleCopyKey = (key: string) => {
-    navigator.clipboard.writeText(key);
-    alert('API key copied to clipboard!');
+  const handleCopyKey = async (key: string) => {
+    try {
+      await navigator.clipboard.writeText(key);
+      setFeedbackTone('success');
+      setFeedbackMessage('API key copied to clipboard.');
+    } catch {
+      setFeedbackTone('error');
+      setFeedbackMessage('Failed to copy API key. Please copy it manually.');
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -179,6 +198,18 @@ export default function ApiKeysPage() {
           <p className="text-sm text-gray-600">
             Manage your API keys for programmatic access to the platform.
           </p>
+          {feedbackMessage && (
+            <p
+              className={`mt-3 rounded border px-3 py-2 text-sm ${
+                feedbackTone === 'success'
+                  ? 'border-green-200 bg-green-50 text-green-800'
+                  : 'border-red-200 bg-red-50 text-red-800'
+              }`}
+              data-testid="api-keys-inline-feedback"
+            >
+              {feedbackMessage}
+            </p>
+          )}
         </div>
 
         {/* Create Key Section */}
@@ -272,14 +303,35 @@ export default function ApiKeysPage() {
                         )}
                       </div>
                     </div>
-                    {key.isActive && (
-                      <button
-                        onClick={() => handleRevokeKey(key.id)}
-                        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors text-sm font-medium"
-                      >
-                        Revoke
-                      </button>
-                    )}
+                    {key.isActive &&
+                      (confirmingRevokeKeyId === key.id ? (
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => void handleRevokeKey(key.id)}
+                            disabled={revokingKeyId === key.id}
+                            className="px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:bg-red-300 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                            data-testid={`api-key-revoke-confirm-${key.id}`}
+                          >
+                            {revokingKeyId === key.id ? 'Revoking...' : 'Confirm Revoke'}
+                          </button>
+                          <button
+                            onClick={() => setConfirmingRevokeKeyId(null)}
+                            disabled={revokingKeyId === key.id}
+                            className="px-3 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 disabled:opacity-60 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                            data-testid={`api-key-revoke-cancel-${key.id}`}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setConfirmingRevokeKeyId(key.id)}
+                          className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors text-sm font-medium"
+                          data-testid={`api-key-revoke-request-${key.id}`}
+                        >
+                          Revoke
+                        </button>
+                      ))}
                   </div>
                 </div>
               ))}
@@ -325,7 +377,7 @@ export default function ApiKeysPage() {
                     {newKey.apiKey}
                   </code>
                   <button
-                    onClick={() => handleCopyKey(newKey.apiKey)}
+                    onClick={() => void handleCopyKey(newKey.apiKey)}
                     className="px-4 py-3 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors font-medium"
                   >
                     Copy

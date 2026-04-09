@@ -15515,6 +15515,49 @@ REL-02-01 deployment rehearsal passed, but concrete runbook mismatches were foun
 
 ---
 
+### UX-01-08: Replace API Keys Page Alert Confirm With Inline Feedback
+
+**Task ID:** UX-01-08
+**Family:** UX-01 (Manual UX/UI Acceptance)
+**Priority:** 🟠 Important
+**Status:** COMPLETE and LOCKED
+**Nature:** UX FIX (IMPORTANT, API KEYS FEEDBACK)
+**Dependencies:** UX-01 (Complete and Locked)
+**Checkpoint:** `docs/UX-01-08-CHECKPOINT.md`
+
+**Objective:**
+
+Replace jarring browser alert()/confirm() usage on the API Keys page with calmer inline feedback/confirmation so the page feels consistent with the rest of the product.
+
+**Why this exists:**
+
+UX-01 identified this as an important UX issue: the API Keys page uses native browser alert() for copy confirmation and confirm() for revoke confirmation. Both are functional but visually jarring and inconsistent with the rest of the product. Inline feedback is a minimal, more appropriate pattern.
+
+**Bounded scope:**
+
+- Inspect the API Keys page (`frontend/app/[locale]/keys/page.tsx`) feedback/confirmation path
+- Replace alert() (copy feedback) with small in-page inline feedback (e.g. brief status text)
+- Replace confirm() (revoke confirmation) with small inline confirmation step
+- Preserve existing copy/revoke behavior after the change
+- Keep the fix tightly scoped to this page only
+- Verify the page still works normally after the change
+
+**Explicitly out of scope:**
+
+- ❌ No broader modal/toast framework
+- ❌ No API keys flow redesign
+- ❌ No unrelated page redesign
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- Copy/revoke feedback no longer depends on native alert()/confirm()
+- API key actions still work normally
+- Page behavior remains intact
+- Fix is documented in `docs/UX-01-08-CHECKPOINT.md`
+
+---
+
 ### UX-01-07: Add Stop Session Confirmation
 
 **Task ID:** UX-01-07
