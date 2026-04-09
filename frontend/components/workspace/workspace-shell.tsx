@@ -499,7 +499,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
       </div>
 
       <footer className="h-10 bg-white border-t border-gray-200 px-4 flex items-center justify-between text-xs text-gray-600">
-        <span>Workspace shell state: {shellState}</span>
+        <span>Workspace</span>
         <span>Sessions: {props.sessions.length}</span>
       </footer>
     </div>

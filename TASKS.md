@@ -6438,7 +6438,7 @@ The core workspace, persistence, commercial foundation, advanced AI features, an
 
 **Family status:** ACTIVE
 
-**Current stage:** UX-01-03 (PLANNED)
+**Current stage:** UX-01-04 (PLANNED)
 
 ---
 
@@ -6559,6 +6559,36 @@ Replace the raw user UUID shown in the workspace header with a more human-readab
 **Acceptance criteria:**
 - Raw UUID no longer appears as the primary user label in the workspace header
 - Header shows a human-readable user identity label
+- Existing behavior remains intact
+
+**Dependencies:** UX-01 (Complete and Locked)
+
+---
+
+#### UX-01-04: Remove Or Simplify Workspace Footer Internal State Label
+
+**Status:** COMPLETE and LOCKED
+**Nature:** UX FIX (IMPORTANT, WORKSPACE CLARITY)
+**Checkpoint:** `docs/UX-01-04-CHECKPOINT.md`
+
+**Objective:**
+Remove or simplify the raw internal workspace state label shown in the footer so the workspace does not expose internal state-machine wording to users.
+
+**Scope:**
+- Inspect the workspace footer rendering path
+- Remove the internal state label or replace it with concise user-facing wording if needed
+- Preserve existing workspace behavior
+- Keep the change tightly scoped to footer clarity only
+
+**Out of scope:**
+- ❌ No broader footer redesign
+- ❌ No state-machine redesign
+- ❌ No status-system redesign
+- ❌ No unrelated copy cleanup
+
+**Acceptance criteria:**
+- Raw internal state label no longer appears in the workspace footer
+- Any replacement wording is concise and user-meaningful
 - Existing behavior remains intact
 
 **Dependencies:** UX-01 (Complete and Locked)

@@ -15515,6 +15515,49 @@ REL-02-01 deployment rehearsal passed, but concrete runbook mismatches were foun
 
 ---
 
+### UX-01-04: Remove Or Simplify Workspace Footer Internal State Label
+
+**Task ID:** UX-01-04
+**Family:** UX-01 (Manual UX/UI Acceptance)
+**Priority:** 🟠 Important
+**Status:** COMPLETE and LOCKED
+**Nature:** UX FIX (IMPORTANT, WORKSPACE CLARITY)
+**Dependencies:** UX-01 (Complete and Locked)
+**Checkpoint:** `docs/UX-01-04-CHECKPOINT.md`
+
+**Objective:**
+
+Remove or simplify the raw internal workspace state label shown in the footer so the workspace does not expose internal state-machine wording to users.
+
+**Why this exists:**
+
+UX-01 identified this as an important clarity issue: the workspace footer renders `"Workspace shell state: <state>"` — a raw internal state-machine value that is not meaningful to a normal user. The footer should either hide it or present concise user-meaningful status.
+
+**Bounded scope:**
+
+- Inspect the workspace footer rendering path (`frontend/components/workspace/workspace-shell.tsx`)
+- Remove the internal state label or replace it with concise user-facing wording if needed
+- Preserve existing workspace behavior
+- Keep the change tightly scoped to footer clarity only
+- Verify workspace still renders normally after the change
+
+**Explicitly out of scope:**
+
+- ❌ No broader footer redesign
+- ❌ No state-machine redesign
+- ❌ No status-system redesign
+- ❌ No unrelated copy cleanup
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- Raw internal state label no longer appears in the workspace footer
+- Any replacement wording is concise and user-meaningful
+- Existing behavior remains intact
+- Fix is documented in `docs/UX-01-04-CHECKPOINT.md`
+
+---
+
 ### UX-01-03: Replace Raw UUID Header With User Email Or Display Name
 
 **Task ID:** UX-01-03
