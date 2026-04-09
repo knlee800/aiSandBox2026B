@@ -897,6 +897,25 @@ function WorkspaceChatPanel(props: {
     fileActionState?: WorkspaceExecutionFileActionState;
   }>;
 }) {
+  const shouldRenderPreformattedChatContent = (content: string): boolean => {
+    const trimmedContent = content.trim();
+    if (trimmedContent.length === 0) {
+      return false;
+    }
+
+    // Keep explicit fenced code and common shell/diff outputs preformatted.
+    if (
+      trimmedContent.includes('```') ||
+      trimmedContent.startsWith('diff --git') ||
+      trimmedContent.startsWith('$ ') ||
+      trimmedContent.startsWith('PS ')
+    ) {
+      return true;
+    }
+
+    return false;
+  };
+
   const isSending =
     props.requestState === 'submitting' ||
     props.requestState === 'queued' ||
@@ -996,6 +1015,17 @@ function WorkspaceChatPanel(props: {
         ) : (
           <ul className="mt-2 space-y-2" data-testid="workspace-chat-thread-list">
             {props.threadMessages.map((message) => (
+              (() => {
+                const displayContent =
+                  message.content.trim().length > 0
+                    ? message.content
+                    : message.role === 'assistant'
+                      ? '(waiting for response...)'
+                      : '';
+                const usePreformattedAssistantContent =
+                  message.role === 'assistant' &&
+                  shouldRenderPreformattedChatContent(displayContent);
+                return (
               <li
                 key={message.id}
                 className={`rounded border px-2 py-1 text-[11px] ${
@@ -1014,17 +1044,31 @@ function WorkspaceChatPanel(props: {
                     Model: {message.model ?? 'unknown'} ({message.provider ?? 'unknown'})
                   </p>
                 ) : null}
-                <pre className="mt-1 whitespace-pre-wrap font-mono">
-                  {message.content.trim().length > 0
-                    ? message.content
-                    : message.role === 'assistant'
-                      ? '(waiting for response...)'
-                      : ''}
-                </pre>
+                {message.role === 'assistant' ? (
+                  usePreformattedAssistantContent ? (
+                    <pre
+                      className="mt-1 whitespace-pre-wrap rounded border border-gray-200 bg-white p-2 font-mono text-[11px] text-gray-800"
+                      data-testid={`workspace-chat-message-content-pre-${message.id}`}
+                    >
+                      {displayContent}
+                    </pre>
+                  ) : (
+                    <p
+                      className="mt-1 whitespace-pre-wrap text-[11px] text-gray-800"
+                      data-testid={`workspace-chat-message-content-prose-${message.id}`}
+                    >
+                      {displayContent}
+                    </p>
+                  )
+                ) : (
+                  <pre className="mt-1 whitespace-pre-wrap font-mono">{displayContent}</pre>
+                )}
                 {message.role === 'assistant' && message.fileActionState ? (
                   <WorkspaceAssistantFileActionSummary fileActionState={message.fileActionState} />
                 ) : null}
               </li>
+                );
+              })()
             ))}
           </ul>
         )}
@@ -1048,9 +1092,21 @@ function WorkspaceChatPanel(props: {
       {props.responseText.trim().length > 0 ? (
         <div className="mt-2 rounded border border-gray-200 bg-white p-2" data-testid="workspace-chat-response">
           <p className="text-[11px] font-semibold text-gray-700">Assistant Response</p>
-          <pre className="mt-1 whitespace-pre-wrap font-mono text-[11px] text-gray-800">
-            {props.responseText}
-          </pre>
+          {shouldRenderPreformattedChatContent(props.responseText) ? (
+            <pre
+              className="mt-1 whitespace-pre-wrap rounded border border-gray-200 bg-gray-50 p-2 font-mono text-[11px] text-gray-800"
+              data-testid="workspace-chat-response-content-pre"
+            >
+              {props.responseText}
+            </pre>
+          ) : (
+            <p
+              className="mt-1 whitespace-pre-wrap text-[11px] text-gray-800"
+              data-testid="workspace-chat-response-content-prose"
+            >
+              {props.responseText}
+            </p>
+          )}
         </div>
       ) : null}
     </div>

@@ -6438,7 +6438,7 @@ The core workspace, persistence, commercial foundation, advanced AI features, an
 
 **Family status:** ACTIVE
 
-**Current stage:** UX-01-04 (PLANNED)
+**Current stage:** UX-01-05 (PLANNED)
 
 ---
 
@@ -6560,6 +6560,36 @@ Replace the raw user UUID shown in the workspace header with a more human-readab
 - Raw UUID no longer appears as the primary user label in the workspace header
 - Header shows a human-readable user identity label
 - Existing behavior remains intact
+
+**Dependencies:** UX-01 (Complete and Locked)
+
+---
+
+#### UX-01-05: Render AI Prose Responses In Normal Readable Font
+
+**Status:** COMPLETE and LOCKED
+**Nature:** UX FIX (IMPORTANT, CHAT READABILITY)
+**Checkpoint:** `docs/UX-01-05-CHECKPOINT.md`
+
+**Objective:**
+Improve chat readability by rendering normal AI prose responses in a standard readable font instead of monospaced code-style text, while preserving code readability where needed.
+
+**Scope:**
+- Inspect assistant message rendering path
+- Change prose response rendering to normal readable text styling
+- Preserve code/preformatted readability where needed
+- Keep the fix tightly scoped to chat rendering only
+
+**Out of scope:**
+- ❌ No markdown/rendering-system redesign
+- ❌ No syntax-highlighting redesign
+- ❌ No broader chat redesign
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+- Prose AI responses no longer render as monospaced code-style blocks by default
+- Code/preformatted content remains readable
+- Chat behavior remains intact
 
 **Dependencies:** UX-01 (Complete and Locked)
 

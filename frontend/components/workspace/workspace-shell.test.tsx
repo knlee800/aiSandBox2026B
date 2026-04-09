@@ -397,7 +397,24 @@ describe('workspace shell component', () => {
     });
 
     assert.match(html, /Here is a text-only response\./);
+    assert.match(html, /workspace-chat-message-content-prose-assistant-4/);
+    assert.doesNotMatch(html, /workspace-chat-message-content-pre-assistant-4/);
     assert.doesNotMatch(html, /workspace-chat-file-actions/);
+  });
+
+  test('renders code-fenced assistant messages in preformatted style', () => {
+    const html = renderWorkspaceShell({
+      chatThreadMessages: [
+        {
+          id: 'assistant-code-1',
+          role: 'assistant',
+          content: '```ts\\nconst value = 1;\\n```',
+        },
+      ],
+    });
+
+    assert.match(html, /workspace-chat-message-content-pre-assistant-code-1/);
+    assert.doesNotMatch(html, /workspace-chat-message-content-prose-assistant-code-1/);
   });
 
   test('renders assistant model attribution when available', () => {
@@ -415,6 +432,21 @@ describe('workspace shell component', () => {
 
     assert.match(html, /Model: gpt-4o \(openai\)/);
     assert.match(html, /workspace-chat-message-attribution-assistant-model-1/);
+  });
+
+  test('renders assistant response prose in normal text and code-fenced response as preformatted', () => {
+    const proseHtml = renderWorkspaceShell({
+      chatResponseText: 'This is a normal assistant prose response.',
+    });
+    const codeHtml = renderWorkspaceShell({
+      chatResponseText: '```bash\\necho hello\\n```',
+    });
+
+    assert.match(proseHtml, /workspace-chat-response-content-prose/);
+    assert.doesNotMatch(proseHtml, /workspace-chat-response-content-pre/);
+
+    assert.match(codeHtml, /workspace-chat-response-content-pre/);
+    assert.doesNotMatch(codeHtml, /workspace-chat-response-content-prose/);
   });
 
   test('renders build output and status in bounded build panel', () => {

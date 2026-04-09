@@ -15515,6 +15515,48 @@ REL-02-01 deployment rehearsal passed, but concrete runbook mismatches were foun
 
 ---
 
+### UX-01-05: Render AI Prose Responses In Normal Readable Font
+
+**Task ID:** UX-01-05
+**Family:** UX-01 (Manual UX/UI Acceptance)
+**Priority:** 🟠 Important
+**Status:** COMPLETE and LOCKED
+**Nature:** UX FIX (IMPORTANT, CHAT READABILITY)
+**Dependencies:** UX-01 (Complete and Locked)
+**Checkpoint:** `docs/UX-01-05-CHECKPOINT.md`
+
+**Objective:**
+
+Improve chat readability by rendering normal AI prose responses in a standard readable font instead of monospaced code-style text, while preserving code readability where needed.
+
+**Why this exists:**
+
+UX-01 identified this as an important readability issue: assistant responses currently render in a monospace/code-like presentation (`<pre>` with `whitespace-pre-wrap font-mono`). That styling is appropriate for code blocks, but jarring for normal prose AI replies. Normal text responses should read like normal text.
+
+**Bounded scope:**
+
+- Inspect the assistant message rendering path (`frontend/components/workspace/workspace-shell.tsx`)
+- Change prose response rendering to normal readable text styling
+- Preserve code/preformatted readability where needed
+- Keep the fix tightly scoped to chat rendering only
+- Verify chat still renders correctly after the change
+
+**Explicitly out of scope:**
+
+- ❌ No markdown/rendering-system redesign
+- ❌ No syntax-highlighting redesign
+- ❌ No broader chat redesign
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- Prose AI responses no longer render as monospaced code-style blocks by default
+- Code/preformatted content remains readable
+- Chat behavior remains intact
+- Fix is documented in `docs/UX-01-05-CHECKPOINT.md`
+
+---
+
 ### UX-01-04: Remove Or Simplify Workspace Footer Internal State Label
 
 **Task ID:** UX-01-04
