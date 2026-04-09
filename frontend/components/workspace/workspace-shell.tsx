@@ -201,6 +201,18 @@ interface WorkspaceShellProps {
   onSaveWorkspaceFile: () => Promise<void>;
 }
 
+export function runStopSessionWithConfirmation(args: {
+  sessionId: string;
+  confirmStop: () => boolean;
+  onStopSession: (sessionId: string) => Promise<void>;
+}): boolean {
+  if (!args.confirmStop()) {
+    return false;
+  }
+  void args.onStopSession(args.sessionId);
+  return true;
+}
+
 export default function WorkspaceShell(props: WorkspaceShellProps) {
   const shellState = computeWorkspaceShellState({
     isLoadingSessions: props.isLoadingSessions,
@@ -288,7 +300,18 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                     {isUsable ? (
                       <button
                         type="button"
-                        onClick={() => void props.onStopSession(session.id)}
+                        onClick={() => {
+                          runStopSessionWithConfirmation({
+                            sessionId: session.id,
+                            confirmStop: () =>
+                              typeof window === 'undefined'
+                                ? true
+                                : window.confirm(
+                                    'Stop this session? Unsaved running work in this session may be interrupted.',
+                                  ),
+                            onStopSession: props.onStopSession,
+                          });
+                        }}
                         disabled={isStopping}
                         className="w-full rounded border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] font-medium text-amber-800 disabled:opacity-60"
                         data-testid={`session-stop-${session.id}`}

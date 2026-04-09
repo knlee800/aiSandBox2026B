@@ -7,6 +7,7 @@ import WorkspaceShell, {
   getHistorySectionVisibilityPresetState,
   moveHistoryCollapsibleSectionOrderItem,
   resetHistoryCollapsibleSectionOrderToDefault,
+  runStopSessionWithConfirmation,
 } from './workspace-shell';
 import type { WorkspaceCheckpoint, WorkspaceShellSession } from './workspace-shell.logic';
 import type { WorkspaceExecState } from './workspace-exec.logic';
@@ -277,6 +278,28 @@ describe('workspace shell component', () => {
 
     assert.match(html, /data-testid="session-stop-12345678-test-session"/);
     assert.match(html, /data-testid="session-remove-87654321-term-session"/);
+  });
+
+  test('requires confirmation before stop session executes', () => {
+    let stopCalls = 0;
+    const cancelled = runStopSessionWithConfirmation({
+      sessionId: session.id,
+      confirmStop: () => false,
+      onStopSession: async () => {
+        stopCalls += 1;
+      },
+    });
+    const confirmed = runStopSessionWithConfirmation({
+      sessionId: session.id,
+      confirmStop: () => true,
+      onStopSession: async () => {
+        stopCalls += 1;
+      },
+    });
+
+    assert.equal(cancelled, false);
+    assert.equal(confirmed, true);
+    assert.equal(stopCalls, 1);
   });
 
   test('renders loading shell state', () => {

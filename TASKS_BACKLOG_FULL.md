@@ -15515,6 +15515,48 @@ REL-02-01 deployment rehearsal passed, but concrete runbook mismatches were foun
 
 ---
 
+### UX-01-07: Add Stop Session Confirmation
+
+**Task ID:** UX-01-07
+**Family:** UX-01 (Manual UX/UI Acceptance)
+**Priority:** 🟠 Important
+**Status:** COMPLETE and LOCKED
+**Nature:** UX FIX (IMPORTANT, SESSION SAFETY)
+**Dependencies:** UX-01 (Complete and Locked)
+**Checkpoint:** `docs/UX-01-07-CHECKPOINT.md`
+
+**Objective:**
+
+Add a confirmation step before stopping a session so users do not accidentally terminate a session with a single click.
+
+**Why this exists:**
+
+UX-01 identified this as an important UX/safety issue: stopping a session is currently a one-click action with no confirmation. Accidental stop is too easy and has no undo path.
+
+**Bounded scope:**
+
+- Inspect the stop-session action path in the session sidebar/workspace shell (`frontend/components/workspace/workspace-shell.tsx`)
+- Add a small confirmation step before stop executes
+- Preserve existing stop-session behavior after confirmation
+- Keep the fix tightly scoped to this action only
+- Verify session stop flow still works normally after the change
+
+**Explicitly out of scope:**
+
+- ❌ No broader session-management redesign
+- ❌ No multi-step destructive-action framework
+- ❌ No unrelated sidebar redesign
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- Stop-session action requires confirmation before executing
+- Confirmed stop still works normally
+- Surrounding session/sidebar behavior remains intact
+- Fix is documented in `docs/UX-01-07-CHECKPOINT.md`
+
+---
+
 ### UX-01-06: Add Registration Link Or CTA To Login Page
 
 **Task ID:** UX-01-06

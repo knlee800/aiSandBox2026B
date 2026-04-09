@@ -6438,7 +6438,7 @@ The core workspace, persistence, commercial foundation, advanced AI features, an
 
 **Family status:** ACTIVE
 
-**Current stage:** UX-01-06 (PLANNED)
+**Current stage:** UX-01-07 (PLANNED)
 
 ---
 
@@ -6560,6 +6560,36 @@ Replace the raw user UUID shown in the workspace header with a more human-readab
 - Raw UUID no longer appears as the primary user label in the workspace header
 - Header shows a human-readable user identity label
 - Existing behavior remains intact
+
+**Dependencies:** UX-01 (Complete and Locked)
+
+---
+
+#### UX-01-07: Add Stop Session Confirmation
+
+**Status:** COMPLETE and LOCKED
+**Nature:** UX FIX (IMPORTANT, SESSION SAFETY)
+**Checkpoint:** `docs/UX-01-07-CHECKPOINT.md`
+
+**Objective:**
+Add a confirmation step before stopping a session so users do not accidentally terminate a session with a single click.
+
+**Scope:**
+- Inspect the stop-session action path in the session sidebar/workspace shell
+- Add a small confirmation step before stop executes
+- Preserve existing stop-session behavior after confirmation
+- Keep the fix tightly scoped to this action only
+
+**Out of scope:**
+- ❌ No broader session-management redesign
+- ❌ No multi-step destructive-action framework
+- ❌ No unrelated sidebar redesign
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+- Stop-session action requires confirmation before executing
+- Confirmed stop still works normally
+- Surrounding session/sidebar behavior remains intact
 
 **Dependencies:** UX-01 (Complete and Locked)
 
