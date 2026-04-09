@@ -228,11 +228,11 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
       <header className="h-14 bg-white border-b border-gray-200 px-4 flex items-center justify-between">
         <div>
           <h1 className="text-sm font-semibold text-gray-900">AI Sandbox Workspace</h1>
-          <p className="text-xs text-gray-500">Core shell baseline (Slice 1)</p>
+          <p className="text-xs text-gray-500">Workspace</p>
         </div>
         <div className="text-xs text-gray-600 text-right">
           <p>{props.userId ? `User ${props.userId}` : 'Authenticated user'}</p>
-          <p className="text-[11px] text-gray-500">Launch polish slice 1: responsive + state clarity</p>
+          <p className="text-[11px] text-gray-500">Session-scoped workspace</p>
         </div>
       </header>
 
@@ -336,7 +336,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                 errorMessage={props.chatError ?? null}
                 threadMessages={props.chatThreadMessages ?? []}
               />
-              <p className="text-xs font-semibold text-gray-700 mb-2">Command Input (Exec Slice)</p>
+              <p className="text-xs font-semibold text-gray-700 mb-2">Command Input</p>
               <WorkspaceExecPanel
                 selectedSessionId={props.selectedSessionId}
                 commandInput={props.commandInput}
@@ -387,7 +387,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
             </section>
           </div>
           <section className="mx-2 mb-2 bg-white border border-gray-200 rounded p-3" data-testid="history-control-slice">
-            <p className="text-xs font-semibold text-gray-700 mb-2">History / Control (Slice 1)</p>
+            <p className="text-xs font-semibold text-gray-700 mb-2">History & Controls</p>
             <HistorySliceMessage state={historyState} />
             <HistoryCreateCheckpointPanel
               selectedSessionId={props.selectedSessionId}
@@ -482,7 +482,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
             ) : null}
           </section>
           <section className="mx-2 mb-2 bg-white border border-gray-200 rounded p-3" data-testid="dashboard-slice">
-            <p className="text-xs font-semibold text-gray-700 mb-2">Dashboard (Slice 1)</p>
+            <p className="text-xs font-semibold text-gray-700 mb-2">Dashboard</p>
             <DashboardSliceMessage state={dashboardState} />
             {dashboardState === 'ready' && props.userSummary && props.usageSummary && props.quotaSummary ? (
               <DashboardSummary
@@ -549,7 +549,7 @@ function HistoryProjectPanel(props: {
 
   return (
     <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="history-project-surface">
-      <p className="text-xs font-semibold text-gray-700">Projects (PR-03-01)</p>
+      <p className="text-xs font-semibold text-gray-700">Projects</p>
       <p className="mt-1 text-[11px] text-gray-500">
         Create a named project and open it in the active session.
       </p>
@@ -601,7 +601,7 @@ function HistoryProjectPanel(props: {
       </div>
 
       <div className="mt-3 rounded border border-gray-200 bg-white p-2" data-testid="history-public-project-surface">
-        <p className="text-xs font-semibold text-gray-700">Public Browse (ADV-05-01)</p>
+        <p className="text-xs font-semibold text-gray-700">Public Projects</p>
         <p className="mt-1 text-[11px] text-gray-500">
           Browse shared projects, view read-only details, and fork.
         </p>
@@ -754,7 +754,7 @@ function HistorySnapshotPanel(props: {
 
   return (
     <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="history-snapshot-surface">
-      <p className="text-xs font-semibold text-gray-700">Project Snapshots (PR-01-01)</p>
+      <p className="text-xs font-semibold text-gray-700">Project Snapshots</p>
       <p className="mt-1 text-[11px] text-gray-500">
         Save/restore snapshots and import/export workspace archives for the active session.
       </p>
@@ -1126,7 +1126,7 @@ function WorkspaceBuildPanel(props: {
 
   return (
     <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="workspace-build-panel">
-      <p className="text-[11px] font-semibold text-gray-700">Build Targets (ADV-03-01)</p>
+      <p className="text-[11px] font-semibold text-gray-700">Build Targets</p>
       <label htmlFor="workspace-build-target-selector" className="mt-1 block text-[11px] text-gray-700">
         Build Target
       </label>

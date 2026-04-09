@@ -6438,7 +6438,7 @@ The core workspace, persistence, commercial foundation, advanced AI features, an
 
 **Family status:** ACTIVE
 
-**Current stage:** none active (UX-01-01 complete and locked)
+**Current stage:** UX-01-02 (PLANNED)
 
 ---
 
@@ -6500,6 +6500,36 @@ Remove or appropriately gate the development-era test credentials block from the
 - Test credentials block is no longer visible to normal users
 - Login form still renders and works normally
 - Error handling remains intact
+
+**Dependencies:** UX-01 (Complete and Locked)
+
+---
+
+#### UX-01-02: Remove Internal Task Slice Labels From Workspace UI
+
+**Status:** COMPLETE and LOCKED
+**Nature:** UX FIX (BLOCKER, WORKSPACE CLARITY)
+**Checkpoint:** `docs/UX-01-02-CHECKPOINT.md`
+
+**Objective:**
+Remove internal build-phase/task/spec labels from the rendered workspace UI and replace them with user-meaningful labels so users do not see implementation scaffolding text.
+
+**Scope:**
+- Inspect rendered workspace headings/labels
+- Remove internal task/slice/spec wording from user-visible UI
+- Replace with concise user-meaningful labels where needed
+- Preserve layout, behavior, and feature scope
+
+**Out of scope:**
+- ❌ No broader information-architecture redesign
+- ❌ No new features
+- ❌ No visual redesign beyond label cleanup
+- ❌ No unrelated text/content rewrite
+
+**Acceptance criteria:**
+- Internal task/slice/spec labels no longer rendered to users
+- Replacement labels are concise and user-meaningful
+- Workspace layout/behavior remains intact
 
 **Dependencies:** UX-01 (Complete and Locked)
 

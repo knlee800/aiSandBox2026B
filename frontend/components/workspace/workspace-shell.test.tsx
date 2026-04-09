@@ -243,8 +243,8 @@ describe('workspace shell component', () => {
     assert.match(html, /Chat Panel/);
     assert.match(html, /Model Provider/);
     assert.match(html, /Enable bounded orchestration \(up to 3 sequential steps\)/);
-    assert.match(html, /Command Input \(Exec Slice\)/);
-    assert.match(html, /Build Targets \(ADV-03-01\)/);
+    assert.match(html, /Command Input/);
+    assert.match(html, /Build Targets/);
     assert.match(html, /Build Target/);
     assert.match(html, /Run Build/);
     assert.match(html, /Editor Panel/);
@@ -254,8 +254,8 @@ describe('workspace shell component', () => {
     assert.match(html, /console\.log\(&quot;hello&quot;\);/);
     assert.match(html, /Preview Panel/);
     assert.match(html, /Preview unavailable/);
-    assert.match(html, /History \/ Control \(Slice 1\)/);
-    assert.match(html, /Dashboard \(Slice 1\)/);
+    assert.match(html, /History &amp; Controls/);
+    assert.match(html, /Dashboard/);
     assert.match(html, /Session 12345678/);
     assert.match(html, /Auto-commit: Message 10/);
     assert.match(html, /View Snapshot/);
@@ -1845,7 +1845,7 @@ describe('workspace shell snapshot surface', () => {
     assert.match(html, /Create Project/);
     assert.match(html, /Open Project/);
     assert.match(html, /Update Visibility/);
-    assert.match(html, /Public Browse \(ADV-05-01\)/);
+    assert.match(html, /Public Projects/);
     assert.match(html, /Read-only public view/);
     assert.match(html, /Fork/);
   });

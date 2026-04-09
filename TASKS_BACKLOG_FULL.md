@@ -15515,6 +15515,50 @@ REL-02-01 deployment rehearsal passed, but concrete runbook mismatches were foun
 
 ---
 
+### UX-01-02: Remove Internal Task Slice Labels From Workspace UI
+
+**Task ID:** UX-01-02
+**Family:** UX-01 (Manual UX/UI Acceptance)
+**Priority:** 🔴 Blocker
+**Status:** COMPLETE and LOCKED
+**Nature:** UX FIX (BLOCKER, WORKSPACE CLARITY)
+**Dependencies:** UX-01 (Complete and Locked)
+**Checkpoint:** `docs/UX-01-02-CHECKPOINT.md`
+
+**Objective:**
+
+Remove internal build-phase/task/spec labels from the rendered workspace UI and replace them with user-meaningful labels so users do not see implementation scaffolding text.
+
+**Why this exists:**
+
+UX-01 identified this as a blocker: the workspace exposes internal labels such as `"Core shell baseline (Slice 1)"`, `"Launch polish slice 1: responsive + state clarity"`, `"History / Control (Slice 1)"`, `"Dashboard (Slice 1)"`, `"Projects (PR-03-01)"`, `"Public Browse (ADV-05-01)"`. These are internal implementation artifacts, not user-facing copy.
+
+**Bounded scope:**
+
+- Inspect the rendered workspace headings/labels (`frontend/components/workspace/workspace-shell.tsx` and related components)
+- Remove internal task/slice/spec wording from user-visible UI
+- Replace with concise user-meaningful labels where needed
+- Preserve layout, behavior, and feature scope
+- Keep the fix tightly scoped to visible labeling only
+- Verify workspace still renders normally after the change
+
+**Explicitly out of scope:**
+
+- ❌ No broader information-architecture redesign
+- ❌ No new features
+- ❌ No visual redesign beyond label cleanup
+- ❌ No unrelated text/content rewrite
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- Internal task/slice/spec labels are no longer rendered to users
+- Replacement labels are concise and user-meaningful
+- Workspace layout/behavior remains intact
+- Fix is documented in `docs/UX-01-02-CHECKPOINT.md`
+
+---
+
 ### UX-01-01: Remove or Gate Test Credentials Block From Login Page
 
 **Task ID:** UX-01-01
