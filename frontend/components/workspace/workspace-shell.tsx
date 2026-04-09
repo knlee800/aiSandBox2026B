@@ -5304,6 +5304,7 @@ function DashboardSummary(props: {
     props.quotaSummary.maxTokens24h - props.usageSummary.tokensUsed24h,
   );
   const quotaResetsAt = props.quotaSummary.resetAt || props.usageSummary.resetAt;
+  const formattedQuotaResetTimestamp = formatQuotaResetTimestamp(quotaResetsAt);
 
   return (
     <div className="mt-2 space-y-2" data-testid="dashboard-summary-cards">
@@ -5343,11 +5344,25 @@ function DashboardSummary(props: {
           {remainingTokens24h} tokens remaining in the current 24h window.
         </p>
         <p className="text-[11px] text-blue-700">
-          Usage window resets at: <span className="font-mono">{quotaResetsAt}</span>
+          Usage window resets at:{' '}
+          <span className="font-medium" data-testid="dashboard-quota-reset-at-formatted">
+            {formattedQuotaResetTimestamp}
+          </span>
         </p>
       </div>
     </div>
   );
+}
+
+function formatQuotaResetTimestamp(value: string | null | undefined): string {
+  if (!value) {
+    return 'Unavailable';
+  }
+  const parsedDate = new Date(value);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return 'Unavailable';
+  }
+  return parsedDate.toLocaleString();
 }
 
 function ShellStateMessage({ state, sessionError }: { state: 'loading' | 'error' | 'empty' | 'ready'; sessionError?: string | null }) {

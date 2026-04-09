@@ -271,6 +271,8 @@ describe('workspace shell component', () => {
     assert.match(html, /Quota Status/);
     assert.match(html, /tokens remaining in the current 24h window/);
     assert.match(html, /Usage window resets at:/);
+    assert.match(html, /dashboard-quota-reset-at-formatted/);
+    assert.doesNotMatch(html, /2026-03-11T12:00:00.000Z/);
   });
 
   test('renders Stop for usable sessions and Remove for unusable sessions', () => {

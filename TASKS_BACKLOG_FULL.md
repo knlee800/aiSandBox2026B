@@ -15515,6 +15515,48 @@ REL-02-01 deployment rehearsal passed, but concrete runbook mismatches were foun
 
 ---
 
+### UX-01-10: Format Quota Reset Timestamp As Human Readable
+
+**Task ID:** UX-01-10
+**Family:** UX-01 (Manual UX/UI Acceptance)
+**Priority:** 🟠 Important
+**Status:** COMPLETE and LOCKED
+**Nature:** UX FIX (IMPORTANT, DASHBOARD CLARITY)
+**Dependencies:** UX-01 (Complete and Locked)
+**Checkpoint:** `docs/UX-01-10-CHECKPOINT.md`
+
+**Objective:**
+
+Replace the raw quota reset ISO timestamp with a more human-readable date/time presentation so users can quickly understand when quota resets.
+
+**Why this exists:**
+
+UX-01 identified this as an important clarity issue: the dashboard currently renders a raw ISO timestamp string for `quotaResetsAt`. This is technically correct but not user-friendly. A readable local date/time format is more appropriate for this surface.
+
+**Bounded scope:**
+
+- Inspect the quota reset rendering path in the workspace dashboard (`frontend/components/workspace/workspace-shell.tsx`)
+- Format the displayed reset timestamp into concise human-readable text (e.g. `toLocaleString()` or equivalent)
+- Preserve the underlying quota data and behavior
+- Keep the fix tightly scoped to display clarity only
+- Verify dashboard/workspace still renders normally after the change
+
+**Explicitly out of scope:**
+
+- ❌ No quota-system redesign
+- ❌ No dashboard redesign beyond this formatting improvement
+- ❌ No relative-time system unless trivially local
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- Raw ISO quota reset string no longer appears in the user-facing dashboard
+- Reset time displays in a clear readable format
+- Existing quota behavior remains intact
+- Fix is documented in `docs/UX-01-10-CHECKPOINT.md`
+
+---
+
 ### UX-01-09: Add Navigation Link To API Keys Page From Workspace Shell
 
 **Task ID:** UX-01-09

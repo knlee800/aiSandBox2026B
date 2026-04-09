@@ -6438,7 +6438,7 @@ The core workspace, persistence, commercial foundation, advanced AI features, an
 
 **Family status:** ACTIVE
 
-**Current stage:** UX-01-09 (PLANNED)
+**Current stage:** UX-01-10 (PLANNED)
 
 ---
 
@@ -6560,6 +6560,36 @@ Replace the raw user UUID shown in the workspace header with a more human-readab
 - Raw UUID no longer appears as the primary user label in the workspace header
 - Header shows a human-readable user identity label
 - Existing behavior remains intact
+
+**Dependencies:** UX-01 (Complete and Locked)
+
+---
+
+#### UX-01-10: Format Quota Reset Timestamp As Human Readable
+
+**Status:** COMPLETE and LOCKED
+**Nature:** UX FIX (IMPORTANT, DASHBOARD CLARITY)
+**Checkpoint:** `docs/UX-01-10-CHECKPOINT.md`
+
+**Objective:**
+Replace the raw quota reset ISO timestamp with a more human-readable date/time presentation so users can quickly understand when quota resets.
+
+**Scope:**
+- Inspect the quota reset rendering path in the workspace dashboard
+- Format the displayed reset timestamp into concise human-readable text
+- Preserve the underlying quota data and behavior
+- Keep the fix tightly scoped to display clarity only
+
+**Out of scope:**
+- ❌ No quota-system redesign
+- ❌ No dashboard redesign beyond this formatting improvement
+- ❌ No relative-time system unless trivially local
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+- Raw ISO quota reset string no longer appears in the user-facing dashboard
+- Reset time displays in a clear readable format
+- Existing quota behavior remains intact
 
 **Dependencies:** UX-01 (Complete and Locked)
 
