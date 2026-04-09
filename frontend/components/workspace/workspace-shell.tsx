@@ -222,6 +222,8 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     usageSummary: props.usageSummary,
     quotaSummary: props.quotaSummary,
   });
+  const headerIdentityLabel =
+    props.userSummary?.email?.trim() || 'Authenticated user';
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col" data-testid="workspace-shell">
@@ -231,7 +233,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
           <p className="text-xs text-gray-500">Workspace</p>
         </div>
         <div className="text-xs text-gray-600 text-right">
-          <p>{props.userId ? `User ${props.userId}` : 'Authenticated user'}</p>
+          <p>{headerIdentityLabel}</p>
           <p className="text-[11px] text-gray-500">Session-scoped workspace</p>
         </div>
       </header>

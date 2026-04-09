@@ -6438,7 +6438,7 @@ The core workspace, persistence, commercial foundation, advanced AI features, an
 
 **Family status:** ACTIVE
 
-**Current stage:** UX-01-02 (PLANNED)
+**Current stage:** UX-01-03 (PLANNED)
 
 ---
 
@@ -6530,6 +6530,36 @@ Remove internal build-phase/task/spec labels from the rendered workspace UI and 
 - Internal task/slice/spec labels no longer rendered to users
 - Replacement labels are concise and user-meaningful
 - Workspace layout/behavior remains intact
+
+**Dependencies:** UX-01 (Complete and Locked)
+
+---
+
+#### UX-01-03: Replace Raw UUID Header With User Email Or Display Name
+
+**Status:** COMPLETE and LOCKED
+**Nature:** UX FIX (IMPORTANT, WORKSPACE HEADER CLARITY)
+**Checkpoint:** `docs/UX-01-03-CHECKPOINT.md`
+
+**Objective:**
+Replace the raw user UUID shown in the workspace header with a more human-readable identifier such as email or display name so the header communicates user identity clearly.
+
+**Scope:**
+- Inspect the workspace header user identity rendering path
+- Replace raw UUID display with existing user email or display name if already available
+- Keep the fix tightly scoped to the rendered header identity label
+- Preserve existing auth/session behavior
+
+**Out of scope:**
+- ❌ No user profile redesign
+- ❌ No account settings work
+- ❌ No auth flow redesign
+- ❌ No broader header redesign
+
+**Acceptance criteria:**
+- Raw UUID no longer appears as the primary user label in the workspace header
+- Header shows a human-readable user identity label
+- Existing behavior remains intact
 
 **Dependencies:** UX-01 (Complete and Locked)
 

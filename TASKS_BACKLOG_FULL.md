@@ -15515,6 +15515,49 @@ REL-02-01 deployment rehearsal passed, but concrete runbook mismatches were foun
 
 ---
 
+### UX-01-03: Replace Raw UUID Header With User Email Or Display Name
+
+**Task ID:** UX-01-03
+**Family:** UX-01 (Manual UX/UI Acceptance)
+**Priority:** 🟠 Important
+**Status:** COMPLETE and LOCKED
+**Nature:** UX FIX (IMPORTANT, WORKSPACE HEADER CLARITY)
+**Dependencies:** UX-01 (Complete and Locked)
+**Checkpoint:** `docs/UX-01-03-CHECKPOINT.md`
+
+**Objective:**
+
+Replace the raw user UUID shown in the workspace header with a more human-readable identifier such as email or display name so the header communicates user identity clearly.
+
+**Why this exists:**
+
+UX-01 identified this as an important clarity issue: the workspace header currently shows `"User <uuid>"` — a raw UUID that is not meaningful to a normal user. Email or display name is the appropriate user-facing identity label.
+
+**Bounded scope:**
+
+- Inspect the workspace header user identity rendering path (`frontend/components/workspace/workspace-shell.tsx`)
+- Replace raw UUID display with existing user email or display name if already available
+- Keep the fix tightly scoped to the rendered header identity label
+- Preserve existing auth/session behavior
+- Verify workspace still renders normally after the change
+
+**Explicitly out of scope:**
+
+- ❌ No user profile redesign
+- ❌ No account settings work
+- ❌ No auth flow redesign
+- ❌ No broader header redesign
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- Raw UUID no longer appears as the primary user label in the workspace header
+- Header shows a human-readable user identity label
+- Existing behavior remains intact
+- Fix is documented in `docs/UX-01-03-CHECKPOINT.md`
+
+---
+
 ### UX-01-02: Remove Internal Task Slice Labels From Workspace UI
 
 **Task ID:** UX-01-02
