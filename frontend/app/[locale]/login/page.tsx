@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useTranslations } from '../../../hooks/useTranslations';
 import axios from 'axios';
+import Link from 'next/link';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 export default function LoginPage() {
@@ -98,6 +99,16 @@ export default function LoginPage() {
           >
             {loading ? t('loggingIn') : t('loginButton')}
           </button>
+
+          <p className="mt-4 text-center text-sm text-gray-600">
+            Need an account?{' '}
+            <Link
+              href={`/${locale}`}
+              className="font-medium text-blue-600 hover:text-blue-700 hover:underline"
+            >
+              Start here
+            </Link>
+          </p>
         </form>
       </div>
     </div>

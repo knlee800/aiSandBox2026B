@@ -6438,7 +6438,7 @@ The core workspace, persistence, commercial foundation, advanced AI features, an
 
 **Family status:** ACTIVE
 
-**Current stage:** UX-01-05 (PLANNED)
+**Current stage:** UX-01-06 (PLANNED)
 
 ---
 
@@ -6560,6 +6560,36 @@ Replace the raw user UUID shown in the workspace header with a more human-readab
 - Raw UUID no longer appears as the primary user label in the workspace header
 - Header shows a human-readable user identity label
 - Existing behavior remains intact
+
+**Dependencies:** UX-01 (Complete and Locked)
+
+---
+
+#### UX-01-06: Add Registration Link Or CTA To Login Page
+
+**Status:** COMPLETE and LOCKED
+**Nature:** UX FIX (IMPORTANT, LOGIN FLOW)
+**Checkpoint:** `docs/UX-01-06-CHECKPOINT.md`
+
+**Objective:**
+Add a clear registration link or call to action on the login page so users who need an account have an obvious path forward.
+
+**Scope:**
+- Inspect the current login page structure
+- Add a small, clear registration path/CTA
+- Preserve the existing login form and error flow
+- Keep the fix tightly scoped to login-page navigation clarity only
+
+**Out of scope:**
+- ❌ No auth-system redesign
+- ❌ No broader onboarding redesign
+- ❌ No registration-flow redesign beyond linking/CTA clarity
+- ❌ No unrelated style cleanup
+
+**Acceptance criteria:**
+- Login page includes a clear registration/sign-up path
+- Login form and error handling remain intact
+- Change is concise and user-meaningful
 
 **Dependencies:** UX-01 (Complete and Locked)
 

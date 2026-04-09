@@ -15515,6 +15515,49 @@ REL-02-01 deployment rehearsal passed, but concrete runbook mismatches were foun
 
 ---
 
+### UX-01-06: Add Registration Link Or CTA To Login Page
+
+**Task ID:** UX-01-06
+**Family:** UX-01 (Manual UX/UI Acceptance)
+**Priority:** 🟠 Important
+**Status:** COMPLETE and LOCKED
+**Nature:** UX FIX (IMPORTANT, LOGIN FLOW)
+**Dependencies:** UX-01 (Complete and Locked)
+**Checkpoint:** `docs/UX-01-06-CHECKPOINT.md`
+
+**Objective:**
+
+Add a clear registration link or call to action on the login page so users who need an account have an obvious path forward.
+
+**Why this exists:**
+
+UX-01 identified this as an important functional gap: the login page has no visible sign-up path. Users who land on the login page and do not already have an account have no CTA or link guiding them to register.
+
+**Bounded scope:**
+
+- Inspect the current login page structure (`frontend/app/[locale]/login/page.tsx`)
+- Add a small, clear registration path/CTA (link or small note below the form)
+- Preserve the existing login form, auth request path, and error flow
+- Keep the fix tightly scoped to login-page navigation clarity only
+- Verify login page still renders and behaves normally after the change
+
+**Explicitly out of scope:**
+
+- ❌ No auth-system redesign
+- ❌ No broader onboarding redesign
+- ❌ No registration-flow redesign beyond linking/CTA clarity
+- ❌ No unrelated style cleanup
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- Login page includes a clear registration/sign-up path
+- Login form and error handling remain intact
+- Change is concise and user-meaningful
+- Fix is documented in `docs/UX-01-06-CHECKPOINT.md`
+
+---
+
 ### UX-01-05: Render AI Prose Responses In Normal Readable Font
 
 **Task ID:** UX-01-05
