@@ -212,13 +212,21 @@ describe('QuotaGuard', () => {
 
   describe('deterministic behavior', () => {
     it('should produce same result for same quota state', () => {
-      // Use key-1 which has higher token limits
       mockRequest.apiKeyIdentity.apiKeyId = 'key-1';
+      const limits = QuotaConfig.getQuotaLimits('key-1');
+      const estimatedTokens = QuotaConfig.estimateTokens();
 
-      // First execution should succeed
+      // First execution should always succeed on an empty quota window.
       expect(quotaGuard.canActivate(mockExecutionContext)).toBe(true);
 
-      // Second execution exhausts token quota (guard records usage on each call)
+      // Deterministically consume remaining quota until the next call exceeds.
+      while (
+        quotaService.getCurrentUsage('key-1').tokens + estimatedTokens <=
+        limits.tokensPerDay
+      ) {
+        expect(quotaGuard.canActivate(mockExecutionContext)).toBe(true);
+      }
+
       expect(() => quotaGuard.canActivate(mockExecutionContext))
         .toThrow(HttpException);
     });

@@ -20,6 +20,9 @@ export interface QuotaLimits {
 }
 
 export class QuotaConfig {
+  private static readonly PRODUCTION_DEFAULT_TOKENS_PER_DAY = 10000;
+  private static readonly LOCAL_DEV_FALLBACK_TOKENS_PER_DAY = 100000;
+
   /**
    * PHASE-42A-1: Max active sessions per user
    * Enforced before container creation in POST /api/sessions
@@ -47,7 +50,7 @@ export class QuotaConfig {
    */
   static readonly DEFAULT_QUOTA: QuotaLimits = {
     requestsPerMinute: 100, // 100 requests per minute
-    tokensPerDay: 10000, // 10,000 tokens per day
+    tokensPerDay: QuotaConfig.resolveDefaultTokensPerDay(),
   };
 
   /**
@@ -68,14 +71,14 @@ export class QuotaConfig {
       'key-1',
       {
         requestsPerMinute: 100,
-        tokensPerDay: 10000,
+        tokensPerDay: QuotaConfig.resolveDefaultTokensPerDay(),
       },
     ],
     [
       'key-2',
       {
         requestsPerMinute: 100,
-        tokensPerDay: 10000,
+        tokensPerDay: QuotaConfig.resolveDefaultTokensPerDay(),
       },
     ],
   ]);
@@ -88,6 +91,19 @@ export class QuotaConfig {
    */
   static getQuotaLimits(apiKeyId: string): QuotaLimits {
     return this.API_KEY_QUOTAS.get(apiKeyId) || this.DEFAULT_QUOTA;
+  }
+
+  private static resolveDefaultTokensPerDay(): number {
+    const configured = Number.parseInt(process.env.DEFAULT_TOKENS_PER_DAY ?? '', 10);
+    if (Number.isFinite(configured) && configured > 0) {
+      return configured;
+    }
+
+    if ((process.env.NODE_ENV || '').toLowerCase() === 'production') {
+      return QuotaConfig.PRODUCTION_DEFAULT_TOKENS_PER_DAY;
+    }
+
+    return QuotaConfig.LOCAL_DEV_FALLBACK_TOKENS_PER_DAY;
   }
 
   /**

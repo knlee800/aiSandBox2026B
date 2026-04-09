@@ -15508,3 +15508,111 @@ REL-02-01 deployment rehearsal passed, but concrete runbook mismatches were foun
 **Reference:** TASKS.md, docs/REL-02-01-CHECKPOINT.md, docs/REL-01-05-CHECKPOINT.md
 
 ---
+
+## UX-01 — Manual UX/UI Acceptance
+
+**Family status:** ACTIVE
+
+---
+
+### UX-01-01: Remove or Gate Test Credentials Block From Login Page
+
+**Task ID:** UX-01-01
+**Family:** UX-01 (Manual UX/UI Acceptance)
+**Priority:** 🔴 Blocker
+**Status:** COMPLETE and LOCKED
+**Nature:** UX FIX (BLOCKER, LOGIN SURFACE)
+**Dependencies:** UX-01 (Complete and Locked)
+**Checkpoint:** `docs/UX-01-01-CHECKPOINT.md`
+
+**Objective:**
+
+Remove or appropriately gate the development-era test credentials block from the login page so non-development users do not see demo credentials as the most prominent login-page content.
+
+**Why this exists:**
+
+UX-01 identified this as a blocker: the login page prominently shows test credentials (`demo@aisandbox.com` / `demo123`) above the form with a "🔑 Test Credentials" heading. This is a development artifact that should not remain visible to normal users.
+
+**Bounded scope:**
+
+- Inspect the login page rendering path (`frontend/app/[locale]/login/page.tsx`)
+- Remove the visible test-credentials block or gate it behind a clearly local/dev-only condition
+- Preserve the rest of the login flow and error handling
+- Keep the fix tightly scoped to this login-page artifact only
+- Verify the login page still works normally after the change
+
+**Explicitly out of scope:**
+
+- ❌ No broader login redesign
+- ❌ No registration/sign-up UX work
+- ❌ No auth flow redesign
+- ❌ No unrelated style cleanup
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- Test credentials block is no longer visible to normal users
+- Login form still renders and works normally
+- Error handling remains intact
+- Fix is documented in `docs/UX-01-01-CHECKPOINT.md`
+
+---
+
+### UX-01: Manual UX UI Acceptance and Polish
+
+**Task ID:** UX-01
+**Family:** UX-01 (Manual UX/UI Acceptance)
+**Priority:** 🟡 Medium
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION (PRODUCT QUALITY, MANUAL UX/UI ACCEPTANCE)
+**Dependencies:** REL-02 (Complete and Locked)
+**Checkpoint:** `docs/UX-01-CHECKPOINT.md`
+
+**Objective:**
+
+Run a bounded manual UX/UI acceptance pass across the core product journeys so remaining usability, clarity, and polish issues can be identified and then fixed through small bounded follow-up tasks.
+
+**Why this exists:**
+
+The feature/spec wave, release-readiness wave, and deployment-readiness wave are complete. What remains is product-quality judgment: whether the UX/UI is actually what you want. That is a separate acceptance phase, not a release-readiness task.
+
+**Scope:**
+
+- Manually review the key user journeys and current UI/UX behavior
+- Identify concrete usability/polish issues only
+- Document findings clearly
+- Recommend bounded follow-up fixes one issue at a time
+- Do not fix anything in this task
+
+**Review areas:**
+
+- Workspace entry / initial load
+- Auth/login flow
+- Session create/select/terminate
+- File tree / editor / preview flow
+- Chat prompt/response/thread readability
+- AI file-action visibility/coherence
+- Checkpoint/history/diff/revert clarity
+- Project create/open/share flow
+- Quota/plan visibility
+- Any obvious UI inconsistency on the core surfaces
+
+**Explicitly out of scope:**
+
+- ❌ No implementation in this task
+- ❌ No new roadmap expansion
+- ❌ No feature redesign unless later chosen through separate tasks
+- ❌ No broad refactor
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- Manual UX/UI review is documented clearly
+- Concrete issues are listed clearly
+- Issues are separated from preferences where possible
+- Recommended follow-up work is broken into small bounded tasks
+- No code changes are made in this task
+
+**Reference:** TASKS.md, docs/REL-02-FINAL-CHECKPOINT.md, docs/PROJECT-FINAL-CLOSURE-CHECKPOINT.md
+
+---

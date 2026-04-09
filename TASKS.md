@@ -6432,6 +6432,79 @@ The core workspace, persistence, commercial foundation, advanced AI features, an
 
 **Current stage:** none active (deployment-readiness wave complete)
 
+---
+
+## UX-01 — Manual UX/UI Acceptance
+
+**Family status:** ACTIVE
+
+**Current stage:** none active (UX-01-01 complete and locked)
+
+---
+
+#### UX-01: Manual UX UI Acceptance and Polish
+
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION (PRODUCT QUALITY, MANUAL UX/UI ACCEPTANCE)
+**Checkpoint:** `docs/UX-01-CHECKPOINT.md`
+
+**Objective:**
+Run a bounded manual UX/UI acceptance pass across the core product journeys so remaining usability, clarity, and polish issues can be identified and then fixed through small bounded follow-up tasks.
+
+**Review areas:**
+- Workspace entry / initial load
+- Auth/login flow
+- Session create/select/terminate
+- File tree / editor / preview flow
+- Chat prompt/response/thread readability
+- AI file-action visibility/coherence
+- Checkpoint/history/diff/revert clarity
+- Project create/open/share flow
+- Quota/plan visibility
+- Obvious UI inconsistency on core surfaces
+
+**Out of scope:**
+- ❌ No implementation in this task
+- ❌ No feature redesign
+- ❌ No roadmap expansion
+- ❌ No broad refactor
+- ❌ No scope expansion
+
+**Dependencies:** REL-02 (Complete and Locked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → UX-01 for full details
+
+---
+
+#### UX-01-01: Remove or Gate Test Credentials Block From Login Page
+
+**Status:** COMPLETE and LOCKED
+**Nature:** UX FIX (BLOCKER, LOGIN SURFACE)
+**Checkpoint:** `docs/UX-01-01-CHECKPOINT.md`
+
+**Objective:**
+Remove or appropriately gate the development-era test credentials block from the login page so non-development users do not see demo credentials as the most prominent login-page content.
+
+**Scope:**
+- Inspect the login page rendering path
+- Remove the visible test-credentials block or gate it behind a clearly local/dev-only condition
+- Preserve the rest of the login flow and error handling
+
+**Out of scope:**
+- ❌ No broader login redesign
+- ❌ No registration/sign-up UX work
+- ❌ No auth flow redesign
+- ❌ No unrelated style cleanup
+
+**Acceptance criteria:**
+- Test credentials block is no longer visible to normal users
+- Login form still renders and works normally
+- Error handling remains intact
+
+**Dependencies:** UX-01 (Complete and Locked)
+
+---
+
 **Completed deployment-readiness tasks:**
 - REL-02-01 (Deployment Rehearsal and Packaging) — COMPLETE and LOCKED
 - REL-02-02 (Runbook Reconciliation After Deployment Rehearsal) — COMPLETE and LOCKED

@@ -19,13 +19,13 @@ describe('QuotaConfig', () => {
     it('should return configured limits for key-1', () => {
       const limits = QuotaConfig.getQuotaLimits('key-1');
       expect(limits.requestsPerMinute).toBe(100);
-      expect(limits.tokensPerDay).toBe(10000);
+      expect(limits.tokensPerDay).toBe(QuotaConfig.DEFAULT_QUOTA.tokensPerDay);
     });
 
     it('should return configured limits for key-2', () => {
       const limits = QuotaConfig.getQuotaLimits('key-2');
       expect(limits.requestsPerMinute).toBe(100);
-      expect(limits.tokensPerDay).toBe(10000);
+      expect(limits.tokensPerDay).toBe(QuotaConfig.DEFAULT_QUOTA.tokensPerDay);
     });
 
     it('should return consistent limits for same API key', () => {
