@@ -263,6 +263,9 @@ describe('workspace shell component', () => {
     assert.match(html, /View Diff/);
     assert.match(html, /Current User/);
     assert.match(html, /user@example\.com/);
+    assert.match(html, /workspace-header-api-keys-link/);
+    assert.match(html, /href="keys"/);
+    assert.match(html, />API Keys</);
     assert.match(html, /Plan: Free \(active\)/);
     assert.match(html, /Active Sessions/);
     assert.match(html, /Quota Status/);

@@ -15515,6 +15515,48 @@ REL-02-01 deployment rehearsal passed, but concrete runbook mismatches were foun
 
 ---
 
+### UX-01-09: Add Navigation Link To API Keys Page From Workspace Shell
+
+**Task ID:** UX-01-09
+**Family:** UX-01 (Manual UX/UI Acceptance)
+**Priority:** 🟠 Important
+**Status:** COMPLETE and LOCKED
+**Nature:** UX FIX (IMPORTANT, NAVIGATION DISCOVERABILITY)
+**Dependencies:** UX-01 (Complete and Locked)
+**Checkpoint:** `docs/UX-01-09-CHECKPOINT.md`
+
+**Objective:**
+
+Add a clear navigation link from the workspace shell to the API Keys page so users do not need to know the route manually.
+
+**Why this exists:**
+
+UX-01 identified this as an important discoverability issue: the API Keys page exists and is functional, but there is no visible path to it from within the workspace shell. Users currently have to know the `/keys` route manually.
+
+**Bounded scope:**
+
+- Inspect the workspace shell navigation/header area (`frontend/components/workspace/workspace-shell.tsx`)
+- Add a small, clear link or CTA to the API Keys page (`/${locale}/keys`)
+- Preserve existing workspace layout and behavior
+- Keep the fix tightly scoped to navigation discoverability only
+- Verify workspace still renders normally after the change
+
+**Explicitly out of scope:**
+
+- ❌ No broader navigation redesign
+- ❌ No account/settings IA redesign
+- ❌ No API keys page redesign
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- Workspace provides a visible path to the API Keys page
+- Existing workspace behavior remains intact
+- Change is concise and user-meaningful
+- Fix is documented in `docs/UX-01-09-CHECKPOINT.md`
+
+---
+
 ### UX-01-08: Replace API Keys Page Alert Confirm With Inline Feedback
 
 **Task ID:** UX-01-08

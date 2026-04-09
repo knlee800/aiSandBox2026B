@@ -6438,7 +6438,7 @@ The core workspace, persistence, commercial foundation, advanced AI features, an
 
 **Family status:** ACTIVE
 
-**Current stage:** UX-01-08 (PLANNED)
+**Current stage:** UX-01-09 (PLANNED)
 
 ---
 
@@ -6560,6 +6560,36 @@ Replace the raw user UUID shown in the workspace header with a more human-readab
 - Raw UUID no longer appears as the primary user label in the workspace header
 - Header shows a human-readable user identity label
 - Existing behavior remains intact
+
+**Dependencies:** UX-01 (Complete and Locked)
+
+---
+
+#### UX-01-09: Add Navigation Link To API Keys Page From Workspace Shell
+
+**Status:** COMPLETE and LOCKED
+**Nature:** UX FIX (IMPORTANT, NAVIGATION DISCOVERABILITY)
+**Checkpoint:** `docs/UX-01-09-CHECKPOINT.md`
+
+**Objective:**
+Add a clear navigation link from the workspace shell to the API Keys page so users do not need to know the route manually.
+
+**Scope:**
+- Inspect the workspace shell navigation/header area
+- Add a small, clear link or CTA to the API Keys page
+- Preserve existing workspace layout and behavior
+- Keep the fix tightly scoped to navigation discoverability only
+
+**Out of scope:**
+- ❌ No broader navigation redesign
+- ❌ No account/settings IA redesign
+- ❌ No API keys page redesign
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+- Workspace provides a visible path to the API Keys page
+- Existing workspace behavior remains intact
+- Change is concise and user-meaningful
 
 **Dependencies:** UX-01 (Complete and Locked)
 

@@ -247,6 +247,15 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
         <div className="text-xs text-gray-600 text-right">
           <p>{headerIdentityLabel}</p>
           <p className="text-[11px] text-gray-500">Session-scoped workspace</p>
+          <p className="mt-1">
+            <a
+              href="keys"
+              className="text-[11px] font-medium text-blue-600 hover:text-blue-700 hover:underline"
+              data-testid="workspace-header-api-keys-link"
+            >
+              API Keys
+            </a>
+          </p>
         </div>
       </header>
 
