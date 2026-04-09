@@ -15946,11 +15946,15 @@ UX-01 identified this as a blocker: the login page prominently shows test creden
 
 **Task ID:** UX-01
 **Family:** UX-01 (Manual UX/UI Acceptance)
+**Family status:** COMPLETE and LOCKED
 **Priority:** 🟡 Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** VALIDATION (PRODUCT QUALITY, MANUAL UX/UI ACCEPTANCE)
 **Dependencies:** REL-02 (Complete and Locked)
 **Checkpoint:** `docs/UX-01-CHECKPOINT.md`
+**Final checkpoint:** `docs/UX-01-FINAL-CHECKPOINT.md`
+
+**Completed tasks:** UX-01, UX-01-01, UX-01-02, UX-01-03, UX-01-04, UX-01-05, UX-01-06, UX-01-07, UX-01-08, UX-01-09, UX-01-10 — all COMPLETE and LOCKED.
 
 **Objective:**
 

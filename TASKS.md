@@ -6436,9 +6436,11 @@ The core workspace, persistence, commercial foundation, advanced AI features, an
 
 ## UX-01 — Manual UX/UI Acceptance
 
-**Family status:** ACTIVE
+**Family status:** COMPLETE and LOCKED
 
-**Current stage:** UX-01-10 (PLANNED)
+**Current stage:** none active (UX-01 wave complete)
+
+**Completed tasks:** UX-01, UX-01-01, UX-01-02, UX-01-03, UX-01-04, UX-01-05, UX-01-06, UX-01-07, UX-01-08, UX-01-09, UX-01-10 — all COMPLETE and LOCKED.
 
 ---
 
