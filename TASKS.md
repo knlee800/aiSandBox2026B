@@ -6434,6 +6434,47 @@ The core workspace, persistence, commercial foundation, advanced AI features, an
 
 ---
 
+## UX-02 — Account Entry
+
+**Family status:** ACTIVE
+
+**Current stage:** UX-02-01 (PLANNED)
+
+---
+
+#### UX-02-01: Add User Registration Page And Wire Login CTA
+
+**Status:** COMPLETE and LOCKED
+**Nature:** UX FIX (FUNCTIONAL GAP, ACCOUNT ENTRY)
+**Checkpoint:** `docs/UX-02-01-CHECKPOINT.md`
+
+**Objective:**
+Add a real user registration page and wire the login-page registration CTA to it so a normal user can create an account through the UI.
+
+**Scope:**
+- Add/register a user-facing registration page
+- Wire existing login-page registration CTA to the real route
+- Submit to existing backend register endpoint
+- Show success/error clearly
+- Preserve existing login flow
+
+**Out of scope:**
+- ❌ No auth-system redesign
+- ❌ No profile system
+- ❌ No onboarding redesign
+- ❌ No password-reset work
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+- User can reach registration from login page
+- User can submit registration through UI
+- Success/error handling is clear
+- Existing login flow remains intact
+
+**Dependencies:** UX-01 (Complete and Locked)
+
+---
+
 ## UX-01 — Manual UX/UI Acceptance
 
 **Family status:** COMPLETE and LOCKED

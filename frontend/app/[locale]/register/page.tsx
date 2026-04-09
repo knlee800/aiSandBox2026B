@@ -1,47 +1,46 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import { useTranslations } from '../../../hooks/useTranslations';
-import axios from 'axios';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import axios from 'axios';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 
-export default function LoginPage() {
-  const router = useRouter();
+export default function RegisterPage() {
   const params = useParams();
   const locale = params.locale as string;
-  const t = useTranslations('login');
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccessMessage('');
     setLoading(true);
 
     try {
-      const response = await axios.post('/api/auth/login', {
-        email,
-        password,
-      }, {
-        headers: {
-          'Accept-Language': locale,
+      await axios.post(
+        '/api/auth/register',
+        {
+          email,
+          password,
         },
-      });
+        {
+          headers: {
+            'Accept-Language': locale,
+          },
+        },
+      );
 
-      if (!response.data.access_token) {
-        throw new Error('Login response missing access_token');
-      }
-
-      localStorage.setItem('access_token', response.data.access_token);
-      localStorage.setItem('userId', response.data.user.id);
-      router.push(`/${locale}/app`);
+      setSuccessMessage('Account created successfully. You can now sign in.');
+      setEmail('');
+      setPassword('');
     } catch (err: any) {
-      setError(err.response?.data?.message || t('loginFailed'));
+      setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -53,15 +52,15 @@ export default function LoginPage() {
         <LanguageSwitcher />
       </div>
       <div className="bg-white p-8 rounded-lg shadow-md w-96">
-        <h1 className="text-2xl font-bold mb-6 text-center">{t('title')}</h1>
+        <h1 className="text-2xl font-bold mb-6 text-center">Create account</h1>
 
-        <form onSubmit={handleLogin}>
+        <form onSubmit={handleRegister}>
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-2" htmlFor="email">
-              {t('email')}
+            <label className="block text-sm font-medium mb-2" htmlFor="register-email">
+              Email
             </label>
             <input
-              id="email"
+              id="register-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -72,11 +71,11 @@ export default function LoginPage() {
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium mb-2" htmlFor="password">
-              {t('password')}
+            <label className="block text-sm font-medium mb-2" htmlFor="register-password">
+              Password
             </label>
             <input
-              id="password"
+              id="register-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -86,30 +85,26 @@ export default function LoginPage() {
             />
           </div>
 
-          {error && (
-            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">
-              {error}
-            </div>
-          )}
+          {error ? <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">{error}</div> : null}
+          {successMessage ? (
+            <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-md text-sm">{successMessage}</div>
+          ) : null}
 
           <button
             type="submit"
             disabled={loading}
             className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 disabled:bg-blue-300 transition-colors"
           >
-            {loading ? t('loggingIn') : t('loginButton')}
+            {loading ? 'Creating account...' : 'Create account'}
           </button>
-
-          <p className="mt-4 text-center text-sm text-gray-600">
-            Need an account?{' '}
-            <Link
-              href={`/${locale}/register`}
-              className="font-medium text-blue-600 hover:text-blue-700 hover:underline"
-            >
-              Start here
-            </Link>
-          </p>
         </form>
+
+        <p className="mt-4 text-center text-sm text-gray-600">
+          Already have an account?{' '}
+          <Link href={`/${locale}/login`} className="font-medium text-blue-600 hover:text-blue-700 hover:underline">
+            Sign in
+          </Link>
+        </p>
       </div>
     </div>
   );

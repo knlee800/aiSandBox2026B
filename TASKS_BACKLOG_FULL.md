@@ -15515,6 +15515,51 @@ REL-02-01 deployment rehearsal passed, but concrete runbook mismatches were foun
 
 ---
 
+### UX-02-01: Add User Registration Page And Wire Login CTA
+
+**Task ID:** UX-02-01
+**Family:** UX-02 (Account Entry)
+**Priority:** 🟠 Important
+**Status:** COMPLETE and LOCKED
+**Nature:** UX FIX (FUNCTIONAL GAP, ACCOUNT ENTRY)
+**Dependencies:** UX-01 (Complete and Locked)
+**Checkpoint:** `docs/UX-02-01-CHECKPOINT.md`
+
+**Objective:**
+
+Add a real user registration page and wire the login-page registration CTA to it so a normal user can create an account through the UI.
+
+**Why this exists:**
+
+The app currently has backend registration capability, but there is no complete visible user-facing registration flow in the UI. The login page now shows a "Need an account? Start here" CTA (UX-01-06) but it links to the public landing page rather than a dedicated registration form.
+
+**Bounded scope:**
+
+- Add a user-facing registration page (`frontend/app/[locale]/register/page.tsx` or equivalent)
+- Wire the existing login-page registration CTA to the real registration route
+- Submit registration to the existing backend register endpoint
+- Show clear success/error handling
+- Preserve existing login flow and auth behavior
+- Keep the fix tightly scoped to account creation entry only
+
+**Explicitly out of scope:**
+
+- ❌ No auth-system redesign
+- ❌ No profile system
+- ❌ No onboarding redesign
+- ❌ No password-reset work
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- User can reach registration from the login page
+- User can submit registration through the UI
+- Success/error handling is clear
+- Existing login flow remains intact
+- Fix is documented in `docs/UX-02-01-CHECKPOINT.md`
+
+---
+
 ### UX-01-10: Format Quota Reset Timestamp As Human Readable
 
 **Task ID:** UX-01-10
