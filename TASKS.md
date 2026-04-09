@@ -5953,6 +5953,84 @@ AI-03-01 completed the minimal AI file-action loop. AI-03-02 makes the workspace
 
 ---
 
+## AI-05 — AI File-Action Diagnostics
+
+**Family status:** ACTIVE
+
+**Current stage:** AI-05-02 (COMPLETE and LOCKED)
+
+---
+
+#### AI-05-01: Diagnose AI File Creation Failure Path
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG INVESTIGATION (CORE PRODUCT LOOP, AI-TO-WORKSPACE FAILURE)
+**Checkpoint:** `docs/AI-05-01-CHECKPOINT.md`
+
+**Objective:**
+Trace why the AI says it cannot create a file, despite the existing AI-to-workspace file-action system, and isolate the exact failing stage in the end-to-end path.
+
+**Scope:**
+- Trace the end-to-end path for a real file-creation request
+- Inspect provider/model selection and prompt path
+- Inspect raw AI response shape
+- Inspect backend file-action parsing result
+- Inspect stream/completion payload for fileActions
+- Inspect frontend file-action apply state/result
+- Inspect any session/stale/terminated guard that may skip writes
+- Identify and document the exact failing stage clearly
+
+**Out of scope:**
+- ❌ No broad AI system redesign
+- ❌ No file-action contract redesign
+- ❌ No UX polish work
+- ❌ No scope expansion
+- ❌ No feature work
+
+**Acceptance criteria:**
+- Exact failing stage identified clearly
+- Evidence documented across backend/frontend boundaries
+- Issue narrowed enough for a single bounded follow-up fix task
+
+**Dependencies:** AI-03 (Complete and Locked), AI-04 (Complete and Locked)
+
+---
+
+#### AI-05-02: Strengthen File Action Output Contract For Normal File Creation Prompts
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (CORE PRODUCT LOOP, MODEL OUTPUT CONTRACT)
+**Checkpoint:** `docs/AI-05-02-CHECKPOINT.md`
+
+**Objective:**
+Make normal file-creation prompts reliably produce valid file-action output so the existing parser, stream, persistence, and frontend apply path can actually create files during ordinary usage.
+
+**Scope:**
+- Inspect the current system/execution prompt instructions for file-action generation
+- Strengthen the model output contract so ordinary file-create requests emit valid fenced file-actions JSON by default
+- Preserve plain conversational behavior for non-file tasks
+- Preserve the existing file-action parser/contract shape unless a tiny wording-alignment change is absolutely required
+- Verify with real file-create prompts that non-empty fileActions are produced through the existing path
+
+**Out of scope:**
+- ❌ No parser redesign
+- ❌ No frontend apply redesign
+- ❌ No broad orchestration redesign
+- ❌ No provider marketplace/model redesign
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+- Ordinary file-create prompts produce valid non-empty fileActions through the normal execution path
+- Non-file prompts still behave normally
+- Existing parser/stream/persistence/frontend flow remains intact
+- Fix is documented in `docs/AI-05-02-CHECKPOINT.md`
+
+**Dependencies:** AI-05-01 (COMPLETE and LOCKED)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → AI-05-02 for full details
+
+---
+
 ## AI-04 — Chat Persistence (Core Product Loop)
 
 **Current stage:** AI-04-01 (COMPLETE and LOCKED)

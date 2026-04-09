@@ -50,6 +50,21 @@ function sleep(ms: number, signal?: AbortSignal): Promise<void> {
   });
 }
 
+const FILE_ACTION_OUTPUT_CONTRACT = `Execution output contract:
+- If the user request requires creating or modifying files, you MUST emit a fenced code block tagged \`file-actions\`.
+- The \`file-actions\` block content MUST be valid JSON containing an array of actions.
+- Each action MUST use action values "create", "write", or "update" and include string fields: "path" and "content".
+- Do not claim that files were created or changed unless matching \`file-actions\` entries are present.
+- If the user request does not require file creation or modification, respond normally in plain conversational text and do not emit \`file-actions\` blocks.`;
+
+function buildExecutionPromptWithFileActionContract(userPrompt: string): string {
+  const normalizedPrompt = typeof userPrompt === 'string' ? userPrompt : '';
+  return `${FILE_ACTION_OUTPUT_CONTRACT}
+
+User request:
+${normalizedPrompt}`;
+}
+
 interface ExecutionCompletionLog {
   event: string;
   executionId: string;
@@ -461,9 +476,12 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
           let lastError: unknown;
           for (let attempt = 0; attempt < EXECUTION_PROVIDER_RETRY_ATTEMPTS; attempt++) {
             try {
+              const executionPrompt = buildExecutionPromptWithFileActionContract(
+                job.data.prompt ?? '',
+              );
               aiResult = await this.aiExecutionService.execute({
                 provider: job.data.provider,
-                prompt: job.data.prompt,
+                prompt: executionPrompt,
                 sessionId: job.data.sessionId,
                 conversationId: job.data.conversationId,
                 userId: job.data.userId,

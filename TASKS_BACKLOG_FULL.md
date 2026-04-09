@@ -14139,6 +14139,148 @@ AI-03-01 completed the minimal AI file-action loop: backend file-action output (
 
 ---
 
+### AI-05-01: Diagnose AI File Creation Failure Path
+
+**Task ID:** AI-05-01
+**Family:** AI-05 (AI File-Action Diagnostics)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG INVESTIGATION (CORE PRODUCT LOOP, AI-TO-WORKSPACE FAILURE)
+**Dependencies:** AI-03 (Complete and Locked), AI-04 (Complete and Locked)
+**Checkpoint:** `docs/AI-05-01-CHECKPOINT.md`
+
+**Objective:**
+
+Trace why the AI says it cannot create a file, despite the existing AI-to-workspace file-action system, and isolate the exact failing stage in the end-to-end path.
+
+**Why this exists:**
+
+The core product promise is AI-driven workspace creation/editing. A real usage attempt asked the AI to create a file, but the AI responded that it could not. That means a core product loop is failing or behaving inconsistently. Before any fix can be safely scoped, the exact failure stage must be identified.
+
+**Bounded scope:**
+
+- Trace the end-to-end path for a real file-creation request
+- Inspect provider/model selection and prompt path
+- Inspect raw AI response shape
+- Inspect backend file-action parsing result
+- Inspect stream/completion payload for fileActions
+- Inspect frontend file-action apply state/result
+- Inspect any session/stale/terminated guard that may skip writes
+- Identify the exact failing stage and document it clearly
+- No fix in this task unless a trivially obvious one-line diagnostic correction is absolutely required
+
+**Explicitly out of scope:**
+
+- ❌ No broad AI system redesign
+- ❌ No file-action contract redesign
+- ❌ No UX polish work
+- ❌ No scope expansion
+- ❌ No feature work
+
+**Acceptance criteria:**
+
+- Exact failing stage identified clearly
+- Evidence documented across backend/frontend boundaries as needed
+- Issue narrowed enough for a single bounded follow-up fix task
+- No unrelated work mixed into this task
+- Fix is documented in `docs/AI-05-01-CHECKPOINT.md`
+
+---
+
+### AI-05-01: Diagnose AI File Creation Failure Path
+
+**Task ID:** AI-05-01
+**Family:** AI-05 (AI File-Action Diagnostics)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG INVESTIGATION (CORE PRODUCT LOOP, AI-TO-WORKSPACE FAILURE)
+**Dependencies:** AI-03 (Complete and Locked), AI-04 (Complete and Locked)
+**Checkpoint:** `docs/AI-05-01-CHECKPOINT.md`
+
+**Objective:**
+
+Trace why the AI says it cannot create a file, despite the existing AI-to-workspace file-action system, and isolate the exact failing stage in the end-to-end path.
+
+**Why this exists:**
+
+The core product promise is AI-driven workspace creation/editing. A real usage attempt asked the AI to create a file, but the AI responded that it could not. That means a core product loop is failing or behaving inconsistently. AI-03 shipped file-action infrastructure; this task diagnoses why it is not being exercised.
+
+**Bounded scope:**
+
+- Trace the end-to-end path for a real file-creation request
+- Inspect provider/model selection and prompt path
+- Inspect raw AI response shape
+- Inspect backend file-action parsing result
+- Inspect stream/completion payload for fileActions
+- Inspect frontend file-action apply state/result
+- Inspect any session/stale/terminated guard that may skip writes
+- Identify the exact failing stage and document it clearly
+- No fix in this task unless a trivially obvious one-line diagnostic correction is absolutely required
+
+**Explicitly out of scope:**
+
+- ❌ No broad AI system redesign
+- ❌ No file-action contract redesign
+- ❌ No UX polish work
+- ❌ No scope expansion
+- ❌ No feature work
+
+**Acceptance criteria:**
+
+- The exact failing stage is identified clearly
+- Evidence is documented across backend/frontend boundaries as needed
+- The issue is narrowed enough for a single bounded follow-up fix task
+- No unrelated work is mixed into this task
+- Fix is documented in `docs/AI-05-01-CHECKPOINT.md`
+
+---
+
+### AI-05-02: Strengthen File Action Output Contract For Normal File Creation Prompts
+
+**Task ID:** AI-05-02
+**Family:** AI-05 (AI File-Action Diagnostics)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (CORE PRODUCT LOOP, MODEL OUTPUT CONTRACT)
+**Dependencies:** AI-05-01 (Complete and Locked)
+**Checkpoint:** `docs/AI-05-02-CHECKPOINT.md`
+
+**Objective:**
+
+Make normal file-creation prompts reliably produce valid file-action output so the existing parser, stream, persistence, and frontend apply path can actually create files during ordinary usage.
+
+**Why this exists:**
+
+AI-05-01 isolated the failure clearly:
+- parser works when structured file-actions JSON is emitted
+- stream/completion/frontend apply path works when fileActions are non-empty
+- ordinary file-create prompts fail because the model responds in plain prose instead of the required file-action contract
+
+**Bounded scope:**
+
+- Inspect the current system/execution prompt instructions for file-action generation
+- Strengthen the model output contract so ordinary file-create requests emit valid fenced file-actions JSON by default
+- Preserve plain conversational behavior for non-file tasks
+- Preserve the existing file-action parser/contract shape unless a tiny wording-alignment change is absolutely required
+- Verify with real file-create prompts that non-empty fileActions are produced through the existing path
+
+**Explicitly out of scope:**
+
+- ❌ No parser redesign
+- ❌ No frontend apply redesign
+- ❌ No broad orchestration redesign
+- ❌ No provider marketplace/model redesign
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- Ordinary file-create prompts produce valid non-empty fileActions through the normal execution path
+- Non-file prompts still behave normally
+- Existing parser/stream/persistence/frontend flow remains intact
+- Fix is documented in `docs/AI-05-02-CHECKPOINT.md`
+
+---
+
 ### AI-04-01: Backend Chat Persistence Wiring
 
 **Task ID:** AI-04-01
