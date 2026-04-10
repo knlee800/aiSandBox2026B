@@ -64,9 +64,26 @@ export class PreviewController {
       });
     }
 
+    if (status.framework === 'Static HTML') {
+      const proxyPrefix = `/api/preview/${sessionId}/proxy`;
+      const requestPath = req.path.startsWith(proxyPrefix)
+        ? req.path.slice(proxyPrefix.length) || '/'
+        : '/';
+      const staticPreview = await this.previewService.readStaticPreviewContent(
+        sessionId,
+        requestPath,
+      );
+      return res
+        .status(200)
+        .setHeader('Content-Type', staticPreview.contentType)
+        .send(staticPreview.content);
+    }
+
+    const target = await this.previewService.getProxyTargetUrl(sessionId);
+
     // Create proxy middleware dynamically
     const proxy = createProxyMiddleware({
-      target: `http://localhost:${status.port}`,
+      target,
       changeOrigin: true,
       ws: true, // Support WebSocket
       pathRewrite: (path) => {

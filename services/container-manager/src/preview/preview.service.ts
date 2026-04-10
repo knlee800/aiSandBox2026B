@@ -1,11 +1,10 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { SessionsService } from '../sessions/sessions.service';
-import { ChildProcess, spawn } from 'child_process';
-import * as fs from 'fs/promises';
-import * as path from 'path';
+import { DockerRuntimeService } from '../docker/docker-runtime.service';
+import axios from 'axios';
 
 interface PreviewProcess {
-  process: ChildProcess;
+  pid?: number;
   port: number;
   status: 'starting' | 'running' | 'error';
   command: string;
@@ -20,7 +19,10 @@ export class PreviewService {
   private readonly PORT_RANGE_START = 3001;
   private readonly PORT_RANGE_END = 3100;
 
-  constructor(private sessionsService: SessionsService) {
+  constructor(
+    private sessionsService: SessionsService,
+    private dockerRuntimeService: DockerRuntimeService,
+  ) {
     // Initialize port pool
     for (let port = this.PORT_RANGE_START; port <= this.PORT_RANGE_END; port++) {
       this.portPool.add(port);
@@ -31,6 +33,8 @@ export class PreviewService {
    * Start a preview server for a session
    */
   async startPreview(sessionId: string, command?: string): Promise<{ port: number; status: string; framework?: string }> {
+    this.sessionsService.assertSessionUsable(sessionId);
+
     // Check if preview already running
     if (this.activePreviews.has(sessionId)) {
       const existing = this.activePreviews.get(sessionId)!;
@@ -41,11 +45,8 @@ export class PreviewService {
       };
     }
 
-    // Get workspace path
-    const workspacePath = this.sessionsService.getWorkspacePath(sessionId);
-
     // Auto-detect framework and command if not provided
-    const { detectedCommand, framework } = await this.detectFramework(workspacePath, command);
+    const { detectedCommand, framework } = await this.detectFramework(sessionId, command);
 
     if (!detectedCommand) {
       throw new BadRequestException('No package.json or start command found. Cannot start preview.');
@@ -64,24 +65,43 @@ export class PreviewService {
 
     console.log(`Final command: ${finalCommand}`);
 
-    // Start the process
-    const childProcess = spawn('sh', ['-c', finalCommand], {
-      cwd: workspacePath,
-      env: {
-        ...process.env,
+    if (framework === 'Static HTML') {
+      this.activePreviews.set(sessionId, {
+        port,
+        status: 'running',
+        command: detectedCommand,
+        framework,
+        startedAt: new Date(),
+      });
+
+      return {
+        port,
+        status: 'running',
+        framework,
+      };
+    }
+
+    const launchResult = await this.runShellInSession(
+      sessionId,
+      `(${finalCommand}) >/tmp/preview-${port}.log 2>&1 & echo $!`,
+      {
         PORT: port.toString(),
         NODE_ENV: 'development',
       },
-      detached: true,  // Create a new process group
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
+      30000,
+    );
+    if (launchResult.exitCode !== 0) {
+      this.releasePort(port);
+      throw new BadRequestException(
+        `Failed to start preview command (exit ${launchResult.exitCode}). ${launchResult.stderr || launchResult.stdout || 'No output'}`,
+      );
+    }
 
-    // Unref so the parent process can exit independently
-    childProcess.unref();
+    const pid = this.parsePidFromOutput(launchResult.stdout);
 
     // Store preview info
     this.activePreviews.set(sessionId, {
-      process: childProcess,
+      pid,
       port,
       status: 'starting',
       command: detectedCommand,
@@ -89,48 +109,11 @@ export class PreviewService {
       startedAt: new Date(),
     });
 
-    // Handle process output
-    childProcess.stdout?.on('data', (data) => {
-      console.log(`[Preview ${sessionId}] ${data.toString().trim()}`);
-
-      // Detect when server is ready
-      const output = data.toString().toLowerCase();
-      if (
-        output.includes('compiled successfully') ||
-        output.includes('ready on') ||
-        output.includes('local:') ||
-        output.includes('listening on') ||
-        output.includes('started server') ||
-        output.includes('accepting connections')
-      ) {
-        const preview = this.activePreviews.get(sessionId);
-        if (preview) {
-          preview.status = 'running';
-          console.log(`[Preview ${sessionId}] Server is now running on port ${port}`);
-        }
-      }
-    });
-
-    childProcess.stderr?.on('data', (data) => {
-      console.error(`[Preview ${sessionId}] Error: ${data.toString().trim()}`);
-    });
-
-    childProcess.on('error', (error) => {
-      console.error(`[Preview ${sessionId}] Process error:`, error);
-      const preview = this.activePreviews.get(sessionId);
-      if (preview) {
-        preview.status = 'error';
-      }
-    });
-
-    childProcess.on('exit', (code) => {
-      console.log(`[Preview ${sessionId}] Process exited with code ${code}`);
-      this.releasePort(port);
-      this.activePreviews.delete(sessionId);
-    });
-
-    // Wait a bit for the server to start
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    const didStart = await this.waitForPreviewServer(sessionId, port, 5000);
+    const previewAfterStart = this.activePreviews.get(sessionId);
+    if (previewAfterStart) {
+      previewAfterStart.status = didStart ? 'running' : 'starting';
+    }
 
     const preview = this.activePreviews.get(sessionId);
     return {
@@ -144,6 +127,7 @@ export class PreviewService {
    * Stop a preview server
    */
   async stopPreview(sessionId: string): Promise<{ message: string }> {
+    this.sessionsService.assertSessionUsable(sessionId);
     const preview = this.activePreviews.get(sessionId);
 
     if (!preview) {
@@ -151,14 +135,13 @@ export class PreviewService {
     }
 
     try {
-      preview.process.kill('SIGTERM');
-
-      // Wait for graceful shutdown
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Force kill if still running
-      if (!preview.process.killed) {
-        preview.process.kill('SIGKILL');
+      if (preview.pid && Number.isInteger(preview.pid)) {
+        await this.runShellInSession(
+          sessionId,
+          `kill -TERM ${preview.pid} >/dev/null 2>&1 || true; sleep 1; kill -0 ${preview.pid} >/dev/null 2>&1 && kill -KILL ${preview.pid} >/dev/null 2>&1 || true`,
+          undefined,
+          10000,
+        );
       }
 
       this.releasePort(preview.port);
@@ -191,22 +174,60 @@ export class PreviewService {
     };
   }
 
+  async getProxyTargetUrl(sessionId: string): Promise<string> {
+    const preview = this.activePreviews.get(sessionId);
+    if (!preview) {
+      throw new NotFoundException('No active preview for this session');
+    }
+
+    const container = await this.dockerRuntimeService.findContainerBySessionId(sessionId);
+    const inspect = await container.inspect();
+    if (!inspect.State.Running) {
+      throw new BadRequestException(`Container for session ${sessionId} is not running`);
+    }
+
+    const networks = inspect.NetworkSettings?.Networks || {};
+    const networkNames = Object.keys(networks);
+    if (networkNames.length === 0) {
+      throw new BadRequestException(`Container for session ${sessionId} has no network configuration`);
+    }
+
+    const ipAddress = networks[networkNames[0]]?.IPAddress;
+    if (!ipAddress) {
+      throw new BadRequestException(`Container for session ${sessionId} has no IP address`);
+    }
+
+    return `http://${ipAddress}:${preview.port}`;
+  }
+
+  async readStaticPreviewContent(
+    sessionId: string,
+    requestPath: string,
+  ): Promise<{ content: string; contentType: string }> {
+    const sanitizedPath = this.sanitizeStaticPath(requestPath);
+    const content = await this.dockerRuntimeService.readFileFromContainer(
+      sessionId,
+      sanitizedPath,
+    );
+
+    return {
+      content,
+      contentType: this.resolveContentType(sanitizedPath),
+    };
+  }
+
   /**
    * Auto-detect framework and command from workspace
    */
-  private async detectFramework(workspacePath: string, providedCommand?: string): Promise<{ detectedCommand: string | null; framework?: string }> {
+  private async detectFramework(sessionId: string, providedCommand?: string): Promise<{ detectedCommand: string | null; framework?: string }> {
     // If command provided, use it
     if (providedCommand) {
       return { detectedCommand: providedCommand };
     }
 
-    // Check for package.json
-    const packageJsonPath = path.join(workspacePath, 'package.json');
+    const packageJson = await this.readPackageJsonInSession(sessionId);
 
-    try {
-      const packageJsonContent = await fs.readFile(packageJsonPath, 'utf-8');
-      const packageJson = JSON.parse(packageJsonContent);
-
+    if (packageJson) {
       // Detect framework
       let framework: string | undefined;
       let command: string | null = null;
@@ -246,22 +267,17 @@ export class PreviewService {
       }
 
       return { detectedCommand: command, framework };
-    } catch (error) {
-      // No package.json found - check for static HTML
-      try {
-        const files = await fs.readdir(workspacePath);
-        if (files.some(f => f.endsWith('.html'))) {
-          return {
-            detectedCommand: 'npx serve -s . --listen $PORT',
-            framework: 'Static HTML',
-          };
-        }
-      } catch {
-        // Ignore
-      }
-
-      return { detectedCommand: null };
     }
+
+    const hasHtml = await this.hasAnyHtmlInSessionWorkspace(sessionId);
+    if (hasHtml) {
+      return {
+        detectedCommand: 'npx serve -s . -l tcp://0.0.0.0:$PORT',
+        framework: 'Static HTML',
+      };
+    }
+
+    return { detectedCommand: null };
   }
 
   /**
@@ -292,12 +308,150 @@ export class PreviewService {
     console.log('Cleaning up all preview processes...');
     for (const [sessionId, preview] of this.activePreviews.entries()) {
       try {
-        preview.process.kill('SIGTERM');
+        if (preview.pid && Number.isInteger(preview.pid)) {
+          await this.runShellInSession(
+            sessionId,
+            `kill -TERM ${preview.pid} >/dev/null 2>&1 || true`,
+            undefined,
+            5000,
+          );
+        }
         this.releasePort(preview.port);
       } catch (error) {
         console.error(`Error killing preview process for session ${sessionId}:`, error);
       }
     }
     this.activePreviews.clear();
+  }
+
+  private async runShellInSession(
+    sessionId: string,
+    script: string,
+    env?: Record<string, string>,
+    timeoutMs: number = 30000,
+  ): Promise<{ exitCode: number; stdout: string; stderr: string }> {
+    return this.dockerRuntimeService.execInContainerBySessionId(
+      sessionId,
+      ['sh', '-c', script],
+      '/workspace',
+      env,
+      timeoutMs,
+    );
+  }
+
+  private async readPackageJsonInSession(sessionId: string): Promise<any | null> {
+    const existsResult = await this.runShellInSession(
+      sessionId,
+      '[ -f /workspace/package.json ]',
+      undefined,
+      10000,
+    );
+    if (existsResult.exitCode !== 0) {
+      return null;
+    }
+
+    const readResult = await this.runShellInSession(
+      sessionId,
+      'cat /workspace/package.json',
+      undefined,
+      10000,
+    );
+    if (readResult.exitCode !== 0) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(readResult.stdout);
+    } catch {
+      return null;
+    }
+  }
+
+  private async hasAnyHtmlInSessionWorkspace(sessionId: string): Promise<boolean> {
+    const htmlResult = await this.runShellInSession(
+      sessionId,
+      'ls /workspace/*.html >/dev/null 2>&1',
+      undefined,
+      10000,
+    );
+    return htmlResult.exitCode === 0;
+  }
+
+  private parsePidFromOutput(output: string): number | undefined {
+    const trimmed = (output || '').trim();
+    if (!trimmed) {
+      return undefined;
+    }
+    const firstLine = trimmed.split('\n')[0].trim();
+    const pid = Number.parseInt(firstLine, 10);
+    return Number.isInteger(pid) && pid > 0 ? pid : undefined;
+  }
+
+  private async waitForPreviewServer(
+    sessionId: string,
+    port: number,
+    timeoutMs: number,
+  ): Promise<boolean> {
+    const startedAt = Date.now();
+    while (Date.now() - startedAt < timeoutMs) {
+      try {
+        const target = await this.getProxyTargetUrl(sessionId);
+        const response = await axios.get(target, {
+          timeout: 1000,
+          validateStatus: () => true,
+        });
+        if (response.status >= 100) {
+          return true;
+        }
+      } catch {
+        // keep polling until timeout
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 400));
+    }
+
+    console.warn(
+      `Preview server for session ${sessionId} did not become reachable on port ${port} within ${timeoutMs}ms`,
+    );
+    return false;
+  }
+
+  private sanitizeStaticPath(requestPath: string): string {
+    const trimmedPath = (requestPath || '/').split('?')[0].split('#')[0];
+    const normalizedPath = trimmedPath === '/' || trimmedPath === ''
+      ? 'index.html'
+      : trimmedPath.replace(/^\/+/, '');
+
+    if (normalizedPath.includes('..')) {
+      throw new BadRequestException('Invalid static preview path');
+    }
+
+    return normalizedPath;
+  }
+
+  private resolveContentType(filePath: string): string {
+    const lowercase = filePath.toLowerCase();
+    if (lowercase.endsWith('.html') || lowercase.endsWith('.htm')) {
+      return 'text/html; charset=utf-8';
+    }
+    if (lowercase.endsWith('.css')) {
+      return 'text/css; charset=utf-8';
+    }
+    if (lowercase.endsWith('.js')) {
+      return 'application/javascript; charset=utf-8';
+    }
+    if (lowercase.endsWith('.json')) {
+      return 'application/json; charset=utf-8';
+    }
+    if (lowercase.endsWith('.svg')) {
+      return 'image/svg+xml';
+    }
+    if (lowercase.endsWith('.png')) {
+      return 'image/png';
+    }
+    if (lowercase.endsWith('.jpg') || lowercase.endsWith('.jpeg')) {
+      return 'image/jpeg';
+    }
+    return 'text/plain; charset=utf-8';
   }
 }

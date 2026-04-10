@@ -3394,6 +3394,47 @@ export default function AppPage() {
     await refreshPreviewForSession(token, selectedSessionId);
   }
 
+  async function handleStartPreview(): Promise<void> {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+
+    if (!selectedSessionId) {
+      setPreviewState('unavailable');
+      setPreviewUrl(null);
+      return;
+    }
+
+    setPreviewState('loading');
+    setPreviewUrl(null);
+
+    try {
+      const startResponse = await fetch(`/api/preview/${selectedSessionId}/start`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!startResponse.ok) {
+        const detail = await readResponseErrorMessage(startResponse);
+        throw new Error(
+          detail
+            ? `Preview start failed (${startResponse.status}): ${detail}`
+            : `Preview start failed (${startResponse.status})`,
+        );
+      }
+
+      await refreshPreviewForSession(token, selectedSessionId);
+    } catch (error) {
+      console.error('Failed to start preview:', error);
+      setPreviewState('error');
+      setPreviewUrl(null);
+    }
+  }
+
   function handlePreviewLoad(): void {
     setPreviewState((currentState) => {
       if (currentState !== 'loading') {
@@ -3552,6 +3593,7 @@ export default function AppPage() {
       buildError={buildError}
       previewState={previewState}
       previewUrl={previewUrl}
+      onStartPreview={handleStartPreview}
       onRefreshPreview={handleRefreshPreview}
       onPreviewLoad={handlePreviewLoad}
       onPreviewError={handlePreviewError}

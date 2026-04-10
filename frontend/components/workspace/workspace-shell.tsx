@@ -186,6 +186,7 @@ interface WorkspaceShellProps {
   buildError?: string | null;
   previewState: WorkspacePreviewState;
   previewUrl: string | null;
+  onStartPreview: () => Promise<void>;
   onRefreshPreview: () => Promise<void>;
   onPreviewLoad: () => void;
   onPreviewError: () => void;
@@ -414,6 +415,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                 selectedSessionId={props.selectedSessionId}
                 previewState={props.previewState}
                 previewUrl={props.previewUrl}
+                onStartPreview={props.onStartPreview}
                 onRefreshPreview={props.onRefreshPreview}
                 onPreviewLoad={props.onPreviewLoad}
                 onPreviewError={props.onPreviewError}
@@ -1334,25 +1336,39 @@ function WorkspacePreviewPanel(props: {
   selectedSessionId: string | null;
   previewState: WorkspacePreviewState;
   previewUrl: string | null;
+  onStartPreview: () => Promise<void>;
   onRefreshPreview: () => Promise<void>;
   onPreviewLoad: () => void;
   onPreviewError: () => void;
 }) {
+  const canStartPreview =
+    Boolean(props.selectedSessionId) && props.previewState === 'unavailable';
   const canRefresh = Boolean(props.selectedSessionId) && props.previewState !== 'loading';
 
   return (
     <div className="rounded border border-gray-200 bg-gray-50 p-2" data-testid="workspace-preview-panel">
       <div className="mb-2 flex items-center justify-between gap-2">
         <p className="text-xs font-semibold text-gray-700">Live Preview</p>
-        <button
-          type="button"
-          data-testid="workspace-preview-refresh"
-          disabled={!canRefresh}
-          onClick={() => void props.onRefreshPreview()}
-          className="rounded bg-blue-600 px-3 py-1 text-xs text-white disabled:bg-blue-300"
-        >
-          {props.previewState === 'loading' ? 'Refreshing...' : 'Refresh'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            data-testid="workspace-preview-start"
+            disabled={!canStartPreview}
+            onClick={() => void props.onStartPreview()}
+            className="rounded border border-blue-300 bg-white px-3 py-1 text-xs text-blue-700 disabled:border-gray-200 disabled:text-gray-400"
+          >
+            Start Preview
+          </button>
+          <button
+            type="button"
+            data-testid="workspace-preview-refresh"
+            disabled={!canRefresh}
+            onClick={() => void props.onRefreshPreview()}
+            className="rounded bg-blue-600 px-3 py-1 text-xs text-white disabled:bg-blue-300"
+          >
+            {props.previewState === 'loading' ? 'Refreshing...' : 'Refresh'}
+          </button>
+        </div>
       </div>
 
       <PreviewStateMessage state={props.previewState} />
@@ -1753,7 +1769,7 @@ function PreviewStateMessage({ state }: { state: WorkspacePreviewState }) {
         tone="neutral"
         heading="Preview unavailable"
         body="No running preview is available for this active session yet."
-        action="Start a dev server in the session, then choose Refresh."
+        action="Choose Start Preview, then use Refresh if needed."
       />
     );
   }

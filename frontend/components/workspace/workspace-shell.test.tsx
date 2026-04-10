@@ -218,6 +218,7 @@ function renderWorkspaceShell(
     execState: idleExecState,
     previewState: unavailablePreviewState,
     previewUrl: null,
+    onStartPreview: async () => {},
     onRefreshPreview: async () => {},
     onPreviewLoad: () => {},
     onPreviewError: () => {},
@@ -588,6 +589,18 @@ describe('workspace shell component', () => {
     assert.match(html, /Preview loading/);
     assert.match(html, /Refreshing\.\.\./);
     assert.match(html, /data-testid="workspace-preview-iframe"/);
+  });
+
+  test('renders unavailable preview state with start preview action', () => {
+    const html = renderWorkspaceShell({
+      selectedSessionId: session.id,
+      previewState: 'unavailable',
+      previewUrl: null,
+    });
+
+    assert.match(html, /Preview unavailable/);
+    assert.match(html, /data-testid="workspace-preview-start"/);
+    assert.match(html, />Start Preview</);
   });
 
   test('renders ready preview state with iframe', () => {
