@@ -38,9 +38,12 @@ export class ProjectsController {
     return await this.projectsService.listProjects(req.user.userId);
   }
 
-  @Get(':id')
+  @Get(':id([0-9a-fA-F-]{36})')
   @HttpCode(HttpStatus.OK)
-  async getProject(@Param('id') id: string, @Request() req): Promise<Project> {
+  async getProject(
+    @Param('id') id: string,
+    @Request() req,
+  ): Promise<Project> {
     return await this.projectsService.getProjectByIdForUser(req.user.userId, id);
   }
 

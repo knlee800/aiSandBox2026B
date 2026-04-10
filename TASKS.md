@@ -6031,6 +6031,192 @@ Make normal file-creation prompts reliably produce valid file-action output so t
 
 ---
 
+## PREV-01 — Preview Availability Diagnostics
+
+**Family status:** COMPLETE and LOCKED
+
+**Current stage:** none active (PREV-01 wave complete)
+
+**Completed tasks:** PREV-01-01, PREV-01-02, PREV-01-03 — all COMPLETE and LOCKED.
+
+**Final checkpoint:** `docs/PREV-01-FINAL-CHECKPOINT.md`
+
+---
+
+#### PREV-01-01: Diagnose Preview Unavailable For AI-Created Files
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG INVESTIGATION (PREVIEW PATH, CORE WORKSPACE USABILITY)
+**Checkpoint:** `docs/PREV-01-01-CHECKPOINT.md`
+
+**Objective:**
+Determine why preview remains unavailable after AI creates files, and isolate whether preview correctly requires a running dev server or is failing to detect/serve a valid previewable output.
+
+**Scope:**
+- Inspect preview availability/status path
+- Inspect what conditions mark a session as previewable
+- Inspect whether static HTML files should be previewable or whether a dev server is always required
+- Inspect preview status endpoint behavior for the real failing scenario
+- Identify the exact failing/expected stage and document it clearly
+- No fix in this task unless a trivially obvious diagnostic correction is absolutely required
+
+**Out of scope:**
+- ❌ No preview redesign
+- ❌ No frontend redesign
+- ❌ No broad workspace redesign
+- ❌ No scope expansion
+- ❌ No feature work
+
+**Acceptance criteria:**
+- Exact preview gating/availability condition is identified clearly
+- Exact reason the real scenario showed "Preview unavailable" is documented
+- Issue is narrowed enough for one bounded follow-up fix task, or clearly confirmed as expected behavior
+- No unrelated work is mixed into this task
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → PREV-01-01 for full details
+
+---
+
+#### PREV-01-02: Fix Preview Start Source Of Truth For Session Workspace
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (PREVIEW PATH, WORKSPACE SOURCE-OF-TRUTH)
+**Checkpoint:** `docs/PREV-01-02-CHECKPOINT.md`
+
+**Objective:**
+Fix the preview start/status path so preview availability is determined from the actual session workspace/runtime source of truth, instead of failing when AI-created files exist in the session but preview start checks the wrong workspace source.
+
+**Scope:**
+- Inspect preview start/status source-of-truth assumptions
+- Align preview start with the real session workspace/runtime source
+- Preserve the existing preview status/proxy model
+- Keep the fix tightly scoped to preview availability/start detection
+- Verify preview can become available from the real session workspace path after the fix
+- Document exact cause and resolution
+
+**Out of scope:**
+- ❌ No broad preview redesign
+- ❌ No full static-site preview redesign unless strictly required by the current architecture
+- ❌ No frontend redesign
+- ❌ No workspace redesign
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+- Preview start/status uses the correct session workspace source
+- A valid previewable session no longer fails just because container-manager checked the wrong workspace location
+- Preview status/proxy behave coherently after start
+- Fix is documented clearly
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → PREV-01-02 for full details
+
+---
+
+#### PREV-01-03: Add Preview Start Action In Workspace UI
+
+**Status:** COMPLETE and LOCKED
+**Nature:** UX FIX (PREVIEW PATH, FRONTEND ACTION GAP)
+**Checkpoint:** `docs/PREV-01-03-CHECKPOINT.md`
+
+**Objective:**
+Add a user-visible preview start action in the workspace UI so users can actually start preview for AI-created previewable files instead of being stuck on a refresh-only unavailable state.
+
+**Scope:**
+- Inspect preview unavailable UI state in the workspace
+- Add a clear Start Preview action
+- Wire it to the existing preview start endpoint
+- Refresh preview status after successful start
+- Preserve existing preview refresh/status/proxy behavior
+- Verify the actual UI path can start preview for an AI-created index.html session
+
+**Out of scope:**
+- ❌ No backend preview redesign
+- ❌ No broad preview UX redesign
+- ❌ No workspace redesign
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+- Unavailable preview state includes a visible start action
+- Clicking it calls the existing preview start path
+- Preview status/proxy update correctly after success
+- Refresh-only dead-end is removed
+- Fix is documented clearly
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → PREV-01-03 for full details
+
+---
+
+## PROJ-01 — Project/Public Flow Diagnostics
+
+**Family status:** ACTIVE
+
+**Current stage:** PROJ-01-02 (COMPLETE and LOCKED)
+
+---
+
+#### PROJ-01-01: Diagnose Saved Project Open Flow And Public Projects Unauthorized Error
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG INVESTIGATION (PROJECT/PUBLIC FLOW, CORE PRODUCT USABILITY)
+**Checkpoint:** `docs/PROJ-01-01-CHECKPOINT.md`
+
+**Objective:**
+Determine why saved projects do not open correctly and why Public Projects fails with unauthorized, and isolate the exact failing stage(s) in the end-to-end project/public flow.
+
+**Scope:**
+- Trace the saved project open flow end to end
+- Trace the public projects load flow end to end
+- Inspect frontend request path, backend endpoint/guard path, and session/project binding behavior
+- Identify the exact failing stage(s) and document them clearly
+- No fix in this task unless a trivially obvious diagnostic correction is absolutely required
+
+**Out of scope:**
+- ❌ No project-system redesign
+- ❌ No public sharing redesign
+- ❌ No feature expansion
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+- Exact failing stage for saved project open is identified clearly
+- Exact failing stage for Public Projects unauthorized is identified clearly
+- Issue(s) are narrowed enough for one or two small bounded follow-up fix tasks
+- No unrelated work is mixed into this task
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → PROJ-01-01 for full details
+
+---
+
+#### PROJ-01-02: Fix Public Projects Route Collision
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (PROJECT/PUBLIC FLOW, ROUTING)
+**Checkpoint:** `docs/PROJ-01-02-CHECKPOINT.md`
+
+**Objective:**
+Fix the backend route collision so `GET /api/projects/public` resolves to the intended public-projects list endpoint instead of being intercepted by the authenticated `@Get(':id')` route in `ProjectsController`.
+
+**Scope:**
+- Inspect route ordering/resolution for projects/public endpoints
+- Apply the smallest safe fix so `/api/projects/public` resolves correctly
+- Preserve existing `/api/projects/:id` behavior
+- Preserve public project detail behavior
+- Verify public projects list works unauthenticated as intended
+
+**Out of scope:**
+- ❌ No public sharing redesign
+- ❌ No project-system redesign
+- ❌ No feature expansion
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+- `GET /api/projects/public` resolves to the intended public list endpoint
+- Public list works unauthenticated without wrong auth/route interception
+- Existing project-id routes remain intact
+- Fix is documented clearly
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → PROJ-01-02 for full details
+
+---
+
 ## AI-04 — Chat Persistence (Core Product Loop)
 
 **Current stage:** AI-04-01 (COMPLETE and LOCKED)
