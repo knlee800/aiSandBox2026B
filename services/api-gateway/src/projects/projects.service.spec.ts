@@ -23,6 +23,7 @@ describe('ProjectsService (PR-03-01)', () => {
   };
   let snapshotPersistenceService: {
     restoreSnapshot: jest.Mock;
+    listSnapshots: jest.Mock;
   };
 
   beforeEach(async () => {
@@ -40,6 +41,7 @@ describe('ProjectsService (PR-03-01)', () => {
     };
     snapshotPersistenceService = {
       restoreSnapshot: jest.fn(),
+      listSnapshots: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -197,6 +199,15 @@ describe('ProjectsService (PR-03-01)', () => {
       createdAt: '2026-04-04T00:00:00.000Z',
       fileCount: 1,
     });
+    snapshotPersistenceService.listSnapshots.mockResolvedValue([
+      {
+        id: 'snapshot-latest',
+        userId: 'user-1',
+        label: null,
+        createdAt: '2026-04-05T00:00:00.000Z',
+        fileCount: 1,
+      },
+    ]);
 
     const result = await service.openProjectIntoSession({
       userId: 'user-1',
@@ -211,6 +222,101 @@ describe('ProjectsService (PR-03-01)', () => {
       snapshotId: 'snapshot-1',
     });
     expect(result.restoredSnapshotId).toBe('snapshot-1');
+    expect(snapshotPersistenceService.listSnapshots).not.toHaveBeenCalled();
+  });
+
+  it('opens project into session and restores latest snapshot by default when snapshotId is omitted', async () => {
+    projectRepository.findOne.mockResolvedValue({
+      id: 'project-1',
+      userId: 'user-1',
+      name: 'Project A',
+    });
+    sessionService.getSessionById.mockResolvedValue({
+      id: 'session-1',
+      userId: 'user-1',
+      terminatedAt: null,
+      projectId: null,
+    });
+    sessionRepository.update.mockResolvedValue({ affected: 1 });
+    snapshotPersistenceService.listSnapshots.mockResolvedValue([
+      {
+        id: 'snapshot-latest',
+        userId: 'user-1',
+        label: null,
+        createdAt: '2026-04-06T00:00:00.000Z',
+        fileCount: 1,
+      },
+      {
+        id: 'snapshot-older',
+        userId: 'user-1',
+        label: null,
+        createdAt: '2026-04-05T00:00:00.000Z',
+        fileCount: 1,
+      },
+    ]);
+    snapshotPersistenceService.restoreSnapshot.mockResolvedValue({
+      id: 'snapshot-latest',
+      userId: 'user-1',
+      label: null,
+      createdAt: '2026-04-06T00:00:00.000Z',
+      fileCount: 1,
+    });
+
+    const result = await service.openProjectIntoSession({
+      userId: 'user-1',
+      projectId: 'project-1',
+      sessionId: 'session-1',
+    });
+
+    expect(snapshotPersistenceService.listSnapshots).toHaveBeenCalledWith('user-1');
+    expect(snapshotPersistenceService.restoreSnapshot).toHaveBeenCalledWith({
+      userId: 'user-1',
+      sessionId: 'session-1',
+      snapshotId: 'snapshot-latest',
+    });
+    expect(result).toEqual({
+      projectId: 'project-1',
+      sessionId: 'session-1',
+      restoredSnapshotId: 'snapshot-latest',
+    });
+    expect(sessionRepository.update).toHaveBeenCalledWith(
+      { id: 'session-1' },
+      { projectId: 'project-1' },
+    );
+  });
+
+  it('opens project into session safely when no snapshots exist and snapshotId is omitted', async () => {
+    projectRepository.findOne.mockResolvedValue({
+      id: 'project-1',
+      userId: 'user-1',
+      name: 'Project A',
+    });
+    sessionService.getSessionById.mockResolvedValue({
+      id: 'session-1',
+      userId: 'user-1',
+      terminatedAt: null,
+      projectId: null,
+    });
+    sessionRepository.update.mockResolvedValue({ affected: 1 });
+    snapshotPersistenceService.listSnapshots.mockResolvedValue([]);
+
+    const result = await service.openProjectIntoSession({
+      userId: 'user-1',
+      projectId: 'project-1',
+      sessionId: 'session-1',
+    });
+
+    expect(snapshotPersistenceService.listSnapshots).toHaveBeenCalledWith('user-1');
+    expect(snapshotPersistenceService.restoreSnapshot).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      projectId: 'project-1',
+      sessionId: 'session-1',
+      restoredSnapshotId: null,
+    });
+    expect(sessionRepository.update).toHaveBeenCalledWith(
+      { id: 'session-1' },
+      { projectId: 'project-1' },
+    );
   });
 
   it('legacy sessions without project_id still work for association', async () => {

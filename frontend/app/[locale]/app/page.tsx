@@ -1024,16 +1024,26 @@ export default function AppPage() {
     setProjectActionMessage(null);
     setProjectActionError(null);
     try {
-      await openWorkspaceProject({
+      const openResult = await openWorkspaceProject({
         token,
         projectId: selectedProjectId,
         sessionId: selectedSessionId,
         snapshotId: selectedSnapshotId ?? undefined,
       });
+      const openSessionId = openResult.sessionId;
+      setSelectedSessionId(openSessionId);
+
+      const loadedFileContent = await loadWorkspaceFilesForSession(token, openSessionId);
+      if (!loadedFileContent && openResult.restoredSnapshotId) {
+        await new Promise<void>((resolve) => {
+          window.setTimeout(() => resolve(), 150);
+        });
+        await loadWorkspaceFilesForSession(token, openSessionId);
+      }
+
+      await refreshPreviewForSession(token, openSessionId);
+      await loadCheckpoints(token, openSessionId);
       await loadSessions(token);
-      await loadWorkspaceFilesForSession(token, selectedSessionId);
-      await refreshPreviewForSession(token, selectedSessionId);
-      await loadCheckpoints(token, selectedSessionId);
       setProjectActionState('success');
       setProjectActionMessage('Project opened in selected session.');
       setProjectActionError(null);
@@ -3147,7 +3157,7 @@ export default function AppPage() {
     setFileSurfaceError(null);
   }
 
-  async function loadWorkspaceFilesForSession(token: string, sessionId: string): Promise<void> {
+  async function loadWorkspaceFilesForSession(token: string, sessionId: string): Promise<boolean> {
     const requestId = fileNavigationRequestIdRef.current + 1;
     fileNavigationRequestIdRef.current = requestId;
     fileContentRequestIdRef.current += 1;
@@ -3169,7 +3179,7 @@ export default function AppPage() {
       });
 
       if (fileNavigationRequestIdRef.current !== requestId) {
-        return;
+        return false;
       }
 
       const firstFilePath = findFirstFilePath(tree);
@@ -3181,15 +3191,15 @@ export default function AppPage() {
         setFileSaveState('clean');
         setFileSaveError(null);
         setFileSurfaceState('empty');
-        return;
+        return false;
       }
 
       setWorkspaceFileTree(tree);
-      await loadWorkspaceFileContent(token, sessionId, firstFilePath);
+      return await loadWorkspaceFileContent(token, sessionId, firstFilePath);
     } catch (error) {
       console.error('Failed to load workspace files:', error);
       if (fileNavigationRequestIdRef.current !== requestId) {
-        return;
+        return false;
       }
       const errorMessage = error instanceof Error ? error.message : String(error);
       if (errorMessage.includes('(410)')) {
@@ -3206,7 +3216,7 @@ export default function AppPage() {
           return fallbackSession ? fallbackSession.id : null;
         });
         resetWorkspaceFileSurface();
-        return;
+        return false;
       }
       setWorkspaceFileTree([]);
       setSelectedFilePath(null);
@@ -3216,6 +3226,7 @@ export default function AppPage() {
       setFileSaveError(null);
       setFileSurfaceState('error');
       setFileSurfaceError('Failed to load workspace files.');
+      return false;
     }
   }
 

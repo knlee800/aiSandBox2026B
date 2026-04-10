@@ -14513,6 +14513,99 @@ PROJ-01-01 isolated the failure:
 
 ---
 
+### PROJ-01-03: Make Project Open Restore Latest Saved Snapshot By Default
+
+**Task ID:** PROJ-01-03
+**Family:** PROJ-01 (Project/Public Flow Diagnostics)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** UX FIX (PROJECT OPEN FLOW, PERSISTENCE EXPECTATION)
+**Dependencies:** PROJ-01-01 (COMPLETE and LOCKED)
+**Checkpoint:** `docs/PROJ-01-03-CHECKPOINT.md`
+
+**Objective:**
+
+Make opening a saved project restore the latest saved project snapshot by default so users experience "open project" as actually opening their saved work rather than only rebinding session metadata.
+
+**Why this exists:**
+
+PROJ-01-01 isolated the remaining gap:
+- Opening a project without `snapshotId` only binds `session.projectId`
+- Workspace contents do not restore
+- Users reasonably expect "open project" to open the saved project state
+
+**Bounded scope only:**
+
+- Inspect the current project open flow
+- Identify the smallest safe way to restore the latest saved snapshot by default when opening a project
+- Preserve explicit snapshot restore behavior if already supported
+- Preserve project/session binding behavior
+- Verify opening a saved project restores usable content through the normal UI/API path
+
+**Explicitly out of scope:**
+
+- ❌ No project-system redesign
+- ❌ No snapshot-system redesign
+- ❌ No feature expansion
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- Opening a project without explicit `snapshotId` restores the latest saved snapshot by default
+- Explicit snapshot behavior remains intact
+- Project/session binding remains intact
+- Fix is documented clearly in `docs/PROJ-01-03-CHECKPOINT.md`
+
+---
+
+### PROJ-01-04: Refresh Workspace State After Project Open
+
+**Task ID:** PROJ-01-04
+**Family:** PROJ-01 (Project/Public Flow Diagnostics)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (PROJECT OPEN FLOW, FRONTEND REFRESH)
+**Dependencies:** PROJ-01-03 (COMPLETE and LOCKED)
+**Checkpoint:** `docs/PROJ-01-04-CHECKPOINT.md`
+
+**Objective:**
+
+Ensure that after a project is opened and restored successfully, the workspace UI refreshes its file tree/editor state so the restored project contents actually appear to the user.
+
+**Why this exists:**
+
+Real usage still shows:
+- "project opened in selected session"
+- But no files appear in the editor/file tree afterward
+
+This suggests the backend open/restore may be succeeding, but the frontend workspace state is not being refreshed coherently after the open action.
+
+**Bounded scope only:**
+
+- Inspect the frontend open-project success path
+- Inspect whether file tree/editor reload is triggered after project open
+- Inspect whether selected file/editor content need reset/reload
+- Apply the smallest safe fix so opened/restored project contents appear in the workspace
+- Preserve existing project open backend behavior
+- Verify the real UI path now shows files after project open
+
+**Explicitly out of scope:**
+
+- ❌ No project-system redesign
+- ❌ No snapshot-system redesign
+- ❌ No workspace redesign
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- After successful project open, workspace file tree refreshes correctly
+- Restored files become visible in the UI
+- Editor/content state is coherent after open
+- Existing project open behavior remains intact
+- Fix is documented clearly in `docs/PROJ-01-04-CHECKPOINT.md`
+
+---
+
 ### AI-04-01: Backend Chat Persistence Wiring
 
 **Task ID:** AI-04-01

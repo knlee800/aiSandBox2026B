@@ -171,24 +171,27 @@ export class ProjectsService {
     sessionId: string;
     restoredSnapshotId: string | null;
   }> {
+    const snapshotIdToRestore =
+      args.snapshotId ?? (await this.snapshotPersistenceService.listSnapshots(args.userId))[0]?.id;
+
     await this.associateSessionWithProject({
       userId: args.userId,
       projectId: args.projectId,
       sessionId: args.sessionId,
     });
 
-    if (args.snapshotId) {
+    if (snapshotIdToRestore) {
       await this.snapshotPersistenceService.restoreSnapshot({
         userId: args.userId,
         sessionId: args.sessionId,
-        snapshotId: args.snapshotId,
+        snapshotId: snapshotIdToRestore,
       });
     }
 
     return {
       projectId: args.projectId,
       sessionId: args.sessionId,
-      restoredSnapshotId: args.snapshotId ?? null,
+      restoredSnapshotId: snapshotIdToRestore ?? null,
     };
   }
 }
