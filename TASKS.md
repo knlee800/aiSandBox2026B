@@ -6149,7 +6149,7 @@ Add a user-visible preview start action in the workspace UI so users can actuall
 
 **Family status:** ACTIVE
 
-**Current stage:** PROJ-01-04 (COMPLETE and LOCKED)
+**Current stage:** PROJ-01-08 (COMPLETE and LOCKED)
 
 ---
 
@@ -6280,6 +6280,138 @@ Ensure that after a project is opened and restored successfully, the workspace U
 - Fix is documented clearly
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → PROJ-01-04 for full details
+
+---
+
+#### PROJ-01-05: Diagnose Project Open Still Shows Empty Workspace
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG INVESTIGATION (PROJECT OPEN FLOW, REAL UI FAILURE)
+**Checkpoint:** `docs/PROJ-01-05-CHECKPOINT.md`
+
+**Objective:**
+Determine why the real UI still shows an empty workspace after "Project opened in selected session," despite the earlier backend/open-refresh fixes.
+
+**Scope:**
+- Reproduce the real UI/API project-open flow again
+- Inspect selected-session state before and after open
+- Inspect backend open/restore result for the exact project used
+- Inspect frontend file-tree reload, selected-file reset, and session-target logic
+- Identify the exact failing stage and document it clearly
+- No fix in this task unless a trivially obvious diagnostic correction is absolutely required, which normally should not be done here
+
+**Out of scope:**
+- ❌ No project-system redesign
+- ❌ No snapshot-system redesign
+- ❌ No workspace redesign
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+- The exact remaining failing stage is identified clearly
+- Evidence is documented across backend/frontend boundaries as needed
+- The issue is narrowed enough for one bounded follow-up fix task
+- No unrelated work is mixed into this task
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → PROJ-01-05 for full details
+
+---
+
+#### PROJ-01-06: Make Project Open Use Project Scoped Latest Snapshot
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (PROJECT OPEN FLOW, SNAPSHOT SELECTION)
+**Checkpoint:** `docs/PROJ-01-06-CHECKPOINT.md`
+
+**Objective:**
+Fix project open so the default snapshot chosen for restore comes from the selected project's own latest snapshot, instead of using the user's global latest snapshot.
+
+**Scope:**
+- Inspect the frontend snapshot-selection logic used by project open
+- Switch the default restore choice to the selected project's own latest snapshot
+- Preserve explicit snapshot selection behavior if present
+- Preserve safe bind-only fallback when the selected project has no snapshots
+- Verify opening a saved project through the real UI/API path restores the correct project content
+
+**Out of scope:**
+- ❌ No project-system redesign
+- ❌ No snapshot-system redesign
+- ❌ No workspace redesign
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+- Default project open no longer uses unrelated global latest snapshots
+- Opening a saved project restores the selected project's latest snapshot when available
+- Projects with no snapshots still behave safely
+- Fix is documented clearly
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → PROJ-01-06 for full details
+
+---
+
+#### PROJ-01-07: Diagnose Real UI Save And Open Project Flow Still Opens Empty
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG INVESTIGATION (PROJECT FLOW, REAL USER PATH)
+**Checkpoint:** `docs/PROJ-01-07-CHECKPOINT.md`
+
+**Objective:**
+Determine why the real UI still opens a saved project into an empty workspace, despite earlier fixes to snapshot selection and refresh behavior.
+
+**Scope:**
+- Trace the exact real user save/open flow end to end
+- Inspect what "save project" actually persists
+- Inspect whether a project-scoped snapshot is created/updated during the real save flow
+- Inspect what exact data the real open flow sends
+- Inspect whether the selected project actually has a restorable snapshot at open time
+- Identify the exact remaining failing stage and document it clearly
+- No fix in this task unless a trivially obvious diagnostic correction is absolutely required, which normally should not be done here
+
+**Out of scope:**
+- ❌ No project-system redesign
+- ❌ No snapshot-system redesign
+- ❌ No workspace redesign
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+- Exact remaining failure is identified clearly
+- Clear distinction is made between project metadata save vs content snapshot save if relevant
+- Issue is narrowed enough for one bounded follow-up fix task
+- No unrelated work is mixed into this task
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → PROJ-01-07 for full details
+
+---
+
+#### PROJ-01-08: Auto Save Initial Project Snapshot On Project Create
+
+**Status:** COMPLETE and LOCKED
+**Nature:** UX FIX (PROJECT SAVE SEMANTICS, CONTENT PERSISTENCE)
+**Checkpoint:** `docs/PROJ-01-08-CHECKPOINT.md`
+
+**Objective:**
+Make project creation persist the current workspace content by automatically saving an initial project-scoped snapshot, so users experience "create/save project" as saving both project identity and current files.
+
+**Scope:**
+- Inspect the current project create flow
+- Automatically create the initial project-scoped snapshot when creating a project from a workspace
+- Preserve existing explicit Save Snapshot behavior
+- Preserve safe behavior when workspace is empty
+- Verify that a newly created project can later be opened with its content intact
+
+**Out of scope:**
+- ❌ No project-system redesign
+- ❌ No snapshot-system redesign
+- ❌ No workspace redesign
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+- Creating a project from a workspace with files results in a project-scoped snapshot being created automatically
+- Later opening that project restores content without requiring a separate manual snapshot first
+- Empty-workspace project creation remains safe
+- Existing explicit snapshot behavior remains intact
+- Fix is documented clearly
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → PROJ-01-08 for full details
 
 ---
 
@@ -6768,7 +6900,7 @@ The core workspace, persistence, commercial foundation, advanced AI features, an
 
 **Family status:** ACTIVE
 
-**Current stage:** UX-02-01 (PLANNED)
+**Current stage:** UX-02-02 (COMPLETE and LOCKED)
 
 ---
 
@@ -6802,6 +6934,41 @@ Add a real user registration page and wire the login-page registration CTA to it
 - Existing login flow remains intact
 
 **Dependencies:** UX-01 (Complete and Locked)
+
+---
+
+#### UX-02-02: Simplify Project Management UI And Make Visibility Secondary
+
+**Status:** COMPLETE and LOCKED
+**Nature:** UX FIX (PROJECT AREA CLARITY, INFORMATION ARCHITECTURE)
+**Checkpoint:** `docs/UX-02-02-CHECKPOINT.md`
+
+**Objective:**
+Restructure the confusing project area so normal project creation/opening is clear, private-by-default, and visually separated from public-sharing controls.
+
+**Scope:**
+- Simplify the project area UI/labels/layout
+- Make normal project creation/opening the primary path
+- Make project visibility/share controls secondary
+- Keep private as the default for normal project creation
+- Separate "My Projects" from "Public Projects" visually and conceptually
+- Preserve existing project/public functionality
+- Verify the project workflow is clearer after the change
+
+**Out of scope:**
+- ❌ No project-system redesign
+- ❌ No public-sharing feature redesign
+- ❌ No backend behavior redesign unless a tiny UI-support change is strictly required
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+- Creating/opening a normal project is visually obvious
+- Private/public choice is no longer required-feeling during normal project creation
+- Public project browsing is clearly separate from private project management
+- Existing functionality remains intact
+- Fix is documented clearly
+
+**Dependencies:** UX-02-01 (Complete and Locked)
 
 ---
 

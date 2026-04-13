@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import {
+  associateWorkspaceProjectSession,
   createWorkspaceProject,
   forkPublicWorkspaceProject,
   loadPublicWorkspaceProjectDetail,
@@ -113,6 +114,34 @@ describe('workspace-projects.logic', () => {
 
     assert.equal(calls[0].url, '/api/projects/project-1/open');
     assert.equal(result.restoredSnapshotId, 'snapshot-1');
+  });
+
+  test('associateWorkspaceProjectSession binds selected session without restore', async () => {
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    const fetchImpl = async (url: string, init?: RequestInit): Promise<Response> => {
+      calls.push({ url, init });
+      return new Response(
+        JSON.stringify({
+          id: 'project-1',
+          userId: 'user-1',
+          name: 'Main Project',
+          visibility: 'private',
+          createdAt: '2026-04-03T00:00:00.000Z',
+          updatedAt: '2026-04-03T00:00:00.000Z',
+        }),
+        { status: 200 },
+      );
+    };
+
+    const result = await associateWorkspaceProjectSession({
+      token: 'token',
+      projectId: 'project-1',
+      sessionId: 'session-1',
+      fetchImpl: fetchImpl as typeof fetch,
+    });
+
+    assert.equal(calls[0].url, '/api/projects/project-1/sessions/session-1');
+    assert.equal(result.id, 'project-1');
   });
 
   test('loadPublicWorkspaceProjects returns bounded public list', async () => {

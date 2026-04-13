@@ -38,6 +38,13 @@ interface OpenProjectArgs {
   fetchImpl?: typeof fetch;
 }
 
+interface AssociateProjectSessionArgs {
+  token: string;
+  projectId: string;
+  sessionId: string;
+  fetchImpl?: typeof fetch;
+}
+
 interface UpdateProjectVisibilityArgs {
   token: string;
   projectId: string;
@@ -201,4 +208,27 @@ export async function openWorkspaceProject(
     sessionId: string;
     restoredSnapshotId: string | null;
   };
+}
+
+export async function associateWorkspaceProjectSession(
+  args: AssociateProjectSessionArgs,
+): Promise<WorkspaceProjectSummary> {
+  const response = await (args.fetchImpl ?? fetch)(
+    `/api/projects/${args.projectId}/sessions/${args.sessionId}`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${args.token}`,
+      },
+    },
+  );
+
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => null)) as
+      | { message?: string }
+      | null;
+    throw new Error(trimMessage(payload?.message, 'Failed to associate project with session.'));
+  }
+
+  return (await response.json()) as WorkspaceProjectSummary;
 }

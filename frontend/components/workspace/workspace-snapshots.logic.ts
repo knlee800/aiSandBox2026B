@@ -38,11 +38,50 @@ interface ImportWorkspaceArchiveArgs {
   fetchImpl?: typeof fetch;
 }
 
+const PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX = '[project-id:';
+const PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX = ']';
+
 function trimMessage(raw: unknown, fallback: string): string {
   if (typeof raw === 'string' && raw.trim().length > 0) {
     return raw.trim();
   }
   return fallback;
+}
+
+export function buildProjectScopedSnapshotLabel(projectId: string): string {
+  return `${PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX}${projectId.trim()}${PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX}`;
+}
+
+function parseProjectIdFromSnapshotLabel(label: string | null): string | null {
+  if (!label) {
+    return null;
+  }
+  const trimmed = label.trim();
+  if (
+    !trimmed.startsWith(PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX) ||
+    !trimmed.endsWith(PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX)
+  ) {
+    return null;
+  }
+  const rawProjectId = trimmed.slice(
+    PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX.length,
+    trimmed.length - PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX.length,
+  );
+  return rawProjectId.trim() ? rawProjectId.trim() : null;
+}
+
+export function resolveProjectScopedLatestSnapshotId(args: {
+  snapshots: WorkspaceSnapshotSummary[];
+  projectId: string;
+}): string | null {
+  const normalizedProjectId = args.projectId.trim();
+  if (!normalizedProjectId) {
+    return null;
+  }
+  const matchedSnapshot = args.snapshots.find(
+    (snapshot) => parseProjectIdFromSnapshotLabel(snapshot.label) === normalizedProjectId,
+  );
+  return matchedSnapshot?.id ?? null;
 }
 
 export async function saveWorkspaceSnapshot(

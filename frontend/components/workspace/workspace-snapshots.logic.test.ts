@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import {
+  buildProjectScopedSnapshotLabel,
   exportWorkspaceArchive,
   importWorkspaceArchive,
   loadWorkspaceSnapshots,
+  resolveProjectScopedLatestSnapshotId,
   restoreWorkspaceSnapshot,
   saveWorkspaceSnapshot,
 } from './workspace-snapshots.logic';
@@ -119,5 +121,58 @@ describe('workspace-snapshots.logic', () => {
 
     assert.equal(calls[0].url, '/api/sessions/session-1/import');
     assert.equal(result.importedFileCount, 1);
+  });
+
+  test('buildProjectScopedSnapshotLabel encodes project id marker', () => {
+    const label = buildProjectScopedSnapshotLabel('project-123');
+    assert.equal(label, '[project-id:project-123]');
+  });
+
+  test('resolveProjectScopedLatestSnapshotId selects latest matching project snapshot', () => {
+    const snapshotId = resolveProjectScopedLatestSnapshotId({
+      projectId: 'project-1',
+      snapshots: [
+        {
+          id: 'snapshot-newer-other',
+          userId: 'user-1',
+          label: '[project-id:project-2]',
+          createdAt: '2026-04-09T12:00:00.000Z',
+          fileCount: 3,
+        },
+        {
+          id: 'snapshot-newer-project-1',
+          userId: 'user-1',
+          label: '[project-id:project-1]',
+          createdAt: '2026-04-09T11:00:00.000Z',
+          fileCount: 7,
+        },
+        {
+          id: 'snapshot-older-project-1',
+          userId: 'user-1',
+          label: '[project-id:project-1]',
+          createdAt: '2026-04-09T10:00:00.000Z',
+          fileCount: 2,
+        },
+      ],
+    });
+
+    assert.equal(snapshotId, 'snapshot-newer-project-1');
+  });
+
+  test('resolveProjectScopedLatestSnapshotId returns null when no project snapshot exists', () => {
+    const snapshotId = resolveProjectScopedLatestSnapshotId({
+      projectId: 'project-1',
+      snapshots: [
+        {
+          id: 'snapshot-other',
+          userId: 'user-1',
+          label: '[project-id:project-2]',
+          createdAt: '2026-04-09T12:00:00.000Z',
+          fileCount: 1,
+        },
+      ],
+    });
+
+    assert.equal(snapshotId, null);
   });
 });

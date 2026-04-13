@@ -1914,6 +1914,9 @@ describe('workspace shell snapshot surface', () => {
     });
 
     assert.match(html, /history-project-surface/);
+    assert.match(html, /My Projects/);
+    assert.match(html, /private by default/);
+    assert.match(html, /Sharing \/ Visibility \(optional\)/);
     assert.match(html, /My Workspace Project/);
     assert.match(html, /Create Project/);
     assert.match(html, /Open Project/);

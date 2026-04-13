@@ -75,14 +75,17 @@ import {
   toQuotaRateLimitGuidance,
 } from '@/components/workspace/workspace-quota-usage.logic';
 import {
+  buildProjectScopedSnapshotLabel,
   exportWorkspaceArchive,
   importWorkspaceArchive,
   loadWorkspaceSnapshots,
+  resolveProjectScopedLatestSnapshotId,
   restoreWorkspaceSnapshot,
   saveWorkspaceSnapshot,
   type WorkspaceSnapshotSummary,
 } from '@/components/workspace/workspace-snapshots.logic';
 import {
+  associateWorkspaceProjectSession,
   createWorkspaceProject,
   forkPublicWorkspaceProject,
   loadPublicWorkspaceProjectDetail,
@@ -906,7 +909,7 @@ export default function AppPage() {
         if (currentSelectedSnapshotId && snapshots.some((snapshot) => snapshot.id === currentSelectedSnapshotId)) {
           return currentSelectedSnapshotId;
         }
-        return snapshots.length > 0 ? snapshots[0].id : null;
+        return null;
       });
       setSnapshotListState('ready');
     } catch (error) {
@@ -989,12 +992,39 @@ export default function AppPage() {
         token,
         name: trimmedName,
       });
+      let createdInitialProjectSnapshot = false;
+      if (selectedSessionId) {
+        try {
+          const currentWorkspaceTree = await loadWorkspaceFileTree({
+            token,
+            sessionId: selectedSessionId,
+          });
+          const firstWorkspaceFilePath = findFirstFilePath(currentWorkspaceTree);
+          if (firstWorkspaceFilePath) {
+            const initialProjectSnapshot = await saveWorkspaceSnapshot({
+              token,
+              sessionId: selectedSessionId,
+              label: buildProjectScopedSnapshotLabel(createdProject.id),
+            });
+            createdInitialProjectSnapshot = true;
+            await loadWorkspaceSnapshotsForUser(token);
+            setSelectedSnapshotId(initialProjectSnapshot.id);
+          }
+        } catch (error) {
+          // Project creation must stay successful even if initial snapshot automation fails.
+          console.error('Failed to auto-save initial project snapshot:', error);
+        }
+      }
       await loadWorkspaceProjectsForUser(token);
       setSelectedProjectId(createdProject.id);
       setSelectedProjectVisibility(createdProject.visibility === 'public' ? 'public' : 'private');
       setProjectNameInput('');
       setProjectActionState('success');
-      setProjectActionMessage('Project created.');
+      setProjectActionMessage(
+        createdInitialProjectSnapshot
+          ? 'Project created with initial snapshot.'
+          : 'Project created.',
+      );
       setProjectActionError(null);
     } catch (error) {
       setProjectActionState('error');
@@ -1024,12 +1054,32 @@ export default function AppPage() {
     setProjectActionMessage(null);
     setProjectActionError(null);
     try {
-      const openResult = await openWorkspaceProject({
-        token,
+      const fallbackProjectSnapshotId = resolveProjectScopedLatestSnapshotId({
+        snapshots: workspaceSnapshots,
         projectId: selectedProjectId,
-        sessionId: selectedSessionId,
-        snapshotId: selectedSnapshotId ?? undefined,
       });
+      const snapshotIdToOpen =
+        selectedSnapshotId?.trim() ? selectedSnapshotId.trim() : fallbackProjectSnapshotId ?? undefined;
+      let openResult: { projectId: string; sessionId: string; restoredSnapshotId: string | null };
+      if (snapshotIdToOpen) {
+        openResult = await openWorkspaceProject({
+          token,
+          projectId: selectedProjectId,
+          sessionId: selectedSessionId,
+          snapshotId: snapshotIdToOpen,
+        });
+      } else {
+        await associateWorkspaceProjectSession({
+          token,
+          projectId: selectedProjectId,
+          sessionId: selectedSessionId,
+        });
+        openResult = {
+          projectId: selectedProjectId,
+          sessionId: selectedSessionId,
+          restoredSnapshotId: null,
+        };
+      }
       const openSessionId = openResult.sessionId;
       setSelectedSessionId(openSessionId);
 
@@ -1311,6 +1361,7 @@ export default function AppPage() {
       const savedSnapshot = await saveWorkspaceSnapshot({
         token,
         sessionId: selectedSessionId,
+        label: selectedProjectId ? buildProjectScopedSnapshotLabel(selectedProjectId) : undefined,
       });
       await loadWorkspaceSnapshotsForUser(token);
       setSelectedSnapshotId(savedSnapshot.id);
