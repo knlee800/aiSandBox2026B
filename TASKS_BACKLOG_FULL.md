@@ -16172,6 +16172,95 @@ REL-02-01 deployment rehearsal passed, but concrete runbook mismatches were foun
 
 ---
 
+### OPS-01-02: Make Stop Terminate Flow Physically Remove Session Containers
+
+**Task ID:** OPS-01-02
+**Family:** OPS-01 (Runtime Cleanup Diagnostics)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (RUNTIME CLEANUP, SESSION CONTAINERS)
+**Dependencies:** OPS-01-01 (Complete and Locked)
+**Checkpoint:** `docs/OPS-01-02-CHECKPOINT.md`
+
+**Objective:**
+
+Fix the normal stop/terminate flow so session containers are physically stopped and removed, not just marked stopped in app state.
+
+**Why this exists:**
+
+OPS-01-01 isolated the failure clearly:
+- normal stop/terminate updates session/app state only
+- does not physically stop/remove Docker containers
+- running session containers accumulate, including sessions already marked stopped/terminated
+
+**Bounded scope only:**
+
+- Inspect normal API stop/terminate wiring
+- Route stop/terminate through the existing physical stop/remove path at the smallest safe boundary
+- Preserve existing DB/session termination semantics
+- Verify stopped/terminated sessions no longer leave running containers behind
+- Document exact cause and resolution
+
+**Explicitly out of scope:**
+
+- ❌ No runtime redesign
+- ❌ No broad cleanup redesign
+- ❌ No scope expansion
+- ❌ No unrelated feature work
+
+**Acceptance criteria:**
+
+- Normal stop/terminate flow physically removes session containers
+- Session DB/status semantics remain intact
+- No extra running containers are left behind for stopped/terminated sessions
+- Fix is documented clearly in `docs/OPS-01-02-CHECKPOINT.md`
+
+---
+
+### OPS-01-01: Diagnose Accumulated Docker Session Containers
+
+**Task ID:** OPS-01-01
+**Family:** OPS-01 (Runtime Cleanup Diagnostics)
+**Priority:** 🟠 Important
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG INVESTIGATION (RUNTIME CLEANUP, SESSION CONTAINERS)
+**Dependencies:** none
+**Checkpoint:** `docs/OPS-01-01-CHECKPOINT.md`
+
+**Objective:**
+
+Determine why many session-related Docker containers are accumulating, and identify whether they are expected stopped remnants, active leaked runtimes, or a cleanup/removal bug.
+
+**Why this exists:**
+
+Real usage shows many session containers in Docker. These should be temporary runtime environments, not persistent project storage.
+
+**Bounded scope only:**
+
+- Inspect current Docker session containers
+- Determine which are running vs exited
+- Inspect naming/session mapping
+- Inspect cleanup/termination code path and intended removal behavior
+- Determine whether expired/terminated sessions are leaving behind containers unexpectedly
+- Identify the exact failing or expected stage clearly
+- No fix in this task unless a trivially obvious diagnostic correction is absolutely required
+
+**Explicitly out of scope:**
+
+- ❌ No cleanup redesign
+- ❌ No broad ops redesign
+- ❌ No scope expansion
+- ❌ No unrelated feature work
+
+**Acceptance criteria:**
+
+- Clear distinction between running vs exited accumulated session containers
+- Exact intended cleanup behavior identified
+- Exact remaining issue, if any, identified clearly
+- Issue narrowed enough for one bounded follow-up fix task if needed
+
+---
+
 ### UX-02-02: Simplify Project Management UI And Make Visibility Secondary
 
 **Task ID:** UX-02-02

@@ -246,6 +246,18 @@ export class SessionsService {
       throw new NotFoundException('Session not found');
     }
 
+    // OPS-01-02: Reuse existing physical cleanup path for normal stop flow.
+    // Keep stop semantics resilient by treating runtime cleanup as best-effort.
+    try {
+      await this.removeSessionContainer(sessionId);
+    } catch (error) {
+      console.error(
+        `Failed to remove container for session ${sessionId} during stop:`,
+        error.message,
+      );
+      // Continue with status/notification semantics even if cleanup fails.
+    }
+
     // Notify api-gateway that session has stopped
     try {
       await this.apiGatewayClient.notifySessionStopped(sessionId);

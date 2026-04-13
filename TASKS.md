@@ -6896,6 +6896,78 @@ The core workspace, persistence, commercial foundation, advanced AI features, an
 
 ---
 
+## OPS-01 — Runtime Cleanup Diagnostics
+
+**Family status:** ACTIVE
+
+**Current stage:** OPS-01-02 (COMPLETE and LOCKED)
+
+---
+
+#### OPS-01-02: Make Stop Terminate Flow Physically Remove Session Containers
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (RUNTIME CLEANUP, SESSION CONTAINERS)
+**Checkpoint:** `docs/OPS-01-02-CHECKPOINT.md`
+
+**Objective:**
+Fix the normal stop/terminate flow so session containers are physically stopped and removed, not just marked stopped in app state.
+
+**Scope:**
+- Inspect normal API stop/terminate wiring
+- Route stop/terminate through the existing physical stop/remove path at the smallest safe boundary
+- Preserve existing DB/session termination semantics
+- Verify stopped/terminated sessions no longer leave running containers behind
+- Document exact cause and resolution
+
+**Out of scope:**
+- ❌ No runtime redesign
+- ❌ No broad cleanup redesign
+- ❌ No scope expansion
+- ❌ No unrelated feature work
+
+**Acceptance criteria:**
+- Normal stop/terminate flow physically removes session containers
+- Session DB/status semantics remain intact
+- No extra running containers are left behind for stopped/terminated sessions
+- Fix is documented clearly
+
+**Dependencies:** OPS-01-01 (Complete and Locked)
+
+---
+
+#### OPS-01-01: Diagnose Accumulated Docker Session Containers
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG INVESTIGATION (RUNTIME CLEANUP, SESSION CONTAINERS)
+**Checkpoint:** `docs/OPS-01-01-CHECKPOINT.md`
+
+**Objective:**
+Determine why many session-related Docker containers are accumulating, and identify whether they are expected stopped remnants, active leaked runtimes, or a cleanup/removal bug.
+
+**Scope:**
+- Inspect current Docker session containers
+- Determine which are running vs exited
+- Inspect naming/session mapping
+- Inspect cleanup/termination code path and intended removal behavior
+- Determine whether expired/terminated sessions are leaving behind containers unexpectedly
+- Identify the exact failing or expected stage clearly
+
+**Out of scope:**
+- ❌ No cleanup redesign
+- ❌ No broad ops redesign
+- ❌ No scope expansion
+- ❌ No unrelated feature work
+- ❌ No fix in this task unless a trivially obvious diagnostic correction is absolutely required
+
+**Acceptance criteria:**
+- Clear distinction between running vs exited accumulated session containers
+- Exact intended cleanup behavior identified
+- Exact remaining issue, if any, identified clearly
+- Issue narrowed enough for one bounded follow-up fix task if needed
+
+---
+
 ## UX-02 — Account Entry
 
 **Family status:** ACTIVE
