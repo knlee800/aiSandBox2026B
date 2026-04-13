@@ -363,6 +363,7 @@ export default function AppPage() {
   const skipNextChatThreadPersistRef = useRef(false);
   const pendingAssistantMessageIdRef = useRef<string | null>(null);
   const selectedSessionIdRef = useRef<string | null>(null);
+  const skipNextSessionEffectFileReloadRef = useRef(false);
   const sessionsRef = useRef<WorkspaceShellSession[]>([]);
   const executionSessionIdByExecutionIdRef = useRef<Record<string, string>>({});
   const executionAssistantMessageIdByExecutionIdRef = useRef<Record<string, string>>({});
@@ -674,6 +675,11 @@ export default function AppPage() {
 
     if (!selectedSessionId) {
       resetWorkspaceFileSurface();
+      return;
+    }
+
+    if (skipNextSessionEffectFileReloadRef.current) {
+      skipNextSessionEffectFileReloadRef.current = false;
       return;
     }
 
@@ -1083,6 +1089,8 @@ export default function AppPage() {
         };
       }
       const openSessionId = openResult.sessionId;
+      skipNextSessionEffectFileReloadRef.current =
+        openSessionId !== selectedSessionIdRef.current;
       setSelectedSessionId(openSessionId);
 
       let loadedFileContent = await loadWorkspaceFilesForSession(token, openSessionId);
@@ -1101,10 +1109,12 @@ export default function AppPage() {
       await refreshPreviewForSession(token, openSessionId);
       await loadCheckpoints(token, openSessionId);
       await loadSessions(token);
+      setSelectedSessionId((current) => current ?? openSessionId);
       setProjectActionState('success');
       setProjectActionMessage('Project opened in selected session.');
       setProjectActionError(null);
     } catch (error) {
+      skipNextSessionEffectFileReloadRef.current = false;
       setProjectActionState('error');
       setProjectActionMessage(null);
       setProjectActionError(

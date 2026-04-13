@@ -6149,7 +6149,7 @@ Add a user-visible preview start action in the workspace UI so users can actuall
 
 **Family status:** ACTIVE
 
-**Current stage:** PROJ-01-09 (COMPLETE and LOCKED)
+**Current stage:** PROJ-01-13 (COMPLETE and LOCKED)
 
 ---
 
@@ -6443,6 +6443,133 @@ After opening a project, refresh workspace file tree/editor state immediately so
 - Fix is documented clearly
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → PROJ-01-09 for full details
+
+---
+
+#### PROJ-01-10: Diagnose Project Open UI Still Requires Browser Reload
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG INVESTIGATION (PROJECT OPEN FLOW, FRONTEND STATE RACE)
+**Checkpoint:** `docs/PROJ-01-10-CHECKPOINT.md`
+
+**Objective:**
+Determine why the real UI still requires a browser reload for restored project files to appear after Open Project, despite the earlier post-open refresh fix.
+
+**Scope:**
+- Reproduce the real UI project-open flow again
+- Inspect post-open file tree reload timing
+- Inspect selected session state before/after open
+- Inspect whether a later state update overwrites the refreshed file tree/editor state
+- Identify the exact remaining failing stage clearly
+- No fix in this task unless a trivially obvious diagnostic correction is absolutely required, which normally should not be done here
+
+**Out of scope:**
+- ❌ No project-system redesign
+- ❌ No snapshot redesign
+- ❌ No workspace redesign
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+- Exact remaining frontend failing stage is identified clearly
+- Issue is narrowed enough for one bounded follow-up fix task
+- No unrelated work is mixed into this task
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → PROJ-01-10 for full details
+
+---
+
+#### PROJ-01-11: Remove Duplicate File Reload Race After Project Open
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (PROJECT OPEN FLOW, FRONTEND STATE RACE)
+**Checkpoint:** `docs/PROJ-01-11-CHECKPOINT.md`
+
+**Objective:**
+Fix the post-open frontend state race so restored project files appear immediately without browser reload by ensuring project open performs one coherent file-tree/editor refresh for the selected session.
+
+**Scope:**
+- Inspect the duplicate post-open reload paths
+- Remove or coordinate the duplicate reload for project-open flow
+- Preserve normal selected-session reload behavior outside this path
+- Keep file-tree/editor state coherent after project open
+- Verify restored files appear immediately without browser reload
+
+**Out of scope:**
+- ❌ No project-system redesign
+- ❌ No snapshot redesign
+- ❌ No workspace redesign
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+- Open Project results in one coherent post-open refresh for the target session
+- Restored files appear immediately without browser reload
+- Selected-session behavior outside project open remains intact
+- Fix is documented clearly
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → PROJ-01-11 for full details
+
+---
+
+#### PROJ-01-12: Diagnose Real UI File Tree Still Empty After Project Open
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG INVESTIGATION (PROJECT OPEN FLOW, RENDERED UI STATE)
+**Checkpoint:** `docs/PROJ-01-12-CHECKPOINT.md`
+
+**Objective:**
+Determine why the real UI still renders an empty file tree after successful project open, even after the duplicate reload race fix, while a full browser refresh makes the files appear.
+
+**Scope:**
+- Inspect the real UI file-tree/render state after project open
+- Inspect whether loaded files are present in state but not rendered
+- Inspect whether another effect/reset/path clears rendered file navigation state after successful load
+- Inspect selected file/file tree derivation path after open
+- Identify the exact remaining failing stage clearly
+- No fix in this task unless a trivially obvious diagnostic correction is absolutely required, which normally should not be done here
+
+**Out of scope:**
+- ❌ No project-system redesign
+- ❌ No snapshot redesign
+- ❌ No workspace redesign
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+- Exact remaining rendered-state failure is identified clearly
+- Issue is narrowed enough for one bounded follow-up fix task
+- No unrelated work is mixed into this task
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → PROJ-01-12 for full details
+
+---
+
+#### PROJ-01-13: Preserve Selected Session And File State When Session Reload Fails After Project Open
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (PROJECT OPEN FLOW, FRONTEND STATE DESTRUCTION)
+**Checkpoint:** `docs/PROJ-01-13-CHECKPOINT.md`
+
+**Objective:**
+Prevent successful project-open file state from being destroyed when the post-open session reload path encounters an error.
+
+**Scope:**
+- Inspect loadSessions error handling in the project-open path
+- Stop destructive selectedSession/file-state reset on session reload failure after successful project open
+- Preserve normal session reload behavior where appropriate
+- Verify successful project-open content remains visible even if session reload fails
+
+**Out of scope:**
+- ❌ No project-system redesign
+- ❌ No snapshot redesign
+- ❌ No workspace redesign
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+- Successful project-open content is not wiped by later session reload failure
+- Selected session remains stable after successful open
+- File tree/editor state remains visible without browser reload
+- No unrelated work is mixed into this task
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → PROJ-01-13 for full details
 
 ---
 

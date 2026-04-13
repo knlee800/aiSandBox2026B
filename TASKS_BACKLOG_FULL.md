@@ -14840,6 +14840,194 @@ Real usage confirms:
 
 ---
 
+### PROJ-01-10: Diagnose Project Open UI Still Requires Browser Reload
+
+**Task ID:** PROJ-01-10
+**Family:** PROJ-01 (Project/Public Flow Diagnostics)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG INVESTIGATION (PROJECT OPEN FLOW, FRONTEND STATE RACE)
+**Dependencies:** PROJ-01-09 (COMPLETE and LOCKED)
+**Checkpoint:** `docs/PROJ-01-10-CHECKPOINT.md`
+
+**Objective:**
+
+Determine why the real UI still requires a browser reload for restored project files to appear after Open Project, despite the earlier post-open refresh fix.
+
+**Why this exists:**
+
+Real usage still shows:
+- Open Project succeeds
+- browser reload makes restored files appear
+- but the immediate UI still does not show them
+
+This means a remaining frontend state/timing issue still exists in the real path.
+
+**Bounded scope only:**
+
+- Reproduce the real UI project-open flow again
+- Inspect post-open file tree reload timing
+- Inspect selected session state before/after open
+- Inspect whether a later state update overwrites the refreshed file tree/editor state
+- Identify the exact remaining failing stage clearly
+- No fix in this task unless a trivially obvious diagnostic correction is absolutely required, which normally should not be done here
+
+**Explicitly out of scope:**
+
+- ❌ No project-system redesign
+- ❌ No snapshot redesign
+- ❌ No workspace redesign
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- Exact remaining frontend failing stage is identified clearly
+- Issue is narrowed enough for one bounded follow-up fix task
+- No unrelated work is mixed into this task
+
+---
+
+### PROJ-01-11: Remove Duplicate File Reload Race After Project Open
+
+**Task ID:** PROJ-01-11
+**Family:** PROJ-01 (Project/Public Flow Diagnostics)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (PROJECT OPEN FLOW, FRONTEND STATE RACE)
+**Dependencies:** PROJ-01-10 (COMPLETE and LOCKED)
+**Checkpoint:** `docs/PROJ-01-11-CHECKPOINT.md`
+
+**Objective:**
+
+Fix the post-open frontend state race so restored project files appear immediately without browser reload by ensuring project open performs one coherent file-tree/editor refresh for the selected session.
+
+**Why this exists:**
+
+PROJ-01-10 isolated the remaining failure:
+- project open triggers two post-open reload paths for the same session
+- file-tree/editor state is cleared at reload start
+- a later duplicate reload can overwrite a successful non-empty state with an empty result
+- UI stays blank until browser reload
+
+**Bounded scope only:**
+
+- Inspect the duplicate post-open reload paths
+- Remove or coordinate the duplicate reload for project-open flow
+- Preserve normal selected-session reload behavior outside this path
+- Keep file-tree/editor state coherent after project open
+- Verify restored files appear immediately without browser reload
+
+**Explicitly out of scope:**
+
+- ❌ No project-system redesign
+- ❌ No snapshot redesign
+- ❌ No workspace redesign
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- Open Project results in one coherent post-open refresh for the target session
+- Restored files appear immediately without browser reload
+- Selected-session behavior outside project open remains intact
+- Fix is documented clearly in `docs/PROJ-01-11-CHECKPOINT.md`
+
+---
+
+### PROJ-01-12: Diagnose Real UI File Tree Still Empty After Project Open
+
+**Task ID:** PROJ-01-12
+**Family:** PROJ-01 (Project/Public Flow Diagnostics)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG INVESTIGATION (PROJECT OPEN FLOW, RENDERED UI STATE)
+**Dependencies:** PROJ-01-11 (COMPLETE and LOCKED)
+**Checkpoint:** `docs/PROJ-01-12-CHECKPOINT.md`
+
+**Objective:**
+
+Determine why the real UI still renders an empty file tree after successful project open, even after the duplicate reload race fix, while a full browser refresh makes the files appear.
+
+**Why this exists:**
+
+Real usage still reproduces:
+- project open succeeds
+- browser refresh makes files appear
+- immediate UI remains empty
+
+This means a remaining rendered-state sync issue still exists after the current reload logic.
+
+**Bounded scope only:**
+
+- inspect the real UI file-tree/render state after project open
+- inspect whether loaded files are present in state but not rendered
+- inspect whether another effect/reset/path clears rendered file navigation state after successful load
+- inspect selected file/file tree derivation path after open
+- identify the exact remaining failing stage clearly
+- no fix in this task unless a trivially obvious diagnostic correction is absolutely required, which normally should not be done here
+
+**Explicitly out of scope:**
+
+- ❌ No project-system redesign
+- ❌ No snapshot redesign
+- ❌ No workspace redesign
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- exact remaining rendered-state failure is identified clearly
+- issue is narrowed enough for one bounded follow-up fix task
+- no unrelated work is mixed into this task
+
+---
+
+### PROJ-01-13: Preserve Selected Session And File State When Session Reload Fails After Project Open
+
+**Task ID:** PROJ-01-13
+**Family:** PROJ-01 (Project/Public Flow Diagnostics)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (PROJECT OPEN FLOW, FRONTEND STATE DESTRUCTION)
+**Dependencies:** PROJ-01-12 (COMPLETE and LOCKED)
+**Checkpoint:** `docs/PROJ-01-13-CHECKPOINT.md`
+
+**Objective:**
+
+Prevent successful project-open file state from being destroyed when the post-open session reload path encounters an error.
+
+**Why this exists:**
+
+PROJ-01-12 isolated the primary failure:
+- project open/restore succeeds
+- handleOpenWorkspaceProject then calls loadSessions(token)
+- on error paths, loadSessions sets selectedSessionId to null
+- that triggers workspace reset and wipes successfully loaded files
+- UI shows success but empty workspace until browser refresh
+
+**Bounded scope only:**
+
+- inspect loadSessions error handling in the project-open path
+- stop destructive selectedSession/file-state reset on session reload failure after successful project open
+- preserve normal session reload behavior where appropriate
+- verify successful project-open content remains visible even if session reload fails
+- document exact cause and resolution
+
+**Explicitly out of scope:**
+
+- ❌ No project-system redesign
+- ❌ No snapshot redesign
+- ❌ No workspace redesign
+- ❌ No scope expansion
+
+**Acceptance criteria:**
+
+- successful project-open content is not wiped by later session reload failure
+- selected session remains stable after successful open
+- file tree/editor state remains visible without browser reload
+- fix is documented clearly
+- no unrelated work is mixed into this task
+
+---
+
 ### AI-04-01: Backend Chat Persistence Wiring
 
 **Task ID:** AI-04-01
