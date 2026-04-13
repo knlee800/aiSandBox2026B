@@ -6149,7 +6149,7 @@ Add a user-visible preview start action in the workspace UI so users can actuall
 
 **Family status:** ACTIVE
 
-**Current stage:** PROJ-01-08 (COMPLETE and LOCKED)
+**Current stage:** PROJ-01-09 (COMPLETE and LOCKED)
 
 ---
 
@@ -6412,6 +6412,37 @@ Make project creation persist the current workspace content by automatically sav
 - Fix is documented clearly
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` → PROJ-01-08 for full details
+
+---
+
+#### PROJ-01-09: Fix File Tree Refresh After Project Open Without Browser Reload
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (PROJECT OPEN FLOW, FRONTEND REFRESH)
+**Checkpoint:** `docs/PROJ-01-09-CHECKPOINT.md`
+
+**Objective:**
+After opening a project, refresh workspace file tree/editor state immediately so restored files appear without requiring a browser reload.
+
+**Scope:**
+- Inspect post-open frontend refresh path
+- Ensure file tree reload happens after restore completes
+- Reset selected file/editor state if needed
+- Preserve backend project restore behavior
+- Verify files appear after Open Project without browser reload
+
+**Out of scope:**
+- ❌ No project-system redesign
+- ❌ No snapshot redesign
+- ❌ No workspace redesign
+
+**Acceptance criteria:**
+- Open Project shows restored files without browser reload
+- Editor/file tree state is coherent
+- Existing project open behavior remains intact
+- Fix is documented clearly
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` → PROJ-01-09 for full details
 
 ---
 

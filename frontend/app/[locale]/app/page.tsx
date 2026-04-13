@@ -107,6 +107,8 @@ import {
 const HIDDEN_UNUSABLE_SESSIONS_STORAGE_KEY = 'workspace_hidden_unusable_sessions';
 const CHAT_THREAD_STORAGE_KEY_PREFIX = 'workspace_chat_thread';
 const CHAT_EXECUTION_POLL_INTERVAL_MS = 3000;
+const PROJECT_OPEN_FILE_REFRESH_RETRY_DELAY_MS = 250;
+const PROJECT_OPEN_FILE_REFRESH_MAX_ATTEMPTS = 6;
 const AI_AUTO_CHECKPOINT_DESCRIPTION = 'AI: applied workspace file actions';
 const DEFAULT_CHAT_MODEL_OPTION = 'xai:grok-3';
 const CHAT_MODEL_OPTIONS = [
@@ -1083,12 +1085,17 @@ export default function AppPage() {
       const openSessionId = openResult.sessionId;
       setSelectedSessionId(openSessionId);
 
-      const loadedFileContent = await loadWorkspaceFilesForSession(token, openSessionId);
+      let loadedFileContent = await loadWorkspaceFilesForSession(token, openSessionId);
       if (!loadedFileContent && openResult.restoredSnapshotId) {
-        await new Promise<void>((resolve) => {
-          window.setTimeout(() => resolve(), 150);
-        });
-        await loadWorkspaceFilesForSession(token, openSessionId);
+        for (let attempt = 0; attempt < PROJECT_OPEN_FILE_REFRESH_MAX_ATTEMPTS; attempt += 1) {
+          await new Promise<void>((resolve) => {
+            window.setTimeout(() => resolve(), PROJECT_OPEN_FILE_REFRESH_RETRY_DELAY_MS);
+          });
+          loadedFileContent = await loadWorkspaceFilesForSession(token, openSessionId);
+          if (loadedFileContent) {
+            break;
+          }
+        }
       }
 
       await refreshPreviewForSession(token, openSessionId);

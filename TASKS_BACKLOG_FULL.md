@@ -14796,6 +14796,50 @@ PROJ-01-07 isolated the remaining real-user failure:
 
 ---
 
+### PROJ-01-09: Fix File Tree Refresh After Project Open Without Browser Reload
+
+**Task ID:** PROJ-01-09
+**Family:** PROJ-01 (Project/Public Flow Diagnostics)
+**Priority:** 🔴 High
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (PROJECT OPEN FLOW, FRONTEND REFRESH)
+**Dependencies:** PROJ-01-08 (COMPLETE and LOCKED)
+**Checkpoint:** `docs/PROJ-01-09-CHECKPOINT.md`
+
+**Objective:**
+
+After opening a project, refresh workspace file tree/editor state immediately so restored files appear without requiring a browser reload.
+
+**Why this exists:**
+
+Real usage confirms:
+- project open restores files successfully
+- browser refresh makes files appear
+- but the UI does not reload file tree/editor state immediately after Open Project
+
+**Bounded scope only:**
+
+- Inspect post-open frontend refresh path
+- Ensure file tree reload happens after restore completes
+- Reset selected file/editor state if needed
+- Preserve backend project restore behavior
+- Verify files appear after Open Project without browser reload
+
+**Explicitly out of scope:**
+
+- ❌ No project-system redesign
+- ❌ No snapshot redesign
+- ❌ No workspace redesign
+
+**Acceptance criteria:**
+
+- Open Project shows restored files without browser reload
+- Editor/file tree state is coherent
+- Existing project open behavior remains intact
+- Fix is documented clearly in `docs/PROJ-01-09-CHECKPOINT.md`
+
+---
+
 ### AI-04-01: Backend Chat Persistence Wiring
 
 **Task ID:** AI-04-01
