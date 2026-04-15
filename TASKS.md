@@ -1,4 +1,4 @@
-## Authority & Scope
+﻿## Authority & Scope
 
 This file lists currently ACTIVE and SELECTED tasks.
 
@@ -15,7 +15,7 @@ Rules:
 
 If conflicts exist, TASKS_BACKLOG_FULL.md takes precedence.
 
-**Program status:** REL-01-01 (PLANNED) — release readiness phase active
+**Program status:** REL-01-01 (PLANNED) ??release readiness phase active
 
 
 \# TASKS.md ??Master Task Index
@@ -460,7 +460,7 @@ Introduce minimal runtime observability for diagnostic visibility into session a
 ---
 
 
-#### TASK-41B: Security Hardening �X Rate Limits + Internal Endpoint Protection
+#### TASK-41B: Security Hardening 嚙碼 Rate Limits + Internal Endpoint Protection
 
 **Status:** COMPLETE and LOCKED  
 **Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE ONLY)  
@@ -492,7 +492,7 @@ Add minimal rate limiting to high-risk endpoints and harden internal endpoint pr
 ---
 
 
-#### TASK-41C: Abuse Hardening — Proxy-Aware IP Normalization
+#### TASK-41C: Abuse Hardening ??Proxy-Aware IP Normalization
 
 **Status:** COMPLETE and LOCKED  
 **Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE ONLY)  
@@ -504,20 +504,20 @@ Improve rate limiting accuracy by correctly parsing client IP addresses from pro
 **Scope:**
 - Parse X-Forwarded-For header correctly (first public IP only)
 - Skip private IP ranges (10.x, 192.168.x, 172.16-31.x, 127.x)
-- Normalize IPv6 formats (::ffff:x.x.x.x → x.x.x.x)
-- Fallback chain: X-Forwarded-For → request.ip → socket.remoteAddress → 'unknown'
-- Deterministic behavior (same input → same output)
+- Normalize IPv6 formats (::ffff:x.x.x.x ??x.x.x.x)
+- Fallback chain: X-Forwarded-For ??request.ip ??socket.remoteAddress ??'unknown'
+- Deterministic behavior (same input ??same output)
 - Minimal change inside RateLimitGuard only
 
 **Non-Goals:**
-- ❌ No external IP services
-- ❌ No IP reputation checking
-- ❌ No blacklist/whitelist
-- ❌ No schema changes
-- ❌ No refactors outside RateLimitGuard
-- ❌ No changes to rate limit logic
+- ??No external IP services
+- ??No IP reputation checking
+- ??No blacklist/whitelist
+- ??No schema changes
+- ??No refactors outside RateLimitGuard
+- ??No changes to rate limit logic
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-41C for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-41C for full details
 
 ---
 
@@ -527,7 +527,7 @@ Improve rate limiting accuracy by correctly parsing client IP addresses from pro
 
 **Active Task:** TASK-42A-1
 
-#### TASK-42A-1: Hard Quota Enforcement — Max Active Sessions Per User
+#### TASK-42A-1: Hard Quota Enforcement ??Max Active Sessions Per User
 
 **Status:** COMPLETE and LOCKED  
 **Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE ONLY)  
@@ -545,17 +545,17 @@ Implement deterministic, database-backed hard quota enforcement for maximum conc
 - Hard stop behavior (no container started if quota exceeded)
 
 **Non-Goals:**
-- ❌ No rolling 24h session limit (TASK-42A-2)
-- ❌ No token quota enforcement (TASK-42A-3)
-- ❌ No billing system redesign
-- ❌ No background workers
-- ❌ No schema changes
+- ??No rolling 24h session limit (TASK-42A-2)
+- ??No token quota enforcement (TASK-42A-3)
+- ??No billing system redesign
+- ??No background workers
+- ??No schema changes
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-42A-1 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-42A-1 for full details
 
 ---
 
-#### TASK-42A-2: Hard Quota Enforcement — Max Sessions Per Rolling 24h
+#### TASK-42A-2: Hard Quota Enforcement ??Max Sessions Per Rolling 24h
 
 **Status:** COMPLETE and LOCKED  
 **Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE ONLY)  
@@ -572,11 +572,11 @@ Implement deterministic, database-backed hard quota enforcement for maximum tota
 
 **Dependencies:** TASK-42A-1
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-42A-2 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-42A-2 for full details
 
 ---
 
-#### TASK-42A-3: Hard Quota Enforcement — Max Tokens Per Rolling 24h
+#### TASK-42A-3: Hard Quota Enforcement ??Max Tokens Per Rolling 24h
 
 **Status:** COMPLETE and LOCKED  
 **Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE ONLY)  
@@ -594,11 +594,11 @@ Implement deterministic, database-backed hard quota enforcement for maximum AI t
 
 **Dependencies:** TASK-42A-2
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-42A-3 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-42A-3 for full details
 
 ---
 
-#### TASK-42A-4: Hard Quota Enforcement — PS 5.x Verification + PHASE-42A Finalization
+#### TASK-42A-4: Hard Quota Enforcement ??PS 5.x Verification + PHASE-42A Finalization
 
 **Status:** COMPLETE and LOCKED  
 **Nature:** VERIFICATION + DOCUMENTATION  
@@ -615,11 +615,11 @@ Comprehensive verification of all PHASE-42A quota enforcement mechanisms using P
 
 **Dependencies:** TASK-42A-1, TASK-42A-2, TASK-42A-3
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-42A-4 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-42A-4 for full details
 
 ---
 
-### Phase 43C: Execution Reliability — Reconciliation
+### Phase 43C: Execution Reliability ??Reconciliation
 
 **Current Stage:** 43C-2
 
@@ -634,7 +634,7 @@ Comprehensive verification of all PHASE-42A quota enforcement mechanisms using P
 **Objective:**  
 Deterministic background reconciliation of orphaned pending execution records.
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-43C-2
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-43C-2
 
 ---
 
@@ -661,11 +661,11 @@ Define production alerting scope, alert thresholds, incident signal definitions,
 - Alignment with architecture constraints (no background workers, request-driven)
 
 **Non-Goals:**
-- ❌ No code changes in 60A
-- ❌ No implementation of alerting systems
-- ❌ No schema changes
+- ??No code changes in 60A
+- ??No implementation of alerting systems
+- ??No schema changes
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-60A for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-60A for full details
 
 ---
 
@@ -684,11 +684,11 @@ Implement external monitoring contract and runbook documents to make Phase 60A d
 - Runbook implementation documents for the 5 defined incident categories
 
 **Non-Goals:**
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-60B for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-60B for full details
 
 ---
 
@@ -716,11 +716,11 @@ Define backup scope, restore priorities, disaster recovery scenarios, recovery o
 - Alignment with current architecture constraints
 
 **Non-Goals:**
-- ❌ No code changes in 61A
-- ❌ No implementation of backup systems
-- ❌ No schema changes
+- ??No code changes in 61A
+- ??No implementation of backup systems
+- ??No schema changes
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-61A for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-61A for full details
 
 ---
 
@@ -731,7 +731,7 @@ Define backup scope, restore priorities, disaster recovery scenarios, recovery o
 **Checkpoint:** `docs/PHASE-61B-CHECKPOINT.md`
 
 **Objective:**  
-Implement operational backup procedure documents and restore runbooks for the Phase 61A recovery scenarios. Documentation only—no platform code, schema, or endpoint changes.
+Implement operational backup procedure documents and restore runbooks for the Phase 61A recovery scenarios. Documentation only?o platform code, schema, or endpoint changes.
 
 **Scope:**
 - Operational backup procedure documents
@@ -741,11 +741,11 @@ Implement operational backup procedure documents and restore runbooks for the Ph
 - Operator prerequisites, dependencies, and safety checks
 
 **Non-Goals:**
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-61B for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-61B for full details
 
 ---
 
@@ -764,7 +764,7 @@ Implement operational backup procedure documents and restore runbooks for the Ph
 **Objective:**  
 Produce the Phase 62A design for backup and restore validation drills so the platform can regularly prove that Phase 61 backup and disaster recovery procedures actually work in practice.
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-62A for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-62A for full details
 
 ---
 
@@ -775,7 +775,7 @@ Produce the Phase 62A design for backup and restore validation drills so the pla
 **Checkpoint:** `docs/PHASE-62B-CHECKPOINT.md`
 
 **Objective:**  
-Implement operator-ready validation drill runbooks for Phase 62A scenarios. Documentation only—no platform code, schema, or endpoint changes.
+Implement operator-ready validation drill runbooks for Phase 62A scenarios. Documentation only?o platform code, schema, or endpoint changes.
 
 **Scope:**
 - Operator-ready validation drill runbooks
@@ -786,11 +786,11 @@ Implement operator-ready validation drill runbooks for Phase 62A scenarios. Docu
 - Post-drill cleanup and signoff
 
 **Non-Goals:**
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-62B for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-62B for full details
 
 ---
 
@@ -820,11 +820,11 @@ Define security operations scope for launch readiness, including audit logging, 
 - Alignment with current architecture constraints
 
 **Non-Goals:**
-- ❌ No code changes in 63A
-- ❌ No implementation of security systems
-- ❌ No schema changes
+- ??No code changes in 63A
+- ??No implementation of security systems
+- ??No schema changes
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-63A for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-63A for full details
 
 ---
 
@@ -835,7 +835,7 @@ Define security operations scope for launch readiness, including audit logging, 
 **Checkpoint:** `docs/PHASE-63B-CHECKPOINT.md`
 
 **Objective:**  
-Implement operator-ready security runbooks and compliance operational documentation per Phase 63A design. Documentation only—no platform code, schema, or endpoint changes.
+Implement operator-ready security runbooks and compliance operational documentation per Phase 63A design. Documentation only?o platform code, schema, or endpoint changes.
 
 **Scope:**
 - Operator-ready security runbooks
@@ -847,11 +847,11 @@ Implement operator-ready security runbooks and compliance operational documentat
 - Evidence / signoff requirements
 
 **Non-Goals:**
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-63B for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-63B for full details
 
 ---
 
@@ -880,9 +880,9 @@ Define launch-ready legal/privacy document scope, privacy policy/terms/cookie no
 - Alignment with current architecture constraints
 
 **Non-Goals:**
-- ❌ No code changes in 64A
+- ??No code changes in 64A
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-64A for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-64A for full details
 
 ---
 
@@ -893,7 +893,7 @@ Define launch-ready legal/privacy document scope, privacy policy/terms/cookie no
 **Checkpoint:** `docs/PHASE-64B-CHECKPOINT.md`
 
 **Objective:**  
-Implement operator-ready legal/privacy operational documentation per Phase 64A design. Documentation only—no platform code, schema, or endpoint changes.
+Implement operator-ready legal/privacy operational documentation per Phase 64A design. Documentation only?o platform code, schema, or endpoint changes.
 
 **Scope:**
 - Operator-ready legal/privacy operational docs
@@ -904,11 +904,11 @@ Implement operator-ready legal/privacy operational documentation per Phase 64A d
 - Cookie / consent / disclosure operational checklist where applicable
 
 **Non-Goals:**
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-64B for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-64B for full details
 
 ---
 
@@ -937,9 +937,9 @@ Define launch-ready admin tool scope, admin actions and operator permissions, ab
 - Alignment with current architecture constraints
 
 **Non-Goals:**
-- ❌ No code changes in 65A
+- ??No code changes in 65A
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-65A for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-65A for full details
 
 ---
 
@@ -950,7 +950,7 @@ Define launch-ready admin tool scope, admin actions and operator permissions, ab
 **Checkpoint:** `docs/PHASE-65B-CHECKPOINT.md`
 
 **Objective:**  
-Implement operator-ready admin procedures per Phase 65A design. Documentation only—no platform code, schema, or endpoint changes.
+Implement operator-ready admin procedures per Phase 65A design. Documentation only?o platform code, schema, or endpoint changes.
 
 **Scope:**
 - Operator-ready admin procedures
@@ -961,11 +961,11 @@ Implement operator-ready admin procedures per Phase 65A design. Documentation on
 - Operator permissions / approval workflow guidance
 
 **Non-Goals:**
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-65B for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-65B for full details
 
 ---
 
@@ -986,11 +986,11 @@ Final validation of Phase 65A design and Phase 65B operator documentation, with 
 - Final checkpoint creation
 
 **Non-Goals:**
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-65C for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-65C for full details
 
 ---
 
@@ -1018,9 +1018,9 @@ Define launch-ready analytics and growth visibility scope, product usage/retenti
 - Alignment with current architecture constraints
 
 **Non-Goals:**
-- ❌ No code changes in 66A
+- ??No code changes in 66A
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-66A for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-66A for full details
 
 ---
 
@@ -1031,7 +1031,7 @@ Define launch-ready analytics and growth visibility scope, product usage/retenti
 **Checkpoint:** `docs/PHASE-66B-CHECKPOINT.md`
 
 **Objective:**
-Implement operator-ready analytics review procedures and stakeholder/founder reporting procedures per Phase 66A design. Documentation only—no platform code, schema, or endpoint changes.
+Implement operator-ready analytics review procedures and stakeholder/founder reporting procedures per Phase 66A design. Documentation only?o platform code, schema, or endpoint changes.
 
 **Scope:**
 - Operator-ready analytics review procedures
@@ -1041,11 +1041,11 @@ Implement operator-ready analytics review procedures and stakeholder/founder rep
 - Dashboard usage guidance for product, cost, reliability, and growth visibility
 
 **Non-Goals:**
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-66B for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-66B for full details
 
 ---
 
@@ -1077,13 +1077,13 @@ Define launch-ready core product UX/UI requirements for the AI Sandbox Platform,
 - Alignment with current architecture and existing backend constraints
 
 **Non-Goals:**
-- ❌ No implementation
-- ❌ No frontend code changes
-- ❌ No backend code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
+- ??No implementation
+- ??No frontend code changes
+- ??No backend code changes
+- ??No schema changes
+- ??No endpoint changes
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-67A for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-67A for full details
 
 ---
 
@@ -1105,13 +1105,13 @@ Final consolidation and validation of all Phase 67A UX/UI design documentation t
 - Final Phase 67 checkpoint creation readiness
 
 **Non-Goals:**
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-67B for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-67B for full details
 
-**Validation Result:** ✅ PASS — All Phase 67A checkpoints consistent, aligned, and launch-ready. No fixes required.
+**Validation Result:** ??PASS ??All Phase 67A checkpoints consistent, aligned, and launch-ready. No fixes required.
 
 ---
 
@@ -1132,21 +1132,21 @@ Create final Phase 67 checkpoint summarizing all UX/UI design work and confirmin
 - Creation of the final Phase 67 checkpoint
 
 **Non-Goals:**
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-67C for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-67C for full details
 
 **Completion Summary:**
-- ✅ All Phase 67A checkpoints reviewed (67A-1, 67A-2, 67A-3)
-- ✅ Phase 67B validation reviewed
-- ✅ Cross-slice coherence confirmed
-- ✅ PRD alignment confirmed
-- ✅ ARCHITECTURE alignment confirmed
-- ✅ Documentation-only scope preserved
-- ✅ No code/schema/endpoint changes occurred
-- ✅ Final checkpoint created: `docs/PHASE-67-FINAL-CHECKPOINT.md`
+- ??All Phase 67A checkpoints reviewed (67A-1, 67A-2, 67A-3)
+- ??Phase 67B validation reviewed
+- ??Cross-slice coherence confirmed
+- ??PRD alignment confirmed
+- ??ARCHITECTURE alignment confirmed
+- ??Documentation-only scope preserved
+- ??No code/schema/endpoint changes occurred
+- ??Final checkpoint created: `docs/PHASE-67-FINAL-CHECKPOINT.md`
 
 ---
 
@@ -1174,26 +1174,26 @@ Convert completed Phase 67 UX/UI design outputs into an implementation-ready exe
 - Implementation task breakdown and sequencing
 
 **Non-Goals:**
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No implementation
-- ❌ No frontend code changes
-- ❌ No backend code changes
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No implementation
+- ??No frontend code changes
+- ??No backend code changes
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-68A for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-68A for full details
 
 **Completion Summary:**
-- ✅ Implementation sequence defined (6 stages: 68B → 68C → 68D → 68E → 68F → 68G)
-- ✅ Backend dependencies mapped (9 endpoints identified, prioritized)
-- ✅ Frontend dependencies mapped (22 frontend tasks identified, sequenced)
-- ✅ Implementation sliced into controlled stages (6 stages, clear boundaries)
-- ✅ Blockers identified (backend endpoints block frontend history/dashboard)
-- ✅ Ready-to-implement work identified (7 tasks can start immediately)
-- ✅ Implementation tasks defined (25 tasks total: 3 backend, 22 frontend)
-- ✅ Validation expectations defined (tests, acceptance criteria, launch checklist)
-- ✅ Risks identified (5 risks, mitigations provided)
-- ✅ Checkpoint created: `docs/PHASE-68A-CHECKPOINT.md`
+- ??Implementation sequence defined (6 stages: 68B ??68C ??68D ??68E ??68F ??68G)
+- ??Backend dependencies mapped (9 endpoints identified, prioritized)
+- ??Frontend dependencies mapped (22 frontend tasks identified, sequenced)
+- ??Implementation sliced into controlled stages (6 stages, clear boundaries)
+- ??Blockers identified (backend endpoints block frontend history/dashboard)
+- ??Ready-to-implement work identified (7 tasks can start immediately)
+- ??Implementation tasks defined (25 tasks total: 3 backend, 22 frontend)
+- ??Validation expectations defined (tests, acceptance criteria, launch checklist)
+- ??Risks identified (5 risks, mitigations provided)
+- ??Checkpoint created: `docs/PHASE-68A-CHECKPOINT.md`
 
 ---
 
@@ -1201,7 +1201,7 @@ Convert completed Phase 67 UX/UI design outputs into an implementation-ready exe
 
 **Active Task:** TASK-68F
 
-#### TASK-68B: Backend UX/UI Support Endpoints — History/Control Slice
+#### TASK-68B: Backend UX/UI Support Endpoints ??History/Control Slice
 
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (BACKEND ONLY, ADDITIVE)
@@ -1218,25 +1218,25 @@ Implement the first minimal backend endpoint slice to unblock frontend history/c
 - API documentation (OpenAPI/Swagger)
 
 **Non-Goals:**
-- ❌ No user dashboard endpoints (deferred to TASK-68B-2)
-- ❌ No admin dashboard endpoints (deferred to TASK-68B-3)
-- ❌ No schema changes (use existing git_checkpoints table)
-- ❌ No frontend work
-- ❌ No refactors
+- ??No user dashboard endpoints (deferred to TASK-68B-2)
+- ??No admin dashboard endpoints (deferred to TASK-68B-3)
+- ??No schema changes (use existing git_checkpoints table)
+- ??No frontend work
+- ??No refactors
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-68B for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-68B for full details
 
 **Completion Summary:**
-- ✅ All 3 endpoints implemented (checkpoints list, diff, revert)
-- ✅ All tests passing (37 tests: 10 controller, 9 service, 18 integration)
-- ✅ No schema changes
-- ✅ No frontend changes
-- ✅ Scope remained narrow
-- ✅ Checkpoint created: `docs/PHASE-68B-CHECKPOINT.md`
+- ??All 3 endpoints implemented (checkpoints list, diff, revert)
+- ??All tests passing (37 tests: 10 controller, 9 service, 18 integration)
+- ??No schema changes
+- ??No frontend changes
+- ??Scope remained narrow
+- ??Checkpoint created: `docs/PHASE-68B-CHECKPOINT.md`
 
 ---
 
-#### TASK-68B-2: Backend UX/UI Support Endpoints — User Dashboard Slice
+#### TASK-68B-2: Backend UX/UI Support Endpoints ??User Dashboard Slice
 
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (BACKEND ONLY, ADDITIVE)
@@ -1254,28 +1254,28 @@ Implement the second minimal backend endpoint slice to unblock frontend user das
 - API documentation
 
 **Non-Goals:**
-- ❌ No admin dashboard endpoints (deferred to TASK-68B-3)
-- ❌ No history/control endpoints (already complete in TASK-68B)
-- ❌ No schema changes (use existing tables)
-- ❌ No frontend work
-- ❌ No refactors
+- ??No admin dashboard endpoints (deferred to TASK-68B-3)
+- ??No history/control endpoints (already complete in TASK-68B)
+- ??No schema changes (use existing tables)
+- ??No frontend work
+- ??No refactors
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-68B-2 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-68B-2 for full details
 
 **Completion Summary:**
-- ✅ Implemented `GET /api/users/me`
-- ✅ Implemented `GET /api/users/me/usage`
-- ✅ Implemented `GET /api/users/me/quotas`
-- ✅ Extended `GET /api/sessions` with `includeTerminated=true`
-- ✅ Added focused tests (17 passing across user/session slice specs)
-- ✅ No schema changes
-- ✅ No frontend changes
-- ✅ Scope remained narrow
-- ✅ Checkpoint created: `docs/PHASE-68B-2-CHECKPOINT.md`
+- ??Implemented `GET /api/users/me`
+- ??Implemented `GET /api/users/me/usage`
+- ??Implemented `GET /api/users/me/quotas`
+- ??Extended `GET /api/sessions` with `includeTerminated=true`
+- ??Added focused tests (17 passing across user/session slice specs)
+- ??No schema changes
+- ??No frontend changes
+- ??Scope remained narrow
+- ??Checkpoint created: `docs/PHASE-68B-2-CHECKPOINT.md`
 
 ---
 
-#### TASK-68B-3: Backend UX/UI Support Endpoints — Admin Dashboard Slice
+#### TASK-68B-3: Backend UX/UI Support Endpoints ??Admin Dashboard Slice
 
 **Status:** COMPLETE and LOCKED  
 **Nature:** IMPLEMENTATION (BACKEND ONLY, ADDITIVE)  
@@ -1292,14 +1292,14 @@ Implement the third minimal backend endpoint slice to unblock frontend admin das
 - API documentation (internal endpoint contracts only)
 
 **Non-Goals:**
-- ❌ No user dashboard endpoints (already complete in TASK-68B-2)
-- ❌ No history/control endpoints (already complete in TASK-68B)
-- ❌ No public-facing endpoints
-- ❌ No frontend work
-- ❌ No schema changes unless explicitly approved by existing design authority
-- ❌ No refactors
+- ??No user dashboard endpoints (already complete in TASK-68B-2)
+- ??No history/control endpoints (already complete in TASK-68B)
+- ??No public-facing endpoints
+- ??No frontend work
+- ??No schema changes unless explicitly approved by existing design authority
+- ??No refactors
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-68B-3 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-68B-3 for full details
 
 ---
 
@@ -1320,12 +1320,12 @@ Validate and consolidate completed backend endpoint slices (`TASK-68B`, `TASK-68
 - Create final consolidation checkpoint: `docs/PHASE-68B-FINAL-CHECKPOINT.md`
 
 **Non-Goals:**
-- ❌ No new endpoint implementation
-- ❌ No frontend work
-- ❌ No refactors
-- ❌ No architecture redesign
+- ??No new endpoint implementation
+- ??No frontend work
+- ??No refactors
+- ??No architecture redesign
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-68B-FINAL for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-68B-FINAL for full details
 
 ---
 
@@ -1346,14 +1346,14 @@ Implement only the first minimal, unblocked frontend core workspace slice from P
 - Slice-specific documentation/checkpoint output
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No history/control UI
-- ❌ No dashboard UI
-- ❌ No public-facing UI
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No history/control UI
+- ??No dashboard UI
+- ??No public-facing UI
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-68C for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-68C for full details
 
 ---
 
@@ -1374,14 +1374,14 @@ Implement only the first minimal, unblocked frontend history/control slice from 
 - Slice-specific documentation/checkpoint output
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No dashboard UI
-- ❌ No public-facing UI
-- ❌ No broader workspace redesign outside this history/control slice
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No dashboard UI
+- ??No public-facing UI
+- ??No broader workspace redesign outside this history/control slice
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-68D for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-68D for full details
 
 ---
 
@@ -1402,13 +1402,13 @@ Implement only the first minimal, unblocked frontend dashboard slice from Phase 
 - Slice-specific documentation/checkpoint output
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No public-facing UI
-- ❌ No broader workspace redesign outside this dashboard slice
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No public-facing UI
+- ??No broader workspace redesign outside this dashboard slice
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-68E for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-68E for full details
 
 ---
 
@@ -1429,13 +1429,13 @@ Implement only the first minimal, unblocked frontend public-facing slice from Ph
 - Slice-specific documentation/checkpoint output
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No authenticated workspace/dashboard/history-control scope
-- ❌ No broader marketing/docs-site expansion outside this first slice
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No authenticated workspace/dashboard/history-control scope
+- ??No broader marketing/docs-site expansion outside this first slice
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-68F for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-68F for full details
 
 ---
 
@@ -1459,13 +1459,13 @@ Implement only the first minimal, unblocked frontend launch-polish slice from Ph
 - Slice-specific documentation/checkpoint output
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new product feature scope
-- ❌ No major redesign of completed surfaces
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new product feature scope
+- ??No major redesign of completed surfaces
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-68G for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-68G for full details
 
 ---
 
@@ -1487,13 +1487,13 @@ Validate and consolidate completed Phase 68 planning and implementation slices i
 - Create final checkpoint: `docs/PHASE-68-FINAL-CHECKPOINT.md`
 
 **Non-Goals:**
-- ❌ No new implementation
-- ❌ No backend changes
-- ❌ No frontend feature expansion
-- ❌ No schema changes
-- ❌ No refactors
+- ??No new implementation
+- ??No backend changes
+- ??No frontend feature expansion
+- ??No schema changes
+- ??No refactors
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-68-FINAL for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-68-FINAL for full details
 
 ---
 
@@ -1520,12 +1520,12 @@ Plan validation for completed Phase 67 and Phase 68 UX/UI outputs and define end
 - Sequencing for any remaining UX/UI validation/fix slices if needed
 
 **Non-Goals:**
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-69A for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-69A for full details
 
 ---
 
@@ -1545,12 +1545,12 @@ Execute the Phase 69A UX/UI validation plan and document end-to-end readiness fi
 - Confirm whether follow-up UX/UI validation/fix slices are required
 
 **Non-Goals:**
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-69B for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-69B for full details
 
 ---
 
@@ -1571,13 +1571,13 @@ Validate and consolidate completed Phase 69 planning/validation outputs and clos
 - Create final Phase 69 checkpoint
 
 **Non-Goals:**
-- ❌ No new implementation
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
+- ??No new implementation
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-69-FINAL for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-69-FINAL for full details
 
 ---
 
@@ -1603,12 +1603,12 @@ Plan launch-readiness validation coverage and sequencing after completed UX/UI d
 - Plan sequencing for any final validation-only slices if needed before broader launch sign-off
 
 **Non-Goals:**
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-70A for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-70A for full details
 
 ---
 
@@ -1628,12 +1628,12 @@ Execute the launch-readiness validation plan defined in `TASK-70A` and document 
 - Explicitly determine whether any blocking issues remain before broader launch sign-off
 
 **Non-Goals:**
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-70B for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-70B for full details
 
 ---
 
@@ -1659,13 +1659,13 @@ Validate and consolidate completed Phase 70 planning and validation outputs and 
 - Create final Phase 70 checkpoint
 
 **Non-Goals:**
-- ❌ No new implementation
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
+- ??No new implementation
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-70-FINAL for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-70-FINAL for full details
 
 ---
 
@@ -1692,12 +1692,12 @@ Compare the broader master plan against the currently completed/narrowed impleme
 - Propose high-level sequencing for remaining master-plan work only
 
 **Non-Goals:**
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-71A for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-71A for full details
 
 ---
 
@@ -1718,12 +1718,12 @@ Review deferred authoritative tasks already present in TASKS/TASKS_BACKLOG, iden
 - High-level sequencing proposal for deferred-task closure only
 
 **Non-Goals:**
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-71B for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-71B for full details
 
 ---
 
@@ -1743,13 +1743,13 @@ Reconcile TASKS.md status markers against checkpoint evidence already present in
 - Bulk status update in TASKS.md for all tasks where checkpoint evidence confirms completion
 
 **Non-Goals:**
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
-- ❌ No new implementation work
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
+- ??No new implementation work
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-71C for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-71C for full details
 
 ---
 
@@ -1771,13 +1771,13 @@ Validate and consolidate completed Phase 71 planning/validation/reconciliation w
 - Create final Phase 71 checkpoint
 
 **Non-Goals:**
-- ❌ No new implementation
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
+- ??No new implementation
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-71-FINAL for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-71-FINAL for full details
 
 ---
 
@@ -1802,13 +1802,13 @@ Resolve the remaining TASK-42A-4 reconciliation exception identified in Phase 71
 - Plan the minimum corrective path based on evidence only
 
 **Non-Goals:**
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
-- ❌ No new implementation
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
+- ??No new implementation
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-72A for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-72A for full details
 
 ---
 
@@ -1827,13 +1827,13 @@ Activate execution of still-incomplete TASK-42A-4 using the existing authoritati
 - Normalize current task tracking for TASK-42A-4 based on Phase 72A evidence conclusion
 
 **Non-Goals:**
-- ❌ No platform code changes in this registration step
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
-- ❌ No scope expansion beyond original TASK-42A-4 intent
+- ??No platform code changes in this registration step
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
+- ??No scope expansion beyond original TASK-42A-4 intent
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-72B for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-72B for full details
 
 ---
 
@@ -1853,11 +1853,11 @@ Execute the original authoritative TASK-42A-4 work exactly as already defined in
 - Normalize project tracking by completing the still-pending original task
 
 **Non-Goals:**
-- ❌ No scope expansion beyond original TASK-42A-4 intent
-- ❌ No replacement/redefinition of original TASK-42A-4 scope
-- ❌ No refactors outside original verification/finalization boundaries
+- ??No scope expansion beyond original TASK-42A-4 intent
+- ??No replacement/redefinition of original TASK-42A-4 scope
+- ??No refactors outside original verification/finalization boundaries
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-72C for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-72C for full details
 
 ---
 
@@ -1879,13 +1879,13 @@ Validate and consolidate completed Phase 72 evidence-resolution, activation, and
 - Create final Phase 72 checkpoint
 
 **Non-Goals:**
-- ❌ No new implementation
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
+- ??No new implementation
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-72-FINAL for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-72-FINAL for full details
 
 ---
 
@@ -1910,12 +1910,12 @@ Select the next authoritative product/workstream priority after closure of the P
 - Provide a high-level sequencing recommendation for the next immediate work family only
 
 **Non-Goals:**
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-73A for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-73A for full details
 
 ---
 
@@ -1935,12 +1935,12 @@ Plan the first bounded commercial-foundation work family selected in Phase 73A u
 - Provide sequencing recommendation for immediate commercial-foundation sub-stages only
 
 **Non-Goals:**
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-73B for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-73B for full details
 
 ---
 
@@ -1960,16 +1960,16 @@ Implement the first non-monetary, architecture-neutral commercial-readiness slic
 - Preserve current request-driven governance and deterministic error semantics
 
 **Non-Goals:**
-- ❌ No monetary billing
-- ❌ No subscriptions
-- ❌ No invoicing
-- ❌ No tax/accounting scope
-- ❌ No new service boundaries
-- ❌ No background-worker patterns
-- ❌ No scope expansion beyond selected bounded family
-- ❌ No schema changes unless explicitly authorized by current PRD/ARCHITECTURE constraints and absolutely required by bounded-family scope
+- ??No monetary billing
+- ??No subscriptions
+- ??No invoicing
+- ??No tax/accounting scope
+- ??No new service boundaries
+- ??No background-worker patterns
+- ??No scope expansion beyond selected bounded family
+- ??No schema changes unless explicitly authorized by current PRD/ARCHITECTURE constraints and absolutely required by bounded-family scope
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-73C-1 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-73C-1 for full details
 
 ---
 
@@ -1989,16 +1989,16 @@ Validate the bounded non-monetary commercial-readiness contract baseline complet
 - Preserve architecture-neutral, request-driven constraints while validating existing behavior
 
 **Non-Goals:**
-- ❌ No monetary billing
-- ❌ No subscriptions
-- ❌ No invoicing
-- ❌ No tax/accounting scope
-- ❌ No new service boundaries
-- ❌ No background-worker patterns
-- ❌ No scope expansion beyond selected bounded family
-- ❌ No schema changes unless explicitly authorized by current PRD/ARCHITECTURE constraints and absolutely required by bounded validation scope
+- ??No monetary billing
+- ??No subscriptions
+- ??No invoicing
+- ??No tax/accounting scope
+- ??No new service boundaries
+- ??No background-worker patterns
+- ??No scope expansion beyond selected bounded family
+- ??No schema changes unless explicitly authorized by current PRD/ARCHITECTURE constraints and absolutely required by bounded validation scope
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-73C-2 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-73C-2 for full details
 
 ---
 
@@ -2020,14 +2020,14 @@ Validate and consolidate completed bounded commercial-readiness outputs (`TASK-7
 - Create final 73C family checkpoint
 
 **Non-Goals:**
-- ❌ No new implementation
-- ❌ No refactors
-- ❌ No monetary billing/subscription/invoicing/tax scope expansion
-- ❌ No architecture expansion or new service boundaries
-- ❌ No background-worker patterns
-- ❌ No scope expansion beyond selected bounded commercial family
+- ??No new implementation
+- ??No refactors
+- ??No monetary billing/subscription/invoicing/tax scope expansion
+- ??No architecture expansion or new service boundaries
+- ??No background-worker patterns
+- ??No scope expansion beyond selected bounded commercial family
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-73C-FINAL for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-73C-FINAL for full details
 
 ---
 
@@ -2048,13 +2048,13 @@ Validate and consolidate completed Phase 73 planning and bounded commercial-foun
 - Create final Phase 73 checkpoint: `docs/PHASE-73-FINAL-CHECKPOINT.md`
 
 **Non-Goals:**
-- ❌ No new implementation
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
+- ??No new implementation
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-73-FINAL for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-73-FINAL for full details
 
 ---
 
@@ -2080,12 +2080,12 @@ Select the next bounded commercial-foundation family after completion of the Pha
 - Provide a high-level sequencing recommendation for the next immediate bounded commercial family only
 
 **Non-Goals:**
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-74A for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-74A for full details
 
 ---
 
@@ -2106,15 +2106,15 @@ Plan the selected bounded family from Phase 74A (`Non-Monetary Commercial Visibi
 - Keep planning documentation-only with no platform code/schema/endpoint changes
 
 **Non-Goals:**
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No implementation work
-- ❌ No refactors
-- ❌ No broader architectural expansion
-- ❌ No monetization scope expansion beyond current authority constraints
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No implementation work
+- ??No refactors
+- ??No broader architectural expansion
+- ??No monetization scope expansion beyond current authority constraints
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-74B for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-74B for full details
 
 ---
 
@@ -2133,21 +2133,21 @@ Verify and normalize cross-surface coherence between user-facing usage/quota sur
 - If cross-surface inconsistency is found, apply minimal normalization to align existing surface contracts
 - If no inconsistency is found, document findings as validation-only
 - Keep scope additive, bounded, and architecture-neutral
-- Bounded to existing endpoints only — no new endpoints
+- Bounded to existing endpoints only ??no new endpoints
 
 **Non-Goals:**
-- ❌ No monetary billing
-- ❌ No subscriptions
-- ❌ No invoicing
-- ❌ No tax/accounting scope
-- ❌ No new service boundaries
-- ❌ No background-worker patterns
-- ❌ No schema changes unless explicitly authorized by current PRD/ARCHITECTURE constraints and absolutely required by this bounded slice
-- ❌ No scope expansion beyond selected bounded family
-- ❌ No new endpoints or surfaces
-- ❌ No broader architectural expansion
+- ??No monetary billing
+- ??No subscriptions
+- ??No invoicing
+- ??No tax/accounting scope
+- ??No new service boundaries
+- ??No background-worker patterns
+- ??No schema changes unless explicitly authorized by current PRD/ARCHITECTURE constraints and absolutely required by this bounded slice
+- ??No scope expansion beyond selected bounded family
+- ??No new endpoints or surfaces
+- ??No broader architectural expansion
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-74C-1 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-74C-1 for full details
 
 ---
 
@@ -2168,18 +2168,18 @@ Validate that existing visibility/reporting surfaces produce deterministic, repr
 - No new implementation expected; if a blocking gap is found, scope it for a subsequent bounded slice
 
 **Non-Goals:**
-- ❌ No monetary billing
-- ❌ No subscriptions
-- ❌ No invoicing
-- ❌ No tax/accounting scope
-- ❌ No new service boundaries
-- ❌ No background-worker patterns
-- ❌ No schema changes unless explicitly authorized by current PRD/ARCHITECTURE constraints and absolutely required by this bounded validation scope
-- ❌ No scope expansion beyond selected bounded family
-- ❌ No new endpoints or surfaces
-- ❌ No broader architectural expansion
+- ??No monetary billing
+- ??No subscriptions
+- ??No invoicing
+- ??No tax/accounting scope
+- ??No new service boundaries
+- ??No background-worker patterns
+- ??No schema changes unless explicitly authorized by current PRD/ARCHITECTURE constraints and absolutely required by this bounded validation scope
+- ??No scope expansion beyond selected bounded family
+- ??No new endpoints or surfaces
+- ??No broader architectural expansion
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-74C-2 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-74C-2 for full details
 
 ---
 
@@ -2201,14 +2201,14 @@ Validate and consolidate completed bounded visibility/reporting family outputs (
 - Create final 74C family checkpoint
 
 **Non-Goals:**
-- ❌ No new implementation
-- ❌ No refactors
-- ❌ No monetary billing/subscription/invoicing/tax scope expansion
-- ❌ No architecture expansion or new service boundaries
-- ❌ No background-worker patterns
-- ❌ No scope expansion beyond selected bounded family
+- ??No new implementation
+- ??No refactors
+- ??No monetary billing/subscription/invoicing/tax scope expansion
+- ??No architecture expansion or new service boundaries
+- ??No background-worker patterns
+- ??No scope expansion beyond selected bounded family
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-74C-FINAL for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-74C-FINAL for full details
 
 ---
 
@@ -2229,13 +2229,13 @@ Validate and consolidate completed Phase 74 planning and bounded visibility/repo
 - Create final Phase 74 checkpoint: `docs/PHASE-74-FINAL-CHECKPOINT.md`
 
 **Non-Goals:**
-- ❌ No new implementation
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
+- ??No new implementation
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-74-FINAL for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-74-FINAL for full details
 
 ---
 
@@ -2261,12 +2261,12 @@ Select the next bounded commercial-foundation family after completion of the Pha
 - Provide a high-level sequencing recommendation for the next immediate bounded commercial family only
 
 **Non-Goals:**
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-75A for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-75A for full details
 
 ---
 
@@ -2293,12 +2293,12 @@ Pause further readiness/commercial-readiness family execution until the current 
 - Pause commercial-readiness family progression until manual validation is complete
 
 **Non-Goals:**
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-76A for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-76A for full details
 
 ---
 
@@ -2319,18 +2319,18 @@ Execute the manual end-to-end app validation plan defined in Phase 76A against t
 - Explicitly determine readiness to resume paused commercial-readiness family execution
 
 **Non-Goals:**
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-76B for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-76B for full details
 
-**Validation Result:** FAIL — ISSUE-76-001 (BLOCKING). Readiness/commercial-readiness work remains paused.
+**Validation Result:** FAIL ??ISSUE-76-001 (BLOCKING). Readiness/commercial-readiness work remains paused.
 
 ---
 
-#### TASK-76C: Resolve ISSUE-76-001 — Validation Environment Readiness
+#### TASK-76C: Resolve ISSUE-76-001 ??Validation Environment Readiness
 
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (MINIMAL, TARGETED FIX)
@@ -2344,21 +2344,21 @@ Resolve the BLOCKING issue ISSUE-76-001 identified during Phase 76B manual valid
 - Ensure frontend dev server is startable and reachable at expected port for UI/responsive validation
 - Ensure at least one test user JWT is available for authenticated API endpoint validation
 - Ensure internal service key (`X-Internal-Service-Key`) is available for admin endpoint validation
-- Minimum required fix path only — no unrelated improvements
+- Minimum required fix path only ??no unrelated improvements
 - Verification/tests for ISSUE-76-001 resolution only
 - Checkpoint/evidence update for this issue-resolution task only
 
 **Non-Goals:**
-- ❌ No unrelated fixes
-- ❌ No scope expansion beyond ISSUE-76-001
-- ❌ No refactors unless absolutely required for the minimum safe fix
-- ❌ No schema changes unless absolutely required
-- ❌ No broader architectural expansion
-- ❌ No commercial-readiness work (still paused pending re-validation)
+- ??No unrelated fixes
+- ??No scope expansion beyond ISSUE-76-001
+- ??No refactors unless absolutely required for the minimum safe fix
+- ??No schema changes unless absolutely required
+- ??No broader architectural expansion
+- ??No commercial-readiness work (still paused pending re-validation)
 
 **Dependencies:** TASK-76B (Complete)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-76C for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-76C for full details
 
 ---
 
@@ -2379,28 +2379,28 @@ Re-execute the manual validation gate after the Phase 76C fix for `ISSUE-76-001`
 - Capture validation evidence and produce task checkpoint output
 
 **Non-Goals:**
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
-- ❌ No unrelated issue work
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
+- ??No unrelated issue work
 
 **Dependencies:** TASK-76C (Complete)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-76D for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-76D for full details
 
-**Validation Result:** FAIL — ISSUE-76-002, ISSUE-76-003, ISSUE-76-004 (all BLOCKING). Readiness/commercial-readiness work remains paused.
+**Validation Result:** FAIL ??ISSUE-76-002, ISSUE-76-003, ISSUE-76-004 (all BLOCKING). Readiness/commercial-readiness work remains paused.
 
 ---
 
-#### TASK-76E: Resolve ISSUE-76-004 — Frontend Process Degraded/Hung
+#### TASK-76E: Resolve ISSUE-76-004 ??Frontend Process Degraded/Hung
 
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (MINIMAL, TARGETED FIX)
 **Checkpoint:** `docs/PHASE-76E-CHECKPOINT.md`
 
 **Objective:**
-Resolve the BLOCKING issue ISSUE-76-004 identified during Phase 76D post-fix manual validation recheck: the frontend process on port 3002 is in a degraded/hung state — accepts TCP connections but does not serve HTTP responses, blocking UI validation for Areas 1, 2, and 8.
+Resolve the BLOCKING issue ISSUE-76-004 identified during Phase 76D post-fix manual validation recheck: the frontend process on port 3002 is in a degraded/hung state ??accepts TCP connections but does not serve HTTP responses, blocking UI validation for Areas 1, 2, and 8.
 
 **Scope:**
 - Resolve ISSUE-76-004 only (one-issue-at-a-time product correction)
@@ -2410,21 +2410,21 @@ Resolve the BLOCKING issue ISSUE-76-004 identified during Phase 76D post-fix man
 - Checkpoint/evidence update for this issue-resolution task only
 
 **Non-Goals:**
-- ❌ No unrelated fixes
-- ❌ No scope expansion beyond ISSUE-76-004
-- ❌ No refactors unless absolutely required for the minimum safe fix
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No broader architectural expansion
-- ❌ No commercial-readiness work (still paused pending re-validation)
+- ??No unrelated fixes
+- ??No scope expansion beyond ISSUE-76-004
+- ??No refactors unless absolutely required for the minimum safe fix
+- ??No schema changes
+- ??No endpoint changes
+- ??No broader architectural expansion
+- ??No commercial-readiness work (still paused pending re-validation)
 
 **Dependencies:** TASK-76D (Complete)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-76E for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-76E for full details
 
 ---
 
-#### TASK-76F: Resolve ISSUE-76-002 — DELETE Session Returns HTTP 500
+#### TASK-76F: Resolve ISSUE-76-002 ??DELETE Session Returns HTTP 500
 
 **Status:** COMPLETE
 **Nature:** IMPLEMENTATION (MINIMAL, TARGETED FIX)
@@ -2441,21 +2441,21 @@ Resolve the BLOCKING issue ISSUE-76-002 identified during Phase 76D post-fix man
 - Checkpoint/evidence update for this issue-resolution task only
 
 **Non-Goals:**
-- ❌ No unrelated fixes
-- ❌ No scope expansion beyond ISSUE-76-002
-- ❌ No refactors unless absolutely required for the minimum safe fix
-- ❌ No schema changes unless absolutely required and clearly justified by the documented issue scope
-- ❌ No endpoint changes unless absolutely required and clearly justified by the documented issue scope
-- ❌ No broader architectural expansion
-- ❌ No commercial-readiness work (still paused pending re-validation)
+- ??No unrelated fixes
+- ??No scope expansion beyond ISSUE-76-002
+- ??No refactors unless absolutely required for the minimum safe fix
+- ??No schema changes unless absolutely required and clearly justified by the documented issue scope
+- ??No endpoint changes unless absolutely required and clearly justified by the documented issue scope
+- ??No broader architectural expansion
+- ??No commercial-readiness work (still paused pending re-validation)
 
 **Dependencies:** TASK-76E (Complete)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-76F for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-76F for full details
 
 ---
 
-#### TASK-76G: Resolve ISSUE-76-003 — GET Checkpoints Returns HTTP 500
+#### TASK-76G: Resolve ISSUE-76-003 ??GET Checkpoints Returns HTTP 500
 
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (MINIMAL, TARGETED FIX)
@@ -2472,17 +2472,17 @@ Resolve the BLOCKING issue ISSUE-76-003 identified during Phase 76D post-fix man
 - Checkpoint/evidence update for this issue-resolution task only
 
 **Non-Goals:**
-- ❌ No unrelated fixes
-- ❌ No scope expansion beyond ISSUE-76-003
-- ❌ No refactors unless absolutely required for the minimum safe fix
-- ❌ No schema changes unless absolutely required and clearly justified by the documented issue scope
-- ❌ No endpoint changes unless absolutely required and clearly justified by the documented issue scope
-- ❌ No broader architectural expansion
-- ❌ No commercial-readiness work (still paused pending re-validation)
+- ??No unrelated fixes
+- ??No scope expansion beyond ISSUE-76-003
+- ??No refactors unless absolutely required for the minimum safe fix
+- ??No schema changes unless absolutely required and clearly justified by the documented issue scope
+- ??No endpoint changes unless absolutely required and clearly justified by the documented issue scope
+- ??No broader architectural expansion
+- ??No commercial-readiness work (still paused pending re-validation)
 
 **Dependencies:** TASK-76F (Complete)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-76G for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-76G for full details
 
 ---
 
@@ -2505,16 +2505,16 @@ Execute a full rerun of the Phase 76A manual end-to-end app validation plan afte
 - No endpoint changes
 
 **Non-Goals:**
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
-- ❌ No unrelated issue work
-- ❌ No commercial-readiness work (gate decision produced by this task, not assumed)
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
+- ??No unrelated issue work
+- ??No commercial-readiness work (gate decision produced by this task, not assumed)
 
 **Dependencies:** TASK-76G (Complete)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-76H for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-76H for full details
 
 ---
 
@@ -2532,30 +2532,30 @@ Validate and consolidate completed Phase 76 manual-validation planning, executio
 - Confirm the manual validation gate process was executed correctly end-to-end
 - Confirm ISSUE-76-001, ISSUE-76-002, ISSUE-76-003, and ISSUE-76-004 were each resolved within bounded one-issue-at-a-time scope
 - Confirm the final rerun (TASK-76H) produced CONDITIONAL PASS and opened the gate for readiness/commercial-readiness work to resume
-- Explicitly record ISSUE-76-005 (exec route gap) as NON-BLOCKING carry-forward only — not a gate blocker
+- Explicitly record ISSUE-76-005 (exec route gap) as NON-BLOCKING carry-forward only ??not a gate blocker
 - Confirm no unauthorized scope expansion or refactors occurred across Phase 76
 - Create final checkpoint: `docs/PHASE-76-FINAL-CHECKPOINT.md`
 
 **Non-Goals:**
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
-- ❌ No new implementation
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
+- ??No new implementation
 
 **Dependencies:** TASK-76H (Complete)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-76-FINAL for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-76-FINAL for full details
 
 ---
 
-### Phase 77: Resolve ISSUE-76-005 — Exec Route Gap
+### Phase 77: Resolve ISSUE-76-005 ??Exec Route Gap
 
 **Current Stage:** 77-FINAL-COMPLETE
 
 **Active Task:** TASK-77-FINAL (COMPLETE and LOCKED)
 
-#### TASK-77A: Resolve ISSUE-76-005 — POST /api/sessions/:id/exec Route Gap
+#### TASK-77A: Resolve ISSUE-76-005 ??POST /api/sessions/:id/exec Route Gap
 
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (MINIMAL, TARGETED FIX)
@@ -2572,16 +2572,16 @@ Resolve ISSUE-76-005 identified during Phase 76H full post-fix manual validation
 - Checkpoint/evidence update for this issue-resolution task only
 
 **Non-Goals:**
-- ❌ No unrelated fixes
-- ❌ No scope expansion beyond ISSUE-76-005
-- ❌ No refactors unless absolutely required for the minimum safe fix
-- ❌ No schema changes unless absolutely required
-- ❌ No broader architectural expansion
-- ❌ No commercial-readiness work
+- ??No unrelated fixes
+- ??No scope expansion beyond ISSUE-76-005
+- ??No refactors unless absolutely required for the minimum safe fix
+- ??No schema changes unless absolutely required
+- ??No broader architectural expansion
+- ??No commercial-readiness work
 
 **Dependencies:** TASK-76-FINAL (Complete)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-77A for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-77A for full details
 
 ---
 
@@ -2607,15 +2607,15 @@ Validate and consolidate completed Phase 77 bounded fix outputs (`TASK-77A`) and
 - Create final Phase 77 checkpoint: `docs/PHASE-77-FINAL-CHECKPOINT.md`
 
 **Non-Goals:**
-- ❌ No new implementation
-- ❌ No platform code changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
+- ??No new implementation
+- ??No platform code changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
 
 **Dependencies:** TASK-77A (Complete)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-77-FINAL for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-77-FINAL for full details
 
 ---
 
@@ -2636,26 +2636,26 @@ Wire the workspace's existing command input surface to `POST /api/sessions/:id/e
 
 **Scope:**
 - Connect the workspace command input UI to `POST /api/sessions/:id/exec`
-- Manage exec lifecycle state: idle → sending → result
+- Manage exec lifecycle state: idle ??sending ??result
 - Disable input while request is in flight
 - Display `exitCode`, `stdout`, `stderr` in the workspace result/output area
 - Visually distinguish success (`exitCode === 0`) from failure (`exitCode !== 0`)
 - Handle HTTP 400, 404, 410, and network/unexpected error as distinct frontend states
-- Frontend-only changes — additive only
+- Frontend-only changes ??additive only
 - Focused frontend tests for this slice
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No checkpoint/history refresh (deferred to TASK-78B)
-- ❌ No terminal emulation or streaming
-- ❌ No broader workspace redesign
-- ❌ No new endpoints
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No checkpoint/history refresh (deferred to TASK-78B)
+- ??No terminal emulation or streaming
+- ??No broader workspace redesign
+- ??No new endpoints
 
 **Dependencies:** TASK-77A (Complete), TASK-68C (Complete), TASK-68D (Complete), Phase 76 gate OPEN
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-78A for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-78A for full details
 
 ---
 
@@ -2673,21 +2673,21 @@ After a successful exec, refresh the checkpoint list and session-state indicator
 - Reflect updated checkpoint list in the existing history/control surface
 - Refresh session status/activity indicator in the existing workspace shell where already wired
 - Use only already-available backend capabilities
-- Frontend-only changes — additive only
+- Frontend-only changes ??additive only
 - Focused frontend tests for this slice
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No polling or timer-based refresh
-- ❌ No websocket/realtime work
-- ❌ No diff/revert UI changes
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No polling or timer-based refresh
+- ??No websocket/realtime work
+- ??No diff/revert UI changes
 
 **Dependencies:** TASK-78A (Complete and Locked), TASK-68D (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-78B for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-78B for full details
 
 ---
 
@@ -2702,7 +2702,7 @@ Validate and consolidate completed Phase 78 slices (`TASK-78A`, `TASK-78B`) and 
 
 **Scope:**
 - Validate and consolidate `TASK-78A` and `TASK-78B` outputs
-- Confirm exec interaction end-to-end (workspace input → exec request → result rendering → post-exec surface refresh)
+- Confirm exec interaction end-to-end (workspace input ??exec request ??result rendering ??post-exec surface refresh)
 - Confirm scope remained frontend-only and additive
 - Confirm no backend changes, no schema changes, no refactors
 - Confirm PRD / ARCHITECTURE alignment (exec contract, HTTP semantics, JWT/ownership)
@@ -2710,28 +2710,28 @@ Validate and consolidate completed Phase 78 slices (`TASK-78A`, `TASK-78B`) and 
 - Create final Phase 78 checkpoint
 
 **Non-Goals:**
-- ❌ No new implementation
-- ❌ No platform code changes
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
-- ❌ No new product scope
-- ❌ No TASK-79 work
+- ??No new implementation
+- ??No platform code changes
+- ??No backend changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
+- ??No new product scope
+- ??No TASK-79 work
 
 **Dependencies:** TASK-78A (Complete and Locked), TASK-78B (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-78-FINAL for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-78-FINAL for full details
 
 **Completion Summary:**
-- ✅ TASK-78A validated — core exec interaction slice complete and locked
-- ✅ TASK-78B validated — post-exec surface coherence complete and locked
-- ✅ End-to-end exec interaction confirmed (workspace input → exec request → result rendering → post-exec refresh)
-- ✅ Scope confirmed frontend-only and additive across all Phase 78 work
-- ✅ No backend changes, schema changes, endpoint changes, or refactors
-- ✅ PRD/ARCHITECTURE alignment confirmed (`exitCode`/`stdout`/`stderr`, HTTP 400/404/410, JWT/ownership)
-- ✅ 39/39 tests pass; 0 regressions
-- ✅ Final checkpoint created: `docs/PHASE-78-FINAL-CHECKPOINT.md`
+- ??TASK-78A validated ??core exec interaction slice complete and locked
+- ??TASK-78B validated ??post-exec surface coherence complete and locked
+- ??End-to-end exec interaction confirmed (workspace input ??exec request ??result rendering ??post-exec refresh)
+- ??Scope confirmed frontend-only and additive across all Phase 78 work
+- ??No backend changes, schema changes, endpoint changes, or refactors
+- ??PRD/ARCHITECTURE alignment confirmed (`exitCode`/`stdout`/`stderr`, HTTP 400/404/410, JWT/ownership)
+- ??39/39 tests pass; 0 regressions
+- ??Final checkpoint created: `docs/PHASE-78-FINAL-CHECKPOINT.md`
 
 ---
 
@@ -2756,33 +2756,33 @@ Make the workspace preview panel meaningfully usable by wiring the existing prev
 - Add clear preview lifecycle states: loading, ready, unavailable / not yet running, error
 - Add manual refresh control for the preview surface only
 - Keep integration localized to the existing workspace shell and preview panel
-- Frontend-only changes — additive only
+- Frontend-only changes ??additive only
 - Focused frontend tests for this slice
 - Slice-specific checkpoint output
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No terminal/streaming work
-- ❌ No editor/file-tree work in this task
-- ❌ No broader workspace redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No terminal/streaming work
+- ??No editor/file-tree work in this task
+- ??No broader workspace redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-78-FINAL (Complete and Locked), TASK-68C (Complete), TASK-78A (Complete and Locked), TASK-78B (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-79A for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-79A for full details
 
 **Completion Summary:**
-- ✅ Preview panel wired to existing preview proxy path for the active session only
-- ✅ All four preview lifecycle states rendered (loading, ready, unavailable, error)
-- ✅ Manual refresh control scoped to preview panel only — no full page reload
-- ✅ Preview tied strictly to active session; resets on session switch
-- ✅ Frontend-only and additive — no backend, schema, endpoint, or refactor changes
-- ✅ 45/45 tests pass; 0 regressions
-- ✅ Checkpoint created: `docs/PHASE-79A-CHECKPOINT.md`
+- ??Preview panel wired to existing preview proxy path for the active session only
+- ??All four preview lifecycle states rendered (loading, ready, unavailable, error)
+- ??Manual refresh control scoped to preview panel only ??no full page reload
+- ??Preview tied strictly to active session; resets on session switch
+- ??Frontend-only and additive ??no backend, schema, endpoint, or refactor changes
+- ??45/45 tests pass; 0 regressions
+- ??Checkpoint created: `docs/PHASE-79A-CHECKPOINT.md`
 
 ---
 
@@ -2803,25 +2803,25 @@ Make the workspace editor area meaningfully usable by wiring the existing editor
 - Add clear localized UI states: loading, ready, empty / no file available, error
 - Keep file-navigation state tied to the active session only
 - Keep integration localized to the existing workspace shell, editor panel, and file-navigation surface
-- Frontend-only changes — additive only
+- Frontend-only changes ??additive only
 - Focused frontend tests for this slice
 - Slice-specific checkpoint output
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No file editing/save behavior in this task
-- ❌ No file create/delete/rename/upload in this task
-- ❌ No terminal/streaming work
-- ❌ No broader workspace redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No file editing/save behavior in this task
+- ??No file create/delete/rename/upload in this task
+- ??No terminal/streaming work
+- ??No broader workspace redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** Phase 78 (Complete and Locked), TASK-79A (Complete and Locked), TASK-68C (Complete)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-79B for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-79B for full details
 
 ---
 
@@ -2843,28 +2843,28 @@ Validate and consolidate completed Phase 79 slices (`TASK-79A`, `TASK-79B`) and 
 - Create final Phase 79 checkpoint
 
 **Non-Goals:**
-- ❌ No new implementation
-- ❌ No platform code changes
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
-- ❌ No new product scope
-- ❌ No TASK-80 work
+- ??No new implementation
+- ??No platform code changes
+- ??No backend changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
+- ??No new product scope
+- ??No TASK-80 work
 
 **Dependencies:** TASK-79A (Complete and Locked), TASK-79B (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-79-FINAL for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-79-FINAL for full details
 
 **Completion Summary:**
-- ✅ TASK-79A validated — core preview interaction slice complete and locked
-- ✅ TASK-79B validated — core editor file navigation slice complete and locked
-- ✅ End-to-end preview and file-navigation usability confirmed
-- ✅ Scope confirmed frontend-only and additive across all Phase 79 work
-- ✅ No backend changes, schema changes, endpoint changes, or refactors
-- ✅ PRD/ARCHITECTURE alignment confirmed (preview proxy, session scoping, file capability reuse)
-- ✅ 49/49 tests pass; 0 regressions
-- ✅ Final checkpoint created: `docs/PHASE-79-FINAL-CHECKPOINT.md`
+- ??TASK-79A validated ??core preview interaction slice complete and locked
+- ??TASK-79B validated ??core editor file navigation slice complete and locked
+- ??End-to-end preview and file-navigation usability confirmed
+- ??Scope confirmed frontend-only and additive across all Phase 79 work
+- ??No backend changes, schema changes, endpoint changes, or refactors
+- ??PRD/ARCHITECTURE alignment confirmed (preview proxy, session scoping, file capability reuse)
+- ??49/49 tests pass; 0 regressions
+- ??Final checkpoint created: `docs/PHASE-79-FINAL-CHECKPOINT.md`
 
 ---
 
@@ -2891,36 +2891,36 @@ Make the workspace editor meaningfully usable for actual code changes by wiring 
 - Keep editing/saving strictly tied to the active session and selected file only
 - Preserve session-switch safety and stale-request guards
 - Keep integration localized to the existing workspace shell/editor panel
-- Frontend-only changes — additive only
+- Frontend-only changes ??additive only
 - Focused frontend tests for this slice
 - Slice-specific checkpoint output
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No create/delete/rename/upload in this task
-- ❌ No diff viewer in this task
-- ❌ No autosave in this task
-- ❌ No collaborative editing
-- ❌ No terminal/streaming work
-- ❌ No broader workspace redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No create/delete/rename/upload in this task
+- ??No diff viewer in this task
+- ??No autosave in this task
+- ??No collaborative editing
+- ??No terminal/streaming work
+- ??No broader workspace redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** Phase 79 (Complete and Closed), TASK-79B (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-80A for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-80A for full details
 
 **Completion Summary:**
-- ✅ Editor content made editable in existing editor area
-- ✅ Save action wired to existing `POST /api/files/:sessionId/write` capability only
-- ✅ Five distinct save states rendered: clean, dirty, saving, saved, save-error
-- ✅ Session-switch and file-change safety preserved; stale-request guards in place
-- ✅ No backend, schema, endpoint, refactor, or polling changes
-- ✅ 51/51 frontend tests pass; 0 regressions
-- ✅ Checkpoint created: `docs/PHASE-80A-CHECKPOINT.md`
+- ??Editor content made editable in existing editor area
+- ??Save action wired to existing `POST /api/files/:sessionId/write` capability only
+- ??Five distinct save states rendered: clean, dirty, saving, saved, save-error
+- ??Session-switch and file-change safety preserved; stale-request guards in place
+- ??No backend, schema, endpoint, refactor, or polling changes
+- ??51/51 frontend tests pass; 0 regressions
+- ??Checkpoint created: `docs/PHASE-80A-CHECKPOINT.md`
 
 ---
 
@@ -2941,26 +2941,26 @@ Make workspace version-control usability meaningfully better by wiring the exist
 - Add localized checkpoint-creation UI states: idle, creating, created, create-error
 - Keep checkpoint creation strictly tied to the active session only
 - Keep integration localized to the existing workspace shell and history/control surface
-- Frontend-only changes — additive only
+- Frontend-only changes ??additive only
 - Focused frontend tests for this slice
 - Slice-specific checkpoint output
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No diff viewer in this task
-- ❌ No revert flow in this task
-- ❌ No branching/star/filter/search in this task
-- ❌ No autosave checkpointing
-- ❌ No polling/websocket behavior
-- ❌ No broader workspace redesign
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No diff viewer in this task
+- ??No revert flow in this task
+- ??No branching/star/filter/search in this task
+- ??No autosave checkpointing
+- ??No polling/websocket behavior
+- ??No broader workspace redesign
+- ??No multi-task work
 
 **Dependencies:** Phase 78 (Complete and Closed), Phase 79 (Complete and Closed), TASK-80A (Complete and Locked), TASK-68D (Complete)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-80B for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-80B for full details
 
 ---
 
@@ -2981,25 +2981,25 @@ Make workspace version-control usability meaningfully better by wiring the exist
 - Refresh relevant workspace surfaces after successful revert using existing fetch patterns only (checkpoint/history, file navigation/editor, preview where supported by existing request-driven paths)
 - Add localized revert UI states: idle, confirming, reverting, reverted, revert-error
 - Keep integration localized to the existing workspace shell and history/control surface
-- Frontend-only changes — additive only
+- Frontend-only changes ??additive only
 - Focused frontend tests for this slice
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No diff viewer in this task
-- ❌ No partial/file-level revert in this task
-- ❌ No branching/star/filter/search in this task
-- ❌ No autosave checkpointing
-- ❌ No polling/websocket behavior
-- ❌ No broader workspace redesign
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No diff viewer in this task
+- ??No partial/file-level revert in this task
+- ??No branching/star/filter/search in this task
+- ??No autosave checkpointing
+- ??No polling/websocket behavior
+- ??No broader workspace redesign
+- ??No multi-task work
 
 **Dependencies:** Phase 78 (Complete and Closed), Phase 79 (Complete and Closed), TASK-80A (Complete and Locked), TASK-80B (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-80C for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-80C for full details
 
 ---
 
@@ -3022,29 +3022,29 @@ Validate and consolidate completed Phase 80 slices (`TASK-80A`, `TASK-80B`) and 
 - Create final checkpoint: `docs/PHASE-80-FINAL-CHECKPOINT.md`
 
 **Non-Goals:**
-- ❌ No new implementation
-- ❌ No platform code changes
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
-- ❌ No new product scope
-- ❌ No TASK-81 work
+- ??No new implementation
+- ??No platform code changes
+- ??No backend changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
+- ??No new product scope
+- ??No TASK-81 work
 
 **Dependencies:** TASK-80A (Complete and Locked), TASK-80B (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-80-FINAL for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-80-FINAL for full details
 
 **Completion Summary:**
-- ✅ TASK-80A validated — core editor save slice complete and locked
-- ✅ TASK-80B validated — core manual checkpoint slice complete and locked
-- ✅ End-to-end editor save and manual checkpoint creation confirmed
-- ✅ Scope confirmed frontend-only and additive across all Phase 80 work
-- ✅ No backend changes, schema changes, endpoint changes, or refactors
-- ✅ PRD/ARCHITECTURE alignment confirmed (file write reuse, checkpoint reuse, session scoping, request-driven behavior)
-- ✅ 55/55 tests pass; 0 regressions
-- ✅ Final checkpoint created: `docs/PHASE-80-FINAL-CHECKPOINT.md`
-- ⚠️ NOTE: This closure predates TASK-80C. Superseded by TASK-80-RECONSOLIDATE.
+- ??TASK-80A validated ??core editor save slice complete and locked
+- ??TASK-80B validated ??core manual checkpoint slice complete and locked
+- ??End-to-end editor save and manual checkpoint creation confirmed
+- ??Scope confirmed frontend-only and additive across all Phase 80 work
+- ??No backend changes, schema changes, endpoint changes, or refactors
+- ??PRD/ARCHITECTURE alignment confirmed (file write reuse, checkpoint reuse, session scoping, request-driven behavior)
+- ??55/55 tests pass; 0 regressions
+- ??Final checkpoint created: `docs/PHASE-80-FINAL-CHECKPOINT.md`
+- ?? NOTE: This closure predates TASK-80C. Superseded by TASK-80-RECONSOLIDATE.
 
 ---
 
@@ -3067,34 +3067,34 @@ Re-validate and re-consolidate Phase 80 so the final Phase 80 closure correctly 
 - Supersede the earlier `TASK-80-FINAL` closure with an updated final Phase 80 checkpoint
 
 **Non-Goals:**
-- ❌ No new implementation
-- ❌ No platform code changes
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
-- ❌ No new product scope
-- ❌ No TASK-81 work
+- ??No new implementation
+- ??No platform code changes
+- ??No backend changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
+- ??No new product scope
+- ??No TASK-81 work
 
 **Dependencies:** TASK-80A (Complete and Locked), TASK-80B (Complete and Locked), TASK-80C (Complete and Locked)
 
 **Completion Summary:**
-- ✅ TASK-80A validated — core editor save slice complete and locked
-- ✅ TASK-80B validated — core manual checkpoint slice complete and locked
-- ✅ TASK-80C validated — core manual revert slice complete and locked
-- ✅ End-to-end editor save, manual checkpoint creation, and manual checkpoint revert confirmed
-- ✅ Scope confirmed frontend-only and additive across all three Phase 80 slices
-- ✅ No backend changes, schema changes, endpoint changes, or refactors
-- ✅ PRD/ARCHITECTURE alignment confirmed (file write reuse, checkpoint reuse, revert reuse, session scoping, request-driven behavior)
-- ✅ 58/58 tests pass; 0 regressions
-- ✅ Earlier PHASE-80-FINAL-CHECKPOINT.md superseded
-- ✅ Final reconsolidated checkpoint created: `docs/PHASE-80-RECONSOLIDATED-FINAL-CHECKPOINT.md`
+- ??TASK-80A validated ??core editor save slice complete and locked
+- ??TASK-80B validated ??core manual checkpoint slice complete and locked
+- ??TASK-80C validated ??core manual revert slice complete and locked
+- ??End-to-end editor save, manual checkpoint creation, and manual checkpoint revert confirmed
+- ??Scope confirmed frontend-only and additive across all three Phase 80 slices
+- ??No backend changes, schema changes, endpoint changes, or refactors
+- ??PRD/ARCHITECTURE alignment confirmed (file write reuse, checkpoint reuse, revert reuse, session scoping, request-driven behavior)
+- ??58/58 tests pass; 0 regressions
+- ??Earlier PHASE-80-FINAL-CHECKPOINT.md superseded
+- ??Final reconsolidated checkpoint created: `docs/PHASE-80-RECONSOLIDATED-FINAL-CHECKPOINT.md`
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-80-RECONSOLIDATE for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-80-RECONSOLIDATE for full details
 
 ---
 
-## Phase 81 — History/Control-Surface Usability Family
+## Phase 81 ??History/Control-Surface Usability Family
 
 **Status:** CLOSED  
 **Final stage:** TASK-81-FINAL-CLOSE (COMPLETE and LOCKED)  
@@ -3123,18 +3123,18 @@ Make workspace history/version-control usability meaningfully better by wiring t
 - Focused frontend tests for this slice
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No new endpoints
-- ❌ No refactors
-- ❌ No revert or manual checkpoint changes in this task
-- ❌ No advanced compare-any-two-checkpoints flow
-- ❌ No polling/websocket behavior
-- ❌ No broader workspace redesign
+- ??No backend changes
+- ??No schema changes
+- ??No new endpoints
+- ??No refactors
+- ??No revert or manual checkpoint changes in this task
+- ??No advanced compare-any-two-checkpoints flow
+- ??No polling/websocket behavior
+- ??No broader workspace redesign
 
-**Dependencies:** Phase 78–80 complete and closed; existing history/control surface and checkpoint list fetch pattern present; existing checkpoint diff capability already available
+**Dependencies:** Phase 78??0 complete and closed; existing history/control surface and checkpoint list fetch pattern present; existing checkpoint diff capability already available
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81A for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81A for full details
 
 ---
 
@@ -3158,32 +3158,32 @@ Make checkpoint comparison more usable by enhancing the existing diff viewer wit
 - Focused frontend tests for this slice
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No new endpoints
-- ❌ No refactors
-- ❌ No compare-any-two-checkpoints flow in this task
-- ❌ No side-by-side Monaco diff editor in this task
-- ❌ No revert or manual checkpoint changes in this task
-- ❌ No search/filter/star/timeline enhancements in this task
-- ❌ No polling/websocket behavior
-- ❌ No broader workspace redesign
+- ??No backend changes
+- ??No schema changes
+- ??No new endpoints
+- ??No refactors
+- ??No compare-any-two-checkpoints flow in this task
+- ??No side-by-side Monaco diff editor in this task
+- ??No revert or manual checkpoint changes in this task
+- ??No search/filter/star/timeline enhancements in this task
+- ??No polling/websocket behavior
+- ??No broader workspace redesign
 
 **Dependencies:** TASK-81A complete and locked; existing diff capability at `GET /api/sessions/:id/checkpoints/:hash/diff`
 
 **Completion Summary:**
-- ✅ Changed-files summary (added/modified/deleted counts and grouped file paths) added inside existing diff viewer
-- ✅ Localized file-by-file navigation added inside existing diff viewer area
-- ✅ Selection defaults to first file; resets safely when checkpoint or session changes
-- ✅ Selected-file detail pane renders status badge, file path, and diff text
-- ✅ Existing TASK-81A diff viewer behavior (all five states: idle/loading/ready/empty/diff-error) preserved
-- ✅ Scope confirmed frontend-only and additive; no existing logic restructured
-- ✅ No backend changes, schema changes, endpoint changes, or refactors
-- ✅ PRD/ARCHITECTURE alignment confirmed (request-driven, session-scoped, existing diff endpoint reused)
-- ✅ 61/61 tests pass; 0 regressions
-- ✅ Checkpoint created: `docs/PHASE-81B-CHECKPOINT.md`
+- ??Changed-files summary (added/modified/deleted counts and grouped file paths) added inside existing diff viewer
+- ??Localized file-by-file navigation added inside existing diff viewer area
+- ??Selection defaults to first file; resets safely when checkpoint or session changes
+- ??Selected-file detail pane renders status badge, file path, and diff text
+- ??Existing TASK-81A diff viewer behavior (all five states: idle/loading/ready/empty/diff-error) preserved
+- ??Scope confirmed frontend-only and additive; no existing logic restructured
+- ??No backend changes, schema changes, endpoint changes, or refactors
+- ??PRD/ARCHITECTURE alignment confirmed (request-driven, session-scoped, existing diff endpoint reused)
+- ??61/61 tests pass; 0 regressions
+- ??Checkpoint created: `docs/PHASE-81B-CHECKPOINT.md`
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81B for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81B for full details
 
 ---
 
@@ -3208,34 +3208,34 @@ Make checkpoint diff inspection more usable by upgrading the existing diff viewe
 - Focused frontend tests for this slice
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No new endpoints
-- ❌ No refactors
-- ❌ No compare-any-two-checkpoints flow in this task
-- ❌ No side-by-side Monaco diff editor in this task
-- ❌ No syntax-highlighting engine integration if that expands scope
-- ❌ No revert or manual checkpoint changes in this task
-- ❌ No search/filter/star/timeline enhancements in this task
-- ❌ No polling/websocket behavior
-- ❌ No broader workspace redesign
+- ??No backend changes
+- ??No schema changes
+- ??No new endpoints
+- ??No refactors
+- ??No compare-any-two-checkpoints flow in this task
+- ??No side-by-side Monaco diff editor in this task
+- ??No syntax-highlighting engine integration if that expands scope
+- ??No revert or manual checkpoint changes in this task
+- ??No search/filter/star/timeline enhancements in this task
+- ??No polling/websocket behavior
+- ??No broader workspace redesign
 
 **Dependencies:** TASK-81A and TASK-81B complete and locked; existing diff capability at `GET /api/sessions/:id/checkpoints/:hash/diff`
 
 **Completion Summary:**
-- ✅ Structured unified-diff rendering added for selected-file diff content inside existing `HistoryCheckpointDiffViewer`
-- ✅ Line parser classifies lines as `hunk` / `added` / `removed` / `context`
-- ✅ Distinct per-line visual styling and `data-testid` hooks for all four line types
-- ✅ Empty diff fallback preserved
-- ✅ Existing TASK-81B changed-file summary and per-file navigation unchanged
-- ✅ Existing TASK-81A five diff states (`idle` / `loading` / `ready` / `empty` / `diff-error`) unchanged
-- ✅ Session-switch and checkpoint-switch scoping preserved unchanged
-- ✅ Scope confirmed frontend-only and additive; no existing logic restructured
-- ✅ No backend changes, schema changes, endpoint changes, or refactors
-- ✅ 62/62 tests pass; 0 regressions
-- ✅ Checkpoint created: `docs/PHASE-81C-CHECKPOINT.md`
+- ??Structured unified-diff rendering added for selected-file diff content inside existing `HistoryCheckpointDiffViewer`
+- ??Line parser classifies lines as `hunk` / `added` / `removed` / `context`
+- ??Distinct per-line visual styling and `data-testid` hooks for all four line types
+- ??Empty diff fallback preserved
+- ??Existing TASK-81B changed-file summary and per-file navigation unchanged
+- ??Existing TASK-81A five diff states (`idle` / `loading` / `ready` / `empty` / `diff-error`) unchanged
+- ??Session-switch and checkpoint-switch scoping preserved unchanged
+- ??Scope confirmed frontend-only and additive; no existing logic restructured
+- ??No backend changes, schema changes, endpoint changes, or refactors
+- ??62/62 tests pass; 0 regressions
+- ??Checkpoint created: `docs/PHASE-81C-CHECKPOINT.md`
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81C for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81C for full details
 
 ---
 
@@ -3258,28 +3258,28 @@ Validate and consolidate completed Phase 81 slices (`TASK-81A`, `TASK-81B`, `TAS
 - Create final checkpoint: `docs/PHASE-81-FINAL-CHECKPOINT.md`
 
 **Non-Goals:**
-- ❌ No new implementation
-- ❌ No platform code changes
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
-- ❌ No new product scope
-- ❌ No TASK-82 work
+- ??No new implementation
+- ??No platform code changes
+- ??No backend changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
+- ??No new product scope
+- ??No TASK-82 work
 
 **Completion Summary:**
-- ✅ TASK-81A confirmed COMPLETE and LOCKED — core checkpoint diff viewer wiring, five diff states, stale-request guard, session-scoped diff handling
-- ✅ TASK-81B confirmed COMPLETE and LOCKED — changed-file summary (added/modified/deleted counts), grouped file paths, per-file diff navigation
-- ✅ TASK-81C confirmed COMPLETE and LOCKED — structured unified-diff line rendering, visual distinction for hunk/added/removed/context lines
-- ✅ End-to-end checkpoint diff usability confirmed across all three slices
-- ✅ Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes
-- ✅ PRD/ARCHITECTURE alignment confirmed (request-driven, session-scoped, existing diff endpoint reused)
-- ✅ 62/62 tests pass; 0 regressions across all surfaces
-- ✅ Checkpoint created: `docs/PHASE-81-FINAL-CHECKPOINT.md`
+- ??TASK-81A confirmed COMPLETE and LOCKED ??core checkpoint diff viewer wiring, five diff states, stale-request guard, session-scoped diff handling
+- ??TASK-81B confirmed COMPLETE and LOCKED ??changed-file summary (added/modified/deleted counts), grouped file paths, per-file diff navigation
+- ??TASK-81C confirmed COMPLETE and LOCKED ??structured unified-diff line rendering, visual distinction for hunk/added/removed/context lines
+- ??End-to-end checkpoint diff usability confirmed across all three slices
+- ??Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes
+- ??PRD/ARCHITECTURE alignment confirmed (request-driven, session-scoped, existing diff endpoint reused)
+- ??62/62 tests pass; 0 regressions across all surfaces
+- ??Checkpoint created: `docs/PHASE-81-FINAL-CHECKPOINT.md`
 
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81-FINAL for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81-FINAL for full details
 
 ---
 
@@ -3296,7 +3296,7 @@ Make checkpoint history comparison more usable by allowing the user to choose tw
 - Reuse the existing history/control surface and existing diff viewer family from TASK-81A / 81B / 81C
 - Add a bounded compare mode: choose a base checkpoint + a target checkpoint from the active session
 - Show compare mode only inside the existing history/control area
-- Use existing checkpoint diff capability only — no new endpoints
+- Use existing checkpoint diff capability only ??no new endpoints
 - Support active-session-scoped comparison only
 - Add localized compare-mode UI states: idle / selecting / loading / ready / compare-error
 - Reuse existing changed-file summary, per-file navigation, and readable diff rendering for the compared result
@@ -3304,35 +3304,35 @@ Make checkpoint history comparison more usable by allowing the user to choose tw
 - Focused frontend tests for this slice
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No new endpoints
-- ❌ No refactors
-- ❌ No side-by-side Monaco diff editor in this task
-- ❌ No branching in this task
-- ❌ No revert / manual-checkpoint changes in this task
-- ❌ No timeline / search / filter / star enhancements in this task
-- ❌ No polling/websocket behavior
-- ❌ No broader workspace redesign
+- ??No backend changes
+- ??No schema changes
+- ??No new endpoints
+- ??No refactors
+- ??No side-by-side Monaco diff editor in this task
+- ??No branching in this task
+- ??No revert / manual-checkpoint changes in this task
+- ??No timeline / search / filter / star enhancements in this task
+- ??No polling/websocket behavior
+- ??No broader workspace redesign
 
 **Dependencies:** TASK-81A, TASK-81B, and TASK-81C complete and locked; existing history/control surface, checkpoint diff capability, changed-file summary, and readable diff rendering all present
 
 **Completion Summary:**
 
-- ✅ Compare mode added inside existing `history-control-slice` boundary — no new panels or routes
-- ✅ Base + target checkpoint selection with `Set Base` / `Set Target` buttons per checkpoint entry
-- ✅ Five compare-mode states implemented: idle / selecting / loading / ready / compare-error
-- ✅ Existing diff capability (`GET /api/sessions/:id/checkpoints/:hash/diff`) reused — no new endpoint
-- ✅ Bounded pair validation: `compare-error` when pair is incomplete, duplicate, or non-adjacent (parentHash mismatch)
-- ✅ Compare-ready result rendered via existing `HistoryCheckpointDiffViewer` — changed-file summary, file navigation, and structured diff lines all reused intact
-- ✅ Active-session scoping and stale-request guard pattern applied (`checkpointCompareRequestIdRef`)
-- ✅ Session-switch compare-state reset added to existing `useEffect([selectedSessionId])`
-- ✅ Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes
-- ✅ PRD/ARCHITECTURE alignment confirmed (request-driven, session-scoped, existing diff endpoint reused)
-- ✅ 63/63 tests pass; 0 regressions across all workspace surfaces
-- ✅ Checkpoint created: `docs/PHASE-81D-CHECKPOINT.md`
+- ??Compare mode added inside existing `history-control-slice` boundary ??no new panels or routes
+- ??Base + target checkpoint selection with `Set Base` / `Set Target` buttons per checkpoint entry
+- ??Five compare-mode states implemented: idle / selecting / loading / ready / compare-error
+- ??Existing diff capability (`GET /api/sessions/:id/checkpoints/:hash/diff`) reused ??no new endpoint
+- ??Bounded pair validation: `compare-error` when pair is incomplete, duplicate, or non-adjacent (parentHash mismatch)
+- ??Compare-ready result rendered via existing `HistoryCheckpointDiffViewer` ??changed-file summary, file navigation, and structured diff lines all reused intact
+- ??Active-session scoping and stale-request guard pattern applied (`checkpointCompareRequestIdRef`)
+- ??Session-switch compare-state reset added to existing `useEffect([selectedSessionId])`
+- ??Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes
+- ??PRD/ARCHITECTURE alignment confirmed (request-driven, session-scoped, existing diff endpoint reused)
+- ??63/63 tests pass; 0 regressions across all workspace surfaces
+- ??Checkpoint created: `docs/PHASE-81D-CHECKPOINT.md`
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81D for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81D for full details
 
 ---
 
@@ -3355,29 +3355,29 @@ Re-validate and re-consolidate Phase 81 so the final Phase 81 closure correctly 
 - Supersede the earlier `TASK-81-FINAL` closure with an updated final checkpoint at `docs/PHASE-81-RECONSOLIDATED-FINAL-CHECKPOINT.md`
 
 **Non-Goals:**
-- ❌ No new implementation
-- ❌ No platform code changes
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
-- ❌ No new product scope
-- ❌ No TASK-82 work
+- ??No new implementation
+- ??No platform code changes
+- ??No backend changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
+- ??No new product scope
+- ??No TASK-82 work
 
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked); prior `TASK-81-FINAL` exists but is now outdated
 
 **Completion Summary:**
-- ✅ TASK-81A confirmed COMPLETE and LOCKED — core checkpoint diff viewer wiring, five diff states (`idle` / `loading` / `ready` / `empty` / `diff-error`), stale-request guard, active-session and selected-checkpoint scoping
-- ✅ TASK-81B confirmed COMPLETE and LOCKED — changed-file summary (added/modified/deleted counts and grouped paths), per-file diff navigation, local file selection with safe reset on diff/session change
-- ✅ TASK-81C confirmed COMPLETE and LOCKED — structured unified-diff line rendering, visual distinction for hunk headers/added/removed/context lines, `parseUnifiedDiffLines` / `getUnifiedDiffLineType` helpers
-- ✅ TASK-81D confirmed COMPLETE and LOCKED — bounded compare mode with five compare states, base/target selection, bounded pair validation, existing diff capability and diff viewer reused for compare result
-- ✅ End-to-end checkpoint diff usability confirmed across all four slices
-- ✅ Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes
-- ✅ PRD/ARCHITECTURE alignment confirmed (request-driven, session-scoped, existing diff endpoint reused)
-- ✅ 63/63 tests pass; 0 regressions across all surfaces
-- ✅ `docs/PHASE-81-RECONSOLIDATED-FINAL-CHECKPOINT.md` created; supersedes `docs/PHASE-81-FINAL-CHECKPOINT.md`
+- ??TASK-81A confirmed COMPLETE and LOCKED ??core checkpoint diff viewer wiring, five diff states (`idle` / `loading` / `ready` / `empty` / `diff-error`), stale-request guard, active-session and selected-checkpoint scoping
+- ??TASK-81B confirmed COMPLETE and LOCKED ??changed-file summary (added/modified/deleted counts and grouped paths), per-file diff navigation, local file selection with safe reset on diff/session change
+- ??TASK-81C confirmed COMPLETE and LOCKED ??structured unified-diff line rendering, visual distinction for hunk headers/added/removed/context lines, `parseUnifiedDiffLines` / `getUnifiedDiffLineType` helpers
+- ??TASK-81D confirmed COMPLETE and LOCKED ??bounded compare mode with five compare states, base/target selection, bounded pair validation, existing diff capability and diff viewer reused for compare result
+- ??End-to-end checkpoint diff usability confirmed across all four slices
+- ??Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes
+- ??PRD/ARCHITECTURE alignment confirmed (request-driven, session-scoped, existing diff endpoint reused)
+- ??63/63 tests pass; 0 regressions across all surfaces
+- ??`docs/PHASE-81-RECONSOLIDATED-FINAL-CHECKPOINT.md` created; supersedes `docs/PHASE-81-FINAL-CHECKPOINT.md`
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81-RECONSOLIDATE for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81-RECONSOLIDATE for full details
 
 ---
 
@@ -3399,29 +3399,29 @@ Make checkpoint history easier to use by adding bounded client-side search and f
 - Focused frontend tests for this slice
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No new endpoints
-- ❌ No refactors
-- ❌ No persistence of saved filters
-- ❌ No starred/favorited checkpoints
-- ❌ No timeline redesign
-- ❌ No fuzzy-search library or dependency expansion if avoidable
-- ❌ No polling/websocket behavior
-- ❌ No broader workspace redesign
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No new endpoints
+- ??No refactors
+- ??No persistence of saved filters
+- ??No starred/favorited checkpoints
+- ??No timeline redesign
+- ??No fuzzy-search library or dependency expansion if avoidable
+- ??No polling/websocket behavior
+- ??No broader workspace redesign
+- ??No multi-task work
 
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked); existing history/control surface and checkpoint list load path already present
 
 **Completion evidence:**
-- ✅ Bounded text search input (`history-search-input`) and description filter (`history-description-filter`) added inside existing `data-testid="history-control-slice"` boundary
-- ✅ `filterVisibleWorkspaceCheckpoints()` pure helper added to `workspace-shell.logic.ts` — no backend/endpoint/schema changes
-- ✅ Search/filter state resets on session switch via `useEffect([selectedSessionId])`
-- ✅ Compare run gating aligned to visible filtered checkpoint subset
-- ✅ `services/` and `backend/` untouched — confirmed by `git diff --name-only -- services/ backend/` → empty
-- ✅ 67/67 tests pass; +4 net new tests for this slice; 0 regressions
+- ??Bounded text search input (`history-search-input`) and description filter (`history-description-filter`) added inside existing `data-testid="history-control-slice"` boundary
+- ??`filterVisibleWorkspaceCheckpoints()` pure helper added to `workspace-shell.logic.ts` ??no backend/endpoint/schema changes
+- ??Search/filter state resets on session switch via `useEffect([selectedSessionId])`
+- ??Compare run gating aligned to visible filtered checkpoint subset
+- ??`services/` and `backend/` untouched ??confirmed by `git diff --name-only -- services/ backend/` ??empty
+- ??67/67 tests pass; +4 net new tests for this slice; 0 regressions
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81E for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81E for full details
 
 ---
 
@@ -3440,15 +3440,15 @@ Re-validate and re-re-consolidate Phase 81 so the final Phase 81 closure correct
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked)
 
 **Completion:**
-- ✅ TASK-81A confirmed COMPLETE and LOCKED — core checkpoint diff viewer wiring, five diff states (`idle` / `loading` / `ready` / `empty` / `diff-error`), stale-request guard, active-session and selected-checkpoint scoping
-- ✅ TASK-81B confirmed COMPLETE and LOCKED — changed-file summary (added/modified/deleted counts and grouped paths), per-file diff navigation, local file selection with safe reset on diff/session change
-- ✅ TASK-81C confirmed COMPLETE and LOCKED — structured unified-diff line rendering, visual distinction for hunk headers/added/removed/context lines, `parseUnifiedDiffLines` / `getUnifiedDiffLineType` helpers
-- ✅ TASK-81D confirmed COMPLETE and LOCKED — bounded compare mode with five compare states, base/target selection, bounded pair validation, existing diff capability and diff viewer reused for compare result
-- ✅ TASK-81E confirmed COMPLETE and LOCKED — bounded client-side text search over checkpoint metadata, description-presence filter from already-loaded data, active-session-scoped state reset, compare-run safety aligned to visible filtered set
-- ✅ Phase 81 final closure: 67/67 tests pass, frontend-only additive scope, no backend/schema/endpoint/refactor changes, no regressions
-- ✅ Authoritative checkpoint: `docs/PHASE-81-RERECONSOLIDATED-FINAL-CHECKPOINT.md` (supersedes `PHASE-81-RECONSOLIDATED-FINAL-CHECKPOINT.md` and `PHASE-81-FINAL-CHECKPOINT.md`)
+- ??TASK-81A confirmed COMPLETE and LOCKED ??core checkpoint diff viewer wiring, five diff states (`idle` / `loading` / `ready` / `empty` / `diff-error`), stale-request guard, active-session and selected-checkpoint scoping
+- ??TASK-81B confirmed COMPLETE and LOCKED ??changed-file summary (added/modified/deleted counts and grouped paths), per-file diff navigation, local file selection with safe reset on diff/session change
+- ??TASK-81C confirmed COMPLETE and LOCKED ??structured unified-diff line rendering, visual distinction for hunk headers/added/removed/context lines, `parseUnifiedDiffLines` / `getUnifiedDiffLineType` helpers
+- ??TASK-81D confirmed COMPLETE and LOCKED ??bounded compare mode with five compare states, base/target selection, bounded pair validation, existing diff capability and diff viewer reused for compare result
+- ??TASK-81E confirmed COMPLETE and LOCKED ??bounded client-side text search over checkpoint metadata, description-presence filter from already-loaded data, active-session-scoped state reset, compare-run safety aligned to visible filtered set
+- ??Phase 81 final closure: 67/67 tests pass, frontend-only additive scope, no backend/schema/endpoint/refactor changes, no regressions
+- ??Authoritative checkpoint: `docs/PHASE-81-RERECONSOLIDATED-FINAL-CHECKPOINT.md` (supersedes `PHASE-81-RECONSOLIDATED-FINAL-CHECKPOINT.md` and `PHASE-81-FINAL-CHECKPOINT.md`)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81-RERECONSOLIDATE for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81-RERECONSOLIDATE for full details
 
 ---
 
@@ -3471,22 +3471,22 @@ Make checkpoint history easier to scan by adding a bounded visual timeline prese
 - Focused frontend tests for this slice
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No new endpoints
-- ❌ No refactors
-- ❌ No branching visualization
-- ❌ No drag/drop reorder
-- ❌ No persistence of timeline preferences
-- ❌ No timeline redesign outside existing history/control slice boundary
-- ❌ No fuzzy-search/dependency expansion
-- ❌ No polling/websocket behavior
-- ❌ No broader workspace redesign
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No new endpoints
+- ??No refactors
+- ??No branching visualization
+- ??No drag/drop reorder
+- ??No persistence of timeline preferences
+- ??No timeline redesign outside existing history/control slice boundary
+- ??No fuzzy-search/dependency expansion
+- ??No polling/websocket behavior
+- ??No broader workspace redesign
+- ??No multi-task work
 
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked); existing history/control surface and checkpoint list load path already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81F for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81F for full details
 
 ---
 
@@ -3510,7 +3510,7 @@ Re-validate and re-re-re-consolidate Phase 81 so the final Phase 81 closure corr
 
 **Dependencies:** TASK-81A through TASK-81F (all Complete and Locked); prior `TASK-81-FINAL`, `TASK-81-RECONSOLIDATE`, and `TASK-81-RERECONSOLIDATE` exist but are outdated (written before TASK-81F)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81-RERERECONSOLIDATE for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81-RERERECONSOLIDATE for full details
 
 ---
 
@@ -3534,7 +3534,7 @@ Re-validate and re-re-re-re-consolidate Phase 81 so the final Phase 81 closure c
 
 **Dependencies:** TASK-81A through TASK-81G (all Complete and Locked); prior `TASK-81-FINAL`, `TASK-81-RECONSOLIDATE`, `TASK-81-RERECONSOLIDATE`, and `TASK-81-RERERECONSOLIDATE` exist but are outdated (written before TASK-81G)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81-RERERERECONSOLIDATE for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81-RERERERECONSOLIDATE for full details
 
 ---
 
@@ -3557,23 +3557,23 @@ Make checkpoint history easier to inspect by adding a bounded git-log-style brow
 - Focused frontend tests for this slice
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No new endpoints
-- ❌ No refactors
-- ❌ No export/history markdown in this task
-- ❌ No full code-at-that-point restoration flow in this task
-- ❌ No branching visualization
-- ❌ No persistence of browser view preferences
-- ❌ No timeline redesign outside existing history/control slice boundary
-- ❌ No fuzzy-search/dependency expansion
-- ❌ No polling/websocket behavior
-- ❌ No broader workspace redesign
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No new endpoints
+- ??No refactors
+- ??No export/history markdown in this task
+- ??No full code-at-that-point restoration flow in this task
+- ??No branching visualization
+- ??No persistence of browser view preferences
+- ??No timeline redesign outside existing history/control slice boundary
+- ??No fuzzy-search/dependency expansion
+- ??No polling/websocket behavior
+- ??No broader workspace redesign
+- ??No multi-task work
 
 **Dependencies:** TASK-81A through TASK-81F (all Complete and Locked); existing history/control surface and checkpoint list load path already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81G for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81G for full details
 
 ---
 
@@ -3596,20 +3596,20 @@ Make checkpoint history more useful by allowing the user to inspect file content
 - Focused frontend tests for this slice
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints unless already available in existing architecture
-- ❌ No restore/revert action in this task
-- ❌ No editing/saving from checkpoint snapshot in this task
-- ❌ No branching visualization
-- ❌ No broader workspace redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints unless already available in existing architecture
+- ??No restore/revert action in this task
+- ??No editing/saving from checkpoint snapshot in this task
+- ??No branching visualization
+- ??No broader workspace redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-81A through TASK-81G (all Complete and Locked); existing history/control surface and checkpoint/history capability already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81H for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81H for full details
 
 ---
 
@@ -3634,21 +3634,21 @@ Make checkpoint history more actionable by allowing the user to jump from a sele
 - Focused frontend tests for this slice
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No auto-open if the live file is missing
-- ❌ No restore/revert action in this task
-- ❌ No editing/saving of checkpoint snapshot content in this task
-- ❌ No branching visualization
-- ❌ No broader workspace redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No auto-open if the live file is missing
+- ??No restore/revert action in this task
+- ??No editing/saving of checkpoint snapshot content in this task
+- ??No branching visualization
+- ??No broader workspace redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-79B, TASK-80A, TASK-81A through TASK-81H (all Complete and Locked); existing live file-navigation/editor surface and history/control surface already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81I for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81I for full details
 
 ---
 
@@ -3673,20 +3673,20 @@ Make checkpoint history workflows faster by allowing the user to pin one checkpo
 - Focused frontend tests for this slice
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No persistence of pinned state beyond current session/view
-- ❌ No automatic compare execution without explicit user action
-- ❌ No broader workflow redesign
-- ❌ No branching visualization
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No persistence of pinned state beyond current session/view
+- ??No automatic compare execution without explicit user action
+- ??No broader workflow redesign
+- ??No branching visualization
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-81A through TASK-81I (all Complete and Locked); existing history/control surface and compare/diff flows already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81J for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81J for full details
 
 ---
 
@@ -3710,20 +3710,20 @@ Make checkpoint history easier to inspect by adding a bounded checkpoint details
 - Focused frontend tests for this slice
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No editing of checkpoint metadata in this task
-- ❌ No export/share action in this task
-- ❌ No branching visualization
-- ❌ No broader workspace redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No editing of checkpoint metadata in this task
+- ??No export/share action in this task
+- ??No branching visualization
+- ??No broader workspace redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-81A through TASK-81J (all Complete and Locked); existing history/control surface and checkpoint list load path already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81K for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81K for full details
 
 ---
 
@@ -3749,21 +3749,21 @@ Make revert workflows safer and easier to understand by adding a bounded revert 
 - Focused frontend tests for this slice
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic revert in this task
-- ❌ No partial/file-level revert in this task
-- ❌ No restore/rewrite of live files outside the existing revert endpoint
-- ❌ No branching visualization
-- ❌ No broader workspace redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic revert in this task
+- ??No partial/file-level revert in this task
+- ??No restore/rewrite of live files outside the existing revert endpoint
+- ??No branching visualization
+- ??No broader workspace redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-80C, TASK-81A through TASK-81K (all Complete and Locked); existing history/control surface, revert flow, and diff/snapshot surfaces already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81L for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81L for full details
 
 ---
 
@@ -3788,21 +3788,21 @@ Make checkpoint history easier to inspect by adding a bounded changed-files insp
 - Focused frontend tests for this slice
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic diff opening in this task
-- ❌ No restore/revert action in this task
-- ❌ No editing/saving from changed-files inspector in this task
-- ❌ No branching visualization
-- ❌ No broader workspace redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic diff opening in this task
+- ??No restore/revert action in this task
+- ??No editing/saving from changed-files inspector in this task
+- ??No branching visualization
+- ??No broader workspace redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-81A through TASK-81L (all Complete and Locked); existing history/control surface and diff/snapshot surfaces already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81M for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81M for full details
 
 ---
 
@@ -3828,20 +3828,20 @@ Make checkpoint history workflows easier to manage by allowing the user to tempo
 - Focused frontend tests for this slice
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No persistence of working-set state beyond current session/view
-- ❌ No bulk actions in this task
-- ❌ No export/share in this task
-- ❌ No broader workspace redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No persistence of working-set state beyond current session/view
+- ??No bulk actions in this task
+- ??No export/share in this task
+- ??No broader workspace redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-81A through TASK-81M (all Complete and Locked); existing history/control surface and checkpoint list load path already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81N for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81N for full details
 
 ---
 
@@ -3867,19 +3867,19 @@ Make the history workflow easier to manage by adding bounded reset/clear control
 - Focused frontend tests for this slice
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic resets
-- ❌ No persistence of reset preferences
-- ❌ No broader workspace redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic resets
+- ??No persistence of reset preferences
+- ??No broader workspace redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-81A through TASK-81N (all Complete and Locked); existing history/control surface already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81O for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81O for full details
 
 ---
 
@@ -3904,19 +3904,19 @@ Make the history workflow easier to read by adding a bounded unified active-chec
 - Focused frontend tests for this slice
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No new durable state
-- ❌ No automatic history actions
-- ❌ No broader workspace redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No new durable state
+- ??No automatic history actions
+- ??No broader workspace redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-81A through TASK-81O (all Complete and Locked); existing history/control surface already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81P for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81P for full details
 
 ---
 
@@ -3941,19 +3941,19 @@ Make the history workflow easier to understand at a glance by adding a bounded h
 - Focused frontend tests for this slice
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No new durable state
-- ❌ No automatic history actions
-- ❌ No broader workspace redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No new durable state
+- ??No automatic history actions
+- ??No broader workspace redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-81A through TASK-81P (all Complete and Locked); existing history/control surface already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81Q for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81Q for full details
 
 ---
 
@@ -3978,19 +3978,19 @@ Make checkpoint comparison easier to understand at a glance by adding a bounded 
 - Focused frontend tests for this slice
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic compare execution in this task
-- ❌ No new durable state
-- ❌ No broader workspace redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic compare execution in this task
+- ??No new durable state
+- ??No broader workspace redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-81A through TASK-81Q (all Complete and Locked); existing history/control surface and compare selection flow already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81R for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81R for full details
 
 ---
 
@@ -4015,20 +4015,20 @@ Make checkpoint inspection smoother by adding a bounded readiness/status surface
 - Focused frontend tests for this slice
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic loading in this task
-- ❌ No automatic action triggering in this task
-- ❌ No new durable state
-- ❌ No broader workspace redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic loading in this task
+- ??No automatic action triggering in this task
+- ??No new durable state
+- ??No broader workspace redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-81A through TASK-81R (all Complete and Locked); existing history/control surface already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81S for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81S for full details
 
 ---
 
@@ -4053,19 +4053,19 @@ Make checkpoint inspection easier at a glance by adding a bounded current-checkp
 - Focused frontend tests for this slice
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic action triggering in this task
-- ❌ No new durable state
-- ❌ No broader workspace redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic action triggering in this task
+- ??No new durable state
+- ??No broader workspace redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-81A through TASK-81S (all Complete and Locked); existing history/control surface already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81T for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81T for full details
 
 ---
 
@@ -4090,19 +4090,19 @@ Make the history workflow easier to understand by showing bounded inline availab
 - Focused frontend tests for this slice
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic actions
-- ❌ No new durable state
-- ❌ No broader workspace redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic actions
+- ??No new durable state
+- ??No broader workspace redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-81A through TASK-81T (all Complete and Locked); existing history/control surface already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81U for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81U for full details
 
 ---
 
@@ -4127,19 +4127,19 @@ Make the history workflow easier to understand by adding a bounded legend for ex
 - Focused frontend tests for this slice
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic actions
-- ❌ No new durable state
-- ❌ No broader workspace redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic actions
+- ??No new durable state
+- ??No broader workspace redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-81A through TASK-81U (all Complete and Locked); existing history/control surface already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81V for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81V for full details
 
 ---
 
@@ -4164,19 +4164,19 @@ Make the history workflow easier to follow by adding a bounded breadcrumb-style 
 - Focused frontend tests for this slice
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic actions
-- ❌ No new durable state
-- ❌ No broader workspace redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic actions
+- ??No new durable state
+- ??No broader workspace redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-81A through TASK-81V (all Complete and Locked); existing history/control surface already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81W for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81W for full details
 
 ---
 
@@ -4201,19 +4201,19 @@ Make the history workflow easier to understand by adding bounded empty/unavailab
 - Focused frontend tests for this slice
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic actions
-- ❌ No new durable state
-- ❌ No broader workspace redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic actions
+- ??No new durable state
+- ??No broader workspace redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-81A through TASK-81W (all Complete and Locked); existing history/control surface already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81X for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81X for full details
 
 ---
 
@@ -4240,19 +4240,19 @@ Make the history workflow easier to scan by adding a bounded frontend-only densi
 - Focused frontend tests for this slice
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic actions
-- ❌ No durable state
-- ❌ No broader workspace redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic actions
+- ??No durable state
+- ??No broader workspace redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-81A through TASK-81X (all Complete and Locked); existing history/control surface already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81Y for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81Y for full details
 
 ---
 
@@ -4279,19 +4279,19 @@ Make the history workflow easier to focus on by adding a bounded frontend-only f
 - Focused frontend tests for this slice
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic actions
-- ❌ No durable state
-- ❌ No broader workspace redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic actions
+- ??No durable state
+- ??No broader workspace redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-81A through TASK-81Y (all Complete and Locked); existing history/control surface already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81Z for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81Z for full details
 
 ---
 
@@ -4314,31 +4314,31 @@ Perform the true final consolidation for Phase 81 and close the Phase 81 history
 - Mark Phase 81 closed so the next bounded slice starts under Phase 82, not Phase 81
 
 **Non-Goals:**
-- ❌ No new implementation
-- ❌ No product code changes
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No endpoint changes
-- ❌ No refactors
-- ❌ No Phase 82 implementation in this task
+- ??No new implementation
+- ??No product code changes
+- ??No backend changes
+- ??No schema changes
+- ??No endpoint changes
+- ??No refactors
+- ??No Phase 82 implementation in this task
 
 **Dependencies:** TASK-81A through TASK-81Z (all Complete and Locked)
 
 **Completion Summary:**
-- ✅ TASK-81A through TASK-81Z confirmed COMPLETE and LOCKED (all 26 implementation slices)
-- ✅ All 5 prior consolidation documents (TASK-81-FINAL, TASK-81-RECONSOLIDATE, TASK-81-RERECONSOLIDATE, TASK-81-RERERECONSOLIDATE, TASK-81-RERERERECONSOLIDATE) superseded by `docs/PHASE-81-FINAL-CHECKPOINT.md`
-- ✅ Final test baseline confirmed: 93/93 passing, 0 failures, 0 regressions
-- ✅ Whole family confirmed frontend-only and additive across all 26 slices
-- ✅ No backend/schema/endpoint/refactor changes confirmed across all 26 slices
-- ✅ No regressions confirmed across workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, and all history/control surfaces
-- ✅ Authoritative final Phase 81 checkpoint produced at `docs/PHASE-81-FINAL-CHECKPOINT.md`
-- ✅ Phase 81 marked CLOSED; next bounded work starts under Phase 82
+- ??TASK-81A through TASK-81Z confirmed COMPLETE and LOCKED (all 26 implementation slices)
+- ??All 5 prior consolidation documents (TASK-81-FINAL, TASK-81-RECONSOLIDATE, TASK-81-RERECONSOLIDATE, TASK-81-RERERECONSOLIDATE, TASK-81-RERERERECONSOLIDATE) superseded by `docs/PHASE-81-FINAL-CHECKPOINT.md`
+- ??Final test baseline confirmed: 93/93 passing, 0 failures, 0 regressions
+- ??Whole family confirmed frontend-only and additive across all 26 slices
+- ??No backend/schema/endpoint/refactor changes confirmed across all 26 slices
+- ??No regressions confirmed across workspace shell, session sidebar, exec interaction, preview panel, file navigation/save, manual checkpoint, manual revert, and all history/control surfaces
+- ??Authoritative final Phase 81 checkpoint produced at `docs/PHASE-81-FINAL-CHECKPOINT.md`
+- ??Phase 81 marked CLOSED; next bounded work starts under Phase 82
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-81-FINAL-CLOSE for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-81-FINAL-CLOSE for full details
 
 ---
 
-## Phase 82 — History Surface Usability Continued
+## Phase 82 ??History Surface Usability Continued
 
 **Status:** CLOSED  
 **Current stage:** TASK-82-FINAL-CLOSE (COMPLETE and LOCKED)
@@ -4355,11 +4355,11 @@ Perform the true final consolidation for Phase 81 and close the Phase 81 history
 Close Phase 82 as a complete, bounded history/control-surface usability family covering all 24 slices (TASK-82A through TASK-82X).
 
 **Outcome:**
-- ✅ All 24 slices (TASK-82A through TASK-82X) confirmed COMPLETE and LOCKED
-- ✅ No backend/schema/endpoint/refactor changes confirmed across all 24 slices
-- ✅ No regressions — 100/100 tests passing (baseline preserved)
-- ✅ Authoritative final Phase 82 checkpoint produced at `docs/PHASE-82-FINAL-CHECKPOINT.md`
-- ✅ Phase 82 marked CLOSED
+- ??All 24 slices (TASK-82A through TASK-82X) confirmed COMPLETE and LOCKED
+- ??No backend/schema/endpoint/refactor changes confirmed across all 24 slices
+- ??No regressions ??100/100 tests passing (baseline preserved)
+- ??Authoritative final Phase 82 checkpoint produced at `docs/PHASE-82-FINAL-CHECKPOINT.md`
+- ??Phase 82 marked CLOSED
 
 **Reference:** `docs/PHASE-82-FINAL-CHECKPOINT.md`
 
@@ -4387,28 +4387,28 @@ Make the history workflow easier to manage at larger scale by adding bounded sec
 - Frontend-only, additive only
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic actions
-- ❌ No durable state
-- ❌ No broader redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic actions
+- ??No durable state
+- ??No broader redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-81A through TASK-81Z and TASK-81-FINAL-CLOSE (all Complete and Locked); existing history/control surface already present
 
 **Completion Summary:**
-- ✅ Bounded collapse/expand control strip added inside existing `history-control-slice`
-- ✅ Four collapsible sections: Controls, Summaries, Inspectors, Checkpoint Browser
-- ✅ Session-scoped local state (`collapsedHistorySections`); resets to all-expanded on session change
-- ✅ All existing Phase 81 history/control surfaces preserved and unchanged in behavior
-- ✅ Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes
-- ✅ 95/95 tests pass; 0 regressions (baseline 93; net +2)
-- ✅ Checkpoint created: `docs/PHASE-82A-CHECKPOINT.md`
+- ??Bounded collapse/expand control strip added inside existing `history-control-slice`
+- ??Four collapsible sections: Controls, Summaries, Inspectors, Checkpoint Browser
+- ??Session-scoped local state (`collapsedHistorySections`); resets to all-expanded on session change
+- ??All existing Phase 81 history/control surfaces preserved and unchanged in behavior
+- ??Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes
+- ??95/95 tests pass; 0 regressions (baseline 93; net +2)
+- ??Checkpoint created: `docs/PHASE-82A-CHECKPOINT.md`
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82A for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-82A for full details
 
 ---
 
@@ -4433,29 +4433,29 @@ Make the history workflow faster to manage by adding bounded quick expand-all / 
 - Frontend-only, additive only
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic actions
-- ❌ No durable state
-- ❌ No broader redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic actions
+- ??No durable state
+- ??No broader redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-82A (Complete and Locked); existing `collapsedHistorySections` state already present
 
 **Completion Summary:**
-- ✅ Quick `Expand All` / `Collapse All` controls added inside existing `history-section-collapse-controls` strip
-- ✅ Read-only collapsed-section count indicator (`Collapsed X/4 sections`) added
-- ✅ Controls operate only on existing `collapsedHistorySections` frontend state from TASK-82A
-- ✅ Session-scoped; resets to all-expanded on session change (inherited from TASK-82A)
-- ✅ All Phase 81 and TASK-82A history/control surfaces preserved and unchanged in behavior
-- ✅ Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes
-- ✅ 95/95 tests pass; 0 regressions
-- ✅ Checkpoint created: `docs/PHASE-82B-CHECKPOINT.md`
+- ??Quick `Expand All` / `Collapse All` controls added inside existing `history-section-collapse-controls` strip
+- ??Read-only collapsed-section count indicator (`Collapsed X/4 sections`) added
+- ??Controls operate only on existing `collapsedHistorySections` frontend state from TASK-82A
+- ??Session-scoped; resets to all-expanded on session change (inherited from TASK-82A)
+- ??All Phase 81 and TASK-82A history/control surfaces preserved and unchanged in behavior
+- ??Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes
+- ??95/95 tests pass; 0 regressions
+- ??Checkpoint created: `docs/PHASE-82B-CHECKPOINT.md`
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82B for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-82B for full details
 
 ---
 
@@ -4480,29 +4480,29 @@ Make the collapsed history workflow easier to understand by adding a bounded com
 - Frontend-only, additive only
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic actions
-- ❌ No durable state
-- ❌ No broader redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic actions
+- ??No durable state
+- ??No broader redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-82A and TASK-82B (Complete and Locked); existing `collapsedHistorySections` state already present
 
 **Completion Summary:**
-- ✅ Compact read-only per-section collapsed/expanded summary added inside existing `history-section-collapse-controls` strip
-- ✅ Summary derives only from existing `collapsedHistorySections` frontend state (no new data sources)
-- ✅ Four section state chips rendered: Controls, Summaries, Inspectors, Checkpoint Browser
-- ✅ Active-session scoping preserved; resets on session change (inherited from TASK-82A)
-- ✅ All Phase 81, TASK-82A, and TASK-82B history/control behaviors remain unchanged
-- ✅ Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes
-- ✅ 95/95 tests pass; 0 regressions
-- ✅ Checkpoint created: `docs/PHASE-82C-CHECKPOINT.md`
+- ??Compact read-only per-section collapsed/expanded summary added inside existing `history-section-collapse-controls` strip
+- ??Summary derives only from existing `collapsedHistorySections` frontend state (no new data sources)
+- ??Four section state chips rendered: Controls, Summaries, Inspectors, Checkpoint Browser
+- ??Active-session scoping preserved; resets on session change (inherited from TASK-82A)
+- ??All Phase 81, TASK-82A, and TASK-82B history/control behaviors remain unchanged
+- ??Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes
+- ??95/95 tests pass; 0 regressions
+- ??Checkpoint created: `docs/PHASE-82C-CHECKPOINT.md`
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82C for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-82C for full details
 
 ---
 
@@ -4527,30 +4527,30 @@ Make the history workflow easier to manage by adding bounded frontend-only secti
 - Frontend-only, additive only
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic actions
-- ❌ No durable state outside current session
-- ❌ No broader redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic actions
+- ??No durable state outside current session
+- ??No broader redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-82A, TASK-82B, and TASK-82C (Complete and Locked); existing history/control surface already present
 
 **Completion Evidence:**
-- ✅ Bounded in-session section-order state added to `HistoryCheckpointList`; resets on `selectedSessionId` change
-- ✅ `moveHistoryCollapsibleSectionOrderItem` helper added for bounded earlier/later moves
-- ✅ Presentation-only section-order controls added inside existing `history-section-collapse-controls` surface
-- ✅ Section-order uses only existing `collapsedHistorySections` and in-surface state; no new data sources
-- ✅ Active-session scoping preserved; order resets on session change
-- ✅ All Phase 81, TASK-82A, TASK-82B, and TASK-82C history/control behaviors remain unchanged
-- ✅ Scope confirmed frontend-only and additive; no backend, schema, endpoint, refactor, fetch, polling, or websocket changes
-- ✅ 97/97 tests pass; 0 regressions
-- ✅ Checkpoint created: `docs/PHASE-82D-CHECKPOINT.md`
+- ??Bounded in-session section-order state added to `HistoryCheckpointList`; resets on `selectedSessionId` change
+- ??`moveHistoryCollapsibleSectionOrderItem` helper added for bounded earlier/later moves
+- ??Presentation-only section-order controls added inside existing `history-section-collapse-controls` surface
+- ??Section-order uses only existing `collapsedHistorySections` and in-surface state; no new data sources
+- ??Active-session scoping preserved; order resets on session change
+- ??All Phase 81, TASK-82A, TASK-82B, and TASK-82C history/control behaviors remain unchanged
+- ??Scope confirmed frontend-only and additive; no backend, schema, endpoint, refactor, fetch, polling, or websocket changes
+- ??97/97 tests pass; 0 regressions
+- ??Checkpoint created: `docs/PHASE-82D-CHECKPOINT.md`
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82D for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-82D for full details
 
 ---
 
@@ -4575,30 +4575,30 @@ Make the history workflow easier to recover from temporary layout changes by add
 - Frontend-only, additive only
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic actions
-- ❌ No durable state outside current session
-- ❌ No broader redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic actions
+- ??No durable state outside current session
+- ??No broader redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-82A, TASK-82B, TASK-82C, and TASK-82D (Complete and Locked); existing history/control surface already present
 
 **Completion Evidence:**
-- ✅ Compact reset-to-default section order control added inside existing `history-section-collapse-controls` surface
-- ✅ `resetHistoryCollapsibleSectionOrderToDefault()` helper added for bounded default order return
-- ✅ Reset control is disabled when order already matches default; enabled only after moves are applied
-- ✅ Reset uses only existing in-session `historyCollapsibleSectionOrder` state; no new data sources, fetches, endpoints, polling, or websocket behavior
-- ✅ Active-session scoping preserved; resets on session change (consistent with TASK-82A through TASK-82D)
-- ✅ All Phase 81, TASK-82A, TASK-82B, TASK-82C, and TASK-82D history/control behaviors remain unchanged
-- ✅ Scope confirmed frontend-only and additive; no backend, schema, endpoint, refactor, fetch, polling, or websocket changes
-- ✅ 98/98 tests pass; 0 regressions
-- ✅ Checkpoint created: `docs/PHASE-82E-CHECKPOINT.md`
+- ??Compact reset-to-default section order control added inside existing `history-section-collapse-controls` surface
+- ??`resetHistoryCollapsibleSectionOrderToDefault()` helper added for bounded default order return
+- ??Reset control is disabled when order already matches default; enabled only after moves are applied
+- ??Reset uses only existing in-session `historyCollapsibleSectionOrder` state; no new data sources, fetches, endpoints, polling, or websocket behavior
+- ??Active-session scoping preserved; resets on session change (consistent with TASK-82A through TASK-82D)
+- ??All Phase 81, TASK-82A, TASK-82B, TASK-82C, and TASK-82D history/control behaviors remain unchanged
+- ??Scope confirmed frontend-only and additive; no backend, schema, endpoint, refactor, fetch, polling, or websocket changes
+- ??98/98 tests pass; 0 regressions
+- ??Checkpoint created: `docs/PHASE-82E-CHECKPOINT.md`
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82E for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-82E for full details
 
 ---
 
@@ -4623,29 +4623,29 @@ Make the history workflow easier to manage by adding bounded frontend-only secti
 - Frontend-only, additive only
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic actions beyond explicit preset selection
-- ❌ No durable state outside current session
-- ❌ No broader redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic actions beyond explicit preset selection
+- ??No durable state outside current session
+- ??No broader redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-82A, TASK-82B, TASK-82C, TASK-82D, and TASK-82E (Complete and Locked); existing history/control surface already present
 
 **Completion Summary:**
-- ✅ Bounded section-visibility preset controls added inside existing `history-section-collapse-controls` strip
-- ✅ Two presets: `overview-oriented` (collapses Inspectors) and `inspection-oriented` (collapses Controls and Summaries)
-- ✅ Active-preset indicator reports `Overview-Oriented`, `Inspection-Oriented`, or `Custom`
-- ✅ Presets operate only on existing `collapsedHistorySections` frontend state from TASK-82A; session-scoped
-- ✅ All Phase 81 and TASK-82A/TASK-82E history/control surfaces preserved and unchanged in behavior
-- ✅ Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes
-- ✅ 99/99 tests pass; 0 regressions (baseline 98; net +1)
-- ✅ Checkpoint created: `docs/PHASE-82F-CHECKPOINT.md`
+- ??Bounded section-visibility preset controls added inside existing `history-section-collapse-controls` strip
+- ??Two presets: `overview-oriented` (collapses Inspectors) and `inspection-oriented` (collapses Controls and Summaries)
+- ??Active-preset indicator reports `Overview-Oriented`, `Inspection-Oriented`, or `Custom`
+- ??Presets operate only on existing `collapsedHistorySections` frontend state from TASK-82A; session-scoped
+- ??All Phase 81 and TASK-82A/TASK-82E history/control surfaces preserved and unchanged in behavior
+- ??Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes
+- ??99/99 tests pass; 0 regressions (baseline 98; net +1)
+- ??Checkpoint created: `docs/PHASE-82F-CHECKPOINT.md`
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82F for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-82F for full details
 
 ---
 
@@ -4670,29 +4670,29 @@ Make the history workflow easier to recover from temporary preset changes by add
 - Frontend-only, additive only
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic actions
-- ❌ No durable state outside current session
-- ❌ No broader redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic actions
+- ??No durable state outside current session
+- ??No broader redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-82A, TASK-82B, TASK-82C, TASK-82D, TASK-82E, and TASK-82F (Complete and Locked); existing history/control surface already present
 
 **Completion evidence:**
-- ✅ Compact reset-to-default visibility preset control added inside `history-section-visibility-preset-controls`
-- ✅ `getDefaultHistorySectionVisibilityPresetState()` helper exported; bounded to existing four section keys
-- ✅ Active preset indicator updated: reports `Default`, `Overview-Oriented`, `Inspection-Oriented`, or `Custom`
-- ✅ Reset button disabled when default visibility state is already active
-- ✅ All changes wired only to existing in-session `collapsedHistorySections` state; no backend/fetch/durable changes
-- ✅ All TASK-82A through TASK-82F controls and behaviors remain intact
-- ✅ 100/100 tests pass; 0 regressions (baseline 99; net +1)
-- ✅ Checkpoint created: `docs/PHASE-82G-CHECKPOINT.md`
+- ??Compact reset-to-default visibility preset control added inside `history-section-visibility-preset-controls`
+- ??`getDefaultHistorySectionVisibilityPresetState()` helper exported; bounded to existing four section keys
+- ??Active preset indicator updated: reports `Default`, `Overview-Oriented`, `Inspection-Oriented`, or `Custom`
+- ??Reset button disabled when default visibility state is already active
+- ??All changes wired only to existing in-session `collapsedHistorySections` state; no backend/fetch/durable changes
+- ??All TASK-82A through TASK-82F controls and behaviors remain intact
+- ??100/100 tests pass; 0 regressions (baseline 99; net +1)
+- ??Checkpoint created: `docs/PHASE-82G-CHECKPOINT.md`
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82G for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-82G for full details
 
 ---
 
@@ -4717,27 +4717,27 @@ Make the history workflow easier to understand by adding a bounded read-only sum
 - Frontend-only, additive only
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic actions
-- ❌ No durable state outside current session
-- ❌ No broader redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic actions
+- ??No durable state outside current session
+- ??No broader redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-82A, TASK-82B, TASK-82C, TASK-82D, TASK-82E, TASK-82F, and TASK-82G (Complete and Locked); existing history/control surface already present
 
 **Completion Summary:**
-- ✅ Compact read-only `history-section-visibility-status-summary` added inside existing `history-section-collapse-controls` surface
-- ✅ Summary reflects active preset label, visible section count, and collapsed section labels from existing in-session state
-- ✅ All existing Phase 81 and TASK-82A through TASK-82G history/control behaviors preserved and unchanged
-- ✅ Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes
-- ✅ 100/100 tests pass; 0 regressions (baseline 100; no net change in count)
-- ✅ Checkpoint created: `docs/PHASE-82H-CHECKPOINT.md`
+- ??Compact read-only `history-section-visibility-status-summary` added inside existing `history-section-collapse-controls` surface
+- ??Summary reflects active preset label, visible section count, and collapsed section labels from existing in-session state
+- ??All existing Phase 81 and TASK-82A through TASK-82G history/control behaviors preserved and unchanged
+- ??Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes
+- ??100/100 tests pass; 0 regressions (baseline 100; no net change in count)
+- ??Checkpoint created: `docs/PHASE-82H-CHECKPOINT.md`
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82H for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-82H for full details
 
 ---
 
@@ -4762,27 +4762,27 @@ Make the history workflow easier to understand by adding a bounded read-only exp
 - Frontend-only, additive only
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic actions
-- ❌ No durable state outside current session
-- ❌ No broader redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic actions
+- ??No durable state outside current session
+- ??No broader redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-82A, TASK-82B, TASK-82C, TASK-82D, TASK-82E, TASK-82F, TASK-82G, and TASK-82H (Complete and Locked); existing history/control surface already present
 
 **Completion notes:**
-- ✅ Compact read-only `history-section-visibility-preset-description` added inside existing `history-section-collapse-controls` surface
-- ✅ Description explains Overview-Oriented and Inspection-Oriented preset modes and their intended presentation focus using existing in-session state
-- ✅ All existing Phase 81 and TASK-82A through TASK-82H history/control behaviors preserved and unchanged
-- ✅ Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes
-- ✅ 100/100 tests pass; 0 regressions (baseline 100; no net change in count)
-- ✅ Checkpoint created: `docs/PHASE-82I-CHECKPOINT.md`
+- ??Compact read-only `history-section-visibility-preset-description` added inside existing `history-section-collapse-controls` surface
+- ??Description explains Overview-Oriented and Inspection-Oriented preset modes and their intended presentation focus using existing in-session state
+- ??All existing Phase 81 and TASK-82A through TASK-82H history/control behaviors preserved and unchanged
+- ??Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes
+- ??100/100 tests pass; 0 regressions (baseline 100; no net change in count)
+- ??Checkpoint created: `docs/PHASE-82I-CHECKPOINT.md`
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82I for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-82I for full details
 
 ---
 
@@ -4807,27 +4807,27 @@ Make the history workflow easier to understand by adding a bounded read-only sum
 - Frontend-only, additive only
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic actions
-- ❌ No durable state outside current session
-- ❌ No broader redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic actions
+- ??No durable state outside current session
+- ??No broader redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-82A, TASK-82B, TASK-82C, TASK-82D, TASK-82E, TASK-82F, TASK-82G, TASK-82H, and TASK-82I (Complete and Locked); existing history/control surface already present
 
 **Completion notes:**
-- ✅ Compact read-only `history-section-hidden-sections-summary` added inside existing `history-section-collapse-controls` surface
-- ✅ Summary reports which already-existing history sections are currently hidden using existing in-session collapsed-section state
-- ✅ All existing Phase 81 and TASK-82A through TASK-82I history/control behaviors preserved and unchanged
-- ✅ Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes
-- ✅ 100/100 tests pass; 0 regressions (baseline 100; no net change in count)
-- ✅ Checkpoint created: `docs/PHASE-82J-CHECKPOINT.md`
+- ??Compact read-only `history-section-hidden-sections-summary` added inside existing `history-section-collapse-controls` surface
+- ??Summary reports which already-existing history sections are currently hidden using existing in-session collapsed-section state
+- ??All existing Phase 81 and TASK-82A through TASK-82I history/control behaviors preserved and unchanged
+- ??Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes
+- ??100/100 tests pass; 0 regressions (baseline 100; no net change in count)
+- ??Checkpoint created: `docs/PHASE-82J-CHECKPOINT.md`
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82J for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-82J for full details
 
 ---
 
@@ -4852,27 +4852,27 @@ Make the history workflow easier to scan by adding a bounded read-only summary o
 - Frontend-only, additive only
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic actions
-- ❌ No durable state outside current session
-- ❌ No broader redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic actions
+- ??No durable state outside current session
+- ??No broader redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-82A, TASK-82B, TASK-82C, TASK-82D, TASK-82E, TASK-82F, TASK-82G, TASK-82H, TASK-82I, and TASK-82J (Complete and Locked); existing history/control surface already present
 
 **Completion notes:**
-- ✅ Compact read-only `history-section-visible-sections-summary` added inside existing `history-section-collapse-controls` surface
-- ✅ Summary reports which already-existing history sections are currently visible using existing in-session collapsed-section state
-- ✅ All existing Phase 81 and TASK-82A through TASK-82J history/control behaviors preserved and unchanged
-- ✅ Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes
-- ✅ 100/100 tests pass; 0 regressions (baseline 100; no net change in count)
-- ✅ Checkpoint created: `docs/PHASE-82K-CHECKPOINT.md`
+- ??Compact read-only `history-section-visible-sections-summary` added inside existing `history-section-collapse-controls` surface
+- ??Summary reports which already-existing history sections are currently visible using existing in-session collapsed-section state
+- ??All existing Phase 81 and TASK-82A through TASK-82J history/control behaviors preserved and unchanged
+- ??Scope confirmed frontend-only and additive; no backend, schema, endpoint, or refactor changes
+- ??100/100 tests pass; 0 regressions (baseline 100; no net change in count)
+- ??Checkpoint created: `docs/PHASE-82K-CHECKPOINT.md`
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82K for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-82K for full details
 
 ---
 
@@ -4897,19 +4897,19 @@ Make the history workflow easier to understand by adding a bounded read-only ind
 - Frontend-only, additive only
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic actions
-- ❌ No durable state outside current session
-- ❌ No broader redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic actions
+- ??No durable state outside current session
+- ??No broader redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-82A, TASK-82B, TASK-82C, TASK-82D, TASK-82E, TASK-82F, TASK-82G, TASK-82H, TASK-82I, TASK-82J, and TASK-82K (Complete and Locked); existing history/control surface already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82L for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-82L for full details
 
 ---
 
@@ -4934,19 +4934,19 @@ Make the history workflow easier to interpret by adding a bounded read-only summ
 - Frontend-only, additive only
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic actions
-- ❌ No durable state outside current session
-- ❌ No broader redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic actions
+- ??No durable state outside current session
+- ??No broader redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-82A through TASK-82L (Complete and Locked); existing history/control surface already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82M for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-82M for full details
 
 ---
 
@@ -4971,19 +4971,19 @@ Make the history workflow easier to read by adding a bounded read-only label tha
 - Frontend-only, additive only
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic actions
-- ❌ No durable state outside current session
-- ❌ No broader redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic actions
+- ??No durable state outside current session
+- ??No broader redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-82A through TASK-82M (Complete and Locked); existing history/control surface already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82N for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-82N for full details
 
 ---
 
@@ -5008,19 +5008,19 @@ Make the history workflow easier to understand by adding a bounded read-only exp
 - Frontend-only, additive only
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic actions
-- ❌ No durable state outside current session
-- ❌ No broader redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic actions
+- ??No durable state outside current session
+- ??No broader redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-82A through TASK-82N (Complete and Locked); existing history/control surface already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82O for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-82O for full details
 
 ---
 
@@ -5045,19 +5045,19 @@ Make the history workflow easier to trust by adding a bounded read-only note tha
 - Frontend-only, additive only
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic actions
-- ❌ No durable state outside current session
-- ❌ No broader redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic actions
+- ??No durable state outside current session
+- ??No broader redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-82A through TASK-82O (Complete and Locked); existing history/control surface already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82P for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-82P for full details
 
 ---
 
@@ -5082,19 +5082,19 @@ Make the history workflow easier to scan by adding a bounded read-only group lab
 - Frontend-only, additive only
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic actions
-- ❌ No durable state outside current session
-- ❌ No broader redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic actions
+- ??No durable state outside current session
+- ??No broader redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-82A through TASK-82P (Complete and Locked); existing history/control surface already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82Q for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-82Q for full details
 
 ---
 
@@ -5119,19 +5119,19 @@ Make the history workflow easier to scan by adding a bounded read-only label tha
 - Frontend-only, additive only
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic actions
-- ❌ No durable state outside current session
-- ❌ No broader redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic actions
+- ??No durable state outside current session
+- ??No broader redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-82A through TASK-82Q (Complete and Locked); existing history/control surface already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82R for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-82R for full details
 
 ---
 
@@ -5156,19 +5156,19 @@ Make the history workflow easier to understand by adding a bounded read-only lab
 - Frontend-only, additive only
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic actions
-- ❌ No durable state outside current session
-- ❌ No broader redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic actions
+- ??No durable state outside current session
+- ??No broader redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-82A through TASK-82R (Complete and Locked); existing history/control surface already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82S for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-82S for full details
 
 ---
 
@@ -5193,19 +5193,19 @@ Make the history workflow easier to understand by adding a bounded read-only lab
 - Frontend-only, additive only
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic actions
-- ❌ No durable state outside current session
-- ❌ No broader redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic actions
+- ??No durable state outside current session
+- ??No broader redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-82A through TASK-82S (Complete and Locked); existing history/control surface already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82T for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-82T for full details
 
 ---
 
@@ -5230,19 +5230,19 @@ Make the history workflow easier to scan by adding a bounded read-only label tha
 - Frontend-only, additive only
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic actions
-- ❌ No durable state outside current session
-- ❌ No broader redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic actions
+- ??No durable state outside current session
+- ??No broader redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-82A through TASK-82T (Complete and Locked); existing history/control surface already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82U for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-82U for full details
 
 ---
 
@@ -5267,19 +5267,19 @@ Make the history workflow easier to scan by adding a bounded read-only label tha
 - Frontend-only, additive only
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic actions
-- ❌ No durable state outside current session
-- ❌ No broader redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic actions
+- ??No durable state outside current session
+- ??No broader redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-82A through TASK-82U (Complete and Locked); existing history/control surface already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82V for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-82V for full details
 
 ---
 
@@ -5304,19 +5304,19 @@ Make the history workflow easier to scan by adding a bounded read-only label tha
 - Frontend-only, additive only
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic actions
-- ❌ No durable state outside current session
-- ❌ No broader redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic actions
+- ??No durable state outside current session
+- ??No broader redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-82A through TASK-82V (Complete and Locked); existing history/control surface already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82W for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-82W for full details
 
 ---
 
@@ -5341,23 +5341,23 @@ Make the history workflow easier to scan by adding a bounded read-only label tha
 - Frontend-only, additive only
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No automatic actions
-- ❌ No durable state outside current session
-- ❌ No broader redesign
-- ❌ No polling/websocket behavior
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No automatic actions
+- ??No durable state outside current session
+- ??No broader redesign
+- ??No polling/websocket behavior
+- ??No multi-task work
 
 **Dependencies:** TASK-82A through TASK-82W (Complete and Locked); existing history/control surface already present
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-82X for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-82X for full details
 
 ---
 
-## Phase 83 — Config Surface and UX Fixes
+## Phase 83 ??Config Surface and UX Fixes
 
 **Current stage:** TASK-83F (COMPLETE and LOCKED)
 
@@ -5383,17 +5383,17 @@ Fix the real UX bug where the Config popup can open from the existing frontend b
 - Do not expand into unrelated configuration redesign
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No redesign of the config surface
-- ❌ No unrelated modal cleanup
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No redesign of the config surface
+- ??No unrelated modal cleanup
+- ??No multi-task work
 
 **Dependencies:** Phase 81 and Phase 82 (Complete and Locked); existing Config popup present in frontend
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-83A for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-83A for full details
 
 ---
 
@@ -5417,17 +5417,17 @@ Fix the real UX bug where the top-right control cluster on authenticated fronten
 - Do not expand into unrelated header redesign
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new endpoints
-- ❌ No redesign of the authenticated page shell
-- ❌ No unrelated responsive cleanup
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new endpoints
+- ??No redesign of the authenticated page shell
+- ??No unrelated responsive cleanup
+- ??No multi-task work
 
 **Dependencies:** Phase 81, Phase 82 (Complete and Locked); TASK-83A (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-83B for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-83B for full details
 
 ---
 
@@ -5450,16 +5450,16 @@ Fix the real frontend UX gap where the existing `/en/driver` page can submit an 
 - Do not expand into unrelated driver redesign
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new product surface
-- ❌ No unrelated polling architecture redesign
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new product surface
+- ??No unrelated polling architecture redesign
+- ??No multi-task work
 
 **Dependencies:** Phase 81, Phase 82 (Complete and Locked); TASK-83A, TASK-83B (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-83D for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-83D for full details
 
 ---
 
@@ -5482,16 +5482,16 @@ Improve the `/en/driver` UX when a rate-limit/quota error occurs by clarifying t
 - Do not expand into unrelated driver redesign
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No new quota system
-- ❌ No unrelated polling redesign
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No new quota system
+- ??No unrelated polling redesign
+- ??No multi-task work
 
 **Dependencies:** Phase 81, Phase 82 (Complete and Locked); TASK-83A, TASK-83B, TASK-83D (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-83E for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-83E for full details
 
 ---
 
@@ -5509,33 +5509,33 @@ Improve `/en/app` session management by adding bounded sidebar actions that let 
 - Add a Stop action for active/usable sessions using an existing safe stop/terminate path
 - Add a Remove action only for expired or terminated/unusable sessions
 - Remove only removes already-unusable sessions from the visible list (existing safe backend delete path, or bounded frontend hide path if deletion is not safe)
-- Preserve checkpoint/history behavior — do not silently destroy history
+- Preserve checkpoint/history behavior ??do not silently destroy history
 - If the currently selected session is stopped/removed, auto-switch to another usable session or clear selection cleanly
 - Keep change bounded to session list actions and session-list refresh/update behavior
 - Preserve all closed Phase 81 and Phase 82 behavior and completed Phase 83 behavior
 
 **Non-Goals:**
-- ❌ No session-management redesign
-- ❌ No backend schema changes
-- ❌ No refactors
-- ❌ No new quota system
-- ❌ No destructive delete of active usable sessions
-- ❌ No silent history deletion
-- ❌ No multi-task work
+- ??No session-management redesign
+- ??No backend schema changes
+- ??No refactors
+- ??No new quota system
+- ??No destructive delete of active usable sessions
+- ??No silent history deletion
+- ??No multi-task work
 
 **Dependencies:** Phase 81, Phase 82 (Complete and Locked); TASK-83A, TASK-83B, TASK-83D, TASK-83E (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-83F for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-83F for full details
 
 ---
 
-## Phase 84 — Workspace Chat Panel
+## Phase 84 ??Workspace Chat Panel
 
 **Current stage:** TASK-84G (COMPLETE and LOCKED)
 
 ---
 
-#### TASK-84A: Workspace Chat Panel — Basic Prompt Submit and Response Surface Slice
+#### TASK-84A: Workspace Chat Panel ??Basic Prompt Submit and Response Surface Slice
 
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
@@ -5556,18 +5556,18 @@ Turn the current `/en/app` Chat Panel from a placeholder/exec-labeled surface in
 - Do not expand into full chat-product redesign yet
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No multi-conversation redesign
-- ❌ No full chat-history persistence redesign
-- ❌ No model/provider settings redesign
-- ❌ No streaming redesign unless already trivially available from the current frontend path
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No multi-conversation redesign
+- ??No full chat-history persistence redesign
+- ??No model/provider settings redesign
+- ??No streaming redesign unless already trivially available from the current frontend path
+- ??No multi-task work
 
 **Dependencies:** Phase 81, Phase 82 (Complete and Locked); Phase 83 (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-84A for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-84A for full details
 
 ---
 
@@ -5591,17 +5591,17 @@ Extend the working `/en/app` Chat Panel from a single prompt/response surface in
 - Do not expand into full conversation persistence redesign yet
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No multi-session conversation redesign
-- ❌ No streaming redesign beyond existing behavior
-- ❌ No model/provider settings redesign
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No multi-session conversation redesign
+- ??No streaming redesign beyond existing behavior
+- ??No model/provider settings redesign
+- ??No multi-task work
 
 **Dependencies:** Phase 81, Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-84B for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-84B for full details
 
 ---
 
@@ -5624,16 +5624,16 @@ Improve `/en/app` Chat Panel UX when chat execution is blocked by quota/rate-lim
 - Do not expand into broader quota redesign
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No model/provider redesign
-- ❌ No conversation persistence redesign
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No model/provider redesign
+- ??No conversation persistence redesign
+- ??No multi-task work
 
 **Dependencies:** Phase 81, Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A, TASK-84B (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-84C for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-84C for full details
 
 ---
 
@@ -5656,16 +5656,16 @@ Fix the remaining `/en/app` Chat Panel message-thread issues where a valid assis
 - Do not expand into broader chat redesign
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No conversation persistence redesign
-- ❌ No streaming redesign beyond fixing current frontend handling
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No conversation persistence redesign
+- ??No streaming redesign beyond fixing current frontend handling
+- ??No multi-task work
 
 **Dependencies:** Phase 81, Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A, TASK-84B, TASK-84C (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-84D for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-84D for full details
 
 ---
 
@@ -5690,18 +5690,18 @@ Improve `/en/app` Chat Panel UX by making the current chat thread persist across
 - Do not expand into full conversation-history redesign yet
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No multi-session conversation redesign
-- ❌ No long-term/global chat history system
-- ❌ No cross-device sync
-- ❌ No model/provider settings redesign
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No multi-session conversation redesign
+- ??No long-term/global chat history system
+- ??No cross-device sync
+- ??No model/provider settings redesign
+- ??No multi-task work
 
 **Dependencies:** Phase 81, Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A, TASK-84B, TASK-84C, TASK-84D (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-84E for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-84E for full details
 
 ---
 
@@ -5718,22 +5718,22 @@ Fix the remaining `/en/app` Chat Panel session-state/render issues where unsent 
 - Reuse the existing `/en/app` Chat Panel only
 - Clear/reset AI Prompt input on new-session creation and session switch
 - Prevent duplicate live rendering of the same assistant response content
-- Preserve the working TASK-84A–84E submit, thread, error, and refresh-persistence flow
+- Preserve the working TASK-84A??4E submit, thread, error, and refresh-persistence flow
 - Keep the change frontend-only and tightly scoped
 - Preserve all completed Phase 83 and Phase 84 behavior
 - Do not expand into broader chat redesign
 
 **Non-Goals:**
-- ❌ No backend changes
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No conversation persistence redesign
-- ❌ No model/provider redesign
-- ❌ No multi-task work
+- ??No backend changes
+- ??No schema changes
+- ??No refactors
+- ??No conversation persistence redesign
+- ??No model/provider redesign
+- ??No multi-task work
 
 **Dependencies:** Phase 81, Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A, TASK-84B, TASK-84C, TASK-84D, TASK-84E (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-84F for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-84F for full details
 
 ---
 
@@ -5756,27 +5756,27 @@ Fix the real product/auth gap where unauthenticated users can still enter `/en/a
 - Preserve all completed Phase 83 and Phase 84 behavior for logged-in users
 
 **Non-Goals:**
-- ❌ No backend changes unless strictly required
-- ❌ No schema changes
-- ❌ No refactors
-- ❌ No login flow redesign
-- ❌ No broad auth architecture redesign
-- ❌ No multi-task work
+- ??No backend changes unless strictly required
+- ??No schema changes
+- ??No refactors
+- ??No login flow redesign
+- ??No broad auth architecture redesign
+- ??No multi-task work
 
 **Dependencies:** Phase 81, Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A through TASK-84F (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → TASK-84G for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??TASK-84G for full details
 
 ---
 
-## AI-03 — AI-to-Workspace Actions (Core Product Loop)
+## AI-03 ??AI-to-Workspace Actions (Core Product Loop)
 
 **Current stage:** AI-03-02 (COMPLETE and LOCKED)
-**Family status:** COMPLETE and LOCKED — All bounded spec tasks complete (AI-03-01A/B/C, AI-03-02).
+**Family status:** COMPLETE and LOCKED ??All bounded spec tasks complete (AI-03-01A/B/C, AI-03-02).
 
 ---
 
-#### AI-03-01: AI-to-Workspace File Actions — Umbrella Parent
+#### AI-03-01: AI-to-Workspace File Actions ??Umbrella Parent
 
 **Status:** COMPLETE and LOCKED
 **Nature:** UMBRELLA WORK FAMILY (CORE PRODUCT LOOP)
@@ -5784,13 +5784,13 @@ Fix the real product/auth gap where unauthenticated users can still enter `/en/a
 AI-03-01 was completed through its three bounded child slices (AI-03-01A, AI-03-01B, AI-03-01C). Post-action workspace coherence was completed separately in AI-03-02.
 
 **Child slices:**
-- AI-03-01A — Backend File-Action Output Pipeline (COMPLETE and LOCKED)
-- AI-03-01B — Frontend File-Action Application (COMPLETE and LOCKED)
-- AI-03-01C — Frontend Chat File-Action Result Surfacing (COMPLETE and LOCKED)
+- AI-03-01A ??Backend File-Action Output Pipeline (COMPLETE and LOCKED)
+- AI-03-01B ??Frontend File-Action Application (COMPLETE and LOCKED)
+- AI-03-01C ??Frontend Chat File-Action Result Surfacing (COMPLETE and LOCKED)
 
 **Dependencies:** Phase 84 (Complete and Locked); AI execution pipeline (operational); workspace file system (operational)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → AI-03-01 for full details; `docs/specs/AI-03-01-ai-to-workspace-file-actions.md` for spec
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??AI-03-01 for full details; `docs/specs/AI-03-01-ai-to-workspace-file-actions.md` for spec
 
 ---
 
@@ -5818,19 +5818,19 @@ Before frontend can apply AI file actions safely, the backend must produce a rel
 - Keep existing submit / poll / stream / cancel behavior intact
 
 **Non-Goals:**
-- ❌ No file writes to workspace
-- ❌ No frontend behavioral changes beyond minimal type compatibility if absolutely required
-- ❌ No file tree refresh, editor reload, preview refresh, auto-checkpoint
-- ❌ No chat result rendering changes
-- ❌ No multi-step orchestration
-- ❌ No shell-first behavior
-- ❌ No agent framework
-- ❌ No schema redesign unless a tiny bounded persistence change is strictly required
-- ❌ No quota / billing / auth redesign
+- ??No file writes to workspace
+- ??No frontend behavioral changes beyond minimal type compatibility if absolutely required
+- ??No file tree refresh, editor reload, preview refresh, auto-checkpoint
+- ??No chat result rendering changes
+- ??No multi-step orchestration
+- ??No shell-first behavior
+- ??No agent framework
+- ??No schema redesign unless a tiny bounded persistence change is strictly required
+- ??No quota / billing / auth redesign
 
 **Dependencies:** Phase 84 (Complete and Locked); AI execution pipeline (operational)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → AI-03-01A for full details; `docs/specs/AI-03-01-ai-to-workspace-file-actions.md` for parent spec
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??AI-03-01A for full details; `docs/specs/AI-03-01-ai-to-workspace-file-actions.md` for parent spec
 
 ---
 
@@ -5859,19 +5859,19 @@ AI-03-01A established the backend fileActions contract and dual-channel delivery
 - Preserve existing chat submit / stream / poll / cancel behavior
 
 **Non-Goals:**
-- ❌ No chat result rendering changes
-- ❌ No file tree refresh, editor reload, preview refresh, auto-checkpoint
-- ❌ No AI-03-02 behavior
-- ❌ No backend file-action contract redesign
-- ❌ No new product endpoints
-- ❌ No shell-first behavior
-- ❌ No agent framework
-- ❌ No retry framework beyond current minimal behavior
-- ❌ No quota / billing / auth redesign
+- ??No chat result rendering changes
+- ??No file tree refresh, editor reload, preview refresh, auto-checkpoint
+- ??No AI-03-02 behavior
+- ??No backend file-action contract redesign
+- ??No new product endpoints
+- ??No shell-first behavior
+- ??No agent framework
+- ??No retry framework beyond current minimal behavior
+- ??No quota / billing / auth redesign
 
 **Dependencies:** AI-03-01A (COMPLETE and LOCKED); Phase 84 (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → AI-03-01B for full details; `docs/specs/AI-03-01-ai-to-workspace-file-actions.md` for parent spec
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??AI-03-01B for full details; `docs/specs/AI-03-01-ai-to-workspace-file-actions.md` for parent spec
 
 ---
 
@@ -5897,18 +5897,18 @@ AI-03-01A established the backend fileActions contract. AI-03-01B safely applied
 - Preserve existing chat submit / stream / poll / cancel behavior
 
 **Non-Goals:**
-- ❌ No file tree refresh, editor reload, preview refresh, auto-checkpoint
-- ❌ No AI-03-02 behavior
-- ❌ No backend contract or file write behavior redesign
-- ❌ No new product endpoints
-- ❌ No diff viewer in chat
-- ❌ No clickable file navigation beyond current surface
-- ❌ No chat layout redesign
-- ❌ No quota / billing / auth redesign
+- ??No file tree refresh, editor reload, preview refresh, auto-checkpoint
+- ??No AI-03-02 behavior
+- ??No backend contract or file write behavior redesign
+- ??No new product endpoints
+- ??No diff viewer in chat
+- ??No clickable file navigation beyond current surface
+- ??No chat layout redesign
+- ??No quota / billing / auth redesign
 
 **Dependencies:** AI-03-01B (COMPLETE and LOCKED); Phase 84 (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → AI-03-01C for full details; `docs/specs/AI-03-01-ai-to-workspace-file-actions.md` for parent spec
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??AI-03-01C for full details; `docs/specs/AI-03-01-ai-to-workspace-file-actions.md` for parent spec
 
 ---
 
@@ -5935,25 +5935,25 @@ AI-03-01 completed the minimal AI file-action loop. AI-03-02 makes the workspace
 - Reuse existing stale-request guard patterns where applicable
 
 **Non-Goals:**
-- ❌ No polling
-- ❌ No filesystem watchers
-- ❌ No websocket push coherence layer
-- ❌ No richer checkpoint metadata
-- ❌ No checkpoint schema redesign
-- ❌ No AI orchestration / agent framework
-- ❌ No project persistence work
-- ❌ No backend chat persistence work
-- ❌ No quota / billing / auth redesign
-- ❌ No shell-first behavior
-- ❌ No broad workspace redesign
+- ??No polling
+- ??No filesystem watchers
+- ??No websocket push coherence layer
+- ??No richer checkpoint metadata
+- ??No checkpoint schema redesign
+- ??No AI orchestration / agent framework
+- ??No project persistence work
+- ??No backend chat persistence work
+- ??No quota / billing / auth redesign
+- ??No shell-first behavior
+- ??No broad workspace redesign
 
 **Dependencies:** AI-03-01C (COMPLETE and LOCKED); Phase 79/80 (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → AI-03-02 for full details; `docs/specs/AI-03-02-post-ai-workspace-coherence.md` for spec
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??AI-03-02 for full details; `docs/specs/AI-03-02-post-ai-workspace-coherence.md` for spec
 
 ---
 
-## AI-05 — AI File-Action Diagnostics
+## AI-05 ??AI File-Action Diagnostics
 
 **Family status:** ACTIVE
 
@@ -5981,11 +5981,11 @@ Trace why the AI says it cannot create a file, despite the existing AI-to-worksp
 - Identify and document the exact failing stage clearly
 
 **Out of scope:**
-- ❌ No broad AI system redesign
-- ❌ No file-action contract redesign
-- ❌ No UX polish work
-- ❌ No scope expansion
-- ❌ No feature work
+- ??No broad AI system redesign
+- ??No file-action contract redesign
+- ??No UX polish work
+- ??No scope expansion
+- ??No feature work
 
 **Acceptance criteria:**
 - Exact failing stage identified clearly
@@ -6013,11 +6013,11 @@ Make normal file-creation prompts reliably produce valid file-action output so t
 - Verify with real file-create prompts that non-empty fileActions are produced through the existing path
 
 **Out of scope:**
-- ❌ No parser redesign
-- ❌ No frontend apply redesign
-- ❌ No broad orchestration redesign
-- ❌ No provider marketplace/model redesign
-- ❌ No scope expansion
+- ??No parser redesign
+- ??No frontend apply redesign
+- ??No broad orchestration redesign
+- ??No provider marketplace/model redesign
+- ??No scope expansion
 
 **Acceptance criteria:**
 - Ordinary file-create prompts produce valid non-empty fileActions through the normal execution path
@@ -6027,17 +6027,17 @@ Make normal file-creation prompts reliably produce valid file-action output so t
 
 **Dependencies:** AI-05-01 (COMPLETE and LOCKED)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → AI-05-02 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??AI-05-02 for full details
 
 ---
 
-## PREV-01 — Preview Availability Diagnostics
+## PREV-01 ??Preview Availability Diagnostics
 
 **Family status:** COMPLETE and LOCKED
 
 **Current stage:** none active (PREV-01 wave complete)
 
-**Completed tasks:** PREV-01-01, PREV-01-02, PREV-01-03 — all COMPLETE and LOCKED.
+**Completed tasks:** PREV-01-01, PREV-01-02, PREV-01-03 ??all COMPLETE and LOCKED.
 
 **Final checkpoint:** `docs/PREV-01-FINAL-CHECKPOINT.md`
 
@@ -6061,11 +6061,11 @@ Determine why preview remains unavailable after AI creates files, and isolate wh
 - No fix in this task unless a trivially obvious diagnostic correction is absolutely required
 
 **Out of scope:**
-- ❌ No preview redesign
-- ❌ No frontend redesign
-- ❌ No broad workspace redesign
-- ❌ No scope expansion
-- ❌ No feature work
+- ??No preview redesign
+- ??No frontend redesign
+- ??No broad workspace redesign
+- ??No scope expansion
+- ??No feature work
 
 **Acceptance criteria:**
 - Exact preview gating/availability condition is identified clearly
@@ -6073,7 +6073,7 @@ Determine why preview remains unavailable after AI creates files, and isolate wh
 - Issue is narrowed enough for one bounded follow-up fix task, or clearly confirmed as expected behavior
 - No unrelated work is mixed into this task
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → PREV-01-01 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??PREV-01-01 for full details
 
 ---
 
@@ -6095,11 +6095,11 @@ Fix the preview start/status path so preview availability is determined from the
 - Document exact cause and resolution
 
 **Out of scope:**
-- ❌ No broad preview redesign
-- ❌ No full static-site preview redesign unless strictly required by the current architecture
-- ❌ No frontend redesign
-- ❌ No workspace redesign
-- ❌ No scope expansion
+- ??No broad preview redesign
+- ??No full static-site preview redesign unless strictly required by the current architecture
+- ??No frontend redesign
+- ??No workspace redesign
+- ??No scope expansion
 
 **Acceptance criteria:**
 - Preview start/status uses the correct session workspace source
@@ -6107,7 +6107,7 @@ Fix the preview start/status path so preview availability is determined from the
 - Preview status/proxy behave coherently after start
 - Fix is documented clearly
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → PREV-01-02 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??PREV-01-02 for full details
 
 ---
 
@@ -6129,10 +6129,10 @@ Add a user-visible preview start action in the workspace UI so users can actuall
 - Verify the actual UI path can start preview for an AI-created index.html session
 
 **Out of scope:**
-- ❌ No backend preview redesign
-- ❌ No broad preview UX redesign
-- ❌ No workspace redesign
-- ❌ No scope expansion
+- ??No backend preview redesign
+- ??No broad preview UX redesign
+- ??No workspace redesign
+- ??No scope expansion
 
 **Acceptance criteria:**
 - Unavailable preview state includes a visible start action
@@ -6141,15 +6141,15 @@ Add a user-visible preview start action in the workspace UI so users can actuall
 - Refresh-only dead-end is removed
 - Fix is documented clearly
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → PREV-01-03 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??PREV-01-03 for full details
 
 ---
 
-## PROJ-01 — Project/Public Flow Diagnostics
+## PROJ-01 ??Project/Public Flow Diagnostics
 
 **Family status:** ACTIVE
 
-**Current stage:** PROJ-01-13 (COMPLETE and LOCKED)
+**Current stage:** PROJ-01-15 (COMPLETE and LOCKED)
 
 ---
 
@@ -6170,10 +6170,10 @@ Determine why saved projects do not open correctly and why Public Projects fails
 - No fix in this task unless a trivially obvious diagnostic correction is absolutely required
 
 **Out of scope:**
-- ❌ No project-system redesign
-- ❌ No public sharing redesign
-- ❌ No feature expansion
-- ❌ No scope expansion
+- ??No project-system redesign
+- ??No public sharing redesign
+- ??No feature expansion
+- ??No scope expansion
 
 **Acceptance criteria:**
 - Exact failing stage for saved project open is identified clearly
@@ -6181,7 +6181,7 @@ Determine why saved projects do not open correctly and why Public Projects fails
 - Issue(s) are narrowed enough for one or two small bounded follow-up fix tasks
 - No unrelated work is mixed into this task
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → PROJ-01-01 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??PROJ-01-01 for full details
 
 ---
 
@@ -6202,10 +6202,10 @@ Fix the backend route collision so `GET /api/projects/public` resolves to the in
 - Verify public projects list works unauthenticated as intended
 
 **Out of scope:**
-- ❌ No public sharing redesign
-- ❌ No project-system redesign
-- ❌ No feature expansion
-- ❌ No scope expansion
+- ??No public sharing redesign
+- ??No project-system redesign
+- ??No feature expansion
+- ??No scope expansion
 
 **Acceptance criteria:**
 - `GET /api/projects/public` resolves to the intended public list endpoint
@@ -6213,7 +6213,7 @@ Fix the backend route collision so `GET /api/projects/public` resolves to the in
 - Existing project-id routes remain intact
 - Fix is documented clearly
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → PROJ-01-02 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??PROJ-01-02 for full details
 
 ---
 
@@ -6234,10 +6234,10 @@ Make opening a saved project restore the latest saved project snapshot by defaul
 - Verify opening a saved project restores usable content through the normal UI/API path
 
 **Out of scope:**
-- ❌ No project-system redesign
-- ❌ No snapshot-system redesign
-- ❌ No feature expansion
-- ❌ No scope expansion
+- ??No project-system redesign
+- ??No snapshot-system redesign
+- ??No feature expansion
+- ??No scope expansion
 
 **Acceptance criteria:**
 - Opening a project without explicit `snapshotId` restores the latest saved snapshot by default
@@ -6245,7 +6245,7 @@ Make opening a saved project restore the latest saved project snapshot by defaul
 - Project/session binding remains intact
 - Fix is documented clearly
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → PROJ-01-03 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??PROJ-01-03 for full details
 
 ---
 
@@ -6267,10 +6267,10 @@ Ensure that after a project is opened and restored successfully, the workspace U
 - Verify the real UI path now shows files after project open
 
 **Out of scope:**
-- ❌ No project-system redesign
-- ❌ No snapshot-system redesign
-- ❌ No workspace redesign
-- ❌ No scope expansion
+- ??No project-system redesign
+- ??No snapshot-system redesign
+- ??No workspace redesign
+- ??No scope expansion
 
 **Acceptance criteria:**
 - After successful project open, workspace file tree refreshes correctly
@@ -6279,7 +6279,7 @@ Ensure that after a project is opened and restored successfully, the workspace U
 - Existing project open behavior remains intact
 - Fix is documented clearly
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → PROJ-01-04 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??PROJ-01-04 for full details
 
 ---
 
@@ -6301,10 +6301,10 @@ Determine why the real UI still shows an empty workspace after "Project opened i
 - No fix in this task unless a trivially obvious diagnostic correction is absolutely required, which normally should not be done here
 
 **Out of scope:**
-- ❌ No project-system redesign
-- ❌ No snapshot-system redesign
-- ❌ No workspace redesign
-- ❌ No scope expansion
+- ??No project-system redesign
+- ??No snapshot-system redesign
+- ??No workspace redesign
+- ??No scope expansion
 
 **Acceptance criteria:**
 - The exact remaining failing stage is identified clearly
@@ -6312,7 +6312,7 @@ Determine why the real UI still shows an empty workspace after "Project opened i
 - The issue is narrowed enough for one bounded follow-up fix task
 - No unrelated work is mixed into this task
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → PROJ-01-05 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??PROJ-01-05 for full details
 
 ---
 
@@ -6333,10 +6333,10 @@ Fix project open so the default snapshot chosen for restore comes from the selec
 - Verify opening a saved project through the real UI/API path restores the correct project content
 
 **Out of scope:**
-- ❌ No project-system redesign
-- ❌ No snapshot-system redesign
-- ❌ No workspace redesign
-- ❌ No scope expansion
+- ??No project-system redesign
+- ??No snapshot-system redesign
+- ??No workspace redesign
+- ??No scope expansion
 
 **Acceptance criteria:**
 - Default project open no longer uses unrelated global latest snapshots
@@ -6344,7 +6344,7 @@ Fix project open so the default snapshot chosen for restore comes from the selec
 - Projects with no snapshots still behave safely
 - Fix is documented clearly
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → PROJ-01-06 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??PROJ-01-06 for full details
 
 ---
 
@@ -6367,10 +6367,10 @@ Determine why the real UI still opens a saved project into an empty workspace, d
 - No fix in this task unless a trivially obvious diagnostic correction is absolutely required, which normally should not be done here
 
 **Out of scope:**
-- ❌ No project-system redesign
-- ❌ No snapshot-system redesign
-- ❌ No workspace redesign
-- ❌ No scope expansion
+- ??No project-system redesign
+- ??No snapshot-system redesign
+- ??No workspace redesign
+- ??No scope expansion
 
 **Acceptance criteria:**
 - Exact remaining failure is identified clearly
@@ -6378,7 +6378,7 @@ Determine why the real UI still opens a saved project into an empty workspace, d
 - Issue is narrowed enough for one bounded follow-up fix task
 - No unrelated work is mixed into this task
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → PROJ-01-07 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??PROJ-01-07 for full details
 
 ---
 
@@ -6399,10 +6399,10 @@ Make project creation persist the current workspace content by automatically sav
 - Verify that a newly created project can later be opened with its content intact
 
 **Out of scope:**
-- ❌ No project-system redesign
-- ❌ No snapshot-system redesign
-- ❌ No workspace redesign
-- ❌ No scope expansion
+- ??No project-system redesign
+- ??No snapshot-system redesign
+- ??No workspace redesign
+- ??No scope expansion
 
 **Acceptance criteria:**
 - Creating a project from a workspace with files results in a project-scoped snapshot being created automatically
@@ -6411,7 +6411,7 @@ Make project creation persist the current workspace content by automatically sav
 - Existing explicit snapshot behavior remains intact
 - Fix is documented clearly
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → PROJ-01-08 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??PROJ-01-08 for full details
 
 ---
 
@@ -6432,9 +6432,9 @@ After opening a project, refresh workspace file tree/editor state immediately so
 - Verify files appear after Open Project without browser reload
 
 **Out of scope:**
-- ❌ No project-system redesign
-- ❌ No snapshot redesign
-- ❌ No workspace redesign
+- ??No project-system redesign
+- ??No snapshot redesign
+- ??No workspace redesign
 
 **Acceptance criteria:**
 - Open Project shows restored files without browser reload
@@ -6442,7 +6442,7 @@ After opening a project, refresh workspace file tree/editor state immediately so
 - Existing project open behavior remains intact
 - Fix is documented clearly
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → PROJ-01-09 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??PROJ-01-09 for full details
 
 ---
 
@@ -6464,17 +6464,17 @@ Determine why the real UI still requires a browser reload for restored project f
 - No fix in this task unless a trivially obvious diagnostic correction is absolutely required, which normally should not be done here
 
 **Out of scope:**
-- ❌ No project-system redesign
-- ❌ No snapshot redesign
-- ❌ No workspace redesign
-- ❌ No scope expansion
+- ??No project-system redesign
+- ??No snapshot redesign
+- ??No workspace redesign
+- ??No scope expansion
 
 **Acceptance criteria:**
 - Exact remaining frontend failing stage is identified clearly
 - Issue is narrowed enough for one bounded follow-up fix task
 - No unrelated work is mixed into this task
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → PROJ-01-10 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??PROJ-01-10 for full details
 
 ---
 
@@ -6495,10 +6495,10 @@ Fix the post-open frontend state race so restored project files appear immediate
 - Verify restored files appear immediately without browser reload
 
 **Out of scope:**
-- ❌ No project-system redesign
-- ❌ No snapshot redesign
-- ❌ No workspace redesign
-- ❌ No scope expansion
+- ??No project-system redesign
+- ??No snapshot redesign
+- ??No workspace redesign
+- ??No scope expansion
 
 **Acceptance criteria:**
 - Open Project results in one coherent post-open refresh for the target session
@@ -6506,7 +6506,7 @@ Fix the post-open frontend state race so restored project files appear immediate
 - Selected-session behavior outside project open remains intact
 - Fix is documented clearly
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → PROJ-01-11 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??PROJ-01-11 for full details
 
 ---
 
@@ -6528,17 +6528,17 @@ Determine why the real UI still renders an empty file tree after successful proj
 - No fix in this task unless a trivially obvious diagnostic correction is absolutely required, which normally should not be done here
 
 **Out of scope:**
-- ❌ No project-system redesign
-- ❌ No snapshot redesign
-- ❌ No workspace redesign
-- ❌ No scope expansion
+- ??No project-system redesign
+- ??No snapshot redesign
+- ??No workspace redesign
+- ??No scope expansion
 
 **Acceptance criteria:**
 - Exact remaining rendered-state failure is identified clearly
 - Issue is narrowed enough for one bounded follow-up fix task
 - No unrelated work is mixed into this task
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → PROJ-01-12 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??PROJ-01-12 for full details
 
 ---
 
@@ -6558,10 +6558,10 @@ Prevent successful project-open file state from being destroyed when the post-op
 - Verify successful project-open content remains visible even if session reload fails
 
 **Out of scope:**
-- ❌ No project-system redesign
-- ❌ No snapshot redesign
-- ❌ No workspace redesign
-- ❌ No scope expansion
+- ??No project-system redesign
+- ??No snapshot redesign
+- ??No workspace redesign
+- ??No scope expansion
 
 **Acceptance criteria:**
 - Successful project-open content is not wiped by later session reload failure
@@ -6569,16 +6569,83 @@ Prevent successful project-open file state from being destroyed when the post-op
 - File tree/editor state remains visible without browser reload
 - No unrelated work is mixed into this task
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → PROJ-01-13 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??PROJ-01-13 for full details
 
 ---
 
-## AI-04 — Chat Persistence (Core Product Loop)
+---
+
+#### PROJ-01-14: Diagnose Project Download Absolute Path Failure
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG INVESTIGATION (PROJECT DOWNLOAD, PATH GUARD)
+**Checkpoint:** `docs/PROJ-01-14-CHECKPOINT.md`
+
+**Objective:**
+Determine why Download Project fails with "Absolute paths outside /workspace not allowed" and isolate the exact failing stage in the export/download flow.
+
+**Scope:**
+- Trace the project download/export flow end to end
+- Inspect archive/export path generation
+- Inspect which path is passed into the guarded read/download step
+- Identify the exact failing stage clearly
+- No fix in this task unless a trivially obvious diagnostic correction is absolutely required, which normally should not be done here
+
+**Out of scope:**
+- No project-system redesign
+- No storage redesign
+- No workspace redesign
+- No scope expansion
+
+**Acceptance criteria:**
+- Exact failing stage is identified clearly
+- Issue is narrowed enough for one bounded fix task
+- No unrelated work is mixed into this task
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-01-14 for full details
+
+---
+
+#### PROJ-01-15: Fix Nested Project Export Path Construction
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (PROJECT DOWNLOAD, ARCHIVE PATHS)
+**Checkpoint:** `docs/PROJ-01-15-CHECKPOINT.md`
+
+**Objective:**
+Fix project export so nested directories are traversed using valid workspace-relative paths instead of invalid absolute paths like /src that are rejected by the workspace path guard.
+
+**Scope:**
+- Inspect recursive archive path construction
+- Correct nested recursion to use valid workspace-relative paths
+- Preserve existing root export behavior
+- Verify nested project export works end to end
+- Document exact cause and resolution
+
+**Out of scope:**
+- No export redesign
+- No path-guard redesign
+- No workspace redesign
+- No scope expansion
+
+**Acceptance criteria:**
+- Export succeeds for projects with nested directories
+- Existing root-only export still works
+- Path guard behavior remains intact
+- Fix is documented clearly
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-01-15 for full details
+
+---
+
+
+## AI-04 ??Chat Persistence (Core Product Loop)
 
 **Current stage:** AI-04-01 (COMPLETE and LOCKED)
-**Family status:** COMPLETE and LOCKED — All bounded spec tasks complete (AI-04-01).
+**Family status:** COMPLETE and LOCKED ??All bounded spec tasks complete (AI-04-01).
 
 ---
+
 
 #### AI-04-01: Backend Chat Persistence Wiring
 
@@ -6603,26 +6670,26 @@ Phase 84 made the workspace chat usable, but chat persistence is still localStor
 - Preserve existing submit / stream / poll / cancel behavior
 
 **Non-Goals:**
-- ❌ No global chat history
-- ❌ No cross-session conversation system
-- ❌ No conversation export or branching
-- ❌ No multi-AI conversation threading
-- ❌ No chat UI redesign
-- ❌ No workspace coherence work
-- ❌ No project persistence work
-- ❌ No quota / billing / auth redesign
-- ❌ No new agent/orchestration behavior
+- ??No global chat history
+- ??No cross-session conversation system
+- ??No conversation export or branching
+- ??No multi-AI conversation threading
+- ??No chat UI redesign
+- ??No workspace coherence work
+- ??No project persistence work
+- ??No quota / billing / auth redesign
+- ??No new agent/orchestration behavior
 
 **Dependencies:** Phase 84 (Complete and Locked); AI-03-02 (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → AI-04-01 for full details; `docs/specs/AI-04-01-backend-chat-persistence.md` for spec
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??AI-04-01 for full details; `docs/specs/AI-04-01-backend-chat-persistence.md` for spec
 
 ---
 
-## PR-01 — Project Persistence
+## PR-01 ??Project Persistence
 
 **Current stage:** PR-03-01 (COMPLETE and LOCKED)
-**Family status:** COMPLETE and LOCKED — All bounded spec tasks complete (PR-01-01, PR-02-01, PR-03-01).
+**Family status:** COMPLETE and LOCKED ??All bounded spec tasks complete (PR-01-01, PR-02-01, PR-03-01).
 
 ---
 
@@ -6648,19 +6715,19 @@ The AI-first workspace loop now works, but work is still tied to ephemeral sessi
 - Keep restore behavior deterministic and bounded
 
 **Non-Goals:**
-- ❌ No persistent project entity yet
-- ❌ No project list / project naming system beyond minimal snapshot labeling if required
-- ❌ No import/export archive UX beyond this save/restore path
-- ❌ No public sharing
-- ❌ No collaborative access
-- ❌ No real-time sync between sessions
-- ❌ No broad git/history redesign
-- ❌ No quota / billing / auth redesign
-- ❌ No background workers
+- ??No persistent project entity yet
+- ??No project list / project naming system beyond minimal snapshot labeling if required
+- ??No import/export archive UX beyond this save/restore path
+- ??No public sharing
+- ??No collaborative access
+- ??No real-time sync between sessions
+- ??No broad git/history redesign
+- ??No quota / billing / auth redesign
+- ??No background workers
 
 **Dependencies:** AI-04-01 (Complete and Locked); Phase 79/80 (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → PR-01-01 for full details; `docs/specs/PR-01-01-project-save-restore.md` for spec
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??PR-01-01 for full details; `docs/specs/PR-01-01-project-save-restore.md` for spec
 
 ---
 
@@ -6686,19 +6753,19 @@ PR-01-01 gave the product durable files-only save/restore. PR-02-01 adds portabi
 - Deterministic overwrite behavior for first slice
 
 **Non-Goals:**
-- ❌ No persistent project entity yet
-- ❌ No GitHub/GitLab integration
-- ❌ No real-time sync with external repositories
-- ❌ No partial/selective import
-- ❌ No public sharing
-- ❌ No collaborative access
-- ❌ No quota / billing / auth redesign
-- ❌ No background workers
-- ❌ No refactors unless absolutely required
+- ??No persistent project entity yet
+- ??No GitHub/GitLab integration
+- ??No real-time sync with external repositories
+- ??No partial/selective import
+- ??No public sharing
+- ??No collaborative access
+- ??No quota / billing / auth redesign
+- ??No background workers
+- ??No refactors unless absolutely required
 
 **Dependencies:** PR-01-01 (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → PR-02-01 for full details; `docs/specs/PR-02-01-project-import-export.md` for spec
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??PR-02-01 for full details; `docs/specs/PR-02-01-project-import-export.md` for spec
 
 ---
 
@@ -6725,26 +6792,26 @@ PR-01-01 delivered files-only save/restore. PR-02-01 delivered import/export por
 - Keep auth and ownership enforcement on all project operations
 
 **Non-Goals:**
-- ❌ No public sharing
-- ❌ No team or collaborative project access
-- ❌ No marketplace/templates
-- ❌ No advanced project settings
-- ❌ No GitHub/GitLab integration
-- ❌ No quota / billing / auth redesign
-- ❌ No background workers
-- ❌ No broad workspace redesign
-- ❌ No refactors unless absolutely required
+- ??No public sharing
+- ??No team or collaborative project access
+- ??No marketplace/templates
+- ??No advanced project settings
+- ??No GitHub/GitLab integration
+- ??No quota / billing / auth redesign
+- ??No background workers
+- ??No broad workspace redesign
+- ??No refactors unless absolutely required
 
 **Dependencies:** PR-01-01 (Complete and Locked), PR-02-01 (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → PR-03-01 for full details; `docs/specs/PR-03-01-project-identity.md` for spec
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??PR-03-01 for full details; `docs/specs/PR-03-01-project-identity.md` for spec
 
 ---
 
-## CO-01 — Commercial Readiness
+## CO-01 ??Commercial Readiness
 
 **Current stage:** CO-03-01 (COMPLETE and LOCKED)
-**Family status:** COMPLETE and LOCKED — All bounded spec tasks complete (CO-01-01, CO-02-01, CO-03-01).
+**Family status:** COMPLETE and LOCKED ??All bounded spec tasks complete (CO-01-01, CO-02-01, CO-03-01).
 
 ---
 
@@ -6768,18 +6835,18 @@ Core product loop and project persistence are now in place. The next bounded com
 - Preserve existing workspace / chat / project behavior
 
 **Out of scope:**
-- ❌ No billing/subscription implementation
-- ❌ No admin-only tooling
-- ❌ No quota model redesign
-- ❌ No polling/timers
-- ❌ No background workers
-- ❌ No auth / billing redesign
-- ❌ No broad dashboard redesign
-- ❌ No refactors unless absolutely required
+- ??No billing/subscription implementation
+- ??No admin-only tooling
+- ??No quota model redesign
+- ??No polling/timers
+- ??No background workers
+- ??No auth / billing redesign
+- ??No broad dashboard redesign
+- ??No refactors unless absolutely required
 
 **Dependencies:** PR-03-01 (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → CO-01-01 for full details; `docs/specs/CO-01-01-quota-usage-ux.md` for spec
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??CO-01-01 for full details; `docs/specs/CO-01-01-quota-usage-ux.md` for spec
 
 ---
 
@@ -6803,19 +6870,19 @@ CO-01-01 aligned visible usage/quota UX with existing enforcement. CO-02-01 now 
 - Preserve existing workspace/project/chat behavior
 
 **Out of scope:**
-- ❌ No full payment provider integration unless spec requires only smallest foundation
-- ❌ No invoicing/tax/accounting workflows
-- ❌ No admin backoffice expansion beyond strictly required
-- ❌ No quota model redesign beyond bounded plan-aware foundation
-- ❌ No polling/timers
-- ❌ No background workers
-- ❌ No auth redesign
-- ❌ No broad dashboard redesign
-- ❌ No refactors unless absolutely required
+- ??No full payment provider integration unless spec requires only smallest foundation
+- ??No invoicing/tax/accounting workflows
+- ??No admin backoffice expansion beyond strictly required
+- ??No quota model redesign beyond bounded plan-aware foundation
+- ??No polling/timers
+- ??No background workers
+- ??No auth redesign
+- ??No broad dashboard redesign
+- ??No refactors unless absolutely required
 
 **Dependencies:** CO-01-01 (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → CO-02-01 for full details; `docs/specs/CO-02-01-billing-plans-foundation.md` for spec
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??CO-02-01 for full details; `docs/specs/CO-02-01-billing-plans-foundation.md` for spec
 
 ---
 
@@ -6839,25 +6906,25 @@ CO-01-01 aligned quota/usage UX. CO-02-01 added minimal plans foundation. CO-03-
 - Keep all admin/operational behavior request-driven only
 
 **Out of scope:**
-- ❌ No broad backoffice suite
-- ❌ No analytics expansion beyond required admin visibility
-- ❌ No payment-provider operations
-- ❌ No invoicing/tax/accounting workflows
-- ❌ No background workers
-- ❌ No auth redesign
-- ❌ No broad dashboard redesign
-- ❌ No refactors unless absolutely required
+- ??No broad backoffice suite
+- ??No analytics expansion beyond required admin visibility
+- ??No payment-provider operations
+- ??No invoicing/tax/accounting workflows
+- ??No background workers
+- ??No auth redesign
+- ??No broad dashboard redesign
+- ??No refactors unless absolutely required
 
 **Dependencies:** CO-02-01 (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → CO-03-01 for full details; `docs/specs/CO-03-01-admin-operational.md` for spec
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??CO-03-01 for full details; `docs/specs/CO-03-01-admin-operational.md` for spec
 
 ---
 
-## ADV-01 — Advanced Product Expansion
+## ADV-01 ??Advanced Product Expansion
 
 **Current stage:** ADV-05-01 (COMPLETE and LOCKED)
-**Family status:** COMPLETE and LOCKED — All bounded spec tasks complete (ADV-01-01 through ADV-05-01).
+**Family status:** COMPLETE and LOCKED ??All bounded spec tasks complete (ADV-01-01 through ADV-05-01).
 
 ---
 
@@ -6881,19 +6948,19 @@ The core AI workspace loop is now complete and durable. The next bounded advance
 - Keep behavior request-driven only
 
 **Out of scope:**
-- ❌ No autonomous multi-agent orchestration
-- ❌ No conversational orchestrator
-- ❌ No agent debate/planning system
-- ❌ No provider marketplace
-- ❌ No billing/provider-cost optimization redesign
-- ❌ No quota/billing/auth redesign
-- ❌ No broad chat/workspace redesign
-- ❌ No background workers
-- ❌ No refactors unless absolutely required
+- ??No autonomous multi-agent orchestration
+- ??No conversational orchestrator
+- ??No agent debate/planning system
+- ??No provider marketplace
+- ??No billing/provider-cost optimization redesign
+- ??No quota/billing/auth redesign
+- ??No broad chat/workspace redesign
+- ??No background workers
+- ??No refactors unless absolutely required
 
 **Dependencies:** CO-03-01 (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → ADV-01-01 for full details; `docs/specs/ADV-01-01-multi-ai-collaboration.md` for spec
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??ADV-01-01 for full details; `docs/specs/ADV-01-01-multi-ai-collaboration.md` for spec
 
 ---
 
@@ -6917,18 +6984,18 @@ ADV-01-01 added controlled multi-model selection and attribution. ADV-02-01 now 
 - Preserve existing chat/workspace/project/commercial behavior
 
 **Out of scope:**
-- ❌ No autonomous agents
-- ❌ No long-running background orchestration
-- ❌ No provider marketplace
-- ❌ No debate/planning swarm
-- ❌ No billing/quota redesign
-- ❌ No broad chat/workspace redesign
-- ❌ No background workers
-- ❌ No refactors unless absolutely required
+- ??No autonomous agents
+- ??No long-running background orchestration
+- ??No provider marketplace
+- ??No debate/planning swarm
+- ??No billing/quota redesign
+- ??No broad chat/workspace redesign
+- ??No background workers
+- ??No refactors unless absolutely required
 
 **Dependencies:** ADV-01-01 (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → ADV-02-01 for full details; `docs/specs/ADV-02-01-conversational-orchestrator.md` for spec
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??ADV-02-01 for full details; `docs/specs/ADV-02-01-conversational-orchestrator.md` for spec
 
 ---
 
@@ -6952,19 +7019,19 @@ The core workspace, persistence, commercial foundation, and bounded advanced AI 
 - Keep behavior request-driven only
 
 **Out of scope:**
-- ❌ No full device cloud
-- ❌ No remote device farm
-- ❌ No app-store submission workflow
-- ❌ No broad CI/CD platform
-- ❌ No autonomous orchestration
-- ❌ No billing/quota redesign
-- ❌ No broad workspace redesign
-- ❌ No background workers
-- ❌ No refactors unless absolutely required
+- ??No full device cloud
+- ??No remote device farm
+- ??No app-store submission workflow
+- ??No broad CI/CD platform
+- ??No autonomous orchestration
+- ??No billing/quota redesign
+- ??No broad workspace redesign
+- ??No background workers
+- ??No refactors unless absolutely required
 
 **Dependencies:** ADV-02-01 (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → ADV-03-01 for full details; `docs/specs/ADV-03-01-mobile-mac-ios-build.md` for spec
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??ADV-03-01 for full details; `docs/specs/ADV-03-01-mobile-mac-ios-build.md` for spec
 
 ---
 
@@ -6988,18 +7055,18 @@ The core workspace, persistence, commercial foundation, and bounded advanced fea
 - Keep behavior request-driven only
 
 **Out of scope:**
-- ❌ No integration marketplace
-- ❌ No broad webhook/event platform
-- ❌ No public exposure of internal-only routes
-- ❌ No SDK/platform sprawl
-- ❌ No billing/quota redesign
-- ❌ No broad admin redesign
-- ❌ No background workers
-- ❌ No refactors unless absolutely required
+- ??No integration marketplace
+- ??No broad webhook/event platform
+- ??No public exposure of internal-only routes
+- ??No SDK/platform sprawl
+- ??No billing/quota redesign
+- ??No broad admin redesign
+- ??No background workers
+- ??No refactors unless absolutely required
 
 **Dependencies:** ADV-03-01 (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → ADV-04-01 for full details; `docs/specs/ADV-04-01-public-api-platform.md` for spec
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??ADV-04-01 for full details; `docs/specs/ADV-04-01-public-api-platform.md` for spec
 
 ---
 
@@ -7023,22 +7090,22 @@ The core workspace, persistence, commercial foundation, advanced AI features, an
 - Keep behavior request-driven only
 
 **Out of scope:**
-- ❌ No broad social/community feed
-- ❌ No comments/likes/follow systems
-- ❌ No broad moderation platform
-- ❌ No marketplace/templates ecosystem
-- ❌ No billing/quota redesign
-- ❌ No broad admin redesign
-- ❌ No background workers
-- ❌ No refactors unless absolutely required
+- ??No broad social/community feed
+- ??No comments/likes/follow systems
+- ??No broad moderation platform
+- ??No marketplace/templates ecosystem
+- ??No billing/quota redesign
+- ??No broad admin redesign
+- ??No background workers
+- ??No refactors unless absolutely required
 
 **Dependencies:** ADV-04-01 (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → ADV-05-01 for full details; `docs/specs/ADV-05-01-public-sharing-community.md` for spec
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??ADV-05-01 for full details; `docs/specs/ADV-05-01-public-sharing-community.md` for spec
 
 ---
 
-## REL-01 — Release Readiness
+## REL-01 ??Release Readiness
 
 **Family status:** COMPLETE and LOCKED
 
@@ -7046,7 +7113,7 @@ The core workspace, persistence, commercial foundation, advanced AI features, an
 
 ---
 
-## REL-02 — Deployment Rehearsal
+## REL-02 ??Deployment Rehearsal
 
 **Family status:** COMPLETE and LOCKED
 
@@ -7054,11 +7121,44 @@ The core workspace, persistence, commercial foundation, advanced AI features, an
 
 ---
 
-## OPS-01 — Runtime Cleanup Diagnostics
+## OPS-01 ??Runtime Cleanup Diagnostics
 
 **Family status:** ACTIVE
 
-**Current stage:** OPS-01-02 (COMPLETE and LOCKED)
+**Current stage:** OPS-01-03 (COMPLETE and LOCKED)
+
+---
+
+#### OPS-01-03: Verify Session Container Cleanup After Stop Terminate Fix
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG INVESTIGATION (RUNTIME CLEANUP, POST-FIX VERIFICATION)
+**Checkpoint:** `docs/OPS-01-03-CHECKPOINT.md`
+
+**Objective:**
+Determine whether the remaining Docker session containers are only pre-fix leftovers or whether new sessions are still accumulating after the OPS-01-02 cleanup fix.
+
+**Scope:**
+- Inspect current `sandbox-session-*` containers
+- Compare creation/start timing where possible
+- Create one or more fresh sessions after the fix
+- Stop/terminate those fresh sessions through the normal app/API flow
+- Verify whether those new session containers are removed correctly
+- Identify whether remaining accumulation is historical residue or an ongoing bug
+- No fix in this task unless a trivially obvious diagnostic correction is absolutely required
+
+**Out of scope:**
+- No cleanup redesign
+- No broad ops redesign
+- No scope expansion
+- No unrelated feature work
+
+**Acceptance criteria:**
+- Clear distinction between old leftover containers and new post-fix behavior
+- Exact remaining issue, if any, identified clearly
+- Issue narrowed enough for one bounded follow-up fix task if needed
+
+**Dependencies:** OPS-01-02 (Complete and Locked)
 
 ---
 
@@ -7079,10 +7179,10 @@ Fix the normal stop/terminate flow so session containers are physically stopped 
 - Document exact cause and resolution
 
 **Out of scope:**
-- ❌ No runtime redesign
-- ❌ No broad cleanup redesign
-- ❌ No scope expansion
-- ❌ No unrelated feature work
+- ??No runtime redesign
+- ??No broad cleanup redesign
+- ??No scope expansion
+- ??No unrelated feature work
 
 **Acceptance criteria:**
 - Normal stop/terminate flow physically removes session containers
@@ -7112,11 +7212,11 @@ Determine why many session-related Docker containers are accumulating, and ident
 - Identify the exact failing or expected stage clearly
 
 **Out of scope:**
-- ❌ No cleanup redesign
-- ❌ No broad ops redesign
-- ❌ No scope expansion
-- ❌ No unrelated feature work
-- ❌ No fix in this task unless a trivially obvious diagnostic correction is absolutely required
+- ??No cleanup redesign
+- ??No broad ops redesign
+- ??No scope expansion
+- ??No unrelated feature work
+- ??No fix in this task unless a trivially obvious diagnostic correction is absolutely required
 
 **Acceptance criteria:**
 - Clear distinction between running vs exited accumulated session containers
@@ -7126,7 +7226,7 @@ Determine why many session-related Docker containers are accumulating, and ident
 
 ---
 
-## UX-02 — Account Entry
+## UX-02 ??Account Entry
 
 **Family status:** ACTIVE
 
@@ -7151,11 +7251,11 @@ Add a real user registration page and wire the login-page registration CTA to it
 - Preserve existing login flow
 
 **Out of scope:**
-- ❌ No auth-system redesign
-- ❌ No profile system
-- ❌ No onboarding redesign
-- ❌ No password-reset work
-- ❌ No scope expansion
+- ??No auth-system redesign
+- ??No profile system
+- ??No onboarding redesign
+- ??No password-reset work
+- ??No scope expansion
 
 **Acceptance criteria:**
 - User can reach registration from login page
@@ -7186,10 +7286,10 @@ Restructure the confusing project area so normal project creation/opening is cle
 - Verify the project workflow is clearer after the change
 
 **Out of scope:**
-- ❌ No project-system redesign
-- ❌ No public-sharing feature redesign
-- ❌ No backend behavior redesign unless a tiny UI-support change is strictly required
-- ❌ No scope expansion
+- ??No project-system redesign
+- ??No public-sharing feature redesign
+- ??No backend behavior redesign unless a tiny UI-support change is strictly required
+- ??No scope expansion
 
 **Acceptance criteria:**
 - Creating/opening a normal project is visually obvious
@@ -7202,13 +7302,13 @@ Restructure the confusing project area so normal project creation/opening is cle
 
 ---
 
-## UX-01 — Manual UX/UI Acceptance
+## UX-01 ??Manual UX/UI Acceptance
 
 **Family status:** COMPLETE and LOCKED
 
 **Current stage:** none active (UX-01 wave complete)
 
-**Completed tasks:** UX-01, UX-01-01, UX-01-02, UX-01-03, UX-01-04, UX-01-05, UX-01-06, UX-01-07, UX-01-08, UX-01-09, UX-01-10 — all COMPLETE and LOCKED.
+**Completed tasks:** UX-01, UX-01-01, UX-01-02, UX-01-03, UX-01-04, UX-01-05, UX-01-06, UX-01-07, UX-01-08, UX-01-09, UX-01-10 ??all COMPLETE and LOCKED.
 
 ---
 
@@ -7234,15 +7334,15 @@ Run a bounded manual UX/UI acceptance pass across the core product journeys so r
 - Obvious UI inconsistency on core surfaces
 
 **Out of scope:**
-- ❌ No implementation in this task
-- ❌ No feature redesign
-- ❌ No roadmap expansion
-- ❌ No broad refactor
-- ❌ No scope expansion
+- ??No implementation in this task
+- ??No feature redesign
+- ??No roadmap expansion
+- ??No broad refactor
+- ??No scope expansion
 
 **Dependencies:** REL-02 (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → UX-01 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??UX-01 for full details
 
 ---
 
@@ -7261,10 +7361,10 @@ Remove or appropriately gate the development-era test credentials block from the
 - Preserve the rest of the login flow and error handling
 
 **Out of scope:**
-- ❌ No broader login redesign
-- ❌ No registration/sign-up UX work
-- ❌ No auth flow redesign
-- ❌ No unrelated style cleanup
+- ??No broader login redesign
+- ??No registration/sign-up UX work
+- ??No auth flow redesign
+- ??No unrelated style cleanup
 
 **Acceptance criteria:**
 - Test credentials block is no longer visible to normal users
@@ -7291,10 +7391,10 @@ Remove internal build-phase/task/spec labels from the rendered workspace UI and 
 - Preserve layout, behavior, and feature scope
 
 **Out of scope:**
-- ❌ No broader information-architecture redesign
-- ❌ No new features
-- ❌ No visual redesign beyond label cleanup
-- ❌ No unrelated text/content rewrite
+- ??No broader information-architecture redesign
+- ??No new features
+- ??No visual redesign beyond label cleanup
+- ??No unrelated text/content rewrite
 
 **Acceptance criteria:**
 - Internal task/slice/spec labels no longer rendered to users
@@ -7321,10 +7421,10 @@ Replace the raw user UUID shown in the workspace header with a more human-readab
 - Preserve existing auth/session behavior
 
 **Out of scope:**
-- ❌ No user profile redesign
-- ❌ No account settings work
-- ❌ No auth flow redesign
-- ❌ No broader header redesign
+- ??No user profile redesign
+- ??No account settings work
+- ??No auth flow redesign
+- ??No broader header redesign
 
 **Acceptance criteria:**
 - Raw UUID no longer appears as the primary user label in the workspace header
@@ -7351,10 +7451,10 @@ Replace the raw quota reset ISO timestamp with a more human-readable date/time p
 - Keep the fix tightly scoped to display clarity only
 
 **Out of scope:**
-- ❌ No quota-system redesign
-- ❌ No dashboard redesign beyond this formatting improvement
-- ❌ No relative-time system unless trivially local
-- ❌ No scope expansion
+- ??No quota-system redesign
+- ??No dashboard redesign beyond this formatting improvement
+- ??No relative-time system unless trivially local
+- ??No scope expansion
 
 **Acceptance criteria:**
 - Raw ISO quota reset string no longer appears in the user-facing dashboard
@@ -7381,10 +7481,10 @@ Add a clear navigation link from the workspace shell to the API Keys page so use
 - Keep the fix tightly scoped to navigation discoverability only
 
 **Out of scope:**
-- ❌ No broader navigation redesign
-- ❌ No account/settings IA redesign
-- ❌ No API keys page redesign
-- ❌ No scope expansion
+- ??No broader navigation redesign
+- ??No account/settings IA redesign
+- ??No API keys page redesign
+- ??No scope expansion
 
 **Acceptance criteria:**
 - Workspace provides a visible path to the API Keys page
@@ -7411,10 +7511,10 @@ Replace jarring browser alert()/confirm() usage on the API Keys page with calmer
 - Keep the fix tightly scoped to this page only
 
 **Out of scope:**
-- ❌ No broader modal/toast framework
-- ❌ No API keys flow redesign
-- ❌ No unrelated page redesign
-- ❌ No scope expansion
+- ??No broader modal/toast framework
+- ??No API keys flow redesign
+- ??No unrelated page redesign
+- ??No scope expansion
 
 **Acceptance criteria:**
 - Copy/revoke feedback no longer depends on native alert()/confirm()
@@ -7441,10 +7541,10 @@ Add a confirmation step before stopping a session so users do not accidentally t
 - Keep the fix tightly scoped to this action only
 
 **Out of scope:**
-- ❌ No broader session-management redesign
-- ❌ No multi-step destructive-action framework
-- ❌ No unrelated sidebar redesign
-- ❌ No scope expansion
+- ??No broader session-management redesign
+- ??No multi-step destructive-action framework
+- ??No unrelated sidebar redesign
+- ??No scope expansion
 
 **Acceptance criteria:**
 - Stop-session action requires confirmation before executing
@@ -7471,10 +7571,10 @@ Add a clear registration link or call to action on the login page so users who n
 - Keep the fix tightly scoped to login-page navigation clarity only
 
 **Out of scope:**
-- ❌ No auth-system redesign
-- ❌ No broader onboarding redesign
-- ❌ No registration-flow redesign beyond linking/CTA clarity
-- ❌ No unrelated style cleanup
+- ??No auth-system redesign
+- ??No broader onboarding redesign
+- ??No registration-flow redesign beyond linking/CTA clarity
+- ??No unrelated style cleanup
 
 **Acceptance criteria:**
 - Login page includes a clear registration/sign-up path
@@ -7501,10 +7601,10 @@ Improve chat readability by rendering normal AI prose responses in a standard re
 - Keep the fix tightly scoped to chat rendering only
 
 **Out of scope:**
-- ❌ No markdown/rendering-system redesign
-- ❌ No syntax-highlighting redesign
-- ❌ No broader chat redesign
-- ❌ No scope expansion
+- ??No markdown/rendering-system redesign
+- ??No syntax-highlighting redesign
+- ??No broader chat redesign
+- ??No scope expansion
 
 **Acceptance criteria:**
 - Prose AI responses no longer render as monospaced code-style blocks by default
@@ -7531,10 +7631,10 @@ Remove or simplify the raw internal workspace state label shown in the footer so
 - Keep the change tightly scoped to footer clarity only
 
 **Out of scope:**
-- ❌ No broader footer redesign
-- ❌ No state-machine redesign
-- ❌ No status-system redesign
-- ❌ No unrelated copy cleanup
+- ??No broader footer redesign
+- ??No state-machine redesign
+- ??No status-system redesign
+- ??No unrelated copy cleanup
 
 **Acceptance criteria:**
 - Raw internal state label no longer appears in the workspace footer
@@ -7546,10 +7646,10 @@ Remove or simplify the raw internal workspace state label shown in the footer so
 ---
 
 **Completed deployment-readiness tasks:**
-- REL-02-01 (Deployment Rehearsal and Packaging) — COMPLETE and LOCKED
-- REL-02-02 (Runbook Reconciliation After Deployment Rehearsal) — COMPLETE and LOCKED
+- REL-02-01 (Deployment Rehearsal and Packaging) ??COMPLETE and LOCKED
+- REL-02-02 (Runbook Reconciliation After Deployment Rehearsal) ??COMPLETE and LOCKED
 
-**Final deployment smoke:** PASS — runbook now matches validated live-stack behavior.
+**Final deployment smoke:** PASS ??runbook now matches validated live-stack behavior.
 
 **Final checkpoint:** `docs/REL-02-FINAL-CHECKPOINT.md`
 
@@ -7573,16 +7673,16 @@ Run one bounded deployment rehearsal from the validated runbook so the stack can
 - Document exact rehearsal steps and outcome
 
 **Out of scope:**
-- ❌ No new feature work
-- ❌ No roadmap expansion
-- ❌ No broad infra redesign
-- ❌ No CI/CD platform work
-- ❌ No release automation platform
-- ❌ No scope expansion
+- ??No new feature work
+- ??No roadmap expansion
+- ??No broad infra redesign
+- ??No CI/CD platform work
+- ??No release automation platform
+- ??No scope expansion
 
 **Dependencies:** REL-01-05 (Complete and Locked), `docs/REL-01-05-CHECKPOINT.md` (operational runbook)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → REL-02-01 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??REL-02-01 for full details
 
 ---
 
@@ -7601,23 +7701,23 @@ Reconcile the operational runbook with the concrete mismatches discovered during
 - Documentation-only changes only
 
 **Out of scope:**
-- ❌ No product code changes
-- ❌ No feature work
-- ❌ No deployment redesign
-- ❌ No release automation
-- ❌ No scope expansion
+- ??No product code changes
+- ??No feature work
+- ??No deployment redesign
+- ??No release automation
+- ??No scope expansion
 
 **Dependencies:** REL-02-01 (Complete and Locked), `docs/REL-02-01-CHECKPOINT.md`
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → REL-02-02 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??REL-02-02 for full details
 
 ---
 
 **Completed validation/hardening tasks:**
-- REL-01-01 (Migration Validation) — COMPLETE and LOCKED
-- REL-01-02 (Integration Smoke Sweep) — COMPLETE and LOCKED
-- REL-01-03 (Environment and Config Audit) — COMPLETE and LOCKED
-- REL-01-05 (Operational Runbook Update) — COMPLETE and LOCKED
+- REL-01-01 (Migration Validation) ??COMPLETE and LOCKED
+- REL-01-02 (Integration Smoke Sweep) ??COMPLETE and LOCKED
+- REL-01-03 (Environment and Config Audit) ??COMPLETE and LOCKED
+- REL-01-05 (Operational Runbook Update) ??COMPLETE and LOCKED
 
 **Concrete blockers resolved:**
 - REL-01-01A/B (Docker recovery; plans migration defect)
@@ -7645,15 +7745,15 @@ Restore a usable Docker/PostgreSQL validation environment so REL-01-01 migration
 - Document exact blocker resolution steps and outcome
 
 **Out of scope:**
-- ❌ No migration validation itself yet
-- ❌ No feature work
-- ❌ No broad environment cleanup
-- ❌ No unrelated bug fixing
-- ❌ No scope expansion
+- ??No migration validation itself yet
+- ??No feature work
+- ??No broad environment cleanup
+- ??No unrelated bug fixing
+- ??No scope expansion
 
-**Dependencies:** REL-01-01 (BLOCKED — environment prerequisite unmet)
+**Dependencies:** REL-01-01 (BLOCKED ??environment prerequisite unmet)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → REL-01-01A for full details; `docs/REL-01-01-CHECKPOINT.md` for blocker context
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??REL-01-01A for full details; `docs/REL-01-01-CHECKPOINT.md` for blocker context
 
 ---
 
@@ -7674,15 +7774,15 @@ Fix the concrete migration defect found during REL-01-01 so the plans foundation
 - Document exact cause and resolution
 
 **Out of scope:**
-- ❌ No broader billing redesign
-- ❌ No unrelated schema cleanup
-- ❌ No feature work
-- ❌ No broad regression sweep
-- ❌ No scope expansion
+- ??No broader billing redesign
+- ??No unrelated schema cleanup
+- ??No feature work
+- ??No broad regression sweep
+- ??No scope expansion
 
-**Dependencies:** REL-01-01 (FAILED — migration defect; see `docs/REL-01-01-CHECKPOINT.md`)
+**Dependencies:** REL-01-01 (FAILED ??migration defect; see `docs/REL-01-01-CHECKPOINT.md`)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → REL-01-01B for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??REL-01-01B for full details
 
 ---
 
@@ -7708,16 +7808,16 @@ Validate the migrations introduced during the completed spec-execution wave agai
 - `services/api-gateway/src/migrations/1771592000000-AddProjectVisibility.ts`
 
 **Out of scope:**
-- ❌ No feature work
-- ❌ No broad regression sweep
-- ❌ No environment/doc cleanup beyond what is strictly needed
-- ❌ No bug-fix sweep unless migration validation finds a concrete issue
-- ❌ No release packaging
-- ❌ No scope expansion
+- ??No feature work
+- ??No broad regression sweep
+- ??No environment/doc cleanup beyond what is strictly needed
+- ??No bug-fix sweep unless migration validation finds a concrete issue
+- ??No release packaging
+- ??No scope expansion
 
 **Dependencies:** PROGRAM-SPEC-EXECUTION-FINAL-CHECKPOINT (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → REL-01-01 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??REL-01-01 for full details
 
 ---
 
@@ -7743,15 +7843,15 @@ Run a bounded end-to-end integration smoke sweep across the preserved regression
 - Route bootstrapping and workspace loading behavior
 
 **Out of scope:**
-- ❌ No new feature work
-- ❌ No bug-fix sweep unless this task finds a concrete defect
-- ❌ No environment/config audit yet
-- ❌ No release packaging
-- ❌ No scope expansion
+- ??No new feature work
+- ??No bug-fix sweep unless this task finds a concrete defect
+- ??No environment/config audit yet
+- ??No release packaging
+- ??No scope expansion
 
 **Dependencies:** REL-01-01 (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → REL-01-02 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??REL-01-02 for full details
 
 #### REL-01-02A: Fix Projects Migration Startup Defect
 
@@ -7768,11 +7868,11 @@ Fix the concrete migration defect blocking live-stack startup so api-gateway can
 - Rerun migration validation path to prove fix on clean database
 - Document cause and resolution
 
-**Out of scope:** ❌ No broader project redesign, unrelated schema cleanup, feature work, broad regression sweep, or scope expansion
+**Out of scope:** ??No broader project redesign, unrelated schema cleanup, feature work, broad regression sweep, or scope expansion
 
 **Dependencies:** REL-01-02 (BLOCKED)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → REL-01-02A for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??REL-01-02A for full details
 
 #### REL-01-02B: Fix Project Creation Slug Defect
 
@@ -7789,11 +7889,11 @@ Fix the concrete live-stack defect blocking REL-01-02 so authenticated project c
 - Rerun specific live-stack validation path to prove fix
 - Document cause and resolution
 
-**Out of scope:** ❌ No broader project redesign, public sharing redesign, unrelated schema cleanup, feature work, broad regression sweep, or scope expansion
+**Out of scope:** ??No broader project redesign, public sharing redesign, unrelated schema cleanup, feature work, broad regression sweep, or scope expansion
 
 **Dependencies:** REL-01-02 (BLOCKED)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → REL-01-02B for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??REL-01-02B for full details
 
 #### REL-01-02C: Fix Snapshot Path Validation After Checkpoint
 
@@ -7812,11 +7912,11 @@ Fix the concrete live-stack defect blocking REL-01-02 so snapshot creation still
 - Rerun specific live-stack validation path to prove fix
 - Document cause and resolution
 
-**Out of scope:** ❌ No broader snapshot redesign, checkpoint redesign, unrelated path/schema cleanup, feature work, broad regression sweep, or scope expansion
+**Out of scope:** ??No broader snapshot redesign, checkpoint redesign, unrelated path/schema cleanup, feature work, broad regression sweep, or scope expansion
 
 **Dependencies:** REL-01-02 (BLOCKED)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → REL-01-02C for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??REL-01-02C for full details
 
 #### REL-01-02D: Fix Public API Execution Status Lookup
 
@@ -7835,11 +7935,11 @@ Fix the concrete live-stack defect blocking REL-01-02 so public API execution st
 - Rerun specific live-stack validation path to prove fix
 - Document cause and resolution
 
-**Out of scope:** ❌ No broader public API redesign, internal route redesign, feature work, broad regression sweep, or scope expansion
+**Out of scope:** ??No broader public API redesign, internal route redesign, feature work, broad regression sweep, or scope expansion
 
 **Dependencies:** REL-01-02 (BLOCKED)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → REL-01-02D for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??REL-01-02D for full details
 
 ---
 
@@ -7859,11 +7959,11 @@ Validate and consolidate the environment/config assumptions required by the now-
 - Identify missing, stale, or inconsistent config entries directly relevant to current features
 - Document exact findings and required corrections
 
-**Out of scope:** ❌ No feature work, no broad deployment redesign, no bug-fix sweep beyond concrete config defects found during this audit, no release packaging, no scope expansion
+**Out of scope:** ??No feature work, no broad deployment redesign, no bug-fix sweep beyond concrete config defects found during this audit, no release packaging, no scope expansion
 
 **Dependencies:** REL-01-02 (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → REL-01-03 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??REL-01-03 for full details
 
 #### REL-01-03A: Fix Environment Template Defects
 
@@ -7882,11 +7982,11 @@ Fix the concrete environment-template defects blocking REL-01-03 so release-read
 - Rerun targeted config-audit checks to prove templates are now coherent
 - Document exact cause and resolution
 
-**Out of scope:** ❌ No feature work, no runtime code changes, no broad config redesign, no unrelated env cleanup, no scope expansion
+**Out of scope:** ??No feature work, no runtime code changes, no broad config redesign, no unrelated env cleanup, no scope expansion
 
 **Dependencies:** REL-01-03 (BLOCKED)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → REL-01-03A for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??REL-01-03A for full details
 
 #### REL-01-03B: Fix Production Provider Template Key Defect
 
@@ -7903,11 +8003,11 @@ Fix the concrete production env-template defect blocking REL-01-03 so the produc
 - Rerun only targeted config-audit checks for this defect
 - Document exact cause and resolution
 
-**Out of scope:** ❌ No feature work, no runtime code changes, no broad config redesign, no unrelated env cleanup, no scope expansion
+**Out of scope:** ??No feature work, no runtime code changes, no broad config redesign, no unrelated env cleanup, no scope expansion
 
 **Dependencies:** REL-01-03 (BLOCKED)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → REL-01-03B for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??REL-01-03B for full details
 
 #### REL-01-05: Operational Runbook Update
 
@@ -7925,10 +8025,11 @@ Create/update a minimal operational runbook so the now-validated stack can be st
 - Document core recovery steps for the blockers already encountered
 - Document required env/config assumptions at a concise operational level
 
-**Out of scope:** ❌ No feature work, no deployment redesign, no packaging/release automation, no broad ops platform work, no scope expansion
+**Out of scope:** ??No feature work, no deployment redesign, no packaging/release automation, no broad ops platform work, no scope expansion
 
 **Dependencies:** REL-01-01 (Complete and Locked), REL-01-02 (Complete and Locked), REL-01-03 (Complete and Locked)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` → REL-01-05 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` ??REL-01-05 for full details
 
 ---
+

@@ -83,6 +83,40 @@ describe('WorkspaceArchiveService (PR-02-01)', () => {
     expect(archive.byteLength).toBeGreaterThan(0);
   });
 
+  it('exports nested directories using workspace-relative recursion paths', async () => {
+    containerManagerHttpClient.listSessionDirectory
+      .mockResolvedValueOnce({
+        path: '/',
+        entries: [{ name: 'src', type: 'dir', size: 0, modifiedAt: 'x' }],
+      })
+      .mockResolvedValueOnce({
+        path: 'src',
+        entries: [{ name: 'app.ts', type: 'file', size: 14, modifiedAt: 'x' }],
+      });
+    containerManagerHttpClient.readSessionFile.mockResolvedValue({
+      path: 'src/app.ts',
+      content: 'console.log(1)',
+    });
+
+    const archive = await service.exportWorkspaceArchive('session-1');
+
+    expect(Buffer.isBuffer(archive)).toBe(true);
+    expect(containerManagerHttpClient.listSessionDirectory).toHaveBeenNthCalledWith(
+      1,
+      'session-1',
+      '/',
+    );
+    expect(containerManagerHttpClient.listSessionDirectory).toHaveBeenNthCalledWith(
+      2,
+      'session-1',
+      'src',
+    );
+    expect(containerManagerHttpClient.readSessionFile).toHaveBeenCalledWith(
+      'session-1',
+      'src/app.ts',
+    );
+  });
+
   it('imports a valid zip archive into workspace', async () => {
     const archive = buildZipWithSingleFile('src/app.ts', 'console.log("ok");');
 
