@@ -87,6 +87,7 @@ services:
       DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
     volumes:
       - api_gateway_data:/database
+      - api_gateway_snapshot_store_data:/snapshot-store
     healthcheck:
       test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:4000/api/health',r=>{r.resume();process.exit(r.statusCode===200?0:1);}).on('error',()=>process.exit(1));\""]
       interval: 15s
@@ -260,6 +261,7 @@ volumes:
   redis_data:
     driver: local
   api_gateway_data:
+  api_gateway_snapshot_store_data:
   ai_service_data:
   container_manager_data:
 

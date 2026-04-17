@@ -364,6 +364,7 @@ export default function AppPage() {
   const pendingAssistantMessageIdRef = useRef<string | null>(null);
   const selectedSessionIdRef = useRef<string | null>(null);
   const skipNextSessionEffectFileReloadRef = useRef(false);
+  const projectOpenInProgressRef = useRef(false);
   const sessionsRef = useRef<WorkspaceShellSession[]>([]);
   const executionSessionIdByExecutionIdRef = useRef<Record<string, string>>({});
   const executionAssistantMessageIdByExecutionIdRef = useRef<Record<string, string>>({});
@@ -460,6 +461,9 @@ export default function AppPage() {
   }, [sessions]);
 
   useEffect(() => {
+    if (projectOpenInProgressRef.current) {
+      return;
+    }
     const token = localStorage.getItem('access_token');
     if (!token) {
       return;
@@ -1061,13 +1065,15 @@ export default function AppPage() {
     setProjectActionState('opening');
     setProjectActionMessage(null);
     setProjectActionError(null);
+    projectOpenInProgressRef.current = true;
     try {
-      const fallbackProjectSnapshotId = resolveProjectScopedLatestSnapshotId({
-        snapshots: workspaceSnapshots,
-        projectId: selectedProjectId,
-      });
-      const snapshotIdToOpen =
-        selectedSnapshotId?.trim() ? selectedSnapshotId.trim() : fallbackProjectSnapshotId ?? undefined;
+      let snapshotIdToOpen: string | undefined = selectedSnapshotId?.trim() || undefined;
+      if (!snapshotIdToOpen) {
+        const freshSnapshots = await loadWorkspaceSnapshots({ token });
+        setWorkspaceSnapshots(freshSnapshots);
+        snapshotIdToOpen =
+          resolveProjectScopedLatestSnapshotId({ snapshots: freshSnapshots, projectId: selectedProjectId }) ?? undefined;
+      }
       let openResult: { projectId: string; sessionId: string; restoredSnapshotId: string | null };
       if (snapshotIdToOpen) {
         openResult = await openWorkspaceProject({
@@ -1110,10 +1116,16 @@ export default function AppPage() {
       await loadCheckpoints(token, openSessionId);
       await loadSessions(token);
       setSelectedSessionId((current) => current ?? openSessionId);
+      projectOpenInProgressRef.current = false;
       setProjectActionState('success');
       setProjectActionMessage('Project opened in selected session.');
       setProjectActionError(null);
+      void loadWorkspaceSnapshotsForUser(token);
+      void loadWorkspaceProjectsForUser(token);
+      void loadPublicWorkspaceProjectsList();
+      void loadDashboardSlice(token);
     } catch (error) {
+      projectOpenInProgressRef.current = false;
       skipNextSessionEffectFileReloadRef.current = false;
       setProjectActionState('error');
       setProjectActionMessage(null);
@@ -3200,6 +3212,9 @@ export default function AppPage() {
   }
 
   useEffect(() => {
+    if (projectOpenInProgressRef.current) {
+      return;
+    }
     const executionIds = Object.keys(chatExecutionFileActionStates);
     if (executionIds.length === 0) {
       return;

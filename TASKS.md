@@ -1,4 +1,4 @@
-﻿## Authority & Scope
+## Authority & Scope
 
 This file lists currently ACTIVE and SELECTED tasks.
 
@@ -6145,11 +6145,57 @@ Add a user-visible preview start action in the workspace UI so users can actuall
 
 ---
 
+## PREV-02 ??Preview Post-Persistence Regression
+
+**Family status:** ACTIVE
+
+**Current stage:** PREV-02-02 (COMPLETE and LOCKED)
+
+---
+
+#### PREV-02-01: Diagnose Preview 500 After Snapshot Persistence Fix
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG INVESTIGATION (PREVIEW PATH, POST-PERSISTENCE REGRESSION)
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PREV-02-01-CHECKPOINT.md`
+
+**Objective:**
+Determine why preview now returns {"statusCode":500,"message":"Internal server error"} after project persistence has been fixed.
+
+**Acceptance criteria:**
+- Exact preview 500 failing stage is identified clearly
+- Logs/evidence identify the real error, not just generic 500
+- Issue is narrowed enough for one bounded fix task
+- No unrelated work is mixed in
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PREV-02-01 for full details
+
+---
+
+#### PREV-02-02: Fix Static HTML Preview Entry File Selection
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (PREVIEW PATH, STATIC HTML ENTRYPOINT)
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PREV-02-02-CHECKPOINT.md`
+
+**Objective:**
+Fix static HTML preview so sessions with an HTML file other than index.html do not start preview successfully and then fail with 500 when proxy tries to serve missing index.html.
+
+**Acceptance criteria:**
+- index.html preview still works
+- hello.html-only workspace no longer produces proxy 500 after successful start
+- behavior is clear and consistent
+- fix is documented clearly
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PREV-02-02 for full details
+
+---
+
 ## PROJ-01 ??Project/Public Flow Diagnostics
 
 **Family status:** ACTIVE
 
-**Current stage:** PROJ-01-15 (COMPLETE and LOCKED)
+**Current stage:** PROJ-01-23 (COMPLETE and LOCKED)
 
 ---
 
@@ -6635,6 +6681,159 @@ Fix project export so nested directories are traversed using valid workspace-rel
 - Fix is documented clearly
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-01-15 for full details
+
+---
+
+#### PROJ-01-16: Diagnose Project Open Files Still Not Reloading Automatically
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG INVESTIGATION (PROJECT OPEN FLOW, REAL UI REGRESSION)
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-01-16-CHECKPOINT.md`
+
+**Objective:**
+Determine why project-open still does not automatically reload files into the workspace in real UI usage, despite the earlier project-open refresh and race-condition fixes.
+
+**Acceptance criteria:**
+- Exact remaining failure is identified clearly
+- Issue is narrowed enough for one bounded follow-up fix task
+- No unrelated work is mixed into this task
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-01-16 for full details
+
+---
+
+#### PROJ-01-17: Load Project Snapshot At Open Time To Avoid Snapshot Race
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (PROJECT OPEN FLOW, SNAPSHOT RACE)
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-01-17-CHECKPOINT.md`
+
+**Objective:**
+Fix project open so it does not depend on stale or temporarily empty React snapshot state when deciding whether to restore a project snapshot.
+
+**Acceptance criteria:**
+- Open Project no longer depends on temporarily empty workspaceSnapshots state
+- Opening a saved project restores content immediately after session switch
+- Projects with no snapshots still fall back safely
+- Fix is documented clearly
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-01-17 for full details
+
+---
+
+#### PROJ-01-18: Diagnose Editor Panel Not Updating After Project Open
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG INVESTIGATION (PROJECT OPEN FLOW, EDITOR STATE)
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-01-18-CHECKPOINT.md`
+
+**Objective:**
+Determine why the editor panel does not update automatically after opening a project, even after project snapshot restore and file reload fixes.
+
+**Acceptance criteria:**
+- Exact editor-panel failing stage is identified clearly
+- Clear distinction is made between file tree refresh, selected file state, and editor content state
+- Issue is narrowed enough for one bounded follow-up fix task
+- No unrelated work is mixed into this task
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-01-18 for full details
+
+---
+
+#### PROJ-01-19: Prevent AI File Action Coherence From Invalidating Project Open Editor Load
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (PROJECT OPEN FLOW, EDITOR STATE RACE)
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-01-19-CHECKPOINT.md`
+
+**Objective:**
+Fix the project-open editor load race where AI file-action coherence invalidates the in-flight editor content request after project open.
+
+**Acceptance criteria:**
+- Project open loads file tree and editor content without browser reload
+- Stale AI file-action coherence does not invalidate project-open editor content load
+- Normal AI file-action coherence still works
+- Fix is documented clearly
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-01-19 for full details
+
+---
+
+#### PROJ-01-20: Diagnose Project Snapshot Persistence Loss Across Server Restart
+
+**Status:** COMPLETE and LOCKED
+**Nature:** CRITICAL BUG INVESTIGATION (PROJECT PERSISTENCE, RESTART RESTORE)
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-01-20-CHECKPOINT.md`
+
+**Objective:**
+Determine why a saved project can be opened into a new session before server restart, but opens empty after all servers are restarted.
+
+**Acceptance criteria:**
+- Clearly state whether project metadata survives restart
+- Clearly state whether project-scoped snapshot metadata survives restart
+- Clearly state whether snapshot/archive file content survives restart
+- Clearly state why restore works before restart but not after restart
+- Issue is narrowed enough for one bounded fix task
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-01-20 for full details
+
+---
+
+#### PROJ-01-21: Persist Snapshot Store Across Docker Restarts
+
+**Status:** COMPLETE and LOCKED
+**Nature:** CRITICAL BUG FIX (PROJECT PERSISTENCE, SNAPSHOT STORAGE)
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-01-21-CHECKPOINT.md`
+
+**Objective:**
+Make project snapshot storage persistent across Docker container restarts so saved projects remain restorable after `docker compose down` and restart.
+
+**Acceptance criteria:**
+- `/snapshot-store/` persists across api-gateway container recreation
+- Saved project snapshot files survive `docker compose down` without `-v`
+- Saved project opens correctly after stack restart
+- Existing immediate project open behavior remains intact
+- Fix is documented clearly
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-01-21 for full details
+
+---
+
+#### PROJ-01-22: Diagnose Files Not Loading Automatically After Project Open
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG INVESTIGATION (PROJECT OPEN FLOW, FILE TREE EDITOR STATE)
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-01-22-CHECKPOINT.md`
+
+**Objective:**
+Determine why files still do not load automatically after opening a project, despite project persistence, snapshot restore, and previous frontend state-race fixes.
+
+**Acceptance criteria:**
+- Exact remaining file-loading failure is identified clearly
+- Clear distinction between backend restore, file-tree reload, selected-file state, editor-content state, and rendered UI
+- Issue is narrowed enough for one bounded follow-up fix task
+- No unrelated work is mixed in
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-01-22 for full details
+
+---
+
+#### PROJ-01-23: Suppress Project State Reset During Project Open Session Transition
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (PROJECT OPEN FLOW, SESSION EFFECT RACE)
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-01-23-CHECKPOINT.md`
+
+**Objective:**
+Prevent the selected-session change effect from clearing project/open UI state while Open Project is still executing across a session transition.
+
+**Acceptance criteria:**
+- Open Project no longer gets disrupted by the session-change reset effect
+- Files/editor load automatically after project open
+- Normal manual session switching still resets/reloads correctly
+- Fix is documented clearly
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-01-23 for full details
 
 ---
 
@@ -7125,7 +7324,24 @@ The core workspace, persistence, commercial foundation, advanced AI features, an
 
 **Family status:** ACTIVE
 
-**Current stage:** OPS-01-03 (COMPLETE and LOCKED)
+**Current stage:** OPS-01-04 (COMPLETE and LOCKED)
+
+---
+
+#### OPS-01-04: Fix Stop Session Returning 500 After Successful Cleanup
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (RUNTIME CLEANUP, API RESPONSE)
+**Checkpoint:** `docs/OPS-01-04-CHECKPOINT.md`
+
+**Objective:**
+Fix `POST /api/sessions/:id/stop` so it returns a successful response when cleanup succeeds, instead of returning 500 after the container is already removed and DB state is stopped.
+
+**Acceptance criteria:**
+- Stop session removes the container
+- DB/session state remains stopped
+- API returns success, not 500
+- Terminate path remains intact
 
 ---
 

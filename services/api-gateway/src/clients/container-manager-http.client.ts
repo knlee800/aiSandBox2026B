@@ -112,6 +112,9 @@ export class ContainerManagerHttpClient implements OnModuleInit {
         `/api/sessions/${sessionId}/stop`,
         {}, // No request body required
         {
+          // Session stop can include Docker stop/remove and may exceed default timeout on Windows.
+          // Align with deleteSession timeout behavior to avoid false 500s after successful cleanup.
+          timeout: 30000,
           headers: {
             'X-Internal-Service-Key': this.internalServiceKey,
           },

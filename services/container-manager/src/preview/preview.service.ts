@@ -49,6 +49,11 @@ export class PreviewService {
     const { detectedCommand, framework } = await this.detectFramework(sessionId, command);
 
     if (!detectedCommand) {
+      if (framework === 'Static HTML (missing-index)') {
+        throw new BadRequestException(
+          'Static HTML preview requires /workspace/index.html at the workspace root.',
+        );
+      }
       throw new BadRequestException('No package.json or start command found. Cannot start preview.');
     }
 
@@ -269,11 +274,19 @@ export class PreviewService {
       return { detectedCommand: command, framework };
     }
 
-    const hasHtml = await this.hasAnyHtmlInSessionWorkspace(sessionId);
-    if (hasHtml) {
+    const hasIndexHtml = await this.hasIndexHtmlInSessionWorkspace(sessionId);
+    if (hasIndexHtml) {
       return {
         detectedCommand: 'npx serve -s . -l tcp://0.0.0.0:$PORT',
         framework: 'Static HTML',
+      };
+    }
+
+    const hasAnyHtml = await this.hasAnyHtmlInSessionWorkspace(sessionId);
+    if (hasAnyHtml) {
+      return {
+        detectedCommand: null,
+        framework: 'Static HTML (missing-index)',
       };
     }
 
@@ -365,6 +378,16 @@ export class PreviewService {
     } catch {
       return null;
     }
+  }
+
+  private async hasIndexHtmlInSessionWorkspace(sessionId: string): Promise<boolean> {
+    const indexResult = await this.runShellInSession(
+      sessionId,
+      '[ -f /workspace/index.html ]',
+      undefined,
+      10000,
+    );
+    return indexResult.exitCode === 0;
   }
 
   private async hasAnyHtmlInSessionWorkspace(sessionId: string): Promise<boolean> {
