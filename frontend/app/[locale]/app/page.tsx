@@ -682,6 +682,10 @@ export default function AppPage() {
       return;
     }
 
+    if (projectOpenInProgressRef.current) {
+      return;
+    }
+
     if (skipNextSessionEffectFileReloadRef.current) {
       skipNextSessionEffectFileReloadRef.current = false;
       return;
@@ -1049,6 +1053,26 @@ export default function AppPage() {
     }
   }
 
+  async function hydrateWorkspaceForProjectOpen(
+    token: string,
+    openSessionId: string,
+    expectFiles: boolean,
+  ): Promise<boolean> {
+    let loaded = await loadWorkspaceFilesForSession(token, openSessionId);
+    if (!loaded && expectFiles) {
+      for (let attempt = 0; attempt < PROJECT_OPEN_FILE_REFRESH_MAX_ATTEMPTS; attempt += 1) {
+        await new Promise<void>((resolve) => {
+          window.setTimeout(() => resolve(), PROJECT_OPEN_FILE_REFRESH_RETRY_DELAY_MS);
+        });
+        loaded = await loadWorkspaceFilesForSession(token, openSessionId);
+        if (loaded) {
+          break;
+        }
+      }
+    }
+    return loaded;
+  }
+
   async function handleOpenWorkspaceProject(): Promise<void> {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -1074,6 +1098,7 @@ export default function AppPage() {
         snapshotIdToOpen =
           resolveProjectScopedLatestSnapshotId({ snapshots: freshSnapshots, projectId: selectedProjectId }) ?? undefined;
       }
+
       let openResult: { projectId: string; sessionId: string; restoredSnapshotId: string | null };
       if (snapshotIdToOpen) {
         openResult = await openWorkspaceProject({
@@ -1094,39 +1119,30 @@ export default function AppPage() {
           restoredSnapshotId: null,
         };
       }
+
       const openSessionId = openResult.sessionId;
+      const expectsRestoredFiles = Boolean(openResult.restoredSnapshotId);
+
       skipNextSessionEffectFileReloadRef.current =
         openSessionId !== selectedSessionIdRef.current;
       setSelectedSessionId(openSessionId);
 
-      let loadedFileContent = await loadWorkspaceFilesForSession(token, openSessionId);
-      if (!loadedFileContent && openResult.restoredSnapshotId) {
-        for (let attempt = 0; attempt < PROJECT_OPEN_FILE_REFRESH_MAX_ATTEMPTS; attempt += 1) {
-          await new Promise<void>((resolve) => {
-            window.setTimeout(() => resolve(), PROJECT_OPEN_FILE_REFRESH_RETRY_DELAY_MS);
-          });
-          loadedFileContent = await loadWorkspaceFilesForSession(token, openSessionId);
-          if (loadedFileContent) {
-            break;
-          }
-        }
-      }
+      await hydrateWorkspaceForProjectOpen(token, openSessionId, expectsRestoredFiles);
 
       await refreshPreviewForSession(token, openSessionId);
       await loadCheckpoints(token, openSessionId);
       await loadSessions(token);
       setSelectedSessionId((current) => current ?? openSessionId);
-      projectOpenInProgressRef.current = false;
+
+      await loadWorkspaceSnapshotsForUser(token);
+      await loadWorkspaceProjectsForUser(token);
+      await loadPublicWorkspaceProjectsList();
+      await loadDashboardSlice(token);
+
       setProjectActionState('success');
       setProjectActionMessage('Project opened in selected session.');
       setProjectActionError(null);
-      void loadWorkspaceSnapshotsForUser(token);
-      void loadWorkspaceProjectsForUser(token);
-      void loadPublicWorkspaceProjectsList();
-      void loadDashboardSlice(token);
     } catch (error) {
-      projectOpenInProgressRef.current = false;
-      skipNextSessionEffectFileReloadRef.current = false;
       setProjectActionState('error');
       setProjectActionMessage(null);
       setProjectActionError(
@@ -1134,6 +1150,9 @@ export default function AppPage() {
           ? error.message
           : 'Failed to open project.',
       );
+    } finally {
+      projectOpenInProgressRef.current = false;
+      skipNextSessionEffectFileReloadRef.current = false;
     }
   }
 

@@ -15537,6 +15537,54 @@ PROJ-01-22 isolated the remaining failure:
 
 ---
 
+### PROJ-02-01: Refactor Project Open Into Deterministic Workspace Hydration Flow
+
+**Task ID:** PROJ-02-01
+**Family:** PROJ-02 (Project Open Hydration Cleanup)
+**Status:** COMPLETE and LOCKED
+**Nature:** FRONTEND ARCHITECTURE FIX / STATE FLOW CLEANUP
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-02-01-CHECKPOINT.md`
+
+**Objective:**
+Replace the fragile project-open UI state/race chain with one deterministic workspace hydration flow so opening a project reliably loads restored files and editor content without browser refresh.
+
+**Why this exists:**
+PROJ-01 fixed many backend/persistence/runtime issues, but real usage still shows that after Open Project, files/editor do not reliably appear until browser refresh. Prior micro-fixes found several competing frontend effects and async state races. This should now be handled as a deliberate state-flow cleanup, not another small patch.
+
+**Bounded scope only:**
+- inspect current Open Project frontend flow
+- design one deterministic hydration sequence for project open
+- backend open/restore completes first
+- then one controlled hydrate step runs:
+  - preserve/select target session
+  - reload sessions/projects/snapshots only if needed
+  - reload file tree
+  - select first restored file if appropriate
+  - load editor content
+  - set final ready state
+- prevent unrelated effects from clearing/overwriting project-open hydration result
+- preserve normal manual session switching behavior
+- preserve existing backend project/snapshot behavior
+- verify project open loads files/editor without browser refresh
+
+**Explicitly out of scope:**
+- no backend project-system redesign
+- no snapshot-system redesign
+- no persistence redesign
+- no preview redesign
+- no broad workspace redesign beyond project-open hydration
+- no scope expansion
+
+**Acceptance criteria:**
+- Open Project loads restored file tree automatically
+- Open Project loads editor content automatically
+- no browser refresh is required
+- normal manual session switching still works
+- existing project persistence behavior remains intact
+- fix is documented clearly
+
+---
+
 ### AI-04-01: Backend Chat Persistence Wiring
 
 **Task ID:** AI-04-01

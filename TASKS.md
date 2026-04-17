@@ -6838,6 +6838,36 @@ Prevent the selected-session change effect from clearing project/open UI state w
 ---
 
 
+## PROJ-02 — Project Open Hydration Cleanup
+
+**Family status:** ACTIVE
+
+**Current stage:** PROJ-02-01 (COMPLETE and LOCKED)
+
+---
+
+#### PROJ-02-01: Refactor Project Open Into Deterministic Workspace Hydration Flow
+
+**Status:** COMPLETE and LOCKED
+**Nature:** FRONTEND ARCHITECTURE FIX / STATE FLOW CLEANUP
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-02-01-CHECKPOINT.md`
+
+**Objective:**
+Replace the fragile project-open UI state/race chain with one deterministic workspace hydration flow so opening a project reliably loads restored files and editor content without browser refresh.
+
+**Acceptance criteria:**
+- Open Project loads restored file tree automatically
+- Open Project loads editor content automatically
+- No browser refresh is required
+- Normal manual session switching still works
+- Existing project persistence behavior remains intact
+- Fix is documented clearly
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-02-01 for full details
+
+---
+
+
 ## AI-04 ??Chat Persistence (Core Product Loop)
 
 **Current stage:** AI-04-01 (COMPLETE and LOCKED)
