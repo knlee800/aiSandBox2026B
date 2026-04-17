@@ -6842,7 +6842,7 @@ Prevent the selected-session change effect from clearing project/open UI state w
 
 **Family status:** ACTIVE
 
-**Current stage:** PROJ-02-01 (COMPLETE and LOCKED)
+**Current stage:** PROJ-02-02 (COMPLETE and LOCKED)
 
 ---
 
@@ -6864,6 +6864,25 @@ Replace the fragile project-open UI state/race chain with one deterministic work
 - Fix is documented clearly
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-02-01 for full details
+
+---
+
+#### PROJ-02-02: Validate Real UI Project Open Hydration Failure With Docker Running
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG INVESTIGATION (PROJECT OPEN HYDRATION, REAL UI VALIDATION)
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-02-02-CHECKPOINT.md`
+
+**Objective:**
+Reproduce and diagnose why the real UI still fails to load files automatically after project open, despite PROJ-02-01's deterministic hydration refactor passing static/unit validation.
+
+**Acceptance criteria:**
+- Exact "fail to load files" stage is identified clearly
+- Evidence includes live-stack/API results, not only source inspection
+- Issue is narrowed enough for one bounded follow-up fix task
+- No unrelated work is mixed in
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-02-02 for full details
 
 ---
 

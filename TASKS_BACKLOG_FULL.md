@@ -15585,6 +15585,45 @@ PROJ-01 fixed many backend/persistence/runtime issues, but real usage still show
 
 ---
 
+### PROJ-02-02: Validate Real UI Project Open Hydration Failure With Docker Running
+
+**Task ID:** PROJ-02-02
+**Family:** PROJ-02 (Project Open Hydration Cleanup)
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG INVESTIGATION (PROJECT OPEN HYDRATION, REAL UI VALIDATION)
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-02-02-CHECKPOINT.md`
+
+**Objective:**
+Reproduce and diagnose why the real UI still fails to load files automatically after project open, despite PROJ-02-01's deterministic hydration refactor passing static/unit validation.
+
+**Why this exists:**
+PROJ-02-01 was marked complete without live Docker/UI validation because Docker Desktop was not running. Real usage still shows "fail to load files," so static/unit validation is insufficient for this state-flow issue.
+
+**Bounded scope only:**
+- run with Docker stack actually running
+- reproduce the real UI/API project-open flow
+- capture frontend/browser-visible behavior and backend/API state
+- inspect whether backend restore succeeds
+- inspect whether frontend hydration request sequence runs
+- inspect exact response/error behind "fail to load files"
+- identify the exact failing stage clearly
+- no fix in this task unless a trivially obvious diagnostic correction is absolutely required, which normally should not be done
+
+**Explicitly out of scope:**
+- no project-system redesign
+- no snapshot redesign
+- no workspace redesign
+- no broad state rewrite
+- no scope expansion
+
+**Acceptance criteria:**
+- exact "fail to load files" stage is identified clearly
+- evidence includes live-stack/API results, not only source inspection
+- issue is narrowed enough for one bounded follow-up fix task
+- no unrelated work is mixed in
+
+---
+
 ### AI-04-01: Backend Chat Persistence Wiring
 
 **Task ID:** AI-04-01
