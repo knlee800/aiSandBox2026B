@@ -128,9 +128,9 @@ const workspaceFileTree: WorkspaceFileNode[] = [
   },
 ];
 
-function renderWorkspaceShell(
+function buildWorkspaceShellProps(
   overrides: Partial<React.ComponentProps<typeof WorkspaceShell>> = {},
-): string {
+): React.ComponentProps<typeof WorkspaceShell> {
   const defaultProps: React.ComponentProps<typeof WorkspaceShell> = {
     locale: 'en',
     projectFirstUxEnabled: false,
@@ -237,7 +237,93 @@ function renderWorkspaceShell(
     onSaveWorkspaceFile: async () => {},
   };
 
-  return renderToStaticMarkup(<WorkspaceShell {...defaultProps} {...overrides} />);
+  return { ...defaultProps, ...overrides };
+}
+
+function renderWorkspaceShell(
+  overrides: Partial<React.ComponentProps<typeof WorkspaceShell>> = {},
+): string {
+  return renderToStaticMarkup(<WorkspaceShell {...buildWorkspaceShellProps(overrides)} />);
+}
+
+type TestableElementProps = {
+  children?: React.ReactNode;
+  onClick?: () => void;
+  'data-testid'?: string;
+} & Record<string, unknown>;
+
+function withPatchedReactHooks<T>(run: () => T): T {
+  const originalUseState = React.useState;
+  const originalUseMemo = React.useMemo;
+  const originalUseEffect = React.useEffect;
+  const originalUseCallback = React.useCallback;
+
+  (React as typeof React & {
+    useState: typeof React.useState;
+    useMemo: typeof React.useMemo;
+    useEffect: typeof React.useEffect;
+    useCallback: typeof React.useCallback;
+  }).useState = ((initialState: unknown) => {
+    const value = typeof initialState === 'function' ? (initialState as () => unknown)() : initialState;
+    return [value, () => {}];
+  }) as unknown as typeof React.useState;
+  (React as typeof React & { useMemo: typeof React.useMemo }).useMemo = ((factory: () => unknown) =>
+    factory()) as unknown as typeof React.useMemo;
+  (React as typeof React & { useEffect: typeof React.useEffect }).useEffect = (() =>
+    undefined) as unknown as typeof React.useEffect;
+  (React as typeof React & { useCallback: typeof React.useCallback }).useCallback = (<TCallback extends Function>(
+    callback: TCallback,
+  ) => callback) as unknown as typeof React.useCallback;
+
+  try {
+    return run();
+  } finally {
+    (React as typeof React & { useState: typeof React.useState }).useState = originalUseState;
+    (React as typeof React & { useMemo: typeof React.useMemo }).useMemo = originalUseMemo;
+    (React as typeof React & { useEffect: typeof React.useEffect }).useEffect = originalUseEffect;
+    (React as typeof React & { useCallback: typeof React.useCallback }).useCallback = originalUseCallback;
+  }
+}
+
+function findElementByTestId(
+  node: React.ReactNode,
+  testId: string,
+): React.ReactElement<TestableElementProps> | null {
+  if (Array.isArray(node)) {
+    for (const child of node) {
+      const match = findElementByTestId(child, testId);
+      if (match) {
+        return match;
+      }
+    }
+    return null;
+  }
+
+  if (!React.isValidElement(node)) {
+    return null;
+  }
+
+  const element = node as React.ReactElement<TestableElementProps, string | React.JSXElementConstructor<any>>;
+  const props = element.props;
+
+  if (typeof element.type === 'function') {
+    return findElementByTestId((element.type as (props: TestableElementProps) => React.ReactNode)(props), testId);
+  }
+
+  if (props['data-testid'] === testId) {
+    return element;
+  }
+
+  return findElementByTestId(props.children, testId);
+}
+
+function renderWorkspaceShellElementByTestId(
+  testId: string,
+  overrides: Partial<React.ComponentProps<typeof WorkspaceShell>> = {},
+): React.ReactElement<TestableElementProps> | null {
+  return withPatchedReactHooks(() =>
+    findElementByTestId(WorkspaceShell(buildWorkspaceShellProps(overrides)), testId),
+  );
 }
 
 describe('workspace shell component', () => {
@@ -435,6 +521,138 @@ describe('workspace shell component', () => {
     assert.match(html, />Reopen project</);
     assert.doesNotMatch(html, /Session terminated \(410\)/);
     assert.doesNotMatch(html, /This session is terminated and cannot execute commands\./);
+  });
+
+  test('renders and wires reopen project action for exec 404 with null selectedSessionId behind feature flag', () => {
+    let openCalls = 0;
+    const onOpenWorkspaceProject = async () => {
+      openCalls += 1;
+    };
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      selectedProjectId: 'project-1',
+      selectedSessionId: null,
+      onOpenWorkspaceProject,
+      execState: {
+        status: 'http-404',
+        result: null,
+      },
+    });
+    const button = renderWorkspaceShellElementByTestId('workspace-exec-reopen-project', {
+      projectFirstUxEnabled: true,
+      selectedProjectId: 'project-1',
+      selectedSessionId: null,
+      onOpenWorkspaceProject,
+      execState: {
+        status: 'http-404',
+        result: null,
+      },
+    });
+
+    assert.match(html, /workspace-exec-reopen-project/);
+    assert.match(html, />Reopen project</);
+    assert.ok(button);
+    const exec404OnClick = button.props.onClick;
+    assert.equal(typeof exec404OnClick, 'function');
+    if (!exec404OnClick) {
+      throw new Error('Expected exec 404 reopen button to expose onClick.');
+    }
+    exec404OnClick();
+    assert.equal(openCalls, 1);
+  });
+
+  test('renders and wires reopen project action for exec 410 with null selectedSessionId behind feature flag', () => {
+    let openCalls = 0;
+    const onOpenWorkspaceProject = async () => {
+      openCalls += 1;
+    };
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      selectedProjectId: 'project-1',
+      selectedSessionId: null,
+      onOpenWorkspaceProject,
+      execState: {
+        status: 'http-410',
+        result: null,
+      },
+    });
+    const button = renderWorkspaceShellElementByTestId('workspace-exec-reopen-project', {
+      projectFirstUxEnabled: true,
+      selectedProjectId: 'project-1',
+      selectedSessionId: null,
+      onOpenWorkspaceProject,
+      execState: {
+        status: 'http-410',
+        result: null,
+      },
+    });
+
+    assert.match(html, /workspace-exec-reopen-project/);
+    assert.match(html, />Reopen project</);
+    assert.ok(button);
+    const exec410OnClick = button.props.onClick;
+    assert.equal(typeof exec410OnClick, 'function');
+    if (!exec410OnClick) {
+      throw new Error('Expected exec 410 reopen button to expose onClick.');
+    }
+    exec410OnClick();
+    assert.equal(openCalls, 1);
+  });
+
+  test('renders and wires reopen project action for shell error with null selectedSessionId behind feature flag', () => {
+    let openCalls = 0;
+    const onOpenWorkspaceProject = async () => {
+      openCalls += 1;
+    };
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      selectedProjectId: 'project-1',
+      selectedSessionId: null,
+      onOpenWorkspaceProject,
+      sessionError: 'Failed to load sessions.',
+      userId: null,
+      checkpoints: [],
+      historyError: 'Failed to load checkpoints.',
+      userSummary: null,
+      usageSummary: null,
+      quotaSummary: null,
+      dashboardError: 'Failed to load dashboard summary.',
+      fileSurfaceState: 'error',
+      workspaceFileTree: [],
+      selectedFilePath: null,
+      selectedFileContent: '',
+      fileSurfaceError: 'Failed to load workspace files.',
+    });
+    const button = renderWorkspaceShellElementByTestId('workspace-shell-reopen-project', {
+      projectFirstUxEnabled: true,
+      selectedProjectId: 'project-1',
+      selectedSessionId: null,
+      onOpenWorkspaceProject,
+      sessionError: 'Failed to load sessions.',
+      userId: null,
+      checkpoints: [],
+      historyError: 'Failed to load checkpoints.',
+      userSummary: null,
+      usageSummary: null,
+      quotaSummary: null,
+      dashboardError: 'Failed to load dashboard summary.',
+      fileSurfaceState: 'error',
+      workspaceFileTree: [],
+      selectedFilePath: null,
+      selectedFileContent: '',
+      fileSurfaceError: 'Failed to load workspace files.',
+    });
+
+    assert.match(html, /workspace-shell-reopen-project/);
+    assert.match(html, />Reopen project</);
+    assert.ok(button);
+    const shellErrorOnClick = button.props.onClick;
+    assert.equal(typeof shellErrorOnClick, 'function');
+    if (!shellErrorOnClick) {
+      throw new Error('Expected shell error reopen button to expose onClick.');
+    }
+    shellErrorOnClick();
+    assert.equal(openCalls, 1);
   });
 
   test('renders Stop for usable sessions and Remove for unusable sessions', () => {

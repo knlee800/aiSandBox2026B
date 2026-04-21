@@ -16191,6 +16191,52 @@ B2a locked the core handler wiring behind the flag, but intentionally did not ch
 
 ---
 
+### PROJ-03-B3a: Confirm And Lock Existing Reopen Project Affordances Route Through Fresh-Session Path Behind Feature Flag
+
+**Task ID:** PROJ-03-B3a
+**Family:** PROJ-03 (Project-First UX Redesign — Phase B)
+**Status:** COMPLETE and LOCKED
+**Nature:** FRONTEND / PHASE B VERIFICATION AND AUDIT
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-B3a-CHECKPOINT.md`
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase B — B3 Reopen Project wiring (split: B3a verification/audit, B3b new affordances)
+
+**Objective:**
+Lock the post-B2b reality that the existing A3 Reopen Project affordances now route through the fresh-session open path under `PROJECT_FIRST_UX`, by adding focused verification tests and documenting remaining uncovered recovery surfaces for a later slice. No production behavior change in this slice.
+
+**Bounded scope:**
+- Frontend only
+- New/extended tests in `frontend/components/workspace/workspace-shell.test.tsx`
+- Verify that with `projectFirstUxEnabled = true`, `selectedProjectId` present, `selectedSessionId` null, and `onOpenWorkspaceProject` provided, the existing Reopen Project buttons on exec 404, exec 410, and shell error states render and call `onOpenWorkspaceProject`
+- Short audit of recovery surfaces (covered vs uncovered) captured in the checkpoint
+- No production behavior change in this slice
+
+**Non-goals:**
+- No change to `handleOpenWorkspaceProject` or any handler
+- No change to `WorkspaceShell` JSX, `StateMessage` props, or Reopen button gating
+- No change to A3 recovery-copy bundle
+- No change to B0 helper, B1 path, B2a, or B2b
+- No new Reopen affordance on additional surfaces (B3b scope)
+- No backend/auth/schema/internal-API changes
+- No B3b/B4 or Phase C/D/E work
+
+**Acceptance checks:**
+- New tests prove that under `PROJECT_FIRST_UX` with `selectedSessionId` null and `selectedProjectId` present: exec 404 Reopen button renders and calls `onOpenWorkspaceProject` once; exec 410 Reopen button renders and calls `onOpenWorkspaceProject` once; shell error Reopen button renders and calls `onOpenWorkspaceProject` once
+- Existing relevant focused test suites remain green
+- Typecheck clean, no introduced lint errors
+- Checkpoint includes audit table of covered vs uncovered recovery surfaces
+
+**Invariants to preserve:**
+- `PROJECT_FIRST_UX` remains the kill switch
+- No regression to project-open hydration / restore discipline (PROJ-02-01)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)
+- No regression to static preview `/workspace/index.html` rule (PREV-02-02)
+- No regression to stop-session cleanup behavior (OPS-01-04)
+
+**Dependencies:** PROJ-03-B2b (COMPLETE and LOCKED)
+
+---
+
 ### AI-04-01: Backend Chat Persistence Wiring
 
 **Task ID:** AI-04-01
