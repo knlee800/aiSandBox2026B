@@ -8,6 +8,7 @@ import WorkspaceShell, {
   moveHistoryCollapsibleSectionOrderItem,
   resetHistoryCollapsibleSectionOrderToDefault,
   runStopSessionWithConfirmation,
+  WorkspaceAdvancedDrawer,
 } from './workspace-shell';
 import type { WorkspaceCheckpoint, WorkspaceShellSession } from './workspace-shell.logic';
 import type { WorkspaceExecState } from './workspace-exec.logic';
@@ -324,6 +325,49 @@ describe('workspace shell component', () => {
     assert.doesNotMatch(html, /Select an active session to send prompts\./);
     assert.doesNotMatch(html, /Select an active session to run a build target\./);
     assert.doesNotMatch(html, /No session selected/);
+  });
+
+  test('does not render advanced drawer when feature flag is off', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: false,
+    });
+
+    assert.doesNotMatch(html, /workspace-advanced-drawer/);
+    assert.doesNotMatch(html, /workspace-advanced-toggle/);
+    assert.doesNotMatch(html, /workspace-advanced-drawer-content/);
+  });
+
+  test('renders advanced drawer collapsed by default behind feature flag', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+    });
+
+    assert.match(html, /workspace-advanced-drawer/);
+    assert.match(html, /workspace-advanced-toggle/);
+    assert.match(html, /aria-expanded="false"/);
+    assert.doesNotMatch(html, /data-testid="workspace-advanced-drawer-content"/);
+  });
+
+  test('renders expanded advanced drawer content with selected session metadata', () => {
+    const html = renderToStaticMarkup(
+      <WorkspaceAdvancedDrawer
+        isOpen
+        onToggle={() => {}}
+        sessionId={session.id}
+        sessionStatus="active"
+        onCopySessionId={async () => {}}
+      />,
+    );
+
+    assert.match(html, /workspace-advanced-drawer/);
+    assert.match(html, /workspace-advanced-toggle/);
+    assert.match(html, /aria-expanded="true"/);
+    assert.match(html, /workspace-advanced-drawer-content/);
+    assert.match(html, /workspace-advanced-session-id/);
+    assert.match(html, /12345678-test-session/);
+    assert.match(html, /workspace-advanced-session-status/);
+    assert.match(html, />active</);
+    assert.match(html, />Copy</);
   });
 
   test('renders reopen project action for disconnected exec state behind feature flag', () => {

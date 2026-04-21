@@ -6909,9 +6909,9 @@ Prevent project snapshots/restores from including `.git/` internals so restoring
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — A0, A1, A3 complete and locked; Phase A approved slices complete.
+**Family status:** ACTIVE — A0, A1, A3, A2a complete and locked; A2b next.
 
-**Current stage:** PROJ-03-A3 (COMPLETE and LOCKED)
+**Current stage:** PROJ-03-A2b (PLANNED)
 
 ---
 
@@ -7055,6 +7055,98 @@ Replace all user-visible raw session/container lifecycle strings (e.g. "session 
 - Static preview index.html requirement (PREV-02-02) unchanged
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-A3. Source: `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase A / Slice A.3.
+
+---
+
+#### PROJ-03-A2a: Add Advanced Drawer Shell Behind Feature Flag
+
+**Status:** COMPLETE and LOCKED
+**Nature:** FRONTEND UX / PHASE A ADVANCED SURFACE SHELL
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-A2a-CHECKPOINT.md`
+
+**Objective:**
+Introduce a collapsed Advanced drawer structure inside the workspace shell behind `PROJECT_FIRST_UX`, populated with read-only informational content (session ID + runtime status). No active controls are relocated in this slice.
+
+**Bounded scope:**
+- Frontend only
+- Collapsible Advanced section added to workspace shell, visible only when `PROJECT_FIRST_UX` is on
+- Collapsed by default
+- Renders session ID as read-only with copy affordance (consistent with existing UI patterns)
+- Renders container/runtime status indicator as read-only
+- No relocation of active controls in this slice
+
+**Non-goals:**
+- No stop-session relocation (that is A2b)
+- No sessions list visibility change (that is A2b)
+- No backend, auth, or schema changes
+- No new endpoints
+- No Advanced content beyond session ID and runtime status in this slice
+
+**Acceptance criteria:**
+- Flag on: Advanced drawer is present, collapsed by default, expands correctly; session ID is readable and copyable; status indicator is visible
+- Flag off: no Advanced drawer, layout and behavior byte-equivalent to today
+- Existing workspace-shell tests pass with no new failures
+- Typecheck clean; no lint errors introduced on changed files
+
+**Dependencies:** PROJ-03-A0 (flag), PROJ-03-A1 (IA shell), PROJ-03-A3 (vocabulary) — all COMPLETE and LOCKED
+
+**Invariants preserved:**
+- `PROJECT_FIRST_UX` remains kill switch
+- Workspace layout/overflow must not regress
+- No regression to project-open hydration (PROJ-02-01)
+- No regression to `.git/` snapshot exclusion (PROJ-02-03)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- Stop-session flow (OPS-01-04) untouched
+- Static preview `index.html` requirement (PREV-02-02) unchanged
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-A2a.
+
+---
+
+#### PROJ-03-A2b: Hide Sessions List And Relocate Stop-Session To Advanced Drawer
+
+**Status:** PLANNED (blocked on PROJ-03-A2a COMPLETE and LOCKED)
+**Nature:** FRONTEND UX / PHASE A SESSION DEMOTION
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-A2b-CHECKPOINT.md`
+
+**Objective:**
+Hide the sessions list from the primary workspace surface and move the stop-session control into the Advanced drawer built in A2a, both behind `PROJECT_FIRST_UX`. The stop-session handler and all underlying session logic are unchanged.
+
+**Bounded scope:**
+- Frontend only
+- Under flag: sessions list hidden from primary surface (component stays mounted; only its primary-surface render is suppressed)
+- Under flag: stop-session rendered inside the Advanced drawer from A2a
+- Advanced drawer then contains: session ID + status (from A2a) + stop-session button
+- Existing stop-session handler and API call are unchanged — only render location changes
+
+**Non-goals:**
+- No change to stop-session logic, handler, or API call
+- No change to session creation or selection behavior
+- No backend, auth, or schema changes
+- No copy-cleanup expansion beyond what is strictly necessary for relocated labels
+- No Phase B auto-fresh-session behavior
+- No history, autosave, or persistence changes
+
+**Acceptance criteria:**
+- Flag on: sessions list not visible in primary surface; no "Sessions" word in primary nav
+- Flag on: stop-session reachable from Advanced drawer and executes correctly
+- Flag off: sessions list and stop-session are in their current locations, unchanged
+- Existing workspace-shell tests pass; new flag-on tests verify stop-session renders in Advanced drawer and sessions list is absent from primary
+- Typecheck clean; no lint errors introduced on changed files
+
+**Dependencies:** PROJ-03-A2a (Advanced drawer shell MUST be COMPLETE and LOCKED first)
+
+**Invariants preserved:**
+- `PROJECT_FIRST_UX` remains kill switch
+- Stop-session must remain reachable and functional behind the flag
+- Hidden sessions list must not introduce React render or state errors
+- No regression to project-open hydration (PROJ-02-01)
+- No regression to `.git/` snapshot exclusion (PROJ-02-03)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- Stop-session flow (OPS-01-04) called, not replaced
+- Static preview `index.html` requirement (PREV-02-02) unchanged
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-A2b.
 
 ---
 

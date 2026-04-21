@@ -224,9 +224,78 @@ export function runStopSessionWithConfirmation(args: {
   return true;
 }
 
+export function WorkspaceAdvancedDrawer(props: {
+  isOpen: boolean;
+  onToggle: () => void;
+  sessionId: string | null;
+  sessionStatus: string;
+  onCopySessionId?: () => Promise<void> | void;
+}) {
+  const hasSessionId = Boolean(props.sessionId);
+
+  return (
+    <div
+      className="border-t border-gray-100 p-2"
+      data-testid="workspace-advanced-drawer"
+    >
+      <button
+        type="button"
+        onClick={props.onToggle}
+        aria-expanded={props.isOpen}
+        aria-controls="workspace-advanced-drawer-content"
+        data-testid="workspace-advanced-toggle"
+        className="flex w-full items-center justify-between rounded border border-gray-200 bg-gray-50 px-3 py-2 text-left text-xs font-medium text-gray-700 hover:bg-gray-100"
+      >
+        <span>Advanced</span>
+        <span className="text-[11px] text-gray-500">
+          {props.isOpen ? 'Hide' : 'Show'}
+        </span>
+      </button>
+      {props.isOpen ? (
+        <div
+          id="workspace-advanced-drawer-content"
+          className="mt-2 rounded border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-700"
+          data-testid="workspace-advanced-drawer-content"
+        >
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="font-medium text-gray-900">Session ID</p>
+              <p
+                className="mt-1 break-all font-mono text-[11px] text-gray-600"
+                data-testid="workspace-advanced-session-id"
+              >
+                {props.sessionId ?? 'No session selected'}
+              </p>
+            </div>
+            {hasSessionId && props.onCopySessionId ? (
+              <button
+                type="button"
+                onClick={() => void props.onCopySessionId?.()}
+                className="shrink-0 rounded border border-gray-300 bg-white px-2 py-1 text-[11px] font-medium text-gray-700 hover:bg-gray-100"
+              >
+                Copy
+              </button>
+            ) : null}
+          </div>
+          <div className="mt-3">
+            <p className="font-medium text-gray-900">Runtime status</p>
+            <span
+              className="mt-1 inline-flex rounded-full border border-gray-300 bg-white px-2 py-1 text-[11px] font-medium text-gray-700"
+              data-testid="workspace-advanced-session-status"
+            >
+              {props.sessionStatus}
+            </span>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export default function WorkspaceShell(props: WorkspaceShellProps) {
   const locale = props.locale ?? 'en';
   const projectFirstUxEnabled = props.projectFirstUxEnabled ?? PROJECT_FIRST_UX;
+  const [advancedDrawerOpen, setAdvancedDrawerOpen] = React.useState(false);
   const shellState = computeWorkspaceShellState({
     isLoadingSessions: props.isLoadingSessions,
     sessionError: props.sessionError,
@@ -249,6 +318,13 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   });
   const headerIdentityLabel =
     props.userSummary?.email?.trim() || 'Authenticated user';
+  const selectedSession =
+    props.selectedSessionId
+      ? props.sessions.find((session) => session.id === props.selectedSessionId) ?? null
+      : null;
+  const selectedSessionStatus = selectedSession
+    ? getSessionLabel(selectedSession)
+    : 'not available';
   const projectsHref = `/${locale}/projects`;
   const galleryHref = `/${locale}/gallery`;
   const accountHref = `/${locale}/account`;
@@ -261,6 +337,20 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
       return;
     }
     void props.onOpenWorkspaceProject();
+  };
+  const handleCopySelectedSessionId = async () => {
+    if (!props.selectedSessionId) {
+      return;
+    }
+    if (typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(props.selectedSessionId);
+    } catch {
+      // Keep this affordance best-effort only; no new error UI in A2a.
+    }
   };
 
   return (
@@ -412,6 +502,15 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
               );
             })}
           </div>
+          {projectFirstUxEnabled ? (
+            <WorkspaceAdvancedDrawer
+              isOpen={advancedDrawerOpen}
+              onToggle={() => setAdvancedDrawerOpen((current) => !current)}
+              sessionId={props.selectedSessionId}
+              sessionStatus={selectedSessionStatus}
+              onCopySessionId={handleCopySelectedSessionId}
+            />
+          ) : null}
         </aside>
 
         <main className="flex-1 min-w-0 flex flex-col overflow-y-auto">
