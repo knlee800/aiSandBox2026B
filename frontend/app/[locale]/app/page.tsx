@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import WorkspaceShell from '@/components/workspace/workspace-shell';
 import { PROJECT_FIRST_UX } from '@/lib/feature-flags';
+import { openProjectInFreshSession } from '@/lib/open-project-in-fresh-session';
 import { recoveryCopy } from '@/lib/recovery-copy';
 import type {
   WorkspaceCheckpoint,
@@ -1016,6 +1017,46 @@ export default function AppPage() {
         token,
         name: trimmedName,
       });
+      if (PROJECT_FIRST_UX) {
+        setSelectedProjectId(createdProject.id);
+        setSelectedProjectVisibility(createdProject.visibility === 'public' ? 'public' : 'private');
+        projectOpenInProgressRef.current = true;
+        try {
+          const openResult = await openProjectInFreshSession({
+            token,
+            projectId: createdProject.id,
+          });
+          const openSessionId = openResult.sessionId;
+          const expectsRestoredFiles = Boolean(openResult.restoredSnapshotId);
+
+          skipNextSessionEffectFileReloadRef.current =
+            openSessionId !== selectedSessionIdRef.current;
+          setSelectedSessionId(openSessionId);
+
+          await hydrateWorkspaceForProjectOpen(token, openSessionId, expectsRestoredFiles);
+
+          await refreshPreviewForSession(token, openSessionId);
+          await loadCheckpoints(token, openSessionId);
+          await loadSessions(token);
+          setSelectedSessionId((current) => current ?? openSessionId);
+
+          await loadWorkspaceSnapshotsForUser(token);
+          await loadWorkspaceProjectsForUser(token);
+          await loadPublicWorkspaceProjectsList();
+          await loadDashboardSlice(token);
+
+          setSelectedProjectId(createdProject.id);
+          setSelectedProjectVisibility(createdProject.visibility === 'public' ? 'public' : 'private');
+          setProjectNameInput('');
+          setProjectActionState('success');
+          setProjectActionMessage('Project created.');
+          setProjectActionError(null);
+          return;
+        } finally {
+          projectOpenInProgressRef.current = false;
+          skipNextSessionEffectFileReloadRef.current = false;
+        }
+      }
       let createdInitialProjectSnapshot = false;
       if (selectedSessionId) {
         try {

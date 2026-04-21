@@ -16014,6 +16014,63 @@ Phase B requires always-fresh-session semantics for New Project (B1), Open Proje
 
 ---
 
+### PROJ-03-B1: Auto-Create Fresh Session On New Project Behind Feature Flag
+
+**Task ID:** PROJ-03-B1
+**Family:** PROJ-03 (Project-First UX Redesign — Phase B)
+**Status:** COMPLETE and LOCKED
+**Nature:** FRONTEND / PHASE B NEW PROJECT WIRING
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-B1-CHECKPOINT.md`
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase B — B1 New Project wiring slice
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, after a successful New Project creation, invoke the locked B0 helper (`openProjectInFreshSession`) so the user lands in the workspace with the new project opened in a freshly created session, with no intermediate session-selection step.
+
+**Why this exists:**
+With B0's helper locked, the first user-visible Phase B behavior change is to wire New Project so it auto-creates a session and opens the project into it. This is the lowest-risk wiring point: new projects have no prior state or snapshots to contend with, and the happy path is straightforward. Locking this before Open Project (B2) ensures we can validate the `projectOpenInProgressRef` call-site discipline in a simple context before extending it to the more complex B2 path.
+
+**Bounded scope:**
+- Frontend only
+- Single call-site wiring in the existing New Project flow
+- Under flag only, after successful project creation: call `openProjectInFreshSession(...)`, awaited end-to-end, wrapped with the existing `projectOpenInProgressRef` discipline (set before call; clear in `finally`)
+- Perform the same hydration follow-ups already used by the existing open-project flow
+- Preserve B0 helper contract and existing project-open sequencing discipline
+- Flag off preserves current New Project flow exactly
+
+**Non-goals:**
+- No change to `handleOpenWorkspaceProject` internals
+- No change to B0 helper internals
+- No change to New Project UI affordance itself
+- No Open Project wiring yet (B2)
+- No Reopen banner wiring yet (B3)
+- No Resume Latest CTA (B4)
+- No backend, auth, schema, or internal-API changes
+- No autosave, history, or persistence work
+- No Phase C/D/E work
+
+**Acceptance criteria:**
+- Flag on: New Project creates the project, creates a fresh session, opens the new project in that fresh session; no intermediate session-selection step
+- Flag on: post-create state matches the existing open-project hydrated state shape
+- Flag on: `projectOpenInProgressRef` set before helper call and cleared in `finally`; failures surface coherently and UI state remains recoverable
+- Flag off: New Project flow unchanged
+- Existing relevant page/workspace tests remain green
+- Typecheck clean; no introduced lint errors on changed files
+
+**Invariants explicitly preserved:**
+- `projectOpenInProgressRef` discipline is the key non-obvious constraint; forgetting `finally`-clear risks reintroducing PROJ-02 race behavior
+- Hydration follow-up parity with the existing open-project path must be preserved
+- Newly created projects may have no snapshot; B0 fallback semantics must remain intact
+- `PROJECT_FIRST_UX` remains kill switch
+- No regression to project-open hydration / restore discipline (PROJ-02-01)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)
+- No regression to static preview `/workspace/index.html` rule (PREV-02-02)
+- No regression to stop-session cleanup behavior (OPS-01-04)
+
+**Dependencies:** PROJ-03-B0 (COMPLETE and LOCKED)
+
+---
+
 ### AI-04-01: Backend Chat Persistence Wiring
 
 **Task ID:** AI-04-01

@@ -6909,9 +6909,9 @@ Prevent project snapshots/restores from including `.git/` internals so restoring
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); B0 COMPLETE and LOCKED; B1/B2/B3/B4 not yet registered.
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); B0 COMPLETE and LOCKED; B1 COMPLETE and LOCKED; B2/B3/B4 not yet registered.
 
-**Current stage:** Phase B in progress — B0 COMPLETE and LOCKED; B1 not yet registered
+**Current stage:** Phase B in progress — B1 COMPLETE and LOCKED; B2 not yet registered
 
 ---
 
@@ -7195,6 +7195,59 @@ Introduce one frontend helper primitive for opening a project in a newly created
 - No regression to stop-session cleanup behavior (OPS-01-04)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-B0.
+
+---
+
+#### PROJ-03-B1: Auto-Create Fresh Session On New Project Behind Feature Flag
+
+**Status:** COMPLETE and LOCKED
+**Nature:** FRONTEND / PHASE B NEW PROJECT WIRING
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-B1-CHECKPOINT.md`
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, after a successful New Project creation, invoke the locked B0 helper (`openProjectInFreshSession`) so the user lands in the workspace with the new project opened in a freshly created session, with no intermediate session-selection step.
+
+**Bounded scope:**
+- Frontend only
+- Single call-site wiring in the existing New Project flow
+- Under flag only, after successful project creation: call `openProjectInFreshSession(...)`, awaited end-to-end, wrapped with the existing `projectOpenInProgressRef` discipline (set before call; clear in `finally`)
+- Perform the same hydration follow-ups already used by the existing open-project flow
+- Preserve B0 helper contract and existing project-open sequencing discipline
+- Flag off preserves current New Project flow exactly
+
+**Non-goals:**
+- No change to `handleOpenWorkspaceProject` internals
+- No change to B0 helper internals
+- No change to New Project UI affordance itself
+- No Open Project wiring yet (B2)
+- No Reopen banner wiring yet (B3)
+- No Resume Latest CTA (B4)
+- No backend, auth, schema, or internal-API changes
+- No autosave, history, or persistence work
+- No Phase C/D/E work
+
+**Acceptance criteria:**
+- Flag on: New Project creates the project, creates a fresh session, opens the new project in that fresh session; no intermediate session-selection step
+- Flag on: post-create state matches the existing open-project hydrated state shape
+- Flag on: `projectOpenInProgressRef` set before helper call and cleared in `finally`; failures surface coherently
+- Flag off: New Project flow unchanged
+- Existing relevant page/workspace tests remain green
+- Typecheck clean; no introduced lint errors
+
+**Dependencies:** PROJ-03-B0 (COMPLETE and LOCKED)
+
+**Invariants preserved:**
+- `projectOpenInProgressRef` discipline is the key non-obvious constraint; forgetting `finally`-clear risks reintroducing PROJ-02 race behavior
+- Hydration follow-up parity with the existing open-project path must be preserved
+- Newly created projects may have no snapshot; B0 fallback semantics must remain intact
+- `PROJECT_FIRST_UX` remains kill switch
+- No regression to project-open hydration / restore discipline (PROJ-02-01)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)
+- No regression to static preview `/workspace/index.html` rule (PREV-02-02)
+- No regression to stop-session cleanup behavior (OPS-01-04)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-B1.
 
 ---
 
