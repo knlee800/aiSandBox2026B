@@ -6842,7 +6842,7 @@ Prevent the selected-session change effect from clearing project/open UI state w
 
 **Family status:** ACTIVE
 
-**Current stage:** PROJ-02-02 (COMPLETE and LOCKED)
+**Current stage:** PROJ-02-03 (COMPLETE and LOCKED)
 
 ---
 
@@ -6883,6 +6883,26 @@ Reproduce and diagnose why the real UI still fails to load files automatically a
 - No unrelated work is mixed in
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-02-02 for full details
+
+---
+
+#### PROJ-02-03: Exclude Git Internals From Project Snapshots And Restore
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (PROJECT SNAPSHOTS, RESTORE BINARY FILE FAILURE)
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-02-03-CHECKPOINT.md`
+
+**Objective:**
+Prevent project snapshots/restores from including `.git/` internals so restoring a saved project does not fail on binary git files like `.git/index`.
+
+**Acceptance criteria:**
+- New project snapshots do not include `.git/` internals
+- Restore ignores/skips `.git/` internals if present in older snapshots
+- Project open no longer returns 500 due to `.git/index`
+- Normal source files still restore correctly
+- Fix is documented clearly
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-02-03 for full details
 
 ---
 

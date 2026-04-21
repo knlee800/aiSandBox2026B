@@ -22,6 +22,29 @@ interface WorkspaceSnapshotPayload {
   files: WorkspaceSnapshotFile[];
 }
 
+// PROJ-02-03: Auto-checkpoint git internals must never enter or leave a
+// workspace snapshot. They contain binary objects (e.g. .git/index has NUL
+// bytes) that the env-var + `printf "%s"` write path used by container-manager
+// cannot transport, which previously caused project-open restore to fail with
+// HTTP 500. The git-checkpoint subsystem owns `.git/` itself, so excluding it
+// here is also semantically correct.
+const SNAPSHOT_EXCLUDED_PATH_PREFIXES: readonly string[] = ['.git'];
+
+function isPathExcludedFromSnapshot(workspaceRelativePath: string): boolean {
+  if (!workspaceRelativePath) {
+    return false;
+  }
+  for (const prefix of SNAPSHOT_EXCLUDED_PATH_PREFIXES) {
+    if (workspaceRelativePath === prefix) {
+      return true;
+    }
+    if (workspaceRelativePath.startsWith(`${prefix}/`)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 @Injectable()
 export class SnapshotPersistenceService {
   private readonly snapshotsRootPath = path.join(
@@ -96,6 +119,13 @@ export class SnapshotPersistenceService {
     const payload = await this.loadSnapshotPayload(args.userId, args.snapshotId);
     await this.clearWorkspace(args.sessionId);
     for (const file of payload.files) {
+      // PROJ-02-03: Defensively skip `.git/` entries that exist in older
+      // snapshots created before exclusion was added. Restoring them would
+      // fail on the first binary file (e.g. `.git/index`) and abort the
+      // whole project open with HTTP 500.
+      if (isPathExcludedFromSnapshot(file.path)) {
+        continue;
+      }
       await this.containerManagerHttpClient.writeSessionFile(
         args.sessionId,
         file.path,
@@ -149,6 +179,11 @@ export class SnapshotPersistenceService {
         directoryPath.length === 0
           ? entry.name
           : `${directoryPath.replace(/\/$/, '')}/${entry.name}`;
+      // PROJ-02-03: Skip auto-checkpoint git internals so `.git/` (which
+      // contains binary objects) never enters new snapshot payloads.
+      if (isPathExcludedFromSnapshot(nextPath)) {
+        continue;
+      }
       if (entry.type === 'dir') {
         filePaths.push(
           ...(await this.collectFilePathsRecursively(sessionId, nextPath)),

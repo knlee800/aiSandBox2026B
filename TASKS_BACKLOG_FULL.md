@@ -15624,6 +15624,50 @@ PROJ-02-01 was marked complete without live Docker/UI validation because Docker 
 
 ---
 
+### PROJ-02-03: Exclude Git Internals From Project Snapshots And Restore
+
+**Task ID:** PROJ-02-03
+**Family:** PROJ-02 (Project Open Hydration Cleanup)
+**Status:** COMPLETE and LOCKED
+**Nature:** BUG FIX (PROJECT SNAPSHOTS, RESTORE BINARY FILE FAILURE)
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-02-03-CHECKPOINT.md`
+
+**Objective:**
+Prevent project snapshots/restores from including `.git/` internals so restoring a saved project does not fail on binary git files like `.git/index`.
+
+**Why this exists:**
+PROJ-02-02 isolated the real 500 cause:
+- project-open restore reads snapshot payload files
+- snapshot contains many `.git/` internals
+- `.git/index` contains NUL bytes
+- restore writes files via container-manager shell/env path
+- binary `.git/index` cannot be transported through that path
+- restore throws and project open returns 500
+
+**Bounded scope only:**
+- inspect snapshot collection rules
+- exclude `.git/` internals from project snapshot payloads
+- ensure restore does not attempt to write `.git/` internals from existing or future snapshots
+- preserve normal source/workspace files
+- verify project open no longer fails with binary `.git/index`
+- document exact cause and fix
+
+**Explicitly out of scope:**
+- no binary file restore redesign
+- no git implementation redesign
+- no snapshot storage redesign
+- no workspace redesign
+- no scope expansion
+
+**Acceptance criteria:**
+- new project snapshots do not include `.git/` internals
+- restore ignores/skips `.git/` internals if present in older snapshots
+- project open no longer returns 500 due to `.git/index`
+- normal source files still restore correctly
+- fix is documented clearly
+
+---
+
 ### AI-04-01: Backend Chat Persistence Wiring
 
 **Task ID:** AI-04-01
