@@ -16129,6 +16129,68 @@ With B1 locked, the next wiring point is the existing Open Project handler. Unli
 
 ---
 
+### PROJ-03-B2b: Relax Open Project Precondition To Enable Fresh-Session Open Path Behind Feature Flag
+
+**Task ID:** PROJ-03-B2b
+**Family:** PROJ-03 (Project-First UX Redesign — Phase B)
+**Status:** COMPLETE and LOCKED
+**Nature:** FRONTEND / PHASE B OPEN PROJECT PRECONDITION ACTIVATION
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-B2b-CHECKPOINT.md`
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase B — B2 Open Project wiring slice (split: B2a handler wiring, B2b precondition activation)
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, relax `handleOpenWorkspaceProject`'s precondition so it no longer requires `selectedSessionId`, making the already-locked B2a fresh-session open path normally user-reachable from the existing Open Project button and the existing Reopen Project affordances.
+
+**Why this exists:**
+B2a locked the core handler wiring behind the flag, but intentionally did not change the UI gating or relaxed the `selectedSessionId` precondition, so the B2a path was not normally user-reachable. B2b is the activation slice: a minimal single-condition change that makes the B2a path reachable when `selectedSessionId` is null (the normal state when the sessions list is hidden under the flag). This follows the same de-risking split used by A2a/A2b — lock the logic first, then unlock the path in a follow-on slice.
+
+**Bounded scope:**
+- Frontend only
+- Single edit to the precondition block of `handleOpenWorkspaceProject` in `frontend/app/[locale]/app/page.tsx`
+- Under flag only:
+  - require only `selectedProjectId`
+  - allow `selectedSessionId` to be null
+  - if needed for accuracy, neutralize rejection error wording under the flag to project-only wording
+- Flag-off path preserves current precondition and current error wording exactly
+- Reuse the already-locked B2a flag-on branch unchanged
+- No new open path introduced in this slice
+
+**Non-goals:**
+- No change to Open Project button JSX (label, visibility, disabled expression)
+- No change to Reopen Project affordances
+- No change to `handleOpenWorkspaceProject` signature
+- No change to the B0 helper
+- No change to the B1 path
+- No change to the B2a flag-on branch body
+- No relaxation of the flag-off precondition
+- No backend, auth, schema, or internal-API changes
+- No autosave, history, or persistence work
+- No B3/B4 or Phase C/D/E work
+
+**Acceptance criteria:**
+- Flag on: `selectedProjectId` set and `selectedSessionId` null now proceeds into the existing B2a branch
+- Flag on: `selectedProjectId` set and `selectedSessionId` set behaves unchanged from B2a
+- Flag on: `selectedProjectId` missing still rejects with accurate flag-on wording
+- Flag off: both `selectedSessionId` and `selectedProjectId` still required; current error wording unchanged
+- Existing relevant helper/workspace/project/snapshot tests remain green
+- Typecheck clean; no introduced lint errors on changed files
+
+**Invariants explicitly preserved:**
+- This is the activation slice that makes the B2a path user-reachable; it touches a PROJ-02-sensitive surface even though the code change is small
+- `selectedSessionId` null becomes an allowed entry shape only under the flag
+- `projectOpenInProgressRef` / `skipNextSessionEffectFileReloadRef` must continue to clear via the existing outer finally
+- `selectedSnapshotId` carryover behavior is unchanged in this slice
+- `PROJECT_FIRST_UX` remains the kill switch
+- No regression to project-open hydration / restore discipline (PROJ-02-01)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)
+- No regression to static preview `/workspace/index.html` rule (PREV-02-02)
+- No regression to stop-session cleanup behavior (OPS-01-04)
+
+**Dependencies:** PROJ-03-B2a (COMPLETE and LOCKED)
+
+---
+
 ### AI-04-01: Backend Chat Persistence Wiring
 
 **Task ID:** AI-04-01

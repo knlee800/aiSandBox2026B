@@ -1128,7 +1128,14 @@ export default function AppPage() {
       router.push(`/${locale}/login`);
       return;
     }
-    if (!selectedSessionId || !selectedProjectId) {
+    if (PROJECT_FIRST_UX) {
+      if (!selectedProjectId) {
+        setProjectActionState('error');
+        setProjectActionMessage(null);
+        setProjectActionError('Select a project to open.');
+        return;
+      }
+    } else if (!selectedSessionId || !selectedProjectId) {
       setProjectActionState('error');
       setProjectActionMessage(null);
       setProjectActionError('Select both an active session and a project.');
@@ -1185,18 +1192,18 @@ export default function AppPage() {
         openResult = await openWorkspaceProject({
           token,
           projectId: selectedProjectId,
-          sessionId: selectedSessionId,
+          sessionId: selectedSessionId!,
           snapshotId: snapshotIdToOpen,
         });
       } else {
         await associateWorkspaceProjectSession({
           token,
           projectId: selectedProjectId,
-          sessionId: selectedSessionId,
+          sessionId: selectedSessionId!,
         });
         openResult = {
           projectId: selectedProjectId,
-          sessionId: selectedSessionId,
+          sessionId: selectedSessionId!,
           restoredSnapshotId: null,
         };
       }

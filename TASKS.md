@@ -6909,9 +6909,9 @@ Prevent project snapshots/restores from including `.git/` internals so restoring
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); B0 COMPLETE and LOCKED; B1 COMPLETE and LOCKED; B2a COMPLETE and LOCKED; B2b/B3/B4 not yet registered.
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); B0 COMPLETE and LOCKED; B1 COMPLETE and LOCKED; B2a COMPLETE and LOCKED; B2b COMPLETE and LOCKED; B3/B4 not yet registered.
 
-**Current stage:** Phase B in progress — B2a COMPLETE and LOCKED; B2b not yet registered
+**Current stage:** Phase B in progress — B2b COMPLETE and LOCKED; B3/B4 not yet registered
 
 ---
 
@@ -7302,6 +7302,64 @@ Behind `PROJECT_FIRST_UX`, change `handleOpenWorkspaceProject` so a successful o
 - No regression to stop-session cleanup behavior (OPS-01-04)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-B2a.
+
+---
+
+#### PROJ-03-B2b: Relax Open Project Precondition To Enable Fresh-Session Open Path Behind Feature Flag
+
+**Status:** COMPLETE and LOCKED
+**Nature:** FRONTEND / PHASE B OPEN PROJECT PRECONDITION ACTIVATION
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-B2b-CHECKPOINT.md`
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, relax `handleOpenWorkspaceProject`'s precondition so it no longer requires `selectedSessionId`, making the already-locked B2a fresh-session open path normally user-reachable from the existing Open Project button and the existing Reopen Project affordances.
+
+**Bounded scope:**
+- Frontend only
+- Single edit to the precondition block of `handleOpenWorkspaceProject` in `frontend/app/[locale]/app/page.tsx`
+- Under flag only:
+  - require only `selectedProjectId`
+  - allow `selectedSessionId` to be null
+  - if needed for accuracy, neutralize rejection error wording under the flag to project-only wording
+- Flag-off path preserves current precondition and current error wording exactly
+- Reuse the already-locked B2a flag-on branch unchanged
+- No new open path introduced in this slice
+
+**Non-goals:**
+- No change to Open Project button JSX (label, visibility, disabled expression)
+- No change to Reopen Project affordances
+- No change to `handleOpenWorkspaceProject` signature
+- No change to the B0 helper
+- No change to the B1 path
+- No change to the B2a flag-on branch body
+- No relaxation of the flag-off precondition
+- No backend, auth, schema, or internal-API changes
+- No autosave, history, or persistence work
+- No B3/B4 or Phase C/D/E work
+
+**Acceptance criteria:**
+- Flag on: `selectedProjectId` set and `selectedSessionId` null now proceeds into the existing B2a branch
+- Flag on: `selectedProjectId` set and `selectedSessionId` set behaves unchanged from B2a
+- Flag on: `selectedProjectId` missing still rejects with accurate flag-on wording
+- Flag off: both `selectedSessionId` and `selectedProjectId` still required; current error wording unchanged
+- Existing relevant helper/workspace/project/snapshot tests remain green
+- Typecheck clean; no introduced lint errors on changed files
+
+**Dependencies:** PROJ-03-B2a (COMPLETE and LOCKED)
+
+**Invariants preserved:**
+- This is the activation slice that makes the B2a path user-reachable; it touches a PROJ-02-sensitive surface even though the code change is small
+- `selectedSessionId` null becomes an allowed entry shape only under the flag
+- `projectOpenInProgressRef` / `skipNextSessionEffectFileReloadRef` must continue to clear via the existing outer finally
+- `selectedSnapshotId` carryover behavior is unchanged in this slice
+- `PROJECT_FIRST_UX` remains the kill switch
+- No regression to project-open hydration / restore discipline (PROJ-02-01)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)
+- No regression to static preview `/workspace/index.html` rule (PREV-02-02)
+- No regression to stop-session cleanup behavior (OPS-01-04)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-B2b.
 
 ---
 
