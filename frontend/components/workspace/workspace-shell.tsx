@@ -230,8 +230,12 @@ export function WorkspaceAdvancedDrawer(props: {
   sessionId: string | null;
   sessionStatus: string;
   onCopySessionId?: () => Promise<void> | void;
+  canStopSession?: boolean;
+  isStoppingSession?: boolean;
+  onStopSession?: () => void;
 }) {
   const hasSessionId = Boolean(props.sessionId);
+  const showStopSession = Boolean(props.canStopSession && props.onStopSession);
 
   return (
     <div
@@ -286,6 +290,20 @@ export function WorkspaceAdvancedDrawer(props: {
               {props.sessionStatus}
             </span>
           </div>
+          {showStopSession ? (
+            <div className="mt-3">
+              <p className="font-medium text-gray-900">Session controls</p>
+              <button
+                type="button"
+                onClick={props.onStopSession}
+                disabled={props.isStoppingSession}
+                data-testid="workspace-advanced-stop-session"
+                className="mt-1 w-full rounded border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] font-medium text-amber-800 disabled:opacity-60"
+              >
+                {props.isStoppingSession ? 'Stopping...' : 'Stop'}
+              </button>
+            </div>
+          ) : null}
         </div>
       ) : null}
     </div>
@@ -325,6 +343,9 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const selectedSessionStatus = selectedSession
     ? getSessionLabel(selectedSession)
     : 'not available';
+  const canStopSelectedSession = Boolean(selectedSession && isUsableSession(selectedSession));
+  const isStoppingSelectedSession =
+    Boolean(props.selectedSessionId) && props.stoppingSessionId === props.selectedSessionId;
   const projectsHref = `/${locale}/projects`;
   const galleryHref = `/${locale}/gallery`;
   const accountHref = `/${locale}/account`;
@@ -351,6 +372,22 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     } catch {
       // Keep this affordance best-effort only; no new error UI in A2a.
     }
+  };
+  const handleStopSelectedSession = () => {
+    if (!props.selectedSessionId) {
+      return;
+    }
+
+    runStopSessionWithConfirmation({
+      sessionId: props.selectedSessionId,
+      confirmStop: () =>
+        typeof window === 'undefined'
+          ? true
+          : window.confirm(
+              'Stop this session? Unsaved running work in this session may be interrupted.',
+            ),
+      onStopSession: props.onStopSession,
+    });
   };
 
   return (
@@ -442,65 +479,67 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
           </div>
 
           <div className="flex-1 overflow-y-auto p-2">
-            {props.sessions.map((session) => {
-              const selected = session.id === props.selectedSessionId;
-              const isUsable = isUsableSession(session);
-              const isStopping = props.stoppingSessionId === session.id;
-              return (
-                <div
-                  key={session.id}
-                  className={`w-full rounded border p-2 mb-2 ${
-                    selected
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 bg-white'
-                  }`}
-                >
-                  <button
-                    type="button"
-                    onClick={() => props.onSelectSession(session.id)}
-                    className={`w-full text-left rounded ${
-                      selected ? '' : 'hover:bg-gray-50'
-                    }`}
-                  >
-                    <p className="text-xs font-medium text-gray-900 truncate">Session {session.id.slice(0, 8)}</p>
-                    <p className="text-xs text-gray-500">{getSessionLabel(session)}</p>
-                  </button>
-                  <div className="mt-2">
-                    {isUsable ? (
+            {projectFirstUxEnabled
+              ? null
+              : props.sessions.map((session) => {
+                  const selected = session.id === props.selectedSessionId;
+                  const isUsable = isUsableSession(session);
+                  const isStopping = props.stoppingSessionId === session.id;
+                  return (
+                    <div
+                      key={session.id}
+                      className={`w-full rounded border p-2 mb-2 ${
+                        selected
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-200 bg-white'
+                      }`}
+                    >
                       <button
                         type="button"
-                        onClick={() => {
-                          runStopSessionWithConfirmation({
-                            sessionId: session.id,
-                            confirmStop: () =>
-                              typeof window === 'undefined'
-                                ? true
-                                : window.confirm(
-                                    'Stop this session? Unsaved running work in this session may be interrupted.',
-                                  ),
-                            onStopSession: props.onStopSession,
-                          });
-                        }}
-                        disabled={isStopping}
-                        className="w-full rounded border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] font-medium text-amber-800 disabled:opacity-60"
-                        data-testid={`session-stop-${session.id}`}
+                        onClick={() => props.onSelectSession(session.id)}
+                        className={`w-full text-left rounded ${
+                          selected ? '' : 'hover:bg-gray-50'
+                        }`}
                       >
-                        {isStopping ? 'Stopping...' : 'Stop'}
+                        <p className="text-xs font-medium text-gray-900 truncate">Session {session.id.slice(0, 8)}</p>
+                        <p className="text-xs text-gray-500">{getSessionLabel(session)}</p>
                       </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => props.onRemoveSession(session.id)}
-                        className="w-full rounded border border-gray-300 bg-gray-50 px-2 py-1 text-[11px] font-medium text-gray-700"
-                        data-testid={`session-remove-${session.id}`}
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+                      <div className="mt-2">
+                        {isUsable ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              runStopSessionWithConfirmation({
+                                sessionId: session.id,
+                                confirmStop: () =>
+                                  typeof window === 'undefined'
+                                    ? true
+                                    : window.confirm(
+                                        'Stop this session? Unsaved running work in this session may be interrupted.',
+                                      ),
+                                onStopSession: props.onStopSession,
+                              });
+                            }}
+                            disabled={isStopping}
+                            className="w-full rounded border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] font-medium text-amber-800 disabled:opacity-60"
+                            data-testid={`session-stop-${session.id}`}
+                          >
+                            {isStopping ? 'Stopping...' : 'Stop'}
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => props.onRemoveSession(session.id)}
+                            className="w-full rounded border border-gray-300 bg-gray-50 px-2 py-1 text-[11px] font-medium text-gray-700"
+                            data-testid={`session-remove-${session.id}`}
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
           </div>
           {projectFirstUxEnabled ? (
             <WorkspaceAdvancedDrawer
@@ -509,6 +548,9 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
               sessionId={props.selectedSessionId}
               sessionStatus={selectedSessionStatus}
               onCopySessionId={handleCopySelectedSessionId}
+              canStopSession={canStopSelectedSession}
+              isStoppingSession={isStoppingSelectedSession}
+              onStopSession={canStopSelectedSession ? handleStopSelectedSession : undefined}
             />
           ) : null}
         </aside>

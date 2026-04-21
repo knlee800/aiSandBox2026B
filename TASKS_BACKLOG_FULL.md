@@ -15670,7 +15670,7 @@ PROJ-02-02 isolated the real 500 cause:
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — A0, A1, A3, A2a complete and locked; A2b next. Approved order: A0 → A1 → A3 → A2a → A2b.
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B not yet started. Completed order: A0 → A1 → A3 → A2a → A2b.
 
 ---
 
@@ -15914,7 +15914,7 @@ The approved design (Section 3.3) requires an Advanced drawer as the landing zon
 
 **Task ID:** PROJ-03-A2b
 **Family:** PROJ-03 (Project-First UX Redesign — Phase A)
-**Status:** PLANNED (blocked on PROJ-03-A2a COMPLETE and LOCKED)
+**Status:** COMPLETE and LOCKED
 **Nature:** FRONTEND UX / PHASE A SESSION DEMOTION
 **Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-A2b-CHECKPOINT.md`
 **Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase A / Slice A.2 (second half)

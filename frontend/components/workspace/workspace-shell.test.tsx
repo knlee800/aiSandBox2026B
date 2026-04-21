@@ -370,6 +370,53 @@ describe('workspace shell component', () => {
     assert.match(html, />Copy</);
   });
 
+  test('hides primary sessions list behind feature flag', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      sessions: [session, terminatedSession],
+      selectedSessionId: session.id,
+    });
+
+    assert.doesNotMatch(html, /Session 12345678/);
+    assert.doesNotMatch(html, /terminated/);
+    assert.doesNotMatch(html, /data-testid="session-stop-12345678-test-session"/);
+    assert.doesNotMatch(html, /data-testid="session-remove-87654321-term-session"/);
+    assert.match(html, /workspace-advanced-drawer/);
+  });
+
+  test('renders advanced drawer stop-session control for selected usable session', () => {
+    const html = renderToStaticMarkup(
+      <WorkspaceAdvancedDrawer
+        isOpen
+        onToggle={() => {}}
+        sessionId={session.id}
+        sessionStatus="active"
+        onCopySessionId={async () => {}}
+        canStopSession
+        isStoppingSession={false}
+        onStopSession={() => {}}
+      />,
+    );
+
+    assert.match(html, /workspace-advanced-stop-session/);
+    assert.match(html, />Session controls</);
+    assert.match(html, />Stop</);
+  });
+
+  test('does not render advanced drawer stop-session control without stoppable selected session', () => {
+    const html = renderToStaticMarkup(
+      <WorkspaceAdvancedDrawer
+        isOpen
+        onToggle={() => {}}
+        sessionId={null}
+        sessionStatus="not available"
+      />,
+    );
+
+    assert.doesNotMatch(html, /workspace-advanced-stop-session/);
+    assert.doesNotMatch(html, />Session controls</);
+  });
+
   test('renders reopen project action for disconnected exec state behind feature flag', () => {
     const html = renderWorkspaceShell({
       projectFirstUxEnabled: true,

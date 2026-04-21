@@ -6909,9 +6909,9 @@ Prevent project snapshots/restores from including `.git/` internals so restoring
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — A0, A1, A3, A2a complete and locked; A2b next.
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B not yet started.
 
-**Current stage:** PROJ-03-A2b (PLANNED)
+**Current stage:** Phase B not started (pending authorization)
 
 ---
 
@@ -7105,7 +7105,7 @@ Introduce a collapsed Advanced drawer structure inside the workspace shell behin
 
 #### PROJ-03-A2b: Hide Sessions List And Relocate Stop-Session To Advanced Drawer
 
-**Status:** PLANNED (blocked on PROJ-03-A2a COMPLETE and LOCKED)
+**Status:** COMPLETE and LOCKED
 **Nature:** FRONTEND UX / PHASE A SESSION DEMOTION
 **Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-A2b-CHECKPOINT.md`
 
