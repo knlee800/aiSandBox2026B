@@ -1,6 +1,8 @@
 'use client';
 
 import React from 'react';
+import { PROJECT_FIRST_UX } from '@/lib/feature-flags';
+import { recoveryCopy } from '@/lib/recovery-copy';
 import {
   computeDashboardSliceState,
   computeHistorySliceState,
@@ -39,6 +41,12 @@ import type {
   WorkspacePublicProjectDetail,
   WorkspacePublicProjectSummary,
 } from './workspace-projects.logic';
+
+const projectFirstUxAnchors = {
+  enabled: PROJECT_FIRST_UX,
+  copy: recoveryCopy,
+};
+void projectFirstUxAnchors;
 
 interface WorkspaceShellProps {
   sessions: WorkspaceShellSession[];

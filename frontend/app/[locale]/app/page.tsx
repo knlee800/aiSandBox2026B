@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import WorkspaceShell from '@/components/workspace/workspace-shell';
+import { PROJECT_FIRST_UX } from '@/lib/feature-flags';
+import { recoveryCopy } from '@/lib/recovery-copy';
 import type {
   WorkspaceCheckpoint,
   WorkspaceQuotaSummary,
@@ -103,6 +105,12 @@ import {
   WORKSPACE_BUILD_TARGET_OPTIONS,
   type WorkspaceBuildTarget,
 } from '@/components/workspace/workspace-build-targets.logic';
+
+const projectFirstUxAnchors = {
+  enabled: PROJECT_FIRST_UX,
+  copy: recoveryCopy,
+};
+void projectFirstUxAnchors;
 
 const HIDDEN_UNUSABLE_SESSIONS_STORAGE_KEY = 'workspace_hidden_unusable_sessions';
 const CHAT_THREAD_STORAGE_KEY_PREFIX = 'workspace_chat_thread';

@@ -6911,13 +6911,13 @@ Prevent project snapshots/restores from including `.git/` internals so restoring
 
 **Family status:** ACTIVE
 
-**Current stage:** PROJ-03-01 (PLANNED)
+**Current stage:** PROJ-03-A1 (PLANNED)
 
 ---
 
 #### PROJ-03-01: Design Project First UX Auto Session Flow Git Backed Autosave And Internal Recovery UI
 
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED
 **Nature:** PRODUCT / UX / ARCHITECTURE DESIGN
 **Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-01-DESIGN.md`
 
@@ -6933,7 +6933,128 @@ Design the next-stage product model so the app becomes project-first and more us
 - Future UX extension points are considered
 - Document is concrete enough to guide later implementation slicing
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-01 for full details
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-01 for full details. Implementation plan: `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md`.
+
+---
+
+#### PROJ-03-A0: Add Feature Flag Infrastructure And Recovery Vocabulary Copy Bundle
+
+**Status:** COMPLETE and LOCKED
+**Nature:** FRONTEND INFRASTRUCTURE / PHASE A PREREQUISITE
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-A0-CHECKPOINT.md`
+
+**Objective:**
+Introduce the `PROJECT_FIRST_UX` feature flag and a centralized recovery-vocabulary copy bundle so all Phase A and later slices can be merged behind a kill-switch and shipped without behavior change when the flag is off.
+
+**Bounded scope:**
+- Frontend only
+- New `frontend/lib/feature-flags.ts` (or equivalent) exporting `PROJECT_FIRST_UX` boolean read from env
+- New `frontend/lib/recovery-copy.ts` exporting string constants for Phase A–B vocabulary ("Reopen project", "Workspace disconnected", "All changes saved", etc.)
+- Wire flag into page.tsx and workspace-shell.tsx as consumption points only — no string substitution yet
+- No behavior change; no UI string changed in this slice
+
+**Non-goals:**
+- No actual UI changes
+- No route additions
+- No backend env vars or internal-endpoint changes
+- No auth work
+- No operator console work
+
+**Acceptance criteria:**
+- Flag defaults to `false` in all environments
+- Flag is flippable in dev via env var without code change
+- Copy bundle exports all strings the design will need (none consumed yet)
+- Existing test suites pass with no new failures (65/65 workspace-shell, typecheck clean)
+- `PROJECT_FIRST_UX=false` is an unambiguous kill-switch to today's behavior
+
+**Invariants preserved:**
+- No change to project-open hydration (PROJ-02-01)
+- No change to `.git/` snapshot exclusion (PROJ-02-03)
+- No change to snapshot-store persistence volume (PROJ-01-21)
+- No change to stop-session timeout behavior (OPS-01-04)
+- Static preview `index.html` requirement unchanged (PREV-02-02)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-A0. Source: `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase 0 / Slice 0.1.
+
+---
+
+#### PROJ-03-A1: Add Project-First Top-Level Routes And Labels Behind Feature Flag
+
+**Status:** PLANNED
+**Nature:** FRONTEND ARCHITECTURE / PHASE A IA SHELL
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-A1-CHECKPOINT.md`
+
+**Objective:**
+Stand up the project-first information architecture (Home, Projects, Workspace, Gallery, Account) as a thin route/nav shell behind `PROJECT_FIRST_UX`, wrapping existing functionality with no behavior change.
+
+**Bounded scope:**
+- Frontend only
+- Add `/[locale]/projects`, `/[locale]/gallery`, `/[locale]/account` top-level routes — each wraps or redirects to its current equivalent surface
+- Update primary nav header (workspace-shell or equivalent) to show new labels under the flag
+- `/[locale]/app/...` workspace route stays intact; new `/[locale]/projects/:id` workspace view reuses it
+- Flag off: product is byte-equivalent to today's behavior
+
+**Non-goals:**
+- No new page functionality beyond routing/labels
+- No sessions list removal yet (A.2, not registered in this batch)
+- No history tab
+- No share modal
+- No gallery data fetching
+- No backend changes
+- No auth changes
+
+**Acceptance criteria:**
+- Flag on: new top-level nav renders with correct labels; all routes resolve to existing equivalent content with no 404s, no console errors, no broken links
+- Flag off: product is byte-equivalent to today's behavior
+- Existing test suites pass; new tests verify flag-gated rendering
+- Manual smoke pass: open a project, write a file, run preview, see the new nav — all work
+
+**Dependencies:** PROJ-03-A0 (flag infrastructure must exist first)
+
+**Invariants preserved:** same as PROJ-03-A0
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-A1. Source: `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase A / Slice A.1.
+
+---
+
+#### PROJ-03-A3: Replace Raw Session Lifecycle Strings With Recovery Vocabulary
+
+**Status:** PLANNED
+**Nature:** FRONTEND UX / PHASE A COPY CLEANUP
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-A3-CHECKPOINT.md`
+
+**Objective:**
+Replace all user-visible raw session/container lifecycle strings (e.g. "session expired", "container exited", "session disconnected") with the recovery vocabulary from the copy bundle, presenting a single primary "Reopen project" action that wraps the existing project-open path.
+
+**Bounded scope:**
+- Frontend only
+- Under `PROJECT_FIRST_UX` flag: all known raw lifecycle strings on the user surface are replaced using recovery-copy bundle strings
+- "Reopen project" primary button wires to the existing `handleOpenWorkspaceProject` / open-project path — no new behavior, just surfaces the action where there was previously only a raw error
+- No new endpoint, no new backend call, no new retry logic
+
+**Non-goals:**
+- No change to the underlying session lifecycle logic
+- No change to backend error shapes
+- No stop-session UX relocation (that is A.2, not registered in this batch)
+- No history, autosave, or persistence changes
+
+**Acceptance criteria:**
+- Flag on: no user-visible string contains raw container/session/runtime mechanics
+- All recovery paths present "Reopen project" as the primary action
+- "Reopen project" correctly invokes the existing open-project flow
+- Flag off: today's string behavior unchanged
+- Existing test suites pass; key new tests verify string replacements and button wiring
+
+**Dependencies:** PROJ-03-A0 (copy bundle), PROJ-03-A1 (routes/labels baseline)
+
+**Invariants preserved:**
+- Existing project-open hydration behavior (PROJ-02-01) is called, not replaced
+- No regression to `.git/` snapshot exclusion (PROJ-02-03)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- Stop-session flow from OPS-01-04 is not affected
+- Static preview index.html requirement (PREV-02-02) unchanged
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-A3. Source: `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase A / Slice A.3.
 
 ---
 
