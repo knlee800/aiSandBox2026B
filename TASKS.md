@@ -6909,9 +6909,9 @@ Prevent project snapshots/restores from including `.git/` internals so restoring
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B not yet started.
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); B0 COMPLETE and LOCKED; B1/B2/B3/B4 not yet registered.
 
-**Current stage:** Phase B not started (pending authorization)
+**Current stage:** Phase B in progress — B0 COMPLETE and LOCKED; B1 not yet registered
 
 ---
 
@@ -7147,6 +7147,54 @@ Hide the sessions list from the primary workspace surface and move the stop-sess
 - Static preview `index.html` requirement (PREV-02-02) unchanged
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-A2b.
+
+---
+
+#### PROJ-03-B0: Add Fresh-Session-Open Helper Primitive Behind Feature Flag
+
+**Status:** COMPLETE and LOCKED
+**Nature:** FRONTEND / PHASE B PRIMITIVE HELPER
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-B0-CHECKPOINT.md`
+
+**Objective:**
+Introduce one frontend helper primitive for opening a project in a newly created fresh session, reusing the existing session-create flow and the existing `handleOpenWorkspaceProject` path, without changing any user-visible call site yet.
+
+**Bounded scope:**
+- Frontend only
+- New helper module/function plus focused unit tests
+- Helper wraps existing primitives only: create session → call existing `handleOpenWorkspaceProject` with the new session id
+- Preserve existing deterministic await sequencing and hydration discipline from PROJ-02 family
+- No user-visible call sites switched in this slice
+- No change to `handleOpenWorkspaceProject` internals
+- Zero user-visible behavior change (helper has no UI callers in this slice)
+
+**Non-goals:**
+- No New Project wiring yet (B1)
+- No Open Project wiring yet (B2)
+- No Reopen banner wiring yet (B3)
+- No Resume Latest CTA (B4)
+- No backend, auth, schema, or internal-API changes
+- No snapshot or persistence redesign
+
+**Acceptance criteria:**
+- Helper exists and is covered by focused unit tests
+- Tests prove: session-create called once; `handleOpenWorkspaceProject` called once with newly created session id; sequence is fully awaited (no fire-and-forget); project-open guard shape is preserved
+- Zero user-visible behavior change; helper has no UI callers
+- Existing page and workspace-shell tests remain green
+- Typecheck clean; no introduced lint errors
+
+**Dependencies:** All PROJ-03 Phase A slices (COMPLETE and LOCKED)
+
+**Invariants preserved:**
+- `PROJECT_FIRST_UX` remains kill switch; flag on/off has no user-visible difference in this slice
+- This helper is the primitive B1/B2/B3/B4 will call; it must preserve the PROJ-02-01 hydration contract exactly
+- No regression to project-open hydration / restore discipline (PROJ-02-01)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)
+- No regression to static preview `/workspace/index.html` rule (PREV-02-02)
+- No regression to stop-session cleanup behavior (OPS-01-04)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-B0.
 
 ---
 

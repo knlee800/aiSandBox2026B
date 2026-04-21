@@ -15670,7 +15670,7 @@ PROJ-02-02 isolated the real 500 cause:
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B not yet started. Completed order: A0 → A1 → A3 → A2a → A2b.
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); B0 COMPLETE and LOCKED; B1/B2/B3/B4 not yet registered. Completed order: A0 → A1 → A3 → A2a → A2b → B0.
 
 ---
 
@@ -15958,6 +15958,59 @@ Once the Advanced drawer shell is locked (A2a), this slice completes the session
 - Static preview `index.html` requirement (PREV-02-02) unchanged
 
 **Dependencies:** PROJ-03-A2a MUST be COMPLETE and LOCKED before A2b begins
+
+---
+
+### PROJ-03-B0: Add Fresh-Session-Open Helper Primitive Behind Feature Flag
+
+**Task ID:** PROJ-03-B0
+**Family:** PROJ-03 (Project-First UX Redesign — Phase B)
+**Status:** COMPLETE and LOCKED
+**Nature:** FRONTEND / PHASE B PRIMITIVE HELPER
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-B0-CHECKPOINT.md`
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase B — prerequisite helper slice
+
+**Objective:**
+Introduce one frontend helper primitive for opening a project in a newly created fresh session, reusing the existing session-create flow and the existing `handleOpenWorkspaceProject` path, without changing any user-visible call site yet.
+
+**Why this exists:**
+Phase B requires always-fresh-session semantics for New Project (B1), Open Project (B2), and Reopen recovery (B3). Those slices all need the same correctly sequenced open primitive. Building and locking this helper in isolation — before wiring it to any user-visible click — ensures the hard-won PROJ-02-01 hydration discipline is preserved exactly and independently verifiable before any user flow depends on it.
+
+**Bounded scope:**
+- Frontend only
+- New helper module/function plus focused unit tests
+- Helper wraps existing primitives only: create session → call existing `handleOpenWorkspaceProject` with the new session id
+- Preserve existing deterministic await sequencing and hydration discipline from PROJ-02 family
+- No user-visible call sites switched in this slice
+- No change to `handleOpenWorkspaceProject` internals
+- Zero user-visible behavior change (helper has no UI callers in this slice)
+
+**Non-goals:**
+- No New Project wiring yet (B1)
+- No Open Project wiring yet (B2)
+- No Reopen banner wiring yet (B3)
+- No Resume Latest CTA (B4)
+- No backend, auth, schema, or internal-API changes
+- No snapshot or persistence redesign
+- No Phase C/D/E work
+
+**Acceptance criteria:**
+- Helper exists and is covered by focused unit tests
+- Tests prove: session-create called once; `handleOpenWorkspaceProject` called once with the newly created session id; sequence is fully awaited (no fire-and-forget); project-open guard shape is preserved
+- Zero user-visible behavior change; helper has no UI callers
+- Existing page and workspace-shell tests remain green
+- Typecheck clean; no introduced lint errors on changed files
+
+**Invariants explicitly preserved:**
+- `PROJECT_FIRST_UX` remains kill switch; flag on/off has no user-visible difference in this slice
+- This helper is the primitive B1/B2/B3/B4 will call; it must preserve the PROJ-02-01 hydration contract exactly
+- No regression to project-open hydration / restore discipline (PROJ-02-01)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)
+- No regression to static preview `/workspace/index.html` rule (PREV-02-02)
+- No regression to stop-session cleanup behavior (OPS-01-04)
+
+**Dependencies:** All PROJ-03 Phase A slices (A0, A1, A3, A2a, A2b) COMPLETE and LOCKED
 
 ---
 
