@@ -16071,6 +16071,64 @@ With B0's helper locked, the first user-visible Phase B behavior change is to wi
 
 ---
 
+### PROJ-03-B2a: Wire Open Project Handler To Open Project In Fresh Session Behind Feature Flag
+
+**Task ID:** PROJ-03-B2a
+**Family:** PROJ-03 (Project-First UX Redesign — Phase B)
+**Status:** COMPLETE and LOCKED
+**Nature:** FRONTEND / PHASE B OPEN PROJECT HANDLER WIRING
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-B2a-CHECKPOINT.md`
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase B — B2 Open Project wiring slice (split: B2a handler wiring, B2b UI gating)
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, change `handleOpenWorkspaceProject` so a successful open goes through the locked B0 helper (`openProjectInFreshSession`) instead of opening into the currently selected session, while keeping the existing Open Project UI affordance and enablement gating unchanged in this slice.
+
+**Why this exists:**
+With B1 locked, the next wiring point is the existing Open Project handler. Unlike B1 (new projects with no prior state), this path may have an explicit snapshot selection to honor and operates on a more complex pre-existing hydration sequence. Splitting the original B2 into B2a (handler wiring) and B2b (UI gating relaxation) follows the successful A2a/A2b and B0/B1 de-risking pattern: lock the core logic first, then unlock the UI path in a follow-on slice once the logic is verified.
+
+**Bounded scope:**
+- Frontend only
+- Single edit to `handleOpenWorkspaceProject` in `frontend/app/[locale]/app/page.tsx`
+- Under flag only, after existing precondition passes: call `openProjectInFreshSession({ token, projectId: selectedProjectId, snapshotId: trimmed selectedSnapshotId when set })`, awaited end-to-end, wrapped with `projectOpenInProgressRef` discipline (set before call; clear in `finally`) and `skipNextSessionEffectFileReloadRef` cleared in same `finally`
+- Mirror the existing open-project follow-up sequence
+- Preserve explicit `selectedSnapshotId` semantics when provided; omit when not set
+- Flag-off path preserves existing `handleOpenWorkspaceProject` behavior exactly
+- Minimal flag-on success-message neutralization allowed if the existing wording would be inaccurate
+
+**Non-goals:**
+- No change to Open Project button enablement, label, or visibility (deferred to B2b)
+- No relaxation of `selectedSessionId` gating yet (that is B2b)
+- No change to `handleOpenWorkspaceProject` signature or external interface
+- No change to B0 helper internals
+- No change to B1 path
+- No Reopen banner wiring yet (B3)
+- No Resume Latest CTA (B4)
+- No backend, auth, schema, or internal-API changes
+- No autosave, history, or persistence work
+- No Phase C/D/E work
+
+**Acceptance criteria:**
+- Flag on (via test/programmatic path): `openProjectInFreshSession` called once with the selected project id; `snapshotId` passed only when explicitly selected; post-open settled state matches the existing open-project settled-state shape
+- Flag on: `projectOpenInProgressRef` and `skipNextSessionEffectFileReloadRef` both cleared in `finally` on success and error paths
+- Flag off: legacy `handleOpenWorkspaceProject` behavior unchanged
+- Existing relevant page/workspace/helper tests remain green
+- Typecheck clean; no introduced lint errors on changed files
+
+**Invariants explicitly preserved:**
+- This is a PROJ-02-sensitive surface; `projectOpenInProgressRef` discipline must remain exact
+- `selectedSessionId` is intentionally ignored by the flag-on open path; UI gating unchanged so path is not normally user-reachable in this slice
+- Explicit `selectedSnapshotId` behavior must remain intact
+- `PROJECT_FIRST_UX` remains kill switch
+- No regression to project-open hydration / restore discipline (PROJ-02-01)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)
+- No regression to static preview `/workspace/index.html` rule (PREV-02-02)
+- No regression to stop-session cleanup behavior (OPS-01-04)
+
+**Dependencies:** PROJ-03-B1 (COMPLETE and LOCKED)
+
+---
+
 ### AI-04-01: Backend Chat Persistence Wiring
 
 **Task ID:** AI-04-01

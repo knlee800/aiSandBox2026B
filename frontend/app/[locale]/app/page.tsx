@@ -1140,7 +1140,39 @@ export default function AppPage() {
     setProjectActionError(null);
     projectOpenInProgressRef.current = true;
     try {
-      let snapshotIdToOpen: string | undefined = selectedSnapshotId?.trim() || undefined;
+      const selectedSnapshotIdToOpen = selectedSnapshotId?.trim() || undefined;
+      if (PROJECT_FIRST_UX) {
+        const openResult = await openProjectInFreshSession({
+          token,
+          projectId: selectedProjectId,
+          snapshotId: selectedSnapshotIdToOpen,
+        });
+        const openSessionId = openResult.sessionId;
+        const expectsRestoredFiles = Boolean(openResult.restoredSnapshotId);
+
+        skipNextSessionEffectFileReloadRef.current =
+          openSessionId !== selectedSessionIdRef.current;
+        setSelectedSessionId(openSessionId);
+
+        await hydrateWorkspaceForProjectOpen(token, openSessionId, expectsRestoredFiles);
+
+        await refreshPreviewForSession(token, openSessionId);
+        await loadCheckpoints(token, openSessionId);
+        await loadSessions(token);
+        setSelectedSessionId((current) => current ?? openSessionId);
+
+        await loadWorkspaceSnapshotsForUser(token);
+        await loadWorkspaceProjectsForUser(token);
+        await loadPublicWorkspaceProjectsList();
+        await loadDashboardSlice(token);
+
+        setProjectActionState('success');
+        setProjectActionMessage('Project opened.');
+        setProjectActionError(null);
+        return;
+      }
+
+      let snapshotIdToOpen: string | undefined = selectedSnapshotIdToOpen;
       if (!snapshotIdToOpen) {
         const freshSnapshots = await loadWorkspaceSnapshots({ token });
         setWorkspaceSnapshots(freshSnapshots);

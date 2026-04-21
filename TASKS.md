@@ -6909,9 +6909,9 @@ Prevent project snapshots/restores from including `.git/` internals so restoring
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); B0 COMPLETE and LOCKED; B1 COMPLETE and LOCKED; B2/B3/B4 not yet registered.
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); B0 COMPLETE and LOCKED; B1 COMPLETE and LOCKED; B2a COMPLETE and LOCKED; B2b/B3/B4 not yet registered.
 
-**Current stage:** Phase B in progress — B1 COMPLETE and LOCKED; B2 not yet registered
+**Current stage:** Phase B in progress — B2a COMPLETE and LOCKED; B2b not yet registered
 
 ---
 
@@ -7248,6 +7248,60 @@ Behind `PROJECT_FIRST_UX`, after a successful New Project creation, invoke the l
 - No regression to stop-session cleanup behavior (OPS-01-04)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-B1.
+
+---
+
+#### PROJ-03-B2a: Wire Open Project Handler To Open Project In Fresh Session Behind Feature Flag
+
+**Status:** COMPLETE and LOCKED
+**Nature:** FRONTEND / PHASE B OPEN PROJECT HANDLER WIRING
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-B2a-CHECKPOINT.md`
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, change `handleOpenWorkspaceProject` so a successful open goes through the locked B0 helper (`openProjectInFreshSession`) instead of opening into the currently selected session, while keeping the existing Open Project UI affordance and enablement gating unchanged in this slice.
+
+**Bounded scope:**
+- Frontend only
+- Single edit to `handleOpenWorkspaceProject` in `frontend/app/[locale]/app/page.tsx`
+- Under flag only, after existing precondition passes: call `openProjectInFreshSession({ token, projectId: selectedProjectId, snapshotId: trimmed selectedSnapshotId when set })`, awaited end-to-end, wrapped with `projectOpenInProgressRef` discipline (set before call; clear in `finally`) and `skipNextSessionEffectFileReloadRef` cleared in same `finally`
+- Mirror the existing open-project follow-up sequence
+- Preserve explicit `selectedSnapshotId` semantics when provided; omit when not set
+- Flag-off path preserves existing `handleOpenWorkspaceProject` behavior exactly
+- Minimal flag-on success-message neutralization allowed if the existing wording would be inaccurate
+
+**Non-goals:**
+- No change to Open Project button enablement, label, or visibility (deferred to B2b)
+- No relaxation of `selectedSessionId` gating yet (that is B2b)
+- No change to `handleOpenWorkspaceProject` signature or external interface
+- No change to B0 helper internals
+- No change to B1 path
+- No Reopen banner wiring yet (B3)
+- No Resume Latest CTA (B4)
+- No backend, auth, schema, or internal-API changes
+- No autosave, history, or persistence work
+- No Phase C/D/E work
+
+**Acceptance criteria:**
+- Flag on (via test/programmatic path): `openProjectInFreshSession` called once with the selected project id; `snapshotId` passed only when explicitly selected; post-open settled state matches the existing open-project settled-state shape
+- Flag on: `projectOpenInProgressRef` and `skipNextSessionEffectFileReloadRef` both cleared in `finally` on success and error paths
+- Flag off: legacy `handleOpenWorkspaceProject` behavior unchanged
+- Existing relevant page/workspace/helper tests remain green
+- Typecheck clean; no introduced lint errors
+
+**Dependencies:** PROJ-03-B1 (COMPLETE and LOCKED)
+
+**Invariants preserved:**
+- This is a PROJ-02-sensitive surface; `projectOpenInProgressRef` discipline must remain exact
+- `selectedSessionId` is intentionally ignored by the flag-on open path; UI gating unchanged so path is not normally user-reachable in this slice
+- Explicit `selectedSnapshotId` behavior must remain intact
+- `PROJECT_FIRST_UX` remains kill switch
+- No regression to project-open hydration / restore discipline (PROJ-02-01)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)
+- No regression to static preview `/workspace/index.html` rule (PREV-02-02)
+- No regression to stop-session cleanup behavior (OPS-01-04)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-B2a.
 
 ---
 
