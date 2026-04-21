@@ -3581,6 +3581,7 @@ export default function AppPage() {
 
   return (
     <WorkspaceShell
+      locale={locale}
       sessions={visibleSessions}
       selectedSessionId={selectedSessionId}
       isLoadingSessions={isLoadingSessions}

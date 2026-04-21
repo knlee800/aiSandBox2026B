@@ -49,6 +49,8 @@ const projectFirstUxAnchors = {
 void projectFirstUxAnchors;
 
 interface WorkspaceShellProps {
+  locale?: string;
+  projectFirstUxEnabled?: boolean;
   sessions: WorkspaceShellSession[];
   selectedSessionId: string | null;
   isLoadingSessions: boolean;
@@ -223,6 +225,8 @@ export function runStopSessionWithConfirmation(args: {
 }
 
 export default function WorkspaceShell(props: WorkspaceShellProps) {
+  const locale = props.locale ?? 'en';
+  const projectFirstUxEnabled = props.projectFirstUxEnabled ?? PROJECT_FIRST_UX;
   const shellState = computeWorkspaceShellState({
     isLoadingSessions: props.isLoadingSessions,
     sessionError: props.sessionError,
@@ -245,27 +249,74 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   });
   const headerIdentityLabel =
     props.userSummary?.email?.trim() || 'Authenticated user';
+  const projectsHref = `/${locale}/projects`;
+  const galleryHref = `/${locale}/gallery`;
+  const accountHref = `/${locale}/account`;
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col" data-testid="workspace-shell">
       <header className="h-14 bg-white border-b border-gray-200 px-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-sm font-semibold text-gray-900">AI Sandbox Workspace</h1>
-          <p className="text-xs text-gray-500">Workspace</p>
-        </div>
-        <div className="text-xs text-gray-600 text-right">
-          <p>{headerIdentityLabel}</p>
-          <p className="text-[11px] text-gray-500">Session-scoped workspace</p>
-          <p className="mt-1">
-            <a
-              href="keys"
-              className="text-[11px] font-medium text-blue-600 hover:text-blue-700 hover:underline"
-              data-testid="workspace-header-api-keys-link"
-            >
-              API Keys
-            </a>
-          </p>
-        </div>
+        {projectFirstUxEnabled ? (
+          <>
+            <div className="min-w-0">
+              <h1 className="text-sm font-semibold text-gray-900">AI Sandbox</h1>
+              <p className="text-xs text-gray-500">Workspace</p>
+            </div>
+            <div className="flex items-center gap-6">
+              <nav
+                className="hidden md:flex items-center gap-4 text-xs font-medium text-gray-600"
+                aria-label="Project-first navigation"
+                data-testid="workspace-header-project-first-nav"
+              >
+                <a
+                  href={projectsHref}
+                  className="hover:text-gray-900 hover:underline"
+                  data-testid="workspace-header-projects-link"
+                >
+                  Projects
+                </a>
+                <a
+                  href={galleryHref}
+                  className="hover:text-gray-900 hover:underline"
+                  data-testid="workspace-header-gallery-link"
+                >
+                  Gallery
+                </a>
+                <a
+                  href={accountHref}
+                  className="hover:text-gray-900 hover:underline"
+                  data-testid="workspace-header-account-link"
+                >
+                  Account
+                </a>
+              </nav>
+              <div className="text-xs text-gray-600 text-right">
+                <p>{headerIdentityLabel}</p>
+                <p className="text-[11px] text-gray-500">Project-first workspace shell</p>
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            <div>
+              <h1 className="text-sm font-semibold text-gray-900">AI Sandbox Workspace</h1>
+              <p className="text-xs text-gray-500">Workspace</p>
+            </div>
+            <div className="text-xs text-gray-600 text-right">
+              <p>{headerIdentityLabel}</p>
+              <p className="text-[11px] text-gray-500">Session-scoped workspace</p>
+              <p className="mt-1">
+                <a
+                  href="keys"
+                  className="text-[11px] font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                  data-testid="workspace-header-api-keys-link"
+                >
+                  API Keys
+                </a>
+              </p>
+            </div>
+          </>
+        )}
       </header>
 
       <div className="flex-1 min-h-0 flex flex-col md:flex-row">

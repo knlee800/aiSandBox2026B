@@ -131,6 +131,8 @@ function renderWorkspaceShell(
   overrides: Partial<React.ComponentProps<typeof WorkspaceShell>> = {},
 ): string {
   const defaultProps: React.ComponentProps<typeof WorkspaceShell> = {
+    locale: 'en',
+    projectFirstUxEnabled: false,
     sessions: [session],
     selectedSessionId: session.id,
     isLoadingSessions: false,
@@ -274,6 +276,28 @@ describe('workspace shell component', () => {
     assert.match(html, /Usage window resets at:/);
     assert.match(html, /dashboard-quota-reset-at-formatted/);
     assert.doesNotMatch(html, /2026-03-11T12:00:00.000Z/);
+  });
+
+  test('renders project-first header nav behind feature flag', () => {
+    const html = renderWorkspaceShell({
+      locale: 'zh-TW',
+      projectFirstUxEnabled: true,
+    });
+
+    assert.match(html, /AI Sandbox/);
+    assert.match(html, /Project-first workspace shell/);
+    assert.match(html, /workspace-header-project-first-nav/);
+    assert.match(html, /workspace-header-projects-link/);
+    assert.match(html, /workspace-header-gallery-link/);
+    assert.match(html, /workspace-header-account-link/);
+    assert.match(html, /href="\/zh-TW\/projects"/);
+    assert.match(html, /href="\/zh-TW\/gallery"/);
+    assert.match(html, /href="\/zh-TW\/account"/);
+    assert.match(html, />Projects</);
+    assert.match(html, />Gallery</);
+    assert.match(html, />Account</);
+    assert.doesNotMatch(html, /Session-scoped workspace/);
+    assert.doesNotMatch(html, /workspace-header-api-keys-link/);
   });
 
   test('renders Stop for usable sessions and Remove for unusable sessions', () => {

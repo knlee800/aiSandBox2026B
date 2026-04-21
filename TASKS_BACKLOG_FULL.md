@@ -15670,7 +15670,7 @@ PROJ-02-02 isolated the real 500 cause:
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — A0 complete and locked; current stage A1 (PLANNED).
+**Family status:** ACTIVE — A0, A1 complete and locked; current stage A3 (PLANNED).
 
 ---
 
@@ -15780,7 +15780,7 @@ All Phase A slices must be gated behind a kill-switch so the product stays stabl
 
 **Task ID:** PROJ-03-A1
 **Family:** PROJ-03 (Project-First UX Redesign — Phase A)
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED
 **Nature:** FRONTEND ARCHITECTURE / PHASE A IA SHELL
 **Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-A1-CHECKPOINT.md`
 **Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase A / Slice A.1

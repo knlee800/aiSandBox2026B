@@ -6911,7 +6911,7 @@ Prevent project snapshots/restores from including `.git/` internals so restoring
 
 **Family status:** ACTIVE
 
-**Current stage:** PROJ-03-A1 (PLANNED)
+**Current stage:** PROJ-03-A3 (PLANNED)
 
 ---
 
@@ -6980,7 +6980,7 @@ Introduce the `PROJECT_FIRST_UX` feature flag and a centralized recovery-vocabul
 
 #### PROJ-03-A1: Add Project-First Top-Level Routes And Labels Behind Feature Flag
 
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED
 **Nature:** FRONTEND ARCHITECTURE / PHASE A IA SHELL
 **Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-A1-CHECKPOINT.md`
 
