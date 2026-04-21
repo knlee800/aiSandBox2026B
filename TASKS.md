@@ -6909,9 +6909,9 @@ Prevent project snapshots/restores from including `.git/` internals so restoring
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE
+**Family status:** ACTIVE — A0, A1, A3 complete and locked; Phase A approved slices complete.
 
-**Current stage:** PROJ-03-A3 (PLANNED)
+**Current stage:** PROJ-03-A3 (COMPLETE and LOCKED)
 
 ---
 
@@ -7019,7 +7019,7 @@ Stand up the project-first information architecture (Home, Projects, Workspace, 
 
 #### PROJ-03-A3: Replace Raw Session Lifecycle Strings With Recovery Vocabulary
 
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED
 **Nature:** FRONTEND UX / PHASE A COPY CLEANUP
 **Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-A3-CHECKPOINT.md`
 

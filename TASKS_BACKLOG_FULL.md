@@ -15670,7 +15670,7 @@ PROJ-02-02 isolated the real 500 cause:
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — A0, A1 complete and locked; current stage A3 (PLANNED).
+**Family status:** ACTIVE — A0, A1, A3 complete and locked; Phase A approved slices complete.
 
 ---
 
@@ -15820,7 +15820,7 @@ The approved design requires new top-level routes and relabeled navigation. This
 
 **Task ID:** PROJ-03-A3
 **Family:** PROJ-03 (Project-First UX Redesign — Phase A)
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED
 **Nature:** FRONTEND UX / PHASE A COPY CLEANUP
 **Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-A3-CHECKPOINT.md`
 **Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase A / Slice A.3

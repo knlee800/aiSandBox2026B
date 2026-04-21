@@ -300,6 +300,52 @@ describe('workspace shell component', () => {
     assert.doesNotMatch(html, /workspace-header-api-keys-link/);
   });
 
+  test('renders project-first recovery wording in main helper surfaces', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      selectedSessionId: null,
+      previewState: 'unavailable',
+    });
+
+    assert.match(
+      html,
+      /Your project stays recoverable\. If the workspace disconnects, reopen the project to continue\./,
+    );
+    assert.match(html, /Open a project to send prompts\./);
+    assert.match(html, /Open a project to run a build target\./);
+    assert.match(html, /No project open/);
+    assert.match(html, /Open a project to start using workspace tools\./);
+    assert.match(html, /Use Start a new project or Open existing project in the history panel\./);
+    assert.match(html, /Your project files are ready to browse\./);
+    assert.match(html, /No preview is running for this workspace yet\./);
+    assert.match(html, /Open a project to create a save point\./);
+    assert.match(html, /Workspaces: 1/);
+    assert.doesNotMatch(html, /Workspace data is session-scoped\./);
+    assert.doesNotMatch(html, /Select an active session to send prompts\./);
+    assert.doesNotMatch(html, /Select an active session to run a build target\./);
+    assert.doesNotMatch(html, /No session selected/);
+  });
+
+  test('renders reopen project action for disconnected exec state behind feature flag', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      selectedProjectId: 'project-1',
+      onOpenWorkspaceProject: async () => {},
+      execState: {
+        status: 'http-410',
+        result: null,
+      },
+    });
+
+    assert.match(html, /Workspace disconnected/);
+    assert.match(html, /Your workspace expired, but your project can be reopened\./);
+    assert.match(html, /Reconnect by reopening your project\./);
+    assert.match(html, /workspace-exec-reopen-project/);
+    assert.match(html, />Reopen project</);
+    assert.doesNotMatch(html, /Session terminated \(410\)/);
+    assert.doesNotMatch(html, /This session is terminated and cannot execute commands\./);
+  });
+
   test('renders Stop for usable sessions and Remove for unusable sessions', () => {
     const html = renderWorkspaceShell({
       sessions: [session, terminatedSession],
