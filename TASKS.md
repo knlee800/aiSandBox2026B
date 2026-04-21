@@ -6907,6 +6907,37 @@ Prevent project snapshots/restores from including `.git/` internals so restoring
 ---
 
 
+## PROJ-03 — Project-First UX Redesign
+
+**Family status:** ACTIVE
+
+**Current stage:** PROJ-03-01 (PLANNED)
+
+---
+
+#### PROJ-03-01: Design Project First UX Auto Session Flow Git Backed Autosave And Internal Recovery UI
+
+**Status:** PLANNED
+**Nature:** PRODUCT / UX / ARCHITECTURE DESIGN
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-01-DESIGN.md`
+
+**Objective:**
+Design the next-stage product model so the app becomes project-first and more user-friendly, with sessions mostly hidden from normal users, autosave/history redesigned around a git-backed model, and an internal operator recovery UI planned for emergencies.
+
+**Acceptance criteria:**
+- A clear product model is proposed
+- Normal user flows are simplified and project-first
+- Session handling is clarified as hidden runtime machinery where appropriate
+- Autosave/history model is clarified
+- Internal recovery/admin UI requirements are outlined
+- Future UX extension points are considered
+- Document is concrete enough to guide later implementation slicing
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-01 for full details
+
+---
+
+
 ## AI-04 ??Chat Persistence (Core Product Loop)
 
 **Current stage:** AI-04-01 (COMPLETE and LOCKED)

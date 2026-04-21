@@ -15668,6 +15668,66 @@ PROJ-02-02 isolated the real 500 cause:
 
 ---
 
+## PROJ-03 — Project-First UX Redesign
+
+**Family status:** ACTIVE — design wave open with PROJ-03-01.
+
+---
+
+### PROJ-03-01: Design Project First UX Auto Session Flow Git Backed Autosave And Internal Recovery UI
+
+**Task ID:** PROJ-03-01
+**Family:** PROJ-03 (Project-First UX Redesign)
+**Status:** PLANNED
+**Nature:** PRODUCT / UX / ARCHITECTURE DESIGN
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-01-DESIGN.md`
+
+**Objective:**
+Design the next-stage product model so the app becomes project-first and more user-friendly, with sessions mostly hidden from normal users, autosave/history redesigned around a git-backed model, and an internal operator recovery UI planned for emergencies.
+
+**Why this exists:**
+Current product behavior is technically improved, but the user model is still too confusing:
+- users think in projects, not sessions
+- asking users to create/open sessions directly is too technical
+- project snapshots vs git history is confusing
+- public/private/share concepts need clearer separation
+- internal recovery tooling is needed for operators
+- future features like AI-to-AI collaboration will need a cleaner product structure
+
+**Design scope only:**
+- define a project-first user model
+- define auto-session creation/opening model:
+  - New Project → create fresh session automatically
+  - Open Existing Project → create fresh session automatically and restore project automatically
+- define what session concepts remain hidden vs visible to users
+- define persistence/history model:
+  - user-facing history/revert model
+  - background autosave/recovery model
+  - role of git vs hidden recovery snapshots
+- define whether Project Snapshots should remain user-facing, be renamed, or move to background recovery only
+- define public/private/share model in clearer UX terms
+- define internal/operator emergency recovery UI requirements
+- define future-ready extension points for upcoming features like AI-to-AI collaboration
+- produce a practical design/spec document, not implementation
+
+**Explicitly out of scope:**
+- no code changes
+- no implementation plan yet
+- no backend refactor
+- no UI implementation
+- no task registration beyond this one
+
+**Acceptance criteria:**
+- a clear product model is proposed
+- normal user flows are simplified and project-first
+- session handling is clarified as hidden runtime machinery where appropriate
+- autosave/history model is clarified
+- internal recovery/admin UI requirements are outlined
+- future UX extension points are considered
+- document is concrete enough to guide later implementation slicing
+
+---
+
 ### AI-04-01: Backend Chat Persistence Wiring
 
 **Task ID:** AI-04-01
