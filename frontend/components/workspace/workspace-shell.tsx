@@ -354,12 +354,24 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     projectFirstUxEnabled &&
     Boolean(props.selectedProjectId) &&
     Boolean(props.onOpenWorkspaceProject);
+  const latestProject = projectFirstUxEnabled
+    ? computeLatestProject(props.workspaceProjects ?? [])
+    : null;
   const handleReopenProject = () => {
     if (!props.onOpenWorkspaceProject) {
       return;
     }
     void props.onOpenWorkspaceProject();
   };
+  const handleResumeLatestProject =
+    latestProject && props.onResumeWorkspaceProjectById
+      ? (() => {
+          const onResumeWorkspaceProjectById = props.onResumeWorkspaceProjectById;
+          return () => {
+            void onResumeWorkspaceProjectById(latestProject.id);
+          };
+        })()
+      : undefined;
   const handleCopySelectedSessionId = async () => {
     if (!props.selectedSessionId) {
       return;
@@ -615,6 +627,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                   projectFirstUxEnabled={projectFirstUxEnabled}
                   canReopenProject={canReopenProject}
                   onReopenProject={canReopenProject ? handleReopenProject : undefined}
+                  onResumeLatestProject={handleResumeLatestProject}
                 />
               </div>
             </section>
@@ -5782,14 +5795,38 @@ function formatQuotaResetTimestamp(value: string | null | undefined): string {
   return parsedDate.toLocaleString();
 }
 
+function computeLatestProject(projects: WorkspaceProjectSummary[]): WorkspaceProjectSummary | null {
+  if (projects.length === 0) {
+    return null;
+  }
+
+  const [latestProject] = [...projects].sort((left, right) => {
+    const updatedAtComparison = right.updatedAt.localeCompare(left.updatedAt);
+    if (updatedAtComparison !== 0) {
+      return updatedAtComparison;
+    }
+    return left.id.localeCompare(right.id);
+  });
+
+  return latestProject ?? null;
+}
+
 function ShellStateMessage(props: {
   state: 'loading' | 'error' | 'empty' | 'ready';
   sessionError?: string | null;
   projectFirstUxEnabled: boolean;
   canReopenProject: boolean;
   onReopenProject?: () => void;
+  onResumeLatestProject?: () => void;
 }) {
-  const { state, sessionError, projectFirstUxEnabled, canReopenProject, onReopenProject } = props;
+  const {
+    state,
+    sessionError,
+    projectFirstUxEnabled,
+    canReopenProject,
+    onReopenProject,
+    onResumeLatestProject,
+  } = props;
   if (state === 'loading') {
     return (
       <StateMessage
@@ -5851,6 +5888,17 @@ function ShellStateMessage(props: {
           projectFirstUxEnabled
             ? recoveryCopy.workspace.help
             : 'Use New Session in the sidebar.'
+        }
+        primaryActionLabel={
+          projectFirstUxEnabled && onResumeLatestProject
+            ? recoveryCopy.actions.resumeLatestProject
+            : undefined
+        }
+        onPrimaryAction={projectFirstUxEnabled ? onResumeLatestProject : undefined}
+        primaryActionTestId={
+          projectFirstUxEnabled && onResumeLatestProject
+            ? 'workspace-shell-resume-latest-project'
+            : undefined
         }
       />
     );

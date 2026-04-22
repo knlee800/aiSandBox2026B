@@ -5,6 +5,7 @@ export const recoveryCopy = {
     startNewProject: 'Start a new project',
     openExistingProject: 'Open existing project',
     reopenProject: 'Reopen project',
+    resumeLatestProject: 'Resume latest project',
     tryAgain: 'Try again',
     openOlderVersion: 'Open older version',
   },

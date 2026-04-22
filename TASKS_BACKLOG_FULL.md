@@ -15670,7 +15670,7 @@ PROJ-02-02 isolated the real 500 cause:
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); B0 COMPLETE and LOCKED; B1/B2/B3/B4 not yet registered. Completed order: A0 → A1 → A3 → A2a → A2b → B0.
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); Phase C not yet registered. Completed order: A0 → A1 → A3 → A2a → A2b → B0 → B1 → B2a → B2b → B3a → B4a → B4b. Current stage: Phase C not yet registered or started.
 
 ---
 
@@ -16302,6 +16302,73 @@ B4 ("Resume Latest Project CTA On Home") requires a new one-click open path that
 - No regression to stop-session cleanup behavior (OPS-01-04)
 
 **Dependencies:** PROJ-03-B3a (COMPLETE and LOCKED)
+
+---
+
+### PROJ-03-B4b: Add Resume Latest Project CTA In Shell Empty State Behind Feature Flag
+
+**Task ID:** PROJ-03-B4b
+**Family:** PROJ-03 (Project-First UX Redesign — Phase B)
+**Status:** COMPLETE and LOCKED
+**Nature:** FRONTEND / PHASE B CTA UI
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-B4b-CHECKPOINT.md`
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase B — B4 Resume Latest Project CTA (split: B4a handler wiring, B4b CTA UI)
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, add a single "Resume latest project" primary-action button to the existing `shellState === 'empty'` `StateMessage` in `WorkspaceShell`. The CTA computes the latest project from the existing `workspaceProjects` prop (by `updatedAt` descending, tie-break by project id) and calls the locked B4a `onResumeWorkspaceProjectById` callback. No route or IA change.
+
+**Why this exists:**
+B4a locked the handler (`handleResumeWorkspaceProjectById`) and exposed the `onResumeWorkspaceProjectById` prop on `WorkspaceShell`, but intentionally deferred the visible CTA to this slice. B4b completes the user-facing half of B4: a one-click "Resume latest project" entry point visible on the shell-empty surface, which is the closest analogue to a "home" or "landing" state in the current IA.
+
+**Bounded scope:**
+- Frontend only
+- Primary implementation in `frontend/components/workspace/workspace-shell.tsx`:
+  - Local helper to compute latest project from `workspaceProjects` (by `updatedAt` descending, tie-break by project id)
+  - CTA mounted in the existing `shellState === 'empty'` `StateMessage` via its primary action seam only
+- Add one new additive copy entry in `frontend/lib/recovery-copy.ts`:
+  - `actions.resumeLatestProject` label: "Resume latest project"
+- Add focused tests in `frontend/components/workspace/workspace-shell.test.tsx`
+- Behavior:
+  - Compute latest project from `workspaceProjects` only (not public projects)
+  - Deterministic latest selection: `updatedAt` descending, tie-break by project id
+  - Render CTA only when `PROJECT_FIRST_UX` is on, latest project exists, and `onResumeWorkspaceProjectById` is provided
+  - Mount only in the existing `shellState === 'empty'` `StateMessage`
+  - Clicking the CTA calls `onResumeWorkspaceProjectById(latestProject.id)` exactly once
+
+**Non-goals:**
+- No new route or IA change
+- No change to nav/header
+- No change to existing Open Project button
+- No change to Reopen Project affordances
+- No change to B4a handler internals
+- No change to B0/B1/B2a/B2b/B3a paths
+- No change to existing `recoveryCopy` entries other than the one additive resume-latest label
+- No "last workspace touch" telemetry
+- No backend/auth/schema/internal-API changes
+- No autosave/history/persistence work
+- No Phase C/D/E work
+
+**Acceptance checks:**
+- Flag off: no resume-latest CTA renders
+- Flag on + non-empty `workspaceProjects` + `onResumeWorkspaceProjectById` provided: CTA renders in shell-empty state; click calls handler exactly once with resolved latest project id
+- Flag on + empty `workspaceProjects`: CTA absent
+- Flag on + handler absent: CTA absent
+- Existing relevant focused test suites remain green
+- Typecheck clean, no introduced lint errors
+- No JSX/copy change outside shell-empty `StateMessage` and the single new copy entry
+
+**Risks / invariants to capture:**
+- Latest-project computation must use `workspaceProjects` only, not public projects
+- `updatedAt` availability/shape to be verified during stage-start
+- This slice adds one visible CTA only; do not quietly expand into more shell/home actions
+- `PROJECT_FIRST_UX` remains the kill switch
+- No regression to project-open hydration / restore discipline (PROJ-02-01)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)
+- No regression to static preview `/workspace/index.html` rule (PREV-02-02)
+- No regression to stop-session cleanup behavior (OPS-01-04)
+
+**Dependencies:** PROJ-03-B4a (COMPLETE and LOCKED)
 
 ---
 

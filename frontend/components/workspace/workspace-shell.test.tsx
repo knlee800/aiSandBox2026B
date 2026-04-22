@@ -15,6 +15,7 @@ import type { WorkspaceExecState } from './workspace-exec.logic';
 import type { WorkspacePreviewState } from './workspace-preview.logic';
 import type { WorkspaceFileNode } from './workspace-file-navigation.logic';
 import type { WorkspaceCheckpointDiffResponse } from './workspace-checkpoint-diff.logic';
+import type { WorkspaceProjectSummary } from './workspace-projects.logic';
 
 const session: WorkspaceShellSession = {
   id: '12345678-test-session',
@@ -28,6 +29,32 @@ const terminatedSession: WorkspaceShellSession = {
   terminatedAt: '2026-03-10T12:30:00.000Z',
   terminationReason: 'manual',
 };
+const resumeLatestProjects: WorkspaceProjectSummary[] = [
+  {
+    id: 'project-b',
+    userId: 'user-123',
+    name: 'Project B',
+    visibility: 'private',
+    createdAt: '2026-03-10T10:00:00.000Z',
+    updatedAt: '2026-03-10T12:30:00.000Z',
+  },
+  {
+    id: 'project-a',
+    userId: 'user-123',
+    name: 'Project A',
+    visibility: 'private',
+    createdAt: '2026-03-10T09:00:00.000Z',
+    updatedAt: '2026-03-10T12:30:00.000Z',
+  },
+  {
+    id: 'project-c',
+    userId: 'user-123',
+    name: 'Project C',
+    visibility: 'private',
+    createdAt: '2026-03-10T08:00:00.000Z',
+    updatedAt: '2026-03-10T11:30:00.000Z',
+  },
+];
 
 const checkpoint: WorkspaceCheckpoint = {
   id: 'checkpoint-1',
@@ -653,6 +680,74 @@ describe('workspace shell component', () => {
     }
     shellErrorOnClick();
     assert.equal(openCalls, 1);
+  });
+
+  test('does not render resume latest project action in shell empty state when feature flag is off', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: false,
+      selectedSessionId: null,
+      workspaceProjects: resumeLatestProjects,
+      onResumeWorkspaceProjectById: async () => {},
+    });
+
+    assert.doesNotMatch(html, /workspace-shell-resume-latest-project/);
+    assert.doesNotMatch(html, />Resume latest project</);
+  });
+
+  test('renders and wires resume latest project action in shell empty state behind feature flag', () => {
+    let resumeCalls = 0;
+    let resumedProjectId: string | null = null;
+    const onResumeWorkspaceProjectById = async (projectId: string) => {
+      resumeCalls += 1;
+      resumedProjectId = projectId;
+    };
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      selectedSessionId: null,
+      workspaceProjects: resumeLatestProjects,
+      onResumeWorkspaceProjectById,
+    });
+    const button = renderWorkspaceShellElementByTestId('workspace-shell-resume-latest-project', {
+      projectFirstUxEnabled: true,
+      selectedSessionId: null,
+      workspaceProjects: resumeLatestProjects,
+      onResumeWorkspaceProjectById,
+    });
+
+    assert.match(html, /workspace-shell-resume-latest-project/);
+    assert.match(html, />Resume latest project</);
+    assert.ok(button);
+    const resumeLatestOnClick = button.props.onClick;
+    assert.equal(typeof resumeLatestOnClick, 'function');
+    if (!resumeLatestOnClick) {
+      throw new Error('Expected resume latest project button to expose onClick.');
+    }
+    resumeLatestOnClick();
+    assert.equal(resumeCalls, 1);
+    assert.equal(resumedProjectId, 'project-a');
+  });
+
+  test('does not render resume latest project action in shell empty state with no workspace projects', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      selectedSessionId: null,
+      workspaceProjects: [],
+      onResumeWorkspaceProjectById: async () => {},
+    });
+
+    assert.doesNotMatch(html, /workspace-shell-resume-latest-project/);
+    assert.doesNotMatch(html, />Resume latest project</);
+  });
+
+  test('does not render resume latest project action in shell empty state without handler', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      selectedSessionId: null,
+      workspaceProjects: resumeLatestProjects,
+    });
+
+    assert.doesNotMatch(html, /workspace-shell-resume-latest-project/);
+    assert.doesNotMatch(html, />Resume latest project</);
   });
 
   test('renders Stop for usable sessions and Remove for unusable sessions', () => {
