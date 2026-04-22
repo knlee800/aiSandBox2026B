@@ -16237,6 +16237,74 @@ Lock the post-B2b reality that the existing A3 Reopen Project affordances now ro
 
 ---
 
+### PROJ-03-B4a: Add Open Project By Id In Fresh Session Handler Behind Feature Flag
+
+**Task ID:** PROJ-03-B4a
+**Family:** PROJ-03 (Project-First UX Redesign — Phase B)
+**Status:** COMPLETE and LOCKED
+**Nature:** FRONTEND / PHASE B HANDLER WIRING
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-B4a-CHECKPOINT.md`
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase B — B4 Resume Latest Project CTA (split: B4a handler wiring, B4b CTA UI)
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, add a parameterized handler (`handleResumeWorkspaceProjectById(projectId: string)`) in `frontend/app/[locale]/app/page.tsx` that opens a caller-supplied `projectId` in a freshly created session by directly invoking the locked B0 helper, mirroring the B1/B2a hydration follow-up sequence, and expose it as a new optional callback prop on `WorkspaceShell`. No UI consumer in this slice.
+
+**Why this exists:**
+B4 ("Resume Latest Project CTA On Home") requires a new one-click open path that accepts a `projectId` directly, rather than relying on the current `selectedProjectId` React state. The existing `handleOpenWorkspaceProject` reads `selectedProjectId` from state (race-prone at call time), so a new parameterized handler is needed to guarantee determinism and keep the hydration discipline aligned with B1/B2a. B4a locks the handler wiring in isolation; B4b (deferred) adds the visible CTA that consumes it.
+
+**Bounded scope:**
+- Frontend only
+- Primary implementation in `frontend/app/[locale]/app/page.tsx`
+- Add a new async handler `handleResumeWorkspaceProjectById(projectId: string)` that:
+  - Returns early when `PROJECT_FIRST_UX` is false
+  - Returns early when `projectId` is empty/invalid
+  - Sets `projectOpenInProgressRef.current = true` before helper call
+  - Calls `openProjectInFreshSession({ token, projectId })`
+  - Mirrors the same B1/B2a hydration follow-up sequence (all 10 steps)
+  - Clears `projectOpenInProgressRef` and `skipNextSessionEffectFileReloadRef` in `finally`
+  - Sets project action success state/message consistently with B2a ("Project opened.")
+- Add one new optional prop to `WorkspaceShell` in `frontend/components/workspace/workspace-shell.tsx`:
+  - `onResumeWorkspaceProjectById?: (projectId: string) => Promise<void>`
+- Pass the new handler from `page.tsx` to `WorkspaceShell` only
+- No UI consumer in this slice
+
+**Non-goals:**
+- No CTA, banner, or button yet (B4b scope)
+- No change to `WorkspaceShell` JSX or panel/state-message rendering
+- No change to A3 recovery copy bundle
+- No change to `handleOpenWorkspaceProject`, `handleCreateWorkspaceProject`, or existing handler bodies
+- No change to B0 helper, B2a, B2b, or B3a
+- No "most recent" computation logic yet (B4b scope)
+- No new route or IA change
+- No backend/auth/schema/internal-API changes
+- No autosave, history, or persistence work
+- No B4b or Phase C/D/E work
+
+**Acceptance checks:**
+- New handler exists and is passed through the new optional `WorkspaceShell` prop
+- Flag off: handler returns early without calling `openProjectInFreshSession` and without setting `projectOpenInProgressRef`
+- Flag on with empty/invalid `projectId`: handler returns early without calling `openProjectInFreshSession`
+- Flag on with valid `projectId`: handler runs the full hydration sequence and clears refs in `finally`
+- Existing relevant helper/workspace/project/snapshot tests remain green
+- Typecheck clean, no introduced lint errors
+- No JSX/copy changes in `workspace-shell.tsx`
+
+**Invariants explicitly preserved:**
+- This is a handler-only preparatory slice; the visible CTA belongs to B4b, not here
+- Hydration follow-up sequence must mirror B1/B2a exactly
+- `projectOpenInProgressRef` and `skipNextSessionEffectFileReloadRef` must clear on every exit path
+- Unused optional prop is acceptable in this slice and should be documented
+- `PROJECT_FIRST_UX` remains the kill switch
+- No regression to project-open hydration / restore discipline (PROJ-02-01)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)
+- No regression to static preview `/workspace/index.html` rule (PREV-02-02)
+- No regression to stop-session cleanup behavior (OPS-01-04)
+
+**Dependencies:** PROJ-03-B3a (COMPLETE and LOCKED)
+
+---
+
 ### AI-04-01: Backend Chat Persistence Wiring
 
 **Task ID:** AI-04-01
