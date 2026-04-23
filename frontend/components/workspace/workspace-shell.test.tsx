@@ -16,6 +16,7 @@ import type { WorkspacePreviewState } from './workspace-preview.logic';
 import type { WorkspaceFileNode } from './workspace-file-navigation.logic';
 import type { WorkspaceCheckpointDiffResponse } from './workspace-checkpoint-diff.logic';
 import type { WorkspaceProjectSummary } from './workspace-projects.logic';
+import type { WorkspaceSnapshotSummary } from './workspace-snapshots.logic';
 
 const session: WorkspaceShellSession = {
   id: '12345678-test-session',
@@ -53,6 +54,36 @@ const resumeLatestProjects: WorkspaceProjectSummary[] = [
     visibility: 'private',
     createdAt: '2026-03-10T08:00:00.000Z',
     updatedAt: '2026-03-10T11:30:00.000Z',
+  },
+];
+const projectHistorySnapshots: WorkspaceSnapshotSummary[] = [
+  {
+    id: 'snapshot-b',
+    userId: 'user-123',
+    label: '[project-id:project-1]',
+    createdAt: '2026-04-03T10:00:00.000Z',
+    fileCount: 2,
+  },
+  {
+    id: 'snapshot-a',
+    userId: 'user-123',
+    label: '[project-id:project-1]',
+    createdAt: '2026-04-03T10:00:00.000Z',
+    fileCount: 3,
+  },
+  {
+    id: 'snapshot-c',
+    userId: 'user-123',
+    label: '[project-id:project-1]',
+    createdAt: '2026-04-02T09:00:00.000Z',
+    fileCount: 1,
+  },
+  {
+    id: 'snapshot-other',
+    userId: 'user-123',
+    label: '[project-id:project-2]',
+    createdAt: '2026-04-04T08:00:00.000Z',
+    fileCount: 4,
   },
 ];
 
@@ -748,6 +779,67 @@ describe('workspace shell component', () => {
 
     assert.doesNotMatch(html, /workspace-shell-resume-latest-project/);
     assert.doesNotMatch(html, />Resume latest project</);
+  });
+
+  test('does not render project history panel when feature flag is off', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: false,
+      selectedProjectId: 'project-1',
+      workspaceSnapshots: projectHistorySnapshots,
+    });
+
+    assert.doesNotMatch(html, /history-project-history-surface/);
+  });
+
+  test('renders project history rows in deterministic newest-first order behind feature flag', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      selectedProjectId: 'project-1',
+      workspaceSnapshots: projectHistorySnapshots,
+    });
+
+    assert.match(html, /history-project-history-surface/);
+    assert.match(html, />Project History</);
+    assert.match(html, />Saved version</);
+    assert.doesNotMatch(html, /history-project-history-row-snapshot-other/);
+    const snapshotAIndex = html.indexOf('history-project-history-row-snapshot-a');
+    const snapshotBIndex = html.indexOf('history-project-history-row-snapshot-b');
+    const snapshotCIndex = html.indexOf('history-project-history-row-snapshot-c');
+    assert.notEqual(snapshotAIndex, -1);
+    assert.notEqual(snapshotBIndex, -1);
+    assert.notEqual(snapshotCIndex, -1);
+    assert.ok(snapshotAIndex < snapshotBIndex);
+    assert.ok(snapshotBIndex < snapshotCIndex);
+  });
+
+  test('renders project history empty state when selected project has no matching snapshots', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      selectedProjectId: 'project-1',
+      workspaceSnapshots: [
+        {
+          id: 'snapshot-other',
+          userId: 'user-123',
+          label: '[project-id:project-2]',
+          createdAt: '2026-04-04T08:00:00.000Z',
+          fileCount: 4,
+        },
+      ],
+    });
+
+    assert.match(html, /history-project-history-surface/);
+    assert.match(html, /history-project-history-empty/);
+    assert.match(html, />No history yet for this project\.</);
+  });
+
+  test('does not render project history panel without a selected project', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      selectedProjectId: null,
+      workspaceSnapshots: projectHistorySnapshots,
+    });
+
+    assert.doesNotMatch(html, /history-project-history-surface/);
   });
 
   test('renders Stop for usable sessions and Remove for unusable sessions', () => {

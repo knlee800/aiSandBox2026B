@@ -30,6 +30,7 @@ export const recoveryCopy = {
       'Your project stays recoverable. If the workspace disconnects, reopen the project to continue.',
     loading: 'Loading your project and preparing workspace tools.',
     unavailable: 'We could not load your project workspace.',
+    noProjectHistoryYet: 'No history yet for this project.',
     openProjectToStart: 'Open a project to start using workspace tools.',
     ready: 'Your project workspace is ready.',
     help: 'Use Start a new project or Open existing project in the history panel.',

@@ -354,6 +354,10 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     projectFirstUxEnabled &&
     Boolean(props.selectedProjectId) &&
     Boolean(props.onOpenWorkspaceProject);
+  const projectHistoryRows =
+    projectFirstUxEnabled && props.selectedProjectId
+      ? computeProjectHistoryRows(props.workspaceSnapshots ?? [], props.selectedProjectId)
+      : [];
   const latestProject = projectFirstUxEnabled
     ? computeLatestProject(props.workspaceProjects ?? [])
     : null;
@@ -713,6 +717,11 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
               onRestoreSnapshot={props.onRestoreWorkspaceSnapshot}
               onExportArchive={props.onExportWorkspaceArchive}
               onImportArchive={props.onImportWorkspaceArchive}
+            />
+            <ProjectHistoryPanel
+              projectFirstUxEnabled={projectFirstUxEnabled}
+              selectedProjectId={props.selectedProjectId ?? null}
+              rows={projectHistoryRows}
             />
             {historyState === 'ready' ? (
               <HistoryCheckpointList
@@ -1151,6 +1160,57 @@ function HistorySnapshotPanel(props: {
           {props.actionError}
         </p>
       ) : null}
+    </div>
+  );
+}
+
+interface ProjectHistoryRow {
+  id: string;
+  label: string;
+  createdAt: string;
+}
+
+function ProjectHistoryPanel(props: {
+  projectFirstUxEnabled: boolean;
+  selectedProjectId: string | null;
+  rows: ProjectHistoryRow[];
+}) {
+  if (!props.projectFirstUxEnabled || !props.selectedProjectId) {
+    return null;
+  }
+
+  return (
+    <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="history-project-history-surface">
+      <p className="text-xs font-semibold text-gray-700">Project History</p>
+      {props.rows.length === 0 ? (
+        <p className="mt-2 text-[11px] text-gray-500" data-testid="history-project-history-empty">
+          {recoveryCopy.workspace.noProjectHistoryYet}
+        </p>
+      ) : (
+        <ul className="mt-2 space-y-2">
+          {props.rows.map((row) => (
+            <li
+              key={row.id}
+              className="rounded border border-gray-200 bg-white px-2 py-2"
+              data-testid={`history-project-history-row-${row.id}`}
+            >
+              <p
+                className="text-xs font-medium text-gray-700"
+                data-testid={`history-project-history-label-${row.id}`}
+              >
+                {row.label}
+              </p>
+              <time
+                className="mt-1 block text-[11px] text-gray-500"
+                dateTime={row.createdAt}
+                data-testid={`history-project-history-timestamp-${row.id}`}
+              >
+                {formatProjectHistoryTimestamp(row.createdAt)}
+              </time>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
@@ -5793,6 +5853,63 @@ function formatQuotaResetTimestamp(value: string | null | undefined): string {
     return 'Unavailable';
   }
   return parsedDate.toLocaleString();
+}
+
+const PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX = '[project-id:';
+const PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX = ']';
+
+function parseProjectIdFromProjectScopedSnapshotLabel(label: string | null): string | null {
+  if (!label) {
+    return null;
+  }
+  const trimmed = label.trim();
+  if (
+    !trimmed.startsWith(PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX) ||
+    !trimmed.endsWith(PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX)
+  ) {
+    return null;
+  }
+  const rawProjectId = trimmed.slice(
+    PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX.length,
+    trimmed.length - PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX.length,
+  );
+  return rawProjectId.trim() ? rawProjectId.trim() : null;
+}
+
+function formatProjectHistoryTimestamp(value: string): string {
+  const parsedDate = new Date(value);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return value;
+  }
+  return parsedDate.toLocaleString();
+}
+
+function computeProjectHistoryRows(
+  snapshots: WorkspaceSnapshotSummary[],
+  projectId: string,
+): ProjectHistoryRow[] {
+  const normalizedProjectId = projectId.trim();
+  if (!normalizedProjectId) {
+    return [];
+  }
+
+  return snapshots
+    .filter(
+      (snapshot) =>
+        parseProjectIdFromProjectScopedSnapshotLabel(snapshot.label) === normalizedProjectId,
+    )
+    .sort((left, right) => {
+      const createdAtComparison = right.createdAt.localeCompare(left.createdAt);
+      if (createdAtComparison !== 0) {
+        return createdAtComparison;
+      }
+      return left.id.localeCompare(right.id);
+    })
+    .map((snapshot) => ({
+      id: snapshot.id,
+      label: 'Saved version',
+      createdAt: snapshot.createdAt,
+    }));
 }
 
 function computeLatestProject(projects: WorkspaceProjectSummary[]): WorkspaceProjectSummary | null {

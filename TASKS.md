@@ -6909,9 +6909,9 @@ Prevent project snapshots/restores from including `.git/` internals so restoring
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); Phase C not yet registered.
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b not yet registered.
 
-**Current stage:** Phase B COMPLETE and LOCKED — Phase C not yet registered or started
+**Current stage:** Phase C in progress — C1a COMPLETE and LOCKED; C1b not yet registered or started
 
 ---
 
@@ -7526,6 +7526,60 @@ Behind `PROJECT_FIRST_UX`, add a single "Resume latest project" primary-action b
 **Dependencies:** PROJ-03-B4a (COMPLETE and LOCKED)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-B4b.
+
+---
+
+### PROJ-03-C1a — Add Read-Only Project History Panel Behind Feature Flag
+
+**Status:** COMPLETE and LOCKED
+**Nature:** FRONTEND / PHASE C READ-ONLY HISTORY PANEL
+**Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-C1a-CHECKPOINT.md`
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C — C1 Workspace History tab (split: C1a read-only panel, C1b Restore wiring)
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, add a read-only History panel inside the workspace that lists the current project's existing project-scoped snapshots newest-first, with a human label and timestamp. No Restore action, no writes, no new endpoints, no git-checkpoint union.
+
+**Bounded scope:**
+- Frontend only
+- Reuse existing project-scoped snapshot data already available to the workspace/page flow — no new fetcher
+- New local helper / view-model to derive `HistoryRow[]` from existing snapshot source
+- Sort by `createdAt` descending; tie-break by snapshot id (deterministic)
+- Mount the panel inside an existing workspace shell slot; no new layout primitive
+- Empty state may use one additive `recoveryCopy` entry if needed
+- Focused render tests only (flag off, flag on + snapshots, flag on + no snapshots)
+
+**Non-goals:**
+- No Restore action of any kind
+- No git checkpoints in the list
+- No autosave, named save, save dialog, or any write
+- No backend changes, new endpoints, or new fetchers
+- No retention/compaction
+- No vocabulary purge ("snapshot" → "history") outside the new panel itself
+- No change to existing snapshots panel
+- No change to locked B-phase handlers (B0/B1/B2a/B2b/B3a/B4a/B4b)
+- No change to A3 recovery copy bundle entries beyond one additive entry if needed
+- No Phase D/E work
+
+**Acceptance checks:**
+- Flag off: no history panel visible anywhere
+- Flag on + selected project + snapshots present: panel renders rows in deterministic newest-first order with label + timestamp
+- Flag on + no snapshots: empty state renders correctly
+- No Restore button, no row action, no write of any kind
+- Existing focused suites remain green; typecheck clean; no introduced lint errors on touched files
+
+**Invariants to preserve:**
+- Reuse existing in-memory snapshot source only; do not create a parallel fetch path
+- No layout regression outside the chosen existing workspace shell slot
+- `PROJECT_FIRST_UX` remains the kill switch
+- No regression to project-open hydration / restore discipline (PROJ-02-01)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)
+- No regression to static preview `/workspace/index.html` rule (PREV-02-02)
+- No regression to stop-session cleanup behavior (OPS-01-04)
+
+**Dependencies:** PROJ-03-B4b (COMPLETE and LOCKED)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-C1a.
 
 ---
 
