@@ -15670,7 +15670,7 @@ PROJ-02-02 isolated the real 500 cause:
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c/C2/C3/C4 deferred. Completed order: A0 → A1 → A3 → A2a → A2b → B0 → B1 → B2a → B2b → B3a → B4a → B4b → C1a → C1b-pre → C1b-cta. Current stage: next slice pending.
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b/C2c/C2d/C2e/C2f/C3/C4 deferred. Completed order: A0 → A1 → A3 → A2a → A2b → B0 → B1 → B2a → B2b → B3a → B4a → B4b → C1a → C1b-pre → C1b-cta → C2a-rate-limit. Current stage: next slice pending.
 
 ---
 
@@ -16556,6 +16556,63 @@ Behind `PROJECT_FIRST_UX`, render one Restore button per row in the locked C1a `
 - No regression to stop-session cleanup behavior (OPS-01-04)
 
 **Dependencies:** PROJ-03-C1b-pre (COMPLETE and LOCKED)
+
+---
+
+### PROJ-03-C2a-rate-limit — Add Per-Minute Autosave Safety-Net Pure-Logic Helper Behind Feature Flag
+
+**Task ID:** PROJ-03-C2a-rate-limit
+**Family:** PROJ-03 (Project-First UX Redesign)
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/PROJ-03-C2a-rate-limit-CHECKPOINT.md`
+**Nature:** FRONTEND / PHASE C AUTOSAVE RATE-LIMIT SCAFFOLDING
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C — C2 first slice: pure-logic safety-net helper
+
+**Objective:**
+Add a single pure-logic helper module (`frontend/lib/autosave-rate-limit.ts`) that defines the autosave rate-limit contract every future C2 trigger will use. No consumers, no write-path changes, no UI change. Mirrors the A0 mechanical-scaffolding pattern. This is the first Phase C area that establishes new-write gating before any behavioral trigger lands.
+
+**Bounded scope:**
+- Frontend only
+- Changes allowed in:
+  - `frontend/lib/autosave-rate-limit.ts` (new): pure-logic helper; exports `AUTOSAVE_MIN_INTERVAL_MS = 60_000` and `shouldAllowAutosaveNow({ now, lastSnapshotAt, minIntervalMs }): boolean`
+  - `frontend/lib/autosave-rate-limit.test.ts` (new): comprehensive unit tests under `node:test`
+- Pure logic only; no side effects, no consumer wiring
+- No changes to `page.tsx`, `workspace-shell.tsx`, `workspace-snapshots.logic.ts`, `open-project-in-fresh-session.ts`, or any locked path
+
+**Non-goals:**
+- No trigger wiring of any kind
+- No write-path change
+- No UI change
+- No new fetcher, no new effect, no new `useEffect`
+- No backend change
+- No label-format extension
+- No retention/compaction (C3)
+- No vocabulary purge (C4)
+- No Phase D/E work
+- No decision on where "last autosave timestamp" state lives (deferred to first consumer slice C2b)
+
+**Acceptance checks:**
+- `shouldAllowAutosaveNow` returns `true` when `lastSnapshotAt` is `null`
+- Returns `true` when `now - lastSnapshotAt >= minIntervalMs`
+- Returns `false` when `now - lastSnapshotAt < minIntervalMs`
+- Boundary behavior (exactly equal) is explicit and covered by tests
+- Zero-interval and negative-interval inputs are explicit and covered by tests
+- Pure function: identical inputs → identical outputs; no observable side effects
+- Existing focused suites remain green; typecheck clean; no introduced lint errors
+- No other production files changed
+
+**Invariants to preserve:**
+- Keep helper signature minimal; no over-design of future trigger state storage
+- No consumer wiring in this slice
+- `PROJECT_FIRST_UX` remains the kill-switch posture for any future consumer
+- No regression to project-open hydration / restore discipline (PROJ-02-01)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)
+- No regression to static preview `/workspace/index.html` rule (PREV-02-02)
+- No regression to stop-session cleanup behavior (OPS-01-04)
+
+**Dependencies:** PROJ-03-C1b-cta (COMPLETE and LOCKED)
 
 ---
 
