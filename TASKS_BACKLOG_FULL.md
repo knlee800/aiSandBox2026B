@@ -15670,7 +15670,7 @@ PROJ-02-02 isolated the real 500 cause:
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b not yet registered. Completed order: A0 → A1 → A3 → A2a → A2b → B0 → B1 → B2a → B2b → B3a → B4a → B4b → C1a. Current stage: C1b not yet registered or started.
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta not yet registered. Completed order: A0 → A1 → A3 → A2a → A2b → B0 → B1 → B2a → B2b → B3a → B4a → B4b → C1a → C1b-pre. Current stage: C1b-cta not yet registered or started.
 
 ---
 
@@ -16426,6 +16426,78 @@ Phase C begins with a purely read-only history surface so that any regression is
 - No regression to stop-session cleanup behavior (OPS-01-04)
 
 **Dependencies:** PROJ-03-B4b (COMPLETE and LOCKED)
+
+---
+
+### PROJ-03-C1b-pre: Add Restore Project From Snapshot Handler Behind Feature Flag
+
+**Task ID:** PROJ-03-C1b-pre
+**Family:** PROJ-03 (Project-First UX Redesign — Phase C)
+**Status:** COMPLETE and LOCKED
+**Nature:** FRONTEND / PHASE C RESTORE HANDLER (PREPARATORY)
+**Checkpoint:** `docs/PROJ-03-C1b-pre-CHECKPOINT.md`
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C — C1b split: C1b-pre handler-only slice
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, add a parameterized handler in `frontend/app/[locale]/app/page.tsx` that opens a supplied project at a supplied snapshot via the locked B0 helper in a freshly created session, mirroring the locked B4a hydration sequence exactly, and expose it as a new optional callback prop on `WorkspaceShell`. No UI consumer in this slice.
+
+**Why this exists:**
+C1a added the read-only history panel. Before a visible Restore CTA can be wired up (C1b-cta), the handler that performs the actual restore operation must exist as a separately validated, locked primitive. Splitting handler from UI mirrors the B4a/B4b pattern and ensures the restore path can be reviewed and locked before any user-visible trigger is added. This slice is handler-only.
+
+**Bounded scope:**
+- Frontend only
+- Primary implementation in `frontend/app/[locale]/app/page.tsx`:
+  - New async handler: `handleRestoreWorkspaceProjectFromSnapshotById(projectId: string, snapshotId: string): Promise<void>`
+  - Early return when `PROJECT_FIRST_UX` is false
+  - Early return when normalized `projectId` is empty/invalid
+  - Early return when normalized `snapshotId` is empty/invalid
+  - Token guard mirrors B4a
+  - Set `projectActionState('opening')`, clear messages/errors
+  - Set `projectOpenInProgressRef.current = true` before helper call
+  - Call `openProjectInFreshSession({ token, projectId, snapshotId })`
+  - Mirror the same hydration follow-up sequence as B4a exactly
+  - Set success message consistently (`Project opened.`)
+  - Clear `projectOpenInProgressRef` and `skipNextSessionEffectFileReloadRef` in `finally`
+- Add one new optional prop on `WorkspaceShell`:
+  - `onRestoreWorkspaceProjectFromSnapshotById?: (projectId: string, snapshotId: string) => Promise<void>`
+- Pass the new handler from `page.tsx` into `WorkspaceShell` only
+- No UI consumer in this slice
+
+**Non-goals:**
+- No Restore button in `ProjectHistoryPanel` rows yet
+- No recovery-copy restore label yet
+- No change to C1a `ProjectHistoryPanel` JSX
+- No change to `handleResumeWorkspaceProjectById` or any other locked handler
+- No change to B0 helper internals
+- No new fetcher, endpoint, or backend change
+- No git-checkpoint integration
+- No autosave, named save, retention/compaction, or vocabulary purge
+- No Phase D/E work
+
+**Acceptance checks:**
+- New handler exists in `page.tsx` and is passed through the new optional `WorkspaceShell` prop
+- Flag off: returns early before setting refs and before any API call
+- Flag on + invalid/empty `projectId`: returns early without side effects
+- Flag on + invalid/empty `snapshotId`: returns early without side effects
+- Flag on + valid `projectId` + valid `snapshotId`: full hydration sequence runs and refs clear in `finally`
+- Existing focused suites remain green
+- Typecheck clean, no introduced lint errors
+- No JSX/copy change in C1a panel
+- `frontend/lib/open-project-in-fresh-session.ts` unchanged
+
+**Risks / invariants to capture:**
+- This is a handler-only preparatory slice; the visible Restore row button belongs to a follow-on slice
+- Hydration follow-up sequence must mirror B4a exactly
+- `projectOpenInProgressRef` and `skipNextSessionEffectFileReloadRef` must clear on every exit path
+- The handler must read neither `selectedProjectId` nor `selectedSnapshotId` from React state
+- `PROJECT_FIRST_UX` remains the kill switch
+- No regression to project-open hydration / restore discipline (PROJ-02-01)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)
+- No regression to static preview `/workspace/index.html` rule (PREV-02-02)
+- No regression to stop-session cleanup behavior (OPS-01-04)
+
+**Dependencies:** PROJ-03-C1a (COMPLETE and LOCKED)
 
 ---
 

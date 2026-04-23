@@ -1305,6 +1305,76 @@ export default function AppPage() {
     }
   }
 
+  async function handleRestoreWorkspaceProjectFromSnapshotById(
+    projectId: string,
+    snapshotId: string,
+  ): Promise<void> {
+    if (!PROJECT_FIRST_UX) {
+      return;
+    }
+
+    const normalizedProjectId = projectId.trim();
+    if (!normalizedProjectId) {
+      return;
+    }
+
+    const normalizedSnapshotId = snapshotId.trim();
+    if (!normalizedSnapshotId) {
+      return;
+    }
+
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+
+    setProjectActionState('opening');
+    setProjectActionMessage(null);
+    setProjectActionError(null);
+    projectOpenInProgressRef.current = true;
+    try {
+      const openResult = await openProjectInFreshSession({
+        token,
+        projectId: normalizedProjectId,
+        snapshotId: normalizedSnapshotId,
+      });
+      const openSessionId = openResult.sessionId;
+      const expectsRestoredFiles = Boolean(openResult.restoredSnapshotId);
+
+      skipNextSessionEffectFileReloadRef.current =
+        openSessionId !== selectedSessionIdRef.current;
+      setSelectedSessionId(openSessionId);
+
+      await hydrateWorkspaceForProjectOpen(token, openSessionId, expectsRestoredFiles);
+
+      await refreshPreviewForSession(token, openSessionId);
+      await loadCheckpoints(token, openSessionId);
+      await loadSessions(token);
+      setSelectedSessionId((current) => current ?? openSessionId);
+
+      await loadWorkspaceSnapshotsForUser(token);
+      await loadWorkspaceProjectsForUser(token);
+      await loadPublicWorkspaceProjectsList();
+      await loadDashboardSlice(token);
+
+      setProjectActionState('success');
+      setProjectActionMessage('Project opened.');
+      setProjectActionError(null);
+    } catch (error) {
+      setProjectActionState('error');
+      setProjectActionMessage(null);
+      setProjectActionError(
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : 'Failed to open project.',
+      );
+    } finally {
+      projectOpenInProgressRef.current = false;
+      skipNextSessionEffectFileReloadRef.current = false;
+    }
+  }
+
   async function handleUpdateWorkspaceProjectVisibility(): Promise<void> {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -3761,6 +3831,9 @@ export default function AppPage() {
       onCreateWorkspaceProject={handleCreateWorkspaceProject}
       onOpenWorkspaceProject={handleOpenWorkspaceProject}
       onResumeWorkspaceProjectById={handleResumeWorkspaceProjectById}
+      onRestoreWorkspaceProjectFromSnapshotById={
+        handleRestoreWorkspaceProjectFromSnapshotById
+      }
       onSelectedProjectVisibilityChange={handleProjectVisibilitySelection}
       onUpdateWorkspaceProjectVisibility={handleUpdateWorkspaceProjectVisibility}
       publicProjectListState={publicProjectListState}

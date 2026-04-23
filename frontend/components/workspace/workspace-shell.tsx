@@ -84,6 +84,10 @@ interface WorkspaceShellProps {
   onCreateWorkspaceProject?: () => Promise<void>;
   onOpenWorkspaceProject?: () => Promise<void>;
   onResumeWorkspaceProjectById?: (projectId: string) => Promise<void>;
+  onRestoreWorkspaceProjectFromSnapshotById?: (
+    projectId: string,
+    snapshotId: string,
+  ) => Promise<void>;
   selectedProjectVisibility?: 'private' | 'public';
   onSelectedProjectVisibilityChange?: (visibility: 'private' | 'public') => void;
   onUpdateWorkspaceProjectVisibility?: () => Promise<void>;
