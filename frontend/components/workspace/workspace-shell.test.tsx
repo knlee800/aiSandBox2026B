@@ -384,6 +384,25 @@ function renderWorkspaceShellElementByTestId(
   );
 }
 
+function withPatchedWindowConfirm<T>(
+  confirmImpl: (message?: string) => boolean,
+  run: () => T,
+): T {
+  const globalObject = globalThis as typeof globalThis & { window?: unknown };
+  const originalWindow = globalObject.window;
+  (globalObject as { window?: unknown }).window = { confirm: confirmImpl };
+
+  try {
+    return run();
+  } finally {
+    if (originalWindow === undefined) {
+      delete (globalObject as { window?: unknown }).window;
+    } else {
+      (globalObject as { window?: unknown }).window = originalWindow;
+    }
+  }
+}
+
 describe('workspace shell component', () => {
   test('renders authenticated workspace shell layout', () => {
     const html = renderWorkspaceShell();
@@ -840,6 +859,120 @@ describe('workspace shell component', () => {
     });
 
     assert.doesNotMatch(html, /history-project-history-surface/);
+  });
+
+  test('does not render project history restore buttons when feature flag is off', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: false,
+      selectedProjectId: 'project-1',
+      workspaceSnapshots: projectHistorySnapshots,
+      onRestoreWorkspaceProjectFromSnapshotById: async () => {},
+    });
+
+    assert.doesNotMatch(html, /history-project-history-restore-snapshot-a/);
+    assert.doesNotMatch(html, />Restore</);
+  });
+
+  test('renders project history restore buttons per row behind feature flag', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      selectedProjectId: 'project-1',
+      workspaceSnapshots: projectHistorySnapshots,
+      onRestoreWorkspaceProjectFromSnapshotById: async () => {},
+    });
+
+    assert.match(html, /history-project-history-restore-snapshot-a/);
+    assert.match(html, /history-project-history-restore-snapshot-b/);
+    assert.match(html, /history-project-history-restore-snapshot-c/);
+    assert.doesNotMatch(html, /history-project-history-restore-snapshot-other/);
+  });
+
+  test('does not render project history restore buttons without restore handler', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      selectedProjectId: 'project-1',
+      workspaceSnapshots: projectHistorySnapshots,
+    });
+
+    assert.doesNotMatch(html, /history-project-history-restore-snapshot-a/);
+    assert.doesNotMatch(html, />Restore</);
+  });
+
+  test('confirms before restoring a project history row and calls handler once on accept', () => {
+    let restoreCalls = 0;
+    let restoredProjectId: string | null = null;
+    let restoredSnapshotId: string | null = null;
+    let confirmCalls = 0;
+    let confirmMessage: string | undefined;
+    const onRestoreWorkspaceProjectFromSnapshotById = async (
+      projectId: string,
+      snapshotId: string,
+    ) => {
+      restoreCalls += 1;
+      restoredProjectId = projectId;
+      restoredSnapshotId = snapshotId;
+    };
+    const button = renderWorkspaceShellElementByTestId('history-project-history-restore-snapshot-a', {
+      projectFirstUxEnabled: true,
+      selectedProjectId: 'project-1',
+      workspaceSnapshots: projectHistorySnapshots,
+      onRestoreWorkspaceProjectFromSnapshotById,
+    });
+
+    assert.ok(button);
+    const onClick = button.props.onClick;
+    assert.equal(typeof onClick, 'function');
+    if (!onClick) {
+      throw new Error('Expected restore button to expose onClick.');
+    }
+
+    withPatchedWindowConfirm((message) => {
+      confirmCalls += 1;
+      confirmMessage = message;
+      return true;
+    }, () => {
+      onClick();
+    });
+
+    assert.equal(confirmCalls, 1);
+    assert.equal(
+      confirmMessage,
+      'Restore this version? Your current workspace will be replaced.',
+    );
+    assert.equal(restoreCalls, 1);
+    assert.equal(restoredProjectId, 'project-1');
+    assert.equal(restoredSnapshotId, 'snapshot-a');
+  });
+
+  test('does not call restore handler when project history restore confirmation is declined', () => {
+    let restoreCalls = 0;
+    let confirmCalls = 0;
+    const onRestoreWorkspaceProjectFromSnapshotById = async () => {
+      restoreCalls += 1;
+    };
+    const button = renderWorkspaceShellElementByTestId('history-project-history-restore-snapshot-a', {
+      projectFirstUxEnabled: true,
+      selectedProjectId: 'project-1',
+      workspaceSnapshots: projectHistorySnapshots,
+      onRestoreWorkspaceProjectFromSnapshotById,
+    });
+
+    assert.ok(button);
+    const onClick = button.props.onClick;
+    assert.equal(typeof onClick, 'function');
+    if (!onClick) {
+      throw new Error('Expected restore button to expose onClick.');
+    }
+
+    withPatchedWindowConfirm(() => {
+      confirmCalls += 1;
+      return false;
+    }, () => {
+      onClick();
+    });
+
+    assert.equal(confirmCalls, 1);
+    assert.equal(restoreCalls, 0);
   });
 
   test('renders Stop for usable sessions and Remove for unusable sessions', () => {

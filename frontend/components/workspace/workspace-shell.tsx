@@ -365,6 +365,29 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const latestProject = projectFirstUxEnabled
     ? computeLatestProject(props.workspaceProjects ?? [])
     : null;
+  const handleRestoreProjectHistoryRow =
+    projectFirstUxEnabled &&
+    props.selectedProjectId &&
+    props.onRestoreWorkspaceProjectFromSnapshotById
+      ? (() => {
+          const selectedProjectId = props.selectedProjectId;
+          const onRestoreWorkspaceProjectFromSnapshotById =
+            props.onRestoreWorkspaceProjectFromSnapshotById;
+          return (snapshotId: string) => {
+            const confirmed =
+              typeof window === 'undefined'
+                ? true
+                : window.confirm(recoveryCopy.workspace.restoreSnapshotConfirm);
+            if (!confirmed) {
+              return;
+            }
+            void onRestoreWorkspaceProjectFromSnapshotById(
+              selectedProjectId,
+              snapshotId,
+            );
+          };
+        })()
+      : undefined;
   const handleReopenProject = () => {
     if (!props.onOpenWorkspaceProject) {
       return;
@@ -726,6 +749,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
               projectFirstUxEnabled={projectFirstUxEnabled}
               selectedProjectId={props.selectedProjectId ?? null}
               rows={projectHistoryRows}
+              onRestore={handleRestoreProjectHistoryRow}
             />
             {historyState === 'ready' ? (
               <HistoryCheckpointList
@@ -1178,6 +1202,7 @@ function ProjectHistoryPanel(props: {
   projectFirstUxEnabled: boolean;
   selectedProjectId: string | null;
   rows: ProjectHistoryRow[];
+  onRestore?: (snapshotId: string) => void;
 }) {
   if (!props.projectFirstUxEnabled || !props.selectedProjectId) {
     return null;
@@ -1211,6 +1236,16 @@ function ProjectHistoryPanel(props: {
               >
                 {formatProjectHistoryTimestamp(row.createdAt)}
               </time>
+              {props.onRestore ? (
+                <button
+                  type="button"
+                  className="mt-2 rounded border border-gray-300 bg-white px-3 py-1 text-xs text-gray-700"
+                  onClick={() => props.onRestore?.(row.id)}
+                  data-testid={`history-project-history-restore-${row.id}`}
+                >
+                  {recoveryCopy.actions.restoreSnapshot}
+                </button>
+              ) : null}
             </li>
           ))}
         </ul>

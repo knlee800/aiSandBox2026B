@@ -15670,7 +15670,7 @@ PROJ-02-02 isolated the real 500 cause:
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta not yet registered. Completed order: A0 → A1 → A3 → A2a → A2b → B0 → B1 → B2a → B2b → B3a → B4a → B4b → C1a → C1b-pre. Current stage: C1b-cta not yet registered or started.
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c/C2/C3/C4 deferred. Completed order: A0 → A1 → A3 → A2a → A2b → B0 → B1 → B2a → B2b → B3a → B4a → B4b → C1a → C1b-pre → C1b-cta. Current stage: next slice pending.
 
 ---
 
@@ -16498,6 +16498,64 @@ C1a added the read-only history panel. Before a visible Restore CTA can be wired
 - No regression to stop-session cleanup behavior (OPS-01-04)
 
 **Dependencies:** PROJ-03-C1a (COMPLETE and LOCKED)
+
+---
+
+### PROJ-03-C1b-cta — Wire Restore Action On Project History Rows Behind Feature Flag
+
+**Task ID:** PROJ-03-C1b-cta
+**Family:** PROJ-03 (Project-First UX Redesign)
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/PROJ-03-C1b-cta-CHECKPOINT.md`
+**Nature:** FRONTEND / PHASE C RESTORE BUTTON UI
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C — C1b split: C1b-cta visible Restore-button UI slice
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, render one Restore button per row in the locked C1a `ProjectHistoryPanel`, gated by an inline `window.confirm`, that calls the locked C1b-pre `onRestoreWorkspaceProjectFromSnapshotById` prop with `(selectedProjectId, row.id)`. No new handler, no new fetcher, no layout change.
+
+**Bounded scope:**
+- Frontend only
+- Changes allowed in:
+  - `frontend/lib/recovery-copy.ts`: two additive copy entries — Restore label and confirm text
+  - `frontend/components/workspace/workspace-shell.tsx`: new optional `onRestore?: (snapshotId: string) => void` on `ProjectHistoryPanel`; derive local restore callback in `WorkspaceShell`; render row-level Restore button when callback exists
+  - `frontend/components/workspace/workspace-shell.test.tsx`: 4–5 focused tests
+- Handler derivation gated on: `projectFirstUxEnabled` + `selectedProjectId` + `onRestoreWorkspaceProjectFromSnapshotById`
+- Click path: inline `window.confirm` guard (SSR-safe, mirrors A2b pattern); on accept → call handler once; on decline → no-op
+- `page.tsx` unchanged in this slice
+
+**Non-goals:**
+- No change to C1b-pre handler internals
+- No change to B0 helper
+- No new fetcher, endpoint, or backend change
+- No git-checkpoint union
+- No autosave, named save, retention/compaction, or vocabulary purge
+- No change to C1a row ordering, labels, timestamps, or empty-state behavior
+- No change to existing `HistorySnapshotPanel` actions
+- No new layout primitive
+- No Phase D/E work
+
+**Acceptance checks:**
+- Flag off: no Restore button renders even when rows are present
+- Flag on + `selectedProjectId` + handler provided + rows present: each row renders a Restore button with deterministic `data-testid="history-project-history-restore-{id}"`; click with confirm accepted calls handler exactly once with `(selectedProjectId, row.id)`
+- Flag on + handler absent: no Restore button
+- Flag on + `selectedProjectId` null: no Restore button
+- Click with confirm declined: handler not called
+- Existing focused suites remain green; typecheck clean; no introduced lint errors
+- `page.tsx` unchanged; `frontend/lib/open-project-in-fresh-session.ts` unchanged
+
+**Invariants to preserve:**
+- This is the first visible Restore affordance in the new History panel; keep it narrowly bounded
+- Inline confirm mirrors the locked A2b pattern exactly
+- `selectedProjectId` captured at click time; no other state read for IDs
+- `PROJECT_FIRST_UX` remains the kill switch
+- No regression to project-open hydration / restore discipline (PROJ-02-01)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)
+- No regression to static preview `/workspace/index.html` rule (PREV-02-02)
+- No regression to stop-session cleanup behavior (OPS-01-04)
+
+**Dependencies:** PROJ-03-C1b-pre (COMPLETE and LOCKED)
 
 ---
 
