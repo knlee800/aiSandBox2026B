@@ -15670,7 +15670,7 @@ PROJ-02-02 isolated the real 500 cause:
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b/C2c/C2d/C2e/C2f/C3/C4 deferred. Completed order: A0 → A1 → A3 → A2a → A2b → B0 → B1 → B2a → B2b → B3a → B4a → B4b → C1a → C1b-pre → C1b-cta → C2a-rate-limit. Current stage: next slice pending.
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c/C2d/C2e/C2f/C3/C4 deferred. Completed order: A0 → A1 → A3 → A2a → A2b → B0 → B1 → B2a → B2b → B3a → B4a → B4b → C1a → C1b-pre → C1b-cta → C2a-rate-limit → C2b-trigger-preview. Current stage: next slice pending.
 
 ---
 
@@ -16613,6 +16613,78 @@ Add a single pure-logic helper module (`frontend/lib/autosave-rate-limit.ts`) th
 - No regression to stop-session cleanup behavior (OPS-01-04)
 
 **Dependencies:** PROJ-03-C1b-cta (COMPLETE and LOCKED)
+
+---
+
+### PROJ-03-C2b-trigger-preview — Add Preview-Start Success Autosave Trigger Behind Feature Flag
+
+**Task ID:** PROJ-03-C2b-trigger-preview
+**Family:** PROJ-03 (Project-First UX Redesign)
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/PROJ-03-C2b-trigger-preview-CHECKPOINT.md`
+**Nature:** FRONTEND / PHASE C AUTOSAVE TRIGGER — PREVIEW-START SUCCESS
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C — C2 first behavioral trigger slice
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, after a successful preview-start in `handleStartPreview`, attempt one project-scoped snapshot via the existing `saveWorkspaceSnapshot` fetcher and the locked C2a `shouldAllowAutosaveNow` rate-limit, then reload the user's snapshot list so the new row appears in the locked C1a `ProjectHistoryPanel`. Skip silently when the flag is off, when no project or session is selected, when project-open hydration is in progress, when rate-limited, or when the save fails. No UI surface change. This is the first behavioral autosave write trigger in Phase C.
+
+**Bounded scope:**
+- Frontend only
+- New files:
+  - `frontend/lib/project-autosave.ts`: exports `attemptProjectAutosave({ token, sessionId, projectId, now, lastAutosaveAt, minIntervalMs?, fetchImpl? })` returning discriminated union `{ status: 'saved' | 'skipped-rate-limited' | 'failed', savedSnapshot? }`; internally uses locked C2a `shouldAllowAutosaveNow`; reuses existing `saveWorkspaceSnapshot` + `buildProjectScopedSnapshotLabel`; catches save errors and returns `{ status: 'failed' }` — never throws
+  - `frontend/lib/project-autosave.test.ts`: focused unit tests under `node:test`
+- Additive changes in `frontend/app/[locale]/app/page.tsx`:
+  - One new import: `attemptProjectAutosave`
+  - One new `useRef<number | null>(null)` declaration: `lastProjectAutosaveAtRef`
+  - One additive block at the end of `handleStartPreview`'s try branch (after successful `await refreshPreviewForSession`), gated on `PROJECT_FIRST_UX && selectedProjectId && selectedSessionId && !projectOpenInProgressRef.current`
+  - On `saved`: update `lastProjectAutosaveAtRef.current = Date.now()` + call `loadWorkspaceSnapshotsForUser`
+  - On `skipped-rate-limited` or `failed`: no-op
+- No change to `workspace-shell.tsx`, `recovery-copy.ts`, `workspace-snapshots.logic.ts`, `open-project-in-fresh-session.ts`, `handleSaveWorkspaceSnapshot`, or any locked Phase A/B/C1 path
+
+**Non-goals:**
+- No UI affordance, toast, banner, or new status surface
+- No change to `recovery-copy.ts`
+- No change to `handleSaveWorkspaceSnapshot`
+- No idle-debounce, AI-boundary, lifecycle, or named-save triggers
+- No label-format extension
+- No retention/compaction (C3)
+- No vocabulary purge (C4)
+- No git-checkpoint union (deferred C1c)
+- No backend/auth/schema/internal-API change
+- No new `useEffect`
+- No Phase D/E work
+
+**Acceptance checks:**
+- Helper tests prove:
+  - Rate-limit skip path returns `skipped-rate-limited` and does not call save fetcher
+  - Save success returns `saved` and calls save once with correct project-scoped label
+  - Save failure returns `failed` without throwing
+  - Custom `minIntervalMs` override is honored
+  - Custom `fetchImpl` wiring is honored
+- page.tsx trigger guards verified:
+  - Flag off → helper not called
+  - No project selected → helper not called
+  - No session selected → helper not called
+  - `projectOpenInProgressRef.current` true → helper not called
+  - Success path → helper called once after `refreshPreviewForSession` succeeds
+  - `saved` result → snapshot list reload occurs; new row visible in `ProjectHistoryPanel`
+- Existing focused suites remain green; typecheck clean; no introduced lint errors
+- No change to locked C1a/C1b-pre/C1b-cta/C2a-rate-limit paths
+
+**Risks and invariants:**
+- This is the first autosave write trigger; bounded to preview-start success only
+- `projectOpenInProgressRef` guard is mandatory even though `handleStartPreview` is not currently in the open-path call chain — protects against future call-site additions
+- In-memory ref only for last autosave timestamp in this slice; no persistence decision yet (worst case: one extra autosave allowed within 60 seconds after page refresh)
+- Save failure swallowed into helper result, not surfaced as new UI — consistent with autosave-as-background design intent
+- `PROJECT_FIRST_UX` remains the kill switch
+- No regression to project-open hydration / restore discipline (PROJ-02-01)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)
+- No regression to static preview `/workspace/index.html` rule (PREV-02-02)
+- No regression to stop-session cleanup behavior (OPS-01-04)
+
+**Dependencies:** PROJ-03-C2a-rate-limit (COMPLETE and LOCKED)
 
 ---
 

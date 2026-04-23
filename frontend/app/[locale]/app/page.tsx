@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import WorkspaceShell from '@/components/workspace/workspace-shell';
 import { PROJECT_FIRST_UX } from '@/lib/feature-flags';
 import { openProjectInFreshSession } from '@/lib/open-project-in-fresh-session';
+import { attemptProjectAutosave } from '@/lib/project-autosave';
 import { recoveryCopy } from '@/lib/recovery-copy';
 import type {
   WorkspaceCheckpoint,
@@ -374,6 +375,7 @@ export default function AppPage() {
   const selectedSessionIdRef = useRef<string | null>(null);
   const skipNextSessionEffectFileReloadRef = useRef(false);
   const projectOpenInProgressRef = useRef(false);
+  const lastProjectAutosaveAtRef = useRef<number | null>(null);
   const sessionsRef = useRef<WorkspaceShellSession[]>([]);
   const executionSessionIdByExecutionIdRef = useRef<Record<string, string>>({});
   const executionAssistantMessageIdByExecutionIdRef = useRef<Record<string, string>>({});
@@ -3760,6 +3762,26 @@ export default function AppPage() {
       }
 
       await refreshPreviewForSession(token, selectedSessionId);
+
+      if (
+        PROJECT_FIRST_UX &&
+        selectedProjectId &&
+        selectedSessionId &&
+        !projectOpenInProgressRef.current
+      ) {
+        const autosaveAttemptedAt = Date.now();
+        const autosaveResult = await attemptProjectAutosave({
+          token,
+          sessionId: selectedSessionId,
+          projectId: selectedProjectId,
+          now: autosaveAttemptedAt,
+          lastAutosaveAt: lastProjectAutosaveAtRef.current,
+        });
+        if (autosaveResult.status === 'saved') {
+          lastProjectAutosaveAtRef.current = autosaveAttemptedAt;
+          void loadWorkspaceSnapshotsForUser(token);
+        }
+      }
     } catch (error) {
       console.error('Failed to start preview:', error);
       setPreviewState('error');
