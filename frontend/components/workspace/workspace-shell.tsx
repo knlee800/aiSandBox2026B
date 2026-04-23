@@ -389,6 +389,30 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
           };
         })()
       : undefined;
+  const handleSaveProjectHistorySnapshot =
+    projectFirstUxEnabled &&
+    props.selectedProjectId &&
+    props.onSaveNamedProjectSnapshot
+      ? (() => {
+          const onSaveNamedProjectSnapshot = props.onSaveNamedProjectSnapshot;
+          return () => {
+            if (typeof window === 'undefined') {
+              return;
+            }
+            const rawName = window.prompt(
+              recoveryCopy.workspace.saveNamedSnapshotPrompt,
+            );
+            if (rawName === null) {
+              return;
+            }
+            const trimmedName = rawName.trim();
+            if (!trimmedName) {
+              return;
+            }
+            void onSaveNamedProjectSnapshot(trimmedName);
+          };
+        })()
+      : undefined;
   const handleReopenProject = () => {
     if (!props.onOpenWorkspaceProject) {
       return;
@@ -751,6 +775,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
               selectedProjectId={props.selectedProjectId ?? null}
               rows={projectHistoryRows}
               onRestore={handleRestoreProjectHistoryRow}
+              onSave={handleSaveProjectHistorySnapshot}
             />
             {historyState === 'ready' ? (
               <HistoryCheckpointList
@@ -1204,6 +1229,7 @@ function ProjectHistoryPanel(props: {
   selectedProjectId: string | null;
   rows: ProjectHistoryRow[];
   onRestore?: (snapshotId: string) => void;
+  onSave?: () => void;
 }) {
   if (!props.projectFirstUxEnabled || !props.selectedProjectId) {
     return null;
@@ -1211,7 +1237,19 @@ function ProjectHistoryPanel(props: {
 
   return (
     <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="history-project-history-surface">
-      <p className="text-xs font-semibold text-gray-700">Project History</p>
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs font-semibold text-gray-700">Project History</p>
+        {props.onSave ? (
+          <button
+            type="button"
+            className="rounded border border-gray-300 bg-white px-3 py-1 text-xs text-gray-700"
+            onClick={() => props.onSave?.()}
+            data-testid="history-project-history-save"
+          >
+            {recoveryCopy.actions.saveNamedSnapshot}
+          </button>
+        ) : null}
+      </div>
       {props.rows.length === 0 ? (
         <p className="mt-2 text-[11px] text-gray-500" data-testid="history-project-history-empty">
           {recoveryCopy.workspace.noProjectHistoryYet}

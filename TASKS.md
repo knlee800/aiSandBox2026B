@@ -6909,9 +6909,9 @@ Prevent project snapshots/restores from including `.git/` internals so restoring
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button/C2c-display/C2d/C2e/C2f/C3/C4 deferred.
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display/C2d/C2e/C2f/C3/C4 deferred.
 
-**Current stage:** Phase C in progress — C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button not yet registered
+**Current stage:** Phase C in progress — C2c-display not yet registered (next deferred slice)
 
 ---
 
@@ -8013,6 +8013,79 @@ Add one new `handleSaveNamedProjectSnapshot(name: string)` callback in `page.tsx
 **Dependencies:** PROJ-03-C2c-handler (COMPLETE and LOCKED)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-C2c-cta-handler-pre.
+
+---
+
+### PROJ-03-C2c-cta-button — Add Named Save Button With Prompt To Project History Panel Behind Feature Flag
+
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/PROJ-03-C2c-cta-button-CHECKPOINT.md`
+**Nature:** FRONTEND / PHASE C NAMED SAVE — VISIBLE BUTTON UI
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C — C2c fourth slice: named-save visible CTA
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, render one "Save" button in `ProjectHistoryPanel` that triggers `window.prompt` for a snapshot name, then calls the locked `onSaveNamedProjectSnapshot` prop. First visible user-initiated named-save affordance.
+
+**Bounded scope:**
+- Frontend only
+- Additive changes in `frontend/lib/recovery-copy.ts`:
+  - New copy entry for save button label (e.g. `actions.saveNamedSnapshot`)
+  - New copy entry for prompt message (e.g. `workspace.saveNamedSnapshotPrompt`)
+- Additive changes in `frontend/components/workspace/workspace-shell.tsx`:
+  - New derived callback inside `WorkspaceShell` gated on `projectFirstUxEnabled` + `props.selectedProjectId` + `props.onSaveNamedProjectSnapshot`
+  - Derived callback calls `window.prompt(...)` with the configured prompt message
+  - SSR-safe guard: if `typeof window === 'undefined'`, do nothing
+  - If prompt returns `null` (cancelled), do nothing
+  - If prompt returns empty/whitespace-only string, do nothing
+  - Otherwise calls `props.onSaveNamedProjectSnapshot(name)` with the trimmed name
+  - New optional prop `onSave?: () => void` on `ProjectHistoryPanel`
+  - One Save button rendered in `ProjectHistoryPanel` header area; renders only when `onSave` is present
+  - Deterministic `data-testid`: `history-project-history-save`
+  - `onSave={handleSaveNamedProjectSnapshot}` passed into `<ProjectHistoryPanel>` at the existing mount site
+- Additive changes in `frontend/components/workspace/workspace-shell.test.tsx`:
+  - Focused tests mirroring C1b-cta pattern (flag off/on, handler absent/present, prompt cancelled, prompt empty, prompt with text)
+- No `page.tsx` change in this slice
+
+**Non-goals:**
+- No modal/dialog component; `window.prompt` only
+- No change to `page.tsx` or `handleSaveNamedProjectSnapshot`
+- No change to `attemptNamedProjectSave`, `attemptProjectAutosave`, or label helpers
+- No change to history row ordering, timestamps, Restore buttons, or empty-state behavior
+- No display of saved names in rows (that is C2c-display)
+- No new effect, ref, or layout restructuring
+- No backend/API/schema change
+- No retention/compaction (C3)
+- No vocabulary purge (C4)
+- No git-checkpoint union (deferred C1c)
+- No C2c-display, C2d/C2e/C2f, C3, C4, or Phase D/E work
+
+**Acceptance checks:**
+- Save button visible in `ProjectHistoryPanel` header when flag on + `selectedProjectId` present + handler present
+- No Save button when flag off, or `selectedProjectId` absent, or handler absent
+- Click triggers `window.prompt` with the configured prompt text
+- Prompt cancelled → handler not called
+- Prompt empty/whitespace → handler not called
+- Prompt with text → `onSaveNamedProjectSnapshot` called with the prompted name
+- Existing Restore buttons and history rows unchanged
+- Existing focused suites remain green
+- Typecheck clean, no introduced lint errors
+- No visible history-row display change
+
+**Invariants to preserve:**
+- This is the first visible named-save UI; narrowly bounded to one button + prompt only
+- `window.prompt` must be SSR-guarded (`typeof window === 'undefined'` check)
+- Empty/blank input treated as cancel/do-nothing; handler not called
+- No visible failure UI introduced in this slice
+- `PROJECT_FIRST_UX` remains the kill-switch posture
+- No regression to project-open hydration / restore discipline (PROJ-02-01)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)
+- No regression to static preview `/workspace/index.html` rule (PREV-02-02)
+- No regression to stop-session cleanup behavior (OPS-01-04)
+
+**Dependencies:** PROJ-03-C2c-cta-handler-pre (COMPLETE and LOCKED)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-C2c-cta-button.
 
 ---
 

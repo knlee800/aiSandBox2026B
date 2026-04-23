@@ -403,6 +403,25 @@ function withPatchedWindowConfirm<T>(
   }
 }
 
+function withPatchedWindowPrompt<T>(
+  promptImpl: (message?: string, defaultValue?: string) => string | null,
+  run: () => T,
+): T {
+  const globalObject = globalThis as typeof globalThis & { window?: unknown };
+  const originalWindow = globalObject.window;
+  (globalObject as { window?: unknown }).window = { prompt: promptImpl };
+
+  try {
+    return run();
+  } finally {
+    if (originalWindow === undefined) {
+      delete (globalObject as { window?: unknown }).window;
+    } else {
+      (globalObject as { window?: unknown }).window = originalWindow;
+    }
+  }
+}
+
 describe('workspace shell component', () => {
   test('renders authenticated workspace shell layout', () => {
     const html = renderWorkspaceShell();
@@ -873,6 +892,38 @@ describe('workspace shell component', () => {
     assert.doesNotMatch(html, />Restore</);
   });
 
+  test('does not render project history save button when feature flag is off', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: false,
+      selectedProjectId: 'project-1',
+      workspaceSnapshots: projectHistorySnapshots,
+      onSaveNamedProjectSnapshot: async () => {},
+    });
+
+    assert.doesNotMatch(html, /history-project-history-save/);
+  });
+
+  test('renders project history save button behind feature flag', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      selectedProjectId: 'project-1',
+      workspaceSnapshots: projectHistorySnapshots,
+      onSaveNamedProjectSnapshot: async () => {},
+    });
+
+    assert.match(html, /history-project-history-save/);
+  });
+
+  test('does not render project history save button without save handler', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      selectedProjectId: 'project-1',
+      workspaceSnapshots: projectHistorySnapshots,
+    });
+
+    assert.doesNotMatch(html, /history-project-history-save/);
+  });
+
   test('renders project history restore buttons per row behind feature flag', () => {
     const html = renderWorkspaceShell({
       projectFirstUxEnabled: true,
@@ -973,6 +1024,100 @@ describe('workspace shell component', () => {
 
     assert.equal(confirmCalls, 1);
     assert.equal(restoreCalls, 0);
+  });
+
+  test('does not call named save handler when project history save prompt is cancelled', () => {
+    let promptCalls = 0;
+    let promptMessage: string | undefined;
+    let saveCalls = 0;
+    const onSaveNamedProjectSnapshot = async () => {
+      saveCalls += 1;
+    };
+    const button = renderWorkspaceShellElementByTestId('history-project-history-save', {
+      projectFirstUxEnabled: true,
+      selectedProjectId: 'project-1',
+      workspaceSnapshots: projectHistorySnapshots,
+      onSaveNamedProjectSnapshot,
+    });
+
+    assert.ok(button);
+    const onClick = button.props.onClick;
+    assert.equal(typeof onClick, 'function');
+    if (!onClick) {
+      throw new Error('Expected save button to expose onClick.');
+    }
+
+    withPatchedWindowPrompt((message) => {
+      promptCalls += 1;
+      promptMessage = message;
+      return null;
+    }, () => {
+      onClick();
+    });
+
+    assert.equal(promptCalls, 1);
+    assert.equal(promptMessage, 'Name this saved version:');
+    assert.equal(saveCalls, 0);
+  });
+
+  test('does not call named save handler when project history save prompt is blank', () => {
+    let saveCalls = 0;
+    const onSaveNamedProjectSnapshot = async () => {
+      saveCalls += 1;
+    };
+    const button = renderWorkspaceShellElementByTestId('history-project-history-save', {
+      projectFirstUxEnabled: true,
+      selectedProjectId: 'project-1',
+      workspaceSnapshots: projectHistorySnapshots,
+      onSaveNamedProjectSnapshot,
+    });
+
+    assert.ok(button);
+    const onClick = button.props.onClick;
+    assert.equal(typeof onClick, 'function');
+    if (!onClick) {
+      throw new Error('Expected save button to expose onClick.');
+    }
+
+    withPatchedWindowPrompt(() => '   ', () => {
+      onClick();
+    });
+
+    assert.equal(saveCalls, 0);
+  });
+
+  test('calls named save handler with trimmed prompt text from project history save button', () => {
+    let promptCalls = 0;
+    let saveCalls = 0;
+    let savedName: string | null = null;
+    const onSaveNamedProjectSnapshot = async (name: string) => {
+      saveCalls += 1;
+      savedName = name;
+    };
+    const button = renderWorkspaceShellElementByTestId('history-project-history-save', {
+      projectFirstUxEnabled: true,
+      selectedProjectId: 'project-1',
+      workspaceSnapshots: projectHistorySnapshots,
+      onSaveNamedProjectSnapshot,
+    });
+
+    assert.ok(button);
+    const onClick = button.props.onClick;
+    assert.equal(typeof onClick, 'function');
+    if (!onClick) {
+      throw new Error('Expected save button to expose onClick.');
+    }
+
+    withPatchedWindowPrompt(() => {
+      promptCalls += 1;
+      return '  Working draft  ';
+    }, () => {
+      onClick();
+    });
+
+    assert.equal(promptCalls, 1);
+    assert.equal(saveCalls, 1);
+    assert.equal(savedName, 'Working draft');
   });
 
   test('renders Stop for usable sessions and Remove for unusable sessions', () => {

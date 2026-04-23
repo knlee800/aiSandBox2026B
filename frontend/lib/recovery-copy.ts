@@ -2,6 +2,7 @@
 // Phase A slices. Nothing consumes these strings yet.
 export const recoveryCopy = {
   actions: {
+    saveNamedSnapshot: 'Save',
     startNewProject: 'Start a new project',
     openExistingProject: 'Open existing project',
     reopenProject: 'Reopen project',
@@ -33,6 +34,7 @@ export const recoveryCopy = {
     unavailable: 'We could not load your project workspace.',
     noProjectHistoryYet: 'No history yet for this project.',
     restoreSnapshotConfirm: 'Restore this version? Your current workspace will be replaced.',
+    saveNamedSnapshotPrompt: 'Name this saved version:',
     openProjectToStart: 'Open a project to start using workspace tools.',
     ready: 'Your project workspace is ready.',
     help: 'Use Start a new project or Open existing project in the history panel.',
