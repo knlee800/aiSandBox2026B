@@ -86,6 +86,29 @@ const projectHistorySnapshots: WorkspaceSnapshotSummary[] = [
     fileCount: 4,
   },
 ];
+const projectHistorySnapshotsWithNames: WorkspaceSnapshotSummary[] = [
+  {
+    id: 'snapshot-named',
+    userId: 'user-123',
+    label: '[project-id:project-1:name:Working draft]',
+    createdAt: '2026-04-05T12:00:00.000Z',
+    fileCount: 2,
+  },
+  {
+    id: 'snapshot-unnamed',
+    userId: 'user-123',
+    label: '[project-id:project-1]',
+    createdAt: '2026-04-04T12:00:00.000Z',
+    fileCount: 3,
+  },
+  {
+    id: 'snapshot-other-named',
+    userId: 'user-123',
+    label: '[project-id:project-2:name:Other project draft]',
+    createdAt: '2026-04-06T12:00:00.000Z',
+    fileCount: 1,
+  },
+];
 
 const checkpoint: WorkspaceCheckpoint = {
   id: 'checkpoint-1',
@@ -878,6 +901,49 @@ describe('workspace shell component', () => {
     });
 
     assert.doesNotMatch(html, /history-project-history-surface/);
+  });
+
+  test('renders parsed snapshot name for named project history rows behind feature flag', () => {
+    const label = renderWorkspaceShellElementByTestId(
+      'history-project-history-label-snapshot-named',
+      {
+        projectFirstUxEnabled: true,
+        selectedProjectId: 'project-1',
+        workspaceSnapshots: projectHistorySnapshotsWithNames,
+      },
+    );
+
+    assert.ok(label);
+    assert.equal(label.props.children, 'Working draft');
+  });
+
+  test('keeps the existing default label for unnamed project history rows', () => {
+    const label = renderWorkspaceShellElementByTestId(
+      'history-project-history-label-snapshot-unnamed',
+      {
+        projectFirstUxEnabled: true,
+        selectedProjectId: 'project-1',
+        workspaceSnapshots: projectHistorySnapshotsWithNames,
+      },
+    );
+
+    assert.ok(label);
+    assert.equal(label.props.children, 'Saved version');
+  });
+
+  test('renders mixed named and unnamed project history rows without changing project filtering', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      selectedProjectId: 'project-1',
+      workspaceSnapshots: projectHistorySnapshotsWithNames,
+    });
+
+    assert.match(html, /history-project-history-label-snapshot-named/);
+    assert.match(html, />Working draft</);
+    assert.match(html, /history-project-history-label-snapshot-unnamed/);
+    assert.match(html, />Saved version</);
+    assert.doesNotMatch(html, /history-project-history-row-snapshot-other-named/);
+    assert.doesNotMatch(html, />Other project draft</);
   });
 
   test('does not render project history restore buttons when feature flag is off', () => {

@@ -15670,7 +15670,7 @@ PROJ-02-02 isolated the real 500 cause:
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display/C2d/C2e/C2f/C3/C4 deferred. Completed order: A0 → A1 → A3 → A2a → A2b → B0 → B1 → B2a → B2b → B3a → B4a → B4b → C1a → C1b-pre → C1b-cta → C2a-rate-limit → C2b-trigger-preview → C2c-label-format → C2c-handler → C2c-cta-handler-pre → C2c-cta-button. Current stage: C2c-display not yet registered (next deferred slice).
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d/C2e/C2f/C3/C4 deferred. Completed order: A0 → A1 → A3 → A2a → A2b → B0 → B1 → B2a → B2b → B3a → B4a → B4b → C1a → C1b-pre → C1b-cta → C2a-rate-limit → C2b-trigger-preview → C2c-label-format → C2c-handler → C2c-cta-handler-pre → C2c-cta-button → C2c-display. Current stage: C2d not yet registered.
 
 ---
 
@@ -16948,6 +16948,72 @@ Behind `PROJECT_FIRST_UX`, render one "Save" button in `ProjectHistoryPanel` tha
 - No regression to stop-session cleanup behavior (OPS-01-04)
 
 **Dependencies:** PROJ-03-C2c-cta-handler-pre (COMPLETE and LOCKED)
+
+---
+
+### PROJ-03-C2c-display — Show Parsed Snapshot Name In Project History Rows Behind Feature Flag
+
+**Task ID:** PROJ-03-C2c-display
+**Family:** PROJ-03 (Project-First UX Redesign)
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/PROJ-03-C2c-display-CHECKPOINT.md`
+**Nature:** FRONTEND / PHASE C NAMED SAVE — HISTORY ROW DISPLAY
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C — C2c fifth slice: named-save row display
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, update project history row labeling so named snapshots show the parsed user-supplied name, while unnamed snapshots continue to display the existing default label. No layout change, no new component, no new prop, no handler change.
+
+**Bounded scope:**
+- Frontend only
+- Changes allowed in `frontend/components/workspace/workspace-shell.tsx`:
+  - Import locked `parseProjectScopedSnapshotName` from `workspace-snapshots.logic.ts`
+  - Update `computeProjectHistoryRows(...)` `.map()` callback so the row label uses the parsed snapshot name when present, falling back to the existing default label when absent
+  - Preserve existing sort/order, row structure, header, Save button, Restore button, timestamps, and empty state
+- Additive changes in `frontend/components/workspace/workspace-shell.test.tsx`:
+  - New fixture snapshots with named labels
+  - Tests for named-label display, unnamed-label default, and mixed-list correctness
+- No `page.tsx` change
+- No `recovery-copy.ts` change
+- No change to `workspace-snapshots.logic.ts`
+
+**Non-goals:**
+- No change to Save button or prompt flow
+- No change to `page.tsx` handlers
+- No change to `attemptNamedProjectSave`, `attemptProjectAutosave`, or label helpers
+- No change to `ProjectHistoryPanel` layout or props
+- No history row ordering change
+- No timestamp or empty-state change
+- No backend/API/schema change
+- No retention/compaction (C3)
+- No vocabulary purge (C4)
+- No git-checkpoint union (deferred C1c)
+- No C2d/C2e/C2f, C3, C4, or Phase D/E work
+
+**Acceptance checks:**
+- Named-label snapshots display the parsed user-supplied name
+- Unnamed-label snapshots still display the existing default label
+- Mixed lists render each row correctly
+- Sort order unchanged
+- Empty-state behavior unchanged
+- Save button, Restore buttons, header, and timestamps unchanged
+- Existing focused suites remain green
+- Typecheck clean, no introduced lint errors
+- No `page.tsx` change
+- No new prop on `WorkspaceShell` or `ProjectHistoryPanel`
+
+**Risks and invariants:**
+- Change narrowly bounded to history-row display text only
+- Rely on locked `parseProjectScopedSnapshotName`; do not duplicate parsing logic
+- Backward compatibility for unnamed / pre-C2c snapshots preserved
+- `PROJECT_FIRST_UX` remains the kill-switch posture
+- No regression to project-open hydration / restore discipline (PROJ-02-01)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)
+- No regression to static preview `/workspace/index.html` rule (PREV-02-02)
+- No regression to stop-session cleanup behavior (OPS-01-04)
+
+**Dependencies:** PROJ-03-C2c-cta-button (COMPLETE and LOCKED)
 
 ---
 

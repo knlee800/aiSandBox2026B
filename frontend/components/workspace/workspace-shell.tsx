@@ -35,7 +35,10 @@ import type {
   WorkspaceCheckpointDiffResponse,
 } from './workspace-checkpoint-diff.logic';
 import type { WorkspaceExecutionFileActionState } from './workspace-ai-file-actions.logic';
-import type { WorkspaceSnapshotSummary } from './workspace-snapshots.logic';
+import {
+  parseProjectScopedSnapshotName,
+  type WorkspaceSnapshotSummary,
+} from './workspace-snapshots.logic';
 import type {
   WorkspaceProjectSummary,
   WorkspacePublicProjectDetail,
@@ -5973,8 +5976,23 @@ function computeProjectHistoryRows(
 
   return snapshots
     .filter(
-      (snapshot) =>
-        parseProjectIdFromProjectScopedSnapshotLabel(snapshot.label) === normalizedProjectId,
+      (snapshot) => {
+        if (
+          parseProjectIdFromProjectScopedSnapshotLabel(snapshot.label) ===
+          normalizedProjectId
+        ) {
+          return true;
+        }
+
+        const trimmedLabel = snapshot.label?.trim();
+        return (
+          typeof trimmedLabel === 'string' &&
+          trimmedLabel.startsWith(
+            `${PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX}${normalizedProjectId}:name:`,
+          ) &&
+          trimmedLabel.endsWith(PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX)
+        );
+      },
     )
     .sort((left, right) => {
       const createdAtComparison = right.createdAt.localeCompare(left.createdAt);
@@ -5985,7 +6003,7 @@ function computeProjectHistoryRows(
     })
     .map((snapshot) => ({
       id: snapshot.id,
-      label: 'Saved version',
+      label: parseProjectScopedSnapshotName(snapshot.label) ?? 'Saved version',
       createdAt: snapshot.createdAt,
     }));
 }
