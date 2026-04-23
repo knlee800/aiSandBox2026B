@@ -6909,9 +6909,9 @@ Prevent project snapshots/restores from including `.git/` internals so restoring
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler/C2c-cta/C2c-display/C2d/C2e/C2f/C3/C4 deferred.
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta/C2c-display/C2d/C2e/C2f/C3/C4 deferred.
 
-**Current stage:** Phase C in progress — C2c-label-format COMPLETE and LOCKED; next slice (C2c-handler) pending registration
+**Current stage:** Phase C in progress — C2c-handler COMPLETE and LOCKED; C2c-cta not yet registered
 
 ---
 
@@ -7888,6 +7888,69 @@ Add pure-logic helpers that support an optional user-supplied name in project-sc
 **Dependencies:** PROJ-03-C2b-trigger-preview (COMPLETE and LOCKED)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-C2c-label-format.
+
+---
+
+### PROJ-03-C2c-handler — Add Named Project Snapshot Save Pure-Logic Helper Behind Feature Flag
+
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/PROJ-03-C2c-handler-CHECKPOINT.md`
+**Nature:** FRONTEND / PHASE C NAMED SAVE PURE LOGIC — HELPER SCAFFOLDING
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C — C2c second slice: named-save handler helper
+
+**Objective:**
+Provide a pure-logic helper that performs a single project-scoped named save by composing the locked C2c-label-format `buildProjectScopedSnapshotLabelWithName` helper with the existing `saveWorkspaceSnapshot` fetcher. Returns a discriminated result and never throws. No consumer wiring. No UI. Mirrors the helper-only scaffolding pattern used by C2a-rate-limit and C2c-label-format.
+
+**Bounded scope:**
+- Frontend only
+- New file: `frontend/lib/project-named-save.ts`
+  - Export `NamedProjectSaveResult` type: `{ status: 'saved'; savedSnapshot: WorkspaceSnapshotSummary } | { status: 'failed' }`
+  - Export `attemptNamedProjectSave({ token, sessionId, projectId, name, fetchImpl? }): Promise<NamedProjectSaveResult>`
+  - Uses `buildProjectScopedSnapshotLabelWithName(projectId, name)` to build the label
+  - Calls `saveWorkspaceSnapshot` exactly once on success
+  - Returns `{ status: 'saved', savedSnapshot }` on HTTP success
+  - Returns `{ status: 'failed' }` on fetch rejection or non-ok response; never re-throws
+- New test file: `frontend/lib/project-named-save.test.ts` (additive only)
+- No changes to any existing production file
+- No consumer imports in this slice
+
+**Non-goals:**
+- No `page.tsx` named-save handler or import
+- No `workspace-shell.tsx` prop/UI/dialog changes
+- No `recovery-copy.ts` changes
+- No change to `attemptProjectAutosave` or `handleSaveWorkspaceSnapshot`
+- No rate-limit gating (named saves are user-initiated)
+- No backend/API/schema change
+- No retention/compaction (C3)
+- No vocabulary purge (C4)
+- No git-checkpoint union (deferred C1c)
+- No C2c-cta, C2c-display, C2d/C2e/C2f, C3, C4, or Phase D/E work
+
+**Acceptance checks:**
+- Helper uses `buildProjectScopedSnapshotLabelWithName(projectId, name)` to build the label
+- Helper calls `saveWorkspaceSnapshot` exactly once on success
+- Returns `{ status: 'saved', savedSnapshot }` on HTTP success
+- Returns `{ status: 'failed' }` on fetch rejection
+- Returns `{ status: 'failed' }` on non-ok HTTP response
+- Blank/whitespace-only `name` results in the unnamed label shape being sent (delegated to `buildProjectScopedSnapshotLabelWithName`)
+- Helper not imported anywhere in production code (verified by grep)
+- No production file other than the new helper file is touched
+- Existing focused suites remain green; typecheck clean; no introduced lint errors
+
+**Invariants to preserve:**
+- Helper-only; no consumer wiring in this slice
+- Delegate name normalization entirely to locked `buildProjectScopedSnapshotLabelWithName`; do not re-implement trim/blank-fallback
+- Do not refactor `attemptProjectAutosave` or create a shared abstraction in this slice
+- `PROJECT_FIRST_UX` remains the kill-switch posture for future consumers (gating deferred to call site)
+- No regression to project-open hydration / restore discipline (PROJ-02-01)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)
+- No regression to static preview `/workspace/index.html` rule (PREV-02-02)
+- No regression to stop-session cleanup behavior (OPS-01-04)
+
+**Dependencies:** PROJ-03-C2c-label-format (COMPLETE and LOCKED)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-C2c-handler.
 
 ---
 
