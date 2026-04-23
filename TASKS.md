@@ -6909,9 +6909,9 @@ Prevent project snapshots/restores from including `.git/` internals so restoring
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta/C2c-display/C2d/C2e/C2f/C3/C4 deferred.
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button/C2c-display/C2d/C2e/C2f/C3/C4 deferred.
 
-**Current stage:** Phase C in progress — C2c-handler COMPLETE and LOCKED; C2c-cta not yet registered
+**Current stage:** Phase C in progress — C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button not yet registered
 
 ---
 
@@ -7951,6 +7951,68 @@ Provide a pure-logic helper that performs a single project-scoped named save by 
 **Dependencies:** PROJ-03-C2c-label-format (COMPLETE and LOCKED)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-C2c-handler.
+
+---
+
+### PROJ-03-C2c-cta-handler-pre — Add Page-Level Named Project Save Handler Wired To Helper Behind Feature Flag
+
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/PROJ-03-C2c-cta-handler-pre-CHECKPOINT.md`
+**Nature:** FRONTEND / PHASE C NAMED SAVE — PAGE HANDLER WIRING (NO UI)
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C — C2c third slice: page-level handler pre-step
+
+**Objective:**
+Add one new `handleSaveNamedProjectSnapshot(name: string)` callback in `page.tsx` that calls the locked `attemptNamedProjectSave` helper, reloads the workspace snapshots list on success, and exposes the callback as a new optional `onSaveNamedProjectSnapshot` prop on `WorkspaceShell`. No visible UI in this slice.
+
+**Bounded scope:**
+- Frontend only
+- Additive changes in `frontend/app/[locale]/app/page.tsx`:
+  - New callback `handleSaveNamedProjectSnapshot(name: string): Promise<void>`
+  - Gated on `PROJECT_FIRST_UX`; short-circuits when token, `selectedProjectId`, `selectedSessionId`, or `projectOpenInProgressRef.current` are missing/true
+  - Calls locked `attemptNamedProjectSave({ token, sessionId, projectId, name })`
+  - On `{ status: 'saved' }` → calls `loadWorkspaceSnapshotsForUser(token)` (best-effort reload)
+  - On `{ status: 'failed' }` → logs and returns; no UI surface
+  - Passes callback into `<WorkspaceShell ...>` as `onSaveNamedProjectSnapshot`
+- Additive changes in `frontend/components/workspace/workspace-shell.tsx`:
+  - New optional prop only: `onSaveNamedProjectSnapshot?: (name: string) => Promise<void>`
+  - Prop is not consumed inside `WorkspaceShell` in this slice (no derived callback, no rendered element)
+
+**Non-goals:**
+- No visible button
+- No dialog or `window.prompt`
+- No `recovery-copy.ts` change
+- No derived callback inside `WorkspaceShell`
+- No change to `attemptNamedProjectSave`, `attemptProjectAutosave`, or label helpers
+- No new effect, no new ref, no layout change
+- No backend/API/schema change
+- No retention/compaction (C3)
+- No vocabulary purge (C4)
+- No git-checkpoint union (deferred C1c)
+- No C2c-cta-button, C2c-display, C2d/C2e/C2f, C3, C4, or Phase D/E work
+
+**Acceptance checks:**
+- New page-level handler exists and is passed into `WorkspaceShell`
+- Handler is fully gated by flag / token / `selectedProjectId` / `selectedSessionId` / `projectOpenInProgressRef`
+- On `{ status: 'saved' }`, snapshot list reload occurs (best-effort)
+- On `{ status: 'failed' }`, no throw and no UI change
+- `WorkspaceShell` optional prop is accepted without changing rendered output
+- Existing focused suites remain green
+- Typecheck clean, no introduced lint errors
+- No visible UI added in this slice
+
+**Invariants to preserve:**
+- Handler must not fire while a project open is in flight (`projectOpenInProgressRef.current === true`)
+- Snapshot reload best-effort only; no new failure path introduced
+- `PROJECT_FIRST_UX` remains the kill-switch posture
+- No regression to project-open hydration / restore discipline (PROJ-02-01)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)
+- No regression to static preview `/workspace/index.html` rule (PREV-02-02)
+- No regression to stop-session cleanup behavior (OPS-01-04)
+
+**Dependencies:** PROJ-03-C2c-handler (COMPLETE and LOCKED)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-C2c-cta-handler-pre.
 
 ---
 

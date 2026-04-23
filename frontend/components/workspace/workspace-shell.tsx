@@ -88,6 +88,7 @@ interface WorkspaceShellProps {
     projectId: string,
     snapshotId: string,
   ) => Promise<void>;
+  onSaveNamedProjectSnapshot?: (name: string) => Promise<void>;
   selectedProjectVisibility?: 'private' | 'public';
   onSelectedProjectVisibilityChange?: (visibility: 'private' | 'public') => void;
   onUpdateWorkspaceProjectVisibility?: () => Promise<void>;

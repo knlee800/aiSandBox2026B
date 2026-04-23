@@ -6,6 +6,7 @@ import WorkspaceShell from '@/components/workspace/workspace-shell';
 import { PROJECT_FIRST_UX } from '@/lib/feature-flags';
 import { openProjectInFreshSession } from '@/lib/open-project-in-fresh-session';
 import { attemptProjectAutosave } from '@/lib/project-autosave';
+import { attemptNamedProjectSave } from '@/lib/project-named-save';
 import { recoveryCopy } from '@/lib/recovery-copy';
 import type {
   WorkspaceCheckpoint,
@@ -1375,6 +1376,42 @@ export default function AppPage() {
       projectOpenInProgressRef.current = false;
       skipNextSessionEffectFileReloadRef.current = false;
     }
+  }
+
+  async function handleSaveNamedProjectSnapshot(name: string): Promise<void> {
+    if (!PROJECT_FIRST_UX) {
+      return;
+    }
+
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      return;
+    }
+
+    if (!selectedProjectId) {
+      return;
+    }
+
+    if (!selectedSessionId) {
+      return;
+    }
+
+    if (projectOpenInProgressRef.current) {
+      return;
+    }
+
+    const saveResult = await attemptNamedProjectSave({
+      token,
+      sessionId: selectedSessionId,
+      projectId: selectedProjectId,
+      name,
+    });
+    if (saveResult.status === 'failed') {
+      console.error('Failed to save named project snapshot.');
+      return;
+    }
+
+    void loadWorkspaceSnapshotsForUser(token);
   }
 
   async function handleUpdateWorkspaceProjectVisibility(): Promise<void> {
@@ -3856,6 +3893,7 @@ export default function AppPage() {
       onRestoreWorkspaceProjectFromSnapshotById={
         handleRestoreWorkspaceProjectFromSnapshotById
       }
+      onSaveNamedProjectSnapshot={handleSaveNamedProjectSnapshot}
       onSelectedProjectVisibilityChange={handleProjectVisibilitySelection}
       onUpdateWorkspaceProjectVisibility={handleUpdateWorkspaceProjectVisibility}
       publicProjectListState={publicProjectListState}
