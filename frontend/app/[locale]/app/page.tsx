@@ -465,6 +465,52 @@ export default function AppPage() {
   }, [locale, router]);
 
   useEffect(() => {
+    if (!PROJECT_FIRST_UX) {
+      return;
+    }
+
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      return;
+    }
+
+    if (!selectedProjectId) {
+      return;
+    }
+
+    if (projectOpenInProgressRef.current) {
+      return;
+    }
+
+    const selectedSessionIdAtExpiryWarning = selectedSessionIdRef.current ?? selectedSessionId;
+    if (!selectedSessionIdAtExpiryWarning) {
+      return;
+    }
+
+    const selectedSessionAtExpiryWarning = sessions.find(
+      (session) => session.id === selectedSessionIdAtExpiryWarning,
+    );
+    if (!selectedSessionAtExpiryWarning?.terminatedAt) {
+      return;
+    }
+
+    void (async () => {
+      const autosaveAttemptedAt = Date.now();
+      const autosaveResult = await attemptProjectAutosave({
+        token,
+        sessionId: selectedSessionIdAtExpiryWarning,
+        projectId: selectedProjectId,
+        now: autosaveAttemptedAt,
+        lastAutosaveAt: lastProjectAutosaveAtRef.current,
+      });
+      if (autosaveResult.status === 'saved') {
+        lastProjectAutosaveAtRef.current = autosaveAttemptedAt;
+        void loadWorkspaceSnapshotsForUser(token);
+      }
+    })();
+  }, [selectedProjectId, selectedSessionId, sessions]);
+
+  useEffect(() => {
     selectedSessionIdRef.current = selectedSessionId;
   }, [selectedSessionId]);
 

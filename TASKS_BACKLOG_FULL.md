@@ -15670,7 +15670,7 @@ PROJ-02-02 isolated the real 500 cause:
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d/C2e/C2f/C3/C4 deferred. Completed order: A0 → A1 → A3 → A2a → A2b → B0 → B1 → B2a → B2b → B3a → B4a → B4b → C1a → C1b-pre → C1b-cta → C2a-rate-limit → C2b-trigger-preview → C2c-label-format → C2c-handler → C2c-cta-handler-pre → C2c-cta-button → C2c-display. Current stage: C2d not yet registered.
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload/C2e/C2f/C3/C4 deferred. Completed order: A0 → A1 → A3 → A2a → A2b → B0 → B1 → B2a → B2b → B3a → B4a → B4b → C1a → C1b-pre → C1b-cta → C2a-rate-limit → C2b-trigger-preview → C2c-label-format → C2c-handler → C2c-cta-handler-pre → C2c-cta-button → C2c-display → C2d-expiry-warn. Current stage: C2d-unload/C2e/C2f/C3/C4 not yet registered.
 
 ---
 
@@ -17014,6 +17014,71 @@ Behind `PROJECT_FIRST_UX`, update project history row labeling so named snapshot
 - No regression to stop-session cleanup behavior (OPS-01-04)
 
 **Dependencies:** PROJ-03-C2c-cta-button (COMPLETE and LOCKED)
+
+---
+
+### PROJ-03-C2d-expiry-warn — Add Session-Expiry Warning Autosave Trigger Behind Feature Flag
+
+**Task ID:** PROJ-03-C2d-expiry-warn
+**Family:** PROJ-03 (Project-First UX Redesign)
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/PROJ-03-C2d-expiry-warn-CHECKPOINT.md`
+**Nature:** FRONTEND / PHASE C AUTOSAVE TRIGGER — SESSION-EXPIRY WARNING
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C — C2d first slice: in-app expiry-warning lifecycle trigger
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, when the workspace detects a session-expiry warning (or equivalent session-terminated warning boundary), attempt one project-scoped autosave snapshot using the locked `attemptProjectAutosave` helper and the existing `lastProjectAutosaveAtRef` rate-limit ref, then reload the snapshot list. Skip silently when the flag is off, when no project or session is selected, when project-open hydration is in progress, when rate-limited, or when the save fails.
+
+**Bounded scope:**
+- Frontend only
+- Additive production changes allowed in `frontend/app/[locale]/app/page.tsx`:
+  - Identify the existing session-expiry / terminated-warning detection path
+  - Add one guarded `attemptProjectAutosave(...)` call at that boundary
+  - Reuse locked `attemptProjectAutosave`, `shouldAllowAutosaveNow`, and `lastProjectAutosaveAtRef`
+  - Guards (all must pass): `PROJECT_FIRST_UX`, `selectedProjectId`, `selectedSessionId`, `!projectOpenInProgressRef.current`
+  - On `saved`: update `lastProjectAutosaveAtRef.current`, reload snapshot list
+  - On `skipped-rate-limited` or `failed`: no-op
+- Additive test changes in the most appropriate existing frontend test file(s)
+- No new helper module in this slice unless stage-start proves it absolutely necessary
+
+**Non-goals:**
+- No `beforeunload` / `pagehide` / `visibilitychange` / route-away handling (deferred to C2d-unload)
+- No unload / close / beacon work
+- No UI affordance, toast, banner, or new visible status surface
+- No change to `workspace-shell.tsx` UI
+- No change to named-save flow or label helpers
+- No backend/API/schema change
+- No retention/compaction (C3)
+- No vocabulary purge (C4)
+- No git-checkpoint union (deferred C1c)
+- No C2d-unload/C2e/C2f, C3, C4, or Phase D/E work
+
+**Acceptance checks:**
+- Expiry-warning trigger fires → flag on + project + session + not hydrating + not rate-limited → one autosave attempt
+- Rate-limited: skip silently
+- Flag off: no autosave
+- No project or no session: no autosave
+- Project-open in progress: no autosave
+- Autosave fails: no crash, no visible error
+- Snapshot list reload on saved result
+- Existing C2b preview-start trigger unaffected
+- Existing C2c named-save flow unaffected
+- Existing focused suites remain green
+- Typecheck clean, no introduced lint errors
+
+**Risks and invariants:**
+- Bounded to in-app session-expiry warning boundary only; unload/close deferred
+- Reuse locked rate-limit and autosave helper patterns; no new save path
+- `projectOpenInProgressRef` guard mandatory
+- `PROJECT_FIRST_UX` remains the kill-switch posture
+- No regression to project-open hydration / restore discipline (PROJ-02-01)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)
+- No regression to static preview `/workspace/index.html` rule (PREV-02-02)
+- No regression to stop-session cleanup behavior (OPS-01-04)
+
+**Dependencies:** PROJ-03-C2c-display (COMPLETE and LOCKED)
 
 ---
 
