@@ -39,6 +39,7 @@ interface ImportWorkspaceArchiveArgs {
 }
 
 const PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX = '[project-id:';
+const PROJECT_SCOPED_SNAPSHOT_NAME_SEPARATOR = ':name:';
 const PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX = ']';
 
 function trimMessage(raw: unknown, fallback: string): string {
@@ -52,7 +53,15 @@ export function buildProjectScopedSnapshotLabel(projectId: string): string {
   return `${PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX}${projectId.trim()}${PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX}`;
 }
 
-function parseProjectIdFromSnapshotLabel(label: string | null): string | null {
+function normalizeProjectScopedSnapshotName(name: string): string | null {
+  const normalizedName = name.trim();
+  return normalizedName ? normalizedName : null;
+}
+
+function parseProjectScopedSnapshotLabelParts(label: string | null): {
+  projectId: string;
+  name: string | null;
+} | null {
   if (!label) {
     return null;
   }
@@ -63,11 +72,50 @@ function parseProjectIdFromSnapshotLabel(label: string | null): string | null {
   ) {
     return null;
   }
-  const rawProjectId = trimmed.slice(
+
+  const rawBody = trimmed.slice(
     PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX.length,
     trimmed.length - PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX.length,
   );
-  return rawProjectId.trim() ? rawProjectId.trim() : null;
+  const separatorIndex = rawBody.indexOf(PROJECT_SCOPED_SNAPSHOT_NAME_SEPARATOR);
+  const rawProjectId =
+    separatorIndex >= 0 ? rawBody.slice(0, separatorIndex) : rawBody;
+  const projectId = rawProjectId.trim();
+  if (!projectId) {
+    return null;
+  }
+
+  const rawName =
+    separatorIndex >= 0
+      ? rawBody.slice(
+          separatorIndex + PROJECT_SCOPED_SNAPSHOT_NAME_SEPARATOR.length,
+        )
+      : null;
+
+  return {
+    projectId,
+    name: rawName === null ? null : normalizeProjectScopedSnapshotName(rawName),
+  };
+}
+
+export function buildProjectScopedSnapshotLabelWithName(
+  projectId: string,
+  name: string,
+): string {
+  const normalizedName = normalizeProjectScopedSnapshotName(name);
+  if (!normalizedName) {
+    return buildProjectScopedSnapshotLabel(projectId);
+  }
+
+  return `${PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX}${projectId.trim()}${PROJECT_SCOPED_SNAPSHOT_NAME_SEPARATOR}${normalizedName}${PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX}`;
+}
+
+function parseProjectIdFromSnapshotLabel(label: string | null): string | null {
+  return parseProjectScopedSnapshotLabelParts(label)?.projectId ?? null;
+}
+
+export function parseProjectScopedSnapshotName(label: string | null): string | null {
+  return parseProjectScopedSnapshotLabelParts(label)?.name ?? null;
 }
 
 export function resolveProjectScopedLatestSnapshotId(args: {

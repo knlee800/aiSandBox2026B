@@ -2,9 +2,11 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import {
   buildProjectScopedSnapshotLabel,
+  buildProjectScopedSnapshotLabelWithName,
   exportWorkspaceArchive,
   importWorkspaceArchive,
   loadWorkspaceSnapshots,
+  parseProjectScopedSnapshotName,
   resolveProjectScopedLatestSnapshotId,
   restoreWorkspaceSnapshot,
   saveWorkspaceSnapshot,
@@ -128,6 +130,50 @@ describe('workspace-snapshots.logic', () => {
     assert.equal(label, '[project-id:project-123]');
   });
 
+  test('buildProjectScopedSnapshotLabelWithName encodes a deterministic named label', () => {
+    const firstLabel = buildProjectScopedSnapshotLabelWithName(
+      'project-123',
+      '  Working draft  ',
+    );
+    const secondLabel = buildProjectScopedSnapshotLabelWithName(
+      'project-123',
+      '  Working draft  ',
+    );
+
+    assert.equal(firstLabel, '[project-id:project-123:name:Working draft]');
+    assert.equal(secondLabel, firstLabel);
+  });
+
+  test('buildProjectScopedSnapshotLabelWithName falls back to the unnamed label shape for blank names', () => {
+    const unnamedLabel = buildProjectScopedSnapshotLabel('project-123');
+    const blankNamedLabel = buildProjectScopedSnapshotLabelWithName(
+      'project-123',
+      '   ',
+    );
+
+    assert.equal(blankNamedLabel, unnamedLabel);
+  });
+
+  test('parseProjectScopedSnapshotName returns the trimmed name when present', () => {
+    const parsedName = parseProjectScopedSnapshotName(
+      '  [project-id:project-123:name:Working draft]  ',
+    );
+
+    assert.equal(parsedName, 'Working draft');
+  });
+
+  test('parseProjectScopedSnapshotName returns null for unnamed or blank-name labels', () => {
+    assert.equal(
+      parseProjectScopedSnapshotName('[project-id:project-123]'),
+      null,
+    );
+    assert.equal(
+      parseProjectScopedSnapshotName('[project-id:project-123:name:   ]'),
+      null,
+    );
+    assert.equal(parseProjectScopedSnapshotName(null), null);
+  });
+
   test('resolveProjectScopedLatestSnapshotId selects latest matching project snapshot', () => {
     const snapshotId = resolveProjectScopedLatestSnapshotId({
       projectId: 'project-1',
@@ -157,6 +203,37 @@ describe('workspace-snapshots.logic', () => {
     });
 
     assert.equal(snapshotId, 'snapshot-newer-project-1');
+  });
+
+  test('resolveProjectScopedLatestSnapshotId matches both unnamed and named project labels', () => {
+    const snapshotId = resolveProjectScopedLatestSnapshotId({
+      projectId: 'project-1',
+      snapshots: [
+        {
+          id: 'snapshot-newer-project-1-named',
+          userId: 'user-1',
+          label: '[project-id:project-1:name:Working draft]',
+          createdAt: '2026-04-09T12:00:00.000Z',
+          fileCount: 5,
+        },
+        {
+          id: 'snapshot-older-project-1-unnamed',
+          userId: 'user-1',
+          label: '[project-id:project-1]',
+          createdAt: '2026-04-09T11:00:00.000Z',
+          fileCount: 4,
+        },
+        {
+          id: 'snapshot-other-project',
+          userId: 'user-1',
+          label: '[project-id:project-2:name:Other]',
+          createdAt: '2026-04-09T10:00:00.000Z',
+          fileCount: 3,
+        },
+      ],
+    });
+
+    assert.equal(snapshotId, 'snapshot-newer-project-1-named');
   });
 
   test('resolveProjectScopedLatestSnapshotId returns null when no project snapshot exists', () => {

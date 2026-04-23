@@ -15670,7 +15670,7 @@ PROJ-02-02 isolated the real 500 cause:
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c/C2d/C2e/C2f/C3/C4 deferred. Completed order: A0 → A1 → A3 → A2a → A2b → B0 → B1 → B2a → B2b → B3a → B4a → B4b → C1a → C1b-pre → C1b-cta → C2a-rate-limit → C2b-trigger-preview. Current stage: next slice pending.
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler/C2c-cta/C2c-display/C2d/C2e/C2f/C3/C4 deferred. Completed order: A0 → A1 → A3 → A2a → A2b → B0 → B1 → B2a → B2b → B3a → B4a → B4b → C1a → C1b-pre → C1b-cta → C2a-rate-limit → C2b-trigger-preview → C2c-label-format. Current stage: C2c-label-format COMPLETE and LOCKED; next slice (C2c-handler) pending registration.
 
 ---
 
@@ -16685,6 +16685,68 @@ Behind `PROJECT_FIRST_UX`, after a successful preview-start in `handleStartPrevi
 - No regression to stop-session cleanup behavior (OPS-01-04)
 
 **Dependencies:** PROJ-03-C2a-rate-limit (COMPLETE and LOCKED)
+
+---
+
+### PROJ-03-C2c-label-format — Add Project Snapshot Label Name Extension Pure-Logic Helpers Behind Feature Flag
+
+**Task ID:** PROJ-03-C2c-label-format
+**Family:** PROJ-03 (Project-First UX Redesign)
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/PROJ-03-C2c-label-format-CHECKPOINT.md`
+**Nature:** FRONTEND / PHASE C SNAPSHOT LABEL FORMAT EXTENSION — PURE LOGIC
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C — C2c first slice: label-format scaffolding
+
+**Objective:**
+Add pure-logic helpers that support an optional user-supplied name in project-scoped snapshot labels while preserving exact backward compatibility with the current unnamed `[project-id:...]` label shape produced and consumed since B0/B4. No consumers yet. No write-path change. No UI change. Mirrors the C2a-rate-limit and A0 mechanical-scaffolding pattern.
+
+**Bounded scope:**
+- Frontend only
+- Allowed production changes:
+  - `frontend/components/workspace/workspace-snapshots.logic.ts` (additive only):
+    - Keep existing `buildProjectScopedSnapshotLabel(projectId)` output byte-identical for unnamed labels
+    - Add either a sibling `buildProjectScopedSnapshotLabelWithName(projectId, name)` helper or a backward-compatible optional-name extension (preferred: sibling to avoid touching the existing exported signature)
+    - Add `parseProjectScopedSnapshotName(label: string | null): string | null` helper
+    - Preserve compatibility of `parseProjectIdFromSnapshotLabel` and `resolveProjectScopedLatestSnapshotId` for both old and new label shapes
+- Allowed test changes:
+  - `frontend/components/workspace/workspace-snapshots.logic.test.ts` (additive only)
+- No consumer wiring in this slice
+
+**Non-goals:**
+- No named-save dialog
+- No `page.tsx` named-save handler
+- No `workspace-shell.tsx` UI or copy changes
+- No change to preview autosave trigger behavior
+- No change to `attemptProjectAutosave`
+- No backend/API/schema change
+- No retention/compaction (C3)
+- No vocabulary purge (C4)
+- No git-checkpoint union (deferred C1c)
+- No Phase D/E work
+
+**Acceptance checks:**
+- Existing unnamed label build path remains byte-identical
+- New named-label build path is deterministic and parseable back to the same `projectId`
+- Existing project-id parser continues to work for both old and new label shapes
+- New name parser returns trimmed name when present and `null` otherwise
+- Empty/whitespace-only names normalize to the unnamed label shape (no `[name:]` artifact)
+- Name normalization behavior (e.g. character stripping, length cap) is explicit and covered by tests
+- Existing latest-snapshot resolution continues to work for both old and new label shapes
+- Existing focused suites remain green; typecheck clean; no introduced lint errors
+- No production file outside `workspace-snapshots.logic.ts` is touched
+
+**Risks and invariants:**
+- Keep format extension unambiguous and backward-compatible
+- No consumer wiring in this slice
+- `PROJECT_FIRST_UX` remains the kill-switch posture for future consumers
+- No regression to project-open hydration / restore discipline (PROJ-02-01)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)
+- No regression to static preview `/workspace/index.html` rule (PREV-02-02)
+- No regression to stop-session cleanup behavior (OPS-01-04)
+
+**Dependencies:** PROJ-03-C2b-trigger-preview (COMPLETE and LOCKED)
 
 ---
 
