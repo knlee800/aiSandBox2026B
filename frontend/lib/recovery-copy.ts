@@ -52,7 +52,7 @@ export const recoveryCopy = {
     openProjectToCreateSavePoint: 'Open a project to create a save point.',
     openProjectToCompareHistory: 'Open a project to compare checkpoints.',
     openProjectToInspectDiffs: 'Open a project to inspect checkpoint diffs.',
-    openProjectToInspectSnapshots: 'Open a project to inspect checkpoint snapshots.',
+    openProjectToInspectSnapshots: 'Open a project to inspect checkpoint history.',
     openProjectToOpenLiveFile: 'Open a project to open a live file from history.',
     openProjectToEnableRevert: 'Open a project to enable checkpoint revert.',
     openOrReopenProject: 'Open or reopen a project to continue.',

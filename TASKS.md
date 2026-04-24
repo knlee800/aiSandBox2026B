@@ -6909,9 +6909,9 @@ Prevent project snapshots/restores from including `.git/` internals so restoring
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer deferred; C3/C4 deferred.
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary — container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED.
 
-**Current stage:** Phase C in progress — C2f-idle-timer/C2d-unload/C3/C4 not yet registered
+**Current stage:** Phase C in progress — C2d-unload/C3 deferred and not yet registered
 
 ---
 
@@ -8351,6 +8351,58 @@ Behind `PROJECT_FIRST_UX`, after the user successfully saves a file via `handleS
 **Dependencies:** PROJ-03-C2e (COMPLETE and LOCKED)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-C2f-file-save.
+
+---
+
+### PROJ-03-C4 — Replace User-Facing Snapshot Wording With History Vocabulary Behind Feature Flag
+
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/PROJ-03-C4-CHECKPOINT.md`
+**Nature:** FRONTEND / PHASE C UX VOCABULARY — USER-FACING WORDING ONLY
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C — C4: vocabulary swap
+**Dependencies:** PROJ-03-C2f-file-save (COMPLETE and LOCKED)
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, replace user-facing strings that say "snapshot/snapshots" with the project-first "history/save" vocabulary already adopted in `ProjectHistoryPanel` and related project-first UI surfaces. Keep all internal TypeScript identifiers, helpers, DTOs, routes, and backend concepts unchanged.
+
+**Bounded scope:**
+- Frontend only
+- Additive or narrowly scoped wording changes only in user-facing frontend files rendered when `PROJECT_FIRST_UX` is on
+- Behavior:
+  - Update user-visible wording on `PROJECT_FIRST_UX` surfaces from snapshot/snapshots to history/save vocabulary where appropriate
+  - Preserve legacy wording when `PROJECT_FIRST_UX` is off (kill-switch)
+  - Do not rename internal TypeScript identifiers, helpers, DTO names, route names, or backend concepts
+  - Prefer existing centralized copy sources where already present; otherwise keep changes minimal and localized
+- No backend/API/schema change
+
+**Non-goals:**
+- No rename of TypeScript identifiers such as `WorkspaceSnapshotSummary`, `loadWorkspaceSnapshotsForUser`, `saveWorkspaceSnapshot`, etc.
+- No backend route / DTO / DB column rename
+- No change to label formats (`[project-id:...]` / `[project-id:...:name:...]`)
+- No change to `ProjectHistoryPanel` layout or behavior
+- No autosave trigger changes
+- No retention/compaction (C3)
+- No git-checkpoint union (C1c)
+- No Phase D/E work
+
+**Acceptance checks:**
+- With `PROJECT_FIRST_UX=true`, targeted user-facing project-first surfaces no longer use snapshot wording where history/save vocabulary is intended
+- With `PROJECT_FIRST_UX=false`, legacy wording remains unchanged
+- Typecheck clean
+- Focused regression suite green
+- No introduced lint errors
+- No internal identifier renames
+
+**Invariants to preserve:**
+- Cosmetic/user-facing only; no behavioral change
+- `PROJECT_FIRST_UX` remains the kill-switch posture
+- No regression to project-open hydration / restore discipline (PROJ-02-01)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)
+- No regression to static preview `/workspace/index.html` rule (PREV-02-02)
+- No regression to stop-session cleanup behavior (OPS-01-04)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-C4.
 
 ---
 

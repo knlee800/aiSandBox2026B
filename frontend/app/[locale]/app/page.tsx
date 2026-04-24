@@ -996,7 +996,9 @@ export default function AppPage() {
       setSnapshotActionError(
         error instanceof Error && error.message.trim()
           ? error.message
-          : 'Failed to load workspace snapshots.',
+          : PROJECT_FIRST_UX
+            ? 'Failed to load project history.'
+            : 'Failed to load workspace snapshots.',
       );
     }
   }
