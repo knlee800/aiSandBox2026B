@@ -15670,7 +15670,7 @@ PROJ-02-02 isolated the real 500 cause:
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary — container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED; D0 COMPLETE and LOCKED; D0b COMPLETE and LOCKED; D0c COMPLETE and LOCKED; D0d COMPLETE and LOCKED. D1/C3/C2d-unload deferred and not yet registered. Completed order: A0 → A1 → A3 → A2a → A2b → B0 → B1 → B2a → B2b → B3a → B4a → B4b → C1a → C1b-pre → C1b-cta → C2a-rate-limit → C2b-trigger-preview → C2c-label-format → C2c-handler → C2c-cta-handler-pre → C2c-cta-button → C2c-display → C2d-expiry-warn → C2e → C2f-file-save → C4 → D0 → D0b → D0c → D0d. Current stage: D0d (COMPLETE and LOCKED).
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2e-hotfix COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary — container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED; D0 COMPLETE and LOCKED; D0b COMPLETE and LOCKED; D0c COMPLETE and LOCKED; D0d COMPLETE and LOCKED. D1/C3/C2d-unload deferred and not yet registered. Completed order: A0 → A1 → A3 → A2a → A2b → B0 → B1 → B2a → B2b → B3a → B4a → B4b → C1a → C1b-pre → C1b-cta → C2a-rate-limit → C2b-trigger-preview → C2c-label-format → C2c-handler → C2c-cta-handler-pre → C2c-cta-button → C2c-display → C2d-expiry-warn → C2e → C2f-file-save → C4 → D0 → D0b → D0c → D0d → C2e-hotfix. Current stage: C2e-hotfix (COMPLETE and LOCKED).
 
 ---
 
@@ -17491,6 +17491,78 @@ After D0c made the project list load reliably on entry, the default-to-`projects
 - Seed must be applied only on cold mount/bootstrap, not during in-progress project open (`projectOpenInProgressRef`)
 - Seed must only win when it matches freshly loaded lists; invalid seed is silently discarded
 - `PROJECT_FIRST_UX` remains the kill-switch posture
+- No regression to project-open hydration / restore discipline (PROJ-02-01)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)
+- No regression to static preview `/workspace/index.html` rule (PREV-02-02)
+- No regression to stop-session cleanup behavior (OPS-01-04)
+
+---
+
+### PROJ-03-C2e-hotfix — Autosave After Every Successful AI Action Boundary Behind Feature Flag
+
+**Task ID:** PROJ-03-C2e-hotfix
+**Family:** PROJ-03 (Project-First UX Redesign)
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/PROJ-03-C2e-hotfix-CHECKPOINT.md`
+**Nature:** FRONTEND / AUTOSAVE CADENCE HOTFIX
+**Source:** Post-C2e behavioral gap: current `AI_ACTIONS_PER_AUTOSAVE = 5` threshold counter in `frontend/app/[locale]/app/page.tsx` only captures a project autosave snapshot after every 5th successful AI coherence completion (`coherenceResult.ran === true`). AI-created/modified files can still be lost from project history if the browser/session ends before the threshold is reached and before another autosave trigger (preview-start, expiry-warning, explicit file-save) fires. The backend filesystem write already happened; only project history/snapshot capture is delayed.
+**Dependencies:** PROJ-03-C2e (COMPLETE and LOCKED)
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, change the AI-action autosave trigger so every successful AI coherence completion (`coherenceResult.ran === true`) attempts a project autosave immediately, instead of waiting for the 5-action threshold. Reuse the existing `attemptProjectAutosave(...)` path and all existing guards. No UI change.
+
+**Why this exists:**
+C2e introduced an AI-action-boundary autosave trigger but throttled it via a fixed every-5th counter. In practice, a single AI action can already create or substantially modify project files; if the user closes the tab before either four more AI actions land or another autosave trigger fires, those files exist on disk inside the running container but are not yet captured into the project snapshot/history. Tightening cadence to every successful AI action — while keeping the existing rate-limit inside `attemptProjectAutosave` as natural backpressure — closes the gap without UI work or backend changes.
+
+**Bounded scope:**
+- `frontend/app/[locale]/app/page.tsx` — remove or bypass the every-5th threshold logic in the C2e path so autosave is attempted after each successful coherence completion
+- Directly relevant tests only if needed
+
+**Behavior (when `PROJECT_FIRST_UX` is true):**
+- After each successful AI coherence completion (`coherenceResult.ran === true`), call `attemptProjectAutosave(...)` immediately
+- Preserve all existing guards:
+  - `PROJECT_FIRST_UX`
+  - token present
+  - `selectedProjectId` present
+  - `selectedSessionIdRef.current` present
+  - `!projectOpenInProgressRef.current`
+- Preserve existing result handling:
+  - on saved → update `lastProjectAutosaveAtRef.current` and best-effort reload workspace snapshots
+  - on skipped-rate-limited or failed → no crash, no UI change
+- No backend/API/schema change
+- No new UI surface
+
+**Non-goals:**
+- No manual editor draft protection
+- No unload/close lifecycle handling
+- No change to preview-start autosave (C2b)
+- No change to expiry-warning autosave (C2d-expiry-warn)
+- No change to explicit file-save autosave (C2f-file-save)
+- No change to named-save flow
+- No backend changes
+- No D1
+- No C3 / C2d-unload work
+- No Phase D/E work
+
+**Acceptance checks:**
+- Each successful AI coherence completion now attempts autosave immediately when guards pass
+- No threshold counter remains in effect for AI autosave
+- Existing guards and best-effort snapshot reload behavior remain intact
+- With `PROJECT_FIRST_UX=false`, legacy behavior unchanged
+- Typecheck clean
+- Focused regression suite green
+- No introduced lint errors
+
+**Risks and invariants:**
+- Keep this to AI autosave cadence only
+- Do not change non-AI autosave triggers (preview-start, expiry-warning, explicit file-save, named-save)
+- Do not introduce UI/UX surface changes
+- Preserve existing C2e guard behavior and no-crash behavior
+- `PROJECT_FIRST_UX` remains the kill-switch posture
+- Preserve all existing behavior except the AI autosave threshold cadence
+- Existing rate-limit (`attemptProjectAutosave`) provides natural backpressure when AI actions land in tight bursts
 - No regression to project-open hydration / restore discipline (PROJ-02-01)
 - No regression to snapshot-store persistence (PROJ-01-21)
 - No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)

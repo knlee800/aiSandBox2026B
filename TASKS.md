@@ -6909,9 +6909,9 @@ Prevent project snapshots/restores from including `.git/` internals so restoring
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary — container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED; D0 COMPLETE and LOCKED; D0b COMPLETE and LOCKED; D0c COMPLETE and LOCKED; D0d COMPLETE and LOCKED. D1/C3/C2d-unload deferred and not yet registered.
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2e-hotfix COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary — container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED; D0 COMPLETE and LOCKED; D0b COMPLETE and LOCKED; D0c COMPLETE and LOCKED; D0d COMPLETE and LOCKED. D1/C3/C2d-unload deferred and not yet registered.
 
-**Current stage:** PROJ-03-D0d (COMPLETE and LOCKED)
+**Current stage:** PROJ-03-C2e-hotfix (COMPLETE and LOCKED)
 
 ---
 
@@ -8627,6 +8627,69 @@ Behind `PROJECT_FIRST_UX`, persist `selectedProjectId` and `selectedSessionId` i
 - No regression to stop-session cleanup behavior (OPS-01-04)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-D0d.
+
+---
+
+### PROJ-03-C2e-hotfix — Autosave After Every Successful AI Action Boundary Behind Feature Flag
+
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/PROJ-03-C2e-hotfix-CHECKPOINT.md`
+**Nature:** FRONTEND / AUTOSAVE CADENCE HOTFIX
+**Source:** Post-C2e behavioral gap: current `AI_ACTIONS_PER_AUTOSAVE = 5` threshold counter only captures a project autosave snapshot after every 5th successful AI coherence completion; AI-created/modified files can still be lost if the browser/session ends before the threshold is reached and before another autosave trigger fires. The backend filesystem write already happened; only project history/snapshot capture is delayed.
+**Dependencies:** PROJ-03-C2e (COMPLETE and LOCKED)
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, change the AI-action autosave trigger so every successful AI coherence completion (`coherenceResult.ran === true`) attempts a project autosave immediately, instead of waiting for the 5-action threshold. Reuse the existing `attemptProjectAutosave(...)` path and all existing guards. No UI change.
+
+**Bounded scope:**
+- Frontend only
+- Narrow changes allowed in:
+  - `frontend/app/[locale]/app/page.tsx` — remove or bypass the every-5th threshold logic in the C2e path so autosave is attempted after each successful coherence completion
+  - directly relevant tests only if needed
+- Behavior:
+  - Remove or bypass the current every-5th threshold logic in the C2e path
+  - After each successful AI coherence completion, attempt autosave immediately
+  - Preserve all existing guards: `PROJECT_FIRST_UX`, token present, `selectedProjectId` present, `selectedSessionIdRef.current` present, `!projectOpenInProgressRef.current`
+  - Preserve existing result handling: on saved → update `lastProjectAutosaveAtRef.current` and best-effort reload workspace snapshots; on skipped-rate-limited or failed → no crash, no UI change
+  - No backend/API/schema change
+  - No new UI surface
+
+**Non-goals:**
+- No manual editor draft protection
+- No unload/close lifecycle handling
+- No change to preview-start autosave
+- No change to expiry-warning autosave
+- No change to explicit file-save autosave
+- No change to named-save flow
+- No backend changes
+- No D1
+- No C3 / C2d-unload work
+- No Phase D/E work
+
+**Acceptance checks:**
+- Each successful AI coherence completion now attempts autosave immediately when guards pass
+- No threshold counter remains in effect for AI autosave
+- Existing guards and best-effort snapshot reload behavior remain intact
+- With `PROJECT_FIRST_UX=false`, legacy behavior unchanged
+- Typecheck clean
+- Focused regression suite green
+- No introduced lint errors
+
+**Risks and invariants:**
+- Keep this to AI autosave cadence only
+- Do not change non-AI autosave triggers (preview-start, expiry-warning, explicit file-save, named-save)
+- Do not introduce UI/UX surface changes
+- Preserve existing C2e guard behavior and no-crash behavior
+- `PROJECT_FIRST_UX` remains the kill-switch posture
+- Preserve all existing behavior except the AI autosave threshold cadence
+- Existing rate-limit (`attemptProjectAutosave`) provides natural backpressure when AI actions land in tight bursts
+- No regression to project-open hydration / restore discipline (PROJ-02-01)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)
+- No regression to static preview `/workspace/index.html` rule (PREV-02-02)
+- No regression to stop-session cleanup behavior (OPS-01-04)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-C2e-hotfix.
 
 ---
 
