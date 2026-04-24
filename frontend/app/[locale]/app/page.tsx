@@ -3760,6 +3760,21 @@ export default function AppPage() {
       setSavedFileContent(selectedFileContent);
       setFileSaveState('saved');
       setFileSaveError(null);
+
+      if (PROJECT_FIRST_UX && selectedProjectId && !projectOpenInProgressRef.current) {
+        const autosaveAttemptedAt = Date.now();
+        const autosaveResult = await attemptProjectAutosave({
+          token,
+          sessionId: selectedSessionId,
+          projectId: selectedProjectId,
+          now: autosaveAttemptedAt,
+          lastAutosaveAt: lastProjectAutosaveAtRef.current,
+        });
+        if (autosaveResult.status === 'saved') {
+          lastProjectAutosaveAtRef.current = autosaveAttemptedAt;
+          void loadWorkspaceSnapshotsForUser(token);
+        }
+      }
     } catch (error) {
       console.error('Failed to save workspace file:', error);
       if (fileSaveRequestIdRef.current !== requestId) {
