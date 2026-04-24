@@ -121,6 +121,7 @@ const CHAT_EXECUTION_POLL_INTERVAL_MS = 3000;
 const PROJECT_OPEN_FILE_REFRESH_RETRY_DELAY_MS = 250;
 const PROJECT_OPEN_FILE_REFRESH_MAX_ATTEMPTS = 6;
 const AI_AUTO_CHECKPOINT_DESCRIPTION = 'AI: applied workspace file actions';
+const AI_ACTIONS_PER_AUTOSAVE = 5;
 const DEFAULT_CHAT_MODEL_OPTION = 'xai:grok-3';
 const CHAT_MODEL_OPTIONS = [
   { value: 'xai:grok-3', provider: 'xai', model: 'grok-3', label: 'xAI - grok-3' },
@@ -377,6 +378,7 @@ export default function AppPage() {
   const skipNextSessionEffectFileReloadRef = useRef(false);
   const projectOpenInProgressRef = useRef(false);
   const lastProjectAutosaveAtRef = useRef<number | null>(null);
+  const aiActionsCompletedSinceLastAutosaveRef = useRef<number>(0);
   const sessionsRef = useRef<WorkspaceShellSession[]>([]);
   const executionSessionIdByExecutionIdRef = useRef<Record<string, string>>({});
   const executionAssistantMessageIdByExecutionIdRef = useRef<Record<string, string>>({});
@@ -647,6 +649,7 @@ export default function AppPage() {
     executionFileActionsByExecutionIdRef.current = {};
     appliedFileActionsExecutionIdsRef.current = new Set<string>();
     coheredExecutionIdsRef.current = new Set<string>();
+    aiActionsCompletedSinceLastAutosaveRef.current = 0;
     skipNextChatThreadPersistRef.current = true;
 
     if (!selectedSessionId) {
@@ -3393,7 +3396,7 @@ export default function AppPage() {
       executionSession?.status !== 'terminated';
     const selectedFilePathAtTrigger = selectedFilePath;
 
-    await runAiActionCoherence({
+    const coherenceResult = await runAiActionCoherence({
       executionId,
       fileActionState,
       selectedSessionId: selectedSessionIdRef.current,
@@ -3423,6 +3426,40 @@ export default function AppPage() {
         await loadCheckpoints(token, executionSessionId);
       },
     });
+
+    if (!coherenceResult.ran) {
+      return;
+    }
+
+    aiActionsCompletedSinceLastAutosaveRef.current += 1;
+    if (aiActionsCompletedSinceLastAutosaveRef.current < AI_ACTIONS_PER_AUTOSAVE) {
+      return;
+    }
+
+    aiActionsCompletedSinceLastAutosaveRef.current = 0;
+
+    const selectedSessionIdAtAutosave = selectedSessionIdRef.current;
+    if (
+      !PROJECT_FIRST_UX ||
+      !selectedProjectId ||
+      !selectedSessionIdAtAutosave ||
+      projectOpenInProgressRef.current
+    ) {
+      return;
+    }
+
+    const autosaveAttemptedAt = Date.now();
+    const autosaveResult = await attemptProjectAutosave({
+      token,
+      sessionId: selectedSessionIdAtAutosave,
+      projectId: selectedProjectId,
+      now: autosaveAttemptedAt,
+      lastAutosaveAt: lastProjectAutosaveAtRef.current,
+    });
+    if (autosaveResult.status === 'saved') {
+      lastProjectAutosaveAtRef.current = autosaveAttemptedAt;
+      void loadWorkspaceSnapshotsForUser(token);
+    }
   }
 
   function attachExecutionFileActionStateToAssistantMessage(

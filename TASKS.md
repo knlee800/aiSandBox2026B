@@ -6909,9 +6909,9 @@ Prevent project snapshots/restores from including `.git/` internals so restoring
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload/C2e/C2f/C3/C4 deferred.
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2f/C3/C4 deferred.
 
-**Current stage:** Phase C in progress — C2d-unload/C2e/C2f/C3/C4 not yet registered
+**Current stage:** Phase C in progress — C2d-unload/C2f/C3/C4 not yet registered
 
 ---
 
@@ -8215,6 +8215,75 @@ Behind `PROJECT_FIRST_UX`, when the workspace detects a session-expiry warning (
 **Dependencies:** PROJ-03-C2c-display (COMPLETE and LOCKED)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-C2d-expiry-warn.
+
+---
+
+### PROJ-03-C2e — Add AI-Action-Boundary Autosave Trigger Behind Feature Flag
+
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/PROJ-03-C2e-CHECKPOINT.md`
+**Nature:** FRONTEND / PHASE C AUTOSAVE TRIGGER — AI ACTION BOUNDARY
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C — C2e: AI file-action coherence boundary trigger
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, after every Nth successful AI file-action coherence completion (`result.ran === true` from `runAiActionCoherence`), attempt one project-scoped autosave snapshot using the locked `attemptProjectAutosave` helper and the existing `lastProjectAutosaveAtRef` rate-limit ref. Reset the counter on any autosave attempt and on project switch. Skip silently when the flag is off, when guards fail, or when rate-limited.
+
+**Bounded scope:**
+- Frontend only
+- Production changes to `frontend/app/[locale]/app/page.tsx`:
+  - Add `aiActionsCompletedSinceLastAutosaveRef` (`useRef<number>`, initial value 0)
+  - Define module-level constant `AI_ACTIONS_PER_AUTOSAVE = 5`
+  - Modify `maybeRunExecutionCoherence` to capture the return value of `await runAiActionCoherence(...)`:
+    - When `result.ran === true`: increment counter
+    - When counter >= `AI_ACTIONS_PER_AUTOSAVE`: apply guards and call `attemptProjectAutosave(...)`
+      - Guards (all must pass): `PROJECT_FIRST_UX`, token, `selectedProjectId`, `selectedSessionId`, `!projectOpenInProgressRef.current`
+      - On `saved`: reset counter to 0, update `lastProjectAutosaveAtRef.current`, best-effort `void loadWorkspaceSnapshotsForUser(token)`
+      - On `skipped-rate-limited` or `failed`: reset counter to 0
+  - Reset counter to 0 on `selectedProjectId` change
+- Additive test changes only if needed in existing frontend test files
+- No new helper module
+
+**Non-goals:**
+- No unload/close lifecycle handling (C2d-unload deferred)
+- No idle-debounce trigger (C2f)
+- No change to `runAiActionCoherence(...)` module or `workspace-ai-coherence.logic.ts`
+- No UI affordance, toast, banner, or visible status surface
+- No change to `workspace-shell.tsx` UI
+- No change to named-save flow or label helpers
+- No backend/API/schema change
+- No retention/compaction (C3)
+- No vocabulary purge (C4)
+- No git-checkpoint union (deferred C1c)
+- No Phase D/E work
+
+**Acceptance checks:**
+- Every Nth coherence completion where `result.ran === true` triggers one autosave attempt when guards pass
+- Fewer than N completions: no autosave from this trigger
+- Counter resets to 0 after any autosave attempt (`saved`, `skipped-rate-limited`, or `failed`)
+- Counter resets to 0 on project switch
+- Flag off: no autosave, no active counter behavior
+- `result.ran === false`: counter not incremented
+- Existing C2b preview-start trigger unaffected
+- Existing C2c named-save flow unaffected
+- Existing C2d-expiry-warn trigger unaffected
+- Existing focused suites remain green
+- Typecheck clean, no introduced lint errors
+
+**Invariants to preserve:**
+- Modification bounded to `maybeRunExecutionCoherence` body only; no new save path
+- Reuse locked rate-limit and autosave helper patterns
+- Counter reset discipline mandatory
+- `projectOpenInProgressRef` guard mandatory
+- `PROJECT_FIRST_UX` remains the kill-switch posture
+- No regression to project-open hydration / restore discipline (PROJ-02-01)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)
+- No regression to static preview `/workspace/index.html` rule (PREV-02-02)
+- No regression to stop-session cleanup behavior (OPS-01-04)
+
+**Dependencies:** PROJ-03-C2d-expiry-warn (COMPLETE and LOCKED)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-C2e.
 
 ---
 
