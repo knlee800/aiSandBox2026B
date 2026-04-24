@@ -117,6 +117,8 @@ void projectFirstUxAnchors;
 
 const HIDDEN_UNUSABLE_SESSIONS_STORAGE_KEY = 'workspace_hidden_unusable_sessions';
 const CHAT_THREAD_STORAGE_KEY_PREFIX = 'workspace_chat_thread';
+const TAB_SELECTED_SESSION_STORAGE_KEY = 'workspace_tab_selected_session_id';
+const TAB_SELECTED_PROJECT_STORAGE_KEY = 'workspace_tab_selected_project_id';
 const CHAT_EXECUTION_POLL_INTERVAL_MS = 3000;
 const PROJECT_OPEN_FILE_REFRESH_RETRY_DELAY_MS = 250;
 const PROJECT_OPEN_FILE_REFRESH_MAX_ATTEMPTS = 6;
@@ -377,6 +379,8 @@ export default function AppPage() {
   const selectedSessionIdRef = useRef<string | null>(null);
   const skipNextSessionEffectFileReloadRef = useRef(false);
   const projectOpenInProgressRef = useRef(false);
+  const coldMountSeededSessionIdRef = useRef<string | null>(null);
+  const coldMountSeededProjectIdRef = useRef<string | null>(null);
   const lastProjectAutosaveAtRef = useRef<number | null>(null);
   const aiActionsCompletedSinceLastAutosaveRef = useRef<number>(0);
   const sessionsRef = useRef<WorkspaceShellSession[]>([]);
@@ -462,8 +466,21 @@ export default function AppPage() {
     setUserId(storedUserId);
     setHiddenSessionIds(storedHiddenSessionIds);
     setAuthLoading(false);
+    if (PROJECT_FIRST_UX) {
+      coldMountSeededSessionIdRef.current =
+        sessionStorage.getItem(TAB_SELECTED_SESSION_STORAGE_KEY) || null;
+      coldMountSeededProjectIdRef.current =
+        sessionStorage.getItem(TAB_SELECTED_PROJECT_STORAGE_KEY) || null;
+    } else {
+      coldMountSeededSessionIdRef.current = null;
+      coldMountSeededProjectIdRef.current = null;
+    }
     void loadSessions(token);
     void loadDashboardSlice(token);
+    if (PROJECT_FIRST_UX) {
+      void loadWorkspaceProjectsForUser(token);
+      void loadPublicWorkspaceProjectsList();
+    }
   }, [locale, router]);
 
   useEffect(() => {
@@ -515,6 +532,32 @@ export default function AppPage() {
   useEffect(() => {
     selectedSessionIdRef.current = selectedSessionId;
   }, [selectedSessionId]);
+
+  useEffect(() => {
+    if (!PROJECT_FIRST_UX) {
+      return;
+    }
+
+    if (selectedSessionId) {
+      sessionStorage.setItem(TAB_SELECTED_SESSION_STORAGE_KEY, selectedSessionId);
+      return;
+    }
+
+    sessionStorage.removeItem(TAB_SELECTED_SESSION_STORAGE_KEY);
+  }, [selectedSessionId]);
+
+  useEffect(() => {
+    if (!PROJECT_FIRST_UX) {
+      return;
+    }
+
+    if (selectedProjectId) {
+      sessionStorage.setItem(TAB_SELECTED_PROJECT_STORAGE_KEY, selectedProjectId);
+      return;
+    }
+
+    sessionStorage.removeItem(TAB_SELECTED_PROJECT_STORAGE_KEY);
+  }, [selectedProjectId]);
 
   useEffect(() => {
     sessionsRef.current = sessions;
@@ -839,6 +882,16 @@ export default function AppPage() {
           return currentSelection;
         }
       }
+
+      const seededSessionId = PROJECT_FIRST_UX ? coldMountSeededSessionIdRef.current : null;
+      coldMountSeededSessionIdRef.current = null;
+      if (seededSessionId) {
+        const seededSession = data.find((session) => session.id === seededSessionId);
+        if (seededSession && isUsableSession(seededSession)) {
+          return seededSessionId;
+        }
+      }
+
       const fallbackSession = data.find((session) => isUsableSession(session));
       return fallbackSession ? fallbackSession.id : null;
     });
@@ -1013,6 +1066,13 @@ export default function AppPage() {
         if (currentSelectedProjectId && projects.some((project) => project.id === currentSelectedProjectId)) {
           return currentSelectedProjectId;
         }
+
+        const seededProjectId = PROJECT_FIRST_UX ? coldMountSeededProjectIdRef.current : null;
+        coldMountSeededProjectIdRef.current = null;
+        if (seededProjectId && projects.some((project) => project.id === seededProjectId)) {
+          return seededProjectId;
+        }
+
         return projects.length > 0 ? projects[0].id : null;
       });
       setProjectListState('ready');

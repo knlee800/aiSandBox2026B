@@ -15670,7 +15670,7 @@ PROJ-02-02 isolated the real 500 cause:
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary — container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED; D0 COMPLETE and LOCKED; D0b PLANNED. D1/C3/C2d-unload deferred and not yet registered. Completed order: A0 → A1 → A3 → A2a → A2b → B0 → B1 → B2a → B2b → B3a → B4a → B4b → C1a → C1b-pre → C1b-cta → C2a-rate-limit → C2b-trigger-preview → C2c-label-format → C2c-handler → C2c-cta-handler-pre → C2c-cta-button → C2c-display → C2d-expiry-warn → C2e → C2f-file-save → C4 → D0. Current stage: D0b (PLANNED).
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary — container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED; D0 COMPLETE and LOCKED; D0b COMPLETE and LOCKED; D0c COMPLETE and LOCKED; D0d COMPLETE and LOCKED. D1/C3/C2d-unload deferred and not yet registered. Completed order: A0 → A1 → A3 → A2a → A2b → B0 → B1 → B2a → B2b → B3a → B4a → B4b → C1a → C1b-pre → C1b-cta → C2a-rate-limit → C2b-trigger-preview → C2c-label-format → C2c-handler → C2c-cta-handler-pre → C2c-cta-button → C2c-display → C2d-expiry-warn → C2e → C2f-file-save → C4 → D0 → D0b → D0c → D0d. Current stage: D0d (COMPLETE and LOCKED).
 
 ---
 
@@ -17378,6 +17378,124 @@ Enable the already-implemented project-first frontend path in the local Docker p
 - Scope limited to the single frontend build arg in `docker-compose.prod.yml`
 - All locked D0 handler/component semantics unchanged
 - `PROJECT_FIRST_UX` remains the kill-switch posture in code
+
+---
+
+### PROJ-03-D0c — Load Project List In Project-First No-Session Entry Path
+
+**Task ID:** PROJ-03-D0c
+**Family:** PROJ-03 (Project-First UX Redesign)
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/PROJ-03-D0c-CHECKPOINT.md`
+**Nature:** FRONTEND / LOAD-PATH WIRING
+**Source:** Post-D0b diagnostic: `loadWorkspaceProjectsForUser(token)` is only invoked from the `[selectedSessionId]` effect in `frontend/app/[locale]/app/page.tsx` (lines 523–587); that effect early-returns when `selectedSessionId` is null (line 575); in the project-first entry path the user has no session yet, so `GET /api/projects` is never called, and the project picker renders empty even though the backend is fully user-scoped
+**Dependencies:** PROJ-03-D0b (COMPLETE and LOCKED)
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, ensure the existing project picker is populated on first entry even when no session is selected, by calling the user-scoped project list loader from the token/bootstrap path rather than relying only on the session-keyed effect.
+
+**Why this exists:**
+`loadWorkspaceProjectsForUser(token)` at line 1006 of `frontend/app/[locale]/app/page.tsx` calls `GET /api/projects` which is already fully user-scoped (no `sessionId` required). The load is triggered only inside the `[selectedSessionId]` effect at lines 523–587, which resets state and early-returns when `selectedSessionId` is null. The initial bootstrap effect at lines 450–467 calls `loadSessions` and `loadDashboardSlice` but not the project loader. In the project-first entry path the user lands without a session, so the project list is never fetched, and `workspaceProjects` stays `[]`. The dropdown in `HistoryProjectPanel` is therefore empty and the "Open Project" button stays disabled, regardless of how many real projects exist in the database. The fix is to invoke `loadWorkspaceProjectsForUser(token)` from the existing bootstrap path when `PROJECT_FIRST_UX` is true.
+
+**Bounded scope:**
+- `frontend/app/[locale]/app/page.tsx` — add `loadWorkspaceProjectsForUser(token)` call (and optionally `loadPublicWorkspaceProjectsList()`) in the existing bootstrap/token-availability path guarded by `PROJECT_FIRST_UX`
+- Directly relevant tests only if needed
+- No other files
+
+**Non-goals:**
+- No dedicated `/projects` landing page
+- No redesign of `AppPage`
+- No change to project create/open handlers
+- No change to project history/autosave/restore/named save behavior
+- No route redesign
+- No backend changes
+- No D1
+- No C3 / C2d-unload work
+
+**Acceptance checks:**
+- With `PROJECT_FIRST_UX=true` and no selected session, existing user-owned projects are fetched and appear in the existing project picker on first entry
+- With `PROJECT_FIRST_UX=false`, legacy behavior unchanged
+- Existing `[selectedSessionId]`-driven behavior remains intact and unmodified
+- Typecheck clean
+- Focused regression suite green
+- No introduced lint errors
+
+**Risks and invariants:**
+- Load-path wiring only; no new surface
+- Do not change backend behavior
+- `PROJECT_FIRST_UX` remains the kill-switch posture
+- No regression to project-open hydration / restore discipline (PROJ-02-01)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)
+- No regression to static preview `/workspace/index.html` rule (PREV-02-02)
+- No regression to stop-session cleanup behavior (OPS-01-04)
+
+---
+
+### PROJ-03-D0d — Add Tab-Scoped Project And Session Selection Seed Behind Feature Flag
+
+**Task ID:** PROJ-03-D0d
+**Family:** PROJ-03 (Project-First UX Redesign)
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/PROJ-03-D0d-CHECKPOINT.md`
+**Nature:** FRONTEND / TAB ISOLATION
+**Source:** Post-D0c diagnostic: `selectedProjectId` and `selectedSessionId` are React-only state in `frontend/app/[locale]/app/page.tsx`; on refresh they reset to null; bootstrap reload + default-selection logic (`loadWorkspaceProjectsForUser` line 1016–1021 and `loadSessions` line 839–848) picks the first item from backend lists ordered `updatedAt DESC`; two tabs independently converge onto the same most-recent project/session after refresh, creating the appearance of shared state
+**Dependencies:** PROJ-03-D0c (COMPLETE and LOCKED)
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, persist `selectedProjectId` and `selectedSessionId` in tab-scoped `sessionStorage` and seed them back into the initial project/session selection flow on cold mount, so each browser tab/window can retain its own project/session after refresh without changing backend behavior or routing.
+
+**Why this exists:**
+After D0c made the project list load reliably on entry, the default-to-`projects[0]` selector causes any two tabs to converge on the same project after a refresh — whichever project was last touched (highest `updatedAt`) across the whole user account wins both tabs. `sessionStorage` is the correct tab-scoped primitive: it survives same-tab refresh, is isolated per tab, and is discarded when the tab closes. No backend "active workspace" pointer exists or is needed.
+
+**Bounded scope:**
+- `frontend/app/[locale]/app/page.tsx` — write selections to `sessionStorage` on change; read seed on cold mount bootstrap; honor seed only if it still exists in freshly loaded lists; fall back to existing default-selection behavior otherwise
+- Directly relevant tests only if needed
+
+**Behavior (when `PROJECT_FIRST_UX` is true):**
+- write `selectedProjectId` to `sessionStorage` when it changes
+- write `selectedSessionId` to `sessionStorage` when it changes
+- on cold mount/bootstrap, read seeded project/session ids from `sessionStorage`
+- allow those seeds to win only if they still exist in the freshly loaded project/session lists
+- otherwise fall back to existing default-selection behavior (first usable item)
+- keep existing `[selectedSessionId]` effect intact and unmodified
+- no backend/API/schema changes
+- no route changes
+- no new UI surface
+
+**Non-goals:**
+- No URL parameter or route-based selection
+- No dedicated `/projects` landing page
+- No redesign of `AppPage`
+- No change to project create/open handlers
+- No change to project history/autosave/restore/named save behavior
+- No backend changes
+- No D1
+- No C3 / C2d-unload work
+
+**Acceptance checks:**
+- With `PROJECT_FIRST_UX=true`, Window A and Window B can keep different `selectedProjectId`/`selectedSessionId` after refresh
+- Valid `sessionStorage` seed is honored over the current first-item default
+- Invalid/missing/expired seed falls back to current default-selection behavior
+- With `PROJECT_FIRST_UX=false`, legacy behavior unchanged
+- Existing `[selectedSessionId]`-driven behavior remains intact
+- Typecheck clean
+- Focused regression suite green
+- No introduced lint errors
+
+**Risks and invariants:**
+- Tab-scoped selection seeding only; do not move auth or other global state out of `localStorage`
+- Do not change backend behavior or project/session ordering
+- Seed must be applied only on cold mount/bootstrap, not during in-progress project open (`projectOpenInProgressRef`)
+- Seed must only win when it matches freshly loaded lists; invalid seed is silently discarded
+- `PROJECT_FIRST_UX` remains the kill-switch posture
+- No regression to project-open hydration / restore discipline (PROJ-02-01)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)
+- No regression to static preview `/workspace/index.html` rule (PREV-02-02)
+- No regression to stop-session cleanup behavior (OPS-01-04)
 
 ---
 
