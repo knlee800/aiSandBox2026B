@@ -74,6 +74,9 @@ services:
     environment:
       NODE_ENV: production
       PORT: 4000
+      MAX_ACTIVE_SESSIONS_PER_USER: "1000000"
+      MAX_SESSIONS_PER_24H: "1000000"
+      JWT_EXPIRES_IN: "30d"
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
       JWT_SECRET: ${JWT_SECRET}
@@ -175,6 +178,7 @@ services:
       dockerfile: Dockerfile
       args:
         API_GATEWAY_URL: http://api-gateway:4000
+        NEXT_PUBLIC_PROJECT_FIRST_UX: "true"
     container_name: aisandbox-frontend
     restart: unless-stopped
     env_file:

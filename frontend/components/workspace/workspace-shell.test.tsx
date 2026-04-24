@@ -109,6 +109,62 @@ const projectHistorySnapshotsWithNames: WorkspaceSnapshotSummary[] = [
     fileCount: 1,
   },
 ];
+const projectPanelRenderOverrides: Partial<React.ComponentProps<typeof WorkspaceShell>> = {
+  workspaceProjects: [
+    {
+      id: 'project-1',
+      userId: 'user-123',
+      name: 'My Workspace Project',
+      createdAt: '2026-04-04T10:00:00.000Z',
+      updatedAt: '2026-04-04T10:00:00.000Z',
+    },
+  ],
+  selectedProjectId: 'project-1',
+  projectNameInput: 'Draft Project',
+  projectListState: 'ready',
+  projectActionState: 'idle',
+  selectedProjectVisibility: 'private',
+  onProjectNameInputChange: () => {},
+  onSelectProjectId: () => {},
+  onCreateWorkspaceProject: async () => {},
+  onOpenWorkspaceProject: async () => {},
+  onSelectedProjectVisibilityChange: () => {},
+  onUpdateWorkspaceProjectVisibility: async () => {},
+  publicProjectListState: 'ready',
+  publicProjectActionState: 'idle',
+  publicProjectActionMessage: null,
+  publicProjectActionError: null,
+  publicWorkspaceProjects: [
+    {
+      id: 'public-project-1',
+      name: 'Shared Example',
+      visibility: 'public',
+      createdAt: '2026-04-04T10:00:00.000Z',
+      updatedAt: '2026-04-04T10:00:00.000Z',
+    },
+  ],
+  selectedPublicProjectId: 'public-project-1',
+  selectedPublicProjectDetail: {
+    id: 'public-project-1',
+    name: 'Shared Example',
+    visibility: 'public',
+    createdAt: '2026-04-04T10:00:00.000Z',
+    updatedAt: '2026-04-04T10:00:00.000Z',
+    readOnly: true,
+  },
+  onSelectPublicProjectId: () => {},
+  onViewPublicWorkspaceProject: async () => {},
+  onForkPublicWorkspaceProject: async () => {},
+  workspaceSnapshots: [],
+  selectedSnapshotId: null,
+  snapshotListState: 'ready',
+  snapshotActionState: 'idle',
+  onSelectSnapshotId: () => {},
+  onSaveWorkspaceSnapshot: async () => {},
+  onRestoreWorkspaceSnapshot: async () => {},
+  onExportWorkspaceArchive: async () => {},
+  onImportWorkspaceArchive: async () => {},
+};
 
 const checkpoint: WorkspaceCheckpoint = {
   id: 'checkpoint-1',
@@ -589,6 +645,16 @@ describe('workspace shell component', () => {
     assert.match(html, /workspace-advanced-drawer/);
   });
 
+  test('does not render the New Session block behind feature flag', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      selectedSessionId: null,
+    });
+
+    assert.doesNotMatch(html, />New Session</);
+    assert.doesNotMatch(html, /Active sessions:/);
+  });
+
   test('renders advanced drawer stop-session control for selected usable session', () => {
     const html = renderToStaticMarkup(
       <WorkspaceAdvancedDrawer
@@ -901,6 +967,49 @@ describe('workspace shell component', () => {
     });
 
     assert.doesNotMatch(html, /history-project-history-surface/);
+  });
+
+  test('allows creating a project without selectedSessionId behind feature flag', () => {
+    const button = renderWorkspaceShellElementByTestId('history-project-create-button', {
+      ...projectPanelRenderOverrides,
+      projectFirstUxEnabled: true,
+      selectedSessionId: null,
+    });
+
+    assert.ok(button);
+    assert.equal(button.props.disabled, false);
+  });
+
+  test('allows opening a project without selectedSessionId behind feature flag', () => {
+    const button = renderWorkspaceShellElementByTestId('history-project-open-button', {
+      ...projectPanelRenderOverrides,
+      projectFirstUxEnabled: true,
+      selectedSessionId: null,
+      selectedProjectId: 'project-1',
+    });
+
+    assert.ok(button);
+    assert.equal(button.props.disabled, false);
+  });
+
+  test('keeps create and open project buttons disabled without selectedSessionId when feature flag is off', () => {
+    const createButton = renderWorkspaceShellElementByTestId('history-project-create-button', {
+      ...projectPanelRenderOverrides,
+      projectFirstUxEnabled: false,
+      selectedSessionId: null,
+      selectedProjectId: 'project-1',
+    });
+    const openButton = renderWorkspaceShellElementByTestId('history-project-open-button', {
+      ...projectPanelRenderOverrides,
+      projectFirstUxEnabled: false,
+      selectedSessionId: null,
+      selectedProjectId: 'project-1',
+    });
+
+    assert.ok(createButton);
+    assert.equal(createButton.props.disabled, true);
+    assert.ok(openButton);
+    assert.equal(openButton.props.disabled, true);
   });
 
   test('renders parsed snapshot name for named project history rows behind feature flag', () => {

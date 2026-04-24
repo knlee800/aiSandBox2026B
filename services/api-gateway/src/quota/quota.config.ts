@@ -28,14 +28,16 @@ export class QuotaConfig {
    * Enforced before container creation in POST /api/sessions
    * Hard limit: no container started if exceeded
    */
-  static readonly MAX_ACTIVE_SESSIONS_PER_USER = 5;
+  static readonly MAX_ACTIVE_SESSIONS_PER_USER =
+    QuotaConfig.resolveIntEnv('MAX_ACTIVE_SESSIONS_PER_USER', 5);
 
   /**
    * PHASE-42A-2: Max sessions per rolling 24h window
    * Enforced before container creation in POST /api/sessions
    * Hard limit: no container started if exceeded
    */
-  static readonly MAX_SESSIONS_PER_24H = 20;
+  static readonly MAX_SESSIONS_PER_24H =
+    QuotaConfig.resolveIntEnv('MAX_SESSIONS_PER_24H', 20);
 
   /**
    * PHASE-42A-3: Max tokens per rolling 24h window
@@ -91,6 +93,15 @@ export class QuotaConfig {
    */
   static getQuotaLimits(apiKeyId: string): QuotaLimits {
     return this.API_KEY_QUOTAS.get(apiKeyId) || this.DEFAULT_QUOTA;
+  }
+
+  private static resolveIntEnv(name: string, fallback: number): number {
+    const configured = Number.parseInt(process.env[name] ?? '', 10);
+    if (Number.isFinite(configured) && configured > 0) {
+      return configured;
+    }
+
+    return fallback;
   }
 
   private static resolveDefaultTokensPerDay(): number {

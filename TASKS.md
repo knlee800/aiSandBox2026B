@@ -6909,9 +6909,9 @@ Prevent project snapshots/restores from including `.git/` internals so restoring
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary — container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED.
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary — container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED; D0 COMPLETE and LOCKED; D0b PLANNED. D1/C3/C2d-unload deferred and not yet registered.
 
-**Current stage:** Phase C in progress — C2d-unload/C3 deferred and not yet registered
+**Current stage:** PROJ-03-D0b (PLANNED)
 
 ---
 
@@ -8406,6 +8406,112 @@ Behind `PROJECT_FIRST_UX`, replace user-facing strings that say "snapshot/snapsh
 
 ---
 
+### PROJ-03-D0 — Project-First Entry Shell Wiring Behind Feature Flag
+
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/PROJ-03-D0-CHECKPOINT.md`
+**Nature:** FRONTEND / PHASE D ENTRY-SHELL WIRING
+**Source:** Diagnostic gap identified post-PROJ-03-C4; closes the session-first visible entry shell
+**Dependencies:** PROJ-03-C4 (COMPLETE and LOCKED)
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, make the visible entry shell behave consistently with the already-locked project-first handlers. The current local dev env has `PROJECT_FIRST_UX` off by default (no `NEXT_PUBLIC_PROJECT_FIRST_UX` env var is set in a normal local run). Even when the flag is on, the entry shell remains session-first because: (a) the "New Session" button is rendered unconditionally, and (b) Create/Open Project buttons are gated by `selectedSessionId`. The underlying `page.tsx` handlers already provision fresh sessions automatically. This slice wires the entry-shell surface to match handler semantics, without building a new landing page UI.
+
+**Bounded scope:**
+- Frontend only
+- Narrow changes allowed in:
+  - `frontend/components/workspace/workspace-shell.tsx`
+  - `frontend/components/workspace/workspace-shell.test.tsx`
+  - local-dev flag enablement/documentation surface only if needed for testing clarity
+- Behavior:
+  - When `PROJECT_FIRST_UX` is true:
+    - Do not render the New Session button block
+    - Allow Create Project without requiring `selectedSessionId`
+    - Allow Open Project without requiring `selectedSessionId`
+  - When `PROJECT_FIRST_UX` is false:
+    - Keep current behavior byte-equivalent
+  - Reuse existing `page.tsx` handlers as-is; no handler change
+  - No change to `/[locale]/projects/page.tsx` route pass-through behavior in this slice
+- No backend/API/schema change
+
+**Non-goals:**
+- No dedicated `/projects` landing page
+- No redesign of `AppPage`
+- No change to project history/autosave/restore/named save handlers
+- No route redesign
+- No removal of legacy code paths when flag is off
+- No Phase D/E follow-up beyond this bounded entry-shell wiring
+- No change to internal identifiers or helper names
+
+**Acceptance checks:**
+- With `PROJECT_FIRST_UX=true`:
+  - New Session button absent
+  - Create Project button usable without `selectedSessionId`
+  - Open Project button usable without `selectedSessionId` (subject to existing `selectedProjectId` requirement only)
+- With `PROJECT_FIRST_UX=false`:
+  - Legacy entry shell unchanged
+- Existing handler behavior remains unchanged and reused
+- Existing focused suites remain green
+- Typecheck clean, no introduced lint errors
+
+**Invariants to preserve:**
+- Entry-shell wiring only; no new landing page
+- Do not alter underlying handler semantics
+- `PROJECT_FIRST_UX` remains the kill-switch posture
+- No regression to project-open hydration / restore discipline (PROJ-02-01)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)
+- No regression to static preview `/workspace/index.html` rule (PREV-02-02)
+- No regression to stop-session cleanup behavior (OPS-01-04)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-D0.
+
+---
+
+### PROJ-03-D0b — Enable PROJECT_FIRST_UX In Local Docker Frontend Build For Testing
+
+**Status:** PLANNED
+**Checkpoint:** `docs/PROJ-03-D0b-CHECKPOINT.md`
+**Nature:** CONFIG / LOCAL TESTING ENABLEMENT
+**Source:** Post-D0 diagnostic: `NEXT_PUBLIC_PROJECT_FIRST_UX` not passed as build arg in `docker-compose.prod.yml`; Next.js inlines `NEXT_PUBLIC_*` at build time so the D0 bundle shipped with the flag off
+**Dependencies:** PROJ-03-D0 (COMPLETE and LOCKED)
+
+**Objective:**
+Enable the already-implemented project-first frontend path in the local Docker production-style frontend by wiring `NEXT_PUBLIC_PROJECT_FIRST_UX=true` into the frontend build args in `docker-compose.prod.yml`. No code changes. D0 UX logic is already locked; this slice makes it reachable at `http://localhost:3000/en/app` after a frontend service rebuild.
+
+**Bounded scope:**
+- Config/testing slice only
+- One file: `docker-compose.prod.yml` — add `NEXT_PUBLIC_PROJECT_FIRST_UX: "true"` to the `frontend.build.args` block
+- No frontend component/code changes
+- No handler changes
+- No route changes
+- No backend/service config changes
+
+**Non-goals:**
+- No frontend component or code changes
+- No dedicated `/projects` landing page
+- No broader env/config refactor
+- No dev-server `.env.local` work in this slice
+- No deployment pipeline redesign
+- No production release policy change
+- No D1, no C3, no C2d-unload
+
+**Acceptance checks:**
+- Rebuilding the frontend service from `docker-compose.prod.yml` produces a bundle with `PROJECT_FIRST_UX` enabled
+- At `http://localhost:3000/en/app`, locked D0 behavior is visible: New Session hidden; Create Project usable without selected session; Open Project usable without selected session when a project is selected
+- No code changes to `workspace-shell.tsx` or page handlers required
+- No introduced compose syntax errors
+
+**Invariants to preserve:**
+- Local Docker testing enablement only; no production release implications
+- Scope limited to the single frontend build arg in `docker-compose.prod.yml`
+- All locked D0 handler/component semantics unchanged
+- `PROJECT_FIRST_UX` remains the kill-switch posture in code
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-D0b.
+
+---
+
 
 ## AI-04 ??Chat Persistence (Core Product Loop)
 
@@ -9008,6 +9114,106 @@ Determine why many session-related Docker containers are accumulating, and ident
 - Exact intended cleanup behavior identified
 - Exact remaining issue, if any, identified clearly
 - Issue narrowed enough for one bounded follow-up fix task if needed
+
+---
+
+## OPS-LOCAL — Local Testing Config
+
+**Family status:** ACTIVE
+
+**Current stage:** OPS-LOCAL-AUTH-JWT (PLANNED)
+
+---
+
+#### OPS-LOCAL-SESSION-LIMITS: Add Env Overrides For Local Session Limits And Raise Them In Docker Compose For Testing
+
+**Status:** PLANNED
+**Checkpoint:** `docs/OPS-LOCAL-SESSION-LIMITS-CHECKPOINT.md`
+**Nature:** CONFIG / LOCAL TESTING ENABLEMENT
+**Source:** Post-D0 testing diagnostic — session creation blocked by hard-coded limits of 5 active / 20 per 24h; local QA cannot test project-first UX without hitting these caps
+
+**Objective:**
+Preserve code defaults of 5 active sessions and 20 sessions per 24h, but add env-driven overrides in api-gateway `QuotaConfig` and set local Docker compose values to `1000000` each, so local QA is not blocked by session caps during project-first testing.
+
+**Bounded scope:**
+- Narrow code/config slice only
+- Changes allowed in:
+  - `services/api-gateway/src/quota/quota.config.ts` — add env-based resolvers for `MAX_ACTIVE_SESSIONS_PER_USER` and `MAX_SESSIONS_PER_24H`; preserve defaults of 5 / 20
+  - `docker-compose.prod.yml` — add `MAX_ACTIVE_SESSIONS_PER_USER: "1000000"` and `MAX_SESSIONS_PER_24H: "1000000"` to the `api-gateway` service environment block
+  - directly relevant tests only if env-based resolver changes cause failures
+- No change to enforcement logic beyond reading the resolved values
+
+**Non-goals:**
+- No change to token quotas
+- No change to login/auth/session-expiry behavior
+- No change to frontend UI
+- No production policy redesign
+- No broader quota-system refactor
+- No unrelated docker-compose cleanup
+- No PROJ-03 changes
+
+**Acceptance checks:**
+- Defaults remain 5 / 20 when env vars are absent
+- Local docker compose can override to 1000000 / 1000000
+- Active sessions guard uses overridden value
+- 24h sessions guard uses overridden value
+- Relevant tests pass
+- `api-gateway` rebuilds cleanly
+- `docker compose ... config` parses cleanly
+
+**Invariants to preserve:**
+- Local-testing only; do not treat this as production policy
+- Use large finite integers, not Infinity
+- Preserve existing enforcement paths and behavior except resolved thresholds
+- Do not affect token quota handling
+- Keep the diff small and reversible
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> OPS-LOCAL-SESSION-LIMITS.
+
+---
+
+#### OPS-LOCAL-AUTH-JWT: Extend Local Docker JWT Lifetime For Testing
+
+**Status:** PLANNED
+**Checkpoint:** `docs/OPS-LOCAL-AUTH-JWT-CHECKPOINT.md`
+**Nature:** CONFIG / LOCAL TESTING ENABLEMENT
+**Source:** Post-OPS-LOCAL-SESSION-LIMITS diagnostic — auth access token is 15m with no refresh mechanism; local QA is forcibly logged out every 15 minutes, interrupting testing
+
+**Objective:**
+Override `JWT_EXPIRES_IN` for the local Docker `api-gateway` service to `30d` so local QA is not interrupted by frequent forced re-login, without changing auth architecture or production defaults.
+
+**Bounded scope:**
+- Narrow config slice only
+- Changes allowed in:
+  - `docker-compose.prod.yml` — add `JWT_EXPIRES_IN: "30d"` under the `api-gateway` service `environment` block
+- No code changes
+- No refresh-token implementation
+- No frontend auth logic change
+- No cookie/session architecture change
+
+**Non-goals:**
+- No refresh-token system
+- No `/auth/refresh` endpoint
+- No frontend silent refresh or axios interceptor work
+- No production policy change
+- No auth refactor
+- No PROJ-03 changes
+- No D1 / C3 / C2d-unload work
+
+**Acceptance checks:**
+- `docker-compose.prod.yml` parses cleanly
+- `api-gateway` can be rebuilt and restarted
+- New `api-gateway` environment includes `JWT_EXPIRES_IN=30d`
+- Newly issued local tokens use the longer lifetime
+- No code changes required
+
+**Invariants to preserve:**
+- Local-testing only; do not treat 30d access tokens as production policy
+- Existing tokens issued before the change remain short-lived; user must log in once after the rebuild
+- No auth architecture change; no change to frontend logout-on-401 behavior
+- Keep the diff tiny and reversible
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> OPS-LOCAL-AUTH-JWT.
 
 ---
 

@@ -530,25 +530,27 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
 
       <div className="flex-1 min-h-0 flex flex-col md:flex-row">
         <aside className="w-full md:w-64 bg-white border-b md:border-b-0 md:border-r border-gray-200 flex flex-col" data-testid="session-sidebar-shell">
-          <div className="p-3 border-b border-gray-100">
-            <button
-              type="button"
-              onClick={() => void props.onCreateSession()}
-              disabled={props.isCreatingSession}
-              className="w-full rounded bg-blue-600 text-white text-sm py-2 disabled:bg-blue-300"
-            >
-              {props.isCreatingSession ? 'Creating...' : 'New Session'}
-            </button>
-            <p className="mt-2 text-xs text-gray-500">
-              Active sessions: {activeSessions}/{props.quotaSummary?.maxActiveSessions ?? 5}
-            </p>
-            {props.sessionCreateError ? (
-              <p className="mt-1 text-xs text-amber-700">{props.sessionCreateError}</p>
-            ) : null}
-            {props.sessionActionError ? (
-              <p className="mt-1 text-xs text-amber-700">{props.sessionActionError}</p>
-            ) : null}
-          </div>
+          {!projectFirstUxEnabled ? (
+            <div className="p-3 border-b border-gray-100">
+              <button
+                type="button"
+                onClick={() => void props.onCreateSession()}
+                disabled={props.isCreatingSession}
+                className="w-full rounded bg-blue-600 text-white text-sm py-2 disabled:bg-blue-300"
+              >
+                {props.isCreatingSession ? 'Creating...' : 'New Session'}
+              </button>
+              <p className="mt-2 text-xs text-gray-500">
+                Active sessions: {activeSessions}/{props.quotaSummary?.maxActiveSessions ?? 5}
+              </p>
+              {props.sessionCreateError ? (
+                <p className="mt-1 text-xs text-amber-700">{props.sessionCreateError}</p>
+              ) : null}
+              {props.sessionActionError ? (
+                <p className="mt-1 text-xs text-amber-700">{props.sessionActionError}</p>
+              ) : null}
+            </div>
+          ) : null}
 
           <div className="flex-1 overflow-y-auto p-2">
             {projectFirstUxEnabled
@@ -733,6 +735,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
               onCreateCheckpoint={props.onCreateManualCheckpoint}
             />
             <HistoryProjectPanel
+              projectFirstUxEnabled={projectFirstUxEnabled}
               selectedSessionId={props.selectedSessionId}
               listState={props.projectListState ?? 'idle'}
               actionState={props.projectActionState ?? 'idle'}
@@ -848,6 +851,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
 }
 
 function HistoryProjectPanel(props: {
+  projectFirstUxEnabled?: boolean;
   selectedSessionId: string | null;
   listState: 'idle' | 'loading' | 'ready' | 'error';
   actionState: 'idle' | 'creating' | 'opening' | 'success' | 'error';
@@ -888,7 +892,7 @@ function HistoryProjectPanel(props: {
     return null;
   }
 
-  const canMutate = Boolean(props.selectedSessionId);
+  const canMutate = Boolean(props.projectFirstUxEnabled || props.selectedSessionId);
 
   return (
     <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="history-project-surface">
