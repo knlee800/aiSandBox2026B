@@ -17,6 +17,7 @@ import {
 
 const activeSession: WorkspaceShellSession = {
   id: 'active-session-id',
+  projectId: null,
   status: 'active',
   expiresAt: '3026-03-10T00:00:00.000Z',
   terminatedAt: null,
@@ -25,6 +26,7 @@ const activeSession: WorkspaceShellSession = {
 
 const terminatedSession: WorkspaceShellSession = {
   id: 'terminated-session-id',
+  projectId: null,
   status: 'stopped',
   expiresAt: '3026-03-10T00:00:00.000Z',
   terminatedAt: '2026-03-10T00:00:00.000Z',
@@ -33,6 +35,7 @@ const terminatedSession: WorkspaceShellSession = {
 
 const expiredSession: WorkspaceShellSession = {
   id: 'expired-session-id',
+  projectId: null,
   status: 'pending',
   expiresAt: '2020-03-10T00:00:00.000Z',
   terminatedAt: null,

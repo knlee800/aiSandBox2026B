@@ -9,6 +9,7 @@ import type { WorkspaceShellSession } from './workspace-shell.logic';
 
 const activeSession: WorkspaceShellSession = {
   id: 'session-active',
+  projectId: null,
   status: 'active',
   terminatedAt: null,
   terminationReason: null,

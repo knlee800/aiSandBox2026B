@@ -1371,6 +1371,7 @@ export default function AppPage() {
         const openResult = await openProjectInFreshSession({
           token,
           projectId: selectedProjectId,
+          existingSessions: sessions,
           snapshotId: selectedSnapshotIdToOpen,
         });
         const openSessionId = openResult.sessionId;
@@ -1487,6 +1488,7 @@ export default function AppPage() {
       const openResult = await openProjectInFreshSession({
         token,
         projectId: normalizedProjectId,
+        existingSessions: sessions,
       });
       const openSessionId = openResult.sessionId;
       const expectsRestoredFiles = Boolean(openResult.restoredSnapshotId);

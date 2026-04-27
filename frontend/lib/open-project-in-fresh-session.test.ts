@@ -15,6 +15,71 @@ function createDeferredResponse(): {
 }
 
 describe('open-project-in-fresh-session', () => {
+  test('reuses an existing usable session for the same project and skips session creation', async () => {
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    const fetchImpl = async (url: string, init?: RequestInit): Promise<Response> => {
+      calls.push({ url, init });
+
+      if (url === '/api/users/me/snapshots') {
+        return new Response(
+          JSON.stringify([
+            {
+              id: 'snapshot-1',
+              userId: 'user-1',
+              label: '[project-id:project-1]',
+              createdAt: '2026-04-09T12:00:00.000Z',
+              fileCount: 1,
+            },
+          ]),
+          { status: 200 },
+        );
+      }
+
+      if (url === '/api/projects/project-1/open') {
+        return new Response(
+          JSON.stringify({
+            projectId: 'project-1',
+            sessionId: 'session-existing-1',
+            restoredSnapshotId: 'snapshot-1',
+          }),
+          { status: 200 },
+        );
+      }
+
+      throw new Error(`Unexpected url: ${url}`);
+    };
+
+    const result = await openProjectInFreshSession({
+      token: 'token',
+      projectId: 'project-1',
+      existingSessions: [
+        {
+          id: 'session-existing-1',
+          projectId: 'project-1',
+          status: 'active',
+          expiresAt: '2999-04-09T12:00:00.000Z',
+          terminatedAt: null,
+          terminationReason: null,
+        },
+      ],
+      fetchImpl: fetchImpl as typeof fetch,
+    });
+
+    assert.deepEqual(
+      calls.map((call) => call.url),
+      ['/api/users/me/snapshots', '/api/projects/project-1/open'],
+    );
+    assert.deepEqual(JSON.parse(String(calls[1].init?.body)), {
+      sessionId: 'session-existing-1',
+      snapshotId: 'snapshot-1',
+    });
+    assert.deepEqual(result, {
+      projectId: 'project-1',
+      sessionId: 'session-existing-1',
+      restoredSnapshotId: 'snapshot-1',
+    });
+  });
+
   test('creates one session and opens the project with the new session id', async () => {
     const calls: Array<{ url: string; init?: RequestInit }> = [];
     const fetchImpl = async (url: string, init?: RequestInit): Promise<Response> => {
@@ -117,6 +182,75 @@ describe('open-project-in-fresh-session', () => {
     assert.deepEqual(result, {
       projectId: 'project-1',
       sessionId: 'session-fresh-2',
+      restoredSnapshotId: null,
+    });
+  });
+
+  test('creates a fresh session when no usable same-project session exists', async () => {
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    const fetchImpl = async (url: string, init?: RequestInit): Promise<Response> => {
+      calls.push({ url, init });
+
+      if (url === '/api/users/me/snapshots') {
+        return new Response(JSON.stringify([]), { status: 200 });
+      }
+
+      if (url === '/api/sessions') {
+        return new Response(JSON.stringify({ id: 'session-fresh-6' }), { status: 201 });
+      }
+
+      if (url === '/api/projects/project-1/sessions/session-fresh-6') {
+        return new Response(
+          JSON.stringify({
+            id: 'project-1',
+            userId: 'user-1',
+            name: 'Main Project',
+            visibility: 'private',
+            createdAt: '2026-04-09T12:00:00.000Z',
+            updatedAt: '2026-04-09T12:00:00.000Z',
+          }),
+          { status: 200 },
+        );
+      }
+
+      throw new Error(`Unexpected url: ${url}`);
+    };
+
+    const result = await openProjectInFreshSession({
+      token: 'token',
+      projectId: 'project-1',
+      existingSessions: [
+        {
+          id: 'session-other-project',
+          projectId: 'project-2',
+          status: 'active',
+          expiresAt: '2999-04-09T12:00:00.000Z',
+          terminatedAt: null,
+          terminationReason: null,
+        },
+        {
+          id: 'session-terminated',
+          projectId: 'project-1',
+          status: 'active',
+          expiresAt: '2999-04-09T12:00:00.000Z',
+          terminatedAt: '2026-04-09T12:00:00.000Z',
+          terminationReason: 'manual',
+        },
+      ],
+      fetchImpl: fetchImpl as typeof fetch,
+    });
+
+    assert.deepEqual(
+      calls.map((call) => call.url),
+      [
+        '/api/users/me/snapshots',
+        '/api/sessions',
+        '/api/projects/project-1/sessions/session-fresh-6',
+      ],
+    );
+    assert.deepEqual(result, {
+      projectId: 'project-1',
+      sessionId: 'session-fresh-6',
       restoredSnapshotId: null,
     });
   });

@@ -20,12 +20,14 @@ import type { WorkspaceSnapshotSummary } from './workspace-snapshots.logic';
 
 const session: WorkspaceShellSession = {
   id: '12345678-test-session',
+  projectId: null,
   status: 'active',
   terminatedAt: null,
   terminationReason: null,
 };
 const terminatedSession: WorkspaceShellSession = {
   id: '87654321-term-session',
+  projectId: null,
   status: 'stopped',
   terminatedAt: '2026-03-10T12:30:00.000Z',
   terminationReason: 'manual',

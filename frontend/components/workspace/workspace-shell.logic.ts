@@ -4,6 +4,7 @@ export type DashboardSliceState = 'loading' | 'error' | 'empty' | 'ready';
 
 export interface WorkspaceShellSession {
   id: string;
+  projectId: string | null;
   status: string;
   expiresAt?: string;
   terminatedAt: string | null;

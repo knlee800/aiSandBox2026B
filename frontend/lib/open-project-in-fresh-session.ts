@@ -3,6 +3,10 @@ import {
   openWorkspaceProject,
 } from '../components/workspace/workspace-projects.logic';
 import {
+  isUsableSession,
+  type WorkspaceShellSession,
+} from '../components/workspace/workspace-shell.logic';
+import {
   loadWorkspaceSnapshots,
   resolveProjectScopedLatestSnapshotId,
 } from '../components/workspace/workspace-snapshots.logic';
@@ -10,6 +14,7 @@ import {
 export interface OpenProjectInFreshSessionArgs {
   token: string;
   projectId: string;
+  existingSessions?: WorkspaceShellSession[];
   snapshotId?: string;
   fetchImpl?: typeof fetch;
 }
@@ -60,7 +65,7 @@ export async function openProjectInFreshSession(
 ): Promise<OpenProjectInFreshSessionResult> {
   const projectId = args.projectId.trim();
   if (!projectId) {
-    throw new Error('Project id is required to open a project in a fresh session.');
+    throw new Error('Project id is required to open a project.');
   }
 
   let snapshotIdToOpen = args.snapshotId?.trim() || undefined;
@@ -76,16 +81,24 @@ export async function openProjectInFreshSession(
       }) ?? undefined;
   }
 
-  const createdSession = await createWorkspaceSession({
-    token: args.token,
-    fetchImpl: args.fetchImpl,
-  });
+  const reusableSession = args.existingSessions?.find(
+    (session) => isUsableSession(session) && session.projectId === projectId,
+  );
+
+  const sessionId = reusableSession
+    ? reusableSession.id
+    : (
+        await createWorkspaceSession({
+          token: args.token,
+          fetchImpl: args.fetchImpl,
+        })
+      ).id;
 
   if (snapshotIdToOpen) {
     return await openWorkspaceProject({
       token: args.token,
       projectId,
-      sessionId: createdSession.id,
+      sessionId,
       snapshotId: snapshotIdToOpen,
       fetchImpl: args.fetchImpl,
     });
@@ -94,13 +107,13 @@ export async function openProjectInFreshSession(
   await associateWorkspaceProjectSession({
     token: args.token,
     projectId,
-    sessionId: createdSession.id,
+    sessionId,
     fetchImpl: args.fetchImpl,
   });
 
   return {
     projectId,
-    sessionId: createdSession.id,
+    sessionId,
     restoredSnapshotId: null,
   };
 }
