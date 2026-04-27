@@ -6909,9 +6909,9 @@ Prevent project snapshots/restores from including `.git/` internals so restoring
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2e-hotfix COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary — container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED; D0 COMPLETE and LOCKED; D0b COMPLETE and LOCKED; D0c COMPLETE and LOCKED; D0d COMPLETE and LOCKED. D1/C3/C2d-unload deferred and not yet registered.
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2e-hotfix COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary — container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED; D0 COMPLETE and LOCKED; D0b COMPLETE and LOCKED; D0c COMPLETE and LOCKED; D0d COMPLETE and LOCKED; D0e COMPLETE and LOCKED; D0e-hotfix COMPLETE and LOCKED. D1/C3/C2d-unload deferred and not yet registered.
 
-**Current stage:** PROJ-03-C2e-hotfix (COMPLETE and LOCKED)
+**Current stage:** PROJ-03-D0e-hotfix (COMPLETE and LOCKED)
 
 ---
 
@@ -8690,6 +8690,130 @@ Behind `PROJECT_FIRST_UX`, change the AI-action autosave trigger so every succes
 - No regression to stop-session cleanup behavior (OPS-01-04)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-C2e-hotfix.
+
+---
+
+### PROJ-03-D0e — Restore Unsaved Editor Draft Per Tab Behind Feature Flag
+
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/PROJ-03-D0e-CHECKPOINT.md`
+**Nature:** FRONTEND / TAB-SCOPED DRAFT PERSISTENCE
+**Source:** Post-D0d gap: manual editor typing that was never explicitly saved to disk lives only in frontend state and is lost on refresh/close. AI-created file loss was addressed by C2e-hotfix; this slice covers the remaining human-typed-but-unsaved buffer case.
+**Dependencies:** PROJ-03-D0d (COMPLETE and LOCKED)
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, persist the current unsaved editor buffer in tab-scoped `sessionStorage` and restore it when the same tab returns to the same project/session/file context, so manual unsaved typing is not lost on refresh/close unless the tab is fully gone or the draft is no longer applicable. Do not autosave the workspace file to disk in this slice.
+
+**Bounded scope:**
+- Frontend only
+- Narrow changes allowed in:
+  - `frontend/app/[locale]/app/page.tsx`
+  - directly relevant tests only if needed
+- Behavior (when `PROJECT_FIRST_UX` is true):
+  - persist unsaved editor draft content in `sessionStorage`
+  - key the draft by the current project/session/file context
+  - restore the draft only when the current tab returns to the same applicable context
+  - remove the draft when the file is successfully saved or when the draft is no longer applicable
+  - no backend/API/schema changes
+  - no true save-to-disk autosave
+  - no new UI surface unless strictly required
+  - keep the current explicit save flow intact
+
+**Non-goals:**
+- No backend autosave of editor contents
+- No unload/close lifecycle handling
+- No cross-tab draft sharing
+- No URL/routing changes
+- No project create/open handler changes
+- No D1
+- No C3 / C2d-unload work
+- No Phase D/E work
+
+**Acceptance checks:**
+- With `PROJECT_FIRST_UX=true`, unsaved typing in the editor survives refresh within the same tab for the same applicable file/project/session context
+- Explicit file save clears or supersedes the stored draft appropriately
+- Draft does not restore into the wrong file/project/session context
+- With `PROJECT_FIRST_UX=false`, legacy behavior unchanged
+- Typecheck clean
+- Focused regression suite green
+- No introduced lint errors
+
+**Risks and invariants:**
+- Keep this to draft persistence only, not disk persistence
+- Do not silently overwrite actual workspace files
+- Do not move auth/global state out of `localStorage`
+- Keep draft storage tab-scoped only
+- Draft restore must be context-matched and conservative
+- `PROJECT_FIRST_UX` remains the kill-switch posture
+- Preserve all existing behavior except per-tab unsaved draft restoration in the flag-on path
+- No regression to project-open hydration / restore discipline (PROJ-02-01)
+- No regression to snapshot-store persistence (PROJ-01-21)
+- No regression to `.git/` exclusion from snapshots/restores (PROJ-02-03)
+- No regression to static preview `/workspace/index.html` rule (PREV-02-02)
+- No regression to stop-session cleanup behavior (OPS-01-04)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-D0e.
+
+---
+
+### PROJ-03-D0e-hotfix — Fix Draft Restore Match And One-Shot Consumption Behind Feature Flag
+
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/PROJ-03-D0e-hotfix-CHECKPOINT.md`
+**Nature:** FRONTEND / TAB-SCOPED DRAFT PERSISTENCE / BUG FIX
+**Source:** Post-D0e inspection: the D0e write path is correct but the restore path has two defects — the cold-mount draft ref is cleared unconditionally on the first `loadWorkspaceFileContent` call (one-shot consumption regardless of match outcome), and the `projectId` check compares against `selectedProjectId` which may still be `null` at the time of the first file load after refresh (project-list fetch races behind session/file hydration). Result: draft restore fails silently and the draft is permanently discarded.
+**Dependencies:** PROJ-03-D0e (COMPLETE and LOCKED)
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, fix the D0e restore-path bug so a tab-scoped unsaved editor draft is not discarded before a valid restore match occurs, and so project matching tolerates the bootstrap hydration race after refresh. Preserve the existing conservative per-tab draft model and explicit save flow.
+
+**Bounded scope:**
+- Frontend only
+- Narrow changes allowed in:
+  - `frontend/app/[locale]/app/page.tsx`
+  - directly relevant tests only if needed
+- Behavior:
+  - only clear the cold-mount draft ref after a successful restore match
+  - keep failed/non-matching first load attempts from discarding the draft
+  - make project match use current `selectedProjectId` when available, otherwise fall back to the tab-seeded project id from `sessionStorage` (the D0d seed source `TAB_SELECTED_PROJECT_STORAGE_KEY`) during the cold-mount restore path
+  - preserve existing `sessionId` and `filePath` exact-match requirements
+  - no backend/API/schema changes
+  - no true save-to-disk autosave
+  - no new UI surface
+  - keep the current explicit save flow intact
+
+**Non-goals:**
+- No true autosave-to-disk
+- No unload/close lifecycle handling
+- No cross-tab draft sharing
+- No URL/routing changes
+- No project create/open handler changes
+- No D1
+- No C3 / C2d-unload work
+- No Phase D/E work
+
+**Acceptance checks:**
+- With `PROJECT_FIRST_UX=true`, unsaved typing still writes to `sessionStorage` as before
+- On refresh in the same tab, draft restore succeeds for the same project/session/file context even when `selectedProjectId` hydrates later than the first file load
+- Non-matching first load attempts do not discard the draft prematurely
+- Explicit file save still clears the draft appropriately
+- With `PROJECT_FIRST_UX=false`, legacy behavior unchanged
+- Typecheck clean
+- Focused regression suite green
+- No introduced lint errors
+
+**Risks and invariants:**
+- Keep this to D0e restore-path correction only
+- Do not broaden into true autosave-to-disk
+- Do not change write-path semantics except as needed to preserve restore correctness
+- Do not silently overwrite actual workspace files
+- Keep draft storage tab-scoped only
+- Restore must remain conservative and context-matched
+- `PROJECT_FIRST_UX` remains the kill-switch posture
+- Preserve all existing behavior except fixing the restore-path race/consumption bug
+- No regression to: project-open hydration / restore discipline; snapshot/history persistence behavior; `.git/` exclusion from snapshots/restores; static preview `/workspace/index.html` rule; stop-session cleanup behavior
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-D0e-hotfix.
 
 ---
 

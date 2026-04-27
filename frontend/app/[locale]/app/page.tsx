@@ -119,6 +119,7 @@ const HIDDEN_UNUSABLE_SESSIONS_STORAGE_KEY = 'workspace_hidden_unusable_sessions
 const CHAT_THREAD_STORAGE_KEY_PREFIX = 'workspace_chat_thread';
 const TAB_SELECTED_SESSION_STORAGE_KEY = 'workspace_tab_selected_session_id';
 const TAB_SELECTED_PROJECT_STORAGE_KEY = 'workspace_tab_selected_project_id';
+const TAB_EDITOR_DRAFT_STORAGE_KEY = 'workspace_tab_editor_draft';
 const CHAT_EXECUTION_POLL_INTERVAL_MS = 3000;
 const PROJECT_OPEN_FILE_REFRESH_RETRY_DELAY_MS = 250;
 const PROJECT_OPEN_FILE_REFRESH_MAX_ATTEMPTS = 6;
@@ -380,6 +381,12 @@ export default function AppPage() {
   const projectOpenInProgressRef = useRef(false);
   const coldMountSeededSessionIdRef = useRef<string | null>(null);
   const coldMountSeededProjectIdRef = useRef<string | null>(null);
+  const coldMountEditorDraftRef = useRef<{
+    projectId: string;
+    sessionId: string;
+    filePath: string;
+    content: string;
+  } | null>(null);
   const lastProjectAutosaveAtRef = useRef<number | null>(null);
   const sessionsRef = useRef<WorkspaceShellSession[]>([]);
   const executionSessionIdByExecutionIdRef = useRef<Record<string, string>>({});
@@ -469,9 +476,40 @@ export default function AppPage() {
         sessionStorage.getItem(TAB_SELECTED_SESSION_STORAGE_KEY) || null;
       coldMountSeededProjectIdRef.current =
         sessionStorage.getItem(TAB_SELECTED_PROJECT_STORAGE_KEY) || null;
+      const storedEditorDraft = sessionStorage.getItem(TAB_EDITOR_DRAFT_STORAGE_KEY);
+      if (!storedEditorDraft) {
+        coldMountEditorDraftRef.current = null;
+      } else {
+        try {
+          const parsedDraft: unknown = JSON.parse(storedEditorDraft);
+          const candidateDraft =
+            parsedDraft && typeof parsedDraft === 'object'
+              ? (parsedDraft as Record<string, unknown>)
+              : null;
+          if (
+            candidateDraft &&
+            typeof candidateDraft.projectId === 'string' &&
+            typeof candidateDraft.sessionId === 'string' &&
+            typeof candidateDraft.filePath === 'string' &&
+            typeof candidateDraft.content === 'string'
+          ) {
+            coldMountEditorDraftRef.current = {
+              projectId: candidateDraft.projectId,
+              sessionId: candidateDraft.sessionId,
+              filePath: candidateDraft.filePath,
+              content: candidateDraft.content,
+            };
+          } else {
+            coldMountEditorDraftRef.current = null;
+          }
+        } catch {
+          coldMountEditorDraftRef.current = null;
+        }
+      }
     } else {
       coldMountSeededSessionIdRef.current = null;
       coldMountSeededProjectIdRef.current = null;
+      coldMountEditorDraftRef.current = null;
     }
     void loadSessions(token);
     void loadDashboardSlice(token);
@@ -556,6 +594,38 @@ export default function AppPage() {
 
     sessionStorage.removeItem(TAB_SELECTED_PROJECT_STORAGE_KEY);
   }, [selectedProjectId]);
+
+  useEffect(() => {
+    if (!PROJECT_FIRST_UX) {
+      return;
+    }
+
+    if (
+      selectedProjectId &&
+      selectedSessionId &&
+      selectedFilePath &&
+      selectedFileContent !== savedFileContent
+    ) {
+      sessionStorage.setItem(
+        TAB_EDITOR_DRAFT_STORAGE_KEY,
+        JSON.stringify({
+          projectId: selectedProjectId,
+          sessionId: selectedSessionId,
+          filePath: selectedFilePath,
+          content: selectedFileContent,
+        }),
+      );
+      return;
+    }
+
+    sessionStorage.removeItem(TAB_EDITOR_DRAFT_STORAGE_KEY);
+  }, [
+    selectedFileContent,
+    savedFileContent,
+    selectedFilePath,
+    selectedProjectId,
+    selectedSessionId,
+  ]);
 
   useEffect(() => {
     sessionsRef.current = sessions;
@@ -3751,10 +3821,25 @@ export default function AppPage() {
         return false;
       }
 
+      const coldMountEditorDraft = PROJECT_FIRST_UX ? coldMountEditorDraftRef.current : null;
+      const coldMountRestoreProjectId =
+        selectedProjectId ?? sessionStorage.getItem(TAB_SELECTED_PROJECT_STORAGE_KEY);
+      const shouldRestoreEditorDraft =
+        !!coldMountEditorDraft &&
+        coldMountEditorDraft.projectId === coldMountRestoreProjectId &&
+        coldMountEditorDraft.sessionId === sessionId &&
+        coldMountEditorDraft.filePath === fileResponse.path;
+      if (shouldRestoreEditorDraft) {
+        coldMountEditorDraftRef.current = null;
+      }
+      const restoredFileContent = shouldRestoreEditorDraft
+        ? coldMountEditorDraft.content
+        : fileResponse.content;
+
       setSelectedFilePath(fileResponse.path);
-      setSelectedFileContent(fileResponse.content);
+      setSelectedFileContent(restoredFileContent);
       setSavedFileContent(fileResponse.content);
-      setFileSaveState('clean');
+      setFileSaveState(restoredFileContent === fileResponse.content ? 'clean' : 'dirty');
       setFileSaveError(null);
       setFileSurfaceState('ready');
       return true;
@@ -3812,6 +3897,9 @@ export default function AppPage() {
       setSavedFileContent(selectedFileContent);
       setFileSaveState('saved');
       setFileSaveError(null);
+      if (PROJECT_FIRST_UX) {
+        sessionStorage.removeItem(TAB_EDITOR_DRAFT_STORAGE_KEY);
+      }
 
       if (PROJECT_FIRST_UX && selectedProjectId && !projectOpenInProgressRef.current) {
         const autosaveAttemptedAt = Date.now();
