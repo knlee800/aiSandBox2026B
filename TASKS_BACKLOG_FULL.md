@@ -20237,3 +20237,110 @@ The feature/spec wave, release-readiness wave, and deployment-readiness wave are
 
 ---
 
+## WS — Workspace Rollout
+
+**Family status:** ACTIVE — WS-01 COMPLETE and LOCKED
+
+**Current stage:** WS-01 (COMPLETE and LOCKED)
+
+**Ordered slices (registered so far):**
+1. WS-01 — Workspace Schema, Entity, And Backfill Foundation (COMPLETE and LOCKED)
+
+---
+
+### WS-01: Workspace Schema, Entity, And Backfill Foundation
+
+**Task ID:** WS-01
+**Family:** WS (Workspace Rollout)
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/WS-01-CHECKPOINT.md`
+**Nature:** BACKEND / SCHEMA / MIGRATION — workspace data model foundation
+**Source:** Workspace v1 planning session (Apr 2026) — agreed bounded v1 plan; first slice of phased workspace rollout
+
+**Objective:**
+
+Add the Workspace entity/table and nullable `Project.workspaceId` foundation, then perform safe idempotent backfill so each user has one default Personal workspace and all existing projects are assigned to that workspace. This slice is backend/schema only and intentionally stops before any new API or frontend UX.
+
+**V1 Workspace definition:**
+
+A Workspace is a named, user-owned personal organizational container for projects. In v1 it is personal-only (single owner, no members, no shared access, no billing). Each user has exactly one default Personal workspace. Projects belong to exactly one workspace. Sessions remain attached to projects, not workspaces.
+
+**Bounded scope:**
+
+- Backend/schema only
+- Allowed files/surfaces:
+  - new `Workspace` TypeORM entity (e.g. `services/api-gateway/src/entities/workspace.entity.ts`)
+  - Workspace module foundations as needed for entity/schema wiring only (not full service/controller)
+  - `Project` entity update to add nullable `workspaceId` FK and TypeORM relation to Workspace
+  - `User` entity relation addition only if minimally needed for wiring
+  - one TypeORM migration: `workspaces` table + nullable `workspace_id` on `projects` + indexes + idempotent backfill
+
+**Workspaces table — required fields:**
+
+| field | type | notes |
+|---|---|---|
+| id | uuid / serial | PK |
+| userId | uuid / int | FK to users, not null |
+| name | varchar | not null |
+| slug | varchar | not null, URL-safe |
+| isDefault | boolean | not null, default false |
+| createdAt | timestamp | not null |
+| updatedAt | timestamp | not null |
+
+**Indexes / constraints:**
+- unique `(userId, slug)`
+- index on `userId`
+- index on `(userId, isDefault)` for fast default-workspace lookup
+
+**Migration behavior:**
+1. Create `workspaces` table with above fields
+2. Add nullable `workspace_id` column to `projects` table
+3. Add FK constraint `projects.workspace_id -> workspaces.id`
+4. Backfill: for each distinct `userId` in `projects`, insert one default Personal workspace if not already present, then `UPDATE projects SET workspace_id = <defaultWorkspaceId> WHERE userId = <userId> AND workspace_id IS NULL`
+5. Backfill must be idempotent (safe to re-run; no duplicate default workspaces, no double-assignment)
+
+**Non-goals for this slice:**
+
+- No frontend workspace selector
+- No workspace CRUD API (list / create / rename / delete endpoints)
+- No workspace filtering in project list endpoint
+- No move-project-between-workspaces
+- No members / roles / billing / shared integrations
+- No nested workspaces
+- No session-to-workspace relationship
+- No NOT NULL enforcement on `workspace_id` in this slice (deferred to later slice after all paths create projects with a workspace)
+- No D1/PROJ-03 work
+- No Phase D/E or other unrelated work
+
+**Acceptance checks:**
+
+- New `workspaces` table exists with agreed v1 fields and constraints
+- `projects` table has nullable `workspace_id` column with FK wiring
+- TypeORM `Workspace` entity present and consistent with migration
+- TypeORM `Project` entity has `workspaceId` nullable field and `workspace` relation
+- Exactly one default Personal workspace is created per user when missing
+- Existing projects are backfilled to the user's default workspace
+- Migration is idempotent/safe for rerun
+- Existing behavior outside workspace awareness remains unchanged
+- Relevant backend typecheck passes; affected tests pass
+- No migration scope beyond this bounded foundation
+
+**Risks / invariants:**
+
+- Workspace is personal-only in v1; no shared/team semantics may be baked in
+- Sessions remain attached to projects only; workspace-to-session wiring is out of scope
+- `workspace_id` must remain nullable in this slice — NOT NULL enforcement is a later slice
+- Backfill must be safe and idempotent; no data loss to existing projects
+- Do not break existing project ownership or user-scoping
+- Do not alter current project / session / history semantics
+- Keep entity/field naming consistent with future expansion to members/roles/billing
+- Do not introduce workspace-awareness into any existing endpoint behavior in this slice
+
+**Dependencies:** PROJ-03-D1d-hotfix (Complete and Locked)
+
+**Reference:** Workspace v1 planning notes (Apr 2026 planning session); see TASKS.md -> WS-01 for active-task summary.
+
+---
+

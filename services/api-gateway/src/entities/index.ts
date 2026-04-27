@@ -13,6 +13,7 @@ export { UsageRecord } from './usage-record.entity';
 export { BillingSnapshot, BillingLineItem } from './billing-snapshot.entity';
 export { ApiKey } from './api-key.entity';
 export { Plan } from './plan.entity';
+export { Workspace } from './workspace.entity';
 export { UserRole } from './user-role.enum';
 export { SessionStatus } from './session-status.enum';
 export { ChatMessageRole } from './chat-message-role.enum';

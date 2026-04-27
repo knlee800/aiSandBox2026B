@@ -10,6 +10,7 @@ import {
 import { UserRole } from './user-role.enum';
 import { Session } from './session.entity';
 import { Project } from './project.entity';
+import { Workspace } from './workspace.entity';
 
 /**
  * User Entity
@@ -114,4 +115,10 @@ export class User {
    */
   @OneToMany(() => Project, (project) => project.user)
   projects: Project[];
+
+  /**
+   * User's workspaces (one-to-many relationship)
+   */
+  @OneToMany(() => Workspace, (workspace) => workspace.user)
+  workspaces: Workspace[];
 }

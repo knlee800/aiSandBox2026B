@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import { User } from './user.entity';
 import { Session } from './session.entity';
+import { Workspace } from './workspace.entity';
 
 export type ProjectVisibility = 'private' | 'public';
 
@@ -33,6 +34,17 @@ export class Project {
   })
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+  @ManyToOne(() => Workspace, (workspace) => workspace.projects, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'workspace_id' })
+  workspace: Workspace | null;
+
+  @Index('idx_projects_workspace_id')
+  @Column({ type: 'uuid', name: 'workspace_id', nullable: true })
+  workspaceId: string | null;
 
   @Column({ type: 'varchar', length: 120 })
   name: string;
