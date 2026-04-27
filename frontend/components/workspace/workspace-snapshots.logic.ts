@@ -40,7 +40,15 @@ interface ImportWorkspaceArchiveArgs {
 
 const PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX = '[project-id:';
 const PROJECT_SCOPED_SNAPSHOT_NAME_SEPARATOR = ':name:';
+const PROJECT_SCOPED_SNAPSHOT_SOURCE_SEPARATOR = ':source:';
 const PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX = ']';
+
+export type ProjectScopedSnapshotSource =
+  | 'ai'
+  | 'file-save'
+  | 'preview'
+  | 'expiry'
+  | 'initial';
 
 function trimMessage(raw: unknown, fallback: string): string {
   if (typeof raw === 'string' && raw.trim().length > 0) {
@@ -49,8 +57,36 @@ function trimMessage(raw: unknown, fallback: string): string {
   return fallback;
 }
 
-export function buildProjectScopedSnapshotLabel(projectId: string): string {
-  return `${PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX}${projectId.trim()}${PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX}`;
+function normalizeProjectScopedSnapshotSource(
+  source: string | null | undefined,
+): ProjectScopedSnapshotSource | null {
+  switch (source?.trim()) {
+    case 'ai':
+      return 'ai';
+    case 'file-save':
+      return 'file-save';
+    case 'preview':
+      return 'preview';
+    case 'expiry':
+      return 'expiry';
+    case 'initial':
+      return 'initial';
+    default:
+      return null;
+  }
+}
+
+export function buildProjectScopedSnapshotLabel(
+  projectId: string,
+  source?: ProjectScopedSnapshotSource,
+): string {
+  const normalizedProjectId = projectId.trim();
+  const normalizedSource = normalizeProjectScopedSnapshotSource(source);
+  if (!normalizedSource) {
+    return `${PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX}${normalizedProjectId}${PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX}`;
+  }
+
+  return `${PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX}${normalizedProjectId}${PROJECT_SCOPED_SNAPSHOT_SOURCE_SEPARATOR}${normalizedSource}${PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX}`;
 }
 
 function normalizeProjectScopedSnapshotName(name: string): string | null {
@@ -61,6 +97,7 @@ function normalizeProjectScopedSnapshotName(name: string): string | null {
 function parseProjectScopedSnapshotLabelParts(label: string | null): {
   projectId: string;
   name: string | null;
+  source: ProjectScopedSnapshotSource | null;
 } | null {
   if (!label) {
     return null;
@@ -77,24 +114,39 @@ function parseProjectScopedSnapshotLabelParts(label: string | null): {
     PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX.length,
     trimmed.length - PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX.length,
   );
-  const separatorIndex = rawBody.indexOf(PROJECT_SCOPED_SNAPSHOT_NAME_SEPARATOR);
+  const nameSeparatorIndex = rawBody.indexOf(PROJECT_SCOPED_SNAPSHOT_NAME_SEPARATOR);
+  const sourceSeparatorIndex = rawBody.indexOf(PROJECT_SCOPED_SNAPSHOT_SOURCE_SEPARATOR);
+  const firstSeparatorIndex =
+    nameSeparatorIndex >= 0
+      ? nameSeparatorIndex
+      : sourceSeparatorIndex >= 0
+        ? sourceSeparatorIndex
+        : -1;
   const rawProjectId =
-    separatorIndex >= 0 ? rawBody.slice(0, separatorIndex) : rawBody;
+    firstSeparatorIndex >= 0 ? rawBody.slice(0, firstSeparatorIndex) : rawBody;
   const projectId = rawProjectId.trim();
   if (!projectId) {
     return null;
   }
 
   const rawName =
-    separatorIndex >= 0
+    nameSeparatorIndex >= 0
       ? rawBody.slice(
-          separatorIndex + PROJECT_SCOPED_SNAPSHOT_NAME_SEPARATOR.length,
+          nameSeparatorIndex + PROJECT_SCOPED_SNAPSHOT_NAME_SEPARATOR.length,
         )
       : null;
+  const rawSource =
+    nameSeparatorIndex >= 0 || sourceSeparatorIndex < 0
+      ? null
+      : rawBody.slice(
+          sourceSeparatorIndex + PROJECT_SCOPED_SNAPSHOT_SOURCE_SEPARATOR.length,
+        );
 
   return {
     projectId,
     name: rawName === null ? null : normalizeProjectScopedSnapshotName(rawName),
+    source:
+      rawSource === null ? null : normalizeProjectScopedSnapshotSource(rawSource),
   };
 }
 
@@ -116,6 +168,12 @@ function parseProjectIdFromSnapshotLabel(label: string | null): string | null {
 
 export function parseProjectScopedSnapshotName(label: string | null): string | null {
   return parseProjectScopedSnapshotLabelParts(label)?.name ?? null;
+}
+
+export function parseProjectScopedSnapshotSource(
+  label: string | null,
+): ProjectScopedSnapshotSource | null {
+  return parseProjectScopedSnapshotLabelParts(label)?.source ?? null;
 }
 
 export function resolveProjectScopedLatestSnapshotId(args: {

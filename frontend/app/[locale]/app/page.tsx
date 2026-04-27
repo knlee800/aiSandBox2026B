@@ -555,6 +555,7 @@ export default function AppPage() {
         token,
         sessionId: selectedSessionIdAtExpiryWarning,
         projectId: selectedProjectId,
+        source: 'expiry',
         now: autosaveAttemptedAt,
         lastAutosaveAt: lastProjectAutosaveAtRef.current,
       });
@@ -1250,7 +1251,7 @@ export default function AppPage() {
             const initialProjectSnapshot = await saveWorkspaceSnapshot({
               token,
               sessionId: selectedSessionId,
-              label: buildProjectScopedSnapshotLabel(createdProject.id),
+              label: buildProjectScopedSnapshotLabel(createdProject.id, 'initial'),
             });
             createdInitialProjectSnapshot = true;
             await loadWorkspaceSnapshotsForUser(token);
@@ -3575,6 +3576,7 @@ export default function AppPage() {
       token,
       sessionId: selectedSessionIdAtAutosave,
       projectId: selectedProjectId,
+      source: 'ai',
       now: autosaveAttemptedAt,
       lastAutosaveAt: lastProjectAutosaveAtRef.current,
     });
@@ -3907,6 +3909,7 @@ export default function AppPage() {
           token,
           sessionId: selectedSessionId,
           projectId: selectedProjectId,
+          source: 'file-save',
           now: autosaveAttemptedAt,
           lastAutosaveAt: lastProjectAutosaveAtRef.current,
         });
@@ -4049,6 +4052,7 @@ export default function AppPage() {
           token,
           sessionId: selectedSessionId,
           projectId: selectedProjectId,
+          source: 'preview',
           now: autosaveAttemptedAt,
           lastAutosaveAt: lastProjectAutosaveAtRef.current,
         });

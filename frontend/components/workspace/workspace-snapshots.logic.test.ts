@@ -7,6 +7,7 @@ import {
   importWorkspaceArchive,
   loadWorkspaceSnapshots,
   parseProjectScopedSnapshotName,
+  parseProjectScopedSnapshotSource,
   resolveProjectScopedLatestSnapshotId,
   restoreWorkspaceSnapshot,
   saveWorkspaceSnapshot,
@@ -130,6 +131,11 @@ describe('workspace-snapshots.logic', () => {
     assert.equal(label, '[project-id:project-123]');
   });
 
+  test('buildProjectScopedSnapshotLabel optionally encodes a stable source tag', () => {
+    const label = buildProjectScopedSnapshotLabel('project-123', 'preview');
+    assert.equal(label, '[project-id:project-123:source:preview]');
+  });
+
   test('buildProjectScopedSnapshotLabelWithName encodes a deterministic named label', () => {
     const firstLabel = buildProjectScopedSnapshotLabelWithName(
       'project-123',
@@ -172,6 +178,20 @@ describe('workspace-snapshots.logic', () => {
       null,
     );
     assert.equal(parseProjectScopedSnapshotName(null), null);
+  });
+
+  test('parseProjectScopedSnapshotSource returns the source tag only for source-tagged labels', () => {
+    assert.equal(
+      parseProjectScopedSnapshotSource('[project-id:project-123:source:file-save]'),
+      'file-save',
+    );
+    assert.equal(
+      parseProjectScopedSnapshotSource('[project-id:project-123:name:Working draft]'),
+      null,
+    );
+    assert.equal(parseProjectScopedSnapshotSource('[project-id:project-123]'), null);
+    assert.equal(parseProjectScopedSnapshotSource('[project-id:project-123:source:unknown]'), null);
+    assert.equal(parseProjectScopedSnapshotSource(null), null);
   });
 
   test('resolveProjectScopedLatestSnapshotId selects latest matching project snapshot', () => {
@@ -234,6 +254,37 @@ describe('workspace-snapshots.logic', () => {
     });
 
     assert.equal(snapshotId, 'snapshot-newer-project-1-named');
+  });
+
+  test('resolveProjectScopedLatestSnapshotId matches source-tagged project labels', () => {
+    const snapshotId = resolveProjectScopedLatestSnapshotId({
+      projectId: 'project-1',
+      snapshots: [
+        {
+          id: 'snapshot-newer-project-1-preview',
+          userId: 'user-1',
+          label: '[project-id:project-1:source:preview]',
+          createdAt: '2026-04-09T12:00:00.000Z',
+          fileCount: 5,
+        },
+        {
+          id: 'snapshot-older-project-1-unnamed',
+          userId: 'user-1',
+          label: '[project-id:project-1]',
+          createdAt: '2026-04-09T11:00:00.000Z',
+          fileCount: 4,
+        },
+        {
+          id: 'snapshot-other-project',
+          userId: 'user-1',
+          label: '[project-id:project-2:source:ai]',
+          createdAt: '2026-04-09T10:00:00.000Z',
+          fileCount: 3,
+        },
+      ],
+    });
+
+    assert.equal(snapshotId, 'snapshot-newer-project-1-preview');
   });
 
   test('resolveProjectScopedLatestSnapshotId returns null when no project snapshot exists', () => {

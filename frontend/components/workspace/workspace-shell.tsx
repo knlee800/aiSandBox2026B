@@ -37,6 +37,7 @@ import type {
 import type { WorkspaceExecutionFileActionState } from './workspace-ai-file-actions.logic';
 import {
   parseProjectScopedSnapshotName,
+  parseProjectScopedSnapshotSource,
   type WorkspaceSnapshotSummary,
 } from './workspace-snapshots.logic';
 import type {
@@ -5962,6 +5963,8 @@ function formatQuotaResetTimestamp(value: string | null | undefined): string {
 }
 
 const PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX = '[project-id:';
+const PROJECT_SCOPED_SNAPSHOT_NAME_SEPARATOR = ':name:';
+const PROJECT_SCOPED_SNAPSHOT_SOURCE_SEPARATOR = ':source:';
 const PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX = ']';
 
 function parseProjectIdFromProjectScopedSnapshotLabel(label: string | null): string | null {
@@ -5979,7 +5982,24 @@ function parseProjectIdFromProjectScopedSnapshotLabel(label: string | null): str
     PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX.length,
     trimmed.length - PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX.length,
   );
-  return rawProjectId.trim() ? rawProjectId.trim() : null;
+  const separatorIndexCandidates = [
+    rawProjectId.indexOf(PROJECT_SCOPED_SNAPSHOT_NAME_SEPARATOR),
+    rawProjectId.indexOf(PROJECT_SCOPED_SNAPSHOT_SOURCE_SEPARATOR),
+  ].filter((index) => index >= 0);
+  const separatorIndex =
+    separatorIndexCandidates.length > 0 ? Math.min(...separatorIndexCandidates) : -1;
+  const normalizedProjectId =
+    separatorIndex >= 0 ? rawProjectId.slice(0, separatorIndex).trim() : rawProjectId.trim();
+  return normalizedProjectId ? normalizedProjectId : null;
+}
+
+function formatProjectHistoryFallbackLabel(label: string | null): string {
+  const source = parseProjectScopedSnapshotSource(label);
+  if (!source) {
+    return 'Saved version';
+  }
+
+  return recoveryCopy.workspace.automaticVersionLabels[source];
 }
 
 function formatProjectHistoryTimestamp(value: string): string {
@@ -6013,7 +6033,7 @@ function computeProjectHistoryRows(
         return (
           typeof trimmedLabel === 'string' &&
           trimmedLabel.startsWith(
-            `${PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX}${normalizedProjectId}:name:`,
+            `${PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX}${normalizedProjectId}${PROJECT_SCOPED_SNAPSHOT_NAME_SEPARATOR}`,
           ) &&
           trimmedLabel.endsWith(PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX)
         );
@@ -6028,7 +6048,9 @@ function computeProjectHistoryRows(
     })
     .map((snapshot) => ({
       id: snapshot.id,
-      label: parseProjectScopedSnapshotName(snapshot.label) ?? 'Saved version',
+      label:
+        parseProjectScopedSnapshotName(snapshot.label) ??
+        formatProjectHistoryFallbackLabel(snapshot.label),
       createdAt: snapshot.createdAt,
     }));
 }

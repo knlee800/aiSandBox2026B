@@ -46,7 +46,7 @@ test('returns skipped-rate-limited and does not call save when under the default
   assert.equal(callCount, 0);
 });
 
-test('returns saved and calls save once with the project-scoped snapshot label', async () => {
+test('returns saved and calls save once with the source-tagged project-scoped snapshot label', async () => {
   const calls: Array<{ url: string; init?: RequestInit }> = [];
   const fetchImpl = async (url: string, init?: RequestInit): Promise<Response> => {
     calls.push({ url, init });
@@ -57,6 +57,7 @@ test('returns saved and calls save once with the project-scoped snapshot label',
     token: 'token-1',
     sessionId: 'session-1',
     projectId: 'project-1',
+    source: 'preview',
     now: 60_000,
     lastAutosaveAt: 0,
     fetchImpl: fetchImpl as typeof fetch,
@@ -74,7 +75,7 @@ test('returns saved and calls save once with the project-scoped snapshot label',
   assert.equal(calls[0].url, '/api/sessions/session-1/snapshot');
   assert.equal(calls[0].init?.method, 'POST');
   assert.deepEqual(JSON.parse(String(calls[0].init?.body)), {
-    label: '[project-id:project-1]',
+    label: '[project-id:project-1:source:preview]',
   });
 });
 

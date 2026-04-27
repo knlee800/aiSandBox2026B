@@ -109,6 +109,50 @@ const projectHistorySnapshotsWithNames: WorkspaceSnapshotSummary[] = [
     fileCount: 1,
   },
 ];
+const projectHistorySnapshotsWithSources: WorkspaceSnapshotSummary[] = [
+  {
+    id: 'snapshot-preview',
+    userId: 'user-123',
+    label: '[project-id:project-1:source:preview]',
+    createdAt: '2026-04-06T12:00:00.000Z',
+    fileCount: 2,
+  },
+  {
+    id: 'snapshot-ai',
+    userId: 'user-123',
+    label: '[project-id:project-1:source:ai]',
+    createdAt: '2026-04-05T12:00:00.000Z',
+    fileCount: 3,
+  },
+  {
+    id: 'snapshot-file-save',
+    userId: 'user-123',
+    label: '[project-id:project-1:source:file-save]',
+    createdAt: '2026-04-04T12:00:00.000Z',
+    fileCount: 4,
+  },
+  {
+    id: 'snapshot-expiry',
+    userId: 'user-123',
+    label: '[project-id:project-1:source:expiry]',
+    createdAt: '2026-04-03T12:00:00.000Z',
+    fileCount: 5,
+  },
+  {
+    id: 'snapshot-initial',
+    userId: 'user-123',
+    label: '[project-id:project-1:source:initial]',
+    createdAt: '2026-04-02T12:00:00.000Z',
+    fileCount: 6,
+  },
+  {
+    id: 'snapshot-other-project-source',
+    userId: 'user-123',
+    label: '[project-id:project-2:source:ai]',
+    createdAt: '2026-04-07T12:00:00.000Z',
+    fileCount: 1,
+  },
+];
 const projectPanelRenderOverrides: Partial<React.ComponentProps<typeof WorkspaceShell>> = {
   workspaceProjects: [
     {
@@ -1081,6 +1125,26 @@ describe('workspace shell component', () => {
 
     assert.ok(label);
     assert.equal(label.props.children, 'Saved version');
+  });
+
+  test('renders source-based fallback labels for automatic project history rows', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      selectedProjectId: 'project-1',
+      workspaceSnapshots: projectHistorySnapshotsWithSources,
+    });
+
+    assert.match(html, /history-project-history-label-snapshot-preview/);
+    assert.match(html, />Preview built</);
+    assert.match(html, /history-project-history-label-snapshot-ai/);
+    assert.match(html, />AI changes saved</);
+    assert.match(html, /history-project-history-label-snapshot-file-save/);
+    assert.match(html, />File saved</);
+    assert.match(html, /history-project-history-label-snapshot-expiry/);
+    assert.match(html, />Session ending</);
+    assert.match(html, /history-project-history-label-snapshot-initial/);
+    assert.match(html, />Project created</);
+    assert.doesNotMatch(html, /history-project-history-row-snapshot-other-project-source/);
   });
 
   test('renders mixed named and unnamed project history rows without changing project filtering', () => {

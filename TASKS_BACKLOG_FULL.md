@@ -15670,7 +15670,7 @@ PROJ-02-02 isolated the real 500 cause:
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2e-hotfix COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary — container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED; D0 COMPLETE and LOCKED; D0b COMPLETE and LOCKED; D0c COMPLETE and LOCKED; D0d COMPLETE and LOCKED; D0e COMPLETE and LOCKED; D0e-hotfix COMPLETE and LOCKED; D1a COMPLETE and LOCKED. C3/C2d-unload deferred and not yet registered. Completed order: A0 → A1 → A3 → A2a → A2b → B0 → B1 → B2a → B2b → B3a → B4a → B4b → C1a → C1b-pre → C1b-cta → C2a-rate-limit → C2b-trigger-preview → C2c-label-format → C2c-handler → C2c-cta-handler-pre → C2c-cta-button → C2c-display → C2d-expiry-warn → C2e → C2f-file-save → C4 → D0 → D0b → D0c → D0d → C2e-hotfix → D0e → D0e-hotfix → D1a. Current stage: D1a (COMPLETE and LOCKED).
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2e-hotfix COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary — container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED; D0 COMPLETE and LOCKED; D0b COMPLETE and LOCKED; D0c COMPLETE and LOCKED; D0d COMPLETE and LOCKED; D0e COMPLETE and LOCKED; D0e-hotfix COMPLETE and LOCKED; D1a COMPLETE and LOCKED; D1b COMPLETE and LOCKED. C3/C2d-unload deferred and not yet registered. Completed order: A0 → A1 → A3 → A2a → A2b → B0 → B1 → B2a → B2b → B3a → B4a → B4b → C1a → C1b-pre → C1b-cta → C2a-rate-limit → C2b-trigger-preview → C2c-label-format → C2c-handler → C2c-cta-handler-pre → C2c-cta-button → C2c-display → C2d-expiry-warn → C2e → C2f-file-save → C4 → D0 → D0b → D0c → D0d → C2e-hotfix → D0e → D0e-hotfix → D1a → D1b. Current stage: D1b (COMPLETE and LOCKED).
 
 ---
 
@@ -17760,6 +17760,77 @@ The platform now protects user work through multiple layered mechanisms (project
 - Do not change actual save/restore semantics in this slice
 - `PROJECT_FIRST_UX` remains the kill-switch posture
 - Preserve all existing protection behavior; only improve discoverability and confidence
+- No regression to: project-open hydration / restore discipline (PROJ-02-01); snapshot/history persistence behavior (PROJ-01-21); `.git/` exclusion from snapshots/restores (PROJ-02-03); static preview `/workspace/index.html` rule (PREV-02-02); stop-session cleanup behavior (OPS-01-04)
+
+---
+
+### PROJ-03-D1b — Add Source-Tagged Automatic Version Labels Behind Feature Flag
+
+**Task ID:** PROJ-03-D1b
+**Family:** PROJ-03 (Project-First UX Redesign)
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/PROJ-03-D1b-CHECKPOINT.md`
+**Nature:** FRONTEND / UX LABEL IMPROVEMENT
+**Source:** Post-D1a gap: all automatic saves (AI, file-save, preview, expiry) produce the identical label `[project-id:<id>]`, which renders as the generic fallback `'Saved version'` in the history list. Manual named saves are already distinguished by user-supplied text. The remaining automatic versions are indistinguishable, making history hard to scan.
+**Dependencies:** PROJ-03-D1a (COMPLETE and LOCKED)
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, make automatic project-history entries easier to distinguish by encoding a stable source tag into automatic snapshot labels and rendering source-specific fallback names in the history list, while leaving manual named saves unchanged.
+
+**Why this exists:**
+Automatic saves from AI actions, file saves, preview builds, and session-expiry warnings all write the same opaque label to the snapshot record. The history list collapses them all to `'Saved version'`. Users cannot tell which version was produced by an AI run vs. a manual file save vs. a preview build without examining timestamps alone. This slice adds a minimal stable source tag to automatic labels so the history surface can render distinct human-readable labels — without changing backend behavior, schema, or manual named-save semantics.
+
+**Bounded scope:**
+- `frontend/components/workspace/workspace-snapshots.logic.ts` — extend `buildProjectScopedSnapshotLabel` to accept an optional stable source tag; add `parseProjectScopedSnapshotSource` to extract it; add source-to-display-label mapping
+- `frontend/lib/project-autosave.ts` — accept and forward a `source` argument to `buildProjectScopedSnapshotLabel`
+- `frontend/app/[locale]/app/page.tsx` — pass the appropriate source tag at each `attemptProjectAutosave` call site (`'ai'`, `'file-save'`, `'preview'`, `'expiry'`) and at the two direct `saveWorkspaceSnapshot` call sites that produce unlabeled snapshots
+- `frontend/components/workspace/workspace-shell.tsx` — in `computeProjectHistoryRows`, use `parseProjectScopedSnapshotSource` to produce source-specific fallback labels instead of the generic `'Saved version'`
+- `frontend/lib/recovery-copy.ts` — add source-to-display label constants for all source tags
+- Directly relevant tests only if needed
+
+**Extended label format:**
+- Named (unchanged): `[project-id:<id>:name:<text>]`
+- New automatic with source: `[project-id:<id>:source:<tag>]`
+- Old automatic (backward compat): `[project-id:<id>]` — still renders as `'Saved version'`
+
+**Behavior (when `PROJECT_FIRST_UX` is true):**
+- Automatic save entries in the history list render source-specific names (e.g. "AI changes saved", "File saved", "Preview built", "Session ending")
+- Manual named saves continue to render the user-supplied name unchanged
+- Older snapshots without a source tag continue to fall back cleanly to the existing `'Saved version'` generic label
+- Timestamp display remains separate and unchanged
+- No backend/API/schema changes
+- No new route
+- No full history redesign
+- No diff/preview flow
+
+**Non-goals:**
+- No backend or schema changes
+- No manual named-save redesign
+- No diff viewer
+- No preview-before-restore
+- No true editor autosave-to-disk
+- No unload handling
+- No git-system redesign
+- No broader D1 history redesign beyond this labeling improvement
+- No C3 / C2d-unload work
+
+**Acceptance checks:**
+- Automatic AI/file-save/preview/expiry history entries render distinct, clearer labels
+- Manual named saves continue to render the user-supplied name unchanged
+- Older unlabeled entries still render safely with the existing generic fallback
+- Timestamp display remains separate and unchanged
+- With `PROJECT_FIRST_UX=false`, legacy behavior unchanged
+- Typecheck clean
+- Focused regression suite green
+- No introduced lint errors
+
+**Risks and invariants:**
+- Use stable internal source tags (short lowercase strings like `'ai'`, `'file-save'`, `'preview'`, `'expiry'`), not display strings, in stored labels
+- Preserve backward compatibility with existing stored labels (no source tag → fallback to `'Saved version'`)
+- Do not change backend behavior or history semantics
+- `PROJECT_FIRST_UX` remains the kill-switch posture
+- Preserve all existing save/restore behavior; only improve label clarity
 - No regression to: project-open hydration / restore discipline (PROJ-02-01); snapshot/history persistence behavior (PROJ-01-21); `.git/` exclusion from snapshots/restores (PROJ-02-03); static preview `/workspace/index.html` rule (PREV-02-02); stop-session cleanup behavior (OPS-01-04)
 
 ---

@@ -6909,9 +6909,9 @@ Prevent project snapshots/restores from including `.git/` internals so restoring
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2e-hotfix COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary — container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED; D0 COMPLETE and LOCKED; D0b COMPLETE and LOCKED; D0c COMPLETE and LOCKED; D0d COMPLETE and LOCKED; D0e COMPLETE and LOCKED; D0e-hotfix COMPLETE and LOCKED; D1a COMPLETE and LOCKED. C3/C2d-unload deferred and not yet registered.
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2e-hotfix COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary — container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED; D0 COMPLETE and LOCKED; D0b COMPLETE and LOCKED; D0c COMPLETE and LOCKED; D0d COMPLETE and LOCKED; D0e COMPLETE and LOCKED; D0e-hotfix COMPLETE and LOCKED; D1a COMPLETE and LOCKED; D1b COMPLETE and LOCKED. C3/C2d-unload deferred and not yet registered.
 
-**Current stage:** PROJ-03-D1a (COMPLETE and LOCKED)
+**Current stage:** PROJ-03-D1b (COMPLETE and LOCKED)
 
 ---
 
@@ -8875,6 +8875,52 @@ Behind `PROJECT_FIRST_UX`, add one obvious user-facing "Versions" / "History" en
 - No regression to: project-open hydration / restore discipline; snapshot/history persistence behavior; `.git/` exclusion from snapshots/restores; static preview `/workspace/index.html` rule; stop-session cleanup behavior
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-D1a.
+
+---
+
+### PROJ-03-D1b — Add Source-Tagged Automatic Version Labels Behind Feature Flag
+
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/PROJ-03-D1b-CHECKPOINT.md`
+**Nature:** FRONTEND / UX LABEL IMPROVEMENT
+**Source:** Post-D1a gap: all automatic saves (AI, file-save, preview, expiry) produce the identical label `[project-id:<id>]`, which renders as the generic fallback `'Saved version'` in the history list. Users cannot distinguish AI saves, file saves, preview builds, or session-expiry saves from each other by label alone.
+**Dependencies:** PROJ-03-D1a (COMPLETE and LOCKED)
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, make automatic project-history entries easier to distinguish by encoding a stable source tag into automatic snapshot labels and rendering source-specific fallback names in the history list, while leaving manual named saves unchanged.
+
+**Bounded scope:**
+- `frontend/components/workspace/workspace-snapshots.logic.ts`
+- `frontend/lib/project-autosave.ts`
+- `frontend/app/[locale]/app/page.tsx`
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/lib/recovery-copy.ts`
+- Directly relevant tests only if needed
+
+**Key constraints:**
+- Source tags are stable and internal only (e.g. `'ai'`, `'file-save'`, `'preview'`, `'expiry'`), not display strings, in stored labels
+- Old labels without a source tag fall back cleanly to the existing `'Saved version'` generic label
+- Manual named saves are unchanged
+- No backend/API/schema changes
+- `PROJECT_FIRST_UX` kill-switch preserved
+- No regression to hydration/restore/snapshot invariants
+
+**Acceptance checks:**
+- Automatic AI/file-save/preview/expiry history entries render distinct, clearer labels
+- Manual named saves continue to render the user-supplied name unchanged
+- Older unlabeled entries still render safely with the existing generic fallback
+- Timestamp display remains separate and unchanged
+- `PROJECT_FIRST_UX=false` → legacy behavior unchanged
+- Typecheck clean, lint clean, focused regression suite green
+
+**Non-goals:**
+- No backend or schema changes
+- No manual named-save redesign
+- No diff viewer
+- No broader D1 history redesign
+- No C3 / C2d-unload work
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-D1b.
 
 ---
 

@@ -2,6 +2,7 @@ import { shouldAllowAutosaveNow } from './autosave-rate-limit';
 import {
   buildProjectScopedSnapshotLabel,
   saveWorkspaceSnapshot,
+  type ProjectScopedSnapshotSource,
   type WorkspaceSnapshotSummary,
 } from '../components/workspace/workspace-snapshots.logic';
 
@@ -14,6 +15,7 @@ export async function attemptProjectAutosave(args: {
   token: string;
   sessionId: string;
   projectId: string;
+  source?: ProjectScopedSnapshotSource;
   now: number;
   lastAutosaveAt: number | null;
   minIntervalMs?: number;
@@ -33,7 +35,7 @@ export async function attemptProjectAutosave(args: {
     const savedSnapshot = await saveWorkspaceSnapshot({
       token: args.token,
       sessionId: args.sessionId,
-      label: buildProjectScopedSnapshotLabel(args.projectId),
+      label: buildProjectScopedSnapshotLabel(args.projectId, args.source),
       fetchImpl: args.fetchImpl,
     });
     return { status: 'saved', savedSnapshot };
