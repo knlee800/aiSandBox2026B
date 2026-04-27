@@ -903,7 +903,7 @@ export default function AppPage() {
     void loadWorkspaceFilesForSession(token, selectedSessionId);
   }, [selectedSessionId]);
 
-  async function loadSessions(token: string): Promise<void> {
+  async function loadSessions(token: string): Promise<WorkspaceShellSession[]> {
     setIsLoadingSessions(true);
     setSessionError(null);
 
@@ -924,21 +924,21 @@ export default function AppPage() {
         setSessions([]);
         setSelectedSessionId(null);
         setIsLoadingSessions(false);
-        return;
+        return [];
       }
 
       if (!response.ok) {
         if (response.status === 401) {
           handleWorkspaceUnauthorizedAccess();
           setIsLoadingSessions(false);
-          return;
+          return [];
         }
         console.error('[WORKSPACE_BOOTSTRAP_FAIL_SESSIONS_HTTP]', response.status, response.statusText);
         setSessionError(`[HTTP_${response.status}] ${response.statusText}`);
         setSessions([]);
         setSelectedSessionId(null);
         setIsLoadingSessions(false);
-        return;
+        return [];
       }
 
       let payload: unknown;
@@ -951,7 +951,7 @@ export default function AppPage() {
         setSessions([]);
         setSelectedSessionId(null);
         setIsLoadingSessions(false);
-        return;
+        return [];
       }
 
       data = Array.isArray(payload)
@@ -966,7 +966,7 @@ export default function AppPage() {
       setSessions([]);
       setSelectedSessionId(null);
       setIsLoadingSessions(false);
-      return;
+      return [];
     }
 
     setSessions(data);
@@ -1001,6 +1001,7 @@ export default function AppPage() {
       return fallbackSession ? fallbackSession.id : null;
     });
     setIsLoadingSessions(false);
+    return data;
   }
 
   async function handleCreateSession(): Promise<void> {
@@ -1368,10 +1369,11 @@ export default function AppPage() {
     try {
       const selectedSnapshotIdToOpen = selectedSnapshotId?.trim() || undefined;
       if (PROJECT_FIRST_UX) {
+        const refreshedSessions = await loadSessions(token);
         const openResult = await openProjectInFreshSession({
           token,
           projectId: selectedProjectId,
-          existingSessions: sessions,
+          existingSessions: refreshedSessions,
           snapshotId: selectedSnapshotIdToOpen,
         });
         const openSessionId = openResult.sessionId;
@@ -1485,10 +1487,11 @@ export default function AppPage() {
     setProjectActionError(null);
     projectOpenInProgressRef.current = true;
     try {
+      const refreshedSessions = await loadSessions(token);
       const openResult = await openProjectInFreshSession({
         token,
         projectId: normalizedProjectId,
-        existingSessions: sessions,
+        existingSessions: refreshedSessions,
       });
       const openSessionId = openResult.sessionId;
       const expectsRestoredFiles = Boolean(openResult.restoredSnapshotId);

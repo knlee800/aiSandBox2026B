@@ -15670,7 +15670,7 @@ PROJ-02-02 isolated the real 500 cause:
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2e-hotfix COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary — container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED; D0 COMPLETE and LOCKED; D0b COMPLETE and LOCKED; D0c COMPLETE and LOCKED; D0d COMPLETE and LOCKED; D0e COMPLETE and LOCKED; D0e-hotfix COMPLETE and LOCKED; D1a COMPLETE and LOCKED; D1b COMPLETE and LOCKED; D1c COMPLETE and LOCKED; D1d COMPLETE and LOCKED. C3/C2d-unload deferred and not yet registered. Completed order: A0 → A1 → A3 → A2a → A2b → B0 → B1 → B2a → B2b → B3a → B4a → B4b → C1a → C1b-pre → C1b-cta → C2a-rate-limit → C2b-trigger-preview → C2c-label-format → C2c-handler → C2c-cta-handler-pre → C2c-cta-button → C2c-display → C2d-expiry-warn → C2e → C2f-file-save → C4 → D0 → D0b → D0c → D0d → C2e-hotfix → D0e → D0e-hotfix → D1a → D1b → D1c → D1d. Current stage: D1d (COMPLETE and LOCKED).
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2e-hotfix COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary — container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED; D0 COMPLETE and LOCKED; D0b COMPLETE and LOCKED; D0c COMPLETE and LOCKED; D0d COMPLETE and LOCKED; D0e COMPLETE and LOCKED; D0e-hotfix COMPLETE and LOCKED; D1a COMPLETE and LOCKED; D1b COMPLETE and LOCKED; D1c COMPLETE and LOCKED; D1d COMPLETE and LOCKED; D1d-hotfix COMPLETE and LOCKED. C3/C2d-unload deferred and not yet registered. Completed order: A0 → A1 → A3 → A2a → A2b → B0 → B1 → B2a → B2b → B3a → B4a → B4b → C1a → C1b-pre → C1b-cta → C2a-rate-limit → C2b-trigger-preview → C2c-label-format → C2c-handler → C2c-cta-handler-pre → C2c-cta-button → C2c-display → C2d-expiry-warn → C2e → C2f-file-save → C4 → D0 → D0b → D0c → D0d → C2e-hotfix → D0e → D0e-hotfix → D1a → D1b → D1c → D1d → D1d-hotfix. Current stage: D1d-hotfix (COMPLETE and LOCKED).
 
 ---
 
@@ -17960,6 +17960,63 @@ Each "Open Project" or "Resume latest project" click currently creates a new Doc
 - Tab-isolated session selection from D0d unaffected — per-tab `sessionStorage` selection keys are unchanged
 - `projectOpenInProgressRef` guard and all open/restore invariants preserved
 - `.git` exclusion, autosave timing, stop-session cleanup semantics preserved
+- No regression to: project-open hydration / restore discipline (PROJ-02-01); snapshot/history persistence (PROJ-01-21); `.git/` exclusion (PROJ-02-03); static preview `/workspace/index.html` rule (PREV-02-02); stop-session cleanup (OPS-01-04)
+
+---
+
+### PROJ-03-D1d-hotfix — Refresh Sessions Before Same-Project Reuse Check Behind Feature Flag
+
+**Task ID:** PROJ-03-D1d-hotfix
+**Family:** PROJ-03 (Project-First UX Redesign)
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/PROJ-03-D1d-hotfix-CHECKPOINT.md`
+**Nature:** FRONTEND / CORRECTIVE HOTFIX FOR D1d STALE-STATE REUSE BUG
+**Source:** Post-D1d bug: the D1d reuse check in `openProjectInFreshSession` consults the in-memory `sessions` React state, which can be stale. A session terminated server-side by idle_timeout after the last `loadSessions()` call will still show `terminatedAt: null` in memory, pass `isUsableSession`, be selected for reuse, and cause the backend to return 410 Gone ("Session has been terminated (reason: idle_timeout)"). The D1d reuse logic itself is correct against the data it has; the data is stale.
+**Dependencies:** PROJ-03-D1d (COMPLETE and LOCKED)
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, eliminate stale same-project session reuse by refreshing the sessions list immediately before the reuse decision in normal project-open/resume flows, so reuse only ever consults current server state. Preserve explicit snapshot restore as always-fresh and leave all other D1d behavior intact.
+
+**Why this exists:**
+D1d introduced session reuse based on the in-memory `sessions` React state. That state is only refreshed on `loadSessions()` calls. Between the last refresh and a "Open Project" / "Resume" click, the server may have terminated the session (e.g. idle_timeout), making the in-memory state stale. The frontend then reuses the terminated session, and the backend rejects it with 410 Gone. The fix is to refresh sessions immediately before the reuse decision, not to add retry-on-410 fallback logic.
+
+**Bounded scope:**
+- Frontend only
+- `frontend/app/[locale]/app/page.tsx` — add `await loadSessions(token)` at `handleOpenWorkspaceProject` (PROJECT_FIRST_UX branch) and `handleResumeWorkspaceProjectById` immediately before each `openProjectInFreshSession` call; `sessions` state is then current when passed as `existingSessions`
+- Directly relevant tests only if needed
+
+**Behavior:**
+- Before calling `openProjectInFreshSession` for "Open Project" and "Resume latest project", always refresh sessions from the backend first
+- The reuse check in the helper then sees the current server state
+- If the previously-reusable session was terminated, it will have `terminatedAt` set in the refreshed data, `isUsableSession` will return false, and the helper falls through to `createWorkspaceSession` as intended
+- Explicit snapshot restore path remains unchanged and always-fresh
+
+**Non-goals:**
+- No backend or schema changes
+- No retry-on-410 recovery flow
+- No broader session-management redesign
+- No "choose session" UI or modal
+- No change to explicit snapshot restore safety rule
+- No broader D1 redesign
+- No C3 / C2d-unload work
+
+**Acceptance checks:**
+- Opening a project refreshes sessions before the reuse decision
+- Resume-latest-project path refreshes sessions before the reuse decision
+- Terminated same-project sessions are no longer reused due to stale frontend state
+- Explicit snapshot restore still always creates a fresh session
+- Existing reuse behavior still works when a same-project usable session truly exists
+- Typecheck clean, focused regression suite green, no introduced lint errors
+
+**Risks and invariants:**
+- Keep this to stale-state correction only; do not broaden into retry logic or backend changes
+- Preserve explicit restore always-fresh behavior
+- Preserve hydration/open flow after reuse
+- Preserve tab-isolated selection behavior from D0d
+- Preserve `projectOpenInProgressRef` guard and all open/restore invariants
+- Preserve `.git` exclusion, autosave timing, and stop-session cleanup semantics
+- `PROJECT_FIRST_UX` remains the kill-switch posture
 - No regression to: project-open hydration / restore discipline (PROJ-02-01); snapshot/history persistence (PROJ-01-21); `.git/` exclusion (PROJ-02-03); static preview `/workspace/index.html` rule (PREV-02-02); stop-session cleanup (OPS-01-04)
 
 ---

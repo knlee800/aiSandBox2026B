@@ -6909,9 +6909,9 @@ Prevent project snapshots/restores from including `.git/` internals so restoring
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2e-hotfix COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary — container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED; D0 COMPLETE and LOCKED; D0b COMPLETE and LOCKED; D0c COMPLETE and LOCKED; D0d COMPLETE and LOCKED; D0e COMPLETE and LOCKED; D0e-hotfix COMPLETE and LOCKED; D1a COMPLETE and LOCKED; D1b COMPLETE and LOCKED; D1c COMPLETE and LOCKED; D1d COMPLETE and LOCKED. C3/C2d-unload deferred and not yet registered.
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2e-hotfix COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary — container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED; D0 COMPLETE and LOCKED; D0b COMPLETE and LOCKED; D0c COMPLETE and LOCKED; D0d COMPLETE and LOCKED; D0e COMPLETE and LOCKED; D0e-hotfix COMPLETE and LOCKED; D1a COMPLETE and LOCKED; D1b COMPLETE and LOCKED; D1c COMPLETE and LOCKED; D1d COMPLETE and LOCKED; D1d-hotfix COMPLETE and LOCKED. C3/C2d-unload deferred and not yet registered.
 
-**Current stage:** PROJ-03-D1d (COMPLETE and LOCKED)
+**Current stage:** PROJ-03-D1d-hotfix (COMPLETE and LOCKED)
 
 ---
 
@@ -9014,6 +9014,50 @@ Behind `PROJECT_FIRST_UX`, when reopening a project, reuse an existing active us
 - No C3 / C2d-unload work
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-D1d.
+
+---
+
+### PROJ-03-D1d-hotfix — Refresh Sessions Before Same-Project Reuse Check Behind Feature Flag
+
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/PROJ-03-D1d-hotfix-CHECKPOINT.md`
+**Nature:** FRONTEND / CORRECTIVE HOTFIX FOR D1d STALE-STATE REUSE BUG
+**Source:** Post-D1d bug: the D1d reuse check in `openProjectInFreshSession` consults the in-memory `sessions` React state, which can be stale. A session terminated server-side by idle_timeout after the last `loadSessions()` call will still show `terminatedAt: null` in memory, pass `isUsableSession`, be selected for reuse, and cause the backend to return 410 Gone ("Session has been terminated (reason: idle_timeout)"). The reuse logic itself is correct against the data it has; the data is stale.
+**Dependencies:** PROJ-03-D1d (COMPLETE and LOCKED)
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, eliminate stale same-project session reuse by refreshing the sessions list immediately before the reuse decision in normal project-open/resume flows, so reuse only ever consults current server state. Preserve explicit snapshot restore as always-fresh and leave all other D1d behavior intact.
+
+**Bounded scope:**
+- Frontend only
+- `frontend/app/[locale]/app/page.tsx` — call `await loadSessions(token)` at `handleOpenWorkspaceProject` (PROJECT_FIRST_UX branch) and `handleResumeWorkspaceProjectById` immediately before each `openProjectInFreshSession` call, then pass the freshly-loaded `sessions` state as `existingSessions`
+- Directly relevant tests only if needed
+
+**Key constraints:**
+- `loadSessions` is already defined in scope; this is a two-call-site additive change
+- Explicit snapshot restore (`handleRestoreWorkspaceProjectFromSnapshotById`) remains unchanged and always-fresh
+- No backend, API, or schema changes
+- No retry-on-410 recovery logic in this slice
+- `PROJECT_FIRST_UX` kill-switch preserved
+
+**Acceptance checks:**
+- Opening a project refreshes sessions before the reuse decision
+- Resume-latest-project path refreshes sessions before the reuse decision
+- Terminated same-project sessions are no longer reused due to stale frontend state
+- Explicit snapshot restore still always creates a fresh session
+- Existing reuse behavior still works when a same-project usable session truly exists
+- Typecheck clean, focused regression suite green, no introduced lint errors
+
+**Non-goals:**
+- No backend or schema changes
+- No retry-on-410 recovery flow
+- No broader session-management redesign
+- No "choose session" UI or modal
+- No change to explicit snapshot restore safety rule
+- No broader D1 redesign
+- No C3 / C2d-unload work
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-D1d-hotfix.
 
 ---
 
