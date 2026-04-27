@@ -153,6 +153,29 @@ const projectHistorySnapshotsWithSources: WorkspaceSnapshotSummary[] = [
     fileCount: 1,
   },
 ];
+const projectHistorySnapshotsWithHints: WorkspaceSnapshotSummary[] = [
+  {
+    id: 'snapshot-ai-hint',
+    userId: 'user-123',
+    label: '[project-id:project-1:source:ai:hint:app.tsx +2]',
+    createdAt: '2026-04-06T12:00:00.000Z',
+    fileCount: 3,
+  },
+  {
+    id: 'snapshot-file-save-hint',
+    userId: 'user-123',
+    label: '[project-id:project-1:source:file-save:hint:index.html]',
+    createdAt: '2026-04-05T12:00:00.000Z',
+    fileCount: 1,
+  },
+  {
+    id: 'snapshot-other-project-hint',
+    userId: 'user-123',
+    label: '[project-id:project-2:source:preview:hint:other.tsx]',
+    createdAt: '2026-04-07T12:00:00.000Z',
+    fileCount: 2,
+  },
+];
 const projectPanelRenderOverrides: Partial<React.ComponentProps<typeof WorkspaceShell>> = {
   workspaceProjects: [
     {
@@ -1145,6 +1168,20 @@ describe('workspace shell component', () => {
     assert.match(html, /history-project-history-label-snapshot-initial/);
     assert.match(html, />Project created</);
     assert.doesNotMatch(html, /history-project-history-row-snapshot-other-project-source/);
+  });
+
+  test('appends deterministic hints to automatic source-based fallback labels when present', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      selectedProjectId: 'project-1',
+      workspaceSnapshots: projectHistorySnapshotsWithHints,
+    });
+
+    assert.match(html, /history-project-history-label-snapshot-ai-hint/);
+    assert.match(html, />AI changes saved · app\.tsx \+2</);
+    assert.match(html, /history-project-history-label-snapshot-file-save-hint/);
+    assert.match(html, />File saved · index\.html</);
+    assert.doesNotMatch(html, /history-project-history-row-snapshot-other-project-hint/);
   });
 
   test('renders mixed named and unnamed project history rows without changing project filtering', () => {

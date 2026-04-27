@@ -6,6 +6,7 @@ import {
   exportWorkspaceArchive,
   importWorkspaceArchive,
   loadWorkspaceSnapshots,
+  parseProjectScopedSnapshotHint,
   parseProjectScopedSnapshotName,
   parseProjectScopedSnapshotSource,
   resolveProjectScopedLatestSnapshotId,
@@ -136,6 +137,15 @@ describe('workspace-snapshots.logic', () => {
     assert.equal(label, '[project-id:project-123:source:preview]');
   });
 
+  test('buildProjectScopedSnapshotLabel optionally encodes a sanitized deterministic hint', () => {
+    const label = buildProjectScopedSnapshotLabel(
+      'project-123',
+      'ai',
+      '  src/app.tsx :hint: ] :name: +2  ',
+    );
+    assert.equal(label, '[project-id:project-123:source:ai:hint:src/app.tsx +2]');
+  });
+
   test('buildProjectScopedSnapshotLabelWithName encodes a deterministic named label', () => {
     const firstLabel = buildProjectScopedSnapshotLabelWithName(
       'project-123',
@@ -186,12 +196,37 @@ describe('workspace-snapshots.logic', () => {
       'file-save',
     );
     assert.equal(
+      parseProjectScopedSnapshotSource('[project-id:project-123:source:ai:hint:index.tsx +2]'),
+      'ai',
+    );
+    assert.equal(
       parseProjectScopedSnapshotSource('[project-id:project-123:name:Working draft]'),
       null,
     );
     assert.equal(parseProjectScopedSnapshotSource('[project-id:project-123]'), null);
     assert.equal(parseProjectScopedSnapshotSource('[project-id:project-123:source:unknown]'), null);
     assert.equal(parseProjectScopedSnapshotSource(null), null);
+  });
+
+  test('parseProjectScopedSnapshotHint returns the sanitized hint only for source-plus-hint labels', () => {
+    assert.equal(
+      parseProjectScopedSnapshotHint('[project-id:project-123:source:preview:hint:index.html]'),
+      'index.html',
+    );
+    assert.equal(
+      parseProjectScopedSnapshotHint('[project-id:project-123:source:ai:hint:index.tsx +2]'),
+      'index.tsx +2',
+    );
+    assert.equal(
+      parseProjectScopedSnapshotHint('[project-id:project-123:source:file-save]'),
+      null,
+    );
+    assert.equal(
+      parseProjectScopedSnapshotHint('[project-id:project-123:name:Working draft]'),
+      null,
+    );
+    assert.equal(parseProjectScopedSnapshotHint('[project-id:project-123]'), null);
+    assert.equal(parseProjectScopedSnapshotHint(null), null);
   });
 
   test('resolveProjectScopedLatestSnapshotId selects latest matching project snapshot', () => {
@@ -263,7 +298,7 @@ describe('workspace-snapshots.logic', () => {
         {
           id: 'snapshot-newer-project-1-preview',
           userId: 'user-1',
-          label: '[project-id:project-1:source:preview]',
+          label: '[project-id:project-1:source:preview:hint:index.html]',
           createdAt: '2026-04-09T12:00:00.000Z',
           fileCount: 5,
         },

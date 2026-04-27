@@ -15670,7 +15670,7 @@ PROJ-02-02 isolated the real 500 cause:
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2e-hotfix COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary — container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED; D0 COMPLETE and LOCKED; D0b COMPLETE and LOCKED; D0c COMPLETE and LOCKED; D0d COMPLETE and LOCKED; D0e COMPLETE and LOCKED; D0e-hotfix COMPLETE and LOCKED; D1a COMPLETE and LOCKED; D1b COMPLETE and LOCKED. C3/C2d-unload deferred and not yet registered. Completed order: A0 → A1 → A3 → A2a → A2b → B0 → B1 → B2a → B2b → B3a → B4a → B4b → C1a → C1b-pre → C1b-cta → C2a-rate-limit → C2b-trigger-preview → C2c-label-format → C2c-handler → C2c-cta-handler-pre → C2c-cta-button → C2c-display → C2d-expiry-warn → C2e → C2f-file-save → C4 → D0 → D0b → D0c → D0d → C2e-hotfix → D0e → D0e-hotfix → D1a → D1b. Current stage: D1b (COMPLETE and LOCKED).
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2e-hotfix COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary — container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED; D0 COMPLETE and LOCKED; D0b COMPLETE and LOCKED; D0c COMPLETE and LOCKED; D0d COMPLETE and LOCKED; D0e COMPLETE and LOCKED; D0e-hotfix COMPLETE and LOCKED; D1a COMPLETE and LOCKED; D1b COMPLETE and LOCKED; D1c COMPLETE and LOCKED. C3/C2d-unload deferred and not yet registered. Completed order: A0 → A1 → A3 → A2a → A2b → B0 → B1 → B2a → B2b → B3a → B4a → B4b → C1a → C1b-pre → C1b-cta → C2a-rate-limit → C2b-trigger-preview → C2c-label-format → C2c-handler → C2c-cta-handler-pre → C2c-cta-button → C2c-display → C2d-expiry-warn → C2e → C2f-file-save → C4 → D0 → D0b → D0c → D0d → C2e-hotfix → D0e → D0e-hotfix → D1a → D1b → D1c. Current stage: D1c (COMPLETE and LOCKED).
 
 ---
 
@@ -17828,6 +17828,74 @@ Automatic saves from AI actions, file saves, preview builds, and session-expiry 
 **Risks and invariants:**
 - Use stable internal source tags (short lowercase strings like `'ai'`, `'file-save'`, `'preview'`, `'expiry'`), not display strings, in stored labels
 - Preserve backward compatibility with existing stored labels (no source tag → fallback to `'Saved version'`)
+- Do not change backend behavior or history semantics
+- `PROJECT_FIRST_UX` remains the kill-switch posture
+- Preserve all existing save/restore behavior; only improve label clarity
+- No regression to: project-open hydration / restore discipline (PROJ-02-01); snapshot/history persistence behavior (PROJ-01-21); `.git/` exclusion from snapshots/restores (PROJ-02-03); static preview `/workspace/index.html` rule (PREV-02-02); stop-session cleanup behavior (OPS-01-04)
+
+---
+
+### PROJ-03-D1c — Add Heuristic Content-Related Automatic Version Labels Behind Feature Flag
+
+**Task ID:** PROJ-03-D1c
+**Family:** PROJ-03 (Project-First UX Redesign)
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/PROJ-03-D1c-CHECKPOINT.md`
+**Nature:** FRONTEND / UX LABEL IMPROVEMENT
+**Source:** Post-D1b gap: source-only labels like "AI changes saved" are still too generic when multiple nearby automatic versions exist in the history list. Deterministic heuristics derived from already-available saved context (changed file paths, file counts, trigger source) can make these labels more distinguishable without AI-generated labeling and without backend or schema changes.
+**Dependencies:** PROJ-03-D1b (COMPLETE and LOCKED)
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, improve automatic project-history labels using deterministic heuristics derived from existing saved context (changed file paths / file counts / trigger source) so nearby versions are easier to distinguish, without requiring AI-generated labels.
+
+**Why this exists:**
+D1b upgraded automatic version labels from the generic `'Saved version'` to source-specific labels (e.g. "AI changes saved", "File saved"). This is a meaningful step but still leaves repeated identical labels when many nearby automatic versions exist for the same source. The next smallest improvement is to enrich labels with deterministic heuristics that are already available at save time — for example, the most-recently changed file path or the number of files changed — without introducing any AI dependency, new async pipeline, backend change, or prompt design.
+
+**Bounded scope:**
+- Frontend only unless inspection proves a tiny backend-independent helper change is needed
+- Narrow changes allowed in:
+  - `frontend/components/workspace/workspace-snapshots.logic.ts`
+  - `frontend/lib/project-autosave.ts`
+  - `frontend/app/[locale]/app/page.tsx`
+  - `frontend/components/workspace/workspace-shell.tsx`
+  - `frontend/lib/recovery-copy.ts`
+  - Directly relevant tests only if needed
+
+**Behavior (when `PROJECT_FIRST_UX` is true):**
+- Automatic version labels are enriched with deterministic heuristic context available at save time
+- Labels become more distinguishable than the current source-only labels
+- Manual named saves continue to render the user-supplied name unchanged
+- Older source-tagged entries continue to render the existing source-based labels
+- Older unlabeled entries continue to fall back to `'Saved version'`
+- No AI call, no async naming pipeline
+- No backend/API/schema changes
+- No new route
+- No history redesign
+
+**Non-goals:**
+- No AI-generated version labels
+- No backend or schema changes
+- No diff viewer
+- No preview-before-restore
+- No true editor autosave-to-disk
+- No unload handling
+- No git-system redesign
+- No broader D1 history redesign beyond this labeling improvement
+- No C3 / C2d-unload work
+
+**Acceptance checks:**
+- Automatic version labels become more distinguishable than the current source-only labels
+- Manual named saves continue to render the user-supplied name unchanged
+- Older labels remain backward-compatible
+- With `PROJECT_FIRST_UX=false`, legacy behavior unchanged
+- Typecheck clean
+- Focused regression suite green
+- No introduced lint errors
+
+**Risks and invariants:**
+- Keep this deterministic and heuristic-only; do not introduce AI dependency or async naming flow
+- Preserve backward compatibility with existing stored labels
 - Do not change backend behavior or history semantics
 - `PROJECT_FIRST_UX` remains the kill-switch posture
 - Preserve all existing save/restore behavior; only improve label clarity

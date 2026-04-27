@@ -36,6 +36,7 @@ import type {
 } from './workspace-checkpoint-diff.logic';
 import type { WorkspaceExecutionFileActionState } from './workspace-ai-file-actions.logic';
 import {
+  parseProjectScopedSnapshotHint,
   parseProjectScopedSnapshotName,
   parseProjectScopedSnapshotSource,
   type WorkspaceSnapshotSummary,
@@ -5965,6 +5966,7 @@ function formatQuotaResetTimestamp(value: string | null | undefined): string {
 const PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX = '[project-id:';
 const PROJECT_SCOPED_SNAPSHOT_NAME_SEPARATOR = ':name:';
 const PROJECT_SCOPED_SNAPSHOT_SOURCE_SEPARATOR = ':source:';
+const PROJECT_SCOPED_SNAPSHOT_HINT_SEPARATOR = ':hint:';
 const PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX = ']';
 
 function parseProjectIdFromProjectScopedSnapshotLabel(label: string | null): string | null {
@@ -5985,6 +5987,7 @@ function parseProjectIdFromProjectScopedSnapshotLabel(label: string | null): str
   const separatorIndexCandidates = [
     rawProjectId.indexOf(PROJECT_SCOPED_SNAPSHOT_NAME_SEPARATOR),
     rawProjectId.indexOf(PROJECT_SCOPED_SNAPSHOT_SOURCE_SEPARATOR),
+    rawProjectId.indexOf(PROJECT_SCOPED_SNAPSHOT_HINT_SEPARATOR),
   ].filter((index) => index >= 0);
   const separatorIndex =
     separatorIndexCandidates.length > 0 ? Math.min(...separatorIndexCandidates) : -1;
@@ -5999,7 +6002,13 @@ function formatProjectHistoryFallbackLabel(label: string | null): string {
     return 'Saved version';
   }
 
-  return recoveryCopy.workspace.automaticVersionLabels[source];
+  const baseLabel = recoveryCopy.workspace.automaticVersionLabels[source];
+  const hint = parseProjectScopedSnapshotHint(label);
+  if (!hint) {
+    return baseLabel;
+  }
+
+  return `${baseLabel} · ${hint}`;
 }
 
 function formatProjectHistoryTimestamp(value: string): string {

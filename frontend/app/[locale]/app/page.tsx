@@ -188,6 +188,43 @@ function normalizeWorkspaceFileActions(rawActions: unknown): WorkspaceFileAction
   return rawActions.filter((item): item is WorkspaceFileAction => isWorkspaceFileAction(item));
 }
 
+function getWorkspacePathBasename(filePath: string | null | undefined): string | null {
+  if (typeof filePath !== 'string') {
+    return null;
+  }
+
+  const normalizedPath = filePath.trim();
+  if (!normalizedPath) {
+    return null;
+  }
+
+  const pathSegments = normalizedPath.split(/[\\/]/).filter(Boolean);
+  const basename = pathSegments.at(-1)?.trim() ?? normalizedPath;
+  return basename ? basename : normalizedPath;
+}
+
+function buildAutosaveHintFromFileActions(actions: WorkspaceFileAction[]): string | null {
+  const uniquePaths: string[] = [];
+  for (const action of actions) {
+    const normalizedPath = action.path.trim();
+    if (!normalizedPath || uniquePaths.includes(normalizedPath)) {
+      continue;
+    }
+    uniquePaths.push(normalizedPath);
+  }
+
+  const firstBasename = getWorkspacePathBasename(uniquePaths[0] ?? null);
+  if (!firstBasename) {
+    return null;
+  }
+
+  if (uniquePaths.length === 1) {
+    return firstBasename;
+  }
+
+  return `${firstBasename} +${uniquePaths.length - 1}`;
+}
+
 function toChatAssistantFailureMessage(input: {
   rawMessage?: string;
   fallbackMessage: string;
@@ -3577,6 +3614,10 @@ export default function AppPage() {
       sessionId: selectedSessionIdAtAutosave,
       projectId: selectedProjectId,
       source: 'ai',
+      hint:
+        buildAutosaveHintFromFileActions(
+          executionFileActionsByExecutionIdRef.current[executionId] ?? [],
+        ) ?? undefined,
       now: autosaveAttemptedAt,
       lastAutosaveAt: lastProjectAutosaveAtRef.current,
     });
@@ -3910,6 +3951,7 @@ export default function AppPage() {
           sessionId: selectedSessionId,
           projectId: selectedProjectId,
           source: 'file-save',
+          hint: getWorkspacePathBasename(selectedFilePath) ?? undefined,
           now: autosaveAttemptedAt,
           lastAutosaveAt: lastProjectAutosaveAtRef.current,
         });
@@ -4053,6 +4095,7 @@ export default function AppPage() {
           sessionId: selectedSessionId,
           projectId: selectedProjectId,
           source: 'preview',
+          hint: getWorkspacePathBasename(selectedFilePath) ?? undefined,
           now: autosaveAttemptedAt,
           lastAutosaveAt: lastProjectAutosaveAtRef.current,
         });

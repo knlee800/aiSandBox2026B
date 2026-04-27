@@ -16,6 +16,7 @@ export async function attemptProjectAutosave(args: {
   sessionId: string;
   projectId: string;
   source?: ProjectScopedSnapshotSource;
+  hint?: string;
   now: number;
   lastAutosaveAt: number | null;
   minIntervalMs?: number;
@@ -35,7 +36,7 @@ export async function attemptProjectAutosave(args: {
     const savedSnapshot = await saveWorkspaceSnapshot({
       token: args.token,
       sessionId: args.sessionId,
-      label: buildProjectScopedSnapshotLabel(args.projectId, args.source),
+      label: buildProjectScopedSnapshotLabel(args.projectId, args.source, args.hint),
       fetchImpl: args.fetchImpl,
     });
     return { status: 'saved', savedSnapshot };

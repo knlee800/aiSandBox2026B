@@ -41,7 +41,9 @@ interface ImportWorkspaceArchiveArgs {
 const PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX = '[project-id:';
 const PROJECT_SCOPED_SNAPSHOT_NAME_SEPARATOR = ':name:';
 const PROJECT_SCOPED_SNAPSHOT_SOURCE_SEPARATOR = ':source:';
+const PROJECT_SCOPED_SNAPSHOT_HINT_SEPARATOR = ':hint:';
 const PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX = ']';
+const PROJECT_SCOPED_SNAPSHOT_HINT_MAX_LENGTH = 40;
 
 export type ProjectScopedSnapshotSource =
   | 'ai'
@@ -76,9 +78,32 @@ function normalizeProjectScopedSnapshotSource(
   }
 }
 
+function normalizeProjectScopedSnapshotHint(hint: string | null | undefined): string | null {
+  if (typeof hint !== 'string') {
+    return null;
+  }
+
+  const normalizedHint = hint
+    .trim()
+    .replace(/\]/g, ' ')
+    .split(PROJECT_SCOPED_SNAPSHOT_NAME_SEPARATOR)
+    .join(' ')
+    .split(PROJECT_SCOPED_SNAPSHOT_SOURCE_SEPARATOR)
+    .join(' ')
+    .split(PROJECT_SCOPED_SNAPSHOT_HINT_SEPARATOR)
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, PROJECT_SCOPED_SNAPSHOT_HINT_MAX_LENGTH)
+    .trim();
+
+  return normalizedHint ? normalizedHint : null;
+}
+
 export function buildProjectScopedSnapshotLabel(
   projectId: string,
   source?: ProjectScopedSnapshotSource,
+  hint?: string,
 ): string {
   const normalizedProjectId = projectId.trim();
   const normalizedSource = normalizeProjectScopedSnapshotSource(source);
@@ -86,7 +111,12 @@ export function buildProjectScopedSnapshotLabel(
     return `${PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX}${normalizedProjectId}${PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX}`;
   }
 
-  return `${PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX}${normalizedProjectId}${PROJECT_SCOPED_SNAPSHOT_SOURCE_SEPARATOR}${normalizedSource}${PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX}`;
+  const normalizedHint = normalizeProjectScopedSnapshotHint(hint);
+  if (!normalizedHint) {
+    return `${PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX}${normalizedProjectId}${PROJECT_SCOPED_SNAPSHOT_SOURCE_SEPARATOR}${normalizedSource}${PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX}`;
+  }
+
+  return `${PROJECT_SCOPED_SNAPSHOT_LABEL_PREFIX}${normalizedProjectId}${PROJECT_SCOPED_SNAPSHOT_SOURCE_SEPARATOR}${normalizedSource}${PROJECT_SCOPED_SNAPSHOT_HINT_SEPARATOR}${normalizedHint}${PROJECT_SCOPED_SNAPSHOT_LABEL_SUFFIX}`;
 }
 
 function normalizeProjectScopedSnapshotName(name: string): string | null {
@@ -98,6 +128,7 @@ function parseProjectScopedSnapshotLabelParts(label: string | null): {
   projectId: string;
   name: string | null;
   source: ProjectScopedSnapshotSource | null;
+  hint: string | null;
 } | null {
   if (!label) {
     return null;
@@ -141,12 +172,23 @@ function parseProjectScopedSnapshotLabelParts(label: string | null): {
       : rawBody.slice(
           sourceSeparatorIndex + PROJECT_SCOPED_SNAPSHOT_SOURCE_SEPARATOR.length,
         );
+  const hintSeparatorIndex =
+    rawSource === null ? -1 : rawSource.indexOf(PROJECT_SCOPED_SNAPSHOT_HINT_SEPARATOR);
+  const rawHint =
+    rawSource === null || hintSeparatorIndex < 0
+      ? null
+      : rawSource.slice(hintSeparatorIndex + PROJECT_SCOPED_SNAPSHOT_HINT_SEPARATOR.length);
 
   return {
     projectId,
     name: rawName === null ? null : normalizeProjectScopedSnapshotName(rawName),
     source:
-      rawSource === null ? null : normalizeProjectScopedSnapshotSource(rawSource),
+      rawSource === null
+        ? null
+        : normalizeProjectScopedSnapshotSource(
+            hintSeparatorIndex >= 0 ? rawSource.slice(0, hintSeparatorIndex) : rawSource,
+          ),
+    hint: rawHint === null ? null : normalizeProjectScopedSnapshotHint(rawHint),
   };
 }
 
@@ -174,6 +216,10 @@ export function parseProjectScopedSnapshotSource(
   label: string | null,
 ): ProjectScopedSnapshotSource | null {
   return parseProjectScopedSnapshotLabelParts(label)?.source ?? null;
+}
+
+export function parseProjectScopedSnapshotHint(label: string | null): string | null {
+  return parseProjectScopedSnapshotLabelParts(label)?.hint ?? null;
 }
 
 export function resolveProjectScopedLatestSnapshotId(args: {
