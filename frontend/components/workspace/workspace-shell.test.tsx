@@ -939,6 +939,49 @@ describe('workspace shell component', () => {
     assert.ok(snapshotBIndex < snapshotCIndex);
   });
 
+  test('renders versions entry point in project history surface behind feature flag', () => {
+    const entryPoint = renderWorkspaceShellElementByTestId(
+      'history-project-history-entrypoint',
+      {
+        projectFirstUxEnabled: true,
+        selectedProjectId: 'project-1',
+        workspaceSnapshots: projectHistorySnapshots,
+      },
+    );
+
+    assert.ok(entryPoint);
+    assert.equal(entryPoint.props.children, 'Versions');
+  });
+
+  test('renders last protected indicator from latest project history row', () => {
+    const indicator = renderWorkspaceShellElementByTestId(
+      'history-project-history-last-protected',
+      {
+        projectFirstUxEnabled: true,
+        selectedProjectId: 'project-1',
+        workspaceSnapshots: projectHistorySnapshots,
+      },
+    );
+
+    assert.ok(indicator);
+    assert.ok(Array.isArray(indicator.props.children));
+    assert.equal(indicator.props.children[0], 'Last protected');
+    assert.match(renderToStaticMarkup(indicator), /2026/);
+  });
+
+  test('does not render versions entry point or last protected indicator when feature flag is off', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: false,
+      selectedProjectId: 'project-1',
+      workspaceSnapshots: projectHistorySnapshots,
+    });
+
+    assert.doesNotMatch(html, /history-project-history-entrypoint/);
+    assert.doesNotMatch(html, /history-project-history-last-protected/);
+    assert.doesNotMatch(html, />Versions</);
+    assert.doesNotMatch(html, />Last protected</);
+  });
+
   test('renders project history empty state when selected project has no matching snapshots', () => {
     const html = renderWorkspaceShell({
       projectFirstUxEnabled: true,

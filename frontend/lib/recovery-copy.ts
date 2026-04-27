@@ -32,6 +32,8 @@ export const recoveryCopy = {
       'Your project stays recoverable. If the workspace disconnects, reopen the project to continue.',
     loading: 'Loading your project and preparing workspace tools.',
     unavailable: 'We could not load your project workspace.',
+    versionsEntryPoint: 'Versions',
+    lastProtected: 'Last protected',
     noProjectHistoryYet: 'No history yet for this project.',
     restoreSnapshotConfirm: 'Restore this version? Your current workspace will be replaced.',
     saveNamedSnapshotPrompt: 'Name this saved version:',

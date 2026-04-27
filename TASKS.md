@@ -6909,9 +6909,9 @@ Prevent project snapshots/restores from including `.git/` internals so restoring
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2e-hotfix COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary — container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED; D0 COMPLETE and LOCKED; D0b COMPLETE and LOCKED; D0c COMPLETE and LOCKED; D0d COMPLETE and LOCKED; D0e COMPLETE and LOCKED; D0e-hotfix COMPLETE and LOCKED. D1/C3/C2d-unload deferred and not yet registered.
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2e-hotfix COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary — container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED; D0 COMPLETE and LOCKED; D0b COMPLETE and LOCKED; D0c COMPLETE and LOCKED; D0d COMPLETE and LOCKED; D0e COMPLETE and LOCKED; D0e-hotfix COMPLETE and LOCKED; D1a COMPLETE and LOCKED. C3/C2d-unload deferred and not yet registered.
 
-**Current stage:** PROJ-03-D0e-hotfix (COMPLETE and LOCKED)
+**Current stage:** PROJ-03-D1a (COMPLETE and LOCKED)
 
 ---
 
@@ -8814,6 +8814,67 @@ Behind `PROJECT_FIRST_UX`, fix the D0e restore-path bug so a tab-scoped unsaved 
 - No regression to: project-open hydration / restore discipline; snapshot/history persistence behavior; `.git/` exclusion from snapshots/restores; static preview `/workspace/index.html` rule; stop-session cleanup behavior
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-D0e-hotfix.
+
+---
+
+### PROJ-03-D1a — Add Unified Versions Entry Point And Last-Protected Indicator Behind Feature Flag
+
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/PROJ-03-D1a-CHECKPOINT.md`
+**Nature:** FRONTEND / UX DISCOVERABILITY
+**Source:** Post-D0e-hotfix gap: the app now has multiple protection mechanisms (project history, named saves, restore, autosaves, AI autosave hotfix, tab-scoped draft persistence) but no single obvious user-facing entry point to discover them. Users lack a clear "I can always go back" reassurance signal.
+**Dependencies:** PROJ-03-D0e-hotfix (COMPLETE and LOCKED)
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, add one obvious user-facing "Versions" / "History" entry point and one small "last protected" reassurance indicator so users can discover the existing version/history protection model without changing backend behavior or redesigning the entire project history UX.
+
+**Bounded scope:**
+- Frontend only
+- Narrow changes allowed in:
+  - `frontend/components/workspace/workspace-shell.tsx`
+  - `frontend/lib/recovery-copy.ts`
+  - directly relevant tests only if needed
+- Behavior:
+  - add one clear History / Versions entry point in the existing project-first workspace surface
+  - add one small visible reassurance indicator (e.g. "last protected" / "last saved version") grounded in already-available history state
+  - reuse existing project history / named save / restore surfaces and data
+  - no backend/API/schema changes
+  - no new route
+  - no full history redesign
+  - no diff/preview flow
+  - keep `PROJECT_FIRST_UX` as the gate
+
+**Non-goals:**
+- No dedicated /projects or /versions landing page
+- No diff viewer
+- No preview-before-restore
+- No true editor autosave-to-disk
+- No unload handling
+- No backend changes
+- No git-system redesign
+- No broader D1 redesign beyond this small discoverability/reassurance slice
+- No C3 / C2d-unload work
+- No Phase D/E work
+
+**Acceptance checks:**
+- With `PROJECT_FIRST_UX=true`, users can clearly find the existing history/versions surface from an obvious entry point
+- With `PROJECT_FIRST_UX=true`, a small "last protected" style reassurance indicator is visible and grounded in existing state
+- With `PROJECT_FIRST_UX=false`, legacy behavior unchanged
+- Existing save/history/restore behavior unchanged
+- Typecheck clean
+- Focused regression suite green
+- No introduced lint errors
+
+**Risks and invariants:**
+- Keep this UX-only and additive
+- Do not invent misleading reassurance text not backed by actual existing state
+- Reuse existing history state rather than adding new backend calls if possible
+- Do not change actual save/restore semantics in this slice
+- `PROJECT_FIRST_UX` remains the kill-switch posture
+- Preserve all existing protection behavior; only improve discoverability and confidence
+- No regression to: project-open hydration / restore discipline; snapshot/history persistence behavior; `.git/` exclusion from snapshots/restores; static preview `/workspace/index.html` rule; stop-session cleanup behavior
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PROJ-03-D1a.
 
 ---
 

@@ -15670,7 +15670,7 @@ PROJ-02-02 isolated the real 500 cause:
 
 ## PROJ-03 — Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2e-hotfix COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary — container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED; D0 COMPLETE and LOCKED; D0b COMPLETE and LOCKED; D0c COMPLETE and LOCKED; D0d COMPLETE and LOCKED; D0e COMPLETE and LOCKED; D0e-hotfix COMPLETE and LOCKED. D1/C3/C2d-unload deferred and not yet registered. Completed order: A0 → A1 → A3 → A2a → A2b → B0 → B1 → B2a → B2b → B3a → B4a → B4b → C1a → C1b-pre → C1b-cta → C2a-rate-limit → C2b-trigger-preview → C2c-label-format → C2c-handler → C2c-cta-handler-pre → C2c-cta-button → C2c-display → C2d-expiry-warn → C2e → C2f-file-save → C4 → D0 → D0b → D0c → D0d → C2e-hotfix → D0e → D0e-hotfix. Current stage: D0e-hotfix (COMPLETE and LOCKED).
+**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2e-hotfix COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary — container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED; D0 COMPLETE and LOCKED; D0b COMPLETE and LOCKED; D0c COMPLETE and LOCKED; D0d COMPLETE and LOCKED; D0e COMPLETE and LOCKED; D0e-hotfix COMPLETE and LOCKED; D1a COMPLETE and LOCKED. C3/C2d-unload deferred and not yet registered. Completed order: A0 → A1 → A3 → A2a → A2b → B0 → B1 → B2a → B2b → B3a → B4a → B4b → C1a → C1b-pre → C1b-cta → C2a-rate-limit → C2b-trigger-preview → C2c-label-format → C2c-handler → C2c-cta-handler-pre → C2c-cta-button → C2c-display → C2d-expiry-warn → C2e → C2f-file-save → C4 → D0 → D0b → D0c → D0d → C2e-hotfix → D0e → D0e-hotfix → D1a. Current stage: D1a (COMPLETE and LOCKED).
 
 ---
 
@@ -17697,6 +17697,69 @@ D0e introduced correct write semantics but the one-shot consumption pattern and 
 - Restore must remain conservative and context-matched
 - `PROJECT_FIRST_UX` remains the kill-switch posture
 - Preserve all existing behavior except fixing the restore-path race/consumption bug
+- No regression to: project-open hydration / restore discipline (PROJ-02-01); snapshot/history persistence behavior (PROJ-01-21); `.git/` exclusion from snapshots/restores (PROJ-02-03); static preview `/workspace/index.html` rule (PREV-02-02); stop-session cleanup behavior (OPS-01-04)
+
+---
+
+### PROJ-03-D1a — Add Unified Versions Entry Point And Last-Protected Indicator Behind Feature Flag
+
+**Task ID:** PROJ-03-D1a
+**Family:** PROJ-03 (Project-First UX Redesign)
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/PROJ-03-D1a-CHECKPOINT.md`
+**Nature:** FRONTEND / UX DISCOVERABILITY
+**Source:** Post-D0e-hotfix gap: the app now has multiple protection mechanisms (project history, named saves, restore, autosaves, AI autosave hotfix, tab-scoped draft persistence) but no single obvious user-facing entry point to discover them. Users lack a clear "I can always go back" reassurance signal. This is the smallest UX-only slice to close that discoverability gap without redesigning the entire history surface.
+**Dependencies:** PROJ-03-D0e-hotfix (COMPLETE and LOCKED)
+
+**Objective:**
+Behind `PROJECT_FIRST_UX`, add one obvious user-facing "Versions" / "History" entry point and one small "last protected" reassurance indicator so users can discover the existing version/history protection model without changing backend behavior or redesigning the entire project history UX.
+
+**Why this exists:**
+The platform now protects user work through multiple layered mechanisms (project history, named saves, restore, autosaves, AI autosave cadence, tab-scoped editor drafts). However, the user-facing surfaces for these protections are scattered. A new user has no single place to see "your work is safe, here's how to go back." This slice adds the minimal UX needed to make the existing protections discoverable and reassuring, without building a full version-history redesign.
+
+**Bounded scope:**
+- `frontend/components/workspace/workspace-shell.tsx` — add one clear History / Versions entry point in the existing project-first workspace surface; add one small visible reassurance indicator grounded in already-available history state
+- `frontend/lib/recovery-copy.ts` — add any needed wording constants for the entry point label and reassurance indicator
+- Directly relevant tests only if needed
+
+**Behavior (when `PROJECT_FIRST_UX` is true):**
+- One clear History / Versions entry point visible in the project-first workspace surface
+- One small visible reassurance indicator (e.g. "last protected" / "last saved version" / equivalent) grounded in already-available history state
+- Reuse existing project history / named save / restore surfaces and data
+- No backend/API/schema changes
+- No new route
+- No full history redesign
+- No diff/preview flow
+
+**Non-goals:**
+- No dedicated /projects or /versions landing page
+- No diff viewer
+- No preview-before-restore
+- No true editor autosave-to-disk
+- No unload handling
+- No backend changes
+- No git-system redesign
+- No broader D1 redesign beyond this small discoverability/reassurance slice
+- No C3 / C2d-unload work
+- No Phase D/E work
+
+**Acceptance checks:**
+- With `PROJECT_FIRST_UX=true`, users can clearly find the existing history/versions surface from an obvious entry point
+- With `PROJECT_FIRST_UX=true`, a small "last protected" style reassurance indicator is visible and grounded in existing state
+- With `PROJECT_FIRST_UX=false`, legacy behavior unchanged
+- Existing save/history/restore behavior unchanged
+- Typecheck clean
+- Focused regression suite green
+- No introduced lint errors
+
+**Risks and invariants:**
+- Keep this UX-only and additive
+- Do not invent misleading reassurance text not backed by actual existing state
+- Reuse existing history state rather than adding new backend calls if possible
+- Do not change actual save/restore semantics in this slice
+- `PROJECT_FIRST_UX` remains the kill-switch posture
+- Preserve all existing protection behavior; only improve discoverability and confidence
 - No regression to: project-open hydration / restore discipline (PROJ-02-01); snapshot/history persistence behavior (PROJ-01-21); `.git/` exclusion from snapshots/restores (PROJ-02-03); static preview `/workspace/index.html` rule (PREV-02-02); stop-session cleanup behavior (OPS-01-04)
 
 ---

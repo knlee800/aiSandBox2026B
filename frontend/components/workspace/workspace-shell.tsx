@@ -1242,10 +1242,20 @@ function ProjectHistoryPanel(props: {
     return null;
   }
 
+  const latestHistoryRow = props.rows[0] ?? null;
+
   return (
     <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="history-project-history-surface">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-xs font-semibold text-gray-700">Project History</p>
+        <div className="flex items-center gap-2">
+          <p className="text-xs font-semibold text-gray-700">Project History</p>
+          <span
+            className="rounded-full border border-violet-200 bg-violet-50 px-2 py-0.5 text-[11px] font-medium text-violet-700"
+            data-testid="history-project-history-entrypoint"
+          >
+            {recoveryCopy.workspace.versionsEntryPoint}
+          </span>
+        </div>
         {props.onSave ? (
           <button
             type="button"
@@ -1257,6 +1267,17 @@ function ProjectHistoryPanel(props: {
           </button>
         ) : null}
       </div>
+      {latestHistoryRow ? (
+        <p
+          className="mt-2 text-[11px] text-gray-500"
+          data-testid="history-project-history-last-protected"
+        >
+          {recoveryCopy.workspace.lastProtected}:{' '}
+          <time dateTime={latestHistoryRow.createdAt}>
+            {formatProjectHistoryTimestamp(latestHistoryRow.createdAt)}
+          </time>
+        </p>
+      ) : null}
       {props.rows.length === 0 ? (
         <p className="mt-2 text-[11px] text-gray-500" data-testid="history-project-history-empty">
           {recoveryCopy.workspace.noProjectHistoryYet}
