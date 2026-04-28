@@ -103,6 +103,10 @@ import {
   type WorkspaceProjectSummary,
 } from '@/components/workspace/workspace-projects.logic';
 import {
+  loadWorkspaces,
+  type Workspace,
+} from '@/components/workspace/workspace-workspaces.logic';
+import {
   detectBuildToolchainUnavailable,
   resolveWorkspaceBuildCommand,
   WORKSPACE_BUILD_TARGET_OPTIONS,
@@ -119,6 +123,7 @@ const HIDDEN_UNUSABLE_SESSIONS_STORAGE_KEY = 'workspace_hidden_unusable_sessions
 const CHAT_THREAD_STORAGE_KEY_PREFIX = 'workspace_chat_thread';
 const TAB_SELECTED_SESSION_STORAGE_KEY = 'workspace_tab_selected_session_id';
 const TAB_SELECTED_PROJECT_STORAGE_KEY = 'workspace_tab_selected_project_id';
+const TAB_SELECTED_WORKSPACE_STORAGE_KEY = 'workspace_tab_selected_workspace_id';
 const TAB_EDITOR_DRAFT_STORAGE_KEY = 'workspace_tab_editor_draft';
 const CHAT_EXECUTION_POLL_INTERVAL_MS = 3000;
 const PROJECT_OPEN_FILE_REFRESH_RETRY_DELAY_MS = 250;
@@ -179,6 +184,36 @@ function parseSelectedChatModelOption(value: string): {
     model: fallback.model,
     optionValue: fallback.value,
   };
+}
+
+function resolveSelectedWorkspaceId(args: {
+  workspaces: Workspace[];
+  currentSelectedWorkspaceId: string | null;
+  seededWorkspaceId: string | null;
+}): string | null {
+  const normalizedCurrentSelectedWorkspaceId =
+    typeof args.currentSelectedWorkspaceId === 'string' && args.currentSelectedWorkspaceId.trim()
+      ? args.currentSelectedWorkspaceId.trim()
+      : null;
+  if (
+    normalizedCurrentSelectedWorkspaceId &&
+    args.workspaces.some((workspace) => workspace.id === normalizedCurrentSelectedWorkspaceId)
+  ) {
+    return normalizedCurrentSelectedWorkspaceId;
+  }
+
+  const normalizedSeededWorkspaceId =
+    typeof args.seededWorkspaceId === 'string' && args.seededWorkspaceId.trim()
+      ? args.seededWorkspaceId.trim()
+      : null;
+  if (
+    normalizedSeededWorkspaceId &&
+    args.workspaces.some((workspace) => workspace.id === normalizedSeededWorkspaceId)
+  ) {
+    return normalizedSeededWorkspaceId;
+  }
+
+  return args.workspaces.find((workspace) => workspace.isDefault)?.id ?? args.workspaces[0]?.id ?? null;
 }
 
 function normalizeWorkspaceFileActions(rawActions: unknown): WorkspaceFileAction[] {
@@ -354,6 +389,8 @@ export default function AppPage() {
   >('idle');
   const [snapshotActionMessage, setSnapshotActionMessage] = useState<string | null>(null);
   const [snapshotActionError, setSnapshotActionError] = useState<string | null>(null);
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string | null>(null);
   const [workspaceProjects, setWorkspaceProjects] = useState<WorkspaceProjectSummary[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [selectedProjectVisibility, setSelectedProjectVisibility] = useState<'private' | 'public'>(
@@ -418,6 +455,7 @@ export default function AppPage() {
   const projectOpenInProgressRef = useRef(false);
   const coldMountSeededSessionIdRef = useRef<string | null>(null);
   const coldMountSeededProjectIdRef = useRef<string | null>(null);
+  const coldMountSeededWorkspaceIdRef = useRef<string | null>(null);
   const coldMountEditorDraftRef = useRef<{
     projectId: string;
     sessionId: string;
@@ -486,6 +524,8 @@ export default function AppPage() {
     localStorage.removeItem('userId');
     setAuthLoading(true);
     setUserId(null);
+    setWorkspaces([]);
+    setSelectedWorkspaceId(null);
     setSessions([]);
     setSelectedSessionId(null);
     setSessionError(null);
@@ -513,6 +553,8 @@ export default function AppPage() {
         sessionStorage.getItem(TAB_SELECTED_SESSION_STORAGE_KEY) || null;
       coldMountSeededProjectIdRef.current =
         sessionStorage.getItem(TAB_SELECTED_PROJECT_STORAGE_KEY) || null;
+      coldMountSeededWorkspaceIdRef.current =
+        sessionStorage.getItem(TAB_SELECTED_WORKSPACE_STORAGE_KEY) || null;
       const storedEditorDraft = sessionStorage.getItem(TAB_EDITOR_DRAFT_STORAGE_KEY);
       if (!storedEditorDraft) {
         coldMountEditorDraftRef.current = null;
@@ -546,12 +588,13 @@ export default function AppPage() {
     } else {
       coldMountSeededSessionIdRef.current = null;
       coldMountSeededProjectIdRef.current = null;
+      coldMountSeededWorkspaceIdRef.current = null;
       coldMountEditorDraftRef.current = null;
     }
     void loadSessions(token);
     void loadDashboardSlice(token);
     if (PROJECT_FIRST_UX) {
-      void loadWorkspaceProjectsForUser(token);
+      void loadWorkspacesForUser(token);
       void loadPublicWorkspaceProjectsList();
     }
   }, [locale, router]);
@@ -619,6 +662,19 @@ export default function AppPage() {
 
     sessionStorage.removeItem(TAB_SELECTED_SESSION_STORAGE_KEY);
   }, [selectedSessionId]);
+
+  useEffect(() => {
+    if (!PROJECT_FIRST_UX) {
+      return;
+    }
+
+    if (selectedWorkspaceId) {
+      sessionStorage.setItem(TAB_SELECTED_WORKSPACE_STORAGE_KEY, selectedWorkspaceId);
+      return;
+    }
+
+    sessionStorage.removeItem(TAB_SELECTED_WORKSPACE_STORAGE_KEY);
+  }, [selectedWorkspaceId]);
 
   useEffect(() => {
     if (!PROJECT_FIRST_UX) {
@@ -715,6 +771,7 @@ export default function AppPage() {
     setSnapshotActionError(null);
     setWorkspaceProjects([]);
     setSelectedProjectId(null);
+    setSelectedProjectVisibility('private');
     setProjectNameInput('');
     setProjectListState('idle');
     setProjectActionState('idle');
@@ -730,10 +787,26 @@ export default function AppPage() {
 
     void loadCheckpoints(token, selectedSessionId);
     void loadWorkspaceSnapshotsForUser(token);
-    void loadWorkspaceProjectsForUser(token);
     void loadPublicWorkspaceProjectsList();
     void loadDashboardSlice(token);
   }, [selectedSessionId]);
+
+  useEffect(() => {
+    if (!PROJECT_FIRST_UX) {
+      return;
+    }
+
+    if (projectOpenInProgressRef.current) {
+      return;
+    }
+
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      return;
+    }
+
+    void loadWorkspaceProjectsForUser(token, selectedWorkspaceId);
+  }, [selectedSessionId, selectedWorkspaceId]);
 
   useEffect(() => {
     if (!chatExecutionId || (chatRequestState !== 'queued' && chatRequestState !== 'running')) {
@@ -1004,6 +1077,35 @@ export default function AppPage() {
     return data;
   }
 
+  async function loadWorkspacesForUser(token: string): Promise<void> {
+    setProjectActionError(null);
+    try {
+      const loadedWorkspaces = await loadWorkspaces({ token });
+      setWorkspaces(loadedWorkspaces);
+      setSelectedWorkspaceId((currentSelectedWorkspaceId) => {
+        const seededWorkspaceId = PROJECT_FIRST_UX ? coldMountSeededWorkspaceIdRef.current : null;
+        coldMountSeededWorkspaceIdRef.current = null;
+        return resolveSelectedWorkspaceId({
+          workspaces: loadedWorkspaces,
+          currentSelectedWorkspaceId,
+          seededWorkspaceId,
+        });
+      });
+    } catch (error) {
+      setWorkspaces([]);
+      setSelectedWorkspaceId(null);
+      setWorkspaceProjects([]);
+      setSelectedProjectId(null);
+      setSelectedProjectVisibility('private');
+      setProjectListState('error');
+      setProjectActionError(
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : 'Failed to load workspaces.',
+      );
+    }
+  }
+
   async function handleCreateSession(): Promise<void> {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -1162,11 +1264,23 @@ export default function AppPage() {
     }
   }
 
-  async function loadWorkspaceProjectsForUser(token: string): Promise<void> {
+  async function loadWorkspaceProjectsForUser(
+    token: string,
+    workspaceId: string | null = selectedWorkspaceId,
+  ): Promise<void> {
+    const normalizedWorkspaceId = workspaceId?.trim() ? workspaceId.trim() : null;
+    if (!normalizedWorkspaceId) {
+      setWorkspaceProjects([]);
+      setSelectedProjectId(null);
+      setSelectedProjectVisibility('private');
+      setProjectListState('ready');
+      return;
+    }
+
     setProjectListState('loading');
     setProjectActionError(null);
     try {
-      const projects = await loadWorkspaceProjects({ token });
+      const projects = await loadWorkspaceProjects({ token, workspaceId: normalizedWorkspaceId });
       setWorkspaceProjects(projects);
       setSelectedProjectId((currentSelectedProjectId) => {
         if (currentSelectedProjectId && projects.some((project) => project.id === currentSelectedProjectId)) {
@@ -1215,6 +1329,16 @@ export default function AppPage() {
     setSelectedProjectVisibility(visibility);
   }
 
+  function handleWorkspaceSelection(workspaceId: string): void {
+    const normalizedWorkspaceId = workspaceId.trim() ? workspaceId.trim() : null;
+    setSelectedWorkspaceId(normalizedWorkspaceId);
+    setSelectedProjectId(null);
+    setSelectedProjectVisibility('private');
+    setProjectActionState('idle');
+    setProjectActionMessage(null);
+    setProjectActionError(null);
+  }
+
   async function handleCreateWorkspaceProject(): Promise<void> {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -1236,6 +1360,7 @@ export default function AppPage() {
       const createdProject = await createWorkspaceProject({
         token,
         name: trimmedName,
+        workspaceId: selectedWorkspaceId ?? undefined,
       });
       if (PROJECT_FIRST_UX) {
         setSelectedProjectId(createdProject.id);
@@ -1261,7 +1386,10 @@ export default function AppPage() {
           setSelectedSessionId((current) => current ?? openSessionId);
 
           await loadWorkspaceSnapshotsForUser(token);
-          await loadWorkspaceProjectsForUser(token);
+          await loadWorkspaceProjectsForUser(
+            token,
+            createdProject.workspaceId ?? selectedWorkspaceId,
+          );
           await loadPublicWorkspaceProjectsList();
           await loadDashboardSlice(token);
 
@@ -1300,7 +1428,10 @@ export default function AppPage() {
           console.error('Failed to auto-save initial project snapshot:', error);
         }
       }
-      await loadWorkspaceProjectsForUser(token);
+      await loadWorkspaceProjectsForUser(
+        token,
+        createdProject.workspaceId ?? selectedWorkspaceId,
+      );
       setSelectedProjectId(createdProject.id);
       setSelectedProjectVisibility(createdProject.visibility === 'public' ? 'public' : 'private');
       setProjectNameInput('');
@@ -4171,6 +4302,9 @@ export default function AppPage() {
       projectActionState={projectActionState}
       projectActionMessage={projectActionMessage}
       projectActionError={projectActionError}
+      workspaces={workspaces}
+      selectedWorkspaceId={selectedWorkspaceId}
+      onSelectWorkspaceId={handleWorkspaceSelection}
       workspaceProjects={workspaceProjects}
       selectedProjectId={selectedProjectId}
       selectedProjectVisibility={selectedProjectVisibility}

@@ -41,6 +41,22 @@ describe('workspace-projects.logic', () => {
     assert.equal(projects[0].name, 'Main Project');
   });
 
+  test('loadWorkspaceProjects forwards optional workspaceId query parameter', async () => {
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    const fetchImpl = async (url: string, init?: RequestInit): Promise<Response> => {
+      calls.push({ url, init });
+      return new Response(JSON.stringify([]), { status: 200 });
+    };
+
+    await loadWorkspaceProjects({
+      token: 'token',
+      workspaceId: ' workspace-2 ',
+      fetchImpl: fetchImpl as typeof fetch,
+    });
+
+    assert.equal(calls[0].url, '/api/projects?workspaceId=workspace-2');
+  });
+
   test('createWorkspaceProject posts name and returns project', async () => {
     const calls: Array<{ url: string; init?: RequestInit }> = [];
     const fetchImpl = async (url: string, init?: RequestInit): Promise<Response> => {

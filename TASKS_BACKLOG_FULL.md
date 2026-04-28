@@ -20239,15 +20239,16 @@ The feature/spec wave, release-readiness wave, and deployment-readiness wave are
 
 ## WS — Workspace Rollout
 
-**Family status:** ACTIVE — WS-01 COMPLETE and LOCKED; WS-02 COMPLETE and LOCKED; WS-03 COMPLETE and LOCKED; WS-04 COMPLETE and LOCKED
+**Family status:** ACTIVE — WS-01 COMPLETE and LOCKED; WS-02 COMPLETE and LOCKED; WS-03 COMPLETE and LOCKED; WS-04 COMPLETE and LOCKED; WS-05 COMPLETE and LOCKED
 
-**Current stage:** WS-04 (COMPLETE and LOCKED)
+**Current stage:** WS-05 (COMPLETE and LOCKED)
 
 **Ordered slices (registered so far):**
 1. WS-01 — Workspace Schema, Entity, And Backfill Foundation (COMPLETE and LOCKED)
 2. WS-02 — Workspace CRUD API Foundation (COMPLETE and LOCKED)
 3. WS-03 — Project Create/List Workspace-Awareness Foundation (COMPLETE and LOCKED)
 4. WS-04 — Frontend Workspace Types And API Helpers (COMPLETE and LOCKED)
+5. WS-05 — Workspace Selector And Filtered Project List (COMPLETE and LOCKED)
 
 ---
 
@@ -20554,6 +20555,67 @@ Add the minimal frontend type definitions and API helper functions required to c
 **Dependencies:** WS-03 (Complete and Locked)
 
 **Reference:** See TASKS.md -> WS-04 for active-task summary.
+
+---
+
+### WS-05: Workspace Selector And Filtered Project List
+
+**Task ID:** WS-05
+**Family:** WS (Workspace Rollout)
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** FRONTEND / UX — workspace selector and project list filtering
+**Source:** WS v1 rollout — fifth slice; follows WS-04 frontend plumbing
+**Checkpoint:** `docs/WS-05-CHECKPOINT.md`
+
+**Objective:**
+Add the first visible workspace UX by loading the user's workspaces, showing a workspace selector in the existing project-first project surface, persisting the selected workspace in lightweight frontend state/storage, and filtering the visible project list to the selected workspace. Stop before workspace management UI and before moving projects between workspaces.
+
+**Bounded scope:**
+- Frontend only
+- Allowed files/surfaces:
+  - `page.tsx`
+  - `workspace-shell.tsx`
+  - `workspace-workspaces.logic.ts` / `workspace-projects.logic.ts` only if minimal helper adjustments are needed
+  - directly relevant tests
+- Behavior:
+  - load workspaces for the current user
+  - determine/select an active workspace (defaulting sensibly, likely the default/personal workspace)
+  - render a workspace selector in the existing project-first project surface
+  - filter project loading/list display to the active workspace
+  - persist selected workspace in lightweight frontend storage if appropriate
+  - no workspace create/rename/delete UI yet
+  - no move-project-between-workspaces yet
+  - no broader redesign beyond this selector/filter slice
+
+**Non-goals:**
+- No workspace create/rename/delete UI yet
+- No move-project-between-workspaces yet
+- No nested workspaces
+- No members / roles / billing / shared integrations
+- No session-to-workspace relationship
+- No D1/PROJ-03 work
+- No Phase D/E or unrelated work
+
+**Acceptance checks:**
+- User can see and switch between their workspaces in the project-first surface
+- Project list reflects the selected workspace only
+- Selected workspace persists appropriately across refresh/navigation if chosen for v1
+- Existing project open/create behavior continues working within the selected workspace
+- No workspace management UI appears
+- Relevant frontend typecheck/tests pass
+
+**Risks / invariants:**
+- Keep to selector/filter UX only — no workspace CRUD management UI
+- Preserve existing project-open/session/history behavior
+- Keep workspace model personal-only in v1
+- Preserve compatibility with current backend response shapes
+- Keep scope minimal so WS-06 can build on top cleanly
+
+**Dependencies:** WS-04 (Complete and Locked)
+
+**Reference:** See TASKS.md -> WS-05 for active-task summary.
 
 ---
 

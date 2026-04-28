@@ -46,6 +46,7 @@ import type {
   WorkspacePublicProjectDetail,
   WorkspacePublicProjectSummary,
 } from './workspace-projects.logic';
+import type { Workspace } from './workspace-workspaces.logic';
 
 const projectFirstUxAnchors = {
   enabled: PROJECT_FIRST_UX,
@@ -81,6 +82,9 @@ interface WorkspaceShellProps {
   projectActionState?: 'idle' | 'creating' | 'opening' | 'success' | 'error';
   projectActionMessage?: string | null;
   projectActionError?: string | null;
+  workspaces?: Workspace[];
+  selectedWorkspaceId?: string | null;
+  onSelectWorkspaceId?: (workspaceId: string) => void;
   workspaceProjects?: WorkspaceProjectSummary[];
   selectedProjectId?: string | null;
   projectNameInput?: string;
@@ -743,6 +747,9 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
               actionState={props.projectActionState ?? 'idle'}
               actionMessage={props.projectActionMessage ?? null}
               actionError={props.projectActionError ?? null}
+              workspaces={props.workspaces ?? []}
+              selectedWorkspaceId={props.selectedWorkspaceId ?? null}
+              onSelectWorkspaceId={props.onSelectWorkspaceId}
               projects={props.workspaceProjects ?? []}
               selectedProjectId={props.selectedProjectId ?? null}
               projectNameInput={props.projectNameInput ?? ''}
@@ -859,6 +866,9 @@ function HistoryProjectPanel(props: {
   actionState: 'idle' | 'creating' | 'opening' | 'success' | 'error';
   actionMessage: string | null;
   actionError: string | null;
+  workspaces: Workspace[];
+  selectedWorkspaceId: string | null;
+  onSelectWorkspaceId?: (workspaceId: string) => void;
   projects: WorkspaceProjectSummary[];
   selectedProjectId: string | null;
   projectNameInput: string;
@@ -882,6 +892,7 @@ function HistoryProjectPanel(props: {
 }) {
   if (
     !props.onProjectNameInputChange ||
+    !props.onSelectWorkspaceId ||
     !props.onSelectProjectId ||
     !props.onCreateProject ||
     !props.onOpenProject ||
@@ -903,6 +914,25 @@ function HistoryProjectPanel(props: {
         <p className="mt-1 text-[11px] text-gray-500">
           Create and open your projects here. New projects are private by default.
         </p>
+
+        <div className="mt-2">
+          <select
+            className="w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs"
+            value={props.selectedWorkspaceId ?? ''}
+            onChange={(event) => props.onSelectWorkspaceId?.(event.target.value)}
+            disabled={props.actionState === 'creating' || props.actionState === 'opening'}
+            data-testid="history-workspace-select"
+          >
+            <option value="" disabled>
+              Select a workspace
+            </option>
+            {props.workspaces.map((workspace) => (
+              <option key={workspace.id} value={workspace.id}>
+                {workspace.name}
+              </option>
+            ))}
+          </select>
+        </div>
 
         <div className="mt-2 flex gap-2">
           <input

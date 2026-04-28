@@ -17,6 +17,7 @@ import type { WorkspaceFileNode } from './workspace-file-navigation.logic';
 import type { WorkspaceCheckpointDiffResponse } from './workspace-checkpoint-diff.logic';
 import type { WorkspaceProjectSummary } from './workspace-projects.logic';
 import type { WorkspaceSnapshotSummary } from './workspace-snapshots.logic';
+import type { Workspace } from './workspace-workspaces.logic';
 
 const session: WorkspaceShellSession = {
   id: '12345678-test-session',
@@ -181,7 +182,30 @@ const projectHistorySnapshotsWithHints: WorkspaceSnapshotSummary[] = [
     fileCount: 2,
   },
 ];
+const workspaceOptions: Workspace[] = [
+  {
+    id: 'workspace-1',
+    userId: 'user-123',
+    name: 'Personal',
+    slug: 'personal',
+    isDefault: true,
+    createdAt: '2026-04-04T10:00:00.000Z',
+    updatedAt: '2026-04-04T10:00:00.000Z',
+  },
+  {
+    id: 'workspace-2',
+    userId: 'user-123',
+    name: 'Client Work',
+    slug: 'client-work',
+    isDefault: false,
+    createdAt: '2026-04-05T10:00:00.000Z',
+    updatedAt: '2026-04-05T10:00:00.000Z',
+  },
+];
 const projectPanelRenderOverrides: Partial<React.ComponentProps<typeof WorkspaceShell>> = {
+  workspaces: workspaceOptions,
+  selectedWorkspaceId: 'workspace-1',
+  onSelectWorkspaceId: () => {},
   workspaceProjects: [
     {
       id: 'project-1',
@@ -1094,6 +1118,37 @@ describe('workspace shell component', () => {
 
     assert.ok(button);
     assert.equal(button.props.disabled, false);
+  });
+
+  test('renders workspace selector and forwards workspace changes in project surface', () => {
+    const selectedWorkspaceIds: string[] = [];
+    const select = renderWorkspaceShellElementByTestId('history-workspace-select', {
+      ...projectPanelRenderOverrides,
+      projectFirstUxEnabled: true,
+      selectedSessionId: null,
+      selectedWorkspaceId: 'workspace-2',
+      onSelectWorkspaceId: (workspaceId: string) => {
+        selectedWorkspaceIds.push(workspaceId);
+      },
+    });
+
+    assert.ok(select);
+    assert.equal(select.props.value, 'workspace-2');
+    assert.match(
+      renderWorkspaceShell({
+        ...projectPanelRenderOverrides,
+        projectFirstUxEnabled: true,
+        selectedSessionId: null,
+        selectedWorkspaceId: 'workspace-2',
+      }),
+      />Client Work</,
+    );
+
+    const onChange = select.props.onChange as
+      | ((event: { target: { value: string } }) => void)
+      | undefined;
+    onChange?.({ target: { value: 'workspace-1' } });
+    assert.deepEqual(selectedWorkspaceIds, ['workspace-1']);
   });
 
   test('allows opening a project without selectedSessionId behind feature flag', () => {
@@ -3026,6 +3081,9 @@ describe('workspace shell component', () => {
 describe('workspace shell snapshot surface', () => {
   test('renders project create/list/open surface', () => {
     const html = renderWorkspaceShell({
+      workspaces: workspaceOptions,
+      selectedWorkspaceId: 'workspace-1',
+      onSelectWorkspaceId: () => {},
       workspaceProjects: [
         {
           id: 'project-1',

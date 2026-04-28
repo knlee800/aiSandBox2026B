@@ -30,6 +30,7 @@ export interface WorkspaceForkedProjectSummary {
 
 interface LoadProjectsArgs {
   token: string;
+  workspaceId?: string;
   fetchImpl?: typeof fetch;
 }
 
@@ -78,7 +79,11 @@ function trimMessage(raw: unknown, fallback: string): string {
 export async function loadWorkspaceProjects(
   args: LoadProjectsArgs,
 ): Promise<WorkspaceProjectSummary[]> {
-  const response = await (args.fetchImpl ?? fetch)('/api/projects', {
+  const trimmedWorkspaceId = args.workspaceId?.trim();
+  const endpoint = trimmedWorkspaceId
+    ? `/api/projects?workspaceId=${encodeURIComponent(trimmedWorkspaceId)}`
+    : '/api/projects';
+  const response = await (args.fetchImpl ?? fetch)(endpoint, {
     method: 'GET',
     headers: {
       Authorization: `Bearer ${args.token}`,
