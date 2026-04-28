@@ -10575,9 +10575,9 @@ Create/update a minimal operational runbook so the now-validated stack can be st
 
 ## WS — Workspace Rollout
 
-**Family status:** ACTIVE — WS-01 COMPLETE and LOCKED; WS-02 COMPLETE and LOCKED; WS-03 COMPLETE and LOCKED
+**Family status:** ACTIVE — WS-01 COMPLETE and LOCKED; WS-02 COMPLETE and LOCKED; WS-03 COMPLETE and LOCKED; WS-04 COMPLETE and LOCKED
 
-**Current stage:** WS-03 (COMPLETE and LOCKED)
+**Current stage:** WS-04 (COMPLETE and LOCKED)
 
 ---
 
@@ -10757,6 +10757,58 @@ Make backend project create/list/read flows workspace-aware by allowing project 
 - Keep scope backend-only
 
 **Dependencies:** WS-02 (Complete and Locked)
+
+---
+
+#### WS-04: Frontend Workspace Types And API Helpers
+
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/WS-04-CHECKPOINT.md`
+**Nature:** FRONTEND / PLUMBING — workspace types and API helpers
+**Source:** WS v1 rollout — fourth slice; follows WS-03 project workspace-awareness
+
+**Objective:**
+Add the minimal frontend type definitions and API helper functions required to consume v1 personal workspaces and workspace-aware project responses. Stop before any visible workspace selector or management UI.
+
+**Bounded scope:**
+- Frontend only
+- Allowed files/surfaces:
+  - workspace-related frontend type file(s)
+  - workspace API helper function(s) (list, read, create, update, delete)
+  - project frontend types/helpers updated so `workspaceId` is represented where backend now returns it
+  - directly relevant tests
+- Behavior:
+  - add frontend `Workspace` type(s) matching current backend response shape
+  - add helper functions for all current workspace CRUD endpoints
+  - update existing project frontend types/helpers to include `workspaceId` where applicable
+  - no visible UI
+  - no workspace selector/switcher yet
+  - no create/rename/delete workspace UI yet
+  - no move-project-between-workspaces yet
+
+**Non-goals:**
+- No visible frontend workspace UI
+- No workspace selector/filter UI
+- No project move UI
+- No backend changes
+- No D1/PROJ-03 work
+- No Phase D/E or unrelated work
+
+**Acceptance checks:**
+- Frontend types accurately represent current backend workspace payloads
+- Frontend project types include `workspaceId` where appropriate
+- Helper functions exist for all current backend workspace CRUD endpoints
+- Existing frontend runtime behavior unchanged (no UI consumes the new helpers yet)
+- Relevant frontend typecheck/tests pass
+
+**Risks / invariants:**
+- Keep to frontend plumbing only — no visible workspace UX
+- Do not change current frontend runtime behavior beyond additive types/helpers
+- Keep v1 workspace model personal-only
+- Preserve compatibility with current backend response shapes
+- Keep scope minimal so WS-05 can build on top cleanly
+
+**Dependencies:** WS-03 (Complete and Locked)
 
 ---
 

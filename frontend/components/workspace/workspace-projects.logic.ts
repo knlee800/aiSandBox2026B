@@ -3,6 +3,7 @@ export interface WorkspaceProjectSummary {
   userId: string;
   name: string;
   visibility?: 'private' | 'public';
+  workspaceId: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -19,6 +20,14 @@ export interface WorkspacePublicProjectDetail extends WorkspacePublicProjectSumm
   readOnly: true;
 }
 
+export interface WorkspaceForkedProjectSummary {
+  id: string;
+  name: string;
+  visibility: 'private';
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface LoadProjectsArgs {
   token: string;
   fetchImpl?: typeof fetch;
@@ -27,6 +36,7 @@ interface LoadProjectsArgs {
 interface CreateProjectArgs {
   token: string;
   name: string;
+  workspaceId?: string;
   fetchImpl?: typeof fetch;
 }
 
@@ -89,13 +99,17 @@ export async function loadWorkspaceProjects(
 export async function createWorkspaceProject(
   args: CreateProjectArgs,
 ): Promise<WorkspaceProjectSummary> {
+  const trimmedWorkspaceId = args.workspaceId?.trim();
   const response = await (args.fetchImpl ?? fetch)('/api/projects', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${args.token}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ name: args.name.trim() }),
+    body: JSON.stringify({
+      name: args.name.trim(),
+      ...(trimmedWorkspaceId ? { workspaceId: trimmedWorkspaceId } : {}),
+    }),
   });
 
   if (!response.ok) {
@@ -164,7 +178,7 @@ export async function loadPublicWorkspaceProjectDetail(args: {
 
 export async function forkPublicWorkspaceProject(
   args: ForkPublicProjectArgs,
-): Promise<WorkspaceProjectSummary> {
+): Promise<WorkspaceForkedProjectSummary> {
   const response = await (args.fetchImpl ?? fetch)(`/api/projects/public/${args.projectId}/fork`, {
     method: 'POST',
     headers: {
@@ -178,7 +192,7 @@ export async function forkPublicWorkspaceProject(
       | null;
     throw new Error(trimMessage(payload?.message, 'Failed to fork public project.'));
   }
-  return (await response.json()) as WorkspaceProjectSummary;
+  return (await response.json()) as WorkspaceForkedProjectSummary;
 }
 
 export async function openWorkspaceProject(

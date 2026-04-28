@@ -22,6 +22,7 @@ describe('workspace-projects.logic', () => {
             id: 'project-1',
             userId: 'user-1',
             name: 'Main Project',
+            workspaceId: 'workspace-1',
             createdAt: '2026-04-03T00:00:00.000Z',
             updatedAt: '2026-04-03T00:00:00.000Z',
           },
@@ -50,6 +51,7 @@ describe('workspace-projects.logic', () => {
           userId: 'user-1',
           name: 'New Project',
           visibility: 'private',
+          workspaceId: 'workspace-2',
           createdAt: '2026-04-03T00:00:00.000Z',
           updatedAt: '2026-04-03T00:00:00.000Z',
         }),
@@ -60,11 +62,46 @@ describe('workspace-projects.logic', () => {
     const project = await createWorkspaceProject({
       token: 'token',
       name: ' New Project ',
+      workspaceId: ' workspace-2 ',
       fetchImpl: fetchImpl as typeof fetch,
     });
 
     assert.equal(calls[0].url, '/api/projects');
+    assert.deepEqual(JSON.parse(String(calls[0].init?.body)), {
+      name: 'New Project',
+      workspaceId: 'workspace-2',
+    });
     assert.equal(project.id, 'project-2');
+    assert.equal(project.workspaceId, 'workspace-2');
+  });
+
+  test('createWorkspaceProject omits workspaceId when not provided', async () => {
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    const fetchImpl = async (url: string, init?: RequestInit): Promise<Response> => {
+      calls.push({ url, init });
+      return new Response(
+        JSON.stringify({
+          id: 'project-3',
+          userId: 'user-1',
+          name: 'Default Workspace Project',
+          visibility: 'private',
+          workspaceId: 'workspace-default',
+          createdAt: '2026-04-03T00:00:00.000Z',
+          updatedAt: '2026-04-03T00:00:00.000Z',
+        }),
+        { status: 201 },
+      );
+    };
+
+    await createWorkspaceProject({
+      token: 'token',
+      name: ' Default Workspace Project ',
+      fetchImpl: fetchImpl as typeof fetch,
+    });
+
+    assert.deepEqual(JSON.parse(String(calls[0].init?.body)), {
+      name: 'Default Workspace Project',
+    });
   });
 
   test('updateWorkspaceProjectVisibility updates project share state', async () => {
@@ -75,6 +112,7 @@ describe('workspace-projects.logic', () => {
           userId: 'user-1',
           name: 'Main Project',
           visibility: 'public',
+          workspaceId: 'workspace-1',
           createdAt: '2026-04-03T00:00:00.000Z',
           updatedAt: '2026-04-03T00:01:00.000Z',
         }),
@@ -126,6 +164,7 @@ describe('workspace-projects.logic', () => {
           userId: 'user-1',
           name: 'Main Project',
           visibility: 'private',
+          workspaceId: 'workspace-1',
           createdAt: '2026-04-03T00:00:00.000Z',
           updatedAt: '2026-04-03T00:00:00.000Z',
         }),
@@ -190,7 +229,6 @@ describe('workspace-projects.logic', () => {
       new Response(
         JSON.stringify({
           id: 'fork-1',
-          userId: 'user-2',
           name: 'Fork of Shared',
           visibility: 'private',
           createdAt: '2026-04-03T00:00:00.000Z',
