@@ -7,12 +7,14 @@ import { PublicProjectsController } from './public-projects.controller';
 import { ProjectsService } from './projects.service';
 import { SessionModule } from '../sessions/session.module';
 import { SnapshotsModule } from '../snapshots/snapshots.module';
+import { WorkspacesModule } from '../workspaces/workspaces.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Project, Session]),
     SessionModule,
     SnapshotsModule,
+    WorkspacesModule,
   ],
   controllers: [ProjectsController, PublicProjectsController],
   providers: [ProjectsService],

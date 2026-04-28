@@ -10575,9 +10575,9 @@ Create/update a minimal operational runbook so the now-validated stack can be st
 
 ## WS — Workspace Rollout
 
-**Family status:** ACTIVE — WS-01 COMPLETE and LOCKED; WS-02 COMPLETE and LOCKED
+**Family status:** ACTIVE — WS-01 COMPLETE and LOCKED; WS-02 COMPLETE and LOCKED; WS-03 COMPLETE and LOCKED
 
-**Current stage:** WS-02 (COMPLETE and LOCKED)
+**Current stage:** WS-03 (COMPLETE and LOCKED)
 
 ---
 
@@ -10699,6 +10699,64 @@ Add the minimal authenticated backend API for v1 personal workspaces: create, li
 - Scope is backend-only
 
 **Dependencies:** WS-01 (Complete and Locked)
+
+---
+
+#### WS-03: Project Create/List Workspace-Awareness Foundation
+
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/WS-03-CHECKPOINT.md`
+**Nature:** BACKEND / API — project create/list workspace-awareness
+**Source:** WS v1 rollout — third slice; follows WS-02 CRUD API foundation
+
+**Objective:**
+Make backend project create/list/read flows workspace-aware by allowing project creation into a chosen workspace, defaulting to the user's default workspace when omitted, supporting optional workspace filtering on project list, and surfacing `workspaceId` in project responses — while keeping all ownership checks user-scoped and stopping before any frontend workspace selector/UI.
+
+**Bounded scope:**
+- Backend/API only
+- Allowed files/surfaces:
+  - project DTO(s) — add optional `workspaceId` to create DTO; add optional `workspaceId` query param to list
+  - projects controller — accept and pass through `workspaceId` for create and list
+  - projects service — resolve default workspace when `workspaceId` is omitted; validate ownership of provided `workspaceId`; filter list by workspace when requested
+  - directly relevant tests
+- Behavior:
+  - `POST /api/projects` accepts optional `workspaceId`; omitted → user's default workspace; provided → must belong to current user
+  - `GET /api/projects` supports optional `workspaceId` query filter
+  - `GET /api/projects/:id` response includes `workspaceId`
+  - all ownership checks remain user-scoped
+  - no frontend/UI
+  - no move-project-between-workspaces
+  - no session-to-workspace changes
+
+**Non-goals:**
+- No frontend workspace selector/UI
+- No workspace switcher/filter UI
+- No move-project-between-workspaces
+- No nested workspaces
+- No members / roles / billing / shared integrations
+- No session-to-workspace relationship
+- No D1/PROJ-03 work
+- No Phase D/E or unrelated work
+
+**Acceptance checks:**
+- User can create a project with an explicit owned `workspaceId`
+- User can create a project without `workspaceId` and it lands in the default workspace
+- Cross-user `workspaceId` is rejected
+- `GET /api/projects` can filter by `workspaceId`
+- Project responses surface `workspaceId`
+- Existing user-scoped project behavior otherwise remains unchanged
+- Relevant backend build/tests pass
+
+**Risks / invariants:**
+- Workspace remains personal-only in v1
+- Ownership is strictly user-scoped
+- Do not break WS-01 default-workspace assumptions
+- Do not break existing project/session/history semantics
+- Do not introduce frontend behavior in this slice
+- Keep future move-project / members / billing expansion possible
+- Keep scope backend-only
+
+**Dependencies:** WS-02 (Complete and Locked)
 
 ---
 

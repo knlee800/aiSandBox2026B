@@ -40,6 +40,7 @@ describe('ProjectsController (PR-03-01)', () => {
       id: 'project-1',
       userId: 'user-1',
       name: 'My Project',
+      workspaceId: 'workspace-1',
       createdAt: new Date(),
       updatedAt: new Date(),
     } as any);
@@ -52,13 +53,22 @@ describe('ProjectsController (PR-03-01)', () => {
     ]);
 
     const created = await controller.createProject(
-      { name: 'My Project' },
+      { name: 'My Project', workspaceId: 'workspace-1' },
       { user: { userId: 'user-1' } },
     );
-    const listed = await controller.listProjects({ user: { userId: 'user-1' } });
+    const listed = await controller.listProjects(
+      { user: { userId: 'user-1' } },
+      'workspace-1',
+    );
 
     expect(created.id).toBe('project-1');
     expect(listed).toHaveLength(1);
+    expect(projectsService.createProject).toHaveBeenCalledWith(
+      'user-1',
+      'My Project',
+      'workspace-1',
+    );
+    expect(projectsService.listProjects).toHaveBeenCalledWith('user-1', 'workspace-1');
   });
 
   it('gets, renames, associates, and opens project with ownership-scoped user id', async () => {

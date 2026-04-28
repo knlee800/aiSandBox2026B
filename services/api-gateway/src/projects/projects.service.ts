@@ -10,6 +10,7 @@ import { Project, type ProjectVisibility } from '../entities/project.entity';
 import { Session } from '../entities/session.entity';
 import { SessionService } from '../sessions/session.service';
 import { SnapshotPersistenceService } from '../snapshots/snapshot-persistence.service';
+import { WorkspacesService } from '../workspaces/workspaces.service';
 
 @Injectable()
 export class ProjectsService {
@@ -20,6 +21,7 @@ export class ProjectsService {
     private readonly projectRepository: Repository<Project>,
     @InjectRepository(Session)
     private readonly sessionRepository: Repository<Session>,
+    private readonly workspacesService: WorkspacesService,
     private readonly sessionService: SessionService,
     private readonly snapshotPersistenceService: SnapshotPersistenceService,
   ) {}
@@ -52,21 +54,35 @@ export class ProjectsService {
     return candidate;
   }
 
-  async createProject(userId: string, name: string): Promise<Project> {
+  async createProject(userId: string, name: string, workspaceId?: string): Promise<Project> {
     const normalizedName = name.trim();
     const slug = await this.generateUniqueSlug(normalizedName);
+    const resolvedWorkspaceId =
+      workspaceId ??
+      (await this.workspacesService.listWorkspaces(userId)).find((workspace) => workspace.isDefault)
+        ?.id;
+
+    if (!resolvedWorkspaceId) {
+      throw new NotFoundException(`Default workspace for user ${userId} not found`);
+    }
+
+    if (workspaceId) {
+      await this.workspacesService.getWorkspaceByIdForUser(userId, workspaceId);
+    }
+
     const project = this.projectRepository.create({
       userId,
       name: normalizedName,
       slug,
       visibility: 'private',
+      workspaceId: resolvedWorkspaceId,
     });
     return await this.projectRepository.save(project);
   }
 
-  async listProjects(userId: string): Promise<Project[]> {
+  async listProjects(userId: string, workspaceId?: string): Promise<Project[]> {
     return await this.projectRepository.find({
-      where: { userId },
+      where: { userId, ...(workspaceId ? { workspaceId } : {}) },
       order: { updatedAt: 'DESC' },
     });
   }

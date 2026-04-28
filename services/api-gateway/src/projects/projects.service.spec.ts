@@ -5,6 +5,7 @@ import { Project } from '../entities/project.entity';
 import { Session } from '../entities/session.entity';
 import { SessionService } from '../sessions/session.service';
 import { SnapshotPersistenceService } from '../snapshots/snapshot-persistence.service';
+import { WorkspacesService } from '../workspaces/workspaces.service';
 import { ProjectsService } from './projects.service';
 
 describe('ProjectsService (PR-03-01)', () => {
@@ -25,6 +26,10 @@ describe('ProjectsService (PR-03-01)', () => {
     restoreSnapshot: jest.Mock;
     listSnapshots: jest.Mock;
   };
+  let workspacesService: {
+    getWorkspaceByIdForUser: jest.Mock;
+    listWorkspaces: jest.Mock;
+  };
 
   beforeEach(async () => {
     projectRepository = {
@@ -42,6 +47,10 @@ describe('ProjectsService (PR-03-01)', () => {
     snapshotPersistenceService = {
       restoreSnapshot: jest.fn(),
       listSnapshots: jest.fn(),
+    };
+    workspacesService = {
+      getWorkspaceByIdForUser: jest.fn(),
+      listWorkspaces: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -63,20 +72,31 @@ describe('ProjectsService (PR-03-01)', () => {
           provide: SnapshotPersistenceService,
           useValue: snapshotPersistenceService,
         },
+        {
+          provide: WorkspacesService,
+          useValue: workspacesService,
+        },
       ],
     }).compile();
 
     service = module.get<ProjectsService>(ProjectsService);
   });
 
-  it('creates a named project for the current user', async () => {
+  it('creates a named project for the current user with an explicit owned workspace', async () => {
     projectRepository.findOne.mockResolvedValue(null);
+    workspacesService.getWorkspaceByIdForUser.mockResolvedValue({
+      id: 'workspace-1',
+      userId: 'user-1',
+      name: 'Workspace A',
+      isDefault: false,
+    });
     projectRepository.create.mockReturnValue({
       id: 'project-1',
       userId: 'user-1',
       name: 'My Project',
       slug: 'my-project',
       visibility: 'private',
+      workspaceId: 'workspace-1',
     });
     projectRepository.save.mockResolvedValue({
       id: 'project-1',
@@ -84,20 +104,103 @@ describe('ProjectsService (PR-03-01)', () => {
       name: 'My Project',
       slug: 'my-project',
       visibility: 'private',
+      workspaceId: 'workspace-1',
     });
 
-    const result = await service.createProject('user-1', '  My Project  ');
+    const result = await service.createProject('user-1', '  My Project  ', 'workspace-1');
 
+    expect(workspacesService.getWorkspaceByIdForUser).toHaveBeenCalledWith(
+      'user-1',
+      'workspace-1',
+    );
+    expect(workspacesService.listWorkspaces).not.toHaveBeenCalled();
     expect(projectRepository.create).toHaveBeenCalledWith({
       userId: 'user-1',
       name: 'My Project',
       slug: 'my-project',
       visibility: 'private',
+      workspaceId: 'workspace-1',
     });
     expect(result.id).toBe('project-1');
   });
 
-  it('lists only current user projects', async () => {
+  it('creates a named project in the default workspace when workspaceId is omitted', async () => {
+    projectRepository.findOne.mockResolvedValue(null);
+    workspacesService.listWorkspaces.mockResolvedValue([
+      {
+        id: 'workspace-default',
+        userId: 'user-1',
+        name: 'Personal',
+        isDefault: true,
+      },
+      {
+        id: 'workspace-other',
+        userId: 'user-1',
+        name: 'Other',
+        isDefault: false,
+      },
+    ]);
+    projectRepository.create.mockReturnValue({
+      id: 'project-2',
+      userId: 'user-1',
+      name: 'Default Project',
+      slug: 'default-project',
+      visibility: 'private',
+      workspaceId: 'workspace-default',
+    });
+    projectRepository.save.mockResolvedValue({
+      id: 'project-2',
+      userId: 'user-1',
+      name: 'Default Project',
+      slug: 'default-project',
+      visibility: 'private',
+      workspaceId: 'workspace-default',
+    });
+
+    const result = await service.createProject('user-1', ' Default Project ');
+
+    expect(workspacesService.listWorkspaces).toHaveBeenCalledWith('user-1');
+    expect(workspacesService.getWorkspaceByIdForUser).not.toHaveBeenCalled();
+    expect(projectRepository.create).toHaveBeenCalledWith({
+      userId: 'user-1',
+      name: 'Default Project',
+      slug: 'default-project',
+      visibility: 'private',
+      workspaceId: 'workspace-default',
+    });
+    expect(result.workspaceId).toBe('workspace-default');
+  });
+
+  it('rejects a cross-user workspaceId during project creation', async () => {
+    projectRepository.findOne.mockResolvedValue(null);
+    workspacesService.getWorkspaceByIdForUser.mockRejectedValue(
+      new NotFoundException('Workspace with ID workspace-foreign not found'),
+    );
+
+    await expect(
+      service.createProject('user-1', ' Project A ', 'workspace-foreign'),
+    ).rejects.toThrow(NotFoundException);
+    expect(projectRepository.create).not.toHaveBeenCalled();
+  });
+
+  it('fails clearly if the default workspace is unexpectedly missing during create', async () => {
+    projectRepository.findOne.mockResolvedValue(null);
+    workspacesService.listWorkspaces.mockResolvedValue([
+      {
+        id: 'workspace-other',
+        userId: 'user-1',
+        name: 'Other',
+        isDefault: false,
+      },
+    ]);
+
+    await expect(service.createProject('user-1', ' Project A ')).rejects.toThrow(
+      NotFoundException,
+    );
+    expect(projectRepository.create).not.toHaveBeenCalled();
+  });
+
+  it('lists only current user projects and supports optional workspace filtering', async () => {
     projectRepository.find.mockResolvedValue([{ id: 'project-1', userId: 'user-1' }]);
 
     const result = await service.listProjects('user-1');
@@ -107,6 +210,12 @@ describe('ProjectsService (PR-03-01)', () => {
       order: { updatedAt: 'DESC' },
     });
     expect(result).toHaveLength(1);
+
+    await service.listProjects('user-1', 'workspace-1');
+    expect(projectRepository.find).toHaveBeenLastCalledWith({
+      where: { userId: 'user-1', workspaceId: 'workspace-1' },
+      order: { updatedAt: 'DESC' },
+    });
   });
 
   it('get/rename enforce project ownership', async () => {

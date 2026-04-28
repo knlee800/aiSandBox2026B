@@ -20239,13 +20239,14 @@ The feature/spec wave, release-readiness wave, and deployment-readiness wave are
 
 ## WS — Workspace Rollout
 
-**Family status:** ACTIVE — WS-01 COMPLETE and LOCKED; WS-02 COMPLETE and LOCKED
+**Family status:** ACTIVE — WS-01 COMPLETE and LOCKED; WS-02 COMPLETE and LOCKED; WS-03 COMPLETE and LOCKED
 
-**Current stage:** WS-02 (COMPLETE and LOCKED)
+**Current stage:** WS-03 (COMPLETE and LOCKED)
 
 **Ordered slices (registered so far):**
 1. WS-01 — Workspace Schema, Entity, And Backfill Foundation (COMPLETE and LOCKED)
 2. WS-02 — Workspace CRUD API Foundation (COMPLETE and LOCKED)
+3. WS-03 — Project Create/List Workspace-Awareness Foundation (COMPLETE and LOCKED)
 
 ---
 
@@ -20423,6 +20424,77 @@ Add the minimal authenticated backend API for v1 personal workspaces: create, li
 **Dependencies:** WS-01 (Complete and Locked)
 
 **Reference:** See TASKS.md -> WS-02 for active-task summary.
+
+---
+
+### WS-03: Project Create/List Workspace-Awareness Foundation
+
+**Task ID:** WS-03
+**Family:** WS (Workspace Rollout)
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/WS-03-CHECKPOINT.md`
+**Nature:** BACKEND / API — project create/list workspace-awareness
+**Source:** WS v1 rollout — third slice; follows WS-02 CRUD API foundation
+
+**Objective:**
+
+Make backend project create/list/read flows workspace-aware by allowing project creation into a chosen workspace, defaulting to the user's default workspace when omitted, supporting optional workspace filtering on project list, and surfacing `workspaceId` in project responses — while keeping all ownership checks user-scoped and stopping before any frontend workspace selector/UI.
+
+**Bounded scope:**
+
+- Backend/API only
+- Allowed files/surfaces:
+  - `CreateProjectDto` — add optional `workspaceId` field
+  - `ProjectsController` — accept optional `workspaceId` on create; accept optional `workspaceId` query param on list
+  - `ProjectsService` — resolve default workspace when `workspaceId` omitted on create; validate `workspaceId` ownership on create; filter list by `workspaceId` when provided
+  - `WorkspacesService` injected into `ProjectsService` for ownership lookup and default-workspace resolution
+  - directly relevant tests
+
+**Behavioral rules:**
+
+| Endpoint | Change |
+|---|---|
+| `POST /api/projects` | Accepts optional `workspaceId`; omitted → resolve user's default workspace; provided → must belong to current user |
+| `GET /api/projects` | Accepts optional `?workspaceId=` query param; filters results to that workspace when present |
+| `GET /api/projects/:id` | No new behavior; `workspaceId` already on entity — surfaces via existing response |
+
+**Non-goals for this slice:**
+
+- No frontend workspace selector/UI
+- No workspace switcher/filter UI
+- No move-project-between-workspaces
+- No nested workspaces
+- No members / roles / billing / shared integrations
+- No session-to-workspace relationship
+- No entity/migration/schema changes in this slice
+- No D1/PROJ-03 work
+- No Phase D/E or unrelated work
+
+**Acceptance checks:**
+
+- User can create a project with an explicit owned `workspaceId`
+- User can create a project without `workspaceId` and it lands in the default workspace
+- Cross-user `workspaceId` is rejected (ownership validated at service layer)
+- `GET /api/projects` can optionally filter by `workspaceId`
+- Project responses surface `workspaceId` (already present via WS-01 entity field)
+- Existing user-scoped project behavior otherwise remains unchanged
+- Relevant backend build and tests pass
+
+**Risks / invariants:**
+
+- Workspace remains personal-only in v1
+- Ownership is strictly user-scoped; no cross-user workspace assignment
+- Do not break WS-01 default-workspace assumptions
+- Do not break existing project/session/history semantics
+- Do not introduce frontend behavior in this slice
+- Keep future move-project / members / billing expansion possible without redesign
+- Keep scope backend-only in this slice
+
+**Dependencies:** WS-02 (Complete and Locked)
+
+**Reference:** See TASKS.md -> WS-03 for active-task summary.
 
 ---
 

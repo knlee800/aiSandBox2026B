@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -29,13 +30,16 @@ export class ProjectsController {
     @Body() body: CreateProjectDto,
     @Request() req,
   ): Promise<Project> {
-    return await this.projectsService.createProject(req.user.userId, body.name);
+    return await this.projectsService.createProject(req.user.userId, body.name, body.workspaceId);
   }
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  async listProjects(@Request() req): Promise<Project[]> {
-    return await this.projectsService.listProjects(req.user.userId);
+  async listProjects(
+    @Request() req,
+    @Query('workspaceId') workspaceId?: string,
+  ): Promise<Project[]> {
+    return await this.projectsService.listProjects(req.user.userId, workspaceId);
   }
 
   @Get(':id([0-9a-fA-F-]{36})')
