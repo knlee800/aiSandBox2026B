@@ -10575,9 +10575,9 @@ Create/update a minimal operational runbook so the now-validated stack can be st
 
 ## WS — Workspace Rollout
 
-**Family status:** ACTIVE — WS-01 COMPLETE and LOCKED
+**Family status:** ACTIVE — WS-01 COMPLETE and LOCKED; WS-02 COMPLETE and LOCKED
 
-**Current stage:** WS-01 (COMPLETE and LOCKED)
+**Current stage:** WS-02 (COMPLETE and LOCKED)
 
 ---
 
@@ -10638,6 +10638,67 @@ Add the Workspace entity/table and nullable `Project.workspaceId` foundation, th
 - Keep future expansion to members/roles/billing possible without redesign
 
 **Dependencies:** PROJ-03-D1d-hotfix (Complete and Locked)
+
+---
+
+#### WS-02: Workspace CRUD API Foundation
+
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/WS-02-CHECKPOINT.md`
+**Nature:** BACKEND / API — workspace CRUD endpoints
+**Source:** WS v1 rollout — second slice; follows WS-01 schema foundation
+
+**Objective:**
+Add the minimal authenticated backend API for v1 personal workspaces: create, list, read, rename, and delete (non-default only). Keep all operations strictly user-scoped and additive. Stop before any frontend UX or project workspace-awareness changes.
+
+**Bounded scope:**
+- Backend/API only
+- Allowed files/surfaces:
+  - new workspaces service, controller, module
+  - DTOs for create/update/list/read as needed
+  - minimal repository/service wiring against the WS-01 Workspace entity
+  - directly relevant unit tests
+- Endpoints:
+  - `POST /api/workspaces` — create workspace for current user
+  - `GET /api/workspaces` — list current user's workspaces
+  - `GET /api/workspaces/:id` — read one current-user workspace
+  - `PATCH /api/workspaces/:id` — rename/update current-user workspace
+  - `DELETE /api/workspaces/:id` — delete a non-default current-user workspace
+- All access is owner-only via authenticated user
+- Default workspace cannot be deleted
+- Deletion of a non-default workspace reassigns its projects to the user's default workspace before removal
+- No frontend/UI
+- No project create/list workspace-awareness changes
+- No members/roles/billing/shared-workspace behavior
+
+**Non-goals:**
+- No frontend workspace selector/UI
+- No project list filtering by workspace
+- No project creation with workspace choice
+- No move-project-between-workspaces
+- No members / roles / billing / shared integrations
+- No nested workspaces
+- No session-to-workspace relationship
+- No D1/PROJ-03 work
+- No Phase D/E or unrelated work
+
+**Acceptance checks:**
+- Authenticated user can create/list/read/update/delete their own workspaces via API
+- Default workspace is protected from deletion
+- Deleting a non-default workspace safely reassigns its projects to the default workspace first
+- Cross-user access is rejected
+- Existing behavior outside workspace CRUD remains unchanged
+- Relevant backend build/tests pass
+
+**Risks / invariants:**
+- Workspace remains personal-only in v1
+- Ownership is strictly user-scoped
+- Do not break WS-01 backfill/default-workspace assumptions
+- Do not alter existing project/session/history semantics beyond what is minimally required for safe workspace deletion
+- Keep future member/role/billing expansion possible without redesign
+- Scope is backend-only
+
+**Dependencies:** WS-01 (Complete and Locked)
 
 ---
 

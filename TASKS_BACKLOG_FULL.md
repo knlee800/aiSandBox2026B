@@ -20239,12 +20239,13 @@ The feature/spec wave, release-readiness wave, and deployment-readiness wave are
 
 ## WS — Workspace Rollout
 
-**Family status:** ACTIVE — WS-01 COMPLETE and LOCKED
+**Family status:** ACTIVE — WS-01 COMPLETE and LOCKED; WS-02 COMPLETE and LOCKED
 
-**Current stage:** WS-01 (COMPLETE and LOCKED)
+**Current stage:** WS-02 (COMPLETE and LOCKED)
 
 **Ordered slices (registered so far):**
 1. WS-01 — Workspace Schema, Entity, And Backfill Foundation (COMPLETE and LOCKED)
+2. WS-02 — Workspace CRUD API Foundation (COMPLETE and LOCKED)
 
 ---
 
@@ -20341,6 +20342,87 @@ A Workspace is a named, user-owned personal organizational container for project
 **Dependencies:** PROJ-03-D1d-hotfix (Complete and Locked)
 
 **Reference:** Workspace v1 planning notes (Apr 2026 planning session); see TASKS.md -> WS-01 for active-task summary.
+
+---
+
+### WS-02: Workspace CRUD API Foundation
+
+**Task ID:** WS-02
+**Family:** WS (Workspace Rollout)
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/WS-02-CHECKPOINT.md`
+**Nature:** BACKEND / API — workspace CRUD endpoints
+**Source:** WS v1 rollout — second slice; follows WS-01 schema foundation
+
+**Objective:**
+
+Add the minimal authenticated backend API for v1 personal workspaces: create, list, read, rename, and delete (non-default only). Keep all operations strictly user-scoped and additive. Stop before any frontend UX or project workspace-awareness changes.
+
+**Bounded scope:**
+
+- Backend/API only
+- Allowed files/surfaces:
+  - new `WorkspacesService`, `WorkspacesController`, `WorkspacesModule` under `services/api-gateway/src/workspaces/`
+  - DTOs: `CreateWorkspaceDto`, `UpdateWorkspaceDto`, list/read response shapes as needed
+  - minimal TypeORM repository wiring against the WS-01 `Workspace` entity
+  - registration of `WorkspacesModule` in `AppModule`
+  - directly relevant unit/integration tests
+
+**Endpoints:**
+
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/api/workspaces` | Create workspace for current user |
+| `GET` | `/api/workspaces` | List current user's workspaces |
+| `GET` | `/api/workspaces/:id` | Read one current-user workspace |
+| `PATCH` | `/api/workspaces/:id` | Rename/update current-user workspace |
+| `DELETE` | `/api/workspaces/:id` | Delete non-default current-user workspace |
+
+**Behavioral rules:**
+
+- All access is owner-only via the currently authenticated user
+- Default workspace (`isDefault = true`) cannot be deleted
+- Deleting a non-default workspace first reassigns all its projects to the user's default workspace (`UPDATE projects SET workspace_id = <defaultId> WHERE workspace_id = <deletedId>`), then removes the workspace row
+- No frontend/UI changes
+- No project create/list workspace-awareness changes in this slice
+- No members/roles/billing/shared-workspace behavior
+
+**Non-goals for this slice:**
+
+- No frontend workspace selector/UI
+- No project list filtering by workspace
+- No project creation with workspace choice
+- No move-project-between-workspaces
+- No members / roles / billing / shared integrations
+- No nested workspaces
+- No session-to-workspace relationship
+- No D1/PROJ-03 work
+- No Phase D/E or unrelated work
+
+**Acceptance checks:**
+
+- Authenticated user can create, list, read, rename, and delete their own workspaces
+- Default workspace is protected from deletion (returns appropriate error)
+- Deleting a non-default workspace safely reassigns its projects to the default workspace before removal
+- Cross-user access is rejected (ownership enforced at service layer)
+- Existing behavior outside workspace CRUD remains unchanged
+- Relevant backend build and tests pass
+
+**Risks / invariants:**
+
+- Workspace remains personal-only in v1; no shared/team semantics
+- Ownership is strictly user-scoped; never cross-user reads or writes
+- Do not break WS-01 backfill/default-workspace assumptions
+- Project reassignment on delete must not alter project contents or session state
+- Do not alter existing project/session/history semantics beyond the safe project-reassignment step
+- Keep future member/role/billing expansion possible without redesign
+- Keep scope backend-only in this slice
+
+**Dependencies:** WS-01 (Complete and Locked)
+
+**Reference:** See TASKS.md -> WS-02 for active-task summary.
 
 ---
 
