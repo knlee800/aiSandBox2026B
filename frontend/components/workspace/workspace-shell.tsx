@@ -79,7 +79,7 @@ interface WorkspaceShellProps {
   onCheckpointDescriptionChange: (value: string) => void;
   onCreateManualCheckpoint: () => Promise<void>;
   projectListState?: 'idle' | 'loading' | 'ready' | 'error';
-  projectActionState?: 'idle' | 'creating' | 'opening' | 'success' | 'error';
+  projectActionState?: 'idle' | 'creating' | 'opening' | 'moving' | 'success' | 'error';
   projectActionMessage?: string | null;
   projectActionError?: string | null;
   workspaces?: Workspace[];
@@ -96,9 +96,12 @@ interface WorkspaceShellProps {
   onDeleteWorkspace?: () => Promise<void>;
   workspaceProjects?: WorkspaceProjectSummary[];
   selectedProjectId?: string | null;
+  projectMoveTargetWorkspaceId?: string | null;
   projectNameInput?: string;
   onProjectNameInputChange?: (value: string) => void;
+  onProjectMoveTargetWorkspaceIdChange?: (workspaceId: string) => void;
   onSelectProjectId?: (projectId: string) => void;
+  onMoveWorkspaceProject?: () => Promise<void>;
   onCreateWorkspaceProject?: () => Promise<void>;
   onOpenWorkspaceProject?: () => Promise<void>;
   onResumeWorkspaceProjectById?: (projectId: string) => Promise<void>;
@@ -770,9 +773,12 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
               onDeleteWorkspace={props.onDeleteWorkspace}
               projects={props.workspaceProjects ?? []}
               selectedProjectId={props.selectedProjectId ?? null}
+              projectMoveTargetWorkspaceId={props.projectMoveTargetWorkspaceId ?? null}
               projectNameInput={props.projectNameInput ?? ''}
               onProjectNameInputChange={props.onProjectNameInputChange}
+              onProjectMoveTargetWorkspaceIdChange={props.onProjectMoveTargetWorkspaceIdChange}
               onSelectProjectId={props.onSelectProjectId}
+              onMoveWorkspaceProject={props.onMoveWorkspaceProject}
               onCreateProject={props.onCreateWorkspaceProject}
               onOpenProject={props.onOpenWorkspaceProject}
                 selectedProjectVisibility={props.selectedProjectVisibility ?? 'private'}
@@ -881,7 +887,7 @@ function HistoryProjectPanel(props: {
   projectFirstUxEnabled?: boolean;
   selectedSessionId: string | null;
   listState: 'idle' | 'loading' | 'ready' | 'error';
-  actionState: 'idle' | 'creating' | 'opening' | 'success' | 'error';
+  actionState: 'idle' | 'creating' | 'opening' | 'moving' | 'success' | 'error';
   actionMessage: string | null;
   actionError: string | null;
   workspaces: Workspace[];
@@ -898,9 +904,12 @@ function HistoryProjectPanel(props: {
   onDeleteWorkspace?: () => Promise<void>;
   projects: WorkspaceProjectSummary[];
   selectedProjectId: string | null;
+  projectMoveTargetWorkspaceId: string | null;
   projectNameInput: string;
   onProjectNameInputChange?: (value: string) => void;
+  onProjectMoveTargetWorkspaceIdChange?: (workspaceId: string) => void;
   onSelectProjectId?: (projectId: string) => void;
+  onMoveWorkspaceProject?: () => Promise<void>;
   onCreateProject?: () => Promise<void>;
   onOpenProject?: () => Promise<void>;
   selectedProjectVisibility: 'private' | 'public';
@@ -926,6 +935,8 @@ function HistoryProjectPanel(props: {
     !props.onRenameWorkspace ||
     !props.onDeleteWorkspace ||
     !props.onSelectProjectId ||
+    !props.onProjectMoveTargetWorkspaceIdChange ||
+    !props.onMoveWorkspaceProject ||
     !props.onCreateProject ||
     !props.onOpenProject ||
     !props.onSelectedProjectVisibilityChange ||
@@ -940,9 +951,16 @@ function HistoryProjectPanel(props: {
   const canMutate = Boolean(props.projectFirstUxEnabled || props.selectedSessionId);
   const selectedWorkspace =
     props.workspaces.find((workspace) => workspace.id === props.selectedWorkspaceId) ?? null;
+  const selectedProject =
+    props.projects.find((project) => project.id === props.selectedProjectId) ?? null;
+  const availableMoveWorkspaces = selectedProject
+    ? props.workspaces.filter((workspace) => workspace.id !== selectedProject.workspaceId)
+    : [];
   const isWorkspaceActionBusy = props.workspaceActionState !== 'idle';
   const hasProjectActionInFlight =
-    props.actionState === 'creating' || props.actionState === 'opening';
+    props.actionState === 'creating' ||
+    props.actionState === 'opening' ||
+    props.actionState === 'moving';
   const workspaceControlsDisabled = isWorkspaceActionBusy || hasProjectActionInFlight;
   const canDeleteSelectedWorkspace = Boolean(selectedWorkspace && !selectedWorkspace.isDefault);
 
@@ -1040,7 +1058,7 @@ function HistoryProjectPanel(props: {
           <button
             type="button"
             className="rounded bg-violet-600 px-2 py-1 text-xs text-white disabled:bg-violet-300"
-            disabled={!canMutate || props.actionState === 'creating' || props.actionState === 'opening'}
+            disabled={!canMutate || hasProjectActionInFlight}
             onClick={() => void props.onCreateProject?.()}
             data-testid="history-project-create-button"
           >
@@ -1053,7 +1071,7 @@ function HistoryProjectPanel(props: {
             className="min-w-0 flex-1 rounded border border-gray-300 bg-white px-2 py-1 text-xs"
             value={props.selectedProjectId ?? ''}
             onChange={(event) => props.onSelectProjectId?.(event.target.value)}
-            disabled={props.listState === 'loading' || props.actionState === 'opening'}
+            disabled={props.listState === 'loading' || hasProjectActionInFlight}
             data-testid="history-project-select"
           >
             <option value="">Select a project</option>
@@ -1066,13 +1084,51 @@ function HistoryProjectPanel(props: {
           <button
             type="button"
             className="rounded bg-teal-600 px-2 py-1 text-xs text-white disabled:bg-teal-300"
-            disabled={!canMutate || !props.selectedProjectId || props.actionState === 'opening'}
+            disabled={!canMutate || !props.selectedProjectId || hasProjectActionInFlight}
             onClick={() => void props.onOpenProject?.()}
             data-testid="history-project-open-button"
           >
             {props.actionState === 'opening' ? 'Opening...' : 'Open Project'}
           </button>
         </div>
+        {props.selectedProjectId ? (
+          <div className="mt-2 flex gap-2">
+            <select
+              className="min-w-0 flex-1 rounded border border-gray-300 bg-white px-2 py-1 text-xs"
+              value={props.projectMoveTargetWorkspaceId ?? ''}
+              onChange={(event) =>
+                props.onProjectMoveTargetWorkspaceIdChange?.(event.target.value)
+              }
+              disabled={!canMutate || workspaceControlsDisabled || availableMoveWorkspaces.length === 0}
+              data-testid="history-project-move-workspace-select"
+            >
+              <option value="">
+                {availableMoveWorkspaces.length > 0
+                  ? 'Select target workspace'
+                  : 'No other workspaces available'}
+              </option>
+              {availableMoveWorkspaces.map((workspace) => (
+                <option key={workspace.id} value={workspace.id}>
+                  {workspace.name}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              className="rounded bg-amber-600 px-2 py-1 text-xs text-white disabled:bg-amber-300"
+              disabled={
+                !canMutate ||
+                workspaceControlsDisabled ||
+                !props.projectMoveTargetWorkspaceId ||
+                availableMoveWorkspaces.length === 0
+              }
+              onClick={() => void props.onMoveWorkspaceProject?.()}
+              data-testid="history-project-move-button"
+            >
+              {props.actionState === 'moving' ? 'Moving...' : 'Move to Workspace'}
+            </button>
+          </div>
+        ) : null}
       </div>
 
       <div
@@ -1092,7 +1148,7 @@ function HistoryProjectPanel(props: {
                 event.target.value === 'public' ? 'public' : 'private',
               )
             }
-            disabled={!props.selectedProjectId || props.actionState === 'creating' || props.actionState === 'opening'}
+            disabled={!props.selectedProjectId || hasProjectActionInFlight}
             data-testid="history-project-visibility-select"
           >
             <option value="private">Private</option>
@@ -1101,7 +1157,7 @@ function HistoryProjectPanel(props: {
           <button
             type="button"
             className="rounded bg-indigo-600 px-2 py-1 text-xs text-white disabled:bg-indigo-300"
-            disabled={!props.selectedProjectId || props.actionState === 'creating' || props.actionState === 'opening'}
+            disabled={!props.selectedProjectId || hasProjectActionInFlight}
             onClick={() => void props.onUpdateProjectVisibility?.()}
             data-testid="history-project-visibility-update-button"
           >

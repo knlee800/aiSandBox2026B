@@ -10575,9 +10575,9 @@ Create/update a minimal operational runbook so the now-validated stack can be st
 
 ## WS — Workspace Rollout
 
-**Family status:** ACTIVE — WS-01 COMPLETE and LOCKED; WS-02 COMPLETE and LOCKED; WS-03 COMPLETE and LOCKED; WS-04 COMPLETE and LOCKED; WS-05 COMPLETE and LOCKED; WS-06 COMPLETE and LOCKED
+**Family status:** ACTIVE — WS-01 COMPLETE and LOCKED; WS-02 COMPLETE and LOCKED; WS-03 COMPLETE and LOCKED; WS-04 COMPLETE and LOCKED; WS-05 COMPLETE and LOCKED; WS-06 COMPLETE and LOCKED; WS-07 COMPLETE and LOCKED
 
-**Current stage:** WS-06 (COMPLETE and LOCKED)
+**Current stage:** WS-07 (COMPLETE and LOCKED)
 
 ---
 
@@ -10921,6 +10921,65 @@ Add the minimal user-facing UI for creating, renaming, and deleting personal wor
 - Keep scope minimal and avoid broader sidebar redesign
 
 **Dependencies:** WS-05 (Complete and Locked)
+
+---
+
+#### WS-07: Move Project Between Workspaces
+
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/WS-07-CHECKPOINT.md`
+**Nature:** BACKEND + FRONTEND — move project workspace assignment
+**Source:** WS v1 rollout — seventh slice; follows WS-06 workspace management UI
+
+**Objective:**
+Allow a user to move an existing owned project from its current workspace to another owned workspace, with strict ownership validation and safe frontend state refresh. The move changes only the project.workspaceId relationship and does not affect sessions, files, snapshots, history, or saved versions.
+
+**Bounded scope:**
+- Backend + frontend minimal move support
+- Allowed files/surfaces:
+  - backend project update/move endpoint or existing PATCH project route if present
+  - backend projects service/controller/DTO and tests
+  - frontend workspace/project helper for move action
+  - `page.tsx` handler and state refresh
+  - `workspace-shell.tsx` minimal move control in the existing project surface
+  - directly relevant tests
+- Behavior:
+  - user can move a selected/existing project to another owned workspace
+  - backend validates: project belongs to current user; target workspace belongs to current user
+  - move updates only project.workspaceId
+  - after move, frontend refreshes the current workspace project list
+  - moved project disappears from current filtered list if it no longer belongs to the selected workspace
+  - if moved project was currently selected/open, active session/files/history are not closed or mutated in this slice; only list membership changes
+  - no nested workspaces, no team/shared workspaces, no sessions-to-workspaces, no history/snapshot changes
+
+**Non-goals:**
+- No drag-and-drop move UI
+- No bulk move
+- No nested workspaces
+- No members / roles / billing / shared integrations
+- No session-to-workspace relationship
+- No file/session/history mutation
+- No D1/PROJ-03 work
+- No Phase D/E or unrelated work
+
+**Acceptance checks:**
+- User can move an owned project to another owned workspace
+- Cross-user project move is rejected
+- Cross-user target workspace is rejected
+- Moving project only changes workspaceId
+- Project list refreshes correctly after move
+- Project open/session/history behavior remains unchanged
+- Relevant backend/frontend typecheck/tests pass
+
+**Risks / invariants:**
+- Moving a project is metadata-only
+- Do not mutate project files, sessions, snapshots, history, or saved versions
+- Keep workspace ownership strictly user-scoped
+- Preserve current open project/session if it is moved while open
+- Preserve project-first UX and existing workspace selector/filter behavior
+- Keep UI simple; no drag-and-drop or broad redesign
+
+**Dependencies:** WS-06 (Complete and Locked)
 
 ---
 

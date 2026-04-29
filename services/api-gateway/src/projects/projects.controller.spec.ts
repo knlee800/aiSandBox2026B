@@ -18,6 +18,7 @@ describe('ProjectsController (PR-03-01)', () => {
             listProjects: jest.fn(),
             getProjectByIdForUser: jest.fn(),
             renameProject: jest.fn(),
+            moveProjectToWorkspace: jest.fn(),
             updateProjectVisibility: jest.fn(),
             associateSessionWithProject: jest.fn(),
             openProjectIntoSession: jest.fn(),
@@ -71,7 +72,7 @@ describe('ProjectsController (PR-03-01)', () => {
     expect(projectsService.listProjects).toHaveBeenCalledWith('user-1', 'workspace-1');
   });
 
-  it('gets, renames, associates, and opens project with ownership-scoped user id', async () => {
+  it('gets, renames, moves, associates, and opens project with ownership-scoped user id', async () => {
     projectsService.getProjectByIdForUser.mockResolvedValue({
       id: 'project-1',
       userId: 'user-1',
@@ -81,6 +82,12 @@ describe('ProjectsController (PR-03-01)', () => {
       id: 'project-1',
       userId: 'user-1',
       name: 'Project B',
+    } as any);
+    projectsService.moveProjectToWorkspace.mockResolvedValue({
+      id: 'project-1',
+      userId: 'user-1',
+      name: 'Project B',
+      workspaceId: 'workspace-2',
     } as any);
     projectsService.associateSessionWithProject.mockResolvedValue({
       projectId: 'project-1',
@@ -101,6 +108,11 @@ describe('ProjectsController (PR-03-01)', () => {
     const userReq = { user: { userId: 'user-1' } };
     await controller.getProject('project-1', userReq);
     await controller.renameProject('project-1', { name: 'Project B' }, userReq);
+    await controller.moveProjectToWorkspace(
+      'project-1',
+      { targetWorkspaceId: 'workspace-2' },
+      userReq,
+    );
     await controller.updateProjectVisibility(
       'project-1',
       { visibility: 'public' },
@@ -118,6 +130,11 @@ describe('ProjectsController (PR-03-01)', () => {
       'user-1',
       'project-1',
       'Project B',
+    );
+    expect(projectsService.moveProjectToWorkspace).toHaveBeenCalledWith(
+      'user-1',
+      'project-1',
+      'workspace-2',
     );
     expect(projectsService.associateSessionWithProject).toHaveBeenCalledWith({
       userId: 'user-1',

@@ -103,6 +103,22 @@ export class ProjectsService {
     return await this.projectRepository.save(project);
   }
 
+  async moveProjectToWorkspace(
+    userId: string,
+    projectId: string,
+    targetWorkspaceId: string,
+  ): Promise<Project> {
+    const project = await this.getProjectByIdForUser(userId, projectId);
+    await this.workspacesService.getWorkspaceByIdForUser(userId, targetWorkspaceId);
+
+    if (project.workspaceId === targetWorkspaceId) {
+      return project;
+    }
+
+    project.workspaceId = targetWorkspaceId;
+    return await this.projectRepository.save(project);
+  }
+
   async updateProjectVisibility(
     userId: string,
     projectId: string,

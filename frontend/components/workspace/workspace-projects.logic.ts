@@ -41,6 +41,13 @@ interface CreateProjectArgs {
   fetchImpl?: typeof fetch;
 }
 
+interface MoveProjectArgs {
+  token: string;
+  projectId: string;
+  targetWorkspaceId: string;
+  fetchImpl?: typeof fetch;
+}
+
 interface OpenProjectArgs {
   token: string;
   projectId: string;
@@ -122,6 +129,28 @@ export async function createWorkspaceProject(
       | { message?: string }
       | null;
     throw new Error(trimMessage(payload?.message, 'Failed to create project.'));
+  }
+
+  return (await response.json()) as WorkspaceProjectSummary;
+}
+
+export async function moveWorkspaceProject(
+  args: MoveProjectArgs,
+): Promise<WorkspaceProjectSummary> {
+  const response = await (args.fetchImpl ?? fetch)(`/api/projects/${args.projectId}/workspace`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${args.token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ targetWorkspaceId: args.targetWorkspaceId.trim() }),
+  });
+
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => null)) as
+      | { message?: string }
+      | null;
+    throw new Error(trimMessage(payload?.message, 'Failed to move project.'));
   }
 
   return (await response.json()) as WorkspaceProjectSummary;

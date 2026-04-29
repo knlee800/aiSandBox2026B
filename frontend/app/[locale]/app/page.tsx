@@ -96,6 +96,7 @@ import {
   loadPublicWorkspaceProjectDetail,
   loadPublicWorkspaceProjects,
   loadWorkspaceProjects,
+  moveWorkspaceProject,
   openWorkspaceProject,
   updateWorkspaceProjectVisibility,
   type WorkspacePublicProjectDetail,
@@ -406,11 +407,14 @@ export default function AppPage() {
     'private',
   );
   const [projectNameInput, setProjectNameInput] = useState('');
+  const [projectMoveTargetWorkspaceId, setProjectMoveTargetWorkspaceId] = useState<string | null>(
+    null,
+  );
   const [projectListState, setProjectListState] = useState<'idle' | 'loading' | 'ready' | 'error'>(
     'idle',
   );
   const [projectActionState, setProjectActionState] = useState<
-    'idle' | 'creating' | 'opening' | 'success' | 'error'
+    'idle' | 'creating' | 'opening' | 'moving' | 'success' | 'error'
   >('idle');
   const [projectActionMessage, setProjectActionMessage] = useState<string | null>(null);
   const [projectActionError, setProjectActionError] = useState<string | null>(null);
@@ -539,6 +543,7 @@ export default function AppPage() {
     setWorkspaceRenameNameInput('');
     setWorkspaceActionState('idle');
     setWorkspaceActionError(null);
+    setProjectMoveTargetWorkspaceId(null);
     setSessions([]);
     setSelectedSessionId(null);
     setSessionError(null);
@@ -706,6 +711,10 @@ export default function AppPage() {
     }
 
     sessionStorage.removeItem(TAB_SELECTED_PROJECT_STORAGE_KEY);
+  }, [selectedProjectId]);
+
+  useEffect(() => {
+    setProjectMoveTargetWorkspaceId(null);
   }, [selectedProjectId]);
 
   useEffect(() => {
@@ -1303,6 +1312,7 @@ export default function AppPage() {
   async function loadWorkspaceProjectsForUser(
     token: string,
     workspaceId: string | null = selectedWorkspaceId,
+    preserveSelectedProjectIdWhenMissing = false,
   ): Promise<void> {
     const normalizedWorkspaceId = workspaceId?.trim() ? workspaceId.trim() : null;
     if (!normalizedWorkspaceId) {
@@ -1329,6 +1339,10 @@ export default function AppPage() {
           return seededProjectId;
         }
 
+        if (preserveSelectedProjectIdWhenMissing && currentSelectedProjectId) {
+          return currentSelectedProjectId;
+        }
+
         return projects.length > 0 ? projects[0].id : null;
       });
       setProjectListState('ready');
@@ -1350,6 +1364,14 @@ export default function AppPage() {
     setProjectActionState('idle');
   }
 
+  function handleProjectMoveTargetWorkspaceSelection(workspaceId: string): void {
+    const normalizedWorkspaceId = workspaceId.trim() ? workspaceId.trim() : null;
+    setProjectMoveTargetWorkspaceId(normalizedWorkspaceId);
+    setProjectActionMessage(null);
+    setProjectActionError(null);
+    setProjectActionState('idle');
+  }
+
   function handleWorkspaceCreateNameInputChange(value: string): void {
     setWorkspaceCreateNameInput(value);
     setWorkspaceActionError(null);
@@ -1365,6 +1387,7 @@ export default function AppPage() {
   function handleProjectSelection(projectId: string): void {
     const normalizedProjectId = projectId.trim() ? projectId : null;
     setSelectedProjectId(normalizedProjectId);
+    setProjectMoveTargetWorkspaceId(null);
     if (!normalizedProjectId) {
       setSelectedProjectVisibility('private');
       return;
@@ -1382,6 +1405,7 @@ export default function AppPage() {
     setSelectedWorkspaceId(normalizedWorkspaceId);
     setWorkspaceActionError(null);
     setWorkspaceActionState('idle');
+    setProjectMoveTargetWorkspaceId(null);
     setSelectedProjectId(null);
     setSelectedProjectVisibility('private');
     setProjectActionState('idle');
@@ -1516,6 +1540,73 @@ export default function AppPage() {
       );
     } finally {
       setWorkspaceActionState('idle');
+    }
+  }
+
+  async function handleMoveWorkspaceProject(
+    projectId: string | null,
+    targetWorkspaceId: string | null,
+  ): Promise<void> {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+
+    const normalizedProjectId =
+      typeof projectId === 'string' && projectId.trim() ? projectId.trim() : null;
+    if (!normalizedProjectId) {
+      setProjectActionState('error');
+      setProjectActionMessage(null);
+      setProjectActionError('Select a project to move.');
+      return;
+    }
+
+    const normalizedTargetWorkspaceId =
+      typeof targetWorkspaceId === 'string' && targetWorkspaceId.trim()
+        ? targetWorkspaceId.trim()
+        : null;
+    if (!normalizedTargetWorkspaceId) {
+      setProjectActionState('error');
+      setProjectActionMessage(null);
+      setProjectActionError('Select a target workspace.');
+      return;
+    }
+
+    const activeSession =
+      sessionsRef.current.find((session) => session.id === selectedSessionIdRef.current) ?? null;
+    const shouldPreserveSelectedProjectId = activeSession?.projectId === normalizedProjectId;
+
+    setProjectActionState('moving');
+    setProjectActionMessage(null);
+    setProjectActionError(null);
+    try {
+      const movedProject = await moveWorkspaceProject({
+        token,
+        projectId: normalizedProjectId,
+        targetWorkspaceId: normalizedTargetWorkspaceId,
+      });
+      await loadWorkspaceProjectsForUser(
+        token,
+        selectedWorkspaceId,
+        shouldPreserveSelectedProjectId,
+      );
+      if (shouldPreserveSelectedProjectId) {
+        setSelectedProjectId(normalizedProjectId);
+        setSelectedProjectVisibility(movedProject.visibility === 'public' ? 'public' : 'private');
+      }
+      setProjectMoveTargetWorkspaceId(null);
+      setProjectActionState('success');
+      setProjectActionMessage('Project moved.');
+      setProjectActionError(null);
+    } catch (error) {
+      setProjectActionState('error');
+      setProjectActionMessage(null);
+      setProjectActionError(
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : 'Failed to move project.',
+      );
     }
   }
 
@@ -4496,10 +4587,15 @@ export default function AppPage() {
       onDeleteWorkspace={() => handleDeleteWorkspace(selectedWorkspaceId)}
       workspaceProjects={workspaceProjects}
       selectedProjectId={selectedProjectId}
+      projectMoveTargetWorkspaceId={projectMoveTargetWorkspaceId}
       selectedProjectVisibility={selectedProjectVisibility}
       projectNameInput={projectNameInput}
       onProjectNameInputChange={handleProjectNameInputChange}
+      onProjectMoveTargetWorkspaceIdChange={handleProjectMoveTargetWorkspaceSelection}
       onSelectProjectId={handleProjectSelection}
+      onMoveWorkspaceProject={() =>
+        handleMoveWorkspaceProject(selectedProjectId, projectMoveTargetWorkspaceId)
+      }
       onCreateWorkspaceProject={handleCreateWorkspaceProject}
       onOpenWorkspaceProject={handleOpenWorkspaceProject}
       onResumeWorkspaceProjectById={handleResumeWorkspaceProjectById}

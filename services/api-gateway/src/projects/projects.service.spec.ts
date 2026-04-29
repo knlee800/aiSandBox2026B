@@ -240,6 +240,78 @@ describe('ProjectsService (PR-03-01)', () => {
     expect(renamed.name).toBe('New Name');
   });
 
+  it('moves a project between owned workspaces by changing only workspaceId', async () => {
+    projectRepository.findOne.mockResolvedValue({
+      id: 'project-1',
+      userId: 'user-1',
+      name: 'Project A',
+      slug: 'project-a',
+      visibility: 'private',
+      workspaceId: 'workspace-1',
+    });
+    workspacesService.getWorkspaceByIdForUser.mockResolvedValue({
+      id: 'workspace-2',
+      userId: 'user-1',
+      name: 'Workspace B',
+      isDefault: false,
+    });
+    projectRepository.save.mockResolvedValue({
+      id: 'project-1',
+      userId: 'user-1',
+      name: 'Project A',
+      slug: 'project-a',
+      visibility: 'private',
+      workspaceId: 'workspace-2',
+    });
+
+    const moved = await service.moveProjectToWorkspace('user-1', 'project-1', 'workspace-2');
+
+    expect(workspacesService.getWorkspaceByIdForUser).toHaveBeenCalledWith('user-1', 'workspace-2');
+    expect(projectRepository.save).toHaveBeenCalledWith({
+      id: 'project-1',
+      userId: 'user-1',
+      name: 'Project A',
+      slug: 'project-a',
+      visibility: 'private',
+      workspaceId: 'workspace-2',
+    });
+    expect(moved).toEqual({
+      id: 'project-1',
+      userId: 'user-1',
+      name: 'Project A',
+      slug: 'project-a',
+      visibility: 'private',
+      workspaceId: 'workspace-2',
+    });
+  });
+
+  it('rejects moving a project to a workspace owned by another user', async () => {
+    projectRepository.findOne.mockResolvedValue({
+      id: 'project-1',
+      userId: 'user-1',
+      name: 'Project A',
+      workspaceId: 'workspace-1',
+    });
+    workspacesService.getWorkspaceByIdForUser.mockRejectedValue(
+      new NotFoundException('Workspace with ID workspace-foreign not found'),
+    );
+
+    await expect(
+      service.moveProjectToWorkspace('user-1', 'project-1', 'workspace-foreign'),
+    ).rejects.toThrow(NotFoundException);
+    expect(projectRepository.save).not.toHaveBeenCalled();
+  });
+
+  it('rejects moving a project the current user does not own', async () => {
+    projectRepository.findOne.mockResolvedValue(null);
+
+    await expect(
+      service.moveProjectToWorkspace('user-1', 'project-foreign', 'workspace-2'),
+    ).rejects.toThrow(NotFoundException);
+    expect(workspacesService.getWorkspaceByIdForUser).not.toHaveBeenCalled();
+    expect(projectRepository.save).not.toHaveBeenCalled();
+  });
+
   it('associates a usable session with a project', async () => {
     projectRepository.findOne.mockResolvedValue({
       id: 'project-1',

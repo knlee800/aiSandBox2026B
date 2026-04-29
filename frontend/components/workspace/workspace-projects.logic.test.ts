@@ -7,6 +7,7 @@ import {
   loadPublicWorkspaceProjectDetail,
   loadPublicWorkspaceProjects,
   loadWorkspaceProjects,
+  moveWorkspaceProject,
   openWorkspaceProject,
   updateWorkspaceProjectVisibility,
 } from './workspace-projects.logic';
@@ -118,6 +119,38 @@ describe('workspace-projects.logic', () => {
     assert.deepEqual(JSON.parse(String(calls[0].init?.body)), {
       name: 'Default Workspace Project',
     });
+  });
+
+  test('moveWorkspaceProject patches the target workspace id', async () => {
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    const fetchImpl = async (url: string, init?: RequestInit): Promise<Response> => {
+      calls.push({ url, init });
+      return new Response(
+        JSON.stringify({
+          id: 'project-1',
+          userId: 'user-1',
+          name: 'Main Project',
+          visibility: 'private',
+          workspaceId: 'workspace-2',
+          createdAt: '2026-04-03T00:00:00.000Z',
+          updatedAt: '2026-04-03T00:01:00.000Z',
+        }),
+        { status: 200 },
+      );
+    };
+
+    const project = await moveWorkspaceProject({
+      token: 'token',
+      projectId: 'project-1',
+      targetWorkspaceId: ' workspace-2 ',
+      fetchImpl: fetchImpl as typeof fetch,
+    });
+
+    assert.equal(calls[0].url, '/api/projects/project-1/workspace');
+    assert.deepEqual(JSON.parse(String(calls[0].init?.body)), {
+      targetWorkspaceId: 'workspace-2',
+    });
+    assert.equal(project.workspaceId, 'workspace-2');
   });
 
   test('updateWorkspaceProjectVisibility updates project share state', async () => {

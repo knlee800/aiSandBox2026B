@@ -220,18 +220,21 @@ const projectPanelRenderOverrides: Partial<React.ComponentProps<typeof Workspace
       id: 'project-1',
       userId: 'user-123',
       name: 'My Workspace Project',
-      workspaceId: null,
+      workspaceId: 'workspace-1',
       createdAt: '2026-04-04T10:00:00.000Z',
       updatedAt: '2026-04-04T10:00:00.000Z',
     },
   ],
   selectedProjectId: 'project-1',
+  projectMoveTargetWorkspaceId: null,
   projectNameInput: 'Draft Project',
   projectListState: 'ready',
   projectActionState: 'idle',
   selectedProjectVisibility: 'private',
   onProjectNameInputChange: () => {},
+  onProjectMoveTargetWorkspaceIdChange: () => {},
   onSelectProjectId: () => {},
+  onMoveWorkspaceProject: async () => {},
   onCreateWorkspaceProject: async () => {},
   onOpenWorkspaceProject: async () => {},
   onSelectedProjectVisibilityChange: () => {},
@@ -412,13 +415,16 @@ function buildWorkspaceShellProps(
     onDeleteWorkspace: async () => {},
     workspaceProjects: [],
     selectedProjectId: null,
+    projectMoveTargetWorkspaceId: null,
     projectNameInput: '',
     projectListState: 'idle',
     projectActionState: 'idle',
     projectActionMessage: null,
     projectActionError: null,
     onProjectNameInputChange: () => {},
+    onProjectMoveTargetWorkspaceIdChange: () => {},
     onSelectProjectId: () => {},
+    onMoveWorkspaceProject: async () => {},
     onCreateWorkspaceProject: async () => {},
     onOpenWorkspaceProject: async () => {},
     selectedProjectVisibility: 'private',
@@ -1301,6 +1307,70 @@ describe('workspace shell component', () => {
     const onClick = button.props.onClick as (() => void) | undefined;
     onClick?.();
     assert.equal(deleteCalls, 1);
+  });
+
+  test('renders project move workspace selector for selected project', () => {
+    const select = renderWorkspaceShellElementByTestId('history-project-move-workspace-select', {
+      ...projectPanelRenderOverrides,
+      projectFirstUxEnabled: true,
+      selectedSessionId: null,
+      selectedWorkspaceId: 'workspace-1',
+      projectMoveTargetWorkspaceId: 'workspace-2',
+      workspaceProjects: [
+        {
+          id: 'project-1',
+          userId: 'user-123',
+          name: 'My Workspace Project',
+          workspaceId: 'workspace-1',
+          createdAt: '2026-04-04T10:00:00.000Z',
+          updatedAt: '2026-04-04T10:00:00.000Z',
+        },
+      ],
+    });
+
+    assert.ok(select);
+    assert.equal(select.props.value, 'workspace-2');
+  });
+
+  test('forwards project move target changes and move requests', () => {
+    const selectedWorkspaceIds: string[] = [];
+    let moveCalls = 0;
+    const select = renderWorkspaceShellElementByTestId('history-project-move-workspace-select', {
+      ...projectPanelRenderOverrides,
+      projectFirstUxEnabled: true,
+      selectedSessionId: null,
+      selectedWorkspaceId: 'workspace-1',
+      projectMoveTargetWorkspaceId: null,
+      onProjectMoveTargetWorkspaceIdChange: (workspaceId: string) => {
+        selectedWorkspaceIds.push(workspaceId);
+      },
+      onMoveWorkspaceProject: async () => {
+        moveCalls += 1;
+      },
+    });
+    const button = renderWorkspaceShellElementByTestId('history-project-move-button', {
+      ...projectPanelRenderOverrides,
+      projectFirstUxEnabled: true,
+      selectedSessionId: null,
+      selectedWorkspaceId: 'workspace-1',
+      projectMoveTargetWorkspaceId: 'workspace-2',
+      onMoveWorkspaceProject: async () => {
+        moveCalls += 1;
+      },
+    });
+
+    assert.ok(select);
+    const onChange = select.props.onChange as
+      | ((event: { target: { value: string } }) => void)
+      | undefined;
+    onChange?.({ target: { value: 'workspace-2' } });
+    assert.deepEqual(selectedWorkspaceIds, ['workspace-2']);
+
+    assert.ok(button);
+    assert.equal(button.props.disabled, false);
+    const onClick = button.props.onClick as (() => void) | undefined;
+    onClick?.();
+    assert.equal(moveCalls, 1);
   });
 
   test('allows opening a project without selectedSessionId behind feature flag', () => {
