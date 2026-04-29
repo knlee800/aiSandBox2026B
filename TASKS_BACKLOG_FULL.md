@@ -20239,9 +20239,9 @@ The feature/spec wave, release-readiness wave, and deployment-readiness wave are
 
 ## WS — Workspace Rollout
 
-**Family status:** ACTIVE — WS-01 COMPLETE and LOCKED; WS-02 COMPLETE and LOCKED; WS-03 COMPLETE and LOCKED; WS-04 COMPLETE and LOCKED; WS-05 COMPLETE and LOCKED
+**Family status:** ACTIVE — WS-01 COMPLETE and LOCKED; WS-02 COMPLETE and LOCKED; WS-03 COMPLETE and LOCKED; WS-04 COMPLETE and LOCKED; WS-05 COMPLETE and LOCKED; WS-06 COMPLETE and LOCKED
 
-**Current stage:** WS-05 (COMPLETE and LOCKED)
+**Current stage:** WS-06 (COMPLETE and LOCKED)
 
 **Ordered slices (registered so far):**
 1. WS-01 — Workspace Schema, Entity, And Backfill Foundation (COMPLETE and LOCKED)
@@ -20249,6 +20249,7 @@ The feature/spec wave, release-readiness wave, and deployment-readiness wave are
 3. WS-03 — Project Create/List Workspace-Awareness Foundation (COMPLETE and LOCKED)
 4. WS-04 — Frontend Workspace Types And API Helpers (COMPLETE and LOCKED)
 5. WS-05 — Workspace Selector And Filtered Project List (COMPLETE and LOCKED)
+6. WS-06 — Workspace Create/Rename/Delete UI (COMPLETE and LOCKED)
 
 ---
 
@@ -20616,6 +20617,69 @@ Add the first visible workspace UX by loading the user's workspaces, showing a w
 **Dependencies:** WS-04 (Complete and Locked)
 
 **Reference:** See TASKS.md -> WS-05 for active-task summary.
+
+---
+
+### WS-06: Workspace Create/Rename/Delete UI
+
+**Task ID:** WS-06
+**Family:** WS (Workspace Rollout)
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** FRONTEND / UX — workspace management UI
+**Source:** WS v1 rollout — sixth slice; follows WS-05 selector/filter surface
+**Checkpoint:** `docs/WS-06-CHECKPOINT.md`
+
+**Objective:**
+Add the minimal user-facing UI for creating, renaming, and deleting personal workspaces using the existing WS-02 CRUD API and WS-05 selector surface. Keep it lightweight, safe, and additive. Stop before project move UI and broader workspace redesign.
+
+**Bounded scope:**
+- Frontend only
+- Allowed files/surfaces:
+  - `page.tsx`
+  - `workspace-shell.tsx`
+  - `workspace-workspaces.logic.ts` only if tiny helper adjustments are needed
+  - directly relevant tests
+- Behavior:
+  - user can create a workspace from the existing workspace surface
+  - user can rename the currently selected workspace
+  - user can delete a non-default workspace
+  - default workspace delete action is hidden or disabled
+  - after create/rename/delete, workspace list and selected workspace state refresh correctly
+  - deletion follows existing backend rule safely
+  - no move-project-between-workspaces yet
+  - no broader redesign beyond this management slice
+
+**Non-goals:**
+- No move-project-between-workspaces yet
+- No nested workspaces
+- No members / roles / billing / shared integrations
+- No session-to-workspace relationship
+- No D1/PROJ-03 work
+- No Phase D/E or unrelated work
+
+**Acceptance checks:**
+- User can create a workspace from the visible workspace surface
+- User can rename a workspace
+- User can delete a non-default workspace
+- Default workspace delete is not offered or is clearly disabled
+- Workspace selector/list refreshes correctly after create/rename/delete
+- Selected workspace state behaves sensibly after delete
+- Existing project list/project-open behavior remains intact
+- Relevant frontend typecheck/tests pass
+
+**Risks / invariants:**
+- Keep this to workspace management UI only
+- Do not broaden into move-project-between-workspaces
+- Preserve existing project-open/session/history behavior
+- Keep workspace model personal-only in v1
+- Preserve compatibility with current backend CRUD behavior
+- Keep scope minimal and avoid broader sidebar redesign
+
+**Dependencies:** WS-05 (Complete and Locked)
+
+**Reference:** See TASKS.md -> WS-06 for active-task summary.
 
 ---
 

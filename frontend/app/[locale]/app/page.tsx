@@ -103,7 +103,10 @@ import {
   type WorkspaceProjectSummary,
 } from '@/components/workspace/workspace-projects.logic';
 import {
+  createWorkspace,
+  deleteWorkspace,
   loadWorkspaces,
+  updateWorkspace,
   type Workspace,
 } from '@/components/workspace/workspace-workspaces.logic';
 import {
@@ -391,6 +394,12 @@ export default function AppPage() {
   const [snapshotActionError, setSnapshotActionError] = useState<string | null>(null);
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string | null>(null);
+  const [workspaceCreateNameInput, setWorkspaceCreateNameInput] = useState('');
+  const [workspaceRenameNameInput, setWorkspaceRenameNameInput] = useState('');
+  const [workspaceActionState, setWorkspaceActionState] = useState<
+    'idle' | 'creating' | 'renaming' | 'deleting'
+  >('idle');
+  const [workspaceActionError, setWorkspaceActionError] = useState<string | null>(null);
   const [workspaceProjects, setWorkspaceProjects] = useState<WorkspaceProjectSummary[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [selectedProjectVisibility, setSelectedProjectVisibility] = useState<'private' | 'public'>(
@@ -526,6 +535,10 @@ export default function AppPage() {
     setUserId(null);
     setWorkspaces([]);
     setSelectedWorkspaceId(null);
+    setWorkspaceCreateNameInput('');
+    setWorkspaceRenameNameInput('');
+    setWorkspaceActionState('idle');
+    setWorkspaceActionError(null);
     setSessions([]);
     setSelectedSessionId(null);
     setSessionError(null);
@@ -675,6 +688,12 @@ export default function AppPage() {
 
     sessionStorage.removeItem(TAB_SELECTED_WORKSPACE_STORAGE_KEY);
   }, [selectedWorkspaceId]);
+
+  useEffect(() => {
+    const selectedWorkspace =
+      workspaces.find((workspace) => workspace.id === selectedWorkspaceId) ?? null;
+    setWorkspaceRenameNameInput(selectedWorkspace?.name ?? '');
+  }, [workspaces, selectedWorkspaceId]);
 
   useEffect(() => {
     if (!PROJECT_FIRST_UX) {
@@ -1077,23 +1096,40 @@ export default function AppPage() {
     return data;
   }
 
-  async function loadWorkspacesForUser(token: string): Promise<void> {
+  function applyLoadedWorkspaces(
+    loadedWorkspaces: Workspace[],
+    preferredSelectedWorkspaceId?: string | null,
+  ): void {
+    setWorkspaces(loadedWorkspaces);
+    setSelectedWorkspaceId((currentSelectedWorkspaceId) => {
+      const seededWorkspaceId =
+        preferredSelectedWorkspaceId === undefined && PROJECT_FIRST_UX
+          ? coldMountSeededWorkspaceIdRef.current
+          : null;
+      coldMountSeededWorkspaceIdRef.current = null;
+      return resolveSelectedWorkspaceId({
+        workspaces: loadedWorkspaces,
+        currentSelectedWorkspaceId:
+          preferredSelectedWorkspaceId === undefined
+            ? currentSelectedWorkspaceId
+            : preferredSelectedWorkspaceId,
+        seededWorkspaceId,
+      });
+    });
+  }
+
+  async function loadWorkspacesForUser(
+    token: string,
+    preferredSelectedWorkspaceId?: string | null,
+  ): Promise<void> {
     setProjectActionError(null);
     try {
       const loadedWorkspaces = await loadWorkspaces({ token });
-      setWorkspaces(loadedWorkspaces);
-      setSelectedWorkspaceId((currentSelectedWorkspaceId) => {
-        const seededWorkspaceId = PROJECT_FIRST_UX ? coldMountSeededWorkspaceIdRef.current : null;
-        coldMountSeededWorkspaceIdRef.current = null;
-        return resolveSelectedWorkspaceId({
-          workspaces: loadedWorkspaces,
-          currentSelectedWorkspaceId,
-          seededWorkspaceId,
-        });
-      });
+      applyLoadedWorkspaces(loadedWorkspaces, preferredSelectedWorkspaceId);
     } catch (error) {
       setWorkspaces([]);
       setSelectedWorkspaceId(null);
+      setWorkspaceRenameNameInput('');
       setWorkspaceProjects([]);
       setSelectedProjectId(null);
       setSelectedProjectVisibility('private');
@@ -1314,6 +1350,18 @@ export default function AppPage() {
     setProjectActionState('idle');
   }
 
+  function handleWorkspaceCreateNameInputChange(value: string): void {
+    setWorkspaceCreateNameInput(value);
+    setWorkspaceActionError(null);
+    setWorkspaceActionState('idle');
+  }
+
+  function handleWorkspaceRenameNameInputChange(value: string): void {
+    setWorkspaceRenameNameInput(value);
+    setWorkspaceActionError(null);
+    setWorkspaceActionState('idle');
+  }
+
   function handleProjectSelection(projectId: string): void {
     const normalizedProjectId = projectId.trim() ? projectId : null;
     setSelectedProjectId(normalizedProjectId);
@@ -1332,11 +1380,143 @@ export default function AppPage() {
   function handleWorkspaceSelection(workspaceId: string): void {
     const normalizedWorkspaceId = workspaceId.trim() ? workspaceId.trim() : null;
     setSelectedWorkspaceId(normalizedWorkspaceId);
+    setWorkspaceActionError(null);
+    setWorkspaceActionState('idle');
     setSelectedProjectId(null);
     setSelectedProjectVisibility('private');
     setProjectActionState('idle');
     setProjectActionMessage(null);
     setProjectActionError(null);
+  }
+
+  async function handleCreateWorkspace(name: string): Promise<void> {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      setWorkspaceActionError('Workspace name is required.');
+      setWorkspaceActionState('idle');
+      return;
+    }
+
+    setWorkspaceActionState('creating');
+    setWorkspaceActionError(null);
+    try {
+      const createdWorkspace = await createWorkspace({
+        token,
+        name: trimmedName,
+      });
+      const loadedWorkspaces = await loadWorkspaces({ token });
+      applyLoadedWorkspaces(loadedWorkspaces, createdWorkspace.id);
+      setWorkspaceCreateNameInput('');
+    } catch (error) {
+      setWorkspaceActionError(
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : 'Failed to create workspace.',
+      );
+    } finally {
+      setWorkspaceActionState('idle');
+    }
+  }
+
+  async function handleRenameWorkspace(
+    workspaceId: string | null,
+    name: string,
+  ): Promise<void> {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+
+    const normalizedWorkspaceId =
+      typeof workspaceId === 'string' && workspaceId.trim() ? workspaceId.trim() : null;
+    if (!normalizedWorkspaceId) {
+      setWorkspaceActionError('Select a workspace to rename.');
+      setWorkspaceActionState('idle');
+      return;
+    }
+
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      setWorkspaceActionError('Workspace name is required.');
+      setWorkspaceActionState('idle');
+      return;
+    }
+
+    setWorkspaceActionState('renaming');
+    setWorkspaceActionError(null);
+    try {
+      await updateWorkspace({
+        token,
+        workspaceId: normalizedWorkspaceId,
+        name: trimmedName,
+      });
+      const loadedWorkspaces = await loadWorkspaces({ token });
+      applyLoadedWorkspaces(loadedWorkspaces, normalizedWorkspaceId);
+    } catch (error) {
+      setWorkspaceActionError(
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : 'Failed to rename workspace.',
+      );
+    } finally {
+      setWorkspaceActionState('idle');
+    }
+  }
+
+  async function handleDeleteWorkspace(workspaceId: string | null): Promise<void> {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+
+    const normalizedWorkspaceId =
+      typeof workspaceId === 'string' && workspaceId.trim() ? workspaceId.trim() : null;
+    if (!normalizedWorkspaceId) {
+      setWorkspaceActionError('Select a workspace to delete.');
+      setWorkspaceActionState('idle');
+      return;
+    }
+
+    const selectedWorkspace =
+      workspaces.find((workspace) => workspace.id === normalizedWorkspaceId) ?? null;
+    if (!selectedWorkspace) {
+      setWorkspaceActionError('Selected workspace no longer exists.');
+      setWorkspaceActionState('idle');
+      return;
+    }
+
+    if (selectedWorkspace.isDefault) {
+      setWorkspaceActionError('Default workspace cannot be deleted.');
+      setWorkspaceActionState('idle');
+      return;
+    }
+
+    setWorkspaceActionState('deleting');
+    setWorkspaceActionError(null);
+    try {
+      await deleteWorkspace({
+        token,
+        workspaceId: normalizedWorkspaceId,
+      });
+      const loadedWorkspaces = await loadWorkspaces({ token });
+      applyLoadedWorkspaces(loadedWorkspaces, null);
+    } catch (error) {
+      setWorkspaceActionError(
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : 'Failed to delete workspace.',
+      );
+    } finally {
+      setWorkspaceActionState('idle');
+    }
   }
 
   async function handleCreateWorkspaceProject(): Promise<void> {
@@ -4304,7 +4484,16 @@ export default function AppPage() {
       projectActionError={projectActionError}
       workspaces={workspaces}
       selectedWorkspaceId={selectedWorkspaceId}
+      workspaceActionState={workspaceActionState}
+      workspaceActionError={workspaceActionError}
+      workspaceCreateNameInput={workspaceCreateNameInput}
+      workspaceRenameNameInput={workspaceRenameNameInput}
       onSelectWorkspaceId={handleWorkspaceSelection}
+      onWorkspaceCreateNameInputChange={handleWorkspaceCreateNameInputChange}
+      onWorkspaceRenameNameInputChange={handleWorkspaceRenameNameInputChange}
+      onCreateWorkspace={() => handleCreateWorkspace(workspaceCreateNameInput)}
+      onRenameWorkspace={() => handleRenameWorkspace(selectedWorkspaceId, workspaceRenameNameInput)}
+      onDeleteWorkspace={() => handleDeleteWorkspace(selectedWorkspaceId)}
       workspaceProjects={workspaceProjects}
       selectedProjectId={selectedProjectId}
       selectedProjectVisibility={selectedProjectVisibility}

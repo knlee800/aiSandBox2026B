@@ -205,7 +205,16 @@ const workspaceOptions: Workspace[] = [
 const projectPanelRenderOverrides: Partial<React.ComponentProps<typeof WorkspaceShell>> = {
   workspaces: workspaceOptions,
   selectedWorkspaceId: 'workspace-1',
+  workspaceActionState: 'idle',
+  workspaceActionError: null,
+  workspaceCreateNameInput: 'New Workspace',
+  workspaceRenameNameInput: 'Personal',
   onSelectWorkspaceId: () => {},
+  onWorkspaceCreateNameInputChange: () => {},
+  onWorkspaceRenameNameInputChange: () => {},
+  onCreateWorkspace: async () => {},
+  onRenameWorkspace: async () => {},
+  onDeleteWorkspace: async () => {},
   workspaceProjects: [
     {
       id: 'project-1',
@@ -389,6 +398,42 @@ function buildWorkspaceShellProps(
     checkpointDescriptionInput: '',
     onCheckpointDescriptionChange: () => {},
     onCreateManualCheckpoint: async () => {},
+    workspaces: workspaceOptions,
+    selectedWorkspaceId: 'workspace-1',
+    workspaceActionState: 'idle',
+    workspaceActionError: null,
+    workspaceCreateNameInput: '',
+    workspaceRenameNameInput: 'Personal',
+    onSelectWorkspaceId: () => {},
+    onWorkspaceCreateNameInputChange: () => {},
+    onWorkspaceRenameNameInputChange: () => {},
+    onCreateWorkspace: async () => {},
+    onRenameWorkspace: async () => {},
+    onDeleteWorkspace: async () => {},
+    workspaceProjects: [],
+    selectedProjectId: null,
+    projectNameInput: '',
+    projectListState: 'idle',
+    projectActionState: 'idle',
+    projectActionMessage: null,
+    projectActionError: null,
+    onProjectNameInputChange: () => {},
+    onSelectProjectId: () => {},
+    onCreateWorkspaceProject: async () => {},
+    onOpenWorkspaceProject: async () => {},
+    selectedProjectVisibility: 'private',
+    onSelectedProjectVisibilityChange: () => {},
+    onUpdateWorkspaceProjectVisibility: async () => {},
+    publicProjectListState: 'idle',
+    publicProjectActionState: 'idle',
+    publicProjectActionMessage: null,
+    publicProjectActionError: null,
+    publicWorkspaceProjects: [],
+    selectedPublicProjectId: null,
+    selectedPublicProjectDetail: null,
+    onSelectPublicProjectId: () => {},
+    onViewPublicWorkspaceProject: async () => {},
+    onForkPublicWorkspaceProject: async () => {},
     checkpointRevertState: 'idle',
     checkpointRevertError: null,
     checkpointRevertTargetId: null,
@@ -1149,6 +1194,113 @@ describe('workspace shell component', () => {
       | undefined;
     onChange?.({ target: { value: 'workspace-1' } });
     assert.deepEqual(selectedWorkspaceIds, ['workspace-1']);
+  });
+
+  test('renders workspace create controls and forwards create requests', () => {
+    let createCalls = 0;
+    const inputValues: string[] = [];
+    const input = renderWorkspaceShellElementByTestId('history-workspace-create-input', {
+      ...projectPanelRenderOverrides,
+      projectFirstUxEnabled: true,
+      selectedSessionId: null,
+      workspaceCreateNameInput: 'Client Ops',
+      onWorkspaceCreateNameInputChange: (value: string) => {
+        inputValues.push(value);
+      },
+    });
+    const button = renderWorkspaceShellElementByTestId('history-workspace-create-button', {
+      ...projectPanelRenderOverrides,
+      projectFirstUxEnabled: true,
+      selectedSessionId: null,
+      workspaceCreateNameInput: 'Client Ops',
+      onCreateWorkspace: async () => {
+        createCalls += 1;
+      },
+    });
+
+    assert.ok(input);
+    assert.equal(input.props.value, 'Client Ops');
+    const onChange = input.props.onChange as
+      | ((event: { target: { value: string } }) => void)
+      | undefined;
+    onChange?.({ target: { value: 'Studio' } });
+    assert.deepEqual(inputValues, ['Studio']);
+
+    assert.ok(button);
+    assert.equal(button.props.disabled, false);
+    const onClick = button.props.onClick as (() => void) | undefined;
+    onClick?.();
+    assert.equal(createCalls, 1);
+  });
+
+  test('renders workspace rename controls and forwards rename requests', () => {
+    let renameCalls = 0;
+    const inputValues: string[] = [];
+    const input = renderWorkspaceShellElementByTestId('history-workspace-rename-input', {
+      ...projectPanelRenderOverrides,
+      projectFirstUxEnabled: true,
+      selectedSessionId: null,
+      selectedWorkspaceId: 'workspace-2',
+      workspaceRenameNameInput: 'Client Work',
+      onWorkspaceRenameNameInputChange: (value: string) => {
+        inputValues.push(value);
+      },
+    });
+    const button = renderWorkspaceShellElementByTestId('history-workspace-rename-button', {
+      ...projectPanelRenderOverrides,
+      projectFirstUxEnabled: true,
+      selectedSessionId: null,
+      selectedWorkspaceId: 'workspace-2',
+      workspaceRenameNameInput: 'Client Work',
+      onRenameWorkspace: async () => {
+        renameCalls += 1;
+      },
+    });
+
+    assert.ok(input);
+    assert.equal(input.props.value, 'Client Work');
+    const onChange = input.props.onChange as
+      | ((event: { target: { value: string } }) => void)
+      | undefined;
+    onChange?.({ target: { value: 'Client Delivery' } });
+    assert.deepEqual(inputValues, ['Client Delivery']);
+
+    assert.ok(button);
+    assert.equal(button.props.disabled, false);
+    const onClick = button.props.onClick as (() => void) | undefined;
+    onClick?.();
+    assert.equal(renameCalls, 1);
+  });
+
+  test('keeps workspace delete disabled for the default workspace', () => {
+    const button = renderWorkspaceShellElementByTestId('history-workspace-delete-button', {
+      ...projectPanelRenderOverrides,
+      projectFirstUxEnabled: true,
+      selectedSessionId: null,
+      selectedWorkspaceId: 'workspace-1',
+    });
+
+    assert.ok(button);
+    assert.equal(button.props.disabled, true);
+  });
+
+  test('enables workspace delete and forwards requests for non-default workspace', () => {
+    let deleteCalls = 0;
+    const button = renderWorkspaceShellElementByTestId('history-workspace-delete-button', {
+      ...projectPanelRenderOverrides,
+      projectFirstUxEnabled: true,
+      selectedSessionId: null,
+      selectedWorkspaceId: 'workspace-2',
+      onDeleteWorkspace: async () => {
+        deleteCalls += 1;
+      },
+    });
+
+    assert.ok(button);
+    assert.equal(button.props.disabled, false);
+    const onClick = button.props.onClick as (() => void) | undefined;
+    onClick?.();
+    assert.equal(deleteCalls, 1);
   });
 
   test('allows opening a project without selectedSessionId behind feature flag', () => {
