@@ -1,3 +1,8 @@
+export interface WorkspaceContext {
+  filePaths: string[];
+  selectedFilePath?: string;
+}
+
 export interface AiExecutionJob {
   executionId: string;
 
@@ -11,6 +16,7 @@ export interface AiExecutionJob {
   adapter: 'openai' | 'anthropic' | 'groq' | 'xai' | 'deepseek' | 'stub';
 
   prompt: string;
+  workspaceContext?: WorkspaceContext;
   model?: string;
 
   requestId?: string;

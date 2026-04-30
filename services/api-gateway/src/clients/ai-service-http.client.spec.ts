@@ -86,6 +86,33 @@ describe('AIServiceHttpClient (Phase 18A)', () => {
       expect(mockAxiosInstance.post).toHaveBeenCalledTimes(1);
     });
 
+    it('should forward optional workspaceContext unchanged', async () => {
+      const request: AIExecutionRequest = {
+        sessionId: 'session-ctx',
+        conversationId: 'conv-ctx',
+        userId: 'user-ctx',
+        prompt: 'List files',
+        provider: 'stub',
+        workspaceContext: {
+          filePaths: ['README.md', 'src/app.ts'],
+          selectedFilePath: 'src/app.ts',
+        },
+      };
+
+      const expectedResult: AIExecutionResult = {
+        output: 'AI response',
+        tokensUsed: 5,
+        model: 'stub',
+      };
+
+      mockAxiosInstance.post.mockResolvedValue({ data: expectedResult });
+
+      const result = await client.execute(request);
+
+      expect(result).toEqual(expectedResult);
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith('/api/execute', request);
+    });
+
     it('should propagate HTTP errors from ai-service', async () => {
       // Arrange
       const request: AIExecutionRequest = {

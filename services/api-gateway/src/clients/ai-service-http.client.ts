@@ -7,6 +7,11 @@ import axios, { AxiosInstance } from 'axios';
  *
  * Phase 28: Provider selection is caller-owned (api-gateway determines provider)
  */
+export interface WorkspaceContext {
+  filePaths: string[];
+  selectedFilePath?: string;
+}
+
 export interface AIExecutionRequest {
   sessionId: string;
   conversationId: string;
@@ -14,6 +19,7 @@ export interface AIExecutionRequest {
   prompt: string;
   provider?: 'stub' | 'anthropic' | 'openai' | 'groq' | 'xai' | 'deepseek';
   model?: string;
+  workspaceContext?: WorkspaceContext;
   metadata?: Record<string, unknown>;
 }
 

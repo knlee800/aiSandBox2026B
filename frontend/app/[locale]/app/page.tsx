@@ -134,6 +134,7 @@ const PROJECT_OPEN_FILE_REFRESH_RETRY_DELAY_MS = 250;
 const PROJECT_OPEN_FILE_REFRESH_MAX_ATTEMPTS = 6;
 const AI_AUTO_CHECKPOINT_DESCRIPTION = 'AI: applied workspace file actions';
 const DEFAULT_CHAT_MODEL_OPTION = 'xai:grok-3';
+const WORKSPACE_CONTEXT_MAX_FILE_PATHS = 200;
 const CHAT_MODEL_OPTIONS = [
   { value: 'xai:grok-3', provider: 'xai', model: 'grok-3', label: 'xAI - grok-3' },
   {
@@ -156,6 +157,60 @@ const CHAT_MODEL_OPTIONS = [
     label: 'DeepSeek - deepseek-chat',
   },
 ] as const;
+
+interface WorkspacePromptContext {
+  filePaths: string[];
+  selectedFilePath?: string;
+}
+
+function collectWorkspacePromptFilePaths(
+  nodes: WorkspaceFileNode[],
+  filePathSet: Set<string>,
+): void {
+  for (const node of nodes) {
+    if (node.type === 'file') {
+      const normalizedPath = node.path.trim();
+      if (normalizedPath) {
+        filePathSet.add(normalizedPath);
+      }
+      continue;
+    }
+
+    if (node.children.length > 0) {
+      collectWorkspacePromptFilePaths(node.children, filePathSet);
+    }
+  }
+}
+
+function buildWorkspacePromptContext(
+  workspaceFileTree: WorkspaceFileNode[],
+  selectedFilePath: string | null,
+): WorkspacePromptContext | undefined {
+  const filePathSet = new Set<string>();
+  collectWorkspacePromptFilePaths(workspaceFileTree, filePathSet);
+
+  const filePaths = Array.from(filePathSet)
+    .sort((left, right) => left.localeCompare(right))
+    .slice(0, WORKSPACE_CONTEXT_MAX_FILE_PATHS);
+
+  const normalizedSelectedFilePath =
+    typeof selectedFilePath === 'string' && selectedFilePath.trim().length > 0
+      ? selectedFilePath.trim()
+      : undefined;
+
+  if (filePaths.length === 0 && !normalizedSelectedFilePath) {
+    return undefined;
+  }
+
+  if (normalizedSelectedFilePath) {
+    return {
+      filePaths,
+      selectedFilePath: normalizedSelectedFilePath,
+    };
+  }
+
+  return { filePaths };
+}
 
 interface WorkspaceChatExecutionResponse {
   executionId?: string;
@@ -3401,6 +3456,10 @@ export default function AppPage() {
               '',
               `Original user request: ${input.prompt}`,
             ].join('\n');
+      const workspaceContext = buildWorkspacePromptContext(
+        workspaceFileTree,
+        selectedFilePath,
+      );
 
       const executeResponse = await fetch('/api/ai/execute', {
         method: 'POST',
@@ -3414,6 +3473,7 @@ export default function AppPage() {
           model: input.chosenModel.model,
           sessionId: executionSessionId ?? crypto.randomUUID(),
           conversationId: executionSessionId ?? crypto.randomUUID(),
+          ...(workspaceContext ? { workspaceContext } : {}),
         }),
       });
 
@@ -3686,6 +3746,10 @@ export default function AppPage() {
     }
 
     try {
+      const workspaceContext = buildWorkspacePromptContext(
+        workspaceFileTree,
+        selectedFilePath,
+      );
       const response = await fetch('/api/ai/execute', {
         method: 'POST',
         headers: {
@@ -3698,6 +3762,7 @@ export default function AppPage() {
           model: chosenModel.model,
           sessionId: selectedSessionId ?? crypto.randomUUID(),
           conversationId: selectedSessionId ?? crypto.randomUUID(),
+          ...(workspaceContext ? { workspaceContext } : {}),
         }),
       });
 

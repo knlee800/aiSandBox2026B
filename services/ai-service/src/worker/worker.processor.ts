@@ -21,6 +21,7 @@ import {
   incrementWorkerClaim,
   incrementStuckRecovered,
 } from '../observability/worker-metrics';
+import type { WorkspaceContext } from '../queue/job.types';
 
 /**
  * Phase-51.3: Conservative classifier for transient (retryable) errors.
@@ -57,9 +58,59 @@ const FILE_ACTION_OUTPUT_CONTRACT = `Execution output contract:
 - Do not claim that files were created or changed unless matching \`file-actions\` entries are present.
 - If the user request does not require file creation or modification, respond normally in plain conversational text and do not emit \`file-actions\` blocks.`;
 
-function buildExecutionPromptWithFileActionContract(userPrompt: string): string {
+function buildWorkspaceContextBlock(
+  workspaceContext?: WorkspaceContext,
+): string | null {
+  if (!workspaceContext || typeof workspaceContext !== 'object') {
+    return null;
+  }
+
+  const normalizedFilePaths = Array.isArray(workspaceContext.filePaths)
+    ? workspaceContext.filePaths
+        .filter((path): path is string => typeof path === 'string')
+        .map((path) => path.trim())
+        .filter((path) => path.length > 0)
+    : [];
+
+  const normalizedSelectedFilePath =
+    typeof workspaceContext.selectedFilePath === 'string' &&
+    workspaceContext.selectedFilePath.trim().length > 0
+      ? workspaceContext.selectedFilePath.trim()
+      : null;
+
+  if (normalizedFilePaths.length === 0 && !normalizedSelectedFilePath) {
+    return null;
+  }
+
+  const sections: string[] = [];
+  if (normalizedFilePaths.length > 0) {
+    sections.push(
+      ['Current workspace files:', ...normalizedFilePaths.map((path) => `- ${path}`)].join('\n'),
+    );
+  }
+  if (normalizedSelectedFilePath) {
+    sections.push(`Currently open file:\n${normalizedSelectedFilePath}`);
+  }
+
+  return sections.join('\n\n');
+}
+
+export function buildExecutionPromptWithFileActionContract(
+  userPrompt: string,
+  workspaceContext?: WorkspaceContext,
+): string {
   const normalizedPrompt = typeof userPrompt === 'string' ? userPrompt : '';
-  return `${FILE_ACTION_OUTPUT_CONTRACT}
+  const workspaceContextBlock = buildWorkspaceContextBlock(workspaceContext);
+  if (!workspaceContextBlock) {
+    return `${FILE_ACTION_OUTPUT_CONTRACT}
+
+User request:
+${normalizedPrompt}`;
+  }
+
+  return `${workspaceContextBlock}
+
+${FILE_ACTION_OUTPUT_CONTRACT}
 
 User request:
 ${normalizedPrompt}`;
@@ -478,6 +529,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
             try {
               const executionPrompt = buildExecutionPromptWithFileActionContract(
                 job.data.prompt ?? '',
+                job.data.workspaceContext,
               );
               aiResult = await this.aiExecutionService.execute({
                 provider: job.data.provider,

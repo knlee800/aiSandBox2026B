@@ -337,6 +337,7 @@ export class AIExecutionController {
       provider,
       adapter: provider,
       prompt: request.prompt,
+      workspaceContext: request.workspaceContext,
       model: requestedModel,
       requestId,
       submittedAt,

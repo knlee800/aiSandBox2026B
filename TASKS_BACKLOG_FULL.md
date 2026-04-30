@@ -20749,3 +20749,84 @@ Allow a user to move an existing owned project from its current workspace to ano
 
 ---
 
+## AI-CTX — AI Workspace Context Awareness
+
+**Family status:** AI-CTX-01 COMPLETE and LOCKED
+
+**Current stage:** AI-CTX-01 (COMPLETE and LOCKED)
+
+**Ordered slices (registered so far):**
+1. AI-CTX-01 — Inject Workspace File Tree And Selected File Path Into AI Prompts (COMPLETE and LOCKED)
+
+---
+
+### AI-CTX-01: Inject Workspace File Tree And Selected File Path Into AI Prompts
+
+**Task ID:** AI-CTX-01
+**Family:** AI-CTX (AI Workspace Context Awareness)
+**Family status:** COMPLETE and LOCKED
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** CROSS-LAYER CONTEXT PLUMBING — frontend → api-gateway → queue → ai-service worker
+**Source:** Inspection session (Apr 2026) — AI answers "list files" like a generic chatbot because the execution path carries no workspace context
+
+**Objective:**
+Make the active AI execution path aware of the current workspace file list and selected file path so non-mutating questions like "list all files" can be answered correctly without adding destructive actions, schema changes, new endpoints, or broad AI tooling changes.
+
+**Bounded scope:**
+- Serialize a compact flat list of workspace file paths from the existing `workspaceFileTree` state
+- Include selected file path if present
+- Pass this as optional `workspaceContext` through:
+  - frontend execute request body (`page.tsx`)
+  - api-gateway AI execution controller/request type/queue forwarding
+  - queue job data type
+  - ai-service worker prompt builder (`worker.processor.ts`)
+- Worker prepends a concise workspace context section to the model prompt when context is present
+- If context is absent, existing behavior remains unchanged (backward-compatible)
+- Do not include full file contents in this slice
+- Do not add new API endpoints or schema changes
+- Do not change file-action schema or parsing
+- Do not add AI file delete support
+
+**Allowed files/surfaces:**
+- `frontend/app/[locale]/app/page.tsx`
+- api-gateway AI execution request DTO/controller/queue forwarding surfaces
+- queue job data type(s)
+- `services/ai-service/src/worker/worker.processor.ts`
+- directly relevant tests
+
+**Non-goals:**
+- No AI file delete support
+- No selected file content injection
+- No full file-content prompt stuffing
+- No new backend or container-manager endpoints
+- No schema or migration changes
+- No new tool system
+- No broad AI agent refactor
+- No UX/UI polish
+- No workspace rollout (WS family) work
+
+**Acceptance checks:**
+- Asking AI to list files can use the injected file-path context
+- Context includes a compact workspace file path list
+- Context includes selected file path when present
+- Existing AI execute calls still work when `workspaceContext` is absent
+- Existing file-action create/write/update behavior remains unchanged
+- Typecheck/build passes for all touched layers
+- Relevant focused tests pass
+- No introduced lint errors
+
+**Risks / invariants:**
+- Keep context compact — do not include file contents (token/cost blowup risk)
+- Preserve current file-action output contract; context is prepended, not mixed in
+- Keep `workspaceContext` optional and backward-compatible at every layer
+- Do not introduce container-manager dependency into ai-service worker
+- Preserve existing provider selection and queue execution semantics
+- No destructive action support in this slice
+
+**Dependencies:** None (standalone context plumbing slice)
+
+**Reference:** See TASKS.md -> AI-CTX-01 for active-task summary.
+
+---
+
