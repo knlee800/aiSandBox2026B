@@ -1790,6 +1790,7 @@ describe('workspace shell component', () => {
             source: 'status',
             fileActions: [{ action: 'write', path: 'src/app.ts', content: 'next' }],
             applyStatus: 'applied',
+            confirmationRequired: false,
             skipReason: null,
             results: [{ action: 'write', path: 'src/app.ts', status: 'success', error: null }],
           },
@@ -1816,6 +1817,7 @@ describe('workspace shell component', () => {
             source: 'stream',
             fileActions: [{ action: 'update', path: 'src/missing.ts', content: 'x' }],
             applyStatus: 'applied',
+            confirmationRequired: false,
             skipReason: null,
             results: [
               {
@@ -1848,6 +1850,7 @@ describe('workspace shell component', () => {
             source: 'status',
             fileActions: [{ action: 'create', path: 'src/new.ts', content: 'ok' }],
             applyStatus: 'skipped',
+            confirmationRequired: false,
             skipReason: 'stale-session',
             results: [{ action: 'create', path: 'src/new.ts', status: 'skipped', error: 'stale-session' }],
           },
@@ -1875,6 +1878,105 @@ describe('workspace shell component', () => {
     assert.match(html, /workspace-chat-message-content-prose-assistant-4/);
     assert.doesNotMatch(html, /workspace-chat-message-content-pre-assistant-4/);
     assert.doesNotMatch(html, /workspace-chat-file-actions/);
+  });
+
+  test('renders confirmation notice for risky assistant file-action batches', () => {
+    const html = renderWorkspaceShell({
+      chatThreadMessages: [
+        {
+          id: 'assistant-confirm-1',
+          role: 'assistant',
+          content: 'This needs confirmation before applying.',
+          executionId: 'exec-confirm-1',
+          fileActionState: {
+            executionId: 'exec-confirm-1',
+            source: 'status',
+            fileActions: [
+              { action: 'write', path: 'package.json', content: '{}' },
+              { action: 'write', path: 'src/app.ts', content: 'next' },
+            ],
+            applyStatus: 'awaiting-confirmation',
+            confirmationRequired: true,
+            skipReason: null,
+            results: [],
+          },
+        },
+      ],
+    });
+
+    assert.match(html, /workspace-chat-file-actions-awaiting-confirmation/);
+    assert.match(html, /Approval required before applying risky file actions\./);
+    assert.match(html, /package\.json/);
+    assert.match(html, /workspace-chat-file-actions-confirm-button/);
+    assert.match(html, /workspace-chat-file-actions-cancel-button/);
+  });
+
+  test('forwards risky file-action confirmation actions from the chat summary', () => {
+    let confirmedExecutionId: string | null = null;
+    let cancelledExecutionId: string | null = null;
+
+    const confirmButton = renderWorkspaceShellElementByTestId(
+      'workspace-chat-file-actions-confirm-button',
+      {
+        onConfirmExecutionFileActions: (executionId) => {
+          confirmedExecutionId = executionId;
+        },
+        onCancelExecutionFileActions: (executionId) => {
+          cancelledExecutionId = executionId;
+        },
+        chatThreadMessages: [
+          {
+            id: 'assistant-confirm-2',
+            role: 'assistant',
+            content: 'Waiting for confirmation.',
+            executionId: 'exec-confirm-2',
+            fileActionState: {
+              executionId: 'exec-confirm-2',
+              source: 'status',
+              fileActions: [{ action: 'write', path: 'package.json', content: '{}' }],
+              applyStatus: 'awaiting-confirmation',
+              confirmationRequired: true,
+              skipReason: null,
+              results: [],
+            },
+          },
+        ],
+      },
+    );
+    confirmButton?.props.onClick?.();
+
+    const cancelButton = renderWorkspaceShellElementByTestId(
+      'workspace-chat-file-actions-cancel-button',
+      {
+        onConfirmExecutionFileActions: (executionId) => {
+          confirmedExecutionId = executionId;
+        },
+        onCancelExecutionFileActions: (executionId) => {
+          cancelledExecutionId = executionId;
+        },
+        chatThreadMessages: [
+          {
+            id: 'assistant-confirm-3',
+            role: 'assistant',
+            content: 'Waiting for confirmation.',
+            executionId: 'exec-confirm-3',
+            fileActionState: {
+              executionId: 'exec-confirm-3',
+              source: 'status',
+              fileActions: [{ action: 'write', path: 'package.json', content: '{}' }],
+              applyStatus: 'awaiting-confirmation',
+              confirmationRequired: true,
+              skipReason: null,
+              results: [],
+            },
+          },
+        ],
+      },
+    );
+    cancelButton?.props.onClick?.();
+
+    assert.equal(confirmedExecutionId, 'exec-confirm-2');
+    assert.equal(cancelledExecutionId, 'exec-confirm-3');
   });
 
   test('renders code-fenced assistant messages in preformatted style', () => {

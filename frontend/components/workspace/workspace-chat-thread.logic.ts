@@ -58,7 +58,10 @@ export function parseStoredChatThreadMessages(raw: string | null): WorkspaceChat
         message.model = candidate.model;
       }
       if (isWorkspaceExecutionFileActionState(candidate.fileActionState)) {
-        message.fileActionState = candidate.fileActionState;
+        message.fileActionState = {
+          ...candidate.fileActionState,
+          confirmationRequired: candidate.fileActionState.confirmationRequired === true,
+        };
       }
       messages.push(message);
     }

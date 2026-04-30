@@ -31,6 +31,7 @@ describe('workspace chat thread logic', () => {
           source: 'status',
           fileActions: [{ action: 'write', path: 'src/a.ts', content: 'a' }],
           applyStatus: 'applied',
+          confirmationRequired: false,
           skipReason: null,
           results: [{ action: 'write', path: 'src/a.ts', status: 'success', error: null }],
         },
@@ -41,6 +42,7 @@ describe('workspace chat thread logic', () => {
     assert.equal(parsed.length, 1);
     assert.equal(parsed[0].executionId, 'exec-1');
     assert.equal(parsed[0].fileActionState?.applyStatus, 'applied');
+    assert.equal(parsed[0].fileActionState?.confirmationRequired, false);
     assert.equal(parsed[0].fileActionState?.results[0].status, 'success');
   });
 

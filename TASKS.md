@@ -11057,9 +11057,9 @@ Make the active AI execution path aware of the current workspace file list and s
 
 ## AI-WS — AI Workspace Capability
 
-**Family status:** ACTIVE — AI-WS-01 COMPLETE and LOCKED
+**Family status:** ACTIVE — AI-WS-02 COMPLETE and LOCKED
 
-**Current stage:** AI-WS-01 (COMPLETE and LOCKED)
+**Current stage:** AI-WS-03 (NOT YET REGISTERED)
 
 ---
 
@@ -11142,6 +11142,72 @@ Extend the existing `workspaceContext` plumbing introduced in AI-CTX-01 to inclu
 - No destructive action support in this slice
 
 **Dependencies:** AI-CTX-01 (COMPLETE and LOCKED)
+
+---
+
+#### AI-WS-02: AI File Action Safety And Confirmation Foundation
+
+**Status:** COMPLETE and LOCKED
+**Nature:** FRONTEND SAFETY/INTERCEPT LAYER — file-action batch classification and confirmation UI before risky AI writes apply
+**Source:** Planning session (Apr 2026) — before adding destructive action support (delete), a safety/confirmation foundation is needed so risky AI file-action batches can be intercepted and approved
+**Depends on:** AI-WS-01 (COMPLETE and LOCKED)
+
+**Objective:**
+Add a frontend safety/confirmation foundation for risky AI file actions before expanding destructive capabilities. Small safe create/write/update batches continue to apply as today. Risky batches are held for user approval. The design leaves a clear extension point for future delete confirmation.
+
+**Bounded scope:**
+- Frontend safety/intercept layer only
+- Add a confirmation/intercept path before applying risky AI file-action batches
+- Keep normal small create/write/update actions applying as today (backward-compatible)
+- Classify risky batches conservatively, for example:
+  - more than 3 file actions in a single batch
+  - single file content larger than a defined size threshold
+  - file paths matching obvious config/env/package patterns (e.g. `package.json`, `.env`, config files)
+- User can approve pending risky actions; approved actions flow through the existing `applySequentialFileActions` path
+- User can cancel pending risky actions; cancelled actions are not applied
+- Future delete actions should have a clear place to plug in, but delete itself is not implemented here
+- Do not add AI file delete support
+- Do not change file-action schema or parser
+- No backend/API/schema changes
+
+**Allowed files/surfaces:**
+- `frontend/app/[locale]/app/page.tsx`
+- `frontend/components/workspace/workspace-ai-file-actions.logic.ts`
+- `frontend/components/workspace/workspace-shell.tsx` or a small confirmation component if needed
+- directly relevant tests
+
+**Non-goals:**
+- No AI file delete support
+- No named file read support
+- No workspace search support
+- No file-action parser or schema changes
+- No backend/API/container-manager changes
+- No automatic snapshot integration in this slice
+- No full diff viewer
+- No broad UX redesign
+- No unrelated workspace rollout work
+
+**Acceptance checks:**
+- Small safe create/write/update batches still apply immediately as before
+- Risky batches are held for confirmation before applying
+- User can approve and actions apply through existing `applySequentialFileActions` logic
+- User can cancel and nothing is applied
+- Existing AI create/write/update backward-compatible behavior preserved for safe batches
+- Design leaves a clear extension point for future delete confirmation
+- Frontend typecheck passes
+- Relevant focused tests pass
+- No introduced lint errors
+
+**Risks / invariants:**
+- Do not block ordinary safe AI edits unnecessarily
+- Do not apply risky actions before user approval
+- Do not change file-action parser/schema in this slice
+- Do not add delete support in this slice
+- Preserve existing idempotency guards and `applySequentialFileActions` semantics
+- Preserve project/session/history behavior
+- Keep this a safety foundation, not a broad UX redesign
+
+**Dependencies:** AI-WS-01 (COMPLETE and LOCKED)
 
 ---
 

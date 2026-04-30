@@ -53,6 +53,7 @@ import {
 import {
   acquireExecutionApplyGuard,
   applySequentialFileActions,
+  isRiskyFileActionBatch,
   isWorkspaceFileAction,
   type WorkspaceExecutionFileActionState,
   type WorkspaceFileAction,
@@ -637,6 +638,8 @@ export default function AppPage() {
   };
   const executionFileActionsByExecutionIdRef = useRef<Record<string, WorkspaceFileAction[]>>({});
   const appliedFileActionsExecutionIdsRef = useRef<Set<string>>(new Set());
+  const pendingConfirmationExecutionIdsRef = useRef<Set<string>>(new Set());
+  const cancelledFileActionsExecutionIdsRef = useRef<Set<string>>(new Set());
   const coheredExecutionIdsRef = useRef<Set<string>>(new Set());
   const [execState, setExecState] = useState<WorkspaceExecState>({
     status: 'idle',
@@ -1029,6 +1032,8 @@ export default function AppPage() {
     executionAssistantMessageIdByExecutionIdRef.current = {};
     executionFileActionsByExecutionIdRef.current = {};
     appliedFileActionsExecutionIdsRef.current = new Set<string>();
+    pendingConfirmationExecutionIdsRef.current = new Set<string>();
+    cancelledFileActionsExecutionIdsRef.current = new Set<string>();
     coheredExecutionIdsRef.current = new Set<string>();
     skipNextChatThreadPersistRef.current = true;
 
@@ -4209,38 +4214,14 @@ export default function AppPage() {
     attachExecutionFileActionStateToAssistantMessage(executionId, nextState);
   }
 
-  async function maybeApplyExecutionFileActions(
+  async function applyExecutionFileActions(
     executionId: string,
     source: 'stream' | 'status',
+    executionSessionId: string,
+    token: string,
+    actions: WorkspaceFileAction[],
   ): Promise<void> {
     if (!acquireExecutionApplyGuard(executionId, appliedFileActionsExecutionIdsRef.current)) {
-      return;
-    }
-    const actions = executionFileActionsByExecutionIdRef.current[executionId] ?? [];
-    const executionSessionId = executionSessionIdByExecutionIdRef.current[executionId] ?? null;
-
-    if (!executionSessionId) {
-      setExecutionFileActionState(executionId, {
-        executionId,
-        source,
-        fileActions: actions,
-        applyStatus: 'skipped',
-        skipReason: 'missing-execution-session',
-        results: [],
-      });
-      return;
-    }
-
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      setExecutionFileActionState(executionId, {
-        executionId,
-        source,
-        fileActions: actions,
-        applyStatus: 'skipped',
-        skipReason: 'missing-auth-token',
-        results: [],
-      });
       return;
     }
 
@@ -4264,8 +4245,143 @@ export default function AppPage() {
       source,
       fileActions: actions,
       applyStatus: applyResult.applyStatus,
+      confirmationRequired: false,
       skipReason: applyResult.skipReason,
       results: applyResult.results,
+    });
+  }
+
+  async function maybeApplyExecutionFileActions(
+    executionId: string,
+    source: 'stream' | 'status',
+  ): Promise<void> {
+    if (cancelledFileActionsExecutionIdsRef.current.has(executionId)) {
+      return;
+    }
+
+    const actions = executionFileActionsByExecutionIdRef.current[executionId] ?? [];
+    const executionSessionId = executionSessionIdByExecutionIdRef.current[executionId] ?? null;
+
+    if (!executionSessionId) {
+      setExecutionFileActionState(executionId, {
+        executionId,
+        source,
+        fileActions: actions,
+        applyStatus: 'skipped',
+        confirmationRequired: false,
+        skipReason: 'missing-execution-session',
+        results: [],
+      });
+      return;
+    }
+
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      setExecutionFileActionState(executionId, {
+        executionId,
+        source,
+        fileActions: actions,
+        applyStatus: 'skipped',
+        confirmationRequired: false,
+        skipReason: 'missing-auth-token',
+        results: [],
+      });
+      return;
+    }
+
+    if (pendingConfirmationExecutionIdsRef.current.has(executionId)) {
+      setExecutionFileActionState(executionId, {
+        executionId,
+        source,
+        fileActions: actions,
+        applyStatus: 'awaiting-confirmation',
+        confirmationRequired: true,
+        skipReason: null,
+        results: [],
+      });
+      return;
+    }
+
+    if (isRiskyFileActionBatch(actions)) {
+      pendingConfirmationExecutionIdsRef.current.add(executionId);
+      setExecutionFileActionState(executionId, {
+        executionId,
+        source,
+        fileActions: actions,
+        applyStatus: 'awaiting-confirmation',
+        confirmationRequired: true,
+        skipReason: null,
+        results: [],
+      });
+      return;
+    }
+
+    await applyExecutionFileActions(executionId, source, executionSessionId, token, actions);
+  }
+
+  async function handleConfirmExecutionFileActions(executionId: string): Promise<void> {
+    if (!pendingConfirmationExecutionIdsRef.current.has(executionId)) {
+      return;
+    }
+
+    const fileActionState = chatExecutionFileActionStates[executionId];
+    const actions = executionFileActionsByExecutionIdRef.current[executionId] ?? [];
+    const executionSessionId = executionSessionIdByExecutionIdRef.current[executionId] ?? null;
+    pendingConfirmationExecutionIdsRef.current.delete(executionId);
+
+    if (!executionSessionId) {
+      setExecutionFileActionState(executionId, {
+        executionId,
+        source: fileActionState?.source ?? 'status',
+        fileActions: actions,
+        applyStatus: 'skipped',
+        confirmationRequired: false,
+        skipReason: 'missing-execution-session',
+        results: [],
+      });
+      return;
+    }
+
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      setExecutionFileActionState(executionId, {
+        executionId,
+        source: fileActionState?.source ?? 'status',
+        fileActions: actions,
+        applyStatus: 'skipped',
+        confirmationRequired: false,
+        skipReason: 'missing-auth-token',
+        results: [],
+      });
+      return;
+    }
+
+    await applyExecutionFileActions(
+      executionId,
+      fileActionState?.source ?? 'status',
+      executionSessionId,
+      token,
+      actions,
+    );
+  }
+
+  function handleCancelExecutionFileActions(executionId: string): void {
+    if (!pendingConfirmationExecutionIdsRef.current.has(executionId)) {
+      return;
+    }
+
+    pendingConfirmationExecutionIdsRef.current.delete(executionId);
+    cancelledFileActionsExecutionIdsRef.current.add(executionId);
+    const fileActionState = chatExecutionFileActionStates[executionId];
+    const actions = executionFileActionsByExecutionIdRef.current[executionId] ?? [];
+    setExecutionFileActionState(executionId, {
+      executionId,
+      source: fileActionState?.source ?? 'status',
+      fileActions: actions,
+      applyStatus: 'skipped',
+      confirmationRequired: false,
+      skipReason: 'user-cancelled',
+      results: [],
     });
   }
 
@@ -4275,11 +4391,39 @@ export default function AppPage() {
     fileActions: WorkspaceFileAction[],
   ): void {
     executionFileActionsByExecutionIdRef.current[executionId] = fileActions;
+    if (appliedFileActionsExecutionIdsRef.current.has(executionId)) {
+      return;
+    }
+    if (cancelledFileActionsExecutionIdsRef.current.has(executionId)) {
+      setExecutionFileActionState(executionId, {
+        executionId,
+        source,
+        fileActions,
+        applyStatus: 'skipped',
+        confirmationRequired: false,
+        skipReason: 'user-cancelled',
+        results: [],
+      });
+      return;
+    }
+    if (pendingConfirmationExecutionIdsRef.current.has(executionId)) {
+      setExecutionFileActionState(executionId, {
+        executionId,
+        source,
+        fileActions,
+        applyStatus: 'awaiting-confirmation',
+        confirmationRequired: true,
+        skipReason: null,
+        results: [],
+      });
+      return;
+    }
     setExecutionFileActionState(executionId, {
       executionId,
       source,
       fileActions,
       applyStatus: 'pending',
+      confirmationRequired: false,
       skipReason: null,
       results: [],
     });
@@ -4816,6 +4960,10 @@ export default function AppPage() {
         label: option.label,
       }))}
       onSubmitChatPrompt={handleSubmitChatPrompt}
+      onConfirmExecutionFileActions={(executionId) => {
+        void handleConfirmExecutionFileActions(executionId);
+      }}
+      onCancelExecutionFileActions={handleCancelExecutionFileActions}
       chatRequestState={chatRequestState}
       chatExecutionId={chatExecutionId}
       chatStatusMessage={chatStatusMessage}

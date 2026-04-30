@@ -3,6 +3,7 @@ import { describe, test } from 'node:test';
 import {
   acquireExecutionApplyGuard,
   applySequentialFileActions,
+  isRiskyFileActionBatch,
   type WorkspaceFileAction,
 } from './workspace-ai-file-actions.logic';
 import type { WorkspaceShellSession } from './workspace-shell.logic';
@@ -91,6 +92,47 @@ describe('workspace ai file-actions logic', () => {
     assert.equal(result.applyStatus, 'skipped');
     assert.equal(result.skipReason, 'stale-session');
     assert.equal(result.results[0].status, 'skipped');
+  });
+
+  test('classifies batches with more than three actions as risky', () => {
+    const riskyActions: WorkspaceFileAction[] = [
+      ...createActions(),
+      { action: 'write', path: 'src/c.ts', content: 'c' },
+      { action: 'write', path: 'src/d.ts', content: 'd' },
+    ];
+
+    assert.equal(isRiskyFileActionBatch(riskyActions), true);
+  });
+
+  test('classifies batches with large content as risky', () => {
+    const riskyActions: WorkspaceFileAction[] = [
+      {
+        action: 'write',
+        path: 'src/app.ts',
+        content: 'x'.repeat(20_001),
+      },
+    ];
+
+    assert.equal(isRiskyFileActionBatch(riskyActions), true);
+  });
+
+  test('classifies obvious config and env targets as risky', () => {
+    assert.equal(
+      isRiskyFileActionBatch([
+        { action: 'write', path: 'package.json', content: '{}' },
+      ]),
+      true,
+    );
+    assert.equal(
+      isRiskyFileActionBatch([
+        { action: 'write', path: '.env.local', content: 'TOKEN=secret' },
+      ]),
+      true,
+    );
+  });
+
+  test('keeps small ordinary write batches auto-applicable', () => {
+    assert.equal(isRiskyFileActionBatch(createActions()), false);
   });
 
   test('terminated-session guard blocks writes', async () => {

@@ -14,6 +14,7 @@ function buildAppliedState(
     source: 'status',
     fileActions: [{ action: 'write', path: 'src/app.ts', content: 'next' }],
     applyStatus: 'applied',
+    confirmationRequired: false,
     skipReason: null,
     results: [{ action: 'write', path: 'src/app.ts', status: 'success', error: null }],
     ...overrides,

@@ -192,6 +192,8 @@ interface WorkspaceShellProps {
   orchestrationEnabled?: boolean;
   onOrchestrationEnabledChange?: (enabled: boolean) => void;
   onSubmitChatPrompt?: () => Promise<void>;
+  onConfirmExecutionFileActions?: (executionId: string) => void | Promise<void>;
+  onCancelExecutionFileActions?: (executionId: string) => void;
   chatRequestState?: 'idle' | 'submitting' | 'queued' | 'running' | 'completed' | 'failed';
   chatExecutionId?: string | null;
   chatStatusMessage?: string | null;
@@ -675,6 +677,8 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                 responseText={props.chatResponseText ?? ''}
                 errorMessage={props.chatError ?? null}
                 threadMessages={props.chatThreadMessages ?? []}
+                onConfirmExecutionFileActions={props.onConfirmExecutionFileActions}
+                onCancelExecutionFileActions={props.onCancelExecutionFileActions}
               />
               <p className="text-xs font-semibold text-gray-700 mb-2">Command Input</p>
               <WorkspaceExecPanel
@@ -1522,6 +1526,8 @@ function WorkspaceChatPanel(props: {
   statusMessage: string | null;
   responseText: string;
   errorMessage: string | null;
+  onConfirmExecutionFileActions?: (executionId: string) => void | Promise<void>;
+  onCancelExecutionFileActions?: (executionId: string) => void;
   threadMessages: Array<{
     id: string;
     role: 'user' | 'assistant';
@@ -1703,7 +1709,19 @@ function WorkspaceChatPanel(props: {
                   <pre className="mt-1 whitespace-pre-wrap font-mono">{displayContent}</pre>
                 )}
                 {message.role === 'assistant' && message.fileActionState ? (
-                  <WorkspaceAssistantFileActionSummary fileActionState={message.fileActionState} />
+                  <WorkspaceAssistantFileActionSummary
+                    fileActionState={message.fileActionState}
+                    onConfirm={
+                      message.executionId && props.onConfirmExecutionFileActions
+                        ? () => void props.onConfirmExecutionFileActions?.(message.executionId!)
+                        : undefined
+                    }
+                    onCancel={
+                      message.executionId && props.onCancelExecutionFileActions
+                        ? () => props.onCancelExecutionFileActions?.(message.executionId!)
+                        : undefined
+                    }
+                  />
                 ) : null}
               </li>
                 );
@@ -1754,16 +1772,53 @@ function WorkspaceChatPanel(props: {
 
 function WorkspaceAssistantFileActionSummary(props: {
   fileActionState: WorkspaceExecutionFileActionState;
+  onConfirm?: () => void;
+  onCancel?: () => void;
 }) {
   const hasRenderableResults =
     props.fileActionState.results.length > 0 ||
-    (props.fileActionState.applyStatus === 'skipped' && props.fileActionState.fileActions.length > 0);
+    ((props.fileActionState.applyStatus === 'skipped' ||
+      props.fileActionState.applyStatus === 'awaiting-confirmation') &&
+      props.fileActionState.fileActions.length > 0);
   if (!hasRenderableResults) {
     return null;
   }
   return (
     <div className="mt-2 rounded border border-gray-200 bg-white p-2" data-testid="workspace-chat-file-actions">
       <p className="text-[11px] font-semibold text-gray-700">File Action Results</p>
+      {props.fileActionState.applyStatus === 'awaiting-confirmation' ? (
+        <div
+          className="mt-1 rounded border border-amber-200 bg-amber-50 p-2 text-[11px] text-amber-900"
+          data-testid="workspace-chat-file-actions-awaiting-confirmation"
+        >
+          <p className="font-semibold">Approval required before applying risky file actions.</p>
+          <ul className="mt-1 space-y-1 font-mono" data-testid="workspace-chat-file-actions-awaiting-list">
+            {props.fileActionState.fileActions.map((action, index) => (
+              <li key={`${action.path}-${action.action}-${index}`}>{action.path}</li>
+            ))}
+          </ul>
+          <div className="mt-2 flex gap-2">
+            <button
+              type="button"
+              className="rounded border border-amber-300 bg-white px-2 py-1 text-[11px] text-amber-900"
+              data-testid="workspace-chat-file-actions-confirm-button"
+              onClick={props.onConfirm}
+              disabled={!props.onConfirm}
+            >
+              Apply
+            </button>
+            <button
+              type="button"
+              className="rounded border border-gray-300 bg-white px-2 py-1 text-[11px] text-gray-700"
+              data-testid="workspace-chat-file-actions-cancel-button"
+              onClick={props.onCancel}
+              disabled={!props.onCancel}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : null}
       {props.fileActionState.applyStatus === 'skipped' ? (
         <p className="mt-1 text-[11px] text-amber-700" data-testid="workspace-chat-file-actions-skipped">
           File action application skipped ({props.fileActionState.skipReason ?? 'unknown reason'}).

@@ -2,6 +2,9 @@ import { isUsableSession, type WorkspaceShellSession } from './workspace-shell.l
 
 export type WorkspaceFileActionType = 'create' | 'write' | 'update';
 
+const RISKY_BATCH_ACTION_COUNT_THRESHOLD = 3;
+const RISKY_CONTENT_SIZE_THRESHOLD = 20_000;
+
 export interface WorkspaceFileAction {
   action: WorkspaceFileActionType;
   path: string;
@@ -17,15 +20,58 @@ export interface WorkspaceExecutionFileActionResult {
   error: string | null;
 }
 
-export type WorkspaceExecutionFileActionApplyStatus = 'pending' | 'applied' | 'skipped';
+export type WorkspaceExecutionFileActionApplyStatus =
+  | 'pending'
+  | 'awaiting-confirmation'
+  | 'applied'
+  | 'skipped';
 
 export interface WorkspaceExecutionFileActionState {
   executionId: string;
   source: 'stream' | 'status';
   fileActions: WorkspaceFileAction[];
   applyStatus: WorkspaceExecutionFileActionApplyStatus;
+  confirmationRequired: boolean;
   skipReason: string | null;
   results: WorkspaceExecutionFileActionResult[];
+}
+
+function isRiskyFileActionPath(path: string): boolean {
+  const normalizedPath = path.trim().toLowerCase();
+  if (!normalizedPath) {
+    return false;
+  }
+
+  const pathSegments = normalizedPath.split('/');
+  const fileName = pathSegments[pathSegments.length - 1] ?? normalizedPath;
+
+  return (
+    fileName === '.env' ||
+    fileName.startsWith('.env.') ||
+    fileName.endsWith('.env') ||
+    fileName.includes('.env.') ||
+    fileName === 'package.json' ||
+    fileName === 'package-lock.json' ||
+    fileName === 'yarn.lock' ||
+    fileName === 'pnpm-lock.yaml' ||
+    fileName === 'docker-compose.yml' ||
+    fileName === 'docker-compose.yaml' ||
+    fileName.endsWith('.config.js') ||
+    fileName.endsWith('.config.ts') ||
+    fileName.endsWith('.config.mjs') ||
+    fileName.endsWith('.config.cjs')
+  );
+}
+
+export function isRiskyFileActionBatch(actions: WorkspaceFileAction[]): boolean {
+  if (actions.length > RISKY_BATCH_ACTION_COUNT_THRESHOLD) {
+    return true;
+  }
+
+  return actions.some(
+    (action) =>
+      action.content.length > RISKY_CONTENT_SIZE_THRESHOLD || isRiskyFileActionPath(action.path),
+  );
 }
 
 export function isWorkspaceFileAction(value: unknown): value is WorkspaceFileAction {
@@ -81,6 +127,7 @@ export function isWorkspaceExecutionFileActionState(
     source?: unknown;
     fileActions?: unknown;
     applyStatus?: unknown;
+    confirmationRequired?: unknown;
     skipReason?: unknown;
     results?: unknown;
   };
@@ -89,8 +136,11 @@ export function isWorkspaceExecutionFileActionState(
     (candidate.source !== 'stream' && candidate.source !== 'status') ||
     !Array.isArray(candidate.fileActions) ||
     (candidate.applyStatus !== 'pending' &&
+      candidate.applyStatus !== 'awaiting-confirmation' &&
       candidate.applyStatus !== 'applied' &&
       candidate.applyStatus !== 'skipped') ||
+    (candidate.confirmationRequired !== undefined &&
+      typeof candidate.confirmationRequired !== 'boolean') ||
     (candidate.skipReason !== null && typeof candidate.skipReason !== 'string') ||
     !Array.isArray(candidate.results)
   ) {
