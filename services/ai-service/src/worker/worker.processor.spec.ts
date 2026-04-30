@@ -68,4 +68,19 @@ List files`,
 const x = 1;
 [...truncated at 8000 characters]`);
   });
+
+  it('appends named file content blocks when provided', () => {
+    expect(
+      buildExecutionPromptWithFileActionContract('Explain utils.ts', {
+        filePaths: ['src/app.ts', 'src/utils.ts'],
+        namedFileContents: [
+          {
+            path: 'src/utils.ts',
+            content: 'export const util = true;',
+          },
+        ],
+      }),
+    ).toContain(`Named file content: src/utils.ts
+export const util = true;`);
+  });
 });

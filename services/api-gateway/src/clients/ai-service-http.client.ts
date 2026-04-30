@@ -7,10 +7,16 @@ import axios, { AxiosInstance } from 'axios';
  *
  * Phase 28: Provider selection is caller-owned (api-gateway determines provider)
  */
+export interface WorkspaceNamedFileContent {
+  path: string;
+  content: string;
+}
+
 export interface WorkspaceContext {
   filePaths: string[];
   selectedFilePath?: string;
   selectedFileContent?: string;
+  namedFileContents?: WorkspaceNamedFileContent[];
   projectName?: string;
   workspaceName?: string;
 }

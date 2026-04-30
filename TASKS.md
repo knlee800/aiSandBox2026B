@@ -11057,9 +11057,9 @@ Make the active AI execution path aware of the current workspace file list and s
 
 ## AI-WS — AI Workspace Capability
 
-**Family status:** ACTIVE — AI-WS-04 COMPLETE and LOCKED
+**Family status:** ACTIVE — AI-WS-05 COMPLETE and LOCKED
 
-**Current stage:** AI-WS-05 (NOT YET REGISTERED)
+**Current stage:** AI-WS-06 (NOT YET REGISTERED)
 
 ---
 
@@ -11350,6 +11350,87 @@ Extend the existing AI `workspaceContext` plumbing to include lightweight projec
 - No destructive action changes in this slice
 
 **Dependencies:** AI-WS-03 (COMPLETE and LOCKED)
+
+---
+
+#### AI-WS-05: Named File Read Support
+
+**Status:** COMPLETE and LOCKED
+**Nature:** FRONTEND-LED NAMED FILE CONTEXT INJECTION — detect explicitly named workspace files, read bounded safe contents through existing frontend file-read capability, and pass them through existing `workspaceContext`
+**Source:** Planning session (Apr 2026) — AI still cannot explain a named file unless that file is currently selected/open
+**Depends on:** AI-WS-04 (COMPLETE and LOCKED)
+
+**Objective:**
+Allow the AI to answer questions about one or more named workspace files by using existing frontend file-read capability to include bounded, safe file contents for explicitly mentioned files, without adding workspace search, broad tool-system refactor, schema changes, or full-project content stuffing.
+
+**Bounded scope:**
+- Cross-layer / frontend-led named file read support
+- Detect explicitly named file paths from the user prompt when they match existing workspace file paths
+- Read a small bounded number of matched named files per prompt (target: max 3)
+- Include matched named file contents in `workspaceContext` as named file content blocks
+- Cap each named file content at approximately 8,000 characters and include a truncation marker when capped
+- Reuse the same sensitive/unsuitable path exclusions as selected file content
+- Do not include contents for unmatched paths
+- Do not read arbitrary paths outside `workspaceFileTree`
+- Do not search file contents
+- Preserve selected-file content context from AI-WS-01
+- Preserve project/workspace metadata context from AI-WS-04
+- If no named files match, existing behavior remains unchanged
+- Do not add new backend/container-manager endpoint if existing frontend read helper is sufficient
+- Do not add workspace search support
+- Do not add grep/search endpoint
+- Do not add broad tool-system refactor
+- Do not add provider-native tool calling
+- Do not add full-project content stuffing
+- Do not add arbitrary backend/container-manager reads beyond matched workspace files
+- Do not add AI file delete changes
+- Do not change file-action schema/parser
+- No schema/database changes
+
+**Allowed files/surfaces:**
+- `frontend/app/[locale]/app/page.tsx`
+- `frontend/components/workspace/workspace-file-navigation.logic.ts` if existing read helper needs a small adjustment
+- AI workspace context type surfaces if needed
+- `services/api-gateway/src/clients/ai-service-http.client.ts` if context shape changes
+- `services/ai-service/src/queue/job.types.ts` if context shape changes
+- `services/ai-service/src/worker/worker.processor.ts` if context prompt block changes
+- directly relevant tests
+
+**Non-goals:**
+- No workspace search support
+- No grep/search endpoint
+- No broad tool-system refactor
+- No provider-native tool calling
+- No full-project content stuffing
+- No arbitrary backend/container-manager reads beyond matched workspace files
+- No AI file delete changes
+- No file-action schema/parser changes
+- No schema or migration
+- No broad UX/UI polish
+- No unrelated workspace rollout work
+- No D1/PROJ-03 work
+
+**Acceptance checks:**
+- User can ask about a named file that is not currently selected/open, and AI receives that file's bounded content
+- Only file paths present in current `workspaceFileTree` are eligible
+- Named file contents are capped and marked if truncated
+- Sensitive/binary/lock/generated paths are excluded
+- Existing selected-file content, file list, and project/workspace metadata context remain intact
+- Existing AI create/write/update/delete behavior remains unchanged
+- Typecheck/build/focused tests pass
+- No introduced lint errors
+
+**Risks / invariants:**
+- Keep named file read explicit and bounded
+- Do not search arbitrary content in this slice
+- Do not inject entire project contents
+- Do not read paths not present in `workspaceFileTree`
+- Do not inject secrets/env/binary/lock/generated files
+- Keep token/cost caps strict
+- Preserve optional/backward-compatible `workspaceContext` behavior
+- Do not change file-action schema/parser/delete behavior
+- Do not introduce container-manager dependency into ai-service worker
+- Preserve provider selection and queue semantics
 
 ---
 

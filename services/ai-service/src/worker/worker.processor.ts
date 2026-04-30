@@ -84,6 +84,26 @@ function buildWorkspaceContextBlock(
     workspaceContext.selectedFileContent.trim().length > 0
       ? workspaceContext.selectedFileContent.trim()
       : null;
+  const normalizedNamedFileContents = Array.isArray(workspaceContext.namedFileContents)
+    ? workspaceContext.namedFileContents
+        .filter(
+          (
+            file,
+          ): file is {
+            path: string;
+            content: string;
+          } =>
+            !!file &&
+            typeof file === 'object' &&
+            typeof file.path === 'string' &&
+            typeof file.content === 'string',
+        )
+        .map((file) => ({
+          path: file.path.trim(),
+          content: file.content.trim(),
+        }))
+        .filter((file) => file.path.length > 0 && file.content.length > 0)
+    : [];
   const normalizedProjectName =
     typeof workspaceContext.projectName === 'string' &&
     workspaceContext.projectName.trim().length > 0
@@ -99,6 +119,7 @@ function buildWorkspaceContextBlock(
     normalizedFilePaths.length === 0 &&
     !normalizedSelectedFilePath &&
     !normalizedSelectedFileContent &&
+    normalizedNamedFileContents.length === 0 &&
     !normalizedProjectName &&
     !normalizedWorkspaceName
   ) {
@@ -122,6 +143,9 @@ function buildWorkspaceContextBlock(
   }
   if (normalizedSelectedFileContent) {
     sections.push(`Selected file content:\n${normalizedSelectedFileContent}`);
+  }
+  for (const namedFile of normalizedNamedFileContents) {
+    sections.push(`Named file content: ${namedFile.path}\n${namedFile.content}`);
   }
 
   return sections.join('\n\n');

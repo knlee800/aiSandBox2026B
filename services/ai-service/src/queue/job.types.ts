@@ -1,7 +1,13 @@
+export interface WorkspaceNamedFileContent {
+  path: string;
+  content: string;
+}
+
 export interface WorkspaceContext {
   filePaths: string[];
   selectedFilePath?: string;
   selectedFileContent?: string;
+  namedFileContents?: WorkspaceNamedFileContent[];
   projectName?: string;
   workspaceName?: string;
 }

@@ -138,6 +138,7 @@ const AI_AUTO_CHECKPOINT_DESCRIPTION = 'AI: applied workspace file actions';
 const DEFAULT_CHAT_MODEL_OPTION = 'xai:grok-3';
 const WORKSPACE_CONTEXT_MAX_FILE_PATHS = 200;
 const WORKSPACE_CONTEXT_MAX_SELECTED_FILE_CHARS = 8000;
+const WORKSPACE_CONTEXT_MAX_NAMED_FILES = 3;
 const CHAT_MODEL_OPTIONS = [
   { value: 'xai:grok-3', provider: 'xai', model: 'grok-3', label: 'xAI - grok-3' },
   {
@@ -161,10 +162,16 @@ const CHAT_MODEL_OPTIONS = [
   },
 ] as const;
 
+interface WorkspacePromptNamedFileContent {
+  path: string;
+  content: string;
+}
+
 interface WorkspacePromptContext {
   filePaths: string[];
   selectedFilePath?: string;
   selectedFileContent?: string;
+  namedFileContents?: WorkspacePromptNamedFileContent[];
   projectName?: string;
   workspaceName?: string;
 }
@@ -245,48 +252,232 @@ function collectWorkspacePromptFilePaths(
   }
 }
 
-function buildWorkspacePromptContext(
-  workspaceFileTree: WorkspaceFileNode[],
-  selectedFilePath: string | null,
-  selectedFileContent?: string,
-  projectName?: string | null,
-  workspaceName?: string | null,
-): WorkspacePromptContext | undefined {
-  const filePathSet = new Set<string>();
-  collectWorkspacePromptFilePaths(workspaceFileTree, filePathSet);
+function normalizeWorkspacePromptFileContent(
+  content: string | null | undefined,
+): string | undefined {
+  if (typeof content !== 'string') {
+    return undefined;
+  }
 
-  const filePaths = Array.from(filePathSet)
-    .sort((left, right) => left.localeCompare(right))
-    .slice(0, WORKSPACE_CONTEXT_MAX_FILE_PATHS);
+  const trimmedContent = content.trim();
+  if (!trimmedContent) {
+    return undefined;
+  }
+
+  return trimmedContent.length > WORKSPACE_CONTEXT_MAX_SELECTED_FILE_CHARS
+    ? `${trimmedContent.slice(0, WORKSPACE_CONTEXT_MAX_SELECTED_FILE_CHARS)}\n[...truncated at 8000 characters]`
+    : trimmedContent;
+}
+
+function getWorkspacePromptReferenceMatchIndex(prompt: string, reference: string): number {
+  const normalizedPrompt = prompt.trim().toLowerCase();
+  const normalizedReference = reference.trim().toLowerCase();
+  if (!normalizedPrompt || !normalizedReference) {
+    return -1;
+  }
+
+  const candidates = new Set<string>([
+    normalizedReference,
+    `"${normalizedReference}"`,
+    `'${normalizedReference}'`,
+    `\`${normalizedReference}\``,
+  ]);
+
+  if (normalizedReference.includes('/')) {
+    const windowsReference = normalizedReference.replaceAll('/', '\\');
+    candidates.add(windowsReference);
+    candidates.add(`"${windowsReference}"`);
+    candidates.add(`'${windowsReference}'`);
+    candidates.add(`\`${windowsReference}\``);
+  }
+
+  let bestIndex = Number.POSITIVE_INFINITY;
+  for (const candidate of candidates) {
+    const candidateIndex = normalizedPrompt.indexOf(candidate);
+    if (candidateIndex >= 0 && candidateIndex < bestIndex) {
+      bestIndex = candidateIndex;
+    }
+  }
+
+  return Number.isFinite(bestIndex) ? bestIndex : -1;
+}
+
+function findExplicitPromptNamedWorkspaceFilePaths(
+  prompt: string,
+  workspaceFilePaths: string[],
+): string[] {
+  const normalizedWorkspaceFilePaths = Array.from(
+    new Set(
+      workspaceFilePaths
+        .filter((path): path is string => typeof path === 'string')
+        .map((path) => path.trim())
+        .filter((path) => path.length > 0),
+    ),
+  ).sort((left, right) => left.localeCompare(right));
+
+  const basenameToPaths = new Map<string, string[]>();
+  for (const filePath of normalizedWorkspaceFilePaths) {
+    const basename = getWorkspacePathBasename(filePath)?.toLowerCase() ?? null;
+    if (!basename) {
+      continue;
+    }
+    const existingPaths = basenameToPaths.get(basename) ?? [];
+    basenameToPaths.set(basename, [...existingPaths, filePath]);
+  }
+
+  const matches: Array<{ path: string; index: number; rank: number }> = [];
+  const matchedPaths = new Set<string>();
+
+  for (const filePath of normalizedWorkspaceFilePaths) {
+    const matchIndex = getWorkspacePromptReferenceMatchIndex(prompt, filePath);
+    if (matchIndex < 0) {
+      continue;
+    }
+    matches.push({ path: filePath, index: matchIndex, rank: 0 });
+    matchedPaths.add(filePath);
+  }
+
+  for (const filePath of normalizedWorkspaceFilePaths) {
+    if (matchedPaths.has(filePath)) {
+      continue;
+    }
+
+    const basename = getWorkspacePathBasename(filePath)?.trim() ?? '';
+    if (!basename) {
+      continue;
+    }
+
+    const basenameMatches = basenameToPaths.get(basename.toLowerCase()) ?? [];
+    if (basenameMatches.length !== 1) {
+      continue;
+    }
+
+    const matchIndex = getWorkspacePromptReferenceMatchIndex(prompt, basename);
+    if (matchIndex < 0) {
+      continue;
+    }
+
+    matches.push({ path: filePath, index: matchIndex, rank: 1 });
+    matchedPaths.add(filePath);
+  }
+
+  return matches
+    .sort((left, right) => {
+      if (left.rank !== right.rank) {
+        return left.rank - right.rank;
+      }
+      if (left.index !== right.index) {
+        return left.index - right.index;
+      }
+      return left.path.localeCompare(right.path);
+    })
+    .map((match) => match.path);
+}
+
+async function loadNamedWorkspacePromptFileContents(args: {
+  prompt: string;
+  token: string;
+  sessionId: string | null;
+  workspaceFilePaths: string[];
+}): Promise<WorkspacePromptNamedFileContent[]> {
+  if (!args.sessionId) {
+    return [];
+  }
+
+  const matchedPaths = findExplicitPromptNamedWorkspaceFilePaths(
+    args.prompt,
+    args.workspaceFilePaths,
+  )
+    .filter((path) => !isSensitiveFilePath(path))
+    .slice(0, WORKSPACE_CONTEXT_MAX_NAMED_FILES);
+
+  if (matchedPaths.length === 0) {
+    return [];
+  }
+
+  const readResults = await Promise.all(
+    matchedPaths.map(async (matchedPath) => {
+      try {
+        const fileResponse = await readWorkspaceFile({
+          token: args.token,
+          sessionId: args.sessionId as string,
+          filePath: matchedPath,
+        });
+        const normalizedPath = fileResponse.path.trim();
+        if (!normalizedPath || isSensitiveFilePath(normalizedPath)) {
+          return null;
+        }
+
+        const normalizedContent = normalizeWorkspacePromptFileContent(fileResponse.content);
+        if (!normalizedContent) {
+          return null;
+        }
+
+        return {
+          path: normalizedPath,
+          content: normalizedContent,
+        } satisfies WorkspacePromptNamedFileContent;
+      } catch (error) {
+        console.warn('Skipping unreadable named workspace file for AI context:', matchedPath, error);
+        return null;
+      }
+    }),
+  );
+
+  return readResults.filter(
+    (result): result is WorkspacePromptNamedFileContent => result !== null,
+  );
+}
+
+async function buildWorkspacePromptContext(args: {
+  prompt: string;
+  token: string;
+  sessionId: string | null;
+  workspaceFileTree: WorkspaceFileNode[];
+  selectedFilePath: string | null;
+  selectedFileContent?: string;
+  projectName?: string | null;
+  workspaceName?: string | null;
+}): Promise<WorkspacePromptContext | undefined> {
+  const filePathSet = new Set<string>();
+  collectWorkspacePromptFilePaths(args.workspaceFileTree, filePathSet);
+  const allWorkspaceFilePaths = Array.from(filePathSet).sort((left, right) =>
+    left.localeCompare(right),
+  );
+
+  const filePaths = allWorkspaceFilePaths.slice(0, WORKSPACE_CONTEXT_MAX_FILE_PATHS);
 
   const normalizedSelectedFilePath =
-    typeof selectedFilePath === 'string' && selectedFilePath.trim().length > 0
-      ? selectedFilePath.trim()
+    typeof args.selectedFilePath === 'string' && args.selectedFilePath.trim().length > 0
+      ? args.selectedFilePath.trim()
       : undefined;
   const normalizedSelectedFileContent =
     normalizedSelectedFilePath &&
-    typeof selectedFileContent === 'string' &&
-    selectedFileContent.trim().length > 0 &&
+    typeof args.selectedFileContent === 'string' &&
+    args.selectedFileContent.trim().length > 0 &&
     !isSensitiveFilePath(normalizedSelectedFilePath)
-      ? selectedFileContent.trim().length > WORKSPACE_CONTEXT_MAX_SELECTED_FILE_CHARS
-        ? `${selectedFileContent
-            .trim()
-            .slice(0, WORKSPACE_CONTEXT_MAX_SELECTED_FILE_CHARS)}\n[...truncated at 8000 characters]`
-        : selectedFileContent.trim()
+      ? normalizeWorkspacePromptFileContent(args.selectedFileContent)
       : undefined;
+  const namedFileContents = await loadNamedWorkspacePromptFileContents({
+    prompt: args.prompt,
+    token: args.token,
+    sessionId: args.sessionId,
+    workspaceFilePaths: allWorkspaceFilePaths,
+  });
   const normalizedProjectName =
-    typeof projectName === 'string' && projectName.trim().length > 0
-      ? projectName.trim()
+    typeof args.projectName === 'string' && args.projectName.trim().length > 0
+      ? args.projectName.trim()
       : undefined;
   const normalizedWorkspaceName =
-    typeof workspaceName === 'string' && workspaceName.trim().length > 0
-      ? workspaceName.trim()
+    typeof args.workspaceName === 'string' && args.workspaceName.trim().length > 0
+      ? args.workspaceName.trim()
       : undefined;
 
   if (
     filePaths.length === 0 &&
     !normalizedSelectedFilePath &&
     !normalizedSelectedFileContent &&
+    namedFileContents.length === 0 &&
     !normalizedProjectName &&
     !normalizedWorkspaceName
   ) {
@@ -303,6 +494,7 @@ function buildWorkspacePromptContext(
     ...(normalizedSelectedFileContent
       ? { selectedFileContent: normalizedSelectedFileContent }
       : {}),
+    ...(namedFileContents.length > 0 ? { namedFileContents } : {}),
   };
 }
 
@@ -3527,6 +3719,24 @@ export default function AppPage() {
     }));
     const executionSessionId = input.selectedSessionId;
     let combinedStepOutput = '';
+    const selectedProject =
+      selectedProjectId
+        ? workspaceProjects.find((project) => project.id === selectedProjectId) ?? null
+        : null;
+    const selectedWorkspace =
+      selectedWorkspaceId
+        ? workspaces.find((workspace) => workspace.id === selectedWorkspaceId) ?? null
+        : null;
+    const workspaceContext = await buildWorkspacePromptContext({
+      prompt: input.prompt,
+      token: input.token,
+      sessionId: executionSessionId,
+      workspaceFileTree,
+      selectedFilePath,
+      selectedFileContent,
+      projectName: selectedProject?.name,
+      workspaceName: selectedWorkspace?.name,
+    });
 
     updateAssistantMessageContent(
       input.assistantMessageId,
@@ -3559,21 +3769,6 @@ export default function AppPage() {
               '',
               `Original user request: ${input.prompt}`,
             ].join('\n');
-      const selectedProject =
-        selectedProjectId
-          ? workspaceProjects.find((project) => project.id === selectedProjectId) ?? null
-          : null;
-      const selectedWorkspace =
-        selectedWorkspaceId
-          ? workspaces.find((workspace) => workspace.id === selectedWorkspaceId) ?? null
-          : null;
-      const workspaceContext = buildWorkspacePromptContext(
-        workspaceFileTree,
-        selectedFilePath,
-        selectedFileContent,
-        selectedProject?.name,
-        selectedWorkspace?.name,
-      );
 
       const executeResponse = await fetch('/api/ai/execute', {
         method: 'POST',
@@ -3868,13 +4063,16 @@ export default function AppPage() {
         selectedWorkspaceId
           ? workspaces.find((workspace) => workspace.id === selectedWorkspaceId) ?? null
           : null;
-      const workspaceContext = buildWorkspacePromptContext(
+      const workspaceContext = await buildWorkspacePromptContext({
+        prompt: trimmedPrompt,
+        token,
+        sessionId: selectedSessionId,
         workspaceFileTree,
         selectedFilePath,
         selectedFileContent,
-        selectedProject?.name,
-        selectedWorkspace?.name,
-      );
+        projectName: selectedProject?.name,
+        workspaceName: selectedWorkspace?.name,
+      });
       const response = await fetch('/api/ai/execute', {
         method: 'POST',
         headers: {
