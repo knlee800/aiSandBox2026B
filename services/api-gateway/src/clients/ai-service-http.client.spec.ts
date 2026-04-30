@@ -96,6 +96,7 @@ describe('AIServiceHttpClient (Phase 18A)', () => {
         workspaceContext: {
           filePaths: ['README.md', 'src/app.ts'],
           selectedFilePath: 'src/app.ts',
+          selectedFileContent: 'export const app = true;',
         },
       };
 

@@ -77,8 +77,17 @@ function buildWorkspaceContextBlock(
     workspaceContext.selectedFilePath.trim().length > 0
       ? workspaceContext.selectedFilePath.trim()
       : null;
+  const normalizedSelectedFileContent =
+    typeof workspaceContext.selectedFileContent === 'string' &&
+    workspaceContext.selectedFileContent.trim().length > 0
+      ? workspaceContext.selectedFileContent.trim()
+      : null;
 
-  if (normalizedFilePaths.length === 0 && !normalizedSelectedFilePath) {
+  if (
+    normalizedFilePaths.length === 0 &&
+    !normalizedSelectedFilePath &&
+    !normalizedSelectedFileContent
+  ) {
     return null;
   }
 
@@ -90,6 +99,9 @@ function buildWorkspaceContextBlock(
   }
   if (normalizedSelectedFilePath) {
     sections.push(`Currently open file:\n${normalizedSelectedFilePath}`);
+  }
+  if (normalizedSelectedFileContent) {
+    sections.push(`Selected file content:\n${normalizedSelectedFileContent}`);
   }
 
   return sections.join('\n\n');

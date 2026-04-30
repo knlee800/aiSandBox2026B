@@ -15,11 +15,12 @@ List files`,
     );
   });
 
-  it('prepends compact workspace context when file paths are present', () => {
+  it('prepends selected file content when workspace context is present', () => {
     expect(
       buildExecutionPromptWithFileActionContract('List files', {
         filePaths: ['README.md', 'src/app.ts'],
         selectedFilePath: 'src/app.ts',
+        selectedFileContent: 'export const app = true;',
       }),
     ).toBe(
       `Current workspace files:
@@ -28,6 +29,9 @@ List files`,
 
 Currently open file:
 src/app.ts
+
+Selected file content:
+export const app = true;
 
 Execution output contract:
 - If the user request requires creating or modifying files, you MUST emit a fenced code block tagged \`file-actions\`.
@@ -39,5 +43,17 @@ Execution output contract:
 User request:
 List files`,
     );
+  });
+
+  it('passes through a truncation marker when selected file content is truncated upstream', () => {
+    expect(
+      buildExecutionPromptWithFileActionContract('Explain this file', {
+        filePaths: ['src/app.ts'],
+        selectedFilePath: 'src/app.ts',
+        selectedFileContent: 'const x = 1;\n[...truncated at 8000 characters]',
+      }),
+    ).toContain(`Selected file content:
+const x = 1;
+[...truncated at 8000 characters]`);
   });
 });

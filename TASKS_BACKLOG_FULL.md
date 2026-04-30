@@ -1,4 +1,4 @@
-## Authority Notice
+﻿## Authority Notice
 
 This document is the MASTER task backlog.
 
@@ -29,9 +29,9 @@ This file is the single source of truth for project scope.
 This document breaks down the AI Sandbox Platform into discrete, actionable tasks organized by module. Each task includes priority, dependencies, and acceptance criteria.
 
 **Priority Levels:**
-- ? **High**: Critical for MVP, blocks other work
-- ? **Medium**: Important but not blocking
-- ? **Low**: Nice-to-have, polish, future features
+- ???**High**: Critical for MVP, blocks other work
+- ?貕?**Medium**: Important but not blocking
+- ?貕?**Low**: Nice-to-have, polish, future features
 
 **Important:** Follow CLAUDE.md workflow rules:
 - Only work on current module specified by user
@@ -45,7 +45,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ## Module 1: Project Setup & Infrastructure
 
 ### Task 1.1: Initialize Project Structure
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** None
 **Description:**
 - Create monorepo structure with `/frontend`, `/backend`, `/services`, `/db`, `/docs`, `/tests`
@@ -64,7 +64,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 1.2: Setup TypeScript Configuration
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 1.1
 **Description:**
 - Configure `tsconfig.json` for both frontend and backend
@@ -83,7 +83,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 1.3: Setup Linting & Formatting
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Dependencies:** 1.2
 **Description:**
 - Install ESLint with TypeScript parser
@@ -102,7 +102,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 1.4: Setup Docker Environment
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 1.1
 **Description:**
 - Install Docker and Docker Compose
@@ -123,7 +123,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ## Module 2: Database Setup
 
 ### Task 2.1: PostgreSQL Setup
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 1.4
 **Description:**
 - Add PostgreSQL container to docker-compose
@@ -142,7 +142,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 2.2: Redis Setup
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 1.4
 **Description:**
 - Add Redis container to docker-compose
@@ -161,7 +161,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 2.3: TypeORM Integration
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 2.1, 1.2
 **Description:**
 - Install TypeORM and pg driver
@@ -180,7 +180,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 2.4: Define Data Models
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 2.3
 **Description:**
 - Create entity models: User, Session, ChatMessage, GitCommit, BillingLog, Container
@@ -200,7 +200,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 2.5: Create Repository Layer
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 2.4
 **Description:**
 - Create repositories for each entity
@@ -221,7 +221,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ## Module 3: Backend - Core Infrastructure
 
 ### Task 3.1: NestJS Project Setup
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 1.2, 2.3
 **Description:**
 - Initialize NestJS application in `/backend`
@@ -241,7 +241,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 3.2: Error Handling Infrastructure
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 3.1
 **Description:**
 - Implement global exception filter
@@ -263,7 +263,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 3.3: Centralized Logging Setup
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 3.2
 **Description:**
 - Install and configure Winston logger
@@ -287,7 +287,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 3.4: Authentication & User Service
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 3.1, 2.5, 3.3
 **Description:**
 - Implement user registration
@@ -313,7 +313,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 3.5: Rate Limiting Service
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 2.2, 3.2
 **Description:**
 - Implement Redis-based rate limiting
@@ -339,7 +339,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ## Module 4: Backend - Core Services
 
 ### Task 4.1: Session Service
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 3.4, 2.5
 **Description:**
 - Implement `SessionService` with methods:
@@ -362,7 +362,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 4.2: Container Service - Basic Operations
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 4.1, 1.4
 **Description:**
 - Implement `ContainerService` with Docker SDK
@@ -388,7 +388,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 4.3: Container Service - Isolation & Security
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 4.2
 **Description:**
 - Configure gVisor runtime for containers
@@ -414,7 +414,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 4.4: Input Validation Service
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 3.1
 **Description:**
 - Create validation DTOs for all endpoints
@@ -437,7 +437,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 4.5: Git Service - Repository Management
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 4.2, 4.4
 **Description:**
 - Implement `GitService` with methods:
@@ -463,7 +463,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 4.6: AI Gateway Service - Claude Integration
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 3.1, 3.3
 **Description:**
 - Implement `AIGatewayService` with Anthropic SDK
@@ -489,7 +489,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 4.7: Chat Service - Message Handling
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 4.6, 4.5, 2.5
 **Description:**
 - Implement `ChatService` with methods:
@@ -511,7 +511,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 4.8: Chat Service - Code Execution Integration
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 4.7, 4.2, 4.4
 **Description:**
 - Integrate chat with container execution
@@ -531,7 +531,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 4.9: Chat Service - Auto-commit After Changes
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 4.8, 4.5
 **Description:**
 - Automatically create git commit after each AI interaction
@@ -551,7 +551,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 4.10: Billing Service - Token Tracking
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 4.7, 2.5
 **Description:**
 - Implement `BillingService` with methods:
@@ -576,7 +576,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 4.11: Project Import Service
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Dependencies:** 4.5, 4.2, 4.4
 **Description:**
 - Implement file upload endpoint
@@ -601,7 +601,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 4.12: Project Export Service
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Dependencies:** 4.2, 4.5
 **Description:**
 - Export container workspace as .zip
@@ -621,7 +621,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ## Module 5: Backend - API Endpoints
 
 ### Task 5.1: Session Endpoints
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 4.1, 3.5, 4.4
 **Description:**
 - POST /api/sessions - create session
@@ -646,7 +646,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 5.2: Chat Endpoints
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 4.7, 3.5, 4.4
 **Description:**
 - POST /api/chat/send - send message
@@ -666,7 +666,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 5.3: Git Endpoints
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 4.5, 3.5, 4.4
 **Description:**
 - POST /api/git/commit - manual commit
@@ -687,7 +687,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 5.4: Container Endpoints
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 4.2, 3.5, 4.4
 **Description:**
 - POST /api/container/exec - execute command
@@ -708,7 +708,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 5.5: Billing Endpoints
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Dependencies:** 4.10, 3.5
 **Description:**
 - GET /api/billing/usage/:userId - get usage stats
@@ -727,7 +727,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 5.6: Import/Export Endpoints
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Dependencies:** 4.11, 4.12, 3.5
 **Description:**
 - POST /api/project/import - upload project
@@ -748,7 +748,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ## Module 6: Backend - WebSocket & Real-time
 
 ### Task 6.1: WebSocket Gateway Setup
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 3.1, 3.4
 **Description:**
 - Configure WebSocket gateway in NestJS
@@ -768,7 +768,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 6.2: Real-time Chat Events
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 6.1, 4.7
 **Description:**
 - Implement WebSocket events for chat:
@@ -788,7 +788,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 6.3: Container Status Events
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Dependencies:** 6.1, 4.2
 **Description:**
 - Broadcast container status changes:
@@ -805,7 +805,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 6.4: Editor Sync Events
-**Priority:** ? Low
+**Priority:** ?貕?Low
 **Dependencies:** 6.1
 **Description:**
 - Implement file sync events:
@@ -825,7 +825,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ## Module 7: Frontend - Project Setup
 
 ### Task 7.1: Next.js Project Initialization
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 1.2
 **Description:**
 - Initialize Next.js 14+ app in `/frontend`
@@ -844,7 +844,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 7.2: UI Component Library Setup
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Dependencies:** 7.1
 **Description:**
 - Install UI library (shadcn/ui, Radix, or similar)
@@ -862,7 +862,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 7.3: API Client Layer
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 7.1
 **Description:**
 - Create API client wrapper using fetch/axios
@@ -885,7 +885,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 7.4: WebSocket Client Setup
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 7.3
 **Description:**
 - Create WebSocket client wrapper
@@ -906,7 +906,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 7.5: State Management Setup
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 7.1
 **Description:**
 - Choose and install state management (Zustand/Redux)
@@ -929,7 +929,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ## Module 8: Frontend - Authentication & Dashboard
 
 ### Task 8.1: Login/Register Pages
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 7.2, 7.3
 **Description:**
 - Create login page with form
@@ -950,7 +950,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 8.2: Protected Route Wrapper
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 8.1, 7.5
 **Description:**
 - Create auth middleware for Next.js
@@ -967,7 +967,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 8.3: Dashboard Page
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 8.2, 7.2
 **Description:**
 - Create dashboard layout
@@ -988,7 +988,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ## Module 9: Frontend - Session View
 
 ### Task 9.1: Session Layout
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 8.3
 **Description:**
 - Create 3-column layout:
@@ -1009,7 +1009,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 9.2: Chat Window Component
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 9.1, 7.4, 7.5
 **Description:**
 - Create chat UI with message list
@@ -1032,7 +1032,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 9.3: Monaco Editor Integration
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 9.1
 **Description:**
 - Install Monaco editor
@@ -1052,7 +1052,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 9.4: File Tree Component
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Dependencies:** 9.3
 **Description:**
 - Display container filesystem as tree
@@ -1071,7 +1071,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 9.5: Preview Component (iframe)
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 9.1, 5.4
 **Description:**
 - Create iframe component for preview
@@ -1091,7 +1091,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 9.6: Git History UI
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Dependencies:** 9.1, 5.3
 **Description:**
 - Display commit history in sidebar/modal
@@ -1112,7 +1112,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ## Module 10: Frontend - Advanced Features
 
 ### Task 10.1: Terminal Component
-**Priority:** ? Low
+**Priority:** ?貕?Low
 **Dependencies:** 9.1, 7.4
 **Description:**
 - Create terminal UI using xterm.js
@@ -1131,7 +1131,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 10.2: File Upload/Download UI
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Dependencies:** 5.6
 **Description:**
 - Upload files to container
@@ -1150,7 +1150,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 10.3: Usage & Billing Dashboard
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Dependencies:** 8.3, 5.5
 **Description:**
 - Show token usage stats
@@ -1171,7 +1171,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ## Module 11: Security Implementation
 
 ### Task 11.1: Security Headers & CORS
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 3.1
 **Description:**
 - Install and configure Helmet.js
@@ -1192,7 +1192,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 11.2: Secrets Management
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 1.1, 3.1
 **Description:**
 - Create .env.example template
@@ -1215,7 +1215,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 11.3: Container Security Hardening
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 4.3
 **Description:**
 - Configure AppArmor/SELinux profiles
@@ -1237,7 +1237,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 11.4: Dependency Security Scanning
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Dependencies:** 1.3
 **Description:**
 - Set up npm audit in CI/CD
@@ -1260,7 +1260,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ## Module 12: Testing
 
 ### Task 12.1: Backend Unit Tests
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Dependencies:** Module 4 complete
 **Description:**
 - Write unit tests for all services
@@ -1280,7 +1280,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 12.2: Backend Integration Tests
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Dependencies:** Module 5 complete
 **Description:**
 - Write integration tests for API endpoints
@@ -1300,7 +1300,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 12.3: Frontend Component Tests
-**Priority:** ? Low
+**Priority:** ?貕?Low
 **Dependencies:** Module 9 complete
 **Description:**
 - Write tests for React components
@@ -1318,7 +1318,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 12.4: End-to-End Tests
-**Priority:** ? Low
+**Priority:** ?貕?Low
 **Dependencies:** Modules 4, 5, 9 complete
 **Description:**
 - Write E2E tests with Playwright/Cypress
@@ -1341,7 +1341,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ## Module 13: Documentation
 
 ### Task 13.1: API Documentation
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Dependencies:** Module 5 complete
 **Description:**
 - Document all API endpoints
@@ -1362,7 +1362,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 13.2: Developer Guide
-**Priority:** ? Low
+**Priority:** ?貕?Low
 **Dependencies:** All modules
 **Description:**
 - Write setup instructions
@@ -1383,7 +1383,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 13.3: User Guide
-**Priority:** ? Low
+**Priority:** ?貕?Low
 **Dependencies:** Module 9 complete
 **Description:**
 - Create user-facing documentation
@@ -1404,7 +1404,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ## Module 14: Deployment
 
 ### Task 14.1: Docker Images for Production
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** Modules 4, 7 complete
 **Description:**
 - Create production Dockerfiles for frontend and backend
@@ -1424,7 +1424,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 14.2: Docker Compose for QNAP
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 14.1, 2.1, 2.2
 **Description:**
 - Create production docker-compose.yml
@@ -1447,7 +1447,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 14.3: Environment Configuration
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 14.2, 11.2
 **Description:**
 - Create .env templates
@@ -1466,7 +1466,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 14.4: Database Migration Strategy
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Dependencies:** 2.4
 **Description:**
 - Set up migration scripts
@@ -1485,7 +1485,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 14.5: Monitoring & Logging Setup
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Dependencies:** 14.2, 3.3
 **Description:**
 - Configure log aggregation (ELK stack or similar)
@@ -1507,7 +1507,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 14.6: CI/CD Pipeline
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Dependencies:** 14.1, 12.1, 12.2
 **Description:**
 - Set up GitHub Actions / GitLab CI
@@ -1528,7 +1528,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 14.7: QNAP Deployment & Testing
-**Priority:** ? High
+**Priority:** ???High
 **Dependencies:** 14.2, 14.3, 14.5
 **Description:**
 - Deploy to QNAP NAS
@@ -1549,7 +1549,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ## Module 15: Performance Optimization
 
 ### Task 15.1: Backend Performance Tuning
-**Priority:** ? Low
+**Priority:** ?貕?Low
 **Dependencies:** Module 4 complete
 **Description:**
 - Profile slow endpoints
@@ -1568,7 +1568,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 15.2: Frontend Performance Optimization
-**Priority:** ? Low
+**Priority:** ?貕?Low
 **Dependencies:** Module 9 complete
 **Description:**
 - Code splitting and lazy loading
@@ -1587,7 +1587,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 15.3: Container Startup Optimization
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Dependencies:** 4.2
 **Description:**
 - Optimize Docker image size
@@ -1608,9 +1608,9 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ## Summary
 
 ### Task Count by Priority
-- ? **High**: 53 tasks (MVP critical)
-- ? **Medium**: 26 tasks (Important for production)
-- ? **Low**: 9 tasks (Polish and future)
+- ???**High**: 53 tasks (MVP critical)
+- ?貕?**Medium**: 26 tasks (Important for production)
+- ?貕?**Low**: 9 tasks (Polish and future)
 
 **Total**: 88 tasks
 
@@ -1695,7 +1695,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 **Task ID:** TASK-40B-1  
 **Phase:** 40B  
 **Stage:** 40B-1  
-**Priority:** ? High  
+**Priority:** ???High  
 **Nature:** DIAGNOSTIC + FIX-IF-REQUIRED  
 **Dependencies:** PHASE-8.3, PHASE-8.4, PHASE-40A-3  
 **Checkpoint:** `docs/PHASE-40B-1-CHECKPOINT.md`
@@ -1834,7 +1834,7 @@ If fixes are required and introduce regressions:
 **Task ID:** TASK-40B-2  
 **Phase:** 40B  
 **Stage:** 40B-2  
-**Priority:** ? High  
+**Priority:** ???High  
 **Nature:** DIAGNOSTIC + FIX-IF-REQUIRED  
 **Dependencies:** PHASE-8.3, PHASE-8.4, TASK-40B-1  
 **Checkpoint:** `docs/PHASE-40B-2-CHECKPOINT.md`
@@ -2001,7 +2001,7 @@ If fixes are required and introduce regressions:
 
 ### ~~TASK-40B-3: Runtime Hardening ??Session Database Unification (PostgreSQL Single Source of Truth)~~ [DEPRECATED]
 
-**?? DEPRECATED ??INVALID FOR PHASE 40B**
+**?蹎? DEPRECATED ??INVALID FOR PHASE 40B**
 
 **Task ID:** TASK-40B-3 (DEPRECATED)  
 **Status:** ??**NOT AUTHORIZED UNDER RUNTIME HARDENING**  
@@ -2029,7 +2029,7 @@ Unify session persistence across services by eliminating SQLite usage in contain
 **Task ID:** TASK-40B-3R  
 **Phase:** 40B  
 **Stage:** 40B-3  
-**Priority:** ? High  
+**Priority:** ???High  
 **Nature:** DIAGNOSTIC + FIX-IF-REQUIRED  
 **Dependencies:** PHASE-8.3, PHASE-8.4, TASK-40B-1, TASK-40B-2  
 **Checkpoint:** `docs/PHASE-40B-3R-CHECKPOINT.md`
@@ -2223,7 +2223,7 @@ If fixes are required and introduce regressions:
 **Task ID:** TASK-41A  
 **Phase:** 41  
 **Stage:** 41A  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** IMPLEMENTATION (ADDITIVE ONLY)  
 **Dependencies:** PHASE-8.3, PHASE-8.4, TASK-40B-3R  
 **Checkpoint:** `docs/PHASE-41A-CHECKPOINT.md`
@@ -2434,7 +2434,7 @@ If implementation introduces regressions:
 **Task ID:** TASK-41B  
 **Phase:** 41  
 **Stage:** 41B  
-**Priority:** ? High  
+**Priority:** ???High  
 **Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE ONLY)  
 **Dependencies:** PHASE-41A  
 **Checkpoint:** `docs/PHASE-41B-CHECKPOINT.md`
@@ -2641,7 +2641,7 @@ If implementation introduces regressions:
 **Task ID:** TASK-41C  
 **Phase:** 41  
 **Stage:** 41C  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE ONLY)  
 **Dependencies:** PHASE-41B  
 **Checkpoint:** `docs/PHASE-41C-CHECKPOINT.md`
@@ -2907,7 +2907,7 @@ If implementation introduces regressions:
 **Task ID:** TASK-42A-1  
 **Phase:** 42  
 **Stage:** 42A  
-**Priority:** ? High  
+**Priority:** ???High  
 **Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE ONLY)  
 **Dependencies:** PHASE-41C  
 **Checkpoint:** `docs/PHASE-42A-1-CHECKPOINT.md`
@@ -3002,7 +3002,7 @@ ELSE
 **Task ID:** TASK-42A-2  
 **Phase:** 42  
 **Stage:** 42A  
-**Priority:** ? High  
+**Priority:** ???High  
 **Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE ONLY)  
 **Dependencies:** TASK-42A-1  
 **Checkpoint:** `docs/PHASE-42A-2-CHECKPOINT.md`
@@ -3085,7 +3085,7 @@ ELSE
 **Task ID:** TASK-42A-3  
 **Phase:** 42  
 **Stage:** 42A  
-**Priority:** ? High  
+**Priority:** ???High  
 **Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE ONLY)  
 **Dependencies:** TASK-42A-2  
 **Checkpoint:** `docs/PHASE-42A-3-CHECKPOINT.md`
@@ -3171,7 +3171,7 @@ ELSE
 **Task ID:** TASK-42A-4  
 **Phase:** 42  
 **Stage:** 42A  
-**Priority:** ? High  
+**Priority:** ???High  
 **Nature:** VERIFICATION + DOCUMENTATION  
 **Dependencies:** TASK-42A-1, TASK-42A-2, TASK-42A-3  
 **Checkpoint:** `docs/PHASE-42A-CHECKPOINT.md`
@@ -3236,7 +3236,7 @@ This task is limited to **verification and documentation only**:
 
 ### ~~TASK-42A (ORIGINAL)~~ [DEPRECATED - SPLIT INTO TASK-42A-1/2/3/4]
 
-**?? DEPRECATED ??REPLACED BY TASK-42A-1, TASK-42A-2, TASK-42A-3, TASK-42A-4**
+**?蹎? DEPRECATED ??REPLACED BY TASK-42A-1, TASK-42A-2, TASK-42A-3, TASK-42A-4**
 
 **Task ID:** TASK-42A (DEPRECATED)  
 **Status:** ??**SPLIT INTO 4 SUBTASKS**  
@@ -3309,7 +3309,7 @@ This task is limited to **minimal, additive implementation only** in:
 **Task ID:** TASK-60A  
 **Phase:** 60  
 **Stage:** 60A  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** DOCUMENTATION / DESIGN (NO CODE)  
 **Dependencies:** PHASE-41A (Runtime Metrics)  
 **Checkpoint:** `docs/PHASE-60A-CHECKPOINT.md`
@@ -3320,7 +3320,7 @@ Define production alerting scope, alert thresholds, incident signal definitions,
 
 **Scope:**
 
-This task is limited to **documentation and design only**?o code changes.
+This task is limited to **documentation and design only**??觔 code changes.
 
 **In Scope:**
 
@@ -3380,14 +3380,14 @@ This task is limited to **documentation and design only**?o code changes.
 **Task ID:** TASK-60B  
 **Phase:** 60  
 **Stage:** 60B  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** DOCUMENTATION (NO CODE)  
 **Dependencies:** PHASE-60A (Design)  
 **Checkpoint:** `docs/PHASE-60B-CHECKPOINT.md`
 
 **Objective:**
 
-Implement external monitoring contract and runbook documents to make Phase 60A design operationally usable. Documentation only?o platform code, schema, or endpoint changes.
+Implement external monitoring contract and runbook documents to make Phase 60A design operationally usable. Documentation only??觔 platform code, schema, or endpoint changes.
 
 **Scope:**
 
@@ -3399,7 +3399,7 @@ Implement external monitoring contract and runbook documents to make Phase 60A d
 2. **Runbook Implementation**
    - Five runbook documents for the 5 defined incident categories
    - Connectivity: Docker connectivity lost, Database connectivity lost, API Gateway unreachable
-   - Session/Container: Session?ontainer drift
+   - Session/Container: Session??ntainer drift
    - Termination: Elevated error termination rate
    - Per PHASE-60A-DESIGN.md section 5 (structure, verification, remediation, escalation)
 
@@ -3427,7 +3427,7 @@ Implement external monitoring contract and runbook documents to make Phase 60A d
 **Task ID:** TASK-61A  
 **Phase:** 61  
 **Stage:** 61A  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** DOCUMENTATION / DESIGN (NO CODE)  
 **Dependencies:** None  
 **Checkpoint:** `docs/PHASE-61A-CHECKPOINT.md`
@@ -3438,7 +3438,7 @@ Define backup scope, restore priorities, disaster recovery scenarios, recovery o
 
 **Scope:**
 
-This task is limited to **documentation and design only**?o code changes.
+This task is limited to **documentation and design only**??觔 code changes.
 
 **In Scope:**
 
@@ -3492,18 +3492,18 @@ This task is limited to **documentation and design only**?o code changes.
 **Task ID:** TASK-61B  
 **Phase:** 61  
 **Stage:** 61B  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** DOCUMENTATION (NO CODE)  
 **Dependencies:** PHASE-61A (Design)  
 **Checkpoint:** `docs/PHASE-61B-CHECKPOINT.md`
 
 **Objective:**
 
-Implement operational backup procedure documents and restore runbooks for the Phase 61A recovery scenarios. Documentation only?o platform code, schema, or endpoint changes.
+Implement operational backup procedure documents and restore runbooks for the Phase 61A recovery scenarios. Documentation only??觔 platform code, schema, or endpoint changes.
 
 **Scope:**
 
-This task is limited to **documentation only**?o code changes.
+This task is limited to **documentation only**??觔 code changes.
 
 **In Scope:**
 
@@ -3558,7 +3558,7 @@ This task is limited to **documentation only**?o code changes.
 **Task ID:** TASK-62A  
 **Phase:** 62  
 **Stage:** 62A  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** DOCUMENTATION / DESIGN (NO CODE)  
 **Dependencies:** PHASE-61 COMPLETE  
 **Checkpoint:** `docs/PHASE-62A-CHECKPOINT.md`
@@ -3576,18 +3576,18 @@ Produce the Phase 62A design for backup and restore validation drills so the pla
 **Task ID:** TASK-62B  
 **Phase:** 62  
 **Stage:** 62B  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** DOCUMENTATION (NO CODE)  
 **Dependencies:** PHASE-62A (Design)  
 **Checkpoint:** `docs/PHASE-62B-CHECKPOINT.md`
 
 **Objective:**
 
-Implement operator-ready validation drill runbooks for Phase 62A scenarios. Documentation only?o platform code, schema, or endpoint changes.
+Implement operator-ready validation drill runbooks for Phase 62A scenarios. Documentation only??觔 platform code, schema, or endpoint changes.
 
 **Scope:**
 
-This task is limited to **documentation only**?o code changes.
+This task is limited to **documentation only**??觔 code changes.
 
 **In Scope:**
 
@@ -3645,7 +3645,7 @@ This task is limited to **documentation only**?o code changes.
 **Task ID:** TASK-63A  
 **Phase:** 63  
 **Stage:** 63A  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** DOCUMENTATION / DESIGN (NO CODE)  
 **Dependencies:** None  
 **Checkpoint:** `docs/PHASE-63A-CHECKPOINT.md`
@@ -3656,7 +3656,7 @@ Define security operations scope for launch readiness, including audit logging, 
 
 **Scope:**
 
-This task is limited to **documentation/design only**?o code changes.
+This task is limited to **documentation/design only**??觔 code changes.
 
 **In Scope:**
 
@@ -3699,18 +3699,18 @@ This task is limited to **documentation/design only**?o code changes.
 **Task ID:** TASK-63B  
 **Phase:** 63  
 **Stage:** 63B  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** DOCUMENTATION (NO CODE)  
 **Dependencies:** PHASE-63A (Design)  
 **Checkpoint:** `docs/PHASE-63B-CHECKPOINT.md`
 
 **Objective:**
 
-Implement operator-ready security runbooks and compliance operational documentation per Phase 63A design. Documentation only?o platform code, schema, or endpoint changes.
+Implement operator-ready security runbooks and compliance operational documentation per Phase 63A design. Documentation only??觔 platform code, schema, or endpoint changes.
 
 **Scope:**
 
-This task is limited to **documentation only**?o code changes.
+This task is limited to **documentation only**??觔 code changes.
 
 **In Scope:**
 
@@ -3761,7 +3761,7 @@ This task is limited to **documentation only**?o code changes.
 **Task ID:** TASK-64A  
 **Phase:** 64  
 **Stage:** 64A  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** DOCUMENTATION / DESIGN (NO CODE)  
 **Dependencies:** None  
 **Checkpoint:** `docs/PHASE-64A-CHECKPOINT.md`
@@ -3772,7 +3772,7 @@ Define launch-ready legal/privacy document scope, privacy policy/terms/cookie no
 
 **Scope:**
 
-This task is limited to **documentation/design only**?o code changes.
+This task is limited to **documentation/design only**??觔 code changes.
 
 **In Scope:**
 
@@ -3810,18 +3810,18 @@ This task is limited to **documentation/design only**?o code changes.
 **Task ID:** TASK-64B
 **Phase:** 64
 **Stage:** 64B
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Nature:** DOCUMENTATION (NO CODE)
 **Dependencies:** PHASE-64A (Design)
 **Checkpoint:** `docs/PHASE-64B-CHECKPOINT.md`
 
 **Objective:**
 
-Implement operator-ready legal/privacy operational documentation per Phase 64A design. Documentation only?o platform code, schema, or endpoint changes.
+Implement operator-ready legal/privacy operational documentation per Phase 64A design. Documentation only??觔 platform code, schema, or endpoint changes.
 
 **Scope:**
 
-This task is limited to **documentation only**?o code changes.
+This task is limited to **documentation only**??觔 code changes.
 
 **In Scope:**
 
@@ -3866,7 +3866,7 @@ This task is limited to **documentation only**?o code changes.
 **Task ID:** TASK-65A  
 **Phase:** 65  
 **Stage:** 65A  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** DOCUMENTATION / DESIGN (NO CODE)  
 **Dependencies:** None  
 **Checkpoint:** `docs/PHASE-65A-CHECKPOINT.md`
@@ -3877,7 +3877,7 @@ Define launch-ready admin tool scope, admin actions and operator permissions, ab
 
 **Scope:**
 
-This task is limited to **documentation/design only**?o code changes.
+This task is limited to **documentation/design only**??觔 code changes.
 
 **In Scope:**
 
@@ -3915,18 +3915,18 @@ This task is limited to **documentation/design only**?o code changes.
 **Task ID:** TASK-65B  
 **Phase:** 65  
 **Stage:** 65B  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** DOCUMENTATION (NO CODE)  
 **Dependencies:** PHASE-65A (Design)  
 **Checkpoint:** `docs/PHASE-65B-CHECKPOINT.md`
 
 **Objective:**
 
-Implement operator-ready admin procedures per Phase 65A design. Documentation only?o platform code, schema, or endpoint changes.
+Implement operator-ready admin procedures per Phase 65A design. Documentation only??觔 platform code, schema, or endpoint changes.
 
 **Scope:**
 
-This task is limited to **documentation only**?o code changes.
+This task is limited to **documentation only**??觔 code changes.
 
 **In Scope:**
 
@@ -3968,7 +3968,7 @@ This task is limited to **documentation only**?o code changes.
 **Task ID:** TASK-65C  
 **Phase:** 65  
 **Stage:** 65C  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** VALIDATION / DOCUMENTATION (NO CODE)  
 **Dependencies:** PHASE-65A (Design), PHASE-65B (Operator Procedures)  
 **Checkpoint:** `docs/PHASE-65C-CHECKPOINT.md`
@@ -4011,7 +4011,7 @@ Final validation of Phase 65A design and Phase 65B operator documentation, with 
 **Task ID:** TASK-66A
 **Phase:** 66
 **Stage:** 66A
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Nature:** DOCUMENTATION / DESIGN (NO CODE)
 **Dependencies:** None
 **Checkpoint:** `docs/PHASE-66A-CHECKPOINT.md`
@@ -4022,7 +4022,7 @@ Define launch-ready analytics and growth visibility scope, product usage/retenti
 
 **Scope:**
 
-This task is limited to **documentation and design only**?o code changes.
+This task is limited to **documentation and design only**??觔 code changes.
 
 **In Scope:**
 
@@ -4057,18 +4057,18 @@ This task is limited to **documentation and design only**?o code changes.
 **Task ID:** TASK-66B
 **Phase:** 66
 **Stage:** 66B
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Nature:** DOCUMENTATION (NO CODE)
 **Dependencies:** PHASE-66A (Design)
 **Checkpoint:** `docs/PHASE-66B-CHECKPOINT.md`
 
 **Objective:**
 
-Implement operator-ready analytics review procedures and stakeholder/founder reporting procedures per Phase 66A design. Documentation only?o platform code, schema, or endpoint changes.
+Implement operator-ready analytics review procedures and stakeholder/founder reporting procedures per Phase 66A design. Documentation only??觔 platform code, schema, or endpoint changes.
 
 **Scope:**
 
-This task is limited to **documentation only**?o code changes.
+This task is limited to **documentation only**??觔 code changes.
 
 **In Scope:**
 
@@ -4106,7 +4106,7 @@ This task is limited to **documentation only**?o code changes.
 **Task ID:** TASK-67A
 **Phase:** 67
 **Stage:** 67A
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Nature:** DOCUMENTATION / DESIGN (NO CODE)
 **Dependencies:** None
 **Checkpoint:** `docs/PHASE-67A-CHECKPOINT.md`
@@ -4117,7 +4117,7 @@ Define launch-ready core product UX/UI requirements for the AI Sandbox Platform,
 
 **Scope:**
 
-This task is limited to **documentation/design only**?o code changes.
+This task is limited to **documentation/design only**??觔 code changes.
 
 **In Scope:**
 
@@ -4171,18 +4171,18 @@ This task is limited to **documentation/design only**?o code changes.
 **Task ID:** TASK-67B
 **Phase:** 67
 **Stage:** 67B
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Nature:** DOCUMENTATION / VALIDATION (NO CODE)
 **Dependencies:** PHASE-67A (Design)
 **Checkpoint:** `docs/PHASE-67B-CHECKPOINT.md`
 
 **Objective:**
 
-Final consolidation and validation of all Phase 67A UX/UI design documentation to ensure consistency, completeness, and launch readiness. Documentation only?o platform code, schema, or endpoint changes.
+Final consolidation and validation of all Phase 67A UX/UI design documentation to ensure consistency, completeness, and launch readiness. Documentation only??觔 platform code, schema, or endpoint changes.
 
 **Scope:**
 
-This task is limited to **documentation and validation only**?o code changes.
+This task is limited to **documentation and validation only**??觔 code changes.
 
 **In Scope:**
 
@@ -4227,18 +4227,18 @@ This task is limited to **documentation and validation only**?o code changes.
 **Task ID:** TASK-67C
 **Phase:** 67
 **Stage:** 67C
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Nature:** DOCUMENTATION (NO CODE)
 **Dependencies:** PHASE-67A (Design), PHASE-67B (Validation)
 **Checkpoint:** `docs/PHASE-67-CHECKPOINT.md`
 
 **Objective:**
 
-Create final Phase 67 checkpoint summarizing all UX/UI design work and confirming documentation-only scope compliance. Documentation only?o platform code, schema, or endpoint changes.
+Create final Phase 67 checkpoint summarizing all UX/UI design work and confirming documentation-only scope compliance. Documentation only??觔 platform code, schema, or endpoint changes.
 
 **Scope:**
 
-This task is limited to **documentation only**?o code changes.
+This task is limited to **documentation only**??觔 code changes.
 
 **In Scope:**
 
@@ -4282,18 +4282,18 @@ This task is limited to **documentation only**?o code changes.
 **Task ID:** TASK-68A
 **Phase:** 68
 **Stage:** 68A
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Nature:** DOCUMENTATION / PLANNING (NO CODE)
 **Dependencies:** PHASE-67 (Complete)
 **Checkpoint:** `docs/PHASE-68A-CHECKPOINT.md`
 
 **Objective:**
 
-Convert completed Phase 67 UX/UI design outputs into an implementation-ready execution plan for launch-priority UX/UI work. This task produces a structured implementation roadmap that sequences backend and frontend work, identifies dependencies, and defines controlled implementation stages. Documentation only?o platform code, schema, or endpoint changes.
+Convert completed Phase 67 UX/UI design outputs into an implementation-ready execution plan for launch-priority UX/UI work. This task produces a structured implementation roadmap that sequences backend and frontend work, identifies dependencies, and defines controlled implementation stages. Documentation only??觔 platform code, schema, or endpoint changes.
 
 **Scope:**
 
-This task is limited to **documentation only**?o code changes.
+This task is limited to **documentation only**??觔 code changes.
 
 **In Scope:**
 
@@ -4385,7 +4385,7 @@ This task is limited to **documentation only**?o code changes.
 **Task ID:** TASK-68B
 **Phase:** 68
 **Stage:** 68B
-**Priority:** ? High
+**Priority:** ???High
 **Nature:** IMPLEMENTATION (BACKEND ONLY, ADDITIVE)
 **Dependencies:** PHASE-68A (Complete), Existing git_checkpoints table, Existing git auto-commit system
 **Checkpoint:** `docs/PHASE-68B-CHECKPOINT.md`
@@ -4396,7 +4396,7 @@ Implement the first minimal backend endpoint slice to unblock frontend history/c
 
 **Scope:**
 
-This task is limited to **backend implementation only**?o frontend, no schema changes.
+This task is limited to **backend implementation only**??觔 frontend, no schema changes.
 
 **In Scope:**
 
@@ -4554,7 +4554,7 @@ This task is limited to **backend implementation only**?o frontend, no schema
 **Task ID:** TASK-68B-2
 **Phase:** 68
 **Stage:** 68B-2
-**Priority:** ? High
+**Priority:** ???High
 **Nature:** IMPLEMENTATION (BACKEND ONLY, ADDITIVE)
 **Dependencies:** PHASE-68B (Complete), Existing users table, Existing sessions table, Existing quota enforcement
 **Checkpoint:** `docs/PHASE-68B-2-CHECKPOINT.md`
@@ -4565,7 +4565,7 @@ Implement the second minimal backend endpoint slice to unblock frontend user das
 
 **Scope:**
 
-This task is limited to **backend implementation only**?o frontend, no schema changes.
+This task is limited to **backend implementation only**??觔 frontend, no schema changes.
 
 **In Scope:**
 
@@ -4722,7 +4722,7 @@ This task is limited to **backend implementation only**?o frontend, no schema
 **Task ID:** TASK-68B-3  
 **Phase:** 68  
 **Stage:** 68B-3  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** IMPLEMENTATION (BACKEND ONLY, ADDITIVE)  
 **Dependencies:** PHASE-68B (Complete), TASK-68B-2 (Complete), Existing users table, Existing sessions table, Existing internal auth guards, Existing runtime metrics endpoint  
 **Checkpoint:** `docs/PHASE-68B-3-CHECKPOINT.md`
@@ -4733,7 +4733,7 @@ Implement the third minimal backend endpoint slice to unblock admin dashboard UX
 
 **Scope:**
 
-This task is limited to **backend implementation only**?o frontend and no scope expansion beyond admin dashboard endpoint needs.
+This task is limited to **backend implementation only**??觔 frontend and no scope expansion beyond admin dashboard endpoint needs.
 
 **In Scope:**
 
@@ -4830,7 +4830,7 @@ This task is limited to **backend implementation only**?o frontend and no sco
 **Task ID:** TASK-68B-FINAL  
 **Phase:** 68  
 **Stage:** 68B-FINAL  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)  
 **Dependencies:** TASK-68B (Complete), TASK-68B-2 (Complete), TASK-68B-3 (Complete), Existing PRD/ARCHITECTURE authority documents  
 **Checkpoint:** `docs/PHASE-68B-FINAL-CHECKPOINT.md`
@@ -4921,7 +4921,7 @@ This task is limited to **documentation and validation only** for completed back
 **Task ID:** TASK-68C  
 **Phase:** 68  
 **Stage:** 68C  
-**Priority:** ? High  
+**Priority:** ???High  
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)  
 **Dependencies:** TASK-68A (Complete), TASK-68B-FINAL (Complete), Existing backend session capabilities only  
 **Checkpoint:** `docs/PHASE-68C-CHECKPOINT.md`
@@ -5001,7 +5001,7 @@ This task is limited to **frontend implementation only** for the first core work
 **Task ID:** TASK-68D  
 **Phase:** 68  
 **Stage:** 68D  
-**Priority:** ? High  
+**Priority:** ???High  
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)  
 **Dependencies:** TASK-68A (Complete), TASK-68B-FINAL (Complete), TASK-68C (Complete), Existing backend history/control capabilities only  
 **Checkpoint:** `docs/PHASE-68D-CHECKPOINT.md`
@@ -5080,7 +5080,7 @@ This task is limited to **frontend implementation only** for the first history/c
 **Task ID:** TASK-68E  
 **Phase:** 68  
 **Stage:** 68E  
-**Priority:** ? High  
+**Priority:** ???High  
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)  
 **Dependencies:** TASK-68A (Complete), TASK-68B-FINAL (Complete), TASK-68C (Complete), Existing backend dashboard capabilities only  
 **Checkpoint:** `docs/PHASE-68E-CHECKPOINT.md`
@@ -5159,7 +5159,7 @@ This task is limited to **frontend implementation only** for the first dashboard
 **Task ID:** TASK-68F  
 **Phase:** 68  
 **Stage:** 68F  
-**Priority:** ? High  
+**Priority:** ???High  
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)  
 **Dependencies:** TASK-68A (Complete), Existing frontend baseline only  
 **Checkpoint:** `docs/PHASE-68F-CHECKPOINT.md`
@@ -5236,7 +5236,7 @@ This task is limited to **frontend implementation only** for the first public-fa
 **Task ID:** TASK-68G  
 **Phase:** 68  
 **Stage:** 68G  
-**Priority:** ? High  
+**Priority:** ???High  
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)  
 **Dependencies:** TASK-68A (Complete), TASK-68C (Complete), TASK-68D (Complete), TASK-68E (Complete), TASK-68F (Complete)  
 **Checkpoint:** `docs/PHASE-68G-CHECKPOINT.md`
@@ -5313,7 +5313,7 @@ This task is limited to **frontend implementation only** for the first launch-po
 **Task ID:** TASK-68-FINAL  
 **Phase:** 68  
 **Stage:** 68-FINAL  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)  
 **Dependencies:** TASK-68A (Complete), TASK-68B (Complete), TASK-68B-2 (Complete), TASK-68B-3 (Complete), TASK-68B-FINAL (Complete), TASK-68C (Complete), TASK-68D (Complete), TASK-68E (Complete), TASK-68F (Complete), TASK-68G (Complete)  
 **Checkpoint:** `docs/PHASE-68-FINAL-CHECKPOINT.md`
@@ -5411,7 +5411,7 @@ This task is limited to **documentation and validation only** for completed Phas
 **Task ID:** TASK-69A  
 **Phase:** 69  
 **Stage:** 69A  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** DOCUMENTATION / PLANNING (NO CODE)  
 **Dependencies:** PHASE-67-FINAL (Complete), PHASE-68-FINAL (Complete)  
 **Checkpoint:** `docs/PHASE-69A-CHECKPOINT.md`
@@ -5504,7 +5504,7 @@ This task is limited to **documentation and planning only**.
 **Task ID:** TASK-69B  
 **Phase:** 69  
 **Stage:** 69B  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** VALIDATION / DOCUMENTATION (NO CODE)  
 **Dependencies:** TASK-69A (Complete)  
 **Checkpoint:** `docs/PHASE-69B-CHECKPOINT.md`
@@ -5596,7 +5596,7 @@ This task is limited to **validation and documentation only**.
 **Task ID:** TASK-69-FINAL  
 **Phase:** 69  
 **Stage:** 69-FINAL  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)  
 **Dependencies:** TASK-69A (Complete), TASK-69B (Complete)  
 **Checkpoint:** `docs/PHASE-69-FINAL-CHECKPOINT.md`
@@ -5675,7 +5675,7 @@ This task is limited to **documentation and final validation only**.
 **Task ID:** TASK-70A  
 **Phase:** 70  
 **Stage:** 70A  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** DOCUMENTATION / PLANNING (NO CODE)  
 **Dependencies:** PHASE-68-FINAL (Complete), PHASE-69-FINAL (Complete)  
 **Checkpoint:** `docs/PHASE-70A-CHECKPOINT.md`
@@ -5761,7 +5761,7 @@ This task is limited to **documentation and planning only**.
 **Task ID:** TASK-70B  
 **Phase:** 70  
 **Stage:** 70B  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** VALIDATION / DOCUMENTATION (NO CODE)  
 **Dependencies:** TASK-70A (Complete)  
 **Checkpoint:** `docs/PHASE-70B-CHECKPOINT.md`
@@ -5846,7 +5846,7 @@ This task is limited to **validation and documentation only**.
 **Task ID:** TASK-70-FINAL  
 **Phase:** 70  
 **Stage:** 70-FINAL  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)  
 **Dependencies:** TASK-70A (Complete), TASK-70B (Complete)  
 **Checkpoint:** `docs/PHASE-70-FINAL-CHECKPOINT.md`
@@ -5926,7 +5926,7 @@ This task is limited to **documentation and validation only**.
 **Task ID:** TASK-71A  
 **Phase:** 71  
 **Stage:** 71A  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** DOCUMENTATION / PLANNING (NO CODE)  
 **Dependencies:** PHASE-70-FINAL (Complete)  
 **Checkpoint:** `docs/PHASE-71A-CHECKPOINT.md`
@@ -6013,7 +6013,7 @@ This task is limited to **documentation and planning only**.
 **Task ID:** TASK-71B  
 **Phase:** 71  
 **Stage:** 71B  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** DOCUMENTATION / PLANNING (NO CODE)  
 **Dependencies:** TASK-71A (Complete)  
 **Checkpoint:** `docs/PHASE-71B-CHECKPOINT.md`
@@ -6093,7 +6093,7 @@ This task is limited to **documentation and planning only**.
 **Task ID:** TASK-71C  
 **Phase:** 71  
 **Stage:** 71C  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** DOCUMENTATION / VALIDATION (NO CODE)  
 **Dependencies:** TASK-71B (Complete)  
 **Checkpoint:** `docs/PHASE-71C-CHECKPOINT.md`
@@ -6166,7 +6166,7 @@ This task is limited to **documentation and validation only**.
 **Task ID:** TASK-71-FINAL  
 **Phase:** 71  
 **Stage:** 71-FINAL  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** DOCUMENTATION / VALIDATION (NO CODE)  
 **Dependencies:** TASK-71C (Complete)  
 **Checkpoint:** `docs/PHASE-71-FINAL-CHECKPOINT.md`
@@ -6242,7 +6242,7 @@ This task is limited to **documentation and validation only**.
 **Task ID:** TASK-72A  
 **Phase:** 72  
 **Stage:** 72A  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** DOCUMENTATION / VALIDATION (NO CODE)  
 **Dependencies:** TASK-71-FINAL (Complete)  
 **Checkpoint:** `docs/PHASE-72A-CHECKPOINT.md`
@@ -6326,7 +6326,7 @@ This task is limited to **documentation and validation only**.
 **Task ID:** TASK-72B  
 **Phase:** 72  
 **Stage:** 72B  
-**Priority:** ? High  
+**Priority:** ???High  
 **Nature:** PLANNING / ACTIVATION (NO CODE)  
 **Dependencies:** TASK-72A (Complete)  
 **Checkpoint:** `docs/PHASE-72B-CHECKPOINT.md`
@@ -6401,7 +6401,7 @@ This task is limited to **planning and activation only**.
 **Task ID:** TASK-72C  
 **Phase:** 72  
 **Stage:** 72C  
-**Priority:** ? High  
+**Priority:** ???High  
 **Nature:** IMPLEMENTATION (VERIFICATION + DOCUMENTATION ONLY)  
 **Dependencies:** TASK-72B (Complete)  
 **Checkpoint:** `docs/PHASE-72C-CHECKPOINT.md`
@@ -6489,7 +6489,7 @@ This task executes **only** the original `TASK-42A-4` scope from current authori
 **Task ID:** TASK-72-FINAL  
 **Phase:** 72  
 **Stage:** 72-FINAL  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)  
 **Dependencies:** TASK-72C (Complete)  
 **Checkpoint:** `docs/PHASE-72-FINAL-CHECKPOINT.md`
@@ -6567,7 +6567,7 @@ This task is limited to **documentation and validation only**.
 **Task ID:** TASK-73A  
 **Phase:** 73  
 **Stage:** 73A  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** DOCUMENTATION / PLANNING (NO CODE)  
 **Dependencies:** PHASE-72-FINAL (Complete)  
 **Checkpoint:** `docs/PHASE-73A-CHECKPOINT.md`
@@ -6644,7 +6644,7 @@ This task is limited to **documentation and planning only**.
 **Task ID:** TASK-73B  
 **Phase:** 73  
 **Stage:** 73B  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** PLANNING / TASK REGISTRATION (NO CODE)  
 **Dependencies:** TASK-73A (Complete)  
 **Checkpoint:** `docs/PHASE-73B-CHECKPOINT.md`
@@ -6731,7 +6731,7 @@ This task is limited to **documentation and planning only**.
 **Task ID:** TASK-73C-1  
 **Phase:** 73  
 **Stage:** 73C-1  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE, BOUNDED)  
 **Dependencies:** TASK-73B (Complete)  
 **Checkpoint:** `docs/PHASE-73C-1-CHECKPOINT.md`
@@ -6810,7 +6810,7 @@ This task is limited to the first bounded commercial-foundation implementation s
 **Task ID:** TASK-73C-2  
 **Phase:** 73  
 **Stage:** 73C-2  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** VALIDATION / DOCUMENTATION (NO NEW IMPLEMENTATION)  
 **Dependencies:** TASK-73C-1 (Complete)  
 **Checkpoint:** `docs/PHASE-73C-2-CHECKPOINT.md`
@@ -6890,7 +6890,7 @@ This task is limited to the second bounded commercial-foundation validation slic
 **Task ID:** TASK-73C-FINAL  
 **Phase:** 73  
 **Stage:** 73C-FINAL  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** VALIDATION / DOCUMENTATION (NO NEW IMPLEMENTATION)  
 **Dependencies:** TASK-73C-1 (Complete), TASK-73C-2 (Complete)  
 **Checkpoint:** `docs/PHASE-73C-FINAL-CHECKPOINT.md`
@@ -6972,7 +6972,7 @@ This task is limited to final consolidation validation for the selected bounded 
 **Task ID:** TASK-73-FINAL  
 **Phase:** 73  
 **Stage:** 73-FINAL  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)  
 **Dependencies:** TASK-73A (Complete), TASK-73B (Complete), TASK-73C-1 (Complete), TASK-73C-2 (Complete), TASK-73C-FINAL (Complete)  
 **Checkpoint:** `docs/PHASE-73-FINAL-CHECKPOINT.md`
@@ -7052,7 +7052,7 @@ This task is limited to final consolidation validation for completed Phase 73 ou
 **Task ID:** TASK-74A  
 **Phase:** 74  
 **Stage:** 74A  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** PLANNING / TASK REGISTRATION (NO CODE)  
 **Dependencies:** TASK-73-FINAL (Complete)  
 **Checkpoint:** `docs/PHASE-74A-CHECKPOINT.md`
@@ -7138,7 +7138,7 @@ This task is limited to **documentation and planning only**.
 **Task ID:** TASK-74B  
 **Phase:** 74  
 **Stage:** 74B  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** PLANNING / TASK REGISTRATION (NO CODE)  
 **Dependencies:** TASK-74A (Complete)  
 **Checkpoint:** `docs/PHASE-74B-CHECKPOINT.md`
@@ -7229,7 +7229,7 @@ This task is limited to **documentation and planning only**.
 **Task ID:** TASK-74C-1
 **Phase:** 74
 **Stage:** 74C-1
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE, BOUNDED)
 **Dependencies:** TASK-74B (Complete)
 **Checkpoint:** `docs/PHASE-74C-1-CHECKPOINT.md`
@@ -7315,7 +7315,7 @@ This task is limited to **bounded implementation or validation on existing surfa
 **Task ID:** TASK-74C-2
 **Phase:** 74
 **Stage:** 74C-2
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Nature:** VALIDATION / DOCUMENTATION (NO NEW IMPLEMENTATION)
 **Dependencies:** TASK-74C-1 (Complete)
 **Checkpoint:** `docs/PHASE-74C-2-CHECKPOINT.md`
@@ -7401,7 +7401,7 @@ This task is limited to **bounded validation and documentation on existing surfa
 **Task ID:** TASK-74C-FINAL
 **Phase:** 74
 **Stage:** 74C-FINAL
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Nature:** VALIDATION / DOCUMENTATION (NO NEW IMPLEMENTATION)
 **Dependencies:** TASK-74C-1 (Complete), TASK-74C-2 (Complete)
 **Checkpoint:** `docs/PHASE-74C-FINAL-CHECKPOINT.md`
@@ -7483,7 +7483,7 @@ This task is limited to **final bounded-family consolidation and validation only
 **Task ID:** TASK-74-FINAL
 **Phase:** 74
 **Stage:** 74-FINAL
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)
 **Dependencies:** TASK-74A (Complete), TASK-74B (Complete), TASK-74C-1 (Complete), TASK-74C-2 (Complete), TASK-74C-FINAL (Complete)
 **Checkpoint:** `docs/PHASE-74-FINAL-CHECKPOINT.md`
@@ -7567,7 +7567,7 @@ This task is limited to final consolidation validation for completed Phase 74 ou
 **Task ID:** TASK-75A  
 **Phase:** 75  
 **Stage:** 75A  
-**Priority:** ? Medium  
+**Priority:** ?貕?Medium  
 **Nature:** DOCUMENTATION / PLANNING (NO CODE)  
 **Dependencies:** TASK-74-FINAL (Complete)  
 **Checkpoint:** `docs/PHASE-75A-CHECKPOINT.md`
@@ -7657,7 +7657,7 @@ This task is limited to **documentation and planning only**.
 **Task ID:** TASK-76A
 **Phase:** 76
 **Stage:** 76A
-**Priority:** ? High
+**Priority:** ???High
 **Nature:** DOCUMENTATION / PLANNING (NO CODE)
 **Dependencies:** TASK-75A (Complete)
 **Checkpoint:** `docs/PHASE-76A-CHECKPOINT.md`
@@ -7746,7 +7746,7 @@ This task is limited to **documentation and planning only**.
 **Task ID:** TASK-76B
 **Phase:** 76
 **Stage:** 76B
-**Priority:** ? High
+**Priority:** ???High
 **Nature:** VALIDATION / DOCUMENTATION (NO CODE)
 **Dependencies:** TASK-76A (Complete)
 **Checkpoint:** `docs/PHASE-76B-CHECKPOINT.md`
@@ -7841,7 +7841,7 @@ This task is limited to **validation and documentation only**.
 **Task ID:** TASK-76C
 **Phase:** 76
 **Stage:** 76C
-**Priority:** ? High
+**Priority:** ???High
 **Nature:** IMPLEMENTATION (MINIMAL, TARGETED FIX)
 **Dependencies:** TASK-76B (Complete)
 **Checkpoint:** `docs/PHASE-76C-CHECKPOINT.md`
@@ -7920,7 +7920,7 @@ This task is limited to **one-issue-at-a-time product correction** for ISSUE-76-
 **Task ID:** TASK-76D
 **Phase:** 76
 **Stage:** 76D
-**Priority:** ? High
+**Priority:** ???High
 **Nature:** VALIDATION / DOCUMENTATION (NO CODE)
 **Dependencies:** TASK-76C (Complete)
 **Checkpoint:** `docs/PHASE-76D-CHECKPOINT.md`
@@ -8004,7 +8004,7 @@ This task is limited to **post-fix manual validation recheck and gate decisionin
 **Task ID:** TASK-76E
 **Phase:** 76
 **Stage:** 76E
-**Priority:** ? High
+**Priority:** ???High
 **Nature:** IMPLEMENTATION (MINIMAL, TARGETED FIX)
 **Dependencies:** TASK-76D (Complete)
 **Checkpoint:** `docs/PHASE-76E-CHECKPOINT.md`
@@ -8098,7 +8098,7 @@ This task is limited to **ISSUE-76-004 resolution only** (one-issue-at-a-time pr
 **Task ID:** TASK-76F
 **Phase:** 76
 **Stage:** 76F
-**Priority:** ? High
+**Priority:** ???High
 **Nature:** IMPLEMENTATION (MINIMAL, TARGETED FIX)
 **Dependencies:** TASK-76E (Complete)
 **Checkpoint:** `docs/PHASE-76F-CHECKPOINT.md`
@@ -8201,7 +8201,7 @@ This task is limited to **ISSUE-76-002 resolution only** (one-issue-at-a-time pr
 **Task ID:** TASK-76G
 **Phase:** 76
 **Stage:** 76G
-**Priority:** ? High
+**Priority:** ???High
 **Nature:** IMPLEMENTATION (MINIMAL, TARGETED FIX)
 **Dependencies:** TASK-76F (Complete)
 **Checkpoint:** `docs/PHASE-76G-CHECKPOINT.md`
@@ -8298,7 +8298,7 @@ This task is limited to **ISSUE-76-003 resolution only** (one-issue-at-a-time pr
 **Task ID:** TASK-76H
 **Phase:** 76
 **Stage:** 76H
-**Priority:** ? High
+**Priority:** ???High
 **Nature:** VALIDATION / DOCUMENTATION (NO CODE)
 **Dependencies:** TASK-76G (Complete)
 **Checkpoint:** `docs/PHASE-76H-CHECKPOINT.md`
@@ -8397,7 +8397,7 @@ This task is limited to **validation and documentation only**.
 **Task ID:** TASK-76-FINAL
 **Phase:** 76
 **Stage:** 76-FINAL
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)
 **Dependencies:** TASK-76A (Complete), TASK-76B (Complete), TASK-76C (Complete), TASK-76D (Complete), TASK-76E (Complete), TASK-76F (Complete), TASK-76G (Complete), TASK-76H (Complete)
 **Checkpoint:** `docs/PHASE-76-FINAL-CHECKPOINT.md`
@@ -8489,7 +8489,7 @@ This task is limited to final consolidation validation for completed Phase 76 ou
 **Task ID:** TASK-77A
 **Phase:** 77
 **Stage:** 77A
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Nature:** IMPLEMENTATION (MINIMAL, TARGETED FIX)
 **Dependencies:** TASK-76-FINAL (Complete)
 **Checkpoint:** `docs/PHASE-77A-CHECKPOINT.md`
@@ -8580,7 +8580,7 @@ This task is limited to **ISSUE-76-005 resolution only** (one-issue-at-a-time pr
 **Task ID:** TASK-77-FINAL
 **Phase:** 77
 **Stage:** 77-FINAL
-**Priority:** ? Low
+**Priority:** ?貕?Low
 **Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)
 **Dependencies:** TASK-77A (Complete)
 **Checkpoint:** `docs/PHASE-77-FINAL-CHECKPOINT.md`
@@ -8646,7 +8646,7 @@ Validate and consolidate completed Phase 77 bounded fix outputs (`TASK-77A`) and
 **Task ID:** TASK-78A
 **Phase:** 78
 **Stage:** 78A
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-77A (Complete), TASK-68C (Complete), TASK-68D (Complete), Phase 76 gate OPEN
@@ -8747,7 +8747,7 @@ Wire the workspace's existing command input surface to `POST /api/sessions/:id/e
 **Task ID:** TASK-78B
 **Phase:** 78
 **Stage:** 78B
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-78A (Complete and Locked), TASK-68D (Complete and Locked)
@@ -8836,7 +8836,7 @@ After a successful exec, refresh the checkpoint list and session-state indicator
 **Task ID:** TASK-78-FINAL
 **Phase:** 78
 **Stage:** 78-FINAL
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)
 **Dependencies:** TASK-78A (Complete and Locked), TASK-78B (Complete and Locked)
@@ -8922,7 +8922,7 @@ Validate and consolidate completed Phase 78 slices (`TASK-78A`, `TASK-78B`) and 
 **Task ID:** TASK-79A
 **Phase:** 79
 **Stage:** 79A
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-78-FINAL (Complete and Locked), TASK-68C (Complete), TASK-78A (Complete and Locked), TASK-78B (Complete and Locked)
@@ -9012,7 +9012,7 @@ Make the workspace preview panel meaningfully usable by wiring the existing prev
 **Task ID:** TASK-79B
 **Phase:** 79
 **Stage:** 79B
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** Phase 78 (Complete and Locked), TASK-79A (Complete and Locked), TASK-68C (Complete)
@@ -9107,7 +9107,7 @@ Make the workspace editor area meaningfully usable by wiring the existing editor
 **Task ID:** TASK-79-FINAL
 **Phase:** 79
 **Stage:** 79-FINAL
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)
 **Dependencies:** TASK-79A (Complete and Locked), TASK-79B (Complete and Locked)
@@ -9201,7 +9201,7 @@ Validate and consolidate completed Phase 79 slices (`TASK-79A`, `TASK-79B`) and 
 **Task ID:** TASK-80A
 **Phase:** 80
 **Stage:** 80A
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** Phase 79 (Complete and Closed), TASK-79B (Complete and Locked)
@@ -9286,7 +9286,7 @@ Make the workspace editor meaningfully usable for actual code changes by wiring 
 - Editing/saving scoped to active session and selected file only
 - PRD.md and ARCHITECTURE.md remain higher authority
 
-**Reference:** TASKS.md, PRD.md 禮3C (File System Operations), ARCHITECTURE.md 禮8 (API Design), PHASE-79B-CHECKPOINT.md, PHASE-79-FINAL-CHECKPOINT.md
+**Reference:** TASKS.md, PRD.md 蝳?C (File System Operations), ARCHITECTURE.md 蝳? (API Design), PHASE-79B-CHECKPOINT.md, PHASE-79-FINAL-CHECKPOINT.md
 
 ---
 
@@ -9295,7 +9295,7 @@ Make the workspace editor meaningfully usable for actual code changes by wiring 
 **Task ID:** TASK-80B
 **Phase:** 80
 **Stage:** 80B
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** Phase 78 (Complete and Closed), Phase 79 (Complete and Closed), TASK-80A (Complete and Locked), TASK-68D (Complete)
@@ -9377,7 +9377,7 @@ Make workspace version-control usability meaningfully better by wiring the exist
 - Checkpoint creation scoped to active session only
 - PRD.md and ARCHITECTURE.md remain higher authority
 
-**Reference:** TASKS.md, PRD.md 禮3D (Version Control / Checkpoints), ARCHITECTURE.md 禮8 (API Design), PHASE-80A-CHECKPOINT.md, PHASE-68D-CHECKPOINT.md (or equivalent history/control checkpoint)
+**Reference:** TASKS.md, PRD.md 蝳?D (Version Control / Checkpoints), ARCHITECTURE.md 蝳? (API Design), PHASE-80A-CHECKPOINT.md, PHASE-68D-CHECKPOINT.md (or equivalent history/control checkpoint)
 
 ---
 
@@ -9386,7 +9386,7 @@ Make workspace version-control usability meaningfully better by wiring the exist
 **Task ID:** TASK-80C
 **Phase:** 80
 **Stage:** 80C
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** Phase 78 (Complete and Closed), Phase 79 (Complete and Closed), TASK-80A (Complete and Locked), TASK-80B (Complete and Locked)
@@ -9483,7 +9483,7 @@ Make workspace version-control usability meaningfully better by wiring the exist
 - PRD.md and ARCHITECTURE.md remain higher authority
 - CLAUDE.md governance loop respected at every stage
 
-**Reference:** TASKS.md, PRD.md 禮3C (File System Operations), ARCHITECTURE.md 禮8 (API Design), PHASE-80B-CHECKPOINT.md, PHASE-80-FINAL-CHECKPOINT.md
+**Reference:** TASKS.md, PRD.md 蝳?C (File System Operations), ARCHITECTURE.md 蝳? (API Design), PHASE-80B-CHECKPOINT.md, PHASE-80-FINAL-CHECKPOINT.md
 
 ---
 
@@ -9492,7 +9492,7 @@ Make workspace version-control usability meaningfully better by wiring the exist
 **Task ID:** TASK-80-FINAL
 **Phase:** 80
 **Stage:** 80-FINAL
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)
 **Dependencies:** TASK-80A (Complete and Locked), TASK-80B (Complete and Locked)
@@ -9583,7 +9583,7 @@ Validate and consolidate completed Phase 80 slices (`TASK-80A`, `TASK-80B`) and 
 **Task ID:** TASK-80-RECONSOLIDATE
 **Phase:** 80
 **Stage:** 80-RECONSOLIDATE
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)
 **Dependencies:** TASK-80A (Complete and Locked), TASK-80B (Complete and Locked), TASK-80C (Complete and Locked)
@@ -9667,7 +9667,7 @@ Re-validate and re-consolidate Phase 80 so the final Phase 80 closure correctly 
 **Task ID:** TASK-81A
 **Phase:** 81
 **Stage:** 81A
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-80A (Complete and Locked), TASK-80B (Complete and Locked), TASK-80C (Complete and Locked), TASK-80-RECONSOLIDATE (Complete and Locked)
@@ -9751,7 +9751,7 @@ Make workspace history/version-control usability meaningfully better by wiring t
 **Task ID:** TASK-81B
 **Phase:** 81
 **Stage:** 81B
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-81A (Complete and Locked)
@@ -9844,7 +9844,7 @@ Make checkpoint comparison more usable by enhancing the existing diff viewer wit
 **Task ID:** TASK-81C
 **Phase:** 81
 **Stage:** 81C
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked)
@@ -9942,7 +9942,7 @@ Make checkpoint diff inspection more usable by upgrading the existing diff viewe
 **Task ID:** TASK-81-FINAL
 **Phase:** 81
 **Stage:** 81-FINAL
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked)
@@ -10025,7 +10025,7 @@ Validate and consolidate completed Phase 81 slices (`TASK-81A`, `TASK-81B`, `TAS
 **Task ID:** TASK-81D
 **Phase:** 81
 **Stage:** 81D
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked)
@@ -10118,7 +10118,7 @@ Make checkpoint history comparison more usable by allowing the user to choose tw
 **Task ID:** TASK-81-RECONSOLIDATE
 **Phase:** 81
 **Stage:** 81-RECONSOLIDATE
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked)
@@ -10203,7 +10203,7 @@ Re-validate and re-consolidate Phase 81 so the final Phase 81 closure correctly 
 **Task ID:** TASK-81E
 **Phase:** 81
 **Stage:** 81E
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked)
@@ -10286,7 +10286,7 @@ Make checkpoint history easier to use by adding bounded client-side search and f
 **Task ID:** TASK-81-RERECONSOLIDATE
 **Phase:** 81
 **Stage:** 81-RERECONSOLIDATE
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked)
@@ -10371,7 +10371,7 @@ Re-validate and re-re-consolidate Phase 81 so the final Phase 81 closure correct
 **Task ID:** TASK-81F
 **Phase:** 81
 **Stage:** 81F
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked); existing history/control surface and checkpoint list load path already present
@@ -10461,7 +10461,7 @@ Make checkpoint history easier to scan by adding a bounded visual timeline prese
 **Task ID:** TASK-81-RERERECONSOLIDATE
 **Phase:** 81
 **Stage:** 81-RERERECONSOLIDATE
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked); prior `TASK-81-FINAL`, `TASK-81-RECONSOLIDATE`, and `TASK-81-RERECONSOLIDATE` exist but are outdated (written before TASK-81F)
@@ -10527,7 +10527,7 @@ Re-validate and re-re-re-consolidate Phase 81 so the final Phase 81 closure corr
 **Task ID:** TASK-81G
 **Phase:** 81
 **Stage:** 81G
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked); existing history/control surface and checkpoint list load path already present
@@ -10592,7 +10592,7 @@ Make checkpoint history easier to inspect by adding a bounded git-log-style brow
 **Task ID:** TASK-81-RERERERECONSOLIDATE
 **Phase:** 81
 **Stage:** 81-RERERERECONSOLIDATE
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked); prior `TASK-81-FINAL`, `TASK-81-RECONSOLIDATE`, `TASK-81-RERECONSOLIDATE`, and `TASK-81-RERERECONSOLIDATE` exist but are outdated (each was written before `TASK-81G` was scoped, implemented, or locked)
@@ -10664,7 +10664,7 @@ Re-validate and re-re-re-re-consolidate Phase 81 so the final Phase 81 closure c
 **Task ID:** TASK-81H
 **Phase:** 81
 **Stage:** 81H
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked); existing history/control surface already present; existing checkpoint/history capability already present
@@ -10721,7 +10721,7 @@ Make checkpoint history more useful by allowing the user to inspect file content
 **Task ID:** TASK-81I
 **Phase:** 81
 **Stage:** 81I
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-79B (Complete and Locked), TASK-80A (Complete and Locked), TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked); existing live file-navigation/editor surface already present; existing history/control surface already present
@@ -10781,7 +10781,7 @@ Make checkpoint history more actionable by allowing the user to jump from a sele
 **Task ID:** TASK-81J
 **Phase:** 81
 **Stage:** 81J
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked), TASK-81I (Complete and Locked); existing history/control surface already present; existing compare/diff flows already present
@@ -10838,7 +10838,7 @@ Make checkpoint history workflows faster by allowing the user to pin one checkpo
 **Task ID:** TASK-81K
 **Phase:** 81
 **Stage:** 81K
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked), TASK-81I (Complete and Locked), TASK-81J (Complete and Locked); existing history/control surface already present; existing checkpoint list load path already present
@@ -10899,7 +10899,7 @@ Make checkpoint history easier to inspect by adding a bounded checkpoint details
 **Task ID:** TASK-81L
 **Phase:** 81
 **Stage:** 81L
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-80C (Complete and Locked), TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked), TASK-81I (Complete and Locked), TASK-81J (Complete and Locked), TASK-81K (Complete and Locked); existing history/control surface already present; existing revert flow already present; existing diff/snapshot surfaces already present
@@ -10958,7 +10958,7 @@ Make revert workflows safer and easier to understand by adding a bounded revert 
 **Task ID:** TASK-81M
 **Phase:** 81
 **Stage:** 81M
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked), TASK-81I (Complete and Locked), TASK-81J (Complete and Locked), TASK-81K (Complete and Locked), TASK-81L (Complete and Locked); existing history/control surface already present; existing diff/snapshot surfaces already present
@@ -11019,7 +11019,7 @@ Make checkpoint history easier to inspect by adding a bounded changed-files insp
 **Task ID:** TASK-81N
 **Phase:** 81
 **Stage:** 81N
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked), TASK-81I (Complete and Locked), TASK-81J (Complete and Locked), TASK-81K (Complete and Locked), TASK-81L (Complete and Locked), TASK-81M (Complete and Locked); existing history/control surface already present; existing checkpoint list load path already present
@@ -11075,7 +11075,7 @@ Make checkpoint history workflows easier to manage by allowing the user to tempo
 **Task ID:** TASK-81O
 **Phase:** 81
 **Stage:** 81O
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked), TASK-81I (Complete and Locked), TASK-81J (Complete and Locked), TASK-81K (Complete and Locked), TASK-81L (Complete and Locked), TASK-81M (Complete and Locked), TASK-81N (Complete and Locked); existing history/control surface already present
@@ -11134,7 +11134,7 @@ Make the history workflow easier to manage by adding bounded reset/clear control
 **Task ID:** TASK-81P
 **Phase:** 81
 **Stage:** 81P
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked), TASK-81I (Complete and Locked), TASK-81J (Complete and Locked), TASK-81K (Complete and Locked), TASK-81L (Complete and Locked), TASK-81M (Complete and Locked), TASK-81N (Complete and Locked), TASK-81O (Complete and Locked); existing history/control surface already present
@@ -11198,7 +11198,7 @@ Make the history workflow easier to read by adding a bounded unified active-chec
 **Task ID:** TASK-81Q
 **Phase:** 81
 **Stage:** 81Q
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked), TASK-81I (Complete and Locked), TASK-81J (Complete and Locked), TASK-81K (Complete and Locked), TASK-81L (Complete and Locked), TASK-81M (Complete and Locked), TASK-81N (Complete and Locked), TASK-81O (Complete and Locked), TASK-81P (Complete and Locked); existing history/control surface already present
@@ -11265,7 +11265,7 @@ Make the history workflow easier to understand at a glance by adding a bounded h
 **Task ID:** TASK-81R
 **Phase:** 81
 **Stage:** 81R
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked), TASK-81I (Complete and Locked), TASK-81J (Complete and Locked), TASK-81K (Complete and Locked), TASK-81L (Complete and Locked), TASK-81M (Complete and Locked), TASK-81N (Complete and Locked), TASK-81O (Complete and Locked), TASK-81P (Complete and Locked), TASK-81Q (Complete and Locked); existing history/control surface and compare selection flow already present
@@ -11327,7 +11327,7 @@ Make checkpoint comparison easier to understand at a glance by adding a bounded 
 **Task ID:** TASK-81S
 **Phase:** 81
 **Stage:** 81S
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked), TASK-81I (Complete and Locked), TASK-81J (Complete and Locked), TASK-81K (Complete and Locked), TASK-81L (Complete and Locked), TASK-81M (Complete and Locked), TASK-81N (Complete and Locked), TASK-81O (Complete and Locked), TASK-81P (Complete and Locked), TASK-81Q (Complete and Locked), TASK-81R (Complete and Locked); existing history/control surface already present
@@ -11391,7 +11391,7 @@ Make checkpoint inspection smoother by adding a bounded readiness/status surface
 **Task ID:** TASK-81T
 **Phase:** 81
 **Stage:** 81T
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked), TASK-81I (Complete and Locked), TASK-81J (Complete and Locked), TASK-81K (Complete and Locked), TASK-81L (Complete and Locked), TASK-81M (Complete and Locked), TASK-81N (Complete and Locked), TASK-81O (Complete and Locked), TASK-81P (Complete and Locked), TASK-81Q (Complete and Locked), TASK-81R (Complete and Locked), TASK-81S (Complete and Locked); existing history/control surface already present
@@ -11454,7 +11454,7 @@ Make checkpoint inspection easier at a glance by adding a bounded current-checkp
 **Task ID:** TASK-81U
 **Phase:** 81
 **Stage:** 81U
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked), TASK-81I (Complete and Locked), TASK-81J (Complete and Locked), TASK-81K (Complete and Locked), TASK-81L (Complete and Locked), TASK-81M (Complete and Locked), TASK-81N (Complete and Locked), TASK-81O (Complete and Locked), TASK-81P (Complete and Locked), TASK-81Q (Complete and Locked), TASK-81R (Complete and Locked), TASK-81S (Complete and Locked), TASK-81T (Complete and Locked); existing history/control surface already present
@@ -11516,7 +11516,7 @@ Make the history workflow easier to understand by showing bounded inline availab
 **Task ID:** TASK-81V
 **Phase:** 81
 **Stage:** 81V
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked), TASK-81I (Complete and Locked), TASK-81J (Complete and Locked), TASK-81K (Complete and Locked), TASK-81L (Complete and Locked), TASK-81M (Complete and Locked), TASK-81N (Complete and Locked), TASK-81O (Complete and Locked), TASK-81P (Complete and Locked), TASK-81Q (Complete and Locked), TASK-81R (Complete and Locked), TASK-81S (Complete and Locked), TASK-81T (Complete and Locked), TASK-81U (Complete and Locked); existing history/control surface already present
@@ -11581,7 +11581,7 @@ Make the history workflow easier to understand by adding a bounded legend for ex
 **Task ID:** TASK-81W
 **Phase:** 81
 **Stage:** 81W
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked), TASK-81I (Complete and Locked), TASK-81J (Complete and Locked), TASK-81K (Complete and Locked), TASK-81L (Complete and Locked), TASK-81M (Complete and Locked), TASK-81N (Complete and Locked), TASK-81O (Complete and Locked), TASK-81P (Complete and Locked), TASK-81Q (Complete and Locked), TASK-81R (Complete and Locked), TASK-81S (Complete and Locked), TASK-81T (Complete and Locked), TASK-81U (Complete and Locked), TASK-81V (Complete and Locked); existing history/control surface already present
@@ -11646,7 +11646,7 @@ Make the history workflow easier to follow by adding a bounded breadcrumb-style 
 **Task ID:** TASK-81X
 **Phase:** 81
 **Stage:** 81X
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked), TASK-81I (Complete and Locked), TASK-81J (Complete and Locked), TASK-81K (Complete and Locked), TASK-81L (Complete and Locked), TASK-81M (Complete and Locked), TASK-81N (Complete and Locked), TASK-81O (Complete and Locked), TASK-81P (Complete and Locked), TASK-81Q (Complete and Locked), TASK-81R (Complete and Locked), TASK-81S (Complete and Locked), TASK-81T (Complete and Locked), TASK-81U (Complete and Locked), TASK-81V (Complete and Locked), TASK-81W (Complete and Locked); existing history/control surface already present
@@ -11709,7 +11709,7 @@ Make the history workflow easier to understand by adding bounded empty/unavailab
 **Task ID:** TASK-81Y
 **Phase:** 81
 **Stage:** 81Y
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked), TASK-81I (Complete and Locked), TASK-81J (Complete and Locked), TASK-81K (Complete and Locked), TASK-81L (Complete and Locked), TASK-81M (Complete and Locked), TASK-81N (Complete and Locked), TASK-81O (Complete and Locked), TASK-81P (Complete and Locked), TASK-81Q (Complete and Locked), TASK-81R (Complete and Locked), TASK-81S (Complete and Locked), TASK-81T (Complete and Locked), TASK-81U (Complete and Locked), TASK-81V (Complete and Locked), TASK-81W (Complete and Locked), TASK-81X (Complete and Locked); existing history/control surface already present
@@ -11768,7 +11768,7 @@ Make the history workflow easier to scan by adding a bounded frontend-only densi
 **Task ID:** TASK-81Z
 **Phase:** 81
 **Stage:** 81Z
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked), TASK-81I (Complete and Locked), TASK-81J (Complete and Locked), TASK-81K (Complete and Locked), TASK-81L (Complete and Locked), TASK-81M (Complete and Locked), TASK-81N (Complete and Locked), TASK-81O (Complete and Locked), TASK-81P (Complete and Locked), TASK-81Q (Complete and Locked), TASK-81R (Complete and Locked), TASK-81S (Complete and Locked), TASK-81T (Complete and Locked), TASK-81U (Complete and Locked), TASK-81V (Complete and Locked), TASK-81W (Complete and Locked), TASK-81X (Complete and Locked), TASK-81Y (Complete and Locked); existing history/control surface already present
@@ -11827,7 +11827,7 @@ Make the history workflow easier to focus on by adding a bounded frontend-only f
 **Task ID:** TASK-81-FINAL-CLOSE
 **Phase:** 81
 **Stage:** 81-FINAL-CLOSE
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)
 **Dependencies:** TASK-81A (Complete and Locked), TASK-81B (Complete and Locked), TASK-81C (Complete and Locked), TASK-81D (Complete and Locked), TASK-81E (Complete and Locked), TASK-81F (Complete and Locked), TASK-81G (Complete and Locked), TASK-81H (Complete and Locked), TASK-81I (Complete and Locked), TASK-81J (Complete and Locked), TASK-81K (Complete and Locked), TASK-81L (Complete and Locked), TASK-81M (Complete and Locked), TASK-81N (Complete and Locked), TASK-81O (Complete and Locked), TASK-81P (Complete and Locked), TASK-81Q (Complete and Locked), TASK-81R (Complete and Locked), TASK-81S (Complete and Locked), TASK-81T (Complete and Locked), TASK-81U (Complete and Locked), TASK-81V (Complete and Locked), TASK-81W (Complete and Locked), TASK-81X (Complete and Locked), TASK-81Y (Complete and Locked), TASK-81Z (Complete and Locked)
@@ -11912,7 +11912,7 @@ Perform the true final consolidation for Phase 81 and close the Phase 81 history
 **Task ID:** TASK-82A
 **Phase:** 82
 **Stage:** 82A
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-81A through TASK-81Z and TASK-81-FINAL-CLOSE (all Complete and Locked); existing history/control surface already present
@@ -11974,7 +11974,7 @@ Make the history workflow easier to manage at larger scale by adding bounded sec
 **Task ID:** TASK-82B
 **Phase:** 82
 **Stage:** 82B
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-82A (Complete and Locked); existing `collapsedHistorySections` state already present
@@ -12038,7 +12038,7 @@ Make the history workflow faster to manage by adding bounded quick expand-all / 
 **Task ID:** TASK-82C
 **Phase:** 82
 **Stage:** 82C
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-82A and TASK-82B (Complete and Locked); existing `collapsedHistorySections` state already present
@@ -12102,7 +12102,7 @@ Make the collapsed history workflow easier to understand by adding a bounded com
 **Task ID:** TASK-82D
 **Phase:** 82
 **Stage:** 82D
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-82A, TASK-82B, and TASK-82C (Complete and Locked); existing history/control surface already present
@@ -12167,7 +12167,7 @@ Make the history workflow easier to manage by adding bounded frontend-only secti
 **Task ID:** TASK-82E
 **Phase:** 82
 **Stage:** 82E
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-82A, TASK-82B, TASK-82C, and TASK-82D (Complete and Locked); existing history/control surface already present
@@ -12232,7 +12232,7 @@ Make the history workflow easier to recover from temporary layout changes by add
 **Task ID:** TASK-82F
 **Phase:** 82
 **Stage:** 82F
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-82A, TASK-82B, TASK-82C, TASK-82D, and TASK-82E (Complete and Locked); existing history/control surface already present
@@ -12285,7 +12285,7 @@ Make the history workflow easier to manage by adding bounded frontend-only secti
 **Task ID:** TASK-82G
 **Phase:** 82
 **Stage:** 82G
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-82A, TASK-82B, TASK-82C, TASK-82D, TASK-82E, and TASK-82F (Complete and Locked); existing history/control surface already present
@@ -12338,7 +12338,7 @@ Make the history workflow easier to recover from temporary preset changes by add
 **Task ID:** TASK-82H
 **Phase:** 82
 **Stage:** 82H
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-82A, TASK-82B, TASK-82C, TASK-82D, TASK-82E, TASK-82F, and TASK-82G (Complete and Locked); existing history/control surface already present
@@ -12391,7 +12391,7 @@ Make the history workflow easier to understand by adding a bounded read-only sum
 **Task ID:** TASK-82I
 **Phase:** 82
 **Stage:** 82I
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-82A, TASK-82B, TASK-82C, TASK-82D, TASK-82E, TASK-82F, TASK-82G, and TASK-82H (Complete and Locked); existing history/control surface already present
@@ -12444,7 +12444,7 @@ Make the history workflow easier to understand by adding a bounded read-only exp
 **Task ID:** TASK-82J
 **Phase:** 82
 **Stage:** 82J
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-82A, TASK-82B, TASK-82C, TASK-82D, TASK-82E, TASK-82F, TASK-82G, TASK-82H, and TASK-82I (Complete and Locked); existing history/control surface already present
@@ -12497,7 +12497,7 @@ Make the history workflow easier to understand by adding a bounded read-only sum
 **Task ID:** TASK-82K
 **Phase:** 82
 **Stage:** 82K
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-82A, TASK-82B, TASK-82C, TASK-82D, TASK-82E, TASK-82F, TASK-82G, TASK-82H, TASK-82I, and TASK-82J (Complete and Locked); existing history/control surface already present
@@ -12550,7 +12550,7 @@ Make the history workflow easier to scan by adding a bounded read-only summary o
 **Task ID:** TASK-82L
 **Phase:** 82
 **Stage:** 82L
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-82A, TASK-82B, TASK-82C, TASK-82D, TASK-82E, TASK-82F, TASK-82G, TASK-82H, TASK-82I, TASK-82J, and TASK-82K (Complete and Locked); existing history/control surface already present
@@ -12603,7 +12603,7 @@ Make the history workflow easier to understand by adding a bounded read-only ind
 **Task ID:** TASK-82M
 **Phase:** 82
 **Stage:** 82M
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-82A through TASK-82L (Complete and Locked); existing history/control surface already present
@@ -12656,7 +12656,7 @@ Make the history workflow easier to interpret by adding a bounded read-only summ
 **Task ID:** TASK-82N
 **Phase:** 82
 **Stage:** 82N
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-82A through TASK-82M (Complete and Locked); existing history/control surface already present
@@ -12709,7 +12709,7 @@ Make the history workflow easier to read by adding a bounded read-only label tha
 **Task ID:** TASK-82O
 **Phase:** 82
 **Stage:** 82O
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-82A through TASK-82N (Complete and Locked); existing history/control surface already present
@@ -12762,7 +12762,7 @@ Make the history workflow easier to understand by adding a bounded read-only exp
 **Task ID:** TASK-82P
 **Phase:** 82
 **Stage:** 82P
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-82A through TASK-82O (Complete and Locked); existing history/control surface already present
@@ -12815,7 +12815,7 @@ Make the history workflow easier to trust by adding a bounded read-only note tha
 **Task ID:** TASK-82Q
 **Phase:** 82
 **Stage:** 82Q
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-82A through TASK-82P (Complete and Locked); existing history/control surface already present
@@ -12868,7 +12868,7 @@ Make the history workflow easier to scan by adding a bounded read-only group lab
 **Task ID:** TASK-82R
 **Phase:** 82
 **Stage:** 82R
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-82A through TASK-82Q (Complete and Locked); existing history/control surface already present
@@ -12921,7 +12921,7 @@ Make the history workflow easier to scan by adding a bounded read-only label tha
 **Task ID:** TASK-82S
 **Phase:** 82
 **Stage:** 82S
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-82A through TASK-82R (Complete and Locked); existing history/control surface already present
@@ -12974,7 +12974,7 @@ Make the history workflow easier to understand by adding a bounded read-only lab
 **Task ID:** TASK-82T
 **Phase:** 82
 **Stage:** 82T
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-82A through TASK-82S (Complete and Locked); existing history/control surface already present
@@ -13027,7 +13027,7 @@ Make the history workflow easier to understand by adding a bounded read-only lab
 **Task ID:** TASK-82U
 **Phase:** 82
 **Stage:** 82U
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-82A through TASK-82T (Complete and Locked); existing history/control surface already present
@@ -13080,7 +13080,7 @@ Make the history workflow easier to scan by adding a bounded read-only label tha
 **Task ID:** TASK-82V
 **Phase:** 82
 **Stage:** 82V
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-82A through TASK-82U (Complete and Locked); existing history/control surface already present
@@ -13133,7 +13133,7 @@ Make the history workflow easier to scan by adding a bounded read-only label tha
 **Task ID:** TASK-82W
 **Phase:** 82
 **Stage:** 82W
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-82A through TASK-82V (Complete and Locked); existing history/control surface already present
@@ -13186,7 +13186,7 @@ Make the history workflow easier to scan by adding a bounded read-only label tha
 **Task ID:** TASK-82X
 **Phase:** 82
 **Stage:** 82X
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-82A through TASK-82W (Complete and Locked); existing history/control surface already present
@@ -13243,7 +13243,7 @@ Make the history workflow easier to scan by adding a bounded read-only label tha
 **Task ID:** TASK-83A
 **Phase:** 83
 **Stage:** 83A
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** Phase 81 and Phase 82 (Complete and Locked); existing Config popup present in frontend
@@ -13292,7 +13292,7 @@ Fix the real UX bug where the Config popup can open from the existing frontend b
 **Task ID:** TASK-83B
 **Phase:** 83
 **Stage:** 83B
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** Phase 81 and Phase 82 (Complete and Locked); TASK-83A (Complete and Locked)
@@ -13341,7 +13341,7 @@ Fix the real UX bug where the top-right control cluster on authenticated fronten
 **Task ID:** TASK-83D
 **Phase:** 83
 **Stage:** 83D
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, BOUNDED)
 **Dependencies:** Phase 81 and Phase 82 (Complete and Locked); TASK-83A and TASK-83B (Complete and Locked)
@@ -13389,7 +13389,7 @@ Fix the real frontend UX gap where the existing `/en/driver` page can submit an 
 **Task ID:** TASK-83E
 **Phase:** 83
 **Stage:** 83E
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, BOUNDED)
 **Dependencies:** Phase 81 and Phase 82 (Complete and Locked); TASK-83A, TASK-83B, and TASK-83D (Complete and Locked)
@@ -13436,7 +13436,7 @@ Improve the `/en/driver` UX when a rate-limit/quota error occurs by clarifying t
 **Task ID:** TASK-83F
 **Phase:** 83
 **Stage:** 83F
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (BOUNDED UX / SESSION LIFECYCLE)
 **Dependencies:** Phase 81 and Phase 82 (Complete and Locked); TASK-83A, TASK-83B, TASK-83D, and TASK-83E (Complete and Locked)
@@ -13486,7 +13486,7 @@ Improve `/en/app` session management by adding bounded sidebar actions that let 
 **Task ID:** TASK-84A
 **Phase:** 84
 **Stage:** 84A
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** Phase 81 and Phase 82 (Complete and Locked); Phase 83 (Complete and Locked)
@@ -13539,7 +13539,7 @@ Turn the current `/en/app` Chat Panel from a placeholder/exec-labeled surface in
 **Task ID:** TASK-84B
 **Phase:** 84
 **Stage:** 84B
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** Phase 81 and Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A (Complete and Locked)
@@ -13589,7 +13589,7 @@ Extend the working `/en/app` Chat Panel from a single prompt/response surface in
 **Task ID:** TASK-84C
 **Phase:** 84
 **Stage:** 84C
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** Phase 81 and Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A, TASK-84B (Complete and Locked)
@@ -13636,7 +13636,7 @@ Improve `/en/app` Chat Panel UX when chat execution is blocked by quota/rate-lim
 **Task ID:** TASK-84D
 **Phase:** 84
 **Stage:** 84D
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** Phase 81 and Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A, TASK-84B, TASK-84C (Complete and Locked)
@@ -13684,7 +13684,7 @@ Fix the remaining `/en/app` Chat Panel message-thread issues where a valid assis
 **Task ID:** TASK-84E
 **Phase:** 84
 **Stage:** 84E
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** Phase 81 and Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A, TASK-84B, TASK-84C, TASK-84D (Complete and Locked)
@@ -13736,7 +13736,7 @@ Improve `/en/app` Chat Panel UX by making the current chat thread persist across
 **Task ID:** TASK-84F
 **Phase:** 84
 **Stage:** 84F
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** Phase 81 and Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A, TASK-84B, TASK-84C, TASK-84D, TASK-84E (Complete and Locked)
@@ -13784,7 +13784,7 @@ Fix the remaining `/en/app` Chat Panel session-state/render issues where unsent 
 **Task ID:** TASK-84G
 **Phase:** 84
 **Stage:** 84G
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (AUTH GATING / FRONTEND-FIRST)
 **Dependencies:** Phase 81 and Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A through TASK-84F (Complete and Locked)
@@ -13835,7 +13835,7 @@ Fix the real product/auth gap where unauthenticated users can still enter `/en/a
 **Task ID:** AI-03-01
 **Family:** AI-03 (AI-to-Workspace Actions)
 **Stage:** AI-03-01
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** UMBRELLA WORK FAMILY (CORE PRODUCT LOOP)
 **Dependencies:** Phase 84 (Complete and Locked); AI execution pipeline (operational); workspace file system (operational)
@@ -13900,7 +13900,7 @@ The revised master plan (`AI_Sandbox_Platform_Master_Plan_Revised.md`) makes AI-
 **Family:** AI-03 (AI-to-Workspace Actions)
 **Parent:** AI-03-01
 **Stage:** AI-03-01A
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (CORE PRODUCT LOOP, BACKEND FIRST SLICE)
 **Dependencies:** Phase 84 (Complete and Locked); AI execution pipeline (operational)
@@ -13961,7 +13961,7 @@ Before frontend can apply AI file actions safely, the backend must produce a rel
 **Family:** AI-03 (AI-to-Workspace Actions)
 **Parent:** AI-03-01
 **Stage:** AI-03-01B
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (CORE PRODUCT LOOP, FRONTEND SIDE-EFFECT SLICE)
 **Dependencies:** AI-03-01A (COMPLETE and LOCKED); Phase 84 (Complete and Locked)
@@ -14024,7 +14024,7 @@ AI-03-01A established the backend fileActions contract and dual-channel delivery
 **Family:** AI-03 (AI-to-Workspace Actions)
 **Parent:** AI-03-01
 **Stage:** AI-03-01C
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (CORE PRODUCT LOOP, FRONTEND RESULT-SURFACING SLICE)
 **Dependencies:** AI-03-01B (COMPLETE and LOCKED); Phase 84 (Complete and Locked)
@@ -14080,7 +14080,7 @@ AI-03-01A established the backend fileActions contract and dual-channel delivery
 
 **Task ID:** AI-03-02
 **Family:** AI-03 (AI-to-Workspace Actions)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (CORE PRODUCT LOOP, POST-ACTION COHERENCE)
 **Dependencies:** AI-03-01C (COMPLETE and LOCKED); Phase 79/80 (Complete and Locked)
@@ -14143,7 +14143,7 @@ AI-03-01 completed the minimal AI file-action loop: backend file-action output (
 
 **Task ID:** AI-05-01
 **Family:** AI-05 (AI File-Action Diagnostics)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG INVESTIGATION (CORE PRODUCT LOOP, AI-TO-WORKSPACE FAILURE)
 **Dependencies:** AI-03 (Complete and Locked), AI-04 (Complete and Locked)
@@ -14191,7 +14191,7 @@ The core product promise is AI-driven workspace creation/editing. A real usage a
 
 **Task ID:** AI-05-01
 **Family:** AI-05 (AI File-Action Diagnostics)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG INVESTIGATION (CORE PRODUCT LOOP, AI-TO-WORKSPACE FAILURE)
 **Dependencies:** AI-03 (Complete and Locked), AI-04 (Complete and Locked)
@@ -14239,7 +14239,7 @@ The core product promise is AI-driven workspace creation/editing. A real usage a
 
 **Task ID:** AI-05-02
 **Family:** AI-05 (AI File-Action Diagnostics)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG FIX (CORE PRODUCT LOOP, MODEL OUTPUT CONTRACT)
 **Dependencies:** AI-05-01 (Complete and Locked)
@@ -14285,7 +14285,7 @@ AI-05-01 isolated the failure clearly:
 
 **Task ID:** PREV-01-01
 **Family:** PREV-01 (Preview Availability Diagnostics)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG INVESTIGATION (PREVIEW PATH, CORE WORKSPACE USABILITY)
 **Checkpoint:** `docs/PREV-01-01-CHECKPOINT.md`
@@ -14331,7 +14331,7 @@ A real usage attempt created previewable files, but the UI still shows:
 
 **Task ID:** PREV-01-02
 **Family:** PREV-01 (Preview Availability Diagnostics)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG FIX (PREVIEW PATH, WORKSPACE SOURCE-OF-TRUTH)
 **Dependencies:** PREV-01-01 (COMPLETE and LOCKED)
@@ -14379,7 +14379,7 @@ PREV-01-01 isolated the failure clearly:
 
 **Task ID:** PREV-01-03
 **Family:** PREV-01 (Preview Availability Diagnostics)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** UX FIX (PREVIEW PATH, FRONTEND ACTION GAP)
 **Dependencies:** PREV-01-02 (COMPLETE and LOCKED)
@@ -14507,7 +14507,7 @@ PREV-02-01 isolated the defect:
 
 **Task ID:** PROJ-01-01
 **Family:** PROJ-01 (Project/Public Flow Diagnostics)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG INVESTIGATION (PROJECT/PUBLIC FLOW, CORE PRODUCT USABILITY)
 **Dependencies:** PR-03-01 (COMPLETE and LOCKED), ADV-05-01 (COMPLETE and LOCKED), REL-01-02 (COMPLETE and LOCKED), UX-01 (COMPLETE and LOCKED)
@@ -14551,7 +14551,7 @@ Real usage exposed two core usability problems:
 
 **Task ID:** PROJ-01-02
 **Family:** PROJ-01 (Project/Public Flow Diagnostics)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG FIX (PROJECT/PUBLIC FLOW, ROUTING)
 **Dependencies:** PROJ-01-01 (COMPLETE and LOCKED)
@@ -14596,7 +14596,7 @@ PROJ-01-01 isolated the failure:
 
 **Task ID:** PROJ-01-03
 **Family:** PROJ-01 (Project/Public Flow Diagnostics)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** UX FIX (PROJECT OPEN FLOW, PERSISTENCE EXPECTATION)
 **Dependencies:** PROJ-01-01 (COMPLETE and LOCKED)
@@ -14641,7 +14641,7 @@ PROJ-01-01 isolated the remaining gap:
 
 **Task ID:** PROJ-01-04
 **Family:** PROJ-01 (Project/Public Flow Diagnostics)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG FIX (PROJECT OPEN FLOW, FRONTEND REFRESH)
 **Dependencies:** PROJ-01-03 (COMPLETE and LOCKED)
@@ -14689,7 +14689,7 @@ This suggests the backend open/restore may be succeeding, but the frontend works
 
 **Task ID:** PROJ-01-05
 **Family:** PROJ-01 (Project/Public Flow Diagnostics)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG INVESTIGATION (PROJECT OPEN FLOW, REAL UI FAILURE)
 **Dependencies:** PROJ-01-04 (COMPLETE and LOCKED)
@@ -14736,7 +14736,7 @@ This means the remaining failing stage is still unresolved in the real UI path.
 
 **Task ID:** PROJ-01-06
 **Family:** PROJ-01 (Project/Public Flow Diagnostics)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG FIX (PROJECT OPEN FLOW, SNAPSHOT SELECTION)
 **Dependencies:** PROJ-01-05 (COMPLETE and LOCKED)
@@ -14781,7 +14781,7 @@ PROJ-01-05 isolated the remaining failure:
 
 **Task ID:** PROJ-01-07
 **Family:** PROJ-01 (Project/Public Flow Diagnostics)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG INVESTIGATION (PROJECT FLOW, REAL USER PATH)
 **Dependencies:** PROJ-01-06 (COMPLETE and LOCKED)
@@ -14832,7 +14832,7 @@ This means either:
 
 **Task ID:** PROJ-01-08
 **Family:** PROJ-01 (Project/Public Flow Diagnostics)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** UX FIX (PROJECT SAVE SEMANTICS, CONTENT PERSISTENCE)
 **Dependencies:** PROJ-01-07 (COMPLETE and LOCKED)
@@ -14879,7 +14879,7 @@ PROJ-01-07 isolated the remaining real-user failure:
 
 **Task ID:** PROJ-01-09
 **Family:** PROJ-01 (Project/Public Flow Diagnostics)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG FIX (PROJECT OPEN FLOW, FRONTEND REFRESH)
 **Dependencies:** PROJ-01-08 (COMPLETE and LOCKED)
@@ -14923,7 +14923,7 @@ Real usage confirms:
 
 **Task ID:** PROJ-01-10
 **Family:** PROJ-01 (Project/Public Flow Diagnostics)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG INVESTIGATION (PROJECT OPEN FLOW, FRONTEND STATE RACE)
 **Dependencies:** PROJ-01-09 (COMPLETE and LOCKED)
@@ -14970,7 +14970,7 @@ This means a remaining frontend state/timing issue still exists in the real path
 
 **Task ID:** PROJ-01-11
 **Family:** PROJ-01 (Project/Public Flow Diagnostics)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG FIX (PROJECT OPEN FLOW, FRONTEND STATE RACE)
 **Dependencies:** PROJ-01-10 (COMPLETE and LOCKED)
@@ -15016,7 +15016,7 @@ PROJ-01-10 isolated the remaining failure:
 
 **Task ID:** PROJ-01-12
 **Family:** PROJ-01 (Project/Public Flow Diagnostics)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG INVESTIGATION (PROJECT OPEN FLOW, RENDERED UI STATE)
 **Dependencies:** PROJ-01-11 (COMPLETE and LOCKED)
@@ -15063,7 +15063,7 @@ This means a remaining rendered-state sync issue still exists after the current 
 
 **Task ID:** PROJ-01-13
 **Family:** PROJ-01 (Project/Public Flow Diagnostics)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG FIX (PROJECT OPEN FLOW, FRONTEND STATE DESTRUCTION)
 **Dependencies:** PROJ-01-12 (COMPLETE and LOCKED)
@@ -15113,7 +15113,7 @@ PROJ-01-12 isolated the primary failure:
 
 **Task ID:** PROJ-01-14
 **Family:** PROJ-01 (Project/Public Flow Diagnostics)
-**Priority:** 🔴 High
+**Priority:** ? High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG INVESTIGATION (PROJECT DOWNLOAD, PATH GUARD)
 **Dependencies:** PROJ-01-13 (COMPLETE and LOCKED)
@@ -15155,7 +15155,7 @@ Real usage shows project download currently fails with:
 
 **Task ID:** PROJ-01-15
 **Family:** PROJ-01 (Project/Public Flow Diagnostics)
-**Priority:** 🔴 High
+**Priority:** ? High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG FIX (PROJECT DOWNLOAD, ARCHIVE PATHS)
 **Dependencies:** PROJ-01-14 (COMPLETE and LOCKED)
@@ -15668,9 +15668,9 @@ PROJ-02-02 isolated the real 500 cause:
 
 ---
 
-## PROJ-03 — Project-First UX Redesign
+## PROJ-03 ??Project-First UX Redesign
 
-**Family status:** ACTIVE — Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2e-hotfix COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary — container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED; D0 COMPLETE and LOCKED; D0b COMPLETE and LOCKED; D0c COMPLETE and LOCKED; D0d COMPLETE and LOCKED; D0e COMPLETE and LOCKED; D0e-hotfix COMPLETE and LOCKED; D1a COMPLETE and LOCKED; D1b COMPLETE and LOCKED; D1c COMPLETE and LOCKED; D1d COMPLETE and LOCKED; D1d-hotfix COMPLETE and LOCKED. C3/C2d-unload deferred and not yet registered. Completed order: A0 → A1 → A3 → A2a → A2b → B0 → B1 → B2a → B2b → B3a → B4a → B4b → C1a → C1b-pre → C1b-cta → C2a-rate-limit → C2b-trigger-preview → C2c-label-format → C2c-handler → C2c-cta-handler-pre → C2c-cta-button → C2c-display → C2d-expiry-warn → C2e → C2f-file-save → C4 → D0 → D0b → D0c → D0d → C2e-hotfix → D0e → D0e-hotfix → D1a → D1b → D1c → D1d → D1d-hotfix. Current stage: D1d-hotfix (COMPLETE and LOCKED).
+**Family status:** ACTIVE ??Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2e-hotfix COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary ??container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED; D0 COMPLETE and LOCKED; D0b COMPLETE and LOCKED; D0c COMPLETE and LOCKED; D0d COMPLETE and LOCKED; D0e COMPLETE and LOCKED; D0e-hotfix COMPLETE and LOCKED; D1a COMPLETE and LOCKED; D1b COMPLETE and LOCKED; D1c COMPLETE and LOCKED; D1d COMPLETE and LOCKED; D1d-hotfix COMPLETE and LOCKED. C3/C2d-unload deferred and not yet registered. Completed order: A0 ??A1 ??A3 ??A2a ??A2b ??B0 ??B1 ??B2a ??B2b ??B3a ??B4a ??B4b ??C1a ??C1b-pre ??C1b-cta ??C2a-rate-limit ??C2b-trigger-preview ??C2c-label-format ??C2c-handler ??C2c-cta-handler-pre ??C2c-cta-button ??C2c-display ??C2d-expiry-warn ??C2e ??C2f-file-save ??C4 ??D0 ??D0b ??D0c ??D0d ??C2e-hotfix ??D0e ??D0e-hotfix ??D1a ??D1b ??D1c ??D1d ??D1d-hotfix. Current stage: D1d-hotfix (COMPLETE and LOCKED).
 
 ---
 
@@ -15697,8 +15697,8 @@ Current product behavior is technically improved, but the user model is still to
 **Design scope only:**
 - define a project-first user model
 - define auto-session creation/opening model:
-  - New Project → create fresh session automatically
-  - Open Existing Project → create fresh session automatically and restore project automatically
+  - New Project ??create fresh session automatically
+  - Open Existing Project ??create fresh session automatically and restore project automatically
 - define what session concepts remain hidden vs visible to users
 - define persistence/history model:
   - user-facing history/revert model
@@ -15733,7 +15733,7 @@ Current product behavior is technically improved, but the user model is still to
 ### PROJ-03-A0: Add Feature Flag Infrastructure And Recovery Vocabulary Copy Bundle
 
 **Task ID:** PROJ-03-A0
-**Family:** PROJ-03 (Project-First UX Redesign — Phase A)
+**Family:** PROJ-03 (Project-First UX Redesign ??Phase A)
 **Status:** COMPLETE and LOCKED
 **Nature:** FRONTEND INFRASTRUCTURE / PHASE A PREREQUISITE
 **Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-A0-CHECKPOINT.md`
@@ -15748,8 +15748,8 @@ All Phase A slices must be gated behind a kill-switch so the product stays stabl
 **Bounded scope:**
 - Frontend only
 - New `frontend/lib/feature-flags.ts` exporting `PROJECT_FIRST_UX` boolean read from env (`NEXT_PUBLIC_PROJECT_FIRST_UX`)
-- New `frontend/lib/recovery-copy.ts` exporting string constants for Phase A–B vocabulary ("Reopen project", "Workspace disconnected", "All changes saved", etc.)
-- Wire flag consumption points into page.tsx and workspace-shell.tsx (import/reference only — no string substitution in this slice)
+- New `frontend/lib/recovery-copy.ts` exporting string constants for Phase A? vocabulary ("Reopen project", "Workspace disconnected", "All changes saved", etc.)
+- Wire flag consumption points into page.tsx and workspace-shell.tsx (import/reference only ??no string substitution in this slice)
 - No behavior change whatsoever
 
 **Non-goals:**
@@ -15779,7 +15779,7 @@ All Phase A slices must be gated behind a kill-switch so the product stays stabl
 ### PROJ-03-A1: Add Project-First Top-Level Routes And Labels Behind Feature Flag
 
 **Task ID:** PROJ-03-A1
-**Family:** PROJ-03 (Project-First UX Redesign — Phase A)
+**Family:** PROJ-03 (Project-First UX Redesign ??Phase A)
 **Status:** COMPLETE and LOCKED
 **Nature:** FRONTEND ARCHITECTURE / PHASE A IA SHELL
 **Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-A1-CHECKPOINT.md`
@@ -15793,7 +15793,7 @@ The approved design requires new top-level routes and relabeled navigation. This
 
 **Bounded scope:**
 - Frontend only
-- Add `/[locale]/projects`, `/[locale]/gallery`, `/[locale]/account` top-level routes — each wraps or redirects to its current equivalent surface
+- Add `/[locale]/projects`, `/[locale]/gallery`, `/[locale]/account` top-level routes ??each wraps or redirects to its current equivalent surface
 - Update primary nav header (workspace-shell or equivalent) to show new labels under the flag
 - `/[locale]/app/...` workspace route stays intact; new `/[locale]/projects/:id` workspace view reuses it
 - Flag off: product is byte-equivalent to today's behavior
@@ -15808,7 +15808,7 @@ The approved design requires new top-level routes and relabeled navigation. This
 - Flag on: new top-level nav renders with correct labels; all routes resolve to existing equivalent content with no 404s, no console errors, no broken links
 - Flag off: product is byte-equivalent to today's behavior
 - Existing test suites pass; new tests verify flag-gated rendering
-- Manual smoke pass: open a project, write a file, run preview, see new nav — all work correctly
+- Manual smoke pass: open a project, write a file, run preview, see new nav ??all work correctly
 
 **Invariants explicitly preserved:** Same as PROJ-03-A0.
 
@@ -15819,7 +15819,7 @@ The approved design requires new top-level routes and relabeled navigation. This
 ### PROJ-03-A3: Replace Raw Session Lifecycle Strings With Recovery Vocabulary
 
 **Task ID:** PROJ-03-A3
-**Family:** PROJ-03 (Project-First UX Redesign — Phase A)
+**Family:** PROJ-03 (Project-First UX Redesign ??Phase A)
 **Status:** COMPLETE and LOCKED
 **Nature:** FRONTEND UX / PHASE A COPY CLEANUP
 **Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-A3-CHECKPOINT.md`
@@ -15834,7 +15834,7 @@ The current UI exposes internal runtime concepts to users in error/status messag
 **Bounded scope:**
 - Frontend only
 - Under `PROJECT_FIRST_UX` flag: all known raw lifecycle strings on the user surface are replaced using copy bundle strings
-- "Reopen project" primary button wires to the existing `handleOpenWorkspaceProject` / open-project path — no new behavior, only surfaces the action where there was previously only a raw error
+- "Reopen project" primary button wires to the existing `handleOpenWorkspaceProject` / open-project path ??no new behavior, only surfaces the action where there was previously only a raw error
 - No new endpoint, no new backend call, no new retry logic
 
 **Non-goals:**
@@ -15864,7 +15864,7 @@ The current UI exposes internal runtime concepts to users in error/status messag
 ### PROJ-03-A2a: Add Advanced Drawer Shell Behind Feature Flag
 
 **Task ID:** PROJ-03-A2a
-**Family:** PROJ-03 (Project-First UX Redesign — Phase A)
+**Family:** PROJ-03 (Project-First UX Redesign ??Phase A)
 **Status:** COMPLETE and LOCKED
 **Nature:** FRONTEND UX / PHASE A ADVANCED SURFACE SHELL
 **Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-A2a-CHECKPOINT.md`
@@ -15906,14 +15906,14 @@ The approved design (Section 3.3) requires an Advanced drawer as the landing zon
 - Stop-session flow (OPS-01-04) untouched
 - Static preview `index.html` requirement (PREV-02-02) unchanged
 
-**Dependencies:** PROJ-03-A0, PROJ-03-A1, PROJ-03-A3 — all COMPLETE and LOCKED
+**Dependencies:** PROJ-03-A0, PROJ-03-A1, PROJ-03-A3 ??all COMPLETE and LOCKED
 
 ---
 
 ### PROJ-03-A2b: Hide Sessions List And Relocate Stop-Session To Advanced Drawer
 
 **Task ID:** PROJ-03-A2b
-**Family:** PROJ-03 (Project-First UX Redesign — Phase A)
+**Family:** PROJ-03 (Project-First UX Redesign ??Phase A)
 **Status:** COMPLETE and LOCKED
 **Nature:** FRONTEND UX / PHASE A SESSION DEMOTION
 **Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-A2b-CHECKPOINT.md`
@@ -15930,7 +15930,7 @@ Once the Advanced drawer shell is locked (A2a), this slice completes the session
 - Under flag: sessions list hidden from primary surface (component stays mounted; only primary-surface render suppressed)
 - Under flag: stop-session rendered inside the Advanced drawer from A2a
 - Advanced drawer then contains: session ID + status (from A2a) + stop-session button
-- Existing stop-session handler and API call unchanged — only render location changes
+- Existing stop-session handler and API call unchanged ??only render location changes
 
 **Non-goals:**
 - No change to stop-session logic, handler, or API call
@@ -15964,22 +15964,22 @@ Once the Advanced drawer shell is locked (A2a), this slice completes the session
 ### PROJ-03-B0: Add Fresh-Session-Open Helper Primitive Behind Feature Flag
 
 **Task ID:** PROJ-03-B0
-**Family:** PROJ-03 (Project-First UX Redesign — Phase B)
+**Family:** PROJ-03 (Project-First UX Redesign ??Phase B)
 **Status:** COMPLETE and LOCKED
 **Nature:** FRONTEND / PHASE B PRIMITIVE HELPER
 **Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-B0-CHECKPOINT.md`
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase B — prerequisite helper slice
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase B ??prerequisite helper slice
 
 **Objective:**
 Introduce one frontend helper primitive for opening a project in a newly created fresh session, reusing the existing session-create flow and the existing `handleOpenWorkspaceProject` path, without changing any user-visible call site yet.
 
 **Why this exists:**
-Phase B requires always-fresh-session semantics for New Project (B1), Open Project (B2), and Reopen recovery (B3). Those slices all need the same correctly sequenced open primitive. Building and locking this helper in isolation — before wiring it to any user-visible click — ensures the hard-won PROJ-02-01 hydration discipline is preserved exactly and independently verifiable before any user flow depends on it.
+Phase B requires always-fresh-session semantics for New Project (B1), Open Project (B2), and Reopen recovery (B3). Those slices all need the same correctly sequenced open primitive. Building and locking this helper in isolation ??before wiring it to any user-visible click ??ensures the hard-won PROJ-02-01 hydration discipline is preserved exactly and independently verifiable before any user flow depends on it.
 
 **Bounded scope:**
 - Frontend only
 - New helper module/function plus focused unit tests
-- Helper wraps existing primitives only: create session → call existing `handleOpenWorkspaceProject` with the new session id
+- Helper wraps existing primitives only: create session ??call existing `handleOpenWorkspaceProject` with the new session id
 - Preserve existing deterministic await sequencing and hydration discipline from PROJ-02 family
 - No user-visible call sites switched in this slice
 - No change to `handleOpenWorkspaceProject` internals
@@ -16017,11 +16017,11 @@ Phase B requires always-fresh-session semantics for New Project (B1), Open Proje
 ### PROJ-03-B1: Auto-Create Fresh Session On New Project Behind Feature Flag
 
 **Task ID:** PROJ-03-B1
-**Family:** PROJ-03 (Project-First UX Redesign — Phase B)
+**Family:** PROJ-03 (Project-First UX Redesign ??Phase B)
 **Status:** COMPLETE and LOCKED
 **Nature:** FRONTEND / PHASE B NEW PROJECT WIRING
 **Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-B1-CHECKPOINT.md`
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase B — B1 New Project wiring slice
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase B ??B1 New Project wiring slice
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, after a successful New Project creation, invoke the locked B0 helper (`openProjectInFreshSession`) so the user lands in the workspace with the new project opened in a freshly created session, with no intermediate session-selection step.
@@ -16074,11 +16074,11 @@ With B0's helper locked, the first user-visible Phase B behavior change is to wi
 ### PROJ-03-B2a: Wire Open Project Handler To Open Project In Fresh Session Behind Feature Flag
 
 **Task ID:** PROJ-03-B2a
-**Family:** PROJ-03 (Project-First UX Redesign — Phase B)
+**Family:** PROJ-03 (Project-First UX Redesign ??Phase B)
 **Status:** COMPLETE and LOCKED
 **Nature:** FRONTEND / PHASE B OPEN PROJECT HANDLER WIRING
 **Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-B2a-CHECKPOINT.md`
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase B — B2 Open Project wiring slice (split: B2a handler wiring, B2b UI gating)
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase B ??B2 Open Project wiring slice (split: B2a handler wiring, B2b UI gating)
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, change `handleOpenWorkspaceProject` so a successful open goes through the locked B0 helper (`openProjectInFreshSession`) instead of opening into the currently selected session, while keeping the existing Open Project UI affordance and enablement gating unchanged in this slice.
@@ -16132,17 +16132,17 @@ With B1 locked, the next wiring point is the existing Open Project handler. Unli
 ### PROJ-03-B2b: Relax Open Project Precondition To Enable Fresh-Session Open Path Behind Feature Flag
 
 **Task ID:** PROJ-03-B2b
-**Family:** PROJ-03 (Project-First UX Redesign — Phase B)
+**Family:** PROJ-03 (Project-First UX Redesign ??Phase B)
 **Status:** COMPLETE and LOCKED
 **Nature:** FRONTEND / PHASE B OPEN PROJECT PRECONDITION ACTIVATION
 **Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-B2b-CHECKPOINT.md`
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase B — B2 Open Project wiring slice (split: B2a handler wiring, B2b precondition activation)
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase B ??B2 Open Project wiring slice (split: B2a handler wiring, B2b precondition activation)
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, relax `handleOpenWorkspaceProject`'s precondition so it no longer requires `selectedSessionId`, making the already-locked B2a fresh-session open path normally user-reachable from the existing Open Project button and the existing Reopen Project affordances.
 
 **Why this exists:**
-B2a locked the core handler wiring behind the flag, but intentionally did not change the UI gating or relaxed the `selectedSessionId` precondition, so the B2a path was not normally user-reachable. B2b is the activation slice: a minimal single-condition change that makes the B2a path reachable when `selectedSessionId` is null (the normal state when the sessions list is hidden under the flag). This follows the same de-risking split used by A2a/A2b — lock the logic first, then unlock the path in a follow-on slice.
+B2a locked the core handler wiring behind the flag, but intentionally did not change the UI gating or relaxed the `selectedSessionId` precondition, so the B2a path was not normally user-reachable. B2b is the activation slice: a minimal single-condition change that makes the B2a path reachable when `selectedSessionId` is null (the normal state when the sessions list is hidden under the flag). This follows the same de-risking split used by A2a/A2b ??lock the logic first, then unlock the path in a follow-on slice.
 
 **Bounded scope:**
 - Frontend only
@@ -16194,11 +16194,11 @@ B2a locked the core handler wiring behind the flag, but intentionally did not ch
 ### PROJ-03-B3a: Confirm And Lock Existing Reopen Project Affordances Route Through Fresh-Session Path Behind Feature Flag
 
 **Task ID:** PROJ-03-B3a
-**Family:** PROJ-03 (Project-First UX Redesign — Phase B)
+**Family:** PROJ-03 (Project-First UX Redesign ??Phase B)
 **Status:** COMPLETE and LOCKED
 **Nature:** FRONTEND / PHASE B VERIFICATION AND AUDIT
 **Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-B3a-CHECKPOINT.md`
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase B — B3 Reopen Project wiring (split: B3a verification/audit, B3b new affordances)
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase B ??B3 Reopen Project wiring (split: B3a verification/audit, B3b new affordances)
 
 **Objective:**
 Lock the post-B2b reality that the existing A3 Reopen Project affordances now route through the fresh-session open path under `PROJECT_FIRST_UX`, by adding focused verification tests and documenting remaining uncovered recovery surfaces for a later slice. No production behavior change in this slice.
@@ -16240,11 +16240,11 @@ Lock the post-B2b reality that the existing A3 Reopen Project affordances now ro
 ### PROJ-03-B4a: Add Open Project By Id In Fresh Session Handler Behind Feature Flag
 
 **Task ID:** PROJ-03-B4a
-**Family:** PROJ-03 (Project-First UX Redesign — Phase B)
+**Family:** PROJ-03 (Project-First UX Redesign ??Phase B)
 **Status:** COMPLETE and LOCKED
 **Nature:** FRONTEND / PHASE B HANDLER WIRING
 **Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-B4a-CHECKPOINT.md`
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase B — B4 Resume Latest Project CTA (split: B4a handler wiring, B4b CTA UI)
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase B ??B4 Resume Latest Project CTA (split: B4a handler wiring, B4b CTA UI)
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, add a parameterized handler (`handleResumeWorkspaceProjectById(projectId: string)`) in `frontend/app/[locale]/app/page.tsx` that opens a caller-supplied `projectId` in a freshly created session by directly invoking the locked B0 helper, mirroring the B1/B2a hydration follow-up sequence, and expose it as a new optional callback prop on `WorkspaceShell`. No UI consumer in this slice.
@@ -16308,11 +16308,11 @@ B4 ("Resume Latest Project CTA On Home") requires a new one-click open path that
 ### PROJ-03-B4b: Add Resume Latest Project CTA In Shell Empty State Behind Feature Flag
 
 **Task ID:** PROJ-03-B4b
-**Family:** PROJ-03 (Project-First UX Redesign — Phase B)
+**Family:** PROJ-03 (Project-First UX Redesign ??Phase B)
 **Status:** COMPLETE and LOCKED
 **Nature:** FRONTEND / PHASE B CTA UI
 **Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-B4b-CHECKPOINT.md`
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase B — B4 Resume Latest Project CTA (split: B4a handler wiring, B4b CTA UI)
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase B ??B4 Resume Latest Project CTA (split: B4a handler wiring, B4b CTA UI)
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, add a single "Resume latest project" primary-action button to the existing `shellState === 'empty'` `StateMessage` in `WorkspaceShell`. The CTA computes the latest project from the existing `workspaceProjects` prop (by `updatedAt` descending, tie-break by project id) and calls the locked B4a `onResumeWorkspaceProjectById` callback. No route or IA change.
@@ -16375,11 +16375,11 @@ B4a locked the handler (`handleResumeWorkspaceProjectById`) and exposed the `onR
 ### PROJ-03-C1a: Add Read-Only Project History Panel Behind Feature Flag
 
 **Task ID:** PROJ-03-C1a
-**Family:** PROJ-03 (Project-First UX Redesign — Phase C)
+**Family:** PROJ-03 (Project-First UX Redesign ??Phase C)
 **Status:** COMPLETE and LOCKED
 **Nature:** FRONTEND / PHASE C READ-ONLY HISTORY PANEL
 **Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-C1a-CHECKPOINT.md`
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C — C1 Workspace History tab (split: C1a read-only panel, C1b Restore wiring)
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ??C1 Workspace History tab (split: C1a read-only panel, C1b Restore wiring)
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, add a read-only History panel inside the workspace that lists the current project's existing project-scoped snapshots newest-first, with a human label and timestamp. No Restore action, no writes, no new endpoints, no git-checkpoint union.
@@ -16389,7 +16389,7 @@ Phase C begins with a purely read-only history surface so that any regression is
 
 **Bounded scope:**
 - Frontend only
-- Reuse existing project-scoped snapshot data already available to the workspace/page flow — no new fetcher
+- Reuse existing project-scoped snapshot data already available to the workspace/page flow ??no new fetcher
 - New local helper / view-model to derive `HistoryRow[]` from existing snapshot source
 - Sort by `createdAt` descending; tie-break by snapshot id (deterministic)
 - Mount the panel inside an existing workspace shell slot; no new layout primitive
@@ -16402,7 +16402,7 @@ Phase C begins with a purely read-only history surface so that any regression is
 - No autosave, named save, save dialog, or any write
 - No backend changes, new endpoints, or new fetchers
 - No retention/compaction
-- No vocabulary purge ("snapshot" → "history") outside the new panel itself
+- No vocabulary purge ("snapshot" ??"history") outside the new panel itself
 - No change to existing snapshots panel
 - No change to locked B-phase handlers (B0/B1/B2a/B2b/B3a/B4a/B4b)
 - No change to A3 recovery copy bundle entries beyond one additive entry if needed
@@ -16432,11 +16432,11 @@ Phase C begins with a purely read-only history surface so that any regression is
 ### PROJ-03-C1b-pre: Add Restore Project From Snapshot Handler Behind Feature Flag
 
 **Task ID:** PROJ-03-C1b-pre
-**Family:** PROJ-03 (Project-First UX Redesign — Phase C)
+**Family:** PROJ-03 (Project-First UX Redesign ??Phase C)
 **Status:** COMPLETE and LOCKED
 **Nature:** FRONTEND / PHASE C RESTORE HANDLER (PREPARATORY)
 **Checkpoint:** `docs/PROJ-03-C1b-pre-CHECKPOINT.md`
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C — C1b split: C1b-pre handler-only slice
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ??C1b split: C1b-pre handler-only slice
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, add a parameterized handler in `frontend/app/[locale]/app/page.tsx` that opens a supplied project at a supplied snapshot via the locked B0 helper in a freshly created session, mirroring the locked B4a hydration sequence exactly, and expose it as a new optional callback prop on `WorkspaceShell`. No UI consumer in this slice.
@@ -16501,7 +16501,7 @@ C1a added the read-only history panel. Before a visible Restore CTA can be wired
 
 ---
 
-### PROJ-03-C1b-cta — Wire Restore Action On Project History Rows Behind Feature Flag
+### PROJ-03-C1b-cta ??Wire Restore Action On Project History Rows Behind Feature Flag
 
 **Task ID:** PROJ-03-C1b-cta
 **Family:** PROJ-03 (Project-First UX Redesign)
@@ -16509,7 +16509,7 @@ C1a added the read-only history panel. Before a visible Restore CTA can be wired
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C1b-cta-CHECKPOINT.md`
 **Nature:** FRONTEND / PHASE C RESTORE BUTTON UI
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C — C1b split: C1b-cta visible Restore-button UI slice
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ??C1b split: C1b-cta visible Restore-button UI slice
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, render one Restore button per row in the locked C1a `ProjectHistoryPanel`, gated by an inline `window.confirm`, that calls the locked C1b-pre `onRestoreWorkspaceProjectFromSnapshotById` prop with `(selectedProjectId, row.id)`. No new handler, no new fetcher, no layout change.
@@ -16517,11 +16517,11 @@ Behind `PROJECT_FIRST_UX`, render one Restore button per row in the locked C1a `
 **Bounded scope:**
 - Frontend only
 - Changes allowed in:
-  - `frontend/lib/recovery-copy.ts`: two additive copy entries — Restore label and confirm text
+  - `frontend/lib/recovery-copy.ts`: two additive copy entries ??Restore label and confirm text
   - `frontend/components/workspace/workspace-shell.tsx`: new optional `onRestore?: (snapshotId: string) => void` on `ProjectHistoryPanel`; derive local restore callback in `WorkspaceShell`; render row-level Restore button when callback exists
-  - `frontend/components/workspace/workspace-shell.test.tsx`: 4–5 focused tests
+  - `frontend/components/workspace/workspace-shell.test.tsx`: 4?? focused tests
 - Handler derivation gated on: `projectFirstUxEnabled` + `selectedProjectId` + `onRestoreWorkspaceProjectFromSnapshotById`
-- Click path: inline `window.confirm` guard (SSR-safe, mirrors A2b pattern); on accept → call handler once; on decline → no-op
+- Click path: inline `window.confirm` guard (SSR-safe, mirrors A2b pattern); on accept ??call handler once; on decline ??no-op
 - `page.tsx` unchanged in this slice
 
 **Non-goals:**
@@ -16559,7 +16559,7 @@ Behind `PROJECT_FIRST_UX`, render one Restore button per row in the locked C1a `
 
 ---
 
-### PROJ-03-C2a-rate-limit — Add Per-Minute Autosave Safety-Net Pure-Logic Helper Behind Feature Flag
+### PROJ-03-C2a-rate-limit ??Add Per-Minute Autosave Safety-Net Pure-Logic Helper Behind Feature Flag
 
 **Task ID:** PROJ-03-C2a-rate-limit
 **Family:** PROJ-03 (Project-First UX Redesign)
@@ -16567,7 +16567,7 @@ Behind `PROJECT_FIRST_UX`, render one Restore button per row in the locked C1a `
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2a-rate-limit-CHECKPOINT.md`
 **Nature:** FRONTEND / PHASE C AUTOSAVE RATE-LIMIT SCAFFOLDING
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C — C2 first slice: pure-logic safety-net helper
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ??C2 first slice: pure-logic safety-net helper
 
 **Objective:**
 Add a single pure-logic helper module (`frontend/lib/autosave-rate-limit.ts`) that defines the autosave rate-limit contract every future C2 trigger will use. No consumers, no write-path changes, no UI change. Mirrors the A0 mechanical-scaffolding pattern. This is the first Phase C area that establishes new-write gating before any behavioral trigger lands.
@@ -16598,7 +16598,7 @@ Add a single pure-logic helper module (`frontend/lib/autosave-rate-limit.ts`) th
 - Returns `false` when `now - lastSnapshotAt < minIntervalMs`
 - Boundary behavior (exactly equal) is explicit and covered by tests
 - Zero-interval and negative-interval inputs are explicit and covered by tests
-- Pure function: identical inputs → identical outputs; no observable side effects
+- Pure function: identical inputs ??identical outputs; no observable side effects
 - Existing focused suites remain green; typecheck clean; no introduced lint errors
 - No other production files changed
 
@@ -16616,15 +16616,15 @@ Add a single pure-logic helper module (`frontend/lib/autosave-rate-limit.ts`) th
 
 ---
 
-### PROJ-03-C2b-trigger-preview — Add Preview-Start Success Autosave Trigger Behind Feature Flag
+### PROJ-03-C2b-trigger-preview ??Add Preview-Start Success Autosave Trigger Behind Feature Flag
 
 **Task ID:** PROJ-03-C2b-trigger-preview
 **Family:** PROJ-03 (Project-First UX Redesign)
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2b-trigger-preview-CHECKPOINT.md`
-**Nature:** FRONTEND / PHASE C AUTOSAVE TRIGGER — PREVIEW-START SUCCESS
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C — C2 first behavioral trigger slice
+**Nature:** FRONTEND / PHASE C AUTOSAVE TRIGGER ??PREVIEW-START SUCCESS
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ??C2 first behavioral trigger slice
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, after a successful preview-start in `handleStartPreview`, attempt one project-scoped snapshot via the existing `saveWorkspaceSnapshot` fetcher and the locked C2a `shouldAllowAutosaveNow` rate-limit, then reload the user's snapshot list so the new row appears in the locked C1a `ProjectHistoryPanel`. Skip silently when the flag is off, when no project or session is selected, when project-open hydration is in progress, when rate-limited, or when the save fails. No UI surface change. This is the first behavioral autosave write trigger in Phase C.
@@ -16632,7 +16632,7 @@ Behind `PROJECT_FIRST_UX`, after a successful preview-start in `handleStartPrevi
 **Bounded scope:**
 - Frontend only
 - New files:
-  - `frontend/lib/project-autosave.ts`: exports `attemptProjectAutosave({ token, sessionId, projectId, now, lastAutosaveAt, minIntervalMs?, fetchImpl? })` returning discriminated union `{ status: 'saved' | 'skipped-rate-limited' | 'failed', savedSnapshot? }`; internally uses locked C2a `shouldAllowAutosaveNow`; reuses existing `saveWorkspaceSnapshot` + `buildProjectScopedSnapshotLabel`; catches save errors and returns `{ status: 'failed' }` — never throws
+  - `frontend/lib/project-autosave.ts`: exports `attemptProjectAutosave({ token, sessionId, projectId, now, lastAutosaveAt, minIntervalMs?, fetchImpl? })` returning discriminated union `{ status: 'saved' | 'skipped-rate-limited' | 'failed', savedSnapshot? }`; internally uses locked C2a `shouldAllowAutosaveNow`; reuses existing `saveWorkspaceSnapshot` + `buildProjectScopedSnapshotLabel`; catches save errors and returns `{ status: 'failed' }` ??never throws
   - `frontend/lib/project-autosave.test.ts`: focused unit tests under `node:test`
 - Additive changes in `frontend/app/[locale]/app/page.tsx`:
   - One new import: `attemptProjectAutosave`
@@ -16663,20 +16663,20 @@ Behind `PROJECT_FIRST_UX`, after a successful preview-start in `handleStartPrevi
   - Custom `minIntervalMs` override is honored
   - Custom `fetchImpl` wiring is honored
 - page.tsx trigger guards verified:
-  - Flag off → helper not called
-  - No project selected → helper not called
-  - No session selected → helper not called
-  - `projectOpenInProgressRef.current` true → helper not called
-  - Success path → helper called once after `refreshPreviewForSession` succeeds
-  - `saved` result → snapshot list reload occurs; new row visible in `ProjectHistoryPanel`
+  - Flag off ??helper not called
+  - No project selected ??helper not called
+  - No session selected ??helper not called
+  - `projectOpenInProgressRef.current` true ??helper not called
+  - Success path ??helper called once after `refreshPreviewForSession` succeeds
+  - `saved` result ??snapshot list reload occurs; new row visible in `ProjectHistoryPanel`
 - Existing focused suites remain green; typecheck clean; no introduced lint errors
 - No change to locked C1a/C1b-pre/C1b-cta/C2a-rate-limit paths
 
 **Risks and invariants:**
 - This is the first autosave write trigger; bounded to preview-start success only
-- `projectOpenInProgressRef` guard is mandatory even though `handleStartPreview` is not currently in the open-path call chain — protects against future call-site additions
+- `projectOpenInProgressRef` guard is mandatory even though `handleStartPreview` is not currently in the open-path call chain ??protects against future call-site additions
 - In-memory ref only for last autosave timestamp in this slice; no persistence decision yet (worst case: one extra autosave allowed within 60 seconds after page refresh)
-- Save failure swallowed into helper result, not surfaced as new UI — consistent with autosave-as-background design intent
+- Save failure swallowed into helper result, not surfaced as new UI ??consistent with autosave-as-background design intent
 - `PROJECT_FIRST_UX` remains the kill switch
 - No regression to project-open hydration / restore discipline (PROJ-02-01)
 - No regression to snapshot-store persistence (PROJ-01-21)
@@ -16688,15 +16688,15 @@ Behind `PROJECT_FIRST_UX`, after a successful preview-start in `handleStartPrevi
 
 ---
 
-### PROJ-03-C2c-label-format — Add Project Snapshot Label Name Extension Pure-Logic Helpers Behind Feature Flag
+### PROJ-03-C2c-label-format ??Add Project Snapshot Label Name Extension Pure-Logic Helpers Behind Feature Flag
 
 **Task ID:** PROJ-03-C2c-label-format
 **Family:** PROJ-03 (Project-First UX Redesign)
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2c-label-format-CHECKPOINT.md`
-**Nature:** FRONTEND / PHASE C SNAPSHOT LABEL FORMAT EXTENSION — PURE LOGIC
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C — C2c first slice: label-format scaffolding
+**Nature:** FRONTEND / PHASE C SNAPSHOT LABEL FORMAT EXTENSION ??PURE LOGIC
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ??C2c first slice: label-format scaffolding
 
 **Objective:**
 Add pure-logic helpers that support an optional user-supplied name in project-scoped snapshot labels while preserving exact backward compatibility with the current unnamed `[project-id:...]` label shape produced and consumed since B0/B4. No consumers yet. No write-path change. No UI change. Mirrors the C2a-rate-limit and A0 mechanical-scaffolding pattern.
@@ -16750,15 +16750,15 @@ Add pure-logic helpers that support an optional user-supplied name in project-sc
 
 ---
 
-### PROJ-03-C2c-handler — Add Named Project Snapshot Save Pure-Logic Helper Behind Feature Flag
+### PROJ-03-C2c-handler ??Add Named Project Snapshot Save Pure-Logic Helper Behind Feature Flag
 
 **Task ID:** PROJ-03-C2c-handler
 **Family:** PROJ-03 (Project-First UX Redesign)
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2c-handler-CHECKPOINT.md`
-**Nature:** FRONTEND / PHASE C NAMED SAVE PURE LOGIC — HELPER SCAFFOLDING
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C — C2c second slice: named-save handler helper
+**Nature:** FRONTEND / PHASE C NAMED SAVE PURE LOGIC ??HELPER SCAFFOLDING
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ??C2c second slice: named-save handler helper
 
 **Objective:**
 Provide a pure-logic helper that performs a single project-scoped named save by composing the locked C2c-label-format `buildProjectScopedSnapshotLabelWithName` helper with the existing `saveWorkspaceSnapshot` fetcher. Returns a discriminated result and never throws. No consumer wiring. No UI. Mirrors the helper-only scaffolding pattern used by C2a-rate-limit and C2c-label-format.
@@ -16814,15 +16814,15 @@ Provide a pure-logic helper that performs a single project-scoped named save by 
 
 ---
 
-### PROJ-03-C2c-cta-handler-pre — Add Page-Level Named Project Save Handler Wired To Helper Behind Feature Flag
+### PROJ-03-C2c-cta-handler-pre ??Add Page-Level Named Project Save Handler Wired To Helper Behind Feature Flag
 
 **Task ID:** PROJ-03-C2c-cta-handler-pre
 **Family:** PROJ-03 (Project-First UX Redesign)
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2c-cta-handler-pre-CHECKPOINT.md`
-**Nature:** FRONTEND / PHASE C NAMED SAVE — PAGE HANDLER WIRING (NO UI)
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C — C2c third slice: page-level handler pre-step
+**Nature:** FRONTEND / PHASE C NAMED SAVE ??PAGE HANDLER WIRING (NO UI)
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ??C2c third slice: page-level handler pre-step
 
 **Objective:**
 Add one new `handleSaveNamedProjectSnapshot(name: string)` callback in `page.tsx` that calls the locked `attemptNamedProjectSave` helper, reloads the workspace snapshots list on success, and exposes the callback as a new optional `onSaveNamedProjectSnapshot` prop on `WorkspaceShell`. No visible UI in this slice.
@@ -16833,8 +16833,8 @@ Add one new `handleSaveNamedProjectSnapshot(name: string)` callback in `page.tsx
   - New callback `handleSaveNamedProjectSnapshot(name: string): Promise<void>`
   - Gated on `PROJECT_FIRST_UX`; short-circuits when token, `selectedProjectId`, `selectedSessionId`, or `projectOpenInProgressRef.current` are missing/true
   - Calls locked `attemptNamedProjectSave({ token, sessionId, projectId, name })`
-  - On `{ status: 'saved' }` → calls `loadWorkspaceSnapshotsForUser(token)` (best-effort reload)
-  - On `{ status: 'failed' }` → logs and returns; no UI surface
+  - On `{ status: 'saved' }` ??calls `loadWorkspaceSnapshotsForUser(token)` (best-effort reload)
+  - On `{ status: 'failed' }` ??logs and returns; no UI surface
   - Passes callback into `<WorkspaceShell ...>` as `onSaveNamedProjectSnapshot`
 - Additive changes in `frontend/components/workspace/workspace-shell.tsx`:
   - New optional prop only: `onSaveNamedProjectSnapshot?: (name: string) => Promise<void>`
@@ -16877,15 +16877,15 @@ Add one new `handleSaveNamedProjectSnapshot(name: string)` callback in `page.tsx
 
 ---
 
-### PROJ-03-C2c-cta-button — Add Named Save Button With Prompt To Project History Panel Behind Feature Flag
+### PROJ-03-C2c-cta-button ??Add Named Save Button With Prompt To Project History Panel Behind Feature Flag
 
 **Task ID:** PROJ-03-C2c-cta-button
 **Family:** PROJ-03 (Project-First UX Redesign)
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2c-cta-button-CHECKPOINT.md`
-**Nature:** FRONTEND / PHASE C NAMED SAVE — VISIBLE BUTTON UI
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C — C2c fourth slice: named-save visible CTA
+**Nature:** FRONTEND / PHASE C NAMED SAVE ??VISIBLE BUTTON UI
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ??C2c fourth slice: named-save visible CTA
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, render one "Save" button in `ProjectHistoryPanel` that triggers `window.prompt` for a snapshot name, then calls the locked `onSaveNamedProjectSnapshot` prop. First visible user-initiated named-save affordance.
@@ -16927,9 +16927,9 @@ Behind `PROJECT_FIRST_UX`, render one "Save" button in `ProjectHistoryPanel` tha
 - Save button visible in `ProjectHistoryPanel` header when flag on + `selectedProjectId` present + handler present
 - No Save button when flag off, or `selectedProjectId` absent, or handler absent
 - Click triggers `window.prompt` with the configured prompt text
-- Prompt cancelled → handler not called
-- Prompt empty/whitespace → handler not called
-- Prompt with text → `onSaveNamedProjectSnapshot` called with the prompted name
+- Prompt cancelled ??handler not called
+- Prompt empty/whitespace ??handler not called
+- Prompt with text ??`onSaveNamedProjectSnapshot` called with the prompted name
 - Existing Restore buttons and history rows unchanged
 - Existing focused suites remain green
 - Typecheck clean, no introduced lint errors
@@ -16951,15 +16951,15 @@ Behind `PROJECT_FIRST_UX`, render one "Save" button in `ProjectHistoryPanel` tha
 
 ---
 
-### PROJ-03-C2c-display — Show Parsed Snapshot Name In Project History Rows Behind Feature Flag
+### PROJ-03-C2c-display ??Show Parsed Snapshot Name In Project History Rows Behind Feature Flag
 
 **Task ID:** PROJ-03-C2c-display
 **Family:** PROJ-03 (Project-First UX Redesign)
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2c-display-CHECKPOINT.md`
-**Nature:** FRONTEND / PHASE C NAMED SAVE — HISTORY ROW DISPLAY
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C — C2c fifth slice: named-save row display
+**Nature:** FRONTEND / PHASE C NAMED SAVE ??HISTORY ROW DISPLAY
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ??C2c fifth slice: named-save row display
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, update project history row labeling so named snapshots show the parsed user-supplied name, while unnamed snapshots continue to display the existing default label. No layout change, no new component, no new prop, no handler change.
@@ -17017,15 +17017,15 @@ Behind `PROJECT_FIRST_UX`, update project history row labeling so named snapshot
 
 ---
 
-### PROJ-03-C2d-expiry-warn — Add Session-Expiry Warning Autosave Trigger Behind Feature Flag
+### PROJ-03-C2d-expiry-warn ??Add Session-Expiry Warning Autosave Trigger Behind Feature Flag
 
 **Task ID:** PROJ-03-C2d-expiry-warn
 **Family:** PROJ-03 (Project-First UX Redesign)
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2d-expiry-warn-CHECKPOINT.md`
-**Nature:** FRONTEND / PHASE C AUTOSAVE TRIGGER — SESSION-EXPIRY WARNING
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C — C2d first slice: in-app expiry-warning lifecycle trigger
+**Nature:** FRONTEND / PHASE C AUTOSAVE TRIGGER ??SESSION-EXPIRY WARNING
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ??C2d first slice: in-app expiry-warning lifecycle trigger
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, when the workspace detects a session-expiry warning (or equivalent session-terminated warning boundary), attempt one project-scoped autosave snapshot using the locked `attemptProjectAutosave` helper and the existing `lastProjectAutosaveAtRef` rate-limit ref, then reload the snapshot list. Skip silently when the flag is off, when no project or session is selected, when project-open hydration is in progress, when rate-limited, or when the save fails.
@@ -17055,7 +17055,7 @@ Behind `PROJECT_FIRST_UX`, when the workspace detects a session-expiry warning (
 - No C2d-unload/C2e/C2f, C3, C4, or Phase D/E work
 
 **Acceptance checks:**
-- Expiry-warning trigger fires → flag on + project + session + not hydrating + not rate-limited → one autosave attempt
+- Expiry-warning trigger fires ??flag on + project + session + not hydrating + not rate-limited ??one autosave attempt
 - Rate-limited: skip silently
 - Flag off: no autosave
 - No project or no session: no autosave
@@ -17082,15 +17082,15 @@ Behind `PROJECT_FIRST_UX`, when the workspace detects a session-expiry warning (
 
 ---
 
-### PROJ-03-C2e — Add AI-Action-Boundary Autosave Trigger Behind Feature Flag
+### PROJ-03-C2e ??Add AI-Action-Boundary Autosave Trigger Behind Feature Flag
 
 **Task ID:** PROJ-03-C2e
 **Family:** PROJ-03 (Project-First UX Redesign)
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2e-CHECKPOINT.md`
-**Nature:** FRONTEND / PHASE C AUTOSAVE TRIGGER — AI ACTION BOUNDARY
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C — C2e: AI file-action coherence boundary trigger
+**Nature:** FRONTEND / PHASE C AUTOSAVE TRIGGER ??AI ACTION BOUNDARY
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ??C2e: AI file-action coherence boundary trigger
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, after every Nth successful AI file-action coherence completion (`result.ran === true` from `runAiActionCoherence`), attempt one project-scoped autosave snapshot using the locked `attemptProjectAutosave` helper and the existing `lastProjectAutosaveAtRef` rate-limit ref. Reset the counter on any autosave attempt and on project switch. Skip silently when the flag is off, when guards fail, or when rate-limited.
@@ -17152,15 +17152,15 @@ Behind `PROJECT_FIRST_UX`, after every Nth successful AI file-action coherence c
 
 ---
 
-### PROJ-03-C2f-file-save — Add User-File-Save Autosave Trigger Behind Feature Flag
+### PROJ-03-C2f-file-save ??Add User-File-Save Autosave Trigger Behind Feature Flag
 
 **Task ID:** PROJ-03-C2f-file-save
 **Family:** PROJ-03 (Project-First UX Redesign)
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2f-file-save-CHECKPOINT.md`
-**Nature:** FRONTEND / PHASE C AUTOSAVE TRIGGER — USER FILE SAVE
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C — C2f first slice: user file-save boundary trigger
+**Nature:** FRONTEND / PHASE C AUTOSAVE TRIGGER ??USER FILE SAVE
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ??C2f first slice: user file-save boundary trigger
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, after the user successfully saves a file via `handleSaveWorkspaceFile`, attempt one project-scoped autosave snapshot using the locked `attemptProjectAutosave` helper and the existing `lastProjectAutosaveAtRef` rate-limit ref. Skip silently when the flag is off, when guards fail, or when rate-limited.
@@ -17190,7 +17190,7 @@ Behind `PROJECT_FIRST_UX`, after the user successfully saves a file via `handleS
 - No Phase D/E work
 
 **Acceptance checks:**
-- Successful file save (flag on + project + session + not hydrating + not rate-limited) → one autosave attempt
+- Successful file save (flag on + project + session + not hydrating + not rate-limited) ??one autosave attempt
 - Rate-limited: skip silently
 - Flag off: no autosave
 - No project selected: no autosave
@@ -17220,15 +17220,15 @@ Behind `PROJECT_FIRST_UX`, after the user successfully saves a file via `handleS
 
 ---
 
-### PROJ-03-C4 — Replace User-Facing Snapshot Wording With History Vocabulary Behind Feature Flag
+### PROJ-03-C4 ??Replace User-Facing Snapshot Wording With History Vocabulary Behind Feature Flag
 
 **Task ID:** PROJ-03-C4
 **Family:** PROJ-03 (Project-First UX Redesign)
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C4-CHECKPOINT.md`
-**Nature:** FRONTEND / PHASE C UX VOCABULARY — USER-FACING WORDING ONLY
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C — C4: vocabulary swap
+**Nature:** FRONTEND / PHASE C UX VOCABULARY ??USER-FACING WORDING ONLY
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ??C4: vocabulary swap
 **Dependencies:** PROJ-03-C2f-file-save (COMPLETE and LOCKED)
 
 **Objective:**
@@ -17273,7 +17273,7 @@ Behind `PROJECT_FIRST_UX`, replace user-facing strings that say "snapshot/snapsh
 
 ---
 
-### PROJ-03-D0 — Project-First Entry Shell Wiring Behind Feature Flag
+### PROJ-03-D0 ??Project-First Entry Shell Wiring Behind Feature Flag
 
 **Task ID:** PROJ-03-D0
 **Family:** PROJ-03 (Project-First UX Redesign)
@@ -17336,7 +17336,7 @@ Behind `PROJECT_FIRST_UX`, make the visible entry shell behave consistently with
 
 ---
 
-### PROJ-03-D0b — Enable PROJECT_FIRST_UX In Local Docker Frontend Build For Testing
+### PROJ-03-D0b ??Enable PROJECT_FIRST_UX In Local Docker Frontend Build For Testing
 
 **Task ID:** PROJ-03-D0b
 **Family:** PROJ-03 (Project-First UX Redesign)
@@ -17352,7 +17352,7 @@ Enable the already-implemented project-first frontend path in the local Docker p
 
 **Bounded scope:**
 - Config/testing slice only
-- One file: `docker-compose.prod.yml` — add `NEXT_PUBLIC_PROJECT_FIRST_UX: "true"` to the `frontend.build.args` block
+- One file: `docker-compose.prod.yml` ??add `NEXT_PUBLIC_PROJECT_FIRST_UX: "true"` to the `frontend.build.args` block
 - No frontend component/code changes
 - No handler changes
 - No route changes
@@ -17381,7 +17381,7 @@ Enable the already-implemented project-first frontend path in the local Docker p
 
 ---
 
-### PROJ-03-D0c — Load Project List In Project-First No-Session Entry Path
+### PROJ-03-D0c ??Load Project List In Project-First No-Session Entry Path
 
 **Task ID:** PROJ-03-D0c
 **Family:** PROJ-03 (Project-First UX Redesign)
@@ -17389,17 +17389,17 @@ Enable the already-implemented project-first frontend path in the local Docker p
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-D0c-CHECKPOINT.md`
 **Nature:** FRONTEND / LOAD-PATH WIRING
-**Source:** Post-D0b diagnostic: `loadWorkspaceProjectsForUser(token)` is only invoked from the `[selectedSessionId]` effect in `frontend/app/[locale]/app/page.tsx` (lines 523–587); that effect early-returns when `selectedSessionId` is null (line 575); in the project-first entry path the user has no session yet, so `GET /api/projects` is never called, and the project picker renders empty even though the backend is fully user-scoped
+**Source:** Post-D0b diagnostic: `loadWorkspaceProjectsForUser(token)` is only invoked from the `[selectedSessionId]` effect in `frontend/app/[locale]/app/page.tsx` (lines 523??87); that effect early-returns when `selectedSessionId` is null (line 575); in the project-first entry path the user has no session yet, so `GET /api/projects` is never called, and the project picker renders empty even though the backend is fully user-scoped
 **Dependencies:** PROJ-03-D0b (COMPLETE and LOCKED)
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, ensure the existing project picker is populated on first entry even when no session is selected, by calling the user-scoped project list loader from the token/bootstrap path rather than relying only on the session-keyed effect.
 
 **Why this exists:**
-`loadWorkspaceProjectsForUser(token)` at line 1006 of `frontend/app/[locale]/app/page.tsx` calls `GET /api/projects` which is already fully user-scoped (no `sessionId` required). The load is triggered only inside the `[selectedSessionId]` effect at lines 523–587, which resets state and early-returns when `selectedSessionId` is null. The initial bootstrap effect at lines 450–467 calls `loadSessions` and `loadDashboardSlice` but not the project loader. In the project-first entry path the user lands without a session, so the project list is never fetched, and `workspaceProjects` stays `[]`. The dropdown in `HistoryProjectPanel` is therefore empty and the "Open Project" button stays disabled, regardless of how many real projects exist in the database. The fix is to invoke `loadWorkspaceProjectsForUser(token)` from the existing bootstrap path when `PROJECT_FIRST_UX` is true.
+`loadWorkspaceProjectsForUser(token)` at line 1006 of `frontend/app/[locale]/app/page.tsx` calls `GET /api/projects` which is already fully user-scoped (no `sessionId` required). The load is triggered only inside the `[selectedSessionId]` effect at lines 523??87, which resets state and early-returns when `selectedSessionId` is null. The initial bootstrap effect at lines 450??67 calls `loadSessions` and `loadDashboardSlice` but not the project loader. In the project-first entry path the user lands without a session, so the project list is never fetched, and `workspaceProjects` stays `[]`. The dropdown in `HistoryProjectPanel` is therefore empty and the "Open Project" button stays disabled, regardless of how many real projects exist in the database. The fix is to invoke `loadWorkspaceProjectsForUser(token)` from the existing bootstrap path when `PROJECT_FIRST_UX` is true.
 
 **Bounded scope:**
-- `frontend/app/[locale]/app/page.tsx` — add `loadWorkspaceProjectsForUser(token)` call (and optionally `loadPublicWorkspaceProjectsList()`) in the existing bootstrap/token-availability path guarded by `PROJECT_FIRST_UX`
+- `frontend/app/[locale]/app/page.tsx` ??add `loadWorkspaceProjectsForUser(token)` call (and optionally `loadPublicWorkspaceProjectsList()`) in the existing bootstrap/token-availability path guarded by `PROJECT_FIRST_UX`
 - Directly relevant tests only if needed
 - No other files
 
@@ -17433,7 +17433,7 @@ Behind `PROJECT_FIRST_UX`, ensure the existing project picker is populated on fi
 
 ---
 
-### PROJ-03-D0d — Add Tab-Scoped Project And Session Selection Seed Behind Feature Flag
+### PROJ-03-D0d ??Add Tab-Scoped Project And Session Selection Seed Behind Feature Flag
 
 **Task ID:** PROJ-03-D0d
 **Family:** PROJ-03 (Project-First UX Redesign)
@@ -17441,17 +17441,17 @@ Behind `PROJECT_FIRST_UX`, ensure the existing project picker is populated on fi
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-D0d-CHECKPOINT.md`
 **Nature:** FRONTEND / TAB ISOLATION
-**Source:** Post-D0c diagnostic: `selectedProjectId` and `selectedSessionId` are React-only state in `frontend/app/[locale]/app/page.tsx`; on refresh they reset to null; bootstrap reload + default-selection logic (`loadWorkspaceProjectsForUser` line 1016–1021 and `loadSessions` line 839–848) picks the first item from backend lists ordered `updatedAt DESC`; two tabs independently converge onto the same most-recent project/session after refresh, creating the appearance of shared state
+**Source:** Post-D0c diagnostic: `selectedProjectId` and `selectedSessionId` are React-only state in `frontend/app/[locale]/app/page.tsx`; on refresh they reset to null; bootstrap reload + default-selection logic (`loadWorkspaceProjectsForUser` line 1016??021 and `loadSessions` line 839??48) picks the first item from backend lists ordered `updatedAt DESC`; two tabs independently converge onto the same most-recent project/session after refresh, creating the appearance of shared state
 **Dependencies:** PROJ-03-D0c (COMPLETE and LOCKED)
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, persist `selectedProjectId` and `selectedSessionId` in tab-scoped `sessionStorage` and seed them back into the initial project/session selection flow on cold mount, so each browser tab/window can retain its own project/session after refresh without changing backend behavior or routing.
 
 **Why this exists:**
-After D0c made the project list load reliably on entry, the default-to-`projects[0]` selector causes any two tabs to converge on the same project after a refresh — whichever project was last touched (highest `updatedAt`) across the whole user account wins both tabs. `sessionStorage` is the correct tab-scoped primitive: it survives same-tab refresh, is isolated per tab, and is discarded when the tab closes. No backend "active workspace" pointer exists or is needed.
+After D0c made the project list load reliably on entry, the default-to-`projects[0]` selector causes any two tabs to converge on the same project after a refresh ??whichever project was last touched (highest `updatedAt`) across the whole user account wins both tabs. `sessionStorage` is the correct tab-scoped primitive: it survives same-tab refresh, is isolated per tab, and is discarded when the tab closes. No backend "active workspace" pointer exists or is needed.
 
 **Bounded scope:**
-- `frontend/app/[locale]/app/page.tsx` — write selections to `sessionStorage` on change; read seed on cold mount bootstrap; honor seed only if it still exists in freshly loaded lists; fall back to existing default-selection behavior otherwise
+- `frontend/app/[locale]/app/page.tsx` ??write selections to `sessionStorage` on change; read seed on cold mount bootstrap; honor seed only if it still exists in freshly loaded lists; fall back to existing default-selection behavior otherwise
 - Directly relevant tests only if needed
 
 **Behavior (when `PROJECT_FIRST_UX` is true):**
@@ -17499,7 +17499,7 @@ After D0c made the project list load reliably on entry, the default-to-`projects
 
 ---
 
-### PROJ-03-C2e-hotfix — Autosave After Every Successful AI Action Boundary Behind Feature Flag
+### PROJ-03-C2e-hotfix ??Autosave After Every Successful AI Action Boundary Behind Feature Flag
 
 **Task ID:** PROJ-03-C2e-hotfix
 **Family:** PROJ-03 (Project-First UX Redesign)
@@ -17514,10 +17514,10 @@ After D0c made the project list load reliably on entry, the default-to-`projects
 Behind `PROJECT_FIRST_UX`, change the AI-action autosave trigger so every successful AI coherence completion (`coherenceResult.ran === true`) attempts a project autosave immediately, instead of waiting for the 5-action threshold. Reuse the existing `attemptProjectAutosave(...)` path and all existing guards. No UI change.
 
 **Why this exists:**
-C2e introduced an AI-action-boundary autosave trigger but throttled it via a fixed every-5th counter. In practice, a single AI action can already create or substantially modify project files; if the user closes the tab before either four more AI actions land or another autosave trigger fires, those files exist on disk inside the running container but are not yet captured into the project snapshot/history. Tightening cadence to every successful AI action — while keeping the existing rate-limit inside `attemptProjectAutosave` as natural backpressure — closes the gap without UI work or backend changes.
+C2e introduced an AI-action-boundary autosave trigger but throttled it via a fixed every-5th counter. In practice, a single AI action can already create or substantially modify project files; if the user closes the tab before either four more AI actions land or another autosave trigger fires, those files exist on disk inside the running container but are not yet captured into the project snapshot/history. Tightening cadence to every successful AI action ??while keeping the existing rate-limit inside `attemptProjectAutosave` as natural backpressure ??closes the gap without UI work or backend changes.
 
 **Bounded scope:**
-- `frontend/app/[locale]/app/page.tsx` — remove or bypass the every-5th threshold logic in the C2e path so autosave is attempted after each successful coherence completion
+- `frontend/app/[locale]/app/page.tsx` ??remove or bypass the every-5th threshold logic in the C2e path so autosave is attempted after each successful coherence completion
 - Directly relevant tests only if needed
 
 **Behavior (when `PROJECT_FIRST_UX` is true):**
@@ -17529,8 +17529,8 @@ C2e introduced an AI-action-boundary autosave trigger but throttled it via a fix
   - `selectedSessionIdRef.current` present
   - `!projectOpenInProgressRef.current`
 - Preserve existing result handling:
-  - on saved → update `lastProjectAutosaveAtRef.current` and best-effort reload workspace snapshots
-  - on skipped-rate-limited or failed → no crash, no UI change
+  - on saved ??update `lastProjectAutosaveAtRef.current` and best-effort reload workspace snapshots
+  - on skipped-rate-limited or failed ??no crash, no UI change
 - No backend/API/schema change
 - No new UI surface
 
@@ -17571,7 +17571,7 @@ C2e introduced an AI-action-boundary autosave trigger but throttled it via a fix
 
 ---
 
-### PROJ-03-D0e — Restore Unsaved Editor Draft Per Tab Behind Feature Flag
+### PROJ-03-D0e ??Restore Unsaved Editor Draft Per Tab Behind Feature Flag
 
 **Task ID:** PROJ-03-D0e
 **Family:** PROJ-03 (Project-First UX Redesign)
@@ -17589,7 +17589,7 @@ Behind `PROJECT_FIRST_UX`, persist the current unsaved editor buffer in tab-scop
 D0d made project/session selection tab-scoped. C2e-hotfix ensured AI-generated file changes are captured to project history immediately. The remaining loss vector is manual typing in the Monaco editor that has not been flushed to the container filesystem via an explicit save. On refresh, the React state holding the editor content is discarded. `sessionStorage` is the correct tab-scoped primitive for this: it survives same-tab refresh, is isolated per tab, is discarded on tab close, and does not require any backend interaction.
 
 **Bounded scope:**
-- `frontend/app/[locale]/app/page.tsx` — write unsaved editor buffer to `sessionStorage` as it changes (debounced or on blur/selection-change); read and restore it on cold mount when context matches; clear it on successful explicit save or context change
+- `frontend/app/[locale]/app/page.tsx` ??write unsaved editor buffer to `sessionStorage` as it changes (debounced or on blur/selection-change); read and restore it on cold mount when context matches; clear it on successful explicit save or context change
 - Directly relevant tests only if needed
 
 **Behavior (when `PROJECT_FIRST_UX` is true):**
@@ -17636,7 +17636,7 @@ D0d made project/session selection tab-scoped. C2e-hotfix ensured AI-generated f
 
 ---
 
-### PROJ-03-D0e-hotfix — Fix Draft Restore Match And One-Shot Consumption Behind Feature Flag
+### PROJ-03-D0e-hotfix ??Fix Draft Restore Match And One-Shot Consumption Behind Feature Flag
 
 **Task ID:** PROJ-03-D0e-hotfix
 **Family:** PROJ-03 (Project-First UX Redesign)
@@ -17654,7 +17654,7 @@ Behind `PROJECT_FIRST_UX`, fix the D0e restore-path bug so a tab-scoped unsaved 
 D0e introduced correct write semantics but the one-shot consumption pattern and the hydration-race in the project-id predicate combine to guarantee restore failure on every normal refresh. The write path and `sessionStorage` content are correct; this is a restore-side defect only.
 
 **Bounded scope:**
-- `frontend/app/[locale]/app/page.tsx` — two targeted changes in `loadWorkspaceFileContent(...)`:
+- `frontend/app/[locale]/app/page.tsx` ??two targeted changes in `loadWorkspaceFileContent(...)`:
   1. Move the `coldMountEditorDraftRef.current = null` clear to inside the successful-match branch only
   2. Make the `projectId` match tolerate a not-yet-hydrated `selectedProjectId` by reading the D0d tab-seed (`TAB_SELECTED_PROJECT_STORAGE_KEY`) from `sessionStorage` as a fallback when `selectedProjectId` is `null`
 - Directly relevant tests only if needed
@@ -17701,7 +17701,7 @@ D0e introduced correct write semantics but the one-shot consumption pattern and 
 
 ---
 
-### PROJ-03-D1a — Add Unified Versions Entry Point And Last-Protected Indicator Behind Feature Flag
+### PROJ-03-D1a ??Add Unified Versions Entry Point And Last-Protected Indicator Behind Feature Flag
 
 **Task ID:** PROJ-03-D1a
 **Family:** PROJ-03 (Project-First UX Redesign)
@@ -17719,8 +17719,8 @@ Behind `PROJECT_FIRST_UX`, add one obvious user-facing "Versions" / "History" en
 The platform now protects user work through multiple layered mechanisms (project history, named saves, restore, autosaves, AI autosave cadence, tab-scoped editor drafts). However, the user-facing surfaces for these protections are scattered. A new user has no single place to see "your work is safe, here's how to go back." This slice adds the minimal UX needed to make the existing protections discoverable and reassuring, without building a full version-history redesign.
 
 **Bounded scope:**
-- `frontend/components/workspace/workspace-shell.tsx` — add one clear History / Versions entry point in the existing project-first workspace surface; add one small visible reassurance indicator grounded in already-available history state
-- `frontend/lib/recovery-copy.ts` — add any needed wording constants for the entry point label and reassurance indicator
+- `frontend/components/workspace/workspace-shell.tsx` ??add one clear History / Versions entry point in the existing project-first workspace surface; add one small visible reassurance indicator grounded in already-available history state
+- `frontend/lib/recovery-copy.ts` ??add any needed wording constants for the entry point label and reassurance indicator
 - Directly relevant tests only if needed
 
 **Behavior (when `PROJECT_FIRST_UX` is true):**
@@ -17764,7 +17764,7 @@ The platform now protects user work through multiple layered mechanisms (project
 
 ---
 
-### PROJ-03-D1b — Add Source-Tagged Automatic Version Labels Behind Feature Flag
+### PROJ-03-D1b ??Add Source-Tagged Automatic Version Labels Behind Feature Flag
 
 **Task ID:** PROJ-03-D1b
 **Family:** PROJ-03 (Project-First UX Redesign)
@@ -17779,20 +17779,20 @@ The platform now protects user work through multiple layered mechanisms (project
 Behind `PROJECT_FIRST_UX`, make automatic project-history entries easier to distinguish by encoding a stable source tag into automatic snapshot labels and rendering source-specific fallback names in the history list, while leaving manual named saves unchanged.
 
 **Why this exists:**
-Automatic saves from AI actions, file saves, preview builds, and session-expiry warnings all write the same opaque label to the snapshot record. The history list collapses them all to `'Saved version'`. Users cannot tell which version was produced by an AI run vs. a manual file save vs. a preview build without examining timestamps alone. This slice adds a minimal stable source tag to automatic labels so the history surface can render distinct human-readable labels — without changing backend behavior, schema, or manual named-save semantics.
+Automatic saves from AI actions, file saves, preview builds, and session-expiry warnings all write the same opaque label to the snapshot record. The history list collapses them all to `'Saved version'`. Users cannot tell which version was produced by an AI run vs. a manual file save vs. a preview build without examining timestamps alone. This slice adds a minimal stable source tag to automatic labels so the history surface can render distinct human-readable labels ??without changing backend behavior, schema, or manual named-save semantics.
 
 **Bounded scope:**
-- `frontend/components/workspace/workspace-snapshots.logic.ts` — extend `buildProjectScopedSnapshotLabel` to accept an optional stable source tag; add `parseProjectScopedSnapshotSource` to extract it; add source-to-display-label mapping
-- `frontend/lib/project-autosave.ts` — accept and forward a `source` argument to `buildProjectScopedSnapshotLabel`
-- `frontend/app/[locale]/app/page.tsx` — pass the appropriate source tag at each `attemptProjectAutosave` call site (`'ai'`, `'file-save'`, `'preview'`, `'expiry'`) and at the two direct `saveWorkspaceSnapshot` call sites that produce unlabeled snapshots
-- `frontend/components/workspace/workspace-shell.tsx` — in `computeProjectHistoryRows`, use `parseProjectScopedSnapshotSource` to produce source-specific fallback labels instead of the generic `'Saved version'`
-- `frontend/lib/recovery-copy.ts` — add source-to-display label constants for all source tags
+- `frontend/components/workspace/workspace-snapshots.logic.ts` ??extend `buildProjectScopedSnapshotLabel` to accept an optional stable source tag; add `parseProjectScopedSnapshotSource` to extract it; add source-to-display-label mapping
+- `frontend/lib/project-autosave.ts` ??accept and forward a `source` argument to `buildProjectScopedSnapshotLabel`
+- `frontend/app/[locale]/app/page.tsx` ??pass the appropriate source tag at each `attemptProjectAutosave` call site (`'ai'`, `'file-save'`, `'preview'`, `'expiry'`) and at the two direct `saveWorkspaceSnapshot` call sites that produce unlabeled snapshots
+- `frontend/components/workspace/workspace-shell.tsx` ??in `computeProjectHistoryRows`, use `parseProjectScopedSnapshotSource` to produce source-specific fallback labels instead of the generic `'Saved version'`
+- `frontend/lib/recovery-copy.ts` ??add source-to-display label constants for all source tags
 - Directly relevant tests only if needed
 
 **Extended label format:**
 - Named (unchanged): `[project-id:<id>:name:<text>]`
 - New automatic with source: `[project-id:<id>:source:<tag>]`
-- Old automatic (backward compat): `[project-id:<id>]` — still renders as `'Saved version'`
+- Old automatic (backward compat): `[project-id:<id>]` ??still renders as `'Saved version'`
 
 **Behavior (when `PROJECT_FIRST_UX` is true):**
 - Automatic save entries in the history list render source-specific names (e.g. "AI changes saved", "File saved", "Preview built", "Session ending")
@@ -17827,7 +17827,7 @@ Automatic saves from AI actions, file saves, preview builds, and session-expiry 
 
 **Risks and invariants:**
 - Use stable internal source tags (short lowercase strings like `'ai'`, `'file-save'`, `'preview'`, `'expiry'`), not display strings, in stored labels
-- Preserve backward compatibility with existing stored labels (no source tag → fallback to `'Saved version'`)
+- Preserve backward compatibility with existing stored labels (no source tag ??fallback to `'Saved version'`)
 - Do not change backend behavior or history semantics
 - `PROJECT_FIRST_UX` remains the kill-switch posture
 - Preserve all existing save/restore behavior; only improve label clarity
@@ -17835,7 +17835,7 @@ Automatic saves from AI actions, file saves, preview builds, and session-expiry 
 
 ---
 
-### PROJ-03-D1c — Add Heuristic Content-Related Automatic Version Labels Behind Feature Flag
+### PROJ-03-D1c ??Add Heuristic Content-Related Automatic Version Labels Behind Feature Flag
 
 **Task ID:** PROJ-03-D1c
 **Family:** PROJ-03 (Project-First UX Redesign)
@@ -17850,7 +17850,7 @@ Automatic saves from AI actions, file saves, preview builds, and session-expiry 
 Behind `PROJECT_FIRST_UX`, improve automatic project-history labels using deterministic heuristics derived from existing saved context (changed file paths / file counts / trigger source) so nearby versions are easier to distinguish, without requiring AI-generated labels.
 
 **Why this exists:**
-D1b upgraded automatic version labels from the generic `'Saved version'` to source-specific labels (e.g. "AI changes saved", "File saved"). This is a meaningful step but still leaves repeated identical labels when many nearby automatic versions exist for the same source. The next smallest improvement is to enrich labels with deterministic heuristics that are already available at save time — for example, the most-recently changed file path or the number of files changed — without introducing any AI dependency, new async pipeline, backend change, or prompt design.
+D1b upgraded automatic version labels from the generic `'Saved version'` to source-specific labels (e.g. "AI changes saved", "File saved"). This is a meaningful step but still leaves repeated identical labels when many nearby automatic versions exist for the same source. The next smallest improvement is to enrich labels with deterministic heuristics that are already available at save time ??for example, the most-recently changed file path or the number of files changed ??without introducing any AI dependency, new async pipeline, backend change, or prompt design.
 
 **Bounded scope:**
 - Frontend only unless inspection proves a tiny backend-independent helper change is needed
@@ -17903,7 +17903,7 @@ D1b upgraded automatic version labels from the generic `'Saved version'` to sour
 
 ---
 
-### PROJ-03-D1d — Reuse Existing Active Session When Reopening Same Project Behind Feature Flag
+### PROJ-03-D1d ??Reuse Existing Active Session When Reopening Same Project Behind Feature Flag
 
 **Task ID:** PROJ-03-D1d
 **Family:** PROJ-03 (Project-First UX Redesign)
@@ -17918,14 +17918,14 @@ D1b upgraded automatic version labels from the generic `'Saved version'` to sour
 Behind `PROJECT_FIRST_UX`, when reopening a project, reuse an existing active usable session already attached to that same project if one exists; otherwise create a fresh session as today. Keep explicit snapshot restore on the always-fresh-session path. Preserve hydration and all existing project-open safety invariants.
 
 **Why this exists:**
-Each "Open Project" or "Resume latest project" click currently creates a new Docker container, even when the user's last session for that project is still alive. This accumulates idle sessions and adds unnecessary startup latency. The backend data model already supports reuse — `Session.projectId` is indexed and populated. The only missing pieces are: exposing `projectId` in the sessions list response and adding a reuse branch in the frontend open helper.
+Each "Open Project" or "Resume latest project" click currently creates a new Docker container, even when the user's last session for that project is still alive. This accumulates idle sessions and adds unnecessary startup latency. The backend data model already supports reuse ??`Session.projectId` is indexed and populated. The only missing pieces are: exposing `projectId` in the sessions list response and adding a reuse branch in the frontend open helper.
 
 **Bounded scope:**
-- `services/api-gateway/src/sessions/session.controller.ts` — expose `projectId` in sessions list response; no schema/migration
-- Any directly relevant backend DTO/type surface if needed — no schema change
-- `frontend/components/workspace/workspace-shell.logic.ts` — add `projectId: string | null` to `WorkspaceShellSession` type
-- `frontend/lib/open-project-in-fresh-session.ts` — add session-reuse branch (check for existing usable same-project session; if found, skip `createWorkspaceSession`; if not found, fall through to current path)
-- `frontend/app/[locale]/app/page.tsx` — pass `sessions` state to the reuse-aware helper at `handleOpenWorkspaceProject` and `handleResumeWorkspaceProjectById` call sites; keep `handleRestoreWorkspaceProjectFromSnapshotById` on the always-fresh path
+- `services/api-gateway/src/sessions/session.controller.ts` ??expose `projectId` in sessions list response; no schema/migration
+- Any directly relevant backend DTO/type surface if needed ??no schema change
+- `frontend/components/workspace/workspace-shell.logic.ts` ??add `projectId: string | null` to `WorkspaceShellSession` type
+- `frontend/lib/open-project-in-fresh-session.ts` ??add session-reuse branch (check for existing usable same-project session; if found, skip `createWorkspaceSession`; if not found, fall through to current path)
+- `frontend/app/[locale]/app/page.tsx` ??pass `sessions` state to the reuse-aware helper at `handleOpenWorkspaceProject` and `handleResumeWorkspaceProjectById` call sites; keep `handleRestoreWorkspaceProjectFromSnapshotById` on the always-fresh path
 - Directly relevant tests only if needed
 
 **Behavior (when `PROJECT_FIRST_UX` is true):**
@@ -17948,23 +17948,23 @@ Each "Open Project" or "Resume latest project" click currently creates a new Doc
 - Resume-latest-project path reuses same-project active session when available
 - Explicit snapshot restore still always creates a fresh session
 - Hydration still runs on reused sessions
-- `PROJECT_FIRST_UX=false` → legacy behavior unchanged
+- `PROJECT_FIRST_UX=false` ??legacy behavior unchanged
 - Typecheck clean, focused regression suite green, no introduced lint errors
 
 **Risks and invariants:**
-- `Session.projectId` already exists in the DB; only expose it — no schema/migration change
+- `Session.projectId` already exists in the DB; only expose it ??no schema/migration change
 - Reuse only active usable sessions (`isUsableSession` = not terminated, not expired)
 - Never skip `hydrateWorkspaceForProjectOpen` on reuse
 - `handleRestoreWorkspaceProjectFromSnapshotById` must remain always-fresh (restoring into a running session is unsafe)
 - `PROJECT_FIRST_UX` remains the kill-switch posture
-- Tab-isolated session selection from D0d unaffected — per-tab `sessionStorage` selection keys are unchanged
+- Tab-isolated session selection from D0d unaffected ??per-tab `sessionStorage` selection keys are unchanged
 - `projectOpenInProgressRef` guard and all open/restore invariants preserved
 - `.git` exclusion, autosave timing, stop-session cleanup semantics preserved
 - No regression to: project-open hydration / restore discipline (PROJ-02-01); snapshot/history persistence (PROJ-01-21); `.git/` exclusion (PROJ-02-03); static preview `/workspace/index.html` rule (PREV-02-02); stop-session cleanup (OPS-01-04)
 
 ---
 
-### PROJ-03-D1d-hotfix — Refresh Sessions Before Same-Project Reuse Check Behind Feature Flag
+### PROJ-03-D1d-hotfix ??Refresh Sessions Before Same-Project Reuse Check Behind Feature Flag
 
 **Task ID:** PROJ-03-D1d-hotfix
 **Family:** PROJ-03 (Project-First UX Redesign)
@@ -17983,7 +17983,7 @@ D1d introduced session reuse based on the in-memory `sessions` React state. That
 
 **Bounded scope:**
 - Frontend only
-- `frontend/app/[locale]/app/page.tsx` — add `await loadSessions(token)` at `handleOpenWorkspaceProject` (PROJECT_FIRST_UX branch) and `handleResumeWorkspaceProjectById` immediately before each `openProjectInFreshSession` call; `sessions` state is then current when passed as `existingSessions`
+- `frontend/app/[locale]/app/page.tsx` ??add `await loadSessions(token)` at `handleOpenWorkspaceProject` (PROJECT_FIRST_UX branch) and `handleResumeWorkspaceProjectById` immediately before each `openProjectInFreshSession` call; `sessions` state is then current when passed as `existingSessions`
 - Directly relevant tests only if needed
 
 **Behavior:**
@@ -18025,7 +18025,7 @@ D1d introduced session reuse based on the in-memory `sessions` React state. That
 
 **Task ID:** AI-04-01
 **Family:** AI-04 (Chat Persistence)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (CORE PRODUCT LOOP, CHAT PERSISTENCE)
 **Dependencies:** Phase 84 (Complete and Locked); AI-03-02 (Complete and Locked)
@@ -18087,7 +18087,7 @@ Phase 84 made the workspace chat usable, but chat persistence is still localStor
 
 **Task ID:** PR-01-01
 **Family:** PR-01 (Project Persistence)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (PROJECT PERSISTENCE, FILES-ONLY SNAPSHOT FOUNDATION)
 **Dependencies:** AI-04-01 (Complete and Locked); Phase 79/80 (Complete and Locked)
@@ -18142,7 +18142,7 @@ The AI-first workspace loop now works end-to-end through AI-03-01/02 and AI-04-0
 
 **Task ID:** PR-02-01
 **Family:** PR-01 (Project Persistence)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (PROJECT PORTABILITY, ARCHIVE IMPORT/EXPORT)
 **Dependencies:** PR-01-01 (Complete and Locked)
@@ -18196,7 +18196,7 @@ PR-01-01 gave the product durable files-only save/restore within the platform. P
 
 **Task ID:** PR-03-01
 **Family:** PR-01 (Project Persistence)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (PROJECT PERSISTENCE, PERSISTENT PROJECT ENTITY)
 **Dependencies:** PR-01-01 (Complete and Locked), PR-02-01 (Complete and Locked)
@@ -18257,7 +18257,7 @@ PR-01-01 delivered files-only save/restore within the platform. PR-02-01 deliver
 
 **Task ID:** CO-01-01
 **Family:** CO-01 (Commercial Readiness)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (COMMERCIAL READINESS, USER-VISIBLE USAGE/QUOTA ALIGNMENT)
 **Dependencies:** PR-03-01 (Complete and Locked)
@@ -18307,7 +18307,7 @@ Core product loop and project persistence are now in place. The next bounded com
 
 **Task ID:** CO-02-01
 **Family:** CO-01 (Commercial Readiness)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (COMMERCIAL READINESS, PLAN/ENTITLEMENT FOUNDATION)
 **Dependencies:** CO-01-01 (Complete and Locked)
@@ -18357,7 +18357,7 @@ CO-01-01 aligned visible usage/quota UX with existing enforcement. CO-02-01 now 
 
 **Task ID:** CO-03-01
 **Family:** CO-01 (Commercial Readiness)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (COMMERCIAL READINESS, ADMIN / OPERATIONAL COMPLETENESS)
 **Dependencies:** CO-02-01 (Complete and Locked)
@@ -18412,7 +18412,7 @@ CO-01-01 aligned quota/usage UX. CO-02-01 added minimal plans foundation. CO-03-
 
 **Task ID:** ADV-01-01
 **Family:** ADV-01 (Advanced Product Expansion)
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (ADVANCED PRODUCT, MULTI-MODEL WORKSPACE SUPPORT)
 **Dependencies:** CO-03-01 (Complete and Locked)
@@ -18462,7 +18462,7 @@ The core AI workspace loop is now complete and durable. The next bounded advance
 
 **Task ID:** ADV-02-01
 **Family:** ADV-01 (Advanced Product Expansion)
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (ADVANCED PRODUCT, SINGLE-MODEL MULTI-STEP ORCHESTRATION)
 **Dependencies:** ADV-01-01 (Complete and Locked)
@@ -18511,7 +18511,7 @@ ADV-01-01 added controlled multi-model selection and attribution. ADV-02-01 now 
 
 **Task ID:** ADV-03-01
 **Family:** ADV-01 (Advanced Product Expansion)
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (ADVANCED PRODUCT, CROSS-PLATFORM BUILD SUPPORT)
 **Dependencies:** ADV-02-01 (Complete and Locked)
@@ -18560,7 +18560,7 @@ The core workspace, persistence, commercial foundation, and bounded advanced AI 
 
 **Task ID:** ADV-04-01
 **Family:** ADV-01 (Advanced Product Expansion)
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (ADVANCED PRODUCT, EXTERNAL API FOUNDATION)
 **Dependencies:** ADV-03-01 (Complete and Locked)
@@ -18609,7 +18609,7 @@ The core workspace, persistence, commercial foundation, and bounded advanced fea
 
 **Task ID:** ADV-05-01
 **Family:** ADV-01 (Advanced Product Expansion)
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (ADVANCED PRODUCT, PUBLIC SHARING FOUNDATION)
 **Dependencies:** ADV-04-01 (Complete and Locked)
@@ -18677,7 +18677,7 @@ The core workspace, persistence, commercial foundation, advanced AI features, an
 
 **Task ID:** REL-01-01A
 **Family:** REL-01 (Release Readiness)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** BLOCKER RESOLUTION (RELEASE READINESS, VALIDATION PREREQUISITE)
 **Dependencies:** REL-01-01 (BLOCKED ??environment prerequisite unmet; see `docs/REL-01-01-CHECKPOINT.md`)
@@ -18723,7 +18723,7 @@ REL-01-01 is blocked by environment prerequisites, not by a confirmed migration 
 
 **Task ID:** REL-01-01B
 **Family:** REL-01 (Release Readiness)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG FIX (RELEASE READINESS, MIGRATION BLOCKER)
 **Dependencies:** REL-01-01 (FAILED ??migration defect found; see `docs/REL-01-01-CHECKPOINT.md`)
@@ -18774,7 +18774,7 @@ Observed failure:
 
 **Task ID:** REL-01-01
 **Family:** REL-01 (Release Readiness)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** VALIDATION (RELEASE READINESS, DATABASE SAFETY)
 **Dependencies:** PROGRAM-SPEC-EXECUTION-FINAL-CHECKPOINT (Complete and Locked)
@@ -18828,7 +18828,7 @@ The recent delivery wave added multiple schema changes but they have not yet bee
 
 **Task ID:** REL-01-02
 **Family:** REL-01 (Release Readiness)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** VALIDATION (RELEASE READINESS, CROSS-SURFACE REGRESSION SWEEP)
 **Dependencies:** REL-01-01 (Complete and Locked)
@@ -18879,7 +18879,7 @@ REL-01-01 validated schema safety. The next release-readiness step is to validat
 
 **Task ID:** REL-01-02A
 **Family:** REL-01 (Release Readiness)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG FIX (RELEASE READINESS, LIVE-STACK BLOCKER)
 **Dependencies:** REL-01-02 (BLOCKED)
@@ -18931,7 +18931,7 @@ REL-01-02 integration smoke sweep found a live-stack blocker. The `aisandbox-api
 
 **Task ID:** REL-01-02B
 **Family:** REL-01 (Release Readiness)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG FIX (RELEASE READINESS, LIVE-SMOKE BLOCKER)
 **Dependencies:** REL-01-02 (BLOCKED)
@@ -18985,7 +18985,7 @@ REL-01-02 integration smoke sweep found a live-stack blocker. Authenticated `POS
 
 **Task ID:** REL-01-02C
 **Family:** REL-01 (Release Readiness)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG FIX (RELEASE READINESS, LIVE-SMOKE BLOCKER)
 **Dependencies:** REL-01-02 (BLOCKED)
@@ -19040,7 +19040,7 @@ REL-01-02 integration smoke sweep found a deterministic live-stack blocker. `POS
 
 **Task ID:** REL-01-02D
 **Family:** REL-01 (Release Readiness)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG FIX (RELEASE READINESS, LIVE-SMOKE BLOCKER)
 **Dependencies:** REL-01-02 (BLOCKED)
@@ -19093,7 +19093,7 @@ REL-01-02 integration smoke sweep found a deterministic live-stack blocker on th
 
 **Task ID:** REL-01-03
 **Family:** REL-01 (Release Readiness)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** VALIDATION (RELEASE READINESS, ENVIRONMENT / CONFIG CONSISTENCY)
 **Dependencies:** REL-01-02 (Complete and Locked)
@@ -19139,7 +19139,7 @@ REL-01-01 validated migrations and REL-01-02 validated live-stack smoke behavior
 
 **Task ID:** REL-01-03A
 **Family:** REL-01 (Release Readiness)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG FIX (RELEASE READINESS, CONFIG BLOCKER)
 **Dependencies:** REL-01-03 (BLOCKED)
@@ -19190,7 +19190,7 @@ REL-01-03 found concrete blocking config defects:
 
 **Task ID:** REL-01-03B
 **Family:** REL-01 (Release Readiness)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG FIX (RELEASE READINESS, CONFIG BLOCKER)
 **Dependencies:** REL-01-03 (BLOCKED)
@@ -19236,7 +19236,7 @@ REL-01-03 found a concrete blocking config defect:
 
 **Task ID:** REL-01-05
 **Family:** REL-01 (Release Readiness)
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** DOCUMENTATION (RELEASE READINESS, OPERATIONAL RUNBOOK)
 **Dependencies:** REL-01-01 (Complete and Locked), REL-01-02 (Complete and Locked), REL-01-03 (Complete and Locked)
@@ -19296,7 +19296,7 @@ REL-01-01 validated migrations. REL-01-02 validated bounded live-stack smoke beh
 
 **Task ID:** REL-02-01
 **Family:** REL-02 (Deployment Rehearsal)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** VALIDATION (RELEASE READINESS, DEPLOYMENT REHEARSAL)
 **Dependencies:** REL-01-05 (Complete and Locked)
@@ -19344,7 +19344,7 @@ The feature/spec wave is complete. The release-readiness wave is complete. The n
 
 **Task ID:** REL-02-02
 **Family:** REL-02 (Deployment Rehearsal)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** DOCUMENTATION (RELEASE READINESS, RUNBOOK ALIGNMENT)
 **Dependencies:** REL-02-01 (Complete and Locked)
@@ -19401,7 +19401,7 @@ REL-02-01 deployment rehearsal passed, but concrete runbook mismatches were foun
 
 **Task ID:** OPS-01-02
 **Family:** OPS-01 (Runtime Cleanup Diagnostics)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG FIX (RUNTIME CLEANUP, SESSION CONTAINERS)
 **Dependencies:** OPS-01-01 (Complete and Locked)
@@ -19446,7 +19446,7 @@ OPS-01-01 isolated the failure clearly:
 
 **Task ID:** OPS-01-04
 **Family:** OPS-01 (Runtime Cleanup Diagnostics)
-**Priority:** 🔴 High
+**Priority:** ? High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG FIX (RUNTIME CLEANUP, API RESPONSE)
 **Dependencies:** OPS-01-03 (Complete and Locked)
@@ -19469,7 +19469,7 @@ Fix `POST /api/sessions/:id/stop` so it returns a successful response when clean
 
 **Task ID:** OPS-01-03
 **Family:** OPS-01 (Runtime Cleanup Diagnostics)
-**Priority:** 🔴 High
+**Priority:** ? High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG INVESTIGATION (RUNTIME CLEANUP, POST-FIX VERIFICATION)
 **Dependencies:** OPS-01-02 (Complete and Locked)
@@ -19554,7 +19554,7 @@ Real usage shows many session containers in Docker. These should be temporary ru
 
 ---
 
-## OPS-LOCAL — Local Testing Config
+## OPS-LOCAL ??Local Testing Config
 
 **Family status:** ACTIVE
 
@@ -19568,7 +19568,7 @@ Real usage shows many session containers in Docker. These should be temporary ru
 **Status:** PLANNED
 **Checkpoint:** `docs/OPS-LOCAL-SESSION-LIMITS-CHECKPOINT.md`
 **Nature:** CONFIG / LOCAL TESTING ENABLEMENT
-**Source:** Post-D0 testing diagnostic — session creation blocked by hard-coded limits of 5 active / 20 per 24h; local QA cannot test project-first UX without hitting these caps
+**Source:** Post-D0 testing diagnostic ??session creation blocked by hard-coded limits of 5 active / 20 per 24h; local QA cannot test project-first UX without hitting these caps
 
 **Objective:**
 Preserve code defaults of 5 active sessions and 20 sessions per 24h, but add env-driven overrides in api-gateway `QuotaConfig` and set local Docker compose values to `1000000` each, so local QA is not blocked by session caps during project-first testing.
@@ -19577,8 +19577,8 @@ Preserve code defaults of 5 active sessions and 20 sessions per 24h, but add env
 `QuotaConfig.MAX_ACTIVE_SESSIONS_PER_USER = 5` and `QuotaConfig.MAX_SESSIONS_PER_24H = 20` are static TypeScript constants with no env-var override path. After D0 (project-first entry shell wiring), the `handleCreateWorkspaceProject` and `handleOpenWorkspaceProject` handlers provision fresh sessions on demand. In active local testing, the 5-active-session and 20-per-24h caps are hit quickly, blocking QA. This slice adds the override path and raises the cap in the local compose file.
 
 **Bounded scope:**
-- `services/api-gateway/src/quota/quota.config.ts` — add env-based resolvers for `MAX_ACTIVE_SESSIONS_PER_USER` and `MAX_SESSIONS_PER_24H` following the existing `resolveDefaultTokensPerDay` pattern; preserve defaults of 5 / 20 when env vars are absent
-- `docker-compose.prod.yml` — add `MAX_ACTIVE_SESSIONS_PER_USER: "1000000"` and `MAX_SESSIONS_PER_24H: "1000000"` to the `api-gateway` service environment block
+- `services/api-gateway/src/quota/quota.config.ts` ??add env-based resolvers for `MAX_ACTIVE_SESSIONS_PER_USER` and `MAX_SESSIONS_PER_24H` following the existing `resolveDefaultTokensPerDay` pattern; preserve defaults of 5 / 20 when env vars are absent
+- `docker-compose.prod.yml` ??add `MAX_ACTIVE_SESSIONS_PER_USER: "1000000"` and `MAX_SESSIONS_PER_24H: "1000000"` to the `api-gateway` service environment block
 - Directly relevant tests only if env-based resolver changes cause unit-test failures
 - No change to enforcement logic beyond reading the resolved values
 
@@ -19617,16 +19617,16 @@ Preserve code defaults of 5 active sessions and 20 sessions per 24h, but add env
 **Status:** PLANNED
 **Checkpoint:** `docs/OPS-LOCAL-AUTH-JWT-CHECKPOINT.md`
 **Nature:** CONFIG / LOCAL TESTING ENABLEMENT
-**Source:** Post-OPS-LOCAL-SESSION-LIMITS diagnostic — auth access token lifetime is 15m (`JWT_EXPIRES_IN=15m` in `services/api-gateway/src/auth/auth.module.ts`, driven by all env files); there is no refresh-token mechanism, no auth cookies, and no silent-refresh in the frontend. On 401 the frontend immediately clears `localStorage` and redirects to `/login`. Local QA is interrupted every 15 minutes.
+**Source:** Post-OPS-LOCAL-SESSION-LIMITS diagnostic ??auth access token lifetime is 15m (`JWT_EXPIRES_IN=15m` in `services/api-gateway/src/auth/auth.module.ts`, driven by all env files); there is no refresh-token mechanism, no auth cookies, and no silent-refresh in the frontend. On 401 the frontend immediately clears `localStorage` and redirects to `/login`. Local QA is interrupted every 15 minutes.
 
 **Objective:**
 Override `JWT_EXPIRES_IN` for the local Docker `api-gateway` service to `30d` so local QA is not interrupted by frequent forced re-login, without changing auth architecture or production defaults.
 
 **Why this exists:**
-`auth.module.ts` configures `JwtModule` with `expiresIn: process.env.JWT_EXPIRES_IN || '15m'`. The env file sets `JWT_EXPIRES_IN=15m`. `auth.service.ts` issues only a single `access_token` — no refresh token, no cookie. The frontend stores the token in `localStorage` and calls `handleWorkspaceUnauthorizedAccess()` on any `401`, wiping state and redirecting to login immediately. There is no refresh endpoint (`POST /auth/refresh` does not exist). After 15 minutes, the first background poll or user action triggers logout. This makes any extended local QA session impossible. The fix is a single `docker-compose.prod.yml` env override for the api-gateway service.
+`auth.module.ts` configures `JwtModule` with `expiresIn: process.env.JWT_EXPIRES_IN || '15m'`. The env file sets `JWT_EXPIRES_IN=15m`. `auth.service.ts` issues only a single `access_token` ??no refresh token, no cookie. The frontend stores the token in `localStorage` and calls `handleWorkspaceUnauthorizedAccess()` on any `401`, wiping state and redirecting to login immediately. There is no refresh endpoint (`POST /auth/refresh` does not exist). After 15 minutes, the first background poll or user action triggers logout. This makes any extended local QA session impossible. The fix is a single `docker-compose.prod.yml` env override for the api-gateway service.
 
 **Bounded scope:**
-- `docker-compose.prod.yml` — add `JWT_EXPIRES_IN: "30d"` under the `api-gateway` service `environment` block
+- `docker-compose.prod.yml` ??add `JWT_EXPIRES_IN: "30d"` under the `api-gateway` service `environment` block
 - No other files
 
 **Non-goals:**
@@ -20091,7 +20091,7 @@ UX-01 identified this as an important clarity issue: the workspace header curren
 
 **Task ID:** UX-01-02
 **Family:** UX-01 (Manual UX/UI Acceptance)
-**Priority:** ? Blocker
+**Priority:** ???Blocker
 **Status:** COMPLETE and LOCKED
 **Nature:** UX FIX (BLOCKER, WORKSPACE CLARITY)
 **Dependencies:** UX-01 (Complete and Locked)
@@ -20135,7 +20135,7 @@ UX-01 identified this as a blocker: the workspace exposes internal labels such a
 
 **Task ID:** UX-01-01
 **Family:** UX-01 (Manual UX/UI Acceptance)
-**Priority:** ? Blocker
+**Priority:** ???Blocker
 **Status:** COMPLETE and LOCKED
 **Nature:** UX FIX (BLOCKER, LOGIN SURFACE)
 **Dependencies:** UX-01 (Complete and Locked)
@@ -20179,7 +20179,7 @@ UX-01 identified this as a blocker: the login page prominently shows test creden
 **Task ID:** UX-01
 **Family:** UX-01 (Manual UX/UI Acceptance)
 **Family status:** COMPLETE and LOCKED
-**Priority:** ? Medium
+**Priority:** ?貕?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** VALIDATION (PRODUCT QUALITY, MANUAL UX/UI ACCEPTANCE)
 **Dependencies:** REL-02 (Complete and Locked)
@@ -20237,20 +20237,20 @@ The feature/spec wave, release-readiness wave, and deployment-readiness wave are
 
 ---
 
-## WS — Workspace Rollout
+## WS ??Workspace Rollout
 
-**Family status:** ACTIVE — WS-01 COMPLETE and LOCKED; WS-02 COMPLETE and LOCKED; WS-03 COMPLETE and LOCKED; WS-04 COMPLETE and LOCKED; WS-05 COMPLETE and LOCKED; WS-06 COMPLETE and LOCKED; WS-07 COMPLETE and LOCKED
+**Family status:** ACTIVE ??WS-01 COMPLETE and LOCKED; WS-02 COMPLETE and LOCKED; WS-03 COMPLETE and LOCKED; WS-04 COMPLETE and LOCKED; WS-05 COMPLETE and LOCKED; WS-06 COMPLETE and LOCKED; WS-07 COMPLETE and LOCKED
 
 **Current stage:** WS-07 (COMPLETE and LOCKED)
 
 **Ordered slices (registered so far):**
-1. WS-01 — Workspace Schema, Entity, And Backfill Foundation (COMPLETE and LOCKED)
-2. WS-02 — Workspace CRUD API Foundation (COMPLETE and LOCKED)
-3. WS-03 — Project Create/List Workspace-Awareness Foundation (COMPLETE and LOCKED)
-4. WS-04 — Frontend Workspace Types And API Helpers (COMPLETE and LOCKED)
-5. WS-05 — Workspace Selector And Filtered Project List (COMPLETE and LOCKED)
-6. WS-06 — Workspace Create/Rename/Delete UI (COMPLETE and LOCKED)
-7. WS-07 — Move Project Between Workspaces (COMPLETE and LOCKED)
+1. WS-01 ??Workspace Schema, Entity, And Backfill Foundation (COMPLETE and LOCKED)
+2. WS-02 ??Workspace CRUD API Foundation (COMPLETE and LOCKED)
+3. WS-03 ??Project Create/List Workspace-Awareness Foundation (COMPLETE and LOCKED)
+4. WS-04 ??Frontend Workspace Types And API Helpers (COMPLETE and LOCKED)
+5. WS-05 ??Workspace Selector And Filtered Project List (COMPLETE and LOCKED)
+6. WS-06 ??Workspace Create/Rename/Delete UI (COMPLETE and LOCKED)
+7. WS-07 ??Move Project Between Workspaces (COMPLETE and LOCKED)
 
 ---
 
@@ -20262,8 +20262,8 @@ The feature/spec wave, release-readiness wave, and deployment-readiness wave are
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/WS-01-CHECKPOINT.md`
-**Nature:** BACKEND / SCHEMA / MIGRATION — workspace data model foundation
-**Source:** Workspace v1 planning session (Apr 2026) — agreed bounded v1 plan; first slice of phased workspace rollout
+**Nature:** BACKEND / SCHEMA / MIGRATION ??workspace data model foundation
+**Source:** Workspace v1 planning session (Apr 2026) ??agreed bounded v1 plan; first slice of phased workspace rollout
 
 **Objective:**
 
@@ -20283,7 +20283,7 @@ A Workspace is a named, user-owned personal organizational container for project
   - `User` entity relation addition only if minimally needed for wiring
   - one TypeORM migration: `workspaces` table + nullable `workspace_id` on `projects` + indexes + idempotent backfill
 
-**Workspaces table — required fields:**
+**Workspaces table ??required fields:**
 
 | field | type | notes |
 |---|---|---|
@@ -20337,7 +20337,7 @@ A Workspace is a named, user-owned personal organizational container for project
 
 - Workspace is personal-only in v1; no shared/team semantics may be baked in
 - Sessions remain attached to projects only; workspace-to-session wiring is out of scope
-- `workspace_id` must remain nullable in this slice — NOT NULL enforcement is a later slice
+- `workspace_id` must remain nullable in this slice ??NOT NULL enforcement is a later slice
 - Backfill must be safe and idempotent; no data loss to existing projects
 - Do not break existing project ownership or user-scoping
 - Do not alter current project / session / history semantics
@@ -20358,8 +20358,8 @@ A Workspace is a named, user-owned personal organizational container for project
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/WS-02-CHECKPOINT.md`
-**Nature:** BACKEND / API — workspace CRUD endpoints
-**Source:** WS v1 rollout — second slice; follows WS-01 schema foundation
+**Nature:** BACKEND / API ??workspace CRUD endpoints
+**Source:** WS v1 rollout ??second slice; follows WS-01 schema foundation
 
 **Objective:**
 
@@ -20439,20 +20439,20 @@ Add the minimal authenticated backend API for v1 personal workspaces: create, li
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/WS-03-CHECKPOINT.md`
-**Nature:** BACKEND / API — project create/list workspace-awareness
-**Source:** WS v1 rollout — third slice; follows WS-02 CRUD API foundation
+**Nature:** BACKEND / API ??project create/list workspace-awareness
+**Source:** WS v1 rollout ??third slice; follows WS-02 CRUD API foundation
 
 **Objective:**
 
-Make backend project create/list/read flows workspace-aware by allowing project creation into a chosen workspace, defaulting to the user's default workspace when omitted, supporting optional workspace filtering on project list, and surfacing `workspaceId` in project responses — while keeping all ownership checks user-scoped and stopping before any frontend workspace selector/UI.
+Make backend project create/list/read flows workspace-aware by allowing project creation into a chosen workspace, defaulting to the user's default workspace when omitted, supporting optional workspace filtering on project list, and surfacing `workspaceId` in project responses ??while keeping all ownership checks user-scoped and stopping before any frontend workspace selector/UI.
 
 **Bounded scope:**
 
 - Backend/API only
 - Allowed files/surfaces:
-  - `CreateProjectDto` — add optional `workspaceId` field
-  - `ProjectsController` — accept optional `workspaceId` on create; accept optional `workspaceId` query param on list
-  - `ProjectsService` — resolve default workspace when `workspaceId` omitted on create; validate `workspaceId` ownership on create; filter list by `workspaceId` when provided
+  - `CreateProjectDto` ??add optional `workspaceId` field
+  - `ProjectsController` ??accept optional `workspaceId` on create; accept optional `workspaceId` query param on list
+  - `ProjectsService` ??resolve default workspace when `workspaceId` omitted on create; validate `workspaceId` ownership on create; filter list by `workspaceId` when provided
   - `WorkspacesService` injected into `ProjectsService` for ownership lookup and default-workspace resolution
   - directly relevant tests
 
@@ -20460,9 +20460,9 @@ Make backend project create/list/read flows workspace-aware by allowing project 
 
 | Endpoint | Change |
 |---|---|
-| `POST /api/projects` | Accepts optional `workspaceId`; omitted → resolve user's default workspace; provided → must belong to current user |
+| `POST /api/projects` | Accepts optional `workspaceId`; omitted ??resolve user's default workspace; provided ??must belong to current user |
 | `GET /api/projects` | Accepts optional `?workspaceId=` query param; filters results to that workspace when present |
-| `GET /api/projects/:id` | No new behavior; `workspaceId` already on entity — surfaces via existing response |
+| `GET /api/projects/:id` | No new behavior; `workspaceId` already on entity ??surfaces via existing response |
 
 **Non-goals for this slice:**
 
@@ -20510,8 +20510,8 @@ Make backend project create/list/read flows workspace-aware by allowing project 
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/WS-04-CHECKPOINT.md`
-**Nature:** FRONTEND / PLUMBING — workspace types and API helpers
-**Source:** WS v1 rollout — fourth slice; follows WS-03 project workspace-awareness
+**Nature:** FRONTEND / PLUMBING ??workspace types and API helpers
+**Source:** WS v1 rollout ??fourth slice; follows WS-03 project workspace-awareness
 
 **Objective:**
 Add the minimal frontend type definitions and API helper functions required to consume v1 personal workspaces and workspace-aware project responses. Stop before any visible workspace selector or management UI.
@@ -20548,7 +20548,7 @@ Add the minimal frontend type definitions and API helper functions required to c
 - Relevant frontend typecheck/tests pass
 
 **Risks / invariants:**
-- Keep to frontend plumbing only — no visible workspace UX
+- Keep to frontend plumbing only ??no visible workspace UX
 - Do not change current frontend runtime behavior beyond additive types/helpers
 - Keep v1 workspace model personal-only
 - Preserve compatibility with current backend response shapes
@@ -20567,8 +20567,8 @@ Add the minimal frontend type definitions and API helper functions required to c
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
-**Nature:** FRONTEND / UX — workspace selector and project list filtering
-**Source:** WS v1 rollout — fifth slice; follows WS-04 frontend plumbing
+**Nature:** FRONTEND / UX ??workspace selector and project list filtering
+**Source:** WS v1 rollout ??fifth slice; follows WS-04 frontend plumbing
 **Checkpoint:** `docs/WS-05-CHECKPOINT.md`
 
 **Objective:**
@@ -20609,7 +20609,7 @@ Add the first visible workspace UX by loading the user's workspaces, showing a w
 - Relevant frontend typecheck/tests pass
 
 **Risks / invariants:**
-- Keep to selector/filter UX only — no workspace CRUD management UI
+- Keep to selector/filter UX only ??no workspace CRUD management UI
 - Preserve existing project-open/session/history behavior
 - Keep workspace model personal-only in v1
 - Preserve compatibility with current backend response shapes
@@ -20628,8 +20628,8 @@ Add the first visible workspace UX by loading the user's workspaces, showing a w
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
-**Nature:** FRONTEND / UX — workspace management UI
-**Source:** WS v1 rollout — sixth slice; follows WS-05 selector/filter surface
+**Nature:** FRONTEND / UX ??workspace management UI
+**Source:** WS v1 rollout ??sixth slice; follows WS-05 selector/filter surface
 **Checkpoint:** `docs/WS-06-CHECKPOINT.md`
 
 **Objective:**
@@ -20692,8 +20692,8 @@ Add the minimal user-facing UI for creating, renaming, and deleting personal wor
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/WS-07-CHECKPOINT.md`
-**Nature:** BACKEND + FRONTEND — move project workspace assignment
-**Source:** WS v1 rollout — seventh slice; follows WS-06 workspace management UI
+**Nature:** BACKEND + FRONTEND ??move project workspace assignment
+**Source:** WS v1 rollout ??seventh slice; follows WS-06 workspace management UI
 
 **Objective:**
 Allow a user to move an existing owned project from its current workspace to another owned workspace, with strict ownership validation and safe frontend state refresh. The move changes only the project.workspaceId relationship and does not affect sessions, files, snapshots, history, or saved versions.
@@ -20749,14 +20749,14 @@ Allow a user to move an existing owned project from its current workspace to ano
 
 ---
 
-## AI-CTX — AI Workspace Context Awareness
+## AI-CTX ??AI Workspace Context Awareness
 
 **Family status:** AI-CTX-01 COMPLETE and LOCKED
 
 **Current stage:** AI-CTX-01 (COMPLETE and LOCKED)
 
 **Ordered slices (registered so far):**
-1. AI-CTX-01 — Inject Workspace File Tree And Selected File Path Into AI Prompts (COMPLETE and LOCKED)
+1. AI-CTX-01 ??Inject Workspace File Tree And Selected File Path Into AI Prompts (COMPLETE and LOCKED)
 
 ---
 
@@ -20767,8 +20767,8 @@ Allow a user to move an existing owned project from its current workspace to ano
 **Family status:** COMPLETE and LOCKED
 **Priority:** High
 **Status:** COMPLETE and LOCKED
-**Nature:** CROSS-LAYER CONTEXT PLUMBING — frontend → api-gateway → queue → ai-service worker
-**Source:** Inspection session (Apr 2026) — AI answers "list files" like a generic chatbot because the execution path carries no workspace context
+**Nature:** CROSS-LAYER CONTEXT PLUMBING ??frontend ??api-gateway ??queue ??ai-service worker
+**Source:** Inspection session (Apr 2026) ??AI answers "list files" like a generic chatbot because the execution path carries no workspace context
 
 **Objective:**
 Make the active AI execution path aware of the current workspace file list and selected file path so non-mutating questions like "list all files" can be answered correctly without adding destructive actions, schema changes, new endpoints, or broad AI tooling changes.
@@ -20817,7 +20817,7 @@ Make the active AI execution path aware of the current workspace file list and s
 - No introduced lint errors
 
 **Risks / invariants:**
-- Keep context compact — do not include file contents (token/cost blowup risk)
+- Keep context compact ??do not include file contents (token/cost blowup risk)
 - Preserve current file-action output contract; context is prepended, not mixed in
 - Keep `workspaceContext` optional and backward-compatible at every layer
 - Do not introduce container-manager dependency into ai-service worker
@@ -20829,4 +20829,104 @@ Make the active AI execution path aware of the current workspace file list and s
 **Reference:** See TASKS.md -> AI-CTX-01 for active-task summary.
 
 ---
+
+## AI-WS ??AI Workspace Capability
+
+**Family status:** ACTIVE ??AI-WS-01 COMPLETE and LOCKED
+
+**Current stage:** AI-WS-01 (COMPLETE and LOCKED)
+
+**Ordered slices (registered so far):**
+1. AI-WS-01 ??Selected File Content Context Injection (COMPLETE and LOCKED)
+
+---
+
+### AI-WS-01: Selected File Content Context Injection
+
+**Task ID:** AI-WS-01
+**Family:** AI-WS (AI Workspace Capability)
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** CROSS-LAYER CONTEXT PLUMBING ??frontend ??api-gateway ??queue ??ai-service worker
+**Source:** Planning session (Apr 2026) ??AI cannot explain or reason about the selected/open file because its content is never included in the execution context
+**Depends on:** AI-CTX-01 (COMPLETE and LOCKED)
+
+**Objective:**
+Extend the existing `workspaceContext` plumbing introduced in AI-CTX-01 to include the content of the currently selected/open file, capped and safely filtered, so the AI can answer questions about the selected file without adding named file read, workspace search, file delete, new endpoints, or broad AI tooling.
+
+**Bounded scope:**
+- Source selected file content from existing frontend `selectedFileContent` state
+- Include content only when `selectedFilePath` is present and `selectedFileContent` is available
+- Cap content at approximately 8,000 characters; truncate safely with a clear marker if exceeded
+- Exclude content for known-sensitive and unsuitable file types:
+  - `.env` and any file matching `*.env`, `.env.*`, `*.env.*`
+  - files with secret/credential-like names (`.secret`, `*.key`, `*.pem`, `*.cert`, etc.)
+  - binary/asset files (images, fonts, compiled outputs)
+  - package lock files (`package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, etc.)
+  - generated/minified files detectable by path pattern
+- Pass `selectedFileContent` as an additional optional field through:
+  - frontend execute request body (`page.tsx`)
+  - api-gateway AI execution request type/controller/queue forwarding
+  - queue job data type (`AiExecutionJob` / `WorkspaceContext`)
+  - ai-service worker prompt builder (`worker.processor.ts` ??`buildWorkspaceContextBlock`)
+- Worker includes selected file content in the context block under the existing context section
+- If content is absent or excluded, existing behavior is unchanged (backward-compatible)
+- Do not add named file read support
+- Do not add workspace search support
+- Do not add AI file delete support
+- Do not add new API endpoints or schema changes
+- Do not change file-action schema or parsing
+
+**Allowed files/surfaces:**
+- `frontend/app/[locale]/app/page.tsx`
+- `services/api-gateway/src/clients/ai-service-http.client.ts`
+- `services/api-gateway/src/ai/ai-execution.controller.ts` (if forwarding changes needed)
+- `services/ai-service/src/queue/job.types.ts`
+- `services/ai-service/src/worker/worker.processor.ts`
+- directly relevant tests
+
+**Non-goals:**
+- No AI file delete support
+- No named file read support
+- No workspace search support
+- No full-project content prompt stuffing
+- No arbitrary file read from backend/container-manager
+- No selected multiple-file content injection
+- No new backend or container-manager endpoints
+- No schema or migration changes
+- No new tool system
+- No broad AI agent refactor
+- No UX/UI polish
+- No unrelated workspace rollout work
+
+**Acceptance checks:**
+- When a file is selected/open and content is eligible, AI prompt context includes capped selected file content
+- AI can answer questions about the selected file (e.g. "explain this file", "what are these buttons for?")
+- Existing file-path list and selected-file-path context from AI-CTX-01 still work unchanged
+- Large selected file content is truncated with a clear marker
+- Sensitive/unsuitable files (`.env`, lock files, binary assets) are not injected
+- Existing AI execute calls still work when selected file content is absent
+- Existing file-action create/write/update behavior remains unchanged
+- Typecheck/build passes for all touched layers
+- Relevant focused tests pass
+- No introduced lint errors
+
+**Risks / invariants:**
+- Content injection is selected-file-only; never inject all project files
+- Cap at ~8,000 characters to avoid token/cost blowup
+- Never inject obvious secrets/env/credential files
+- Do not inject binary/assets or lock files
+- Keep `workspaceContext` optional and backward-compatible at every layer
+- Preserve current file-action output contract; context block is prepended, not mixed in
+- Do not introduce container-manager dependency into ai-service worker
+- Preserve existing provider selection and queue execution semantics
+- No destructive action support in this slice
+
+**Dependencies:** AI-CTX-01 (COMPLETE and LOCKED)
+
+**Reference:** See TASKS.md -> AI-WS-01 for active-task summary.
+
+---
+
 

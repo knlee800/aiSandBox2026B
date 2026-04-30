@@ -11055,3 +11055,93 @@ Make the active AI execution path aware of the current workspace file list and s
 
 ---
 
+## AI-WS — AI Workspace Capability
+
+**Family status:** ACTIVE — AI-WS-01 COMPLETE and LOCKED
+
+**Current stage:** AI-WS-01 (COMPLETE and LOCKED)
+
+---
+
+#### AI-WS-01: Selected File Content Context Injection
+
+**Status:** COMPLETE and LOCKED
+**Nature:** CROSS-LAYER CONTEXT PLUMBING — frontend → api-gateway → queue → ai-service worker
+**Source:** Planning session (Apr 2026) — AI cannot explain or reason about the selected/open file because its content is never included in the execution context
+**Depends on:** AI-CTX-01 (COMPLETE and LOCKED)
+
+**Objective:**
+Extend the existing `workspaceContext` plumbing introduced in AI-CTX-01 to include the content of the currently selected/open file, capped and safely filtered, so the AI can answer questions about the selected file without adding named file read, workspace search, file delete, new endpoints, or broad AI tooling.
+
+**Bounded scope:**
+- Source selected file content from existing frontend `selectedFileContent` state
+- Include content only when `selectedFilePath` is present and `selectedFileContent` is available
+- Cap content at approximately 8,000 characters; truncate safely with a clear marker if exceeded
+- Exclude content for known-sensitive and unsuitable file types:
+  - `.env` and any file matching `*.env`, `.env.*`, `*.env.*`
+  - files with secret/credential-like names (`.secret`, `*.key`, `*.pem`, `*.cert`, etc.)
+  - binary/asset files (images, fonts, compiled outputs)
+  - package lock files (`package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, etc.)
+  - generated/minified files detectable by path pattern
+- Pass `selectedFileContent` as an additional optional field through:
+  - frontend execute request body (`page.tsx`)
+  - api-gateway AI execution request type/controller/queue forwarding
+  - queue job data type (`AiExecutionJob` / `WorkspaceContext`)
+  - ai-service worker prompt builder (`worker.processor.ts` — `buildWorkspaceContextBlock`)
+- Worker includes selected file content in the context block under the existing context section
+- If content is absent or excluded, existing behavior is unchanged (backward-compatible)
+- Do not add named file read support
+- Do not add workspace search support
+- Do not add AI file delete support
+- Do not add new API endpoints or schema changes
+- Do not change file-action schema or parsing
+
+**Allowed files/surfaces:**
+- `frontend/app/[locale]/app/page.tsx`
+- `services/api-gateway/src/clients/ai-service-http.client.ts`
+- `services/api-gateway/src/ai/ai-execution.controller.ts` (if forwarding changes needed)
+- `services/ai-service/src/queue/job.types.ts`
+- `services/ai-service/src/worker/worker.processor.ts`
+- directly relevant tests
+
+**Non-goals:**
+- No AI file delete support
+- No named file read support
+- No workspace search support
+- No full-project content prompt stuffing
+- No arbitrary file read from backend/container-manager
+- No selected multiple-file content injection
+- No new backend or container-manager endpoints
+- No schema or migration changes
+- No new tool system
+- No broad AI agent refactor
+- No UX/UI polish
+- No unrelated workspace rollout work
+
+**Acceptance checks:**
+- When a file is selected/open and content is eligible, AI prompt context includes capped selected file content
+- AI can answer questions about the selected file (e.g. "explain this file", "what are these buttons for?")
+- Existing file-path list and selected-file-path context from AI-CTX-01 still work unchanged
+- Large selected file content is truncated with a clear marker
+- Sensitive/unsuitable files (`.env`, lock files, binary assets) are not injected
+- Existing AI execute calls still work when selected file content is absent
+- Existing file-action create/write/update behavior remains unchanged
+- Typecheck/build passes for all touched layers
+- Relevant focused tests pass
+- No introduced lint errors
+
+**Risks / invariants:**
+- Content injection is selected-file-only; never inject all project files
+- Cap at ~8,000 characters to avoid token/cost blowup
+- Never inject obvious secrets/env/credential files
+- Do not inject binary/assets or lock files
+- Keep `workspaceContext` optional and backward-compatible at every layer
+- Preserve current file-action output contract; context block is prepended, not mixed in
+- Do not introduce container-manager dependency into ai-service worker
+- Preserve existing provider selection and queue execution semantics
+- No destructive action support in this slice
+
+**Dependencies:** AI-CTX-01 (COMPLETE and LOCKED)
+
+---
+

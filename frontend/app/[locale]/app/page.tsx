@@ -135,6 +135,7 @@ const PROJECT_OPEN_FILE_REFRESH_MAX_ATTEMPTS = 6;
 const AI_AUTO_CHECKPOINT_DESCRIPTION = 'AI: applied workspace file actions';
 const DEFAULT_CHAT_MODEL_OPTION = 'xai:grok-3';
 const WORKSPACE_CONTEXT_MAX_FILE_PATHS = 200;
+const WORKSPACE_CONTEXT_MAX_SELECTED_FILE_CHARS = 8000;
 const CHAT_MODEL_OPTIONS = [
   { value: 'xai:grok-3', provider: 'xai', model: 'grok-3', label: 'xAI - grok-3' },
   {
@@ -161,6 +162,64 @@ const CHAT_MODEL_OPTIONS = [
 interface WorkspacePromptContext {
   filePaths: string[];
   selectedFilePath?: string;
+  selectedFileContent?: string;
+}
+
+function isSensitiveFilePath(path: string): boolean {
+  const normalizedPath = path.trim().toLowerCase();
+  if (!normalizedPath) {
+    return false;
+  }
+
+  const pathSegments = normalizedPath.split('/');
+  const fileName = pathSegments[pathSegments.length - 1] ?? normalizedPath;
+
+  if (
+    fileName === '.env' ||
+    fileName.startsWith('.env.') ||
+    fileName.endsWith('.env') ||
+    fileName.includes('.env.') ||
+    fileName.endsWith('.key') ||
+    fileName.endsWith('.pem') ||
+    fileName.endsWith('.cert') ||
+    fileName.endsWith('.secret') ||
+    fileName.endsWith('.credentials') ||
+    fileName === 'package-lock.json' ||
+    fileName === 'yarn.lock' ||
+    fileName === 'pnpm-lock.yaml' ||
+    fileName.endsWith('.lock') ||
+    fileName.endsWith('.png') ||
+    fileName.endsWith('.jpg') ||
+    fileName.endsWith('.jpeg') ||
+    fileName.endsWith('.gif') ||
+    fileName.endsWith('.ico') ||
+    fileName.endsWith('.webp') ||
+    fileName.endsWith('.svg') ||
+    fileName.endsWith('.woff') ||
+    fileName.endsWith('.woff2') ||
+    fileName.endsWith('.ttf') ||
+    fileName.endsWith('.eot') ||
+    fileName.endsWith('.mp4') ||
+    fileName.endsWith('.mp3') ||
+    fileName.endsWith('.zip') ||
+    fileName.endsWith('.gz') ||
+    fileName.endsWith('.tar') ||
+    fileName.endsWith('.bin') ||
+    fileName.endsWith('.exe') ||
+    fileName.endsWith('.dll') ||
+    fileName.endsWith('.so') ||
+    fileName.endsWith('.min.js') ||
+    fileName.endsWith('.min.css') ||
+    fileName.endsWith('.map')
+  ) {
+    return true;
+  }
+
+  return (
+    normalizedPath.includes('/dist/') ||
+    normalizedPath.includes('/build/') ||
+    normalizedPath.includes('/coverage/')
+  );
 }
 
 function collectWorkspacePromptFilePaths(
@@ -185,6 +244,7 @@ function collectWorkspacePromptFilePaths(
 function buildWorkspacePromptContext(
   workspaceFileTree: WorkspaceFileNode[],
   selectedFilePath: string | null,
+  selectedFileContent?: string,
 ): WorkspacePromptContext | undefined {
   const filePathSet = new Set<string>();
   collectWorkspacePromptFilePaths(workspaceFileTree, filePathSet);
@@ -197,19 +257,35 @@ function buildWorkspacePromptContext(
     typeof selectedFilePath === 'string' && selectedFilePath.trim().length > 0
       ? selectedFilePath.trim()
       : undefined;
+  const normalizedSelectedFileContent =
+    normalizedSelectedFilePath &&
+    typeof selectedFileContent === 'string' &&
+    selectedFileContent.trim().length > 0 &&
+    !isSensitiveFilePath(normalizedSelectedFilePath)
+      ? selectedFileContent.trim().length > WORKSPACE_CONTEXT_MAX_SELECTED_FILE_CHARS
+        ? `${selectedFileContent
+            .trim()
+            .slice(0, WORKSPACE_CONTEXT_MAX_SELECTED_FILE_CHARS)}\n[...truncated at 8000 characters]`
+        : selectedFileContent.trim()
+      : undefined;
 
-  if (filePaths.length === 0 && !normalizedSelectedFilePath) {
+  if (
+    filePaths.length === 0 &&
+    !normalizedSelectedFilePath &&
+    !normalizedSelectedFileContent
+  ) {
     return undefined;
   }
 
-  if (normalizedSelectedFilePath) {
-    return {
-      filePaths,
-      selectedFilePath: normalizedSelectedFilePath,
-    };
-  }
-
-  return { filePaths };
+  return {
+    filePaths,
+    ...(normalizedSelectedFilePath
+      ? { selectedFilePath: normalizedSelectedFilePath }
+      : {}),
+    ...(normalizedSelectedFileContent
+      ? { selectedFileContent: normalizedSelectedFileContent }
+      : {}),
+  };
 }
 
 interface WorkspaceChatExecutionResponse {
@@ -3459,6 +3535,7 @@ export default function AppPage() {
       const workspaceContext = buildWorkspacePromptContext(
         workspaceFileTree,
         selectedFilePath,
+        selectedFileContent,
       );
 
       const executeResponse = await fetch('/api/ai/execute', {
@@ -3749,6 +3826,7 @@ export default function AppPage() {
       const workspaceContext = buildWorkspacePromptContext(
         workspaceFileTree,
         selectedFilePath,
+        selectedFileContent,
       );
       const response = await fetch('/api/ai/execute', {
         method: 'POST',

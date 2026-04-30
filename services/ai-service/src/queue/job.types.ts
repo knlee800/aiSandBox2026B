@@ -1,6 +1,7 @@
 export interface WorkspaceContext {
   filePaths: string[];
   selectedFilePath?: string;
+  selectedFileContent?: string;
 }
 
 export interface AiExecutionJob {
