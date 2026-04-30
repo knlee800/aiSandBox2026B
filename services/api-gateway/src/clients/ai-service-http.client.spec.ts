@@ -97,6 +97,8 @@ describe('AIServiceHttpClient (Phase 18A)', () => {
           filePaths: ['README.md', 'src/app.ts'],
           selectedFilePath: 'src/app.ts',
           selectedFileContent: 'export const app = true;',
+          projectName: 'Sandbox Project',
+          workspaceName: 'Personal',
         },
       };
 

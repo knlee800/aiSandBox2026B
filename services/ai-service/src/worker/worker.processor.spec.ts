@@ -17,15 +17,23 @@ List files`,
     );
   });
 
-  it('prepends selected file content when workspace context is present', () => {
+  it('prepends project/workspace metadata and selected file content when workspace context is present', () => {
     expect(
       buildExecutionPromptWithFileActionContract('List files', {
         filePaths: ['README.md', 'src/app.ts'],
+        projectName: 'Sandbox Project',
+        workspaceName: 'Personal',
         selectedFilePath: 'src/app.ts',
         selectedFileContent: 'export const app = true;',
       }),
     ).toBe(
-      `Current workspace files:
+      `Current project:
+Sandbox Project
+
+Current workspace:
+Personal
+
+Current workspace files:
 - README.md
 - src/app.ts
 

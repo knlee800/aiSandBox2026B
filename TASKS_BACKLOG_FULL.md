@@ -20832,14 +20832,15 @@ Make the active AI execution path aware of the current workspace file list and s
 
 ## AI-WS ??AI Workspace Capability
 
-**Family status:** ACTIVE — AI-WS-03 COMPLETE and LOCKED
+**Family status:** ACTIVE — AI-WS-04 COMPLETE and LOCKED
 
-**Current stage:** AI-WS-04 (NOT YET REGISTERED)
+**Current stage:** AI-WS-05 (NOT YET REGISTERED)
 
 **Ordered slices (registered so far):**
 1. AI-WS-01 — Selected File Content Context Injection (COMPLETE and LOCKED)
 2. AI-WS-02 — AI File Action Safety And Confirmation Foundation (COMPLETE and LOCKED)
 3. AI-WS-03 — AI File Delete Support (COMPLETE and LOCKED)
+4. AI-WS-04 — Project And Workspace Metadata Context (COMPLETE and LOCKED)
 
 ---
 
@@ -21084,6 +21085,80 @@ Add support for AI-proposed file delete actions through the active file-actions 
 **Dependencies:** AI-WS-02 (COMPLETE and LOCKED)
 
 **Reference:** See TASKS.md -> AI-WS-03 for active-task summary.
+
+---
+
+### AI-WS-04: Project And Workspace Metadata Context
+
+**Task ID:** AI-WS-04
+**Family:** AI-WS (AI Workspace Capability)
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** CROSS-LAYER CONTEXT PLUMBING — extend `workspaceContext` with lightweight project/workspace metadata for better prompt grounding
+**Source:** Planning session (Apr 2026) — after file and selected-file awareness are in place, AI should understand the current workspace/project it is operating in
+**Depends on:** AI-WS-03 (COMPLETE and LOCKED)
+
+**Objective:**
+Extend the existing AI `workspaceContext` plumbing to include lightweight project/workspace metadata so AI responses can reference the current workspace/project context accurately, without adding file reads, search, new endpoints, schema changes, or broader AI tooling.
+
+**Bounded scope:**
+- Cross-layer context plumbing only
+- Include current project name if available
+- Include current workspace name if available
+- Omit project id, workspace id, session id, and session status to keep context concise
+- Preserve existing file path list, selected file path, and selected file content context
+- Worker prepends concise metadata inside the existing workspace context block
+- Context remains optional and backward-compatible
+- If metadata is absent, existing behavior remains unchanged
+- No new endpoints
+- No schema/database changes
+- No named file read
+- No workspace search
+- No AI file delete changes
+- No file-action schema/parser changes
+
+**Allowed files/surfaces:**
+- `frontend/app/[locale]/app/page.tsx`
+- api-gateway AI execution request type/controller/queue forwarding surfaces if needed
+- ai-service queue job type
+- `services/ai-service/src/worker/worker.processor.ts`
+- directly relevant tests
+
+**Non-goals:**
+- No named file read support
+- No workspace search support
+- No full-project content stuffing
+- No new backend/container-manager endpoint
+- No schema or migration
+- No new tool system
+- No broad AI agent refactor
+- No UX/UI polish
+- No unrelated workspace rollout work
+- No D1/PROJ-03 work
+
+**Acceptance checks:**
+- AI prompt context includes project/workspace names when available
+- Existing file path list, selected file path, and selected file content context still work
+- Existing AI execute calls still work if metadata is absent
+- Existing file-action create/write/update/delete behavior remains unchanged
+- Context stays compact and avoids leaking auth/user/secrets
+- Relevant frontend/api-gateway/ai-service typecheck/build/tests pass
+- No introduced lint errors
+
+**Risks / invariants:**
+- Keep metadata lightweight
+- Do not include auth tokens, user email, user id, secrets, or billing data
+- Names only; no ids/session metadata
+- Preserve optional/backward-compatible `workspaceContext` behavior
+- Do not change file-action schema/parser/delete support
+- Do not introduce container-manager dependency into ai-service worker
+- Preserve provider selection and queue execution semantics
+- No destructive action changes in this slice
+
+**Dependencies:** AI-WS-03 (COMPLETE and LOCKED)
+
+**Reference:** See TASKS.md -> AI-WS-04 for active-task summary.
 
 ---
 

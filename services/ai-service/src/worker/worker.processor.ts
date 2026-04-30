@@ -84,16 +84,34 @@ function buildWorkspaceContextBlock(
     workspaceContext.selectedFileContent.trim().length > 0
       ? workspaceContext.selectedFileContent.trim()
       : null;
+  const normalizedProjectName =
+    typeof workspaceContext.projectName === 'string' &&
+    workspaceContext.projectName.trim().length > 0
+      ? workspaceContext.projectName.trim()
+      : null;
+  const normalizedWorkspaceName =
+    typeof workspaceContext.workspaceName === 'string' &&
+    workspaceContext.workspaceName.trim().length > 0
+      ? workspaceContext.workspaceName.trim()
+      : null;
 
   if (
     normalizedFilePaths.length === 0 &&
     !normalizedSelectedFilePath &&
-    !normalizedSelectedFileContent
+    !normalizedSelectedFileContent &&
+    !normalizedProjectName &&
+    !normalizedWorkspaceName
   ) {
     return null;
   }
 
   const sections: string[] = [];
+  if (normalizedProjectName) {
+    sections.push(`Current project:\n${normalizedProjectName}`);
+  }
+  if (normalizedWorkspaceName) {
+    sections.push(`Current workspace:\n${normalizedWorkspaceName}`);
+  }
   if (normalizedFilePaths.length > 0) {
     sections.push(
       ['Current workspace files:', ...normalizedFilePaths.map((path) => `- ${path}`)].join('\n'),

@@ -165,6 +165,8 @@ interface WorkspacePromptContext {
   filePaths: string[];
   selectedFilePath?: string;
   selectedFileContent?: string;
+  projectName?: string;
+  workspaceName?: string;
 }
 
 function isSensitiveFilePath(path: string): boolean {
@@ -247,6 +249,8 @@ function buildWorkspacePromptContext(
   workspaceFileTree: WorkspaceFileNode[],
   selectedFilePath: string | null,
   selectedFileContent?: string,
+  projectName?: string | null,
+  workspaceName?: string | null,
 ): WorkspacePromptContext | undefined {
   const filePathSet = new Set<string>();
   collectWorkspacePromptFilePaths(workspaceFileTree, filePathSet);
@@ -270,17 +274,29 @@ function buildWorkspacePromptContext(
             .slice(0, WORKSPACE_CONTEXT_MAX_SELECTED_FILE_CHARS)}\n[...truncated at 8000 characters]`
         : selectedFileContent.trim()
       : undefined;
+  const normalizedProjectName =
+    typeof projectName === 'string' && projectName.trim().length > 0
+      ? projectName.trim()
+      : undefined;
+  const normalizedWorkspaceName =
+    typeof workspaceName === 'string' && workspaceName.trim().length > 0
+      ? workspaceName.trim()
+      : undefined;
 
   if (
     filePaths.length === 0 &&
     !normalizedSelectedFilePath &&
-    !normalizedSelectedFileContent
+    !normalizedSelectedFileContent &&
+    !normalizedProjectName &&
+    !normalizedWorkspaceName
   ) {
     return undefined;
   }
 
   return {
     filePaths,
+    ...(normalizedProjectName ? { projectName: normalizedProjectName } : {}),
+    ...(normalizedWorkspaceName ? { workspaceName: normalizedWorkspaceName } : {}),
     ...(normalizedSelectedFilePath
       ? { selectedFilePath: normalizedSelectedFilePath }
       : {}),
@@ -3543,10 +3559,20 @@ export default function AppPage() {
               '',
               `Original user request: ${input.prompt}`,
             ].join('\n');
+      const selectedProject =
+        selectedProjectId
+          ? workspaceProjects.find((project) => project.id === selectedProjectId) ?? null
+          : null;
+      const selectedWorkspace =
+        selectedWorkspaceId
+          ? workspaces.find((workspace) => workspace.id === selectedWorkspaceId) ?? null
+          : null;
       const workspaceContext = buildWorkspacePromptContext(
         workspaceFileTree,
         selectedFilePath,
         selectedFileContent,
+        selectedProject?.name,
+        selectedWorkspace?.name,
       );
 
       const executeResponse = await fetch('/api/ai/execute', {
@@ -3834,10 +3860,20 @@ export default function AppPage() {
     }
 
     try {
+      const selectedProject =
+        selectedProjectId
+          ? workspaceProjects.find((project) => project.id === selectedProjectId) ?? null
+          : null;
+      const selectedWorkspace =
+        selectedWorkspaceId
+          ? workspaces.find((workspace) => workspace.id === selectedWorkspaceId) ?? null
+          : null;
       const workspaceContext = buildWorkspacePromptContext(
         workspaceFileTree,
         selectedFilePath,
         selectedFileContent,
+        selectedProject?.name,
+        selectedWorkspace?.name,
       );
       const response = await fetch('/api/ai/execute', {
         method: 'POST',
