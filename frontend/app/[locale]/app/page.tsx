@@ -46,9 +46,11 @@ import {
   findFirstFilePath,
   loadWorkspaceFileTree,
   readWorkspaceFile,
+  searchWorkspaceFiles,
   writeWorkspaceFile,
   type WorkspaceFileNode,
   type WorkspaceFileSaveState,
+  type WorkspaceSearchResults,
   type WorkspaceFileSurfaceState,
 } from '@/components/workspace/workspace-file-navigation.logic';
 import {
@@ -139,6 +141,7 @@ const DEFAULT_CHAT_MODEL_OPTION = 'xai:grok-3';
 const WORKSPACE_CONTEXT_MAX_FILE_PATHS = 200;
 const WORKSPACE_CONTEXT_MAX_SELECTED_FILE_CHARS = 8000;
 const WORKSPACE_CONTEXT_MAX_NAMED_FILES = 3;
+const WORKSPACE_CONTEXT_MAX_SEARCH_QUERY_CHARS = 120;
 const CHAT_MODEL_OPTIONS = [
   { value: 'xai:grok-3', provider: 'xai', model: 'grok-3', label: 'xAI - grok-3' },
   {
@@ -172,6 +175,7 @@ interface WorkspacePromptContext {
   selectedFilePath?: string;
   selectedFileContent?: string;
   namedFileContents?: WorkspacePromptNamedFileContent[];
+  searchResults?: WorkspaceSearchResults;
   projectName?: string;
   workspaceName?: string;
 }
@@ -267,6 +271,119 @@ function normalizeWorkspacePromptFileContent(
   return trimmedContent.length > WORKSPACE_CONTEXT_MAX_SELECTED_FILE_CHARS
     ? `${trimmedContent.slice(0, WORKSPACE_CONTEXT_MAX_SELECTED_FILE_CHARS)}\n[...truncated at 8000 characters]`
     : trimmedContent;
+}
+
+function normalizeWorkspaceSearchQueryCandidate(
+  candidate: string | null | undefined,
+): string | undefined {
+  if (typeof candidate !== 'string' || /[\u0000\r\n]/.test(candidate)) {
+    return undefined;
+  }
+
+  const normalizedCandidate = candidate
+    .trim()
+    .replace(/^["`]+|["`]+$/g, '')
+    .replace(/\s+/g, ' ')
+    .replace(/[?!.,;:]+$/g, '')
+    .trim();
+
+  if (!normalizedCandidate || normalizedCandidate.length > WORKSPACE_CONTEXT_MAX_SEARCH_QUERY_CHARS) {
+    return undefined;
+  }
+
+  if (normalizedCandidate.split(/\s+/).length > 8) {
+    return undefined;
+  }
+
+  const normalizedLowerCandidate = normalizedCandidate.toLowerCase();
+  if (
+    normalizedLowerCandidate === 'it' ||
+    normalizedLowerCandidate === 'this' ||
+    normalizedLowerCandidate === 'that' ||
+    normalizedLowerCandidate === 'something'
+  ) {
+    return undefined;
+  }
+
+  return normalizedCandidate;
+}
+
+function extractQuotedWorkspaceSearchCandidate(prompt: string): string | undefined {
+  const doubleQuotedMatch = prompt.match(/"([^"\r\n]{2,120})"/);
+  if (doubleQuotedMatch?.[1]) {
+    return normalizeWorkspaceSearchQueryCandidate(doubleQuotedMatch[1]);
+  }
+
+  const backtickMatch = prompt.match(/`([^`\r\n]{2,120})`/);
+  if (backtickMatch?.[1]) {
+    return normalizeWorkspaceSearchQueryCandidate(backtickMatch[1]);
+  }
+
+  return undefined;
+}
+
+function stripWorkspaceSearchSuffixes(candidate: string): string {
+  return candidate
+    .replace(
+      /\s+(?:implemented|defined|declared|used|referenced|mentioned|found)\s*(?:in|across)?\s*(?:this|the)?\s*(?:workspace|project|repo|repository)?$/i,
+      '',
+    )
+    .replace(
+      /\s+(?:in|across)\s+(?:this|the)?\s*(?:workspace|project|repo|repository).*$/i,
+      '',
+    )
+    .replace(/\s+(?:please|for me)$/i, '')
+    .trim();
+}
+
+function findExplicitPromptSearchQuery(prompt: string): string | undefined {
+  const normalizedPrompt = prompt.trim();
+  if (!normalizedPrompt) {
+    return undefined;
+  }
+
+  const lowerPrompt = normalizedPrompt.toLowerCase();
+  const hasExplicitSearchIntent =
+    /\bsearch\b/.test(lowerPrompt) ||
+    /\bfind\b/.test(lowerPrompt) ||
+    /\blocate\b/.test(lowerPrompt) ||
+    /\bwhere\s+(?:is|are)\b/.test(lowerPrompt) ||
+    /\bwhich\s+files?\s+(?:mention|mentions|contain|contains)\b/.test(lowerPrompt);
+
+  if (!hasExplicitSearchIntent) {
+    return undefined;
+  }
+
+  const quotedCandidate = extractQuotedWorkspaceSearchCandidate(normalizedPrompt);
+  if (quotedCandidate) {
+    return quotedCandidate;
+  }
+
+  const searchPatterns = [
+    /\bwhich\s+files?\s+(?:mention|mentions|contain|contains)\s+(.+?)(?:\?|$)/i,
+    /\bwhich\s+file\s+contains\s+(.+?)(?:\?|$)/i,
+    /\bsearch\s+for\s+(.+?)(?:\?|$)/i,
+    /\bfind\s+(.+?)(?:\?|$)/i,
+    /\blocate\s+(.+?)(?:\?|$)/i,
+    /\bwhere\s+(?:is|are)\s+(.+?)(?:\?|$)/i,
+  ];
+
+  for (const pattern of searchPatterns) {
+    const matched = normalizedPrompt.match(pattern);
+    const rawCandidate = matched?.[1];
+    if (!rawCandidate) {
+      continue;
+    }
+
+    const normalizedCandidate = normalizeWorkspaceSearchQueryCandidate(
+      stripWorkspaceSearchSuffixes(rawCandidate),
+    );
+    if (normalizedCandidate) {
+      return normalizedCandidate;
+    }
+  }
+
+  return undefined;
 }
 
 function getWorkspacePromptReferenceMatchIndex(prompt: string, reference: string): number {
@@ -429,6 +546,32 @@ async function loadNamedWorkspacePromptFileContents(args: {
   );
 }
 
+async function loadWorkspacePromptSearchResults(args: {
+  prompt: string;
+  token: string;
+  sessionId: string | null;
+}): Promise<WorkspaceSearchResults | undefined> {
+  if (!args.sessionId) {
+    return undefined;
+  }
+
+  const searchQuery = findExplicitPromptSearchQuery(args.prompt);
+  if (!searchQuery) {
+    return undefined;
+  }
+
+  try {
+    return await searchWorkspaceFiles({
+      token: args.token,
+      sessionId: args.sessionId,
+      query: searchQuery,
+    });
+  } catch (error) {
+    console.warn('Skipping workspace content search for AI context:', searchQuery, error);
+    return undefined;
+  }
+}
+
 async function buildWorkspacePromptContext(args: {
   prompt: string;
   token: string;
@@ -464,6 +607,11 @@ async function buildWorkspacePromptContext(args: {
     sessionId: args.sessionId,
     workspaceFilePaths: allWorkspaceFilePaths,
   });
+  const searchResults = await loadWorkspacePromptSearchResults({
+    prompt: args.prompt,
+    token: args.token,
+    sessionId: args.sessionId,
+  });
   const normalizedProjectName =
     typeof args.projectName === 'string' && args.projectName.trim().length > 0
       ? args.projectName.trim()
@@ -478,6 +626,7 @@ async function buildWorkspacePromptContext(args: {
     !normalizedSelectedFilePath &&
     !normalizedSelectedFileContent &&
     namedFileContents.length === 0 &&
+    !searchResults &&
     !normalizedProjectName &&
     !normalizedWorkspaceName
   ) {
@@ -495,6 +644,7 @@ async function buildWorkspacePromptContext(args: {
       ? { selectedFileContent: normalizedSelectedFileContent }
       : {}),
     ...(namedFileContents.length > 0 ? { namedFileContents } : {}),
+    ...(searchResults ? { searchResults } : {}),
   };
 }
 

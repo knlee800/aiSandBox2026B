@@ -20,6 +20,18 @@ export interface WorkspaceReadFileResponse {
   content: string;
 }
 
+export interface WorkspaceSearchMatch {
+  path: string;
+  line: number;
+  preview: string;
+}
+
+export interface WorkspaceSearchResults {
+  query: string;
+  results: WorkspaceSearchMatch[];
+  truncated: boolean;
+}
+
 export type WorkspaceFileSaveState = 'clean' | 'dirty' | 'saving' | 'saved' | 'save-error';
 
 interface SessionFileRequestArgs {
@@ -110,6 +122,28 @@ export async function deleteWorkspaceFile(
   if (!response.ok) {
     throw new Error(`File delete failed (${response.status})`);
   }
+}
+
+export async function searchWorkspaceFiles(
+  args: SessionFileRequestArgs & { query: string },
+): Promise<WorkspaceSearchResults> {
+  const fetchImpl = args.fetchImpl ?? fetch;
+  const response = await fetchImpl(`/api/sessions/${encodeURIComponent(args.sessionId)}/files/search`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${args.token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      query: args.query,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`File search failed (${response.status})`);
+  }
+
+  return (await response.json()) as WorkspaceSearchResults;
 }
 
 export async function loadWorkspaceFileTree(

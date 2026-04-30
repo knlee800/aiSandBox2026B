@@ -26,3 +26,9 @@ export class CreateDirectoryDto {
   @IsNotEmpty()
   path: string;
 }
+
+export class SearchFilesDto {
+  @IsString()
+  @IsNotEmpty()
+  query: string;
+}

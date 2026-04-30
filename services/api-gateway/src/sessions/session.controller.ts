@@ -319,6 +319,35 @@ export class SessionController {
     await this.containerManagerHttpClient.deleteSessionFile(id, path);
   }
 
+  @Post(':id/files/search')
+  @HttpCode(HttpStatus.OK)
+  async searchSessionFiles(
+    @Param('id') id: string,
+    @Body('query') query: string,
+    @Request() req,
+  ): Promise<{
+    query: string;
+    results: Array<{ path: string; line: number; preview: string }>;
+    truncated: boolean;
+  }> {
+    const userId = req.user.userId;
+    const session = await this.sessionService.getSessionById(id);
+
+    if (session.userId !== userId) {
+      throw new NotFoundException(`Session with ID ${id} not found`);
+    }
+
+    if (session.terminatedAt !== null) {
+      throw new GoneException(`Session ${id} is terminated`);
+    }
+
+    if (!query || query.trim().length === 0) {
+      throw new BadRequestException('query is required');
+    }
+
+    return await this.containerManagerHttpClient.searchSessionFiles(id, query);
+  }
+
   @Post(':id/snapshot')
   @HttpCode(HttpStatus.CREATED)
   async saveSessionSnapshot(

@@ -83,4 +83,19 @@ const x = 1;
     ).toContain(`Named file content: src/utils.ts
 export const util = true;`);
   });
+
+  it('appends workspace search results when provided', () => {
+    expect(
+      buildExecutionPromptWithFileActionContract('Where is login implemented?', {
+        filePaths: ['src/app.ts'],
+        searchResults: {
+          query: 'login',
+          results: [{ path: 'src/app.ts', line: 12, preview: 'const login = true;' }],
+          truncated: true,
+        },
+      }),
+    ).toContain(`Workspace search results for: login
+- src/app.ts:12 - const login = true;
+[...results truncated]`);
+  });
 });

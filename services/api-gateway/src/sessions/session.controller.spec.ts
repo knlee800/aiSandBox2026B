@@ -318,6 +318,7 @@ describe('SessionController file delete route', () => {
             stopSession: jest.fn(),
             deleteSession: jest.fn(),
             deleteSessionFile: jest.fn(),
+            searchSessionFiles: jest.fn(),
           },
         },
         {
@@ -398,6 +399,62 @@ describe('SessionController file delete route', () => {
     ).rejects.toThrow(BadRequestException);
 
     expect(containerManagerClient.deleteSessionFile).not.toHaveBeenCalled();
+  });
+
+  it('POST /api/sessions/:id/files/search delegates for active owned session', async () => {
+    sessionService.getSessionById.mockResolvedValue(mockActiveSession);
+    containerManagerClient.searchSessionFiles.mockResolvedValue({
+      query: 'login',
+      results: [{ path: 'src/app.ts', line: 7, preview: 'const login = true;' }],
+      truncated: false,
+    });
+
+    const result = await controller.searchSessionFiles('session-1', 'login', {
+      user: { userId: 'user-1' },
+    });
+
+    expect(result).toEqual({
+      query: 'login',
+      results: [{ path: 'src/app.ts', line: 7, preview: 'const login = true;' }],
+      truncated: false,
+    });
+    expect(containerManagerClient.searchSessionFiles).toHaveBeenCalledWith('session-1', 'login');
+  });
+
+  it('POST /api/sessions/:id/files/search returns 404 for non-owned session', async () => {
+    sessionService.getSessionById.mockResolvedValue(mockActiveSession);
+
+    await expect(
+      controller.searchSessionFiles('session-1', 'login', {
+        user: { userId: 'other-user' },
+      }),
+    ).rejects.toThrow(NotFoundException);
+
+    expect(containerManagerClient.searchSessionFiles).not.toHaveBeenCalled();
+  });
+
+  it('POST /api/sessions/:id/files/search returns 410 for terminated session', async () => {
+    sessionService.getSessionById.mockResolvedValue(mockTerminatedSession);
+
+    await expect(
+      controller.searchSessionFiles('session-1', 'login', {
+        user: { userId: 'user-1' },
+      }),
+    ).rejects.toThrow(GoneException);
+
+    expect(containerManagerClient.searchSessionFiles).not.toHaveBeenCalled();
+  });
+
+  it('POST /api/sessions/:id/files/search returns 400 for empty query', async () => {
+    sessionService.getSessionById.mockResolvedValue(mockActiveSession);
+
+    await expect(
+      controller.searchSessionFiles('session-1', '   ', {
+        user: { userId: 'user-1' },
+      }),
+    ).rejects.toThrow(BadRequestException);
+
+    expect(containerManagerClient.searchSessionFiles).not.toHaveBeenCalled();
   });
 });
 

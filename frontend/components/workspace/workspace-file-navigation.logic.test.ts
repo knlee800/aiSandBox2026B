@@ -6,6 +6,7 @@ import {
   listWorkspaceDirectory,
   loadWorkspaceFileTree,
   readWorkspaceFile,
+  searchWorkspaceFiles,
   writeWorkspaceFile,
   type WorkspaceFileEntry,
   type WorkspaceFileNode,
@@ -125,6 +126,38 @@ describe('workspace file navigation logic', () => {
       'application/json',
     );
     assert.equal(fetchCalls[0].init?.body, JSON.stringify({ path: 'src/old.ts' }));
+  });
+
+  test('searches workspace files using existing session-scoped search endpoint', async () => {
+    const fetchCalls: Array<{ url: string; init?: RequestInit }> = [];
+    const fakeFetch = async (url: string | URL, init?: RequestInit) => {
+      fetchCalls.push({ url: String(url), init });
+      return {
+        ok: true,
+        json: async () => ({
+          query: 'login',
+          results: [{ path: 'src/app.ts', line: 12, preview: 'const login = true;' }],
+          truncated: false,
+        }),
+      } as Response;
+    };
+
+    const result = await searchWorkspaceFiles({
+      token: 'token-search',
+      sessionId: 'session-search',
+      query: 'login',
+      fetchImpl: fakeFetch as typeof fetch,
+    });
+
+    assert.equal(fetchCalls.length, 1);
+    assert.equal(fetchCalls[0].url, '/api/sessions/session-search/files/search');
+    assert.equal(fetchCalls[0].init?.method, 'POST');
+    assert.equal(
+      (fetchCalls[0].init?.headers as Record<string, string>)['Content-Type'],
+      'application/json',
+    );
+    assert.equal(fetchCalls[0].init?.body, JSON.stringify({ query: 'login' }));
+    assert.equal(result.results[0]?.path, 'src/app.ts');
   });
 
   test('builds recursive file tree and returns first file path deterministically', async () => {

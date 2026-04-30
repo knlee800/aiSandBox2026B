@@ -1,6 +1,12 @@
 import { Controller, Get, Post, Delete, Param, Body, Query } from '@nestjs/common';
 import { FilesService } from './files.service';
-import { WriteFileDto, ReadFileDto, DeleteFileDto, CreateDirectoryDto } from './dto/files.dto';
+import {
+  WriteFileDto,
+  ReadFileDto,
+  DeleteFileDto,
+  CreateDirectoryDto,
+  SearchFilesDto,
+} from './dto/files.dto';
 
 @Controller('files')
 export class FilesController {
@@ -48,5 +54,13 @@ export class FilesController {
     @Body() createDirDto: CreateDirectoryDto
   ) {
     return this.filesService.createDirectory(sessionId, createDirDto.path);
+  }
+
+  @Post(':sessionId/search')
+  async search(
+    @Param('sessionId') sessionId: string,
+    @Body() searchFilesDto: SearchFilesDto,
+  ) {
+    return this.filesService.searchFiles(sessionId, searchFilesDto.query);
   }
 }

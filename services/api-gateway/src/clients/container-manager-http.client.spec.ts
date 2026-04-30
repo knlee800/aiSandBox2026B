@@ -5,9 +5,9 @@ jest.mock('axios');
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
-describe('ContainerManagerHttpClient file delete', () => {
+describe('ContainerManagerHttpClient file operations', () => {
   let client: ContainerManagerHttpClient;
-  let mockAxiosInstance: { delete: jest.Mock };
+  let mockAxiosInstance: { delete: jest.Mock; post: jest.Mock };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -15,6 +15,7 @@ describe('ContainerManagerHttpClient file delete', () => {
 
     mockAxiosInstance = {
       delete: jest.fn(),
+      post: jest.fn(),
     };
 
     mockedAxios.create.mockReturnValue(mockAxiosInstance as never);
@@ -38,5 +39,27 @@ describe('ContainerManagerHttpClient file delete', () => {
         'X-Internal-Service-Key': 'test-internal-key',
       },
     });
+  });
+
+  it('calls the bounded container-manager file search endpoint', async () => {
+    const expected = {
+      query: 'login',
+      results: [{ path: 'src/app.ts', line: 12, preview: 'const login = true;' }],
+      truncated: false,
+    };
+    mockAxiosInstance.post.mockResolvedValue({ data: expected });
+
+    const result = await client.searchSessionFiles('session-123', 'login');
+
+    expect(result).toEqual(expected);
+    expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+      '/api/files/session-123/search',
+      { query: 'login' },
+      {
+        headers: {
+          'X-Internal-Service-Key': 'test-internal-key',
+        },
+      },
+    );
   });
 });

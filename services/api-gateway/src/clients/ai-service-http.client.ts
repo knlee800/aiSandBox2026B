@@ -12,11 +12,24 @@ export interface WorkspaceNamedFileContent {
   content: string;
 }
 
+export interface WorkspaceSearchMatch {
+  path: string;
+  line: number;
+  preview: string;
+}
+
+export interface WorkspaceSearchResults {
+  query: string;
+  results: WorkspaceSearchMatch[];
+  truncated: boolean;
+}
+
 export interface WorkspaceContext {
   filePaths: string[];
   selectedFilePath?: string;
   selectedFileContent?: string;
   namedFileContents?: WorkspaceNamedFileContent[];
+  searchResults?: WorkspaceSearchResults;
   projectName?: string;
   workspaceName?: string;
 }

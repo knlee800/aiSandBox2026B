@@ -11057,9 +11057,9 @@ Make the active AI execution path aware of the current workspace file list and s
 
 ## AI-WS — AI Workspace Capability
 
-**Family status:** ACTIVE — AI-WS-05 COMPLETE and LOCKED
+**Family status:** ACTIVE — AI-WS-06 COMPLETE and LOCKED
 
-**Current stage:** AI-WS-06 (NOT YET REGISTERED)
+**Current stage:** AI-WS-06 (COMPLETE and LOCKED)
 
 ---
 
@@ -11433,4 +11433,77 @@ Allow the AI to answer questions about one or more named workspace files by usin
 - Preserve provider selection and queue semantics
 
 ---
+
+#### AI-WS-06: Workspace Content Search Support
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BOUNDED WORKSPACE CONTENT SEARCH — safely search text-like workspace files for explicit locate/find questions without broad tool refactors or arbitrary command execution
+**Source:** Planning session (Apr 2026) — AI still cannot search across workspace file contents for prompts like "where is login implemented?" or "which files mention this text?"
+**Depends on:** AI-WS-05 (COMPLETE and LOCKED)
+
+**Objective:**
+Add a bounded, safe workspace content search capability so AI can answer questions like "where is login implemented?" or "which files mention this text?" without full-project content stuffing, arbitrary command execution, provider-native tool refactors, or broad agent redesign.
+
+**Bounded scope:**
+- Safe workspace search support only
+- Support user prompts that explicitly ask to search/find text or locate where something is implemented
+- Search only text-like files under the current workspace/session
+- Cap result size strictly, for example max files/results/characters
+- Exclude sensitive/unsuitable paths:
+  - env/secrets/credentials
+  - binary/assets
+  - lock/generated/vendor directories
+- Do not expose arbitrary shell command execution to the model
+- Do not stuff all file contents into prompt
+- Do not change file-action schema/parser/delete support
+- Do not add provider-native tool calling
+- No schema/database changes
+- No broad agent refactor
+- If search cannot run safely, fail closed with a clear message
+
+**Allowed files/surfaces:**
+- `frontend/app/[locale]/app/page.tsx`
+- `frontend/components/workspace/workspace-file-navigation.logic.ts` or a new small workspace-search helper if needed
+- `services/api-gateway/src/sessions/session.controller.ts` only if a safe search route is needed
+- `services/api-gateway/src/clients/container-manager-http.client.ts` only if proxy support is needed
+- `services/container-manager/src/files` or session exec/search surface only if a safe bounded search endpoint is needed
+- `services/ai-service/src/worker/worker.processor.ts` only if prompt/context contract needs search-result wording
+- workspaceContext type surfaces if search results are injected into prompt context
+- directly relevant tests
+
+**Non-goals:**
+- No provider-native tool calling
+- No broad AI agent/tool-system refactor
+- No arbitrary shell command execution
+- No full-project content stuffing
+- No vector index / embeddings
+- No database schema/migration
+- No semantic search
+- No recursive binary/asset scanning
+- No search across other projects/workspaces
+- No AI file delete changes
+- No file-action parser/schema changes
+- No unrelated workspace rollout work
+- No D1/PROJ-03 work
+
+**Acceptance checks:**
+- AI can answer a prompt asking where a named text/function/component is used, based on bounded search results
+- Search is scoped to the current workspace/session only
+- Search skips sensitive/binary/generated/vendor paths
+- Search output is capped
+- Search cannot execute arbitrary commands
+- Existing file list, selected file, selected content, named-file content, metadata, create/write/update/delete behavior remain unchanged
+- Relevant frontend/backend/typecheck/build/tests pass
+- No introduced lint errors
+
+**Risks / invariants:**
+- Search must be bounded and safe
+- Do not introduce arbitrary command execution controlled by the model
+- Keep result payload compact to avoid token/cost blowup
+- Keep search scoped to current workspace/session
+- Do not leak secrets/env files
+- Preserve optional/backward-compatible `workspaceContext` behavior
+- Preserve provider selection and queue semantics
+- Preserve existing file-action behavior
+- No destructive action changes in this slice
 

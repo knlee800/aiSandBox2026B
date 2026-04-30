@@ -1,6 +1,18 @@
 import { HttpException, Injectable, OnModuleInit, ServiceUnavailableException } from '@nestjs/common';
 import axios, { AxiosInstance } from 'axios';
 
+export interface WorkspaceSearchMatch {
+  path: string;
+  line: number;
+  preview: string;
+}
+
+export interface WorkspaceSearchResults {
+  query: string;
+  results: WorkspaceSearchMatch[];
+  truncated: boolean;
+}
+
 /**
  * ContainerManagerHttpClient
  * Internal HTTP client for calling container-manager service
@@ -462,6 +474,41 @@ export class ContainerManagerHttpClient implements OnModuleInit {
       }
       throw new ServiceUnavailableException(
         `Failed to delete file for session ${sessionId}`,
+      );
+    }
+  }
+
+  async searchSessionFiles(
+    sessionId: string,
+    query: string,
+  ): Promise<WorkspaceSearchResults> {
+    if (this.isDisabled) {
+      throw new ServiceUnavailableException(
+        'ContainerManager file search is unavailable (INTERNAL_SERVICE_KEY not configured in api-gateway)',
+      );
+    }
+
+    try {
+      const response = await this.axiosInstance.post(
+        `/api/files/${sessionId}/search`,
+        { query },
+        {
+          headers: {
+            'X-Internal-Service-Key': this.internalServiceKey,
+          },
+        },
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status ?? 502;
+        const message =
+          (error.response?.data as { message?: string } | undefined)?.message ||
+          error.message;
+        throw new HttpException(message, status);
+      }
+      throw new ServiceUnavailableException(
+        `Failed to search files for session ${sessionId}`,
       );
     }
   }

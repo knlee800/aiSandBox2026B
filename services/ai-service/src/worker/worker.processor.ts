@@ -104,6 +104,40 @@ function buildWorkspaceContextBlock(
         }))
         .filter((file) => file.path.length > 0 && file.content.length > 0)
     : [];
+  const normalizedSearchResults =
+    workspaceContext.searchResults &&
+    typeof workspaceContext.searchResults === 'object' &&
+    typeof workspaceContext.searchResults.query === 'string' &&
+    workspaceContext.searchResults.query.trim().length > 0
+      ? {
+          query: workspaceContext.searchResults.query.trim(),
+          results: Array.isArray(workspaceContext.searchResults.results)
+            ? workspaceContext.searchResults.results
+                .filter(
+                  (
+                    result,
+                  ): result is {
+                    path: string;
+                    line: number;
+                    preview: string;
+                  } =>
+                    !!result &&
+                    typeof result === 'object' &&
+                    typeof result.path === 'string' &&
+                    typeof result.line === 'number' &&
+                    Number.isFinite(result.line) &&
+                    typeof result.preview === 'string',
+                )
+                .map((result) => ({
+                  path: result.path.trim(),
+                  line: Math.max(1, Math.trunc(result.line)),
+                  preview: result.preview.trim(),
+                }))
+                .filter((result) => result.path.length > 0 && result.preview.length > 0)
+            : [],
+          truncated: workspaceContext.searchResults.truncated === true,
+        }
+      : null;
   const normalizedProjectName =
     typeof workspaceContext.projectName === 'string' &&
     workspaceContext.projectName.trim().length > 0
@@ -120,6 +154,7 @@ function buildWorkspaceContextBlock(
     !normalizedSelectedFilePath &&
     !normalizedSelectedFileContent &&
     normalizedNamedFileContents.length === 0 &&
+    !normalizedSearchResults &&
     !normalizedProjectName &&
     !normalizedWorkspaceName
   ) {
@@ -146,6 +181,22 @@ function buildWorkspaceContextBlock(
   }
   for (const namedFile of normalizedNamedFileContents) {
     sections.push(`Named file content: ${namedFile.path}\n${namedFile.content}`);
+  }
+  if (normalizedSearchResults) {
+    const searchLines =
+      normalizedSearchResults.results.length > 0
+        ? normalizedSearchResults.results.map(
+            (result) => `- ${result.path}:${result.line} - ${result.preview}`,
+          )
+        : ['(no matches found)'];
+    if (normalizedSearchResults.truncated) {
+      searchLines.push('[...results truncated]');
+    }
+    sections.push(
+      [`Workspace search results for: ${normalizedSearchResults.query}`, ...searchLines].join(
+        '\n',
+      ),
+    );
   }
 
   return sections.join('\n\n');

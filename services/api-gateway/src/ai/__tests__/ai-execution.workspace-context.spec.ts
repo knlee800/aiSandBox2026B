@@ -35,6 +35,11 @@ describe('AIExecutionController workspaceContext forwarding', () => {
             content: 'export const util = true;',
           },
         ],
+        searchResults: {
+          query: 'login',
+          results: [{ path: 'src/app.ts', line: 12, preview: 'const login = true;' }],
+          truncated: false,
+        },
         projectName: 'Sandbox Project',
         workspaceName: 'Personal',
       },
