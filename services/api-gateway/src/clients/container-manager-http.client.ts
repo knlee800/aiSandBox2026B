@@ -438,6 +438,34 @@ export class ContainerManagerHttpClient implements OnModuleInit {
     }
   }
 
+  async deleteSessionFile(sessionId: string, path: string): Promise<void> {
+    if (this.isDisabled) {
+      throw new ServiceUnavailableException(
+        'ContainerManager file delete is unavailable (INTERNAL_SERVICE_KEY not configured in api-gateway)',
+      );
+    }
+
+    try {
+      await this.axiosInstance.delete(`/api/files/${sessionId}/delete`, {
+        data: { path },
+        headers: {
+          'X-Internal-Service-Key': this.internalServiceKey,
+        },
+      });
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status ?? 502;
+        const message =
+          (error.response?.data as { message?: string } | undefined)?.message ||
+          error.message;
+        throw new HttpException(message, status);
+      }
+      throw new ServiceUnavailableException(
+        `Failed to delete file for session ${sessionId}`,
+      );
+    }
+  }
+
   /**
    * Get git diff for a checkpoint from container-manager
    * PHASE-68B: Call git diff endpoint

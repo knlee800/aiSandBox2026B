@@ -1,15 +1,23 @@
 import { isUsableSession, type WorkspaceShellSession } from './workspace-shell.logic';
 
-export type WorkspaceFileActionType = 'create' | 'write' | 'update';
+export type WorkspaceFileActionType = 'create' | 'write' | 'update' | 'delete';
+export type WorkspaceFileWriteActionType = 'create' | 'write' | 'update';
 
 const RISKY_BATCH_ACTION_COUNT_THRESHOLD = 3;
 const RISKY_CONTENT_SIZE_THRESHOLD = 20_000;
 
-export interface WorkspaceFileAction {
-  action: WorkspaceFileActionType;
+export interface WorkspaceFileWriteAction {
+  action: WorkspaceFileWriteActionType;
   path: string;
   content: string;
 }
+
+export interface WorkspaceFileDeleteAction {
+  action: 'delete';
+  path: string;
+}
+
+export type WorkspaceFileAction = WorkspaceFileWriteAction | WorkspaceFileDeleteAction;
 
 export type WorkspaceExecutionFileActionResultStatus = 'success' | 'failed' | 'skipped';
 
@@ -68,10 +76,15 @@ export function isRiskyFileActionBatch(actions: WorkspaceFileAction[]): boolean 
     return true;
   }
 
-  return actions.some(
-    (action) =>
-      action.content.length > RISKY_CONTENT_SIZE_THRESHOLD || isRiskyFileActionPath(action.path),
-  );
+  return actions.some((action) => {
+    if (action.action === 'delete') {
+      return true;
+    }
+    return (
+      action.content.length > RISKY_CONTENT_SIZE_THRESHOLD ||
+      isRiskyFileActionPath(action.path)
+    );
+  });
 }
 
 export function isWorkspaceFileAction(value: unknown): value is WorkspaceFileAction {
@@ -83,6 +96,9 @@ export function isWorkspaceFileAction(value: unknown): value is WorkspaceFileAct
     path?: unknown;
     content?: unknown;
   };
+  if (candidate.action === 'delete') {
+    return typeof candidate.path === 'string';
+  }
   return (
     (candidate.action === 'create' ||
       candidate.action === 'write' ||
@@ -107,7 +123,8 @@ function isWorkspaceExecutionFileActionResult(
   return (
     (candidate.action === 'create' ||
       candidate.action === 'write' ||
-      candidate.action === 'update') &&
+      candidate.action === 'update' ||
+      candidate.action === 'delete') &&
     typeof candidate.path === 'string' &&
     (candidate.status === 'success' ||
       candidate.status === 'failed' ||

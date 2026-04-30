@@ -4,6 +4,7 @@ import {
   acquireExecutionApplyGuard,
   applySequentialFileActions,
   isRiskyFileActionBatch,
+  isWorkspaceFileAction,
   type WorkspaceFileAction,
 } from './workspace-ai-file-actions.logic';
 import type { WorkspaceShellSession } from './workspace-shell.logic';
@@ -131,8 +132,23 @@ describe('workspace ai file-actions logic', () => {
     );
   });
 
+  test('always classifies delete actions as risky', () => {
+    assert.equal(
+      isRiskyFileActionBatch([{ action: 'delete', path: 'src/old.ts' }]),
+      true,
+    );
+  });
+
   test('keeps small ordinary write batches auto-applicable', () => {
     assert.equal(isRiskyFileActionBatch(createActions()), false);
+  });
+
+  test('guard accepts delete without content', () => {
+    assert.equal(isWorkspaceFileAction({ action: 'delete', path: 'src/old.ts' }), true);
+  });
+
+  test('guard rejects non-delete actions without content', () => {
+    assert.equal(isWorkspaceFileAction({ action: 'write', path: 'src/app.ts' }), false);
   });
 
   test('terminated-session guard blocks writes', async () => {

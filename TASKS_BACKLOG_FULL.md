@@ -20832,13 +20832,14 @@ Make the active AI execution path aware of the current workspace file list and s
 
 ## AI-WS ??AI Workspace Capability
 
-**Family status:** ACTIVE — AI-WS-02 COMPLETE and LOCKED
+**Family status:** ACTIVE — AI-WS-03 COMPLETE and LOCKED
 
-**Current stage:** AI-WS-03 (NOT YET REGISTERED)
+**Current stage:** AI-WS-04 (NOT YET REGISTERED)
 
 **Ordered slices (registered so far):**
 1. AI-WS-01 — Selected File Content Context Injection (COMPLETE and LOCKED)
 2. AI-WS-02 — AI File Action Safety And Confirmation Foundation (COMPLETE and LOCKED)
+3. AI-WS-03 — AI File Delete Support (COMPLETE and LOCKED)
 
 ---
 
@@ -21002,6 +21003,87 @@ Add a frontend safety/confirmation foundation for risky AI file actions before e
 **Dependencies:** AI-WS-01 (COMPLETE and LOCKED)
 
 **Reference:** See TASKS.md -> AI-WS-02 for active-task summary.
+
+---
+
+### AI-WS-03: AI File Delete Support
+
+**Task ID:** AI-WS-03
+**Family:** AI-WS (AI Workspace Capability)
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** CROSS-LAYER FILE-ACTION EXTENSION — extend file-action contract to allow AI-proposed delete, always held for confirmation, frontend delete call through api-gateway to container-manager
+**Source:** Planning session (Apr 2026) — delete is the next destructive capability after safety confirmation foundation is in place
+**Depends on:** AI-WS-02 (COMPLETE and LOCKED)
+
+**Objective:**
+Add support for AI-proposed file delete actions through the active file-actions path, with mandatory confirmation before deletion and safe editor/file-tree cleanup after successful deletion. Delete must be metadata/action-safe and must not change unrelated file-action behavior.
+
+**Bounded scope:**
+- Extend active ile-actions contract to allow delete action type
+- Delete action requires path; does not require content
+- Parser accepts delete and validates path using existing path safety rules
+- Frontend file-action type/guard accepts delete without content
+- Delete actions are always treated as risky and held for confirmation via AI-WS-02 confirmation flow
+- Approved delete calls a frontend delete helper
+- Frontend delete helper calls api-gateway delete route
+- Api-gateway proxies to existing container-manager delete file endpoint/client
+- After successful delete: refresh file tree; if deleted file is selected/open file, clear selected file/editor state safely
+- No directory delete in v1
+- No bulk-delete special UI beyond existing confirmation list
+- No schema/database changes
+
+**Allowed files/surfaces:**
+- services/ai-service/src/worker/worker.processor.ts
+- services/ai-service/src/ai-execution/types.ts
+- services/ai-service/src/ai-execution/file-actions.parser.ts
+- services/api-gateway/src/sessions/session.controller.ts
+- services/api-gateway/src/clients/container-manager-http.client.ts
+- rontend/components/workspace/workspace-ai-file-actions.logic.ts
+- rontend/components/workspace/workspace-file-navigation.logic.ts
+- rontend/app/[locale]/app/page.tsx
+- rontend/components/workspace/workspace-shell.tsx (only if minimal confirmation/status wording needed)
+- directly relevant tests
+
+**Non-goals:**
+- No named file read support
+- No workspace search support
+- No broad tool-system refactor
+- No directory delete
+- No bulk-delete UX beyond existing confirmation
+- No automatic snapshot integration unless trivially available and safe
+- No full diff viewer
+- No unrelated workspace rollout work
+- No D1/PROJ-03 work
+
+**Acceptance checks:**
+- AI can emit a valid delete file-action
+- Delete action without content parses successfully
+- Delete action is always held for confirmation
+- Cancelling delete applies nothing
+- Approving delete deletes the target file through existing container-manager support
+- File tree refreshes after delete
+- If selected/open file is deleted, editor/file selection clears safely
+- Create/write/update existing behavior remains unchanged
+- Backend/frontend/ai-service builds and focused tests pass
+- No introduced lint errors
+
+**Risks / invariants:**
+- Delete is destructive and must always require confirmation
+- Do not allow delete before user approval
+- Do not delete directories in v1
+- Keep existing path traversal protections
+- Do not bypass session usability checks
+- Preserve existing create/write/update behavior
+- Preserve idempotency and duplicate-delivery guards
+- Preserve project/session/history behavior
+- No schema or migration
+- No broad AI agent refactor
+
+**Dependencies:** AI-WS-02 (COMPLETE and LOCKED)
+
+**Reference:** See TASKS.md -> AI-WS-03 for active-task summary.
 
 ---
 

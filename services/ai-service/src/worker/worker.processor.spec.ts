@@ -4,11 +4,13 @@ describe('buildExecutionPromptWithFileActionContract', () => {
   it('preserves the existing prompt when workspaceContext is absent', () => {
     expect(buildExecutionPromptWithFileActionContract('List files')).toBe(
       `Execution output contract:
-- If the user request requires creating or modifying files, you MUST emit a fenced code block tagged \`file-actions\`.
+- If the user request requires creating, modifying, or deleting files, you MUST emit a fenced code block tagged \`file-actions\`.
 - The \`file-actions\` block content MUST be valid JSON containing an array of actions.
-- Each action MUST use action values "create", "write", or "update" and include string fields: "path" and "content".
-- Do not claim that files were created or changed unless matching \`file-actions\` entries are present.
-- If the user request does not require file creation or modification, respond normally in plain conversational text and do not emit \`file-actions\` blocks.
+- Each action MUST use action value "create", "write", "update", or "delete".
+- "create", "write", and "update" actions MUST include string fields: "path" and "content".
+- "delete" actions MUST include string field "path" and MUST NOT include or require "content".
+- Do not claim that files were created, changed, or deleted unless matching \`file-actions\` entries are present.
+- If the user request does not require file creation, modification, or deletion, respond normally in plain conversational text and do not emit \`file-actions\` blocks.
 
 User request:
 List files`,
@@ -34,11 +36,13 @@ Selected file content:
 export const app = true;
 
 Execution output contract:
-- If the user request requires creating or modifying files, you MUST emit a fenced code block tagged \`file-actions\`.
+- If the user request requires creating, modifying, or deleting files, you MUST emit a fenced code block tagged \`file-actions\`.
 - The \`file-actions\` block content MUST be valid JSON containing an array of actions.
-- Each action MUST use action values "create", "write", or "update" and include string fields: "path" and "content".
-- Do not claim that files were created or changed unless matching \`file-actions\` entries are present.
-- If the user request does not require file creation or modification, respond normally in plain conversational text and do not emit \`file-actions\` blocks.
+- Each action MUST use action value "create", "write", "update", or "delete".
+- "create", "write", and "update" actions MUST include string fields: "path" and "content".
+- "delete" actions MUST include string field "path" and MUST NOT include or require "content".
+- Do not claim that files were created, changed, or deleted unless matching \`file-actions\` entries are present.
+- If the user request does not require file creation, modification, or deletion, respond normally in plain conversational text and do not emit \`file-actions\` blocks.
 
 User request:
 List files`,

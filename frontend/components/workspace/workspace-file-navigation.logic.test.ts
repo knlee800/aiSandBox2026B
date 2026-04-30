@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import {
+  deleteWorkspaceFile,
   findFirstFilePath,
   listWorkspaceDirectory,
   loadWorkspaceFileTree,
@@ -98,6 +99,32 @@ describe('workspace file navigation logic', () => {
       fetchCalls[0].init?.body,
       JSON.stringify({ path: 'src/app.ts', content: 'console.log("saved");' }),
     );
+  });
+
+  test('deletes selected file using existing session-scoped delete endpoint', async () => {
+    const fetchCalls: Array<{ url: string; init?: RequestInit }> = [];
+    const fakeFetch = async (url: string | URL, init?: RequestInit) => {
+      fetchCalls.push({ url: String(url), init });
+      return {
+        ok: true,
+      } as Response;
+    };
+
+    await deleteWorkspaceFile({
+      token: 'token-del',
+      sessionId: 'session-del',
+      filePath: 'src/old.ts',
+      fetchImpl: fakeFetch as typeof fetch,
+    });
+
+    assert.equal(fetchCalls.length, 1);
+    assert.equal(fetchCalls[0].url, '/api/sessions/session-del/files/delete');
+    assert.equal(fetchCalls[0].init?.method, 'DELETE');
+    assert.equal(
+      (fetchCalls[0].init?.headers as Record<string, string>)['Content-Type'],
+      'application/json',
+    );
+    assert.equal(fetchCalls[0].init?.body, JSON.stringify({ path: 'src/old.ts' }));
   });
 
   test('builds recursive file tree and returns first file path deterministically', async () => {

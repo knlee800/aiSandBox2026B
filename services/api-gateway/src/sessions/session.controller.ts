@@ -294,6 +294,31 @@ export class SessionController {
     await this.containerManagerHttpClient.writeSessionFile(id, path, content);
   }
 
+  @Delete(':id/files/delete')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteSessionFile(
+    @Param('id') id: string,
+    @Body('path') path: string,
+    @Request() req,
+  ): Promise<void> {
+    const userId = req.user.userId;
+    const session = await this.sessionService.getSessionById(id);
+
+    if (session.userId !== userId) {
+      throw new NotFoundException(`Session with ID ${id} not found`);
+    }
+
+    if (session.terminatedAt !== null) {
+      throw new GoneException(`Session ${id} is terminated`);
+    }
+
+    if (!path || path.trim().length === 0) {
+      throw new BadRequestException('path is required');
+    }
+
+    await this.containerManagerHttpClient.deleteSessionFile(id, path);
+  }
+
   @Post(':id/snapshot')
   @HttpCode(HttpStatus.CREATED)
   async saveSessionSnapshot(

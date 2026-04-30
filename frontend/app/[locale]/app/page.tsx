@@ -42,6 +42,7 @@ import {
   type WorkspacePreviewState,
 } from '@/components/workspace/workspace-preview.logic';
 import {
+  deleteWorkspaceFile,
   findFirstFilePath,
   loadWorkspaceFileTree,
   readWorkspaceFile,
@@ -596,6 +597,7 @@ export default function AppPage() {
   const skipNextChatThreadPersistRef = useRef(false);
   const pendingAssistantMessageIdRef = useRef<string | null>(null);
   const selectedSessionIdRef = useRef<string | null>(null);
+  const selectedFilePathRef = useRef<string | null>(null);
   const skipNextSessionEffectFileReloadRef = useRef(false);
   const projectOpenInProgressRef = useRef(false);
   const coldMountSeededSessionIdRef = useRef<string | null>(null);
@@ -801,6 +803,10 @@ export default function AppPage() {
   useEffect(() => {
     selectedSessionIdRef.current = selectedSessionId;
   }, [selectedSessionId]);
+
+  useEffect(() => {
+    selectedFilePathRef.current = selectedFilePath;
+  }, [selectedFilePath]);
 
   useEffect(() => {
     if (!PROJECT_FIRST_UX) {
@@ -4092,6 +4098,51 @@ export default function AppPage() {
     return sessionsRef.current.find((session) => session.id === sessionId) ?? null;
   }
 
+  async function refreshWorkspaceFileTreeAfterDelete(
+    token: string,
+    sessionId: string,
+    deletedPath: string,
+  ): Promise<void> {
+    if (selectedSessionIdRef.current !== sessionId) {
+      return;
+    }
+
+    const tree = await loadWorkspaceFileTree({
+      token,
+      sessionId,
+    });
+
+    if (selectedSessionIdRef.current !== sessionId) {
+      return;
+    }
+
+    const hasFiles = findFirstFilePath(tree) !== null;
+    setWorkspaceFileTree(tree);
+    setFileSurfaceError(null);
+
+    if (!hasFiles) {
+      setSelectedFilePath(null);
+      setSelectedFileContent('');
+      setSavedFileContent('');
+      setFileSaveState('clean');
+      setFileSaveError(null);
+      setFileSurfaceState('empty');
+      return;
+    }
+
+    if (selectedFilePathRef.current === deletedPath) {
+      fileContentRequestIdRef.current += 1;
+      fileSaveRequestIdRef.current += 1;
+      setSelectedFilePath(null);
+      setSelectedFileContent('');
+      setSavedFileContent('');
+      setFileSaveState('clean');
+      setFileSaveError(null);
+    }
+
+    setFileSurfaceState('ready');
+  }
+
   async function maybeRunExecutionCoherence(executionId: string): Promise<void> {
     const fileActionState = chatExecutionFileActionStates[executionId];
     if (!fileActionState || fileActionState.applyStatus !== 'applied') {
@@ -4231,6 +4282,16 @@ export default function AppPage() {
       getSelectedSessionId: () => selectedSessionIdRef.current,
       getSessionById: getSessionByIdForFileActions,
       writeFile: async (action) => {
+        if (action.action === 'delete') {
+          await deleteWorkspaceFile({
+            token,
+            sessionId: executionSessionId,
+            filePath: action.path,
+          });
+          await refreshWorkspaceFileTreeAfterDelete(token, executionSessionId, action.path);
+          return;
+        }
+
         await writeWorkspaceFile({
           token,
           sessionId: executionSessionId,

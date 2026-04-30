@@ -2,7 +2,7 @@ import { posix as pathPosix } from 'path';
 import { FileAction, FileActionType } from './types';
 
 const FILE_ACTION_BLOCK_REGEX = /```file-actions\s*([\s\S]*?)```/gi;
-const VALID_ACTIONS = new Set<FileActionType>(['create', 'write', 'update']);
+const VALID_ACTIONS = new Set<FileActionType>(['create', 'write', 'update', 'delete']);
 
 function normalizeAndValidatePath(rawPath: unknown): string | null {
   if (typeof rawPath !== 'string') return null;
@@ -33,6 +33,13 @@ function parseActionCandidate(candidate: unknown): FileAction | null {
 
   const path = normalizeAndValidatePath(value.path);
   if (!path) return null;
+
+  if (action === 'delete') {
+    return {
+      action,
+      path,
+    };
+  }
 
   if (typeof value.content !== 'string') return null;
 

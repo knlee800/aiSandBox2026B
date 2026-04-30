@@ -92,6 +92,26 @@ export async function writeWorkspaceFile(
   }
 }
 
+export async function deleteWorkspaceFile(
+  args: SessionFileRequestArgs & { filePath: string },
+): Promise<void> {
+  const fetchImpl = args.fetchImpl ?? fetch;
+  const response = await fetchImpl(`/api/sessions/${encodeURIComponent(args.sessionId)}/files/delete`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${args.token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      path: args.filePath,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`File delete failed (${response.status})`);
+  }
+}
+
 export async function loadWorkspaceFileTree(
   args: SessionFileRequestArgs,
 ): Promise<WorkspaceFileNode[]> {

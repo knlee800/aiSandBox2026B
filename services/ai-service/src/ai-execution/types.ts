@@ -37,13 +37,20 @@ export interface AIExecutionResult {
   fileActions?: FileAction[];
 }
 
-export type FileActionType = 'create' | 'write' | 'update';
+export type FileActionType = 'create' | 'write' | 'update' | 'delete';
 
-export interface FileAction {
-  action: FileActionType;
+export interface FileWriteAction {
+  action: 'create' | 'write' | 'update';
   path: string;
   content: string;
 }
+
+export interface FileDeleteAction {
+  action: 'delete';
+  path: string;
+}
+
+export type FileAction = FileWriteAction | FileDeleteAction;
 
 /**
  * AIProviderConfig

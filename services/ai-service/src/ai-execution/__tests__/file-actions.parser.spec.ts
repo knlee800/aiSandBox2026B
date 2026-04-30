@@ -56,6 +56,34 @@ describe('file-actions parser', () => {
     ]);
   });
 
+  it('parses delete actions with path only', () => {
+    const output = [
+      '```file-actions',
+      JSON.stringify([{ action: 'delete', path: 'src/old.ts' }]),
+      '```',
+    ].join('\n');
+
+    const parsed = extractFileActionsFromOutput(output);
+
+    expect(parsed.fileActions).toEqual([{ action: 'delete', path: 'src/old.ts' }]);
+  });
+
+  it('still requires content for non-delete actions', () => {
+    const output = [
+      '```file-actions',
+      JSON.stringify([
+        { action: 'write', path: 'src/missing.ts' },
+        { action: 'update', path: 'src/also-missing.ts' },
+        { action: 'delete', path: 'src/old.ts' },
+      ]),
+      '```',
+    ].join('\n');
+
+    const parsed = extractFileActionsFromOutput(output);
+
+    expect(parsed.fileActions).toEqual([{ action: 'delete', path: 'src/old.ts' }]);
+  });
+
   it('keeps non-file-action outputs intact with empty actions', () => {
     const output = 'Here is the explanation without file action blocks.';
     const parsed = extractFileActionsFromOutput(output);

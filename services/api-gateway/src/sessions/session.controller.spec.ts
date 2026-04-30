@@ -270,6 +270,137 @@ describe('SessionController (PHASE-76F: ISSUE-76-002 DELETE termination fix)', (
   });
 });
 
+describe('SessionController file delete route', () => {
+  let controller: SessionController;
+  let sessionService: jest.Mocked<SessionService>;
+  let containerManagerClient: jest.Mocked<ContainerManagerHttpClient>;
+
+  const mockActiveSession = {
+    id: 'session-1',
+    userId: 'user-1',
+    status: 'active' as any,
+    containerId: 'container-abc',
+    createdAt: new Date(),
+    expiresAt: new Date(),
+    lastActivityAt: new Date(),
+    user: {} as any,
+    terminatedAt: null,
+    terminationReason: null,
+    project: null,
+    projectId: null,
+  };
+
+  const mockTerminatedSession = {
+    ...mockActiveSession,
+    terminatedAt: new Date('2026-03-12T00:00:00Z'),
+    terminationReason: 'manual',
+  };
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [SessionController],
+      providers: [
+        {
+          provide: SessionService,
+          useValue: {
+            createSession: jest.fn(),
+            getSessionsByUser: jest.fn(),
+            getSessionById: jest.fn(),
+            stopSession: jest.fn(),
+            deleteSession: jest.fn(),
+            terminateSession: jest.fn(),
+          },
+        },
+        {
+          provide: ContainerManagerHttpClient,
+          useValue: {
+            startSession: jest.fn(),
+            stopSession: jest.fn(),
+            deleteSession: jest.fn(),
+            deleteSessionFile: jest.fn(),
+          },
+        },
+        {
+          provide: SnapshotPersistenceService,
+          useValue: {
+            saveSnapshot: jest.fn(),
+            restoreSnapshot: jest.fn(),
+            listSnapshots: jest.fn(),
+          },
+        },
+        {
+          provide: WorkspaceArchiveService,
+          useValue: {
+            exportWorkspaceArchive: jest.fn(),
+            importWorkspaceArchive: jest.fn(),
+          },
+        },
+      ],
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(SessionQuotaGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(RateLimitGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
+
+    controller = module.get<SessionController>(SessionController);
+    sessionService = module.get(SessionService);
+    containerManagerClient = module.get(ContainerManagerHttpClient);
+  });
+
+  it('DELETE /api/sessions/:id/files/delete delegates for active owned session', async () => {
+    sessionService.getSessionById.mockResolvedValue(mockActiveSession);
+    containerManagerClient.deleteSessionFile.mockResolvedValue(undefined);
+
+    await controller.deleteSessionFile('session-1', 'src/old.ts', {
+      user: { userId: 'user-1' },
+    });
+
+    expect(containerManagerClient.deleteSessionFile).toHaveBeenCalledWith(
+      'session-1',
+      'src/old.ts',
+    );
+  });
+
+  it('DELETE /api/sessions/:id/files/delete returns 404 for non-owned session', async () => {
+    sessionService.getSessionById.mockResolvedValue(mockActiveSession);
+
+    await expect(
+      controller.deleteSessionFile('session-1', 'src/old.ts', {
+        user: { userId: 'other-user' },
+      }),
+    ).rejects.toThrow(NotFoundException);
+
+    expect(containerManagerClient.deleteSessionFile).not.toHaveBeenCalled();
+  });
+
+  it('DELETE /api/sessions/:id/files/delete returns 410 for terminated session', async () => {
+    sessionService.getSessionById.mockResolvedValue(mockTerminatedSession);
+
+    await expect(
+      controller.deleteSessionFile('session-1', 'src/old.ts', {
+        user: { userId: 'user-1' },
+      }),
+    ).rejects.toThrow(GoneException);
+
+    expect(containerManagerClient.deleteSessionFile).not.toHaveBeenCalled();
+  });
+
+  it('DELETE /api/sessions/:id/files/delete returns 400 for empty path', async () => {
+    sessionService.getSessionById.mockResolvedValue(mockActiveSession);
+
+    await expect(
+      controller.deleteSessionFile('session-1', '', {
+        user: { userId: 'user-1' },
+      }),
+    ).rejects.toThrow(BadRequestException);
+
+    expect(containerManagerClient.deleteSessionFile).not.toHaveBeenCalled();
+  });
+});
+
 /**
  * PHASE-77A: ISSUE-76-005 regression tests
  * POST /api/sessions/:id/exec must exist and behave per PRD/ARCHITECTURE contract.
