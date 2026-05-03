@@ -11057,9 +11057,9 @@ Make the active AI execution path aware of the current workspace file list and s
 
 ## AI-WS — AI Workspace Capability
 
-**Family status:** ACTIVE — AI-WS-06 COMPLETE and LOCKED; AI-WS-03-hotfix COMPLETE and LOCKED
+**Family status:** ACTIVE — AI-WS-06 COMPLETE and LOCKED; AI-WS-03-hotfix COMPLETE and LOCKED; AI-WS-03-hotfix2 COMPLETE and LOCKED
 
-**Current stage:** AI-WS-03-hotfix (COMPLETE and LOCKED)
+**Current stage:** AI-WS-03-hotfix2 (COMPLETE and LOCKED)
 
 ---
 
@@ -11555,4 +11555,67 @@ Fix the frontend error guidance so generic 403 AI execute failures are not misla
 - Preserve existing non-403/non-429 behavior unless directly affected
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-WS-03-hotfix.
+
+---
+
+#### AI-WS-03-hotfix2: Accept Raw JSON File-Actions Fallback
+
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/AI-WS-03-hotfix2-CHECKPOINT.md`
+**Nature:** AI SERVICE PARSER HOTFIX — add a safe fallback extraction path for bare `{"file-actions":[...]}` model output so that delete/create/write/update actions survive the known contract-violation output shape without changing the primary fenced block contract
+**Source:** Inspection session (May 2026) — model sometimes emits raw JSON `{"file-actions":[...]}` instead of a fenced ```file-actions block; the current parser only reads fenced blocks, so no file actions are extracted and no confirmation appears
+**Depends on:** AI-WS-03 (COMPLETE and LOCKED); AI-WS-03-hotfix (COMPLETE and LOCKED)
+
+**Objective:**
+Make the ai-service file-action parser tolerate the known malformed-but-clear model output shape `{"file-actions":[...]}` so delete/create/write/update actions inside that raw JSON can still enter the existing frontend apply/confirmation pipeline, without changing fenced block extraction, frontend behavior, or backend file handling.
+
+**Bounded scope:**
+- AI service parser only, plus focused parser tests
+- Likely files:
+  - `services/ai-service/src/ai-execution/file-actions.parser.ts`
+  - `services/ai-service/src/ai-execution/__tests__/file-actions.parser.spec.ts`
+  - `services/ai-service/src/worker/worker.processor.ts` only if a tiny prompt wording clarification is needed
+  - directly relevant tests
+- Existing fenced ```file-actions block extraction remains unchanged (primary path)
+- If no fenced file-actions block is found, parser may fall back to detecting a bare JSON object with a top-level `"file-actions"` array in the text output
+- Fallback accepts only clear JSON object payloads with a top-level array
+- Actions inside fallback still go through existing action/path/content validation
+- Delete without content still parses correctly as supported by AI-WS-03
+- Non-delete actions still require content
+- Malformed JSON or unsafe action/path must fail closed and produce no file actions
+- No frontend changes
+- No backend/API/container-manager changes
+- No file-action apply logic changes
+- No preview routing changes
+
+**Non-goals:**
+- No change to AI delete application behavior
+- No change to confirmation UI
+- No preview/static routing fix
+- No file-action schema expansion beyond existing AI-WS-03 actions
+- No named file read/search changes
+- No backend/API/container-manager changes
+- No UX/UI changes
+- No unrelated workspace rollout work
+- No D1/PROJ-03 work
+
+**Acceptance checks:**
+- Raw JSON `{"file-actions":[{"action":"delete","path":"foo.html"}]}` extracts a delete action
+- Raw JSON create/write/update with valid content extracts correctly
+- Non-delete raw JSON action without content is rejected (no action extracted)
+- Existing fenced block tests still pass
+- Malformed raw JSON does not crash and extracts no actions
+- Unsafe paths remain rejected by existing path validation
+- AI service build and focused parser tests pass
+- No introduced lint errors
+
+**Risks / invariants:**
+- Fenced block contract remains the primary expected model format
+- Fallback must be narrow and safe — do not parse arbitrary prose as actions
+- Do not loosen path safety
+- Do not change frontend confirmation or apply semantics
+- Delete remains risky/confirmation-gated downstream as established by AI-WS-02
+- No backend or frontend behavior changes beyond parser extraction
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-WS-03-hotfix2.
 

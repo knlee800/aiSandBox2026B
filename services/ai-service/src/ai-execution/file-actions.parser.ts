@@ -69,6 +69,29 @@ function parseBlockPayload(blockPayload: string): FileAction[] {
   }
 }
 
+function parseTopLevelFileActionsObjectPayload(rawOutput: string): FileAction[] {
+  const trimmed = rawOutput.trim();
+  if (!trimmed) return [];
+
+  try {
+    const parsed = JSON.parse(trimmed) as unknown;
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return [];
+    }
+
+    const candidateActions = (parsed as Record<string, unknown>)['file-actions'];
+    if (!Array.isArray(candidateActions)) {
+      return [];
+    }
+
+    return candidateActions
+      .map((item) => parseActionCandidate(item))
+      .filter((item): item is FileAction => item !== null);
+  } catch {
+    return [];
+  }
+}
+
 export interface ParsedFileActionsOutput {
   textOutput: string;
   fileActions: FileAction[];
@@ -89,6 +112,10 @@ export function extractFileActionsFromOutput(
     }
     return '';
   });
+
+  if (collectedActions.length === 0) {
+    collectedActions.push(...parseTopLevelFileActionsObjectPayload(rawOutput));
+  }
 
   return {
     textOutput: textOutput.trim(),
