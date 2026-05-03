@@ -11057,9 +11057,9 @@ Make the active AI execution path aware of the current workspace file list and s
 
 ## AI-WS — AI Workspace Capability
 
-**Family status:** ACTIVE — AI-WS-06 COMPLETE and LOCKED
+**Family status:** ACTIVE — AI-WS-06 COMPLETE and LOCKED; AI-WS-03-hotfix COMPLETE and LOCKED
 
-**Current stage:** AI-WS-06 (COMPLETE and LOCKED)
+**Current stage:** AI-WS-03-hotfix (COMPLETE and LOCKED)
 
 ---
 
@@ -11506,4 +11506,53 @@ Add a bounded, safe workspace content search capability so AI can answer questio
 - Preserve provider selection and queue semantics
 - Preserve existing file-action behavior
 - No destructive action changes in this slice
+
+---
+
+#### AI-WS-03-hotfix: Correct AI Execute 403 Error Wording
+
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/AI-WS-03-hotfix-CHECKPOINT.md`
+**Nature:** FRONTEND WORDING HOTFIX — correct misleading AI execute error guidance for generic 403 responses without changing backend enforcement or AI behavior
+**Source:** Inspection session (Apr 2026) — frontend currently maps generic `POST /api/ai/execute` 403 failures to quota wording even when the failure can be access/launch/scope/auth related
+**Depends on:** AI-WS-06 (COMPLETE and LOCKED)
+
+**Objective:**
+Fix the frontend error guidance so generic 403 AI execute failures are not mislabeled as quota failures.
+
+**Bounded scope:**
+- Frontend only
+- Likely files:
+  - `frontend/components/workspace/workspace-quota-usage.logic.ts`
+  - `frontend/components/workspace/workspace-quota-usage.logic.test.ts` only if a directly relevant seam exists
+- Do not map all 403 responses to quota wording
+- Keep quota/rate-limit wording when:
+  - status code is 429, or
+  - raw message clearly includes quota/rate-limit wording
+- For 403 without quota/rate-limit wording:
+  - preserve useful backend message if available, or
+  - use a generic access fallback such as "Request blocked by access rules. Check your API key permissions or launch access."
+
+**Non-goals:**
+- No backend changes
+- No quota enforcement changes
+- No launch/auth guard changes
+- No provider logic changes
+- No AI delete behavior changes
+- No file-action parser/schema changes
+
+**Acceptance checks:**
+- 429 still maps to quota/rate-limit guidance
+- 403 with quota wording still maps to quota guidance
+- 403 without quota wording maps to access/permission guidance, not quota
+- Typecheck and focused tests pass
+- No introduced lint errors
+
+**Risks / invariants:**
+- Frontend wording fix only
+- Do not change actual quota, auth, launch, or provider behavior
+- Do not affect AI file-action handling or delete flow
+- Preserve existing non-403/non-429 behavior unless directly affected
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-WS-03-hotfix.
 

@@ -20832,9 +20832,9 @@ Make the active AI execution path aware of the current workspace file list and s
 
 ## AI-WS ??AI Workspace Capability
 
-**Family status:** ACTIVE — AI-WS-06 COMPLETE and LOCKED
+**Family status:** ACTIVE — AI-WS-06 COMPLETE and LOCKED; AI-WS-03-hotfix COMPLETE and LOCKED
 
-**Current stage:** AI-WS-06 (COMPLETE and LOCKED)
+**Current stage:** AI-WS-03-hotfix (COMPLETE and LOCKED)
 
 **Ordered slices (registered so far):**
 1. AI-WS-01 — Selected File Content Context Injection (COMPLETE and LOCKED)
@@ -20843,6 +20843,7 @@ Make the active AI execution path aware of the current workspace file list and s
 4. AI-WS-04 — Project And Workspace Metadata Context (COMPLETE and LOCKED)
 5. AI-WS-05 — Named File Read Support (COMPLETE and LOCKED)
 6. AI-WS-06 — Workspace Content Search Support (COMPLETE and LOCKED)
+7. AI-WS-03-hotfix — Correct AI Execute 403 Error Wording (COMPLETE and LOCKED)
 
 ---
 
@@ -21329,6 +21330,64 @@ Add a bounded, safe workspace content search capability so AI can answer questio
 - No destructive action changes in this slice
 
 **Reference:** See TASKS.md -> AI-WS-06 for active-task summary.
+
+---
+
+### AI-WS-03-hotfix: Correct AI Execute 403 Error Wording
+
+**Task ID:** AI-WS-03-hotfix
+**Family:** AI-WS (AI Workspace Capability)
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/AI-WS-03-hotfix-CHECKPOINT.md`
+**Nature:** FRONTEND WORDING HOTFIX — correct misleading AI execute error guidance for generic 403 responses without changing backend enforcement or AI behavior
+**Source:** Inspection session (Apr 2026) — frontend currently maps generic `POST /api/ai/execute` 403 failures to quota wording even when the failure can be access/launch/scope/auth related
+**Depends on:** AI-WS-06 (COMPLETE and LOCKED)
+
+**Objective:**
+Fix the frontend error guidance so generic 403 AI execute failures are not mislabeled as quota failures.
+
+**Bounded scope:**
+- Frontend only
+- Likely files:
+  - `frontend/components/workspace/workspace-quota-usage.logic.ts`
+  - `frontend/components/workspace/workspace-quota-usage.logic.test.ts` only if a directly relevant seam exists
+- Do not map all 403 responses to quota wording
+- Keep quota/rate-limit wording when:
+  - status code is 429, or
+  - raw message clearly includes quota/rate-limit wording
+- For 403 without quota/rate-limit wording:
+  - preserve useful backend message if available, or
+  - use a generic access fallback such as "Request blocked by access rules. Check your API key permissions or launch access."
+
+**Allowed files/surfaces:**
+- `frontend/components/workspace/workspace-quota-usage.logic.ts`
+- `frontend/components/workspace/workspace-quota-usage.logic.test.ts` only if a directly relevant test seam exists
+- directly relevant frontend call sites only if needed to preserve current error plumbing shape
+
+**Non-goals:**
+- No backend changes
+- No quota enforcement changes
+- No launch/auth guard changes
+- No provider logic changes
+- No AI delete behavior changes
+- No file-action parser/schema changes
+
+**Acceptance checks:**
+- 429 still maps to quota/rate-limit guidance
+- 403 with quota wording still maps to quota guidance
+- 403 without quota wording maps to access/permission guidance, not quota
+- Typecheck and focused tests pass
+- No introduced lint errors
+
+**Risks / invariants:**
+- Frontend wording fix only
+- Do not change actual quota, auth, launch, or provider behavior
+- Do not affect AI file-action handling or delete flow
+- Preserve existing non-403/non-429 behavior unless directly affected
+
+**Reference:** See TASKS.md -> AI-WS-03-hotfix for active-task summary.
 
 ---
 

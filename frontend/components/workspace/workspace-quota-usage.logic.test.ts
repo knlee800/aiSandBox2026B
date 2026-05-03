@@ -38,6 +38,48 @@ describe('workspace quota usage logic', () => {
     );
   });
 
+  test('maps usage-limit failures to quota guidance', () => {
+    const message = toQuotaRateLimitGuidance({
+      rawMessage: 'Usage limit exceeded for current workspace',
+      fallbackMessage: 'Chat execution failed.',
+      statusCode: 403,
+    });
+    assert.equal(
+      message,
+      'Request blocked by quota limits. Review usage and try again after quota reset.',
+    );
+  });
+
+  test('maps 403 rate-limit wording to rate-limit guidance', () => {
+    const message = toQuotaRateLimitGuidance({
+      rawMessage: 'Rate limit exceeded for current window',
+      fallbackMessage: 'Chat execution failed.',
+      statusCode: 403,
+    });
+    assert.equal(message, 'Request blocked by rate limits. Retry shortly.');
+  });
+
+  test('maps generic 403 failures to access guidance', () => {
+    const message = toQuotaRateLimitGuidance({
+      rawMessage: 'Forbidden resource',
+      fallbackMessage: 'Chat execution failed.',
+      statusCode: 403,
+    });
+    assert.equal(
+      message,
+      'Request blocked by access rules. Check your API key permissions or launch access.',
+    );
+  });
+
+  test('preserves useful 403 backend messages', () => {
+    const message = toQuotaRateLimitGuidance({
+      rawMessage: 'API key lacks ai:execute scope.',
+      fallbackMessage: 'Chat execution failed.',
+      statusCode: 403,
+    });
+    assert.equal(message, 'API key lacks ai:execute scope.');
+  });
+
   test('returns raw or fallback message for non-quota failures', () => {
     assert.equal(
       toQuotaRateLimitGuidance({
