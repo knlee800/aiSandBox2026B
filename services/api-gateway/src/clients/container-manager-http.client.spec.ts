@@ -28,17 +28,20 @@ describe('ContainerManagerHttpClient file operations', () => {
     delete process.env.INTERNAL_SERVICE_KEY;
   });
 
-  it('calls the existing container-manager file delete endpoint', async () => {
+  it('calls the internal sessions file delete endpoint', async () => {
     mockAxiosInstance.delete.mockResolvedValue({ data: undefined });
 
     await client.deleteSessionFile('session-123', 'src/old.ts');
 
-    expect(mockAxiosInstance.delete).toHaveBeenCalledWith('/api/files/session-123/delete', {
-      data: { path: 'src/old.ts' },
-      headers: {
-        'X-Internal-Service-Key': 'test-internal-key',
+    expect(mockAxiosInstance.delete).toHaveBeenCalledWith(
+      '/api/internal/sessions/session-123/files',
+      {
+        data: { path: 'src/old.ts' },
+        headers: {
+          'X-Internal-Service-Key': 'test-internal-key',
+        },
       },
-    });
+    );
   });
 
   it('calls the bounded container-manager file search endpoint', async () => {

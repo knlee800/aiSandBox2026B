@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import Docker from 'dockerode';
 import { GovernanceConfig } from '../config/governance.config';
 
@@ -515,6 +515,62 @@ export class DockerRuntimeService implements OnModuleInit {
       // Wrap other errors (container errors, write failures) as HTTP 500
       throw new Error(
         `Failed to write file to container for session ${sessionId}: ${error.message}`,
+      );
+    }
+  }
+
+  /**
+   * Delete a file from container filesystem by session ID
+   * Task AI-WS-03-hotfix5: Route file delete through container exec
+   *
+   * @param sessionId - Session identifier
+   * @param filePath - Relative path from /workspace (e.g., "index.js", "src/app.ts")
+   * @throws BadRequestException if path is invalid or points to a directory
+   * @throws NotFoundException if file does not exist
+   * @throws Error if container not found, not running, or delete fails
+   */
+  async deleteFileFromContainer(
+    sessionId: string,
+    filePath: string,
+  ): Promise<void> {
+    try {
+      this.validateWorkspacePath(filePath);
+
+      const container = await this.findContainerBySessionId(sessionId);
+      const inspect = await container.inspect();
+      if (!inspect.State.Running) {
+        throw new Error(`Container for session ${sessionId} is not running`);
+      }
+
+      const fullPath = `/workspace/${filePath}`;
+      const result = await this.execInContainerBySessionId(
+        sessionId,
+        ['rm', fullPath],
+        '/workspace',
+        undefined,
+        30000,
+      );
+
+      if (result.exitCode !== 0) {
+        const stderr = `${result.stderr ?? ''}`.trim();
+        if (/No such file/i.test(stderr)) {
+          throw new NotFoundException(`File not found: ${filePath}`);
+        }
+        if (/Is a directory/i.test(stderr)) {
+          throw new BadRequestException('Directory delete is not supported');
+        }
+        throw new Error(`Failed to delete file: ${filePath}`);
+      }
+    } catch (error) {
+      if (
+        error instanceof BadRequestException ||
+        error instanceof NotFoundException
+      ) {
+        throw error;
+      }
+
+      throw new Error(
+        `Failed to delete file from container for session ${sessionId}: ${error.message}`,
       );
     }
   }

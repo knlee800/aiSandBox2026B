@@ -11057,9 +11057,9 @@ Make the active AI execution path aware of the current workspace file list and s
 
 ## AI-WS — AI Workspace Capability
 
-**Family status:** ACTIVE — AI-WS-06 COMPLETE and LOCKED; AI-WS-03-hotfix COMPLETE and LOCKED; AI-WS-03-hotfix2 COMPLETE and LOCKED
+**Family status:** ACTIVE — AI-WS-06 COMPLETE and LOCKED; AI-WS-03-hotfix COMPLETE and LOCKED; AI-WS-03-hotfix2 COMPLETE and LOCKED; AI-WS-03-hotfix3 COMPLETE and LOCKED; AI-WS-02-hotfix COMPLETE and LOCKED; AI-WS-03-hotfix4 COMPLETE and LOCKED; AI-WS-03-hotfix5 COMPLETE and LOCKED
 
-**Current stage:** AI-WS-03-hotfix2 (COMPLETE and LOCKED)
+**Current stage:** AI-WS-03-hotfix5 (COMPLETE and LOCKED)
 
 ---
 
@@ -11618,4 +11618,283 @@ Make the ai-service file-action parser tolerate the known malformed-but-clear mo
 - No backend or frontend behavior changes beyond parser extraction
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-WS-03-hotfix2.
+
+---
+
+#### AI-WS-03-hotfix3: Surface Backend Delete Error Message
+
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/AI-WS-03-hotfix3-CHECKPOINT.md`
+**Nature:** FRONTEND HELPER HOTFIX — update `deleteWorkspaceFile` to surface the backend error message on failed delete responses instead of discarding the response body
+**Source:** Inspection session (May 2026) — after AI-WS-03-hotfix2, delete reaches the apply pipeline but `deleteWorkspaceFile` throws generic `File delete failed (404)` instead of surfacing the container-manager's useful `File not found: index2.html` message
+**Depends on:** AI-WS-03-hotfix2 (COMPLETE and LOCKED)
+
+**Objective:**
+Update the frontend delete helper to read and surface the backend `message` field from non-OK delete responses, while preserving existing fallback behavior for non-JSON or empty error bodies.
+
+**Bounded scope:**
+- Frontend helper only, plus focused tests
+- Likely files:
+  - `frontend/components/workspace/workspace-file-navigation.logic.ts`
+  - `frontend/components/workspace/workspace-file-navigation.logic.test.ts`
+- On failed `deleteWorkspaceFile(...)` response:
+  - try to parse JSON response body
+  - if body has useful string `message`, throw that message
+  - otherwise keep fallback: `File delete failed (<status>)`
+  - non-JSON error body must not crash
+- Successful delete behavior unchanged
+- No backend changes
+- No AI parser changes
+- No file-action apply logic changes
+- No confirmation UI changes
+- No delete route/body changes
+- No preview changes
+
+**Non-goals:**
+- No backend changes
+- No AI parser changes
+- No file-action apply logic changes
+- No confirmation UI changes
+- No delete route/body changes
+- No preview changes
+- No unrelated workspace rollout work
+- No D1/PROJ-03 work
+
+**Acceptance checks:**
+- 404 with JSON `{ message: "File not found: index2.html" }` throws `File not found: index2.html`
+- 404 with non-JSON body falls back to `File delete failed (404)`
+- 204/OK delete still resolves successfully
+- Existing read/write/list helper behavior unchanged
+- Frontend typecheck and focused tests pass
+- No introduced lint errors
+
+**Risks / invariants:**
+- Frontend-only
+- Do not alter delete route, confirmation gate, parser, or backend behavior
+- Preserve fallback for non-JSON errors
+- Preserve existing file-action apply semantics
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-WS-03-hotfix3.
+
+---
+
+#### AI-WS-02-hotfix: Sanitize Restored Pending File-Action Confirmations
+
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/AI-WS-02-hotfix-CHECKPOINT.md`
+**Nature:** FRONTEND CHAT-THREAD RESTORE HOTFIX — sanitize stale `awaiting-confirmation` file-action states when restoring persisted chat messages, so ghost Apply buttons are never rendered after session restore or page reload
+**Source:** Inspection session (May 2026) — after AI-WS-03-hotfix3, observed that delete-test.html appeared to not delete when Apply was pressed; root cause traced to a prior unconfirmed execution's awaiting-confirmation state being restored from localStorage, while `pendingConfirmationExecutionIdsRef` was cleared — pressing Apply silently returned with no action
+**Depends on:** AI-WS-02 (COMPLETE and LOCKED)
+
+**Objective:**
+In `parseStoredChatThreadMessages`, when a restored message has `fileActionState.applyStatus === 'awaiting-confirmation'`, convert it to `applyStatus: 'skipped'` with `skipReason: 'session-restored'` and `confirmationRequired: false`, so the message shows a neutral skipped indicator rather than a non-functional Apply button.
+
+**Bounded scope:**
+- Frontend chat-thread restore normalization only, plus focused tests
+- Likely files:
+  - `frontend/components/workspace/workspace-chat-thread.logic.ts`
+  - `frontend/components/workspace/workspace-chat-thread.logic.test.ts`
+- In `parseStoredChatThreadMessages`, convert restored `awaiting-confirmation` → `skipped` with `skipReason: 'session-restored'`
+- Already applied states remain unchanged
+- Already skipped/failed states remain unchanged
+- In-session confirmation behavior remains unchanged
+- No changes outside the restore/parse path
+
+**Non-goals:**
+- No change to live confirmation/apply flow
+- No change to `pendingConfirmationExecutionIdsRef` logic
+- No model output contract changes
+- No backend/API/container-manager changes
+- No parser/schema changes
+- No delete behavior changes
+- No broad chat persistence refactor
+- No confirmation UI redesign
+- No preview changes
+
+**Acceptance checks:**
+- Restored message with `applyStatus: 'awaiting-confirmation'` becomes `applyStatus: 'skipped'` with `skipReason: 'session-restored'` and `confirmationRequired: false`
+- Restored message with `applyStatus: 'applied'` remains unchanged
+- Restored message with `applyStatus: 'skipped'` remains unchanged
+- Restored message with no `fileActionState` remains unchanged
+- Existing chat-thread parsing behavior intact
+- Frontend typecheck and focused tests pass
+- No introduced lint errors
+
+**Risks / invariants:**
+- Frontend-only
+- Do not affect live in-session confirmation flow
+- Do not silently apply stale actions after restore
+- Do not render dead Apply buttons after restore
+- Preserve existing applied/skipped/failed historical messages
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-WS-02-hotfix.
+
+---
+
+#### AI-WS-03-hotfix4: Preserve Delete File Actions In API Gateway Execution Results
+
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/AI-WS-03-hotfix4-CHECKPOINT.md`
+**Nature:** API GATEWAY DTO / PARSER HOTFIX — update execution-result DTO and metadata parser to accept and return delete file-actions, preventing status/execute responses from stripping delete actions out of completed execution results
+**Source:** Inspection session (May 2026) — delete file-actions arrive correctly through SSE but the status/execute response returns `fileActions: []` for delete executions because `parseExecutionResultMetadata` only accepts create/write/update, silently dropping delete; this causes the frontend pending confirmation state to be overwritten with an empty action array, making the Apply button disappear
+**Depends on:** AI-WS-03 (COMPLETE and LOCKED)
+
+**Objective:**
+Update `FileActionDto` and `parseExecutionResultMetadata` in the API gateway so delete file-actions stored in execution metadata are included in status/execute responses, matching the AI-WS-03 action schema.
+
+**Bounded scope:**
+- API gateway execution-result DTO and metadata parser only, plus focused tests
+- Likely files:
+  - `services/api-gateway/src/ai/dto/execution-result.dto.ts`
+  - `services/api-gateway/src/ai/ai-execution.controller.ts`
+  - focused test file for execution result metadata parsing
+- `FileActionDto.action` extends to include `"delete"`
+- `content` is optional or absent for delete actions in the DTO
+- `parseExecutionResultMetadata` accepts delete actions with string `path` and no `content`
+- create/write/update actions still require string `content`
+- invalid actions still dropped
+- No frontend changes
+- No ai-service parser changes
+- No container-manager changes
+- No delete route/body changes
+- No confirmation UI changes
+- No file-action apply logic changes
+
+**Non-goals:**
+- No frontend changes
+- No ai-service changes
+- No container-manager changes
+- No delete route changes
+- No confirmation UI redesign
+- No apply logic changes
+- No unrelated status shape changes
+
+**Acceptance checks:**
+- Metadata with delete action returns `fileActions` containing the delete entry
+- Metadata with mixed create + delete returns both
+- Delete action without `content` is accepted
+- Non-delete action without `content` is still rejected
+- Existing create/write/update parsing tests pass
+- API gateway build and focused tests pass
+- No introduced lint errors
+
+**Risks / invariants:**
+- API gateway DTO must align with AI-WS-03 action schema
+- Do not loosen content validation for create/write/update
+- Do not change frontend behavior in this task
+- Preserve existing status response shape; only extend to allow delete with no content
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-WS-03-hotfix4.
+
+---
+
+#### AI-WS-03-hotfix5: Route File Delete Through Container Exec
+
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/AI-WS-03-hotfix5-CHECKPOINT.md`
+**Nature:** CONTAINER-MANAGER ROUTING HOTFIX — route file delete through Docker exec (matching read/write/list) instead of host `fs.unlink()` via FilesController; update API gateway HTTP client to target the internal sessions delete route
+**Source:** Inspection session (May 2026) — deleting an existing file fails with "File not found" because `ContainerManagerHttpClient.deleteSessionFile` calls `DELETE /api/files/${sessionId}/delete` (FilesController → host fs.unlink), while all other file operations route through `InternalSessionsController` → Docker exec; on Windows/Docker Desktop bind mounts this produces a filesystem view mismatch
+**Depends on:** AI-WS-03 (COMPLETE and LOCKED)
+
+**Bounded scope:**
+- Container-manager delete path and API gateway HTTP client target URL only
+- Likely files:
+  - `services/container-manager/src/docker/docker-runtime.service.ts`
+  - `services/container-manager/src/sessions/sessions.service.ts`
+  - `services/container-manager/src/sessions/internal-sessions.controller.ts`
+  - `services/api-gateway/src/clients/container-manager-http.client.ts`
+  - focused tests for changed surfaces
+- No frontend changes
+- No AI parser changes
+- No file-action apply logic changes
+- No confirmation UI changes
+- No API gateway user-facing route changes
+- No schema/migration
+- No broad file API refactor
+- Existing FilesController delete route may remain but must no longer be called by the API gateway client
+
+**Acceptance checks:**
+- Deleting a file that exists in the active container workspace succeeds
+- Deleting a missing file returns a useful not-found error
+- Path traversal is rejected
+- API gateway client calls the new internal sessions delete route
+- Read/write/list behavior unchanged
+- Container-manager and API-gateway builds and focused tests pass
+- No introduced lint errors
+
+**Risks / invariants:**
+- Must not introduce arbitrary shell command execution
+- Use existing container exec safety patterns (validateWorkspacePath)
+- Keep delete scoped to current session workspace
+- Do not delete directories recursively — file-only delete in v1
+- Preserve frontend/API gateway public route behavior
+- Preserve AI file-action apply and confirmation gate behavior
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-WS-03-hotfix5.
+
+---
+
+## PREVIEW — Preview Routing & Static Serving
+
+**Family status:** ACTIVE — PREVIEW-hotfix COMPLETE and LOCKED
+
+**Current stage:** PREVIEW-hotfix (COMPLETE and LOCKED)
+
+---
+
+#### PREVIEW-hotfix: Preserve Static HTML Relative Links Under Proxy Route
+
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/PREVIEW-hotfix-CHECKPOINT.md`
+**Nature:** CONTAINER-MANAGER STATIC PREVIEW HOTFIX — inject a `<base>` tag into served static HTML responses so relative links resolve under the `/proxy/` route namespace without changing file storage, write paths, or AI behavior
+**Source:** Inspection session (May 2026) — static HTML preview iframe is loaded at `/api/preview/<sessionId>/proxy`; relative links like `href="page2.html"` resolve to `/api/preview/<sessionId>/page2.html` and miss the `/proxy/` route, causing 404
+**Depends on:** AI-WS-03-hotfix2 (COMPLETE and LOCKED)
+
+**Objective:**
+Make normal static HTML relative links and buttons work inside the preview iframe by injecting a correct `<base>` tag into served static HTML responses so relative URLs resolve under `/api/preview/<sessionId>/proxy/`, without changing file write paths, AI file actions, workspace storage, or broad preview architecture.
+
+**Bounded scope:**
+- Container-manager static preview serving only
+- Likely files:
+  - `services/container-manager/src/preview/preview.service.ts`
+  - focused preview test (existing spec or new focused spec alongside)
+  - directly relevant tests
+- When serving static HTML preview content, inject `<base href="/api/preview/<sessionId>/proxy/">` into `<head>` if present; otherwise insert safely near the top of the document
+- Only apply to HTML responses — do not modify CSS, JS, images, or other assets
+- Do not inject if a `<base>` tag is already present in the document
+- Do not change workspace file storage paths
+- Do not change AI file-action paths
+- Do not change session file read/write/delete APIs
+- Do not change non-static (dynamic/server) preview behavior
+- Keep implementation small and testable
+
+**Non-goals:**
+- No AI parser changes
+- No AI prompt changes
+- No file-action changes
+- No workspace storage changes
+- No route redesign
+- No SPA routing overhaul
+- No broad preview refactor
+- No D1/PROJ-03 work
+- No unrelated workspace rollout work
+
+**Acceptance checks:**
+- Static HTML response includes correct `<base href="/api/preview/<sessionId>/proxy/">`
+- HTML with `<head>` gets base tag injected inside `<head>`
+- HTML with an existing `<base>` tag is not double-injected
+- Non-HTML assets are not modified
+- Relative links like `page2.html` resolve to `/api/preview/<sessionId>/proxy/page2.html`
+- Relevant build/tests pass
+- No introduced lint errors
+
+**Risks / invariants:**
+- Inject only in served response — do not rewrite user files on disk
+- Do not modify non-HTML content
+- Do not break existing asset loading
+- Do not change file write/read/delete behavior
+- Do not change AI behavior
+- Keep fix limited to static preview content serving
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PREVIEW-hotfix.
 

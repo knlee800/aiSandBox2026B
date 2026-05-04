@@ -174,6 +174,27 @@ export class InternalSessionsController {
   }
 
   /**
+   * DELETE /api/internal/sessions/:id/files
+   * Delete a file from a session's container filesystem
+   * Task AI-WS-03-hotfix5: Route file delete through container exec
+   *
+   * Request body:
+   * - path (required): Relative file path from /workspace
+   */
+  @Delete(':id/files')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteFile(
+    @Param('id') sessionId: string,
+    @Body('path') filePath?: string,
+  ): Promise<void> {
+    if (!filePath) {
+      throw new BadRequestException('Request body field "path" is required');
+    }
+
+    await this.sessionsService.deleteFileFromContainer(sessionId, filePath);
+  }
+
+  /**
    * GET /api/internal/sessions/:id/dirs
    * List directory contents from a session's container filesystem
    * Task 7.2C: Container Directory Listing (Read-Only)

@@ -49,6 +49,78 @@ describe('AIExecutionController.getExecution fileActions', () => {
     });
   });
 
+  it('returns delete fileActions for completed execution without content', async () => {
+    const executionResultService = {
+      getExecution: jest.fn().mockResolvedValue({
+        execution_id: 'exec-delete',
+        execution_status: 'completed',
+        tokens_used: 3,
+        metadata: {
+          aiExecutionResult: {
+            output: 'delete response',
+            fileActions: [{ action: 'delete', path: 'delete-test.html' }],
+          },
+        },
+      }),
+    };
+
+    const controller = makeController(executionResultService);
+    const result = await controller.getExecution('exec-delete');
+
+    expect(result.fileActions).toEqual([{ action: 'delete', path: 'delete-test.html' }]);
+  });
+
+  it('returns mixed create and delete fileActions for completed execution', async () => {
+    const executionResultService = {
+      getExecution: jest.fn().mockResolvedValue({
+        execution_id: 'exec-mixed',
+        execution_status: 'completed',
+        tokens_used: 7,
+        metadata: {
+          aiExecutionResult: {
+            output: 'mixed response',
+            fileActions: [
+              { action: 'create', path: 'src/a.ts', content: 'a' },
+              { action: 'delete', path: 'src/old.ts' },
+            ],
+          },
+        },
+      }),
+    };
+
+    const controller = makeController(executionResultService);
+    const result = await controller.getExecution('exec-mixed');
+
+    expect(result.fileActions).toEqual([
+      { action: 'create', path: 'src/a.ts', content: 'a' },
+      { action: 'delete', path: 'src/old.ts' },
+    ]);
+  });
+
+  it('rejects non-delete fileActions without content while preserving delete actions', async () => {
+    const executionResultService = {
+      getExecution: jest.fn().mockResolvedValue({
+        execution_id: 'exec-invalid',
+        execution_status: 'completed',
+        tokens_used: 2,
+        metadata: {
+          aiExecutionResult: {
+            output: 'invalid response',
+            fileActions: [
+              { action: 'write', path: 'src/missing.ts' },
+              { action: 'delete', path: 'src/old.ts' },
+            ],
+          },
+        },
+      }),
+    };
+
+    const controller = makeController(executionResultService);
+    const result = await controller.getExecution('exec-invalid');
+
+    expect(result.fileActions).toEqual([{ action: 'delete', path: 'src/old.ts' }]);
+  });
+
   it('returns empty fileActions when metadata does not contain them', async () => {
     const executionResultService = {
       getExecution: jest.fn().mockResolvedValue({

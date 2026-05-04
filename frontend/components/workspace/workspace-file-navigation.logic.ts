@@ -120,6 +120,18 @@ export async function deleteWorkspaceFile(
   });
 
   if (!response.ok) {
+    let backendMessage: string | null = null;
+    try {
+      const errorBody = (await response.json()) as { message?: unknown };
+      if (typeof errorBody.message === 'string' && errorBody.message.trim().length > 0) {
+        backendMessage = errorBody.message.trim();
+      }
+    } catch {
+      backendMessage = null;
+    }
+    if (backendMessage) {
+      throw new Error(backendMessage);
+    }
     throw new Error(`File delete failed (${response.status})`);
   }
 }

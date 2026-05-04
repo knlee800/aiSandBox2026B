@@ -15,7 +15,7 @@ export interface ExecutionResultDto {
 }
 
 export interface FileActionDto {
-  action: 'create' | 'write' | 'update';
+  action: 'create' | 'write' | 'update' | 'delete';
   path: string;
-  content: string;
+  content?: string;
 }

@@ -108,6 +108,7 @@ describe('workspace file navigation logic', () => {
       fetchCalls.push({ url: String(url), init });
       return {
         ok: true,
+        status: 204,
       } as Response;
     };
 
@@ -126,6 +127,46 @@ describe('workspace file navigation logic', () => {
       'application/json',
     );
     assert.equal(fetchCalls[0].init?.body, JSON.stringify({ path: 'src/old.ts' }));
+  });
+
+  test('surfaces backend delete error messages when available', async () => {
+    const fakeFetch = async () =>
+      ({
+        ok: false,
+        status: 404,
+        json: async () => ({ message: 'File not found: index2.html' }),
+      }) as unknown as Response;
+
+    await assert.rejects(
+      deleteWorkspaceFile({
+        token: 'token-del',
+        sessionId: 'session-del',
+        filePath: 'index2.html',
+        fetchImpl: fakeFetch as typeof fetch,
+      }),
+      /File not found: index2\.html/,
+    );
+  });
+
+  test('falls back to generic delete error when backend body is not json', async () => {
+    const fakeFetch = async () =>
+      ({
+        ok: false,
+        status: 404,
+        json: async () => {
+          throw new SyntaxError('Unexpected token < in JSON');
+        },
+      }) as unknown as Response;
+
+    await assert.rejects(
+      deleteWorkspaceFile({
+        token: 'token-del',
+        sessionId: 'session-del',
+        filePath: 'index2.html',
+        fetchImpl: fakeFetch as typeof fetch,
+      }),
+      /File delete failed \(404\)/,
+    );
   });
 
   test('searches workspace files using existing session-scoped search endpoint', async () => {

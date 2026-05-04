@@ -141,6 +141,11 @@ export class AIExecutionController {
           path: value.path,
           content: value.content,
         });
+      } else if (value.action === 'delete' && typeof value.path === 'string') {
+        fileActions.push({
+          action: value.action,
+          path: value.path,
+        });
       }
     }
 

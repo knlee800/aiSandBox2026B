@@ -214,10 +214,13 @@ export class PreviewService {
       sessionId,
       sanitizedPath,
     );
+    const contentType = this.resolveContentType(sanitizedPath);
 
     return {
-      content,
-      contentType: this.resolveContentType(sanitizedPath),
+      content: contentType.startsWith('text/html')
+        ? this.injectPreviewBaseTag(content, sessionId)
+        : content,
+      contentType,
     };
   }
 
@@ -450,6 +453,19 @@ export class PreviewService {
     }
 
     return normalizedPath;
+  }
+
+  private injectPreviewBaseTag(html: string, sessionId: string): string {
+    if (/<base\b/i.test(html)) {
+      return html;
+    }
+
+    const baseTag = `<base href="/api/preview/${encodeURIComponent(sessionId)}/proxy/">`;
+    if (/<head\b[^>]*>/i.test(html)) {
+      return html.replace(/<head\b[^>]*>/i, (match) => `${match}${baseTag}`);
+    }
+
+    return `${baseTag}${html}`;
   }
 
   private resolveContentType(filePath: string): string {

@@ -58,10 +58,16 @@ export function parseStoredChatThreadMessages(raw: string | null): WorkspaceChat
         message.model = candidate.model;
       }
       if (isWorkspaceExecutionFileActionState(candidate.fileActionState)) {
-        message.fileActionState = {
+        const normalizedFileActionState: WorkspaceExecutionFileActionState = {
           ...candidate.fileActionState,
           confirmationRequired: candidate.fileActionState.confirmationRequired === true,
         };
+        if (normalizedFileActionState.applyStatus === 'awaiting-confirmation') {
+          normalizedFileActionState.applyStatus = 'skipped';
+          normalizedFileActionState.skipReason = 'session-restored';
+          normalizedFileActionState.confirmationRequired = false;
+        }
+        message.fileActionState = normalizedFileActionState;
       }
       messages.push(message);
     }

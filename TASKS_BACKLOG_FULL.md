@@ -20832,9 +20832,9 @@ Make the active AI execution path aware of the current workspace file list and s
 
 ## AI-WS ??AI Workspace Capability
 
-**Family status:** ACTIVE — AI-WS-06 COMPLETE and LOCKED; AI-WS-03-hotfix COMPLETE and LOCKED; AI-WS-03-hotfix2 COMPLETE and LOCKED
+**Family status:** ACTIVE — AI-WS-06 COMPLETE and LOCKED; AI-WS-03-hotfix COMPLETE and LOCKED; AI-WS-03-hotfix2 COMPLETE and LOCKED; AI-WS-03-hotfix3 COMPLETE and LOCKED; AI-WS-02-hotfix COMPLETE and LOCKED; AI-WS-03-hotfix4 COMPLETE and LOCKED; AI-WS-03-hotfix5 COMPLETE and LOCKED
 
-**Current stage:** AI-WS-03-hotfix2 (COMPLETE and LOCKED)
+**Current stage:** AI-WS-03-hotfix5 (COMPLETE and LOCKED)
 
 **Ordered slices (registered so far):**
 1. AI-WS-01 — Selected File Content Context Injection (COMPLETE and LOCKED)
@@ -20845,6 +20845,10 @@ Make the active AI execution path aware of the current workspace file list and s
 6. AI-WS-06 — Workspace Content Search Support (COMPLETE and LOCKED)
 7. AI-WS-03-hotfix — Correct AI Execute 403 Error Wording (COMPLETE and LOCKED)
 8. AI-WS-03-hotfix2 — Accept Raw JSON File-Actions Fallback (COMPLETE and LOCKED)
+9. AI-WS-03-hotfix3 — Surface Backend Delete Error Message (COMPLETE and LOCKED)
+10. AI-WS-02-hotfix — Sanitize Restored Pending File-Action Confirmations (COMPLETE and LOCKED)
+11. AI-WS-03-hotfix4 — Preserve Delete File Actions In API Gateway Execution Results (COMPLETE and LOCKED)
+12. AI-WS-03-hotfix5 — Route File Delete Through Container Exec (COMPLETE and LOCKED)
 
 ---
 
@@ -21456,6 +21460,255 @@ Make the ai-service file-action parser tolerate the known malformed-but-clear mo
 - No backend or frontend behavior changes beyond parser extraction
 
 **Reference:** See TASKS.md -> AI-WS-03-hotfix2 for active-task summary.
+
+---
+
+### AI-WS-03-hotfix3: Surface Backend Delete Error Message
+
+**Task ID:** AI-WS-03-hotfix3
+**Family:** AI-WS (AI Workspace Capability)
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/AI-WS-03-hotfix3-CHECKPOINT.md`
+**Nature:** FRONTEND HELPER HOTFIX — update `deleteWorkspaceFile` to surface the backend error message on failed delete responses instead of discarding the response body
+**Source:** Inspection session (May 2026) — after AI-WS-03-hotfix2, delete reaches the apply pipeline but `deleteWorkspaceFile` throws generic `File delete failed (404)` instead of surfacing the container-manager's useful `File not found: index2.html` message
+**Depends on:** AI-WS-03-hotfix2 (COMPLETE and LOCKED)
+
+**Objective:**
+Update the frontend delete helper to read and surface the backend `message` field from non-OK delete responses, while preserving existing fallback behavior for non-JSON or empty error bodies.
+
+**Bounded scope:**
+- Frontend helper only, plus focused tests
+- Likely files:
+  - `frontend/components/workspace/workspace-file-navigation.logic.ts`
+  - `frontend/components/workspace/workspace-file-navigation.logic.test.ts`
+- On failed `deleteWorkspaceFile(...)` response:
+  - try to parse JSON response body
+  - if body has useful string `message`, throw that message
+  - otherwise keep fallback: `File delete failed (<status>)`
+  - non-JSON error body must not crash
+- Successful delete behavior unchanged
+- No backend changes
+- No AI parser changes
+- No file-action apply logic changes
+- No confirmation UI changes
+- No delete route/body changes
+- No preview changes
+
+**Non-goals:**
+- No backend changes
+- No AI parser changes
+- No file-action apply logic changes
+- No confirmation UI changes
+- No delete route/body changes
+- No preview changes
+- No unrelated workspace rollout work
+- No D1/PROJ-03 work
+
+**Acceptance checks:**
+- 404 with JSON `{ message: "File not found: index2.html" }` throws `File not found: index2.html`
+- 404 with non-JSON body falls back to `File delete failed (404)`
+- 204/OK delete still resolves successfully
+- Existing read/write/list helper behavior unchanged
+- Frontend typecheck and focused tests pass
+- No introduced lint errors
+
+**Risks / invariants:**
+- Frontend-only
+- Do not alter delete route, confirmation gate, parser, or backend behavior
+- Preserve fallback for non-JSON errors
+- Preserve existing file-action apply semantics
+
+**Reference:** See TASKS.md -> AI-WS-03-hotfix3 for active-task summary.
+
+---
+
+### AI-WS-02-hotfix: Sanitize Restored Pending File-Action Confirmations
+
+**Task ID:** AI-WS-02-hotfix
+**Family:** AI-WS (AI Workspace Capability)
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/AI-WS-02-hotfix-CHECKPOINT.md`
+**Nature:** FRONTEND CHAT-THREAD RESTORE HOTFIX — sanitize stale `awaiting-confirmation` file-action states when restoring persisted chat messages, so ghost Apply buttons are never rendered after session restore or page reload
+**Source:** Inspection session (May 2026) — after AI-WS-03-hotfix3, observed that delete-test.html appeared to not delete when Apply was pressed; root cause traced to a prior unconfirmed execution's awaiting-confirmation state being restored from localStorage, while `pendingConfirmationExecutionIdsRef` was cleared — pressing Apply silently returned with no action
+**Depends on:** AI-WS-02 (COMPLETE and LOCKED)
+
+**Objective:**
+In `parseStoredChatThreadMessages`, when a restored message has `fileActionState.applyStatus === 'awaiting-confirmation'`, convert it to `applyStatus: 'skipped'` with `skipReason: 'session-restored'` and `confirmationRequired: false`, so the message shows a neutral skipped indicator rather than a non-functional Apply button.
+
+**Bounded scope:**
+- Frontend chat-thread restore normalization only, plus focused tests
+- Likely files:
+  - `frontend/components/workspace/workspace-chat-thread.logic.ts`
+  - `frontend/components/workspace/workspace-chat-thread.logic.test.ts`
+- In `parseStoredChatThreadMessages`, convert restored `awaiting-confirmation` → `skipped` with `skipReason: 'session-restored'`
+- Already applied states remain unchanged
+- Already skipped/failed states remain unchanged
+- In-session confirmation behavior remains unchanged
+- No changes outside the restore/parse path
+
+**Non-goals:**
+- No change to live confirmation/apply flow
+- No change to `pendingConfirmationExecutionIdsRef` logic
+- No model output contract changes
+- No backend/API/container-manager changes
+- No parser/schema changes
+- No delete behavior changes
+- No broad chat persistence refactor
+- No confirmation UI redesign
+- No preview changes
+
+**Acceptance checks:**
+- Restored message with `applyStatus: 'awaiting-confirmation'` becomes `applyStatus: 'skipped'` with `skipReason: 'session-restored'` and `confirmationRequired: false`
+- Restored message with `applyStatus: 'applied'` remains unchanged
+- Restored message with `applyStatus: 'skipped'` remains unchanged
+- Restored message with no `fileActionState` remains unchanged
+- Existing chat-thread parsing behavior intact
+- Frontend typecheck and focused tests pass
+- No introduced lint errors
+
+**Risks / invariants:**
+- Frontend-only
+- Do not affect live in-session confirmation flow
+- Do not silently apply stale actions after restore
+- Do not render dead Apply buttons after restore
+- Preserve existing applied/skipped/failed historical messages
+
+**Reference:** See TASKS.md -> AI-WS-02-hotfix for active-task summary.
+
+---
+
+### AI-WS-03-hotfix4: Preserve Delete File Actions In API Gateway Execution Results
+
+**Task ID:** AI-WS-03-hotfix4
+**Family:** AI-WS (AI Workspace Capability)
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/AI-WS-03-hotfix4-CHECKPOINT.md`
+**Nature:** API GATEWAY DTO / PARSER HOTFIX — update execution-result DTO and metadata parser to accept and return delete file-actions, preventing status/execute responses from stripping delete actions out of completed execution results
+**Source:** Inspection session (May 2026) — delete file-actions arrive correctly through SSE but the status/execute response returns `fileActions: []` for delete executions because `parseExecutionResultMetadata` only accepts create/write/update, silently dropping delete; this causes the frontend pending confirmation state to be overwritten with an empty action array, making the Apply button disappear
+**Depends on:** AI-WS-03 (COMPLETE and LOCKED)
+
+**Objective:**
+Update `FileActionDto` and `parseExecutionResultMetadata` in the API gateway so delete file-actions stored in execution metadata are included in status/execute responses, matching the AI-WS-03 action schema.
+
+**Bounded scope:**
+- API gateway execution-result DTO and metadata parser only, plus focused tests
+- Likely files:
+  - `services/api-gateway/src/ai/dto/execution-result.dto.ts`
+  - `services/api-gateway/src/ai/ai-execution.controller.ts`
+  - focused test file for execution result metadata parsing
+- `FileActionDto.action` extends to include `"delete"`
+- `content` is optional or absent for delete actions in the DTO
+- `parseExecutionResultMetadata` accepts delete actions with string `path` and no `content`
+- create/write/update actions still require string `content`
+- invalid actions still dropped
+- No frontend changes
+- No ai-service parser changes
+- No container-manager changes
+- No delete route/body changes
+- No confirmation UI changes
+- No file-action apply logic changes
+
+**Non-goals:**
+- No frontend changes
+- No ai-service changes
+- No container-manager changes
+- No delete route changes
+- No confirmation UI redesign
+- No apply logic changes
+- No unrelated status shape changes
+
+**Acceptance checks:**
+- Metadata with delete action returns `fileActions` containing the delete entry
+- Metadata with mixed create + delete returns both
+- Delete action without `content` is accepted
+- Non-delete action without `content` is still rejected
+- Existing create/write/update parsing tests pass
+- API gateway build and focused tests pass
+- No introduced lint errors
+
+**Risks / invariants:**
+- API gateway DTO must align with AI-WS-03 action schema
+- Do not loosen content validation for create/write/update
+- Do not change frontend behavior in this task
+- Preserve existing status response shape; only extend to allow delete with no content
+
+**Reference:** See TASKS.md -> AI-WS-03-hotfix4 for active-task summary.
+
+---
+
+### AI-WS-03-hotfix5: Route File Delete Through Container Exec
+
+**Task ID:** AI-WS-03-hotfix5
+**Family:** AI-WS (AI Workspace Capability)
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/AI-WS-03-hotfix5-CHECKPOINT.md`
+**Nature:** CONTAINER-MANAGER ROUTING HOTFIX — route file delete through Docker exec (matching read/write/list) instead of host `fs.unlink()` via FilesController; update API gateway HTTP client to target the internal sessions delete route
+**Source:** Inspection session (May 2026) — deleting an existing file fails with "File not found" because `ContainerManagerHttpClient.deleteSessionFile` calls `DELETE /api/files/${sessionId}/delete` (FilesController → host `fs.unlink`), while all other file operations route through `InternalSessionsController` → Docker exec; on Windows/Docker Desktop bind mounts this produces a filesystem view mismatch where the container sees the file at `/workspace/...` but host `fs.unlink` fails or sees a stale/inaccessible path
+**Depends on:** AI-WS-03 (COMPLETE and LOCKED)
+
+**Objective:**
+Route file delete through the same container-exec path as read/write/list so delete operates against the active container `/workspace` filesystem view.
+
+**Bounded scope:**
+- Container-manager delete path and API gateway HTTP client target URL only
+- Likely files:
+  - `services/container-manager/src/docker/docker-runtime.service.ts`
+  - `services/container-manager/src/sessions/sessions.service.ts`
+  - `services/container-manager/src/sessions/internal-sessions.controller.ts`
+  - `services/api-gateway/src/clients/container-manager-http.client.ts`
+  - focused tests for changed surfaces
+- No frontend changes
+- No AI parser changes
+- No file-action apply logic changes
+- No confirmation UI changes
+- No API gateway user-facing route changes
+- No schema/migration
+- No broad file API refactor
+- Existing FilesController delete route may remain but must no longer be called by the API gateway client
+
+**Non-goals:**
+- No directory delete / recursive delete
+- No frontend changes
+- No AI prompt/parser changes
+- No confirmation UI changes
+- No API gateway public route changes
+- No schema/DB changes
+- No broad FilesController refactor
+
+**Required behavior:**
+- Delete uses container exec `rm /workspace/<safePath>` (file only, no -r)
+- Path remains workspace-scoped and path-traversal protected (same validateWorkspacePath pattern)
+- Missing file returns a useful not-found error (not a generic 500)
+- API gateway client calls the internal sessions delete route matching read/write/list architecture
+- Existing read/write/list behavior unchanged
+
+**Acceptance checks:**
+- Deleting a file that exists in the active container workspace succeeds
+- Deleting a missing file returns a useful not-found error
+- Path traversal is rejected
+- API gateway client targets the new internal sessions delete route
+- Read/write/list behavior unchanged
+- Container-manager and API-gateway builds and focused tests pass
+- No introduced lint errors
+
+**Risks / invariants:**
+- Must not introduce arbitrary shell command execution
+- Use existing container exec safety patterns (validateWorkspacePath)
+- Keep delete scoped to current session workspace
+- Do not delete directories recursively — file-only in v1
+- Preserve frontend/API gateway public route behavior
+- Preserve AI file-action apply and confirmation gate behavior
+- Keep this backend routing fix only
+
+**Reference:** See TASKS.md -> AI-WS-03-hotfix5 for active-task summary.
 
 ---
 

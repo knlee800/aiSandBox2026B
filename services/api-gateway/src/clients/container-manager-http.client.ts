@@ -458,7 +458,7 @@ export class ContainerManagerHttpClient implements OnModuleInit {
     }
 
     try {
-      await this.axiosInstance.delete(`/api/files/${sessionId}/delete`, {
+      await this.axiosInstance.delete(`/api/internal/sessions/${sessionId}/files`, {
         data: { path },
         headers: {
           'X-Internal-Service-Key': this.internalServiceKey,

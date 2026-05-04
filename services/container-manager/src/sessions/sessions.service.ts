@@ -572,6 +572,31 @@ export class SessionsService {
   }
 
   /**
+   * Delete a file from a session's container filesystem
+   * Task AI-WS-03-hotfix5: Route file delete through container exec
+   *
+   * @param sessionId - Session UUID
+   * @param filePath - Relative path from /workspace
+   * @throws NotFoundException if session does not exist or file is missing
+   * @throws GoneException if session is terminated, max lifetime exceeded, or idle timeout exceeded
+   * @throws TooManyRequestsException if quota exceeded
+   * @throws Error if container not found, not running, path invalid, or delete fails
+   */
+  async deleteFileFromContainer(
+    sessionId: string,
+    filePath: string,
+  ): Promise<void> {
+    this.assertSessionUsableOrThrow(sessionId);
+    await this.checkAndEnforceMaxLifetime(sessionId);
+    await this.checkAndEnforceIdleTimeout(sessionId);
+    await this.checkAndEnforceQuota(sessionId);
+
+    await this.dockerRuntimeService.deleteFileFromContainer(sessionId, filePath);
+
+    this.updateLastActivity(sessionId);
+  }
+
+  /**
    * List directory contents from a session's container filesystem
    * Task 7.2C: Container Directory Listing (Read-Only)
    * Task 8.3A: Enforce Session Idle Timeout
