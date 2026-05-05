@@ -1,8 +1,11 @@
 import {notFound} from 'next/navigation';
+import { Inter } from 'next/font/google';
 import {TranslationProvider} from '../../components/TranslationProvider';
 import SystemReadiness from '../../components/SystemReadiness';
 import "../globals.css";
 import fallbackMessages from '../../messages/en.json';
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export default async function LocaleLayout({
   children,
@@ -24,7 +27,7 @@ export default async function LocaleLayout({
   const messages = (await import(`../../messages/${locale}.json`)).default;
 
   return (
-    <html lang={locale}>
+    <html lang={locale} className={inter.variable}>
       <body>
         <TranslationProvider
           locale={locale}

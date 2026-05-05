@@ -12037,16 +12037,16 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## UX-IA — Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE — UX-IA-02 NEXT
+**Family status:** ACTIVE — UX-IA-03 NEXT
 
-**Current stage:** UX-IA-02 (not started)
+**Current stage:** UX-IA-03 (not started)
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
 **Ordered slices:**
 1. UX-IA-00 — Master spec (COMPLETE — `docs/UX-IA-00-MASTER-PLAN.md`)
 2. UX-IA-01 — i18n Foundation & Locale Middleware (COMPLETE and LOCKED — `docs/UX-IA-01-CHECKPOINT.md`)
-3. UX-IA-02 — Design Token Foundation (pending)
+3. UX-IA-02 — Design Token Foundation (COMPLETE and LOCKED — `docs/UX-IA-02-CHECKPOINT.md`)
 4. UX-IA-03 — Public Landing Redesign + Login/Register Polish (pending)
 5. UX-IA-04 — Workspace Shell + Sidebar + Home View (pending)
 6. UX-IA-05 — Projects Grid/List + Recent Projects (pending)
@@ -12094,4 +12094,42 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 - `sandbox` namespace migration strategy: keep existing keys for now / migrate gradually / mark deprecated
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-01.
+
+---
+
+#### UX-IA-02: Design Token Foundation
+
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/UX-IA-02-CHECKPOINT.md`
+**Nature:** FRONTEND CSS / TAILWIND CONFIG — establish brand, surface, border, text, and muted token strategy; define light theme CSS custom properties in `:root`; prepare dark theme placeholders if low-risk; no component or layout changes
+**Source:** UX-IA-00 master plan (May 2026) — all subsequent visual phases must build on a shared token system to avoid palette drift
+**Depends on:** UX-IA-01 (COMPLETE and LOCKED)
+
+**Bounded scope:**
+- `frontend/tailwind.config.js` — extend theme with brand, surface, border, text, and muted color tokens; add font family and radius tokens
+- `frontend/app/globals.css` — define CSS custom properties for light theme in `:root`; add dark theme placeholder block if low-risk
+- `frontend/app/[locale]/layout.tsx` — add `next/font` Inter font import if needed; keep all i18n/TranslationProvider wiring unchanged
+
+**Non-goals:**
+- No workspace layout changes
+- No public landing redesign
+- No login/register redesign
+- No component restructuring
+- No full dark mode implementation (placeholders only)
+- No new external dependencies (Next.js built-ins only)
+- No i18n changes
+- No AI-WS changes
+
+**Acceptance checks:**
+- `frontend/tailwind.config.js` has brand/surface/border/text/muted token extensions
+- `frontend/app/globals.css` has `:root` CSS variable block for light theme tokens
+- Font loads correctly in running app
+- Frontend typecheck passes (`npx tsc --noEmit`)
+- Frontend tests pass (`npm run test`)
+- Frontend build passes (`npm run build`)
+- No lint/read errors on touched files
+- No visual regressions to existing pages beyond token defaults naturally applying
+- No regressions to locale middleware or `TranslationProvider`
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-02.
 

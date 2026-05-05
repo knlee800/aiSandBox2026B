@@ -22044,3 +22044,64 @@ Key counts per locale file will expand from ~30 keys (3 namespaces) to ~100+ key
 
 ---
 
+### UX-IA-02: Design Token Foundation
+
+**Task ID:** UX-IA-02
+**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/UX-IA-02-CHECKPOINT.md`
+**Nature:** FRONTEND CSS / TAILWIND CONFIG — establish brand, surface, border, text, and muted token strategy; define light theme CSS custom properties in `:root`; prepare dark theme placeholders if low-risk; no component or layout changes
+**Source:** UX-IA-00 master plan (May 2026) — all subsequent visual phases must build on a shared token system to avoid palette drift
+**Depends on:** UX-IA-01 (COMPLETE and LOCKED)
+
+**Objective:**
+Establish frontend design tokens (Tailwind theme extensions and CSS custom properties) so that all later UX-IA visual phases use consistent brand colors, surfaces, borders, font, and radii from the start without introducing palette drift or hardcoded hex values.
+
+**Bounded scope:**
+- `frontend/tailwind.config.js` — extend `theme.extend` with color tokens: `brand`, `surface`, `border`, `text`, `muted`; add font family (`inter`/sans) and border radius tokens
+- `frontend/app/globals.css` — define CSS custom properties in `:root` for all light theme tokens; add dark theme placeholder block if low-risk (e.g., `@media (prefers-color-scheme: dark)` or `.dark` class)
+- `frontend/app/[locale]/layout.tsx` — add `next/font/google` Inter import if needed; keep all i18n and `TranslationProvider` wiring unchanged
+
+**Required behavior:**
+- Tailwind config has brand/surface/border/text/muted color token extensions referencing CSS variables
+- CSS `:root` defines concrete values for all light theme tokens
+- Font (Inter or equivalent) loads via `next/font` and applies to `<body>`
+- Existing UI remains visually stable (token defaults must be chosen not to break current UI)
+- Dark theme: placeholder block only if safe; no functional dark mode toggle required
+- All UX-IA-01 i18n behavior preserved
+
+**Non-goals:**
+- No workspace layout changes
+- No public landing redesign
+- No login/register redesign
+- No component restructuring
+- No full dark mode implementation (placeholders only)
+- No new external npm dependencies (Next.js built-ins only)
+- No i18n changes
+- No AI-WS changes
+- No removal of existing Tailwind config values
+
+**Acceptance checks:**
+- `frontend/tailwind.config.js` has brand/surface/border/text/muted token extensions
+- `frontend/app/globals.css` has `:root` CSS variable block for light theme tokens
+- Font loads correctly (verified via build output)
+- Frontend typecheck passes (`npx tsc --noEmit`)
+- Frontend tests pass (`npm run test`)
+- Frontend build passes (`npm run build`)
+- No lint/read errors on touched files
+- No visual regressions to existing pages beyond token defaults naturally applying
+- No regressions to locale middleware or `TranslationProvider`
+
+**Risks / invariants:**
+- Token default values must not visually break existing UI (choose values that match or closely approximate current palette)
+- Do not remove or rename any existing Tailwind config keys
+- Do not alter font loading in a way that breaks `TranslationProvider` or layout hydration
+- Do not touch completed AI-WS behavior
+- Keep this as token foundation only; no visual redesign work
+
+**Reference:** See TASKS.md -> UX-IA-02. See `docs/UX-IA-00-MASTER-PLAN.md` section UX-IA-02.
+
+---
+
