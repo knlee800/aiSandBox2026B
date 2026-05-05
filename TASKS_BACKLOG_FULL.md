@@ -21952,3 +21952,95 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 
 ---
 
+## UX-IA — Product & UX/UI Redesign (Evolutionary)
+
+**Family status:** ACTIVE — UX-IA-01 PLANNED
+
+**Current stage:** UX-IA-01 (PLANNED)
+
+**Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
+
+**Ordered slices:**
+1. UX-IA-00 — Master spec (COMPLETE — `docs/UX-IA-00-MASTER-PLAN.md`)
+2. UX-IA-01 — i18n Foundation & Locale Middleware (PLANNED)
+3. UX-IA-02 through UX-IA-14 — pending (see master spec for full list)
+
+---
+
+### UX-IA-01: i18n Foundation & Locale Middleware
+
+**Task ID:** UX-IA-01
+**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/UX-IA-01-CHECKPOINT.md`
+**Nature:** FRONTEND I18N INFRASTRUCTURE — expand translation files to all required namespaces, implement English fallback in `useTranslations`, add locale middleware for default locale redirect, decide namespace access pattern and `sandbox` namespace migration strategy; no visual or layout changes
+**Source:** UX-IA-00 master plan (May 2026) — multilingual is mandatory; all later UX phases must use translation keys from day one to prevent hardcoded-string debt
+**Depends on:** UX-IA-00 (COMPLETE)
+
+**Objective:**
+Establish the complete i18n foundation so all subsequent UX-IA phases can introduce new UI strings via translation keys from the start, without accumulating hardcoded-English technical debt.
+
+**Bounded scope:**
+- `frontend/middleware.ts` (new) — locale middleware: redirect `/` → `/en` (or best locale match); must not interfere with `/api/*` rewrites in `next.config.js`
+- `frontend/messages/en.json` — expand with all required namespaces: `common`, `login`, `register`, `landing`, `workspace`, `project`, `tabs`, `account`, `ai`, `errors`, `languages`
+- `frontend/messages/zh-TW.json` — expand with same namespace structure
+- `frontend/messages/zh-CN.json` — expand with same namespace structure
+- `frontend/hooks/useTranslations.ts` — add English fallback: active locale → English fallback → key string
+- `frontend/components/TranslationProvider.tsx` — pass `fallbackMessages` (en.json) alongside active locale messages through context
+- `frontend/app/[locale]/layout.tsx` — if needed to import en.json as fallbackMessages
+- `frontend/components/LanguageSwitcher.tsx` — minor polish if needed
+
+**Required behavior:**
+- Translation files include all namespaces for all 3 locales
+- English fallback works when zh-TW or zh-CN is missing a key
+- `useTranslations` fallback chain: active locale → English → raw key
+- Middleware redirects `/` to locale route without breaking `/api/*`
+- Existing login/register language behavior keeps working
+- Existing workspace/app behavior is unchanged
+
+**Decision points (resolve and record in consolidation checkpoint):**
+- Namespace access pattern: components call `useTranslations` once per namespace they need (current pattern), or hook is extended to support cross-namespace dot paths (e.g., `t('common.save')` from any call site)
+- `sandbox` namespace migration: keep existing keys for now and migrate gradually, or mark as deprecated in this slice
+
+**Non-goals:**
+- No visual redesign
+- No workspace layout changes
+- No AI-WS logic changes
+- No route cleanup beyond locale middleware
+- No `recoveryCopy.ts` rewrite (migration planned incrementally per later slice)
+- No public landing redesign
+- No deletion of existing `sandbox` namespace keys (strategy decided here, applied gradually)
+
+**Required translation key namespaces (from master plan section 8):**
+
+```
+common, login, register, landing, workspace, project, tabs, account, ai, errors, languages
+```
+
+Key counts per locale file will expand from ~30 keys (3 namespaces) to ~100+ keys (11 namespaces).
+
+**Acceptance checks:**
+- `/` redirects to locale route without breaking `/api/*`
+- `/en/login` still renders translated login text
+- `zh-TW` and `zh-CN` login/register still work
+- Missing `zh-TW`/`zh-CN` key falls back to English value (not raw key string)
+- All three message files are valid JSON and structurally consistent for new namespaces
+- No visual/layout regressions in existing pages
+- Frontend typecheck passes
+- Focused translation/middleware tests pass if available
+- No lint errors
+
+**Risks / invariants:**
+- Do not break Next.js `/api/*` rewrite behavior
+- Do not break existing locale routes
+- Do not hardcode new UX strings in this or any later slice
+- Do not migrate the entire workspace UI in this slice
+- Do not touch completed AI-WS behavior
+- Keep this as i18n foundation only
+
+**Reference:** See TASKS.md -> UX-IA-01. See `docs/UX-IA-00-MASTER-PLAN.md` section UX-IA-01.
+
+---
+

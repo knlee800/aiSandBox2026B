@@ -1,4 +1,20 @@
 {
+  "common": {
+    "appName": "AI Sandbox",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "create": "Create",
+    "open": "Open",
+    "close": "Close",
+    "back": "Back",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "confirm": "Confirm",
+    "send": "Send",
+    "search": "Search"
+  },
   "login": {
     "title": "AI Sandbox",
     "email": "Email",
@@ -7,7 +23,92 @@
     "loggingIn": "Logging in...",
     "invalidCredentials": "Invalid credentials",
     "loginFailed": "Login failed",
-    "testCredentials": "Test credentials"
+    "testCredentials": "Test credentials",
+    "needAccount": "Need an account?",
+    "startHere": "Start here"
+  },
+  "register": {
+    "title": "Create account",
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "registerButton": "Create account",
+    "registering": "Creating account...",
+    "registerFailed": "Registration failed",
+    "alreadyHaveAccount": "Already have an account?",
+    "loginHere": "Login here"
+  },
+  "landing": {
+    "hero": "Build anything",
+    "heroSubtitle": "Describe what you want to build and continue after login.",
+    "promptPlaceholder": "Describe your app idea...",
+    "continueToWorkspace": "Continue to Workspace",
+    "signInToStart": "Sign In to Start"
+  },
+  "workspace": {
+    "home": "Home",
+    "projects": "Projects",
+    "templates": "Templates & Community",
+    "recentProjects": "Recent Projects",
+    "upgrade": "Upgrade",
+    "newProject": "New Project",
+    "noProjects": "No projects yet.",
+    "buildAnything": "Build anything",
+    "describeBuild": "Describe what you want to build...",
+    "start": "Start"
+  },
+  "project": {
+    "chat": "Chat",
+    "history": "History",
+    "preview": "Preview",
+    "codeFiles": "Code & Files",
+    "restore": "Restore this version",
+    "restoreConfirm": "Restore this version? Your current workspace will be replaced.",
+    "noHistory": "No history yet for this project.",
+    "files": "Files",
+    "unsavedChanges": "Unsaved changes"
+  },
+  "tabs": {
+    "preview": "Preview",
+    "codeFiles": "Code & Files",
+    "database": "Database",
+    "auth": "Auth",
+    "security": "Security",
+    "analytics": "Analytics",
+    "envVars": "Env Var / Secrets",
+    "publishing": "Publishing",
+    "deploy": "Deploy",
+    "payment": "Payment",
+    "domain": "Domain",
+    "appStorage": "App Storage",
+    "agentSkills": "Agent Skills",
+    "comingSoon": "Coming soon"
+  },
+  "account": {
+    "settings": "Settings",
+    "language": "Language",
+    "theme": "Theme",
+    "help": "Help",
+    "referral": "Referral",
+    "affiliate": "Affiliate",
+    "logout": "Log out",
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "ai": {
+    "prompt": "Ask the assistant...",
+    "sending": "Sending...",
+    "modelProvider": "Model",
+    "fileActions": "File Actions",
+    "approvalRequired": "Approval required",
+    "apply": "Apply",
+    "skip": "Skip"
+  },
+  "errors": {
+    "unknown": "Something went wrong.",
+    "network": "Network error. Please try again.",
+    "forbidden": "You do not have access to this action.",
+    "notFound": "The requested resource was not found."
   },
   "sandbox": {
     "files": "Files",

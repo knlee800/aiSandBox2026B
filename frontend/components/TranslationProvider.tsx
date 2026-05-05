@@ -9,6 +9,7 @@ type Messages = {
 type TranslationContextType = {
   locale: string;
   messages: Messages;
+  fallbackMessages: Messages;
 };
 
 const TranslationContext = createContext<TranslationContextType | undefined>(undefined);
@@ -16,14 +17,16 @@ const TranslationContext = createContext<TranslationContextType | undefined>(und
 export function TranslationProvider({
   locale,
   messages,
+  fallbackMessages,
   children,
 }: {
   locale: string;
   messages: Messages;
+  fallbackMessages: Messages;
   children: ReactNode;
 }) {
   return (
-    <TranslationContext.Provider value={{ locale, messages }}>
+    <TranslationContext.Provider value={{ locale, messages, fallbackMessages }}>
       {children}
     </TranslationContext.Provider>
   );

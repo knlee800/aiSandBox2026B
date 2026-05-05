@@ -1,4 +1,20 @@
 {
+  "common": {
+    "appName": "AI 沙盒",
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "create": "创建",
+    "open": "打开",
+    "close": "关闭",
+    "back": "返回",
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "confirm": "确认",
+    "send": "发送",
+    "search": "搜索"
+  },
   "login": {
     "title": "AI 沙盒",
     "email": "电子邮件",
@@ -7,7 +23,92 @@
     "loggingIn": "登录中...",
     "invalidCredentials": "无效的凭证",
     "loginFailed": "登录失败",
-    "testCredentials": "测试凭证"
+    "testCredentials": "测试凭证",
+    "needAccount": "还没有账号？",
+    "startHere": "从这里开始"
+  },
+  "register": {
+    "title": "创建账号",
+    "name": "名称",
+    "email": "电子邮件",
+    "password": "密码",
+    "registerButton": "创建账号",
+    "registering": "创建账号中...",
+    "registerFailed": "注册失败",
+    "alreadyHaveAccount": "已经有账号？",
+    "loginHere": "前往登录"
+  },
+  "landing": {
+    "hero": "构建任何内容",
+    "heroSubtitle": "描述你想创建的内容，登录后可继续。",
+    "promptPlaceholder": "描述你的应用想法...",
+    "continueToWorkspace": "进入工作区",
+    "signInToStart": "登录后开始"
+  },
+  "workspace": {
+    "home": "首页",
+    "projects": "项目",
+    "templates": "模板与社区",
+    "recentProjects": "最近项目",
+    "upgrade": "升级",
+    "newProject": "新建项目",
+    "noProjects": "暂无项目。",
+    "buildAnything": "构建任何内容",
+    "describeBuild": "描述你想构建的内容...",
+    "start": "开始"
+  },
+  "project": {
+    "chat": "聊天",
+    "history": "历史",
+    "preview": "预览",
+    "codeFiles": "代码与文件",
+    "restore": "恢复此版本",
+    "restoreConfirm": "要恢复此版本吗？当前工作区将被替换。",
+    "noHistory": "该项目暂无历史记录。",
+    "files": "文件",
+    "unsavedChanges": "有未保存更改"
+  },
+  "tabs": {
+    "preview": "预览",
+    "codeFiles": "代码与文件",
+    "database": "数据库",
+    "auth": "认证",
+    "security": "安全",
+    "analytics": "分析",
+    "envVars": "环境变量 / 密钥",
+    "publishing": "发布",
+    "deploy": "部署",
+    "payment": "支付",
+    "domain": "域名",
+    "appStorage": "应用存储",
+    "agentSkills": "代理技能",
+    "comingSoon": "即将推出"
+  },
+  "account": {
+    "settings": "设置",
+    "language": "语言",
+    "theme": "主题",
+    "help": "帮助",
+    "referral": "推荐",
+    "affiliate": "联盟",
+    "logout": "退出登录",
+    "light": "浅色",
+    "dark": "深色"
+  },
+  "ai": {
+    "prompt": "询问助手...",
+    "sending": "发送中...",
+    "modelProvider": "模型",
+    "fileActions": "文件操作",
+    "approvalRequired": "需要确认",
+    "apply": "应用",
+    "skip": "跳过"
+  },
+  "errors": {
+    "unknown": "发生未知错误。",
+    "network": "网络错误，请稍后重试。",
+    "forbidden": "你没有此操作权限。",
+    "notFound": "未找到请求的资源。"
   },
   "sandbox": {
     "files": "文件",

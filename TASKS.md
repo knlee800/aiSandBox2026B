@@ -12033,3 +12033,65 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-FILETREE-hotfix. See `docs/UX-FILETREE-hotfix-CHECKPOINT.md`.
 
+---
+
+## UX-IA — Product & UX/UI Redesign (Evolutionary)
+
+**Family status:** ACTIVE — UX-IA-02 NEXT
+
+**Current stage:** UX-IA-02 (not started)
+
+**Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
+
+**Ordered slices:**
+1. UX-IA-00 — Master spec (COMPLETE — `docs/UX-IA-00-MASTER-PLAN.md`)
+2. UX-IA-01 — i18n Foundation & Locale Middleware (COMPLETE and LOCKED — `docs/UX-IA-01-CHECKPOINT.md`)
+3. UX-IA-02 — Design Token Foundation (pending)
+4. UX-IA-03 — Public Landing Redesign + Login/Register Polish (pending)
+5. UX-IA-04 — Workspace Shell + Sidebar + Home View (pending)
+6. UX-IA-05 — Projects Grid/List + Recent Projects (pending)
+7. UX-IA-06 — Templates / Community View (pending)
+8. UX-IA-07 — Account Menu + Settings + Language/Theme (pending)
+9. UX-IA-08 — Project Mode Shell (pending)
+10. UX-IA-09 — Project AI + History Panel (pending)
+11. UX-IA-10 — Preview + Code & Files Tabs (pending)
+12. UX-IA-11 — Future Product Tab Placeholders (pending)
+13. UX-IA-12 — Upgrade Flow + Dashboard Polish (pending)
+14. UX-IA-13 — Responsive / Mobile Polish (pending)
+15. UX-IA-14 — Route Cleanup / Redirects (pending)
+
+---
+
+#### UX-IA-01: i18n Foundation & Locale Middleware
+
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/UX-IA-01-CHECKPOINT.md`
+**Nature:** FRONTEND I18N INFRASTRUCTURE — expand translation files to all required namespaces, implement English fallback in `useTranslations`, add locale middleware for default locale redirect, decide namespace access pattern and `sandbox` namespace migration strategy; no visual or layout changes
+**Source:** UX-IA-00 master plan (May 2026) — multilingual is mandatory; all later UX phases must use translation keys from day one to prevent hardcoded-string debt
+**Depends on:** UX-IA-00 (COMPLETE)
+
+**Bounded scope:**
+- `frontend/middleware.ts` (new) — default locale redirect, must not interfere with `/api/*`
+- `frontend/messages/en.json` — expand with all namespaces
+- `frontend/messages/zh-TW.json` — expand with all namespaces
+- `frontend/messages/zh-CN.json` — expand with all namespaces
+- `frontend/hooks/useTranslations.ts` — add English fallback (active locale → English → key)
+- `frontend/components/TranslationProvider.tsx` — pass `fallbackMessages` (en.json) alongside active locale messages
+- `frontend/app/[locale]/layout.tsx` — if needed to import en.json as fallback
+- `frontend/components/LanguageSwitcher.tsx` — minor polish if needed
+
+**Non-goals:**
+- No visual redesign
+- No workspace layout changes
+- No AI-WS logic changes
+- No route cleanup beyond locale middleware
+- No recoveryCopy rewrite
+- No public landing redesign
+- No deletion of existing `sandbox` namespace keys (migration strategy decided within this slice, applied gradually)
+
+**Decision points (resolve and record during consolidation):**
+- Namespace access pattern: components call `useTranslations` once per namespace (current pattern), or hook extended for cross-namespace dot paths
+- `sandbox` namespace migration strategy: keep existing keys for now / migrate gradually / mark deprecated
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-01.
+

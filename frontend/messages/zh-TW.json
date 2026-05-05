@@ -1,4 +1,20 @@
 {
+  "common": {
+    "appName": "AI 沙盒",
+    "save": "儲存",
+    "cancel": "取消",
+    "delete": "刪除",
+    "create": "建立",
+    "open": "開啟",
+    "close": "關閉",
+    "back": "返回",
+    "loading": "載入中...",
+    "error": "錯誤",
+    "success": "成功",
+    "confirm": "確認",
+    "send": "發送",
+    "search": "搜尋"
+  },
   "login": {
     "title": "AI 沙盒",
     "email": "電子郵件",
@@ -7,7 +23,92 @@
     "loggingIn": "登入中...",
     "invalidCredentials": "無效的憑證",
     "loginFailed": "登入失敗",
-    "testCredentials": "測試憑證"
+    "testCredentials": "測試憑證",
+    "needAccount": "還沒有帳號？",
+    "startHere": "從這裡開始"
+  },
+  "register": {
+    "title": "建立帳號",
+    "name": "名稱",
+    "email": "電子郵件",
+    "password": "密碼",
+    "registerButton": "建立帳號",
+    "registering": "建立帳號中...",
+    "registerFailed": "註冊失敗",
+    "alreadyHaveAccount": "已經有帳號？",
+    "loginHere": "前往登入"
+  },
+  "landing": {
+    "hero": "打造任何內容",
+    "heroSubtitle": "描述你想建立的內容，登入後可繼續。",
+    "promptPlaceholder": "描述你的應用想法...",
+    "continueToWorkspace": "前往工作區",
+    "signInToStart": "登入後開始"
+  },
+  "workspace": {
+    "home": "首頁",
+    "projects": "專案",
+    "templates": "模板與社群",
+    "recentProjects": "最近專案",
+    "upgrade": "升級",
+    "newProject": "新建專案",
+    "noProjects": "目前沒有專案。",
+    "buildAnything": "打造任何內容",
+    "describeBuild": "描述你想建立的內容...",
+    "start": "開始"
+  },
+  "project": {
+    "chat": "聊天",
+    "history": "歷史",
+    "preview": "預覽",
+    "codeFiles": "程式碼與檔案",
+    "restore": "還原此版本",
+    "restoreConfirm": "要還原此版本嗎？目前工作區將被取代。",
+    "noHistory": "此專案尚無歷史紀錄。",
+    "files": "檔案",
+    "unsavedChanges": "有未儲存變更"
+  },
+  "tabs": {
+    "preview": "預覽",
+    "codeFiles": "程式碼與檔案",
+    "database": "資料庫",
+    "auth": "驗證",
+    "security": "安全",
+    "analytics": "分析",
+    "envVars": "環境變數 / 密鑰",
+    "publishing": "發佈",
+    "deploy": "部署",
+    "payment": "付款",
+    "domain": "網域",
+    "appStorage": "應用儲存",
+    "agentSkills": "代理技能",
+    "comingSoon": "即將推出"
+  },
+  "account": {
+    "settings": "設定",
+    "language": "語言",
+    "theme": "主題",
+    "help": "幫助",
+    "referral": "推薦",
+    "affiliate": "聯盟",
+    "logout": "登出",
+    "light": "淺色",
+    "dark": "深色"
+  },
+  "ai": {
+    "prompt": "詢問助理...",
+    "sending": "發送中...",
+    "modelProvider": "模型",
+    "fileActions": "檔案操作",
+    "approvalRequired": "需要確認",
+    "apply": "套用",
+    "skip": "略過"
+  },
+  "errors": {
+    "unknown": "發生未知錯誤。",
+    "network": "網路錯誤，請稍後再試。",
+    "forbidden": "你沒有此操作權限。",
+    "notFound": "找不到請求的資源。"
   },
   "sandbox": {
     "files": "檔案",

@@ -3,26 +3,40 @@
 import { useTranslationContext } from '../components/TranslationProvider';
 
 export function useTranslations(namespace?: string) {
-  const { messages } = useTranslationContext();
+  const { messages, fallbackMessages } = useTranslationContext();
 
-  return function t(key: string): string {
-    // If a namespace is provided, prefix the key with it
-    const fullKey = namespace ? `${namespace}.${key}` : key;
-
-    // Split the key by dots to traverse the nested object
+  const resolveNestedValue = (source: Record<string, unknown>, fullKey: string): string | null => {
     const keys = fullKey.split('.');
-    let value: any = messages;
+    let value: unknown = source;
 
-    for (const k of keys) {
-      if (value && typeof value === 'object' && k in value) {
-        value = value[k];
+    for (const keyPart of keys) {
+      if (value && typeof value === 'object' && keyPart in (value as Record<string, unknown>)) {
+        value = (value as Record<string, unknown>)[keyPart];
       } else {
-        // Return the key itself if translation not found
-        return fullKey;
+        return null;
       }
     }
 
-    return typeof value === 'string' ? value : fullKey;
+    return typeof value === 'string' ? value : null;
+  };
+
+  return function t(key: string): string {
+    // Keep namespace-based lookup behavior in this slice.
+    const fullKey = namespace ? `${namespace}.${key}` : key;
+    const activeValue = resolveNestedValue(messages as Record<string, unknown>, fullKey);
+    if (activeValue !== null) {
+      return activeValue;
+    }
+
+    const fallbackValue = resolveNestedValue(
+      fallbackMessages as Record<string, unknown>,
+      fullKey,
+    );
+    if (fallbackValue !== null) {
+      return fallbackValue;
+    }
+
+    return fullKey;
   };
 }
 
