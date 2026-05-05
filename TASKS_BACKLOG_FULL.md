@@ -21888,3 +21888,67 @@ Add `-H` to grep flags in the container search shell script so that grep output 
 
 ---
 
+## UX-FILETREE — Workspace File Tree UX
+
+**Family status:** COMPLETE and LOCKED — UX-FILETREE-hotfix COMPLETE and LOCKED
+
+**Current stage:** none active (UX-FILETREE-hotfix wave complete)
+
+**Ordered slices:**
+1. UX-FILETREE-hotfix — Hide Internal Git Files From Workspace File Tree (COMPLETE and LOCKED)
+
+---
+
+### UX-FILETREE-hotfix: Hide Internal Git Files From Workspace File Tree
+
+**Task ID:** UX-FILETREE-hotfix
+**Family:** UX-FILETREE (Workspace File Tree UX)
+**Family status:** COMPLETE and LOCKED
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** FRONTEND FILE-TREE DISPLAY/FILTER HOTFIX — exclude `.git/` and everything under `.git/` from the user-facing Files panel, applied consistently after initial load, create refresh, delete refresh, and manual refresh; no change to on-disk files or internal git/checkpoint behavior
+**Source:** User observation (May 2026) — after create or delete operations, the workspace file tree can show internal `.git/` contents (hooks, objects, logs, refs, HEAD, index, config) which should not be visible to the user
+
+**Objective:**
+Ensure `.git/` and all files/directories under `.git/` are excluded from the user-facing Files panel consistently across all file-tree load and refresh paths.
+
+**Bounded scope (actual):**
+- `frontend/components/workspace/workspace-file-navigation.logic.ts` — added `isInternalGitTreeEntry()` filter in `loadWorkspaceFileTree()` before sort and recursion
+- `frontend/components/workspace/workspace-file-navigation.logic.test.ts` — added focused `.git` filtering regression test (10 tests total, all pass)
+- `frontend/app/[locale]/app/page.tsx` — not changed (filtering is entirely in the shared logic module)
+
+**Required behavior:**
+- `.git/` and everything under `.git/` must not appear in the user-facing Files panel
+- Filtering must apply after:
+  - initial file-tree load
+  - create file refresh
+  - delete file refresh
+  - manual/session refresh
+- Normal user files remain visible
+- Hidden `.git` files are not deleted or modified
+
+**Non-goals:**
+- No change to git/checkpoint behavior
+- No deletion of `.git` from disk
+- No change to file create/write/delete behavior
+- No change to AI file-action behavior
+- No broad file tree redesign
+- No hiding of other dotfiles beyond `.git/`
+
+**Acceptance checks:**
+- File tree containing `.git/` renders without `.git/`
+- `index.html`, `style.css`, and other normal files remain visible
+- Create/delete refresh does not reintroduce `.git/`
+- Frontend typecheck and focused tests pass
+- No introduced lint errors
+
+**Risks / invariants:**
+- Do not break internal checkpoint/git operations
+- Do not remove files from disk
+- Do not hide normal dotfiles unless explicitly scoped
+- Keep this as display/filtering only unless server-side filtering is already the established pattern
+
+**Reference:** See TASKS.md -> UX-FILETREE-hotfix. See `docs/UX-FILETREE-hotfix-CHECKPOINT.md`.
+
+---
+

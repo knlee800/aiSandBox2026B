@@ -254,6 +254,138 @@ describe('workspace file navigation logic', () => {
     assert.equal(findFirstFilePath(tree), 'src/index.ts');
   });
 
+  test('filters internal .git entries from the user-facing file tree across refresh loads', async () => {
+    const fetchCalls: string[] = [];
+    const fakeFetch = async (url: string | URL) => {
+      const urlString = String(url);
+      fetchCalls.push(urlString);
+
+      if (urlString.includes('/list?path=%2F')) {
+        return {
+          ok: true,
+          json: async () =>
+            [
+              { name: '.git', path: '.git', type: 'directory', size: 0, modified: '2026-05-05' },
+              {
+                name: '.git/index',
+                path: '.git/index',
+                type: 'file',
+                size: 64,
+                modified: '2026-05-05',
+              },
+              {
+                name: 'components',
+                path: 'components',
+                type: 'directory',
+                size: 0,
+                modified: '2026-05-05',
+              },
+              {
+                name: 'hello-ai-test.txt',
+                path: 'hello-ai-test.txt',
+                type: 'file',
+                size: 20,
+                modified: '2026-05-05',
+              },
+              {
+                name: 'index.html',
+                path: 'index.html',
+                type: 'file',
+                size: 100,
+                modified: '2026-05-05',
+              },
+              {
+                name: 'page2.html',
+                path: 'page2.html',
+                type: 'file',
+                size: 100,
+                modified: '2026-05-05',
+              },
+              {
+                name: 'style.css',
+                path: 'style.css',
+                type: 'file',
+                size: 100,
+                modified: '2026-05-05',
+              },
+            ] satisfies WorkspaceFileEntry[],
+        } as Response;
+      }
+
+      if (urlString.includes('/list?path=components%2Fnested')) {
+        return {
+          ok: true,
+          json: async () =>
+            [
+              {
+                name: 'keep-me.ts',
+                path: 'components/nested/keep-me.ts',
+                type: 'file',
+                size: 50,
+                modified: '2026-05-05',
+              },
+            ] satisfies WorkspaceFileEntry[],
+        } as Response;
+      }
+
+      if (urlString.includes('/list?path=components')) {
+        return {
+          ok: true,
+          json: async () =>
+            [
+              {
+                name: 'nested',
+                path: 'components/nested',
+                type: 'directory',
+                size: 0,
+                modified: '2026-05-05',
+              },
+            ] satisfies WorkspaceFileEntry[],
+        } as Response;
+      }
+
+      if (urlString.includes('/list?path=.git')) {
+        return {
+          ok: true,
+          json: async () =>
+            [
+              {
+                name: 'hooks',
+                path: '.git/hooks',
+                type: 'directory',
+                size: 0,
+                modified: '2026-05-05',
+              },
+              {
+                name: 'objects',
+                path: '.git/objects',
+                type: 'directory',
+                size: 0,
+                modified: '2026-05-05',
+              },
+            ] satisfies WorkspaceFileEntry[],
+        } as Response;
+      }
+
+      throw new Error(`Unhandled URL: ${urlString}`);
+    };
+
+    const tree = await loadWorkspaceFileTree({
+      token: 'token-tree',
+      sessionId: 'session-tree',
+      fetchImpl: fakeFetch as typeof fetch,
+    });
+
+    assert.deepEqual(
+      tree.map((node) => node.path),
+      ['components', 'hello-ai-test.txt', 'index.html', 'page2.html', 'style.css'],
+    );
+    assert.equal(tree[0]?.children[0]?.path, 'components/nested');
+    assert.equal(tree[0]?.children[0]?.children[0]?.path, 'components/nested/keep-me.ts');
+    assert.equal(tree.some((node) => node.path === '.git' || node.path.startsWith('.git/')), false);
+    assert.equal(fetchCalls.some((url) => url.includes('/list?path=.git')), false);
+  });
+
   test('returns null when no file exists in tree', () => {
     const directoryOnlyTree: WorkspaceFileNode[] = [
       {

@@ -40,6 +40,15 @@ interface SessionFileRequestArgs {
   fetchImpl?: typeof fetch;
 }
 
+function normalizeWorkspaceTreePath(path: string): string {
+  return path.trim().replace(/^\/+/, '');
+}
+
+function isInternalGitTreeEntry(entry: Pick<WorkspaceFileEntry, 'name' | 'path'>): boolean {
+  const normalizedPath = normalizeWorkspaceTreePath(entry.path);
+  return entry.name === '.git' || normalizedPath === '.git' || normalizedPath.startsWith('.git/');
+}
+
 export async function listWorkspaceDirectory(
   args: SessionFileRequestArgs & { directoryPath?: string },
 ): Promise<WorkspaceFileEntry[]> {
@@ -169,7 +178,7 @@ export async function loadWorkspaceFileTree(
       fetchImpl: args.fetchImpl,
     });
 
-    const sortedEntries = [...entries].sort((left, right) => {
+    const sortedEntries = entries.filter((entry) => !isInternalGitTreeEntry(entry)).sort((left, right) => {
       if (left.type !== right.type) {
         return left.type === 'directory' ? -1 : 1;
       }

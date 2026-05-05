@@ -11999,3 +11999,37 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> PREVIEW-hotfix.
 
+---
+
+## UX-FILETREE — Workspace File Tree UX
+
+**Family status:** COMPLETE and LOCKED — UX-FILETREE-hotfix COMPLETE and LOCKED
+
+**Current stage:** none active (UX-FILETREE-hotfix wave complete)
+
+**Completed tasks:** UX-FILETREE-hotfix — COMPLETE and LOCKED.
+
+---
+
+#### UX-FILETREE-hotfix: Hide Internal Git Files From Workspace File Tree
+
+**Status:** COMPLETE and LOCKED
+**Nature:** FRONTEND FILE-TREE DISPLAY/FILTER HOTFIX — exclude `.git/` and everything under `.git/` from the user-facing Files panel, applied consistently after initial load, create refresh, delete refresh, and manual refresh; no change to on-disk files or internal git/checkpoint behavior
+**Source:** User observation (May 2026) — after create or delete operations, the workspace file tree can show internal `.git/` contents (hooks, objects, logs, refs, HEAD, index, config) which should not be visible to the user
+**Depends on:** (none)
+
+**Bounded scope:**
+- `frontend/components/workspace/workspace-file-navigation.logic.ts` — added `isInternalGitTreeEntry()` filter in `loadWorkspaceFileTree()` before sort and recursion
+- `frontend/components/workspace/workspace-file-navigation.logic.test.ts` — added focused `.git` filtering regression test (10 tests total, all pass)
+- `frontend/app/[locale]/app/page.tsx` — not changed (filtering is entirely in the shared logic module)
+
+**Non-goals:**
+- No change to git/checkpoint behavior
+- No deletion of `.git` from disk
+- No change to file create/write/delete behavior
+- No change to AI file-action behavior
+- No broad file tree redesign
+- No hiding of other dotfiles beyond `.git/`
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-FILETREE-hotfix. See `docs/UX-FILETREE-hotfix-CHECKPOINT.md`.
+
