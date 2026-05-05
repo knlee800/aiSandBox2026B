@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { DockerRuntimeService } from './docker-runtime.service';
 
-describe('DockerRuntimeService deleteFileFromContainer', () => {
+describe('DockerRuntimeService file operations', () => {
   let service: DockerRuntimeService;
 
   beforeEach(() => {
@@ -14,52 +14,195 @@ describe('DockerRuntimeService deleteFileFromContainer', () => {
     } as any);
   });
 
-  it('calls exec with rm against the workspace file path', async () => {
-    const inspect = jest.fn().mockImplementation(async () => ({ State: { Running: true } }));
-    const execSpy = jest
-      .spyOn(service, 'execInContainerBySessionId')
-      .mockResolvedValue({ exitCode: 0, stdout: '', stderr: '' });
-    jest
-      .spyOn(service, 'findContainerBySessionId')
-      .mockResolvedValue({ inspect } as any);
+  describe('deleteFileFromContainer', () => {
+    it('calls exec with rm against the workspace file path', async () => {
+      const inspect = jest.fn().mockImplementation(async () => ({ State: { Running: true } }));
+      const execSpy = jest
+        .spyOn(service, 'execInContainerBySessionId')
+        .mockResolvedValue({ exitCode: 0, stdout: '', stderr: '' });
+      jest
+        .spyOn(service, 'findContainerBySessionId')
+        .mockResolvedValue({ inspect } as any);
 
-    await service.deleteFileFromContainer('session-123', 'src/delete-test.html');
+      await service.deleteFileFromContainer('session-123', 'src/delete-test.html');
 
-    expect(execSpy).toHaveBeenCalledWith(
-      'session-123',
-      ['rm', '/workspace/src/delete-test.html'],
-      '/workspace',
-      undefined,
-      30000,
-    );
+      expect(execSpy).toHaveBeenCalledWith(
+        'session-123',
+        ['rm', '/workspace/src/delete-test.html'],
+        '/workspace',
+        undefined,
+        30000,
+      );
+    });
+
+    it('throws not found when rm reports a missing file', async () => {
+      jest
+        .spyOn(service, 'findContainerBySessionId')
+        .mockResolvedValue({
+          inspect: jest.fn().mockImplementation(async () => ({ State: { Running: true } })),
+        } as any);
+      jest
+        .spyOn(service, 'execInContainerBySessionId')
+        .mockResolvedValue({
+          exitCode: 1,
+          stdout: '',
+          stderr: "rm: can't remove '/workspace/src/missing.html': No such file or directory",
+        });
+
+      await expect(
+        service.deleteFileFromContainer('session-123', 'src/missing.html'),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('rejects path traversal before exec', async () => {
+      const execSpy = jest.spyOn(service, 'execInContainerBySessionId');
+
+      await expect(
+        service.deleteFileFromContainer('session-123', '../secret.txt'),
+      ).rejects.toThrow(BadRequestException);
+
+      expect(execSpy).not.toHaveBeenCalled();
+    });
   });
 
-  it('throws not found when rm reports a missing file', async () => {
-    jest
-      .spyOn(service, 'findContainerBySessionId')
-      .mockResolvedValue({
+  describe('searchFilesInContainer', () => {
+    it('parses grep output into bounded structured results', async () => {
+      const execSpy = jest
+        .spyOn(service, 'execInContainerBySessionId')
+        .mockResolvedValue({
+          exitCode: 0,
+          stdout: [
+            '/workspace/src/app.ts:12:const SPECIAL_TEST_KEYWORD = true;',
+            '/workspace/src/login.ts:8:export const SPECIAL_TEST_KEYWORD: string = "ok";',
+            '__AI_WS_SEARCH_TRUNCATED__',
+          ].join('\n'),
+          stderr: '',
+        });
+      jest.spyOn(service, 'findContainerBySessionId').mockResolvedValue({
         inspect: jest.fn().mockImplementation(async () => ({ State: { Running: true } })),
       } as any);
-    jest
-      .spyOn(service, 'execInContainerBySessionId')
-      .mockResolvedValue({
-        exitCode: 1,
-        stdout: '',
-        stderr: "rm: can't remove '/workspace/src/missing.html': No such file or directory",
+
+      const result = await service.searchFilesInContainer(
+        'session-123',
+        'SPECIAL_TEST_KEYWORD',
+      );
+
+      expect(result).toEqual({
+        query: 'SPECIAL_TEST_KEYWORD',
+        results: [
+          {
+            path: 'src/app.ts',
+            line: 12,
+            preview: 'const SPECIAL_TEST_KEYWORD = true;',
+          },
+          {
+            path: 'src/login.ts',
+            line: 8,
+            preview: 'export const SPECIAL_TEST_KEYWORD: string = "ok";',
+          },
+        ],
+        truncated: true,
+      });
+      expect(execSpy).toHaveBeenCalledWith(
+        'session-123',
+        [
+          'sh',
+          '-c',
+          expect.stringContaining('grep -FnHi -e "$QUERY" "$file"'),
+        ],
+        '/workspace',
+        { QUERY: 'SPECIAL_TEST_KEYWORD' },
+        30000,
+      );
+      expect(execSpy.mock.calls[0]?.[1]?.[2]).toContain('find /workspace');
+      expect(execSpy.mock.calls[0]?.[1]?.[2]).not.toContain('mktemp');
+    });
+
+    it('parses .txt file grep output into structured results', async () => {
+      jest.spyOn(service, 'findContainerBySessionId').mockResolvedValue({
+        inspect: jest.fn().mockImplementation(async () => ({ State: { Running: true } })),
+      } as any);
+      jest.spyOn(service, 'execInContainerBySessionId').mockResolvedValue({
+        exitCode: 0,
+        stdout: '/workspace/key.txt:1:SPECIAL_TEST_KEYWORD',
+        stderr: '',
       });
 
-    await expect(
-      service.deleteFileFromContainer('session-123', 'src/missing.html'),
-    ).rejects.toThrow(NotFoundException);
-  });
+      await expect(
+        service.searchFilesInContainer('session-123', 'SPECIAL_TEST_KEYWORD'),
+      ).resolves.toEqual({
+        query: 'SPECIAL_TEST_KEYWORD',
+        results: [
+          {
+            path: 'key.txt',
+            line: 1,
+            preview: 'SPECIAL_TEST_KEYWORD',
+          },
+        ],
+        truncated: false,
+      });
+    });
 
-  it('rejects path traversal before exec', async () => {
-    const execSpy = jest.spyOn(service, 'execInContainerBySessionId');
+    it('returns empty results when grep finds no matches', async () => {
+      jest.spyOn(service, 'findContainerBySessionId').mockResolvedValue({
+        inspect: jest.fn().mockImplementation(async () => ({ State: { Running: true } })),
+      } as any);
+      jest.spyOn(service, 'execInContainerBySessionId').mockResolvedValue({
+        exitCode: 1,
+        stdout: '',
+        stderr: '',
+      });
 
-    await expect(
-      service.deleteFileFromContainer('session-123', '../secret.txt'),
-    ).rejects.toThrow(BadRequestException);
+      await expect(
+        service.searchFilesInContainer('session-123', 'SPECIAL_TEST_KEYWORD'),
+      ).resolves.toEqual({
+        query: 'SPECIAL_TEST_KEYWORD',
+        results: [],
+        truncated: false,
+      });
+    });
 
-    expect(execSpy).not.toHaveBeenCalled();
+    it('logs a warning when search exits non-zero with empty stdout and stderr', async () => {
+      const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+      jest.spyOn(service, 'findContainerBySessionId').mockResolvedValue({
+        inspect: jest.fn().mockImplementation(async () => ({ State: { Running: true } })),
+      } as any);
+      jest.spyOn(service, 'execInContainerBySessionId').mockResolvedValue({
+        exitCode: 127,
+        stdout: '',
+        stderr: 'find: not found',
+      });
+
+      await expect(
+        service.searchFilesInContainer('session-123', 'SPECIAL_TEST_KEYWORD'),
+      ).resolves.toEqual({
+        query: 'SPECIAL_TEST_KEYWORD',
+        results: [],
+        truncated: false,
+      });
+      expect(warnSpy).toHaveBeenCalledWith(
+        '[AI-WS-06-hotfix2] Search script failed for session session-123: exitCode=127, stderr=find: not found',
+      );
+    });
+
+    it('rejects empty query before exec', async () => {
+      const execSpy = jest.spyOn(service, 'execInContainerBySessionId');
+
+      await expect(service.searchFilesInContainer('session-123', '   ')).rejects.toThrow(
+        BadRequestException,
+      );
+
+      expect(execSpy).not.toHaveBeenCalled();
+    });
+
+    it('rejects too-long query before exec', async () => {
+      const execSpy = jest.spyOn(service, 'execInContainerBySessionId');
+
+      await expect(
+        service.searchFilesInContainer('session-123', 'x'.repeat(121)),
+      ).rejects.toThrow(BadRequestException);
+
+      expect(execSpy).not.toHaveBeenCalled();
+    });
   });
 });

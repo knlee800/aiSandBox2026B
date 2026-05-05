@@ -195,6 +195,31 @@ export class InternalSessionsController {
   }
 
   /**
+   * POST /api/internal/sessions/:id/files/search
+   * Search text-like files from a session's container filesystem
+   * Task AI-WS-06-hotfix: Route workspace search through container exec
+   *
+   * Request body:
+   * - query (required): Plain-text search query
+   */
+  @Post(':id/files/search')
+  @HttpCode(HttpStatus.OK)
+  async searchFiles(
+    @Param('id') sessionId: string,
+    @Body('query') query?: string,
+  ): Promise<{
+    query: string;
+    results: Array<{ path: string; line: number; preview: string }>;
+    truncated: boolean;
+  }> {
+    if (!query) {
+      throw new BadRequestException('Request body field "query" is required');
+    }
+
+    return this.sessionsService.searchFilesInContainer(sessionId, query);
+  }
+
+  /**
    * GET /api/internal/sessions/:id/dirs
    * List directory contents from a session's container filesystem
    * Task 7.2C: Container Directory Listing (Read-Only)

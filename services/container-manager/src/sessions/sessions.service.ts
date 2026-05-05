@@ -597,6 +597,40 @@ export class SessionsService {
   }
 
   /**
+   * Search text-like files in a session's container filesystem
+   * Task AI-WS-06-hotfix: Route workspace search through container exec
+   *
+   * @param sessionId - Session UUID
+   * @param query - Plain-text query to search for
+   * @returns Structured bounded search results
+   * @throws NotFoundException if session does not exist
+   * @throws GoneException if session is terminated, max lifetime exceeded, or idle timeout exceeded
+   * @throws TooManyRequestsException if quota exceeded
+   * @throws Error if container not found, not running, query invalid, or search fails
+   */
+  async searchFilesInContainer(
+    sessionId: string,
+    query: string,
+  ): Promise<{
+    query: string;
+    results: Array<{ path: string; line: number; preview: string }>;
+    truncated: boolean;
+  }> {
+    this.assertSessionUsableOrThrow(sessionId);
+    await this.checkAndEnforceMaxLifetime(sessionId);
+    await this.checkAndEnforceIdleTimeout(sessionId);
+    await this.checkAndEnforceQuota(sessionId);
+
+    const result = await this.dockerRuntimeService.searchFilesInContainer(
+      sessionId,
+      query,
+    );
+
+    this.updateLastActivity(sessionId);
+    return result;
+  }
+
+  /**
    * List directory contents from a session's container filesystem
    * Task 7.2C: Container Directory Listing (Read-Only)
    * Task 8.3A: Enforce Session Idle Timeout

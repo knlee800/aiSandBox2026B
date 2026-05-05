@@ -56,7 +56,7 @@ describe('ContainerManagerHttpClient file operations', () => {
 
     expect(result).toEqual(expected);
     expect(mockAxiosInstance.post).toHaveBeenCalledWith(
-      '/api/files/session-123/search',
+      '/api/internal/sessions/session-123/files/search',
       { query: 'login' },
       {
         headers: {

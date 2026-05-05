@@ -20832,9 +20832,9 @@ Make the active AI execution path aware of the current workspace file list and s
 
 ## AI-WS ??AI Workspace Capability
 
-**Family status:** ACTIVE — AI-WS-06 COMPLETE and LOCKED; AI-WS-03-hotfix COMPLETE and LOCKED; AI-WS-03-hotfix2 COMPLETE and LOCKED; AI-WS-03-hotfix3 COMPLETE and LOCKED; AI-WS-02-hotfix COMPLETE and LOCKED; AI-WS-03-hotfix4 COMPLETE and LOCKED; AI-WS-03-hotfix5 COMPLETE and LOCKED
+**Family status:** ACTIVE — AI-WS-06 COMPLETE and LOCKED; AI-WS-03-hotfix COMPLETE and LOCKED; AI-WS-03-hotfix2 COMPLETE and LOCKED; AI-WS-03-hotfix3 COMPLETE and LOCKED; AI-WS-02-hotfix COMPLETE and LOCKED; AI-WS-03-hotfix4 COMPLETE and LOCKED; AI-WS-03-hotfix5 COMPLETE and LOCKED; AI-WS-06-hotfix COMPLETE and LOCKED; AI-WS-06-hotfix2 COMPLETE and LOCKED; AI-WS-06-hotfix3 COMPLETE and LOCKED
 
-**Current stage:** AI-WS-03-hotfix5 (COMPLETE and LOCKED)
+**Current stage:** AI-WS-06-hotfix3 (COMPLETE and LOCKED)
 
 **Ordered slices (registered so far):**
 1. AI-WS-01 — Selected File Content Context Injection (COMPLETE and LOCKED)
@@ -20849,6 +20849,9 @@ Make the active AI execution path aware of the current workspace file list and s
 10. AI-WS-02-hotfix — Sanitize Restored Pending File-Action Confirmations (COMPLETE and LOCKED)
 11. AI-WS-03-hotfix4 — Preserve Delete File Actions In API Gateway Execution Results (COMPLETE and LOCKED)
 12. AI-WS-03-hotfix5 — Route File Delete Through Container Exec (COMPLETE and LOCKED)
+13. AI-WS-06-hotfix — Route Workspace Search Through Container Exec (COMPLETE and LOCKED)
+14. AI-WS-06-hotfix2 — Simplify Container Search Script And Log Failures (COMPLETE and LOCKED)
+15. AI-WS-06-hotfix3 — Force Grep Filename Prefix In Container Search (COMPLETE and LOCKED)
 
 ---
 
@@ -21709,6 +21712,179 @@ Route file delete through the same container-exec path as read/write/list so del
 - Keep this backend routing fix only
 
 **Reference:** See TASKS.md -> AI-WS-03-hotfix5 for active-task summary.
+
+---
+
+### AI-WS-06-hotfix: Route Workspace Search Through Container Exec
+
+**Task ID:** AI-WS-06-hotfix
+**Family:** AI-WS (AI Workspace Capability)
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/AI-WS-06-hotfix-CHECKPOINT.md`
+**Nature:** CONTAINER-MANAGER ROUTING HOTFIX — route AI workspace content search through Docker exec inside the active sandbox container, matching the read/write/list/delete architecture; update API gateway HTTP client to target the internal sessions search route
+**Source:** Inspection session (May 2026) — AI-WS-06 workspace search can run but returns no matches even when named-file read can see the content; root cause is the same host/container filesystem mismatch that affected delete before AI-WS-03-hotfix5: `FilesService.searchFiles()` uses `fs.readdir()` + `fs.readFile()` against the host `workspacePath`, while files live in the active container `/workspace/` view; on Windows/Docker Desktop/WSL2 this produces empty results
+**Depends on:** AI-WS-06 (COMPLETE and LOCKED); AI-WS-03-hotfix5 (COMPLETE and LOCKED)
+
+**Objective:**
+Route AI workspace content search through the same active-container execution path as read/write/list/delete, preserving all AI-WS-06 safety caps, exclusions, and result format.
+
+**Bounded scope:**
+- `services/container-manager/src/docker/docker-runtime.service.ts` — add `searchFilesInContainer(sessionId, query)` using safe Docker exec (grep or equivalent), bounded by AI-WS-06 caps
+- `services/container-manager/src/sessions/sessions.service.ts` — add `searchFilesInContainer(sessionId, query)` with existing session governance checks
+- `services/container-manager/src/sessions/internal-sessions.controller.ts` — add `POST :id/files/search` route guarded by `InternalServiceAuthGuard`
+- `services/api-gateway/src/clients/container-manager-http.client.ts` — change `searchSessionFiles()` target from `POST /api/files/${sessionId}/search` to `POST /api/internal/sessions/${sessionId}/files/search` with internal service key header
+- Focused tests for the above
+
+**Non-goals (explicit):**
+- No frontend changes
+- No AI service prompt/context changes
+- No file-action parser changes
+- No delete behavior changes
+- No schema/migration
+- No broad file API refactor
+- No semantic/vector/embedding search
+- No arbitrary shell command execution exposed to the model
+
+**Required behavior:**
+- Plain text query only; no shell interpolation of query into command string
+- Max query length enforced (same cap as AI-WS-06: 120 chars)
+- Max files scanned, max matches, max preview chars, max total response chars (same caps as AI-WS-06)
+- Text-like files only; binary detection preserved
+- Skip env/secrets/credentials files
+- Skip binary/asset extensions
+- Skip lock/generated/vendor/dist/node_modules directories
+- Empty or unsafe query rejected or fail-closed
+- Existing `FilesController` search route remains but is no longer used by API gateway client
+- Existing frontend `searchWorkspaceFiles(...)` and public API gateway route stay unchanged
+
+**Risks / invariants:**
+- Do not introduce arbitrary shell command execution
+- Keep search scoped to current session `/workspace` only
+- Keep result payload compact and bounded
+- Preserve AI-WS-06 exclusions, caps, and result format
+- Preserve frontend and API gateway public route behavior
+- Preserve AI prompt/context behavior
+- Preserve all read/write/list/delete behavior
+
+**Reference:** See TASKS.md -> AI-WS-06-hotfix for active-task summary.
+
+---
+
+### AI-WS-06-hotfix2: Simplify Container Search Script And Log Failures
+
+**Task ID:** AI-WS-06-hotfix2
+**Family:** AI-WS (AI Workspace Capability)
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/AI-WS-06-hotfix2-CHECKPOINT.md`
+**Nature:** CONTAINER-MANAGER DOCKER RUNTIME HOTFIX — simplify the multi-line shell search script to eliminate `mktemp`/temp-file dependency that may silently fail in minimal container images; add diagnostic stderr logging when exec exits non-zero with empty stdout so failures are no longer invisible
+**Source:** Inspection session (May 2026) — after AI-WS-06-hotfix, search routes correctly through Docker exec but still returns empty results; named-file read confirms keyword exists in `key.txt`; inspection shows the entire route chain and prompt/context flow are correct; likely failure is inside the search shell script itself: `mktemp` or `find` may not be available in the minimal sandbox image, causing script to exit non-zero with empty stdout, which is silently swallowed and returned as `{ results: [] }` — indistinguishable from a genuine no-match
+**Depends on:** AI-WS-06-hotfix (COMPLETE and LOCKED)
+
+**Objective:**
+Simplify `DockerRuntimeService.searchFilesInContainer` shell script and add diagnostic logging so that script failures are visible in logs and do not silently masquerade as genuine no-match results.
+
+**Bounded scope:**
+- `services/container-manager/src/docker/docker-runtime.service.ts` — replace `mktemp`/temp-file pattern with direct `find ... | while read` pipeline; add stderr warning log on non-zero empty-stdout exit
+- `services/container-manager/src/docker/docker-runtime.service.spec.ts` — add focused tests for stderr logging path and `.txt` file match parsing
+
+**Required behavior:**
+- Remove `mktemp` / temp-file dependency from search script
+- Use `find ... | while IFS= read -r file; do ... grep ... done` pipeline
+- Keep query passed via env var `QUERY` (not shell-interpolated)
+- Keep fixed-string grep mode (`grep -Fni -e "$QUERY"`)
+- Keep all existing safety caps and exclusions (unchanged)
+- Keep search scoped to `/workspace`
+- If exec exits non-zero with empty stdout, log stderr as a warning before returning empty results
+- Do not throw for no-match grep behavior
+- Do not expose arbitrary shell execution
+
+**Non-goals:**
+- No API gateway changes
+- No frontend changes
+- No AI service prompt/context changes
+- No route changes
+- No schema/migration
+- No semantic/vector search
+- No file-action or delete behavior changes
+- No change to query validation, safety caps, exclusions, or response shape
+
+**Acceptance checks:**
+- Search script no longer contains `mktemp`
+- Successful mocked grep output still parses into `{ path, line, preview }`
+- `.txt` file match such as `/workspace/key.txt:1:SPECIAL_TEST_KEYWORD` parses correctly
+- Empty/no-match result returns empty results cleanly
+- Non-zero + empty stdout + non-empty stderr → warning logged, empty results returned
+- Existing caps/exclusions tests still pass
+- Container-manager build and focused tests pass
+- No introduced lint errors
+
+**Risks / invariants:**
+- Do not loosen query validation
+- Do not shell-interpolate user/model query into script
+- Do not remove safety exclusions/caps
+- Do not change response shape `{ query, results, truncated }`
+- Do not change API gateway or frontend routing
+- Keep this container-manager-only
+
+**Reference:** See TASKS.md -> AI-WS-06-hotfix2 for active-task summary.
+
+---
+
+### AI-WS-06-hotfix3: Force Grep Filename Prefix In Container Search
+
+**Task ID:** AI-WS-06-hotfix3
+**Family:** AI-WS (AI Workspace Capability)
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/AI-WS-06-hotfix3-CHECKPOINT.md`
+**Nature:** CONTAINER-MANAGER SEARCH SCRIPT ONE-LINE FIX — add `-H` flag to `grep` call inside `searchFilesInContainer` shell script so output always includes the filename prefix, making results parseable by the existing TypeScript parser
+**Source:** Inspection session (May 2026) — after AI-WS-06-hotfix2, search still returns no matches; live `node:20-alpine` container test confirmed: `grep -Fni` omits filename when searching a single file (output: `1:SPECIAL_TEST_KEYWORD`), but the parser expects `path:line:preview` (e.g. `/workspace/key.txt:1:SPECIAL_TEST_KEYWORD`); lines without a second colon are silently skipped by `parseWorkspaceSearchOutput`; `grep -FnHi` forces filename inclusion always; BusyBox grep used by `node:20-alpine` supports `-H`
+**Depends on:** AI-WS-06-hotfix2 (COMPLETE and LOCKED)
+
+**Objective:**
+Add `-H` to grep flags in the container search shell script so that grep output always includes the filename, enabling the existing parser to produce non-empty results.
+
+**Bounded scope:**
+- `services/container-manager/src/docker/docker-runtime.service.ts` — change `grep -Fni` to `grep -FnHi` in the `searchFilesInContainer` shell script (one-character/one-flag change)
+- `services/container-manager/src/docker/docker-runtime.service.spec.ts` — assert generated script contains `grep -FnHi` (update/extend existing grep flag assertion)
+
+**Required behavior:**
+- Search script uses `grep -FnHi -e "$QUERY" "$file"`
+- Grep output format becomes: `path:line:preview` (e.g. `/workspace/key.txt:1:SPECIAL_TEST_KEYWORD`)
+- Existing TypeScript parser `parseWorkspaceSearchOutput` remains unchanged
+- Existing caps/exclusions/query validation unchanged
+- Existing response shape `{ query, results, truncated }` unchanged
+
+**Non-goals:**
+- No API gateway changes
+- No frontend changes
+- No AI service prompt/context changes
+- No route changes
+- No parser response shape changes
+- No semantic/vector search
+- No file-action or delete behavior changes
+- No query validation or safety cap changes
+
+**Acceptance checks:**
+- Generated search script contains `grep -FnHi`
+- Existing `.txt` parse test still passes
+- Existing search tests still pass
+- Container-manager build and focused Docker runtime tests pass
+- No introduced lint errors
+
+**Risks / invariants:**
+- Do not change search API contract
+- Do not change parser response shape
+- Do not loosen safety caps/exclusions
+- Do not change query handling
+- Keep this one-flag fix plus focused test assertion only
+
+**Reference:** See TASKS.md -> AI-WS-06-hotfix3 for active-task summary.
 
 ---
 

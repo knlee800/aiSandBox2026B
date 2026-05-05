@@ -4,6 +4,13 @@ import Docker from 'dockerode';
 import { GovernanceConfig } from '../config/governance.config';
 
 const SANDBOX_IMAGE = 'node:20-alpine';
+const WORKSPACE_SEARCH_MAX_QUERY_LENGTH = 120;
+const WORKSPACE_SEARCH_MAX_FILES_SCANNED = 200;
+const WORKSPACE_SEARCH_MAX_MATCHES = 20;
+const WORKSPACE_SEARCH_MAX_PREVIEW_CHARS = 240;
+const WORKSPACE_SEARCH_MAX_TOTAL_RESPONSE_CHARS = 8000;
+const WORKSPACE_SEARCH_MAX_FILE_BYTES = 262_144;
+const WORKSPACE_SEARCH_TRUNCATED_MARKER = '__AI_WS_SEARCH_TRUNCATED__';
 
 /**
  * DockerRuntimeService
@@ -576,6 +583,139 @@ export class DockerRuntimeService implements OnModuleInit {
   }
 
   /**
+   * Search text-like files in container filesystem by session ID
+   * Task AI-WS-06-hotfix: Route workspace search through container exec
+   *
+   * @param sessionId - Session identifier
+   * @param query - Plain-text query to search for
+   * @returns Structured bounded search results
+   * @throws BadRequestException if query is invalid
+   * @throws Error if container not found, not running, or search fails
+   */
+  async searchFilesInContainer(
+    sessionId: string,
+    query: string,
+  ): Promise<{
+    query: string;
+    results: Array<{ path: string; line: number; preview: string }>;
+    truncated: boolean;
+  }> {
+    try {
+      const normalizedQuery = this.normalizeWorkspaceSearchQuery(query);
+
+      const container = await this.findContainerBySessionId(sessionId);
+      const inspect = await container.inspect();
+      if (!inspect.State.Running) {
+        throw new Error(`Container for session ${sessionId} is not running`);
+      }
+
+      const searchScript = `
+        files="$(
+          find /workspace \
+            \\( -type d \\( \
+              -name '.git' -o \
+              -name 'node_modules' -o \
+              -name 'dist' -o \
+              -name 'build' -o \
+              -name '.next' -o \
+              -name 'coverage' -o \
+              -name 'vendor' -o \
+              -name 'generated' -o \
+              -name '.turbo' -o \
+              -name '.cache' \
+            \\) -prune \\) -o \
+            \\( -type f -size -${WORKSPACE_SEARCH_MAX_FILE_BYTES + 1}c \
+              ! -name '.env' \
+              ! -name '.env.*' \
+              ! -name '*.env' \
+              ! -name '*.env.*' \
+              ! -name '*.key' \
+              ! -name '*.pem' \
+              ! -name '*.cert' \
+              ! -name '*.secret' \
+              ! -name '*.credentials' \
+              ! -name 'package-lock.json' \
+              ! -name 'yarn.lock' \
+              ! -name 'pnpm-lock.yaml' \
+              ! -name '*.lock' \
+              ! -name '*.min.js' \
+              ! -name '*.min.css' \
+              ! -name '*.map' \
+              ! -name '*.png' \
+              ! -name '*.jpg' \
+              ! -name '*.jpeg' \
+              ! -name '*.gif' \
+              ! -name '*.ico' \
+              ! -name '*.webp' \
+              ! -name '*.svg' \
+              ! -name '*.woff' \
+              ! -name '*.woff2' \
+              ! -name '*.ttf' \
+              ! -name '*.eot' \
+              ! -name '*.mp4' \
+              ! -name '*.mp3' \
+              ! -name '*.zip' \
+              ! -name '*.gz' \
+              ! -name '*.tar' \
+              ! -name '*.bin' \
+              ! -name '*.exe' \
+              ! -name '*.dll' \
+              ! -name '*.so' \
+              ! -name '*.pdf' \
+              -print \
+            \\)
+        )" || exit $?
+
+        files_scanned=0
+        printf '%s\n' "$files" | while IFS= read -r file; do
+          [ -n "$file" ] || continue
+          files_scanned=$((files_scanned + 1))
+          if [ "$files_scanned" -gt ${WORKSPACE_SEARCH_MAX_FILES_SCANNED} ]; then
+            echo '${WORKSPACE_SEARCH_TRUNCATED_MARKER}'
+            break
+          fi
+          grep -FnHi -e "$QUERY" "$file" 2>/dev/null || true
+        done
+      `.trim();
+
+      const result = await this.execInContainerBySessionId(
+        sessionId,
+        ['sh', '-c', searchScript],
+        '/workspace',
+        { QUERY: normalizedQuery },
+        30000,
+      );
+
+      if (result.exitCode !== 0 && `${result.stdout ?? ''}`.trim().length === 0) {
+        const stderr = `${result.stderr ?? ''}`.trim();
+        if (stderr.length > 0) {
+          console.warn(
+            `[AI-WS-06-hotfix2] Search script failed for session ${sessionId}: exitCode=${result.exitCode}, stderr=${stderr}`,
+          );
+        }
+        return {
+          query: normalizedQuery,
+          results: [],
+          truncated: false,
+        };
+      }
+      if (result.exitCode !== 0) {
+        throw new Error(`Failed to search files for query: ${normalizedQuery}`);
+      }
+
+      return this.parseWorkspaceSearchOutput(normalizedQuery, result.stdout ?? '');
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
+      throw new Error(
+        `Failed to search files in container for session ${sessionId}: ${error.message}`,
+      );
+    }
+  }
+
+  /**
    * List directory contents from container filesystem by session ID
    * Task 7.2C: Container Directory Listing (Read-Only)
    *
@@ -816,6 +956,175 @@ export class DockerRuntimeService implements OnModuleInit {
     if (filePath.startsWith('/workspace')) {
       throw new BadRequestException('Path must be relative to /workspace');
     }
+  }
+
+  private normalizeWorkspaceSearchQuery(query: string): string {
+    if (typeof query !== 'string') {
+      throw new BadRequestException('Search query is required');
+    }
+
+    if (/[\u0000-\u001f\u007f]/.test(query)) {
+      throw new BadRequestException('Search query contains unsupported control characters');
+    }
+
+    const normalizedQuery = query.trim().replace(/\s+/g, ' ');
+    if (!normalizedQuery) {
+      throw new BadRequestException('Search query is required');
+    }
+    if (normalizedQuery.length > WORKSPACE_SEARCH_MAX_QUERY_LENGTH) {
+      throw new BadRequestException(
+        `Search query must be at most ${WORKSPACE_SEARCH_MAX_QUERY_LENGTH} characters`,
+      );
+    }
+
+    return normalizedQuery;
+  }
+
+  private parseWorkspaceSearchOutput(
+    query: string,
+    stdout: string,
+  ): {
+    query: string;
+    results: Array<{ path: string; line: number; preview: string }>;
+    truncated: boolean;
+  } {
+    const results: Array<{ path: string; line: number; preview: string }> = [];
+    let totalResponseChars = 0;
+    let truncated = false;
+
+    for (const rawLine of stdout.split(/\r?\n/)) {
+      const line = rawLine.trim();
+      if (!line) {
+        continue;
+      }
+      if (line === WORKSPACE_SEARCH_TRUNCATED_MARKER) {
+        truncated = true;
+        continue;
+      }
+
+      const firstColonIndex = line.indexOf(':');
+      const secondColonIndex =
+        firstColonIndex >= 0 ? line.indexOf(':', firstColonIndex + 1) : -1;
+      if (firstColonIndex <= 0 || secondColonIndex <= firstColonIndex + 1) {
+        continue;
+      }
+
+      const rawPath = line.slice(0, firstColonIndex);
+      const path = rawPath.startsWith('/workspace/')
+        ? rawPath.slice('/workspace/'.length)
+        : rawPath === '/workspace'
+          ? ''
+          : rawPath;
+      if (!path || this.shouldSkipSearchResultPath(path)) {
+        continue;
+      }
+
+      const parsedLineNumber = Number.parseInt(
+        line.slice(firstColonIndex + 1, secondColonIndex),
+        10,
+      );
+      if (!Number.isFinite(parsedLineNumber) || parsedLineNumber < 1) {
+        continue;
+      }
+
+      const preview = this.normalizeSearchPreview(line.slice(secondColonIndex + 1));
+      if (!preview) {
+        continue;
+      }
+
+      const nextResultCharCount = path.length + preview.length + String(parsedLineNumber).length + 8;
+      if (
+        results.length >= WORKSPACE_SEARCH_MAX_MATCHES ||
+        totalResponseChars + nextResultCharCount > WORKSPACE_SEARCH_MAX_TOTAL_RESPONSE_CHARS
+      ) {
+        truncated = true;
+        break;
+      }
+
+      results.push({
+        path,
+        line: parsedLineNumber,
+        preview,
+      });
+      totalResponseChars += nextResultCharCount;
+    }
+
+    return {
+      query,
+      results,
+      truncated,
+    };
+  }
+
+  private shouldSkipSearchResultPath(relativePath: string): boolean {
+    const normalizedPath = relativePath.trim().toLowerCase();
+    const fileName = normalizedPath.split('/').pop() ?? '';
+
+    if (
+      fileName === '.env' ||
+      fileName.startsWith('.env.') ||
+      fileName.endsWith('.env') ||
+      fileName.includes('.env.') ||
+      fileName.endsWith('.key') ||
+      fileName.endsWith('.pem') ||
+      fileName.endsWith('.cert') ||
+      fileName.endsWith('.secret') ||
+      fileName.endsWith('.credentials') ||
+      fileName === 'package-lock.json' ||
+      fileName === 'yarn.lock' ||
+      fileName === 'pnpm-lock.yaml' ||
+      fileName.endsWith('.lock') ||
+      fileName.endsWith('.min.js') ||
+      fileName.endsWith('.min.css') ||
+      fileName.endsWith('.map') ||
+      fileName.endsWith('.png') ||
+      fileName.endsWith('.jpg') ||
+      fileName.endsWith('.jpeg') ||
+      fileName.endsWith('.gif') ||
+      fileName.endsWith('.ico') ||
+      fileName.endsWith('.webp') ||
+      fileName.endsWith('.svg') ||
+      fileName.endsWith('.woff') ||
+      fileName.endsWith('.woff2') ||
+      fileName.endsWith('.ttf') ||
+      fileName.endsWith('.eot') ||
+      fileName.endsWith('.mp4') ||
+      fileName.endsWith('.mp3') ||
+      fileName.endsWith('.zip') ||
+      fileName.endsWith('.gz') ||
+      fileName.endsWith('.tar') ||
+      fileName.endsWith('.bin') ||
+      fileName.endsWith('.exe') ||
+      fileName.endsWith('.dll') ||
+      fileName.endsWith('.so') ||
+      fileName.endsWith('.pdf')
+    ) {
+      return true;
+    }
+
+    return (
+      normalizedPath.includes('/.git/') ||
+      normalizedPath.includes('/node_modules/') ||
+      normalizedPath.includes('/dist/') ||
+      normalizedPath.includes('/build/') ||
+      normalizedPath.includes('/.next/') ||
+      normalizedPath.includes('/coverage/') ||
+      normalizedPath.includes('/vendor/') ||
+      normalizedPath.includes('/generated/') ||
+      normalizedPath.includes('/.turbo/') ||
+      normalizedPath.includes('/.cache/')
+    );
+  }
+
+  private normalizeSearchPreview(preview: string): string {
+    const normalizedPreview = preview.replace(/\t/g, ' ').trim();
+    if (!normalizedPreview) {
+      return '';
+    }
+    if (normalizedPreview.length <= WORKSPACE_SEARCH_MAX_PREVIEW_CHARS) {
+      return normalizedPreview;
+    }
+    return `${normalizedPreview.slice(0, WORKSPACE_SEARCH_MAX_PREVIEW_CHARS - 3)}...`;
   }
 
   /**

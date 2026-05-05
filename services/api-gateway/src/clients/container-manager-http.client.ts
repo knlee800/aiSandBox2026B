@@ -490,7 +490,7 @@ export class ContainerManagerHttpClient implements OnModuleInit {
 
     try {
       const response = await this.axiosInstance.post(
-        `/api/files/${sessionId}/search`,
+        `/api/internal/sessions/${sessionId}/files/search`,
         { query },
         {
           headers: {

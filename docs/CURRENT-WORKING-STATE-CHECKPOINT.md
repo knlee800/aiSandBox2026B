@@ -141,3 +141,57 @@ Current active stage in PROJ-01 family: `PROJ-01-23 (COMPLETE and LOCKED)` — n
 - No auth or billing changes.
 - No scope expansion beyond approved tasks.
 - All prior checkpoint invariants remain intact.
+
+---
+
+## 7. AI-WS Stabilization Pass — Completed 2026-05-05
+
+### Summary
+
+The full AI-WS capability stabilization pass completed successfully. All AI-WS tasks and hotfixes are COMPLETE and LOCKED.
+
+### Manual Validation Passed (user-confirmed)
+
+| Capability | Result |
+|---|---|
+| Selected file content context injected into AI prompt | Passed |
+| Project/workspace metadata context injected into AI prompt | Passed |
+| Named file read (AI asks to show content of a specific file) | Passed |
+| Workspace search for `SPECIAL_TEST_KEYWORD` in `key.txt` | Passed |
+| Safe file create — auto-applied without confirmation | Passed |
+| Delete confirmation appears and stays stable (no ghost Apply after restore) | Passed |
+| Confirmed delete removes existing file from active container `/workspace` | Passed |
+| Cancelled delete preserves file | Passed |
+| Missing-file delete surfaces useful "File not found" message | Passed |
+| Restored stale `awaiting-confirmation` Apply button sanitized to `skipped` | Passed |
+| Static HTML preview relative links resolve correctly via `<base>` tag injection | Passed |
+
+### Stable AI Workspace Capabilities (as of 2026-05-05)
+
+- File list context in AI prompt
+- Selected file content read
+- Named file read (AI-WS-05)
+- Workspace content search (AI-WS-06) — routed through active container exec with `grep -FnHi`
+- File create / write / update (auto-applied)
+- File delete with explicit user confirmation
+- File delete routed through active container `/workspace` (not host filesystem)
+- Static HTML preview relative-link navigation
+
+### Hotfix Chain (all COMPLETE and LOCKED)
+
+| Task | Fix |
+|---|---|
+| AI-WS-03-hotfix | Corrected misleading 403 error wording in frontend |
+| AI-WS-03-hotfix2 | Added raw JSON file-action fallback parser in AI service |
+| PREVIEW-hotfix | Injected `<base>` tag for static HTML preview relative links |
+| AI-WS-03-hotfix3 | Surfaced backend delete error message in frontend |
+| AI-WS-02-hotfix | Sanitized restored stale `awaiting-confirmation` states on session load |
+| AI-WS-03-hotfix4 | Preserved `delete` file actions through API gateway execution results |
+| AI-WS-03-hotfix5 | Routed file delete through container exec (aligned with read/write/list) |
+| AI-WS-06-hotfix | Routed workspace search through internal sessions route and container exec |
+| AI-WS-06-hotfix2 | Simplified container search script — removed `mktemp`/temp-file; added stderr diagnostic logging |
+| AI-WS-06-hotfix3 | Added `-H` flag to grep so filename prefix is always included in search output |
+
+### No New Work Started
+
+No new feature tasks were registered or started as part of this stabilization closure.
