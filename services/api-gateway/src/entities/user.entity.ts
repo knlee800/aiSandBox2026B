@@ -11,6 +11,7 @@ import { UserRole } from './user-role.enum';
 import { Session } from './session.entity';
 import { Project } from './project.entity';
 import { Workspace } from './workspace.entity';
+import { OauthAccount } from './oauth-account.entity';
 
 /**
  * User Entity
@@ -40,13 +41,15 @@ export class User {
   passwordHash: string | null;
 
   /**
-   * Authentication provider (email, google, apple, github)
+   * Legacy single-provider auth marker kept for backward compatibility.
+   * AUTH-APP-01 uses oauth_accounts as the source of truth for linked providers.
    */
   @Column({ type: 'varchar', length: 50, name: 'auth_provider', default: 'email' })
   authProvider: string;
 
   /**
-   * OAuth provider-specific user ID
+   * Legacy single-provider OAuth ID kept for backward compatibility.
+   * AUTH-APP-01 uses oauth_accounts for provider-specific account identifiers.
    */
   @Column({ type: 'varchar', length: 255, name: 'oauth_id', nullable: true })
   oauthId: string | null;
@@ -121,4 +124,10 @@ export class User {
    */
   @OneToMany(() => Workspace, (workspace) => workspace.user)
   workspaces: Workspace[];
+
+  /**
+   * Linked OAuth provider accounts for multi-provider sign-in.
+   */
+  @OneToMany(() => OauthAccount, (oauthAccount) => oauthAccount.user)
+  oauthAccounts: OauthAccount[];
 }

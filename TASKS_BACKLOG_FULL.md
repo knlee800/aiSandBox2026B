@@ -22192,7 +22192,7 @@ Transform the public landing page into the "Build anything" entry experience wit
 
 ## AUTH — aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-APP-01A COMPLETE — AUTH-APP-01B NEXT
+**Family status:** ACTIVE — AUTH-APP-01B COMPLETE — AUTH-APP-01C NEXT
 **Important distinction:** AUTH-APP-01 is for the aiSandBox platform itself. AUTH-MODULE-01 (reusable generated app-auth for user-created apps) is a separate, later family.
 **Decision spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -22214,7 +22214,7 @@ Add production-ready authentication for the aiSandBox hosted app — email, Goog
 
 **Confirmed child slices (order locked by AUTH-APP-01A — see `docs/AUTH-APP-01-SPEC.md` Section 14):**
 1. AUTH-APP-01A — Auth Architecture & Implementation Spec (COMPLETE and LOCKED)
-2. AUTH-APP-01B — Database / Schema Migrations (pending)
+2. AUTH-APP-01B — Database / Schema Migrations (COMPLETE and LOCKED)
 3. AUTH-APP-01C — Token Storage & Email Auth Hardening (pending; may split into C1 + C2 at stage-start)
 4. AUTH-APP-01D — Google OAuth (pending)
 5. AUTH-APP-01E — Apple OAuth (pending)
@@ -22299,6 +22299,77 @@ Produce a concrete, decision-complete implementation spec document for all first
 - [x] No OAuth provider configured
 
 **Reference:** See TASKS.md -> AUTH-APP-01A. See `docs/AUTH-APP-01-SPEC.md`. See `docs/UX-IA-00-MASTER-PLAN.md` AUTH-APP-01 entry.
+
+---
+
+### AUTH-APP-01B: Database / Schema Migrations
+
+**Task ID:** AUTH-APP-01B
+**Family:** AUTH
+**Parent:** AUTH-APP-01
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Source:** AUTH-APP-01A spec (`docs/AUTH-APP-01-SPEC.md` Section 5); locked slice order
+**Depends on:** AUTH-APP-01A (COMPLETE and LOCKED)
+**Completed:** 2026-05-06
+**Checkpoint:** `docs/AUTH-APP-01B-CHECKPOINT.md`
+
+**Objective:**
+Apply all database schema changes required by the AUTH-APP-01 architecture before any auth behavior is implemented. Fixes the critical `password_hash` nullability blocker and lays the schema foundation for OAuth account linking, session persistence, and email verification.
+
+**Implementation summary:**
+
+Migration `1771700000000-AddAuthSchemaFoundation.ts`:
+- `ALTER TABLE "users" ALTER COLUMN "password_hash" DROP NOT NULL`
+- Added `auth_provider`, `oauth_id`, `last_login_at`, `stripe_customer_id` to `users` (columns already declared in entity but absent from all prior migrations — pre-existing schema/entity drift fixed here)
+- Created `oauth_accounts` table: uuid PK, user_id FK, provider, provider_account_id, provider_email nullable, created_at; unique on (provider, provider_account_id); index on user_id
+- Created `verification_tokens` table: uuid PK, user_id FK, token_hash unique, type, expires_at, used_at nullable, created_at; indexes on token_hash and (user_id, type)
+- Created `auth_sessions` table: uuid PK, user_id FK, session_token_hash unique, expires_at, last_active_at, revoked_at nullable, created_at; indexes on session_token_hash, user_id, expires_at
+- Down migration reverses all changes in correct order; includes safety guard on `password_hash` NOT NULL restore
+
+Entities created:
+- `src/entities/oauth-account.entity.ts` — `OauthAccount`
+- `src/entities/verification-token.entity.ts` — `VerificationToken`
+- `src/entities/auth-session.entity.ts` — `AuthSession`
+
+Entity/module updates:
+- `src/entities/user.entity.ts` — added legacy/backward-compat comments on `authProvider`/`oauthId`; added `oauthAccounts` OneToMany
+- `src/auth/auth.module.ts` — added `OauthAccount`, `VerificationToken`, `AuthSession` to `TypeOrmModule.forFeature`
+
+**Non-goals met (none of the following were touched):**
+- No Google/Apple OAuth strategy or routes
+- No HTTP-only cookie session middleware
+- No frontend localStorage migration
+- No email sending or verification flow
+- No password reset flow
+- No rate limiting
+- No route/API protection changes
+- No frontend changes
+- No new npm dependencies
+- No existing columns or tables removed
+
+**Acceptance checks (all MET):**
+- [x] Migration makes `users.password_hash` nullable
+- [x] Migration adds `oauth_accounts` table with correct schema
+- [x] Migration adds `verification_tokens` table with correct schema
+- [x] Migration adds `auth_sessions` table with correct schema
+- [x] `OauthAccount`, `VerificationToken`, `AuthSession` entities created and match migration schema
+- [x] `User` entity updated: deprecation comments on `authProvider`/`oauthId`; `oauthAccounts` relation added; no fields removed
+- [x] All new entities registered in `AuthModule`
+- [x] `npx tsc --noEmit` PASS
+- [x] `npm test` FAIL — pre-existing environment issue (REDIS_URL not set during test bootstrap); not introduced by this slice
+- [x] `npm run lint` FAIL — pre-existing tooling issue (ESLint config not discoverable); not introduced by this slice
+- [x] No frontend files changed
+- [x] No auth controller / service behavior changed
+- [x] No package.json changes
+
+**Carry-forward risks to AUTH-APP-01C:**
+- `npm test` cannot be trusted until `REDIS_URL` is available in the test environment
+- `npm run lint` cannot be trusted until ESLint config is resolved for this package
+- Transactional email provider must be selected and configured before email verification/password reset can be implemented in AUTH-APP-01C
+
+**Reference:** See TASKS.md -> AUTH-APP-01B. See `docs/AUTH-APP-01B-CHECKPOINT.md`. See `docs/AUTH-APP-01-SPEC.md` Section 5.
 
 ---
 

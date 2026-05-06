@@ -12216,9 +12216,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## AUTH — aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-APP-01A COMPLETE — AUTH-APP-01B NEXT
+**Family status:** ACTIVE — AUTH-APP-01B COMPLETE — AUTH-APP-01C NEXT
 
-**Current stage:** AUTH-APP-01B (pending — register before starting)
+**Current stage:** AUTH-APP-01C (pending — register before starting)
 
 **Master spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Reference master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -12233,7 +12233,7 @@ Goal: add production-ready authentication (email, Google, Apple) for the aiSandB
 
 Confirmed child slices (order locked by AUTH-APP-01A spec — `docs/AUTH-APP-01-SPEC.md` Section 14):
 1. AUTH-APP-01A — Auth Architecture & Implementation Spec (COMPLETE and LOCKED)
-2. AUTH-APP-01B — Database / Schema Migrations (pending)
+2. AUTH-APP-01B — Database / Schema Migrations (COMPLETE and LOCKED)
 3. AUTH-APP-01C — Token Storage & Email Auth Hardening (pending; may split into C1 + C2 — see note below)
 4. AUTH-APP-01D — Google OAuth (pending)
 5. AUTH-APP-01E — Apple OAuth (pending)
@@ -12270,4 +12270,32 @@ Confirmed child slices (order locked by AUTH-APP-01A spec — `docs/AUTH-APP-01-
 7. **Slice order:** AUTH-APP-01B → C → D → E → F → G → H → Z (locked; C may split into C1 + C2).
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01A. See `docs/AUTH-APP-01-SPEC.md`.
+
+---
+
+#### AUTH-APP-01B: Database / Schema Migrations
+
+**Status:** COMPLETE and LOCKED
+**Source:** AUTH-APP-01A spec (`docs/AUTH-APP-01-SPEC.md` Section 5); locked slice order
+**Depends on:** AUTH-APP-01A (COMPLETE and LOCKED)
+**Completed:** 2026-05-06
+**Checkpoint:** `docs/AUTH-APP-01B-CHECKPOINT.md`
+
+**Implemented:**
+- `users.password_hash` made nullable (fixes schema/entity mismatch blocking OAuth users)
+- Added missing `users` columns already declared in entity: `auth_provider`, `oauth_id`, `last_login_at`, `stripe_customer_id`
+- Created `oauth_accounts` table with FK, unique constraint, and index
+- Created `verification_tokens` table with FK, unique token_hash, and composite index
+- Created `auth_sessions` table with FK, unique session_token_hash, and expires_at index
+- Created `OauthAccount`, `VerificationToken`, `AuthSession` TypeORM entities
+- Added legacy/backward-compat comments to `User.authProvider` and `User.oauthId`
+- Added `User.oauthAccounts` OneToMany relation
+- Registered all three new entities in `AuthModule.TypeOrmModule.forFeature`
+
+**Validation:**
+- `npx tsc --noEmit`: PASS
+- `npm test`: FAIL — pre-existing environment issue (REDIS_URL not set during test bootstrap); not caused by this slice
+- `npm run lint`: FAIL — pre-existing tooling issue (ESLint config not discoverable by package lint script); not caused by this slice
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01B. See `docs/AUTH-APP-01B-CHECKPOINT.md`.
 
