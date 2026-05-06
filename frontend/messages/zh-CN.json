@@ -35,6 +35,7 @@
     "registerButton": "创建账号",
     "registering": "创建账号中...",
     "registerFailed": "注册失败",
+    "successMessage": "帐号创建成功。您现在可以登录。",
     "alreadyHaveAccount": "已经有账号？",
     "loginHere": "前往登录"
   },
@@ -42,8 +43,10 @@
     "hero": "构建任何内容",
     "heroSubtitle": "描述你想创建的内容，登录后可继续。",
     "promptPlaceholder": "描述你的应用想法...",
+    "promptSubmit": "立即开始",
     "continueToWorkspace": "进入工作区",
-    "signInToStart": "登录后开始"
+    "signInToStart": "登录后开始",
+    "signIn": "登录"
   },
   "workspace": {
     "home": "首页",

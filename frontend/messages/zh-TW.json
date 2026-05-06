@@ -35,6 +35,7 @@
     "registerButton": "建立帳號",
     "registering": "建立帳號中...",
     "registerFailed": "註冊失敗",
+    "successMessage": "帳號建立成功。您現在可以登入。",
     "alreadyHaveAccount": "已經有帳號？",
     "loginHere": "前往登入"
   },
@@ -42,8 +43,10 @@
     "hero": "打造任何內容",
     "heroSubtitle": "描述你想建立的內容，登入後可繼續。",
     "promptPlaceholder": "描述你的應用想法...",
+    "promptSubmit": "立即開始",
     "continueToWorkspace": "前往工作區",
-    "signInToStart": "登入後開始"
+    "signInToStart": "登入後開始",
+    "signIn": "登入"
   },
   "workspace": {
     "home": "首頁",

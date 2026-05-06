@@ -22105,3 +22105,88 @@ Establish frontend design tokens (Tailwind theme extensions and CSS custom prope
 
 ---
 
+### UX-IA-03: Public Landing Redesign + Login/Register Polish
+
+**Task ID:** UX-IA-03
+**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/UX-IA-03-CHECKPOINT.md`
+**Nature:** FRONTEND UI / I18N — redesign public landing as "Build anything" entry experience with prompt chatbox and CTA; polish login/register pages using UX-IA-02 design tokens; full i18n for all three pages; no auth changes, no workspace changes
+**Source:** UX-IA-00 master plan (May 2026) — public landing and login/register are the first user-facing surfaces; must reflect the new product direction before workspace redesign begins
+**Depends on:** UX-IA-01 (COMPLETE and LOCKED), UX-IA-02 (COMPLETE and LOCKED)
+
+**Objective:**
+Transform the public landing page into the "Build anything" entry experience with a prompt chatbox and sign-in/register CTA. Polish login and register pages to use the UX-IA-02 design token foundation and achieve full i18n coverage. No authentication, no workspace, no AI-WS changes.
+
+**Bounded scope:**
+- `frontend/components/public/public-landing-slice.tsx` — redesign with "Build anything" headline, short subtitle, prompt chatbox, sign-in/register CTA behavior
+- `frontend/app/[locale]/page.tsx` — wire updated landing component props
+- `frontend/app/[locale]/login/page.tsx` — visual polish using design tokens + full i18n
+- `frontend/app/[locale]/register/page.tsx` — visual polish using design tokens + full i18n
+- `frontend/components/LanguageSwitcher.tsx` — ensure visible on all three pages if not already
+- `frontend/messages/en.json` — add/complete landing, login, register i18n keys
+- `frontend/messages/zh-TW.json` — same namespace additions
+- `frontend/messages/zh-CN.json` — same namespace additions
+- Focused tests for sessionStorage prompt preservation if existing test setup supports them
+
+**Required behavior:**
+- `/[locale]` public landing shows: "Build anything" headline, short subtitle, prompt input, sign-in/register CTA
+- Submitting the prompt before login must **not** create a project
+- Submitting the prompt before login must store the prompt text in `sessionStorage` and redirect to login or register
+- Login/register pages remain functionally unchanged — visual/i18n polish only
+- Login/register use design token CSS classes where practical (`bg-surface-raised`, `text-text-primary`, `border-border`, etc.)
+- All landing/login/register user-facing strings must use `useTranslations` i18n keys — no hardcoded English
+- UX-IA-01 English fallback behavior (`active locale → English → raw key`) unchanged
+- UX-IA-02 font (`--font-inter`) and token CSS variables unchanged
+
+**Auth non-goals (explicitly forbidden in this slice):**
+- No Auth.js / NextAuth implementation
+- No Google OAuth / Apple OAuth configuration
+- No database-backed auth or session model changes
+- No backend auth service changes
+- No API guards or route protection changes
+- No password reset flows
+- No email verification
+- No provider account linking logic
+- All of the above belong to AUTH-APP-01 (registered and implemented separately after UX-IA-03)
+
+**Other non-goals:**
+- No authenticated workspace redesign
+- No workspace shell / sidebar changes
+- No project mode changes
+- No preview tab changes (Visual Edit Mode is roadmap-only — master plan Section 12)
+- No AI-WS file-action changes
+- No billing/upgrade changes
+- No new external npm dependencies
+- No route cleanup (that is UX-IA-14)
+- No anonymous project creation
+
+**Acceptance checks:**
+- `/en` renders public landing with "Build anything" headline and prompt input
+- `/zh-TW` and `/zh-CN` render localized landing/login/register text correctly
+- Prompt submission before login stores text in `sessionStorage` and redirects to login/register
+- Login flow still works as before (auth unchanged)
+- Register flow still works as before (auth unchanged)
+- Missing `zh-TW`/`zh-CN` keys fall back to English (UX-IA-01 behavior preserved)
+- Frontend typecheck passes (`npx tsc --noEmit`)
+- Frontend tests pass (`npm run test`)
+- Frontend build passes (`npm run build`)
+- No lint/read errors on touched files
+- No regression to locale middleware redirects (`/` → `/en`, locale-less paths → `/en/<path>`)
+
+**Risks / invariants:**
+- Do not break existing auth form submit / redirect logic
+- Do not hardcode any new landing/login/register strings — all must use `t('key')`
+- Do not change workspace behavior or any AI-WS logic
+- Do not structure the login page in a way that blocks AUTH-APP-01's later addition of OAuth buttons
+- Do not structure the landing chatbox in a way that prevents future prompt-to-project flow (AUTH-APP-01 + UX-IA-04 will complete this flow)
+- Keep this slice public/auth-page UI only
+- Visual Edit Mode remains roadmap-only after this slice
+- AUTH-APP-01 remains roadmap-only after this slice
+
+**Reference:** See TASKS.md -> UX-IA-03. See `docs/UX-IA-00-MASTER-PLAN.md` section UX-IA-03.
+
+---
+

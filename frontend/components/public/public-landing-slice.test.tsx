@@ -5,39 +5,56 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { PublicLandingSliceView } from './public-landing-slice';
 
 describe('public landing slice component', () => {
-  test('renders first minimal public-facing slice', () => {
-    const html = renderToStaticMarkup(<PublicLandingSliceView locale="en" state="empty" />);
+  const baseProps = {
+    locale: 'en',
+    prompt: '',
+    onPromptChange: () => {},
+    onPromptSubmit: () => {},
+    strings: {
+      appName: 'AI Sandbox',
+      hero: 'Build anything',
+      heroSubtitle: 'Describe what you want to build and continue after login.',
+      promptPlaceholder: 'Describe your app idea...',
+      promptSubmit: 'Get started',
+      continueToWorkspace: 'Continue to Workspace',
+      signInToStart: 'Sign In to Start',
+      signIn: 'Sign In',
+      needAccount: 'Need an account?',
+      startHere: 'Start here',
+    },
+  } as const;
+
+  test('renders the build-anything landing with prompt controls', () => {
+    const html = renderToStaticMarkup(<PublicLandingSliceView {...baseProps} state="empty" />);
 
     assert.match(html, /AI Sandbox/);
-    assert.match(html, /Build software by chatting with AI in isolated sandboxes\./);
-    assert.match(html, /Core Product Surface/);
-    assert.match(html, /Isolated Sessions/);
-    assert.match(html, /Deterministic Behavior/);
-    assert.match(html, /AI-Assisted Workflow/);
+    assert.match(html, /Build anything/);
+    assert.match(html, /Describe what you want to build and continue after login\./);
+    assert.match(html, /Describe your app idea\.\.\./);
+    assert.match(html, /Get started/);
+    assert.match(html, /Sign In/);
+    assert.match(html, /Need an account\?/);
+    assert.match(html, /Start here/);
+    assert.match(html, /textarea/);
   });
 
-  test('renders state messaging for loading, error, and ready', () => {
-    const loadingHtml = renderToStaticMarkup(<PublicLandingSliceView locale="en" state="loading" />);
-    const errorHtml = renderToStaticMarkup(<PublicLandingSliceView locale="en" state="error" />);
-    const readyHtml = renderToStaticMarkup(<PublicLandingSliceView locale="en" state="ready" />);
+  test('uses login and register routes for anonymous visitors', () => {
+    const html = renderToStaticMarkup(<PublicLandingSliceView {...baseProps} state="empty" />);
 
-    assert.match(loadingHtml, /Public surface is loading/);
-    assert.match(errorHtml, /Public surface unavailable/);
-    assert.match(readyHtml, /Signed-in state detected/);
-    assert.match(readyHtml, /Action: Use Continue to Workspace\./);
+    assert.match(html, /href="\/en\/login"/);
+    assert.match(html, /href="\/en\/register"/);
   });
 
-  test('adds trust note and responsive spacing classes', () => {
-    const html = renderToStaticMarkup(<PublicLandingSliceView locale="en" state="empty" />);
-    assert.match(html, /Trust note: your coding sessions run in isolated containers/);
-    assert.ok(html.includes('px-4'));
-    assert.ok(html.includes('sm:px-6'));
-    assert.ok(html.includes('text-2xl'));
-    assert.ok(html.includes('sm:text-3xl'));
+  test('shows continue-to-workspace CTA for ready state', () => {
+    const html = renderToStaticMarkup(<PublicLandingSliceView {...baseProps} state="ready" />);
+
+    assert.match(html, /Continue to Workspace/);
+    assert.match(html, /href="\/en\/app"/);
+    assert.ok(!html.includes('Need an account?'));
   });
 
   test('keeps authenticated-app scope out of public slice', () => {
-    const html = renderToStaticMarkup(<PublicLandingSliceView locale="en" state="empty" />);
+    const html = renderToStaticMarkup(<PublicLandingSliceView {...baseProps} state="empty" />);
 
     assert.ok(!html.includes('History / Control'));
     assert.ok(!html.includes('Dashboard'));

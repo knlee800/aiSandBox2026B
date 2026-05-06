@@ -35,6 +35,7 @@
     "registerButton": "Create account",
     "registering": "Creating account...",
     "registerFailed": "Registration failed",
+    "successMessage": "Account created successfully. You can now sign in.",
     "alreadyHaveAccount": "Already have an account?",
     "loginHere": "Login here"
   },
@@ -42,8 +43,10 @@
     "hero": "Build anything",
     "heroSubtitle": "Describe what you want to build and continue after login.",
     "promptPlaceholder": "Describe your app idea...",
+    "promptSubmit": "Get started",
     "continueToWorkspace": "Continue to Workspace",
-    "signInToStart": "Sign In to Start"
+    "signInToStart": "Sign In to Start",
+    "signIn": "Sign In"
   },
   "workspace": {
     "home": "Home",

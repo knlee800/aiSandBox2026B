@@ -48,16 +48,16 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+    <div className="flex min-h-screen items-center justify-center bg-surface-raised">
       <div className="absolute top-4 right-4">
         <LanguageSwitcher />
       </div>
-      <div className="bg-white p-8 rounded-lg shadow-md w-96">
-        <h1 className="text-2xl font-bold mb-6 text-center">{t('title')}</h1>
+      <div className="w-96 rounded-lg border border-border bg-surface-base p-8 shadow-md">
+        <h1 className="mb-6 text-center text-2xl font-bold text-text-primary">{t('title')}</h1>
 
         <form onSubmit={handleLogin}>
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-2" htmlFor="email">
+            <label className="mb-2 block text-sm font-medium text-text-primary" htmlFor="email">
               {t('email')}
             </label>
             <input
@@ -65,14 +65,13 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="you@example.com"
+              className="w-full rounded-md border border-border bg-surface-base px-3 py-2 text-text-primary focus:outline-none focus:ring-2 focus:ring-brand"
               required
             />
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium mb-2" htmlFor="password">
+            <label className="mb-2 block text-sm font-medium text-text-primary" htmlFor="password">
               {t('password')}
             </label>
             <input
@@ -80,8 +79,7 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="********"
+              className="w-full rounded-md border border-border bg-surface-base px-3 py-2 text-text-primary focus:outline-none focus:ring-2 focus:ring-brand"
               required
             />
           </div>
@@ -95,18 +93,18 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 disabled:bg-blue-300 transition-colors"
+            className="w-full rounded-md bg-brand py-2 text-white transition-colors hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? t('loggingIn') : t('loginButton')}
           </button>
 
-          <p className="mt-4 text-center text-sm text-gray-600">
-            Need an account?{' '}
+          <p className="mt-4 text-center text-sm text-text-secondary">
+            {t('needAccount')}{' '}
             <Link
               href={`/${locale}/register`}
-              className="font-medium text-blue-600 hover:text-blue-700 hover:underline"
+              className="font-medium text-brand hover:text-brand-hover hover:underline"
             >
-              Start here
+              {t('startHere')}
             </Link>
           </p>
         </form>

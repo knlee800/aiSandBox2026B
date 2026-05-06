@@ -741,11 +741,51 @@ All phases are incremental evolutions of the existing app. Each phase wraps, reo
 
 **Existing functions to reuse**: `PublicLandingSlice` component, login auth flow, `useTranslations`, `LanguageSwitcher`
 **New functionality**: Chatbox UI on landing, sessionStorage prompt preservation through login, i18n for all landing/login/register text
-**Non-goals**: No anonymous project creation, no workspace changes
+**Non-goals**: No anonymous project creation, no workspace changes, **no visual edit mode** (see Section 12 — Visual Edit Mode is a later capability; UX-IA-03 must not make decisions that would prevent future preview iframe selection events), **no production authentication changes** — UX-IA-03 must not implement Auth.js, NextAuth, Google/Apple OAuth, database-backed sessions, API guards, or password-reset flows; those belong to AUTH-APP-01 which follows immediately after
+**Auth constraint**: UX-IA-03 polishes the login and register *page UI* only (design tokens, i18n, layout). It must not alter backend auth flow, session management, or any OAuth configuration. Decisions made in UX-IA-03 must not make AUTH-APP-01 harder (e.g., do not hardcode auth provider assumptions into the login page structure).
 **Risk**: Low-Medium (landing is isolated from workspace)
 **Loop**: 3-step (implement, verify, consolidate)
 **Model**: Sonnet 4.6
 **Acceptance**: Landing shows "Build anything" + chatbox, typing prompt before login → redirects to login → prompt preserved in sessionStorage, login/register match design tokens, all text uses i18n keys
+
+---
+
+### AUTH-APP-01: aiSandBox First-Party User Authentication
+
+> **Family note**: AUTH-APP-01 is a separate task family from UX-IA. It is placed here in the roadmap between UX-IA-03 and UX-IA-04 because production authentication must be in place before workspace/project-mode redesign reaches users. AUTH-APP-01 is not a UX-IA slice — it will be tracked under its own task family when registered.
+
+**Objective**: Add production-ready authentication to the aiSandBox app itself. Real users must be able to sign in securely (email, Google, Apple) before accessing hosted aiSandBox features.
+
+**Recommended initial stack**:
+- Auth.js / NextAuth-style architecture (evaluate against existing architecture before committing)
+- Email auth (magic link or email+password — decide during spec phase)
+- Google OAuth sign-in
+- Apple OAuth sign-in
+- PostgreSQL-backed users / linked accounts / sessions
+- HTTP-only secure session cookies
+
+**Scope**:
+- **Email authentication**: email login or magic link/password flow (decided during spec); email verification; password reset if password auth is chosen; rate limiting and abuse protection on auth endpoints
+- **Google sign-in**: OAuth client setup; redirect URL configuration; account linking behavior for existing email users
+- **Apple sign-in**: Apple Developer setup documentation; Services ID / Team ID / Key ID / private key handling; private relay email handling; account linking behavior
+- **User/session model**: user table; linked provider accounts table; session persistence; created/updated timestamps; soft-delete or disabled-user handling consistent with existing architecture
+- **Route/API protection**: protect all aiSandBox app pages that require login; protect backend APIs that require authenticated user context; consistent redirect/reject behavior for unauthenticated users
+- **UX**: login page; register/sign-in entry; logout; basic account page; clear error messages for failed login, OAuth failure, and account-linking edge cases
+- **Security**: HTTP-only secure cookies; CSRF protection where applicable; safe redirect handling; no secrets exposed to frontend; OAuth secrets stored only in environment variables; rate-limit auth endpoints; prevent duplicate account creation for same email/provider combinations
+- **Testing and verification**: unit tests for auth helpers and guards; integration tests for protected route behavior; build/typecheck/lint must pass; manual OAuth setup checklist for Google and Apple
+
+**Non-goals**:
+- Reusable auth module or template for user-generated apps (that is AUTH-MODULE-01, a later separate item)
+- Multi-framework auth templates
+- Clerk / Supabase / Firebase provider support
+- Enterprise SSO / SAML
+- Billing/subscription integration
+- Admin user-management dashboard (unless already planned in architecture)
+- Full identity provider platform
+
+**Complexity note**: AUTH-APP-01 is a real multi-slice phase, not a login-page tweak. Estimated to require several implementation slices (e.g., schema + session model, email auth, Google OAuth, Apple OAuth, route protection, UX polish, testing). Register and stage-start with a plan phase before implementation.
+
+**Recommended sequencing**: AUTH-APP-01 must start after UX-IA-03 is COMPLETE and LOCKED. UX-IA-04 (Workspace Shell) can begin after AUTH-APP-01 is stable enough that route protection will not disrupt workspace restructuring.
 
 ---
 
@@ -954,6 +994,110 @@ All phases are incremental evolutions of the existing app. Each phase wraps, reo
 
 ---
 
+### UX-IA-15: Visual Edit Mode Foundation
+
+**Objective**: Add a preview element picker / selection overlay to the project mode Preview tab. When the user clicks an element in the preview iframe, capture its DOM metadata (selector, text content, bounding box, CSS classes) and surface it as context to the AI chat panel. AI uses the existing AI-WS file-action system to propose and apply source changes. Preview refreshes after a successful file action.
+
+**Likely files**:
+- `frontend/components/workspace/workspace-preview.logic.ts` — postMessage bridge for element selection events from the preview iframe
+- `frontend/components/workspace/workspace-project-mode.tsx` — selection overlay toggle, selection context state
+- `frontend/components/workspace/workspace-chat-*.logic.ts` — inject selected element context into AI prompt
+
+**Existing functions to reuse**: `WorkspacePreviewPanel` iframe logic, existing AI-WS file-action flow, file-action confirmation safety rules
+**New functionality**: Element picker toggle in Preview tab toolbar, cross-frame `postMessage` listener, DOM metadata capture, selected-element context injection into AI prompt
+**Non-goals**: No inline text editing, no drag/resize, no style panel, no DOM-to-source mapping (deferred to UX-IA-16+), no bypass of existing file-action confirmation rules
+**Risk**: Medium (cross-frame communication, iframe origin constraints, AI prompt context injection)
+**Dependencies**: UX-IA-08 (Project Mode Shell) and UX-IA-10 (Preview + Code & Files Tabs) must be COMPLETE and LOCKED first — preview must be a stable tab surface before adding selection overlay
+**Loop**: 4-step (plan, implement, verify, consolidate)
+**Model**: Opus 4.6
+**Acceptance**: Element picker toggle appears in Preview tab, clicking an element highlights it with a selection overlay, element metadata (selector, text, classes, bounds) is appended to the AI chat context, AI can propose file changes based on element context, file-action confirmation flow is preserved
+
+---
+
+### UX-IA-16: Visual Edit AI Patch Flow
+
+**Objective**: Improve the AI's ability to act on selected element context. Establish a cleaner prompt contract for visual edit requests. Add structured patch preview/confirmation before applying source changes from visual edit prompts.
+
+**Likely files**:
+- `frontend/components/workspace/workspace-chat-*.logic.ts` — visual-edit prompt contract
+- Backend AI service — visual-edit system prompt extension
+
+**Existing functions to reuse**: AI-WS file-action system, file-action confirmation UI, checkpoint creation
+**New functionality**: Visual-edit prompt contract, structured diff preview for visual patches
+**Non-goals**: No drag/resize editing, no inline text editing, no real-time preview patching
+**Risk**: Medium (AI prompt engineering, patch correctness)
+**Dependencies**: UX-IA-15 (Visual Edit Mode Foundation) must be COMPLETE and LOCKED
+**Loop**: 3-step (implement, verify, consolidate)
+**Model**: Sonnet 4.6
+**Acceptance**: Visual edit requests produce correct file-action proposals, diff is shown before apply, confirmation is required, checkpoint is created on apply
+
+---
+
+### UX-IA-17: Visual Edit Undo / Checkpoint Integration
+
+**Objective**: Integrate visual edit apply actions with the existing project history/snapshot checkpoint system. Applied visual edits create a named checkpoint. Undo restores from checkpoint using the existing restore flow.
+
+**Likely files**:
+- `frontend/components/workspace/workspace-snapshots.logic.ts` — trigger snapshot on visual edit apply
+- `frontend/components/workspace/workspace-checkpoint-*.logic.ts` — label visual edit checkpoints
+- `frontend/components/workspace/workspace-project-mode.tsx` — undo affordance in Preview tab toolbar
+
+**Existing functions to reuse**: `onCreateWorkspaceSnapshot`, `onRestoreWorkspaceProjectFromSnapshotById`, `ProjectHistoryPanel`
+**New functionality**: Auto-snapshot on visual edit apply, visual edit checkpoint label, undo button in Preview tab
+**Non-goals**: No multi-level undo stack beyond existing snapshot restore, no drag/resize editing
+**Risk**: Low (reuses existing snapshot/restore infrastructure)
+**Dependencies**: UX-IA-16 (Visual Edit AI Patch Flow) must be COMPLETE and LOCKED
+**Loop**: 2-step (implement, consolidate)
+**Model**: Sonnet 4.6
+**Acceptance**: Applying a visual edit creates a labeled snapshot, undo button triggers restore confirmation, history timeline shows visual edit checkpoints
+
+---
+
+### AUTH-MODULE-01: Reusable User Authentication Module / Template for aiSandBox-Created Apps
+
+> **Family note**: AUTH-MODULE-01 is a separate task family from UX-IA and from AUTH-APP-01. It is a product-level capability that allows aiSandBox *users* to add authentication to *their own apps* via AI-assisted template generation. It must not be confused with AUTH-APP-01 (which is authentication for the aiSandBox platform itself). It will be tracked under its own task family when registered.
+
+**Objective**: Allow aiSandBox users to say "Add user authentication with email, Google, and Apple sign-in to my app" and have aiSandBox generate or install a working auth starter into their project, including routes, database schema, UI, and environment configuration.
+
+**Recommended v1 scope**:
+- One stack only to start: Next.js + Auth.js + PostgreSQL
+- Generate auth routes and API handlers
+- Generate database schema / migrations for users, accounts, sessions
+- Generate protected route example
+- Generate login / register / logout UI components
+- Generate `.env.example` with required variables documented
+- Provide Google OAuth and Apple OAuth setup checklist as inline documentation
+- Add validation tests for generated auth flows
+- Integrate with aiSandBox checkpoint/rollback system: create a named snapshot before applying generated changes so users can revert cleanly
+
+**Non-goals for v1**:
+- Universal framework support (Vue, Angular, SvelteKit, etc.)
+- Hosted identity provider
+- Clerk / Supabase / Firebase auth provider support
+- Enterprise SSO / SAML
+- Billing / subscription integration
+- Advanced admin dashboard
+
+**Complexity note**: AUTH-MODULE-01 is larger than AUTH-APP-01 because it requires template generation, safe file patching into an existing user project, framework detection, environment variable handling, rollback/checkpoint integration, and validation of generated code. Treat as a major multi-slice product module.
+
+**Prerequisites**: AUTH-APP-01 (aiSandBox's own auth) must be COMPLETE and stable. Project mode, preview/code tabs, and file-action system (UX-IA-08 through UX-IA-10 and AI-WS series) must all be stable.
+
+---
+
+### Cross-Family Roadmap Ordering Note
+
+The recommended implementation order across families is:
+
+1. UX-IA-03 — Public Landing Redesign + Login/Register Polish (UI/i18n only)
+2. AUTH-APP-01 — aiSandBox First-Party User Authentication (production auth for the platform)
+3. UX-IA-04 through UX-IA-14 — Workspace / project-mode redesign continues
+4. UX-IA-15 through UX-IA-17 — Visual Edit Mode (requires stable preview tab)
+5. AUTH-MODULE-01 — Reusable generated app-auth module (later product capability)
+
+AUTH-APP-01 and AUTH-MODULE-01 are separate task families. They are roadmap entries in this document but must be registered in `TASKS.md` / `TASKS_BACKLOG_FULL.md` under their own family headings before implementation begins.
+
+---
+
 ## 11. Recommended First Implementation Slice
 
 **Start with: UX-IA-01 — i18n Foundation & Locale Middleware**
@@ -986,6 +1130,70 @@ These two infrastructure slices together establish the foundation that makes all
 
 ---
 
+## 12. Future Capability: Visual Edit Mode
+
+**Added:** 2026-05-06
+
+### Overview
+
+Visual Edit Mode allows users to make UX/UI changes directly from the preview surface. The user clicks or selects an element in the preview iframe and asks the AI to change that visual element. The AI uses the existing file-action system to propose and apply source changes. The preview refreshes after a successful apply.
+
+This is **not part of UX-IA-01 through UX-IA-14**. It is a later capability requiring a stable project mode preview surface first.
+
+---
+
+### Level A — Visual Edit Foundation (UX-IA-15)
+
+- Preview tab gains an element picker toggle in its toolbar
+- When active, a selection overlay is injected into the preview iframe via `postMessage`
+- Clicking an element in the preview captures DOM metadata: CSS selector, text content, bounding box, applied classes
+- Captured metadata is surfaced as structured context appended to the AI chat prompt
+- AI uses the existing AI-WS file-action system to propose source changes
+- File-action confirmation rules are preserved — no bypass
+- Preview refreshes automatically after a confirmed file action
+
+---
+
+### Level B — Advanced Visual Editor (UX-IA-16 + UX-IA-17)
+
+- Inline text editing directly in the preview (UX-IA-16)
+- Structured diff preview and confirmation before applying visual patches (UX-IA-16)
+- Named checkpoint created automatically on every visual edit apply (UX-IA-17)
+- Undo button in Preview tab toolbar triggers existing restore flow (UX-IA-17)
+- History timeline labels visual edit checkpoints (UX-IA-17)
+
+Future (beyond current roadmap, not yet scheduled):
+- Drag/resize/reposition elements
+- Style controls panel
+- Component/file ownership inference
+- Real-time preview patching without full refresh
+- Better DOM-to-source mapping (treat as hard; defer until foundation proves viable)
+
+---
+
+### Design Constraints / Invariants for All Phases
+
+These constraints apply from UX-IA-04 onward to all phases that touch the Preview tab or project mode layout:
+
+1. **Preview tab iframe must remain capable of supporting an overlay and selection events.** Do not wrap the iframe in a way that blocks pointer events or prevents injection of a selection overlay script.
+2. **Cross-frame postMessage communication must not be blocked.** Preview tab structure must not prevent `window.postMessage` / `message` event listener patterns between the app and the preview iframe.
+3. **AI-WS file-action confirmation and checkpoint safety remain the only source-change mechanism.** Visual edit must not introduce a bypass path for file writes that skips the existing confirmation flow.
+4. **Visual edit must not bypass existing file action safety rules.** Risky file actions proposed by visual edit must follow the same classification and approval logic as AI chat file actions.
+5. **Direct manipulation must be introduced gradually.** Start with element selection + AI prompt (UX-IA-15), not full drag/drop/resize editing. DOM-to-source mapping is hard and is explicitly deferred to advanced phases.
+6. **Existing project history/checkpoint system is the undo mechanism.** Do not introduce a parallel undo stack. Reuse `onCreateWorkspaceSnapshot` and `onRestoreWorkspaceProjectFromSnapshotById`.
+
+---
+
+### Dependency Ordering
+
+Visual Edit Mode must come after:
+- **UX-IA-08** — Project Mode Shell (preview must exist as a stable tab)
+- **UX-IA-10** — Preview + Code & Files Tabs (preview tab must be fully wired and sized correctly)
+
+Visual Edit phases must not be started until UX-IA-08 and UX-IA-10 are both COMPLETE and LOCKED.
+
+---
+
 ## Invariants
 
 - No implementation should start from this document alone.
@@ -993,3 +1201,4 @@ These two infrastructure slices together establish the foundation that makes all
 - All completed AI-WS work and hotfixes remain COMPLETE and LOCKED.
 - All prior checkpoint invariants remain intact.
 - This document does not modify the PRD or ARCHITECTURE — those are updated separately if scope changes require it.
+- Preview tab structure from UX-IA-10 onward must preserve the ability to add a selection overlay and cross-frame postMessage communication (Visual Edit Mode constraint — see Section 12).

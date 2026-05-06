@@ -12037,9 +12037,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## UX-IA — Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE — UX-IA-03 NEXT
+**Family status:** ACTIVE — AUTH-APP-01 NEXT (cross-family; UX-IA-04 follows after)
 
-**Current stage:** UX-IA-03 (not started)
+**Current stage:** AUTH-APP-01 (not started — register under AUTH family before implementing)
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -12047,8 +12047,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 1. UX-IA-00 — Master spec (COMPLETE — `docs/UX-IA-00-MASTER-PLAN.md`)
 2. UX-IA-01 — i18n Foundation & Locale Middleware (COMPLETE and LOCKED — `docs/UX-IA-01-CHECKPOINT.md`)
 3. UX-IA-02 — Design Token Foundation (COMPLETE and LOCKED — `docs/UX-IA-02-CHECKPOINT.md`)
-4. UX-IA-03 — Public Landing Redesign + Login/Register Polish (pending)
-5. UX-IA-04 — Workspace Shell + Sidebar + Home View (pending)
+4. UX-IA-03 — Public Landing Redesign + Login/Register Polish (COMPLETE and LOCKED — `docs/UX-IA-03-CHECKPOINT.md`)
+   ↳ AUTH-APP-01 — aiSandBox First-Party User Authentication (cross-family — NEXT; see `docs/UX-IA-00-MASTER-PLAN.md` AUTH-APP-01 entry; register under AUTH family before starting)
+5. UX-IA-04 — Workspace Shell + Sidebar + Home View (pending — note: confirm AUTH-APP-01 stability before UX-IA-04 reaches users)
 6. UX-IA-05 — Projects Grid/List + Recent Projects (pending)
 7. UX-IA-06 — Templates / Community View (pending)
 8. UX-IA-07 — Account Menu + Settings + Language/Theme (pending)
@@ -12059,6 +12060,10 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 13. UX-IA-12 — Upgrade Flow + Dashboard Polish (pending)
 14. UX-IA-13 — Responsive / Mobile Polish (pending)
 15. UX-IA-14 — Route Cleanup / Redirects (pending)
+16. UX-IA-15 — Visual Edit Mode Foundation (pending — requires UX-IA-08 + UX-IA-10 COMPLETE)
+17. UX-IA-16 — Visual Edit AI Patch Flow (pending — requires UX-IA-15 COMPLETE)
+18. UX-IA-17 — Visual Edit Undo / Checkpoint Integration (pending — requires UX-IA-16 COMPLETE)
+   ↳ AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps (cross-family — later product capability; requires AUTH-APP-01 + UX-IA-08–UX-IA-10 COMPLETE; see `docs/UX-IA-00-MASTER-PLAN.md` AUTH-MODULE-01 entry; register under AUTH family before starting)
 
 ---
 
@@ -12132,4 +12137,78 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 - No regressions to locale middleware or `TranslationProvider`
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-02.
+
+---
+
+#### UX-IA-03: Public Landing Redesign + Login/Register Polish
+
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/UX-IA-03-CHECKPOINT.md`
+**Nature:** FRONTEND UI / I18N — redesign public landing as "Build anything" entry experience with prompt chatbox and CTA; polish login/register pages using UX-IA-02 design tokens; full i18n for all three pages; no auth changes, no workspace changes
+**Source:** UX-IA-00 master plan (May 2026) — public landing and login/register are the first user-facing surfaces; must reflect the new product direction before workspace redesign begins
+**Depends on:** UX-IA-01 (COMPLETE and LOCKED), UX-IA-02 (COMPLETE and LOCKED)
+
+**Bounded scope:**
+- `frontend/components/public/public-landing-slice.tsx` — redesign with "Build anything" headline, subtitle, prompt chatbox, sign-in/register CTA
+- `frontend/app/[locale]/page.tsx` — wire updated landing component props
+- `frontend/app/[locale]/login/page.tsx` — visual polish using design tokens + full i18n
+- `frontend/app/[locale]/register/page.tsx` — visual polish using design tokens + full i18n
+- `frontend/components/LanguageSwitcher.tsx` — ensure visible on all three pages if not already
+- `frontend/messages/en.json` — add/complete landing/login/register i18n keys
+- `frontend/messages/zh-TW.json` — same
+- `frontend/messages/zh-CN.json` — same
+- Focused tests for prompt sessionStorage preservation if test setup supports them
+
+**Required behavior:**
+- `/[locale]` public landing shows: "Build anything" headline, short subtitle, prompt input, sign-in/register CTA
+- Submitting the prompt before login must **not** create a project
+- Submitting the prompt before login must store the prompt text in `sessionStorage` and redirect to login or register
+- Login/register pages remain functionally unchanged — visual/i18n polish only
+- Login/register use design token CSS classes where practical (colors, font, radius)
+- All landing/login/register user-facing strings use `useTranslations` i18n keys
+- UX-IA-01 English fallback behavior unchanged
+- UX-IA-02 font and token foundation unchanged
+
+**Auth non-goals (explicitly forbidden in this slice):**
+- No Auth.js / NextAuth
+- No Google OAuth / Apple OAuth
+- No database-backed auth or session changes
+- No API guards or backend auth changes
+- No password reset flows
+- No email verification
+- No provider account linking
+- No route/API protection changes
+- All of the above belong to AUTH-APP-01 (later)
+
+**Other non-goals:**
+- No authenticated workspace redesign
+- No workspace shell/sidebar changes
+- No project mode changes
+- No preview tab changes (Visual Edit Mode is roadmap-only — see master plan Section 12)
+- No AI-WS changes
+- No billing/upgrade changes
+- No new external dependencies
+- No route cleanup
+
+**Acceptance checks:**
+- `/en` renders public landing with "Build anything" headline and prompt input
+- `/zh-TW` and `/zh-CN` render localized landing/login/register text
+- Prompt submission before login stores text in `sessionStorage` and redirects to login/register
+- Login and register flows still work as before
+- Missing locale keys fall back to English (UX-IA-01 behavior)
+- Frontend typecheck passes (`npx tsc --noEmit`)
+- Frontend tests pass (`npm run test`)
+- Frontend build passes (`npm run build`)
+- No lint/read errors on touched files
+- No regression to locale middleware redirects
+
+**Risks / invariants:**
+- Do not break existing auth form functionality
+- Do not hardcode new landing/login/register strings (all must use `t('key')`)
+- Do not change workspace or AI-WS behavior
+- Keep this slice public/auth-page UI only
+- Visual Edit Mode remains roadmap-only after this slice
+- AUTH-APP-01 remains roadmap-only after this slice
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-03.
 
