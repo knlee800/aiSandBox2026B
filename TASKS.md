@@ -12212,3 +12212,62 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-03.
 
+---
+
+## AUTH — aiSandBox First-Party Authentication
+
+**Family status:** ACTIVE — AUTH-APP-01A COMPLETE — AUTH-APP-01B NEXT
+
+**Current stage:** AUTH-APP-01B (pending — register before starting)
+
+**Master spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
+**Reference master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
+
+**Important distinction:**
+- `AUTH-APP-01` — authentication for the aiSandBox platform itself (this family)
+- `AUTH-MODULE-01` — reusable generated app-auth for user-created apps (later, separate family)
+
+**Parent roadmap: AUTH-APP-01 — aiSandBox First-Party User Authentication**
+
+Goal: add production-ready authentication (email, Google, Apple) for the aiSandBox hosted app so real users can sign in securely before using platform features.
+
+Confirmed child slices (order locked by AUTH-APP-01A spec — `docs/AUTH-APP-01-SPEC.md` Section 14):
+1. AUTH-APP-01A — Auth Architecture & Implementation Spec (COMPLETE and LOCKED)
+2. AUTH-APP-01B — Database / Schema Migrations (pending)
+3. AUTH-APP-01C — Token Storage & Email Auth Hardening (pending; may split into C1 + C2 — see note below)
+4. AUTH-APP-01D — Google OAuth (pending)
+5. AUTH-APP-01E — Apple OAuth (pending)
+6. AUTH-APP-01F — Route / API Protection (pending)
+7. AUTH-APP-01G — Auth UX Integration (pending)
+8. AUTH-APP-01H — Security Hardening + Validation Checklist (pending)
+9. AUTH-APP-01Z — Final Consolidation (pending)
+
+**AUTH-APP-01C split note:** At AUTH-APP-01C stage-start, assess scope. If HTTP-only cookie/session migration + email verification/password reset is too large for one slice, split into:
+- AUTH-APP-01C1 — HTTP-only Cookie / Session Migration
+- AUTH-APP-01C2 — Email Verification / Password Reset / Rate Limiting
+
+**Blocking prerequisite for AUTH-APP-01C:** Transactional email provider must be chosen and configured (API key in env) before AUTH-APP-01C can implement email verification or password reset. No provider is currently configured.
+
+---
+
+#### AUTH-APP-01A: Auth Architecture & Implementation Spec
+
+**Status:** COMPLETE and LOCKED
+**Nature:** SPEC / ARCHITECTURE DOCUMENT ONLY
+**Source:** UX-IA-00 master plan (May 2026) AUTH-APP-01 entry; cross-family next step after UX-IA-03
+**Depends on:** UX-IA-03 (COMPLETE and LOCKED)
+**Completed:** 2026-05-06
+**Checkpoint:** `docs/AUTH-APP-01A-CHECKPOINT.md`
+**Spec:** `docs/AUTH-APP-01-SPEC.md`
+
+**Key decisions recorded:**
+1. **Auth stack:** Extend existing NestJS + Passport + JWT backend. Auth.js / NextAuth explicitly rejected (would create two parallel auth systems).
+2. **Token/session storage:** HTTP-only secure cookie session with server-side `auth_sessions` table. localStorage `access_token` removed.
+3. **OAuth callback flow:** Server-side session establishment. No token in redirect URL. `state` parameter validated. Post-login redirect uses allowlist.
+4. **Account linking:** Verified-email auto-link allowed (Google same-email → existing account). Apple private relay email never auto-linked. Conflict cases return safe errors.
+5. **Data model changes (AUTH-APP-01B):** Make `password_hash` nullable; add `oauth_accounts`, `verification_tokens`, `auth_sessions` tables.
+6. **Email provider:** Transactional email provider unresolved — blocks AUTH-APP-01C email verification and password reset. Must be resolved before AUTH-APP-01C stage-start.
+7. **Slice order:** AUTH-APP-01B → C → D → E → F → G → H → Z (locked; C may split into C1 + C2).
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01A. See `docs/AUTH-APP-01-SPEC.md`.
+

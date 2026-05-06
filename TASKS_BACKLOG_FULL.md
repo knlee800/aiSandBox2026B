@@ -22190,3 +22190,115 @@ Transform the public landing page into the "Build anything" entry experience wit
 
 ---
 
+## AUTH — aiSandBox First-Party Authentication
+
+**Family status:** ACTIVE — AUTH-APP-01A COMPLETE — AUTH-APP-01B NEXT
+**Important distinction:** AUTH-APP-01 is for the aiSandBox platform itself. AUTH-MODULE-01 (reusable generated app-auth for user-created apps) is a separate, later family.
+**Decision spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
+**Master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
+
+---
+
+### AUTH-APP-01: aiSandBox First-Party User Authentication (Phase Parent)
+
+**Task ID:** AUTH-APP-01
+**Family:** AUTH
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** PLANNED (multi-slice phase — implementation begins with AUTH-APP-01A spec)
+**Source:** UX-IA-00 master plan (May 2026) — production auth must be in place before workspace/project-mode redesign reaches real users
+**Depends on:** UX-IA-03 (COMPLETE and LOCKED)
+
+**Objective:**
+Add production-ready authentication for the aiSandBox hosted app — email, Google, and Apple sign-in — so real users can sign in securely before using platform features. Covers user/session model, route/API protection, UX integration, security hardening, and testing.
+
+**Confirmed child slices (order locked by AUTH-APP-01A — see `docs/AUTH-APP-01-SPEC.md` Section 14):**
+1. AUTH-APP-01A — Auth Architecture & Implementation Spec (COMPLETE and LOCKED)
+2. AUTH-APP-01B — Database / Schema Migrations (pending)
+3. AUTH-APP-01C — Token Storage & Email Auth Hardening (pending; may split into C1 + C2 at stage-start)
+4. AUTH-APP-01D — Google OAuth (pending)
+5. AUTH-APP-01E — Apple OAuth (pending)
+6. AUTH-APP-01F — Route / API Protection (pending)
+7. AUTH-APP-01G — Auth UX Integration (pending)
+8. AUTH-APP-01H — Security Hardening + Validation Checklist (pending)
+9. AUTH-APP-01Z — Final Consolidation (pending)
+
+**Non-goals:**
+- AUTH-MODULE-01 (reusable generated app-auth for user-created apps — separate later family)
+- Clerk / Supabase / Firebase provider support
+- Enterprise SSO / SAML
+- Billing / subscription integration
+- Admin user-management dashboard
+- Full identity-provider platform
+
+**Reference:** See TASKS.md -> AUTH family. See `docs/UX-IA-00-MASTER-PLAN.md` AUTH-APP-01 entry.
+
+---
+
+### AUTH-APP-01A: Auth Architecture & Implementation Spec
+
+**Task ID:** AUTH-APP-01A
+**Family:** AUTH
+**Parent:** AUTH-APP-01
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** SPEC / ARCHITECTURE DOCUMENT ONLY
+**Source:** UX-IA-00 master plan AUTH-APP-01 entry; cross-family next step after UX-IA-03
+**Depends on:** UX-IA-03 (COMPLETE and LOCKED)
+**Completed:** 2026-05-06
+**Checkpoint:** `docs/AUTH-APP-01A-CHECKPOINT.md`
+**Spec:** `docs/AUTH-APP-01-SPEC.md`
+
+**Objective:**
+Produce a concrete, decision-complete implementation spec document for all first-party aiSandBox authentication before any code is written. Decisions made here gate all subsequent AUTH-APP-01 implementation slices.
+
+**Key decisions recorded in `docs/AUTH-APP-01-SPEC.md`:**
+
+1. **Auth stack:** Extend existing NestJS + Passport + JWT. Auth.js / NextAuth rejected — would create two parallel auth systems alongside the existing NestJS API Gateway auth backend.
+
+2. **Token/session storage:** HTTP-only secure cookie session with server-side `auth_sessions` persistence. Frontend `localStorage` access_token usage removed. `SameSite=Lax`, `Secure` in production, `HttpOnly` always. CSRF protection for cookie-authenticated mutating requests.
+
+3. **OAuth callback flow:** Server-side session establishment on callback. No token in redirect URL. `state` parameter validated. Allowlisted post-login redirect targets.
+
+4. **Data model (AUTH-APP-01B):** Make `users.password_hash` nullable (fixes schema/entity mismatch). Add `oauth_accounts` table (multi-provider linking), `verification_tokens` table (email verify + password reset), `auth_sessions` table (session persistence/revocation). All additive/backward-compatible.
+
+5. **Account linking:** Same verified email from Google auto-links to existing account. Apple private relay email never auto-linked. Unverified-email and conflict cases return safe errors.
+
+6. **Email auth:** Keep email + password (not magic link). Add email verification and password reset. Rate limiting on all auth endpoints. Transactional email provider unresolved — **blocks AUTH-APP-01C** — must be chosen before AUTH-APP-01C stage-start.
+
+7. **Google OAuth:** `passport-google-oauth20`; routes GET /auth/google + GET /auth/google/callback; env vars: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_CALLBACK_URL; manual setup checklist in spec.
+
+8. **Apple OAuth:** Library TBD at AUTH-APP-01E stage-start; POST callback; private relay email handling per policy; Apple Developer checklist in spec.
+
+9. **Route/API protection:** Frontend session-cookie guard in Next.js middleware; backend 401 for unauthenticated API calls; public routes explicitly listed in spec.
+
+10. **Slice order:** AUTH-APP-01B → C → D → E → F → G → H → Z (locked). AUTH-APP-01C may split into C1 (session cookie migration) + C2 (email auth hardening) at stage-start.
+
+**Non-goals:**
+- No AUTH-MODULE-01 work (separate later family)
+- No Clerk / Supabase / Firebase provider support
+- No enterprise SSO / SAML
+- No billing / subscription integration
+- No admin user-management dashboard
+- No full identity-provider platform
+- No Visual Edit Mode
+- No UX-IA-04 workspace redesign
+- No unrelated refactors
+
+**Acceptance checks (all MET):**
+- [x] Spec document created: `docs/AUTH-APP-01-SPEC.md`
+- [x] All 10 decision areas covered
+- [x] Stack decision recorded with explicit rationale
+- [x] Data model schema outlined
+- [x] Route/API protection strategy decided
+- [x] Slice breakdown confirmed with ordering rationale
+- [x] No production source files changed
+- [x] No npm dependencies installed
+- [x] No database migrations run
+- [x] No OAuth provider configured
+
+**Reference:** See TASKS.md -> AUTH-APP-01A. See `docs/AUTH-APP-01-SPEC.md`. See `docs/UX-IA-00-MASTER-PLAN.md` AUTH-APP-01 entry.
+
+---
+
