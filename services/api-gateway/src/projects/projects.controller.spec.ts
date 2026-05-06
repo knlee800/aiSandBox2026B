@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ProjectsController } from './projects.controller';
 import { ProjectsService } from './projects.service';
+import { SessionCookieGuard } from '../auth/session-cookie.guard';
 
 describe('ProjectsController (PR-03-01)', () => {
   let controller: ProjectsController;
@@ -25,15 +25,18 @@ describe('ProjectsController (PR-03-01)', () => {
           },
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(SessionCookieGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get<ProjectsController>(ProjectsController);
     projectsService = module.get(ProjectsService);
   });
 
-  it('applies JwtAuthGuard at controller level', () => {
+  it('applies SessionCookieGuard at controller level', () => {
     const guards = Reflect.getMetadata('__guards__', ProjectsController) || [];
-    expect(guards).toContain(JwtAuthGuard);
+    expect(guards).toContain(SessionCookieGuard);
   });
 
   it('creates and lists user projects through service', async () => {

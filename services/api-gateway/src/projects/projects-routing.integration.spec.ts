@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, INestApplication } from '@nestjs/common';
 import { Test, TestingModuleBuilder } from '@nestjs/testing';
 import request from 'supertest';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { SessionCookieGuard } from '../auth/session-cookie.guard';
 import { ProjectsController } from './projects.controller';
 import { PublicProjectsController } from './public-projects.controller';
 import { ProjectsService } from './projects.service';
@@ -34,7 +34,7 @@ describe('Projects routing collision guardrail (PROJ-01-02)', () => {
       ],
     });
 
-    moduleBuilder.overrideGuard(JwtAuthGuard).useClass(HeaderJwtGuard);
+    moduleBuilder.overrideGuard(SessionCookieGuard).useClass(HeaderJwtGuard);
     const moduleRef = await moduleBuilder.compile();
 
     app = moduleRef.createNestApplication();

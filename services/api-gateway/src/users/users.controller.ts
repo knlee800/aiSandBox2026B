@@ -6,7 +6,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { SessionCookieGuard } from '../auth/session-cookie.guard';
 import { UsersService } from './users.service';
 import { UserMeResponseDto } from './dto/user-me-response.dto';
 import { UserUsageResponseDto } from './dto/user-usage-response.dto';
@@ -18,7 +18,7 @@ import { SnapshotPersistenceService } from '../snapshots/snapshot-persistence.se
  * TASK-68B-2: Public user dashboard endpoints.
  */
 @Controller('users')
-@UseGuards(JwtAuthGuard)
+@UseGuards(SessionCookieGuard)
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AdminOperationalController } from './admin-operational.controller';
 import { AdminDashboardService } from './admin-dashboard.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { SessionCookieGuard } from '../auth/session-cookie.guard';
 import { AdminRoleGuard } from '../guards/admin-role.guard';
 import { GUARDS_METADATA } from '@nestjs/common/constants';
 
@@ -25,15 +25,18 @@ describe('AdminOperationalController (CO-03-01)', () => {
           useValue: mockService,
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(SessionCookieGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get<AdminOperationalController>(AdminOperationalController);
     service = module.get(AdminDashboardService);
   });
 
-  it('applies JwtAuthGuard and AdminRoleGuard at controller level', () => {
+  it('applies SessionCookieGuard and AdminRoleGuard at controller level', () => {
     const guards = Reflect.getMetadata(GUARDS_METADATA, AdminOperationalController) || [];
-    expect(guards).toContain(JwtAuthGuard);
+    expect(guards).toContain(SessionCookieGuard);
     expect(guards).toContain(AdminRoleGuard);
   });
 

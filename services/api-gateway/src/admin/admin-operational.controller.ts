@@ -19,11 +19,11 @@ import {
   AdminUsersResponseDto,
 } from './dto/admin-users-response.dto';
 import { AdminSessionsResponseDto } from './dto/admin-sessions-response.dto';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { SessionCookieGuard } from '../auth/session-cookie.guard';
 import { AdminRoleGuard } from '../guards/admin-role.guard';
 
 @Controller('admin')
-@UseGuards(JwtAuthGuard, AdminRoleGuard)
+@UseGuards(SessionCookieGuard, AdminRoleGuard)
 export class AdminOperationalController {
   constructor(private readonly adminDashboardService: AdminDashboardService) {}
 

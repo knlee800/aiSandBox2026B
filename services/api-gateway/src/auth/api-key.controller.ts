@@ -8,7 +8,7 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common';
-import { JwtAuthGuard } from './jwt-auth.guard';
+import { SessionCookieGuard } from './session-cookie.guard';
 import { ApiKeyService } from './api-key.service';
 import {
   CreateApiKeyDto,
@@ -31,7 +31,7 @@ import {
  * Users can only manage their own API keys.
  */
 @Controller('keys')
-@UseGuards(JwtAuthGuard)
+@UseGuards(SessionCookieGuard)
 export class ApiKeyController {
   constructor(private readonly apiKeyService: ApiKeyService) {}
 

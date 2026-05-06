@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UnauthorizedException } from '@nestjs/common';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { SessionCookieGuard } from '../auth/session-cookie.guard';
 import { SnapshotPersistenceService } from '../snapshots/snapshot-persistence.service';
 
 describe('UsersController (TASK-68B-2)', () => {
@@ -32,16 +32,19 @@ describe('UsersController (TASK-68B-2)', () => {
           useValue: mockSnapshotPersistenceService,
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(SessionCookieGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get<UsersController>(UsersController);
     usersService = module.get(UsersService);
     snapshotPersistenceService = module.get(SnapshotPersistenceService);
   });
 
-  it('applies JwtAuthGuard at controller level', () => {
+  it('applies SessionCookieGuard at controller level', () => {
     const guards = Reflect.getMetadata('__guards__', UsersController) || [];
-    expect(guards).toContain(JwtAuthGuard);
+    expect(guards).toContain(SessionCookieGuard);
   });
 
   it('GET /api/users/me returns current user info', async () => {

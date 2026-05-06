@@ -18,8 +18,6 @@
     "migration:create": "typeorm migration:create"
   },
   "dependencies": {
-    "accept-language-parser": "^1.5.0",
-    "axios": "^1.6.5",
     "@nestjs/common": "^10.3.0",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^10.3.0",
@@ -29,11 +27,14 @@
     "@nestjs/platform-socket.io": "^10.3.0",
     "@nestjs/typeorm": "^11.0.0",
     "@nestjs/websockets": "^10.3.0",
+    "accept-language-parser": "^1.5.0",
+    "axios": "^1.6.5",
     "bcrypt": "^5.1.1",
     "better-sqlite3": "^12.5.0",
     "bullmq": "^5.70.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "cookie-parser": "^1.4.7",
     "i18next": "^25.7.3",
     "i18next-fs-backend": "^2.6.1",
     "i18next-http-middleware": "^3.9.0",
@@ -50,6 +51,7 @@
   "devDependencies": {
     "@nestjs/testing": "^10.4.22",
     "@types/bcrypt": "^5.0.2",
+    "@types/cookie-parser": "^1.4.10",
     "@types/jest": "^30.0.0",
     "@types/node": "^20.11.0",
     "@types/passport-jwt": "^4.0.1",

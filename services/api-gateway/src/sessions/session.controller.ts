@@ -19,7 +19,7 @@ import {
   Res,
 } from '@nestjs/common';
 import { SessionService } from './session.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { SessionCookieGuard } from '../auth/session-cookie.guard';
 import { Session } from '../entities/session.entity';
 import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
 import { RateLimitGuard, RateLimit } from '../guards/rate-limit.guard';
@@ -38,7 +38,7 @@ import { Response } from 'express';
  * Routes: /api/sessions/* (global prefix 'api' applied in main.ts)
  */
 @Controller('sessions')
-@UseGuards(JwtAuthGuard)
+@UseGuards(SessionCookieGuard)
 export class SessionController {
   constructor(
     private readonly sessionService: SessionService,

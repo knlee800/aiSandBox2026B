@@ -14,7 +14,7 @@ import {
 import { ConversationService } from './conversation.service';
 import { ChatMessageService } from '../chat-messages/chat-message.service';
 import { SessionService } from '../sessions/session.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { SessionCookieGuard } from '../auth/session-cookie.guard';
 import { Conversation } from '../entities/conversation.entity';
 import { ChatMessage } from '../entities/chat-message.entity';
 import { AddSessionMessageDto } from './dto/add-session-message.dto';
@@ -26,7 +26,7 @@ import { AddSessionMessageDto } from './dto/add-session-message.dto';
  * Routes: /api/sessions/:id/conversation, /api/conversations/* (global prefix 'api' applied in main.ts)
  */
 @Controller()
-@UseGuards(JwtAuthGuard)
+@UseGuards(SessionCookieGuard)
 export class ConversationController {
   constructor(
     private readonly conversationService: ConversationService,

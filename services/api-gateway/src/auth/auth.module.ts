@@ -14,6 +14,7 @@ import { User } from '../entities/user.entity';
 import { OauthAccount } from '../entities/oauth-account.entity';
 import { VerificationToken } from '../entities/verification-token.entity';
 import { AuthSession } from '../entities/auth-session.entity';
+import { SessionCookieGuard } from './session-cookie.guard';
 
 @Module({
   imports: [
@@ -25,7 +26,20 @@ import { AuthSession } from '../entities/auth-session.entity';
     TypeOrmModule.forFeature([ApiKey, User, OauthAccount, VerificationToken, AuthSession]),
   ],
   controllers: [AuthController, ApiKeyController],
-  providers: [AuthService, JwtStrategy, ApiKeyAuthGuard, AuthorizationGuard, ApiKeyService],
-  exports: [AuthService, ApiKeyAuthGuard, AuthorizationGuard, ApiKeyService],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    SessionCookieGuard,
+    ApiKeyAuthGuard,
+    AuthorizationGuard,
+    ApiKeyService,
+  ],
+  exports: [
+    AuthService,
+    SessionCookieGuard,
+    ApiKeyAuthGuard,
+    AuthorizationGuard,
+    ApiKeyService,
+  ],
 })
 export class AuthModule {}

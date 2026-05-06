@@ -11,7 +11,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { SessionCookieGuard } from '../auth/session-cookie.guard';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { RenameProjectDto } from './dto/rename-project.dto';
@@ -21,7 +21,7 @@ import { UpdateProjectVisibilityDto } from './dto/update-project-visibility.dto'
 import { MoveProjectDto } from './dto/move-project.dto';
 
 @Controller('projects')
-@UseGuards(JwtAuthGuard)
+@UseGuards(SessionCookieGuard)
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 

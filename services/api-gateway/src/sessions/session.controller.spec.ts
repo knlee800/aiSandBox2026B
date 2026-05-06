@@ -3,7 +3,7 @@ import { NotFoundException, GoneException, BadRequestException } from '@nestjs/c
 import { SessionController } from './session.controller';
 import { SessionService } from './session.service';
 import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { SessionCookieGuard } from '../auth/session-cookie.guard';
 import { SessionQuotaGuard } from '../quota/session-quota.guard';
 import { RateLimitGuard } from '../guards/rate-limit.guard';
 import { SnapshotPersistenceService } from '../snapshots/snapshot-persistence.service';
@@ -58,7 +58,7 @@ describe('SessionController (TASK-68B-2 query extension)', () => {
         },
       ],
     })
-      .overrideGuard(JwtAuthGuard)
+      .overrideGuard(SessionCookieGuard)
       .useValue({ canActivate: () => true })
       .overrideGuard(SessionQuotaGuard)
       .useValue({ canActivate: () => true })
@@ -71,9 +71,9 @@ describe('SessionController (TASK-68B-2 query extension)', () => {
     containerManagerClient = module.get(ContainerManagerHttpClient);
   });
 
-  it('applies JwtAuthGuard at controller level', () => {
+  it('applies SessionCookieGuard at controller level', () => {
     const guards = Reflect.getMetadata('__guards__', SessionController) || [];
-    expect(guards).toContain(JwtAuthGuard);
+    expect(guards).toContain(SessionCookieGuard);
   });
 
   it('GET /api/sessions defaults includeTerminated=false', async () => {
@@ -180,7 +180,7 @@ describe('SessionController (PHASE-76F: ISSUE-76-002 DELETE termination fix)', (
         },
       ],
     })
-      .overrideGuard(JwtAuthGuard)
+      .overrideGuard(SessionCookieGuard)
       .useValue({ canActivate: () => true })
       .overrideGuard(SessionQuotaGuard)
       .useValue({ canActivate: () => true })
@@ -338,7 +338,7 @@ describe('SessionController file delete route', () => {
         },
       ],
     })
-      .overrideGuard(JwtAuthGuard)
+      .overrideGuard(SessionCookieGuard)
       .useValue({ canActivate: () => true })
       .overrideGuard(SessionQuotaGuard)
       .useValue({ canActivate: () => true })
@@ -529,7 +529,7 @@ describe('SessionController (PHASE-77A: ISSUE-76-005 exec route)', () => {
         },
       ],
     })
-      .overrideGuard(JwtAuthGuard)
+      .overrideGuard(SessionCookieGuard)
       .useValue({ canActivate: () => true })
       .overrideGuard(SessionQuotaGuard)
       .useValue({ canActivate: () => true })
@@ -701,7 +701,7 @@ describe('SessionController (PR-01-01 snapshots)', () => {
         },
       ],
     })
-      .overrideGuard(JwtAuthGuard)
+      .overrideGuard(SessionCookieGuard)
       .useValue({ canActivate: () => true })
       .overrideGuard(SessionQuotaGuard)
       .useValue({ canActivate: () => true })
@@ -847,7 +847,7 @@ describe('SessionController (PR-02-01 import/export)', () => {
         },
       ],
     })
-      .overrideGuard(JwtAuthGuard)
+      .overrideGuard(SessionCookieGuard)
       .useValue({ canActivate: () => true })
       .overrideGuard(SessionQuotaGuard)
       .useValue({ canActivate: () => true })

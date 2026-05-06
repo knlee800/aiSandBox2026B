@@ -8,7 +8,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { SessionCookieGuard } from '../auth/session-cookie.guard';
 import { ProjectsService } from './projects.service';
 
 @Controller('projects/public')
@@ -58,7 +58,7 @@ export class PublicProjectsController {
   }
 
   @Post(':id/fork')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(SessionCookieGuard)
   @HttpCode(HttpStatus.CREATED)
   async forkPublicProject(
     @Param('id') id: string,

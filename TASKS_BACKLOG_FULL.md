@@ -22192,7 +22192,7 @@ Transform the public landing page into the "Build anything" entry experience wit
 
 ## AUTH — aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-APP-01B COMPLETE — AUTH-APP-01C NEXT
+**Family status:** ACTIVE — AUTH-APP-01C1A COMPLETE — AUTH-APP-01C1B NEXT
 **Important distinction:** AUTH-APP-01 is for the aiSandBox platform itself. AUTH-MODULE-01 (reusable generated app-auth for user-created apps) is a separate, later family.
 **Decision spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -22215,13 +22215,15 @@ Add production-ready authentication for the aiSandBox hosted app — email, Goog
 **Confirmed child slices (order locked by AUTH-APP-01A — see `docs/AUTH-APP-01-SPEC.md` Section 14):**
 1. AUTH-APP-01A — Auth Architecture & Implementation Spec (COMPLETE and LOCKED)
 2. AUTH-APP-01B — Database / Schema Migrations (COMPLETE and LOCKED)
-3. AUTH-APP-01C — Token Storage & Email Auth Hardening (pending; may split into C1 + C2 at stage-start)
-4. AUTH-APP-01D — Google OAuth (pending)
-5. AUTH-APP-01E — Apple OAuth (pending)
-6. AUTH-APP-01F — Route / API Protection (pending)
-7. AUTH-APP-01G — Auth UX Integration (pending)
-8. AUTH-APP-01H — Security Hardening + Validation Checklist (pending)
-9. AUTH-APP-01Z — Final Consolidation (pending)
+3. AUTH-APP-01C1A — Backend Cookie Session Foundation (COMPLETE and LOCKED)
+4. AUTH-APP-01C1B — Frontend localStorage/Bearer Migration (PLANNED — NEXT)
+5. AUTH-APP-01C2 — Email Verification / Password Reset / Rate Limiting (PLANNED — BLOCKED on email provider)
+6. AUTH-APP-01D — Google OAuth (pending)
+7. AUTH-APP-01E — Apple OAuth (pending)
+8. AUTH-APP-01F — Route / API Protection (pending)
+9. AUTH-APP-01G — Auth UX Integration (pending)
+10. AUTH-APP-01H — Security Hardening + Validation Checklist (pending)
+11. AUTH-APP-01Z — Final Consolidation (pending)
 
 **Non-goals:**
 - AUTH-MODULE-01 (reusable generated app-auth for user-created apps — separate later family)
@@ -22370,6 +22372,222 @@ Entity/module updates:
 - Transactional email provider must be selected and configured before email verification/password reset can be implemented in AUTH-APP-01C
 
 **Reference:** See TASKS.md -> AUTH-APP-01B. See `docs/AUTH-APP-01B-CHECKPOINT.md`. See `docs/AUTH-APP-01-SPEC.md` Section 5.
+
+---
+
+### AUTH-APP-01C1A: Backend Cookie Session Foundation
+
+**Task ID:** AUTH-APP-01C1A
+**Family:** AUTH
+**Parent:** AUTH-APP-01
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Source:** AUTH-APP-01C1 stage-start — backend + frontend surface too large for one slice; backend isolated here
+**Depends on:** AUTH-APP-01B (COMPLETE and LOCKED)
+**Completed:** 2026-05-06
+**Checkpoint:** `docs/AUTH-APP-01C1A-CHECKPOINT.md`
+
+**Objective:**
+Establish the server-side HTTP-only cookie session infrastructure. Creates the `SessionCookieGuard`, wires session creation/revocation into `AuthService`, modifies the login/logout endpoints, and replaces `JwtAuthGuard` on all browser-facing controllers. Frontend migration is deferred to AUTH-APP-01C1B.
+
+**Implemented:**
+
+1. **Dependencies** — `cookie-parser ^1.4.7` + `@types/cookie-parser ^1.4.10` installed; `app.use(cookieParser())` in `main.ts`.
+
+2. **`SessionCookieGuard`** (new file `src/auth/session-cookie.guard.ts`):
+   - Reads `req.cookies['aisandbox_session']` (raw opaque token)
+   - SHA-256 hashes it; queries `auth_sessions` (not expired, not revoked)
+   - On valid: attaches `req.user = { userId, email, role, plan }`; returns `true`
+   - On invalid/missing: throws `UnauthorizedException`
+   - Exported from `AuthModule`
+
+3. **`AuthService` additions**:
+   - `createSession(userId)` — 32-byte random token, SHA-256 hash stored, 7-day expiry, returns raw token
+   - `validateSessionToken(rawToken)` — validates hash, updates `lastActiveAt`, returns user
+   - `revokeSession(rawToken)` — sets `revoked_at = now()` on matching session
+   - `Repository<AuthSession>` injected
+
+4. **`POST /auth/login`** — sets HTTP-only `aisandbox_session` cookie (SameSite=Lax, Secure in production, 7-day maxAge, path=/); returns `{ user }` only — **`access_token` removed from response body**.
+
+5. **`GET /auth/me`** — guard switched from `JwtAuthGuard` to `SessionCookieGuard`.
+
+6. **`POST /auth/logout`** (new) — `SessionCookieGuard`, revokes session, clears cookie, returns `{ ok: true }`.
+
+7. **Controller guard replacement** — `JwtAuthGuard` → `SessionCookieGuard` on 9 browser-facing controllers: `projects`, `sessions`, `conversations`, `users`, `checkpoints`, `workspaces`, `api-key`, `admin-operational`, `public-projects`.
+
+8. **`JwtAuthGuard` / `JwtStrategy` preserved** — not deleted.
+
+9. **9 controller specs updated** to `overrideGuard(SessionCookieGuard)`.
+
+10. **No frontend files changed.**
+
+**Non-goals confirmed:**
+- No frontend localStorage migration (AUTH-APP-01C1B)
+- No Google/Apple OAuth
+- No email verification or password reset
+- No rate limiting
+- No billing changes
+
+**Acceptance checks (all met):**
+- [x] `cookie-parser` installed; `app.use(cookieParser())` in `main.ts`
+- [x] `SessionCookieGuard` created, exported from `AuthModule`
+- [x] `AuthService.createSession`, `validateSessionToken`, `revokeSession` added
+- [x] Login sets HTTP-only `aisandbox_session` cookie; response body has no `access_token`
+- [x] `GET /auth/me` uses `SessionCookieGuard`
+- [x] `POST /auth/logout` revokes session and clears cookie
+- [x] All 9 browser-facing controllers use `SessionCookieGuard`
+- [x] `JwtAuthGuard` / `JwtStrategy` still exist in codebase
+- [x] 9 affected controller specs updated to `overrideGuard(SessionCookieGuard)`
+- [x] `npx tsc --noEmit` passes in `services/api-gateway`
+
+**Validation:**
+- `npx tsc --noEmit`: PASS
+- `npm test`: NOT FULLY PASSING — pre-existing blockers only (not introduced by C1A):
+  - 64 unit suites pass; 1 pre-existing failure (`ai-execution.controller.spec.ts`, not in C1A changeset)
+  - 10 integration/smoke suites fail — Redis not host-port-bound (Docker internal network only)
+- `npm run lint`: FAIL — pre-existing ESLint config discovery issue in `services/api-gateway`
+
+**Carry-forward blockers (all pre-existing):**
+- `npm test` cannot be fully trusted until Redis is host-accessible from test runner
+- `npm run lint` cannot be trusted until ESLint config is resolved in `api-gateway`
+- `ai-execution.controller.spec.ts` has 4 pre-existing unit test failures — separate cleanup needed
+
+**Reference:** See TASKS.md -> AUTH-APP-01C1A. See `docs/AUTH-APP-01C1A-CHECKPOINT.md`.
+
+---
+
+### AUTH-APP-01C1B: Frontend localStorage / Bearer Migration
+
+**Task ID:** AUTH-APP-01C1B
+**Family:** AUTH
+**Parent:** AUTH-APP-01
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** PLANNED
+**Source:** AUTH-APP-01C1 stage-start — frontend surface isolated here; backend already handled by AUTH-APP-01C1A
+**Depends on:** AUTH-APP-01C1A (COMPLETE)
+
+**Objective:**
+Remove all frontend dependence on `localStorage` for `access_token` and `userId`, and remove all manual `Authorization: Bearer` headers from browser-side fetch calls. After this slice, the browser relies entirely on the HTTP-only session cookie set by AUTH-APP-01C1A.
+
+**Bounded scope:**
+
+1. **`frontend/app/[locale]/login/page.tsx`**:
+   - Remove `if (!response.data.access_token)` check
+   - Remove `localStorage.setItem('access_token', ...)`
+   - Remove `localStorage.setItem('userId', ...)`
+   - Keep redirect to `/${locale}/app`
+
+2. **`frontend/app/[locale]/app/page.tsx`** (~30 token reads):
+   - Replace init-time `localStorage.getItem('access_token')` / `getItem('userId')` with a `GET /api/auth/me` fetch call; derive `userId` from response
+   - Remove all `const token = localStorage.getItem('access_token')` local variable declarations
+   - Remove all `Authorization: Bearer ${token}` from inline fetch headers (browser sends cookie automatically)
+   - Replace logout `localStorage.removeItem(...)` with `POST /api/auth/logout` call
+   - Remove `token` argument from all workspace logic function call-sites
+
+3. **`frontend/app/[locale]/keys/page.tsx`**:
+   - Remove `localStorage.getItem('access_token')` auth-guard in `useEffect`; rely on `/auth/me` or backend 401
+   - Remove `Authorization: Bearer ${token}` from all three fetch call-sites
+
+4. **Workspace logic helpers** — remove `token: string` from function/type signatures and remove `Authorization` header from fetches:
+   - `workspace-exec.logic.ts`
+   - `workspace-checkpoint-diff.logic.ts`
+   - `workspace-file-navigation.logic.ts`
+   - `workspace-snapshots.logic.ts`
+   - `workspace-workspaces.logic.ts`
+   - `workspace-checkpoint-revert.logic.ts`
+   - `workspace-projects.logic.ts`
+   - `workspace-chat-persistence.logic.ts`
+   - `workspace-checkpoint-create.logic.ts`
+   - `lib/open-project-in-fresh-session.ts`
+
+5. **Test files** — update to match removed token signatures and removed `Authorization` header assertions:
+   - `workspace-file-navigation.logic.test.ts` (explicitly asserts `Authorization: 'Bearer token-123'`)
+   - All other `*.logic.test.ts` and `*.test.tsx` files that pass `token` arguments to changed helpers
+
+6. **Zero-localStorage verification** — confirm zero production frontend references to `localStorage.*('access_token')` or `localStorage.*('userId')` after changes.
+
+**Non-goals:**
+- No backend auth changes beyond what AUTH-APP-01C1A established
+- No Google/Apple OAuth
+- No email verification or password reset
+- No rate limiting
+- No auth UX redesign
+
+**Acceptance checks:**
+- [ ] Zero `localStorage.getItem/setItem/removeItem('access_token')` in production frontend code
+- [ ] Zero `localStorage.getItem/setItem/removeItem('userId')` in production frontend code
+- [ ] Zero `Authorization: Bearer` in browser-side fetch calls
+- [ ] All workspace logic helpers no longer accept `token` parameter
+- [ ] `open-project-in-fresh-session.ts` no longer accepts or passes `token`
+- [ ] All affected test files updated and passing
+- [ ] `npx tsc --noEmit` passes in `frontend`
+- [ ] `npm run build` passes in `frontend`
+- [ ] No backend files changed
+
+**Reference:** See TASKS.md -> AUTH-APP-01C1B. See `docs/AUTH-APP-01-SPEC.md` Section 3.
+
+---
+
+### AUTH-APP-01C2: Email Verification / Password Reset / Rate Limiting
+
+**Task ID:** AUTH-APP-01C2
+**Family:** AUTH
+**Parent:** AUTH-APP-01
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** PLANNED — BLOCKED on transactional email provider selection
+**Source:** AUTH-APP-01A spec (Sections 7, 12); AUTH-APP-01C split confirmed at registration
+**Depends on:** AUTH-APP-01C1 (COMPLETE) + transactional email provider configured in environment
+
+**Blocking prerequisite:**
+A transactional email provider must be selected and its API key added to environment variables before this slice can begin. No provider is currently configured. Candidates per spec: Resend, SendGrid, Amazon SES. Provider selection must happen before AUTH-APP-01C2 stage-start — it is not resolved in this registration.
+
+**Objective:**
+Add email verification and password reset flows that use the `verification_tokens` table from AUTH-APP-01B, and add rate limiting to all auth endpoints. This slice is intentionally decoupled from cookie-session migration (AUTH-APP-01C1) and OAuth (AUTH-APP-01D) so both can proceed while the email provider decision is pending.
+
+**Bounded scope:**
+
+1. **Transactional email provider setup** — configure chosen provider (Resend/SendGrid/SES); add `EMAIL_PROVIDER`, `EMAIL_API_KEY`, `EMAIL_FROM` (or equivalent) env vars; document in project README or env template. This is a prerequisite step performed at AUTH-APP-01C2 stage-start.
+
+2. **Email verification flow:**
+   - After `POST /api/auth/register`: generate random token, SHA-256 hash it, store in `verification_tokens` (`type='email_verify'`, 24h expiry), send verification email with raw token link
+   - `GET /api/auth/email/verify?token=<raw>`: hash token, look up record, validate not expired / not used, mark user `emailVerified=true`, mark token `used_at`
+   - `POST /api/auth/email/verify/resend`: rate-limited, generates new token, invalidates prior unused tokens for same user+type
+
+3. **Password reset flow:**
+   - `POST /api/auth/password-reset/request`: generate token, store in `verification_tokens` (`type='password_reset'`, 1h expiry), send reset email
+   - `POST /api/auth/password-reset/confirm`: validate token, hash new password, update `users.password_hash`, mark token used, revoke all `auth_sessions` for the user
+   - Raw token sent to user; hash stored in DB
+
+4. **Rate limiting** — apply to:
+   - `POST /api/auth/login` — 10/min per IP
+   - `POST /api/auth/register` — 5/min per IP
+   - `POST /api/auth/password-reset/request` — 5/hr per email, 10/hr per IP
+   - `POST /api/auth/email/verify/resend` — 3/hr per user
+   - Implementation: `@nestjs/throttler` or Redis-backed throttler (confirm at stage-start)
+
+5. **User entity `emailVerified` field** — if not yet added, add `email_verified` column to `users` (migration required) and corresponding entity field.
+
+**Non-goals:**
+- No Google or Apple OAuth
+- No frontend auth redesign beyond verify/reset UI pages (minimal: email sent confirmation, token expired/invalid error, success state)
+- No billing or subscription changes
+- No account-linking logic (deferred to AUTH-APP-01D/E)
+
+**Acceptance checks:**
+- [ ] Transactional email provider configured with env vars documented
+- [ ] Email verification token generated and email sent on register
+- [ ] Verification endpoint validates token, marks user verified, marks token used
+- [ ] Token resend is rate-limited
+- [ ] Password reset request sends email with hashed token
+- [ ] Password reset confirm validates token, updates password, revokes sessions
+- [ ] Rate limiting applied to all auth endpoints per spec Section 7.5
+- [ ] `npx tsc --noEmit` passes in `services/api-gateway`
+- [ ] No OAuth code added
+
+**Reference:** See TASKS.md -> AUTH-APP-01C2. See `docs/AUTH-APP-01-SPEC.md` Sections 7, 12.
 
 ---
 

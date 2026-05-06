@@ -4,7 +4,7 @@ import { CheckpointsService } from '../checkpoints.service';
 import { GitCheckpointService } from '../../git-checkpoints/git-checkpoint.service';
 import { SessionService } from '../../sessions/session.service';
 import { ContainerManagerHttpClient } from '../../clients/container-manager-http.client';
-import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
+import { SessionCookieGuard } from '../../auth/session-cookie.guard';
 import { NotFoundException, GoneException } from '@nestjs/common';
 
 describe('CheckpointsController Integration (PHASE-68B)', () => {
@@ -47,7 +47,7 @@ describe('CheckpointsController Integration (PHASE-68B)', () => {
         },
       ],
     })
-      .overrideGuard(JwtAuthGuard)
+      .overrideGuard(SessionCookieGuard)
       .useValue({ canActivate: () => true })
       .compile();
 

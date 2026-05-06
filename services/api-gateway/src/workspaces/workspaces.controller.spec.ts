@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { WorkspacesController } from './workspaces.controller';
 import { WorkspacesService } from './workspaces.service';
+import { SessionCookieGuard } from '../auth/session-cookie.guard';
 
 describe('WorkspacesController (WS-02)', () => {
   let controller: WorkspacesController;
@@ -22,15 +22,18 @@ describe('WorkspacesController (WS-02)', () => {
           },
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(SessionCookieGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get<WorkspacesController>(WorkspacesController);
     workspacesService = module.get(WorkspacesService);
   });
 
-  it('applies JwtAuthGuard at controller level', () => {
+  it('applies SessionCookieGuard at controller level', () => {
     const guards = Reflect.getMetadata('__guards__', WorkspacesController) || [];
-    expect(guards).toContain(JwtAuthGuard);
+    expect(guards).toContain(SessionCookieGuard);
   });
 
   it('routes owner-scoped CRUD calls through the service', async () => {

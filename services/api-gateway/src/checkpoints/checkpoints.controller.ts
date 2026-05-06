@@ -11,7 +11,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CheckpointsService } from './checkpoints.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { SessionCookieGuard } from '../auth/session-cookie.guard';
 import { CheckpointResponseDto } from './dto/checkpoint-response.dto';
 import { DiffResponseDto } from './dto/diff-response.dto';
 import { RevertRequestDto } from './dto/revert-request.dto';
@@ -24,7 +24,7 @@ import { RevertResponseDto } from './dto/revert-response.dto';
  * Routes: /api/sessions/:id/checkpoints/* (global prefix 'api' applied in main.ts)
  */
 @Controller('sessions/:id/checkpoints')
-@UseGuards(JwtAuthGuard)
+@UseGuards(SessionCookieGuard)
 export class CheckpointsController {
   constructor(private readonly checkpointsService: CheckpointsService) {}
 

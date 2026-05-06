@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './filters/http-exception.filter';
 
@@ -14,6 +15,8 @@ async function bootstrap() {
     origin: true,
     credentials: true,
   });
+
+  app.use(cookieParser());
 
   // Enable global exception filter (PHASE-42A-4: Preserve quota error body shape)
   app.useGlobalFilters(new HttpExceptionFilter());

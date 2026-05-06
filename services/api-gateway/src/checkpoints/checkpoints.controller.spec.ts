@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CheckpointsController } from './checkpoints.controller';
 import { CheckpointsService } from './checkpoints.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { SessionCookieGuard } from '../auth/session-cookie.guard';
 import { NotFoundException, GoneException } from '@nestjs/common';
 import { CheckpointResponseDto } from './dto/checkpoint-response.dto';
 import { DiffResponseDto } from './dto/diff-response.dto';
@@ -41,7 +41,7 @@ describe('CheckpointsController (PHASE-68B)', () => {
         },
       ],
     })
-      .overrideGuard(JwtAuthGuard)
+      .overrideGuard(SessionCookieGuard)
       .useValue(mockGuard)
       .compile();
 

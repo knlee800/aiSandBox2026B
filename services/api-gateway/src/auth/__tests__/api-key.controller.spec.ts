@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
 import { ApiKeyController } from '../api-key.controller';
 import { ApiKeyService } from '../api-key.service';
+import { SessionCookieGuard } from '../session-cookie.guard';
 
 describe('ApiKeyController', () => {
   let controller: ApiKeyController;
@@ -22,7 +23,10 @@ describe('ApiKeyController', () => {
           useValue: mockApiKeyService,
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(SessionCookieGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get<ApiKeyController>(ApiKeyController);
     service = module.get<ApiKeyService>(ApiKeyService);

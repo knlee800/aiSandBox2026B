@@ -11,14 +11,14 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { SessionCookieGuard } from '../auth/session-cookie.guard';
 import { Workspace } from '../entities/workspace.entity';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
 import { WorkspacesService } from './workspaces.service';
 
 @Controller('workspaces')
-@UseGuards(JwtAuthGuard)
+@UseGuards(SessionCookieGuard)
 export class WorkspacesController {
   constructor(private readonly workspacesService: WorkspacesService) {}
 
