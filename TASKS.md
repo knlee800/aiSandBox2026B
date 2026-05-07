@@ -12216,9 +12216,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## AUTH — aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 COMPLETE — AUTH-APP-01H NEXT
+**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 COMPLETE — AUTH-APP-01H ACTIVE — AUTH-APP-01H1 COMPLETE — AUTH-APP-01H2 NEXT
 
-**Current stage:** AUTH-APP-01H (PLANNED)
+**Current stage:** AUTH-APP-01H2 (PLANNED — pending @nestjs/throttler dependency approval)
 
 **Master spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Reference master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -12249,7 +12249,11 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
    - AUTH-APP-01G2 — Login/Register OAuth Error + Button Polish (COMPLETE and LOCKED)
    - AUTH-APP-01G3 — Logout + Basic Account Surface (COMPLETE and LOCKED)
    - AUTH-APP-01G4 — Auth UX Validation + Checkpoint (COMPLETE and LOCKED)
-10. AUTH-APP-01H — Security Hardening + Validation Checklist (PLANNED — current stage)
+10. AUTH-APP-01H — Security Hardening + Validation Checklist (ACTIVE — child slices registered):
+    - AUTH-APP-01H1 — Security Hardening Inventory (COMPLETE and LOCKED)
+    - AUTH-APP-01H2 — CSRF + Rate Limiting + Redirect Hardening (PLANNED — current stage — pending @nestjs/throttler approval)
+    - AUTH-APP-01H3 — Events Endpoint Guards + Test/Tooling Triage (PLANNED)
+    - AUTH-APP-01H4 — Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation (PLANNED)
 11. AUTH-APP-01Z — Final Consolidation (pending)
 
 **Sequencing note:** AUTH-APP-01D (Google OAuth) depends on AUTH-APP-01C1A (session cookie infrastructure must exist for OAuth callbacks to set cookies). AUTH-APP-01D does NOT need to wait for AUTH-APP-01C1B or AUTH-APP-01C2. AUTH-APP-01C2 remains blocked until a transactional email provider is selected and configured.
@@ -12762,4 +12766,59 @@ Run full automated validation suite, record manual smoke as deferred, and create
 **Manual smoke checklist:** NOT RUN — deferred to user live environment (no live frontend/backend/browser available in automated session; dev servers user-controlled).
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01G4. See `docs/AUTH-APP-01G4-CHECKPOINT.md`. See `docs/AUTH-APP-01G-CHECKPOINT.md`. See `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md` Section 12.
+
+---
+
+#### AUTH-APP-01H: Security Hardening + Validation Checklist (Phase Parent)
+
+**Status:** ACTIVE
+**Parent:** AUTH-APP-01
+**Family:** AUTH
+**Depends on:** AUTH-APP-01G4 (COMPLETE and LOCKED)
+**Registered:** 2026-05-07
+
+**Objective:**
+Deliver all remaining AUTH-APP-01 security hardening and validation work before AUTH-APP-01Z final consolidation. Covers CSRF protection, rate limiting on auth endpoints, redirect allowlist hardening, OAuth state parameter audit, events endpoint carry-forward resolution, preview proxy scope decision, test/tooling blocker triage, secrets env audit, and full manual smoke verification.
+
+**Confirmed child slices:**
+1. AUTH-APP-01H1 — Security Hardening Inventory (COMPLETE and LOCKED)
+2. AUTH-APP-01H2 — CSRF + Rate Limiting + Redirect Hardening (PLANNED)
+3. AUTH-APP-01H3 — Events Endpoint Guards + Test/Tooling Triage (PLANNED)
+4. AUTH-APP-01H4 — Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation (PLANNED)
+
+**AUTH-APP-01C2 remains BLOCKED:** Transactional email provider not yet chosen. AUTH-APP-01H does not unblock AUTH-APP-01C2.
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01H. See `docs/AUTH-APP-01-SPEC.md`. See `docs/AUTH-APP-01F-CHECKPOINT.md` (carry-forwards). See `docs/AUTH-APP-01G-CHECKPOINT.md` (carry-forwards).
+
+---
+
+#### AUTH-APP-01H1: Security Hardening Inventory
+
+**Status:** COMPLETE and LOCKED
+**Nature:** DOCUMENTATION / SPEC ONLY — no production source files changed
+**Parent:** AUTH-APP-01H (ACTIVE)
+**Family:** AUTH
+**Depends on:** AUTH-APP-01G4 (COMPLETE and LOCKED)
+**Completed:** 2026-05-07
+**Checkpoint:** `docs/AUTH-APP-01H1-CHECKPOINT.md`
+**Spec:** `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`
+
+**Key findings:**
+- CSRF protection: MISSING — no synchronizer token or middleware; `SameSite=Lax` partial mitigation only
+- Auth endpoint rate limiting: MISSING — `@nestjs/throttler` not installed, no decorators/guards
+- OAuth state parameter: PARTIAL — `state: true` functional; `OAUTH_STATE_SECRET`/`SESSION_SECRET` undocumented
+- Redirect allowlist: NO OPEN REDIRECT — no formal allowlist constant
+- Secrets/env documentation: SIGNIFICANT GAP — all OAuth + session vars missing from `api-gateway/.env.example`
+- Events endpoints: UNGUARDED — 3 endpoints; 2 callers use raw `HttpService`, no auth header
+- Preview proxy: UNGUARDED — formally deferred; product decision required
+- Backend full `npm test`: ENVIRONMENT BLOCKER (Redis absent) — targeted-test workaround
+- `ai-execution-guards` QuotaService: TEST BLOCKER — missing mock provider
+- ESLint config: TOOLING BLOCKER — no `.eslintrc.*` in `services/api-gateway`
+
+**H2/H3/H4 boundaries defined in spec:**
+- H2: CSRF + rate limiting (login/register) + redirect allowlist + env docs — **pending `@nestjs/throttler` user approval**
+- H3: events guards + container-manager caller updates + ESLint config + QuotaService mock + preview deferral
+- H4: secrets grep audit + manual smoke (34 items) + family checkpoint
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01H1. See `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`. See `docs/AUTH-APP-01H1-CHECKPOINT.md`.
 

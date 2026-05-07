@@ -22192,7 +22192,7 @@ Transform the public landing page into the "Build anything" entry experience wit
 
 ## AUTH ??aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 COMPLETE — AUTH-APP-01H NEXT
+**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 COMPLETE — AUTH-APP-01H ACTIVE — AUTH-APP-01H1 COMPLETE — AUTH-APP-01H2 NEXT
 **Important distinction:** AUTH-APP-01 is for the aiSandBox platform itself. AUTH-MODULE-01 (reusable generated app-auth for user-created apps) is a separate, later family.
 **Decision spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -22230,8 +22230,12 @@ Add production-ready authentication for the aiSandBox hosted app ??email, Google
    - AUTH-APP-01G2 — Login/Register OAuth Error + Button Polish (COMPLETE and LOCKED)
    - AUTH-APP-01G3 — Logout + Basic Account Surface (COMPLETE and LOCKED)
    - AUTH-APP-01G4 — Auth UX Validation + Checkpoint (COMPLETE and LOCKED)
-10. AUTH-APP-01H ??Security Hardening + Validation Checklist (PLANNED — current stage)
-11. AUTH-APP-01Z ??Final Consolidation (pending)
+10. AUTH-APP-01H — Security Hardening + Validation Checklist (ACTIVE — child slices registered):
+    - AUTH-APP-01H1 — Security Hardening Inventory (COMPLETE and LOCKED)
+    - AUTH-APP-01H2 — CSRF + Rate Limiting + Redirect Hardening (PLANNED — current stage — pending @nestjs/throttler approval)
+    - AUTH-APP-01H3 — Events Endpoint Guards + Test/Tooling Triage (PLANNED)
+    - AUTH-APP-01H4 — Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation (PLANNED)
+11. AUTH-APP-01Z — Final Consolidation (pending)
 
 **Non-goals:**
 - AUTH-MODULE-01 (reusable generated app-auth for user-created apps ??separate later family)
@@ -23474,4 +23478,110 @@ Run full automated validation suite for the AUTH-APP-01G family, record manual s
 - [x] `TASKS_BACKLOG_FULL.md` updated
 
 **Reference:** See TASKS.md -> AUTH-APP-01G4. See `docs/AUTH-APP-01G4-CHECKPOINT.md`. See `docs/AUTH-APP-01G-CHECKPOINT.md`. See `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md` Section 12.
+
+---
+
+### AUTH-APP-01H: Security Hardening + Validation Checklist (Phase Parent)
+
+**Task ID:** AUTH-APP-01H
+**Family:** AUTH
+**Parent:** AUTH-APP-01
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** ACTIVE
+**Nature:** PHASE PARENT — split into H1–H4 child slices
+**Source:** AUTH-APP-01-SPEC.md Section 14 (locked slice order)
+**Depends on:** AUTH-APP-01G4 (COMPLETE and LOCKED)
+**Registered:** 2026-05-07
+
+**Objective:**
+Deliver all remaining AUTH-APP-01 security hardening and validation work before AUTH-APP-01Z final consolidation. Covers CSRF protection, rate limiting on auth endpoints, redirect allowlist hardening, OAuth state parameter audit, events endpoint carry-forward resolution (from AUTH-APP-01F), preview proxy scope decision, test/tooling blocker triage, secrets env audit, and full manual smoke verification (carrying forward all NOT RUN items from AUTH-APP-01F4 and AUTH-APP-01G4).
+
+**Confirmed child slices:**
+1. AUTH-APP-01H1 — Security Hardening Inventory (COMPLETE and LOCKED)
+2. AUTH-APP-01H2 — CSRF + Rate Limiting + Redirect Hardening (PLANNED)
+3. AUTH-APP-01H3 — Events Endpoint Guards + Test/Tooling Triage (PLANNED)
+4. AUTH-APP-01H4 — Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation (PLANNED)
+
+**Carry-forwards absorbed from prior slices:**
+
+| Item | Source | Status |
+|---|---|---|
+| Events endpoints (3) unguarded (`file-changed`, `checkpoint-created`, `token-updated`) | AUTH-APP-01F carry-forward | Pending — H3 |
+| Preview proxy auth-forwarding (`/api/preview/*`) | AUTH-APP-01F carry-forward | Pending — H3 scope decision |
+| Manual smoke checklist F-family (22 items) | AUTH-APP-01F4 NOT RUN | Pending — H4 |
+| Manual smoke checklist G-family (12 items) | AUTH-APP-01G4 NOT RUN | Pending — H4 |
+| Backend full `npm test` Redis blocker | Pre-existing since AUTH-APP-01B | Pending — H3 triage |
+| `ai-execution-guards` QuotaService test blocker | Pre-existing before AUTH-APP-01F1 | Pending — H3 triage |
+| Backend ESLint config discovery blocker | Pre-existing since AUTH-APP-01B | Pending — H3 triage |
+
+**AUTH-APP-01C2 remains BLOCKED:** Transactional email provider not yet chosen. AUTH-APP-01H does not unblock AUTH-APP-01C2.
+
+**Non-goals:**
+- No AUTH-APP-01C2 email verification / password reset work
+- No AUTH-MODULE-01 work
+- No workspace redesign
+- No billing/subscription changes
+- No new product features
+
+**Reference:** See TASKS.md -> AUTH-APP-01H. See `docs/AUTH-APP-01-SPEC.md`. See `docs/AUTH-APP-01F-CHECKPOINT.md`. See `docs/AUTH-APP-01G-CHECKPOINT.md`.
+
+---
+
+### AUTH-APP-01H1: Security Hardening Inventory
+
+**Task ID:** AUTH-APP-01H1
+**Family:** AUTH
+**Parent:** AUTH-APP-01H (ACTIVE)
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** DOCUMENTATION / SPEC ONLY — no production source files changed
+**Source:** AUTH-APP-01H registration (2026-05-07); AUTH-APP-01-SPEC.md Section 14
+**Depends on:** AUTH-APP-01G4 (COMPLETE and LOCKED)
+**Completed:** 2026-05-07
+**Checkpoint:** `docs/AUTH-APP-01H1-CHECKPOINT.md`
+**Spec:** `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`
+
+**Objective:**
+Produce a read-only security hardening inventory and scope plan before any AUTH-APP-01H implementation work begins. Inspect the current state of CSRF protection, auth endpoint rate limiting, OAuth state parameter handling, redirect allowlist behavior, and secrets/env documentation. Formally catalogue all carry-forward items (events endpoints, preview proxy, test/tooling blockers). Define the exact implementation boundaries for AUTH-APP-01H2, H3, and H4.
+
+**Key findings:**
+- CSRF protection: MISSING — no synchronizer token or middleware; `SameSite=Lax` partial mitigation only; Apple POST callback must be excluded from future CSRF enforcement
+- Auth endpoint rate limiting: MISSING — `@nestjs/throttler` not installed, no decorators/guards anywhere
+- OAuth state parameter: PARTIAL — `state: true` functional in both strategies; `OAUTH_STATE_SECRET`/`SESSION_SECRET` undocumented in `api-gateway/.env.example`
+- Redirect allowlist: NO OPEN REDIRECT — no formal allowlist constant; redirects hardcoded to `/${locale}/app` and `/${locale}/login`
+- Secrets/env documentation: SIGNIFICANT GAP — all OAuth + session env vars missing from `api-gateway/.env.example`; source code clean (no hardcoded real credentials found)
+- Events endpoints: UNGUARDED — 3 endpoints; `files.service.ts` and `git.service.ts` call via raw `HttpService` with no auth header; `token-updated` has no known caller
+- Preview proxy: UNGUARDED — formally deferred; product decision (public vs. session-owner-only) required; risk: MEDIUM
+- Backend full `npm test`: ENVIRONMENT BLOCKER — `REDIS_URL` absent; targeted-test strategy is established workaround
+- `ai-execution-guards` QuotaService: TEST BLOCKER — missing mock provider in `TestingModule`
+- ESLint config: TOOLING BLOCKER — no `.eslintrc.*` in `services/api-gateway`
+
+**H2/H3/H4 boundaries:**
+- H2: CSRF + rate limiting (login/register only) + redirect allowlist + `api-gateway/.env.example` — **`@nestjs/throttler` user approval required before H2 begins**
+- H3: events guards + container-manager caller updates + ESLint config + QuotaService mock + preview deferral document
+- H4: secrets grep audit + manual smoke (22 F-items + 12 G-items + 6 H-specific items) + family checkpoint
+
+**Acceptance checks:**
+- [x] All 10 inventory areas documented in `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md` (12 sections total)
+- [x] Each gap rated: missing / partial / no open risk / environment blocker / tooling blocker
+- [x] H2/H3/H4 boundaries formally defined with files-in-scope lists and validation commands
+- [x] No production source files changed — confirmed by `git status`
+- [x] `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md` created
+- [x] `docs/AUTH-APP-01H1-CHECKPOINT.md` created
+- [x] `TASKS.md` updated
+- [x] `TASKS_BACKLOG_FULL.md` updated
+
+**Non-goals confirmed:**
+- No CSRF implementation
+- No rate limiting configuration
+- No guard additions to any controller
+- No dependency installs
+- No frontend changes
+- No backend behavior changes
+- No container-manager changes
+- No email provider work (AUTH-APP-01C2 remains BLOCKED)
+
+**Reference:** See TASKS.md -> AUTH-APP-01H1. See `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`. See `docs/AUTH-APP-01H1-CHECKPOINT.md`. See `docs/AUTH-APP-01-SPEC.md`.
 
