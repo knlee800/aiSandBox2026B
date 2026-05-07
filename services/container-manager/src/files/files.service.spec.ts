@@ -17,6 +17,10 @@ describe('FilesService searchFiles', () => {
     post: jest.fn(),
   };
 
+  const apiGatewayClient = {
+    notifyFileChanged: jest.fn(async () => undefined),
+  };
+
   async function writeWorkspaceFile(relativePath: string, content: string | Buffer): Promise<void> {
     const fullPath = path.join(tempWorkspacePath, relativePath);
     await nodeFs.mkdir(path.dirname(fullPath), { recursive: true });
@@ -26,7 +30,11 @@ describe('FilesService searchFiles', () => {
   beforeEach(async () => {
     tempWorkspacePath = await nodeFs.mkdtemp(path.join(os.tmpdir(), 'aisandbox-search-'));
     sessionsService.getWorkspacePath.mockReturnValue(tempWorkspacePath);
-    service = new FilesService(sessionsService as any, httpService as any);
+    service = new FilesService(
+      sessionsService as any,
+      httpService as any,
+      apiGatewayClient as any,
+    );
   });
 
   afterEach(async () => {

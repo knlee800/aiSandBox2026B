@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
 import * as fs from 'fs/promises';
 import * as fsSync from 'fs';
 import * as path from 'path';
 import { SessionsService } from '../sessions/sessions.service';
+import { ApiGatewayHttpClient } from '../clients/api-gateway-http.client';
 
 const WORKSPACE_SEARCH_MAX_QUERY_LENGTH = 120;
 const WORKSPACE_SEARCH_MAX_FILES_SCANNED = 200;
@@ -71,6 +71,7 @@ export class FilesService {
   constructor(
     private sessionsService: SessionsService,
     private httpService: HttpService,
+    private apiGatewayClient: ApiGatewayHttpClient,
   ) {}
 
   async readFile(sessionId: string, filePath: string) {
@@ -430,16 +431,11 @@ export class FilesService {
 
   private async emitFileChange(sessionId: string, filePath: string, action: 'created' | 'updated' | 'deleted') {
     try {
-      await firstValueFrom(
-        this.httpService.post('http://localhost:4000/api/events/file-changed', {
-          sessionId,
-          file: {
-            path: filePath,
-            action,
-            timestamp: new Date().toISOString(),
-          },
-        }),
-      );
+      await this.apiGatewayClient.notifyFileChanged(sessionId, {
+        path: filePath,
+        action,
+        timestamp: new Date().toISOString(),
+      });
     } catch (error) {
       console.error('Failed to emit file change event:', error.message);
     }

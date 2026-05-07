@@ -337,12 +337,7 @@ export class GitService {
 
   private async emitCheckpointCreated(sessionId: string, checkpoint: any) {
     try {
-      await firstValueFrom(
-        this.httpService.post('http://localhost:4000/api/events/checkpoint-created', {
-          sessionId,
-          checkpoint,
-        }),
-      );
+      await this.apiGatewayClient.notifyCheckpointCreated(sessionId, checkpoint);
     } catch (error) {
       console.error('Failed to emit checkpoint created event:', error.message);
     }

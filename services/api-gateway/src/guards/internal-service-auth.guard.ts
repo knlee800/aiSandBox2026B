@@ -38,9 +38,11 @@ export class InternalServiceAuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<Request>();
     const path = request.path;
 
-    // Only apply to /api/internal/* routes
-    if (!path.startsWith('/api/internal/')) {
-      return true; // Bypass guard for non-internal routes
+    // Only apply to protected internal service routes
+    const isInternalRoute = path.startsWith('/api/internal/');
+    const isEventsRoute = path.startsWith('/api/events/');
+    if (!isInternalRoute && !isEventsRoute) {
+      return true; // Bypass guard for public routes
     }
 
     // If no key is configured, DENY access to internal routes

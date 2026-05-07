@@ -3,9 +3,10 @@ import { HttpModule } from '@nestjs/axios';
 import { FilesController } from './files.controller';
 import { FilesService } from './files.service';
 import { SessionsModule } from '../sessions/sessions.module';
+import { ClientsModule } from '../clients/clients.module';
 
 @Module({
-  imports: [SessionsModule, HttpModule],
+  imports: [SessionsModule, HttpModule, ClientsModule],
   controllers: [FilesController],
   providers: [FilesService],
   exports: [FilesService],

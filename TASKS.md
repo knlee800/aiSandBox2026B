@@ -12216,9 +12216,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## AUTH — aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 COMPLETE — AUTH-APP-01H ACTIVE — AUTH-APP-01H1 COMPLETE — AUTH-APP-01H2 COMPLETE — AUTH-APP-01H3 NEXT
+**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 COMPLETE — AUTH-APP-01H ACTIVE — AUTH-APP-01H1 COMPLETE — AUTH-APP-01H2 COMPLETE — AUTH-APP-01H3 COMPLETE — AUTH-APP-01H4 NEXT
 
-**Current stage:** AUTH-APP-01H3 (PLANNED — next)
+**Current stage:** AUTH-APP-01H4 (PLANNED — next)
 
 **Master spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Reference master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -12252,8 +12252,8 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
 10. AUTH-APP-01H — Security Hardening + Validation Checklist (ACTIVE — child slices registered):
     - AUTH-APP-01H1 — Security Hardening Inventory (COMPLETE and LOCKED)
     - AUTH-APP-01H2 — CSRF + Rate Limiting + Redirect Hardening (COMPLETE and LOCKED)
-    - AUTH-APP-01H3 — Events Endpoint Guards + Test/Tooling Triage (PLANNED — current stage)
-    - AUTH-APP-01H4 — Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation (PLANNED)
+    - AUTH-APP-01H3 — Events Endpoint Guards + Test/Tooling Triage (COMPLETE and LOCKED)
+    - AUTH-APP-01H4 — Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation (PLANNED — current stage)
 11. AUTH-APP-01Z — Final Consolidation (pending)
 
 **Sequencing note:** AUTH-APP-01D (Google OAuth) depends on AUTH-APP-01C1A (session cookie infrastructure must exist for OAuth callbacks to set cookies). AUTH-APP-01D does NOT need to wait for AUTH-APP-01C1B or AUTH-APP-01C2. AUTH-APP-01C2 remains blocked until a transactional email provider is selected and configured.
@@ -12783,8 +12783,8 @@ Deliver all remaining AUTH-APP-01 security hardening and validation work before 
 **Confirmed child slices:**
 1. AUTH-APP-01H1 — Security Hardening Inventory (COMPLETE and LOCKED)
 2. AUTH-APP-01H2 — CSRF + Rate Limiting + Redirect Hardening (COMPLETE and LOCKED)
-3. AUTH-APP-01H3 — Events Endpoint Guards + Test/Tooling Triage (PLANNED — current stage)
-4. AUTH-APP-01H4 — Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation (PLANNED)
+3. AUTH-APP-01H3 — Events Endpoint Guards + Test/Tooling Triage (COMPLETE and LOCKED)
+4. AUTH-APP-01H4 — Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation (PLANNED — current stage)
 
 **AUTH-APP-01C2 remains BLOCKED:** Transactional email provider not yet chosen. AUTH-APP-01H does not unblock AUTH-APP-01C2.
 
@@ -12846,4 +12846,32 @@ Deliver all remaining AUTH-APP-01 security hardening and validation work before 
 - `api-gateway/.env.example` updated with placeholders for all missing auth/session/OAuth vars
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01H2. See `docs/AUTH-APP-01H2-CHECKPOINT.md`. See `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`.
+
+#### AUTH-APP-01H3: Events Endpoint Guards + Test/Tooling Triage
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BACKEND IMPLEMENTATION + TEST/TOOLING FIXES
+**Parent:** AUTH-APP-01H (ACTIVE)
+**Family:** AUTH
+**Depends on:** AUTH-APP-01H2 (COMPLETE and LOCKED)
+**Completed:** 2026-05-07
+**Checkpoint:** `docs/AUTH-APP-01H3-CHECKPOINT.md`
+**Spec:** `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`
+
+**Key changes:**
+- `InternalServiceAuthGuard` path check extended to protect `/api/events/*` in addition to `/api/internal/*`; global `APP_GUARD` registration unchanged
+- All three events endpoints (`file-changed`, `checkpoint-created`, `token-updated`) now require `X-Internal-Service-Key`
+- `ApiGatewayHttpClient` (container-manager) gained `notifyFileChanged()` and `notifyCheckpointCreated()` methods sending `X-Internal-Service-Key`
+- `GitService.emitCheckpointCreated()` replaced raw `httpService.post()` with `apiGatewayClient.notifyCheckpointCreated()`
+- `FilesModule` imports `ClientsModule`; `FilesService` injects `ApiGatewayHttpClient`; `FilesService.emitFileChange()` replaced raw `httpService.post()` with `apiGatewayClient.notifyFileChanged()`
+- Created `services/api-gateway/.eslintrc.js` (ESLint 8 legacy config) — `npm run lint` now runs; repo-wide baseline of 353 pre-existing errors documented
+- `ai-execution-guards.integration.spec.ts`: real `QuotaService` replaced with `useValue` mock; kill-switch tests corrected to use `process.env.AI_PROVIDER`; local lint violations cleaned
+- New `events.controller.guard.spec.ts` — 4 guard unit tests (PASS 4/4)
+- Preview proxy formally deferred — no implementation
+
+**Carry-forwards to H4:**
+- Preview proxy `/api/preview/*` — deferred (product decision + cross-service auth design required)
+- api-gateway lint baseline — 353 pre-existing errors across unrelated files; separate future slice
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01H3. See `docs/AUTH-APP-01H3-CHECKPOINT.md`. See `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`.
 

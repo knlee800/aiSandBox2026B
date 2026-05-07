@@ -25,27 +25,51 @@ import { QuotaGuard } from '../../quota/quota.guard';
 import { QuotaService } from '../../quota/quota.service';
 import { LaunchConfig } from '../../launch/launch.config';
 import { AbortConfig } from '../../abort/abort.config';
-import { LaunchState } from '../../launch/launch-state.enum';
-import { AbortMode } from '../../abort/abort-mode.enum';
 import { ApiKeyIdentity } from '../../auth/api-key.config';
 import { ApiKeyAuthGuard } from '../../auth/api-key-auth.guard';
 import { GlobalSafetyLimitService } from '../../safety/global-safety-limit.service';
+import { KillSwitchConfig } from '../../safety/kill-switch.config';
 import { AIExecutionController } from '../ai-execution.controller';
 
 describe('AI Execution Guards Integration (Phase 31B)', () => {
+  type MockRequest = {
+    apiKeyIdentity?: ApiKeyIdentity;
+    body: {
+      provider: string;
+      max_tokens: number;
+    };
+  };
+
+  const originalAiProvider = process.env.AI_PROVIDER;
   let launchGuard: LaunchGuard;
   let abortGuard: AbortGuard;
   let executionSafetyGuard: ExecutionSafetyGuard;
-  let quotaGuard: QuotaGuard;
   let quotaService: QuotaService;
-  let globalSafetyLimitService: GlobalSafetyLimitService;
   let mockContext: ExecutionContext;
-  let mockRequest: any;
+  let mockRequest: MockRequest;
+  let quotaServiceMock: {
+    getCurrentUsage: jest.Mock;
+    clearAll: jest.Mock;
+    checkRequestQuota: jest.Mock;
+    checkTokenQuota: jest.Mock;
+    recordRequest: jest.Mock;
+    recordTokens: jest.Mock;
+  };
 
   beforeEach(async () => {
     // Reset configs
     LaunchConfig.reset();
     AbortConfig.reset();
+    process.env.AI_PROVIDER = 'stub';
+
+    quotaServiceMock = {
+      getCurrentUsage: jest.fn().mockReturnValue({ requests: 0, tokens: 0 }),
+      clearAll: jest.fn(),
+      checkRequestQuota: jest.fn().mockReturnValue(true),
+      checkTokenQuota: jest.fn().mockReturnValue(true),
+      recordRequest: jest.fn(),
+      recordTokens: jest.fn(),
+    };
 
     // Create test module
     const module: TestingModule = await Test.createTestingModule({
@@ -54,7 +78,10 @@ describe('AI Execution Guards Integration (Phase 31B)', () => {
         AbortGuard,
         ExecutionSafetyGuard,
         QuotaGuard,
-        QuotaService,
+        {
+          provide: QuotaService,
+          useValue: quotaServiceMock,
+        },
         GlobalSafetyLimitService,
         Reflector,
       ],
@@ -63,9 +90,7 @@ describe('AI Execution Guards Integration (Phase 31B)', () => {
     launchGuard = module.get<LaunchGuard>(LaunchGuard);
     abortGuard = module.get<AbortGuard>(AbortGuard);
     executionSafetyGuard = module.get<ExecutionSafetyGuard>(ExecutionSafetyGuard);
-    quotaGuard = module.get<QuotaGuard>(QuotaGuard);
     quotaService = module.get<QuotaService>(QuotaService);
-    globalSafetyLimitService = module.get<GlobalSafetyLimitService>(GlobalSafetyLimitService);
 
     // Setup mock request
     mockRequest = {
@@ -83,11 +108,17 @@ describe('AI Execution Guards Integration (Phase 31B)', () => {
       }),
       getHandler: () => ({}),
       getClass: () => ({}),
-    } as any;
+    } as unknown as ExecutionContext;
   });
 
   afterEach(() => {
+    if (originalAiProvider === undefined) {
+      delete process.env.AI_PROVIDER;
+    } else {
+      process.env.AI_PROVIDER = originalAiProvider;
+    }
     quotaService.clearAll();
+    jest.restoreAllMocks();
     jest.clearAllMocks();
   });
 
@@ -274,10 +305,10 @@ describe('AI Execution Guards Integration (Phase 31B)', () => {
       });
 
       it('should block when PROVIDER_XAI_ENABLED=false', () => {
-        // NOTE: KillSwitchConfig uses static readonly fields evaluated at module load time
-        // This is by design (no runtime mutation in production)
-        // To test this behavior, we test with an unknown provider which is disabled by default
-        mockRequest.body.provider = 'unknown-provider-for-test';
+        process.env.AI_PROVIDER = 'xai';
+        jest
+          .spyOn(KillSwitchConfig, 'isProviderEnabled')
+          .mockReturnValue(false);
 
         expect(() => executionSafetyGuard.canActivate(mockContext)).toThrow(ServiceUnavailableException);
       });
@@ -290,7 +321,7 @@ describe('AI Execution Guards Integration (Phase 31B)', () => {
       });
 
       it('should block unknown provider by default', () => {
-        mockRequest.body.provider = 'unknown-provider';
+        process.env.AI_PROVIDER = 'unknown-provider';
 
         expect(() => executionSafetyGuard.canActivate(mockContext)).toThrow(ServiceUnavailableException);
       });
