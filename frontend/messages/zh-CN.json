@@ -118,7 +118,7 @@
     "network": "网络错误，请稍后重试。",
     "forbidden": "你没有此操作权限。",
     "notFound": "未找到请求的资源。",
-    "oauthFailed": "使用 Google 登录失败，请重试。",
+    "oauthFailed": "登录失败，请重试。",
     "accountConflict": "此电子邮件已绑定其他登录方式。请使用原有登录方式。"
   },
   "sandbox": {

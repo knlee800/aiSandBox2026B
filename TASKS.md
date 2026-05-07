@@ -12216,9 +12216,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## AUTH — aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G ACTIVE — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 NEXT
+**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G ACTIVE — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 NEXT
 
-**Current stage:** AUTH-APP-01G2 (PLANNED)
+**Current stage:** AUTH-APP-01G3 (PLANNED)
 
 **Master spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Reference master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -12246,7 +12246,8 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
    - AUTH-APP-01F4 — Protection Validation + Consolidation (COMPLETE and LOCKED)
 9. AUTH-APP-01G — Auth UX Integration (ACTIVE — child slices registered):
    - AUTH-APP-01G1 — Auth UX Inventory + Scope (COMPLETE and LOCKED)
-   - AUTH-APP-01G2 — Login/Register OAuth Error + Button Polish (PLANNED — current stage)
+   - AUTH-APP-01G2 — Login/Register OAuth Error + Button Polish (COMPLETE and LOCKED)
+   - AUTH-APP-01G3 — Logout + Basic Account Surface (PLANNED — current stage)
 10. AUTH-APP-01H — Security Hardening + Validation Checklist (pending)
 11. AUTH-APP-01Z — Final Consolidation (pending)
 
@@ -12681,30 +12682,53 @@ Produce an inventory and implementation scope for auth UX integration now that p
 
 #### AUTH-APP-01G2: Login/Register OAuth Error + Button Polish
 
-**Status:** PLANNED
-**Nature:** FRONTEND UI ONLY
+**Status:** COMPLETE and LOCKED
+**Nature:** FRONTEND UI ONLY — no backend files changed
 **Parent:** AUTH-APP-01G (ACTIVE)
 **Family:** AUTH
 **Depends on:** AUTH-APP-01G1 (COMPLETE and LOCKED)
+**Completed:** 2026-05-07
+**Checkpoint:** `docs/AUTH-APP-01G2-CHECKPOINT.md`
+
+**Implemented:**
+- `OAuthErrorBanner` sub-component added to `login/page.tsx` — reads `?error` via `useSearchParams()`; renders `errors.accountConflict` for `account_conflict`, `errors.oauthFailed` for all other codes; wrapped in `<Suspense fallback={null}>`; placed above existing form error block
+- `errors.oauthFailed` updated to provider-agnostic wording in en, zh-TW, zh-CN
+- OAuth button polish applied to all four `<a>` links (login Google/Apple, register Google/Apple): `transition-colors` → `transition`; added `active:scale-[0.97]`; added `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand`
+- Register success stay-on-page behavior preserved — no auto-redirect added
+- New test file: `frontend/app/[locale]/login/page.test.tsx` — 3 tests for `OAuthErrorBanner`
+
+**Validation:**
+- `npm run build`: PASS
+- `npx tsc --noEmit`: PASS
+- `npm test`: PASS — 253 tests, 22 suites, 0 failures
+- Login page test (direct): PASS — 3 tests, 0 failures
+- `frontend/tsconfig.tsbuildinfo` modified by build; restored via `git restore`
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01G2. See `docs/AUTH-APP-01G2-CHECKPOINT.md`. See `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md` Sections 5 and 10.
+
+---
+
+#### AUTH-APP-01G3: Logout + Basic Account Surface
+
+**Status:** PLANNED
+**Nature:** FRONTEND ONLY
+**Parent:** AUTH-APP-01G (ACTIVE)
+**Family:** AUTH
+**Depends on:** AUTH-APP-01G2 (COMPLETE and LOCKED)
 
 **Objective:**
-Consume OAuth error query params on the login page, make `errors.oauthFailed` provider-agnostic, and add minimal OAuth button polish.
+Add logout button/caller wired to `POST /api/auth/logout`, redirect to `/${locale}/login` on success, and add minimal account/auth surface if safely achievable.
 
-**Bounded scope:**
-- `frontend/app/[locale]/login/page.tsx`
-- `frontend/app/[locale]/register/page.tsx`
-- `frontend/messages/en.json`, `zh-TW.json`, `zh-CN.json`
-- Consume `?error=oauth_failed` and `?error=account_conflict` on login page
-- Provider-agnostic `errors.oauthFailed` copy in all three locales
-- Minimal OAuth button polish (advisory-driven, bounded)
-- Decide register success behavior at stage-start
+**Pre-implementation requirement:**
+Inspect `frontend/app/[locale]/app/page.tsx` at stage-start to locate account/user menu before committing to placement. File is very large. Split to G3a/G3b if logout + account surface is too large.
 
 **Non-goals:**
 - No backend changes
-- No account surface
-- No logout
-- No full redesign
+- No full account redesign
+- No keys page token migration
+- No email verification
+- No workspace redesign
 - No new dependencies
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01G2. See `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md` Sections 5 and 10.
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01G3. See `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md` Sections 6 and 11.
 

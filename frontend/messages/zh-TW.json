@@ -118,7 +118,7 @@
     "network": "網路錯誤，請稍後再試。",
     "forbidden": "你沒有此操作權限。",
     "notFound": "找不到請求的資源。",
-    "oauthFailed": "使用 Google 登入失敗，請再試一次。",
+    "oauthFailed": "登入失敗，請再試一次。",
     "accountConflict": "此電子郵件已綁定其他登入方式。請使用原本的登入方式。"
   },
   "sandbox": {

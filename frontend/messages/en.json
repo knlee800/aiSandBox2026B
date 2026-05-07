@@ -118,7 +118,7 @@
     "network": "Network error. Please try again.",
     "forbidden": "You do not have access to this action.",
     "notFound": "The requested resource was not found.",
-    "oauthFailed": "Sign in with Google failed. Please try again.",
+    "oauthFailed": "Sign-in failed. Please try again.",
     "accountConflict": "This email is linked to a different sign-in method. Please sign in with your original method."
   },
   "sandbox": {

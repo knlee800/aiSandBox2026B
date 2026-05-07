@@ -106,14 +106,14 @@ export default function RegisterPage() {
 
           <a
             href={`/api/auth/google?locale=${locale}`}
-            className="block w-full rounded-md border border-border bg-surface-base py-2 text-center text-text-primary transition-colors hover:bg-surface-raised"
+            className="block w-full rounded-md border border-border bg-surface-base py-2 text-center text-text-primary transition hover:bg-surface-raised active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
           >
             {t('continueWithGoogle')}
           </a>
 
           <a
             href={`/api/auth/apple?locale=${locale}`}
-            className="mt-3 block w-full rounded-md border border-border bg-surface-base py-2 text-center text-text-primary transition-colors hover:bg-surface-raised"
+            className="mt-3 block w-full rounded-md border border-border bg-surface-base py-2 text-center text-text-primary transition hover:bg-surface-raised active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
           >
             {t('continueWithApple')}
           </a>

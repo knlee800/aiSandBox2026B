@@ -1,11 +1,27 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useTranslations } from '../../../hooks/useTranslations';
 import axios from 'axios';
 import Link from 'next/link';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+
+function OAuthErrorBanner() {
+  const searchParams = useSearchParams();
+  const tErrors = useTranslations('errors');
+  const error = searchParams.get('error');
+
+  if (!error) {
+    return null;
+  }
+
+  return (
+    <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">
+      {error === 'account_conflict' ? tErrors('accountConflict') : tErrors('oauthFailed')}
+    </div>
+  );
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -77,6 +93,10 @@ export default function LoginPage() {
             />
           </div>
 
+          <Suspense fallback={null}>
+            <OAuthErrorBanner />
+          </Suspense>
+
           {error && (
             <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">
               {error}
@@ -99,14 +119,14 @@ export default function LoginPage() {
 
           <a
             href={`/api/auth/google?locale=${locale}`}
-            className="block w-full rounded-md border border-border bg-surface-base py-2 text-center text-text-primary transition-colors hover:bg-surface-raised"
+            className="block w-full rounded-md border border-border bg-surface-base py-2 text-center text-text-primary transition hover:bg-surface-raised active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
           >
             {t('continueWithGoogle')}
           </a>
 
           <a
             href={`/api/auth/apple?locale=${locale}`}
-            className="mt-3 block w-full rounded-md border border-border bg-surface-base py-2 text-center text-text-primary transition-colors hover:bg-surface-raised"
+            className="mt-3 block w-full rounded-md border border-border bg-surface-base py-2 text-center text-text-primary transition hover:bg-surface-raised active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
           >
             {t('continueWithApple')}
           </a>
