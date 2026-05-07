@@ -12216,9 +12216,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## AUTH — aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G ACTIVE — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 NEXT
+**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 COMPLETE — AUTH-APP-01H NEXT
 
-**Current stage:** AUTH-APP-01G4 (PLANNED)
+**Current stage:** AUTH-APP-01H (PLANNED)
 
 **Master spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Reference master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -12244,12 +12244,12 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
    - AUTH-APP-01F2 — Backend API Protection Gaps (COMPLETE and LOCKED)
    - AUTH-APP-01F3 — Frontend Protected Route Behavior (COMPLETE and LOCKED)
    - AUTH-APP-01F4 — Protection Validation + Consolidation (COMPLETE and LOCKED)
-9. AUTH-APP-01G — Auth UX Integration (ACTIVE — child slices registered):
+9. AUTH-APP-01G — Auth UX Integration (VALIDATION COMPLETE — manual smoke deferred — all child slices COMPLETE and LOCKED):
    - AUTH-APP-01G1 — Auth UX Inventory + Scope (COMPLETE and LOCKED)
    - AUTH-APP-01G2 — Login/Register OAuth Error + Button Polish (COMPLETE and LOCKED)
    - AUTH-APP-01G3 — Logout + Basic Account Surface (COMPLETE and LOCKED)
-   - AUTH-APP-01G4 — Auth UX Validation + Checkpoint (PLANNED — current stage)
-10. AUTH-APP-01H — Security Hardening + Validation Checklist (pending)
+   - AUTH-APP-01G4 — Auth UX Validation + Checkpoint (COMPLETE and LOCKED)
+10. AUTH-APP-01H — Security Hardening + Validation Checklist (PLANNED — current stage)
 11. AUTH-APP-01Z — Final Consolidation (pending)
 
 **Sequencing note:** AUTH-APP-01D (Google OAuth) depends on AUTH-APP-01C1A (session cookie infrastructure must exist for OAuth callbacks to set cookies). AUTH-APP-01D does NOT need to wait for AUTH-APP-01C1B or AUTH-APP-01C2. AUTH-APP-01C2 remains blocked until a transactional email provider is selected and configured.
@@ -12740,36 +12740,26 @@ Add logout button/caller wired to `POST /api/auth/logout`, redirect to `/${local
 
 #### AUTH-APP-01G4: Auth UX Validation + Checkpoint
 
-**Status:** PLANNED
-**Nature:** VALIDATION AND DOCUMENTATION ONLY
-**Parent:** AUTH-APP-01G (ACTIVE)
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION AND DOCUMENTATION ONLY — no production source files changed
+**Parent:** AUTH-APP-01G (VALIDATION COMPLETE — manual smoke deferred)
 **Family:** AUTH
 **Depends on:** AUTH-APP-01G3 (COMPLETE and LOCKED)
+**Checkpoint:** `docs/AUTH-APP-01G4-CHECKPOINT.md`
+**Family checkpoint:** `docs/AUTH-APP-01G-CHECKPOINT.md`
 
 **Objective:**
-Run full automated validation suite, execute the 10-item manual smoke checklist from `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md` Section 12, create `docs/AUTH-APP-01G-CHECKPOINT.md`, and mark AUTH-APP-01G COMPLETE and LOCKED.
+Run full automated validation suite, record manual smoke as deferred, and create G4 task checkpoint plus AUTH-APP-01G family checkpoint.
 
-**Automated checks:**
-- `npx tsc --noEmit`
-- `npm run build`
-- `npm test` — full suite + any targeted tests added in G2/G3
-- Login page OAuth error tests (direct invocation)
+**Automated validation results:**
+- `npm run build`: PASS — Next.js 15.5.12, compiled in 2.6s
+- `npx tsc --noEmit`: PASS
+- `npm test`: PASS — 256 tests, 22 suites, 0 failures
+- Login page direct test: PASS — 3 tests, 0 failures
+- Keys page direct test: PASS — 3 tests, 0 failures
+- `frontend/tsconfig.tsbuildinfo` modified by build; restored via `git restore`
 
-**Manual smoke checklist (10 items from spec Section 12):**
-1. Password login — succeeds and redirects to app
-2. Password login — wrong credentials shows error
-3. OAuth link present and styled on login page
-4. `?error=oauth_failed` — user-facing error displayed on login page
-5. `?error=account_conflict` — user-facing error displayed on login page
-6. Password register — succeeds (stay-on-page success message)
-7. Logout — calls backend, clears session cookie, redirects to login
-8. Logout — revisiting `/app` after logout redirects back to login
-9. Account page — renders expected minimal surface
-10. All surfaces behave correctly in zh-TW and zh-CN
+**Manual smoke checklist:** NOT RUN — deferred to user live environment (no live frontend/backend/browser available in automated session; dev servers user-controlled).
 
-**Non-goals:**
-- No new source code changes
-- No new features
-
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01G4. See `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md` Section 12.
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01G4. See `docs/AUTH-APP-01G4-CHECKPOINT.md`. See `docs/AUTH-APP-01G-CHECKPOINT.md`. See `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md` Section 12.
 

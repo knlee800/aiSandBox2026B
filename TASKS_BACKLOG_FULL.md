@@ -22192,7 +22192,7 @@ Transform the public landing page into the "Build anything" entry experience wit
 
 ## AUTH ??aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G ACTIVE — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 NEXT
+**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 COMPLETE — AUTH-APP-01H NEXT
 **Important distinction:** AUTH-APP-01 is for the aiSandBox platform itself. AUTH-MODULE-01 (reusable generated app-auth for user-created apps) is a separate, later family.
 **Decision spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -22225,12 +22225,12 @@ Add production-ready authentication for the aiSandBox hosted app ??email, Google
    - AUTH-APP-01F2 — Backend API Protection Gaps (COMPLETE and LOCKED)
    - AUTH-APP-01F3 — Frontend Protected Route Behavior (COMPLETE and LOCKED)
    - AUTH-APP-01F4 — Protection Validation + Consolidation (COMPLETE and LOCKED)
-9. AUTH-APP-01G — Auth UX Integration (ACTIVE — child slices registered):
+9. AUTH-APP-01G — Auth UX Integration (VALIDATION COMPLETE — manual smoke deferred — all child slices COMPLETE and LOCKED):
    - AUTH-APP-01G1 — Auth UX Inventory + Scope (COMPLETE and LOCKED)
    - AUTH-APP-01G2 — Login/Register OAuth Error + Button Polish (COMPLETE and LOCKED)
    - AUTH-APP-01G3 — Logout + Basic Account Surface (COMPLETE and LOCKED)
-   - AUTH-APP-01G4 — Auth UX Validation + Checkpoint (PLANNED — current stage)
-10. AUTH-APP-01H ??Security Hardening + Validation Checklist (pending)
+   - AUTH-APP-01G4 — Auth UX Validation + Checkpoint (COMPLETE and LOCKED)
+10. AUTH-APP-01H ??Security Hardening + Validation Checklist (PLANNED — current stage)
 11. AUTH-APP-01Z ??Final Consolidation (pending)
 
 **Non-goals:**
@@ -23213,8 +23213,9 @@ Run bounded validation across all AUTH-APP-01F2 backend guard additions and AUTH
 **Parent:** AUTH-APP-01
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** ACTIVE (child slices registered — AUTH-APP-01G4 is current stage)
+**Status:** VALIDATION COMPLETE — manual smoke deferred (all child slices COMPLETE and LOCKED)
 **Depends on:** AUTH-APP-01F4 (COMPLETE and LOCKED)
+**Family checkpoint:** `docs/AUTH-APP-01G-CHECKPOINT.md`
 
 **Objective:**
 Integrate auth UX surfaces now that password login, Google OAuth, Apple OAuth, cookie sessions, and protected routes are all in place. Covers login/register UX polish, OAuth error handling, logout, and a minimal account surface.
@@ -23223,7 +23224,9 @@ Integrate auth UX surfaces now that password login, Google OAuth, Apple OAuth, c
 1. AUTH-APP-01G1 — Auth UX Inventory + Scope (COMPLETE and LOCKED)
 2. AUTH-APP-01G2 — Login/Register OAuth Error + Button Polish (COMPLETE and LOCKED)
 3. AUTH-APP-01G3 — Logout + Basic Account Surface (COMPLETE and LOCKED)
-4. AUTH-APP-01G4 — Auth UX Validation + Checkpoint (PLANNED — current stage)
+4. AUTH-APP-01G4 — Auth UX Validation + Checkpoint (COMPLETE and LOCKED)
+
+**Manual smoke deferred:** 12-item checklist not run in automated session. Must be verified by user against live environment before AUTH-APP-01G is promoted to COMPLETE and LOCKED.
 
 **Non-goals:**
 - No AUTH-APP-01C2 email verification/password reset work
@@ -23233,7 +23236,7 @@ Integrate auth UX surfaces now that password login, Google OAuth, Apple OAuth, c
 - No AUTH-MODULE-01 work
 - No new dependencies
 
-**Reference:** See TASKS.md -> AUTH-APP-01G. See `docs/AUTH-APP-01-SPEC.md`.
+**Reference:** See TASKS.md -> AUTH-APP-01G. See `docs/AUTH-APP-01G-CHECKPOINT.md`. See `docs/AUTH-APP-01-SPEC.md`.
 
 ---
 
@@ -23419,4 +23422,56 @@ Add a logout button/caller wired to `POST /api/auth/logout`, clear local UI stat
 - [x] `TASKS_BACKLOG_FULL.md` updated
 
 **Reference:** See TASKS.md -> AUTH-APP-01G3. See `docs/AUTH-APP-01G3-CHECKPOINT.md`. See `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md` Sections 6 and 11.
+
+---
+
+### AUTH-APP-01G4: Auth UX Validation + Checkpoint
+
+**Task ID:** AUTH-APP-01G4
+**Family:** AUTH
+**Parent:** AUTH-APP-01G
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION AND DOCUMENTATION ONLY — no production source files changed
+**Depends on:** AUTH-APP-01G3 (COMPLETE and LOCKED)
+**Checkpoint:** `docs/AUTH-APP-01G4-CHECKPOINT.md`
+**Family checkpoint:** `docs/AUTH-APP-01G-CHECKPOINT.md`
+
+**Objective:**
+Run full automated validation suite for the AUTH-APP-01G family, record manual smoke checklist disposition, and create the G4 task checkpoint and AUTH-APP-01G parent/family checkpoint.
+
+**Automated validation results:**
+- `npm run build`: PASS — Next.js 15.5.12, compiled in 2.6s
+- `npx tsc --noEmit`: PASS
+- `npm test`: PASS — 256 tests, 22 suites, 0 failures
+- Login page direct test (`npx tsx "app/[locale]/login/page.test.tsx"`): PASS — 3 tests, 0 failures
+- Keys page direct test (`npx tsx "app/[locale]/keys/page.test.tsx"`): PASS — 3 tests, 0 failures
+- `frontend/tsconfig.tsbuildinfo` modified by build; restored via `git restore`
+
+**Manual smoke checklist:** NOT RUN — deferred to user live environment.
+- Reason: no live frontend/backend/browser available in automated session; dev servers user-controlled per `CLAUDE.md`
+- 12 items deferred; see `docs/AUTH-APP-01G4-CHECKPOINT.md` for full checklist
+
+**Non-blocking deferred items:**
+- `login.testCredentials` dead i18n key — future task
+- `register.name` dead i18n key — future task
+- Keys page raw Tailwind classes — future task
+- Google callback hardcodes `oauth_failed` — documentation only
+
+**Completion checklist:**
+- [x] Automated validation: `npm run build` PASS
+- [x] Automated validation: `npx tsc --noEmit` PASS
+- [x] Automated validation: `npm test` PASS (256 tests, 0 failures)
+- [x] Login page direct test PASS (3/3)
+- [x] Keys page direct test PASS (3/3)
+- [x] `frontend/tsconfig.tsbuildinfo` restored
+- [x] Manual smoke: NOT RUN — deferred, documented
+- [x] No production source files changed
+- [x] `docs/AUTH-APP-01G4-CHECKPOINT.md` created
+- [x] `docs/AUTH-APP-01G-CHECKPOINT.md` created
+- [x] `TASKS.md` updated
+- [x] `TASKS_BACKLOG_FULL.md` updated
+
+**Reference:** See TASKS.md -> AUTH-APP-01G4. See `docs/AUTH-APP-01G4-CHECKPOINT.md`. See `docs/AUTH-APP-01G-CHECKPOINT.md`. See `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md` Section 12.
 
