@@ -13,7 +13,6 @@ describe('workspace checkpoint create logic', () => {
     };
 
     await createWorkspaceCheckpoint({
-      token: 'token-123',
       sessionId: 'session-abc',
       userId: 'user-xyz',
       description: '   ',
@@ -22,7 +21,6 @@ describe('workspace checkpoint create logic', () => {
 
     assert.equal(url, '/api/sessions/session-abc/checkpoints');
     assert.equal(init?.method, 'POST');
-    assert.equal((init?.headers as Record<string, string>).Authorization, 'Bearer token-123');
     assert.equal((init?.headers as Record<string, string>)['Content-Type'], 'application/json');
     assert.equal(init?.body, JSON.stringify({ userId: 'user-xyz', messageNumber: 0 }));
   });
@@ -35,7 +33,6 @@ describe('workspace checkpoint create logic', () => {
     };
 
     await createWorkspaceCheckpoint({
-      token: 'token-123',
       sessionId: 'session-abc',
       userId: 'user-xyz',
       description: 'Save point before risky change',
@@ -58,7 +55,6 @@ describe('workspace checkpoint create logic', () => {
     await assert.rejects(
       () =>
         createWorkspaceCheckpoint({
-          token: 'token-123',
           sessionId: 'session-abc',
           userId: 'user-xyz',
           fetchImpl,

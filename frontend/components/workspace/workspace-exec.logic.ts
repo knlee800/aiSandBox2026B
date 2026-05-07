@@ -20,7 +20,7 @@ export interface WorkspaceExecState {
 }
 
 interface ExecuteSessionCommandInput {
-  token: string;
+  token?: string;
   sessionId: string;
   command: string;
   fetchImpl?: typeof fetch;
@@ -35,7 +35,6 @@ export async function executeSessionCommand(
     const response = await fetchImpl(`/api/sessions/${input.sessionId}/exec`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${input.token}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ command: input.command }),

@@ -41,23 +41,22 @@ export default function PublicShareDetailPage() {
   }, [projectId]);
 
   async function handleFork(): Promise<void> {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
-      return;
-    }
     setForking(true);
     setError(null);
     setMessage(null);
     try {
-      await forkPublicWorkspaceProject({ token, projectId });
+      await forkPublicWorkspaceProject({ projectId });
       setMessage('Fork created in your private project list.');
     } catch (forkError) {
-      setError(
+      const forkMessage =
         forkError instanceof Error && forkError.message.trim()
           ? forkError.message
-          : 'Failed to fork project.',
-      );
+          : 'Failed to fork project.';
+      if (forkMessage.includes('(401)') || forkMessage.includes('(403)')) {
+        router.push(`/${locale}/login`);
+        return;
+      }
+      setError(forkMessage);
     } finally {
       setForking(false);
     }

@@ -12,7 +12,7 @@ export type ProjectAutosaveResult =
   | { status: 'failed' };
 
 export async function attemptProjectAutosave(args: {
-  token: string;
+  token?: string;
   sessionId: string;
   projectId: string;
   source?: ProjectScopedSnapshotSource;
@@ -34,7 +34,6 @@ export async function attemptProjectAutosave(args: {
 
   try {
     const savedSnapshot = await saveWorkspaceSnapshot({
-      token: args.token,
       sessionId: args.sessionId,
       label: buildProjectScopedSnapshotLabel(args.projectId, args.source, args.hint),
       fetchImpl: args.fetchImpl,

@@ -13,7 +13,6 @@ describe('workspace checkpoint revert logic', () => {
     };
 
     await revertWorkspaceCheckpoint({
-      token: 'token-123',
       sessionId: 'session-abc',
       userId: 'user-xyz',
       commitHash: 'abc123def456',
@@ -22,7 +21,6 @@ describe('workspace checkpoint revert logic', () => {
 
     assert.equal(url, '/api/git/session-abc/revert');
     assert.equal(init?.method, 'POST');
-    assert.equal((init?.headers as Record<string, string>).Authorization, 'Bearer token-123');
     assert.equal((init?.headers as Record<string, string>)['Content-Type'], 'application/json');
     assert.equal(
       init?.body,
@@ -39,7 +37,6 @@ describe('workspace checkpoint revert logic', () => {
     await assert.rejects(
       () =>
         revertWorkspaceCheckpoint({
-          token: 'token-123',
           sessionId: 'session-abc',
           userId: 'user-xyz',
           commitHash: 'abc123def456',

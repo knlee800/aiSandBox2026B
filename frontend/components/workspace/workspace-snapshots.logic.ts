@@ -7,32 +7,32 @@ export interface WorkspaceSnapshotSummary {
 }
 
 interface SaveSnapshotArgs {
-  token: string;
+  token?: string;
   sessionId: string;
   label?: string;
   fetchImpl?: typeof fetch;
 }
 
 interface RestoreSnapshotArgs {
-  token: string;
+  token?: string;
   sessionId: string;
   snapshotId: string;
   fetchImpl?: typeof fetch;
 }
 
 interface LoadSnapshotsArgs {
-  token: string;
+  token?: string;
   fetchImpl?: typeof fetch;
 }
 
 interface ExportWorkspaceArchiveArgs {
-  token: string;
+  token?: string;
   sessionId: string;
   fetchImpl?: typeof fetch;
 }
 
 interface ImportWorkspaceArchiveArgs {
-  token: string;
+  token?: string;
   sessionId: string;
   archiveFile: File;
   fetchImpl?: typeof fetch;
@@ -244,7 +244,6 @@ export async function saveWorkspaceSnapshot(
     {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${args.token}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -269,9 +268,6 @@ export async function loadWorkspaceSnapshots(
   args: LoadSnapshotsArgs,
 ): Promise<WorkspaceSnapshotSummary[]> {
   const response = await (args.fetchImpl ?? fetch)('/api/users/me/snapshots', {
-    headers: {
-      Authorization: `Bearer ${args.token}`,
-    },
   });
 
   if (!response.ok) {
@@ -295,7 +291,6 @@ export async function restoreWorkspaceSnapshot(
     {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${args.token}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -321,9 +316,6 @@ export async function exportWorkspaceArchive(
     `/api/sessions/${args.sessionId}/export`,
     {
       method: 'GET',
-      headers: {
-        Authorization: `Bearer ${args.token}`,
-      },
     },
   );
 
@@ -348,9 +340,6 @@ export async function importWorkspaceArchive(
     `/api/sessions/${args.sessionId}/import`,
     {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${args.token}`,
-      },
       body: formData,
     },
   );

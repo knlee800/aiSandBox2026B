@@ -12216,9 +12216,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## AUTH — aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-APP-01C1A COMPLETE — AUTH-APP-01C1B NEXT
+**Family status:** ACTIVE — AUTH-APP-01C1B COMPLETE — AUTH-APP-01D NEXT
 
-**Current stage:** AUTH-APP-01C1B (PLANNED)
+**Current stage:** AUTH-APP-01D (PLANNED — pending stage-start)
 
 **Master spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Reference master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -12235,7 +12235,7 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
 1. AUTH-APP-01A — Auth Architecture & Implementation Spec (COMPLETE and LOCKED)
 2. AUTH-APP-01B — Database / Schema Migrations (COMPLETE and LOCKED)
 3. AUTH-APP-01C1A — Backend Cookie Session Foundation (COMPLETE and LOCKED)
-4. AUTH-APP-01C1B — Frontend localStorage/Bearer Migration (PLANNED — NEXT)
+4. AUTH-APP-01C1B — Frontend localStorage/Bearer Migration (COMPLETE and LOCKED)
 5. AUTH-APP-01C2 — Email Verification / Password Reset / Rate Limiting (PLANNED — BLOCKED on email provider)
 6. AUTH-APP-01D — Google OAuth (pending — depends on C1A; preferably after C1B)
 7. AUTH-APP-01E — Apple OAuth (pending)
@@ -12334,9 +12334,11 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
 
 #### AUTH-APP-01C1B: Frontend localStorage / Bearer Migration
 
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED
+**Completed:** 2026-05-06
+**Checkpoint:** `docs/AUTH-APP-01C1B-CHECKPOINT.md`
 **Source:** AUTH-APP-01C1 stage-start (scope split; frontend surface isolated here)
-**Depends on:** AUTH-APP-01C1A (COMPLETE)
+**Depends on:** AUTH-APP-01C1A (COMPLETE and LOCKED)
 
 **Bounded scope:**
 - Remove `localStorage.setItem('access_token', ...)` and `setItem('userId', ...)` from `login/page.tsx`
@@ -12355,16 +12357,26 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
 - No rate limiting
 - No auth UX redesign beyond removing localStorage + adding logout fetch
 
-**Acceptance checks:**
-- Zero `localStorage.getItem/setItem/removeItem('access_token')` in production frontend code
-- Zero `localStorage.getItem/setItem/removeItem('userId')` in production frontend code
-- Zero `Authorization: Bearer` in browser-side fetch calls
-- All workspace logic function signatures no longer accept `token`
-- All affected test files updated and passing
-- `npx tsc --noEmit` passes in `frontend`
-- `npm run build` passes in `frontend`
+**Acceptance checks (all met):**
+- [x] Zero `localStorage.getItem/setItem/removeItem('access_token')` in production frontend code
+- [x] Zero `localStorage.getItem/setItem/removeItem('userId')` in production frontend code
+- [x] Zero `Authorization: Bearer ${token}` in browser-side session-auth fetch calls
+- [x] All workspace logic function signatures no longer require `token`
+- [x] All affected test files updated and passing
+- [x] `npx tsc --noEmit` passes in `frontend`
+- [x] `npm run build` passes in `frontend`
+- [x] `npm test` passes in `frontend`
+- [x] No backend files changed
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01C1B. See `docs/AUTH-APP-01-SPEC.md` Section 3.
+**Validation:**
+- `npx tsc --noEmit`: PASS
+- `npm test`: PASS
+- `npm run build`: PASS
+- ReadLints: PASS — no linter errors on touched files
+- Safety grep: zero matches for `access_token` and `Bearer ${token}`
+- `DRIVER_API_KEY` bearer headers preserved
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01C1B. See `docs/AUTH-APP-01C1B-CHECKPOINT.md`.
 
 ---
 

@@ -30,7 +30,6 @@ describe('workspace-workspaces.logic', () => {
     };
 
     const workspaces = await loadWorkspaces({
-      token: 'token',
       fetchImpl: fetchImpl as typeof fetch,
     });
 
@@ -58,7 +57,6 @@ describe('workspace-workspaces.logic', () => {
     };
 
     const workspace = await loadWorkspace({
-      token: 'token',
       workspaceId: 'workspace-2',
       fetchImpl: fetchImpl as typeof fetch,
     });
@@ -86,7 +84,6 @@ describe('workspace-workspaces.logic', () => {
     };
 
     const workspace = await createWorkspace({
-      token: 'token',
       name: ' Design ',
       fetchImpl: fetchImpl as typeof fetch,
     });
@@ -115,7 +112,6 @@ describe('workspace-workspaces.logic', () => {
     };
 
     const workspace = await updateWorkspace({
-      token: 'token',
       workspaceId: 'workspace-2',
       name: ' Renamed Workspace ',
       fetchImpl: fetchImpl as typeof fetch,
@@ -134,7 +130,6 @@ describe('workspace-workspaces.logic', () => {
     };
 
     const result = await deleteWorkspace({
-      token: 'token',
       workspaceId: 'workspace-2',
       fetchImpl: fetchImpl as typeof fetch,
     });

@@ -35,7 +35,7 @@ export interface WorkspaceSearchResults {
 export type WorkspaceFileSaveState = 'clean' | 'dirty' | 'saving' | 'saved' | 'save-error';
 
 interface SessionFileRequestArgs {
-  token: string;
+  token?: string;
   sessionId: string;
   fetchImpl?: typeof fetch;
 }
@@ -59,9 +59,6 @@ export async function listWorkspaceDirectory(
     `/api/sessions/${encodeURIComponent(args.sessionId)}/files/list?${query.toString()}`,
     {
       method: 'GET',
-      headers: {
-        Authorization: `Bearer ${args.token}`,
-      },
     },
   );
 
@@ -79,7 +76,6 @@ export async function readWorkspaceFile(
   const response = await fetchImpl(`/api/sessions/${encodeURIComponent(args.sessionId)}/files/read`, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${args.token}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ path: args.filePath }),
@@ -99,7 +95,6 @@ export async function writeWorkspaceFile(
   const response = await fetchImpl(`/api/sessions/${encodeURIComponent(args.sessionId)}/files/write`, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${args.token}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -120,7 +115,6 @@ export async function deleteWorkspaceFile(
   const response = await fetchImpl(`/api/sessions/${encodeURIComponent(args.sessionId)}/files/delete`, {
     method: 'DELETE',
     headers: {
-      Authorization: `Bearer ${args.token}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -152,7 +146,6 @@ export async function searchWorkspaceFiles(
   const response = await fetchImpl(`/api/sessions/${encodeURIComponent(args.sessionId)}/files/search`, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${args.token}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -172,7 +165,6 @@ export async function loadWorkspaceFileTree(
 ): Promise<WorkspaceFileNode[]> {
   const buildTreeForPath = async (directoryPath: string): Promise<WorkspaceFileNode[]> => {
     const entries = await listWorkspaceDirectory({
-      token: args.token,
       sessionId: args.sessionId,
       directoryPath,
       fetchImpl: args.fetchImpl,

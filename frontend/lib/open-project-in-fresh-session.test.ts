@@ -50,7 +50,6 @@ describe('open-project-in-fresh-session', () => {
     };
 
     const result = await openProjectInFreshSession({
-      token: 'token',
       projectId: 'project-1',
       existingSessions: [
         {
@@ -119,7 +118,6 @@ describe('open-project-in-fresh-session', () => {
     };
 
     const result = await openProjectInFreshSession({
-      token: 'token',
       projectId: 'project-1',
       fetchImpl: fetchImpl as typeof fetch,
     });
@@ -170,7 +168,6 @@ describe('open-project-in-fresh-session', () => {
     };
 
     const result = await openProjectInFreshSession({
-      token: 'token',
       projectId: 'project-1',
       fetchImpl: fetchImpl as typeof fetch,
     });
@@ -217,7 +214,6 @@ describe('open-project-in-fresh-session', () => {
     };
 
     const result = await openProjectInFreshSession({
-      token: 'token',
       projectId: 'project-1',
       existingSessions: [
         {
@@ -289,7 +285,6 @@ describe('open-project-in-fresh-session', () => {
 
     let resolved = false;
     const openPromise = openProjectInFreshSession({
-      token: 'token',
       projectId: 'project-1',
       fetchImpl: fetchImpl as typeof fetch,
     }).then(() => {
@@ -339,7 +334,6 @@ describe('open-project-in-fresh-session', () => {
     await assert.rejects(
       () =>
         openProjectInFreshSession({
-          token: 'token',
           projectId: 'project-1',
           fetchImpl: fetchImpl as typeof fetch,
         }),
@@ -383,7 +377,6 @@ describe('open-project-in-fresh-session', () => {
     await assert.rejects(
       () =>
         openProjectInFreshSession({
-          token: 'token',
           projectId: 'project-1',
           fetchImpl: fetchImpl as typeof fetch,
         }),
@@ -415,7 +408,6 @@ describe('open-project-in-fresh-session', () => {
     };
 
     const result = await openProjectInFreshSession({
-      token: 'token',
       projectId: 'project-1',
       snapshotId: ' snapshot-explicit ',
       fetchImpl: fetchImpl as typeof fetch,

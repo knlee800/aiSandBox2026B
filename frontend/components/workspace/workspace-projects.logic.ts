@@ -29,27 +29,27 @@ export interface WorkspaceForkedProjectSummary {
 }
 
 interface LoadProjectsArgs {
-  token: string;
+  token?: string;
   workspaceId?: string;
   fetchImpl?: typeof fetch;
 }
 
 interface CreateProjectArgs {
-  token: string;
+  token?: string;
   name: string;
   workspaceId?: string;
   fetchImpl?: typeof fetch;
 }
 
 interface MoveProjectArgs {
-  token: string;
+  token?: string;
   projectId: string;
   targetWorkspaceId: string;
   fetchImpl?: typeof fetch;
 }
 
 interface OpenProjectArgs {
-  token: string;
+  token?: string;
   projectId: string;
   sessionId: string;
   snapshotId?: string;
@@ -57,21 +57,21 @@ interface OpenProjectArgs {
 }
 
 interface AssociateProjectSessionArgs {
-  token: string;
+  token?: string;
   projectId: string;
   sessionId: string;
   fetchImpl?: typeof fetch;
 }
 
 interface UpdateProjectVisibilityArgs {
-  token: string;
+  token?: string;
   projectId: string;
   visibility: 'private' | 'public';
   fetchImpl?: typeof fetch;
 }
 
 interface ForkPublicProjectArgs {
-  token: string;
+  token?: string;
   projectId: string;
   fetchImpl?: typeof fetch;
 }
@@ -92,9 +92,6 @@ export async function loadWorkspaceProjects(
     : '/api/projects';
   const response = await (args.fetchImpl ?? fetch)(endpoint, {
     method: 'GET',
-    headers: {
-      Authorization: `Bearer ${args.token}`,
-    },
   });
 
   if (!response.ok) {
@@ -115,7 +112,6 @@ export async function createWorkspaceProject(
   const response = await (args.fetchImpl ?? fetch)('/api/projects', {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${args.token}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -140,7 +136,6 @@ export async function moveWorkspaceProject(
   const response = await (args.fetchImpl ?? fetch)(`/api/projects/${args.projectId}/workspace`, {
     method: 'PATCH',
     headers: {
-      Authorization: `Bearer ${args.token}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ targetWorkspaceId: args.targetWorkspaceId.trim() }),
@@ -162,7 +157,6 @@ export async function updateWorkspaceProjectVisibility(
   const response = await (args.fetchImpl ?? fetch)(`/api/projects/${args.projectId}/visibility`, {
     method: 'PATCH',
     headers: {
-      Authorization: `Bearer ${args.token}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ visibility: args.visibility }),
@@ -215,16 +209,15 @@ export async function forkPublicWorkspaceProject(
 ): Promise<WorkspaceForkedProjectSummary> {
   const response = await (args.fetchImpl ?? fetch)(`/api/projects/public/${args.projectId}/fork`, {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${args.token}`,
-    },
   });
 
   if (!response.ok) {
     const payload = (await response.json().catch(() => null)) as
       | { message?: string }
       | null;
-    throw new Error(trimMessage(payload?.message, 'Failed to fork public project.'));
+    throw new Error(
+      trimMessage(payload?.message, `Failed to fork public project (${response.status}).`),
+    );
   }
   return (await response.json()) as WorkspaceForkedProjectSummary;
 }
@@ -235,7 +228,6 @@ export async function openWorkspaceProject(
   const response = await (args.fetchImpl ?? fetch)(`/api/projects/${args.projectId}/open`, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${args.token}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -265,9 +257,6 @@ export async function associateWorkspaceProjectSession(
     `/api/projects/${args.projectId}/sessions/${args.sessionId}`,
     {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${args.token}`,
-      },
     },
   );
 

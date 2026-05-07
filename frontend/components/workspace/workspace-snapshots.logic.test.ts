@@ -32,7 +32,6 @@ describe('workspace-snapshots.logic', () => {
     };
 
     const result = await saveWorkspaceSnapshot({
-      token: 'token',
       sessionId: 'session-1',
       label: ' first ',
       fetchImpl: fetchImpl as typeof fetch,
@@ -60,7 +59,6 @@ describe('workspace-snapshots.logic', () => {
       );
 
     const result = await loadWorkspaceSnapshots({
-      token: 'token',
       fetchImpl: fetchImpl as typeof fetch,
     });
 
@@ -76,7 +74,6 @@ describe('workspace-snapshots.logic', () => {
     };
 
     await restoreWorkspaceSnapshot({
-      token: 'token',
       sessionId: 'session-1',
       snapshotId: 'snapshot-1',
       fetchImpl: fetchImpl as typeof fetch,
@@ -97,7 +94,6 @@ describe('workspace-snapshots.logic', () => {
     };
 
     const blob = await exportWorkspaceArchive({
-      token: 'token',
       sessionId: 'session-1',
       fetchImpl: fetchImpl as typeof fetch,
     });
@@ -117,7 +113,6 @@ describe('workspace-snapshots.logic', () => {
 
     const file = new File(['hello'], 'workspace.zip', { type: 'application/zip' });
     const result = await importWorkspaceArchive({
-      token: 'token',
       sessionId: 'session-1',
       archiveFile: file,
       fetchImpl: fetchImpl as typeof fetch,

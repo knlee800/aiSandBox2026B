@@ -53,24 +53,14 @@ export default function ApiKeysPage() {
   const [revokingKeyId, setRevokingKeyId] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
-      return;
-    }
-
     loadKeys();
   }, []);
 
   const loadKeys = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('access_token');
       const response = await fetch('/api/keys', {
         method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
       });
 
       if (!response.ok) {
@@ -102,14 +92,12 @@ export default function ApiKeysPage() {
 
     setCreating(true);
     try {
-      const token = localStorage.getItem('access_token');
       const scopes = scopesInput.split(',').map(s => s.trim()).filter(s => s);
 
       const response = await fetch('/api/keys', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ scopes }),
       });
@@ -142,12 +130,8 @@ export default function ApiKeysPage() {
   const handleRevokeKey = async (keyId: string) => {
     setRevokingKeyId(keyId);
     try {
-      const token = localStorage.getItem('access_token');
       const response = await fetch(`/api/keys/${keyId}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
       });
 
       if (!response.ok) {

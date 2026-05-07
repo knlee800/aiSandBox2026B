@@ -24,7 +24,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await axios.post('/api/auth/login', {
+      await axios.post('/api/auth/login', {
         email,
         password,
       }, {
@@ -32,13 +32,6 @@ export default function LoginPage() {
           'Accept-Language': locale,
         },
       });
-
-      if (!response.data.access_token) {
-        throw new Error('Login response missing access_token');
-      }
-
-      localStorage.setItem('access_token', response.data.access_token);
-      localStorage.setItem('userId', response.data.user.id);
       router.push(`/${locale}/app`);
     } catch (err: any) {
       setError(err.response?.data?.message || t('loginFailed'));

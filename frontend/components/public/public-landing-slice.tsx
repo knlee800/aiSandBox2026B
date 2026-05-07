@@ -44,20 +44,22 @@ export default function PublicLandingSlice(props: PublicLandingSliceProps) {
   const tLogin = useTranslations('login');
   const [isHydrating, setIsHydrating] = useState(true);
   const [initError, setInitError] = useState<string | null>(null);
-  const [hasAccessToken, setHasAccessToken] = useState(false);
+  const [hasSession, setHasSession] = useState(false);
   const [prompt, setPrompt] = useState('');
 
   useEffect(() => {
-    try {
-      const token = window.localStorage.getItem('access_token');
-      setHasAccessToken(Boolean(token));
-      setInitError(null);
-    } catch {
-      setInitError('Unable to access browser storage.');
-      setHasAccessToken(false);
-    } finally {
-      setIsHydrating(false);
-    }
+    void (async () => {
+      try {
+        const response = await fetch('/api/auth/me');
+        setHasSession(response.ok);
+        setInitError(null);
+      } catch {
+        setInitError('Unable to determine current sign-in state.');
+        setHasSession(false);
+      } finally {
+        setIsHydrating(false);
+      }
+    })();
   }, []);
 
   const state = useMemo(
@@ -65,9 +67,9 @@ export default function PublicLandingSlice(props: PublicLandingSliceProps) {
       computePublicLandingState({
         isHydrating,
         initError,
-        hasAccessToken,
+        hasAccessToken: hasSession,
       }),
-    [hasAccessToken, initError, isHydrating],
+    [hasSession, initError, isHydrating],
   );
 
   const handlePromptSubmit = () => {

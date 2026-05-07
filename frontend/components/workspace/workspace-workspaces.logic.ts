@@ -9,31 +9,31 @@ export interface Workspace {
 }
 
 export interface LoadWorkspacesArgs {
-  token: string;
+  token?: string;
   fetchImpl?: typeof fetch;
 }
 
 export interface LoadWorkspaceArgs {
-  token: string;
+  token?: string;
   workspaceId: string;
   fetchImpl?: typeof fetch;
 }
 
 export interface CreateWorkspaceArgs {
-  token: string;
+  token?: string;
   name: string;
   fetchImpl?: typeof fetch;
 }
 
 export interface UpdateWorkspaceArgs {
-  token: string;
+  token?: string;
   workspaceId: string;
   name: string;
   fetchImpl?: typeof fetch;
 }
 
 export interface DeleteWorkspaceArgs {
-  token: string;
+  token?: string;
   workspaceId: string;
   fetchImpl?: typeof fetch;
 }
@@ -48,9 +48,6 @@ function trimMessage(raw: unknown, fallback: string): string {
 export async function loadWorkspaces(args: LoadWorkspacesArgs): Promise<Workspace[]> {
   const response = await (args.fetchImpl ?? fetch)('/api/workspaces', {
     method: 'GET',
-    headers: {
-      Authorization: `Bearer ${args.token}`,
-    },
   });
 
   if (!response.ok) {
@@ -67,9 +64,6 @@ export async function loadWorkspaces(args: LoadWorkspacesArgs): Promise<Workspac
 export async function loadWorkspace(args: LoadWorkspaceArgs): Promise<Workspace> {
   const response = await (args.fetchImpl ?? fetch)(`/api/workspaces/${args.workspaceId}`, {
     method: 'GET',
-    headers: {
-      Authorization: `Bearer ${args.token}`,
-    },
   });
 
   if (!response.ok) {
@@ -86,7 +80,6 @@ export async function createWorkspace(args: CreateWorkspaceArgs): Promise<Worksp
   const response = await (args.fetchImpl ?? fetch)('/api/workspaces', {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${args.token}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ name: args.name.trim() }),
@@ -106,7 +99,6 @@ export async function updateWorkspace(args: UpdateWorkspaceArgs): Promise<Worksp
   const response = await (args.fetchImpl ?? fetch)(`/api/workspaces/${args.workspaceId}`, {
     method: 'PATCH',
     headers: {
-      Authorization: `Bearer ${args.token}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ name: args.name.trim() }),
@@ -125,9 +117,6 @@ export async function updateWorkspace(args: UpdateWorkspaceArgs): Promise<Worksp
 export async function deleteWorkspace(args: DeleteWorkspaceArgs): Promise<{ deleted: true }> {
   const response = await (args.fetchImpl ?? fetch)(`/api/workspaces/${args.workspaceId}`, {
     method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${args.token}`,
-    },
   });
 
   if (!response.ok) {

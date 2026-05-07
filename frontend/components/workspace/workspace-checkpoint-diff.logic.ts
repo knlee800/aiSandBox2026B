@@ -18,7 +18,7 @@ export interface WorkspaceCheckpointDiffResponse {
 }
 
 interface LoadWorkspaceCheckpointDiffArgs {
-  token: string;
+  token?: string;
   sessionId: string;
   commitHash: string;
   fetchImpl?: typeof fetch;
@@ -32,9 +32,6 @@ export async function loadWorkspaceCheckpointDiff(
     `/api/sessions/${encodeURIComponent(args.sessionId)}/checkpoints/${encodeURIComponent(args.commitHash)}/diff`,
     {
       method: 'GET',
-      headers: {
-        Authorization: `Bearer ${args.token}`,
-      },
     },
   );
 

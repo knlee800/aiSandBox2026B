@@ -12,7 +12,6 @@ import {
 } from '../components/workspace/workspace-snapshots.logic';
 
 export interface OpenProjectInFreshSessionArgs {
-  token: string;
   projectId: string;
   existingSessions?: WorkspaceShellSession[];
   snapshotId?: string;
@@ -37,14 +36,11 @@ function trimMessage(raw: unknown, fallback: string): string {
 }
 
 async function createWorkspaceSession(args: {
-  token: string;
+  token?: string;
   fetchImpl?: typeof fetch;
 }): Promise<CreatedWorkspaceSession> {
   const response = await (args.fetchImpl ?? fetch)('/api/sessions', {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${args.token}`,
-    },
   });
 
   if (!response.ok) {
@@ -71,7 +67,6 @@ export async function openProjectInFreshSession(
   let snapshotIdToOpen = args.snapshotId?.trim() || undefined;
   if (!snapshotIdToOpen) {
     const freshSnapshots = await loadWorkspaceSnapshots({
-      token: args.token,
       fetchImpl: args.fetchImpl,
     });
     snapshotIdToOpen =
@@ -89,14 +84,12 @@ export async function openProjectInFreshSession(
     ? reusableSession.id
     : (
         await createWorkspaceSession({
-          token: args.token,
           fetchImpl: args.fetchImpl,
         })
       ).id;
 
   if (snapshotIdToOpen) {
     return await openWorkspaceProject({
-      token: args.token,
       projectId,
       sessionId,
       snapshotId: snapshotIdToOpen,
@@ -105,7 +98,6 @@ export async function openProjectInFreshSession(
   }
 
   await associateWorkspaceProjectSession({
-    token: args.token,
     projectId,
     sessionId,
     fetchImpl: args.fetchImpl,

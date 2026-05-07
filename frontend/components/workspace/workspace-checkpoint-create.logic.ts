@@ -1,7 +1,7 @@
 export type WorkspaceCheckpointCreateState = 'idle' | 'creating' | 'created' | 'create-error';
 
 interface CreateWorkspaceCheckpointArgs {
-  token: string;
+  token?: string;
   sessionId: string;
   userId: string;
   description?: string;
@@ -33,7 +33,6 @@ export async function createWorkspaceCheckpoint(
     {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${args.token}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(body),

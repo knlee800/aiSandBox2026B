@@ -33,7 +33,6 @@ describe('workspace-projects.logic', () => {
     };
 
     const projects = await loadWorkspaceProjects({
-      token: 'token',
       fetchImpl: fetchImpl as typeof fetch,
     });
 
@@ -50,7 +49,6 @@ describe('workspace-projects.logic', () => {
     };
 
     await loadWorkspaceProjects({
-      token: 'token',
       workspaceId: ' workspace-2 ',
       fetchImpl: fetchImpl as typeof fetch,
     });
@@ -77,7 +75,6 @@ describe('workspace-projects.logic', () => {
     };
 
     const project = await createWorkspaceProject({
-      token: 'token',
       name: ' New Project ',
       workspaceId: ' workspace-2 ',
       fetchImpl: fetchImpl as typeof fetch,
@@ -111,7 +108,6 @@ describe('workspace-projects.logic', () => {
     };
 
     await createWorkspaceProject({
-      token: 'token',
       name: ' Default Workspace Project ',
       fetchImpl: fetchImpl as typeof fetch,
     });
@@ -140,7 +136,6 @@ describe('workspace-projects.logic', () => {
     };
 
     const project = await moveWorkspaceProject({
-      token: 'token',
       projectId: 'project-1',
       targetWorkspaceId: ' workspace-2 ',
       fetchImpl: fetchImpl as typeof fetch,
@@ -169,7 +164,6 @@ describe('workspace-projects.logic', () => {
       );
 
     const updated = await updateWorkspaceProjectVisibility({
-      token: 'token',
       projectId: 'project-1',
       visibility: 'public',
       fetchImpl: fetchImpl as typeof fetch,
@@ -192,7 +186,6 @@ describe('workspace-projects.logic', () => {
     };
 
     const result = await openWorkspaceProject({
-      token: 'token',
       projectId: 'project-1',
       sessionId: 'session-1',
       snapshotId: 'snapshot-1',
@@ -222,7 +215,6 @@ describe('workspace-projects.logic', () => {
     };
 
     const result = await associateWorkspaceProjectSession({
-      token: 'token',
       projectId: 'project-1',
       sessionId: 'session-1',
       fetchImpl: fetchImpl as typeof fetch,
@@ -287,7 +279,6 @@ describe('workspace-projects.logic', () => {
       );
 
     const forked = await forkPublicWorkspaceProject({
-      token: 'token',
       projectId: 'project-public-1',
       fetchImpl: fetchImpl as typeof fetch,
     });

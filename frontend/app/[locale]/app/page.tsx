@@ -493,7 +493,6 @@ function findExplicitPromptNamedWorkspaceFilePaths(
 
 async function loadNamedWorkspacePromptFileContents(args: {
   prompt: string;
-  token: string;
   sessionId: string | null;
   workspaceFilePaths: string[];
 }): Promise<WorkspacePromptNamedFileContent[]> {
@@ -516,7 +515,6 @@ async function loadNamedWorkspacePromptFileContents(args: {
     matchedPaths.map(async (matchedPath) => {
       try {
         const fileResponse = await readWorkspaceFile({
-          token: args.token,
           sessionId: args.sessionId as string,
           filePath: matchedPath,
         });
@@ -548,7 +546,6 @@ async function loadNamedWorkspacePromptFileContents(args: {
 
 async function loadWorkspacePromptSearchResults(args: {
   prompt: string;
-  token: string;
   sessionId: string | null;
 }): Promise<WorkspaceSearchResults | undefined> {
   if (!args.sessionId) {
@@ -562,7 +559,6 @@ async function loadWorkspacePromptSearchResults(args: {
 
   try {
     return await searchWorkspaceFiles({
-      token: args.token,
       sessionId: args.sessionId,
       query: searchQuery,
     });
@@ -574,7 +570,6 @@ async function loadWorkspacePromptSearchResults(args: {
 
 async function buildWorkspacePromptContext(args: {
   prompt: string;
-  token: string;
   sessionId: string | null;
   workspaceFileTree: WorkspaceFileNode[];
   selectedFilePath: string | null;
@@ -603,13 +598,11 @@ async function buildWorkspacePromptContext(args: {
       : undefined;
   const namedFileContents = await loadNamedWorkspacePromptFileContents({
     prompt: args.prompt,
-    token: args.token,
     sessionId: args.sessionId,
     workspaceFilePaths: allWorkspaceFilePaths,
   });
   const searchResults = await loadWorkspacePromptSearchResults({
     prompt: args.prompt,
-    token: args.token,
     sessionId: args.sessionId,
   });
   const normalizedProjectName =
@@ -1027,8 +1020,6 @@ export default function AppPage() {
   const checkpointLiveOpenRequestIdRef = useRef(0);
 
   function handleWorkspaceUnauthorizedAccess(): void {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('userId');
     setAuthLoading(true);
     setUserId(null);
     setWorkspaces([]);
@@ -1046,20 +1037,10 @@ export default function AppPage() {
   }
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    const storedUserId = localStorage.getItem('userId');
     const storedHiddenSessionIds = parseHiddenSessionIds(
       localStorage.getItem(HIDDEN_UNUSABLE_SESSIONS_STORAGE_KEY),
     );
-
-    if (!token) {
-      router.push(`/${locale}/login`);
-      return;
-    }
-
-    setUserId(storedUserId);
     setHiddenSessionIds(storedHiddenSessionIds);
-    setAuthLoading(false);
     if (PROJECT_FIRST_UX) {
       coldMountSeededSessionIdRef.current =
         sessionStorage.getItem(TAB_SELECTED_SESSION_STORAGE_KEY) || null;
@@ -1103,12 +1084,31 @@ export default function AppPage() {
       coldMountSeededWorkspaceIdRef.current = null;
       coldMountEditorDraftRef.current = null;
     }
-    void loadSessions(token);
-    void loadDashboardSlice(token);
-    if (PROJECT_FIRST_UX) {
-      void loadWorkspacesForUser(token);
-      void loadPublicWorkspaceProjectsList();
-    }
+
+    void (async () => {
+      try {
+        const meResponse = await fetch('/api/auth/me');
+        if (!meResponse.ok) {
+          router.push(`/${locale}/login`);
+          return;
+        }
+        const me = (await meResponse.json()) as { id?: unknown };
+        if (typeof me.id !== 'string' || !me.id.trim()) {
+          router.push(`/${locale}/login`);
+          return;
+        }
+        setUserId(me.id);
+        setAuthLoading(false);
+        void loadSessions();
+        void loadDashboardSlice();
+        if (PROJECT_FIRST_UX) {
+          void loadWorkspacesForUser();
+          void loadPublicWorkspaceProjectsList();
+        }
+      } catch {
+        router.push(`/${locale}/login`);
+      }
+    })();
   }, [locale, router]);
 
   useEffect(() => {
@@ -1116,8 +1116,7 @@ export default function AppPage() {
       return;
     }
 
-    const token = localStorage.getItem('access_token');
-    if (!token) {
+    if (!userId) {
       return;
     }
 
@@ -1144,7 +1143,6 @@ export default function AppPage() {
     void (async () => {
       const autosaveAttemptedAt = Date.now();
       const autosaveResult = await attemptProjectAutosave({
-        token,
         sessionId: selectedSessionIdAtExpiryWarning,
         projectId: selectedProjectId,
         source: 'expiry',
@@ -1153,10 +1151,10 @@ export default function AppPage() {
       });
       if (autosaveResult.status === 'saved') {
         lastProjectAutosaveAtRef.current = autosaveAttemptedAt;
-        void loadWorkspaceSnapshotsForUser(token);
+        void loadWorkspaceSnapshotsForUser();
       }
     })();
-  }, [selectedProjectId, selectedSessionId, sessions]);
+  }, [selectedProjectId, selectedSessionId, sessions, userId]);
 
   useEffect(() => {
     selectedSessionIdRef.current = selectedSessionId;
@@ -1255,8 +1253,7 @@ export default function AppPage() {
     if (projectOpenInProgressRef.current) {
       return;
     }
-    const token = localStorage.getItem('access_token');
-    if (!token) {
+    if (!userId) {
       return;
     }
 
@@ -1311,11 +1308,11 @@ export default function AppPage() {
       return;
     }
 
-    void loadCheckpoints(token, selectedSessionId);
-    void loadWorkspaceSnapshotsForUser(token);
+    void loadCheckpoints(selectedSessionId);
+    void loadWorkspaceSnapshotsForUser();
     void loadPublicWorkspaceProjectsList();
-    void loadDashboardSlice(token);
-  }, [selectedSessionId]);
+    void loadDashboardSlice();
+  }, [selectedSessionId, userId]);
 
   useEffect(() => {
     if (!PROJECT_FIRST_UX) {
@@ -1326,13 +1323,12 @@ export default function AppPage() {
       return;
     }
 
-    const token = localStorage.getItem('access_token');
-    if (!token) {
+    if (!userId) {
       return;
     }
 
-    void loadWorkspaceProjectsForUser(token, selectedWorkspaceId);
-  }, [selectedSessionId, selectedWorkspaceId]);
+    void loadWorkspaceProjectsForUser(selectedWorkspaceId);
+  }, [selectedSessionId, selectedWorkspaceId, userId]);
 
   useEffect(() => {
     if (!chatExecutionId || (chatRequestState !== 'queued' && chatRequestState !== 'running')) {
@@ -1409,14 +1405,12 @@ export default function AppPage() {
       localStorage.getItem(getChatThreadStorageKey(selectedSessionId)),
     );
     setChatThreadMessages(restoredMessages);
-    const token = localStorage.getItem('access_token');
-    if (!token) {
+    if (!userId) {
       return;
     }
     void (async () => {
       try {
         const backendMessages = await loadSessionChatMessagesFromBackend({
-          token,
           sessionId: selectedSessionId,
         });
         if (selectedSessionIdRef.current !== selectedSessionId) {
@@ -1429,7 +1423,7 @@ export default function AppPage() {
         // Keep localStorage-backed thread as fallback when backend load fails.
       }
     })();
-  }, [selectedSessionId]);
+  }, [selectedSessionId, userId]);
 
   useEffect(() => {
     if (!selectedSessionId) {
@@ -1467,8 +1461,7 @@ export default function AppPage() {
   }, [chatExecutionFileActionStates]);
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
+    if (!userId) {
       return;
     }
 
@@ -1478,12 +1471,11 @@ export default function AppPage() {
       return;
     }
 
-    void refreshPreviewForSession(token, selectedSessionId);
-  }, [selectedSessionId]);
+    void refreshPreviewForSession(selectedSessionId);
+  }, [selectedSessionId, userId]);
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
+    if (!userId) {
       return;
     }
 
@@ -1501,10 +1493,10 @@ export default function AppPage() {
       return;
     }
 
-    void loadWorkspaceFilesForSession(token, selectedSessionId);
-  }, [selectedSessionId]);
+    void loadWorkspaceFilesForSession(selectedSessionId);
+  }, [selectedSessionId, userId]);
 
-  async function loadSessions(token: string): Promise<WorkspaceShellSession[]> {
+  async function loadSessions(): Promise<WorkspaceShellSession[]> {
     setIsLoadingSessions(true);
     setSessionError(null);
 
@@ -1514,9 +1506,6 @@ export default function AppPage() {
       try {
         response = await fetch('/api/sessions?includeTerminated=true', {
           method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
         });
       } catch (fetchError) {
         const detail = fetchError instanceof Error ? fetchError.message : String(fetchError);
@@ -1628,12 +1617,11 @@ export default function AppPage() {
   }
 
   async function loadWorkspacesForUser(
-    token: string,
     preferredSelectedWorkspaceId?: string | null,
   ): Promise<void> {
     setProjectActionError(null);
     try {
-      const loadedWorkspaces = await loadWorkspaces({ token });
+      const loadedWorkspaces = await loadWorkspaces({});
       applyLoadedWorkspaces(loadedWorkspaces, preferredSelectedWorkspaceId);
     } catch (error) {
       setWorkspaces([]);
@@ -1652,9 +1640,7 @@ export default function AppPage() {
   }
 
   async function handleCreateSession(): Promise<void> {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
+    if (!userId) {
       return;
     }
 
@@ -1663,9 +1649,6 @@ export default function AppPage() {
     try {
       const response = await fetch('/api/sessions', {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       });
 
       if (!response.ok) {
@@ -1677,7 +1660,7 @@ export default function AppPage() {
       }
 
       const createdSession = (await response.json()) as WorkspaceShellSession;
-      await loadSessions(token);
+      await loadSessions();
       setSelectedSessionId(createdSession.id);
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
@@ -1689,9 +1672,7 @@ export default function AppPage() {
   }
 
   async function handleStopSession(sessionId: string): Promise<void> {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
+    if (!userId) {
       return;
     }
 
@@ -1705,15 +1686,12 @@ export default function AppPage() {
     try {
       const response = await fetch(`/api/sessions/${sessionId}/stop`, {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       });
       if (!response.ok) {
         throw new Error(`Session stop failed (${response.status})`);
       }
-      await loadSessions(token);
-      await loadDashboardSlice(token);
+      await loadSessions();
+      await loadDashboardSlice();
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
       setSessionActionError(detail);
@@ -1753,16 +1731,13 @@ export default function AppPage() {
     });
   }
 
-  async function loadCheckpoints(token: string, sessionId: string): Promise<void> {
+  async function loadCheckpoints(sessionId: string): Promise<void> {
     setIsLoadingHistory(true);
     setHistoryError(null);
 
     try {
       const response = await fetch(`/api/sessions/${sessionId}/checkpoints`, {
         method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       });
 
       if (!response.ok) {
@@ -1782,11 +1757,11 @@ export default function AppPage() {
     }
   }
 
-  async function loadWorkspaceSnapshotsForUser(token: string): Promise<void> {
+  async function loadWorkspaceSnapshotsForUser(): Promise<void> {
     setSnapshotListState('loading');
     setSnapshotActionError(null);
     try {
-      const snapshots = await loadWorkspaceSnapshots({ token });
+      const snapshots = await loadWorkspaceSnapshots({});
       setWorkspaceSnapshots(snapshots);
       setSelectedSnapshotId((currentSelectedSnapshotId) => {
         if (currentSelectedSnapshotId && snapshots.some((snapshot) => snapshot.id === currentSelectedSnapshotId)) {
@@ -1810,7 +1785,6 @@ export default function AppPage() {
   }
 
   async function loadWorkspaceProjectsForUser(
-    token: string,
     workspaceId: string | null = selectedWorkspaceId,
     preserveSelectedProjectIdWhenMissing = false,
   ): Promise<void> {
@@ -1826,7 +1800,7 @@ export default function AppPage() {
     setProjectListState('loading');
     setProjectActionError(null);
     try {
-      const projects = await loadWorkspaceProjects({ token, workspaceId: normalizedWorkspaceId });
+      const projects = await loadWorkspaceProjects({ workspaceId: normalizedWorkspaceId });
       setWorkspaceProjects(projects);
       setSelectedProjectId((currentSelectedProjectId) => {
         if (currentSelectedProjectId && projects.some((project) => project.id === currentSelectedProjectId)) {
@@ -1914,9 +1888,7 @@ export default function AppPage() {
   }
 
   async function handleCreateWorkspace(name: string): Promise<void> {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
+    if (!userId) {
       return;
     }
 
@@ -1931,10 +1903,9 @@ export default function AppPage() {
     setWorkspaceActionError(null);
     try {
       const createdWorkspace = await createWorkspace({
-        token,
         name: trimmedName,
       });
-      const loadedWorkspaces = await loadWorkspaces({ token });
+      const loadedWorkspaces = await loadWorkspaces({});
       applyLoadedWorkspaces(loadedWorkspaces, createdWorkspace.id);
       setWorkspaceCreateNameInput('');
     } catch (error) {
@@ -1952,9 +1923,7 @@ export default function AppPage() {
     workspaceId: string | null,
     name: string,
   ): Promise<void> {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
+    if (!userId) {
       return;
     }
 
@@ -1977,11 +1946,10 @@ export default function AppPage() {
     setWorkspaceActionError(null);
     try {
       await updateWorkspace({
-        token,
         workspaceId: normalizedWorkspaceId,
         name: trimmedName,
       });
-      const loadedWorkspaces = await loadWorkspaces({ token });
+      const loadedWorkspaces = await loadWorkspaces({});
       applyLoadedWorkspaces(loadedWorkspaces, normalizedWorkspaceId);
     } catch (error) {
       setWorkspaceActionError(
@@ -1995,9 +1963,7 @@ export default function AppPage() {
   }
 
   async function handleDeleteWorkspace(workspaceId: string | null): Promise<void> {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
+    if (!userId) {
       return;
     }
 
@@ -2027,10 +1993,9 @@ export default function AppPage() {
     setWorkspaceActionError(null);
     try {
       await deleteWorkspace({
-        token,
         workspaceId: normalizedWorkspaceId,
       });
-      const loadedWorkspaces = await loadWorkspaces({ token });
+      const loadedWorkspaces = await loadWorkspaces({});
       applyLoadedWorkspaces(loadedWorkspaces, null);
     } catch (error) {
       setWorkspaceActionError(
@@ -2047,9 +2012,7 @@ export default function AppPage() {
     projectId: string | null,
     targetWorkspaceId: string | null,
   ): Promise<void> {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
+    if (!userId) {
       return;
     }
 
@@ -2082,12 +2045,10 @@ export default function AppPage() {
     setProjectActionError(null);
     try {
       const movedProject = await moveWorkspaceProject({
-        token,
         projectId: normalizedProjectId,
         targetWorkspaceId: normalizedTargetWorkspaceId,
       });
       await loadWorkspaceProjectsForUser(
-        token,
         selectedWorkspaceId,
         shouldPreserveSelectedProjectId,
       );
@@ -2111,9 +2072,7 @@ export default function AppPage() {
   }
 
   async function handleCreateWorkspaceProject(): Promise<void> {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
+    if (!userId) {
       return;
     }
     const trimmedName = projectNameInput.trim();
@@ -2129,7 +2088,6 @@ export default function AppPage() {
     setProjectActionError(null);
     try {
       const createdProject = await createWorkspaceProject({
-        token,
         name: trimmedName,
         workspaceId: selectedWorkspaceId ?? undefined,
       });
@@ -2139,7 +2097,6 @@ export default function AppPage() {
         projectOpenInProgressRef.current = true;
         try {
           const openResult = await openProjectInFreshSession({
-            token,
             projectId: createdProject.id,
           });
           const openSessionId = openResult.sessionId;
@@ -2149,20 +2106,19 @@ export default function AppPage() {
             openSessionId !== selectedSessionIdRef.current;
           setSelectedSessionId(openSessionId);
 
-          await hydrateWorkspaceForProjectOpen(token, openSessionId, expectsRestoredFiles);
+          await hydrateWorkspaceForProjectOpen(openSessionId, expectsRestoredFiles);
 
-          await refreshPreviewForSession(token, openSessionId);
-          await loadCheckpoints(token, openSessionId);
-          await loadSessions(token);
+          await refreshPreviewForSession(openSessionId);
+          await loadCheckpoints(openSessionId);
+          await loadSessions();
           setSelectedSessionId((current) => current ?? openSessionId);
 
-          await loadWorkspaceSnapshotsForUser(token);
+          await loadWorkspaceSnapshotsForUser();
           await loadWorkspaceProjectsForUser(
-            token,
             createdProject.workspaceId ?? selectedWorkspaceId,
           );
           await loadPublicWorkspaceProjectsList();
-          await loadDashboardSlice(token);
+          await loadDashboardSlice();
 
           setSelectedProjectId(createdProject.id);
           setSelectedProjectVisibility(createdProject.visibility === 'public' ? 'public' : 'private');
@@ -2180,18 +2136,16 @@ export default function AppPage() {
       if (selectedSessionId) {
         try {
           const currentWorkspaceTree = await loadWorkspaceFileTree({
-            token,
             sessionId: selectedSessionId,
           });
           const firstWorkspaceFilePath = findFirstFilePath(currentWorkspaceTree);
           if (firstWorkspaceFilePath) {
             const initialProjectSnapshot = await saveWorkspaceSnapshot({
-              token,
               sessionId: selectedSessionId,
               label: buildProjectScopedSnapshotLabel(createdProject.id, 'initial'),
             });
             createdInitialProjectSnapshot = true;
-            await loadWorkspaceSnapshotsForUser(token);
+            await loadWorkspaceSnapshotsForUser();
             setSelectedSnapshotId(initialProjectSnapshot.id);
           }
         } catch (error) {
@@ -2200,7 +2154,6 @@ export default function AppPage() {
         }
       }
       await loadWorkspaceProjectsForUser(
-        token,
         createdProject.workspaceId ?? selectedWorkspaceId,
       );
       setSelectedProjectId(createdProject.id);
@@ -2225,17 +2178,16 @@ export default function AppPage() {
   }
 
   async function hydrateWorkspaceForProjectOpen(
-    token: string,
     openSessionId: string,
     expectFiles: boolean,
   ): Promise<boolean> {
-    let loaded = await loadWorkspaceFilesForSession(token, openSessionId);
+    let loaded = await loadWorkspaceFilesForSession(openSessionId);
     if (!loaded && expectFiles) {
       for (let attempt = 0; attempt < PROJECT_OPEN_FILE_REFRESH_MAX_ATTEMPTS; attempt += 1) {
         await new Promise<void>((resolve) => {
           window.setTimeout(() => resolve(), PROJECT_OPEN_FILE_REFRESH_RETRY_DELAY_MS);
         });
-        loaded = await loadWorkspaceFilesForSession(token, openSessionId);
+        loaded = await loadWorkspaceFilesForSession(openSessionId);
         if (loaded) {
           break;
         }
@@ -2245,9 +2197,7 @@ export default function AppPage() {
   }
 
   async function handleOpenWorkspaceProject(): Promise<void> {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
+    if (!userId) {
       return;
     }
     if (PROJECT_FIRST_UX) {
@@ -2271,9 +2221,8 @@ export default function AppPage() {
     try {
       const selectedSnapshotIdToOpen = selectedSnapshotId?.trim() || undefined;
       if (PROJECT_FIRST_UX) {
-        const refreshedSessions = await loadSessions(token);
+        const refreshedSessions = await loadSessions();
         const openResult = await openProjectInFreshSession({
-          token,
           projectId: selectedProjectId,
           existingSessions: refreshedSessions,
           snapshotId: selectedSnapshotIdToOpen,
@@ -2285,17 +2234,17 @@ export default function AppPage() {
           openSessionId !== selectedSessionIdRef.current;
         setSelectedSessionId(openSessionId);
 
-        await hydrateWorkspaceForProjectOpen(token, openSessionId, expectsRestoredFiles);
+        await hydrateWorkspaceForProjectOpen(openSessionId, expectsRestoredFiles);
 
-        await refreshPreviewForSession(token, openSessionId);
-        await loadCheckpoints(token, openSessionId);
-        await loadSessions(token);
+        await refreshPreviewForSession(openSessionId);
+        await loadCheckpoints(openSessionId);
+        await loadSessions();
         setSelectedSessionId((current) => current ?? openSessionId);
 
-        await loadWorkspaceSnapshotsForUser(token);
-        await loadWorkspaceProjectsForUser(token);
+        await loadWorkspaceSnapshotsForUser();
+        await loadWorkspaceProjectsForUser();
         await loadPublicWorkspaceProjectsList();
-        await loadDashboardSlice(token);
+        await loadDashboardSlice();
 
         setProjectActionState('success');
         setProjectActionMessage('Project opened.');
@@ -2305,7 +2254,7 @@ export default function AppPage() {
 
       let snapshotIdToOpen: string | undefined = selectedSnapshotIdToOpen;
       if (!snapshotIdToOpen) {
-        const freshSnapshots = await loadWorkspaceSnapshots({ token });
+        const freshSnapshots = await loadWorkspaceSnapshots({});
         setWorkspaceSnapshots(freshSnapshots);
         snapshotIdToOpen =
           resolveProjectScopedLatestSnapshotId({ snapshots: freshSnapshots, projectId: selectedProjectId }) ?? undefined;
@@ -2314,14 +2263,12 @@ export default function AppPage() {
       let openResult: { projectId: string; sessionId: string; restoredSnapshotId: string | null };
       if (snapshotIdToOpen) {
         openResult = await openWorkspaceProject({
-          token,
           projectId: selectedProjectId,
           sessionId: selectedSessionId!,
           snapshotId: snapshotIdToOpen,
         });
       } else {
         await associateWorkspaceProjectSession({
-          token,
           projectId: selectedProjectId,
           sessionId: selectedSessionId!,
         });
@@ -2339,17 +2286,17 @@ export default function AppPage() {
         openSessionId !== selectedSessionIdRef.current;
       setSelectedSessionId(openSessionId);
 
-      await hydrateWorkspaceForProjectOpen(token, openSessionId, expectsRestoredFiles);
+      await hydrateWorkspaceForProjectOpen(openSessionId, expectsRestoredFiles);
 
-      await refreshPreviewForSession(token, openSessionId);
-      await loadCheckpoints(token, openSessionId);
-      await loadSessions(token);
+      await refreshPreviewForSession(openSessionId);
+      await loadCheckpoints(openSessionId);
+      await loadSessions();
       setSelectedSessionId((current) => current ?? openSessionId);
 
-      await loadWorkspaceSnapshotsForUser(token);
-      await loadWorkspaceProjectsForUser(token);
+      await loadWorkspaceSnapshotsForUser();
+      await loadWorkspaceProjectsForUser();
       await loadPublicWorkspaceProjectsList();
-      await loadDashboardSlice(token);
+      await loadDashboardSlice();
 
       setProjectActionState('success');
       setProjectActionMessage('Project opened in selected session.');
@@ -2378,9 +2325,7 @@ export default function AppPage() {
       return;
     }
 
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
+    if (!userId) {
       return;
     }
 
@@ -2389,9 +2334,8 @@ export default function AppPage() {
     setProjectActionError(null);
     projectOpenInProgressRef.current = true;
     try {
-      const refreshedSessions = await loadSessions(token);
+      const refreshedSessions = await loadSessions();
       const openResult = await openProjectInFreshSession({
-        token,
         projectId: normalizedProjectId,
         existingSessions: refreshedSessions,
       });
@@ -2402,17 +2346,17 @@ export default function AppPage() {
         openSessionId !== selectedSessionIdRef.current;
       setSelectedSessionId(openSessionId);
 
-      await hydrateWorkspaceForProjectOpen(token, openSessionId, expectsRestoredFiles);
+      await hydrateWorkspaceForProjectOpen(openSessionId, expectsRestoredFiles);
 
-      await refreshPreviewForSession(token, openSessionId);
-      await loadCheckpoints(token, openSessionId);
-      await loadSessions(token);
+      await refreshPreviewForSession(openSessionId);
+      await loadCheckpoints(openSessionId);
+      await loadSessions();
       setSelectedSessionId((current) => current ?? openSessionId);
 
-      await loadWorkspaceSnapshotsForUser(token);
-      await loadWorkspaceProjectsForUser(token);
+      await loadWorkspaceSnapshotsForUser();
+      await loadWorkspaceProjectsForUser();
       await loadPublicWorkspaceProjectsList();
-      await loadDashboardSlice(token);
+      await loadDashboardSlice();
 
       setProjectActionState('success');
       setProjectActionMessage('Project opened.');
@@ -2449,9 +2393,7 @@ export default function AppPage() {
       return;
     }
 
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
+    if (!userId) {
       return;
     }
 
@@ -2461,7 +2403,6 @@ export default function AppPage() {
     projectOpenInProgressRef.current = true;
     try {
       const openResult = await openProjectInFreshSession({
-        token,
         projectId: normalizedProjectId,
         snapshotId: normalizedSnapshotId,
       });
@@ -2472,17 +2413,17 @@ export default function AppPage() {
         openSessionId !== selectedSessionIdRef.current;
       setSelectedSessionId(openSessionId);
 
-      await hydrateWorkspaceForProjectOpen(token, openSessionId, expectsRestoredFiles);
+      await hydrateWorkspaceForProjectOpen(openSessionId, expectsRestoredFiles);
 
-      await refreshPreviewForSession(token, openSessionId);
-      await loadCheckpoints(token, openSessionId);
-      await loadSessions(token);
+      await refreshPreviewForSession(openSessionId);
+      await loadCheckpoints(openSessionId);
+      await loadSessions();
       setSelectedSessionId((current) => current ?? openSessionId);
 
-      await loadWorkspaceSnapshotsForUser(token);
-      await loadWorkspaceProjectsForUser(token);
+      await loadWorkspaceSnapshotsForUser();
+      await loadWorkspaceProjectsForUser();
       await loadPublicWorkspaceProjectsList();
-      await loadDashboardSlice(token);
+      await loadDashboardSlice();
 
       setProjectActionState('success');
       setProjectActionMessage('Project opened.');
@@ -2506,8 +2447,7 @@ export default function AppPage() {
       return;
     }
 
-    const token = localStorage.getItem('access_token');
-    if (!token) {
+    if (!userId) {
       return;
     }
 
@@ -2524,7 +2464,6 @@ export default function AppPage() {
     }
 
     const saveResult = await attemptNamedProjectSave({
-      token,
       sessionId: selectedSessionId,
       projectId: selectedProjectId,
       name,
@@ -2534,13 +2473,11 @@ export default function AppPage() {
       return;
     }
 
-    void loadWorkspaceSnapshotsForUser(token);
+    void loadWorkspaceSnapshotsForUser();
   }
 
   async function handleUpdateWorkspaceProjectVisibility(): Promise<void> {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
+    if (!userId) {
       return;
     }
     if (!selectedProjectId) {
@@ -2554,12 +2491,11 @@ export default function AppPage() {
     setProjectActionError(null);
     try {
       const updatedProject = await updateWorkspaceProjectVisibility({
-        token,
         projectId: selectedProjectId,
         visibility: selectedProjectVisibility,
       });
       setSelectedProjectVisibility(updatedProject.visibility === 'public' ? 'public' : 'private');
-      await loadWorkspaceProjectsForUser(token);
+      await loadWorkspaceProjectsForUser();
       await loadPublicWorkspaceProjectsList();
       setProjectActionState('success');
       setProjectActionMessage(`Project visibility set to ${updatedProject.visibility}.`);
@@ -2645,9 +2581,7 @@ export default function AppPage() {
   }
 
   async function handleForkPublicWorkspaceProject(): Promise<void> {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
+    if (!userId) {
       return;
     }
     if (!selectedPublicProjectId) {
@@ -2661,10 +2595,9 @@ export default function AppPage() {
     setPublicProjectActionError(null);
     try {
       const forked = await forkPublicWorkspaceProject({
-        token,
         projectId: selectedPublicProjectId,
       });
-      await loadWorkspaceProjectsForUser(token);
+      await loadWorkspaceProjectsForUser();
       setSelectedProjectId(forked.id);
       setSelectedProjectVisibility('private');
       setPublicProjectActionState('success');
@@ -2688,9 +2621,7 @@ export default function AppPage() {
   }
 
   async function handleCreateManualCheckpoint(): Promise<void> {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
+    if (!userId) {
       return;
     }
 
@@ -2714,7 +2645,6 @@ export default function AppPage() {
 
     try {
       const createResult: WorkspaceCheckpointCreateResult = await createWorkspaceCheckpoint({
-        token,
         sessionId: selectedSessionId,
         userId,
         description: checkpointDescriptionInput,
@@ -2732,7 +2662,7 @@ export default function AppPage() {
       const createdCommitHash = createResult.commitHash;
 
       setCheckpointCreateState('created');
-      await loadCheckpoints(token, selectedSessionId);
+      await loadCheckpoints(selectedSessionId);
       setCheckpoints((prev) => {
         if (prev.some((cp) => cp.commitHash === createdCommitHash)) {
           return prev;
@@ -2771,9 +2701,7 @@ export default function AppPage() {
   }
 
   async function handleSaveWorkspaceSnapshot(): Promise<void> {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
+    if (!userId) {
       return;
     }
     if (!selectedSessionId) {
@@ -2788,11 +2716,10 @@ export default function AppPage() {
     setSnapshotActionError(null);
     try {
       const savedSnapshot = await saveWorkspaceSnapshot({
-        token,
         sessionId: selectedSessionId,
         label: selectedProjectId ? buildProjectScopedSnapshotLabel(selectedProjectId) : undefined,
       });
-      await loadWorkspaceSnapshotsForUser(token);
+      await loadWorkspaceSnapshotsForUser();
       setSelectedSnapshotId(savedSnapshot.id);
       setSnapshotActionState('success');
       setSnapshotActionMessage('Workspace snapshot saved.');
@@ -2809,9 +2736,7 @@ export default function AppPage() {
   }
 
   async function handleRestoreWorkspaceSnapshot(): Promise<void> {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
+    if (!userId) {
       return;
     }
     if (!selectedSessionId || !selectedSnapshotId) {
@@ -2826,14 +2751,13 @@ export default function AppPage() {
     setSnapshotActionError(null);
     try {
       await restoreWorkspaceSnapshot({
-        token,
         sessionId: selectedSessionId,
         snapshotId: selectedSnapshotId,
       });
-      await loadWorkspaceFilesForSession(token, selectedSessionId);
-      await refreshPreviewForSession(token, selectedSessionId);
-      await loadCheckpoints(token, selectedSessionId);
-      await loadWorkspaceSnapshotsForUser(token);
+      await loadWorkspaceFilesForSession(selectedSessionId);
+      await refreshPreviewForSession(selectedSessionId);
+      await loadCheckpoints(selectedSessionId);
+      await loadWorkspaceSnapshotsForUser();
       setSnapshotActionState('success');
       setSnapshotActionMessage('Workspace snapshot restored.');
       setSnapshotActionError(null);
@@ -2849,9 +2773,7 @@ export default function AppPage() {
   }
 
   async function handleExportWorkspaceArchive(): Promise<void> {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
+    if (!userId) {
       return;
     }
     if (!selectedSessionId) {
@@ -2866,7 +2788,6 @@ export default function AppPage() {
     setSnapshotActionError(null);
     try {
       const blob = await exportWorkspaceArchive({
-        token,
         sessionId: selectedSessionId,
       });
       const downloadUrl = URL.createObjectURL(blob);
@@ -2892,9 +2813,7 @@ export default function AppPage() {
   }
 
   async function handleImportWorkspaceArchive(file: File): Promise<void> {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
+    if (!userId) {
       return;
     }
     if (!selectedSessionId) {
@@ -2909,13 +2828,12 @@ export default function AppPage() {
     setSnapshotActionError(null);
     try {
       await importWorkspaceArchive({
-        token,
         sessionId: selectedSessionId,
         archiveFile: file,
       });
-      await loadWorkspaceFilesForSession(token, selectedSessionId);
-      await refreshPreviewForSession(token, selectedSessionId);
-      await loadCheckpoints(token, selectedSessionId);
+      await loadWorkspaceFilesForSession(selectedSessionId);
+      await refreshPreviewForSession(selectedSessionId);
+      await loadCheckpoints(selectedSessionId);
       setSnapshotActionState('success');
       setSnapshotActionMessage('Workspace archive imported.');
       setSnapshotActionError(null);
@@ -2969,9 +2887,7 @@ export default function AppPage() {
   }
 
   async function handleConfirmCheckpointRevert(): Promise<void> {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
+    if (!userId) {
       return;
     }
 
@@ -3009,7 +2925,6 @@ export default function AppPage() {
 
     try {
       await revertWorkspaceCheckpoint({
-        token,
         sessionId,
         userId,
         commitHash: targetCheckpoint.commitHash,
@@ -3019,17 +2934,17 @@ export default function AppPage() {
         return;
       }
 
-      await loadCheckpoints(token, sessionId);
+      await loadCheckpoints(sessionId);
       if (checkpointRevertRequestIdRef.current !== requestId) {
         return;
       }
 
-      await loadWorkspaceFilesForSession(token, sessionId);
+      await loadWorkspaceFilesForSession(sessionId);
       if (checkpointRevertRequestIdRef.current !== requestId) {
         return;
       }
 
-      await refreshPreviewForSession(token, sessionId);
+      await refreshPreviewForSession(sessionId);
       if (checkpointRevertRequestIdRef.current !== requestId) {
         return;
       }
@@ -3048,9 +2963,7 @@ export default function AppPage() {
   }
 
   async function handleViewCheckpointDiff(checkpointId: string): Promise<void> {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
+    if (!userId) {
       return;
     }
 
@@ -3090,7 +3003,6 @@ export default function AppPage() {
 
     try {
       const response = await loadWorkspaceCheckpointDiff({
-        token,
         sessionId,
         commitHash: targetCheckpoint.commitHash,
       });
@@ -3121,9 +3033,7 @@ export default function AppPage() {
   }
 
   async function handleViewCheckpointSnapshot(checkpointId: string): Promise<void> {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
+    if (!userId) {
       return;
     }
 
@@ -3163,7 +3073,6 @@ export default function AppPage() {
 
     try {
       const response = await loadWorkspaceCheckpointDiff({
-        token,
         sessionId,
         commitHash: targetCheckpoint.commitHash,
       });
@@ -3214,9 +3123,7 @@ export default function AppPage() {
   }
 
   async function handleOpenCheckpointFileInLiveWorkspace(filePath: string): Promise<void> {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
+    if (!userId) {
       return;
     }
 
@@ -3265,7 +3172,7 @@ export default function AppPage() {
     setCheckpointLiveOpenTargetPath(normalizedPath);
 
     try {
-      const opened = await loadWorkspaceFileContent(token, sessionId, normalizedPath);
+      const opened = await loadWorkspaceFileContent(sessionId, normalizedPath);
 
       if (checkpointLiveOpenRequestIdRef.current !== requestId) {
         return;
@@ -3342,9 +3249,7 @@ export default function AppPage() {
   }
 
   async function handleRunCheckpointCompare(): Promise<void> {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
+    if (!userId) {
       return;
     }
 
@@ -3395,7 +3300,6 @@ export default function AppPage() {
 
     try {
       const response = await loadWorkspaceCheckpointDiff({
-        token,
         sessionId,
         commitHash: targetCheckpoint.commitHash,
       });
@@ -3448,7 +3352,7 @@ export default function AppPage() {
     setCheckpointPinnedReferenceId(null);
   }
 
-  async function loadDashboardSlice(token: string): Promise<void> {
+  async function loadDashboardSlice(): Promise<void> {
     setIsLoadingDashboard(true);
     setDashboardError(null);
 
@@ -3456,21 +3360,12 @@ export default function AppPage() {
       const [userResponse, usageResponse, quotasResponse] = await Promise.all([
         fetch('/api/users/me', {
           method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
         }),
         fetch('/api/users/me/usage', {
           method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
         }),
         fetch('/api/users/me/quotas', {
           method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
         }),
       ]);
 
@@ -3509,9 +3404,7 @@ export default function AppPage() {
   }
 
   async function handleExecuteCommand(): Promise<void> {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
+    if (!userId) {
       return;
     }
 
@@ -3557,7 +3450,6 @@ export default function AppPage() {
     });
 
     const nextState = await executeSessionCommand({
-      token,
       sessionId,
       command: trimmedCommand,
     });
@@ -3567,25 +3459,23 @@ export default function AppPage() {
     await refreshPostExecSurfaces({
       execState: nextState,
       refreshCheckpoints: async () => {
-        await loadCheckpoints(token, sessionId);
+        await loadCheckpoints(sessionId);
       },
       refreshSessions: async () => {
-        await loadSessions(token);
+        await loadSessions();
       },
       refreshDashboard: async () => {
-        await loadDashboardSlice(token);
+        await loadDashboardSlice();
       },
     });
 
     if (nextState.status === 'result') {
-      await loadWorkspaceFilesForSession(token, sessionId);
+      await loadWorkspaceFilesForSession(sessionId);
     }
   }
 
   async function handleRunBuildTarget(): Promise<void> {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
+    if (!userId) {
       return;
     }
 
@@ -3619,7 +3509,6 @@ export default function AppPage() {
     setBuildOutput('');
 
     const nextState = await executeSessionCommand({
-      token,
       sessionId: selectedSessionId,
       command: resolved.command,
     });
@@ -3629,7 +3518,7 @@ export default function AppPage() {
       setBuildRequestState('failed');
       setBuildStatusMessage(null);
       setBuildError(nextState.errorMessage ?? 'Build request failed before execution completed.');
-      await loadDashboardSlice(token);
+      await loadDashboardSlice();
       return;
     }
 
@@ -3643,8 +3532,8 @@ export default function AppPage() {
       setBuildRequestState('completed');
       setBuildStatusMessage(`${resolved.target} build completed successfully.`);
       setBuildError(null);
-      await loadWorkspaceFilesForSession(token, selectedSessionId);
-      await loadDashboardSlice(token);
+      await loadWorkspaceFilesForSession(selectedSessionId);
+      await loadDashboardSlice();
       return;
     }
 
@@ -3665,13 +3554,11 @@ export default function AppPage() {
         `${resolved.target} build failed (exit ${nextState.result.exitCode}). Review build output for details.`,
       );
     }
-    await loadDashboardSlice(token);
+    await loadDashboardSlice();
   }
 
   async function refreshChatExecutionStatus(executionId: string): Promise<void> {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
+    if (!userId) {
       return;
     }
     const apiKey = localStorage.getItem(DRIVER_API_KEY_STORAGE_KEY)?.trim() ?? '';
@@ -3745,7 +3632,6 @@ export default function AppPage() {
           const executionSessionId = executionSessionIdByExecutionIdRef.current[executionId] ?? null;
           if (executionSessionId) {
             void persistSessionChatMessageToBackend({
-              token,
               sessionId: executionSessionId,
               role: 'assistant',
               content: resolvedResponse,
@@ -3758,7 +3644,7 @@ export default function AppPage() {
         setChatStatusMessage('Assistant response received.');
         setChatError(null);
         if (shouldRefreshDashboardForChatStatus(nextStatus)) {
-          await loadDashboardSlice(token);
+          await loadDashboardSlice();
         }
         return;
       }
@@ -3794,7 +3680,6 @@ export default function AppPage() {
           const executionSessionId = executionSessionIdByExecutionIdRef.current[executionId] ?? null;
           if (executionSessionId) {
             void persistSessionChatMessageToBackend({
-              token,
               sessionId: executionSessionId,
               role: 'assistant',
               content: failureMessage,
@@ -3805,7 +3690,7 @@ export default function AppPage() {
           pendingAssistantMessageIdRef.current = null;
         }
         if (shouldRefreshDashboardForChatStatus(nextStatus)) {
-          await loadDashboardSlice(token);
+          await loadDashboardSlice();
         }
         return;
       }
@@ -3828,7 +3713,7 @@ export default function AppPage() {
       setChatRequestState('failed');
       setChatStatusMessage(null);
       setChatError(failureMessage);
-      await loadDashboardSlice(token);
+      await loadDashboardSlice();
     }
   }
 
@@ -3852,7 +3737,6 @@ export default function AppPage() {
   }
 
   async function submitOrchestratedChatPrompt(input: {
-    token: string;
     apiKey: string;
     prompt: string;
     selectedSessionId: string | null;
@@ -3879,7 +3763,6 @@ export default function AppPage() {
         : null;
     const workspaceContext = await buildWorkspacePromptContext({
       prompt: input.prompt,
-      token: input.token,
       sessionId: executionSessionId,
       workspaceFileTree,
       selectedFilePath,
@@ -3954,7 +3837,6 @@ export default function AppPage() {
         updateAssistantMessageContent(input.assistantMessageId, finalFailureContent);
         if (executionSessionId) {
           void persistSessionChatMessageToBackend({
-            token: input.token,
             sessionId: executionSessionId,
             role: 'assistant',
             content: finalFailureContent,
@@ -3980,7 +3862,6 @@ export default function AppPage() {
         updateAssistantMessageContent(input.assistantMessageId, finalFailureContent);
         if (executionSessionId) {
           void persistSessionChatMessageToBackend({
-            token: input.token,
             sessionId: executionSessionId,
             role: 'assistant',
             content: finalFailureContent,
@@ -4024,7 +3905,6 @@ export default function AppPage() {
           updateAssistantMessageContent(input.assistantMessageId, finalFailureContent);
           if (executionSessionId) {
             void persistSessionChatMessageToBackend({
-              token: input.token,
               sessionId: executionSessionId,
               role: 'assistant',
               content: finalFailureContent,
@@ -4075,7 +3955,6 @@ export default function AppPage() {
         updateAssistantMessageContent(input.assistantMessageId, finalFailureContent);
         if (executionSessionId) {
           void persistSessionChatMessageToBackend({
-            token: input.token,
             sessionId: executionSessionId,
             role: 'assistant',
             content: finalFailureContent,
@@ -4121,7 +4000,6 @@ export default function AppPage() {
 
     if (executionSessionId) {
       void persistSessionChatMessageToBackend({
-        token: input.token,
         sessionId: executionSessionId,
         role: 'assistant',
         content: finalContent,
@@ -4129,13 +4007,11 @@ export default function AppPage() {
         // Keep local thread persistence as compatibility fallback.
       });
     }
-    await loadDashboardSlice(input.token);
+    await loadDashboardSlice();
   }
 
   async function handleSubmitChatPrompt(): Promise<void> {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
+    if (!userId) {
       return;
     }
     const apiKey = localStorage.getItem(DRIVER_API_KEY_STORAGE_KEY)?.trim() ?? '';
@@ -4183,7 +4059,6 @@ export default function AppPage() {
     ]);
     if (selectedSessionId) {
       void persistSessionChatMessageToBackend({
-        token,
         sessionId: selectedSessionId,
         role: 'user',
         content: trimmedPrompt,
@@ -4194,7 +4069,6 @@ export default function AppPage() {
 
     if (isChatOrchestrationEnabled) {
       await submitOrchestratedChatPrompt({
-        token,
         apiKey,
         prompt: trimmedPrompt,
         selectedSessionId,
@@ -4215,7 +4089,6 @@ export default function AppPage() {
           : null;
       const workspaceContext = await buildWorkspacePromptContext({
         prompt: trimmedPrompt,
-        token,
         sessionId: selectedSessionId,
         workspaceFileTree,
         selectedFilePath,
@@ -4367,7 +4240,6 @@ export default function AppPage() {
           );
           if (executionSessionId) {
             void persistSessionChatMessageToBackend({
-              token,
               sessionId: executionSessionId,
               role: 'assistant',
               content: completedResponse,
@@ -4379,7 +4251,7 @@ export default function AppPage() {
         }
         setChatStatusMessage('Assistant response received.');
         if (shouldRefreshDashboardForChatStatus(nextStatus)) {
-          await loadDashboardSlice(token);
+          await loadDashboardSlice();
         }
         return;
       }
@@ -4410,7 +4282,6 @@ export default function AppPage() {
           );
           if (executionSessionId) {
             void persistSessionChatMessageToBackend({
-              token,
               sessionId: executionSessionId,
               role: 'assistant',
               content: failureMessage,
@@ -4421,7 +4292,7 @@ export default function AppPage() {
           pendingAssistantMessageIdRef.current = null;
         }
         if (shouldRefreshDashboardForChatStatus(nextStatus)) {
-          await loadDashboardSlice(token);
+          await loadDashboardSlice();
         }
         return;
       }
@@ -4464,7 +4335,6 @@ export default function AppPage() {
         );
         if (selectedSessionId) {
           void persistSessionChatMessageToBackend({
-            token,
             sessionId: selectedSessionId,
             role: 'assistant',
             content: failureMessage,
@@ -4474,7 +4344,7 @@ export default function AppPage() {
         }
         pendingAssistantMessageIdRef.current = null;
       }
-      await loadDashboardSlice(token);
+      await loadDashboardSlice();
     }
   }
 
@@ -4483,7 +4353,6 @@ export default function AppPage() {
   }
 
   async function refreshWorkspaceFileTreeAfterDelete(
-    token: string,
     sessionId: string,
     deletedPath: string,
   ): Promise<void> {
@@ -4492,7 +4361,6 @@ export default function AppPage() {
     }
 
     const tree = await loadWorkspaceFileTree({
-      token,
       sessionId,
     });
 
@@ -4539,9 +4407,8 @@ export default function AppPage() {
       return;
     }
 
-    const token = localStorage.getItem('access_token');
     const executionSessionId = executionSessionIdByExecutionIdRef.current[executionId] ?? null;
-    if (!token || !userId || !executionSessionId) {
+    if (!userId || !executionSessionId) {
       return;
     }
 
@@ -4562,17 +4429,16 @@ export default function AppPage() {
       selectedFilePath: selectedFilePathAtTrigger,
       checkpointDescription: AI_AUTO_CHECKPOINT_DESCRIPTION,
       refreshFileTree: async () => {
-        await loadWorkspaceFilesForSession(token, executionSessionId);
+        await loadWorkspaceFilesForSession(executionSessionId);
       },
       reloadEditorFile: async (filePath) => {
-        await loadWorkspaceFileContent(token, executionSessionId, filePath);
+        await loadWorkspaceFileContent(executionSessionId, filePath);
       },
       refreshPreview: async () => {
-        await refreshPreviewForSession(token, executionSessionId);
+        await refreshPreviewForSession(executionSessionId);
       },
       createCheckpoint: async (description) => {
         const checkpointResult: WorkspaceCheckpointCreateResult = await createWorkspaceCheckpoint({
-          token,
           sessionId: executionSessionId,
           userId,
           description,
@@ -4580,7 +4446,7 @@ export default function AppPage() {
         return { commitHash: checkpointResult.commitHash };
       },
       refreshCheckpoints: async () => {
-        await loadCheckpoints(token, executionSessionId);
+        await loadCheckpoints(executionSessionId);
       },
     });
 
@@ -4600,7 +4466,6 @@ export default function AppPage() {
 
     const autosaveAttemptedAt = Date.now();
     const autosaveResult = await attemptProjectAutosave({
-      token,
       sessionId: selectedSessionIdAtAutosave,
       projectId: selectedProjectId,
       source: 'ai',
@@ -4613,7 +4478,7 @@ export default function AppPage() {
     });
     if (autosaveResult.status === 'saved') {
       lastProjectAutosaveAtRef.current = autosaveAttemptedAt;
-      void loadWorkspaceSnapshotsForUser(token);
+      void loadWorkspaceSnapshotsForUser();
     }
   }
 
@@ -4653,7 +4518,6 @@ export default function AppPage() {
     executionId: string,
     source: 'stream' | 'status',
     executionSessionId: string,
-    token: string,
     actions: WorkspaceFileAction[],
   ): Promise<void> {
     if (!acquireExecutionApplyGuard(executionId, appliedFileActionsExecutionIdsRef.current)) {
@@ -4668,16 +4532,14 @@ export default function AppPage() {
       writeFile: async (action) => {
         if (action.action === 'delete') {
           await deleteWorkspaceFile({
-            token,
             sessionId: executionSessionId,
             filePath: action.path,
           });
-          await refreshWorkspaceFileTreeAfterDelete(token, executionSessionId, action.path);
+          await refreshWorkspaceFileTreeAfterDelete(executionSessionId, action.path);
           return;
         }
 
         await writeWorkspaceFile({
-          token,
           sessionId: executionSessionId,
           filePath: action.path,
           content: action.content,
@@ -4720,15 +4582,14 @@ export default function AppPage() {
       return;
     }
 
-    const token = localStorage.getItem('access_token');
-    if (!token) {
+    if (!userId) {
       setExecutionFileActionState(executionId, {
         executionId,
         source,
         fileActions: actions,
         applyStatus: 'skipped',
         confirmationRequired: false,
-        skipReason: 'missing-auth-token',
+        skipReason: 'missing-auth-session',
         results: [],
       });
       return;
@@ -4761,7 +4622,7 @@ export default function AppPage() {
       return;
     }
 
-    await applyExecutionFileActions(executionId, source, executionSessionId, token, actions);
+    await applyExecutionFileActions(executionId, source, executionSessionId, actions);
   }
 
   async function handleConfirmExecutionFileActions(executionId: string): Promise<void> {
@@ -4787,15 +4648,14 @@ export default function AppPage() {
       return;
     }
 
-    const token = localStorage.getItem('access_token');
-    if (!token) {
+    if (!userId) {
       setExecutionFileActionState(executionId, {
         executionId,
         source: fileActionState?.source ?? 'status',
         fileActions: actions,
         applyStatus: 'skipped',
         confirmationRequired: false,
-        skipReason: 'missing-auth-token',
+        skipReason: 'missing-auth-session',
         results: [],
       });
       return;
@@ -4805,7 +4665,6 @@ export default function AppPage() {
       executionId,
       fileActionState?.source ?? 'status',
       executionSessionId,
-      token,
       actions,
     );
   }
@@ -4904,7 +4763,7 @@ export default function AppPage() {
     setFileSurfaceError(null);
   }
 
-  async function loadWorkspaceFilesForSession(token: string, sessionId: string): Promise<boolean> {
+  async function loadWorkspaceFilesForSession(sessionId: string): Promise<boolean> {
     const requestId = fileNavigationRequestIdRef.current + 1;
     fileNavigationRequestIdRef.current = requestId;
     fileContentRequestIdRef.current += 1;
@@ -4921,7 +4780,6 @@ export default function AppPage() {
 
     try {
       const tree = await loadWorkspaceFileTree({
-        token,
         sessionId,
       });
 
@@ -4942,7 +4800,7 @@ export default function AppPage() {
       }
 
       setWorkspaceFileTree(tree);
-      return await loadWorkspaceFileContent(token, sessionId, firstFilePath);
+      return await loadWorkspaceFileContent(sessionId, firstFilePath);
     } catch (error) {
       console.error('Failed to load workspace files:', error);
       if (fileNavigationRequestIdRef.current !== requestId) {
@@ -4977,11 +4835,7 @@ export default function AppPage() {
     }
   }
 
-  async function loadWorkspaceFileContent(
-    token: string,
-    sessionId: string,
-    filePath: string,
-  ): Promise<boolean> {
+  async function loadWorkspaceFileContent(sessionId: string, filePath: string): Promise<boolean> {
     const requestId = fileContentRequestIdRef.current + 1;
     fileContentRequestIdRef.current = requestId;
     fileSaveRequestIdRef.current += 1;
@@ -4994,7 +4848,6 @@ export default function AppPage() {
 
     try {
       const fileResponse = await readWorkspaceFile({
-        token,
         sessionId,
         filePath,
       });
@@ -5047,9 +4900,7 @@ export default function AppPage() {
   }
 
   async function handleSaveWorkspaceFile(): Promise<void> {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
+    if (!userId) {
       return;
     }
 
@@ -5066,7 +4917,6 @@ export default function AppPage() {
 
     try {
       await writeWorkspaceFile({
-        token,
         sessionId: selectedSessionId,
         filePath: selectedFilePath,
         content: selectedFileContent,
@@ -5086,7 +4936,6 @@ export default function AppPage() {
       if (PROJECT_FIRST_UX && selectedProjectId && !projectOpenInProgressRef.current) {
         const autosaveAttemptedAt = Date.now();
         const autosaveResult = await attemptProjectAutosave({
-          token,
           sessionId: selectedSessionId,
           projectId: selectedProjectId,
           source: 'file-save',
@@ -5096,7 +4945,7 @@ export default function AppPage() {
         });
         if (autosaveResult.status === 'saved') {
           lastProjectAutosaveAtRef.current = autosaveAttemptedAt;
-          void loadWorkspaceSnapshotsForUser(token);
+          void loadWorkspaceSnapshotsForUser();
         }
       }
     } catch (error) {
@@ -5110,9 +4959,7 @@ export default function AppPage() {
   }
 
   async function handleSelectWorkspaceFile(filePath: string): Promise<void> {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
+    if (!userId) {
       return;
     }
 
@@ -5127,10 +4974,10 @@ export default function AppPage() {
       return;
     }
 
-    await loadWorkspaceFileContent(token, selectedSessionId, filePath);
+    await loadWorkspaceFileContent(selectedSessionId, filePath);
   }
 
-  async function refreshPreviewForSession(token: string, sessionId: string): Promise<void> {
+  async function refreshPreviewForSession(sessionId: string): Promise<void> {
     const requestId = previewRequestIdRef.current + 1;
     previewRequestIdRef.current = requestId;
     setPreviewState('loading');
@@ -5139,9 +4986,6 @@ export default function AppPage() {
     try {
       const statusResponse = await fetch(`/api/preview/${sessionId}/status`, {
         method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       });
 
       if (!statusResponse.ok) {
@@ -5172,9 +5016,7 @@ export default function AppPage() {
   }
 
   async function handleRefreshPreview(): Promise<void> {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
+    if (!userId) {
       return;
     }
 
@@ -5184,13 +5026,11 @@ export default function AppPage() {
       return;
     }
 
-    await refreshPreviewForSession(token, selectedSessionId);
+    await refreshPreviewForSession(selectedSessionId);
   }
 
   async function handleStartPreview(): Promise<void> {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push(`/${locale}/login`);
+    if (!userId) {
       return;
     }
 
@@ -5206,9 +5046,6 @@ export default function AppPage() {
     try {
       const startResponse = await fetch(`/api/preview/${selectedSessionId}/start`, {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       });
 
       if (!startResponse.ok) {
@@ -5220,7 +5057,7 @@ export default function AppPage() {
         );
       }
 
-      await refreshPreviewForSession(token, selectedSessionId);
+      await refreshPreviewForSession(selectedSessionId);
 
       if (
         PROJECT_FIRST_UX &&
@@ -5230,7 +5067,6 @@ export default function AppPage() {
       ) {
         const autosaveAttemptedAt = Date.now();
         const autosaveResult = await attemptProjectAutosave({
-          token,
           sessionId: selectedSessionId,
           projectId: selectedProjectId,
           source: 'preview',
@@ -5240,7 +5076,7 @@ export default function AppPage() {
         });
         if (autosaveResult.status === 'saved') {
           lastProjectAutosaveAtRef.current = autosaveAttemptedAt;
-          void loadWorkspaceSnapshotsForUser(token);
+          void loadWorkspaceSnapshotsForUser();
         }
       }
     } catch (error) {

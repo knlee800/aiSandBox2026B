@@ -7,7 +7,7 @@ export type WorkspaceCheckpointRevertState =
   | 'revert-error';
 
 interface RevertWorkspaceCheckpointArgs {
-  token: string;
+  token?: string;
   sessionId: string;
   userId: string;
   commitHash: string;
@@ -21,7 +21,6 @@ export async function revertWorkspaceCheckpoint(
   const response = await fetchImpl(`/api/git/${encodeURIComponent(args.sessionId)}/revert`, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${args.token}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({

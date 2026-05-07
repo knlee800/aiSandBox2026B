@@ -9,7 +9,7 @@ export type NamedProjectSaveResult =
   | { status: 'failed' };
 
 export async function attemptNamedProjectSave(args: {
-  token: string;
+  token?: string;
   sessionId: string;
   projectId: string;
   name: string;
@@ -17,7 +17,6 @@ export async function attemptNamedProjectSave(args: {
 }): Promise<NamedProjectSaveResult> {
   try {
     const savedSnapshot = await saveWorkspaceSnapshot({
-      token: args.token,
       sessionId: args.sessionId,
       label: buildProjectScopedSnapshotLabelWithName(args.projectId, args.name),
       fetchImpl: args.fetchImpl,

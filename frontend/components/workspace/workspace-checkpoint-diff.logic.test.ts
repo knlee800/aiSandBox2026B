@@ -26,7 +26,6 @@ describe('workspace checkpoint diff logic', () => {
     };
 
     const result = await loadWorkspaceCheckpointDiff({
-      token: 'token-123',
       sessionId: 'session-abc',
       commitHash: 'abc123',
       fetchImpl,
@@ -34,7 +33,6 @@ describe('workspace checkpoint diff logic', () => {
 
     assert.equal(url, '/api/sessions/session-abc/checkpoints/abc123/diff');
     assert.equal(init?.method, 'GET');
-    assert.equal((init?.headers as Record<string, string>).Authorization, 'Bearer token-123');
     assert.equal(result.commitHash, 'abc123');
     assert.equal(result.parentHash, 'def456');
     assert.equal(result.files.length, 1);
@@ -48,7 +46,6 @@ describe('workspace checkpoint diff logic', () => {
     await assert.rejects(
       () =>
         loadWorkspaceCheckpointDiff({
-          token: 'token-123',
           sessionId: 'session-abc',
           commitHash: 'abc123',
           fetchImpl,

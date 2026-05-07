@@ -13,13 +13,13 @@ export interface BackendChatMessageResponse {
 }
 
 interface LoadSessionChatMessagesArgs {
-  token: string;
+  token?: string;
   sessionId: string;
   fetchImpl?: typeof fetch;
 }
 
 interface PersistSessionChatMessageArgs {
-  token: string;
+  token?: string;
   sessionId: string;
   role: 'user' | 'assistant';
   content: string;
@@ -34,9 +34,6 @@ export async function loadSessionChatMessagesFromBackend(
     `/api/sessions/${encodeURIComponent(args.sessionId)}/conversation`,
     {
       method: 'GET',
-      headers: {
-        Authorization: `Bearer ${args.token}`,
-      },
     },
   );
   if (!conversationResponse.ok) {
@@ -52,9 +49,6 @@ export async function loadSessionChatMessagesFromBackend(
     `/api/conversations/${encodeURIComponent(conversationData.id)}/messages?limit=200&offset=0`,
     {
       method: 'GET',
-      headers: {
-        Authorization: `Bearer ${args.token}`,
-      },
     },
   );
   if (!messagesResponse.ok) {
@@ -88,7 +82,6 @@ export async function persistSessionChatMessageToBackend(
   const response = await fetchImpl(`/api/sessions/${encodeURIComponent(args.sessionId)}/messages`, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${args.token}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({

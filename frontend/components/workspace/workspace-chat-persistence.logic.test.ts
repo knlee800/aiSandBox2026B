@@ -26,7 +26,6 @@ describe('workspace chat persistence logic', () => {
     }) as typeof fetch;
 
     const messages = await loadSessionChatMessagesFromBackend({
-      token: 'token',
       sessionId: 'session-1',
       fetchImpl,
     });
@@ -48,7 +47,6 @@ describe('workspace chat persistence logic', () => {
       }) as Response) as typeof fetch;
 
     const messages = await loadSessionChatMessagesFromBackend({
-      token: 'token',
       sessionId: 'session-1',
       fetchImpl,
     });
@@ -64,7 +62,6 @@ describe('workspace chat persistence logic', () => {
       }) as Response) as typeof fetch;
 
     const messageId = await persistSessionChatMessageToBackend({
-      token: 'token',
       sessionId: 'session-1',
       role: 'user',
       content: 'hello',
@@ -84,7 +81,6 @@ describe('workspace chat persistence logic', () => {
 
     await assert.rejects(
       loadSessionChatMessagesFromBackend({
-        token: 'token',
         sessionId: 'session-1',
         fetchImpl,
       }),
@@ -102,7 +98,6 @@ describe('workspace chat persistence logic', () => {
 
     await assert.rejects(
       persistSessionChatMessageToBackend({
-        token: 'token',
         sessionId: 'session-1',
         role: 'assistant',
         content: 'response',

@@ -30,8 +30,8 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 
 **Priority Levels:**
 - ???**High**: Critical for MVP, blocks other work
-- ?貕?**Medium**: Important but not blocking
-- ?貕?**Low**: Nice-to-have, polish, future features
+- ?�?**Medium**: Important but not blocking
+- ?�?**Low**: Nice-to-have, polish, future features
 
 **Important:** Follow CLAUDE.md workflow rules:
 - Only work on current module specified by user
@@ -83,7 +83,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 1.3: Setup Linting & Formatting
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Dependencies:** 1.2
 **Description:**
 - Install ESLint with TypeScript parser
@@ -576,7 +576,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 4.11: Project Import Service
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Dependencies:** 4.5, 4.2, 4.4
 **Description:**
 - Implement file upload endpoint
@@ -601,7 +601,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 4.12: Project Export Service
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Dependencies:** 4.2, 4.5
 **Description:**
 - Export container workspace as .zip
@@ -708,7 +708,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 5.5: Billing Endpoints
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Dependencies:** 4.10, 3.5
 **Description:**
 - GET /api/billing/usage/:userId - get usage stats
@@ -727,7 +727,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 5.6: Import/Export Endpoints
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Dependencies:** 4.11, 4.12, 3.5
 **Description:**
 - POST /api/project/import - upload project
@@ -788,7 +788,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 6.3: Container Status Events
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Dependencies:** 6.1, 4.2
 **Description:**
 - Broadcast container status changes:
@@ -805,7 +805,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 6.4: Editor Sync Events
-**Priority:** ?貕?Low
+**Priority:** ?�?Low
 **Dependencies:** 6.1
 **Description:**
 - Implement file sync events:
@@ -844,7 +844,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 7.2: UI Component Library Setup
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Dependencies:** 7.1
 **Description:**
 - Install UI library (shadcn/ui, Radix, or similar)
@@ -1052,7 +1052,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 9.4: File Tree Component
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Dependencies:** 9.3
 **Description:**
 - Display container filesystem as tree
@@ -1091,7 +1091,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 9.6: Git History UI
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Dependencies:** 9.1, 5.3
 **Description:**
 - Display commit history in sidebar/modal
@@ -1112,7 +1112,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ## Module 10: Frontend - Advanced Features
 
 ### Task 10.1: Terminal Component
-**Priority:** ?貕?Low
+**Priority:** ?�?Low
 **Dependencies:** 9.1, 7.4
 **Description:**
 - Create terminal UI using xterm.js
@@ -1131,7 +1131,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 10.2: File Upload/Download UI
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Dependencies:** 5.6
 **Description:**
 - Upload files to container
@@ -1150,7 +1150,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 10.3: Usage & Billing Dashboard
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Dependencies:** 8.3, 5.5
 **Description:**
 - Show token usage stats
@@ -1237,7 +1237,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 11.4: Dependency Security Scanning
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Dependencies:** 1.3
 **Description:**
 - Set up npm audit in CI/CD
@@ -1260,7 +1260,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ## Module 12: Testing
 
 ### Task 12.1: Backend Unit Tests
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Dependencies:** Module 4 complete
 **Description:**
 - Write unit tests for all services
@@ -1280,7 +1280,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 12.2: Backend Integration Tests
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Dependencies:** Module 5 complete
 **Description:**
 - Write integration tests for API endpoints
@@ -1300,7 +1300,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 12.3: Frontend Component Tests
-**Priority:** ?貕?Low
+**Priority:** ?�?Low
 **Dependencies:** Module 9 complete
 **Description:**
 - Write tests for React components
@@ -1318,7 +1318,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 12.4: End-to-End Tests
-**Priority:** ?貕?Low
+**Priority:** ?�?Low
 **Dependencies:** Modules 4, 5, 9 complete
 **Description:**
 - Write E2E tests with Playwright/Cypress
@@ -1341,7 +1341,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ## Module 13: Documentation
 
 ### Task 13.1: API Documentation
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Dependencies:** Module 5 complete
 **Description:**
 - Document all API endpoints
@@ -1362,7 +1362,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 13.2: Developer Guide
-**Priority:** ?貕?Low
+**Priority:** ?�?Low
 **Dependencies:** All modules
 **Description:**
 - Write setup instructions
@@ -1383,7 +1383,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 13.3: User Guide
-**Priority:** ?貕?Low
+**Priority:** ?�?Low
 **Dependencies:** Module 9 complete
 **Description:**
 - Create user-facing documentation
@@ -1466,7 +1466,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 14.4: Database Migration Strategy
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Dependencies:** 2.4
 **Description:**
 - Set up migration scripts
@@ -1485,7 +1485,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 14.5: Monitoring & Logging Setup
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Dependencies:** 14.2, 3.3
 **Description:**
 - Configure log aggregation (ELK stack or similar)
@@ -1507,7 +1507,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 14.6: CI/CD Pipeline
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Dependencies:** 14.1, 12.1, 12.2
 **Description:**
 - Set up GitHub Actions / GitLab CI
@@ -1549,7 +1549,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ## Module 15: Performance Optimization
 
 ### Task 15.1: Backend Performance Tuning
-**Priority:** ?貕?Low
+**Priority:** ?�?Low
 **Dependencies:** Module 4 complete
 **Description:**
 - Profile slow endpoints
@@ -1568,7 +1568,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 15.2: Frontend Performance Optimization
-**Priority:** ?貕?Low
+**Priority:** ?�?Low
 **Dependencies:** Module 9 complete
 **Description:**
 - Code splitting and lazy loading
@@ -1587,7 +1587,7 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 ---
 
 ### Task 15.3: Container Startup Optimization
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Dependencies:** 4.2
 **Description:**
 - Optimize Docker image size
@@ -1609,8 +1609,8 @@ This document breaks down the AI Sandbox Platform into discrete, actionable task
 
 ### Task Count by Priority
 - ???**High**: 53 tasks (MVP critical)
-- ?貕?**Medium**: 26 tasks (Important for production)
-- ?貕?**Low**: 9 tasks (Polish and future)
+- ?�?**Medium**: 26 tasks (Important for production)
+- ?�?**Low**: 9 tasks (Polish and future)
 
 **Total**: 88 tasks
 
@@ -2001,7 +2001,7 @@ If fixes are required and introduce regressions:
 
 ### ~~TASK-40B-3: Runtime Hardening ??Session Database Unification (PostgreSQL Single Source of Truth)~~ [DEPRECATED]
 
-**?蹎? DEPRECATED ??INVALID FOR PHASE 40B**
+**?�? DEPRECATED ??INVALID FOR PHASE 40B**
 
 **Task ID:** TASK-40B-3 (DEPRECATED)  
 **Status:** ??**NOT AUTHORIZED UNDER RUNTIME HARDENING**  
@@ -2223,7 +2223,7 @@ If fixes are required and introduce regressions:
 **Task ID:** TASK-41A  
 **Phase:** 41  
 **Stage:** 41A  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** IMPLEMENTATION (ADDITIVE ONLY)  
 **Dependencies:** PHASE-8.3, PHASE-8.4, TASK-40B-3R  
 **Checkpoint:** `docs/PHASE-41A-CHECKPOINT.md`
@@ -2641,7 +2641,7 @@ If implementation introduces regressions:
 **Task ID:** TASK-41C  
 **Phase:** 41  
 **Stage:** 41C  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE ONLY)  
 **Dependencies:** PHASE-41B  
 **Checkpoint:** `docs/PHASE-41C-CHECKPOINT.md`
@@ -3236,7 +3236,7 @@ This task is limited to **verification and documentation only**:
 
 ### ~~TASK-42A (ORIGINAL)~~ [DEPRECATED - SPLIT INTO TASK-42A-1/2/3/4]
 
-**?蹎? DEPRECATED ??REPLACED BY TASK-42A-1, TASK-42A-2, TASK-42A-3, TASK-42A-4**
+**?�? DEPRECATED ??REPLACED BY TASK-42A-1, TASK-42A-2, TASK-42A-3, TASK-42A-4**
 
 **Task ID:** TASK-42A (DEPRECATED)  
 **Status:** ??**SPLIT INTO 4 SUBTASKS**  
@@ -3309,7 +3309,7 @@ This task is limited to **minimal, additive implementation only** in:
 **Task ID:** TASK-60A  
 **Phase:** 60  
 **Stage:** 60A  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** DOCUMENTATION / DESIGN (NO CODE)  
 **Dependencies:** PHASE-41A (Runtime Metrics)  
 **Checkpoint:** `docs/PHASE-60A-CHECKPOINT.md`
@@ -3320,7 +3320,7 @@ Define production alerting scope, alert thresholds, incident signal definitions,
 
 **Scope:**
 
-This task is limited to **documentation and design only**??觔 code changes.
+This task is limited to **documentation and design only**??�?code changes.
 
 **In Scope:**
 
@@ -3380,14 +3380,14 @@ This task is limited to **documentation and design only**??觔 code changes.
 **Task ID:** TASK-60B  
 **Phase:** 60  
 **Stage:** 60B  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** DOCUMENTATION (NO CODE)  
 **Dependencies:** PHASE-60A (Design)  
 **Checkpoint:** `docs/PHASE-60B-CHECKPOINT.md`
 
 **Objective:**
 
-Implement external monitoring contract and runbook documents to make Phase 60A design operationally usable. Documentation only??觔 platform code, schema, or endpoint changes.
+Implement external monitoring contract and runbook documents to make Phase 60A design operationally usable. Documentation only??�?platform code, schema, or endpoint changes.
 
 **Scope:**
 
@@ -3399,7 +3399,7 @@ Implement external monitoring contract and runbook documents to make Phase 60A d
 2. **Runbook Implementation**
    - Five runbook documents for the 5 defined incident categories
    - Connectivity: Docker connectivity lost, Database connectivity lost, API Gateway unreachable
-   - Session/Container: Session??ntainer drift
+   - Session/Container: Session???�ntainer drift
    - Termination: Elevated error termination rate
    - Per PHASE-60A-DESIGN.md section 5 (structure, verification, remediation, escalation)
 
@@ -3427,7 +3427,7 @@ Implement external monitoring contract and runbook documents to make Phase 60A d
 **Task ID:** TASK-61A  
 **Phase:** 61  
 **Stage:** 61A  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** DOCUMENTATION / DESIGN (NO CODE)  
 **Dependencies:** None  
 **Checkpoint:** `docs/PHASE-61A-CHECKPOINT.md`
@@ -3438,7 +3438,7 @@ Define backup scope, restore priorities, disaster recovery scenarios, recovery o
 
 **Scope:**
 
-This task is limited to **documentation and design only**??觔 code changes.
+This task is limited to **documentation and design only**??�?code changes.
 
 **In Scope:**
 
@@ -3492,18 +3492,18 @@ This task is limited to **documentation and design only**??觔 code changes.
 **Task ID:** TASK-61B  
 **Phase:** 61  
 **Stage:** 61B  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** DOCUMENTATION (NO CODE)  
 **Dependencies:** PHASE-61A (Design)  
 **Checkpoint:** `docs/PHASE-61B-CHECKPOINT.md`
 
 **Objective:**
 
-Implement operational backup procedure documents and restore runbooks for the Phase 61A recovery scenarios. Documentation only??觔 platform code, schema, or endpoint changes.
+Implement operational backup procedure documents and restore runbooks for the Phase 61A recovery scenarios. Documentation only??�?platform code, schema, or endpoint changes.
 
 **Scope:**
 
-This task is limited to **documentation only**??觔 code changes.
+This task is limited to **documentation only**??�?code changes.
 
 **In Scope:**
 
@@ -3558,7 +3558,7 @@ This task is limited to **documentation only**??觔 code changes.
 **Task ID:** TASK-62A  
 **Phase:** 62  
 **Stage:** 62A  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** DOCUMENTATION / DESIGN (NO CODE)  
 **Dependencies:** PHASE-61 COMPLETE  
 **Checkpoint:** `docs/PHASE-62A-CHECKPOINT.md`
@@ -3576,18 +3576,18 @@ Produce the Phase 62A design for backup and restore validation drills so the pla
 **Task ID:** TASK-62B  
 **Phase:** 62  
 **Stage:** 62B  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** DOCUMENTATION (NO CODE)  
 **Dependencies:** PHASE-62A (Design)  
 **Checkpoint:** `docs/PHASE-62B-CHECKPOINT.md`
 
 **Objective:**
 
-Implement operator-ready validation drill runbooks for Phase 62A scenarios. Documentation only??觔 platform code, schema, or endpoint changes.
+Implement operator-ready validation drill runbooks for Phase 62A scenarios. Documentation only??�?platform code, schema, or endpoint changes.
 
 **Scope:**
 
-This task is limited to **documentation only**??觔 code changes.
+This task is limited to **documentation only**??�?code changes.
 
 **In Scope:**
 
@@ -3645,7 +3645,7 @@ This task is limited to **documentation only**??觔 code changes.
 **Task ID:** TASK-63A  
 **Phase:** 63  
 **Stage:** 63A  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** DOCUMENTATION / DESIGN (NO CODE)  
 **Dependencies:** None  
 **Checkpoint:** `docs/PHASE-63A-CHECKPOINT.md`
@@ -3656,7 +3656,7 @@ Define security operations scope for launch readiness, including audit logging, 
 
 **Scope:**
 
-This task is limited to **documentation/design only**??觔 code changes.
+This task is limited to **documentation/design only**??�?code changes.
 
 **In Scope:**
 
@@ -3699,18 +3699,18 @@ This task is limited to **documentation/design only**??觔 code changes.
 **Task ID:** TASK-63B  
 **Phase:** 63  
 **Stage:** 63B  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** DOCUMENTATION (NO CODE)  
 **Dependencies:** PHASE-63A (Design)  
 **Checkpoint:** `docs/PHASE-63B-CHECKPOINT.md`
 
 **Objective:**
 
-Implement operator-ready security runbooks and compliance operational documentation per Phase 63A design. Documentation only??觔 platform code, schema, or endpoint changes.
+Implement operator-ready security runbooks and compliance operational documentation per Phase 63A design. Documentation only??�?platform code, schema, or endpoint changes.
 
 **Scope:**
 
-This task is limited to **documentation only**??觔 code changes.
+This task is limited to **documentation only**??�?code changes.
 
 **In Scope:**
 
@@ -3761,7 +3761,7 @@ This task is limited to **documentation only**??觔 code changes.
 **Task ID:** TASK-64A  
 **Phase:** 64  
 **Stage:** 64A  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** DOCUMENTATION / DESIGN (NO CODE)  
 **Dependencies:** None  
 **Checkpoint:** `docs/PHASE-64A-CHECKPOINT.md`
@@ -3772,7 +3772,7 @@ Define launch-ready legal/privacy document scope, privacy policy/terms/cookie no
 
 **Scope:**
 
-This task is limited to **documentation/design only**??觔 code changes.
+This task is limited to **documentation/design only**??�?code changes.
 
 **In Scope:**
 
@@ -3810,18 +3810,18 @@ This task is limited to **documentation/design only**??觔 code changes.
 **Task ID:** TASK-64B
 **Phase:** 64
 **Stage:** 64B
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Nature:** DOCUMENTATION (NO CODE)
 **Dependencies:** PHASE-64A (Design)
 **Checkpoint:** `docs/PHASE-64B-CHECKPOINT.md`
 
 **Objective:**
 
-Implement operator-ready legal/privacy operational documentation per Phase 64A design. Documentation only??觔 platform code, schema, or endpoint changes.
+Implement operator-ready legal/privacy operational documentation per Phase 64A design. Documentation only??�?platform code, schema, or endpoint changes.
 
 **Scope:**
 
-This task is limited to **documentation only**??觔 code changes.
+This task is limited to **documentation only**??�?code changes.
 
 **In Scope:**
 
@@ -3866,7 +3866,7 @@ This task is limited to **documentation only**??觔 code changes.
 **Task ID:** TASK-65A  
 **Phase:** 65  
 **Stage:** 65A  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** DOCUMENTATION / DESIGN (NO CODE)  
 **Dependencies:** None  
 **Checkpoint:** `docs/PHASE-65A-CHECKPOINT.md`
@@ -3877,7 +3877,7 @@ Define launch-ready admin tool scope, admin actions and operator permissions, ab
 
 **Scope:**
 
-This task is limited to **documentation/design only**??觔 code changes.
+This task is limited to **documentation/design only**??�?code changes.
 
 **In Scope:**
 
@@ -3915,18 +3915,18 @@ This task is limited to **documentation/design only**??觔 code changes.
 **Task ID:** TASK-65B  
 **Phase:** 65  
 **Stage:** 65B  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** DOCUMENTATION (NO CODE)  
 **Dependencies:** PHASE-65A (Design)  
 **Checkpoint:** `docs/PHASE-65B-CHECKPOINT.md`
 
 **Objective:**
 
-Implement operator-ready admin procedures per Phase 65A design. Documentation only??觔 platform code, schema, or endpoint changes.
+Implement operator-ready admin procedures per Phase 65A design. Documentation only??�?platform code, schema, or endpoint changes.
 
 **Scope:**
 
-This task is limited to **documentation only**??觔 code changes.
+This task is limited to **documentation only**??�?code changes.
 
 **In Scope:**
 
@@ -3968,7 +3968,7 @@ This task is limited to **documentation only**??觔 code changes.
 **Task ID:** TASK-65C  
 **Phase:** 65  
 **Stage:** 65C  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** VALIDATION / DOCUMENTATION (NO CODE)  
 **Dependencies:** PHASE-65A (Design), PHASE-65B (Operator Procedures)  
 **Checkpoint:** `docs/PHASE-65C-CHECKPOINT.md`
@@ -4011,7 +4011,7 @@ Final validation of Phase 65A design and Phase 65B operator documentation, with 
 **Task ID:** TASK-66A
 **Phase:** 66
 **Stage:** 66A
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Nature:** DOCUMENTATION / DESIGN (NO CODE)
 **Dependencies:** None
 **Checkpoint:** `docs/PHASE-66A-CHECKPOINT.md`
@@ -4022,7 +4022,7 @@ Define launch-ready analytics and growth visibility scope, product usage/retenti
 
 **Scope:**
 
-This task is limited to **documentation and design only**??觔 code changes.
+This task is limited to **documentation and design only**??�?code changes.
 
 **In Scope:**
 
@@ -4057,18 +4057,18 @@ This task is limited to **documentation and design only**??觔 code changes.
 **Task ID:** TASK-66B
 **Phase:** 66
 **Stage:** 66B
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Nature:** DOCUMENTATION (NO CODE)
 **Dependencies:** PHASE-66A (Design)
 **Checkpoint:** `docs/PHASE-66B-CHECKPOINT.md`
 
 **Objective:**
 
-Implement operator-ready analytics review procedures and stakeholder/founder reporting procedures per Phase 66A design. Documentation only??觔 platform code, schema, or endpoint changes.
+Implement operator-ready analytics review procedures and stakeholder/founder reporting procedures per Phase 66A design. Documentation only??�?platform code, schema, or endpoint changes.
 
 **Scope:**
 
-This task is limited to **documentation only**??觔 code changes.
+This task is limited to **documentation only**??�?code changes.
 
 **In Scope:**
 
@@ -4106,7 +4106,7 @@ This task is limited to **documentation only**??觔 code changes.
 **Task ID:** TASK-67A
 **Phase:** 67
 **Stage:** 67A
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Nature:** DOCUMENTATION / DESIGN (NO CODE)
 **Dependencies:** None
 **Checkpoint:** `docs/PHASE-67A-CHECKPOINT.md`
@@ -4117,7 +4117,7 @@ Define launch-ready core product UX/UI requirements for the AI Sandbox Platform,
 
 **Scope:**
 
-This task is limited to **documentation/design only**??觔 code changes.
+This task is limited to **documentation/design only**??�?code changes.
 
 **In Scope:**
 
@@ -4171,18 +4171,18 @@ This task is limited to **documentation/design only**??觔 code changes.
 **Task ID:** TASK-67B
 **Phase:** 67
 **Stage:** 67B
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Nature:** DOCUMENTATION / VALIDATION (NO CODE)
 **Dependencies:** PHASE-67A (Design)
 **Checkpoint:** `docs/PHASE-67B-CHECKPOINT.md`
 
 **Objective:**
 
-Final consolidation and validation of all Phase 67A UX/UI design documentation to ensure consistency, completeness, and launch readiness. Documentation only??觔 platform code, schema, or endpoint changes.
+Final consolidation and validation of all Phase 67A UX/UI design documentation to ensure consistency, completeness, and launch readiness. Documentation only??�?platform code, schema, or endpoint changes.
 
 **Scope:**
 
-This task is limited to **documentation and validation only**??觔 code changes.
+This task is limited to **documentation and validation only**??�?code changes.
 
 **In Scope:**
 
@@ -4227,18 +4227,18 @@ This task is limited to **documentation and validation only**??觔 code changes.
 **Task ID:** TASK-67C
 **Phase:** 67
 **Stage:** 67C
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Nature:** DOCUMENTATION (NO CODE)
 **Dependencies:** PHASE-67A (Design), PHASE-67B (Validation)
 **Checkpoint:** `docs/PHASE-67-CHECKPOINT.md`
 
 **Objective:**
 
-Create final Phase 67 checkpoint summarizing all UX/UI design work and confirming documentation-only scope compliance. Documentation only??觔 platform code, schema, or endpoint changes.
+Create final Phase 67 checkpoint summarizing all UX/UI design work and confirming documentation-only scope compliance. Documentation only??�?platform code, schema, or endpoint changes.
 
 **Scope:**
 
-This task is limited to **documentation only**??觔 code changes.
+This task is limited to **documentation only**??�?code changes.
 
 **In Scope:**
 
@@ -4282,18 +4282,18 @@ This task is limited to **documentation only**??觔 code changes.
 **Task ID:** TASK-68A
 **Phase:** 68
 **Stage:** 68A
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Nature:** DOCUMENTATION / PLANNING (NO CODE)
 **Dependencies:** PHASE-67 (Complete)
 **Checkpoint:** `docs/PHASE-68A-CHECKPOINT.md`
 
 **Objective:**
 
-Convert completed Phase 67 UX/UI design outputs into an implementation-ready execution plan for launch-priority UX/UI work. This task produces a structured implementation roadmap that sequences backend and frontend work, identifies dependencies, and defines controlled implementation stages. Documentation only??觔 platform code, schema, or endpoint changes.
+Convert completed Phase 67 UX/UI design outputs into an implementation-ready execution plan for launch-priority UX/UI work. This task produces a structured implementation roadmap that sequences backend and frontend work, identifies dependencies, and defines controlled implementation stages. Documentation only??�?platform code, schema, or endpoint changes.
 
 **Scope:**
 
-This task is limited to **documentation only**??觔 code changes.
+This task is limited to **documentation only**??�?code changes.
 
 **In Scope:**
 
@@ -4396,7 +4396,7 @@ Implement the first minimal backend endpoint slice to unblock frontend history/c
 
 **Scope:**
 
-This task is limited to **backend implementation only**??觔 frontend, no schema changes.
+This task is limited to **backend implementation only**??�?frontend, no schema changes.
 
 **In Scope:**
 
@@ -4565,7 +4565,7 @@ Implement the second minimal backend endpoint slice to unblock frontend user das
 
 **Scope:**
 
-This task is limited to **backend implementation only**??觔 frontend, no schema changes.
+This task is limited to **backend implementation only**??�?frontend, no schema changes.
 
 **In Scope:**
 
@@ -4722,7 +4722,7 @@ This task is limited to **backend implementation only**??觔 frontend, no schema
 **Task ID:** TASK-68B-3  
 **Phase:** 68  
 **Stage:** 68B-3  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** IMPLEMENTATION (BACKEND ONLY, ADDITIVE)  
 **Dependencies:** PHASE-68B (Complete), TASK-68B-2 (Complete), Existing users table, Existing sessions table, Existing internal auth guards, Existing runtime metrics endpoint  
 **Checkpoint:** `docs/PHASE-68B-3-CHECKPOINT.md`
@@ -4733,7 +4733,7 @@ Implement the third minimal backend endpoint slice to unblock admin dashboard UX
 
 **Scope:**
 
-This task is limited to **backend implementation only**??觔 frontend and no scope expansion beyond admin dashboard endpoint needs.
+This task is limited to **backend implementation only**??�?frontend and no scope expansion beyond admin dashboard endpoint needs.
 
 **In Scope:**
 
@@ -4830,7 +4830,7 @@ This task is limited to **backend implementation only**??觔 frontend and no sco
 **Task ID:** TASK-68B-FINAL  
 **Phase:** 68  
 **Stage:** 68B-FINAL  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)  
 **Dependencies:** TASK-68B (Complete), TASK-68B-2 (Complete), TASK-68B-3 (Complete), Existing PRD/ARCHITECTURE authority documents  
 **Checkpoint:** `docs/PHASE-68B-FINAL-CHECKPOINT.md`
@@ -5313,7 +5313,7 @@ This task is limited to **frontend implementation only** for the first launch-po
 **Task ID:** TASK-68-FINAL  
 **Phase:** 68  
 **Stage:** 68-FINAL  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)  
 **Dependencies:** TASK-68A (Complete), TASK-68B (Complete), TASK-68B-2 (Complete), TASK-68B-3 (Complete), TASK-68B-FINAL (Complete), TASK-68C (Complete), TASK-68D (Complete), TASK-68E (Complete), TASK-68F (Complete), TASK-68G (Complete)  
 **Checkpoint:** `docs/PHASE-68-FINAL-CHECKPOINT.md`
@@ -5411,7 +5411,7 @@ This task is limited to **documentation and validation only** for completed Phas
 **Task ID:** TASK-69A  
 **Phase:** 69  
 **Stage:** 69A  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** DOCUMENTATION / PLANNING (NO CODE)  
 **Dependencies:** PHASE-67-FINAL (Complete), PHASE-68-FINAL (Complete)  
 **Checkpoint:** `docs/PHASE-69A-CHECKPOINT.md`
@@ -5504,7 +5504,7 @@ This task is limited to **documentation and planning only**.
 **Task ID:** TASK-69B  
 **Phase:** 69  
 **Stage:** 69B  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** VALIDATION / DOCUMENTATION (NO CODE)  
 **Dependencies:** TASK-69A (Complete)  
 **Checkpoint:** `docs/PHASE-69B-CHECKPOINT.md`
@@ -5596,7 +5596,7 @@ This task is limited to **validation and documentation only**.
 **Task ID:** TASK-69-FINAL  
 **Phase:** 69  
 **Stage:** 69-FINAL  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)  
 **Dependencies:** TASK-69A (Complete), TASK-69B (Complete)  
 **Checkpoint:** `docs/PHASE-69-FINAL-CHECKPOINT.md`
@@ -5675,7 +5675,7 @@ This task is limited to **documentation and final validation only**.
 **Task ID:** TASK-70A  
 **Phase:** 70  
 **Stage:** 70A  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** DOCUMENTATION / PLANNING (NO CODE)  
 **Dependencies:** PHASE-68-FINAL (Complete), PHASE-69-FINAL (Complete)  
 **Checkpoint:** `docs/PHASE-70A-CHECKPOINT.md`
@@ -5761,7 +5761,7 @@ This task is limited to **documentation and planning only**.
 **Task ID:** TASK-70B  
 **Phase:** 70  
 **Stage:** 70B  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** VALIDATION / DOCUMENTATION (NO CODE)  
 **Dependencies:** TASK-70A (Complete)  
 **Checkpoint:** `docs/PHASE-70B-CHECKPOINT.md`
@@ -5846,7 +5846,7 @@ This task is limited to **validation and documentation only**.
 **Task ID:** TASK-70-FINAL  
 **Phase:** 70  
 **Stage:** 70-FINAL  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)  
 **Dependencies:** TASK-70A (Complete), TASK-70B (Complete)  
 **Checkpoint:** `docs/PHASE-70-FINAL-CHECKPOINT.md`
@@ -5926,7 +5926,7 @@ This task is limited to **documentation and validation only**.
 **Task ID:** TASK-71A  
 **Phase:** 71  
 **Stage:** 71A  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** DOCUMENTATION / PLANNING (NO CODE)  
 **Dependencies:** PHASE-70-FINAL (Complete)  
 **Checkpoint:** `docs/PHASE-71A-CHECKPOINT.md`
@@ -6013,7 +6013,7 @@ This task is limited to **documentation and planning only**.
 **Task ID:** TASK-71B  
 **Phase:** 71  
 **Stage:** 71B  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** DOCUMENTATION / PLANNING (NO CODE)  
 **Dependencies:** TASK-71A (Complete)  
 **Checkpoint:** `docs/PHASE-71B-CHECKPOINT.md`
@@ -6093,7 +6093,7 @@ This task is limited to **documentation and planning only**.
 **Task ID:** TASK-71C  
 **Phase:** 71  
 **Stage:** 71C  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** DOCUMENTATION / VALIDATION (NO CODE)  
 **Dependencies:** TASK-71B (Complete)  
 **Checkpoint:** `docs/PHASE-71C-CHECKPOINT.md`
@@ -6166,7 +6166,7 @@ This task is limited to **documentation and validation only**.
 **Task ID:** TASK-71-FINAL  
 **Phase:** 71  
 **Stage:** 71-FINAL  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** DOCUMENTATION / VALIDATION (NO CODE)  
 **Dependencies:** TASK-71C (Complete)  
 **Checkpoint:** `docs/PHASE-71-FINAL-CHECKPOINT.md`
@@ -6242,7 +6242,7 @@ This task is limited to **documentation and validation only**.
 **Task ID:** TASK-72A  
 **Phase:** 72  
 **Stage:** 72A  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** DOCUMENTATION / VALIDATION (NO CODE)  
 **Dependencies:** TASK-71-FINAL (Complete)  
 **Checkpoint:** `docs/PHASE-72A-CHECKPOINT.md`
@@ -6489,7 +6489,7 @@ This task executes **only** the original `TASK-42A-4` scope from current authori
 **Task ID:** TASK-72-FINAL  
 **Phase:** 72  
 **Stage:** 72-FINAL  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)  
 **Dependencies:** TASK-72C (Complete)  
 **Checkpoint:** `docs/PHASE-72-FINAL-CHECKPOINT.md`
@@ -6567,7 +6567,7 @@ This task is limited to **documentation and validation only**.
 **Task ID:** TASK-73A  
 **Phase:** 73  
 **Stage:** 73A  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** DOCUMENTATION / PLANNING (NO CODE)  
 **Dependencies:** PHASE-72-FINAL (Complete)  
 **Checkpoint:** `docs/PHASE-73A-CHECKPOINT.md`
@@ -6644,7 +6644,7 @@ This task is limited to **documentation and planning only**.
 **Task ID:** TASK-73B  
 **Phase:** 73  
 **Stage:** 73B  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** PLANNING / TASK REGISTRATION (NO CODE)  
 **Dependencies:** TASK-73A (Complete)  
 **Checkpoint:** `docs/PHASE-73B-CHECKPOINT.md`
@@ -6731,7 +6731,7 @@ This task is limited to **documentation and planning only**.
 **Task ID:** TASK-73C-1  
 **Phase:** 73  
 **Stage:** 73C-1  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE, BOUNDED)  
 **Dependencies:** TASK-73B (Complete)  
 **Checkpoint:** `docs/PHASE-73C-1-CHECKPOINT.md`
@@ -6810,7 +6810,7 @@ This task is limited to the first bounded commercial-foundation implementation s
 **Task ID:** TASK-73C-2  
 **Phase:** 73  
 **Stage:** 73C-2  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** VALIDATION / DOCUMENTATION (NO NEW IMPLEMENTATION)  
 **Dependencies:** TASK-73C-1 (Complete)  
 **Checkpoint:** `docs/PHASE-73C-2-CHECKPOINT.md`
@@ -6890,7 +6890,7 @@ This task is limited to the second bounded commercial-foundation validation slic
 **Task ID:** TASK-73C-FINAL  
 **Phase:** 73  
 **Stage:** 73C-FINAL  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** VALIDATION / DOCUMENTATION (NO NEW IMPLEMENTATION)  
 **Dependencies:** TASK-73C-1 (Complete), TASK-73C-2 (Complete)  
 **Checkpoint:** `docs/PHASE-73C-FINAL-CHECKPOINT.md`
@@ -6972,7 +6972,7 @@ This task is limited to final consolidation validation for the selected bounded 
 **Task ID:** TASK-73-FINAL  
 **Phase:** 73  
 **Stage:** 73-FINAL  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)  
 **Dependencies:** TASK-73A (Complete), TASK-73B (Complete), TASK-73C-1 (Complete), TASK-73C-2 (Complete), TASK-73C-FINAL (Complete)  
 **Checkpoint:** `docs/PHASE-73-FINAL-CHECKPOINT.md`
@@ -7052,7 +7052,7 @@ This task is limited to final consolidation validation for completed Phase 73 ou
 **Task ID:** TASK-74A  
 **Phase:** 74  
 **Stage:** 74A  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** PLANNING / TASK REGISTRATION (NO CODE)  
 **Dependencies:** TASK-73-FINAL (Complete)  
 **Checkpoint:** `docs/PHASE-74A-CHECKPOINT.md`
@@ -7138,7 +7138,7 @@ This task is limited to **documentation and planning only**.
 **Task ID:** TASK-74B  
 **Phase:** 74  
 **Stage:** 74B  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** PLANNING / TASK REGISTRATION (NO CODE)  
 **Dependencies:** TASK-74A (Complete)  
 **Checkpoint:** `docs/PHASE-74B-CHECKPOINT.md`
@@ -7229,7 +7229,7 @@ This task is limited to **documentation and planning only**.
 **Task ID:** TASK-74C-1
 **Phase:** 74
 **Stage:** 74C-1
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE, BOUNDED)
 **Dependencies:** TASK-74B (Complete)
 **Checkpoint:** `docs/PHASE-74C-1-CHECKPOINT.md`
@@ -7315,7 +7315,7 @@ This task is limited to **bounded implementation or validation on existing surfa
 **Task ID:** TASK-74C-2
 **Phase:** 74
 **Stage:** 74C-2
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Nature:** VALIDATION / DOCUMENTATION (NO NEW IMPLEMENTATION)
 **Dependencies:** TASK-74C-1 (Complete)
 **Checkpoint:** `docs/PHASE-74C-2-CHECKPOINT.md`
@@ -7401,7 +7401,7 @@ This task is limited to **bounded validation and documentation on existing surfa
 **Task ID:** TASK-74C-FINAL
 **Phase:** 74
 **Stage:** 74C-FINAL
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Nature:** VALIDATION / DOCUMENTATION (NO NEW IMPLEMENTATION)
 **Dependencies:** TASK-74C-1 (Complete), TASK-74C-2 (Complete)
 **Checkpoint:** `docs/PHASE-74C-FINAL-CHECKPOINT.md`
@@ -7483,7 +7483,7 @@ This task is limited to **final bounded-family consolidation and validation only
 **Task ID:** TASK-74-FINAL
 **Phase:** 74
 **Stage:** 74-FINAL
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)
 **Dependencies:** TASK-74A (Complete), TASK-74B (Complete), TASK-74C-1 (Complete), TASK-74C-2 (Complete), TASK-74C-FINAL (Complete)
 **Checkpoint:** `docs/PHASE-74-FINAL-CHECKPOINT.md`
@@ -7567,7 +7567,7 @@ This task is limited to final consolidation validation for completed Phase 74 ou
 **Task ID:** TASK-75A  
 **Phase:** 75  
 **Stage:** 75A  
-**Priority:** ?貕?Medium  
+**Priority:** ?�?Medium  
 **Nature:** DOCUMENTATION / PLANNING (NO CODE)  
 **Dependencies:** TASK-74-FINAL (Complete)  
 **Checkpoint:** `docs/PHASE-75A-CHECKPOINT.md`
@@ -8397,7 +8397,7 @@ This task is limited to **validation and documentation only**.
 **Task ID:** TASK-76-FINAL
 **Phase:** 76
 **Stage:** 76-FINAL
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)
 **Dependencies:** TASK-76A (Complete), TASK-76B (Complete), TASK-76C (Complete), TASK-76D (Complete), TASK-76E (Complete), TASK-76F (Complete), TASK-76G (Complete), TASK-76H (Complete)
 **Checkpoint:** `docs/PHASE-76-FINAL-CHECKPOINT.md`
@@ -8489,7 +8489,7 @@ This task is limited to final consolidation validation for completed Phase 76 ou
 **Task ID:** TASK-77A
 **Phase:** 77
 **Stage:** 77A
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Nature:** IMPLEMENTATION (MINIMAL, TARGETED FIX)
 **Dependencies:** TASK-76-FINAL (Complete)
 **Checkpoint:** `docs/PHASE-77A-CHECKPOINT.md`
@@ -8580,7 +8580,7 @@ This task is limited to **ISSUE-76-005 resolution only** (one-issue-at-a-time pr
 **Task ID:** TASK-77-FINAL
 **Phase:** 77
 **Stage:** 77-FINAL
-**Priority:** ?貕?Low
+**Priority:** ?�?Low
 **Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)
 **Dependencies:** TASK-77A (Complete)
 **Checkpoint:** `docs/PHASE-77-FINAL-CHECKPOINT.md`
@@ -8646,7 +8646,7 @@ Validate and consolidate completed Phase 77 bounded fix outputs (`TASK-77A`) and
 **Task ID:** TASK-78A
 **Phase:** 78
 **Stage:** 78A
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-77A (Complete), TASK-68C (Complete), TASK-68D (Complete), Phase 76 gate OPEN
@@ -8747,7 +8747,7 @@ Wire the workspace's existing command input surface to `POST /api/sessions/:id/e
 **Task ID:** TASK-78B
 **Phase:** 78
 **Stage:** 78B
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-78A (Complete and Locked), TASK-68D (Complete and Locked)
@@ -8836,7 +8836,7 @@ After a successful exec, refresh the checkpoint list and session-state indicator
 **Task ID:** TASK-78-FINAL
 **Phase:** 78
 **Stage:** 78-FINAL
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)
 **Dependencies:** TASK-78A (Complete and Locked), TASK-78B (Complete and Locked)
@@ -8922,7 +8922,7 @@ Validate and consolidate completed Phase 78 slices (`TASK-78A`, `TASK-78B`) and 
 **Task ID:** TASK-79A
 **Phase:** 79
 **Stage:** 79A
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** TASK-78-FINAL (Complete and Locked), TASK-68C (Complete), TASK-78A (Complete and Locked), TASK-78B (Complete and Locked)
@@ -9012,7 +9012,7 @@ Make the workspace preview panel meaningfully usable by wiring the existing prev
 **Task ID:** TASK-79B
 **Phase:** 79
 **Stage:** 79B
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** Phase 78 (Complete and Locked), TASK-79A (Complete and Locked), TASK-68C (Complete)
@@ -9107,7 +9107,7 @@ Make the workspace editor area meaningfully usable by wiring the existing editor
 **Task ID:** TASK-79-FINAL
 **Phase:** 79
 **Stage:** 79-FINAL
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** VALIDATION / DOCUMENTATION ONLY (NO CODE)
 **Dependencies:** TASK-79A (Complete and Locked), TASK-79B (Complete and Locked)
@@ -9286,7 +9286,7 @@ Make the workspace editor meaningfully usable for actual code changes by wiring 
 - Editing/saving scoped to active session and selected file only
 - PRD.md and ARCHITECTURE.md remain higher authority
 
-**Reference:** TASKS.md, PRD.md 蝳?C (File System Operations), ARCHITECTURE.md 蝳? (API Design), PHASE-79B-CHECKPOINT.md, PHASE-79-FINAL-CHECKPOINT.md
+**Reference:** TASKS.md, PRD.md ??C (File System Operations), ARCHITECTURE.md ?? (API Design), PHASE-79B-CHECKPOINT.md, PHASE-79-FINAL-CHECKPOINT.md
 
 ---
 
@@ -9377,7 +9377,7 @@ Make workspace version-control usability meaningfully better by wiring the exist
 - Checkpoint creation scoped to active session only
 - PRD.md and ARCHITECTURE.md remain higher authority
 
-**Reference:** TASKS.md, PRD.md 蝳?D (Version Control / Checkpoints), ARCHITECTURE.md 蝳? (API Design), PHASE-80A-CHECKPOINT.md, PHASE-68D-CHECKPOINT.md (or equivalent history/control checkpoint)
+**Reference:** TASKS.md, PRD.md ??D (Version Control / Checkpoints), ARCHITECTURE.md ?? (API Design), PHASE-80A-CHECKPOINT.md, PHASE-68D-CHECKPOINT.md (or equivalent history/control checkpoint)
 
 ---
 
@@ -9483,7 +9483,7 @@ Make workspace version-control usability meaningfully better by wiring the exist
 - PRD.md and ARCHITECTURE.md remain higher authority
 - CLAUDE.md governance loop respected at every stage
 
-**Reference:** TASKS.md, PRD.md 蝳?C (File System Operations), ARCHITECTURE.md 蝳? (API Design), PHASE-80B-CHECKPOINT.md, PHASE-80-FINAL-CHECKPOINT.md
+**Reference:** TASKS.md, PRD.md ??C (File System Operations), ARCHITECTURE.md ?? (API Design), PHASE-80B-CHECKPOINT.md, PHASE-80-FINAL-CHECKPOINT.md
 
 ---
 
@@ -13589,7 +13589,7 @@ Extend the working `/en/app` Chat Panel from a single prompt/response surface in
 **Task ID:** TASK-84C
 **Phase:** 84
 **Stage:** 84C
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** Phase 81 and Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A, TASK-84B (Complete and Locked)
@@ -13636,7 +13636,7 @@ Improve `/en/app` Chat Panel UX when chat execution is blocked by quota/rate-lim
 **Task ID:** TASK-84D
 **Phase:** 84
 **Stage:** 84D
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** Phase 81 and Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A, TASK-84B, TASK-84C (Complete and Locked)
@@ -13684,7 +13684,7 @@ Fix the remaining `/en/app` Chat Panel message-thread issues where a valid assis
 **Task ID:** TASK-84E
 **Phase:** 84
 **Stage:** 84E
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** Phase 81 and Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A, TASK-84B, TASK-84C, TASK-84D (Complete and Locked)
@@ -13736,7 +13736,7 @@ Improve `/en/app` Chat Panel UX by making the current chat thread persist across
 **Task ID:** TASK-84F
 **Phase:** 84
 **Stage:** 84F
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (FRONTEND ONLY, ADDITIVE)
 **Dependencies:** Phase 81 and Phase 82 (Complete and Locked); Phase 83 (Complete and Locked); TASK-84A, TASK-84B, TASK-84C, TASK-84D, TASK-84E (Complete and Locked)
@@ -15113,7 +15113,7 @@ PROJ-01-12 isolated the primary failure:
 
 **Task ID:** PROJ-01-14
 **Family:** PROJ-01 (Project/Public Flow Diagnostics)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG INVESTIGATION (PROJECT DOWNLOAD, PATH GUARD)
 **Dependencies:** PROJ-01-13 (COMPLETE and LOCKED)
@@ -15155,7 +15155,7 @@ Real usage shows project download currently fails with:
 
 **Task ID:** PROJ-01-15
 **Family:** PROJ-01 (Project/Public Flow Diagnostics)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG FIX (PROJECT DOWNLOAD, ARCHIVE PATHS)
 **Dependencies:** PROJ-01-14 (COMPLETE and LOCKED)
@@ -15748,7 +15748,7 @@ All Phase A slices must be gated behind a kill-switch so the product stays stabl
 **Bounded scope:**
 - Frontend only
 - New `frontend/lib/feature-flags.ts` exporting `PROJECT_FIRST_UX` boolean read from env (`NEXT_PUBLIC_PROJECT_FIRST_UX`)
-- New `frontend/lib/recovery-copy.ts` exporting string constants for Phase A? vocabulary ("Reopen project", "Workspace disconnected", "All changes saved", etc.)
+- New `frontend/lib/recovery-copy.ts` exporting string constants for Phase A???vocabulary ("Reopen project", "Workspace disconnected", "All changes saved", etc.)
 - Wire flag consumption points into page.tsx and workspace-shell.tsx (import/reference only ??no string substitution in this slice)
 - No behavior change whatsoever
 
@@ -18412,7 +18412,7 @@ CO-01-01 aligned quota/usage UX. CO-02-01 added minimal plans foundation. CO-03-
 
 **Task ID:** ADV-01-01
 **Family:** ADV-01 (Advanced Product Expansion)
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (ADVANCED PRODUCT, MULTI-MODEL WORKSPACE SUPPORT)
 **Dependencies:** CO-03-01 (Complete and Locked)
@@ -18462,7 +18462,7 @@ The core AI workspace loop is now complete and durable. The next bounded advance
 
 **Task ID:** ADV-02-01
 **Family:** ADV-01 (Advanced Product Expansion)
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (ADVANCED PRODUCT, SINGLE-MODEL MULTI-STEP ORCHESTRATION)
 **Dependencies:** ADV-01-01 (Complete and Locked)
@@ -18511,7 +18511,7 @@ ADV-01-01 added controlled multi-model selection and attribution. ADV-02-01 now 
 
 **Task ID:** ADV-03-01
 **Family:** ADV-01 (Advanced Product Expansion)
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (ADVANCED PRODUCT, CROSS-PLATFORM BUILD SUPPORT)
 **Dependencies:** ADV-02-01 (Complete and Locked)
@@ -18560,7 +18560,7 @@ The core workspace, persistence, commercial foundation, and bounded advanced AI 
 
 **Task ID:** ADV-04-01
 **Family:** ADV-01 (Advanced Product Expansion)
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (ADVANCED PRODUCT, EXTERNAL API FOUNDATION)
 **Dependencies:** ADV-03-01 (Complete and Locked)
@@ -18609,7 +18609,7 @@ The core workspace, persistence, commercial foundation, and bounded advanced fea
 
 **Task ID:** ADV-05-01
 **Family:** ADV-01 (Advanced Product Expansion)
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (ADVANCED PRODUCT, PUBLIC SHARING FOUNDATION)
 **Dependencies:** ADV-04-01 (Complete and Locked)
@@ -19236,7 +19236,7 @@ REL-01-03 found a concrete blocking config defect:
 
 **Task ID:** REL-01-05
 **Family:** REL-01 (Release Readiness)
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** DOCUMENTATION (RELEASE READINESS, OPERATIONAL RUNBOOK)
 **Dependencies:** REL-01-01 (Complete and Locked), REL-01-02 (Complete and Locked), REL-01-03 (Complete and Locked)
@@ -19446,7 +19446,7 @@ OPS-01-01 isolated the failure clearly:
 
 **Task ID:** OPS-01-04
 **Family:** OPS-01 (Runtime Cleanup Diagnostics)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG FIX (RUNTIME CLEANUP, API RESPONSE)
 **Dependencies:** OPS-01-03 (Complete and Locked)
@@ -19469,7 +19469,7 @@ Fix `POST /api/sessions/:id/stop` so it returns a successful response when clean
 
 **Task ID:** OPS-01-03
 **Family:** OPS-01 (Runtime Cleanup Diagnostics)
-**Priority:** ? High
+**Priority:** ???High
 **Status:** COMPLETE and LOCKED
 **Nature:** BUG INVESTIGATION (RUNTIME CLEANUP, POST-FIX VERIFICATION)
 **Dependencies:** OPS-01-02 (Complete and Locked)
@@ -20179,7 +20179,7 @@ UX-01 identified this as a blocker: the login page prominently shows test creden
 **Task ID:** UX-01
 **Family:** UX-01 (Manual UX/UI Acceptance)
 **Family status:** COMPLETE and LOCKED
-**Priority:** ?貕?Medium
+**Priority:** ?�?Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** VALIDATION (PRODUCT QUALITY, MANUAL UX/UI ACCEPTANCE)
 **Dependencies:** REL-02 (Complete and Locked)
@@ -20832,26 +20832,26 @@ Make the active AI execution path aware of the current workspace file list and s
 
 ## AI-WS ??AI Workspace Capability
 
-**Family status:** ACTIVE — AI-WS-06 COMPLETE and LOCKED; AI-WS-03-hotfix COMPLETE and LOCKED; AI-WS-03-hotfix2 COMPLETE and LOCKED; AI-WS-03-hotfix3 COMPLETE and LOCKED; AI-WS-02-hotfix COMPLETE and LOCKED; AI-WS-03-hotfix4 COMPLETE and LOCKED; AI-WS-03-hotfix5 COMPLETE and LOCKED; AI-WS-06-hotfix COMPLETE and LOCKED; AI-WS-06-hotfix2 COMPLETE and LOCKED; AI-WS-06-hotfix3 COMPLETE and LOCKED
+**Family status:** ACTIVE ??AI-WS-06 COMPLETE and LOCKED; AI-WS-03-hotfix COMPLETE and LOCKED; AI-WS-03-hotfix2 COMPLETE and LOCKED; AI-WS-03-hotfix3 COMPLETE and LOCKED; AI-WS-02-hotfix COMPLETE and LOCKED; AI-WS-03-hotfix4 COMPLETE and LOCKED; AI-WS-03-hotfix5 COMPLETE and LOCKED; AI-WS-06-hotfix COMPLETE and LOCKED; AI-WS-06-hotfix2 COMPLETE and LOCKED; AI-WS-06-hotfix3 COMPLETE and LOCKED
 
 **Current stage:** AI-WS-06-hotfix3 (COMPLETE and LOCKED)
 
 **Ordered slices (registered so far):**
-1. AI-WS-01 — Selected File Content Context Injection (COMPLETE and LOCKED)
-2. AI-WS-02 — AI File Action Safety And Confirmation Foundation (COMPLETE and LOCKED)
-3. AI-WS-03 — AI File Delete Support (COMPLETE and LOCKED)
-4. AI-WS-04 — Project And Workspace Metadata Context (COMPLETE and LOCKED)
-5. AI-WS-05 — Named File Read Support (COMPLETE and LOCKED)
-6. AI-WS-06 — Workspace Content Search Support (COMPLETE and LOCKED)
-7. AI-WS-03-hotfix — Correct AI Execute 403 Error Wording (COMPLETE and LOCKED)
-8. AI-WS-03-hotfix2 — Accept Raw JSON File-Actions Fallback (COMPLETE and LOCKED)
-9. AI-WS-03-hotfix3 — Surface Backend Delete Error Message (COMPLETE and LOCKED)
-10. AI-WS-02-hotfix — Sanitize Restored Pending File-Action Confirmations (COMPLETE and LOCKED)
-11. AI-WS-03-hotfix4 — Preserve Delete File Actions In API Gateway Execution Results (COMPLETE and LOCKED)
-12. AI-WS-03-hotfix5 — Route File Delete Through Container Exec (COMPLETE and LOCKED)
-13. AI-WS-06-hotfix — Route Workspace Search Through Container Exec (COMPLETE and LOCKED)
-14. AI-WS-06-hotfix2 — Simplify Container Search Script And Log Failures (COMPLETE and LOCKED)
-15. AI-WS-06-hotfix3 — Force Grep Filename Prefix In Container Search (COMPLETE and LOCKED)
+1. AI-WS-01 ??Selected File Content Context Injection (COMPLETE and LOCKED)
+2. AI-WS-02 ??AI File Action Safety And Confirmation Foundation (COMPLETE and LOCKED)
+3. AI-WS-03 ??AI File Delete Support (COMPLETE and LOCKED)
+4. AI-WS-04 ??Project And Workspace Metadata Context (COMPLETE and LOCKED)
+5. AI-WS-05 ??Named File Read Support (COMPLETE and LOCKED)
+6. AI-WS-06 ??Workspace Content Search Support (COMPLETE and LOCKED)
+7. AI-WS-03-hotfix ??Correct AI Execute 403 Error Wording (COMPLETE and LOCKED)
+8. AI-WS-03-hotfix2 ??Accept Raw JSON File-Actions Fallback (COMPLETE and LOCKED)
+9. AI-WS-03-hotfix3 ??Surface Backend Delete Error Message (COMPLETE and LOCKED)
+10. AI-WS-02-hotfix ??Sanitize Restored Pending File-Action Confirmations (COMPLETE and LOCKED)
+11. AI-WS-03-hotfix4 ??Preserve Delete File Actions In API Gateway Execution Results (COMPLETE and LOCKED)
+12. AI-WS-03-hotfix5 ??Route File Delete Through Container Exec (COMPLETE and LOCKED)
+13. AI-WS-06-hotfix ??Route Workspace Search Through Container Exec (COMPLETE and LOCKED)
+14. AI-WS-06-hotfix2 ??Simplify Container Search Script And Log Failures (COMPLETE and LOCKED)
+15. AI-WS-06-hotfix3 ??Force Grep Filename Prefix In Container Search (COMPLETE and LOCKED)
 
 ---
 
@@ -20953,8 +20953,8 @@ Extend the existing `workspaceContext` plumbing introduced in AI-CTX-01 to inclu
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
-**Nature:** FRONTEND SAFETY/INTERCEPT LAYER — file-action batch classification and confirmation UI before risky AI writes apply
-**Source:** Planning session (Apr 2026) — before adding destructive action support (delete), a safety/confirmation foundation is needed so risky AI file-action batches can be intercepted and approved
+**Nature:** FRONTEND SAFETY/INTERCEPT LAYER ??file-action batch classification and confirmation UI before risky AI writes apply
+**Source:** Planning session (Apr 2026) ??before adding destructive action support (delete), a safety/confirmation foundation is needed so risky AI file-action batches can be intercepted and approved
 **Depends on:** AI-WS-01 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -21025,8 +21025,8 @@ Add a frontend safety/confirmation foundation for risky AI file actions before e
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
-**Nature:** CROSS-LAYER FILE-ACTION EXTENSION — extend file-action contract to allow AI-proposed delete, always held for confirmation, frontend delete call through api-gateway to container-manager
-**Source:** Planning session (Apr 2026) — delete is the next destructive capability after safety confirmation foundation is in place
+**Nature:** CROSS-LAYER FILE-ACTION EXTENSION ??extend file-action contract to allow AI-proposed delete, always held for confirmation, frontend delete call through api-gateway to container-manager
+**Source:** Planning session (Apr 2026) ??delete is the next destructive capability after safety confirmation foundation is in place
 **Depends on:** AI-WS-02 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -21106,8 +21106,8 @@ Add support for AI-proposed file delete actions through the active file-actions 
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
-**Nature:** CROSS-LAYER CONTEXT PLUMBING — extend `workspaceContext` with lightweight project/workspace metadata for better prompt grounding
-**Source:** Planning session (Apr 2026) — after file and selected-file awareness are in place, AI should understand the current workspace/project it is operating in
+**Nature:** CROSS-LAYER CONTEXT PLUMBING ??extend `workspaceContext` with lightweight project/workspace metadata for better prompt grounding
+**Source:** Planning session (Apr 2026) ??after file and selected-file awareness are in place, AI should understand the current workspace/project it is operating in
 **Depends on:** AI-WS-03 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -21180,8 +21180,8 @@ Extend the existing AI `workspaceContext` plumbing to include lightweight projec
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
-**Nature:** FRONTEND-LED NAMED FILE CONTEXT INJECTION — detect explicitly named workspace files, read bounded safe contents through existing frontend file-read capability, and pass them through existing `workspaceContext`
-**Source:** Planning session (Apr 2026) — AI still cannot explain a named file unless that file is currently selected/open
+**Nature:** FRONTEND-LED NAMED FILE CONTEXT INJECTION ??detect explicitly named workspace files, read bounded safe contents through existing frontend file-read capability, and pass them through existing `workspaceContext`
+**Source:** Planning session (Apr 2026) ??AI still cannot explain a named file unless that file is currently selected/open
 **Depends on:** AI-WS-04 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -21267,8 +21267,8 @@ Allow the AI to answer questions about one or more named workspace files by usin
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
-**Nature:** BOUNDED WORKSPACE CONTENT SEARCH — safely search text-like workspace files for explicit locate/find questions without broad tool refactors or arbitrary command execution
-**Source:** Planning session (Apr 2026) — AI still cannot search across workspace file contents for prompts like "where is login implemented?" or "which files mention this text?"
+**Nature:** BOUNDED WORKSPACE CONTENT SEARCH ??safely search text-like workspace files for explicit locate/find questions without broad tool refactors or arbitrary command execution
+**Source:** Planning session (Apr 2026) ??AI still cannot search across workspace file contents for prompts like "where is login implemented?" or "which files mention this text?"
 **Depends on:** AI-WS-05 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -21349,8 +21349,8 @@ Add a bounded, safe workspace content search capability so AI can answer questio
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/AI-WS-03-hotfix-CHECKPOINT.md`
-**Nature:** FRONTEND WORDING HOTFIX — correct misleading AI execute error guidance for generic 403 responses without changing backend enforcement or AI behavior
-**Source:** Inspection session (Apr 2026) — frontend currently maps generic `POST /api/ai/execute` 403 failures to quota wording even when the failure can be access/launch/scope/auth related
+**Nature:** FRONTEND WORDING HOTFIX ??correct misleading AI execute error guidance for generic 403 responses without changing backend enforcement or AI behavior
+**Source:** Inspection session (Apr 2026) ??frontend currently maps generic `POST /api/ai/execute` 403 failures to quota wording even when the failure can be access/launch/scope/auth related
 **Depends on:** AI-WS-06 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -21407,8 +21407,8 @@ Fix the frontend error guidance so generic 403 AI execute failures are not misla
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/AI-WS-03-hotfix2-CHECKPOINT.md`
-**Nature:** AI SERVICE PARSER HOTFIX — add a safe fallback extraction path for bare `{"file-actions":[...]}` model output so that delete/create/write/update actions survive the known contract-violation output shape without changing the primary fenced block contract
-**Source:** Inspection session (May 2026) — model sometimes emits raw JSON `{"file-actions":[...]}` instead of a fenced ```file-actions block; the current parser only reads fenced blocks, so no file actions are extracted and no confirmation appears
+**Nature:** AI SERVICE PARSER HOTFIX ??add a safe fallback extraction path for bare `{"file-actions":[...]}` model output so that delete/create/write/update actions survive the known contract-violation output shape without changing the primary fenced block contract
+**Source:** Inspection session (May 2026) ??model sometimes emits raw JSON `{"file-actions":[...]}` instead of a fenced ```file-actions block; the current parser only reads fenced blocks, so no file actions are extracted and no confirmation appears
 **Depends on:** AI-WS-03 (COMPLETE and LOCKED); AI-WS-03-hotfix (COMPLETE and LOCKED)
 
 **Objective:**
@@ -21456,7 +21456,7 @@ Make the ai-service file-action parser tolerate the known malformed-but-clear mo
 
 **Risks / invariants:**
 - Fenced block contract remains the primary expected model format
-- Fallback must be narrow and safe — do not parse arbitrary prose as actions
+- Fallback must be narrow and safe ??do not parse arbitrary prose as actions
 - Do not loosen path safety
 - Do not change frontend confirmation or apply semantics
 - Delete remains risky/confirmation-gated downstream as established by AI-WS-02
@@ -21474,8 +21474,8 @@ Make the ai-service file-action parser tolerate the known malformed-but-clear mo
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/AI-WS-03-hotfix3-CHECKPOINT.md`
-**Nature:** FRONTEND HELPER HOTFIX — update `deleteWorkspaceFile` to surface the backend error message on failed delete responses instead of discarding the response body
-**Source:** Inspection session (May 2026) — after AI-WS-03-hotfix2, delete reaches the apply pipeline but `deleteWorkspaceFile` throws generic `File delete failed (404)` instead of surfacing the container-manager's useful `File not found: index2.html` message
+**Nature:** FRONTEND HELPER HOTFIX ??update `deleteWorkspaceFile` to surface the backend error message on failed delete responses instead of discarding the response body
+**Source:** Inspection session (May 2026) ??after AI-WS-03-hotfix2, delete reaches the apply pipeline but `deleteWorkspaceFile` throws generic `File delete failed (404)` instead of surfacing the container-manager's useful `File not found: index2.html` message
 **Depends on:** AI-WS-03-hotfix2 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -21535,8 +21535,8 @@ Update the frontend delete helper to read and surface the backend `message` fiel
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/AI-WS-02-hotfix-CHECKPOINT.md`
-**Nature:** FRONTEND CHAT-THREAD RESTORE HOTFIX — sanitize stale `awaiting-confirmation` file-action states when restoring persisted chat messages, so ghost Apply buttons are never rendered after session restore or page reload
-**Source:** Inspection session (May 2026) — after AI-WS-03-hotfix3, observed that delete-test.html appeared to not delete when Apply was pressed; root cause traced to a prior unconfirmed execution's awaiting-confirmation state being restored from localStorage, while `pendingConfirmationExecutionIdsRef` was cleared — pressing Apply silently returned with no action
+**Nature:** FRONTEND CHAT-THREAD RESTORE HOTFIX ??sanitize stale `awaiting-confirmation` file-action states when restoring persisted chat messages, so ghost Apply buttons are never rendered after session restore or page reload
+**Source:** Inspection session (May 2026) ??after AI-WS-03-hotfix3, observed that delete-test.html appeared to not delete when Apply was pressed; root cause traced to a prior unconfirmed execution's awaiting-confirmation state being restored from localStorage, while `pendingConfirmationExecutionIdsRef` was cleared ??pressing Apply silently returned with no action
 **Depends on:** AI-WS-02 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -21547,7 +21547,7 @@ In `parseStoredChatThreadMessages`, when a restored message has `fileActionState
 - Likely files:
   - `frontend/components/workspace/workspace-chat-thread.logic.ts`
   - `frontend/components/workspace/workspace-chat-thread.logic.test.ts`
-- In `parseStoredChatThreadMessages`, convert restored `awaiting-confirmation` → `skipped` with `skipReason: 'session-restored'`
+- In `parseStoredChatThreadMessages`, convert restored `awaiting-confirmation` ??`skipped` with `skipReason: 'session-restored'`
 - Already applied states remain unchanged
 - Already skipped/failed states remain unchanged
 - In-session confirmation behavior remains unchanged
@@ -21592,8 +21592,8 @@ In `parseStoredChatThreadMessages`, when a restored message has `fileActionState
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/AI-WS-03-hotfix4-CHECKPOINT.md`
-**Nature:** API GATEWAY DTO / PARSER HOTFIX — update execution-result DTO and metadata parser to accept and return delete file-actions, preventing status/execute responses from stripping delete actions out of completed execution results
-**Source:** Inspection session (May 2026) — delete file-actions arrive correctly through SSE but the status/execute response returns `fileActions: []` for delete executions because `parseExecutionResultMetadata` only accepts create/write/update, silently dropping delete; this causes the frontend pending confirmation state to be overwritten with an empty action array, making the Apply button disappear
+**Nature:** API GATEWAY DTO / PARSER HOTFIX ??update execution-result DTO and metadata parser to accept and return delete file-actions, preventing status/execute responses from stripping delete actions out of completed execution results
+**Source:** Inspection session (May 2026) ??delete file-actions arrive correctly through SSE but the status/execute response returns `fileActions: []` for delete executions because `parseExecutionResultMetadata` only accepts create/write/update, silently dropping delete; this causes the frontend pending confirmation state to be overwritten with an empty action array, making the Apply button disappear
 **Depends on:** AI-WS-03 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -21653,8 +21653,8 @@ Update `FileActionDto` and `parseExecutionResultMetadata` in the API gateway so 
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/AI-WS-03-hotfix5-CHECKPOINT.md`
-**Nature:** CONTAINER-MANAGER ROUTING HOTFIX — route file delete through Docker exec (matching read/write/list) instead of host `fs.unlink()` via FilesController; update API gateway HTTP client to target the internal sessions delete route
-**Source:** Inspection session (May 2026) — deleting an existing file fails with "File not found" because `ContainerManagerHttpClient.deleteSessionFile` calls `DELETE /api/files/${sessionId}/delete` (FilesController → host `fs.unlink`), while all other file operations route through `InternalSessionsController` → Docker exec; on Windows/Docker Desktop bind mounts this produces a filesystem view mismatch where the container sees the file at `/workspace/...` but host `fs.unlink` fails or sees a stale/inaccessible path
+**Nature:** CONTAINER-MANAGER ROUTING HOTFIX ??route file delete through Docker exec (matching read/write/list) instead of host `fs.unlink()` via FilesController; update API gateway HTTP client to target the internal sessions delete route
+**Source:** Inspection session (May 2026) ??deleting an existing file fails with "File not found" because `ContainerManagerHttpClient.deleteSessionFile` calls `DELETE /api/files/${sessionId}/delete` (FilesController ??host `fs.unlink`), while all other file operations route through `InternalSessionsController` ??Docker exec; on Windows/Docker Desktop bind mounts this produces a filesystem view mismatch where the container sees the file at `/workspace/...` but host `fs.unlink` fails or sees a stale/inaccessible path
 **Depends on:** AI-WS-03 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -21706,7 +21706,7 @@ Route file delete through the same container-exec path as read/write/list so del
 - Must not introduce arbitrary shell command execution
 - Use existing container exec safety patterns (validateWorkspacePath)
 - Keep delete scoped to current session workspace
-- Do not delete directories recursively — file-only in v1
+- Do not delete directories recursively ??file-only in v1
 - Preserve frontend/API gateway public route behavior
 - Preserve AI file-action apply and confirmation gate behavior
 - Keep this backend routing fix only
@@ -21723,18 +21723,18 @@ Route file delete through the same container-exec path as read/write/list so del
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/AI-WS-06-hotfix-CHECKPOINT.md`
-**Nature:** CONTAINER-MANAGER ROUTING HOTFIX — route AI workspace content search through Docker exec inside the active sandbox container, matching the read/write/list/delete architecture; update API gateway HTTP client to target the internal sessions search route
-**Source:** Inspection session (May 2026) — AI-WS-06 workspace search can run but returns no matches even when named-file read can see the content; root cause is the same host/container filesystem mismatch that affected delete before AI-WS-03-hotfix5: `FilesService.searchFiles()` uses `fs.readdir()` + `fs.readFile()` against the host `workspacePath`, while files live in the active container `/workspace/` view; on Windows/Docker Desktop/WSL2 this produces empty results
+**Nature:** CONTAINER-MANAGER ROUTING HOTFIX ??route AI workspace content search through Docker exec inside the active sandbox container, matching the read/write/list/delete architecture; update API gateway HTTP client to target the internal sessions search route
+**Source:** Inspection session (May 2026) ??AI-WS-06 workspace search can run but returns no matches even when named-file read can see the content; root cause is the same host/container filesystem mismatch that affected delete before AI-WS-03-hotfix5: `FilesService.searchFiles()` uses `fs.readdir()` + `fs.readFile()` against the host `workspacePath`, while files live in the active container `/workspace/` view; on Windows/Docker Desktop/WSL2 this produces empty results
 **Depends on:** AI-WS-06 (COMPLETE and LOCKED); AI-WS-03-hotfix5 (COMPLETE and LOCKED)
 
 **Objective:**
 Route AI workspace content search through the same active-container execution path as read/write/list/delete, preserving all AI-WS-06 safety caps, exclusions, and result format.
 
 **Bounded scope:**
-- `services/container-manager/src/docker/docker-runtime.service.ts` — add `searchFilesInContainer(sessionId, query)` using safe Docker exec (grep or equivalent), bounded by AI-WS-06 caps
-- `services/container-manager/src/sessions/sessions.service.ts` — add `searchFilesInContainer(sessionId, query)` with existing session governance checks
-- `services/container-manager/src/sessions/internal-sessions.controller.ts` — add `POST :id/files/search` route guarded by `InternalServiceAuthGuard`
-- `services/api-gateway/src/clients/container-manager-http.client.ts` — change `searchSessionFiles()` target from `POST /api/files/${sessionId}/search` to `POST /api/internal/sessions/${sessionId}/files/search` with internal service key header
+- `services/container-manager/src/docker/docker-runtime.service.ts` ??add `searchFilesInContainer(sessionId, query)` using safe Docker exec (grep or equivalent), bounded by AI-WS-06 caps
+- `services/container-manager/src/sessions/sessions.service.ts` ??add `searchFilesInContainer(sessionId, query)` with existing session governance checks
+- `services/container-manager/src/sessions/internal-sessions.controller.ts` ??add `POST :id/files/search` route guarded by `InternalServiceAuthGuard`
+- `services/api-gateway/src/clients/container-manager-http.client.ts` ??change `searchSessionFiles()` target from `POST /api/files/${sessionId}/search` to `POST /api/internal/sessions/${sessionId}/files/search` with internal service key header
 - Focused tests for the above
 
 **Non-goals (explicit):**
@@ -21780,16 +21780,16 @@ Route AI workspace content search through the same active-container execution pa
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/AI-WS-06-hotfix2-CHECKPOINT.md`
-**Nature:** CONTAINER-MANAGER DOCKER RUNTIME HOTFIX — simplify the multi-line shell search script to eliminate `mktemp`/temp-file dependency that may silently fail in minimal container images; add diagnostic stderr logging when exec exits non-zero with empty stdout so failures are no longer invisible
-**Source:** Inspection session (May 2026) — after AI-WS-06-hotfix, search routes correctly through Docker exec but still returns empty results; named-file read confirms keyword exists in `key.txt`; inspection shows the entire route chain and prompt/context flow are correct; likely failure is inside the search shell script itself: `mktemp` or `find` may not be available in the minimal sandbox image, causing script to exit non-zero with empty stdout, which is silently swallowed and returned as `{ results: [] }` — indistinguishable from a genuine no-match
+**Nature:** CONTAINER-MANAGER DOCKER RUNTIME HOTFIX ??simplify the multi-line shell search script to eliminate `mktemp`/temp-file dependency that may silently fail in minimal container images; add diagnostic stderr logging when exec exits non-zero with empty stdout so failures are no longer invisible
+**Source:** Inspection session (May 2026) ??after AI-WS-06-hotfix, search routes correctly through Docker exec but still returns empty results; named-file read confirms keyword exists in `key.txt`; inspection shows the entire route chain and prompt/context flow are correct; likely failure is inside the search shell script itself: `mktemp` or `find` may not be available in the minimal sandbox image, causing script to exit non-zero with empty stdout, which is silently swallowed and returned as `{ results: [] }` ??indistinguishable from a genuine no-match
 **Depends on:** AI-WS-06-hotfix (COMPLETE and LOCKED)
 
 **Objective:**
 Simplify `DockerRuntimeService.searchFilesInContainer` shell script and add diagnostic logging so that script failures are visible in logs and do not silently masquerade as genuine no-match results.
 
 **Bounded scope:**
-- `services/container-manager/src/docker/docker-runtime.service.ts` — replace `mktemp`/temp-file pattern with direct `find ... | while read` pipeline; add stderr warning log on non-zero empty-stdout exit
-- `services/container-manager/src/docker/docker-runtime.service.spec.ts` — add focused tests for stderr logging path and `.txt` file match parsing
+- `services/container-manager/src/docker/docker-runtime.service.ts` ??replace `mktemp`/temp-file pattern with direct `find ... | while read` pipeline; add stderr warning log on non-zero empty-stdout exit
+- `services/container-manager/src/docker/docker-runtime.service.spec.ts` ??add focused tests for stderr logging path and `.txt` file match parsing
 
 **Required behavior:**
 - Remove `mktemp` / temp-file dependency from search script
@@ -21817,7 +21817,7 @@ Simplify `DockerRuntimeService.searchFilesInContainer` shell script and add diag
 - Successful mocked grep output still parses into `{ path, line, preview }`
 - `.txt` file match such as `/workspace/key.txt:1:SPECIAL_TEST_KEYWORD` parses correctly
 - Empty/no-match result returns empty results cleanly
-- Non-zero + empty stdout + non-empty stderr → warning logged, empty results returned
+- Non-zero + empty stdout + non-empty stderr ??warning logged, empty results returned
 - Existing caps/exclusions tests still pass
 - Container-manager build and focused tests pass
 - No introduced lint errors
@@ -21842,16 +21842,16 @@ Simplify `DockerRuntimeService.searchFilesInContainer` shell script and add diag
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/AI-WS-06-hotfix3-CHECKPOINT.md`
-**Nature:** CONTAINER-MANAGER SEARCH SCRIPT ONE-LINE FIX — add `-H` flag to `grep` call inside `searchFilesInContainer` shell script so output always includes the filename prefix, making results parseable by the existing TypeScript parser
-**Source:** Inspection session (May 2026) — after AI-WS-06-hotfix2, search still returns no matches; live `node:20-alpine` container test confirmed: `grep -Fni` omits filename when searching a single file (output: `1:SPECIAL_TEST_KEYWORD`), but the parser expects `path:line:preview` (e.g. `/workspace/key.txt:1:SPECIAL_TEST_KEYWORD`); lines without a second colon are silently skipped by `parseWorkspaceSearchOutput`; `grep -FnHi` forces filename inclusion always; BusyBox grep used by `node:20-alpine` supports `-H`
+**Nature:** CONTAINER-MANAGER SEARCH SCRIPT ONE-LINE FIX ??add `-H` flag to `grep` call inside `searchFilesInContainer` shell script so output always includes the filename prefix, making results parseable by the existing TypeScript parser
+**Source:** Inspection session (May 2026) ??after AI-WS-06-hotfix2, search still returns no matches; live `node:20-alpine` container test confirmed: `grep -Fni` omits filename when searching a single file (output: `1:SPECIAL_TEST_KEYWORD`), but the parser expects `path:line:preview` (e.g. `/workspace/key.txt:1:SPECIAL_TEST_KEYWORD`); lines without a second colon are silently skipped by `parseWorkspaceSearchOutput`; `grep -FnHi` forces filename inclusion always; BusyBox grep used by `node:20-alpine` supports `-H`
 **Depends on:** AI-WS-06-hotfix2 (COMPLETE and LOCKED)
 
 **Objective:**
 Add `-H` to grep flags in the container search shell script so that grep output always includes the filename, enabling the existing parser to produce non-empty results.
 
 **Bounded scope:**
-- `services/container-manager/src/docker/docker-runtime.service.ts` — change `grep -Fni` to `grep -FnHi` in the `searchFilesInContainer` shell script (one-character/one-flag change)
-- `services/container-manager/src/docker/docker-runtime.service.spec.ts` — assert generated script contains `grep -FnHi` (update/extend existing grep flag assertion)
+- `services/container-manager/src/docker/docker-runtime.service.ts` ??change `grep -Fni` to `grep -FnHi` in the `searchFilesInContainer` shell script (one-character/one-flag change)
+- `services/container-manager/src/docker/docker-runtime.service.spec.ts` ??assert generated script contains `grep -FnHi` (update/extend existing grep flag assertion)
 
 **Required behavior:**
 - Search script uses `grep -FnHi -e "$QUERY" "$file"`
@@ -21888,14 +21888,14 @@ Add `-H` to grep flags in the container search shell script so that grep output 
 
 ---
 
-## UX-FILETREE — Workspace File Tree UX
+## UX-FILETREE ??Workspace File Tree UX
 
-**Family status:** COMPLETE and LOCKED — UX-FILETREE-hotfix COMPLETE and LOCKED
+**Family status:** COMPLETE and LOCKED ??UX-FILETREE-hotfix COMPLETE and LOCKED
 
 **Current stage:** none active (UX-FILETREE-hotfix wave complete)
 
 **Ordered slices:**
-1. UX-FILETREE-hotfix — Hide Internal Git Files From Workspace File Tree (COMPLETE and LOCKED)
+1. UX-FILETREE-hotfix ??Hide Internal Git Files From Workspace File Tree (COMPLETE and LOCKED)
 
 ---
 
@@ -21906,16 +21906,16 @@ Add `-H` to grep flags in the container search shell script so that grep output 
 **Family status:** COMPLETE and LOCKED
 **Priority:** High
 **Status:** COMPLETE and LOCKED
-**Nature:** FRONTEND FILE-TREE DISPLAY/FILTER HOTFIX — exclude `.git/` and everything under `.git/` from the user-facing Files panel, applied consistently after initial load, create refresh, delete refresh, and manual refresh; no change to on-disk files or internal git/checkpoint behavior
-**Source:** User observation (May 2026) — after create or delete operations, the workspace file tree can show internal `.git/` contents (hooks, objects, logs, refs, HEAD, index, config) which should not be visible to the user
+**Nature:** FRONTEND FILE-TREE DISPLAY/FILTER HOTFIX ??exclude `.git/` and everything under `.git/` from the user-facing Files panel, applied consistently after initial load, create refresh, delete refresh, and manual refresh; no change to on-disk files or internal git/checkpoint behavior
+**Source:** User observation (May 2026) ??after create or delete operations, the workspace file tree can show internal `.git/` contents (hooks, objects, logs, refs, HEAD, index, config) which should not be visible to the user
 
 **Objective:**
 Ensure `.git/` and all files/directories under `.git/` are excluded from the user-facing Files panel consistently across all file-tree load and refresh paths.
 
 **Bounded scope (actual):**
-- `frontend/components/workspace/workspace-file-navigation.logic.ts` — added `isInternalGitTreeEntry()` filter in `loadWorkspaceFileTree()` before sort and recursion
-- `frontend/components/workspace/workspace-file-navigation.logic.test.ts` — added focused `.git` filtering regression test (10 tests total, all pass)
-- `frontend/app/[locale]/app/page.tsx` — not changed (filtering is entirely in the shared logic module)
+- `frontend/components/workspace/workspace-file-navigation.logic.ts` ??added `isInternalGitTreeEntry()` filter in `loadWorkspaceFileTree()` before sort and recursion
+- `frontend/components/workspace/workspace-file-navigation.logic.test.ts` ??added focused `.git` filtering regression test (10 tests total, all pass)
+- `frontend/app/[locale]/app/page.tsx` ??not changed (filtering is entirely in the shared logic module)
 
 **Required behavior:**
 - `.git/` and everything under `.git/` must not appear in the user-facing Files panel
@@ -21952,50 +21952,50 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 
 ---
 
-## UX-IA — Product & UX/UI Redesign (Evolutionary)
+## UX-IA ??Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE — UX-IA-01 PLANNED
+**Family status:** ACTIVE ??UX-IA-01 PLANNED
 
 **Current stage:** UX-IA-01 (PLANNED)
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
 **Ordered slices:**
-1. UX-IA-00 — Master spec (COMPLETE — `docs/UX-IA-00-MASTER-PLAN.md`)
-2. UX-IA-01 — i18n Foundation & Locale Middleware (PLANNED)
-3. UX-IA-02 through UX-IA-14 — pending (see master spec for full list)
+1. UX-IA-00 ??Master spec (COMPLETE ??`docs/UX-IA-00-MASTER-PLAN.md`)
+2. UX-IA-01 ??i18n Foundation & Locale Middleware (PLANNED)
+3. UX-IA-02 through UX-IA-14 ??pending (see master spec for full list)
 
 ---
 
 ### UX-IA-01: i18n Foundation & Locale Middleware
 
 **Task ID:** UX-IA-01
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign ??Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/UX-IA-01-CHECKPOINT.md`
-**Nature:** FRONTEND I18N INFRASTRUCTURE — expand translation files to all required namespaces, implement English fallback in `useTranslations`, add locale middleware for default locale redirect, decide namespace access pattern and `sandbox` namespace migration strategy; no visual or layout changes
-**Source:** UX-IA-00 master plan (May 2026) — multilingual is mandatory; all later UX phases must use translation keys from day one to prevent hardcoded-string debt
+**Nature:** FRONTEND I18N INFRASTRUCTURE ??expand translation files to all required namespaces, implement English fallback in `useTranslations`, add locale middleware for default locale redirect, decide namespace access pattern and `sandbox` namespace migration strategy; no visual or layout changes
+**Source:** UX-IA-00 master plan (May 2026) ??multilingual is mandatory; all later UX phases must use translation keys from day one to prevent hardcoded-string debt
 **Depends on:** UX-IA-00 (COMPLETE)
 
 **Objective:**
 Establish the complete i18n foundation so all subsequent UX-IA phases can introduce new UI strings via translation keys from the start, without accumulating hardcoded-English technical debt.
 
 **Bounded scope:**
-- `frontend/middleware.ts` (new) — locale middleware: redirect `/` → `/en` (or best locale match); must not interfere with `/api/*` rewrites in `next.config.js`
-- `frontend/messages/en.json` — expand with all required namespaces: `common`, `login`, `register`, `landing`, `workspace`, `project`, `tabs`, `account`, `ai`, `errors`, `languages`
-- `frontend/messages/zh-TW.json` — expand with same namespace structure
-- `frontend/messages/zh-CN.json` — expand with same namespace structure
-- `frontend/hooks/useTranslations.ts` — add English fallback: active locale → English fallback → key string
-- `frontend/components/TranslationProvider.tsx` — pass `fallbackMessages` (en.json) alongside active locale messages through context
-- `frontend/app/[locale]/layout.tsx` — if needed to import en.json as fallbackMessages
-- `frontend/components/LanguageSwitcher.tsx` — minor polish if needed
+- `frontend/middleware.ts` (new) ??locale middleware: redirect `/` ??`/en` (or best locale match); must not interfere with `/api/*` rewrites in `next.config.js`
+- `frontend/messages/en.json` ??expand with all required namespaces: `common`, `login`, `register`, `landing`, `workspace`, `project`, `tabs`, `account`, `ai`, `errors`, `languages`
+- `frontend/messages/zh-TW.json` ??expand with same namespace structure
+- `frontend/messages/zh-CN.json` ??expand with same namespace structure
+- `frontend/hooks/useTranslations.ts` ??add English fallback: active locale ??English fallback ??key string
+- `frontend/components/TranslationProvider.tsx` ??pass `fallbackMessages` (en.json) alongside active locale messages through context
+- `frontend/app/[locale]/layout.tsx` ??if needed to import en.json as fallbackMessages
+- `frontend/components/LanguageSwitcher.tsx` ??minor polish if needed
 
 **Required behavior:**
 - Translation files include all namespaces for all 3 locales
 - English fallback works when zh-TW or zh-CN is missing a key
-- `useTranslations` fallback chain: active locale → English → raw key
+- `useTranslations` fallback chain: active locale ??English ??raw key
 - Middleware redirects `/` to locale route without breaking `/api/*`
 - Existing login/register language behavior keeps working
 - Existing workspace/app behavior is unchanged
@@ -22047,22 +22047,22 @@ Key counts per locale file will expand from ~30 keys (3 namespaces) to ~100+ key
 ### UX-IA-02: Design Token Foundation
 
 **Task ID:** UX-IA-02
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign ??Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/UX-IA-02-CHECKPOINT.md`
-**Nature:** FRONTEND CSS / TAILWIND CONFIG — establish brand, surface, border, text, and muted token strategy; define light theme CSS custom properties in `:root`; prepare dark theme placeholders if low-risk; no component or layout changes
-**Source:** UX-IA-00 master plan (May 2026) — all subsequent visual phases must build on a shared token system to avoid palette drift
+**Nature:** FRONTEND CSS / TAILWIND CONFIG ??establish brand, surface, border, text, and muted token strategy; define light theme CSS custom properties in `:root`; prepare dark theme placeholders if low-risk; no component or layout changes
+**Source:** UX-IA-00 master plan (May 2026) ??all subsequent visual phases must build on a shared token system to avoid palette drift
 **Depends on:** UX-IA-01 (COMPLETE and LOCKED)
 
 **Objective:**
 Establish frontend design tokens (Tailwind theme extensions and CSS custom properties) so that all later UX-IA visual phases use consistent brand colors, surfaces, borders, font, and radii from the start without introducing palette drift or hardcoded hex values.
 
 **Bounded scope:**
-- `frontend/tailwind.config.js` — extend `theme.extend` with color tokens: `brand`, `surface`, `border`, `text`, `muted`; add font family (`inter`/sans) and border radius tokens
-- `frontend/app/globals.css` — define CSS custom properties in `:root` for all light theme tokens; add dark theme placeholder block if low-risk (e.g., `@media (prefers-color-scheme: dark)` or `.dark` class)
-- `frontend/app/[locale]/layout.tsx` — add `next/font/google` Inter import if needed; keep all i18n and `TranslationProvider` wiring unchanged
+- `frontend/tailwind.config.js` ??extend `theme.extend` with color tokens: `brand`, `surface`, `border`, `text`, `muted`; add font family (`inter`/sans) and border radius tokens
+- `frontend/app/globals.css` ??define CSS custom properties in `:root` for all light theme tokens; add dark theme placeholder block if low-risk (e.g., `@media (prefers-color-scheme: dark)` or `.dark` class)
+- `frontend/app/[locale]/layout.tsx` ??add `next/font/google` Inter import if needed; keep all i18n and `TranslationProvider` wiring unchanged
 
 **Required behavior:**
 - Tailwind config has brand/surface/border/text/muted color token extensions referencing CSS variables
@@ -22108,37 +22108,37 @@ Establish frontend design tokens (Tailwind theme extensions and CSS custom prope
 ### UX-IA-03: Public Landing Redesign + Login/Register Polish
 
 **Task ID:** UX-IA-03
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign ??Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/UX-IA-03-CHECKPOINT.md`
-**Nature:** FRONTEND UI / I18N — redesign public landing as "Build anything" entry experience with prompt chatbox and CTA; polish login/register pages using UX-IA-02 design tokens; full i18n for all three pages; no auth changes, no workspace changes
-**Source:** UX-IA-00 master plan (May 2026) — public landing and login/register are the first user-facing surfaces; must reflect the new product direction before workspace redesign begins
+**Nature:** FRONTEND UI / I18N ??redesign public landing as "Build anything" entry experience with prompt chatbox and CTA; polish login/register pages using UX-IA-02 design tokens; full i18n for all three pages; no auth changes, no workspace changes
+**Source:** UX-IA-00 master plan (May 2026) ??public landing and login/register are the first user-facing surfaces; must reflect the new product direction before workspace redesign begins
 **Depends on:** UX-IA-01 (COMPLETE and LOCKED), UX-IA-02 (COMPLETE and LOCKED)
 
 **Objective:**
 Transform the public landing page into the "Build anything" entry experience with a prompt chatbox and sign-in/register CTA. Polish login and register pages to use the UX-IA-02 design token foundation and achieve full i18n coverage. No authentication, no workspace, no AI-WS changes.
 
 **Bounded scope:**
-- `frontend/components/public/public-landing-slice.tsx` — redesign with "Build anything" headline, short subtitle, prompt chatbox, sign-in/register CTA behavior
-- `frontend/app/[locale]/page.tsx` — wire updated landing component props
-- `frontend/app/[locale]/login/page.tsx` — visual polish using design tokens + full i18n
-- `frontend/app/[locale]/register/page.tsx` — visual polish using design tokens + full i18n
-- `frontend/components/LanguageSwitcher.tsx` — ensure visible on all three pages if not already
-- `frontend/messages/en.json` — add/complete landing, login, register i18n keys
-- `frontend/messages/zh-TW.json` — same namespace additions
-- `frontend/messages/zh-CN.json` — same namespace additions
+- `frontend/components/public/public-landing-slice.tsx` ??redesign with "Build anything" headline, short subtitle, prompt chatbox, sign-in/register CTA behavior
+- `frontend/app/[locale]/page.tsx` ??wire updated landing component props
+- `frontend/app/[locale]/login/page.tsx` ??visual polish using design tokens + full i18n
+- `frontend/app/[locale]/register/page.tsx` ??visual polish using design tokens + full i18n
+- `frontend/components/LanguageSwitcher.tsx` ??ensure visible on all three pages if not already
+- `frontend/messages/en.json` ??add/complete landing, login, register i18n keys
+- `frontend/messages/zh-TW.json` ??same namespace additions
+- `frontend/messages/zh-CN.json` ??same namespace additions
 - Focused tests for sessionStorage prompt preservation if existing test setup supports them
 
 **Required behavior:**
 - `/[locale]` public landing shows: "Build anything" headline, short subtitle, prompt input, sign-in/register CTA
 - Submitting the prompt before login must **not** create a project
 - Submitting the prompt before login must store the prompt text in `sessionStorage` and redirect to login or register
-- Login/register pages remain functionally unchanged — visual/i18n polish only
+- Login/register pages remain functionally unchanged ??visual/i18n polish only
 - Login/register use design token CSS classes where practical (`bg-surface-raised`, `text-text-primary`, `border-border`, etc.)
-- All landing/login/register user-facing strings must use `useTranslations` i18n keys — no hardcoded English
-- UX-IA-01 English fallback behavior (`active locale → English → raw key`) unchanged
+- All landing/login/register user-facing strings must use `useTranslations` i18n keys ??no hardcoded English
+- UX-IA-01 English fallback behavior (`active locale ??English ??raw key`) unchanged
 - UX-IA-02 font (`--font-inter`) and token CSS variables unchanged
 
 **Auth non-goals (explicitly forbidden in this slice):**
@@ -22156,7 +22156,7 @@ Transform the public landing page into the "Build anything" entry experience wit
 - No authenticated workspace redesign
 - No workspace shell / sidebar changes
 - No project mode changes
-- No preview tab changes (Visual Edit Mode is roadmap-only — master plan Section 12)
+- No preview tab changes (Visual Edit Mode is roadmap-only ??master plan Section 12)
 - No AI-WS file-action changes
 - No billing/upgrade changes
 - No new external npm dependencies
@@ -22174,11 +22174,11 @@ Transform the public landing page into the "Build anything" entry experience wit
 - Frontend tests pass (`npm run test`)
 - Frontend build passes (`npm run build`)
 - No lint/read errors on touched files
-- No regression to locale middleware redirects (`/` → `/en`, locale-less paths → `/en/<path>`)
+- No regression to locale middleware redirects (`/` ??`/en`, locale-less paths ??`/en/<path>`)
 
 **Risks / invariants:**
 - Do not break existing auth form submit / redirect logic
-- Do not hardcode any new landing/login/register strings — all must use `t('key')`
+- Do not hardcode any new landing/login/register strings ??all must use `t('key')`
 - Do not change workspace behavior or any AI-WS logic
 - Do not structure the login page in a way that blocks AUTH-APP-01's later addition of OAuth buttons
 - Do not structure the landing chatbox in a way that prevents future prompt-to-project flow (AUTH-APP-01 + UX-IA-04 will complete this flow)
@@ -22190,9 +22190,9 @@ Transform the public landing page into the "Build anything" entry experience wit
 
 ---
 
-## AUTH — aiSandBox First-Party Authentication
+## AUTH ??aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-APP-01C1A COMPLETE — AUTH-APP-01C1B NEXT
+**Family status:** ACTIVE ??AUTH-APP-01C1B COMPLETE ??AUTH-APP-01D NEXT
 **Important distinction:** AUTH-APP-01 is for the aiSandBox platform itself. AUTH-MODULE-01 (reusable generated app-auth for user-created apps) is a separate, later family.
 **Decision spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -22205,28 +22205,28 @@ Transform the public landing page into the "Build anything" entry experience wit
 **Family:** AUTH
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** PLANNED (multi-slice phase — implementation begins with AUTH-APP-01A spec)
-**Source:** UX-IA-00 master plan (May 2026) — production auth must be in place before workspace/project-mode redesign reaches real users
+**Status:** PLANNED (multi-slice phase ??implementation begins with AUTH-APP-01A spec)
+**Source:** UX-IA-00 master plan (May 2026) ??production auth must be in place before workspace/project-mode redesign reaches real users
 **Depends on:** UX-IA-03 (COMPLETE and LOCKED)
 
 **Objective:**
-Add production-ready authentication for the aiSandBox hosted app — email, Google, and Apple sign-in — so real users can sign in securely before using platform features. Covers user/session model, route/API protection, UX integration, security hardening, and testing.
+Add production-ready authentication for the aiSandBox hosted app ??email, Google, and Apple sign-in ??so real users can sign in securely before using platform features. Covers user/session model, route/API protection, UX integration, security hardening, and testing.
 
-**Confirmed child slices (order locked by AUTH-APP-01A — see `docs/AUTH-APP-01-SPEC.md` Section 14):**
-1. AUTH-APP-01A — Auth Architecture & Implementation Spec (COMPLETE and LOCKED)
-2. AUTH-APP-01B — Database / Schema Migrations (COMPLETE and LOCKED)
-3. AUTH-APP-01C1A — Backend Cookie Session Foundation (COMPLETE and LOCKED)
-4. AUTH-APP-01C1B — Frontend localStorage/Bearer Migration (PLANNED — NEXT)
-5. AUTH-APP-01C2 — Email Verification / Password Reset / Rate Limiting (PLANNED — BLOCKED on email provider)
-6. AUTH-APP-01D — Google OAuth (pending)
-7. AUTH-APP-01E — Apple OAuth (pending)
-8. AUTH-APP-01F — Route / API Protection (pending)
-9. AUTH-APP-01G — Auth UX Integration (pending)
-10. AUTH-APP-01H — Security Hardening + Validation Checklist (pending)
-11. AUTH-APP-01Z — Final Consolidation (pending)
+**Confirmed child slices (order locked by AUTH-APP-01A ??see `docs/AUTH-APP-01-SPEC.md` Section 14):**
+1. AUTH-APP-01A ??Auth Architecture & Implementation Spec (COMPLETE and LOCKED)
+2. AUTH-APP-01B ??Database / Schema Migrations (COMPLETE and LOCKED)
+3. AUTH-APP-01C1A ??Backend Cookie Session Foundation (COMPLETE and LOCKED)
+4. AUTH-APP-01C1B ??Frontend localStorage/Bearer Migration (COMPLETE and LOCKED)
+5. AUTH-APP-01C2 ??Email Verification / Password Reset / Rate Limiting (PLANNED ??BLOCKED on email provider)
+6. AUTH-APP-01D ??Google OAuth (pending)
+7. AUTH-APP-01E ??Apple OAuth (pending)
+8. AUTH-APP-01F ??Route / API Protection (pending)
+9. AUTH-APP-01G ??Auth UX Integration (pending)
+10. AUTH-APP-01H ??Security Hardening + Validation Checklist (pending)
+11. AUTH-APP-01Z ??Final Consolidation (pending)
 
 **Non-goals:**
-- AUTH-MODULE-01 (reusable generated app-auth for user-created apps — separate later family)
+- AUTH-MODULE-01 (reusable generated app-auth for user-created apps ??separate later family)
 - Clerk / Supabase / Firebase provider support
 - Enterprise SSO / SAML
 - Billing / subscription integration
@@ -22257,7 +22257,7 @@ Produce a concrete, decision-complete implementation spec document for all first
 
 **Key decisions recorded in `docs/AUTH-APP-01-SPEC.md`:**
 
-1. **Auth stack:** Extend existing NestJS + Passport + JWT. Auth.js / NextAuth rejected — would create two parallel auth systems alongside the existing NestJS API Gateway auth backend.
+1. **Auth stack:** Extend existing NestJS + Passport + JWT. Auth.js / NextAuth rejected ??would create two parallel auth systems alongside the existing NestJS API Gateway auth backend.
 
 2. **Token/session storage:** HTTP-only secure cookie session with server-side `auth_sessions` persistence. Frontend `localStorage` access_token usage removed. `SameSite=Lax`, `Secure` in production, `HttpOnly` always. CSRF protection for cookie-authenticated mutating requests.
 
@@ -22267,7 +22267,7 @@ Produce a concrete, decision-complete implementation spec document for all first
 
 5. **Account linking:** Same verified email from Google auto-links to existing account. Apple private relay email never auto-linked. Unverified-email and conflict cases return safe errors.
 
-6. **Email auth:** Keep email + password (not magic link). Add email verification and password reset. Rate limiting on all auth endpoints. Transactional email provider unresolved — **blocks AUTH-APP-01C** — must be chosen before AUTH-APP-01C stage-start.
+6. **Email auth:** Keep email + password (not magic link). Add email verification and password reset. Rate limiting on all auth endpoints. Transactional email provider unresolved ??**blocks AUTH-APP-01C** ??must be chosen before AUTH-APP-01C stage-start.
 
 7. **Google OAuth:** `passport-google-oauth20`; routes GET /auth/google + GET /auth/google/callback; env vars: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_CALLBACK_URL; manual setup checklist in spec.
 
@@ -22275,7 +22275,7 @@ Produce a concrete, decision-complete implementation spec document for all first
 
 9. **Route/API protection:** Frontend session-cookie guard in Next.js middleware; backend 401 for unauthenticated API calls; public routes explicitly listed in spec.
 
-10. **Slice order:** AUTH-APP-01B → C → D → E → F → G → H → Z (locked). AUTH-APP-01C may split into C1 (session cookie migration) + C2 (email auth hardening) at stage-start.
+10. **Slice order:** AUTH-APP-01B ??C ??D ??E ??F ??G ??H ??Z (locked). AUTH-APP-01C may split into C1 (session cookie migration) + C2 (email auth hardening) at stage-start.
 
 **Non-goals:**
 - No AUTH-MODULE-01 work (separate later family)
@@ -22324,20 +22324,20 @@ Apply all database schema changes required by the AUTH-APP-01 architecture befor
 
 Migration `1771700000000-AddAuthSchemaFoundation.ts`:
 - `ALTER TABLE "users" ALTER COLUMN "password_hash" DROP NOT NULL`
-- Added `auth_provider`, `oauth_id`, `last_login_at`, `stripe_customer_id` to `users` (columns already declared in entity but absent from all prior migrations — pre-existing schema/entity drift fixed here)
+- Added `auth_provider`, `oauth_id`, `last_login_at`, `stripe_customer_id` to `users` (columns already declared in entity but absent from all prior migrations ??pre-existing schema/entity drift fixed here)
 - Created `oauth_accounts` table: uuid PK, user_id FK, provider, provider_account_id, provider_email nullable, created_at; unique on (provider, provider_account_id); index on user_id
 - Created `verification_tokens` table: uuid PK, user_id FK, token_hash unique, type, expires_at, used_at nullable, created_at; indexes on token_hash and (user_id, type)
 - Created `auth_sessions` table: uuid PK, user_id FK, session_token_hash unique, expires_at, last_active_at, revoked_at nullable, created_at; indexes on session_token_hash, user_id, expires_at
 - Down migration reverses all changes in correct order; includes safety guard on `password_hash` NOT NULL restore
 
 Entities created:
-- `src/entities/oauth-account.entity.ts` — `OauthAccount`
-- `src/entities/verification-token.entity.ts` — `VerificationToken`
-- `src/entities/auth-session.entity.ts` — `AuthSession`
+- `src/entities/oauth-account.entity.ts` ??`OauthAccount`
+- `src/entities/verification-token.entity.ts` ??`VerificationToken`
+- `src/entities/auth-session.entity.ts` ??`AuthSession`
 
 Entity/module updates:
-- `src/entities/user.entity.ts` — added legacy/backward-compat comments on `authProvider`/`oauthId`; added `oauthAccounts` OneToMany
-- `src/auth/auth.module.ts` — added `OauthAccount`, `VerificationToken`, `AuthSession` to `TypeOrmModule.forFeature`
+- `src/entities/user.entity.ts` ??added legacy/backward-compat comments on `authProvider`/`oauthId`; added `oauthAccounts` OneToMany
+- `src/auth/auth.module.ts` ??added `OauthAccount`, `VerificationToken`, `AuthSession` to `TypeOrmModule.forFeature`
 
 **Non-goals met (none of the following were touched):**
 - No Google/Apple OAuth strategy or routes
@@ -22360,8 +22360,8 @@ Entity/module updates:
 - [x] `User` entity updated: deprecation comments on `authProvider`/`oauthId`; `oauthAccounts` relation added; no fields removed
 - [x] All new entities registered in `AuthModule`
 - [x] `npx tsc --noEmit` PASS
-- [x] `npm test` FAIL — pre-existing environment issue (REDIS_URL not set during test bootstrap); not introduced by this slice
-- [x] `npm run lint` FAIL — pre-existing tooling issue (ESLint config not discoverable); not introduced by this slice
+- [x] `npm test` FAIL ??pre-existing environment issue (REDIS_URL not set during test bootstrap); not introduced by this slice
+- [x] `npm run lint` FAIL ??pre-existing tooling issue (ESLint config not discoverable); not introduced by this slice
 - [x] No frontend files changed
 - [x] No auth controller / service behavior changed
 - [x] No package.json changes
@@ -22383,7 +22383,7 @@ Entity/module updates:
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
-**Source:** AUTH-APP-01C1 stage-start — backend + frontend surface too large for one slice; backend isolated here
+**Source:** AUTH-APP-01C1 stage-start ??backend + frontend surface too large for one slice; backend isolated here
 **Depends on:** AUTH-APP-01B (COMPLETE and LOCKED)
 **Completed:** 2026-05-06
 **Checkpoint:** `docs/AUTH-APP-01C1A-CHECKPOINT.md`
@@ -22393,7 +22393,7 @@ Establish the server-side HTTP-only cookie session infrastructure. Creates the `
 
 **Implemented:**
 
-1. **Dependencies** — `cookie-parser ^1.4.7` + `@types/cookie-parser ^1.4.10` installed; `app.use(cookieParser())` in `main.ts`.
+1. **Dependencies** ??`cookie-parser ^1.4.7` + `@types/cookie-parser ^1.4.10` installed; `app.use(cookieParser())` in `main.ts`.
 
 2. **`SessionCookieGuard`** (new file `src/auth/session-cookie.guard.ts`):
    - Reads `req.cookies['aisandbox_session']` (raw opaque token)
@@ -22403,20 +22403,20 @@ Establish the server-side HTTP-only cookie session infrastructure. Creates the `
    - Exported from `AuthModule`
 
 3. **`AuthService` additions**:
-   - `createSession(userId)` — 32-byte random token, SHA-256 hash stored, 7-day expiry, returns raw token
-   - `validateSessionToken(rawToken)` — validates hash, updates `lastActiveAt`, returns user
-   - `revokeSession(rawToken)` — sets `revoked_at = now()` on matching session
+   - `createSession(userId)` ??32-byte random token, SHA-256 hash stored, 7-day expiry, returns raw token
+   - `validateSessionToken(rawToken)` ??validates hash, updates `lastActiveAt`, returns user
+   - `revokeSession(rawToken)` ??sets `revoked_at = now()` on matching session
    - `Repository<AuthSession>` injected
 
-4. **`POST /auth/login`** — sets HTTP-only `aisandbox_session` cookie (SameSite=Lax, Secure in production, 7-day maxAge, path=/); returns `{ user }` only — **`access_token` removed from response body**.
+4. **`POST /auth/login`** ??sets HTTP-only `aisandbox_session` cookie (SameSite=Lax, Secure in production, 7-day maxAge, path=/); returns `{ user }` only ??**`access_token` removed from response body**.
 
-5. **`GET /auth/me`** — guard switched from `JwtAuthGuard` to `SessionCookieGuard`.
+5. **`GET /auth/me`** ??guard switched from `JwtAuthGuard` to `SessionCookieGuard`.
 
-6. **`POST /auth/logout`** (new) — `SessionCookieGuard`, revokes session, clears cookie, returns `{ ok: true }`.
+6. **`POST /auth/logout`** (new) ??`SessionCookieGuard`, revokes session, clears cookie, returns `{ ok: true }`.
 
-7. **Controller guard replacement** — `JwtAuthGuard` → `SessionCookieGuard` on 9 browser-facing controllers: `projects`, `sessions`, `conversations`, `users`, `checkpoints`, `workspaces`, `api-key`, `admin-operational`, `public-projects`.
+7. **Controller guard replacement** ??`JwtAuthGuard` ??`SessionCookieGuard` on 9 browser-facing controllers: `projects`, `sessions`, `conversations`, `users`, `checkpoints`, `workspaces`, `api-key`, `admin-operational`, `public-projects`.
 
-8. **`JwtAuthGuard` / `JwtStrategy` preserved** — not deleted.
+8. **`JwtAuthGuard` / `JwtStrategy` preserved** ??not deleted.
 
 9. **9 controller specs updated** to `overrideGuard(SessionCookieGuard)`.
 
@@ -22443,15 +22443,15 @@ Establish the server-side HTTP-only cookie session infrastructure. Creates the `
 
 **Validation:**
 - `npx tsc --noEmit`: PASS
-- `npm test`: NOT FULLY PASSING — pre-existing blockers only (not introduced by C1A):
+- `npm test`: NOT FULLY PASSING ??pre-existing blockers only (not introduced by C1A):
   - 64 unit suites pass; 1 pre-existing failure (`ai-execution.controller.spec.ts`, not in C1A changeset)
-  - 10 integration/smoke suites fail — Redis not host-port-bound (Docker internal network only)
-- `npm run lint`: FAIL — pre-existing ESLint config discovery issue in `services/api-gateway`
+  - 10 integration/smoke suites fail ??Redis not host-port-bound (Docker internal network only)
+- `npm run lint`: FAIL ??pre-existing ESLint config discovery issue in `services/api-gateway`
 
 **Carry-forward blockers (all pre-existing):**
 - `npm test` cannot be fully trusted until Redis is host-accessible from test runner
 - `npm run lint` cannot be trusted until ESLint config is resolved in `api-gateway`
-- `ai-execution.controller.spec.ts` has 4 pre-existing unit test failures — separate cleanup needed
+- `ai-execution.controller.spec.ts` has 4 pre-existing unit test failures ??separate cleanup needed
 
 **Reference:** See TASKS.md -> AUTH-APP-01C1A. See `docs/AUTH-APP-01C1A-CHECKPOINT.md`.
 
@@ -22464,9 +22464,11 @@ Establish the server-side HTTP-only cookie session infrastructure. Creates the `
 **Parent:** AUTH-APP-01
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** PLANNED
-**Source:** AUTH-APP-01C1 stage-start — frontend surface isolated here; backend already handled by AUTH-APP-01C1A
-**Depends on:** AUTH-APP-01C1A (COMPLETE)
+**Status:** COMPLETE and LOCKED
+**Completed:** 2026-05-06
+**Checkpoint:** `docs/AUTH-APP-01C1B-CHECKPOINT.md`
+**Source:** AUTH-APP-01C1 stage-start ??frontend surface isolated here; backend already handled by AUTH-APP-01C1A
+**Depends on:** AUTH-APP-01C1A (COMPLETE and LOCKED)
 
 **Objective:**
 Remove all frontend dependence on `localStorage` for `access_token` and `userId`, and remove all manual `Authorization: Bearer` headers from browser-side fetch calls. After this slice, the browser relies entirely on the HTTP-only session cookie set by AUTH-APP-01C1A.
@@ -22490,7 +22492,7 @@ Remove all frontend dependence on `localStorage` for `access_token` and `userId`
    - Remove `localStorage.getItem('access_token')` auth-guard in `useEffect`; rely on `/auth/me` or backend 401
    - Remove `Authorization: Bearer ${token}` from all three fetch call-sites
 
-4. **Workspace logic helpers** — remove `token: string` from function/type signatures and remove `Authorization` header from fetches:
+4. **Workspace logic helpers** ??remove `token: string` from function/type signatures and remove `Authorization` header from fetches:
    - `workspace-exec.logic.ts`
    - `workspace-checkpoint-diff.logic.ts`
    - `workspace-file-navigation.logic.ts`
@@ -22502,11 +22504,11 @@ Remove all frontend dependence on `localStorage` for `access_token` and `userId`
    - `workspace-checkpoint-create.logic.ts`
    - `lib/open-project-in-fresh-session.ts`
 
-5. **Test files** — update to match removed token signatures and removed `Authorization` header assertions:
+5. **Test files** ??update to match removed token signatures and removed `Authorization` header assertions:
    - `workspace-file-navigation.logic.test.ts` (explicitly asserts `Authorization: 'Bearer token-123'`)
    - All other `*.logic.test.ts` and `*.test.tsx` files that pass `token` arguments to changed helpers
 
-6. **Zero-localStorage verification** — confirm zero production frontend references to `localStorage.*('access_token')` or `localStorage.*('userId')` after changes.
+6. **Zero-localStorage verification** ??confirm zero production frontend references to `localStorage.*('access_token')` or `localStorage.*('userId')` after changes.
 
 **Non-goals:**
 - No backend auth changes beyond what AUTH-APP-01C1A established
@@ -22515,18 +22517,58 @@ Remove all frontend dependence on `localStorage` for `access_token` and `userId`
 - No rate limiting
 - No auth UX redesign
 
-**Acceptance checks:**
-- [ ] Zero `localStorage.getItem/setItem/removeItem('access_token')` in production frontend code
-- [ ] Zero `localStorage.getItem/setItem/removeItem('userId')` in production frontend code
-- [ ] Zero `Authorization: Bearer` in browser-side fetch calls
-- [ ] All workspace logic helpers no longer accept `token` parameter
-- [ ] `open-project-in-fresh-session.ts` no longer accepts or passes `token`
-- [ ] All affected test files updated and passing
-- [ ] `npx tsc --noEmit` passes in `frontend`
-- [ ] `npm run build` passes in `frontend`
-- [ ] No backend files changed
+**Implemented:**
 
-**Reference:** See TASKS.md -> AUTH-APP-01C1B. See `docs/AUTH-APP-01-SPEC.md` Section 3.
+1. **`login/page.tsx`** �X removed `localStorage.setItem('access_token', ...)`, `setItem('userId', ...)`, and `if (!response.data.access_token)` check. Login relies on backend `Set-Cookie aisandbox_session` behavior.
+
+2. **`app/page.tsx`** �X replaced init-time `localStorage.getItem('access_token')` / `getItem('userId')` with `GET /api/auth/me` fetch; derives `userId` from response. Removed all `Authorization: Bearer ${token}` from session-auth fetch calls. `handleWorkspaceUnauthorizedAccess` no longer clears localStorage. Auth-gated guards updated from `if (!token)` to `if (!userId)`.
+
+3. **`keys/page.tsx`** �X removed `localStorage.getItem('access_token')` auth-guard and `Authorization: Bearer` from all three fetch call-sites.
+
+4. **`share/[projectId]/page.tsx`** �X removed `localStorage.getItem('access_token')` gate from fork behavior; 401/403 from fork API redirects to `/${locale}/login`. Public read-only viewing preserved.
+
+5. **`public-landing-slice.tsx`** �X replaced `localStorage.getItem('access_token')` check with `GET /api/auth/me` for session awareness. `sessionStorage` pending-prompt behavior preserved.
+
+6. **9 workspace logic helpers** �X `token: string` removed from function interfaces and `Authorization: Bearer ${args.token}` removed from all fetch calls: `workspace-chat-persistence`, `workspace-checkpoint-create`, `workspace-checkpoint-diff`, `workspace-checkpoint-revert`, `workspace-exec`, `workspace-file-navigation`, `workspace-projects`, `workspace-snapshots`, `workspace-workspaces`.
+
+7. **`open-project-in-fresh-session.ts`** �X `token` removed from `OpenProjectInFreshSessionArgs` and all internal pass-throughs.
+
+8. **`project-autosave.ts`** �X `token` removed from `attemptProjectAutosave` args and downstream `saveWorkspaceSnapshot` call.
+
+9. **`project-named-save.ts`** �X `token` removed from `attemptNamedProjectSave` args and downstream `saveWorkspaceSnapshot` call.
+
+10. **10 test files updated** �X `token` args removed from call-sites; `Authorization: Bearer token` header assertions removed.
+
+11. **`DRIVER_API_KEY_STORAGE_KEY` / `Authorization: Bearer ${apiKey}` AI execution flow preserved** �X not migrated.
+
+**Acceptance checks (all met):**
+- [x] Zero `localStorage.getItem/setItem/removeItem('access_token')` in production frontend code
+- [x] Zero `localStorage.getItem/setItem/removeItem('userId')` in production frontend code
+- [x] Zero `Authorization: Bearer ${token}` in browser-side session-auth fetch calls
+- [x] All workspace logic helpers no longer require `token` parameter
+- [x] `open-project-in-fresh-session.ts` no longer accepts or passes `token`
+- [x] All affected test files updated and passing
+- [x] `npx tsc --noEmit` passes in `frontend`
+- [x] `npm run build` passes in `frontend`
+- [x] `npm test` passes in `frontend`
+- [x] No backend files changed
+
+**Validation:**
+- `npx tsc --noEmit`: PASS
+- `npm test`: PASS
+- `npm run build`: PASS
+- ReadLints: PASS �X no linter errors on touched files
+- Safety grep: zero matches for all `access_token` and `Bearer ${token}` patterns
+- `DRIVER_API_KEY` bearer headers confirmed preserved
+
+**Non-goals confirmed:**
+- No backend auth changes beyond AUTH-APP-01C1A
+- No Google/Apple OAuth
+- No email verification or password reset
+- No rate limiting
+- No auth UX redesign
+
+**Reference:** See TASKS.md -> AUTH-APP-01C1B. See `docs/AUTH-APP-01C1B-CHECKPOINT.md`.
 
 ---
 
@@ -22537,19 +22579,19 @@ Remove all frontend dependence on `localStorage` for `access_token` and `userId`
 **Parent:** AUTH-APP-01
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** PLANNED — BLOCKED on transactional email provider selection
+**Status:** PLANNED ??BLOCKED on transactional email provider selection
 **Source:** AUTH-APP-01A spec (Sections 7, 12); AUTH-APP-01C split confirmed at registration
 **Depends on:** AUTH-APP-01C1 (COMPLETE) + transactional email provider configured in environment
 
 **Blocking prerequisite:**
-A transactional email provider must be selected and its API key added to environment variables before this slice can begin. No provider is currently configured. Candidates per spec: Resend, SendGrid, Amazon SES. Provider selection must happen before AUTH-APP-01C2 stage-start — it is not resolved in this registration.
+A transactional email provider must be selected and its API key added to environment variables before this slice can begin. No provider is currently configured. Candidates per spec: Resend, SendGrid, Amazon SES. Provider selection must happen before AUTH-APP-01C2 stage-start ??it is not resolved in this registration.
 
 **Objective:**
 Add email verification and password reset flows that use the `verification_tokens` table from AUTH-APP-01B, and add rate limiting to all auth endpoints. This slice is intentionally decoupled from cookie-session migration (AUTH-APP-01C1) and OAuth (AUTH-APP-01D) so both can proceed while the email provider decision is pending.
 
 **Bounded scope:**
 
-1. **Transactional email provider setup** — configure chosen provider (Resend/SendGrid/SES); add `EMAIL_PROVIDER`, `EMAIL_API_KEY`, `EMAIL_FROM` (or equivalent) env vars; document in project README or env template. This is a prerequisite step performed at AUTH-APP-01C2 stage-start.
+1. **Transactional email provider setup** ??configure chosen provider (Resend/SendGrid/SES); add `EMAIL_PROVIDER`, `EMAIL_API_KEY`, `EMAIL_FROM` (or equivalent) env vars; document in project README or env template. This is a prerequisite step performed at AUTH-APP-01C2 stage-start.
 
 2. **Email verification flow:**
    - After `POST /api/auth/register`: generate random token, SHA-256 hash it, store in `verification_tokens` (`type='email_verify'`, 24h expiry), send verification email with raw token link
@@ -22561,14 +22603,14 @@ Add email verification and password reset flows that use the `verification_token
    - `POST /api/auth/password-reset/confirm`: validate token, hash new password, update `users.password_hash`, mark token used, revoke all `auth_sessions` for the user
    - Raw token sent to user; hash stored in DB
 
-4. **Rate limiting** — apply to:
-   - `POST /api/auth/login` — 10/min per IP
-   - `POST /api/auth/register` — 5/min per IP
-   - `POST /api/auth/password-reset/request` — 5/hr per email, 10/hr per IP
-   - `POST /api/auth/email/verify/resend` — 3/hr per user
+4. **Rate limiting** ??apply to:
+   - `POST /api/auth/login` ??10/min per IP
+   - `POST /api/auth/register` ??5/min per IP
+   - `POST /api/auth/password-reset/request` ??5/hr per email, 10/hr per IP
+   - `POST /api/auth/email/verify/resend` ??3/hr per user
    - Implementation: `@nestjs/throttler` or Redis-backed throttler (confirm at stage-start)
 
-5. **User entity `emailVerified` field** — if not yet added, add `email_verified` column to `users` (migration required) and corresponding entity field.
+5. **User entity `emailVerified` field** ??if not yet added, add `email_verified` column to `users` (migration required) and corresponding entity field.
 
 **Non-goals:**
 - No Google or Apple OAuth

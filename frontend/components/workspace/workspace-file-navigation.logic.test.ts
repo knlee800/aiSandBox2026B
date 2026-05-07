@@ -27,7 +27,6 @@ describe('workspace file navigation logic', () => {
     };
 
     const result = await listWorkspaceDirectory({
-      token: 'token-123',
       sessionId: 'session-123',
       directoryPath: '/src',
       fetchImpl: fakeFetch as typeof fetch,
@@ -36,10 +35,6 @@ describe('workspace file navigation logic', () => {
     assert.equal(fetchCalls.length, 1);
     assert.equal(fetchCalls[0].url, '/api/sessions/session-123/files/list?path=%2Fsrc');
     assert.equal(fetchCalls[0].init?.method, 'GET');
-    assert.equal(
-      (fetchCalls[0].init?.headers as Record<string, string>).Authorization,
-      'Bearer token-123',
-    );
     assert.equal(result[0].path, 'src');
   });
 
@@ -54,7 +49,6 @@ describe('workspace file navigation logic', () => {
     };
 
     const result = await readWorkspaceFile({
-      token: 'token-456',
       sessionId: 'session-456',
       filePath: 'src/app.ts',
       fetchImpl: fakeFetch as typeof fetch,
@@ -82,7 +76,6 @@ describe('workspace file navigation logic', () => {
     };
 
     await writeWorkspaceFile({
-      token: 'token-789',
       sessionId: 'session-789',
       filePath: 'src/app.ts',
       content: 'console.log("saved");',
@@ -113,7 +106,6 @@ describe('workspace file navigation logic', () => {
     };
 
     await deleteWorkspaceFile({
-      token: 'token-del',
       sessionId: 'session-del',
       filePath: 'src/old.ts',
       fetchImpl: fakeFetch as typeof fetch,
@@ -139,7 +131,6 @@ describe('workspace file navigation logic', () => {
 
     await assert.rejects(
       deleteWorkspaceFile({
-        token: 'token-del',
         sessionId: 'session-del',
         filePath: 'index2.html',
         fetchImpl: fakeFetch as typeof fetch,
@@ -160,7 +151,6 @@ describe('workspace file navigation logic', () => {
 
     await assert.rejects(
       deleteWorkspaceFile({
-        token: 'token-del',
         sessionId: 'session-del',
         filePath: 'index2.html',
         fetchImpl: fakeFetch as typeof fetch,
@@ -184,7 +174,6 @@ describe('workspace file navigation logic', () => {
     };
 
     const result = await searchWorkspaceFiles({
-      token: 'token-search',
       sessionId: 'session-search',
       query: 'login',
       fetchImpl: fakeFetch as typeof fetch,
@@ -241,7 +230,6 @@ describe('workspace file navigation logic', () => {
     };
 
     const tree = await loadWorkspaceFileTree({
-      token: 'token-789',
       sessionId: 'session-789',
       fetchImpl: fakeFetch as typeof fetch,
     });
@@ -371,7 +359,6 @@ describe('workspace file navigation logic', () => {
     };
 
     const tree = await loadWorkspaceFileTree({
-      token: 'token-tree',
       sessionId: 'session-tree',
       fetchImpl: fakeFetch as typeof fetch,
     });
