@@ -12216,9 +12216,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## AUTH — aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F NEXT
+**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F ACTIVE — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 NEXT
 
-**Current stage:** AUTH-APP-01F (PLANNED)
+**Current stage:** AUTH-APP-01F2 (PLANNED)
 
 **Master spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Reference master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -12239,7 +12239,11 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
 5. AUTH-APP-01C2 — Email Verification / Password Reset / Rate Limiting (PLANNED — BLOCKED on email provider)
 6. AUTH-APP-01D — Google OAuth (COMPLETE and LOCKED)
 7. AUTH-APP-01E — Apple OAuth (COMPLETE and LOCKED)
-8. AUTH-APP-01F — Route / API Protection (pending)
+8. AUTH-APP-01F — Route / API Protection (ACTIVE — child slices registered):
+   - AUTH-APP-01F1 — Route/API Protection Inventory + Spec (COMPLETE and LOCKED)
+   - AUTH-APP-01F2 — Backend API Protection Gaps (PLANNED — current stage)
+   - AUTH-APP-01F3 — Frontend Protected Route Behavior (pending)
+   - AUTH-APP-01F4 — Protection Validation + Consolidation (pending)
 9. AUTH-APP-01G — Auth UX Integration (pending)
 10. AUTH-APP-01H — Security Hardening + Validation Checklist (pending)
 11. AUTH-APP-01Z — Final Consolidation (pending)
@@ -12488,4 +12492,42 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
 - `npm run lint` backend: ESLint config not discoverable in `services/api-gateway`
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01E. See `docs/AUTH-APP-01E-CHECKPOINT.md`.
+
+---
+
+#### AUTH-APP-01F1: Route/API Protection Inventory + Spec
+
+**Status:** COMPLETE and LOCKED
+**Nature:** DOCUMENTATION / SPEC ONLY — no production code changes
+**Parent:** AUTH-APP-01F (ACTIVE)
+**Family:** AUTH
+**Depends on:** AUTH-APP-01E (COMPLETE and LOCKED)
+**Completed:** 2026-05-07
+**Checkpoint:** `docs/AUTH-APP-01F1-CHECKPOINT.md`
+**Spec:** `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md`
+
+**Implemented:**
+- Inspected all 30 backend controllers across `services/api-gateway/src/`
+- Inspected all frontend routes under `frontend/app/`
+- Confirmed `JwtAuthGuard` removed from all active controllers (zero remaining usages)
+- Documented full guard coverage: `SessionCookieGuard` (10 controllers/surfaces), `ApiKeyAuthGuard` (5 controllers), `InternalServiceAuthGuard` (7 internal controllers), intentionally public (9 endpoints)
+- Identified 8 protection gaps/decisions for F2 (AI execution cancel/get, service-to-service endpoints, runtime metrics, preview proxy, dead file cleanup)
+- Identified 2 frontend protection gaps for F3 (`/keys`, `/account` — no login redirect on 401)
+- Confirmed no `middleware.ts` exists — all frontend auth is reactive/client-side
+- Locked 11 behavior decisions and 6 governing invariants
+- Defined F2/F3/F4 implementation boundaries
+
+**Non-goals confirmed:**
+- No route guard implementation (AUTH-APP-01F2)
+- No frontend middleware/redirect implementation (AUTH-APP-01F3)
+- No OAuth or email/password changes
+- No AUTH-MODULE-01
+- No workspace UX changes
+- No Visual Edit Mode
+
+**Carry-forward blockers (pre-existing, not introduced by F1):**
+- `npm test` backend full suite: fails — `REDIS_URL` not set in test environment; `ai-execution.controller.spec.ts` pre-existing failures
+- `npm run lint` backend: ESLint config not discoverable in `services/api-gateway`
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01F1. See `docs/AUTH-APP-01F1-CHECKPOINT.md`. See `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md`.
 

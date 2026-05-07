@@ -22192,7 +22192,7 @@ Transform the public landing page into the "Build anything" entry experience wit
 
 ## AUTH ??aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F NEXT
+**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F ACTIVE — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 NEXT
 **Important distinction:** AUTH-APP-01 is for the aiSandBox platform itself. AUTH-MODULE-01 (reusable generated app-auth for user-created apps) is a separate, later family.
 **Decision spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -22220,7 +22220,11 @@ Add production-ready authentication for the aiSandBox hosted app ??email, Google
 5. AUTH-APP-01C2 ??Email Verification / Password Reset / Rate Limiting (PLANNED ??BLOCKED on email provider)
 6. AUTH-APP-01D — Google OAuth (COMPLETE and LOCKED)
 7. AUTH-APP-01E — Apple OAuth (COMPLETE and LOCKED)
-8. AUTH-APP-01F ??Route / API Protection (pending)
+8. AUTH-APP-01F — Route / API Protection (ACTIVE — child slices registered):
+   - AUTH-APP-01F1 — Route/API Protection Inventory + Spec (PLANNED — current stage)
+   - AUTH-APP-01F2 — Backend API Protection Gaps (pending)
+   - AUTH-APP-01F3 — Frontend Protected Route Behavior (pending)
+   - AUTH-APP-01F4 — Protection Validation + Consolidation (pending)
 9. AUTH-APP-01G ??Auth UX Integration (pending)
 10. AUTH-APP-01H ??Security Hardening + Validation Checklist (pending)
 11. AUTH-APP-01Z ??Final Consolidation (pending)
@@ -22805,6 +22809,136 @@ Add Apple OAuth sign-in to the aiSandBox platform using `@nicokaiser/passport-ap
 - `npm run lint` backend: ESLint config not discoverable in `services/api-gateway`
 
 **Reference:** See TASKS.md -> AUTH-APP-01E. See `docs/AUTH-APP-01E-CHECKPOINT.md`. See `docs/AUTH-APP-01-SPEC.md` Section 9.
+
+---
+
+### AUTH-APP-01F: Route / API Protection (Phase Parent)
+
+**Task ID:** AUTH-APP-01F
+**Family:** AUTH
+**Parent:** AUTH-APP-01
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** ACTIVE (child slices registered — AUTH-APP-01F1 is current stage)
+**Source:** AUTH-APP-01A spec (Section 9 — route/API protection slice); locked slice order
+**Depends on:** AUTH-APP-01E (COMPLETE and LOCKED)
+
+**Objective:**
+Ensure all frontend routes and backend API endpoints are correctly protected by authentication guards. Public routes remain public; authenticated surfaces enforce session-cookie auth consistently; `DRIVER_API_KEY` flows are preserved unchanged; unauthenticated access to browser routes redirects to `/[locale]/login`; unauthenticated API access returns 401/403.
+
+**Child slices:**
+1. AUTH-APP-01F1 — Route/API Protection Inventory + Spec (COMPLETE and LOCKED)
+2. AUTH-APP-01F2 — Backend API Protection Gaps (PLANNED — current stage)
+3. AUTH-APP-01F3 — Frontend Protected Route Behavior (pending)
+4. AUTH-APP-01F4 — Protection Validation + Consolidation (pending)
+
+**Non-goals:**
+- No OAuth or email/password changes
+- No auth UX redesign (AUTH-APP-01G)
+- No AUTH-MODULE-01
+- No workspace UX changes
+- No Visual Edit Mode
+
+**Reference:** See TASKS.md -> AUTH-APP-01F.
+
+---
+
+### AUTH-APP-01F1: Route/API Protection Inventory + Spec
+
+**Task ID:** AUTH-APP-01F1
+**Family:** AUTH
+**Parent:** AUTH-APP-01F
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** DOCUMENTATION / SPEC ONLY — no production code changes
+**Source:** AUTH-APP-01F child slice registration (2026-05-07)
+**Depends on:** AUTH-APP-01E (COMPLETE and LOCKED)
+**Completed:** 2026-05-07
+**Checkpoint:** `docs/AUTH-APP-01F1-CHECKPOINT.md`
+**Spec:** `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md`
+
+**Objective:**
+Produce a concrete protection inventory and implementation spec before changing any route/API protection code. Inspect existing frontend routes and backend controllers, identify which surfaces require authenticated user context and which must remain public, document current guard coverage, and define the implementation boundaries that AUTH-APP-01F2 and AUTH-APP-01F3 will execute against.
+
+**Bounded scope:**
+- Documentation and spec output only
+- Inspect frontend routes; identify public vs. authenticated surfaces
+- Inspect backend controllers; identify current guard coverage (SessionCookieGuard, JwtAuthGuard, ApiKeyAuthGuard, internal guards)
+- Identify endpoints intentionally public and endpoints currently unguarded but requiring protection
+- Identify frontend redirect/unauthorized handling behavior
+- Propose AUTH-APP-01F2 (backend gaps) and AUTH-APP-01F3 (frontend protected routes) implementation boundaries
+- No production code changes
+- No frontend route changes
+- No backend guard changes
+- No OAuth/email/password changes
+- No workspace redesign
+- No Visual Edit Mode
+
+**Spec must cover:**
+
+1. **Public routes that must stay public:**
+   - Landing page
+   - `/[locale]/login`
+   - `/[locale]/register`
+   - Share/public project viewing surfaces
+   - `GET /api/auth/google`, `GET /api/auth/google/callback`
+   - `GET /api/auth/apple`, `POST /api/auth/apple/callback`
+   - `POST /api/auth/login`, `POST /api/auth/register`
+   - Health/readiness endpoints if applicable
+
+2. **Authenticated frontend routes:**
+   - App workspace (`/[locale]/app`)
+   - Keys/account/API key pages
+   - Protected project/session/workspace surfaces
+
+3. **Backend API surface:**
+   - Endpoints currently using `SessionCookieGuard`
+   - Endpoints still using `JwtAuthGuard`
+   - Endpoints intentionally public (no guard)
+   - Endpoints using `ApiKeyAuthGuard` / `DRIVER_API_KEY` flow — must not be changed
+   - Internal-only endpoints — must remain protected by internal guards
+
+4. **Required behavior decisions:**
+   - Unauthenticated page access redirects to `/[locale]/login`
+   - Unauthenticated API access returns 401/403 consistently
+   - Cookie-session auth remains the browser auth path
+   - No `Authorization: Bearer` session-token restoration
+   - `DRIVER_API_KEY` Bearer flows remain unchanged
+
+5. **Tests/validation plan:**
+   - Backend guard/controller unit tests (targeted)
+   - Frontend redirect/auth-bootstrap tests if feasible
+   - Known carry-forward blockers recorded separately
+
+**Non-goals:**
+- No route guard implementation (AUTH-APP-01F2)
+- No frontend middleware/redirect implementation (AUTH-APP-01F3)
+- No OAuth or email/password changes
+- No AUTH-MODULE-01
+- No workspace UX changes
+- No Visual Edit Mode
+
+**Acceptance checks:**
+- [x] Spec document created: `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md`
+- [x] Public route inventory complete (6 public frontend routes documented)
+- [x] Authenticated frontend route inventory complete (4 routes + gap classification)
+- [x] Backend controller guard coverage documented for all 30 controllers
+- [x] `DRIVER_API_KEY` endpoints explicitly identified and marked do-not-change
+- [x] Internal-only endpoints explicitly identified (7 controllers under `/api/internal/`)
+- [x] `JwtAuthGuard` confirmed removed from all active controllers — zero remaining usages
+- [x] AUTH-APP-01F2 and AUTH-APP-01F3 implementation boundaries explicitly defined
+- [x] Carry-forward blockers recorded
+- [x] No production source files changed
+- [x] No npm dependencies installed
+- [x] No database migrations run
+- [x] Checkpoint created: `docs/AUTH-APP-01F1-CHECKPOINT.md`
+
+**Carry-forward blockers (inherited, not introduced here):**
+- `npm test` backend full suite: fails — `REDIS_URL` not set in test environment; `ai-execution.controller.spec.ts` pre-existing failures
+- `npm run lint` backend: ESLint config not discoverable in `services/api-gateway`
+
+**Reference:** See TASKS.md -> AUTH-APP-01F1. See `docs/AUTH-APP-01-SPEC.md` Section 9.
 
 ---
 
