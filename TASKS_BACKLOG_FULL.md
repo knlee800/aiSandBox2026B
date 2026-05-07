@@ -22192,7 +22192,7 @@ Transform the public landing page into the "Build anything" entry experience wit
 
 ## AUTH ??aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G NEXT
+**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G ACTIVE — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 NEXT
 **Important distinction:** AUTH-APP-01 is for the aiSandBox platform itself. AUTH-MODULE-01 (reusable generated app-auth for user-created apps) is a separate, later family.
 **Decision spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -22225,7 +22225,9 @@ Add production-ready authentication for the aiSandBox hosted app ??email, Google
    - AUTH-APP-01F2 — Backend API Protection Gaps (COMPLETE and LOCKED)
    - AUTH-APP-01F3 — Frontend Protected Route Behavior (COMPLETE and LOCKED)
    - AUTH-APP-01F4 — Protection Validation + Consolidation (COMPLETE and LOCKED)
-9. AUTH-APP-01G — Auth UX Integration (PLANNED — current stage)
+9. AUTH-APP-01G — Auth UX Integration (ACTIVE — child slices registered):
+   - AUTH-APP-01G1 — Auth UX Inventory + Scope (COMPLETE and LOCKED)
+   - AUTH-APP-01G2 — Login/Register OAuth Error + Button Polish (PLANNED — current stage)
 10. AUTH-APP-01H ??Security Hardening + Validation Checklist (pending)
 11. AUTH-APP-01Z ??Final Consolidation (pending)
 
@@ -23199,4 +23201,134 @@ Run bounded validation across all AUTH-APP-01F2 backend guard additions and AUTH
 - [x] `TASKS_BACKLOG_FULL.md` updated
 
 **Reference:** See TASKS.md -> AUTH-APP-01F4. See `docs/AUTH-APP-01F4-CHECKPOINT.md`. See `docs/AUTH-APP-01F-CHECKPOINT.md`. See `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md`.
+
+---
+
+### AUTH-APP-01G: Auth UX Integration (Phase Parent)
+
+**Task ID:** AUTH-APP-01G
+**Family:** AUTH
+**Parent:** AUTH-APP-01
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** ACTIVE (child slices registered — AUTH-APP-01G2 is current stage)
+**Depends on:** AUTH-APP-01F4 (COMPLETE and LOCKED)
+
+**Objective:**
+Integrate auth UX surfaces now that password login, Google OAuth, Apple OAuth, cookie sessions, and protected routes are all in place. Covers login/register UX polish, OAuth error handling, logout, and a minimal account surface.
+
+**Confirmed child slices:**
+1. AUTH-APP-01G1 — Auth UX Inventory + Scope (COMPLETE and LOCKED)
+2. AUTH-APP-01G2 — Login/Register OAuth Error + Button Polish (PLANNED — current stage)
+2. AUTH-APP-01G2 — Login/Register OAuth Error + Button Polish (pending)
+3. AUTH-APP-01G3 — Logout + Basic Account Surface (pending)
+4. AUTH-APP-01G4 — Auth UX Validation + Checkpoint (pending)
+
+**Non-goals:**
+- No AUTH-APP-01C2 email verification/password reset work
+- No transactional email
+- No workspace redesign
+- No Visual Edit Mode
+- No AUTH-MODULE-01 work
+- No new dependencies
+
+**Reference:** See TASKS.md -> AUTH-APP-01G. See `docs/AUTH-APP-01-SPEC.md`.
+
+---
+
+### AUTH-APP-01G1: Auth UX Inventory + Scope
+
+**Task ID:** AUTH-APP-01G1
+**Family:** AUTH
+**Parent:** AUTH-APP-01G
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** DOCUMENTATION / SPEC ONLY — no production source files changed
+**Depends on:** AUTH-APP-01F4 (COMPLETE and LOCKED)
+**Completed:** 2026-05-07
+**Checkpoint:** `docs/AUTH-APP-01G1-CHECKPOINT.md`
+**Spec:** `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md`
+
+**Objective:**
+Produce an inventory and implementation scope for auth UX integration now that password login, Google OAuth, Apple OAuth, cookie sessions, and protected routes are all in place. Decide the precise boundaries for AUTH-APP-01G2 and AUTH-APP-01G3 before any UX code is written.
+
+**Key findings:**
+- OAuth error query param gap: backend emits `?error=oauth_failed` / `?error=account_conflict` but login page does not consume them; `errors.oauthFailed` and `errors.accountConflict` i18n keys exist but are never rendered
+- `errors.oauthFailed` is Google-specific in wording; Apple also uses `oauth_failed` — must be made provider-agnostic in G2
+- Logout complete absence: no frontend component calls `POST /api/auth/logout`; backend endpoint is fully implemented; two orphaned i18n keys (`account.logout`, `sandbox.logout`) in all three locales
+- `/account` redirects to `/keys` (flag=false) or renders `ApiKeysPage` (flag=true); no profile/auth section exists
+- Keys page uses zero UX-IA-02 tokens — pre-existing, deferred
+- Login/register pages are token-consistent; OAuth buttons are visually generic (no provider icon or color)
+- Register success stays on page; whether to auto-redirect is a G2 decision
+
+**G2/G3/G4 boundaries decided:**
+- G2: login/register OAuth error display + provider-agnostic copy + minimal OAuth button polish
+- G3: logout caller + basic account surface
+- G4: validation + checkpoint
+- G3 must split to G3a/G3b if logout + account surface is too large
+
+**Validation:**
+- `git status`: `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md` new; `TASKS.md` and `TASKS_BACKLOG_FULL.md` modified (registration from earlier in session)
+- No production source files changed
+- No frontend or backend behavior changed
+- No tests run — docs-only
+
+**Acceptance checks (all MET):**
+- [x] Login page surfaces inspected and findings documented
+- [x] Register page surfaces inspected and findings documented
+- [x] Logout behavior inspected and findings documented (complete absence confirmed)
+- [x] Account surface inspected and findings documented
+- [x] OAuth error query param handling inspected (gap confirmed)
+- [x] i18n key coverage gaps identified (`errors.oauthFailed` Google-specific; dead keys noted)
+- [x] UX-IA-02 token consistency gaps identified (keys page deferred)
+- [x] G2 scope boundary decided and documented
+- [x] G3 scope boundary decided and documented
+- [x] No production source files changed
+- [x] `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md` created
+- [x] `docs/AUTH-APP-01G1-CHECKPOINT.md` created
+- [x] `TASKS.md` updated
+- [x] `TASKS_BACKLOG_FULL.md` updated
+
+**Reference:** See TASKS.md -> AUTH-APP-01G1. See `docs/AUTH-APP-01G1-CHECKPOINT.md`. See `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md`.
+
+---
+
+### AUTH-APP-01G2: Login/Register OAuth Error + Button Polish
+
+**Task ID:** AUTH-APP-01G2
+**Family:** AUTH
+**Parent:** AUTH-APP-01G
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** PLANNED
+**Nature:** FRONTEND UI ONLY
+**Depends on:** AUTH-APP-01G1 (COMPLETE and LOCKED)
+
+**Objective:**
+Consume OAuth error query params on the login page, make `errors.oauthFailed` provider-agnostic, and add minimal OAuth button polish to login and register pages.
+
+**Bounded scope:**
+- `frontend/app/[locale]/login/page.tsx`
+- `frontend/app/[locale]/register/page.tsx`
+- `frontend/messages/en.json`, `zh-TW.json`, `zh-CN.json`
+- Consume `?error=oauth_failed` and `?error=account_conflict` on login page using `useSearchParams()`
+- Render error in existing error div pattern using `errors.*` i18n keys
+- Make `errors.oauthFailed` provider-agnostic in all three locales
+- Minimal OAuth button polish (advisory-driven, bounded)
+- Decide register success behavior at stage-start
+
+**Key decisions at G2 stage-start:**
+- `useSearchParams` Suspense pattern (Next.js App Router constraint)
+- Provider-agnostic `errors.oauthFailed` wording
+- Register success behavior (auto-redirect vs. stay-on-page)
+
+**Non-goals:**
+- No backend changes
+- No account surface changes
+- No logout implementation
+- No full page redesign
+- No new npm dependencies
+
+**Reference:** See TASKS.md -> AUTH-APP-01G2. See `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md` Sections 5 and 10.
 
