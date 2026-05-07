@@ -26,6 +26,7 @@
     "testCredentials": "Test credentials",
     "orContinueWith": "Or continue with",
     "continueWithGoogle": "Continue with Google",
+    "continueWithApple": "Continue with Apple",
     "needAccount": "Need an account?",
     "startHere": "Start here"
   },
@@ -40,6 +41,7 @@
     "successMessage": "Account created successfully. You can now sign in.",
     "orContinueWith": "Or continue with",
     "continueWithGoogle": "Continue with Google",
+    "continueWithApple": "Continue with Apple",
     "alreadyHaveAccount": "Already have an account?",
     "loginHere": "Login here"
   },

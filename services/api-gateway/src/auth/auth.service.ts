@@ -14,6 +14,17 @@ export interface GoogleProfileInput {
   emailVerified: boolean;
 }
 
+export interface AppleProfileInput {
+  appleId: string;
+  email: string | null;
+  emailVerified: boolean;
+  isPrivateEmail: boolean;
+  name?: {
+    firstName?: string;
+    lastName?: string;
+  } | null;
+}
+
 @Injectable()
 export class AuthService {
   private static readonly SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -146,6 +157,25 @@ export class AuthService {
     await this.oauthAccountRepository.save(oauthAccount);
   }
 
+  private async createAppleOauthLink(
+    userId: string,
+    appleId: string,
+    providerEmail: string | null,
+  ): Promise<void> {
+    const oauthAccount = this.oauthAccountRepository.create({
+      userId,
+      provider: 'apple',
+      providerAccountId: appleId,
+      providerEmail,
+    });
+
+    await this.oauthAccountRepository.save(oauthAccount);
+  }
+
+  private isApplePrivateRelayEmail(email: string | null): boolean {
+    return Boolean(email && email.endsWith('@privaterelay.appleid.com'));
+  }
+
   async findOrCreateGoogleUser(profile: GoogleProfileInput): Promise<User> {
     const existingOauthAccount = await this.oauthAccountRepository.findOne({
       where: {
@@ -195,6 +225,83 @@ export class AuthService {
     const savedUser = await this.userRepository.save(newUser);
 
     await this.createGoogleOauthLink(savedUser.id, profile.googleId, normalizedEmail);
+    return savedUser;
+  }
+
+  async findOrCreateAppleUser(profile: AppleProfileInput): Promise<User> {
+    const appleId = profile.appleId?.trim();
+    if (!appleId) {
+      throw new UnauthorizedException('Apple account did not provide an account identifier');
+    }
+
+    const existingOauthAccount = await this.oauthAccountRepository.findOne({
+      where: {
+        provider: 'apple',
+        providerAccountId: appleId,
+      },
+      relations: {
+        user: true,
+      },
+    });
+
+    if (existingOauthAccount?.user?.isActive) {
+      return this.touchLastLogin(existingOauthAccount.user);
+    }
+    if (existingOauthAccount?.user && !existingOauthAccount.user.isActive) {
+      throw new UnauthorizedException('User account is inactive');
+    }
+
+    const normalizedEmail = profile.email?.trim().toLowerCase() ?? null;
+    if (!normalizedEmail) {
+      throw new UnauthorizedException('Apple account did not provide an email address');
+    }
+
+    const isPrivateRelayEmail =
+      profile.isPrivateEmail || this.isApplePrivateRelayEmail(normalizedEmail);
+
+    if (isPrivateRelayEmail) {
+      const newUser = this.userRepository.create({
+        email: normalizedEmail,
+        passwordHash: null,
+        authProvider: 'apple',
+        oauthId: appleId,
+        role: 'user' as any,
+        planType: 'free',
+        isActive: true,
+        lastLoginAt: new Date(),
+      });
+      const savedUser = await this.userRepository.save(newUser);
+
+      await this.createAppleOauthLink(savedUser.id, appleId, normalizedEmail);
+      return savedUser;
+    }
+
+    const existingUser = await this.userRepository.findOne({
+      where: { email: ILike(normalizedEmail) },
+    });
+
+    if (existingUser) {
+      if (!existingUser.isActive) {
+        throw new UnauthorizedException('User account is inactive');
+      }
+
+      await this.createAppleOauthLink(existingUser.id, appleId, normalizedEmail);
+      return this.touchLastLogin(existingUser);
+    }
+
+    const newUser = this.userRepository.create({
+      email: normalizedEmail,
+      passwordHash: null,
+      authProvider: 'apple',
+      oauthId: appleId,
+      role: 'user' as any,
+      planType: 'free',
+      isActive: true,
+      lastLoginAt: new Date(),
+    });
+    const savedUser = await this.userRepository.save(newUser);
+
+    await this.createAppleOauthLink(savedUser.id, appleId, normalizedEmail);
     return savedUser;
   }
 

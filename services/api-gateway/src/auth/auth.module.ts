@@ -10,6 +10,7 @@ import { AuthorizationGuard } from './authorization.guard';
 import { ApiKeyService } from './api-key.service';
 import { ApiKeyController } from './api-key.controller';
 import { GoogleStrategy } from './google.strategy';
+import { AppleStrategy } from './apple.strategy';
 import { ApiKey } from '../entities/api-key.entity';
 import { User } from '../entities/user.entity';
 import { OauthAccount } from '../entities/oauth-account.entity';
@@ -31,6 +32,7 @@ import { SessionCookieGuard } from './session-cookie.guard';
     AuthService,
     JwtStrategy,
     GoogleStrategy,
+    AppleStrategy,
     SessionCookieGuard,
     ApiKeyAuthGuard,
     AuthorizationGuard,

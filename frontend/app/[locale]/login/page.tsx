@@ -104,6 +104,13 @@ export default function LoginPage() {
             {t('continueWithGoogle')}
           </a>
 
+          <a
+            href={`/api/auth/apple?locale=${locale}`}
+            className="mt-3 block w-full rounded-md border border-border bg-surface-base py-2 text-center text-text-primary transition-colors hover:bg-surface-raised"
+          >
+            {t('continueWithApple')}
+          </a>
+
           <p className="mt-4 text-center text-sm text-text-secondary">
             {t('needAccount')}{' '}
             <Link

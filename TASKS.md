@@ -12216,9 +12216,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## AUTH — aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-APP-01D COMPLETE — AUTH-APP-01E NEXT
+**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F NEXT
 
-**Current stage:** AUTH-APP-01E (PLANNED — pending registration)
+**Current stage:** AUTH-APP-01F (PLANNED)
 
 **Master spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Reference master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -12238,7 +12238,7 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
 4. AUTH-APP-01C1B — Frontend localStorage/Bearer Migration (COMPLETE and LOCKED)
 5. AUTH-APP-01C2 — Email Verification / Password Reset / Rate Limiting (PLANNED — BLOCKED on email provider)
 6. AUTH-APP-01D — Google OAuth (COMPLETE and LOCKED)
-7. AUTH-APP-01E — Apple OAuth (pending)
+7. AUTH-APP-01E — Apple OAuth (COMPLETE and LOCKED)
 8. AUTH-APP-01F — Route / API Protection (pending)
 9. AUTH-APP-01G — Auth UX Integration (pending)
 10. AUTH-APP-01H — Security Hardening + Validation Checklist (pending)
@@ -12444,4 +12444,48 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
 - `npm run build` (frontend): PASS
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01D. See `docs/AUTH-APP-01D-CHECKPOINT.md`.
+
+---
+
+#### AUTH-APP-01E: Apple OAuth
+
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/AUTH-APP-01E-CHECKPOINT.md`
+
+**Source:** AUTH-APP-01A spec (Section 9 — Apple OAuth slice); AUTH-APP-01E confirmed at AUTH family registration
+**Depends on:** AUTH-APP-01C1A (COMPLETE), AUTH-APP-01D (COMPLETE), AUTH-APP-01B (COMPLETE)
+
+**Bounded scope:**
+- Add `@nicokaiser/passport-apple` strategy (`apple.strategy.ts`); private key normalized from env with `.replace(/\\n/g, '\n')`
+- `GET /api/auth/apple` — initiate Apple OAuth flow; persist locale in existing `aisandbox_oauth_state` state cookie
+- `POST /api/auth/apple/callback` — create `auth_sessions` server-side session, set `aisandbox_session` cookie, redirect to app (Apple callback is POST not GET)
+- `AuthService.findOrCreateAppleUser()` — provider account lookup; private relay email creates new user without auto-link; real email auto-links; inactive user rejected
+- `AuthModule` registers `AppleStrategy`
+- Minimal "Continue with Apple" link on login/register pages with i18n keys (`login.continueWithApple`, `register.continueWithApple`) in en/zh-TW/zh-CN
+- Apple OAuth env vars documented in `services/api-gateway/docs/SMOKE-PACK-README.md`
+
+**Environment variables:**
+- `APPLE_CLIENT_ID` (Services ID), `APPLE_TEAM_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY`, `APPLE_CALLBACK_URL`
+- `OAUTH_STATE_SECRET` reused from AUTH-APP-01D
+
+**Non-goals:**
+- No Google OAuth behavior changes
+- No email verification or password reset (AUTH-APP-01C2)
+- No frontend auth redesign beyond minimal link (AUTH-APP-01G)
+- No AUTH-MODULE-01
+- No migrations or entity changes
+
+**Validation:**
+- `npx tsc --noEmit` (api-gateway): PASS
+- `npx jest src/auth/auth.service.spec.ts src/auth/__tests__/apple.strategy.spec.ts --runInBand`: PASS — 2 suites, 12 tests
+- `npx tsc --noEmit` (frontend): PASS
+- `npm test` (frontend): PASS — 253 tests
+- `npm run build` (frontend): PASS
+- `frontend/tsconfig.tsbuildinfo` modified by build; restored via `git restore`
+
+**Carry-forward blockers (pre-existing, not introduced by AUTH-APP-01E):**
+- `npm test` backend full suite: fails — `REDIS_URL` not set in test environment; `ai-execution.controller.spec.ts` pre-existing failures
+- `npm run lint` backend: ESLint config not discoverable in `services/api-gateway`
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01E. See `docs/AUTH-APP-01E-CHECKPOINT.md`.
 

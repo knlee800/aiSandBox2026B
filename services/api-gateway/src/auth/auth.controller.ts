@@ -10,6 +10,7 @@ import {
   HttpCode,
   HttpStatus,
   Query,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto } from './dto/auth.dto';
@@ -75,6 +76,27 @@ export class AuthController {
 
   private clearOauthState(request: OAuthSessionRequest): void {
     request.session = null;
+  }
+
+  private getOauthErrorCode(error: unknown): 'oauth_failed' | 'account_conflict' {
+    if (!(error instanceof UnauthorizedException)) {
+      return 'oauth_failed';
+    }
+
+    const response = error.getResponse();
+    const message =
+      typeof response === 'string'
+        ? response
+        : typeof response === 'object' &&
+            response !== null &&
+            'message' in response &&
+            typeof response.message === 'string'
+          ? response.message
+          : Array.isArray((response as { message?: unknown }).message)
+            ? (response as { message: string[] }).message.join(' ')
+            : '';
+
+    return message.toLowerCase().includes('account conflict') ? 'account_conflict' : 'oauth_failed';
   }
 
   @Post('login')
@@ -150,6 +172,56 @@ export class AuthController {
           reject(error);
         }
       });
+    });
+  }
+
+  @Get('apple')
+  async appleAuth(
+    @Query('locale') locale: string | undefined,
+    @Request() req: OAuthSessionRequest,
+    @Res() response: Response,
+  ) {
+    const normalizedLocale = this.normalizeLocale(locale);
+    req.session = req.session ?? {};
+    req.session.oauthLocale = normalizedLocale;
+
+    passport.authenticate('apple', {
+      scope: ['name', 'email'],
+      session: false,
+    })(req as any, response as any, () => undefined);
+  }
+
+  @Post('apple/callback')
+  async appleCallback(@Request() req: OAuthSessionRequest, @Res() response: Response) {
+    const fallbackLocale = this.normalizeLocale(req.session?.oauthLocale);
+
+    await new Promise<void>((resolve) => {
+      passport.authenticate(
+        'apple',
+        { session: false },
+        async (error: unknown, user?: OAuthSessionRequest['user']) => {
+          const locale = this.normalizeLocale(req.session?.oauthLocale || fallbackLocale);
+
+          if (error || !user) {
+            this.clearOauthState(req);
+            response.redirect(`/${locale}/login?error=${this.getOauthErrorCode(error)}`);
+            resolve();
+            return;
+          }
+
+          try {
+            const sessionToken = await this.authService.createSession(user.id);
+            this.clearOauthState(req);
+            this.setSessionCookie(response, sessionToken);
+            response.redirect(`/${locale}/app`);
+          } catch (callbackError) {
+            this.clearOauthState(req);
+            response.redirect(`/${locale}/login?error=${this.getOauthErrorCode(callbackError)}`);
+          }
+
+          resolve();
+        },
+      )(req as any, response as any, () => undefined);
     });
   }
 

@@ -26,6 +26,7 @@
     "testCredentials": "测试凭证",
     "orContinueWith": "或继续使用",
     "continueWithGoogle": "使用 Google 继续",
+    "continueWithApple": "使用 Apple 继续",
     "needAccount": "还没有账号？",
     "startHere": "从这里开始"
   },
@@ -40,6 +41,7 @@
     "successMessage": "帐号创建成功。您现在可以登录。",
     "orContinueWith": "或继续使用",
     "continueWithGoogle": "使用 Google 继续",
+    "continueWithApple": "使用 Apple 继续",
     "alreadyHaveAccount": "已经有账号？",
     "loginHere": "前往登录"
   },

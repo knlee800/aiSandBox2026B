@@ -22192,7 +22192,7 @@ Transform the public landing page into the "Build anything" entry experience wit
 
 ## AUTH ??aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-APP-01D COMPLETE — AUTH-APP-01E NEXT
+**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F NEXT
 **Important distinction:** AUTH-APP-01 is for the aiSandBox platform itself. AUTH-MODULE-01 (reusable generated app-auth for user-created apps) is a separate, later family.
 **Decision spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -22219,7 +22219,7 @@ Add production-ready authentication for the aiSandBox hosted app ??email, Google
 4. AUTH-APP-01C1B ??Frontend localStorage/Bearer Migration (COMPLETE and LOCKED)
 5. AUTH-APP-01C2 ??Email Verification / Password Reset / Rate Limiting (PLANNED ??BLOCKED on email provider)
 6. AUTH-APP-01D — Google OAuth (COMPLETE and LOCKED)
-7. AUTH-APP-01E ??Apple OAuth (pending)
+7. AUTH-APP-01E — Apple OAuth (COMPLETE and LOCKED)
 8. AUTH-APP-01F ??Route / API Protection (pending)
 9. AUTH-APP-01G ??Auth UX Integration (pending)
 10. AUTH-APP-01H ??Security Hardening + Validation Checklist (pending)
@@ -22717,6 +22717,94 @@ Add Google OAuth sign-in to the aiSandBox platform using `passport-google-oauth2
 - `npm run lint` backend: ESLint config not discoverable in `services/api-gateway`
 
 **Reference:** See TASKS.md -> AUTH-APP-01D. See `docs/AUTH-APP-01D-CHECKPOINT.md`. See `docs/AUTH-APP-01-SPEC.md` Section 6.
+
+---
+
+### AUTH-APP-01E: Apple OAuth
+
+**Task ID:** AUTH-APP-01E
+**Family:** AUTH
+**Parent:** AUTH-APP-01
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/AUTH-APP-01E-CHECKPOINT.md`
+**Source:** AUTH-APP-01A spec (Section 9 — Apple OAuth slice); AUTH-APP-01E confirmed at AUTH family registration
+**Depends on:** AUTH-APP-01C1A (COMPLETE), AUTH-APP-01D (COMPLETE), AUTH-APP-01B (COMPLETE)
+**Completed:** 2026-05-07
+
+**Objective:**
+Add Apple OAuth sign-in to the aiSandBox platform using `@nicokaiser/passport-apple`, integrated with the existing session cookie infrastructure from AUTH-APP-01C1A and the OAuth state cookie-session flow from AUTH-APP-01D. On successful Apple callback a server-side `auth_sessions` record is created and the `aisandbox_session` HttpOnly cookie is set. No `access_token` is returned to the browser. Multi-provider account linking uses the policy in spec Section 6 with Apple-specific private relay email handling.
+
+**Dependency added:**
+- `@nicokaiser/passport-apple` (production) — handles ES256 client secret JWT generation internally
+
+**Bounded scope:**
+
+1. **AppleStrategy** (`services/api-gateway/src/auth/apple.strategy.ts`) — Passport strategy using `@nicokaiser/passport-apple`; reads `APPLE_CLIENT_ID`, `APPLE_TEAM_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY` (with `\n` normalization), `APPLE_CALLBACK_URL`; scopes `['name', 'email']`; calls `authService.findOrCreateAppleUser()` in `validate()`; name payload accepted but not stored (no name column on `User`)
+
+2. **AuthController routes:**
+   - `GET /api/auth/apple` — accepts optional `?locale=en|zh-TW|zh-CN`; normalizes invalid to `en`; stores locale in `aisandbox_oauth_state` state cookie (reused from AUTH-APP-01D); initiates Apple redirect
+   - `POST /api/auth/apple/callback` — Apple sends POST (not GET); on success: calls `createSession(user.id)`, sets `aisandbox_session` cookie, clears OAuth state, redirects to `/${locale}/app`; on error: redirects to `/${locale}/login?error=oauth_failed`; on account conflict: redirects to `/${locale}/login?error=account_conflict`
+
+3. **AuthService.findOrCreateAppleUser()** — account-linking order:
+   1. Existing `oauth_accounts` row for `provider='apple'` + `providerAccountId` match → sign in, touch `lastLoginAt`; inactive user → `UnauthorizedException`
+   2. Missing `appleId` → `UnauthorizedException`
+   3. No provider match and email is null → `UnauthorizedException` (repeat sign-in where Apple omitted email)
+   4. Private relay email (`isPrivateEmail` flag or `@privaterelay.appleid.com` suffix) → create new user + `oauth_accounts` row; no email-based lookup
+   5. Real email matches existing `users` row → create `oauth_accounts` link, touch `lastLoginAt`; inactive existing user → `UnauthorizedException`
+   6. No match → create new `users` row (`passwordHash=null`, `authProvider='apple'`) + new `oauth_accounts` row
+
+4. **AuthModule** — registers `AppleStrategy` as provider alongside `GoogleStrategy`
+
+5. **Frontend** — minimal "Continue with Apple" `<a>` link on login/register pages below the Google link; same border/surface design-token classes; i18n keys added to en, zh-TW, zh-CN message files; full UX polish deferred to AUTH-APP-01G
+
+6. **Environment variables:** `APPLE_CLIENT_ID`, `APPLE_TEAM_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY`, `APPLE_CALLBACK_URL`; `OAUTH_STATE_SECRET` reused from AUTH-APP-01D; documented in `services/api-gateway/docs/SMOKE-PACK-README.md`
+
+**Files changed:**
+- `services/api-gateway/package.json`
+- `services/api-gateway/src/auth/apple.strategy.ts` (new)
+- `services/api-gateway/src/auth/__tests__/apple.strategy.spec.ts` (new)
+- `services/api-gateway/src/auth/auth.service.ts`
+- `services/api-gateway/src/auth/auth.controller.ts`
+- `services/api-gateway/src/auth/auth.module.ts`
+- `services/api-gateway/src/auth/auth.service.spec.ts`
+- `frontend/app/[locale]/login/page.tsx`
+- `frontend/app/[locale]/register/page.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+- `services/api-gateway/docs/SMOKE-PACK-README.md`
+
+**Non-goals:**
+- No Google OAuth behavior changes
+- No email verification or password reset (AUTH-APP-01C2)
+- No rate limiting (AUTH-APP-01H)
+- No frontend auth redesign beyond minimal link (AUTH-APP-01G)
+- No AUTH-MODULE-01
+- No workspace UX changes
+- No Visual Edit Mode
+- No migrations or entity changes
+
+**Acceptance checks:**
+- [x] `GET /api/auth/apple` accepted (Apple Developer Portal credentials required for end-to-end test)
+- [x] `POST /api/auth/apple/callback` is POST route (not GET)
+- [x] `findOrCreateAppleUser()` handles all six account-linking cases including private relay
+- [x] Private relay email creates new user without auto-linking to existing real-email account
+- [x] Locale normalized to allowlist; no open redirect possible
+- [x] "Continue with Apple" link present on login/register in all three locales
+- [x] `npx tsc --noEmit` passes in `services/api-gateway`
+- [x] `npx tsc --noEmit` passes in `frontend`
+- [x] `npm test` passes in `frontend` (253 tests)
+- [x] `npm run build` passes in `frontend`
+- [x] Apple auth unit tests pass (2 suites, 12 tests — includes Google OAuth regression)
+- [ ] Manual end-to-end with real Apple Developer credentials (requires Services ID, Key, `.p8` file)
+
+**Carry-forward blockers (pre-existing, not introduced by AUTH-APP-01E):**
+- `npm test` backend full suite: fails — `REDIS_URL` not set in test environment; `ai-execution.controller.spec.ts` pre-existing failures
+- `npm run lint` backend: ESLint config not discoverable in `services/api-gateway`
+
+**Reference:** See TASKS.md -> AUTH-APP-01E. See `docs/AUTH-APP-01E-CHECKPOINT.md`. See `docs/AUTH-APP-01-SPEC.md` Section 9.
 
 ---
 
