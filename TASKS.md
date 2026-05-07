@@ -12216,9 +12216,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## AUTH — aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F ACTIVE — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 NEXT
+**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G NEXT
 
-**Current stage:** AUTH-APP-01F4 (PLANNED)
+**Current stage:** AUTH-APP-01G (PLANNED)
 
 **Master spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Reference master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -12239,12 +12239,12 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
 5. AUTH-APP-01C2 — Email Verification / Password Reset / Rate Limiting (PLANNED — BLOCKED on email provider)
 6. AUTH-APP-01D — Google OAuth (COMPLETE and LOCKED)
 7. AUTH-APP-01E — Apple OAuth (COMPLETE and LOCKED)
-8. AUTH-APP-01F — Route / API Protection (ACTIVE — child slices registered):
+8. AUTH-APP-01F — Route / API Protection (VALIDATION COMPLETE — carry-forwards pending — child slices all complete):
    - AUTH-APP-01F1 — Route/API Protection Inventory + Spec (COMPLETE and LOCKED)
    - AUTH-APP-01F2 — Backend API Protection Gaps (COMPLETE and LOCKED)
    - AUTH-APP-01F3 — Frontend Protected Route Behavior (COMPLETE and LOCKED)
-   - AUTH-APP-01F4 — Protection Validation + Consolidation (PLANNED — current stage)
-9. AUTH-APP-01G — Auth UX Integration (pending)
+   - AUTH-APP-01F4 — Protection Validation + Consolidation (COMPLETE and LOCKED)
+9. AUTH-APP-01G — Auth UX Integration (PLANNED — current stage)
 10. AUTH-APP-01H — Security Hardening + Validation Checklist (pending)
 11. AUTH-APP-01Z — Final Consolidation (pending)
 
@@ -12499,7 +12499,7 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
 
 **Status:** COMPLETE and LOCKED
 **Nature:** DOCUMENTATION / SPEC ONLY — no production code changes
-**Parent:** AUTH-APP-01F (ACTIVE)
+**Parent:** AUTH-APP-01F (VALIDATION COMPLETE — carry-forwards pending)
 **Family:** AUTH
 **Depends on:** AUTH-APP-01E (COMPLETE and LOCKED)
 **Completed:** 2026-05-07
@@ -12536,7 +12536,7 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
 #### AUTH-APP-01F2: Backend API Protection Gaps
 
 **Status:** COMPLETE and LOCKED
-**Parent:** AUTH-APP-01F (ACTIVE)
+**Parent:** AUTH-APP-01F (VALIDATION COMPLETE — carry-forwards pending)
 **Family:** AUTH
 **Depends on:** AUTH-APP-01F1 (COMPLETE and LOCKED)
 **Completed:** 2026-05-07
@@ -12578,7 +12578,7 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
 #### AUTH-APP-01F3: Frontend Protected Route Behavior
 
 **Status:** COMPLETE and LOCKED
-**Parent:** AUTH-APP-01F (ACTIVE)
+**Parent:** AUTH-APP-01F (VALIDATION COMPLETE — carry-forwards pending)
 **Family:** AUTH
 **Depends on:** AUTH-APP-01F2 (COMPLETE and LOCKED)
 **Completed:** 2026-05-07
@@ -12607,4 +12607,40 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
 - No new npm dependencies
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01F3. See `docs/AUTH-APP-01F3-CHECKPOINT.md`. See `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md`.
+
+---
+
+#### AUTH-APP-01F4: Protection Validation + Consolidation
+
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION AND CONSOLIDATION ONLY — no production source files changed
+**Parent:** AUTH-APP-01F (VALIDATION COMPLETE — carry-forwards pending)
+**Family:** AUTH
+**Depends on:** AUTH-APP-01F3 (COMPLETE and LOCKED)
+**Completed:** 2026-05-07
+**Checkpoint:** `docs/AUTH-APP-01F4-CHECKPOINT.md`
+**Family checkpoint:** `docs/AUTH-APP-01F-CHECKPOINT.md`
+**Spec:** `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md` (Section 8)
+
+**Validation results:**
+- Backend targeted tests (6 guard metadata tests): PASS
+  - `AIExecutionController guard metadata`: 3/3 (cancel, get, stream — ApiKeyAuthGuard)
+  - `ChatMessageController guard metadata`: 1/1 (InternalServiceAuthGuard)
+  - `TokenUsageController guard metadata`: 1/1 (InternalServiceAuthGuard)
+  - `RuntimeController guard metadata`: 1/1 (InternalServiceAuthGuard)
+- Frontend build: PASS (Next.js 15.5.12 — compiled in 2.3s)
+- Frontend `npx tsc --noEmit`: PASS
+- Frontend `npm test`: PASS — 253 tests, 22 suites, 0 failures
+- Frontend `/keys` direct auth bootstrap test: PASS — 3/3 tests
+- Manual smoke checklist: NOT RUN (no live environment) — carried to AUTH-APP-01H
+
+**Carry-forward items:**
+- Events endpoints (`file-changed`, `checkpoint-created`, `token-updated`) still unguarded — container-manager callers don't send `X-Internal-Service-Key` → AUTH-APP-01F2a or AUTH-APP-01H
+- Preview proxy (`@All /api/preview/*`) still unguarded — cross-service coordination needed → dedicated investigation slice
+- Manual smoke checklist (22 items) — not run → AUTH-APP-01H
+- Backend full `npm test` Redis env blocker — pre-existing since AUTH-APP-01B → carry-forward
+- `ai-execution-guards` full suite `QuotaService` blocker — pre-existing → carry-forward
+- `npm run lint` ESLint config blocker — pre-existing since AUTH-APP-01B → carry-forward
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01F4. See `docs/AUTH-APP-01F4-CHECKPOINT.md`. See `docs/AUTH-APP-01F-CHECKPOINT.md`.
 

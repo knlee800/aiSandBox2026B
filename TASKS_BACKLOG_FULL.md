@@ -22192,7 +22192,7 @@ Transform the public landing page into the "Build anything" entry experience wit
 
 ## AUTH ??aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F ACTIVE — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 NEXT
+**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G NEXT
 **Important distinction:** AUTH-APP-01 is for the aiSandBox platform itself. AUTH-MODULE-01 (reusable generated app-auth for user-created apps) is a separate, later family.
 **Decision spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -22224,8 +22224,8 @@ Add production-ready authentication for the aiSandBox hosted app ??email, Google
    - AUTH-APP-01F1 — Route/API Protection Inventory + Spec (COMPLETE and LOCKED)
    - AUTH-APP-01F2 — Backend API Protection Gaps (COMPLETE and LOCKED)
    - AUTH-APP-01F3 — Frontend Protected Route Behavior (COMPLETE and LOCKED)
-   - AUTH-APP-01F4 — Protection Validation + Consolidation (PLANNED — current stage)
-9. AUTH-APP-01G ??Auth UX Integration (pending)
+   - AUTH-APP-01F4 — Protection Validation + Consolidation (COMPLETE and LOCKED)
+9. AUTH-APP-01G — Auth UX Integration (PLANNED — current stage)
 10. AUTH-APP-01H ??Security Hardening + Validation Checklist (pending)
 11. AUTH-APP-01Z ??Final Consolidation (pending)
 
@@ -22819,7 +22819,7 @@ Add Apple OAuth sign-in to the aiSandBox platform using `@nicokaiser/passport-ap
 **Parent:** AUTH-APP-01
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** ACTIVE (child slices registered — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 is current stage)
+**Status:** VALIDATION COMPLETE — carry-forwards pending (all child slices COMPLETE and LOCKED)
 **Source:** AUTH-APP-01A spec (Section 9 — route/API protection slice); locked slice order
 **Depends on:** AUTH-APP-01E (COMPLETE and LOCKED)
 
@@ -22830,7 +22830,19 @@ Ensure all frontend routes and backend API endpoints are correctly protected by 
 1. AUTH-APP-01F1 — Route/API Protection Inventory + Spec (COMPLETE and LOCKED)
 2. AUTH-APP-01F2 — Backend API Protection Gaps (COMPLETE and LOCKED)
 3. AUTH-APP-01F3 — Frontend Protected Route Behavior (COMPLETE and LOCKED)
-4. AUTH-APP-01F4 — Protection Validation + Consolidation (PLANNED — current stage)
+4. AUTH-APP-01F4 — Protection Validation + Consolidation (COMPLETE and LOCKED)
+
+**Completed:** 2026-05-07
+**Checkpoint:** `docs/AUTH-APP-01F4-CHECKPOINT.md` (F4 task checkpoint)
+**Family checkpoint:** `docs/AUTH-APP-01F-CHECKPOINT.md` (family summary)
+
+**Carry-forward items (open — not resolved in F1–F4):**
+- `POST /api/events/file-changed`, `checkpoint-created`, `token-updated` — still unguarded. Container-manager callers don't send `X-Internal-Service-Key`. Fix requires updating `files.service.ts` and `git.service.ts` in container-manager. Target: AUTH-APP-01F2a or AUTH-APP-01H.
+- `@All /api/preview/*` — proxy still unguarded. Cross-service coordination needed; auth-forwarding mechanism not yet designed. Target: dedicated investigation slice.
+- Manual smoke checklist (22 items from spec Section 8.3) — not run (no live environment). Target: AUTH-APP-01H.
+- Backend full `npm test` Redis env blocker — pre-existing since AUTH-APP-01B.
+- `ai-execution-guards.integration.spec.ts` full suite `QuotaService` blocker — pre-existing.
+- `npm run lint` ESLint config blocker — pre-existing since AUTH-APP-01B.
 
 **Non-goals:**
 - No OAuth or email/password changes
@@ -22839,7 +22851,7 @@ Ensure all frontend routes and backend API endpoints are correctly protected by 
 - No workspace UX changes
 - No Visual Edit Mode
 
-**Reference:** See TASKS.md -> AUTH-APP-01F.
+**Reference:** See TASKS.md -> AUTH-APP-01F. See `docs/AUTH-APP-01F-CHECKPOINT.md`.
 
 ---
 
@@ -23110,4 +23122,81 @@ Implement the frontend protected route behavior gaps identified in AUTH-APP-01F1
 - Backend full `npm test` / Redis integration blockers — pre-existing
 
 **Reference:** See TASKS.md -> AUTH-APP-01F3. See `docs/AUTH-APP-01F3-CHECKPOINT.md`. See `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md`.
+
+---
+
+### AUTH-APP-01F4: Protection Validation + Consolidation
+
+**Task ID:** AUTH-APP-01F4
+**Family:** AUTH
+**Parent:** AUTH-APP-01F (VALIDATION COMPLETE — carry-forwards pending)
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION AND CONSOLIDATION ONLY — no production source files changed
+**Source:** AUTH-APP-01F child slice registration (2026-05-07)
+**Depends on:** AUTH-APP-01F3 (COMPLETE and LOCKED)
+**Completed:** 2026-05-07
+**Checkpoint:** `docs/AUTH-APP-01F4-CHECKPOINT.md`
+**Family checkpoint:** `docs/AUTH-APP-01F-CHECKPOINT.md`
+**Spec:** `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md` (Section 8)
+
+**Objective:**
+Run bounded validation across all AUTH-APP-01F2 backend guard additions and AUTH-APP-01F3 frontend protected-route changes. Confirm all targeted guard metadata tests pass. Record manual smoke checklist disposition. Produce the task-level and family-level checkpoints. Update governance files.
+
+**Bounded scope:**
+- No production source files changed
+- Run targeted backend Jest tests (guard metadata only — no full suite)
+- Run frontend build, tsc, npm test, and direct /keys auth bootstrap test
+- Record manual smoke checklist disposition (not run — no live environment)
+- Create `docs/AUTH-APP-01F4-CHECKPOINT.md`
+- Create `docs/AUTH-APP-01F-CHECKPOINT.md` (family summary)
+- Update `TASKS.md` and `TASKS_BACKLOG_FULL.md`
+
+**Validation results:**
+- `AIExecutionController guard metadata`: 3/3 PASS (cancel, get, stream — ApiKeyAuthGuard)
+- `ChatMessageController guard metadata`: 1/1 PASS (InternalServiceAuthGuard)
+- `TokenUsageController guard metadata`: 1/1 PASS (InternalServiceAuthGuard)
+- `RuntimeController guard metadata`: 1/1 PASS (InternalServiceAuthGuard)
+- Frontend `npm run build`: PASS (Next.js 15.5.12 — 13 routes)
+- Frontend `npx tsc --noEmit`: PASS
+- Frontend `npm test`: PASS — 253 tests, 22 suites, 0 failures
+- Frontend `/keys` direct auth bootstrap test: PASS — 3/3 tests
+- Manual smoke checklist: NOT RUN — no live environment → carry to AUTH-APP-01H
+
+**Carry-forward items:**
+- Events endpoints (`/api/events/file-changed`, `/api/events/checkpoint-created`, `/api/events/token-updated`) — unguarded. Container-manager callers don't send `X-Internal-Service-Key`. Target: AUTH-APP-01F2a or AUTH-APP-01H.
+- Preview proxy (`@All /api/preview/*`) — unguarded. Cross-service coordination needed. Target: dedicated investigation slice.
+- Manual smoke checklist (22 items) — not run. Target: AUTH-APP-01H.
+- Backend full `npm test` Redis env blocker — pre-existing since AUTH-APP-01B.
+- `ai-execution-guards.integration.spec.ts` full suite `QuotaService` blocker — pre-existing.
+- `npm run lint` ESLint config blocker — pre-existing since AUTH-APP-01B.
+
+**Non-goals:**
+- No new guards added
+- No frontend pages modified
+- No middleware created
+- No backend routes changed
+- No OAuth or email/password changes
+- No preview proxy fix
+- No events endpoint fix
+- No container-manager changes
+- No new npm dependencies
+
+**Acceptance checks:**
+- [x] Backend guard metadata: 6 targeted tests PASS (3 ai-execution + 1 chat-message + 1 token-usage + 1 runtime)
+- [x] Frontend build PASS
+- [x] Frontend `npx tsc --noEmit` PASS
+- [x] Frontend `npm test` PASS — 253 tests, 0 failures
+- [x] `/keys` direct auth bootstrap test PASS — 3/3
+- [x] `frontend/tsconfig.tsbuildinfo` restored to clean state
+- [x] Manual smoke checklist disposition recorded — NOT RUN, carried to AUTH-APP-01H
+- [x] Carry-forward blockers recorded
+- [x] No production source files changed
+- [x] `docs/AUTH-APP-01F4-CHECKPOINT.md` created
+- [x] `docs/AUTH-APP-01F-CHECKPOINT.md` created
+- [x] `TASKS.md` updated
+- [x] `TASKS_BACKLOG_FULL.md` updated
+
+**Reference:** See TASKS.md -> AUTH-APP-01F4. See `docs/AUTH-APP-01F4-CHECKPOINT.md`. See `docs/AUTH-APP-01F-CHECKPOINT.md`. See `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md`.
 
