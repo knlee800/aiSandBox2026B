@@ -9,15 +9,31 @@ import {
   Res,
   HttpCode,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto } from './dto/auth.dto';
 import { SessionCookieGuard } from './session-cookie.guard';
 import * as acceptLanguageParser from 'accept-language-parser';
-import { Response } from 'express';
+import * as passport from 'passport';
+import { Request as ExpressRequest, Response } from 'express';
+
+type OAuthSessionRequest = ExpressRequest & {
+  session?: {
+    oauthLocale?: string;
+  } | null;
+  user?: {
+    id: string;
+    email: string;
+    role: string;
+    planType?: string;
+  };
+};
 
 @Controller('auth')
 export class AuthController {
+  private static readonly SUPPORTED_LOCALES = new Set(['en', 'zh-TW', 'zh-CN']);
+
   constructor(private authService: AuthService) {}
 
   private getLanguageFromHeader(acceptLanguage: string | undefined): string {
@@ -39,6 +55,28 @@ export class AuthController {
     return 'en'; // Default to English
   }
 
+  private normalizeLocale(locale?: string): string {
+    if (!locale || !AuthController.SUPPORTED_LOCALES.has(locale)) {
+      return 'en';
+    }
+
+    return locale;
+  }
+
+  private setSessionCookie(response: Response, sessionToken: string): void {
+    response.cookie('aisandbox_session', sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+  }
+
+  private clearOauthState(request: OAuthSessionRequest): void {
+    request.session = null;
+  }
+
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(
@@ -48,13 +86,7 @@ export class AuthController {
   ) {
     const lang = this.getLanguageFromHeader(acceptLanguage);
     const result = await this.authService.login(loginDto.email, loginDto.password, lang);
-    response.cookie('aisandbox_session', result.sessionToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    this.setSessionCookie(response, result.sessionToken);
     return {
       user: result.user,
     };
@@ -67,6 +99,58 @@ export class AuthController {
       message: 'User registered successfully',
       user,
     };
+  }
+
+  @Get('google')
+  async googleAuth(
+    @Query('locale') locale: string | undefined,
+    @Request() req: OAuthSessionRequest,
+    @Res() response: Response,
+  ) {
+    const normalizedLocale = this.normalizeLocale(locale);
+    req.session = req.session ?? {};
+    req.session.oauthLocale = normalizedLocale;
+
+    passport.authenticate('google', {
+      scope: ['email', 'profile'],
+      session: false,
+    })(req as any, response as any, () => undefined);
+  }
+
+  @Get('google/callback')
+  async googleCallback(@Request() req: OAuthSessionRequest, @Res() response: Response) {
+    const fallbackLocale = this.normalizeLocale(req.session?.oauthLocale);
+
+    await new Promise<void>((resolve, reject) => {
+      passport.authenticate(
+        'google',
+        { session: false },
+        async (error: unknown, user?: OAuthSessionRequest['user']) => {
+          const locale = this.normalizeLocale(req.session?.oauthLocale || fallbackLocale);
+
+          try {
+            if (error || !user) {
+              this.clearOauthState(req);
+              response.redirect(`/${locale}/login?error=oauth_failed`);
+              resolve();
+              return;
+            }
+
+            const sessionToken = await this.authService.createSession(user.id);
+            this.clearOauthState(req);
+            this.setSessionCookie(response, sessionToken);
+            response.redirect(`/${locale}/app`);
+            resolve();
+          } catch (callbackError) {
+            reject(callbackError);
+          }
+        },
+      )(req as any, response as any, (error: unknown) => {
+        if (error) {
+          reject(error);
+        }
+      });
+    });
   }
 
   @UseGuards(SessionCookieGuard)

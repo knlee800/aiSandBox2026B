@@ -22192,7 +22192,7 @@ Transform the public landing page into the "Build anything" entry experience wit
 
 ## AUTH ??aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE ??AUTH-APP-01C1B COMPLETE ??AUTH-APP-01D NEXT
+**Family status:** ACTIVE — AUTH-APP-01D COMPLETE — AUTH-APP-01E NEXT
 **Important distinction:** AUTH-APP-01 is for the aiSandBox platform itself. AUTH-MODULE-01 (reusable generated app-auth for user-created apps) is a separate, later family.
 **Decision spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -22218,7 +22218,7 @@ Add production-ready authentication for the aiSandBox hosted app ??email, Google
 3. AUTH-APP-01C1A ??Backend Cookie Session Foundation (COMPLETE and LOCKED)
 4. AUTH-APP-01C1B ??Frontend localStorage/Bearer Migration (COMPLETE and LOCKED)
 5. AUTH-APP-01C2 ??Email Verification / Password Reset / Rate Limiting (PLANNED ??BLOCKED on email provider)
-6. AUTH-APP-01D ??Google OAuth (pending)
+6. AUTH-APP-01D — Google OAuth (COMPLETE and LOCKED)
 7. AUTH-APP-01E ??Apple OAuth (pending)
 8. AUTH-APP-01F ??Route / API Protection (pending)
 9. AUTH-APP-01G ??Auth UX Integration (pending)
@@ -22630,6 +22630,93 @@ Add email verification and password reset flows that use the `verification_token
 - [ ] No OAuth code added
 
 **Reference:** See TASKS.md -> AUTH-APP-01C2. See `docs/AUTH-APP-01-SPEC.md` Sections 7, 12.
+
+---
+
+### AUTH-APP-01D: Google OAuth
+
+**Task ID:** AUTH-APP-01D
+**Family:** AUTH
+**Parent:** AUTH-APP-01
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/AUTH-APP-01D-CHECKPOINT.md`
+**Source:** AUTH-APP-01A spec (Section 6 — OAuth providers); AUTH-APP-01D confirmed at AUTH family registration
+**Depends on:** AUTH-APP-01C1A (COMPLETE), AUTH-APP-01B (COMPLETE)
+
+**Objective:**
+Add Google OAuth sign-in to the aiSandBox platform using `passport-google-oauth20`, integrated with the existing session cookie infrastructure from AUTH-APP-01C1A. On successful callback a server-side `auth_sessions` record is created and the `aisandbox_session` HttpOnly cookie is set. No `access_token` is returned to the browser. Multi-provider account linking uses the policy in spec Section 6.
+
+**Dependencies added:**
+- `passport-google-oauth20` (production)
+- `cookie-session` (production)
+- `@types/passport-google-oauth20` (devDependency)
+- `@types/cookie-session` (devDependency)
+
+**Bounded scope:**
+
+1. **OAuth state management** — `cookie-session` middleware registered in `main.ts` before `cookieParser`; stores short-lived state (locale) in `aisandbox_oauth_state` cookie (10-min maxAge, HttpOnly, SameSite=Lax); separate from `aisandbox_session`; secret preference order: `OAUTH_STATE_SECRET` → `SESSION_SECRET` → `JWT_SECRET`
+
+2. **GoogleStrategy** (`services/api-gateway/src/auth/google.strategy.ts`) — Passport strategy using `passport-google-oauth20`; scopes `email` + `profile`; calls `authService.findOrCreateGoogleUser()` in `validate()`; no refresh token requested
+
+3. **AuthController routes:**
+   - `GET /api/auth/google` — accepts optional `?locale=en|zh-TW|zh-CN`; normalizes invalid to `en`; stores locale in state cookie; initiates Google redirect
+   - `GET /api/auth/google/callback` — on success: calls `createSession(user.id)`, sets `aisandbox_session` cookie, clears OAuth state cookie, redirects to `/${locale}/app`; on error: redirects to `/${locale}/login?error=oauth_failed`
+
+4. **AuthService.findOrCreateGoogleUser()** — account-linking order:
+   1. Existing `oauth_accounts` row for `provider='google'` + `providerAccountId` match → sign in, touch `lastLoginAt`
+   2. Verified Google email matches existing `users` row → create `oauth_accounts` link, touch `lastLoginAt`
+   3. Google email unverified and existing user found → reject (`UnauthorizedException`)
+   4. No match → create new `users` row (`passwordHash=null`, `authProvider='google'`) + new `oauth_accounts` row
+
+5. **Frontend** — minimal "Continue with Google" `<a>` link on login/register pages; i18n keys added to en, zh-TW, zh-CN message files; full UX polish deferred to AUTH-APP-01G
+
+6. **Environment variables:** `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL`, `OAUTH_STATE_SECRET`; documented in `services/api-gateway/docs/SMOKE-PACK-README.md` (`.env.example` write denied by tool; no duplicate created)
+
+**Files changed:**
+- `services/api-gateway/package.json`
+- `services/api-gateway/src/main.ts`
+- `services/api-gateway/src/auth/google.strategy.ts` (new)
+- `services/api-gateway/src/auth/__tests__/google.strategy.spec.ts` (new)
+- `services/api-gateway/src/auth/auth.service.ts`
+- `services/api-gateway/src/auth/auth.controller.ts`
+- `services/api-gateway/src/auth/auth.module.ts`
+- `services/api-gateway/src/auth/auth.service.spec.ts` (new)
+- `frontend/app/[locale]/login/page.tsx`
+- `frontend/app/[locale]/register/page.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+- `services/api-gateway/docs/SMOKE-PACK-README.md`
+
+**Non-goals:**
+- No Apple OAuth (AUTH-APP-01E)
+- No email verification or password reset (AUTH-APP-01C2)
+- No rate limiting (AUTH-APP-01H)
+- No frontend auth redesign beyond minimal button (AUTH-APP-01G)
+- No AUTH-MODULE-01
+- No workspace UX changes
+- No Visual Edit Mode
+
+**Acceptance checks:**
+- [x] `GET /api/auth/google` initiates Google OAuth redirect
+- [x] `GET /api/auth/google/callback` sets `aisandbox_session` cookie and redirects to `/${locale}/app`
+- [x] `findOrCreateGoogleUser()` handles all four account-linking cases
+- [x] Locale normalized to allowlist; no open redirect possible
+- [x] "Continue with Google" link present on login/register in all three locales
+- [x] `npx tsc --noEmit` passes in `services/api-gateway`
+- [x] `npx tsc --noEmit` passes in `frontend`
+- [x] `npm test` passes in `frontend` (253 tests)
+- [x] `npm run build` passes in `frontend`
+- [x] Google auth unit tests pass (2 suites, 6 tests)
+- [ ] Manual end-to-end with real Google credentials (requires Cloud Console setup)
+
+**Carry-forward blockers (pre-existing, not introduced by AUTH-APP-01D):**
+- `npm test` backend full suite: fails — `REDIS_URL` not set in test environment; `ai-execution.controller.spec.ts` pre-existing failures
+- `npm run lint` backend: ESLint config not discoverable in `services/api-gateway`
+
+**Reference:** See TASKS.md -> AUTH-APP-01D. See `docs/AUTH-APP-01D-CHECKPOINT.md`. See `docs/AUTH-APP-01-SPEC.md` Section 6.
 
 ---
 

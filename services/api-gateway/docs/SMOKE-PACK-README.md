@@ -76,6 +76,7 @@ Before running smoke tests:
 
 5. **Environment configured:**
    - api-gateway `.env`: `AI_PROVIDER`, `DATABASE_URL`, `LAUNCH_STATE`, `ABORT_MODE`
+   - Google OAuth (AUTH-APP-01D): `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL`, `OAUTH_STATE_SECRET`
    - ai-service `.env`: Provider API key (e.g., `XAI_API_KEY`)
 
 6. **Valid API key in database:**

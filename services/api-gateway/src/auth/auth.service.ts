@@ -1,11 +1,18 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, MoreThan, Repository } from 'typeorm';
+import { ILike, IsNull, MoreThan, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { createHash, randomBytes } from 'crypto';
 import i18n from '../config/i18n';
 import { User } from '../entities/user.entity';
 import { AuthSession } from '../entities/auth-session.entity';
+import { OauthAccount } from '../entities/oauth-account.entity';
+
+export interface GoogleProfileInput {
+  googleId: string;
+  email: string | null;
+  emailVerified: boolean;
+}
 
 @Injectable()
 export class AuthService {
@@ -14,6 +21,8 @@ export class AuthService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(OauthAccount)
+    private oauthAccountRepository: Repository<OauthAccount>,
     @InjectRepository(AuthSession)
     private authSessionRepository: Repository<AuthSession>,
   ) {}
@@ -113,6 +122,80 @@ export class AuthService {
         revokedAt: new Date(),
       },
     );
+  }
+
+  private async touchLastLogin(user: User): Promise<User> {
+    const lastLoginAt = new Date();
+    await this.userRepository.update(user.id, { lastLoginAt });
+    user.lastLoginAt = lastLoginAt;
+    return user;
+  }
+
+  private async createGoogleOauthLink(
+    userId: string,
+    googleId: string,
+    providerEmail: string | null,
+  ): Promise<void> {
+    const oauthAccount = this.oauthAccountRepository.create({
+      userId,
+      provider: 'google',
+      providerAccountId: googleId,
+      providerEmail,
+    });
+
+    await this.oauthAccountRepository.save(oauthAccount);
+  }
+
+  async findOrCreateGoogleUser(profile: GoogleProfileInput): Promise<User> {
+    const existingOauthAccount = await this.oauthAccountRepository.findOne({
+      where: {
+        provider: 'google',
+        providerAccountId: profile.googleId,
+      },
+      relations: {
+        user: true,
+      },
+    });
+
+    if (existingOauthAccount?.user?.isActive) {
+      return this.touchLastLogin(existingOauthAccount.user);
+    }
+    if (existingOauthAccount?.user && !existingOauthAccount.user.isActive) {
+      throw new UnauthorizedException('User account is inactive');
+    }
+
+    const normalizedEmail = profile.email?.trim().toLowerCase() ?? null;
+    if (!normalizedEmail) {
+      throw new UnauthorizedException('Google account did not provide an email address');
+    }
+
+    const existingUser = await this.userRepository.findOne({
+      where: { email: ILike(normalizedEmail) },
+    });
+
+    if (existingUser) {
+      if (!profile.emailVerified) {
+        throw new UnauthorizedException('Google account email must be verified before linking');
+      }
+
+      await this.createGoogleOauthLink(existingUser.id, profile.googleId, normalizedEmail);
+      return this.touchLastLogin(existingUser);
+    }
+
+    const newUser = this.userRepository.create({
+      email: normalizedEmail,
+      passwordHash: null,
+      authProvider: 'google',
+      oauthId: profile.googleId,
+      role: 'user' as any,
+      planType: 'free',
+      isActive: true,
+      lastLoginAt: new Date(),
+    });
+    const savedUser = await this.userRepository.save(newUser);
+
+    await this.createGoogleOauthLink(savedUser.id, profile.googleId, normalizedEmail);
+    return savedUser;
   }
 
   async login(email: string, password: string, lang: string = 'en') {

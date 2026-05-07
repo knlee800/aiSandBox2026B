@@ -24,6 +24,8 @@
     "invalidCredentials": "無效的憑證",
     "loginFailed": "登入失敗",
     "testCredentials": "測試憑證",
+    "orContinueWith": "或繼續使用",
+    "continueWithGoogle": "使用 Google 繼續",
     "needAccount": "還沒有帳號？",
     "startHere": "從這裡開始"
   },
@@ -36,6 +38,8 @@
     "registering": "建立帳號中...",
     "registerFailed": "註冊失敗",
     "successMessage": "帳號建立成功。您現在可以登入。",
+    "orContinueWith": "或繼續使用",
+    "continueWithGoogle": "使用 Google 繼續",
     "alreadyHaveAccount": "已經有帳號？",
     "loginHere": "前往登入"
   },
@@ -111,7 +115,9 @@
     "unknown": "發生未知錯誤。",
     "network": "網路錯誤，請稍後再試。",
     "forbidden": "你沒有此操作權限。",
-    "notFound": "找不到請求的資源。"
+    "notFound": "找不到請求的資源。",
+    "oauthFailed": "使用 Google 登入失敗，請再試一次。",
+    "accountConflict": "此電子郵件已綁定其他登入方式。請使用原本的登入方式。"
   },
   "sandbox": {
     "files": "檔案",

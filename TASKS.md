@@ -12216,9 +12216,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## AUTH — aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-APP-01C1B COMPLETE — AUTH-APP-01D NEXT
+**Family status:** ACTIVE — AUTH-APP-01D COMPLETE — AUTH-APP-01E NEXT
 
-**Current stage:** AUTH-APP-01D (PLANNED — pending stage-start)
+**Current stage:** AUTH-APP-01E (PLANNED — pending registration)
 
 **Master spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Reference master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -12237,7 +12237,7 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
 3. AUTH-APP-01C1A — Backend Cookie Session Foundation (COMPLETE and LOCKED)
 4. AUTH-APP-01C1B — Frontend localStorage/Bearer Migration (COMPLETE and LOCKED)
 5. AUTH-APP-01C2 — Email Verification / Password Reset / Rate Limiting (PLANNED — BLOCKED on email provider)
-6. AUTH-APP-01D — Google OAuth (pending — depends on C1A; preferably after C1B)
+6. AUTH-APP-01D — Google OAuth (COMPLETE and LOCKED)
 7. AUTH-APP-01E — Apple OAuth (pending)
 8. AUTH-APP-01F — Route / API Protection (pending)
 9. AUTH-APP-01G — Auth UX Integration (pending)
@@ -12410,4 +12410,38 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
 - `npx tsc --noEmit` passes in `services/api-gateway`
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01C2. See `docs/AUTH-APP-01-SPEC.md` Sections 7, 12.
+
+---
+
+#### AUTH-APP-01D: Google OAuth
+
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/AUTH-APP-01D-CHECKPOINT.md`
+
+**Source:** AUTH-APP-01A spec (Section 6 — OAuth providers); AUTH-APP-01D confirmed at AUTH family registration
+**Depends on:** AUTH-APP-01C1A (COMPLETE), AUTH-APP-01B (COMPLETE)
+
+**Bounded scope:**
+- Add `passport-google-oauth20` strategy with `cookie-session` OAuth state management
+- `GET /api/auth/google` — initiate OAuth flow, persist locale in state cookie
+- `GET /api/auth/google/callback` — create `auth_sessions` server-side session, set `aisandbox_session` cookie, redirect to app
+- `AuthService.findOrCreateGoogleUser()` — link existing user by provider account or verified email; create new user if no match
+- Minimal "Continue with Google" link on login/register pages with i18n keys
+- OAuth env vars documented in `services/api-gateway/docs/SMOKE-PACK-README.md` (`.env.example` write denied by tool)
+
+**Non-goals:**
+- No Apple OAuth (AUTH-APP-01E)
+- No email verification or password reset (AUTH-APP-01C2)
+- No frontend auth redesign beyond minimal button (AUTH-APP-01G)
+- No AUTH-MODULE-01
+
+**Validation:**
+- `npx tsc --noEmit` (api-gateway): PASS
+- Google auth unit tests (2 suites, 6 tests): PASS
+- `npm test` (api-gateway full): FAIL — carry-forward only (REDIS_URL, ai-execution.controller.spec.ts, ESLint config)
+- `npx tsc --noEmit` (frontend): PASS
+- `npm test` (frontend): PASS — 253 tests
+- `npm run build` (frontend): PASS
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01D. See `docs/AUTH-APP-01D-CHECKPOINT.md`.
 

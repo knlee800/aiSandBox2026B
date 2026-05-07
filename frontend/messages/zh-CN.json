@@ -24,6 +24,8 @@
     "invalidCredentials": "无效的凭证",
     "loginFailed": "登录失败",
     "testCredentials": "测试凭证",
+    "orContinueWith": "或继续使用",
+    "continueWithGoogle": "使用 Google 继续",
     "needAccount": "还没有账号？",
     "startHere": "从这里开始"
   },
@@ -36,6 +38,8 @@
     "registering": "创建账号中...",
     "registerFailed": "注册失败",
     "successMessage": "帐号创建成功。您现在可以登录。",
+    "orContinueWith": "或继续使用",
+    "continueWithGoogle": "使用 Google 继续",
     "alreadyHaveAccount": "已经有账号？",
     "loginHere": "前往登录"
   },
@@ -111,7 +115,9 @@
     "unknown": "发生未知错误。",
     "network": "网络错误，请稍后重试。",
     "forbidden": "你没有此操作权限。",
-    "notFound": "未找到请求的资源。"
+    "notFound": "未找到请求的资源。",
+    "oauthFailed": "使用 Google 登录失败，请重试。",
+    "accountConflict": "此电子邮件已绑定其他登录方式。请使用原有登录方式。"
   },
   "sandbox": {
     "files": "文件",

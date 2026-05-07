@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import cookieSession from 'cookie-session';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './filters/http-exception.filter';
@@ -16,6 +17,23 @@ async function bootstrap() {
     credentials: true,
   });
 
+  const oauthStateSecret =
+    process.env.OAUTH_STATE_SECRET ||
+    process.env.SESSION_SECRET ||
+    process.env.JWT_SECRET ||
+    'change_this_in_production_use_a_long_random_string';
+
+  // Short-lived OAuth state cookie only; this is separate from the auth session cookie.
+  app.use(
+    cookieSession({
+      name: 'aisandbox_oauth_state',
+      keys: [oauthStateSecret],
+      maxAge: 10 * 60 * 1000,
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+    }),
+  );
   app.use(cookieParser());
 
   // Enable global exception filter (PHASE-42A-4: Preserve quota error body shape)

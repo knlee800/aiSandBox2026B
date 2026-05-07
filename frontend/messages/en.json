@@ -24,6 +24,8 @@
     "invalidCredentials": "Invalid credentials",
     "loginFailed": "Login failed",
     "testCredentials": "Test credentials",
+    "orContinueWith": "Or continue with",
+    "continueWithGoogle": "Continue with Google",
     "needAccount": "Need an account?",
     "startHere": "Start here"
   },
@@ -36,6 +38,8 @@
     "registering": "Creating account...",
     "registerFailed": "Registration failed",
     "successMessage": "Account created successfully. You can now sign in.",
+    "orContinueWith": "Or continue with",
+    "continueWithGoogle": "Continue with Google",
     "alreadyHaveAccount": "Already have an account?",
     "loginHere": "Login here"
   },
@@ -111,7 +115,9 @@
     "unknown": "Something went wrong.",
     "network": "Network error. Please try again.",
     "forbidden": "You do not have access to this action.",
-    "notFound": "The requested resource was not found."
+    "notFound": "The requested resource was not found.",
+    "oauthFailed": "Sign in with Google failed. Please try again.",
+    "accountConflict": "This email is linked to a different sign-in method. Please sign in with your original method."
   },
   "sandbox": {
     "files": "Files",

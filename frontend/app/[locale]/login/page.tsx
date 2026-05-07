@@ -91,6 +91,19 @@ export default function LoginPage() {
             {loading ? t('loggingIn') : t('loginButton')}
           </button>
 
+          <div className="my-4 flex items-center gap-3 text-sm text-text-secondary">
+            <div className="h-px flex-1 bg-border" />
+            <span>{t('orContinueWith')}</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+
+          <a
+            href={`/api/auth/google?locale=${locale}`}
+            className="block w-full rounded-md border border-border bg-surface-base py-2 text-center text-text-primary transition-colors hover:bg-surface-raised"
+          >
+            {t('continueWithGoogle')}
+          </a>
+
           <p className="mt-4 text-center text-sm text-text-secondary">
             {t('needAccount')}{' '}
             <Link
