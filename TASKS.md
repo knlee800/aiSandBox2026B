@@ -12216,9 +12216,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## AUTH — aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G ACTIVE — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 NEXT
+**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G ACTIVE — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 NEXT
 
-**Current stage:** AUTH-APP-01G3 (PLANNED)
+**Current stage:** AUTH-APP-01G4 (PLANNED)
 
 **Master spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Reference master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -12247,7 +12247,8 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
 9. AUTH-APP-01G — Auth UX Integration (ACTIVE — child slices registered):
    - AUTH-APP-01G1 — Auth UX Inventory + Scope (COMPLETE and LOCKED)
    - AUTH-APP-01G2 — Login/Register OAuth Error + Button Polish (COMPLETE and LOCKED)
-   - AUTH-APP-01G3 — Logout + Basic Account Surface (PLANNED — current stage)
+   - AUTH-APP-01G3 — Logout + Basic Account Surface (COMPLETE and LOCKED)
+   - AUTH-APP-01G4 — Auth UX Validation + Checkpoint (PLANNED — current stage)
 10. AUTH-APP-01H — Security Hardening + Validation Checklist (pending)
 11. AUTH-APP-01Z — Final Consolidation (pending)
 
@@ -12710,25 +12711,65 @@ Produce an inventory and implementation scope for auth UX integration now that p
 
 #### AUTH-APP-01G3: Logout + Basic Account Surface
 
-**Status:** PLANNED
-**Nature:** FRONTEND ONLY
+**Status:** COMPLETE and LOCKED
+**Nature:** FRONTEND ONLY — no backend files changed
 **Parent:** AUTH-APP-01G (ACTIVE)
 **Family:** AUTH
 **Depends on:** AUTH-APP-01G2 (COMPLETE and LOCKED)
+**Checkpoint:** `docs/AUTH-APP-01G3-CHECKPOINT.md`
 
 **Objective:**
 Add logout button/caller wired to `POST /api/auth/logout`, redirect to `/${locale}/login` on success, and add minimal account/auth surface if safely achievable.
 
-**Pre-implementation requirement:**
-Inspect `frontend/app/[locale]/app/page.tsx` at stage-start to locate account/user menu before committing to placement. File is very large. Split to G3a/G3b if logout + account surface is too large.
+**Files changed:**
+- `frontend/app/[locale]/app/page.tsx` — added `handleLogout()`; passed `onLogout` to `WorkspaceShell`
+- `frontend/components/workspace/workspace-shell.tsx` — added `onLogout?: () => void` prop; logout button in header for both UX flag paths
+- `frontend/app/[locale]/account/page.tsx` — added `<LogoutButton />` above `<ApiKeysPage />` for `PROJECT_FIRST_UX=true`
+- `frontend/components/auth/logout-button.tsx` — new: `'use client'` component; `GET /api/auth/me` on mount; email display; logout + redirect
+- `frontend/components/workspace/workspace-shell.test.tsx` — 3 logout button tests added
+
+**Validation:**
+- `npm run build`: PASS
+- `npx tsc --noEmit`: PASS
+- `npm test`: PASS — 256 tests, 22 suites, 0 failures
+- `frontend/tsconfig.tsbuildinfo` modified by build; restored via `git restore`
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01G3. See `docs/AUTH-APP-01G3-CHECKPOINT.md`. See `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md` Sections 6 and 11.
+
+---
+
+#### AUTH-APP-01G4: Auth UX Validation + Checkpoint
+
+**Status:** PLANNED
+**Nature:** VALIDATION AND DOCUMENTATION ONLY
+**Parent:** AUTH-APP-01G (ACTIVE)
+**Family:** AUTH
+**Depends on:** AUTH-APP-01G3 (COMPLETE and LOCKED)
+
+**Objective:**
+Run full automated validation suite, execute the 10-item manual smoke checklist from `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md` Section 12, create `docs/AUTH-APP-01G-CHECKPOINT.md`, and mark AUTH-APP-01G COMPLETE and LOCKED.
+
+**Automated checks:**
+- `npx tsc --noEmit`
+- `npm run build`
+- `npm test` — full suite + any targeted tests added in G2/G3
+- Login page OAuth error tests (direct invocation)
+
+**Manual smoke checklist (10 items from spec Section 12):**
+1. Password login — succeeds and redirects to app
+2. Password login — wrong credentials shows error
+3. OAuth link present and styled on login page
+4. `?error=oauth_failed` — user-facing error displayed on login page
+5. `?error=account_conflict` — user-facing error displayed on login page
+6. Password register — succeeds (stay-on-page success message)
+7. Logout — calls backend, clears session cookie, redirects to login
+8. Logout — revisiting `/app` after logout redirects back to login
+9. Account page — renders expected minimal surface
+10. All surfaces behave correctly in zh-TW and zh-CN
 
 **Non-goals:**
-- No backend changes
-- No full account redesign
-- No keys page token migration
-- No email verification
-- No workspace redesign
-- No new dependencies
+- No new source code changes
+- No new features
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01G3. See `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md` Sections 6 and 11.
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01G4. See `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md` Section 12.
 

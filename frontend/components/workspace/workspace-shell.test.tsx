@@ -686,6 +686,16 @@ describe('workspace shell component', () => {
     assert.match(html, /Usage window resets at:/);
     assert.match(html, /dashboard-quota-reset-at-formatted/);
     assert.doesNotMatch(html, /2026-03-11T12:00:00.000Z/);
+    assert.doesNotMatch(html, /workspace-header-logout-button/);
+  });
+
+  test('renders logout button in the session-scoped header when onLogout is provided', () => {
+    const html = renderWorkspaceShell({
+      onLogout: () => {},
+    });
+
+    assert.match(html, /workspace-header-logout-button/);
+    assert.match(html, />Log out</);
   });
 
   test('renders project-first header nav behind feature flag', () => {
@@ -708,6 +718,30 @@ describe('workspace shell component', () => {
     assert.match(html, />Account</);
     assert.doesNotMatch(html, /Session-scoped workspace/);
     assert.doesNotMatch(html, /workspace-header-api-keys-link/);
+  });
+
+  test('renders logout button in the project-first header when onLogout is provided', () => {
+    const html = renderWorkspaceShell({
+      locale: 'en',
+      projectFirstUxEnabled: true,
+      onLogout: () => {},
+    });
+
+    assert.match(html, /workspace-header-logout-button/);
+    assert.match(html, />Log out</);
+  });
+
+  test('clicking logout calls onLogout when provided', () => {
+    let callCount = 0;
+    const logoutButton = renderWorkspaceShellElementByTestId('workspace-header-logout-button', {
+      onLogout: () => {
+        callCount += 1;
+      },
+    });
+
+    assert.ok(logoutButton);
+    logoutButton.props.onClick?.();
+    assert.equal(callCount, 1);
   });
 
   test('renders project-first recovery wording in main helper surfaces', () => {

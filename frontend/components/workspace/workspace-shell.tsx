@@ -57,6 +57,7 @@ void projectFirstUxAnchors;
 interface WorkspaceShellProps {
   locale?: string;
   projectFirstUxEnabled?: boolean;
+  onLogout?: () => void;
   sessions: WorkspaceShellSession[];
   selectedSessionId: string | null;
   isLoadingSessions: boolean;
@@ -518,6 +519,16 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                 >
                   Account
                 </a>
+                {props.onLogout ? (
+                  <button
+                    type="button"
+                    onClick={props.onLogout}
+                    className="hover:text-gray-900 hover:underline transition active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                    data-testid="workspace-header-logout-button"
+                  >
+                    Log out
+                  </button>
+                ) : null}
               </nav>
               <div className="text-xs text-gray-600 text-right">
                 <p>{headerIdentityLabel}</p>
@@ -543,6 +554,18 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                   API Keys
                 </a>
               </p>
+              {props.onLogout ? (
+                <p className="mt-1">
+                  <button
+                    type="button"
+                    onClick={props.onLogout}
+                    className="text-[11px] font-medium text-blue-600 hover:text-blue-700 hover:underline transition active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                    data-testid="workspace-header-logout-button"
+                  >
+                    Log out
+                  </button>
+                </p>
+              ) : null}
             </div>
           </>
         )}

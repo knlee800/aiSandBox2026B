@@ -22192,7 +22192,7 @@ Transform the public landing page into the "Build anything" entry experience wit
 
 ## AUTH ??aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G ACTIVE — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 NEXT
+**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G ACTIVE — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 NEXT
 **Important distinction:** AUTH-APP-01 is for the aiSandBox platform itself. AUTH-MODULE-01 (reusable generated app-auth for user-created apps) is a separate, later family.
 **Decision spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -22228,7 +22228,8 @@ Add production-ready authentication for the aiSandBox hosted app ??email, Google
 9. AUTH-APP-01G — Auth UX Integration (ACTIVE — child slices registered):
    - AUTH-APP-01G1 — Auth UX Inventory + Scope (COMPLETE and LOCKED)
    - AUTH-APP-01G2 — Login/Register OAuth Error + Button Polish (COMPLETE and LOCKED)
-   - AUTH-APP-01G3 — Logout + Basic Account Surface (PLANNED — current stage)
+   - AUTH-APP-01G3 — Logout + Basic Account Surface (COMPLETE and LOCKED)
+   - AUTH-APP-01G4 — Auth UX Validation + Checkpoint (PLANNED — current stage)
 10. AUTH-APP-01H ??Security Hardening + Validation Checklist (pending)
 11. AUTH-APP-01Z ??Final Consolidation (pending)
 
@@ -23212,7 +23213,7 @@ Run bounded validation across all AUTH-APP-01F2 backend guard additions and AUTH
 **Parent:** AUTH-APP-01
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** ACTIVE (child slices registered — AUTH-APP-01G3 is current stage)
+**Status:** ACTIVE (child slices registered — AUTH-APP-01G4 is current stage)
 **Depends on:** AUTH-APP-01F4 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -23221,10 +23222,8 @@ Integrate auth UX surfaces now that password login, Google OAuth, Apple OAuth, c
 **Confirmed child slices:**
 1. AUTH-APP-01G1 — Auth UX Inventory + Scope (COMPLETE and LOCKED)
 2. AUTH-APP-01G2 — Login/Register OAuth Error + Button Polish (COMPLETE and LOCKED)
-3. AUTH-APP-01G3 — Logout + Basic Account Surface (PLANNED — current stage)
-2. AUTH-APP-01G2 — Login/Register OAuth Error + Button Polish (pending)
-3. AUTH-APP-01G3 — Logout + Basic Account Surface (pending)
-4. AUTH-APP-01G4 — Auth UX Validation + Checkpoint (pending)
+3. AUTH-APP-01G3 — Logout + Basic Account Surface (COMPLETE and LOCKED)
+4. AUTH-APP-01G4 — Auth UX Validation + Checkpoint (PLANNED — current stage)
 
 **Non-goals:**
 - No AUTH-APP-01C2 email verification/password reset work
@@ -23377,32 +23376,47 @@ Consume OAuth error query params on the login page, make `errors.oauthFailed` pr
 **Parent:** AUTH-APP-01G
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** PLANNED
-**Nature:** FRONTEND ONLY
+**Status:** COMPLETE and LOCKED
+**Nature:** FRONTEND ONLY — no backend files changed
 **Depends on:** AUTH-APP-01G2 (COMPLETE and LOCKED)
+**Checkpoint:** `docs/AUTH-APP-01G3-CHECKPOINT.md`
 
 **Objective:**
-Add a logout button/caller wired to `POST /api/auth/logout`, clear local UI state, redirect to `/${locale}/login` on success, and optionally add minimal account/auth info if safely achievable without restructuring.
+Add a logout button/caller wired to `POST /api/auth/logout`, clear local UI state, redirect to `/${locale}/login` on success, and add minimal account/auth info.
 
-**Bounded scope:**
-- `frontend/app/[locale]/app/page.tsx`
-- `frontend/app/[locale]/account/page.tsx`
-- `frontend/components/auth/logout-button.tsx` (possibly new)
-- `frontend/messages/en.json`, `zh-TW.json`, `zh-CN.json` (if new keys needed)
+**Files changed:**
+- `frontend/app/[locale]/app/page.tsx` — added `handleLogout()`; passed `onLogout` to `WorkspaceShell`
+- `frontend/components/workspace/workspace-shell.tsx` — added `onLogout?: () => void` prop; logout button in both header paths
+- `frontend/app/[locale]/account/page.tsx` — added `<LogoutButton />` above `<ApiKeysPage />` for `PROJECT_FIRST_UX=true`
+- `frontend/components/auth/logout-button.tsx` — new: `'use client'` component; `GET /api/auth/me` email display; logout + redirect
+- `frontend/components/workspace/workspace-shell.test.tsx` — 3 logout button tests added
 
-**Pre-implementation requirement:**
-Inspect `app/page.tsx` at stage-start to locate account/user menu before any implementation. File is very large (~5000+ lines). If logout + account surface is too large for one slice, split to G3a (logout only) and G3b (account surface) before proceeding.
+**Implementation summary:**
+- `handleLogout()` calls `POST /api/auth/logout`, then always calls `handleWorkspaceUnauthorizedAccess()` which clears workspace state and redirects to `/${locale}/login`
+- Logout button renders only when `onLogout` prop provided; appears in workspace header nav (both UX flag paths)
+- `PROJECT_FIRST_UX=true` account page now shows minimal `LogoutButton` surface (email + logout) above API Keys
+- `PROJECT_FIRST_UX=false` account page redirect to `/keys` preserved unchanged
+- No message JSON changes; uses existing `account.logout` key
+- No new dependencies
 
-**Non-goals:**
-- No backend changes
-- No full account redesign
-- No provider management UI
-- No password change UI
-- No billing section
-- No keys page token migration
-- No email verification
-- No workspace redesign
-- No new npm dependencies
+**Validation:**
+- `npm run build`: PASS
+- `npx tsc --noEmit`: PASS
+- `npm test`: PASS — 256 tests, 22 suites, 0 failures
+- `frontend/tsconfig.tsbuildinfo` restored via `git restore`
 
-**Reference:** See TASKS.md -> AUTH-APP-01G3. See `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md` Sections 6 and 11.
+**Completion checklist:**
+- [x] `frontend/app/[locale]/app/page.tsx` updated
+- [x] `frontend/components/workspace/workspace-shell.tsx` updated
+- [x] `frontend/app/[locale]/account/page.tsx` updated
+- [x] `frontend/components/auth/logout-button.tsx` created
+- [x] `frontend/components/workspace/workspace-shell.test.tsx` updated
+- [x] No backend files changed
+- [x] No message JSON files changed
+- [x] No new npm dependencies
+- [x] `docs/AUTH-APP-01G3-CHECKPOINT.md` created
+- [x] `TASKS.md` updated
+- [x] `TASKS_BACKLOG_FULL.md` updated
+
+**Reference:** See TASKS.md -> AUTH-APP-01G3. See `docs/AUTH-APP-01G3-CHECKPOINT.md`. See `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md` Sections 6 and 11.
 

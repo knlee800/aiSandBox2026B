@@ -1036,6 +1036,16 @@ export default function AppPage() {
     router.push(`/${locale}/login`);
   }
 
+  async function handleLogout(): Promise<void> {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch {
+      // still redirect and clear local UI state
+    }
+
+    handleWorkspaceUnauthorizedAccess();
+  }
+
   useEffect(() => {
     const storedHiddenSessionIds = parseHiddenSessionIds(
       localStorage.getItem(HIDDEN_UNUSABLE_SESSIONS_STORAGE_KEY),
@@ -5112,6 +5122,7 @@ export default function AppPage() {
   return (
     <WorkspaceShell
       locale={locale}
+      onLogout={handleLogout}
       sessions={visibleSessions}
       selectedSessionId={selectedSessionId}
       isLoadingSessions={isLoadingSessions}
