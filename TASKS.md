@@ -12216,9 +12216,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## AUTH — aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F ACTIVE — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 NEXT
+**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F ACTIVE — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 NEXT
 
-**Current stage:** AUTH-APP-01F3 (PLANNED)
+**Current stage:** AUTH-APP-01F4 (PLANNED)
 
 **Master spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Reference master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -12242,8 +12242,8 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
 8. AUTH-APP-01F — Route / API Protection (ACTIVE — child slices registered):
    - AUTH-APP-01F1 — Route/API Protection Inventory + Spec (COMPLETE and LOCKED)
    - AUTH-APP-01F2 — Backend API Protection Gaps (COMPLETE and LOCKED)
-   - AUTH-APP-01F3 — Frontend Protected Route Behavior (PLANNED — current stage)
-   - AUTH-APP-01F4 — Protection Validation + Consolidation (pending)
+   - AUTH-APP-01F3 — Frontend Protected Route Behavior (COMPLETE and LOCKED)
+   - AUTH-APP-01F4 — Protection Validation + Consolidation (PLANNED — current stage)
 9. AUTH-APP-01G — Auth UX Integration (pending)
 10. AUTH-APP-01H — Security Hardening + Validation Checklist (pending)
 11. AUTH-APP-01Z — Final Consolidation (pending)
@@ -12572,4 +12572,39 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
 - Preview proxy (`@All /api/preview/*`) still unguarded — requires coordinated api-gateway + container-manager auth-forwarding investigation
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01F2. See `docs/AUTH-APP-01F2-CHECKPOINT.md`. See `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md`.
+
+---
+
+#### AUTH-APP-01F3: Frontend Protected Route Behavior
+
+**Status:** COMPLETE and LOCKED
+**Parent:** AUTH-APP-01F (ACTIVE)
+**Family:** AUTH
+**Depends on:** AUTH-APP-01F2 (COMPLETE and LOCKED)
+**Completed:** 2026-05-07
+**Checkpoint:** `docs/AUTH-APP-01F3-CHECKPOINT.md`
+**Spec:** `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md` (Sections 3.2, 7)
+
+**Implemented:**
+- Added `authLoading` state to `ApiKeysPage` (`frontend/app/[locale]/keys/page.tsx`)
+- Replaced mount-only `loadKeys()` effect with `GET /api/auth/me` bootstrap
+- Redirects to `/${locale}/login` when `/api/auth/me` is non-OK or returns no valid `id`
+- On valid auth: clears `authLoading` and calls existing `loadKeys()`
+- Added early loading gate before key-management render
+- Preserved all existing `loadKeys()`, `handleCreateKey()`, `handleRevokeKey()`, `ErrorRemediation` handling, and authenticated UI behavior
+- `/[locale]/account` inherits the redirect fix automatically (delegates to `/keys` or renders same `ApiKeysPage` component)
+- Added focused auth bootstrap tests in `frontend/app/[locale]/keys/page.test.tsx`
+
+**Non-goals confirmed:**
+- No backend files changed
+- No `middleware.ts` created
+- No `/driver` changes (intentionally separate `DRIVER_API_KEY` flow)
+- No `/test` changes (dev artifact, out of scope)
+- No `/account` changes (inherits fix automatically)
+- No `/projects` changes
+- No i18n message key additions
+- No OAuth or email/password changes
+- No new npm dependencies
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01F3. See `docs/AUTH-APP-01F3-CHECKPOINT.md`. See `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md`.
 

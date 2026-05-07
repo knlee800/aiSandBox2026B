@@ -41,6 +41,7 @@ export default function ApiKeysPage() {
   const params = useParams();
   const locale = params.locale as string;
 
+  const [authLoading, setAuthLoading] = useState(true);
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -53,8 +54,27 @@ export default function ApiKeysPage() {
   const [revokingKeyId, setRevokingKeyId] = useState<string | null>(null);
 
   useEffect(() => {
-    loadKeys();
-  }, []);
+    void (async () => {
+      try {
+        const meResponse = await fetch('/api/auth/me');
+        if (!meResponse.ok) {
+          router.push(`/${locale}/login`);
+          return;
+        }
+
+        const me = (await meResponse.json()) as { id?: unknown };
+        if (typeof me.id !== 'string' || !me.id.trim()) {
+          router.push(`/${locale}/login`);
+          return;
+        }
+
+        setAuthLoading(false);
+        void loadKeys();
+      } catch {
+        router.push(`/${locale}/login`);
+      }
+    })();
+  }, [locale, router]);
 
   const loadKeys = async () => {
     setLoading(true);
@@ -172,6 +192,14 @@ export default function ApiKeysPage() {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString();
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-sm text-gray-600">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">

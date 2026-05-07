@@ -22192,7 +22192,7 @@ Transform the public landing page into the "Build anything" entry experience wit
 
 ## AUTH ??aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F ACTIVE — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 NEXT
+**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F ACTIVE — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 NEXT
 **Important distinction:** AUTH-APP-01 is for the aiSandBox platform itself. AUTH-MODULE-01 (reusable generated app-auth for user-created apps) is a separate, later family.
 **Decision spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -22223,8 +22223,8 @@ Add production-ready authentication for the aiSandBox hosted app ??email, Google
 8. AUTH-APP-01F — Route / API Protection (ACTIVE — child slices registered):
    - AUTH-APP-01F1 — Route/API Protection Inventory + Spec (COMPLETE and LOCKED)
    - AUTH-APP-01F2 — Backend API Protection Gaps (COMPLETE and LOCKED)
-   - AUTH-APP-01F3 — Frontend Protected Route Behavior (PLANNED — current stage)
-   - AUTH-APP-01F4 — Protection Validation + Consolidation (pending)
+   - AUTH-APP-01F3 — Frontend Protected Route Behavior (COMPLETE and LOCKED)
+   - AUTH-APP-01F4 — Protection Validation + Consolidation (PLANNED — current stage)
 9. AUTH-APP-01G ??Auth UX Integration (pending)
 10. AUTH-APP-01H ??Security Hardening + Validation Checklist (pending)
 11. AUTH-APP-01Z ??Final Consolidation (pending)
@@ -22819,7 +22819,7 @@ Add Apple OAuth sign-in to the aiSandBox platform using `@nicokaiser/passport-ap
 **Parent:** AUTH-APP-01
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** ACTIVE (child slices registered — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 is current stage)
+**Status:** ACTIVE (child slices registered — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 is current stage)
 **Source:** AUTH-APP-01A spec (Section 9 — route/API protection slice); locked slice order
 **Depends on:** AUTH-APP-01E (COMPLETE and LOCKED)
 
@@ -22829,8 +22829,8 @@ Ensure all frontend routes and backend API endpoints are correctly protected by 
 **Child slices:**
 1. AUTH-APP-01F1 — Route/API Protection Inventory + Spec (COMPLETE and LOCKED)
 2. AUTH-APP-01F2 — Backend API Protection Gaps (COMPLETE and LOCKED)
-3. AUTH-APP-01F3 — Frontend Protected Route Behavior (PLANNED — current stage)
-4. AUTH-APP-01F4 — Protection Validation + Consolidation (pending)
+3. AUTH-APP-01F3 — Frontend Protected Route Behavior (COMPLETE and LOCKED)
+4. AUTH-APP-01F4 — Protection Validation + Consolidation (PLANNED — current stage)
 
 **Non-goals:**
 - No OAuth or email/password changes
@@ -23032,4 +23032,82 @@ Implement the backend API protection gaps identified in the F1 inventory. Guard 
 - Preview proxy (`@All /api/preview/*`) still unguarded — requires coordinated api-gateway + container-manager auth-forwarding / ownership-validation investigation (dedicated slice)
 
 **Reference:** See TASKS.md -> AUTH-APP-01F2. See `docs/AUTH-APP-01F2-CHECKPOINT.md`. See `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md`.
+
+---
+
+### AUTH-APP-01F3: Frontend Protected Route Behavior
+
+**Task ID:** AUTH-APP-01F3
+**Family:** AUTH
+**Parent:** AUTH-APP-01F
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** FRONTEND IMPLEMENTATION — no backend files changed, no new dependencies
+**Source:** AUTH-APP-01F child slice registration (2026-05-07)
+**Depends on:** AUTH-APP-01F2 (COMPLETE and LOCKED)
+**Completed:** 2026-05-07
+**Checkpoint:** `docs/AUTH-APP-01F3-CHECKPOINT.md`
+**Spec:** `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md` (Sections 3.2, 7)
+
+**Objective:**
+Implement the frontend protected route behavior gaps identified in AUTH-APP-01F1. Specifically: add a cookie-session auth bootstrap to `/[locale]/keys` so that unauthenticated access redirects to `/${locale}/login` instead of showing an error overlay. Pattern mirrors existing `/[locale]/app` bootstrap exactly. All other frontend routes required no change.
+
+**Bounded scope:**
+- `frontend/app/[locale]/keys/page.tsx` — production file changed
+- `frontend/app/[locale]/keys/page.test.tsx` — test file added
+- No other files touched
+
+**Implemented:**
+- Added `authLoading` state (`useState(true)`) to `ApiKeysPage`
+- Replaced mount-only `loadKeys()` effect with `GET /api/auth/me` bootstrap matching `/app` pattern
+- Redirects to `/${locale}/login` when `/api/auth/me` returns non-OK status
+- Redirects to `/${locale}/login` when `/api/auth/me` returns OK but missing/invalid `id`
+- On valid auth: sets `authLoading(false)` and calls existing `loadKeys()`
+- Added early loading gate (`if (authLoading) return <Loading />`) before key-management render
+- Preserved all existing `loadKeys()`, `handleCreateKey()`, `handleRevokeKey()`, `ErrorRemediation` handling
+- `/[locale]/account` inherits the redirect fix automatically (delegates to `/keys` or renders same `ApiKeysPage`)
+
+**Route behavior after F3:**
+
+| Route | Unauthenticated behavior | File changed |
+|---|---|---|
+| `/[locale]/keys` | Redirects to `/${locale}/login` | `keys/page.tsx` |
+| `/[locale]/account` | Inherits via delegation | No change |
+| `/[locale]/projects` | Delegates to `/app`; already protected | No change |
+| `/[locale]/driver` | Intentional separate `DRIVER_API_KEY` flow | No change |
+| `/test` | Dev artifact; intentionally unprotected | No change |
+
+**Test coverage:**
+- `frontend/app/[locale]/keys/page.test.tsx` — 3 focused tests
+  1. `/api/auth/me` non-OK → `router.push('/en/login')`
+  2. `/api/auth/me` OK but missing/invalid `id` → `router.push('/en/login')`
+  3. Valid `/api/auth/me` + `/api/keys` success → renders key-management surface, no redirect
+
+**Validation:**
+- `npm run build` — PASS
+- `npx tsc --noEmit` (after build) — PASS
+- `npm test` — PASS (253 tests, 22 suites, 0 failures)
+- Targeted `/keys` test — PASS (3 tests, 0 failures)
+- `frontend/tsconfig.tsbuildinfo` restored after validation
+
+**Note — Next.js typegen ordering:** `npx tsc --noEmit` before `npm run build` fails with `TS6053` for `.next/types/**` paths. This is a pre-existing environment characteristic: `npm run build` must generate `.next/types` first. Errors are not caused by F3 files.
+
+**Non-goals confirmed:**
+- No backend files changed
+- No `middleware.ts` created
+- No `/driver` changes
+- No `/test` changes
+- No `/account` changes (inherits fix automatically)
+- No `/projects` changes
+- No i18n message key additions
+- No OAuth or email/password changes
+- No new npm dependencies
+
+**Carry-forward items (from F2, not introduced by F3):**
+- Events endpoints (`file-changed`, `checkpoint-created`, `token-updated`) still unguarded — AUTH-APP-01F2a or AUTH-APP-01H
+- Preview proxy (`@All /api/preview/*`) still unguarded — dedicated investigation slice
+- Backend full `npm test` / Redis integration blockers — pre-existing
+
+**Reference:** See TASKS.md -> AUTH-APP-01F3. See `docs/AUTH-APP-01F3-CHECKPOINT.md`. See `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md`.
 
