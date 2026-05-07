@@ -22192,7 +22192,7 @@ Transform the public landing page into the "Build anything" entry experience wit
 
 ## AUTH ??aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 COMPLETE — AUTH-APP-01H ACTIVE — AUTH-APP-01H1 COMPLETE — AUTH-APP-01H2 NEXT
+**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 COMPLETE — AUTH-APP-01H ACTIVE — AUTH-APP-01H1 COMPLETE — AUTH-APP-01H2 COMPLETE — AUTH-APP-01H3 NEXT
 **Important distinction:** AUTH-APP-01 is for the aiSandBox platform itself. AUTH-MODULE-01 (reusable generated app-auth for user-created apps) is a separate, later family.
 **Decision spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -22232,8 +22232,8 @@ Add production-ready authentication for the aiSandBox hosted app ??email, Google
    - AUTH-APP-01G4 — Auth UX Validation + Checkpoint (COMPLETE and LOCKED)
 10. AUTH-APP-01H — Security Hardening + Validation Checklist (ACTIVE — child slices registered):
     - AUTH-APP-01H1 — Security Hardening Inventory (COMPLETE and LOCKED)
-    - AUTH-APP-01H2 — CSRF + Rate Limiting + Redirect Hardening (PLANNED — current stage — pending @nestjs/throttler approval)
-    - AUTH-APP-01H3 — Events Endpoint Guards + Test/Tooling Triage (PLANNED)
+    - AUTH-APP-01H2 — CSRF + Rate Limiting + Redirect Hardening (COMPLETE and LOCKED)
+    - AUTH-APP-01H3 — Events Endpoint Guards + Test/Tooling Triage (PLANNED — current stage)
     - AUTH-APP-01H4 — Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation (PLANNED)
 11. AUTH-APP-01Z — Final Consolidation (pending)
 
@@ -23499,8 +23499,8 @@ Deliver all remaining AUTH-APP-01 security hardening and validation work before 
 
 **Confirmed child slices:**
 1. AUTH-APP-01H1 — Security Hardening Inventory (COMPLETE and LOCKED)
-2. AUTH-APP-01H2 — CSRF + Rate Limiting + Redirect Hardening (PLANNED)
-3. AUTH-APP-01H3 — Events Endpoint Guards + Test/Tooling Triage (PLANNED)
+2. AUTH-APP-01H2 — CSRF + Rate Limiting + Redirect Hardening (COMPLETE and LOCKED)
+3. AUTH-APP-01H3 — Events Endpoint Guards + Test/Tooling Triage (PLANNED — current stage)
 4. AUTH-APP-01H4 — Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation (PLANNED)
 
 **Carry-forwards absorbed from prior slices:**
@@ -23584,4 +23584,60 @@ Produce a read-only security hardening inventory and scope plan before any AUTH-
 - No email provider work (AUTH-APP-01C2 remains BLOCKED)
 
 **Reference:** See TASKS.md -> AUTH-APP-01H1. See `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`. See `docs/AUTH-APP-01H1-CHECKPOINT.md`. See `docs/AUTH-APP-01-SPEC.md`.
+
+---
+
+### AUTH-APP-01H2: CSRF + Rate Limiting + Redirect Hardening
+
+**Task ID:** AUTH-APP-01H2
+**Family:** AUTH
+**Parent:** AUTH-APP-01H (ACTIVE)
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** BACKEND + FRONTEND IMPLEMENTATION
+**Source:** AUTH-APP-01H registration (2026-05-07); AUTH-APP-01H-SECURITY-HARDENING-SPEC.md Section 11
+**Depends on:** AUTH-APP-01H1 (COMPLETE and LOCKED)
+**Completed:** 2026-05-07
+**Checkpoint:** `docs/AUTH-APP-01H2-CHECKPOINT.md`
+**Spec:** `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`
+
+**Objective:**
+Implement CSRF double-submit cookie protection, in-memory auth endpoint rate limiting, OAuth redirect allowlist hardening, and `api-gateway/.env.example` documentation for all missing auth/session/OAuth env vars.
+
+**Dependency added:**
+`@nestjs/throttler@^6.5.0` — in-memory storage only; user-approved before implementation.
+
+**Key changes:**
+- CSRF cookie-setting middleware added to `main.ts` after `cookieParser()`; sets `aisandbox_csrf` (non-HttpOnly, SameSite=Lax) only when absent
+- New `CsrfGuard` (`src/auth/csrf.guard.ts`) validates `aisandbox_csrf` cookie against `X-CSRF-Token` header (double-submit pattern); applied only to `POST /auth/logout`
+- Apple `POST /api/auth/apple/callback` explicitly excluded from CSRF — Apple server POST carries no browser cookies
+- `ThrottlerModule.forRoot([{ name: 'default', ttl: 60000, limit: 10 }])` registered in `app.module.ts` (in-memory)
+- Per-route throttling via `@UseGuards(ThrottlerGuard)` + `@Throttle({ default: { limit, ttl } })`: login 10/60s/IP, register 5/60s/IP; `ThrottlerGuard` not registered globally
+- `ALLOWED_POST_OAUTH_REDIRECTS = new Set(['/app', '/login'])` added to `auth.controller.ts`; all OAuth success/error redirects validated through `buildOAuthRedirectPath()`
+- Frontend logout callers updated to read `aisandbox_csrf` from `document.cookie` and send `X-CSRF-Token` header; UX not blocked when token is absent
+- `api-gateway/.env.example` updated with placeholders for `JWT_SECRET`, `SESSION_SECRET`, `OAUTH_STATE_SECRET`, `GOOGLE_CLIENT_ID/SECRET/CALLBACK_URL`, `APPLE_CLIENT_ID/TEAM_ID/KEY_ID/PRIVATE_KEY/CALLBACK_URL`
+
+**Acceptance checks:**
+- [x] `npx tsc --noEmit` passes in `services/api-gateway`
+- [x] `npx jest --testPathPatterns="csrf.guard"` passes — 5/5 tests
+- [x] `npm run build` passes in `frontend`
+- [x] `npx tsc --noEmit` passes in `frontend`
+- [x] `npm test` passes in `frontend` — 256/256 tests
+- [x] Edited-file lints: no errors
+- [x] `frontend/tsconfig.tsbuildinfo` restored after validation
+- [x] Apple callback excluded from CSRF confirmed
+- [x] `ThrottlerGuard` not registered globally confirmed
+- [x] `.env.example` contains no real secrets confirmed
+
+**Non-goals confirmed:**
+- No CSRF enforcement on Apple callback, login, or register
+- No CSRF enforcement across other session-protected controllers (H3+ scope)
+- No Redis-backed throttling
+- No password reset / email verification rate limits (AUTH-APP-01C2 BLOCKED)
+- No OAuth strategy changes
+- No container-manager changes
+- No frontend redesign
+
+**Reference:** See TASKS.md -> AUTH-APP-01H2. See `docs/AUTH-APP-01H2-CHECKPOINT.md`. See `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`. See `docs/AUTH-APP-01-SPEC.md`.
 

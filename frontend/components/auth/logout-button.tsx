@@ -8,6 +8,15 @@ type AuthMeResponse = {
   email?: unknown;
 };
 
+function getCsrfTokenFromCookie(): string | null {
+  const csrfCookie = document.cookie
+    .split(';')
+    .map((cookie) => cookie.trim())
+    .find((cookie) => cookie.startsWith('aisandbox_csrf='));
+
+  return csrfCookie?.slice('aisandbox_csrf='.length) || null;
+}
+
 export default function LogoutButton() {
   const router = useRouter();
   const params = useParams();
@@ -56,9 +65,13 @@ export default function LogoutButton() {
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
+    const csrfToken = getCsrfTokenFromCookie();
 
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: csrfToken ? { 'X-CSRF-Token': csrfToken } : undefined,
+      });
     } catch {
       // redirect even when the logout request fails locally
     }

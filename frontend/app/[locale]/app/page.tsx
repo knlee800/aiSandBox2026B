@@ -121,6 +121,15 @@ import {
   type WorkspaceBuildTarget,
 } from '@/components/workspace/workspace-build-targets.logic';
 
+function getCsrfTokenFromCookie(): string | null {
+  const csrfCookie = document.cookie
+    .split(';')
+    .map((cookie) => cookie.trim())
+    .find((cookie) => cookie.startsWith('aisandbox_csrf='));
+
+  return csrfCookie?.slice('aisandbox_csrf='.length) || null;
+}
+
 const projectFirstUxAnchors = {
   enabled: PROJECT_FIRST_UX,
   copy: recoveryCopy,
@@ -1037,8 +1046,13 @@ export default function AppPage() {
   }
 
   async function handleLogout(): Promise<void> {
+    const csrfToken = getCsrfTokenFromCookie();
+
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: csrfToken ? { 'X-CSRF-Token': csrfToken } : undefined,
+      });
     } catch {
       // still redirect and clear local UI state
     }

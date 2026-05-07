@@ -12,9 +12,11 @@ import {
   Query,
   UnauthorizedException,
 } from '@nestjs/common';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto } from './dto/auth.dto';
 import { SessionCookieGuard } from './session-cookie.guard';
+import { CsrfGuard } from './csrf.guard';
 import * as acceptLanguageParser from 'accept-language-parser';
 import * as passport from 'passport';
 import { Request as ExpressRequest, Response } from 'express';
@@ -34,6 +36,7 @@ type OAuthSessionRequest = ExpressRequest & {
 @Controller('auth')
 export class AuthController {
   private static readonly SUPPORTED_LOCALES = new Set(['en', 'zh-TW', 'zh-CN']);
+  private static readonly ALLOWED_POST_OAUTH_REDIRECTS = new Set(['/app', '/login']);
 
   constructor(private authService: AuthService) {}
 
@@ -62,6 +65,17 @@ export class AuthController {
     }
 
     return locale;
+  }
+
+  private buildOAuthRedirectPath(
+    locale: string,
+    path: string,
+    errorCode?: 'oauth_failed' | 'account_conflict',
+  ): string {
+    const safePath = AuthController.ALLOWED_POST_OAUTH_REDIRECTS.has(path) ? path : '/login';
+    const redirectPath = `/${locale}${safePath}`;
+
+    return errorCode ? `${redirectPath}?error=${errorCode}` : redirectPath;
   }
 
   private setSessionCookie(response: Response, sessionToken: string): void {
@@ -100,6 +114,8 @@ export class AuthController {
   }
 
   @Post('login')
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @HttpCode(HttpStatus.OK)
   async login(
     @Body() loginDto: LoginDto,
@@ -115,6 +131,8 @@ export class AuthController {
   }
 
   @Post('register')
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   async register(@Body() registerDto: RegisterDto) {
     const user = await this.authService.register(registerDto.email, registerDto.password);
     return {
@@ -153,7 +171,7 @@ export class AuthController {
           try {
             if (error || !user) {
               this.clearOauthState(req);
-              response.redirect(`/${locale}/login?error=oauth_failed`);
+              response.redirect(this.buildOAuthRedirectPath(locale, '/login', 'oauth_failed'));
               resolve();
               return;
             }
@@ -161,7 +179,7 @@ export class AuthController {
             const sessionToken = await this.authService.createSession(user.id);
             this.clearOauthState(req);
             this.setSessionCookie(response, sessionToken);
-            response.redirect(`/${locale}/app`);
+            response.redirect(this.buildOAuthRedirectPath(locale, '/app'));
             resolve();
           } catch (callbackError) {
             reject(callbackError);
@@ -204,7 +222,9 @@ export class AuthController {
 
           if (error || !user) {
             this.clearOauthState(req);
-            response.redirect(`/${locale}/login?error=${this.getOauthErrorCode(error)}`);
+            response.redirect(
+              this.buildOAuthRedirectPath(locale, '/login', this.getOauthErrorCode(error)),
+            );
             resolve();
             return;
           }
@@ -213,10 +233,16 @@ export class AuthController {
             const sessionToken = await this.authService.createSession(user.id);
             this.clearOauthState(req);
             this.setSessionCookie(response, sessionToken);
-            response.redirect(`/${locale}/app`);
+            response.redirect(this.buildOAuthRedirectPath(locale, '/app'));
           } catch (callbackError) {
             this.clearOauthState(req);
-            response.redirect(`/${locale}/login?error=${this.getOauthErrorCode(callbackError)}`);
+            response.redirect(
+              this.buildOAuthRedirectPath(
+                locale,
+                '/login',
+                this.getOauthErrorCode(callbackError),
+              ),
+            );
           }
 
           resolve();
@@ -231,7 +257,7 @@ export class AuthController {
     return this.authService.getUserById(req.user.userId);
   }
 
-  @UseGuards(SessionCookieGuard)
+  @UseGuards(SessionCookieGuard, CsrfGuard)
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   async logout(@Request() req, @Res({ passthrough: true }) response: Response) {

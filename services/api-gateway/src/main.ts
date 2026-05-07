@@ -3,6 +3,12 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import cookieSession from 'cookie-session';
 import cookieParser from 'cookie-parser';
+import { randomBytes } from 'crypto';
+import type {
+  NextFunction,
+  Request as ExpressRequest,
+  Response as ExpressResponse,
+} from 'express';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './filters/http-exception.filter';
 
@@ -35,6 +41,18 @@ async function bootstrap() {
     }),
   );
   app.use(cookieParser());
+  app.use((req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
+    if (!req.cookies?.aisandbox_csrf) {
+      res.cookie('aisandbox_csrf', randomBytes(32).toString('hex'), {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+      });
+    }
+
+    next();
+  });
 
   // Enable global exception filter (PHASE-42A-4: Preserve quota error body shape)
   app.useGlobalFilters(new HttpExceptionFilter());

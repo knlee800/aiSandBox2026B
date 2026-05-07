@@ -12216,9 +12216,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## AUTH — aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 COMPLETE — AUTH-APP-01H ACTIVE — AUTH-APP-01H1 COMPLETE — AUTH-APP-01H2 NEXT
+**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 COMPLETE — AUTH-APP-01H ACTIVE — AUTH-APP-01H1 COMPLETE — AUTH-APP-01H2 COMPLETE — AUTH-APP-01H3 NEXT
 
-**Current stage:** AUTH-APP-01H2 (PLANNED — pending @nestjs/throttler dependency approval)
+**Current stage:** AUTH-APP-01H3 (PLANNED — next)
 
 **Master spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Reference master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -12251,8 +12251,8 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
    - AUTH-APP-01G4 — Auth UX Validation + Checkpoint (COMPLETE and LOCKED)
 10. AUTH-APP-01H — Security Hardening + Validation Checklist (ACTIVE — child slices registered):
     - AUTH-APP-01H1 — Security Hardening Inventory (COMPLETE and LOCKED)
-    - AUTH-APP-01H2 — CSRF + Rate Limiting + Redirect Hardening (PLANNED — current stage — pending @nestjs/throttler approval)
-    - AUTH-APP-01H3 — Events Endpoint Guards + Test/Tooling Triage (PLANNED)
+    - AUTH-APP-01H2 — CSRF + Rate Limiting + Redirect Hardening (COMPLETE and LOCKED)
+    - AUTH-APP-01H3 — Events Endpoint Guards + Test/Tooling Triage (PLANNED — current stage)
     - AUTH-APP-01H4 — Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation (PLANNED)
 11. AUTH-APP-01Z — Final Consolidation (pending)
 
@@ -12782,8 +12782,8 @@ Deliver all remaining AUTH-APP-01 security hardening and validation work before 
 
 **Confirmed child slices:**
 1. AUTH-APP-01H1 — Security Hardening Inventory (COMPLETE and LOCKED)
-2. AUTH-APP-01H2 — CSRF + Rate Limiting + Redirect Hardening (PLANNED)
-3. AUTH-APP-01H3 — Events Endpoint Guards + Test/Tooling Triage (PLANNED)
+2. AUTH-APP-01H2 — CSRF + Rate Limiting + Redirect Hardening (COMPLETE and LOCKED)
+3. AUTH-APP-01H3 — Events Endpoint Guards + Test/Tooling Triage (PLANNED — current stage)
 4. AUTH-APP-01H4 — Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation (PLANNED)
 
 **AUTH-APP-01C2 remains BLOCKED:** Transactional email provider not yet chosen. AUTH-APP-01H does not unblock AUTH-APP-01C2.
@@ -12821,4 +12821,29 @@ Deliver all remaining AUTH-APP-01 security hardening and validation work before 
 - H4: secrets grep audit + manual smoke (34 items) + family checkpoint
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01H1. See `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`. See `docs/AUTH-APP-01H1-CHECKPOINT.md`.
+
+---
+
+#### AUTH-APP-01H2: CSRF + Rate Limiting + Redirect Hardening
+
+**Status:** COMPLETE and LOCKED
+**Nature:** BACKEND + FRONTEND IMPLEMENTATION
+**Parent:** AUTH-APP-01H (ACTIVE)
+**Family:** AUTH
+**Depends on:** AUTH-APP-01H1 (COMPLETE and LOCKED)
+**Completed:** 2026-05-07
+**Checkpoint:** `docs/AUTH-APP-01H2-CHECKPOINT.md`
+**Spec:** `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`
+
+**Dependency added:** `@nestjs/throttler@^6.5.0` (in-memory only; explicitly approved)
+
+**Key changes:**
+- CSRF double-submit cookie middleware (`aisandbox_csrf`, non-HttpOnly) added to `main.ts`
+- `CsrfGuard` created; applied to `POST /auth/logout` only — Apple callback, login, register explicitly excluded
+- Frontend logout callers (`page.tsx`, `logout-button.tsx`) send `X-CSRF-Token` from cookie when present
+- `ThrottlerModule` registered in `app.module.ts` (in-memory); per-route throttling: login 10/60s/IP, register 5/60s/IP
+- `ALLOWED_POST_OAUTH_REDIRECTS` allowlist added to `auth.controller.ts`; all OAuth redirects validated through it
+- `api-gateway/.env.example` updated with placeholders for all missing auth/session/OAuth vars
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01H2. See `docs/AUTH-APP-01H2-CHECKPOINT.md`. See `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`.
 

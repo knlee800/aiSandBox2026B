@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD, APP_FILTER } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { StartupModule } from './startup/startup.module';
 import { AuthModule } from './auth/auth.module';
 import { HealthModule } from './health/health.module';
@@ -45,6 +46,7 @@ import { IdempotentReplayExceptionFilter } from './filters/idempotent-replay-exc
     // Reads configuration from environment variables
     // Auto-loads entities matching pattern: src/**/*.entity{.ts,.js}
     TypeOrmModule.forRoot(databaseConfig()),
+    ThrottlerModule.forRoot([{ name: 'default', ttl: 60000, limit: 10 }]),
 
     AuthModule,
     HealthModule,
