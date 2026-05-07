@@ -1,4 +1,5 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
+import { InternalServiceAuthGuard } from '../guards/internal-service-auth.guard';
 import { RuntimeService } from './runtime.service';
 
 /**
@@ -20,6 +21,7 @@ import { RuntimeService } from './runtime.service';
  * - timestamp: Current timestamp (ISO 8601)
  */
 @Controller('runtime')
+@UseGuards(InternalServiceAuthGuard)
 export class RuntimeController {
   constructor(private readonly runtimeService: RuntimeService) {}
 

@@ -12216,9 +12216,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## AUTH — aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F ACTIVE — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 NEXT
+**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F ACTIVE — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 NEXT
 
-**Current stage:** AUTH-APP-01F2 (PLANNED)
+**Current stage:** AUTH-APP-01F3 (PLANNED)
 
 **Master spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Reference master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -12241,8 +12241,8 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
 7. AUTH-APP-01E — Apple OAuth (COMPLETE and LOCKED)
 8. AUTH-APP-01F — Route / API Protection (ACTIVE — child slices registered):
    - AUTH-APP-01F1 — Route/API Protection Inventory + Spec (COMPLETE and LOCKED)
-   - AUTH-APP-01F2 — Backend API Protection Gaps (PLANNED — current stage)
-   - AUTH-APP-01F3 — Frontend Protected Route Behavior (pending)
+   - AUTH-APP-01F2 — Backend API Protection Gaps (COMPLETE and LOCKED)
+   - AUTH-APP-01F3 — Frontend Protected Route Behavior (PLANNED — current stage)
    - AUTH-APP-01F4 — Protection Validation + Consolidation (pending)
 9. AUTH-APP-01G — Auth UX Integration (pending)
 10. AUTH-APP-01H — Security Hardening + Validation Checklist (pending)
@@ -12530,4 +12530,46 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
 - `npm run lint` backend: ESLint config not discoverable in `services/api-gateway`
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01F1. See `docs/AUTH-APP-01F1-CHECKPOINT.md`. See `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md`.
+
+---
+
+#### AUTH-APP-01F2: Backend API Protection Gaps
+
+**Status:** COMPLETE and LOCKED
+**Parent:** AUTH-APP-01F (ACTIVE)
+**Family:** AUTH
+**Depends on:** AUTH-APP-01F1 (COMPLETE and LOCKED)
+**Completed:** 2026-05-07
+**Checkpoint:** `docs/AUTH-APP-01F2-CHECKPOINT.md`
+**Spec:** `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md` (Sections 4.5, 6, 10)
+
+**Implemented:**
+- Added method-level `@UseGuards(ApiKeyAuthGuard)` to `POST /api/ai/executions/:executionId/cancel`, `GET /api/ai/executions/:executionId`, and `GET /api/ai/executions/:executionId/stream`
+- `POST /api/ai/execute` guard stack left unchanged
+- Added class-level `@UseGuards(InternalServiceAuthGuard)` to `ChatMessageController` (`POST /api/chat-messages/add-by-session`) — Option B; ai-service caller already sends `X-Internal-Service-Key`
+- Added class-level `@UseGuards(InternalServiceAuthGuard)` to `TokenUsageController` (`POST /api/token-usage/record`) — Option B; ai-service caller already sends `X-Internal-Service-Key`
+- Added class-level `@UseGuards(InternalServiceAuthGuard)` to `RuntimeController` (`GET /api/runtime/metrics`)
+- Deleted `services/api-gateway/src/auth/api-key.controllerXXXXX.ts` (stale dead file; not imported anywhere active)
+- Deleted `services/api-gateway/src/auth/jwt-auth.guard.ts` (only reference was the dead controller; comment-only in `session-quota.guard.ts`)
+- Added targeted guard metadata tests for all newly guarded endpoints
+- Recorded accepted exceptions for events endpoints (Option C carry-forward) and preview proxy (deferred)
+
+**Non-goals confirmed:**
+- No frontend files changed
+- No events endpoint guard added (container-manager callers do not send `X-Internal-Service-Key`)
+- No preview proxy guard added (cross-service ownership validation deferred)
+- No OAuth or email/password changes
+- No route path migrations
+- No new npm dependencies
+
+**Carry-forward blockers (pre-existing, not introduced by F2):**
+- `npm test` backend full suite: fails — `REDIS_URL` not set; `ai-execution.controller.spec.ts` pre-existing failures
+- `ai-execution-guards.integration.spec.ts` full suite: `QuotaService` unresolved dependencies (pre-existing)
+- `npm run lint` backend: ESLint config not discoverable in `services/api-gateway`
+
+**Carry-forward items (not resolved in F2):**
+- Events endpoints (`file-changed`, `checkpoint-created`, `token-updated`) still unguarded — requires container-manager callers to send `X-Internal-Service-Key` before guard can be added (AUTH-APP-01F2a or AUTH-APP-01H)
+- Preview proxy (`@All /api/preview/*`) still unguarded — requires coordinated api-gateway + container-manager auth-forwarding investigation
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01F2. See `docs/AUTH-APP-01F2-CHECKPOINT.md`. See `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md`.
 

@@ -22192,7 +22192,7 @@ Transform the public landing page into the "Build anything" entry experience wit
 
 ## AUTH ??aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F ACTIVE — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 NEXT
+**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F ACTIVE — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 NEXT
 **Important distinction:** AUTH-APP-01 is for the aiSandBox platform itself. AUTH-MODULE-01 (reusable generated app-auth for user-created apps) is a separate, later family.
 **Decision spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -22221,9 +22221,9 @@ Add production-ready authentication for the aiSandBox hosted app ??email, Google
 6. AUTH-APP-01D — Google OAuth (COMPLETE and LOCKED)
 7. AUTH-APP-01E — Apple OAuth (COMPLETE and LOCKED)
 8. AUTH-APP-01F — Route / API Protection (ACTIVE — child slices registered):
-   - AUTH-APP-01F1 — Route/API Protection Inventory + Spec (PLANNED — current stage)
-   - AUTH-APP-01F2 — Backend API Protection Gaps (pending)
-   - AUTH-APP-01F3 — Frontend Protected Route Behavior (pending)
+   - AUTH-APP-01F1 — Route/API Protection Inventory + Spec (COMPLETE and LOCKED)
+   - AUTH-APP-01F2 — Backend API Protection Gaps (COMPLETE and LOCKED)
+   - AUTH-APP-01F3 — Frontend Protected Route Behavior (PLANNED — current stage)
    - AUTH-APP-01F4 — Protection Validation + Consolidation (pending)
 9. AUTH-APP-01G ??Auth UX Integration (pending)
 10. AUTH-APP-01H ??Security Hardening + Validation Checklist (pending)
@@ -22819,7 +22819,7 @@ Add Apple OAuth sign-in to the aiSandBox platform using `@nicokaiser/passport-ap
 **Parent:** AUTH-APP-01
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** ACTIVE (child slices registered — AUTH-APP-01F1 is current stage)
+**Status:** ACTIVE (child slices registered — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 is current stage)
 **Source:** AUTH-APP-01A spec (Section 9 — route/API protection slice); locked slice order
 **Depends on:** AUTH-APP-01E (COMPLETE and LOCKED)
 
@@ -22828,8 +22828,8 @@ Ensure all frontend routes and backend API endpoints are correctly protected by 
 
 **Child slices:**
 1. AUTH-APP-01F1 — Route/API Protection Inventory + Spec (COMPLETE and LOCKED)
-2. AUTH-APP-01F2 — Backend API Protection Gaps (PLANNED — current stage)
-3. AUTH-APP-01F3 — Frontend Protected Route Behavior (pending)
+2. AUTH-APP-01F2 — Backend API Protection Gaps (COMPLETE and LOCKED)
+3. AUTH-APP-01F3 — Frontend Protected Route Behavior (PLANNED — current stage)
 4. AUTH-APP-01F4 — Protection Validation + Consolidation (pending)
 
 **Non-goals:**
@@ -22941,4 +22941,95 @@ Produce a concrete protection inventory and implementation spec before changing 
 **Reference:** See TASKS.md -> AUTH-APP-01F1. See `docs/AUTH-APP-01-SPEC.md` Section 9.
 
 ---
+
+### AUTH-APP-01F2: Backend API Protection Gaps
+
+**Task ID:** AUTH-APP-01F2
+**Family:** AUTH
+**Parent:** AUTH-APP-01F
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** BACKEND IMPLEMENTATION — no frontend files changed, no new dependencies
+**Source:** AUTH-APP-01F1 spec (`docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md` Sections 4.5 and 6); locked slice order
+**Depends on:** AUTH-APP-01F1 (COMPLETE and LOCKED)
+**Completed:** 2026-05-07
+**Checkpoint:** `docs/AUTH-APP-01F2-CHECKPOINT.md`
+**Spec:** `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md` (Sections 4.5, 6, 10)
+
+**Objective:**
+Implement the backend API protection gaps identified in the F1 inventory. Guard the AI execution cancel/get/stream endpoints, protect service-to-service write endpoints with `InternalServiceAuthGuard`, restrict the runtime metrics diagnostic endpoint, delete confirmed-dead stale auth files, and record accepted exceptions for events endpoints and the preview proxy.
+
+**Bounded scope:**
+- Backend controllers only — no frontend files
+- No route path migrations
+- No new npm dependencies
+- No OAuth or email/password changes
+- No broad refactors
+- Events endpoints and preview proxy dispositions recorded but not implemented (carry-forward)
+
+**Implemented:**
+
+*AI Execution Controller* (`services/api-gateway/src/ai/ai-execution.controller.ts`):
+- Added `@UseGuards(ApiKeyAuthGuard)` at method level to `cancelExecution` (`POST /api/ai/executions/:executionId/cancel`)
+- Added `@UseGuards(ApiKeyAuthGuard)` at method level to `getExecution` (`GET /api/ai/executions/:executionId`)
+- Added `@UseGuards(ApiKeyAuthGuard)` at method level to `streamExecution` (`GET /api/ai/executions/:executionId/stream`)
+- `POST /api/ai/execute` guard stack left unchanged
+
+*ChatMessageController* (`services/api-gateway/src/chat-messages/chat-message.controller.ts`):
+- Added class-level `@UseGuards(InternalServiceAuthGuard)` — Option B from spec Section 6.2
+- ai-service caller (`ApiGatewayHttpClient.addChatMessage`) already sends `X-Internal-Service-Key`; no ai-service change required
+
+*TokenUsageController* (`services/api-gateway/src/token-usage/token-usage.controller.ts`):
+- Added class-level `@UseGuards(InternalServiceAuthGuard)` — Option B from spec Section 6.2
+- ai-service caller (`ApiGatewayHttpClient.recordTokenUsage`) already sends `X-Internal-Service-Key`; no ai-service change required
+
+*RuntimeController* (`services/api-gateway/src/runtime/runtime.controller.ts`):
+- Added class-level `@UseGuards(InternalServiceAuthGuard)` — restricts diagnostic endpoint to internal callers
+
+*Stale file cleanup:*
+- Deleted `services/api-gateway/src/auth/api-key.controllerXXXXX.ts` — dead file, not imported in `auth.module.ts`, contained stale `JwtAuthGuard` usage
+- Deleted `services/api-gateway/src/auth/jwt-auth.guard.ts` — only reference was the dead controller; comment-only reference in `session-quota.guard.ts`
+
+*Tests added:*
+- `services/api-gateway/src/chat-messages/chat-message.controller.spec.ts` — guard metadata test
+- `services/api-gateway/src/token-usage/token-usage.controller.spec.ts` — guard metadata test
+- `services/api-gateway/src/runtime/runtime.controller.spec.ts` — guard metadata test
+- `services/api-gateway/src/ai/__tests__/ai-execution-guards.integration.spec.ts` — new isolated `describe('AIExecutionController guard metadata')` top-level block with 3 metadata tests
+
+**Non-goals:**
+- No frontend files changed
+- No events endpoint guard added — container-manager callers do not send `X-Internal-Service-Key` (carry-forward)
+- No preview proxy guard added — cross-service ownership validation deferred
+- No OAuth or email/password changes
+- No route path migrations
+- No new npm dependencies
+
+**Acceptance checks:**
+- [x] `POST /api/ai/executions/:executionId/cancel` — `ApiKeyAuthGuard` added
+- [x] `GET /api/ai/executions/:executionId` — `ApiKeyAuthGuard` added
+- [x] `GET /api/ai/executions/:executionId/stream` — `ApiKeyAuthGuard` added
+- [x] `POST /api/chat-messages/add-by-session` — `InternalServiceAuthGuard` added (Option B)
+- [x] `POST /api/token-usage/record` — `InternalServiceAuthGuard` added (Option B)
+- [x] `GET /api/runtime/metrics` — `InternalServiceAuthGuard` added
+- [x] Events endpoints — disposition recorded (Option C: accepted carry-forward)
+- [x] Preview proxy — disposition recorded (deferred child slice)
+- [x] `api-key.controllerXXXXX.ts` — deleted; import scan confirmed safe
+- [x] `jwt-auth.guard.ts` — deleted; import scan confirmed safe
+- [x] `npx tsc --noEmit` PASS
+- [x] Targeted guard metadata tests pass for all newly guarded endpoints
+- [x] No frontend files changed
+- [x] No new npm dependencies installed
+- [x] Checkpoint created: `docs/AUTH-APP-01F2-CHECKPOINT.md`
+
+**Carry-forward blockers (inherited, not introduced by F2):**
+- `npm test` backend full suite: fails — `REDIS_URL` not set; `ai-execution.controller.spec.ts` pre-existing failures
+- `ai-execution-guards.integration.spec.ts` full suite: `QuotaService` unresolved dependencies (pre-existing)
+- `npm run lint` backend: ESLint config not discoverable in `services/api-gateway`
+
+**Carry-forward items (not resolved in F2):**
+- Events endpoints (`file-changed`, `checkpoint-created`, `token-updated`) still unguarded — container-manager `files.service.ts` and `git.service.ts` callers do not send `X-Internal-Service-Key`; requires updating those two callers and then adding `InternalServiceAuthGuard` to `EventsController` (AUTH-APP-01F2a or AUTH-APP-01H)
+- Preview proxy (`@All /api/preview/*`) still unguarded — requires coordinated api-gateway + container-manager auth-forwarding / ownership-validation investigation (dedicated slice)
+
+**Reference:** See TASKS.md -> AUTH-APP-01F2. See `docs/AUTH-APP-01F2-CHECKPOINT.md`. See `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md`.
 

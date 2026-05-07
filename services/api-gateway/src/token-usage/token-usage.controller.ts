@@ -1,4 +1,5 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
+import { InternalServiceAuthGuard } from '../guards/internal-service-auth.guard';
 import { TokenUsageService } from './token-usage.service';
 import { RecordTokenUsageDto } from './dto/record-token-usage.dto';
 
@@ -9,6 +10,7 @@ import { RecordTokenUsageDto } from './dto/record-token-usage.dto';
  * Routes: /api/token-usage/* (global prefix 'api' applied in main.ts)
  */
 @Controller('token-usage')
+@UseGuards(InternalServiceAuthGuard)
 export class TokenUsageController {
   constructor(private readonly tokenUsageService: TokenUsageService) {}
 

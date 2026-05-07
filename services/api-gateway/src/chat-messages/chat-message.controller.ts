@@ -1,4 +1,5 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
+import { InternalServiceAuthGuard } from '../guards/internal-service-auth.guard';
 import { ChatMessageService } from './chat-message.service';
 import { AddMessageBySessionDto } from './dto/add-message-by-session.dto';
 
@@ -9,6 +10,7 @@ import { AddMessageBySessionDto } from './dto/add-message-by-session.dto';
  * Routes: /api/chat-messages/* (global prefix 'api' applied in main.ts)
  */
 @Controller('chat-messages')
+@UseGuards(InternalServiceAuthGuard)
 export class ChatMessageController {
   constructor(private readonly chatMessageService: ChatMessageService) {}
 

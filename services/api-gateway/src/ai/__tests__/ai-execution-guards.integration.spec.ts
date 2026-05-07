@@ -16,6 +16,7 @@
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { ExecutionContext, ForbiddenException, ServiceUnavailableException } from '@nestjs/common';
+import { GUARDS_METADATA } from '@nestjs/common/constants';
 import { Reflector } from '@nestjs/core';
 import { LaunchGuard } from '../../launch/launch.guard';
 import { AbortGuard } from '../../abort/abort.guard';
@@ -27,7 +28,9 @@ import { AbortConfig } from '../../abort/abort.config';
 import { LaunchState } from '../../launch/launch-state.enum';
 import { AbortMode } from '../../abort/abort-mode.enum';
 import { ApiKeyIdentity } from '../../auth/api-key.config';
+import { ApiKeyAuthGuard } from '../../auth/api-key-auth.guard';
 import { GlobalSafetyLimitService } from '../../safety/global-safety-limit.service';
+import { AIExecutionController } from '../ai-execution.controller';
 
 describe('AI Execution Guards Integration (Phase 31B)', () => {
   let launchGuard: LaunchGuard;
@@ -474,5 +477,38 @@ describe('AI Execution Guards Integration (Phase 31B)', () => {
       expect(launchGuard.canActivate(mockContext)).toBe(true);
       expect(abortGuard.canActivate(mockContext)).toBe(true);
     });
+  });
+
+});
+
+describe('AIExecutionController guard metadata', () => {
+  it('protects cancelExecution with ApiKeyAuthGuard', () => {
+    const guards =
+      Reflect.getMetadata(
+        GUARDS_METADATA,
+        AIExecutionController.prototype.cancelExecution,
+      ) ?? [];
+
+    expect(guards).toContain(ApiKeyAuthGuard);
+  });
+
+  it('protects getExecution with ApiKeyAuthGuard', () => {
+    const guards =
+      Reflect.getMetadata(
+        GUARDS_METADATA,
+        AIExecutionController.prototype.getExecution,
+      ) ?? [];
+
+    expect(guards).toContain(ApiKeyAuthGuard);
+  });
+
+  it('protects streamExecution with ApiKeyAuthGuard', () => {
+    const guards =
+      Reflect.getMetadata(
+        GUARDS_METADATA,
+        AIExecutionController.prototype.streamExecution,
+      ) ?? [];
+
+    expect(guards).toContain(ApiKeyAuthGuard);
   });
 });

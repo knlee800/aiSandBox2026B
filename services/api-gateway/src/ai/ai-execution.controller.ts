@@ -364,6 +364,7 @@ export class AIExecutionController {
    * Returns 409 Conflict if execution cannot be cancelled.
    */
   @Post('executions/:executionId/cancel')
+  @UseGuards(ApiKeyAuthGuard)
   async cancelExecution(
     @Param('executionId') executionId: string,
   ): Promise<{ executionId: string; status: string }> {
@@ -391,6 +392,7 @@ export class AIExecutionController {
    * Throws 404 if execution not found.
    */
   @Get('executions/:executionId')
+  @UseGuards(ApiKeyAuthGuard)
   async getExecution(
     @Param('executionId') executionId: string,
   ): Promise<ExecutionResultDto> {
@@ -472,6 +474,7 @@ export class AIExecutionController {
    * Non-blocking. If no client connects, execution completes normally.
    */
   @Sse('executions/:executionId/stream')
+  @UseGuards(ApiKeyAuthGuard)
   streamExecution(
     @Param('executionId') executionId: string,
   ): Observable<MessageEvent> {
