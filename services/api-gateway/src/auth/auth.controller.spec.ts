@@ -1,4 +1,4 @@
-import { UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { Response } from 'express';
 import { AuthController } from './auth.controller';
 
@@ -8,6 +8,8 @@ describe('AuthController email verification routes', () => {
     validateAndConsumeToken: jest.fn(),
     markEmailVerified: jest.fn(),
     resendEmailVerification: jest.fn(),
+    requestPasswordReset: jest.fn(),
+    confirmPasswordReset: jest.fn(),
   };
 
   let controller: AuthController;
@@ -87,5 +89,63 @@ describe('AuthController email verification routes', () => {
     expect(result).toEqual({
       message: 'If that email is registered and unverified, a new verification link has been sent.',
     });
+  });
+
+  it('POST password-reset/request returns generic message and calls requestPasswordReset with locale', async () => {
+    mockAuthService.requestPasswordReset.mockResolvedValue(undefined);
+
+    const result = await controller.requestPasswordReset(
+      { email: 'user@example.com' },
+      'zh-TW,zh;q=0.9',
+    );
+
+    expect(mockAuthService.requestPasswordReset).toHaveBeenCalledWith('user@example.com', 'zh-TW');
+    expect(result).toEqual({
+      message: 'If that email is registered, a password reset link has been sent.',
+    });
+  });
+
+  it('POST password-reset/request preserves generic 200 behavior when service no-ops', async () => {
+    mockAuthService.requestPasswordReset.mockResolvedValue(undefined);
+
+    const result = await controller.requestPasswordReset({ email: 'unknown@example.com' }, undefined);
+
+    expect(mockAuthService.requestPasswordReset).toHaveBeenCalledWith('unknown@example.com', 'en');
+    expect(result).toEqual({
+      message: 'If that email is registered, a password reset link has been sent.',
+    });
+  });
+
+  it('POST password-reset/confirm valid returns success message', async () => {
+    mockAuthService.confirmPasswordReset.mockResolvedValue(undefined);
+
+    const result = await controller.confirmPasswordReset({
+      token: 'valid-reset-token',
+      newPassword: 'newpassword123',
+    });
+
+    expect(mockAuthService.confirmPasswordReset).toHaveBeenCalledWith(
+      'valid-reset-token',
+      'newpassword123',
+    );
+    expect(result).toEqual({
+      message: 'Password reset successfully. Please sign in with your new password.',
+    });
+  });
+
+  it('POST password-reset/confirm maps UnauthorizedException to BadRequestException', async () => {
+    mockAuthService.confirmPasswordReset.mockRejectedValue(
+      new UnauthorizedException('Invalid or expired verification token'),
+    );
+
+    const promise = controller.confirmPasswordReset({
+      token: 'expired-reset-token',
+      newPassword: 'newpassword123',
+    });
+
+    await expect(promise).rejects.toBeInstanceOf(BadRequestException);
+    await expect(promise).rejects.toThrow(
+      'Reset link is invalid or has expired. Please request a new one.',
+    );
   });
 });

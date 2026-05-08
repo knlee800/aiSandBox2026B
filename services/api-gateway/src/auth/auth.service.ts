@@ -1,4 +1,4 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, IsNull, MoreThan, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -127,6 +127,27 @@ export class AuthService {
     });
   }
 
+  private async sendPasswordResetEmail(
+    email: string,
+    rawToken: string,
+    locale: string,
+  ): Promise<void> {
+    const baseUrl = process.env.APP_BASE_URL;
+    if (!baseUrl) {
+      throw new Error('APP_BASE_URL is required for password reset');
+    }
+
+    const safeLocale = locale?.trim() ? locale.trim() : 'en';
+    const resetUrl = `${baseUrl}/${safeLocale}/reset-password?token=${rawToken}`;
+
+    await this.emailProvider.sendEmail({
+      to: email,
+      subject: 'Reset your password — AI Sandbox',
+      html: `<p>You requested a password reset for your AI Sandbox account.</p><p><a href="${resetUrl}">Reset your password</a></p><p>This link expires in 1 hour. If you did not request this, you can ignore this email.</p>`,
+      text: `You requested a password reset for your AI Sandbox account.\n\nReset your password: ${resetUrl}\n\nThis link expires in 1 hour. If you did not request this, you can ignore this email.`,
+    });
+  }
+
   async validateAndConsumeToken(
     rawToken: string,
     type: string,
@@ -197,6 +218,57 @@ export class AuthService {
       locale,
     );
     await this.sendVerificationEmail(user.email, rawToken, locale);
+  }
+
+  async requestPasswordReset(email: string, locale: string): Promise<void> {
+    const normalizedEmail = email?.trim().toLowerCase();
+    if (!normalizedEmail) {
+      return;
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { email: ILike(normalizedEmail) },
+    });
+    if (!user || !user.isActive) {
+      return;
+    }
+
+    await this.verificationTokenRepository.update(
+      {
+        userId: user.id,
+        type: 'password_reset',
+        usedAt: IsNull(),
+      },
+      {
+        usedAt: new Date(),
+      },
+    );
+
+    const rawToken = await this.generateAndStoreVerificationToken(
+      user.id,
+      'password_reset',
+      60 * 60 * 1000,
+      locale,
+    );
+    await this.sendPasswordResetEmail(user.email, rawToken, locale);
+  }
+
+  async confirmPasswordReset(rawToken: string, newPassword: string): Promise<void> {
+    if (!newPassword || newPassword.length < 6) {
+      throw new BadRequestException('Password must be at least 6 characters.');
+    }
+
+    const { userId } = await this.validateAndConsumeToken(rawToken, 'password_reset');
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+    await this.userRepository.update(userId, { passwordHash });
+    await this.revokeAllUserSessions(userId);
+  }
+
+  async revokeAllUserSessions(userId: string): Promise<void> {
+    await this.authSessionRepository.update(
+      { userId, revokedAt: IsNull() },
+      { revokedAt: new Date() },
+    );
   }
 
   async createSession(userId: string): Promise<string> {

@@ -22,3 +22,17 @@ export class ResendVerificationDto {
   @IsEmail()
   email: string;
 }
+
+export class PasswordResetRequestDto {
+  @IsEmail()
+  email: string;
+}
+
+export class PasswordResetConfirmDto {
+  @IsString()
+  token: string;
+
+  @IsString()
+  @MinLength(6)
+  newPassword: string;
+}

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Controller,
   Post,
   Body,
@@ -14,7 +15,13 @@ import {
 } from '@nestjs/common';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
-import { LoginDto, RegisterDto, ResendVerificationDto } from './dto/auth.dto';
+import {
+  LoginDto,
+  PasswordResetConfirmDto,
+  PasswordResetRequestDto,
+  RegisterDto,
+  ResendVerificationDto,
+} from './dto/auth.dto';
 import { SessionCookieGuard } from './session-cookie.guard';
 import { CsrfGuard } from './csrf.guard';
 import { EmailThrottlerGuard } from './email-throttler.guard';
@@ -181,6 +188,42 @@ export class AuthController {
     return {
       message: 'If that email is registered and unverified, a new verification link has been sent.',
     };
+  }
+
+  @Post('password-reset/request')
+  @UseGuards(EmailThrottlerGuard)
+  @Throttle({ default: { limit: 5, ttl: 3600000 } })
+  @HttpCode(HttpStatus.OK)
+  async requestPasswordReset(
+    @Body() passwordResetRequestDto: PasswordResetRequestDto,
+    @Headers('accept-language') acceptLanguage?: string,
+  ) {
+    const locale = this.getLanguageFromHeader(acceptLanguage);
+    await this.authService.requestPasswordReset(passwordResetRequestDto.email, locale);
+    return {
+      message: 'If that email is registered, a password reset link has been sent.',
+    };
+  }
+
+  @Post('password-reset/confirm')
+  @HttpCode(HttpStatus.OK)
+  async confirmPasswordReset(@Body() passwordResetConfirmDto: PasswordResetConfirmDto) {
+    try {
+      await this.authService.confirmPasswordReset(
+        passwordResetConfirmDto.token,
+        passwordResetConfirmDto.newPassword,
+      );
+      return {
+        message: 'Password reset successfully. Please sign in with your new password.',
+      };
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw new BadRequestException(
+          'Reset link is invalid or has expired. Please request a new one.',
+        );
+      }
+      throw error;
+    }
   }
 
   @Get('google')
