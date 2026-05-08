@@ -12216,9 +12216,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## AUTH — aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 COMPLETE — AUTH-APP-01H ACTIVE — AUTH-APP-01H1 COMPLETE — AUTH-APP-01H2 COMPLETE — AUTH-APP-01H3 COMPLETE — AUTH-APP-01H4 NEXT
+**Family status:** VALIDATION COMPLETE (AUTH-APP-01C2 BLOCKED; manual smoke deferred) — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 COMPLETE — AUTH-APP-01H VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01H1 COMPLETE — AUTH-APP-01H2 COMPLETE — AUTH-APP-01H3 COMPLETE — AUTH-APP-01H4 COMPLETE — AUTH-APP-01Z COMPLETE
 
-**Current stage:** AUTH-APP-01H4 (PLANNED — next)
+**Current stage:** AUTH-APP-01C2 (BLOCKED — pending transactional email provider choice)
 
 **Master spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Reference master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -12229,6 +12229,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 **Parent roadmap: AUTH-APP-01 — aiSandBox First-Party User Authentication**
 
+**Parent status: VALIDATION COMPLETE — AUTH-APP-01C2 BLOCKED; manual smoke deferred; carry-forwards pending**
+**Parent checkpoint:** `docs/AUTH-APP-01-CHECKPOINT.md`
+
 Goal: add production-ready authentication (email, Google, Apple) for the aiSandBox hosted app so real users can sign in securely before using platform features.
 
 Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backend + frontend surface too large for one slice):
@@ -12236,10 +12239,10 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
 2. AUTH-APP-01B — Database / Schema Migrations (COMPLETE and LOCKED)
 3. AUTH-APP-01C1A — Backend Cookie Session Foundation (COMPLETE and LOCKED)
 4. AUTH-APP-01C1B — Frontend localStorage/Bearer Migration (COMPLETE and LOCKED)
-5. AUTH-APP-01C2 — Email Verification / Password Reset / Rate Limiting (PLANNED — BLOCKED on email provider)
+5. AUTH-APP-01C2 — Email Verification / Password Reset / Rate Limiting (BLOCKED — email provider not chosen)
 6. AUTH-APP-01D — Google OAuth (COMPLETE and LOCKED)
 7. AUTH-APP-01E — Apple OAuth (COMPLETE and LOCKED)
-8. AUTH-APP-01F — Route / API Protection (VALIDATION COMPLETE — carry-forwards pending — child slices all complete):
+8. AUTH-APP-01F — Route / API Protection (VALIDATION COMPLETE — carry-forwards/manual smoke deferred — child slices all complete):
    - AUTH-APP-01F1 — Route/API Protection Inventory + Spec (COMPLETE and LOCKED)
    - AUTH-APP-01F2 — Backend API Protection Gaps (COMPLETE and LOCKED)
    - AUTH-APP-01F3 — Frontend Protected Route Behavior (COMPLETE and LOCKED)
@@ -12249,12 +12252,12 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
    - AUTH-APP-01G2 — Login/Register OAuth Error + Button Polish (COMPLETE and LOCKED)
    - AUTH-APP-01G3 — Logout + Basic Account Surface (COMPLETE and LOCKED)
    - AUTH-APP-01G4 — Auth UX Validation + Checkpoint (COMPLETE and LOCKED)
-10. AUTH-APP-01H — Security Hardening + Validation Checklist (ACTIVE — child slices registered):
+10. AUTH-APP-01H — Security Hardening + Validation Checklist (VALIDATION COMPLETE — manual smoke deferred — all child slices COMPLETE and LOCKED):
     - AUTH-APP-01H1 — Security Hardening Inventory (COMPLETE and LOCKED)
     - AUTH-APP-01H2 — CSRF + Rate Limiting + Redirect Hardening (COMPLETE and LOCKED)
     - AUTH-APP-01H3 — Events Endpoint Guards + Test/Tooling Triage (COMPLETE and LOCKED)
-    - AUTH-APP-01H4 — Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation (PLANNED — current stage)
-11. AUTH-APP-01Z — Final Consolidation (pending)
+    - AUTH-APP-01H4 — Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation (COMPLETE and LOCKED)
+11. AUTH-APP-01Z — Final Consolidation (COMPLETE and LOCKED)
 
 **Sequencing note:** AUTH-APP-01D (Google OAuth) depends on AUTH-APP-01C1A (session cookie infrastructure must exist for OAuth callbacks to set cookies). AUTH-APP-01D does NOT need to wait for AUTH-APP-01C1B or AUTH-APP-01C2. AUTH-APP-01C2 remains blocked until a transactional email provider is selected and configured.
 
@@ -12771,11 +12774,12 @@ Run full automated validation suite, record manual smoke as deferred, and create
 
 #### AUTH-APP-01H: Security Hardening + Validation Checklist (Phase Parent)
 
-**Status:** ACTIVE
+**Status:** VALIDATION COMPLETE — manual smoke deferred
 **Parent:** AUTH-APP-01
 **Family:** AUTH
 **Depends on:** AUTH-APP-01G4 (COMPLETE and LOCKED)
 **Registered:** 2026-05-07
+**Checkpoint:** `docs/AUTH-APP-01H-CHECKPOINT.md`
 
 **Objective:**
 Deliver all remaining AUTH-APP-01 security hardening and validation work before AUTH-APP-01Z final consolidation. Covers CSRF protection, rate limiting on auth endpoints, redirect allowlist hardening, OAuth state parameter audit, events endpoint carry-forward resolution, preview proxy scope decision, test/tooling blocker triage, secrets env audit, and full manual smoke verification.
@@ -12784,11 +12788,16 @@ Deliver all remaining AUTH-APP-01 security hardening and validation work before 
 1. AUTH-APP-01H1 — Security Hardening Inventory (COMPLETE and LOCKED)
 2. AUTH-APP-01H2 — CSRF + Rate Limiting + Redirect Hardening (COMPLETE and LOCKED)
 3. AUTH-APP-01H3 — Events Endpoint Guards + Test/Tooling Triage (COMPLETE and LOCKED)
-4. AUTH-APP-01H4 — Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation (PLANNED — current stage)
+4. AUTH-APP-01H4 — Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation (COMPLETE and LOCKED)
 
 **AUTH-APP-01C2 remains BLOCKED:** Transactional email provider not yet chosen. AUTH-APP-01H does not unblock AUTH-APP-01C2.
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01H. See `docs/AUTH-APP-01-SPEC.md`. See `docs/AUTH-APP-01F-CHECKPOINT.md` (carry-forwards). See `docs/AUTH-APP-01G-CHECKPOINT.md` (carry-forwards).
+**Carry-forwards:**
+- Preview proxy `/api/preview/*` — MEDIUM risk; dedicated future investigation slice required
+- api-gateway lint baseline — 353 pre-existing errors; separate future slice
+- 40 manual smoke items (22 F-family + 12 G-family + 6 H-specific) — deferred to user live environment
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01H. See `docs/AUTH-APP-01H-CHECKPOINT.md`. See `docs/AUTH-APP-01-SPEC.md`. See `docs/AUTH-APP-01F-CHECKPOINT.md` (carry-forwards). See `docs/AUTH-APP-01G-CHECKPOINT.md` (carry-forwards).
 
 ---
 
@@ -12874,4 +12883,73 @@ Deliver all remaining AUTH-APP-01 security hardening and validation work before 
 - api-gateway lint baseline — 353 pre-existing errors across unrelated files; separate future slice
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01H3. See `docs/AUTH-APP-01H3-CHECKPOINT.md`. See `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`.
+
+---
+
+#### AUTH-APP-01H4: Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation
+
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION AND GOVERNANCE ONLY — no production source files changed
+**Parent:** AUTH-APP-01H (VALIDATION COMPLETE — manual smoke deferred)
+**Family:** AUTH
+**Depends on:** AUTH-APP-01H3 (COMPLETE and LOCKED)
+**Completed:** 2026-05-08
+**Checkpoint:** `docs/AUTH-APP-01H4-CHECKPOINT.md`
+**Family checkpoint:** `docs/AUTH-APP-01H-CHECKPOINT.md`
+**Spec:** `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`
+
+**Key findings and actions:**
+- Secrets audit initially found real Anthropic and XAI API keys in tracked `.envxxx` and `.env.prod` files — H4 paused immediately
+- Local history cleanup performed (user action): both files removed from git tracking; `git ls-files` returns clean; working tree clean
+- Post-cleanup secrets audit: CLEAN — no real credentials in any tracked source file; all `sk-ant-` and PEM header hits are placeholders/tests/docs
+- Old provider keys (Anthropic, XAI) must be rotated before any future push/deployment — treat as compromised
+- api-gateway typecheck: PASS; container-manager typecheck: PASS
+- Targeted tests: 40/40 PASS (csrf.guard: 5, events.controller.guard: 4, ai-execution-guards: 31, files.service: 2)
+- Manual smoke: 40 items NOT RUN — deferred to user live environment (22 F-family + 12 G-family + 6 H-specific)
+- CSRF smoke item correction recorded: `CsrfGuard` applies to `POST /auth/logout` only; login/register are correctly excluded
+
+**Carry-forwards:**
+- Preview proxy `/api/preview/*` — MEDIUM risk; dedicated future investigation slice
+- api-gateway lint baseline — 353 pre-existing errors; separate future slice
+- 40 manual smoke items deferred to user live environment
+- Provider key rotation — user action required before any push
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01H4. See `docs/AUTH-APP-01H4-CHECKPOINT.md`. See `docs/AUTH-APP-01H-CHECKPOINT.md`. See `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`.
+
+---
+
+#### AUTH-APP-01Z: Final AUTH-APP-01 Consolidation
+
+**Status:** COMPLETE and LOCKED
+**Nature:** GOVERNANCE AND DOCUMENTATION ONLY — no production source files changed
+**Parent:** AUTH-APP-01 (VALIDATION COMPLETE — AUTH-APP-01C2 BLOCKED; manual smoke deferred)
+**Family:** AUTH
+**Depends on:** AUTH-APP-01H4 (COMPLETE and LOCKED)
+**Completed:** 2026-05-08
+**Checkpoint:** `docs/AUTH-APP-01Z-CHECKPOINT.md`
+**Family checkpoint:** `docs/AUTH-APP-01-CHECKPOINT.md`
+**Spec:** `docs/AUTH-APP-01-SPEC.md` (Section 14 — slice order)
+
+**What AUTH-APP-01Z delivered:**
+- `docs/AUTH-APP-01Z-CHECKPOINT.md` — Z task checkpoint
+- `docs/AUTH-APP-01-CHECKPOINT.md` — AUTH-APP-01 family summary
+- `TASKS.md` and `TASKS_BACKLOG_FULL.md` updated: AUTH-APP-01Z COMPLETE and LOCKED; AUTH-APP-01 parent VALIDATION COMPLETE; stale child list entries corrected
+
+**AUTH-APP-01 parent status:** VALIDATION COMPLETE — AUTH-APP-01C2 BLOCKED; manual smoke deferred; carry-forwards pending
+
+**Carry-forwards recorded:**
+- AUTH-APP-01C2 BLOCKED — transactional email provider not chosen
+- 40 manual smoke items deferred to user live environment
+- Preview proxy `/api/preview/*` — MEDIUM risk; dedicated investigation slice required
+- api-gateway lint baseline — 353 pre-existing errors; separate cleanup slice
+- Old Anthropic/XAI provider keys must be rotated before any push/deployment
+
+**Next recommended work (independent paths):**
+1. Choose email provider → unblock AUTH-APP-01C2
+2. Run 40-item manual smoke checklist in live environment
+3. Rotate old Anthropic/XAI keys before any push/deploy
+4. Approve preview proxy investigation slice
+5. Address api-gateway lint baseline
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01Z. See `docs/AUTH-APP-01Z-CHECKPOINT.md`. See `docs/AUTH-APP-01-CHECKPOINT.md`. See `docs/AUTH-APP-01-SPEC.md`.
 

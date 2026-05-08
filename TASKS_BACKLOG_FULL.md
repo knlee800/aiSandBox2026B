@@ -22192,7 +22192,7 @@ Transform the public landing page into the "Build anything" entry experience wit
 
 ## AUTH ??aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 COMPLETE — AUTH-APP-01H ACTIVE — AUTH-APP-01H1 COMPLETE — AUTH-APP-01H2 COMPLETE — AUTH-APP-01H3 COMPLETE — AUTH-APP-01H4 NEXT
+**Family status:** VALIDATION COMPLETE (AUTH-APP-01C2 BLOCKED; manual smoke deferred) — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 COMPLETE — AUTH-APP-01H VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01H1 COMPLETE — AUTH-APP-01H2 COMPLETE — AUTH-APP-01H3 COMPLETE — AUTH-APP-01H4 COMPLETE — AUTH-APP-01Z COMPLETE
 **Important distinction:** AUTH-APP-01 is for the aiSandBox platform itself. AUTH-MODULE-01 (reusable generated app-auth for user-created apps) is a separate, later family.
 **Decision spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -22203,9 +22203,10 @@ Transform the public landing page into the "Build anything" entry experience wit
 
 **Task ID:** AUTH-APP-01
 **Family:** AUTH
-**Family status:** ACTIVE
+**Family status:** VALIDATION COMPLETE (AUTH-APP-01C2 BLOCKED; manual smoke deferred)
 **Priority:** High
-**Status:** PLANNED (multi-slice phase ??implementation begins with AUTH-APP-01A spec)
+**Status:** VALIDATION COMPLETE — AUTH-APP-01C2 BLOCKED; manual smoke deferred; carry-forwards pending
+**Checkpoint:** `docs/AUTH-APP-01-CHECKPOINT.md`
 **Source:** UX-IA-00 master plan (May 2026) ??production auth must be in place before workspace/project-mode redesign reaches real users
 **Depends on:** UX-IA-03 (COMPLETE and LOCKED)
 
@@ -22220,7 +22221,7 @@ Add production-ready authentication for the aiSandBox hosted app ??email, Google
 5. AUTH-APP-01C2 ??Email Verification / Password Reset / Rate Limiting (PLANNED ??BLOCKED on email provider)
 6. AUTH-APP-01D — Google OAuth (COMPLETE and LOCKED)
 7. AUTH-APP-01E — Apple OAuth (COMPLETE and LOCKED)
-8. AUTH-APP-01F — Route / API Protection (ACTIVE — child slices registered):
+8. AUTH-APP-01F — Route / API Protection (VALIDATION COMPLETE — carry-forwards/manual smoke deferred — all child slices COMPLETE and LOCKED):
    - AUTH-APP-01F1 — Route/API Protection Inventory + Spec (COMPLETE and LOCKED)
    - AUTH-APP-01F2 — Backend API Protection Gaps (COMPLETE and LOCKED)
    - AUTH-APP-01F3 — Frontend Protected Route Behavior (COMPLETE and LOCKED)
@@ -22230,12 +22231,12 @@ Add production-ready authentication for the aiSandBox hosted app ??email, Google
    - AUTH-APP-01G2 — Login/Register OAuth Error + Button Polish (COMPLETE and LOCKED)
    - AUTH-APP-01G3 — Logout + Basic Account Surface (COMPLETE and LOCKED)
    - AUTH-APP-01G4 — Auth UX Validation + Checkpoint (COMPLETE and LOCKED)
-10. AUTH-APP-01H — Security Hardening + Validation Checklist (ACTIVE — child slices registered):
+10. AUTH-APP-01H — Security Hardening + Validation Checklist (VALIDATION COMPLETE — manual smoke deferred — all child slices COMPLETE and LOCKED):
     - AUTH-APP-01H1 — Security Hardening Inventory (COMPLETE and LOCKED)
     - AUTH-APP-01H2 — CSRF + Rate Limiting + Redirect Hardening (COMPLETE and LOCKED)
     - AUTH-APP-01H3 — Events Endpoint Guards + Test/Tooling Triage (COMPLETE and LOCKED)
-    - AUTH-APP-01H4 — Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation (PLANNED — current stage)
-11. AUTH-APP-01Z — Final Consolidation (pending)
+    - AUTH-APP-01H4 — Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation (COMPLETE and LOCKED)
+11. AUTH-APP-01Z — Final Consolidation (COMPLETE and LOCKED)
 
 **Non-goals:**
 - AUTH-MODULE-01 (reusable generated app-auth for user-created apps ??separate later family)
@@ -23486,13 +23487,14 @@ Run full automated validation suite for the AUTH-APP-01G family, record manual s
 **Task ID:** AUTH-APP-01H
 **Family:** AUTH
 **Parent:** AUTH-APP-01
-**Family status:** ACTIVE
+**Family status:** VALIDATION COMPLETE (manual smoke deferred)
 **Priority:** High
-**Status:** ACTIVE
+**Status:** VALIDATION COMPLETE — manual smoke deferred
 **Nature:** PHASE PARENT — split into H1–H4 child slices
 **Source:** AUTH-APP-01-SPEC.md Section 14 (locked slice order)
 **Depends on:** AUTH-APP-01G4 (COMPLETE and LOCKED)
 **Registered:** 2026-05-07
+**Checkpoint:** `docs/AUTH-APP-01H-CHECKPOINT.md`
 
 **Objective:**
 Deliver all remaining AUTH-APP-01 security hardening and validation work before AUTH-APP-01Z final consolidation. Covers CSRF protection, rate limiting on auth endpoints, redirect allowlist hardening, OAuth state parameter audit, events endpoint carry-forward resolution (from AUTH-APP-01F), preview proxy scope decision, test/tooling blocker triage, secrets env audit, and full manual smoke verification (carrying forward all NOT RUN items from AUTH-APP-01F4 and AUTH-APP-01G4).
@@ -23501,19 +23503,19 @@ Deliver all remaining AUTH-APP-01 security hardening and validation work before 
 1. AUTH-APP-01H1 — Security Hardening Inventory (COMPLETE and LOCKED)
 2. AUTH-APP-01H2 — CSRF + Rate Limiting + Redirect Hardening (COMPLETE and LOCKED)
 3. AUTH-APP-01H3 — Events Endpoint Guards + Test/Tooling Triage (COMPLETE and LOCKED)
-4. AUTH-APP-01H4 — Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation (PLANNED — current stage)
+4. AUTH-APP-01H4 — Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation (COMPLETE and LOCKED)
 
-**Carry-forwards absorbed from prior slices:**
+**Carry-forwards absorbed and resolved/deferred:**
 
-| Item | Source | Status |
+| Item | Source | Resolution |
 |---|---|---|
-| Events endpoints (3) unguarded (`file-changed`, `checkpoint-created`, `token-updated`) | AUTH-APP-01F carry-forward | Pending — H3 |
-| Preview proxy auth-forwarding (`/api/preview/*`) | AUTH-APP-01F carry-forward | Pending — H3 scope decision |
-| Manual smoke checklist F-family (22 items) | AUTH-APP-01F4 NOT RUN | Pending — H4 |
-| Manual smoke checklist G-family (12 items) | AUTH-APP-01G4 NOT RUN | Pending — H4 |
-| Backend full `npm test` Redis blocker | Pre-existing since AUTH-APP-01B | Pending — H3 triage |
-| `ai-execution-guards` QuotaService test blocker | Pre-existing before AUTH-APP-01F1 | Pending — H3 triage |
-| Backend ESLint config discovery blocker | Pre-existing since AUTH-APP-01B | Pending — H3 triage |
+| Events endpoints (3) unguarded (`file-changed`, `checkpoint-created`, `token-updated`) | AUTH-APP-01F carry-forward | RESOLVED in H3 — guard path extended; callers updated |
+| Preview proxy auth-forwarding (`/api/preview/*`) | AUTH-APP-01F carry-forward | DEFERRED — product decision + cross-service auth design required; risk: MEDIUM |
+| Manual smoke checklist F-family (22 items) | AUTH-APP-01F4 NOT RUN | DEFERRED — 40 total smoke items deferred to user live environment |
+| Manual smoke checklist G-family (12 items) | AUTH-APP-01G4 NOT RUN | DEFERRED — included in 40-item deferred total |
+| Backend full `npm test` Redis blocker | Pre-existing since AUTH-APP-01B | DOCUMENTED — targeted test strategy; environment constraint; not a code defect |
+| `ai-execution-guards` QuotaService test blocker | Pre-existing before AUTH-APP-01F1 | RESOLVED in H3 — `useValue` mock added; 31/31 tests pass |
+| Backend ESLint config discovery blocker | Pre-existing since AUTH-APP-01B | RESOLVED in H3 — `.eslintrc.js` created; 353-error baseline documented |
 
 **AUTH-APP-01C2 remains BLOCKED:** Transactional email provider not yet chosen. AUTH-APP-01H does not unblock AUTH-APP-01C2.
 
@@ -23710,4 +23712,140 @@ Guard all three events endpoints with `InternalServiceAuthGuard` (extending the 
 - api-gateway lint baseline — 353 pre-existing errors across unrelated files; separate future slice
 
 **Reference:** See TASKS.md -> AUTH-APP-01H3. See `docs/AUTH-APP-01H3-CHECKPOINT.md`. See `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`. See `docs/AUTH-APP-01-SPEC.md`.
+
+---
+
+### AUTH-APP-01H4: Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation
+
+**Task ID:** AUTH-APP-01H4
+**Family:** AUTH
+**Parent:** AUTH-APP-01H (VALIDATION COMPLETE — manual smoke deferred)
+**Family status:** VALIDATION COMPLETE (manual smoke deferred)
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** VALIDATION AND GOVERNANCE ONLY — no production source files changed
+**Source:** AUTH-APP-01H registration (2026-05-07); AUTH-APP-01H-SECURITY-HARDENING-SPEC.md Section 11
+**Depends on:** AUTH-APP-01H3 (COMPLETE and LOCKED)
+**Completed:** 2026-05-08
+**Checkpoint:** `docs/AUTH-APP-01H4-CHECKPOINT.md`
+**Family checkpoint:** `docs/AUTH-APP-01H-CHECKPOINT.md`
+**Spec:** `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`
+
+**Objective:**
+Run the secrets grep audit, reconfirm targeted automated validation from H2/H3, record manual smoke disposition, and produce the H4 task checkpoint and AUTH-APP-01H family summary checkpoint. Governance and validation slice only — no production source code modified.
+
+**Secrets audit:**
+- Initial audit found real Anthropic and XAI provider keys in tracked `.envxxx` and `.env.prod` files — H4 paused immediately
+- User performed local history cleanup: both files removed from git tracking; working tree clean
+- Post-cleanup audit: CLEAN — no real credentials in any tracked source file
+- Remaining `sk-ant-` and PEM header hits are all placeholder/test/doc values
+- Mandatory follow-up: old Anthropic and XAI provider keys must be rotated before any future push or deployment
+
+**Automated validation results:**
+
+| Command | Result |
+|---|---|
+| `npx tsc --noEmit` — `services/api-gateway` | PASS |
+| `npx jest --testPathPatterns="csrf.guard\|events.controller.guard\|ai-execution-guards" --runInBand` | PASS — 40/40 (csrf: 5, events guard: 4, ai-execution: 31) |
+| `npx tsc --noEmit` — `services/container-manager` | PASS |
+| `npm test -- files --runInBand` — `services/container-manager` | PASS — 2/2 |
+
+**Manual smoke:** 40 items NOT RUN — deferred to user live environment (22 F-family + 12 G-family + 6 H-specific). No live Docker/PostgreSQL/Redis/api-gateway/browser environment available in this session.
+
+**CSRF smoke item correction recorded:** `CsrfGuard` applies only to `POST /auth/logout`. The H1 spec draft incorrectly implied `POST /auth/login` should fail without CSRF. Login and register are public entry points — correctly excluded from CSRF enforcement.
+
+**Carry-forwards:**
+- Preview proxy `/api/preview/*` — MEDIUM risk; dedicated future investigation slice required
+- api-gateway lint baseline — 353 pre-existing errors; separate future lint cleanup slice
+- 40 manual smoke items — deferred to user live environment
+- Provider key rotation — user must rotate Anthropic and XAI keys before any push
+
+**Acceptance checks:**
+- [x] `git ls-files "*.p8"` — no tracked `.p8` files
+- [x] `git ls-files` for env files — no tracked raw `.env` files
+- [x] All PEM header matches in tracked files are safe placeholders/tests
+- [x] All `sk-ant-` matches are placeholder/test/doc values only
+- [x] `api-gateway/.env.example` all 11 auth/session/OAuth variables confirmed as placeholder-only
+- [x] `npx tsc --noEmit` PASS — api-gateway
+- [x] 40/40 targeted tests PASS — api-gateway
+- [x] `npx tsc --noEmit` PASS — container-manager
+- [x] 2/2 files tests PASS — container-manager
+- [x] Manual smoke disposition recorded: 40 items NOT RUN / deferred
+- [x] `docs/AUTH-APP-01H4-CHECKPOINT.md` created
+- [x] `docs/AUTH-APP-01H-CHECKPOINT.md` created
+- [x] `TASKS.md` updated — H4 COMPLETE and LOCKED; H parent VALIDATION COMPLETE; current stage AUTH-APP-01Z
+- [x] `TASKS_BACKLOG_FULL.md` updated — same
+- [x] No production source files changed
+
+**Non-goals confirmed:**
+- No production source file edits
+- No new features
+- No refactoring
+- No auth endpoint changes
+- No frontend changes
+- No dependency additions
+- No repo-wide lint cleanup
+- No AUTH-APP-01C2 work (BLOCKED)
+- No preview proxy auth implementation
+
+**Reference:** See TASKS.md -> AUTH-APP-01H4. See `docs/AUTH-APP-01H4-CHECKPOINT.md`. See `docs/AUTH-APP-01H-CHECKPOINT.md`. See `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`. See `docs/AUTH-APP-01-SPEC.md`.
+
+---
+
+### AUTH-APP-01Z: Final AUTH-APP-01 Consolidation
+
+**Task ID:** AUTH-APP-01Z
+**Family:** AUTH
+**Parent:** AUTH-APP-01 (VALIDATION COMPLETE — AUTH-APP-01C2 BLOCKED; manual smoke deferred; carry-forwards pending)
+**Family status:** VALIDATION COMPLETE (AUTH-APP-01C2 BLOCKED; manual smoke deferred)
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** GOVERNANCE AND DOCUMENTATION ONLY — no production source files changed
+**Completed:** 2026-05-08
+**Checkpoint:** `docs/AUTH-APP-01Z-CHECKPOINT.md`
+**Family checkpoint:** `docs/AUTH-APP-01-CHECKPOINT.md`
+**Depends on:** AUTH-APP-01H4 (COMPLETE and LOCKED)
+**Spec:** `docs/AUTH-APP-01-SPEC.md` (Section 14 — slice order)
+
+**Objective:** Create the final AUTH-APP-01Z task checkpoint and AUTH-APP-01 family summary checkpoint, update TASKS.md and TASKS_BACKLOG_FULL.md to reflect the completed state of the implementation wave, and record the remaining blocked/deferred items.
+
+**Files changed (governance only):**
+- `docs/AUTH-APP-01Z-CHECKPOINT.md` — created
+- `docs/AUTH-APP-01-CHECKPOINT.md` — created
+- `TASKS.md` — AUTH-APP-01Z entry added; AUTH-APP-01 parent status updated; family status line updated
+- `TASKS_BACKLOG_FULL.md` — AUTH-APP-01Z entry added; AUTH-APP-01 parent status updated; stale child list entries corrected
+
+**Production source files changed: None.**
+
+**Validation (referenced from H4 — no rerun required):**
+- api-gateway `npx tsc --noEmit`: PASS
+- api-gateway targeted tests (csrf.guard, events.controller.guard, ai-execution-guards): PASS — 40/40
+- container-manager `npx tsc --noEmit`: PASS
+- container-manager `npm test -- files --runInBand`: PASS — 2/2
+- Secrets audit: CLEAN after local history cleanup
+- Manual smoke: NOT RUN — deferred
+- Z lightweight reconfirmation (`npx tsc --noEmit` api-gateway): PASS
+
+**AUTH-APP-01 parent status declared:**
+VALIDATION COMPLETE — AUTH-APP-01C2 BLOCKED; manual smoke deferred; carry-forwards pending
+
+**Carry-forwards recorded:**
+- AUTH-APP-01C2 BLOCKED — transactional email provider not chosen; candidates: Resend, SendGrid, Amazon SES
+- 40 manual smoke items (22 F-family, 12 G-family, 6 H-specific) — deferred to user live environment
+- Preview proxy `/api/preview/*` — fully open; MEDIUM risk; product decision + dedicated investigation slice required
+- api-gateway lint baseline — 353 pre-existing errors; separate cleanup slice
+- Old Anthropic API key (`sk-ant-api03-...`) — found in prior git history (now cleaned); MUST be rotated before any push/deployment
+- Old XAI API key (`xai-...`) — found in prior git history (now cleaned); MUST be rotated before any push/deployment
+- Dev Redis password `aisandboxredis123` — found in prior git history; rotate if instance is network-accessible
+- Keys page raw Tailwind classes — future UX task
+- `login.testCredentials` and `register.name` dead i18n keys — future cleanup
+
+**Next recommended work (independent paths):**
+1. Choose transactional email provider → unblock AUTH-APP-01C2
+2. Run 40-item manual smoke checklist in live environment
+3. Rotate old Anthropic/XAI provider keys before any push/deploy
+4. Approve preview proxy investigation slice
+5. Address api-gateway lint baseline
+
+**Reference:** See TASKS.md -> AUTH-APP-01Z. See `docs/AUTH-APP-01Z-CHECKPOINT.md`. See `docs/AUTH-APP-01-CHECKPOINT.md`. See `docs/AUTH-APP-01-SPEC.md`.
 
