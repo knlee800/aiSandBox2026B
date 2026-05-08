@@ -12,6 +12,10 @@ pnpm-lock.yaml
 .env.local
 .env.*.local
 
+.env.*
+!.env.example
+!*.env.example
+.envxxx
 # Logs
 logs/
 *.log
