@@ -23983,3 +23983,179 @@ VALIDATION COMPLETE — AUTH-APP-01C2 VALIDATION COMPLETE (AUTH-APP-01C2A COMPLE
 
 **Reference:** See TASKS.md -> AUTH-APP-01Z. See `docs/AUTH-APP-01Z-CHECKPOINT.md`. See `docs/AUTH-APP-01-CHECKPOINT.md`. See `docs/AUTH-APP-01-SPEC.md`.
 
+---
+
+### AUTH-APP-02: Preview Proxy Security (Phase Parent)
+
+**Task ID:** AUTH-APP-02
+**Family:** AUTH
+**Parent:** AUTH (carry-forward from AUTH-APP-01H)
+**Priority:** Medium
+**Status:** ACTIVE
+**Nature:** INVESTIGATION PHASE PARENT
+**Registered:** 2026-05-08
+**Depends on:** AUTH-APP-01Z (COMPLETE and LOCKED)
+
+**Objective:** Investigate and resolve the security gap in the `/api/preview/*` proxy path. The api-gateway PreviewController proxies all preview requests to container-manager without any auth guard. Container-manager has `ENABLE_PREVIEW_ACCESS_CONTROL=false` by default and its existing access control is JWT Bearer based (not SessionCookieGuard based). A product/security decision and threat model analysis are required before any implementation.
+
+**Confirmed child slices:**
+1. AUTH-APP-02A — Preview Proxy Auth Investigation (COMPLETE and LOCKED)
+2. AUTH-APP-02B — Add SessionCookieGuard to api-gateway PreviewController (PLANNED)
+3. AUTH-APP-02C — Session Ownership Check / Product Decision (CONDITIONAL — blocked on product decision)
+
+**Carry-forward source:** AUTH-APP-01H (MEDIUM risk; preview proxy formally deferred in H3 and H4)
+
+**Production source files changed: None (registration only).**
+
+---
+
+### AUTH-APP-02A: Preview Proxy Auth Investigation
+
+**Task ID:** AUTH-APP-02A
+**Family:** AUTH
+**Parent:** AUTH-APP-02 (ACTIVE)
+**Priority:** Medium
+**Status:** COMPLETE and LOCKED
+**Nature:** INVESTIGATION / SPEC ONLY — no production source files changed
+**Completed:** 2026-05-08
+**Registered:** 2026-05-08
+**Depends on:** AUTH-APP-01Z (COMPLETE and LOCKED)
+**Checkpoint:** `docs/AUTH-APP-02A-CHECKPOINT.md`
+**Spec:** `docs/AUTH-APP-02A-PREVIEW-PROXY-AUTH-SPEC.md`
+
+**Objective:**
+Perform a bounded investigation of the `/api/preview/*` proxy auth gap. Inspect the current api-gateway preview proxy, the container-manager preview access-control path, and frontend preview iframe URL generation. Determine the threat model, product decision options (public/shareable vs. owner-only vs. signed URLs vs. mixed), and propose the smallest safe implementation options. Produce a written spec. Recommend next implementation slice only after investigation is complete.
+
+**Bounded scope:**
+- Inspect `services/api-gateway` PreviewController and proxy configuration for `/api/preview/*`
+- Inspect `services/container-manager` preview/access-control path and `ENABLE_PREVIEW_ACCESS_CONTROL` flag usage
+- Inspect frontend preview iframe URL generation and usage patterns
+- Determine whether previews should be public/shareable or owner-restricted (product decision)
+- Identify current auth gaps and threat model (what can an unauthenticated actor access?)
+- Propose smallest safe implementation options (guard at api-gateway, access control at container-manager, signed URLs, or mixed)
+- Recommend next implementation slice only after investigation is complete
+
+**Non-goals:**
+- No code changes of any kind
+- No guards added to api-gateway or container-manager
+- No frontend routing changes
+- No container-manager changes
+- No dependency changes
+- No database migration
+- No manual smoke
+
+**Key findings:**
+- api-gateway `PreviewController` uses `@All('*')` with no guard — fully open to unauthenticated requests
+- Browser iframe uses same-origin `/api/preview/:sessionId/proxy` URL; `aisandbox_session` cookie forwarded but ignored by container-manager
+- Active container-manager module is `src/preview/` (no trailing `s`) — no auth or ownership check on any route (start, stop, status, proxy)
+- Inactive module `src/previews/` (with trailing `s`) contains optional JWT/Bearer access control but is NOT registered in `app.module.ts` and has no effect on live traffic
+- `ENABLE_PREVIEW_ACCESS_CONTROL` is tied to the inactive code path — does not protect current `/api/preview/*` routes
+- No public/share preview UI found in frontend — product behavior implies workspace-private preview
+- Threat model: T1 unauthenticated access (MEDIUM), T2 cross-user access (MEDIUM), T5 container-manager direct access (MEDIUM infrastructure), T3/T4/T6 (LOW)
+
+**Acceptance checklist:**
+- [x] api-gateway PreviewController and proxy config inspected and documented
+- [x] container-manager preview access-control path and `ENABLE_PREVIEW_ACCESS_CONTROL` behavior documented
+- [x] Frontend preview iframe URL generation/usage documented
+- [x] Threat model written (T1–T6)
+- [x] Product decision options enumerated: public/shareable, owner-only, signed URLs, mixed (Options A–E in spec)
+- [x] At least two implementation options proposed with trade-offs
+- [x] Recommended next implementation slice identified (AUTH-APP-02B)
+- [x] `docs/AUTH-APP-02A-PREVIEW-PROXY-AUTH-SPEC.md` created
+- [x] No production source files changed
+- [x] `TASKS.md` updated: AUTH-APP-02A COMPLETE and LOCKED; AUTH-APP-02B registered
+- [x] `TASKS_BACKLOG_FULL.md` updated: AUTH-APP-02A COMPLETE and LOCKED; AUTH-APP-02B registered
+
+**Carry-forward source:** AUTH-APP-01H (`docs/AUTH-APP-01H-CHECKPOINT.md`), AUTH-APP-01H3 (preview proxy formally deferred), AUTH-APP-01H4 (MEDIUM risk carry-forward), AUTH-APP-01Z (`docs/AUTH-APP-01Z-CHECKPOINT.md`, item 4 in next recommended work)
+
+**Production source files changed: None.**
+
+**Reference:** See TASKS.md -> AUTH-APP-02A. See `docs/AUTH-APP-02A-CHECKPOINT.md`. See `docs/AUTH-APP-02A-PREVIEW-PROXY-AUTH-SPEC.md`. See `docs/AUTH-APP-01H-CHECKPOINT.md` (carry-forward). See `docs/AUTH-APP-01Z-CHECKPOINT.md` (carry-forward).
+
+---
+
+### AUTH-APP-02B: Add SessionCookieGuard to api-gateway PreviewController
+
+**Task ID:** AUTH-APP-02B
+**Family:** AUTH
+**Parent:** AUTH-APP-02 (ACTIVE)
+**Priority:** Medium
+**Status:** PLANNED
+**Nature:** BACKEND IMPLEMENTATION
+**Registered:** 2026-05-08
+**Depends on:** AUTH-APP-02A (COMPLETE and LOCKED)
+
+**Objective:**
+Add `SessionCookieGuard` at the `PreviewController` class level in api-gateway to block unauthenticated access to all `/api/preview/*` routes (start, stop, status, proxy). This is the smallest safe fix for the MEDIUM-risk preview proxy auth gap identified in AUTH-APP-02A.
+
+**Rationale:**
+- Closes T1 (unauthenticated access) and T6 (unguarded start/stop/status)
+- Aligns with cookie-session auth architecture established in AUTH-APP-01C1A
+- Browser iframe already sends `aisandbox_session` with `credentials: 'include'` — no frontend change required
+- No container-manager changes required
+- Consistent with `SessionCookieGuard` pattern used on all other protected routes
+
+**Files in scope:**
+- `services/api-gateway/src/preview/preview.controller.ts` — add `@UseGuards(SessionCookieGuard)` at controller class level
+- `services/api-gateway/src/preview/preview.module.ts` — add `AuthModule` to imports for guard DI
+- `services/api-gateway/src/preview/__tests__/preview.controller.guard.spec.ts` — new guard unit tests
+
+**Non-goals:**
+- No ownership check (deferred to AUTH-APP-02C)
+- No container-manager changes
+- No frontend changes
+- No activation of inactive `src/previews/` module
+- No signed preview URLs
+- No public share design
+- No header sanitization
+
+**Acceptance checklist:**
+- [ ] `@UseGuards(SessionCookieGuard)` added to `PreviewController`
+- [ ] `AuthModule` imported in `PreviewModule`
+- [ ] Guard unit tests created and passing (no cookie → 401; valid cookie → proxied; invalid cookie → 401)
+- [ ] `npx tsc --noEmit` in `services/api-gateway`: PASS
+- [ ] `preview.controller.guard.spec.ts` tests: all PASS
+- [ ] Manual smoke: logged-in preview loads; unauthenticated request returns 401
+- [ ] No production source files outside preview module changed
+- [ ] `TASKS.md` updated: AUTH-APP-02B COMPLETE and LOCKED
+- [ ] `TASKS_BACKLOG_FULL.md` updated: AUTH-APP-02B COMPLETE and LOCKED
+- [ ] Checkpoint created: `docs/AUTH-APP-02B-CHECKPOINT.md`
+
+**Production source files changed:** (to be filled at completion)
+
+**Reference:** See TASKS.md -> AUTH-APP-02B. See `docs/AUTH-APP-02A-PREVIEW-PROXY-AUTH-SPEC.md` Section 9.
+
+---
+
+### AUTH-APP-02C: Session Ownership Check / Product Decision
+
+**Task ID:** AUTH-APP-02C
+**Family:** AUTH
+**Parent:** AUTH-APP-02 (ACTIVE)
+**Priority:** Medium
+**Status:** CONDITIONAL — blocked on product decision
+**Nature:** TBD (depends on product decision)
+**Registered:** 2026-05-08
+**Depends on:** AUTH-APP-02B (PLANNED) + explicit product decision
+
+**Objective:**
+After AUTH-APP-02B is complete, determine the preview sharing model and implement the appropriate ownership enforcement. The product/security decision required is: should previews be owner-only, public/shareable, signed-link shareable, or a mixed model?
+
+**Blocked on:**
+Product owner must explicitly decide the preview sharing model before AUTH-APP-02C can be scoped and implemented.
+
+**If owner-only is chosen:**
+- Determine how api-gateway resolves session ownership (api-gateway DB access or new internal endpoint on container-manager: `GET /api/internal/sessions/:id/owner`)
+- Add ownership check after `SessionCookieGuard` in `PreviewController`: compare `req.user.userId` with session's `user_id`
+- Return 403 Forbidden if ownership does not match
+
+**If shareable is chosen:**
+- May require relaxing or replacing `SessionCookieGuard` for externally shared links
+- Signed preview token infrastructure required (separate feature design)
+
+**Non-goals (until product decision):**
+- No implementation of any kind
+- No changes to api-gateway, container-manager, or frontend
+
+**Reference:** See TASKS.md -> AUTH-APP-02C. See `docs/AUTH-APP-02A-PREVIEW-PROXY-AUTH-SPEC.md` Section 10.
+
