@@ -12216,9 +12216,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## AUTH — aiSandBox First-Party Authentication
 
-**Family status:** VALIDATION COMPLETE (AUTH-APP-01C2 ACTIVE — AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C PLANNED; manual smoke deferred) — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 COMPLETE — AUTH-APP-01H VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01H1 COMPLETE — AUTH-APP-01H2 COMPLETE — AUTH-APP-01H3 COMPLETE — AUTH-APP-01H4 COMPLETE — AUTH-APP-01Z COMPLETE
+**Family status:** VALIDATION COMPLETE (AUTH-APP-01C2 ACTIVE — AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D PLANNED; manual smoke deferred) — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 COMPLETE — AUTH-APP-01H VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01H1 COMPLETE — AUTH-APP-01H2 COMPLETE — AUTH-APP-01H3 COMPLETE — AUTH-APP-01H4 COMPLETE — AUTH-APP-01Z COMPLETE
 
-**Current stage:** AUTH-APP-01C2C — Email Verification Backend Flow
+**Current stage:** AUTH-APP-01C2D — Password Reset Backend Flow
 
 **Master spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Reference master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -12229,7 +12229,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 **Parent roadmap: AUTH-APP-01 — aiSandBox First-Party User Authentication**
 
-**Parent status: VALIDATION COMPLETE — AUTH-APP-01C2 ACTIVE (AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C PLANNED); manual smoke deferred; carry-forwards pending**
+**Parent status: VALIDATION COMPLETE — AUTH-APP-01C2 ACTIVE (AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D PLANNED); manual smoke deferred; carry-forwards pending**
 **Parent checkpoint:** `docs/AUTH-APP-01-CHECKPOINT.md`
 
 Goal: add production-ready authentication (email, Google, Apple) for the aiSandBox hosted app so real users can sign in securely before using platform features.
@@ -12239,7 +12239,7 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
 2. AUTH-APP-01B — Database / Schema Migrations (COMPLETE and LOCKED)
 3. AUTH-APP-01C1A — Backend Cookie Session Foundation (COMPLETE and LOCKED)
 4. AUTH-APP-01C1B — Frontend localStorage/Bearer Migration (COMPLETE and LOCKED)
-5. AUTH-APP-01C2 — Email Verification / Password Reset / Rate Limiting (ACTIVE — AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C PLANNED)
+5. AUTH-APP-01C2 — Email Verification / Password Reset / Rate Limiting (ACTIVE — AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D PLANNED)
 6. AUTH-APP-01D — Google OAuth (COMPLETE and LOCKED)
 7. AUTH-APP-01E — Apple OAuth (COMPLETE and LOCKED)
 8. AUTH-APP-01F — Route / API Protection (VALIDATION COMPLETE — carry-forwards/manual smoke deferred — child slices all complete):
@@ -12397,7 +12397,7 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
 
 #### AUTH-APP-01C2: Email Verification / Password Reset / Rate Limiting
 
-**Status:** ACTIVE — AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C PLANNED
+**Status:** ACTIVE — AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D PLANNED
 
 **Provider decision:** Resend selected as v1 transactional email provider (decided 2026-05-08). AUTH-APP-01C2 is unblocked. EmailProvider abstraction required — auth service must not call Resend directly.
 
@@ -12407,8 +12407,8 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
 **Child slices (AUTH-APP-01C2 split — surface too large for one slice):**
 1. AUTH-APP-01C2A — Email Verification / Password Reset Spec + Provider Abstraction Plan (COMPLETE and LOCKED)
 2. AUTH-APP-01C2B — Email Provider Foundation with Resend Adapter (COMPLETE and LOCKED)
-3. AUTH-APP-01C2C — Email Verification Backend Flow (PLANNED — current stage)
-4. AUTH-APP-01C2D — Password Reset Backend Flow (PLANNED)
+3. AUTH-APP-01C2C — Email Verification Backend Flow (COMPLETE and LOCKED — checkpoint: `docs/AUTH-APP-01C2C-CHECKPOINT.md`)
+4. AUTH-APP-01C2D — Password Reset Backend Flow (PLANNED — current stage)
 5. AUTH-APP-01C2E — Frontend Auth Email UX (PLANNED)
 6. AUTH-APP-01C2F — Email Auth Validation + Consolidation (PLANNED)
 
@@ -13030,17 +13030,17 @@ Deliver all remaining AUTH-APP-01 security hardening and validation work before 
 - `docs/AUTH-APP-01-CHECKPOINT.md` — AUTH-APP-01 family summary
 - `TASKS.md` and `TASKS_BACKLOG_FULL.md` updated: AUTH-APP-01Z COMPLETE and LOCKED; AUTH-APP-01 parent VALIDATION COMPLETE; stale child list entries corrected
 
-**AUTH-APP-01 parent status:** VALIDATION COMPLETE — AUTH-APP-01C2 ACTIVE (AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C PLANNED); manual smoke deferred; carry-forwards pending
+**AUTH-APP-01 parent status:** VALIDATION COMPLETE — AUTH-APP-01C2 ACTIVE (AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D PLANNED); manual smoke deferred; carry-forwards pending
 
 **Carry-forwards recorded:**
-- AUTH-APP-01C2 ACTIVE — AUTH-APP-01C2A COMPLETE and LOCKED; AUTH-APP-01C2B COMPLETE and LOCKED; AUTH-APP-01C2C PLANNED (current stage)
+- AUTH-APP-01C2 ACTIVE — AUTH-APP-01C2A COMPLETE and LOCKED; AUTH-APP-01C2B COMPLETE and LOCKED; AUTH-APP-01C2C COMPLETE and LOCKED; AUTH-APP-01C2D PLANNED (current stage)
 - 40 manual smoke items deferred to user live environment
 - Preview proxy `/api/preview/*` — MEDIUM risk; dedicated investigation slice required
 - api-gateway lint baseline — 353 pre-existing errors; separate cleanup slice
 - Old Anthropic/XAI provider keys must be rotated before any push/deployment
 
 **Next recommended work (independent paths):**
-1. Implement AUTH-APP-01C2C — Email Verification Backend Flow
+1. Implement AUTH-APP-01C2D — Password Reset Backend Flow
 2. Run 40-item manual smoke checklist in live environment
 3. Rotate old Anthropic/XAI keys before any push/deploy
 4. Approve preview proxy investigation slice

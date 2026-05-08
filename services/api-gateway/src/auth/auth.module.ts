@@ -17,6 +17,7 @@ import { OauthAccount } from '../entities/oauth-account.entity';
 import { VerificationToken } from '../entities/verification-token.entity';
 import { AuthSession } from '../entities/auth-session.entity';
 import { SessionCookieGuard } from './session-cookie.guard';
+import { EmailThrottlerGuard } from './email-throttler.guard';
 import { EmailModule } from '../email/email.module';
 
 @Module({
@@ -36,6 +37,7 @@ import { EmailModule } from '../email/email.module';
     GoogleStrategy,
     AppleStrategy,
     SessionCookieGuard,
+    EmailThrottlerGuard,
     ApiKeyAuthGuard,
     AuthorizationGuard,
     ApiKeyService,

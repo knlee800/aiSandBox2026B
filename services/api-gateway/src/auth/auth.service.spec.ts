@@ -5,6 +5,7 @@ import { AppleProfileInput, AuthService, GoogleProfileInput } from './auth.servi
 import { User } from '../entities/user.entity';
 import { AuthSession } from '../entities/auth-session.entity';
 import { OauthAccount } from '../entities/oauth-account.entity';
+import { VerificationToken } from '../entities/verification-token.entity';
 import { EMAIL_PROVIDER } from '../email/email-provider.interface';
 
 describe('AuthService OAuth account linking', () => {
@@ -30,6 +31,13 @@ describe('AuthService OAuth account linking', () => {
     update: jest.fn(),
   };
 
+  const mockVerificationTokenRepository = {
+    create: jest.fn(),
+    save: jest.fn(),
+    findOne: jest.fn(),
+    update: jest.fn(),
+  };
+
   const mockEmailProvider = {
     sendEmail: jest.fn().mockResolvedValue(undefined),
   };
@@ -49,6 +57,10 @@ describe('AuthService OAuth account linking', () => {
         {
           provide: getRepositoryToken(AuthSession),
           useValue: mockAuthSessionRepository,
+        },
+        {
+          provide: getRepositoryToken(VerificationToken),
+          useValue: mockVerificationTokenRepository,
         },
         {
           provide: EMAIL_PROVIDER,
@@ -174,6 +186,7 @@ describe('AuthService OAuth account linking', () => {
         passwordHash: null,
         authProvider: 'google',
         oauthId: 'google-user-999',
+        emailVerified: true,
         role: 'user',
         planType: 'free',
         isActive: true,
@@ -310,6 +323,7 @@ describe('AuthService OAuth account linking', () => {
         passwordHash: null,
         authProvider: 'apple',
         oauthId: 'apple-user-789',
+        emailVerified: true,
         role: 'user',
         planType: 'free',
         isActive: true,
@@ -359,6 +373,7 @@ describe('AuthService OAuth account linking', () => {
         passwordHash: null,
         authProvider: 'apple',
         oauthId: 'apple-user-999',
+        emailVerified: true,
         role: 'user',
         planType: 'free',
         isActive: true,

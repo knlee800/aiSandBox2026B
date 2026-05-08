@@ -38,6 +38,9 @@ export class VerificationToken {
   @Column({ type: 'timestamp', name: 'used_at', nullable: true })
   usedAt: Date | null;
 
+  @Column({ type: 'varchar', length: 10, default: 'en' })
+  locale: string;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }

@@ -89,6 +89,9 @@ export class User {
   @Column({ type: 'boolean', default: true, name: 'is_active' })
   isActive: boolean;
 
+  @Column({ type: 'boolean', name: 'email_verified', default: false })
+  emailVerified: boolean;
+
   /**
    * Last login timestamp
    */

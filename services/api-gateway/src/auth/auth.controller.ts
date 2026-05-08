@@ -14,9 +14,10 @@ import {
 } from '@nestjs/common';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
-import { LoginDto, RegisterDto } from './dto/auth.dto';
+import { LoginDto, RegisterDto, ResendVerificationDto } from './dto/auth.dto';
 import { SessionCookieGuard } from './session-cookie.guard';
 import { CsrfGuard } from './csrf.guard';
+import { EmailThrottlerGuard } from './email-throttler.guard';
 import * as acceptLanguageParser from 'accept-language-parser';
 import * as passport from 'passport';
 import { Request as ExpressRequest, Response } from 'express';
@@ -133,11 +134,52 @@ export class AuthController {
   @Post('register')
   @UseGuards(ThrottlerGuard)
   @Throttle({ default: { limit: 5, ttl: 60000 } })
-  async register(@Body() registerDto: RegisterDto) {
-    const user = await this.authService.register(registerDto.email, registerDto.password);
+  async register(
+    @Body() registerDto: RegisterDto,
+    @Headers('accept-language') acceptLanguage?: string,
+  ) {
+    const locale = this.getLanguageFromHeader(acceptLanguage);
+    const user = await this.authService.register(registerDto.email, registerDto.password, locale);
     return {
       message: 'User registered successfully',
       user,
+    };
+  }
+
+  @Get('email/verify')
+  async verifyEmail(
+    @Query('token') token: string | undefined,
+    @Query('locale') locale: string | undefined,
+    @Res() response: Response,
+  ): Promise<void> {
+    const fallbackLocale = this.normalizeLocale(locale ?? 'en');
+    if (!token || token.trim().length === 0) {
+      response.redirect(`/${fallbackLocale}/login?error=token_expired`);
+      return;
+    }
+
+    try {
+      const result = await this.authService.validateAndConsumeToken(token, 'email_verify');
+      await this.authService.markEmailVerified(result.userId);
+      const successLocale = this.normalizeLocale(result.locale);
+      response.redirect(`/${successLocale}/login?verified=1`);
+    } catch {
+      response.redirect(`/${fallbackLocale}/login?error=token_expired`);
+    }
+  }
+
+  @Post('email/verify/resend')
+  @UseGuards(EmailThrottlerGuard)
+  @Throttle({ default: { limit: 3, ttl: 3600000 } })
+  @HttpCode(HttpStatus.OK)
+  async resendVerificationEmail(
+    @Body() resendVerificationDto: ResendVerificationDto,
+    @Headers('accept-language') acceptLanguage?: string,
+  ) {
+    const locale = this.getLanguageFromHeader(acceptLanguage);
+    await this.authService.resendEmailVerification(resendVerificationDto.email, locale);
+    return {
+      message: 'If that email is registered and unverified, a new verification link has been sent.',
     };
   }
 
