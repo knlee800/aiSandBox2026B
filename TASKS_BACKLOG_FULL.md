@@ -22192,7 +22192,7 @@ Transform the public landing page into the "Build anything" entry experience wit
 
 ## AUTH ??aiSandBox First-Party Authentication
 
-**Family status:** VALIDATION COMPLETE (AUTH-APP-01C2 BLOCKED; manual smoke deferred) — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 COMPLETE — AUTH-APP-01H VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01H1 COMPLETE — AUTH-APP-01H2 COMPLETE — AUTH-APP-01H3 COMPLETE — AUTH-APP-01H4 COMPLETE — AUTH-APP-01Z COMPLETE
+**Family status:** VALIDATION COMPLETE (AUTH-APP-01C2 ACTIVE — AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B PLANNED; manual smoke deferred) — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 COMPLETE — AUTH-APP-01H VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01H1 COMPLETE — AUTH-APP-01H2 COMPLETE — AUTH-APP-01H3 COMPLETE — AUTH-APP-01H4 COMPLETE — AUTH-APP-01Z COMPLETE
 **Important distinction:** AUTH-APP-01 is for the aiSandBox platform itself. AUTH-MODULE-01 (reusable generated app-auth for user-created apps) is a separate, later family.
 **Decision spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -22203,9 +22203,9 @@ Transform the public landing page into the "Build anything" entry experience wit
 
 **Task ID:** AUTH-APP-01
 **Family:** AUTH
-**Family status:** VALIDATION COMPLETE (AUTH-APP-01C2 BLOCKED; manual smoke deferred)
+**Family status:** VALIDATION COMPLETE (AUTH-APP-01C2 ACTIVE — AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B PLANNED; manual smoke deferred)
 **Priority:** High
-**Status:** VALIDATION COMPLETE — AUTH-APP-01C2 BLOCKED; manual smoke deferred; carry-forwards pending
+**Status:** VALIDATION COMPLETE — AUTH-APP-01C2 ACTIVE (AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B PLANNED); manual smoke deferred; carry-forwards pending
 **Checkpoint:** `docs/AUTH-APP-01-CHECKPOINT.md`
 **Source:** UX-IA-00 master plan (May 2026) ??production auth must be in place before workspace/project-mode redesign reaches real users
 **Depends on:** UX-IA-03 (COMPLETE and LOCKED)
@@ -22218,7 +22218,7 @@ Add production-ready authentication for the aiSandBox hosted app ??email, Google
 2. AUTH-APP-01B ??Database / Schema Migrations (COMPLETE and LOCKED)
 3. AUTH-APP-01C1A ??Backend Cookie Session Foundation (COMPLETE and LOCKED)
 4. AUTH-APP-01C1B ??Frontend localStorage/Bearer Migration (COMPLETE and LOCKED)
-5. AUTH-APP-01C2 ??Email Verification / Password Reset / Rate Limiting (PLANNED ??BLOCKED on email provider)
+5. AUTH-APP-01C2 — Email Verification / Password Reset / Rate Limiting (ACTIVE — AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B PLANNED)
 6. AUTH-APP-01D — Google OAuth (COMPLETE and LOCKED)
 7. AUTH-APP-01E — Apple OAuth (COMPLETE and LOCKED)
 8. AUTH-APP-01F — Route / API Protection (VALIDATION COMPLETE — carry-forwards/manual smoke deferred — all child slices COMPLETE and LOCKED):
@@ -22592,38 +22592,53 @@ Remove all frontend dependence on `localStorage` for `access_token` and `userId`
 **Parent:** AUTH-APP-01
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** PLANNED ??BLOCKED on transactional email provider selection
+**Status:** ACTIVE — AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B PLANNED
 **Source:** AUTH-APP-01A spec (Sections 7, 12); AUTH-APP-01C split confirmed at registration
-**Depends on:** AUTH-APP-01C1 (COMPLETE) + transactional email provider configured in environment
+**Depends on:** AUTH-APP-01C1 (COMPLETE) + Resend as chosen email provider
 
-**Blocking prerequisite:**
-A transactional email provider must be selected and its API key added to environment variables before this slice can begin. No provider is currently configured. Candidates per spec: Resend, SendGrid, Amazon SES. Provider selection must happen before AUTH-APP-01C2 stage-start ??it is not resolved in this registration.
+**Provider decision:**
+Resend selected as v1 transactional email provider (decided 2026-05-08). AUTH-APP-01C2 is unblocked. EmailProvider abstraction required — auth service must not call Resend directly. Future SES/SendGrid migration is a small adapter task.
 
 **Objective:**
-Add email verification and password reset flows that use the `verification_tokens` table from AUTH-APP-01B, and add rate limiting to all auth endpoints. This slice is intentionally decoupled from cookie-session migration (AUTH-APP-01C1) and OAuth (AUTH-APP-01D) so both can proceed while the email provider decision is pending.
+Add email verification and password reset flows that use the `verification_tokens` table from AUTH-APP-01B, and add rate limiting to all auth endpoints. Uses EmailProvider abstraction with ResendEmailProvider as the v1 adapter; future providers (SES, SendGrid) can be added as separate adapters without touching auth business logic.
+
+**Child slices (AUTH-APP-01C2 split — surface too large for one slice):**
+1. AUTH-APP-01C2A — Email Verification / Password Reset Spec + Provider Abstraction Plan (COMPLETE and LOCKED)
+2. AUTH-APP-01C2B — Email Provider Foundation with Resend Adapter (PLANNED — current stage)
+3. AUTH-APP-01C2C — Email Verification Backend Flow (PLANNED)
+4. AUTH-APP-01C2D — Password Reset Backend Flow (PLANNED)
+5. AUTH-APP-01C2E — Frontend Auth Email UX (PLANNED)
+6. AUTH-APP-01C2F — Email Auth Validation + Consolidation (PLANNED)
 
 **Bounded scope:**
 
-1. **Transactional email provider setup** ??configure chosen provider (Resend/SendGrid/SES); add `EMAIL_PROVIDER`, `EMAIL_API_KEY`, `EMAIL_FROM` (or equivalent) env vars; document in project README or env template. This is a prerequisite step performed at AUTH-APP-01C2 stage-start.
+1. **Transactional email provider setup** — configure Resend as v1 provider via EmailProvider abstraction; add `EMAIL_PROVIDER`, `RESEND_API_KEY`, `AUTH_EMAIL_FROM`, `APP_BASE_URL` env vars; document in project README or env template.
 
-2. **Email verification flow:**
+2. **EmailProvider abstraction:**
+   - `EmailProvider` interface: `sendEmail(to, subject, html): Promise<void>`
+   - `ResendEmailProvider` implements `EmailProvider` using Resend SDK (v1 adapter)
+   - `EMAIL_PROVIDER=resend` config selects provider at startup
+   - Auth service calls `EmailProvider` interface only — never Resend directly
+   - Future: `SesEmailProvider`, `SendGridEmailProvider` as separate adapter tasks
+
+3. **Email verification flow:**
    - After `POST /api/auth/register`: generate random token, SHA-256 hash it, store in `verification_tokens` (`type='email_verify'`, 24h expiry), send verification email with raw token link
    - `GET /api/auth/email/verify?token=<raw>`: hash token, look up record, validate not expired / not used, mark user `emailVerified=true`, mark token `used_at`
    - `POST /api/auth/email/verify/resend`: rate-limited, generates new token, invalidates prior unused tokens for same user+type
 
-3. **Password reset flow:**
+4. **Password reset flow:**
    - `POST /api/auth/password-reset/request`: generate token, store in `verification_tokens` (`type='password_reset'`, 1h expiry), send reset email
    - `POST /api/auth/password-reset/confirm`: validate token, hash new password, update `users.password_hash`, mark token used, revoke all `auth_sessions` for the user
    - Raw token sent to user; hash stored in DB
 
-4. **Rate limiting** ??apply to:
-   - `POST /api/auth/login` ??10/min per IP
-   - `POST /api/auth/register` ??5/min per IP
-   - `POST /api/auth/password-reset/request` ??5/hr per email, 10/hr per IP
-   - `POST /api/auth/email/verify/resend` ??3/hr per user
+5. **Rate limiting** — apply to:
+   - `POST /api/auth/login` — 10/min per IP
+   - `POST /api/auth/register` — 5/min per IP
+   - `POST /api/auth/password-reset/request` — 5/hr per email, 10/hr per IP
+   - `POST /api/auth/email/verify/resend` — 3/hr per user
    - Implementation: `@nestjs/throttler` or Redis-backed throttler (confirm at stage-start)
 
-5. **User entity `emailVerified` field** ??if not yet added, add `email_verified` column to `users` (migration required) and corresponding entity field.
+6. **User entity `emailVerified` field** — if not yet added, add `email_verified` column to `users` (migration required) and corresponding entity field.
 
 **Non-goals:**
 - No Google or Apple OAuth
@@ -22633,6 +22648,7 @@ Add email verification and password reset flows that use the `verification_token
 
 **Acceptance checks:**
 - [ ] Transactional email provider configured with env vars documented
+- [ ] EmailProvider abstraction in place; auth service calls interface only
 - [ ] Email verification token generated and email sent on register
 - [ ] Verification endpoint validates token, marks user verified, marks token used
 - [ ] Token resend is rate-limited
@@ -22643,6 +22659,61 @@ Add email verification and password reset flows that use the `verification_token
 - [ ] No OAuth code added
 
 **Reference:** See TASKS.md -> AUTH-APP-01C2. See `docs/AUTH-APP-01-SPEC.md` Sections 7, 12.
+
+---
+
+### AUTH-APP-01C2A: Email Verification / Password Reset Spec + Provider Abstraction Plan
+
+**Task ID:** AUTH-APP-01C2A
+**Family:** AUTH
+**Parent:** AUTH-APP-01C2 (ACTIVE)
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** SPEC AND DOCUMENTATION ONLY — no production source files changed
+**Registered:** 2026-05-08
+**Completed:** 2026-05-08
+**Depends on:** AUTH-APP-01C2 unblocked (Resend chosen — DONE)
+**Checkpoint:** `docs/AUTH-APP-01C2A-CHECKPOINT.md`
+**Spec:** `docs/AUTH-APP-01C2-EMAIL-AUTH-SPEC.md`
+
+**Objective:**
+Define the complete design for the email verification and password reset flows, including the EmailProvider abstraction, Resend v1 adapter boundary, future provider migration path, DB/token requirements, backend route plan, frontend UX plan, security rules, env vars, and validation plan. No production source code is written in this slice.
+
+**Files changed (governance and docs only):**
+- `docs/AUTH-APP-01C2-EMAIL-AUTH-SPEC.md` — **created** — 13-section implementation spec
+- `docs/AUTH-APP-01C2A-CHECKPOINT.md` — **created** — this task's checkpoint
+- `TASKS.md` — updated: AUTH-APP-01C2A COMPLETE and LOCKED; stage advanced to AUTH-APP-01C2B
+- `TASKS_BACKLOG_FULL.md` — updated: same status changes
+
+**Production source files changed: None.**
+
+**Key decisions recorded:**
+1. `EmailProvider` interface: `sendEmail({ to, subject, html, text? }): Promise<void>`
+2. `EMAIL_PROVIDER` NestJS injection token; auth service depends on abstraction only
+3. `ResendEmailProvider` v1; `StubEmailProvider` for tests (`EMAIL_PROVIDER=stub`)
+4. `EmailModule` factory selects provider from `EMAIL_PROVIDER` env var
+5. Future SES/SendGrid: adapter-only switch — no auth logic changes
+6. `email_verified` column added to `users` in C2C (`DEFAULT false`); OAuth users set `true` at creation
+7. `locale` column added to `verification_tokens` in C2C for post-verification redirect
+8. Verification resend: unauthenticated, `{ email }` body, always `200`, 3/hr/email
+9. Password reset: always `200` (anti-enumeration), 1h TTL, revokes all sessions on confirm
+10. No CSRF on any of the four new public routes
+11. Dual-key rate limiting for `POST /password-reset/request` via `EmailThrottlerGuard`
+12. `AuthService.revokeAllUserSessions(userId)` new method in C2D
+
+**Acceptance checks:**
+- [x] EmailProvider interface defined in spec
+- [x] ResendEmailProvider adapter boundary defined
+- [x] Future provider switch path (SES, SendGrid) documented
+- [x] Env vars defined: EMAIL_PROVIDER, RESEND_API_KEY, AUTH_EMAIL_FROM, APP_BASE_URL
+- [x] DB/token requirements confirmed against AUTH-APP-01B schema
+- [x] Backend route plan complete
+- [x] Frontend UX plan complete
+- [x] Security rules documented (token hashing, expiry, one-time use, rate limiting, no log leakage)
+- [x] Test/validation plan documented
+
+**Reference:** See TASKS.md -> AUTH-APP-01C2A. See `docs/AUTH-APP-01C2A-CHECKPOINT.md`. See `docs/AUTH-APP-01C2-EMAIL-AUTH-SPEC.md`.
 
 ---
 
@@ -23827,10 +23898,10 @@ Run the secrets grep audit, reconfirm targeted automated validation from H2/H3, 
 - Z lightweight reconfirmation (`npx tsc --noEmit` api-gateway): PASS
 
 **AUTH-APP-01 parent status declared:**
-VALIDATION COMPLETE — AUTH-APP-01C2 BLOCKED; manual smoke deferred; carry-forwards pending
+VALIDATION COMPLETE — AUTH-APP-01C2 ACTIVE (AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B PLANNED); manual smoke deferred; carry-forwards pending
 
 **Carry-forwards recorded:**
-- AUTH-APP-01C2 BLOCKED — transactional email provider not chosen; candidates: Resend, SendGrid, Amazon SES
+- AUTH-APP-01C2 ACTIVE — AUTH-APP-01C2A COMPLETE and LOCKED; AUTH-APP-01C2B PLANNED (current stage)
 - 40 manual smoke items (22 F-family, 12 G-family, 6 H-specific) — deferred to user live environment
 - Preview proxy `/api/preview/*` — fully open; MEDIUM risk; product decision + dedicated investigation slice required
 - api-gateway lint baseline — 353 pre-existing errors; separate cleanup slice
@@ -23841,7 +23912,7 @@ VALIDATION COMPLETE — AUTH-APP-01C2 BLOCKED; manual smoke deferred; carry-forw
 - `login.testCredentials` and `register.name` dead i18n keys — future cleanup
 
 **Next recommended work (independent paths):**
-1. Choose transactional email provider → unblock AUTH-APP-01C2
+1. Implement AUTH-APP-01C2B — Email Provider Foundation with Resend Adapter
 2. Run 40-item manual smoke checklist in live environment
 3. Rotate old Anthropic/XAI provider keys before any push/deploy
 4. Approve preview proxy investigation slice
