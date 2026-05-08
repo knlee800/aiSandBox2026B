@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, IsNull, MoreThan, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -7,6 +7,7 @@ import i18n from '../config/i18n';
 import { User } from '../entities/user.entity';
 import { AuthSession } from '../entities/auth-session.entity';
 import { OauthAccount } from '../entities/oauth-account.entity';
+import { EMAIL_PROVIDER, EmailProvider } from '../email/email-provider.interface';
 
 export interface GoogleProfileInput {
   googleId: string;
@@ -36,6 +37,8 @@ export class AuthService {
     private oauthAccountRepository: Repository<OauthAccount>,
     @InjectRepository(AuthSession)
     private authSessionRepository: Repository<AuthSession>,
+    @Inject(EMAIL_PROVIDER)
+    private readonly emailProvider: EmailProvider,
   ) {}
 
   async validateUser(email: string, password: string, lang: string = 'en'): Promise<any> {

@@ -17,6 +17,7 @@ import { OauthAccount } from '../entities/oauth-account.entity';
 import { VerificationToken } from '../entities/verification-token.entity';
 import { AuthSession } from '../entities/auth-session.entity';
 import { SessionCookieGuard } from './session-cookie.guard';
+import { EmailModule } from '../email/email.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { SessionCookieGuard } from './session-cookie.guard';
       secret: process.env.JWT_SECRET || 'change_this_in_production_use_a_long_random_string',
       signOptions: { expiresIn: process.env.JWT_EXPIRES_IN || '15m' },
     }),
+    EmailModule,
     TypeOrmModule.forFeature([ApiKey, User, OauthAccount, VerificationToken, AuthSession]),
   ],
   controllers: [AuthController, ApiKeyController],

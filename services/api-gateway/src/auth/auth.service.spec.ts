@@ -5,6 +5,7 @@ import { AppleProfileInput, AuthService, GoogleProfileInput } from './auth.servi
 import { User } from '../entities/user.entity';
 import { AuthSession } from '../entities/auth-session.entity';
 import { OauthAccount } from '../entities/oauth-account.entity';
+import { EMAIL_PROVIDER } from '../email/email-provider.interface';
 
 describe('AuthService OAuth account linking', () => {
   let service: AuthService;
@@ -29,6 +30,10 @@ describe('AuthService OAuth account linking', () => {
     update: jest.fn(),
   };
 
+  const mockEmailProvider = {
+    sendEmail: jest.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -44,6 +49,10 @@ describe('AuthService OAuth account linking', () => {
         {
           provide: getRepositoryToken(AuthSession),
           useValue: mockAuthSessionRepository,
+        },
+        {
+          provide: EMAIL_PROVIDER,
+          useValue: mockEmailProvider,
         },
       ],
     }).compile();

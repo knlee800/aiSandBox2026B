@@ -22192,7 +22192,7 @@ Transform the public landing page into the "Build anything" entry experience wit
 
 ## AUTH ??aiSandBox First-Party Authentication
 
-**Family status:** VALIDATION COMPLETE (AUTH-APP-01C2 ACTIVE — AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B PLANNED; manual smoke deferred) — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 COMPLETE — AUTH-APP-01H VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01H1 COMPLETE — AUTH-APP-01H2 COMPLETE — AUTH-APP-01H3 COMPLETE — AUTH-APP-01H4 COMPLETE — AUTH-APP-01Z COMPLETE
+**Family status:** VALIDATION COMPLETE (AUTH-APP-01C2 ACTIVE — AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C PLANNED; manual smoke deferred) — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 COMPLETE — AUTH-APP-01H VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01H1 COMPLETE — AUTH-APP-01H2 COMPLETE — AUTH-APP-01H3 COMPLETE — AUTH-APP-01H4 COMPLETE — AUTH-APP-01Z COMPLETE
 **Important distinction:** AUTH-APP-01 is for the aiSandBox platform itself. AUTH-MODULE-01 (reusable generated app-auth for user-created apps) is a separate, later family.
 **Decision spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -22203,9 +22203,9 @@ Transform the public landing page into the "Build anything" entry experience wit
 
 **Task ID:** AUTH-APP-01
 **Family:** AUTH
-**Family status:** VALIDATION COMPLETE (AUTH-APP-01C2 ACTIVE — AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B PLANNED; manual smoke deferred)
+**Family status:** VALIDATION COMPLETE (AUTH-APP-01C2 ACTIVE — AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C PLANNED; manual smoke deferred)
 **Priority:** High
-**Status:** VALIDATION COMPLETE — AUTH-APP-01C2 ACTIVE (AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B PLANNED); manual smoke deferred; carry-forwards pending
+**Status:** VALIDATION COMPLETE — AUTH-APP-01C2 ACTIVE (AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C PLANNED); manual smoke deferred; carry-forwards pending
 **Checkpoint:** `docs/AUTH-APP-01-CHECKPOINT.md`
 **Source:** UX-IA-00 master plan (May 2026) ??production auth must be in place before workspace/project-mode redesign reaches real users
 **Depends on:** UX-IA-03 (COMPLETE and LOCKED)
@@ -22218,7 +22218,7 @@ Add production-ready authentication for the aiSandBox hosted app ??email, Google
 2. AUTH-APP-01B ??Database / Schema Migrations (COMPLETE and LOCKED)
 3. AUTH-APP-01C1A ??Backend Cookie Session Foundation (COMPLETE and LOCKED)
 4. AUTH-APP-01C1B ??Frontend localStorage/Bearer Migration (COMPLETE and LOCKED)
-5. AUTH-APP-01C2 — Email Verification / Password Reset / Rate Limiting (ACTIVE — AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B PLANNED)
+5. AUTH-APP-01C2 — Email Verification / Password Reset / Rate Limiting (ACTIVE — AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C PLANNED)
 6. AUTH-APP-01D — Google OAuth (COMPLETE and LOCKED)
 7. AUTH-APP-01E — Apple OAuth (COMPLETE and LOCKED)
 8. AUTH-APP-01F — Route / API Protection (VALIDATION COMPLETE — carry-forwards/manual smoke deferred — all child slices COMPLETE and LOCKED):
@@ -22592,7 +22592,7 @@ Remove all frontend dependence on `localStorage` for `access_token` and `userId`
 **Parent:** AUTH-APP-01
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** ACTIVE — AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B PLANNED
+**Status:** ACTIVE — AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C PLANNED
 **Source:** AUTH-APP-01A spec (Sections 7, 12); AUTH-APP-01C split confirmed at registration
 **Depends on:** AUTH-APP-01C1 (COMPLETE) + Resend as chosen email provider
 
@@ -22604,8 +22604,8 @@ Add email verification and password reset flows that use the `verification_token
 
 **Child slices (AUTH-APP-01C2 split — surface too large for one slice):**
 1. AUTH-APP-01C2A — Email Verification / Password Reset Spec + Provider Abstraction Plan (COMPLETE and LOCKED)
-2. AUTH-APP-01C2B — Email Provider Foundation with Resend Adapter (PLANNED — current stage)
-3. AUTH-APP-01C2C — Email Verification Backend Flow (PLANNED)
+2. AUTH-APP-01C2B — Email Provider Foundation with Resend Adapter (COMPLETE and LOCKED)
+3. AUTH-APP-01C2C — Email Verification Backend Flow (PLANNED — current stage)
 4. AUTH-APP-01C2D — Password Reset Backend Flow (PLANNED)
 5. AUTH-APP-01C2E — Frontend Auth Email UX (PLANNED)
 6. AUTH-APP-01C2F — Email Auth Validation + Consolidation (PLANNED)
@@ -22714,6 +22714,66 @@ Define the complete design for the email verification and password reset flows, 
 - [x] Test/validation plan documented
 
 **Reference:** See TASKS.md -> AUTH-APP-01C2A. See `docs/AUTH-APP-01C2A-CHECKPOINT.md`. See `docs/AUTH-APP-01C2-EMAIL-AUTH-SPEC.md`.
+
+---
+
+### AUTH-APP-01C2B: Email Provider Foundation with Resend Adapter
+
+**Task ID:** AUTH-APP-01C2B
+**Family:** AUTH
+**Parent:** AUTH-APP-01C2 (ACTIVE)
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** BACKEND — email provider abstraction; Resend adapter; module wiring; no auth routes, no DB migration
+**Registered:** 2026-05-08
+**Completed:** 2026-05-08
+**Depends on:** AUTH-APP-01C2A (COMPLETE and LOCKED)
+**Checkpoint:** `docs/AUTH-APP-01C2B-CHECKPOINT.md`
+**Spec:** `docs/AUTH-APP-01C2-EMAIL-AUTH-SPEC.md`
+
+**Objective:**
+Install `resend` dependency; create `EmailProvider` abstraction, `StubEmailProvider`, `ResendEmailProvider`, and `EmailModule` factory; wire `AuthModule` and `AuthService`; document all required email env vars in `.env.example`. No auth business logic, DB migrations, routes, or frontend changes in this slice.
+
+**Files changed:**
+- `services/api-gateway/package.json` — `resend` added to dependencies
+- `services/api-gateway/.env.example` — email env var block added
+- `services/api-gateway/src/email/email-provider.interface.ts` — **created** — `EmailProvider` interface + `EMAIL_PROVIDER` symbol
+- `services/api-gateway/src/email/stub-email.provider.ts` — **created** — `StubEmailProvider` (no-op for local/test)
+- `services/api-gateway/src/email/resend-email.provider.ts` — **created** — `ResendEmailProvider` v1 Resend adapter
+- `services/api-gateway/src/email/email.module.ts` — **created** — `EmailModule` with factory provider
+- `services/api-gateway/src/email/__tests__/email.module.spec.ts` — **created** — factory/env unit tests
+- `services/api-gateway/src/email/__tests__/resend-email.provider.spec.ts` — **created** — SDK mock unit tests
+- `services/api-gateway/src/auth/auth.module.ts` — `EmailModule` added to imports
+- `services/api-gateway/src/auth/auth.service.ts` — `@Inject(EMAIL_PROVIDER) private readonly emailProvider: EmailProvider` added to constructor
+- `services/api-gateway/src/auth/auth.service.spec.ts` — minimal `EMAIL_PROVIDER` DI mock added
+
+**Production source files changed:** `auth.module.ts`, `auth.service.ts` (wiring only; no auth business logic changed).
+
+**Key implementation details:**
+1. `EmailProvider` interface: `sendEmail({ to, subject, html, text? }): Promise<void>`
+2. `EMAIL_PROVIDER = Symbol('EMAIL_PROVIDER')` — NestJS DI token
+3. `StubEmailProvider` — intentional no-op; no network calls; no logging of body/secrets
+4. `ResendEmailProvider` — constructor validates `RESEND_API_KEY` + `AUTH_EMAIL_FROM`; uses `replyTo` (camelCase); throws on SDK error
+5. `EmailModule` factory — validates `APP_BASE_URL` for all modes; selects stub/resend via `EMAIL_PROVIDER` env var; throws on unknown provider
+6. `AuthModule` imports `EmailModule`; `AuthService` injects `EMAIL_PROVIDER` (no usage yet — C2C wires actual calls)
+7. Resend SDK fully mocked in tests — no real network calls
+8. `services/api-gateway/package-lock.json` generated locally; git-ignored in this repo (monorepo root lockfile convention)
+
+**Acceptance checks:**
+- [x] `resend` installed in `services/api-gateway`
+- [x] `EmailProvider` interface and `EMAIL_PROVIDER` injection token defined
+- [x] `StubEmailProvider` — no-op; no network; safe for all tests
+- [x] `ResendEmailProvider` — validates `RESEND_API_KEY` + `AUTH_EMAIL_FROM`; uses `replyTo` camelCase; throws on SDK error
+- [x] `EmailModule` factory — validates `APP_BASE_URL`; selects stub/resend; throws on unknown provider
+- [x] `AuthModule` imports `EmailModule`
+- [x] `AuthService` injects `EMAIL_PROVIDER`; no email-sending methods yet
+- [x] `.env.example` updated with all email vars and safety comments
+- [x] `npx tsc --noEmit` PASS
+- [x] Email module unit tests: 2 suites, 14 tests PASS
+- [x] Auth tests: 2 suites, 20 tests PASS (after minimal DI mock fix)
+
+**Reference:** See TASKS.md -> AUTH-APP-01C2B. See `docs/AUTH-APP-01C2B-CHECKPOINT.md`. See `docs/AUTH-APP-01C2-EMAIL-AUTH-SPEC.md`.
 
 ---
 
@@ -23898,10 +23958,10 @@ Run the secrets grep audit, reconfirm targeted automated validation from H2/H3, 
 - Z lightweight reconfirmation (`npx tsc --noEmit` api-gateway): PASS
 
 **AUTH-APP-01 parent status declared:**
-VALIDATION COMPLETE — AUTH-APP-01C2 ACTIVE (AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B PLANNED); manual smoke deferred; carry-forwards pending
+VALIDATION COMPLETE — AUTH-APP-01C2 ACTIVE (AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C PLANNED); manual smoke deferred; carry-forwards pending
 
 **Carry-forwards recorded:**
-- AUTH-APP-01C2 ACTIVE — AUTH-APP-01C2A COMPLETE and LOCKED; AUTH-APP-01C2B PLANNED (current stage)
+- AUTH-APP-01C2 ACTIVE — AUTH-APP-01C2A COMPLETE and LOCKED; AUTH-APP-01C2B COMPLETE and LOCKED; AUTH-APP-01C2C PLANNED (current stage)
 - 40 manual smoke items (22 F-family, 12 G-family, 6 H-specific) — deferred to user live environment
 - Preview proxy `/api/preview/*` — fully open; MEDIUM risk; product decision + dedicated investigation slice required
 - api-gateway lint baseline — 353 pre-existing errors; separate cleanup slice
@@ -23912,7 +23972,7 @@ VALIDATION COMPLETE — AUTH-APP-01C2 ACTIVE (AUTH-APP-01C2A COMPLETE; AUTH-APP-
 - `login.testCredentials` and `register.name` dead i18n keys — future cleanup
 
 **Next recommended work (independent paths):**
-1. Implement AUTH-APP-01C2B — Email Provider Foundation with Resend Adapter
+1. Implement AUTH-APP-01C2C — Email Verification Backend Flow
 2. Run 40-item manual smoke checklist in live environment
 3. Rotate old Anthropic/XAI provider keys before any push/deploy
 4. Approve preview proxy investigation slice
