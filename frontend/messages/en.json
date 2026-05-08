@@ -28,7 +28,10 @@
     "continueWithGoogle": "Continue with Google",
     "continueWithApple": "Continue with Apple",
     "needAccount": "Need an account?",
-    "startHere": "Start here"
+    "startHere": "Start here",
+    "forgotPassword": "Forgot your password?",
+    "resetIt": "Reset it",
+    "emailVerified": "Email verified. You can now sign in."
   },
   "register": {
     "title": "Create account",
@@ -38,12 +41,35 @@
     "registerButton": "Create account",
     "registering": "Creating account...",
     "registerFailed": "Registration failed",
-    "successMessage": "Account created successfully. You can now sign in.",
+    "successMessage": "Account created. We've sent a verification email — please check your inbox.",
     "orContinueWith": "Or continue with",
     "continueWithGoogle": "Continue with Google",
     "continueWithApple": "Continue with Apple",
     "alreadyHaveAccount": "Already have an account?",
-    "loginHere": "Login here"
+    "loginHere": "Login here",
+    "resendVerification": "Resend verification email",
+    "verificationResent": "Verification email resent."
+  },
+  "forgotPassword": {
+    "title": "Reset your password",
+    "email": "Email",
+    "submitButton": "Send reset link",
+    "sending": "Sending...",
+    "sentMessage": "If that email is registered, a reset link has been sent. Please check your inbox.",
+    "backToLogin": "Back to sign in"
+  },
+  "resetPassword": {
+    "title": "Choose a new password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
+    "submitButton": "Reset password",
+    "resetting": "Resetting...",
+    "successMessage": "Password reset successfully. Please sign in.",
+    "signIn": "Sign in",
+    "passwordMismatch": "Passwords do not match.",
+    "passwordTooShort": "Password must be at least 6 characters.",
+    "requestNew": "Request a new reset link",
+    "resetFailed": "Reset failed. Please try again."
   },
   "landing": {
     "hero": "Build anything",
@@ -119,7 +145,9 @@
     "forbidden": "You do not have access to this action.",
     "notFound": "The requested resource was not found.",
     "oauthFailed": "Sign-in failed. Please try again.",
-    "accountConflict": "This email is linked to a different sign-in method. Please sign in with your original method."
+    "accountConflict": "This email is linked to a different sign-in method. Please sign in with your original method.",
+    "tokenExpired": "This link is invalid or has expired.",
+    "verificationExpired": "This verification link has expired. Request a new one from the register page."
   },
   "sandbox": {
     "files": "Files",

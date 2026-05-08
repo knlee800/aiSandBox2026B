@@ -22192,7 +22192,7 @@ Transform the public landing page into the "Build anything" entry experience wit
 
 ## AUTH ??aiSandBox First-Party Authentication
 
-**Family status:** VALIDATION COMPLETE (AUTH-APP-01C2 ACTIVE — AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E PLANNED; manual smoke deferred) — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 COMPLETE — AUTH-APP-01H VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01H1 COMPLETE — AUTH-APP-01H2 COMPLETE — AUTH-APP-01H3 COMPLETE — AUTH-APP-01H4 COMPLETE — AUTH-APP-01Z COMPLETE
+**Family status:** VALIDATION COMPLETE (AUTH-APP-01C2 ACTIVE — AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F PLANNED; manual smoke deferred) — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 COMPLETE — AUTH-APP-01H VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01H1 COMPLETE — AUTH-APP-01H2 COMPLETE — AUTH-APP-01H3 COMPLETE — AUTH-APP-01H4 COMPLETE — AUTH-APP-01Z COMPLETE
 **Important distinction:** AUTH-APP-01 is for the aiSandBox platform itself. AUTH-MODULE-01 (reusable generated app-auth for user-created apps) is a separate, later family.
 **Decision spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -22205,7 +22205,7 @@ Transform the public landing page into the "Build anything" entry experience wit
 **Family:** AUTH
 **Family status:** VALIDATION COMPLETE (AUTH-APP-01C2 ACTIVE — AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D PLANNED; manual smoke deferred)
 **Priority:** High
-**Status:** VALIDATION COMPLETE — AUTH-APP-01C2 ACTIVE (AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E PLANNED); manual smoke deferred; carry-forwards pending
+**Status:** VALIDATION COMPLETE — AUTH-APP-01C2 ACTIVE (AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F PLANNED); manual smoke deferred; carry-forwards pending
 **Checkpoint:** `docs/AUTH-APP-01-CHECKPOINT.md`
 **Source:** UX-IA-00 master plan (May 2026) ??production auth must be in place before workspace/project-mode redesign reaches real users
 **Depends on:** UX-IA-03 (COMPLETE and LOCKED)
@@ -22218,7 +22218,7 @@ Add production-ready authentication for the aiSandBox hosted app ??email, Google
 2. AUTH-APP-01B ??Database / Schema Migrations (COMPLETE and LOCKED)
 3. AUTH-APP-01C1A ??Backend Cookie Session Foundation (COMPLETE and LOCKED)
 4. AUTH-APP-01C1B ??Frontend localStorage/Bearer Migration (COMPLETE and LOCKED)
-5. AUTH-APP-01C2 — Email Verification / Password Reset / Rate Limiting (ACTIVE — AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E PLANNED)
+5. AUTH-APP-01C2 — Email Verification / Password Reset / Rate Limiting (ACTIVE — AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F PLANNED)
 6. AUTH-APP-01D — Google OAuth (COMPLETE and LOCKED)
 7. AUTH-APP-01E — Apple OAuth (COMPLETE and LOCKED)
 8. AUTH-APP-01F — Route / API Protection (VALIDATION COMPLETE — carry-forwards/manual smoke deferred — all child slices COMPLETE and LOCKED):
@@ -22592,7 +22592,7 @@ Remove all frontend dependence on `localStorage` for `access_token` and `userId`
 **Parent:** AUTH-APP-01
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** ACTIVE — AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E PLANNED
+**Status:** ACTIVE — AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE and LOCKED; AUTH-APP-01C2F PLANNED
 **Source:** AUTH-APP-01A spec (Sections 7, 12); AUTH-APP-01C split confirmed at registration
 **Depends on:** AUTH-APP-01C1 (COMPLETE) + Resend as chosen email provider
 
@@ -22607,8 +22607,8 @@ Add email verification and password reset flows that use the `verification_token
 2. AUTH-APP-01C2B — Email Provider Foundation with Resend Adapter (COMPLETE and LOCKED)
 3. AUTH-APP-01C2C — Email Verification Backend Flow (COMPLETE and LOCKED — checkpoint: `docs/AUTH-APP-01C2C-CHECKPOINT.md`)
 4. AUTH-APP-01C2D — Password Reset Backend Flow (COMPLETE and LOCKED — checkpoint: `docs/AUTH-APP-01C2D-CHECKPOINT.md`)
-5. AUTH-APP-01C2E — Frontend Auth Email UX (PLANNED — current stage)
-6. AUTH-APP-01C2F — Email Auth Validation + Consolidation (PLANNED)
+5. AUTH-APP-01C2E — Frontend Auth Email UX (COMPLETE and LOCKED — checkpoint: `docs/AUTH-APP-01C2E-CHECKPOINT.md`)
+6. AUTH-APP-01C2F — Email Auth Validation + Consolidation (PLANNED — current stage)
 
 **Bounded scope:**
 
@@ -23958,10 +23958,10 @@ Run the secrets grep audit, reconfirm targeted automated validation from H2/H3, 
 - Z lightweight reconfirmation (`npx tsc --noEmit` api-gateway): PASS
 
 **AUTH-APP-01 parent status declared:**
-VALIDATION COMPLETE — AUTH-APP-01C2 ACTIVE (AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E PLANNED); manual smoke deferred; carry-forwards pending
+VALIDATION COMPLETE — AUTH-APP-01C2 ACTIVE (AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F PLANNED); manual smoke deferred; carry-forwards pending
 
 **Carry-forwards recorded:**
-- AUTH-APP-01C2 ACTIVE — AUTH-APP-01C2A COMPLETE and LOCKED; AUTH-APP-01C2B COMPLETE and LOCKED; AUTH-APP-01C2C COMPLETE and LOCKED; AUTH-APP-01C2D COMPLETE and LOCKED; AUTH-APP-01C2E PLANNED (current stage)
+- AUTH-APP-01C2 ACTIVE — AUTH-APP-01C2A COMPLETE and LOCKED; AUTH-APP-01C2B COMPLETE and LOCKED; AUTH-APP-01C2C COMPLETE and LOCKED; AUTH-APP-01C2D COMPLETE and LOCKED; AUTH-APP-01C2E COMPLETE and LOCKED; AUTH-APP-01C2F PLANNED (current stage)
 - Password reset request: 10/hr/IP secondary limit not independently enforced in C2D v1; carry-forward for named throttler or Redis-backed limiter
 - 40 manual smoke items (22 F-family, 12 G-family, 6 H-specific) — deferred to user live environment
 - Preview proxy `/api/preview/*` — fully open; MEDIUM risk; product decision + dedicated investigation slice required
@@ -23973,7 +23973,7 @@ VALIDATION COMPLETE — AUTH-APP-01C2 ACTIVE (AUTH-APP-01C2A COMPLETE; AUTH-APP-
 - `login.testCredentials` and `register.name` dead i18n keys — future cleanup
 
 **Next recommended work (independent paths):**
-1. Implement AUTH-APP-01C2E — Frontend Auth Email UX
+1. Implement AUTH-APP-01C2F — Email Auth Validation + Consolidation
 2. Run 40-item manual smoke checklist in live environment
 3. Rotate old Anthropic/XAI provider keys before any push/deploy
 4. Approve preview proxy investigation slice

@@ -7,18 +7,35 @@ import axios from 'axios';
 import Link from 'next/link';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 
-function OAuthErrorBanner() {
+function AuthStatusBanner() {
   const searchParams = useSearchParams();
+  const tLogin = useTranslations('login');
   const tErrors = useTranslations('errors');
+  const verified = searchParams.get('verified');
   const error = searchParams.get('error');
+
+  if (verified === '1') {
+    return (
+      <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-md text-sm">
+        {tLogin('emailVerified')}
+      </div>
+    );
+  }
 
   if (!error) {
     return null;
   }
 
+  const message =
+    error === 'token_expired'
+      ? tErrors('verificationExpired')
+      : error === 'account_conflict'
+        ? tErrors('accountConflict')
+        : tErrors('oauthFailed');
+
   return (
     <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">
-      {error === 'account_conflict' ? tErrors('accountConflict') : tErrors('oauthFailed')}
+      {message}
     </div>
   );
 }
@@ -79,7 +96,7 @@ export default function LoginPage() {
             />
           </div>
 
-          <div className="mb-6">
+          <div className="mb-3">
             <label className="mb-2 block text-sm font-medium text-text-primary" htmlFor="password">
               {t('password')}
             </label>
@@ -93,8 +110,14 @@ export default function LoginPage() {
             />
           </div>
 
+          <div className="mb-6 text-right">
+            <Link href={`/${locale}/forgot-password`} className="text-sm text-text-secondary hover:underline">
+              {t('forgotPassword')}
+            </Link>
+          </div>
+
           <Suspense fallback={null}>
-            <OAuthErrorBanner />
+            <AuthStatusBanner />
           </Suspense>
 
           {error && (
@@ -106,7 +129,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-md bg-brand py-2 text-white transition-colors hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full rounded-md bg-brand py-2 text-white transition-colors hover:bg-brand-hover active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? t('loggingIn') : t('loginButton')}
           </button>

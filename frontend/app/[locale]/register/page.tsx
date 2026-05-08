@@ -17,11 +17,15 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [registeredEmail, setRegisteredEmail] = useState('');
+  const [resendStatus, setResendStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccessMessage('');
+    setRegisteredEmail('');
+    setResendStatus('idle');
     setLoading(true);
 
     try {
@@ -38,6 +42,7 @@ export default function RegisterPage() {
         },
       );
 
+      setRegisteredEmail(email);
       setSuccessMessage(t('successMessage'));
       setEmail('');
       setPassword('');
@@ -45,6 +50,31 @@ export default function RegisterPage() {
       setError(err.response?.data?.message || t('registerFailed'));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!registeredEmail || resendStatus === 'sending' || resendStatus === 'sent') {
+      return;
+    }
+
+    setError('');
+    setResendStatus('sending');
+
+    try {
+      await axios.post(
+        '/api/auth/email/verify/resend',
+        { email: registeredEmail },
+        {
+          headers: {
+            'Accept-Language': locale,
+          },
+        },
+      );
+      setResendStatus('sent');
+    } catch (err: any) {
+      setResendStatus('error');
+      setError(err.response?.data?.message || t('registerFailed'));
     }
   };
 
@@ -89,11 +119,27 @@ export default function RegisterPage() {
           {successMessage ? (
             <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-md text-sm">{successMessage}</div>
           ) : null}
+          {successMessage && registeredEmail ? (
+            resendStatus === 'sent' ? (
+              <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-md text-sm">
+                {t('verificationResent')}
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={handleResendVerification}
+                disabled={resendStatus === 'sending'}
+                className="mb-4 text-sm font-medium text-brand hover:text-brand-hover hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {resendStatus === 'sending' ? `${t('resendVerification')}...` : t('resendVerification')}
+              </button>
+            )
+          ) : null}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-md bg-brand py-2 text-white transition-colors hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full rounded-md bg-brand py-2 text-white transition-colors hover:bg-brand-hover active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? t('registering') : t('registerButton')}
           </button>

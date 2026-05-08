@@ -28,7 +28,10 @@
     "continueWithGoogle": "使用 Google 繼續",
     "continueWithApple": "以 Apple 繼續",
     "needAccount": "還沒有帳號？",
-    "startHere": "從這裡開始"
+    "startHere": "從這裡開始",
+    "forgotPassword": "忘記密碼？",
+    "resetIt": "重設",
+    "emailVerified": "電子郵件已驗證。您現在可以登入。"
   },
   "register": {
     "title": "建立帳號",
@@ -38,12 +41,35 @@
     "registerButton": "建立帳號",
     "registering": "建立帳號中...",
     "registerFailed": "註冊失敗",
-    "successMessage": "帳號建立成功。您現在可以登入。",
+    "successMessage": "帳號已建立。我們已發送驗證郵件，請查看您的收件匣。",
     "orContinueWith": "或繼續使用",
     "continueWithGoogle": "使用 Google 繼續",
     "continueWithApple": "以 Apple 繼續",
     "alreadyHaveAccount": "已經有帳號？",
-    "loginHere": "前往登入"
+    "loginHere": "前往登入",
+    "resendVerification": "重新發送驗證郵件",
+    "verificationResent": "驗證郵件已重新發送。"
+  },
+  "forgotPassword": {
+    "title": "重設密碼",
+    "email": "電子郵件",
+    "submitButton": "發送重設連結",
+    "sending": "發送中...",
+    "sentMessage": "若該電子郵件已註冊，重設連結已發送。請查看您的收件匣。",
+    "backToLogin": "返回登入"
+  },
+  "resetPassword": {
+    "title": "設定新密碼",
+    "newPassword": "新密碼",
+    "confirmPassword": "確認密碼",
+    "submitButton": "重設密碼",
+    "resetting": "重設中...",
+    "successMessage": "密碼已成功重設。請登入。",
+    "signIn": "登入",
+    "passwordMismatch": "密碼不一致。",
+    "passwordTooShort": "密碼至少須為 6 個字元。",
+    "requestNew": "申請新的重設連結",
+    "resetFailed": "重設失敗，請再試一次。"
   },
   "landing": {
     "hero": "打造任何內容",
@@ -119,7 +145,9 @@
     "forbidden": "你沒有此操作權限。",
     "notFound": "找不到請求的資源。",
     "oauthFailed": "登入失敗，請再試一次。",
-    "accountConflict": "此電子郵件已綁定其他登入方式。請使用原本的登入方式。"
+    "accountConflict": "此電子郵件已綁定其他登入方式。請使用原本的登入方式。",
+    "tokenExpired": "此連結無效或已過期。",
+    "verificationExpired": "此驗證連結已過期。請從註冊頁面申請新的連結。"
   },
   "sandbox": {
     "files": "檔案",
