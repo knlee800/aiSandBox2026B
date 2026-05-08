@@ -12216,9 +12216,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## AUTH — aiSandBox First-Party Authentication
 
-**Family status:** VALIDATION COMPLETE (AUTH-APP-01C2 ACTIVE — AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F PLANNED; manual smoke deferred) — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 COMPLETE — AUTH-APP-01H VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01H1 COMPLETE — AUTH-APP-01H2 COMPLETE — AUTH-APP-01H3 COMPLETE — AUTH-APP-01H4 COMPLETE — AUTH-APP-01Z COMPLETE
+**Family status:** VALIDATION COMPLETE (AUTH-APP-01C2 VALIDATION COMPLETE — AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F COMPLETE; manual smoke deferred) — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 COMPLETE — AUTH-APP-01H VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01H1 COMPLETE — AUTH-APP-01H2 COMPLETE — AUTH-APP-01H3 COMPLETE — AUTH-APP-01H4 COMPLETE — AUTH-APP-01Z COMPLETE
 
-**Current stage:** AUTH-APP-01C2F — Email Auth Validation + Consolidation
+**Current stage:** AUTH-APP-01C2F COMPLETE and LOCKED — next: live smoke checklist or preview proxy investigation slice
 
 **Master spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Reference master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -12229,7 +12229,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 **Parent roadmap: AUTH-APP-01 — aiSandBox First-Party User Authentication**
 
-**Parent status: VALIDATION COMPLETE — AUTH-APP-01C2 ACTIVE (AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F PLANNED); manual smoke deferred; carry-forwards pending**
+**Parent status: VALIDATION COMPLETE — AUTH-APP-01C2 VALIDATION COMPLETE (AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F COMPLETE); manual smoke deferred; carry-forwards pending**
 **Parent checkpoint:** `docs/AUTH-APP-01-CHECKPOINT.md`
 
 Goal: add production-ready authentication (email, Google, Apple) for the aiSandBox hosted app so real users can sign in securely before using platform features.
@@ -12397,7 +12397,8 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
 
 #### AUTH-APP-01C2: Email Verification / Password Reset / Rate Limiting
 
-**Status:** ACTIVE — AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE and LOCKED; AUTH-APP-01C2F PLANNED
+**Status:** VALIDATION COMPLETE — manual smoke deferred — AUTH-APP-01C2A COMPLETE and LOCKED; AUTH-APP-01C2B COMPLETE and LOCKED; AUTH-APP-01C2C COMPLETE and LOCKED; AUTH-APP-01C2D COMPLETE and LOCKED; AUTH-APP-01C2E COMPLETE and LOCKED; AUTH-APP-01C2F COMPLETE and LOCKED
+**Checkpoint:** `docs/AUTH-APP-01C2-CHECKPOINT.md`
 
 **Provider decision:** Resend selected as v1 transactional email provider (decided 2026-05-08). AUTH-APP-01C2 is unblocked. EmailProvider abstraction required — auth service must not call Resend directly.
 
@@ -12410,7 +12411,7 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
 3. AUTH-APP-01C2C — Email Verification Backend Flow (COMPLETE and LOCKED — checkpoint: `docs/AUTH-APP-01C2C-CHECKPOINT.md`)
 4. AUTH-APP-01C2D — Password Reset Backend Flow (COMPLETE and LOCKED — checkpoint: `docs/AUTH-APP-01C2D-CHECKPOINT.md`)
 5. AUTH-APP-01C2E — Frontend Auth Email UX (COMPLETE and LOCKED — checkpoint: `docs/AUTH-APP-01C2E-CHECKPOINT.md`)
-6. AUTH-APP-01C2F — Email Auth Validation + Consolidation (PLANNED — current stage)
+6. AUTH-APP-01C2F — Email Auth Validation + Consolidation (COMPLETE and LOCKED — checkpoint: `docs/AUTH-APP-01C2F-CHECKPOINT.md`; family checkpoint: `docs/AUTH-APP-01C2-CHECKPOINT.md`)
 
 **Bounded scope:**
 - Select and configure transactional email provider; document required env vars
@@ -12441,7 +12442,7 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
 
 **Status:** COMPLETE and LOCKED
 **Nature:** SPEC AND DOCUMENTATION ONLY — no production source files changed
-**Parent:** AUTH-APP-01C2 (ACTIVE)
+**Parent:** AUTH-APP-01C2 (VALIDATION COMPLETE — manual smoke deferred)
 **Family:** AUTH
 **Depends on:** AUTH-APP-01C2 unblocked (Resend chosen — DONE)
 **Registered:** 2026-05-08
@@ -12484,7 +12485,7 @@ Confirmed child slices (AUTH-APP-01C1 further split — stage-start found backen
 
 **Status:** COMPLETE and LOCKED
 **Nature:** BACKEND — email provider abstraction; Resend adapter; module wiring; no auth routes, no DB migration
-**Parent:** AUTH-APP-01C2 (ACTIVE)
+**Parent:** AUTH-APP-01C2 (VALIDATION COMPLETE — manual smoke deferred)
 **Family:** AUTH
 **Depends on:** AUTH-APP-01C2A (COMPLETE and LOCKED)
 **Registered:** 2026-05-08
@@ -13017,7 +13018,7 @@ Deliver all remaining AUTH-APP-01 security hardening and validation work before 
 
 **Status:** COMPLETE and LOCKED
 **Nature:** GOVERNANCE AND DOCUMENTATION ONLY — no production source files changed
-**Parent:** AUTH-APP-01 (VALIDATION COMPLETE — AUTH-APP-01C2 BLOCKED; manual smoke deferred)
+**Parent:** AUTH-APP-01 (VALIDATION COMPLETE — AUTH-APP-01C2 VALIDATION COMPLETE; manual smoke deferred)
 **Family:** AUTH
 **Depends on:** AUTH-APP-01H4 (COMPLETE and LOCKED)
 **Completed:** 2026-05-08
@@ -13030,10 +13031,11 @@ Deliver all remaining AUTH-APP-01 security hardening and validation work before 
 - `docs/AUTH-APP-01-CHECKPOINT.md` — AUTH-APP-01 family summary
 - `TASKS.md` and `TASKS_BACKLOG_FULL.md` updated: AUTH-APP-01Z COMPLETE and LOCKED; AUTH-APP-01 parent VALIDATION COMPLETE; stale child list entries corrected
 
-**AUTH-APP-01 parent status:** VALIDATION COMPLETE — AUTH-APP-01C2 ACTIVE (AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F PLANNED); manual smoke deferred; carry-forwards pending
+**AUTH-APP-01 parent status:** VALIDATION COMPLETE — AUTH-APP-01C2 VALIDATION COMPLETE (AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F COMPLETE); manual smoke deferred; carry-forwards pending
 
 **Carry-forwards recorded:**
-- AUTH-APP-01C2 ACTIVE — AUTH-APP-01C2A COMPLETE and LOCKED; AUTH-APP-01C2B COMPLETE and LOCKED; AUTH-APP-01C2C COMPLETE and LOCKED; AUTH-APP-01C2D COMPLETE and LOCKED; AUTH-APP-01C2E COMPLETE and LOCKED; AUTH-APP-01C2F PLANNED (current stage)
+- AUTH-APP-01C2 VALIDATION COMPLETE — manual smoke deferred — AUTH-APP-01C2A COMPLETE and LOCKED; AUTH-APP-01C2B COMPLETE and LOCKED; AUTH-APP-01C2C COMPLETE and LOCKED; AUTH-APP-01C2D COMPLETE and LOCKED; AUTH-APP-01C2E COMPLETE and LOCKED; AUTH-APP-01C2F COMPLETE and LOCKED
+- 26-item C2 manual smoke checklist deferred to live environment (see `docs/AUTH-APP-01C2F-CHECKPOINT.md`)
 - 40 manual smoke items deferred to user live environment
 - Preview proxy `/api/preview/*` — MEDIUM risk; dedicated investigation slice required
 - api-gateway lint baseline — 353 pre-existing errors; separate cleanup slice
@@ -13041,7 +13043,7 @@ Deliver all remaining AUTH-APP-01 security hardening and validation work before 
 - Password reset request: 10/hr/IP secondary limit not independently enforced in C2D v1; carry-forward for named throttler or Redis-backed limiter
 
 **Next recommended work (independent paths):**
-1. Implement AUTH-APP-01C2F — Email Auth Validation + Consolidation
+1. Run 26-item C2 manual smoke checklist in live environment (see `docs/AUTH-APP-01C2F-CHECKPOINT.md`)
 2. Run 40-item manual smoke checklist in live environment
 3. Rotate old Anthropic/XAI keys before any push/deploy
 4. Approve preview proxy investigation slice
