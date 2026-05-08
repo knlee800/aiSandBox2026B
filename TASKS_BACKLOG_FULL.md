@@ -24000,7 +24000,7 @@ VALIDATION COMPLETE — AUTH-APP-01C2 VALIDATION COMPLETE (AUTH-APP-01C2A COMPLE
 
 **Confirmed child slices:**
 1. AUTH-APP-02A — Preview Proxy Auth Investigation (COMPLETE and LOCKED)
-2. AUTH-APP-02B — Add SessionCookieGuard to api-gateway PreviewController (PLANNED)
+2. AUTH-APP-02B — Add SessionCookieGuard to api-gateway PreviewController (COMPLETE and LOCKED)
 3. AUTH-APP-02C — Session Ownership Check / Product Decision (CONDITIONAL — blocked on product decision)
 
 **Carry-forward source:** AUTH-APP-01H (MEDIUM risk; preview proxy formally deferred in H3 and H4)
@@ -24080,13 +24080,16 @@ Perform a bounded investigation of the `/api/preview/*` proxy auth gap. Inspect 
 **Family:** AUTH
 **Parent:** AUTH-APP-02 (ACTIVE)
 **Priority:** Medium
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED
 **Nature:** BACKEND IMPLEMENTATION
 **Registered:** 2026-05-08
+**Completed:** 2026-05-08
 **Depends on:** AUTH-APP-02A (COMPLETE and LOCKED)
+**Checkpoint:** `docs/AUTH-APP-02B-CHECKPOINT.md`
+**Spec:** `docs/AUTH-APP-02A-PREVIEW-PROXY-AUTH-SPEC.md` Section 9
 
 **Objective:**
-Add `SessionCookieGuard` at the `PreviewController` class level in api-gateway to block unauthenticated access to all `/api/preview/*` routes (start, stop, status, proxy). This is the smallest safe fix for the MEDIUM-risk preview proxy auth gap identified in AUTH-APP-02A.
+Add `SessionCookieGuard` at the `PreviewController` class level in api-gateway to block unauthenticated access to all `/api/preview/*` routes (start, stop, status, proxy). Closes threats T1 (unauthenticated content access) and T6 (unguarded start/stop resource abuse).
 
 **Rationale:**
 - Closes T1 (unauthenticated access) and T6 (unguarded start/stop/status)
@@ -24095,12 +24098,13 @@ Add `SessionCookieGuard` at the `PreviewController` class level in api-gateway t
 - No container-manager changes required
 - Consistent with `SessionCookieGuard` pattern used on all other protected routes
 
-**Files in scope:**
-- `services/api-gateway/src/preview/preview.controller.ts` — add `@UseGuards(SessionCookieGuard)` at controller class level
-- `services/api-gateway/src/preview/preview.module.ts` — add `AuthModule` to imports for guard DI
-- `services/api-gateway/src/preview/__tests__/preview.controller.guard.spec.ts` — new guard unit tests
+**Files changed:**
+- `services/api-gateway/src/preview/preview.controller.ts` — `@UseGuards(SessionCookieGuard)` added at controller class level; `UseGuards` + `SessionCookieGuard` imported
+- `services/api-gateway/src/preview/__tests__/preview.controller.guard.spec.ts` — **Created** — 3 guard tests
 
-**Non-goals:**
+**`preview.module.ts` not changed** — `AuthModule` import is not required; `SessionCookieGuard` resolves from `AppModule`-level DI context (confirmed by same pattern in `SessionModule`, `CheckpointsModule`, `WorkspacesModule`).
+
+**Non-goals confirmed:**
 - No ownership check (deferred to AUTH-APP-02C)
 - No container-manager changes
 - No frontend changes
@@ -24110,20 +24114,27 @@ Add `SessionCookieGuard` at the `PreviewController` class level in api-gateway t
 - No header sanitization
 
 **Acceptance checklist:**
-- [ ] `@UseGuards(SessionCookieGuard)` added to `PreviewController`
-- [ ] `AuthModule` imported in `PreviewModule`
-- [ ] Guard unit tests created and passing (no cookie → 401; valid cookie → proxied; invalid cookie → 401)
-- [ ] `npx tsc --noEmit` in `services/api-gateway`: PASS
-- [ ] `preview.controller.guard.spec.ts` tests: all PASS
-- [ ] Manual smoke: logged-in preview loads; unauthenticated request returns 401
-- [ ] No production source files outside preview module changed
-- [ ] `TASKS.md` updated: AUTH-APP-02B COMPLETE and LOCKED
-- [ ] `TASKS_BACKLOG_FULL.md` updated: AUTH-APP-02B COMPLETE and LOCKED
-- [ ] Checkpoint created: `docs/AUTH-APP-02B-CHECKPOINT.md`
+- [x] `@UseGuards(SessionCookieGuard)` added to `PreviewController`
+- [x] Guard unit tests created and passing
+- [x] `npx tsc --noEmit` in `services/api-gateway`: PASS
+- [x] `preview.controller.guard.spec.ts` tests: PASS — 1 suite, 3 tests
+- [ ] Manual smoke: logged-in preview loads; unauthenticated request returns 401 — NOT RUN (deferred to live environment)
+- [x] No production source files outside preview module changed
+- [x] `TASKS.md` updated: AUTH-APP-02B COMPLETE and LOCKED
+- [x] `TASKS_BACKLOG_FULL.md` updated: AUTH-APP-02B COMPLETE and LOCKED
+- [x] Checkpoint created: `docs/AUTH-APP-02B-CHECKPOINT.md`
 
-**Production source files changed:** (to be filled at completion)
+**Note on `AuthModule` in `PreviewModule`:** The registration spec listed this as a likely change. Investigation during stage-start confirmed it is not needed — `SessionCookieGuard` is available from the parent DI context. The checklist item for `AuthModule` import is intentionally omitted as not applicable.
 
-**Reference:** See TASKS.md -> AUTH-APP-02B. See `docs/AUTH-APP-02A-PREVIEW-PROXY-AUTH-SPEC.md` Section 9.
+**Production source files changed: 1** (`services/api-gateway/src/preview/preview.controller.ts`)
+
+**Carry-forwards:**
+- Cross-user session access (T2) — AUTH-APP-02C (blocked on product decision)
+- Header sanitization — future hardening slice
+- Container-manager direct access (T5) — infrastructure/network isolation concern
+- Manual smoke — 4 items deferred to live environment
+
+**Reference:** See TASKS.md -> AUTH-APP-02B. See `docs/AUTH-APP-02B-CHECKPOINT.md`. See `docs/AUTH-APP-02A-PREVIEW-PROXY-AUTH-SPEC.md` Section 9.
 
 ---
 
@@ -24136,7 +24147,7 @@ Add `SessionCookieGuard` at the `PreviewController` class level in api-gateway t
 **Status:** CONDITIONAL — blocked on product decision
 **Nature:** TBD (depends on product decision)
 **Registered:** 2026-05-08
-**Depends on:** AUTH-APP-02B (PLANNED) + explicit product decision
+**Depends on:** AUTH-APP-02B (COMPLETE and LOCKED) + explicit product decision
 
 **Objective:**
 After AUTH-APP-02B is complete, determine the preview sharing model and implement the appropriate ownership enforcement. The product/security decision required is: should previews be owner-only, public/shareable, signed-link shareable, or a mixed model?

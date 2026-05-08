@@ -1,7 +1,9 @@
-import { All, Controller, Req, Res } from '@nestjs/common';
+import { All, Controller, Req, Res, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 import axios from 'axios';
+import { SessionCookieGuard } from '../auth/session-cookie.guard';
 
+@UseGuards(SessionCookieGuard)
 @Controller('preview')
 export class PreviewController {
   private readonly containerManagerUrl = process.env.CONTAINER_MANAGER_URL || 'http://localhost:4001';
