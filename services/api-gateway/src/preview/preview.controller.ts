@@ -2,8 +2,31 @@ import { All, Controller, Req, Res, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 import axios from 'axios';
 import { SessionCookieGuard } from '../auth/session-cookie.guard';
+import { PreviewOwnershipGuard } from './preview-ownership.guard';
 
-@UseGuards(SessionCookieGuard)
+const PROXY_HEADER_DENYLIST = new Set([
+  'host',
+  'cookie',
+  'authorization',
+  'proxy-authorization',
+  'x-internal-service-key',
+  'x-csrf-token',
+  'x-forwarded-user',
+  'x-user-id',
+  'x-session-id',
+]);
+
+export function sanitizeProxyHeaders(
+  headers: Record<string, string | string[] | undefined>,
+): Record<string, string | string[] | undefined> {
+  return Object.fromEntries(
+    Object.entries(headers).filter(
+      ([key]) => !PROXY_HEADER_DENYLIST.has(key.toLowerCase()),
+    ),
+  );
+}
+
+@UseGuards(SessionCookieGuard, PreviewOwnershipGuard)
 @Controller('preview')
 export class PreviewController {
   private readonly containerManagerUrl = process.env.CONTAINER_MANAGER_URL || 'http://localhost:4001';
@@ -25,10 +48,7 @@ export class PreviewController {
         url,
         data: req.body,
         params: req.query,
-        headers: {
-          ...req.headers,
-          host: undefined, // Remove host header
-        },
+        headers: sanitizeProxyHeaders(req.headers),
         responseType: req.path.includes('/proxy') ? 'stream' : 'json',
         validateStatus: () => true, // Don't throw on any status
       });

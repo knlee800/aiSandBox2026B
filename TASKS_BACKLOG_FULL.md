@@ -23991,21 +23991,24 @@ VALIDATION COMPLETE — AUTH-APP-01C2 VALIDATION COMPLETE (AUTH-APP-01C2A COMPLE
 **Family:** AUTH
 **Parent:** AUTH (carry-forward from AUTH-APP-01H)
 **Priority:** Medium
-**Status:** ACTIVE
+**Status:** VALIDATION COMPLETE — manual smoke deferred
 **Nature:** INVESTIGATION PHASE PARENT
 **Registered:** 2026-05-08
+**Completed:** 2026-05-10
 **Depends on:** AUTH-APP-01Z (COMPLETE and LOCKED)
+**Checkpoint:** `docs/AUTH-APP-02-CHECKPOINT.md`
 
 **Objective:** Investigate and resolve the security gap in the `/api/preview/*` proxy path. The api-gateway PreviewController proxies all preview requests to container-manager without any auth guard. Container-manager has `ENABLE_PREVIEW_ACCESS_CONTROL=false` by default and its existing access control is JWT Bearer based (not SessionCookieGuard based). A product/security decision and threat model analysis are required before any implementation.
 
 **Confirmed child slices:**
 1. AUTH-APP-02A — Preview Proxy Auth Investigation (COMPLETE and LOCKED)
 2. AUTH-APP-02B — Add SessionCookieGuard to api-gateway PreviewController (COMPLETE and LOCKED)
-3. AUTH-APP-02C — Session Ownership Check / Product Decision (CONDITIONAL — blocked on product decision)
+3. AUTH-APP-02C — Session Ownership Check / Owner-only Preview Authorization (COMPLETE and LOCKED)
+4. AUTH-APP-02D — Preview Proxy Header Sanitization (COMPLETE and LOCKED)
 
 **Carry-forward source:** AUTH-APP-01H (MEDIUM risk; preview proxy formally deferred in H3 and H4)
 
-**Production source files changed: None (registration only).**
+**Production source files changed: None (registration only — changes in child slices).**
 
 ---
 
@@ -24138,35 +24141,188 @@ Add `SessionCookieGuard` at the `PreviewController` class level in api-gateway t
 
 ---
 
-### AUTH-APP-02C: Session Ownership Check / Product Decision
+### AUTH-APP-02C: Session Ownership Check / Owner-only Preview Authorization
 
 **Task ID:** AUTH-APP-02C
 **Family:** AUTH
-**Parent:** AUTH-APP-02 (ACTIVE)
+**Parent:** AUTH-APP-02 (VALIDATION COMPLETE — manual smoke deferred)
 **Priority:** Medium
-**Status:** CONDITIONAL — blocked on product decision
-**Nature:** TBD (depends on product decision)
+**Status:** COMPLETE and LOCKED
+**Nature:** BACKEND IMPLEMENTATION
 **Registered:** 2026-05-08
-**Depends on:** AUTH-APP-02B (COMPLETE and LOCKED) + explicit product decision
+**Completed:** 2026-05-10
+**Depends on:** AUTH-APP-02B (COMPLETE and LOCKED) + owner-only product decision
+**Checkpoint:** `docs/AUTH-APP-02C-CHECKPOINT.md`
+**Spec:** `docs/AUTH-APP-02A-PREVIEW-PROXY-AUTH-SPEC.md` Section 10
+
+**Product decision:** Owner-only previews. No public/share links. No signed URLs. Public/shareable preview is a deferred product feature.
+
+**ID namespace confirmed:** The `sessionId` in `/api/preview/:sessionId/*` is the api-gateway PostgreSQL `sessions.id` UUID. api-gateway generates this UUID and passes it to container-manager, which stores it as its own session primary key. No cross-service call needed for ownership check.
 
 **Objective:**
-After AUTH-APP-02B is complete, determine the preview sharing model and implement the appropriate ownership enforcement. The product/security decision required is: should previews be owner-only, public/shareable, signed-link shareable, or a mixed model?
+Add `PreviewOwnershipGuard` to api-gateway `PreviewController` to block cross-user preview access. After `SessionCookieGuard` verifies the user is authenticated, `PreviewOwnershipGuard` verifies the authenticated user owns the session being previewed. Closes threat T2 (cross-user session preview access) identified in AUTH-APP-02A.
 
-**Blocked on:**
-Product owner must explicitly decide the preview sharing model before AUTH-APP-02C can be scoped and implemented.
+**Files changed:**
+- `services/api-gateway/src/preview/preview-ownership.guard.ts` — **Created** — `PreviewOwnershipGuard`
+- `services/api-gateway/src/preview/preview.controller.ts` — guard chain updated to `@UseGuards(SessionCookieGuard, PreviewOwnershipGuard)`
+- `services/api-gateway/src/preview/preview.module.ts` — `SessionModule` imported; `PreviewOwnershipGuard` added to providers
+- `services/api-gateway/src/preview/__tests__/preview.ownership.guard.spec.ts` — **Created** — 9 ownership guard tests
 
-**If owner-only is chosen:**
-- Determine how api-gateway resolves session ownership (api-gateway DB access or new internal endpoint on container-manager: `GET /api/internal/sessions/:id/owner`)
-- Add ownership check after `SessionCookieGuard` in `PreviewController`: compare `req.user.userId` with session's `user_id`
-- Return 403 Forbidden if ownership does not match
+**Guard behavior:**
+- Requires `req.user.userId` (populated by `SessionCookieGuard`)
+- Extracts `sessionId` from `req.path` segment index 3
+- Calls `SessionService.getSessionById(sessionId)` — api-gateway PostgreSQL lookup
+- Returns 403 for: missing user, malformed path, session not found, ownership mismatch
+- Returns `true` on match
+- No container-manager call; no session/user logging
 
-**If shareable is chosen:**
-- May require relaxing or replacing `SessionCookieGuard` for externally shared links
-- Signed preview token infrastructure required (separate feature design)
+**Non-goals confirmed:**
+- No container-manager changes
+- No frontend changes
+- No activation of inactive `src/previews/` module
+- No signed preview URLs
+- No public/share preview behavior
+- No header sanitization
+- No new external dependencies
+- No DB migration
 
-**Non-goals (until product decision):**
-- No implementation of any kind
-- No changes to api-gateway, container-manager, or frontend
+**Acceptance checklist:**
+- [x] `PreviewOwnershipGuard` created with correct ownership logic
+- [x] `@UseGuards(SessionCookieGuard, PreviewOwnershipGuard)` applied at `PreviewController` class level
+- [x] `PreviewModule` imports `SessionModule`; `PreviewOwnershipGuard` in providers
+- [x] 9 ownership guard tests created and passing
+- [x] `npx tsc --noEmit` in `services/api-gateway`: PASS
+- [x] `preview.ownership.guard.spec.ts`: PASS — 9/9
+- [x] Combined guard suites: PASS — 12/12
+- [x] Lint on touched files: PASS
+- [ ] Manual smoke — 4 items: NOT RUN (deferred to live environment)
+- [x] No frontend files changed
+- [x] No container-manager files changed
+- [x] `TASKS.md` updated: AUTH-APP-02C COMPLETE and LOCKED
+- [x] `TASKS_BACKLOG_FULL.md` updated: AUTH-APP-02C COMPLETE and LOCKED
+- [x] Checkpoint created: `docs/AUTH-APP-02C-CHECKPOINT.md`
+- [x] Family checkpoint created: `docs/AUTH-APP-02-CHECKPOINT.md`
 
-**Reference:** See TASKS.md -> AUTH-APP-02C. See `docs/AUTH-APP-02A-PREVIEW-PROXY-AUTH-SPEC.md` Section 10.
+**Production source files changed: 3**
+- `services/api-gateway/src/preview/preview-ownership.guard.ts` (new)
+- `services/api-gateway/src/preview/preview.controller.ts` (updated)
+- `services/api-gateway/src/preview/preview.module.ts` (updated)
+
+**New test files created: 1**
+- `services/api-gateway/src/preview/__tests__/preview.ownership.guard.spec.ts`
+
+**Carry-forwards:**
+- Header sanitization — future hardening slice
+- Container-manager direct access (T5) — infrastructure/network isolation concern
+- Public/share/signed preview — deferred product feature
+- Manual smoke — 4 items deferred to live environment
+
+**Reference:** See TASKS.md -> AUTH-APP-02C. See `docs/AUTH-APP-02C-CHECKPOINT.md`. See `docs/AUTH-APP-02-CHECKPOINT.md`. See `docs/AUTH-APP-02A-PREVIEW-PROXY-AUTH-SPEC.md` Section 10.
+
+---
+
+### AUTH-APP-02D: Preview Proxy Header Sanitization
+
+**Task ID:** AUTH-APP-02D
+**Family:** AUTH
+**Parent:** AUTH-APP-02 (VALIDATION COMPLETE — manual smoke deferred)
+**Priority:** Medium
+**Status:** COMPLETE and LOCKED
+**Nature:** BACKEND SECURITY HARDENING
+**Registered:** 2026-05-10
+**Completed:** 2026-05-10
+**Depends on:** AUTH-APP-02C (COMPLETE and LOCKED)
+**Checkpoint:** `docs/AUTH-APP-02D-CHECKPOINT.md`
+
+**Objective:**
+Sanitize forwarded headers in the api-gateway `PreviewController` before proxying requests to container-manager. The current proxy removes only `host` from inbound headers, leaving sensitive auth/security headers potentially forwarded to container-manager. Apply an explicit denylist to strip sensitive headers before the axios proxy call while preserving headers required for correct browser/preview rendering.
+
+**Bounded scope:**
+- Inspect current header forwarding logic in `preview.controller.ts`
+- Define and apply explicit header denylist before axios proxy call
+- Preserve required browser/proxy headers for preview rendering
+- Preserve streaming behavior
+- Preserve `SessionCookieGuard` + `PreviewOwnershipGuard` behavior
+- Add targeted header sanitization tests
+
+**Headers to strip (denylist):**
+- `host`
+- `cookie`
+- `authorization`
+- `proxy-authorization`
+- `x-internal-service-key`
+- `x-csrf-token`
+- `x-forwarded-user`
+- `x-user-id`
+- `x-session-id`
+
+**Headers to preserve (examples):**
+- `accept`
+- `accept-language`
+- `user-agent`
+- `content-type`
+- `range`
+- `if-none-match`
+- `if-modified-since`
+- `cache-control`
+
+**Files expected:**
+- `services/api-gateway/src/preview/preview.controller.ts` — sanitize headers before proxy call
+- `services/api-gateway/src/preview/__tests__/preview.header-sanitization.spec.ts` — new targeted test file
+
+**Non-goals:**
+- No frontend changes
+- No container-manager changes
+- No ownership logic changes
+- No SessionCookieGuard/PreviewOwnershipGuard changes
+- No public/share preview
+- No signed URLs
+- No dependency changes
+- No DB/migration changes
+- No manual smoke
+
+**Files changed:**
+- `services/api-gateway/src/preview/preview.controller.ts` — `PROXY_HEADER_DENYLIST` and `sanitizeProxyHeaders` added; axios headers replaced
+- `services/api-gateway/src/preview/__tests__/preview.header-sanitization.spec.ts` — **Created** — 23 direct unit tests
+
+**Implementation notes:**
+- `PROXY_HEADER_DENYLIST`: module-scope `Set<string>` with 9 lowercase entries; constructed once, not per request
+- `sanitizeProxyHeaders`: exported named function; `Object.fromEntries(Object.entries(headers).filter(...))` with `.toLowerCase()` on keys; multi-value `string[]` and `undefined` values pass through unchanged
+- Axios call: `headers: sanitizeProxyHeaders(req.headers)` replaces `{ ...req.headers, host: undefined }`
+- Guard chain `@UseGuards(SessionCookieGuard, PreviewOwnershipGuard)`, streaming path, body/query forwarding, and error handling all unchanged
+- `x-forwarded-for` intentionally not denied in this slice
+
+**Acceptance checklist:**
+- [x] Header denylist defined and applied before axios proxy call in `preview.controller.ts`
+- [x] Sensitive headers (`cookie`, `authorization`, `proxy-authorization`, `x-internal-service-key`, `x-csrf-token`, `x-forwarded-user`, `x-user-id`, `x-session-id`) are stripped
+- [x] Required rendering headers (`accept`, `content-type`, `range`, `if-none-match`, `if-modified-since`, `cache-control`, `accept-language`, `user-agent`) are preserved
+- [x] Streaming behavior unaffected
+- [x] `SessionCookieGuard` + `PreviewOwnershipGuard` behavior unaffected
+- [x] `preview.header-sanitization.spec.ts` created with targeted tests
+- [x] `npx tsc --noEmit` in `services/api-gateway`: PASS
+- [x] Header sanitization tests: PASS — 23/23
+- [x] Full preview test suite passes — 35/35 (3 suites)
+- [x] Lint on touched files: PASS
+- [x] No frontend files changed
+- [x] No container-manager files changed
+- [x] Checkpoint created: `docs/AUTH-APP-02D-CHECKPOINT.md`
+- [x] `TASKS.md` updated: AUTH-APP-02D COMPLETE and LOCKED
+- [x] `TASKS_BACKLOG_FULL.md` updated: AUTH-APP-02D COMPLETE and LOCKED
+- [ ] Manual smoke — 4 items: NOT RUN (deferred to live environment)
+
+**Production source files changed: 1**
+- `services/api-gateway/src/preview/preview.controller.ts` (updated)
+
+**New test files created: 1**
+- `services/api-gateway/src/preview/__tests__/preview.header-sanitization.spec.ts`
+
+**Carry-forwards:**
+- `x-forwarded-for` privacy/logging decision — intentionally deferred
+- Manual smoke — 4 items deferred to live environment
+- Container-manager direct access (T5) — infrastructure/network isolation concern
+- Public/share/signed preview — deferred product feature
+
+**Carry-forward source:** AUTH-APP-02B and AUTH-APP-02C carry-forward: "Header sanitization — future hardening slice"
+
+**Reference:** See TASKS.md -> AUTH-APP-02D. See `docs/AUTH-APP-02D-CHECKPOINT.md`. See `docs/AUTH-APP-02-CHECKPOINT.md`. See `docs/AUTH-APP-02A-PREVIEW-PROXY-AUTH-SPEC.md`.
 
