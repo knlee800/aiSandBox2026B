@@ -1,4 +1,4 @@
-## Authority Notice
+﻿## Authority Notice
 
 This document is the MASTER task backlog.
 
@@ -23991,7 +23991,7 @@ VALIDATION COMPLETE — AUTH-APP-01C2 VALIDATION COMPLETE (AUTH-APP-01C2A COMPLE
 **Family:** AUTH
 **Parent:** AUTH (carry-forward from AUTH-APP-01H)
 **Priority:** Medium
-**Status:** VALIDATION COMPLETE — manual smoke deferred
+**Status:** COMPLETE and LOCKED
 **Nature:** INVESTIGATION PHASE PARENT
 **Registered:** 2026-05-08
 **Completed:** 2026-05-10
@@ -24145,7 +24145,7 @@ Add `SessionCookieGuard` at the `PreviewController` class level in api-gateway t
 
 **Task ID:** AUTH-APP-02C
 **Family:** AUTH
-**Parent:** AUTH-APP-02 (VALIDATION COMPLETE — manual smoke deferred)
+**Parent:** AUTH-APP-02 (COMPLETE and LOCKED)
 **Priority:** Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** BACKEND IMPLEMENTATION
@@ -24225,7 +24225,7 @@ Add `PreviewOwnershipGuard` to api-gateway `PreviewController` to block cross-us
 
 **Task ID:** AUTH-APP-02D
 **Family:** AUTH
-**Parent:** AUTH-APP-02 (VALIDATION COMPLETE — manual smoke deferred)
+**Parent:** AUTH-APP-02 (COMPLETE and LOCKED)
 **Priority:** Medium
 **Status:** COMPLETE and LOCKED
 **Nature:** BACKEND SECURITY HARDENING

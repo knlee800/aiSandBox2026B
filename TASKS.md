@@ -1,4 +1,4 @@
-## Authority & Scope
+﻿## Authority & Scope
 
 This file lists currently ACTIVE and SELECTED tasks.
 
@@ -12216,9 +12216,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## AUTH — aiSandBox First-Party Authentication
 
-**Family status:** VALIDATION COMPLETE (AUTH-APP-01C2 VALIDATION COMPLETE — AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F COMPLETE; manual smoke deferred) — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 COMPLETE — AUTH-APP-01H VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01H1 COMPLETE — AUTH-APP-01H2 COMPLETE — AUTH-APP-01H3 COMPLETE — AUTH-APP-01H4 COMPLETE — AUTH-APP-01Z COMPLETE — AUTH-APP-02A COMPLETE and LOCKED — AUTH-APP-02B COMPLETE and LOCKED — AUTH-APP-02C COMPLETE and LOCKED — AUTH-APP-02 VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-02D COMPLETE and LOCKED
+**Family status:** VALIDATION COMPLETE (AUTH-APP-01C2 VALIDATION COMPLETE — AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F COMPLETE; manual smoke deferred) — AUTH-APP-01E COMPLETE — AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) — AUTH-APP-01F1 COMPLETE — AUTH-APP-01F2 COMPLETE — AUTH-APP-01F3 COMPLETE — AUTH-APP-01F4 COMPLETE — AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01G1 COMPLETE — AUTH-APP-01G2 COMPLETE — AUTH-APP-01G3 COMPLETE — AUTH-APP-01G4 COMPLETE — AUTH-APP-01H VALIDATION COMPLETE (manual smoke deferred) — AUTH-APP-01H1 COMPLETE — AUTH-APP-01H2 COMPLETE — AUTH-APP-01H3 COMPLETE — AUTH-APP-01H4 COMPLETE — AUTH-APP-01Z COMPLETE — AUTH-APP-02A COMPLETE and LOCKED — AUTH-APP-02B COMPLETE and LOCKED — AUTH-APP-02C COMPLETE and LOCKED — AUTH-APP-02 COMPLETE and LOCKED — AUTH-APP-02D COMPLETE and LOCKED
 
-**Current stage:** AUTH-APP-02 VALIDATION COMPLETE — manual smoke deferred; AUTH-APP-02D COMPLETE and LOCKED; no active implementation task
+**Current stage:** AUTH-APP-02 COMPLETE and LOCKED; AUTH-APP-02D COMPLETE and LOCKED; no active implementation task
 
 **Master spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Reference master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -13055,7 +13055,7 @@ Deliver all remaining AUTH-APP-01 security hardening and validation work before 
 
 ### AUTH-APP-02: Preview Proxy Security (Phase Parent)
 
-**Status:** VALIDATION COMPLETE — manual smoke deferred
+**Status:** COMPLETE and LOCKED
 **Parent:** AUTH (carry-forward from AUTH-APP-01H)
 **Family:** AUTH
 **Depends on:** AUTH-APP-01Z (COMPLETE and LOCKED)
@@ -13158,7 +13158,7 @@ Add `SessionCookieGuard` at the `PreviewController` class level in api-gateway t
 
 **Status:** COMPLETE and LOCKED
 **Nature:** BACKEND IMPLEMENTATION
-**Parent:** AUTH-APP-02 (VALIDATION COMPLETE — manual smoke deferred)
+**Parent:** AUTH-APP-02 (COMPLETE and LOCKED)
 **Family:** AUTH
 **Depends on:** AUTH-APP-02B (COMPLETE and LOCKED) + owner-only product decision
 **Completed:** 2026-05-10
@@ -13205,7 +13205,7 @@ Add `PreviewOwnershipGuard` to api-gateway `PreviewController` to block cross-us
 
 **Status:** COMPLETE and LOCKED
 **Nature:** BACKEND SECURITY HARDENING
-**Parent:** AUTH-APP-02 (VALIDATION COMPLETE — manual smoke deferred)
+**Parent:** AUTH-APP-02 (COMPLETE and LOCKED)
 **Family:** AUTH
 **Depends on:** AUTH-APP-02C (COMPLETE and LOCKED)
 **Registered:** 2026-05-10
