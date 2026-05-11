@@ -21954,9 +21954,9 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 
 ## UX-IA ??Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE — UX-IA-04 ACTIVE — UX-IA-04A COMPLETE and LOCKED — UX-IA-04B ACTIVE / current stage
+**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 pending
 
-**Current stage:** UX-IA-04B — Home view chatbox + prompt-to-project flow
+**Current stage:** UX-IA-05 — Projects Grid/List + Recent Projects (pending; not yet started)
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -21966,10 +21966,10 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 3. UX-IA-02 ??Design Token Foundation (COMPLETE and LOCKED ??`docs/UX-IA-02-CHECKPOINT.md`)
 4. UX-IA-03 ??Public Landing Redesign + Login/Register Polish (COMPLETE and LOCKED ??`docs/UX-IA-03-CHECKPOINT.md`)
    > AUTH-APP-01 + AUTH-APP-02 ??aiSandBox First-Party Authentication (cross-family ??COMPLETE and LOCKED ??`docs/AUTH-APP-01-CHECKPOINT.md` + `docs/AUTH-APP-02-CHECKPOINT.md`)
-5. UX-IA-04 — Workspace Shell + Sidebar + Home View (ACTIVE — child slices registered)
+5. UX-IA-04 — Workspace Shell + Sidebar + Home View (COMPLETE and LOCKED — `docs/UX-IA-04-CHECKPOINT.md`)
    - UX-IA-04A — Sidebar shell + view state scaffolding (COMPLETE and LOCKED — `docs/UX-IA-04A-CHECKPOINT.md`)
-   - UX-IA-04B — Home view chatbox + prompt-to-project flow (ACTIVE / current stage)
-   - UX-IA-04C — Tests + validation + consolidation (PLANNED)
+   - UX-IA-04B — Home view chatbox + prompt-to-project flow (COMPLETE and LOCKED — `docs/UX-IA-04B-CHECKPOINT.md`)
+   - UX-IA-04C — Tests + validation + consolidation (COMPLETE and LOCKED — `docs/UX-IA-04-CHECKPOINT.md`)
 6. UX-IA-05 through UX-IA-17 ??pending (see master spec for full list)
 
 ---
@@ -22202,7 +22202,7 @@ Transform the public landing page into the "Build anything" entry experience wit
 **Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** ACTIVE — child slices registered; UX-IA-04B is current stage
+**Status:** COMPLETE and LOCKED — `docs/UX-IA-04-CHECKPOINT.md`
 **Source:** `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-04 section
 **Depends on:** UX-IA-03 (COMPLETE and LOCKED), AUTH-APP-01 (COMPLETE and LOCKED), AUTH-APP-02 (COMPLETE and LOCKED), PROJ-02-01 (COMPLETE and LOCKED), PROJ-02-02 (COMPLETE and LOCKED), PROJ-02-03 (COMPLETE and LOCKED)
 **Risk:** Medium-High — split into 3 child slices to reduce per-pass risk
@@ -22214,8 +22214,8 @@ Evolve `WorkspaceShell` into a sidebar + right content layout. Add `WorkspaceVie
 
 **Child slices:**
 - UX-IA-04A — Sidebar shell + view state scaffolding (COMPLETE and LOCKED — `docs/UX-IA-04A-CHECKPOINT.md`)
-- UX-IA-04B — Home view chatbox + prompt-to-project flow (ACTIVE / current stage)
-- UX-IA-04C — Tests + validation + consolidation (PLANNED)
+- UX-IA-04B — Home view chatbox + prompt-to-project flow (COMPLETE and LOCKED — `docs/UX-IA-04B-CHECKPOINT.md`)
+- UX-IA-04C — Tests + validation + consolidation (COMPLETE and LOCKED — `docs/UX-IA-04-CHECKPOINT.md`)
 
 **Bounded scope:**
 - `frontend/components/workspace/workspace-shell.tsx` — layout restructure: sidebar + right content
@@ -22347,7 +22347,7 @@ Default: `'home'`. Lives in `page.tsx` as `useState<WorkspaceView>('home')`.
 **Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** ACTIVE / current stage
+**Status:** COMPLETE and LOCKED — `docs/UX-IA-04B-CHECKPOINT.md`
 **Source:** UX-IA-04 plan phase result (May 2026)
 **Depends on:** UX-IA-04A (COMPLETE and LOCKED — `docs/UX-IA-04A-CHECKPOINT.md`)
 **Risk:** Medium
@@ -22397,9 +22397,9 @@ Implement the Home view "Build anything" chatbox and the prompt-to-project creat
 **Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED — `docs/UX-IA-04-CHECKPOINT.md`
 **Source:** UX-IA-04 plan phase result (May 2026)
-**Depends on:** UX-IA-04B (PLANNED — must be COMPLETE and LOCKED first)
+**Depends on:** UX-IA-04B (COMPLETE and LOCKED — `docs/UX-IA-04B-CHECKPOINT.md`)
 **Risk:** Low-Medium
 
 **Objective:**

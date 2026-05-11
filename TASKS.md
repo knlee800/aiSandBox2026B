@@ -12037,9 +12037,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## UX-IA �X Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE — UX-IA-04 ACTIVE — UX-IA-04A COMPLETE and LOCKED — UX-IA-04B ACTIVE / current stage
+**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 pending
 
-**Current stage:** UX-IA-04B — Home view chatbox + prompt-to-project flow
+**Current stage:** UX-IA-05 — Projects Grid/List + Recent Projects (pending; not yet started)
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -12049,10 +12049,10 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 3. UX-IA-02 �X Design Token Foundation (COMPLETE and LOCKED �X `docs/UX-IA-02-CHECKPOINT.md`)
 4. UX-IA-03 �X Public Landing Redesign + Login/Register Polish (COMPLETE and LOCKED �X `docs/UX-IA-03-CHECKPOINT.md`)
    > AUTH-APP-01 + AUTH-APP-02 �X aiSandBox First-Party Authentication (cross-family �X COMPLETE and LOCKED �X `docs/AUTH-APP-01-CHECKPOINT.md` + `docs/AUTH-APP-02-CHECKPOINT.md`)
-5. UX-IA-04 — Workspace Shell + Sidebar + Home View (ACTIVE — child slices registered)
+5. UX-IA-04 — Workspace Shell + Sidebar + Home View (COMPLETE and LOCKED — `docs/UX-IA-04-CHECKPOINT.md`)
    - UX-IA-04A — Sidebar shell + view state scaffolding (COMPLETE and LOCKED — `docs/UX-IA-04A-CHECKPOINT.md`)
-   - UX-IA-04B — Home view chatbox + prompt-to-project flow (ACTIVE / current stage)
-   - UX-IA-04C — Tests + validation + consolidation (PLANNED)
+   - UX-IA-04B — Home view chatbox + prompt-to-project flow (COMPLETE and LOCKED — `docs/UX-IA-04B-CHECKPOINT.md`)
+   - UX-IA-04C — Tests + validation + consolidation (COMPLETE and LOCKED — `docs/UX-IA-04-CHECKPOINT.md`)
 6. UX-IA-05 �X Projects Grid/List + Recent Projects (pending)
 7. UX-IA-06 �X Templates / Community View (pending)
 8. UX-IA-07 �X Account Menu + Settings + Language/Theme (pending)
@@ -12219,7 +12219,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 #### UX-IA-04: Workspace Shell + Sidebar + Home View
 
-**Status:** ACTIVE — child slices registered; UX-IA-04B is current stage
+**Status:** COMPLETE and LOCKED — `docs/UX-IA-04-CHECKPOINT.md`
 **Task ID:** UX-IA-04
 **Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
 **Source:** `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-04 section
@@ -12233,8 +12233,8 @@ Evolve `WorkspaceShell` into a sidebar + right content layout. Add `WorkspaceVie
 
 **Child slices:**
 - UX-IA-04A — Sidebar shell + view state scaffolding (COMPLETE and LOCKED — `docs/UX-IA-04A-CHECKPOINT.md`)
-- UX-IA-04B — Home view chatbox + prompt-to-project flow (ACTIVE / current stage)
-- UX-IA-04C — Tests + validation + consolidation (PLANNED)
+- UX-IA-04B — Home view chatbox + prompt-to-project flow (COMPLETE and LOCKED — `docs/UX-IA-04B-CHECKPOINT.md`)
+- UX-IA-04C — Tests + validation + consolidation (COMPLETE and LOCKED — `docs/UX-IA-04-CHECKPOINT.md`)
 
 **Bounded scope:**
 - `frontend/components/workspace/workspace-shell.tsx` — layout restructure: sidebar + right content
@@ -12315,7 +12315,7 @@ Add `WorkspaceView` state to `page.tsx`. Create `workspace-sidebar.tsx`. Restruc
 
 #### UX-IA-04B: Home View Chatbox + Prompt-to-Project Flow
 
-**Status:** ACTIVE / current stage
+**Status:** COMPLETE and LOCKED — `docs/UX-IA-04B-CHECKPOINT.md`
 **Task ID:** UX-IA-04B
 **Parent:** UX-IA-04
 **Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
@@ -12348,11 +12348,11 @@ Implement the Home view "Build anything" chatbox and the prompt-to-project creat
 
 #### UX-IA-04C: Tests + Validation + Consolidation
 
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED — `docs/UX-IA-04-CHECKPOINT.md`
 **Task ID:** UX-IA-04C
 **Parent:** UX-IA-04
 **Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
-**Depends on:** UX-IA-04B (PLANNED — must be COMPLETE and LOCKED first)
+**Depends on:** UX-IA-04B (COMPLETE and LOCKED — `docs/UX-IA-04B-CHECKPOINT.md`)
 **Risk:** Low-Medium
 
 **Objective:**

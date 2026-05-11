@@ -191,6 +191,7 @@ interface WorkspaceShellProps {
   dashboardError: string | null;
   chatPromptInput?: string;
   onChatPromptInputChange?: (value: string) => void;
+  onCreateProjectFromPrompt?: (prompt: string) => Promise<void>;
   selectedModelOption?: string;
   onSelectedModelOptionChange?: (value: string) => void;
   availableModelOptions?: Array<{
@@ -353,6 +354,9 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const resolvedWorkspaceView = props.workspaceView ?? 'project';
   const scaffoldMessages = getWorkspaceScaffoldMessages(locale);
   const [advancedDrawerOpen, setAdvancedDrawerOpen] = React.useState(false);
+  const homePromptInput = props.chatPromptInput ?? '';
+  const trimmedHomePrompt = homePromptInput.trim();
+  const isCreatingProjectFromPrompt = props.projectActionState === 'creating';
   const shellState = computeWorkspaceShellState({
     isLoadingSessions: props.isLoadingSessions,
     sessionError: props.sessionError,
@@ -756,7 +760,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   );
 
   const homeWorkspaceContent = (
-    <div className="flex flex-1 min-h-0 flex-col p-4" data-testid="workspace-home-placeholder">
+    <div className="flex flex-1 min-h-0 flex-col p-4" data-testid="workspace-home-view">
       <div className="mx-auto flex w-full max-w-3xl flex-1 items-center justify-center">
         <div className="w-full rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           <p className="text-sm font-semibold uppercase tracking-wide text-gray-500">
@@ -768,18 +772,36 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
           <p className="mt-2 text-sm text-gray-600">{scaffoldMessages.describeBuild}</p>
           <div className="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-4">
             <textarea
-              disabled
-              value=""
+              value={homePromptInput}
               placeholder={scaffoldMessages.describeBuild}
-              className="min-h-32 w-full resize-none rounded border border-gray-300 bg-white px-3 py-3 text-sm text-gray-500"
-              data-testid="workspace-home-placeholder-input"
+              rows={6}
+              disabled={isCreatingProjectFromPrompt || !props.onChatPromptInputChange}
+              onChange={(event) => {
+                props.onChatPromptInputChange?.(event.target.value);
+              }}
+              className="min-h-32 w-full resize-none rounded border border-gray-300 bg-white px-3 py-3 text-sm text-gray-900"
+              data-testid="workspace-home-input"
             />
             <div className="mt-3 flex justify-end">
               <button
                 type="button"
-                disabled
-                className="rounded bg-gray-300 px-4 py-2 text-sm font-medium text-white"
-                data-testid="workspace-home-placeholder-submit"
+                disabled={
+                  isCreatingProjectFromPrompt ||
+                  !props.onCreateProjectFromPrompt ||
+                  trimmedHomePrompt.length === 0
+                }
+                onClick={() => {
+                  if (
+                    isCreatingProjectFromPrompt ||
+                    !props.onCreateProjectFromPrompt ||
+                    trimmedHomePrompt.length === 0
+                  ) {
+                    return;
+                  }
+                  void props.onCreateProjectFromPrompt(trimmedHomePrompt);
+                }}
+                className="rounded bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-gray-300"
+                data-testid="workspace-home-submit"
               >
                 {scaffoldMessages.start}
               </button>

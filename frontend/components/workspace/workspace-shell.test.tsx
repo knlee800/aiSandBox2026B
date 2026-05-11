@@ -501,6 +501,7 @@ function buildWorkspaceShellProps(
     onSelectedModelOptionChange: () => {},
     orchestrationEnabled: false,
     onOrchestrationEnabledChange: () => {},
+    onCreateProjectFromPrompt: async () => {},
     availableModelOptions: [
       { value: 'xai:grok-3', label: 'xAI - grok-3' },
       { value: 'openai:gpt-4o', label: 'OpenAI - gpt-4o' },
@@ -731,17 +732,70 @@ describe('workspace shell component', () => {
     assert.match(html, />Log out</);
   });
 
-  test('renders home placeholder when project-first home view is selected', () => {
+  test('renders home chatbox when project-first home view is selected', () => {
     const html = renderWorkspaceShell({
       projectFirstUxEnabled: true,
       workspaceView: 'home',
     });
 
-    assert.match(html, /workspace-home-placeholder/);
+    assert.match(html, /workspace-home-view/);
     assert.match(html, />Build anything</);
-    assert.match(html, /workspace-home-placeholder-input/);
-    assert.match(html, /workspace-home-placeholder-submit/);
+    assert.match(html, /workspace-home-input/);
+    assert.match(html, /workspace-home-submit/);
     assert.doesNotMatch(html, /Chat Panel/);
+  });
+
+  test('wires home prompt input and submit in project-first home view', () => {
+    let changedPrompt = '';
+    const input = renderWorkspaceShellElementByTestId('workspace-home-input', {
+      projectFirstUxEnabled: true,
+      workspaceView: 'home',
+      chatPromptInput: '',
+      onChatPromptInputChange: (value) => {
+        changedPrompt = value;
+      },
+    });
+
+    assert.ok(input);
+    const onChange = input.props.onChange as
+      | ((event: { target: { value: string } }) => void)
+      | undefined;
+    onChange?.({ target: { value: 'Build a kanban board' } });
+    assert.equal(changedPrompt, 'Build a kanban board');
+
+    let submittedPrompt = '';
+    const button = renderWorkspaceShellElementByTestId('workspace-home-submit', {
+      projectFirstUxEnabled: true,
+      workspaceView: 'home',
+      chatPromptInput: changedPrompt,
+      onCreateProjectFromPrompt: async (prompt) => {
+        submittedPrompt = prompt;
+      },
+    });
+
+    assert.ok(button);
+    assert.equal(button.props.disabled, false);
+    const onClick = button.props.onClick as (() => void) | undefined;
+    onClick?.();
+    assert.equal(submittedPrompt, 'Build a kanban board');
+  });
+
+  test('does not submit an empty home prompt', () => {
+    let submittedPrompt = '';
+    const button = renderWorkspaceShellElementByTestId('workspace-home-submit', {
+      projectFirstUxEnabled: true,
+      workspaceView: 'home',
+      chatPromptInput: '   ',
+      onCreateProjectFromPrompt: async (prompt) => {
+        submittedPrompt = prompt;
+      },
+    });
+
+    assert.ok(button);
+    assert.equal(button.props.disabled, true);
+    const onClick = button.props.onClick as (() => void) | undefined;
+    onClick?.();
+    assert.equal(submittedPrompt, '');
   });
 
   test('renders existing workspace content when project view is selected', () => {
@@ -755,6 +809,38 @@ describe('workspace shell component', () => {
     assert.match(html, /Editor Panel/);
     assert.match(html, /Preview Panel/);
     assert.match(html, /History &amp; Controls/);
+  });
+
+  test('renders recent projects in project-first sidebar when workspaceProjects are provided', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'home',
+      workspaceProjects: [
+        {
+          id: 'proj-recent-1',
+          userId: 'user-123',
+          name: 'My Kanban App',
+          visibility: 'private',
+          workspaceId: 'workspace-1',
+          createdAt: '2026-05-10T10:00:00.000Z',
+          updatedAt: '2026-05-11T09:00:00.000Z',
+        },
+        {
+          id: 'proj-recent-2',
+          userId: 'user-123',
+          name: 'Landing Page',
+          visibility: 'private',
+          workspaceId: 'workspace-1',
+          createdAt: '2026-05-09T10:00:00.000Z',
+          updatedAt: '2026-05-11T08:00:00.000Z',
+        },
+      ],
+    });
+
+    assert.match(html, /workspace-sidebar-recent-project-proj-recent-1/);
+    assert.match(html, /workspace-sidebar-recent-project-proj-recent-2/);
+    assert.match(html, /My Kanban App/);
+    assert.match(html, /Landing Page/);
   });
 
   test('clicking logout calls onLogout when provided', () => {

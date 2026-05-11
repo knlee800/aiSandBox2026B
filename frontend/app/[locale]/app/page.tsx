@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { useRouter, useParams } from 'next/navigation';
 import WorkspaceShell from '@/components/workspace/workspace-shell';
 import { PROJECT_FIRST_UX } from '@/lib/feature-flags';
@@ -142,6 +143,7 @@ const TAB_SELECTED_SESSION_STORAGE_KEY = 'workspace_tab_selected_session_id';
 const TAB_SELECTED_PROJECT_STORAGE_KEY = 'workspace_tab_selected_project_id';
 const TAB_SELECTED_WORKSPACE_STORAGE_KEY = 'workspace_tab_selected_workspace_id';
 const TAB_EDITOR_DRAFT_STORAGE_KEY = 'workspace_tab_editor_draft';
+const PENDING_HOME_PROMPT_STORAGE_KEY = 'aisandbox_pending_prompt';
 const CHAT_EXECUTION_POLL_INTERVAL_MS = 3000;
 const PROJECT_OPEN_FILE_REFRESH_RETRY_DELAY_MS = 250;
 const PROJECT_OPEN_FILE_REFRESH_MAX_ATTEMPTS = 6;
@@ -1137,6 +1139,21 @@ export default function AppPage() {
       }
     })();
   }, [locale, router]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const pendingPrompt = window.sessionStorage.getItem(PENDING_HOME_PROMPT_STORAGE_KEY);
+    window.sessionStorage.removeItem(PENDING_HOME_PROMPT_STORAGE_KEY);
+    const trimmedPendingPrompt = pendingPrompt?.trim() ?? '';
+    if (!trimmedPendingPrompt) {
+      return;
+    }
+
+    setChatPromptInput(trimmedPendingPrompt);
+  }, []);
 
   useEffect(() => {
     if (!PROJECT_FIRST_UX) {
@@ -2203,6 +2220,24 @@ export default function AppPage() {
           : 'Failed to create project.',
       );
     }
+  }
+
+  async function handleCreateProjectFromPrompt(prompt: string): Promise<void> {
+    const trimmedPrompt = prompt.trim();
+    if (!trimmedPrompt) {
+      return;
+    }
+
+    const autoProjectName =
+      trimmedPrompt.replace(/\s+/g, ' ').slice(0, 40).trim() || 'New project';
+
+    flushSync(() => {
+      setProjectNameInput(autoProjectName);
+      setChatPromptInput(trimmedPrompt);
+    });
+
+    await handleCreateWorkspaceProject();
+    setChatPromptInput(trimmedPrompt);
   }
 
   async function hydrateWorkspaceForProjectOpen(
@@ -5267,6 +5302,7 @@ export default function AppPage() {
       dashboardError={dashboardError}
       chatPromptInput={chatPromptInput}
       onChatPromptInputChange={setChatPromptInput}
+      onCreateProjectFromPrompt={handleCreateProjectFromPrompt}
       selectedModelOption={selectedChatModelOption}
       onSelectedModelOptionChange={setSelectedChatModelOption}
       orchestrationEnabled={isChatOrchestrationEnabled}
