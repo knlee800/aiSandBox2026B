@@ -9668,9 +9668,9 @@ Determine why many session-related Docker containers are accumulating, and ident
 
 ## OPS-LOCAL ¡X Local Testing Config
 
-**Family status:** ACTIVE
+**Family status:** COMPLETE
 
-**Current stage:** OPS-LOCAL-AUTH-JWT (PLANNED)
+**Current stage:** OPS-LOCAL-AUTH-JWT (COMPLETE AND LOCKED)
 
 ---
 
@@ -9723,7 +9723,7 @@ Preserve code defaults of 5 active sessions and 20 sessions per 24h, but add env
 
 #### OPS-LOCAL-AUTH-JWT: Extend Local Docker JWT Lifetime For Testing
 
-**Status:** PLANNED
+**Status:** COMPLETE AND LOCKED
 **Checkpoint:** `docs/OPS-LOCAL-AUTH-JWT-CHECKPOINT.md`
 **Nature:** CONFIG / LOCAL TESTING ENABLEMENT
 **Source:** Post-OPS-LOCAL-SESSION-LIMITS diagnostic ¡X auth access token is 15m with no refresh mechanism; local QA is forcibly logged out every 15 minutes, interrupting testing

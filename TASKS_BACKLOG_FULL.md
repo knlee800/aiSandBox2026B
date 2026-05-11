@@ -19614,7 +19614,7 @@ Preserve code defaults of 5 active sessions and 20 sessions per 24h, but add env
 **Task ID:** OPS-LOCAL-AUTH-JWT
 **Family:** OPS-LOCAL (Local Testing Config)
 **Priority:** High
-**Status:** PLANNED
+**Status:** COMPLETE AND LOCKED
 **Checkpoint:** `docs/OPS-LOCAL-AUTH-JWT-CHECKPOINT.md`
 **Nature:** CONFIG / LOCAL TESTING ENABLEMENT
 **Source:** Post-OPS-LOCAL-SESSION-LIMITS diagnostic ??auth access token lifetime is 15m (`JWT_EXPIRES_IN=15m` in `services/api-gateway/src/auth/auth.module.ts`, driven by all env files); there is no refresh-token mechanism, no auth cookies, and no silent-refresh in the frontend. On 401 the frontend immediately clears `localStorage` and redirects to `/login`. Local QA is interrupted every 15 minutes.
