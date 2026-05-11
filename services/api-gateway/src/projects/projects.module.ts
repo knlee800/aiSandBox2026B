@@ -5,6 +5,7 @@ import { Session } from '../entities/session.entity';
 import { ProjectsController } from './projects.controller';
 import { PublicProjectsController } from './public-projects.controller';
 import { ProjectsService } from './projects.service';
+import { AuthModule } from '../auth/auth.module';
 import { SessionModule } from '../sessions/session.module';
 import { SnapshotsModule } from '../snapshots/snapshots.module';
 import { WorkspacesModule } from '../workspaces/workspaces.module';
@@ -12,6 +13,7 @@ import { WorkspacesModule } from '../workspaces/workspaces.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Project, Session]),
+    AuthModule,
     SessionModule,
     SnapshotsModule,
     WorkspacesModule,

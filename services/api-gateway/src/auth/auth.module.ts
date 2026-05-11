@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -9,8 +9,8 @@ import { ApiKeyAuthGuard } from './api-key-auth.guard';
 import { AuthorizationGuard } from './authorization.guard';
 import { ApiKeyService } from './api-key.service';
 import { ApiKeyController } from './api-key.controller';
-import { GoogleStrategy } from './google.strategy';
-import { AppleStrategy } from './apple.strategy';
+import { GoogleStrategy, hasGoogleOAuthConfig } from './google.strategy';
+import { AppleStrategy, hasAppleOAuthConfig } from './apple.strategy';
 import { ApiKey } from '../entities/api-key.entity';
 import { User } from '../entities/user.entity';
 import { OauthAccount } from '../entities/oauth-account.entity';
@@ -19,6 +19,32 @@ import { AuthSession } from '../entities/auth-session.entity';
 import { SessionCookieGuard } from './session-cookie.guard';
 import { EmailThrottlerGuard } from './email-throttler.guard';
 import { EmailModule } from '../email/email.module';
+
+export const googleStrategyProvider = {
+  provide: GoogleStrategy,
+  inject: [AuthService],
+  useFactory: (authService: AuthService) => {
+    if (!hasGoogleOAuthConfig()) {
+      Logger.warn('Google OAuth disabled: missing Google env configuration', 'AuthModule');
+      return null;
+    }
+
+    return new GoogleStrategy(authService);
+  },
+};
+
+export const appleStrategyProvider = {
+  provide: AppleStrategy,
+  inject: [AuthService],
+  useFactory: (authService: AuthService) => {
+    if (!hasAppleOAuthConfig()) {
+      Logger.warn('Apple OAuth disabled: missing Apple env configuration', 'AuthModule');
+      return null;
+    }
+
+    return new AppleStrategy(authService);
+  },
+};
 
 @Module({
   imports: [
@@ -34,8 +60,8 @@ import { EmailModule } from '../email/email.module';
   providers: [
     AuthService,
     JwtStrategy,
-    GoogleStrategy,
-    AppleStrategy,
+    googleStrategyProvider,
+    appleStrategyProvider,
     SessionCookieGuard,
     EmailThrottlerGuard,
     ApiKeyAuthGuard,

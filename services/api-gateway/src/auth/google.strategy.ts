@@ -3,14 +3,36 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Profile, Strategy } from 'passport-google-oauth20';
 import { AuthService } from './auth.service';
 
+const REQUIRED_GOOGLE_ENV_VARS = [
+  'GOOGLE_CLIENT_ID',
+  'GOOGLE_CLIENT_SECRET',
+  'GOOGLE_CALLBACK_URL',
+] as const;
+
+export function hasGoogleOAuthConfig(): boolean {
+  return REQUIRED_GOOGLE_ENV_VARS.every((name) => {
+    const value = process.env[name]?.trim();
+    return Boolean(value);
+  });
+}
+
+function getRequiredGoogleEnv(name: (typeof REQUIRED_GOOGLE_ENV_VARS)[number]): string {
+  const value = process.env[name]?.trim();
+
+  if (!value) {
+    throw new Error('Google OAuth disabled: missing Google env configuration');
+  }
+
+  return value;
+}
+
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(private readonly authService: AuthService) {
     super({
-      clientID: process.env.GOOGLE_CLIENT_ID || 'missing-google-client-id',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'missing-google-client-secret',
-      callbackURL:
-        process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3000/api/auth/google/callback',
+      clientID: getRequiredGoogleEnv('GOOGLE_CLIENT_ID'),
+      clientSecret: getRequiredGoogleEnv('GOOGLE_CLIENT_SECRET'),
+      callbackURL: getRequiredGoogleEnv('GOOGLE_CALLBACK_URL'),
       scope: ['email', 'profile'],
       state: true,
     });

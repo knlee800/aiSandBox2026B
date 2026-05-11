@@ -1,10 +1,18 @@
-import { AppleStrategy } from '../apple.strategy';
+import { AppleStrategy, hasAppleOAuthConfig } from '../apple.strategy';
 import { AuthService } from '../auth.service';
 
 describe('AppleStrategy', () => {
   const mockAuthService = {
     findOrCreateAppleUser: jest.fn(),
   } as unknown as AuthService;
+
+  const appleEnvKeys = [
+    'APPLE_CLIENT_ID',
+    'APPLE_TEAM_ID',
+    'APPLE_KEY_ID',
+    'APPLE_PRIVATE_KEY',
+    'APPLE_CALLBACK_URL',
+  ] as const;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -14,6 +22,25 @@ describe('AppleStrategy', () => {
     process.env.APPLE_PRIVATE_KEY =
       '-----BEGIN PRIVATE KEY-----\\nabc123\\n-----END PRIVATE KEY-----';
     process.env.APPLE_CALLBACK_URL = 'http://localhost:3000/api/auth/apple/callback';
+  });
+
+  afterEach(() => {
+    for (const key of appleEnvKeys) {
+      delete process.env[key];
+    }
+  });
+
+  it('reports Apple OAuth config as disabled when any required env is missing', () => {
+    delete process.env.APPLE_PRIVATE_KEY;
+
+    expect(hasAppleOAuthConfig()).toBe(false);
+    expect(() => new AppleStrategy(mockAuthService)).toThrow(
+      'Apple OAuth disabled: missing Apple env configuration',
+    );
+  });
+
+  it('reports Apple OAuth config as enabled when all required env vars are present', () => {
+    expect(hasAppleOAuthConfig()).toBe(true);
   });
 
   it('passes normalized apple profile data to AuthService', async () => {

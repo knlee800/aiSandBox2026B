@@ -1,6 +1,7 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Conversation } from '../entities/conversation.entity';
+import { AuthModule } from '../auth/auth.module';
 import { ConversationRepository } from '../repositories/conversation.repository';
 import { ConversationService } from './conversation.service';
 import { ConversationController } from './conversation.controller';
@@ -10,6 +11,7 @@ import { SessionModule } from '../sessions/session.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Conversation]),
+    AuthModule,
     forwardRef(() => ChatMessageModule),
     forwardRef(() => SessionModule),
   ],

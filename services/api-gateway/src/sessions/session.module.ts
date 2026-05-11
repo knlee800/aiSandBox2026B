@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Session } from '../entities/session.entity';
+import { AuthModule } from '../auth/auth.module';
 import { SessionRepository } from '../repositories/session.repository';
 import { SessionService } from './session.service';
 import { InternalSessionController } from './internal-session.controller';
@@ -18,6 +19,7 @@ import { SnapshotsModule } from '../snapshots/snapshots.module';
   imports: [
     // Register Session entity for TypeORM
     TypeOrmModule.forFeature([Session]),
+    AuthModule,
     // PHASE-42A-1: Import QuotaModule for SessionQuotaGuard
     QuotaModule,
     SnapshotsModule,

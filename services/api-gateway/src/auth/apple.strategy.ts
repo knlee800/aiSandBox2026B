@@ -3,6 +3,15 @@ import { PassportStrategy } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 
 const ApplePassportStrategy = require('@nicokaiser/passport-apple');
+const REQUIRED_APPLE_ENV_VARS = [
+  'APPLE_CLIENT_ID',
+  'APPLE_TEAM_ID',
+  'APPLE_KEY_ID',
+  'APPLE_PRIVATE_KEY',
+  'APPLE_CALLBACK_URL',
+] as const;
+
+const APPLE_OAUTH_MISSING_CONFIG_MESSAGE = 'Apple OAuth disabled: missing Apple env configuration';
 
 type AppleProfile = {
   id?: string;
@@ -16,16 +25,32 @@ type AppleProfile = {
   };
 };
 
+function getRequiredAppleEnv(name: (typeof REQUIRED_APPLE_ENV_VARS)[number]): string {
+  const value = process.env[name]?.trim();
+
+  if (!value) {
+    throw new Error(APPLE_OAUTH_MISSING_CONFIG_MESSAGE);
+  }
+
+  return value;
+}
+
+export function hasAppleOAuthConfig(): boolean {
+  return REQUIRED_APPLE_ENV_VARS.every((name) => {
+    const value = process.env[name]?.trim();
+    return Boolean(value);
+  });
+}
+
 @Injectable()
 export class AppleStrategy extends PassportStrategy(ApplePassportStrategy, 'apple') {
   constructor(private readonly authService: AuthService) {
     super({
-      clientID: process.env.APPLE_CLIENT_ID || 'missing-apple-client-id',
-      teamID: process.env.APPLE_TEAM_ID || 'missing-apple-team-id',
-      keyID: process.env.APPLE_KEY_ID || 'missing-apple-key-id',
-      key: (process.env.APPLE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
-      callbackURL:
-        process.env.APPLE_CALLBACK_URL || 'http://localhost:3000/api/auth/apple/callback',
+      clientID: getRequiredAppleEnv('APPLE_CLIENT_ID'),
+      teamID: getRequiredAppleEnv('APPLE_TEAM_ID'),
+      keyID: getRequiredAppleEnv('APPLE_KEY_ID'),
+      key: getRequiredAppleEnv('APPLE_PRIVATE_KEY').replace(/\\n/g, '\n'),
+      callbackURL: getRequiredAppleEnv('APPLE_CALLBACK_URL'),
       scope: ['name', 'email'],
       state: true,
     });

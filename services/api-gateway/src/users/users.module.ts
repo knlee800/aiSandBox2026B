@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { Plan } from '../entities/plan.entity';
+import { AuthModule } from '../auth/auth.module';
 import { QuotaModule } from '../quota/quota.module';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
@@ -12,7 +13,7 @@ import { SnapshotsModule } from '../snapshots/snapshots.module';
  * TASK-68B-2: User dashboard support endpoints module.
  */
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Plan]), QuotaModule, SnapshotsModule],
+  imports: [TypeOrmModule.forFeature([User, Plan]), AuthModule, QuotaModule, SnapshotsModule],
   controllers: [UsersController],
   providers: [UsersService],
   exports: [UsersService],

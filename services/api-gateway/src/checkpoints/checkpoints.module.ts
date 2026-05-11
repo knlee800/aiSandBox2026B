@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CheckpointsController } from './checkpoints.controller';
 import { CheckpointsService } from './checkpoints.service';
+import { AuthModule } from '../auth/auth.module';
 import { GitCheckpointModule } from '../git-checkpoints/git-checkpoint.module';
 import { SessionModule } from '../sessions/session.module';
 
@@ -11,6 +12,7 @@ import { SessionModule } from '../sessions/session.module';
  */
 @Module({
   imports: [
+    AuthModule,
     GitCheckpointModule, // For GitCheckpointService
     SessionModule, // For SessionService and ContainerManagerHttpClient
   ],

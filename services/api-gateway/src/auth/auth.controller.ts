@@ -26,7 +26,7 @@ import { SessionCookieGuard } from './session-cookie.guard';
 import { CsrfGuard } from './csrf.guard';
 import { EmailThrottlerGuard } from './email-throttler.guard';
 import * as acceptLanguageParser from 'accept-language-parser';
-import * as passport from 'passport';
+import passport from 'passport';
 import { Request as ExpressRequest, Response } from 'express';
 
 type OAuthSessionRequest = ExpressRequest & {
@@ -98,6 +98,14 @@ export class AuthController {
 
   private clearOauthState(request: OAuthSessionRequest): void {
     request.session = null;
+  }
+
+  private isPassportStrategyRegistered(name: string): boolean {
+    const instance = passport as typeof passport & {
+      _strategy?: (strategyName: string) => unknown;
+    };
+
+    return typeof instance._strategy === 'function' && Boolean(instance._strategy(name));
   }
 
   private getOauthErrorCode(error: unknown): 'oauth_failed' | 'account_conflict' {
@@ -236,6 +244,12 @@ export class AuthController {
     req.session = req.session ?? {};
     req.session.oauthLocale = normalizedLocale;
 
+    if (!this.isPassportStrategyRegistered('google')) {
+      this.clearOauthState(req);
+      response.redirect(this.buildOAuthRedirectPath(normalizedLocale, '/login', 'oauth_failed'));
+      return;
+    }
+
     passport.authenticate('google', {
       scope: ['email', 'profile'],
       session: false,
@@ -245,6 +259,12 @@ export class AuthController {
   @Get('google/callback')
   async googleCallback(@Request() req: OAuthSessionRequest, @Res() response: Response) {
     const fallbackLocale = this.normalizeLocale(req.session?.oauthLocale);
+
+    if (!this.isPassportStrategyRegistered('google')) {
+      this.clearOauthState(req);
+      response.redirect(this.buildOAuthRedirectPath(fallbackLocale, '/login', 'oauth_failed'));
+      return;
+    }
 
     await new Promise<void>((resolve, reject) => {
       passport.authenticate(
@@ -288,6 +308,12 @@ export class AuthController {
     req.session = req.session ?? {};
     req.session.oauthLocale = normalizedLocale;
 
+    if (!this.isPassportStrategyRegistered('apple')) {
+      this.clearOauthState(req);
+      response.redirect(this.buildOAuthRedirectPath(normalizedLocale, '/login', 'oauth_failed'));
+      return;
+    }
+
     passport.authenticate('apple', {
       scope: ['name', 'email'],
       session: false,
@@ -297,6 +323,12 @@ export class AuthController {
   @Post('apple/callback')
   async appleCallback(@Request() req: OAuthSessionRequest, @Res() response: Response) {
     const fallbackLocale = this.normalizeLocale(req.session?.oauthLocale);
+
+    if (!this.isPassportStrategyRegistered('apple')) {
+      this.clearOauthState(req);
+      response.redirect(this.buildOAuthRedirectPath(fallbackLocale, '/login', 'oauth_failed'));
+      return;
+    }
 
     await new Promise<void>((resolve) => {
       passport.authenticate(

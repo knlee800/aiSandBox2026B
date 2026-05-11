@@ -12,6 +12,7 @@ import { User } from '../entities/user.entity';
 import { Session } from '../entities/session.entity';
 import { UsageRecord } from '../entities/usage-record.entity';
 import { Plan } from '../entities/plan.entity';
+import { AuthModule } from '../auth/auth.module';
 import { SessionModule } from '../sessions/session.module';
 import { AdminOperationalController } from './admin-operational.controller';
 
@@ -45,6 +46,7 @@ import { AdminOperationalController } from './admin-operational.controller';
  */
 @Module({
   imports: [
+    AuthModule,
     PaymentsModule,
     SessionModule,
     TypeOrmModule.forFeature([User, Session, UsageRecord, Plan]),
