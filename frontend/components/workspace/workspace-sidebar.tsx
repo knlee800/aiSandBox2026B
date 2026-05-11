@@ -1,0 +1,262 @@
+'use client';
+
+import React from 'react';
+import type { ReactNode } from 'react';
+import type {
+  WorkspaceQuotaSummary,
+  WorkspaceUsageSummary,
+  WorkspaceUserSummary,
+} from './workspace-shell.logic';
+import type { WorkspaceProjectSummary } from './workspace-projects.logic';
+import type { Workspace } from './workspace-workspaces.logic';
+import enMessages from '@/messages/en.json';
+import zhCnMessages from '@/messages/zh-CN.json';
+import zhTwMessages from '@/messages/zh-TW.json';
+
+export type WorkspaceView = 'home' | 'projects' | 'templates' | 'project';
+
+export interface WorkspaceSidebarRecentProject
+  extends Pick<WorkspaceProjectSummary, 'id' | 'name' | 'updatedAt'> {}
+
+interface WorkspaceSidebarProps {
+  locale?: string;
+  workspaces: Workspace[];
+  selectedWorkspaceId: string | null;
+  onSelectWorkspaceId?: (workspaceId: string) => void;
+  workspaceView: WorkspaceView;
+  onWorkspaceViewChange?: (view: WorkspaceView) => void;
+  recentProjects: WorkspaceSidebarRecentProject[];
+  onOpenRecentProject?: (projectId: string) => void;
+  userSummary?: WorkspaceUserSummary | null;
+  usageSummary?: WorkspaceUsageSummary | null;
+  quotaSummary?: WorkspaceQuotaSummary | null;
+  activeSessions?: number;
+  onLogout?: () => void;
+  footerContent?: ReactNode;
+}
+
+function resolveNestedMessage(
+  source: Record<string, unknown>,
+  fullKey: string,
+): string | null {
+  const keys = fullKey.split('.');
+  let value: unknown = source;
+
+  for (const keyPart of keys) {
+    if (value && typeof value === 'object' && keyPart in (value as Record<string, unknown>)) {
+      value = (value as Record<string, unknown>)[keyPart];
+    } else {
+      return null;
+    }
+  }
+
+  return typeof value === 'string' ? value : null;
+}
+
+function getLocaleMessages(locale?: string): Record<string, unknown> {
+  if (locale === 'zh-TW') {
+    return zhTwMessages as Record<string, unknown>;
+  }
+  if (locale === 'zh-CN') {
+    return zhCnMessages as Record<string, unknown>;
+  }
+  return enMessages as Record<string, unknown>;
+}
+
+export function getWorkspaceScaffoldMessages(locale?: string) {
+  const activeMessages = getLocaleMessages(locale);
+  const fallbackMessages = enMessages as Record<string, unknown>;
+  const read = (fullKey: string): string =>
+    resolveNestedMessage(activeMessages, fullKey) ??
+    resolveNestedMessage(fallbackMessages, fullKey) ??
+    fullKey;
+
+  return {
+    appName: read('common.appName'),
+    home: read('workspace.home'),
+    projects: read('workspace.projects'),
+    templates: read('workspace.templates'),
+    recentProjects: read('workspace.recentProjects'),
+    upgrade: read('workspace.upgrade'),
+    newProject: read('workspace.newProject'),
+    noProjects: read('workspace.noProjects'),
+    buildAnything: read('workspace.buildAnything'),
+    describeBuild: read('workspace.describeBuild'),
+    start: read('workspace.start'),
+    logout: read('account.logout'),
+    comingSoon: read('tabs.comingSoon'),
+  };
+}
+
+function formatRecentProjectUpdatedAt(value: string): string {
+  const parsedDate = new Date(value);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return value;
+  }
+
+  return parsedDate.toLocaleDateString();
+}
+
+export default function WorkspaceSidebar(props: WorkspaceSidebarProps) {
+  const messages = getWorkspaceScaffoldMessages(props.locale);
+  const selectedWorkspace =
+    props.workspaces.find((workspace) => workspace.id === props.selectedWorkspaceId) ?? null;
+  const canShowCompactUsage = Boolean(
+    props.userSummary && props.usageSummary && props.quotaSummary,
+  );
+
+  return (
+    <aside
+      className="w-full shrink-0 border-b border-gray-200 bg-white md:w-72 md:border-b-0 md:border-r"
+      data-testid="workspace-sidebar"
+    >
+      <div className="flex h-full flex-col">
+        <div className="border-b border-gray-100 px-4 py-4">
+          <p className="text-sm font-semibold text-gray-900">{messages.appName}</p>
+          <p className="mt-1 truncate text-xs text-gray-500">
+            {selectedWorkspace?.name ?? messages.projects}
+          </p>
+        </div>
+
+        <div className="border-b border-gray-100 px-4 py-3">
+          <label
+            htmlFor="workspace-sidebar-workspace-select"
+            className="mb-2 block text-[11px] font-medium uppercase tracking-wide text-gray-500"
+          >
+            {messages.projects}
+          </label>
+          <select
+            id="workspace-sidebar-workspace-select"
+            className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900"
+            value={props.selectedWorkspaceId ?? ''}
+            onChange={(event) => props.onSelectWorkspaceId?.(event.target.value)}
+            data-testid="workspace-sidebar-workspace-select"
+          >
+            <option value="" disabled>
+              {selectedWorkspace?.name ?? messages.projects}
+            </option>
+            {props.workspaces.map((workspace) => (
+              <option key={workspace.id} value={workspace.id}>
+                {workspace.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="border-b border-gray-100 px-3 py-3">
+          <div className="space-y-1">
+            {([
+              ['home', messages.home],
+              ['projects', messages.projects],
+              ['templates', messages.templates],
+            ] as const).map(([view, label]) => {
+              const isActive = props.workspaceView === view;
+              return (
+                <button
+                  key={view}
+                  type="button"
+                  onClick={() => props.onWorkspaceViewChange?.(view)}
+                  className={`flex w-full items-center justify-between rounded px-3 py-2 text-left text-sm ${
+                    isActive
+                      ? 'bg-gray-900 text-white'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                  data-testid={`workspace-sidebar-nav-${view}`}
+                >
+                  <span>{label}</span>
+                  {isActive ? <span className="text-xs text-gray-300">Current</span> : null}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-4 py-4">
+          <div>
+            <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">
+              {messages.recentProjects}
+            </p>
+            <div className="mt-3 space-y-2">
+              {props.recentProjects.length > 0 ? (
+                props.recentProjects.map((project) => (
+                  <button
+                    key={project.id}
+                    type="button"
+                    onClick={() => props.onOpenRecentProject?.(project.id)}
+                    className="w-full rounded border border-gray-200 bg-white px-3 py-2 text-left hover:bg-gray-50"
+                    data-testid={`workspace-sidebar-recent-project-${project.id}`}
+                  >
+                    <p className="truncate text-sm font-medium text-gray-900">{project.name}</p>
+                    <p className="mt-1 text-xs text-gray-500">
+                      {formatRecentProjectUpdatedAt(project.updatedAt)}
+                    </p>
+                  </button>
+                ))
+              ) : (
+                <p
+                  className="rounded border border-dashed border-gray-200 px-3 py-4 text-sm text-gray-500"
+                  data-testid="workspace-sidebar-no-recent-projects"
+                >
+                  {messages.noProjects}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {canShowCompactUsage ? (
+            <div
+              className="mt-6 rounded border border-gray-200 bg-gray-50 p-3"
+              data-testid="workspace-sidebar-compact-usage"
+            >
+              <p className="truncate text-sm font-medium text-gray-900">
+                {props.userSummary?.email}
+              </p>
+              <p className="mt-1 text-xs text-gray-500">
+                {props.userSummary?.planName} ({props.userSummary?.planStatus})
+              </p>
+              <div className="mt-3 grid grid-cols-1 gap-2">
+                <div className="rounded border border-gray-200 bg-white px-3 py-2">
+                  <p className="text-[11px] uppercase tracking-wide text-gray-500">
+                    Active sessions
+                  </p>
+                  <p className="text-sm font-semibold text-gray-900">
+                    {props.activeSessions ?? 0}/{props.quotaSummary?.maxActiveSessions ?? 0}
+                  </p>
+                </div>
+                <div className="rounded border border-gray-200 bg-white px-3 py-2">
+                  <p className="text-[11px] uppercase tracking-wide text-gray-500">Tokens</p>
+                  <p className="text-sm font-semibold text-gray-900">
+                    {props.usageSummary?.tokensUsed24h ?? 0}/{props.quotaSummary?.maxTokens24h ?? 0}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        <div className="border-t border-gray-100 px-4 py-4">
+          <button
+            type="button"
+            disabled
+            className="w-full rounded border border-gray-300 bg-gray-100 px-3 py-2 text-sm font-medium text-gray-600"
+            data-testid="workspace-sidebar-upgrade-button"
+          >
+            {messages.upgrade}
+          </button>
+          {props.onLogout ? (
+            <button
+              type="button"
+              onClick={props.onLogout}
+              className="mt-2 w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              data-testid="workspace-header-logout-button"
+            >
+              {messages.logout}
+            </button>
+          ) : null}
+        </div>
+
+        {props.footerContent ? props.footerContent : null}
+      </div>
+    </aside>
+  );
+}

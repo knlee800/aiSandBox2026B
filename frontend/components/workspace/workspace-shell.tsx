@@ -3,6 +3,11 @@
 import React from 'react';
 import { PROJECT_FIRST_UX } from '@/lib/feature-flags';
 import { recoveryCopy } from '@/lib/recovery-copy';
+import WorkspaceSidebar, {
+  getWorkspaceScaffoldMessages,
+  type WorkspaceSidebarRecentProject,
+  type WorkspaceView,
+} from './workspace-sidebar';
 import {
   computeDashboardSliceState,
   computeHistorySliceState,
@@ -57,6 +62,8 @@ void projectFirstUxAnchors;
 interface WorkspaceShellProps {
   locale?: string;
   projectFirstUxEnabled?: boolean;
+  workspaceView?: WorkspaceView;
+  onWorkspaceViewChange?: (view: WorkspaceView) => void;
   onLogout?: () => void;
   sessions: WorkspaceShellSession[];
   selectedSessionId: string | null;
@@ -343,6 +350,8 @@ export function WorkspaceAdvancedDrawer(props: {
 export default function WorkspaceShell(props: WorkspaceShellProps) {
   const locale = props.locale ?? 'en';
   const projectFirstUxEnabled = props.projectFirstUxEnabled ?? PROJECT_FIRST_UX;
+  const resolvedWorkspaceView = props.workspaceView ?? 'project';
+  const scaffoldMessages = getWorkspaceScaffoldMessages(locale);
   const [advancedDrawerOpen, setAdvancedDrawerOpen] = React.useState(false);
   const shellState = computeWorkspaceShellState({
     isLoadingSessions: props.isLoadingSessions,
@@ -376,9 +385,6 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const canStopSelectedSession = Boolean(selectedSession && isUsableSession(selectedSession));
   const isStoppingSelectedSession =
     Boolean(props.selectedSessionId) && props.stoppingSessionId === props.selectedSessionId;
-  const projectsHref = `/${locale}/projects`;
-  const galleryHref = `/${locale}/gallery`;
-  const accountHref = `/${locale}/account`;
   const canReopenProject =
     projectFirstUxEnabled &&
     Boolean(props.selectedProjectId) &&
@@ -390,6 +396,9 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const latestProject = projectFirstUxEnabled
     ? computeLatestProject(props.workspaceProjects ?? [])
     : null;
+  const recentProjects = projectFirstUxEnabled
+    ? computeRecentProjects(props.workspaceProjects ?? [])
+    : [];
   const handleRestoreProjectHistoryRow =
     projectFirstUxEnabled &&
     props.selectedProjectId &&
@@ -452,6 +461,12 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
           };
         })()
       : undefined;
+  const handleOpenRecentProject =
+    props.onResumeWorkspaceProjectById && projectFirstUxEnabled
+      ? ((projectId: string) => {
+          void props.onResumeWorkspaceProjectById?.(projectId);
+        })
+      : undefined;
   const handleCopySelectedSessionId = async () => {
     if (!props.selectedSessionId) {
       return;
@@ -483,97 +498,350 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     });
   };
 
-  return (
-    <div className="min-h-screen bg-gray-100 flex flex-col" data-testid="workspace-shell">
-      <header className="h-14 bg-white border-b border-gray-200 px-4 flex items-center justify-between">
-        {projectFirstUxEnabled ? (
-          <>
-            <div className="min-w-0">
-              <h1 className="text-sm font-semibold text-gray-900">AI Sandbox</h1>
-              <p className="text-xs text-gray-500">Workspace</p>
-            </div>
-            <div className="flex items-center gap-6">
-              <nav
-                className="hidden md:flex items-center gap-4 text-xs font-medium text-gray-600"
-                aria-label="Project-first navigation"
-                data-testid="workspace-header-project-first-nav"
-              >
-                <a
-                  href={projectsHref}
-                  className="hover:text-gray-900 hover:underline"
-                  data-testid="workspace-header-projects-link"
-                >
-                  Projects
-                </a>
-                <a
-                  href={galleryHref}
-                  className="hover:text-gray-900 hover:underline"
-                  data-testid="workspace-header-gallery-link"
-                >
-                  Gallery
-                </a>
-                <a
-                  href={accountHref}
-                  className="hover:text-gray-900 hover:underline"
-                  data-testid="workspace-header-account-link"
-                >
-                  Account
-                </a>
-                {props.onLogout ? (
-                  <button
-                    type="button"
-                    onClick={props.onLogout}
-                    className="hover:text-gray-900 hover:underline transition active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-                    data-testid="workspace-header-logout-button"
-                  >
-                    Log out
-                  </button>
-                ) : null}
-              </nav>
-              <div className="text-xs text-gray-600 text-right">
-                <p>{headerIdentityLabel}</p>
-                <p className="text-[11px] text-gray-500">Project-first workspace shell</p>
-              </div>
-            </div>
-          </>
-        ) : (
-          <>
-            <div>
-              <h1 className="text-sm font-semibold text-gray-900">AI Sandbox Workspace</h1>
-              <p className="text-xs text-gray-500">Workspace</p>
-            </div>
-            <div className="text-xs text-gray-600 text-right">
-              <p>{headerIdentityLabel}</p>
-              <p className="text-[11px] text-gray-500">Session-scoped workspace</p>
-              <p className="mt-1">
-                <a
-                  href="keys"
-                  className="text-[11px] font-medium text-blue-600 hover:text-blue-700 hover:underline"
-                  data-testid="workspace-header-api-keys-link"
-                >
-                  API Keys
-                </a>
-              </p>
-              {props.onLogout ? (
-                <p className="mt-1">
-                  <button
-                    type="button"
-                    onClick={props.onLogout}
-                    className="text-[11px] font-medium text-blue-600 hover:text-blue-700 hover:underline transition active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-                    data-testid="workspace-header-logout-button"
-                  >
-                    Log out
-                  </button>
-                </p>
-              ) : null}
-            </div>
-          </>
-        )}
-      </header>
+  const historyAndDashboardContent = (
+    <>
+      <section
+        className="mx-2 mb-2 bg-white border border-gray-200 rounded p-3"
+        data-testid="history-control-slice"
+      >
+        <p className="text-xs font-semibold text-gray-700 mb-2">History & Controls</p>
+        <HistorySliceMessage state={historyState} />
+        <HistoryCreateCheckpointPanel
+          projectFirstUxEnabled={projectFirstUxEnabled}
+          selectedSessionId={props.selectedSessionId}
+          createState={props.checkpointCreateState}
+          createErrorMessage={props.checkpointCreateError}
+          descriptionValue={props.checkpointDescriptionInput}
+          onDescriptionChange={props.onCheckpointDescriptionChange}
+          onCreateCheckpoint={props.onCreateManualCheckpoint}
+        />
+        <HistoryProjectPanel
+          projectFirstUxEnabled={projectFirstUxEnabled}
+          selectedSessionId={props.selectedSessionId}
+          listState={props.projectListState ?? 'idle'}
+          actionState={props.projectActionState ?? 'idle'}
+          actionMessage={props.projectActionMessage ?? null}
+          actionError={props.projectActionError ?? null}
+          workspaces={props.workspaces ?? []}
+          selectedWorkspaceId={props.selectedWorkspaceId ?? null}
+          workspaceActionState={props.workspaceActionState ?? 'idle'}
+          workspaceActionError={props.workspaceActionError ?? null}
+          workspaceCreateNameInput={props.workspaceCreateNameInput ?? ''}
+          workspaceRenameNameInput={props.workspaceRenameNameInput ?? ''}
+          onSelectWorkspaceId={props.onSelectWorkspaceId}
+          onWorkspaceCreateNameInputChange={props.onWorkspaceCreateNameInputChange}
+          onWorkspaceRenameNameInputChange={props.onWorkspaceRenameNameInputChange}
+          onCreateWorkspace={props.onCreateWorkspace}
+          onRenameWorkspace={props.onRenameWorkspace}
+          onDeleteWorkspace={props.onDeleteWorkspace}
+          projects={props.workspaceProjects ?? []}
+          selectedProjectId={props.selectedProjectId ?? null}
+          projectMoveTargetWorkspaceId={props.projectMoveTargetWorkspaceId ?? null}
+          projectNameInput={props.projectNameInput ?? ''}
+          onProjectNameInputChange={props.onProjectNameInputChange}
+          onProjectMoveTargetWorkspaceIdChange={props.onProjectMoveTargetWorkspaceIdChange}
+          onSelectProjectId={props.onSelectProjectId}
+          onMoveWorkspaceProject={props.onMoveWorkspaceProject}
+          onCreateProject={props.onCreateWorkspaceProject}
+          onOpenProject={props.onOpenWorkspaceProject}
+          selectedProjectVisibility={props.selectedProjectVisibility ?? 'private'}
+          onSelectedProjectVisibilityChange={props.onSelectedProjectVisibilityChange}
+          onUpdateProjectVisibility={props.onUpdateWorkspaceProjectVisibility}
+          publicProjectListState={props.publicProjectListState ?? 'idle'}
+          publicProjectActionState={props.publicProjectActionState ?? 'idle'}
+          publicProjectActionMessage={props.publicProjectActionMessage ?? null}
+          publicProjectActionError={props.publicProjectActionError ?? null}
+          publicProjects={props.publicWorkspaceProjects ?? []}
+          selectedPublicProjectId={props.selectedPublicProjectId ?? null}
+          selectedPublicProjectDetail={props.selectedPublicProjectDetail ?? null}
+          onSelectPublicProjectId={props.onSelectPublicProjectId}
+          onViewPublicProject={props.onViewPublicWorkspaceProject}
+          onForkPublicProject={props.onForkPublicWorkspaceProject}
+        />
+        <HistorySnapshotPanel
+          selectedSessionId={props.selectedSessionId}
+          listState={props.snapshotListState ?? 'idle'}
+          actionState={props.snapshotActionState ?? 'idle'}
+          actionMessage={props.snapshotActionMessage ?? null}
+          actionError={props.snapshotActionError ?? null}
+          snapshots={props.workspaceSnapshots ?? []}
+          selectedSnapshotId={props.selectedSnapshotId ?? null}
+          onSelectSnapshotId={props.onSelectSnapshotId}
+          onSaveSnapshot={props.onSaveWorkspaceSnapshot}
+          onRestoreSnapshot={props.onRestoreWorkspaceSnapshot}
+          onExportArchive={props.onExportWorkspaceArchive}
+          onImportArchive={props.onImportWorkspaceArchive}
+        />
+        <ProjectHistoryPanel
+          projectFirstUxEnabled={projectFirstUxEnabled}
+          selectedProjectId={props.selectedProjectId ?? null}
+          rows={projectHistoryRows}
+          onRestore={handleRestoreProjectHistoryRow}
+          onSave={handleSaveProjectHistorySnapshot}
+        />
+        {historyState === 'ready' ? (
+          <HistoryCheckpointList
+            projectFirstUxEnabled={projectFirstUxEnabled}
+            selectedSessionId={props.selectedSessionId}
+            checkpoints={props.checkpoints}
+            hasSelectedSession={Boolean(props.selectedSessionId)}
+            revertState={props.checkpointRevertState}
+            revertErrorMessage={props.checkpointRevertError}
+            selectedCheckpointId={props.checkpointRevertTargetId}
+            onInitiateRevert={props.onInitiateCheckpointRevert}
+            onAdvanceRevertPreview={props.onAdvanceCheckpointRevertPreview}
+            onCancelRevert={props.onCancelCheckpointRevert}
+            onConfirmRevert={props.onConfirmCheckpointRevert}
+            diffState={props.checkpointDiffState}
+            diffErrorMessage={props.checkpointDiffError}
+            diffTargetCheckpointId={props.checkpointDiffTargetId}
+            diffResponse={props.checkpointDiffResponse}
+            onViewDiff={props.onViewCheckpointDiff}
+            compareState={props.checkpointCompareState}
+            compareErrorMessage={props.checkpointCompareError}
+            compareBaseCheckpointId={props.checkpointCompareBaseId}
+            compareTargetCheckpointId={props.checkpointCompareTargetId}
+            compareResponse={props.checkpointCompareResponse}
+            onStartCompare={props.onStartCheckpointCompare}
+            onCancelCompare={props.onCancelCheckpointCompare}
+            onSelectCompareBase={props.onSelectCheckpointCompareBase}
+            onSelectCompareTarget={props.onSelectCheckpointCompareTarget}
+            onRunCompare={props.onRunCheckpointCompare}
+            pinnedCompareReferenceCheckpointId={props.pinnedCompareReferenceCheckpointId}
+            onPinCheckpointCompareReference={props.onPinCheckpointCompareReference}
+            onClearPinnedCheckpointCompareReference={props.onClearPinnedCheckpointCompareReference}
+            snapshotState={props.checkpointSnapshotState}
+            snapshotErrorMessage={props.checkpointSnapshotError}
+            snapshotTargetCheckpointId={props.checkpointSnapshotTargetId}
+            snapshotResponse={props.checkpointSnapshotResponse}
+            onViewSnapshot={props.onViewCheckpointSnapshot}
+            liveOpenState={props.checkpointLiveOpenState}
+            liveOpenErrorMessage={props.checkpointLiveOpenError}
+            liveOpenTargetPath={props.checkpointLiveOpenTargetPath}
+            canOpenInLiveWorkspace={props.canOpenCheckpointFileInLiveWorkspace}
+            onOpenInLiveWorkspace={props.onOpenCheckpointFileInLiveWorkspace}
+          />
+        ) : null}
+      </section>
+      <section className="mx-2 mb-2 bg-white border border-gray-200 rounded p-3" data-testid="dashboard-slice">
+        <p className="text-xs font-semibold text-gray-700 mb-2">Dashboard</p>
+        <DashboardSliceMessage state={dashboardState} />
+        {dashboardState === 'ready' && props.userSummary && props.usageSummary && props.quotaSummary ? (
+          <DashboardSummary
+            userSummary={props.userSummary}
+            usageSummary={props.usageSummary}
+            quotaSummary={props.quotaSummary}
+            activeSessions={activeSessions}
+          />
+        ) : null}
+      </section>
+    </>
+  );
 
-      <div className="flex-1 min-h-0 flex flex-col md:flex-row">
-        <aside className="w-full md:w-64 bg-white border-b md:border-b-0 md:border-r border-gray-200 flex flex-col" data-testid="session-sidebar-shell">
-          {!projectFirstUxEnabled ? (
+  const projectWorkspaceContent = (
+    <>
+      <div className="px-2 pt-2">
+        <p
+          className="rounded border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-blue-800"
+          data-testid="workspace-trust-note"
+        >
+          {projectFirstUxEnabled
+            ? recoveryCopy.workspace.trustNote
+            : 'Workspace data is session-scoped. If a state fails, use the suggested retry action below.'}
+        </p>
+      </div>
+      <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 p-2">
+        <section className="bg-white border border-gray-200 rounded p-3" data-testid="chat-panel-shell">
+          <p className="text-xs font-semibold text-gray-700 mb-2">Chat Panel</p>
+          <WorkspaceChatPanel
+            projectFirstUxEnabled={projectFirstUxEnabled}
+            selectedSessionId={props.selectedSessionId}
+            promptInput={props.chatPromptInput ?? ''}
+            onPromptInputChange={props.onChatPromptInputChange}
+            selectedModelOption={props.selectedModelOption ?? ''}
+            onSelectedModelOptionChange={props.onSelectedModelOptionChange}
+            availableModelOptions={props.availableModelOptions ?? []}
+            orchestrationEnabled={props.orchestrationEnabled ?? false}
+            onOrchestrationEnabledChange={props.onOrchestrationEnabledChange}
+            onSubmitPrompt={props.onSubmitChatPrompt}
+            requestState={props.chatRequestState ?? 'idle'}
+            executionId={props.chatExecutionId ?? null}
+            statusMessage={props.chatStatusMessage ?? null}
+            responseText={props.chatResponseText ?? ''}
+            errorMessage={props.chatError ?? null}
+            threadMessages={props.chatThreadMessages ?? []}
+            onConfirmExecutionFileActions={props.onConfirmExecutionFileActions}
+            onCancelExecutionFileActions={props.onCancelExecutionFileActions}
+          />
+          <p className="text-xs font-semibold text-gray-700 mb-2">Command Input</p>
+          <WorkspaceExecPanel
+            projectFirstUxEnabled={projectFirstUxEnabled}
+            canReopenProject={canReopenProject}
+            onReopenProject={canReopenProject ? handleReopenProject : undefined}
+            selectedSessionId={props.selectedSessionId}
+            commandInput={props.commandInput}
+            onCommandInputChange={props.onCommandInputChange}
+            onExecuteCommand={props.onExecuteCommand}
+            execState={props.execState}
+          />
+          <WorkspaceBuildPanel
+            projectFirstUxEnabled={projectFirstUxEnabled}
+            selectedSessionId={props.selectedSessionId}
+            selectedBuildTarget={props.selectedBuildTarget ?? ''}
+            onSelectedBuildTargetChange={props.onSelectedBuildTargetChange}
+            availableBuildTargets={props.availableBuildTargets ?? []}
+            onRunBuildTarget={props.onRunBuildTarget}
+            buildRequestState={props.buildRequestState ?? 'idle'}
+            buildStatusMessage={props.buildStatusMessage ?? null}
+            buildOutput={props.buildOutput ?? ''}
+            buildError={props.buildError ?? null}
+          />
+          <div className="mt-3">
+            <ShellStateMessage
+              state={shellState}
+              sessionError={props.sessionError}
+              projectFirstUxEnabled={projectFirstUxEnabled}
+              canReopenProject={canReopenProject}
+              onReopenProject={canReopenProject ? handleReopenProject : undefined}
+              onResumeLatestProject={handleResumeLatestProject}
+            />
+          </div>
+        </section>
+        <section className="bg-white border border-gray-200 rounded p-3" data-testid="editor-panel-shell">
+          <p className="text-xs font-semibold text-gray-700 mb-2">Editor Panel</p>
+          <WorkspaceEditorPanel
+            projectFirstUxEnabled={projectFirstUxEnabled}
+            state={props.fileSurfaceState}
+            fileTree={props.workspaceFileTree}
+            selectedFilePath={props.selectedFilePath}
+            selectedFileContent={props.selectedFileContent}
+            saveState={props.fileSaveState}
+            saveErrorMessage={props.fileSaveError}
+            errorMessage={props.fileSurfaceError}
+            onSelectFile={props.onSelectWorkspaceFile}
+            onEditorContentChange={props.onEditorContentChange}
+            onSaveFile={props.onSaveWorkspaceFile}
+          />
+        </section>
+        <section className="bg-white border border-gray-200 rounded p-3" data-testid="preview-panel-shell">
+          <p className="text-xs font-semibold text-gray-700 mb-2">Preview Panel</p>
+          <WorkspacePreviewPanel
+            projectFirstUxEnabled={projectFirstUxEnabled}
+            selectedSessionId={props.selectedSessionId}
+            previewState={props.previewState}
+            previewUrl={props.previewUrl}
+            onStartPreview={props.onStartPreview}
+            onRefreshPreview={props.onRefreshPreview}
+            onPreviewLoad={props.onPreviewLoad}
+            onPreviewError={props.onPreviewError}
+          />
+        </section>
+      </div>
+      {historyAndDashboardContent}
+    </>
+  );
+
+  const projectsWorkspaceContent = (
+    <div className="flex flex-1 min-h-0 flex-col" data-testid="workspace-projects-view">
+      <div className="px-2 pt-2">
+        <p
+          className="rounded border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-blue-800"
+          data-testid="workspace-trust-note"
+        >
+          {recoveryCopy.workspace.trustNote}
+        </p>
+      </div>
+      {historyAndDashboardContent}
+    </div>
+  );
+
+  const homeWorkspaceContent = (
+    <div className="flex flex-1 min-h-0 flex-col p-4" data-testid="workspace-home-placeholder">
+      <div className="mx-auto flex w-full max-w-3xl flex-1 items-center justify-center">
+        <div className="w-full rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <p className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+            {scaffoldMessages.home}
+          </p>
+          <h2 className="mt-3 text-3xl font-semibold text-gray-900">
+            {scaffoldMessages.buildAnything}
+          </h2>
+          <p className="mt-2 text-sm text-gray-600">{scaffoldMessages.describeBuild}</p>
+          <div className="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-4">
+            <textarea
+              disabled
+              value=""
+              placeholder={scaffoldMessages.describeBuild}
+              className="min-h-32 w-full resize-none rounded border border-gray-300 bg-white px-3 py-3 text-sm text-gray-500"
+              data-testid="workspace-home-placeholder-input"
+            />
+            <div className="mt-3 flex justify-end">
+              <button
+                type="button"
+                disabled
+                className="rounded bg-gray-300 px-4 py-2 text-sm font-medium text-white"
+                data-testid="workspace-home-placeholder-submit"
+              >
+                {scaffoldMessages.start}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const templatesWorkspaceContent = (
+    <div className="flex flex-1 min-h-0 flex-col p-4" data-testid="workspace-templates-placeholder">
+      <div className="mx-auto w-full max-w-3xl rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+        <p className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+          {scaffoldMessages.templates}
+        </p>
+        <h2 className="mt-3 text-2xl font-semibold text-gray-900">{scaffoldMessages.templates}</h2>
+        <p className="mt-2 text-sm text-gray-600">{scaffoldMessages.comingSoon}</p>
+      </div>
+    </div>
+  );
+
+  if (!projectFirstUxEnabled) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex flex-col" data-testid="workspace-shell">
+        <header className="h-14 bg-white border-b border-gray-200 px-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-sm font-semibold text-gray-900">AI Sandbox Workspace</h1>
+            <p className="text-xs text-gray-500">Workspace</p>
+          </div>
+          <div className="text-xs text-gray-600 text-right">
+            <p>{headerIdentityLabel}</p>
+            <p className="text-[11px] text-gray-500">Session-scoped workspace</p>
+            <p className="mt-1">
+              <a
+                href="keys"
+                className="text-[11px] font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                data-testid="workspace-header-api-keys-link"
+              >
+                API Keys
+              </a>
+            </p>
+            {props.onLogout ? (
+              <p className="mt-1">
+                <button
+                  type="button"
+                  onClick={props.onLogout}
+                  className="text-[11px] font-medium text-blue-600 hover:text-blue-700 hover:underline transition active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                  data-testid="workspace-header-logout-button"
+                >
+                  Log out
+                </button>
+              </p>
+            ) : null}
+          </div>
+        </header>
+
+        <div className="flex-1 min-h-0 flex flex-col md:flex-row">
+          <aside
+            className="w-full md:w-64 bg-white border-b md:border-b-0 md:border-r border-gray-200 flex flex-col"
+            data-testid="session-sidebar-shell"
+          >
             <div className="p-3 border-b border-gray-100">
               <button
                 type="button"
@@ -593,72 +861,97 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                 <p className="mt-1 text-xs text-amber-700">{props.sessionActionError}</p>
               ) : null}
             </div>
-          ) : null}
 
-          <div className="flex-1 overflow-y-auto p-2">
-            {projectFirstUxEnabled
-              ? null
-              : props.sessions.map((session) => {
-                  const selected = session.id === props.selectedSessionId;
-                  const isUsable = isUsableSession(session);
-                  const isStopping = props.stoppingSessionId === session.id;
-                  return (
-                    <div
-                      key={session.id}
-                      className={`w-full rounded border p-2 mb-2 ${
-                        selected
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-200 bg-white'
-                      }`}
+            <div className="flex-1 overflow-y-auto p-2">
+              {props.sessions.map((session) => {
+                const selected = session.id === props.selectedSessionId;
+                const isUsable = isUsableSession(session);
+                const isStopping = props.stoppingSessionId === session.id;
+                return (
+                  <div
+                    key={session.id}
+                    className={`w-full rounded border p-2 mb-2 ${
+                      selected ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white'
+                    }`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => props.onSelectSession(session.id)}
+                      className={`w-full text-left rounded ${selected ? '' : 'hover:bg-gray-50'}`}
                     >
-                      <button
-                        type="button"
-                        onClick={() => props.onSelectSession(session.id)}
-                        className={`w-full text-left rounded ${
-                          selected ? '' : 'hover:bg-gray-50'
-                        }`}
-                      >
-                        <p className="text-xs font-medium text-gray-900 truncate">Session {session.id.slice(0, 8)}</p>
-                        <p className="text-xs text-gray-500">{getSessionLabel(session)}</p>
-                      </button>
-                      <div className="mt-2">
-                        {isUsable ? (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              runStopSessionWithConfirmation({
-                                sessionId: session.id,
-                                confirmStop: () =>
-                                  typeof window === 'undefined'
-                                    ? true
-                                    : window.confirm(
-                                        'Stop this session? Unsaved running work in this session may be interrupted.',
-                                      ),
-                                onStopSession: props.onStopSession,
-                              });
-                            }}
-                            disabled={isStopping}
-                            className="w-full rounded border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] font-medium text-amber-800 disabled:opacity-60"
-                            data-testid={`session-stop-${session.id}`}
-                          >
-                            {isStopping ? 'Stopping...' : 'Stop'}
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => props.onRemoveSession(session.id)}
-                            className="w-full rounded border border-gray-300 bg-gray-50 px-2 py-1 text-[11px] font-medium text-gray-700"
-                            data-testid={`session-remove-${session.id}`}
-                          >
-                            Remove
-                          </button>
-                        )}
-                      </div>
+                      <p className="text-xs font-medium text-gray-900 truncate">
+                        Session {session.id.slice(0, 8)}
+                      </p>
+                      <p className="text-xs text-gray-500">{getSessionLabel(session)}</p>
+                    </button>
+                    <div className="mt-2">
+                      {isUsable ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            runStopSessionWithConfirmation({
+                              sessionId: session.id,
+                              confirmStop: () =>
+                                typeof window === 'undefined'
+                                  ? true
+                                  : window.confirm(
+                                      'Stop this session? Unsaved running work in this session may be interrupted.',
+                                    ),
+                              onStopSession: props.onStopSession,
+                            });
+                          }}
+                          disabled={isStopping}
+                          className="w-full rounded border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] font-medium text-amber-800 disabled:opacity-60"
+                          data-testid={`session-stop-${session.id}`}
+                        >
+                          {isStopping ? 'Stopping...' : 'Stop'}
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => props.onRemoveSession(session.id)}
+                          className="w-full rounded border border-gray-300 bg-gray-50 px-2 py-1 text-[11px] font-medium text-gray-700"
+                          data-testid={`session-remove-${session.id}`}
+                        >
+                          Remove
+                        </button>
+                      )}
                     </div>
-                  );
-                })}
-          </div>
-          {projectFirstUxEnabled ? (
+                  </div>
+                );
+              })}
+            </div>
+          </aside>
+
+          <main className="flex-1 min-w-0 flex flex-col overflow-y-auto">{projectWorkspaceContent}</main>
+        </div>
+
+        <footer className="h-10 bg-white border-t border-gray-200 px-4 flex items-center justify-between text-xs text-gray-600">
+          <span>Workspace</span>
+          <span>Sessions: {props.sessions.length}</span>
+        </footer>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-100 flex flex-col" data-testid="workspace-shell">
+      <div className="flex-1 min-h-0 flex flex-col md:flex-row">
+        <WorkspaceSidebar
+          locale={locale}
+          workspaces={props.workspaces ?? []}
+          selectedWorkspaceId={props.selectedWorkspaceId ?? null}
+          onSelectWorkspaceId={props.onSelectWorkspaceId}
+          workspaceView={resolvedWorkspaceView}
+          onWorkspaceViewChange={props.onWorkspaceViewChange}
+          recentProjects={recentProjects}
+          onOpenRecentProject={handleOpenRecentProject}
+          userSummary={props.userSummary}
+          usageSummary={props.usageSummary}
+          quotaSummary={props.quotaSummary}
+          activeSessions={activeSessions}
+          onLogout={props.onLogout}
+          footerContent={
             <WorkspaceAdvancedDrawer
               isOpen={advancedDrawerOpen}
               onToggle={() => setAdvancedDrawerOpen((current) => !current)}
@@ -669,242 +962,22 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
               isStoppingSession={isStoppingSelectedSession}
               onStopSession={canStopSelectedSession ? handleStopSelectedSession : undefined}
             />
-          ) : null}
-        </aside>
+          }
+        />
 
-        <main className="flex-1 min-w-0 flex flex-col overflow-y-auto">
-          <div className="px-2 pt-2">
-            <p className="rounded border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-blue-800" data-testid="workspace-trust-note">
-              {projectFirstUxEnabled
-                ? recoveryCopy.workspace.trustNote
-                : 'Workspace data is session-scoped. If a state fails, use the suggested retry action below.'}
-            </p>
-          </div>
-          <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 p-2">
-            <section className="bg-white border border-gray-200 rounded p-3" data-testid="chat-panel-shell">
-              <p className="text-xs font-semibold text-gray-700 mb-2">Chat Panel</p>
-              <WorkspaceChatPanel
-                projectFirstUxEnabled={projectFirstUxEnabled}
-                selectedSessionId={props.selectedSessionId}
-                promptInput={props.chatPromptInput ?? ''}
-                onPromptInputChange={props.onChatPromptInputChange}
-                selectedModelOption={props.selectedModelOption ?? ''}
-                onSelectedModelOptionChange={props.onSelectedModelOptionChange}
-                availableModelOptions={props.availableModelOptions ?? []}
-                orchestrationEnabled={props.orchestrationEnabled ?? false}
-                onOrchestrationEnabledChange={props.onOrchestrationEnabledChange}
-                onSubmitPrompt={props.onSubmitChatPrompt}
-                requestState={props.chatRequestState ?? 'idle'}
-                executionId={props.chatExecutionId ?? null}
-                statusMessage={props.chatStatusMessage ?? null}
-                responseText={props.chatResponseText ?? ''}
-                errorMessage={props.chatError ?? null}
-                threadMessages={props.chatThreadMessages ?? []}
-                onConfirmExecutionFileActions={props.onConfirmExecutionFileActions}
-                onCancelExecutionFileActions={props.onCancelExecutionFileActions}
-              />
-              <p className="text-xs font-semibold text-gray-700 mb-2">Command Input</p>
-              <WorkspaceExecPanel
-                projectFirstUxEnabled={projectFirstUxEnabled}
-                canReopenProject={canReopenProject}
-                onReopenProject={canReopenProject ? handleReopenProject : undefined}
-                selectedSessionId={props.selectedSessionId}
-                commandInput={props.commandInput}
-                onCommandInputChange={props.onCommandInputChange}
-                onExecuteCommand={props.onExecuteCommand}
-                execState={props.execState}
-              />
-              <WorkspaceBuildPanel
-                projectFirstUxEnabled={projectFirstUxEnabled}
-                selectedSessionId={props.selectedSessionId}
-                selectedBuildTarget={props.selectedBuildTarget ?? ''}
-                onSelectedBuildTargetChange={props.onSelectedBuildTargetChange}
-                availableBuildTargets={props.availableBuildTargets ?? []}
-                onRunBuildTarget={props.onRunBuildTarget}
-                buildRequestState={props.buildRequestState ?? 'idle'}
-                buildStatusMessage={props.buildStatusMessage ?? null}
-                buildOutput={props.buildOutput ?? ''}
-                buildError={props.buildError ?? null}
-              />
-              <div className="mt-3">
-                <ShellStateMessage
-                  state={shellState}
-                  sessionError={props.sessionError}
-                  projectFirstUxEnabled={projectFirstUxEnabled}
-                  canReopenProject={canReopenProject}
-                  onReopenProject={canReopenProject ? handleReopenProject : undefined}
-                  onResumeLatestProject={handleResumeLatestProject}
-                />
-              </div>
-            </section>
-            <section className="bg-white border border-gray-200 rounded p-3" data-testid="editor-panel-shell">
-              <p className="text-xs font-semibold text-gray-700 mb-2">Editor Panel</p>
-              <WorkspaceEditorPanel
-                projectFirstUxEnabled={projectFirstUxEnabled}
-                state={props.fileSurfaceState}
-                fileTree={props.workspaceFileTree}
-                selectedFilePath={props.selectedFilePath}
-                selectedFileContent={props.selectedFileContent}
-                saveState={props.fileSaveState}
-                saveErrorMessage={props.fileSaveError}
-                errorMessage={props.fileSurfaceError}
-                onSelectFile={props.onSelectWorkspaceFile}
-                onEditorContentChange={props.onEditorContentChange}
-                onSaveFile={props.onSaveWorkspaceFile}
-              />
-            </section>
-            <section className="bg-white border border-gray-200 rounded p-3" data-testid="preview-panel-shell">
-              <p className="text-xs font-semibold text-gray-700 mb-2">Preview Panel</p>
-              <WorkspacePreviewPanel
-                projectFirstUxEnabled={projectFirstUxEnabled}
-                selectedSessionId={props.selectedSessionId}
-                previewState={props.previewState}
-                previewUrl={props.previewUrl}
-                onStartPreview={props.onStartPreview}
-                onRefreshPreview={props.onRefreshPreview}
-                onPreviewLoad={props.onPreviewLoad}
-                onPreviewError={props.onPreviewError}
-              />
-            </section>
-          </div>
-          <section className="mx-2 mb-2 bg-white border border-gray-200 rounded p-3" data-testid="history-control-slice">
-            <p className="text-xs font-semibold text-gray-700 mb-2">History & Controls</p>
-            <HistorySliceMessage state={historyState} />
-            <HistoryCreateCheckpointPanel
-              projectFirstUxEnabled={projectFirstUxEnabled}
-              selectedSessionId={props.selectedSessionId}
-              createState={props.checkpointCreateState}
-              createErrorMessage={props.checkpointCreateError}
-              descriptionValue={props.checkpointDescriptionInput}
-              onDescriptionChange={props.onCheckpointDescriptionChange}
-              onCreateCheckpoint={props.onCreateManualCheckpoint}
-            />
-            <HistoryProjectPanel
-              projectFirstUxEnabled={projectFirstUxEnabled}
-              selectedSessionId={props.selectedSessionId}
-              listState={props.projectListState ?? 'idle'}
-              actionState={props.projectActionState ?? 'idle'}
-              actionMessage={props.projectActionMessage ?? null}
-              actionError={props.projectActionError ?? null}
-              workspaces={props.workspaces ?? []}
-              selectedWorkspaceId={props.selectedWorkspaceId ?? null}
-              workspaceActionState={props.workspaceActionState ?? 'idle'}
-              workspaceActionError={props.workspaceActionError ?? null}
-              workspaceCreateNameInput={props.workspaceCreateNameInput ?? ''}
-              workspaceRenameNameInput={props.workspaceRenameNameInput ?? ''}
-              onSelectWorkspaceId={props.onSelectWorkspaceId}
-              onWorkspaceCreateNameInputChange={props.onWorkspaceCreateNameInputChange}
-              onWorkspaceRenameNameInputChange={props.onWorkspaceRenameNameInputChange}
-              onCreateWorkspace={props.onCreateWorkspace}
-              onRenameWorkspace={props.onRenameWorkspace}
-              onDeleteWorkspace={props.onDeleteWorkspace}
-              projects={props.workspaceProjects ?? []}
-              selectedProjectId={props.selectedProjectId ?? null}
-              projectMoveTargetWorkspaceId={props.projectMoveTargetWorkspaceId ?? null}
-              projectNameInput={props.projectNameInput ?? ''}
-              onProjectNameInputChange={props.onProjectNameInputChange}
-              onProjectMoveTargetWorkspaceIdChange={props.onProjectMoveTargetWorkspaceIdChange}
-              onSelectProjectId={props.onSelectProjectId}
-              onMoveWorkspaceProject={props.onMoveWorkspaceProject}
-              onCreateProject={props.onCreateWorkspaceProject}
-              onOpenProject={props.onOpenWorkspaceProject}
-                selectedProjectVisibility={props.selectedProjectVisibility ?? 'private'}
-                onSelectedProjectVisibilityChange={props.onSelectedProjectVisibilityChange}
-                onUpdateProjectVisibility={props.onUpdateWorkspaceProjectVisibility}
-                publicProjectListState={props.publicProjectListState ?? 'idle'}
-                publicProjectActionState={props.publicProjectActionState ?? 'idle'}
-                publicProjectActionMessage={props.publicProjectActionMessage ?? null}
-                publicProjectActionError={props.publicProjectActionError ?? null}
-                publicProjects={props.publicWorkspaceProjects ?? []}
-                selectedPublicProjectId={props.selectedPublicProjectId ?? null}
-                selectedPublicProjectDetail={props.selectedPublicProjectDetail ?? null}
-                onSelectPublicProjectId={props.onSelectPublicProjectId}
-                onViewPublicProject={props.onViewPublicWorkspaceProject}
-                onForkPublicProject={props.onForkPublicWorkspaceProject}
-            />
-            <HistorySnapshotPanel
-              selectedSessionId={props.selectedSessionId}
-              listState={props.snapshotListState ?? 'idle'}
-              actionState={props.snapshotActionState ?? 'idle'}
-              actionMessage={props.snapshotActionMessage ?? null}
-              actionError={props.snapshotActionError ?? null}
-              snapshots={props.workspaceSnapshots ?? []}
-              selectedSnapshotId={props.selectedSnapshotId ?? null}
-              onSelectSnapshotId={props.onSelectSnapshotId}
-              onSaveSnapshot={props.onSaveWorkspaceSnapshot}
-              onRestoreSnapshot={props.onRestoreWorkspaceSnapshot}
-              onExportArchive={props.onExportWorkspaceArchive}
-              onImportArchive={props.onImportWorkspaceArchive}
-            />
-            <ProjectHistoryPanel
-              projectFirstUxEnabled={projectFirstUxEnabled}
-              selectedProjectId={props.selectedProjectId ?? null}
-              rows={projectHistoryRows}
-              onRestore={handleRestoreProjectHistoryRow}
-              onSave={handleSaveProjectHistorySnapshot}
-            />
-            {historyState === 'ready' ? (
-              <HistoryCheckpointList
-                projectFirstUxEnabled={projectFirstUxEnabled}
-                selectedSessionId={props.selectedSessionId}
-                checkpoints={props.checkpoints}
-                hasSelectedSession={Boolean(props.selectedSessionId)}
-                revertState={props.checkpointRevertState}
-                revertErrorMessage={props.checkpointRevertError}
-                selectedCheckpointId={props.checkpointRevertTargetId}
-                onInitiateRevert={props.onInitiateCheckpointRevert}
-                onAdvanceRevertPreview={props.onAdvanceCheckpointRevertPreview}
-                onCancelRevert={props.onCancelCheckpointRevert}
-                onConfirmRevert={props.onConfirmCheckpointRevert}
-                diffState={props.checkpointDiffState}
-                diffErrorMessage={props.checkpointDiffError}
-                diffTargetCheckpointId={props.checkpointDiffTargetId}
-                diffResponse={props.checkpointDiffResponse}
-                onViewDiff={props.onViewCheckpointDiff}
-                compareState={props.checkpointCompareState}
-                compareErrorMessage={props.checkpointCompareError}
-                compareBaseCheckpointId={props.checkpointCompareBaseId}
-                compareTargetCheckpointId={props.checkpointCompareTargetId}
-                compareResponse={props.checkpointCompareResponse}
-                onStartCompare={props.onStartCheckpointCompare}
-                onCancelCompare={props.onCancelCheckpointCompare}
-                onSelectCompareBase={props.onSelectCheckpointCompareBase}
-                onSelectCompareTarget={props.onSelectCheckpointCompareTarget}
-                onRunCompare={props.onRunCheckpointCompare}
-                pinnedCompareReferenceCheckpointId={props.pinnedCompareReferenceCheckpointId}
-                onPinCheckpointCompareReference={props.onPinCheckpointCompareReference}
-                onClearPinnedCheckpointCompareReference={props.onClearPinnedCheckpointCompareReference}
-                snapshotState={props.checkpointSnapshotState}
-                snapshotErrorMessage={props.checkpointSnapshotError}
-                snapshotTargetCheckpointId={props.checkpointSnapshotTargetId}
-                snapshotResponse={props.checkpointSnapshotResponse}
-                onViewSnapshot={props.onViewCheckpointSnapshot}
-                liveOpenState={props.checkpointLiveOpenState}
-                liveOpenErrorMessage={props.checkpointLiveOpenError}
-                liveOpenTargetPath={props.checkpointLiveOpenTargetPath}
-                canOpenInLiveWorkspace={props.canOpenCheckpointFileInLiveWorkspace}
-                onOpenInLiveWorkspace={props.onOpenCheckpointFileInLiveWorkspace}
-              />
-            ) : null}
-          </section>
-          <section className="mx-2 mb-2 bg-white border border-gray-200 rounded p-3" data-testid="dashboard-slice">
-            <p className="text-xs font-semibold text-gray-700 mb-2">Dashboard</p>
-            <DashboardSliceMessage state={dashboardState} />
-            {dashboardState === 'ready' && props.userSummary && props.usageSummary && props.quotaSummary ? (
-              <DashboardSummary
-                userSummary={props.userSummary}
-                usageSummary={props.usageSummary}
-                quotaSummary={props.quotaSummary}
-                activeSessions={activeSessions}
-              />
-            ) : null}
-          </section>
+        <main className="flex-1 min-w-0 flex flex-col overflow-y-auto" data-testid="workspace-content-shell">
+          {resolvedWorkspaceView === 'home' ? homeWorkspaceContent : null}
+          {resolvedWorkspaceView === 'projects' ? projectsWorkspaceContent : null}
+          {resolvedWorkspaceView === 'templates' ? templatesWorkspaceContent : null}
+          {resolvedWorkspaceView === 'project' ? (
+            <div data-testid="workspace-project-view">{projectWorkspaceContent}</div>
+          ) : null}
         </main>
       </div>
 
       <footer className="h-10 bg-white border-t border-gray-200 px-4 flex items-center justify-between text-xs text-gray-600">
         <span>Workspace</span>
-        <span>{projectFirstUxEnabled ? `Workspaces: ${props.sessions.length}` : `Sessions: ${props.sessions.length}`}</span>
+        <span>Workspaces: {props.sessions.length}</span>
       </footer>
     </div>
   );
@@ -6336,6 +6409,29 @@ function computeLatestProject(projects: WorkspaceProjectSummary[]): WorkspacePro
   });
 
   return latestProject ?? null;
+}
+
+function computeRecentProjects(
+  projects: WorkspaceProjectSummary[],
+): WorkspaceSidebarRecentProject[] {
+  if (projects.length === 0) {
+    return [];
+  }
+
+  return [...projects]
+    .sort((left, right) => {
+      const updatedAtComparison = right.updatedAt.localeCompare(left.updatedAt);
+      if (updatedAtComparison !== 0) {
+        return updatedAtComparison;
+      }
+      return left.id.localeCompare(right.id);
+    })
+    .slice(0, 5)
+    .map((project) => ({
+      id: project.id,
+      name: project.name,
+      updatedAt: project.updatedAt,
+    }));
 }
 
 function ShellStateMessage(props: {

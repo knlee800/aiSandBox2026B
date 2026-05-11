@@ -1,4 +1,4 @@
-## Authority & Scope
+ï»¿## Authority & Scope
 
 This file lists currently ACTIVE and SELECTED tasks.
 
@@ -731,7 +731,7 @@ Define backup scope, restore priorities, disaster recovery scenarios, recovery o
 **Checkpoint:** `docs/PHASE-61B-CHECKPOINT.md`
 
 **Objective:**  
-Implement operational backup procedure documents and restore runbooks for the Phase 61A recovery scenarios. Documentation only?”no platform code, schema, or endpoint changes.
+Implement operational backup procedure documents and restore runbooks for the Phase 61A recovery scenarios. Documentation only??no platform code, schema, or endpoint changes.
 
 **Scope:**
 - Operational backup procedure documents
@@ -775,7 +775,7 @@ Produce the Phase 62A design for backup and restore validation drills so the pla
 **Checkpoint:** `docs/PHASE-62B-CHECKPOINT.md`
 
 **Objective:**  
-Implement operator-ready validation drill runbooks for Phase 62A scenarios. Documentation only?”no platform code, schema, or endpoint changes.
+Implement operator-ready validation drill runbooks for Phase 62A scenarios. Documentation only??no platform code, schema, or endpoint changes.
 
 **Scope:**
 - Operator-ready validation drill runbooks
@@ -835,7 +835,7 @@ Define security operations scope for launch readiness, including audit logging, 
 **Checkpoint:** `docs/PHASE-63B-CHECKPOINT.md`
 
 **Objective:**  
-Implement operator-ready security runbooks and compliance operational documentation per Phase 63A design. Documentation only?”no platform code, schema, or endpoint changes.
+Implement operator-ready security runbooks and compliance operational documentation per Phase 63A design. Documentation only??no platform code, schema, or endpoint changes.
 
 **Scope:**
 - Operator-ready security runbooks
@@ -893,7 +893,7 @@ Define launch-ready legal/privacy document scope, privacy policy/terms/cookie no
 **Checkpoint:** `docs/PHASE-64B-CHECKPOINT.md`
 
 **Objective:**  
-Implement operator-ready legal/privacy operational documentation per Phase 64A design. Documentation only?”no platform code, schema, or endpoint changes.
+Implement operator-ready legal/privacy operational documentation per Phase 64A design. Documentation only??no platform code, schema, or endpoint changes.
 
 **Scope:**
 - Operator-ready legal/privacy operational docs
@@ -950,7 +950,7 @@ Define launch-ready admin tool scope, admin actions and operator permissions, ab
 **Checkpoint:** `docs/PHASE-65B-CHECKPOINT.md`
 
 **Objective:**  
-Implement operator-ready admin procedures per Phase 65A design. Documentation only?”no platform code, schema, or endpoint changes.
+Implement operator-ready admin procedures per Phase 65A design. Documentation only??no platform code, schema, or endpoint changes.
 
 **Scope:**
 - Operator-ready admin procedures
@@ -1031,7 +1031,7 @@ Define launch-ready analytics and growth visibility scope, product usage/retenti
 **Checkpoint:** `docs/PHASE-66B-CHECKPOINT.md`
 
 **Objective:**
-Implement operator-ready analytics review procedures and stakeholder/founder reporting procedures per Phase 66A design. Documentation only?”no platform code, schema, or endpoint changes.
+Implement operator-ready analytics review procedures and stakeholder/founder reporting procedures per Phase 66A design. Documentation only??no platform code, schema, or endpoint changes.
 
 **Scope:**
 - Operator-ready analytics review procedures
@@ -3044,7 +3044,7 @@ Validate and consolidate completed Phase 80 slices (`TASK-80A`, `TASK-80B`) and 
 - ??PRD/ARCHITECTURE alignment confirmed (file write reuse, checkpoint reuse, session scoping, request-driven behavior)
 - ??55/55 tests pass; 0 regressions
 - ??Final checkpoint created: `docs/PHASE-80-FINAL-CHECKPOINT.md`
-- ? ï? NOTE: This closure predates TASK-80C. Superseded by TASK-80-RECONSOLIDATE.
+- ?ï¿½ï¿½? NOTE: This closure predates TASK-80C. Superseded by TASK-80-RECONSOLIDATE.
 
 ---
 
@@ -6838,7 +6838,7 @@ Prevent the selected-session change effect from clearing project/open UI state w
 ---
 
 
-## PROJ-02 ¡X Project Open Hydration Cleanup
+## PROJ-02 ï¿½X Project Open Hydration Cleanup
 
 **Family status:** ACTIVE
 
@@ -6907,9 +6907,9 @@ Prevent project snapshots/restores from including `.git/` internals so restoring
 ---
 
 
-## PROJ-03 ¡X Project-First UX Redesign
+## PROJ-03 ï¿½X Project-First UX Redesign
 
-**Family status:** ACTIVE ¡X Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2e-hotfix COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary ¡X container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED; D0 COMPLETE and LOCKED; D0b COMPLETE and LOCKED; D0c COMPLETE and LOCKED; D0d COMPLETE and LOCKED; D0e COMPLETE and LOCKED; D0e-hotfix COMPLETE and LOCKED; D1a COMPLETE and LOCKED; D1b COMPLETE and LOCKED; D1c COMPLETE and LOCKED; D1d COMPLETE and LOCKED; D1d-hotfix COMPLETE and LOCKED. C3/C2d-unload deferred and not yet registered.
+**Family status:** ACTIVE ï¿½X Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2e-hotfix COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary ï¿½X container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED; D0 COMPLETE and LOCKED; D0b COMPLETE and LOCKED; D0c COMPLETE and LOCKED; D0d COMPLETE and LOCKED; D0e COMPLETE and LOCKED; D0e-hotfix COMPLETE and LOCKED; D1a COMPLETE and LOCKED; D1b COMPLETE and LOCKED; D1c COMPLETE and LOCKED; D1d COMPLETE and LOCKED; D1d-hotfix COMPLETE and LOCKED. C3/C2d-unload deferred and not yet registered.
 
 **Current stage:** PROJ-03-D1d-hotfix (COMPLETE and LOCKED)
 
@@ -6949,8 +6949,8 @@ Introduce the `PROJECT_FIRST_UX` feature flag and a centralized recovery-vocabul
 **Bounded scope:**
 - Frontend only
 - New `frontend/lib/feature-flags.ts` (or equivalent) exporting `PROJECT_FIRST_UX` boolean read from env
-- New `frontend/lib/recovery-copy.ts` exporting string constants for Phase A¡VB vocabulary ("Reopen project", "Workspace disconnected", "All changes saved", etc.)
-- Wire flag into page.tsx and workspace-shell.tsx as consumption points only ¡X no string substitution yet
+- New `frontend/lib/recovery-copy.ts` exporting string constants for Phase Aï¿½VB vocabulary ("Reopen project", "Workspace disconnected", "All changes saved", etc.)
+- Wire flag into page.tsx and workspace-shell.tsx as consumption points only ï¿½X no string substitution yet
 - No behavior change; no UI string changed in this slice
 
 **Non-goals:**
@@ -6989,7 +6989,7 @@ Stand up the project-first information architecture (Home, Projects, Workspace, 
 
 **Bounded scope:**
 - Frontend only
-- Add `/[locale]/projects`, `/[locale]/gallery`, `/[locale]/account` top-level routes ¡X each wraps or redirects to its current equivalent surface
+- Add `/[locale]/projects`, `/[locale]/gallery`, `/[locale]/account` top-level routes ï¿½X each wraps or redirects to its current equivalent surface
 - Update primary nav header (workspace-shell or equivalent) to show new labels under the flag
 - `/[locale]/app/...` workspace route stays intact; new `/[locale]/projects/:id` workspace view reuses it
 - Flag off: product is byte-equivalent to today's behavior
@@ -7007,7 +7007,7 @@ Stand up the project-first information architecture (Home, Projects, Workspace, 
 - Flag on: new top-level nav renders with correct labels; all routes resolve to existing equivalent content with no 404s, no console errors, no broken links
 - Flag off: product is byte-equivalent to today's behavior
 - Existing test suites pass; new tests verify flag-gated rendering
-- Manual smoke pass: open a project, write a file, run preview, see the new nav ¡X all work
+- Manual smoke pass: open a project, write a file, run preview, see the new nav ï¿½X all work
 
 **Dependencies:** PROJ-03-A0 (flag infrastructure must exist first)
 
@@ -7029,7 +7029,7 @@ Replace all user-visible raw session/container lifecycle strings (e.g. "session 
 **Bounded scope:**
 - Frontend only
 - Under `PROJECT_FIRST_UX` flag: all known raw lifecycle strings on the user surface are replaced using recovery-copy bundle strings
-- "Reopen project" primary button wires to the existing `handleOpenWorkspaceProject` / open-project path ¡X no new behavior, just surfaces the action where there was previously only a raw error
+- "Reopen project" primary button wires to the existing `handleOpenWorkspaceProject` / open-project path ï¿½X no new behavior, just surfaces the action where there was previously only a raw error
 - No new endpoint, no new backend call, no new retry logic
 
 **Non-goals:**
@@ -7088,7 +7088,7 @@ Introduce a collapsed Advanced drawer structure inside the workspace shell behin
 - Existing workspace-shell tests pass with no new failures
 - Typecheck clean; no lint errors introduced on changed files
 
-**Dependencies:** PROJ-03-A0 (flag), PROJ-03-A1 (IA shell), PROJ-03-A3 (vocabulary) ¡X all COMPLETE and LOCKED
+**Dependencies:** PROJ-03-A0 (flag), PROJ-03-A1 (IA shell), PROJ-03-A3 (vocabulary) ï¿½X all COMPLETE and LOCKED
 
 **Invariants preserved:**
 - `PROJECT_FIRST_UX` remains kill switch
@@ -7117,7 +7117,7 @@ Hide the sessions list from the primary workspace surface and move the stop-sess
 - Under flag: sessions list hidden from primary surface (component stays mounted; only its primary-surface render is suppressed)
 - Under flag: stop-session rendered inside the Advanced drawer from A2a
 - Advanced drawer then contains: session ID + status (from A2a) + stop-session button
-- Existing stop-session handler and API call are unchanged ¡X only render location changes
+- Existing stop-session handler and API call are unchanged ï¿½X only render location changes
 
 **Non-goals:**
 - No change to stop-session logic, handler, or API call
@@ -7162,7 +7162,7 @@ Introduce one frontend helper primitive for opening a project in a newly created
 **Bounded scope:**
 - Frontend only
 - New helper module/function plus focused unit tests
-- Helper wraps existing primitives only: create session ¡÷ call existing `handleOpenWorkspaceProject` with the new session id
+- Helper wraps existing primitives only: create session ï¿½ï¿½ call existing `handleOpenWorkspaceProject` with the new session id
 - Preserve existing deterministic await sequencing and hydration discipline from PROJ-02 family
 - No user-visible call sites switched in this slice
 - No change to `handleOpenWorkspaceProject` internals
@@ -7363,7 +7363,7 @@ Behind `PROJECT_FIRST_UX`, relax `handleOpenWorkspaceProject`'s precondition so 
 
 ---
 
-### PROJ-03-B3a ¡X Confirm And Lock Existing Reopen Project Affordances Route Through Fresh-Session Path Behind Feature Flag
+### PROJ-03-B3a ï¿½X Confirm And Lock Existing Reopen Project Affordances Route Through Fresh-Session Path Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-B3a-CHECKPOINT.md`
@@ -7404,7 +7404,7 @@ Behind `PROJECT_FIRST_UX`, relax `handleOpenWorkspaceProject`'s precondition so 
 
 ---
 
-### PROJ-03-B4a ¡X Add Open Project By Id In Fresh Session Handler Behind Feature Flag
+### PROJ-03-B4a ï¿½X Add Open Project By Id In Fresh Session Handler Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Nature:** FRONTEND / PHASE B HANDLER WIRING
@@ -7466,12 +7466,12 @@ Behind `PROJECT_FIRST_UX`, add a parameterized handler (`handleResumeWorkspacePr
 
 ---
 
-### PROJ-03-B4b ¡X Add Resume Latest Project CTA In Shell Empty State Behind Feature Flag
+### PROJ-03-B4b ï¿½X Add Resume Latest Project CTA In Shell Empty State Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Nature:** FRONTEND / PHASE B CTA UI
 **Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-B4b-CHECKPOINT.md`
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase B ¡X B4 Resume Latest Project CTA (split: B4a handler wiring, B4b CTA UI)
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase B ï¿½X B4 Resume Latest Project CTA (split: B4a handler wiring, B4b CTA UI)
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, add a single "Resume latest project" primary-action button to the existing `shellState === 'empty'` `StateMessage` in `WorkspaceShell`. The CTA computes the latest project from the existing `workspaceProjects` prop (by `updatedAt` descending, tie-break by project id) and calls the locked B4a `onResumeWorkspaceProjectById` callback. No route or IA change.
@@ -7529,19 +7529,19 @@ Behind `PROJECT_FIRST_UX`, add a single "Resume latest project" primary-action b
 
 ---
 
-### PROJ-03-C1a ¡X Add Read-Only Project History Panel Behind Feature Flag
+### PROJ-03-C1a ï¿½X Add Read-Only Project History Panel Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Nature:** FRONTEND / PHASE C READ-ONLY HISTORY PANEL
 **Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-C1a-CHECKPOINT.md`
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ¡X C1 Workspace History tab (split: C1a read-only panel, C1b Restore wiring)
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ï¿½X C1 Workspace History tab (split: C1a read-only panel, C1b Restore wiring)
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, add a read-only History panel inside the workspace that lists the current project's existing project-scoped snapshots newest-first, with a human label and timestamp. No Restore action, no writes, no new endpoints, no git-checkpoint union.
 
 **Bounded scope:**
 - Frontend only
-- Reuse existing project-scoped snapshot data already available to the workspace/page flow ¡X no new fetcher
+- Reuse existing project-scoped snapshot data already available to the workspace/page flow ï¿½X no new fetcher
 - New local helper / view-model to derive `HistoryRow[]` from existing snapshot source
 - Sort by `createdAt` descending; tie-break by snapshot id (deterministic)
 - Mount the panel inside an existing workspace shell slot; no new layout primitive
@@ -7554,7 +7554,7 @@ Behind `PROJECT_FIRST_UX`, add a read-only History panel inside the workspace th
 - No autosave, named save, save dialog, or any write
 - No backend changes, new endpoints, or new fetchers
 - No retention/compaction
-- No vocabulary purge ("snapshot" ¡÷ "history") outside the new panel itself
+- No vocabulary purge ("snapshot" ï¿½ï¿½ "history") outside the new panel itself
 - No change to existing snapshots panel
 - No change to locked B-phase handlers (B0/B1/B2a/B2b/B3a/B4a/B4b)
 - No change to A3 recovery copy bundle entries beyond one additive entry if needed
@@ -7583,12 +7583,12 @@ Behind `PROJECT_FIRST_UX`, add a read-only History panel inside the workspace th
 
 ---
 
-### PROJ-03-C1b-pre ¡X Add Restore Project From Snapshot Handler Behind Feature Flag
+### PROJ-03-C1b-pre ï¿½X Add Restore Project From Snapshot Handler Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Nature:** FRONTEND / PHASE C RESTORE HANDLER (PREPARATORY)
 **Checkpoint:** `docs/PROJ-03-C1b-pre-CHECKPOINT.md`
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ¡X C1b split: C1b-pre handler-only slice
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ï¿½X C1b split: C1b-pre handler-only slice
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, add a parameterized handler in `frontend/app/[locale]/app/page.tsx` that opens a supplied project at a supplied snapshot via the locked B0 helper in a freshly created session, mirroring the locked B4a hydration sequence exactly, and expose it as a new optional callback prop on `WorkspaceShell`. No UI consumer in this slice.
@@ -7652,12 +7652,12 @@ Behind `PROJECT_FIRST_UX`, add a parameterized handler in `frontend/app/[locale]
 
 ---
 
-### PROJ-03-C1b-cta ¡X Wire Restore Action On Project History Rows Behind Feature Flag
+### PROJ-03-C1b-cta ï¿½X Wire Restore Action On Project History Rows Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C1b-cta-CHECKPOINT.md`
 **Nature:** FRONTEND / PHASE C RESTORE BUTTON UI
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ¡X C1b split: C1b-cta visible Restore-button UI slice
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ï¿½X C1b split: C1b-cta visible Restore-button UI slice
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, render one Restore button per row in the locked C1a `ProjectHistoryPanel`, gated by an inline `window.confirm`, that calls the locked C1b-pre `onRestoreWorkspaceProjectFromSnapshotById` prop with `(selectedProjectId, row.id)`. No new handler, no new fetcher, no layout change.
@@ -7665,11 +7665,11 @@ Behind `PROJECT_FIRST_UX`, render one Restore button per row in the locked C1a `
 **Bounded scope:**
 - Frontend only
 - Changes allowed in:
-  - `frontend/lib/recovery-copy.ts`: two additive copy entries ¡X Restore label and confirm text
+  - `frontend/lib/recovery-copy.ts`: two additive copy entries ï¿½X Restore label and confirm text
   - `frontend/components/workspace/workspace-shell.tsx`: new optional `onRestore?: (snapshotId: string) => void` on `ProjectHistoryPanel`; derive local restore callback in `WorkspaceShell`; render row-level Restore button when callback exists
-  - `frontend/components/workspace/workspace-shell.test.tsx`: 4¡V5 focused tests
+  - `frontend/components/workspace/workspace-shell.test.tsx`: 4ï¿½V5 focused tests
 - Handler derivation gated on: `projectFirstUxEnabled` + `selectedProjectId` + `onRestoreWorkspaceProjectFromSnapshotById`
-- Click path: inline `window.confirm` guard (SSR-safe, mirrors A2b pattern); on accept ¡÷ call handler once; on decline ¡÷ no-op
+- Click path: inline `window.confirm` guard (SSR-safe, mirrors A2b pattern); on accept ï¿½ï¿½ call handler once; on decline ï¿½ï¿½ no-op
 - `page.tsx` unchanged in this slice
 
 **Non-goals:**
@@ -7709,12 +7709,12 @@ Behind `PROJECT_FIRST_UX`, render one Restore button per row in the locked C1a `
 
 ---
 
-### PROJ-03-C2a-rate-limit ¡X Add Per-Minute Autosave Safety-Net Pure-Logic Helper Behind Feature Flag
+### PROJ-03-C2a-rate-limit ï¿½X Add Per-Minute Autosave Safety-Net Pure-Logic Helper Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2a-rate-limit-CHECKPOINT.md`
 **Nature:** FRONTEND / PHASE C AUTOSAVE RATE-LIMIT SCAFFOLDING
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ¡X C2 first slice: pure-logic safety-net helper
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ï¿½X C2 first slice: pure-logic safety-net helper
 
 **Objective:**
 Add a single pure-logic helper module (`frontend/lib/autosave-rate-limit.ts`) that defines the autosave rate-limit contract every future C2 trigger will use. No consumers, no write-path changes, no UI change. Mirrors the A0 mechanical-scaffolding pattern.
@@ -7745,7 +7745,7 @@ Add a single pure-logic helper module (`frontend/lib/autosave-rate-limit.ts`) th
 - Returns `false` when `now - lastSnapshotAt < minIntervalMs`
 - Boundary behavior (exactly equal) is explicit and covered by tests
 - Zero-interval and negative-interval inputs are explicit and covered by tests
-- Pure function: identical inputs ¡÷ identical outputs; no observable side effects
+- Pure function: identical inputs ï¿½ï¿½ identical outputs; no observable side effects
 - Existing focused suites remain green; typecheck clean; no introduced lint errors
 - No other production files changed
 
@@ -7765,12 +7765,12 @@ Add a single pure-logic helper module (`frontend/lib/autosave-rate-limit.ts`) th
 
 ---
 
-### PROJ-03-C2b-trigger-preview ¡X Add Preview-Start Success Autosave Trigger Behind Feature Flag
+### PROJ-03-C2b-trigger-preview ï¿½X Add Preview-Start Success Autosave Trigger Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2b-trigger-preview-CHECKPOINT.md`
-**Nature:** FRONTEND / PHASE C AUTOSAVE TRIGGER ¡X PREVIEW-START SUCCESS
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ¡X C2 first behavioral trigger slice
+**Nature:** FRONTEND / PHASE C AUTOSAVE TRIGGER ï¿½X PREVIEW-START SUCCESS
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ï¿½X C2 first behavioral trigger slice
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, after a successful preview-start in `handleStartPreview`, attempt one project-scoped snapshot via the existing `saveWorkspaceSnapshot` fetcher and the locked C2a `shouldAllowAutosaveNow` rate-limit, then reload the user's snapshot list so the new row appears in the locked C1a `ProjectHistoryPanel`. Skip silently when the flag is off, when no project or session is selected, when project-open hydration is in progress, when rate-limited, or when the save fails. No UI surface change.
@@ -7830,12 +7830,12 @@ Behind `PROJECT_FIRST_UX`, after a successful preview-start in `handleStartPrevi
 
 ---
 
-### PROJ-03-C2c-label-format ¡X Add Project Snapshot Label Name Extension Pure-Logic Helpers Behind Feature Flag
+### PROJ-03-C2c-label-format ï¿½X Add Project Snapshot Label Name Extension Pure-Logic Helpers Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2c-label-format-CHECKPOINT.md`
-**Nature:** FRONTEND / PHASE C SNAPSHOT LABEL FORMAT EXTENSION ¡X PURE LOGIC
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ¡X C2c first slice: label-format scaffolding
+**Nature:** FRONTEND / PHASE C SNAPSHOT LABEL FORMAT EXTENSION ï¿½X PURE LOGIC
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ï¿½X C2c first slice: label-format scaffolding
 
 **Objective:**
 Add pure-logic helpers that support an optional user-supplied name in project-scoped snapshot labels while preserving exact backward compatibility with the current unnamed `[project-id:...]` label shape produced and consumed since B0/B4. No consumers yet. No write-path change. No UI change. Mirrors the C2a-rate-limit and A0 mechanical-scaffolding pattern.
@@ -7891,12 +7891,12 @@ Add pure-logic helpers that support an optional user-supplied name in project-sc
 
 ---
 
-### PROJ-03-C2c-handler ¡X Add Named Project Snapshot Save Pure-Logic Helper Behind Feature Flag
+### PROJ-03-C2c-handler ï¿½X Add Named Project Snapshot Save Pure-Logic Helper Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2c-handler-CHECKPOINT.md`
-**Nature:** FRONTEND / PHASE C NAMED SAVE PURE LOGIC ¡X HELPER SCAFFOLDING
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ¡X C2c second slice: named-save handler helper
+**Nature:** FRONTEND / PHASE C NAMED SAVE PURE LOGIC ï¿½X HELPER SCAFFOLDING
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ï¿½X C2c second slice: named-save handler helper
 
 **Objective:**
 Provide a pure-logic helper that performs a single project-scoped named save by composing the locked C2c-label-format `buildProjectScopedSnapshotLabelWithName` helper with the existing `saveWorkspaceSnapshot` fetcher. Returns a discriminated result and never throws. No consumer wiring. No UI. Mirrors the helper-only scaffolding pattern used by C2a-rate-limit and C2c-label-format.
@@ -7954,12 +7954,12 @@ Provide a pure-logic helper that performs a single project-scoped named save by 
 
 ---
 
-### PROJ-03-C2c-cta-handler-pre ¡X Add Page-Level Named Project Save Handler Wired To Helper Behind Feature Flag
+### PROJ-03-C2c-cta-handler-pre ï¿½X Add Page-Level Named Project Save Handler Wired To Helper Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2c-cta-handler-pre-CHECKPOINT.md`
-**Nature:** FRONTEND / PHASE C NAMED SAVE ¡X PAGE HANDLER WIRING (NO UI)
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ¡X C2c third slice: page-level handler pre-step
+**Nature:** FRONTEND / PHASE C NAMED SAVE ï¿½X PAGE HANDLER WIRING (NO UI)
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ï¿½X C2c third slice: page-level handler pre-step
 
 **Objective:**
 Add one new `handleSaveNamedProjectSnapshot(name: string)` callback in `page.tsx` that calls the locked `attemptNamedProjectSave` helper, reloads the workspace snapshots list on success, and exposes the callback as a new optional `onSaveNamedProjectSnapshot` prop on `WorkspaceShell`. No visible UI in this slice.
@@ -7970,8 +7970,8 @@ Add one new `handleSaveNamedProjectSnapshot(name: string)` callback in `page.tsx
   - New callback `handleSaveNamedProjectSnapshot(name: string): Promise<void>`
   - Gated on `PROJECT_FIRST_UX`; short-circuits when token, `selectedProjectId`, `selectedSessionId`, or `projectOpenInProgressRef.current` are missing/true
   - Calls locked `attemptNamedProjectSave({ token, sessionId, projectId, name })`
-  - On `{ status: 'saved' }` ¡÷ calls `loadWorkspaceSnapshotsForUser(token)` (best-effort reload)
-  - On `{ status: 'failed' }` ¡÷ logs and returns; no UI surface
+  - On `{ status: 'saved' }` ï¿½ï¿½ calls `loadWorkspaceSnapshotsForUser(token)` (best-effort reload)
+  - On `{ status: 'failed' }` ï¿½ï¿½ logs and returns; no UI surface
   - Passes callback into `<WorkspaceShell ...>` as `onSaveNamedProjectSnapshot`
 - Additive changes in `frontend/components/workspace/workspace-shell.tsx`:
   - New optional prop only: `onSaveNamedProjectSnapshot?: (name: string) => Promise<void>`
@@ -8016,12 +8016,12 @@ Add one new `handleSaveNamedProjectSnapshot(name: string)` callback in `page.tsx
 
 ---
 
-### PROJ-03-C2c-cta-button ¡X Add Named Save Button With Prompt To Project History Panel Behind Feature Flag
+### PROJ-03-C2c-cta-button ï¿½X Add Named Save Button With Prompt To Project History Panel Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2c-cta-button-CHECKPOINT.md`
-**Nature:** FRONTEND / PHASE C NAMED SAVE ¡X VISIBLE BUTTON UI
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ¡X C2c fourth slice: named-save visible CTA
+**Nature:** FRONTEND / PHASE C NAMED SAVE ï¿½X VISIBLE BUTTON UI
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ï¿½X C2c fourth slice: named-save visible CTA
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, render one "Save" button in `ProjectHistoryPanel` that triggers `window.prompt` for a snapshot name, then calls the locked `onSaveNamedProjectSnapshot` prop. First visible user-initiated named-save affordance.
@@ -8063,9 +8063,9 @@ Behind `PROJECT_FIRST_UX`, render one "Save" button in `ProjectHistoryPanel` tha
 - Save button visible in `ProjectHistoryPanel` header when flag on + `selectedProjectId` present + handler present
 - No Save button when flag off, or `selectedProjectId` absent, or handler absent
 - Click triggers `window.prompt` with the configured prompt text
-- Prompt cancelled ¡÷ handler not called
-- Prompt empty/whitespace ¡÷ handler not called
-- Prompt with text ¡÷ `onSaveNamedProjectSnapshot` called with the prompted name
+- Prompt cancelled ï¿½ï¿½ handler not called
+- Prompt empty/whitespace ï¿½ï¿½ handler not called
+- Prompt with text ï¿½ï¿½ `onSaveNamedProjectSnapshot` called with the prompted name
 - Existing Restore buttons and history rows unchanged
 - Existing focused suites remain green
 - Typecheck clean, no introduced lint errors
@@ -8089,12 +8089,12 @@ Behind `PROJECT_FIRST_UX`, render one "Save" button in `ProjectHistoryPanel` tha
 
 ---
 
-### PROJ-03-C2c-display ¡X Show Parsed Snapshot Name In Project History Rows Behind Feature Flag
+### PROJ-03-C2c-display ï¿½X Show Parsed Snapshot Name In Project History Rows Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2c-display-CHECKPOINT.md`
-**Nature:** FRONTEND / PHASE C NAMED SAVE ¡X HISTORY ROW DISPLAY
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ¡X C2c fifth slice: named-save row display
+**Nature:** FRONTEND / PHASE C NAMED SAVE ï¿½X HISTORY ROW DISPLAY
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ï¿½X C2c fifth slice: named-save row display
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, update project history row labeling so named snapshots show the parsed user-supplied name, while unnamed snapshots continue to display the existing default label. No layout change, no new component, no new prop, no handler change.
@@ -8154,12 +8154,12 @@ Behind `PROJECT_FIRST_UX`, update project history row labeling so named snapshot
 
 ---
 
-### PROJ-03-C2d-expiry-warn ¡X Add Session-Expiry Warning Autosave Trigger Behind Feature Flag
+### PROJ-03-C2d-expiry-warn ï¿½X Add Session-Expiry Warning Autosave Trigger Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2d-expiry-warn-CHECKPOINT.md`
-**Nature:** FRONTEND / PHASE C AUTOSAVE TRIGGER ¡X SESSION-EXPIRY WARNING
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ¡X C2d first slice: in-app expiry-warning lifecycle trigger
+**Nature:** FRONTEND / PHASE C AUTOSAVE TRIGGER ï¿½X SESSION-EXPIRY WARNING
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ï¿½X C2d first slice: in-app expiry-warning lifecycle trigger
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, when the workspace detects a session-expiry warning (or equivalent session-terminated warning boundary), attempt one project-scoped autosave snapshot using the locked `attemptProjectAutosave` helper and the existing `lastProjectAutosaveAtRef` rate-limit ref, then reload the snapshot list. Skip silently when the flag is off, when no project or session is selected, when project-open hydration is in progress, when rate-limited, or when the save fails.
@@ -8189,7 +8189,7 @@ Behind `PROJECT_FIRST_UX`, when the workspace detects a session-expiry warning (
 - No C2d-unload/C2e/C2f, C3, C4, or Phase D/E work
 
 **Acceptance checks:**
-- Expiry-warning trigger fires ¡÷ flag on + project + session + not hydrating + not rate-limited ¡÷ one autosave attempt
+- Expiry-warning trigger fires ï¿½ï¿½ flag on + project + session + not hydrating + not rate-limited ï¿½ï¿½ one autosave attempt
 - Rate-limited: skip silently
 - Flag off: no autosave
 - No project or no session: no autosave
@@ -8218,12 +8218,12 @@ Behind `PROJECT_FIRST_UX`, when the workspace detects a session-expiry warning (
 
 ---
 
-### PROJ-03-C2e ¡X Add AI-Action-Boundary Autosave Trigger Behind Feature Flag
+### PROJ-03-C2e ï¿½X Add AI-Action-Boundary Autosave Trigger Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2e-CHECKPOINT.md`
-**Nature:** FRONTEND / PHASE C AUTOSAVE TRIGGER ¡X AI ACTION BOUNDARY
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ¡X C2e: AI file-action coherence boundary trigger
+**Nature:** FRONTEND / PHASE C AUTOSAVE TRIGGER ï¿½X AI ACTION BOUNDARY
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ï¿½X C2e: AI file-action coherence boundary trigger
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, after every Nth successful AI file-action coherence completion (`result.ran === true` from `runAiActionCoherence`), attempt one project-scoped autosave snapshot using the locked `attemptProjectAutosave` helper and the existing `lastProjectAutosaveAtRef` rate-limit ref. Reset the counter on any autosave attempt and on project switch. Skip silently when the flag is off, when guards fail, or when rate-limited.
@@ -8287,12 +8287,12 @@ Behind `PROJECT_FIRST_UX`, after every Nth successful AI file-action coherence c
 
 ---
 
-### PROJ-03-C2f-file-save ¡X Add User-File-Save Autosave Trigger Behind Feature Flag
+### PROJ-03-C2f-file-save ï¿½X Add User-File-Save Autosave Trigger Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2f-file-save-CHECKPOINT.md`
-**Nature:** FRONTEND / PHASE C AUTOSAVE TRIGGER ¡X USER FILE SAVE
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ¡X C2f first slice: user file-save boundary trigger
+**Nature:** FRONTEND / PHASE C AUTOSAVE TRIGGER ï¿½X USER FILE SAVE
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ï¿½X C2f first slice: user file-save boundary trigger
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, after the user successfully saves a file via `handleSaveWorkspaceFile`, attempt one project-scoped autosave snapshot using the locked `attemptProjectAutosave` helper and the existing `lastProjectAutosaveAtRef` rate-limit ref. Skip silently when the flag is off, when guards fail, or when rate-limited.
@@ -8322,7 +8322,7 @@ Behind `PROJECT_FIRST_UX`, after the user successfully saves a file via `handleS
 - No Phase D/E work
 
 **Acceptance checks:**
-- Successful file save (flag on + project + session + not hydrating + not rate-limited) ¡÷ one autosave attempt
+- Successful file save (flag on + project + session + not hydrating + not rate-limited) ï¿½ï¿½ one autosave attempt
 - Rate-limited: skip silently
 - Flag off: no autosave
 - No project selected: no autosave
@@ -8354,12 +8354,12 @@ Behind `PROJECT_FIRST_UX`, after the user successfully saves a file via `handleS
 
 ---
 
-### PROJ-03-C4 ¡X Replace User-Facing Snapshot Wording With History Vocabulary Behind Feature Flag
+### PROJ-03-C4 ï¿½X Replace User-Facing Snapshot Wording With History Vocabulary Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C4-CHECKPOINT.md`
-**Nature:** FRONTEND / PHASE C UX VOCABULARY ¡X USER-FACING WORDING ONLY
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ¡X C4: vocabulary swap
+**Nature:** FRONTEND / PHASE C UX VOCABULARY ï¿½X USER-FACING WORDING ONLY
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ï¿½X C4: vocabulary swap
 **Dependencies:** PROJ-03-C2f-file-save (COMPLETE and LOCKED)
 
 **Objective:**
@@ -8406,7 +8406,7 @@ Behind `PROJECT_FIRST_UX`, replace user-facing strings that say "snapshot/snapsh
 
 ---
 
-### PROJ-03-D0 ¡X Project-First Entry Shell Wiring Behind Feature Flag
+### PROJ-03-D0 ï¿½X Project-First Entry Shell Wiring Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-D0-CHECKPOINT.md`
@@ -8468,7 +8468,7 @@ Behind `PROJECT_FIRST_UX`, make the visible entry shell behave consistently with
 
 ---
 
-### PROJ-03-D0b ¡X Enable PROJECT_FIRST_UX In Local Docker Frontend Build For Testing
+### PROJ-03-D0b ï¿½X Enable PROJECT_FIRST_UX In Local Docker Frontend Build For Testing
 
 **Status:** PLANNED
 **Checkpoint:** `docs/PROJ-03-D0b-CHECKPOINT.md`
@@ -8481,7 +8481,7 @@ Enable the already-implemented project-first frontend path in the local Docker p
 
 **Bounded scope:**
 - Config/testing slice only
-- One file: `docker-compose.prod.yml` ¡X add `NEXT_PUBLIC_PROJECT_FIRST_UX: "true"` to the `frontend.build.args` block
+- One file: `docker-compose.prod.yml` ï¿½X add `NEXT_PUBLIC_PROJECT_FIRST_UX: "true"` to the `frontend.build.args` block
 - No frontend component/code changes
 - No handler changes
 - No route changes
@@ -8512,7 +8512,7 @@ Enable the already-implemented project-first frontend path in the local Docker p
 
 ---
 
-### PROJ-03-D0c ¡X Load Project List In Project-First No-Session Entry Path
+### PROJ-03-D0c ï¿½X Load Project List In Project-First No-Session Entry Path
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-D0c-CHECKPOINT.md`
@@ -8526,7 +8526,7 @@ Behind `PROJECT_FIRST_UX`, ensure the existing project picker is populated on fi
 **Bounded scope:**
 - Frontend only
 - Narrow changes allowed in:
-  - `frontend/app/[locale]/app/page.tsx` ¡X add `loadWorkspaceProjectsForUser(token)` call (and optionally `loadPublicWorkspaceProjectsList()`) in the existing bootstrap/token-availability path, guarded by `PROJECT_FIRST_UX`
+  - `frontend/app/[locale]/app/page.tsx` ï¿½X add `loadWorkspaceProjectsForUser(token)` call (and optionally `loadPublicWorkspaceProjectsList()`) in the existing bootstrap/token-availability path, guarded by `PROJECT_FIRST_UX`
   - directly relevant tests only if needed
 - Behavior:
   - When `PROJECT_FIRST_UX` is true and a token is available in the bootstrap path, call `loadWorkspaceProjectsForUser(token)` so existing user-owned projects appear in the project picker before any session is created
@@ -8567,7 +8567,7 @@ Behind `PROJECT_FIRST_UX`, ensure the existing project picker is populated on fi
 
 ---
 
-### PROJ-03-D0d ¡X Add Tab-Scoped Project And Session Selection Seed Behind Feature Flag
+### PROJ-03-D0d ï¿½X Add Tab-Scoped Project And Session Selection Seed Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-D0d-CHECKPOINT.md`
@@ -8581,7 +8581,7 @@ Behind `PROJECT_FIRST_UX`, persist `selectedProjectId` and `selectedSessionId` i
 **Bounded scope:**
 - Frontend only
 - Narrow changes allowed in:
-  - `frontend/app/[locale]/app/page.tsx` ¡X write selections to `sessionStorage` on change; read seed on cold mount bootstrap; honor seed only if it still exists in freshly loaded lists; fall back to existing default-selection behavior otherwise
+  - `frontend/app/[locale]/app/page.tsx` ï¿½X write selections to `sessionStorage` on change; read seed on cold mount bootstrap; honor seed only if it still exists in freshly loaded lists; fall back to existing default-selection behavior otherwise
   - directly relevant tests only if needed
 - Behavior (when `PROJECT_FIRST_UX` is true):
   - write `selectedProjectId` to `sessionStorage` when it changes
@@ -8630,7 +8630,7 @@ Behind `PROJECT_FIRST_UX`, persist `selectedProjectId` and `selectedSessionId` i
 
 ---
 
-### PROJ-03-C2e-hotfix ¡X Autosave After Every Successful AI Action Boundary Behind Feature Flag
+### PROJ-03-C2e-hotfix ï¿½X Autosave After Every Successful AI Action Boundary Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2e-hotfix-CHECKPOINT.md`
@@ -8644,13 +8644,13 @@ Behind `PROJECT_FIRST_UX`, change the AI-action autosave trigger so every succes
 **Bounded scope:**
 - Frontend only
 - Narrow changes allowed in:
-  - `frontend/app/[locale]/app/page.tsx` ¡X remove or bypass the every-5th threshold logic in the C2e path so autosave is attempted after each successful coherence completion
+  - `frontend/app/[locale]/app/page.tsx` ï¿½X remove or bypass the every-5th threshold logic in the C2e path so autosave is attempted after each successful coherence completion
   - directly relevant tests only if needed
 - Behavior:
   - Remove or bypass the current every-5th threshold logic in the C2e path
   - After each successful AI coherence completion, attempt autosave immediately
   - Preserve all existing guards: `PROJECT_FIRST_UX`, token present, `selectedProjectId` present, `selectedSessionIdRef.current` present, `!projectOpenInProgressRef.current`
-  - Preserve existing result handling: on saved ¡÷ update `lastProjectAutosaveAtRef.current` and best-effort reload workspace snapshots; on skipped-rate-limited or failed ¡÷ no crash, no UI change
+  - Preserve existing result handling: on saved ï¿½ï¿½ update `lastProjectAutosaveAtRef.current` and best-effort reload workspace snapshots; on skipped-rate-limited or failed ï¿½ï¿½ no crash, no UI change
   - No backend/API/schema change
   - No new UI surface
 
@@ -8693,7 +8693,7 @@ Behind `PROJECT_FIRST_UX`, change the AI-action autosave trigger so every succes
 
 ---
 
-### PROJ-03-D0e ¡X Restore Unsaved Editor Draft Per Tab Behind Feature Flag
+### PROJ-03-D0e ï¿½X Restore Unsaved Editor Draft Per Tab Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-D0e-CHECKPOINT.md`
@@ -8756,12 +8756,12 @@ Behind `PROJECT_FIRST_UX`, persist the current unsaved editor buffer in tab-scop
 
 ---
 
-### PROJ-03-D0e-hotfix ¡X Fix Draft Restore Match And One-Shot Consumption Behind Feature Flag
+### PROJ-03-D0e-hotfix ï¿½X Fix Draft Restore Match And One-Shot Consumption Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-D0e-hotfix-CHECKPOINT.md`
 **Nature:** FRONTEND / TAB-SCOPED DRAFT PERSISTENCE / BUG FIX
-**Source:** Post-D0e inspection: the D0e write path is correct but the restore path has two defects ¡X the cold-mount draft ref is cleared unconditionally on the first `loadWorkspaceFileContent` call (one-shot consumption regardless of match outcome), and the `projectId` check compares against `selectedProjectId` which may still be `null` at the time of the first file load after refresh (project-list fetch races behind session/file hydration). Result: draft restore fails silently and the draft is permanently discarded.
+**Source:** Post-D0e inspection: the D0e write path is correct but the restore path has two defects ï¿½X the cold-mount draft ref is cleared unconditionally on the first `loadWorkspaceFileContent` call (one-shot consumption regardless of match outcome), and the `projectId` check compares against `selectedProjectId` which may still be `null` at the time of the first file load after refresh (project-list fetch races behind session/file hydration). Result: draft restore fails silently and the draft is permanently discarded.
 **Dependencies:** PROJ-03-D0e (COMPLETE and LOCKED)
 
 **Objective:**
@@ -8817,7 +8817,7 @@ Behind `PROJECT_FIRST_UX`, fix the D0e restore-path bug so a tab-scoped unsaved 
 
 ---
 
-### PROJ-03-D1a ¡X Add Unified Versions Entry Point And Last-Protected Indicator Behind Feature Flag
+### PROJ-03-D1a ï¿½X Add Unified Versions Entry Point And Last-Protected Indicator Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-D1a-CHECKPOINT.md`
@@ -8878,7 +8878,7 @@ Behind `PROJECT_FIRST_UX`, add one obvious user-facing "Versions" / "History" en
 
 ---
 
-### PROJ-03-D1b ¡X Add Source-Tagged Automatic Version Labels Behind Feature Flag
+### PROJ-03-D1b ï¿½X Add Source-Tagged Automatic Version Labels Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-D1b-CHECKPOINT.md`
@@ -8910,7 +8910,7 @@ Behind `PROJECT_FIRST_UX`, make automatic project-history entries easier to dist
 - Manual named saves continue to render the user-supplied name unchanged
 - Older unlabeled entries still render safely with the existing generic fallback
 - Timestamp display remains separate and unchanged
-- `PROJECT_FIRST_UX=false` ¡÷ legacy behavior unchanged
+- `PROJECT_FIRST_UX=false` ï¿½ï¿½ legacy behavior unchanged
 - Typecheck clean, lint clean, focused regression suite green
 
 **Non-goals:**
@@ -8924,7 +8924,7 @@ Behind `PROJECT_FIRST_UX`, make automatic project-history entries easier to dist
 
 ---
 
-### PROJ-03-D1c ¡X Add Heuristic Content-Related Automatic Version Labels Behind Feature Flag
+### PROJ-03-D1c ï¿½X Add Heuristic Content-Related Automatic Version Labels Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-D1c-CHECKPOINT.md`
@@ -8944,7 +8944,7 @@ Behind `PROJECT_FIRST_UX`, improve automatic project-history labels using determ
 - Directly relevant tests only if needed
 
 **Key constraints:**
-- Deterministic heuristics only ¡X no AI call, no async naming pipeline
+- Deterministic heuristics only ï¿½X no AI call, no async naming pipeline
 - Preserve manual named saves unchanged
 - Preserve backward compatibility with older source-tagged or unlabeled entries
 - No backend/API/schema changes
@@ -8955,7 +8955,7 @@ Behind `PROJECT_FIRST_UX`, improve automatic project-history labels using determ
 - Automatic version labels become more distinguishable than the current source-only labels
 - Manual named saves continue to render the user-supplied name unchanged
 - Older labels remain backward-compatible
-- `PROJECT_FIRST_UX=false` ¡÷ legacy behavior unchanged
+- `PROJECT_FIRST_UX=false` ï¿½ï¿½ legacy behavior unchanged
 - Typecheck clean, lint clean, focused regression suite green
 
 **Non-goals:**
@@ -8969,7 +8969,7 @@ Behind `PROJECT_FIRST_UX`, improve automatic project-history labels using determ
 
 ---
 
-### PROJ-03-D1d ¡X Reuse Existing Active Session When Reopening Same Project Behind Feature Flag
+### PROJ-03-D1d ï¿½X Reuse Existing Active Session When Reopening Same Project Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-D1d-CHECKPOINT.md`
@@ -8982,14 +8982,14 @@ Behind `PROJECT_FIRST_UX`, when reopening a project, reuse an existing active us
 
 **Bounded scope:**
 - `services/api-gateway/src/sessions/session.controller.ts` (expose `projectId` in sessions list response)
-- Any directly relevant backend DTO/type if needed ¡X no schema migration
+- Any directly relevant backend DTO/type if needed ï¿½X no schema migration
 - `frontend/components/workspace/workspace-shell.logic.ts` (add `projectId` to `WorkspaceShellSession` type)
 - `frontend/lib/open-project-in-fresh-session.ts` (add session-reuse branch)
 - `frontend/app/[locale]/app/page.tsx` (pass `sessions` to reuse-aware open helper at relevant call sites)
 - Directly relevant tests only if needed
 
 **Key constraints:**
-- `SESSION.projectId` already exists in the DB; only expose it ¡X no schema/migration change
+- `SESSION.projectId` already exists in the DB; only expose it ï¿½X no schema/migration change
 - Reuse only active usable sessions (`isUsableSession` = not terminated, not expired)
 - Hydration still runs on reused sessions
 - Explicit snapshot restore (`handleRestoreWorkspaceProjectFromSnapshotById`) must remain always-fresh
@@ -9017,7 +9017,7 @@ Behind `PROJECT_FIRST_UX`, when reopening a project, reuse an existing active us
 
 ---
 
-### PROJ-03-D1d-hotfix ¡X Refresh Sessions Before Same-Project Reuse Check Behind Feature Flag
+### PROJ-03-D1d-hotfix ï¿½X Refresh Sessions Before Same-Project Reuse Check Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-D1d-hotfix-CHECKPOINT.md`
@@ -9030,7 +9030,7 @@ Behind `PROJECT_FIRST_UX`, eliminate stale same-project session reuse by refresh
 
 **Bounded scope:**
 - Frontend only
-- `frontend/app/[locale]/app/page.tsx` ¡X call `await loadSessions(token)` at `handleOpenWorkspaceProject` (PROJECT_FIRST_UX branch) and `handleResumeWorkspaceProjectById` immediately before each `openProjectInFreshSession` call, then pass the freshly-loaded `sessions` state as `existingSessions`
+- `frontend/app/[locale]/app/page.tsx` ï¿½X call `await loadSessions(token)` at `handleOpenWorkspaceProject` (PROJECT_FIRST_UX branch) and `handleResumeWorkspaceProjectById` immediately before each `openProjectInFreshSession` call, then pass the freshly-loaded `sessions` state as `existingSessions`
 - Directly relevant tests only if needed
 
 **Key constraints:**
@@ -9666,7 +9666,7 @@ Determine why many session-related Docker containers are accumulating, and ident
 
 ---
 
-## OPS-LOCAL ¡X Local Testing Config
+## OPS-LOCAL ï¿½X Local Testing Config
 
 **Family status:** COMPLETE
 
@@ -9679,7 +9679,7 @@ Determine why many session-related Docker containers are accumulating, and ident
 **Status:** COMPLETE AND LOCKED
 **Checkpoint:** `docs/OPS-LOCAL-SESSION-LIMITS-CHECKPOINT.md`
 **Nature:** CONFIG / LOCAL TESTING ENABLEMENT
-**Source:** Post-D0 testing diagnostic ¡X session creation blocked by hard-coded limits of 5 active / 20 per 24h; local QA cannot test project-first UX without hitting these caps
+**Source:** Post-D0 testing diagnostic ï¿½X session creation blocked by hard-coded limits of 5 active / 20 per 24h; local QA cannot test project-first UX without hitting these caps
 
 **Objective:**
 Preserve code defaults of 5 active sessions and 20 sessions per 24h, but add env-driven overrides in api-gateway `QuotaConfig` and set local Docker compose values to `1000000` each, so local QA is not blocked by session caps during project-first testing.
@@ -9687,8 +9687,8 @@ Preserve code defaults of 5 active sessions and 20 sessions per 24h, but add env
 **Bounded scope:**
 - Narrow code/config slice only
 - Changes allowed in:
-  - `services/api-gateway/src/quota/quota.config.ts` ¡X add env-based resolvers for `MAX_ACTIVE_SESSIONS_PER_USER` and `MAX_SESSIONS_PER_24H`; preserve defaults of 5 / 20
-  - `docker-compose.prod.yml` ¡X add `MAX_ACTIVE_SESSIONS_PER_USER: "1000000"` and `MAX_SESSIONS_PER_24H: "1000000"` to the `api-gateway` service environment block
+  - `services/api-gateway/src/quota/quota.config.ts` ï¿½X add env-based resolvers for `MAX_ACTIVE_SESSIONS_PER_USER` and `MAX_SESSIONS_PER_24H`; preserve defaults of 5 / 20
+  - `docker-compose.prod.yml` ï¿½X add `MAX_ACTIVE_SESSIONS_PER_USER: "1000000"` and `MAX_SESSIONS_PER_24H: "1000000"` to the `api-gateway` service environment block
   - directly relevant tests only if env-based resolver changes cause failures
 - No change to enforcement logic beyond reading the resolved values
 
@@ -9726,7 +9726,7 @@ Preserve code defaults of 5 active sessions and 20 sessions per 24h, but add env
 **Status:** COMPLETE AND LOCKED
 **Checkpoint:** `docs/OPS-LOCAL-AUTH-JWT-CHECKPOINT.md`
 **Nature:** CONFIG / LOCAL TESTING ENABLEMENT
-**Source:** Post-OPS-LOCAL-SESSION-LIMITS diagnostic ¡X auth access token is 15m with no refresh mechanism; local QA is forcibly logged out every 15 minutes, interrupting testing
+**Source:** Post-OPS-LOCAL-SESSION-LIMITS diagnostic ï¿½X auth access token is 15m with no refresh mechanism; local QA is forcibly logged out every 15 minutes, interrupting testing
 
 **Objective:**
 Override `JWT_EXPIRES_IN` for the local Docker `api-gateway` service to `30d` so local QA is not interrupted by frequent forced re-login, without changing auth architecture or production defaults.
@@ -9734,7 +9734,7 @@ Override `JWT_EXPIRES_IN` for the local Docker `api-gateway` service to `30d` so
 **Bounded scope:**
 - Narrow config slice only
 - Changes allowed in:
-  - `docker-compose.prod.yml` ¡X add `JWT_EXPIRES_IN: "30d"` under the `api-gateway` service `environment` block
+  - `docker-compose.prod.yml` ï¿½X add `JWT_EXPIRES_IN: "30d"` under the `api-gateway` service `environment` block
 - No code changes
 - No refresh-token implementation
 - No frontend auth logic change
@@ -10573,9 +10573,9 @@ Create/update a minimal operational runbook so the now-validated stack can be st
 
 ---
 
-## WS ¡X Workspace Rollout
+## WS ï¿½X Workspace Rollout
 
-**Family status:** ACTIVE ¡X WS-01 COMPLETE and LOCKED; WS-02 COMPLETE and LOCKED; WS-03 COMPLETE and LOCKED; WS-04 COMPLETE and LOCKED; WS-05 COMPLETE and LOCKED; WS-06 COMPLETE and LOCKED; WS-07 COMPLETE and LOCKED
+**Family status:** ACTIVE ï¿½X WS-01 COMPLETE and LOCKED; WS-02 COMPLETE and LOCKED; WS-03 COMPLETE and LOCKED; WS-04 COMPLETE and LOCKED; WS-05 COMPLETE and LOCKED; WS-06 COMPLETE and LOCKED; WS-07 COMPLETE and LOCKED
 
 **Current stage:** WS-07 (COMPLETE and LOCKED)
 
@@ -10585,8 +10585,8 @@ Create/update a minimal operational runbook so the now-validated stack can be st
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/WS-01-CHECKPOINT.md`
-**Nature:** BACKEND / SCHEMA / MIGRATION ¡X workspace data model foundation
-**Source:** Workspace v1 planning session (Apr 2026) ¡X agreed bounded v1 plan
+**Nature:** BACKEND / SCHEMA / MIGRATION ï¿½X workspace data model foundation
+**Source:** Workspace v1 planning session (Apr 2026) ï¿½X agreed bounded v1 plan
 
 **Objective:**
 Add the Workspace entity/table and nullable `Project.workspaceId` foundation, then perform safe idempotent backfill so each user has one default Personal workspace and all existing projects are assigned to that workspace. This slice is backend/schema only and intentionally stops before any new API or frontend UX.
@@ -10645,8 +10645,8 @@ Add the Workspace entity/table and nullable `Project.workspaceId` foundation, th
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/WS-02-CHECKPOINT.md`
-**Nature:** BACKEND / API ¡X workspace CRUD endpoints
-**Source:** WS v1 rollout ¡X second slice; follows WS-01 schema foundation
+**Nature:** BACKEND / API ï¿½X workspace CRUD endpoints
+**Source:** WS v1 rollout ï¿½X second slice; follows WS-01 schema foundation
 
 **Objective:**
 Add the minimal authenticated backend API for v1 personal workspaces: create, list, read, rename, and delete (non-default only). Keep all operations strictly user-scoped and additive. Stop before any frontend UX or project workspace-awareness changes.
@@ -10659,11 +10659,11 @@ Add the minimal authenticated backend API for v1 personal workspaces: create, li
   - minimal repository/service wiring against the WS-01 Workspace entity
   - directly relevant unit tests
 - Endpoints:
-  - `POST /api/workspaces` ¡X create workspace for current user
-  - `GET /api/workspaces` ¡X list current user's workspaces
-  - `GET /api/workspaces/:id` ¡X read one current-user workspace
-  - `PATCH /api/workspaces/:id` ¡X rename/update current-user workspace
-  - `DELETE /api/workspaces/:id` ¡X delete a non-default current-user workspace
+  - `POST /api/workspaces` ï¿½X create workspace for current user
+  - `GET /api/workspaces` ï¿½X list current user's workspaces
+  - `GET /api/workspaces/:id` ï¿½X read one current-user workspace
+  - `PATCH /api/workspaces/:id` ï¿½X rename/update current-user workspace
+  - `DELETE /api/workspaces/:id` ï¿½X delete a non-default current-user workspace
 - All access is owner-only via authenticated user
 - Default workspace cannot be deleted
 - Deletion of a non-default workspace reassigns its projects to the user's default workspace before removal
@@ -10706,21 +10706,21 @@ Add the minimal authenticated backend API for v1 personal workspaces: create, li
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/WS-03-CHECKPOINT.md`
-**Nature:** BACKEND / API ¡X project create/list workspace-awareness
-**Source:** WS v1 rollout ¡X third slice; follows WS-02 CRUD API foundation
+**Nature:** BACKEND / API ï¿½X project create/list workspace-awareness
+**Source:** WS v1 rollout ï¿½X third slice; follows WS-02 CRUD API foundation
 
 **Objective:**
-Make backend project create/list/read flows workspace-aware by allowing project creation into a chosen workspace, defaulting to the user's default workspace when omitted, supporting optional workspace filtering on project list, and surfacing `workspaceId` in project responses ¡X while keeping all ownership checks user-scoped and stopping before any frontend workspace selector/UI.
+Make backend project create/list/read flows workspace-aware by allowing project creation into a chosen workspace, defaulting to the user's default workspace when omitted, supporting optional workspace filtering on project list, and surfacing `workspaceId` in project responses ï¿½X while keeping all ownership checks user-scoped and stopping before any frontend workspace selector/UI.
 
 **Bounded scope:**
 - Backend/API only
 - Allowed files/surfaces:
-  - project DTO(s) ¡X add optional `workspaceId` to create DTO; add optional `workspaceId` query param to list
-  - projects controller ¡X accept and pass through `workspaceId` for create and list
-  - projects service ¡X resolve default workspace when `workspaceId` is omitted; validate ownership of provided `workspaceId`; filter list by workspace when requested
+  - project DTO(s) ï¿½X add optional `workspaceId` to create DTO; add optional `workspaceId` query param to list
+  - projects controller ï¿½X accept and pass through `workspaceId` for create and list
+  - projects service ï¿½X resolve default workspace when `workspaceId` is omitted; validate ownership of provided `workspaceId`; filter list by workspace when requested
   - directly relevant tests
 - Behavior:
-  - `POST /api/projects` accepts optional `workspaceId`; omitted ¡÷ user's default workspace; provided ¡÷ must belong to current user
+  - `POST /api/projects` accepts optional `workspaceId`; omitted ï¿½ï¿½ user's default workspace; provided ï¿½ï¿½ must belong to current user
   - `GET /api/projects` supports optional `workspaceId` query filter
   - `GET /api/projects/:id` response includes `workspaceId`
   - all ownership checks remain user-scoped
@@ -10764,8 +10764,8 @@ Make backend project create/list/read flows workspace-aware by allowing project 
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/WS-04-CHECKPOINT.md`
-**Nature:** FRONTEND / PLUMBING ¡X workspace types and API helpers
-**Source:** WS v1 rollout ¡X fourth slice; follows WS-03 project workspace-awareness
+**Nature:** FRONTEND / PLUMBING ï¿½X workspace types and API helpers
+**Source:** WS v1 rollout ï¿½X fourth slice; follows WS-03 project workspace-awareness
 
 **Objective:**
 Add the minimal frontend type definitions and API helper functions required to consume v1 personal workspaces and workspace-aware project responses. Stop before any visible workspace selector or management UI.
@@ -10802,7 +10802,7 @@ Add the minimal frontend type definitions and API helper functions required to c
 - Relevant frontend typecheck/tests pass
 
 **Risks / invariants:**
-- Keep to frontend plumbing only ¡X no visible workspace UX
+- Keep to frontend plumbing only ï¿½X no visible workspace UX
 - Do not change current frontend runtime behavior beyond additive types/helpers
 - Keep v1 workspace model personal-only
 - Preserve compatibility with current backend response shapes
@@ -10815,8 +10815,8 @@ Add the minimal frontend type definitions and API helper functions required to c
 #### WS-05: Workspace Selector And Filtered Project List
 
 **Status:** COMPLETE and LOCKED
-**Nature:** FRONTEND / UX ¡X workspace selector and project list filtering
-**Source:** WS v1 rollout ¡X fifth slice; follows WS-04 frontend plumbing
+**Nature:** FRONTEND / UX ï¿½X workspace selector and project list filtering
+**Source:** WS v1 rollout ï¿½X fifth slice; follows WS-04 frontend plumbing
 **Checkpoint:** `docs/WS-05-CHECKPOINT.md`
 
 **Objective:**
@@ -10857,7 +10857,7 @@ Add the first visible workspace UX by loading the user's workspaces, showing a w
 - Relevant frontend typecheck/tests pass
 
 **Risks / invariants:**
-- Keep to selector/filter UX only ¡X no workspace CRUD management UI
+- Keep to selector/filter UX only ï¿½X no workspace CRUD management UI
 - Preserve existing project-open/session/history behavior
 - Keep workspace model personal-only in v1
 - Preserve compatibility with current backend response shapes
@@ -10870,8 +10870,8 @@ Add the first visible workspace UX by loading the user's workspaces, showing a w
 #### WS-06: Workspace Create/Rename/Delete UI
 
 **Status:** COMPLETE and LOCKED
-**Nature:** FRONTEND / UX ¡X workspace management UI
-**Source:** WS v1 rollout ¡X sixth slice; follows WS-05 selector/filter surface
+**Nature:** FRONTEND / UX ï¿½X workspace management UI
+**Source:** WS v1 rollout ï¿½X sixth slice; follows WS-05 selector/filter surface
 **Checkpoint:** `docs/WS-06-CHECKPOINT.md`
 
 **Objective:**
@@ -10928,8 +10928,8 @@ Add the minimal user-facing UI for creating, renaming, and deleting personal wor
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/WS-07-CHECKPOINT.md`
-**Nature:** BACKEND + FRONTEND ¡X move project workspace assignment
-**Source:** WS v1 rollout ¡X seventh slice; follows WS-06 workspace management UI
+**Nature:** BACKEND + FRONTEND ï¿½X move project workspace assignment
+**Source:** WS v1 rollout ï¿½X seventh slice; follows WS-06 workspace management UI
 
 **Objective:**
 Allow a user to move an existing owned project from its current workspace to another owned workspace, with strict ownership validation and safe frontend state refresh. The move changes only the project.workspaceId relationship and does not affect sessions, files, snapshots, history, or saved versions.
@@ -10983,7 +10983,7 @@ Allow a user to move an existing owned project from its current workspace to ano
 
 ---
 
-## AI-CTX ¡X AI Workspace Context Awareness
+## AI-CTX ï¿½X AI Workspace Context Awareness
 
 **Family status:** AI-CTX-01 COMPLETE and LOCKED
 
@@ -10994,8 +10994,8 @@ Allow a user to move an existing owned project from its current workspace to ano
 #### AI-CTX-01: Inject Workspace File Tree And Selected File Path Into AI Prompts
 
 **Status:** COMPLETE and LOCKED
-**Nature:** CROSS-LAYER CONTEXT PLUMBING ¡X frontend ¡÷ api-gateway ¡÷ queue ¡÷ ai-service worker
-**Source:** Inspection session (Apr 2026) ¡X AI answers "list files" like a generic chatbot because the execution path carries no workspace context
+**Nature:** CROSS-LAYER CONTEXT PLUMBING ï¿½X frontend ï¿½ï¿½ api-gateway ï¿½ï¿½ queue ï¿½ï¿½ ai-service worker
+**Source:** Inspection session (Apr 2026) ï¿½X AI answers "list files" like a generic chatbot because the execution path carries no workspace context
 
 **Objective:**
 Make the active AI execution path aware of the current workspace file list and selected file path so non-mutating questions like "list all files" can be answered correctly without adding destructive actions, schema changes, new endpoints, or broad AI tooling changes.
@@ -11044,7 +11044,7 @@ Make the active AI execution path aware of the current workspace file list and s
 - No introduced lint errors
 
 **Risks / invariants:**
-- Keep context compact ¡X do not include file contents (token/cost blowup risk)
+- Keep context compact ï¿½X do not include file contents (token/cost blowup risk)
 - Preserve current file-action output contract; context is prepended, not mixed in
 - Keep `workspaceContext` optional and backward-compatible at every layer
 - Do not introduce container-manager dependency into ai-service worker
@@ -11055,9 +11055,9 @@ Make the active AI execution path aware of the current workspace file list and s
 
 ---
 
-## AI-WS ¡X AI Workspace Capability
+## AI-WS ï¿½X AI Workspace Capability
 
-**Family status:** ACTIVE ¡X AI-WS-06 COMPLETE and LOCKED; AI-WS-03-hotfix COMPLETE and LOCKED; AI-WS-03-hotfix2 COMPLETE and LOCKED; AI-WS-03-hotfix3 COMPLETE and LOCKED; AI-WS-02-hotfix COMPLETE and LOCKED; AI-WS-03-hotfix4 COMPLETE and LOCKED; AI-WS-03-hotfix5 COMPLETE and LOCKED; AI-WS-06-hotfix COMPLETE and LOCKED; AI-WS-06-hotfix2 COMPLETE and LOCKED; AI-WS-06-hotfix3 COMPLETE and LOCKED
+**Family status:** ACTIVE ï¿½X AI-WS-06 COMPLETE and LOCKED; AI-WS-03-hotfix COMPLETE and LOCKED; AI-WS-03-hotfix2 COMPLETE and LOCKED; AI-WS-03-hotfix3 COMPLETE and LOCKED; AI-WS-02-hotfix COMPLETE and LOCKED; AI-WS-03-hotfix4 COMPLETE and LOCKED; AI-WS-03-hotfix5 COMPLETE and LOCKED; AI-WS-06-hotfix COMPLETE and LOCKED; AI-WS-06-hotfix2 COMPLETE and LOCKED; AI-WS-06-hotfix3 COMPLETE and LOCKED
 
 **Current stage:** AI-WS-06-hotfix3 (COMPLETE and LOCKED)
 
@@ -11066,8 +11066,8 @@ Make the active AI execution path aware of the current workspace file list and s
 #### AI-WS-01: Selected File Content Context Injection
 
 **Status:** COMPLETE and LOCKED
-**Nature:** CROSS-LAYER CONTEXT PLUMBING ¡X frontend ¡÷ api-gateway ¡÷ queue ¡÷ ai-service worker
-**Source:** Planning session (Apr 2026) ¡X AI cannot explain or reason about the selected/open file because its content is never included in the execution context
+**Nature:** CROSS-LAYER CONTEXT PLUMBING ï¿½X frontend ï¿½ï¿½ api-gateway ï¿½ï¿½ queue ï¿½ï¿½ ai-service worker
+**Source:** Planning session (Apr 2026) ï¿½X AI cannot explain or reason about the selected/open file because its content is never included in the execution context
 **Depends on:** AI-CTX-01 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -11087,7 +11087,7 @@ Extend the existing `workspaceContext` plumbing introduced in AI-CTX-01 to inclu
   - frontend execute request body (`page.tsx`)
   - api-gateway AI execution request type/controller/queue forwarding
   - queue job data type (`AiExecutionJob` / `WorkspaceContext`)
-  - ai-service worker prompt builder (`worker.processor.ts` ¡X `buildWorkspaceContextBlock`)
+  - ai-service worker prompt builder (`worker.processor.ts` ï¿½X `buildWorkspaceContextBlock`)
 - Worker includes selected file content in the context block under the existing context section
 - If content is absent or excluded, existing behavior is unchanged (backward-compatible)
 - Do not add named file read support
@@ -11148,8 +11148,8 @@ Extend the existing `workspaceContext` plumbing introduced in AI-CTX-01 to inclu
 #### AI-WS-02: AI File Action Safety And Confirmation Foundation
 
 **Status:** COMPLETE and LOCKED
-**Nature:** FRONTEND SAFETY/INTERCEPT LAYER ¡X file-action batch classification and confirmation UI before risky AI writes apply
-**Source:** Planning session (Apr 2026) ¡X before adding destructive action support (delete), a safety/confirmation foundation is needed so risky AI file-action batches can be intercepted and approved
+**Nature:** FRONTEND SAFETY/INTERCEPT LAYER ï¿½X file-action batch classification and confirmation UI before risky AI writes apply
+**Source:** Planning session (Apr 2026) ï¿½X before adding destructive action support (delete), a safety/confirmation foundation is needed so risky AI file-action batches can be intercepted and approved
 **Depends on:** AI-WS-01 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -11213,8 +11213,8 @@ Add a frontend safety/confirmation foundation for risky AI file actions before e
 #### AI-WS-03: AI File Delete Support
 
 **Status:** COMPLETE and LOCKED
-**Nature:** CROSS-LAYER FILE-ACTION EXTENSION ¡X extend file-action contract to allow AI-proposed delete, always held for confirmation, frontend delete call through api-gateway to container-manager
-**Source:** Planning session (Apr 2026) ¡X delete is the next destructive capability after safety confirmation foundation is in place
+**Nature:** CROSS-LAYER FILE-ACTION EXTENSION ï¿½X extend file-action contract to allow AI-proposed delete, always held for confirmation, frontend delete call through api-gateway to container-manager
+**Source:** Planning session (Apr 2026) ï¿½X delete is the next destructive capability after safety confirmation foundation is in place
 **Depends on:** AI-WS-02 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -11288,8 +11288,8 @@ Add support for AI-proposed file delete actions through the active file-actions 
 #### AI-WS-04: Project And Workspace Metadata Context
 
 **Status:** COMPLETE and LOCKED
-**Nature:** CROSS-LAYER CONTEXT PLUMBING ¡X extend `workspaceContext` with lightweight project/workspace metadata for better prompt grounding
-**Source:** Planning session (Apr 2026) ¡X after file and selected-file awareness are in place, AI should understand the current workspace/project it is operating in
+**Nature:** CROSS-LAYER CONTEXT PLUMBING ï¿½X extend `workspaceContext` with lightweight project/workspace metadata for better prompt grounding
+**Source:** Planning session (Apr 2026) ï¿½X after file and selected-file awareness are in place, AI should understand the current workspace/project it is operating in
 **Depends on:** AI-WS-03 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -11356,8 +11356,8 @@ Extend the existing AI `workspaceContext` plumbing to include lightweight projec
 #### AI-WS-05: Named File Read Support
 
 **Status:** COMPLETE and LOCKED
-**Nature:** FRONTEND-LED NAMED FILE CONTEXT INJECTION ¡X detect explicitly named workspace files, read bounded safe contents through existing frontend file-read capability, and pass them through existing `workspaceContext`
-**Source:** Planning session (Apr 2026) ¡X AI still cannot explain a named file unless that file is currently selected/open
+**Nature:** FRONTEND-LED NAMED FILE CONTEXT INJECTION ï¿½X detect explicitly named workspace files, read bounded safe contents through existing frontend file-read capability, and pass them through existing `workspaceContext`
+**Source:** Planning session (Apr 2026) ï¿½X AI still cannot explain a named file unless that file is currently selected/open
 **Depends on:** AI-WS-04 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -11437,8 +11437,8 @@ Allow the AI to answer questions about one or more named workspace files by usin
 #### AI-WS-06: Workspace Content Search Support
 
 **Status:** COMPLETE and LOCKED
-**Nature:** BOUNDED WORKSPACE CONTENT SEARCH ¡X safely search text-like workspace files for explicit locate/find questions without broad tool refactors or arbitrary command execution
-**Source:** Planning session (Apr 2026) ¡X AI still cannot search across workspace file contents for prompts like "where is login implemented?" or "which files mention this text?"
+**Nature:** BOUNDED WORKSPACE CONTENT SEARCH ï¿½X safely search text-like workspace files for explicit locate/find questions without broad tool refactors or arbitrary command execution
+**Source:** Planning session (Apr 2026) ï¿½X AI still cannot search across workspace file contents for prompts like "where is login implemented?" or "which files mention this text?"
 **Depends on:** AI-WS-05 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -11513,8 +11513,8 @@ Add a bounded, safe workspace content search capability so AI can answer questio
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/AI-WS-03-hotfix-CHECKPOINT.md`
-**Nature:** FRONTEND WORDING HOTFIX ¡X correct misleading AI execute error guidance for generic 403 responses without changing backend enforcement or AI behavior
-**Source:** Inspection session (Apr 2026) ¡X frontend currently maps generic `POST /api/ai/execute` 403 failures to quota wording even when the failure can be access/launch/scope/auth related
+**Nature:** FRONTEND WORDING HOTFIX ï¿½X correct misleading AI execute error guidance for generic 403 responses without changing backend enforcement or AI behavior
+**Source:** Inspection session (Apr 2026) ï¿½X frontend currently maps generic `POST /api/ai/execute` 403 failures to quota wording even when the failure can be access/launch/scope/auth related
 **Depends on:** AI-WS-06 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -11562,8 +11562,8 @@ Fix the frontend error guidance so generic 403 AI execute failures are not misla
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/AI-WS-03-hotfix2-CHECKPOINT.md`
-**Nature:** AI SERVICE PARSER HOTFIX ¡X add a safe fallback extraction path for bare `{"file-actions":[...]}` model output so that delete/create/write/update actions survive the known contract-violation output shape without changing the primary fenced block contract
-**Source:** Inspection session (May 2026) ¡X model sometimes emits raw JSON `{"file-actions":[...]}` instead of a fenced ```file-actions block; the current parser only reads fenced blocks, so no file actions are extracted and no confirmation appears
+**Nature:** AI SERVICE PARSER HOTFIX ï¿½X add a safe fallback extraction path for bare `{"file-actions":[...]}` model output so that delete/create/write/update actions survive the known contract-violation output shape without changing the primary fenced block contract
+**Source:** Inspection session (May 2026) ï¿½X model sometimes emits raw JSON `{"file-actions":[...]}` instead of a fenced ```file-actions block; the current parser only reads fenced blocks, so no file actions are extracted and no confirmation appears
 **Depends on:** AI-WS-03 (COMPLETE and LOCKED); AI-WS-03-hotfix (COMPLETE and LOCKED)
 
 **Objective:**
@@ -11611,7 +11611,7 @@ Make the ai-service file-action parser tolerate the known malformed-but-clear mo
 
 **Risks / invariants:**
 - Fenced block contract remains the primary expected model format
-- Fallback must be narrow and safe ¡X do not parse arbitrary prose as actions
+- Fallback must be narrow and safe ï¿½X do not parse arbitrary prose as actions
 - Do not loosen path safety
 - Do not change frontend confirmation or apply semantics
 - Delete remains risky/confirmation-gated downstream as established by AI-WS-02
@@ -11625,8 +11625,8 @@ Make the ai-service file-action parser tolerate the known malformed-but-clear mo
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/AI-WS-03-hotfix3-CHECKPOINT.md`
-**Nature:** FRONTEND HELPER HOTFIX ¡X update `deleteWorkspaceFile` to surface the backend error message on failed delete responses instead of discarding the response body
-**Source:** Inspection session (May 2026) ¡X after AI-WS-03-hotfix2, delete reaches the apply pipeline but `deleteWorkspaceFile` throws generic `File delete failed (404)` instead of surfacing the container-manager's useful `File not found: index2.html` message
+**Nature:** FRONTEND HELPER HOTFIX ï¿½X update `deleteWorkspaceFile` to surface the backend error message on failed delete responses instead of discarding the response body
+**Source:** Inspection session (May 2026) ï¿½X after AI-WS-03-hotfix2, delete reaches the apply pipeline but `deleteWorkspaceFile` throws generic `File delete failed (404)` instead of surfacing the container-manager's useful `File not found: index2.html` message
 **Depends on:** AI-WS-03-hotfix2 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -11682,8 +11682,8 @@ Update the frontend delete helper to read and surface the backend `message` fiel
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/AI-WS-02-hotfix-CHECKPOINT.md`
-**Nature:** FRONTEND CHAT-THREAD RESTORE HOTFIX ¡X sanitize stale `awaiting-confirmation` file-action states when restoring persisted chat messages, so ghost Apply buttons are never rendered after session restore or page reload
-**Source:** Inspection session (May 2026) ¡X after AI-WS-03-hotfix3, observed that delete-test.html appeared to not delete when Apply was pressed; root cause traced to a prior unconfirmed execution's awaiting-confirmation state being restored from localStorage, while `pendingConfirmationExecutionIdsRef` was cleared ¡X pressing Apply silently returned with no action
+**Nature:** FRONTEND CHAT-THREAD RESTORE HOTFIX ï¿½X sanitize stale `awaiting-confirmation` file-action states when restoring persisted chat messages, so ghost Apply buttons are never rendered after session restore or page reload
+**Source:** Inspection session (May 2026) ï¿½X after AI-WS-03-hotfix3, observed that delete-test.html appeared to not delete when Apply was pressed; root cause traced to a prior unconfirmed execution's awaiting-confirmation state being restored from localStorage, while `pendingConfirmationExecutionIdsRef` was cleared ï¿½X pressing Apply silently returned with no action
 **Depends on:** AI-WS-02 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -11694,7 +11694,7 @@ In `parseStoredChatThreadMessages`, when a restored message has `fileActionState
 - Likely files:
   - `frontend/components/workspace/workspace-chat-thread.logic.ts`
   - `frontend/components/workspace/workspace-chat-thread.logic.test.ts`
-- In `parseStoredChatThreadMessages`, convert restored `awaiting-confirmation` ¡÷ `skipped` with `skipReason: 'session-restored'`
+- In `parseStoredChatThreadMessages`, convert restored `awaiting-confirmation` ï¿½ï¿½ `skipped` with `skipReason: 'session-restored'`
 - Already applied states remain unchanged
 - Already skipped/failed states remain unchanged
 - In-session confirmation behavior remains unchanged
@@ -11735,8 +11735,8 @@ In `parseStoredChatThreadMessages`, when a restored message has `fileActionState
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/AI-WS-03-hotfix4-CHECKPOINT.md`
-**Nature:** API GATEWAY DTO / PARSER HOTFIX ¡X update execution-result DTO and metadata parser to accept and return delete file-actions, preventing status/execute responses from stripping delete actions out of completed execution results
-**Source:** Inspection session (May 2026) ¡X delete file-actions arrive correctly through SSE but the status/execute response returns `fileActions: []` for delete executions because `parseExecutionResultMetadata` only accepts create/write/update, silently dropping delete; this causes the frontend pending confirmation state to be overwritten with an empty action array, making the Apply button disappear
+**Nature:** API GATEWAY DTO / PARSER HOTFIX ï¿½X update execution-result DTO and metadata parser to accept and return delete file-actions, preventing status/execute responses from stripping delete actions out of completed execution results
+**Source:** Inspection session (May 2026) ï¿½X delete file-actions arrive correctly through SSE but the status/execute response returns `fileActions: []` for delete executions because `parseExecutionResultMetadata` only accepts create/write/update, silently dropping delete; this causes the frontend pending confirmation state to be overwritten with an empty action array, making the Apply button disappear
 **Depends on:** AI-WS-03 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -11792,8 +11792,8 @@ Update `FileActionDto` and `parseExecutionResultMetadata` in the API gateway so 
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/AI-WS-03-hotfix5-CHECKPOINT.md`
-**Nature:** CONTAINER-MANAGER ROUTING HOTFIX ¡X route file delete through Docker exec (matching read/write/list) instead of host `fs.unlink()` via FilesController; update API gateway HTTP client to target the internal sessions delete route
-**Source:** Inspection session (May 2026) ¡X deleting an existing file fails with "File not found" because `ContainerManagerHttpClient.deleteSessionFile` calls `DELETE /api/files/${sessionId}/delete` (FilesController ¡÷ host fs.unlink), while all other file operations route through `InternalSessionsController` ¡÷ Docker exec; on Windows/Docker Desktop bind mounts this produces a filesystem view mismatch
+**Nature:** CONTAINER-MANAGER ROUTING HOTFIX ï¿½X route file delete through Docker exec (matching read/write/list) instead of host `fs.unlink()` via FilesController; update API gateway HTTP client to target the internal sessions delete route
+**Source:** Inspection session (May 2026) ï¿½X deleting an existing file fails with "File not found" because `ContainerManagerHttpClient.deleteSessionFile` calls `DELETE /api/files/${sessionId}/delete` (FilesController ï¿½ï¿½ host fs.unlink), while all other file operations route through `InternalSessionsController` ï¿½ï¿½ Docker exec; on Windows/Docker Desktop bind mounts this produces a filesystem view mismatch
 **Depends on:** AI-WS-03 (COMPLETE and LOCKED)
 
 **Bounded scope:**
@@ -11826,7 +11826,7 @@ Update `FileActionDto` and `parseExecutionResultMetadata` in the API gateway so 
 - Must not introduce arbitrary shell command execution
 - Use existing container exec safety patterns (validateWorkspacePath)
 - Keep delete scoped to current session workspace
-- Do not delete directories recursively ¡X file-only delete in v1
+- Do not delete directories recursively ï¿½X file-only delete in v1
 - Preserve frontend/API gateway public route behavior
 - Preserve AI file-action apply and confirmation gate behavior
 
@@ -11843,13 +11843,13 @@ Update `FileActionDto` and `parseExecutionResultMetadata` in the API gateway so 
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/AI-WS-06-hotfix2-CHECKPOINT.md`
-**Nature:** CONTAINER-MANAGER DOCKER RUNTIME HOTFIX ¡X simplify the multi-line shell search script to eliminate `mktemp`/temp-file dependency that may silently fail in minimal container images; add diagnostic stderr logging when exec exits non-zero with empty stdout so failures are no longer invisible
-**Source:** Inspection session (May 2026) ¡X after AI-WS-06-hotfix, search routes correctly through Docker exec but still returns empty results; named-file read confirms keyword exists in `key.txt`; inspection shows the entire route chain and prompt/context flow are correct; likely failure is inside the search shell script itself: `mktemp` or `find` may not be available in the minimal sandbox image, causing script to exit non-zero with empty stdout, which is silently swallowed and returned as `{ results: [] }` ¡X indistinguishable from a genuine no-match
+**Nature:** CONTAINER-MANAGER DOCKER RUNTIME HOTFIX ï¿½X simplify the multi-line shell search script to eliminate `mktemp`/temp-file dependency that may silently fail in minimal container images; add diagnostic stderr logging when exec exits non-zero with empty stdout so failures are no longer invisible
+**Source:** Inspection session (May 2026) ï¿½X after AI-WS-06-hotfix, search routes correctly through Docker exec but still returns empty results; named-file read confirms keyword exists in `key.txt`; inspection shows the entire route chain and prompt/context flow are correct; likely failure is inside the search shell script itself: `mktemp` or `find` may not be available in the minimal sandbox image, causing script to exit non-zero with empty stdout, which is silently swallowed and returned as `{ results: [] }` ï¿½X indistinguishable from a genuine no-match
 **Depends on:** AI-WS-06-hotfix (COMPLETE and LOCKED)
 
 **Bounded scope:**
-- `services/container-manager/src/docker/docker-runtime.service.ts` ¡X replace `mktemp`/temp-file pattern with direct `find ... | while read` pipeline; add stderr warning log on non-zero empty-stdout exit
-- `services/container-manager/src/docker/docker-runtime.service.spec.ts` ¡X add focused tests for stderr logging path and `.txt` file match parsing
+- `services/container-manager/src/docker/docker-runtime.service.ts` ï¿½X replace `mktemp`/temp-file pattern with direct `find ... | while read` pipeline; add stderr warning log on non-zero empty-stdout exit
+- `services/container-manager/src/docker/docker-runtime.service.spec.ts` ï¿½X add focused tests for stderr logging path and `.txt` file match parsing
 
 **Non-goals:**
 - No API gateway changes
@@ -11867,13 +11867,13 @@ Update `FileActionDto` and `parseExecutionResultMetadata` in the API gateway so 
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/AI-WS-06-hotfix3-CHECKPOINT.md`
-**Nature:** CONTAINER-MANAGER SEARCH SCRIPT ONE-LINE FIX ¡X add `-H` flag to `grep` call inside `searchFilesInContainer` shell script so output always includes the filename prefix, making results parseable by the existing TypeScript parser
-**Source:** Inspection session (May 2026) ¡X after AI-WS-06-hotfix2, search still returns no matches; live container test confirmed that `grep -Fni` omits filename when searching a single file (output: `1:SPECIAL_TEST_KEYWORD`), but the parser expects `path:line:preview` (e.g. `/workspace/key.txt:1:SPECIAL_TEST_KEYWORD`); `grep -FnHi` forces filename inclusion; BusyBox grep (used by `node:20-alpine`) supports `-H`
+**Nature:** CONTAINER-MANAGER SEARCH SCRIPT ONE-LINE FIX ï¿½X add `-H` flag to `grep` call inside `searchFilesInContainer` shell script so output always includes the filename prefix, making results parseable by the existing TypeScript parser
+**Source:** Inspection session (May 2026) ï¿½X after AI-WS-06-hotfix2, search still returns no matches; live container test confirmed that `grep -Fni` omits filename when searching a single file (output: `1:SPECIAL_TEST_KEYWORD`), but the parser expects `path:line:preview` (e.g. `/workspace/key.txt:1:SPECIAL_TEST_KEYWORD`); `grep -FnHi` forces filename inclusion; BusyBox grep (used by `node:20-alpine`) supports `-H`
 **Depends on:** AI-WS-06-hotfix2 (COMPLETE and LOCKED)
 
 **Bounded scope:**
-- `services/container-manager/src/docker/docker-runtime.service.ts` ¡X change `grep -Fni` to `grep -FnHi` in `searchFilesInContainer` shell script
-- `services/container-manager/src/docker/docker-runtime.service.spec.ts` ¡X assert generated script contains `grep -FnHi` (update/extend existing assertion)
+- `services/container-manager/src/docker/docker-runtime.service.ts` ï¿½X change `grep -Fni` to `grep -FnHi` in `searchFilesInContainer` shell script
+- `services/container-manager/src/docker/docker-runtime.service.spec.ts` ï¿½X assert generated script contains `grep -FnHi` (update/extend existing assertion)
 
 **Non-goals:**
 - No API gateway changes
@@ -11886,18 +11886,18 @@ Update `FileActionDto` and `parseExecutionResultMetadata` in the API gateway so 
 - No query validation or safety cap changes
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-WS-06-hotfix3.
-**Nature:** CONTAINER-MANAGER ROUTING HOTFIX ¡X route AI workspace content search through Docker exec inside the active sandbox container, matching the read/write/list/delete architecture; update API gateway HTTP client to target the internal sessions search route
-**Source:** Inspection session (May 2026) ¡X AI-WS-06 workspace search can run but returns no matches even when named-file read can see the content; root cause is the same host/container filesystem mismatch that affected delete before AI-WS-03-hotfix5: `FilesService.searchFiles()` uses `fs.readdir()` + `fs.readFile()` against the host `workspacePath`, while files live in the active container `/workspace/` view; on Windows/Docker Desktop/WSL2 this produces empty results
+**Nature:** CONTAINER-MANAGER ROUTING HOTFIX ï¿½X route AI workspace content search through Docker exec inside the active sandbox container, matching the read/write/list/delete architecture; update API gateway HTTP client to target the internal sessions search route
+**Source:** Inspection session (May 2026) ï¿½X AI-WS-06 workspace search can run but returns no matches even when named-file read can see the content; root cause is the same host/container filesystem mismatch that affected delete before AI-WS-03-hotfix5: `FilesService.searchFiles()` uses `fs.readdir()` + `fs.readFile()` against the host `workspacePath`, while files live in the active container `/workspace/` view; on Windows/Docker Desktop/WSL2 this produces empty results
 **Depends on:** AI-WS-06 (COMPLETE and LOCKED); AI-WS-03-hotfix5 (COMPLETE and LOCKED)
 
 **Objective:**
 Route AI workspace content search through the same active-container execution path as read/write/list/delete, preserving all AI-WS-06 safety caps, exclusions, and result format.
 
 **Bounded scope:**
-- `services/container-manager/src/docker/docker-runtime.service.ts` ¡X add `searchFilesInContainer(sessionId, query)` using safe Docker exec (grep or equivalent), bounded by AI-WS-06 caps
-- `services/container-manager/src/sessions/sessions.service.ts` ¡X add `searchFilesInContainer(sessionId, query)` with existing session governance checks
-- `services/container-manager/src/sessions/internal-sessions.controller.ts` ¡X add `POST :id/files/search` route guarded by `InternalServiceAuthGuard`
-- `services/api-gateway/src/clients/container-manager-http.client.ts` ¡X change `searchSessionFiles()` target from `POST /api/files/${sessionId}/search` to `POST /api/internal/sessions/${sessionId}/files/search` with internal service key header
+- `services/container-manager/src/docker/docker-runtime.service.ts` ï¿½X add `searchFilesInContainer(sessionId, query)` using safe Docker exec (grep or equivalent), bounded by AI-WS-06 caps
+- `services/container-manager/src/sessions/sessions.service.ts` ï¿½X add `searchFilesInContainer(sessionId, query)` with existing session governance checks
+- `services/container-manager/src/sessions/internal-sessions.controller.ts` ï¿½X add `POST :id/files/search` route guarded by `InternalServiceAuthGuard`
+- `services/api-gateway/src/clients/container-manager-http.client.ts` ï¿½X change `searchSessionFiles()` target from `POST /api/files/${sessionId}/search` to `POST /api/internal/sessions/${sessionId}/files/search` with internal service key header
 - Focused tests for the above
 
 **Non-goals (explicit):**
@@ -11935,9 +11935,9 @@ Route AI workspace content search through the same active-container execution pa
 
 ---
 
-## PREVIEW ¡X Preview Routing & Static Serving
+## PREVIEW ï¿½X Preview Routing & Static Serving
 
-**Family status:** ACTIVE ¡X PREVIEW-hotfix COMPLETE and LOCKED
+**Family status:** ACTIVE ï¿½X PREVIEW-hotfix COMPLETE and LOCKED
 
 **Current stage:** PREVIEW-hotfix (COMPLETE and LOCKED)
 
@@ -11947,8 +11947,8 @@ Route AI workspace content search through the same active-container execution pa
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PREVIEW-hotfix-CHECKPOINT.md`
-**Nature:** CONTAINER-MANAGER STATIC PREVIEW HOTFIX ¡X inject a `<base>` tag into served static HTML responses so relative links resolve under the `/proxy/` route namespace without changing file storage, write paths, or AI behavior
-**Source:** Inspection session (May 2026) ¡X static HTML preview iframe is loaded at `/api/preview/<sessionId>/proxy`; relative links like `href="page2.html"` resolve to `/api/preview/<sessionId>/page2.html` and miss the `/proxy/` route, causing 404
+**Nature:** CONTAINER-MANAGER STATIC PREVIEW HOTFIX ï¿½X inject a `<base>` tag into served static HTML responses so relative links resolve under the `/proxy/` route namespace without changing file storage, write paths, or AI behavior
+**Source:** Inspection session (May 2026) ï¿½X static HTML preview iframe is loaded at `/api/preview/<sessionId>/proxy`; relative links like `href="page2.html"` resolve to `/api/preview/<sessionId>/page2.html` and miss the `/proxy/` route, causing 404
 **Depends on:** AI-WS-03-hotfix2 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -11961,7 +11961,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
   - focused preview test (existing spec or new focused spec alongside)
   - directly relevant tests
 - When serving static HTML preview content, inject `<base href="/api/preview/<sessionId>/proxy/">` into `<head>` if present; otherwise insert safely near the top of the document
-- Only apply to HTML responses ¡X do not modify CSS, JS, images, or other assets
+- Only apply to HTML responses ï¿½X do not modify CSS, JS, images, or other assets
 - Do not inject if a `<base>` tag is already present in the document
 - Do not change workspace file storage paths
 - Do not change AI file-action paths
@@ -11990,7 +11990,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 - No introduced lint errors
 
 **Risks / invariants:**
-- Inject only in served response ¡X do not rewrite user files on disk
+- Inject only in served response ï¿½X do not rewrite user files on disk
 - Do not modify non-HTML content
 - Do not break existing asset loading
 - Do not change file write/read/delete behavior
@@ -12001,27 +12001,27 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ---
 
-## UX-FILETREE ¡X Workspace File Tree UX
+## UX-FILETREE ï¿½X Workspace File Tree UX
 
-**Family status:** COMPLETE and LOCKED ¡X UX-FILETREE-hotfix COMPLETE and LOCKED
+**Family status:** COMPLETE and LOCKED ï¿½X UX-FILETREE-hotfix COMPLETE and LOCKED
 
 **Current stage:** none active (UX-FILETREE-hotfix wave complete)
 
-**Completed tasks:** UX-FILETREE-hotfix ¡X COMPLETE and LOCKED.
+**Completed tasks:** UX-FILETREE-hotfix ï¿½X COMPLETE and LOCKED.
 
 ---
 
 #### UX-FILETREE-hotfix: Hide Internal Git Files From Workspace File Tree
 
 **Status:** COMPLETE and LOCKED
-**Nature:** FRONTEND FILE-TREE DISPLAY/FILTER HOTFIX ¡X exclude `.git/` and everything under `.git/` from the user-facing Files panel, applied consistently after initial load, create refresh, delete refresh, and manual refresh; no change to on-disk files or internal git/checkpoint behavior
-**Source:** User observation (May 2026) ¡X after create or delete operations, the workspace file tree can show internal `.git/` contents (hooks, objects, logs, refs, HEAD, index, config) which should not be visible to the user
+**Nature:** FRONTEND FILE-TREE DISPLAY/FILTER HOTFIX ï¿½X exclude `.git/` and everything under `.git/` from the user-facing Files panel, applied consistently after initial load, create refresh, delete refresh, and manual refresh; no change to on-disk files or internal git/checkpoint behavior
+**Source:** User observation (May 2026) ï¿½X after create or delete operations, the workspace file tree can show internal `.git/` contents (hooks, objects, logs, refs, HEAD, index, config) which should not be visible to the user
 **Depends on:** (none)
 
 **Bounded scope:**
-- `frontend/components/workspace/workspace-file-navigation.logic.ts` ¡X added `isInternalGitTreeEntry()` filter in `loadWorkspaceFileTree()` before sort and recursion
-- `frontend/components/workspace/workspace-file-navigation.logic.test.ts` ¡X added focused `.git` filtering regression test (10 tests total, all pass)
-- `frontend/app/[locale]/app/page.tsx` ¡X not changed (filtering is entirely in the shared logic module)
+- `frontend/components/workspace/workspace-file-navigation.logic.ts` ï¿½X added `isInternalGitTreeEntry()` filter in `loadWorkspaceFileTree()` before sort and recursion
+- `frontend/components/workspace/workspace-file-navigation.logic.test.ts` ï¿½X added focused `.git` filtering regression test (10 tests total, all pass)
+- `frontend/app/[locale]/app/page.tsx` ï¿½X not changed (filtering is entirely in the shared logic module)
 
 **Non-goals:**
 - No change to git/checkpoint behavior
@@ -12035,35 +12035,38 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ---
 
-## UX-IA ¡X Product & UX/UI Redesign (Evolutionary)
+## UX-IA ï¿½X Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE ¡X AUTH-APP-01 NEXT (cross-family; UX-IA-04 follows after)
+**Family status:** ACTIVE â€” UX-IA-04 ACTIVE â€” UX-IA-04A COMPLETE and LOCKED â€” UX-IA-04B ACTIVE / current stage
 
-**Current stage:** AUTH-APP-01 (not started ¡X register under AUTH family before implementing)
+**Current stage:** UX-IA-04B â€” Home view chatbox + prompt-to-project flow
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
 **Ordered slices:**
-1. UX-IA-00 ¡X Master spec (COMPLETE ¡X `docs/UX-IA-00-MASTER-PLAN.md`)
-2. UX-IA-01 ¡X i18n Foundation & Locale Middleware (COMPLETE and LOCKED ¡X `docs/UX-IA-01-CHECKPOINT.md`)
-3. UX-IA-02 ¡X Design Token Foundation (COMPLETE and LOCKED ¡X `docs/UX-IA-02-CHECKPOINT.md`)
-4. UX-IA-03 ¡X Public Landing Redesign + Login/Register Polish (COMPLETE and LOCKED ¡X `docs/UX-IA-03-CHECKPOINT.md`)
-   ? AUTH-APP-01 ¡X aiSandBox First-Party User Authentication (cross-family ¡X NEXT; see `docs/UX-IA-00-MASTER-PLAN.md` AUTH-APP-01 entry; register under AUTH family before starting)
-5. UX-IA-04 ¡X Workspace Shell + Sidebar + Home View (pending ¡X note: confirm AUTH-APP-01 stability before UX-IA-04 reaches users)
-6. UX-IA-05 ¡X Projects Grid/List + Recent Projects (pending)
-7. UX-IA-06 ¡X Templates / Community View (pending)
-8. UX-IA-07 ¡X Account Menu + Settings + Language/Theme (pending)
-9. UX-IA-08 ¡X Project Mode Shell (pending)
-10. UX-IA-09 ¡X Project AI + History Panel (pending)
-11. UX-IA-10 ¡X Preview + Code & Files Tabs (pending)
-12. UX-IA-11 ¡X Future Product Tab Placeholders (pending)
-13. UX-IA-12 ¡X Upgrade Flow + Dashboard Polish (pending)
-14. UX-IA-13 ¡X Responsive / Mobile Polish (pending)
-15. UX-IA-14 ¡X Route Cleanup / Redirects (pending)
-16. UX-IA-15 ¡X Visual Edit Mode Foundation (pending ¡X requires UX-IA-08 + UX-IA-10 COMPLETE)
-17. UX-IA-16 ¡X Visual Edit AI Patch Flow (pending ¡X requires UX-IA-15 COMPLETE)
-18. UX-IA-17 ¡X Visual Edit Undo / Checkpoint Integration (pending ¡X requires UX-IA-16 COMPLETE)
-   ? AUTH-MODULE-01 ¡X Reusable App-Auth Module for aiSandBox-Created Apps (cross-family ¡X later product capability; requires AUTH-APP-01 + UX-IA-08¡VUX-IA-10 COMPLETE; see `docs/UX-IA-00-MASTER-PLAN.md` AUTH-MODULE-01 entry; register under AUTH family before starting)
+1. UX-IA-00 ï¿½X Master spec (COMPLETE ï¿½X `docs/UX-IA-00-MASTER-PLAN.md`)
+2. UX-IA-01 ï¿½X i18n Foundation & Locale Middleware (COMPLETE and LOCKED ï¿½X `docs/UX-IA-01-CHECKPOINT.md`)
+3. UX-IA-02 ï¿½X Design Token Foundation (COMPLETE and LOCKED ï¿½X `docs/UX-IA-02-CHECKPOINT.md`)
+4. UX-IA-03 ï¿½X Public Landing Redesign + Login/Register Polish (COMPLETE and LOCKED ï¿½X `docs/UX-IA-03-CHECKPOINT.md`)
+   > AUTH-APP-01 + AUTH-APP-02 ï¿½X aiSandBox First-Party Authentication (cross-family ï¿½X COMPLETE and LOCKED ï¿½X `docs/AUTH-APP-01-CHECKPOINT.md` + `docs/AUTH-APP-02-CHECKPOINT.md`)
+5. UX-IA-04 â€” Workspace Shell + Sidebar + Home View (ACTIVE â€” child slices registered)
+   - UX-IA-04A â€” Sidebar shell + view state scaffolding (COMPLETE and LOCKED â€” `docs/UX-IA-04A-CHECKPOINT.md`)
+   - UX-IA-04B â€” Home view chatbox + prompt-to-project flow (ACTIVE / current stage)
+   - UX-IA-04C â€” Tests + validation + consolidation (PLANNED)
+6. UX-IA-05 ï¿½X Projects Grid/List + Recent Projects (pending)
+7. UX-IA-06 ï¿½X Templates / Community View (pending)
+8. UX-IA-07 ï¿½X Account Menu + Settings + Language/Theme (pending)
+9. UX-IA-08 ï¿½X Project Mode Shell (pending)
+10. UX-IA-09 ï¿½X Project AI + History Panel (pending)
+11. UX-IA-10 ï¿½X Preview + Code & Files Tabs (pending)
+12. UX-IA-11 ï¿½X Future Product Tab Placeholders (pending)
+13. UX-IA-12 ï¿½X Upgrade Flow + Dashboard Polish (pending)
+14. UX-IA-13 ï¿½X Responsive / Mobile Polish (pending)
+15. UX-IA-14 ï¿½X Route Cleanup / Redirects (pending)
+16. UX-IA-15 ï¿½X Visual Edit Mode Foundation (pending ï¿½X requires UX-IA-08 + UX-IA-10 COMPLETE)
+17. UX-IA-16 ï¿½X Visual Edit AI Patch Flow (pending ï¿½X requires UX-IA-15 COMPLETE)
+18. UX-IA-17 ï¿½X Visual Edit Undo / Checkpoint Integration (pending ï¿½X requires UX-IA-16 COMPLETE)
+   ? AUTH-MODULE-01 ï¿½X Reusable App-Auth Module for aiSandBox-Created Apps (cross-family ï¿½X later product capability; requires AUTH-APP-01 + UX-IA-08ï¿½VUX-IA-10 COMPLETE; see `docs/UX-IA-00-MASTER-PLAN.md` AUTH-MODULE-01 entry; register under AUTH family before starting)
 
 ---
 
@@ -12071,19 +12074,19 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/UX-IA-01-CHECKPOINT.md`
-**Nature:** FRONTEND I18N INFRASTRUCTURE ¡X expand translation files to all required namespaces, implement English fallback in `useTranslations`, add locale middleware for default locale redirect, decide namespace access pattern and `sandbox` namespace migration strategy; no visual or layout changes
-**Source:** UX-IA-00 master plan (May 2026) ¡X multilingual is mandatory; all later UX phases must use translation keys from day one to prevent hardcoded-string debt
+**Nature:** FRONTEND I18N INFRASTRUCTURE ï¿½X expand translation files to all required namespaces, implement English fallback in `useTranslations`, add locale middleware for default locale redirect, decide namespace access pattern and `sandbox` namespace migration strategy; no visual or layout changes
+**Source:** UX-IA-00 master plan (May 2026) ï¿½X multilingual is mandatory; all later UX phases must use translation keys from day one to prevent hardcoded-string debt
 **Depends on:** UX-IA-00 (COMPLETE)
 
 **Bounded scope:**
-- `frontend/middleware.ts` (new) ¡X default locale redirect, must not interfere with `/api/*`
-- `frontend/messages/en.json` ¡X expand with all namespaces
-- `frontend/messages/zh-TW.json` ¡X expand with all namespaces
-- `frontend/messages/zh-CN.json` ¡X expand with all namespaces
-- `frontend/hooks/useTranslations.ts` ¡X add English fallback (active locale ¡÷ English ¡÷ key)
-- `frontend/components/TranslationProvider.tsx` ¡X pass `fallbackMessages` (en.json) alongside active locale messages
-- `frontend/app/[locale]/layout.tsx` ¡X if needed to import en.json as fallback
-- `frontend/components/LanguageSwitcher.tsx` ¡X minor polish if needed
+- `frontend/middleware.ts` (new) ï¿½X default locale redirect, must not interfere with `/api/*`
+- `frontend/messages/en.json` ï¿½X expand with all namespaces
+- `frontend/messages/zh-TW.json` ï¿½X expand with all namespaces
+- `frontend/messages/zh-CN.json` ï¿½X expand with all namespaces
+- `frontend/hooks/useTranslations.ts` ï¿½X add English fallback (active locale ï¿½ï¿½ English ï¿½ï¿½ key)
+- `frontend/components/TranslationProvider.tsx` ï¿½X pass `fallbackMessages` (en.json) alongside active locale messages
+- `frontend/app/[locale]/layout.tsx` ï¿½X if needed to import en.json as fallback
+- `frontend/components/LanguageSwitcher.tsx` ï¿½X minor polish if needed
 
 **Non-goals:**
 - No visual redesign
@@ -12106,14 +12109,14 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/UX-IA-02-CHECKPOINT.md`
-**Nature:** FRONTEND CSS / TAILWIND CONFIG ¡X establish brand, surface, border, text, and muted token strategy; define light theme CSS custom properties in `:root`; prepare dark theme placeholders if low-risk; no component or layout changes
-**Source:** UX-IA-00 master plan (May 2026) ¡X all subsequent visual phases must build on a shared token system to avoid palette drift
+**Nature:** FRONTEND CSS / TAILWIND CONFIG ï¿½X establish brand, surface, border, text, and muted token strategy; define light theme CSS custom properties in `:root`; prepare dark theme placeholders if low-risk; no component or layout changes
+**Source:** UX-IA-00 master plan (May 2026) ï¿½X all subsequent visual phases must build on a shared token system to avoid palette drift
 **Depends on:** UX-IA-01 (COMPLETE and LOCKED)
 
 **Bounded scope:**
-- `frontend/tailwind.config.js` ¡X extend theme with brand, surface, border, text, and muted color tokens; add font family and radius tokens
-- `frontend/app/globals.css` ¡X define CSS custom properties for light theme in `:root`; add dark theme placeholder block if low-risk
-- `frontend/app/[locale]/layout.tsx` ¡X add `next/font` Inter font import if needed; keep all i18n/TranslationProvider wiring unchanged
+- `frontend/tailwind.config.js` ï¿½X extend theme with brand, surface, border, text, and muted color tokens; add font family and radius tokens
+- `frontend/app/globals.css` ï¿½X define CSS custom properties for light theme in `:root`; add dark theme placeholder block if low-risk
+- `frontend/app/[locale]/layout.tsx` ï¿½X add `next/font` Inter font import if needed; keep all i18n/TranslationProvider wiring unchanged
 
 **Non-goals:**
 - No workspace layout changes
@@ -12144,26 +12147,26 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/UX-IA-03-CHECKPOINT.md`
-**Nature:** FRONTEND UI / I18N ¡X redesign public landing as "Build anything" entry experience with prompt chatbox and CTA; polish login/register pages using UX-IA-02 design tokens; full i18n for all three pages; no auth changes, no workspace changes
-**Source:** UX-IA-00 master plan (May 2026) ¡X public landing and login/register are the first user-facing surfaces; must reflect the new product direction before workspace redesign begins
+**Nature:** FRONTEND UI / I18N ï¿½X redesign public landing as "Build anything" entry experience with prompt chatbox and CTA; polish login/register pages using UX-IA-02 design tokens; full i18n for all three pages; no auth changes, no workspace changes
+**Source:** UX-IA-00 master plan (May 2026) ï¿½X public landing and login/register are the first user-facing surfaces; must reflect the new product direction before workspace redesign begins
 **Depends on:** UX-IA-01 (COMPLETE and LOCKED), UX-IA-02 (COMPLETE and LOCKED)
 
 **Bounded scope:**
-- `frontend/components/public/public-landing-slice.tsx` ¡X redesign with "Build anything" headline, subtitle, prompt chatbox, sign-in/register CTA
-- `frontend/app/[locale]/page.tsx` ¡X wire updated landing component props
-- `frontend/app/[locale]/login/page.tsx` ¡X visual polish using design tokens + full i18n
-- `frontend/app/[locale]/register/page.tsx` ¡X visual polish using design tokens + full i18n
-- `frontend/components/LanguageSwitcher.tsx` ¡X ensure visible on all three pages if not already
-- `frontend/messages/en.json` ¡X add/complete landing/login/register i18n keys
-- `frontend/messages/zh-TW.json` ¡X same
-- `frontend/messages/zh-CN.json` ¡X same
+- `frontend/components/public/public-landing-slice.tsx` ï¿½X redesign with "Build anything" headline, subtitle, prompt chatbox, sign-in/register CTA
+- `frontend/app/[locale]/page.tsx` ï¿½X wire updated landing component props
+- `frontend/app/[locale]/login/page.tsx` ï¿½X visual polish using design tokens + full i18n
+- `frontend/app/[locale]/register/page.tsx` ï¿½X visual polish using design tokens + full i18n
+- `frontend/components/LanguageSwitcher.tsx` ï¿½X ensure visible on all three pages if not already
+- `frontend/messages/en.json` ï¿½X add/complete landing/login/register i18n keys
+- `frontend/messages/zh-TW.json` ï¿½X same
+- `frontend/messages/zh-CN.json` ï¿½X same
 - Focused tests for prompt sessionStorage preservation if test setup supports them
 
 **Required behavior:**
 - `/[locale]` public landing shows: "Build anything" headline, short subtitle, prompt input, sign-in/register CTA
 - Submitting the prompt before login must **not** create a project
 - Submitting the prompt before login must store the prompt text in `sessionStorage` and redirect to login or register
-- Login/register pages remain functionally unchanged ¡X visual/i18n polish only
+- Login/register pages remain functionally unchanged ï¿½X visual/i18n polish only
 - Login/register use design token CSS classes where practical (colors, font, radius)
 - All landing/login/register user-facing strings use `useTranslations` i18n keys
 - UX-IA-01 English fallback behavior unchanged
@@ -12184,7 +12187,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 - No authenticated workspace redesign
 - No workspace shell/sidebar changes
 - No project mode changes
-- No preview tab changes (Visual Edit Mode is roadmap-only ¡X see master plan Section 12)
+- No preview tab changes (Visual Edit Mode is roadmap-only ï¿½X see master plan Section 12)
 - No AI-WS changes
 - No billing/upgrade changes
 - No new external dependencies
@@ -12214,9 +12217,169 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ---
 
-## AUTH ¡X aiSandBox First-Party Authentication
+#### UX-IA-04: Workspace Shell + Sidebar + Home View
 
-**Family status:** VALIDATION COMPLETE (AUTH-APP-01C2 VALIDATION COMPLETE ¡X AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F COMPLETE; manual smoke deferred) ¡X AUTH-APP-01E COMPLETE ¡X AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) ¡X AUTH-APP-01F1 COMPLETE ¡X AUTH-APP-01F2 COMPLETE ¡X AUTH-APP-01F3 COMPLETE ¡X AUTH-APP-01F4 COMPLETE ¡X AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) ¡X AUTH-APP-01G1 COMPLETE ¡X AUTH-APP-01G2 COMPLETE ¡X AUTH-APP-01G3 COMPLETE ¡X AUTH-APP-01G4 COMPLETE ¡X AUTH-APP-01H VALIDATION COMPLETE (manual smoke deferred) ¡X AUTH-APP-01H1 COMPLETE ¡X AUTH-APP-01H2 COMPLETE ¡X AUTH-APP-01H3 COMPLETE ¡X AUTH-APP-01H4 COMPLETE ¡X AUTH-APP-01Z COMPLETE ¡X AUTH-APP-02A COMPLETE and LOCKED ¡X AUTH-APP-02B COMPLETE and LOCKED ¡X AUTH-APP-02C COMPLETE and LOCKED ¡X AUTH-APP-02 COMPLETE and LOCKED ¡X AUTH-APP-02D COMPLETE and LOCKED
+**Status:** ACTIVE â€” child slices registered; UX-IA-04B is current stage
+**Task ID:** UX-IA-04
+**Family:** UX-IA (Product & UX/UI Redesign â€” Evolutionary)
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` â€” UX-IA-04 section
+**Depends on:** UX-IA-03 (COMPLETE and LOCKED), AUTH-APP-01 (COMPLETE and LOCKED), AUTH-APP-02 (COMPLETE and LOCKED), PROJ-02-01 (COMPLETE and LOCKED), PROJ-02-02 (COMPLETE and LOCKED), PROJ-02-03 (COMPLETE and LOCKED)
+**Risk:** Medium-High â€” major layout restructure of primary workspace component; split into 3 child slices to reduce per-pass risk
+**Loop:** 4-step (plan â€” implement â€” verify tests â€” consolidate)
+**Model:** Opus 4.6 for plan phase and major implementation; Sonnet 4.6 for registration and consolidation
+
+**Objective:**
+Evolve `WorkspaceShell` into a sidebar + right content layout. Add `WorkspaceView` state (`home | projects | templates | project`). Implement the authenticated Home view with a "Build anything" chatbox. Submitting a prompt from Home creates a project and opens project mode. Extract or prepare a `WorkspaceSidebar` component. Reuse existing workspace/project state and handlers from `page.tsx`. Reuse `DashboardSummary` data for compact sidebar usage. Preserve all existing workspace/project/AI/file/preview/history behavior.
+
+**Child slices:**
+- UX-IA-04A â€” Sidebar shell + view state scaffolding (COMPLETE and LOCKED â€” `docs/UX-IA-04A-CHECKPOINT.md`)
+- UX-IA-04B â€” Home view chatbox + prompt-to-project flow (ACTIVE / current stage)
+- UX-IA-04C â€” Tests + validation + consolidation (PLANNED)
+
+**Bounded scope:**
+- `frontend/components/workspace/workspace-shell.tsx` â€” layout restructure: sidebar + right content
+- `frontend/components/workspace/workspace-shell.test.tsx` â€” update tests for new layout and view state
+- `frontend/app/[locale]/app/page.tsx` â€” add `workspaceView` state, wire create-project-from-prompt
+- New: `frontend/components/workspace/workspace-sidebar.tsx` â€” extracted sidebar component
+
+**Non-goals:**
+- No project mode implementation yet (UX-IA-08)
+- No tab system yet (UX-IA-10)
+- No account menu yet (UX-IA-07)
+- No template/community view implementation beyond nav item (UX-IA-06)
+- No route cleanup (UX-IA-14)
+- No backend or API changes
+- No auth changes
+- No broad refactor of AI-WS, preview, or file logic
+- No visual edit mode
+- No breaking of completed AI-WS, AUTH, PROJ, or preview security work
+
+**Acceptance checks (full UX-IA-04):**
+- UX-IA-04 registered in TASKS.md and TASKS_BACKLOG_FULL.md â€” DONE
+- Sidebar renders with workspace selector + Home/Projects/Templates nav items
+- Home view shows "Build anything" chatbox
+- Prompt submission from Home creates a project and opens project mode
+- All user-facing strings use i18n keys (no hardcoded English)
+- Existing workspace/project/AI/file/preview/history behavior preserved
+- Frontend typecheck passes (`npx tsc --noEmit`)
+- Focused tests for new layout/view-state pass (`npm run test`)
+- Frontend build passes (`npm run build`)
+- No regressions to AUTH-APP-01/02, PROJ-02, or UX-IA-01/02/03 behavior
+
+**Sequencing risk note:**
+PROJ-02-01 (Refactor Project Open Into Deterministic Workspace Hydration Flow) is COMPLETE and LOCKED. UX-IA-04 may proceed; the fragile project-open chain has been addressed. AUTH-APP-01 through AUTH-APP-02D are COMPLETE and LOCKED; authentication prerequisites satisfied.
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-04.
+
+---
+
+#### UX-IA-04A: Sidebar Shell + View State Scaffolding
+
+**Status:** COMPLETE and LOCKED â€” `docs/UX-IA-04A-CHECKPOINT.md`
+**Task ID:** UX-IA-04A
+**Parent:** UX-IA-04
+**Family:** UX-IA (Product & UX/UI Redesign â€” Evolutionary)
+**Source:** UX-IA-04 plan phase result (May 2026)
+**Depends on:** UX-IA-04 plan phase (COMPLETE)
+**Risk:** Medium
+
+**Objective:**
+Add `WorkspaceView` state to `page.tsx`. Create `workspace-sidebar.tsx`. Restructure `workspace-shell.tsx` layout from the existing header+aside+main arrangement to sidebar+right-content with view-based rendering. Wire nav items. Render recent projects and compact usage. Home view shows static placeholder only. Preserve all existing project/AI/preview/history behavior unchanged.
+
+**Bounded scope:**
+- `frontend/app/[locale]/app/page.tsx` â€” add `workspaceView: WorkspaceView` state; add `onWorkspaceViewChange` handler; pass both as new props to `WorkspaceShell`
+- `frontend/components/workspace/workspace-shell.tsx` â€” restructure outer layout to sidebar + right content; add view-based rendering (`home` placeholder / `projects` / `templates` / `project`); accept new `workspaceView` + `onWorkspaceViewChange` props; pass sidebar data as props to `WorkspaceSidebar`
+- `frontend/components/workspace/workspace-sidebar.tsx` (new) â€” sidebar component: workspace dropdown, Home/Projects/Templates nav items, recent projects list (top 5 by `updatedAt`), compact usage display, session advanced drawer
+- `frontend/components/workspace/workspace-shell.test.tsx` â€” minimal adjustments to keep existing tests passing; defer heavy test additions to UX-IA-04C
+
+**Non-goals:**
+- No Home prompt-to-project flow (UX-IA-04B)
+- No handleCreateProjectFromPrompt handler
+- No sessionStorage pending prompt consumption
+- No project mode redesign (UX-IA-08)
+- No tab system (UX-IA-10/11)
+- No account menu (UX-IA-07)
+- No backend or API changes
+- No auth changes
+- No recoveryCopy migration beyond what is touched by structural changes
+- No responsive/mobile work (UX-IA-13)
+
+**Validation:**
+- `npx tsc --noEmit` (from `frontend/`) â€” must pass
+- `npm test` (from `frontend/`) â€” must pass
+- `npm run build` (from `frontend/`) â€” run if practical
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-04A.
+
+---
+
+#### UX-IA-04B: Home View Chatbox + Prompt-to-Project Flow
+
+**Status:** ACTIVE / current stage
+**Task ID:** UX-IA-04B
+**Parent:** UX-IA-04
+**Family:** UX-IA (Product & UX/UI Redesign â€” Evolutionary)
+**Depends on:** UX-IA-04A (COMPLETE and LOCKED â€” `docs/UX-IA-04A-CHECKPOINT.md`)
+**Risk:** Medium
+
+**Objective:**
+Implement the Home view "Build anything" chatbox and the prompt-to-project creation flow. Add `handleCreateProjectFromPrompt` to `page.tsx`. Consume `sessionStorage` pending prompt written by UX-IA-03 landing page. Pre-fill prompt into existing `chatPromptInput` state so it's ready when project mode opens.
+
+**Bounded scope:**
+- `frontend/app/[locale]/app/page.tsx` â€” add `handleCreateProjectFromPrompt(prompt: string)` handler; add sessionStorage pending-prompt consumption on mount; wire new `onCreateProjectFromPrompt` prop to `WorkspaceShell`
+- `frontend/components/workspace/workspace-shell.tsx` â€” implement Home view content: "Build anything" headline, prompt textarea, submit button; wire `onCreateProjectFromPrompt` prop; use existing `workspace.*` i18n keys
+
+**Non-goals:**
+- No new backend APIs
+- No AI flow rewrite
+- No change to `handleCreateWorkspaceProject` internals
+- No change to PROJ-02-01 hydration flow
+- No new project-open race surface
+- No account menu (UX-IA-07)
+- No tab system (UX-IA-08/10/11)
+
+**Validation:**
+- `npx tsc --noEmit` (from `frontend/`) â€” must pass
+- `npm test` (from `frontend/`) â€” must pass
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-04B.
+
+---
+
+#### UX-IA-04C: Tests + Validation + Consolidation
+
+**Status:** PLANNED
+**Task ID:** UX-IA-04C
+**Parent:** UX-IA-04
+**Family:** UX-IA (Product & UX/UI Redesign â€” Evolutionary)
+**Depends on:** UX-IA-04B (PLANNED â€” must be COMPLETE and LOCKED first)
+**Risk:** Low-Medium
+
+**Objective:**
+Update and extend `workspace-shell.test.tsx` for the new layout structure, sidebar, view state, and Home chatbox. Run full validation suite. Write checkpoint document and close UX-IA-04.
+
+**Bounded scope:**
+- `frontend/components/workspace/workspace-shell.test.tsx` â€” update existing tests for new layout; add tests for sidebar, view switching, Home chatbox, prompt-to-project flow
+- `docs/UX-IA-04-CHECKPOINT.md` (new) â€” checkpoint document
+- `TASKS.md` â€” mark UX-IA-04 and all child slices COMPLETE and LOCKED
+- `TASKS_BACKLOG_FULL.md` â€” mark UX-IA-04 and all child slices COMPLETE and LOCKED
+
+**Non-goals:**
+- No new features
+- No source code changes beyond test fixes
+
+**Validation:**
+- `npx tsc --noEmit` (from `frontend/`) â€” must pass
+- `npm test` (from `frontend/`) â€” must pass, including new test cases
+- `npm run build` (from `frontend/`) â€” must pass
+- `ReadLints` on all touched files â€” no introduced errors
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-04C.
+---
+
+## AUTH ï¿½X aiSandBox First-Party Authentication
+
+**Family status:** VALIDATION COMPLETE (AUTH-APP-01C2 VALIDATION COMPLETE ï¿½X AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F COMPLETE; manual smoke deferred) ï¿½X AUTH-APP-01E COMPLETE ï¿½X AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) ï¿½X AUTH-APP-01F1 COMPLETE ï¿½X AUTH-APP-01F2 COMPLETE ï¿½X AUTH-APP-01F3 COMPLETE ï¿½X AUTH-APP-01F4 COMPLETE ï¿½X AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) ï¿½X AUTH-APP-01G1 COMPLETE ï¿½X AUTH-APP-01G2 COMPLETE ï¿½X AUTH-APP-01G3 COMPLETE ï¿½X AUTH-APP-01G4 COMPLETE ï¿½X AUTH-APP-01H VALIDATION COMPLETE (manual smoke deferred) ï¿½X AUTH-APP-01H1 COMPLETE ï¿½X AUTH-APP-01H2 COMPLETE ï¿½X AUTH-APP-01H3 COMPLETE ï¿½X AUTH-APP-01H4 COMPLETE ï¿½X AUTH-APP-01Z COMPLETE ï¿½X AUTH-APP-02A COMPLETE and LOCKED ï¿½X AUTH-APP-02B COMPLETE and LOCKED ï¿½X AUTH-APP-02C COMPLETE and LOCKED ï¿½X AUTH-APP-02 COMPLETE and LOCKED ï¿½X AUTH-APP-02D COMPLETE and LOCKED
 
 **Current stage:** AUTH-APP-02 COMPLETE and LOCKED; AUTH-APP-02D COMPLETE and LOCKED; no active implementation task
 
@@ -12224,44 +12387,44 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 **Reference master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
 
 **Important distinction:**
-- `AUTH-APP-01` ¡X authentication for the aiSandBox platform itself (this family)
-- `AUTH-MODULE-01` ¡X reusable generated app-auth for user-created apps (later, separate family)
+- `AUTH-APP-01` ï¿½X authentication for the aiSandBox platform itself (this family)
+- `AUTH-MODULE-01` ï¿½X reusable generated app-auth for user-created apps (later, separate family)
 
-**Parent roadmap: AUTH-APP-01 ¡X aiSandBox First-Party User Authentication**
+**Parent roadmap: AUTH-APP-01 ï¿½X aiSandBox First-Party User Authentication**
 
-**Parent status: VALIDATION COMPLETE ¡X AUTH-APP-01C2 VALIDATION COMPLETE (AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F COMPLETE); manual smoke deferred; carry-forwards pending**
+**Parent status: VALIDATION COMPLETE ï¿½X AUTH-APP-01C2 VALIDATION COMPLETE (AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F COMPLETE); manual smoke deferred; carry-forwards pending**
 **Parent checkpoint:** `docs/AUTH-APP-01-CHECKPOINT.md`
 
 Goal: add production-ready authentication (email, Google, Apple) for the aiSandBox hosted app so real users can sign in securely before using platform features.
 
-Confirmed child slices (AUTH-APP-01C1 further split ¡X stage-start found backend + frontend surface too large for one slice):
-1. AUTH-APP-01A ¡X Auth Architecture & Implementation Spec (COMPLETE and LOCKED)
-2. AUTH-APP-01B ¡X Database / Schema Migrations (COMPLETE and LOCKED)
-3. AUTH-APP-01C1A ¡X Backend Cookie Session Foundation (COMPLETE and LOCKED)
-4. AUTH-APP-01C1B ¡X Frontend localStorage/Bearer Migration (COMPLETE and LOCKED)
-5. AUTH-APP-01C2 ¡X Email Verification / Password Reset / Rate Limiting (ACTIVE ¡X AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F PLANNED)
-6. AUTH-APP-01D ¡X Google OAuth (COMPLETE and LOCKED)
-7. AUTH-APP-01E ¡X Apple OAuth (COMPLETE and LOCKED)
-8. AUTH-APP-01F ¡X Route / API Protection (VALIDATION COMPLETE ¡X carry-forwards/manual smoke deferred ¡X child slices all complete):
-   - AUTH-APP-01F1 ¡X Route/API Protection Inventory + Spec (COMPLETE and LOCKED)
-   - AUTH-APP-01F2 ¡X Backend API Protection Gaps (COMPLETE and LOCKED)
-   - AUTH-APP-01F3 ¡X Frontend Protected Route Behavior (COMPLETE and LOCKED)
-   - AUTH-APP-01F4 ¡X Protection Validation + Consolidation (COMPLETE and LOCKED)
-9. AUTH-APP-01G ¡X Auth UX Integration (VALIDATION COMPLETE ¡X manual smoke deferred ¡X all child slices COMPLETE and LOCKED):
-   - AUTH-APP-01G1 ¡X Auth UX Inventory + Scope (COMPLETE and LOCKED)
-   - AUTH-APP-01G2 ¡X Login/Register OAuth Error + Button Polish (COMPLETE and LOCKED)
-   - AUTH-APP-01G3 ¡X Logout + Basic Account Surface (COMPLETE and LOCKED)
-   - AUTH-APP-01G4 ¡X Auth UX Validation + Checkpoint (COMPLETE and LOCKED)
-10. AUTH-APP-01H ¡X Security Hardening + Validation Checklist (VALIDATION COMPLETE ¡X manual smoke deferred ¡X all child slices COMPLETE and LOCKED):
-    - AUTH-APP-01H1 ¡X Security Hardening Inventory (COMPLETE and LOCKED)
-    - AUTH-APP-01H2 ¡X CSRF + Rate Limiting + Redirect Hardening (COMPLETE and LOCKED)
-    - AUTH-APP-01H3 ¡X Events Endpoint Guards + Test/Tooling Triage (COMPLETE and LOCKED)
-    - AUTH-APP-01H4 ¡X Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation (COMPLETE and LOCKED)
-11. AUTH-APP-01Z ¡X Final Consolidation (COMPLETE and LOCKED)
+Confirmed child slices (AUTH-APP-01C1 further split ï¿½X stage-start found backend + frontend surface too large for one slice):
+1. AUTH-APP-01A ï¿½X Auth Architecture & Implementation Spec (COMPLETE and LOCKED)
+2. AUTH-APP-01B ï¿½X Database / Schema Migrations (COMPLETE and LOCKED)
+3. AUTH-APP-01C1A ï¿½X Backend Cookie Session Foundation (COMPLETE and LOCKED)
+4. AUTH-APP-01C1B ï¿½X Frontend localStorage/Bearer Migration (COMPLETE and LOCKED)
+5. AUTH-APP-01C2 ï¿½X Email Verification / Password Reset / Rate Limiting (ACTIVE ï¿½X AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F PLANNED)
+6. AUTH-APP-01D ï¿½X Google OAuth (COMPLETE and LOCKED)
+7. AUTH-APP-01E ï¿½X Apple OAuth (COMPLETE and LOCKED)
+8. AUTH-APP-01F ï¿½X Route / API Protection (VALIDATION COMPLETE ï¿½X carry-forwards/manual smoke deferred ï¿½X child slices all complete):
+   - AUTH-APP-01F1 ï¿½X Route/API Protection Inventory + Spec (COMPLETE and LOCKED)
+   - AUTH-APP-01F2 ï¿½X Backend API Protection Gaps (COMPLETE and LOCKED)
+   - AUTH-APP-01F3 ï¿½X Frontend Protected Route Behavior (COMPLETE and LOCKED)
+   - AUTH-APP-01F4 ï¿½X Protection Validation + Consolidation (COMPLETE and LOCKED)
+9. AUTH-APP-01G ï¿½X Auth UX Integration (VALIDATION COMPLETE ï¿½X manual smoke deferred ï¿½X all child slices COMPLETE and LOCKED):
+   - AUTH-APP-01G1 ï¿½X Auth UX Inventory + Scope (COMPLETE and LOCKED)
+   - AUTH-APP-01G2 ï¿½X Login/Register OAuth Error + Button Polish (COMPLETE and LOCKED)
+   - AUTH-APP-01G3 ï¿½X Logout + Basic Account Surface (COMPLETE and LOCKED)
+   - AUTH-APP-01G4 ï¿½X Auth UX Validation + Checkpoint (COMPLETE and LOCKED)
+10. AUTH-APP-01H ï¿½X Security Hardening + Validation Checklist (VALIDATION COMPLETE ï¿½X manual smoke deferred ï¿½X all child slices COMPLETE and LOCKED):
+    - AUTH-APP-01H1 ï¿½X Security Hardening Inventory (COMPLETE and LOCKED)
+    - AUTH-APP-01H2 ï¿½X CSRF + Rate Limiting + Redirect Hardening (COMPLETE and LOCKED)
+    - AUTH-APP-01H3 ï¿½X Events Endpoint Guards + Test/Tooling Triage (COMPLETE and LOCKED)
+    - AUTH-APP-01H4 ï¿½X Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation (COMPLETE and LOCKED)
+11. AUTH-APP-01Z ï¿½X Final Consolidation (COMPLETE and LOCKED)
 
 **Sequencing note:** AUTH-APP-01D (Google OAuth) depends on AUTH-APP-01C1A (session cookie infrastructure must exist for OAuth callbacks to set cookies). AUTH-APP-01D does NOT need to wait for AUTH-APP-01C1B or AUTH-APP-01C2. AUTH-APP-01C2 is now ACTIVE; AUTH-APP-01C2A is the current stage.
 
-**AUTH-APP-01C2 provider decision:** Resend selected as v1 transactional email provider (decided 2026-05-08). AUTH-APP-01C2 is unblocked. Required env vars: EMAIL_PROVIDER=resend, RESEND_API_KEY, AUTH_EMAIL_FROM, APP_BASE_URL. EmailProvider abstraction required ¡X auth business logic must not call Resend directly.
+**AUTH-APP-01C2 provider decision:** Resend selected as v1 transactional email provider (decided 2026-05-08). AUTH-APP-01C2 is unblocked. Required env vars: EMAIL_PROVIDER=resend, RESEND_API_KEY, AUTH_EMAIL_FROM, APP_BASE_URL. EmailProvider abstraction required ï¿½X auth business logic must not call Resend directly.
 
 ---
 
@@ -12279,10 +12442,10 @@ Confirmed child slices (AUTH-APP-01C1 further split ¡X stage-start found backend
 1. **Auth stack:** Extend existing NestJS + Passport + JWT backend. Auth.js / NextAuth explicitly rejected (would create two parallel auth systems).
 2. **Token/session storage:** HTTP-only secure cookie session with server-side `auth_sessions` table. localStorage `access_token` removed.
 3. **OAuth callback flow:** Server-side session establishment. No token in redirect URL. `state` parameter validated. Post-login redirect uses allowlist.
-4. **Account linking:** Verified-email auto-link allowed (Google same-email ¡÷ existing account). Apple private relay email never auto-linked. Conflict cases return safe errors.
+4. **Account linking:** Verified-email auto-link allowed (Google same-email ï¿½ï¿½ existing account). Apple private relay email never auto-linked. Conflict cases return safe errors.
 5. **Data model changes (AUTH-APP-01B):** Make `password_hash` nullable; add `oauth_accounts`, `verification_tokens`, `auth_sessions` tables.
-6. **Email provider:** Transactional email provider unresolved ¡X blocks AUTH-APP-01C email verification and password reset. Must be resolved before AUTH-APP-01C stage-start.
-7. **Slice order:** AUTH-APP-01B ¡÷ C ¡÷ D ¡÷ E ¡÷ F ¡÷ G ¡÷ H ¡÷ Z (locked; C may split into C1 + C2).
+6. **Email provider:** Transactional email provider unresolved ï¿½X blocks AUTH-APP-01C email verification and password reset. Must be resolved before AUTH-APP-01C stage-start.
+7. **Slice order:** AUTH-APP-01B ï¿½ï¿½ C ï¿½ï¿½ D ï¿½ï¿½ E ï¿½ï¿½ F ï¿½ï¿½ G ï¿½ï¿½ H ï¿½ï¿½ Z (locked; C may split into C1 + C2).
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01A. See `docs/AUTH-APP-01-SPEC.md`.
 
@@ -12309,8 +12472,8 @@ Confirmed child slices (AUTH-APP-01C1 further split ¡X stage-start found backend
 
 **Validation:**
 - `npx tsc --noEmit`: PASS
-- `npm test`: FAIL ¡X pre-existing environment issue (REDIS_URL not set during test bootstrap); not caused by this slice
-- `npm run lint`: FAIL ¡X pre-existing tooling issue (ESLint config not discoverable by package lint script); not caused by this slice
+- `npm test`: FAIL ï¿½X pre-existing environment issue (REDIS_URL not set during test bootstrap); not caused by this slice
+- `npm run lint`: FAIL ï¿½X pre-existing tooling issue (ESLint config not discoverable by package lint script); not caused by this slice
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01B. See `docs/AUTH-APP-01B-CHECKPOINT.md`.
 
@@ -12326,11 +12489,11 @@ Confirmed child slices (AUTH-APP-01C1 further split ¡X stage-start found backend
 
 **Implemented:**
 - `cookie-parser` + `@types/cookie-parser` installed; `app.use(cookieParser())` in `main.ts`
-- `SessionCookieGuard` created ¡X reads `aisandbox_session`, SHA-256 hashes, validates `auth_sessions` (not expired, not revoked), attaches `req.user`; exported from `AuthModule`
+- `SessionCookieGuard` created ï¿½X reads `aisandbox_session`, SHA-256 hashes, validates `auth_sessions` (not expired, not revoked), attaches `req.user`; exported from `AuthModule`
 - `AuthService.createSession(userId)`, `validateSessionToken(rawToken)`, `revokeSession(rawToken)` added; `Repository<AuthSession>` injected
-- `POST /auth/login` ¡X sets HTTP-only `aisandbox_session` cookie (SameSite=Lax, Secure in production, 7-day maxAge); returns `{ user }` only ¡X **`access_token` removed from response**
-- `GET /auth/me` ¡X guard switched from `JwtAuthGuard` to `SessionCookieGuard`
-- `POST /auth/logout` ¡X added; uses `SessionCookieGuard`, revokes session, clears cookie, returns `{ ok: true }`
+- `POST /auth/login` ï¿½X sets HTTP-only `aisandbox_session` cookie (SameSite=Lax, Secure in production, 7-day maxAge); returns `{ user }` only ï¿½X **`access_token` removed from response**
+- `GET /auth/me` ï¿½X guard switched from `JwtAuthGuard` to `SessionCookieGuard`
+- `POST /auth/logout` ï¿½X added; uses `SessionCookieGuard`, revokes session, clears cookie, returns `{ ok: true }`
 - `JwtAuthGuard` replaced with `SessionCookieGuard` on 9 browser-facing controllers: `projects`, `sessions`, `conversations`, `users`, `checkpoints`, `workspaces`, `api-key`, `admin-operational`, `public-projects`
 - `JwtStrategy` / `JwtAuthGuard` preserved in codebase (not deleted)
 - 9 affected controller specs updated to `overrideGuard(SessionCookieGuard)`
@@ -12338,10 +12501,10 @@ Confirmed child slices (AUTH-APP-01C1 further split ¡X stage-start found backend
 
 **Validation:**
 - `npx tsc --noEmit`: PASS
-- `npm test`: NOT FULLY PASSING ¡X pre-existing blockers only (see checkpoint)
-  - 64 unit suites pass; 1 fails (`ai-execution.controller.spec.ts`) ¡X pre-existing, file not in C1A changeset
-  - 10 integration/smoke suites fail ¡X Redis not host-port-bound in this environment; pre-existing constraint
-- `npm run lint`: FAIL ¡X pre-existing ESLint config discovery issue in `services/api-gateway`
+- `npm test`: NOT FULLY PASSING ï¿½X pre-existing blockers only (see checkpoint)
+  - 64 unit suites pass; 1 fails (`ai-execution.controller.spec.ts`) ï¿½X pre-existing, file not in C1A changeset
+  - 10 integration/smoke suites fail ï¿½X Redis not host-port-bound in this environment; pre-existing constraint
+- `npm run lint`: FAIL ï¿½X pre-existing ESLint config discovery issue in `services/api-gateway`
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01C1A. See `docs/AUTH-APP-01C1A-CHECKPOINT.md`.
 
@@ -12387,7 +12550,7 @@ Confirmed child slices (AUTH-APP-01C1 further split ¡X stage-start found backend
 - `npx tsc --noEmit`: PASS
 - `npm test`: PASS
 - `npm run build`: PASS
-- ReadLints: PASS ¡X no linter errors on touched files
+- ReadLints: PASS ï¿½X no linter errors on touched files
 - Safety grep: zero matches for `access_token` and `Bearer ${token}`
 - `DRIVER_API_KEY` bearer headers preserved
 
@@ -12397,27 +12560,27 @@ Confirmed child slices (AUTH-APP-01C1 further split ¡X stage-start found backend
 
 #### AUTH-APP-01C2: Email Verification / Password Reset / Rate Limiting
 
-**Status:** VALIDATION COMPLETE ¡X manual smoke deferred ¡X AUTH-APP-01C2A COMPLETE and LOCKED; AUTH-APP-01C2B COMPLETE and LOCKED; AUTH-APP-01C2C COMPLETE and LOCKED; AUTH-APP-01C2D COMPLETE and LOCKED; AUTH-APP-01C2E COMPLETE and LOCKED; AUTH-APP-01C2F COMPLETE and LOCKED
+**Status:** VALIDATION COMPLETE ï¿½X manual smoke deferred ï¿½X AUTH-APP-01C2A COMPLETE and LOCKED; AUTH-APP-01C2B COMPLETE and LOCKED; AUTH-APP-01C2C COMPLETE and LOCKED; AUTH-APP-01C2D COMPLETE and LOCKED; AUTH-APP-01C2E COMPLETE and LOCKED; AUTH-APP-01C2F COMPLETE and LOCKED
 **Checkpoint:** `docs/AUTH-APP-01C2-CHECKPOINT.md`
 
-**Provider decision:** Resend selected as v1 transactional email provider (decided 2026-05-08). AUTH-APP-01C2 is unblocked. EmailProvider abstraction required ¡X auth service must not call Resend directly.
+**Provider decision:** Resend selected as v1 transactional email provider (decided 2026-05-08). AUTH-APP-01C2 is unblocked. EmailProvider abstraction required ï¿½X auth service must not call Resend directly.
 
 **Source:** AUTH-APP-01A spec (Sections 7 + 12); AUTH-APP-01C split confirmed at registration
 **Depends on:** AUTH-APP-01C1 (COMPLETE) + Resend as chosen email provider
 
-**Child slices (AUTH-APP-01C2 split ¡X surface too large for one slice):**
-1. AUTH-APP-01C2A ¡X Email Verification / Password Reset Spec + Provider Abstraction Plan (COMPLETE and LOCKED)
-2. AUTH-APP-01C2B ¡X Email Provider Foundation with Resend Adapter (COMPLETE and LOCKED)
-3. AUTH-APP-01C2C ¡X Email Verification Backend Flow (COMPLETE and LOCKED ¡X checkpoint: `docs/AUTH-APP-01C2C-CHECKPOINT.md`)
-4. AUTH-APP-01C2D ¡X Password Reset Backend Flow (COMPLETE and LOCKED ¡X checkpoint: `docs/AUTH-APP-01C2D-CHECKPOINT.md`)
-5. AUTH-APP-01C2E ¡X Frontend Auth Email UX (COMPLETE and LOCKED ¡X checkpoint: `docs/AUTH-APP-01C2E-CHECKPOINT.md`)
-6. AUTH-APP-01C2F ¡X Email Auth Validation + Consolidation (COMPLETE and LOCKED ¡X checkpoint: `docs/AUTH-APP-01C2F-CHECKPOINT.md`; family checkpoint: `docs/AUTH-APP-01C2-CHECKPOINT.md`)
+**Child slices (AUTH-APP-01C2 split ï¿½X surface too large for one slice):**
+1. AUTH-APP-01C2A ï¿½X Email Verification / Password Reset Spec + Provider Abstraction Plan (COMPLETE and LOCKED)
+2. AUTH-APP-01C2B ï¿½X Email Provider Foundation with Resend Adapter (COMPLETE and LOCKED)
+3. AUTH-APP-01C2C ï¿½X Email Verification Backend Flow (COMPLETE and LOCKED ï¿½X checkpoint: `docs/AUTH-APP-01C2C-CHECKPOINT.md`)
+4. AUTH-APP-01C2D ï¿½X Password Reset Backend Flow (COMPLETE and LOCKED ï¿½X checkpoint: `docs/AUTH-APP-01C2D-CHECKPOINT.md`)
+5. AUTH-APP-01C2E ï¿½X Frontend Auth Email UX (COMPLETE and LOCKED ï¿½X checkpoint: `docs/AUTH-APP-01C2E-CHECKPOINT.md`)
+6. AUTH-APP-01C2F ï¿½X Email Auth Validation + Consolidation (COMPLETE and LOCKED ï¿½X checkpoint: `docs/AUTH-APP-01C2F-CHECKPOINT.md`; family checkpoint: `docs/AUTH-APP-01C2-CHECKPOINT.md`)
 
 **Bounded scope:**
 - Select and configure transactional email provider; document required env vars
 - Add EmailProvider abstraction; ResendEmailProvider v1 adapter; future SES/SendGrid adapters as separate tasks
-- Add email verification flow: token generation ¡÷ email send ¡÷ verification endpoint ¡÷ mark user verified
-- Add password reset flow: request ¡÷ email with reset token ¡÷ confirm with new password ¡÷ revoke active sessions
+- Add email verification flow: token generation ï¿½ï¿½ email send ï¿½ï¿½ verification endpoint ï¿½ï¿½ mark user verified
+- Add password reset flow: request ï¿½ï¿½ email with reset token ï¿½ï¿½ confirm with new password ï¿½ï¿½ revoke active sessions
 - Use `verification_tokens` table from AUTH-APP-01B (SHA-256 hashed tokens, expiry, used_at)
 - Add rate limiting on auth endpoints: login, register, email-verify resend, password-reset-request
 - No OAuth implementation
@@ -12441,10 +12604,10 @@ Confirmed child slices (AUTH-APP-01C1 further split ¡X stage-start found backend
 #### AUTH-APP-01C2A: Email Verification / Password Reset Spec + Provider Abstraction Plan
 
 **Status:** COMPLETE and LOCKED
-**Nature:** SPEC AND DOCUMENTATION ONLY ¡X no production source files changed
-**Parent:** AUTH-APP-01C2 (VALIDATION COMPLETE ¡X manual smoke deferred)
+**Nature:** SPEC AND DOCUMENTATION ONLY ï¿½X no production source files changed
+**Parent:** AUTH-APP-01C2 (VALIDATION COMPLETE ï¿½X manual smoke deferred)
 **Family:** AUTH
-**Depends on:** AUTH-APP-01C2 unblocked (Resend chosen ¡X DONE)
+**Depends on:** AUTH-APP-01C2 unblocked (Resend chosen ï¿½X DONE)
 **Registered:** 2026-05-08
 **Completed:** 2026-05-08
 **Checkpoint:** `docs/AUTH-APP-01C2A-CHECKPOINT.md`
@@ -12455,7 +12618,7 @@ Confirmed child slices (AUTH-APP-01C1 further split ¡X stage-start found backend
 2. `EMAIL_PROVIDER` NestJS injection token; auth service depends on abstraction only
 3. `ResendEmailProvider` v1; `StubEmailProvider` for tests (`EMAIL_PROVIDER=stub`)
 4. `EmailModule` factory selects provider from `EMAIL_PROVIDER` env var
-5. Future SES/SendGrid: adapter-only switch ¡X no auth logic changes
+5. Future SES/SendGrid: adapter-only switch ï¿½X no auth logic changes
 6. `email_verified` column added to `users` in C2C (`DEFAULT false`); OAuth users set `true` at creation
 7. `locale` column added to `verification_tokens` in C2C for post-verification redirect
 8. Verification resend: unauthenticated, `{ email }` body, always `200`, 3/hr/email
@@ -12484,8 +12647,8 @@ Confirmed child slices (AUTH-APP-01C1 further split ¡X stage-start found backend
 #### AUTH-APP-01C2B: Email Provider Foundation with Resend Adapter
 
 **Status:** COMPLETE and LOCKED
-**Nature:** BACKEND ¡X email provider abstraction; Resend adapter; module wiring; no auth routes, no DB migration
-**Parent:** AUTH-APP-01C2 (VALIDATION COMPLETE ¡X manual smoke deferred)
+**Nature:** BACKEND ï¿½X email provider abstraction; Resend adapter; module wiring; no auth routes, no DB migration
+**Parent:** AUTH-APP-01C2 (VALIDATION COMPLETE ï¿½X manual smoke deferred)
 **Family:** AUTH
 **Depends on:** AUTH-APP-01C2A (COMPLETE and LOCKED)
 **Registered:** 2026-05-08
@@ -12493,26 +12656,26 @@ Confirmed child slices (AUTH-APP-01C1 further split ¡X stage-start found backend
 **Checkpoint:** `docs/AUTH-APP-01C2B-CHECKPOINT.md`
 
 **Files changed:**
-- `services/api-gateway/package.json` ¡X `resend` added to dependencies
-- `services/api-gateway/.env.example` ¡X email env var block added
-- `services/api-gateway/src/email/email-provider.interface.ts` ¡X **created** ¡X `EmailProvider` interface + `EMAIL_PROVIDER` symbol
-- `services/api-gateway/src/email/stub-email.provider.ts` ¡X **created** ¡X `StubEmailProvider` (no-op for local/test)
-- `services/api-gateway/src/email/resend-email.provider.ts` ¡X **created** ¡X `ResendEmailProvider` v1 Resend adapter
-- `services/api-gateway/src/email/email.module.ts` ¡X **created** ¡X `EmailModule` with factory provider
-- `services/api-gateway/src/email/__tests__/email.module.spec.ts` ¡X **created** ¡X factory/env unit tests
-- `services/api-gateway/src/email/__tests__/resend-email.provider.spec.ts` ¡X **created** ¡X SDK mock unit tests
-- `services/api-gateway/src/auth/auth.module.ts` ¡X `EmailModule` added to imports
-- `services/api-gateway/src/auth/auth.service.ts` ¡X `@Inject(EMAIL_PROVIDER) private readonly emailProvider: EmailProvider` added to constructor
-- `services/api-gateway/src/auth/auth.service.spec.ts` ¡X minimal `EMAIL_PROVIDER` DI mock added
+- `services/api-gateway/package.json` ï¿½X `resend` added to dependencies
+- `services/api-gateway/.env.example` ï¿½X email env var block added
+- `services/api-gateway/src/email/email-provider.interface.ts` ï¿½X **created** ï¿½X `EmailProvider` interface + `EMAIL_PROVIDER` symbol
+- `services/api-gateway/src/email/stub-email.provider.ts` ï¿½X **created** ï¿½X `StubEmailProvider` (no-op for local/test)
+- `services/api-gateway/src/email/resend-email.provider.ts` ï¿½X **created** ï¿½X `ResendEmailProvider` v1 Resend adapter
+- `services/api-gateway/src/email/email.module.ts` ï¿½X **created** ï¿½X `EmailModule` with factory provider
+- `services/api-gateway/src/email/__tests__/email.module.spec.ts` ï¿½X **created** ï¿½X factory/env unit tests
+- `services/api-gateway/src/email/__tests__/resend-email.provider.spec.ts` ï¿½X **created** ï¿½X SDK mock unit tests
+- `services/api-gateway/src/auth/auth.module.ts` ï¿½X `EmailModule` added to imports
+- `services/api-gateway/src/auth/auth.service.ts` ï¿½X `@Inject(EMAIL_PROVIDER) private readonly emailProvider: EmailProvider` added to constructor
+- `services/api-gateway/src/auth/auth.service.spec.ts` ï¿½X minimal `EMAIL_PROVIDER` DI mock added
 
 **Production source files changed:** `auth.module.ts`, `auth.service.ts` (wiring only; no auth business logic changed).
 
 **Acceptance checks:**
 - [x] `resend` installed in `services/api-gateway`
 - [x] `EmailProvider` interface and `EMAIL_PROVIDER` injection token defined
-- [x] `StubEmailProvider` ¡X no-op; no network; safe for all tests
-- [x] `ResendEmailProvider` ¡X validates `RESEND_API_KEY` + `AUTH_EMAIL_FROM`; uses `replyTo` camelCase; throws on SDK error
-- [x] `EmailModule` factory ¡X validates `APP_BASE_URL`; selects stub/resend; throws on unknown provider
+- [x] `StubEmailProvider` ï¿½X no-op; no network; safe for all tests
+- [x] `ResendEmailProvider` ï¿½X validates `RESEND_API_KEY` + `AUTH_EMAIL_FROM`; uses `replyTo` camelCase; throws on SDK error
+- [x] `EmailModule` factory ï¿½X validates `APP_BASE_URL`; selects stub/resend; throws on unknown provider
 - [x] `AuthModule` imports `EmailModule`
 - [x] `AuthService` injects `EMAIL_PROVIDER`; no email-sending methods yet
 - [x] `.env.example` updated with all email vars and safety comments
@@ -12529,14 +12692,14 @@ Confirmed child slices (AUTH-APP-01C1 further split ¡X stage-start found backend
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/AUTH-APP-01D-CHECKPOINT.md`
 
-**Source:** AUTH-APP-01A spec (Section 6 ¡X OAuth providers); AUTH-APP-01D confirmed at AUTH family registration
+**Source:** AUTH-APP-01A spec (Section 6 ï¿½X OAuth providers); AUTH-APP-01D confirmed at AUTH family registration
 **Depends on:** AUTH-APP-01C1A (COMPLETE), AUTH-APP-01B (COMPLETE)
 
 **Bounded scope:**
 - Add `passport-google-oauth20` strategy with `cookie-session` OAuth state management
-- `GET /api/auth/google` ¡X initiate OAuth flow, persist locale in state cookie
-- `GET /api/auth/google/callback` ¡X create `auth_sessions` server-side session, set `aisandbox_session` cookie, redirect to app
-- `AuthService.findOrCreateGoogleUser()` ¡X link existing user by provider account or verified email; create new user if no match
+- `GET /api/auth/google` ï¿½X initiate OAuth flow, persist locale in state cookie
+- `GET /api/auth/google/callback` ï¿½X create `auth_sessions` server-side session, set `aisandbox_session` cookie, redirect to app
+- `AuthService.findOrCreateGoogleUser()` ï¿½X link existing user by provider account or verified email; create new user if no match
 - Minimal "Continue with Google" link on login/register pages with i18n keys
 - OAuth env vars documented in `services/api-gateway/docs/SMOKE-PACK-README.md` (`.env.example` write denied by tool)
 
@@ -12549,9 +12712,9 @@ Confirmed child slices (AUTH-APP-01C1 further split ¡X stage-start found backend
 **Validation:**
 - `npx tsc --noEmit` (api-gateway): PASS
 - Google auth unit tests (2 suites, 6 tests): PASS
-- `npm test` (api-gateway full): FAIL ¡X carry-forward only (REDIS_URL, ai-execution.controller.spec.ts, ESLint config)
+- `npm test` (api-gateway full): FAIL ï¿½X carry-forward only (REDIS_URL, ai-execution.controller.spec.ts, ESLint config)
 - `npx tsc --noEmit` (frontend): PASS
-- `npm test` (frontend): PASS ¡X 253 tests
+- `npm test` (frontend): PASS ï¿½X 253 tests
 - `npm run build` (frontend): PASS
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01D. See `docs/AUTH-APP-01D-CHECKPOINT.md`.
@@ -12563,14 +12726,14 @@ Confirmed child slices (AUTH-APP-01C1 further split ¡X stage-start found backend
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/AUTH-APP-01E-CHECKPOINT.md`
 
-**Source:** AUTH-APP-01A spec (Section 9 ¡X Apple OAuth slice); AUTH-APP-01E confirmed at AUTH family registration
+**Source:** AUTH-APP-01A spec (Section 9 ï¿½X Apple OAuth slice); AUTH-APP-01E confirmed at AUTH family registration
 **Depends on:** AUTH-APP-01C1A (COMPLETE), AUTH-APP-01D (COMPLETE), AUTH-APP-01B (COMPLETE)
 
 **Bounded scope:**
 - Add `@nicokaiser/passport-apple` strategy (`apple.strategy.ts`); private key normalized from env with `.replace(/\\n/g, '\n')`
-- `GET /api/auth/apple` ¡X initiate Apple OAuth flow; persist locale in existing `aisandbox_oauth_state` state cookie
-- `POST /api/auth/apple/callback` ¡X create `auth_sessions` server-side session, set `aisandbox_session` cookie, redirect to app (Apple callback is POST not GET)
-- `AuthService.findOrCreateAppleUser()` ¡X provider account lookup; private relay email creates new user without auto-link; real email auto-links; inactive user rejected
+- `GET /api/auth/apple` ï¿½X initiate Apple OAuth flow; persist locale in existing `aisandbox_oauth_state` state cookie
+- `POST /api/auth/apple/callback` ï¿½X create `auth_sessions` server-side session, set `aisandbox_session` cookie, redirect to app (Apple callback is POST not GET)
+- `AuthService.findOrCreateAppleUser()` ï¿½X provider account lookup; private relay email creates new user without auto-link; real email auto-links; inactive user rejected
 - `AuthModule` registers `AppleStrategy`
 - Minimal "Continue with Apple" link on login/register pages with i18n keys (`login.continueWithApple`, `register.continueWithApple`) in en/zh-TW/zh-CN
 - Apple OAuth env vars documented in `services/api-gateway/docs/SMOKE-PACK-README.md`
@@ -12588,14 +12751,14 @@ Confirmed child slices (AUTH-APP-01C1 further split ¡X stage-start found backend
 
 **Validation:**
 - `npx tsc --noEmit` (api-gateway): PASS
-- `npx jest src/auth/auth.service.spec.ts src/auth/__tests__/apple.strategy.spec.ts --runInBand`: PASS ¡X 2 suites, 12 tests
+- `npx jest src/auth/auth.service.spec.ts src/auth/__tests__/apple.strategy.spec.ts --runInBand`: PASS ï¿½X 2 suites, 12 tests
 - `npx tsc --noEmit` (frontend): PASS
-- `npm test` (frontend): PASS ¡X 253 tests
+- `npm test` (frontend): PASS ï¿½X 253 tests
 - `npm run build` (frontend): PASS
 - `frontend/tsconfig.tsbuildinfo` modified by build; restored via `git restore`
 
 **Carry-forward blockers (pre-existing, not introduced by AUTH-APP-01E):**
-- `npm test` backend full suite: fails ¡X `REDIS_URL` not set in test environment; `ai-execution.controller.spec.ts` pre-existing failures
+- `npm test` backend full suite: fails ï¿½X `REDIS_URL` not set in test environment; `ai-execution.controller.spec.ts` pre-existing failures
 - `npm run lint` backend: ESLint config not discoverable in `services/api-gateway`
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01E. See `docs/AUTH-APP-01E-CHECKPOINT.md`.
@@ -12605,8 +12768,8 @@ Confirmed child slices (AUTH-APP-01C1 further split ¡X stage-start found backend
 #### AUTH-APP-01F1: Route/API Protection Inventory + Spec
 
 **Status:** COMPLETE and LOCKED
-**Nature:** DOCUMENTATION / SPEC ONLY ¡X no production code changes
-**Parent:** AUTH-APP-01F (VALIDATION COMPLETE ¡X carry-forwards pending)
+**Nature:** DOCUMENTATION / SPEC ONLY ï¿½X no production code changes
+**Parent:** AUTH-APP-01F (VALIDATION COMPLETE ï¿½X carry-forwards pending)
 **Family:** AUTH
 **Depends on:** AUTH-APP-01E (COMPLETE and LOCKED)
 **Completed:** 2026-05-07
@@ -12619,8 +12782,8 @@ Confirmed child slices (AUTH-APP-01C1 further split ¡X stage-start found backend
 - Confirmed `JwtAuthGuard` removed from all active controllers (zero remaining usages)
 - Documented full guard coverage: `SessionCookieGuard` (10 controllers/surfaces), `ApiKeyAuthGuard` (5 controllers), `InternalServiceAuthGuard` (7 internal controllers), intentionally public (9 endpoints)
 - Identified 8 protection gaps/decisions for F2 (AI execution cancel/get, service-to-service endpoints, runtime metrics, preview proxy, dead file cleanup)
-- Identified 2 frontend protection gaps for F3 (`/keys`, `/account` ¡X no login redirect on 401)
-- Confirmed no `middleware.ts` exists ¡X all frontend auth is reactive/client-side
+- Identified 2 frontend protection gaps for F3 (`/keys`, `/account` ï¿½X no login redirect on 401)
+- Confirmed no `middleware.ts` exists ï¿½X all frontend auth is reactive/client-side
 - Locked 11 behavior decisions and 6 governing invariants
 - Defined F2/F3/F4 implementation boundaries
 
@@ -12633,7 +12796,7 @@ Confirmed child slices (AUTH-APP-01C1 further split ¡X stage-start found backend
 - No Visual Edit Mode
 
 **Carry-forward blockers (pre-existing, not introduced by F1):**
-- `npm test` backend full suite: fails ¡X `REDIS_URL` not set in test environment; `ai-execution.controller.spec.ts` pre-existing failures
+- `npm test` backend full suite: fails ï¿½X `REDIS_URL` not set in test environment; `ai-execution.controller.spec.ts` pre-existing failures
 - `npm run lint` backend: ESLint config not discoverable in `services/api-gateway`
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01F1. See `docs/AUTH-APP-01F1-CHECKPOINT.md`. See `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md`.
@@ -12643,7 +12806,7 @@ Confirmed child slices (AUTH-APP-01C1 further split ¡X stage-start found backend
 #### AUTH-APP-01F2: Backend API Protection Gaps
 
 **Status:** COMPLETE and LOCKED
-**Parent:** AUTH-APP-01F (VALIDATION COMPLETE ¡X carry-forwards pending)
+**Parent:** AUTH-APP-01F (VALIDATION COMPLETE ï¿½X carry-forwards pending)
 **Family:** AUTH
 **Depends on:** AUTH-APP-01F1 (COMPLETE and LOCKED)
 **Completed:** 2026-05-07
@@ -12653,8 +12816,8 @@ Confirmed child slices (AUTH-APP-01C1 further split ¡X stage-start found backend
 **Implemented:**
 - Added method-level `@UseGuards(ApiKeyAuthGuard)` to `POST /api/ai/executions/:executionId/cancel`, `GET /api/ai/executions/:executionId`, and `GET /api/ai/executions/:executionId/stream`
 - `POST /api/ai/execute` guard stack left unchanged
-- Added class-level `@UseGuards(InternalServiceAuthGuard)` to `ChatMessageController` (`POST /api/chat-messages/add-by-session`) ¡X Option B; ai-service caller already sends `X-Internal-Service-Key`
-- Added class-level `@UseGuards(InternalServiceAuthGuard)` to `TokenUsageController` (`POST /api/token-usage/record`) ¡X Option B; ai-service caller already sends `X-Internal-Service-Key`
+- Added class-level `@UseGuards(InternalServiceAuthGuard)` to `ChatMessageController` (`POST /api/chat-messages/add-by-session`) ï¿½X Option B; ai-service caller already sends `X-Internal-Service-Key`
+- Added class-level `@UseGuards(InternalServiceAuthGuard)` to `TokenUsageController` (`POST /api/token-usage/record`) ï¿½X Option B; ai-service caller already sends `X-Internal-Service-Key`
 - Added class-level `@UseGuards(InternalServiceAuthGuard)` to `RuntimeController` (`GET /api/runtime/metrics`)
 - Deleted `services/api-gateway/src/auth/api-key.controllerXXXXX.ts` (stale dead file; not imported anywhere active)
 - Deleted `services/api-gateway/src/auth/jwt-auth.guard.ts` (only reference was the dead controller; comment-only in `session-quota.guard.ts`)
@@ -12670,13 +12833,13 @@ Confirmed child slices (AUTH-APP-01C1 further split ¡X stage-start found backend
 - No new npm dependencies
 
 **Carry-forward blockers (pre-existing, not introduced by F2):**
-- `npm test` backend full suite: fails ¡X `REDIS_URL` not set; `ai-execution.controller.spec.ts` pre-existing failures
+- `npm test` backend full suite: fails ï¿½X `REDIS_URL` not set; `ai-execution.controller.spec.ts` pre-existing failures
 - `ai-execution-guards.integration.spec.ts` full suite: `QuotaService` unresolved dependencies (pre-existing)
 - `npm run lint` backend: ESLint config not discoverable in `services/api-gateway`
 
 **Carry-forward items (not resolved in F2):**
-- Events endpoints (`file-changed`, `checkpoint-created`, `token-updated`) still unguarded ¡X requires container-manager callers to send `X-Internal-Service-Key` before guard can be added (AUTH-APP-01F2a or AUTH-APP-01H)
-- Preview proxy (`@All /api/preview/*`) still unguarded ¡X requires coordinated api-gateway + container-manager auth-forwarding investigation
+- Events endpoints (`file-changed`, `checkpoint-created`, `token-updated`) still unguarded ï¿½X requires container-manager callers to send `X-Internal-Service-Key` before guard can be added (AUTH-APP-01F2a or AUTH-APP-01H)
+- Preview proxy (`@All /api/preview/*`) still unguarded ï¿½X requires coordinated api-gateway + container-manager auth-forwarding investigation
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01F2. See `docs/AUTH-APP-01F2-CHECKPOINT.md`. See `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md`.
 
@@ -12685,7 +12848,7 @@ Confirmed child slices (AUTH-APP-01C1 further split ¡X stage-start found backend
 #### AUTH-APP-01F3: Frontend Protected Route Behavior
 
 **Status:** COMPLETE and LOCKED
-**Parent:** AUTH-APP-01F (VALIDATION COMPLETE ¡X carry-forwards pending)
+**Parent:** AUTH-APP-01F (VALIDATION COMPLETE ï¿½X carry-forwards pending)
 **Family:** AUTH
 **Depends on:** AUTH-APP-01F2 (COMPLETE and LOCKED)
 **Completed:** 2026-05-07
@@ -12720,8 +12883,8 @@ Confirmed child slices (AUTH-APP-01C1 further split ¡X stage-start found backend
 #### AUTH-APP-01F4: Protection Validation + Consolidation
 
 **Status:** COMPLETE and LOCKED
-**Nature:** VALIDATION AND CONSOLIDATION ONLY ¡X no production source files changed
-**Parent:** AUTH-APP-01F (VALIDATION COMPLETE ¡X carry-forwards pending)
+**Nature:** VALIDATION AND CONSOLIDATION ONLY ï¿½X no production source files changed
+**Parent:** AUTH-APP-01F (VALIDATION COMPLETE ï¿½X carry-forwards pending)
 **Family:** AUTH
 **Depends on:** AUTH-APP-01F3 (COMPLETE and LOCKED)
 **Completed:** 2026-05-07
@@ -12731,23 +12894,23 @@ Confirmed child slices (AUTH-APP-01C1 further split ¡X stage-start found backend
 
 **Validation results:**
 - Backend targeted tests (6 guard metadata tests): PASS
-  - `AIExecutionController guard metadata`: 3/3 (cancel, get, stream ¡X ApiKeyAuthGuard)
+  - `AIExecutionController guard metadata`: 3/3 (cancel, get, stream ï¿½X ApiKeyAuthGuard)
   - `ChatMessageController guard metadata`: 1/1 (InternalServiceAuthGuard)
   - `TokenUsageController guard metadata`: 1/1 (InternalServiceAuthGuard)
   - `RuntimeController guard metadata`: 1/1 (InternalServiceAuthGuard)
-- Frontend build: PASS (Next.js 15.5.12 ¡X compiled in 2.3s)
+- Frontend build: PASS (Next.js 15.5.12 ï¿½X compiled in 2.3s)
 - Frontend `npx tsc --noEmit`: PASS
-- Frontend `npm test`: PASS ¡X 253 tests, 22 suites, 0 failures
-- Frontend `/keys` direct auth bootstrap test: PASS ¡X 3/3 tests
-- Manual smoke checklist: NOT RUN (no live environment) ¡X carried to AUTH-APP-01H
+- Frontend `npm test`: PASS ï¿½X 253 tests, 22 suites, 0 failures
+- Frontend `/keys` direct auth bootstrap test: PASS ï¿½X 3/3 tests
+- Manual smoke checklist: NOT RUN (no live environment) ï¿½X carried to AUTH-APP-01H
 
 **Carry-forward items:**
-- Events endpoints (`file-changed`, `checkpoint-created`, `token-updated`) still unguarded ¡X container-manager callers don't send `X-Internal-Service-Key` ¡÷ AUTH-APP-01F2a or AUTH-APP-01H
-- Preview proxy (`@All /api/preview/*`) still unguarded ¡X cross-service coordination needed ¡÷ dedicated investigation slice
-- Manual smoke checklist (22 items) ¡X not run ¡÷ AUTH-APP-01H
-- Backend full `npm test` Redis env blocker ¡X pre-existing since AUTH-APP-01B ¡÷ carry-forward
-- `ai-execution-guards` full suite `QuotaService` blocker ¡X pre-existing ¡÷ carry-forward
-- `npm run lint` ESLint config blocker ¡X pre-existing since AUTH-APP-01B ¡÷ carry-forward
+- Events endpoints (`file-changed`, `checkpoint-created`, `token-updated`) still unguarded ï¿½X container-manager callers don't send `X-Internal-Service-Key` ï¿½ï¿½ AUTH-APP-01F2a or AUTH-APP-01H
+- Preview proxy (`@All /api/preview/*`) still unguarded ï¿½X cross-service coordination needed ï¿½ï¿½ dedicated investigation slice
+- Manual smoke checklist (22 items) ï¿½X not run ï¿½ï¿½ AUTH-APP-01H
+- Backend full `npm test` Redis env blocker ï¿½X pre-existing since AUTH-APP-01B ï¿½ï¿½ carry-forward
+- `ai-execution-guards` full suite `QuotaService` blocker ï¿½X pre-existing ï¿½ï¿½ carry-forward
+- `npm run lint` ESLint config blocker ï¿½X pre-existing since AUTH-APP-01B ï¿½ï¿½ carry-forward
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01F4. See `docs/AUTH-APP-01F4-CHECKPOINT.md`. See `docs/AUTH-APP-01F-CHECKPOINT.md`.
 
@@ -12756,7 +12919,7 @@ Confirmed child slices (AUTH-APP-01C1 further split ¡X stage-start found backend
 #### AUTH-APP-01G1: Auth UX Inventory + Scope
 
 **Status:** COMPLETE and LOCKED
-**Nature:** DOCUMENTATION / SPEC ONLY ¡X no production source files changed
+**Nature:** DOCUMENTATION / SPEC ONLY ï¿½X no production source files changed
 **Parent:** AUTH-APP-01G (ACTIVE)
 **Family:** AUTH
 **Depends on:** AUTH-APP-01F4 (COMPLETE and LOCKED)
@@ -12769,16 +12932,16 @@ Produce an inventory and implementation scope for auth UX integration now that p
 
 **Key findings:**
 - OAuth error query param gap: backend emits `?error=oauth_failed` / `?error=account_conflict` but login page does not consume them; `errors.oauthFailed` and `errors.accountConflict` i18n keys exist unused
-- `errors.oauthFailed` is Google-specific; Apple also uses `oauth_failed` ¡X must be made provider-agnostic in G2
+- `errors.oauthFailed` is Google-specific; Apple also uses `oauth_failed` ï¿½X must be made provider-agnostic in G2
 - Logout complete absence: no frontend component calls `POST /api/auth/logout`; backend endpoint is fully implemented
 - `/account` redirects to `/keys` (flag=false) or renders `ApiKeysPage` (flag=true); no profile/auth section
-- Keys page uses zero UX-IA-02 tokens ¡X deferred
+- Keys page uses zero UX-IA-02 tokens ï¿½X deferred
 - Login/register pages are token-consistent; OAuth buttons are generic (no brand visual)
 
 **Validation:**
-- No production source files changed ¡X confirmed by `git status`
+- No production source files changed ï¿½X confirmed by `git status`
 - No frontend or backend behavior changed
-- No tests run ¡X docs-only
+- No tests run ï¿½X docs-only
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01G1. See `docs/AUTH-APP-01G1-CHECKPOINT.md`. See `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md`.
 
@@ -12787,7 +12950,7 @@ Produce an inventory and implementation scope for auth UX integration now that p
 #### AUTH-APP-01G2: Login/Register OAuth Error + Button Polish
 
 **Status:** COMPLETE and LOCKED
-**Nature:** FRONTEND UI ONLY ¡X no backend files changed
+**Nature:** FRONTEND UI ONLY ï¿½X no backend files changed
 **Parent:** AUTH-APP-01G (ACTIVE)
 **Family:** AUTH
 **Depends on:** AUTH-APP-01G1 (COMPLETE and LOCKED)
@@ -12795,17 +12958,17 @@ Produce an inventory and implementation scope for auth UX integration now that p
 **Checkpoint:** `docs/AUTH-APP-01G2-CHECKPOINT.md`
 
 **Implemented:**
-- `OAuthErrorBanner` sub-component added to `login/page.tsx` ¡X reads `?error` via `useSearchParams()`; renders `errors.accountConflict` for `account_conflict`, `errors.oauthFailed` for all other codes; wrapped in `<Suspense fallback={null}>`; placed above existing form error block
+- `OAuthErrorBanner` sub-component added to `login/page.tsx` ï¿½X reads `?error` via `useSearchParams()`; renders `errors.accountConflict` for `account_conflict`, `errors.oauthFailed` for all other codes; wrapped in `<Suspense fallback={null}>`; placed above existing form error block
 - `errors.oauthFailed` updated to provider-agnostic wording in en, zh-TW, zh-CN
-- OAuth button polish applied to all four `<a>` links (login Google/Apple, register Google/Apple): `transition-colors` ¡÷ `transition`; added `active:scale-[0.97]`; added `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand`
-- Register success stay-on-page behavior preserved ¡X no auto-redirect added
-- New test file: `frontend/app/[locale]/login/page.test.tsx` ¡X 3 tests for `OAuthErrorBanner`
+- OAuth button polish applied to all four `<a>` links (login Google/Apple, register Google/Apple): `transition-colors` ï¿½ï¿½ `transition`; added `active:scale-[0.97]`; added `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand`
+- Register success stay-on-page behavior preserved ï¿½X no auto-redirect added
+- New test file: `frontend/app/[locale]/login/page.test.tsx` ï¿½X 3 tests for `OAuthErrorBanner`
 
 **Validation:**
 - `npm run build`: PASS
 - `npx tsc --noEmit`: PASS
-- `npm test`: PASS ¡X 253 tests, 22 suites, 0 failures
-- Login page test (direct): PASS ¡X 3 tests, 0 failures
+- `npm test`: PASS ï¿½X 253 tests, 22 suites, 0 failures
+- Login page test (direct): PASS ï¿½X 3 tests, 0 failures
 - `frontend/tsconfig.tsbuildinfo` modified by build; restored via `git restore`
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01G2. See `docs/AUTH-APP-01G2-CHECKPOINT.md`. See `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md` Sections 5 and 10.
@@ -12815,7 +12978,7 @@ Produce an inventory and implementation scope for auth UX integration now that p
 #### AUTH-APP-01G3: Logout + Basic Account Surface
 
 **Status:** COMPLETE and LOCKED
-**Nature:** FRONTEND ONLY ¡X no backend files changed
+**Nature:** FRONTEND ONLY ï¿½X no backend files changed
 **Parent:** AUTH-APP-01G (ACTIVE)
 **Family:** AUTH
 **Depends on:** AUTH-APP-01G2 (COMPLETE and LOCKED)
@@ -12825,16 +12988,16 @@ Produce an inventory and implementation scope for auth UX integration now that p
 Add logout button/caller wired to `POST /api/auth/logout`, redirect to `/${locale}/login` on success, and add minimal account/auth surface if safely achievable.
 
 **Files changed:**
-- `frontend/app/[locale]/app/page.tsx` ¡X added `handleLogout()`; passed `onLogout` to `WorkspaceShell`
-- `frontend/components/workspace/workspace-shell.tsx` ¡X added `onLogout?: () => void` prop; logout button in header for both UX flag paths
-- `frontend/app/[locale]/account/page.tsx` ¡X added `<LogoutButton />` above `<ApiKeysPage />` for `PROJECT_FIRST_UX=true`
-- `frontend/components/auth/logout-button.tsx` ¡X new: `'use client'` component; `GET /api/auth/me` on mount; email display; logout + redirect
-- `frontend/components/workspace/workspace-shell.test.tsx` ¡X 3 logout button tests added
+- `frontend/app/[locale]/app/page.tsx` ï¿½X added `handleLogout()`; passed `onLogout` to `WorkspaceShell`
+- `frontend/components/workspace/workspace-shell.tsx` ï¿½X added `onLogout?: () => void` prop; logout button in header for both UX flag paths
+- `frontend/app/[locale]/account/page.tsx` ï¿½X added `<LogoutButton />` above `<ApiKeysPage />` for `PROJECT_FIRST_UX=true`
+- `frontend/components/auth/logout-button.tsx` ï¿½X new: `'use client'` component; `GET /api/auth/me` on mount; email display; logout + redirect
+- `frontend/components/workspace/workspace-shell.test.tsx` ï¿½X 3 logout button tests added
 
 **Validation:**
 - `npm run build`: PASS
 - `npx tsc --noEmit`: PASS
-- `npm test`: PASS ¡X 256 tests, 22 suites, 0 failures
+- `npm test`: PASS ï¿½X 256 tests, 22 suites, 0 failures
 - `frontend/tsconfig.tsbuildinfo` modified by build; restored via `git restore`
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01G3. See `docs/AUTH-APP-01G3-CHECKPOINT.md`. See `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md` Sections 6 and 11.
@@ -12844,8 +13007,8 @@ Add logout button/caller wired to `POST /api/auth/logout`, redirect to `/${local
 #### AUTH-APP-01G4: Auth UX Validation + Checkpoint
 
 **Status:** COMPLETE and LOCKED
-**Nature:** VALIDATION AND DOCUMENTATION ONLY ¡X no production source files changed
-**Parent:** AUTH-APP-01G (VALIDATION COMPLETE ¡X manual smoke deferred)
+**Nature:** VALIDATION AND DOCUMENTATION ONLY ï¿½X no production source files changed
+**Parent:** AUTH-APP-01G (VALIDATION COMPLETE ï¿½X manual smoke deferred)
 **Family:** AUTH
 **Depends on:** AUTH-APP-01G3 (COMPLETE and LOCKED)
 **Checkpoint:** `docs/AUTH-APP-01G4-CHECKPOINT.md`
@@ -12855,14 +13018,14 @@ Add logout button/caller wired to `POST /api/auth/logout`, redirect to `/${local
 Run full automated validation suite, record manual smoke as deferred, and create G4 task checkpoint plus AUTH-APP-01G family checkpoint.
 
 **Automated validation results:**
-- `npm run build`: PASS ¡X Next.js 15.5.12, compiled in 2.6s
+- `npm run build`: PASS ï¿½X Next.js 15.5.12, compiled in 2.6s
 - `npx tsc --noEmit`: PASS
-- `npm test`: PASS ¡X 256 tests, 22 suites, 0 failures
-- Login page direct test: PASS ¡X 3 tests, 0 failures
-- Keys page direct test: PASS ¡X 3 tests, 0 failures
+- `npm test`: PASS ï¿½X 256 tests, 22 suites, 0 failures
+- Login page direct test: PASS ï¿½X 3 tests, 0 failures
+- Keys page direct test: PASS ï¿½X 3 tests, 0 failures
 - `frontend/tsconfig.tsbuildinfo` modified by build; restored via `git restore`
 
-**Manual smoke checklist:** NOT RUN ¡X deferred to user live environment (no live frontend/backend/browser available in automated session; dev servers user-controlled).
+**Manual smoke checklist:** NOT RUN ï¿½X deferred to user live environment (no live frontend/backend/browser available in automated session; dev servers user-controlled).
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01G4. See `docs/AUTH-APP-01G4-CHECKPOINT.md`. See `docs/AUTH-APP-01G-CHECKPOINT.md`. See `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md` Section 12.
 
@@ -12870,7 +13033,7 @@ Run full automated validation suite, record manual smoke as deferred, and create
 
 #### AUTH-APP-01H: Security Hardening + Validation Checklist (Phase Parent)
 
-**Status:** VALIDATION COMPLETE ¡X manual smoke deferred
+**Status:** VALIDATION COMPLETE ï¿½X manual smoke deferred
 **Parent:** AUTH-APP-01
 **Family:** AUTH
 **Depends on:** AUTH-APP-01G4 (COMPLETE and LOCKED)
@@ -12881,17 +13044,17 @@ Run full automated validation suite, record manual smoke as deferred, and create
 Deliver all remaining AUTH-APP-01 security hardening and validation work before AUTH-APP-01Z final consolidation. Covers CSRF protection, rate limiting on auth endpoints, redirect allowlist hardening, OAuth state parameter audit, events endpoint carry-forward resolution, preview proxy scope decision, test/tooling blocker triage, secrets env audit, and full manual smoke verification.
 
 **Confirmed child slices:**
-1. AUTH-APP-01H1 ¡X Security Hardening Inventory (COMPLETE and LOCKED)
-2. AUTH-APP-01H2 ¡X CSRF + Rate Limiting + Redirect Hardening (COMPLETE and LOCKED)
-3. AUTH-APP-01H3 ¡X Events Endpoint Guards + Test/Tooling Triage (COMPLETE and LOCKED)
-4. AUTH-APP-01H4 ¡X Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation (COMPLETE and LOCKED)
+1. AUTH-APP-01H1 ï¿½X Security Hardening Inventory (COMPLETE and LOCKED)
+2. AUTH-APP-01H2 ï¿½X CSRF + Rate Limiting + Redirect Hardening (COMPLETE and LOCKED)
+3. AUTH-APP-01H3 ï¿½X Events Endpoint Guards + Test/Tooling Triage (COMPLETE and LOCKED)
+4. AUTH-APP-01H4 ï¿½X Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation (COMPLETE and LOCKED)
 
 **AUTH-APP-01C2 remains BLOCKED:** Transactional email provider not yet chosen. AUTH-APP-01H does not unblock AUTH-APP-01C2.
 
 **Carry-forwards:**
-- Preview proxy `/api/preview/*` ¡X MEDIUM risk; dedicated future investigation slice required
-- api-gateway lint baseline ¡X 353 pre-existing errors; separate future slice
-- 40 manual smoke items (22 F-family + 12 G-family + 6 H-specific) ¡X deferred to user live environment
+- Preview proxy `/api/preview/*` ï¿½X MEDIUM risk; dedicated future investigation slice required
+- api-gateway lint baseline ï¿½X 353 pre-existing errors; separate future slice
+- 40 manual smoke items (22 F-family + 12 G-family + 6 H-specific) ï¿½X deferred to user live environment
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01H. See `docs/AUTH-APP-01H-CHECKPOINT.md`. See `docs/AUTH-APP-01-SPEC.md`. See `docs/AUTH-APP-01F-CHECKPOINT.md` (carry-forwards). See `docs/AUTH-APP-01G-CHECKPOINT.md` (carry-forwards).
 
@@ -12900,7 +13063,7 @@ Deliver all remaining AUTH-APP-01 security hardening and validation work before 
 #### AUTH-APP-01H1: Security Hardening Inventory
 
 **Status:** COMPLETE and LOCKED
-**Nature:** DOCUMENTATION / SPEC ONLY ¡X no production source files changed
+**Nature:** DOCUMENTATION / SPEC ONLY ï¿½X no production source files changed
 **Parent:** AUTH-APP-01H (ACTIVE)
 **Family:** AUTH
 **Depends on:** AUTH-APP-01G4 (COMPLETE and LOCKED)
@@ -12909,19 +13072,19 @@ Deliver all remaining AUTH-APP-01 security hardening and validation work before 
 **Spec:** `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`
 
 **Key findings:**
-- CSRF protection: MISSING ¡X no synchronizer token or middleware; `SameSite=Lax` partial mitigation only
-- Auth endpoint rate limiting: MISSING ¡X `@nestjs/throttler` not installed, no decorators/guards
-- OAuth state parameter: PARTIAL ¡X `state: true` functional; `OAUTH_STATE_SECRET`/`SESSION_SECRET` undocumented
-- Redirect allowlist: NO OPEN REDIRECT ¡X no formal allowlist constant
-- Secrets/env documentation: SIGNIFICANT GAP ¡X all OAuth + session vars missing from `api-gateway/.env.example`
-- Events endpoints: UNGUARDED ¡X 3 endpoints; 2 callers use raw `HttpService`, no auth header
-- Preview proxy: UNGUARDED ¡X formally deferred; product decision required
-- Backend full `npm test`: ENVIRONMENT BLOCKER (Redis absent) ¡X targeted-test workaround
-- `ai-execution-guards` QuotaService: TEST BLOCKER ¡X missing mock provider
-- ESLint config: TOOLING BLOCKER ¡X no `.eslintrc.*` in `services/api-gateway`
+- CSRF protection: MISSING ï¿½X no synchronizer token or middleware; `SameSite=Lax` partial mitigation only
+- Auth endpoint rate limiting: MISSING ï¿½X `@nestjs/throttler` not installed, no decorators/guards
+- OAuth state parameter: PARTIAL ï¿½X `state: true` functional; `OAUTH_STATE_SECRET`/`SESSION_SECRET` undocumented
+- Redirect allowlist: NO OPEN REDIRECT ï¿½X no formal allowlist constant
+- Secrets/env documentation: SIGNIFICANT GAP ï¿½X all OAuth + session vars missing from `api-gateway/.env.example`
+- Events endpoints: UNGUARDED ï¿½X 3 endpoints; 2 callers use raw `HttpService`, no auth header
+- Preview proxy: UNGUARDED ï¿½X formally deferred; product decision required
+- Backend full `npm test`: ENVIRONMENT BLOCKER (Redis absent) ï¿½X targeted-test workaround
+- `ai-execution-guards` QuotaService: TEST BLOCKER ï¿½X missing mock provider
+- ESLint config: TOOLING BLOCKER ï¿½X no `.eslintrc.*` in `services/api-gateway`
 
 **H2/H3/H4 boundaries defined in spec:**
-- H2: CSRF + rate limiting (login/register) + redirect allowlist + env docs ¡X **pending `@nestjs/throttler` user approval**
+- H2: CSRF + rate limiting (login/register) + redirect allowlist + env docs ï¿½X **pending `@nestjs/throttler` user approval**
 - H3: events guards + container-manager caller updates + ESLint config + QuotaService mock + preview deferral
 - H4: secrets grep audit + manual smoke (34 items) + family checkpoint
 
@@ -12944,7 +13107,7 @@ Deliver all remaining AUTH-APP-01 security hardening and validation work before 
 
 **Key changes:**
 - CSRF double-submit cookie middleware (`aisandbox_csrf`, non-HttpOnly) added to `main.ts`
-- `CsrfGuard` created; applied to `POST /auth/logout` only ¡X Apple callback, login, register explicitly excluded
+- `CsrfGuard` created; applied to `POST /auth/logout` only ï¿½X Apple callback, login, register explicitly excluded
 - Frontend logout callers (`page.tsx`, `logout-button.tsx`) send `X-CSRF-Token` from cookie when present
 - `ThrottlerModule` registered in `app.module.ts` (in-memory); per-route throttling: login 10/60s/IP, register 5/60s/IP
 - `ALLOWED_POST_OAUTH_REDIRECTS` allowlist added to `auth.controller.ts`; all OAuth redirects validated through it
@@ -12969,14 +13132,14 @@ Deliver all remaining AUTH-APP-01 security hardening and validation work before 
 - `ApiGatewayHttpClient` (container-manager) gained `notifyFileChanged()` and `notifyCheckpointCreated()` methods sending `X-Internal-Service-Key`
 - `GitService.emitCheckpointCreated()` replaced raw `httpService.post()` with `apiGatewayClient.notifyCheckpointCreated()`
 - `FilesModule` imports `ClientsModule`; `FilesService` injects `ApiGatewayHttpClient`; `FilesService.emitFileChange()` replaced raw `httpService.post()` with `apiGatewayClient.notifyFileChanged()`
-- Created `services/api-gateway/.eslintrc.js` (ESLint 8 legacy config) ¡X `npm run lint` now runs; repo-wide baseline of 353 pre-existing errors documented
+- Created `services/api-gateway/.eslintrc.js` (ESLint 8 legacy config) ï¿½X `npm run lint` now runs; repo-wide baseline of 353 pre-existing errors documented
 - `ai-execution-guards.integration.spec.ts`: real `QuotaService` replaced with `useValue` mock; kill-switch tests corrected to use `process.env.AI_PROVIDER`; local lint violations cleaned
-- New `events.controller.guard.spec.ts` ¡X 4 guard unit tests (PASS 4/4)
-- Preview proxy formally deferred ¡X no implementation
+- New `events.controller.guard.spec.ts` ï¿½X 4 guard unit tests (PASS 4/4)
+- Preview proxy formally deferred ï¿½X no implementation
 
 **Carry-forwards to H4:**
-- Preview proxy `/api/preview/*` ¡X deferred (product decision + cross-service auth design required)
-- api-gateway lint baseline ¡X 353 pre-existing errors across unrelated files; separate future slice
+- Preview proxy `/api/preview/*` ï¿½X deferred (product decision + cross-service auth design required)
+- api-gateway lint baseline ï¿½X 353 pre-existing errors across unrelated files; separate future slice
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01H3. See `docs/AUTH-APP-01H3-CHECKPOINT.md`. See `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`.
 
@@ -12985,8 +13148,8 @@ Deliver all remaining AUTH-APP-01 security hardening and validation work before 
 #### AUTH-APP-01H4: Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation
 
 **Status:** COMPLETE and LOCKED
-**Nature:** VALIDATION AND GOVERNANCE ONLY ¡X no production source files changed
-**Parent:** AUTH-APP-01H (VALIDATION COMPLETE ¡X manual smoke deferred)
+**Nature:** VALIDATION AND GOVERNANCE ONLY ï¿½X no production source files changed
+**Parent:** AUTH-APP-01H (VALIDATION COMPLETE ï¿½X manual smoke deferred)
 **Family:** AUTH
 **Depends on:** AUTH-APP-01H3 (COMPLETE and LOCKED)
 **Completed:** 2026-05-08
@@ -12995,20 +13158,20 @@ Deliver all remaining AUTH-APP-01 security hardening and validation work before 
 **Spec:** `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`
 
 **Key findings and actions:**
-- Secrets audit initially found real Anthropic and XAI API keys in tracked `.envxxx` and `.env.prod` files ¡X H4 paused immediately
+- Secrets audit initially found real Anthropic and XAI API keys in tracked `.envxxx` and `.env.prod` files ï¿½X H4 paused immediately
 - Local history cleanup performed (user action): both files removed from git tracking; `git ls-files` returns clean; working tree clean
-- Post-cleanup secrets audit: CLEAN ¡X no real credentials in any tracked source file; all `sk-ant-` and PEM header hits are placeholders/tests/docs
-- Old provider keys (Anthropic, XAI) must be rotated before any future push/deployment ¡X treat as compromised
+- Post-cleanup secrets audit: CLEAN ï¿½X no real credentials in any tracked source file; all `sk-ant-` and PEM header hits are placeholders/tests/docs
+- Old provider keys (Anthropic, XAI) must be rotated before any future push/deployment ï¿½X treat as compromised
 - api-gateway typecheck: PASS; container-manager typecheck: PASS
 - Targeted tests: 40/40 PASS (csrf.guard: 5, events.controller.guard: 4, ai-execution-guards: 31, files.service: 2)
-- Manual smoke: 40 items NOT RUN ¡X deferred to user live environment (22 F-family + 12 G-family + 6 H-specific)
+- Manual smoke: 40 items NOT RUN ï¿½X deferred to user live environment (22 F-family + 12 G-family + 6 H-specific)
 - CSRF smoke item correction recorded: `CsrfGuard` applies to `POST /auth/logout` only; login/register are correctly excluded
 
 **Carry-forwards:**
-- Preview proxy `/api/preview/*` ¡X MEDIUM risk; dedicated future investigation slice
-- api-gateway lint baseline ¡X 353 pre-existing errors; separate future slice
+- Preview proxy `/api/preview/*` ï¿½X MEDIUM risk; dedicated future investigation slice
+- api-gateway lint baseline ï¿½X 353 pre-existing errors; separate future slice
 - 40 manual smoke items deferred to user live environment
-- Provider key rotation ¡X user action required before any push
+- Provider key rotation ï¿½X user action required before any push
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01H4. See `docs/AUTH-APP-01H4-CHECKPOINT.md`. See `docs/AUTH-APP-01H-CHECKPOINT.md`. See `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`.
 
@@ -13017,28 +13180,28 @@ Deliver all remaining AUTH-APP-01 security hardening and validation work before 
 #### AUTH-APP-01Z: Final AUTH-APP-01 Consolidation
 
 **Status:** COMPLETE and LOCKED
-**Nature:** GOVERNANCE AND DOCUMENTATION ONLY ¡X no production source files changed
-**Parent:** AUTH-APP-01 (VALIDATION COMPLETE ¡X AUTH-APP-01C2 VALIDATION COMPLETE; manual smoke deferred)
+**Nature:** GOVERNANCE AND DOCUMENTATION ONLY ï¿½X no production source files changed
+**Parent:** AUTH-APP-01 (VALIDATION COMPLETE ï¿½X AUTH-APP-01C2 VALIDATION COMPLETE; manual smoke deferred)
 **Family:** AUTH
 **Depends on:** AUTH-APP-01H4 (COMPLETE and LOCKED)
 **Completed:** 2026-05-08
 **Checkpoint:** `docs/AUTH-APP-01Z-CHECKPOINT.md`
 **Family checkpoint:** `docs/AUTH-APP-01-CHECKPOINT.md`
-**Spec:** `docs/AUTH-APP-01-SPEC.md` (Section 14 ¡X slice order)
+**Spec:** `docs/AUTH-APP-01-SPEC.md` (Section 14 ï¿½X slice order)
 
 **What AUTH-APP-01Z delivered:**
-- `docs/AUTH-APP-01Z-CHECKPOINT.md` ¡X Z task checkpoint
-- `docs/AUTH-APP-01-CHECKPOINT.md` ¡X AUTH-APP-01 family summary
+- `docs/AUTH-APP-01Z-CHECKPOINT.md` ï¿½X Z task checkpoint
+- `docs/AUTH-APP-01-CHECKPOINT.md` ï¿½X AUTH-APP-01 family summary
 - `TASKS.md` and `TASKS_BACKLOG_FULL.md` updated: AUTH-APP-01Z COMPLETE and LOCKED; AUTH-APP-01 parent VALIDATION COMPLETE; stale child list entries corrected
 
-**AUTH-APP-01 parent status:** VALIDATION COMPLETE ¡X AUTH-APP-01C2 VALIDATION COMPLETE (AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F COMPLETE); manual smoke deferred; carry-forwards pending
+**AUTH-APP-01 parent status:** VALIDATION COMPLETE ï¿½X AUTH-APP-01C2 VALIDATION COMPLETE (AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F COMPLETE); manual smoke deferred; carry-forwards pending
 
 **Carry-forwards recorded:**
-- AUTH-APP-01C2 VALIDATION COMPLETE ¡X manual smoke deferred ¡X AUTH-APP-01C2A COMPLETE and LOCKED; AUTH-APP-01C2B COMPLETE and LOCKED; AUTH-APP-01C2C COMPLETE and LOCKED; AUTH-APP-01C2D COMPLETE and LOCKED; AUTH-APP-01C2E COMPLETE and LOCKED; AUTH-APP-01C2F COMPLETE and LOCKED
+- AUTH-APP-01C2 VALIDATION COMPLETE ï¿½X manual smoke deferred ï¿½X AUTH-APP-01C2A COMPLETE and LOCKED; AUTH-APP-01C2B COMPLETE and LOCKED; AUTH-APP-01C2C COMPLETE and LOCKED; AUTH-APP-01C2D COMPLETE and LOCKED; AUTH-APP-01C2E COMPLETE and LOCKED; AUTH-APP-01C2F COMPLETE and LOCKED
 - 26-item C2 manual smoke checklist deferred to live environment (see `docs/AUTH-APP-01C2F-CHECKPOINT.md`)
 - 40 manual smoke items deferred to user live environment
-- Preview proxy `/api/preview/*` ¡X MEDIUM risk; dedicated investigation slice required
-- api-gateway lint baseline ¡X 353 pre-existing errors; separate cleanup slice
+- Preview proxy `/api/preview/*` ï¿½X MEDIUM risk; dedicated investigation slice required
+- api-gateway lint baseline ï¿½X 353 pre-existing errors; separate cleanup slice
 - Old Anthropic/XAI provider keys must be rotated before any push/deployment
 - Password reset request: 10/hr/IP secondary limit not independently enforced in C2D v1; carry-forward for named throttler or Redis-backed limiter
 
@@ -13067,10 +13230,10 @@ Deliver all remaining AUTH-APP-01 security hardening and validation work before 
 Investigate and resolve the security gap in the `/api/preview/*` proxy path. The api-gateway PreviewController proxies all preview requests to container-manager without any auth guard. Container-manager has `ENABLE_PREVIEW_ACCESS_CONTROL=false` by default and its existing access control is JWT Bearer based (not SessionCookieGuard based). A product decision and threat model analysis are required before any implementation.
 
 **Confirmed child slices:**
-1. AUTH-APP-02A ¡X Preview Proxy Auth Investigation (COMPLETE and LOCKED)
-2. AUTH-APP-02B ¡X Add SessionCookieGuard to api-gateway PreviewController (COMPLETE and LOCKED)
-3. AUTH-APP-02C ¡X Session Ownership Check / Owner-only Preview Authorization (COMPLETE and LOCKED)
-4. AUTH-APP-02D ¡X Preview Proxy Header Sanitization (COMPLETE and LOCKED)
+1. AUTH-APP-02A ï¿½X Preview Proxy Auth Investigation (COMPLETE and LOCKED)
+2. AUTH-APP-02B ï¿½X Add SessionCookieGuard to api-gateway PreviewController (COMPLETE and LOCKED)
+3. AUTH-APP-02C ï¿½X Session Ownership Check / Owner-only Preview Authorization (COMPLETE and LOCKED)
+4. AUTH-APP-02D ï¿½X Preview Proxy Header Sanitization (COMPLETE and LOCKED)
 
 **Carry-forward source:** AUTH-APP-01H (MEDIUM risk; preview proxy formally deferred)
 
@@ -13079,7 +13242,7 @@ Investigate and resolve the security gap in the `/api/preview/*` proxy path. The
 #### AUTH-APP-02A: Preview Proxy Auth Investigation
 
 **Status:** COMPLETE and LOCKED
-**Nature:** INVESTIGATION / SPEC ONLY ¡X no production source files changed
+**Nature:** INVESTIGATION / SPEC ONLY ï¿½X no production source files changed
 **Parent:** AUTH-APP-02 (ACTIVE)
 **Family:** AUTH
 **Depends on:** AUTH-APP-01Z (COMPLETE and LOCKED)
@@ -13091,15 +13254,15 @@ Investigate and resolve the security gap in the `/api/preview/*` proxy path. The
 Perform a bounded investigation of the `/api/preview/*` proxy auth gap. Inspect the current api-gateway preview proxy, the container-manager preview access-control path, and frontend preview iframe URL generation. Determine the threat model, product decision options, and propose the smallest safe implementation option.
 
 **Key findings:**
-- api-gateway `PreviewController` uses `@All('*')` with no guard ¡X fully open
+- api-gateway `PreviewController` uses `@All('*')` with no guard ï¿½X fully open
 - Browser iframe uses same-origin `/api/preview/:sessionId/proxy` URL; session cookie forwarded but ignored by container-manager
-- Active container-manager module is `src/preview/` ¡X no auth or ownership check on any route
+- Active container-manager module is `src/preview/` ï¿½X no auth or ownership check on any route
 - Inactive module `src/previews/` contains optional JWT/Bearer access control but is NOT registered and has no effect
-- `ENABLE_PREVIEW_ACCESS_CONTROL` is tied to inactive code path ¡X does not protect current routes
-- No public/share preview UI found ¡X product behavior implies workspace-private preview
+- `ENABLE_PREVIEW_ACCESS_CONTROL` is tied to inactive code path ï¿½X does not protect current routes
+- No public/share preview UI found ï¿½X product behavior implies workspace-private preview
 - Threat model: T1 unauthenticated access (MEDIUM), T2 cross-user access (MEDIUM), T5 infra bypass (MEDIUM), T3/T4/T6 (LOW)
 
-**Recommendation:** AUTH-APP-02B ¡X Add `SessionCookieGuard` to api-gateway `PreviewController`. Smallest safe fix; closes unauthenticated access; no frontend or container-manager changes.
+**Recommendation:** AUTH-APP-02B ï¿½X Add `SessionCookieGuard` to api-gateway `PreviewController`. Smallest safe fix; closes unauthenticated access; no frontend or container-manager changes.
 
 **Non-goals confirmed:**
 - No production source files changed
@@ -13129,12 +13292,12 @@ Add `SessionCookieGuard` at the `PreviewController` class level in api-gateway t
 **Key changes:**
 - `@UseGuards(SessionCookieGuard)` applied at `PreviewController` class level
 - `SessionCookieGuard` imported from `../auth/session-cookie.guard`; `UseGuards` added to `@nestjs/common` import
-- `preview.module.ts` unchanged ¡X `AuthModule` import not required (guard resolves from `AppModule` DI context)
-- `preview.controller.guard.spec.ts` created ¡X 3 guard tests (metadata, compile, block)
+- `preview.module.ts` unchanged ï¿½X `AuthModule` import not required (guard resolves from `AppModule` DI context)
+- `preview.controller.guard.spec.ts` created ï¿½X 3 guard tests (metadata, compile, block)
 
 **Validation:**
 - `npx tsc --noEmit` in `services/api-gateway`: PASS
-- `npx jest --testPathPatterns="preview.controller.guard" --runInBand`: PASS ¡X 1 suite, 3 tests
+- `npx jest --testPathPatterns="preview.controller.guard" --runInBand`: PASS ï¿½X 1 suite, 3 tests
 
 **Non-goals confirmed:**
 - No ownership check (deferred to AUTH-APP-02C)
@@ -13145,10 +13308,10 @@ Add `SessionCookieGuard` at the `PreviewController` class level in api-gateway t
 - No header sanitization
 
 **Carry-forwards:**
-- Cross-user session access (T2) ¡X AUTH-APP-02C
-- Header sanitization ¡X future hardening slice
-- Container-manager direct access (T5) ¡X infrastructure concern
-- Manual smoke ¡X 4 items deferred to live environment
+- Cross-user session access (T2) ï¿½X AUTH-APP-02C
+- Header sanitization ï¿½X future hardening slice
+- Container-manager direct access (T5) ï¿½X infrastructure concern
+- Manual smoke ï¿½X 4 items deferred to live environment
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-02B. See `docs/AUTH-APP-02B-CHECKPOINT.md`.
 
@@ -13171,15 +13334,15 @@ Add `SessionCookieGuard` at the `PreviewController` class level in api-gateway t
 Add `PreviewOwnershipGuard` to api-gateway `PreviewController` to block cross-user preview access. After `SessionCookieGuard` verifies authentication, `PreviewOwnershipGuard` verifies the authenticated user owns the session being previewed. Closes threat T2 (cross-user session preview access).
 
 **Key changes:**
-- `PreviewOwnershipGuard` created ¡X injects `SessionService`, extracts `sessionId` from path, compares `session.userId` with `req.user.userId`, returns 403 for all failure conditions
+- `PreviewOwnershipGuard` created ï¿½X injects `SessionService`, extracts `sessionId` from path, compares `session.userId` with `req.user.userId`, returns 403 for all failure conditions
 - `@UseGuards(SessionCookieGuard, PreviewOwnershipGuard)` applied at `PreviewController` class level
 - `PreviewModule` updated: `SessionModule` imported, `PreviewOwnershipGuard` added to providers
-- `preview.ownership.guard.spec.ts` created ¡X 9 tests (metadata, order, match, mismatch, not-found, no-user, malformed paths, sessionId extraction)
+- `preview.ownership.guard.spec.ts` created ï¿½X 9 tests (metadata, order, match, mismatch, not-found, no-user, malformed paths, sessionId extraction)
 
 **Validation:**
 - `npx tsc --noEmit` in `services/api-gateway`: PASS
-- `npx jest --testPathPatterns="preview.ownership" --runInBand`: PASS ¡X 1 suite, 9 tests
-- `npx jest --testPathPatterns="preview.controller.guard|preview.ownership" --runInBand`: PASS ¡X 2 suites, 12 tests
+- `npx jest --testPathPatterns="preview.ownership" --runInBand`: PASS ï¿½X 1 suite, 9 tests
+- `npx jest --testPathPatterns="preview.controller.guard|preview.ownership" --runInBand`: PASS ï¿½X 2 suites, 12 tests
 - Lint on all touched files: PASS
 
 **Non-goals confirmed:**
@@ -13192,10 +13355,10 @@ Add `PreviewOwnershipGuard` to api-gateway `PreviewController` to block cross-us
 - No new external dependencies
 
 **Carry-forwards:**
-- Header sanitization ¡X future hardening slice
-- Container-manager direct access (T5) ¡X infrastructure/network isolation concern
-- Public/share/signed preview ¡X deferred product feature
-- Manual smoke ¡X 4 items deferred to live environment
+- Header sanitization ï¿½X future hardening slice
+- Container-manager direct access (T5) ï¿½X infrastructure/network isolation concern
+- Public/share/signed preview ï¿½X deferred product feature
+- Manual smoke ï¿½X 4 items deferred to live environment
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-02C. See `docs/AUTH-APP-02C-CHECKPOINT.md`. See `docs/AUTH-APP-02-CHECKPOINT.md`. See `docs/AUTH-APP-02A-PREVIEW-PROXY-AUTH-SPEC.md` Section 10.
 
@@ -13216,17 +13379,17 @@ Add `PreviewOwnershipGuard` to api-gateway `PreviewController` to block cross-us
 Sanitize forwarded headers in the api-gateway `PreviewController` before proxying requests to container-manager. The proxy previously spread `req.headers` directly into the axios call, removing only `host`. This left sensitive auth/security headers forwarded to container-manager. Apply an explicit denylist via `sanitizeProxyHeaders` to strip sensitive headers before the axios proxy call while preserving headers required for correct browser/preview rendering.
 
 **Key changes:**
-- `PROXY_HEADER_DENYLIST` constant defined at module scope ¡X set of 9 lowercase header names
-- `sanitizeProxyHeaders(headers)` exported named function ¡X filters entries by denylist using `.toLowerCase()` for case-insensitive matching
-- Axios `headers` replaced: `{ ...req.headers, host: undefined }` ¡÷ `sanitizeProxyHeaders(req.headers)`
-- `preview.header-sanitization.spec.ts` created ¡X 23 direct unit tests against the exported helper
+- `PROXY_HEADER_DENYLIST` constant defined at module scope ï¿½X set of 9 lowercase header names
+- `sanitizeProxyHeaders(headers)` exported named function ï¿½X filters entries by denylist using `.toLowerCase()` for case-insensitive matching
+- Axios `headers` replaced: `{ ...req.headers, host: undefined }` ï¿½ï¿½ `sanitizeProxyHeaders(req.headers)`
+- `preview.header-sanitization.spec.ts` created ï¿½X 23 direct unit tests against the exported helper
 
 **Headers stripped:** `host`, `cookie`, `authorization`, `proxy-authorization`, `x-internal-service-key`, `x-csrf-token`, `x-forwarded-user`, `x-user-id`, `x-session-id`.
 
 **Validation:**
 - `npx tsc --noEmit` in `services/api-gateway`: PASS
-- `npx jest --testPathPatterns="preview.header-sanitization" --runInBand`: PASS ¡X 1 suite, 23 tests
-- `npx jest --testPathPatterns="preview" --runInBand`: PASS ¡X 3 suites, 35 tests
+- `npx jest --testPathPatterns="preview.header-sanitization" --runInBand`: PASS ï¿½X 1 suite, 23 tests
+- `npx jest --testPathPatterns="preview" --runInBand`: PASS ï¿½X 3 suites, 35 tests
 - Lint on all touched preview files: PASS
 
 **Non-goals confirmed:**
@@ -13241,9 +13404,9 @@ Sanitize forwarded headers in the api-gateway `PreviewController` before proxyin
 - No manual smoke
 
 **Carry-forwards:**
-- `x-forwarded-for` privacy/logging decision ¡X intentionally deferred
-- Manual smoke ¡X 4 items deferred to live environment
-- Container-manager direct access (T5) ¡X infrastructure/network isolation concern
+- `x-forwarded-for` privacy/logging decision ï¿½X intentionally deferred
+- Manual smoke ï¿½X 4 items deferred to live environment
+- Container-manager direct access (T5) ï¿½X infrastructure/network isolation concern
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-02D. See `docs/AUTH-APP-02D-CHECKPOINT.md`. See `docs/AUTH-APP-02-CHECKPOINT.md`. See `docs/AUTH-APP-02A-PREVIEW-PROXY-AUTH-SPEC.md`.
 

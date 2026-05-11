@@ -189,6 +189,8 @@ interface WorkspacePromptContext {
   workspaceName?: string;
 }
 
+type WorkspaceView = 'home' | 'projects' | 'templates' | 'project';
+
 function isSensitiveFilePath(path: string): boolean {
   const normalizedPath = path.trim().toLowerCase();
   if (!normalizedPath) {
@@ -896,6 +898,7 @@ export default function AppPage() {
   const [workspaceActionError, setWorkspaceActionError] = useState<string | null>(null);
   const [workspaceProjects, setWorkspaceProjects] = useState<WorkspaceProjectSummary[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [workspaceView, setWorkspaceView] = useState<WorkspaceView>('home');
   const [selectedProjectVisibility, setSelectedProjectVisibility] = useState<'private' | 'public'>(
     'private',
   );
@@ -2144,6 +2147,7 @@ export default function AppPage() {
           await loadPublicWorkspaceProjectsList();
           await loadDashboardSlice();
 
+          setWorkspaceView('project');
           setSelectedProjectId(createdProject.id);
           setSelectedProjectVisibility(createdProject.visibility === 'public' ? 'public' : 'private');
           setProjectNameInput('');
@@ -2270,6 +2274,7 @@ export default function AppPage() {
         await loadPublicWorkspaceProjectsList();
         await loadDashboardSlice();
 
+        setWorkspaceView('project');
         setProjectActionState('success');
         setProjectActionMessage('Project opened.');
         setProjectActionError(null);
@@ -2322,6 +2327,7 @@ export default function AppPage() {
       await loadPublicWorkspaceProjectsList();
       await loadDashboardSlice();
 
+      setWorkspaceView('project');
       setProjectActionState('success');
       setProjectActionMessage('Project opened in selected session.');
       setProjectActionError(null);
@@ -2382,6 +2388,7 @@ export default function AppPage() {
       await loadPublicWorkspaceProjectsList();
       await loadDashboardSlice();
 
+      setWorkspaceView('project');
       setProjectActionState('success');
       setProjectActionMessage('Project opened.');
       setProjectActionError(null);
@@ -2449,6 +2456,7 @@ export default function AppPage() {
       await loadPublicWorkspaceProjectsList();
       await loadDashboardSlice();
 
+      setWorkspaceView('project');
       setProjectActionState('success');
       setProjectActionMessage('Project opened.');
       setProjectActionError(null);
@@ -5136,6 +5144,8 @@ export default function AppPage() {
   return (
     <WorkspaceShell
       locale={locale}
+      workspaceView={workspaceView}
+      onWorkspaceViewChange={setWorkspaceView}
       onLogout={handleLogout}
       sessions={visibleSessions}
       selectedSessionId={selectedSessionId}

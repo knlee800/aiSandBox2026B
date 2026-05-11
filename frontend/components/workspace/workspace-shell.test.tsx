@@ -380,6 +380,8 @@ function buildWorkspaceShellProps(
   const defaultProps: React.ComponentProps<typeof WorkspaceShell> = {
     locale: 'en',
     projectFirstUxEnabled: false,
+    workspaceView: 'project',
+    onWorkspaceViewChange: () => {},
     sessions: [session],
     selectedSessionId: session.id,
     isLoadingSessions: false,
@@ -698,29 +700,27 @@ describe('workspace shell component', () => {
     assert.match(html, />Log out</);
   });
 
-  test('renders project-first header nav behind feature flag', () => {
+  test('renders project-first sidebar nav behind feature flag', () => {
     const html = renderWorkspaceShell({
       locale: 'zh-TW',
       projectFirstUxEnabled: true,
+      workspaceView: 'home',
     });
 
-    assert.match(html, /AI Sandbox/);
-    assert.match(html, /Project-first workspace shell/);
-    assert.match(html, /workspace-header-project-first-nav/);
-    assert.match(html, /workspace-header-projects-link/);
-    assert.match(html, /workspace-header-gallery-link/);
-    assert.match(html, /workspace-header-account-link/);
-    assert.match(html, /href="\/zh-TW\/projects"/);
-    assert.match(html, /href="\/zh-TW\/gallery"/);
-    assert.match(html, /href="\/zh-TW\/account"/);
-    assert.match(html, />Projects</);
-    assert.match(html, />Gallery</);
-    assert.match(html, />Account</);
+    assert.match(html, /AI 沙盒/);
+    assert.match(html, /workspace-sidebar/);
+    assert.match(html, /workspace-sidebar-nav-home/);
+    assert.match(html, /workspace-sidebar-nav-projects/);
+    assert.match(html, /workspace-sidebar-nav-templates/);
+    assert.match(html, /workspace-sidebar-workspace-select/);
+    assert.match(html, />專案</);
+    assert.match(html, />首頁</);
+    assert.match(html, />模板與社群</);
     assert.doesNotMatch(html, /Session-scoped workspace/);
     assert.doesNotMatch(html, /workspace-header-api-keys-link/);
   });
 
-  test('renders logout button in the project-first header when onLogout is provided', () => {
+  test('renders logout button in the project-first sidebar when onLogout is provided', () => {
     const html = renderWorkspaceShell({
       locale: 'en',
       projectFirstUxEnabled: true,
@@ -729,6 +729,32 @@ describe('workspace shell component', () => {
 
     assert.match(html, /workspace-header-logout-button/);
     assert.match(html, />Log out</);
+  });
+
+  test('renders home placeholder when project-first home view is selected', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'home',
+    });
+
+    assert.match(html, /workspace-home-placeholder/);
+    assert.match(html, />Build anything</);
+    assert.match(html, /workspace-home-placeholder-input/);
+    assert.match(html, /workspace-home-placeholder-submit/);
+    assert.doesNotMatch(html, /Chat Panel/);
+  });
+
+  test('renders existing workspace content when project view is selected', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+
+    assert.match(html, /workspace-project-view/);
+    assert.match(html, /Chat Panel/);
+    assert.match(html, /Editor Panel/);
+    assert.match(html, /Preview Panel/);
+    assert.match(html, /History &amp; Controls/);
   });
 
   test('clicking logout calls onLogout when provided', () => {
