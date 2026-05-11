@@ -75,6 +75,8 @@ export function getWorkspaceScaffoldMessages(locale?: string) {
     appName: read('common.appName'),
     home: read('workspace.home'),
     projects: read('workspace.projects'),
+    gridView: read('workspace.gridView'),
+    listView: read('workspace.listView'),
     templates: read('workspace.templates'),
     recentProjects: read('workspace.recentProjects'),
     upgrade: read('workspace.upgrade'),

@@ -83,6 +83,8 @@
   "workspace": {
     "home": "首页",
     "projects": "项目",
+    "gridView": "网格视图",
+    "listView": "列表视图",
     "templates": "模板与社区",
     "recentProjects": "最近项目",
     "upgrade": "升级",

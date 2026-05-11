@@ -1,4 +1,4 @@
-﻿## Authority & Scope
+## Authority & Scope
 
 This file lists currently ACTIVE and SELECTED tasks.
 
@@ -12037,9 +12037,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## UX-IA �X Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 pending
+**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 pending
 
-**Current stage:** UX-IA-05 — Projects Grid/List + Recent Projects (pending; not yet started)
+**Current stage:** UX-IA-06 — Templates / Community View (pending; not yet started)
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -12053,7 +12053,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
    - UX-IA-04A — Sidebar shell + view state scaffolding (COMPLETE and LOCKED — `docs/UX-IA-04A-CHECKPOINT.md`)
    - UX-IA-04B — Home view chatbox + prompt-to-project flow (COMPLETE and LOCKED — `docs/UX-IA-04B-CHECKPOINT.md`)
    - UX-IA-04C — Tests + validation + consolidation (COMPLETE and LOCKED — `docs/UX-IA-04-CHECKPOINT.md`)
-6. UX-IA-05 �X Projects Grid/List + Recent Projects (pending)
+6. UX-IA-05 — Projects Grid/List + Recent Projects (COMPLETE and LOCKED — `docs/UX-IA-05-CHECKPOINT.md`)
 7. UX-IA-06 �X Templates / Community View (pending)
 8. UX-IA-07 �X Account Menu + Settings + Language/Theme (pending)
 9. UX-IA-08 �X Project Mode Shell (pending)
@@ -12375,6 +12375,66 @@ Update and extend `workspace-shell.test.tsx` for the new layout structure, sideb
 - `ReadLints` on all touched files — no introduced errors
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-04C.
+---
+
+#### UX-IA-05: Projects Grid/List + Recent Projects
+
+**Status:** COMPLETE and LOCKED — `docs/UX-IA-05-CHECKPOINT.md`
+**Task ID:** UX-IA-05
+**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-05 section
+**Depends on:** UX-IA-04 (COMPLETE and LOCKED — `docs/UX-IA-04-CHECKPOINT.md`)
+**Risk:** Low-Medium
+**Loop:** 3-step (implement — verify tests — consolidate)
+**Model:** Sonnet 4.6
+
+**Objective:**
+Build the Projects view with project cards in grid/list form. Make sidebar recent projects clickable. Reuse existing `workspaceProjects`, `onOpenWorkspaceProject`, `onCreateWorkspaceProject`, `onResumeWorkspaceProjectById` handlers. Introduce a `WorkspaceProjectCard` component. Add grid/list toggle if safe in this slice. Implement empty state for no projects. Preserve all UX-IA-04 sidebar, Home chatbox, and project-mode behavior unchanged.
+
+**Bounded scope:**
+- `frontend/components/workspace/workspace-shell.tsx` — replace Projects view placeholder with grid/list of project cards; add grid/list toggle
+- New: `frontend/components/workspace/workspace-project-card.tsx` — project card component (name, updated date, open/resume action)
+- `frontend/components/workspace/workspace-sidebar.tsx` — make recent project items clickable (call `onOpenWorkspaceProject` or `onResumeWorkspaceProjectById` then transition to `project` view)
+- `frontend/components/workspace/workspace-shell.test.tsx` — tests for projects grid, project card render, grid/list toggle, empty state, recent project click
+- Possibly: `frontend/app/[locale]/app/page.tsx` — only if view wiring for projects view needs adjustment
+
+**Non-goals:**
+- No Templates/Community view implementation (UX-IA-06)
+- No account menu (UX-IA-07)
+- No project mode shell or tab system (UX-IA-08/10/11)
+- No backend or API changes
+- No auth changes
+- No route cleanup (UX-IA-14)
+- No broad refactor of AI-WS, preview, or file logic
+- No responsive/mobile work (UX-IA-13)
+
+**Dependencies:**
+- UX-IA-04 (COMPLETE and LOCKED): WorkspaceView state, WorkspaceSidebar, Home chatbox, sidebar + right content layout
+- `workspaceProjects` prop already wired from `page.tsx` to `WorkspaceShell`
+- `onOpenWorkspaceProject`, `onCreateWorkspaceProject`, `onResumeWorkspaceProjectById` already available
+
+**Risks / invariants:**
+- Recent project click must use same PROJ-02-01 hydration chain as existing project open; do not introduce a new project-open race surface
+- Grid/list toggle state: keep local to Projects view unless reason to hoist; decide during implementation
+- Do not break existing HistoryProjectPanel or snapshot panel behavior currently under Projects view
+- All new user-facing strings must use i18n keys; no hardcoded English; reuse existing `workspace.*` namespace keys where possible
+
+**Acceptance checks:**
+- UX-IA-05 registered in TASKS.md and TASKS_BACKLOG_FULL.md
+- Projects view shows `WorkspaceProjectCard` grid for selected workspace projects
+- Grid/list toggle works (if included in this slice)
+- Clicking a project card calls existing open/resume handler and transitions to `project` view
+- Sidebar recent projects (up to 5) are clickable and open project mode
+- Empty state shown when no projects exist
+- All new user-facing strings use i18n keys
+- `npx tsc --noEmit` passes (from `frontend/`)
+- `npm test` passes with new test cases (from `frontend/`)
+- `npm run build` passes (from `frontend/`)
+- No regressions to UX-IA-04 sidebar, Home view, or project-mode behavior
+- No regressions to AUTH-APP-01/02 or PROJ-02 hydration chain
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-05. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-05 section.
+
 ---
 
 ## AUTH �X aiSandBox First-Party Authentication

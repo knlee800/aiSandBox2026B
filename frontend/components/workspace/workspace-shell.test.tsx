@@ -62,6 +62,26 @@ const resumeLatestProjects: WorkspaceProjectSummary[] = [
     updatedAt: '2026-03-10T11:30:00.000Z',
   },
 ];
+const projectsViewProjects: WorkspaceProjectSummary[] = [
+  {
+    id: 'projects-view-1',
+    userId: 'user-123',
+    name: 'Invoice Dashboard',
+    visibility: 'private',
+    workspaceId: 'workspace-1',
+    createdAt: '2026-05-08T10:00:00.000Z',
+    updatedAt: '2026-05-11T09:00:00.000Z',
+  },
+  {
+    id: 'projects-view-2',
+    userId: 'user-123',
+    name: 'Support Portal',
+    visibility: 'public',
+    workspaceId: 'workspace-1',
+    createdAt: '2026-05-09T10:00:00.000Z',
+    updatedAt: '2026-05-11T08:00:00.000Z',
+  },
+];
 const projectHistorySnapshots: WorkspaceSnapshotSummary[] = [
   {
     id: 'snapshot-b',
@@ -841,6 +861,97 @@ describe('workspace shell component', () => {
     assert.match(html, /workspace-sidebar-recent-project-proj-recent-2/);
     assert.match(html, /My Kanban App/);
     assert.match(html, /Landing Page/);
+  });
+
+  test('renders project cards in projects view when workspaceProjects exist', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'projects',
+      workspaceProjects: projectsViewProjects,
+    });
+
+    assert.match(html, /workspace-projects-grid/);
+    assert.match(html, /workspace-project-card-projects-view-1/);
+    assert.match(html, /workspace-project-card-projects-view-2/);
+  });
+
+  test('renders project names in project cards', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'projects',
+      workspaceProjects: projectsViewProjects,
+    });
+
+    assert.match(html, /Invoice Dashboard/);
+    assert.match(html, /Support Portal/);
+  });
+
+  test('renders empty state in projects view when no projects exist', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'projects',
+      workspaceProjects: [],
+    });
+
+    assert.match(html, /workspace-projects-empty-state/);
+    assert.match(html, />No projects yet\.</);
+  });
+
+  test('clicking project card calls onResumeWorkspaceProjectById with project id', () => {
+    let resumeCalls = 0;
+    let resumedProjectId: string | null = null;
+    const projectCard = renderWorkspaceShellElementByTestId(
+      'workspace-project-card-projects-view-2',
+      {
+        projectFirstUxEnabled: true,
+        workspaceView: 'projects',
+        workspaceProjects: projectsViewProjects,
+        onResumeWorkspaceProjectById: async (projectId: string) => {
+          resumeCalls += 1;
+          resumedProjectId = projectId;
+        },
+      },
+    );
+
+    assert.ok(projectCard);
+    projectCard.props.onClick?.();
+    assert.equal(resumeCalls, 1);
+    assert.equal(resumedProjectId, 'projects-view-2');
+  });
+
+  test('renders grid and list toggle buttons in projects view', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'projects',
+      workspaceProjects: projectsViewProjects,
+    });
+
+    assert.match(html, /workspace-projects-grid-toggle/);
+    assert.match(html, /workspace-projects-list-toggle/);
+    assert.match(html, />Grid view</);
+    assert.match(html, />List view</);
+  });
+
+  test('clicking sidebar recent project calls onResumeWorkspaceProjectById with project id', () => {
+    let resumeCalls = 0;
+    let resumedProjectId: string | null = null;
+    const recentProjectButton = renderWorkspaceShellElementByTestId(
+      'workspace-sidebar-recent-project-projects-view-1',
+      {
+        projectFirstUxEnabled: true,
+        workspaceView: 'home',
+        workspaceProjects: projectsViewProjects,
+        onResumeWorkspaceProjectById: async (projectId: string) => {
+          resumeCalls += 1;
+          resumedProjectId = projectId;
+        },
+      },
+    );
+
+    assert.ok(recentProjectButton);
+    recentProjectButton.props.onClick?.();
+    assert.equal(resumeCalls, 1);
+    assert.equal(resumedProjectId, 'projects-view-1');
   });
 
   test('clicking logout calls onLogout when provided', () => {

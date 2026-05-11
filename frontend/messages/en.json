@@ -83,6 +83,8 @@
   "workspace": {
     "home": "Home",
     "projects": "Projects",
+    "gridView": "Grid view",
+    "listView": "List view",
     "templates": "Templates & Community",
     "recentProjects": "Recent Projects",
     "upgrade": "Upgrade",

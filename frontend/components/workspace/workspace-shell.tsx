@@ -8,6 +8,7 @@ import WorkspaceSidebar, {
   type WorkspaceSidebarRecentProject,
   type WorkspaceView,
 } from './workspace-sidebar';
+import WorkspaceProjectCard from './workspace-project-card';
 import {
   computeDashboardSliceState,
   computeHistorySliceState,
@@ -354,9 +355,15 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const resolvedWorkspaceView = props.workspaceView ?? 'project';
   const scaffoldMessages = getWorkspaceScaffoldMessages(locale);
   const [advancedDrawerOpen, setAdvancedDrawerOpen] = React.useState(false);
+  const [projectsViewMode, setProjectsViewMode] = React.useState<'grid' | 'list'>('grid');
   const homePromptInput = props.chatPromptInput ?? '';
   const trimmedHomePrompt = homePromptInput.trim();
   const isCreatingProjectFromPrompt = props.projectActionState === 'creating';
+  const hasProjectActionInFlight =
+    props.projectActionState === 'creating' ||
+    props.projectActionState === 'opening' ||
+    props.projectActionState === 'moving';
+  const workspaceProjects = props.workspaceProjects ?? [];
   const shellState = computeWorkspaceShellState({
     isLoadingSessions: props.isLoadingSessions,
     sessionError: props.sessionError,
@@ -397,11 +404,9 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     projectFirstUxEnabled && props.selectedProjectId
       ? computeProjectHistoryRows(props.workspaceSnapshots ?? [], props.selectedProjectId)
       : [];
-  const latestProject = projectFirstUxEnabled
-    ? computeLatestProject(props.workspaceProjects ?? [])
-    : null;
+  const latestProject = projectFirstUxEnabled ? computeLatestProject(workspaceProjects) : null;
   const recentProjects = projectFirstUxEnabled
-    ? computeRecentProjects(props.workspaceProjects ?? [])
+    ? computeRecentProjects(workspaceProjects)
     : [];
   const handleRestoreProjectHistoryRow =
     projectFirstUxEnabled &&
@@ -471,6 +476,9 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
           void props.onResumeWorkspaceProjectById?.(projectId);
         })
       : undefined;
+  const handleOpenProjectCard = (projectId: string) => {
+    handleOpenRecentProject?.(projectId);
+  };
   const handleCopySelectedSessionId = async () => {
     if (!props.selectedSessionId) {
       return;
@@ -755,6 +763,93 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
           {recoveryCopy.workspace.trustNote}
         </p>
       </div>
+      <section
+        className="mx-2 mb-2 rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
+        data-testid="workspace-projects-surface"
+      >
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+              {scaffoldMessages.projects}
+            </p>
+            <h2 className="mt-1 text-2xl font-semibold text-gray-900">{scaffoldMessages.projects}</h2>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-1">
+              <button
+                type="button"
+                onClick={() => setProjectsViewMode('grid')}
+                className={`rounded px-3 py-1.5 text-sm font-medium ${
+                  projectsViewMode === 'grid'
+                    ? 'bg-gray-900 text-white'
+                    : 'text-gray-700 hover:bg-white'
+                }`}
+                data-testid="workspace-projects-grid-toggle"
+              >
+                {scaffoldMessages.gridView}
+              </button>
+              <button
+                type="button"
+                onClick={() => setProjectsViewMode('list')}
+                className={`rounded px-3 py-1.5 text-sm font-medium ${
+                  projectsViewMode === 'list'
+                    ? 'bg-gray-900 text-white'
+                    : 'text-gray-700 hover:bg-white'
+                }`}
+                data-testid="workspace-projects-list-toggle"
+              >
+                {scaffoldMessages.listView}
+              </button>
+            </div>
+            {props.onCreateWorkspaceProject ? (
+              <button
+                type="button"
+                onClick={() => void props.onCreateWorkspaceProject?.()}
+                disabled={hasProjectActionInFlight}
+                className="rounded bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-gray-300"
+                data-testid="workspace-projects-new-project-button"
+              >
+                {scaffoldMessages.newProject}
+              </button>
+            ) : null}
+          </div>
+        </div>
+        {workspaceProjects.length > 0 ? (
+          projectsViewMode === 'grid' ? (
+            <div
+              className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3"
+              data-testid="workspace-projects-grid"
+            >
+              {workspaceProjects.map((project) => (
+                <WorkspaceProjectCard
+                  key={project.id}
+                  project={project}
+                  viewMode="grid"
+                  onOpen={handleOpenProjectCard}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="mt-4 flex flex-col gap-3" data-testid="workspace-projects-list">
+              {workspaceProjects.map((project) => (
+                <WorkspaceProjectCard
+                  key={project.id}
+                  project={project}
+                  viewMode="list"
+                  onOpen={handleOpenProjectCard}
+                />
+              ))}
+            </div>
+          )
+        ) : (
+          <p
+            className="mt-4 rounded-lg border border-dashed border-gray-200 px-4 py-6 text-sm text-gray-500"
+            data-testid="workspace-projects-empty-state"
+          >
+            {scaffoldMessages.noProjects}
+          </p>
+        )}
+      </section>
       {historyAndDashboardContent}
     </div>
   );

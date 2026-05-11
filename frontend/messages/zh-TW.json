@@ -83,6 +83,8 @@
   "workspace": {
     "home": "首頁",
     "projects": "專案",
+    "gridView": "格狀顯示",
+    "listView": "列表顯示",
     "templates": "模板與社群",
     "recentProjects": "最近專案",
     "upgrade": "升級",
