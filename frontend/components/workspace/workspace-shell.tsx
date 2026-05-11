@@ -9,6 +9,7 @@ import WorkspaceSidebar, {
   type WorkspaceView,
 } from './workspace-sidebar';
 import WorkspaceProjectCard from './workspace-project-card';
+import WorkspaceTemplateCard from './workspace-template-card';
 import {
   computeDashboardSliceState,
   computeHistorySliceState,
@@ -132,6 +133,7 @@ interface WorkspaceShellProps {
   onSelectPublicProjectId?: (projectId: string) => void;
   onViewPublicWorkspaceProject?: () => Promise<void>;
   onForkPublicWorkspaceProject?: () => Promise<void>;
+  onForkPublicWorkspaceProjectById?: (projectId: string) => Promise<void>;
   snapshotListState?: 'idle' | 'loading' | 'ready' | 'error';
   snapshotActionState?:
     | 'idle'
@@ -356,14 +358,19 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const scaffoldMessages = getWorkspaceScaffoldMessages(locale);
   const [advancedDrawerOpen, setAdvancedDrawerOpen] = React.useState(false);
   const [projectsViewMode, setProjectsViewMode] = React.useState<'grid' | 'list'>('grid');
+  const [templateSearch, setTemplateSearch] = React.useState('');
   const homePromptInput = props.chatPromptInput ?? '';
   const trimmedHomePrompt = homePromptInput.trim();
+  const normalizedTemplateSearch = templateSearch.trim().toLowerCase();
   const isCreatingProjectFromPrompt = props.projectActionState === 'creating';
   const hasProjectActionInFlight =
     props.projectActionState === 'creating' ||
     props.projectActionState === 'opening' ||
     props.projectActionState === 'moving';
   const workspaceProjects = props.workspaceProjects ?? [];
+  const filteredTemplateProjects = (props.publicWorkspaceProjects ?? []).filter((project) =>
+    project.name.toLowerCase().includes(normalizedTemplateSearch),
+  );
   const shellState = computeWorkspaceShellState({
     isLoadingSessions: props.isLoadingSessions,
     sessionError: props.sessionError,
@@ -908,13 +915,51 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   );
 
   const templatesWorkspaceContent = (
-    <div className="flex flex-1 min-h-0 flex-col p-4" data-testid="workspace-templates-placeholder">
-      <div className="mx-auto w-full max-w-3xl rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-        <p className="text-sm font-semibold uppercase tracking-wide text-gray-500">
-          {scaffoldMessages.templates}
-        </p>
-        <h2 className="mt-3 text-2xl font-semibold text-gray-900">{scaffoldMessages.templates}</h2>
-        <p className="mt-2 text-sm text-gray-600">{scaffoldMessages.comingSoon}</p>
+    <div className="flex flex-1 min-h-0 flex-col p-4" data-testid="workspace-templates-view">
+      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+              {scaffoldMessages.templates}
+            </p>
+            <h2 className="mt-3 text-2xl font-semibold text-gray-900">{scaffoldMessages.templates}</h2>
+          </div>
+          <input
+            type="search"
+            value={templateSearch}
+            onChange={(event) => setTemplateSearch(event.target.value)}
+            placeholder={scaffoldMessages.search}
+            aria-label={scaffoldMessages.search}
+            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 md:max-w-xs"
+            data-testid="workspace-templates-search"
+          />
+        </div>
+        {filteredTemplateProjects.length > 0 ? (
+          <div
+            className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3"
+            data-testid="workspace-templates-grid"
+          >
+            {filteredTemplateProjects.map((project) => (
+              <WorkspaceTemplateCard
+                key={project.id}
+                project={project}
+                onFork={(projectId) => {
+                  void props.onForkPublicWorkspaceProjectById?.(projectId);
+                }}
+                isForking={props.publicProjectActionState === 'forking'}
+                forkLabel={scaffoldMessages.fork}
+                forkingLabel={scaffoldMessages.forking}
+              />
+            ))}
+          </div>
+        ) : (
+          <p
+            className="mt-6 rounded-lg border border-dashed border-gray-200 px-4 py-6 text-sm text-gray-500"
+            data-testid="workspace-templates-empty-state"
+          >
+            {scaffoldMessages.noTemplates}
+          </p>
+        )}
       </div>
     </div>
   );

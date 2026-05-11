@@ -2681,6 +2681,41 @@ export default function AppPage() {
     }
   }
 
+  async function handleForkPublicWorkspaceProjectById(projectId: string): Promise<void> {
+    if (!userId) {
+      return;
+    }
+
+    const normalizedProjectId = projectId.trim();
+    if (!normalizedProjectId) {
+      return;
+    }
+
+    setPublicProjectActionState('forking');
+    setPublicProjectActionMessage(null);
+    setPublicProjectActionError(null);
+
+    try {
+      const forked = await forkPublicWorkspaceProject({
+        projectId: normalizedProjectId,
+      });
+      await loadWorkspaceProjectsForUser();
+      await loadPublicWorkspaceProjectsList();
+      setPublicProjectActionState('success');
+      setPublicProjectActionMessage('Project forked to your private project list.');
+      setPublicProjectActionError(null);
+      await handleResumeWorkspaceProjectById(forked.id);
+    } catch (error) {
+      setPublicProjectActionState('error');
+      setPublicProjectActionMessage(null);
+      setPublicProjectActionError(
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : 'Failed to fork project.',
+      );
+    }
+  }
+
   function handleCheckpointDescriptionChange(value: string): void {
     setCheckpointDescriptionInput(value);
     setCheckpointCreateError(null);
@@ -5253,6 +5288,7 @@ export default function AppPage() {
       onSelectPublicProjectId={handleSelectPublicProject}
       onViewPublicWorkspaceProject={handleViewPublicWorkspaceProject}
       onForkPublicWorkspaceProject={handleForkPublicWorkspaceProject}
+      onForkPublicWorkspaceProjectById={handleForkPublicWorkspaceProjectById}
       workspaceSnapshots={workspaceSnapshots}
       selectedSnapshotId={selectedSnapshotId}
       onSelectSnapshotId={handleSnapshotSelection}

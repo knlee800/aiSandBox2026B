@@ -15,7 +15,7 @@ import type { WorkspaceExecState } from './workspace-exec.logic';
 import type { WorkspacePreviewState } from './workspace-preview.logic';
 import type { WorkspaceFileNode } from './workspace-file-navigation.logic';
 import type { WorkspaceCheckpointDiffResponse } from './workspace-checkpoint-diff.logic';
-import type { WorkspaceProjectSummary } from './workspace-projects.logic';
+import type { WorkspaceProjectSummary, WorkspacePublicProjectSummary } from './workspace-projects.logic';
 import type { WorkspaceSnapshotSummary } from './workspace-snapshots.logic';
 import type { Workspace } from './workspace-workspaces.logic';
 
@@ -78,6 +78,22 @@ const projectsViewProjects: WorkspaceProjectSummary[] = [
     name: 'Support Portal',
     visibility: 'public',
     workspaceId: 'workspace-1',
+    createdAt: '2026-05-09T10:00:00.000Z',
+    updatedAt: '2026-05-11T08:00:00.000Z',
+  },
+];
+const templatesViewProjects: WorkspacePublicProjectSummary[] = [
+  {
+    id: 'template-view-1',
+    name: 'Starter CRM',
+    visibility: 'public',
+    createdAt: '2026-05-10T10:00:00.000Z',
+    updatedAt: '2026-05-11T09:00:00.000Z',
+  },
+  {
+    id: 'template-view-2',
+    name: 'Marketplace Clone',
+    visibility: 'public',
     createdAt: '2026-05-09T10:00:00.000Z',
     updatedAt: '2026-05-11T08:00:00.000Z',
   },
@@ -952,6 +968,105 @@ describe('workspace shell component', () => {
     recentProjectButton.props.onClick?.();
     assert.equal(resumeCalls, 1);
     assert.equal(resumedProjectId, 'projects-view-1');
+  });
+
+  test('renders template cards in templates view when public projects exist', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'templates',
+      publicWorkspaceProjects: templatesViewProjects,
+    });
+
+    assert.match(html, /workspace-templates-view/);
+    assert.match(html, /workspace-templates-grid/);
+    assert.match(html, /workspace-template-card-template-view-1/);
+    assert.match(html, /workspace-template-card-template-view-2/);
+  });
+
+  test('renders template project names in template cards', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'templates',
+      publicWorkspaceProjects: templatesViewProjects,
+    });
+
+    assert.match(html, /Starter CRM/);
+    assert.match(html, /Marketplace Clone/);
+  });
+
+  test('renders empty state in templates view when no public projects exist', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'templates',
+      publicWorkspaceProjects: [],
+    });
+
+    assert.match(html, /workspace-templates-empty-state/);
+    assert.match(html, />No templates available\.</);
+  });
+
+  test('renders search input in templates view', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'templates',
+      publicWorkspaceProjects: templatesViewProjects,
+    });
+
+    assert.match(html, /workspace-templates-search/);
+    assert.match(html, /placeholder="Search"/);
+  });
+
+  test('clicking fork on a template card calls onForkPublicWorkspaceProjectById with project id', () => {
+    let forkCalls = 0;
+    let forkedProjectId: string | null = null;
+    const forkButton = renderWorkspaceShellElementByTestId(
+      'workspace-template-card-fork-template-view-2',
+      {
+        projectFirstUxEnabled: true,
+        workspaceView: 'templates',
+        publicWorkspaceProjects: templatesViewProjects,
+        onForkPublicWorkspaceProjectById: async (projectId: string) => {
+          forkCalls += 1;
+          forkedProjectId = projectId;
+        },
+      },
+    );
+
+    assert.ok(forkButton);
+    forkButton.props.onClick?.();
+    assert.equal(forkCalls, 1);
+    assert.equal(forkedProjectId, 'template-view-2');
+  });
+
+  test('search filter hides non-matching template cards if testable', () => {
+    const originalUseState = React.useState;
+    let useStateCalls = 0;
+
+    (React as typeof React & { useState: typeof React.useState }).useState = ((initialState: unknown) => {
+      useStateCalls += 1;
+      if (useStateCalls === 3) {
+        return ['market', () => {}];
+      }
+      const value = typeof initialState === 'function' ? (initialState as () => unknown)() : initialState;
+      return [value, () => {}];
+    }) as unknown as typeof React.useState;
+
+    try {
+      const html = renderToStaticMarkup(
+        <WorkspaceShell
+          {...buildWorkspaceShellProps({
+            projectFirstUxEnabled: true,
+            workspaceView: 'templates',
+            publicWorkspaceProjects: templatesViewProjects,
+          })}
+        />,
+      );
+
+      assert.match(html, /workspace-template-card-template-view-2/);
+      assert.doesNotMatch(html, /workspace-template-card-template-view-1/);
+    } finally {
+      (React as typeof React & { useState: typeof React.useState }).useState = originalUseState;
+    }
   });
 
   test('clicking logout calls onLogout when provided', () => {

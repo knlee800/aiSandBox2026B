@@ -19393,7 +19393,7 @@ REL-02-01 deployment rehearsal passed, but concrete runbook mismatches were foun
 
 ## UX-01 ??Manual UX/UI Acceptance
 
-**Family status:** ACTIVE
+**Family status:** COMPLETE and LOCKED
 
 ---
 
@@ -21954,9 +21954,9 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 
 ## UX-IA ??Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 pending
+**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 pending
 
-**Current stage:** UX-IA-06 — Templates / Community View (pending; not yet started)
+**Current stage:** UX-IA-07 — Account Menu + Settings + Language/Theme (pending; not yet started)
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -21971,7 +21971,8 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
    - UX-IA-04B — Home view chatbox + prompt-to-project flow (COMPLETE and LOCKED — `docs/UX-IA-04B-CHECKPOINT.md`)
    - UX-IA-04C — Tests + validation + consolidation (COMPLETE and LOCKED — `docs/UX-IA-04-CHECKPOINT.md`)
 6. UX-IA-05 — Projects Grid/List + Recent Projects (COMPLETE and LOCKED — `docs/UX-IA-05-CHECKPOINT.md`)
-7. UX-IA-06 through UX-IA-17 — pending (see master spec for full list)
+7. UX-IA-06 — Templates / Community View (COMPLETE and LOCKED — docs/UX-IA-06-CHECKPOINT.md)
+8. UX-IA-07 through UX-IA-17 — pending (see master spec for full list)
 
 ---
 
@@ -22502,6 +22503,84 @@ Build the Projects view with project cards in grid/list form. Make sidebar recen
 - No regressions to AUTH-APP-01/02 or PROJ-02 hydration chain
 
 **Reference:** See TASKS.md -> UX-IA-05. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-05 section.
+
+---
+
+### UX-IA-06: Templates / Community View
+
+**Task ID:** UX-IA-06
+**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED — `docs/UX-IA-06-CHECKPOINT.md`
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-06 section
+**Depends on:** UX-IA-05 (COMPLETE and LOCKED — `docs/UX-IA-05-CHECKPOINT.md`)
+**Risk:** Low
+**Loop:** 3-step (implement — verify tests — consolidate)
+**Model:** Sonnet 4.6
+
+**Objective:**
+Templates view shows public/community projects with search and fork capability. Reuse existing `loadPublicWorkspaceProjects` data and public project state. Reuse existing `onForkPublicWorkspaceProject` and `onViewPublicWorkspaceProject` handlers where already available. Add template/project card UI reusing `WorkspaceProjectCard` if safe; extend or create new card component only if the prop contract is insufficient. Add search/filter UI if safe in this slice (local state only; no new backend endpoints). Forking a public project creates a copy in user's workspace and opens project mode using the existing handler flow. Preserve all UX-IA-04 sidebar/home/project view scaffolding and UX-IA-05 project grid/list behavior unchanged.
+
+**Bounded scope:**
+- `frontend/components/workspace/workspace-shell.tsx` — replace Templates view placeholder with public project browsing surface; wire `loadPublicWorkspaceProjects`, `onForkPublicWorkspaceProject`, `onViewPublicWorkspaceProject`
+- `frontend/components/workspace/workspace-project-card.tsx` — reuse for template cards if prop contract is compatible; extend only if props are insufficient; create new template card component only if `WorkspaceProjectCard` cannot be safely adapted
+- `frontend/components/workspace/workspace-shell.test.tsx` — tests for templates view render, template card display, fork action handler invocation, search/filter behavior if included
+- `frontend/messages/en.json` — add any new `workspace.templates*` i18n keys required for new user-facing strings
+- `frontend/messages/zh-TW.json` — same
+- `frontend/messages/zh-CN.json` — same
+- Possibly: `frontend/app/[locale]/app/page.tsx` — only if `onForkPublicWorkspaceProject` or `onViewPublicWorkspaceProject` handler wiring is confirmed missing from existing `WorkspaceShell` props
+
+**Required behavior:**
+- Templates view shows public project cards for all results from `loadPublicWorkspaceProjects`
+- Fork button on each card calls `onForkPublicWorkspaceProject`; on success, forked project opens in project mode
+- View button (if present) calls `onViewPublicWorkspaceProject` to open the public project in read-only view
+- Search/filter field filters visible cards by project name (local state; no backend call required)
+- Empty state shown when no public projects are available
+- All new user-facing strings use `useTranslations` i18n keys; no hardcoded English
+
+**Non-goals:**
+- No template creation system
+- No curation or admin system
+- No account menu (UX-IA-07)
+- No project mode shell or tab system (UX-IA-08/10/11)
+- No backend or API changes
+- No auth changes
+- No route cleanup (UX-IA-14)
+- No responsive/mobile work (UX-IA-13)
+- No broad refactor of AI-WS, preview, or file logic
+- No new i18n namespaces; add under existing `workspace.*` namespace only
+
+**Dependencies:**
+- UX-IA-05 (COMPLETE and LOCKED): `WorkspaceProjectCard`, `WorkspaceView` state, sidebar + right content layout, projects view grid/list; all invariants locked
+- `loadPublicWorkspaceProjects` function present in existing logic layer (`workspace-projects.logic.ts`)
+- `onForkPublicWorkspaceProject` and `onViewPublicWorkspaceProject` expected from existing public project handler flow; confirm exact prop availability in `WorkspaceShell` before implementation
+
+**Risks / invariants:**
+- Fork action must route through existing project-open hydration chain (PROJ-02-01 `hydrateWorkspaceForProjectOpen` + `projectOpenInProgressRef` guard); do not introduce a new project-open race surface
+- Reuse `WorkspaceProjectCard` if prop contract is compatible; only extend or add a new template card component if the existing component cannot be safely adapted
+- Search/filter: include in this slice only if implementable with local component state and no new backend endpoints; defer if complexity is higher than expected
+- All new strings must use i18n keys; add under `workspace.*` namespace; no hardcoded English
+- Preserve UX-IA-04 sidebar, Home view, project-mode behavior, and UX-IA-05 Projects view behavior unchanged
+- Do not alter `HistoryProjectPanel`, snapshot panel, or any PROJ-02-01 hydration chain behavior
+
+**Acceptance checks:**
+- UX-IA-06 registered in TASKS.md and TASKS_BACKLOG_FULL.md
+- Templates view shows public project cards using `loadPublicWorkspaceProjects` data
+- Fork action calls existing `onForkPublicWorkspaceProject` handler; forked project opens in project mode
+- View action calls `onViewPublicWorkspaceProject` if included
+- Search/filter UI present if included in slice
+- All new user-facing strings use i18n keys
+- `npx tsc --noEmit` passes (from `frontend/`)
+- `npm test` passes with new test cases (from `frontend/`)
+- `npm run build` passes (from `frontend/`)
+- No regressions to UX-IA-04 sidebar, Home view, or project-mode behavior
+- No regressions to UX-IA-05 Projects view
+- No regressions to AUTH-APP-01/02 or PROJ-02 hydration chain
+
+**Checkpoint:** `docs/UX-IA-06-CHECKPOINT.md`
+
+**Reference:** See TASKS.md -> UX-IA-06. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-06 section.
 
 ---
 

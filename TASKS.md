@@ -1,4 +1,4 @@
-## Authority & Scope
+﻿## Authority & Scope
 
 This file lists currently ACTIVE and SELECTED tasks.
 
@@ -12037,9 +12037,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## UX-IA �X Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 pending
+**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 pending
 
-**Current stage:** UX-IA-06 — Templates / Community View (pending; not yet started)
+**Current stage:** UX-IA-07 — Account Menu + Settings + Language/Theme (pending; not yet started)
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -12054,7 +12054,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
    - UX-IA-04B — Home view chatbox + prompt-to-project flow (COMPLETE and LOCKED — `docs/UX-IA-04B-CHECKPOINT.md`)
    - UX-IA-04C — Tests + validation + consolidation (COMPLETE and LOCKED — `docs/UX-IA-04-CHECKPOINT.md`)
 6. UX-IA-05 — Projects Grid/List + Recent Projects (COMPLETE and LOCKED — `docs/UX-IA-05-CHECKPOINT.md`)
-7. UX-IA-06 �X Templates / Community View (pending)
+7. UX-IA-06 — Templates / Community View (COMPLETE and LOCKED — docs/UX-IA-06-CHECKPOINT.md)
 8. UX-IA-07 �X Account Menu + Settings + Language/Theme (pending)
 9. UX-IA-08 �X Project Mode Shell (pending)
 10. UX-IA-09 �X Project AI + History Panel (pending)
@@ -12434,6 +12434,71 @@ Build the Projects view with project cards in grid/list form. Make sidebar recen
 - No regressions to AUTH-APP-01/02 or PROJ-02 hydration chain
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-05. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-05 section.
+
+---
+
+#### UX-IA-06: Templates / Community View
+
+**Status:** COMPLETE and LOCKED — `docs/UX-IA-06-CHECKPOINT.md`
+**Task ID:** UX-IA-06
+**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-06 section
+**Depends on:** UX-IA-05 (COMPLETE and LOCKED — `docs/UX-IA-05-CHECKPOINT.md`)
+**Risk:** Low
+**Loop:** 3-step (implement — verify tests — consolidate)
+**Model:** Sonnet 4.6
+
+**Objective:**
+Templates view shows public/community projects with search and fork capability. Reuse existing `loadPublicWorkspaceProjects` data and public project state. Reuse existing `onForkPublicWorkspaceProject` and `onViewPublicWorkspaceProject` handlers where already available. Add template/project card UI reusing `WorkspaceProjectCard` if safe; extend or create new card component only if the prop contract is insufficient. Add search/filter UI if safe in this slice (local state only; no new backend endpoints). Forking a public project creates a copy in user's workspace and opens project mode using the existing handler flow. Preserve all UX-IA-04 and UX-IA-05 sidebar/home/project/projects-view scaffolding.
+
+**Bounded scope:**
+- `frontend/components/workspace/workspace-shell.tsx` — replace Templates view placeholder with public project browsing surface; wire `loadPublicWorkspaceProjects`, `onForkPublicWorkspaceProject`, `onViewPublicWorkspaceProject`
+- `frontend/components/workspace/workspace-project-card.tsx` — reuse for template cards if prop contract is compatible; extend only if props are insufficient; create new template card component only if `WorkspaceProjectCard` cannot be safely adapted
+- `frontend/components/workspace/workspace-shell.test.tsx` — tests for templates view render, template card display, fork action handler invocation, search/filter behavior if included
+- `frontend/messages/en.json` — add any new `workspace.templates*` i18n keys required for new user-facing strings
+- `frontend/messages/zh-TW.json` — same
+- `frontend/messages/zh-CN.json` — same
+- Possibly: `frontend/app/[locale]/app/page.tsx` — only if `onForkPublicWorkspaceProject` or `onViewPublicWorkspaceProject` handler wiring is confirmed missing from existing `WorkspaceShell` props
+
+**Non-goals:**
+- No template creation system
+- No curation or admin system
+- No account menu (UX-IA-07)
+- No project mode shell or tab system (UX-IA-08/10/11)
+- No backend or API changes
+- No auth changes
+- No route cleanup (UX-IA-14)
+- No responsive/mobile work (UX-IA-13)
+- No broad refactor of AI-WS, preview, or file logic
+
+**Dependencies:**
+- UX-IA-05 (COMPLETE and LOCKED): `WorkspaceProjectCard`, `WorkspaceView` state, sidebar + right content layout, projects view grid/list; all invariants locked
+- `loadPublicWorkspaceProjects` present in existing logic layer
+- `onForkPublicWorkspaceProject` and `onViewPublicWorkspaceProject` expected from existing public project handler flow; confirm exact prop availability in `WorkspaceShell` before implementation
+
+**Risks / invariants:**
+- Fork action must route through existing project-open hydration chain (PROJ-02-01); do not introduce a new project-open race surface
+- Reuse `WorkspaceProjectCard` if prop contract is compatible; only extend or add a new template card component if the existing component cannot be safely adapted
+- Search/filter: include in this slice only if implementable with local component state and no new backend endpoints; defer if complexity is higher than expected
+- All new user-facing strings must use i18n keys; add under `workspace.*` namespace; no hardcoded English
+- Preserve UX-IA-04 and UX-IA-05 sidebar, Home view, Projects view, and project-mode behavior unchanged
+
+**Acceptance checks:**
+- UX-IA-06 registered in TASKS.md and TASKS_BACKLOG_FULL.md
+- Templates view shows public project cards using `loadPublicWorkspaceProjects` data
+- Fork action calls existing fork handler; forked project opens in project mode
+- Search/filter UI present if included in slice
+- All new user-facing strings use i18n keys
+- `npx tsc --noEmit` passes (from `frontend/`)
+- `npm test` passes with new test cases (from `frontend/`)
+- `npm run build` passes (from `frontend/`)
+- No regressions to UX-IA-04 sidebar, Home view, or project-mode behavior
+- No regressions to UX-IA-05 Projects view
+- No regressions to AUTH-APP-01/02 or PROJ-02 hydration chain
+
+**Checkpoint:** `docs/UX-IA-06-CHECKPOINT.md`
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-06. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-06 section.
 
 ---
 
