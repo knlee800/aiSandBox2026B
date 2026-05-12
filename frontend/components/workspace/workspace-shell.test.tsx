@@ -936,6 +936,64 @@ describe('workspace shell component', () => {
     assert.match(html, /History &amp; Controls/);
   });
 
+  test('renders project mode header in project view', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+      workspaceProjects: projectsViewProjects,
+      selectedProjectId: 'projects-view-1',
+    });
+
+    assert.match(html, /workspace-project-mode-header/);
+    assert.match(html, /Invoice Dashboard/);
+  });
+
+  test('renders back button in project mode header', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+
+    assert.match(html, /workspace-project-back-button/);
+    assert.match(html, /Back/);
+  });
+
+  test('clicking back button calls onWorkspaceViewChange with projects', () => {
+    let changedView: string | null = null;
+    const backButton = renderWorkspaceShellElementByTestId(
+      'workspace-project-back-button',
+      {
+        projectFirstUxEnabled: true,
+        workspaceView: 'project',
+        onWorkspaceViewChange: (view) => {
+          changedView = view;
+        },
+      },
+    );
+
+    assert.ok(backButton, 'back button element should exist');
+    backButton.props.onClick?.();
+    assert.equal(changedView, 'projects');
+  });
+
+  test('renders AI panel zone in project view', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+
+    assert.match(html, /workspace-project-ai-panel/);
+  });
+
+  test('renders content panel zone in project view', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+
+    assert.match(html, /workspace-project-content-panel/);
+  });
+
   test('renders recent projects in project-first sidebar when workspaceProjects are provided', () => {
     const html = renderWorkspaceShell({
       projectFirstUxEnabled: true,

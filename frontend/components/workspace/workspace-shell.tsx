@@ -54,12 +54,21 @@ import type {
   WorkspacePublicProjectSummary,
 } from './workspace-projects.logic';
 import type { Workspace } from './workspace-workspaces.logic';
+import enMessages from '@/messages/en.json';
+import zhTwMessages from '@/messages/zh-TW.json';
+import zhCnMessages from '@/messages/zh-CN.json';
 
 const projectFirstUxAnchors = {
   enabled: PROJECT_FIRST_UX,
   copy: recoveryCopy,
 };
 void projectFirstUxAnchors;
+
+function getProjectModeBackLabel(locale: string): string {
+  if (locale === 'zh-TW') return zhTwMessages.common.back;
+  if (locale === 'zh-CN') return zhCnMessages.common.back;
+  return enMessages.common.back;
+}
 
 interface WorkspaceShellProps {
   locale?: string;
@@ -369,6 +378,11 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     props.projectActionState === 'opening' ||
     props.projectActionState === 'moving';
   const workspaceProjects = props.workspaceProjects ?? [];
+  const activeProject = props.selectedProjectId
+    ? workspaceProjects.find((p) => p.id === props.selectedProjectId) ?? null
+    : null;
+  const activeProjectName = activeProject?.name ?? '';
+  const backLabel = getProjectModeBackLabel(locale);
   const filteredTemplateProjects = (props.publicWorkspaceProjects ?? []).filter((project) =>
     project.name.toLowerCase().includes(normalizedTemplateSearch),
   );
@@ -658,104 +672,120 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     </>
   );
 
+  const projectTrustNote = (
+    <div className="px-2 pt-2">
+      <p
+        className="rounded border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-blue-800"
+        data-testid="workspace-trust-note"
+      >
+        {projectFirstUxEnabled
+          ? recoveryCopy.workspace.trustNote
+          : 'Workspace data is session-scoped. If a state fails, use the suggested retry action below.'}
+      </p>
+    </div>
+  );
+
+  const projectChatSection = (
+    <section className="bg-white border border-gray-200 rounded p-3" data-testid="chat-panel-shell">
+      <p className="text-xs font-semibold text-gray-700 mb-2">Chat Panel</p>
+      <WorkspaceChatPanel
+        projectFirstUxEnabled={projectFirstUxEnabled}
+        selectedSessionId={props.selectedSessionId}
+        promptInput={props.chatPromptInput ?? ''}
+        onPromptInputChange={props.onChatPromptInputChange}
+        selectedModelOption={props.selectedModelOption ?? ''}
+        onSelectedModelOptionChange={props.onSelectedModelOptionChange}
+        availableModelOptions={props.availableModelOptions ?? []}
+        orchestrationEnabled={props.orchestrationEnabled ?? false}
+        onOrchestrationEnabledChange={props.onOrchestrationEnabledChange}
+        onSubmitPrompt={props.onSubmitChatPrompt}
+        requestState={props.chatRequestState ?? 'idle'}
+        executionId={props.chatExecutionId ?? null}
+        statusMessage={props.chatStatusMessage ?? null}
+        responseText={props.chatResponseText ?? ''}
+        errorMessage={props.chatError ?? null}
+        threadMessages={props.chatThreadMessages ?? []}
+        onConfirmExecutionFileActions={props.onConfirmExecutionFileActions}
+        onCancelExecutionFileActions={props.onCancelExecutionFileActions}
+      />
+      <p className="text-xs font-semibold text-gray-700 mb-2">Command Input</p>
+      <WorkspaceExecPanel
+        projectFirstUxEnabled={projectFirstUxEnabled}
+        canReopenProject={canReopenProject}
+        onReopenProject={canReopenProject ? handleReopenProject : undefined}
+        selectedSessionId={props.selectedSessionId}
+        commandInput={props.commandInput}
+        onCommandInputChange={props.onCommandInputChange}
+        onExecuteCommand={props.onExecuteCommand}
+        execState={props.execState}
+      />
+      <WorkspaceBuildPanel
+        projectFirstUxEnabled={projectFirstUxEnabled}
+        selectedSessionId={props.selectedSessionId}
+        selectedBuildTarget={props.selectedBuildTarget ?? ''}
+        onSelectedBuildTargetChange={props.onSelectedBuildTargetChange}
+        availableBuildTargets={props.availableBuildTargets ?? []}
+        onRunBuildTarget={props.onRunBuildTarget}
+        buildRequestState={props.buildRequestState ?? 'idle'}
+        buildStatusMessage={props.buildStatusMessage ?? null}
+        buildOutput={props.buildOutput ?? ''}
+        buildError={props.buildError ?? null}
+      />
+      <div className="mt-3">
+        <ShellStateMessage
+          state={shellState}
+          sessionError={props.sessionError}
+          projectFirstUxEnabled={projectFirstUxEnabled}
+          canReopenProject={canReopenProject}
+          onReopenProject={canReopenProject ? handleReopenProject : undefined}
+          onResumeLatestProject={handleResumeLatestProject}
+        />
+      </div>
+    </section>
+  );
+
+  const projectEditorSection = (
+    <section className="bg-white border border-gray-200 rounded p-3" data-testid="editor-panel-shell">
+      <p className="text-xs font-semibold text-gray-700 mb-2">Editor Panel</p>
+      <WorkspaceEditorPanel
+        projectFirstUxEnabled={projectFirstUxEnabled}
+        state={props.fileSurfaceState}
+        fileTree={props.workspaceFileTree}
+        selectedFilePath={props.selectedFilePath}
+        selectedFileContent={props.selectedFileContent}
+        saveState={props.fileSaveState}
+        saveErrorMessage={props.fileSaveError}
+        errorMessage={props.fileSurfaceError}
+        onSelectFile={props.onSelectWorkspaceFile}
+        onEditorContentChange={props.onEditorContentChange}
+        onSaveFile={props.onSaveWorkspaceFile}
+      />
+    </section>
+  );
+
+  const projectPreviewSection = (
+    <section className="bg-white border border-gray-200 rounded p-3" data-testid="preview-panel-shell">
+      <p className="text-xs font-semibold text-gray-700 mb-2">Preview Panel</p>
+      <WorkspacePreviewPanel
+        projectFirstUxEnabled={projectFirstUxEnabled}
+        selectedSessionId={props.selectedSessionId}
+        previewState={props.previewState}
+        previewUrl={props.previewUrl}
+        onStartPreview={props.onStartPreview}
+        onRefreshPreview={props.onRefreshPreview}
+        onPreviewLoad={props.onPreviewLoad}
+        onPreviewError={props.onPreviewError}
+      />
+    </section>
+  );
+
   const projectWorkspaceContent = (
     <>
-      <div className="px-2 pt-2">
-        <p
-          className="rounded border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-blue-800"
-          data-testid="workspace-trust-note"
-        >
-          {projectFirstUxEnabled
-            ? recoveryCopy.workspace.trustNote
-            : 'Workspace data is session-scoped. If a state fails, use the suggested retry action below.'}
-        </p>
-      </div>
+      {projectTrustNote}
       <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 p-2">
-        <section className="bg-white border border-gray-200 rounded p-3" data-testid="chat-panel-shell">
-          <p className="text-xs font-semibold text-gray-700 mb-2">Chat Panel</p>
-          <WorkspaceChatPanel
-            projectFirstUxEnabled={projectFirstUxEnabled}
-            selectedSessionId={props.selectedSessionId}
-            promptInput={props.chatPromptInput ?? ''}
-            onPromptInputChange={props.onChatPromptInputChange}
-            selectedModelOption={props.selectedModelOption ?? ''}
-            onSelectedModelOptionChange={props.onSelectedModelOptionChange}
-            availableModelOptions={props.availableModelOptions ?? []}
-            orchestrationEnabled={props.orchestrationEnabled ?? false}
-            onOrchestrationEnabledChange={props.onOrchestrationEnabledChange}
-            onSubmitPrompt={props.onSubmitChatPrompt}
-            requestState={props.chatRequestState ?? 'idle'}
-            executionId={props.chatExecutionId ?? null}
-            statusMessage={props.chatStatusMessage ?? null}
-            responseText={props.chatResponseText ?? ''}
-            errorMessage={props.chatError ?? null}
-            threadMessages={props.chatThreadMessages ?? []}
-            onConfirmExecutionFileActions={props.onConfirmExecutionFileActions}
-            onCancelExecutionFileActions={props.onCancelExecutionFileActions}
-          />
-          <p className="text-xs font-semibold text-gray-700 mb-2">Command Input</p>
-          <WorkspaceExecPanel
-            projectFirstUxEnabled={projectFirstUxEnabled}
-            canReopenProject={canReopenProject}
-            onReopenProject={canReopenProject ? handleReopenProject : undefined}
-            selectedSessionId={props.selectedSessionId}
-            commandInput={props.commandInput}
-            onCommandInputChange={props.onCommandInputChange}
-            onExecuteCommand={props.onExecuteCommand}
-            execState={props.execState}
-          />
-          <WorkspaceBuildPanel
-            projectFirstUxEnabled={projectFirstUxEnabled}
-            selectedSessionId={props.selectedSessionId}
-            selectedBuildTarget={props.selectedBuildTarget ?? ''}
-            onSelectedBuildTargetChange={props.onSelectedBuildTargetChange}
-            availableBuildTargets={props.availableBuildTargets ?? []}
-            onRunBuildTarget={props.onRunBuildTarget}
-            buildRequestState={props.buildRequestState ?? 'idle'}
-            buildStatusMessage={props.buildStatusMessage ?? null}
-            buildOutput={props.buildOutput ?? ''}
-            buildError={props.buildError ?? null}
-          />
-          <div className="mt-3">
-            <ShellStateMessage
-              state={shellState}
-              sessionError={props.sessionError}
-              projectFirstUxEnabled={projectFirstUxEnabled}
-              canReopenProject={canReopenProject}
-              onReopenProject={canReopenProject ? handleReopenProject : undefined}
-              onResumeLatestProject={handleResumeLatestProject}
-            />
-          </div>
-        </section>
-        <section className="bg-white border border-gray-200 rounded p-3" data-testid="editor-panel-shell">
-          <p className="text-xs font-semibold text-gray-700 mb-2">Editor Panel</p>
-          <WorkspaceEditorPanel
-            projectFirstUxEnabled={projectFirstUxEnabled}
-            state={props.fileSurfaceState}
-            fileTree={props.workspaceFileTree}
-            selectedFilePath={props.selectedFilePath}
-            selectedFileContent={props.selectedFileContent}
-            saveState={props.fileSaveState}
-            saveErrorMessage={props.fileSaveError}
-            errorMessage={props.fileSurfaceError}
-            onSelectFile={props.onSelectWorkspaceFile}
-            onEditorContentChange={props.onEditorContentChange}
-            onSaveFile={props.onSaveWorkspaceFile}
-          />
-        </section>
-        <section className="bg-white border border-gray-200 rounded p-3" data-testid="preview-panel-shell">
-          <p className="text-xs font-semibold text-gray-700 mb-2">Preview Panel</p>
-          <WorkspacePreviewPanel
-            projectFirstUxEnabled={projectFirstUxEnabled}
-            selectedSessionId={props.selectedSessionId}
-            previewState={props.previewState}
-            previewUrl={props.previewUrl}
-            onStartPreview={props.onStartPreview}
-            onRefreshPreview={props.onRefreshPreview}
-            onPreviewLoad={props.onPreviewLoad}
-            onPreviewError={props.onPreviewError}
-          />
-        </section>
+        {projectChatSection}
+        {projectEditorSection}
+        {projectPreviewSection}
       </div>
       {historyAndDashboardContent}
     </>
@@ -1134,7 +1164,41 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
           {resolvedWorkspaceView === 'projects' ? projectsWorkspaceContent : null}
           {resolvedWorkspaceView === 'templates' ? templatesWorkspaceContent : null}
           {resolvedWorkspaceView === 'project' ? (
-            <div data-testid="workspace-project-view">{projectWorkspaceContent}</div>
+            <div data-testid="workspace-project-view" className="flex flex-1 min-h-0 flex-col">
+              <header
+                className="flex items-center gap-3 border-b border-gray-200 bg-white px-4 py-2"
+                data-testid="workspace-project-mode-header"
+              >
+                <button
+                  type="button"
+                  onClick={() => props.onWorkspaceViewChange?.('projects')}
+                  className="rounded px-2 py-1 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                  data-testid="workspace-project-back-button"
+                >
+                  &larr; {backLabel}
+                </button>
+                <h2 className="text-sm font-semibold text-gray-900 truncate">
+                  {activeProjectName}
+                </h2>
+              </header>
+              {projectTrustNote}
+              <div className="flex flex-1 min-h-0">
+                <aside
+                  className="w-full md:w-96 border-r border-gray-200 bg-white overflow-y-auto flex flex-col gap-2 p-2"
+                  data-testid="workspace-project-ai-panel"
+                >
+                  {projectChatSection}
+                  {historyAndDashboardContent}
+                </aside>
+                <main
+                  className="flex-1 min-w-0 overflow-y-auto flex flex-col gap-2 p-2"
+                  data-testid="workspace-project-content-panel"
+                >
+                  {projectEditorSection}
+                  {projectPreviewSection}
+                </main>
+              </div>
+            </div>
           ) : null}
         </main>
       </div>

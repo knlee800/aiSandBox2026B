@@ -21954,9 +21954,9 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 
 ## UX-IA ??Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 pending
+**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 ACTIVE — UX-IA-08A COMPLETE and LOCKED — UX-IA-08B ACTIVE
 
-**Current stage:** UX-IA-08 — Project Mode Shell (pending; not yet started)
+**Current stage:** UX-IA-08B — Tab Registry + Tab Bar + AI Panel Collapse (ACTIVE)
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -21972,8 +21972,12 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
    - UX-IA-04C — Tests + validation + consolidation (COMPLETE and LOCKED — `docs/UX-IA-04-CHECKPOINT.md`)
 6. UX-IA-05 — Projects Grid/List + Recent Projects (COMPLETE and LOCKED — `docs/UX-IA-05-CHECKPOINT.md`)
 7. UX-IA-06 — Templates / Community View (COMPLETE and LOCKED — docs/UX-IA-06-CHECKPOINT.md)
-8. UX-IA-07 — Account Menu + Settings + Language/Theme (COMPLETE and LOCKED — docs/UX-IA-07-CHECKPOINT.md)
-9. UX-IA-08 through UX-IA-17 — pending (see master spec for full list)
+8. UX-IA-07 — Account Menu + Settings + Language/Theme (COMPLETE and LOCKED — `docs/UX-IA-07-CHECKPOINT.md`)
+9. UX-IA-08 — Project Mode Shell (ACTIVE — child slices in progress)
+   - UX-IA-08A — Project Mode Layout Shell + Back Header (COMPLETE and LOCKED — `docs/UX-IA-08A-CHECKPOINT.md`)
+   - UX-IA-08B — Tab Registry + Tab Bar + AI Panel Collapse (ACTIVE)
+   - UX-IA-08C — Tests + Validation + Consolidation (PLANNED — depends on UX-IA-08B)
+10. UX-IA-09 through UX-IA-17 — pending (see master spec for full list)
 
 ---
 
@@ -22664,6 +22668,249 @@ Add account avatar in the workspace sidebar footer that opens a popup account me
 **Checkpoint:** `docs/UX-IA-07-CHECKPOINT.md`
 
 **Reference:** See TASKS.md -> UX-IA-07. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-07 section.
+
+---
+
+### UX-IA-08: Project Mode Shell (Parent)
+
+**Task ID:** UX-IA-08
+**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** ACTIVE — plan phase COMPLETE — child slices in progress
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-08 section
+**Depends on:** UX-IA-07 (COMPLETE and LOCKED — `docs/UX-IA-07-CHECKPOINT.md`)
+**Risk:** Medium-High
+**Model:** Opus 4.6 (UX-IA-08A, UX-IA-08B); Sonnet 4.6 (UX-IA-08C)
+
+**Objective:**
+When a project is opened, the workspace transforms into project mode: top project header with back button, left AI assistant panel, right tabbed workspace shell with tab registry and orientation toggle. Preserve all existing project open/resume/hydration behavior, AI chat/file action flows, and editor/preview/history behavior.
+
+**Plan decisions recorded:**
+- No `workspace-project-mode.tsx` extraction — project mode layout stays as conditional JSX in `workspace-shell.tsx` to avoid threading ~190 props through an intermediary
+- `page.tsx` does not need changes — back button uses existing `onWorkspaceViewChange('projects')` callback
+- Sidebar remains visible in project mode
+- Preview + Code tabs wired in UX-IA-08B using existing `WorkspacePreviewPanel` and `WorkspaceEditorPanel` (not deferred to UX-IA-10)
+- UX-IA-10 owns later full-height sizing, panel refinements, and file tree layout changes
+- Tab state is local to `WorkspaceShell` (`activeTabId` as `useState`; orientation and collapse preferences in localStorage with SSR guards)
+
+**Child slices:**
+- UX-IA-08A — Project Mode Layout Shell + Back Header (COMPLETE and LOCKED — `docs/UX-IA-08A-CHECKPOINT.md`)
+- UX-IA-08B — Tab Registry + Tab Bar + AI Panel Collapse (ACTIVE)
+- UX-IA-08C — Tests + Validation + Consolidation (PLANNED — depends on UX-IA-08B)
+
+**Checkpoint:** `docs/UX-IA-08-CHECKPOINT.md` (to be created after UX-IA-08C)
+
+**Reference:** See TASKS.md -> UX-IA-08. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-08 section.
+
+---
+
+### UX-IA-08A: Project Mode Layout Shell + Back Header
+
+**Task ID:** UX-IA-08A
+**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/UX-IA-08A-CHECKPOINT.md`
+**Parent:** UX-IA-08 — Project Mode Shell
+**Depends on:** UX-IA-08 plan phase COMPLETE; UX-IA-07 (COMPLETE and LOCKED)
+**Risk:** Medium-High
+**Loop:** 3-step (implement — verify tests — consolidate into parent)
+**Model:** Opus 4.6
+
+**Objective:**
+Restructure `projectWorkspaceContent` in `workspace-shell.tsx` from the current 3-column grid layout into the project-mode layout: top header bar (project name + back button), left AI panel zone, right content zone. Chat, exec, build, and history content move into the left AI panel zone. Editor and preview content move into the right content zone (stacked or side-by-side, no tabs yet). Back button calls `onWorkspaceViewChange('projects')`. No new props to `WorkspaceShellProps` or `page.tsx` changes.
+
+**Bounded scope:**
+- `frontend/components/workspace/workspace-shell.tsx` — restructure `projectWorkspaceContent` JSX into project-mode layout (header + left zone + right zone); back button wired to `props.onWorkspaceViewChange?.('projects')`
+- `frontend/components/workspace/workspace-shell.test.tsx` — update any assertions affected by layout change; add tests for project header, back button, AI panel zone, right content zone
+- `frontend/messages/en.json` — add `project.backToProjects` key if `common.back` alone is insufficient; no other new keys expected
+- `frontend/messages/zh-TW.json` — same
+- `frontend/messages/zh-CN.json` — same
+
+**Required behavior:**
+- When `workspaceView === 'project'`, renders: top header bar with back button + project name; left AI panel zone (~320px); right content zone (flex-1)
+- Back button calls `props.onWorkspaceViewChange?.('projects')`
+- Left AI panel zone contains: `WorkspaceChatPanel`, `WorkspaceExecPanel`, `WorkspaceBuildPanel`, `ShellStateMessage`, `historyAndDashboardContent`
+- Right content zone contains: `WorkspaceEditorPanel`, `WorkspacePreviewPanel` (stacked or side-by-side)
+- All existing sub-component testids remain present in the rendered output
+
+**Non-goals:**
+- No tab bar
+- No tab registry
+- No AI panel collapse/expand
+- No tab orientation toggle
+- No `page.tsx` changes
+- No new props on `WorkspaceShellProps`
+- No backend, API, or auth changes
+- No account menu changes
+- No broad refactor outside project-mode view branch
+
+**Dependencies:**
+- UX-IA-07 (COMPLETE and LOCKED): sidebar with account menu; all invariants locked
+- UX-IA-04 (COMPLETE and LOCKED): `WorkspaceView` state; `onWorkspaceViewChange` callback; `PROJ-02-01` hydration chain
+- All AI-WS handlers (AI-WS-01 through AI-WS-06 + all hotfixes): preserved as-is in left AI panel zone
+- `WorkspaceChatPanel`, `WorkspaceExecPanel`, `WorkspaceBuildPanel`, `historyAndDashboardContent` — moved into left zone; props unchanged
+- `WorkspaceEditorPanel`, `WorkspacePreviewPanel` — moved into right zone; props unchanged
+
+**Risks / invariants:**
+- `projectWorkspaceContent` is a JSX variable inside `WorkspaceShell`; restructuring it is purely a layout change with no prop interface impact
+- All existing sub-component testids (`workspace-chat-ai-panel`, `workspace-editor-panel`, `workspace-preview-panel`, etc.) must remain present in the rendered output
+- `workspace-project-view` testid wrapper must remain or be accounted for in updated tests
+- Must not break existing AI-WS chat, file actions, file confirmation, or execution polling flows
+- Must not add any `window.postMessage`-blocking wrapper around the preview iframe
+- All new user-facing strings must use i18n keys; `common.back` already exists
+
+**Tests to add/update:**
+- Update: `renders existing workspace content when project view is selected` — adjust if container structure changes
+- New: `renders project header in project mode layout` — `data-testid="workspace-project-header"` present
+- New: `renders back button in project header` — `data-testid="workspace-project-back-button"` present
+- New: `back button calls onWorkspaceViewChange with projects` — click fires handler
+- New: `renders AI panel zone in project mode layout` — `data-testid="workspace-project-ai-panel"` present
+- New: `renders right content zone in project mode layout` — `data-testid="workspace-project-right-zone"` present
+
+**Acceptance checks:**
+- Project header renders with back button when `workspaceView === 'project'`
+- Back button calls `onWorkspaceViewChange('projects')`
+- Left AI panel zone contains chat panel, exec panel, build panel, history content
+- Right content zone contains editor panel and preview panel
+- All existing sub-component testids still render inside project view
+- All user-facing strings use i18n keys
+- `npx tsc --noEmit` passes (from `frontend/`)
+- `npm test` passes with new/updated test cases (from `frontend/`)
+- `npm run build` passes (from `frontend/`)
+- No regressions to UX-IA-04 through UX-IA-07, AUTH-APP-01/02, or PROJ-02 hydration chain
+
+**Reference:** See TASKS.md -> UX-IA-08A. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-08 section.
+
+---
+
+### UX-IA-08B: Tab Registry + Tab Bar + AI Panel Collapse
+
+**Task ID:** UX-IA-08B
+**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** ACTIVE
+**Parent:** UX-IA-08 — Project Mode Shell
+**Depends on:** UX-IA-08A (COMPLETE and LOCKED — `docs/UX-IA-08A-CHECKPOINT.md`)
+**Risk:** Medium
+**Loop:** 3-step (implement — verify tests — consolidate into parent)
+**Model:** Opus 4.6
+
+**Objective:**
+Create the `TabDefinition` interface and `TAB_REGISTRY` array. Create a `WorkspaceTabBar` presentational component. In the right content zone from UX-IA-08A, replace the stacked editor+preview with a tab bar at the top plus active tab content area. Wire the Preview tab to the existing `WorkspacePreviewPanel`; wire the Code & Files tab to the existing `WorkspaceEditorPanel`. All remaining tabs show "Coming soon" placeholder (`tabs.comingSoon`). Add AI panel collapse/expand toggle with localStorage persistence. Add tab orientation preference (horizontal/vertical) with localStorage persistence.
+
+**Bounded scope:**
+- `frontend/components/workspace/workspace-tab-registry.ts` — **new** — `TabDefinition` interface; `TAB_REGISTRY` array with all tabs from master spec
+- `frontend/components/workspace/workspace-tab-bar.tsx` — **new** — presentational tab bar component; receives `tabs`, `activeTabId`, `orientation`, `onTabChange`, `onOrientationToggle` as props; no Next.js hooks
+- `frontend/components/workspace/workspace-shell.tsx` — import tab registry and tab bar; replace right content zone with tab bar + active tab content; add `activeTabId` state; add `tabOrientation` localStorage preference (SSR-guarded); add `aiPanelCollapsed` localStorage preference (SSR-guarded); add AI panel collapse toggle button
+- `frontend/components/workspace/workspace-shell.test.tsx` — add `buildWorkspaceTabBarProps` + `renderWorkspaceTabBar` helpers; add tests for tab bar, active tab content, placeholders, orientation toggle, AI panel collapse
+- `frontend/messages/en.json` — add `project.collapsePanel` and `project.expandPanel` keys if not already present; all `tabs.*` keys already exist
+- `frontend/messages/zh-TW.json` — same
+- `frontend/messages/zh-CN.json` — same
+
+**Required behavior:**
+- Tab bar renders all tabs from `TAB_REGISTRY`
+- Active tab is `preview` by default; clicking a tab updates `activeTabId` state
+- Preview tab content: renders `WorkspacePreviewPanel` with existing props
+- Code & Files tab content: renders `WorkspaceEditorPanel` with existing props
+- All other tabs: render "Coming soon" text using `tabs.comingSoon` i18n key
+- Tab orientation toggle: switches between `horizontal` (tab bar at top of right zone) and `vertical` (tab bar on left edge of right zone); preference saved to localStorage
+- AI panel collapse toggle: collapses left AI panel to icon strip (~48px) or expands to full width (~320px); preference saved to localStorage
+
+**Non-goals:**
+- No full-height panel sizing or file tree layout refinements (belongs to UX-IA-10)
+- No functional tab content for Database/Auth/Security/Analytics/Env Var/Payment/Domain/App Storage/Agent Skills
+- No `page.tsx` changes
+- No new props on `WorkspaceShellProps`
+- No backend, API, or auth changes
+- No account menu changes
+
+**Design decisions locked (from plan phase):**
+- `workspace-project-mode.tsx` is NOT created — all logic stays in `workspace-shell.tsx`
+- Preview + Code tabs wired to existing panels; UX-IA-10 handles sizing/refinements
+- Tab state is local to `WorkspaceShell` (`useState`); no new props passed through
+- All localStorage reads SSR-guarded with `typeof window !== 'undefined'`
+
+**Risks / invariants:**
+- All localStorage reads must be SSR-guarded; test renders use `withPatchedReactHooks` which stubs `useState` returning initial values
+- Preview iframe must not be wrapped in any additional layer that blocks pointer events or `window.postMessage` (UX-IA-15 constraint)
+- All AI-WS chat, file actions, file confirmation, and execution polling flows must continue to function with panels inside tab content
+- `WorkspaceTabBar` is presentational with no Next.js hooks; safe to use with `renderToStaticMarkup`
+
+**Tests to add/update:**
+- New test helpers: `buildWorkspaceTabBarProps(overrides)`, `renderWorkspaceTabBar(overrides)`
+- New: `renders tab bar in project mode right content zone` — `data-testid="workspace-tab-bar"` present
+- New: `renders Preview tab in tab bar`
+- New: `renders Code & Files tab in tab bar`
+- New: `renders placeholder tabs with Coming soon text`
+- New: `active tab is Preview by default`
+- New: `active tab content shows preview panel when Preview tab is active`
+- New: `active tab content shows editor panel when Code tab is active`
+- New: `tab orientation toggle renders`
+- New: `AI panel collapse toggle renders`
+
+**Acceptance checks:**
+- Tab bar renders all registered tabs
+- Preview and Code & Files tabs render existing panel content when active
+- All other tabs show "Coming soon" (i18n key `tabs.comingSoon`)
+- Tab orientation toggle switches horizontal/vertical; preference saved to localStorage
+- AI panel collapse/expand toggle works; preference saved to localStorage
+- All AI-WS capabilities still function inside tab content
+- Preview iframe has no pointer-event-blocking wrapper
+- All user-facing strings use i18n keys
+- `npx tsc --noEmit` passes (from `frontend/`)
+- `npm test` passes with new/updated test cases (from `frontend/`)
+- `npm run build` passes (from `frontend/`)
+- No regressions to UX-IA-04 through UX-IA-07, AUTH-APP-01/02, PROJ-02 hydration chain, or UX-IA-08A
+
+**Reference:** See TASKS.md -> UX-IA-08B. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-08 section.
+
+---
+
+### UX-IA-08C: Tests + Validation + Consolidation
+
+**Task ID:** UX-IA-08C
+**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** PLANNED
+**Parent:** UX-IA-08 — Project Mode Shell
+**Depends on:** UX-IA-08B (must be COMPLETE before starting)
+**Risk:** Low
+**Loop:** consolidation only
+**Model:** Sonnet 4.6
+
+**Objective:**
+Run the full validation suite after UX-IA-08B completes. Write `docs/UX-IA-08-CHECKPOINT.md`. Update TASKS.md and TASKS_BACKLOG_FULL.md to mark UX-IA-08 and all child slices COMPLETE and LOCKED.
+
+**Bounded scope:**
+- Run `npx tsc --noEmit` (from `frontend/`)
+- Run `npm test` (from `frontend/`)
+- Run `npm run build` (from `frontend/`)
+- Run `ReadLints` on all touched files
+- Run `git restore -- frontend/tsconfig.tsbuildinfo`
+- Write `docs/UX-IA-08-CHECKPOINT.md`
+- Update TASKS.md and TASKS_BACKLOG_FULL.md
+
+**Non-goals:**
+- No source file changes unless validation uncovers a regression requiring a fix
+- No new features
+
+**Acceptance checks:**
+- `npx tsc --noEmit` passes
+- `npm test` passes (all pre-existing + UX-IA-08A + UX-IA-08B test additions)
+- `npm run build` passes
+- `ReadLints` shows no errors on touched files
+- `docs/UX-IA-08-CHECKPOINT.md` created and complete
+- TASKS.md and TASKS_BACKLOG_FULL.md updated: UX-IA-08 COMPLETE and LOCKED
+- Family status updated: UX-IA-08 COMPLETE and LOCKED — UX-IA-09 pending
+
+**Checkpoint:** `docs/UX-IA-08-CHECKPOINT.md`
+
+**Reference:** See TASKS.md -> UX-IA-08C. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-08 section.
 
 
 ## AUTH ??aiSandBox First-Party Authentication
