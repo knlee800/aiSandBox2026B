@@ -67,6 +67,7 @@ interface WorkspaceShellProps {
   workspaceView?: WorkspaceView;
   onWorkspaceViewChange?: (view: WorkspaceView) => void;
   onLogout?: () => void;
+  onLanguageChange?: (locale: string) => void;
   sessions: WorkspaceShellSession[];
   selectedSessionId: string | null;
   isLoadingSessions: boolean;
@@ -1113,6 +1114,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
           quotaSummary={props.quotaSummary}
           activeSessions={activeSessions}
           onLogout={props.onLogout}
+          onLanguageChange={props.onLanguageChange}
           footerContent={
             <WorkspaceAdvancedDrawer
               isOpen={advancedDrawerOpen}

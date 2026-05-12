@@ -10,6 +10,7 @@ import WorkspaceShell, {
   runStopSessionWithConfirmation,
   WorkspaceAdvancedDrawer,
 } from './workspace-shell';
+import WorkspaceAccountMenu from './workspace-account-menu';
 import type { WorkspaceCheckpoint, WorkspaceShellSession } from './workspace-shell.logic';
 import type { WorkspaceExecState } from './workspace-exec.logic';
 import type { WorkspacePreviewState } from './workspace-preview.logic';
@@ -570,6 +571,36 @@ function renderWorkspaceShell(
   return renderToStaticMarkup(<WorkspaceShell {...buildWorkspaceShellProps(overrides)} />);
 }
 
+function buildWorkspaceAccountMenuProps(
+  overrides: Partial<React.ComponentProps<typeof WorkspaceAccountMenu>> = {},
+): React.ComponentProps<typeof WorkspaceAccountMenu> {
+  return {
+    userEmail: userSummary.email,
+    isOpen: true,
+    onClose: () => {},
+    onLogout: () => {},
+    currentLocale: 'en',
+    onLanguageChange: () => {},
+    settingsLabel: 'Settings',
+    languageLabel: 'Language',
+    themeLabel: 'Theme',
+    helpLabel: 'Help',
+    referralLabel: 'Referral',
+    logoutLabel: 'Log out',
+    lightLabel: 'Light',
+    darkLabel: 'Dark',
+    ...overrides,
+  };
+}
+
+function renderWorkspaceAccountMenu(
+  overrides: Partial<React.ComponentProps<typeof WorkspaceAccountMenu>> = {},
+): string {
+  return renderToStaticMarkup(
+    <WorkspaceAccountMenu {...buildWorkspaceAccountMenuProps(overrides)} />,
+  );
+}
+
 type TestableElementProps = {
   children?: React.ReactNode;
   onClick?: () => void;
@@ -581,12 +612,14 @@ function withPatchedReactHooks<T>(run: () => T): T {
   const originalUseMemo = React.useMemo;
   const originalUseEffect = React.useEffect;
   const originalUseCallback = React.useCallback;
+  const originalUseRef = React.useRef;
 
   (React as typeof React & {
     useState: typeof React.useState;
     useMemo: typeof React.useMemo;
     useEffect: typeof React.useEffect;
     useCallback: typeof React.useCallback;
+    useRef: typeof React.useRef;
   }).useState = ((initialState: unknown) => {
     const value = typeof initialState === 'function' ? (initialState as () => unknown)() : initialState;
     return [value, () => {}];
@@ -598,6 +631,9 @@ function withPatchedReactHooks<T>(run: () => T): T {
   (React as typeof React & { useCallback: typeof React.useCallback }).useCallback = (<TCallback extends Function>(
     callback: TCallback,
   ) => callback) as unknown as typeof React.useCallback;
+  (React as typeof React & { useRef: typeof React.useRef }).useRef = ((initialValue: unknown) => ({
+    current: initialValue,
+  })) as unknown as typeof React.useRef;
 
   try {
     return run();
@@ -606,6 +642,7 @@ function withPatchedReactHooks<T>(run: () => T): T {
     (React as typeof React & { useMemo: typeof React.useMemo }).useMemo = originalUseMemo;
     (React as typeof React & { useEffect: typeof React.useEffect }).useEffect = originalUseEffect;
     (React as typeof React & { useCallback: typeof React.useCallback }).useCallback = originalUseCallback;
+    (React as typeof React & { useRef: typeof React.useRef }).useRef = originalUseRef;
   }
 }
 
@@ -757,15 +794,67 @@ describe('workspace shell component', () => {
     assert.doesNotMatch(html, /workspace-header-api-keys-link/);
   });
 
-  test('renders logout button in the project-first sidebar when onLogout is provided', () => {
+  test('renders account avatar trigger in the project-first sidebar footer', () => {
     const html = renderWorkspaceShell({
       locale: 'en',
       projectFirstUxEnabled: true,
       onLogout: () => {},
     });
 
+    assert.match(html, /workspace-sidebar-account-avatar/);
+    assert.doesNotMatch(html, /workspace-account-menu/);
+    assert.doesNotMatch(html, /workspace-header-logout-button/);
+  });
+
+  test('account menu is closed by default in the project-first sidebar', () => {
+    const html = renderWorkspaceShell({
+      locale: 'en',
+      projectFirstUxEnabled: true,
+      onLogout: () => {},
+    });
+
+    assert.doesNotMatch(html, /workspace-account-menu/);
+  });
+
+  test('account menu renders user email when open', () => {
+    const html = renderWorkspaceAccountMenu();
+
+    assert.match(html, /workspace-account-menu/);
+    assert.match(html, /user@example\.com/);
+  });
+
+  test('account menu renders language options', () => {
+    const html = renderWorkspaceAccountMenu({
+      currentLocale: 'zh-TW',
+    });
+
+    assert.match(html, /workspace-account-menu-language/);
+    assert.match(html, />English</);
+    assert.match(html, />繁體中文</);
+    assert.match(html, />简体中文</);
+  });
+
+  test('account menu renders logout option', () => {
+    const html = renderWorkspaceAccountMenu();
+
+    assert.match(html, /workspace-account-menu-logout/);
     assert.match(html, /workspace-header-logout-button/);
     assert.match(html, />Log out</);
+  });
+
+  test('account menu renders settings placeholder', () => {
+    const html = renderWorkspaceAccountMenu();
+
+    assert.match(html, /workspace-account-menu-settings/);
+    assert.match(html, />Settings</);
+  });
+
+  test('account menu renders theme placeholder', () => {
+    const html = renderWorkspaceAccountMenu();
+
+    assert.match(html, /workspace-account-menu-theme/);
+    assert.match(html, />Light</);
+    assert.match(html, />Dark</);
   });
 
   test('renders home chatbox when project-first home view is selected', () => {
@@ -1036,6 +1125,42 @@ describe('workspace shell component', () => {
     forkButton.props.onClick?.();
     assert.equal(forkCalls, 1);
     assert.equal(forkedProjectId, 'template-view-2');
+  });
+
+  test('clicking logout in account menu calls onLogout', () => {
+    let callCount = 0;
+    const logoutButton = findElementByTestId(
+      <WorkspaceAccountMenu
+        {...buildWorkspaceAccountMenuProps({
+          onLogout: () => {
+            callCount += 1;
+          },
+        })}
+      />,
+      'workspace-header-logout-button',
+    );
+
+    assert.ok(logoutButton);
+    logoutButton.props.onClick?.();
+    assert.equal(callCount, 1);
+  });
+
+  test('clicking language option calls onLanguageChange with locale code', () => {
+    let changedLocale = '';
+    const languageButton = findElementByTestId(
+      <WorkspaceAccountMenu
+        {...buildWorkspaceAccountMenuProps({
+          onLanguageChange: (locale) => {
+            changedLocale = locale;
+          },
+        })}
+      />,
+      'workspace-account-menu-language-zh-TW',
+    );
+
+    assert.ok(languageButton);
+    languageButton.props.onClick?.();
+    assert.equal(changedLocale, 'zh-TW');
   });
 
   test('search filter hides non-matching template cards if testable', () => {

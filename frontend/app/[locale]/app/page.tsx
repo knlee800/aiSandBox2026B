@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
-import { useRouter, useParams } from 'next/navigation';
+import { usePathname, useRouter, useParams } from 'next/navigation';
 import WorkspaceShell from '@/components/workspace/workspace-shell';
 import { PROJECT_FIRST_UX } from '@/lib/feature-flags';
 import { openProjectInFreshSession } from '@/lib/open-project-in-fresh-session';
@@ -832,6 +832,7 @@ export default function AppPage() {
     | 'open-error';
 
   const router = useRouter();
+  const pathname = usePathname();
   const params = useParams();
   const locale = params.locale as string;
 
@@ -1063,6 +1064,20 @@ export default function AppPage() {
     }
 
     handleWorkspaceUnauthorizedAccess();
+  }
+
+  function handleLanguageChange(newLocale: string): void {
+    if (!newLocale || newLocale === locale || !pathname) {
+      return;
+    }
+
+    const segments = pathname.split('/');
+    if (segments.length < 2) {
+      return;
+    }
+
+    segments[1] = newLocale;
+    router.push(segments.join('/'));
   }
 
   useEffect(() => {
@@ -5217,6 +5232,7 @@ export default function AppPage() {
       workspaceView={workspaceView}
       onWorkspaceViewChange={setWorkspaceView}
       onLogout={handleLogout}
+      onLanguageChange={handleLanguageChange}
       sessions={visibleSessions}
       selectedSessionId={selectedSessionId}
       isLoadingSessions={isLoadingSessions}

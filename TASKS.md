@@ -12037,9 +12037,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## UX-IA �X Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 pending
+**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 pending
 
-**Current stage:** UX-IA-07 — Account Menu + Settings + Language/Theme (pending; not yet started)
+**Current stage:** UX-IA-08 — Project Mode Shell (pending; not yet started)
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -12055,7 +12055,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
    - UX-IA-04C — Tests + validation + consolidation (COMPLETE and LOCKED — `docs/UX-IA-04-CHECKPOINT.md`)
 6. UX-IA-05 — Projects Grid/List + Recent Projects (COMPLETE and LOCKED — `docs/UX-IA-05-CHECKPOINT.md`)
 7. UX-IA-06 — Templates / Community View (COMPLETE and LOCKED — docs/UX-IA-06-CHECKPOINT.md)
-8. UX-IA-07 �X Account Menu + Settings + Language/Theme (pending)
+8. UX-IA-07 — Account Menu + Settings + Language/Theme (COMPLETE and LOCKED — docs/UX-IA-07-CHECKPOINT.md)
 9. UX-IA-08 �X Project Mode Shell (pending)
 10. UX-IA-09 �X Project AI + History Panel (pending)
 11. UX-IA-10 �X Preview + Code & Files Tabs (pending)
@@ -12501,6 +12501,80 @@ Templates view shows public/community projects with search and fork capability. 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-06. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-06 section.
 
 ---
+
+#### UX-IA-07: Account Menu + Settings + Language/Theme
+
+**Status:** COMPLETE and LOCKED — `docs/UX-IA-07-CHECKPOINT.md`
+**Task ID:** UX-IA-07
+**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-07 section
+**Depends on:** UX-IA-06 (COMPLETE and LOCKED — `docs/UX-IA-06-CHECKPOINT.md`)
+**Risk:** Low
+**Loop:** 2-step (implement — consolidate)
+**Model:** Sonnet 4.6
+
+**Objective:**
+Add account avatar in the workspace sidebar footer that opens a popup account menu. Integrate the existing `LanguageSwitcher` mechanism into the account menu. Add theme preference placeholder (light active; dark deferred). Add Settings, Profile, Help, and Referral placeholder menu items. Reuse existing user identity and logout flow already present in `page.tsx`. Preserve all UX-IA-04 sidebar/home/project-mode, UX-IA-05 projects view, UX-IA-06 templates view, and auth/session behavior unchanged.
+
+**Bounded scope:**
+- `frontend/components/workspace/workspace-sidebar.tsx` — add account avatar in sidebar footer; wire popup menu toggle
+- `frontend/components/workspace/workspace-account-menu.tsx` — **new** presentational account menu popup component
+- `frontend/components/workspace/workspace-shell.test.tsx` — tests for account menu open/close, language switch in menu, logout, placeholder items rendering
+- `frontend/messages/en.json` — add new i18n keys for account menu user-facing strings (under `workspace.*` namespace)
+- `frontend/messages/zh-TW.json` — same
+- `frontend/messages/zh-CN.json` — same
+- Possibly: `frontend/components/workspace/workspace-shell.tsx` — only if account-menu-related props are confirmed missing from existing `WorkspaceShell` prop surface
+
+**Non-goals:**
+- No profile editing UI or backend
+- No real billing or upgrade flow
+- No dark theme implementation beyond placeholder
+- No settings persistence or backend
+- No project mode shell or tab system (UX-IA-08/10/11)
+- No backend or API changes
+- No auth changes
+- No route cleanup (UX-IA-14)
+- No responsive/mobile work (UX-IA-13)
+- No broad refactor of AI-WS, preview, or file logic
+- No new i18n namespaces; add under existing `workspace.*` namespace only
+
+**Dependencies:**
+- UX-IA-04 (COMPLETE and LOCKED): sidebar shell + view state + Home view; all invariants locked
+- UX-IA-05 (COMPLETE and LOCKED): projects view; all invariants locked
+- UX-IA-06 (COMPLETE and LOCKED): templates view; all invariants locked
+- Existing `LanguageSwitcher` component and path-segment locale routing mechanism
+- User identity (display name, email) available from `page.tsx` auth/session context
+- Logout handler available from existing handler flow in `page.tsx`
+
+**Risks / invariants:**
+- Menu popup close-on-outside-click must not interfere with sidebar nav item clicks or workspace content area interactions
+- Language switching must use the existing path-segment locale mechanism; do not introduce a parallel state-based locale system
+- Theme toggle is a UI placeholder only; actual dark-mode CSS is out of scope; do not add Tailwind `dark:` variants or CSS custom properties unless explicitly authorized
+- All new user-facing strings must use i18n keys under `workspace.*` namespace; no hardcoded English
+- Preserve UX-IA-04 sidebar, Home view, Projects view (UX-IA-05), Templates view (UX-IA-06), and project-mode behavior unchanged
+- Preserve auth/session behavior, CSRF guards, and PROJ-02-01 hydration chain
+
+**Acceptance checks:**
+- UX-IA-07 registered in TASKS.md and TASKS_BACKLOG_FULL.md
+- Account avatar visible in sidebar footer; clicking it opens the account menu popup
+- Account menu closes on outside click or explicit close action
+- Language switcher inside account menu calls existing locale mechanism
+- Logout action calls existing logout handler
+- Settings, Profile, Help, Referral items rendered (placeholder/disabled acceptable)
+- Theme toggle placeholder rendered (light mode only; dark deferred)
+- All new user-facing strings use i18n keys
+- `npx tsc --noEmit` passes (from `frontend/`)
+- `npm test` passes with new test cases (from `frontend/`)
+- `npm run build` passes (from `frontend/`)
+- No regressions to UX-IA-04 sidebar, Home view, or project-mode behavior
+- No regressions to UX-IA-05 Projects view
+- No regressions to UX-IA-06 Templates view
+- No regressions to AUTH-APP-01/02 or PROJ-02 hydration chain
+
+**Checkpoint:** `docs/UX-IA-07-CHECKPOINT.md`
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-07. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-07 section.
+
 
 ## AUTH �X aiSandBox First-Party Authentication
 

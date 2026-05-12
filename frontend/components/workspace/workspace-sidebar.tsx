@@ -12,6 +12,7 @@ import type { Workspace } from './workspace-workspaces.logic';
 import enMessages from '@/messages/en.json';
 import zhCnMessages from '@/messages/zh-CN.json';
 import zhTwMessages from '@/messages/zh-TW.json';
+import WorkspaceAccountMenu from './workspace-account-menu';
 
 export type WorkspaceView = 'home' | 'projects' | 'templates' | 'project';
 
@@ -32,6 +33,7 @@ interface WorkspaceSidebarProps {
   quotaSummary?: WorkspaceQuotaSummary | null;
   activeSessions?: number;
   onLogout?: () => void;
+  onLanguageChange?: (locale: string) => void;
   footerContent?: ReactNode;
 }
 
@@ -90,6 +92,13 @@ export function getWorkspaceScaffoldMessages(locale?: string) {
     describeBuild: read('workspace.describeBuild'),
     start: read('workspace.start'),
     logout: read('account.logout'),
+    settings: read('account.settings'),
+    language: read('account.language'),
+    theme: read('account.theme'),
+    help: read('account.help'),
+    referral: read('account.referral'),
+    light: read('account.light'),
+    dark: read('account.dark'),
     comingSoon: read('tabs.comingSoon'),
   };
 }
@@ -103,13 +112,46 @@ function formatRecentProjectUpdatedAt(value: string): string {
   return parsedDate.toLocaleDateString();
 }
 
+function getUserAvatarInitial(userEmail?: string | null): string {
+  const trimmedEmail = userEmail?.trim();
+  if (!trimmedEmail) {
+    return 'U';
+  }
+
+  return trimmedEmail.charAt(0).toUpperCase();
+}
+
 export default function WorkspaceSidebar(props: WorkspaceSidebarProps) {
   const messages = getWorkspaceScaffoldMessages(props.locale);
+  const [accountMenuOpen, setAccountMenuOpen] = React.useState(false);
+  const accountMenuRef = React.useRef<HTMLDivElement | null>(null);
   const selectedWorkspace =
     props.workspaces.find((workspace) => workspace.id === props.selectedWorkspaceId) ?? null;
   const canShowCompactUsage = Boolean(
     props.userSummary && props.usageSummary && props.quotaSummary,
   );
+  const accountAvatarInitial = getUserAvatarInitial(props.userSummary?.email);
+
+  React.useEffect(() => {
+    if (!accountMenuOpen) {
+      return undefined;
+    }
+
+    function handleDocumentMouseDown(event: MouseEvent): void {
+      const target = event.target;
+      if (!(target instanceof Node)) {
+        return;
+      }
+      if (!accountMenuRef.current?.contains(target)) {
+        setAccountMenuOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleDocumentMouseDown);
+    return () => {
+      document.removeEventListener('mousedown', handleDocumentMouseDown);
+    };
+  }, [accountMenuOpen]);
 
   return (
     <aside
@@ -249,16 +291,41 @@ export default function WorkspaceSidebar(props: WorkspaceSidebarProps) {
           >
             {messages.upgrade}
           </button>
-          {props.onLogout ? (
+          <div className="relative mt-2" ref={accountMenuRef}>
             <button
               type="button"
-              onClick={props.onLogout}
-              className="mt-2 w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              data-testid="workspace-header-logout-button"
+              onClick={() => setAccountMenuOpen((current) => !current)}
+              className="flex w-full items-center gap-3 rounded border border-gray-300 bg-white px-3 py-2 text-left text-sm font-medium text-gray-700 hover:bg-gray-50"
+              data-testid="workspace-sidebar-account-avatar"
+              aria-expanded={accountMenuOpen}
             >
-              {messages.logout}
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-900 text-sm font-semibold text-white">
+                {accountAvatarInitial}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-medium text-gray-900">
+                  {props.userSummary?.email ?? messages.settings}
+                </span>
+                <span className="block truncate text-xs text-gray-500">{messages.language}</span>
+              </span>
             </button>
-          ) : null}
+            <WorkspaceAccountMenu
+              userEmail={props.userSummary?.email}
+              isOpen={accountMenuOpen}
+              onClose={() => setAccountMenuOpen(false)}
+              onLogout={props.onLogout}
+              currentLocale={props.locale}
+              onLanguageChange={props.onLanguageChange}
+              settingsLabel={messages.settings}
+              languageLabel={messages.language}
+              themeLabel={messages.theme}
+              helpLabel={messages.help}
+              referralLabel={messages.referral}
+              logoutLabel={messages.logout}
+              lightLabel={messages.light}
+              darkLabel={messages.dark}
+            />
+          </div>
         </div>
 
         {props.footerContent ? props.footerContent : null}
