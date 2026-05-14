@@ -957,7 +957,7 @@ describe('workspace shell component', () => {
 
     assert.match(html, /workspace-project-view/);
     assert.match(html, /Chat Panel/);
-    assert.match(html, /Preview Panel/);
+    assert.match(html, /workspace-preview-panel/);
     assert.match(html, /workspace-ai-panel-toggle/);
     assert.match(html, /workspace-ai-panel-view-chat/);
     assert.match(html, /workspace-ai-panel-view-history/);
@@ -1155,17 +1155,68 @@ describe('workspace shell component', () => {
 
     assert.match(html, /workspace-tab-content/);
     assert.match(html, /preview-panel-shell/);
+    assert.match(html, /workspace-preview-panel/);
+    assert.doesNotMatch(html, />Preview Panel</);
   });
 
-  test('active tab content shows editor panel when Code tab is active', () => {
+  test('tab content wrapper renders with full-height overflow-hidden layout', () => {
+    const tabContent = renderWorkspaceShellElementByTestId('workspace-tab-content', {
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+    assert.ok(tabContent);
+
+    const className = String(tabContent.props.className ?? '');
+    assert.match(className, /overflow-hidden/);
+    assert.doesNotMatch(className, /overflow-y-auto/);
+  });
+
+  test('preview panel shell renders full-height tab content and contains workspace preview panel', () => {
+    const panelShell = renderWorkspaceShellElementByTestId('preview-panel-shell', {
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+    const previewPanel = renderWorkspaceShellElementByTestId('workspace-preview-panel', {
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+    assert.ok(panelShell);
+    assert.ok(previewPanel);
+
+    const className = String(panelShell.props.className ?? '');
+    assert.match(className, /flex/);
+    assert.match(className, /flex-col/);
+    assert.match(className, /flex-1/);
+    assert.match(className, /min-h-0/);
+    assert.match(className, /overflow-hidden/);
+  });
+
+  test('editor panel shell can render in Code & Files tab path where statically testable', () => {
+    const codeTabButton = renderWorkspaceShellElementByTestId('workspace-tab-codeFiles', {
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+    assert.ok(codeTabButton);
+    assert.equal(typeof codeTabButton.props.onClick, 'function');
+  });
+
+  test('default preview tab does not render workspace tab placeholder', () => {
     const html = renderWorkspaceShell({
       projectFirstUxEnabled: true,
       workspaceView: 'project',
     });
 
-    assert.match(html, /workspace-tab-content/);
-    assert.match(html, /workspace-tab-codeFiles/);
+    assert.doesNotMatch(html, /workspace-tab-placeholder/);
+  });
+
+  test('legacy non-project-first path still renders preview-panel-shell and editor-panel-shell', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: false,
+      workspaceView: 'project',
+    });
+
     assert.match(html, /preview-panel-shell/);
+    assert.match(html, /editor-panel-shell/);
   });
 
   test('tab orientation toggle renders', () => {

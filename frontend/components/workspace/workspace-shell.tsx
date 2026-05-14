@@ -1379,11 +1379,48 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                     onTabChange={setActiveTabId}
                     onOrientationToggle={handleTabOrientationToggle}
                   />
-                  <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-2 p-2" data-testid="workspace-tab-content">
-                    {activeTabId === 'preview' ? projectPreviewSection : null}
-                    {activeTabId === 'codeFiles' ? projectEditorSection : null}
+                  <div className="flex-1 min-h-0 overflow-hidden flex flex-col" data-testid="workspace-tab-content">
+                    {activeTabId === 'preview' ? (
+                      <div
+                        className="flex flex-col flex-1 min-h-0 overflow-hidden"
+                        data-testid="preview-panel-shell"
+                      >
+                        <WorkspacePreviewPanel
+                          projectFirstUxEnabled={projectFirstUxEnabled}
+                          selectedSessionId={props.selectedSessionId}
+                          previewState={props.previewState}
+                          previewUrl={props.previewUrl}
+                          onStartPreview={props.onStartPreview}
+                          onRefreshPreview={props.onRefreshPreview}
+                          onPreviewLoad={props.onPreviewLoad}
+                          onPreviewError={props.onPreviewError}
+                          fillHeight
+                        />
+                      </div>
+                    ) : null}
+                    {activeTabId === 'codeFiles' ? (
+                      <div
+                        className="flex flex-col flex-1 min-h-0 overflow-hidden"
+                        data-testid="editor-panel-shell"
+                      >
+                        <WorkspaceEditorPanel
+                          projectFirstUxEnabled={projectFirstUxEnabled}
+                          state={props.fileSurfaceState}
+                          fileTree={props.workspaceFileTree}
+                          selectedFilePath={props.selectedFilePath}
+                          selectedFileContent={props.selectedFileContent}
+                          saveState={props.fileSaveState}
+                          saveErrorMessage={props.fileSaveError}
+                          errorMessage={props.fileSurfaceError}
+                          onSelectFile={props.onSelectWorkspaceFile}
+                          onEditorContentChange={props.onEditorContentChange}
+                          onSaveFile={props.onSaveWorkspaceFile}
+                          fillHeight
+                        />
+                      </div>
+                    ) : null}
                     {activeTabId !== 'preview' && activeTabId !== 'codeFiles' ? (
-                      <div className="flex items-center justify-center flex-1 text-sm text-gray-400" data-testid="workspace-tab-placeholder">
+                      <div className="flex items-center justify-center flex-1 p-4 text-sm text-gray-400" data-testid="workspace-tab-placeholder">
                         {comingSoonLabel}
                       </div>
                     ) : null}
@@ -2530,13 +2567,20 @@ function WorkspacePreviewPanel(props: {
   onRefreshPreview: () => Promise<void>;
   onPreviewLoad: () => void;
   onPreviewError: () => void;
+  fillHeight?: boolean;
 }) {
   const canStartPreview =
     Boolean(props.selectedSessionId) && props.previewState === 'unavailable';
   const canRefresh = Boolean(props.selectedSessionId) && props.previewState !== 'loading';
+  const panelClassName = props.fillHeight
+    ? 'flex flex-col flex-1 min-h-0 overflow-hidden rounded border border-gray-200 bg-gray-50 p-2'
+    : 'rounded border border-gray-200 bg-gray-50 p-2';
+  const iframeClassName = props.fillHeight
+    ? 'mt-2 w-full flex-1 min-h-0 rounded border border-gray-200 bg-white'
+    : 'mt-2 h-56 w-full rounded border border-gray-200 bg-white';
 
   return (
-    <div className="rounded border border-gray-200 bg-gray-50 p-2" data-testid="workspace-preview-panel">
+    <div className={panelClassName} data-testid="workspace-preview-panel">
       <div className="mb-2 flex items-center justify-between gap-2">
         <p className="text-xs font-semibold text-gray-700">Live Preview</p>
         <div className="flex items-center gap-2">
@@ -2573,7 +2617,7 @@ function WorkspacePreviewPanel(props: {
           src={props.previewUrl}
           onLoad={props.onPreviewLoad}
           onError={props.onPreviewError}
-          className="mt-2 h-56 w-full rounded border border-gray-200 bg-white"
+          className={iframeClassName}
         />
       ) : null}
     </div>
@@ -2592,19 +2636,35 @@ function WorkspaceEditorPanel(props: {
   onSelectFile: (filePath: string) => Promise<void>;
   onEditorContentChange: (content: string) => void;
   onSaveFile: () => Promise<void>;
+  fillHeight?: boolean;
 }) {
   const canSave = props.saveState === 'dirty' || props.saveState === 'save-error';
+  const panelClassName = props.fillHeight
+    ? 'flex flex-col flex-1 min-h-0 overflow-hidden rounded border border-gray-200 bg-gray-50 p-2'
+    : 'rounded border border-gray-200 bg-gray-50 p-2';
+  const layoutClassName = props.fillHeight
+    ? 'mt-2 flex flex-1 min-h-0 gap-2'
+    : 'mt-2 grid gap-2 md:grid-cols-[14rem_1fr]';
+  const treePaneClassName = props.fillHeight
+    ? 'flex flex-col min-h-0 w-56 shrink-0 overflow-y-auto rounded border border-gray-200 bg-white p-2'
+    : 'rounded border border-gray-200 bg-white p-2';
+  const editorPaneClassName = props.fillHeight
+    ? 'flex flex-col flex-1 min-h-0 overflow-hidden rounded border border-gray-200 bg-white p-2'
+    : 'rounded border border-gray-200 bg-white p-2';
+  const textareaClassName = props.fillHeight
+    ? 'mt-2 flex-1 min-h-0 w-full resize-none overflow-auto rounded border border-gray-200 bg-gray-50 p-2 font-mono text-[11px] text-gray-800 disabled:bg-gray-100 disabled:text-gray-500'
+    : 'mt-2 h-56 w-full resize-none overflow-auto rounded border border-gray-200 bg-gray-50 p-2 font-mono text-[11px] text-gray-800 disabled:bg-gray-100 disabled:text-gray-500';
 
   return (
-    <div className="rounded border border-gray-200 bg-gray-50 p-2" data-testid="workspace-editor-panel">
+    <div className={panelClassName} data-testid="workspace-editor-panel">
       <EditorStateMessage
         state={props.state}
         errorMessage={props.errorMessage}
         projectFirstUxEnabled={props.projectFirstUxEnabled}
       />
       {props.state === 'ready' ? (
-        <div className="mt-2 grid gap-2 md:grid-cols-[14rem_1fr]">
-          <div className="rounded border border-gray-200 bg-white p-2">
+        <div className={layoutClassName}>
+          <div className={treePaneClassName}>
             <p className="text-[11px] font-semibold text-gray-700">Files</p>
             <ul className="mt-2 space-y-1" data-testid="workspace-file-tree">
               {props.fileTree.map((node) => (
@@ -2618,7 +2678,7 @@ function WorkspaceEditorPanel(props: {
               ))}
             </ul>
           </div>
-          <div className="rounded border border-gray-200 bg-white p-2">
+          <div className={editorPaneClassName}>
             <div className="flex items-center justify-between gap-2">
               <p className="text-[11px] font-semibold text-gray-700">File Content</p>
               <button
@@ -2645,7 +2705,7 @@ function WorkspaceEditorPanel(props: {
               value={props.selectedFileContent}
               onChange={(event) => props.onEditorContentChange(event.target.value)}
               disabled={props.saveState === 'saving'}
-              className="mt-2 h-56 w-full resize-none overflow-auto rounded border border-gray-200 bg-gray-50 p-2 font-mono text-[11px] text-gray-800 disabled:bg-gray-100 disabled:text-gray-500"
+              className={textareaClassName}
               spellCheck={false}
             />
           </div>

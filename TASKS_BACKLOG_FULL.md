@@ -21954,9 +21954,9 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 
 ## UX-IA ??Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 COMPLETE and LOCKED — UX-IA-09 COMPLETE and LOCKED — UX-IA-10 pending
+**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 COMPLETE and LOCKED — UX-IA-09 COMPLETE and LOCKED — UX-IA-10 COMPLETE and LOCKED — UX-IA-11 pending
 
-**Current stage:** UX-IA-10 — Preview + Code & Files Tabs (pending)
+**Current stage:** UX-IA-11 — Future Product Tab Placeholders (pending)
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -21978,7 +21978,7 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
    - UX-IA-08B — Tab Registry + Tab Bar + AI Panel Collapse (COMPLETE and LOCKED — `docs/UX-IA-08B-CHECKPOINT.md`)
    - UX-IA-08C — Tests + Validation + Consolidation (COMPLETE and LOCKED — `docs/UX-IA-08-CHECKPOINT.md`)
 10. UX-IA-09 — Project AI + History Panel (COMPLETE and LOCKED — `docs/UX-IA-09-CHECKPOINT.md`)
-11. UX-IA-10 through UX-IA-17 — pending (see master spec for full list)
+11. UX-IA-10 — Preview + Code & Files Tabs (COMPLETE and LOCKED — `docs/UX-IA-10-CHECKPOINT.md`)
 
 ---
 
@@ -22990,6 +22990,87 @@ Wire AI chat into the project mode left panel with a chat/history toggle. Add a 
 
 **Reference:** See TASKS.md -> UX-IA-09. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-09 section.
 
+
+-----
+
+### UX-IA-10: Preview + Code & Files Tabs
+
+**Task ID:** UX-IA-10
+**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-10 section
+**Depends on:** UX-IA-09 (COMPLETE and LOCKED — `docs/UX-IA-09-CHECKPOINT.md`)
+**Risk:** Medium (panel sizing, iframe behavior, full-height CSS constraints)
+**Loop:** 3-step (implement — verify tests — consolidate)
+**Model:** Sonnet 4.6
+
+**Objective:**
+Wire existing preview and editor content into the UX-IA-08 tab system as the first two fully functional tabs. Ensure panels fill available height in the right content zone. Add file tree as the left section of the Code & Files tab. Preserve preview iframe compatibility and all existing file action flows.
+
+**Scope:**
+- Refine Preview tab to render `WorkspacePreviewPanel` at full height inside the tab content area.
+- Refine Code & Files tab to render `WorkspaceEditorPanel` at full height, with file tree as a left section.
+- Ensure full-height layout for both tabs (right content zone fills available vertical space below tab bar).
+- Preserve existing `WorkspacePreviewPanel` iframe behavior and `window.postMessage` path (Visual Edit Mode compatibility constraint from UX-IA-15).
+- Preserve existing `WorkspaceEditorPanel` behavior and all AI-WS file action flows.
+- Preserve UX-IA-09 AI/history toggle and inline restore confirmation in the left AI panel.
+- Preserve all UX-IA-08 testids and invariants.
+
+**Non-goals:**
+- No Visual Edit Mode (belongs to UX-IA-15+)
+- No new functional Database/Auth/Security/Analytics/Env Var/Payment/Domain/App Storage/Agent Skills tab content
+- No tab pinning or visibility settings UI (belongs to UX-IA-11)
+- No backend/API changes
+- No auth changes
+- No route cleanup
+- No account menu changes
+- No Templates/Community changes
+- No Monaco Editor integration or new editor features
+- No broad refactor
+- No new dependencies
+
+**Likely files:**
+- `frontend/components/workspace/workspace-shell.tsx` (primary — tab content layout, full-height CSS)
+- `frontend/components/workspace/workspace-shell.test.tsx` (test updates)
+- `frontend/components/workspace/workspace-tab-bar.tsx` (only if minor layout adjustment needed)
+- Possibly `frontend/messages/en.json`, `zh-TW.json`, `zh-CN.json` (if new i18n keys confirmed missing)
+
+**Note on workspace-project-mode.tsx:**
+This file does not exist. Per UX-IA-08 locked invariant, project mode logic stays in `workspace-shell.tsx`. The master plan reference to `workspace-project-mode.tsx` is superseded by this invariant.
+
+**UX/UI skills advisory (plan phase only):**
+- Impeccable: layout review for full-height panels, vertical space allocation
+- Emil Kowalski: tab content empty/loading/error states, resize and overflow behavior
+- Skills are advisory only — do not override architecture, tests, or slice boundaries
+
+**Dependencies:**
+- UX-IA-09 COMPLETE and LOCKED (`docs/UX-IA-09-CHECKPOINT.md`)
+- UX-IA-08B COMPLETE and LOCKED (— defines tab shell, `workspace-tab-registry.ts`, `workspace-tab-bar.tsx`)
+
+**Invariants to preserve:**
+- `WorkspaceShellProps` interface — no new props
+- `WorkspaceChatPanel`, `WorkspaceExecPanel`, `WorkspaceBuildPanel` props — unchanged
+- `WorkspacePreviewPanel` props — unchanged; iframe pointer-event path unaffected
+- `WorkspaceEditorPanel` props — unchanged
+- UX-IA-09 testids: `workspace-ai-panel-toggle`, `workspace-ai-panel-view-chat`, `workspace-ai-panel-view-history`, `workspace-restore-confirm-bar`, `workspace-restore-confirm-button`, `workspace-restore-cancel-button`
+- UX-IA-08 testids: `workspace-project-view`, `workspace-project-mode-header`, `workspace-project-back-button`, `workspace-project-ai-panel`, `workspace-project-content-panel`
+- UX-IA-08B testids: `workspace-tab-bar`, `workspace-ai-panel-collapse-toggle`, `workspace-tab-content`
+- Sub-component testids: `chat-panel-shell`, `editor-panel-shell`, `preview-panel-shell`, `history-control-slice`, `dashboard-slice`
+- PROJ-02-01 hydration chain — unaffected
+- AUTH-APP-01/02 invariants — preserved
+
+**Validation plan:**
+- `npx tsc --noEmit` from `frontend/` — 0 errors
+- `npm test` from `frontend/` — 0 failures; all existing 313 tests pass
+- `npm run build` from `frontend/` — passes
+- `ReadLints` on all touched files — no introduced errors
+- No regressions to UX-IA-04 through UX-IA-09, AUTH-APP-01/02, PROJ-02 hydration chain, AI-WS file action flows
+
+**Checkpoint:** `docs/UX-IA-10-CHECKPOINT.md`
+
+**Reference:** See TASKS.md —> UX-IA-10. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-10 section.
 
 
 ## AUTH ??aiSandBox First-Party Authentication
