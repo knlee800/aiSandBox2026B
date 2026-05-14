@@ -19,6 +19,9 @@ import type { WorkspaceCheckpointDiffResponse } from './workspace-checkpoint-dif
 import type { WorkspaceProjectSummary, WorkspacePublicProjectSummary } from './workspace-projects.logic';
 import type { WorkspaceSnapshotSummary } from './workspace-snapshots.logic';
 import type { Workspace } from './workspace-workspaces.logic';
+import WorkspaceTabBar from './workspace-tab-bar';
+import type { WorkspaceTabBarProps } from './workspace-tab-bar';
+import { TAB_REGISTRY } from './workspace-tab-registry';
 
 const session: WorkspaceShellSession = {
   id: '12345678-test-session',
@@ -725,6 +728,29 @@ function withPatchedWindowPrompt<T>(
   }
 }
 
+function buildWorkspaceTabBarProps(
+  overrides: Partial<WorkspaceTabBarProps> = {},
+): WorkspaceTabBarProps {
+  const defaultTabs = TAB_REGISTRY.map((tab) => ({
+    id: tab.id,
+    label: tab.labelKey,
+  }));
+  return {
+    tabs: defaultTabs,
+    activeTabId: 'preview',
+    orientation: 'horizontal' as const,
+    onTabChange: () => {},
+    onOrientationToggle: () => {},
+    ...overrides,
+  };
+}
+
+function renderWorkspaceTabBar(
+  overrides: Partial<WorkspaceTabBarProps> = {},
+): string {
+  return renderToStaticMarkup(<WorkspaceTabBar {...buildWorkspaceTabBarProps(overrides)} />);
+}
+
 describe('workspace shell component', () => {
   test('renders authenticated workspace shell layout', () => {
     const html = renderWorkspaceShell();
@@ -931,9 +957,9 @@ describe('workspace shell component', () => {
 
     assert.match(html, /workspace-project-view/);
     assert.match(html, /Chat Panel/);
-    assert.match(html, /Editor Panel/);
     assert.match(html, /Preview Panel/);
     assert.match(html, /History &amp; Controls/);
+    assert.match(html, /workspace-tab-bar/);
   });
 
   test('renders project mode header in project view', () => {
@@ -992,6 +1018,100 @@ describe('workspace shell component', () => {
     });
 
     assert.match(html, /workspace-project-content-panel/);
+  });
+
+  test('renders tab bar in project mode right content zone', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+
+    assert.match(html, /workspace-tab-bar/);
+  });
+
+  test('renders Preview tab in tab bar', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+
+    assert.match(html, /workspace-tab-preview/);
+    assert.match(html, />Preview</);
+  });
+
+  test('renders Code & Files tab in tab bar', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+
+    assert.match(html, /workspace-tab-codeFiles/);
+    assert.match(html, />Code &amp; Files</);
+  });
+
+  test('renders placeholder tabs with Coming soon text', () => {
+    const tabBarHtml = renderWorkspaceTabBar();
+    assert.match(tabBarHtml, /workspace-tab-database/);
+    assert.match(tabBarHtml, /workspace-tab-auth/);
+    assert.match(tabBarHtml, /workspace-tab-security/);
+    assert.match(tabBarHtml, /workspace-tab-analytics/);
+    assert.match(tabBarHtml, /workspace-tab-envVars/);
+
+    const shellHtml = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+    assert.match(shellHtml, /workspace-tab-database/);
+    assert.match(shellHtml, /workspace-tab-auth/);
+  });
+
+  test('active tab is Preview by default', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+
+    assert.match(html, /aria-selected="true"[^>]*>Preview</);
+  });
+
+  test('active tab content shows preview panel when Preview tab is active', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+
+    assert.match(html, /workspace-tab-content/);
+    assert.match(html, /preview-panel-shell/);
+  });
+
+  test('active tab content shows editor panel when Code tab is active', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+
+    assert.match(html, /workspace-tab-content/);
+    assert.match(html, /workspace-tab-codeFiles/);
+    assert.match(html, /preview-panel-shell/);
+  });
+
+  test('tab orientation toggle renders', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+
+    assert.match(html, /workspace-tab-orientation-toggle/);
+  });
+
+  test('AI panel collapse toggle renders', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+
+    assert.match(html, /workspace-ai-panel-collapse-toggle/);
+    assert.match(html, /Collapse AI panel/);
   });
 
   test('renders recent projects in project-first sidebar when workspaceProjects are provided', () => {
@@ -1281,7 +1401,6 @@ describe('workspace shell component', () => {
     assert.match(html, /No project open/);
     assert.match(html, /Open a project to start using workspace tools\./);
     assert.match(html, /Use Start a new project or Open existing project in the history panel\./);
-    assert.match(html, /Your project files are ready to browse\./);
     assert.match(html, /No preview is running for this workspace yet\./);
     assert.match(html, /Open a project to create a save point\./);
     assert.match(html, /Workspaces: 1/);

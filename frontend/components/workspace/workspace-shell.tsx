@@ -57,6 +57,16 @@ import type { Workspace } from './workspace-workspaces.logic';
 import enMessages from '@/messages/en.json';
 import zhTwMessages from '@/messages/zh-TW.json';
 import zhCnMessages from '@/messages/zh-CN.json';
+import WorkspaceTabBar from './workspace-tab-bar';
+import type { WorkspaceTabBarTab } from './workspace-tab-bar';
+import {
+  TAB_REGISTRY,
+  DEFAULT_ACTIVE_TAB_ID,
+  DEFAULT_TAB_ORIENTATION,
+  TAB_ORIENTATION_STORAGE_KEY,
+  AI_PANEL_COLLAPSED_STORAGE_KEY,
+  type TabOrientation,
+} from './workspace-tab-registry';
 
 const projectFirstUxAnchors = {
   enabled: PROJECT_FIRST_UX,
@@ -68,6 +78,38 @@ function getProjectModeBackLabel(locale: string): string {
   if (locale === 'zh-TW') return zhTwMessages.common.back;
   if (locale === 'zh-CN') return zhCnMessages.common.back;
   return enMessages.common.back;
+}
+
+function getTabMessages(locale: string): typeof enMessages.tabs {
+  if (locale === 'zh-TW') return zhTwMessages.tabs;
+  if (locale === 'zh-CN') return zhCnMessages.tabs;
+  return enMessages.tabs;
+}
+
+function getProjectPanelMessages(locale: string): typeof enMessages.project {
+  if (locale === 'zh-TW') return zhTwMessages.project;
+  if (locale === 'zh-CN') return zhCnMessages.project;
+  return enMessages.project;
+}
+
+function resolveTabBarTabs(locale: string): WorkspaceTabBarTab[] {
+  const tabMessages = getTabMessages(locale);
+  return TAB_REGISTRY.map((tab) => ({
+    id: tab.id,
+    label: tabMessages[tab.labelKey as keyof typeof tabMessages] ?? tab.labelKey,
+  }));
+}
+
+function readStoredTabOrientation(): TabOrientation {
+  if (typeof window === 'undefined') return DEFAULT_TAB_ORIENTATION;
+  const stored = window.localStorage.getItem(TAB_ORIENTATION_STORAGE_KEY);
+  if (stored === 'horizontal' || stored === 'vertical') return stored;
+  return DEFAULT_TAB_ORIENTATION;
+}
+
+function readStoredAiPanelCollapsed(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.localStorage.getItem(AI_PANEL_COLLAPSED_STORAGE_KEY) === 'true';
 }
 
 interface WorkspaceShellProps {
@@ -369,6 +411,12 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const [advancedDrawerOpen, setAdvancedDrawerOpen] = React.useState(false);
   const [projectsViewMode, setProjectsViewMode] = React.useState<'grid' | 'list'>('grid');
   const [templateSearch, setTemplateSearch] = React.useState('');
+  const [activeTabId, setActiveTabId] = React.useState(DEFAULT_ACTIVE_TAB_ID);
+  const [tabOrientation, setTabOrientation] = React.useState<TabOrientation>(readStoredTabOrientation);
+  const [aiPanelCollapsed, setAiPanelCollapsed] = React.useState(readStoredAiPanelCollapsed);
+  const tabBarTabs = React.useMemo(() => resolveTabBarTabs(locale), [locale]);
+  const projectPanelMessages = React.useMemo(() => getProjectPanelMessages(locale), [locale]);
+  const comingSoonLabel = React.useMemo(() => getTabMessages(locale).comingSoon, [locale]);
   const homePromptInput = props.chatPromptInput ?? '';
   const trimmedHomePrompt = homePromptInput.trim();
   const normalizedTemplateSearch = templateSearch.trim().toLowerCase();
@@ -500,6 +548,24 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
       : undefined;
   const handleOpenProjectCard = (projectId: string) => {
     handleOpenRecentProject?.(projectId);
+  };
+  const handleTabOrientationToggle = () => {
+    setTabOrientation((prev) => {
+      const next = prev === 'horizontal' ? 'vertical' : 'horizontal';
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(TAB_ORIENTATION_STORAGE_KEY, next);
+      }
+      return next;
+    });
+  };
+  const handleAiPanelCollapseToggle = () => {
+    setAiPanelCollapsed((prev) => {
+      const next = !prev;
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(AI_PANEL_COLLAPSED_STORAGE_KEY, String(next));
+      }
+      return next;
+    });
   };
   const handleCopySelectedSessionId = async () => {
     if (!props.selectedSessionId) {
@@ -1177,25 +1243,49 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                 >
                   &larr; {backLabel}
                 </button>
-                <h2 className="text-sm font-semibold text-gray-900 truncate">
+                <h2 className="flex-1 text-sm font-semibold text-gray-900 truncate">
                   {activeProjectName}
                 </h2>
+                <button
+                  type="button"
+                  onClick={handleAiPanelCollapseToggle}
+                  className="rounded px-2 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100"
+                  data-testid="workspace-ai-panel-collapse-toggle"
+                >
+                  {aiPanelCollapsed ? projectPanelMessages.expandPanel : projectPanelMessages.collapsePanel}
+                </button>
               </header>
               {projectTrustNote}
               <div className="flex flex-1 min-h-0">
-                <aside
-                  className="w-full md:w-96 border-r border-gray-200 bg-white overflow-y-auto flex flex-col gap-2 p-2"
-                  data-testid="workspace-project-ai-panel"
-                >
-                  {projectChatSection}
-                  {historyAndDashboardContent}
-                </aside>
+                {!aiPanelCollapsed ? (
+                  <aside
+                    className="w-full md:w-96 border-r border-gray-200 bg-white overflow-y-auto flex flex-col gap-2 p-2"
+                    data-testid="workspace-project-ai-panel"
+                  >
+                    {projectChatSection}
+                    {historyAndDashboardContent}
+                  </aside>
+                ) : null}
                 <main
-                  className="flex-1 min-w-0 overflow-y-auto flex flex-col gap-2 p-2"
+                  className="flex-1 min-w-0 flex flex-col"
                   data-testid="workspace-project-content-panel"
                 >
-                  {projectEditorSection}
-                  {projectPreviewSection}
+                  <WorkspaceTabBar
+                    tabs={tabBarTabs}
+                    activeTabId={activeTabId}
+                    orientation={tabOrientation}
+                    onTabChange={setActiveTabId}
+                    onOrientationToggle={handleTabOrientationToggle}
+                  />
+                  <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-2 p-2" data-testid="workspace-tab-content">
+                    {activeTabId === 'preview' ? projectPreviewSection : null}
+                    {activeTabId === 'codeFiles' ? projectEditorSection : null}
+                    {activeTabId !== 'preview' && activeTabId !== 'codeFiles' ? (
+                      <div className="flex items-center justify-center flex-1 text-sm text-gray-400" data-testid="workspace-tab-placeholder">
+                        {comingSoonLabel}
+                      </div>
+                    ) : null}
+                  </div>
                 </main>
               </div>
             </div>

@@ -106,7 +106,9 @@
     "restoreConfirm": "要還原此版本嗎？目前工作區將被取代。",
     "noHistory": "此專案尚無歷史紀錄。",
     "files": "檔案",
-    "unsavedChanges": "有未儲存變更"
+    "unsavedChanges": "有未儲存變更",
+    "collapsePanel": "收合 AI 面板",
+    "expandPanel": "展開 AI 面板"
   },
   "tabs": {
     "preview": "預覽",

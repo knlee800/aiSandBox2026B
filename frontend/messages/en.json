@@ -106,7 +106,9 @@
     "restoreConfirm": "Restore this version? Your current workspace will be replaced.",
     "noHistory": "No history yet for this project.",
     "files": "Files",
-    "unsavedChanges": "Unsaved changes"
+    "unsavedChanges": "Unsaved changes",
+    "collapsePanel": "Collapse AI panel",
+    "expandPanel": "Expand AI panel"
   },
   "tabs": {
     "preview": "Preview",
