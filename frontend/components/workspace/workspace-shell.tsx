@@ -276,6 +276,7 @@ interface WorkspaceShellProps {
   chatStatusMessage?: string | null;
   chatResponseText?: string;
   chatError?: string | null;
+  visualEditExecutionIds?: string[];
   chatThreadMessages?: Array<{
     id: string;
     role: 'user' | 'assistant';
@@ -923,6 +924,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
         statusMessage={props.chatStatusMessage ?? null}
         responseText={props.chatResponseText ?? ''}
         errorMessage={props.chatError ?? null}
+        visualEditExecutionIds={props.visualEditExecutionIds ?? []}
         threadMessages={props.chatThreadMessages ?? []}
         onConfirmExecutionFileActions={props.onConfirmExecutionFileActions}
         onCancelExecutionFileActions={props.onCancelExecutionFileActions}
@@ -2252,6 +2254,7 @@ function WorkspaceChatPanel(props: {
   statusMessage: string | null;
   responseText: string;
   errorMessage: string | null;
+  visualEditExecutionIds: string[];
   onConfirmExecutionFileActions?: (executionId: string) => void | Promise<void>;
   onCancelExecutionFileActions?: (executionId: string) => void;
   threadMessages: Array<{
@@ -2287,6 +2290,7 @@ function WorkspaceChatPanel(props: {
     props.requestState === 'submitting' ||
     props.requestState === 'queued' ||
     props.requestState === 'running';
+  const visualEditExecutionIdSet = new Set(props.visualEditExecutionIds);
   const canSubmit =
     Boolean(props.selectedSessionId) &&
     Boolean(props.onSubmitPrompt) &&
@@ -2437,6 +2441,9 @@ function WorkspaceChatPanel(props: {
                 {message.role === 'assistant' && message.fileActionState ? (
                   <WorkspaceAssistantFileActionSummary
                     fileActionState={message.fileActionState}
+                    isVisualEditExecution={Boolean(
+                      message.executionId && visualEditExecutionIdSet.has(message.executionId),
+                    )}
                     onConfirm={
                       message.executionId && props.onConfirmExecutionFileActions
                         ? () => void props.onConfirmExecutionFileActions?.(message.executionId!)
@@ -2498,6 +2505,7 @@ function WorkspaceChatPanel(props: {
 
 function WorkspaceAssistantFileActionSummary(props: {
   fileActionState: WorkspaceExecutionFileActionState;
+  isVisualEditExecution?: boolean;
   onConfirm?: () => void;
   onCancel?: () => void;
 }) {
@@ -2512,6 +2520,14 @@ function WorkspaceAssistantFileActionSummary(props: {
   return (
     <div className="mt-2 rounded border border-gray-200 bg-white p-2" data-testid="workspace-chat-file-actions">
       <p className="text-[11px] font-semibold text-gray-700">File Action Results</p>
+      {props.isVisualEditExecution ? (
+        <p
+          className="mt-1 text-[11px] text-violet-700"
+          data-testid="workspace-chat-file-actions-visual-edit-attribution"
+        >
+          Source: Visual Edit mode selection.
+        </p>
+      ) : null}
       {props.fileActionState.applyStatus === 'awaiting-confirmation' ? (
         <div
           className="mt-1 rounded border border-amber-200 bg-amber-50 p-2 text-[11px] text-amber-900"

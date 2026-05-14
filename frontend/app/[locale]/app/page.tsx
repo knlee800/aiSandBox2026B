@@ -1016,6 +1016,7 @@ export default function AppPage() {
   const appliedFileActionsExecutionIdsRef = useRef<Set<string>>(new Set());
   const pendingConfirmationExecutionIdsRef = useRef<Set<string>>(new Set());
   const cancelledFileActionsExecutionIdsRef = useRef<Set<string>>(new Set());
+  const visualEditExecutionIdsRef = useRef<Set<string>>(new Set());
   const coheredExecutionIdsRef = useRef<Set<string>>(new Set());
   const [execState, setExecState] = useState<WorkspaceExecState>({
     status: 'idle',
@@ -1461,6 +1462,7 @@ export default function AppPage() {
     appliedFileActionsExecutionIdsRef.current = new Set<string>();
     pendingConfirmationExecutionIdsRef.current = new Set<string>();
     cancelledFileActionsExecutionIdsRef.current = new Set<string>();
+    visualEditExecutionIdsRef.current = new Set<string>();
     coheredExecutionIdsRef.current = new Set<string>();
     skipNextChatThreadPersistRef.current = true;
 
@@ -3867,6 +3869,7 @@ export default function AppPage() {
     selectedSessionId: string | null;
     chosenModel: { provider: string; model: string };
     assistantMessageId: string;
+    isVisualEditPrompt: boolean;
   }): Promise<void> {
     const orchestrationPlan = buildWorkspaceChatOrchestrationPlan(
       input.prompt,
@@ -3996,6 +3999,10 @@ export default function AppPage() {
           });
         }
         return;
+      }
+
+      if (input.isVisualEditPrompt) {
+        visualEditExecutionIdsRef.current.add(executionId);
       }
 
       if (executionSessionId) {
@@ -4159,6 +4166,7 @@ export default function AppPage() {
       trimmedPrompt,
       selectedPreviewElement,
     );
+    const isVisualEditPrompt = selectedPreviewElement !== null;
 
     setChatRequestState('submitting');
     chatStreamRef.current?.close();
@@ -4204,6 +4212,7 @@ export default function AppPage() {
         selectedSessionId,
         chosenModel,
         assistantMessageId,
+        isVisualEditPrompt,
       });
       setSelectedPreviewElement(null);
       return;
@@ -4269,6 +4278,10 @@ export default function AppPage() {
       const nextFileActions = normalizeWorkspaceFileActions(data.fileActions);
       const executionSessionId = selectedSessionId;
       setSelectedPreviewElement(null);
+
+      if (isVisualEditPrompt && nextExecutionId) {
+        visualEditExecutionIdsRef.current.add(nextExecutionId);
+      }
 
       setChatExecutionId(nextExecutionId);
       if (nextExecutionId && executionSessionId) {
@@ -4729,6 +4742,20 @@ export default function AppPage() {
     }
 
     if (pendingConfirmationExecutionIdsRef.current.has(executionId)) {
+      setExecutionFileActionState(executionId, {
+        executionId,
+        source,
+        fileActions: actions,
+        applyStatus: 'awaiting-confirmation',
+        confirmationRequired: true,
+        skipReason: null,
+        results: [],
+      });
+      return;
+    }
+
+    if (visualEditExecutionIdsRef.current.has(executionId)) {
+      pendingConfirmationExecutionIdsRef.current.add(executionId);
       setExecutionFileActionState(executionId, {
         executionId,
         source,
@@ -5394,6 +5421,7 @@ export default function AppPage() {
       chatResponseText={chatResponseText}
       chatError={chatError}
       chatThreadMessages={chatThreadMessages}
+      visualEditExecutionIds={Array.from(visualEditExecutionIdsRef.current)}
       commandInput={commandInput}
       onCommandInputChange={setCommandInput}
       onExecuteCommand={handleExecuteCommand}

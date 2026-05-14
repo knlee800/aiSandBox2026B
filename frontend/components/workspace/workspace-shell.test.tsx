@@ -2788,9 +2788,37 @@ describe('workspace shell component', () => {
 
     assert.match(html, /workspace-chat-file-actions-awaiting-confirmation/);
     assert.match(html, /Approval required before applying risky file actions\./);
+    assert.doesNotMatch(html, /workspace-chat-file-actions-visual-edit-attribution/);
     assert.match(html, /package\.json/);
     assert.match(html, /workspace-chat-file-actions-confirm-button/);
     assert.match(html, /workspace-chat-file-actions-cancel-button/);
+  });
+
+  test('renders visual-edit attribution for visual-edit-sourced execution file actions', () => {
+    const html = renderWorkspaceShell({
+      visualEditExecutionIds: ['exec-visual-1'],
+      chatThreadMessages: [
+        {
+          id: 'assistant-visual-confirm-1',
+          role: 'assistant',
+          content: 'Awaiting confirmation for visual edit.',
+          executionId: 'exec-visual-1',
+          fileActionState: {
+            executionId: 'exec-visual-1',
+            source: 'status',
+            fileActions: [{ action: 'write', path: 'src/app.tsx', content: 'updated' }],
+            applyStatus: 'awaiting-confirmation',
+            confirmationRequired: true,
+            skipReason: null,
+            results: [],
+          },
+        },
+      ],
+    });
+
+    assert.match(html, /workspace-chat-file-actions-visual-edit-attribution/);
+    assert.match(html, /Source: Visual Edit mode selection\./);
+    assert.match(html, /Approval required before applying risky file actions\./);
   });
 
   test('forwards risky file-action confirmation actions from the chat summary', () => {
@@ -4666,6 +4694,30 @@ describe('workspace prompt context — UX-IA-15C helpers', () => {
     );
   });
 
+  test('tracks visual-edit execution ids in both submit paths and clears them on reset', () => {
+    const pageSource = readFileSync(
+      new URL('../../app/[locale]/app/page.tsx', import.meta.url),
+      'utf8',
+    );
+
+    assert.match(pageSource, /const visualEditExecutionIdsRef = useRef<Set<string>>\(new Set\(\)\);/);
+    assert.match(pageSource, /if \(input\.isVisualEditPrompt\) \{\s+visualEditExecutionIdsRef\.current\.add\(executionId\);/);
+    assert.match(pageSource, /if \(isVisualEditPrompt && nextExecutionId\) \{\s+visualEditExecutionIdsRef\.current\.add\(nextExecutionId\);/);
+    assert.match(pageSource, /visualEditExecutionIdsRef\.current = new Set<string>\(\);/);
+  });
+
+  test('forces awaiting confirmation for visual-edit execution file actions', () => {
+    const pageSource = readFileSync(
+      new URL('../../app/[locale]/app/page.tsx', import.meta.url),
+      'utf8',
+    );
+
+    assert.match(pageSource, /if \(visualEditExecutionIdsRef\.current\.has\(executionId\)\) \{/);
+    assert.match(pageSource, /pendingConfirmationExecutionIdsRef\.current\.add\(executionId\);/);
+    assert.match(pageSource, /applyStatus: 'awaiting-confirmation'/);
+    assert.match(pageSource, /confirmationRequired: true/);
+  });
+
   test('buildPromptWithSelectedPreviewElement prefixes prompt metadata when element exists', () => {
     const prompt = buildPromptWithSelectedPreviewElement(
       'Make the button more rounded',
@@ -4678,6 +4730,15 @@ describe('workspace prompt context — UX-IA-15C helpers', () => {
     assert.match(prompt, /Text: Submit/);
     assert.match(prompt, /Classes: btn primary/);
     assert.match(prompt, /Bounds: x=10, y=20, width=120, height=40/);
+    assert.match(prompt, /\[Visual Edit Mode Contract\]/);
+    assert.match(prompt, /User is in Visual Edit Mode\./);
+    assert.match(prompt, /Treat the selected preview element as the target of the requested change\./);
+    assert.match(
+      prompt,
+      /Identify the source file responsible for rendering or styling the selected element before proposing edits\./,
+    );
+    assert.match(prompt, /Propose focused file-actions only for files directly required to satisfy this request\./);
+    assert.match(prompt, /Follow the existing file-action output contract exactly\./);
     assert.match(prompt, /User request:\nMake the button more rounded/);
   });
 

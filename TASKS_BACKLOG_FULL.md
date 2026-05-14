@@ -1,4 +1,4 @@
-﻿## Authority Notice
+## Authority Notice
 
 This document is the MASTER task backlog.
 
@@ -21956,7 +21956,7 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 
 **Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED)
 
-**Current stage:** UX-IA-16 — Visual Edit AI Patch Flow (PENDING — next task)
+**Current stage:** UX-IA-16B — Visual Edit Diff Preview in Confirmation UI (ACTIVE — current stage)
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -21987,7 +21987,9 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
     - UX-IA-15A ??Preview Picker Infrastructure (COMPLETE and LOCKED ??docs/UX-IA-15A-CHECKPOINT.md)
     - UX-IA-15B ??Cross-Frame Picker Script + postMessage Listener (COMPLETE and LOCKED ??docs/UX-IA-15B-CHECKPOINT.md)
     - UX-IA-15C ??AI Prompt Context Injection + Validation + Consolidation (COMPLETE and LOCKED ??docs/UX-IA-15C-CHECKPOINT.md)
-17. UX-IA-16 ?X Visual Edit AI Patch Flow (PENDING ?X requires UX-IA-15 COMPLETE ??now satisfied)
+17. UX-IA-16 — Visual Edit AI Patch Flow (ACTIVE — plan split complete: 16A + 16B)
+    - UX-IA-16A — Visual Edit Prompt Contract + Force-Confirmation (COMPLETE and LOCKED — `docs/UX-IA-16A-CHECKPOINT.md`)
+    - UX-IA-16B — Visual Edit Diff Preview in Confirmation UI (ACTIVE — current stage)
 18. UX-IA-17 ?X Visual Edit Undo / Checkpoint Integration (pending ?X requires UX-IA-16 COMPLETE)
 
 ---
@@ -23794,6 +23796,202 @@ Wire the captured preview element selection into the AI prompt context, validate
 
 **Reference:** See TASKS.md -> UX-IA-15C. Checkpoints: `docs/UX-IA-15C-CHECKPOINT.md`, `docs/UX-IA-15-CHECKPOINT.md`.
 
+
+
+### UX-IA-16: Visual Edit AI Patch Flow
+
+**Task ID:** UX-IA-16
+**Parent:** UX-IA family (UX-IA — Product & UX/UI Redesign — Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family status:** ACTIVE — UX-IA-16 ACTIVE (plan split: 16A COMPLETE and LOCKED, 16B ACTIVE)
+**Priority:** Medium
+**Status:** ACTIVE — plan complete; child slices registered (16A ACTIVE, 16B PLANNED)
+**Risk:** Medium
+**Model:** Sonnet 4.6 (plan phase — COMPLETE); implementation per child slice
+**Depends on:** UX-IA-15 (COMPLETE and LOCKED — `docs/UX-IA-15-CHECKPOINT.md`)
+**Checkpoint:** Pending — to be created when all child slices are COMPLETE and LOCKED
+
+**Objective:**
+Wire the visual edit selected-element context (captured in UX-IA-15) into AI patch requests, and ensure AI-proposed file changes flow through the existing AI-WS file-action confirmation flow without bypass.
+
+**Plan result:**
+- Plan phase COMPLETE (Sonnet 4.6, 2026-05-14)
+- No backend changes required — visual edit context flows entirely through frontend prompt prefix
+- Split into two child slices: UX-IA-16A (prompt contract + force-confirmation) and UX-IA-16B (diff preview in confirmation UI)
+- UX-IA-16B may be deferred if force-confirmation with file path list from 16A is sufficient for initial validation
+
+**Child slices:**
+- UX-IA-16A — Visual Edit Prompt Contract + Force-Confirmation (COMPLETE and LOCKED — `docs/UX-IA-16A-CHECKPOINT.md`)
+- UX-IA-16B — Visual Edit Diff Preview in Confirmation UI (ACTIVE — current stage)
+
+**Non-goals (parent-level):**
+- No direct DOM mutation as final output
+- No bypass of file-action confirmation flow
+- No automatic patch application without existing confirmation flow
+- No backend changes
+- No auth changes
+- No route changes
+- No Visual Edit drag/drop editor
+- No broad refactor
+- No new dependencies unless explicitly approved
+
+**Acceptance checks:**
+- UX-IA-16 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- Plan phase completed and approved — DONE
+- Child slices identified and registered — DONE (16A ACTIVE, 16B PLANNED)
+- UX-IA-16A COMPLETE and LOCKED — `docs/UX-IA-16A-CHECKPOINT.md` — DONE
+- UX-IA-16B COMPLETE and LOCKED (PENDING)
+- Parent checkpoint created on all child slices complete (PENDING)
+
+**Reference:** See TASKS.md -> UX-IA-16. Master plan: `docs/UX-IA-00-MASTER-PLAN.md`. Upstream: `docs/UX-IA-15C-CHECKPOINT.md`.
+
+---
+
+### UX-IA-16A: Visual Edit Prompt Contract + Force-Confirmation
+
+**Task ID:** UX-IA-16A
+**Parent:** UX-IA-16 — Visual Edit AI Patch Flow
+**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family status:** ACTIVE — UX-IA-16A COMPLETE and LOCKED; UX-IA-16B ACTIVE (current stage)
+**Priority:** Medium
+**Status:** COMPLETE and LOCKED
+**Risk:** Low
+**Model:** GPT-5.3 Codex for implementation
+**Depends on:** UX-IA-16 plan phase (COMPLETE)
+**Checkpoint:** `docs/UX-IA-16A-CHECKPOINT.md`
+
+**Objective:**
+Enhance the visual-edit prompt contract so the AI receives directive instructions to propose file-action patches for the selected element. Force all visual-edit-sourced executions through the existing file-action confirmation dialog regardless of batch size or risk classification.
+
+**Scope:**
+- Enhance `buildPromptWithSelectedPreviewElement` in `workspace-preview.logic.ts` to include visual-edit-specific AI instructions (directive block prepended when element context is present; element metadata block preserved; original user prompt appended)
+- Add `visualEditExecutionIdsRef` (`useRef<Set<string>>`) in `page.tsx` to track visual-edit-sourced execution IDs
+- Record visual-edit intent on the execution ID at submit time in both non-orchestration and orchestration paths, before any `consumeExecutionFileActions` call
+- In `maybeApplyExecutionFileActions`, check `visualEditExecutionIdsRef` before the `isRiskyFileActionBatch` check — force `awaiting-confirmation` for visual-edit-sourced executions
+- Add minimal visual-edit attribution label to `WorkspaceAssistantFileActionSummary` in `workspace-shell.tsx` when the execution is visual-edit-sourced
+- Clear `visualEditExecutionIdsRef` on chat reset (alongside existing `appliedFileActionsExecutionIdsRef` and `cancelledFileActionsExecutionIdsRef` reset)
+- Add/update focused tests
+
+**Non-goals:**
+- No diff preview (belongs to UX-IA-16B)
+- No backend changes
+- No new npm dependencies
+- No bypass of confirmation flow
+- No direct DOM mutation
+- No changes to picker script, postMessage listener, or UX-IA-15 wiring
+
+**Files likely to change:**
+
+| File | Change |
+|---|---|
+| `frontend/components/workspace/workspace-preview.logic.ts` | Enhance `buildPromptWithSelectedPreviewElement` with visual-edit instructions |
+| `frontend/app/[locale]/app/page.tsx` | Add `visualEditExecutionIdsRef`; record on submit; check in `maybeApplyExecutionFileActions`; clear on reset |
+| `frontend/components/workspace/workspace-shell.tsx` | Visual-edit attribution label in `WorkspaceAssistantFileActionSummary` |
+| `frontend/components/workspace/workspace-shell.test.tsx` | Add/update tests |
+
+**No other files changed.** No backend files. No auth files. No i18n files. No governance docs.
+
+**Preservation invariants:**
+- UX-IA-15A/15B/15C: all types, helpers, postMessage listener, prompt prefix shape — fully preserved
+- `isRiskyFileActionBatch` logic — unchanged; still applies for non-visual-edit executions
+- `acquireExecutionApplyGuard` apply-once safety — unchanged
+- `applySequentialFileActions` per-action session validation — unchanged
+- `maybeRunExecutionCoherence` (file tree refresh, preview refresh, checkpoint, autosave) — unchanged
+- Cancel path — unchanged
+- All prior UX-IA-04 through UX-IA-15 `data-testid` contracts and component interfaces — unaffected
+
+**Tests to add:**
+
+| Test | Assertion |
+|---|---|
+| `buildPromptWithSelectedPreviewElement includes visual-edit instruction block when element present` | Output contains visual-edit directive text, element metadata, and original prompt |
+| `buildPromptWithSelectedPreviewElement unchanged when no element` | Existing test preserved — returns original prompt unchanged |
+| `Visual-edit execution always triggers awaiting-confirmation regardless of action count` | Single small safe write with visual-edit intent → `applyStatus === 'awaiting-confirmation'` |
+| `Non-visual-edit execution follows normal risky-batch logic` | Single small safe write without visual-edit intent → auto-applies |
+| `visualEditExecutionIdsRef cleared on chat reset` | After reset, visual-edit tracking is empty |
+
+**Validation plan:**
+- `npx tsc --noEmit` from `frontend/` — 0 errors
+- `npm test` from `frontend/` — all tests pass; baseline 353, expect 353 + new tests
+- `npm run build` from `frontend/` — passes
+- `ReadLints` on all touched files — 0 new errors
+- Manual: select element → submit prompt → verify AI prompt in DevTools contains visual-edit instruction block → verify confirmation dialog appears for a single-file safe write
+
+**Acceptance checks:**
+- UX-IA-16A registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- Status set to ACTIVE — current stage — DONE
+- Scope, non-goals, files, tests, and validation plan recorded — DONE
+- No implementation performed in this registration — DONE
+- Implementation complete and validated — DONE (tsc PASS, 356/356 tests PASS, build PASS, lints PASS)
+- `docs/UX-IA-16A-CHECKPOINT.md` created — DONE
+
+**Reference:** See TASKS.md -> UX-IA-16A. Parent: UX-IA-16. Upstream: `docs/UX-IA-15C-CHECKPOINT.md`.
+
+---
+
+### UX-IA-16B: Visual Edit Diff Preview in Confirmation UI
+
+**Task ID:** UX-IA-16B
+**Parent:** UX-IA-16 — Visual Edit AI Patch Flow
+**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family status:** ACTIVE — UX-IA-16B ACTIVE (current stage)
+**Priority:** Medium
+**Status:** ACTIVE — current stage
+**Risk:** Medium
+**Model:** Opus 4.6 High if UI/diff complexity is high; otherwise GPT-5.3 Codex — evaluate at implementation time
+**Depends on:** UX-IA-16A (COMPLETE and LOCKED — `docs/UX-IA-16A-CHECKPOINT.md`)
+**Checkpoint:** Pending — to be created on completion (`docs/UX-IA-16B-CHECKPOINT.md`)
+
+**Objective:**
+When a visual-edit execution reaches `awaiting-confirmation`, display a diff preview of the proposed file changes so the user can review source diffs before approving. Existing non-visual-edit confirmation behavior is preserved unchanged.
+
+**Scope:**
+- Add a pure line-level unified diff helper (no new npm dependency — implement with string comparison)
+- For visual-edit confirmations: fetch current file content from the session via the existing session file-read API for each file-action path
+- Compute diff between current content and proposed `file-actions` content
+- For `create` actions: display full proposed content as "new file"
+- For `delete` actions: display file path with "delete" marker
+- Cap diff display length to avoid UI overflow
+- Render diff preview only within `WorkspaceAssistantFileActionSummary` for visual-edit executions — non-visual-edit confirmation block is unchanged
+- Add/update focused tests
+
+**Non-goals:**
+- No backend changes
+- No new npm dependencies
+- No automatic apply
+- No bypass of confirmation
+- No changes to non-visual-edit confirmation behavior
+- No full side-by-side diff editor
+
+**Files likely to change:**
+
+| File | Change |
+|---|---|
+| `frontend/components/workspace/workspace-preview.logic.ts` or `workspace-diff.logic.ts` | Pure diff computation helper |
+| `frontend/components/workspace/workspace-shell.tsx` | Diff preview rendering in `WorkspaceAssistantFileActionSummary` for visual-edit executions |
+| `frontend/app/[locale]/app/page.tsx` | Pass file-read capability to confirmation UI path if needed |
+| `frontend/components/workspace/workspace-shell.test.tsx` | Tests for diff computation and diff display |
+
+**Preservation invariants:**
+- All UX-IA-16A invariants — fully preserved
+- Non-visual-edit confirmation path — unchanged
+- Apply-once guard, cancel path, coherence path — unchanged
+
+**Validation plan:**
+- `npx tsc --noEmit` from `frontend/` — 0 errors
+- `npm test` from `frontend/` — all tests pass
+- `npm run build` from `frontend/` — passes
+- `ReadLints` on all touched files — 0 new errors
+- Manual: visual-edit confirmation dialog shows diff for modified file; non-visual-edit confirmation still shows path list only
+
+**Acceptance checks:**
+- UX-IA-16B registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- Status set to PLANNED — DONE
+- Scope, non-goals, files, and validation plan recorded — DONE
+- Implementation complete and validated (PENDING)
+- `docs/UX-IA-16B-CHECKPOINT.md` created (PENDING)
+
+**Reference:** See TASKS.md -> UX-IA-16B. Parent: UX-IA-16. Depends on: `docs/UX-IA-16A-CHECKPOINT.md`.
 
 
 

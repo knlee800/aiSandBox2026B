@@ -125,6 +125,13 @@ export function buildPromptWithSelectedPreviewElement(
     `Classes: ${formatSelectedPreviewElementClasses(selectedPreviewElement.classList)}`,
     `Bounds: x=${bounds.x}, y=${bounds.y}, width=${bounds.width}, height=${bounds.height}`,
     '',
+    '[Visual Edit Mode Contract]',
+    'User is in Visual Edit Mode.',
+    'Treat the selected preview element as the target of the requested change.',
+    'Identify the source file responsible for rendering or styling the selected element before proposing edits.',
+    'Propose focused file-actions only for files directly required to satisfy this request.',
+    'Follow the existing file-action output contract exactly.',
+    '',
     'User request:',
     prompt,
   ].join('\n');
