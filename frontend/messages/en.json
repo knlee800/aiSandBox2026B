@@ -110,7 +110,11 @@
     "files": "Files",
     "unsavedChanges": "Unsaved changes",
     "collapsePanel": "Collapse AI panel",
-    "expandPanel": "Expand AI panel"
+    "expandPanel": "Expand AI panel",
+    "selectElement": "Select Element",
+    "pickerActive": "Picker active — click an element in the preview",
+    "elementSelected": "Element selected",
+    "deselectElement": "Clear selection"
   },
   "tabs": {
     "preview": "Preview",

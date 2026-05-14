@@ -422,6 +422,8 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const [tabOrientation, setTabOrientation] = React.useState<TabOrientation>(readStoredTabOrientation);
   const [aiPanelCollapsed, setAiPanelCollapsed] = React.useState(readStoredAiPanelCollapsed);
   const [aiPanelView, setAiPanelView] = React.useState<'chat' | 'history'>('chat');
+  const [pickerActive, setPickerActive] = React.useState(false);
+  const previewIframeRef = React.useRef<HTMLIFrameElement | null>(null);
   const [pendingRestoreSnapshotId, setPendingRestoreSnapshotId] = React.useState<string | null>(
     null,
   );
@@ -540,6 +542,14 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const handleCancelRestore = () => {
     setPendingRestoreSnapshotId(null);
   };
+  const handlePickerToggle = React.useCallback(() => {
+    setPickerActive((current) => !current);
+  }, []);
+  React.useEffect(() => {
+    if (!props.previewUrl || props.previewState !== 'ready') {
+      setPickerActive(false);
+    }
+  }, [props.previewUrl, props.previewState]);
   const handleSaveProjectHistorySnapshot =
     projectFirstUxEnabled &&
     props.selectedProjectId &&
@@ -873,6 +883,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
       <p className="text-xs font-semibold text-gray-700 mb-2">Preview Panel</p>
       <WorkspacePreviewPanel
         projectFirstUxEnabled={projectFirstUxEnabled}
+        projectMessages={projectPanelMessages}
         selectedSessionId={props.selectedSessionId}
         previewState={props.previewState}
         previewUrl={props.previewUrl}
@@ -880,6 +891,9 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
         onRefreshPreview={props.onRefreshPreview}
         onPreviewLoad={props.onPreviewLoad}
         onPreviewError={props.onPreviewError}
+        iframeRef={previewIframeRef}
+        pickerActive={pickerActive}
+        onPickerToggle={handlePickerToggle}
       />
     </section>
   );
@@ -1430,6 +1444,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                       >
                         <WorkspacePreviewPanel
                           projectFirstUxEnabled={projectFirstUxEnabled}
+                          projectMessages={projectPanelMessages}
                           selectedSessionId={props.selectedSessionId}
                           previewState={props.previewState}
                           previewUrl={props.previewUrl}
@@ -1437,6 +1452,9 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                           onRefreshPreview={props.onRefreshPreview}
                           onPreviewLoad={props.onPreviewLoad}
                           onPreviewError={props.onPreviewError}
+                          iframeRef={previewIframeRef}
+                          pickerActive={pickerActive}
+                          onPickerToggle={handlePickerToggle}
                           fillHeight
                         />
                       </div>
@@ -2609,6 +2627,10 @@ function WorkspaceExecPanel(props: {
 
 function WorkspacePreviewPanel(props: {
   projectFirstUxEnabled: boolean;
+  projectMessages: Pick<
+    typeof enMessages.project,
+    'selectElement' | 'pickerActive' | 'deselectElement'
+  >;
   selectedSessionId: string | null;
   previewState: WorkspacePreviewState;
   previewUrl: string | null;
@@ -2616,11 +2638,20 @@ function WorkspacePreviewPanel(props: {
   onRefreshPreview: () => Promise<void>;
   onPreviewLoad: () => void;
   onPreviewError: () => void;
+  iframeRef?: React.RefObject<HTMLIFrameElement | null>;
+  pickerActive?: boolean;
+  onPickerToggle?: () => void;
   fillHeight?: boolean;
 }) {
   const canStartPreview =
     Boolean(props.selectedSessionId) && props.previewState === 'unavailable';
   const canRefresh = Boolean(props.selectedSessionId) && props.previewState !== 'loading';
+  const canTogglePicker =
+    Boolean(props.selectedSessionId) && Boolean(props.previewUrl) && props.previewState === 'ready';
+  const pickerActive = props.pickerActive ?? false;
+  const pickerToggleLabel = pickerActive
+    ? props.projectMessages.deselectElement
+    : props.projectMessages.selectElement;
   const panelClassName = props.fillHeight
     ? 'flex flex-col flex-1 min-h-0 overflow-hidden rounded border border-gray-200 bg-gray-50 p-2'
     : 'rounded border border-gray-200 bg-gray-50 p-2';
@@ -2651,6 +2682,16 @@ function WorkspacePreviewPanel(props: {
           >
             {props.previewState === 'loading' ? 'Refreshing...' : 'Refresh'}
           </button>
+          <button
+            type="button"
+            data-testid="workspace-preview-picker-toggle"
+            aria-pressed={pickerActive}
+            disabled={!canTogglePicker}
+            onClick={() => props.onPickerToggle?.()}
+            className="rounded border border-violet-300 bg-white px-3 py-1 text-xs text-violet-700 disabled:border-gray-200 disabled:text-gray-400"
+          >
+            {pickerToggleLabel}
+          </button>
         </div>
       </div>
 
@@ -2658,9 +2699,18 @@ function WorkspacePreviewPanel(props: {
         state={props.previewState}
         projectFirstUxEnabled={props.projectFirstUxEnabled}
       />
+      {pickerActive ? (
+        <p
+          className="mt-2 rounded border border-violet-200 bg-violet-50 px-2 py-1 text-[11px] text-violet-800"
+          data-testid="workspace-preview-picker-active"
+        >
+          {props.projectMessages.pickerActive}
+        </p>
+      ) : null}
 
       {props.previewUrl ? (
         <iframe
+          ref={props.iframeRef}
           title="Session Preview"
           data-testid="workspace-preview-iframe"
           src={props.previewUrl}

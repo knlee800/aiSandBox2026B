@@ -110,7 +110,11 @@
     "files": "檔案",
     "unsavedChanges": "有未儲存變更",
     "collapsePanel": "收合 AI 面板",
-    "expandPanel": "展開 AI 面板"
+    "expandPanel": "展開 AI 面板",
+    "selectElement": "選取元素",
+    "pickerActive": "選取模式 — 在預覽中點選元素",
+    "elementSelected": "已選取元素",
+    "deselectElement": "清除選取"
   },
   "tabs": {
     "preview": "預覽",

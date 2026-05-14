@@ -3010,6 +3010,57 @@ describe('workspace shell component', () => {
     assert.match(html, /data-testid="workspace-preview-iframe"/);
   });
 
+  test('renders preview picker toggle in Preview tab toolbar', () => {
+    const html = renderWorkspaceShell({
+      selectedSessionId: session.id,
+      previewState: 'ready',
+      previewUrl: `/api/preview/${session.id}/proxy?refresh=11`,
+    });
+
+    assert.match(html, /data-testid="workspace-preview-picker-toggle"/);
+  });
+
+  test('disables preview picker toggle when preview URL is missing', () => {
+    const html = renderWorkspaceShell({
+      selectedSessionId: session.id,
+      previewState: 'ready',
+      previewUrl: null,
+    });
+
+    assert.match(html, /data-testid="workspace-preview-picker-toggle"[^>]*disabled/);
+  });
+
+  test('sets preview picker toggle aria-pressed false by default', () => {
+    const html = renderWorkspaceShell({
+      selectedSessionId: session.id,
+      previewState: 'ready',
+      previewUrl: `/api/preview/${session.id}/proxy?refresh=12`,
+    });
+
+    assert.match(html, /data-testid="workspace-preview-picker-toggle"[^>]*aria-pressed="false"/);
+  });
+
+  test('keeps preview Start and Refresh controls visible with picker infrastructure', () => {
+    const html = renderWorkspaceShell({
+      selectedSessionId: session.id,
+      previewState: 'ready',
+      previewUrl: `/api/preview/${session.id}/proxy?refresh=13`,
+    });
+
+    assert.match(html, /data-testid="workspace-preview-start"/);
+    assert.match(html, /data-testid="workspace-preview-refresh"/);
+  });
+
+  test('keeps preview iframe rendering when preview URL exists', () => {
+    const html = renderWorkspaceShell({
+      selectedSessionId: session.id,
+      previewState: 'ready',
+      previewUrl: `/api/preview/${session.id}/proxy?refresh=14`,
+    });
+
+    assert.match(html, /data-testid="workspace-preview-iframe"/);
+  });
+
   test('renders unavailable preview state with start preview action', () => {
     const html = renderWorkspaceShell({
       selectedSessionId: session.id,

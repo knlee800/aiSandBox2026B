@@ -1,4 +1,4 @@
-#
+﻿#
 (ACTIVE -- plan phase)ity & Scope
 
 This file lists currently ACTIVE and SELECTED tasks.
@@ -12038,9 +12038,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## UX-IA ?X Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED
+**Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 ACTIVE (child slices: 15A COMPLETE and LOCKED, 15B ACTIVE, 15C PLANNED)
 
-**Current stage:** UX-IA-15 ?X Visual Edit Mode Foundation (pending)
+**Current stage:** UX-IA-15B ??Cross-Frame Picker Script + postMessage Listener (ACTIVE)
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -12067,7 +12067,10 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 13. UX-IA-12 ?X Upgrade Flow + Dashboard Polish (COMPLETE and LOCKED ?X `docs/UX-IA-12-CHECKPOINT.md`)
 14. UX-IA-13 ?X Responsive / Mobile Polish (COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X \docs/UX-IA-13-CHECKPOINT.md\)
 15. UX-IA-14 ?X Route Cleanup / Redirects (COMPLETE and LOCKED ?X docs/UX-IA-14-CHECKPOINT.md)
-16. UX-IA-15 ?X Visual Edit Mode Foundation (pending ?X requires UX-IA-08 + UX-IA-10 COMPLETE)
+16. UX-IA-15 ??Visual Edit Mode Foundation (ACTIVE ??child slices in progress ??UX-IA-08 + UX-IA-10 COMPLETE and LOCKED)
+    - UX-IA-15A ??Preview Picker Infrastructure (COMPLETE and LOCKED ??docs/UX-IA-15A-CHECKPOINT.md)
+    - UX-IA-15B ??Cross-Frame Picker Script + postMessage Listener (ACTIVE)
+    - UX-IA-15C ??AI Prompt Context Injection + Validation + Consolidation (PLANNED)
 17. UX-IA-16 ?X Visual Edit AI Patch Flow (pending ?X requires UX-IA-15 COMPLETE)
 18. UX-IA-17 ?X Visual Edit Undo / Checkpoint Integration (pending ?X requires UX-IA-16 COMPLETE)
    ? AUTH-MODULE-01 ?X Reusable App-Auth Module for aiSandBox-Created Apps (cross-family ?X later product capability; requires AUTH-APP-01 + UX-IA-08?VUX-IA-10 COMPLETE; see `docs/UX-IA-00-MASTER-PLAN.md` AUTH-MODULE-01 entry; register under AUTH family before starting)
@@ -13309,6 +13312,264 @@ Clean up or redirect deprecated workspace/auth/navigation routes that became obs
 - No auth or session regressions
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-14. See `docs/UX-IA-00-MASTER-PLAN.md` ? UX-IA-14 section.
+
+---
+
+#### UX-IA-15: Visual Edit Mode Foundation
+
+**Status:** ACTIVE ??child slices in progress (plan complete; child slices: 15A COMPLETE and LOCKED, 15B ACTIVE, 15C PLANNED)
+**Task ID:** UX-IA-15
+**Family:** UX-IA (Product & UX/UI Redesign ? Evolutionary)
+**Family status:** ACTIVE
+**Priority:** Medium
+**Depends on:** UX-IA-08 (COMPLETE and LOCKED ? `docs/UX-IA-08-CHECKPOINT.md`), UX-IA-10 (COMPLETE and LOCKED ? `docs/UX-IA-10-CHECKPOINT.md`), UX-IA-14 (COMPLETE and LOCKED ? `docs/UX-IA-14-CHECKPOINT.md`)
+**Checkpoint:** `docs/UX-IA-15-CHECKPOINT.md` (to be created on completion)
+**Risk:** Medium — cross-frame postMessage, iframe origin constraints, AI prompt context injection
+**Loop:** 4-step (plan ? implement ? verify ? consolidate)
+**Model:** Opus 4.6 for plan phase and implementation; Sonnet 4.6 for registration and consolidation
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` ? UX-IA-15 section + Section 12 (Visual Edit Mode)
+
+**Objective:**
+Add a preview element picker / selection overlay to the project mode Preview tab. When the user activates the picker toggle and clicks an element in the preview iframe, capture its DOM metadata (CSS selector, text content, bounding box, applied CSS classes) via cross-frame `postMessage` and surface it as structured context appended to the AI chat prompt. The AI uses the existing AI-WS file-action system to propose and apply source changes. Preview refreshes after a confirmed file action. All existing file-action confirmation and checkpoint safety rules are preserved without bypass.
+
+**Bounded scope (likely files — confirm during plan phase):**
+- `frontend/components/workspace/workspace-preview.logic.ts` ? add cross-frame `postMessage` listener; handle `element-selected` message from preview iframe; expose selected-element state
+- `frontend/components/workspace/workspace-project-mode.tsx` ? add element picker toggle button to Preview tab toolbar; maintain `selectedElement` state; pass `selectedElement` context into AI prompt flow
+- `frontend/components/workspace/workspace-chat-*.logic.ts` ? inject selected element metadata (selector, text, classes, bounds) as structured context block at start of user prompt when `selectedElement` is set
+- Inline picker script (injected into preview iframe via `postMessage`) ? adds selection overlay and click handler; sends back `{ selector, textContent, classList, boundingBox }` on element click; no external dependencies
+
+**Non-goals:**
+- No full visual editor
+- No inline text editing directly in preview
+- No drag/resize/reposition elements
+- No style controls panel
+- No DOM-to-source mapping (deferred to UX-IA-16+)
+- No bypass of existing AI-WS file-action confirmation rules
+- No backend or API changes (unless plan phase proves unavoidable — requires explicit approval)
+- No auth changes
+- No route changes
+- No billing changes
+- No broad refactor of workspace, AI-WS, or preview logic
+- No new dependencies unless explicitly approved after plan phase
+
+**Preservation invariants:**
+- UX-IA-08 project mode tab shell ? unchanged
+- UX-IA-09 AI/history panel ? unchanged
+- UX-IA-10 Preview tab iframe behavior and `fillHeight` wiring ? unchanged as base; overlay is additive
+- AI-WS file action confirmation and checkpoint safety rules ? fully preserved, no bypass path
+- `WorkspacePreviewPanel` iframe structure and `window.postMessage` path ? preserved (Visual Edit Mode constraint from UX-IA-00 Section 12)
+- Existing preview iframe `src` and reload behavior ? unchanged
+- All prior UX-IA-04 through UX-IA-14 testids and component contracts ? unaffected
+
+**Dependencies (all satisfied):**
+- UX-IA-08 COMPLETE and LOCKED (project mode shell + tab bar — confirmed ? `docs/UX-IA-08-CHECKPOINT.md`)
+- UX-IA-10 COMPLETE and LOCKED (Preview tab full-height wiring — confirmed ? `docs/UX-IA-10-CHECKPOINT.md`)
+- UX-IA-14 COMPLETE and LOCKED (route cleanup — confirmed ? `docs/UX-IA-14-CHECKPOINT.md`)
+- No backend tasks blocking
+
+**Risks:**
+- Cross-frame `postMessage` origin validation — must use allowlist or same-origin check; do not accept messages from arbitrary origins
+- Iframe sandbox attribute — if the preview iframe has a `sandbox` attribute that restricts `allow-scripts`, the injected picker script cannot run; inspect current `WorkspacePreviewPanel` iframe attributes during plan phase
+- AI prompt context injection — must not break existing prompt flow if `selectedElement` is null; injection must be opt-in and clearly delimited
+- Picker script injection timing — must handle cases where the preview iframe reloads (e.g., after a file action); picker state may need to be re-injected
+- CSS selector stability — generated selectors may be fragile if the AI produces code changes that alter the DOM structure; this is a known limitation acceptable for foundation phase
+- Plan phase may reveal need for a small backend extension (e.g., to forward DOM context to AI service); if so, this must be approved before implementation begins
+
+**Model guidance:**
+- Plan phase (Opus 4.6): read `workspace-preview.logic.ts`, `WorkspacePreviewPanel` in `workspace-shell.tsx`, and `workspace-chat-*.logic.ts`; map existing `postMessage` patterns if any; design element picker toggle placement, `postMessage` protocol (message schema, origin policy), selected-element state shape, and AI prompt injection contract; identify child slices if scope warrants splitting
+- Implementation (Opus 4.6 for core cross-frame and state work; Sonnet 4.6 for UI wiring): implement in minimal slices; do not combine picker script, postMessage listener, state management, and prompt injection into a single pass
+- Verify: typecheck, existing test suite (323 baseline), focused tests for picker toggle and postMessage handler, build
+- Consolidate: write `docs/UX-IA-15-CHECKPOINT.md`; update this entry to COMPLETE and LOCKED
+
+**Validation plan:**
+- `npx tsc --noEmit` from `frontend/` ? 0 errors
+- `npm test` from `frontend/` ? 323 tests baseline, 0 failures; add focused tests for picker toggle and postMessage handler
+- `npm run build` from `frontend/` ? passes
+- `ReadLints` on all touched files ? 0 new errors
+- Manual: picker toggle appears in Preview tab toolbar; clicking an element in the preview highlights it; element metadata appears in AI chat context; AI can propose file changes; file-action confirmation flow is unchanged
+
+**Acceptance checks:**
+- UX-IA-15 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- Current stage set to UX-IA-15 ACTIVE / plan phase — DONE
+- Scope, non-goals, dependencies, risks, model guidance, and validation plan recorded — DONE
+- No implementation performed during registration
+- Element picker toggle appears in Preview tab toolbar when UX-IA-15 is implemented
+- Clicking an element in the preview iframe highlights it with a selection overlay
+- Element metadata (selector, text content, CSS classes, bounding box) is appended to AI chat context
+- AI can propose file changes based on element context using existing AI-WS file-action flow
+- File-action confirmation flow is fully preserved
+- All prior UX-IA invariants preserved
+- Frontend typecheck, tests, and build pass
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-15. See `docs/UX-IA-00-MASTER-PLAN.md` ? UX-IA-15 section + Section 12.
+
+---
+
+#### UX-IA-15A: Preview Picker Infrastructure
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** UX-IA-15A
+**Parent:** UX-IA-15 ??Visual Edit Mode Foundation
+**Family:** UX-IA (Product & UX/UI Redesign ??Evolutionary)
+**Priority:** Medium
+**Risk:** Low
+**Model:** GPT-5.3 Codex for implementation
+**Depends on:** UX-IA-15 plan phase (COMPLETE)
+**Checkpoint:** `docs/UX-IA-15A-CHECKPOINT.md` ??COMPLETE and LOCKED
+
+**Objective:**
+Establish the type foundation, helper utilities, iframeRef wiring, picker toggle button, and i18n keys required for the Visual Edit Mode picker. No script injection, no postMessage listener, no prompt injection.
+
+**Scope:**
+- Add `SelectedPreviewElement` interface and `VisualEditMessage` types to `frontend/components/workspace/workspace-preview.logic.ts`
+- Add CSS selector generator helper to `workspace-preview.logic.ts`
+- Add origin/source validator helper to `workspace-preview.logic.ts`
+- Add `iframeRef` to preview iframe in `frontend/components/workspace/workspace-shell.tsx`
+- Add picker toggle button to `WorkspacePreviewPanel` toolbar in `workspace-shell.tsx`
+- Add `pickerActive` local state in `WorkspaceShell`
+- Add `onPickerToggle` prop to `WorkspacePreviewPanel`
+- Add i18n keys to all 3 locale files
+- Add focused tests
+
+**Non-goals:**
+- No script injection into preview iframe
+- No postMessage listener
+- No prompt context injection
+- No `page.tsx` changes
+- No backend/API/auth changes
+- No `workspace-project-mode.tsx` (does not exist; project mode is locked inside `workspace-shell.tsx` per UX-IA-08)
+
+**Preservation invariants:**
+- UX-IA-08 project mode locked inside `frontend/components/workspace/workspace-shell.tsx` ??no new mode file created
+- All prior UX-IA-04 through UX-IA-14 testids and component contracts ??unaffected
+- Existing preview iframe `src` and reload behavior ??unchanged
+
+**Validation plan:**
+- `npx tsc --noEmit` from `frontend/` ??0 errors
+- `npm test` from `frontend/` ??323 tests baseline, 0 failures; add focused tests for picker toggle state and type exports
+- `ReadLints` on all touched files ??0 new errors
+
+**Acceptance checks:**
+- UX-IA-15A registered in TASKS.md and TASKS_BACKLOG_FULL.md ??DONE
+- Types and helpers exist in `workspace-preview.logic.ts` ??DONE
+- `iframeRef` wired in `workspace-shell.tsx` ??DONE
+- Picker toggle button renders in `WorkspacePreviewPanel` toolbar ??DONE
+- `pickerActive` state toggles correctly ??DONE
+- i18n keys present in all 3 locale files ??DONE
+- No script injection, no postMessage, no prompt injection performed ??DONE (confirmed)
+- `npx tsc --noEmit` ??PASS
+- `npm test` ??PASS (328 tests, 328 passed, 0 failed)
+- `npm run build` ??PASS
+- `ReadLints` on touched files ??PASS (0 errors)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-15A. Checkpoint: `docs/UX-IA-15A-CHECKPOINT.md`.
+
+---
+
+#### UX-IA-15B: Cross-Frame Picker Script + postMessage Listener
+
+**Status:** ACTIVE
+**Task ID:** UX-IA-15B
+**Parent:** UX-IA-15 ??Visual Edit Mode Foundation
+**Family:** UX-IA (Product & UX/UI Redesign ??Evolutionary)
+**Priority:** Medium
+**Risk:** Medium ??cross-frame script injection, iframe origin constraints, reload re-injection
+**Model:** Opus 4.6 High if cross-frame injection is tricky; otherwise GPT-5.3 Codex
+**Depends on:** UX-IA-15A (COMPLETE and LOCKED ??`docs/UX-IA-15A-CHECKPOINT.md`)
+**Checkpoint:** Covered by `docs/UX-IA-15-CHECKPOINT.md` (created on UX-IA-15C completion)
+
+**Objective:**
+Inject the element picker script into the same-origin preview iframe, listen for postMessage events with origin and source validation, capture selected element metadata, surface the selection in the UI, and handle re-injection on iframe reload.
+
+**Scope:**
+- Inject picker script into same-origin preview iframe via `iframeRef`
+- Add postMessage listener with origin + source validation (using helpers from UX-IA-15A)
+- Capture selected element metadata (`{ selector, textContent, classList, boundingBox }`)
+- Auto-deactivate picker after selection
+- Re-inject on iframe reload if picker remains active
+- Surface selected element UI indicator in `WorkspacePreviewPanel`
+
+**Non-goals:**
+- No AI prompt injection (belongs to UX-IA-15C)
+- No backend/API changes
+- No DOM-to-source mapping
+
+**Preservation invariants:**
+- All UX-IA-15A types and helpers ??unchanged
+- Existing preview iframe `src` and reload behavior ??unchanged
+- UX-IA-08 project mode shell locked in `workspace-shell.tsx` ??unchanged
+
+**Validation plan:**
+- `npx tsc --noEmit` from `frontend/` ??0 errors
+- `npm test` from `frontend/` ??323+ baseline, 0 failures; add focused tests for postMessage handler and picker script injection
+- `ReadLints` on all touched files ??0 new errors
+
+**Acceptance checks:**
+- UX-IA-15B registered in TASKS.md and TASKS_BACKLOG_FULL.md ??DONE
+- Picker script injects into same-origin iframe
+- postMessage listener validates origin and source
+- Element metadata captured on click
+- Picker auto-deactivates after selection
+- Re-injection works on iframe reload
+- UI indicator surfaces selected element
+- TypeScript, tests pass
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-15B.
+
+---
+
+#### UX-IA-15C: AI Prompt Context Injection + Validation + Consolidation
+
+**Status:** PLANNED
+**Task ID:** UX-IA-15C
+**Parent:** UX-IA-15 ??Visual Edit Mode Foundation
+**Family:** UX-IA (Product & UX/UI Redesign ??Evolutionary)
+**Priority:** Medium
+**Risk:** Low-Medium
+**Model:** GPT-5.3 Codex for implementation; Sonnet 4.6 for consolidation
+**Depends on:** UX-IA-15B (PLANNED)
+**Checkpoint:** `docs/UX-IA-15-CHECKPOINT.md` (created in this slice ??closes UX-IA-15 parent)
+
+**Objective:**
+Wire the captured preview element selection into the AI prompt context, validate the full end-to-end flow, and consolidate UX-IA-15 with a checkpoint.
+
+**Scope:**
+- Add `selectedPreviewElement` state to `frontend/app/[locale]/workspace/[projectId]/page.tsx`
+- Add `handlePreviewElementSelected` callback in `page.tsx`
+- Extend `WorkspacePromptContext` with optional `selectedPreviewElement`
+- Prefix AI prompt with selected element context block when `selectedPreviewElement` is set
+- Clear `selectedPreviewElement` after prompt submit
+- Full validation (typecheck, tests, build, lints)
+- Create `docs/UX-IA-15-CHECKPOINT.md`
+- Close UX-IA-15 parent (mark COMPLETE and LOCKED)
+
+**Non-goals:**
+- No bypass of file-action confirmation rules
+- No backend/API/auth changes
+- No DOM-to-source mapping
+
+**Preservation invariants:**
+- All AI-WS file-action confirmation and checkpoint safety rules ??fully preserved, no bypass path
+- All prior UX-IA invariants ??unaffected
+
+**Validation plan:**
+- `npx tsc --noEmit` from `frontend/` ??0 errors
+- `npm test` from `frontend/` ??all tests pass; add focused tests for prompt context injection
+- `npm run build` from `frontend/` ??passes
+- `ReadLints` on all touched files ??0 new errors
+
+**Acceptance checks:**
+- UX-IA-15C registered in TASKS.md and TASKS_BACKLOG_FULL.md ??DONE
+- `selectedPreviewElement` state flows from selection to prompt
+- AI prompt prefixed with element context when element selected
+- Element context cleared after submit
+- `docs/UX-IA-15-CHECKPOINT.md` created
+- UX-IA-15 parent marked COMPLETE and LOCKED
+- TypeScript, tests, and build pass
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-15C.
+
+
 
 
 ## AUTH ?X aiSandBox First-Party
