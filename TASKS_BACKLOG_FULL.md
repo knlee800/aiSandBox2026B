@@ -21954,9 +21954,9 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 
 ## UX-IA ??Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 ACTIVE — UX-IA-08A COMPLETE and LOCKED — UX-IA-08B COMPLETE and LOCKED — UX-IA-08C ACTIVE
+**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 COMPLETE and LOCKED — UX-IA-09 pending
 
-**Current stage:** UX-IA-08C — Tests + Validation + Consolidation (ACTIVE)
+**Current stage:** UX-IA-09 — Project AI + History Panel (pending)
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -21973,10 +21973,10 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 6. UX-IA-05 — Projects Grid/List + Recent Projects (COMPLETE and LOCKED — `docs/UX-IA-05-CHECKPOINT.md`)
 7. UX-IA-06 — Templates / Community View (COMPLETE and LOCKED — docs/UX-IA-06-CHECKPOINT.md)
 8. UX-IA-07 — Account Menu + Settings + Language/Theme (COMPLETE and LOCKED — `docs/UX-IA-07-CHECKPOINT.md`)
-9. UX-IA-08 — Project Mode Shell (ACTIVE — child slices in progress)
+9. UX-IA-08 — Project Mode Shell (COMPLETE and LOCKED — `docs/UX-IA-08-CHECKPOINT.md`)
    - UX-IA-08A — Project Mode Layout Shell + Back Header (COMPLETE and LOCKED — `docs/UX-IA-08A-CHECKPOINT.md`)
    - UX-IA-08B — Tab Registry + Tab Bar + AI Panel Collapse (COMPLETE and LOCKED — `docs/UX-IA-08B-CHECKPOINT.md`)
-   - UX-IA-08C — Tests + Validation + Consolidation (ACTIVE)
+   - UX-IA-08C — Tests + Validation + Consolidation (COMPLETE and LOCKED — `docs/UX-IA-08-CHECKPOINT.md`)
 10. UX-IA-09 through UX-IA-17 — pending (see master spec for full list)
 
 ---
@@ -22677,7 +22677,8 @@ Add account avatar in the workspace sidebar footer that opens a popup account me
 **Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** ACTIVE — plan phase COMPLETE — child slices in progress
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/UX-IA-08-CHECKPOINT.md`
 **Source:** `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-08 section
 **Depends on:** UX-IA-07 (COMPLETE and LOCKED — `docs/UX-IA-07-CHECKPOINT.md`)
 **Risk:** Medium-High
@@ -22697,9 +22698,9 @@ When a project is opened, the workspace transforms into project mode: top projec
 **Child slices:**
 - UX-IA-08A — Project Mode Layout Shell + Back Header (COMPLETE and LOCKED — `docs/UX-IA-08A-CHECKPOINT.md`)
 - UX-IA-08B — Tab Registry + Tab Bar + AI Panel Collapse (COMPLETE and LOCKED — `docs/UX-IA-08B-CHECKPOINT.md`)
-- UX-IA-08C — Tests + Validation + Consolidation (ACTIVE)
+- UX-IA-08C — Tests + Validation + Consolidation (COMPLETE and LOCKED — `docs/UX-IA-08-CHECKPOINT.md`)
 
-**Checkpoint:** `docs/UX-IA-08-CHECKPOINT.md` (to be created after UX-IA-08C)
+**Checkpoint:** `docs/UX-IA-08-CHECKPOINT.md`
 
 **Reference:** See TASKS.md -> UX-IA-08. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-08 section.
 
@@ -22877,7 +22878,8 @@ Create the `TabDefinition` interface and `TAB_REGISTRY` array. Create a `Workspa
 **Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** ACTIVE
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/UX-IA-08-CHECKPOINT.md`
 **Parent:** UX-IA-08 — Project Mode Shell
 **Depends on:** UX-IA-08B (COMPLETE and LOCKED — `docs/UX-IA-08B-CHECKPOINT.md`)
 **Risk:** Low
