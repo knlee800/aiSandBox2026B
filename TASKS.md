@@ -1,4 +1,4 @@
-﻿#
+#
 (ACTIVE -- plan phase)ity & Scope
 
 This file lists currently ACTIVE and SELECTED tasks.
@@ -461,7 +461,7 @@ Introduce minimal runtime observability for diagnostic visibility into session a
 ---
 
 
-#### TASK-41B: Security Hardening �X Rate Limits + Internal Endpoint Protection
+#### TASK-41B: Security Hardening ?X Rate Limits + Internal Endpoint Protection
 
 **Status:** COMPLETE and LOCKED  
 **Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE ONLY)  
@@ -3045,7 +3045,7 @@ Validate and consolidate completed Phase 80 slices (`TASK-80A`, `TASK-80B`) and 
 - ??PRD/ARCHITECTURE alignment confirmed (file write reuse, checkpoint reuse, session scoping, request-driven behavior)
 - ??55/55 tests pass; 0 regressions
 - ??Final checkpoint created: `docs/PHASE-80-FINAL-CHECKPOINT.md`
-- ?��? NOTE: This closure predates TASK-80C. Superseded by TASK-80-RECONSOLIDATE.
+- ???? NOTE: This closure predates TASK-80C. Superseded by TASK-80-RECONSOLIDATE.
 
 ---
 
@@ -6839,7 +6839,7 @@ Prevent the selected-session change effect from clearing project/open UI state w
 ---
 
 
-## PROJ-02 �X Project Open Hydration Cleanup
+## PROJ-02 ?X Project Open Hydration Cleanup
 
 **Family status:** ACTIVE
 
@@ -6908,9 +6908,9 @@ Prevent project snapshots/restores from including `.git/` internals so restoring
 ---
 
 
-## PROJ-03 �X Project-First UX Redesign
+## PROJ-03 ?X Project-First UX Redesign
 
-**Family status:** ACTIVE �X Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2e-hotfix COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary �X container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED; D0 COMPLETE and LOCKED; D0b COMPLETE and LOCKED; D0c COMPLETE and LOCKED; D0d COMPLETE and LOCKED; D0e COMPLETE and LOCKED; D0e-hotfix COMPLETE and LOCKED; D1a COMPLETE and LOCKED; D1b COMPLETE and LOCKED; D1c COMPLETE and LOCKED; D1d COMPLETE and LOCKED; D1d-hotfix COMPLETE and LOCKED. C3/C2d-unload deferred and not yet registered.
+**Family status:** ACTIVE ?X Phase A complete (A0, A1, A3, A2a, A2b all COMPLETE and LOCKED); Phase B complete (B0, B1, B2a, B2b, B3a, B4a, B4b all COMPLETE and LOCKED; B3b deferred); C1a COMPLETE and LOCKED; C1b-pre COMPLETE and LOCKED; C1b-cta COMPLETE and LOCKED; C1c deferred; C2a-rate-limit COMPLETE and LOCKED; C2b-trigger-preview COMPLETE and LOCKED; C2c-label-format COMPLETE and LOCKED; C2c-handler COMPLETE and LOCKED; C2c-cta-handler-pre COMPLETE and LOCKED; C2c-cta-button COMPLETE and LOCKED; C2c-display COMPLETE and LOCKED; C2d-expiry-warn COMPLETE and LOCKED; C2d-unload deferred; C2e COMPLETE and LOCKED; C2e-hotfix COMPLETE and LOCKED; C2f-file-save COMPLETE and LOCKED; C2f-idle-timer SKIPPED (unnecessary ?X container-state autosave already covered by C2b/C2d-expiry-warn/C2e/C2f-file-save; idle debounce would not capture unsaved Monaco buffer edits); C3 deferred; C4 COMPLETE and LOCKED; D0 COMPLETE and LOCKED; D0b COMPLETE and LOCKED; D0c COMPLETE and LOCKED; D0d COMPLETE and LOCKED; D0e COMPLETE and LOCKED; D0e-hotfix COMPLETE and LOCKED; D1a COMPLETE and LOCKED; D1b COMPLETE and LOCKED; D1c COMPLETE and LOCKED; D1d COMPLETE and LOCKED; D1d-hotfix COMPLETE and LOCKED. C3/C2d-unload deferred and not yet registered.
 
 **Current stage:** PROJ-03-D1d-hotfix (COMPLETE and LOCKED)
 
@@ -6950,8 +6950,8 @@ Introduce the `PROJECT_FIRST_UX` feature flag and a centralized recovery-vocabul
 **Bounded scope:**
 - Frontend only
 - New `frontend/lib/feature-flags.ts` (or equivalent) exporting `PROJECT_FIRST_UX` boolean read from env
-- New `frontend/lib/recovery-copy.ts` exporting string constants for Phase A�VB vocabulary ("Reopen project", "Workspace disconnected", "All changes saved", etc.)
-- Wire flag into page.tsx and workspace-shell.tsx as consumption points only �X no string substitution yet
+- New `frontend/lib/recovery-copy.ts` exporting string constants for Phase A?VB vocabulary ("Reopen project", "Workspace disconnected", "All changes saved", etc.)
+- Wire flag into page.tsx and workspace-shell.tsx as consumption points only ?X no string substitution yet
 - No behavior change; no UI string changed in this slice
 
 **Non-goals:**
@@ -6990,7 +6990,7 @@ Stand up the project-first information architecture (Home, Projects, Workspace, 
 
 **Bounded scope:**
 - Frontend only
-- Add `/[locale]/projects`, `/[locale]/gallery`, `/[locale]/account` top-level routes �X each wraps or redirects to its current equivalent surface
+- Add `/[locale]/projects`, `/[locale]/gallery`, `/[locale]/account` top-level routes ?X each wraps or redirects to its current equivalent surface
 - Update primary nav header (workspace-shell or equivalent) to show new labels under the flag
 - `/[locale]/app/...` workspace route stays intact; new `/[locale]/projects/:id` workspace view reuses it
 - Flag off: product is byte-equivalent to today's behavior
@@ -7008,7 +7008,7 @@ Stand up the project-first information architecture (Home, Projects, Workspace, 
 - Flag on: new top-level nav renders with correct labels; all routes resolve to existing equivalent content with no 404s, no console errors, no broken links
 - Flag off: product is byte-equivalent to today's behavior
 - Existing test suites pass; new tests verify flag-gated rendering
-- Manual smoke pass: open a project, write a file, run preview, see the new nav �X all work
+- Manual smoke pass: open a project, write a file, run preview, see the new nav ?X all work
 
 **Dependencies:** PROJ-03-A0 (flag infrastructure must exist first)
 
@@ -7030,7 +7030,7 @@ Replace all user-visible raw session/container lifecycle strings (e.g. "session 
 **Bounded scope:**
 - Frontend only
 - Under `PROJECT_FIRST_UX` flag: all known raw lifecycle strings on the user surface are replaced using recovery-copy bundle strings
-- "Reopen project" primary button wires to the existing `handleOpenWorkspaceProject` / open-project path �X no new behavior, just surfaces the action where there was previously only a raw error
+- "Reopen project" primary button wires to the existing `handleOpenWorkspaceProject` / open-project path ?X no new behavior, just surfaces the action where there was previously only a raw error
 - No new endpoint, no new backend call, no new retry logic
 
 **Non-goals:**
@@ -7089,7 +7089,7 @@ Introduce a collapsed Advanced drawer structure inside the workspace shell behin
 - Existing workspace-shell tests pass with no new failures
 - Typecheck clean; no lint errors introduced on changed files
 
-**Dependencies:** PROJ-03-A0 (flag), PROJ-03-A1 (IA shell), PROJ-03-A3 (vocabulary) �X all COMPLETE and LOCKED
+**Dependencies:** PROJ-03-A0 (flag), PROJ-03-A1 (IA shell), PROJ-03-A3 (vocabulary) ?X all COMPLETE and LOCKED
 
 **Invariants preserved:**
 - `PROJECT_FIRST_UX` remains kill switch
@@ -7118,7 +7118,7 @@ Hide the sessions list from the primary workspace surface and move the stop-sess
 - Under flag: sessions list hidden from primary surface (component stays mounted; only its primary-surface render is suppressed)
 - Under flag: stop-session rendered inside the Advanced drawer from A2a
 - Advanced drawer then contains: session ID + status (from A2a) + stop-session button
-- Existing stop-session handler and API call are unchanged �X only render location changes
+- Existing stop-session handler and API call are unchanged ?X only render location changes
 
 **Non-goals:**
 - No change to stop-session logic, handler, or API call
@@ -7163,7 +7163,7 @@ Introduce one frontend helper primitive for opening a project in a newly created
 **Bounded scope:**
 - Frontend only
 - New helper module/function plus focused unit tests
-- Helper wraps existing primitives only: create session �� call existing `handleOpenWorkspaceProject` with the new session id
+- Helper wraps existing primitives only: create session ?? call existing `handleOpenWorkspaceProject` with the new session id
 - Preserve existing deterministic await sequencing and hydration discipline from PROJ-02 family
 - No user-visible call sites switched in this slice
 - No change to `handleOpenWorkspaceProject` internals
@@ -7364,7 +7364,7 @@ Behind `PROJECT_FIRST_UX`, relax `handleOpenWorkspaceProject`'s precondition so 
 
 ---
 
-### PROJ-03-B3a �X Confirm And Lock Existing Reopen Project Affordances Route Through Fresh-Session Path Behind Feature Flag
+### PROJ-03-B3a ?X Confirm And Lock Existing Reopen Project Affordances Route Through Fresh-Session Path Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-B3a-CHECKPOINT.md`
@@ -7405,7 +7405,7 @@ Behind `PROJECT_FIRST_UX`, relax `handleOpenWorkspaceProject`'s precondition so 
 
 ---
 
-### PROJ-03-B4a �X Add Open Project By Id In Fresh Session Handler Behind Feature Flag
+### PROJ-03-B4a ?X Add Open Project By Id In Fresh Session Handler Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Nature:** FRONTEND / PHASE B HANDLER WIRING
@@ -7467,12 +7467,12 @@ Behind `PROJECT_FIRST_UX`, add a parameterized handler (`handleResumeWorkspacePr
 
 ---
 
-### PROJ-03-B4b �X Add Resume Latest Project CTA In Shell Empty State Behind Feature Flag
+### PROJ-03-B4b ?X Add Resume Latest Project CTA In Shell Empty State Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Nature:** FRONTEND / PHASE B CTA UI
 **Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-B4b-CHECKPOINT.md`
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase B �X B4 Resume Latest Project CTA (split: B4a handler wiring, B4b CTA UI)
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase B ?X B4 Resume Latest Project CTA (split: B4a handler wiring, B4b CTA UI)
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, add a single "Resume latest project" primary-action button to the existing `shellState === 'empty'` `StateMessage` in `WorkspaceShell`. The CTA computes the latest project from the existing `workspaceProjects` prop (by `updatedAt` descending, tie-break by project id) and calls the locked B4a `onResumeWorkspaceProjectById` callback. No route or IA change.
@@ -7530,19 +7530,19 @@ Behind `PROJECT_FIRST_UX`, add a single "Resume latest project" primary-action b
 
 ---
 
-### PROJ-03-C1a �X Add Read-Only Project History Panel Behind Feature Flag
+### PROJ-03-C1a ?X Add Read-Only Project History Panel Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Nature:** FRONTEND / PHASE C READ-ONLY HISTORY PANEL
 **Checkpoint:** `C:\Users\knlee\aiSandBox2026B\docs\PROJ-03-C1a-CHECKPOINT.md`
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C �X C1 Workspace History tab (split: C1a read-only panel, C1b Restore wiring)
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ?X C1 Workspace History tab (split: C1a read-only panel, C1b Restore wiring)
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, add a read-only History panel inside the workspace that lists the current project's existing project-scoped snapshots newest-first, with a human label and timestamp. No Restore action, no writes, no new endpoints, no git-checkpoint union.
 
 **Bounded scope:**
 - Frontend only
-- Reuse existing project-scoped snapshot data already available to the workspace/page flow �X no new fetcher
+- Reuse existing project-scoped snapshot data already available to the workspace/page flow ?X no new fetcher
 - New local helper / view-model to derive `HistoryRow[]` from existing snapshot source
 - Sort by `createdAt` descending; tie-break by snapshot id (deterministic)
 - Mount the panel inside an existing workspace shell slot; no new layout primitive
@@ -7555,7 +7555,7 @@ Behind `PROJECT_FIRST_UX`, add a read-only History panel inside the workspace th
 - No autosave, named save, save dialog, or any write
 - No backend changes, new endpoints, or new fetchers
 - No retention/compaction
-- No vocabulary purge ("snapshot" �� "history") outside the new panel itself
+- No vocabulary purge ("snapshot" ?? "history") outside the new panel itself
 - No change to existing snapshots panel
 - No change to locked B-phase handlers (B0/B1/B2a/B2b/B3a/B4a/B4b)
 - No change to A3 recovery copy bundle entries beyond one additive entry if needed
@@ -7584,12 +7584,12 @@ Behind `PROJECT_FIRST_UX`, add a read-only History panel inside the workspace th
 
 ---
 
-### PROJ-03-C1b-pre �X Add Restore Project From Snapshot Handler Behind Feature Flag
+### PROJ-03-C1b-pre ?X Add Restore Project From Snapshot Handler Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Nature:** FRONTEND / PHASE C RESTORE HANDLER (PREPARATORY)
 **Checkpoint:** `docs/PROJ-03-C1b-pre-CHECKPOINT.md`
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C �X C1b split: C1b-pre handler-only slice
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ?X C1b split: C1b-pre handler-only slice
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, add a parameterized handler in `frontend/app/[locale]/app/page.tsx` that opens a supplied project at a supplied snapshot via the locked B0 helper in a freshly created session, mirroring the locked B4a hydration sequence exactly, and expose it as a new optional callback prop on `WorkspaceShell`. No UI consumer in this slice.
@@ -7653,12 +7653,12 @@ Behind `PROJECT_FIRST_UX`, add a parameterized handler in `frontend/app/[locale]
 
 ---
 
-### PROJ-03-C1b-cta �X Wire Restore Action On Project History Rows Behind Feature Flag
+### PROJ-03-C1b-cta ?X Wire Restore Action On Project History Rows Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C1b-cta-CHECKPOINT.md`
 **Nature:** FRONTEND / PHASE C RESTORE BUTTON UI
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C �X C1b split: C1b-cta visible Restore-button UI slice
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ?X C1b split: C1b-cta visible Restore-button UI slice
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, render one Restore button per row in the locked C1a `ProjectHistoryPanel`, gated by an inline `window.confirm`, that calls the locked C1b-pre `onRestoreWorkspaceProjectFromSnapshotById` prop with `(selectedProjectId, row.id)`. No new handler, no new fetcher, no layout change.
@@ -7666,11 +7666,11 @@ Behind `PROJECT_FIRST_UX`, render one Restore button per row in the locked C1a `
 **Bounded scope:**
 - Frontend only
 - Changes allowed in:
-  - `frontend/lib/recovery-copy.ts`: two additive copy entries �X Restore label and confirm text
+  - `frontend/lib/recovery-copy.ts`: two additive copy entries ?X Restore label and confirm text
   - `frontend/components/workspace/workspace-shell.tsx`: new optional `onRestore?: (snapshotId: string) => void` on `ProjectHistoryPanel`; derive local restore callback in `WorkspaceShell`; render row-level Restore button when callback exists
-  - `frontend/components/workspace/workspace-shell.test.tsx`: 4�V5 focused tests
+  - `frontend/components/workspace/workspace-shell.test.tsx`: 4?V5 focused tests
 - Handler derivation gated on: `projectFirstUxEnabled` + `selectedProjectId` + `onRestoreWorkspaceProjectFromSnapshotById`
-- Click path: inline `window.confirm` guard (SSR-safe, mirrors A2b pattern); on accept �� call handler once; on decline �� no-op
+- Click path: inline `window.confirm` guard (SSR-safe, mirrors A2b pattern); on accept ?? call handler once; on decline ?? no-op
 - `page.tsx` unchanged in this slice
 
 **Non-goals:**
@@ -7710,12 +7710,12 @@ Behind `PROJECT_FIRST_UX`, render one Restore button per row in the locked C1a `
 
 ---
 
-### PROJ-03-C2a-rate-limit �X Add Per-Minute Autosave Safety-Net Pure-Logic Helper Behind Feature Flag
+### PROJ-03-C2a-rate-limit ?X Add Per-Minute Autosave Safety-Net Pure-Logic Helper Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2a-rate-limit-CHECKPOINT.md`
 **Nature:** FRONTEND / PHASE C AUTOSAVE RATE-LIMIT SCAFFOLDING
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C �X C2 first slice: pure-logic safety-net helper
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ?X C2 first slice: pure-logic safety-net helper
 
 **Objective:**
 Add a single pure-logic helper module (`frontend/lib/autosave-rate-limit.ts`) that defines the autosave rate-limit contract every future C2 trigger will use. No consumers, no write-path changes, no UI change. Mirrors the A0 mechanical-scaffolding pattern.
@@ -7746,7 +7746,7 @@ Add a single pure-logic helper module (`frontend/lib/autosave-rate-limit.ts`) th
 - Returns `false` when `now - lastSnapshotAt < minIntervalMs`
 - Boundary behavior (exactly equal) is explicit and covered by tests
 - Zero-interval and negative-interval inputs are explicit and covered by tests
-- Pure function: identical inputs �� identical outputs; no observable side effects
+- Pure function: identical inputs ?? identical outputs; no observable side effects
 - Existing focused suites remain green; typecheck clean; no introduced lint errors
 - No other production files changed
 
@@ -7766,12 +7766,12 @@ Add a single pure-logic helper module (`frontend/lib/autosave-rate-limit.ts`) th
 
 ---
 
-### PROJ-03-C2b-trigger-preview �X Add Preview-Start Success Autosave Trigger Behind Feature Flag
+### PROJ-03-C2b-trigger-preview ?X Add Preview-Start Success Autosave Trigger Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2b-trigger-preview-CHECKPOINT.md`
-**Nature:** FRONTEND / PHASE C AUTOSAVE TRIGGER �X PREVIEW-START SUCCESS
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C �X C2 first behavioral trigger slice
+**Nature:** FRONTEND / PHASE C AUTOSAVE TRIGGER ?X PREVIEW-START SUCCESS
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ?X C2 first behavioral trigger slice
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, after a successful preview-start in `handleStartPreview`, attempt one project-scoped snapshot via the existing `saveWorkspaceSnapshot` fetcher and the locked C2a `shouldAllowAutosaveNow` rate-limit, then reload the user's snapshot list so the new row appears in the locked C1a `ProjectHistoryPanel`. Skip silently when the flag is off, when no project or session is selected, when project-open hydration is in progress, when rate-limited, or when the save fails. No UI surface change.
@@ -7831,12 +7831,12 @@ Behind `PROJECT_FIRST_UX`, after a successful preview-start in `handleStartPrevi
 
 ---
 
-### PROJ-03-C2c-label-format �X Add Project Snapshot Label Name Extension Pure-Logic Helpers Behind Feature Flag
+### PROJ-03-C2c-label-format ?X Add Project Snapshot Label Name Extension Pure-Logic Helpers Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2c-label-format-CHECKPOINT.md`
-**Nature:** FRONTEND / PHASE C SNAPSHOT LABEL FORMAT EXTENSION �X PURE LOGIC
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C �X C2c first slice: label-format scaffolding
+**Nature:** FRONTEND / PHASE C SNAPSHOT LABEL FORMAT EXTENSION ?X PURE LOGIC
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ?X C2c first slice: label-format scaffolding
 
 **Objective:**
 Add pure-logic helpers that support an optional user-supplied name in project-scoped snapshot labels while preserving exact backward compatibility with the current unnamed `[project-id:...]` label shape produced and consumed since B0/B4. No consumers yet. No write-path change. No UI change. Mirrors the C2a-rate-limit and A0 mechanical-scaffolding pattern.
@@ -7892,12 +7892,12 @@ Add pure-logic helpers that support an optional user-supplied name in project-sc
 
 ---
 
-### PROJ-03-C2c-handler �X Add Named Project Snapshot Save Pure-Logic Helper Behind Feature Flag
+### PROJ-03-C2c-handler ?X Add Named Project Snapshot Save Pure-Logic Helper Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2c-handler-CHECKPOINT.md`
-**Nature:** FRONTEND / PHASE C NAMED SAVE PURE LOGIC �X HELPER SCAFFOLDING
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C �X C2c second slice: named-save handler helper
+**Nature:** FRONTEND / PHASE C NAMED SAVE PURE LOGIC ?X HELPER SCAFFOLDING
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ?X C2c second slice: named-save handler helper
 
 **Objective:**
 Provide a pure-logic helper that performs a single project-scoped named save by composing the locked C2c-label-format `buildProjectScopedSnapshotLabelWithName` helper with the existing `saveWorkspaceSnapshot` fetcher. Returns a discriminated result and never throws. No consumer wiring. No UI. Mirrors the helper-only scaffolding pattern used by C2a-rate-limit and C2c-label-format.
@@ -7955,12 +7955,12 @@ Provide a pure-logic helper that performs a single project-scoped named save by 
 
 ---
 
-### PROJ-03-C2c-cta-handler-pre �X Add Page-Level Named Project Save Handler Wired To Helper Behind Feature Flag
+### PROJ-03-C2c-cta-handler-pre ?X Add Page-Level Named Project Save Handler Wired To Helper Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2c-cta-handler-pre-CHECKPOINT.md`
-**Nature:** FRONTEND / PHASE C NAMED SAVE �X PAGE HANDLER WIRING (NO UI)
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C �X C2c third slice: page-level handler pre-step
+**Nature:** FRONTEND / PHASE C NAMED SAVE ?X PAGE HANDLER WIRING (NO UI)
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ?X C2c third slice: page-level handler pre-step
 
 **Objective:**
 Add one new `handleSaveNamedProjectSnapshot(name: string)` callback in `page.tsx` that calls the locked `attemptNamedProjectSave` helper, reloads the workspace snapshots list on success, and exposes the callback as a new optional `onSaveNamedProjectSnapshot` prop on `WorkspaceShell`. No visible UI in this slice.
@@ -7971,8 +7971,8 @@ Add one new `handleSaveNamedProjectSnapshot(name: string)` callback in `page.tsx
   - New callback `handleSaveNamedProjectSnapshot(name: string): Promise<void>`
   - Gated on `PROJECT_FIRST_UX`; short-circuits when token, `selectedProjectId`, `selectedSessionId`, or `projectOpenInProgressRef.current` are missing/true
   - Calls locked `attemptNamedProjectSave({ token, sessionId, projectId, name })`
-  - On `{ status: 'saved' }` �� calls `loadWorkspaceSnapshotsForUser(token)` (best-effort reload)
-  - On `{ status: 'failed' }` �� logs and returns; no UI surface
+  - On `{ status: 'saved' }` ?? calls `loadWorkspaceSnapshotsForUser(token)` (best-effort reload)
+  - On `{ status: 'failed' }` ?? logs and returns; no UI surface
   - Passes callback into `<WorkspaceShell ...>` as `onSaveNamedProjectSnapshot`
 - Additive changes in `frontend/components/workspace/workspace-shell.tsx`:
   - New optional prop only: `onSaveNamedProjectSnapshot?: (name: string) => Promise<void>`
@@ -8017,12 +8017,12 @@ Add one new `handleSaveNamedProjectSnapshot(name: string)` callback in `page.tsx
 
 ---
 
-### PROJ-03-C2c-cta-button �X Add Named Save Button With Prompt To Project History Panel Behind Feature Flag
+### PROJ-03-C2c-cta-button ?X Add Named Save Button With Prompt To Project History Panel Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2c-cta-button-CHECKPOINT.md`
-**Nature:** FRONTEND / PHASE C NAMED SAVE �X VISIBLE BUTTON UI
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C �X C2c fourth slice: named-save visible CTA
+**Nature:** FRONTEND / PHASE C NAMED SAVE ?X VISIBLE BUTTON UI
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ?X C2c fourth slice: named-save visible CTA
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, render one "Save" button in `ProjectHistoryPanel` that triggers `window.prompt` for a snapshot name, then calls the locked `onSaveNamedProjectSnapshot` prop. First visible user-initiated named-save affordance.
@@ -8064,9 +8064,9 @@ Behind `PROJECT_FIRST_UX`, render one "Save" button in `ProjectHistoryPanel` tha
 - Save button visible in `ProjectHistoryPanel` header when flag on + `selectedProjectId` present + handler present
 - No Save button when flag off, or `selectedProjectId` absent, or handler absent
 - Click triggers `window.prompt` with the configured prompt text
-- Prompt cancelled �� handler not called
-- Prompt empty/whitespace �� handler not called
-- Prompt with text �� `onSaveNamedProjectSnapshot` called with the prompted name
+- Prompt cancelled ?? handler not called
+- Prompt empty/whitespace ?? handler not called
+- Prompt with text ?? `onSaveNamedProjectSnapshot` called with the prompted name
 - Existing Restore buttons and history rows unchanged
 - Existing focused suites remain green
 - Typecheck clean, no introduced lint errors
@@ -8090,12 +8090,12 @@ Behind `PROJECT_FIRST_UX`, render one "Save" button in `ProjectHistoryPanel` tha
 
 ---
 
-### PROJ-03-C2c-display �X Show Parsed Snapshot Name In Project History Rows Behind Feature Flag
+### PROJ-03-C2c-display ?X Show Parsed Snapshot Name In Project History Rows Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2c-display-CHECKPOINT.md`
-**Nature:** FRONTEND / PHASE C NAMED SAVE �X HISTORY ROW DISPLAY
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C �X C2c fifth slice: named-save row display
+**Nature:** FRONTEND / PHASE C NAMED SAVE ?X HISTORY ROW DISPLAY
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ?X C2c fifth slice: named-save row display
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, update project history row labeling so named snapshots show the parsed user-supplied name, while unnamed snapshots continue to display the existing default label. No layout change, no new component, no new prop, no handler change.
@@ -8155,12 +8155,12 @@ Behind `PROJECT_FIRST_UX`, update project history row labeling so named snapshot
 
 ---
 
-### PROJ-03-C2d-expiry-warn �X Add Session-Expiry Warning Autosave Trigger Behind Feature Flag
+### PROJ-03-C2d-expiry-warn ?X Add Session-Expiry Warning Autosave Trigger Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2d-expiry-warn-CHECKPOINT.md`
-**Nature:** FRONTEND / PHASE C AUTOSAVE TRIGGER �X SESSION-EXPIRY WARNING
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C �X C2d first slice: in-app expiry-warning lifecycle trigger
+**Nature:** FRONTEND / PHASE C AUTOSAVE TRIGGER ?X SESSION-EXPIRY WARNING
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ?X C2d first slice: in-app expiry-warning lifecycle trigger
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, when the workspace detects a session-expiry warning (or equivalent session-terminated warning boundary), attempt one project-scoped autosave snapshot using the locked `attemptProjectAutosave` helper and the existing `lastProjectAutosaveAtRef` rate-limit ref, then reload the snapshot list. Skip silently when the flag is off, when no project or session is selected, when project-open hydration is in progress, when rate-limited, or when the save fails.
@@ -8190,7 +8190,7 @@ Behind `PROJECT_FIRST_UX`, when the workspace detects a session-expiry warning (
 - No C2d-unload/C2e/C2f, C3, C4, or Phase D/E work
 
 **Acceptance checks:**
-- Expiry-warning trigger fires �� flag on + project + session + not hydrating + not rate-limited �� one autosave attempt
+- Expiry-warning trigger fires ?? flag on + project + session + not hydrating + not rate-limited ?? one autosave attempt
 - Rate-limited: skip silently
 - Flag off: no autosave
 - No project or no session: no autosave
@@ -8219,12 +8219,12 @@ Behind `PROJECT_FIRST_UX`, when the workspace detects a session-expiry warning (
 
 ---
 
-### PROJ-03-C2e �X Add AI-Action-Boundary Autosave Trigger Behind Feature Flag
+### PROJ-03-C2e ?X Add AI-Action-Boundary Autosave Trigger Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2e-CHECKPOINT.md`
-**Nature:** FRONTEND / PHASE C AUTOSAVE TRIGGER �X AI ACTION BOUNDARY
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C �X C2e: AI file-action coherence boundary trigger
+**Nature:** FRONTEND / PHASE C AUTOSAVE TRIGGER ?X AI ACTION BOUNDARY
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ?X C2e: AI file-action coherence boundary trigger
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, after every Nth successful AI file-action coherence completion (`result.ran === true` from `runAiActionCoherence`), attempt one project-scoped autosave snapshot using the locked `attemptProjectAutosave` helper and the existing `lastProjectAutosaveAtRef` rate-limit ref. Reset the counter on any autosave attempt and on project switch. Skip silently when the flag is off, when guards fail, or when rate-limited.
@@ -8288,12 +8288,12 @@ Behind `PROJECT_FIRST_UX`, after every Nth successful AI file-action coherence c
 
 ---
 
-### PROJ-03-C2f-file-save �X Add User-File-Save Autosave Trigger Behind Feature Flag
+### PROJ-03-C2f-file-save ?X Add User-File-Save Autosave Trigger Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2f-file-save-CHECKPOINT.md`
-**Nature:** FRONTEND / PHASE C AUTOSAVE TRIGGER �X USER FILE SAVE
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C �X C2f first slice: user file-save boundary trigger
+**Nature:** FRONTEND / PHASE C AUTOSAVE TRIGGER ?X USER FILE SAVE
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ?X C2f first slice: user file-save boundary trigger
 
 **Objective:**
 Behind `PROJECT_FIRST_UX`, after the user successfully saves a file via `handleSaveWorkspaceFile`, attempt one project-scoped autosave snapshot using the locked `attemptProjectAutosave` helper and the existing `lastProjectAutosaveAtRef` rate-limit ref. Skip silently when the flag is off, when guards fail, or when rate-limited.
@@ -8323,7 +8323,7 @@ Behind `PROJECT_FIRST_UX`, after the user successfully saves a file via `handleS
 - No Phase D/E work
 
 **Acceptance checks:**
-- Successful file save (flag on + project + session + not hydrating + not rate-limited) �� one autosave attempt
+- Successful file save (flag on + project + session + not hydrating + not rate-limited) ?? one autosave attempt
 - Rate-limited: skip silently
 - Flag off: no autosave
 - No project selected: no autosave
@@ -8355,12 +8355,12 @@ Behind `PROJECT_FIRST_UX`, after the user successfully saves a file via `handleS
 
 ---
 
-### PROJ-03-C4 �X Replace User-Facing Snapshot Wording With History Vocabulary Behind Feature Flag
+### PROJ-03-C4 ?X Replace User-Facing Snapshot Wording With History Vocabulary Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C4-CHECKPOINT.md`
-**Nature:** FRONTEND / PHASE C UX VOCABULARY �X USER-FACING WORDING ONLY
-**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C �X C4: vocabulary swap
+**Nature:** FRONTEND / PHASE C UX VOCABULARY ?X USER-FACING WORDING ONLY
+**Source:** `docs/PROJ-03-01-IMPLEMENTATION-PLAN.md` Phase C ?X C4: vocabulary swap
 **Dependencies:** PROJ-03-C2f-file-save (COMPLETE and LOCKED)
 
 **Objective:**
@@ -8407,7 +8407,7 @@ Behind `PROJECT_FIRST_UX`, replace user-facing strings that say "snapshot/snapsh
 
 ---
 
-### PROJ-03-D0 �X Project-First Entry Shell Wiring Behind Feature Flag
+### PROJ-03-D0 ?X Project-First Entry Shell Wiring Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-D0-CHECKPOINT.md`
@@ -8469,7 +8469,7 @@ Behind `PROJECT_FIRST_UX`, make the visible entry shell behave consistently with
 
 ---
 
-### PROJ-03-D0b �X Enable PROJECT_FIRST_UX In Local Docker Frontend Build For Testing
+### PROJ-03-D0b ?X Enable PROJECT_FIRST_UX In Local Docker Frontend Build For Testing
 
 **Status:** PLANNED
 **Checkpoint:** `docs/PROJ-03-D0b-CHECKPOINT.md`
@@ -8482,7 +8482,7 @@ Enable the already-implemented project-first frontend path in the local Docker p
 
 **Bounded scope:**
 - Config/testing slice only
-- One file: `docker-compose.prod.yml` �X add `NEXT_PUBLIC_PROJECT_FIRST_UX: "true"` to the `frontend.build.args` block
+- One file: `docker-compose.prod.yml` ?X add `NEXT_PUBLIC_PROJECT_FIRST_UX: "true"` to the `frontend.build.args` block
 - No frontend component/code changes
 - No handler changes
 - No route changes
@@ -8513,7 +8513,7 @@ Enable the already-implemented project-first frontend path in the local Docker p
 
 ---
 
-### PROJ-03-D0c �X Load Project List In Project-First No-Session Entry Path
+### PROJ-03-D0c ?X Load Project List In Project-First No-Session Entry Path
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-D0c-CHECKPOINT.md`
@@ -8527,7 +8527,7 @@ Behind `PROJECT_FIRST_UX`, ensure the existing project picker is populated on fi
 **Bounded scope:**
 - Frontend only
 - Narrow changes allowed in:
-  - `frontend/app/[locale]/app/page.tsx` �X add `loadWorkspaceProjectsForUser(token)` call (and optionally `loadPublicWorkspaceProjectsList()`) in the existing bootstrap/token-availability path, guarded by `PROJECT_FIRST_UX`
+  - `frontend/app/[locale]/app/page.tsx` ?X add `loadWorkspaceProjectsForUser(token)` call (and optionally `loadPublicWorkspaceProjectsList()`) in the existing bootstrap/token-availability path, guarded by `PROJECT_FIRST_UX`
   - directly relevant tests only if needed
 - Behavior:
   - When `PROJECT_FIRST_UX` is true and a token is available in the bootstrap path, call `loadWorkspaceProjectsForUser(token)` so existing user-owned projects appear in the project picker before any session is created
@@ -8568,7 +8568,7 @@ Behind `PROJECT_FIRST_UX`, ensure the existing project picker is populated on fi
 
 ---
 
-### PROJ-03-D0d �X Add Tab-Scoped Project And Session Selection Seed Behind Feature Flag
+### PROJ-03-D0d ?X Add Tab-Scoped Project And Session Selection Seed Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-D0d-CHECKPOINT.md`
@@ -8582,7 +8582,7 @@ Behind `PROJECT_FIRST_UX`, persist `selectedProjectId` and `selectedSessionId` i
 **Bounded scope:**
 - Frontend only
 - Narrow changes allowed in:
-  - `frontend/app/[locale]/app/page.tsx` �X write selections to `sessionStorage` on change; read seed on cold mount bootstrap; honor seed only if it still exists in freshly loaded lists; fall back to existing default-selection behavior otherwise
+  - `frontend/app/[locale]/app/page.tsx` ?X write selections to `sessionStorage` on change; read seed on cold mount bootstrap; honor seed only if it still exists in freshly loaded lists; fall back to existing default-selection behavior otherwise
   - directly relevant tests only if needed
 - Behavior (when `PROJECT_FIRST_UX` is true):
   - write `selectedProjectId` to `sessionStorage` when it changes
@@ -8631,7 +8631,7 @@ Behind `PROJECT_FIRST_UX`, persist `selectedProjectId` and `selectedSessionId` i
 
 ---
 
-### PROJ-03-C2e-hotfix �X Autosave After Every Successful AI Action Boundary Behind Feature Flag
+### PROJ-03-C2e-hotfix ?X Autosave After Every Successful AI Action Boundary Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-C2e-hotfix-CHECKPOINT.md`
@@ -8645,13 +8645,13 @@ Behind `PROJECT_FIRST_UX`, change the AI-action autosave trigger so every succes
 **Bounded scope:**
 - Frontend only
 - Narrow changes allowed in:
-  - `frontend/app/[locale]/app/page.tsx` �X remove or bypass the every-5th threshold logic in the C2e path so autosave is attempted after each successful coherence completion
+  - `frontend/app/[locale]/app/page.tsx` ?X remove or bypass the every-5th threshold logic in the C2e path so autosave is attempted after each successful coherence completion
   - directly relevant tests only if needed
 - Behavior:
   - Remove or bypass the current every-5th threshold logic in the C2e path
   - After each successful AI coherence completion, attempt autosave immediately
   - Preserve all existing guards: `PROJECT_FIRST_UX`, token present, `selectedProjectId` present, `selectedSessionIdRef.current` present, `!projectOpenInProgressRef.current`
-  - Preserve existing result handling: on saved �� update `lastProjectAutosaveAtRef.current` and best-effort reload workspace snapshots; on skipped-rate-limited or failed �� no crash, no UI change
+  - Preserve existing result handling: on saved ?? update `lastProjectAutosaveAtRef.current` and best-effort reload workspace snapshots; on skipped-rate-limited or failed ?? no crash, no UI change
   - No backend/API/schema change
   - No new UI surface
 
@@ -8694,7 +8694,7 @@ Behind `PROJECT_FIRST_UX`, change the AI-action autosave trigger so every succes
 
 ---
 
-### PROJ-03-D0e �X Restore Unsaved Editor Draft Per Tab Behind Feature Flag
+### PROJ-03-D0e ?X Restore Unsaved Editor Draft Per Tab Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-D0e-CHECKPOINT.md`
@@ -8757,12 +8757,12 @@ Behind `PROJECT_FIRST_UX`, persist the current unsaved editor buffer in tab-scop
 
 ---
 
-### PROJ-03-D0e-hotfix �X Fix Draft Restore Match And One-Shot Consumption Behind Feature Flag
+### PROJ-03-D0e-hotfix ?X Fix Draft Restore Match And One-Shot Consumption Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-D0e-hotfix-CHECKPOINT.md`
 **Nature:** FRONTEND / TAB-SCOPED DRAFT PERSISTENCE / BUG FIX
-**Source:** Post-D0e inspection: the D0e write path is correct but the restore path has two defects �X the cold-mount draft ref is cleared unconditionally on the first `loadWorkspaceFileContent` call (one-shot consumption regardless of match outcome), and the `projectId` check compares against `selectedProjectId` which may still be `null` at the time of the first file load after refresh (project-list fetch races behind session/file hydration). Result: draft restore fails silently and the draft is permanently discarded.
+**Source:** Post-D0e inspection: the D0e write path is correct but the restore path has two defects ?X the cold-mount draft ref is cleared unconditionally on the first `loadWorkspaceFileContent` call (one-shot consumption regardless of match outcome), and the `projectId` check compares against `selectedProjectId` which may still be `null` at the time of the first file load after refresh (project-list fetch races behind session/file hydration). Result: draft restore fails silently and the draft is permanently discarded.
 **Dependencies:** PROJ-03-D0e (COMPLETE and LOCKED)
 
 **Objective:**
@@ -8818,7 +8818,7 @@ Behind `PROJECT_FIRST_UX`, fix the D0e restore-path bug so a tab-scoped unsaved 
 
 ---
 
-### PROJ-03-D1a �X Add Unified Versions Entry Point And Last-Protected Indicator Behind Feature Flag
+### PROJ-03-D1a ?X Add Unified Versions Entry Point And Last-Protected Indicator Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-D1a-CHECKPOINT.md`
@@ -8879,7 +8879,7 @@ Behind `PROJECT_FIRST_UX`, add one obvious user-facing "Versions" / "History" en
 
 ---
 
-### PROJ-03-D1b �X Add Source-Tagged Automatic Version Labels Behind Feature Flag
+### PROJ-03-D1b ?X Add Source-Tagged Automatic Version Labels Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-D1b-CHECKPOINT.md`
@@ -8911,7 +8911,7 @@ Behind `PROJECT_FIRST_UX`, make automatic project-history entries easier to dist
 - Manual named saves continue to render the user-supplied name unchanged
 - Older unlabeled entries still render safely with the existing generic fallback
 - Timestamp display remains separate and unchanged
-- `PROJECT_FIRST_UX=false` �� legacy behavior unchanged
+- `PROJECT_FIRST_UX=false` ?? legacy behavior unchanged
 - Typecheck clean, lint clean, focused regression suite green
 
 **Non-goals:**
@@ -8925,7 +8925,7 @@ Behind `PROJECT_FIRST_UX`, make automatic project-history entries easier to dist
 
 ---
 
-### PROJ-03-D1c �X Add Heuristic Content-Related Automatic Version Labels Behind Feature Flag
+### PROJ-03-D1c ?X Add Heuristic Content-Related Automatic Version Labels Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-D1c-CHECKPOINT.md`
@@ -8945,7 +8945,7 @@ Behind `PROJECT_FIRST_UX`, improve automatic project-history labels using determ
 - Directly relevant tests only if needed
 
 **Key constraints:**
-- Deterministic heuristics only �X no AI call, no async naming pipeline
+- Deterministic heuristics only ?X no AI call, no async naming pipeline
 - Preserve manual named saves unchanged
 - Preserve backward compatibility with older source-tagged or unlabeled entries
 - No backend/API/schema changes
@@ -8956,7 +8956,7 @@ Behind `PROJECT_FIRST_UX`, improve automatic project-history labels using determ
 - Automatic version labels become more distinguishable than the current source-only labels
 - Manual named saves continue to render the user-supplied name unchanged
 - Older labels remain backward-compatible
-- `PROJECT_FIRST_UX=false` �� legacy behavior unchanged
+- `PROJECT_FIRST_UX=false` ?? legacy behavior unchanged
 - Typecheck clean, lint clean, focused regression suite green
 
 **Non-goals:**
@@ -8970,7 +8970,7 @@ Behind `PROJECT_FIRST_UX`, improve automatic project-history labels using determ
 
 ---
 
-### PROJ-03-D1d �X Reuse Existing Active Session When Reopening Same Project Behind Feature Flag
+### PROJ-03-D1d ?X Reuse Existing Active Session When Reopening Same Project Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-D1d-CHECKPOINT.md`
@@ -8983,14 +8983,14 @@ Behind `PROJECT_FIRST_UX`, when reopening a project, reuse an existing active us
 
 **Bounded scope:**
 - `services/api-gateway/src/sessions/session.controller.ts` (expose `projectId` in sessions list response)
-- Any directly relevant backend DTO/type if needed �X no schema migration
+- Any directly relevant backend DTO/type if needed ?X no schema migration
 - `frontend/components/workspace/workspace-shell.logic.ts` (add `projectId` to `WorkspaceShellSession` type)
 - `frontend/lib/open-project-in-fresh-session.ts` (add session-reuse branch)
 - `frontend/app/[locale]/app/page.tsx` (pass `sessions` to reuse-aware open helper at relevant call sites)
 - Directly relevant tests only if needed
 
 **Key constraints:**
-- `SESSION.projectId` already exists in the DB; only expose it �X no schema/migration change
+- `SESSION.projectId` already exists in the DB; only expose it ?X no schema/migration change
 - Reuse only active usable sessions (`isUsableSession` = not terminated, not expired)
 - Hydration still runs on reused sessions
 - Explicit snapshot restore (`handleRestoreWorkspaceProjectFromSnapshotById`) must remain always-fresh
@@ -9018,7 +9018,7 @@ Behind `PROJECT_FIRST_UX`, when reopening a project, reuse an existing active us
 
 ---
 
-### PROJ-03-D1d-hotfix �X Refresh Sessions Before Same-Project Reuse Check Behind Feature Flag
+### PROJ-03-D1d-hotfix ?X Refresh Sessions Before Same-Project Reuse Check Behind Feature Flag
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PROJ-03-D1d-hotfix-CHECKPOINT.md`
@@ -9031,7 +9031,7 @@ Behind `PROJECT_FIRST_UX`, eliminate stale same-project session reuse by refresh
 
 **Bounded scope:**
 - Frontend only
-- `frontend/app/[locale]/app/page.tsx` �X call `await loadSessions(token)` at `handleOpenWorkspaceProject` (PROJECT_FIRST_UX branch) and `handleResumeWorkspaceProjectById` immediately before each `openProjectInFreshSession` call, then pass the freshly-loaded `sessions` state as `existingSessions`
+- `frontend/app/[locale]/app/page.tsx` ?X call `await loadSessions(token)` at `handleOpenWorkspaceProject` (PROJECT_FIRST_UX branch) and `handleResumeWorkspaceProjectById` immediately before each `openProjectInFreshSession` call, then pass the freshly-loaded `sessions` state as `existingSessions`
 - Directly relevant tests only if needed
 
 **Key constraints:**
@@ -9667,7 +9667,7 @@ Determine why many session-related Docker containers are accumulating, and ident
 
 ---
 
-## OPS-LOCAL �X Local Testing Config
+## OPS-LOCAL ?X Local Testing Config
 
 **Family status:** COMPLETE
 
@@ -9680,7 +9680,7 @@ Determine why many session-related Docker containers are accumulating, and ident
 **Status:** COMPLETE AND LOCKED
 **Checkpoint:** `docs/OPS-LOCAL-SESSION-LIMITS-CHECKPOINT.md`
 **Nature:** CONFIG / LOCAL TESTING ENABLEMENT
-**Source:** Post-D0 testing diagnostic �X session creation blocked by hard-coded limits of 5 active / 20 per 24h; local QA cannot test project-first UX without hitting these caps
+**Source:** Post-D0 testing diagnostic ?X session creation blocked by hard-coded limits of 5 active / 20 per 24h; local QA cannot test project-first UX without hitting these caps
 
 **Objective:**
 Preserve code defaults of 5 active sessions and 20 sessions per 24h, but add env-driven overrides in api-gateway `QuotaConfig` and set local Docker compose values to `1000000` each, so local QA is not blocked by session caps during project-first testing.
@@ -9688,8 +9688,8 @@ Preserve code defaults of 5 active sessions and 20 sessions per 24h, but add env
 **Bounded scope:**
 - Narrow code/config slice only
 - Changes allowed in:
-  - `services/api-gateway/src/quota/quota.config.ts` �X add env-based resolvers for `MAX_ACTIVE_SESSIONS_PER_USER` and `MAX_SESSIONS_PER_24H`; preserve defaults of 5 / 20
-  - `docker-compose.prod.yml` �X add `MAX_ACTIVE_SESSIONS_PER_USER: "1000000"` and `MAX_SESSIONS_PER_24H: "1000000"` to the `api-gateway` service environment block
+  - `services/api-gateway/src/quota/quota.config.ts` ?X add env-based resolvers for `MAX_ACTIVE_SESSIONS_PER_USER` and `MAX_SESSIONS_PER_24H`; preserve defaults of 5 / 20
+  - `docker-compose.prod.yml` ?X add `MAX_ACTIVE_SESSIONS_PER_USER: "1000000"` and `MAX_SESSIONS_PER_24H: "1000000"` to the `api-gateway` service environment block
   - directly relevant tests only if env-based resolver changes cause failures
 - No change to enforcement logic beyond reading the resolved values
 
@@ -9727,7 +9727,7 @@ Preserve code defaults of 5 active sessions and 20 sessions per 24h, but add env
 **Status:** COMPLETE AND LOCKED
 **Checkpoint:** `docs/OPS-LOCAL-AUTH-JWT-CHECKPOINT.md`
 **Nature:** CONFIG / LOCAL TESTING ENABLEMENT
-**Source:** Post-OPS-LOCAL-SESSION-LIMITS diagnostic �X auth access token is 15m with no refresh mechanism; local QA is forcibly logged out every 15 minutes, interrupting testing
+**Source:** Post-OPS-LOCAL-SESSION-LIMITS diagnostic ?X auth access token is 15m with no refresh mechanism; local QA is forcibly logged out every 15 minutes, interrupting testing
 
 **Objective:**
 Override `JWT_EXPIRES_IN` for the local Docker `api-gateway` service to `30d` so local QA is not interrupted by frequent forced re-login, without changing auth architecture or production defaults.
@@ -9735,7 +9735,7 @@ Override `JWT_EXPIRES_IN` for the local Docker `api-gateway` service to `30d` so
 **Bounded scope:**
 - Narrow config slice only
 - Changes allowed in:
-  - `docker-compose.prod.yml` �X add `JWT_EXPIRES_IN: "30d"` under the `api-gateway` service `environment` block
+  - `docker-compose.prod.yml` ?X add `JWT_EXPIRES_IN: "30d"` under the `api-gateway` service `environment` block
 - No code changes
 - No refresh-token implementation
 - No frontend auth logic change
@@ -10574,9 +10574,9 @@ Create/update a minimal operational runbook so the now-validated stack can be st
 
 ---
 
-## WS �X Workspace Rollout
+## WS ?X Workspace Rollout
 
-**Family status:** ACTIVE �X WS-01 COMPLETE and LOCKED; WS-02 COMPLETE and LOCKED; WS-03 COMPLETE and LOCKED; WS-04 COMPLETE and LOCKED; WS-05 COMPLETE and LOCKED; WS-06 COMPLETE and LOCKED; WS-07 COMPLETE and LOCKED
+**Family status:** ACTIVE ?X WS-01 COMPLETE and LOCKED; WS-02 COMPLETE and LOCKED; WS-03 COMPLETE and LOCKED; WS-04 COMPLETE and LOCKED; WS-05 COMPLETE and LOCKED; WS-06 COMPLETE and LOCKED; WS-07 COMPLETE and LOCKED
 
 **Current stage:** WS-07 (COMPLETE and LOCKED)
 
@@ -10586,8 +10586,8 @@ Create/update a minimal operational runbook so the now-validated stack can be st
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/WS-01-CHECKPOINT.md`
-**Nature:** BACKEND / SCHEMA / MIGRATION �X workspace data model foundation
-**Source:** Workspace v1 planning session (Apr 2026) �X agreed bounded v1 plan
+**Nature:** BACKEND / SCHEMA / MIGRATION ?X workspace data model foundation
+**Source:** Workspace v1 planning session (Apr 2026) ?X agreed bounded v1 plan
 
 **Objective:**
 Add the Workspace entity/table and nullable `Project.workspaceId` foundation, then perform safe idempotent backfill so each user has one default Personal workspace and all existing projects are assigned to that workspace. This slice is backend/schema only and intentionally stops before any new API or frontend UX.
@@ -10646,8 +10646,8 @@ Add the Workspace entity/table and nullable `Project.workspaceId` foundation, th
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/WS-02-CHECKPOINT.md`
-**Nature:** BACKEND / API �X workspace CRUD endpoints
-**Source:** WS v1 rollout �X second slice; follows WS-01 schema foundation
+**Nature:** BACKEND / API ?X workspace CRUD endpoints
+**Source:** WS v1 rollout ?X second slice; follows WS-01 schema foundation
 
 **Objective:**
 Add the minimal authenticated backend API for v1 personal workspaces: create, list, read, rename, and delete (non-default only). Keep all operations strictly user-scoped and additive. Stop before any frontend UX or project workspace-awareness changes.
@@ -10660,11 +10660,11 @@ Add the minimal authenticated backend API for v1 personal workspaces: create, li
   - minimal repository/service wiring against the WS-01 Workspace entity
   - directly relevant unit tests
 - Endpoints:
-  - `POST /api/workspaces` �X create workspace for current user
-  - `GET /api/workspaces` �X list current user's workspaces
-  - `GET /api/workspaces/:id` �X read one current-user workspace
-  - `PATCH /api/workspaces/:id` �X rename/update current-user workspace
-  - `DELETE /api/workspaces/:id` �X delete a non-default current-user workspace
+  - `POST /api/workspaces` ?X create workspace for current user
+  - `GET /api/workspaces` ?X list current user's workspaces
+  - `GET /api/workspaces/:id` ?X read one current-user workspace
+  - `PATCH /api/workspaces/:id` ?X rename/update current-user workspace
+  - `DELETE /api/workspaces/:id` ?X delete a non-default current-user workspace
 - All access is owner-only via authenticated user
 - Default workspace cannot be deleted
 - Deletion of a non-default workspace reassigns its projects to the user's default workspace before removal
@@ -10707,21 +10707,21 @@ Add the minimal authenticated backend API for v1 personal workspaces: create, li
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/WS-03-CHECKPOINT.md`
-**Nature:** BACKEND / API �X project create/list workspace-awareness
-**Source:** WS v1 rollout �X third slice; follows WS-02 CRUD API foundation
+**Nature:** BACKEND / API ?X project create/list workspace-awareness
+**Source:** WS v1 rollout ?X third slice; follows WS-02 CRUD API foundation
 
 **Objective:**
-Make backend project create/list/read flows workspace-aware by allowing project creation into a chosen workspace, defaulting to the user's default workspace when omitted, supporting optional workspace filtering on project list, and surfacing `workspaceId` in project responses �X while keeping all ownership checks user-scoped and stopping before any frontend workspace selector/UI.
+Make backend project create/list/read flows workspace-aware by allowing project creation into a chosen workspace, defaulting to the user's default workspace when omitted, supporting optional workspace filtering on project list, and surfacing `workspaceId` in project responses ?X while keeping all ownership checks user-scoped and stopping before any frontend workspace selector/UI.
 
 **Bounded scope:**
 - Backend/API only
 - Allowed files/surfaces:
-  - project DTO(s) �X add optional `workspaceId` to create DTO; add optional `workspaceId` query param to list
-  - projects controller �X accept and pass through `workspaceId` for create and list
-  - projects service �X resolve default workspace when `workspaceId` is omitted; validate ownership of provided `workspaceId`; filter list by workspace when requested
+  - project DTO(s) ?X add optional `workspaceId` to create DTO; add optional `workspaceId` query param to list
+  - projects controller ?X accept and pass through `workspaceId` for create and list
+  - projects service ?X resolve default workspace when `workspaceId` is omitted; validate ownership of provided `workspaceId`; filter list by workspace when requested
   - directly relevant tests
 - Behavior:
-  - `POST /api/projects` accepts optional `workspaceId`; omitted �� user's default workspace; provided �� must belong to current user
+  - `POST /api/projects` accepts optional `workspaceId`; omitted ?? user's default workspace; provided ?? must belong to current user
   - `GET /api/projects` supports optional `workspaceId` query filter
   - `GET /api/projects/:id` response includes `workspaceId`
   - all ownership checks remain user-scoped
@@ -10765,8 +10765,8 @@ Make backend project create/list/read flows workspace-aware by allowing project 
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/WS-04-CHECKPOINT.md`
-**Nature:** FRONTEND / PLUMBING �X workspace types and API helpers
-**Source:** WS v1 rollout �X fourth slice; follows WS-03 project workspace-awareness
+**Nature:** FRONTEND / PLUMBING ?X workspace types and API helpers
+**Source:** WS v1 rollout ?X fourth slice; follows WS-03 project workspace-awareness
 
 **Objective:**
 Add the minimal frontend type definitions and API helper functions required to consume v1 personal workspaces and workspace-aware project responses. Stop before any visible workspace selector or management UI.
@@ -10803,7 +10803,7 @@ Add the minimal frontend type definitions and API helper functions required to c
 - Relevant frontend typecheck/tests pass
 
 **Risks / invariants:**
-- Keep to frontend plumbing only �X no visible workspace UX
+- Keep to frontend plumbing only ?X no visible workspace UX
 - Do not change current frontend runtime behavior beyond additive types/helpers
 - Keep v1 workspace model personal-only
 - Preserve compatibility with current backend response shapes
@@ -10816,8 +10816,8 @@ Add the minimal frontend type definitions and API helper functions required to c
 #### WS-05: Workspace Selector And Filtered Project List
 
 **Status:** COMPLETE and LOCKED
-**Nature:** FRONTEND / UX �X workspace selector and project list filtering
-**Source:** WS v1 rollout �X fifth slice; follows WS-04 frontend plumbing
+**Nature:** FRONTEND / UX ?X workspace selector and project list filtering
+**Source:** WS v1 rollout ?X fifth slice; follows WS-04 frontend plumbing
 **Checkpoint:** `docs/WS-05-CHECKPOINT.md`
 
 **Objective:**
@@ -10858,7 +10858,7 @@ Add the first visible workspace UX by loading the user's workspaces, showing a w
 - Relevant frontend typecheck/tests pass
 
 **Risks / invariants:**
-- Keep to selector/filter UX only �X no workspace CRUD management UI
+- Keep to selector/filter UX only ?X no workspace CRUD management UI
 - Preserve existing project-open/session/history behavior
 - Keep workspace model personal-only in v1
 - Preserve compatibility with current backend response shapes
@@ -10871,8 +10871,8 @@ Add the first visible workspace UX by loading the user's workspaces, showing a w
 #### WS-06: Workspace Create/Rename/Delete UI
 
 **Status:** COMPLETE and LOCKED
-**Nature:** FRONTEND / UX �X workspace management UI
-**Source:** WS v1 rollout �X sixth slice; follows WS-05 selector/filter surface
+**Nature:** FRONTEND / UX ?X workspace management UI
+**Source:** WS v1 rollout ?X sixth slice; follows WS-05 selector/filter surface
 **Checkpoint:** `docs/WS-06-CHECKPOINT.md`
 
 **Objective:**
@@ -10929,8 +10929,8 @@ Add the minimal user-facing UI for creating, renaming, and deleting personal wor
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/WS-07-CHECKPOINT.md`
-**Nature:** BACKEND + FRONTEND �X move project workspace assignment
-**Source:** WS v1 rollout �X seventh slice; follows WS-06 workspace management UI
+**Nature:** BACKEND + FRONTEND ?X move project workspace assignment
+**Source:** WS v1 rollout ?X seventh slice; follows WS-06 workspace management UI
 
 **Objective:**
 Allow a user to move an existing owned project from its current workspace to another owned workspace, with strict ownership validation and safe frontend state refresh. The move changes only the project.workspaceId relationship and does not affect sessions, files, snapshots, history, or saved versions.
@@ -10984,7 +10984,7 @@ Allow a user to move an existing owned project from its current workspace to ano
 
 ---
 
-## AI-CTX �X AI Workspace Context Awareness
+## AI-CTX ?X AI Workspace Context Awareness
 
 **Family status:** AI-CTX-01 COMPLETE and LOCKED
 
@@ -10995,8 +10995,8 @@ Allow a user to move an existing owned project from its current workspace to ano
 #### AI-CTX-01: Inject Workspace File Tree And Selected File Path Into AI Prompts
 
 **Status:** COMPLETE and LOCKED
-**Nature:** CROSS-LAYER CONTEXT PLUMBING �X frontend �� api-gateway �� queue �� ai-service worker
-**Source:** Inspection session (Apr 2026) �X AI answers "list files" like a generic chatbot because the execution path carries no workspace context
+**Nature:** CROSS-LAYER CONTEXT PLUMBING ?X frontend ?? api-gateway ?? queue ?? ai-service worker
+**Source:** Inspection session (Apr 2026) ?X AI answers "list files" like a generic chatbot because the execution path carries no workspace context
 
 **Objective:**
 Make the active AI execution path aware of the current workspace file list and selected file path so non-mutating questions like "list all files" can be answered correctly without adding destructive actions, schema changes, new endpoints, or broad AI tooling changes.
@@ -11045,7 +11045,7 @@ Make the active AI execution path aware of the current workspace file list and s
 - No introduced lint errors
 
 **Risks / invariants:**
-- Keep context compact �X do not include file contents (token/cost blowup risk)
+- Keep context compact ?X do not include file contents (token/cost blowup risk)
 - Preserve current file-action output contract; context is prepended, not mixed in
 - Keep `workspaceContext` optional and backward-compatible at every layer
 - Do not introduce container-manager dependency into ai-service worker
@@ -11056,9 +11056,9 @@ Make the active AI execution path aware of the current workspace file list and s
 
 ---
 
-## AI-WS �X AI Workspace Capability
+## AI-WS ?X AI Workspace Capability
 
-**Family status:** ACTIVE �X AI-WS-06 COMPLETE and LOCKED; AI-WS-03-hotfix COMPLETE and LOCKED; AI-WS-03-hotfix2 COMPLETE and LOCKED; AI-WS-03-hotfix3 COMPLETE and LOCKED; AI-WS-02-hotfix COMPLETE and LOCKED; AI-WS-03-hotfix4 COMPLETE and LOCKED; AI-WS-03-hotfix5 COMPLETE and LOCKED; AI-WS-06-hotfix COMPLETE and LOCKED; AI-WS-06-hotfix2 COMPLETE and LOCKED; AI-WS-06-hotfix3 COMPLETE and LOCKED
+**Family status:** ACTIVE ?X AI-WS-06 COMPLETE and LOCKED; AI-WS-03-hotfix COMPLETE and LOCKED; AI-WS-03-hotfix2 COMPLETE and LOCKED; AI-WS-03-hotfix3 COMPLETE and LOCKED; AI-WS-02-hotfix COMPLETE and LOCKED; AI-WS-03-hotfix4 COMPLETE and LOCKED; AI-WS-03-hotfix5 COMPLETE and LOCKED; AI-WS-06-hotfix COMPLETE and LOCKED; AI-WS-06-hotfix2 COMPLETE and LOCKED; AI-WS-06-hotfix3 COMPLETE and LOCKED
 
 **Current stage:** AI-WS-06-hotfix3 (COMPLETE and LOCKED)
 
@@ -11067,8 +11067,8 @@ Make the active AI execution path aware of the current workspace file list and s
 #### AI-WS-01: Selected File Content Context Injection
 
 **Status:** COMPLETE and LOCKED
-**Nature:** CROSS-LAYER CONTEXT PLUMBING �X frontend �� api-gateway �� queue �� ai-service worker
-**Source:** Planning session (Apr 2026) �X AI cannot explain or reason about the selected/open file because its content is never included in the execution context
+**Nature:** CROSS-LAYER CONTEXT PLUMBING ?X frontend ?? api-gateway ?? queue ?? ai-service worker
+**Source:** Planning session (Apr 2026) ?X AI cannot explain or reason about the selected/open file because its content is never included in the execution context
 **Depends on:** AI-CTX-01 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -11088,7 +11088,7 @@ Extend the existing `workspaceContext` plumbing introduced in AI-CTX-01 to inclu
   - frontend execute request body (`page.tsx`)
   - api-gateway AI execution request type/controller/queue forwarding
   - queue job data type (`AiExecutionJob` / `WorkspaceContext`)
-  - ai-service worker prompt builder (`worker.processor.ts` �X `buildWorkspaceContextBlock`)
+  - ai-service worker prompt builder (`worker.processor.ts` ?X `buildWorkspaceContextBlock`)
 - Worker includes selected file content in the context block under the existing context section
 - If content is absent or excluded, existing behavior is unchanged (backward-compatible)
 - Do not add named file read support
@@ -11149,8 +11149,8 @@ Extend the existing `workspaceContext` plumbing introduced in AI-CTX-01 to inclu
 #### AI-WS-02: AI File Action Safety And Confirmation Foundation
 
 **Status:** COMPLETE and LOCKED
-**Nature:** FRONTEND SAFETY/INTERCEPT LAYER �X file-action batch classification and confirmation UI before risky AI writes apply
-**Source:** Planning session (Apr 2026) �X before adding destructive action support (delete), a safety/confirmation foundation is needed so risky AI file-action batches can be intercepted and approved
+**Nature:** FRONTEND SAFETY/INTERCEPT LAYER ?X file-action batch classification and confirmation UI before risky AI writes apply
+**Source:** Planning session (Apr 2026) ?X before adding destructive action support (delete), a safety/confirmation foundation is needed so risky AI file-action batches can be intercepted and approved
 **Depends on:** AI-WS-01 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -11214,8 +11214,8 @@ Add a frontend safety/confirmation foundation for risky AI file actions before e
 #### AI-WS-03: AI File Delete Support
 
 **Status:** COMPLETE and LOCKED
-**Nature:** CROSS-LAYER FILE-ACTION EXTENSION �X extend file-action contract to allow AI-proposed delete, always held for confirmation, frontend delete call through api-gateway to container-manager
-**Source:** Planning session (Apr 2026) �X delete is the next destructive capability after safety confirmation foundation is in place
+**Nature:** CROSS-LAYER FILE-ACTION EXTENSION ?X extend file-action contract to allow AI-proposed delete, always held for confirmation, frontend delete call through api-gateway to container-manager
+**Source:** Planning session (Apr 2026) ?X delete is the next destructive capability after safety confirmation foundation is in place
 **Depends on:** AI-WS-02 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -11289,8 +11289,8 @@ Add support for AI-proposed file delete actions through the active file-actions 
 #### AI-WS-04: Project And Workspace Metadata Context
 
 **Status:** COMPLETE and LOCKED
-**Nature:** CROSS-LAYER CONTEXT PLUMBING �X extend `workspaceContext` with lightweight project/workspace metadata for better prompt grounding
-**Source:** Planning session (Apr 2026) �X after file and selected-file awareness are in place, AI should understand the current workspace/project it is operating in
+**Nature:** CROSS-LAYER CONTEXT PLUMBING ?X extend `workspaceContext` with lightweight project/workspace metadata for better prompt grounding
+**Source:** Planning session (Apr 2026) ?X after file and selected-file awareness are in place, AI should understand the current workspace/project it is operating in
 **Depends on:** AI-WS-03 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -11357,8 +11357,8 @@ Extend the existing AI `workspaceContext` plumbing to include lightweight projec
 #### AI-WS-05: Named File Read Support
 
 **Status:** COMPLETE and LOCKED
-**Nature:** FRONTEND-LED NAMED FILE CONTEXT INJECTION �X detect explicitly named workspace files, read bounded safe contents through existing frontend file-read capability, and pass them through existing `workspaceContext`
-**Source:** Planning session (Apr 2026) �X AI still cannot explain a named file unless that file is currently selected/open
+**Nature:** FRONTEND-LED NAMED FILE CONTEXT INJECTION ?X detect explicitly named workspace files, read bounded safe contents through existing frontend file-read capability, and pass them through existing `workspaceContext`
+**Source:** Planning session (Apr 2026) ?X AI still cannot explain a named file unless that file is currently selected/open
 **Depends on:** AI-WS-04 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -11438,8 +11438,8 @@ Allow the AI to answer questions about one or more named workspace files by usin
 #### AI-WS-06: Workspace Content Search Support
 
 **Status:** COMPLETE and LOCKED
-**Nature:** BOUNDED WORKSPACE CONTENT SEARCH �X safely search text-like workspace files for explicit locate/find questions without broad tool refactors or arbitrary command execution
-**Source:** Planning session (Apr 2026) �X AI still cannot search across workspace file contents for prompts like "where is login implemented?" or "which files mention this text?"
+**Nature:** BOUNDED WORKSPACE CONTENT SEARCH ?X safely search text-like workspace files for explicit locate/find questions without broad tool refactors or arbitrary command execution
+**Source:** Planning session (Apr 2026) ?X AI still cannot search across workspace file contents for prompts like "where is login implemented?" or "which files mention this text?"
 **Depends on:** AI-WS-05 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -11514,8 +11514,8 @@ Add a bounded, safe workspace content search capability so AI can answer questio
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/AI-WS-03-hotfix-CHECKPOINT.md`
-**Nature:** FRONTEND WORDING HOTFIX �X correct misleading AI execute error guidance for generic 403 responses without changing backend enforcement or AI behavior
-**Source:** Inspection session (Apr 2026) �X frontend currently maps generic `POST /api/ai/execute` 403 failures to quota wording even when the failure can be access/launch/scope/auth related
+**Nature:** FRONTEND WORDING HOTFIX ?X correct misleading AI execute error guidance for generic 403 responses without changing backend enforcement or AI behavior
+**Source:** Inspection session (Apr 2026) ?X frontend currently maps generic `POST /api/ai/execute` 403 failures to quota wording even when the failure can be access/launch/scope/auth related
 **Depends on:** AI-WS-06 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -11563,8 +11563,8 @@ Fix the frontend error guidance so generic 403 AI execute failures are not misla
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/AI-WS-03-hotfix2-CHECKPOINT.md`
-**Nature:** AI SERVICE PARSER HOTFIX �X add a safe fallback extraction path for bare `{"file-actions":[...]}` model output so that delete/create/write/update actions survive the known contract-violation output shape without changing the primary fenced block contract
-**Source:** Inspection session (May 2026) �X model sometimes emits raw JSON `{"file-actions":[...]}` instead of a fenced ```file-actions block; the current parser only reads fenced blocks, so no file actions are extracted and no confirmation appears
+**Nature:** AI SERVICE PARSER HOTFIX ?X add a safe fallback extraction path for bare `{"file-actions":[...]}` model output so that delete/create/write/update actions survive the known contract-violation output shape without changing the primary fenced block contract
+**Source:** Inspection session (May 2026) ?X model sometimes emits raw JSON `{"file-actions":[...]}` instead of a fenced ```file-actions block; the current parser only reads fenced blocks, so no file actions are extracted and no confirmation appears
 **Depends on:** AI-WS-03 (COMPLETE and LOCKED); AI-WS-03-hotfix (COMPLETE and LOCKED)
 
 **Objective:**
@@ -11612,7 +11612,7 @@ Make the ai-service file-action parser tolerate the known malformed-but-clear mo
 
 **Risks / invariants:**
 - Fenced block contract remains the primary expected model format
-- Fallback must be narrow and safe �X do not parse arbitrary prose as actions
+- Fallback must be narrow and safe ?X do not parse arbitrary prose as actions
 - Do not loosen path safety
 - Do not change frontend confirmation or apply semantics
 - Delete remains risky/confirmation-gated downstream as established by AI-WS-02
@@ -11626,8 +11626,8 @@ Make the ai-service file-action parser tolerate the known malformed-but-clear mo
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/AI-WS-03-hotfix3-CHECKPOINT.md`
-**Nature:** FRONTEND HELPER HOTFIX �X update `deleteWorkspaceFile` to surface the backend error message on failed delete responses instead of discarding the response body
-**Source:** Inspection session (May 2026) �X after AI-WS-03-hotfix2, delete reaches the apply pipeline but `deleteWorkspaceFile` throws generic `File delete failed (404)` instead of surfacing the container-manager's useful `File not found: index2.html` message
+**Nature:** FRONTEND HELPER HOTFIX ?X update `deleteWorkspaceFile` to surface the backend error message on failed delete responses instead of discarding the response body
+**Source:** Inspection session (May 2026) ?X after AI-WS-03-hotfix2, delete reaches the apply pipeline but `deleteWorkspaceFile` throws generic `File delete failed (404)` instead of surfacing the container-manager's useful `File not found: index2.html` message
 **Depends on:** AI-WS-03-hotfix2 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -11683,8 +11683,8 @@ Update the frontend delete helper to read and surface the backend `message` fiel
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/AI-WS-02-hotfix-CHECKPOINT.md`
-**Nature:** FRONTEND CHAT-THREAD RESTORE HOTFIX �X sanitize stale `awaiting-confirmation` file-action states when restoring persisted chat messages, so ghost Apply buttons are never rendered after session restore or page reload
-**Source:** Inspection session (May 2026) �X after AI-WS-03-hotfix3, observed that delete-test.html appeared to not delete when Apply was pressed; root cause traced to a prior unconfirmed execution's awaiting-confirmation state being restored from localStorage, while `pendingConfirmationExecutionIdsRef` was cleared �X pressing Apply silently returned with no action
+**Nature:** FRONTEND CHAT-THREAD RESTORE HOTFIX ?X sanitize stale `awaiting-confirmation` file-action states when restoring persisted chat messages, so ghost Apply buttons are never rendered after session restore or page reload
+**Source:** Inspection session (May 2026) ?X after AI-WS-03-hotfix3, observed that delete-test.html appeared to not delete when Apply was pressed; root cause traced to a prior unconfirmed execution's awaiting-confirmation state being restored from localStorage, while `pendingConfirmationExecutionIdsRef` was cleared ?X pressing Apply silently returned with no action
 **Depends on:** AI-WS-02 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -11695,7 +11695,7 @@ In `parseStoredChatThreadMessages`, when a restored message has `fileActionState
 - Likely files:
   - `frontend/components/workspace/workspace-chat-thread.logic.ts`
   - `frontend/components/workspace/workspace-chat-thread.logic.test.ts`
-- In `parseStoredChatThreadMessages`, convert restored `awaiting-confirmation` �� `skipped` with `skipReason: 'session-restored'`
+- In `parseStoredChatThreadMessages`, convert restored `awaiting-confirmation` ?? `skipped` with `skipReason: 'session-restored'`
 - Already applied states remain unchanged
 - Already skipped/failed states remain unchanged
 - In-session confirmation behavior remains unchanged
@@ -11736,8 +11736,8 @@ In `parseStoredChatThreadMessages`, when a restored message has `fileActionState
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/AI-WS-03-hotfix4-CHECKPOINT.md`
-**Nature:** API GATEWAY DTO / PARSER HOTFIX �X update execution-result DTO and metadata parser to accept and return delete file-actions, preventing status/execute responses from stripping delete actions out of completed execution results
-**Source:** Inspection session (May 2026) �X delete file-actions arrive correctly through SSE but the status/execute response returns `fileActions: []` for delete executions because `parseExecutionResultMetadata` only accepts create/write/update, silently dropping delete; this causes the frontend pending confirmation state to be overwritten with an empty action array, making the Apply button disappear
+**Nature:** API GATEWAY DTO / PARSER HOTFIX ?X update execution-result DTO and metadata parser to accept and return delete file-actions, preventing status/execute responses from stripping delete actions out of completed execution results
+**Source:** Inspection session (May 2026) ?X delete file-actions arrive correctly through SSE but the status/execute response returns `fileActions: []` for delete executions because `parseExecutionResultMetadata` only accepts create/write/update, silently dropping delete; this causes the frontend pending confirmation state to be overwritten with an empty action array, making the Apply button disappear
 **Depends on:** AI-WS-03 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -11793,8 +11793,8 @@ Update `FileActionDto` and `parseExecutionResultMetadata` in the API gateway so 
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/AI-WS-03-hotfix5-CHECKPOINT.md`
-**Nature:** CONTAINER-MANAGER ROUTING HOTFIX �X route file delete through Docker exec (matching read/write/list) instead of host `fs.unlink()` via FilesController; update API gateway HTTP client to target the internal sessions delete route
-**Source:** Inspection session (May 2026) �X deleting an existing file fails with "File not found" because `ContainerManagerHttpClient.deleteSessionFile` calls `DELETE /api/files/${sessionId}/delete` (FilesController �� host fs.unlink), while all other file operations route through `InternalSessionsController` �� Docker exec; on Windows/Docker Desktop bind mounts this produces a filesystem view mismatch
+**Nature:** CONTAINER-MANAGER ROUTING HOTFIX ?X route file delete through Docker exec (matching read/write/list) instead of host `fs.unlink()` via FilesController; update API gateway HTTP client to target the internal sessions delete route
+**Source:** Inspection session (May 2026) ?X deleting an existing file fails with "File not found" because `ContainerManagerHttpClient.deleteSessionFile` calls `DELETE /api/files/${sessionId}/delete` (FilesController ?? host fs.unlink), while all other file operations route through `InternalSessionsController` ?? Docker exec; on Windows/Docker Desktop bind mounts this produces a filesystem view mismatch
 **Depends on:** AI-WS-03 (COMPLETE and LOCKED)
 
 **Bounded scope:**
@@ -11827,7 +11827,7 @@ Update `FileActionDto` and `parseExecutionResultMetadata` in the API gateway so 
 - Must not introduce arbitrary shell command execution
 - Use existing container exec safety patterns (validateWorkspacePath)
 - Keep delete scoped to current session workspace
-- Do not delete directories recursively �X file-only delete in v1
+- Do not delete directories recursively ?X file-only delete in v1
 - Preserve frontend/API gateway public route behavior
 - Preserve AI file-action apply and confirmation gate behavior
 
@@ -11844,13 +11844,13 @@ Update `FileActionDto` and `parseExecutionResultMetadata` in the API gateway so 
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/AI-WS-06-hotfix2-CHECKPOINT.md`
-**Nature:** CONTAINER-MANAGER DOCKER RUNTIME HOTFIX �X simplify the multi-line shell search script to eliminate `mktemp`/temp-file dependency that may silently fail in minimal container images; add diagnostic stderr logging when exec exits non-zero with empty stdout so failures are no longer invisible
-**Source:** Inspection session (May 2026) �X after AI-WS-06-hotfix, search routes correctly through Docker exec but still returns empty results; named-file read confirms keyword exists in `key.txt`; inspection shows the entire route chain and prompt/context flow are correct; likely failure is inside the search shell script itself: `mktemp` or `find` may not be available in the minimal sandbox image, causing script to exit non-zero with empty stdout, which is silently swallowed and returned as `{ results: [] }` �X indistinguishable from a genuine no-match
+**Nature:** CONTAINER-MANAGER DOCKER RUNTIME HOTFIX ?X simplify the multi-line shell search script to eliminate `mktemp`/temp-file dependency that may silently fail in minimal container images; add diagnostic stderr logging when exec exits non-zero with empty stdout so failures are no longer invisible
+**Source:** Inspection session (May 2026) ?X after AI-WS-06-hotfix, search routes correctly through Docker exec but still returns empty results; named-file read confirms keyword exists in `key.txt`; inspection shows the entire route chain and prompt/context flow are correct; likely failure is inside the search shell script itself: `mktemp` or `find` may not be available in the minimal sandbox image, causing script to exit non-zero with empty stdout, which is silently swallowed and returned as `{ results: [] }` ?X indistinguishable from a genuine no-match
 **Depends on:** AI-WS-06-hotfix (COMPLETE and LOCKED)
 
 **Bounded scope:**
-- `services/container-manager/src/docker/docker-runtime.service.ts` �X replace `mktemp`/temp-file pattern with direct `find ... | while read` pipeline; add stderr warning log on non-zero empty-stdout exit
-- `services/container-manager/src/docker/docker-runtime.service.spec.ts` �X add focused tests for stderr logging path and `.txt` file match parsing
+- `services/container-manager/src/docker/docker-runtime.service.ts` ?X replace `mktemp`/temp-file pattern with direct `find ... | while read` pipeline; add stderr warning log on non-zero empty-stdout exit
+- `services/container-manager/src/docker/docker-runtime.service.spec.ts` ?X add focused tests for stderr logging path and `.txt` file match parsing
 
 **Non-goals:**
 - No API gateway changes
@@ -11868,13 +11868,13 @@ Update `FileActionDto` and `parseExecutionResultMetadata` in the API gateway so 
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/AI-WS-06-hotfix3-CHECKPOINT.md`
-**Nature:** CONTAINER-MANAGER SEARCH SCRIPT ONE-LINE FIX �X add `-H` flag to `grep` call inside `searchFilesInContainer` shell script so output always includes the filename prefix, making results parseable by the existing TypeScript parser
-**Source:** Inspection session (May 2026) �X after AI-WS-06-hotfix2, search still returns no matches; live container test confirmed that `grep -Fni` omits filename when searching a single file (output: `1:SPECIAL_TEST_KEYWORD`), but the parser expects `path:line:preview` (e.g. `/workspace/key.txt:1:SPECIAL_TEST_KEYWORD`); `grep -FnHi` forces filename inclusion; BusyBox grep (used by `node:20-alpine`) supports `-H`
+**Nature:** CONTAINER-MANAGER SEARCH SCRIPT ONE-LINE FIX ?X add `-H` flag to `grep` call inside `searchFilesInContainer` shell script so output always includes the filename prefix, making results parseable by the existing TypeScript parser
+**Source:** Inspection session (May 2026) ?X after AI-WS-06-hotfix2, search still returns no matches; live container test confirmed that `grep -Fni` omits filename when searching a single file (output: `1:SPECIAL_TEST_KEYWORD`), but the parser expects `path:line:preview` (e.g. `/workspace/key.txt:1:SPECIAL_TEST_KEYWORD`); `grep -FnHi` forces filename inclusion; BusyBox grep (used by `node:20-alpine`) supports `-H`
 **Depends on:** AI-WS-06-hotfix2 (COMPLETE and LOCKED)
 
 **Bounded scope:**
-- `services/container-manager/src/docker/docker-runtime.service.ts` �X change `grep -Fni` to `grep -FnHi` in `searchFilesInContainer` shell script
-- `services/container-manager/src/docker/docker-runtime.service.spec.ts` �X assert generated script contains `grep -FnHi` (update/extend existing assertion)
+- `services/container-manager/src/docker/docker-runtime.service.ts` ?X change `grep -Fni` to `grep -FnHi` in `searchFilesInContainer` shell script
+- `services/container-manager/src/docker/docker-runtime.service.spec.ts` ?X assert generated script contains `grep -FnHi` (update/extend existing assertion)
 
 **Non-goals:**
 - No API gateway changes
@@ -11887,18 +11887,18 @@ Update `FileActionDto` and `parseExecutionResultMetadata` in the API gateway so 
 - No query validation or safety cap changes
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-WS-06-hotfix3.
-**Nature:** CONTAINER-MANAGER ROUTING HOTFIX �X route AI workspace content search through Docker exec inside the active sandbox container, matching the read/write/list/delete architecture; update API gateway HTTP client to target the internal sessions search route
-**Source:** Inspection session (May 2026) �X AI-WS-06 workspace search can run but returns no matches even when named-file read can see the content; root cause is the same host/container filesystem mismatch that affected delete before AI-WS-03-hotfix5: `FilesService.searchFiles()` uses `fs.readdir()` + `fs.readFile()` against the host `workspacePath`, while files live in the active container `/workspace/` view; on Windows/Docker Desktop/WSL2 this produces empty results
+**Nature:** CONTAINER-MANAGER ROUTING HOTFIX ?X route AI workspace content search through Docker exec inside the active sandbox container, matching the read/write/list/delete architecture; update API gateway HTTP client to target the internal sessions search route
+**Source:** Inspection session (May 2026) ?X AI-WS-06 workspace search can run but returns no matches even when named-file read can see the content; root cause is the same host/container filesystem mismatch that affected delete before AI-WS-03-hotfix5: `FilesService.searchFiles()` uses `fs.readdir()` + `fs.readFile()` against the host `workspacePath`, while files live in the active container `/workspace/` view; on Windows/Docker Desktop/WSL2 this produces empty results
 **Depends on:** AI-WS-06 (COMPLETE and LOCKED); AI-WS-03-hotfix5 (COMPLETE and LOCKED)
 
 **Objective:**
 Route AI workspace content search through the same active-container execution path as read/write/list/delete, preserving all AI-WS-06 safety caps, exclusions, and result format.
 
 **Bounded scope:**
-- `services/container-manager/src/docker/docker-runtime.service.ts` �X add `searchFilesInContainer(sessionId, query)` using safe Docker exec (grep or equivalent), bounded by AI-WS-06 caps
-- `services/container-manager/src/sessions/sessions.service.ts` �X add `searchFilesInContainer(sessionId, query)` with existing session governance checks
-- `services/container-manager/src/sessions/internal-sessions.controller.ts` �X add `POST :id/files/search` route guarded by `InternalServiceAuthGuard`
-- `services/api-gateway/src/clients/container-manager-http.client.ts` �X change `searchSessionFiles()` target from `POST /api/files/${sessionId}/search` to `POST /api/internal/sessions/${sessionId}/files/search` with internal service key header
+- `services/container-manager/src/docker/docker-runtime.service.ts` ?X add `searchFilesInContainer(sessionId, query)` using safe Docker exec (grep or equivalent), bounded by AI-WS-06 caps
+- `services/container-manager/src/sessions/sessions.service.ts` ?X add `searchFilesInContainer(sessionId, query)` with existing session governance checks
+- `services/container-manager/src/sessions/internal-sessions.controller.ts` ?X add `POST :id/files/search` route guarded by `InternalServiceAuthGuard`
+- `services/api-gateway/src/clients/container-manager-http.client.ts` ?X change `searchSessionFiles()` target from `POST /api/files/${sessionId}/search` to `POST /api/internal/sessions/${sessionId}/files/search` with internal service key header
 - Focused tests for the above
 
 **Non-goals (explicit):**
@@ -11936,9 +11936,9 @@ Route AI workspace content search through the same active-container execution pa
 
 ---
 
-## PREVIEW �X Preview Routing & Static Serving
+## PREVIEW ?X Preview Routing & Static Serving
 
-**Family status:** ACTIVE �X PREVIEW-hotfix COMPLETE and LOCKED
+**Family status:** ACTIVE ?X PREVIEW-hotfix COMPLETE and LOCKED
 
 **Current stage:** PREVIEW-hotfix (COMPLETE and LOCKED)
 
@@ -11948,8 +11948,8 @@ Route AI workspace content search through the same active-container execution pa
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/PREVIEW-hotfix-CHECKPOINT.md`
-**Nature:** CONTAINER-MANAGER STATIC PREVIEW HOTFIX �X inject a `<base>` tag into served static HTML responses so relative links resolve under the `/proxy/` route namespace without changing file storage, write paths, or AI behavior
-**Source:** Inspection session (May 2026) �X static HTML preview iframe is loaded at `/api/preview/<sessionId>/proxy`; relative links like `href="page2.html"` resolve to `/api/preview/<sessionId>/page2.html` and miss the `/proxy/` route, causing 404
+**Nature:** CONTAINER-MANAGER STATIC PREVIEW HOTFIX ?X inject a `<base>` tag into served static HTML responses so relative links resolve under the `/proxy/` route namespace without changing file storage, write paths, or AI behavior
+**Source:** Inspection session (May 2026) ?X static HTML preview iframe is loaded at `/api/preview/<sessionId>/proxy`; relative links like `href="page2.html"` resolve to `/api/preview/<sessionId>/page2.html` and miss the `/proxy/` route, causing 404
 **Depends on:** AI-WS-03-hotfix2 (COMPLETE and LOCKED)
 
 **Objective:**
@@ -11962,7 +11962,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
   - focused preview test (existing spec or new focused spec alongside)
   - directly relevant tests
 - When serving static HTML preview content, inject `<base href="/api/preview/<sessionId>/proxy/">` into `<head>` if present; otherwise insert safely near the top of the document
-- Only apply to HTML responses �X do not modify CSS, JS, images, or other assets
+- Only apply to HTML responses ?X do not modify CSS, JS, images, or other assets
 - Do not inject if a `<base>` tag is already present in the document
 - Do not change workspace file storage paths
 - Do not change AI file-action paths
@@ -11991,7 +11991,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 - No introduced lint errors
 
 **Risks / invariants:**
-- Inject only in served response �X do not rewrite user files on disk
+- Inject only in served response ?X do not rewrite user files on disk
 - Do not modify non-HTML content
 - Do not break existing asset loading
 - Do not change file write/read/delete behavior
@@ -12002,27 +12002,27 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ---
 
-## UX-FILETREE �X Workspace File Tree UX
+## UX-FILETREE ?X Workspace File Tree UX
 
-**Family status:** COMPLETE and LOCKED �X UX-FILETREE-hotfix COMPLETE and LOCKED
+**Family status:** COMPLETE and LOCKED ?X UX-FILETREE-hotfix COMPLETE and LOCKED
 
 **Current stage:** none active (UX-FILETREE-hotfix wave complete)
 
-**Completed tasks:** UX-FILETREE-hotfix �X COMPLETE and LOCKED.
+**Completed tasks:** UX-FILETREE-hotfix ?X COMPLETE and LOCKED.
 
 ---
 
 #### UX-FILETREE-hotfix: Hide Internal Git Files From Workspace File Tree
 
 **Status:** COMPLETE and LOCKED
-**Nature:** FRONTEND FILE-TREE DISPLAY/FILTER HOTFIX �X exclude `.git/` and everything under `.git/` from the user-facing Files panel, applied consistently after initial load, create refresh, delete refresh, and manual refresh; no change to on-disk files or internal git/checkpoint behavior
-**Source:** User observation (May 2026) �X after create or delete operations, the workspace file tree can show internal `.git/` contents (hooks, objects, logs, refs, HEAD, index, config) which should not be visible to the user
+**Nature:** FRONTEND FILE-TREE DISPLAY/FILTER HOTFIX ?X exclude `.git/` and everything under `.git/` from the user-facing Files panel, applied consistently after initial load, create refresh, delete refresh, and manual refresh; no change to on-disk files or internal git/checkpoint behavior
+**Source:** User observation (May 2026) ?X after create or delete operations, the workspace file tree can show internal `.git/` contents (hooks, objects, logs, refs, HEAD, index, config) which should not be visible to the user
 **Depends on:** (none)
 
 **Bounded scope:**
-- `frontend/components/workspace/workspace-file-navigation.logic.ts` �X added `isInternalGitTreeEntry()` filter in `loadWorkspaceFileTree()` before sort and recursion
-- `frontend/components/workspace/workspace-file-navigation.logic.test.ts` �X added focused `.git` filtering regression test (10 tests total, all pass)
-- `frontend/app/[locale]/app/page.tsx` �X not changed (filtering is entirely in the shared logic module)
+- `frontend/components/workspace/workspace-file-navigation.logic.ts` ?X added `isInternalGitTreeEntry()` filter in `loadWorkspaceFileTree()` before sort and recursion
+- `frontend/components/workspace/workspace-file-navigation.logic.test.ts` ?X added focused `.git` filtering regression test (10 tests total, all pass)
+- `frontend/app/[locale]/app/page.tsx` ?X not changed (filtering is entirely in the shared logic module)
 
 **Non-goals:**
 - No change to git/checkpoint behavior
@@ -12036,41 +12036,41 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ---
 
-## UX-IA �X Product & UX/UI Redesign (Evolutionary)
+## UX-IA ?X Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 COMPLETE and LOCKED — UX-IA-09 COMPLETE and LOCKED — UX-IA-10 COMPLETE and LOCKED — UX-IA-11 COMPLETE and LOCKED — UX-IA-12 COMPLETE and LOCKED — UX-IA-13 COMPLETE and LOCKED — 13A COMPLETE and LOCKED — 13B COMPLETE and LOCKED — UX-IA-14 pending
+**Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED
 
-**Current stage:** UX-IA-14 — Route Cleanup / Redirects (pending)
+**Current stage:** UX-IA-15 ?X Visual Edit Mode Foundation (pending)
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
 **Ordered slices:**
-1. UX-IA-00 �X Master spec (COMPLETE �X `docs/UX-IA-00-MASTER-PLAN.md`)
-2. UX-IA-01 �X i18n Foundation & Locale Middleware (COMPLETE and LOCKED �X `docs/UX-IA-01-CHECKPOINT.md`)
-3. UX-IA-02 �X Design Token Foundation (COMPLETE and LOCKED �X `docs/UX-IA-02-CHECKPOINT.md`)
-4. UX-IA-03 �X Public Landing Redesign + Login/Register Polish (COMPLETE and LOCKED �X `docs/UX-IA-03-CHECKPOINT.md`)
-   > AUTH-APP-01 + AUTH-APP-02 �X aiSandBox First-Party Authentication (cross-family �X COMPLETE and LOCKED �X `docs/AUTH-APP-01-CHECKPOINT.md` + `docs/AUTH-APP-02-CHECKPOINT.md`)
-5. UX-IA-04 — Workspace Shell + Sidebar + Home View (COMPLETE and LOCKED — `docs/UX-IA-04-CHECKPOINT.md`)
-   - UX-IA-04A — Sidebar shell + view state scaffolding (COMPLETE and LOCKED — `docs/UX-IA-04A-CHECKPOINT.md`)
-   - UX-IA-04B — Home view chatbox + prompt-to-project flow (COMPLETE and LOCKED — `docs/UX-IA-04B-CHECKPOINT.md`)
-   - UX-IA-04C — Tests + validation + consolidation (COMPLETE and LOCKED — `docs/UX-IA-04-CHECKPOINT.md`)
-6. UX-IA-05 — Projects Grid/List + Recent Projects (COMPLETE and LOCKED — `docs/UX-IA-05-CHECKPOINT.md`)
-7. UX-IA-06 — Templates / Community View (COMPLETE and LOCKED — docs/UX-IA-06-CHECKPOINT.md)
-8. UX-IA-07 — Account Menu + Settings + Language/Theme (COMPLETE and LOCKED — `docs/UX-IA-07-CHECKPOINT.md`)
-9. UX-IA-08 — Project Mode Shell (COMPLETE and LOCKED — `docs/UX-IA-08-CHECKPOINT.md`)
-   - UX-IA-08A — Project Mode Layout Shell + Back Header (COMPLETE and LOCKED — `docs/UX-IA-08A-CHECKPOINT.md`)
-   - UX-IA-08B — Tab Registry + Tab Bar + AI Panel Collapse (COMPLETE and LOCKED — `docs/UX-IA-08B-CHECKPOINT.md`)
-   - UX-IA-08C — Tests + Validation + Consolidation (COMPLETE and LOCKED — `docs/UX-IA-08-CHECKPOINT.md`)
-10. UX-IA-09 �X Project AI + History Panel (COMPLETE and LOCKED — `docs/UX-IA-09-CHECKPOINT.md`)
-11. UX-IA-10 �X Preview + Code & Files Tabs (COMPLETE and LOCKED — `docs/UX-IA-10-CHECKPOINT.md`)
-12. UX-IA-11 �X Future Product Tab Placeholders (COMPLETE and LOCKED — `docs/UX-IA-11-CHECKPOINT.md`)
-13. UX-IA-12 �X Upgrade Flow + Dashboard Polish (COMPLETE and LOCKED — `docs/UX-IA-12-CHECKPOINT.md`)
-14. UX-IA-13 �X Responsive / Mobile Polish (COMPLETE and LOCKED — 13A COMPLETE and LOCKED — 13B COMPLETE and LOCKED — \docs/UX-IA-13-CHECKPOINT.md\)
-15. UX-IA-14 �X Route Cleanup / Redirects (pending)
-16. UX-IA-15 �X Visual Edit Mode Foundation (pending �X requires UX-IA-08 + UX-IA-10 COMPLETE)
-17. UX-IA-16 �X Visual Edit AI Patch Flow (pending �X requires UX-IA-15 COMPLETE)
-18. UX-IA-17 �X Visual Edit Undo / Checkpoint Integration (pending �X requires UX-IA-16 COMPLETE)
-   ? AUTH-MODULE-01 �X Reusable App-Auth Module for aiSandBox-Created Apps (cross-family �X later product capability; requires AUTH-APP-01 + UX-IA-08�VUX-IA-10 COMPLETE; see `docs/UX-IA-00-MASTER-PLAN.md` AUTH-MODULE-01 entry; register under AUTH family before starting)
+1. UX-IA-00 ?X Master spec (COMPLETE ?X `docs/UX-IA-00-MASTER-PLAN.md`)
+2. UX-IA-01 ?X i18n Foundation & Locale Middleware (COMPLETE and LOCKED ?X `docs/UX-IA-01-CHECKPOINT.md`)
+3. UX-IA-02 ?X Design Token Foundation (COMPLETE and LOCKED ?X `docs/UX-IA-02-CHECKPOINT.md`)
+4. UX-IA-03 ?X Public Landing Redesign + Login/Register Polish (COMPLETE and LOCKED ?X `docs/UX-IA-03-CHECKPOINT.md`)
+   > AUTH-APP-01 + AUTH-APP-02 ?X aiSandBox First-Party Authentication (cross-family ?X COMPLETE and LOCKED ?X `docs/AUTH-APP-01-CHECKPOINT.md` + `docs/AUTH-APP-02-CHECKPOINT.md`)
+5. UX-IA-04 ?X Workspace Shell + Sidebar + Home View (COMPLETE and LOCKED ?X `docs/UX-IA-04-CHECKPOINT.md`)
+   - UX-IA-04A ?X Sidebar shell + view state scaffolding (COMPLETE and LOCKED ?X `docs/UX-IA-04A-CHECKPOINT.md`)
+   - UX-IA-04B ?X Home view chatbox + prompt-to-project flow (COMPLETE and LOCKED ?X `docs/UX-IA-04B-CHECKPOINT.md`)
+   - UX-IA-04C ?X Tests + validation + consolidation (COMPLETE and LOCKED ?X `docs/UX-IA-04-CHECKPOINT.md`)
+6. UX-IA-05 ?X Projects Grid/List + Recent Projects (COMPLETE and LOCKED ?X `docs/UX-IA-05-CHECKPOINT.md`)
+7. UX-IA-06 ?X Templates / Community View (COMPLETE and LOCKED ?X docs/UX-IA-06-CHECKPOINT.md)
+8. UX-IA-07 ?X Account Menu + Settings + Language/Theme (COMPLETE and LOCKED ?X `docs/UX-IA-07-CHECKPOINT.md`)
+9. UX-IA-08 ?X Project Mode Shell (COMPLETE and LOCKED ?X `docs/UX-IA-08-CHECKPOINT.md`)
+   - UX-IA-08A ?X Project Mode Layout Shell + Back Header (COMPLETE and LOCKED ?X `docs/UX-IA-08A-CHECKPOINT.md`)
+   - UX-IA-08B ?X Tab Registry + Tab Bar + AI Panel Collapse (COMPLETE and LOCKED ?X `docs/UX-IA-08B-CHECKPOINT.md`)
+   - UX-IA-08C ?X Tests + Validation + Consolidation (COMPLETE and LOCKED ?X `docs/UX-IA-08-CHECKPOINT.md`)
+10. UX-IA-09 ?X Project AI + History Panel (COMPLETE and LOCKED ?X `docs/UX-IA-09-CHECKPOINT.md`)
+11. UX-IA-10 ?X Preview + Code & Files Tabs (COMPLETE and LOCKED ?X `docs/UX-IA-10-CHECKPOINT.md`)
+12. UX-IA-11 ?X Future Product Tab Placeholders (COMPLETE and LOCKED ?X `docs/UX-IA-11-CHECKPOINT.md`)
+13. UX-IA-12 ?X Upgrade Flow + Dashboard Polish (COMPLETE and LOCKED ?X `docs/UX-IA-12-CHECKPOINT.md`)
+14. UX-IA-13 ?X Responsive / Mobile Polish (COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X \docs/UX-IA-13-CHECKPOINT.md\)
+15. UX-IA-14 ?X Route Cleanup / Redirects (COMPLETE and LOCKED ?X docs/UX-IA-14-CHECKPOINT.md)
+16. UX-IA-15 ?X Visual Edit Mode Foundation (pending ?X requires UX-IA-08 + UX-IA-10 COMPLETE)
+17. UX-IA-16 ?X Visual Edit AI Patch Flow (pending ?X requires UX-IA-15 COMPLETE)
+18. UX-IA-17 ?X Visual Edit Undo / Checkpoint Integration (pending ?X requires UX-IA-16 COMPLETE)
+   ? AUTH-MODULE-01 ?X Reusable App-Auth Module for aiSandBox-Created Apps (cross-family ?X later product capability; requires AUTH-APP-01 + UX-IA-08?VUX-IA-10 COMPLETE; see `docs/UX-IA-00-MASTER-PLAN.md` AUTH-MODULE-01 entry; register under AUTH family before starting)
 
 ---
 
@@ -12078,19 +12078,19 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/UX-IA-01-CHECKPOINT.md`
-**Nature:** FRONTEND I18N INFRASTRUCTURE �X expand translation files to all required namespaces, implement English fallback in `useTranslations`, add locale middleware for default locale redirect, decide namespace access pattern and `sandbox` namespace migration strategy; no visual or layout changes
-**Source:** UX-IA-00 master plan (May 2026) �X multilingual is mandatory; all later UX phases must use translation keys from day one to prevent hardcoded-string debt
+**Nature:** FRONTEND I18N INFRASTRUCTURE ?X expand translation files to all required namespaces, implement English fallback in `useTranslations`, add locale middleware for default locale redirect, decide namespace access pattern and `sandbox` namespace migration strategy; no visual or layout changes
+**Source:** UX-IA-00 master plan (May 2026) ?X multilingual is mandatory; all later UX phases must use translation keys from day one to prevent hardcoded-string debt
 **Depends on:** UX-IA-00 (COMPLETE)
 
 **Bounded scope:**
-- `frontend/middleware.ts` (new) �X default locale redirect, must not interfere with `/api/*`
-- `frontend/messages/en.json` �X expand with all namespaces
-- `frontend/messages/zh-TW.json` �X expand with all namespaces
-- `frontend/messages/zh-CN.json` �X expand with all namespaces
-- `frontend/hooks/useTranslations.ts` �X add English fallback (active locale �� English �� key)
-- `frontend/components/TranslationProvider.tsx` �X pass `fallbackMessages` (en.json) alongside active locale messages
-- `frontend/app/[locale]/layout.tsx` �X if needed to import en.json as fallback
-- `frontend/components/LanguageSwitcher.tsx` �X minor polish if needed
+- `frontend/middleware.ts` (new) ?X default locale redirect, must not interfere with `/api/*`
+- `frontend/messages/en.json` ?X expand with all namespaces
+- `frontend/messages/zh-TW.json` ?X expand with all namespaces
+- `frontend/messages/zh-CN.json` ?X expand with all namespaces
+- `frontend/hooks/useTranslations.ts` ?X add English fallback (active locale ?? English ?? key)
+- `frontend/components/TranslationProvider.tsx` ?X pass `fallbackMessages` (en.json) alongside active locale messages
+- `frontend/app/[locale]/layout.tsx` ?X if needed to import en.json as fallback
+- `frontend/components/LanguageSwitcher.tsx` ?X minor polish if needed
 
 **Non-goals:**
 - No visual redesign
@@ -12113,14 +12113,14 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/UX-IA-02-CHECKPOINT.md`
-**Nature:** FRONTEND CSS / TAILWIND CONFIG �X establish brand, surface, border, text, and muted token strategy; define light theme CSS custom properties in `:root`; prepare dark theme placeholders if low-risk; no component or layout changes
-**Source:** UX-IA-00 master plan (May 2026) �X all subsequent visual phases must build on a shared token system to avoid palette drift
+**Nature:** FRONTEND CSS / TAILWIND CONFIG ?X establish brand, surface, border, text, and muted token strategy; define light theme CSS custom properties in `:root`; prepare dark theme placeholders if low-risk; no component or layout changes
+**Source:** UX-IA-00 master plan (May 2026) ?X all subsequent visual phases must build on a shared token system to avoid palette drift
 **Depends on:** UX-IA-01 (COMPLETE and LOCKED)
 
 **Bounded scope:**
-- `frontend/tailwind.config.js` �X extend theme with brand, surface, border, text, and muted color tokens; add font family and radius tokens
-- `frontend/app/globals.css` �X define CSS custom properties for light theme in `:root`; add dark theme placeholder block if low-risk
-- `frontend/app/[locale]/layout.tsx` �X add `next/font` Inter font import if needed; keep all i18n/TranslationProvider wiring unchanged
+- `frontend/tailwind.config.js` ?X extend theme with brand, surface, border, text, and muted color tokens; add font family and radius tokens
+- `frontend/app/globals.css` ?X define CSS custom properties for light theme in `:root`; add dark theme placeholder block if low-risk
+- `frontend/app/[locale]/layout.tsx` ?X add `next/font` Inter font import if needed; keep all i18n/TranslationProvider wiring unchanged
 
 **Non-goals:**
 - No workspace layout changes
@@ -12151,26 +12151,26 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/UX-IA-03-CHECKPOINT.md`
-**Nature:** FRONTEND UI / I18N �X redesign public landing as "Build anything" entry experience with prompt chatbox and CTA; polish login/register pages using UX-IA-02 design tokens; full i18n for all three pages; no auth changes, no workspace changes
-**Source:** UX-IA-00 master plan (May 2026) �X public landing and login/register are the first user-facing surfaces; must reflect the new product direction before workspace redesign begins
+**Nature:** FRONTEND UI / I18N ?X redesign public landing as "Build anything" entry experience with prompt chatbox and CTA; polish login/register pages using UX-IA-02 design tokens; full i18n for all three pages; no auth changes, no workspace changes
+**Source:** UX-IA-00 master plan (May 2026) ?X public landing and login/register are the first user-facing surfaces; must reflect the new product direction before workspace redesign begins
 **Depends on:** UX-IA-01 (COMPLETE and LOCKED), UX-IA-02 (COMPLETE and LOCKED)
 
 **Bounded scope:**
-- `frontend/components/public/public-landing-slice.tsx` �X redesign with "Build anything" headline, subtitle, prompt chatbox, sign-in/register CTA
-- `frontend/app/[locale]/page.tsx` �X wire updated landing component props
-- `frontend/app/[locale]/login/page.tsx` �X visual polish using design tokens + full i18n
-- `frontend/app/[locale]/register/page.tsx` �X visual polish using design tokens + full i18n
-- `frontend/components/LanguageSwitcher.tsx` �X ensure visible on all three pages if not already
-- `frontend/messages/en.json` �X add/complete landing/login/register i18n keys
-- `frontend/messages/zh-TW.json` �X same
-- `frontend/messages/zh-CN.json` �X same
+- `frontend/components/public/public-landing-slice.tsx` ?X redesign with "Build anything" headline, subtitle, prompt chatbox, sign-in/register CTA
+- `frontend/app/[locale]/page.tsx` ?X wire updated landing component props
+- `frontend/app/[locale]/login/page.tsx` ?X visual polish using design tokens + full i18n
+- `frontend/app/[locale]/register/page.tsx` ?X visual polish using design tokens + full i18n
+- `frontend/components/LanguageSwitcher.tsx` ?X ensure visible on all three pages if not already
+- `frontend/messages/en.json` ?X add/complete landing/login/register i18n keys
+- `frontend/messages/zh-TW.json` ?X same
+- `frontend/messages/zh-CN.json` ?X same
 - Focused tests for prompt sessionStorage preservation if test setup supports them
 
 **Required behavior:**
 - `/[locale]` public landing shows: "Build anything" headline, short subtitle, prompt input, sign-in/register CTA
 - Submitting the prompt before login must **not** create a project
 - Submitting the prompt before login must store the prompt text in `sessionStorage` and redirect to login or register
-- Login/register pages remain functionally unchanged �X visual/i18n polish only
+- Login/register pages remain functionally unchanged ?X visual/i18n polish only
 - Login/register use design token CSS classes where practical (colors, font, radius)
 - All landing/login/register user-facing strings use `useTranslations` i18n keys
 - UX-IA-01 English fallback behavior unchanged
@@ -12191,7 +12191,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 - No authenticated workspace redesign
 - No workspace shell/sidebar changes
 - No project mode changes
-- No preview tab changes (Visual Edit Mode is roadmap-only �X see master plan Section 12)
+- No preview tab changes (Visual Edit Mode is roadmap-only ?X see master plan Section 12)
 - No AI-WS changes
 - No billing/upgrade changes
 - No new external dependencies
@@ -12223,28 +12223,28 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 #### UX-IA-04: Workspace Shell + Sidebar + Home View
 
-**Status:** COMPLETE and LOCKED — `docs/UX-IA-04-CHECKPOINT.md`
+**Status:** COMPLETE and LOCKED ?X `docs/UX-IA-04-CHECKPOINT.md`
 **Task ID:** UX-IA-04
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
-**Source:** `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-04 section
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-04 section
 **Depends on:** UX-IA-03 (COMPLETE and LOCKED), AUTH-APP-01 (COMPLETE and LOCKED), AUTH-APP-02 (COMPLETE and LOCKED), PROJ-02-01 (COMPLETE and LOCKED), PROJ-02-02 (COMPLETE and LOCKED), PROJ-02-03 (COMPLETE and LOCKED)
-**Risk:** Medium-High — major layout restructure of primary workspace component; split into 3 child slices to reduce per-pass risk
-**Loop:** 4-step (plan — implement — verify tests — consolidate)
+**Risk:** Medium-High ?X major layout restructure of primary workspace component; split into 3 child slices to reduce per-pass risk
+**Loop:** 4-step (plan ?X implement ?X verify tests ?X consolidate)
 **Model:** Opus 4.6 for plan phase and major implementation; Sonnet 4.6 for registration and consolidation
 
 **Objective:**
 Evolve `WorkspaceShell` into a sidebar + right content layout. Add `WorkspaceView` state (`home | projects | templates | project`). Implement the authenticated Home view with a "Build anything" chatbox. Submitting a prompt from Home creates a project and opens project mode. Extract or prepare a `WorkspaceSidebar` component. Reuse existing workspace/project state and handlers from `page.tsx`. Reuse `DashboardSummary` data for compact sidebar usage. Preserve all existing workspace/project/AI/file/preview/history behavior.
 
 **Child slices:**
-- UX-IA-04A — Sidebar shell + view state scaffolding (COMPLETE and LOCKED — `docs/UX-IA-04A-CHECKPOINT.md`)
-- UX-IA-04B — Home view chatbox + prompt-to-project flow (COMPLETE and LOCKED — `docs/UX-IA-04B-CHECKPOINT.md`)
-- UX-IA-04C — Tests + validation + consolidation (COMPLETE and LOCKED — `docs/UX-IA-04-CHECKPOINT.md`)
+- UX-IA-04A ?X Sidebar shell + view state scaffolding (COMPLETE and LOCKED ?X `docs/UX-IA-04A-CHECKPOINT.md`)
+- UX-IA-04B ?X Home view chatbox + prompt-to-project flow (COMPLETE and LOCKED ?X `docs/UX-IA-04B-CHECKPOINT.md`)
+- UX-IA-04C ?X Tests + validation + consolidation (COMPLETE and LOCKED ?X `docs/UX-IA-04-CHECKPOINT.md`)
 
 **Bounded scope:**
-- `frontend/components/workspace/workspace-shell.tsx` — layout restructure: sidebar + right content
-- `frontend/components/workspace/workspace-shell.test.tsx` — update tests for new layout and view state
-- `frontend/app/[locale]/app/page.tsx` — add `workspaceView` state, wire create-project-from-prompt
-- New: `frontend/components/workspace/workspace-sidebar.tsx` — extracted sidebar component
+- `frontend/components/workspace/workspace-shell.tsx` ?X layout restructure: sidebar + right content
+- `frontend/components/workspace/workspace-shell.test.tsx` ?X update tests for new layout and view state
+- `frontend/app/[locale]/app/page.tsx` ?X add `workspaceView` state, wire create-project-from-prompt
+- New: `frontend/components/workspace/workspace-sidebar.tsx` ?X extracted sidebar component
 
 **Non-goals:**
 - No project mode implementation yet (UX-IA-08)
@@ -12259,7 +12259,7 @@ Evolve `WorkspaceShell` into a sidebar + right content layout. Add `WorkspaceVie
 - No breaking of completed AI-WS, AUTH, PROJ, or preview security work
 
 **Acceptance checks (full UX-IA-04):**
-- UX-IA-04 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- UX-IA-04 registered in TASKS.md and TASKS_BACKLOG_FULL.md ?X DONE
 - Sidebar renders with workspace selector + Home/Projects/Templates nav items
 - Home view shows "Build anything" chatbox
 - Prompt submission from Home creates a project and opens project mode
@@ -12279,10 +12279,10 @@ PROJ-02-01 (Refactor Project Open Into Deterministic Workspace Hydration Flow) i
 
 #### UX-IA-04A: Sidebar Shell + View State Scaffolding
 
-**Status:** COMPLETE and LOCKED — `docs/UX-IA-04A-CHECKPOINT.md`
+**Status:** COMPLETE and LOCKED ?X `docs/UX-IA-04A-CHECKPOINT.md`
 **Task ID:** UX-IA-04A
 **Parent:** UX-IA-04
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Source:** UX-IA-04 plan phase result (May 2026)
 **Depends on:** UX-IA-04 plan phase (COMPLETE)
 **Risk:** Medium
@@ -12291,10 +12291,10 @@ PROJ-02-01 (Refactor Project Open Into Deterministic Workspace Hydration Flow) i
 Add `WorkspaceView` state to `page.tsx`. Create `workspace-sidebar.tsx`. Restructure `workspace-shell.tsx` layout from the existing header+aside+main arrangement to sidebar+right-content with view-based rendering. Wire nav items. Render recent projects and compact usage. Home view shows static placeholder only. Preserve all existing project/AI/preview/history behavior unchanged.
 
 **Bounded scope:**
-- `frontend/app/[locale]/app/page.tsx` — add `workspaceView: WorkspaceView` state; add `onWorkspaceViewChange` handler; pass both as new props to `WorkspaceShell`
-- `frontend/components/workspace/workspace-shell.tsx` — restructure outer layout to sidebar + right content; add view-based rendering (`home` placeholder / `projects` / `templates` / `project`); accept new `workspaceView` + `onWorkspaceViewChange` props; pass sidebar data as props to `WorkspaceSidebar`
-- `frontend/components/workspace/workspace-sidebar.tsx` (new) — sidebar component: workspace dropdown, Home/Projects/Templates nav items, recent projects list (top 5 by `updatedAt`), compact usage display, session advanced drawer
-- `frontend/components/workspace/workspace-shell.test.tsx` — minimal adjustments to keep existing tests passing; defer heavy test additions to UX-IA-04C
+- `frontend/app/[locale]/app/page.tsx` ?X add `workspaceView: WorkspaceView` state; add `onWorkspaceViewChange` handler; pass both as new props to `WorkspaceShell`
+- `frontend/components/workspace/workspace-shell.tsx` ?X restructure outer layout to sidebar + right content; add view-based rendering (`home` placeholder / `projects` / `templates` / `project`); accept new `workspaceView` + `onWorkspaceViewChange` props; pass sidebar data as props to `WorkspaceSidebar`
+- `frontend/components/workspace/workspace-sidebar.tsx` (new) ?X sidebar component: workspace dropdown, Home/Projects/Templates nav items, recent projects list (top 5 by `updatedAt`), compact usage display, session advanced drawer
+- `frontend/components/workspace/workspace-shell.test.tsx` ?X minimal adjustments to keep existing tests passing; defer heavy test additions to UX-IA-04C
 
 **Non-goals:**
 - No Home prompt-to-project flow (UX-IA-04B)
@@ -12309,9 +12309,9 @@ Add `WorkspaceView` state to `page.tsx`. Create `workspace-sidebar.tsx`. Restruc
 - No responsive/mobile work (UX-IA-13)
 
 **Validation:**
-- `npx tsc --noEmit` (from `frontend/`) — must pass
-- `npm test` (from `frontend/`) — must pass
-- `npm run build` (from `frontend/`) — run if practical
+- `npx tsc --noEmit` (from `frontend/`) ?X must pass
+- `npm test` (from `frontend/`) ?X must pass
+- `npm run build` (from `frontend/`) ?X run if practical
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-04A.
 
@@ -12319,19 +12319,19 @@ Add `WorkspaceView` state to `page.tsx`. Create `workspace-sidebar.tsx`. Restruc
 
 #### UX-IA-04B: Home View Chatbox + Prompt-to-Project Flow
 
-**Status:** COMPLETE and LOCKED — `docs/UX-IA-04B-CHECKPOINT.md`
+**Status:** COMPLETE and LOCKED ?X `docs/UX-IA-04B-CHECKPOINT.md`
 **Task ID:** UX-IA-04B
 **Parent:** UX-IA-04
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
-**Depends on:** UX-IA-04A (COMPLETE and LOCKED — `docs/UX-IA-04A-CHECKPOINT.md`)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
+**Depends on:** UX-IA-04A (COMPLETE and LOCKED ?X `docs/UX-IA-04A-CHECKPOINT.md`)
 **Risk:** Medium
 
 **Objective:**
 Implement the Home view "Build anything" chatbox and the prompt-to-project creation flow. Add `handleCreateProjectFromPrompt` to `page.tsx`. Consume `sessionStorage` pending prompt written by UX-IA-03 landing page. Pre-fill prompt into existing `chatPromptInput` state so it's ready when project mode opens.
 
 **Bounded scope:**
-- `frontend/app/[locale]/app/page.tsx` — add `handleCreateProjectFromPrompt(prompt: string)` handler; add sessionStorage pending-prompt consumption on mount; wire new `onCreateProjectFromPrompt` prop to `WorkspaceShell`
-- `frontend/components/workspace/workspace-shell.tsx` — implement Home view content: "Build anything" headline, prompt textarea, submit button; wire `onCreateProjectFromPrompt` prop; use existing `workspace.*` i18n keys
+- `frontend/app/[locale]/app/page.tsx` ?X add `handleCreateProjectFromPrompt(prompt: string)` handler; add sessionStorage pending-prompt consumption on mount; wire new `onCreateProjectFromPrompt` prop to `WorkspaceShell`
+- `frontend/components/workspace/workspace-shell.tsx` ?X implement Home view content: "Build anything" headline, prompt textarea, submit button; wire `onCreateProjectFromPrompt` prop; use existing `workspace.*` i18n keys
 
 **Non-goals:**
 - No new backend APIs
@@ -12343,8 +12343,8 @@ Implement the Home view "Build anything" chatbox and the prompt-to-project creat
 - No tab system (UX-IA-08/10/11)
 
 **Validation:**
-- `npx tsc --noEmit` (from `frontend/`) — must pass
-- `npm test` (from `frontend/`) — must pass
+- `npx tsc --noEmit` (from `frontend/`) ?X must pass
+- `npm test` (from `frontend/`) ?X must pass
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-04B.
 
@@ -12352,55 +12352,55 @@ Implement the Home view "Build anything" chatbox and the prompt-to-project creat
 
 #### UX-IA-04C: Tests + Validation + Consolidation
 
-**Status:** COMPLETE and LOCKED — `docs/UX-IA-04-CHECKPOINT.md`
+**Status:** COMPLETE and LOCKED ?X `docs/UX-IA-04-CHECKPOINT.md`
 **Task ID:** UX-IA-04C
 **Parent:** UX-IA-04
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
-**Depends on:** UX-IA-04B (COMPLETE and LOCKED — `docs/UX-IA-04B-CHECKPOINT.md`)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
+**Depends on:** UX-IA-04B (COMPLETE and LOCKED ?X `docs/UX-IA-04B-CHECKPOINT.md`)
 **Risk:** Low-Medium
 
 **Objective:**
 Update and extend `workspace-shell.test.tsx` for the new layout structure, sidebar, view state, and Home chatbox. Run full validation suite. Write checkpoint document and close UX-IA-04.
 
 **Bounded scope:**
-- `frontend/components/workspace/workspace-shell.test.tsx` — update existing tests for new layout; add tests for sidebar, view switching, Home chatbox, prompt-to-project flow
-- `docs/UX-IA-04-CHECKPOINT.md` (new) — checkpoint document
-- `TASKS.md` — mark UX-IA-04 and all child slices COMPLETE and LOCKED
-- `TASKS_BACKLOG_FULL.md` — mark UX-IA-04 and all child slices COMPLETE and LOCKED
+- `frontend/components/workspace/workspace-shell.test.tsx` ?X update existing tests for new layout; add tests for sidebar, view switching, Home chatbox, prompt-to-project flow
+- `docs/UX-IA-04-CHECKPOINT.md` (new) ?X checkpoint document
+- `TASKS.md` ?X mark UX-IA-04 and all child slices COMPLETE and LOCKED
+- `TASKS_BACKLOG_FULL.md` ?X mark UX-IA-04 and all child slices COMPLETE and LOCKED
 
 **Non-goals:**
 - No new features
 - No source code changes beyond test fixes
 
 **Validation:**
-- `npx tsc --noEmit` (from `frontend/`) — must pass
-- `npm test` (from `frontend/`) — must pass, including new test cases
-- `npm run build` (from `frontend/`) — must pass
-- `ReadLints` on all touched files — no introduced errors
+- `npx tsc --noEmit` (from `frontend/`) ?X must pass
+- `npm test` (from `frontend/`) ?X must pass, including new test cases
+- `npm run build` (from `frontend/`) ?X must pass
+- `ReadLints` on all touched files ?X no introduced errors
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-04C.
 ---
 
 #### UX-IA-05: Projects Grid/List + Recent Projects
 
-**Status:** COMPLETE and LOCKED — `docs/UX-IA-05-CHECKPOINT.md`
+**Status:** COMPLETE and LOCKED ?X `docs/UX-IA-05-CHECKPOINT.md`
 **Task ID:** UX-IA-05
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
-**Source:** `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-05 section
-**Depends on:** UX-IA-04 (COMPLETE and LOCKED — `docs/UX-IA-04-CHECKPOINT.md`)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-05 section
+**Depends on:** UX-IA-04 (COMPLETE and LOCKED ?X `docs/UX-IA-04-CHECKPOINT.md`)
 **Risk:** Low-Medium
-**Loop:** 3-step (implement — verify tests — consolidate)
+**Loop:** 3-step (implement ?X verify tests ?X consolidate)
 **Model:** Sonnet 4.6
 
 **Objective:**
 Build the Projects view with project cards in grid/list form. Make sidebar recent projects clickable. Reuse existing `workspaceProjects`, `onOpenWorkspaceProject`, `onCreateWorkspaceProject`, `onResumeWorkspaceProjectById` handlers. Introduce a `WorkspaceProjectCard` component. Add grid/list toggle if safe in this slice. Implement empty state for no projects. Preserve all UX-IA-04 sidebar, Home chatbox, and project-mode behavior unchanged.
 
 **Bounded scope:**
-- `frontend/components/workspace/workspace-shell.tsx` — replace Projects view placeholder with grid/list of project cards; add grid/list toggle
-- New: `frontend/components/workspace/workspace-project-card.tsx` — project card component (name, updated date, open/resume action)
-- `frontend/components/workspace/workspace-sidebar.tsx` — make recent project items clickable (call `onOpenWorkspaceProject` or `onResumeWorkspaceProjectById` then transition to `project` view)
-- `frontend/components/workspace/workspace-shell.test.tsx` — tests for projects grid, project card render, grid/list toggle, empty state, recent project click
-- Possibly: `frontend/app/[locale]/app/page.tsx` — only if view wiring for projects view needs adjustment
+- `frontend/components/workspace/workspace-shell.tsx` ?X replace Projects view placeholder with grid/list of project cards; add grid/list toggle
+- New: `frontend/components/workspace/workspace-project-card.tsx` ?X project card component (name, updated date, open/resume action)
+- `frontend/components/workspace/workspace-sidebar.tsx` ?X make recent project items clickable (call `onOpenWorkspaceProject` or `onResumeWorkspaceProjectById` then transition to `project` view)
+- `frontend/components/workspace/workspace-shell.test.tsx` ?X tests for projects grid, project card render, grid/list toggle, empty state, recent project click
+- Possibly: `frontend/app/[locale]/app/page.tsx` ?X only if view wiring for projects view needs adjustment
 
 **Non-goals:**
 - No Templates/Community view implementation (UX-IA-06)
@@ -12437,32 +12437,32 @@ Build the Projects view with project cards in grid/list form. Make sidebar recen
 - No regressions to UX-IA-04 sidebar, Home view, or project-mode behavior
 - No regressions to AUTH-APP-01/02 or PROJ-02 hydration chain
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-05. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-05 section.
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-05. See `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-05 section.
 
 ---
 
 #### UX-IA-06: Templates / Community View
 
-**Status:** COMPLETE and LOCKED — `docs/UX-IA-06-CHECKPOINT.md`
+**Status:** COMPLETE and LOCKED ?X `docs/UX-IA-06-CHECKPOINT.md`
 **Task ID:** UX-IA-06
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
-**Source:** `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-06 section
-**Depends on:** UX-IA-05 (COMPLETE and LOCKED — `docs/UX-IA-05-CHECKPOINT.md`)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-06 section
+**Depends on:** UX-IA-05 (COMPLETE and LOCKED ?X `docs/UX-IA-05-CHECKPOINT.md`)
 **Risk:** Low
-**Loop:** 3-step (implement — verify tests — consolidate)
+**Loop:** 3-step (implement ?X verify tests ?X consolidate)
 **Model:** Sonnet 4.6
 
 **Objective:**
 Templates view shows public/community projects with search and fork capability. Reuse existing `loadPublicWorkspaceProjects` data and public project state. Reuse existing `onForkPublicWorkspaceProject` and `onViewPublicWorkspaceProject` handlers where already available. Add template/project card UI reusing `WorkspaceProjectCard` if safe; extend or create new card component only if the prop contract is insufficient. Add search/filter UI if safe in this slice (local state only; no new backend endpoints). Forking a public project creates a copy in user's workspace and opens project mode using the existing handler flow. Preserve all UX-IA-04 and UX-IA-05 sidebar/home/project/projects-view scaffolding.
 
 **Bounded scope:**
-- `frontend/components/workspace/workspace-shell.tsx` — replace Templates view placeholder with public project browsing surface; wire `loadPublicWorkspaceProjects`, `onForkPublicWorkspaceProject`, `onViewPublicWorkspaceProject`
-- `frontend/components/workspace/workspace-project-card.tsx` — reuse for template cards if prop contract is compatible; extend only if props are insufficient; create new template card component only if `WorkspaceProjectCard` cannot be safely adapted
-- `frontend/components/workspace/workspace-shell.test.tsx` — tests for templates view render, template card display, fork action handler invocation, search/filter behavior if included
-- `frontend/messages/en.json` — add any new `workspace.templates*` i18n keys required for new user-facing strings
-- `frontend/messages/zh-TW.json` — same
-- `frontend/messages/zh-CN.json` — same
-- Possibly: `frontend/app/[locale]/app/page.tsx` — only if `onForkPublicWorkspaceProject` or `onViewPublicWorkspaceProject` handler wiring is confirmed missing from existing `WorkspaceShell` props
+- `frontend/components/workspace/workspace-shell.tsx` ?X replace Templates view placeholder with public project browsing surface; wire `loadPublicWorkspaceProjects`, `onForkPublicWorkspaceProject`, `onViewPublicWorkspaceProject`
+- `frontend/components/workspace/workspace-project-card.tsx` ?X reuse for template cards if prop contract is compatible; extend only if props are insufficient; create new template card component only if `WorkspaceProjectCard` cannot be safely adapted
+- `frontend/components/workspace/workspace-shell.test.tsx` ?X tests for templates view render, template card display, fork action handler invocation, search/filter behavior if included
+- `frontend/messages/en.json` ?X add any new `workspace.templates*` i18n keys required for new user-facing strings
+- `frontend/messages/zh-TW.json` ?X same
+- `frontend/messages/zh-CN.json` ?X same
+- Possibly: `frontend/app/[locale]/app/page.tsx` ?X only if `onForkPublicWorkspaceProject` or `onViewPublicWorkspaceProject` handler wiring is confirmed missing from existing `WorkspaceShell` props
 
 **Non-goals:**
 - No template creation system
@@ -12502,32 +12502,32 @@ Templates view shows public/community projects with search and fork capability. 
 
 **Checkpoint:** `docs/UX-IA-06-CHECKPOINT.md`
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-06. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-06 section.
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-06. See `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-06 section.
 
 ---
 
 #### UX-IA-07: Account Menu + Settings + Language/Theme
 
-**Status:** COMPLETE and LOCKED — `docs/UX-IA-07-CHECKPOINT.md`
+**Status:** COMPLETE and LOCKED ?X `docs/UX-IA-07-CHECKPOINT.md`
 **Task ID:** UX-IA-07
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
-**Source:** `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-07 section
-**Depends on:** UX-IA-06 (COMPLETE and LOCKED — `docs/UX-IA-06-CHECKPOINT.md`)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-07 section
+**Depends on:** UX-IA-06 (COMPLETE and LOCKED ?X `docs/UX-IA-06-CHECKPOINT.md`)
 **Risk:** Low
-**Loop:** 2-step (implement — consolidate)
+**Loop:** 2-step (implement ?X consolidate)
 **Model:** Sonnet 4.6
 
 **Objective:**
 Add account avatar in the workspace sidebar footer that opens a popup account menu. Integrate the existing `LanguageSwitcher` mechanism into the account menu. Add theme preference placeholder (light active; dark deferred). Add Settings, Profile, Help, and Referral placeholder menu items. Reuse existing user identity and logout flow already present in `page.tsx`. Preserve all UX-IA-04 sidebar/home/project-mode, UX-IA-05 projects view, UX-IA-06 templates view, and auth/session behavior unchanged.
 
 **Bounded scope:**
-- `frontend/components/workspace/workspace-sidebar.tsx` — add account avatar in sidebar footer; wire popup menu toggle
-- `frontend/components/workspace/workspace-account-menu.tsx` — **new** presentational account menu popup component
-- `frontend/components/workspace/workspace-shell.test.tsx` — tests for account menu open/close, language switch in menu, logout, placeholder items rendering
-- `frontend/messages/en.json` — add new i18n keys for account menu user-facing strings (under `workspace.*` namespace)
-- `frontend/messages/zh-TW.json` — same
-- `frontend/messages/zh-CN.json` — same
-- Possibly: `frontend/components/workspace/workspace-shell.tsx` — only if account-menu-related props are confirmed missing from existing `WorkspaceShell` prop surface
+- `frontend/components/workspace/workspace-sidebar.tsx` ?X add account avatar in sidebar footer; wire popup menu toggle
+- `frontend/components/workspace/workspace-account-menu.tsx` ?X **new** presentational account menu popup component
+- `frontend/components/workspace/workspace-shell.test.tsx` ?X tests for account menu open/close, language switch in menu, logout, placeholder items rendering
+- `frontend/messages/en.json` ?X add new i18n keys for account menu user-facing strings (under `workspace.*` namespace)
+- `frontend/messages/zh-TW.json` ?X same
+- `frontend/messages/zh-CN.json` ?X same
+- Possibly: `frontend/components/workspace/workspace-shell.tsx` ?X only if account-menu-related props are confirmed missing from existing `WorkspaceShell` prop surface
 
 **Non-goals:**
 - No profile editing UI or backend
@@ -12577,7 +12577,7 @@ Add account avatar in the workspace sidebar footer that opens a popup account me
 
 **Checkpoint:** `docs/UX-IA-07-CHECKPOINT.md`
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-07. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-07 section.
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-07. See `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-07 section.
 
 ---
 
@@ -12585,28 +12585,28 @@ Add account avatar in the workspace sidebar footer that opens a popup account me
 
 **Status:** COMPLETE and LOCKED
 **Task ID:** UX-IA-08
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
-**Source:** `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-08 section
-**Depends on:** UX-IA-07 (COMPLETE and LOCKED — `docs/UX-IA-07-CHECKPOINT.md`)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-08 section
+**Depends on:** UX-IA-07 (COMPLETE and LOCKED ?X `docs/UX-IA-07-CHECKPOINT.md`)
 **Risk:** Medium-High
 **Model:** Opus 4.6 (UX-IA-08A, UX-IA-08B); Sonnet 4.6 (UX-IA-08C)
 
 **Plan decisions recorded:**
-- No `workspace-project-mode.tsx` extraction — project mode layout stays as conditional JSX in `workspace-shell.tsx` to avoid threading ~190 props through an intermediary
-- `page.tsx` does not need changes — back button uses existing `onWorkspaceViewChange('projects')` callback
+- No `workspace-project-mode.tsx` extraction ?X project mode layout stays as conditional JSX in `workspace-shell.tsx` to avoid threading ~190 props through an intermediary
+- `page.tsx` does not need changes ?X back button uses existing `onWorkspaceViewChange('projects')` callback
 - Sidebar remains visible in project mode
 - Preview + Code tabs wired in UX-IA-08B using existing `WorkspacePreviewPanel` and `WorkspaceEditorPanel` (not deferred to UX-IA-10)
 - UX-IA-10 owns later full-height sizing, panel refinements, and file tree layout changes
 - Tab state is local to `WorkspaceShell` (`activeTabId` as `useState`; orientation and collapse preferences in localStorage with SSR guards)
 
 **Child slices:**
-- UX-IA-08A — Project Mode Layout Shell + Back Header (COMPLETE and LOCKED — `docs/UX-IA-08A-CHECKPOINT.md`)
-- UX-IA-08B — Tab Registry + Tab Bar + AI Panel Collapse (COMPLETE and LOCKED — `docs/UX-IA-08B-CHECKPOINT.md`)
-- UX-IA-08C — Tests + Validation + Consolidation (COMPLETE and LOCKED — `docs/UX-IA-08-CHECKPOINT.md`)
+- UX-IA-08A ?X Project Mode Layout Shell + Back Header (COMPLETE and LOCKED ?X `docs/UX-IA-08A-CHECKPOINT.md`)
+- UX-IA-08B ?X Tab Registry + Tab Bar + AI Panel Collapse (COMPLETE and LOCKED ?X `docs/UX-IA-08B-CHECKPOINT.md`)
+- UX-IA-08C ?X Tests + Validation + Consolidation (COMPLETE and LOCKED ?X `docs/UX-IA-08-CHECKPOINT.md`)
 
 **Checkpoint:** `docs/UX-IA-08-CHECKPOINT.md`
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-08. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-08 section.
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-08. See `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-08 section.
 
 ---
 
@@ -12615,22 +12615,22 @@ Add account avatar in the workspace sidebar footer that opens a popup account me
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/UX-IA-08A-CHECKPOINT.md`
 **Task ID:** UX-IA-08A
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
-**Parent:** UX-IA-08 — Project Mode Shell
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
+**Parent:** UX-IA-08 ?X Project Mode Shell
 **Depends on:** UX-IA-08 plan phase COMPLETE; UX-IA-07 (COMPLETE and LOCKED)
 **Risk:** Medium-High
-**Loop:** 3-step (implement — verify tests — consolidate into parent)
+**Loop:** 3-step (implement ?X verify tests ?X consolidate into parent)
 **Model:** Opus 4.6
 
 **Objective:**
 Restructure `projectWorkspaceContent` in `workspace-shell.tsx` from the current 3-column grid layout into the project-mode layout: top header bar (project name + back button), left AI panel zone, right content zone. Chat, exec, build, and history content move into the left AI panel zone. Editor and preview content move into the right content zone (stacked or side-by-side, no tabs yet). Back button calls `onWorkspaceViewChange('projects')`. No new props to `WorkspaceShellProps` or `page.tsx` changes.
 
 **Bounded scope:**
-- `frontend/components/workspace/workspace-shell.tsx` — restructure `projectWorkspaceContent` JSX into project-mode layout (header + left zone + right zone); back button wired to `props.onWorkspaceViewChange?.('projects')`
-- `frontend/components/workspace/workspace-shell.test.tsx` — update any assertions affected by layout change; add tests for project header, back button, AI panel zone, right content zone
-- `frontend/messages/en.json` — add `project.backToProjects` key if `common.back` alone is insufficient; no other new keys expected
-- `frontend/messages/zh-TW.json` — same
-- `frontend/messages/zh-CN.json` — same
+- `frontend/components/workspace/workspace-shell.tsx` ?X restructure `projectWorkspaceContent` JSX into project-mode layout (header + left zone + right zone); back button wired to `props.onWorkspaceViewChange?.('projects')`
+- `frontend/components/workspace/workspace-shell.test.tsx` ?X update any assertions affected by layout change; add tests for project header, back button, AI panel zone, right content zone
+- `frontend/messages/en.json` ?X add `project.backToProjects` key if `common.back` alone is insufficient; no other new keys expected
+- `frontend/messages/zh-TW.json` ?X same
+- `frontend/messages/zh-CN.json` ?X same
 
 **Non-goals:**
 - No tab bar
@@ -12647,8 +12647,8 @@ Restructure `projectWorkspaceContent` in `workspace-shell.tsx` from the current 
 - UX-IA-07 (COMPLETE and LOCKED): sidebar with account menu; all invariants locked
 - UX-IA-04 (COMPLETE and LOCKED): `WorkspaceView` state; `onWorkspaceViewChange` callback; `PROJ-02-01` hydration chain
 - All AI-WS handlers (AI-WS-01 through AI-WS-06 + all hotfixes): preserved as-is in left AI panel zone
-- `WorkspaceChatPanel`, `WorkspaceExecPanel`, `WorkspaceBuildPanel`, `historyAndDashboardContent` — moved into left zone; props unchanged
-- `WorkspaceEditorPanel`, `WorkspacePreviewPanel` — moved into right zone; props unchanged
+- `WorkspaceChatPanel`, `WorkspaceExecPanel`, `WorkspaceBuildPanel`, `historyAndDashboardContent` ?X moved into left zone; props unchanged
+- `WorkspaceEditorPanel`, `WorkspacePreviewPanel` ?X moved into right zone; props unchanged
 
 **Risks / invariants:**
 - `projectWorkspaceContent` is a JSX variable inside `WorkspaceShell`; restructuring it is purely a layout change with no prop interface impact
@@ -12659,12 +12659,12 @@ Restructure `projectWorkspaceContent` in `workspace-shell.tsx` from the current 
 - All new user-facing strings must use i18n keys; `common.back` already exists
 
 **Tests to add/update:**
-- Update: `renders existing workspace content when project view is selected` — adjust if container structure changes
-- New: `renders project header in project mode layout` — `data-testid="workspace-project-header"` present
-- New: `renders back button in project header` — `data-testid="workspace-project-back-button"` present
-- New: `back button calls onWorkspaceViewChange with projects` — click fires handler
-- New: `renders AI panel zone in project mode layout` — `data-testid="workspace-project-ai-panel"` present
-- New: `renders right content zone in project mode layout` — `data-testid="workspace-project-right-zone"` present
+- Update: `renders existing workspace content when project view is selected` ?X adjust if container structure changes
+- New: `renders project header in project mode layout` ?X `data-testid="workspace-project-header"` present
+- New: `renders back button in project header` ?X `data-testid="workspace-project-back-button"` present
+- New: `back button calls onWorkspaceViewChange with projects` ?X click fires handler
+- New: `renders AI panel zone in project mode layout` ?X `data-testid="workspace-project-ai-panel"` present
+- New: `renders right content zone in project mode layout` ?X `data-testid="workspace-project-right-zone"` present
 
 **Acceptance checks:**
 - Project header renders with back button when `workspaceView === 'project'`
@@ -12678,7 +12678,7 @@ Restructure `projectWorkspaceContent` in `workspace-shell.tsx` from the current 
 - `npm run build` passes (from `frontend/`)
 - No regressions to UX-IA-04 through UX-IA-07, AUTH-APP-01/02, or PROJ-02 hydration chain
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-08A. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-08 section.
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-08A. See `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-08 section.
 
 ---
 
@@ -12686,24 +12686,24 @@ Restructure `projectWorkspaceContent` in `workspace-shell.tsx` from the current 
 
 **Status:** COMPLETE and LOCKED
 **Task ID:** UX-IA-08B
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
-**Parent:** UX-IA-08 — Project Mode Shell
-**Depends on:** UX-IA-08A (COMPLETE and LOCKED — `docs/UX-IA-08A-CHECKPOINT.md`)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
+**Parent:** UX-IA-08 ?X Project Mode Shell
+**Depends on:** UX-IA-08A (COMPLETE and LOCKED ?X `docs/UX-IA-08A-CHECKPOINT.md`)
 **Risk:** Medium
-**Loop:** 3-step (implement — verify tests — consolidate into parent)
+**Loop:** 3-step (implement ?X verify tests ?X consolidate into parent)
 **Model:** Opus 4.6
 
 **Objective:**
 Create the `TabDefinition` interface and `TAB_REGISTRY` array. Create a `WorkspaceTabBar` presentational component. In the right content zone from UX-IA-08A, replace the stacked editor+preview with a tab bar at the top plus active tab content area. Wire the Preview tab to the existing `WorkspacePreviewPanel`; wire the Code & Files tab to the existing `WorkspaceEditorPanel`. All remaining tabs show "Coming soon" placeholder (`tabs.comingSoon`). Add AI panel collapse/expand toggle with localStorage persistence. Add tab orientation preference (horizontal/vertical) with localStorage persistence.
 
 **Bounded scope:**
-- `frontend/components/workspace/workspace-tab-registry.ts` — **new** — `TabDefinition` interface; `TAB_REGISTRY` array with all tabs from master spec
-- `frontend/components/workspace/workspace-tab-bar.tsx` — **new** — presentational tab bar component; receives `tabs`, `activeTabId`, `orientation`, `onTabChange`, `onOrientationToggle` as props; no Next.js hooks
-- `frontend/components/workspace/workspace-shell.tsx` — import tab registry and tab bar; replace right content zone with tab bar + active tab content; add `activeTabId` state; add `tabOrientation` localStorage preference (SSR-guarded); add `aiPanelCollapsed` localStorage preference (SSR-guarded); add AI panel collapse toggle button
-- `frontend/components/workspace/workspace-shell.test.tsx` — add `buildWorkspaceTabBarProps` + `renderWorkspaceTabBar` helpers; add tests for tab bar, active tab content, placeholders, orientation toggle, AI panel collapse
-- `frontend/messages/en.json` — add `project.collapsePanel` and `project.expandPanel` keys if not already present; all `tabs.*` keys already exist
-- `frontend/messages/zh-TW.json` — same
-- `frontend/messages/zh-CN.json` — same
+- `frontend/components/workspace/workspace-tab-registry.ts` ?X **new** ?X `TabDefinition` interface; `TAB_REGISTRY` array with all tabs from master spec
+- `frontend/components/workspace/workspace-tab-bar.tsx` ?X **new** ?X presentational tab bar component; receives `tabs`, `activeTabId`, `orientation`, `onTabChange`, `onOrientationToggle` as props; no Next.js hooks
+- `frontend/components/workspace/workspace-shell.tsx` ?X import tab registry and tab bar; replace right content zone with tab bar + active tab content; add `activeTabId` state; add `tabOrientation` localStorage preference (SSR-guarded); add `aiPanelCollapsed` localStorage preference (SSR-guarded); add AI panel collapse toggle button
+- `frontend/components/workspace/workspace-shell.test.tsx` ?X add `buildWorkspaceTabBarProps` + `renderWorkspaceTabBar` helpers; add tests for tab bar, active tab content, placeholders, orientation toggle, AI panel collapse
+- `frontend/messages/en.json` ?X add `project.collapsePanel` and `project.expandPanel` keys if not already present; all `tabs.*` keys already exist
+- `frontend/messages/zh-TW.json` ?X same
+- `frontend/messages/zh-CN.json` ?X same
 
 **Non-goals:**
 - No full-height panel sizing or file tree layout refinements (belongs to UX-IA-10)
@@ -12714,7 +12714,7 @@ Create the `TabDefinition` interface and `TAB_REGISTRY` array. Create a `Workspa
 - No account menu changes
 
 **Design decisions locked (from plan phase):**
-- `workspace-project-mode.tsx` is NOT created — all logic stays in `workspace-shell.tsx`
+- `workspace-project-mode.tsx` is NOT created ?X all logic stays in `workspace-shell.tsx`
 - Preview + Code tabs wired to existing panels; UX-IA-10 handles sizing/refinements
 - Tab state is local to `WorkspaceShell` (`useState`); no new props passed through
 - All localStorage reads SSR-guarded with `typeof window !== 'undefined'`
@@ -12727,7 +12727,7 @@ Create the `TabDefinition` interface and `TAB_REGISTRY` array. Create a `Workspa
 
 **Tests to add/update:**
 - New test helpers: `buildWorkspaceTabBarProps(overrides)`, `renderWorkspaceTabBar(overrides)`
-- New: `renders tab bar in project mode right content zone` — `data-testid="workspace-tab-bar"` present
+- New: `renders tab bar in project mode right content zone` ?X `data-testid="workspace-tab-bar"` present
 - New: `renders Preview tab in tab bar`
 - New: `renders Code & Files tab in tab bar`
 - New: `renders placeholder tabs with Coming soon text`
@@ -12751,7 +12751,7 @@ Create the `TabDefinition` interface and `TAB_REGISTRY` array. Create a `Workspa
 - `npm run build` passes (from `frontend/`)
 - No regressions to UX-IA-04 through UX-IA-07, AUTH-APP-01/02, PROJ-02 hydration chain, or UX-IA-08A
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-08B. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-08 section. See `docs/UX-IA-08B-CHECKPOINT.md`.
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-08B. See `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-08 section. See `docs/UX-IA-08B-CHECKPOINT.md`.
 
 ---
 
@@ -12759,9 +12759,9 @@ Create the `TabDefinition` interface and `TAB_REGISTRY` array. Create a `Workspa
 
 **Status:** COMPLETE and LOCKED
 **Task ID:** UX-IA-08C
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
-**Parent:** UX-IA-08 — Project Mode Shell
-**Depends on:** UX-IA-08B (COMPLETE and LOCKED — `docs/UX-IA-08B-CHECKPOINT.md`)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
+**Parent:** UX-IA-08 ?X Project Mode Shell
+**Depends on:** UX-IA-08B (COMPLETE and LOCKED ?X `docs/UX-IA-08B-CHECKPOINT.md`)
 **Risk:** Low
 **Loop:** consolidation only
 **Model:** Sonnet 4.6
@@ -12789,11 +12789,11 @@ Run the full validation suite after UX-IA-08B completes. Write `docs/UX-IA-08-CH
 - `ReadLints` shows no errors on touched files
 - `docs/UX-IA-08-CHECKPOINT.md` created and complete
 - TASKS.md and TASKS_BACKLOG_FULL.md updated: UX-IA-08 COMPLETE and LOCKED
-- Family status updated: UX-IA-08 COMPLETE and LOCKED — UX-IA-09 pending
+- Family status updated: UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 pending
 
 **Checkpoint:** `docs/UX-IA-08-CHECKPOINT.md`
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-08C. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-08 section.
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-08C. See `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-08 section.
 
 ----
 
@@ -12866,13 +12866,13 @@ Wire AI chat into the project mode left panel with a chat/history toggle. Add a 
 
 **Status:** COMPLETE and LOCKED
 **Task ID:** UX-IA-10
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
-**Source:** `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-10 section
-**Depends on:** UX-IA-09 (COMPLETE and LOCKED — `docs/UX-IA-09-CHECKPOINT.md`)
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-10 section
+**Depends on:** UX-IA-09 (COMPLETE and LOCKED ?X `docs/UX-IA-09-CHECKPOINT.md`)
 **Risk:** Medium (panel sizing, iframe behavior, full-height CSS constraints)
-**Loop:** 3-step (implement — verify tests — consolidate)
+**Loop:** 3-step (implement ?X verify tests ?X consolidate)
 **Model:** Sonnet 4.6
 
 **Objective:**
@@ -12901,7 +12901,7 @@ Wire existing preview and editor content into the UX-IA-08 tab system as the fir
 - No new dependencies
 
 **Likely files:**
-- `frontend/components/workspace/workspace-shell.tsx` (primary — tab content layout, full-height CSS)
+- `frontend/components/workspace/workspace-shell.tsx` (primary ?X tab content layout, full-height CSS)
 - `frontend/components/workspace/workspace-shell.test.tsx` (test updates)
 - `frontend/components/workspace/workspace-tab-bar.tsx` (only if minor layout adjustment needed)
 - Possibly `frontend/messages/en.json`, `zh-TW.json`, `zh-CN.json` (if new i18n keys confirmed missing)
@@ -12912,34 +12912,34 @@ This file does not exist. Per UX-IA-08 locked invariant, project mode logic stay
 **UX/UI skills advisory (plan phase only):**
 - Impeccable: layout review for full-height panels, vertical space allocation
 - Emil Kowalski: tab content empty/loading/error states, resize and overflow behavior
-- Skills are advisory only — do not override architecture, tests, or slice boundaries
+- Skills are advisory only ?X do not override architecture, tests, or slice boundaries
 
 **Dependencies:**
 - UX-IA-09 COMPLETE and LOCKED (`docs/UX-IA-09-CHECKPOINT.md`)
-- UX-IA-08B COMPLETE and LOCKED (— defines tab shell, `workspace-tab-registry.ts`, `workspace-tab-bar.tsx`)
+- UX-IA-08B COMPLETE and LOCKED (?X defines tab shell, `workspace-tab-registry.ts`, `workspace-tab-bar.tsx`)
 
 **Invariants to preserve:**
-- `WorkspaceShellProps` interface — no new props
-- `WorkspaceChatPanel`, `WorkspaceExecPanel`, `WorkspaceBuildPanel` props — unchanged
-- `WorkspacePreviewPanel` props — unchanged; iframe pointer-event path unaffected
-- `WorkspaceEditorPanel` props — unchanged
+- `WorkspaceShellProps` interface ?X no new props
+- `WorkspaceChatPanel`, `WorkspaceExecPanel`, `WorkspaceBuildPanel` props ?X unchanged
+- `WorkspacePreviewPanel` props ?X unchanged; iframe pointer-event path unaffected
+- `WorkspaceEditorPanel` props ?X unchanged
 - UX-IA-09 testids: `workspace-ai-panel-toggle`, `workspace-ai-panel-view-chat`, `workspace-ai-panel-view-history`, `workspace-restore-confirm-bar`, `workspace-restore-confirm-button`, `workspace-restore-cancel-button`
 - UX-IA-08 testids: `workspace-project-view`, `workspace-project-mode-header`, `workspace-project-back-button`, `workspace-project-ai-panel`, `workspace-project-content-panel`
 - UX-IA-08B testids: `workspace-tab-bar`, `workspace-ai-panel-collapse-toggle`, `workspace-tab-content`
 - Sub-component testids: `chat-panel-shell`, `editor-panel-shell`, `preview-panel-shell`, `history-control-slice`, `dashboard-slice`
-- PROJ-02-01 hydration chain — unaffected
-- AUTH-APP-01/02 invariants — preserved
+- PROJ-02-01 hydration chain ?X unaffected
+- AUTH-APP-01/02 invariants ?X preserved
 
 **Validation plan:**
-- `npx tsc --noEmit` from `frontend/` — 0 errors
-- `npm test` from `frontend/` — 0 failures; all existing 313 tests pass
-- `npm run build` from `frontend/` — passes
-- `ReadLints` on all touched files — no introduced errors
+- `npx tsc --noEmit` from `frontend/` ?X 0 errors
+- `npm test` from `frontend/` ?X 0 failures; all existing 313 tests pass
+- `npm run build` from `frontend/` ?X passes
+- `ReadLints` on all touched files ?X no introduced errors
 - No regressions to UX-IA-04 through UX-IA-09, AUTH-APP-01/02, PROJ-02 hydration chain, AI-WS file action flows
 
 **Checkpoint:** `docs/UX-IA-10-CHECKPOINT.md`
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` —> UX-IA-10. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-10 section.
+**Reference:** See `TASKS_BACKLOG_FULL.md` ?X> UX-IA-10. See `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-10 section.
 
 
 -----
@@ -12948,13 +12948,13 @@ This file does not exist. Per UX-IA-08 locked invariant, project mode logic stay
 
 **Status:** COMPLETE and LOCKED
 **Task ID:** UX-IA-11
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** Medium
-**Source:** `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-11 section
-**Depends on:** UX-IA-10 (COMPLETE and LOCKED — `docs/UX-IA-10-CHECKPOINT.md`)
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-11 section
+**Depends on:** UX-IA-10 (COMPLETE and LOCKED ?X `docs/UX-IA-10-CHECKPOINT.md`)
 **Risk:** Low (placeholder copy/layout only; no functional tab content)
-**Loop:** 3-step (implement — verify tests — consolidate)
+**Loop:** 3-step (implement ?X verify tests ?X consolidate)
 **Model:** Sonnet 4.6
 
 **Objective:**
@@ -12962,12 +12962,12 @@ Refine placeholder content and copy for the 11 non-functional product tabs regis
 
 **Scope:**
 - Refine placeholder copy and layout for non-functional tabs (Database, Auth, Security, Analytics, Env Vars, Publishing, Deploy, Payment, Domain, App Storage, Agent Skills) inside the existing `workspace-tab-content` area.
-- Improve placeholder visual presentation — layout, spacing, descriptive copy — without implementing functional content.
+- Improve placeholder visual presentation ?X layout, spacing, descriptive copy ?X without implementing functional content.
 - Preserve the tab registry structure in `workspace-tab-registry.ts` unchanged unless placeholder metadata (label keys, descriptions) is confirmed missing.
 - Preserve tab bar behavior, orientation toggle, and AI panel collapse (UX-IA-08 invariants).
 - Preserve UX-IA-09 AI/history toggle and inline restore confirmation.
 - Preserve Preview and Code & Files tab functional behavior (UX-IA-10 invariants).
-- Preserve `WorkspacePreviewPanel` iframe and `window.postMessage` path (Visual Edit Mode compatibility — UX-IA-15 constraint).
+- Preserve `WorkspacePreviewPanel` iframe and `window.postMessage` path (Visual Edit Mode compatibility ?X UX-IA-15 constraint).
 - Add or update i18n keys for placeholder copy only if confirmed missing from locale files.
 
 **Non-goals:**
@@ -12984,7 +12984,7 @@ Refine placeholder content and copy for the 11 non-functional product tabs regis
 - No `workspace-project-mode.tsx` creation (locked invariant from UX-IA-08)
 
 **Likely files:**
-- `frontend/components/workspace/workspace-shell.tsx` (primary — placeholder tab rendering)
+- `frontend/components/workspace/workspace-shell.tsx` (primary ?X placeholder tab rendering)
 - `frontend/components/workspace/workspace-tab-registry.ts` (only if placeholder metadata confirmed missing)
 - `frontend/components/workspace/workspace-shell.test.tsx` (test updates for new placeholder assertions)
 - Possibly `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json` (if missing placeholder copy keys confirmed)
@@ -12994,37 +12994,37 @@ This file does not exist. Per UX-IA-08 locked invariant, project mode logic stay
 
 **UX/UI skills advisory (plan phase only):**
 - Impeccable: placeholder layout, visual hierarchy, spacing, and copy clarity for coming-soon states
-- Emil Kowalski: empty/placeholder state design — clear messaging, appropriate visual weight, non-intrusive placeholder treatment
-- Skills are advisory only — do not override architecture, tests, or slice boundaries
+- Emil Kowalski: empty/placeholder state design ?X clear messaging, appropriate visual weight, non-intrusive placeholder treatment
+- Skills are advisory only ?X do not override architecture, tests, or slice boundaries
 
 **Dependencies:**
 - UX-IA-10 COMPLETE and LOCKED (`docs/UX-IA-10-CHECKPOINT.md`)
 - UX-IA-09 COMPLETE and LOCKED (`docs/UX-IA-09-CHECKPOINT.md`)
-- UX-IA-08B COMPLETE and LOCKED (`docs/UX-IA-08B-CHECKPOINT.md`) — defines tab registry structure
+- UX-IA-08B COMPLETE and LOCKED (`docs/UX-IA-08B-CHECKPOINT.md`) ?X defines tab registry structure
 
 **Invariants to preserve:**
-- `WorkspaceShellProps` interface — no new props
-- `WorkspaceChatPanel`, `WorkspaceExecPanel`, `WorkspaceBuildPanel` props — unchanged
-- `WorkspacePreviewPanel` props — unchanged; iframe pointer-event path unaffected; `window.postMessage` path preserved
-- `WorkspaceEditorPanel` props — unchanged; all AI-WS file action flows unaffected
+- `WorkspaceShellProps` interface ?X no new props
+- `WorkspaceChatPanel`, `WorkspaceExecPanel`, `WorkspaceBuildPanel` props ?X unchanged
+- `WorkspacePreviewPanel` props ?X unchanged; iframe pointer-event path unaffected; `window.postMessage` path preserved
+- `WorkspaceEditorPanel` props ?X unchanged; all AI-WS file action flows unaffected
 - UX-IA-10 testids: `preview-panel-shell`, `editor-panel-shell`, `workspace-tab-content` with overflow-hidden layout
 - UX-IA-09 testids: `workspace-ai-panel-toggle`, `workspace-ai-panel-view-chat`, `workspace-ai-panel-view-history`, `workspace-restore-confirm-bar`, `workspace-restore-confirm-button`, `workspace-restore-cancel-button`
 - UX-IA-08 testids: `workspace-project-view`, `workspace-project-mode-header`, `workspace-project-back-button`, `workspace-project-ai-panel`, `workspace-project-content-panel`
 - UX-IA-08B testids: `workspace-tab-bar`, `workspace-ai-panel-collapse-toggle`
-- `workspace-tab-placeholder` testid — preserved
-- PROJ-02-01 hydration chain — unaffected
-- AUTH-APP-01/02 invariants — preserved
+- `workspace-tab-placeholder` testid ?X preserved
+- PROJ-02-01 hydration chain ?X unaffected
+- AUTH-APP-01/02 invariants ?X preserved
 
 **Validation plan:**
-- `npx tsc --noEmit` from `frontend/` — 0 errors
-- `npm test` from `frontend/` — 0 failures; existing 317 tests pass (baseline from UX-IA-10)
-- `npm run build` from `frontend/` — passes
-- `ReadLints` on all touched files — no introduced errors
+- `npx tsc --noEmit` from `frontend/` ?X 0 errors
+- `npm test` from `frontend/` ?X 0 failures; existing 317 tests pass (baseline from UX-IA-10)
+- `npm run build` from `frontend/` ?X passes
+- `ReadLints` on all touched files ?X no introduced errors
 - No regressions to UX-IA-04 through UX-IA-10, AUTH-APP-01/02, PROJ-02 hydration chain, AI-WS file action flows
 
 **Checkpoint:** `docs/UX-IA-11-CHECKPOINT.md`
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` —> UX-IA-11. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-11 section.
+**Reference:** See `TASKS_BACKLOG_FULL.md` ?X> UX-IA-11. See `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-11 section.
 
 -----
 
@@ -13032,13 +13032,13 @@ This file does not exist. Per UX-IA-08 locked invariant, project mode logic stay
 
 **Status:** COMPLETE and LOCKED
 **Task ID:** UX-IA-12
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** Medium
-**Source:** `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-12 section
-**Depends on:** UX-IA-11 (COMPLETE and LOCKED — `docs/UX-IA-11-CHECKPOINT.md`)
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-12 section
+**Depends on:** UX-IA-11 (COMPLETE and LOCKED ?X `docs/UX-IA-11-CHECKPOINT.md`)
 **Risk:** Low-Medium (visual polish and copy only; no billing implementation; no new dependencies)
-**Loop:** 3-step (plan — implement — verify tests + consolidate)
+**Loop:** 3-step (plan ?X implement ?X verify tests + consolidate)
 **Model:** Sonnet 4.6
 
 **Objective:**
@@ -13077,7 +13077,7 @@ Polish the Upgrade CTA and compact usage/quota display in the authenticated work
 
 **Checkpoint:** `docs/UX-IA-12-CHECKPOINT.md`
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` —> UX-IA-12. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-12 section.
+**Reference:** See `TASKS_BACKLOG_FULL.md` ?X> UX-IA-12. See `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-12 section.
 
 
 -----
@@ -13087,21 +13087,21 @@ Polish the Upgrade CTA and compact usage/quota display in the authenticated work
 **Status:** COMPLETE and LOCKED
 **Date closed:** 2026-05-14
 **Task ID:** UX-IA-13
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** Medium
-**Source:** `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-13 section
-**Depends on:** UX-IA-12 (COMPLETE and LOCKED — `docs/UX-IA-12-CHECKPOINT.md`)
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-13 section
+**Depends on:** UX-IA-12 (COMPLETE and LOCKED ?X `docs/UX-IA-12-CHECKPOINT.md`)
 **Risk:** Low-Medium
-**Loop:** 2 child slices (13A — 13B)
+**Loop:** 2 child slices (13A ?X 13B)
 **Model:** Sonnet 4.6
 
 **Objective:**
 Responsive and mobile polish for the authenticated workspace UX. Audit (2026-05-14) identified two independent sub-problems: (1) project mode AI+content panel stacking missing on mobile, and (2) sidebar hamburger / slide-over missing. Split into UX-IA-13A (low-risk Tailwind class only) and UX-IA-13B (new state + new testid).
 
 **Child slices:**
-- UX-IA-13A — Project Mode Mobile Stacking + Minor Responsive Fixes (COMPLETE and LOCKED — `docs/UX-IA-13A-CHECKPOINT.md`)
-- UX-IA-13B — Sidebar Hamburger / Mobile Slide-over (COMPLETE and LOCKED — `docs/UX-IA-13B-CHECKPOINT.md`)
+- UX-IA-13A ?X Project Mode Mobile Stacking + Minor Responsive Fixes (COMPLETE and LOCKED ?X `docs/UX-IA-13A-CHECKPOINT.md`)
+- UX-IA-13B ?X Sidebar Hamburger / Mobile Slide-over (COMPLETE and LOCKED ?X `docs/UX-IA-13B-CHECKPOINT.md`)
 
 **Non-goals:**
 - No new product features
@@ -13116,7 +13116,7 @@ Responsive and mobile polish for the authenticated workspace UX. Audit (2026-05-
 
 **Checkpoint:** `docs/UX-IA-13-CHECKPOINT.md`
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` —> UX-IA-13. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-13 section.
+**Reference:** See `TASKS_BACKLOG_FULL.md` ?X> UX-IA-13. See `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-13 section.
 
 
 -----
@@ -13125,7 +13125,7 @@ Responsive and mobile polish for the authenticated workspace UX. Audit (2026-05-
 
 **Status:** COMPLETE and LOCKED
 **Task ID:** UX-IA-13A
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Parent:** UX-IA-13
 **Priority:** Medium
 **Risk:** Low (Tailwind responsive class additions only; no new state; no new testids)
@@ -13133,11 +13133,11 @@ Responsive and mobile polish for the authenticated workspace UX. Audit (2026-05-
 **Model:** Sonnet 4.6
 
 **Objective:**
-Fix project mode mobile layout. The AI panel and content panel inner container currently has no responsive flex direction, defaulting to `flex-row` at all viewports. Add `flex-col md:flex-row` so panels stack vertically on < 768px and are side-by-side on ≥ 768px. Add bounded mobile max-height to the AI panel so it does not consume the full screen when stacked.
+Fix project mode mobile layout. The AI panel and content panel inner container currently has no responsive flex direction, defaulting to `flex-row` at all viewports. Add `flex-col md:flex-row` so panels stack vertically on < 768px and are side-by-side on ? 768px. Add bounded mobile max-height to the AI panel so it does not consume the full screen when stacked.
 
 **Scope:**
-- Project mode inner container `<div className="flex flex-1 min-h-0">` — add `flex-col md:flex-row`.
-- AI panel `aside` (`workspace-project-ai-panel`) — add `max-h-[50vh] md:max-h-none`; `overflow-y-auto` already present.
+- Project mode inner container `<div className="flex flex-1 min-h-0">` ?X add `flex-col md:flex-row`.
+- AI panel `aside` (`workspace-project-ai-panel`) ?X add `max-h-[50vh] md:max-h-none`; `overflow-y-auto` already present.
 - Desktop side-by-side layout preserved unchanged.
 - All existing testids preserved exactly. No new testids. No new React state.
 - Do not touch the non-`projectFirstUxEnabled` branch.
@@ -13151,12 +13151,12 @@ Fix project mode mobile layout. The AI panel and content panel inner container c
 - No changes to any other component file
 
 **Validation:**
-- `npx tsc --noEmit` from `frontend/` — 0 errors
-- `npm test` from `frontend/` — 320 tests, 0 failures
-- `npm run build` from `frontend/` — passes
-- `ReadLints` on `workspace-shell.tsx` — 0 new errors
+- `npx tsc --noEmit` from `frontend/` ?X 0 errors
+- `npm test` from `frontend/` ?X 320 tests, 0 failures
+- `npm run build` from `frontend/` ?X passes
+- `ReadLints` on `workspace-shell.tsx` ?X 0 new errors
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` —> UX-IA-13A.
+**Reference:** See `TASKS_BACKLOG_FULL.md` ?X> UX-IA-13A.
 
 **Tests:** 320 passing (unchanged from UX-IA-12 baseline), 0 failed.
 
@@ -13170,16 +13170,16 @@ Fix project mode mobile layout. The AI panel and content panel inner container c
 **Status:** COMPLETE and LOCKED
 **Date closed:** 2026-05-14
 **Task ID:** UX-IA-13B
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Parent:** UX-IA-13
 **Depends on:** UX-IA-13A (must be COMPLETE before 13B starts)
 **Priority:** Medium
 **Risk:** Medium (new `useState` for sidebar open/close; new hamburger button testid; overlay; CSS slide-over transition)
-**Loop:** 2-step (implement — verify + consolidate)
+**Loop:** 2-step (implement ?X verify + consolidate)
 **Model:** Sonnet 4.6
 
 **Objective:**
-Add mobile hamburger toggle and slide-over panel for the workspace sidebar on < 768px. On ≥ 768px the sidebar remains always visible (unchanged). Introduces one new testid: `workspace-sidebar-mobile-toggle`.
+Add mobile hamburger toggle and slide-over panel for the workspace sidebar on < 768px. On ? 768px the sidebar remains always visible (unchanged). Introduces one new testid: `workspace-sidebar-mobile-toggle`.
 
 **Scope:**
 - Hamburger button in project-first shell header; mobile-only (`md:hidden`); `data-testid="workspace-sidebar-mobile-toggle"`.
@@ -13191,7 +13191,7 @@ Add mobile hamburger toggle and slide-over panel for the workspace sidebar on < 
 
 **Files in scope:**
 - `frontend/components/workspace/workspace-shell.tsx` (primary)
-- `frontend/components/workspace/workspace-sidebar.tsx` (only if className or visibility prop is needed — confirm before touching)
+- `frontend/components/workspace/workspace-sidebar.tsx` (only if className or visibility prop is needed ?X confirm before touching)
 - `frontend/components/workspace/workspace-shell.test.tsx` (3 new tests)
 
 **New testid:** `workspace-sidebar-mobile-toggle`
@@ -13200,23 +13200,115 @@ Add mobile hamburger toggle and slide-over panel for the workspace sidebar on < 
 - Emil Kowalski: slide-over `transition: transform 250ms cubic-bezier(0.32, 0.72, 0, 1)`; overlay `transition: opacity 200ms ease-out`; hamburger `scale(0.97)` on `:active`; gate hover with `@media (hover: hover) and (pointer: fine)`. Advisory only. No animation library.
 
 **Tests to add (3):**
-- `'renders sidebar mobile toggle button in project-first shell'` — asserts `data-testid="workspace-sidebar-mobile-toggle"` present
-- `'sidebar mobile toggle is absent when projectFirstUxEnabled is false'` — legacy shell does not get hamburger
-- `'workspace-account-menu testid still resolves after sidebar markup change'` — existing account menu testid unaffected
+- `'renders sidebar mobile toggle button in project-first shell'` ?X asserts `data-testid="workspace-sidebar-mobile-toggle"` present
+- `'sidebar mobile toggle is absent when projectFirstUxEnabled is false'` ?X legacy shell does not get hamburger
+- `'workspace-account-menu testid still resolves after sidebar markup change'` ?X existing account menu testid unaffected
 
 **Validation:**
-- `npx tsc --noEmit` from `frontend/` — 0 errors
-- `npm test` from `frontend/` — 323 tests (320 baseline + 3 new), 0 failures
-- `npm run build` from `frontend/` — passes
-- `ReadLints` on touched files — 0 new errors
-- Manual: 375px — hamburger visible, tap opens slide-over, overlay tap closes; 768px — no hamburger, sidebar always visible
+- `npx tsc --noEmit` from `frontend/` ?X 0 errors
+- `npm test` from `frontend/` ?X 323 tests (320 baseline + 3 new), 0 failures
+- `npm run build` from `frontend/` ?X passes
+- `ReadLints` on touched files ?X 0 new errors
+- Manual: 375px ?X hamburger visible, tap opens slide-over, overlay tap closes; 768px ?X no hamburger, sidebar always visible
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` —> UX-IA-13B.
+**Reference:** See `TASKS_BACKLOG_FULL.md` ?X> UX-IA-13B.
 
 **Tests:** 323 passing (320 baseline + 3 new), 0 failed.
 
 **Checkpoint:** `docs/UX-IA-13B-CHECKPOINT.md`
 
 
+---
 
-## AUTH �X aiSandBox First-Party
+#### UX-IA-14: Route Cleanup / Redirects
+
+**Status:** COMPLETE and LOCKED
+**Date closed:** 2026-05-14
+**Task ID:** UX-IA-14
+**Family:** UX-IA (Product & UX/UI Redesign ? Evolutionary)
+**Family status:** ACTIVE
+**Priority:** Medium
+**Depends on:** UX-IA-13 (COMPLETE and LOCKED ? `docs/UX-IA-13-CHECKPOINT.md`)
+**Checkpoint:** `docs/UX-IA-14-CHECKPOINT.md`
+**Risk:** Low
+**Loop:** 2-step (implement, consolidate)
+**Model:** Sonnet 4.6
+
+**Objective:**
+Clean up or redirect deprecated workspace/auth/navigation routes that became obsolete after UX-IA-04 through UX-IA-13. All workspace content is now served from the canonical `/[locale]/app` shell. Old routes that previously reached subsets of this content (`keys`, `account`, `projects`, `gallery`) must redirect safely to the canonical route so existing bookmarks and links do not break users. Document the full canonical and deprecated route maps.
+
+**Deprecated routes to redirect (from `docs/UX-IA-00-MASTER-PLAN.md` section 4):**
+
+| Current route | Action |
+|---|---|
+| `/[locale]/keys` | Redirect to `/[locale]/app` |
+| `/[locale]/account` | Redirect to `/[locale]/app` |
+| `/[locale]/projects` | Redirect to `/[locale]/app` |
+| `/[locale]/gallery` | Redirect to `/[locale]/app` |
+
+**Canonical route map (preserve unchanged):**
+
+| Route | Purpose |
+|---|---|
+| `/[locale]` | Public landing |
+| `/[locale]/login` | Login form |
+| `/[locale]/register` | Registration form |
+| `/[locale]/app` | Authenticated workspace (all views) |
+| `/[locale]/share/[projectId]` | Public project viewer |
+
+**Routes to evaluate during plan phase:**
+- `/[locale]/driver` ? internal/debug; evaluate: redirect, preserve, or remove
+- `/test` ? debug page, no locale segment; evaluate: preserve or remove
+
+**Likely files (pending inspection):**
+- `frontend/app/[locale]/keys/page.tsx` ? add or replace with `redirect()`
+- `frontend/app/[locale]/account/page.tsx` ? add or replace with `redirect()`
+- `frontend/app/[locale]/projects/page.tsx` ? add or replace with `redirect()`
+- `frontend/app/[locale]/gallery/page.tsx` ? add or replace with `redirect()`
+- `frontend/middleware.ts` ? verify only; no change expected
+- `frontend/app/[locale]/app/page.tsx` ? no change expected unless redirect wiring requires it
+- Route/redirect tests if existing test coverage touches these paths
+
+**Preservation invariants:**
+- `/[locale]/app` canonical route ? must not be changed or moved
+- Locale-aware routing (`[locale]` path segment, middleware) ? must not be broken
+- Auth/session behavior (`SessionCookieGuard`, CSRF guards in `page.tsx`) ? must not be altered
+- Middleware behavior and `/api/*` rewrites in `next.config.js` ? must not be affected
+- All UX-IA-04 through UX-IA-13 testids and component contracts ? unaffected by route file changes
+
+**Non-goals:**
+- No UX redesign
+- No backend or API changes
+- No auth model changes
+- No new product features
+- No Visual Edit Mode
+- No billing changes
+- No broad refactor
+- No new dependencies
+
+**Risks:**
+- Next.js `redirect()` in Server Component route files must use locale-aware destination: `redirect(\`/${locale}/app\`)` ? inspect current locale resolution pattern in existing redirect files before implementing
+- Middleware must not catch redirect targets and loop back to the deprecated route
+- `/[locale]/driver` and `/test` disposition must be confirmed during plan phase before touching
+
+**Validation plan:**
+- `npx tsc --noEmit` from `frontend/` ? 0 errors
+- `npm test` from `frontend/` ? 323 tests baseline, 0 failures
+- `npm run build` from `frontend/` ? passes
+- `ReadLints` on touched files ? 0 new errors
+- Manual: navigate to each deprecated route ? confirm redirect to `/[locale]/app`
+- Manual: confirm `/[locale]/app`, `/[locale]/login`, `/[locale]/register`, `/[locale]/share/*` all still resolve normally
+
+**Acceptance checks:**
+- UX-IA-14 registered in TASKS.md and TASKS_BACKLOG_FULL.md
+- Current stage set to UX-IA-14 COMPLETE and LOCKED
+- All deprecated routes redirect to `/[locale]/app`
+- No broken routes in canonical route map
+- Canonical route map and deprecated route map documented in checkpoint
+- Frontend build passes with 0 errors
+- No auth or session regressions
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-14. See `docs/UX-IA-00-MASTER-PLAN.md` ? UX-IA-14 section.
+
+
+## AUTH ?X aiSandBox First-Party

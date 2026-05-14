@@ -1,4 +1,4 @@
-﻿## Authority Notice
+## Authority Notice
 
 This document is the MASTER task backlog.
 
@@ -21954,9 +21954,9 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 
 ## UX-IA ??Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE �X UX-IA-04 COMPLETE and LOCKED �X UX-IA-05 COMPLETE and LOCKED �X UX-IA-06 COMPLETE and LOCKED �X UX-IA-07 COMPLETE and LOCKED �X UX-IA-08 COMPLETE and LOCKED �X UX-IA-09 COMPLETE and LOCKED �X UX-IA-10 COMPLETE and LOCKED �X UX-IA-11 COMPLETE and LOCKED �X UX-IA-12 COMPLETE and LOCKED �X UX-IA-13 COMPLETE and LOCKED — 13A COMPLETE and LOCKED — 13B COMPLETE and LOCKED
+**Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED
 
-**Current stage:** UX-IA-14 — Route Cleanup / Redirects (pending)
+**Current stage:** UX-IA-15 ?X Visual Edit Mode Foundation (pending)
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -21966,26 +21966,26 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 3. UX-IA-02 ??Design Token Foundation (COMPLETE and LOCKED ??`docs/UX-IA-02-CHECKPOINT.md`)
 4. UX-IA-03 ??Public Landing Redesign + Login/Register Polish (COMPLETE and LOCKED ??`docs/UX-IA-03-CHECKPOINT.md`)
    > AUTH-APP-01 + AUTH-APP-02 ??aiSandBox First-Party Authentication (cross-family ??COMPLETE and LOCKED ??`docs/AUTH-APP-01-CHECKPOINT.md` + `docs/AUTH-APP-02-CHECKPOINT.md`)
-5. UX-IA-04 �X Workspace Shell + Sidebar + Home View (COMPLETE and LOCKED �X `docs/UX-IA-04-CHECKPOINT.md`)
-   - UX-IA-04A �X Sidebar shell + view state scaffolding (COMPLETE and LOCKED �X `docs/UX-IA-04A-CHECKPOINT.md`)
-   - UX-IA-04B �X Home view chatbox + prompt-to-project flow (COMPLETE and LOCKED �X `docs/UX-IA-04B-CHECKPOINT.md`)
-   - UX-IA-04C �X Tests + validation + consolidation (COMPLETE and LOCKED �X `docs/UX-IA-04-CHECKPOINT.md`)
-6. UX-IA-05 �X Projects Grid/List + Recent Projects (COMPLETE and LOCKED �X `docs/UX-IA-05-CHECKPOINT.md`)
-7. UX-IA-06 �X Templates / Community View (COMPLETE and LOCKED �X docs/UX-IA-06-CHECKPOINT.md)
-8. UX-IA-07 �X Account Menu + Settings + Language/Theme (COMPLETE and LOCKED �X `docs/UX-IA-07-CHECKPOINT.md`)
-9. UX-IA-08 �X Project Mode Shell (COMPLETE and LOCKED �X `docs/UX-IA-08-CHECKPOINT.md`)
-   - UX-IA-08A �X Project Mode Layout Shell + Back Header (COMPLETE and LOCKED �X `docs/UX-IA-08A-CHECKPOINT.md`)
-   - UX-IA-08B �X Tab Registry + Tab Bar + AI Panel Collapse (COMPLETE and LOCKED �X `docs/UX-IA-08B-CHECKPOINT.md`)
-   - UX-IA-08C �X Tests + Validation + Consolidation (COMPLETE and LOCKED �X `docs/UX-IA-08-CHECKPOINT.md`)
-10. UX-IA-09 �X Project AI + History Panel (COMPLETE and LOCKED �X `docs/UX-IA-09-CHECKPOINT.md`)
-11. UX-IA-10 �X Preview + Code & Files Tabs (COMPLETE and LOCKED �X `docs/UX-IA-10-CHECKPOINT.md`)
-12. UX-IA-11 �X Future Product Tab Placeholders (COMPLETE and LOCKED �X `docs/UX-IA-11-CHECKPOINT.md`)
-13. UX-IA-12 �X Upgrade Flow + Dashboard Polish (COMPLETE and LOCKED �X `docs/UX-IA-12-CHECKPOINT.md`)
-14. UX-IA-13 �X Responsive / Mobile Polish (COMPLETE and LOCKED — 13A COMPLETE and LOCKED — 13B COMPLETE and LOCKED — \docs/UX-IA-13-CHECKPOINT.md\)
-15. UX-IA-14 �X Route Cleanup / Redirects (pending)
-16. UX-IA-15 �X Visual Edit Mode Foundation (pending �X requires UX-IA-08 + UX-IA-10 COMPLETE)
-17. UX-IA-16 �X Visual Edit AI Patch Flow (pending �X requires UX-IA-15 COMPLETE)
-18. UX-IA-17 �X Visual Edit Undo / Checkpoint Integration (pending �X requires UX-IA-16 COMPLETE)
+5. UX-IA-04 ?X Workspace Shell + Sidebar + Home View (COMPLETE and LOCKED ?X `docs/UX-IA-04-CHECKPOINT.md`)
+   - UX-IA-04A ?X Sidebar shell + view state scaffolding (COMPLETE and LOCKED ?X `docs/UX-IA-04A-CHECKPOINT.md`)
+   - UX-IA-04B ?X Home view chatbox + prompt-to-project flow (COMPLETE and LOCKED ?X `docs/UX-IA-04B-CHECKPOINT.md`)
+   - UX-IA-04C ?X Tests + validation + consolidation (COMPLETE and LOCKED ?X `docs/UX-IA-04-CHECKPOINT.md`)
+6. UX-IA-05 ?X Projects Grid/List + Recent Projects (COMPLETE and LOCKED ?X `docs/UX-IA-05-CHECKPOINT.md`)
+7. UX-IA-06 ?X Templates / Community View (COMPLETE and LOCKED ?X docs/UX-IA-06-CHECKPOINT.md)
+8. UX-IA-07 ?X Account Menu + Settings + Language/Theme (COMPLETE and LOCKED ?X `docs/UX-IA-07-CHECKPOINT.md`)
+9. UX-IA-08 ?X Project Mode Shell (COMPLETE and LOCKED ?X `docs/UX-IA-08-CHECKPOINT.md`)
+   - UX-IA-08A ?X Project Mode Layout Shell + Back Header (COMPLETE and LOCKED ?X `docs/UX-IA-08A-CHECKPOINT.md`)
+   - UX-IA-08B ?X Tab Registry + Tab Bar + AI Panel Collapse (COMPLETE and LOCKED ?X `docs/UX-IA-08B-CHECKPOINT.md`)
+   - UX-IA-08C ?X Tests + Validation + Consolidation (COMPLETE and LOCKED ?X `docs/UX-IA-08-CHECKPOINT.md`)
+10. UX-IA-09 ?X Project AI + History Panel (COMPLETE and LOCKED ?X `docs/UX-IA-09-CHECKPOINT.md`)
+11. UX-IA-10 ?X Preview + Code & Files Tabs (COMPLETE and LOCKED ?X `docs/UX-IA-10-CHECKPOINT.md`)
+12. UX-IA-11 ?X Future Product Tab Placeholders (COMPLETE and LOCKED ?X `docs/UX-IA-11-CHECKPOINT.md`)
+13. UX-IA-12 ?X Upgrade Flow + Dashboard Polish (COMPLETE and LOCKED ?X `docs/UX-IA-12-CHECKPOINT.md`)
+14. UX-IA-13 ? Responsive / Mobile Polish (COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X \docs/UX-IA-13-CHECKPOINT.md\)
+15. UX-IA-14 ? Route Cleanup / Redirects (COMPLETE and LOCKED ? `docs/UX-IA-14-CHECKPOINT.md`)
+16. UX-IA-15 ?X Visual Edit Mode Foundation (pending ?X requires UX-IA-08 + UX-IA-10 COMPLETE)
+17. UX-IA-16 ?X Visual Edit AI Patch Flow (pending ?X requires UX-IA-15 COMPLETE)
+18. UX-IA-17 ?X Visual Edit Undo / Checkpoint Integration (pending ?X requires UX-IA-16 COMPLETE)
 
 ---
 
@@ -22214,29 +22214,29 @@ Transform the public landing page into the "Build anything" entry experience wit
 ### UX-IA-04: Workspace Shell + Sidebar + Home View
 
 **Task ID:** UX-IA-04
-**Family:** UX-IA (Product & UX/UI Redesign �X Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** COMPLETE and LOCKED �X `docs/UX-IA-04-CHECKPOINT.md`
-**Source:** `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-04 section
+**Status:** COMPLETE and LOCKED ?X `docs/UX-IA-04-CHECKPOINT.md`
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-04 section
 **Depends on:** UX-IA-03 (COMPLETE and LOCKED), AUTH-APP-01 (COMPLETE and LOCKED), AUTH-APP-02 (COMPLETE and LOCKED), PROJ-02-01 (COMPLETE and LOCKED), PROJ-02-02 (COMPLETE and LOCKED), PROJ-02-03 (COMPLETE and LOCKED)
-**Risk:** Medium-High �X split into 3 child slices to reduce per-pass risk
-**Loop:** 4-step (plan �X implement �X verify tests �X consolidate)
+**Risk:** Medium-High ?X split into 3 child slices to reduce per-pass risk
+**Loop:** 4-step (plan ?X implement ?X verify tests ?X consolidate)
 **Model:** Opus 4.6 for plan phase and major implementation; Sonnet 4.6 for registration and consolidation
 
 **Objective:**
 Evolve `WorkspaceShell` into a sidebar + right content layout. Add `WorkspaceView` state (`home | projects | templates | project`). Implement the authenticated Home view with a "Build anything" chatbox. Submitting a prompt from Home creates a project and opens project mode. Extract or prepare a `WorkspaceSidebar` component. Reuse existing workspace/project state and handlers from `page.tsx`. Reuse `DashboardSummary` data for compact sidebar usage. Preserve all existing workspace/project/AI/file/preview/history behavior.
 
 **Child slices:**
-- UX-IA-04A �X Sidebar shell + view state scaffolding (COMPLETE and LOCKED �X `docs/UX-IA-04A-CHECKPOINT.md`)
-- UX-IA-04B �X Home view chatbox + prompt-to-project flow (COMPLETE and LOCKED �X `docs/UX-IA-04B-CHECKPOINT.md`)
-- UX-IA-04C �X Tests + validation + consolidation (COMPLETE and LOCKED �X `docs/UX-IA-04-CHECKPOINT.md`)
+- UX-IA-04A ?X Sidebar shell + view state scaffolding (COMPLETE and LOCKED ?X `docs/UX-IA-04A-CHECKPOINT.md`)
+- UX-IA-04B ?X Home view chatbox + prompt-to-project flow (COMPLETE and LOCKED ?X `docs/UX-IA-04B-CHECKPOINT.md`)
+- UX-IA-04C ?X Tests + validation + consolidation (COMPLETE and LOCKED ?X `docs/UX-IA-04-CHECKPOINT.md`)
 
 **Bounded scope:**
-- `frontend/components/workspace/workspace-shell.tsx` �X layout restructure: sidebar + right content
-- `frontend/components/workspace/workspace-shell.test.tsx` �X update tests for new layout and view state
-- `frontend/app/[locale]/app/page.tsx` �X add `workspaceView` state, wire create-project-from-prompt
-- New: `frontend/components/workspace/workspace-sidebar.tsx` �X extracted sidebar component
+- `frontend/components/workspace/workspace-shell.tsx` ?X layout restructure: sidebar + right content
+- `frontend/components/workspace/workspace-shell.test.tsx` ?X update tests for new layout and view state
+- `frontend/app/[locale]/app/page.tsx` ?X add `workspaceView` state, wire create-project-from-prompt
+- New: `frontend/components/workspace/workspace-sidebar.tsx` ?X extracted sidebar component
 
 **Required behavior:**
 - `WorkspaceShell` renders sidebar (~260px fixed left) + right content area (flex-1)
@@ -22264,7 +22264,7 @@ Evolve `WorkspaceShell` into a sidebar + right content layout. Add `WorkspaceVie
 - No breaking of PROJ-02-01/02/03 project-open hydration
 
 **Acceptance checks:**
-- UX-IA-04 registered in TASKS.md and TASKS_BACKLOG_FULL.md �X DONE
+- UX-IA-04 registered in TASKS.md and TASKS_BACKLOG_FULL.md ?X DONE
 - Sidebar renders with workspace selector + Home/Projects/Templates nav items
 - Home view shows "Build anything" chatbox
 - Prompt submission from Home creates a project and opens project mode
@@ -22298,10 +22298,10 @@ PROJ-02-01 (Refactor Project Open Into Deterministic Workspace Hydration Flow) i
 
 **Task ID:** UX-IA-04A
 **Parent:** UX-IA-04
-**Family:** UX-IA (Product & UX/UI Redesign �X Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** COMPLETE and LOCKED �X `docs/UX-IA-04A-CHECKPOINT.md`
+**Status:** COMPLETE and LOCKED ?X `docs/UX-IA-04A-CHECKPOINT.md`
 **Source:** UX-IA-04 plan phase result (May 2026)
 **Depends on:** UX-IA-04 plan phase (COMPLETE)
 **Risk:** Medium
@@ -22310,10 +22310,10 @@ PROJ-02-01 (Refactor Project Open Into Deterministic Workspace Hydration Flow) i
 Add `WorkspaceView` state to `page.tsx`. Create `workspace-sidebar.tsx`. Restructure `workspace-shell.tsx` layout from the existing header+aside+main arrangement to sidebar+right-content with view-based rendering. Wire nav items. Render recent projects and compact usage. Home view shows static placeholder only. Preserve all existing project/AI/preview/history behavior unchanged.
 
 **Bounded scope:**
-- `frontend/app/[locale]/app/page.tsx` �X add `workspaceView: WorkspaceView` state; add `onWorkspaceViewChange` handler; pass both as new props to `WorkspaceShell`
-- `frontend/components/workspace/workspace-shell.tsx` �X restructure outer layout to sidebar + right content; add view-based rendering (`home` placeholder / `projects` shows existing `HistoryProjectPanel` content / `templates` shows existing public project content / `project` shows existing chat/editor/preview/history grid); accept new `workspaceView` + `onWorkspaceViewChange` props; pass sidebar data as props to `WorkspaceSidebar`
-- `frontend/components/workspace/workspace-sidebar.tsx` (new) �X sidebar component: workspace dropdown, Home/Projects/Templates nav items, recent projects list (top 5 by `updatedAt`), compact usage display, session advanced drawer
-- `frontend/components/workspace/workspace-shell.test.tsx` �X minimal adjustments to keep existing tests passing; defer heavy test additions to UX-IA-04C
+- `frontend/app/[locale]/app/page.tsx` ?X add `workspaceView: WorkspaceView` state; add `onWorkspaceViewChange` handler; pass both as new props to `WorkspaceShell`
+- `frontend/components/workspace/workspace-shell.tsx` ?X restructure outer layout to sidebar + right content; add view-based rendering (`home` placeholder / `projects` shows existing `HistoryProjectPanel` content / `templates` shows existing public project content / `project` shows existing chat/editor/preview/history grid); accept new `workspaceView` + `onWorkspaceViewChange` props; pass sidebar data as props to `WorkspaceSidebar`
+- `frontend/components/workspace/workspace-sidebar.tsx` (new) ?X sidebar component: workspace dropdown, Home/Projects/Templates nav items, recent projects list (top 5 by `updatedAt`), compact usage display, session advanced drawer
+- `frontend/components/workspace/workspace-shell.test.tsx` ?X minimal adjustments to keep existing tests passing; defer heavy test additions to UX-IA-04C
 
 **WorkspaceView type:**
 ```typescript
@@ -22322,13 +22322,13 @@ type WorkspaceView = 'home' | 'projects' | 'templates' | 'project';
 Default: `'home'`. Lives in `page.tsx` as `useState<WorkspaceView>('home')`.
 
 **WorkspaceSidebar props (minimum set):**
-- `workspaces` / `selectedWorkspaceId` / `onSelectWorkspaceId` �X workspace dropdown data
-- `workspaceView` / `onWorkspaceViewChange` �X active view + setter
-- `recentProjects` �X top 5 from `workspaceProjects` by `updatedAt`
-- `onOpenRecentProject: (projectId: string) => void` �X maps to `handleResumeWorkspaceProjectById`
-- `userSummary` / `usageSummary` / `quotaSummary` �X compact usage display (optional; show only when available)
-- `onLogout` �X existing
-- `locale` �X existing
+- `workspaces` / `selectedWorkspaceId` / `onSelectWorkspaceId` ?X workspace dropdown data
+- `workspaceView` / `onWorkspaceViewChange` ?X active view + setter
+- `recentProjects` ?X top 5 from `workspaceProjects` by `updatedAt`
+- `onOpenRecentProject: (projectId: string) => void` ?X maps to `handleResumeWorkspaceProjectById`
+- `userSummary` / `usageSummary` / `quotaSummary` ?X compact usage display (optional; show only when available)
+- `onLogout` ?X existing
+- `locale` ?X existing
 
 **Non-goals:**
 - No Home prompt-to-project flow (UX-IA-04B)
@@ -22347,9 +22347,9 @@ Default: `'home'`. Lives in `page.tsx` as `useState<WorkspaceView>('home')`.
 - `workspace.upgrade`, `workspace.noProjects`, `common.appName`
 
 **Validation:**
-- `npx tsc --noEmit` (from `frontend/`) �X must pass
-- `npm test` (from `frontend/`) �X must pass
-- `npm run build` (from `frontend/`) �X run if practical
+- `npx tsc --noEmit` (from `frontend/`) ?X must pass
+- `npm test` (from `frontend/`) ?X must pass
+- `npm run build` (from `frontend/`) ?X run if practical
 
 **Reference:** See TASKS.md -> UX-IA-04A.
 
@@ -22359,20 +22359,20 @@ Default: `'home'`. Lives in `page.tsx` as `useState<WorkspaceView>('home')`.
 
 **Task ID:** UX-IA-04B
 **Parent:** UX-IA-04
-**Family:** UX-IA (Product & UX/UI Redesign �X Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** COMPLETE and LOCKED �X `docs/UX-IA-04B-CHECKPOINT.md`
+**Status:** COMPLETE and LOCKED ?X `docs/UX-IA-04B-CHECKPOINT.md`
 **Source:** UX-IA-04 plan phase result (May 2026)
-**Depends on:** UX-IA-04A (COMPLETE and LOCKED �X `docs/UX-IA-04A-CHECKPOINT.md`)
+**Depends on:** UX-IA-04A (COMPLETE and LOCKED ?X `docs/UX-IA-04A-CHECKPOINT.md`)
 **Risk:** Medium
 
 **Objective:**
 Implement the Home view "Build anything" chatbox and the prompt-to-project creation flow. Add `handleCreateProjectFromPrompt` to `page.tsx`. Consume `sessionStorage` pending prompt written by UX-IA-03 landing page. Pre-fill prompt into existing `chatPromptInput` state so it's ready when project mode opens.
 
 **Bounded scope:**
-- `frontend/app/[locale]/app/page.tsx` �X add `handleCreateProjectFromPrompt(prompt: string)` handler (auto-generates project name from prompt, sets `projectNameInput`, sets `chatPromptInput`, calls `handleCreateWorkspaceProject`, sets `workspaceView = 'project'` on success); add sessionStorage pending-prompt consumption on mount; wire new `onCreateProjectFromPrompt` prop to `WorkspaceShell`
-- `frontend/components/workspace/workspace-shell.tsx` �X implement Home view content: "Build anything" headline, prompt textarea, submit button; wire `onCreateProjectFromPrompt` prop; use existing `workspace.*` i18n keys
+- `frontend/app/[locale]/app/page.tsx` ?X add `handleCreateProjectFromPrompt(prompt: string)` handler (auto-generates project name from prompt, sets `projectNameInput`, sets `chatPromptInput`, calls `handleCreateWorkspaceProject`, sets `workspaceView = 'project'` on success); add sessionStorage pending-prompt consumption on mount; wire new `onCreateProjectFromPrompt` prop to `WorkspaceShell`
+- `frontend/components/workspace/workspace-shell.tsx` ?X implement Home view content: "Build anything" headline, prompt textarea, submit button; wire `onCreateProjectFromPrompt` prop; use existing `workspace.*` i18n keys
 
 **sessionStorage key:** `aisandbox_pending_prompt` (established by UX-IA-03)
 **Consumption behavior:** Read once on Home view mount; clear the key immediately after reading; set as initial home prompt input.
@@ -22398,8 +22398,8 @@ Implement the Home view "Build anything" chatbox and the prompt-to-project creat
 - `workspace.buildAnything`, `workspace.describeBuild`, `workspace.start`, `workspace.newProject`
 
 **Validation:**
-- `npx tsc --noEmit` (from `frontend/`) �X must pass
-- `npm test` (from `frontend/`) �X must pass
+- `npx tsc --noEmit` (from `frontend/`) ?X must pass
+- `npm test` (from `frontend/`) ?X must pass
 
 **Reference:** See TASKS.md -> UX-IA-04B.
 
@@ -22409,19 +22409,19 @@ Implement the Home view "Build anything" chatbox and the prompt-to-project creat
 
 **Task ID:** UX-IA-04C
 **Parent:** UX-IA-04
-**Family:** UX-IA (Product & UX/UI Redesign �X Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** COMPLETE and LOCKED �X `docs/UX-IA-04-CHECKPOINT.md`
+**Status:** COMPLETE and LOCKED ?X `docs/UX-IA-04-CHECKPOINT.md`
 **Source:** UX-IA-04 plan phase result (May 2026)
-**Depends on:** UX-IA-04B (COMPLETE and LOCKED �X `docs/UX-IA-04B-CHECKPOINT.md`)
+**Depends on:** UX-IA-04B (COMPLETE and LOCKED ?X `docs/UX-IA-04B-CHECKPOINT.md`)
 **Risk:** Low-Medium
 
 **Objective:**
 Update and extend `workspace-shell.test.tsx` for the new layout structure, sidebar, view state, and Home chatbox. Run full validation suite. Write checkpoint document and close UX-IA-04.
 
 **Bounded scope:**
-- `frontend/components/workspace/workspace-shell.test.tsx` �X update tests broken by layout restructure; add new tests:
+- `frontend/components/workspace/workspace-shell.test.tsx` ?X update tests broken by layout restructure; add new tests:
   - `WorkspaceSidebar` renders nav items (Home, Projects, Templates)
   - `WorkspaceSidebar` renders workspace dropdown
   - `WorkspaceSidebar` renders recent projects list
@@ -22431,19 +22431,19 @@ Update and extend `workspace-shell.test.tsx` for the new layout structure, sideb
   - Home view submit calls `onCreateProjectFromPrompt` with prompt text
   - `project` view renders existing chat/editor/preview grid
   - `projects` view renders existing project list content
-- `docs/UX-IA-04-CHECKPOINT.md` (new) �X checkpoint document
-- `TASKS.md` �X mark UX-IA-04 and all child slices COMPLETE and LOCKED
-- `TASKS_BACKLOG_FULL.md` �X mark UX-IA-04 and all child slices COMPLETE and LOCKED
+- `docs/UX-IA-04-CHECKPOINT.md` (new) ?X checkpoint document
+- `TASKS.md` ?X mark UX-IA-04 and all child slices COMPLETE and LOCKED
+- `TASKS_BACKLOG_FULL.md` ?X mark UX-IA-04 and all child slices COMPLETE and LOCKED
 
 **Non-goals:**
 - No new features
 - No source code changes beyond test fixes and checkpoint/governance docs
 
 **Validation:**
-- `npx tsc --noEmit` (from `frontend/`) �X must pass
-- `npm test` (from `frontend/`) �X must pass, including new test cases
-- `npm run build` (from `frontend/`) �X must pass
-- `ReadLints` on all touched files �X no introduced errors
+- `npx tsc --noEmit` (from `frontend/`) ?X must pass
+- `npm test` (from `frontend/`) ?X must pass, including new test cases
+- `npm run build` (from `frontend/`) ?X must pass
+- `ReadLints` on all touched files ?X no introduced errors
 
 **Reference:** See TASKS.md -> UX-IA-04C.
 ---
@@ -22451,25 +22451,25 @@ Update and extend `workspace-shell.test.tsx` for the new layout structure, sideb
 ### UX-IA-05: Projects Grid/List + Recent Projects
 
 **Task ID:** UX-IA-05
-**Family:** UX-IA (Product & UX/UI Redesign �X Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** COMPLETE and LOCKED �X `docs/UX-IA-05-CHECKPOINT.md`
-**Source:** `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-05 section
-**Depends on:** UX-IA-04 (COMPLETE and LOCKED �X `docs/UX-IA-04-CHECKPOINT.md`)
+**Status:** COMPLETE and LOCKED ?X `docs/UX-IA-05-CHECKPOINT.md`
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-05 section
+**Depends on:** UX-IA-04 (COMPLETE and LOCKED ?X `docs/UX-IA-04-CHECKPOINT.md`)
 **Risk:** Low-Medium
-**Loop:** 3-step (implement �X verify tests �X consolidate)
+**Loop:** 3-step (implement ?X verify tests ?X consolidate)
 **Model:** Sonnet 4.6
 
 **Objective:**
 Build the Projects view with project cards in grid/list form. Make sidebar recent projects clickable. Reuse existing `workspaceProjects`, `onOpenWorkspaceProject`, `onCreateWorkspaceProject`, `onResumeWorkspaceProjectById` handlers from `page.tsx`. Introduce a `WorkspaceProjectCard` component. Add grid/list toggle if safe in this slice. Implement empty state for no projects. Preserve all UX-IA-04 sidebar, Home chatbox, and project-mode behavior unchanged.
 
 **Bounded scope:**
-- `frontend/components/workspace/workspace-shell.tsx` �X replace Projects view placeholder content with grid/list of project cards; add grid/list toggle
-- New: `frontend/components/workspace/workspace-project-card.tsx` �X project card component (project name, last updated, open/resume CTA)
-- `frontend/components/workspace/workspace-sidebar.tsx` �X make recent project items clickable (invoke `onOpenWorkspaceProject` or `onResumeWorkspaceProjectById`; transition to `project` view)
-- `frontend/components/workspace/workspace-shell.test.tsx` �X tests for projects grid render, project card render, grid/list toggle, empty state, recent project click behavior
-- Possibly: `frontend/app/[locale]/app/page.tsx` �X only if view wiring for the projects view needs adjustment
+- `frontend/components/workspace/workspace-shell.tsx` ?X replace Projects view placeholder content with grid/list of project cards; add grid/list toggle
+- New: `frontend/components/workspace/workspace-project-card.tsx` ?X project card component (project name, last updated, open/resume CTA)
+- `frontend/components/workspace/workspace-sidebar.tsx` ?X make recent project items clickable (invoke `onOpenWorkspaceProject` or `onResumeWorkspaceProjectById`; transition to `project` view)
+- `frontend/components/workspace/workspace-shell.test.tsx` ?X tests for projects grid render, project card render, grid/list toggle, empty state, recent project click behavior
+- Possibly: `frontend/app/[locale]/app/page.tsx` ?X only if view wiring for the projects view needs adjustment
 
 **Required behavior:**
 - Projects view shows `WorkspaceProjectCard` tiles for each project in `workspaceProjects` for the selected workspace
@@ -22515,34 +22515,34 @@ Build the Projects view with project cards in grid/list form. Make sidebar recen
 - No regressions to UX-IA-04 sidebar, Home view, or project-mode behavior
 - No regressions to AUTH-APP-01/02 or PROJ-02 hydration chain
 
-**Reference:** See TASKS.md -> UX-IA-05. See `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-05 section.
+**Reference:** See TASKS.md -> UX-IA-05. See `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-05 section.
 
 ---
 
 ### UX-IA-06: Templates / Community View
 
 **Task ID:** UX-IA-06
-**Family:** UX-IA (Product & UX/UI Redesign �X Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** COMPLETE and LOCKED �X `docs/UX-IA-06-CHECKPOINT.md`
-**Source:** `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-06 section
-**Depends on:** UX-IA-05 (COMPLETE and LOCKED �X `docs/UX-IA-05-CHECKPOINT.md`)
+**Status:** COMPLETE and LOCKED ?X `docs/UX-IA-06-CHECKPOINT.md`
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-06 section
+**Depends on:** UX-IA-05 (COMPLETE and LOCKED ?X `docs/UX-IA-05-CHECKPOINT.md`)
 **Risk:** Low
-**Loop:** 3-step (implement �X verify tests �X consolidate)
+**Loop:** 3-step (implement ?X verify tests ?X consolidate)
 **Model:** Sonnet 4.6
 
 **Objective:**
 Templates view shows public/community projects with search and fork capability. Reuse existing `loadPublicWorkspaceProjects` data and public project state. Reuse existing `onForkPublicWorkspaceProject` and `onViewPublicWorkspaceProject` handlers where already available. Add template/project card UI reusing `WorkspaceProjectCard` if safe; extend or create new card component only if the prop contract is insufficient. Add search/filter UI if safe in this slice (local state only; no new backend endpoints). Forking a public project creates a copy in user's workspace and opens project mode using the existing handler flow. Preserve all UX-IA-04 sidebar/home/project view scaffolding and UX-IA-05 project grid/list behavior unchanged.
 
 **Bounded scope:**
-- `frontend/components/workspace/workspace-shell.tsx` �X replace Templates view placeholder with public project browsing surface; wire `loadPublicWorkspaceProjects`, `onForkPublicWorkspaceProject`, `onViewPublicWorkspaceProject`
-- `frontend/components/workspace/workspace-project-card.tsx` �X reuse for template cards if prop contract is compatible; extend only if props are insufficient; create new template card component only if `WorkspaceProjectCard` cannot be safely adapted
-- `frontend/components/workspace/workspace-shell.test.tsx` �X tests for templates view render, template card display, fork action handler invocation, search/filter behavior if included
-- `frontend/messages/en.json` �X add any new `workspace.templates*` i18n keys required for new user-facing strings
-- `frontend/messages/zh-TW.json` �X same
-- `frontend/messages/zh-CN.json` �X same
-- Possibly: `frontend/app/[locale]/app/page.tsx` �X only if `onForkPublicWorkspaceProject` or `onViewPublicWorkspaceProject` handler wiring is confirmed missing from existing `WorkspaceShell` props
+- `frontend/components/workspace/workspace-shell.tsx` ?X replace Templates view placeholder with public project browsing surface; wire `loadPublicWorkspaceProjects`, `onForkPublicWorkspaceProject`, `onViewPublicWorkspaceProject`
+- `frontend/components/workspace/workspace-project-card.tsx` ?X reuse for template cards if prop contract is compatible; extend only if props are insufficient; create new template card component only if `WorkspaceProjectCard` cannot be safely adapted
+- `frontend/components/workspace/workspace-shell.test.tsx` ?X tests for templates view render, template card display, fork action handler invocation, search/filter behavior if included
+- `frontend/messages/en.json` ?X add any new `workspace.templates*` i18n keys required for new user-facing strings
+- `frontend/messages/zh-TW.json` ?X same
+- `frontend/messages/zh-CN.json` ?X same
+- Possibly: `frontend/app/[locale]/app/page.tsx` ?X only if `onForkPublicWorkspaceProject` or `onViewPublicWorkspaceProject` handler wiring is confirmed missing from existing `WorkspaceShell` props
 
 **Required behavior:**
 - Templates view shows public project cards for all results from `loadPublicWorkspaceProjects`
@@ -22593,33 +22593,33 @@ Templates view shows public/community projects with search and fork capability. 
 
 **Checkpoint:** `docs/UX-IA-06-CHECKPOINT.md`
 
-**Reference:** See TASKS.md -> UX-IA-06. See `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-06 section.
+**Reference:** See TASKS.md -> UX-IA-06. See `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-06 section.
 ---
 
 ### UX-IA-07: Account Menu + Settings + Language/Theme
 
 **Task ID:** UX-IA-07
-**Family:** UX-IA (Product & UX/UI Redesign �X Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** COMPLETE and LOCKED �X `docs/UX-IA-07-CHECKPOINT.md`
-**Source:** `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-07 section
-**Depends on:** UX-IA-06 (COMPLETE and LOCKED �X `docs/UX-IA-06-CHECKPOINT.md`)
+**Status:** COMPLETE and LOCKED ?X `docs/UX-IA-07-CHECKPOINT.md`
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-07 section
+**Depends on:** UX-IA-06 (COMPLETE and LOCKED ?X `docs/UX-IA-06-CHECKPOINT.md`)
 **Risk:** Low
-**Loop:** 2-step (implement �X consolidate)
+**Loop:** 2-step (implement ?X consolidate)
 **Model:** Sonnet 4.6
 
 **Objective:**
 Add account avatar in the workspace sidebar footer that opens a popup account menu. Integrate the existing `LanguageSwitcher` mechanism into the account menu. Add theme preference placeholder (light active; dark deferred). Add Settings, Profile, Help, and Referral placeholder menu items. Reuse existing user identity and logout flow already present in `page.tsx`. Preserve all UX-IA-04 sidebar/home/project-mode, UX-IA-05 projects view, UX-IA-06 templates view, and auth/session behavior unchanged.
 
 **Bounded scope:**
-- `frontend/components/workspace/workspace-sidebar.tsx` �X add account avatar in sidebar footer; wire popup menu toggle
-- `frontend/components/workspace/workspace-account-menu.tsx` �X **new** presentational account menu popup component
-- `frontend/components/workspace/workspace-shell.test.tsx` �X tests for account menu open/close, language switch in menu, logout, placeholder items rendering
-- `frontend/messages/en.json` �X add new i18n keys for account menu user-facing strings (under `workspace.*` namespace)
-- `frontend/messages/zh-TW.json` �X same
-- `frontend/messages/zh-CN.json` �X same
-- Possibly: `frontend/components/workspace/workspace-shell.tsx` �X only if account-menu-related props are confirmed missing from existing `WorkspaceShell` prop surface
+- `frontend/components/workspace/workspace-sidebar.tsx` ?X add account avatar in sidebar footer; wire popup menu toggle
+- `frontend/components/workspace/workspace-account-menu.tsx` ?X **new** presentational account menu popup component
+- `frontend/components/workspace/workspace-shell.test.tsx` ?X tests for account menu open/close, language switch in menu, logout, placeholder items rendering
+- `frontend/messages/en.json` ?X add new i18n keys for account menu user-facing strings (under `workspace.*` namespace)
+- `frontend/messages/zh-TW.json` ?X same
+- `frontend/messages/zh-CN.json` ?X same
+- Possibly: `frontend/components/workspace/workspace-shell.tsx` ?X only if account-menu-related props are confirmed missing from existing `WorkspaceShell` prop surface
 
 **Required behavior:**
 - Account avatar rendered in sidebar footer area; clicking it toggles the account menu popup open/closed
@@ -22675,20 +22675,20 @@ Add account avatar in the workspace sidebar footer that opens a popup account me
 
 **Checkpoint:** `docs/UX-IA-07-CHECKPOINT.md`
 
-**Reference:** See TASKS.md -> UX-IA-07. See `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-07 section.
+**Reference:** See TASKS.md -> UX-IA-07. See `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-07 section.
 
 ---
 
 ### UX-IA-08: Project Mode Shell (Parent)
 
 **Task ID:** UX-IA-08
-**Family:** UX-IA (Product & UX/UI Redesign �X Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/UX-IA-08-CHECKPOINT.md`
-**Source:** `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-08 section
-**Depends on:** UX-IA-07 (COMPLETE and LOCKED �X `docs/UX-IA-07-CHECKPOINT.md`)
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-08 section
+**Depends on:** UX-IA-07 (COMPLETE and LOCKED ?X `docs/UX-IA-07-CHECKPOINT.md`)
 **Risk:** Medium-High
 **Model:** Opus 4.6 (UX-IA-08A, UX-IA-08B); Sonnet 4.6 (UX-IA-08C)
 
@@ -22696,47 +22696,47 @@ Add account avatar in the workspace sidebar footer that opens a popup account me
 When a project is opened, the workspace transforms into project mode: top project header with back button, left AI assistant panel, right tabbed workspace shell with tab registry and orientation toggle. Preserve all existing project open/resume/hydration behavior, AI chat/file action flows, and editor/preview/history behavior.
 
 **Plan decisions recorded:**
-- No `workspace-project-mode.tsx` extraction �X project mode layout stays as conditional JSX in `workspace-shell.tsx` to avoid threading ~190 props through an intermediary
-- `page.tsx` does not need changes �X back button uses existing `onWorkspaceViewChange('projects')` callback
+- No `workspace-project-mode.tsx` extraction ?X project mode layout stays as conditional JSX in `workspace-shell.tsx` to avoid threading ~190 props through an intermediary
+- `page.tsx` does not need changes ?X back button uses existing `onWorkspaceViewChange('projects')` callback
 - Sidebar remains visible in project mode
 - Preview + Code tabs wired in UX-IA-08B using existing `WorkspacePreviewPanel` and `WorkspaceEditorPanel` (not deferred to UX-IA-10)
 - UX-IA-10 owns later full-height sizing, panel refinements, and file tree layout changes
 - Tab state is local to `WorkspaceShell` (`activeTabId` as `useState`; orientation and collapse preferences in localStorage with SSR guards)
 
 **Child slices:**
-- UX-IA-08A �X Project Mode Layout Shell + Back Header (COMPLETE and LOCKED �X `docs/UX-IA-08A-CHECKPOINT.md`)
-- UX-IA-08B �X Tab Registry + Tab Bar + AI Panel Collapse (COMPLETE and LOCKED �X `docs/UX-IA-08B-CHECKPOINT.md`)
-- UX-IA-08C �X Tests + Validation + Consolidation (COMPLETE and LOCKED �X `docs/UX-IA-08-CHECKPOINT.md`)
+- UX-IA-08A ?X Project Mode Layout Shell + Back Header (COMPLETE and LOCKED ?X `docs/UX-IA-08A-CHECKPOINT.md`)
+- UX-IA-08B ?X Tab Registry + Tab Bar + AI Panel Collapse (COMPLETE and LOCKED ?X `docs/UX-IA-08B-CHECKPOINT.md`)
+- UX-IA-08C ?X Tests + Validation + Consolidation (COMPLETE and LOCKED ?X `docs/UX-IA-08-CHECKPOINT.md`)
 
 **Checkpoint:** `docs/UX-IA-08-CHECKPOINT.md`
 
-**Reference:** See TASKS.md -> UX-IA-08. See `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-08 section.
+**Reference:** See TASKS.md -> UX-IA-08. See `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-08 section.
 
 ---
 
 ### UX-IA-08A: Project Mode Layout Shell + Back Header
 
 **Task ID:** UX-IA-08A
-**Family:** UX-IA (Product & UX/UI Redesign �X Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/UX-IA-08A-CHECKPOINT.md`
-**Parent:** UX-IA-08 �X Project Mode Shell
+**Parent:** UX-IA-08 ?X Project Mode Shell
 **Depends on:** UX-IA-08 plan phase COMPLETE; UX-IA-07 (COMPLETE and LOCKED)
 **Risk:** Medium-High
-**Loop:** 3-step (implement �X verify tests �X consolidate into parent)
+**Loop:** 3-step (implement ?X verify tests ?X consolidate into parent)
 **Model:** Opus 4.6
 
 **Objective:**
 Restructure `projectWorkspaceContent` in `workspace-shell.tsx` from the current 3-column grid layout into the project-mode layout: top header bar (project name + back button), left AI panel zone, right content zone. Chat, exec, build, and history content move into the left AI panel zone. Editor and preview content move into the right content zone (stacked or side-by-side, no tabs yet). Back button calls `onWorkspaceViewChange('projects')`. No new props to `WorkspaceShellProps` or `page.tsx` changes.
 
 **Bounded scope:**
-- `frontend/components/workspace/workspace-shell.tsx` �X restructure `projectWorkspaceContent` JSX into project-mode layout (header + left zone + right zone); back button wired to `props.onWorkspaceViewChange?.('projects')`
-- `frontend/components/workspace/workspace-shell.test.tsx` �X update any assertions affected by layout change; add tests for project header, back button, AI panel zone, right content zone
-- `frontend/messages/en.json` �X add `project.backToProjects` key if `common.back` alone is insufficient; no other new keys expected
-- `frontend/messages/zh-TW.json` �X same
-- `frontend/messages/zh-CN.json` �X same
+- `frontend/components/workspace/workspace-shell.tsx` ?X restructure `projectWorkspaceContent` JSX into project-mode layout (header + left zone + right zone); back button wired to `props.onWorkspaceViewChange?.('projects')`
+- `frontend/components/workspace/workspace-shell.test.tsx` ?X update any assertions affected by layout change; add tests for project header, back button, AI panel zone, right content zone
+- `frontend/messages/en.json` ?X add `project.backToProjects` key if `common.back` alone is insufficient; no other new keys expected
+- `frontend/messages/zh-TW.json` ?X same
+- `frontend/messages/zh-CN.json` ?X same
 
 **Required behavior:**
 - When `workspaceView === 'project'`, renders: top header bar with back button + project name; left AI panel zone (~320px); right content zone (flex-1)
@@ -22760,8 +22760,8 @@ Restructure `projectWorkspaceContent` in `workspace-shell.tsx` from the current 
 - UX-IA-07 (COMPLETE and LOCKED): sidebar with account menu; all invariants locked
 - UX-IA-04 (COMPLETE and LOCKED): `WorkspaceView` state; `onWorkspaceViewChange` callback; `PROJ-02-01` hydration chain
 - All AI-WS handlers (AI-WS-01 through AI-WS-06 + all hotfixes): preserved as-is in left AI panel zone
-- `WorkspaceChatPanel`, `WorkspaceExecPanel`, `WorkspaceBuildPanel`, `historyAndDashboardContent` �X moved into left zone; props unchanged
-- `WorkspaceEditorPanel`, `WorkspacePreviewPanel` �X moved into right zone; props unchanged
+- `WorkspaceChatPanel`, `WorkspaceExecPanel`, `WorkspaceBuildPanel`, `historyAndDashboardContent` ?X moved into left zone; props unchanged
+- `WorkspaceEditorPanel`, `WorkspacePreviewPanel` ?X moved into right zone; props unchanged
 
 **Risks / invariants:**
 - `projectWorkspaceContent` is a JSX variable inside `WorkspaceShell`; restructuring it is purely a layout change with no prop interface impact
@@ -22772,12 +22772,12 @@ Restructure `projectWorkspaceContent` in `workspace-shell.tsx` from the current 
 - All new user-facing strings must use i18n keys; `common.back` already exists
 
 **Tests to add/update:**
-- Update: `renders existing workspace content when project view is selected` �X adjust if container structure changes
-- New: `renders project header in project mode layout` �X `data-testid="workspace-project-header"` present
-- New: `renders back button in project header` �X `data-testid="workspace-project-back-button"` present
-- New: `back button calls onWorkspaceViewChange with projects` �X click fires handler
-- New: `renders AI panel zone in project mode layout` �X `data-testid="workspace-project-ai-panel"` present
-- New: `renders right content zone in project mode layout` �X `data-testid="workspace-project-right-zone"` present
+- Update: `renders existing workspace content when project view is selected` ?X adjust if container structure changes
+- New: `renders project header in project mode layout` ?X `data-testid="workspace-project-header"` present
+- New: `renders back button in project header` ?X `data-testid="workspace-project-back-button"` present
+- New: `back button calls onWorkspaceViewChange with projects` ?X click fires handler
+- New: `renders AI panel zone in project mode layout` ?X `data-testid="workspace-project-ai-panel"` present
+- New: `renders right content zone in project mode layout` ?X `data-testid="workspace-project-right-zone"` present
 
 **Acceptance checks:**
 - Project header renders with back button when `workspaceView === 'project'`
@@ -22791,35 +22791,35 @@ Restructure `projectWorkspaceContent` in `workspace-shell.tsx` from the current 
 - `npm run build` passes (from `frontend/`)
 - No regressions to UX-IA-04 through UX-IA-07, AUTH-APP-01/02, or PROJ-02 hydration chain
 
-**Reference:** See TASKS.md -> UX-IA-08A. See `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-08 section.
+**Reference:** See TASKS.md -> UX-IA-08A. See `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-08 section.
 
 ---
 
 ### UX-IA-08B: Tab Registry + Tab Bar + AI Panel Collapse
 
 **Task ID:** UX-IA-08B
-**Family:** UX-IA (Product & UX/UI Redesign �X Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/UX-IA-08B-CHECKPOINT.md`
-**Parent:** UX-IA-08 �X Project Mode Shell
-**Depends on:** UX-IA-08A (COMPLETE and LOCKED �X `docs/UX-IA-08A-CHECKPOINT.md`)
+**Parent:** UX-IA-08 ?X Project Mode Shell
+**Depends on:** UX-IA-08A (COMPLETE and LOCKED ?X `docs/UX-IA-08A-CHECKPOINT.md`)
 **Risk:** Medium
-**Loop:** 3-step (implement �X verify tests �X consolidate into parent)
+**Loop:** 3-step (implement ?X verify tests ?X consolidate into parent)
 **Model:** Opus 4.6
 
 **Objective:**
 Create the `TabDefinition` interface and `TAB_REGISTRY` array. Create a `WorkspaceTabBar` presentational component. In the right content zone from UX-IA-08A, replace the stacked editor+preview with a tab bar at the top plus active tab content area. Wire the Preview tab to the existing `WorkspacePreviewPanel`; wire the Code & Files tab to the existing `WorkspaceEditorPanel`. All remaining tabs show "Coming soon" placeholder (`tabs.comingSoon`). Add AI panel collapse/expand toggle with localStorage persistence. Add tab orientation preference (horizontal/vertical) with localStorage persistence.
 
 **Bounded scope:**
-- `frontend/components/workspace/workspace-tab-registry.ts` �X **new** �X `TabDefinition` interface; `TAB_REGISTRY` array with all tabs from master spec
-- `frontend/components/workspace/workspace-tab-bar.tsx` �X **new** �X presentational tab bar component; receives `tabs`, `activeTabId`, `orientation`, `onTabChange`, `onOrientationToggle` as props; no Next.js hooks
-- `frontend/components/workspace/workspace-shell.tsx` �X import tab registry and tab bar; replace right content zone with tab bar + active tab content; add `activeTabId` state; add `tabOrientation` localStorage preference (SSR-guarded); add `aiPanelCollapsed` localStorage preference (SSR-guarded); add AI panel collapse toggle button
-- `frontend/components/workspace/workspace-shell.test.tsx` �X add `buildWorkspaceTabBarProps` + `renderWorkspaceTabBar` helpers; add tests for tab bar, active tab content, placeholders, orientation toggle, AI panel collapse
-- `frontend/messages/en.json` �X add `project.collapsePanel` and `project.expandPanel` keys if not already present; all `tabs.*` keys already exist
-- `frontend/messages/zh-TW.json` �X same
-- `frontend/messages/zh-CN.json` �X same
+- `frontend/components/workspace/workspace-tab-registry.ts` ?X **new** ?X `TabDefinition` interface; `TAB_REGISTRY` array with all tabs from master spec
+- `frontend/components/workspace/workspace-tab-bar.tsx` ?X **new** ?X presentational tab bar component; receives `tabs`, `activeTabId`, `orientation`, `onTabChange`, `onOrientationToggle` as props; no Next.js hooks
+- `frontend/components/workspace/workspace-shell.tsx` ?X import tab registry and tab bar; replace right content zone with tab bar + active tab content; add `activeTabId` state; add `tabOrientation` localStorage preference (SSR-guarded); add `aiPanelCollapsed` localStorage preference (SSR-guarded); add AI panel collapse toggle button
+- `frontend/components/workspace/workspace-shell.test.tsx` ?X add `buildWorkspaceTabBarProps` + `renderWorkspaceTabBar` helpers; add tests for tab bar, active tab content, placeholders, orientation toggle, AI panel collapse
+- `frontend/messages/en.json` ?X add `project.collapsePanel` and `project.expandPanel` keys if not already present; all `tabs.*` keys already exist
+- `frontend/messages/zh-TW.json` ?X same
+- `frontend/messages/zh-CN.json` ?X same
 
 **Required behavior:**
 - Tab bar renders all tabs from `TAB_REGISTRY`
@@ -22839,7 +22839,7 @@ Create the `TabDefinition` interface and `TAB_REGISTRY` array. Create a `Workspa
 - No account menu changes
 
 **Design decisions locked (from plan phase):**
-- `workspace-project-mode.tsx` is NOT created �X all logic stays in `workspace-shell.tsx`
+- `workspace-project-mode.tsx` is NOT created ?X all logic stays in `workspace-shell.tsx`
 - Preview + Code tabs wired to existing panels; UX-IA-10 handles sizing/refinements
 - Tab state is local to `WorkspaceShell` (`useState`); no new props passed through
 - All localStorage reads SSR-guarded with `typeof window !== 'undefined'`
@@ -22852,7 +22852,7 @@ Create the `TabDefinition` interface and `TAB_REGISTRY` array. Create a `Workspa
 
 **Tests to add/update:**
 - New test helpers: `buildWorkspaceTabBarProps(overrides)`, `renderWorkspaceTabBar(overrides)`
-- New: `renders tab bar in project mode right content zone` �X `data-testid="workspace-tab-bar"` present
+- New: `renders tab bar in project mode right content zone` ?X `data-testid="workspace-tab-bar"` present
 - New: `renders Preview tab in tab bar`
 - New: `renders Code & Files tab in tab bar`
 - New: `renders placeholder tabs with Coming soon text`
@@ -22876,20 +22876,20 @@ Create the `TabDefinition` interface and `TAB_REGISTRY` array. Create a `Workspa
 - `npm run build` passes (from `frontend/`)
 - No regressions to UX-IA-04 through UX-IA-07, AUTH-APP-01/02, PROJ-02 hydration chain, or UX-IA-08A
 
-**Reference:** See TASKS.md -> UX-IA-08B. See `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-08 section. See `docs/UX-IA-08B-CHECKPOINT.md`.
+**Reference:** See TASKS.md -> UX-IA-08B. See `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-08 section. See `docs/UX-IA-08B-CHECKPOINT.md`.
 
 ---
 
 ### UX-IA-08C: Tests + Validation + Consolidation
 
 **Task ID:** UX-IA-08C
-**Family:** UX-IA (Product & UX/UI Redesign �X Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/UX-IA-08-CHECKPOINT.md`
-**Parent:** UX-IA-08 �X Project Mode Shell
-**Depends on:** UX-IA-08B (COMPLETE and LOCKED �X `docs/UX-IA-08B-CHECKPOINT.md`)
+**Parent:** UX-IA-08 ?X Project Mode Shell
+**Depends on:** UX-IA-08B (COMPLETE and LOCKED ?X `docs/UX-IA-08B-CHECKPOINT.md`)
 **Risk:** Low
 **Loop:** consolidation only
 **Model:** Sonnet 4.6
@@ -22917,41 +22917,41 @@ Run the full validation suite after UX-IA-08B completes. Write `docs/UX-IA-08-CH
 - `ReadLints` shows no errors on touched files
 - `docs/UX-IA-08-CHECKPOINT.md` created and complete
 - TASKS.md and TASKS_BACKLOG_FULL.md updated: UX-IA-08 COMPLETE and LOCKED
-- Family status updated: UX-IA-08 COMPLETE and LOCKED �X UX-IA-09 COMPLETE and LOCKED �X UX-IA-10 pending
+- Family status updated: UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 pending
 
 **Checkpoint:** `docs/UX-IA-08-CHECKPOINT.md`
 
-**Reference:** See TASKS.md -> UX-IA-08C. See `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-08 section.
+**Reference:** See TASKS.md -> UX-IA-08C. See `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-08 section.
 
 ----
 
 ### UX-IA-09: Project AI + History Panel
 
 **Task ID:** UX-IA-09
-**Family:** UX-IA (Product & UX/UI Redesign �X Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
-**Source:** `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-09 section
-**Depends on:** UX-IA-08 (COMPLETE and LOCKED �X `docs/UX-IA-08-CHECKPOINT.md`)
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-09 section
+**Depends on:** UX-IA-08 (COMPLETE and LOCKED ?X `docs/UX-IA-08-CHECKPOINT.md`)
 **Risk:** Medium
-**Loop:** 3-step (implement �X verify tests �X consolidate)
+**Loop:** 3-step (implement ?X verify tests ?X consolidate)
 **Model:** Sonnet 4.6
 
 **Objective:**
 Wire AI chat into the project mode left panel with a chat/history toggle. Add a history icon/toggle for the project history timeline in the left AI panel zone. Add an inline restore confirmation for project history restore. Preserve all UX-IA-08 invariants, AI-WS file action flows, existing project history restore behavior, PROJ-02 deterministic project hydration, and AUTH/session behavior.
 
 **Bounded scope:**
-- `frontend/components/workspace/workspace-shell.tsx` �X wire chat/history toggle in left AI panel zone; add history icon/toggle; add inline restore confirmation; no new props added to `WorkspaceShellProps`; all local state additions only
-- `frontend/components/workspace/workspace-shell.test.tsx` �X add/update tests for chat/history toggle, history icon, inline restore confirmation
-- `frontend/messages/en.json` �X add new i18n keys required (e.g. `project.showHistory`, `project.showChat`, `project.confirmRestore`, `project.cancelRestore`) only if not already present
-- `frontend/messages/zh-TW.json` �X same
-- `frontend/messages/zh-CN.json` �X same
+- `frontend/components/workspace/workspace-shell.tsx` ?X wire chat/history toggle in left AI panel zone; add history icon/toggle; add inline restore confirmation; no new props added to `WorkspaceShellProps`; all local state additions only
+- `frontend/components/workspace/workspace-shell.test.tsx` ?X add/update tests for chat/history toggle, history icon, inline restore confirmation
+- `frontend/messages/en.json` ?X add new i18n keys required (e.g. `project.showHistory`, `project.showChat`, `project.confirmRestore`, `project.cancelRestore`) only if not already present
+- `frontend/messages/zh-TW.json` ?X same
+- `frontend/messages/zh-CN.json` ?X same
 
 **Existing functions to reuse:**
-- `WorkspaceChatPanel` logic �X reuse without refactoring internals
-- `historyAndDashboardContent` �X reuse without refactoring internals
-- `onRestoreWorkspaceProjectFromSnapshotById` �X reuse; inline confirm wraps the call; do not change the handler
+- `WorkspaceChatPanel` logic ?X reuse without refactoring internals
+- `historyAndDashboardContent` ?X reuse without refactoring internals
+- `onRestoreWorkspaceProjectFromSnapshotById` ?X reuse; inline confirm wraps the call; do not change the handler
 
 **Non-goals:**
 - No backend or API changes
@@ -22964,21 +22964,21 @@ Wire AI chat into the project mode left panel with a chat/history toggle. Add a 
 - No new AI capabilities or history backend features
 
 **Dependencies:**
-- UX-IA-08 (COMPLETE and LOCKED �X `docs/UX-IA-08-CHECKPOINT.md`) �X project mode shell, tab bar, AI panel collapse, left AI panel zone
-- AI-WS-06-hotfix3 (COMPLETE and LOCKED) �X AI-WS file action flows preserved
-- PROJ-02-03 (COMPLETE and LOCKED) �X deterministic project hydration preserved
-- AUTH-APP-02D (COMPLETE and LOCKED) �X session/auth behavior preserved
+- UX-IA-08 (COMPLETE and LOCKED ?X `docs/UX-IA-08-CHECKPOINT.md`) ?X project mode shell, tab bar, AI panel collapse, left AI panel zone
+- AI-WS-06-hotfix3 (COMPLETE and LOCKED) ?X AI-WS file action flows preserved
+- PROJ-02-03 (COMPLETE and LOCKED) ?X deterministic project hydration preserved
+- AUTH-APP-02D (COMPLETE and LOCKED) ?X session/auth behavior preserved
 
 **Risks:**
 - Inline restore confirmation must not disrupt existing `onRestoreWorkspaceProjectFromSnapshotById` call path
 - Chat/history toggle state must not collide with `aiPanelCollapsed` state from UX-IA-08
-- No new props may be added to `WorkspaceShellProps` �X toggle state must be local to left panel zone JSX
+- No new props may be added to `WorkspaceShellProps` ?X toggle state must be local to left panel zone JSX
 - AI-WS file action confirmation flows (accept/reject file patches) must remain unaffected
 - Preview iframe pointer-event path must remain unblocked (UX-IA-15 constraint)
 
 **Model guidance:**
 - Additive-only within left AI panel zone JSX in `workspace-shell.tsx`
-- Reuse `WorkspaceChatPanel`, `historyAndDashboardContent`, and `onRestoreWorkspaceProjectFromSnapshotById` �X do not refactor their internals
+- Reuse `WorkspaceChatPanel`, `historyAndDashboardContent`, and `onRestoreWorkspaceProjectFromSnapshotById` ?X do not refactor their internals
 - Minimal local state additions only; no prop threading through `WorkspaceShellProps`
 
 **Acceptance checks:**
@@ -22995,7 +22995,7 @@ Wire AI chat into the project mode left panel with a chat/history toggle. Add a 
 
 **Checkpoint:** `docs/UX-IA-09-CHECKPOINT.md`
 
-**Reference:** See TASKS.md -> UX-IA-09. See `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-09 section.
+**Reference:** See TASKS.md -> UX-IA-09. See `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-09 section.
 
 
 -----
@@ -23003,14 +23003,14 @@ Wire AI chat into the project mode left panel with a chat/history toggle. Add a 
 ### UX-IA-10: Preview + Code & Files Tabs
 
 **Task ID:** UX-IA-10
-**Family:** UX-IA (Product & UX/UI Redesign �X Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
-**Source:** `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-10 section
-**Depends on:** UX-IA-09 (COMPLETE and LOCKED �X `docs/UX-IA-09-CHECKPOINT.md`)
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-10 section
+**Depends on:** UX-IA-09 (COMPLETE and LOCKED ?X `docs/UX-IA-09-CHECKPOINT.md`)
 **Risk:** Medium (panel sizing, iframe behavior, full-height CSS constraints)
-**Loop:** 3-step (implement �X verify tests �X consolidate)
+**Loop:** 3-step (implement ?X verify tests ?X consolidate)
 **Model:** Sonnet 4.6
 
 **Objective:**
@@ -23039,7 +23039,7 @@ Wire existing preview and editor content into the UX-IA-08 tab system as the fir
 - No new dependencies
 
 **Likely files:**
-- `frontend/components/workspace/workspace-shell.tsx` (primary �X tab content layout, full-height CSS)
+- `frontend/components/workspace/workspace-shell.tsx` (primary ?X tab content layout, full-height CSS)
 - `frontend/components/workspace/workspace-shell.test.tsx` (test updates)
 - `frontend/components/workspace/workspace-tab-bar.tsx` (only if minor layout adjustment needed)
 - Possibly `frontend/messages/en.json`, `zh-TW.json`, `zh-CN.json` (if new i18n keys confirmed missing)
@@ -23050,34 +23050,34 @@ This file does not exist. Per UX-IA-08 locked invariant, project mode logic stay
 **UX/UI skills advisory (plan phase only):**
 - Impeccable: layout review for full-height panels, vertical space allocation
 - Emil Kowalski: tab content empty/loading/error states, resize and overflow behavior
-- Skills are advisory only �X do not override architecture, tests, or slice boundaries
+- Skills are advisory only ?X do not override architecture, tests, or slice boundaries
 
 **Dependencies:**
 - UX-IA-09 COMPLETE and LOCKED (`docs/UX-IA-09-CHECKPOINT.md`)
-- UX-IA-08B COMPLETE and LOCKED (�X defines tab shell, `workspace-tab-registry.ts`, `workspace-tab-bar.tsx`)
+- UX-IA-08B COMPLETE and LOCKED (?X defines tab shell, `workspace-tab-registry.ts`, `workspace-tab-bar.tsx`)
 
 **Invariants to preserve:**
-- `WorkspaceShellProps` interface �X no new props
-- `WorkspaceChatPanel`, `WorkspaceExecPanel`, `WorkspaceBuildPanel` props �X unchanged
-- `WorkspacePreviewPanel` props �X unchanged; iframe pointer-event path unaffected
-- `WorkspaceEditorPanel` props �X unchanged
+- `WorkspaceShellProps` interface ?X no new props
+- `WorkspaceChatPanel`, `WorkspaceExecPanel`, `WorkspaceBuildPanel` props ?X unchanged
+- `WorkspacePreviewPanel` props ?X unchanged; iframe pointer-event path unaffected
+- `WorkspaceEditorPanel` props ?X unchanged
 - UX-IA-09 testids: `workspace-ai-panel-toggle`, `workspace-ai-panel-view-chat`, `workspace-ai-panel-view-history`, `workspace-restore-confirm-bar`, `workspace-restore-confirm-button`, `workspace-restore-cancel-button`
 - UX-IA-08 testids: `workspace-project-view`, `workspace-project-mode-header`, `workspace-project-back-button`, `workspace-project-ai-panel`, `workspace-project-content-panel`
 - UX-IA-08B testids: `workspace-tab-bar`, `workspace-ai-panel-collapse-toggle`, `workspace-tab-content`
 - Sub-component testids: `chat-panel-shell`, `editor-panel-shell`, `preview-panel-shell`, `history-control-slice`, `dashboard-slice`
-- PROJ-02-01 hydration chain �X unaffected
-- AUTH-APP-01/02 invariants �X preserved
+- PROJ-02-01 hydration chain ?X unaffected
+- AUTH-APP-01/02 invariants ?X preserved
 
 **Validation plan:**
-- `npx tsc --noEmit` from `frontend/` �X 0 errors
-- `npm test` from `frontend/` �X 0 failures; all existing 313 tests pass
-- `npm run build` from `frontend/` �X passes
-- `ReadLints` on all touched files �X no introduced errors
+- `npx tsc --noEmit` from `frontend/` ?X 0 errors
+- `npm test` from `frontend/` ?X 0 failures; all existing 313 tests pass
+- `npm run build` from `frontend/` ?X passes
+- `ReadLints` on all touched files ?X no introduced errors
 - No regressions to UX-IA-04 through UX-IA-09, AUTH-APP-01/02, PROJ-02 hydration chain, AI-WS file action flows
 
 **Checkpoint:** `docs/UX-IA-10-CHECKPOINT.md`
 
-**Reference:** See TASKS.md �X> UX-IA-10. See `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-10 section.
+**Reference:** See TASKS.md ?X> UX-IA-10. See `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-10 section.
 
 
 -----
@@ -23085,14 +23085,14 @@ This file does not exist. Per UX-IA-08 locked invariant, project mode logic stay
 ### UX-IA-11: Future Product Tab Placeholders
 
 **Task ID:** UX-IA-11
-**Family:** UX-IA (Product & UX/UI Redesign �X Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** Medium
 **Status:** COMPLETE and LOCKED
-**Source:** `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-11 section
-**Depends on:** UX-IA-10 (COMPLETE and LOCKED �X `docs/UX-IA-10-CHECKPOINT.md`)
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-11 section
+**Depends on:** UX-IA-10 (COMPLETE and LOCKED ?X `docs/UX-IA-10-CHECKPOINT.md`)
 **Risk:** Low (placeholder copy/layout only; no functional tab content)
-**Loop:** 3-step (implement �X verify tests �X consolidate)
+**Loop:** 3-step (implement ?X verify tests ?X consolidate)
 **Model:** Sonnet 4.6
 
 **Objective:**
@@ -23100,12 +23100,12 @@ Refine placeholder content and copy for the 11 non-functional product tabs regis
 
 **Scope:**
 - Refine placeholder copy and layout for non-functional tabs (Database, Auth, Security, Analytics, Env Vars, Publishing, Deploy, Payment, Domain, App Storage, Agent Skills) inside the existing `workspace-tab-content` area.
-- Improve placeholder visual presentation �X layout, spacing, descriptive copy �X without implementing functional content.
+- Improve placeholder visual presentation ?X layout, spacing, descriptive copy ?X without implementing functional content.
 - Preserve the tab registry structure in `workspace-tab-registry.ts` unchanged unless placeholder metadata (label keys, descriptions) is confirmed missing.
 - Preserve tab bar behavior, orientation toggle, and AI panel collapse (UX-IA-08 invariants).
 - Preserve UX-IA-09 AI/history toggle and inline restore confirmation.
 - Preserve Preview and Code & Files tab functional behavior (UX-IA-10 invariants).
-- Preserve `WorkspacePreviewPanel` iframe and `window.postMessage` path (Visual Edit Mode compatibility �X UX-IA-15 constraint).
+- Preserve `WorkspacePreviewPanel` iframe and `window.postMessage` path (Visual Edit Mode compatibility ?X UX-IA-15 constraint).
 - Add or update i18n keys for placeholder copy only if confirmed missing from locale files.
 
 **Non-goals:**
@@ -23122,7 +23122,7 @@ Refine placeholder content and copy for the 11 non-functional product tabs regis
 - No `workspace-project-mode.tsx` creation (locked invariant from UX-IA-08)
 
 **Likely files:**
-- `frontend/components/workspace/workspace-shell.tsx` (primary �X placeholder tab rendering)
+- `frontend/components/workspace/workspace-shell.tsx` (primary ?X placeholder tab rendering)
 - `frontend/components/workspace/workspace-tab-registry.ts` (only if placeholder metadata confirmed missing)
 - `frontend/components/workspace/workspace-shell.test.tsx` (test updates for new placeholder assertions)
 - Possibly `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json` (if missing placeholder copy keys confirmed)
@@ -23132,37 +23132,37 @@ This file does not exist. Per UX-IA-08 locked invariant, project mode logic stay
 
 **UX/UI skills advisory (plan phase only):**
 - Impeccable: placeholder layout, visual hierarchy, spacing, and copy clarity for coming-soon states
-- Emil Kowalski: empty/placeholder state design �X clear messaging, appropriate visual weight, non-intrusive placeholder treatment
-- Skills are advisory only �X do not override architecture, tests, or slice boundaries
+- Emil Kowalski: empty/placeholder state design ?X clear messaging, appropriate visual weight, non-intrusive placeholder treatment
+- Skills are advisory only ?X do not override architecture, tests, or slice boundaries
 
 **Dependencies:**
 - UX-IA-10 COMPLETE and LOCKED (`docs/UX-IA-10-CHECKPOINT.md`)
 - UX-IA-09 COMPLETE and LOCKED (`docs/UX-IA-09-CHECKPOINT.md`)
-- UX-IA-08B COMPLETE and LOCKED (`docs/UX-IA-08B-CHECKPOINT.md`) �X defines tab registry structure
+- UX-IA-08B COMPLETE and LOCKED (`docs/UX-IA-08B-CHECKPOINT.md`) ?X defines tab registry structure
 
 **Invariants to preserve:**
-- `WorkspaceShellProps` interface �X no new props
-- `WorkspaceChatPanel`, `WorkspaceExecPanel`, `WorkspaceBuildPanel` props �X unchanged
-- `WorkspacePreviewPanel` props �X unchanged; iframe pointer-event path unaffected; `window.postMessage` path preserved
-- `WorkspaceEditorPanel` props �X unchanged; all AI-WS file action flows unaffected
+- `WorkspaceShellProps` interface ?X no new props
+- `WorkspaceChatPanel`, `WorkspaceExecPanel`, `WorkspaceBuildPanel` props ?X unchanged
+- `WorkspacePreviewPanel` props ?X unchanged; iframe pointer-event path unaffected; `window.postMessage` path preserved
+- `WorkspaceEditorPanel` props ?X unchanged; all AI-WS file action flows unaffected
 - UX-IA-10 testids: `preview-panel-shell`, `editor-panel-shell`, `workspace-tab-content` with overflow-hidden layout
 - UX-IA-09 testids: `workspace-ai-panel-toggle`, `workspace-ai-panel-view-chat`, `workspace-ai-panel-view-history`, `workspace-restore-confirm-bar`, `workspace-restore-confirm-button`, `workspace-restore-cancel-button`
 - UX-IA-08 testids: `workspace-project-view`, `workspace-project-mode-header`, `workspace-project-back-button`, `workspace-project-ai-panel`, `workspace-project-content-panel`
 - UX-IA-08B testids: `workspace-tab-bar`, `workspace-ai-panel-collapse-toggle`
-- `workspace-tab-placeholder` testid �X preserved
-- PROJ-02-01 hydration chain �X unaffected
-- AUTH-APP-01/02 invariants �X preserved
+- `workspace-tab-placeholder` testid ?X preserved
+- PROJ-02-01 hydration chain ?X unaffected
+- AUTH-APP-01/02 invariants ?X preserved
 
 **Validation plan:**
-- `npx tsc --noEmit` from `frontend/` �X 0 errors
-- `npm test` from `frontend/` �X 0 failures; existing 317 tests pass (baseline from UX-IA-10)
-- `npm run build` from `frontend/` �X passes
-- `ReadLints` on all touched files �X no introduced errors
+- `npx tsc --noEmit` from `frontend/` ?X 0 errors
+- `npm test` from `frontend/` ?X 0 failures; existing 317 tests pass (baseline from UX-IA-10)
+- `npm run build` from `frontend/` ?X passes
+- `ReadLints` on all touched files ?X no introduced errors
 - No regressions to UX-IA-04 through UX-IA-10, AUTH-APP-01/02, PROJ-02 hydration chain, AI-WS file action flows
 
 **Checkpoint:** `docs/UX-IA-11-CHECKPOINT.md`
 
-**Reference:** See TASKS.md �X> UX-IA-11. See `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-11 section.
+**Reference:** See TASKS.md ?X> UX-IA-11. See `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-11 section.
 
 
 -----
@@ -23170,14 +23170,14 @@ This file does not exist. Per UX-IA-08 locked invariant, project mode logic stay
 ### UX-IA-12: Upgrade Flow + Dashboard Polish
 
 **Task ID:** UX-IA-12
-**Family:** UX-IA (Product & UX/UI Redesign �X Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** Medium
 **Status:** COMPLETE and LOCKED
-**Source:** `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-12 section
-**Depends on:** UX-IA-11 (COMPLETE and LOCKED �X `docs/UX-IA-11-CHECKPOINT.md`)
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-12 section
+**Depends on:** UX-IA-11 (COMPLETE and LOCKED ?X `docs/UX-IA-11-CHECKPOINT.md`)
 **Risk:** Low-Medium (visual polish and copy only; no billing implementation; no new dependencies)
-**Loop:** 3-step (plan �X implement �X verify tests + consolidate)
+**Loop:** 3-step (plan ?X implement ?X verify tests + consolidate)
 **Model:** Sonnet 4.6
 
 **Objective:**
@@ -23185,8 +23185,8 @@ Polish the dashboard, usage summary, and upgrade CTA surfaces in the authenticat
 
 **Scope:**
 - Refine Upgrade CTA placement and copy in `workspace-sidebar.tsx` (sidebar footer area) and/or `workspace-account-menu.tsx` if account CTA area needs tiny polish.
-- Refine usage/quota summary display in `workspace-sidebar.tsx` �X improve visual hierarchy, spacing, and legibility of usage/quota row.
-- Preserve existing billing safety state: no charge, no checkout, no real payment flow �X Upgrade CTA is display-only.
+- Refine usage/quota summary display in `workspace-sidebar.tsx` ?X improve visual hierarchy, spacing, and legibility of usage/quota row.
+- Preserve existing billing safety state: no charge, no checkout, no real payment flow ?X Upgrade CTA is display-only.
 - Add or update i18n keys for upgrade CTA and usage display copy only if confirmed missing from locale files.
 - Update tests in `workspace-shell.test.tsx` to cover any new or changed testids.
 
@@ -23203,16 +23203,16 @@ Polish the dashboard, usage summary, and upgrade CTA surfaces in the authenticat
 - No new dependencies
 
 **Likely files:**
-- `frontend/components/workspace/workspace-sidebar.tsx` (primary �X upgrade CTA + usage display polish)
+- `frontend/components/workspace/workspace-sidebar.tsx` (primary ?X upgrade CTA + usage display polish)
 - `frontend/components/workspace/workspace-shell.tsx` (if upgrade surface lives in shell layout)
-- `frontend/components/workspace/workspace-account-menu.tsx` (only if upgrade/account CTA needs tiny polish �X confirm before touching)
+- `frontend/components/workspace/workspace-account-menu.tsx` (only if upgrade/account CTA needs tiny polish ?X confirm before touching)
 - `frontend/components/workspace/workspace-shell.test.tsx` (test updates for new/changed assertions)
 - Possibly `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json` (if missing copy keys confirmed)
 
 **UX/UI skills advisory (plan phase only):**
 - Impeccable: dashboard/usage surface layout, visual hierarchy, upgrade CTA placement and prominence, spacing and polish
 - Emil Kowalski: CTA interaction polish, usage meter/badge visual design, subtle affordance for upgrade without disruption
-- Skills are advisory only �X do not override architecture, tests, or slice boundaries
+- Skills are advisory only ?X do not override architecture, tests, or slice boundaries
 
 **Dependencies:**
 - UX-IA-11 COMPLETE and LOCKED (`docs/UX-IA-11-CHECKPOINT.md`)
@@ -23223,31 +23223,31 @@ Polish the dashboard, usage summary, and upgrade CTA surfaces in the authenticat
 - UX-IA-04 COMPLETE and LOCKED (`docs/UX-IA-04-CHECKPOINT.md`)
 
 **Invariants to preserve:**
-- `WorkspaceShellProps` interface �X no new props
-- UX-IA-04 sidebar/home/project shell invariants �X no structural changes
-- UX-IA-05 projects grid/list �X unchanged
-- UX-IA-06 templates view �X unchanged
-- UX-IA-07 account menu �X preserved; `workspace-account-menu.tsx` touched only if upgrade CTA polish is confirmed in scope
-- UX-IA-08 through UX-IA-11 project mode and tab invariants �X all locked testids preserved
-- Existing billing safety state �X no-charge behavior unchanged
-- PROJ-02-01 hydration chain �X unaffected
-- AUTH-APP-01/02 invariants �X preserved
+- `WorkspaceShellProps` interface ?X no new props
+- UX-IA-04 sidebar/home/project shell invariants ?X no structural changes
+- UX-IA-05 projects grid/list ?X unchanged
+- UX-IA-06 templates view ?X unchanged
+- UX-IA-07 account menu ?X preserved; `workspace-account-menu.tsx` touched only if upgrade CTA polish is confirmed in scope
+- UX-IA-08 through UX-IA-11 project mode and tab invariants ?X all locked testids preserved
+- Existing billing safety state ?X no-charge behavior unchanged
+- PROJ-02-01 hydration chain ?X unaffected
+- AUTH-APP-01/02 invariants ?X preserved
 
 **Risks:**
-- Upgrade CTA scope creep into billing/checkout �X guard against; CTA is display-only in this slice
-- Touching `workspace-account-menu.tsx` without confirmed need �X confirm scope before editing
-- i18n key additions creating missing-key regressions in zh-TW or zh-CN �X add all three locale files together if any key is added
+- Upgrade CTA scope creep into billing/checkout ?X guard against; CTA is display-only in this slice
+- Touching `workspace-account-menu.tsx` without confirmed need ?X confirm scope before editing
+- i18n key additions creating missing-key regressions in zh-TW or zh-CN ?X add all three locale files together if any key is added
 
 **Validation plan:**
-- `npx tsc --noEmit` from `frontend/` �X 0 errors
-- `npm test` from `frontend/` �X 0 failures; existing tests pass (317 baseline from UX-IA-11)
-- `npm run build` from `frontend/` �X passes
-- `ReadLints` on all touched files �X no introduced errors
+- `npx tsc --noEmit` from `frontend/` ?X 0 errors
+- `npm test` from `frontend/` ?X 0 failures; existing tests pass (317 baseline from UX-IA-11)
+- `npm run build` from `frontend/` ?X passes
+- `ReadLints` on all touched files ?X no introduced errors
 - No regressions to UX-IA-04 through UX-IA-11, AUTH-APP-01/02, PROJ-02 hydration chain, AI-WS file action flows
 
 **Checkpoint:** `docs/UX-IA-12-CHECKPOINT.md`
 
-**Reference:** See TASKS.md �X> UX-IA-12. See `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-12 section.
+**Reference:** See TASKS.md ?X> UX-IA-12. See `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-12 section.
 
 
 -----
@@ -23255,23 +23255,23 @@ Polish the dashboard, usage summary, and upgrade CTA surfaces in the authenticat
 ### UX-IA-13: Responsive / Mobile Polish
 
 **Task ID:** UX-IA-13
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** Medium
 **Status:** COMPLETE and LOCKED
 **Date closed:** 2026-05-14
-**Source:** `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-13 section
-**Depends on:** UX-IA-12 (COMPLETE and LOCKED — `docs/UX-IA-12-CHECKPOINT.md`)
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-13 section
+**Depends on:** UX-IA-12 (COMPLETE and LOCKED ?X `docs/UX-IA-12-CHECKPOINT.md`)
 **Risk:** Low-Medium
-**Loop:** 2 child slices (13A — 13B)
+**Loop:** 2 child slices (13A ?X 13B)
 **Model:** Sonnet 4.6
 
 **Objective:**
 Responsive and mobile polish for the authenticated workspace UX. Audit (2026-05-14) identified two independent sub-problems: (1) project mode AI+content panel stacking missing on mobile, and (2) sidebar hamburger / slide-over missing. Split into UX-IA-13A (low-risk Tailwind class only) and UX-IA-13B (new state + new testid).
 
 **Child slices:**
-- UX-IA-13A — Project Mode Mobile Stacking + Minor Responsive Fixes (COMPLETE and LOCKED — `docs/UX-IA-13A-CHECKPOINT.md`)
-- UX-IA-13B — Sidebar Hamburger / Mobile Slide-over (COMPLETE and LOCKED — `docs/UX-IA-13B-CHECKPOINT.md`)
+- UX-IA-13A ?X Project Mode Mobile Stacking + Minor Responsive Fixes (COMPLETE and LOCKED ?X `docs/UX-IA-13A-CHECKPOINT.md`)
+- UX-IA-13B ?X Sidebar Hamburger / Mobile Slide-over (COMPLETE and LOCKED ?X `docs/UX-IA-13B-CHECKPOINT.md`)
 
 **Non-goals (parent):**
 - No new product features
@@ -23285,16 +23285,16 @@ Responsive and mobile polish for the authenticated workspace UX. Audit (2026-05-
 - No native mobile app
 
 **Invariants to preserve:**
-- `WorkspaceShellProps` interface — no new props beyond hamburger state in 13B
-- All testids from UX-IA-04 through UX-IA-12 — must not change
-- All AI-WS file action flows — unaffected
-- PROJ-02-01 hydration chain — unaffected
-- AUTH-APP-01/02 invariants — preserved
-- Preview iframe pointer-event path and `window.postMessage` compatibility — preserved (Visual Edit Mode constraint)
+- `WorkspaceShellProps` interface ?X no new props beyond hamburger state in 13B
+- All testids from UX-IA-04 through UX-IA-12 ?X must not change
+- All AI-WS file action flows ?X unaffected
+- PROJ-02-01 hydration chain ?X unaffected
+- AUTH-APP-01/02 invariants ?X preserved
+- Preview iframe pointer-event path and `window.postMessage` compatibility ?X preserved (Visual Edit Mode constraint)
 
 **Checkpoint:** `docs/UX-IA-13-CHECKPOINT.md`
 
-**Reference:** See TASKS.md —> UX-IA-13. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-13 section.
+**Reference:** See TASKS.md ?X> UX-IA-13. See `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-13 section.
 
 
 -----
@@ -23302,7 +23302,7 @@ Responsive and mobile polish for the authenticated workspace UX. Audit (2026-05-
 ### UX-IA-13A: Project Mode Mobile Stacking + Minor Responsive Fixes
 
 **Task ID:** UX-IA-13A
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Family status:** ACTIVE
 **Parent:** UX-IA-13
 **Priority:** Medium
@@ -23312,11 +23312,11 @@ Responsive and mobile polish for the authenticated workspace UX. Audit (2026-05-
 **Model:** Sonnet 4.6
 
 **Objective:**
-Fix project mode mobile layout. The AI panel and content panel inner container currently has no responsive flex direction, defaulting to `flex-row` at all viewports. Add `flex-col md:flex-row` so panels stack vertically on < 768px and are side-by-side on ≥ 768px. Add bounded mobile max-height to the AI panel so it does not consume the full screen when stacked.
+Fix project mode mobile layout. The AI panel and content panel inner container currently has no responsive flex direction, defaulting to `flex-row` at all viewports. Add `flex-col md:flex-row` so panels stack vertically on < 768px and are side-by-side on ? 768px. Add bounded mobile max-height to the AI panel so it does not consume the full screen when stacked.
 
 **Scope:**
-- Project mode inner container `<div className="flex flex-1 min-h-0">` in `workspace-shell.tsx` — add `flex-col md:flex-row`.
-- AI panel `aside` (`data-testid="workspace-project-ai-panel"`) — add `max-h-[50vh] md:max-h-none`; `overflow-y-auto` already present; desktop layout unchanged.
+- Project mode inner container `<div className="flex flex-1 min-h-0">` in `workspace-shell.tsx` ?X add `flex-col md:flex-row`.
+- AI panel `aside` (`data-testid="workspace-project-ai-panel"`) ?X add `max-h-[50vh] md:max-h-none`; `overflow-y-auto` already present; desktop layout unchanged.
 - All existing testids preserved exactly. No new testids. No new React state.
 - Do not touch the non-`projectFirstUxEnabled` branch.
 
@@ -23329,23 +23329,23 @@ Fix project mode mobile layout. The AI panel and content panel inner container c
 - No changes to any other component file
 
 **Invariants to preserve:**
-- All testids from UX-IA-04 through UX-IA-12 — must not change
-- `workspace-project-ai-panel`, `workspace-project-content-panel`, `workspace-tab-bar`, `workspace-tab-content` — all preserved
-- AI-WS file action flows — unaffected
-- Preview iframe pointer-event path — preserved
+- All testids from UX-IA-04 through UX-IA-12 ?X must not change
+- `workspace-project-ai-panel`, `workspace-project-content-panel`, `workspace-tab-bar`, `workspace-tab-content` ?X all preserved
+- AI-WS file action flows ?X unaffected
+- Preview iframe pointer-event path ?X preserved
 
 **Risks:**
-- `flex-col md:flex-row` addition unintentionally affecting desktop layout — verify desktop at 1280px
-- `max-h-[50vh]` cutting off AI chat content on mobile — `overflow-y-auto` already on the panel ensures scrollability
+- `flex-col md:flex-row` addition unintentionally affecting desktop layout ?X verify desktop at 1280px
+- `max-h-[50vh]` cutting off AI chat content on mobile ?X `overflow-y-auto` already on the panel ensures scrollability
 
 **Validation plan:**
-- `npx tsc --noEmit` from `frontend/` — 0 errors
-- `npm test` from `frontend/` — 320 tests, 0 failures
-- `npm run build` from `frontend/` — passes
-- `ReadLints` on `workspace-shell.tsx` — 0 new errors
+- `npx tsc --noEmit` from `frontend/` ?X 0 errors
+- `npm test` from `frontend/` ?X 320 tests, 0 failures
+- `npm run build` from `frontend/` ?X passes
+- `ReadLints` on `workspace-shell.tsx` ?X 0 new errors
 - Manual spot-check at 375px (stacked), 768px (side-by-side), 1280px (no regression)
 
-**Reference:** See TASKS.md —> UX-IA-13A. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-13 section.
+**Reference:** See TASKS.md ?X> UX-IA-13A. See `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-13 section.
 
 **Tests:** 320 passing (unchanged from UX-IA-12 baseline), 0 failed.
 
@@ -23357,7 +23357,7 @@ Fix project mode mobile layout. The AI panel and content panel inner container c
 ### UX-IA-13B: Sidebar Hamburger / Mobile Slide-over
 
 **Task ID:** UX-IA-13B
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Family status:** ACTIVE
 **Parent:** UX-IA-13
 **Depends on:** UX-IA-13A (must be COMPLETE before 13B starts)
@@ -23365,11 +23365,11 @@ Fix project mode mobile layout. The AI panel and content panel inner container c
 **Status:** COMPLETE and LOCKED
 **Date closed:** 2026-05-14
 **Risk:** Medium (new `useState` for sidebar open/close; new hamburger button testid; overlay; CSS slide-over transition)
-**Loop:** 2-step (implement — verify + consolidate)
+**Loop:** 2-step (implement ?X verify + consolidate)
 **Model:** Sonnet 4.6
 
 **Objective:**
-Add mobile hamburger toggle and slide-over panel for the workspace sidebar on < 768px. On ≥ 768px the sidebar remains always visible (unchanged). Introduces one new testid: `workspace-sidebar-mobile-toggle`.
+Add mobile hamburger toggle and slide-over panel for the workspace sidebar on < 768px. On ? 768px the sidebar remains always visible (unchanged). Introduces one new testid: `workspace-sidebar-mobile-toggle`.
 
 **Scope:**
 - Hamburger button in project-first shell header; mobile-only (`md:hidden`); `data-testid="workspace-sidebar-mobile-toggle"`.
@@ -23381,19 +23381,19 @@ Add mobile hamburger toggle and slide-over panel for the workspace sidebar on < 
 
 **Likely files:**
 - `frontend/components/workspace/workspace-shell.tsx` (primary)
-- `frontend/components/workspace/workspace-sidebar.tsx` (only if className or visibility prop is needed — confirm before touching)
+- `frontend/components/workspace/workspace-sidebar.tsx` (only if className or visibility prop is needed ?X confirm before touching)
 - `frontend/components/workspace/workspace-shell.test.tsx` (3 new tests)
 
 **New testid:** `workspace-sidebar-mobile-toggle`
 
 **UX/UI skills advisory (implementation):**
 - Emil Kowalski: slide-over `transition: transform 250ms cubic-bezier(0.32, 0.72, 0, 1)`; overlay `transition: opacity 200ms ease-out`; hamburger `scale(0.97)` on `:active`; gate hover with `@media (hover: hover) and (pointer: fine)`. Advisory only. No animation library.
-- Skills are advisory only — do not override architecture, tests, or slice boundaries
+- Skills are advisory only ?X do not override architecture, tests, or slice boundaries
 
 **Tests to add (3):**
-- `'renders sidebar mobile toggle button in project-first shell'` — asserts `data-testid="workspace-sidebar-mobile-toggle"` present
-- `'sidebar mobile toggle is absent when projectFirstUxEnabled is false'` — legacy shell does not get hamburger
-- `'workspace-account-menu testid still resolves after sidebar markup change'` — existing account menu testid unaffected
+- `'renders sidebar mobile toggle button in project-first shell'` ?X asserts `data-testid="workspace-sidebar-mobile-toggle"` present
+- `'sidebar mobile toggle is absent when projectFirstUxEnabled is false'` ?X legacy shell does not get hamburger
+- `'workspace-account-menu testid still resolves after sidebar markup change'` ?X existing account menu testid unaffected
 
 **Non-goals:**
 - No new product features, no backend, no auth, no new dependencies
@@ -23401,29 +23401,127 @@ Add mobile hamburger toggle and slide-over panel for the workspace sidebar on < 
 - No route cleanup
 
 **Invariants to preserve:**
-- All testids from UX-IA-04 through UX-IA-12 — must not change
-- AI-WS file action flows — unaffected
-- PROJ-02-01 hydration chain — unaffected
-- AUTH-APP-01/02 invariants — preserved
-- Preview iframe pointer-event path — preserved (Visual Edit Mode constraint)
+- All testids from UX-IA-04 through UX-IA-12 ?X must not change
+- AI-WS file action flows ?X unaffected
+- PROJ-02-01 hydration chain ?X unaffected
+- AUTH-APP-01/02 invariants ?X preserved
+- Preview iframe pointer-event path ?X preserved (Visual Edit Mode constraint)
 
 **Risks:**
-- Slide-over conflicts with account menu `absolute bottom-full` positioning — account menu is inside sidebar DOM; confirm it does not clip against viewport edge when slide-over is open
-- New hamburger state leaks into non-project-first branch — state must be scoped to project-first branch only
-- CSS `z-index` conflicts with overlay vs account menu popup — set overlay `z-10`, sidebar `z-20`, account menu `z-20` (already set)
+- Slide-over conflicts with account menu `absolute bottom-full` positioning ?X account menu is inside sidebar DOM; confirm it does not clip against viewport edge when slide-over is open
+- New hamburger state leaks into non-project-first branch ?X state must be scoped to project-first branch only
+- CSS `z-index` conflicts with overlay vs account menu popup ?X set overlay `z-10`, sidebar `z-20`, account menu `z-20` (already set)
 
 **Validation plan:**
-- `npx tsc --noEmit` from `frontend/` — 0 errors
-- `npm test` from `frontend/` — 323 tests (320 baseline + 3 new), 0 failures
-- `npm run build` from `frontend/` — passes
-- `ReadLints` on touched files — 0 new errors
-- Manual: 375px — hamburger visible, tap opens slide-over, overlay tap closes, sidebar testids accessible; 768px — no hamburger visible, sidebar always shown; 1280px — no regressions
+- `npx tsc --noEmit` from `frontend/` ?X 0 errors
+- `npm test` from `frontend/` ?X 323 tests (320 baseline + 3 new), 0 failures
+- `npm run build` from `frontend/` ?X passes
+- `ReadLints` on touched files ?X 0 new errors
+- Manual: 375px ?X hamburger visible, tap opens slide-over, overlay tap closes, sidebar testids accessible; 768px ?X no hamburger visible, sidebar always shown; 1280px ?X no regressions
 
-**Reference:** See TASKS.md —> UX-IA-13B. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-13 section.
+**Reference:** See TASKS.md ?X> UX-IA-13B. See `docs/UX-IA-00-MASTER-PLAN.md` ?X UX-IA-13 section.
 
 **Tests:** 323 passing (320 baseline + 3 new), 0 failed.
 
 **Checkpoint:** `docs/UX-IA-13B-CHECKPOINT.md`
+
+
+---
+
+### UX-IA-14: Route Cleanup / Redirects
+
+**Task ID:** UX-IA-14
+**Family:** UX-IA (Product & UX/UI Redesign ? Evolutionary)
+**Family status:** ACTIVE
+**Priority:** Medium
+**Status:** COMPLETE and LOCKED
+**Date closed:** 2026-05-14
+**Depends on:** UX-IA-13 (COMPLETE and LOCKED ? `docs/UX-IA-13-CHECKPOINT.md`)
+**Checkpoint:** `docs/UX-IA-14-CHECKPOINT.md`
+**Risk:** Low
+**Loop:** 2-step (implement, consolidate)
+**Model:** Sonnet 4.6
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` ? UX-IA-14 section
+
+**Objective:**
+Clean up or redirect deprecated workspace/auth/navigation routes that became obsolete after UX-IA-04 through UX-IA-13. All workspace content is now served from the canonical `/[locale]/app` shell. Old routes that previously reached subsets of this content (`keys`, `account`, `projects`, `gallery`) must redirect safely to the canonical route so existing bookmarks and links do not break users. Document the full canonical and deprecated route maps.
+
+**Deprecated routes to redirect (from `docs/UX-IA-00-MASTER-PLAN.md` section 4):**
+
+| Current route | Action |
+|---|---|
+| `/[locale]/keys` | Redirect to `/[locale]/app` |
+| `/[locale]/account` | Redirect to `/[locale]/app` |
+| `/[locale]/projects` | Redirect to `/[locale]/app` |
+| `/[locale]/gallery` | Redirect to `/[locale]/app` |
+
+**Canonical route map (preserve unchanged):**
+
+| Route | Purpose |
+|---|---|
+| `/[locale]` | Public landing |
+| `/[locale]/login` | Login form |
+| `/[locale]/register` | Registration form |
+| `/[locale]/app` | Authenticated workspace (all views) |
+| `/[locale]/share/[projectId]` | Public project viewer |
+
+**Routes to evaluate during plan phase:**
+- `/[locale]/driver` ? internal/debug; evaluate: redirect, preserve, or remove
+- `/test` ? debug page, no locale segment; evaluate: preserve or remove
+
+**Likely files (pending inspection):**
+- `frontend/app/[locale]/keys/page.tsx` ? add or replace with `redirect()`
+- `frontend/app/[locale]/account/page.tsx` ? add or replace with `redirect()`
+- `frontend/app/[locale]/projects/page.tsx` ? add or replace with `redirect()`
+- `frontend/app/[locale]/gallery/page.tsx` ? add or replace with `redirect()`
+- `frontend/middleware.ts` ? verify only; no change expected
+- `frontend/app/[locale]/app/page.tsx` ? no change expected unless redirect wiring requires it
+- Route/redirect tests if existing test coverage touches these paths
+
+**Preservation invariants:**
+- `/[locale]/app` canonical route ? must not be changed or moved
+- Locale-aware routing (`[locale]` path segment, middleware) ? must not be broken
+- Auth/session behavior (`SessionCookieGuard`, CSRF guards in `page.tsx`) ? must not be altered
+- Middleware behavior and `/api/*` rewrites in `next.config.js` ? must not be affected
+- All UX-IA-04 through UX-IA-13 testids and component contracts ? unaffected by route file changes
+
+**Non-goals:**
+- No UX redesign
+- No backend or API changes
+- No auth model changes
+- No new product features
+- No Visual Edit Mode
+- No billing changes
+- No broad refactor
+- No new dependencies
+
+**Risks:**
+- Next.js `redirect()` in Server Component route files must use locale-aware destination: `redirect(\`/${locale}/app\`)` ? inspect current locale resolution pattern in existing redirect files before implementing
+- Middleware must not catch redirect targets and loop back to the deprecated route
+- `/[locale]/driver` and `/test` disposition must be confirmed during plan phase before touching
+
+**Dependencies:**
+- UX-IA-13 COMPLETE and LOCKED (confirmed ? `docs/UX-IA-13-CHECKPOINT.md`)
+- No backend tasks blocking
+
+**Validation plan:**
+- `npx tsc --noEmit` from `frontend/` ? 0 errors
+- `npm test` from `frontend/` ? 323 tests baseline, 0 failures
+- `npm run build` from `frontend/` ? passes
+- `ReadLints` on touched files ? 0 new errors
+- Manual: navigate to each deprecated route ? confirm redirect to `/[locale]/app`
+- Manual: confirm `/[locale]/app`, `/[locale]/login`, `/[locale]/register`, `/[locale]/share/*` all still resolve normally
+
+**Acceptance checks:**
+- UX-IA-14 registered in TASKS.md and TASKS_BACKLOG_FULL.md
+- Current stage set to UX-IA-14 COMPLETE and LOCKED
+- All deprecated routes redirect to `/[locale]/app`
+- No broken routes in canonical route map
+- Canonical route map and deprecated route map documented in checkpoint
+- Frontend build passes with 0 errors
+- No auth or session regressions
+
+**Reference:** See TASKS.md -> UX-IA-14. See `docs/UX-IA-00-MASTER-PLAN.md` ? UX-IA-14 section.
 
 
 ## AUTH ??aiSandBox First-Party Authentication
