@@ -21954,9 +21954,9 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 
 ## UX-IA ??Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 ACTIVE (child slices: 15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C ACTIVE)
+**Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED)
 
-**Current stage:** UX-IA-15C ? AI Prompt Context Injection + Validation + Consolidation (ACTIVE)
+**Current stage:** UX-IA-16 — Visual Edit AI Patch Flow (PENDING — next task)
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -21983,11 +21983,11 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 13. UX-IA-12 ?X Upgrade Flow + Dashboard Polish (COMPLETE and LOCKED ?X `docs/UX-IA-12-CHECKPOINT.md`)
 14. UX-IA-13 ? Responsive / Mobile Polish (COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X \docs/UX-IA-13-CHECKPOINT.md\)
 15. UX-IA-14 ? Route Cleanup / Redirects (COMPLETE and LOCKED ? `docs/UX-IA-14-CHECKPOINT.md`)
-16. UX-IA-15 ??Visual Edit Mode Foundation (ACTIVE ??child slices in progress ??UX-IA-08 + UX-IA-10 COMPLETE and LOCKED)
+16. UX-IA-15 ??Visual Edit Mode Foundation (COMPLETE and LOCKED ??docs/UX-IA-15-CHECKPOINT.md)
     - UX-IA-15A ??Preview Picker Infrastructure (COMPLETE and LOCKED ??docs/UX-IA-15A-CHECKPOINT.md)
     - UX-IA-15B ??Cross-Frame Picker Script + postMessage Listener (COMPLETE and LOCKED ??docs/UX-IA-15B-CHECKPOINT.md)
-    - UX-IA-15C ??AI Prompt Context Injection + Validation + Consolidation (ACTIVE)
-17. UX-IA-16 ?X Visual Edit AI Patch Flow (pending ?X requires UX-IA-15 COMPLETE)
+    - UX-IA-15C ??AI Prompt Context Injection + Validation + Consolidation (COMPLETE and LOCKED ??docs/UX-IA-15C-CHECKPOINT.md)
+17. UX-IA-16 ?X Visual Edit AI Patch Flow (PENDING ?X requires UX-IA-15 COMPLETE ??now satisfied)
 18. UX-IA-17 ?X Visual Edit Undo / Checkpoint Integration (pending ?X requires UX-IA-16 COMPLETE)
 
 ---
@@ -23534,9 +23534,9 @@ Clean up or redirect deprecated workspace/auth/navigation routes that became obs
 **Family:** UX-IA (Product & UX/UI Redesign ? Evolutionary)
 **Family status:** ACTIVE
 **Priority:** Medium
-**Status:** ACTIVE ??child slices in progress (plan complete; child slices: 15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C ACTIVE)
+**Status:** COMPLETE and LOCKED ??child slices: 15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED
 **Depends on:** UX-IA-08 (COMPLETE and LOCKED ? `docs/UX-IA-08-CHECKPOINT.md`), UX-IA-10 (COMPLETE and LOCKED ? `docs/UX-IA-10-CHECKPOINT.md`), UX-IA-14 (COMPLETE and LOCKED ? `docs/UX-IA-14-CHECKPOINT.md`)
-**Checkpoint:** `docs/UX-IA-15-CHECKPOINT.md` (to be created on completion)
+**Checkpoint:** `docs/UX-IA-15-CHECKPOINT.md` ??COMPLETE and LOCKED
 **Risk:** Medium �?? cross-frame postMessage, iframe origin constraints, AI prompt context injection
 **Loop:** 4-step (plan ? implement ? verify ? consolidate)
 **Model:** Opus 4.6 for plan phase and implementation; Sonnet 4.6 for registration and consolidation
@@ -23744,11 +23744,11 @@ Inject the element picker script into the same-origin preview iframe, listen for
 **Family:** UX-IA (Product & UX/UI Redesign ??Evolutionary)
 **Family status:** ACTIVE
 **Priority:** Medium
-**Status:** ACTIVE
+**Status:** COMPLETE and LOCKED
 **Risk:** Low-Medium
-**Model:** GPT-5.3 Codex for implementation; Sonnet 4.6 for consolidation
+**Model:** Sonnet 4.6 for implementation and consolidation
 **Depends on:** UX-IA-15B (COMPLETE and LOCKED ??`docs/UX-IA-15B-CHECKPOINT.md`)
-**Checkpoint:** `docs/UX-IA-15-CHECKPOINT.md` (created in this slice ??closes UX-IA-15 parent)
+**Checkpoint:** `docs/UX-IA-15C-CHECKPOINT.md` ??COMPLETE and LOCKED; parent closed: `docs/UX-IA-15-CHECKPOINT.md`
 
 **Objective:**
 Wire the captured preview element selection into the AI prompt context, validate the full end-to-end flow, and consolidate UX-IA-15 with a checkpoint.
@@ -23780,14 +23780,19 @@ Wire the captured preview element selection into the AI prompt context, validate
 
 **Acceptance checks:**
 - UX-IA-15C registered in TASKS.md and TASKS_BACKLOG_FULL.md ??DONE
-- `selectedPreviewElement` state flows from selection to prompt
-- AI prompt prefixed with element context when element selected
-- Element context cleared after submit
-- `docs/UX-IA-15-CHECKPOINT.md` created
-- UX-IA-15 parent marked COMPLETE and LOCKED
-- TypeScript, tests, and build pass
+- `selectedPreviewElement` state flows from selection to prompt ??DONE
+- AI prompt prefixed with element context when element selected ??DONE
+- Element context cleared after submit ??DONE
+- `docs/UX-IA-15C-CHECKPOINT.md` created ??DONE
+- `docs/UX-IA-15-CHECKPOINT.md` created ??DONE
+- UX-IA-15 parent marked COMPLETE and LOCKED ??DONE
+- TypeScript, tests, and build pass ??DONE (353 tests, 0 failed)
+- `npx tsc --noEmit` ??PASS
+- `npm test` ??PASS (353 tests, 353 passed, 0 failed)
+- `npm run build` ??PASS
+- `ReadLints` on touched files ??PASS (0 errors)
 
-**Reference:** See TASKS.md -> UX-IA-15C.
+**Reference:** See TASKS.md -> UX-IA-15C. Checkpoints: `docs/UX-IA-15C-CHECKPOINT.md`, `docs/UX-IA-15-CHECKPOINT.md`.
 
 
 

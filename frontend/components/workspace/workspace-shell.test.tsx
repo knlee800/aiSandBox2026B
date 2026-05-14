@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { describe, test } from 'node:test';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -15,6 +16,7 @@ import type { WorkspaceCheckpoint, WorkspaceShellSession } from './workspace-she
 import type { WorkspaceExecState } from './workspace-exec.logic';
 import type { WorkspacePreviewState } from './workspace-preview.logic';
 import {
+  buildPromptWithSelectedPreviewElement,
   generatePickerScriptSource,
   getPickerScriptId,
   getPickerOverlayId,
@@ -3112,6 +3114,18 @@ describe('workspace shell component', () => {
     assert.doesNotMatch(html, /data-testid="workspace-preview-picker-active"/);
   });
 
+  test('accepts onPreviewElementSelected callback without breaking preview render', () => {
+    const html = renderWorkspaceShell({
+      selectedSessionId: session.id,
+      previewState: 'ready',
+      previewUrl: `/api/preview/${session.id}/proxy?refresh=19`,
+      onPreviewElementSelected: () => {},
+    });
+
+    assert.match(html, /data-testid="workspace-preview-picker-toggle"/);
+    assert.match(html, /data-testid="workspace-preview-iframe"/);
+  });
+
   test('renders unavailable preview state with start preview action', () => {
     const html = renderWorkspaceShell({
       selectedSessionId: session.id,
@@ -4626,5 +4640,50 @@ describe('workspace preview logic — UX-IA-15B helpers', () => {
       }),
       true,
     );
+  });
+});
+
+describe('workspace prompt context — UX-IA-15C helpers', () => {
+  const selectedPreviewElement: SelectedPreviewElement = {
+    tagName: 'button',
+    selector: '#submit-button',
+    textContent: 'Submit',
+    classList: ['btn', 'primary'],
+    boundingBox: { x: 10, y: 20, width: 120, height: 40 },
+    id: 'submit-button',
+  };
+
+  test('buildWorkspacePromptContext wiring includes selectedPreviewElement', () => {
+    const pageSource = readFileSync(
+      new URL('../../app/[locale]/app/page.tsx', import.meta.url),
+      'utf8',
+    );
+
+    assert.match(pageSource, /selectedPreviewElement\?: SelectedPreviewElement \| null;/);
+    assert.match(
+      pageSource,
+      /\.\.\.\(args\.selectedPreviewElement \? \{ selectedPreviewElement: args\.selectedPreviewElement \} : \{\}\),/,
+    );
+  });
+
+  test('buildPromptWithSelectedPreviewElement prefixes prompt metadata when element exists', () => {
+    const prompt = buildPromptWithSelectedPreviewElement(
+      'Make the button more rounded',
+      selectedPreviewElement,
+    );
+
+    assert.match(prompt, /\[Selected preview element\]/);
+    assert.match(prompt, /Tag: button/);
+    assert.match(prompt, /Selector: #submit-button/);
+    assert.match(prompt, /Text: Submit/);
+    assert.match(prompt, /Classes: btn primary/);
+    assert.match(prompt, /Bounds: x=10, y=20, width=120, height=40/);
+    assert.match(prompt, /User request:\nMake the button more rounded/);
+  });
+
+  test('buildPromptWithSelectedPreviewElement keeps prompt unchanged when no element exists', () => {
+    const originalPrompt = 'Refactor this form layout.';
+    const prompt = buildPromptWithSelectedPreviewElement(originalPrompt, null);
+    assert.strictEqual(prompt, originalPrompt);
   });
 });

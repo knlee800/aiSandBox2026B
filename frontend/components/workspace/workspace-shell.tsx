@@ -306,6 +306,7 @@ interface WorkspaceShellProps {
   onRefreshPreview: () => Promise<void>;
   onPreviewLoad: () => void;
   onPreviewError: () => void;
+  onPreviewElementSelected?: (element: SelectedPreviewElement | null) => void;
   fileSurfaceState: WorkspaceFileSurfaceState;
   workspaceFileTree: WorkspaceFileNode[];
   selectedFilePath: string | null;
@@ -601,20 +602,23 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
       const next = !current;
       if (next) {
         setSelectedPreviewElement(null);
+        props.onPreviewElementSelected?.(null);
         setTimeout(() => injectPickerScript(), 0);
       } else {
         removePickerScript();
       }
       return next;
     });
-  }, [injectPickerScript, removePickerScript]);
+  }, [injectPickerScript, removePickerScript, props.onPreviewElementSelected]);
 
   React.useEffect(() => {
     if (!props.previewUrl || props.previewState !== 'ready') {
       setPickerActive(false);
       removePickerScript();
+      setSelectedPreviewElement(null);
+      props.onPreviewElementSelected?.(null);
     }
-  }, [props.previewUrl, props.previewState, removePickerScript]);
+  }, [props.previewUrl, props.previewState, removePickerScript, props.onPreviewElementSelected]);
 
   React.useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -635,6 +639,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
         return;
       }
       setSelectedPreviewElement(event.data.payload);
+      props.onPreviewElementSelected?.(event.data.payload);
       setPickerActive(false);
     };
 
@@ -642,7 +647,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     return () => {
       window.removeEventListener('message', handleMessage);
     };
-  }, []);
+  }, [props.onPreviewElementSelected]);
   const handlePreviewLoadWithPicker = React.useCallback(() => {
     props.onPreviewLoad();
     if (pickerActive) {

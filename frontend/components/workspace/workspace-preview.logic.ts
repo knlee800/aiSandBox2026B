@@ -108,6 +108,28 @@ export function isValidVisualEditMessageOriginAndSource(
   return input.messageSource === input.expectedSource;
 }
 
+export function buildPromptWithSelectedPreviewElement(
+  prompt: string,
+  selectedPreviewElement: SelectedPreviewElement | null,
+): string {
+  if (!selectedPreviewElement) {
+    return prompt;
+  }
+
+  const bounds = selectedPreviewElement.boundingBox;
+  return [
+    '[Selected preview element]',
+    `Tag: ${selectedPreviewElement.tagName}`,
+    `Selector: ${selectedPreviewElement.selector}`,
+    `Text: ${formatSelectedPreviewElementTextContent(selectedPreviewElement.textContent)}`,
+    `Classes: ${formatSelectedPreviewElementClasses(selectedPreviewElement.classList)}`,
+    `Bounds: x=${bounds.x}, y=${bounds.y}, width=${bounds.width}, height=${bounds.height}`,
+    '',
+    'User request:',
+    prompt,
+  ].join('\n');
+}
+
 function normalizeTagName(tagName: string): string {
   const trimmed = tagName.trim().toLowerCase();
   return trimmed.length > 0 ? trimmed : '*';
@@ -123,6 +145,18 @@ function normalizeToken(value: string | null): string {
 
 function escapeCssIdentifier(value: string): string {
   return value.replace(/[^a-zA-Z0-9_-]/g, '\\$&');
+}
+
+function formatSelectedPreviewElementTextContent(value: string): string {
+  const trimmedValue = value.trim();
+  return trimmedValue.length > 0 ? trimmedValue : '(empty)';
+}
+
+function formatSelectedPreviewElementClasses(classList: readonly string[]): string {
+  const normalized = classList
+    .map((className) => className.trim())
+    .filter((className) => className.length > 0);
+  return normalized.length > 0 ? normalized.join(' ') : '(none)';
 }
 
 export function isVisualEditElementSelectedMessage(

@@ -37,8 +37,10 @@ import {
   type WorkspaceCheckpointDiffResponse,
 } from '@/components/workspace/workspace-checkpoint-diff.logic';
 import {
+  buildPromptWithSelectedPreviewElement,
   buildPreviewProxyUrl,
   isPreviewRunning,
+  type SelectedPreviewElement,
   type WorkspacePreviewStatusResponse,
   type WorkspacePreviewState,
 } from '@/components/workspace/workspace-preview.logic';
@@ -189,6 +191,7 @@ interface WorkspacePromptContext {
   searchResults?: WorkspaceSearchResults;
   projectName?: string;
   workspaceName?: string;
+  selectedPreviewElement?: SelectedPreviewElement;
 }
 
 type WorkspaceView = 'home' | 'projects' | 'templates' | 'project';
@@ -589,6 +592,7 @@ async function buildWorkspacePromptContext(args: {
   selectedFileContent?: string;
   projectName?: string | null;
   workspaceName?: string | null;
+  selectedPreviewElement?: SelectedPreviewElement | null;
 }): Promise<WorkspacePromptContext | undefined> {
   const filePathSet = new Set<string>();
   collectWorkspacePromptFilePaths(args.workspaceFileTree, filePathSet);
@@ -634,7 +638,8 @@ async function buildWorkspacePromptContext(args: {
     namedFileContents.length === 0 &&
     !searchResults &&
     !normalizedProjectName &&
-    !normalizedWorkspaceName
+    !normalizedWorkspaceName &&
+    !args.selectedPreviewElement
   ) {
     return undefined;
   }
@@ -651,6 +656,7 @@ async function buildWorkspacePromptContext(args: {
       : {}),
     ...(namedFileContents.length > 0 ? { namedFileContents } : {}),
     ...(searchResults ? { searchResults } : {}),
+    ...(args.selectedPreviewElement ? { selectedPreviewElement: args.selectedPreviewElement } : {}),
   };
 }
 
@@ -942,6 +948,8 @@ export default function AppPage() {
   const [buildStatusMessage, setBuildStatusMessage] = useState<string | null>(null);
   const [buildOutput, setBuildOutput] = useState('');
   const [buildError, setBuildError] = useState<string | null>(null);
+  const [selectedPreviewElement, setSelectedPreviewElement] =
+    useState<SelectedPreviewElement | null>(null);
   const [chatPromptInput, setChatPromptInput] = useState('');
   const [chatResponseText, setChatResponseText] = useState('');
   const [chatRequestState, setChatRequestState] = useState<
@@ -3886,6 +3894,7 @@ export default function AppPage() {
       selectedFileContent,
       projectName: selectedProject?.name,
       workspaceName: selectedWorkspace?.name,
+      selectedPreviewElement,
     });
 
     updateAssistantMessageContent(
@@ -4146,6 +4155,10 @@ export default function AppPage() {
       setChatError('Enter a prompt before sending.');
       return;
     }
+    const promptWithSelectedPreviewElement = buildPromptWithSelectedPreviewElement(
+      trimmedPrompt,
+      selectedPreviewElement,
+    );
 
     setChatRequestState('submitting');
     chatStreamRef.current?.close();
@@ -4187,11 +4200,12 @@ export default function AppPage() {
     if (isChatOrchestrationEnabled) {
       await submitOrchestratedChatPrompt({
         apiKey,
-        prompt: trimmedPrompt,
+        prompt: promptWithSelectedPreviewElement,
         selectedSessionId,
         chosenModel,
         assistantMessageId,
       });
+      setSelectedPreviewElement(null);
       return;
     }
 
@@ -4212,6 +4226,7 @@ export default function AppPage() {
         selectedFileContent,
         projectName: selectedProject?.name,
         workspaceName: selectedWorkspace?.name,
+        selectedPreviewElement,
       });
       const response = await fetch('/api/ai/execute', {
         method: 'POST',
@@ -4220,7 +4235,7 @@ export default function AppPage() {
           Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          prompt: trimmedPrompt,
+          prompt: promptWithSelectedPreviewElement,
           provider: chosenModel.provider,
           model: chosenModel.model,
           sessionId: selectedSessionId ?? crypto.randomUUID(),
@@ -4253,6 +4268,7 @@ export default function AppPage() {
           : chosenModel.model;
       const nextFileActions = normalizeWorkspaceFileActions(data.fileActions);
       const executionSessionId = selectedSessionId;
+      setSelectedPreviewElement(null);
 
       setChatExecutionId(nextExecutionId);
       if (nextExecutionId && executionSessionId) {
@@ -5216,6 +5232,10 @@ export default function AppPage() {
     setPreviewState('error');
   }
 
+  function handlePreviewElementSelected(element: SelectedPreviewElement | null): void {
+    setSelectedPreviewElement(element);
+  }
+
   const visibleSessions = sessions.filter((session) => !hiddenSessionIds.includes(session.id));
 
   if (authLoading) {
@@ -5398,6 +5418,7 @@ export default function AppPage() {
       onRefreshPreview={handleRefreshPreview}
       onPreviewLoad={handlePreviewLoad}
       onPreviewError={handlePreviewError}
+      onPreviewElementSelected={handlePreviewElementSelected}
       fileSurfaceState={fileSurfaceState}
       workspaceFileTree={workspaceFileTree}
       selectedFilePath={selectedFilePath}
