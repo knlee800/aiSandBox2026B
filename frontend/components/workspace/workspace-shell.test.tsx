@@ -958,7 +958,9 @@ describe('workspace shell component', () => {
     assert.match(html, /workspace-project-view/);
     assert.match(html, /Chat Panel/);
     assert.match(html, /Preview Panel/);
-    assert.match(html, /History &amp; Controls/);
+    assert.match(html, /workspace-ai-panel-toggle/);
+    assert.match(html, /workspace-ai-panel-view-chat/);
+    assert.match(html, /workspace-ai-panel-view-history/);
     assert.match(html, /workspace-tab-bar/);
   });
 
@@ -1009,6 +1011,77 @@ describe('workspace shell component', () => {
     });
 
     assert.match(html, /workspace-project-ai-panel/);
+  });
+
+  test('renders chat and history toggle buttons in project mode', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+
+    assert.match(html, /workspace-ai-panel-toggle/);
+    assert.match(html, /workspace-ai-panel-view-chat/);
+    assert.match(html, /workspace-ai-panel-view-history/);
+    assert.match(html, />Chat</);
+    assert.match(html, />History</);
+  });
+
+  test('renders chat panel by default in project mode', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+
+    assert.match(html, /chat-panel-shell/);
+    assert.match(html, /workspace-ai-panel-view-chat/);
+  });
+
+  test('does not render restore confirm bar without pending restore', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+      selectedProjectId: 'project-1',
+      workspaceSnapshots: projectHistorySnapshots,
+    });
+
+    assert.doesNotMatch(html, /workspace-restore-confirm-bar/);
+  });
+
+  test('project history panel still renders in non-project views', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'projects',
+      selectedProjectId: 'project-1',
+      workspaceSnapshots: projectHistorySnapshots,
+    });
+
+    assert.match(html, /history-project-history-surface/);
+    assert.match(html, /History &amp; Controls/);
+  });
+
+  test('restore-related buttons and handlers remain wired where statically testable', () => {
+    let restoreProjectId = '';
+    let restoreSnapshotId = '';
+    const restoreButton = renderWorkspaceShellElementByTestId(
+      'history-project-history-restore-snapshot-a',
+      {
+        projectFirstUxEnabled: true,
+        workspaceView: 'projects',
+        selectedProjectId: 'project-1',
+        workspaceSnapshots: projectHistorySnapshots,
+        onRestoreWorkspaceProjectFromSnapshotById: async (projectId, snapshotId) => {
+          restoreProjectId = projectId;
+          restoreSnapshotId = snapshotId;
+        },
+      },
+    );
+
+    assert.ok(restoreButton);
+    assert.equal(typeof restoreButton.props.onClick, 'function');
+    const onClick = restoreButton.props.onClick as (() => void) | undefined;
+    onClick?.();
+    assert.equal(restoreProjectId, 'project-1');
+    assert.equal(restoreSnapshotId, 'snapshot-a');
   });
 
   test('renders content panel zone in project view', () => {
@@ -2241,6 +2314,7 @@ describe('workspace shell component', () => {
     };
     const button = renderWorkspaceShellElementByTestId('history-project-history-restore-snapshot-a', {
       projectFirstUxEnabled: true,
+      workspaceView: 'projects',
       selectedProjectId: 'project-1',
       workspaceSnapshots: projectHistorySnapshots,
       onRestoreWorkspaceProjectFromSnapshotById,
@@ -2279,6 +2353,7 @@ describe('workspace shell component', () => {
     };
     const button = renderWorkspaceShellElementByTestId('history-project-history-restore-snapshot-a', {
       projectFirstUxEnabled: true,
+      workspaceView: 'projects',
       selectedProjectId: 'project-1',
       workspaceSnapshots: projectHistorySnapshots,
       onRestoreWorkspaceProjectFromSnapshotById,

@@ -1,4 +1,5 @@
-﻿## Authority & Scope
+﻿﻿#
+(ACTIVE -- plan phase)ity & Scope
 
 This file lists currently ACTIVE and SELECTED tasks.
 
@@ -12037,9 +12038,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## UX-IA �X Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 COMPLETE and LOCKED — UX-IA-09 pending
+**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 COMPLETE and LOCKED — UX-IA-09 COMPLETE and LOCKED — UX-IA-10 pending
 
-**Current stage:** UX-IA-09 — Project AI + History Panel (pending)
+**Current stage:** UX-IA-10 — Preview + Code & Files Tabs (pending)
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -12060,7 +12061,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
    - UX-IA-08A — Project Mode Layout Shell + Back Header (COMPLETE and LOCKED — `docs/UX-IA-08A-CHECKPOINT.md`)
    - UX-IA-08B — Tab Registry + Tab Bar + AI Panel Collapse (COMPLETE and LOCKED — `docs/UX-IA-08B-CHECKPOINT.md`)
    - UX-IA-08C — Tests + Validation + Consolidation (COMPLETE and LOCKED — `docs/UX-IA-08-CHECKPOINT.md`)
-10. UX-IA-09 �X Project AI + History Panel (pending)
+10. UX-IA-09 �X Project AI + History Panel (COMPLETE and LOCKED -- `docs/UX-IA-09-CHECKPOINT.md`)
 11. UX-IA-10 �X Preview + Code & Files Tabs (pending)
 12. UX-IA-11 �X Future Product Tab Placeholders (pending)
 13. UX-IA-12 �X Upgrade Flow + Dashboard Polish (pending)
@@ -12793,6 +12794,71 @@ Run the full validation suite after UX-IA-08B completes. Write `docs/UX-IA-08-CH
 **Checkpoint:** `docs/UX-IA-08-CHECKPOINT.md`
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-08C. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-08 section.
+
+----
+
+#### UX-IA-09: Project AI + History Panel
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** UX-IA-09
+**Family:** UX-IA (Product & UX/UI Redesign -- Evolutionary)
+**Family status:** ACTIVE
+**Priority:** High
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` -- UX-IA-09 section
+**Depends on:** UX-IA-08 (COMPLETE and LOCKED -- `docs/UX-IA-08-CHECKPOINT.md`)
+**Risk:** Medium
+**Loop:** 3-step (implement -- verify tests -- consolidate)
+**Model:** Sonnet 4.6
+
+**Objective:**
+Wire AI chat into the project mode left panel with a chat/history toggle. Add a history icon/toggle for the project history timeline in the left AI panel zone. Add an inline restore confirmation for project history restore. Preserve all UX-IA-08 invariants, AI-WS file action flows, existing project history restore behavior, PROJ-02 deterministic project hydration, and AUTH/session behavior.
+
+**Bounded scope:**
+- `frontend/components/workspace/workspace-shell.tsx` -- wire chat/history toggle in left AI panel zone; add history icon/toggle; add inline restore confirmation; no new props added to `WorkspaceShellProps`; all local state additions only
+- `frontend/components/workspace/workspace-shell.test.tsx` -- add/update tests for chat/history toggle, history icon, inline restore confirmation
+- `frontend/messages/en.json` -- add new i18n keys required (e.g. `project.showHistory`, `project.showChat`, `project.confirmRestore`, `project.cancelRestore`) only if not already present
+- `frontend/messages/zh-TW.json` -- same
+- `frontend/messages/zh-CN.json` -- same
+
+**Non-goals:**
+- No backend or API changes
+- No auth changes
+- No route cleanup
+- No Visual Edit Mode work (belongs to UX-IA-15+)
+- No new tab registry work beyond what UX-IA-08 already created
+- No full Preview + Code layout refinement (belongs to UX-IA-10)
+- No broad refactor of AI-WS, preview, or file logic
+- No new AI capabilities or history backend features
+
+**Dependencies:**
+- UX-IA-08 (COMPLETE and LOCKED -- `docs/UX-IA-08-CHECKPOINT.md`) -- project mode shell, tab bar, AI panel collapse, left AI panel zone
+- AI-WS-06-hotfix3 (COMPLETE and LOCKED) -- AI-WS file action flows preserved
+- PROJ-02-03 (COMPLETE and LOCKED) -- deterministic project hydration preserved
+- AUTH-APP-02D (COMPLETE and LOCKED) -- session/auth behavior preserved
+
+**Risks:**
+- Inline restore confirmation must not disrupt existing `onRestoreWorkspaceProjectFromSnapshotById` call path
+- Chat/history toggle state must not collide with `aiPanelCollapsed` state from UX-IA-08
+- No new props may be added to `WorkspaceShellProps` -- toggle state must be local to left panel zone JSX
+- AI-WS file action confirmation flows (accept/reject file patches) must remain unaffected
+- Preview iframe pointer-event path must remain unblocked (UX-IA-15 constraint)
+
+**Model guidance:**
+- Additive-only within left AI panel zone JSX in `workspace-shell.tsx`
+- Reuse `WorkspaceChatPanel`, `historyAndDashboardContent`, and `onRestoreWorkspaceProjectFromSnapshotById` -- do not refactor their internals
+- Minimal local state additions only; no prop threading through `WorkspaceShellProps`
+
+**Validation plan:**
+- `npx tsc --noEmit` (from `frontend/`) -- must pass
+- `npm test` (from `frontend/`) -- must pass; net new tests for chat/history toggle, history icon, inline restore confirmation
+- `npm run build` (from `frontend/`) -- must pass
+- `ReadLints` on all touched files -- no introduced errors
+- No regressions to UX-IA-04 through UX-IA-08, AUTH-APP-01/02, PROJ-02 hydration chain, AI-WS file action flows
+
+**Checkpoint:** `docs/UX-IA-09-CHECKPOINT.md`
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-09. See `docs/UX-IA-00-MASTER-PLAN.md` -- UX-IA-09 section.
+
 
 
 ## AUTH �X aiSandBox First-Party Authentication

@@ -92,6 +92,12 @@ function getProjectPanelMessages(locale: string): typeof enMessages.project {
   return enMessages.project;
 }
 
+function getCommonMessages(locale: string): typeof enMessages.common {
+  if (locale === 'zh-TW') return zhTwMessages.common;
+  if (locale === 'zh-CN') return zhCnMessages.common;
+  return enMessages.common;
+}
+
 function resolveTabBarTabs(locale: string): WorkspaceTabBarTab[] {
   const tabMessages = getTabMessages(locale);
   return TAB_REGISTRY.map((tab) => ({
@@ -414,8 +420,13 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const [activeTabId, setActiveTabId] = React.useState(DEFAULT_ACTIVE_TAB_ID);
   const [tabOrientation, setTabOrientation] = React.useState<TabOrientation>(readStoredTabOrientation);
   const [aiPanelCollapsed, setAiPanelCollapsed] = React.useState(readStoredAiPanelCollapsed);
+  const [aiPanelView, setAiPanelView] = React.useState<'chat' | 'history'>('chat');
+  const [pendingRestoreSnapshotId, setPendingRestoreSnapshotId] = React.useState<string | null>(
+    null,
+  );
   const tabBarTabs = React.useMemo(() => resolveTabBarTabs(locale), [locale]);
   const projectPanelMessages = React.useMemo(() => getProjectPanelMessages(locale), [locale]);
+  const commonMessages = React.useMemo(() => getCommonMessages(locale), [locale]);
   const comingSoonLabel = React.useMemo(() => getTabMessages(locale).comingSoon, [locale]);
   const homePromptInput = props.chatPromptInput ?? '';
   const trimmedHomePrompt = homePromptInput.trim();
@@ -487,6 +498,10 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
           const onRestoreWorkspaceProjectFromSnapshotById =
             props.onRestoreWorkspaceProjectFromSnapshotById;
           return (snapshotId: string) => {
+            if (resolvedWorkspaceView === 'project') {
+              setPendingRestoreSnapshotId(snapshotId);
+              return;
+            }
             const confirmed =
               typeof window === 'undefined'
                 ? true
@@ -501,6 +516,25 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
           };
         })()
       : undefined;
+  const handleConfirmRestore = () => {
+    if (
+      !pendingRestoreSnapshotId ||
+      !props.selectedProjectId ||
+      !props.onRestoreWorkspaceProjectFromSnapshotById
+    ) {
+      setPendingRestoreSnapshotId(null);
+      return;
+    }
+    const projectId = props.selectedProjectId;
+    const onRestoreWorkspaceProjectFromSnapshotById =
+      props.onRestoreWorkspaceProjectFromSnapshotById;
+    const snapshotId = pendingRestoreSnapshotId;
+    setPendingRestoreSnapshotId(null);
+    void onRestoreWorkspaceProjectFromSnapshotById(projectId, snapshotId);
+  };
+  const handleCancelRestore = () => {
+    setPendingRestoreSnapshotId(null);
+  };
   const handleSaveProjectHistorySnapshot =
     projectFirstUxEnabled &&
     props.selectedProjectId &&
@@ -1262,8 +1296,76 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                     className="w-full md:w-96 border-r border-gray-200 bg-white overflow-y-auto flex flex-col gap-2 p-2"
                     data-testid="workspace-project-ai-panel"
                   >
-                    {projectChatSection}
-                    {historyAndDashboardContent}
+                    <div
+                      className="sticky top-0 z-10 -m-2 mb-2 flex border-b border-gray-200 bg-white"
+                      data-testid="workspace-ai-panel-toggle"
+                    >
+                      <button
+                        type="button"
+                        className={`flex-1 px-3 py-2 text-xs font-semibold ${
+                          aiPanelView === 'chat'
+                            ? 'border-b-2 border-gray-900 text-gray-900'
+                            : 'text-gray-600 hover:bg-gray-50'
+                        }`}
+                        data-testid="workspace-ai-panel-view-chat"
+                        onClick={() => {
+                          setAiPanelView('chat');
+                          setPendingRestoreSnapshotId(null);
+                        }}
+                      >
+                        {projectPanelMessages.chat}
+                      </button>
+                      <button
+                        type="button"
+                        className={`flex-1 px-3 py-2 text-xs font-semibold ${
+                          aiPanelView === 'history'
+                            ? 'border-b-2 border-gray-900 text-gray-900'
+                            : 'text-gray-600 hover:bg-gray-50'
+                        }`}
+                        data-testid="workspace-ai-panel-view-history"
+                        onClick={() => setAiPanelView('history')}
+                      >
+                        {projectPanelMessages.history}
+                      </button>
+                    </div>
+                    <div
+                      className={aiPanelView === 'chat' ? '' : 'hidden'}
+                      data-testid="workspace-ai-panel-chat-content"
+                    >
+                      {projectChatSection}
+                    </div>
+                    <div
+                      className={aiPanelView === 'history' ? '' : 'hidden'}
+                      data-testid="workspace-ai-panel-history-content"
+                    >
+                      {pendingRestoreSnapshotId ? (
+                        <section
+                          className="rounded border border-amber-200 bg-amber-50 p-3"
+                          data-testid="workspace-restore-confirm-bar"
+                        >
+                          <p className="text-xs text-amber-900">{projectPanelMessages.restoreConfirm}</p>
+                          <div className="mt-2 flex gap-2">
+                            <button
+                              type="button"
+                              className="rounded bg-amber-700 px-2 py-1 text-xs font-medium text-white"
+                              data-testid="workspace-restore-confirm-button"
+                              onClick={handleConfirmRestore}
+                            >
+                              {projectPanelMessages.restore}
+                            </button>
+                            <button
+                              type="button"
+                              className="rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-700"
+                              data-testid="workspace-restore-cancel-button"
+                              onClick={handleCancelRestore}
+                            >
+                              {commonMessages.cancel}
+                            </button>
+                          </div>
+                        </section>
+                      ) : null}
+                      {historyAndDashboardContent}
+                    </div>
                   </aside>
                 ) : null}
                 <main
