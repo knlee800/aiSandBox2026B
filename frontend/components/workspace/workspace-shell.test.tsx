@@ -2789,6 +2789,11 @@ describe('workspace shell component', () => {
     assert.match(html, /workspace-chat-file-actions-awaiting-confirmation/);
     assert.match(html, /Approval required before applying risky file actions\./);
     assert.doesNotMatch(html, /workspace-chat-file-actions-visual-edit-attribution/);
+    assert.doesNotMatch(html, /workspace-chat-file-actions-diff-loading/);
+    assert.doesNotMatch(html, /workspace-chat-file-actions-diff-error/);
+    assert.doesNotMatch(html, /workspace-chat-file-actions-diff-update/);
+    assert.doesNotMatch(html, /workspace-chat-file-actions-diff-create/);
+    assert.doesNotMatch(html, /workspace-chat-file-actions-diff-delete/);
     assert.match(html, /package\.json/);
     assert.match(html, /workspace-chat-file-actions-confirm-button/);
     assert.match(html, /workspace-chat-file-actions-cancel-button/);
@@ -2819,6 +2824,63 @@ describe('workspace shell component', () => {
     assert.match(html, /workspace-chat-file-actions-visual-edit-attribution/);
     assert.match(html, /Source: Visual Edit mode selection\./);
     assert.match(html, /Approval required before applying risky file actions\./);
+  });
+
+  test('renders diff loading state for visual-edit awaiting-confirmation execution', () => {
+    const html = renderWorkspaceShell({
+      visualEditExecutionIds: ['exec-visual-loading-1'],
+      chatThreadMessages: [
+        {
+          id: 'assistant-visual-loading-1',
+          role: 'assistant',
+          content: 'Waiting for visual diff preview.',
+          executionId: 'exec-visual-loading-1',
+          fileActionState: {
+            executionId: 'exec-visual-loading-1',
+            source: 'status',
+            fileActions: [{ action: 'write', path: 'src/app.tsx', content: 'updated' }],
+            applyStatus: 'awaiting-confirmation',
+            confirmationRequired: true,
+            skipReason: null,
+            results: [],
+          },
+        },
+      ],
+    });
+
+    assert.match(html, /workspace-chat-file-actions-diff-loading/);
+    assert.doesNotMatch(html, /workspace-chat-file-actions-diff-update/);
+    assert.doesNotMatch(html, /workspace-chat-file-actions-diff-create/);
+    assert.doesNotMatch(html, /workspace-chat-file-actions-diff-delete/);
+  });
+
+  test('does not render diff for non-visual-edit awaiting-confirmation execution', () => {
+    const html = renderWorkspaceShell({
+      chatThreadMessages: [
+        {
+          id: 'assistant-non-visual-confirm-1',
+          role: 'assistant',
+          content: 'Non-visual confirmation path.',
+          executionId: 'exec-non-visual-1',
+          fileActionState: {
+            executionId: 'exec-non-visual-1',
+            source: 'status',
+            fileActions: [{ action: 'write', path: 'src/non-visual.ts', content: 'update' }],
+            applyStatus: 'awaiting-confirmation',
+            confirmationRequired: true,
+            skipReason: null,
+            results: [],
+          },
+        },
+      ],
+    });
+
+    assert.match(html, /workspace-chat-file-actions-awaiting-confirmation/);
+    assert.doesNotMatch(html, /workspace-chat-file-actions-diff-loading/);
+    assert.doesNotMatch(html, /workspace-chat-file-actions-diff-error/);
+    assert.doesNotMatch(html, /workspace-chat-file-actions-diff-update/);
+    assert.doesNotMatch(html, /workspace-chat-file-actions-diff-create/);
+    assert.doesNotMatch(html, /workspace-chat-file-actions-diff-delete/);
   });
 
   test('forwards risky file-action confirmation actions from the chat summary', () => {
@@ -4746,5 +4808,32 @@ describe('workspace prompt context — UX-IA-15C helpers', () => {
     const originalPrompt = 'Refactor this form layout.';
     const prompt = buildPromptWithSelectedPreviewElement(originalPrompt, null);
     assert.strictEqual(prompt, originalPrompt);
+  });
+});
+
+describe('workspace visual edit diff preview wiring — UX-IA-16B', () => {
+  test('renders diff preview for visual-edit update action', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.match(shellSource, /workspace-chat-file-actions-diff-update/);
+    assert.match(shellSource, /const updateDiff = computeLineDiff\(currentFile\.content, action\.content\);/);
+  });
+
+  test('renders create diff marker', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.match(shellSource, /workspace-chat-file-actions-diff-create/);
+    assert.match(shellSource, /const createDiff = computeLineDiff\('', action\.content\);/);
+  });
+
+  test('renders delete diff marker', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.match(shellSource, /workspace-chat-file-actions-diff-delete/);
+    assert.match(shellSource, /\[file will be deleted\]/);
+  });
+
+  test('renders diff error state gracefully when file read fails', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.match(shellSource, /Promise\.allSettled/);
+    assert.match(shellSource, /setDiffState\(hasRejectedResult \? 'error' : 'ready'\);/);
+    assert.match(shellSource, /workspace-chat-file-actions-diff-error/);
   });
 });

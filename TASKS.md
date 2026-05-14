@@ -12038,9 +12038,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## UX-IA ?X Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED)
+**Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) ?X UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED)
 
-**Current stage:** UX-IA-16B — Visual Edit Diff Preview in Confirmation UI (ACTIVE — current stage)
+**Current stage:** UX-IA-17 — Visual Edit Undo / Checkpoint Integration (PENDING — next stage)
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -12071,10 +12071,10 @@ Make normal static HTML relative links and buttons work inside the preview ifram
     - UX-IA-15A ??Preview Picker Infrastructure (COMPLETE and LOCKED ??docs/UX-IA-15A-CHECKPOINT.md)
     - UX-IA-15B ??Cross-Frame Picker Script + postMessage Listener (COMPLETE and LOCKED ??docs/UX-IA-15B-CHECKPOINT.md)
     - UX-IA-15C ??AI Prompt Context Injection + Validation + Consolidation (COMPLETE and LOCKED ??docs/UX-IA-15C-CHECKPOINT.md)
-17. UX-IA-16 — Visual Edit AI Patch Flow (ACTIVE — plan split complete: 16A + 16B)
+17. UX-IA-16 — Visual Edit AI Patch Flow (COMPLETE and LOCKED — `docs/UX-IA-16-CHECKPOINT.md`)
     - UX-IA-16A — Visual Edit Prompt Contract + Force-Confirmation (COMPLETE and LOCKED — `docs/UX-IA-16A-CHECKPOINT.md`)
-    - UX-IA-16B — Visual Edit Diff Preview in Confirmation UI (ACTIVE — current stage)
-18. UX-IA-17 ?X Visual Edit Undo / Checkpoint Integration (pending ?X requires UX-IA-16 COMPLETE)
+    - UX-IA-16B — Visual Edit Diff Preview in Confirmation UI (COMPLETE and LOCKED — `docs/UX-IA-16B-CHECKPOINT.md`)
+18. UX-IA-17 ?X Visual Edit Undo / Checkpoint Integration (PENDING — next stage; requires UX-IA-16 COMPLETE — now satisfied)
    ? AUTH-MODULE-01 ?X Reusable App-Auth Module for aiSandBox-Created Apps (cross-family ?X later product capability; requires AUTH-APP-01 + UX-IA-08?VUX-IA-10 COMPLETE; see `docs/UX-IA-00-MASTER-PLAN.md` AUTH-MODULE-01 entry; register under AUTH family before starting)
 
 ---
@@ -13580,7 +13580,7 @@ Wire the captured preview element selection into the AI prompt context, validate
 
 #### UX-IA-16: Visual Edit AI Patch Flow
 
-**Status:** ACTIVE — plan complete; child slices registered (16A ACTIVE, 16B PLANNED)
+**Status:** COMPLETE and LOCKED
 **Task ID:** UX-IA-16
 **Parent:** UX-IA family (UX-IA — Product & UX/UI Redesign — Evolutionary)
 **Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
@@ -13588,7 +13588,7 @@ Wire the captured preview element selection into the AI prompt context, validate
 **Risk:** Medium
 **Model:** Sonnet 4.6 (plan phase — COMPLETE); implementation per child slice
 **Depends on:** UX-IA-15 (COMPLETE and LOCKED — `docs/UX-IA-15-CHECKPOINT.md`)
-**Checkpoint:** Pending — to be created when all child slices are COMPLETE and LOCKED
+**Checkpoint:** `docs/UX-IA-16-CHECKPOINT.md`
 
 **Objective:**
 Wire the visual edit selected-element context (captured in UX-IA-15) into AI patch requests, and ensure AI-proposed file changes flow through the existing AI-WS file-action confirmation flow without bypass.
@@ -13601,7 +13601,7 @@ Wire the visual edit selected-element context (captured in UX-IA-15) into AI pat
 
 **Child slices:**
 - UX-IA-16A — Visual Edit Prompt Contract + Force-Confirmation (COMPLETE and LOCKED — `docs/UX-IA-16A-CHECKPOINT.md`)
-- UX-IA-16B — Visual Edit Diff Preview in Confirmation UI (ACTIVE — current stage)
+- UX-IA-16B — Visual Edit Diff Preview in Confirmation UI (COMPLETE and LOCKED — `docs/UX-IA-16B-CHECKPOINT.md`)
 
 **Non-goals (parent-level):**
 - No direct DOM mutation as final output
@@ -13619,8 +13619,8 @@ Wire the visual edit selected-element context (captured in UX-IA-15) into AI pat
 - Plan phase completed and approved — DONE
 - Child slices identified and registered — DONE (16A ACTIVE, 16B PLANNED)
 - UX-IA-16A COMPLETE and LOCKED — `docs/UX-IA-16A-CHECKPOINT.md` — DONE
-- UX-IA-16B COMPLETE and LOCKED (PENDING)
-- Parent checkpoint created on all child slices complete (PENDING)
+- UX-IA-16B COMPLETE and LOCKED — `docs/UX-IA-16B-CHECKPOINT.md` — DONE
+- Parent checkpoint created on all child slices complete — DONE (`docs/UX-IA-16-CHECKPOINT.md`)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-16. Master plan: `docs/UX-IA-00-MASTER-PLAN.md`. Upstream: `docs/UX-IA-15C-CHECKPOINT.md`.
 
@@ -13709,15 +13709,15 @@ Enhance the visual-edit prompt contract so the AI receives directive instruction
 
 #### UX-IA-16B: Visual Edit Diff Preview in Confirmation UI
 
-**Status:** ACTIVE — current stage
+**Status:** COMPLETE and LOCKED
 **Task ID:** UX-IA-16B
 **Parent:** UX-IA-16 — Visual Edit AI Patch Flow
 **Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
 **Priority:** Medium
 **Risk:** Medium
-**Model:** Opus 4.6 High if UI/diff complexity is high; otherwise GPT-5.3 Codex — evaluate at implementation time
+**Model:** Sonnet 4.6 (implementation)
 **Depends on:** UX-IA-16A (COMPLETE and LOCKED — `docs/UX-IA-16A-CHECKPOINT.md`)
-**Checkpoint:** Pending — to be created on completion
+**Checkpoint:** `docs/UX-IA-16B-CHECKPOINT.md`
 
 **Objective:**
 When a visual-edit execution reaches `awaiting-confirmation`, display a diff preview of the proposed file changes so the user can review source diffs before approving. Existing non-visual-edit confirmation behavior is preserved unchanged.
@@ -13765,8 +13765,8 @@ When a visual-edit execution reaches `awaiting-confirmation`, display a diff pre
 - UX-IA-16B registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
 - Status set to PLANNED — DONE
 - Scope, non-goals, files, and validation plan recorded — DONE
-- Implementation complete and validated (PENDING — after UX-IA-16A)
-- `docs/UX-IA-16B-CHECKPOINT.md` created (PENDING)
+- Implementation complete and validated — DONE (tsc PASS, 370/370 tests PASS, build PASS, lints PASS)
+- `docs/UX-IA-16B-CHECKPOINT.md` created — DONE
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-16B. Parent: UX-IA-16. Depends on: `docs/UX-IA-16A-CHECKPOINT.md`.
 

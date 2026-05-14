@@ -37,10 +37,11 @@ import {
   isVisualEditElementSelectedMessage,
   isValidVisualEditMessageOriginAndSource,
 } from './workspace-preview.logic';
-import type {
-  WorkspaceFileSaveState,
-  WorkspaceFileNode,
-  WorkspaceFileSurfaceState,
+import {
+  readWorkspaceFile,
+  type WorkspaceFileSaveState,
+  type WorkspaceFileNode,
+  type WorkspaceFileSurfaceState,
 } from './workspace-file-navigation.logic';
 import type { WorkspaceCheckpointCreateState } from './workspace-checkpoint-create.logic';
 import type { WorkspaceCheckpointRevertState } from './workspace-checkpoint-revert.logic';
@@ -49,6 +50,7 @@ import type {
   WorkspaceCheckpointDiffResponse,
 } from './workspace-checkpoint-diff.logic';
 import type { WorkspaceExecutionFileActionState } from './workspace-ai-file-actions.logic';
+import { DIFF_MAX_LINES, computeLineDiff, type FileDiffResult } from './workspace-diff.logic';
 import {
   parseProjectScopedSnapshotHint,
   parseProjectScopedSnapshotName,
@@ -2441,6 +2443,7 @@ function WorkspaceChatPanel(props: {
                 {message.role === 'assistant' && message.fileActionState ? (
                   <WorkspaceAssistantFileActionSummary
                     fileActionState={message.fileActionState}
+                    selectedSessionId={props.selectedSessionId}
                     isVisualEditExecution={Boolean(
                       message.executionId && visualEditExecutionIdSet.has(message.executionId),
                     )}
@@ -2505,10 +2508,167 @@ function WorkspaceChatPanel(props: {
 
 function WorkspaceAssistantFileActionSummary(props: {
   fileActionState: WorkspaceExecutionFileActionState;
+  selectedSessionId: string | null;
   isVisualEditExecution?: boolean;
   onConfirm?: () => void;
   onCancel?: () => void;
 }) {
+  const isVisualEditAwaitingConfirmation =
+    Boolean(props.isVisualEditExecution) && props.fileActionState.applyStatus === 'awaiting-confirmation';
+  const [diffState, setDiffState] = React.useState<'idle' | 'loading' | 'ready' | 'error'>(() =>
+    isVisualEditAwaitingConfirmation ? 'loading' : 'idle',
+  );
+  const [fileDiffResults, setFileDiffResults] = React.useState<FileDiffResult[]>([]);
+
+  React.useEffect(() => {
+    if (!isVisualEditAwaitingConfirmation || !props.selectedSessionId) {
+      setDiffState('idle');
+      setFileDiffResults([]);
+      return;
+    }
+
+    let cancelled = false;
+    const sessionId = props.selectedSessionId;
+    setDiffState('loading');
+    setFileDiffResults([]);
+
+    void (async () => {
+      const settledResults = await Promise.allSettled(
+        props.fileActionState.fileActions.map(async (action): Promise<FileDiffResult> => {
+          if (action.action === 'create') {
+            const createDiff = computeLineDiff('', action.content);
+            return {
+              path: action.path,
+              action: action.action,
+              lines: createDiff.lines,
+              truncated: createDiff.truncated,
+            };
+          }
+
+          if (action.action === 'delete') {
+            let currentContent = '';
+            try {
+              const currentFile = await readWorkspaceFile({
+                sessionId,
+                filePath: action.path,
+              });
+              currentContent = currentFile.content;
+            } catch {
+              currentContent = '';
+            }
+            const deleteDiff = computeLineDiff(currentContent, '');
+            return {
+              path: action.path,
+              action: action.action,
+              lines: deleteDiff.lines,
+              truncated: deleteDiff.truncated,
+            };
+          }
+
+          const currentFile = await readWorkspaceFile({
+            sessionId,
+            filePath: action.path,
+          });
+          const updateDiff = computeLineDiff(currentFile.content, action.content);
+          return {
+            path: action.path,
+            action: action.action,
+            lines: updateDiff.lines,
+            truncated: updateDiff.truncated,
+          };
+        }),
+      );
+
+      if (cancelled) {
+        return;
+      }
+
+      const nextDiffResults: FileDiffResult[] = [];
+      let hasRejectedResult = false;
+      for (const settled of settledResults) {
+        if (settled.status === 'fulfilled') {
+          nextDiffResults.push(settled.value);
+          continue;
+        }
+        hasRejectedResult = true;
+      }
+
+      setFileDiffResults(nextDiffResults);
+      setDiffState(hasRejectedResult ? 'error' : 'ready');
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    isVisualEditAwaitingConfirmation,
+    props.fileActionState.fileActions,
+    props.fileActionState.executionId,
+    props.selectedSessionId,
+  ]);
+
+  const renderDiffLinePrefix = (type: 'added' | 'removed' | 'context'): string => {
+    if (type === 'added') {
+      return '+';
+    }
+    if (type === 'removed') {
+      return '-';
+    }
+    return ' ';
+  };
+
+  const renderDiffLineClassName = (type: 'added' | 'removed' | 'context'): string => {
+    if (type === 'added') {
+      return 'text-emerald-700';
+    }
+    if (type === 'removed') {
+      return 'text-red-700';
+    }
+    return 'text-gray-700';
+  };
+
+  const renderVisualEditDiffPreview = (result: FileDiffResult) => {
+    if (result.action === 'delete') {
+      return (
+        <div
+          key={`${result.path}-${result.action}`}
+          className="mt-1 rounded border border-red-200 bg-red-50 p-2"
+          data-testid="workspace-chat-file-actions-diff-delete"
+        >
+          <p className="font-mono text-red-800">delete {result.path}</p>
+          <p className="mt-1 text-red-700">[file will be deleted]</p>
+        </div>
+      );
+    }
+
+    const testId =
+      result.action === 'create'
+        ? 'workspace-chat-file-actions-diff-create'
+        : 'workspace-chat-file-actions-diff-update';
+    const heading = `${result.action} ${result.path}`;
+
+    return (
+      <div key={`${result.path}-${result.action}`} className="mt-1 rounded border border-gray-200 bg-white p-2" data-testid={testId}>
+        <p className="font-mono text-gray-800">{heading}</p>
+        <pre className="mt-1 overflow-x-auto rounded border border-gray-200 bg-gray-50 p-2 text-[10px] leading-4 text-gray-800">
+          {result.lines.map((line, index) => (
+            <span
+              key={`${line.type}-${line.lineNumber}-${index}`}
+              className={`block font-mono ${renderDiffLineClassName(line.type)}`}
+            >
+              {renderDiffLinePrefix(line.type)} {line.lineNumber} {line.content}
+            </span>
+          ))}
+        </pre>
+        {result.truncated ? (
+          <p className="mt-1 text-[10px] text-amber-700">
+            Diff truncated to the first {DIFF_MAX_LINES} lines.
+          </p>
+        ) : null}
+      </div>
+    );
+  };
+
   const hasRenderableResults =
     props.fileActionState.results.length > 0 ||
     ((props.fileActionState.applyStatus === 'skipped' ||
@@ -2534,6 +2694,23 @@ function WorkspaceAssistantFileActionSummary(props: {
           data-testid="workspace-chat-file-actions-awaiting-confirmation"
         >
           <p className="font-semibold">Approval required before applying risky file actions.</p>
+          {isVisualEditAwaitingConfirmation ? (
+            <>
+              {diffState === 'loading' ? (
+                <p className="mt-1 text-[11px] text-amber-800" data-testid="workspace-chat-file-actions-diff-loading">
+                  Loading diff preview...
+                </p>
+              ) : null}
+              {diffState === 'error' ? (
+                <p className="mt-1 text-[11px] text-red-700" data-testid="workspace-chat-file-actions-diff-error">
+                  Diff preview unavailable for one or more files. You can still apply or cancel.
+                </p>
+              ) : null}
+              {diffState === 'ready' ? (
+                <div className="mt-1 space-y-1">{fileDiffResults.map((result) => renderVisualEditDiffPreview(result))}</div>
+              ) : null}
+            </>
+          ) : null}
           <ul className="mt-1 space-y-1 font-mono" data-testid="workspace-chat-file-actions-awaiting-list">
             {props.fileActionState.fileActions.map((action, index) => (
               <li key={`${action.path}-${action.action}-${index}`}>{action.path}</li>
