@@ -12038,9 +12038,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## UX-IA �X Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 COMPLETE and LOCKED — UX-IA-09 COMPLETE and LOCKED — UX-IA-10 COMPLETE and LOCKED — UX-IA-11 pending
+**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 COMPLETE and LOCKED — UX-IA-09 COMPLETE and LOCKED — UX-IA-10 COMPLETE and LOCKED — UX-IA-11 COMPLETE and LOCKED — UX-IA-12 pending
 
-**Current stage:** UX-IA-11 — Future Product Tab Placeholders (pending)
+**Current stage:** UX-IA-12 — Upgrade Flow + Dashboard Polish (pending)
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -12063,7 +12063,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
    - UX-IA-08C — Tests + Validation + Consolidation (COMPLETE and LOCKED — `docs/UX-IA-08-CHECKPOINT.md`)
 10. UX-IA-09 �X Project AI + History Panel (COMPLETE and LOCKED — `docs/UX-IA-09-CHECKPOINT.md`)
 11. UX-IA-10 �X Preview + Code & Files Tabs (COMPLETE and LOCKED — `docs/UX-IA-10-CHECKPOINT.md`)
-12. UX-IA-11 �X Future Product Tab Placeholders (pending)
+12. UX-IA-11 �X Future Product Tab Placeholders (COMPLETE and LOCKED — `docs/UX-IA-11-CHECKPOINT.md`)
 13. UX-IA-12 �X Upgrade Flow + Dashboard Polish (pending)
 14. UX-IA-13 �X Responsive / Mobile Polish (pending)
 15. UX-IA-14 �X Route Cleanup / Redirects (pending)
@@ -12940,6 +12940,91 @@ This file does not exist. Per UX-IA-08 locked invariant, project mode logic stay
 **Checkpoint:** `docs/UX-IA-10-CHECKPOINT.md`
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` —> UX-IA-10. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-10 section.
+
+
+-----
+
+#### UX-IA-11: Future Product Tab Placeholders
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** UX-IA-11
+**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family status:** ACTIVE
+**Priority:** Medium
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-11 section
+**Depends on:** UX-IA-10 (COMPLETE and LOCKED — `docs/UX-IA-10-CHECKPOINT.md`)
+**Risk:** Low (placeholder copy/layout only; no functional tab content)
+**Loop:** 3-step (implement — verify tests — consolidate)
+**Model:** Sonnet 4.6
+
+**Objective:**
+Refine placeholder content and copy for the 11 non-functional product tabs registered in the UX-IA-08 tab registry (Database, Auth, Security, Analytics, Env Vars, Publishing, Deploy, Payment, Domain, App Storage, Agent Skills). Improve placeholder layout and messaging inside the existing tab shell. Keep Preview and Code & Files tabs fully functional as completed in UX-IA-10.
+
+**Scope:**
+- Refine placeholder copy and layout for non-functional tabs (Database, Auth, Security, Analytics, Env Vars, Publishing, Deploy, Payment, Domain, App Storage, Agent Skills) inside the existing `workspace-tab-content` area.
+- Improve placeholder visual presentation — layout, spacing, descriptive copy — without implementing functional content.
+- Preserve the tab registry structure in `workspace-tab-registry.ts` unchanged unless placeholder metadata (label keys, descriptions) is confirmed missing.
+- Preserve tab bar behavior, orientation toggle, and AI panel collapse (UX-IA-08 invariants).
+- Preserve UX-IA-09 AI/history toggle and inline restore confirmation.
+- Preserve Preview and Code & Files tab functional behavior (UX-IA-10 invariants).
+- Preserve `WorkspacePreviewPanel` iframe and `window.postMessage` path (Visual Edit Mode compatibility — UX-IA-15 constraint).
+- Add or update i18n keys for placeholder copy only if confirmed missing from locale files.
+
+**Non-goals:**
+- No functional Database/Auth/Security/Analytics/Env Var/Payment/Domain/App Storage/Agent Skills implementation
+- No backend or API changes
+- No auth changes
+- No Visual Edit Mode (belongs to UX-IA-15+)
+- No Preview or Code & Files tab refactoring
+- No route cleanup (belongs to UX-IA-14)
+- No broad refactor
+- No new dependencies
+- No new props on `WorkspaceShellProps`
+- No `page.tsx` changes
+- No `workspace-project-mode.tsx` creation (locked invariant from UX-IA-08)
+
+**Likely files:**
+- `frontend/components/workspace/workspace-shell.tsx` (primary — placeholder tab rendering)
+- `frontend/components/workspace/workspace-tab-registry.ts` (only if placeholder metadata confirmed missing)
+- `frontend/components/workspace/workspace-shell.test.tsx` (test updates for new placeholder assertions)
+- Possibly `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json` (if missing placeholder copy keys confirmed)
+
+**Note on workspace-project-mode.tsx:**
+This file does not exist. Per UX-IA-08 locked invariant, project mode logic stays in `workspace-shell.tsx`. This applies to UX-IA-11 as well.
+
+**UX/UI skills advisory (plan phase only):**
+- Impeccable: placeholder layout, visual hierarchy, spacing, and copy clarity for coming-soon states
+- Emil Kowalski: empty/placeholder state design — clear messaging, appropriate visual weight, non-intrusive placeholder treatment
+- Skills are advisory only — do not override architecture, tests, or slice boundaries
+
+**Dependencies:**
+- UX-IA-10 COMPLETE and LOCKED (`docs/UX-IA-10-CHECKPOINT.md`)
+- UX-IA-09 COMPLETE and LOCKED (`docs/UX-IA-09-CHECKPOINT.md`)
+- UX-IA-08B COMPLETE and LOCKED (`docs/UX-IA-08B-CHECKPOINT.md`) — defines tab registry structure
+
+**Invariants to preserve:**
+- `WorkspaceShellProps` interface — no new props
+- `WorkspaceChatPanel`, `WorkspaceExecPanel`, `WorkspaceBuildPanel` props — unchanged
+- `WorkspacePreviewPanel` props — unchanged; iframe pointer-event path unaffected; `window.postMessage` path preserved
+- `WorkspaceEditorPanel` props — unchanged; all AI-WS file action flows unaffected
+- UX-IA-10 testids: `preview-panel-shell`, `editor-panel-shell`, `workspace-tab-content` with overflow-hidden layout
+- UX-IA-09 testids: `workspace-ai-panel-toggle`, `workspace-ai-panel-view-chat`, `workspace-ai-panel-view-history`, `workspace-restore-confirm-bar`, `workspace-restore-confirm-button`, `workspace-restore-cancel-button`
+- UX-IA-08 testids: `workspace-project-view`, `workspace-project-mode-header`, `workspace-project-back-button`, `workspace-project-ai-panel`, `workspace-project-content-panel`
+- UX-IA-08B testids: `workspace-tab-bar`, `workspace-ai-panel-collapse-toggle`
+- `workspace-tab-placeholder` testid — preserved
+- PROJ-02-01 hydration chain — unaffected
+- AUTH-APP-01/02 invariants — preserved
+
+**Validation plan:**
+- `npx tsc --noEmit` from `frontend/` — 0 errors
+- `npm test` from `frontend/` — 0 failures; existing 317 tests pass (baseline from UX-IA-10)
+- `npm run build` from `frontend/` — passes
+- `ReadLints` on all touched files — no introduced errors
+- No regressions to UX-IA-04 through UX-IA-10, AUTH-APP-01/02, PROJ-02 hydration chain, AI-WS file action flows
+
+**Checkpoint:** `docs/UX-IA-11-CHECKPOINT.md`
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` —> UX-IA-11. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-11 section.
 
 
 ## AUTH �X aiSandBox First-Party Authentication

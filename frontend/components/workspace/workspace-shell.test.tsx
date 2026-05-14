@@ -1129,6 +1129,12 @@ describe('workspace shell component', () => {
     assert.match(tabBarHtml, /workspace-tab-security/);
     assert.match(tabBarHtml, /workspace-tab-analytics/);
     assert.match(tabBarHtml, /workspace-tab-envVars/);
+    assert.match(tabBarHtml, /workspace-tab-publishing/);
+    assert.match(tabBarHtml, /workspace-tab-deploy/);
+    assert.match(tabBarHtml, /workspace-tab-payment/);
+    assert.match(tabBarHtml, /workspace-tab-domain/);
+    assert.match(tabBarHtml, /workspace-tab-appStorage/);
+    assert.match(tabBarHtml, /workspace-tab-agentSkills/);
 
     const shellHtml = renderWorkspaceShell({
       projectFirstUxEnabled: true,
@@ -1136,6 +1142,12 @@ describe('workspace shell component', () => {
     });
     assert.match(shellHtml, /workspace-tab-database/);
     assert.match(shellHtml, /workspace-tab-auth/);
+    assert.match(shellHtml, /workspace-tab-publishing/);
+    assert.match(shellHtml, /workspace-tab-deploy/);
+    assert.match(shellHtml, /workspace-tab-payment/);
+    assert.match(shellHtml, /workspace-tab-domain/);
+    assert.match(shellHtml, /workspace-tab-appStorage/);
+    assert.match(shellHtml, /workspace-tab-agentSkills/);
   });
 
   test('active tab is Preview by default', () => {

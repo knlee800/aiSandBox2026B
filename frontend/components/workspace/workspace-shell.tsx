@@ -428,6 +428,10 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const projectPanelMessages = React.useMemo(() => getProjectPanelMessages(locale), [locale]);
   const commonMessages = React.useMemo(() => getCommonMessages(locale), [locale]);
   const comingSoonLabel = React.useMemo(() => getTabMessages(locale).comingSoon, [locale]);
+  const activeTabLabel = React.useMemo(
+    () => tabBarTabs.find((tab) => tab.id === activeTabId)?.label ?? activeTabId,
+    [tabBarTabs, activeTabId],
+  );
   const homePromptInput = props.chatPromptInput ?? '';
   const trimmedHomePrompt = homePromptInput.trim();
   const normalizedTemplateSearch = templateSearch.trim().toLowerCase();
@@ -1420,8 +1424,14 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                       </div>
                     ) : null}
                     {activeTabId !== 'preview' && activeTabId !== 'codeFiles' ? (
-                      <div className="flex items-center justify-center flex-1 p-4 text-sm text-gray-400" data-testid="workspace-tab-placeholder">
-                        {comingSoonLabel}
+                      <div
+                        className="flex flex-col items-center justify-center flex-1 gap-3 p-8"
+                        data-testid="workspace-tab-placeholder"
+                      >
+                        <p className="text-sm font-medium text-gray-700">{activeTabLabel}</p>
+                        <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-500">
+                          {comingSoonLabel}
+                        </span>
                       </div>
                     ) : null}
                   </div>
