@@ -14,6 +14,15 @@ import WorkspaceAccountMenu from './workspace-account-menu';
 import type { WorkspaceCheckpoint, WorkspaceShellSession } from './workspace-shell.logic';
 import type { WorkspaceExecState } from './workspace-exec.logic';
 import type { WorkspacePreviewState } from './workspace-preview.logic';
+import {
+  generatePickerScriptSource,
+  getPickerScriptId,
+  getPickerOverlayId,
+  getMaxTextContentLength,
+  isVisualEditElementSelectedMessage,
+  isValidVisualEditMessageOriginAndSource,
+} from './workspace-preview.logic';
+import type { SelectedPreviewElement } from './workspace-preview.logic';
 import type { WorkspaceFileNode } from './workspace-file-navigation.logic';
 import type { WorkspaceCheckpointDiffResponse } from './workspace-checkpoint-diff.logic';
 import type { WorkspaceProjectSummary, WorkspacePublicProjectSummary } from './workspace-projects.logic';
@@ -3061,6 +3070,48 @@ describe('workspace shell component', () => {
     assert.match(html, /data-testid="workspace-preview-iframe"/);
   });
 
+  test('selected element indicator is absent by default', () => {
+    const html = renderWorkspaceShell({
+      selectedSessionId: session.id,
+      previewState: 'ready',
+      previewUrl: `/api/preview/${session.id}/proxy?refresh=15`,
+    });
+
+    assert.doesNotMatch(html, /data-testid="workspace-preview-selected-element"/);
+  });
+
+  test('picker toggle still renders after 15B implementation', () => {
+    const html = renderWorkspaceShell({
+      selectedSessionId: session.id,
+      previewState: 'ready',
+      previewUrl: `/api/preview/${session.id}/proxy?refresh=16`,
+    });
+
+    assert.match(html, /data-testid="workspace-preview-picker-toggle"/);
+    assert.match(html, /data-testid="workspace-preview-start"/);
+    assert.match(html, /data-testid="workspace-preview-refresh"/);
+  });
+
+  test('preview iframe still renders after 15B wiring', () => {
+    const html = renderWorkspaceShell({
+      selectedSessionId: session.id,
+      previewState: 'ready',
+      previewUrl: `/api/preview/${session.id}/proxy?refresh=17`,
+    });
+
+    assert.match(html, /data-testid="workspace-preview-iframe"/);
+  });
+
+  test('picker-active banner is absent by default after 15B', () => {
+    const html = renderWorkspaceShell({
+      selectedSessionId: session.id,
+      previewState: 'ready',
+      previewUrl: `/api/preview/${session.id}/proxy?refresh=18`,
+    });
+
+    assert.doesNotMatch(html, /data-testid="workspace-preview-picker-active"/);
+  });
+
   test('renders unavailable preview state with start preview action', () => {
     const html = renderWorkspaceShell({
       selectedSessionId: session.id,
@@ -4442,5 +4493,138 @@ describe('workspace shell snapshot surface', () => {
 
     assert.match(html, /Loading snapshots\.\.\./);
     assert.match(html, /Restoring\.\.\./);
+  });
+});
+
+describe('workspace preview logic — UX-IA-15B helpers', () => {
+  test('generatePickerScriptSource returns a non-empty string', () => {
+    const source = generatePickerScriptSource();
+    assert.ok(typeof source === 'string');
+    assert.ok(source.length > 100);
+  });
+
+  test('generatePickerScriptSource contains picker script ID', () => {
+    const source = generatePickerScriptSource();
+    assert.ok(source.includes(getPickerScriptId()));
+  });
+
+  test('generatePickerScriptSource contains overlay ID', () => {
+    const source = generatePickerScriptSource();
+    assert.ok(source.includes(getPickerOverlayId()));
+  });
+
+  test('generatePickerScriptSource contains element-selected message type', () => {
+    const source = generatePickerScriptSource();
+    assert.ok(source.includes('visual-edit:element-selected'));
+  });
+
+  test('generatePickerScriptSource contains deactivate-picker listener', () => {
+    const source = generatePickerScriptSource();
+    assert.ok(source.includes('visual-edit:deactivate-picker'));
+  });
+
+  test('generatePickerScriptSource contains max text content length', () => {
+    const source = generatePickerScriptSource();
+    assert.ok(source.includes(String(getMaxTextContentLength())));
+  });
+
+  test('getPickerScriptId returns a stable value', () => {
+    assert.strictEqual(getPickerScriptId(), getPickerScriptId());
+    assert.ok(getPickerScriptId().length > 0);
+  });
+
+  test('getPickerOverlayId returns a stable value', () => {
+    assert.strictEqual(getPickerOverlayId(), getPickerOverlayId());
+    assert.ok(getPickerOverlayId().length > 0);
+  });
+
+  test('isVisualEditElementSelectedMessage accepts valid message', () => {
+    const valid = {
+      type: 'visual-edit:element-selected',
+      payload: {
+        tagName: 'div',
+        selector: 'div.foo',
+        textContent: 'hello',
+        classList: ['foo'],
+        boundingBox: { x: 0, y: 0, width: 100, height: 50 },
+        id: null,
+      },
+    };
+    assert.strictEqual(isVisualEditElementSelectedMessage(valid), true);
+  });
+
+  test('isVisualEditElementSelectedMessage rejects wrong type', () => {
+    assert.strictEqual(isVisualEditElementSelectedMessage({ type: 'other' }), false);
+  });
+
+  test('isVisualEditElementSelectedMessage rejects null', () => {
+    assert.strictEqual(isVisualEditElementSelectedMessage(null), false);
+  });
+
+  test('isVisualEditElementSelectedMessage rejects missing payload', () => {
+    assert.strictEqual(
+      isVisualEditElementSelectedMessage({ type: 'visual-edit:element-selected' }),
+      false,
+    );
+  });
+
+  test('isVisualEditElementSelectedMessage rejects incomplete payload', () => {
+    assert.strictEqual(
+      isVisualEditElementSelectedMessage({
+        type: 'visual-edit:element-selected',
+        payload: { tagName: 'div' },
+      }),
+      false,
+    );
+  });
+
+  test('isValidVisualEditMessageOriginAndSource rejects mismatched origin', () => {
+    assert.strictEqual(
+      isValidVisualEditMessageOriginAndSource({
+        expectedOrigin: 'http://localhost:3000',
+        messageOrigin: 'http://evil.com',
+        expectedSource: {} as MessageEventSource,
+        messageSource: {} as MessageEventSource,
+      }),
+      false,
+    );
+  });
+
+  test('isValidVisualEditMessageOriginAndSource rejects null expected origin', () => {
+    assert.strictEqual(
+      isValidVisualEditMessageOriginAndSource({
+        expectedOrigin: null,
+        messageOrigin: 'http://localhost:3000',
+        expectedSource: {} as MessageEventSource,
+        messageSource: {} as MessageEventSource,
+      }),
+      false,
+    );
+  });
+
+  test('isValidVisualEditMessageOriginAndSource rejects null message source', () => {
+    const source = {} as MessageEventSource;
+    assert.strictEqual(
+      isValidVisualEditMessageOriginAndSource({
+        expectedOrigin: 'http://localhost:3000',
+        messageOrigin: 'http://localhost:3000',
+        expectedSource: source,
+        messageSource: null,
+      }),
+      false,
+    );
+  });
+
+  test('isValidVisualEditMessageOriginAndSource accepts matching origin and source', () => {
+    const source = {} as MessageEventSource;
+    assert.strictEqual(
+      isValidVisualEditMessageOriginAndSource({
+        expectedOrigin: 'http://localhost:3000',
+        messageOrigin: 'http://localhost:3000',
+        expectedSource: source,
+        messageSource: source,
+      }),
+      true,
+    );
   });
 });

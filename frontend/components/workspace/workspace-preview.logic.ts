@@ -124,3 +124,158 @@ function normalizeToken(value: string | null): string {
 function escapeCssIdentifier(value: string): string {
   return value.replace(/[^a-zA-Z0-9_-]/g, '\\$&');
 }
+
+export function isVisualEditElementSelectedMessage(
+  data: unknown,
+): data is VisualEditElementSelectedMessage {
+  if (typeof data !== 'object' || data === null) {
+    return false;
+  }
+
+  const record = data as Record<string, unknown>;
+  if (record.type !== 'visual-edit:element-selected') {
+    return false;
+  }
+
+  const payload = record.payload;
+  if (typeof payload !== 'object' || payload === null) {
+    return false;
+  }
+
+  const p = payload as Record<string, unknown>;
+  return (
+    typeof p.tagName === 'string' &&
+    typeof p.selector === 'string' &&
+    typeof p.textContent === 'string' &&
+    Array.isArray(p.classList) &&
+    typeof p.boundingBox === 'object' &&
+    p.boundingBox !== null
+  );
+}
+
+const PICKER_SCRIPT_ID = '__visual_edit_picker_script__';
+const PICKER_OVERLAY_ID = '__visual_edit_picker_overlay__';
+const MAX_TEXT_CONTENT_LENGTH = 200;
+
+export function getPickerScriptId(): string {
+  return PICKER_SCRIPT_ID;
+}
+
+export function getPickerOverlayId(): string {
+  return PICKER_OVERLAY_ID;
+}
+
+export function getMaxTextContentLength(): number {
+  return MAX_TEXT_CONTENT_LENGTH;
+}
+
+export function generatePickerScriptSource(): string {
+  return `(function() {
+  'use strict';
+
+  var SCRIPT_ID = '${PICKER_SCRIPT_ID}';
+  var OVERLAY_ID = '${PICKER_OVERLAY_ID}';
+  var MAX_TEXT = ${MAX_TEXT_CONTENT_LENGTH};
+
+  if (document.getElementById(SCRIPT_ID + '-active')) return;
+  var marker = document.createElement('meta');
+  marker.id = SCRIPT_ID + '-active';
+  document.head.appendChild(marker);
+
+  var overlay = document.createElement('div');
+  overlay.id = OVERLAY_ID;
+  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:2147483647;pointer-events:none;';
+  document.body.appendChild(overlay);
+
+  var highlight = document.createElement('div');
+  highlight.style.cssText = 'position:absolute;border:2px solid #7c3aed;background:rgba(124,58,237,0.08);pointer-events:none;transition:all 0.05s ease;display:none;';
+  overlay.appendChild(highlight);
+
+  function showHighlight(el) {
+    var rect = el.getBoundingClientRect();
+    highlight.style.left = rect.left + 'px';
+    highlight.style.top = rect.top + 'px';
+    highlight.style.width = rect.width + 'px';
+    highlight.style.height = rect.height + 'px';
+    highlight.style.display = 'block';
+  }
+
+  function hideHighlight() {
+    highlight.style.display = 'none';
+  }
+
+  function truncate(str, max) {
+    if (!str) return '';
+    var trimmed = str.trim();
+    return trimmed.length > max ? trimmed.slice(0, max) + '...' : trimmed;
+  }
+
+  function buildSelector(el) {
+    var parts = [];
+    var current = el;
+    while (current && current !== document.body && current !== document.documentElement) {
+      var tag = current.tagName.toLowerCase();
+      if (current.id) {
+        parts.unshift(tag + '#' + current.id);
+        break;
+      }
+      var classes = Array.prototype.slice.call(current.classList || []);
+      var siblingsOfType = current.parentElement
+        ? Array.prototype.slice.call(current.parentElement.children).filter(function(c) { return c.tagName === current.tagName; })
+        : [];
+      var nth = siblingsOfType.length > 1 ? ':nth-of-type(' + (siblingsOfType.indexOf(current) + 1) + ')' : '';
+      parts.unshift(tag + (classes.length > 0 ? '.' + classes.join('.') : '') + nth);
+      current = current.parentElement;
+    }
+    return parts.join(' > ');
+  }
+
+  function handleMouseMove(e) {
+    if (e.target && e.target !== overlay && e.target !== highlight) {
+      showHighlight(e.target);
+    }
+  }
+
+  function handleClick(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    var el = e.target;
+    if (!el || el === overlay || el === highlight) return;
+
+    var rect = el.getBoundingClientRect();
+    var payload = {
+      tagName: el.tagName.toLowerCase(),
+      selector: buildSelector(el),
+      textContent: truncate(el.textContent, MAX_TEXT),
+      classList: Array.prototype.slice.call(el.classList || []),
+      boundingBox: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+      id: el.id || null
+    };
+
+    window.parent.postMessage({ type: 'visual-edit:element-selected', payload: payload }, '*');
+    cleanup();
+  }
+
+  function cleanup() {
+    document.removeEventListener('mousemove', handleMouseMove, true);
+    document.removeEventListener('click', handleClick, true);
+    hideHighlight();
+    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    var m = document.getElementById(SCRIPT_ID + '-active');
+    if (m && m.parentNode) m.parentNode.removeChild(m);
+  }
+
+  function handleParentMessage(e) {
+    if (e.data && e.data.type === 'visual-edit:deactivate-picker') {
+      cleanup();
+      window.removeEventListener('message', handleParentMessage);
+    }
+  }
+
+  document.addEventListener('mousemove', handleMouseMove, true);
+  document.addEventListener('click', handleClick, true);
+  window.addEventListener('message', handleParentMessage);
+})();`;
+}

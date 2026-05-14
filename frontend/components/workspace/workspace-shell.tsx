@@ -29,7 +29,14 @@ import {
   type WorkspaceUserSummary,
 } from './workspace-shell.logic';
 import type { WorkspaceExecState } from './workspace-exec.logic';
-import type { WorkspacePreviewState } from './workspace-preview.logic';
+import type { WorkspacePreviewState, SelectedPreviewElement } from './workspace-preview.logic';
+import {
+  generatePickerScriptSource,
+  getPickerScriptId,
+  getPickerOverlayId,
+  isVisualEditElementSelectedMessage,
+  isValidVisualEditMessageOriginAndSource,
+} from './workspace-preview.logic';
 import type {
   WorkspaceFileSaveState,
   WorkspaceFileNode,
@@ -424,6 +431,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const [aiPanelView, setAiPanelView] = React.useState<'chat' | 'history'>('chat');
   const [pickerActive, setPickerActive] = React.useState(false);
   const previewIframeRef = React.useRef<HTMLIFrameElement | null>(null);
+  const [selectedPreviewElement, setSelectedPreviewElement] = React.useState<SelectedPreviewElement | null>(null);
   const [pendingRestoreSnapshotId, setPendingRestoreSnapshotId] = React.useState<string | null>(
     null,
   );
@@ -542,14 +550,105 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const handleCancelRestore = () => {
     setPendingRestoreSnapshotId(null);
   };
-  const handlePickerToggle = React.useCallback(() => {
-    setPickerActive((current) => !current);
+
+  const injectPickerScript = React.useCallback(() => {
+    try {
+      const iframe = previewIframeRef.current;
+      if (!iframe) return;
+      const doc = iframe.contentDocument;
+      const win = iframe.contentWindow;
+      if (!doc || !win) return;
+      const scriptId = getPickerScriptId();
+      if (doc.getElementById(scriptId + '-active')) return;
+      const existing = doc.getElementById(scriptId);
+      if (existing && existing.parentNode) {
+        existing.parentNode.removeChild(existing);
+      }
+      const script = doc.createElement('script');
+      script.id = scriptId;
+      script.textContent = generatePickerScriptSource();
+      doc.body.appendChild(script);
+    } catch {
+      // iframe not same-origin or not yet loaded
+    }
   }, []);
+
+  const removePickerScript = React.useCallback(() => {
+    try {
+      const iframe = previewIframeRef.current;
+      if (!iframe) return;
+      const win = iframe.contentWindow;
+      if (win) {
+        win.postMessage({ type: 'visual-edit:deactivate-picker' }, '*');
+      }
+      const doc = iframe.contentDocument;
+      if (!doc) return;
+      const scriptId = getPickerScriptId();
+      const overlayId = getPickerOverlayId();
+      const marker = doc.getElementById(scriptId + '-active');
+      if (marker && marker.parentNode) marker.parentNode.removeChild(marker);
+      const overlay = doc.getElementById(overlayId);
+      if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+      const scriptEl = doc.getElementById(scriptId);
+      if (scriptEl && scriptEl.parentNode) scriptEl.parentNode.removeChild(scriptEl);
+    } catch {
+      // iframe not same-origin or already cleaned
+    }
+  }, []);
+
+  const handlePickerToggle = React.useCallback(() => {
+    setPickerActive((current) => {
+      const next = !current;
+      if (next) {
+        setSelectedPreviewElement(null);
+        setTimeout(() => injectPickerScript(), 0);
+      } else {
+        removePickerScript();
+      }
+      return next;
+    });
+  }, [injectPickerScript, removePickerScript]);
+
   React.useEffect(() => {
     if (!props.previewUrl || props.previewState !== 'ready') {
       setPickerActive(false);
+      removePickerScript();
     }
-  }, [props.previewUrl, props.previewState]);
+  }, [props.previewUrl, props.previewState, removePickerScript]);
+
+  React.useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (!isVisualEditElementSelectedMessage(event.data)) {
+        return;
+      }
+      const iframe = previewIframeRef.current;
+      const expectedSource = iframe?.contentWindow ?? null;
+      const expectedOrigin = typeof window !== 'undefined' ? window.location.origin : null;
+      if (
+        !isValidVisualEditMessageOriginAndSource({
+          expectedOrigin,
+          messageOrigin: event.origin,
+          expectedSource,
+          messageSource: event.source,
+        })
+      ) {
+        return;
+      }
+      setSelectedPreviewElement(event.data.payload);
+      setPickerActive(false);
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
+  }, []);
+  const handlePreviewLoadWithPicker = React.useCallback(() => {
+    props.onPreviewLoad();
+    if (pickerActive) {
+      setTimeout(() => injectPickerScript(), 0);
+    }
+  }, [props.onPreviewLoad, pickerActive, injectPickerScript]);
   const handleSaveProjectHistorySnapshot =
     projectFirstUxEnabled &&
     props.selectedProjectId &&
@@ -889,11 +988,12 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
         previewUrl={props.previewUrl}
         onStartPreview={props.onStartPreview}
         onRefreshPreview={props.onRefreshPreview}
-        onPreviewLoad={props.onPreviewLoad}
+        onPreviewLoad={handlePreviewLoadWithPicker}
         onPreviewError={props.onPreviewError}
         iframeRef={previewIframeRef}
         pickerActive={pickerActive}
         onPickerToggle={handlePickerToggle}
+        selectedPreviewElement={selectedPreviewElement}
       />
     </section>
   );
@@ -1450,11 +1550,12 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                           previewUrl={props.previewUrl}
                           onStartPreview={props.onStartPreview}
                           onRefreshPreview={props.onRefreshPreview}
-                          onPreviewLoad={props.onPreviewLoad}
+                          onPreviewLoad={handlePreviewLoadWithPicker}
                           onPreviewError={props.onPreviewError}
                           iframeRef={previewIframeRef}
                           pickerActive={pickerActive}
                           onPickerToggle={handlePickerToggle}
+                          selectedPreviewElement={selectedPreviewElement}
                           fillHeight
                         />
                       </div>
@@ -2629,7 +2730,7 @@ function WorkspacePreviewPanel(props: {
   projectFirstUxEnabled: boolean;
   projectMessages: Pick<
     typeof enMessages.project,
-    'selectElement' | 'pickerActive' | 'deselectElement'
+    'selectElement' | 'pickerActive' | 'deselectElement' | 'elementSelected'
   >;
   selectedSessionId: string | null;
   previewState: WorkspacePreviewState;
@@ -2641,6 +2742,7 @@ function WorkspacePreviewPanel(props: {
   iframeRef?: React.RefObject<HTMLIFrameElement | null>;
   pickerActive?: boolean;
   onPickerToggle?: () => void;
+  selectedPreviewElement?: SelectedPreviewElement | null;
   fillHeight?: boolean;
 }) {
   const canStartPreview =
@@ -2705,6 +2807,16 @@ function WorkspacePreviewPanel(props: {
           data-testid="workspace-preview-picker-active"
         >
           {props.projectMessages.pickerActive}
+        </p>
+      ) : null}
+
+      {!pickerActive && props.selectedPreviewElement ? (
+        <p
+          className="mt-2 rounded border border-emerald-200 bg-emerald-50 px-2 py-1 text-[11px] text-emerald-800 truncate"
+          data-testid="workspace-preview-selected-element"
+        >
+          {props.projectMessages.elementSelected}: &lt;{props.selectedPreviewElement.tagName}&gt;{' '}
+          <span className="font-mono text-[10px] text-emerald-600">{props.selectedPreviewElement.selector}</span>
         </p>
       ) : null}
 

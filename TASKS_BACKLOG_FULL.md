@@ -21954,9 +21954,9 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 
 ## UX-IA ??Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 ACTIVE (child slices: 15A COMPLETE and LOCKED, 15B ACTIVE, 15C PLANNED)
+**Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 ACTIVE (child slices: 15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C ACTIVE)
 
-**Current stage:** UX-IA-15B ??Cross-Frame Picker Script + postMessage Listener (ACTIVE)
+**Current stage:** UX-IA-15C ? AI Prompt Context Injection + Validation + Consolidation (ACTIVE)
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -21985,8 +21985,8 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 15. UX-IA-14 ? Route Cleanup / Redirects (COMPLETE and LOCKED ? `docs/UX-IA-14-CHECKPOINT.md`)
 16. UX-IA-15 ??Visual Edit Mode Foundation (ACTIVE ??child slices in progress ??UX-IA-08 + UX-IA-10 COMPLETE and LOCKED)
     - UX-IA-15A ??Preview Picker Infrastructure (COMPLETE and LOCKED ??docs/UX-IA-15A-CHECKPOINT.md)
-    - UX-IA-15B ??Cross-Frame Picker Script + postMessage Listener (ACTIVE)
-    - UX-IA-15C ??AI Prompt Context Injection + Validation + Consolidation (PLANNED)
+    - UX-IA-15B ??Cross-Frame Picker Script + postMessage Listener (COMPLETE and LOCKED ??docs/UX-IA-15B-CHECKPOINT.md)
+    - UX-IA-15C ??AI Prompt Context Injection + Validation + Consolidation (ACTIVE)
 17. UX-IA-16 ?X Visual Edit AI Patch Flow (pending ?X requires UX-IA-15 COMPLETE)
 18. UX-IA-17 ?X Visual Edit Undo / Checkpoint Integration (pending ?X requires UX-IA-16 COMPLETE)
 
@@ -23534,10 +23534,10 @@ Clean up or redirect deprecated workspace/auth/navigation routes that became obs
 **Family:** UX-IA (Product & UX/UI Redesign ? Evolutionary)
 **Family status:** ACTIVE
 **Priority:** Medium
-**Status:** ACTIVE ??child slices in progress (plan complete; child slices: 15A COMPLETE and LOCKED, 15B ACTIVE, 15C PLANNED)
+**Status:** ACTIVE ??child slices in progress (plan complete; child slices: 15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C ACTIVE)
 **Depends on:** UX-IA-08 (COMPLETE and LOCKED ? `docs/UX-IA-08-CHECKPOINT.md`), UX-IA-10 (COMPLETE and LOCKED ? `docs/UX-IA-10-CHECKPOINT.md`), UX-IA-14 (COMPLETE and LOCKED ? `docs/UX-IA-14-CHECKPOINT.md`)
 **Checkpoint:** `docs/UX-IA-15-CHECKPOINT.md` (to be created on completion)
-**Risk:** Medium — cross-frame postMessage, iframe origin constraints, AI prompt context injection
+**Risk:** Medium �?? cross-frame postMessage, iframe origin constraints, AI prompt context injection
 **Loop:** 4-step (plan ? implement ? verify ? consolidate)
 **Model:** Opus 4.6 for plan phase and implementation; Sonnet 4.6 for registration and consolidation
 **Source:** `docs/UX-IA-00-MASTER-PLAN.md` ? UX-IA-15 section + Section 12 (Visual Edit Mode)
@@ -23545,7 +23545,7 @@ Clean up or redirect deprecated workspace/auth/navigation routes that became obs
 **Objective:**
 Add a preview element picker / selection overlay to the project mode Preview tab. When the user activates the picker toggle and clicks an element in the preview iframe, capture its DOM metadata (CSS selector, text content, bounding box, applied CSS classes) via cross-frame `postMessage` and surface it as structured context appended to the AI chat prompt. The AI uses the existing AI-WS file-action system to propose and apply source changes. Preview refreshes after a confirmed file action. All existing file-action confirmation and checkpoint safety rules are preserved without bypass.
 
-**Bounded scope (likely files — confirm during plan phase):**
+**Bounded scope (likely files �?? confirm during plan phase):**
 - `frontend/components/workspace/workspace-preview.logic.ts` ? add cross-frame `postMessage` listener; handle `element-selected` message from preview iframe; expose selected-element state
 - `frontend/components/workspace/workspace-project-mode.tsx` ? add element picker toggle button to Preview tab toolbar; maintain `selectedElement` state; pass `selectedElement` context into AI prompt flow
 - `frontend/components/workspace/workspace-chat-*.logic.ts` ? inject selected element metadata (selector, text, classes, bounds) as structured context block at start of user prompt when `selectedElement` is set
@@ -23558,7 +23558,7 @@ Add a preview element picker / selection overlay to the project mode Preview tab
 - No style controls panel
 - No DOM-to-source mapping (deferred to UX-IA-16+)
 - No bypass of existing AI-WS file-action confirmation rules
-- No backend or API changes (unless plan phase proves unavoidable — requires explicit approval)
+- No backend or API changes (unless plan phase proves unavoidable �?? requires explicit approval)
 - No auth changes
 - No route changes
 - No billing changes
@@ -23575,17 +23575,17 @@ Add a preview element picker / selection overlay to the project mode Preview tab
 - All prior UX-IA-04 through UX-IA-14 testids and component contracts ? unaffected
 
 **Dependencies (all satisfied):**
-- UX-IA-08 COMPLETE and LOCKED (project mode shell + tab bar — confirmed ? `docs/UX-IA-08-CHECKPOINT.md`)
-- UX-IA-10 COMPLETE and LOCKED (Preview tab full-height wiring — confirmed ? `docs/UX-IA-10-CHECKPOINT.md`)
-- UX-IA-14 COMPLETE and LOCKED (route cleanup — confirmed ? `docs/UX-IA-14-CHECKPOINT.md`)
+- UX-IA-08 COMPLETE and LOCKED (project mode shell + tab bar �?? confirmed ? `docs/UX-IA-08-CHECKPOINT.md`)
+- UX-IA-10 COMPLETE and LOCKED (Preview tab full-height wiring �?? confirmed ? `docs/UX-IA-10-CHECKPOINT.md`)
+- UX-IA-14 COMPLETE and LOCKED (route cleanup �?? confirmed ? `docs/UX-IA-14-CHECKPOINT.md`)
 - No backend tasks blocking
 
 **Risks:**
-- Cross-frame `postMessage` origin validation — must use allowlist or same-origin check; do not accept messages from arbitrary origins
-- Iframe sandbox attribute — if the preview iframe has a `sandbox` attribute that restricts `allow-scripts`, the injected picker script cannot run; inspect current `WorkspacePreviewPanel` iframe attributes during plan phase
-- AI prompt context injection — must not break existing prompt flow if `selectedElement` is null; injection must be opt-in and clearly delimited
-- Picker script injection timing — must handle cases where the preview iframe reloads (e.g., after a file action); picker state may need to be re-injected
-- CSS selector stability — generated selectors may be fragile if the AI produces code changes that alter the DOM structure; this is a known limitation acceptable for foundation phase
+- Cross-frame `postMessage` origin validation �?? must use allowlist or same-origin check; do not accept messages from arbitrary origins
+- Iframe sandbox attribute �?? if the preview iframe has a `sandbox` attribute that restricts `allow-scripts`, the injected picker script cannot run; inspect current `WorkspacePreviewPanel` iframe attributes during plan phase
+- AI prompt context injection �?? must not break existing prompt flow if `selectedElement` is null; injection must be opt-in and clearly delimited
+- Picker script injection timing �?? must handle cases where the preview iframe reloads (e.g., after a file action); picker state may need to be re-injected
+- CSS selector stability �?? generated selectors may be fragile if the AI produces code changes that alter the DOM structure; this is a known limitation acceptable for foundation phase
 - Plan phase may reveal need for a small backend extension (e.g., to forward DOM context to AI service); if so, this must be approved before implementation begins
 
 **Model guidance:**
@@ -23602,9 +23602,9 @@ Add a preview element picker / selection overlay to the project mode Preview tab
 - Manual: picker toggle appears in Preview tab toolbar; clicking an element in the preview highlights it; element metadata appears in AI chat context; AI can propose file changes; file-action confirmation flow is unchanged
 
 **Acceptance checks:**
-- UX-IA-15 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
-- Current stage set to UX-IA-15 ACTIVE / plan phase — DONE
-- Scope, non-goals, dependencies, risks, model guidance, and validation plan recorded — DONE
+- UX-IA-15 registered in TASKS.md and TASKS_BACKLOG_FULL.md �?? DONE
+- Current stage set to UX-IA-15 ACTIVE / plan phase �?? DONE
+- Scope, non-goals, dependencies, risks, model guidance, and validation plan recorded �?? DONE
 - No implementation performed during registration
 - Element picker toggle appears in Preview tab toolbar when UX-IA-15 is implemented
 - Clicking an element in the preview iframe highlights it with a selection overlay
@@ -23687,11 +23687,11 @@ Establish the type foundation, helper utilities, iframeRef wiring, picker toggle
 **Family:** UX-IA (Product & UX/UI Redesign ??Evolutionary)
 **Family status:** ACTIVE
 **Priority:** Medium
-**Status:** ACTIVE
+**Status:** COMPLETE and LOCKED
 **Risk:** Medium ??cross-frame script injection, iframe origin constraints, reload re-injection
-**Model:** Opus 4.6 High if cross-frame injection is tricky; otherwise GPT-5.3 Codex
+**Model:** Sonnet 4.6
 **Depends on:** UX-IA-15A (COMPLETE and LOCKED ??`docs/UX-IA-15A-CHECKPOINT.md`)
-**Checkpoint:** Covered by `docs/UX-IA-15-CHECKPOINT.md` (created on UX-IA-15C completion)
+**Checkpoint:** `docs/UX-IA-15B-CHECKPOINT.md` ??COMPLETE and LOCKED
 
 **Objective:**
 Inject the element picker script into the same-origin preview iframe, listen for postMessage events with origin and source validation, capture selected element metadata, surface the selection in the UI, and handle re-injection on iframe reload.
@@ -23721,15 +23721,19 @@ Inject the element picker script into the same-origin preview iframe, listen for
 
 **Acceptance checks:**
 - UX-IA-15B registered in TASKS.md and TASKS_BACKLOG_FULL.md ??DONE
-- Picker script injects into same-origin iframe
-- postMessage listener validates origin and source
-- Element metadata captured on click
-- Picker auto-deactivates after selection
-- Re-injection works on iframe reload
-- UI indicator surfaces selected element
-- TypeScript, tests pass
+- Picker script injects into same-origin iframe ??DONE
+- postMessage listener validates origin and source ??DONE
+- Element metadata captured on click ??DONE
+- Picker auto-deactivates after selection ??DONE
+- Re-injection works on iframe reload ??DONE
+- UI indicator surfaces selected element ??DONE (`data-testid="workspace-preview-selected-element"`)
+- TypeScript, tests pass ??DONE (349 tests, 0 failed)
+- `npx tsc --noEmit` ??PASS
+- `npm test` ??PASS (349 tests, 349 passed, 0 failed)
+- `npm run build` ??PASS
+- `ReadLints` on touched files ??PASS (0 errors)
 
-**Reference:** See TASKS.md -> UX-IA-15B.
+**Reference:** See TASKS.md -> UX-IA-15B. Checkpoint: `docs/UX-IA-15B-CHECKPOINT.md`.
 
 ---
 
@@ -23740,10 +23744,10 @@ Inject the element picker script into the same-origin preview iframe, listen for
 **Family:** UX-IA (Product & UX/UI Redesign ??Evolutionary)
 **Family status:** ACTIVE
 **Priority:** Medium
-**Status:** PLANNED
+**Status:** ACTIVE
 **Risk:** Low-Medium
 **Model:** GPT-5.3 Codex for implementation; Sonnet 4.6 for consolidation
-**Depends on:** UX-IA-15B (PLANNED)
+**Depends on:** UX-IA-15B (COMPLETE and LOCKED ??`docs/UX-IA-15B-CHECKPOINT.md`)
 **Checkpoint:** `docs/UX-IA-15-CHECKPOINT.md` (created in this slice ??closes UX-IA-15 parent)
 
 **Objective:**
