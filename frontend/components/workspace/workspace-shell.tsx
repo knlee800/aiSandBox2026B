@@ -1294,10 +1294,10 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                 </button>
               </header>
               {projectTrustNote}
-              <div className="flex flex-1 min-h-0">
+              <div className="flex flex-1 min-h-0 flex-col md:flex-row">
                 {!aiPanelCollapsed ? (
                   <aside
-                    className="w-full md:w-96 border-r border-gray-200 bg-white overflow-y-auto flex flex-col gap-2 p-2"
+                    className="w-full max-h-[50vh] md:w-96 md:max-h-none border-r border-gray-200 bg-white overflow-y-auto flex flex-col gap-2 p-2"
                     data-testid="workspace-project-ai-panel"
                   >
                     <div

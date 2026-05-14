@@ -12038,9 +12038,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## UX-IA �X Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 COMPLETE and LOCKED — UX-IA-09 COMPLETE and LOCKED — UX-IA-10 COMPLETE and LOCKED — UX-IA-11 COMPLETE and LOCKED — UX-IA-12 COMPLETE and LOCKED — UX-IA-13 pending
+**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 COMPLETE and LOCKED — UX-IA-09 COMPLETE and LOCKED — UX-IA-10 COMPLETE and LOCKED — UX-IA-11 COMPLETE and LOCKED — UX-IA-12 COMPLETE and LOCKED — UX-IA-13 ACTIVE — 13A COMPLETE and LOCKED — 13B ACTIVE
 
-**Current stage:** UX-IA-13 — Responsive / Mobile Polish (pending)
+**Current stage:** UX-IA-13B — Sidebar Hamburger / Mobile Slide-over (ACTIVE)
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -12065,7 +12065,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 11. UX-IA-10 �X Preview + Code & Files Tabs (COMPLETE and LOCKED — `docs/UX-IA-10-CHECKPOINT.md`)
 12. UX-IA-11 �X Future Product Tab Placeholders (COMPLETE and LOCKED — `docs/UX-IA-11-CHECKPOINT.md`)
 13. UX-IA-12 �X Upgrade Flow + Dashboard Polish (COMPLETE and LOCKED — `docs/UX-IA-12-CHECKPOINT.md`)
-14. UX-IA-13 �X Responsive / Mobile Polish (pending)
+14. UX-IA-13 �X Responsive / Mobile Polish (ACTIVE — 13A ACTIVE — 13B PLANNED)
 15. UX-IA-14 �X Route Cleanup / Redirects (pending)
 16. UX-IA-15 �X Visual Edit Mode Foundation (pending �X requires UX-IA-08 + UX-IA-10 COMPLETE)
 17. UX-IA-16 �X Visual Edit AI Patch Flow (pending �X requires UX-IA-15 COMPLETE)
@@ -13080,1037 +13080,137 @@ Polish the Upgrade CTA and compact usage/quota display in the authenticated work
 **Reference:** See `TASKS_BACKLOG_FULL.md` —> UX-IA-12. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-12 section.
 
 
+-----
 
-## AUTH �X aiSandBox First-Party Authentication
+#### UX-IA-13: Responsive / Mobile Polish
 
-**Family status:** VALIDATION COMPLETE (AUTH-APP-01C2 VALIDATION COMPLETE �X AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F COMPLETE; manual smoke deferred) �X AUTH-APP-01E COMPLETE �X AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) �X AUTH-APP-01F1 COMPLETE �X AUTH-APP-01F2 COMPLETE �X AUTH-APP-01F3 COMPLETE �X AUTH-APP-01F4 COMPLETE �X AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) �X AUTH-APP-01G1 COMPLETE �X AUTH-APP-01G2 COMPLETE �X AUTH-APP-01G3 COMPLETE �X AUTH-APP-01G4 COMPLETE �X AUTH-APP-01H VALIDATION COMPLETE (manual smoke deferred) �X AUTH-APP-01H1 COMPLETE �X AUTH-APP-01H2 COMPLETE �X AUTH-APP-01H3 COMPLETE �X AUTH-APP-01H4 COMPLETE �X AUTH-APP-01Z COMPLETE �X AUTH-APP-02A COMPLETE and LOCKED �X AUTH-APP-02B COMPLETE and LOCKED �X AUTH-APP-02C COMPLETE and LOCKED �X AUTH-APP-02 COMPLETE and LOCKED �X AUTH-APP-02D COMPLETE and LOCKED
+**Status:** ACTIVE — child slices in progress
+**Task ID:** UX-IA-13
+**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family status:** ACTIVE
+**Priority:** Medium
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-13 section
+**Depends on:** UX-IA-12 (COMPLETE and LOCKED — `docs/UX-IA-12-CHECKPOINT.md`)
+**Risk:** Low-Medium
+**Loop:** 2 child slices (13A — 13B)
+**Model:** Sonnet 4.6
 
-**Current stage:** AUTH-APP-02 COMPLETE and LOCKED; AUTH-APP-02D COMPLETE and LOCKED; no active implementation task
+**Objective:**
+Responsive and mobile polish for the authenticated workspace UX. Audit (2026-05-14) identified two independent sub-problems: (1) project mode AI+content panel stacking missing on mobile, and (2) sidebar hamburger / slide-over missing. Split into UX-IA-13A (low-risk Tailwind class only) and UX-IA-13B (new state + new testid).
 
-**Master spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
-**Reference master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
-
-**Important distinction:**
-- `AUTH-APP-01` �X authentication for the aiSandBox platform itself (this family)
-- `AUTH-MODULE-01` �X reusable generated app-auth for user-created apps (later, separate family)
-
-**Parent roadmap: AUTH-APP-01 �X aiSandBox First-Party User Authentication**
-
-**Parent status: VALIDATION COMPLETE �X AUTH-APP-01C2 VALIDATION COMPLETE (AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F COMPLETE); manual smoke deferred; carry-forwards pending**
-**Parent checkpoint:** `docs/AUTH-APP-01-CHECKPOINT.md`
-
-Goal: add production-ready authentication (email, Google, Apple) for the aiSandBox hosted app so real users can sign in securely before using platform features.
-
-Confirmed child slices (AUTH-APP-01C1 further split �X stage-start found backend + frontend surface too large for one slice):
-1. AUTH-APP-01A �X Auth Architecture & Implementation Spec (COMPLETE and LOCKED)
-2. AUTH-APP-01B �X Database / Schema Migrations (COMPLETE and LOCKED)
-3. AUTH-APP-01C1A �X Backend Cookie Session Foundation (COMPLETE and LOCKED)
-4. AUTH-APP-01C1B �X Frontend localStorage/Bearer Migration (COMPLETE and LOCKED)
-5. AUTH-APP-01C2 �X Email Verification / Password Reset / Rate Limiting (ACTIVE �X AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F PLANNED)
-6. AUTH-APP-01D �X Google OAuth (COMPLETE and LOCKED)
-7. AUTH-APP-01E �X Apple OAuth (COMPLETE and LOCKED)
-8. AUTH-APP-01F �X Route / API Protection (VALIDATION COMPLETE �X carry-forwards/manual smoke deferred �X child slices all complete):
-   - AUTH-APP-01F1 �X Route/API Protection Inventory + Spec (COMPLETE and LOCKED)
-   - AUTH-APP-01F2 �X Backend API Protection Gaps (COMPLETE and LOCKED)
-   - AUTH-APP-01F3 �X Frontend Protected Route Behavior (COMPLETE and LOCKED)
-   - AUTH-APP-01F4 �X Protection Validation + Consolidation (COMPLETE and LOCKED)
-9. AUTH-APP-01G �X Auth UX Integration (VALIDATION COMPLETE �X manual smoke deferred �X all child slices COMPLETE and LOCKED):
-   - AUTH-APP-01G1 �X Auth UX Inventory + Scope (COMPLETE and LOCKED)
-   - AUTH-APP-01G2 �X Login/Register OAuth Error + Button Polish (COMPLETE and LOCKED)
-   - AUTH-APP-01G3 �X Logout + Basic Account Surface (COMPLETE and LOCKED)
-   - AUTH-APP-01G4 �X Auth UX Validation + Checkpoint (COMPLETE and LOCKED)
-10. AUTH-APP-01H �X Security Hardening + Validation Checklist (VALIDATION COMPLETE �X manual smoke deferred �X all child slices COMPLETE and LOCKED):
-    - AUTH-APP-01H1 �X Security Hardening Inventory (COMPLETE and LOCKED)
-    - AUTH-APP-01H2 �X CSRF + Rate Limiting + Redirect Hardening (COMPLETE and LOCKED)
-    - AUTH-APP-01H3 �X Events Endpoint Guards + Test/Tooling Triage (COMPLETE and LOCKED)
-    - AUTH-APP-01H4 �X Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation (COMPLETE and LOCKED)
-11. AUTH-APP-01Z �X Final Consolidation (COMPLETE and LOCKED)
-
-**Sequencing note:** AUTH-APP-01D (Google OAuth) depends on AUTH-APP-01C1A (session cookie infrastructure must exist for OAuth callbacks to set cookies). AUTH-APP-01D does NOT need to wait for AUTH-APP-01C1B or AUTH-APP-01C2. AUTH-APP-01C2 is now ACTIVE; AUTH-APP-01C2A is the current stage.
-
-**AUTH-APP-01C2 provider decision:** Resend selected as v1 transactional email provider (decided 2026-05-08). AUTH-APP-01C2 is unblocked. Required env vars: EMAIL_PROVIDER=resend, RESEND_API_KEY, AUTH_EMAIL_FROM, APP_BASE_URL. EmailProvider abstraction required �X auth business logic must not call Resend directly.
-
----
-
-#### AUTH-APP-01A: Auth Architecture & Implementation Spec
-
-**Status:** COMPLETE and LOCKED
-**Nature:** SPEC / ARCHITECTURE DOCUMENT ONLY
-**Source:** UX-IA-00 master plan (May 2026) AUTH-APP-01 entry; cross-family next step after UX-IA-03
-**Depends on:** UX-IA-03 (COMPLETE and LOCKED)
-**Completed:** 2026-05-06
-**Checkpoint:** `docs/AUTH-APP-01A-CHECKPOINT.md`
-**Spec:** `docs/AUTH-APP-01-SPEC.md`
-
-**Key decisions recorded:**
-1. **Auth stack:** Extend existing NestJS + Passport + JWT backend. Auth.js / NextAuth explicitly rejected (would create two parallel auth systems).
-2. **Token/session storage:** HTTP-only secure cookie session with server-side `auth_sessions` table. localStorage `access_token` removed.
-3. **OAuth callback flow:** Server-side session establishment. No token in redirect URL. `state` parameter validated. Post-login redirect uses allowlist.
-4. **Account linking:** Verified-email auto-link allowed (Google same-email �� existing account). Apple private relay email never auto-linked. Conflict cases return safe errors.
-5. **Data model changes (AUTH-APP-01B):** Make `password_hash` nullable; add `oauth_accounts`, `verification_tokens`, `auth_sessions` tables.
-6. **Email provider:** Transactional email provider unresolved �X blocks AUTH-APP-01C email verification and password reset. Must be resolved before AUTH-APP-01C stage-start.
-7. **Slice order:** AUTH-APP-01B �� C �� D �� E �� F �� G �� H �� Z (locked; C may split into C1 + C2).
-
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01A. See `docs/AUTH-APP-01-SPEC.md`.
-
----
-
-#### AUTH-APP-01B: Database / Schema Migrations
-
-**Status:** COMPLETE and LOCKED
-**Source:** AUTH-APP-01A spec (`docs/AUTH-APP-01-SPEC.md` Section 5); locked slice order
-**Depends on:** AUTH-APP-01A (COMPLETE and LOCKED)
-**Completed:** 2026-05-06
-**Checkpoint:** `docs/AUTH-APP-01B-CHECKPOINT.md`
-
-**Implemented:**
-- `users.password_hash` made nullable (fixes schema/entity mismatch blocking OAuth users)
-- Added missing `users` columns already declared in entity: `auth_provider`, `oauth_id`, `last_login_at`, `stripe_customer_id`
-- Created `oauth_accounts` table with FK, unique constraint, and index
-- Created `verification_tokens` table with FK, unique token_hash, and composite index
-- Created `auth_sessions` table with FK, unique session_token_hash, and expires_at index
-- Created `OauthAccount`, `VerificationToken`, `AuthSession` TypeORM entities
-- Added legacy/backward-compat comments to `User.authProvider` and `User.oauthId`
-- Added `User.oauthAccounts` OneToMany relation
-- Registered all three new entities in `AuthModule.TypeOrmModule.forFeature`
-
-**Validation:**
-- `npx tsc --noEmit`: PASS
-- `npm test`: FAIL �X pre-existing environment issue (REDIS_URL not set during test bootstrap); not caused by this slice
-- `npm run lint`: FAIL �X pre-existing tooling issue (ESLint config not discoverable by package lint script); not caused by this slice
-
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01B. See `docs/AUTH-APP-01B-CHECKPOINT.md`.
-
----
-
-#### AUTH-APP-01C1A: Backend Cookie Session Foundation
-
-**Status:** COMPLETE and LOCKED
-**Source:** AUTH-APP-01C1 stage-start (scope split; backend surface isolated here)
-**Depends on:** AUTH-APP-01B (COMPLETE and LOCKED)
-**Completed:** 2026-05-06
-**Checkpoint:** `docs/AUTH-APP-01C1A-CHECKPOINT.md`
-
-**Implemented:**
-- `cookie-parser` + `@types/cookie-parser` installed; `app.use(cookieParser())` in `main.ts`
-- `SessionCookieGuard` created �X reads `aisandbox_session`, SHA-256 hashes, validates `auth_sessions` (not expired, not revoked), attaches `req.user`; exported from `AuthModule`
-- `AuthService.createSession(userId)`, `validateSessionToken(rawToken)`, `revokeSession(rawToken)` added; `Repository<AuthSession>` injected
-- `POST /auth/login` �X sets HTTP-only `aisandbox_session` cookie (SameSite=Lax, Secure in production, 7-day maxAge); returns `{ user }` only �X **`access_token` removed from response**
-- `GET /auth/me` �X guard switched from `JwtAuthGuard` to `SessionCookieGuard`
-- `POST /auth/logout` �X added; uses `SessionCookieGuard`, revokes session, clears cookie, returns `{ ok: true }`
-- `JwtAuthGuard` replaced with `SessionCookieGuard` on 9 browser-facing controllers: `projects`, `sessions`, `conversations`, `users`, `checkpoints`, `workspaces`, `api-key`, `admin-operational`, `public-projects`
-- `JwtStrategy` / `JwtAuthGuard` preserved in codebase (not deleted)
-- 9 affected controller specs updated to `overrideGuard(SessionCookieGuard)`
-- No frontend files changed
-
-**Validation:**
-- `npx tsc --noEmit`: PASS
-- `npm test`: NOT FULLY PASSING �X pre-existing blockers only (see checkpoint)
-  - 64 unit suites pass; 1 fails (`ai-execution.controller.spec.ts`) �X pre-existing, file not in C1A changeset
-  - 10 integration/smoke suites fail �X Redis not host-port-bound in this environment; pre-existing constraint
-- `npm run lint`: FAIL �X pre-existing ESLint config discovery issue in `services/api-gateway`
-
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01C1A. See `docs/AUTH-APP-01C1A-CHECKPOINT.md`.
-
----
-
-#### AUTH-APP-01C1B: Frontend localStorage / Bearer Migration
-
-**Status:** COMPLETE and LOCKED
-**Completed:** 2026-05-06
-**Checkpoint:** `docs/AUTH-APP-01C1B-CHECKPOINT.md`
-**Source:** AUTH-APP-01C1 stage-start (scope split; frontend surface isolated here)
-**Depends on:** AUTH-APP-01C1A (COMPLETE and LOCKED)
-
-**Bounded scope:**
-- Remove `localStorage.setItem('access_token', ...)` and `setItem('userId', ...)` from `login/page.tsx`
-- Replace `localStorage.getItem('access_token')` / `getItem('userId')` in `app/page.tsx` with `/api/auth/me` call on init
-- Remove `localStorage.removeItem('access_token')` / `removeItem('userId')` from logout in `app/page.tsx`; replace with `POST /api/auth/logout` call
-- Remove `Authorization: Bearer ${token}` from all inline fetch calls in `app/page.tsx` and `keys/page.tsx`
-- Remove `token: string` parameter from workspace logic helpers (`workspace-exec.logic.ts`, `workspace-checkpoint-diff.logic.ts`, `workspace-file-navigation.logic.ts`, `workspace-snapshots.logic.ts`, `workspace-workspaces.logic.ts`, `workspace-checkpoint-revert.logic.ts`, `workspace-projects.logic.ts`, `workspace-chat-persistence.logic.ts`, `workspace-checkpoint-create.logic.ts`) and `open-project-in-fresh-session.ts`; remove corresponding `Authorization` headers from each
-- Update all `*.logic.test.ts` and `*.test.tsx` files that pass `token` args or assert `Authorization` header presence
-- Verify zero production frontend references to `access_token` or `userId` via localStorage after changes
-- No backend behavior changes beyond what AUTH-APP-01C1A already established
+**Child slices:**
+- UX-IA-13A — Project Mode Mobile Stacking + Minor Responsive Fixes (ACTIVE — current stage)
+- UX-IA-13B — Sidebar Hamburger / Mobile Slide-over (PLANNED — starts after 13A COMPLETE)
 
 **Non-goals:**
-- No backend auth changes (those are AUTH-APP-01C1A)
-- No Google/Apple OAuth
-- No email verification or password reset
-- No rate limiting
-- No auth UX redesign beyond removing localStorage + adding logout fetch
+- No new product features
+- No backend or API changes
+- No auth changes
+- No Visual Edit Mode (UX-IA-15+)
+- No billing changes
+- No route cleanup (UX-IA-14)
+- No broad redesign
+- No new dependencies
+- No native mobile app
 
-**Acceptance checks (all met):**
-- [x] Zero `localStorage.getItem/setItem/removeItem('access_token')` in production frontend code
-- [x] Zero `localStorage.getItem/setItem/removeItem('userId')` in production frontend code
-- [x] Zero `Authorization: Bearer ${token}` in browser-side session-auth fetch calls
-- [x] All workspace logic function signatures no longer require `token`
-- [x] All affected test files updated and passing
-- [x] `npx tsc --noEmit` passes in `frontend`
-- [x] `npm run build` passes in `frontend`
-- [x] `npm test` passes in `frontend`
-- [x] No backend files changed
+**Checkpoint:** `docs/UX-IA-13-CHECKPOINT.md` (to be created on completion of UX-IA-13B)
 
-**Validation:**
-- `npx tsc --noEmit`: PASS
-- `npm test`: PASS
-- `npm run build`: PASS
-- ReadLints: PASS �X no linter errors on touched files
-- Safety grep: zero matches for `access_token` and `Bearer ${token}`
-- `DRIVER_API_KEY` bearer headers preserved
+**Reference:** See `TASKS_BACKLOG_FULL.md` —> UX-IA-13. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-13 section.
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01C1B. See `docs/AUTH-APP-01C1B-CHECKPOINT.md`.
 
----
+-----
 
-#### AUTH-APP-01C2: Email Verification / Password Reset / Rate Limiting
+#### UX-IA-13A: Project Mode Mobile Stacking + Minor Responsive Fixes
 
-**Status:** VALIDATION COMPLETE �X manual smoke deferred �X AUTH-APP-01C2A COMPLETE and LOCKED; AUTH-APP-01C2B COMPLETE and LOCKED; AUTH-APP-01C2C COMPLETE and LOCKED; AUTH-APP-01C2D COMPLETE and LOCKED; AUTH-APP-01C2E COMPLETE and LOCKED; AUTH-APP-01C2F COMPLETE and LOCKED
-**Checkpoint:** `docs/AUTH-APP-01C2-CHECKPOINT.md`
+**Status:** COMPLETE and LOCKED
+**Task ID:** UX-IA-13A
+**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Parent:** UX-IA-13
+**Priority:** Medium
+**Risk:** Low (Tailwind responsive class additions only; no new state; no new testids)
+**Loop:** 1-step (implement + verify)
+**Model:** Sonnet 4.6
 
-**Provider decision:** Resend selected as v1 transactional email provider (decided 2026-05-08). AUTH-APP-01C2 is unblocked. EmailProvider abstraction required �X auth service must not call Resend directly.
+**Objective:**
+Fix project mode mobile layout. The AI panel and content panel inner container currently has no responsive flex direction, defaulting to `flex-row` at all viewports. Add `flex-col md:flex-row` so panels stack vertically on < 768px and are side-by-side on ≥ 768px. Add bounded mobile max-height to the AI panel so it does not consume the full screen when stacked.
 
-**Source:** AUTH-APP-01A spec (Sections 7 + 12); AUTH-APP-01C split confirmed at registration
-**Depends on:** AUTH-APP-01C1 (COMPLETE) + Resend as chosen email provider
+**Scope:**
+- Project mode inner container `<div className="flex flex-1 min-h-0">` — add `flex-col md:flex-row`.
+- AI panel `aside` (`workspace-project-ai-panel`) — add `max-h-[50vh] md:max-h-none`; `overflow-y-auto` already present.
+- Desktop side-by-side layout preserved unchanged.
+- All existing testids preserved exactly. No new testids. No new React state.
+- Do not touch the non-`projectFirstUxEnabled` branch.
 
-**Child slices (AUTH-APP-01C2 split �X surface too large for one slice):**
-1. AUTH-APP-01C2A �X Email Verification / Password Reset Spec + Provider Abstraction Plan (COMPLETE and LOCKED)
-2. AUTH-APP-01C2B �X Email Provider Foundation with Resend Adapter (COMPLETE and LOCKED)
-3. AUTH-APP-01C2C �X Email Verification Backend Flow (COMPLETE and LOCKED �X checkpoint: `docs/AUTH-APP-01C2C-CHECKPOINT.md`)
-4. AUTH-APP-01C2D �X Password Reset Backend Flow (COMPLETE and LOCKED �X checkpoint: `docs/AUTH-APP-01C2D-CHECKPOINT.md`)
-5. AUTH-APP-01C2E �X Frontend Auth Email UX (COMPLETE and LOCKED �X checkpoint: `docs/AUTH-APP-01C2E-CHECKPOINT.md`)
-6. AUTH-APP-01C2F �X Email Auth Validation + Consolidation (COMPLETE and LOCKED �X checkpoint: `docs/AUTH-APP-01C2F-CHECKPOINT.md`; family checkpoint: `docs/AUTH-APP-01C2-CHECKPOINT.md`)
-
-**Bounded scope:**
-- Select and configure transactional email provider; document required env vars
-- Add EmailProvider abstraction; ResendEmailProvider v1 adapter; future SES/SendGrid adapters as separate tasks
-- Add email verification flow: token generation �� email send �� verification endpoint �� mark user verified
-- Add password reset flow: request �� email with reset token �� confirm with new password �� revoke active sessions
-- Use `verification_tokens` table from AUTH-APP-01B (SHA-256 hashed tokens, expiry, used_at)
-- Add rate limiting on auth endpoints: login, register, email-verify resend, password-reset-request
-- No OAuth implementation
+**Files in scope:**
+- `frontend/components/workspace/workspace-shell.tsx` (only)
 
 **Non-goals:**
-- No Google or Apple OAuth
-- No frontend auth redesign beyond verify/reset pages
-- No billing or subscription changes
-
-**Acceptance checks:**
-- Email verification token generated and sent on register
-- Verification endpoint marks user verified and marks token used
-- Password reset request sends email; confirm endpoint validates token, updates password, revokes sessions
-- Rate limiting applied to all auth endpoints per spec Section 7.5
-- `npx tsc --noEmit` passes in `services/api-gateway`
-
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01C2. See `docs/AUTH-APP-01-SPEC.md` Sections 7, 12.
-
----
-
-#### AUTH-APP-01C2A: Email Verification / Password Reset Spec + Provider Abstraction Plan
-
-**Status:** COMPLETE and LOCKED
-**Nature:** SPEC AND DOCUMENTATION ONLY �X no production source files changed
-**Parent:** AUTH-APP-01C2 (VALIDATION COMPLETE �X manual smoke deferred)
-**Family:** AUTH
-**Depends on:** AUTH-APP-01C2 unblocked (Resend chosen �X DONE)
-**Registered:** 2026-05-08
-**Completed:** 2026-05-08
-**Checkpoint:** `docs/AUTH-APP-01C2A-CHECKPOINT.md`
-**Spec:** `docs/AUTH-APP-01C2-EMAIL-AUTH-SPEC.md`
-
-**Key decisions recorded:**
-1. `EmailProvider` interface: `sendEmail({ to, subject, html, text? }): Promise<void>`
-2. `EMAIL_PROVIDER` NestJS injection token; auth service depends on abstraction only
-3. `ResendEmailProvider` v1; `StubEmailProvider` for tests (`EMAIL_PROVIDER=stub`)
-4. `EmailModule` factory selects provider from `EMAIL_PROVIDER` env var
-5. Future SES/SendGrid: adapter-only switch �X no auth logic changes
-6. `email_verified` column added to `users` in C2C (`DEFAULT false`); OAuth users set `true` at creation
-7. `locale` column added to `verification_tokens` in C2C for post-verification redirect
-8. Verification resend: unauthenticated, `{ email }` body, always `200`, 3/hr/email
-9. Password reset: always `200` (anti-enumeration), 1h TTL, revokes all sessions on confirm
-10. No CSRF on any of the four new public routes
-11. Dual-key rate limiting for `POST /password-reset/request` via `EmailThrottlerGuard`
-12. `AuthService.revokeAllUserSessions(userId)` new method in C2D
-
-**Production source files changed: None.**
-
-**Acceptance checks:**
-- [x] EmailProvider interface defined in spec
-- [x] ResendEmailProvider adapter boundary defined
-- [x] Future provider switch path (SES, SendGrid) documented
-- [x] Env vars defined: EMAIL_PROVIDER, RESEND_API_KEY, AUTH_EMAIL_FROM, APP_BASE_URL
-- [x] DB/token requirements confirmed against AUTH-APP-01B schema
-- [x] Backend route plan complete
-- [x] Frontend UX plan complete
-- [x] Security rules documented
-- [x] Test/validation plan documented
-
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01C2A. See `docs/AUTH-APP-01C2A-CHECKPOINT.md`. See `docs/AUTH-APP-01C2-EMAIL-AUTH-SPEC.md`.
-
----
-
-#### AUTH-APP-01C2B: Email Provider Foundation with Resend Adapter
-
-**Status:** COMPLETE and LOCKED
-**Nature:** BACKEND �X email provider abstraction; Resend adapter; module wiring; no auth routes, no DB migration
-**Parent:** AUTH-APP-01C2 (VALIDATION COMPLETE �X manual smoke deferred)
-**Family:** AUTH
-**Depends on:** AUTH-APP-01C2A (COMPLETE and LOCKED)
-**Registered:** 2026-05-08
-**Completed:** 2026-05-08
-**Checkpoint:** `docs/AUTH-APP-01C2B-CHECKPOINT.md`
-
-**Files changed:**
-- `services/api-gateway/package.json` �X `resend` added to dependencies
-- `services/api-gateway/.env.example` �X email env var block added
-- `services/api-gateway/src/email/email-provider.interface.ts` �X **created** �X `EmailProvider` interface + `EMAIL_PROVIDER` symbol
-- `services/api-gateway/src/email/stub-email.provider.ts` �X **created** �X `StubEmailProvider` (no-op for local/test)
-- `services/api-gateway/src/email/resend-email.provider.ts` �X **created** �X `ResendEmailProvider` v1 Resend adapter
-- `services/api-gateway/src/email/email.module.ts` �X **created** �X `EmailModule` with factory provider
-- `services/api-gateway/src/email/__tests__/email.module.spec.ts` �X **created** �X factory/env unit tests
-- `services/api-gateway/src/email/__tests__/resend-email.provider.spec.ts` �X **created** �X SDK mock unit tests
-- `services/api-gateway/src/auth/auth.module.ts` �X `EmailModule` added to imports
-- `services/api-gateway/src/auth/auth.service.ts` �X `@Inject(EMAIL_PROVIDER) private readonly emailProvider: EmailProvider` added to constructor
-- `services/api-gateway/src/auth/auth.service.spec.ts` �X minimal `EMAIL_PROVIDER` DI mock added
-
-**Production source files changed:** `auth.module.ts`, `auth.service.ts` (wiring only; no auth business logic changed).
-
-**Acceptance checks:**
-- [x] `resend` installed in `services/api-gateway`
-- [x] `EmailProvider` interface and `EMAIL_PROVIDER` injection token defined
-- [x] `StubEmailProvider` �X no-op; no network; safe for all tests
-- [x] `ResendEmailProvider` �X validates `RESEND_API_KEY` + `AUTH_EMAIL_FROM`; uses `replyTo` camelCase; throws on SDK error
-- [x] `EmailModule` factory �X validates `APP_BASE_URL`; selects stub/resend; throws on unknown provider
-- [x] `AuthModule` imports `EmailModule`
-- [x] `AuthService` injects `EMAIL_PROVIDER`; no email-sending methods yet
-- [x] `.env.example` updated with all email vars and safety comments
-- [x] `npx tsc --noEmit` PASS
-- [x] Email module unit tests: 2 suites, 14 tests PASS
-- [x] Auth tests: 2 suites, 20 tests PASS (after minimal DI mock fix)
-
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01C2B. See `docs/AUTH-APP-01C2B-CHECKPOINT.md`. See `docs/AUTH-APP-01C2-EMAIL-AUTH-SPEC.md`.
-
----
-
-#### AUTH-APP-01D: Google OAuth
-
-**Status:** COMPLETE and LOCKED
-**Checkpoint:** `docs/AUTH-APP-01D-CHECKPOINT.md`
-
-**Source:** AUTH-APP-01A spec (Section 6 �X OAuth providers); AUTH-APP-01D confirmed at AUTH family registration
-**Depends on:** AUTH-APP-01C1A (COMPLETE), AUTH-APP-01B (COMPLETE)
-
-**Bounded scope:**
-- Add `passport-google-oauth20` strategy with `cookie-session` OAuth state management
-- `GET /api/auth/google` �X initiate OAuth flow, persist locale in state cookie
-- `GET /api/auth/google/callback` �X create `auth_sessions` server-side session, set `aisandbox_session` cookie, redirect to app
-- `AuthService.findOrCreateGoogleUser()` �X link existing user by provider account or verified email; create new user if no match
-- Minimal "Continue with Google" link on login/register pages with i18n keys
-- OAuth env vars documented in `services/api-gateway/docs/SMOKE-PACK-README.md` (`.env.example` write denied by tool)
-
-**Non-goals:**
-- No Apple OAuth (AUTH-APP-01E)
-- No email verification or password reset (AUTH-APP-01C2)
-- No frontend auth redesign beyond minimal button (AUTH-APP-01G)
-- No AUTH-MODULE-01
+- No sidebar hamburger (UX-IA-13B)
+- No new product features, no backend, no auth, no new dependencies
+- No changes to any other component file
 
 **Validation:**
-- `npx tsc --noEmit` (api-gateway): PASS
-- Google auth unit tests (2 suites, 6 tests): PASS
-- `npm test` (api-gateway full): FAIL �X carry-forward only (REDIS_URL, ai-execution.controller.spec.ts, ESLint config)
-- `npx tsc --noEmit` (frontend): PASS
-- `npm test` (frontend): PASS �X 253 tests
-- `npm run build` (frontend): PASS
+- `npx tsc --noEmit` from `frontend/` — 0 errors
+- `npm test` from `frontend/` — 320 tests, 0 failures
+- `npm run build` from `frontend/` — passes
+- `ReadLints` on `workspace-shell.tsx` — 0 new errors
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01D. See `docs/AUTH-APP-01D-CHECKPOINT.md`.
+**Reference:** See `TASKS_BACKLOG_FULL.md` —> UX-IA-13A.
 
----
+**Tests:** 320 passing (unchanged from UX-IA-12 baseline), 0 failed.
 
-#### AUTH-APP-01E: Apple OAuth
+**Checkpoint:** `docs/UX-IA-13A-CHECKPOINT.md`
 
-**Status:** COMPLETE and LOCKED
-**Checkpoint:** `docs/AUTH-APP-01E-CHECKPOINT.md`
 
-**Source:** AUTH-APP-01A spec (Section 9 �X Apple OAuth slice); AUTH-APP-01E confirmed at AUTH family registration
-**Depends on:** AUTH-APP-01C1A (COMPLETE), AUTH-APP-01D (COMPLETE), AUTH-APP-01B (COMPLETE)
+-----
 
-**Bounded scope:**
-- Add `@nicokaiser/passport-apple` strategy (`apple.strategy.ts`); private key normalized from env with `.replace(/\\n/g, '\n')`
-- `GET /api/auth/apple` �X initiate Apple OAuth flow; persist locale in existing `aisandbox_oauth_state` state cookie
-- `POST /api/auth/apple/callback` �X create `auth_sessions` server-side session, set `aisandbox_session` cookie, redirect to app (Apple callback is POST not GET)
-- `AuthService.findOrCreateAppleUser()` �X provider account lookup; private relay email creates new user without auto-link; real email auto-links; inactive user rejected
-- `AuthModule` registers `AppleStrategy`
-- Minimal "Continue with Apple" link on login/register pages with i18n keys (`login.continueWithApple`, `register.continueWithApple`) in en/zh-TW/zh-CN
-- Apple OAuth env vars documented in `services/api-gateway/docs/SMOKE-PACK-README.md`
+#### UX-IA-13B: Sidebar Hamburger / Mobile Slide-over
 
-**Environment variables:**
-- `APPLE_CLIENT_ID` (Services ID), `APPLE_TEAM_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY`, `APPLE_CALLBACK_URL`
-- `OAUTH_STATE_SECRET` reused from AUTH-APP-01D
+**Status:** ACTIVE
+**Task ID:** UX-IA-13B
+**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Parent:** UX-IA-13
+**Depends on:** UX-IA-13A (must be COMPLETE before 13B starts)
+**Priority:** Medium
+**Risk:** Medium (new `useState` for sidebar open/close; new hamburger button testid; overlay; CSS slide-over transition)
+**Loop:** 2-step (implement — verify + consolidate)
+**Model:** Sonnet 4.6
 
-**Non-goals:**
-- No Google OAuth behavior changes
-- No email verification or password reset (AUTH-APP-01C2)
-- No frontend auth redesign beyond minimal link (AUTH-APP-01G)
-- No AUTH-MODULE-01
-- No migrations or entity changes
+**Objective:**
+Add mobile hamburger toggle and slide-over panel for the workspace sidebar on < 768px. On ≥ 768px the sidebar remains always visible (unchanged). Introduces one new testid: `workspace-sidebar-mobile-toggle`.
+
+**Scope:**
+- Hamburger button in project-first shell header; mobile-only (`md:hidden`); `data-testid="workspace-sidebar-mobile-toggle"`.
+- `useState(false)` for `isSidebarOpen` in `WorkspaceShell` project-first branch only.
+- Sidebar hidden by default on mobile and revealed as slide-over when open; CSS transition on `transform`.
+- Overlay `fixed inset-0 bg-black/20 z-10` when open on mobile; tap closes sidebar.
+- All existing sidebar testids preserved: `workspace-sidebar`, all nav items, account avatar, upgrade button, compact usage.
+- Desktop layout completely unchanged.
+
+**Files in scope:**
+- `frontend/components/workspace/workspace-shell.tsx` (primary)
+- `frontend/components/workspace/workspace-sidebar.tsx` (only if className or visibility prop is needed — confirm before touching)
+- `frontend/components/workspace/workspace-shell.test.tsx` (3 new tests)
+
+**New testid:** `workspace-sidebar-mobile-toggle`
+
+**UX/UI advisory:**
+- Emil Kowalski: slide-over `transition: transform 250ms cubic-bezier(0.32, 0.72, 0, 1)`; overlay `transition: opacity 200ms ease-out`; hamburger `scale(0.97)` on `:active`; gate hover with `@media (hover: hover) and (pointer: fine)`. Advisory only. No animation library.
+
+**Tests to add (3):**
+- `'renders sidebar mobile toggle button in project-first shell'` — asserts `data-testid="workspace-sidebar-mobile-toggle"` present
+- `'sidebar mobile toggle is absent when projectFirstUxEnabled is false'` — legacy shell does not get hamburger
+- `'workspace-account-menu testid still resolves after sidebar markup change'` — existing account menu testid unaffected
 
 **Validation:**
-- `npx tsc --noEmit` (api-gateway): PASS
-- `npx jest src/auth/auth.service.spec.ts src/auth/__tests__/apple.strategy.spec.ts --runInBand`: PASS �X 2 suites, 12 tests
-- `npx tsc --noEmit` (frontend): PASS
-- `npm test` (frontend): PASS �X 253 tests
-- `npm run build` (frontend): PASS
-- `frontend/tsconfig.tsbuildinfo` modified by build; restored via `git restore`
+- `npx tsc --noEmit` from `frontend/` — 0 errors
+- `npm test` from `frontend/` — 323 tests (320 baseline + 3 new), 0 failures
+- `npm run build` from `frontend/` — passes
+- `ReadLints` on touched files — 0 new errors
+- Manual: 375px — hamburger visible, tap opens slide-over, overlay tap closes; 768px — no hamburger, sidebar always visible
 
-**Carry-forward blockers (pre-existing, not introduced by AUTH-APP-01E):**
-- `npm test` backend full suite: fails �X `REDIS_URL` not set in test environment; `ai-execution.controller.spec.ts` pre-existing failures
-- `npm run lint` backend: ESLint config not discoverable in `services/api-gateway`
+**Reference:** See `TASKS_BACKLOG_FULL.md` —> UX-IA-13B.
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01E. See `docs/AUTH-APP-01E-CHECKPOINT.md`.
 
----
 
-#### AUTH-APP-01F1: Route/API Protection Inventory + Spec
-
-**Status:** COMPLETE and LOCKED
-**Nature:** DOCUMENTATION / SPEC ONLY �X no production code changes
-**Parent:** AUTH-APP-01F (VALIDATION COMPLETE �X carry-forwards pending)
-**Family:** AUTH
-**Depends on:** AUTH-APP-01E (COMPLETE and LOCKED)
-**Completed:** 2026-05-07
-**Checkpoint:** `docs/AUTH-APP-01F1-CHECKPOINT.md`
-**Spec:** `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md`
-
-**Implemented:**
-- Inspected all 30 backend controllers across `services/api-gateway/src/`
-- Inspected all frontend routes under `frontend/app/`
-- Confirmed `JwtAuthGuard` removed from all active controllers (zero remaining usages)
-- Documented full guard coverage: `SessionCookieGuard` (10 controllers/surfaces), `ApiKeyAuthGuard` (5 controllers), `InternalServiceAuthGuard` (7 internal controllers), intentionally public (9 endpoints)
-- Identified 8 protection gaps/decisions for F2 (AI execution cancel/get, service-to-service endpoints, runtime metrics, preview proxy, dead file cleanup)
-- Identified 2 frontend protection gaps for F3 (`/keys`, `/account` �X no login redirect on 401)
-- Confirmed no `middleware.ts` exists �X all frontend auth is reactive/client-side
-- Locked 11 behavior decisions and 6 governing invariants
-- Defined F2/F3/F4 implementation boundaries
-
-**Non-goals confirmed:**
-- No route guard implementation (AUTH-APP-01F2)
-- No frontend middleware/redirect implementation (AUTH-APP-01F3)
-- No OAuth or email/password changes
-- No AUTH-MODULE-01
-- No workspace UX changes
-- No Visual Edit Mode
-
-**Carry-forward blockers (pre-existing, not introduced by F1):**
-- `npm test` backend full suite: fails �X `REDIS_URL` not set in test environment; `ai-execution.controller.spec.ts` pre-existing failures
-- `npm run lint` backend: ESLint config not discoverable in `services/api-gateway`
-
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01F1. See `docs/AUTH-APP-01F1-CHECKPOINT.md`. See `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md`.
-
----
-
-#### AUTH-APP-01F2: Backend API Protection Gaps
-
-**Status:** COMPLETE and LOCKED
-**Parent:** AUTH-APP-01F (VALIDATION COMPLETE �X carry-forwards pending)
-**Family:** AUTH
-**Depends on:** AUTH-APP-01F1 (COMPLETE and LOCKED)
-**Completed:** 2026-05-07
-**Checkpoint:** `docs/AUTH-APP-01F2-CHECKPOINT.md`
-**Spec:** `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md` (Sections 4.5, 6, 10)
-
-**Implemented:**
-- Added method-level `@UseGuards(ApiKeyAuthGuard)` to `POST /api/ai/executions/:executionId/cancel`, `GET /api/ai/executions/:executionId`, and `GET /api/ai/executions/:executionId/stream`
-- `POST /api/ai/execute` guard stack left unchanged
-- Added class-level `@UseGuards(InternalServiceAuthGuard)` to `ChatMessageController` (`POST /api/chat-messages/add-by-session`) �X Option B; ai-service caller already sends `X-Internal-Service-Key`
-- Added class-level `@UseGuards(InternalServiceAuthGuard)` to `TokenUsageController` (`POST /api/token-usage/record`) �X Option B; ai-service caller already sends `X-Internal-Service-Key`
-- Added class-level `@UseGuards(InternalServiceAuthGuard)` to `RuntimeController` (`GET /api/runtime/metrics`)
-- Deleted `services/api-gateway/src/auth/api-key.controllerXXXXX.ts` (stale dead file; not imported anywhere active)
-- Deleted `services/api-gateway/src/auth/jwt-auth.guard.ts` (only reference was the dead controller; comment-only in `session-quota.guard.ts`)
-- Added targeted guard metadata tests for all newly guarded endpoints
-- Recorded accepted exceptions for events endpoints (Option C carry-forward) and preview proxy (deferred)
-
-**Non-goals confirmed:**
-- No frontend files changed
-- No events endpoint guard added (container-manager callers do not send `X-Internal-Service-Key`)
-- No preview proxy guard added (cross-service ownership validation deferred)
-- No OAuth or email/password changes
-- No route path migrations
-- No new npm dependencies
-
-**Carry-forward blockers (pre-existing, not introduced by F2):**
-- `npm test` backend full suite: fails �X `REDIS_URL` not set; `ai-execution.controller.spec.ts` pre-existing failures
-- `ai-execution-guards.integration.spec.ts` full suite: `QuotaService` unresolved dependencies (pre-existing)
-- `npm run lint` backend: ESLint config not discoverable in `services/api-gateway`
-
-**Carry-forward items (not resolved in F2):**
-- Events endpoints (`file-changed`, `checkpoint-created`, `token-updated`) still unguarded �X requires container-manager callers to send `X-Internal-Service-Key` before guard can be added (AUTH-APP-01F2a or AUTH-APP-01H)
-- Preview proxy (`@All /api/preview/*`) still unguarded �X requires coordinated api-gateway + container-manager auth-forwarding investigation
-
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01F2. See `docs/AUTH-APP-01F2-CHECKPOINT.md`. See `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md`.
-
----
-
-#### AUTH-APP-01F3: Frontend Protected Route Behavior
-
-**Status:** COMPLETE and LOCKED
-**Parent:** AUTH-APP-01F (VALIDATION COMPLETE �X carry-forwards pending)
-**Family:** AUTH
-**Depends on:** AUTH-APP-01F2 (COMPLETE and LOCKED)
-**Completed:** 2026-05-07
-**Checkpoint:** `docs/AUTH-APP-01F3-CHECKPOINT.md`
-**Spec:** `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md` (Sections 3.2, 7)
-
-**Implemented:**
-- Added `authLoading` state to `ApiKeysPage` (`frontend/app/[locale]/keys/page.tsx`)
-- Replaced mount-only `loadKeys()` effect with `GET /api/auth/me` bootstrap
-- Redirects to `/${locale}/login` when `/api/auth/me` is non-OK or returns no valid `id`
-- On valid auth: clears `authLoading` and calls existing `loadKeys()`
-- Added early loading gate before key-management render
-- Preserved all existing `loadKeys()`, `handleCreateKey()`, `handleRevokeKey()`, `ErrorRemediation` handling, and authenticated UI behavior
-- `/[locale]/account` inherits the redirect fix automatically (delegates to `/keys` or renders same `ApiKeysPage` component)
-- Added focused auth bootstrap tests in `frontend/app/[locale]/keys/page.test.tsx`
-
-**Non-goals confirmed:**
-- No backend files changed
-- No `middleware.ts` created
-- No `/driver` changes (intentionally separate `DRIVER_API_KEY` flow)
-- No `/test` changes (dev artifact, out of scope)
-- No `/account` changes (inherits fix automatically)
-- No `/projects` changes
-- No i18n message key additions
-- No OAuth or email/password changes
-- No new npm dependencies
-
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01F3. See `docs/AUTH-APP-01F3-CHECKPOINT.md`. See `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md`.
-
----
-
-#### AUTH-APP-01F4: Protection Validation + Consolidation
-
-**Status:** COMPLETE and LOCKED
-**Nature:** VALIDATION AND CONSOLIDATION ONLY �X no production source files changed
-**Parent:** AUTH-APP-01F (VALIDATION COMPLETE �X carry-forwards pending)
-**Family:** AUTH
-**Depends on:** AUTH-APP-01F3 (COMPLETE and LOCKED)
-**Completed:** 2026-05-07
-**Checkpoint:** `docs/AUTH-APP-01F4-CHECKPOINT.md`
-**Family checkpoint:** `docs/AUTH-APP-01F-CHECKPOINT.md`
-**Spec:** `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md` (Section 8)
-
-**Validation results:**
-- Backend targeted tests (6 guard metadata tests): PASS
-  - `AIExecutionController guard metadata`: 3/3 (cancel, get, stream �X ApiKeyAuthGuard)
-  - `ChatMessageController guard metadata`: 1/1 (InternalServiceAuthGuard)
-  - `TokenUsageController guard metadata`: 1/1 (InternalServiceAuthGuard)
-  - `RuntimeController guard metadata`: 1/1 (InternalServiceAuthGuard)
-- Frontend build: PASS (Next.js 15.5.12 �X compiled in 2.3s)
-- Frontend `npx tsc --noEmit`: PASS
-- Frontend `npm test`: PASS �X 253 tests, 22 suites, 0 failures
-- Frontend `/keys` direct auth bootstrap test: PASS �X 3/3 tests
-- Manual smoke checklist: NOT RUN (no live environment) �X carried to AUTH-APP-01H
-
-**Carry-forward items:**
-- Events endpoints (`file-changed`, `checkpoint-created`, `token-updated`) still unguarded �X container-manager callers don't send `X-Internal-Service-Key` �� AUTH-APP-01F2a or AUTH-APP-01H
-- Preview proxy (`@All /api/preview/*`) still unguarded �X cross-service coordination needed �� dedicated investigation slice
-- Manual smoke checklist (22 items) �X not run �� AUTH-APP-01H
-- Backend full `npm test` Redis env blocker �X pre-existing since AUTH-APP-01B �� carry-forward
-- `ai-execution-guards` full suite `QuotaService` blocker �X pre-existing �� carry-forward
-- `npm run lint` ESLint config blocker �X pre-existing since AUTH-APP-01B �� carry-forward
-
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01F4. See `docs/AUTH-APP-01F4-CHECKPOINT.md`. See `docs/AUTH-APP-01F-CHECKPOINT.md`.
-
----
-
-#### AUTH-APP-01G1: Auth UX Inventory + Scope
-
-**Status:** COMPLETE and LOCKED
-**Nature:** DOCUMENTATION / SPEC ONLY �X no production source files changed
-**Parent:** AUTH-APP-01G (ACTIVE)
-**Family:** AUTH
-**Depends on:** AUTH-APP-01F4 (COMPLETE and LOCKED)
-**Completed:** 2026-05-07
-**Checkpoint:** `docs/AUTH-APP-01G1-CHECKPOINT.md`
-**Spec:** `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md`
-
-**Objective:**
-Produce an inventory and implementation scope for auth UX integration now that password login, Google OAuth, Apple OAuth, cookie sessions, and protected routes are all in place. Decide the precise boundaries for AUTH-APP-01G2 and AUTH-APP-01G3 before any UX code is written.
-
-**Key findings:**
-- OAuth error query param gap: backend emits `?error=oauth_failed` / `?error=account_conflict` but login page does not consume them; `errors.oauthFailed` and `errors.accountConflict` i18n keys exist unused
-- `errors.oauthFailed` is Google-specific; Apple also uses `oauth_failed` �X must be made provider-agnostic in G2
-- Logout complete absence: no frontend component calls `POST /api/auth/logout`; backend endpoint is fully implemented
-- `/account` redirects to `/keys` (flag=false) or renders `ApiKeysPage` (flag=true); no profile/auth section
-- Keys page uses zero UX-IA-02 tokens �X deferred
-- Login/register pages are token-consistent; OAuth buttons are generic (no brand visual)
-
-**Validation:**
-- No production source files changed �X confirmed by `git status`
-- No frontend or backend behavior changed
-- No tests run �X docs-only
-
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01G1. See `docs/AUTH-APP-01G1-CHECKPOINT.md`. See `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md`.
-
----
-
-#### AUTH-APP-01G2: Login/Register OAuth Error + Button Polish
-
-**Status:** COMPLETE and LOCKED
-**Nature:** FRONTEND UI ONLY �X no backend files changed
-**Parent:** AUTH-APP-01G (ACTIVE)
-**Family:** AUTH
-**Depends on:** AUTH-APP-01G1 (COMPLETE and LOCKED)
-**Completed:** 2026-05-07
-**Checkpoint:** `docs/AUTH-APP-01G2-CHECKPOINT.md`
-
-**Implemented:**
-- `OAuthErrorBanner` sub-component added to `login/page.tsx` �X reads `?error` via `useSearchParams()`; renders `errors.accountConflict` for `account_conflict`, `errors.oauthFailed` for all other codes; wrapped in `<Suspense fallback={null}>`; placed above existing form error block
-- `errors.oauthFailed` updated to provider-agnostic wording in en, zh-TW, zh-CN
-- OAuth button polish applied to all four `<a>` links (login Google/Apple, register Google/Apple): `transition-colors` �� `transition`; added `active:scale-[0.97]`; added `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand`
-- Register success stay-on-page behavior preserved �X no auto-redirect added
-- New test file: `frontend/app/[locale]/login/page.test.tsx` �X 3 tests for `OAuthErrorBanner`
-
-**Validation:**
-- `npm run build`: PASS
-- `npx tsc --noEmit`: PASS
-- `npm test`: PASS �X 253 tests, 22 suites, 0 failures
-- Login page test (direct): PASS �X 3 tests, 0 failures
-- `frontend/tsconfig.tsbuildinfo` modified by build; restored via `git restore`
-
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01G2. See `docs/AUTH-APP-01G2-CHECKPOINT.md`. See `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md` Sections 5 and 10.
-
----
-
-#### AUTH-APP-01G3: Logout + Basic Account Surface
-
-**Status:** COMPLETE and LOCKED
-**Nature:** FRONTEND ONLY �X no backend files changed
-**Parent:** AUTH-APP-01G (ACTIVE)
-**Family:** AUTH
-**Depends on:** AUTH-APP-01G2 (COMPLETE and LOCKED)
-**Checkpoint:** `docs/AUTH-APP-01G3-CHECKPOINT.md`
-
-**Objective:**
-Add logout button/caller wired to `POST /api/auth/logout`, redirect to `/${locale}/login` on success, and add minimal account/auth surface if safely achievable.
-
-**Files changed:**
-- `frontend/app/[locale]/app/page.tsx` �X added `handleLogout()`; passed `onLogout` to `WorkspaceShell`
-- `frontend/components/workspace/workspace-shell.tsx` �X added `onLogout?: () => void` prop; logout button in header for both UX flag paths
-- `frontend/app/[locale]/account/page.tsx` �X added `<LogoutButton />` above `<ApiKeysPage />` for `PROJECT_FIRST_UX=true`
-- `frontend/components/auth/logout-button.tsx` �X new: `'use client'` component; `GET /api/auth/me` on mount; email display; logout + redirect
-- `frontend/components/workspace/workspace-shell.test.tsx` �X 3 logout button tests added
-
-**Validation:**
-- `npm run build`: PASS
-- `npx tsc --noEmit`: PASS
-- `npm test`: PASS �X 256 tests, 22 suites, 0 failures
-- `frontend/tsconfig.tsbuildinfo` modified by build; restored via `git restore`
-
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01G3. See `docs/AUTH-APP-01G3-CHECKPOINT.md`. See `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md` Sections 6 and 11.
-
----
-
-#### AUTH-APP-01G4: Auth UX Validation + Checkpoint
-
-**Status:** COMPLETE and LOCKED
-**Nature:** VALIDATION AND DOCUMENTATION ONLY �X no production source files changed
-**Parent:** AUTH-APP-01G (VALIDATION COMPLETE �X manual smoke deferred)
-**Family:** AUTH
-**Depends on:** AUTH-APP-01G3 (COMPLETE and LOCKED)
-**Checkpoint:** `docs/AUTH-APP-01G4-CHECKPOINT.md`
-**Family checkpoint:** `docs/AUTH-APP-01G-CHECKPOINT.md`
-
-**Objective:**
-Run full automated validation suite, record manual smoke as deferred, and create G4 task checkpoint plus AUTH-APP-01G family checkpoint.
-
-**Automated validation results:**
-- `npm run build`: PASS �X Next.js 15.5.12, compiled in 2.6s
-- `npx tsc --noEmit`: PASS
-- `npm test`: PASS �X 256 tests, 22 suites, 0 failures
-- Login page direct test: PASS �X 3 tests, 0 failures
-- Keys page direct test: PASS �X 3 tests, 0 failures
-- `frontend/tsconfig.tsbuildinfo` modified by build; restored via `git restore`
-
-**Manual smoke checklist:** NOT RUN �X deferred to user live environment (no live frontend/backend/browser available in automated session; dev servers user-controlled).
-
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01G4. See `docs/AUTH-APP-01G4-CHECKPOINT.md`. See `docs/AUTH-APP-01G-CHECKPOINT.md`. See `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md` Section 12.
-
----
-
-#### AUTH-APP-01H: Security Hardening + Validation Checklist (Phase Parent)
-
-**Status:** VALIDATION COMPLETE �X manual smoke deferred
-**Parent:** AUTH-APP-01
-**Family:** AUTH
-**Depends on:** AUTH-APP-01G4 (COMPLETE and LOCKED)
-**Registered:** 2026-05-07
-**Checkpoint:** `docs/AUTH-APP-01H-CHECKPOINT.md`
-
-**Objective:**
-Deliver all remaining AUTH-APP-01 security hardening and validation work before AUTH-APP-01Z final consolidation. Covers CSRF protection, rate limiting on auth endpoints, redirect allowlist hardening, OAuth state parameter audit, events endpoint carry-forward resolution, preview proxy scope decision, test/tooling blocker triage, secrets env audit, and full manual smoke verification.
-
-**Confirmed child slices:**
-1. AUTH-APP-01H1 �X Security Hardening Inventory (COMPLETE and LOCKED)
-2. AUTH-APP-01H2 �X CSRF + Rate Limiting + Redirect Hardening (COMPLETE and LOCKED)
-3. AUTH-APP-01H3 �X Events Endpoint Guards + Test/Tooling Triage (COMPLETE and LOCKED)
-4. AUTH-APP-01H4 �X Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation (COMPLETE and LOCKED)
-
-**AUTH-APP-01C2 remains BLOCKED:** Transactional email provider not yet chosen. AUTH-APP-01H does not unblock AUTH-APP-01C2.
-
-**Carry-forwards:**
-- Preview proxy `/api/preview/*` �X MEDIUM risk; dedicated future investigation slice required
-- api-gateway lint baseline �X 353 pre-existing errors; separate future slice
-- 40 manual smoke items (22 F-family + 12 G-family + 6 H-specific) �X deferred to user live environment
-
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01H. See `docs/AUTH-APP-01H-CHECKPOINT.md`. See `docs/AUTH-APP-01-SPEC.md`. See `docs/AUTH-APP-01F-CHECKPOINT.md` (carry-forwards). See `docs/AUTH-APP-01G-CHECKPOINT.md` (carry-forwards).
-
----
-
-#### AUTH-APP-01H1: Security Hardening Inventory
-
-**Status:** COMPLETE and LOCKED
-**Nature:** DOCUMENTATION / SPEC ONLY �X no production source files changed
-**Parent:** AUTH-APP-01H (ACTIVE)
-**Family:** AUTH
-**Depends on:** AUTH-APP-01G4 (COMPLETE and LOCKED)
-**Completed:** 2026-05-07
-**Checkpoint:** `docs/AUTH-APP-01H1-CHECKPOINT.md`
-**Spec:** `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`
-
-**Key findings:**
-- CSRF protection: MISSING �X no synchronizer token or middleware; `SameSite=Lax` partial mitigation only
-- Auth endpoint rate limiting: MISSING �X `@nestjs/throttler` not installed, no decorators/guards
-- OAuth state parameter: PARTIAL �X `state: true` functional; `OAUTH_STATE_SECRET`/`SESSION_SECRET` undocumented
-- Redirect allowlist: NO OPEN REDIRECT �X no formal allowlist constant
-- Secrets/env documentation: SIGNIFICANT GAP �X all OAuth + session vars missing from `api-gateway/.env.example`
-- Events endpoints: UNGUARDED �X 3 endpoints; 2 callers use raw `HttpService`, no auth header
-- Preview proxy: UNGUARDED �X formally deferred; product decision required
-- Backend full `npm test`: ENVIRONMENT BLOCKER (Redis absent) �X targeted-test workaround
-- `ai-execution-guards` QuotaService: TEST BLOCKER �X missing mock provider
-- ESLint config: TOOLING BLOCKER �X no `.eslintrc.*` in `services/api-gateway`
-
-**H2/H3/H4 boundaries defined in spec:**
-- H2: CSRF + rate limiting (login/register) + redirect allowlist + env docs �X **pending `@nestjs/throttler` user approval**
-- H3: events guards + container-manager caller updates + ESLint config + QuotaService mock + preview deferral
-- H4: secrets grep audit + manual smoke (34 items) + family checkpoint
-
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01H1. See `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`. See `docs/AUTH-APP-01H1-CHECKPOINT.md`.
-
----
-
-#### AUTH-APP-01H2: CSRF + Rate Limiting + Redirect Hardening
-
-**Status:** COMPLETE and LOCKED
-**Nature:** BACKEND + FRONTEND IMPLEMENTATION
-**Parent:** AUTH-APP-01H (ACTIVE)
-**Family:** AUTH
-**Depends on:** AUTH-APP-01H1 (COMPLETE and LOCKED)
-**Completed:** 2026-05-07
-**Checkpoint:** `docs/AUTH-APP-01H2-CHECKPOINT.md`
-**Spec:** `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`
-
-**Dependency added:** `@nestjs/throttler@^6.5.0` (in-memory only; explicitly approved)
-
-**Key changes:**
-- CSRF double-submit cookie middleware (`aisandbox_csrf`, non-HttpOnly) added to `main.ts`
-- `CsrfGuard` created; applied to `POST /auth/logout` only �X Apple callback, login, register explicitly excluded
-- Frontend logout callers (`page.tsx`, `logout-button.tsx`) send `X-CSRF-Token` from cookie when present
-- `ThrottlerModule` registered in `app.module.ts` (in-memory); per-route throttling: login 10/60s/IP, register 5/60s/IP
-- `ALLOWED_POST_OAUTH_REDIRECTS` allowlist added to `auth.controller.ts`; all OAuth redirects validated through it
-- `api-gateway/.env.example` updated with placeholders for all missing auth/session/OAuth vars
-
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01H2. See `docs/AUTH-APP-01H2-CHECKPOINT.md`. See `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`.
-
-#### AUTH-APP-01H3: Events Endpoint Guards + Test/Tooling Triage
-
-**Status:** COMPLETE and LOCKED
-**Nature:** BACKEND IMPLEMENTATION + TEST/TOOLING FIXES
-**Parent:** AUTH-APP-01H (ACTIVE)
-**Family:** AUTH
-**Depends on:** AUTH-APP-01H2 (COMPLETE and LOCKED)
-**Completed:** 2026-05-07
-**Checkpoint:** `docs/AUTH-APP-01H3-CHECKPOINT.md`
-**Spec:** `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`
-
-**Key changes:**
-- `InternalServiceAuthGuard` path check extended to protect `/api/events/*` in addition to `/api/internal/*`; global `APP_GUARD` registration unchanged
-- All three events endpoints (`file-changed`, `checkpoint-created`, `token-updated`) now require `X-Internal-Service-Key`
-- `ApiGatewayHttpClient` (container-manager) gained `notifyFileChanged()` and `notifyCheckpointCreated()` methods sending `X-Internal-Service-Key`
-- `GitService.emitCheckpointCreated()` replaced raw `httpService.post()` with `apiGatewayClient.notifyCheckpointCreated()`
-- `FilesModule` imports `ClientsModule`; `FilesService` injects `ApiGatewayHttpClient`; `FilesService.emitFileChange()` replaced raw `httpService.post()` with `apiGatewayClient.notifyFileChanged()`
-- Created `services/api-gateway/.eslintrc.js` (ESLint 8 legacy config) �X `npm run lint` now runs; repo-wide baseline of 353 pre-existing errors documented
-- `ai-execution-guards.integration.spec.ts`: real `QuotaService` replaced with `useValue` mock; kill-switch tests corrected to use `process.env.AI_PROVIDER`; local lint violations cleaned
-- New `events.controller.guard.spec.ts` �X 4 guard unit tests (PASS 4/4)
-- Preview proxy formally deferred �X no implementation
-
-**Carry-forwards to H4:**
-- Preview proxy `/api/preview/*` �X deferred (product decision + cross-service auth design required)
-- api-gateway lint baseline �X 353 pre-existing errors across unrelated files; separate future slice
-
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01H3. See `docs/AUTH-APP-01H3-CHECKPOINT.md`. See `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`.
-
----
-
-#### AUTH-APP-01H4: Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation
-
-**Status:** COMPLETE and LOCKED
-**Nature:** VALIDATION AND GOVERNANCE ONLY �X no production source files changed
-**Parent:** AUTH-APP-01H (VALIDATION COMPLETE �X manual smoke deferred)
-**Family:** AUTH
-**Depends on:** AUTH-APP-01H3 (COMPLETE and LOCKED)
-**Completed:** 2026-05-08
-**Checkpoint:** `docs/AUTH-APP-01H4-CHECKPOINT.md`
-**Family checkpoint:** `docs/AUTH-APP-01H-CHECKPOINT.md`
-**Spec:** `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`
-
-**Key findings and actions:**
-- Secrets audit initially found real Anthropic and XAI API keys in tracked `.envxxx` and `.env.prod` files �X H4 paused immediately
-- Local history cleanup performed (user action): both files removed from git tracking; `git ls-files` returns clean; working tree clean
-- Post-cleanup secrets audit: CLEAN �X no real credentials in any tracked source file; all `sk-ant-` and PEM header hits are placeholders/tests/docs
-- Old provider keys (Anthropic, XAI) must be rotated before any future push/deployment �X treat as compromised
-- api-gateway typecheck: PASS; container-manager typecheck: PASS
-- Targeted tests: 40/40 PASS (csrf.guard: 5, events.controller.guard: 4, ai-execution-guards: 31, files.service: 2)
-- Manual smoke: 40 items NOT RUN �X deferred to user live environment (22 F-family + 12 G-family + 6 H-specific)
-- CSRF smoke item correction recorded: `CsrfGuard` applies to `POST /auth/logout` only; login/register are correctly excluded
-
-**Carry-forwards:**
-- Preview proxy `/api/preview/*` �X MEDIUM risk; dedicated future investigation slice
-- api-gateway lint baseline �X 353 pre-existing errors; separate future slice
-- 40 manual smoke items deferred to user live environment
-- Provider key rotation �X user action required before any push
-
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01H4. See `docs/AUTH-APP-01H4-CHECKPOINT.md`. See `docs/AUTH-APP-01H-CHECKPOINT.md`. See `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`.
-
----
-
-#### AUTH-APP-01Z: Final AUTH-APP-01 Consolidation
-
-**Status:** COMPLETE and LOCKED
-**Nature:** GOVERNANCE AND DOCUMENTATION ONLY �X no production source files changed
-**Parent:** AUTH-APP-01 (VALIDATION COMPLETE �X AUTH-APP-01C2 VALIDATION COMPLETE; manual smoke deferred)
-**Family:** AUTH
-**Depends on:** AUTH-APP-01H4 (COMPLETE and LOCKED)
-**Completed:** 2026-05-08
-**Checkpoint:** `docs/AUTH-APP-01Z-CHECKPOINT.md`
-**Family checkpoint:** `docs/AUTH-APP-01-CHECKPOINT.md`
-**Spec:** `docs/AUTH-APP-01-SPEC.md` (Section 14 �X slice order)
-
-**What AUTH-APP-01Z delivered:**
-- `docs/AUTH-APP-01Z-CHECKPOINT.md` �X Z task checkpoint
-- `docs/AUTH-APP-01-CHECKPOINT.md` �X AUTH-APP-01 family summary
-- `TASKS.md` and `TASKS_BACKLOG_FULL.md` updated: AUTH-APP-01Z COMPLETE and LOCKED; AUTH-APP-01 parent VALIDATION COMPLETE; stale child list entries corrected
-
-**AUTH-APP-01 parent status:** VALIDATION COMPLETE �X AUTH-APP-01C2 VALIDATION COMPLETE (AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F COMPLETE); manual smoke deferred; carry-forwards pending
-
-**Carry-forwards recorded:**
-- AUTH-APP-01C2 VALIDATION COMPLETE �X manual smoke deferred �X AUTH-APP-01C2A COMPLETE and LOCKED; AUTH-APP-01C2B COMPLETE and LOCKED; AUTH-APP-01C2C COMPLETE and LOCKED; AUTH-APP-01C2D COMPLETE and LOCKED; AUTH-APP-01C2E COMPLETE and LOCKED; AUTH-APP-01C2F COMPLETE and LOCKED
-- 26-item C2 manual smoke checklist deferred to live environment (see `docs/AUTH-APP-01C2F-CHECKPOINT.md`)
-- 40 manual smoke items deferred to user live environment
-- Preview proxy `/api/preview/*` �X MEDIUM risk; dedicated investigation slice required
-- api-gateway lint baseline �X 353 pre-existing errors; separate cleanup slice
-- Old Anthropic/XAI provider keys must be rotated before any push/deployment
-- Password reset request: 10/hr/IP secondary limit not independently enforced in C2D v1; carry-forward for named throttler or Redis-backed limiter
-
-**Next recommended work (independent paths):**
-1. Run 26-item C2 manual smoke checklist in live environment (see `docs/AUTH-APP-01C2F-CHECKPOINT.md`)
-2. Run 40-item manual smoke checklist in live environment
-3. Rotate old Anthropic/XAI keys before any push/deploy
-4. Approve preview proxy investigation slice
-5. Address api-gateway lint baseline
-
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-01Z. See `docs/AUTH-APP-01Z-CHECKPOINT.md`. See `docs/AUTH-APP-01-CHECKPOINT.md`. See `docs/AUTH-APP-01-SPEC.md`.
-
----
-
-### AUTH-APP-02: Preview Proxy Security (Phase Parent)
-
-**Status:** COMPLETE and LOCKED
-**Parent:** AUTH (carry-forward from AUTH-APP-01H)
-**Family:** AUTH
-**Depends on:** AUTH-APP-01Z (COMPLETE and LOCKED)
-**Registered:** 2026-05-08
-**Completed:** 2026-05-10
-**Checkpoint:** `docs/AUTH-APP-02-CHECKPOINT.md`
-
-**Objective:**
-Investigate and resolve the security gap in the `/api/preview/*` proxy path. The api-gateway PreviewController proxies all preview requests to container-manager without any auth guard. Container-manager has `ENABLE_PREVIEW_ACCESS_CONTROL=false` by default and its existing access control is JWT Bearer based (not SessionCookieGuard based). A product decision and threat model analysis are required before any implementation.
-
-**Confirmed child slices:**
-1. AUTH-APP-02A �X Preview Proxy Auth Investigation (COMPLETE and LOCKED)
-2. AUTH-APP-02B �X Add SessionCookieGuard to api-gateway PreviewController (COMPLETE and LOCKED)
-3. AUTH-APP-02C �X Session Ownership Check / Owner-only Preview Authorization (COMPLETE and LOCKED)
-4. AUTH-APP-02D �X Preview Proxy Header Sanitization (COMPLETE and LOCKED)
-
-**Carry-forward source:** AUTH-APP-01H (MEDIUM risk; preview proxy formally deferred)
-
----
-
-#### AUTH-APP-02A: Preview Proxy Auth Investigation
-
-**Status:** COMPLETE and LOCKED
-**Nature:** INVESTIGATION / SPEC ONLY �X no production source files changed
-**Parent:** AUTH-APP-02 (ACTIVE)
-**Family:** AUTH
-**Depends on:** AUTH-APP-01Z (COMPLETE and LOCKED)
-**Completed:** 2026-05-08
-**Checkpoint:** `docs/AUTH-APP-02A-CHECKPOINT.md`
-**Spec:** `docs/AUTH-APP-02A-PREVIEW-PROXY-AUTH-SPEC.md`
-
-**Objective:**
-Perform a bounded investigation of the `/api/preview/*` proxy auth gap. Inspect the current api-gateway preview proxy, the container-manager preview access-control path, and frontend preview iframe URL generation. Determine the threat model, product decision options, and propose the smallest safe implementation option.
-
-**Key findings:**
-- api-gateway `PreviewController` uses `@All('*')` with no guard �X fully open
-- Browser iframe uses same-origin `/api/preview/:sessionId/proxy` URL; session cookie forwarded but ignored by container-manager
-- Active container-manager module is `src/preview/` �X no auth or ownership check on any route
-- Inactive module `src/previews/` contains optional JWT/Bearer access control but is NOT registered and has no effect
-- `ENABLE_PREVIEW_ACCESS_CONTROL` is tied to inactive code path �X does not protect current routes
-- No public/share preview UI found �X product behavior implies workspace-private preview
-- Threat model: T1 unauthenticated access (MEDIUM), T2 cross-user access (MEDIUM), T5 infra bypass (MEDIUM), T3/T4/T6 (LOW)
-
-**Recommendation:** AUTH-APP-02B �X Add `SessionCookieGuard` to api-gateway `PreviewController`. Smallest safe fix; closes unauthenticated access; no frontend or container-manager changes.
-
-**Non-goals confirmed:**
-- No production source files changed
-- No guards added
-- No frontend changes
-- No container-manager changes
-- No dependencies added
-
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-02A. See `docs/AUTH-APP-02A-CHECKPOINT.md`. See `docs/AUTH-APP-02A-PREVIEW-PROXY-AUTH-SPEC.md`.
-
----
-
-#### AUTH-APP-02B: Add SessionCookieGuard to api-gateway PreviewController
-
-**Status:** COMPLETE and LOCKED
-**Nature:** BACKEND IMPLEMENTATION
-**Parent:** AUTH-APP-02 (ACTIVE)
-**Family:** AUTH
-**Depends on:** AUTH-APP-02A (COMPLETE and LOCKED)
-**Completed:** 2026-05-08
-**Checkpoint:** `docs/AUTH-APP-02B-CHECKPOINT.md`
-**Spec:** `docs/AUTH-APP-02A-PREVIEW-PROXY-AUTH-SPEC.md` Section 9
-
-**Objective:**
-Add `SessionCookieGuard` at the `PreviewController` class level in api-gateway to block unauthenticated access to all `/api/preview/*` routes (start, stop, status, proxy). Closes threats T1 (unauthenticated content access) and T6 (unguarded start/stop resource abuse).
-
-**Key changes:**
-- `@UseGuards(SessionCookieGuard)` applied at `PreviewController` class level
-- `SessionCookieGuard` imported from `../auth/session-cookie.guard`; `UseGuards` added to `@nestjs/common` import
-- `preview.module.ts` unchanged �X `AuthModule` import not required (guard resolves from `AppModule` DI context)
-- `preview.controller.guard.spec.ts` created �X 3 guard tests (metadata, compile, block)
-
-**Validation:**
-- `npx tsc --noEmit` in `services/api-gateway`: PASS
-- `npx jest --testPathPatterns="preview.controller.guard" --runInBand`: PASS �X 1 suite, 3 tests
-
-**Non-goals confirmed:**
-- No ownership check (deferred to AUTH-APP-02C)
-- No container-manager changes
-- No frontend changes
-- No `preview.module.ts` changes
-- No activation of inactive `src/previews/` module
-- No header sanitization
-
-**Carry-forwards:**
-- Cross-user session access (T2) �X AUTH-APP-02C
-- Header sanitization �X future hardening slice
-- Container-manager direct access (T5) �X infrastructure concern
-- Manual smoke �X 4 items deferred to live environment
-
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-02B. See `docs/AUTH-APP-02B-CHECKPOINT.md`.
-
----
-
-#### AUTH-APP-02C: Session Ownership Check / Owner-only Preview Authorization
-
-**Status:** COMPLETE and LOCKED
-**Nature:** BACKEND IMPLEMENTATION
-**Parent:** AUTH-APP-02 (COMPLETE and LOCKED)
-**Family:** AUTH
-**Depends on:** AUTH-APP-02B (COMPLETE and LOCKED) + owner-only product decision
-**Completed:** 2026-05-10
-**Checkpoint:** `docs/AUTH-APP-02C-CHECKPOINT.md`
-**Spec:** `docs/AUTH-APP-02A-PREVIEW-PROXY-AUTH-SPEC.md` Section 10
-
-**Product decision:** Owner-only previews. No public/share links. No signed URLs.
-
-**Objective:**
-Add `PreviewOwnershipGuard` to api-gateway `PreviewController` to block cross-user preview access. After `SessionCookieGuard` verifies authentication, `PreviewOwnershipGuard` verifies the authenticated user owns the session being previewed. Closes threat T2 (cross-user session preview access).
-
-**Key changes:**
-- `PreviewOwnershipGuard` created �X injects `SessionService`, extracts `sessionId` from path, compares `session.userId` with `req.user.userId`, returns 403 for all failure conditions
-- `@UseGuards(SessionCookieGuard, PreviewOwnershipGuard)` applied at `PreviewController` class level
-- `PreviewModule` updated: `SessionModule` imported, `PreviewOwnershipGuard` added to providers
-- `preview.ownership.guard.spec.ts` created �X 9 tests (metadata, order, match, mismatch, not-found, no-user, malformed paths, sessionId extraction)
-
-**Validation:**
-- `npx tsc --noEmit` in `services/api-gateway`: PASS
-- `npx jest --testPathPatterns="preview.ownership" --runInBand`: PASS �X 1 suite, 9 tests
-- `npx jest --testPathPatterns="preview.controller.guard|preview.ownership" --runInBand`: PASS �X 2 suites, 12 tests
-- Lint on all touched files: PASS
-
-**Non-goals confirmed:**
-- No container-manager changes
-- No frontend changes
-- No activation of inactive `src/previews/` module
-- No signed preview URLs
-- No public/share preview behavior
-- No header sanitization
-- No new external dependencies
-
-**Carry-forwards:**
-- Header sanitization �X future hardening slice
-- Container-manager direct access (T5) �X infrastructure/network isolation concern
-- Public/share/signed preview �X deferred product feature
-- Manual smoke �X 4 items deferred to live environment
-
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-02C. See `docs/AUTH-APP-02C-CHECKPOINT.md`. See `docs/AUTH-APP-02-CHECKPOINT.md`. See `docs/AUTH-APP-02A-PREVIEW-PROXY-AUTH-SPEC.md` Section 10.
-
----
-
-#### AUTH-APP-02D: Preview Proxy Header Sanitization
-
-**Status:** COMPLETE and LOCKED
-**Nature:** BACKEND SECURITY HARDENING
-**Parent:** AUTH-APP-02 (COMPLETE and LOCKED)
-**Family:** AUTH
-**Depends on:** AUTH-APP-02C (COMPLETE and LOCKED)
-**Registered:** 2026-05-10
-**Completed:** 2026-05-10
-**Checkpoint:** `docs/AUTH-APP-02D-CHECKPOINT.md`
-
-**Objective:**
-Sanitize forwarded headers in the api-gateway `PreviewController` before proxying requests to container-manager. The proxy previously spread `req.headers` directly into the axios call, removing only `host`. This left sensitive auth/security headers forwarded to container-manager. Apply an explicit denylist via `sanitizeProxyHeaders` to strip sensitive headers before the axios proxy call while preserving headers required for correct browser/preview rendering.
-
-**Key changes:**
-- `PROXY_HEADER_DENYLIST` constant defined at module scope �X set of 9 lowercase header names
-- `sanitizeProxyHeaders(headers)` exported named function �X filters entries by denylist using `.toLowerCase()` for case-insensitive matching
-- Axios `headers` replaced: `{ ...req.headers, host: undefined }` �� `sanitizeProxyHeaders(req.headers)`
-- `preview.header-sanitization.spec.ts` created �X 23 direct unit tests against the exported helper
-
-**Headers stripped:** `host`, `cookie`, `authorization`, `proxy-authorization`, `x-internal-service-key`, `x-csrf-token`, `x-forwarded-user`, `x-user-id`, `x-session-id`.
-
-**Validation:**
-- `npx tsc --noEmit` in `services/api-gateway`: PASS
-- `npx jest --testPathPatterns="preview.header-sanitization" --runInBand`: PASS �X 1 suite, 23 tests
-- `npx jest --testPathPatterns="preview" --runInBand`: PASS �X 3 suites, 35 tests
-- Lint on all touched preview files: PASS
-
-**Non-goals confirmed:**
-- No frontend changes
-- No container-manager changes
-- No ownership logic changes
-- No SessionCookieGuard/PreviewOwnershipGuard changes
-- No public/share preview
-- No signed URLs
-- No dependency changes
-- No DB/migration changes
-- No manual smoke
-
-**Carry-forwards:**
-- `x-forwarded-for` privacy/logging decision �X intentionally deferred
-- Manual smoke �X 4 items deferred to live environment
-- Container-manager direct access (T5) �X infrastructure/network isolation concern
-
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-APP-02D. See `docs/AUTH-APP-02D-CHECKPOINT.md`. See `docs/AUTH-APP-02-CHECKPOINT.md`. See `docs/AUTH-APP-02A-PREVIEW-PROXY-AUTH-SPEC.md`.
-
+## AUTH �X aiSandBox First-Party
