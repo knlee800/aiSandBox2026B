@@ -100,6 +100,8 @@ export function getWorkspaceScaffoldMessages(locale?: string) {
     light: read('account.light'),
     dark: read('account.dark'),
     comingSoon: read('tabs.comingSoon'),
+    activeSessions: read('workspace.activeSessions'),
+    tokens: read('workspace.tokens'),
   };
 }
 
@@ -256,26 +258,23 @@ export default function WorkspaceSidebar(props: WorkspaceSidebarProps) {
               className="mt-6 rounded border border-gray-200 bg-gray-50 p-3"
               data-testid="workspace-sidebar-compact-usage"
             >
-              <p className="truncate text-sm font-medium text-gray-900">
-                {props.userSummary?.email}
+              <p className="text-xs font-medium text-gray-700">
+                {props.userSummary?.planName}
               </p>
-              <p className="mt-1 text-xs text-gray-500">
-                {props.userSummary?.planName} ({props.userSummary?.planStatus})
-              </p>
-              <div className="mt-3 grid grid-cols-1 gap-2">
-                <div className="rounded border border-gray-200 bg-white px-3 py-2">
-                  <p className="text-[11px] uppercase tracking-wide text-gray-500">
-                    Active sessions
-                  </p>
-                  <p className="text-sm font-semibold text-gray-900">
-                    {props.activeSessions ?? 0}/{props.quotaSummary?.maxActiveSessions ?? 0}
-                  </p>
+              <p className="text-[11px] text-gray-500">{props.userSummary?.planStatus}</p>
+              <div className="mt-3 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-500">{messages.activeSessions}</span>
+                  <span className="text-xs font-medium text-gray-700">
+                    {props.activeSessions ?? 0} / {props.quotaSummary?.maxActiveSessions ?? 0}
+                  </span>
                 </div>
-                <div className="rounded border border-gray-200 bg-white px-3 py-2">
-                  <p className="text-[11px] uppercase tracking-wide text-gray-500">Tokens</p>
-                  <p className="text-sm font-semibold text-gray-900">
-                    {props.usageSummary?.tokensUsed24h ?? 0}/{props.quotaSummary?.maxTokens24h ?? 0}
-                  </p>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-500">{messages.tokens}</span>
+                  <span className="text-xs font-medium text-gray-700">
+                    {props.usageSummary?.tokensUsed24h ?? 0} /{' '}
+                    {props.quotaSummary?.maxTokens24h ?? 0}
+                  </span>
                 </div>
               </div>
             </div>
@@ -286,10 +285,13 @@ export default function WorkspaceSidebar(props: WorkspaceSidebarProps) {
           <button
             type="button"
             disabled
-            className="w-full rounded border border-gray-300 bg-gray-100 px-3 py-2 text-sm font-medium text-gray-600"
+            className="flex w-full items-center justify-between rounded border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700"
             data-testid="workspace-sidebar-upgrade-button"
           >
-            {messages.upgrade}
+            <span>{messages.upgrade}</span>
+            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500">
+              {messages.comingSoon}
+            </span>
           </button>
           <div className="relative mt-2" ref={accountMenuRef}>
             <button

@@ -842,6 +842,37 @@ describe('workspace shell component', () => {
     assert.doesNotMatch(html, /workspace-account-menu/);
   });
 
+  test('renders upgrade CTA button in the project-first sidebar footer', () => {
+    const html = renderWorkspaceShell({
+      locale: 'en',
+      projectFirstUxEnabled: true,
+    });
+
+    assert.match(html, /workspace-sidebar-upgrade-button/);
+  });
+
+  test('renders compact usage block in project-first sidebar when summary data is available', () => {
+    const html = renderWorkspaceShell({
+      locale: 'en',
+      projectFirstUxEnabled: true,
+      userSummary,
+      usageSummary,
+      quotaSummary,
+    });
+
+    assert.match(html, /workspace-sidebar-compact-usage/);
+  });
+
+  test('compact usage block is hidden in project-first sidebar when usage summary is unavailable', () => {
+    const html = renderWorkspaceShell({
+      locale: 'en',
+      projectFirstUxEnabled: true,
+      usageSummary: null,
+    });
+
+    assert.doesNotMatch(html, /workspace-sidebar-compact-usage/);
+  });
+
   test('account menu renders user email when open', () => {
     const html = renderWorkspaceAccountMenu();
 

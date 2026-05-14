@@ -12038,9 +12038,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## UX-IA �X Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 COMPLETE and LOCKED — UX-IA-09 COMPLETE and LOCKED — UX-IA-10 COMPLETE and LOCKED — UX-IA-11 COMPLETE and LOCKED — UX-IA-12 pending
+**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 COMPLETE and LOCKED — UX-IA-09 COMPLETE and LOCKED — UX-IA-10 COMPLETE and LOCKED — UX-IA-11 COMPLETE and LOCKED — UX-IA-12 COMPLETE and LOCKED — UX-IA-13 pending
 
-**Current stage:** UX-IA-12 — Upgrade Flow + Dashboard Polish (pending)
+**Current stage:** UX-IA-13 — Responsive / Mobile Polish (pending)
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -12064,7 +12064,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 10. UX-IA-09 �X Project AI + History Panel (COMPLETE and LOCKED — `docs/UX-IA-09-CHECKPOINT.md`)
 11. UX-IA-10 �X Preview + Code & Files Tabs (COMPLETE and LOCKED — `docs/UX-IA-10-CHECKPOINT.md`)
 12. UX-IA-11 �X Future Product Tab Placeholders (COMPLETE and LOCKED — `docs/UX-IA-11-CHECKPOINT.md`)
-13. UX-IA-12 �X Upgrade Flow + Dashboard Polish (pending)
+13. UX-IA-12 �X Upgrade Flow + Dashboard Polish (COMPLETE and LOCKED — `docs/UX-IA-12-CHECKPOINT.md`)
 14. UX-IA-13 �X Responsive / Mobile Polish (pending)
 15. UX-IA-14 �X Route Cleanup / Redirects (pending)
 16. UX-IA-15 �X Visual Edit Mode Foundation (pending �X requires UX-IA-08 + UX-IA-10 COMPLETE)
@@ -13025,6 +13025,60 @@ This file does not exist. Per UX-IA-08 locked invariant, project mode logic stay
 **Checkpoint:** `docs/UX-IA-11-CHECKPOINT.md`
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` —> UX-IA-11. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-11 section.
+
+-----
+
+#### UX-IA-12: Upgrade Flow + Dashboard Polish
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** UX-IA-12
+**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family status:** ACTIVE
+**Priority:** Medium
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-12 section
+**Depends on:** UX-IA-11 (COMPLETE and LOCKED — `docs/UX-IA-11-CHECKPOINT.md`)
+**Risk:** Low-Medium (visual polish and copy only; no billing implementation; no new dependencies)
+**Loop:** 3-step (plan — implement — verify tests + consolidate)
+**Model:** Sonnet 4.6
+
+**Objective:**
+Polish the Upgrade CTA and compact usage/quota display in the authenticated workspace sidebar. Improve visual hierarchy and legibility of the usage summary. Fix two hardcoded English strings with i18n keys. Preserve all locked UX-IA-04 through UX-IA-11 invariants. No billing or payment implementation.
+
+**Scope:**
+- Upgrade CTA restyled from gray disabled control to clean future CTA; `disabled` attribute preserved.
+- Inline "Coming soon" badge added using existing `messages.comingSoon`; no new i18n key for badge.
+- Compact usage block: email line removed (redundant); plan display reformatted without parentheses.
+- Two identical stat boxes replaced with inline flex rows.
+- Hardcoded "Active sessions" and "Tokens" strings replaced with i18n keys.
+- Two new locale keys added to all three locale files: `workspace.activeSessions`, `workspace.tokens`.
+- Three new focused tests added.
+
+**Non-goals:**
+- No real billing/checkout implementation
+- No Stripe or payment integration
+- No backend or API changes
+- No auth changes
+- No route cleanup (belongs to UX-IA-14)
+- No account/profile backend
+- No project mode or tab architecture changes (UX-IA-08/09/10/11 invariants locked)
+- No Visual Edit Mode (belongs to UX-IA-15+)
+- No broad refactor
+- No new dependencies
+- No new files
+
+**Files changed:**
+- `frontend/components/workspace/workspace-sidebar.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+
+**Tests:** 320 passing (317 baseline + 3 new), 0 failed.
+
+**Checkpoint:** `docs/UX-IA-12-CHECKPOINT.md`
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` —> UX-IA-12. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-12 section.
+
 
 
 ## AUTH �X aiSandBox First-Party Authentication

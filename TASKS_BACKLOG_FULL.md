@@ -21954,9 +21954,9 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 
 ## UX-IA ??Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 COMPLETE and LOCKED — UX-IA-09 COMPLETE and LOCKED — UX-IA-10 COMPLETE and LOCKED — UX-IA-11 COMPLETE and LOCKED — UX-IA-12 pending
+**Family status:** ACTIVE �X UX-IA-04 COMPLETE and LOCKED �X UX-IA-05 COMPLETE and LOCKED �X UX-IA-06 COMPLETE and LOCKED �X UX-IA-07 COMPLETE and LOCKED �X UX-IA-08 COMPLETE and LOCKED �X UX-IA-09 COMPLETE and LOCKED �X UX-IA-10 COMPLETE and LOCKED �X UX-IA-11 COMPLETE and LOCKED �X UX-IA-12 COMPLETE and LOCKED �X UX-IA-13 pending
 
-**Current stage:** UX-IA-12 — Upgrade Flow + Dashboard Polish (pending)
+**Current stage:** UX-IA-13 �X Responsive / Mobile Polish (pending)
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -21966,26 +21966,26 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 3. UX-IA-02 ??Design Token Foundation (COMPLETE and LOCKED ??`docs/UX-IA-02-CHECKPOINT.md`)
 4. UX-IA-03 ??Public Landing Redesign + Login/Register Polish (COMPLETE and LOCKED ??`docs/UX-IA-03-CHECKPOINT.md`)
    > AUTH-APP-01 + AUTH-APP-02 ??aiSandBox First-Party Authentication (cross-family ??COMPLETE and LOCKED ??`docs/AUTH-APP-01-CHECKPOINT.md` + `docs/AUTH-APP-02-CHECKPOINT.md`)
-5. UX-IA-04 — Workspace Shell + Sidebar + Home View (COMPLETE and LOCKED — `docs/UX-IA-04-CHECKPOINT.md`)
-   - UX-IA-04A — Sidebar shell + view state scaffolding (COMPLETE and LOCKED — `docs/UX-IA-04A-CHECKPOINT.md`)
-   - UX-IA-04B — Home view chatbox + prompt-to-project flow (COMPLETE and LOCKED — `docs/UX-IA-04B-CHECKPOINT.md`)
-   - UX-IA-04C — Tests + validation + consolidation (COMPLETE and LOCKED — `docs/UX-IA-04-CHECKPOINT.md`)
-6. UX-IA-05 — Projects Grid/List + Recent Projects (COMPLETE and LOCKED — `docs/UX-IA-05-CHECKPOINT.md`)
-7. UX-IA-06 — Templates / Community View (COMPLETE and LOCKED — docs/UX-IA-06-CHECKPOINT.md)
-8. UX-IA-07 — Account Menu + Settings + Language/Theme (COMPLETE and LOCKED — `docs/UX-IA-07-CHECKPOINT.md`)
-9. UX-IA-08 — Project Mode Shell (COMPLETE and LOCKED — `docs/UX-IA-08-CHECKPOINT.md`)
-   - UX-IA-08A — Project Mode Layout Shell + Back Header (COMPLETE and LOCKED — `docs/UX-IA-08A-CHECKPOINT.md`)
-   - UX-IA-08B — Tab Registry + Tab Bar + AI Panel Collapse (COMPLETE and LOCKED — `docs/UX-IA-08B-CHECKPOINT.md`)
-   - UX-IA-08C — Tests + Validation + Consolidation (COMPLETE and LOCKED — `docs/UX-IA-08-CHECKPOINT.md`)
-10. UX-IA-09 — Project AI + History Panel (COMPLETE and LOCKED — `docs/UX-IA-09-CHECKPOINT.md`)
-11. UX-IA-10 — Preview + Code & Files Tabs (COMPLETE and LOCKED — `docs/UX-IA-10-CHECKPOINT.md`)
-12. UX-IA-11 — Future Product Tab Placeholders (COMPLETE and LOCKED — `docs/UX-IA-11-CHECKPOINT.md`)
-13. UX-IA-12 — Upgrade Flow + Dashboard Polish (pending)
-14. UX-IA-13 — Responsive / Mobile Polish (pending)
-15. UX-IA-14 — Route Cleanup / Redirects (pending)
-16. UX-IA-15 — Visual Edit Mode Foundation (pending — requires UX-IA-08 + UX-IA-10 COMPLETE)
-17. UX-IA-16 — Visual Edit AI Patch Flow (pending — requires UX-IA-15 COMPLETE)
-18. UX-IA-17 — Visual Edit Undo / Checkpoint Integration (pending — requires UX-IA-16 COMPLETE)
+5. UX-IA-04 �X Workspace Shell + Sidebar + Home View (COMPLETE and LOCKED �X `docs/UX-IA-04-CHECKPOINT.md`)
+   - UX-IA-04A �X Sidebar shell + view state scaffolding (COMPLETE and LOCKED �X `docs/UX-IA-04A-CHECKPOINT.md`)
+   - UX-IA-04B �X Home view chatbox + prompt-to-project flow (COMPLETE and LOCKED �X `docs/UX-IA-04B-CHECKPOINT.md`)
+   - UX-IA-04C �X Tests + validation + consolidation (COMPLETE and LOCKED �X `docs/UX-IA-04-CHECKPOINT.md`)
+6. UX-IA-05 �X Projects Grid/List + Recent Projects (COMPLETE and LOCKED �X `docs/UX-IA-05-CHECKPOINT.md`)
+7. UX-IA-06 �X Templates / Community View (COMPLETE and LOCKED �X docs/UX-IA-06-CHECKPOINT.md)
+8. UX-IA-07 �X Account Menu + Settings + Language/Theme (COMPLETE and LOCKED �X `docs/UX-IA-07-CHECKPOINT.md`)
+9. UX-IA-08 �X Project Mode Shell (COMPLETE and LOCKED �X `docs/UX-IA-08-CHECKPOINT.md`)
+   - UX-IA-08A �X Project Mode Layout Shell + Back Header (COMPLETE and LOCKED �X `docs/UX-IA-08A-CHECKPOINT.md`)
+   - UX-IA-08B �X Tab Registry + Tab Bar + AI Panel Collapse (COMPLETE and LOCKED �X `docs/UX-IA-08B-CHECKPOINT.md`)
+   - UX-IA-08C �X Tests + Validation + Consolidation (COMPLETE and LOCKED �X `docs/UX-IA-08-CHECKPOINT.md`)
+10. UX-IA-09 �X Project AI + History Panel (COMPLETE and LOCKED �X `docs/UX-IA-09-CHECKPOINT.md`)
+11. UX-IA-10 �X Preview + Code & Files Tabs (COMPLETE and LOCKED �X `docs/UX-IA-10-CHECKPOINT.md`)
+12. UX-IA-11 �X Future Product Tab Placeholders (COMPLETE and LOCKED �X `docs/UX-IA-11-CHECKPOINT.md`)
+13. UX-IA-12 �X Upgrade Flow + Dashboard Polish (COMPLETE and LOCKED �X `docs/UX-IA-12-CHECKPOINT.md`)
+14. UX-IA-13 �X Responsive / Mobile Polish (pending)
+15. UX-IA-14 �X Route Cleanup / Redirects (pending)
+16. UX-IA-15 �X Visual Edit Mode Foundation (pending �X requires UX-IA-08 + UX-IA-10 COMPLETE)
+17. UX-IA-16 �X Visual Edit AI Patch Flow (pending �X requires UX-IA-15 COMPLETE)
+18. UX-IA-17 �X Visual Edit Undo / Checkpoint Integration (pending �X requires UX-IA-16 COMPLETE)
 
 ---
 
@@ -22214,29 +22214,29 @@ Transform the public landing page into the "Build anything" entry experience wit
 ### UX-IA-04: Workspace Shell + Sidebar + Home View
 
 **Task ID:** UX-IA-04
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign �X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** COMPLETE and LOCKED — `docs/UX-IA-04-CHECKPOINT.md`
-**Source:** `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-04 section
+**Status:** COMPLETE and LOCKED �X `docs/UX-IA-04-CHECKPOINT.md`
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-04 section
 **Depends on:** UX-IA-03 (COMPLETE and LOCKED), AUTH-APP-01 (COMPLETE and LOCKED), AUTH-APP-02 (COMPLETE and LOCKED), PROJ-02-01 (COMPLETE and LOCKED), PROJ-02-02 (COMPLETE and LOCKED), PROJ-02-03 (COMPLETE and LOCKED)
-**Risk:** Medium-High — split into 3 child slices to reduce per-pass risk
-**Loop:** 4-step (plan — implement — verify tests — consolidate)
+**Risk:** Medium-High �X split into 3 child slices to reduce per-pass risk
+**Loop:** 4-step (plan �X implement �X verify tests �X consolidate)
 **Model:** Opus 4.6 for plan phase and major implementation; Sonnet 4.6 for registration and consolidation
 
 **Objective:**
 Evolve `WorkspaceShell` into a sidebar + right content layout. Add `WorkspaceView` state (`home | projects | templates | project`). Implement the authenticated Home view with a "Build anything" chatbox. Submitting a prompt from Home creates a project and opens project mode. Extract or prepare a `WorkspaceSidebar` component. Reuse existing workspace/project state and handlers from `page.tsx`. Reuse `DashboardSummary` data for compact sidebar usage. Preserve all existing workspace/project/AI/file/preview/history behavior.
 
 **Child slices:**
-- UX-IA-04A — Sidebar shell + view state scaffolding (COMPLETE and LOCKED — `docs/UX-IA-04A-CHECKPOINT.md`)
-- UX-IA-04B — Home view chatbox + prompt-to-project flow (COMPLETE and LOCKED — `docs/UX-IA-04B-CHECKPOINT.md`)
-- UX-IA-04C — Tests + validation + consolidation (COMPLETE and LOCKED — `docs/UX-IA-04-CHECKPOINT.md`)
+- UX-IA-04A �X Sidebar shell + view state scaffolding (COMPLETE and LOCKED �X `docs/UX-IA-04A-CHECKPOINT.md`)
+- UX-IA-04B �X Home view chatbox + prompt-to-project flow (COMPLETE and LOCKED �X `docs/UX-IA-04B-CHECKPOINT.md`)
+- UX-IA-04C �X Tests + validation + consolidation (COMPLETE and LOCKED �X `docs/UX-IA-04-CHECKPOINT.md`)
 
 **Bounded scope:**
-- `frontend/components/workspace/workspace-shell.tsx` — layout restructure: sidebar + right content
-- `frontend/components/workspace/workspace-shell.test.tsx` — update tests for new layout and view state
-- `frontend/app/[locale]/app/page.tsx` — add `workspaceView` state, wire create-project-from-prompt
-- New: `frontend/components/workspace/workspace-sidebar.tsx` — extracted sidebar component
+- `frontend/components/workspace/workspace-shell.tsx` �X layout restructure: sidebar + right content
+- `frontend/components/workspace/workspace-shell.test.tsx` �X update tests for new layout and view state
+- `frontend/app/[locale]/app/page.tsx` �X add `workspaceView` state, wire create-project-from-prompt
+- New: `frontend/components/workspace/workspace-sidebar.tsx` �X extracted sidebar component
 
 **Required behavior:**
 - `WorkspaceShell` renders sidebar (~260px fixed left) + right content area (flex-1)
@@ -22264,7 +22264,7 @@ Evolve `WorkspaceShell` into a sidebar + right content layout. Add `WorkspaceVie
 - No breaking of PROJ-02-01/02/03 project-open hydration
 
 **Acceptance checks:**
-- UX-IA-04 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- UX-IA-04 registered in TASKS.md and TASKS_BACKLOG_FULL.md �X DONE
 - Sidebar renders with workspace selector + Home/Projects/Templates nav items
 - Home view shows "Build anything" chatbox
 - Prompt submission from Home creates a project and opens project mode
@@ -22298,10 +22298,10 @@ PROJ-02-01 (Refactor Project Open Into Deterministic Workspace Hydration Flow) i
 
 **Task ID:** UX-IA-04A
 **Parent:** UX-IA-04
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign �X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** COMPLETE and LOCKED — `docs/UX-IA-04A-CHECKPOINT.md`
+**Status:** COMPLETE and LOCKED �X `docs/UX-IA-04A-CHECKPOINT.md`
 **Source:** UX-IA-04 plan phase result (May 2026)
 **Depends on:** UX-IA-04 plan phase (COMPLETE)
 **Risk:** Medium
@@ -22310,10 +22310,10 @@ PROJ-02-01 (Refactor Project Open Into Deterministic Workspace Hydration Flow) i
 Add `WorkspaceView` state to `page.tsx`. Create `workspace-sidebar.tsx`. Restructure `workspace-shell.tsx` layout from the existing header+aside+main arrangement to sidebar+right-content with view-based rendering. Wire nav items. Render recent projects and compact usage. Home view shows static placeholder only. Preserve all existing project/AI/preview/history behavior unchanged.
 
 **Bounded scope:**
-- `frontend/app/[locale]/app/page.tsx` — add `workspaceView: WorkspaceView` state; add `onWorkspaceViewChange` handler; pass both as new props to `WorkspaceShell`
-- `frontend/components/workspace/workspace-shell.tsx` — restructure outer layout to sidebar + right content; add view-based rendering (`home` placeholder / `projects` shows existing `HistoryProjectPanel` content / `templates` shows existing public project content / `project` shows existing chat/editor/preview/history grid); accept new `workspaceView` + `onWorkspaceViewChange` props; pass sidebar data as props to `WorkspaceSidebar`
-- `frontend/components/workspace/workspace-sidebar.tsx` (new) — sidebar component: workspace dropdown, Home/Projects/Templates nav items, recent projects list (top 5 by `updatedAt`), compact usage display, session advanced drawer
-- `frontend/components/workspace/workspace-shell.test.tsx` — minimal adjustments to keep existing tests passing; defer heavy test additions to UX-IA-04C
+- `frontend/app/[locale]/app/page.tsx` �X add `workspaceView: WorkspaceView` state; add `onWorkspaceViewChange` handler; pass both as new props to `WorkspaceShell`
+- `frontend/components/workspace/workspace-shell.tsx` �X restructure outer layout to sidebar + right content; add view-based rendering (`home` placeholder / `projects` shows existing `HistoryProjectPanel` content / `templates` shows existing public project content / `project` shows existing chat/editor/preview/history grid); accept new `workspaceView` + `onWorkspaceViewChange` props; pass sidebar data as props to `WorkspaceSidebar`
+- `frontend/components/workspace/workspace-sidebar.tsx` (new) �X sidebar component: workspace dropdown, Home/Projects/Templates nav items, recent projects list (top 5 by `updatedAt`), compact usage display, session advanced drawer
+- `frontend/components/workspace/workspace-shell.test.tsx` �X minimal adjustments to keep existing tests passing; defer heavy test additions to UX-IA-04C
 
 **WorkspaceView type:**
 ```typescript
@@ -22322,13 +22322,13 @@ type WorkspaceView = 'home' | 'projects' | 'templates' | 'project';
 Default: `'home'`. Lives in `page.tsx` as `useState<WorkspaceView>('home')`.
 
 **WorkspaceSidebar props (minimum set):**
-- `workspaces` / `selectedWorkspaceId` / `onSelectWorkspaceId` — workspace dropdown data
-- `workspaceView` / `onWorkspaceViewChange` — active view + setter
-- `recentProjects` — top 5 from `workspaceProjects` by `updatedAt`
-- `onOpenRecentProject: (projectId: string) => void` — maps to `handleResumeWorkspaceProjectById`
-- `userSummary` / `usageSummary` / `quotaSummary` — compact usage display (optional; show only when available)
-- `onLogout` — existing
-- `locale` — existing
+- `workspaces` / `selectedWorkspaceId` / `onSelectWorkspaceId` �X workspace dropdown data
+- `workspaceView` / `onWorkspaceViewChange` �X active view + setter
+- `recentProjects` �X top 5 from `workspaceProjects` by `updatedAt`
+- `onOpenRecentProject: (projectId: string) => void` �X maps to `handleResumeWorkspaceProjectById`
+- `userSummary` / `usageSummary` / `quotaSummary` �X compact usage display (optional; show only when available)
+- `onLogout` �X existing
+- `locale` �X existing
 
 **Non-goals:**
 - No Home prompt-to-project flow (UX-IA-04B)
@@ -22347,9 +22347,9 @@ Default: `'home'`. Lives in `page.tsx` as `useState<WorkspaceView>('home')`.
 - `workspace.upgrade`, `workspace.noProjects`, `common.appName`
 
 **Validation:**
-- `npx tsc --noEmit` (from `frontend/`) — must pass
-- `npm test` (from `frontend/`) — must pass
-- `npm run build` (from `frontend/`) — run if practical
+- `npx tsc --noEmit` (from `frontend/`) �X must pass
+- `npm test` (from `frontend/`) �X must pass
+- `npm run build` (from `frontend/`) �X run if practical
 
 **Reference:** See TASKS.md -> UX-IA-04A.
 
@@ -22359,20 +22359,20 @@ Default: `'home'`. Lives in `page.tsx` as `useState<WorkspaceView>('home')`.
 
 **Task ID:** UX-IA-04B
 **Parent:** UX-IA-04
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign �X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** COMPLETE and LOCKED — `docs/UX-IA-04B-CHECKPOINT.md`
+**Status:** COMPLETE and LOCKED �X `docs/UX-IA-04B-CHECKPOINT.md`
 **Source:** UX-IA-04 plan phase result (May 2026)
-**Depends on:** UX-IA-04A (COMPLETE and LOCKED — `docs/UX-IA-04A-CHECKPOINT.md`)
+**Depends on:** UX-IA-04A (COMPLETE and LOCKED �X `docs/UX-IA-04A-CHECKPOINT.md`)
 **Risk:** Medium
 
 **Objective:**
 Implement the Home view "Build anything" chatbox and the prompt-to-project creation flow. Add `handleCreateProjectFromPrompt` to `page.tsx`. Consume `sessionStorage` pending prompt written by UX-IA-03 landing page. Pre-fill prompt into existing `chatPromptInput` state so it's ready when project mode opens.
 
 **Bounded scope:**
-- `frontend/app/[locale]/app/page.tsx` — add `handleCreateProjectFromPrompt(prompt: string)` handler (auto-generates project name from prompt, sets `projectNameInput`, sets `chatPromptInput`, calls `handleCreateWorkspaceProject`, sets `workspaceView = 'project'` on success); add sessionStorage pending-prompt consumption on mount; wire new `onCreateProjectFromPrompt` prop to `WorkspaceShell`
-- `frontend/components/workspace/workspace-shell.tsx` — implement Home view content: "Build anything" headline, prompt textarea, submit button; wire `onCreateProjectFromPrompt` prop; use existing `workspace.*` i18n keys
+- `frontend/app/[locale]/app/page.tsx` �X add `handleCreateProjectFromPrompt(prompt: string)` handler (auto-generates project name from prompt, sets `projectNameInput`, sets `chatPromptInput`, calls `handleCreateWorkspaceProject`, sets `workspaceView = 'project'` on success); add sessionStorage pending-prompt consumption on mount; wire new `onCreateProjectFromPrompt` prop to `WorkspaceShell`
+- `frontend/components/workspace/workspace-shell.tsx` �X implement Home view content: "Build anything" headline, prompt textarea, submit button; wire `onCreateProjectFromPrompt` prop; use existing `workspace.*` i18n keys
 
 **sessionStorage key:** `aisandbox_pending_prompt` (established by UX-IA-03)
 **Consumption behavior:** Read once on Home view mount; clear the key immediately after reading; set as initial home prompt input.
@@ -22398,8 +22398,8 @@ Implement the Home view "Build anything" chatbox and the prompt-to-project creat
 - `workspace.buildAnything`, `workspace.describeBuild`, `workspace.start`, `workspace.newProject`
 
 **Validation:**
-- `npx tsc --noEmit` (from `frontend/`) — must pass
-- `npm test` (from `frontend/`) — must pass
+- `npx tsc --noEmit` (from `frontend/`) �X must pass
+- `npm test` (from `frontend/`) �X must pass
 
 **Reference:** See TASKS.md -> UX-IA-04B.
 
@@ -22409,19 +22409,19 @@ Implement the Home view "Build anything" chatbox and the prompt-to-project creat
 
 **Task ID:** UX-IA-04C
 **Parent:** UX-IA-04
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign �X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** COMPLETE and LOCKED — `docs/UX-IA-04-CHECKPOINT.md`
+**Status:** COMPLETE and LOCKED �X `docs/UX-IA-04-CHECKPOINT.md`
 **Source:** UX-IA-04 plan phase result (May 2026)
-**Depends on:** UX-IA-04B (COMPLETE and LOCKED — `docs/UX-IA-04B-CHECKPOINT.md`)
+**Depends on:** UX-IA-04B (COMPLETE and LOCKED �X `docs/UX-IA-04B-CHECKPOINT.md`)
 **Risk:** Low-Medium
 
 **Objective:**
 Update and extend `workspace-shell.test.tsx` for the new layout structure, sidebar, view state, and Home chatbox. Run full validation suite. Write checkpoint document and close UX-IA-04.
 
 **Bounded scope:**
-- `frontend/components/workspace/workspace-shell.test.tsx` — update tests broken by layout restructure; add new tests:
+- `frontend/components/workspace/workspace-shell.test.tsx` �X update tests broken by layout restructure; add new tests:
   - `WorkspaceSidebar` renders nav items (Home, Projects, Templates)
   - `WorkspaceSidebar` renders workspace dropdown
   - `WorkspaceSidebar` renders recent projects list
@@ -22431,19 +22431,19 @@ Update and extend `workspace-shell.test.tsx` for the new layout structure, sideb
   - Home view submit calls `onCreateProjectFromPrompt` with prompt text
   - `project` view renders existing chat/editor/preview grid
   - `projects` view renders existing project list content
-- `docs/UX-IA-04-CHECKPOINT.md` (new) — checkpoint document
-- `TASKS.md` — mark UX-IA-04 and all child slices COMPLETE and LOCKED
-- `TASKS_BACKLOG_FULL.md` — mark UX-IA-04 and all child slices COMPLETE and LOCKED
+- `docs/UX-IA-04-CHECKPOINT.md` (new) �X checkpoint document
+- `TASKS.md` �X mark UX-IA-04 and all child slices COMPLETE and LOCKED
+- `TASKS_BACKLOG_FULL.md` �X mark UX-IA-04 and all child slices COMPLETE and LOCKED
 
 **Non-goals:**
 - No new features
 - No source code changes beyond test fixes and checkpoint/governance docs
 
 **Validation:**
-- `npx tsc --noEmit` (from `frontend/`) — must pass
-- `npm test` (from `frontend/`) — must pass, including new test cases
-- `npm run build` (from `frontend/`) — must pass
-- `ReadLints` on all touched files — no introduced errors
+- `npx tsc --noEmit` (from `frontend/`) �X must pass
+- `npm test` (from `frontend/`) �X must pass, including new test cases
+- `npm run build` (from `frontend/`) �X must pass
+- `ReadLints` on all touched files �X no introduced errors
 
 **Reference:** See TASKS.md -> UX-IA-04C.
 ---
@@ -22451,25 +22451,25 @@ Update and extend `workspace-shell.test.tsx` for the new layout structure, sideb
 ### UX-IA-05: Projects Grid/List + Recent Projects
 
 **Task ID:** UX-IA-05
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign �X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** COMPLETE and LOCKED — `docs/UX-IA-05-CHECKPOINT.md`
-**Source:** `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-05 section
-**Depends on:** UX-IA-04 (COMPLETE and LOCKED — `docs/UX-IA-04-CHECKPOINT.md`)
+**Status:** COMPLETE and LOCKED �X `docs/UX-IA-05-CHECKPOINT.md`
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-05 section
+**Depends on:** UX-IA-04 (COMPLETE and LOCKED �X `docs/UX-IA-04-CHECKPOINT.md`)
 **Risk:** Low-Medium
-**Loop:** 3-step (implement — verify tests — consolidate)
+**Loop:** 3-step (implement �X verify tests �X consolidate)
 **Model:** Sonnet 4.6
 
 **Objective:**
 Build the Projects view with project cards in grid/list form. Make sidebar recent projects clickable. Reuse existing `workspaceProjects`, `onOpenWorkspaceProject`, `onCreateWorkspaceProject`, `onResumeWorkspaceProjectById` handlers from `page.tsx`. Introduce a `WorkspaceProjectCard` component. Add grid/list toggle if safe in this slice. Implement empty state for no projects. Preserve all UX-IA-04 sidebar, Home chatbox, and project-mode behavior unchanged.
 
 **Bounded scope:**
-- `frontend/components/workspace/workspace-shell.tsx` — replace Projects view placeholder content with grid/list of project cards; add grid/list toggle
-- New: `frontend/components/workspace/workspace-project-card.tsx` — project card component (project name, last updated, open/resume CTA)
-- `frontend/components/workspace/workspace-sidebar.tsx` — make recent project items clickable (invoke `onOpenWorkspaceProject` or `onResumeWorkspaceProjectById`; transition to `project` view)
-- `frontend/components/workspace/workspace-shell.test.tsx` — tests for projects grid render, project card render, grid/list toggle, empty state, recent project click behavior
-- Possibly: `frontend/app/[locale]/app/page.tsx` — only if view wiring for the projects view needs adjustment
+- `frontend/components/workspace/workspace-shell.tsx` �X replace Projects view placeholder content with grid/list of project cards; add grid/list toggle
+- New: `frontend/components/workspace/workspace-project-card.tsx` �X project card component (project name, last updated, open/resume CTA)
+- `frontend/components/workspace/workspace-sidebar.tsx` �X make recent project items clickable (invoke `onOpenWorkspaceProject` or `onResumeWorkspaceProjectById`; transition to `project` view)
+- `frontend/components/workspace/workspace-shell.test.tsx` �X tests for projects grid render, project card render, grid/list toggle, empty state, recent project click behavior
+- Possibly: `frontend/app/[locale]/app/page.tsx` �X only if view wiring for the projects view needs adjustment
 
 **Required behavior:**
 - Projects view shows `WorkspaceProjectCard` tiles for each project in `workspaceProjects` for the selected workspace
@@ -22515,34 +22515,34 @@ Build the Projects view with project cards in grid/list form. Make sidebar recen
 - No regressions to UX-IA-04 sidebar, Home view, or project-mode behavior
 - No regressions to AUTH-APP-01/02 or PROJ-02 hydration chain
 
-**Reference:** See TASKS.md -> UX-IA-05. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-05 section.
+**Reference:** See TASKS.md -> UX-IA-05. See `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-05 section.
 
 ---
 
 ### UX-IA-06: Templates / Community View
 
 **Task ID:** UX-IA-06
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign �X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** COMPLETE and LOCKED — `docs/UX-IA-06-CHECKPOINT.md`
-**Source:** `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-06 section
-**Depends on:** UX-IA-05 (COMPLETE and LOCKED — `docs/UX-IA-05-CHECKPOINT.md`)
+**Status:** COMPLETE and LOCKED �X `docs/UX-IA-06-CHECKPOINT.md`
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-06 section
+**Depends on:** UX-IA-05 (COMPLETE and LOCKED �X `docs/UX-IA-05-CHECKPOINT.md`)
 **Risk:** Low
-**Loop:** 3-step (implement — verify tests — consolidate)
+**Loop:** 3-step (implement �X verify tests �X consolidate)
 **Model:** Sonnet 4.6
 
 **Objective:**
 Templates view shows public/community projects with search and fork capability. Reuse existing `loadPublicWorkspaceProjects` data and public project state. Reuse existing `onForkPublicWorkspaceProject` and `onViewPublicWorkspaceProject` handlers where already available. Add template/project card UI reusing `WorkspaceProjectCard` if safe; extend or create new card component only if the prop contract is insufficient. Add search/filter UI if safe in this slice (local state only; no new backend endpoints). Forking a public project creates a copy in user's workspace and opens project mode using the existing handler flow. Preserve all UX-IA-04 sidebar/home/project view scaffolding and UX-IA-05 project grid/list behavior unchanged.
 
 **Bounded scope:**
-- `frontend/components/workspace/workspace-shell.tsx` — replace Templates view placeholder with public project browsing surface; wire `loadPublicWorkspaceProjects`, `onForkPublicWorkspaceProject`, `onViewPublicWorkspaceProject`
-- `frontend/components/workspace/workspace-project-card.tsx` — reuse for template cards if prop contract is compatible; extend only if props are insufficient; create new template card component only if `WorkspaceProjectCard` cannot be safely adapted
-- `frontend/components/workspace/workspace-shell.test.tsx` — tests for templates view render, template card display, fork action handler invocation, search/filter behavior if included
-- `frontend/messages/en.json` — add any new `workspace.templates*` i18n keys required for new user-facing strings
-- `frontend/messages/zh-TW.json` — same
-- `frontend/messages/zh-CN.json` — same
-- Possibly: `frontend/app/[locale]/app/page.tsx` — only if `onForkPublicWorkspaceProject` or `onViewPublicWorkspaceProject` handler wiring is confirmed missing from existing `WorkspaceShell` props
+- `frontend/components/workspace/workspace-shell.tsx` �X replace Templates view placeholder with public project browsing surface; wire `loadPublicWorkspaceProjects`, `onForkPublicWorkspaceProject`, `onViewPublicWorkspaceProject`
+- `frontend/components/workspace/workspace-project-card.tsx` �X reuse for template cards if prop contract is compatible; extend only if props are insufficient; create new template card component only if `WorkspaceProjectCard` cannot be safely adapted
+- `frontend/components/workspace/workspace-shell.test.tsx` �X tests for templates view render, template card display, fork action handler invocation, search/filter behavior if included
+- `frontend/messages/en.json` �X add any new `workspace.templates*` i18n keys required for new user-facing strings
+- `frontend/messages/zh-TW.json` �X same
+- `frontend/messages/zh-CN.json` �X same
+- Possibly: `frontend/app/[locale]/app/page.tsx` �X only if `onForkPublicWorkspaceProject` or `onViewPublicWorkspaceProject` handler wiring is confirmed missing from existing `WorkspaceShell` props
 
 **Required behavior:**
 - Templates view shows public project cards for all results from `loadPublicWorkspaceProjects`
@@ -22593,33 +22593,33 @@ Templates view shows public/community projects with search and fork capability. 
 
 **Checkpoint:** `docs/UX-IA-06-CHECKPOINT.md`
 
-**Reference:** See TASKS.md -> UX-IA-06. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-06 section.
+**Reference:** See TASKS.md -> UX-IA-06. See `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-06 section.
 ---
 
 ### UX-IA-07: Account Menu + Settings + Language/Theme
 
 **Task ID:** UX-IA-07
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign �X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** COMPLETE and LOCKED — `docs/UX-IA-07-CHECKPOINT.md`
-**Source:** `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-07 section
-**Depends on:** UX-IA-06 (COMPLETE and LOCKED — `docs/UX-IA-06-CHECKPOINT.md`)
+**Status:** COMPLETE and LOCKED �X `docs/UX-IA-07-CHECKPOINT.md`
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-07 section
+**Depends on:** UX-IA-06 (COMPLETE and LOCKED �X `docs/UX-IA-06-CHECKPOINT.md`)
 **Risk:** Low
-**Loop:** 2-step (implement — consolidate)
+**Loop:** 2-step (implement �X consolidate)
 **Model:** Sonnet 4.6
 
 **Objective:**
 Add account avatar in the workspace sidebar footer that opens a popup account menu. Integrate the existing `LanguageSwitcher` mechanism into the account menu. Add theme preference placeholder (light active; dark deferred). Add Settings, Profile, Help, and Referral placeholder menu items. Reuse existing user identity and logout flow already present in `page.tsx`. Preserve all UX-IA-04 sidebar/home/project-mode, UX-IA-05 projects view, UX-IA-06 templates view, and auth/session behavior unchanged.
 
 **Bounded scope:**
-- `frontend/components/workspace/workspace-sidebar.tsx` — add account avatar in sidebar footer; wire popup menu toggle
-- `frontend/components/workspace/workspace-account-menu.tsx` — **new** presentational account menu popup component
-- `frontend/components/workspace/workspace-shell.test.tsx` — tests for account menu open/close, language switch in menu, logout, placeholder items rendering
-- `frontend/messages/en.json` — add new i18n keys for account menu user-facing strings (under `workspace.*` namespace)
-- `frontend/messages/zh-TW.json` — same
-- `frontend/messages/zh-CN.json` — same
-- Possibly: `frontend/components/workspace/workspace-shell.tsx` — only if account-menu-related props are confirmed missing from existing `WorkspaceShell` prop surface
+- `frontend/components/workspace/workspace-sidebar.tsx` �X add account avatar in sidebar footer; wire popup menu toggle
+- `frontend/components/workspace/workspace-account-menu.tsx` �X **new** presentational account menu popup component
+- `frontend/components/workspace/workspace-shell.test.tsx` �X tests for account menu open/close, language switch in menu, logout, placeholder items rendering
+- `frontend/messages/en.json` �X add new i18n keys for account menu user-facing strings (under `workspace.*` namespace)
+- `frontend/messages/zh-TW.json` �X same
+- `frontend/messages/zh-CN.json` �X same
+- Possibly: `frontend/components/workspace/workspace-shell.tsx` �X only if account-menu-related props are confirmed missing from existing `WorkspaceShell` prop surface
 
 **Required behavior:**
 - Account avatar rendered in sidebar footer area; clicking it toggles the account menu popup open/closed
@@ -22675,20 +22675,20 @@ Add account avatar in the workspace sidebar footer that opens a popup account me
 
 **Checkpoint:** `docs/UX-IA-07-CHECKPOINT.md`
 
-**Reference:** See TASKS.md -> UX-IA-07. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-07 section.
+**Reference:** See TASKS.md -> UX-IA-07. See `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-07 section.
 
 ---
 
 ### UX-IA-08: Project Mode Shell (Parent)
 
 **Task ID:** UX-IA-08
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign �X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/UX-IA-08-CHECKPOINT.md`
-**Source:** `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-08 section
-**Depends on:** UX-IA-07 (COMPLETE and LOCKED — `docs/UX-IA-07-CHECKPOINT.md`)
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-08 section
+**Depends on:** UX-IA-07 (COMPLETE and LOCKED �X `docs/UX-IA-07-CHECKPOINT.md`)
 **Risk:** Medium-High
 **Model:** Opus 4.6 (UX-IA-08A, UX-IA-08B); Sonnet 4.6 (UX-IA-08C)
 
@@ -22696,47 +22696,47 @@ Add account avatar in the workspace sidebar footer that opens a popup account me
 When a project is opened, the workspace transforms into project mode: top project header with back button, left AI assistant panel, right tabbed workspace shell with tab registry and orientation toggle. Preserve all existing project open/resume/hydration behavior, AI chat/file action flows, and editor/preview/history behavior.
 
 **Plan decisions recorded:**
-- No `workspace-project-mode.tsx` extraction — project mode layout stays as conditional JSX in `workspace-shell.tsx` to avoid threading ~190 props through an intermediary
-- `page.tsx` does not need changes — back button uses existing `onWorkspaceViewChange('projects')` callback
+- No `workspace-project-mode.tsx` extraction �X project mode layout stays as conditional JSX in `workspace-shell.tsx` to avoid threading ~190 props through an intermediary
+- `page.tsx` does not need changes �X back button uses existing `onWorkspaceViewChange('projects')` callback
 - Sidebar remains visible in project mode
 - Preview + Code tabs wired in UX-IA-08B using existing `WorkspacePreviewPanel` and `WorkspaceEditorPanel` (not deferred to UX-IA-10)
 - UX-IA-10 owns later full-height sizing, panel refinements, and file tree layout changes
 - Tab state is local to `WorkspaceShell` (`activeTabId` as `useState`; orientation and collapse preferences in localStorage with SSR guards)
 
 **Child slices:**
-- UX-IA-08A — Project Mode Layout Shell + Back Header (COMPLETE and LOCKED — `docs/UX-IA-08A-CHECKPOINT.md`)
-- UX-IA-08B — Tab Registry + Tab Bar + AI Panel Collapse (COMPLETE and LOCKED — `docs/UX-IA-08B-CHECKPOINT.md`)
-- UX-IA-08C — Tests + Validation + Consolidation (COMPLETE and LOCKED — `docs/UX-IA-08-CHECKPOINT.md`)
+- UX-IA-08A �X Project Mode Layout Shell + Back Header (COMPLETE and LOCKED �X `docs/UX-IA-08A-CHECKPOINT.md`)
+- UX-IA-08B �X Tab Registry + Tab Bar + AI Panel Collapse (COMPLETE and LOCKED �X `docs/UX-IA-08B-CHECKPOINT.md`)
+- UX-IA-08C �X Tests + Validation + Consolidation (COMPLETE and LOCKED �X `docs/UX-IA-08-CHECKPOINT.md`)
 
 **Checkpoint:** `docs/UX-IA-08-CHECKPOINT.md`
 
-**Reference:** See TASKS.md -> UX-IA-08. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-08 section.
+**Reference:** See TASKS.md -> UX-IA-08. See `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-08 section.
 
 ---
 
 ### UX-IA-08A: Project Mode Layout Shell + Back Header
 
 **Task ID:** UX-IA-08A
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign �X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/UX-IA-08A-CHECKPOINT.md`
-**Parent:** UX-IA-08 — Project Mode Shell
+**Parent:** UX-IA-08 �X Project Mode Shell
 **Depends on:** UX-IA-08 plan phase COMPLETE; UX-IA-07 (COMPLETE and LOCKED)
 **Risk:** Medium-High
-**Loop:** 3-step (implement — verify tests — consolidate into parent)
+**Loop:** 3-step (implement �X verify tests �X consolidate into parent)
 **Model:** Opus 4.6
 
 **Objective:**
 Restructure `projectWorkspaceContent` in `workspace-shell.tsx` from the current 3-column grid layout into the project-mode layout: top header bar (project name + back button), left AI panel zone, right content zone. Chat, exec, build, and history content move into the left AI panel zone. Editor and preview content move into the right content zone (stacked or side-by-side, no tabs yet). Back button calls `onWorkspaceViewChange('projects')`. No new props to `WorkspaceShellProps` or `page.tsx` changes.
 
 **Bounded scope:**
-- `frontend/components/workspace/workspace-shell.tsx` — restructure `projectWorkspaceContent` JSX into project-mode layout (header + left zone + right zone); back button wired to `props.onWorkspaceViewChange?.('projects')`
-- `frontend/components/workspace/workspace-shell.test.tsx` — update any assertions affected by layout change; add tests for project header, back button, AI panel zone, right content zone
-- `frontend/messages/en.json` — add `project.backToProjects` key if `common.back` alone is insufficient; no other new keys expected
-- `frontend/messages/zh-TW.json` — same
-- `frontend/messages/zh-CN.json` — same
+- `frontend/components/workspace/workspace-shell.tsx` �X restructure `projectWorkspaceContent` JSX into project-mode layout (header + left zone + right zone); back button wired to `props.onWorkspaceViewChange?.('projects')`
+- `frontend/components/workspace/workspace-shell.test.tsx` �X update any assertions affected by layout change; add tests for project header, back button, AI panel zone, right content zone
+- `frontend/messages/en.json` �X add `project.backToProjects` key if `common.back` alone is insufficient; no other new keys expected
+- `frontend/messages/zh-TW.json` �X same
+- `frontend/messages/zh-CN.json` �X same
 
 **Required behavior:**
 - When `workspaceView === 'project'`, renders: top header bar with back button + project name; left AI panel zone (~320px); right content zone (flex-1)
@@ -22760,8 +22760,8 @@ Restructure `projectWorkspaceContent` in `workspace-shell.tsx` from the current 
 - UX-IA-07 (COMPLETE and LOCKED): sidebar with account menu; all invariants locked
 - UX-IA-04 (COMPLETE and LOCKED): `WorkspaceView` state; `onWorkspaceViewChange` callback; `PROJ-02-01` hydration chain
 - All AI-WS handlers (AI-WS-01 through AI-WS-06 + all hotfixes): preserved as-is in left AI panel zone
-- `WorkspaceChatPanel`, `WorkspaceExecPanel`, `WorkspaceBuildPanel`, `historyAndDashboardContent` — moved into left zone; props unchanged
-- `WorkspaceEditorPanel`, `WorkspacePreviewPanel` — moved into right zone; props unchanged
+- `WorkspaceChatPanel`, `WorkspaceExecPanel`, `WorkspaceBuildPanel`, `historyAndDashboardContent` �X moved into left zone; props unchanged
+- `WorkspaceEditorPanel`, `WorkspacePreviewPanel` �X moved into right zone; props unchanged
 
 **Risks / invariants:**
 - `projectWorkspaceContent` is a JSX variable inside `WorkspaceShell`; restructuring it is purely a layout change with no prop interface impact
@@ -22772,12 +22772,12 @@ Restructure `projectWorkspaceContent` in `workspace-shell.tsx` from the current 
 - All new user-facing strings must use i18n keys; `common.back` already exists
 
 **Tests to add/update:**
-- Update: `renders existing workspace content when project view is selected` — adjust if container structure changes
-- New: `renders project header in project mode layout` — `data-testid="workspace-project-header"` present
-- New: `renders back button in project header` — `data-testid="workspace-project-back-button"` present
-- New: `back button calls onWorkspaceViewChange with projects` — click fires handler
-- New: `renders AI panel zone in project mode layout` — `data-testid="workspace-project-ai-panel"` present
-- New: `renders right content zone in project mode layout` — `data-testid="workspace-project-right-zone"` present
+- Update: `renders existing workspace content when project view is selected` �X adjust if container structure changes
+- New: `renders project header in project mode layout` �X `data-testid="workspace-project-header"` present
+- New: `renders back button in project header` �X `data-testid="workspace-project-back-button"` present
+- New: `back button calls onWorkspaceViewChange with projects` �X click fires handler
+- New: `renders AI panel zone in project mode layout` �X `data-testid="workspace-project-ai-panel"` present
+- New: `renders right content zone in project mode layout` �X `data-testid="workspace-project-right-zone"` present
 
 **Acceptance checks:**
 - Project header renders with back button when `workspaceView === 'project'`
@@ -22791,35 +22791,35 @@ Restructure `projectWorkspaceContent` in `workspace-shell.tsx` from the current 
 - `npm run build` passes (from `frontend/`)
 - No regressions to UX-IA-04 through UX-IA-07, AUTH-APP-01/02, or PROJ-02 hydration chain
 
-**Reference:** See TASKS.md -> UX-IA-08A. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-08 section.
+**Reference:** See TASKS.md -> UX-IA-08A. See `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-08 section.
 
 ---
 
 ### UX-IA-08B: Tab Registry + Tab Bar + AI Panel Collapse
 
 **Task ID:** UX-IA-08B
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign �X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/UX-IA-08B-CHECKPOINT.md`
-**Parent:** UX-IA-08 — Project Mode Shell
-**Depends on:** UX-IA-08A (COMPLETE and LOCKED — `docs/UX-IA-08A-CHECKPOINT.md`)
+**Parent:** UX-IA-08 �X Project Mode Shell
+**Depends on:** UX-IA-08A (COMPLETE and LOCKED �X `docs/UX-IA-08A-CHECKPOINT.md`)
 **Risk:** Medium
-**Loop:** 3-step (implement — verify tests — consolidate into parent)
+**Loop:** 3-step (implement �X verify tests �X consolidate into parent)
 **Model:** Opus 4.6
 
 **Objective:**
 Create the `TabDefinition` interface and `TAB_REGISTRY` array. Create a `WorkspaceTabBar` presentational component. In the right content zone from UX-IA-08A, replace the stacked editor+preview with a tab bar at the top plus active tab content area. Wire the Preview tab to the existing `WorkspacePreviewPanel`; wire the Code & Files tab to the existing `WorkspaceEditorPanel`. All remaining tabs show "Coming soon" placeholder (`tabs.comingSoon`). Add AI panel collapse/expand toggle with localStorage persistence. Add tab orientation preference (horizontal/vertical) with localStorage persistence.
 
 **Bounded scope:**
-- `frontend/components/workspace/workspace-tab-registry.ts` — **new** — `TabDefinition` interface; `TAB_REGISTRY` array with all tabs from master spec
-- `frontend/components/workspace/workspace-tab-bar.tsx` — **new** — presentational tab bar component; receives `tabs`, `activeTabId`, `orientation`, `onTabChange`, `onOrientationToggle` as props; no Next.js hooks
-- `frontend/components/workspace/workspace-shell.tsx` — import tab registry and tab bar; replace right content zone with tab bar + active tab content; add `activeTabId` state; add `tabOrientation` localStorage preference (SSR-guarded); add `aiPanelCollapsed` localStorage preference (SSR-guarded); add AI panel collapse toggle button
-- `frontend/components/workspace/workspace-shell.test.tsx` — add `buildWorkspaceTabBarProps` + `renderWorkspaceTabBar` helpers; add tests for tab bar, active tab content, placeholders, orientation toggle, AI panel collapse
-- `frontend/messages/en.json` — add `project.collapsePanel` and `project.expandPanel` keys if not already present; all `tabs.*` keys already exist
-- `frontend/messages/zh-TW.json` — same
-- `frontend/messages/zh-CN.json` — same
+- `frontend/components/workspace/workspace-tab-registry.ts` �X **new** �X `TabDefinition` interface; `TAB_REGISTRY` array with all tabs from master spec
+- `frontend/components/workspace/workspace-tab-bar.tsx` �X **new** �X presentational tab bar component; receives `tabs`, `activeTabId`, `orientation`, `onTabChange`, `onOrientationToggle` as props; no Next.js hooks
+- `frontend/components/workspace/workspace-shell.tsx` �X import tab registry and tab bar; replace right content zone with tab bar + active tab content; add `activeTabId` state; add `tabOrientation` localStorage preference (SSR-guarded); add `aiPanelCollapsed` localStorage preference (SSR-guarded); add AI panel collapse toggle button
+- `frontend/components/workspace/workspace-shell.test.tsx` �X add `buildWorkspaceTabBarProps` + `renderWorkspaceTabBar` helpers; add tests for tab bar, active tab content, placeholders, orientation toggle, AI panel collapse
+- `frontend/messages/en.json` �X add `project.collapsePanel` and `project.expandPanel` keys if not already present; all `tabs.*` keys already exist
+- `frontend/messages/zh-TW.json` �X same
+- `frontend/messages/zh-CN.json` �X same
 
 **Required behavior:**
 - Tab bar renders all tabs from `TAB_REGISTRY`
@@ -22839,7 +22839,7 @@ Create the `TabDefinition` interface and `TAB_REGISTRY` array. Create a `Workspa
 - No account menu changes
 
 **Design decisions locked (from plan phase):**
-- `workspace-project-mode.tsx` is NOT created — all logic stays in `workspace-shell.tsx`
+- `workspace-project-mode.tsx` is NOT created �X all logic stays in `workspace-shell.tsx`
 - Preview + Code tabs wired to existing panels; UX-IA-10 handles sizing/refinements
 - Tab state is local to `WorkspaceShell` (`useState`); no new props passed through
 - All localStorage reads SSR-guarded with `typeof window !== 'undefined'`
@@ -22852,7 +22852,7 @@ Create the `TabDefinition` interface and `TAB_REGISTRY` array. Create a `Workspa
 
 **Tests to add/update:**
 - New test helpers: `buildWorkspaceTabBarProps(overrides)`, `renderWorkspaceTabBar(overrides)`
-- New: `renders tab bar in project mode right content zone` — `data-testid="workspace-tab-bar"` present
+- New: `renders tab bar in project mode right content zone` �X `data-testid="workspace-tab-bar"` present
 - New: `renders Preview tab in tab bar`
 - New: `renders Code & Files tab in tab bar`
 - New: `renders placeholder tabs with Coming soon text`
@@ -22876,20 +22876,20 @@ Create the `TabDefinition` interface and `TAB_REGISTRY` array. Create a `Workspa
 - `npm run build` passes (from `frontend/`)
 - No regressions to UX-IA-04 through UX-IA-07, AUTH-APP-01/02, PROJ-02 hydration chain, or UX-IA-08A
 
-**Reference:** See TASKS.md -> UX-IA-08B. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-08 section. See `docs/UX-IA-08B-CHECKPOINT.md`.
+**Reference:** See TASKS.md -> UX-IA-08B. See `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-08 section. See `docs/UX-IA-08B-CHECKPOINT.md`.
 
 ---
 
 ### UX-IA-08C: Tests + Validation + Consolidation
 
 **Task ID:** UX-IA-08C
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign �X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/UX-IA-08-CHECKPOINT.md`
-**Parent:** UX-IA-08 — Project Mode Shell
-**Depends on:** UX-IA-08B (COMPLETE and LOCKED — `docs/UX-IA-08B-CHECKPOINT.md`)
+**Parent:** UX-IA-08 �X Project Mode Shell
+**Depends on:** UX-IA-08B (COMPLETE and LOCKED �X `docs/UX-IA-08B-CHECKPOINT.md`)
 **Risk:** Low
 **Loop:** consolidation only
 **Model:** Sonnet 4.6
@@ -22917,41 +22917,41 @@ Run the full validation suite after UX-IA-08B completes. Write `docs/UX-IA-08-CH
 - `ReadLints` shows no errors on touched files
 - `docs/UX-IA-08-CHECKPOINT.md` created and complete
 - TASKS.md and TASKS_BACKLOG_FULL.md updated: UX-IA-08 COMPLETE and LOCKED
-- Family status updated: UX-IA-08 COMPLETE and LOCKED — UX-IA-09 COMPLETE and LOCKED — UX-IA-10 pending
+- Family status updated: UX-IA-08 COMPLETE and LOCKED �X UX-IA-09 COMPLETE and LOCKED �X UX-IA-10 pending
 
 **Checkpoint:** `docs/UX-IA-08-CHECKPOINT.md`
 
-**Reference:** See TASKS.md -> UX-IA-08C. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-08 section.
+**Reference:** See TASKS.md -> UX-IA-08C. See `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-08 section.
 
 ----
 
 ### UX-IA-09: Project AI + History Panel
 
 **Task ID:** UX-IA-09
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign �X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
-**Source:** `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-09 section
-**Depends on:** UX-IA-08 (COMPLETE and LOCKED — `docs/UX-IA-08-CHECKPOINT.md`)
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-09 section
+**Depends on:** UX-IA-08 (COMPLETE and LOCKED �X `docs/UX-IA-08-CHECKPOINT.md`)
 **Risk:** Medium
-**Loop:** 3-step (implement — verify tests — consolidate)
+**Loop:** 3-step (implement �X verify tests �X consolidate)
 **Model:** Sonnet 4.6
 
 **Objective:**
 Wire AI chat into the project mode left panel with a chat/history toggle. Add a history icon/toggle for the project history timeline in the left AI panel zone. Add an inline restore confirmation for project history restore. Preserve all UX-IA-08 invariants, AI-WS file action flows, existing project history restore behavior, PROJ-02 deterministic project hydration, and AUTH/session behavior.
 
 **Bounded scope:**
-- `frontend/components/workspace/workspace-shell.tsx` — wire chat/history toggle in left AI panel zone; add history icon/toggle; add inline restore confirmation; no new props added to `WorkspaceShellProps`; all local state additions only
-- `frontend/components/workspace/workspace-shell.test.tsx` — add/update tests for chat/history toggle, history icon, inline restore confirmation
-- `frontend/messages/en.json` — add new i18n keys required (e.g. `project.showHistory`, `project.showChat`, `project.confirmRestore`, `project.cancelRestore`) only if not already present
-- `frontend/messages/zh-TW.json` — same
-- `frontend/messages/zh-CN.json` — same
+- `frontend/components/workspace/workspace-shell.tsx` �X wire chat/history toggle in left AI panel zone; add history icon/toggle; add inline restore confirmation; no new props added to `WorkspaceShellProps`; all local state additions only
+- `frontend/components/workspace/workspace-shell.test.tsx` �X add/update tests for chat/history toggle, history icon, inline restore confirmation
+- `frontend/messages/en.json` �X add new i18n keys required (e.g. `project.showHistory`, `project.showChat`, `project.confirmRestore`, `project.cancelRestore`) only if not already present
+- `frontend/messages/zh-TW.json` �X same
+- `frontend/messages/zh-CN.json` �X same
 
 **Existing functions to reuse:**
-- `WorkspaceChatPanel` logic — reuse without refactoring internals
-- `historyAndDashboardContent` — reuse without refactoring internals
-- `onRestoreWorkspaceProjectFromSnapshotById` — reuse; inline confirm wraps the call; do not change the handler
+- `WorkspaceChatPanel` logic �X reuse without refactoring internals
+- `historyAndDashboardContent` �X reuse without refactoring internals
+- `onRestoreWorkspaceProjectFromSnapshotById` �X reuse; inline confirm wraps the call; do not change the handler
 
 **Non-goals:**
 - No backend or API changes
@@ -22964,21 +22964,21 @@ Wire AI chat into the project mode left panel with a chat/history toggle. Add a 
 - No new AI capabilities or history backend features
 
 **Dependencies:**
-- UX-IA-08 (COMPLETE and LOCKED — `docs/UX-IA-08-CHECKPOINT.md`) — project mode shell, tab bar, AI panel collapse, left AI panel zone
-- AI-WS-06-hotfix3 (COMPLETE and LOCKED) — AI-WS file action flows preserved
-- PROJ-02-03 (COMPLETE and LOCKED) — deterministic project hydration preserved
-- AUTH-APP-02D (COMPLETE and LOCKED) — session/auth behavior preserved
+- UX-IA-08 (COMPLETE and LOCKED �X `docs/UX-IA-08-CHECKPOINT.md`) �X project mode shell, tab bar, AI panel collapse, left AI panel zone
+- AI-WS-06-hotfix3 (COMPLETE and LOCKED) �X AI-WS file action flows preserved
+- PROJ-02-03 (COMPLETE and LOCKED) �X deterministic project hydration preserved
+- AUTH-APP-02D (COMPLETE and LOCKED) �X session/auth behavior preserved
 
 **Risks:**
 - Inline restore confirmation must not disrupt existing `onRestoreWorkspaceProjectFromSnapshotById` call path
 - Chat/history toggle state must not collide with `aiPanelCollapsed` state from UX-IA-08
-- No new props may be added to `WorkspaceShellProps` — toggle state must be local to left panel zone JSX
+- No new props may be added to `WorkspaceShellProps` �X toggle state must be local to left panel zone JSX
 - AI-WS file action confirmation flows (accept/reject file patches) must remain unaffected
 - Preview iframe pointer-event path must remain unblocked (UX-IA-15 constraint)
 
 **Model guidance:**
 - Additive-only within left AI panel zone JSX in `workspace-shell.tsx`
-- Reuse `WorkspaceChatPanel`, `historyAndDashboardContent`, and `onRestoreWorkspaceProjectFromSnapshotById` — do not refactor their internals
+- Reuse `WorkspaceChatPanel`, `historyAndDashboardContent`, and `onRestoreWorkspaceProjectFromSnapshotById` �X do not refactor their internals
 - Minimal local state additions only; no prop threading through `WorkspaceShellProps`
 
 **Acceptance checks:**
@@ -22995,7 +22995,7 @@ Wire AI chat into the project mode left panel with a chat/history toggle. Add a 
 
 **Checkpoint:** `docs/UX-IA-09-CHECKPOINT.md`
 
-**Reference:** See TASKS.md -> UX-IA-09. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-09 section.
+**Reference:** See TASKS.md -> UX-IA-09. See `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-09 section.
 
 
 -----
@@ -23003,14 +23003,14 @@ Wire AI chat into the project mode left panel with a chat/history toggle. Add a 
 ### UX-IA-10: Preview + Code & Files Tabs
 
 **Task ID:** UX-IA-10
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign �X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
-**Source:** `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-10 section
-**Depends on:** UX-IA-09 (COMPLETE and LOCKED — `docs/UX-IA-09-CHECKPOINT.md`)
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-10 section
+**Depends on:** UX-IA-09 (COMPLETE and LOCKED �X `docs/UX-IA-09-CHECKPOINT.md`)
 **Risk:** Medium (panel sizing, iframe behavior, full-height CSS constraints)
-**Loop:** 3-step (implement — verify tests — consolidate)
+**Loop:** 3-step (implement �X verify tests �X consolidate)
 **Model:** Sonnet 4.6
 
 **Objective:**
@@ -23039,7 +23039,7 @@ Wire existing preview and editor content into the UX-IA-08 tab system as the fir
 - No new dependencies
 
 **Likely files:**
-- `frontend/components/workspace/workspace-shell.tsx` (primary — tab content layout, full-height CSS)
+- `frontend/components/workspace/workspace-shell.tsx` (primary �X tab content layout, full-height CSS)
 - `frontend/components/workspace/workspace-shell.test.tsx` (test updates)
 - `frontend/components/workspace/workspace-tab-bar.tsx` (only if minor layout adjustment needed)
 - Possibly `frontend/messages/en.json`, `zh-TW.json`, `zh-CN.json` (if new i18n keys confirmed missing)
@@ -23050,34 +23050,34 @@ This file does not exist. Per UX-IA-08 locked invariant, project mode logic stay
 **UX/UI skills advisory (plan phase only):**
 - Impeccable: layout review for full-height panels, vertical space allocation
 - Emil Kowalski: tab content empty/loading/error states, resize and overflow behavior
-- Skills are advisory only — do not override architecture, tests, or slice boundaries
+- Skills are advisory only �X do not override architecture, tests, or slice boundaries
 
 **Dependencies:**
 - UX-IA-09 COMPLETE and LOCKED (`docs/UX-IA-09-CHECKPOINT.md`)
-- UX-IA-08B COMPLETE and LOCKED (— defines tab shell, `workspace-tab-registry.ts`, `workspace-tab-bar.tsx`)
+- UX-IA-08B COMPLETE and LOCKED (�X defines tab shell, `workspace-tab-registry.ts`, `workspace-tab-bar.tsx`)
 
 **Invariants to preserve:**
-- `WorkspaceShellProps` interface — no new props
-- `WorkspaceChatPanel`, `WorkspaceExecPanel`, `WorkspaceBuildPanel` props — unchanged
-- `WorkspacePreviewPanel` props — unchanged; iframe pointer-event path unaffected
-- `WorkspaceEditorPanel` props — unchanged
+- `WorkspaceShellProps` interface �X no new props
+- `WorkspaceChatPanel`, `WorkspaceExecPanel`, `WorkspaceBuildPanel` props �X unchanged
+- `WorkspacePreviewPanel` props �X unchanged; iframe pointer-event path unaffected
+- `WorkspaceEditorPanel` props �X unchanged
 - UX-IA-09 testids: `workspace-ai-panel-toggle`, `workspace-ai-panel-view-chat`, `workspace-ai-panel-view-history`, `workspace-restore-confirm-bar`, `workspace-restore-confirm-button`, `workspace-restore-cancel-button`
 - UX-IA-08 testids: `workspace-project-view`, `workspace-project-mode-header`, `workspace-project-back-button`, `workspace-project-ai-panel`, `workspace-project-content-panel`
 - UX-IA-08B testids: `workspace-tab-bar`, `workspace-ai-panel-collapse-toggle`, `workspace-tab-content`
 - Sub-component testids: `chat-panel-shell`, `editor-panel-shell`, `preview-panel-shell`, `history-control-slice`, `dashboard-slice`
-- PROJ-02-01 hydration chain — unaffected
-- AUTH-APP-01/02 invariants — preserved
+- PROJ-02-01 hydration chain �X unaffected
+- AUTH-APP-01/02 invariants �X preserved
 
 **Validation plan:**
-- `npx tsc --noEmit` from `frontend/` — 0 errors
-- `npm test` from `frontend/` — 0 failures; all existing 313 tests pass
-- `npm run build` from `frontend/` — passes
-- `ReadLints` on all touched files — no introduced errors
+- `npx tsc --noEmit` from `frontend/` �X 0 errors
+- `npm test` from `frontend/` �X 0 failures; all existing 313 tests pass
+- `npm run build` from `frontend/` �X passes
+- `ReadLints` on all touched files �X no introduced errors
 - No regressions to UX-IA-04 through UX-IA-09, AUTH-APP-01/02, PROJ-02 hydration chain, AI-WS file action flows
 
 **Checkpoint:** `docs/UX-IA-10-CHECKPOINT.md`
 
-**Reference:** See TASKS.md —> UX-IA-10. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-10 section.
+**Reference:** See TASKS.md �X> UX-IA-10. See `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-10 section.
 
 
 -----
@@ -23085,14 +23085,14 @@ This file does not exist. Per UX-IA-08 locked invariant, project mode logic stay
 ### UX-IA-11: Future Product Tab Placeholders
 
 **Task ID:** UX-IA-11
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign �X Evolutionary)
 **Family status:** ACTIVE
 **Priority:** Medium
 **Status:** COMPLETE and LOCKED
-**Source:** `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-11 section
-**Depends on:** UX-IA-10 (COMPLETE and LOCKED — `docs/UX-IA-10-CHECKPOINT.md`)
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-11 section
+**Depends on:** UX-IA-10 (COMPLETE and LOCKED �X `docs/UX-IA-10-CHECKPOINT.md`)
 **Risk:** Low (placeholder copy/layout only; no functional tab content)
-**Loop:** 3-step (implement — verify tests — consolidate)
+**Loop:** 3-step (implement �X verify tests �X consolidate)
 **Model:** Sonnet 4.6
 
 **Objective:**
@@ -23100,12 +23100,12 @@ Refine placeholder content and copy for the 11 non-functional product tabs regis
 
 **Scope:**
 - Refine placeholder copy and layout for non-functional tabs (Database, Auth, Security, Analytics, Env Vars, Publishing, Deploy, Payment, Domain, App Storage, Agent Skills) inside the existing `workspace-tab-content` area.
-- Improve placeholder visual presentation — layout, spacing, descriptive copy — without implementing functional content.
+- Improve placeholder visual presentation �X layout, spacing, descriptive copy �X without implementing functional content.
 - Preserve the tab registry structure in `workspace-tab-registry.ts` unchanged unless placeholder metadata (label keys, descriptions) is confirmed missing.
 - Preserve tab bar behavior, orientation toggle, and AI panel collapse (UX-IA-08 invariants).
 - Preserve UX-IA-09 AI/history toggle and inline restore confirmation.
 - Preserve Preview and Code & Files tab functional behavior (UX-IA-10 invariants).
-- Preserve `WorkspacePreviewPanel` iframe and `window.postMessage` path (Visual Edit Mode compatibility — UX-IA-15 constraint).
+- Preserve `WorkspacePreviewPanel` iframe and `window.postMessage` path (Visual Edit Mode compatibility �X UX-IA-15 constraint).
 - Add or update i18n keys for placeholder copy only if confirmed missing from locale files.
 
 **Non-goals:**
@@ -23122,7 +23122,7 @@ Refine placeholder content and copy for the 11 non-functional product tabs regis
 - No `workspace-project-mode.tsx` creation (locked invariant from UX-IA-08)
 
 **Likely files:**
-- `frontend/components/workspace/workspace-shell.tsx` (primary — placeholder tab rendering)
+- `frontend/components/workspace/workspace-shell.tsx` (primary �X placeholder tab rendering)
 - `frontend/components/workspace/workspace-tab-registry.ts` (only if placeholder metadata confirmed missing)
 - `frontend/components/workspace/workspace-shell.test.tsx` (test updates for new placeholder assertions)
 - Possibly `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json` (if missing placeholder copy keys confirmed)
@@ -23132,42 +23132,127 @@ This file does not exist. Per UX-IA-08 locked invariant, project mode logic stay
 
 **UX/UI skills advisory (plan phase only):**
 - Impeccable: placeholder layout, visual hierarchy, spacing, and copy clarity for coming-soon states
-- Emil Kowalski: empty/placeholder state design — clear messaging, appropriate visual weight, non-intrusive placeholder treatment
-- Skills are advisory only — do not override architecture, tests, or slice boundaries
+- Emil Kowalski: empty/placeholder state design �X clear messaging, appropriate visual weight, non-intrusive placeholder treatment
+- Skills are advisory only �X do not override architecture, tests, or slice boundaries
 
 **Dependencies:**
 - UX-IA-10 COMPLETE and LOCKED (`docs/UX-IA-10-CHECKPOINT.md`)
 - UX-IA-09 COMPLETE and LOCKED (`docs/UX-IA-09-CHECKPOINT.md`)
-- UX-IA-08B COMPLETE and LOCKED (`docs/UX-IA-08B-CHECKPOINT.md`) — defines tab registry structure
+- UX-IA-08B COMPLETE and LOCKED (`docs/UX-IA-08B-CHECKPOINT.md`) �X defines tab registry structure
 
 **Invariants to preserve:**
-- `WorkspaceShellProps` interface — no new props
-- `WorkspaceChatPanel`, `WorkspaceExecPanel`, `WorkspaceBuildPanel` props — unchanged
-- `WorkspacePreviewPanel` props — unchanged; iframe pointer-event path unaffected; `window.postMessage` path preserved
-- `WorkspaceEditorPanel` props — unchanged; all AI-WS file action flows unaffected
+- `WorkspaceShellProps` interface �X no new props
+- `WorkspaceChatPanel`, `WorkspaceExecPanel`, `WorkspaceBuildPanel` props �X unchanged
+- `WorkspacePreviewPanel` props �X unchanged; iframe pointer-event path unaffected; `window.postMessage` path preserved
+- `WorkspaceEditorPanel` props �X unchanged; all AI-WS file action flows unaffected
 - UX-IA-10 testids: `preview-panel-shell`, `editor-panel-shell`, `workspace-tab-content` with overflow-hidden layout
 - UX-IA-09 testids: `workspace-ai-panel-toggle`, `workspace-ai-panel-view-chat`, `workspace-ai-panel-view-history`, `workspace-restore-confirm-bar`, `workspace-restore-confirm-button`, `workspace-restore-cancel-button`
 - UX-IA-08 testids: `workspace-project-view`, `workspace-project-mode-header`, `workspace-project-back-button`, `workspace-project-ai-panel`, `workspace-project-content-panel`
 - UX-IA-08B testids: `workspace-tab-bar`, `workspace-ai-panel-collapse-toggle`
-- `workspace-tab-placeholder` testid — preserved
-- PROJ-02-01 hydration chain — unaffected
-- AUTH-APP-01/02 invariants — preserved
+- `workspace-tab-placeholder` testid �X preserved
+- PROJ-02-01 hydration chain �X unaffected
+- AUTH-APP-01/02 invariants �X preserved
 
 **Validation plan:**
-- `npx tsc --noEmit` from `frontend/` — 0 errors
-- `npm test` from `frontend/` — 0 failures; existing 317 tests pass (baseline from UX-IA-10)
-- `npm run build` from `frontend/` — passes
-- `ReadLints` on all touched files — no introduced errors
+- `npx tsc --noEmit` from `frontend/` �X 0 errors
+- `npm test` from `frontend/` �X 0 failures; existing 317 tests pass (baseline from UX-IA-10)
+- `npm run build` from `frontend/` �X passes
+- `ReadLints` on all touched files �X no introduced errors
 - No regressions to UX-IA-04 through UX-IA-10, AUTH-APP-01/02, PROJ-02 hydration chain, AI-WS file action flows
 
 **Checkpoint:** `docs/UX-IA-11-CHECKPOINT.md`
 
-**Reference:** See TASKS.md —> UX-IA-11. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-11 section.
+**Reference:** See TASKS.md �X> UX-IA-11. See `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-11 section.
+
+
+-----
+
+### UX-IA-12: Upgrade Flow + Dashboard Polish
+
+**Task ID:** UX-IA-12
+**Family:** UX-IA (Product & UX/UI Redesign �X Evolutionary)
+**Family status:** ACTIVE
+**Priority:** Medium
+**Status:** COMPLETE and LOCKED
+**Source:** `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-12 section
+**Depends on:** UX-IA-11 (COMPLETE and LOCKED �X `docs/UX-IA-11-CHECKPOINT.md`)
+**Risk:** Low-Medium (visual polish and copy only; no billing implementation; no new dependencies)
+**Loop:** 3-step (plan �X implement �X verify tests + consolidate)
+**Model:** Sonnet 4.6
+
+**Objective:**
+Polish the dashboard, usage summary, and upgrade CTA surfaces in the authenticated workspace. Improve Upgrade CTA placement and copy in the sidebar and account menu area. Refine the usage/quota display for clarity and visual quality. No billing or payment implementation. Preserve all locked UX-IA-04 through UX-IA-11 invariants.
+
+**Scope:**
+- Refine Upgrade CTA placement and copy in `workspace-sidebar.tsx` (sidebar footer area) and/or `workspace-account-menu.tsx` if account CTA area needs tiny polish.
+- Refine usage/quota summary display in `workspace-sidebar.tsx` �X improve visual hierarchy, spacing, and legibility of usage/quota row.
+- Preserve existing billing safety state: no charge, no checkout, no real payment flow �X Upgrade CTA is display-only.
+- Add or update i18n keys for upgrade CTA and usage display copy only if confirmed missing from locale files.
+- Update tests in `workspace-shell.test.tsx` to cover any new or changed testids.
+
+**Non-goals:**
+- No real billing/checkout implementation
+- No Stripe or payment integration
+- No backend or API changes
+- No auth changes
+- No route cleanup (belongs to UX-IA-14)
+- No account/profile backend
+- No project mode or tab architecture changes (UX-IA-08/09/10/11 invariants locked)
+- No Visual Edit Mode (belongs to UX-IA-15+)
+- No broad refactor
+- No new dependencies
+
+**Likely files:**
+- `frontend/components/workspace/workspace-sidebar.tsx` (primary �X upgrade CTA + usage display polish)
+- `frontend/components/workspace/workspace-shell.tsx` (if upgrade surface lives in shell layout)
+- `frontend/components/workspace/workspace-account-menu.tsx` (only if upgrade/account CTA needs tiny polish �X confirm before touching)
+- `frontend/components/workspace/workspace-shell.test.tsx` (test updates for new/changed assertions)
+- Possibly `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json` (if missing copy keys confirmed)
+
+**UX/UI skills advisory (plan phase only):**
+- Impeccable: dashboard/usage surface layout, visual hierarchy, upgrade CTA placement and prominence, spacing and polish
+- Emil Kowalski: CTA interaction polish, usage meter/badge visual design, subtle affordance for upgrade without disruption
+- Skills are advisory only �X do not override architecture, tests, or slice boundaries
+
+**Dependencies:**
+- UX-IA-11 COMPLETE and LOCKED (`docs/UX-IA-11-CHECKPOINT.md`)
+- UX-IA-10 COMPLETE and LOCKED (`docs/UX-IA-10-CHECKPOINT.md`)
+- UX-IA-09 COMPLETE and LOCKED (`docs/UX-IA-09-CHECKPOINT.md`)
+- UX-IA-08 COMPLETE and LOCKED (`docs/UX-IA-08-CHECKPOINT.md`)
+- UX-IA-07 COMPLETE and LOCKED (`docs/UX-IA-07-CHECKPOINT.md`)
+- UX-IA-04 COMPLETE and LOCKED (`docs/UX-IA-04-CHECKPOINT.md`)
+
+**Invariants to preserve:**
+- `WorkspaceShellProps` interface �X no new props
+- UX-IA-04 sidebar/home/project shell invariants �X no structural changes
+- UX-IA-05 projects grid/list �X unchanged
+- UX-IA-06 templates view �X unchanged
+- UX-IA-07 account menu �X preserved; `workspace-account-menu.tsx` touched only if upgrade CTA polish is confirmed in scope
+- UX-IA-08 through UX-IA-11 project mode and tab invariants �X all locked testids preserved
+- Existing billing safety state �X no-charge behavior unchanged
+- PROJ-02-01 hydration chain �X unaffected
+- AUTH-APP-01/02 invariants �X preserved
+
+**Risks:**
+- Upgrade CTA scope creep into billing/checkout �X guard against; CTA is display-only in this slice
+- Touching `workspace-account-menu.tsx` without confirmed need �X confirm scope before editing
+- i18n key additions creating missing-key regressions in zh-TW or zh-CN �X add all three locale files together if any key is added
+
+**Validation plan:**
+- `npx tsc --noEmit` from `frontend/` �X 0 errors
+- `npm test` from `frontend/` �X 0 failures; existing tests pass (317 baseline from UX-IA-11)
+- `npm run build` from `frontend/` �X passes
+- `ReadLints` on all touched files �X no introduced errors
+- No regressions to UX-IA-04 through UX-IA-11, AUTH-APP-01/02, PROJ-02 hydration chain, AI-WS file action flows
+
+**Checkpoint:** `docs/UX-IA-12-CHECKPOINT.md`
+
+**Reference:** See TASKS.md �X> UX-IA-12. See `docs/UX-IA-00-MASTER-PLAN.md` �X UX-IA-12 section.
 
 
 ## AUTH ??aiSandBox First-Party Authentication
 
-**Family status:** VALIDATION COMPLETE (AUTH-APP-01C2 VALIDATION COMPLETE �X AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F COMPLETE; manual smoke deferred) �X AUTH-APP-01E COMPLETE �X AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) �X AUTH-APP-01F1 COMPLETE �X AUTH-APP-01F2 COMPLETE �X AUTH-APP-01F3 COMPLETE �X AUTH-APP-01F4 COMPLETE �X AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) �X AUTH-APP-01G1 COMPLETE �X AUTH-APP-01G2 COMPLETE �X AUTH-APP-01G3 COMPLETE �X AUTH-APP-01G4 COMPLETE �X AUTH-APP-01H VALIDATION COMPLETE (manual smoke deferred) �X AUTH-APP-01H1 COMPLETE �X AUTH-APP-01H2 COMPLETE �X AUTH-APP-01H3 COMPLETE �X AUTH-APP-01H4 COMPLETE �X AUTH-APP-01Z COMPLETE
+**Family status:** VALIDATION COMPLETE (AUTH-APP-01C2 VALIDATION COMPLETE ?X AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F COMPLETE; manual smoke deferred) ?X AUTH-APP-01E COMPLETE ?X AUTH-APP-01F VALIDATION COMPLETE (carry-forwards pending) ?X AUTH-APP-01F1 COMPLETE ?X AUTH-APP-01F2 COMPLETE ?X AUTH-APP-01F3 COMPLETE ?X AUTH-APP-01F4 COMPLETE ?X AUTH-APP-01G VALIDATION COMPLETE (manual smoke deferred) ?X AUTH-APP-01G1 COMPLETE ?X AUTH-APP-01G2 COMPLETE ?X AUTH-APP-01G3 COMPLETE ?X AUTH-APP-01G4 COMPLETE ?X AUTH-APP-01H VALIDATION COMPLETE (manual smoke deferred) ?X AUTH-APP-01H1 COMPLETE ?X AUTH-APP-01H2 COMPLETE ?X AUTH-APP-01H3 COMPLETE ?X AUTH-APP-01H4 COMPLETE ?X AUTH-APP-01Z COMPLETE
 **Important distinction:** AUTH-APP-01 is for the aiSandBox platform itself. AUTH-MODULE-01 (reusable generated app-auth for user-created apps) is a separate, later family.
 **Decision spec:** `docs/AUTH-APP-01-SPEC.md` (decision-complete as of AUTH-APP-01A)
 **Master plan:** `docs/UX-IA-00-MASTER-PLAN.md` (AUTH-APP-01 entry)
@@ -23178,9 +23263,9 @@ This file does not exist. Per UX-IA-08 locked invariant, project mode logic stay
 
 **Task ID:** AUTH-APP-01
 **Family:** AUTH
-**Family status:** VALIDATION COMPLETE (AUTH-APP-01C2 VALIDATION COMPLETE �X AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F COMPLETE; manual smoke deferred)
+**Family status:** VALIDATION COMPLETE (AUTH-APP-01C2 VALIDATION COMPLETE ?X AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F COMPLETE; manual smoke deferred)
 **Priority:** High
-**Status:** VALIDATION COMPLETE �X AUTH-APP-01C2 VALIDATION COMPLETE (AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F COMPLETE); manual smoke deferred; carry-forwards pending
+**Status:** VALIDATION COMPLETE ?X AUTH-APP-01C2 VALIDATION COMPLETE (AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F COMPLETE); manual smoke deferred; carry-forwards pending
 **Checkpoint:** `docs/AUTH-APP-01-CHECKPOINT.md`
 **Source:** UX-IA-00 master plan (May 2026) ??production auth must be in place before workspace/project-mode redesign reaches real users
 **Depends on:** UX-IA-03 (COMPLETE and LOCKED)
@@ -23193,25 +23278,25 @@ Add production-ready authentication for the aiSandBox hosted app ??email, Google
 2. AUTH-APP-01B ??Database / Schema Migrations (COMPLETE and LOCKED)
 3. AUTH-APP-01C1A ??Backend Cookie Session Foundation (COMPLETE and LOCKED)
 4. AUTH-APP-01C1B ??Frontend localStorage/Bearer Migration (COMPLETE and LOCKED)
-5. AUTH-APP-01C2 �X Email Verification / Password Reset / Rate Limiting (ACTIVE �X AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F PLANNED)
-6. AUTH-APP-01D �X Google OAuth (COMPLETE and LOCKED)
-7. AUTH-APP-01E �X Apple OAuth (COMPLETE and LOCKED)
-8. AUTH-APP-01F �X Route / API Protection (VALIDATION COMPLETE �X carry-forwards/manual smoke deferred �X all child slices COMPLETE and LOCKED):
-   - AUTH-APP-01F1 �X Route/API Protection Inventory + Spec (COMPLETE and LOCKED)
-   - AUTH-APP-01F2 �X Backend API Protection Gaps (COMPLETE and LOCKED)
-   - AUTH-APP-01F3 �X Frontend Protected Route Behavior (COMPLETE and LOCKED)
-   - AUTH-APP-01F4 �X Protection Validation + Consolidation (COMPLETE and LOCKED)
-9. AUTH-APP-01G �X Auth UX Integration (VALIDATION COMPLETE �X manual smoke deferred �X all child slices COMPLETE and LOCKED):
-   - AUTH-APP-01G1 �X Auth UX Inventory + Scope (COMPLETE and LOCKED)
-   - AUTH-APP-01G2 �X Login/Register OAuth Error + Button Polish (COMPLETE and LOCKED)
-   - AUTH-APP-01G3 �X Logout + Basic Account Surface (COMPLETE and LOCKED)
-   - AUTH-APP-01G4 �X Auth UX Validation + Checkpoint (COMPLETE and LOCKED)
-10. AUTH-APP-01H �X Security Hardening + Validation Checklist (VALIDATION COMPLETE �X manual smoke deferred �X all child slices COMPLETE and LOCKED):
-    - AUTH-APP-01H1 �X Security Hardening Inventory (COMPLETE and LOCKED)
-    - AUTH-APP-01H2 �X CSRF + Rate Limiting + Redirect Hardening (COMPLETE and LOCKED)
-    - AUTH-APP-01H3 �X Events Endpoint Guards + Test/Tooling Triage (COMPLETE and LOCKED)
-    - AUTH-APP-01H4 �X Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation (COMPLETE and LOCKED)
-11. AUTH-APP-01Z �X Final Consolidation (COMPLETE and LOCKED)
+5. AUTH-APP-01C2 ?X Email Verification / Password Reset / Rate Limiting (ACTIVE ?X AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F PLANNED)
+6. AUTH-APP-01D ?X Google OAuth (COMPLETE and LOCKED)
+7. AUTH-APP-01E ?X Apple OAuth (COMPLETE and LOCKED)
+8. AUTH-APP-01F ?X Route / API Protection (VALIDATION COMPLETE ?X carry-forwards/manual smoke deferred ?X all child slices COMPLETE and LOCKED):
+   - AUTH-APP-01F1 ?X Route/API Protection Inventory + Spec (COMPLETE and LOCKED)
+   - AUTH-APP-01F2 ?X Backend API Protection Gaps (COMPLETE and LOCKED)
+   - AUTH-APP-01F3 ?X Frontend Protected Route Behavior (COMPLETE and LOCKED)
+   - AUTH-APP-01F4 ?X Protection Validation + Consolidation (COMPLETE and LOCKED)
+9. AUTH-APP-01G ?X Auth UX Integration (VALIDATION COMPLETE ?X manual smoke deferred ?X all child slices COMPLETE and LOCKED):
+   - AUTH-APP-01G1 ?X Auth UX Inventory + Scope (COMPLETE and LOCKED)
+   - AUTH-APP-01G2 ?X Login/Register OAuth Error + Button Polish (COMPLETE and LOCKED)
+   - AUTH-APP-01G3 ?X Logout + Basic Account Surface (COMPLETE and LOCKED)
+   - AUTH-APP-01G4 ?X Auth UX Validation + Checkpoint (COMPLETE and LOCKED)
+10. AUTH-APP-01H ?X Security Hardening + Validation Checklist (VALIDATION COMPLETE ?X manual smoke deferred ?X all child slices COMPLETE and LOCKED):
+    - AUTH-APP-01H1 ?X Security Hardening Inventory (COMPLETE and LOCKED)
+    - AUTH-APP-01H2 ?X CSRF + Rate Limiting + Redirect Hardening (COMPLETE and LOCKED)
+    - AUTH-APP-01H3 ?X Events Endpoint Guards + Test/Tooling Triage (COMPLETE and LOCKED)
+    - AUTH-APP-01H4 ?X Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation (COMPLETE and LOCKED)
+11. AUTH-APP-01Z ?X Final Consolidation (COMPLETE and LOCKED)
 
 **Non-goals:**
 - AUTH-MODULE-01 (reusable generated app-auth for user-created apps ??separate later family)
@@ -23565,36 +23650,36 @@ Remove all frontend dependence on `localStorage` for `access_token` and `userId`
 **Task ID:** AUTH-APP-01C2
 **Family:** AUTH
 **Parent:** AUTH-APP-01
-**Family status:** VALIDATION COMPLETE �X manual smoke deferred
+**Family status:** VALIDATION COMPLETE ?X manual smoke deferred
 **Priority:** High
-**Status:** VALIDATION COMPLETE �X manual smoke deferred �X AUTH-APP-01C2A COMPLETE and LOCKED; AUTH-APP-01C2B COMPLETE and LOCKED; AUTH-APP-01C2C COMPLETE and LOCKED; AUTH-APP-01C2D COMPLETE and LOCKED; AUTH-APP-01C2E COMPLETE and LOCKED; AUTH-APP-01C2F COMPLETE and LOCKED
+**Status:** VALIDATION COMPLETE ?X manual smoke deferred ?X AUTH-APP-01C2A COMPLETE and LOCKED; AUTH-APP-01C2B COMPLETE and LOCKED; AUTH-APP-01C2C COMPLETE and LOCKED; AUTH-APP-01C2D COMPLETE and LOCKED; AUTH-APP-01C2E COMPLETE and LOCKED; AUTH-APP-01C2F COMPLETE and LOCKED
 **Checkpoint:** `docs/AUTH-APP-01C2-CHECKPOINT.md`
 **Source:** AUTH-APP-01A spec (Sections 7, 12); AUTH-APP-01C split confirmed at registration
 **Depends on:** AUTH-APP-01C1 (COMPLETE) + Resend as chosen email provider
 
 **Provider decision:**
-Resend selected as v1 transactional email provider (decided 2026-05-08). AUTH-APP-01C2 is unblocked. EmailProvider abstraction required �X auth service must not call Resend directly. Future SES/SendGrid migration is a small adapter task.
+Resend selected as v1 transactional email provider (decided 2026-05-08). AUTH-APP-01C2 is unblocked. EmailProvider abstraction required ?X auth service must not call Resend directly. Future SES/SendGrid migration is a small adapter task.
 
 **Objective:**
 Add email verification and password reset flows that use the `verification_tokens` table from AUTH-APP-01B, and add rate limiting to all auth endpoints. Uses EmailProvider abstraction with ResendEmailProvider as the v1 adapter; future providers (SES, SendGrid) can be added as separate adapters without touching auth business logic.
 
-**Child slices (AUTH-APP-01C2 split �X surface too large for one slice):**
-1. AUTH-APP-01C2A �X Email Verification / Password Reset Spec + Provider Abstraction Plan (COMPLETE and LOCKED)
-2. AUTH-APP-01C2B �X Email Provider Foundation with Resend Adapter (COMPLETE and LOCKED)
-3. AUTH-APP-01C2C �X Email Verification Backend Flow (COMPLETE and LOCKED �X checkpoint: `docs/AUTH-APP-01C2C-CHECKPOINT.md`)
-4. AUTH-APP-01C2D �X Password Reset Backend Flow (COMPLETE and LOCKED �X checkpoint: `docs/AUTH-APP-01C2D-CHECKPOINT.md`)
-5. AUTH-APP-01C2E �X Frontend Auth Email UX (COMPLETE and LOCKED �X checkpoint: `docs/AUTH-APP-01C2E-CHECKPOINT.md`)
-6. AUTH-APP-01C2F �X Email Auth Validation + Consolidation (COMPLETE and LOCKED �X checkpoint: `docs/AUTH-APP-01C2F-CHECKPOINT.md`; family checkpoint: `docs/AUTH-APP-01C2-CHECKPOINT.md`)
+**Child slices (AUTH-APP-01C2 split ?X surface too large for one slice):**
+1. AUTH-APP-01C2A ?X Email Verification / Password Reset Spec + Provider Abstraction Plan (COMPLETE and LOCKED)
+2. AUTH-APP-01C2B ?X Email Provider Foundation with Resend Adapter (COMPLETE and LOCKED)
+3. AUTH-APP-01C2C ?X Email Verification Backend Flow (COMPLETE and LOCKED ?X checkpoint: `docs/AUTH-APP-01C2C-CHECKPOINT.md`)
+4. AUTH-APP-01C2D ?X Password Reset Backend Flow (COMPLETE and LOCKED ?X checkpoint: `docs/AUTH-APP-01C2D-CHECKPOINT.md`)
+5. AUTH-APP-01C2E ?X Frontend Auth Email UX (COMPLETE and LOCKED ?X checkpoint: `docs/AUTH-APP-01C2E-CHECKPOINT.md`)
+6. AUTH-APP-01C2F ?X Email Auth Validation + Consolidation (COMPLETE and LOCKED ?X checkpoint: `docs/AUTH-APP-01C2F-CHECKPOINT.md`; family checkpoint: `docs/AUTH-APP-01C2-CHECKPOINT.md`)
 
 **Bounded scope:**
 
-1. **Transactional email provider setup** �X configure Resend as v1 provider via EmailProvider abstraction; add `EMAIL_PROVIDER`, `RESEND_API_KEY`, `AUTH_EMAIL_FROM`, `APP_BASE_URL` env vars; document in project README or env template.
+1. **Transactional email provider setup** ?X configure Resend as v1 provider via EmailProvider abstraction; add `EMAIL_PROVIDER`, `RESEND_API_KEY`, `AUTH_EMAIL_FROM`, `APP_BASE_URL` env vars; document in project README or env template.
 
 2. **EmailProvider abstraction:**
    - `EmailProvider` interface: `sendEmail(to, subject, html): Promise<void>`
    - `ResendEmailProvider` implements `EmailProvider` using Resend SDK (v1 adapter)
    - `EMAIL_PROVIDER=resend` config selects provider at startup
-   - Auth service calls `EmailProvider` interface only �X never Resend directly
+   - Auth service calls `EmailProvider` interface only ?X never Resend directly
    - Future: `SesEmailProvider`, `SendGridEmailProvider` as separate adapter tasks
 
 3. **Email verification flow:**
@@ -23607,14 +23692,14 @@ Add email verification and password reset flows that use the `verification_token
    - `POST /api/auth/password-reset/confirm`: validate token, hash new password, update `users.password_hash`, mark token used, revoke all `auth_sessions` for the user
    - Raw token sent to user; hash stored in DB
 
-5. **Rate limiting** �X apply to:
-   - `POST /api/auth/login` �X 10/min per IP
-   - `POST /api/auth/register` �X 5/min per IP
-   - `POST /api/auth/password-reset/request` �X 5/hr per email, 10/hr per IP
-   - `POST /api/auth/email/verify/resend` �X 3/hr per user
+5. **Rate limiting** ?X apply to:
+   - `POST /api/auth/login` ?X 10/min per IP
+   - `POST /api/auth/register` ?X 5/min per IP
+   - `POST /api/auth/password-reset/request` ?X 5/hr per email, 10/hr per IP
+   - `POST /api/auth/email/verify/resend` ?X 3/hr per user
    - Implementation: `@nestjs/throttler` or Redis-backed throttler (confirm at stage-start)
 
-6. **User entity `emailVerified` field** �X if not yet added, add `email_verified` column to `users` (migration required) and corresponding entity field.
+6. **User entity `emailVerified` field** ?X if not yet added, add `email_verified` column to `users` (migration required) and corresponding entity field.
 
 **Non-goals:**
 - No Google or Apple OAuth
@@ -23646,10 +23731,10 @@ Add email verification and password reset flows that use the `verification_token
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
-**Nature:** SPEC AND DOCUMENTATION ONLY �X no production source files changed
+**Nature:** SPEC AND DOCUMENTATION ONLY ?X no production source files changed
 **Registered:** 2026-05-08
 **Completed:** 2026-05-08
-**Depends on:** AUTH-APP-01C2 unblocked (Resend chosen �X DONE)
+**Depends on:** AUTH-APP-01C2 unblocked (Resend chosen ?X DONE)
 **Checkpoint:** `docs/AUTH-APP-01C2A-CHECKPOINT.md`
 **Spec:** `docs/AUTH-APP-01C2-EMAIL-AUTH-SPEC.md`
 
@@ -23657,10 +23742,10 @@ Add email verification and password reset flows that use the `verification_token
 Define the complete design for the email verification and password reset flows, including the EmailProvider abstraction, Resend v1 adapter boundary, future provider migration path, DB/token requirements, backend route plan, frontend UX plan, security rules, env vars, and validation plan. No production source code is written in this slice.
 
 **Files changed (governance and docs only):**
-- `docs/AUTH-APP-01C2-EMAIL-AUTH-SPEC.md` �X **created** �X 13-section implementation spec
-- `docs/AUTH-APP-01C2A-CHECKPOINT.md` �X **created** �X this task's checkpoint
-- `TASKS.md` �X updated: AUTH-APP-01C2A COMPLETE and LOCKED; stage advanced to AUTH-APP-01C2B
-- `TASKS_BACKLOG_FULL.md` �X updated: same status changes
+- `docs/AUTH-APP-01C2-EMAIL-AUTH-SPEC.md` ?X **created** ?X 13-section implementation spec
+- `docs/AUTH-APP-01C2A-CHECKPOINT.md` ?X **created** ?X this task's checkpoint
+- `TASKS.md` ?X updated: AUTH-APP-01C2A COMPLETE and LOCKED; stage advanced to AUTH-APP-01C2B
+- `TASKS_BACKLOG_FULL.md` ?X updated: same status changes
 
 **Production source files changed: None.**
 
@@ -23669,7 +23754,7 @@ Define the complete design for the email verification and password reset flows, 
 2. `EMAIL_PROVIDER` NestJS injection token; auth service depends on abstraction only
 3. `ResendEmailProvider` v1; `StubEmailProvider` for tests (`EMAIL_PROVIDER=stub`)
 4. `EmailModule` factory selects provider from `EMAIL_PROVIDER` env var
-5. Future SES/SendGrid: adapter-only switch �X no auth logic changes
+5. Future SES/SendGrid: adapter-only switch ?X no auth logic changes
 6. `email_verified` column added to `users` in C2C (`DEFAULT false`); OAuth users set `true` at creation
 7. `locale` column added to `verification_tokens` in C2C for post-verification redirect
 8. Verification resend: unauthenticated, `{ email }` body, always `200`, 3/hr/email
@@ -23701,7 +23786,7 @@ Define the complete design for the email verification and password reset flows, 
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
-**Nature:** BACKEND �X email provider abstraction; Resend adapter; module wiring; no auth routes, no DB migration
+**Nature:** BACKEND ?X email provider abstraction; Resend adapter; module wiring; no auth routes, no DB migration
 **Registered:** 2026-05-08
 **Completed:** 2026-05-08
 **Depends on:** AUTH-APP-01C2A (COMPLETE and LOCKED)
@@ -23712,36 +23797,36 @@ Define the complete design for the email verification and password reset flows, 
 Install `resend` dependency; create `EmailProvider` abstraction, `StubEmailProvider`, `ResendEmailProvider`, and `EmailModule` factory; wire `AuthModule` and `AuthService`; document all required email env vars in `.env.example`. No auth business logic, DB migrations, routes, or frontend changes in this slice.
 
 **Files changed:**
-- `services/api-gateway/package.json` �X `resend` added to dependencies
-- `services/api-gateway/.env.example` �X email env var block added
-- `services/api-gateway/src/email/email-provider.interface.ts` �X **created** �X `EmailProvider` interface + `EMAIL_PROVIDER` symbol
-- `services/api-gateway/src/email/stub-email.provider.ts` �X **created** �X `StubEmailProvider` (no-op for local/test)
-- `services/api-gateway/src/email/resend-email.provider.ts` �X **created** �X `ResendEmailProvider` v1 Resend adapter
-- `services/api-gateway/src/email/email.module.ts` �X **created** �X `EmailModule` with factory provider
-- `services/api-gateway/src/email/__tests__/email.module.spec.ts` �X **created** �X factory/env unit tests
-- `services/api-gateway/src/email/__tests__/resend-email.provider.spec.ts` �X **created** �X SDK mock unit tests
-- `services/api-gateway/src/auth/auth.module.ts` �X `EmailModule` added to imports
-- `services/api-gateway/src/auth/auth.service.ts` �X `@Inject(EMAIL_PROVIDER) private readonly emailProvider: EmailProvider` added to constructor
-- `services/api-gateway/src/auth/auth.service.spec.ts` �X minimal `EMAIL_PROVIDER` DI mock added
+- `services/api-gateway/package.json` ?X `resend` added to dependencies
+- `services/api-gateway/.env.example` ?X email env var block added
+- `services/api-gateway/src/email/email-provider.interface.ts` ?X **created** ?X `EmailProvider` interface + `EMAIL_PROVIDER` symbol
+- `services/api-gateway/src/email/stub-email.provider.ts` ?X **created** ?X `StubEmailProvider` (no-op for local/test)
+- `services/api-gateway/src/email/resend-email.provider.ts` ?X **created** ?X `ResendEmailProvider` v1 Resend adapter
+- `services/api-gateway/src/email/email.module.ts` ?X **created** ?X `EmailModule` with factory provider
+- `services/api-gateway/src/email/__tests__/email.module.spec.ts` ?X **created** ?X factory/env unit tests
+- `services/api-gateway/src/email/__tests__/resend-email.provider.spec.ts` ?X **created** ?X SDK mock unit tests
+- `services/api-gateway/src/auth/auth.module.ts` ?X `EmailModule` added to imports
+- `services/api-gateway/src/auth/auth.service.ts` ?X `@Inject(EMAIL_PROVIDER) private readonly emailProvider: EmailProvider` added to constructor
+- `services/api-gateway/src/auth/auth.service.spec.ts` ?X minimal `EMAIL_PROVIDER` DI mock added
 
 **Production source files changed:** `auth.module.ts`, `auth.service.ts` (wiring only; no auth business logic changed).
 
 **Key implementation details:**
 1. `EmailProvider` interface: `sendEmail({ to, subject, html, text? }): Promise<void>`
-2. `EMAIL_PROVIDER = Symbol('EMAIL_PROVIDER')` �X NestJS DI token
-3. `StubEmailProvider` �X intentional no-op; no network calls; no logging of body/secrets
-4. `ResendEmailProvider` �X constructor validates `RESEND_API_KEY` + `AUTH_EMAIL_FROM`; uses `replyTo` (camelCase); throws on SDK error
-5. `EmailModule` factory �X validates `APP_BASE_URL` for all modes; selects stub/resend via `EMAIL_PROVIDER` env var; throws on unknown provider
-6. `AuthModule` imports `EmailModule`; `AuthService` injects `EMAIL_PROVIDER` (no usage yet �X C2C wires actual calls)
-7. Resend SDK fully mocked in tests �X no real network calls
+2. `EMAIL_PROVIDER = Symbol('EMAIL_PROVIDER')` ?X NestJS DI token
+3. `StubEmailProvider` ?X intentional no-op; no network calls; no logging of body/secrets
+4. `ResendEmailProvider` ?X constructor validates `RESEND_API_KEY` + `AUTH_EMAIL_FROM`; uses `replyTo` (camelCase); throws on SDK error
+5. `EmailModule` factory ?X validates `APP_BASE_URL` for all modes; selects stub/resend via `EMAIL_PROVIDER` env var; throws on unknown provider
+6. `AuthModule` imports `EmailModule`; `AuthService` injects `EMAIL_PROVIDER` (no usage yet ?X C2C wires actual calls)
+7. Resend SDK fully mocked in tests ?X no real network calls
 8. `services/api-gateway/package-lock.json` generated locally; git-ignored in this repo (monorepo root lockfile convention)
 
 **Acceptance checks:**
 - [x] `resend` installed in `services/api-gateway`
 - [x] `EmailProvider` interface and `EMAIL_PROVIDER` injection token defined
-- [x] `StubEmailProvider` �X no-op; no network; safe for all tests
-- [x] `ResendEmailProvider` �X validates `RESEND_API_KEY` + `AUTH_EMAIL_FROM`; uses `replyTo` camelCase; throws on SDK error
-- [x] `EmailModule` factory �X validates `APP_BASE_URL`; selects stub/resend; throws on unknown provider
+- [x] `StubEmailProvider` ?X no-op; no network; safe for all tests
+- [x] `ResendEmailProvider` ?X validates `RESEND_API_KEY` + `AUTH_EMAIL_FROM`; uses `replyTo` camelCase; throws on SDK error
+- [x] `EmailModule` factory ?X validates `APP_BASE_URL`; selects stub/resend; throws on unknown provider
 - [x] `AuthModule` imports `EmailModule`
 - [x] `AuthService` injects `EMAIL_PROVIDER`; no email-sending methods yet
 - [x] `.env.example` updated with all email vars and safety comments
@@ -23762,7 +23847,7 @@ Install `resend` dependency; create `EmailProvider` abstraction, `StubEmailProvi
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/AUTH-APP-01D-CHECKPOINT.md`
-**Source:** AUTH-APP-01A spec (Section 6 �X OAuth providers); AUTH-APP-01D confirmed at AUTH family registration
+**Source:** AUTH-APP-01A spec (Section 6 ?X OAuth providers); AUTH-APP-01D confirmed at AUTH family registration
 **Depends on:** AUTH-APP-01C1A (COMPLETE), AUTH-APP-01B (COMPLETE)
 
 **Objective:**
@@ -23776,21 +23861,21 @@ Add Google OAuth sign-in to the aiSandBox platform using `passport-google-oauth2
 
 **Bounded scope:**
 
-1. **OAuth state management** �X `cookie-session` middleware registered in `main.ts` before `cookieParser`; stores short-lived state (locale) in `aisandbox_oauth_state` cookie (10-min maxAge, HttpOnly, SameSite=Lax); separate from `aisandbox_session`; secret preference order: `OAUTH_STATE_SECRET` �� `SESSION_SECRET` �� `JWT_SECRET`
+1. **OAuth state management** ?X `cookie-session` middleware registered in `main.ts` before `cookieParser`; stores short-lived state (locale) in `aisandbox_oauth_state` cookie (10-min maxAge, HttpOnly, SameSite=Lax); separate from `aisandbox_session`; secret preference order: `OAUTH_STATE_SECRET` ?? `SESSION_SECRET` ?? `JWT_SECRET`
 
-2. **GoogleStrategy** (`services/api-gateway/src/auth/google.strategy.ts`) �X Passport strategy using `passport-google-oauth20`; scopes `email` + `profile`; calls `authService.findOrCreateGoogleUser()` in `validate()`; no refresh token requested
+2. **GoogleStrategy** (`services/api-gateway/src/auth/google.strategy.ts`) ?X Passport strategy using `passport-google-oauth20`; scopes `email` + `profile`; calls `authService.findOrCreateGoogleUser()` in `validate()`; no refresh token requested
 
 3. **AuthController routes:**
-   - `GET /api/auth/google` �X accepts optional `?locale=en|zh-TW|zh-CN`; normalizes invalid to `en`; stores locale in state cookie; initiates Google redirect
-   - `GET /api/auth/google/callback` �X on success: calls `createSession(user.id)`, sets `aisandbox_session` cookie, clears OAuth state cookie, redirects to `/${locale}/app`; on error: redirects to `/${locale}/login?error=oauth_failed`
+   - `GET /api/auth/google` ?X accepts optional `?locale=en|zh-TW|zh-CN`; normalizes invalid to `en`; stores locale in state cookie; initiates Google redirect
+   - `GET /api/auth/google/callback` ?X on success: calls `createSession(user.id)`, sets `aisandbox_session` cookie, clears OAuth state cookie, redirects to `/${locale}/app`; on error: redirects to `/${locale}/login?error=oauth_failed`
 
-4. **AuthService.findOrCreateGoogleUser()** �X account-linking order:
-   1. Existing `oauth_accounts` row for `provider='google'` + `providerAccountId` match �� sign in, touch `lastLoginAt`
-   2. Verified Google email matches existing `users` row �� create `oauth_accounts` link, touch `lastLoginAt`
-   3. Google email unverified and existing user found �� reject (`UnauthorizedException`)
-   4. No match �� create new `users` row (`passwordHash=null`, `authProvider='google'`) + new `oauth_accounts` row
+4. **AuthService.findOrCreateGoogleUser()** ?X account-linking order:
+   1. Existing `oauth_accounts` row for `provider='google'` + `providerAccountId` match ?? sign in, touch `lastLoginAt`
+   2. Verified Google email matches existing `users` row ?? create `oauth_accounts` link, touch `lastLoginAt`
+   3. Google email unverified and existing user found ?? reject (`UnauthorizedException`)
+   4. No match ?? create new `users` row (`passwordHash=null`, `authProvider='google'`) + new `oauth_accounts` row
 
-5. **Frontend** �X minimal "Continue with Google" `<a>` link on login/register pages; i18n keys added to en, zh-TW, zh-CN message files; full UX polish deferred to AUTH-APP-01G
+5. **Frontend** ?X minimal "Continue with Google" `<a>` link on login/register pages; i18n keys added to en, zh-TW, zh-CN message files; full UX polish deferred to AUTH-APP-01G
 
 6. **Environment variables:** `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL`, `OAUTH_STATE_SECRET`; documented in `services/api-gateway/docs/SMOKE-PACK-README.md` (`.env.example` write denied by tool; no duplicate created)
 
@@ -23833,7 +23918,7 @@ Add Google OAuth sign-in to the aiSandBox platform using `passport-google-oauth2
 - [ ] Manual end-to-end with real Google credentials (requires Cloud Console setup)
 
 **Carry-forward blockers (pre-existing, not introduced by AUTH-APP-01D):**
-- `npm test` backend full suite: fails �X `REDIS_URL` not set in test environment; `ai-execution.controller.spec.ts` pre-existing failures
+- `npm test` backend full suite: fails ?X `REDIS_URL` not set in test environment; `ai-execution.controller.spec.ts` pre-existing failures
 - `npm run lint` backend: ESLint config not discoverable in `services/api-gateway`
 
 **Reference:** See TASKS.md -> AUTH-APP-01D. See `docs/AUTH-APP-01D-CHECKPOINT.md`. See `docs/AUTH-APP-01-SPEC.md` Section 6.
@@ -23849,7 +23934,7 @@ Add Google OAuth sign-in to the aiSandBox platform using `passport-google-oauth2
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Checkpoint:** `docs/AUTH-APP-01E-CHECKPOINT.md`
-**Source:** AUTH-APP-01A spec (Section 9 �X Apple OAuth slice); AUTH-APP-01E confirmed at AUTH family registration
+**Source:** AUTH-APP-01A spec (Section 9 ?X Apple OAuth slice); AUTH-APP-01E confirmed at AUTH family registration
 **Depends on:** AUTH-APP-01C1A (COMPLETE), AUTH-APP-01D (COMPLETE), AUTH-APP-01B (COMPLETE)
 **Completed:** 2026-05-07
 
@@ -23857,27 +23942,27 @@ Add Google OAuth sign-in to the aiSandBox platform using `passport-google-oauth2
 Add Apple OAuth sign-in to the aiSandBox platform using `@nicokaiser/passport-apple`, integrated with the existing session cookie infrastructure from AUTH-APP-01C1A and the OAuth state cookie-session flow from AUTH-APP-01D. On successful Apple callback a server-side `auth_sessions` record is created and the `aisandbox_session` HttpOnly cookie is set. No `access_token` is returned to the browser. Multi-provider account linking uses the policy in spec Section 6 with Apple-specific private relay email handling.
 
 **Dependency added:**
-- `@nicokaiser/passport-apple` (production) �X handles ES256 client secret JWT generation internally
+- `@nicokaiser/passport-apple` (production) ?X handles ES256 client secret JWT generation internally
 
 **Bounded scope:**
 
-1. **AppleStrategy** (`services/api-gateway/src/auth/apple.strategy.ts`) �X Passport strategy using `@nicokaiser/passport-apple`; reads `APPLE_CLIENT_ID`, `APPLE_TEAM_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY` (with `\n` normalization), `APPLE_CALLBACK_URL`; scopes `['name', 'email']`; calls `authService.findOrCreateAppleUser()` in `validate()`; name payload accepted but not stored (no name column on `User`)
+1. **AppleStrategy** (`services/api-gateway/src/auth/apple.strategy.ts`) ?X Passport strategy using `@nicokaiser/passport-apple`; reads `APPLE_CLIENT_ID`, `APPLE_TEAM_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY` (with `\n` normalization), `APPLE_CALLBACK_URL`; scopes `['name', 'email']`; calls `authService.findOrCreateAppleUser()` in `validate()`; name payload accepted but not stored (no name column on `User`)
 
 2. **AuthController routes:**
-   - `GET /api/auth/apple` �X accepts optional `?locale=en|zh-TW|zh-CN`; normalizes invalid to `en`; stores locale in `aisandbox_oauth_state` state cookie (reused from AUTH-APP-01D); initiates Apple redirect
-   - `POST /api/auth/apple/callback` �X Apple sends POST (not GET); on success: calls `createSession(user.id)`, sets `aisandbox_session` cookie, clears OAuth state, redirects to `/${locale}/app`; on error: redirects to `/${locale}/login?error=oauth_failed`; on account conflict: redirects to `/${locale}/login?error=account_conflict`
+   - `GET /api/auth/apple` ?X accepts optional `?locale=en|zh-TW|zh-CN`; normalizes invalid to `en`; stores locale in `aisandbox_oauth_state` state cookie (reused from AUTH-APP-01D); initiates Apple redirect
+   - `POST /api/auth/apple/callback` ?X Apple sends POST (not GET); on success: calls `createSession(user.id)`, sets `aisandbox_session` cookie, clears OAuth state, redirects to `/${locale}/app`; on error: redirects to `/${locale}/login?error=oauth_failed`; on account conflict: redirects to `/${locale}/login?error=account_conflict`
 
-3. **AuthService.findOrCreateAppleUser()** �X account-linking order:
-   1. Existing `oauth_accounts` row for `provider='apple'` + `providerAccountId` match �� sign in, touch `lastLoginAt`; inactive user �� `UnauthorizedException`
-   2. Missing `appleId` �� `UnauthorizedException`
-   3. No provider match and email is null �� `UnauthorizedException` (repeat sign-in where Apple omitted email)
-   4. Private relay email (`isPrivateEmail` flag or `@privaterelay.appleid.com` suffix) �� create new user + `oauth_accounts` row; no email-based lookup
-   5. Real email matches existing `users` row �� create `oauth_accounts` link, touch `lastLoginAt`; inactive existing user �� `UnauthorizedException`
-   6. No match �� create new `users` row (`passwordHash=null`, `authProvider='apple'`) + new `oauth_accounts` row
+3. **AuthService.findOrCreateAppleUser()** ?X account-linking order:
+   1. Existing `oauth_accounts` row for `provider='apple'` + `providerAccountId` match ?? sign in, touch `lastLoginAt`; inactive user ?? `UnauthorizedException`
+   2. Missing `appleId` ?? `UnauthorizedException`
+   3. No provider match and email is null ?? `UnauthorizedException` (repeat sign-in where Apple omitted email)
+   4. Private relay email (`isPrivateEmail` flag or `@privaterelay.appleid.com` suffix) ?? create new user + `oauth_accounts` row; no email-based lookup
+   5. Real email matches existing `users` row ?? create `oauth_accounts` link, touch `lastLoginAt`; inactive existing user ?? `UnauthorizedException`
+   6. No match ?? create new `users` row (`passwordHash=null`, `authProvider='apple'`) + new `oauth_accounts` row
 
-4. **AuthModule** �X registers `AppleStrategy` as provider alongside `GoogleStrategy`
+4. **AuthModule** ?X registers `AppleStrategy` as provider alongside `GoogleStrategy`
 
-5. **Frontend** �X minimal "Continue with Apple" `<a>` link on login/register pages below the Google link; same border/surface design-token classes; i18n keys added to en, zh-TW, zh-CN message files; full UX polish deferred to AUTH-APP-01G
+5. **Frontend** ?X minimal "Continue with Apple" `<a>` link on login/register pages below the Google link; same border/surface design-token classes; i18n keys added to en, zh-TW, zh-CN message files; full UX polish deferred to AUTH-APP-01G
 
 6. **Environment variables:** `APPLE_CLIENT_ID`, `APPLE_TEAM_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY`, `APPLE_CALLBACK_URL`; `OAUTH_STATE_SECRET` reused from AUTH-APP-01D; documented in `services/api-gateway/docs/SMOKE-PACK-README.md`
 
@@ -23917,11 +24002,11 @@ Add Apple OAuth sign-in to the aiSandBox platform using `@nicokaiser/passport-ap
 - [x] `npx tsc --noEmit` passes in `frontend`
 - [x] `npm test` passes in `frontend` (253 tests)
 - [x] `npm run build` passes in `frontend`
-- [x] Apple auth unit tests pass (2 suites, 12 tests �X includes Google OAuth regression)
+- [x] Apple auth unit tests pass (2 suites, 12 tests ?X includes Google OAuth regression)
 - [ ] Manual end-to-end with real Apple Developer credentials (requires Services ID, Key, `.p8` file)
 
 **Carry-forward blockers (pre-existing, not introduced by AUTH-APP-01E):**
-- `npm test` backend full suite: fails �X `REDIS_URL` not set in test environment; `ai-execution.controller.spec.ts` pre-existing failures
+- `npm test` backend full suite: fails ?X `REDIS_URL` not set in test environment; `ai-execution.controller.spec.ts` pre-existing failures
 - `npm run lint` backend: ESLint config not discoverable in `services/api-gateway`
 
 **Reference:** See TASKS.md -> AUTH-APP-01E. See `docs/AUTH-APP-01E-CHECKPOINT.md`. See `docs/AUTH-APP-01-SPEC.md` Section 9.
@@ -23935,30 +24020,30 @@ Add Apple OAuth sign-in to the aiSandBox platform using `@nicokaiser/passport-ap
 **Parent:** AUTH-APP-01
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** VALIDATION COMPLETE �X carry-forwards pending (all child slices COMPLETE and LOCKED)
-**Source:** AUTH-APP-01A spec (Section 9 �X route/API protection slice); locked slice order
+**Status:** VALIDATION COMPLETE ?X carry-forwards pending (all child slices COMPLETE and LOCKED)
+**Source:** AUTH-APP-01A spec (Section 9 ?X route/API protection slice); locked slice order
 **Depends on:** AUTH-APP-01E (COMPLETE and LOCKED)
 
 **Objective:**
 Ensure all frontend routes and backend API endpoints are correctly protected by authentication guards. Public routes remain public; authenticated surfaces enforce session-cookie auth consistently; `DRIVER_API_KEY` flows are preserved unchanged; unauthenticated access to browser routes redirects to `/[locale]/login`; unauthenticated API access returns 401/403.
 
 **Child slices:**
-1. AUTH-APP-01F1 �X Route/API Protection Inventory + Spec (COMPLETE and LOCKED)
-2. AUTH-APP-01F2 �X Backend API Protection Gaps (COMPLETE and LOCKED)
-3. AUTH-APP-01F3 �X Frontend Protected Route Behavior (COMPLETE and LOCKED)
-4. AUTH-APP-01F4 �X Protection Validation + Consolidation (COMPLETE and LOCKED)
+1. AUTH-APP-01F1 ?X Route/API Protection Inventory + Spec (COMPLETE and LOCKED)
+2. AUTH-APP-01F2 ?X Backend API Protection Gaps (COMPLETE and LOCKED)
+3. AUTH-APP-01F3 ?X Frontend Protected Route Behavior (COMPLETE and LOCKED)
+4. AUTH-APP-01F4 ?X Protection Validation + Consolidation (COMPLETE and LOCKED)
 
 **Completed:** 2026-05-07
 **Checkpoint:** `docs/AUTH-APP-01F4-CHECKPOINT.md` (F4 task checkpoint)
 **Family checkpoint:** `docs/AUTH-APP-01F-CHECKPOINT.md` (family summary)
 
-**Carry-forward items (open �X not resolved in F1�VF4):**
-- `POST /api/events/file-changed`, `checkpoint-created`, `token-updated` �X still unguarded. Container-manager callers don't send `X-Internal-Service-Key`. Fix requires updating `files.service.ts` and `git.service.ts` in container-manager. Target: AUTH-APP-01F2a or AUTH-APP-01H.
-- `@All /api/preview/*` �X proxy still unguarded. Cross-service coordination needed; auth-forwarding mechanism not yet designed. Target: dedicated investigation slice.
-- Manual smoke checklist (22 items from spec Section 8.3) �X not run (no live environment). Target: AUTH-APP-01H.
-- Backend full `npm test` Redis env blocker �X pre-existing since AUTH-APP-01B.
-- `ai-execution-guards.integration.spec.ts` full suite `QuotaService` blocker �X pre-existing.
-- `npm run lint` ESLint config blocker �X pre-existing since AUTH-APP-01B.
+**Carry-forward items (open ?X not resolved in F1?VF4):**
+- `POST /api/events/file-changed`, `checkpoint-created`, `token-updated` ?X still unguarded. Container-manager callers don't send `X-Internal-Service-Key`. Fix requires updating `files.service.ts` and `git.service.ts` in container-manager. Target: AUTH-APP-01F2a or AUTH-APP-01H.
+- `@All /api/preview/*` ?X proxy still unguarded. Cross-service coordination needed; auth-forwarding mechanism not yet designed. Target: dedicated investigation slice.
+- Manual smoke checklist (22 items from spec Section 8.3) ?X not run (no live environment). Target: AUTH-APP-01H.
+- Backend full `npm test` Redis env blocker ?X pre-existing since AUTH-APP-01B.
+- `ai-execution-guards.integration.spec.ts` full suite `QuotaService` blocker ?X pre-existing.
+- `npm run lint` ESLint config blocker ?X pre-existing since AUTH-APP-01B.
 
 **Non-goals:**
 - No OAuth or email/password changes
@@ -23979,7 +24064,7 @@ Ensure all frontend routes and backend API endpoints are correctly protected by 
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
-**Nature:** DOCUMENTATION / SPEC ONLY �X no production code changes
+**Nature:** DOCUMENTATION / SPEC ONLY ?X no production code changes
 **Source:** AUTH-APP-01F child slice registration (2026-05-07)
 **Depends on:** AUTH-APP-01E (COMPLETE and LOCKED)
 **Completed:** 2026-05-07
@@ -24024,8 +24109,8 @@ Produce a concrete protection inventory and implementation spec before changing 
    - Endpoints currently using `SessionCookieGuard`
    - Endpoints still using `JwtAuthGuard`
    - Endpoints intentionally public (no guard)
-   - Endpoints using `ApiKeyAuthGuard` / `DRIVER_API_KEY` flow �X must not be changed
-   - Internal-only endpoints �X must remain protected by internal guards
+   - Endpoints using `ApiKeyAuthGuard` / `DRIVER_API_KEY` flow ?X must not be changed
+   - Internal-only endpoints ?X must remain protected by internal guards
 
 4. **Required behavior decisions:**
    - Unauthenticated page access redirects to `/[locale]/login`
@@ -24054,7 +24139,7 @@ Produce a concrete protection inventory and implementation spec before changing 
 - [x] Backend controller guard coverage documented for all 30 controllers
 - [x] `DRIVER_API_KEY` endpoints explicitly identified and marked do-not-change
 - [x] Internal-only endpoints explicitly identified (7 controllers under `/api/internal/`)
-- [x] `JwtAuthGuard` confirmed removed from all active controllers �X zero remaining usages
+- [x] `JwtAuthGuard` confirmed removed from all active controllers ?X zero remaining usages
 - [x] AUTH-APP-01F2 and AUTH-APP-01F3 implementation boundaries explicitly defined
 - [x] Carry-forward blockers recorded
 - [x] No production source files changed
@@ -24063,7 +24148,7 @@ Produce a concrete protection inventory and implementation spec before changing 
 - [x] Checkpoint created: `docs/AUTH-APP-01F1-CHECKPOINT.md`
 
 **Carry-forward blockers (inherited, not introduced here):**
-- `npm test` backend full suite: fails �X `REDIS_URL` not set in test environment; `ai-execution.controller.spec.ts` pre-existing failures
+- `npm test` backend full suite: fails ?X `REDIS_URL` not set in test environment; `ai-execution.controller.spec.ts` pre-existing failures
 - `npm run lint` backend: ESLint config not discoverable in `services/api-gateway`
 
 **Reference:** See TASKS.md -> AUTH-APP-01F1. See `docs/AUTH-APP-01-SPEC.md` Section 9.
@@ -24078,7 +24163,7 @@ Produce a concrete protection inventory and implementation spec before changing 
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
-**Nature:** BACKEND IMPLEMENTATION �X no frontend files changed, no new dependencies
+**Nature:** BACKEND IMPLEMENTATION ?X no frontend files changed, no new dependencies
 **Source:** AUTH-APP-01F1 spec (`docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md` Sections 4.5 and 6); locked slice order
 **Depends on:** AUTH-APP-01F1 (COMPLETE and LOCKED)
 **Completed:** 2026-05-07
@@ -24089,7 +24174,7 @@ Produce a concrete protection inventory and implementation spec before changing 
 Implement the backend API protection gaps identified in the F1 inventory. Guard the AI execution cancel/get/stream endpoints, protect service-to-service write endpoints with `InternalServiceAuthGuard`, restrict the runtime metrics diagnostic endpoint, delete confirmed-dead stale auth files, and record accepted exceptions for events endpoints and the preview proxy.
 
 **Bounded scope:**
-- Backend controllers only �X no frontend files
+- Backend controllers only ?X no frontend files
 - No route path migrations
 - No new npm dependencies
 - No OAuth or email/password changes
@@ -24105,45 +24190,45 @@ Implement the backend API protection gaps identified in the F1 inventory. Guard 
 - `POST /api/ai/execute` guard stack left unchanged
 
 *ChatMessageController* (`services/api-gateway/src/chat-messages/chat-message.controller.ts`):
-- Added class-level `@UseGuards(InternalServiceAuthGuard)` �X Option B from spec Section 6.2
+- Added class-level `@UseGuards(InternalServiceAuthGuard)` ?X Option B from spec Section 6.2
 - ai-service caller (`ApiGatewayHttpClient.addChatMessage`) already sends `X-Internal-Service-Key`; no ai-service change required
 
 *TokenUsageController* (`services/api-gateway/src/token-usage/token-usage.controller.ts`):
-- Added class-level `@UseGuards(InternalServiceAuthGuard)` �X Option B from spec Section 6.2
+- Added class-level `@UseGuards(InternalServiceAuthGuard)` ?X Option B from spec Section 6.2
 - ai-service caller (`ApiGatewayHttpClient.recordTokenUsage`) already sends `X-Internal-Service-Key`; no ai-service change required
 
 *RuntimeController* (`services/api-gateway/src/runtime/runtime.controller.ts`):
-- Added class-level `@UseGuards(InternalServiceAuthGuard)` �X restricts diagnostic endpoint to internal callers
+- Added class-level `@UseGuards(InternalServiceAuthGuard)` ?X restricts diagnostic endpoint to internal callers
 
 *Stale file cleanup:*
-- Deleted `services/api-gateway/src/auth/api-key.controllerXXXXX.ts` �X dead file, not imported in `auth.module.ts`, contained stale `JwtAuthGuard` usage
-- Deleted `services/api-gateway/src/auth/jwt-auth.guard.ts` �X only reference was the dead controller; comment-only reference in `session-quota.guard.ts`
+- Deleted `services/api-gateway/src/auth/api-key.controllerXXXXX.ts` ?X dead file, not imported in `auth.module.ts`, contained stale `JwtAuthGuard` usage
+- Deleted `services/api-gateway/src/auth/jwt-auth.guard.ts` ?X only reference was the dead controller; comment-only reference in `session-quota.guard.ts`
 
 *Tests added:*
-- `services/api-gateway/src/chat-messages/chat-message.controller.spec.ts` �X guard metadata test
-- `services/api-gateway/src/token-usage/token-usage.controller.spec.ts` �X guard metadata test
-- `services/api-gateway/src/runtime/runtime.controller.spec.ts` �X guard metadata test
-- `services/api-gateway/src/ai/__tests__/ai-execution-guards.integration.spec.ts` �X new isolated `describe('AIExecutionController guard metadata')` top-level block with 3 metadata tests
+- `services/api-gateway/src/chat-messages/chat-message.controller.spec.ts` ?X guard metadata test
+- `services/api-gateway/src/token-usage/token-usage.controller.spec.ts` ?X guard metadata test
+- `services/api-gateway/src/runtime/runtime.controller.spec.ts` ?X guard metadata test
+- `services/api-gateway/src/ai/__tests__/ai-execution-guards.integration.spec.ts` ?X new isolated `describe('AIExecutionController guard metadata')` top-level block with 3 metadata tests
 
 **Non-goals:**
 - No frontend files changed
-- No events endpoint guard added �X container-manager callers do not send `X-Internal-Service-Key` (carry-forward)
-- No preview proxy guard added �X cross-service ownership validation deferred
+- No events endpoint guard added ?X container-manager callers do not send `X-Internal-Service-Key` (carry-forward)
+- No preview proxy guard added ?X cross-service ownership validation deferred
 - No OAuth or email/password changes
 - No route path migrations
 - No new npm dependencies
 
 **Acceptance checks:**
-- [x] `POST /api/ai/executions/:executionId/cancel` �X `ApiKeyAuthGuard` added
-- [x] `GET /api/ai/executions/:executionId` �X `ApiKeyAuthGuard` added
-- [x] `GET /api/ai/executions/:executionId/stream` �X `ApiKeyAuthGuard` added
-- [x] `POST /api/chat-messages/add-by-session` �X `InternalServiceAuthGuard` added (Option B)
-- [x] `POST /api/token-usage/record` �X `InternalServiceAuthGuard` added (Option B)
-- [x] `GET /api/runtime/metrics` �X `InternalServiceAuthGuard` added
-- [x] Events endpoints �X disposition recorded (Option C: accepted carry-forward)
-- [x] Preview proxy �X disposition recorded (deferred child slice)
-- [x] `api-key.controllerXXXXX.ts` �X deleted; import scan confirmed safe
-- [x] `jwt-auth.guard.ts` �X deleted; import scan confirmed safe
+- [x] `POST /api/ai/executions/:executionId/cancel` ?X `ApiKeyAuthGuard` added
+- [x] `GET /api/ai/executions/:executionId` ?X `ApiKeyAuthGuard` added
+- [x] `GET /api/ai/executions/:executionId/stream` ?X `ApiKeyAuthGuard` added
+- [x] `POST /api/chat-messages/add-by-session` ?X `InternalServiceAuthGuard` added (Option B)
+- [x] `POST /api/token-usage/record` ?X `InternalServiceAuthGuard` added (Option B)
+- [x] `GET /api/runtime/metrics` ?X `InternalServiceAuthGuard` added
+- [x] Events endpoints ?X disposition recorded (Option C: accepted carry-forward)
+- [x] Preview proxy ?X disposition recorded (deferred child slice)
+- [x] `api-key.controllerXXXXX.ts` ?X deleted; import scan confirmed safe
+- [x] `jwt-auth.guard.ts` ?X deleted; import scan confirmed safe
 - [x] `npx tsc --noEmit` PASS
 - [x] Targeted guard metadata tests pass for all newly guarded endpoints
 - [x] No frontend files changed
@@ -24151,13 +24236,13 @@ Implement the backend API protection gaps identified in the F1 inventory. Guard 
 - [x] Checkpoint created: `docs/AUTH-APP-01F2-CHECKPOINT.md`
 
 **Carry-forward blockers (inherited, not introduced by F2):**
-- `npm test` backend full suite: fails �X `REDIS_URL` not set; `ai-execution.controller.spec.ts` pre-existing failures
+- `npm test` backend full suite: fails ?X `REDIS_URL` not set; `ai-execution.controller.spec.ts` pre-existing failures
 - `ai-execution-guards.integration.spec.ts` full suite: `QuotaService` unresolved dependencies (pre-existing)
 - `npm run lint` backend: ESLint config not discoverable in `services/api-gateway`
 
 **Carry-forward items (not resolved in F2):**
-- Events endpoints (`file-changed`, `checkpoint-created`, `token-updated`) still unguarded �X container-manager `files.service.ts` and `git.service.ts` callers do not send `X-Internal-Service-Key`; requires updating those two callers and then adding `InternalServiceAuthGuard` to `EventsController` (AUTH-APP-01F2a or AUTH-APP-01H)
-- Preview proxy (`@All /api/preview/*`) still unguarded �X requires coordinated api-gateway + container-manager auth-forwarding / ownership-validation investigation (dedicated slice)
+- Events endpoints (`file-changed`, `checkpoint-created`, `token-updated`) still unguarded ?X container-manager `files.service.ts` and `git.service.ts` callers do not send `X-Internal-Service-Key`; requires updating those two callers and then adding `InternalServiceAuthGuard` to `EventsController` (AUTH-APP-01F2a or AUTH-APP-01H)
+- Preview proxy (`@All /api/preview/*`) still unguarded ?X requires coordinated api-gateway + container-manager auth-forwarding / ownership-validation investigation (dedicated slice)
 
 **Reference:** See TASKS.md -> AUTH-APP-01F2. See `docs/AUTH-APP-01F2-CHECKPOINT.md`. See `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md`.
 
@@ -24171,7 +24256,7 @@ Implement the backend API protection gaps identified in the F1 inventory. Guard 
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
-**Nature:** FRONTEND IMPLEMENTATION �X no backend files changed, no new dependencies
+**Nature:** FRONTEND IMPLEMENTATION ?X no backend files changed, no new dependencies
 **Source:** AUTH-APP-01F child slice registration (2026-05-07)
 **Depends on:** AUTH-APP-01F2 (COMPLETE and LOCKED)
 **Completed:** 2026-05-07
@@ -24182,8 +24267,8 @@ Implement the backend API protection gaps identified in the F1 inventory. Guard 
 Implement the frontend protected route behavior gaps identified in AUTH-APP-01F1. Specifically: add a cookie-session auth bootstrap to `/[locale]/keys` so that unauthenticated access redirects to `/${locale}/login` instead of showing an error overlay. Pattern mirrors existing `/[locale]/app` bootstrap exactly. All other frontend routes required no change.
 
 **Bounded scope:**
-- `frontend/app/[locale]/keys/page.tsx` �X production file changed
-- `frontend/app/[locale]/keys/page.test.tsx` �X test file added
+- `frontend/app/[locale]/keys/page.tsx` ?X production file changed
+- `frontend/app/[locale]/keys/page.test.tsx` ?X test file added
 - No other files touched
 
 **Implemented:**
@@ -24207,19 +24292,19 @@ Implement the frontend protected route behavior gaps identified in AUTH-APP-01F1
 | `/test` | Dev artifact; intentionally unprotected | No change |
 
 **Test coverage:**
-- `frontend/app/[locale]/keys/page.test.tsx` �X 3 focused tests
-  1. `/api/auth/me` non-OK �� `router.push('/en/login')`
-  2. `/api/auth/me` OK but missing/invalid `id` �� `router.push('/en/login')`
-  3. Valid `/api/auth/me` + `/api/keys` success �� renders key-management surface, no redirect
+- `frontend/app/[locale]/keys/page.test.tsx` ?X 3 focused tests
+  1. `/api/auth/me` non-OK ?? `router.push('/en/login')`
+  2. `/api/auth/me` OK but missing/invalid `id` ?? `router.push('/en/login')`
+  3. Valid `/api/auth/me` + `/api/keys` success ?? renders key-management surface, no redirect
 
 **Validation:**
-- `npm run build` �X PASS
-- `npx tsc --noEmit` (after build) �X PASS
-- `npm test` �X PASS (253 tests, 22 suites, 0 failures)
-- Targeted `/keys` test �X PASS (3 tests, 0 failures)
+- `npm run build` ?X PASS
+- `npx tsc --noEmit` (after build) ?X PASS
+- `npm test` ?X PASS (253 tests, 22 suites, 0 failures)
+- Targeted `/keys` test ?X PASS (3 tests, 0 failures)
 - `frontend/tsconfig.tsbuildinfo` restored after validation
 
-**Note �X Next.js typegen ordering:** `npx tsc --noEmit` before `npm run build` fails with `TS6053` for `.next/types/**` paths. This is a pre-existing environment characteristic: `npm run build` must generate `.next/types` first. Errors are not caused by F3 files.
+**Note ?X Next.js typegen ordering:** `npx tsc --noEmit` before `npm run build` fails with `TS6053` for `.next/types/**` paths. This is a pre-existing environment characteristic: `npm run build` must generate `.next/types` first. Errors are not caused by F3 files.
 
 **Non-goals confirmed:**
 - No backend files changed
@@ -24233,9 +24318,9 @@ Implement the frontend protected route behavior gaps identified in AUTH-APP-01F1
 - No new npm dependencies
 
 **Carry-forward items (from F2, not introduced by F3):**
-- Events endpoints (`file-changed`, `checkpoint-created`, `token-updated`) still unguarded �X AUTH-APP-01F2a or AUTH-APP-01H
-- Preview proxy (`@All /api/preview/*`) still unguarded �X dedicated investigation slice
-- Backend full `npm test` / Redis integration blockers �X pre-existing
+- Events endpoints (`file-changed`, `checkpoint-created`, `token-updated`) still unguarded ?X AUTH-APP-01F2a or AUTH-APP-01H
+- Preview proxy (`@All /api/preview/*`) still unguarded ?X dedicated investigation slice
+- Backend full `npm test` / Redis integration blockers ?X pre-existing
 
 **Reference:** See TASKS.md -> AUTH-APP-01F3. See `docs/AUTH-APP-01F3-CHECKPOINT.md`. See `docs/AUTH-APP-01F-ROUTE-API-PROTECTION-SPEC.md`.
 
@@ -24245,11 +24330,11 @@ Implement the frontend protected route behavior gaps identified in AUTH-APP-01F1
 
 **Task ID:** AUTH-APP-01F4
 **Family:** AUTH
-**Parent:** AUTH-APP-01F (VALIDATION COMPLETE �X carry-forwards pending)
+**Parent:** AUTH-APP-01F (VALIDATION COMPLETE ?X carry-forwards pending)
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
-**Nature:** VALIDATION AND CONSOLIDATION ONLY �X no production source files changed
+**Nature:** VALIDATION AND CONSOLIDATION ONLY ?X no production source files changed
 **Source:** AUTH-APP-01F child slice registration (2026-05-07)
 **Depends on:** AUTH-APP-01F3 (COMPLETE and LOCKED)
 **Completed:** 2026-05-07
@@ -24262,31 +24347,31 @@ Run bounded validation across all AUTH-APP-01F2 backend guard additions and AUTH
 
 **Bounded scope:**
 - No production source files changed
-- Run targeted backend Jest tests (guard metadata only �X no full suite)
+- Run targeted backend Jest tests (guard metadata only ?X no full suite)
 - Run frontend build, tsc, npm test, and direct /keys auth bootstrap test
-- Record manual smoke checklist disposition (not run �X no live environment)
+- Record manual smoke checklist disposition (not run ?X no live environment)
 - Create `docs/AUTH-APP-01F4-CHECKPOINT.md`
 - Create `docs/AUTH-APP-01F-CHECKPOINT.md` (family summary)
 - Update `TASKS.md` and `TASKS_BACKLOG_FULL.md`
 
 **Validation results:**
-- `AIExecutionController guard metadata`: 3/3 PASS (cancel, get, stream �X ApiKeyAuthGuard)
+- `AIExecutionController guard metadata`: 3/3 PASS (cancel, get, stream ?X ApiKeyAuthGuard)
 - `ChatMessageController guard metadata`: 1/1 PASS (InternalServiceAuthGuard)
 - `TokenUsageController guard metadata`: 1/1 PASS (InternalServiceAuthGuard)
 - `RuntimeController guard metadata`: 1/1 PASS (InternalServiceAuthGuard)
-- Frontend `npm run build`: PASS (Next.js 15.5.12 �X 13 routes)
+- Frontend `npm run build`: PASS (Next.js 15.5.12 ?X 13 routes)
 - Frontend `npx tsc --noEmit`: PASS
-- Frontend `npm test`: PASS �X 253 tests, 22 suites, 0 failures
-- Frontend `/keys` direct auth bootstrap test: PASS �X 3/3 tests
-- Manual smoke checklist: NOT RUN �X no live environment �� carry to AUTH-APP-01H
+- Frontend `npm test`: PASS ?X 253 tests, 22 suites, 0 failures
+- Frontend `/keys` direct auth bootstrap test: PASS ?X 3/3 tests
+- Manual smoke checklist: NOT RUN ?X no live environment ?? carry to AUTH-APP-01H
 
 **Carry-forward items:**
-- Events endpoints (`/api/events/file-changed`, `/api/events/checkpoint-created`, `/api/events/token-updated`) �X unguarded. Container-manager callers don't send `X-Internal-Service-Key`. Target: AUTH-APP-01F2a or AUTH-APP-01H.
-- Preview proxy (`@All /api/preview/*`) �X unguarded. Cross-service coordination needed. Target: dedicated investigation slice.
-- Manual smoke checklist (22 items) �X not run. Target: AUTH-APP-01H.
-- Backend full `npm test` Redis env blocker �X pre-existing since AUTH-APP-01B.
-- `ai-execution-guards.integration.spec.ts` full suite `QuotaService` blocker �X pre-existing.
-- `npm run lint` ESLint config blocker �X pre-existing since AUTH-APP-01B.
+- Events endpoints (`/api/events/file-changed`, `/api/events/checkpoint-created`, `/api/events/token-updated`) ?X unguarded. Container-manager callers don't send `X-Internal-Service-Key`. Target: AUTH-APP-01F2a or AUTH-APP-01H.
+- Preview proxy (`@All /api/preview/*`) ?X unguarded. Cross-service coordination needed. Target: dedicated investigation slice.
+- Manual smoke checklist (22 items) ?X not run. Target: AUTH-APP-01H.
+- Backend full `npm test` Redis env blocker ?X pre-existing since AUTH-APP-01B.
+- `ai-execution-guards.integration.spec.ts` full suite `QuotaService` blocker ?X pre-existing.
+- `npm run lint` ESLint config blocker ?X pre-existing since AUTH-APP-01B.
 
 **Non-goals:**
 - No new guards added
@@ -24303,10 +24388,10 @@ Run bounded validation across all AUTH-APP-01F2 backend guard additions and AUTH
 - [x] Backend guard metadata: 6 targeted tests PASS (3 ai-execution + 1 chat-message + 1 token-usage + 1 runtime)
 - [x] Frontend build PASS
 - [x] Frontend `npx tsc --noEmit` PASS
-- [x] Frontend `npm test` PASS �X 253 tests, 0 failures
-- [x] `/keys` direct auth bootstrap test PASS �X 3/3
+- [x] Frontend `npm test` PASS ?X 253 tests, 0 failures
+- [x] `/keys` direct auth bootstrap test PASS ?X 3/3
 - [x] `frontend/tsconfig.tsbuildinfo` restored to clean state
-- [x] Manual smoke checklist disposition recorded �X NOT RUN, carried to AUTH-APP-01H
+- [x] Manual smoke checklist disposition recorded ?X NOT RUN, carried to AUTH-APP-01H
 - [x] Carry-forward blockers recorded
 - [x] No production source files changed
 - [x] `docs/AUTH-APP-01F4-CHECKPOINT.md` created
@@ -24325,7 +24410,7 @@ Run bounded validation across all AUTH-APP-01F2 backend guard additions and AUTH
 **Parent:** AUTH-APP-01
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** VALIDATION COMPLETE �X manual smoke deferred (all child slices COMPLETE and LOCKED)
+**Status:** VALIDATION COMPLETE ?X manual smoke deferred (all child slices COMPLETE and LOCKED)
 **Depends on:** AUTH-APP-01F4 (COMPLETE and LOCKED)
 **Family checkpoint:** `docs/AUTH-APP-01G-CHECKPOINT.md`
 
@@ -24333,10 +24418,10 @@ Run bounded validation across all AUTH-APP-01F2 backend guard additions and AUTH
 Integrate auth UX surfaces now that password login, Google OAuth, Apple OAuth, cookie sessions, and protected routes are all in place. Covers login/register UX polish, OAuth error handling, logout, and a minimal account surface.
 
 **Confirmed child slices:**
-1. AUTH-APP-01G1 �X Auth UX Inventory + Scope (COMPLETE and LOCKED)
-2. AUTH-APP-01G2 �X Login/Register OAuth Error + Button Polish (COMPLETE and LOCKED)
-3. AUTH-APP-01G3 �X Logout + Basic Account Surface (COMPLETE and LOCKED)
-4. AUTH-APP-01G4 �X Auth UX Validation + Checkpoint (COMPLETE and LOCKED)
+1. AUTH-APP-01G1 ?X Auth UX Inventory + Scope (COMPLETE and LOCKED)
+2. AUTH-APP-01G2 ?X Login/Register OAuth Error + Button Polish (COMPLETE and LOCKED)
+3. AUTH-APP-01G3 ?X Logout + Basic Account Surface (COMPLETE and LOCKED)
+4. AUTH-APP-01G4 ?X Auth UX Validation + Checkpoint (COMPLETE and LOCKED)
 
 **Manual smoke deferred:** 12-item checklist not run in automated session. Must be verified by user against live environment before AUTH-APP-01G is promoted to COMPLETE and LOCKED.
 
@@ -24360,7 +24445,7 @@ Integrate auth UX surfaces now that password login, Google OAuth, Apple OAuth, c
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
-**Nature:** DOCUMENTATION / SPEC ONLY �X no production source files changed
+**Nature:** DOCUMENTATION / SPEC ONLY ?X no production source files changed
 **Depends on:** AUTH-APP-01F4 (COMPLETE and LOCKED)
 **Completed:** 2026-05-07
 **Checkpoint:** `docs/AUTH-APP-01G1-CHECKPOINT.md`
@@ -24371,10 +24456,10 @@ Produce an inventory and implementation scope for auth UX integration now that p
 
 **Key findings:**
 - OAuth error query param gap: backend emits `?error=oauth_failed` / `?error=account_conflict` but login page does not consume them; `errors.oauthFailed` and `errors.accountConflict` i18n keys exist but are never rendered
-- `errors.oauthFailed` is Google-specific in wording; Apple also uses `oauth_failed` �X must be made provider-agnostic in G2
+- `errors.oauthFailed` is Google-specific in wording; Apple also uses `oauth_failed` ?X must be made provider-agnostic in G2
 - Logout complete absence: no frontend component calls `POST /api/auth/logout`; backend endpoint is fully implemented; two orphaned i18n keys (`account.logout`, `sandbox.logout`) in all three locales
 - `/account` redirects to `/keys` (flag=false) or renders `ApiKeysPage` (flag=true); no profile/auth section exists
-- Keys page uses zero UX-IA-02 tokens �X pre-existing, deferred
+- Keys page uses zero UX-IA-02 tokens ?X pre-existing, deferred
 - Login/register pages are token-consistent; OAuth buttons are visually generic (no provider icon or color)
 - Register success stays on page; whether to auto-redirect is a G2 decision
 
@@ -24388,7 +24473,7 @@ Produce an inventory and implementation scope for auth UX integration now that p
 - `git status`: `docs/AUTH-APP-01G-AUTH-UX-SCOPE.md` new; `TASKS.md` and `TASKS_BACKLOG_FULL.md` modified (registration from earlier in session)
 - No production source files changed
 - No frontend or backend behavior changed
-- No tests run �X docs-only
+- No tests run ?X docs-only
 
 **Acceptance checks (all MET):**
 - [x] Login page surfaces inspected and findings documented
@@ -24418,7 +24503,7 @@ Produce an inventory and implementation scope for auth UX integration now that p
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
-**Nature:** FRONTEND UI ONLY �X no backend files changed
+**Nature:** FRONTEND UI ONLY ?X no backend files changed
 **Depends on:** AUTH-APP-01G1 (COMPLETE and LOCKED)
 **Completed:** 2026-05-07
 **Checkpoint:** `docs/AUTH-APP-01G2-CHECKPOINT.md`
@@ -24428,23 +24513,23 @@ Consume OAuth error query params on the login page, make `errors.oauthFailed` pr
 
 **Implemented:**
 
-1. **`OAuthErrorBanner` sub-component** �X added to `login/page.tsx` (not exported); reads `?error` via `useSearchParams()`; uses `useTranslations('errors')`; renders `errors.accountConflict` for `error === 'account_conflict'`, `errors.oauthFailed` for all other non-null error codes; returns `null` when no `?error` present; styled with existing red error classes
+1. **`OAuthErrorBanner` sub-component** ?X added to `login/page.tsx` (not exported); reads `?error` via `useSearchParams()`; uses `useTranslations('errors')`; renders `errors.accountConflict` for `error === 'account_conflict'`, `errors.oauthFailed` for all other non-null error codes; returns `null` when no `?error` present; styled with existing red error classes
 
-2. **Suspense boundary** �X `<Suspense fallback={null}><OAuthErrorBanner /></Suspense>` placed above the existing `{error && ...}` form error block inside `LoginPage`; outer `LoginPage` required no structural change
+2. **Suspense boundary** ?X `<Suspense fallback={null}><OAuthErrorBanner /></Suspense>` placed above the existing `{error && ...}` form error block inside `LoginPage`; outer `LoginPage` required no structural change
 
 3. **`errors.oauthFailed` wording updated** across en, zh-TW, zh-CN:
    - en: `"Sign-in failed. Please try again."`
-   - zh-TW: `"�n�J���ѡA�ЦA�դ@���C"`
-   - zh-CN: `"�n?��?�A?��?�C"`
+   - zh-TW: `"?n?J????A??A??@???C"`
+   - zh-CN: `"?n?????A?????C"`
 
 4. **OAuth button polish** applied to all four `<a>` links (login Google/Apple, register Google/Apple):
-   - `transition-colors` �� `transition`
+   - `transition-colors` ?? `transition`
    - Added `active:scale-[0.97]`
    - Added `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand`
 
-5. **Register success behavior** �X preserved unchanged; stay-on-page success message kept; no auto-redirect added
+5. **Register success behavior** ?X preserved unchanged; stay-on-page success message kept; no auto-redirect added
 
-6. **New test file** �X `frontend/app/[locale]/login/page.test.tsx`; 3 tests: no error param, `oauth_failed`, `account_conflict`; uses `node:test` + `renderToStaticMarkup` + `Module._load` harness pattern
+6. **New test file** ?X `frontend/app/[locale]/login/page.test.tsx`; 3 tests: no error param, `oauth_failed`, `account_conflict`; uses `node:test` + `renderToStaticMarkup` + `Module._load` harness pattern
 
 **Key decisions made at stage-start:**
 - Suspense: `OAuthErrorBanner` sub-component + `<Suspense fallback={null}>` in `LoginPage`
@@ -24452,10 +24537,10 @@ Consume OAuth error query params on the login page, make `errors.oauthFailed` pr
 - Register success: stay-on-page preserved
 
 **Validation:**
-- `npm run build`: PASS �X Next.js 15.5.12, compiled in 3.3s
+- `npm run build`: PASS ?X Next.js 15.5.12, compiled in 3.3s
 - `npx tsc --noEmit`: PASS
-- `npm test`: PASS �X 253 tests, 22 suites, 0 failures
-- Login page test (direct): PASS �X 3 tests, 0 failures
+- `npm test`: PASS ?X 253 tests, 22 suites, 0 failures
+- Login page test (direct): PASS ?X 3 tests, 0 failures
 - `frontend/tsconfig.tsbuildinfo` modified by build; restored via `git restore`
 
 **Test runner note:** `npx tsx --test "app/[locale]/login/page.test.tsx"` discovers 0 tests due to bracketed `[locale]` path not resolving as glob. Correct invocation: `npx tsx "app/[locale]/login/page.test.tsx"`. Consistent with existing `keys/page.test.tsx` pattern.
@@ -24473,8 +24558,8 @@ Consume OAuth error query params on the login page, make `errors.oauthFailed` pr
 - [x] No new npm dependencies
 - [x] `npm run build` PASS
 - [x] `npx tsc --noEmit` PASS
-- [x] `npm test` PASS �X 253 tests, 0 failures
-- [x] Login page tests PASS �X 3 tests, 0 failures
+- [x] `npm test` PASS ?X 253 tests, 0 failures
+- [x] Login page tests PASS ?X 3 tests, 0 failures
 - [x] `frontend/tsconfig.tsbuildinfo` restored
 - [x] `docs/AUTH-APP-01G2-CHECKPOINT.md` created
 - [x] `TASKS.md` updated
@@ -24492,7 +24577,7 @@ Consume OAuth error query params on the login page, make `errors.oauthFailed` pr
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
-**Nature:** FRONTEND ONLY �X no backend files changed
+**Nature:** FRONTEND ONLY ?X no backend files changed
 **Depends on:** AUTH-APP-01G2 (COMPLETE and LOCKED)
 **Checkpoint:** `docs/AUTH-APP-01G3-CHECKPOINT.md`
 
@@ -24500,11 +24585,11 @@ Consume OAuth error query params on the login page, make `errors.oauthFailed` pr
 Add a logout button/caller wired to `POST /api/auth/logout`, clear local UI state, redirect to `/${locale}/login` on success, and add minimal account/auth info.
 
 **Files changed:**
-- `frontend/app/[locale]/app/page.tsx` �X added `handleLogout()`; passed `onLogout` to `WorkspaceShell`
-- `frontend/components/workspace/workspace-shell.tsx` �X added `onLogout?: () => void` prop; logout button in both header paths
-- `frontend/app/[locale]/account/page.tsx` �X added `<LogoutButton />` above `<ApiKeysPage />` for `PROJECT_FIRST_UX=true`
-- `frontend/components/auth/logout-button.tsx` �X new: `'use client'` component; `GET /api/auth/me` email display; logout + redirect
-- `frontend/components/workspace/workspace-shell.test.tsx` �X 3 logout button tests added
+- `frontend/app/[locale]/app/page.tsx` ?X added `handleLogout()`; passed `onLogout` to `WorkspaceShell`
+- `frontend/components/workspace/workspace-shell.tsx` ?X added `onLogout?: () => void` prop; logout button in both header paths
+- `frontend/app/[locale]/account/page.tsx` ?X added `<LogoutButton />` above `<ApiKeysPage />` for `PROJECT_FIRST_UX=true`
+- `frontend/components/auth/logout-button.tsx` ?X new: `'use client'` component; `GET /api/auth/me` email display; logout + redirect
+- `frontend/components/workspace/workspace-shell.test.tsx` ?X 3 logout button tests added
 
 **Implementation summary:**
 - `handleLogout()` calls `POST /api/auth/logout`, then always calls `handleWorkspaceUnauthorizedAccess()` which clears workspace state and redirects to `/${locale}/login`
@@ -24517,7 +24602,7 @@ Add a logout button/caller wired to `POST /api/auth/logout`, clear local UI stat
 **Validation:**
 - `npm run build`: PASS
 - `npx tsc --noEmit`: PASS
-- `npm test`: PASS �X 256 tests, 22 suites, 0 failures
+- `npm test`: PASS ?X 256 tests, 22 suites, 0 failures
 - `frontend/tsconfig.tsbuildinfo` restored via `git restore`
 
 **Completion checklist:**
@@ -24545,7 +24630,7 @@ Add a logout button/caller wired to `POST /api/auth/logout`, clear local UI stat
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
-**Nature:** VALIDATION AND DOCUMENTATION ONLY �X no production source files changed
+**Nature:** VALIDATION AND DOCUMENTATION ONLY ?X no production source files changed
 **Depends on:** AUTH-APP-01G3 (COMPLETE and LOCKED)
 **Checkpoint:** `docs/AUTH-APP-01G4-CHECKPOINT.md`
 **Family checkpoint:** `docs/AUTH-APP-01G-CHECKPOINT.md`
@@ -24554,22 +24639,22 @@ Add a logout button/caller wired to `POST /api/auth/logout`, clear local UI stat
 Run full automated validation suite for the AUTH-APP-01G family, record manual smoke checklist disposition, and create the G4 task checkpoint and AUTH-APP-01G parent/family checkpoint.
 
 **Automated validation results:**
-- `npm run build`: PASS �X Next.js 15.5.12, compiled in 2.6s
+- `npm run build`: PASS ?X Next.js 15.5.12, compiled in 2.6s
 - `npx tsc --noEmit`: PASS
-- `npm test`: PASS �X 256 tests, 22 suites, 0 failures
-- Login page direct test (`npx tsx "app/[locale]/login/page.test.tsx"`): PASS �X 3 tests, 0 failures
-- Keys page direct test (`npx tsx "app/[locale]/keys/page.test.tsx"`): PASS �X 3 tests, 0 failures
+- `npm test`: PASS ?X 256 tests, 22 suites, 0 failures
+- Login page direct test (`npx tsx "app/[locale]/login/page.test.tsx"`): PASS ?X 3 tests, 0 failures
+- Keys page direct test (`npx tsx "app/[locale]/keys/page.test.tsx"`): PASS ?X 3 tests, 0 failures
 - `frontend/tsconfig.tsbuildinfo` modified by build; restored via `git restore`
 
-**Manual smoke checklist:** NOT RUN �X deferred to user live environment.
+**Manual smoke checklist:** NOT RUN ?X deferred to user live environment.
 - Reason: no live frontend/backend/browser available in automated session; dev servers user-controlled per `CLAUDE.md`
 - 12 items deferred; see `docs/AUTH-APP-01G4-CHECKPOINT.md` for full checklist
 
 **Non-blocking deferred items:**
-- `login.testCredentials` dead i18n key �X future task
-- `register.name` dead i18n key �X future task
-- Keys page raw Tailwind classes �X future task
-- Google callback hardcodes `oauth_failed` �X documentation only
+- `login.testCredentials` dead i18n key ?X future task
+- `register.name` dead i18n key ?X future task
+- Keys page raw Tailwind classes ?X future task
+- Google callback hardcodes `oauth_failed` ?X documentation only
 
 **Completion checklist:**
 - [x] Automated validation: `npm run build` PASS
@@ -24578,7 +24663,7 @@ Run full automated validation suite for the AUTH-APP-01G family, record manual s
 - [x] Login page direct test PASS (3/3)
 - [x] Keys page direct test PASS (3/3)
 - [x] `frontend/tsconfig.tsbuildinfo` restored
-- [x] Manual smoke: NOT RUN �X deferred, documented
+- [x] Manual smoke: NOT RUN ?X deferred, documented
 - [x] No production source files changed
 - [x] `docs/AUTH-APP-01G4-CHECKPOINT.md` created
 - [x] `docs/AUTH-APP-01G-CHECKPOINT.md` created
@@ -24596,8 +24681,8 @@ Run full automated validation suite for the AUTH-APP-01G family, record manual s
 **Parent:** AUTH-APP-01
 **Family status:** VALIDATION COMPLETE (manual smoke deferred)
 **Priority:** High
-**Status:** VALIDATION COMPLETE �X manual smoke deferred
-**Nature:** PHASE PARENT �X split into H1�VH4 child slices
+**Status:** VALIDATION COMPLETE ?X manual smoke deferred
+**Nature:** PHASE PARENT ?X split into H1?VH4 child slices
 **Source:** AUTH-APP-01-SPEC.md Section 14 (locked slice order)
 **Depends on:** AUTH-APP-01G4 (COMPLETE and LOCKED)
 **Registered:** 2026-05-07
@@ -24607,22 +24692,22 @@ Run full automated validation suite for the AUTH-APP-01G family, record manual s
 Deliver all remaining AUTH-APP-01 security hardening and validation work before AUTH-APP-01Z final consolidation. Covers CSRF protection, rate limiting on auth endpoints, redirect allowlist hardening, OAuth state parameter audit, events endpoint carry-forward resolution (from AUTH-APP-01F), preview proxy scope decision, test/tooling blocker triage, secrets env audit, and full manual smoke verification (carrying forward all NOT RUN items from AUTH-APP-01F4 and AUTH-APP-01G4).
 
 **Confirmed child slices:**
-1. AUTH-APP-01H1 �X Security Hardening Inventory (COMPLETE and LOCKED)
-2. AUTH-APP-01H2 �X CSRF + Rate Limiting + Redirect Hardening (COMPLETE and LOCKED)
-3. AUTH-APP-01H3 �X Events Endpoint Guards + Test/Tooling Triage (COMPLETE and LOCKED)
-4. AUTH-APP-01H4 �X Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation (COMPLETE and LOCKED)
+1. AUTH-APP-01H1 ?X Security Hardening Inventory (COMPLETE and LOCKED)
+2. AUTH-APP-01H2 ?X CSRF + Rate Limiting + Redirect Hardening (COMPLETE and LOCKED)
+3. AUTH-APP-01H3 ?X Events Endpoint Guards + Test/Tooling Triage (COMPLETE and LOCKED)
+4. AUTH-APP-01H4 ?X Manual Smoke + Secrets Audit + Final AUTH-APP-01H Consolidation (COMPLETE and LOCKED)
 
 **Carry-forwards absorbed and resolved/deferred:**
 
 | Item | Source | Resolution |
 |---|---|---|
-| Events endpoints (3) unguarded (`file-changed`, `checkpoint-created`, `token-updated`) | AUTH-APP-01F carry-forward | RESOLVED in H3 �X guard path extended; callers updated |
-| Preview proxy auth-forwarding (`/api/preview/*`) | AUTH-APP-01F carry-forward | DEFERRED �X product decision + cross-service auth design required; risk: MEDIUM |
-| Manual smoke checklist F-family (22 items) | AUTH-APP-01F4 NOT RUN | DEFERRED �X 40 total smoke items deferred to user live environment |
-| Manual smoke checklist G-family (12 items) | AUTH-APP-01G4 NOT RUN | DEFERRED �X included in 40-item deferred total |
-| Backend full `npm test` Redis blocker | Pre-existing since AUTH-APP-01B | DOCUMENTED �X targeted test strategy; environment constraint; not a code defect |
-| `ai-execution-guards` QuotaService test blocker | Pre-existing before AUTH-APP-01F1 | RESOLVED in H3 �X `useValue` mock added; 31/31 tests pass |
-| Backend ESLint config discovery blocker | Pre-existing since AUTH-APP-01B | RESOLVED in H3 �X `.eslintrc.js` created; 353-error baseline documented |
+| Events endpoints (3) unguarded (`file-changed`, `checkpoint-created`, `token-updated`) | AUTH-APP-01F carry-forward | RESOLVED in H3 ?X guard path extended; callers updated |
+| Preview proxy auth-forwarding (`/api/preview/*`) | AUTH-APP-01F carry-forward | DEFERRED ?X product decision + cross-service auth design required; risk: MEDIUM |
+| Manual smoke checklist F-family (22 items) | AUTH-APP-01F4 NOT RUN | DEFERRED ?X 40 total smoke items deferred to user live environment |
+| Manual smoke checklist G-family (12 items) | AUTH-APP-01G4 NOT RUN | DEFERRED ?X included in 40-item deferred total |
+| Backend full `npm test` Redis blocker | Pre-existing since AUTH-APP-01B | DOCUMENTED ?X targeted test strategy; environment constraint; not a code defect |
+| `ai-execution-guards` QuotaService test blocker | Pre-existing before AUTH-APP-01F1 | RESOLVED in H3 ?X `useValue` mock added; 31/31 tests pass |
+| Backend ESLint config discovery blocker | Pre-existing since AUTH-APP-01B | RESOLVED in H3 ?X `.eslintrc.js` created; 353-error baseline documented |
 
 **AUTH-APP-01C2 remains BLOCKED:** Transactional email provider not yet chosen. AUTH-APP-01H does not unblock AUTH-APP-01C2.
 
@@ -24645,7 +24730,7 @@ Deliver all remaining AUTH-APP-01 security hardening and validation work before 
 **Family status:** ACTIVE
 **Priority:** High
 **Status:** COMPLETE and LOCKED
-**Nature:** DOCUMENTATION / SPEC ONLY �X no production source files changed
+**Nature:** DOCUMENTATION / SPEC ONLY ?X no production source files changed
 **Source:** AUTH-APP-01H registration (2026-05-07); AUTH-APP-01-SPEC.md Section 14
 **Depends on:** AUTH-APP-01G4 (COMPLETE and LOCKED)
 **Completed:** 2026-05-07
@@ -24656,19 +24741,19 @@ Deliver all remaining AUTH-APP-01 security hardening and validation work before 
 Produce a read-only security hardening inventory and scope plan before any AUTH-APP-01H implementation work begins. Inspect the current state of CSRF protection, auth endpoint rate limiting, OAuth state parameter handling, redirect allowlist behavior, and secrets/env documentation. Formally catalogue all carry-forward items (events endpoints, preview proxy, test/tooling blockers). Define the exact implementation boundaries for AUTH-APP-01H2, H3, and H4.
 
 **Key findings:**
-- CSRF protection: MISSING �X no synchronizer token or middleware; `SameSite=Lax` partial mitigation only; Apple POST callback must be excluded from future CSRF enforcement
-- Auth endpoint rate limiting: MISSING �X `@nestjs/throttler` not installed, no decorators/guards anywhere
-- OAuth state parameter: PARTIAL �X `state: true` functional in both strategies; `OAUTH_STATE_SECRET`/`SESSION_SECRET` undocumented in `api-gateway/.env.example`
-- Redirect allowlist: NO OPEN REDIRECT �X no formal allowlist constant; redirects hardcoded to `/${locale}/app` and `/${locale}/login`
-- Secrets/env documentation: SIGNIFICANT GAP �X all OAuth + session env vars missing from `api-gateway/.env.example`; source code clean (no hardcoded real credentials found)
-- Events endpoints: UNGUARDED �X 3 endpoints; `files.service.ts` and `git.service.ts` call via raw `HttpService` with no auth header; `token-updated` has no known caller
-- Preview proxy: UNGUARDED �X formally deferred; product decision (public vs. session-owner-only) required; risk: MEDIUM
-- Backend full `npm test`: ENVIRONMENT BLOCKER �X `REDIS_URL` absent; targeted-test strategy is established workaround
-- `ai-execution-guards` QuotaService: TEST BLOCKER �X missing mock provider in `TestingModule`
-- ESLint config: TOOLING BLOCKER �X no `.eslintrc.*` in `services/api-gateway`
+- CSRF protection: MISSING ?X no synchronizer token or middleware; `SameSite=Lax` partial mitigation only; Apple POST callback must be excluded from future CSRF enforcement
+- Auth endpoint rate limiting: MISSING ?X `@nestjs/throttler` not installed, no decorators/guards anywhere
+- OAuth state parameter: PARTIAL ?X `state: true` functional in both strategies; `OAUTH_STATE_SECRET`/`SESSION_SECRET` undocumented in `api-gateway/.env.example`
+- Redirect allowlist: NO OPEN REDIRECT ?X no formal allowlist constant; redirects hardcoded to `/${locale}/app` and `/${locale}/login`
+- Secrets/env documentation: SIGNIFICANT GAP ?X all OAuth + session env vars missing from `api-gateway/.env.example`; source code clean (no hardcoded real credentials found)
+- Events endpoints: UNGUARDED ?X 3 endpoints; `files.service.ts` and `git.service.ts` call via raw `HttpService` with no auth header; `token-updated` has no known caller
+- Preview proxy: UNGUARDED ?X formally deferred; product decision (public vs. session-owner-only) required; risk: MEDIUM
+- Backend full `npm test`: ENVIRONMENT BLOCKER ?X `REDIS_URL` absent; targeted-test strategy is established workaround
+- `ai-execution-guards` QuotaService: TEST BLOCKER ?X missing mock provider in `TestingModule`
+- ESLint config: TOOLING BLOCKER ?X no `.eslintrc.*` in `services/api-gateway`
 
 **H2/H3/H4 boundaries:**
-- H2: CSRF + rate limiting (login/register only) + redirect allowlist + `api-gateway/.env.example` �X **`@nestjs/throttler` user approval required before H2 begins**
+- H2: CSRF + rate limiting (login/register only) + redirect allowlist + `api-gateway/.env.example` ?X **`@nestjs/throttler` user approval required before H2 begins**
 - H3: events guards + container-manager caller updates + ESLint config + QuotaService mock + preview deferral document
 - H4: secrets grep audit + manual smoke (22 F-items + 12 G-items + 6 H-specific items) + family checkpoint
 
@@ -24676,7 +24761,7 @@ Produce a read-only security hardening inventory and scope plan before any AUTH-
 - [x] All 10 inventory areas documented in `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md` (12 sections total)
 - [x] Each gap rated: missing / partial / no open risk / environment blocker / tooling blocker
 - [x] H2/H3/H4 boundaries formally defined with files-in-scope lists and validation commands
-- [x] No production source files changed �X confirmed by `git status`
+- [x] No production source files changed ?X confirmed by `git status`
 - [x] `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md` created
 - [x] `docs/AUTH-APP-01H1-CHECKPOINT.md` created
 - [x] `TASKS.md` updated
@@ -24715,12 +24800,12 @@ Produce a read-only security hardening inventory and scope plan before any AUTH-
 Implement CSRF double-submit cookie protection, in-memory auth endpoint rate limiting, OAuth redirect allowlist hardening, and `api-gateway/.env.example` documentation for all missing auth/session/OAuth env vars.
 
 **Dependency added:**
-`@nestjs/throttler@^6.5.0` �X in-memory storage only; user-approved before implementation.
+`@nestjs/throttler@^6.5.0` ?X in-memory storage only; user-approved before implementation.
 
 **Key changes:**
 - CSRF cookie-setting middleware added to `main.ts` after `cookieParser()`; sets `aisandbox_csrf` (non-HttpOnly, SameSite=Lax) only when absent
 - New `CsrfGuard` (`src/auth/csrf.guard.ts`) validates `aisandbox_csrf` cookie against `X-CSRF-Token` header (double-submit pattern); applied only to `POST /auth/logout`
-- Apple `POST /api/auth/apple/callback` explicitly excluded from CSRF �X Apple server POST carries no browser cookies
+- Apple `POST /api/auth/apple/callback` explicitly excluded from CSRF ?X Apple server POST carries no browser cookies
 - `ThrottlerModule.forRoot([{ name: 'default', ttl: 60000, limit: 10 }])` registered in `app.module.ts` (in-memory)
 - Per-route throttling via `@UseGuards(ThrottlerGuard)` + `@Throttle({ default: { limit, ttl } })`: login 10/60s/IP, register 5/60s/IP; `ThrottlerGuard` not registered globally
 - `ALLOWED_POST_OAUTH_REDIRECTS = new Set(['/app', '/login'])` added to `auth.controller.ts`; all OAuth success/error redirects validated through `buildOAuthRedirectPath()`
@@ -24729,10 +24814,10 @@ Implement CSRF double-submit cookie protection, in-memory auth endpoint rate lim
 
 **Acceptance checks:**
 - [x] `npx tsc --noEmit` passes in `services/api-gateway`
-- [x] `npx jest --testPathPatterns="csrf.guard"` passes �X 5/5 tests
+- [x] `npx jest --testPathPatterns="csrf.guard"` passes ?X 5/5 tests
 - [x] `npm run build` passes in `frontend`
 - [x] `npx tsc --noEmit` passes in `frontend`
-- [x] `npm test` passes in `frontend` �X 256/256 tests
+- [x] `npm test` passes in `frontend` ?X 256/256 tests
 - [x] Edited-file lints: no errors
 - [x] `frontend/tsconfig.tsbuildinfo` restored after validation
 - [x] Apple callback excluded from CSRF confirmed
@@ -24774,20 +24859,20 @@ Guard all three events endpoints with `InternalServiceAuthGuard` (extending the 
 
 | Item | Source | Resolution |
 |---|---|---|
-| Events endpoints (3) unguarded | AUTH-APP-01F carry-forward | RESOLVED �X guard path extended; callers updated |
-| `ai-execution-guards` QuotaService test blocker | Pre-existing since AUTH-APP-01F1 | RESOLVED �X `useValue` mock |
-| Backend ESLint config discovery blocker | Pre-existing since AUTH-APP-01B | RESOLVED �X `.eslintrc.js` created; baseline documented |
-| Backend full `npm test` Redis blocker | Pre-existing since AUTH-APP-01B | DEFERRED �X environment constraint; targeted tests used |
-| Preview proxy auth-forwarding | AUTH-APP-01F carry-forward | DEFERRED �X product decision + cross-service auth design required |
+| Events endpoints (3) unguarded | AUTH-APP-01F carry-forward | RESOLVED ?X guard path extended; callers updated |
+| `ai-execution-guards` QuotaService test blocker | Pre-existing since AUTH-APP-01F1 | RESOLVED ?X `useValue` mock |
+| Backend ESLint config discovery blocker | Pre-existing since AUTH-APP-01B | RESOLVED ?X `.eslintrc.js` created; baseline documented |
+| Backend full `npm test` Redis blocker | Pre-existing since AUTH-APP-01B | DEFERRED ?X environment constraint; targeted tests used |
+| Preview proxy auth-forwarding | AUTH-APP-01F carry-forward | DEFERRED ?X product decision + cross-service auth design required |
 
 **Key changes:**
 
 *Api-gateway:*
 - `InternalServiceAuthGuard`: extended path check to also protect `/api/events/*`; global `APP_GUARD` registration unchanged
 - All three events endpoints (`file-changed`, `checkpoint-created`, `token-updated`) now require `X-Internal-Service-Key`
-- `services/api-gateway/.eslintrc.js` created �X ESLint 8 legacy config with `@typescript-eslint/recommended`; `npm run lint` now runs
+- `services/api-gateway/.eslintrc.js` created ?X ESLint 8 legacy config with `@typescript-eslint/recommended`; `npm run lint` now runs
 - `ai-execution-guards.integration.spec.ts`: real `QuotaService` replaced with `useValue` mock; kill-switch tests corrected (use `process.env.AI_PROVIDER`; `jest.spyOn(KillSwitchConfig, 'isProviderEnabled')` where needed); local lint violations cleaned (unused imports, unused vars, explicit-any)
-- `events.controller.guard.spec.ts` created �X 4 guard unit tests
+- `events.controller.guard.spec.ts` created ?X 4 guard unit tests
 
 *Container-manager:*
 - `ApiGatewayHttpClient` added `notifyFileChanged()` and `notifyCheckpointCreated()` methods (follow existing fail-fast pattern; send `X-Internal-Service-Key`)
@@ -24798,10 +24883,10 @@ Guard all three events endpoints with `InternalServiceAuthGuard` (extending the 
 
 **Acceptance checks:**
 - [x] `npx tsc --noEmit` passes in `services/api-gateway`
-- [x] `npx jest --testPathPatterns="events.controller.guard" --runInBand` passes �X 4/4
-- [x] `npx jest --testPathPatterns="ai-execution-guards" --runInBand` passes �X 31/31
+- [x] `npx jest --testPathPatterns="events.controller.guard" --runInBand` passes ?X 4/4
+- [x] `npx jest --testPathPatterns="ai-execution-guards" --runInBand` passes ?X 31/31
 - [x] `npx tsc --noEmit` passes in `services/container-manager`
-- [x] `npm test -- files` passes in `services/container-manager` �X 2/2
+- [x] `npm test -- files` passes in `services/container-manager` ?X 2/2
 - [x] H3-touched files no longer appear in `npm run lint` output
 - [x] `npm run lint` runs without startup failure (`.eslintrc.js` exists)
 
@@ -24815,8 +24900,8 @@ Guard all three events endpoints with `InternalServiceAuthGuard` (extending the 
 - No repo-wide lint cleanup
 
 **Carry-forwards to H4:**
-- Preview proxy `/api/preview/*` �X deferred (product decision + cross-service auth-forwarding design required; risk: MEDIUM)
-- api-gateway lint baseline �X 353 pre-existing errors across unrelated files; separate future slice
+- Preview proxy `/api/preview/*` ?X deferred (product decision + cross-service auth-forwarding design required; risk: MEDIUM)
+- api-gateway lint baseline ?X 353 pre-existing errors across unrelated files; separate future slice
 
 **Reference:** See TASKS.md -> AUTH-APP-01H3. See `docs/AUTH-APP-01H3-CHECKPOINT.md`. See `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`. See `docs/AUTH-APP-01-SPEC.md`.
 
@@ -24826,11 +24911,11 @@ Guard all three events endpoints with `InternalServiceAuthGuard` (extending the 
 
 **Task ID:** AUTH-APP-01H4
 **Family:** AUTH
-**Parent:** AUTH-APP-01H (VALIDATION COMPLETE �X manual smoke deferred)
+**Parent:** AUTH-APP-01H (VALIDATION COMPLETE ?X manual smoke deferred)
 **Family status:** VALIDATION COMPLETE (manual smoke deferred)
 **Priority:** High
 **Status:** COMPLETE and LOCKED
-**Nature:** VALIDATION AND GOVERNANCE ONLY �X no production source files changed
+**Nature:** VALIDATION AND GOVERNANCE ONLY ?X no production source files changed
 **Source:** AUTH-APP-01H registration (2026-05-07); AUTH-APP-01H-SECURITY-HARDENING-SPEC.md Section 11
 **Depends on:** AUTH-APP-01H3 (COMPLETE and LOCKED)
 **Completed:** 2026-05-08
@@ -24839,12 +24924,12 @@ Guard all three events endpoints with `InternalServiceAuthGuard` (extending the 
 **Spec:** `docs/AUTH-APP-01H-SECURITY-HARDENING-SPEC.md`
 
 **Objective:**
-Run the secrets grep audit, reconfirm targeted automated validation from H2/H3, record manual smoke disposition, and produce the H4 task checkpoint and AUTH-APP-01H family summary checkpoint. Governance and validation slice only �X no production source code modified.
+Run the secrets grep audit, reconfirm targeted automated validation from H2/H3, record manual smoke disposition, and produce the H4 task checkpoint and AUTH-APP-01H family summary checkpoint. Governance and validation slice only ?X no production source code modified.
 
 **Secrets audit:**
-- Initial audit found real Anthropic and XAI provider keys in tracked `.envxxx` and `.env.prod` files �X H4 paused immediately
+- Initial audit found real Anthropic and XAI provider keys in tracked `.envxxx` and `.env.prod` files ?X H4 paused immediately
 - User performed local history cleanup: both files removed from git tracking; working tree clean
-- Post-cleanup audit: CLEAN �X no real credentials in any tracked source file
+- Post-cleanup audit: CLEAN ?X no real credentials in any tracked source file
 - Remaining `sk-ant-` and PEM header hits are all placeholder/test/doc values
 - Mandatory follow-up: old Anthropic and XAI provider keys must be rotated before any future push or deployment
 
@@ -24852,36 +24937,36 @@ Run the secrets grep audit, reconfirm targeted automated validation from H2/H3, 
 
 | Command | Result |
 |---|---|
-| `npx tsc --noEmit` �X `services/api-gateway` | PASS |
-| `npx jest --testPathPatterns="csrf.guard\|events.controller.guard\|ai-execution-guards" --runInBand` | PASS �X 40/40 (csrf: 5, events guard: 4, ai-execution: 31) |
-| `npx tsc --noEmit` �X `services/container-manager` | PASS |
-| `npm test -- files --runInBand` �X `services/container-manager` | PASS �X 2/2 |
+| `npx tsc --noEmit` ?X `services/api-gateway` | PASS |
+| `npx jest --testPathPatterns="csrf.guard\|events.controller.guard\|ai-execution-guards" --runInBand` | PASS ?X 40/40 (csrf: 5, events guard: 4, ai-execution: 31) |
+| `npx tsc --noEmit` ?X `services/container-manager` | PASS |
+| `npm test -- files --runInBand` ?X `services/container-manager` | PASS ?X 2/2 |
 
-**Manual smoke:** 40 items NOT RUN �X deferred to user live environment (22 F-family + 12 G-family + 6 H-specific). No live Docker/PostgreSQL/Redis/api-gateway/browser environment available in this session.
+**Manual smoke:** 40 items NOT RUN ?X deferred to user live environment (22 F-family + 12 G-family + 6 H-specific). No live Docker/PostgreSQL/Redis/api-gateway/browser environment available in this session.
 
-**CSRF smoke item correction recorded:** `CsrfGuard` applies only to `POST /auth/logout`. The H1 spec draft incorrectly implied `POST /auth/login` should fail without CSRF. Login and register are public entry points �X correctly excluded from CSRF enforcement.
+**CSRF smoke item correction recorded:** `CsrfGuard` applies only to `POST /auth/logout`. The H1 spec draft incorrectly implied `POST /auth/login` should fail without CSRF. Login and register are public entry points ?X correctly excluded from CSRF enforcement.
 
 **Carry-forwards:**
-- Preview proxy `/api/preview/*` �X MEDIUM risk; dedicated future investigation slice required
-- api-gateway lint baseline �X 353 pre-existing errors; separate future lint cleanup slice
-- 40 manual smoke items �X deferred to user live environment
-- Provider key rotation �X user must rotate Anthropic and XAI keys before any push
+- Preview proxy `/api/preview/*` ?X MEDIUM risk; dedicated future investigation slice required
+- api-gateway lint baseline ?X 353 pre-existing errors; separate future lint cleanup slice
+- 40 manual smoke items ?X deferred to user live environment
+- Provider key rotation ?X user must rotate Anthropic and XAI keys before any push
 
 **Acceptance checks:**
-- [x] `git ls-files "*.p8"` �X no tracked `.p8` files
-- [x] `git ls-files` for env files �X no tracked raw `.env` files
+- [x] `git ls-files "*.p8"` ?X no tracked `.p8` files
+- [x] `git ls-files` for env files ?X no tracked raw `.env` files
 - [x] All PEM header matches in tracked files are safe placeholders/tests
 - [x] All `sk-ant-` matches are placeholder/test/doc values only
 - [x] `api-gateway/.env.example` all 11 auth/session/OAuth variables confirmed as placeholder-only
-- [x] `npx tsc --noEmit` PASS �X api-gateway
-- [x] 40/40 targeted tests PASS �X api-gateway
-- [x] `npx tsc --noEmit` PASS �X container-manager
-- [x] 2/2 files tests PASS �X container-manager
+- [x] `npx tsc --noEmit` PASS ?X api-gateway
+- [x] 40/40 targeted tests PASS ?X api-gateway
+- [x] `npx tsc --noEmit` PASS ?X container-manager
+- [x] 2/2 files tests PASS ?X container-manager
 - [x] Manual smoke disposition recorded: 40 items NOT RUN / deferred
 - [x] `docs/AUTH-APP-01H4-CHECKPOINT.md` created
 - [x] `docs/AUTH-APP-01H-CHECKPOINT.md` created
-- [x] `TASKS.md` updated �X H4 COMPLETE and LOCKED; H parent VALIDATION COMPLETE; current stage AUTH-APP-01Z
-- [x] `TASKS_BACKLOG_FULL.md` updated �X same
+- [x] `TASKS.md` updated ?X H4 COMPLETE and LOCKED; H parent VALIDATION COMPLETE; current stage AUTH-APP-01Z
+- [x] `TASKS_BACKLOG_FULL.md` updated ?X same
 - [x] No production source files changed
 
 **Non-goals confirmed:**
@@ -24903,51 +24988,51 @@ Run the secrets grep audit, reconfirm targeted automated validation from H2/H3, 
 
 **Task ID:** AUTH-APP-01Z
 **Family:** AUTH
-**Parent:** AUTH-APP-01 (VALIDATION COMPLETE �X AUTH-APP-01C2 BLOCKED; manual smoke deferred; carry-forwards pending)
+**Parent:** AUTH-APP-01 (VALIDATION COMPLETE ?X AUTH-APP-01C2 BLOCKED; manual smoke deferred; carry-forwards pending)
 **Family status:** VALIDATION COMPLETE (AUTH-APP-01C2 BLOCKED; manual smoke deferred)
 **Priority:** High
 **Status:** COMPLETE and LOCKED
-**Nature:** GOVERNANCE AND DOCUMENTATION ONLY �X no production source files changed
+**Nature:** GOVERNANCE AND DOCUMENTATION ONLY ?X no production source files changed
 **Completed:** 2026-05-08
 **Checkpoint:** `docs/AUTH-APP-01Z-CHECKPOINT.md`
 **Family checkpoint:** `docs/AUTH-APP-01-CHECKPOINT.md`
 **Depends on:** AUTH-APP-01H4 (COMPLETE and LOCKED)
-**Spec:** `docs/AUTH-APP-01-SPEC.md` (Section 14 �X slice order)
+**Spec:** `docs/AUTH-APP-01-SPEC.md` (Section 14 ?X slice order)
 
 **Objective:** Create the final AUTH-APP-01Z task checkpoint and AUTH-APP-01 family summary checkpoint, update TASKS.md and TASKS_BACKLOG_FULL.md to reflect the completed state of the implementation wave, and record the remaining blocked/deferred items.
 
 **Files changed (governance only):**
-- `docs/AUTH-APP-01Z-CHECKPOINT.md` �X created
-- `docs/AUTH-APP-01-CHECKPOINT.md` �X created
-- `TASKS.md` �X AUTH-APP-01Z entry added; AUTH-APP-01 parent status updated; family status line updated
-- `TASKS_BACKLOG_FULL.md` �X AUTH-APP-01Z entry added; AUTH-APP-01 parent status updated; stale child list entries corrected
+- `docs/AUTH-APP-01Z-CHECKPOINT.md` ?X created
+- `docs/AUTH-APP-01-CHECKPOINT.md` ?X created
+- `TASKS.md` ?X AUTH-APP-01Z entry added; AUTH-APP-01 parent status updated; family status line updated
+- `TASKS_BACKLOG_FULL.md` ?X AUTH-APP-01Z entry added; AUTH-APP-01 parent status updated; stale child list entries corrected
 
 **Production source files changed: None.**
 
-**Validation (referenced from H4 �X no rerun required):**
+**Validation (referenced from H4 ?X no rerun required):**
 - api-gateway `npx tsc --noEmit`: PASS
-- api-gateway targeted tests (csrf.guard, events.controller.guard, ai-execution-guards): PASS �X 40/40
+- api-gateway targeted tests (csrf.guard, events.controller.guard, ai-execution-guards): PASS ?X 40/40
 - container-manager `npx tsc --noEmit`: PASS
-- container-manager `npm test -- files --runInBand`: PASS �X 2/2
+- container-manager `npm test -- files --runInBand`: PASS ?X 2/2
 - Secrets audit: CLEAN after local history cleanup
-- Manual smoke: NOT RUN �X deferred
+- Manual smoke: NOT RUN ?X deferred
 - Z lightweight reconfirmation (`npx tsc --noEmit` api-gateway): PASS
 
 **AUTH-APP-01 parent status declared:**
-VALIDATION COMPLETE �X AUTH-APP-01C2 VALIDATION COMPLETE (AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F COMPLETE); manual smoke deferred; carry-forwards pending
+VALIDATION COMPLETE ?X AUTH-APP-01C2 VALIDATION COMPLETE (AUTH-APP-01C2A COMPLETE; AUTH-APP-01C2B COMPLETE; AUTH-APP-01C2C COMPLETE; AUTH-APP-01C2D COMPLETE; AUTH-APP-01C2E COMPLETE; AUTH-APP-01C2F COMPLETE); manual smoke deferred; carry-forwards pending
 
 **Carry-forwards recorded:**
-- AUTH-APP-01C2 VALIDATION COMPLETE �X manual smoke deferred �X AUTH-APP-01C2A COMPLETE and LOCKED; AUTH-APP-01C2B COMPLETE and LOCKED; AUTH-APP-01C2C COMPLETE and LOCKED; AUTH-APP-01C2D COMPLETE and LOCKED; AUTH-APP-01C2E COMPLETE and LOCKED; AUTH-APP-01C2F COMPLETE and LOCKED
+- AUTH-APP-01C2 VALIDATION COMPLETE ?X manual smoke deferred ?X AUTH-APP-01C2A COMPLETE and LOCKED; AUTH-APP-01C2B COMPLETE and LOCKED; AUTH-APP-01C2C COMPLETE and LOCKED; AUTH-APP-01C2D COMPLETE and LOCKED; AUTH-APP-01C2E COMPLETE and LOCKED; AUTH-APP-01C2F COMPLETE and LOCKED
 - 26-item C2 manual smoke checklist deferred to live environment (see `docs/AUTH-APP-01C2F-CHECKPOINT.md`)
 - Password reset request: 10/hr/IP secondary limit not independently enforced in C2D v1; carry-forward for named throttler or Redis-backed limiter
-- 40 manual smoke items (22 F-family, 12 G-family, 6 H-specific) �X deferred to user live environment
-- Preview proxy `/api/preview/*` �X fully open; MEDIUM risk; product decision + dedicated investigation slice required
-- api-gateway lint baseline �X 353 pre-existing errors; separate cleanup slice
-- Old Anthropic API key (`sk-ant-api03-...`) �X found in prior git history (now cleaned); MUST be rotated before any push/deployment
-- Old XAI API key (`xai-...`) �X found in prior git history (now cleaned); MUST be rotated before any push/deployment
-- Dev Redis password `aisandboxredis123` �X found in prior git history; rotate if instance is network-accessible
-- Keys page raw Tailwind classes �X future UX task
-- `login.testCredentials` and `register.name` dead i18n keys �X future cleanup
+- 40 manual smoke items (22 F-family, 12 G-family, 6 H-specific) ?X deferred to user live environment
+- Preview proxy `/api/preview/*` ?X fully open; MEDIUM risk; product decision + dedicated investigation slice required
+- api-gateway lint baseline ?X 353 pre-existing errors; separate cleanup slice
+- Old Anthropic API key (`sk-ant-api03-...`) ?X found in prior git history (now cleaned); MUST be rotated before any push/deployment
+- Old XAI API key (`xai-...`) ?X found in prior git history (now cleaned); MUST be rotated before any push/deployment
+- Dev Redis password `aisandboxredis123` ?X found in prior git history; rotate if instance is network-accessible
+- Keys page raw Tailwind classes ?X future UX task
+- `login.testCredentials` and `register.name` dead i18n keys ?X future cleanup
 
 **Next recommended work (independent paths):**
 1. Run 26-item C2 manual smoke checklist in live environment (see `docs/AUTH-APP-01C2F-CHECKPOINT.md`)
@@ -24976,14 +25061,14 @@ VALIDATION COMPLETE �X AUTH-APP-01C2 VALIDATION COMPLETE (AUTH-APP-01C2A COMPL
 **Objective:** Investigate and resolve the security gap in the `/api/preview/*` proxy path. The api-gateway PreviewController proxies all preview requests to container-manager without any auth guard. Container-manager has `ENABLE_PREVIEW_ACCESS_CONTROL=false` by default and its existing access control is JWT Bearer based (not SessionCookieGuard based). A product/security decision and threat model analysis are required before any implementation.
 
 **Confirmed child slices:**
-1. AUTH-APP-02A �X Preview Proxy Auth Investigation (COMPLETE and LOCKED)
-2. AUTH-APP-02B �X Add SessionCookieGuard to api-gateway PreviewController (COMPLETE and LOCKED)
-3. AUTH-APP-02C �X Session Ownership Check / Owner-only Preview Authorization (COMPLETE and LOCKED)
-4. AUTH-APP-02D �X Preview Proxy Header Sanitization (COMPLETE and LOCKED)
+1. AUTH-APP-02A ?X Preview Proxy Auth Investigation (COMPLETE and LOCKED)
+2. AUTH-APP-02B ?X Add SessionCookieGuard to api-gateway PreviewController (COMPLETE and LOCKED)
+3. AUTH-APP-02C ?X Session Ownership Check / Owner-only Preview Authorization (COMPLETE and LOCKED)
+4. AUTH-APP-02D ?X Preview Proxy Header Sanitization (COMPLETE and LOCKED)
 
 **Carry-forward source:** AUTH-APP-01H (MEDIUM risk; preview proxy formally deferred in H3 and H4)
 
-**Production source files changed: None (registration only �X changes in child slices).**
+**Production source files changed: None (registration only ?X changes in child slices).**
 
 ---
 
@@ -24994,7 +25079,7 @@ VALIDATION COMPLETE �X AUTH-APP-01C2 VALIDATION COMPLETE (AUTH-APP-01C2A COMPL
 **Parent:** AUTH-APP-02 (ACTIVE)
 **Priority:** Medium
 **Status:** COMPLETE and LOCKED
-**Nature:** INVESTIGATION / SPEC ONLY �X no production source files changed
+**Nature:** INVESTIGATION / SPEC ONLY ?X no production source files changed
 **Completed:** 2026-05-08
 **Registered:** 2026-05-08
 **Depends on:** AUTH-APP-01Z (COMPLETE and LOCKED)
@@ -25023,20 +25108,20 @@ Perform a bounded investigation of the `/api/preview/*` proxy auth gap. Inspect 
 - No manual smoke
 
 **Key findings:**
-- api-gateway `PreviewController` uses `@All('*')` with no guard �X fully open to unauthenticated requests
+- api-gateway `PreviewController` uses `@All('*')` with no guard ?X fully open to unauthenticated requests
 - Browser iframe uses same-origin `/api/preview/:sessionId/proxy` URL; `aisandbox_session` cookie forwarded but ignored by container-manager
-- Active container-manager module is `src/preview/` (no trailing `s`) �X no auth or ownership check on any route (start, stop, status, proxy)
+- Active container-manager module is `src/preview/` (no trailing `s`) ?X no auth or ownership check on any route (start, stop, status, proxy)
 - Inactive module `src/previews/` (with trailing `s`) contains optional JWT/Bearer access control but is NOT registered in `app.module.ts` and has no effect on live traffic
-- `ENABLE_PREVIEW_ACCESS_CONTROL` is tied to the inactive code path �X does not protect current `/api/preview/*` routes
-- No public/share preview UI found in frontend �X product behavior implies workspace-private preview
+- `ENABLE_PREVIEW_ACCESS_CONTROL` is tied to the inactive code path ?X does not protect current `/api/preview/*` routes
+- No public/share preview UI found in frontend ?X product behavior implies workspace-private preview
 - Threat model: T1 unauthenticated access (MEDIUM), T2 cross-user access (MEDIUM), T5 container-manager direct access (MEDIUM infrastructure), T3/T4/T6 (LOW)
 
 **Acceptance checklist:**
 - [x] api-gateway PreviewController and proxy config inspected and documented
 - [x] container-manager preview access-control path and `ENABLE_PREVIEW_ACCESS_CONTROL` behavior documented
 - [x] Frontend preview iframe URL generation/usage documented
-- [x] Threat model written (T1�VT6)
-- [x] Product decision options enumerated: public/shareable, owner-only, signed URLs, mixed (Options A�VE in spec)
+- [x] Threat model written (T1?VT6)
+- [x] Product decision options enumerated: public/shareable, owner-only, signed URLs, mixed (Options A?VE in spec)
 - [x] At least two implementation options proposed with trade-offs
 - [x] Recommended next implementation slice identified (AUTH-APP-02B)
 - [x] `docs/AUTH-APP-02A-PREVIEW-PROXY-AUTH-SPEC.md` created
@@ -25072,15 +25157,15 @@ Add `SessionCookieGuard` at the `PreviewController` class level in api-gateway t
 **Rationale:**
 - Closes T1 (unauthenticated access) and T6 (unguarded start/stop/status)
 - Aligns with cookie-session auth architecture established in AUTH-APP-01C1A
-- Browser iframe already sends `aisandbox_session` with `credentials: 'include'` �X no frontend change required
+- Browser iframe already sends `aisandbox_session` with `credentials: 'include'` ?X no frontend change required
 - No container-manager changes required
 - Consistent with `SessionCookieGuard` pattern used on all other protected routes
 
 **Files changed:**
-- `services/api-gateway/src/preview/preview.controller.ts` �X `@UseGuards(SessionCookieGuard)` added at controller class level; `UseGuards` + `SessionCookieGuard` imported
-- `services/api-gateway/src/preview/__tests__/preview.controller.guard.spec.ts` �X **Created** �X 3 guard tests
+- `services/api-gateway/src/preview/preview.controller.ts` ?X `@UseGuards(SessionCookieGuard)` added at controller class level; `UseGuards` + `SessionCookieGuard` imported
+- `services/api-gateway/src/preview/__tests__/preview.controller.guard.spec.ts` ?X **Created** ?X 3 guard tests
 
-**`preview.module.ts` not changed** �X `AuthModule` import is not required; `SessionCookieGuard` resolves from `AppModule`-level DI context (confirmed by same pattern in `SessionModule`, `CheckpointsModule`, `WorkspacesModule`).
+**`preview.module.ts` not changed** ?X `AuthModule` import is not required; `SessionCookieGuard` resolves from `AppModule`-level DI context (confirmed by same pattern in `SessionModule`, `CheckpointsModule`, `WorkspacesModule`).
 
 **Non-goals confirmed:**
 - No ownership check (deferred to AUTH-APP-02C)
@@ -25095,22 +25180,22 @@ Add `SessionCookieGuard` at the `PreviewController` class level in api-gateway t
 - [x] `@UseGuards(SessionCookieGuard)` added to `PreviewController`
 - [x] Guard unit tests created and passing
 - [x] `npx tsc --noEmit` in `services/api-gateway`: PASS
-- [x] `preview.controller.guard.spec.ts` tests: PASS �X 1 suite, 3 tests
-- [ ] Manual smoke: logged-in preview loads; unauthenticated request returns 401 �X NOT RUN (deferred to live environment)
+- [x] `preview.controller.guard.spec.ts` tests: PASS ?X 1 suite, 3 tests
+- [ ] Manual smoke: logged-in preview loads; unauthenticated request returns 401 ?X NOT RUN (deferred to live environment)
 - [x] No production source files outside preview module changed
 - [x] `TASKS.md` updated: AUTH-APP-02B COMPLETE and LOCKED
 - [x] `TASKS_BACKLOG_FULL.md` updated: AUTH-APP-02B COMPLETE and LOCKED
 - [x] Checkpoint created: `docs/AUTH-APP-02B-CHECKPOINT.md`
 
-**Note on `AuthModule` in `PreviewModule`:** The registration spec listed this as a likely change. Investigation during stage-start confirmed it is not needed �X `SessionCookieGuard` is available from the parent DI context. The checklist item for `AuthModule` import is intentionally omitted as not applicable.
+**Note on `AuthModule` in `PreviewModule`:** The registration spec listed this as a likely change. Investigation during stage-start confirmed it is not needed ?X `SessionCookieGuard` is available from the parent DI context. The checklist item for `AuthModule` import is intentionally omitted as not applicable.
 
 **Production source files changed: 1** (`services/api-gateway/src/preview/preview.controller.ts`)
 
 **Carry-forwards:**
-- Cross-user session access (T2) �X AUTH-APP-02C (blocked on product decision)
-- Header sanitization �X future hardening slice
-- Container-manager direct access (T5) �X infrastructure/network isolation concern
-- Manual smoke �X 4 items deferred to live environment
+- Cross-user session access (T2) ?X AUTH-APP-02C (blocked on product decision)
+- Header sanitization ?X future hardening slice
+- Container-manager direct access (T5) ?X infrastructure/network isolation concern
+- Manual smoke ?X 4 items deferred to live environment
 
 **Reference:** See TASKS.md -> AUTH-APP-02B. See `docs/AUTH-APP-02B-CHECKPOINT.md`. See `docs/AUTH-APP-02A-PREVIEW-PROXY-AUTH-SPEC.md` Section 9.
 
@@ -25138,15 +25223,15 @@ Add `SessionCookieGuard` at the `PreviewController` class level in api-gateway t
 Add `PreviewOwnershipGuard` to api-gateway `PreviewController` to block cross-user preview access. After `SessionCookieGuard` verifies the user is authenticated, `PreviewOwnershipGuard` verifies the authenticated user owns the session being previewed. Closes threat T2 (cross-user session preview access) identified in AUTH-APP-02A.
 
 **Files changed:**
-- `services/api-gateway/src/preview/preview-ownership.guard.ts` �X **Created** �X `PreviewOwnershipGuard`
-- `services/api-gateway/src/preview/preview.controller.ts` �X guard chain updated to `@UseGuards(SessionCookieGuard, PreviewOwnershipGuard)`
-- `services/api-gateway/src/preview/preview.module.ts` �X `SessionModule` imported; `PreviewOwnershipGuard` added to providers
-- `services/api-gateway/src/preview/__tests__/preview.ownership.guard.spec.ts` �X **Created** �X 9 ownership guard tests
+- `services/api-gateway/src/preview/preview-ownership.guard.ts` ?X **Created** ?X `PreviewOwnershipGuard`
+- `services/api-gateway/src/preview/preview.controller.ts` ?X guard chain updated to `@UseGuards(SessionCookieGuard, PreviewOwnershipGuard)`
+- `services/api-gateway/src/preview/preview.module.ts` ?X `SessionModule` imported; `PreviewOwnershipGuard` added to providers
+- `services/api-gateway/src/preview/__tests__/preview.ownership.guard.spec.ts` ?X **Created** ?X 9 ownership guard tests
 
 **Guard behavior:**
 - Requires `req.user.userId` (populated by `SessionCookieGuard`)
 - Extracts `sessionId` from `req.path` segment index 3
-- Calls `SessionService.getSessionById(sessionId)` �X api-gateway PostgreSQL lookup
+- Calls `SessionService.getSessionById(sessionId)` ?X api-gateway PostgreSQL lookup
 - Returns 403 for: missing user, malformed path, session not found, ownership mismatch
 - Returns `true` on match
 - No container-manager call; no session/user logging
@@ -25167,10 +25252,10 @@ Add `PreviewOwnershipGuard` to api-gateway `PreviewController` to block cross-us
 - [x] `PreviewModule` imports `SessionModule`; `PreviewOwnershipGuard` in providers
 - [x] 9 ownership guard tests created and passing
 - [x] `npx tsc --noEmit` in `services/api-gateway`: PASS
-- [x] `preview.ownership.guard.spec.ts`: PASS �X 9/9
-- [x] Combined guard suites: PASS �X 12/12
+- [x] `preview.ownership.guard.spec.ts`: PASS ?X 9/9
+- [x] Combined guard suites: PASS ?X 12/12
 - [x] Lint on touched files: PASS
-- [ ] Manual smoke �X 4 items: NOT RUN (deferred to live environment)
+- [ ] Manual smoke ?X 4 items: NOT RUN (deferred to live environment)
 - [x] No frontend files changed
 - [x] No container-manager files changed
 - [x] `TASKS.md` updated: AUTH-APP-02C COMPLETE and LOCKED
@@ -25187,10 +25272,10 @@ Add `PreviewOwnershipGuard` to api-gateway `PreviewController` to block cross-us
 - `services/api-gateway/src/preview/__tests__/preview.ownership.guard.spec.ts`
 
 **Carry-forwards:**
-- Header sanitization �X future hardening slice
-- Container-manager direct access (T5) �X infrastructure/network isolation concern
-- Public/share/signed preview �X deferred product feature
-- Manual smoke �X 4 items deferred to live environment
+- Header sanitization ?X future hardening slice
+- Container-manager direct access (T5) ?X infrastructure/network isolation concern
+- Public/share/signed preview ?X deferred product feature
+- Manual smoke ?X 4 items deferred to live environment
 
 **Reference:** See TASKS.md -> AUTH-APP-02C. See `docs/AUTH-APP-02C-CHECKPOINT.md`. See `docs/AUTH-APP-02-CHECKPOINT.md`. See `docs/AUTH-APP-02A-PREVIEW-PROXY-AUTH-SPEC.md` Section 10.
 
@@ -25242,8 +25327,8 @@ Sanitize forwarded headers in the api-gateway `PreviewController` before proxyin
 - `cache-control`
 
 **Files expected:**
-- `services/api-gateway/src/preview/preview.controller.ts` �X sanitize headers before proxy call
-- `services/api-gateway/src/preview/__tests__/preview.header-sanitization.spec.ts` �X new targeted test file
+- `services/api-gateway/src/preview/preview.controller.ts` ?X sanitize headers before proxy call
+- `services/api-gateway/src/preview/__tests__/preview.header-sanitization.spec.ts` ?X new targeted test file
 
 **Non-goals:**
 - No frontend changes
@@ -25257,8 +25342,8 @@ Sanitize forwarded headers in the api-gateway `PreviewController` before proxyin
 - No manual smoke
 
 **Files changed:**
-- `services/api-gateway/src/preview/preview.controller.ts` �X `PROXY_HEADER_DENYLIST` and `sanitizeProxyHeaders` added; axios headers replaced
-- `services/api-gateway/src/preview/__tests__/preview.header-sanitization.spec.ts` �X **Created** �X 23 direct unit tests
+- `services/api-gateway/src/preview/preview.controller.ts` ?X `PROXY_HEADER_DENYLIST` and `sanitizeProxyHeaders` added; axios headers replaced
+- `services/api-gateway/src/preview/__tests__/preview.header-sanitization.spec.ts` ?X **Created** ?X 23 direct unit tests
 
 **Implementation notes:**
 - `PROXY_HEADER_DENYLIST`: module-scope `Set<string>` with 9 lowercase entries; constructed once, not per request
@@ -25275,15 +25360,15 @@ Sanitize forwarded headers in the api-gateway `PreviewController` before proxyin
 - [x] `SessionCookieGuard` + `PreviewOwnershipGuard` behavior unaffected
 - [x] `preview.header-sanitization.spec.ts` created with targeted tests
 - [x] `npx tsc --noEmit` in `services/api-gateway`: PASS
-- [x] Header sanitization tests: PASS �X 23/23
-- [x] Full preview test suite passes �X 35/35 (3 suites)
+- [x] Header sanitization tests: PASS ?X 23/23
+- [x] Full preview test suite passes ?X 35/35 (3 suites)
 - [x] Lint on touched files: PASS
 - [x] No frontend files changed
 - [x] No container-manager files changed
 - [x] Checkpoint created: `docs/AUTH-APP-02D-CHECKPOINT.md`
 - [x] `TASKS.md` updated: AUTH-APP-02D COMPLETE and LOCKED
 - [x] `TASKS_BACKLOG_FULL.md` updated: AUTH-APP-02D COMPLETE and LOCKED
-- [ ] Manual smoke �X 4 items: NOT RUN (deferred to live environment)
+- [ ] Manual smoke ?X 4 items: NOT RUN (deferred to live environment)
 
 **Production source files changed: 1**
 - `services/api-gateway/src/preview/preview.controller.ts` (updated)
@@ -25292,12 +25377,12 @@ Sanitize forwarded headers in the api-gateway `PreviewController` before proxyin
 - `services/api-gateway/src/preview/__tests__/preview.header-sanitization.spec.ts`
 
 **Carry-forwards:**
-- `x-forwarded-for` privacy/logging decision �X intentionally deferred
-- Manual smoke �X 4 items deferred to live environment
-- Container-manager direct access (T5) �X infrastructure/network isolation concern
-- Public/share/signed preview �X deferred product feature
+- `x-forwarded-for` privacy/logging decision ?X intentionally deferred
+- Manual smoke ?X 4 items deferred to live environment
+- Container-manager direct access (T5) ?X infrastructure/network isolation concern
+- Public/share/signed preview ?X deferred product feature
 
-**Carry-forward source:** AUTH-APP-02B and AUTH-APP-02C carry-forward: "Header sanitization �X future hardening slice"
+**Carry-forward source:** AUTH-APP-02B and AUTH-APP-02C carry-forward: "Header sanitization ?X future hardening slice"
 
 **Reference:** See TASKS.md -> AUTH-APP-02D. See `docs/AUTH-APP-02D-CHECKPOINT.md`. See `docs/AUTH-APP-02-CHECKPOINT.md`. See `docs/AUTH-APP-02A-PREVIEW-PROXY-AUTH-SPEC.md`.
 
