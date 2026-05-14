@@ -873,6 +873,34 @@ describe('workspace shell component', () => {
     assert.doesNotMatch(html, /workspace-sidebar-compact-usage/);
   });
 
+  test('renders sidebar mobile toggle button in project-first shell', () => {
+    const html = renderWorkspaceShell({
+      locale: 'en',
+      projectFirstUxEnabled: true,
+    });
+
+    assert.match(html, /workspace-sidebar-mobile-toggle/);
+  });
+
+  test('sidebar mobile toggle is absent when projectFirstUxEnabled is false', () => {
+    const html = renderWorkspaceShell({
+      locale: 'en',
+      projectFirstUxEnabled: false,
+    });
+
+    assert.doesNotMatch(html, /workspace-sidebar-mobile-toggle/);
+  });
+
+  test('workspace-account-menu testid still resolves after sidebar markup change', () => {
+    const html = renderWorkspaceShell({
+      locale: 'en',
+      projectFirstUxEnabled: true,
+      userSummary,
+    });
+
+    assert.match(html, /workspace-sidebar-account-avatar/);
+  });
+
   test('account menu renders user email when open', () => {
     const html = renderWorkspaceAccountMenu();
 

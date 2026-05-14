@@ -417,6 +417,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const [advancedDrawerOpen, setAdvancedDrawerOpen] = React.useState(false);
   const [projectsViewMode, setProjectsViewMode] = React.useState<'grid' | 'list'>('grid');
   const [templateSearch, setTemplateSearch] = React.useState('');
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const [activeTabId, setActiveTabId] = React.useState(DEFAULT_ACTIVE_TAB_ID);
   const [tabOrientation, setTabOrientation] = React.useState<TabOrientation>(readStoredTabOrientation);
   const [aiPanelCollapsed, setAiPanelCollapsed] = React.useState(readStoredAiPanelCollapsed);
@@ -1233,35 +1234,73 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col" data-testid="workspace-shell">
+      <div className="border-b border-gray-200 bg-white px-4 py-2 md:hidden">
+        <button
+          type="button"
+          onClick={() => setIsSidebarOpen(true)}
+          className="rounded p-1.5 text-gray-600 active:scale-[0.97] transition-transform duration-100"
+          data-testid="workspace-sidebar-mobile-toggle"
+          aria-label="Open sidebar"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 20 20"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path d="M3 5H17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M3 10H17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M3 15H17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+        </button>
+      </div>
       <div className="flex-1 min-h-0 flex flex-col md:flex-row">
-        <WorkspaceSidebar
-          locale={locale}
-          workspaces={props.workspaces ?? []}
-          selectedWorkspaceId={props.selectedWorkspaceId ?? null}
-          onSelectWorkspaceId={props.onSelectWorkspaceId}
-          workspaceView={resolvedWorkspaceView}
-          onWorkspaceViewChange={props.onWorkspaceViewChange}
-          recentProjects={recentProjects}
-          onOpenRecentProject={handleOpenRecentProject}
-          userSummary={props.userSummary}
-          usageSummary={props.usageSummary}
-          quotaSummary={props.quotaSummary}
-          activeSessions={activeSessions}
-          onLogout={props.onLogout}
-          onLanguageChange={props.onLanguageChange}
-          footerContent={
-            <WorkspaceAdvancedDrawer
-              isOpen={advancedDrawerOpen}
-              onToggle={() => setAdvancedDrawerOpen((current) => !current)}
-              sessionId={props.selectedSessionId}
-              sessionStatus={selectedSessionStatus}
-              onCopySessionId={handleCopySelectedSessionId}
-              canStopSession={canStopSelectedSession}
-              isStoppingSession={isStoppingSelectedSession}
-              onStopSession={canStopSelectedSession ? handleStopSelectedSession : undefined}
-            />
-          }
-        />
+        {isSidebarOpen && (
+          <div
+            className="fixed inset-0 z-10 bg-black/20 transition-opacity duration-200 ease-out md:hidden"
+            aria-hidden="true"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
+        <div
+          className={[
+            'fixed inset-y-0 left-0 z-20 w-72',
+            'transition-transform duration-[250ms] ease-[cubic-bezier(0.32,0.72,0,1)]',
+            isSidebarOpen ? 'translate-x-0' : '-translate-x-full',
+            'md:static md:z-auto md:w-auto md:translate-x-0',
+          ].join(' ')}
+        >
+          <WorkspaceSidebar
+            locale={locale}
+            workspaces={props.workspaces ?? []}
+            selectedWorkspaceId={props.selectedWorkspaceId ?? null}
+            onSelectWorkspaceId={props.onSelectWorkspaceId}
+            workspaceView={resolvedWorkspaceView}
+            onWorkspaceViewChange={props.onWorkspaceViewChange}
+            recentProjects={recentProjects}
+            onOpenRecentProject={handleOpenRecentProject}
+            userSummary={props.userSummary}
+            usageSummary={props.usageSummary}
+            quotaSummary={props.quotaSummary}
+            activeSessions={activeSessions}
+            onLogout={props.onLogout}
+            onLanguageChange={props.onLanguageChange}
+            footerContent={
+              <WorkspaceAdvancedDrawer
+                isOpen={advancedDrawerOpen}
+                onToggle={() => setAdvancedDrawerOpen((current) => !current)}
+                sessionId={props.selectedSessionId}
+                sessionStatus={selectedSessionStatus}
+                onCopySessionId={handleCopySelectedSessionId}
+                canStopSession={canStopSelectedSession}
+                isStoppingSession={isStoppingSelectedSession}
+                onStopSession={canStopSelectedSession ? handleStopSelectedSession : undefined}
+              />
+            }
+          />
+        </div>
 
         <main className="flex-1 min-w-0 flex flex-col overflow-y-auto" data-testid="workspace-content-shell">
           {resolvedWorkspaceView === 'home' ? homeWorkspaceContent : null}

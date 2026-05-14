@@ -12038,9 +12038,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## UX-IA �X Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 COMPLETE and LOCKED — UX-IA-09 COMPLETE and LOCKED — UX-IA-10 COMPLETE and LOCKED — UX-IA-11 COMPLETE and LOCKED — UX-IA-12 COMPLETE and LOCKED — UX-IA-13 ACTIVE — 13A COMPLETE and LOCKED — 13B ACTIVE
+**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 COMPLETE and LOCKED — UX-IA-09 COMPLETE and LOCKED — UX-IA-10 COMPLETE and LOCKED — UX-IA-11 COMPLETE and LOCKED — UX-IA-12 COMPLETE and LOCKED — UX-IA-13 COMPLETE and LOCKED — 13A COMPLETE and LOCKED — 13B COMPLETE and LOCKED — UX-IA-14 pending
 
-**Current stage:** UX-IA-13B — Sidebar Hamburger / Mobile Slide-over (ACTIVE)
+**Current stage:** UX-IA-14 — Route Cleanup / Redirects (pending)
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -12065,7 +12065,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 11. UX-IA-10 �X Preview + Code & Files Tabs (COMPLETE and LOCKED — `docs/UX-IA-10-CHECKPOINT.md`)
 12. UX-IA-11 �X Future Product Tab Placeholders (COMPLETE and LOCKED — `docs/UX-IA-11-CHECKPOINT.md`)
 13. UX-IA-12 �X Upgrade Flow + Dashboard Polish (COMPLETE and LOCKED — `docs/UX-IA-12-CHECKPOINT.md`)
-14. UX-IA-13 �X Responsive / Mobile Polish (ACTIVE — 13A ACTIVE — 13B PLANNED)
+14. UX-IA-13 �X Responsive / Mobile Polish (COMPLETE and LOCKED — 13A COMPLETE and LOCKED — 13B COMPLETE and LOCKED — \docs/UX-IA-13-CHECKPOINT.md\)
 15. UX-IA-14 �X Route Cleanup / Redirects (pending)
 16. UX-IA-15 �X Visual Edit Mode Foundation (pending �X requires UX-IA-08 + UX-IA-10 COMPLETE)
 17. UX-IA-16 �X Visual Edit AI Patch Flow (pending �X requires UX-IA-15 COMPLETE)
@@ -13084,7 +13084,8 @@ Polish the Upgrade CTA and compact usage/quota display in the authenticated work
 
 #### UX-IA-13: Responsive / Mobile Polish
 
-**Status:** ACTIVE — child slices in progress
+**Status:** COMPLETE and LOCKED
+**Date closed:** 2026-05-14
 **Task ID:** UX-IA-13
 **Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
 **Family status:** ACTIVE
@@ -13099,8 +13100,8 @@ Polish the Upgrade CTA and compact usage/quota display in the authenticated work
 Responsive and mobile polish for the authenticated workspace UX. Audit (2026-05-14) identified two independent sub-problems: (1) project mode AI+content panel stacking missing on mobile, and (2) sidebar hamburger / slide-over missing. Split into UX-IA-13A (low-risk Tailwind class only) and UX-IA-13B (new state + new testid).
 
 **Child slices:**
-- UX-IA-13A — Project Mode Mobile Stacking + Minor Responsive Fixes (ACTIVE — current stage)
-- UX-IA-13B — Sidebar Hamburger / Mobile Slide-over (PLANNED — starts after 13A COMPLETE)
+- UX-IA-13A — Project Mode Mobile Stacking + Minor Responsive Fixes (COMPLETE and LOCKED — `docs/UX-IA-13A-CHECKPOINT.md`)
+- UX-IA-13B — Sidebar Hamburger / Mobile Slide-over (COMPLETE and LOCKED — `docs/UX-IA-13B-CHECKPOINT.md`)
 
 **Non-goals:**
 - No new product features
@@ -13113,7 +13114,7 @@ Responsive and mobile polish for the authenticated workspace UX. Audit (2026-05-
 - No new dependencies
 - No native mobile app
 
-**Checkpoint:** `docs/UX-IA-13-CHECKPOINT.md` (to be created on completion of UX-IA-13B)
+**Checkpoint:** `docs/UX-IA-13-CHECKPOINT.md`
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` —> UX-IA-13. See `docs/UX-IA-00-MASTER-PLAN.md` — UX-IA-13 section.
 
@@ -13166,7 +13167,8 @@ Fix project mode mobile layout. The AI panel and content panel inner container c
 
 #### UX-IA-13B: Sidebar Hamburger / Mobile Slide-over
 
-**Status:** ACTIVE
+**Status:** COMPLETE and LOCKED
+**Date closed:** 2026-05-14
 **Task ID:** UX-IA-13B
 **Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
 **Parent:** UX-IA-13
@@ -13210,6 +13212,10 @@ Add mobile hamburger toggle and slide-over panel for the workspace sidebar on < 
 - Manual: 375px — hamburger visible, tap opens slide-over, overlay tap closes; 768px — no hamburger, sidebar always visible
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` —> UX-IA-13B.
+
+**Tests:** 323 passing (320 baseline + 3 new), 0 failed.
+
+**Checkpoint:** `docs/UX-IA-13B-CHECKPOINT.md`
 
 
 
