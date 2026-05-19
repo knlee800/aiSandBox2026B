@@ -13942,16 +13942,16 @@ After a visual-edit apply succeeds, surface an Undo/Revert button in the `Worksp
 
 ## AUTH — aiSandBox First-Party
 
-**Family status:** ACTIVE — AUTH-MODULE-01C ACTIVE (implementation)
+**Family status:** ACTIVE — AUTH-MODULE-01D ACTIVE (implementation)
 
-**Current stage:** AUTH-MODULE-01C — Template File Generation Engine (ACTIVE)
+**Current stage:** AUTH-MODULE-01D — Auth Module Install Flow Integration (ACTIVE)
 
 **Registered tasks:**
 1. AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps (ACTIVE — plan COMPLETE; child slices in progress)
    - AUTH-MODULE-01A — Auth Template Registry Foundation (COMPLETE and LOCKED — `docs/AUTH-MODULE-01A-CHECKPOINT.md`)
    - AUTH-MODULE-01B — Framework Detection & Eligibility Check (COMPLETE and LOCKED — `docs/AUTH-MODULE-01B-CHECKPOINT.md`)
-   - AUTH-MODULE-01C — Template File Generation Engine (ACTIVE — current stage)
-   - AUTH-MODULE-01D — Auth Module Install Flow Integration (PLANNED)
+   - AUTH-MODULE-01C — Template File Generation Engine (COMPLETE and LOCKED — `docs/AUTH-MODULE-01C-CHECKPOINT.md`)
+   - AUTH-MODULE-01D — Auth Module Install Flow Integration (ACTIVE — current stage)
    - AUTH-MODULE-01E — AI Prompt Recognition & UX Polish (PLANNED)
    - AUTH-MODULE-01Z — Validation & Consolidation (PLANNED)
 
@@ -13959,7 +13959,7 @@ After a visual-edit apply succeeds, surface an Undo/Revert button in the `Worksp
 
 #### AUTH-MODULE-01: Reusable App-Auth Module for aiSandBox-Created Apps
 
-**Status:** ACTIVE — plan COMPLETE; child slices registered; AUTH-MODULE-01C in progress
+**Status:** ACTIVE — plan COMPLETE; child slices registered; AUTH-MODULE-01D in progress
 **Task ID:** AUTH-MODULE-01
 **Family:** AUTH
 **Priority:** High
@@ -13980,8 +13980,8 @@ After a visual-edit apply succeeds, surface an Undo/Revert button in the `Worksp
 **Child slices:**
 - AUTH-MODULE-01A — Auth Template Registry Foundation (COMPLETE and LOCKED — `docs/AUTH-MODULE-01A-CHECKPOINT.md`)
 - AUTH-MODULE-01B — Framework Detection & Eligibility Check (COMPLETE and LOCKED — `docs/AUTH-MODULE-01B-CHECKPOINT.md`)
-- AUTH-MODULE-01C — Template File Generation Engine (ACTIVE — current stage)
-- AUTH-MODULE-01D — Auth Module Install Flow Integration (PLANNED)
+- AUTH-MODULE-01C — Template File Generation Engine (COMPLETE and LOCKED — `docs/AUTH-MODULE-01C-CHECKPOINT.md`)
+- AUTH-MODULE-01D — Auth Module Install Flow Integration (ACTIVE — current stage)
 - AUTH-MODULE-01E — AI Prompt Recognition & UX Polish (PLANNED)
 - AUTH-MODULE-01Z — Validation & Consolidation (PLANNED)
 
@@ -14075,7 +14075,7 @@ Implement detection logic that reads the workspace `package.json` to determine w
 
 #### AUTH-MODULE-01C: Template File Generation Engine
 
-**Status:** ACTIVE — current stage
+**Status:** COMPLETE and LOCKED
 **Task ID:** AUTH-MODULE-01C
 **Parent:** AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps
 **Family:** AUTH
@@ -14083,7 +14083,7 @@ Implement detection logic that reads the workspace `package.json` to determine w
 **Risk:** Medium — package.json merging must not clobber existing deps; path safety must be enforced
 **Model:** GPT-5.3 Codex
 **Depends on:** AUTH-MODULE-01B (COMPLETE and LOCKED — required)
-**Checkpoint:** `docs/AUTH-MODULE-01C-CHECKPOINT.md` (not yet created)
+**Checkpoint:** `docs/AUTH-MODULE-01C-CHECKPOINT.md`
 
 **Objective:**
 Given a detection result from AUTH-MODULE-01B and the template registry from AUTH-MODULE-01A, produce the complete `WorkspaceFileAction[]` array ready for `applySequentialFileActions`. Handle the clean-project case and the existing-Prisma case. Merge `package.json` dependencies safely.
@@ -14103,9 +14103,9 @@ Given a detection result from AUTH-MODULE-01B and the template registry from AUT
 
 **Acceptance checks:**
 - AUTH-MODULE-01C registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
-- Status ACTIVE — DONE
-- Implementation complete and validated — pending
-- `docs/AUTH-MODULE-01C-CHECKPOINT.md` created — pending
+- Status COMPLETE and LOCKED — DONE
+- Implementation complete and validated — DONE
+- `docs/AUTH-MODULE-01C-CHECKPOINT.md` created — DONE
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-MODULE-01C. Parent: AUTH-MODULE-01.
 
@@ -14113,7 +14113,7 @@ Given a detection result from AUTH-MODULE-01B and the template registry from AUT
 
 #### AUTH-MODULE-01D: Auth Module Install Flow Integration
 
-**Status:** PLANNED
+**Status:** ACTIVE — current stage
 **Task ID:** AUTH-MODULE-01D
 **Parent:** AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps
 **Family:** AUTH
@@ -14145,7 +14145,7 @@ Wire the auth module install flow into the workspace. Expose a callable `handleI
 
 **Acceptance checks:**
 - AUTH-MODULE-01D registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
-- Status PLANNED — DONE
+- Status ACTIVE — DONE
 - Implementation complete and validated — pending
 - `docs/AUTH-MODULE-01D-CHECKPOINT.md` created — pending
 
