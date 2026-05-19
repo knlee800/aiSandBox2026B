@@ -24176,12 +24176,18 @@ After a visual-edit apply succeeds, surface an Undo/Revert button in the `Worksp
 
 ## AUTH — aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-MODULE-01 ACTIVE (plan phase)
+**Family status:** ACTIVE — AUTH-MODULE-01B ACTIVE (implementation)
 
-**Current stage:** AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps (ACTIVE — plan phase)
+**Current stage:** AUTH-MODULE-01B — Framework Detection & Eligibility Check (ACTIVE)
 
 **Registered tasks:**
-1. AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps (ACTIVE — plan phase)
+1. AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps (ACTIVE — plan COMPLETE; child slices in progress)
+   - AUTH-MODULE-01A — Auth Template Registry Foundation (COMPLETE and LOCKED — `docs/AUTH-MODULE-01A-CHECKPOINT.md`)
+   - AUTH-MODULE-01B — Framework Detection & Eligibility Check (ACTIVE — current stage)
+   - AUTH-MODULE-01C — Template File Generation Engine (PLANNED)
+   - AUTH-MODULE-01D — Auth Module Install Flow Integration (PLANNED)
+   - AUTH-MODULE-01E — AI Prompt Recognition & UX Polish (PLANNED)
+   - AUTH-MODULE-01Z — Validation & Consolidation (PLANNED)
 
 ---
 
@@ -24189,71 +24195,314 @@ After a visual-edit apply succeeds, surface an Undo/Revert button in the `Worksp
 
 **Task ID:** AUTH-MODULE-01
 **Family:** AUTH
-**Family status:** ACTIVE — AUTH-MODULE-01 ACTIVE (plan phase)
+**Family status:** ACTIVE — AUTH-MODULE-01B ACTIVE (implementation)
 **Priority:** High
-**Status:** ACTIVE — plan phase
-**Risk:** High — template generation, safe file patching, framework detection, rollback/checkpoint integration; exact implementation shape must be confirmed during plan phase before any implementation begins
-**Model:** TBD — confirm during plan phase
+**Status:** ACTIVE — plan COMPLETE; child slices registered; AUTH-MODULE-01B in progress
+**Risk:** High — template generation, framework detection, rollback/checkpoint integration
+**Model:** GPT-5.3 Codex (confirmed during plan phase)
 **Depends on:** AUTH-APP-01 (VALIDATION COMPLETE — carry-forwards pending); AUTH-APP-02 through AUTH-APP-02D (COMPLETE and LOCKED); UX-IA-08 through UX-IA-10 (COMPLETE and LOCKED); AI-WS file-action system (COMPLETE and LOCKED)
-**Checkpoint:** `docs/AUTH-MODULE-01-CHECKPOINT.md` (not yet created — created after plan is approved and implementation is complete)
+**Checkpoint:** `docs/AUTH-MODULE-01-CHECKPOINT.md` (created at AUTH-MODULE-01Z)
 
-**Objective:**
-Allow aiSandBox users to say "Add user authentication with email, Google, and Apple sign-in to my app" and have aiSandBox generate or install a working auth starter into their project — including routes, database schema, UI, and environment configuration — with a named checkpoint created before changes are applied so the user can revert cleanly.
+**Plan decisions (confirmed 2026-05-19):**
+- Strategy: deterministic frontend template registry — not AI-hallucinated auth code
+- v1 stack: Next.js + Auth.js v5 + PostgreSQL + Prisma adapter
+- Backend changes: none — uses existing writeWorkspaceFile / checkpoint / coherence flow
+- Pre-install checkpoint required before applying template files
+- No auto-run migrations; user runs `npx prisma db push` manually
+- No new aiSandBox platform dependencies
+- Generated apps must not reference `aisandbox_session`, `aisandbox_csrf`, `X-Internal-Service-Key`, `SessionCookieGuard`, `CsrfGuard`, `PreviewOwnershipGuard`, or any platform OAuth/session mechanism
 
-**Scope (v1 — subject to plan-phase confirmation):**
-- One stack only to start: Next.js + Auth.js + PostgreSQL
-- Generate auth routes and API handlers
-- Generate database schema / migrations for users, accounts, sessions
-- Generate protected route example
-- Generate login / register / logout UI components
-- Generate `.env.example` with required auth variables documented
-- Provide Google OAuth and Apple OAuth setup checklist as inline documentation
-- Add validation tests for generated auth flows
-- Integrate with aiSandBox checkpoint/rollback system: create a named snapshot before applying generated changes so users can revert cleanly
-- Reuse existing aiSandBox session/auth foundations (AUTH-APP-01 cookie-session, AUTH-APP-02 preview-proxy security invariants) — generated apps must not conflict with platform auth behavior
-- Preserve generated-app isolation and security boundaries (no leakage of aiSandBox session cookies or internal service keys into generated-app auth flow)
-
-**Non-goals:**
-- No implementation in this registration step
-- No backend/API changes in this registration step
-- No auth model rewrite
-- No changes to existing aiSandBox login/register/session behavior
-- No route changes to the aiSandBox platform
-- No generated-app runtime changes until plan is approved
-- No new dependencies unless explicitly approved during plan phase
-- Universal framework support (Vue, Angular, SvelteKit, etc.) — v1 is Next.js + Auth.js + PostgreSQL only
-- Hosted identity provider
-- Clerk / Supabase / Firebase auth provider support
-- Enterprise SSO / SAML
-- Billing / subscription integration
-- Advanced admin dashboard
-
-**Risks:**
-- Template generation requires safe file patching into an existing user project without clobbering existing files — strategy must be confirmed during plan phase
-- Framework detection strategy (how to determine stack before generating) — must be confirmed during plan phase
-- Environment variable handling: generated `.env.example` must not expose or conflict with aiSandBox platform env vars
-- Rollback/checkpoint integration: must reuse existing checkpoint system; exact hook point to be confirmed during plan phase
-- Generated auth flows must be isolated from aiSandBox's own `aisandbox_session` / `aisandbox_csrf` cookie namespace
-- AUTH-APP-01C2 (email verification, password reset) is still BLOCKED on email provider choice — generated app email auth may have a dependency on this resolution
-- AUTH-APP-01 manual smoke checklist (40 items) has not been run — platform auth stability unconfirmed in live environment; AUTH-MODULE-01 implementation should not begin until AUTH-APP-01 manual smoke is complete
-
-**Model guidance:**
-- Requires plan phase before any implementation begins
-- Plan phase must confirm: exact file patching strategy, framework detection approach, checkpoint hook point, env var handling, and v1 slice breakdown
-- Implementation will proceed in child slices (AUTH-MODULE-01A, 01B, …) after plan is approved
-- Each child slice follows the same registration → plan → implement → checkpoint discipline
-
-**Validation plan (plan phase — not implementation):**
-- Plan document produced and approved — covers file patching strategy, framework detection, checkpoint integration, env var handling, v1 slice breakdown
-- No source files changed in plan phase
-- No tsc / test / build runs required for plan phase
-- Validation runs will be defined per child implementation slice after plan is approved
-
-**Acceptance checks:**
-- AUTH-MODULE-01 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
-- Current stage set to AUTH-MODULE-01 ACTIVE / plan phase — DONE
-- Scope, non-goals, dependencies, risks, model guidance, and validation plan recorded — DONE
-- No implementation performed — DONE
-- No production source files edited — DONE
+**Child slices:**
+- AUTH-MODULE-01A — Auth Template Registry Foundation (COMPLETE and LOCKED — `docs/AUTH-MODULE-01A-CHECKPOINT.md`)
+- AUTH-MODULE-01B — Framework Detection & Eligibility Check (ACTIVE — current stage)
+- AUTH-MODULE-01C — Template File Generation Engine (PLANNED)
+- AUTH-MODULE-01D — Auth Module Install Flow Integration (PLANNED)
+- AUTH-MODULE-01E — AI Prompt Recognition & UX Polish (PLANNED)
+- AUTH-MODULE-01Z — Validation & Consolidation (PLANNED)
 
 **Reference:** See TASKS.md -> AUTH-MODULE-01. See `docs/UX-IA-00-MASTER-PLAN.md` Section AUTH-MODULE-01. Depends on: AUTH-APP-01 (VALIDATION COMPLETE), AUTH-APP-02D (COMPLETE and LOCKED), UX-IA-08–UX-IA-10 (COMPLETE and LOCKED).
+
+---
+
+### AUTH-MODULE-01A: Auth Template Registry Foundation
+
+**Task ID:** AUTH-MODULE-01A
+**Parent:** AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps
+**Family:** AUTH
+**Family status:** ACTIVE — AUTH-MODULE-01B ACTIVE (implementation)
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Risk:** Low-Medium — pure TypeScript definitions and string constants; no runtime integration
+**Model:** GPT-5.3 Codex
+**Depends on:** AUTH-MODULE-01 plan phase (COMPLETE)
+**Checkpoint:** `docs/AUTH-MODULE-01A-CHECKPOINT.md`
+
+**Objective:**
+Define the complete typed template registry for the Next.js + Auth.js v5 + PostgreSQL auth starter. Establish all template file contents as typed constants, define the file manifest and dependency list, and validate that no aiSandBox platform auth references appear in generated content.
+
+**Files created:**
+
+| File | Purpose |
+|---|---|
+| `frontend/lib/auth-module/auth-template-types.ts` | Type definitions: `AuthTemplate`, `AuthTemplateFile`, `AuthTemplateDependency`, `AuthTemplateEnvVar`, `AuthTemplateManifest` |
+| `frontend/lib/auth-module/auth-template-files.ts` | All generated file contents as typed string constants (15 files) |
+| `frontend/lib/auth-module/auth-template-registry.ts` | Assembled registry: file manifest, dependency list, env var manifest, template metadata |
+| `frontend/lib/auth-module/auth-template-registry.test.ts` | 8 tests: template validity, path safety, dependency list, no platform auth references |
+
+**File changed:**
+
+| File | Change |
+|---|---|
+| `frontend/package.json` | Test discovery fix — added `lib/auth-module/*.test.ts` to test glob |
+
+**Dependency list (in registry, for user's generated app — not aiSandBox platform):**
+- `next-auth@^5.0.0-beta`
+- `@auth/prisma-adapter@^2.7.0`
+- `@prisma/client@^5.22.0`
+- `bcryptjs@^2.4.3`
+- `prisma@^5.22.0` (devDependency)
+- `@types/bcryptjs@^2.4.6` (devDependency)
+
+**Non-goals:**
+- No framework detection
+- No file-action generation engine
+- No install flow wiring
+- No AI prompt recognition
+- No backend/API changes
+- No platform dependency changes
+- No changes to any existing frontend or backend files
+
+**Validation results:**
+- `npx tsc --noEmit` from `frontend/` — PASS
+- `npm test` from `frontend/` — PASS (391 tests, 0 failures)
+- `ReadLints` on new files — PASS (0 errors)
+
+**Acceptance checks:**
+- AUTH-MODULE-01A registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- Status COMPLETE and LOCKED — DONE
+- Implementation complete and validated — DONE (tsc PASS, 391/391 tests PASS, lints PASS)
+- `docs/AUTH-MODULE-01A-CHECKPOINT.md` created — DONE
+
+**Reference:** See TASKS.md -> AUTH-MODULE-01A. Parent: AUTH-MODULE-01.
+
+---
+
+### AUTH-MODULE-01B: Framework Detection & Eligibility Check
+
+**Task ID:** AUTH-MODULE-01B
+**Parent:** AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps
+**Family:** AUTH
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** ACTIVE — current stage
+**Risk:** Low-Medium — reads existing workspace files; no writes
+**Model:** GPT-5.3 Codex
+**Depends on:** AUTH-MODULE-01A (COMPLETE and LOCKED — required)
+**Checkpoint:** `docs/AUTH-MODULE-01B-CHECKPOINT.md` (not yet created)
+
+**Objective:**
+Implement detection logic that reads the workspace `package.json` to determine whether a project is eligible for the auth starter. Detect Next.js, existing Prisma presence, and package manager. Return a typed eligibility result with clear unsupported-stack messages.
+
+**Files to create:**
+
+| File | Purpose |
+|---|---|
+| `frontend/lib/auth-module/auth-module-detection.ts` | `detectAuthModuleEligibility()`: reads package.json, returns `AuthModuleEligibilityResult` |
+| `frontend/lib/auth-module/auth-module-detection.test.ts` | Tests for framework detection, Prisma detection, package manager detection, error cases |
+
+**Non-goals:**
+- No template generation
+- No install flow or file writes
+- No new backend endpoints
+
+**Validation plan:**
+- `npx tsc --noEmit` from `frontend/` — 0 errors
+- `npm test` from `frontend/` — all tests pass
+- `ReadLints` on new files — 0 new errors
+
+**Acceptance checks:**
+- AUTH-MODULE-01B registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- Status PLANNED — DONE
+- Implementation complete and validated — pending
+- `docs/AUTH-MODULE-01B-CHECKPOINT.md` created — pending
+
+**Reference:** See TASKS.md -> AUTH-MODULE-01B. Parent: AUTH-MODULE-01.
+
+---
+
+### AUTH-MODULE-01C: Template File Generation Engine
+
+**Task ID:** AUTH-MODULE-01C
+**Parent:** AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps
+**Family:** AUTH
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** PLANNED
+**Risk:** Medium — package.json merging must not clobber existing deps; path safety must be enforced
+**Model:** GPT-5.3 Codex
+**Depends on:** AUTH-MODULE-01B (COMPLETE and LOCKED — required)
+**Checkpoint:** `docs/AUTH-MODULE-01C-CHECKPOINT.md` (not yet created)
+
+**Objective:**
+Given a detection result from AUTH-MODULE-01B and the template registry from AUTH-MODULE-01A, produce the complete `WorkspaceFileAction[]` array ready for `applySequentialFileActions`. Handle clean-project and existing-Prisma cases. Merge `package.json` dependencies safely without removing existing deps.
+
+**Files to create:**
+
+| File | Purpose |
+|---|---|
+| `frontend/lib/auth-module/auth-module-generator.ts` | `generateAuthModuleFileActions(eligibility, registry)` → `WorkspaceFileAction[]` |
+| `frontend/lib/auth-module/auth-module-generator.test.ts` | Tests for clean project, existing-Prisma project, package.json merge, path safety, no platform auth references |
+
+**Non-goals:**
+- No live file apply
+- No backend changes
+- No install flow wiring
+
+**Validation plan:**
+- `npx tsc --noEmit` from `frontend/` — 0 errors
+- `npm test` from `frontend/` — all tests pass
+- `ReadLints` on new files — 0 new errors
+
+**Acceptance checks:**
+- AUTH-MODULE-01C registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- Status PLANNED — DONE
+- Implementation complete and validated — pending
+- `docs/AUTH-MODULE-01C-CHECKPOINT.md` created — pending
+
+**Reference:** See TASKS.md -> AUTH-MODULE-01C. Parent: AUTH-MODULE-01.
+
+---
+
+### AUTH-MODULE-01D: Auth Module Install Flow Integration
+
+**Task ID:** AUTH-MODULE-01D
+**Parent:** AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps
+**Family:** AUTH
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** PLANNED
+**Risk:** Medium-High — touches page.tsx; must not bypass existing apply-guard or confirmation safety; pre-install checkpoint must land before file writes
+**Model:** GPT-5.3 Codex
+**Depends on:** AUTH-MODULE-01C (COMPLETE and LOCKED — required)
+**Checkpoint:** `docs/AUTH-MODULE-01D-CHECKPOINT.md` (not yet created)
+
+**Objective:**
+Wire the auth module install flow into the workspace. `handleInstallAuthModule` in `page.tsx`: creates a pre-install named checkpoint, runs eligibility detection, generates file actions, applies through existing `applySequentialFileActions` confirmation flow, then runs post-apply coherence/checkpoint/refresh and surfaces setup instructions in chat thread.
+
+**Files likely to change:**
+
+| File | Change |
+|---|---|
+| `frontend/app/[locale]/app/page.tsx` | New `handleInstallAuthModule` function; pre-install checkpoint; detection; generation; apply; post-coherence |
+| `frontend/components/workspace/workspace-shell.tsx` | Thread `onInstallAuthModule` prop if UI trigger needed (minimal) |
+
+**Non-goals:**
+- No bypass of `isRiskyFileActionBatch` confirmation
+- No bypass of `acquireExecutionApplyGuard`
+- No new backend endpoints unless plan proves unavoidable
+- No changes to UX-IA-17 undo/revert behavior
+
+**Validation plan:**
+- `npx tsc --noEmit` from `frontend/` — 0 errors
+- `npm test` from `frontend/` — all tests pass
+- `npm run build` from `frontend/` — passes
+- `ReadLints` on touched files — 0 new errors
+
+**Acceptance checks:**
+- AUTH-MODULE-01D registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- Status PLANNED — DONE
+- Implementation complete and validated — pending
+- `docs/AUTH-MODULE-01D-CHECKPOINT.md` created — pending
+
+**Reference:** See TASKS.md -> AUTH-MODULE-01D. Parent: AUTH-MODULE-01.
+
+---
+
+### AUTH-MODULE-01E: AI Prompt Recognition & UX Polish
+
+**Task ID:** AUTH-MODULE-01E
+**Parent:** AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps
+**Family:** AUTH
+**Family status:** ACTIVE
+**Priority:** Medium
+**Status:** PLANNED
+**Risk:** Medium — intent recognition must have low false-positive rate; must not hijack unrelated prompts
+**Model:** GPT-5.3 Codex
+**Depends on:** AUTH-MODULE-01D (COMPLETE and LOCKED — required)
+**Checkpoint:** `docs/AUTH-MODULE-01E-CHECKPOINT.md` (not yet created)
+
+**Objective:**
+Detect when a user chat prompt expresses auth module intent and route to `handleInstallAuthModule`. Add chat-thread progress and completion messaging. Add i18n keys if needed.
+
+**Files likely to change:**
+
+| File | Change |
+|---|---|
+| `frontend/lib/auth-module/auth-module-intent.ts` | Create — `detectAuthModuleIntent(prompt): boolean` |
+| `frontend/lib/auth-module/auth-module-intent.test.ts` | Create — true/false positive tests |
+| `frontend/app/[locale]/app/page.tsx` | Wire intent detection before AI execution dispatch |
+| `frontend/messages/en.json` | Auth module i18n keys (optional) |
+| `frontend/messages/zh-TW.json` | Auth module i18n keys (optional) |
+| `frontend/messages/zh-CN.json` | Auth module i18n keys (optional) |
+
+**Non-goals:**
+- No broad chat or AI execution refactor
+- No non-Next.js framework support
+- No changes to existing AI execution path for non-auth prompts
+
+**Validation plan:**
+- `npx tsc --noEmit` from `frontend/` — 0 errors
+- `npm test` from `frontend/` — all tests pass
+- `npm run build` from `frontend/` — passes
+- `ReadLints` on touched files — 0 new errors
+
+**Acceptance checks:**
+- AUTH-MODULE-01E registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- Status PLANNED — DONE
+- Implementation complete and validated — pending
+- `docs/AUTH-MODULE-01E-CHECKPOINT.md` created — pending
+
+**Reference:** See TASKS.md -> AUTH-MODULE-01E. Parent: AUTH-MODULE-01.
+
+---
+
+### AUTH-MODULE-01Z: Validation & Consolidation
+
+**Task ID:** AUTH-MODULE-01Z
+**Parent:** AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps
+**Family:** AUTH
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** PLANNED
+**Risk:** Low — governance and documentation only unless validation reveals issues
+**Model:** GPT-5.3 Codex
+**Depends on:** AUTH-MODULE-01E (COMPLETE and LOCKED — required)
+**Checkpoint:** `docs/AUTH-MODULE-01Z-CHECKPOINT.md` + `docs/AUTH-MODULE-01-CHECKPOINT.md` (not yet created)
+
+**Objective:**
+Run the full validation pass across all child slices, execute the manual smoke checklist, create the family-level checkpoint document, and close AUTH-MODULE-01 as COMPLETE and LOCKED.
+
+**Scope:**
+- Full tsc + test + build + lint pass across all touched files
+- Manual smoke checklist execution (14 items — defined in plan phase)
+- Create `docs/AUTH-MODULE-01Z-CHECKPOINT.md` — Z-slice record
+- Create `docs/AUTH-MODULE-01-CHECKPOINT.md` — family summary
+- Update TASKS.md and TASKS_BACKLOG_FULL.md: all child slices COMPLETE and LOCKED; AUTH-MODULE-01 COMPLETE and LOCKED
+
+**Non-goals:**
+- No production source changes unless fixing validation-discovered issues
+- No new features
+
+**Validation plan:**
+- `npx tsc --noEmit` from `frontend/` — 0 errors
+- `npm test` from `frontend/` — all tests pass
+- `npm run build` from `frontend/` — passes
+- Manual smoke: 14-item checklist (defined in plan phase)
+
+**Acceptance checks:**
+- AUTH-MODULE-01Z registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- Status PLANNED — DONE
+- All child slices validated and COMPLETE and LOCKED — pending
+- `docs/AUTH-MODULE-01-CHECKPOINT.md` created — pending
+
+**Reference:** See TASKS.md -> AUTH-MODULE-01Z. Parent: AUTH-MODULE-01.
