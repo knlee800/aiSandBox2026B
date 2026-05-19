@@ -24176,15 +24176,15 @@ After a visual-edit apply succeeds, surface an Undo/Revert button in the `Worksp
 
 ## AUTH — aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-MODULE-01B ACTIVE (implementation)
+**Family status:** ACTIVE — AUTH-MODULE-01C ACTIVE (implementation)
 
-**Current stage:** AUTH-MODULE-01B — Framework Detection & Eligibility Check (ACTIVE)
+**Current stage:** AUTH-MODULE-01C — Template File Generation Engine (ACTIVE)
 
 **Registered tasks:**
 1. AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps (ACTIVE — plan COMPLETE; child slices in progress)
    - AUTH-MODULE-01A — Auth Template Registry Foundation (COMPLETE and LOCKED — `docs/AUTH-MODULE-01A-CHECKPOINT.md`)
-   - AUTH-MODULE-01B — Framework Detection & Eligibility Check (ACTIVE — current stage)
-   - AUTH-MODULE-01C — Template File Generation Engine (PLANNED)
+   - AUTH-MODULE-01B — Framework Detection & Eligibility Check (COMPLETE and LOCKED — `docs/AUTH-MODULE-01B-CHECKPOINT.md`)
+   - AUTH-MODULE-01C — Template File Generation Engine (ACTIVE — current stage)
    - AUTH-MODULE-01D — Auth Module Install Flow Integration (PLANNED)
    - AUTH-MODULE-01E — AI Prompt Recognition & UX Polish (PLANNED)
    - AUTH-MODULE-01Z — Validation & Consolidation (PLANNED)
@@ -24195,9 +24195,9 @@ After a visual-edit apply succeeds, surface an Undo/Revert button in the `Worksp
 
 **Task ID:** AUTH-MODULE-01
 **Family:** AUTH
-**Family status:** ACTIVE — AUTH-MODULE-01B ACTIVE (implementation)
+**Family status:** ACTIVE — AUTH-MODULE-01C ACTIVE (implementation)
 **Priority:** High
-**Status:** ACTIVE — plan COMPLETE; child slices registered; AUTH-MODULE-01B in progress
+**Status:** ACTIVE — plan COMPLETE; child slices registered; AUTH-MODULE-01C in progress
 **Risk:** High — template generation, framework detection, rollback/checkpoint integration
 **Model:** GPT-5.3 Codex (confirmed during plan phase)
 **Depends on:** AUTH-APP-01 (VALIDATION COMPLETE — carry-forwards pending); AUTH-APP-02 through AUTH-APP-02D (COMPLETE and LOCKED); UX-IA-08 through UX-IA-10 (COMPLETE and LOCKED); AI-WS file-action system (COMPLETE and LOCKED)
@@ -24214,8 +24214,8 @@ After a visual-edit apply succeeds, surface an Undo/Revert button in the `Worksp
 
 **Child slices:**
 - AUTH-MODULE-01A — Auth Template Registry Foundation (COMPLETE and LOCKED — `docs/AUTH-MODULE-01A-CHECKPOINT.md`)
-- AUTH-MODULE-01B — Framework Detection & Eligibility Check (ACTIVE — current stage)
-- AUTH-MODULE-01C — Template File Generation Engine (PLANNED)
+- AUTH-MODULE-01B — Framework Detection & Eligibility Check (COMPLETE and LOCKED — `docs/AUTH-MODULE-01B-CHECKPOINT.md`)
+- AUTH-MODULE-01C — Template File Generation Engine (ACTIVE — current stage)
 - AUTH-MODULE-01D — Auth Module Install Flow Integration (PLANNED)
 - AUTH-MODULE-01E — AI Prompt Recognition & UX Polish (PLANNED)
 - AUTH-MODULE-01Z — Validation & Consolidation (PLANNED)
@@ -24229,7 +24229,7 @@ After a visual-edit apply succeeds, surface an Undo/Revert button in the `Worksp
 **Task ID:** AUTH-MODULE-01A
 **Parent:** AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps
 **Family:** AUTH
-**Family status:** ACTIVE — AUTH-MODULE-01B ACTIVE (implementation)
+**Family status:** ACTIVE — AUTH-MODULE-01C ACTIVE (implementation)
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Risk:** Low-Medium — pure TypeScript definitions and string constants; no runtime integration
@@ -24294,11 +24294,11 @@ Define the complete typed template registry for the Next.js + Auth.js v5 + Postg
 **Family:** AUTH
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** ACTIVE — current stage
+**Status:** COMPLETE and LOCKED
 **Risk:** Low-Medium — reads existing workspace files; no writes
 **Model:** GPT-5.3 Codex
 **Depends on:** AUTH-MODULE-01A (COMPLETE and LOCKED — required)
-**Checkpoint:** `docs/AUTH-MODULE-01B-CHECKPOINT.md` (not yet created)
+**Checkpoint:** `docs/AUTH-MODULE-01B-CHECKPOINT.md`
 
 **Objective:**
 Implement detection logic that reads the workspace `package.json` to determine whether a project is eligible for the auth starter. Detect Next.js, existing Prisma presence, and package manager. Return a typed eligibility result with clear unsupported-stack messages.
@@ -24322,9 +24322,9 @@ Implement detection logic that reads the workspace `package.json` to determine w
 
 **Acceptance checks:**
 - AUTH-MODULE-01B registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
-- Status PLANNED — DONE
-- Implementation complete and validated — pending
-- `docs/AUTH-MODULE-01B-CHECKPOINT.md` created — pending
+- Status COMPLETE and LOCKED — DONE
+- Implementation complete and validated — DONE (tsc PASS, 400/400 tests PASS, lints PASS)
+- `docs/AUTH-MODULE-01B-CHECKPOINT.md` created — DONE
 
 **Reference:** See TASKS.md -> AUTH-MODULE-01B. Parent: AUTH-MODULE-01.
 
@@ -24337,7 +24337,7 @@ Implement detection logic that reads the workspace `package.json` to determine w
 **Family:** AUTH
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** PLANNED
+**Status:** ACTIVE — current stage
 **Risk:** Medium — package.json merging must not clobber existing deps; path safety must be enforced
 **Model:** GPT-5.3 Codex
 **Depends on:** AUTH-MODULE-01B (COMPLETE and LOCKED — required)
@@ -24365,7 +24365,7 @@ Given a detection result from AUTH-MODULE-01B and the template registry from AUT
 
 **Acceptance checks:**
 - AUTH-MODULE-01C registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
-- Status PLANNED — DONE
+- Status ACTIVE — DONE
 - Implementation complete and validated — pending
 - `docs/AUTH-MODULE-01C-CHECKPOINT.md` created — pending
 
