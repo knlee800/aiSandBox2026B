@@ -150,6 +150,7 @@ const CHAT_EXECUTION_POLL_INTERVAL_MS = 3000;
 const PROJECT_OPEN_FILE_REFRESH_RETRY_DELAY_MS = 250;
 const PROJECT_OPEN_FILE_REFRESH_MAX_ATTEMPTS = 6;
 const AI_AUTO_CHECKPOINT_DESCRIPTION = 'AI: applied workspace file actions';
+const VISUAL_EDIT_CHECKPOINT_DESCRIPTION = 'Visual Edit: applied file changes';
 const DEFAULT_CHAT_MODEL_OPTION = 'xai:grok-3';
 const WORKSPACE_CONTEXT_MAX_FILE_PATHS = 200;
 const WORKSPACE_CONTEXT_MAX_SELECTED_FILE_CHARS = 8000;
@@ -1017,6 +1018,7 @@ export default function AppPage() {
   const pendingConfirmationExecutionIdsRef = useRef<Set<string>>(new Set());
   const cancelledFileActionsExecutionIdsRef = useRef<Set<string>>(new Set());
   const visualEditExecutionIdsRef = useRef<Set<string>>(new Set());
+  const visualEditCheckpointByExecutionIdRef = useRef<Record<string, string>>({});
   const coheredExecutionIdsRef = useRef<Set<string>>(new Set());
   const [execState, setExecState] = useState<WorkspaceExecState>({
     status: 'idle',
@@ -1463,6 +1465,7 @@ export default function AppPage() {
     pendingConfirmationExecutionIdsRef.current = new Set<string>();
     cancelledFileActionsExecutionIdsRef.current = new Set<string>();
     visualEditExecutionIdsRef.current = new Set<string>();
+    visualEditCheckpointByExecutionIdRef.current = {};
     coheredExecutionIdsRef.current = new Set<string>();
     skipNextChatThreadPersistRef.current = true;
 
@@ -4565,6 +4568,10 @@ export default function AppPage() {
       !executionSession?.terminatedAt &&
       executionSession?.status !== 'terminated';
     const selectedFilePathAtTrigger = selectedFilePath;
+    const checkpointDescription = visualEditExecutionIdsRef.current.has(executionId)
+      ? VISUAL_EDIT_CHECKPOINT_DESCRIPTION
+      : AI_AUTO_CHECKPOINT_DESCRIPTION;
+    let capturedVisualEditCommitHash: string | null = null;
 
     const coherenceResult = await runAiActionCoherence({
       executionId,
@@ -4573,7 +4580,7 @@ export default function AppPage() {
       executionSessionId,
       isExecutionSessionUsable,
       selectedFilePath: selectedFilePathAtTrigger,
-      checkpointDescription: AI_AUTO_CHECKPOINT_DESCRIPTION,
+      checkpointDescription,
       refreshFileTree: async () => {
         await loadWorkspaceFilesForSession(executionSessionId);
       },
@@ -4589,12 +4596,19 @@ export default function AppPage() {
           userId,
           description,
         });
+        if (visualEditExecutionIdsRef.current.has(executionId) && checkpointResult.commitHash) {
+          capturedVisualEditCommitHash = checkpointResult.commitHash;
+        }
         return { commitHash: checkpointResult.commitHash };
       },
       refreshCheckpoints: async () => {
         await loadCheckpoints(executionSessionId);
       },
     });
+
+    if (coherenceResult.ran && capturedVisualEditCommitHash) {
+      visualEditCheckpointByExecutionIdRef.current[executionId] = capturedVisualEditCommitHash;
+    }
 
     if (!coherenceResult.ran) {
       return;
@@ -5422,6 +5436,7 @@ export default function AppPage() {
       chatError={chatError}
       chatThreadMessages={chatThreadMessages}
       visualEditExecutionIds={Array.from(visualEditExecutionIdsRef.current)}
+      visualEditCheckpointByExecutionId={{ ...visualEditCheckpointByExecutionIdRef.current }}
       commandInput={commandInput}
       onCommandInputChange={setCommandInput}
       onExecuteCommand={handleExecuteCommand}

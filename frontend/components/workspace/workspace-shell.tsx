@@ -279,6 +279,7 @@ interface WorkspaceShellProps {
   chatResponseText?: string;
   chatError?: string | null;
   visualEditExecutionIds?: string[];
+  visualEditCheckpointByExecutionId?: Record<string, string>;
   chatThreadMessages?: Array<{
     id: string;
     role: 'user' | 'assistant';
@@ -927,9 +928,11 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
         responseText={props.chatResponseText ?? ''}
         errorMessage={props.chatError ?? null}
         visualEditExecutionIds={props.visualEditExecutionIds ?? []}
+        visualEditCheckpointByExecutionId={props.visualEditCheckpointByExecutionId}
         threadMessages={props.chatThreadMessages ?? []}
         onConfirmExecutionFileActions={props.onConfirmExecutionFileActions}
         onCancelExecutionFileActions={props.onCancelExecutionFileActions}
+        onInitiateCheckpointRevert={props.onInitiateCheckpointRevert}
       />
       <p className="text-xs font-semibold text-gray-700 mb-2">Command Input</p>
       <WorkspaceExecPanel
@@ -2257,8 +2260,10 @@ function WorkspaceChatPanel(props: {
   responseText: string;
   errorMessage: string | null;
   visualEditExecutionIds: string[];
+  visualEditCheckpointByExecutionId?: Record<string, string>;
   onConfirmExecutionFileActions?: (executionId: string) => void | Promise<void>;
   onCancelExecutionFileActions?: (executionId: string) => void;
+  onInitiateCheckpointRevert?: (checkpointId: string) => void;
   threadMessages: Array<{
     id: string;
     role: 'user' | 'assistant';
@@ -2402,6 +2407,9 @@ function WorkspaceChatPanel(props: {
                 const usePreformattedAssistantContent =
                   message.role === 'assistant' &&
                   shouldRenderPreformattedChatContent(displayContent);
+                const undoCheckpointId = message.executionId
+                  ? (props.visualEditCheckpointByExecutionId?.[message.executionId] ?? null)
+                  : null;
                 return (
               <li
                 key={message.id}
@@ -2455,6 +2463,11 @@ function WorkspaceChatPanel(props: {
                     onCancel={
                       message.executionId && props.onCancelExecutionFileActions
                         ? () => props.onCancelExecutionFileActions?.(message.executionId!)
+                        : undefined
+                    }
+                    onUndoVisualEdit={
+                      undoCheckpointId && props.onInitiateCheckpointRevert
+                        ? () => props.onInitiateCheckpointRevert?.(undoCheckpointId)
                         : undefined
                     }
                   />
@@ -2512,6 +2525,7 @@ function WorkspaceAssistantFileActionSummary(props: {
   isVisualEditExecution?: boolean;
   onConfirm?: () => void;
   onCancel?: () => void;
+  onUndoVisualEdit?: () => void;
 }) {
   const isVisualEditAwaitingConfirmation =
     Boolean(props.isVisualEditExecution) && props.fileActionState.applyStatus === 'awaiting-confirmation';
@@ -2768,6 +2782,20 @@ function WorkspaceAssistantFileActionSummary(props: {
             </li>
           ))}
         </ul>
+      ) : null}
+      {props.isVisualEditExecution === true &&
+      props.fileActionState.applyStatus === 'applied' &&
+      props.onUndoVisualEdit ? (
+        <div className="mt-2">
+          <button
+            type="button"
+            className="rounded border border-violet-300 bg-white px-2 py-1 text-[11px] text-violet-800 transition-transform duration-150 ease-out active:scale-[0.98]"
+            data-testid="workspace-chat-file-actions-undo-visual-edit"
+            onClick={props.onUndoVisualEdit}
+          >
+            Undo / Revert
+          </button>
+        </div>
       ) : null}
     </div>
   );

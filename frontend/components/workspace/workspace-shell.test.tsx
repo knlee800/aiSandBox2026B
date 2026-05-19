@@ -4837,3 +4837,182 @@ describe('workspace visual edit diff preview wiring — UX-IA-16B', () => {
     assert.match(shellSource, /workspace-chat-file-actions-diff-error/);
   });
 });
+
+describe('workspace visual edit checkpoint labeling — UX-IA-17A', () => {
+  test('page source defines VISUAL_EDIT_CHECKPOINT_DESCRIPTION', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(
+      pageSource,
+      /const VISUAL_EDIT_CHECKPOINT_DESCRIPTION = 'Visual Edit: applied file changes';/,
+    );
+  });
+
+  test('page source keeps AI_AUTO_CHECKPOINT_DESCRIPTION for non-visual-edit executions', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(
+      pageSource,
+      /const AI_AUTO_CHECKPOINT_DESCRIPTION = 'AI: applied workspace file actions';/,
+    );
+  });
+
+  test('page source selects checkpointDescription using visualEditExecutionIdsRef.current.has(executionId)', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(
+      pageSource,
+      /const checkpointDescription = visualEditExecutionIdsRef\.current\.has\(executionId\)\s*\?\s*VISUAL_EDIT_CHECKPOINT_DESCRIPTION\s*:\s*AI_AUTO_CHECKPOINT_DESCRIPTION;/,
+    );
+  });
+
+  test('page source passes conditional checkpointDescription into runAiActionCoherence', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(pageSource, /const coherenceResult = await runAiActionCoherence\(\{/);
+    assert.match(pageSource, /checkpointDescription,/);
+  });
+});
+
+describe('workspace visual edit undo affordance — UX-IA-17B', () => {
+  test('page source defines visualEditCheckpointByExecutionIdRef', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(
+      pageSource,
+      /const visualEditCheckpointByExecutionIdRef = useRef<Record<string, string>>\(\{\}\);/,
+    );
+  });
+
+  test('page source stores visual-edit checkpoint hash by execution id', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(
+      pageSource,
+      /visualEditCheckpointByExecutionIdRef\.current\[executionId\] = capturedVisualEditCommitHash;/,
+    );
+  });
+
+  test('page source resets visualEditCheckpointByExecutionIdRef on chat reset path', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(pageSource, /visualEditCheckpointByExecutionIdRef\.current = \{\};/);
+  });
+
+  test('workspace shell source defines onUndoVisualEdit prop on WorkspaceAssistantFileActionSummary', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.match(shellSource, /onUndoVisualEdit\?: \(\) => void;/);
+  });
+
+  test('workspace shell source includes visual-edit undo button test id', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.match(shellSource, /workspace-chat-file-actions-undo-visual-edit/);
+  });
+
+  test("renders undo button for visual-edit execution with applyStatus='applied' and undo callback", () => {
+    const html = renderWorkspaceShell({
+      visualEditExecutionIds: ['exec-visual-applied-1'],
+      visualEditCheckpointByExecutionId: {
+        'exec-visual-applied-1': 'commit-visual-1',
+      },
+      onInitiateCheckpointRevert: () => {},
+      chatThreadMessages: [
+        {
+          id: 'assistant-visual-applied-1',
+          role: 'assistant',
+          content: 'Applied visual edit changes.',
+          executionId: 'exec-visual-applied-1',
+          fileActionState: {
+            executionId: 'exec-visual-applied-1',
+            source: 'status',
+            fileActions: [{ action: 'write', path: 'src/app.tsx', content: 'updated' }],
+            applyStatus: 'applied',
+            confirmationRequired: false,
+            skipReason: null,
+            results: [{ action: 'write', path: 'src/app.tsx', status: 'success', error: null }],
+          },
+        },
+      ],
+    });
+
+    assert.match(html, /workspace-chat-file-actions-undo-visual-edit/);
+    assert.match(html, /Undo \/ Revert/);
+  });
+
+  test('does not render undo button for non-visual-edit execution', () => {
+    const html = renderWorkspaceShell({
+      visualEditExecutionIds: [],
+      visualEditCheckpointByExecutionId: {
+        'exec-non-visual-applied-1': 'commit-non-visual-1',
+      },
+      onInitiateCheckpointRevert: () => {},
+      chatThreadMessages: [
+        {
+          id: 'assistant-non-visual-applied-1',
+          role: 'assistant',
+          content: 'Applied non-visual changes.',
+          executionId: 'exec-non-visual-applied-1',
+          fileActionState: {
+            executionId: 'exec-non-visual-applied-1',
+            source: 'status',
+            fileActions: [{ action: 'write', path: 'src/non-visual.ts', content: 'updated' }],
+            applyStatus: 'applied',
+            confirmationRequired: false,
+            skipReason: null,
+            results: [{ action: 'write', path: 'src/non-visual.ts', status: 'success', error: null }],
+          },
+        },
+      ],
+    });
+
+    assert.doesNotMatch(html, /workspace-chat-file-actions-undo-visual-edit/);
+  });
+
+  test("does not render undo button when applyStatus is 'awaiting-confirmation'", () => {
+    const html = renderWorkspaceShell({
+      visualEditExecutionIds: ['exec-visual-awaiting-1'],
+      visualEditCheckpointByExecutionId: {
+        'exec-visual-awaiting-1': 'commit-visual-awaiting-1',
+      },
+      onInitiateCheckpointRevert: () => {},
+      chatThreadMessages: [
+        {
+          id: 'assistant-visual-awaiting-1',
+          role: 'assistant',
+          content: 'Waiting for confirmation.',
+          executionId: 'exec-visual-awaiting-1',
+          fileActionState: {
+            executionId: 'exec-visual-awaiting-1',
+            source: 'status',
+            fileActions: [{ action: 'write', path: 'src/app.tsx', content: 'updated' }],
+            applyStatus: 'awaiting-confirmation',
+            confirmationRequired: true,
+            skipReason: null,
+            results: [],
+          },
+        },
+      ],
+    });
+
+    assert.doesNotMatch(html, /workspace-chat-file-actions-undo-visual-edit/);
+  });
+
+  test('does not render undo button when onUndoVisualEdit is undefined', () => {
+    const html = renderWorkspaceShell({
+      visualEditExecutionIds: ['exec-visual-no-undo-1'],
+      onInitiateCheckpointRevert: () => {},
+      chatThreadMessages: [
+        {
+          id: 'assistant-visual-no-undo-1',
+          role: 'assistant',
+          content: 'Visual edit applied but checkpoint id missing.',
+          executionId: 'exec-visual-no-undo-1',
+          fileActionState: {
+            executionId: 'exec-visual-no-undo-1',
+            source: 'status',
+            fileActions: [{ action: 'write', path: 'src/app.tsx', content: 'updated' }],
+            applyStatus: 'applied',
+            confirmationRequired: false,
+            skipReason: null,
+            results: [{ action: 'write', path: 'src/app.tsx', status: 'success', error: null }],
+          },
+        },
+      ],
+    });
+
+    assert.doesNotMatch(html, /workspace-chat-file-actions-undo-visual-edit/);
+  });
+});

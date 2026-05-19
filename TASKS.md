@@ -12038,9 +12038,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## UX-IA ?X Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) ?X UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED)
+**Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) ?X UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) ?X UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED)
 
-**Current stage:** UX-IA-17 — Visual Edit Undo / Checkpoint Integration (PENDING — next stage)
+**Current stage:** AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps (ACTIVE — plan phase)
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -12074,8 +12074,10 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 17. UX-IA-16 — Visual Edit AI Patch Flow (COMPLETE and LOCKED — `docs/UX-IA-16-CHECKPOINT.md`)
     - UX-IA-16A — Visual Edit Prompt Contract + Force-Confirmation (COMPLETE and LOCKED — `docs/UX-IA-16A-CHECKPOINT.md`)
     - UX-IA-16B — Visual Edit Diff Preview in Confirmation UI (COMPLETE and LOCKED — `docs/UX-IA-16B-CHECKPOINT.md`)
-18. UX-IA-17 ?X Visual Edit Undo / Checkpoint Integration (PENDING — next stage; requires UX-IA-16 COMPLETE — now satisfied)
-   ? AUTH-MODULE-01 ?X Reusable App-Auth Module for aiSandBox-Created Apps (cross-family ?X later product capability; requires AUTH-APP-01 + UX-IA-08?VUX-IA-10 COMPLETE; see `docs/UX-IA-00-MASTER-PLAN.md` AUTH-MODULE-01 entry; register under AUTH family before starting)
+18. UX-IA-17 — Visual Edit Undo / Checkpoint Integration (COMPLETE and LOCKED — `docs/UX-IA-17-CHECKPOINT.md`)
+    - UX-IA-17A — Visual Edit Checkpoint Labeling (COMPLETE and LOCKED — `docs/UX-IA-17A-CHECKPOINT.md`)
+    - UX-IA-17B — Visual Edit Undo Affordance (COMPLETE and LOCKED — `docs/UX-IA-17B-CHECKPOINT.md`)
+   > AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps (cross-family — ACTIVE — plan phase — registered under AUTH family; see AUTH section below; requires AUTH-APP-01 + UX-IA-08–UX-IA-10 COMPLETE; see `docs/UX-IA-00-MASTER-PLAN.md` AUTH-MODULE-01 entry)
 
 ---
 
@@ -13770,6 +13772,253 @@ When a visual-edit execution reaches `awaiting-confirmation`, display a diff pre
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-16B. Parent: UX-IA-16. Depends on: `docs/UX-IA-16A-CHECKPOINT.md`.
 
+---
+
+#### UX-IA-17: Visual Edit Undo / Checkpoint Integration
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** UX-IA-17
+**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Priority:** Medium
+**Risk:** Low–Medium
+**Depends on:** UX-IA-16 (COMPLETE and LOCKED — `docs/UX-IA-16-CHECKPOINT.md`)
+**Checkpoint:** `docs/UX-IA-17-CHECKPOINT.md`
+
+**Objective:**
+Integrate visual-edit apply actions with the existing project history/snapshot checkpoint system. Applied visual edits create a named checkpoint. A safe undo/revert affordance is surfaced in the chat thread after a visual-edit apply, delegating to the existing checkpoint revert flow.
+
+**Plan findings (resolved):**
+- `maybeRunExecutionCoherence` already triggers checkpoint creation for every apply — including visual-edit applies. No new checkpoint trigger is needed.
+- `visualEditExecutionIdsRef.current.has(executionId)` is readable inside `maybeRunExecutionCoherence` in `page.tsx` at the point where `checkpointDescription` is passed to `runAiActionCoherence`. This is the correct hook point.
+- Distinct label is passed via the existing `checkpointDescription` parameter — no change to `runAiActionCoherence` or `workspace-ai-coherence.logic.ts`.
+- Undo affordance belongs in `WorkspaceAssistantFileActionSummary` (chat thread post-apply area) for visual-edit executions — not in the Preview tab toolbar.
+- Undo delegates to existing `onInitiateCheckpointRevert(checkpointId)` multi-step flow — no new restore mechanism.
+- No backend changes required.
+
+**Child slices:**
+- UX-IA-17A — Visual Edit Checkpoint Labeling (COMPLETE and LOCKED — `docs/UX-IA-17A-CHECKPOINT.md`)
+- UX-IA-17B — Visual Edit Undo Affordance (COMPLETE and LOCKED — `docs/UX-IA-17B-CHECKPOINT.md`)
+
+**Non-goals (parent):**
+- No direct DOM rollback
+- No bypass of checkpoint/restore safety
+- No automatic undo without user confirmation
+- No backend changes
+- No auth changes, route changes, drag/drop editor, broad refactor, new dependencies
+
+**Invariants to preserve:**
+- `runAiActionCoherence` — unchanged
+- `acquireExecutionApplyGuard` apply-once safety — unchanged
+- `handleConfirmExecutionFileActions` / `handleCancelExecutionFileActions` — unchanged
+- All UX-IA-15 and UX-IA-16 invariants — fully preserved
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-17. Depends on: `docs/UX-IA-16-CHECKPOINT.md`.
+
+---
+
+#### UX-IA-17A: Visual Edit Checkpoint Labeling
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** UX-IA-17A
+**Parent:** UX-IA-17 — Visual Edit Undo / Checkpoint Integration
+**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Priority:** Medium
+**Risk:** Low
+**Model:** GPT-5.3 Codex (implementation)
+**Depends on:** UX-IA-17 plan phase (COMPLETE)
+**Checkpoint:** `docs/UX-IA-17A-CHECKPOINT.md`
+
+**Objective:**
+When a visual-edit execution's file actions are applied and the coherence checkpoint is created, use a distinct description string so the checkpoint appears with a visual-edit label in the history timeline.
+
+**Scope:**
+- In `page.tsx`, inside `maybeRunExecutionCoherence`, conditionally set `checkpointDescription` based on `visualEditExecutionIdsRef.current.has(executionId)`
+- Define a new constant: `VISUAL_EDIT_CHECKPOINT_DESCRIPTION = 'Visual Edit: applied file changes'`
+- Pass `VISUAL_EDIT_CHECKPOINT_DESCRIPTION` when execution is visual-edit-sourced; pass existing `AI_AUTO_CHECKPOINT_DESCRIPTION` otherwise
+- Add focused source assertions / unit tests confirming the conditional and both constants exist
+
+**Files to change:**
+
+| File | Change |
+|---|---|
+| `frontend/app/[locale]/app/page.tsx` | New constant `VISUAL_EDIT_CHECKPOINT_DESCRIPTION`; conditional `checkpointDescription` inside `maybeRunExecutionCoherence` |
+| `frontend/components/workspace/workspace-shell.test.tsx` | Source assertions for new constant and conditional |
+
+**Non-goals:**
+- No undo button
+- No prop threading
+- No checkpoint restore UI changes
+- No changes to `runAiActionCoherence` or `workspace-ai-coherence.logic.ts`
+- No backend or API changes
+- No auth, route, or i18n changes
+- No new dependencies
+
+**Invariants to preserve:**
+- `AI_AUTO_CHECKPOINT_DESCRIPTION` — unchanged; still used for non-visual-edit executions
+- `runAiActionCoherence` interface and implementation — unchanged
+- `acquireExecutionCoherenceGuard` — unchanged
+- All UX-IA-15 and UX-IA-16 invariants — fully preserved
+
+**Validation plan:**
+- `npx tsc --noEmit` from `frontend/` — 0 errors
+- `npm test` from `frontend/` — all tests pass (baseline: 370)
+- `npm run build` from `frontend/` — passes
+- `ReadLints` on touched files — 0 new errors
+- Manual: visual-edit apply creates checkpoint labelled `Visual Edit: applied file changes`; standard AI apply still creates `AI: applied workspace file actions`
+
+**Acceptance checks:**
+- UX-IA-17A registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- Status ACTIVE — DONE
+- No implementation performed in registration — DONE
+- Implementation complete and validated — DONE (tsc PASS, 374/374 tests PASS, build PASS, lints PASS)
+- `docs/UX-IA-17A-CHECKPOINT.md` created — DONE
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-17A. Parent: UX-IA-17.
+
+---
+
+#### UX-IA-17B: Visual Edit Undo Affordance
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** UX-IA-17B
+**Parent:** UX-IA-17 — Visual Edit Undo / Checkpoint Integration
+**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Priority:** Medium
+**Risk:** Medium
+**Model:** GPT-5.3 Codex
+**Depends on:** UX-IA-17A (COMPLETE and LOCKED — required)
+**Checkpoint:** `docs/UX-IA-17B-CHECKPOINT.md`
+
+**Objective:**
+After a visual-edit apply succeeds, surface an Undo/Revert button in the `WorkspaceAssistantFileActionSummary` post-apply result area. The button calls the existing `onInitiateCheckpointRevert` multi-step flow. Non-visual-edit file-action UI is preserved unchanged.
+
+**Scope:**
+- In `page.tsx`: after `runAiActionCoherence` returns `checkpointCreated: true` for a visual-edit execution, store the resulting `commitHash` in a new ref (`visualEditCheckpointByExecutionIdRef: Record<string, string>`)
+- Thread the checkpoint ID to `WorkspaceAssistantFileActionSummary` via a new optional prop (`onUndoVisualEdit?: () => void`, or by passing `checkpointId: string | null`)
+- In `WorkspaceAssistantFileActionSummary`: render an Undo/Revert button for visual-edit executions when `applyStatus` shows applied results and a checkpoint ID exists; button is disabled/hidden when no checkpoint hash
+- Wire the button to call `onInitiateCheckpointRevert(checkpointId)` — delegates to the existing multi-step revert confirmation dialog
+- Preserve non-visual-edit file-action result display unchanged
+- Add focused tests for button render, button absence for non-visual-edit, and wiring
+
+**Files likely to change:**
+
+| File | Change |
+|---|---|
+| `frontend/app/[locale]/app/page.tsx` | New `visualEditCheckpointByExecutionIdRef`; populate on coherence success for visual-edit; thread to shell |
+| `frontend/components/workspace/workspace-shell.tsx` | New optional prop on `WorkspaceAssistantFileActionSummary`; Undo/Revert button in post-apply visual-edit block |
+| `frontend/components/workspace/workspace-shell.test.tsx` | Tests: undo button renders for visual-edit with results; absent for non-visual-edit; wiring assertion |
+
+**Non-goals:**
+- No direct DOM rollback
+- No automatic undo without user confirmation
+- No bypass of checkpoint revert confirmation flow
+- No backend or API changes
+- No new revert mechanism — reuse `onInitiateCheckpointRevert` as-is
+- No auth, route, or i18n changes (optional i18n key may be added if scope allows)
+- No new dependencies
+
+**Invariants to preserve:**
+- `handleInitiateCheckpointRevert` / `handleConfirmCheckpointRevert` — unchanged
+- `acquireExecutionApplyGuard` apply-once safety — unchanged
+- Non-visual-edit `WorkspaceAssistantFileActionSummary` rendering — unchanged
+- All UX-IA-15, UX-IA-16, and UX-IA-17A invariants — fully preserved
+
+**Validation plan:**
+- `npx tsc --noEmit` from `frontend/` — 0 errors
+- `npm test` from `frontend/` — all tests pass (baseline: 370 + count from 17A)
+- `npm run build` from `frontend/` — passes
+- `ReadLints` on touched files — 0 new errors
+- Manual: after visual-edit apply, undo button appears in chat thread; clicking opens revert confirmation; confirming reverts and refreshes file tree, preview, checkpoints; non-visual-edit file-action results show no undo button
+
+**Acceptance checks:**
+- UX-IA-17B registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- Status ACTIVE — DONE
+- Implementation complete and validated — DONE (tsc PASS, 383/383 tests PASS, build PASS, lints PASS)
+- `docs/UX-IA-17B-CHECKPOINT.md` created — DONE
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-17B. Parent: UX-IA-17. Depends on: `docs/UX-IA-17A-CHECKPOINT.md`.
 
 
-## AUTH ?X aiSandBox First-Party
+
+## AUTH — aiSandBox First-Party
+
+**Family status:** ACTIVE — AUTH-MODULE-01 ACTIVE (plan phase)
+
+**Current stage:** AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps (ACTIVE — plan phase)
+
+**Registered tasks:**
+1. AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps (ACTIVE — plan phase)
+
+---
+
+#### AUTH-MODULE-01: Reusable App-Auth Module for aiSandBox-Created Apps
+
+**Status:** ACTIVE — plan phase
+**Task ID:** AUTH-MODULE-01
+**Family:** AUTH
+**Priority:** High
+**Risk:** High — template generation, safe file patching, framework detection, rollback/checkpoint integration; exact implementation shape must be confirmed during plan phase before any implementation begins
+**Model:** TBD — confirm during plan phase
+**Depends on:** AUTH-APP-01 (VALIDATION COMPLETE — carry-forwards pending); AUTH-APP-02 through AUTH-APP-02D (COMPLETE and LOCKED); UX-IA-08 through UX-IA-10 (COMPLETE and LOCKED); AI-WS file-action system (COMPLETE and LOCKED)
+**Checkpoint:** `docs/AUTH-MODULE-01-CHECKPOINT.md` (not yet created — created after plan is approved and implementation is complete)
+
+**Objective:**
+Allow aiSandBox users to say "Add user authentication with email, Google, and Apple sign-in to my app" and have aiSandBox generate or install a working auth starter into their project — including routes, database schema, UI, and environment configuration — with a named checkpoint created before changes are applied so the user can revert cleanly.
+
+**Scope (v1 — subject to plan-phase confirmation):**
+- One stack only to start: Next.js + Auth.js + PostgreSQL
+- Generate auth routes and API handlers
+- Generate database schema / migrations for users, accounts, sessions
+- Generate protected route example
+- Generate login / register / logout UI components
+- Generate `.env.example` with required auth variables documented
+- Provide Google OAuth and Apple OAuth setup checklist as inline documentation
+- Add validation tests for generated auth flows
+- Integrate with aiSandBox checkpoint/rollback system: create a named snapshot before applying generated changes so users can revert cleanly
+- Reuse existing aiSandBox session/auth foundations (AUTH-APP-01 cookie-session, AUTH-APP-02 preview-proxy security invariants) — generated apps must not conflict with platform auth behavior
+- Preserve generated-app isolation and security boundaries (no leakage of aiSandBox session cookies or internal service keys into generated-app auth flow)
+
+**Non-goals:**
+- No implementation in this registration step
+- No backend/API changes in this registration step
+- No auth model rewrite
+- No changes to existing aiSandBox login/register/session behavior
+- No route changes to the aiSandBox platform
+- No generated-app runtime changes until plan is approved
+- No new dependencies unless explicitly approved during plan phase
+- Universal framework support (Vue, Angular, SvelteKit, etc.) — v1 is Next.js + Auth.js + PostgreSQL only
+- Hosted identity provider
+- Clerk / Supabase / Firebase auth provider support
+- Enterprise SSO / SAML
+- Billing / subscription integration
+- Advanced admin dashboard
+
+**Risks:**
+- Template generation requires safe file patching into an existing user project without clobbering existing files — strategy must be confirmed during plan phase
+- Framework detection strategy (how to determine stack before generating) — must be confirmed during plan phase
+- Environment variable handling: generated `.env.example` must not expose or conflict with aiSandBox platform env vars
+- Rollback/checkpoint integration: must reuse existing checkpoint system; exact hook point to be confirmed during plan phase
+- Generated auth flows must be isolated from aiSandBox's own `aisandbox_session` / `aisandbox_csrf` cookie namespace
+- AUTH-APP-01C2 (email verification, password reset) is still BLOCKED on email provider choice — generated app email auth may have a dependency on this resolution
+- AUTH-APP-01 manual smoke checklist (40 items) has not been run — platform auth stability unconfirmed in live environment; AUTH-MODULE-01 implementation should not begin until AUTH-APP-01 manual smoke is complete
+
+**Model guidance:**
+- Requires plan phase before any implementation begins
+- Plan phase must confirm: exact file patching strategy, framework detection approach, checkpoint hook point, env var handling, and v1 slice breakdown
+- Implementation will proceed in child slices (AUTH-MODULE-01A, 01B, …) after plan is approved
+- Each child slice follows the same registration → plan → implement → checkpoint discipline
+
+**Validation plan (plan phase — not implementation):**
+- Plan document produced and approved — covers file patching strategy, framework detection, checkpoint integration, env var handling, v1 slice breakdown
+- No source files changed in plan phase
+- No tsc / test / build runs required for plan phase
+- Validation runs will be defined per child implementation slice after plan is approved
+
+**Acceptance checks:**
+- AUTH-MODULE-01 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- Current stage set to AUTH-MODULE-01 ACTIVE / plan phase — DONE
+- Scope, non-goals, dependencies, risks, model guidance, and validation plan recorded — DONE
+- No implementation performed — DONE
+- No production source files edited — DONE
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-MODULE-01. See `docs/UX-IA-00-MASTER-PLAN.md` Section AUTH-MODULE-01. Depends on: AUTH-APP-01 (VALIDATION COMPLETE), AUTH-APP-02D (COMPLETE and LOCKED), UX-IA-08–UX-IA-10 (COMPLETE and LOCKED).
