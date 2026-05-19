@@ -127,6 +127,7 @@ import {
   detectAuthModuleEligibility,
   type AuthModuleEligibilityResult,
 } from '@/lib/auth-module/auth-module-detection';
+import { detectAuthModuleIntent } from '@/lib/auth-module/auth-module-intent';
 import {
   AuthModuleGenerationError,
   generateAuthModuleFileActions,
@@ -4179,6 +4180,28 @@ export default function AppPage() {
       setChatError('Enter a prompt before sending.');
       return;
     }
+    if (detectAuthModuleIntent(trimmedPrompt)) {
+      const userMessageId = crypto.randomUUID();
+      setChatThreadMessages((currentMessages) => [
+        ...currentMessages,
+        {
+          id: userMessageId,
+          role: 'user',
+          content: trimmedPrompt,
+        },
+      ]);
+      if (selectedSessionId) {
+        void persistSessionChatMessageToBackend({
+          sessionId: selectedSessionId,
+          role: 'user',
+          content: trimmedPrompt,
+        }).catch(() => {
+          // Keep local thread persistence as compatibility fallback.
+        });
+      }
+      await handleInstallAuthModule();
+      return;
+    }
     const promptWithSelectedPreviewElement = buildPromptWithSelectedPreviewElement(
       trimmedPrompt,
       selectedPreviewElement,
@@ -4526,6 +4549,7 @@ export default function AppPage() {
         },
       ]);
     };
+    appendAssistantMessage('Installing auth module — preparing your workspace...');
 
     if (!userId) {
       appendAssistantMessage('Auth module installation failed: missing authenticated user.');
@@ -4659,19 +4683,15 @@ export default function AppPage() {
 
     const executionId = crypto.randomUUID();
     const assistantMessageId = crypto.randomUUID();
-    const summarizedActionLines = actions
-      .slice(0, 6)
-      .map((action) => `- ${action.action} ${action.path}`);
-    const additionalActionCount = actions.length - summarizedActionLines.length;
     const assistantSummary = [
-      'Prepared auth module file actions.',
-      `Execution ID: ${executionId}`,
-      `Total file actions: ${actions.length}`,
+      `Auth module files are ready — ${actions.length} files prepared.`,
       '',
-      ...summarizedActionLines,
-      ...(additionalActionCount > 0 ? [`- ...and ${additionalActionCount} more actions`] : []),
-      '',
-      'Confirmation will be requested before applying risky changes.',
+      'Next steps:',
+      '1. Run: npm install',
+      '2. Set up .env — copy .env.example and fill in AUTH_SECRET and DATABASE_URL',
+      '3. Run: npx prisma migrate dev --name init',
+      '4. Start your dev server',
+      'See SETUP-AUTH.md in your project for full instructions.',
     ].join('\n');
 
     executionFileActionsByExecutionIdRef.current[executionId] = actions;

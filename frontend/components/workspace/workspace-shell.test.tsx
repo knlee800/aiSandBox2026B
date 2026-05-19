@@ -4952,6 +4952,66 @@ describe('auth module install flow integration — AUTH-MODULE-01D', () => {
   });
 });
 
+describe('auth module intent recognition — AUTH-MODULE-01E', () => {
+  test('page source imports detectAuthModuleIntent', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(
+      pageSource,
+      /import \{ detectAuthModuleIntent \} from '@\/lib\/auth-module\/auth-module-intent';/,
+    );
+  });
+
+  test('handleSubmitChatPrompt calls detectAuthModuleIntent(trimmedPrompt)', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(pageSource, /if \(detectAuthModuleIntent\(trimmedPrompt\)\) \{/);
+  });
+
+  test('auth intent branch appends user message before calling handleInstallAuthModule', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    const branchStart = pageSource.indexOf('if (detectAuthModuleIntent(trimmedPrompt)) {');
+    const userRoleIndex = pageSource.indexOf("role: 'user'", branchStart);
+    const installCallIndex = pageSource.indexOf('await handleInstallAuthModule();', branchStart);
+
+    assert.ok(branchStart >= 0);
+    assert.ok(userRoleIndex >= 0);
+    assert.ok(installCallIndex >= 0);
+    assert.ok(userRoleIndex < installCallIndex);
+  });
+
+  test('auth intent branch returns before normal AI execution paths', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    const branchStart = pageSource.indexOf('if (detectAuthModuleIntent(trimmedPrompt)) {');
+    const branchEnd = pageSource.indexOf(
+      'const promptWithSelectedPreviewElement = buildPromptWithSelectedPreviewElement(',
+      branchStart,
+    );
+    const branchSource = pageSource.slice(branchStart, branchEnd);
+    const submitStateIndex = pageSource.indexOf("setChatRequestState('submitting');");
+
+    assert.ok(branchStart >= 0);
+    assert.ok(branchEnd > branchStart);
+    assert.ok(submitStateIndex > branchEnd);
+    assert.match(branchSource, /await handleInstallAuthModule\(\);/);
+    assert.match(branchSource, /return;/);
+  });
+
+  test('handleInstallAuthModule posts installing status message', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(
+      pageSource,
+      /appendAssistantMessage\('Installing auth module — preparing your workspace\.\.\.'\);/,
+    );
+  });
+
+  test('completion summary mentions setup steps and SETUP-AUTH.md', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(pageSource, /Auth module files are ready — \$\{actions\.length\} files prepared\./);
+    assert.match(pageSource, /Next steps:/);
+    assert.match(pageSource, /Run: npm install/);
+    assert.match(pageSource, /SETUP-AUTH\.md/);
+  });
+});
+
 describe('workspace visual edit undo affordance — UX-IA-17B', () => {
   test('page source defines visualEditCheckpointByExecutionIdRef', () => {
     const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');

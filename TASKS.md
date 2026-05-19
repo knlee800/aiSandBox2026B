@@ -13942,24 +13942,24 @@ After a visual-edit apply succeeds, surface an Undo/Revert button in the `Worksp
 
 ## AUTH — aiSandBox First-Party
 
-**Family status:** ACTIVE — AUTH-MODULE-01E ACTIVE (implementation)
+**Family status:** COMPLETE and LOCKED — AUTH-MODULE-01 COMPLETE and LOCKED
 
-**Current stage:** AUTH-MODULE-01E — AI Prompt Recognition & UX Polish (ACTIVE)
+**Current stage:** AUTH-MODULE-01 complete — next task pending
 
 **Registered tasks:**
-1. AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps (ACTIVE — plan COMPLETE; child slices in progress)
+1. AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps (COMPLETE and LOCKED — `docs/AUTH-MODULE-01-CHECKPOINT.md`)
    - AUTH-MODULE-01A — Auth Template Registry Foundation (COMPLETE and LOCKED — `docs/AUTH-MODULE-01A-CHECKPOINT.md`)
    - AUTH-MODULE-01B — Framework Detection & Eligibility Check (COMPLETE and LOCKED — `docs/AUTH-MODULE-01B-CHECKPOINT.md`)
    - AUTH-MODULE-01C — Template File Generation Engine (COMPLETE and LOCKED — `docs/AUTH-MODULE-01C-CHECKPOINT.md`)
    - AUTH-MODULE-01D — Auth Module Install Flow Integration (COMPLETE and LOCKED — `docs/AUTH-MODULE-01D-CHECKPOINT.md`)
-   - AUTH-MODULE-01E — AI Prompt Recognition & UX Polish (ACTIVE — current stage)
-   - AUTH-MODULE-01Z — Validation & Consolidation (PLANNED)
+   - AUTH-MODULE-01E — AI Prompt Recognition & UX Polish (COMPLETE and LOCKED — `docs/AUTH-MODULE-01E-CHECKPOINT.md`)
+   - AUTH-MODULE-01Z — Validation & Consolidation (COMPLETE and LOCKED — `docs/AUTH-MODULE-01Z-CHECKPOINT.md`)
 
 ---
 
 #### AUTH-MODULE-01: Reusable App-Auth Module for aiSandBox-Created Apps
 
-**Status:** ACTIVE — plan COMPLETE; child slices registered; AUTH-MODULE-01E in progress
+**Status:** COMPLETE and LOCKED
 **Task ID:** AUTH-MODULE-01
 **Family:** AUTH
 **Priority:** High
@@ -13982,8 +13982,8 @@ After a visual-edit apply succeeds, surface an Undo/Revert button in the `Worksp
 - AUTH-MODULE-01B — Framework Detection & Eligibility Check (COMPLETE and LOCKED — `docs/AUTH-MODULE-01B-CHECKPOINT.md`)
 - AUTH-MODULE-01C — Template File Generation Engine (COMPLETE and LOCKED — `docs/AUTH-MODULE-01C-CHECKPOINT.md`)
 - AUTH-MODULE-01D — Auth Module Install Flow Integration (COMPLETE and LOCKED — `docs/AUTH-MODULE-01D-CHECKPOINT.md`)
-- AUTH-MODULE-01E — AI Prompt Recognition & UX Polish (ACTIVE — current stage)
-- AUTH-MODULE-01Z — Validation & Consolidation (PLANNED)
+- AUTH-MODULE-01E — AI Prompt Recognition & UX Polish (COMPLETE and LOCKED — `docs/AUTH-MODULE-01E-CHECKPOINT.md`)
+- AUTH-MODULE-01Z — Validation & Consolidation (COMPLETE and LOCKED — `docs/AUTH-MODULE-01Z-CHECKPOINT.md`)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-MODULE-01. See `docs/UX-IA-00-MASTER-PLAN.md` Section AUTH-MODULE-01. Depends on: AUTH-APP-01 (VALIDATION COMPLETE), AUTH-APP-02D (COMPLETE and LOCKED), UX-IA-08–UX-IA-10 (COMPLETE and LOCKED).
 
@@ -14155,7 +14155,7 @@ Wire the auth module install flow into the workspace. Expose a callable `handleI
 
 #### AUTH-MODULE-01E: AI Prompt Recognition & UX Polish
 
-**Status:** ACTIVE — current stage
+**Status:** COMPLETE and LOCKED
 **Task ID:** AUTH-MODULE-01E
 **Parent:** AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps
 **Family:** AUTH
@@ -14163,7 +14163,7 @@ Wire the auth module install flow into the workspace. Expose a callable `handleI
 **Risk:** Medium — intent recognition must have low false-positive rate; must not hijack unrelated prompts
 **Model:** GPT-5.3 Codex
 **Depends on:** AUTH-MODULE-01D (COMPLETE and LOCKED — `docs/AUTH-MODULE-01D-CHECKPOINT.md`)
-**Checkpoint:** `docs/AUTH-MODULE-01E-CHECKPOINT.md` (not yet created)
+**Checkpoint:** `docs/AUTH-MODULE-01E-CHECKPOINT.md`
 
 **Objective:**
 Detect when a user's chat prompt expresses auth module intent ("add authentication", "add login", "add signup", etc.) and route it to the `handleInstallAuthModule` flow instead of raw AI generation. Add chat-thread messaging for install progress and completion. Add i18n keys if needed.
@@ -14189,9 +14189,9 @@ Detect when a user's chat prompt expresses auth module intent ("add authenticati
 
 **Acceptance checks:**
 - AUTH-MODULE-01E registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
-- Status ACTIVE — DONE
-- Implementation complete and validated — pending
-- `docs/AUTH-MODULE-01E-CHECKPOINT.md` created — pending
+- Status COMPLETE and LOCKED — DONE
+- Implementation complete and validated — DONE (tsc PASS, 437/437 tests PASS, build PASS, lints PASS)
+- `docs/AUTH-MODULE-01E-CHECKPOINT.md` created — DONE
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-MODULE-01E. Parent: AUTH-MODULE-01.
 
@@ -14199,14 +14199,14 @@ Detect when a user's chat prompt expresses auth module intent ("add authenticati
 
 #### AUTH-MODULE-01Z: Validation & Consolidation
 
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED
 **Task ID:** AUTH-MODULE-01Z
 **Parent:** AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps
 **Family:** AUTH
 **Priority:** High
 **Risk:** Low — governance and documentation only unless validation reveals issues
 **Model:** GPT-5.3 Codex
-**Depends on:** AUTH-MODULE-01E (COMPLETE and LOCKED — required)
+**Depends on:** AUTH-MODULE-01E (COMPLETE and LOCKED — `docs/AUTH-MODULE-01E-CHECKPOINT.md`)
 **Checkpoint:** `docs/AUTH-MODULE-01Z-CHECKPOINT.md` + `docs/AUTH-MODULE-01-CHECKPOINT.md` (not yet created)
 
 **Objective:**
@@ -14231,8 +14231,9 @@ Run the full validation pass across all child slices, execute the manual smoke c
 
 **Acceptance checks:**
 - AUTH-MODULE-01Z registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
-- Status PLANNED — DONE
-- All child slices validated and COMPLETE and LOCKED — pending
-- `docs/AUTH-MODULE-01-CHECKPOINT.md` created — pending
+- Status COMPLETE and LOCKED — DONE
+- All child slices validated and COMPLETE and LOCKED — DONE (tsc PASS, 437/437 tests PASS, build PASS, lints PASS)
+- `docs/AUTH-MODULE-01Z-CHECKPOINT.md` created — DONE (`docs/AUTH-MODULE-01Z-CHECKPOINT.md`)
+- `docs/AUTH-MODULE-01-CHECKPOINT.md` created — DONE (`docs/AUTH-MODULE-01-CHECKPOINT.md`)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-MODULE-01Z. Parent: AUTH-MODULE-01.
