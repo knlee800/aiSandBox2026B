@@ -4859,7 +4859,15 @@ describe('workspace visual edit checkpoint labeling — UX-IA-17A', () => {
     const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
     assert.match(
       pageSource,
-      /const checkpointDescription = visualEditExecutionIdsRef\.current\.has\(executionId\)\s*\?\s*VISUAL_EDIT_CHECKPOINT_DESCRIPTION\s*:\s*AI_AUTO_CHECKPOINT_DESCRIPTION;/,
+      /const checkpointDescription = visualEditExecutionIdsRef\.current\.has\(executionId\)\s*\?\s*VISUAL_EDIT_CHECKPOINT_DESCRIPTION/,
+    );
+    assert.match(
+      pageSource,
+      /authModuleExecutionIdsRef\.current\.has\(executionId\)\s*\?\s*AUTH_MODULE_INSTALL_CHECKPOINT_DESCRIPTION/,
+    );
+    assert.match(
+      pageSource,
+      /:\s*AI_AUTO_CHECKPOINT_DESCRIPTION;/,
     );
   });
 
@@ -4867,6 +4875,80 @@ describe('workspace visual edit checkpoint labeling — UX-IA-17A', () => {
     const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
     assert.match(pageSource, /const coherenceResult = await runAiActionCoherence\(\{/);
     assert.match(pageSource, /checkpointDescription,/);
+  });
+});
+
+describe('auth module install flow integration — AUTH-MODULE-01D', () => {
+  test('page source defines AUTH_MODULE_PREINSTALL_CHECKPOINT_DESCRIPTION', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(
+      pageSource,
+      /const AUTH_MODULE_PREINSTALL_CHECKPOINT_DESCRIPTION = 'Auth Module: pre-install snapshot';/,
+    );
+  });
+
+  test('page source defines AUTH_MODULE_INSTALL_CHECKPOINT_DESCRIPTION', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(
+      pageSource,
+      /const AUTH_MODULE_INSTALL_CHECKPOINT_DESCRIPTION =\s*'Auth Module: installed authentication starter';/,
+    );
+  });
+
+  test('page source defines and resets authModuleExecutionIdsRef', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(pageSource, /const authModuleExecutionIdsRef = useRef\(new Set<string>\(\)\);/);
+    assert.match(pageSource, /authModuleExecutionIdsRef\.current = new Set<string>\(\);/);
+  });
+
+  test('page source selects auth-module checkpoint description in maybeRunExecutionCoherence', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(pageSource, /authModuleExecutionIdsRef\.current\.has\(executionId\)/);
+    assert.match(pageSource, /AUTH_MODULE_INSTALL_CHECKPOINT_DESCRIPTION/);
+  });
+
+  test('handleInstallAuthModule reads package.json and checks eligibility', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(pageSource, /async function handleInstallAuthModule\(\): Promise<void> \{/);
+    assert.match(pageSource, /filePath: 'package\.json'/);
+    assert.match(pageSource, /const eligibility: AuthModuleEligibilityResult = detectAuthModuleEligibility\(\{/);
+  });
+
+  test('handleInstallAuthModule generates auth module file actions', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(pageSource, /actions = generateAuthModuleFileActions\(\{/);
+    assert.match(pageSource, /template,\s+eligibility,\s+packageJsonContent,\s+prismaSchemaContent,\s+dotEnvExampleContent,/);
+  });
+
+  test('handleInstallAuthModule creates pre-install checkpoint before apply', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    const checkpointIndex = pageSource.indexOf(
+      "description: AUTH_MODULE_PREINSTALL_CHECKPOINT_DESCRIPTION",
+    );
+    const applyIndex = pageSource.indexOf(
+      "await maybeApplyExecutionFileActions(executionId, 'status');",
+    );
+    assert.ok(checkpointIndex >= 0);
+    assert.ok(applyIndex >= 0);
+    assert.ok(checkpointIndex < applyIndex);
+  });
+
+  test('handleInstallAuthModule routes generated actions through maybeApplyExecutionFileActions', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(pageSource, /await maybeApplyExecutionFileActions\(executionId, 'status'\);/);
+  });
+
+  test('workspace shell source defines onInstallAuthModule prop', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.match(shellSource, /onInstallAuthModule\?: \(\) => void \| Promise<void>;/);
+  });
+
+  test('WorkspaceShell accepts onInstallAuthModule prop without render failure', () => {
+    assert.doesNotThrow(() => {
+      renderWorkspaceShell({
+        onInstallAuthModule: async () => {},
+      });
+    });
   });
 });
 

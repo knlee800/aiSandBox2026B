@@ -24176,17 +24176,17 @@ After a visual-edit apply succeeds, surface an Undo/Revert button in the `Worksp
 
 ## AUTH — aiSandBox First-Party Authentication
 
-**Family status:** ACTIVE — AUTH-MODULE-01D ACTIVE (implementation)
+**Family status:** ACTIVE — AUTH-MODULE-01E ACTIVE (implementation)
 
-**Current stage:** AUTH-MODULE-01D — Auth Module Install Flow Integration (ACTIVE)
+**Current stage:** AUTH-MODULE-01E — AI Prompt Recognition & UX Polish (ACTIVE)
 
 **Registered tasks:**
 1. AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps (ACTIVE — plan COMPLETE; child slices in progress)
    - AUTH-MODULE-01A — Auth Template Registry Foundation (COMPLETE and LOCKED — `docs/AUTH-MODULE-01A-CHECKPOINT.md`)
    - AUTH-MODULE-01B — Framework Detection & Eligibility Check (COMPLETE and LOCKED — `docs/AUTH-MODULE-01B-CHECKPOINT.md`)
    - AUTH-MODULE-01C — Template File Generation Engine (COMPLETE and LOCKED — `docs/AUTH-MODULE-01C-CHECKPOINT.md`)
-   - AUTH-MODULE-01D — Auth Module Install Flow Integration (ACTIVE — current stage)
-   - AUTH-MODULE-01E — AI Prompt Recognition & UX Polish (PLANNED)
+   - AUTH-MODULE-01D — Auth Module Install Flow Integration (COMPLETE and LOCKED — `docs/AUTH-MODULE-01D-CHECKPOINT.md`)
+   - AUTH-MODULE-01E — AI Prompt Recognition & UX Polish (ACTIVE — current stage)
    - AUTH-MODULE-01Z — Validation & Consolidation (PLANNED)
 
 ---
@@ -24195,9 +24195,9 @@ After a visual-edit apply succeeds, surface an Undo/Revert button in the `Worksp
 
 **Task ID:** AUTH-MODULE-01
 **Family:** AUTH
-**Family status:** ACTIVE — AUTH-MODULE-01D ACTIVE (implementation)
+**Family status:** ACTIVE — AUTH-MODULE-01E ACTIVE (implementation)
 **Priority:** High
-**Status:** ACTIVE — plan COMPLETE; child slices registered; AUTH-MODULE-01D in progress
+**Status:** ACTIVE — plan COMPLETE; child slices registered; AUTH-MODULE-01E in progress
 **Risk:** High — template generation, framework detection, rollback/checkpoint integration
 **Model:** GPT-5.3 Codex (confirmed during plan phase)
 **Depends on:** AUTH-APP-01 (VALIDATION COMPLETE — carry-forwards pending); AUTH-APP-02 through AUTH-APP-02D (COMPLETE and LOCKED); UX-IA-08 through UX-IA-10 (COMPLETE and LOCKED); AI-WS file-action system (COMPLETE and LOCKED)
@@ -24216,8 +24216,8 @@ After a visual-edit apply succeeds, surface an Undo/Revert button in the `Worksp
 - AUTH-MODULE-01A — Auth Template Registry Foundation (COMPLETE and LOCKED — `docs/AUTH-MODULE-01A-CHECKPOINT.md`)
 - AUTH-MODULE-01B — Framework Detection & Eligibility Check (COMPLETE and LOCKED — `docs/AUTH-MODULE-01B-CHECKPOINT.md`)
 - AUTH-MODULE-01C — Template File Generation Engine (COMPLETE and LOCKED — `docs/AUTH-MODULE-01C-CHECKPOINT.md`)
-- AUTH-MODULE-01D — Auth Module Install Flow Integration (ACTIVE — current stage)
-- AUTH-MODULE-01E — AI Prompt Recognition & UX Polish (PLANNED)
+- AUTH-MODULE-01D — Auth Module Install Flow Integration (COMPLETE and LOCKED — `docs/AUTH-MODULE-01D-CHECKPOINT.md`)
+- AUTH-MODULE-01E — AI Prompt Recognition & UX Polish (ACTIVE — current stage)
 - AUTH-MODULE-01Z — Validation & Consolidation (PLANNED)
 
 **Reference:** See TASKS.md -> AUTH-MODULE-01. See `docs/UX-IA-00-MASTER-PLAN.md` Section AUTH-MODULE-01. Depends on: AUTH-APP-01 (VALIDATION COMPLETE), AUTH-APP-02D (COMPLETE and LOCKED), UX-IA-08–UX-IA-10 (COMPLETE and LOCKED).
@@ -24380,11 +24380,11 @@ Given a detection result from AUTH-MODULE-01B and the template registry from AUT
 **Family:** AUTH
 **Family status:** ACTIVE
 **Priority:** High
-**Status:** ACTIVE — current stage
+**Status:** COMPLETE and LOCKED
 **Risk:** Medium-High — touches page.tsx; must not bypass existing apply-guard or confirmation safety; pre-install checkpoint must land before file writes
 **Model:** GPT-5.3 Codex
 **Depends on:** AUTH-MODULE-01C (COMPLETE and LOCKED — required)
-**Checkpoint:** `docs/AUTH-MODULE-01D-CHECKPOINT.md` (not yet created)
+**Checkpoint:** `docs/AUTH-MODULE-01D-CHECKPOINT.md`
 
 **Objective:**
 Wire the auth module install flow into the workspace. `handleInstallAuthModule` in `page.tsx`: creates a pre-install named checkpoint, runs eligibility detection, generates file actions, applies through existing `applySequentialFileActions` confirmation flow, then runs post-apply coherence/checkpoint/refresh and surfaces setup instructions in chat thread.
@@ -24410,9 +24410,9 @@ Wire the auth module install flow into the workspace. `handleInstallAuthModule` 
 
 **Acceptance checks:**
 - AUTH-MODULE-01D registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
-- Status ACTIVE — DONE
-- Implementation complete and validated — pending
-- `docs/AUTH-MODULE-01D-CHECKPOINT.md` created — pending
+- Status COMPLETE and LOCKED — DONE
+- Implementation complete and validated — DONE (tsc PASS, 418/418 tests PASS, build PASS, lints PASS)
+- `docs/AUTH-MODULE-01D-CHECKPOINT.md` created — DONE
 
 **Reference:** See TASKS.md -> AUTH-MODULE-01D. Parent: AUTH-MODULE-01.
 
@@ -24425,10 +24425,10 @@ Wire the auth module install flow into the workspace. `handleInstallAuthModule` 
 **Family:** AUTH
 **Family status:** ACTIVE
 **Priority:** Medium
-**Status:** PLANNED
+**Status:** ACTIVE — current stage
 **Risk:** Medium — intent recognition must have low false-positive rate; must not hijack unrelated prompts
 **Model:** GPT-5.3 Codex
-**Depends on:** AUTH-MODULE-01D (COMPLETE and LOCKED — required)
+**Depends on:** AUTH-MODULE-01D (COMPLETE and LOCKED — `docs/AUTH-MODULE-01D-CHECKPOINT.md`)
 **Checkpoint:** `docs/AUTH-MODULE-01E-CHECKPOINT.md` (not yet created)
 
 **Objective:**
@@ -24458,7 +24458,7 @@ Detect when a user chat prompt expresses auth module intent and route to `handle
 
 **Acceptance checks:**
 - AUTH-MODULE-01E registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
-- Status PLANNED — DONE
+- Status ACTIVE — DONE
 - Implementation complete and validated — pending
 - `docs/AUTH-MODULE-01E-CHECKPOINT.md` created — pending
 

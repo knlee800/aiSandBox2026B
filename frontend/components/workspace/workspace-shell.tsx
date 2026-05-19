@@ -271,6 +271,7 @@ interface WorkspaceShellProps {
   orchestrationEnabled?: boolean;
   onOrchestrationEnabledChange?: (enabled: boolean) => void;
   onSubmitChatPrompt?: () => Promise<void>;
+  onInstallAuthModule?: () => void | Promise<void>;
   onConfirmExecutionFileActions?: (executionId: string) => void | Promise<void>;
   onCancelExecutionFileActions?: (executionId: string) => void;
   chatRequestState?: 'idle' | 'submitting' | 'queued' | 'running' | 'completed' | 'failed';

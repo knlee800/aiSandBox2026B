@@ -123,6 +123,15 @@ import {
   WORKSPACE_BUILD_TARGET_OPTIONS,
   type WorkspaceBuildTarget,
 } from '@/components/workspace/workspace-build-targets.logic';
+import {
+  detectAuthModuleEligibility,
+  type AuthModuleEligibilityResult,
+} from '@/lib/auth-module/auth-module-detection';
+import {
+  AuthModuleGenerationError,
+  generateAuthModuleFileActions,
+} from '@/lib/auth-module/auth-module-generator';
+import { AUTH_TEMPLATES_V1 } from '@/lib/auth-module/auth-template-registry';
 
 function getCsrfTokenFromCookie(): string | null {
   const csrfCookie = document.cookie
@@ -151,6 +160,9 @@ const PROJECT_OPEN_FILE_REFRESH_RETRY_DELAY_MS = 250;
 const PROJECT_OPEN_FILE_REFRESH_MAX_ATTEMPTS = 6;
 const AI_AUTO_CHECKPOINT_DESCRIPTION = 'AI: applied workspace file actions';
 const VISUAL_EDIT_CHECKPOINT_DESCRIPTION = 'Visual Edit: applied file changes';
+const AUTH_MODULE_PREINSTALL_CHECKPOINT_DESCRIPTION = 'Auth Module: pre-install snapshot';
+const AUTH_MODULE_INSTALL_CHECKPOINT_DESCRIPTION =
+  'Auth Module: installed authentication starter';
 const DEFAULT_CHAT_MODEL_OPTION = 'xai:grok-3';
 const WORKSPACE_CONTEXT_MAX_FILE_PATHS = 200;
 const WORKSPACE_CONTEXT_MAX_SELECTED_FILE_CHARS = 8000;
@@ -1018,6 +1030,7 @@ export default function AppPage() {
   const pendingConfirmationExecutionIdsRef = useRef<Set<string>>(new Set());
   const cancelledFileActionsExecutionIdsRef = useRef<Set<string>>(new Set());
   const visualEditExecutionIdsRef = useRef<Set<string>>(new Set());
+  const authModuleExecutionIdsRef = useRef(new Set<string>());
   const visualEditCheckpointByExecutionIdRef = useRef<Record<string, string>>({});
   const coheredExecutionIdsRef = useRef<Set<string>>(new Set());
   const [execState, setExecState] = useState<WorkspaceExecState>({
@@ -1465,6 +1478,7 @@ export default function AppPage() {
     pendingConfirmationExecutionIdsRef.current = new Set<string>();
     cancelledFileActionsExecutionIdsRef.current = new Set<string>();
     visualEditExecutionIdsRef.current = new Set<string>();
+    authModuleExecutionIdsRef.current = new Set<string>();
     visualEditCheckpointByExecutionIdRef.current = {};
     coheredExecutionIdsRef.current = new Set<string>();
     skipNextChatThreadPersistRef.current = true;
@@ -4501,6 +4515,192 @@ export default function AppPage() {
     return sessionsRef.current.find((session) => session.id === sessionId) ?? null;
   }
 
+  async function handleInstallAuthModule(): Promise<void> {
+    const appendAssistantMessage = (content: string): void => {
+      setChatThreadMessages((currentMessages) => [
+        ...currentMessages,
+        {
+          id: crypto.randomUUID(),
+          role: 'assistant',
+          content,
+        },
+      ]);
+    };
+
+    if (!userId) {
+      appendAssistantMessage('Auth module installation failed: missing authenticated user.');
+      return;
+    }
+
+    if (!selectedSessionId) {
+      appendAssistantMessage('Auth module installation failed: no workspace session is selected.');
+      return;
+    }
+
+    const selectedSession = getSessionByIdForFileActions(selectedSessionId);
+    if (!selectedSession) {
+      appendAssistantMessage(
+        'Auth module installation failed: selected workspace session is not active.',
+      );
+      return;
+    }
+    const isSelectedSessionUsable =
+      isUsableSession(selectedSession) &&
+      !selectedSession.terminatedAt &&
+      selectedSession.status !== 'terminated';
+    if (!isSelectedSessionUsable) {
+      appendAssistantMessage(
+        'Auth module installation failed: selected workspace session is not active.',
+      );
+      return;
+    }
+
+    if (fileSurfaceState !== 'ready') {
+      appendAssistantMessage(
+        'Auth module installation failed: workspace file surface is not ready yet.',
+      );
+      return;
+    }
+
+    let packageJsonContent: string;
+    try {
+      const packageJsonResponse = await readWorkspaceFile({
+        sessionId: selectedSessionId,
+        filePath: 'package.json',
+      });
+      packageJsonContent = packageJsonResponse.content;
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      appendAssistantMessage(`Auth module installation failed: unable to read package.json (${detail}).`);
+      return;
+    }
+
+    let prismaSchemaContent: string | null = null;
+    try {
+      const prismaSchemaResponse = await readWorkspaceFile({
+        sessionId: selectedSessionId,
+        filePath: 'prisma/schema.prisma',
+      });
+      prismaSchemaContent = prismaSchemaResponse.content;
+    } catch {
+      prismaSchemaContent = null;
+    }
+
+    let dotEnvExampleContent: string | null = null;
+    try {
+      const dotEnvExampleResponse = await readWorkspaceFile({
+        sessionId: selectedSessionId,
+        filePath: '.env.example',
+      });
+      dotEnvExampleContent = dotEnvExampleResponse.content;
+    } catch {
+      dotEnvExampleContent = null;
+    }
+
+    const lockfiles = workspaceFileTree
+      .filter(
+        (node) =>
+          node.type === 'file' &&
+          (node.name === 'package-lock.json' ||
+            node.name === 'yarn.lock' ||
+            node.name === 'pnpm-lock.yaml'),
+      )
+      .map((node) => node.name);
+
+    const eligibility: AuthModuleEligibilityResult = detectAuthModuleEligibility({
+      packageJsonContent,
+      lockfiles,
+    });
+
+    if (!eligibility.eligible) {
+      appendAssistantMessage(`Auth module installation is not available: ${eligibility.reason}`);
+      return;
+    }
+
+    try {
+      await createWorkspaceCheckpoint({
+        sessionId: selectedSessionId,
+        userId,
+        description: AUTH_MODULE_PREINSTALL_CHECKPOINT_DESCRIPTION,
+      });
+      await loadCheckpoints(selectedSessionId);
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      appendAssistantMessage(
+        `Auth module installation failed: unable to create pre-install checkpoint (${detail}).`,
+      );
+      return;
+    }
+
+    const template = AUTH_TEMPLATES_V1[0];
+    if (!template) {
+      appendAssistantMessage('Auth module installation failed: auth template registry is empty.');
+      return;
+    }
+
+    let actions: WorkspaceFileAction[];
+    try {
+      actions = generateAuthModuleFileActions({
+        template,
+        eligibility,
+        packageJsonContent,
+        prismaSchemaContent,
+        dotEnvExampleContent,
+      });
+    } catch (error) {
+      if (error instanceof AuthModuleGenerationError) {
+        appendAssistantMessage(`Auth module generation failed: ${error.message}`);
+        return;
+      }
+      const detail = error instanceof Error ? error.message : String(error);
+      appendAssistantMessage(`Auth module generation failed: ${detail}`);
+      return;
+    }
+
+    const executionId = crypto.randomUUID();
+    const assistantMessageId = crypto.randomUUID();
+    const summarizedActionLines = actions
+      .slice(0, 6)
+      .map((action) => `- ${action.action} ${action.path}`);
+    const additionalActionCount = actions.length - summarizedActionLines.length;
+    const assistantSummary = [
+      'Prepared auth module file actions.',
+      `Execution ID: ${executionId}`,
+      `Total file actions: ${actions.length}`,
+      '',
+      ...summarizedActionLines,
+      ...(additionalActionCount > 0 ? [`- ...and ${additionalActionCount} more actions`] : []),
+      '',
+      'Confirmation will be requested before applying risky changes.',
+    ].join('\n');
+
+    executionFileActionsByExecutionIdRef.current[executionId] = actions;
+    executionSessionIdByExecutionIdRef.current[executionId] = selectedSessionId;
+    executionAssistantMessageIdByExecutionIdRef.current[executionId] = assistantMessageId;
+    authModuleExecutionIdsRef.current.add(executionId);
+
+    setChatThreadMessages((currentMessages) => [
+      ...currentMessages,
+      {
+        id: assistantMessageId,
+        role: 'assistant',
+        content: assistantSummary,
+        executionId,
+      },
+    ]);
+    setExecutionFileActionState(executionId, {
+      executionId,
+      source: 'status',
+      fileActions: actions,
+      applyStatus: 'pending',
+      confirmationRequired: false,
+      skipReason: null,
+      results: [],
+    });
+
+    await maybeApplyExecutionFileActions(executionId, 'status');
+  }
+
   async function refreshWorkspaceFileTreeAfterDelete(
     sessionId: string,
     deletedPath: string,
@@ -4570,7 +4770,9 @@ export default function AppPage() {
     const selectedFilePathAtTrigger = selectedFilePath;
     const checkpointDescription = visualEditExecutionIdsRef.current.has(executionId)
       ? VISUAL_EDIT_CHECKPOINT_DESCRIPTION
-      : AI_AUTO_CHECKPOINT_DESCRIPTION;
+      : authModuleExecutionIdsRef.current.has(executionId)
+        ? AUTH_MODULE_INSTALL_CHECKPOINT_DESCRIPTION
+        : AI_AUTO_CHECKPOINT_DESCRIPTION;
     let capturedVisualEditCommitHash: string | null = null;
 
     const coherenceResult = await runAiActionCoherence({
@@ -5425,6 +5627,7 @@ export default function AppPage() {
         label: option.label,
       }))}
       onSubmitChatPrompt={handleSubmitChatPrompt}
+      onInstallAuthModule={handleInstallAuthModule}
       onConfirmExecutionFileActions={(executionId) => {
         void handleConfirmExecutionFileActions(executionId);
       }}
