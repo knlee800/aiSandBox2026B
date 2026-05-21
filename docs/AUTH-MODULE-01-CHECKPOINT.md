@@ -180,7 +180,7 @@ Carry-forward: smoke checklist should be executed against a live stack as part o
 ## Carry-Forwards / Known Limitations
 
 1. **Manual smoke SKIPPED** — needs live-stack execution before production deployment.
-2. **Checkpoint label discrepancy** — AUTH-MODULE-01D implemented `AUTH_MODULE_PREINSTALL_CHECKPOINT_DESCRIPTION = "Auth module install — pre-install snapshot"` and `AUTH_MODULE_INSTALL_CHECKPOINT_DESCRIPTION = "Auth module installed"`. Original plan-phase smoke spec referenced "Auth Module: pre-install snapshot" / "Auth Module: installed authentication starter". Implemented constants are the locked values.
+2. **Checkpoint labels (resolved)** — Implemented constants are `AUTH_MODULE_PREINSTALL_CHECKPOINT_DESCRIPTION = "Auth Module: pre-install snapshot"` and `AUTH_MODULE_INSTALL_CHECKPOINT_DESCRIPTION = "Auth Module: installed authentication starter"`. These match the manual smoke checklist exactly. A prior carry-forward note listed incorrect values; this note supersedes it.
 3. **v1 stack only** — registry supports `nextjs / app-router` only. Non-Next.js projects receive a clear `UNSUPPORTED_FRAMEWORK` message. Additional framework support is a future task.
 4. **Generated app dependencies not auto-installed** — the module writes `package.json` with auth deps but does not run `npm install`. SETUP-AUTH.md instructs the user.
 

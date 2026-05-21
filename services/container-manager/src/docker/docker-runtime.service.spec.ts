@@ -14,6 +14,55 @@ describe('DockerRuntimeService file operations', () => {
     } as any);
   });
 
+  describe('writeFileToContainer path validation', () => {
+    it.each([
+      'app/api/auth/[...nextauth]/route.ts',
+      'app/[id]/page.tsx',
+      'app/[[...slug]]/page.tsx',
+      'app/....dotfile/page.tsx',
+      'src/components/auth/login.tsx',
+    ])('allows safe path and reaches exec: %s', async (filePath) => {
+      jest.spyOn(service, 'findContainerBySessionId').mockResolvedValue({
+        inspect: jest.fn().mockImplementation(async () => ({ State: { Running: true } })),
+      } as any);
+      const execSpy = jest
+        .spyOn(service, 'execInContainerBySessionId')
+        .mockResolvedValue({ exitCode: 0, stdout: '', stderr: '' });
+
+      await expect(
+        service.writeFileToContainer('session-123', filePath, 'file-content'),
+      ).resolves.toBeUndefined();
+
+      expect(execSpy).toHaveBeenCalledWith(
+        'session-123',
+        ['sh', '-c', 'mkdir -p "$(dirname "$FILE")" && printf "%s" "$CONTENT" > "$FILE"'],
+        '/workspace',
+        {
+          FILE: `/workspace/${filePath}`,
+          CONTENT: 'file-content',
+        },
+        30000,
+      );
+    });
+
+    it.each([
+      '../secret.txt',
+      'foo/../bar',
+      'a/../../etc/passwd',
+      '/etc/passwd',
+      '/workspace/foo.ts',
+      '',
+    ])('rejects unsafe path before exec: %s', async (filePath) => {
+      const execSpy = jest.spyOn(service, 'execInContainerBySessionId');
+
+      await expect(service.writeFileToContainer('session-123', filePath, 'file-content')).rejects.toThrow(
+        BadRequestException,
+      );
+
+      expect(execSpy).not.toHaveBeenCalled();
+    });
+  });
+
   describe('deleteFileFromContainer', () => {
     it('calls exec with rm against the workspace file path', async () => {
       const inspect = jest.fn().mockImplementation(async () => ({ State: { Running: true } }));

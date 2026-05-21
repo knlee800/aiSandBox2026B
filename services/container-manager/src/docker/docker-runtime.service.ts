@@ -943,7 +943,8 @@ export class DockerRuntimeService implements OnModuleInit {
     }
 
     // Reject path traversal attempts
-    if (filePath.includes('..')) {
+    const pathSegments = filePath.split('/');
+    if (pathSegments.some((segment) => segment === '..')) {
       throw new BadRequestException('Path traversal not allowed');
     }
 

@@ -21956,7 +21956,7 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 
 **Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) ?X UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) ?X UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED)
 
-**Current stage:** AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps (ACTIVE — plan phase)
+**Current stage:** AUTH-MODULE-02B — Checkpoint Revert Has No Effect (ACTIVE)
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -21993,7 +21993,8 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 18. UX-IA-17 — Visual Edit Undo / Checkpoint Integration (COMPLETE and LOCKED — `docs/UX-IA-17-CHECKPOINT.md`)
     - UX-IA-17A — Visual Edit Checkpoint Labeling (COMPLETE and LOCKED — `docs/UX-IA-17A-CHECKPOINT.md`)
     - UX-IA-17B — Visual Edit Undo Affordance (COMPLETE and LOCKED — `docs/UX-IA-17B-CHECKPOINT.md`)
-   > AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps (cross-family — ACTIVE — plan phase — registered under AUTH family; see AUTH section below; requires AUTH-APP-01 + UX-IA-08–UX-IA-10 COMPLETE; see `docs/UX-IA-00-MASTER-PLAN.md` AUTH-MODULE-01 entry)
+   > AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps (cross-family — COMPLETE and LOCKED — `docs/AUTH-MODULE-01-CHECKPOINT.md` — registered under AUTH family)
+   > AUTH-MODULE-02 — Auth Module Live Smoke Blockers (cross-family — ACTIVE — triage/plan phase — registered under AUTH family; unblocks AUTH-MODULE-01 production-readiness)
 
 ---
 
@@ -24176,9 +24177,9 @@ After a visual-edit apply succeeds, surface an Undo/Revert button in the `Worksp
 
 ## AUTH — aiSandBox First-Party Authentication
 
-**Family status:** COMPLETE and LOCKED — AUTH-MODULE-01 COMPLETE and LOCKED
+**Family status:** ACTIVE — AUTH-MODULE-01 COMPLETE and LOCKED — AUTH-MODULE-02 ACTIVE (child slices in progress)
 
-**Current stage:** AUTH-MODULE-01 complete — next task pending
+**Current stage:** AUTH-MODULE-02B — Checkpoint Revert Has No Effect (ACTIVE)
 
 **Registered tasks:**
 1. AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps (COMPLETE and LOCKED — `docs/AUTH-MODULE-01-CHECKPOINT.md`)
@@ -24188,6 +24189,9 @@ After a visual-edit apply succeeds, surface an Undo/Revert button in the `Worksp
    - AUTH-MODULE-01D — Auth Module Install Flow Integration (COMPLETE and LOCKED — `docs/AUTH-MODULE-01D-CHECKPOINT.md`)
    - AUTH-MODULE-01E — AI Prompt Recognition & UX Polish (COMPLETE and LOCKED — `docs/AUTH-MODULE-01E-CHECKPOINT.md`)
    - AUTH-MODULE-01Z — Validation & Consolidation (COMPLETE and LOCKED — `docs/AUTH-MODULE-01Z-CHECKPOINT.md`)
+2. AUTH-MODULE-02 — Auth Module Live Smoke Blockers (ACTIVE — child slices in progress)
+   - AUTH-MODULE-02A — Support Next.js Bracket Route File Paths (COMPLETE and LOCKED — `docs/AUTH-MODULE-02A-CHECKPOINT.md`)
+   - AUTH-MODULE-02B — Checkpoint Revert Has No Effect (ACTIVE)
 
 ---
 
@@ -24507,3 +24511,110 @@ Run the full validation pass across all child slices, execute the manual smoke c
 - `docs/AUTH-MODULE-01-CHECKPOINT.md` created — DONE (`docs/AUTH-MODULE-01-CHECKPOINT.md`)
 
 **Reference:** See TASKS.md -> AUTH-MODULE-01Z. Parent: AUTH-MODULE-01.
+
+---
+
+### AUTH-MODULE-02: Auth Module Live Smoke Blockers
+
+**Status:** ACTIVE — child slices in progress
+**Task ID:** AUTH-MODULE-02
+**Family:** AUTH
+**Priority:** High
+**Risk:** High — AUTH-MODULE-01 cannot be considered production-ready until these live smoke blockers are fixed and revalidated
+**Depends on:** AUTH-MODULE-01 (COMPLETE and LOCKED)
+**Reason:** Live manual smoke validation of AUTH-MODULE-01 found two high-severity blockers requiring dedicated fix slices.
+
+**Child slices:**
+- AUTH-MODULE-02A — Support Next.js Bracket Route File Paths (COMPLETE and LOCKED — `docs/AUTH-MODULE-02A-CHECKPOINT.md`)
+- AUTH-MODULE-02B — Checkpoint Revert Has No Effect (ACTIVE)
+
+**Acceptance checks:**
+- AUTH-MODULE-02A COMPLETE and verified — bracket route paths accepted by file write API
+- AUTH-MODULE-02B COMPLETE and verified — checkpoint revert restores workspace files correctly
+- Both blockers resolved and revalidated before AUTH-MODULE-01 is treated as production-ready
+
+**Reference:** See TASKS.md -> AUTH-MODULE-02.
+
+---
+
+### AUTH-MODULE-02A: Support Next.js Bracket Route File Paths
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** AUTH-MODULE-02A
+**Parent:** AUTH-MODULE-02 — Auth Module Live Smoke Blockers
+**Family:** AUTH
+**Priority:** High
+**Risk:** Medium-High
+**Depends on:** AUTH-MODULE-02 registration (DONE)
+**Checkpoint:** `docs/AUTH-MODULE-02A-CHECKPOINT.md`
+
+**Bug:**
+File write fails for valid Next.js App Router catch-all route path:
+`app/api/auth/[...nextauth]/route.ts`
+Observed error: File write failed (400)
+Cause: Backend file write API rejects square brackets and ellipsis in file paths.
+Impact: Auth.js API route handler is never written, so generated app auth endpoint is missing.
+
+**Scope:**
+- Trace file path validation in frontend / api-gateway / container-manager file write path
+- Allow safe Next.js route segment syntax: `[id]`, `[...nextauth]`, `[[...slug]]`
+- Preserve path traversal protections
+- Preserve rejection of: absolute paths, `..` traversal, drive letters, null bytes, unsafe separators, dangerous paths
+- Add tests for allowed bracket route paths and rejected malicious paths
+
+**Non-goals:**
+- No auth template redesign
+- No broad file API refactor
+- No bypass of path safety
+- No generated-app runtime changes beyond allowing safe path names
+
+**Acceptance checks:**
+- File write succeeds for `app/api/auth/[...nextauth]/route.ts` — DONE
+- File write succeeds for `app/[id]/page.tsx` and `app/[[...slug]]/page.tsx` — DONE
+- Malicious paths still rejected (absolute paths, `..` traversal, null bytes, drive letters) — DONE
+- Tests added and passing — DONE (32/32 tests PASS, build PASS, lints PASS)
+- No regression on existing file write behavior — DONE
+- `docs/AUTH-MODULE-02A-CHECKPOINT.md` created — DONE
+
+**Reference:** See TASKS.md -> AUTH-MODULE-02A. Parent: AUTH-MODULE-02.
+
+---
+
+### AUTH-MODULE-02B: Checkpoint Revert Has No Effect
+
+**Status:** ACTIVE
+**Task ID:** AUTH-MODULE-02B
+**Parent:** AUTH-MODULE-02 — Auth Module Live Smoke Blockers
+**Family:** AUTH
+**Priority:** High
+**Risk:** High
+**Depends on:** AUTH-MODULE-02A (COMPLETE and LOCKED — `docs/AUTH-MODULE-02A-CHECKPOINT.md`)
+
+**Bug:**
+Reverting to "Auth Module: pre-install snapshot" was confirmed by user, but workspace files did not revert.
+Expected: Auth files removed and package.json reverted.
+Observed: File tree and package.json unchanged.
+Impact: Checkpoint revert safety net is non-functional.
+
+**Scope:**
+- Trace `revertWorkspaceCheckpoint` frontend flow
+- Trace api-gateway / container-manager revert endpoint
+- Trace GitService revert/reset behavior inside workspace container
+- Confirm whether `git reset --hard` runs in the correct workspace
+- Confirm whether file tree / editor / preview refresh after revert is actually loading reverted files
+- Add tests around checkpoint revert behavior where feasible
+- Fix the smallest root cause
+
+**Non-goals:**
+- No new undo system
+- No auth-module-specific revert workaround unless root cause is isolated to auth module
+- No broad checkpoint redesign unless unavoidable and approved
+
+**Acceptance checks:**
+- Reverting a named checkpoint removes subsequently created files
+- `package.json` reflects the pre-install state after revert
+- File tree and editor reload reverted content
+- Tests added and passing
+- No regression on existing checkpoint create/list behavior
+
+**Reference:** See TASKS.md -> AUTH-MODULE-02B. Parent: AUTH-MODULE-02.
