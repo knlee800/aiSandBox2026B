@@ -1,14 +1,28 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { IsInt, IsOptional, IsString, Min } from 'class-validator';
 import { GitCheckpointService } from './git-checkpoint.service';
 
 /**
  * DTO for recording git checkpoint
  */
 class RecordCheckpointDto {
+  @IsString()
   sessionId: string;
+
+  @IsString()
   commitHash: string;
+
+  @IsInt()
+  @Min(0)
   filesChanged: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
   messageNumber?: number | null;
+
+  @IsOptional()
+  @IsString()
   description?: string | null;
 }
 

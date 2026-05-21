@@ -14350,3 +14350,56 @@ Impact: Checkpoint revert safety net is non-functional.
 - No regression on existing checkpoint create/list behavior
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-MODULE-02B. Parent: AUTH-MODULE-02.
+
+---
+
+#### CHECKPOINT-LEDGER-01: Fix Internal Git Checkpoint Ledger session_id Null
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** CHECKPOINT-LEDGER-01
+**Family:** CHECKPOINT
+**Priority:** Medium
+**Risk:** Medium
+**Depends on:** AUTH-MODULE-02 (COMPLETE and LOCKED)
+**Checkpoint:** `docs/CHECKPOINT-LEDGER-01-CHECKPOINT.md`
+
+**Bug:**
+Internal git checkpoint ledger callback logs:
+`null value in column "session_id" of relation "git_checkpoints"`
+Triggered via: `POST /api/internal/git-checkpoints`
+Container-manager also logs: `Failed to record git checkpoint for session ...: Request failed with status code 500`
+Impact: Failed backend ledger writes, production log noise, and potential checkpoint metadata inconsistency.
+Workspace revert is NOT blocked, but the ledger record is corrupted.
+
+**Root cause:** Global `ValidationPipe({ whitelist: true, transform: true })` stripped all fields from `RecordCheckpointDto` because the DTO had no class-validator decorators. Fixed by adding `@IsString()`, `@IsInt()`, `@Min(0)`, `@IsOptional()` decorators to all fields.
+
+**Scope:**
+- Trace container-manager internal checkpoint recording call after git checkpoint/revert
+- Trace api-gateway `POST /api/internal/git-checkpoints` endpoint
+- Identify why `session_id` is null at write time
+- Fix the smallest root cause
+- Preserve existing checkpoint create/list/revert behavior
+- Add tests proving `sessionId` is forwarded and stored correctly
+- Confirm revert still succeeds after fix
+
+**Non-goals:**
+- No broad checkpoint redesign
+- No new undo system
+- No auth-module changes
+- No frontend UX changes
+- No billing/quota table fixes
+- No unrelated api-gateway/container-manager refactor
+
+**Acceptance checks:**
+- [x] `session_id` is non-null in `git_checkpoints` table after a git checkpoint event
+- [x] `POST /api/internal/git-checkpoints` returns 2xx with valid `session_id` payload
+- [x] Container-manager no longer logs 500 error on checkpoint recording
+- [x] Tests added and passing — sessionId forwarded and stored correctly
+- [x] Existing checkpoint create/list/revert behavior unchanged
+- [x] `docs/CHECKPOINT-LEDGER-01-CHECKPOINT.md` created
+
+**Files changed:**
+- `services/api-gateway/src/git-checkpoints/internal-git-checkpoint.controller.ts` (DTO decorators added)
+- `services/api-gateway/src/git-checkpoints/internal-git-checkpoint.controller.spec.ts` (7 tests, new file)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> CHECKPOINT-LEDGER-01. Checkpoint: `docs/CHECKPOINT-LEDGER-01-CHECKPOINT.md`.
