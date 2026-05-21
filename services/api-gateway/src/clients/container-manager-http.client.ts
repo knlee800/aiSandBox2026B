@@ -562,12 +562,14 @@ export class ContainerManagerHttpClient implements OnModuleInit {
    * Calls POST /api/git/:sessionId/revert
    * @param sessionId - Session UUID
    * @param commitHash - Commit hash to revert to
+   * @param userId - User ID performing the revert (required for checkpoint ledger)
    * @returns Revert result (message, commitHash)
    * @throws Error on HTTP failure (fail-fast)
    */
   async revertToCheckpoint(
     sessionId: string,
     commitHash: string,
+    userId: string,
   ): Promise<GitRevertResult> {
     if (this.isDisabled) {
       throw new Error(
@@ -578,7 +580,7 @@ export class ContainerManagerHttpClient implements OnModuleInit {
     try {
       const response = await this.axiosInstance.post(
         `/api/git/${sessionId}/revert`,
-        { commitHash },
+        { commitHash, userId },
         {
           headers: {
             'X-Internal-Service-Key': this.internalServiceKey,

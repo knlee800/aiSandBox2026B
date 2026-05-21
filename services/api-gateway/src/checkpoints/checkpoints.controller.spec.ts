@@ -223,7 +223,7 @@ describe('CheckpointsController (PHASE-68B)', () => {
 
       expect(result).toEqual(mockRevertResponse);
       expect(mockSessionService.getSessionById).toHaveBeenCalledWith(sessionId);
-      expect(service.revertToCheckpoint).toHaveBeenCalledWith(sessionId, commitHash);
+      expect(service.revertToCheckpoint).toHaveBeenCalledWith(sessionId, commitHash, userId);
     });
 
     it('should throw NotFoundException if session not owned by user', async () => {

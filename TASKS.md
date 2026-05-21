@@ -12040,7 +12040,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 **Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) ?X UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) ?X UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED)
 
-**Current stage:** AUTH-MODULE-02B — Checkpoint Revert Has No Effect (ACTIVE)
+**Current stage:** AUTH-MODULE-02 COMPLETE and LOCKED — awaiting next task selection
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -12078,7 +12078,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
     - UX-IA-17A — Visual Edit Checkpoint Labeling (COMPLETE and LOCKED — `docs/UX-IA-17A-CHECKPOINT.md`)
     - UX-IA-17B — Visual Edit Undo Affordance (COMPLETE and LOCKED — `docs/UX-IA-17B-CHECKPOINT.md`)
    > AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps (cross-family — COMPLETE and LOCKED — `docs/AUTH-MODULE-01-CHECKPOINT.md` — registered under AUTH family)
-   > AUTH-MODULE-02 — Auth Module Live Smoke Blockers (cross-family — ACTIVE — triage/plan phase — registered under AUTH family; unblocks AUTH-MODULE-01 production-readiness)
+   > AUTH-MODULE-02 — Auth Module Live Smoke Blockers (cross-family — COMPLETE and LOCKED — `docs/AUTH-MODULE-02-CHECKPOINT.md` — registered under AUTH family)
 
 ---
 
@@ -13943,9 +13943,9 @@ After a visual-edit apply succeeds, surface an Undo/Revert button in the `Worksp
 
 ## AUTH — aiSandBox First-Party
 
-**Family status:** ACTIVE — AUTH-MODULE-01 COMPLETE and LOCKED — AUTH-MODULE-02 ACTIVE (child slices in progress)
+**Family status:** COMPLETE and LOCKED — AUTH-MODULE-01 COMPLETE and LOCKED — AUTH-MODULE-02 COMPLETE and LOCKED
 
-**Current stage:** AUTH-MODULE-02B — Checkpoint Revert Has No Effect (ACTIVE)
+**Current stage:** AUTH-MODULE-02 COMPLETE and LOCKED — awaiting next task selection
 
 **Registered tasks:**
 1. AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps (COMPLETE and LOCKED — `docs/AUTH-MODULE-01-CHECKPOINT.md`)
@@ -13955,9 +13955,9 @@ After a visual-edit apply succeeds, surface an Undo/Revert button in the `Worksp
    - AUTH-MODULE-01D — Auth Module Install Flow Integration (COMPLETE and LOCKED — `docs/AUTH-MODULE-01D-CHECKPOINT.md`)
    - AUTH-MODULE-01E — AI Prompt Recognition & UX Polish (COMPLETE and LOCKED — `docs/AUTH-MODULE-01E-CHECKPOINT.md`)
    - AUTH-MODULE-01Z — Validation & Consolidation (COMPLETE and LOCKED — `docs/AUTH-MODULE-01Z-CHECKPOINT.md`)
-2. AUTH-MODULE-02 — Auth Module Live Smoke Blockers (ACTIVE — child slices in progress)
+2. AUTH-MODULE-02 — Auth Module Live Smoke Blockers (COMPLETE and LOCKED — `docs/AUTH-MODULE-02-CHECKPOINT.md`)
    - AUTH-MODULE-02A — Support Next.js Bracket Route File Paths (COMPLETE and LOCKED — `docs/AUTH-MODULE-02A-CHECKPOINT.md`)
-   - AUTH-MODULE-02B — Checkpoint Revert Has No Effect (ACTIVE)
+   - AUTH-MODULE-02B — Checkpoint Revert Has No Effect (COMPLETE and LOCKED — `docs/AUTH-MODULE-02B-CHECKPOINT.md`)
 
 ---
 
@@ -14246,22 +14246,23 @@ Run the full validation pass across all child slices, execute the manual smoke c
 
 #### AUTH-MODULE-02: Auth Module Live Smoke Blockers
 
-**Status:** ACTIVE — child slices in progress
+**Status:** COMPLETE and LOCKED
 **Task ID:** AUTH-MODULE-02
 **Family:** AUTH
 **Priority:** High
 **Risk:** High — AUTH-MODULE-01 cannot be considered production-ready until these live smoke blockers are fixed and revalidated
 **Depends on:** AUTH-MODULE-01 (COMPLETE and LOCKED)
 **Reason:** Live manual smoke validation of AUTH-MODULE-01 found two high-severity blockers requiring dedicated fix slices.
+**Checkpoint:** `docs/AUTH-MODULE-02-CHECKPOINT.md`
 
 **Child slices:**
 - AUTH-MODULE-02A — Support Next.js Bracket Route File Paths (COMPLETE and LOCKED — `docs/AUTH-MODULE-02A-CHECKPOINT.md`)
-- AUTH-MODULE-02B — Checkpoint Revert Has No Effect (ACTIVE)
+- AUTH-MODULE-02B — Checkpoint Revert Has No Effect (COMPLETE and LOCKED — `docs/AUTH-MODULE-02B-CHECKPOINT.md`)
 
 **Acceptance checks:**
-- AUTH-MODULE-02A COMPLETE and verified — bracket route paths accepted by file write API
-- AUTH-MODULE-02B COMPLETE and verified — checkpoint revert restores workspace files correctly
-- Both blockers resolved and revalidated before AUTH-MODULE-01 is treated as production-ready
+- [x] AUTH-MODULE-02A COMPLETE and verified — bracket route paths accepted by file write API
+- [x] AUTH-MODULE-02B COMPLETE and verified — checkpoint revert restores workspace files correctly
+- [x] Both blockers resolved and revalidated — AUTH-MODULE-01 is now production-ready
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-MODULE-02.
 
@@ -14312,13 +14313,14 @@ Impact: Auth.js API route handler is never written, so generated app auth endpoi
 
 #### AUTH-MODULE-02B: Checkpoint Revert Has No Effect
 
-**Status:** ACTIVE
+**Status:** COMPLETE and LOCKED
 **Task ID:** AUTH-MODULE-02B
 **Parent:** AUTH-MODULE-02 — Auth Module Live Smoke Blockers
 **Family:** AUTH
 **Priority:** High
 **Risk:** High
 **Depends on:** AUTH-MODULE-02A (COMPLETE and LOCKED — `docs/AUTH-MODULE-02A-CHECKPOINT.md`)
+**Checkpoint:** `docs/AUTH-MODULE-02B-CHECKPOINT.md`
 
 **Bug:**
 Reverting to "Auth Module: pre-install snapshot" was confirmed by user, but workspace files did not revert.

@@ -324,6 +324,7 @@ describe('CheckpointsController Integration (PHASE-68B)', () => {
       expect(containerManagerClient.revertToCheckpoint).toHaveBeenCalledWith(
         sessionId,
         commitHash,
+        userId,
       );
     });
 

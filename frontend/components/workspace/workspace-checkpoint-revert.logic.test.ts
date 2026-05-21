@@ -3,7 +3,7 @@ import { describe, test } from 'node:test';
 import { revertWorkspaceCheckpoint } from './workspace-checkpoint-revert.logic';
 
 describe('workspace checkpoint revert logic', () => {
-  test('posts checkpoint revert with active-session commit hash payload', async () => {
+  test('posts checkpoint revert to sessions endpoint with active-session commit hash payload', async () => {
     let url = '';
     let init: RequestInit | undefined;
     const fetchImpl: typeof fetch = async (input, requestInit) => {
@@ -19,7 +19,7 @@ describe('workspace checkpoint revert logic', () => {
       fetchImpl,
     });
 
-    assert.equal(url, '/api/git/session-abc/revert');
+    assert.equal(url, '/api/sessions/session-abc/revert');
     assert.equal(init?.method, 'POST');
     assert.equal((init?.headers as Record<string, string>)['Content-Type'], 'application/json');
     assert.equal(

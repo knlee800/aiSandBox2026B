@@ -207,12 +207,12 @@ describe('CheckpointsService (PHASE-68B)', () => {
         .mockResolvedValueOnce(mockNewCheckpoint as GitCheckpoint);
       containerManagerClient.revertToCheckpoint.mockResolvedValue(mockRevertResult);
 
-      const result = await service.revertToCheckpoint(sessionId, commitHash);
+      const result = await service.revertToCheckpoint(sessionId, commitHash, 'user-456');
 
       expect(result.message).toBe('Reverted successfully');
       expect(result.newCheckpoint.id).toBe('new-checkpoint-id');
       expect(sessionService.getSessionById).toHaveBeenCalledWith(sessionId);
-      expect(containerManagerClient.revertToCheckpoint).toHaveBeenCalledWith(sessionId, commitHash);
+      expect(containerManagerClient.revertToCheckpoint).toHaveBeenCalledWith(sessionId, commitHash, 'user-456');
     });
 
     it('should throw GoneException if session is terminated', async () => {
@@ -227,7 +227,7 @@ describe('CheckpointsService (PHASE-68B)', () => {
       sessionService.getSessionById.mockResolvedValue(mockSession as any);
 
       await expect(
-        service.revertToCheckpoint(sessionId, commitHash),
+        service.revertToCheckpoint(sessionId, commitHash, 'user-456'),
       ).rejects.toThrow(GoneException);
     });
 
@@ -244,7 +244,7 @@ describe('CheckpointsService (PHASE-68B)', () => {
       gitCheckpointService.getCheckpointByHash.mockResolvedValue(null);
 
       await expect(
-        service.revertToCheckpoint(sessionId, commitHash),
+        service.revertToCheckpoint(sessionId, commitHash, 'user-456'),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -267,7 +267,7 @@ describe('CheckpointsService (PHASE-68B)', () => {
       gitCheckpointService.getCheckpointByHash.mockResolvedValue(mockCheckpoint as GitCheckpoint);
 
       await expect(
-        service.revertToCheckpoint(sessionId, commitHash),
+        service.revertToCheckpoint(sessionId, commitHash, 'user-456'),
       ).rejects.toThrow(NotFoundException);
     });
   });

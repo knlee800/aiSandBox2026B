@@ -105,6 +105,7 @@ export class CheckpointsService {
   async revertToCheckpoint(
     sessionId: string,
     commitHash: string,
+    userId: string,
   ): Promise<RevertResponseDto> {
     // Verify session exists and not terminated
     const session = await this.sessionService.getSessionById(sessionId);
@@ -137,6 +138,7 @@ export class CheckpointsService {
     const revertResult = await this.containerManagerHttpClient.revertToCheckpoint(
       sessionId,
       commitHash,
+      userId,
     );
 
     // Get the new checkpoint created by the revert operation

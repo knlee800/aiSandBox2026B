@@ -21,14 +21,15 @@ import { RevertResponseDto } from './dto/revert-response.dto';
  * CheckpointsController
  * PHASE-68B: Public HTTP endpoints for checkpoint history/control operations
  * All endpoints require JWT authentication and enforce session ownership
- * Routes: /api/sessions/:id/checkpoints/* (global prefix 'api' applied in main.ts)
+ * Routes: /api/sessions/:id/checkpoints/* and /api/sessions/:id/revert
+ * (global prefix 'api' applied in main.ts)
  */
-@Controller('sessions/:id/checkpoints')
+@Controller('sessions/:id')
 @UseGuards(SessionCookieGuard)
 export class CheckpointsController {
   constructor(private readonly checkpointsService: CheckpointsService) {}
 
-  @Post()
+  @Post('checkpoints')
   @HttpCode(HttpStatus.CREATED)
   async createManualCheckpoint(
     @Param('id') id: string,
@@ -59,7 +60,7 @@ export class CheckpointsController {
    * @param req - Request object with authenticated user
    * @returns Array of checkpoints
    */
-  @Get()
+  @Get('checkpoints')
   @HttpCode(HttpStatus.OK)
   async listCheckpoints(
     @Param('id') id: string,
@@ -92,7 +93,7 @@ export class CheckpointsController {
    * @param req - Request object with authenticated user
    * @returns Diff data
    */
-  @Get(':hash/diff')
+  @Get('checkpoints/:hash/diff')
   @HttpCode(HttpStatus.OK)
   async getCheckpointDiff(
     @Param('id') id: string,
@@ -124,7 +125,7 @@ export class CheckpointsController {
    * @param req - Request object with authenticated user
    * @returns Revert result with new checkpoint info
    */
-  @Post('../revert')
+  @Post('revert')
   @HttpCode(HttpStatus.OK)
   async revertToCheckpoint(
     @Param('id') id: string,
@@ -143,6 +144,7 @@ export class CheckpointsController {
     return await this.checkpointsService.revertToCheckpoint(
       id,
       revertDto.commitHash,
+      userId,
     );
   }
 }

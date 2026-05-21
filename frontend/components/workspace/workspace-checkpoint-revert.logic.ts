@@ -18,7 +18,7 @@ export async function revertWorkspaceCheckpoint(
   args: RevertWorkspaceCheckpointArgs,
 ): Promise<void> {
   const fetchImpl = args.fetchImpl ?? fetch;
-  const response = await fetchImpl(`/api/git/${encodeURIComponent(args.sessionId)}/revert`, {
+  const response = await fetchImpl(`/api/sessions/${encodeURIComponent(args.sessionId)}/revert`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

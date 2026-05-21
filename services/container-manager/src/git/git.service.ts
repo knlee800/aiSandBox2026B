@@ -144,11 +144,15 @@ export class GitService {
   }
 
   async revert(sessionId: string, userId: string, commitHash: string) {
-    const workspacePath = this.sessionsService.getWorkspacePath(sessionId);
-    const git: SimpleGit = simpleGit(workspacePath);
-
-    // Reset to commit
-    await git.reset(['--hard', commitHash]);
+    const resetResult = await this.sessionsService.execInContainer(
+      sessionId,
+      ['sh', '-lc', 'git reset --hard "$COMMIT_HASH"'],
+      '/workspace',
+      { COMMIT_HASH: commitHash },
+    );
+    if (resetResult.exitCode !== 0) {
+      throw new Error(resetResult.stderr || 'Failed to reset to commit');
+    }
 
     // Create checkpoint for the revert operation
     const revertDescription = `Reverted to ${commitHash.substring(0, 7)}`;
