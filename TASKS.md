@@ -14552,3 +14552,82 @@ Technical backend/file-read error leaks to user instead of a clear eligibility m
 - [x] Live smoke item 14 re-run and PASS
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-MODULE-03B. Parent: AUTH-MODULE-03. Checkpoint: `docs/AUTH-MODULE-03B-CHECKPOINT.md`.
+
+---
+
+## Family: I18N
+
+### I18N-SHELL-01: Wire Visual Edit UI i18n Keys
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** I18N-SHELL-01
+**Family:** I18N
+**Priority:** Medium
+**Risk:** Low-Medium
+**Nature:** FRONTEND-ONLY
+**Depends on:** UX-IA-17 (COMPLETE and LOCKED), AUTH-MODULE-03 (COMPLETE and LOCKED)
+**Checkpoint:** `docs/I18N-SHELL-01-CHECKPOINT.md`
+
+**Context:**
+A read-only multilingual audit found workspace shell and page.tsx still contain hardcoded English UX/UI strings. Public auth/landing surfaces are multilingual-ready. This slice addresses the first targeted cleanup: visual-edit file-action UI strings added around UX-IA-16/17.
+
+**Primary files:**
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+**Objective:**
+Remove hardcoded English user-facing strings added around UX-IA-16/17 visual-edit file-action UI and wire them into the existing workspace-shell locale-switch pattern.
+
+**Scope:**
+The following hardcoded user-facing strings in `workspace-shell.tsx` must be replaced with multilingual keys:
+
+1. "File Action Results"
+2. "Source: Visual Edit mode selection."
+3. "Loading diff preview..."
+4. "Diff preview unavailable for one or more files. You can still apply or cancel."
+5. "Undo / Revert"
+
+Also wire nearby existing buttons:
+6. "Apply" — use existing `ai.apply` if available, or add key if missing
+7. "Cancel" — use existing `common.cancel` if available
+
+**Required implementation shape:**
+- Add `getAiMessages(locale)` helper in `workspace-shell.tsx` following the existing `getTabMessages` / `getProjectPanelMessages` / `getCommonMessages` pattern.
+- Add missing `ai.*` keys to all 3 locale files (`en.json`, `zh-TW.json`, `zh-CN.json`).
+- Replace the hardcoded strings in `WorkspaceAssistantFileActionSummary` / relevant file-action UI.
+- Keep visual layout unchanged.
+- Preserve existing test IDs.
+- Add/update tests/source assertions proving no hardcoded English remains for the listed visual-edit strings and all new keys exist in all 3 locale files.
+
+**Non-goals:**
+- No `page.tsx` changes
+- No AUTH-MODULE chat message cleanup in this slice
+- No checkpoint description translation in this slice
+- No broad workspace-shell i18n migration
+- No backend changes
+- No routing changes
+- No new dependencies
+- No UI redesign
+- No TASK-73C-1 changes
+
+**Validation plan:**
+- `npx tsc --noEmit` from `frontend/`
+- `npm test` from `frontend/`
+- `npm run build` if workspace-shell runtime changes warrant it
+- `ReadLints` on touched files
+
+**Acceptance checks:**
+- [ ] All 7 listed strings replaced with locale-switch keys
+- [ ] All new keys present in `en.json`, `zh-TW.json`, `zh-CN.json`
+- [ ] `getAiMessages(locale)` helper added and follows existing pattern
+- [ ] Visual layout unchanged
+- [ ] Test IDs preserved
+- [ ] Tests/assertions prove no hardcoded English for listed strings
+- [ ] `npx tsc --noEmit` passes
+- [ ] `npm test` passes
+- [ ] No unrelated files changed
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> I18N-SHELL-01.

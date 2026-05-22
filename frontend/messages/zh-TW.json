@@ -148,6 +148,11 @@
     "sending": "發送中...",
     "modelProvider": "模型",
     "fileActions": "檔案操作",
+    "fileActionResults": "檔案操作結果",
+    "visualEditAttribution": "來源：Visual Edit 模式選取。",
+    "diffPreviewLoading": "正在載入差異預覽...",
+    "diffPreviewUnavailable": "一或多個檔案無法提供差異預覽。你仍可套用或取消。",
+    "undoRevert": "還原 / 回退",
     "approvalRequired": "需要確認",
     "apply": "套用",
     "skip": "略過"

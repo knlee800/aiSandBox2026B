@@ -148,6 +148,11 @@
     "sending": "发送中...",
     "modelProvider": "模型",
     "fileActions": "文件操作",
+    "fileActionResults": "文件操作结果",
+    "visualEditAttribution": "来源：Visual Edit 模式选择。",
+    "diffPreviewLoading": "正在加载差异预览...",
+    "diffPreviewUnavailable": "一个或多个文件暂无法提供差异预览。你仍可应用或取消。",
+    "undoRevert": "撤销 / 回退",
     "approvalRequired": "需要确认",
     "apply": "应用",
     "skip": "跳过"

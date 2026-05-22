@@ -148,6 +148,11 @@
     "sending": "Sending...",
     "modelProvider": "Model",
     "fileActions": "File Actions",
+    "fileActionResults": "File Action Results",
+    "visualEditAttribution": "Source: Visual Edit mode selection.",
+    "diffPreviewLoading": "Loading diff preview...",
+    "diffPreviewUnavailable": "Diff preview unavailable for one or more files. You can still apply or cancel.",
+    "undoRevert": "Undo / Revert",
     "approvalRequired": "Approval required",
     "apply": "Apply",
     "skip": "Skip"

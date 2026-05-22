@@ -107,6 +107,12 @@ function getCommonMessages(locale: string): typeof enMessages.common {
   return enMessages.common;
 }
 
+function getAiMessages(locale: string): typeof enMessages.ai {
+  if (locale === 'zh-TW') return zhTwMessages.ai;
+  if (locale === 'zh-CN') return zhCnMessages.ai;
+  return enMessages.ai;
+}
+
 function resolveTabBarTabs(locale: string): WorkspaceTabBarTab[] {
   const tabMessages = getTabMessages(locale);
   return TAB_REGISTRY.map((tab) => ({
@@ -444,6 +450,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const tabBarTabs = React.useMemo(() => resolveTabBarTabs(locale), [locale]);
   const projectPanelMessages = React.useMemo(() => getProjectPanelMessages(locale), [locale]);
   const commonMessages = React.useMemo(() => getCommonMessages(locale), [locale]);
+  const aiMessages = React.useMemo(() => getAiMessages(locale), [locale]);
   const comingSoonLabel = React.useMemo(() => getTabMessages(locale).comingSoon, [locale]);
   const activeTabLabel = React.useMemo(
     () => tabBarTabs.find((tab) => tab.id === activeTabId)?.label ?? activeTabId,
@@ -914,6 +921,8 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
       <p className="text-xs font-semibold text-gray-700 mb-2">Chat Panel</p>
       <WorkspaceChatPanel
         projectFirstUxEnabled={projectFirstUxEnabled}
+        aiMessages={aiMessages}
+        commonMessages={commonMessages}
         selectedSessionId={props.selectedSessionId}
         promptInput={props.chatPromptInput ?? ''}
         onPromptInputChange={props.onChatPromptInputChange}
@@ -2243,6 +2252,8 @@ function ProjectHistoryPanel(props: {
 
 function WorkspaceChatPanel(props: {
   projectFirstUxEnabled: boolean;
+  aiMessages: typeof enMessages.ai;
+  commonMessages: typeof enMessages.common;
   selectedSessionId: string | null;
   promptInput: string;
   onPromptInputChange?: (value: string) => void;
@@ -2452,6 +2463,8 @@ function WorkspaceChatPanel(props: {
                 {message.role === 'assistant' && message.fileActionState ? (
                   <WorkspaceAssistantFileActionSummary
                     fileActionState={message.fileActionState}
+                    aiMessages={props.aiMessages}
+                    commonMessages={props.commonMessages}
                     selectedSessionId={props.selectedSessionId}
                     isVisualEditExecution={Boolean(
                       message.executionId && visualEditExecutionIdSet.has(message.executionId),
@@ -2522,6 +2535,8 @@ function WorkspaceChatPanel(props: {
 
 function WorkspaceAssistantFileActionSummary(props: {
   fileActionState: WorkspaceExecutionFileActionState;
+  aiMessages: typeof enMessages.ai;
+  commonMessages: typeof enMessages.common;
   selectedSessionId: string | null;
   isVisualEditExecution?: boolean;
   onConfirm?: () => void;
@@ -2694,13 +2709,13 @@ function WorkspaceAssistantFileActionSummary(props: {
   }
   return (
     <div className="mt-2 rounded border border-gray-200 bg-white p-2" data-testid="workspace-chat-file-actions">
-      <p className="text-[11px] font-semibold text-gray-700">File Action Results</p>
+      <p className="text-[11px] font-semibold text-gray-700">{props.aiMessages.fileActionResults}</p>
       {props.isVisualEditExecution ? (
         <p
           className="mt-1 text-[11px] text-violet-700"
           data-testid="workspace-chat-file-actions-visual-edit-attribution"
         >
-          Source: Visual Edit mode selection.
+          {props.aiMessages.visualEditAttribution}
         </p>
       ) : null}
       {props.fileActionState.applyStatus === 'awaiting-confirmation' ? (
@@ -2713,12 +2728,12 @@ function WorkspaceAssistantFileActionSummary(props: {
             <>
               {diffState === 'loading' ? (
                 <p className="mt-1 text-[11px] text-amber-800" data-testid="workspace-chat-file-actions-diff-loading">
-                  Loading diff preview...
+                  {props.aiMessages.diffPreviewLoading}
                 </p>
               ) : null}
               {diffState === 'error' ? (
                 <p className="mt-1 text-[11px] text-red-700" data-testid="workspace-chat-file-actions-diff-error">
-                  Diff preview unavailable for one or more files. You can still apply or cancel.
+                  {props.aiMessages.diffPreviewUnavailable}
                 </p>
               ) : null}
               {diffState === 'ready' ? (
@@ -2739,7 +2754,7 @@ function WorkspaceAssistantFileActionSummary(props: {
               onClick={props.onConfirm}
               disabled={!props.onConfirm}
             >
-              Apply
+              {props.aiMessages.apply}
             </button>
             <button
               type="button"
@@ -2748,7 +2763,7 @@ function WorkspaceAssistantFileActionSummary(props: {
               onClick={props.onCancel}
               disabled={!props.onCancel}
             >
-              Cancel
+              {props.commonMessages.cancel}
             </button>
           </div>
         </div>
@@ -2794,7 +2809,7 @@ function WorkspaceAssistantFileActionSummary(props: {
             data-testid="workspace-chat-file-actions-undo-visual-edit"
             onClick={props.onUndoVisualEdit}
           >
-            Undo / Revert
+            {props.aiMessages.undoRevert}
           </button>
         </div>
       ) : null}

@@ -4838,6 +4838,63 @@ describe('workspace visual edit diff preview wiring — UX-IA-16B', () => {
   });
 });
 
+describe('workspace visual edit i18n wiring — I18N-SHELL-01', () => {
+  test('workspace shell source defines getAiMessages helper following locale-switch pattern', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.match(shellSource, /function getAiMessages\(locale: string\): typeof enMessages\.ai \{/);
+    assert.match(shellSource, /if \(locale === 'zh-TW'\) return zhTwMessages\.ai;/);
+    assert.match(shellSource, /if \(locale === 'zh-CN'\) return zhCnMessages\.ai;/);
+    assert.match(shellSource, /return enMessages\.ai;/);
+  });
+
+  test('locale files define required ai keys for visual-edit file-action copy', () => {
+    const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));
+    const zhTw = JSON.parse(readFileSync(new URL('../../messages/zh-TW.json', import.meta.url), 'utf8'));
+    const zhCn = JSON.parse(readFileSync(new URL('../../messages/zh-CN.json', import.meta.url), 'utf8'));
+    const requiredAiKeys = [
+      'fileActionResults',
+      'visualEditAttribution',
+      'diffPreviewLoading',
+      'diffPreviewUnavailable',
+      'undoRevert',
+      'apply',
+    ] as const;
+
+    for (const key of requiredAiKeys) {
+      assert.ok(typeof en.ai?.[key] === 'string' && en.ai[key].length > 0);
+      assert.ok(typeof zhTw.ai?.[key] === 'string' && zhTw.ai[key].length > 0);
+      assert.ok(typeof zhCn.ai?.[key] === 'string' && zhCn.ai[key].length > 0);
+    }
+
+    assert.ok(typeof en.common?.cancel === 'string' && en.common.cancel.length > 0);
+    assert.ok(typeof zhTw.common?.cancel === 'string' && zhTw.common.cancel.length > 0);
+    assert.ok(typeof zhCn.common?.cancel === 'string' && zhCn.common.cancel.length > 0);
+  });
+
+  test('workspace shell source removes targeted hardcoded English visual-edit strings', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.doesNotMatch(shellSource, /File Action Results/);
+    assert.doesNotMatch(shellSource, /Source: Visual Edit mode selection\./);
+    assert.doesNotMatch(shellSource, /Loading diff preview\.\.\./);
+    assert.doesNotMatch(
+      shellSource,
+      /Diff preview unavailable for one or more files\. You can still apply or cancel\./,
+    );
+    assert.doesNotMatch(shellSource, /Undo \/ Revert/);
+  });
+
+  test('workspace shell file-action UI uses ai/common message values for target labels', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.match(shellSource, /\{props\.aiMessages\.fileActionResults\}/);
+    assert.match(shellSource, /\{props\.aiMessages\.visualEditAttribution\}/);
+    assert.match(shellSource, /\{props\.aiMessages\.diffPreviewLoading\}/);
+    assert.match(shellSource, /\{props\.aiMessages\.diffPreviewUnavailable\}/);
+    assert.match(shellSource, /\{props\.aiMessages\.undoRevert\}/);
+    assert.match(shellSource, /\{props\.aiMessages\.apply\}/);
+    assert.match(shellSource, /\{props\.commonMessages\.cancel\}/);
+  });
+});
+
 describe('workspace visual edit checkpoint labeling — UX-IA-17A', () => {
   test('page source defines VISUAL_EDIT_CHECKPOINT_DESCRIPTION', () => {
     const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
