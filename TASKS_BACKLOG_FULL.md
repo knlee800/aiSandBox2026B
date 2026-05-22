@@ -18,6 +18,36 @@ Rules:
 
 This file is the single source of truth for project scope.
 
+---
+
+## Global UX/UI Multilingual-First Rule (CRITICAL)
+
+For all aiSandBox2026B UX/UI work, multilingual support is a top-priority invariant and must be planned at task-definition time.
+
+Any new or changed user-facing UX/UI text MUST be implemented multilingual-first in the same task slice:
+
+- Add or update translation keys in `frontend/messages/en.json`
+- Add or update matching Traditional Chinese keys in `frontend/messages/zh-TW.json`
+- Add or update matching Simplified Chinese keys in `frontend/messages/zh-CN.json`
+- Use the existing translation hook/pattern for rendered UI text
+- Do not add hardcoded English user-facing UI copy unless explicitly approved as temporary developer/debug-only text
+- Add tests or source checks for translation keys/rendered translated copy where practical
+
+This applies to empty states, loading/error/success messages, buttons, labels, chat/system status messages, tooltips, help text, auth-module UX copy, checkpoint/history UX copy, and responsive/mobile UI copy.
+
+If a UX/UI backlog entry proposes new visible text without same-slice i18n updates, revise the scope before activation or implementation.
+
+### Required UX/UI Acceptance Check Template
+
+Every UX/UI backlog entry that adds or changes visible user-facing text must include these acceptance checks:
+
+- [ ] No new hardcoded user-facing English copy
+- [ ] `frontend/messages/en.json` updated
+- [ ] `frontend/messages/zh-TW.json` updated
+- [ ] `frontend/messages/zh-CN.json` updated
+- [ ] Component uses the existing translation hook/pattern
+- [ ] Tests/source checks cover translation keys or rendered translated copy where practical
+
 
 # TASKS.md ??Project Task Breakdown
 ## AI Sandbox Platform
