@@ -4642,11 +4642,16 @@ export default function AppPage() {
     }
 
     try {
-      await createWorkspaceCheckpoint({
+      const preinstallResult: WorkspaceCheckpointCreateResult = await createWorkspaceCheckpoint({
         sessionId: selectedSessionId,
         userId,
         description: AUTH_MODULE_PREINSTALL_CHECKPOINT_DESCRIPTION,
+        allowEmpty: true,
       });
+      if (!preinstallResult.commitHash) {
+        appendAssistantMessage('Auth module installation failed: unable to create pre-install checkpoint.');
+        return;
+      }
       await loadCheckpoints(selectedSessionId);
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);

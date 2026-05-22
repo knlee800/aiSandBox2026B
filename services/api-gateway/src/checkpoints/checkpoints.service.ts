@@ -168,6 +168,7 @@ export class CheckpointsService {
     userId: string,
     messageNumber: number = 0,
     description?: string,
+    allowEmpty?: boolean,
   ): Promise<{ message: string; commitHash: string; filesChanged: number }> {
     const session = await this.sessionService.getSessionById(sessionId);
     if (session.terminatedAt !== null) {
@@ -181,6 +182,7 @@ export class CheckpointsService {
       userId,
       messageNumber,
       description,
+      allowEmpty,
     );
 
     if (result.commitHash) {

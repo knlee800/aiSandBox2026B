@@ -18,9 +18,16 @@ export class GitController {
     @Param('sessionId') sessionId: string,
     @Body('userId') userId: string,
     @Body('messageNumber') messageNumber: number,
-    @Body('description') description?: string
+    @Body('description') description?: string,
+    @Body('allowEmpty') allowEmpty?: boolean,
   ) {
-    return this.gitService.commit(sessionId, userId, messageNumber, description);
+    return this.gitService.commit(
+      sessionId,
+      userId,
+      messageNumber,
+      description,
+      allowEmpty,
+    );
   }
 
   @Get(':sessionId/history')

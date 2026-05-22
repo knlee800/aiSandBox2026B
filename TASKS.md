@@ -13943,9 +13943,9 @@ After a visual-edit apply succeeds, surface an Undo/Revert button in the `Worksp
 
 ## AUTH — aiSandBox First-Party
 
-**Family status:** COMPLETE and LOCKED — AUTH-MODULE-01 COMPLETE and LOCKED — AUTH-MODULE-02 COMPLETE and LOCKED
+**Family status:** COMPLETE and LOCKED — AUTH-MODULE-01 COMPLETE and LOCKED — AUTH-MODULE-02 COMPLETE and LOCKED — CHECKPOINT-LEDGER-01 COMPLETE and LOCKED — AUTH-MODULE-03 ACTIVE — AUTH-MODULE-03A COMPLETE and LOCKED
 
-**Current stage:** AUTH-MODULE-02 COMPLETE and LOCKED — awaiting next task selection
+**Current stage:** AUTH-MODULE-03B ACTIVE
 
 **Registered tasks:**
 1. AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps (COMPLETE and LOCKED — `docs/AUTH-MODULE-01-CHECKPOINT.md`)
@@ -13958,6 +13958,10 @@ After a visual-edit apply succeeds, surface an Undo/Revert button in the `Worksp
 2. AUTH-MODULE-02 — Auth Module Live Smoke Blockers (COMPLETE and LOCKED — `docs/AUTH-MODULE-02-CHECKPOINT.md`)
    - AUTH-MODULE-02A — Support Next.js Bracket Route File Paths (COMPLETE and LOCKED — `docs/AUTH-MODULE-02A-CHECKPOINT.md`)
    - AUTH-MODULE-02B — Checkpoint Revert Has No Effect (COMPLETE and LOCKED — `docs/AUTH-MODULE-02B-CHECKPOINT.md`)
+3. CHECKPOINT-LEDGER-01 — Fix Internal Git Checkpoint Ledger session_id Null (COMPLETE and LOCKED — `docs/CHECKPOINT-LEDGER-01-CHECKPOINT.md`)
+4. AUTH-MODULE-03 — Auth Module Final Live Smoke Fixes (ACTIVE — child slices in progress)
+   - AUTH-MODULE-03A — Pre-install Auth Module Checkpoint Missing (COMPLETE and LOCKED — `docs/AUTH-MODULE-03A-CHECKPOINT.md`)
+   - AUTH-MODULE-03B — Friendly Unsupported Message for Missing package.json (ACTIVE — starts after 03A)
 
 ---
 
@@ -14403,3 +14407,117 @@ Workspace revert is NOT blocked, but the ledger record is corrupted.
 - `services/api-gateway/src/git-checkpoints/internal-git-checkpoint.controller.spec.ts` (7 tests, new file)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> CHECKPOINT-LEDGER-01. Checkpoint: `docs/CHECKPOINT-LEDGER-01-CHECKPOINT.md`.
+
+---
+
+#### AUTH-MODULE-03: Auth Module Final Live Smoke Fixes
+
+**Status:** ACTIVE — child slices in progress
+**Task ID:** AUTH-MODULE-03
+**Family:** AUTH
+**Priority:** High
+**Risk:** High — AUTH-MODULE-01 cannot be considered production-ready until the two remaining live smoke failures are fixed and revalidated
+**Depends on:** AUTH-MODULE-02 (COMPLETE and LOCKED), CHECKPOINT-LEDGER-01 (COMPLETE and LOCKED)
+**Reason:** Final live smoke validation of AUTH-MODULE-01 (run after AUTH-MODULE-02 fixes) returned 12 PASS, 2 FAIL, 0 BLOCKED, 0 SKIPPED. Two failures require dedicated fix slices.
+**Checkpoint:** `docs/AUTH-MODULE-03-CHECKPOINT.md` (not yet created — created at AUTH-MODULE-03Z or final slice)
+
+**Child slices:**
+- AUTH-MODULE-03A — Pre-install Auth Module Checkpoint Missing (COMPLETE and LOCKED — `docs/AUTH-MODULE-03A-CHECKPOINT.md`)
+- AUTH-MODULE-03B — Friendly Unsupported Message for Missing package.json (ACTIVE)
+
+**Known pre-existing console noise (not blocking):**
+- Stale background `/api/sessions/.../files/read` 500 for old sessions
+- Stale `/api/ai/executions/.../stream` 401
+- Benign 404 resource/preload warning
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-MODULE-03.
+
+---
+
+#### AUTH-MODULE-03A: Pre-install Auth Module Checkpoint Missing
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** AUTH-MODULE-03A
+**Parent:** AUTH-MODULE-03 — Auth Module Final Live Smoke Fixes
+**Family:** AUTH
+**Priority:** High
+**Risk:** High
+**Depends on:** AUTH-MODULE-03 registration (DONE)
+**Checkpoint:** `docs/AUTH-MODULE-03A-CHECKPOINT.md`
+
+**Bug:**
+Live smoke item 5 failed. Expected pre-install checkpoint:
+"Auth Module: pre-install snapshot"
+Observed:
+Checkpoint absent. Only two checkpoints existed:
+- AI: applied workspace file actions
+- Auth Module: installed authentication starter
+
+Impact:
+The intended clean rollback point before auth module file writes is missing. Revert worked only because an earlier checkpoint existed, not because the auth module pre-install safety checkpoint was created.
+
+**Scope:**
+- Trace `handleInstallAuthModule` pre-install checkpoint call
+- Confirm whether `createWorkspaceCheckpoint` is called, fails, races, or creates a checkpoint that is not surfaced
+- Confirm whether checkpoint refresh runs after pre-install
+- Fix the smallest root cause
+- Add tests
+- Re-run live smoke items 5 and 13
+
+**Non-goals:**
+- No auth template changes
+- No checkpoint redesign
+- No new undo system
+- No broad workspace history refactor
+
+**Acceptance checks:**
+- [x] Pre-install checkpoint "Auth Module: pre-install snapshot" appears in checkpoint list before auth files are written
+- [x] Checkpoint created with correct label and timing
+- [x] Checkpoint refresh surfaces the new checkpoint in UI
+- [x] Tests added and passing
+- [x] Live smoke items 5 and 13 re-run and PASS
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-MODULE-03A. Parent: AUTH-MODULE-03. Checkpoint: `docs/AUTH-MODULE-03A-CHECKPOINT.md`.
+
+---
+
+#### AUTH-MODULE-03B: Friendly Unsupported Message for Missing package.json
+
+**Status:** ACTIVE
+**Task ID:** AUTH-MODULE-03B
+**Parent:** AUTH-MODULE-03 — Auth Module Final Live Smoke Fixes
+**Family:** AUTH
+**Priority:** Medium
+**Risk:** Medium
+**Depends on:** AUTH-MODULE-03A (COMPLETE and LOCKED — `docs/AUTH-MODULE-03A-CHECKPOINT.md`)
+
+**Bug:**
+Live smoke item 14 failed. Blank/non-Next.js workspace produced:
+"Auth module installation failed: unable to read package.json (File read failed (500))."
+
+Expected:
+Friendly unsupported-project message, e.g.:
+"This workspace doesn't look like a Next.js project yet. Create or open a Next.js project first, then try adding authentication again."
+
+Impact:
+Technical backend/file-read error leaks to user instead of a clear eligibility message.
+
+**Scope:**
+- Trace `readWorkspaceFile` failure for missing package.json
+- Decide whether file-read API should return 404 for missing files, or whether `handleInstallAuthModule` should map missing package.json read failure to a friendly unsupported message
+- Fix the smallest root cause
+- Add tests
+- Re-run live smoke item 14
+
+**Non-goals:**
+- No broad file API redesign unless necessary
+- No auth-module template changes
+- No backend changes unless triage proves API semantics are the root cause
+
+**Acceptance checks:**
+- [ ] Missing package.json produces friendly eligibility message instead of raw error
+- [ ] Error message matches expected UX copy (or approved equivalent)
+- [ ] Tests added and passing
+- [ ] Live smoke item 14 re-run and PASS
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-MODULE-03B. Parent: AUTH-MODULE-03.

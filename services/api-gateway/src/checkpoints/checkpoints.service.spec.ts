@@ -16,6 +16,7 @@ describe('CheckpointsService (PHASE-68B)', () => {
     const mockGitCheckpointService = {
       getSessionTimeline: jest.fn(),
       getCheckpointByHash: jest.fn(),
+      recordCheckpoint: jest.fn(),
     };
 
     const mockSessionService = {
@@ -25,6 +26,7 @@ describe('CheckpointsService (PHASE-68B)', () => {
     const mockContainerManagerClient = {
       getGitDiff: jest.fn(),
       revertToCheckpoint: jest.fn(),
+      createManualCheckpoint: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -269,6 +271,81 @@ describe('CheckpointsService (PHASE-68B)', () => {
       await expect(
         service.revertToCheckpoint(sessionId, commitHash, 'user-456'),
       ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('createManualCheckpoint', () => {
+    it('forwards allowEmpty=true and records checkpoint when commit hash is returned', async () => {
+      const sessionId = 'session-123';
+      const userId = 'user-456';
+      const mockSession = {
+        id: sessionId,
+        userId,
+        terminatedAt: null,
+      };
+      const result = {
+        message: 'Changes committed successfully',
+        commitHash: 'abc123def456789012345678901234567890abcd',
+        filesChanged: 0,
+      };
+
+      sessionService.getSessionById.mockResolvedValue(mockSession as any);
+      containerManagerClient.createManualCheckpoint.mockResolvedValue(result as any);
+      gitCheckpointService.getCheckpointByHash.mockResolvedValue(null);
+
+      const response = await service.createManualCheckpoint(
+        sessionId,
+        userId,
+        0,
+        'Auth Module: pre-install snapshot',
+        true,
+      );
+
+      expect(containerManagerClient.createManualCheckpoint).toHaveBeenCalledWith(
+        sessionId,
+        userId,
+        0,
+        'Auth Module: pre-install snapshot',
+        true,
+      );
+      expect(gitCheckpointService.recordCheckpoint).toHaveBeenCalledWith({
+        sessionId,
+        commitHash: result.commitHash,
+        filesChanged: 0,
+        messageNumber: 0,
+        description: 'Auth Module: pre-install snapshot',
+      });
+      expect(response).toEqual(result);
+    });
+
+    it('does not record checkpoint when commitHash is null', async () => {
+      const sessionId = 'session-123';
+      const userId = 'user-456';
+      const mockSession = {
+        id: sessionId,
+        userId,
+        terminatedAt: null,
+      };
+      const result = {
+        message: 'No changes to commit',
+        commitHash: null,
+        filesChanged: 0,
+      };
+
+      sessionService.getSessionById.mockResolvedValue(mockSession as any);
+      containerManagerClient.createManualCheckpoint.mockResolvedValue(result as any);
+
+      const response = await service.createManualCheckpoint(
+        sessionId,
+        userId,
+        0,
+        'Auth Module: pre-install snapshot',
+        true,
+      );
+
+      expect(gitCheckpointService.getCheckpointByHash).not.toHaveBeenCalled();
+      expect(gitCheckpointService.recordCheckpoint).not.toHaveBeenCalled();
+      expect(response).toEqual(result);
     });
   });
 });

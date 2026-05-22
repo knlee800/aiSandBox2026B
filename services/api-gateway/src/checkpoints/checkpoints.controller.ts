@@ -33,7 +33,7 @@ export class CheckpointsController {
   @HttpCode(HttpStatus.CREATED)
   async createManualCheckpoint(
     @Param('id') id: string,
-    @Body() body: { messageNumber?: number; description?: string },
+    @Body() body: { messageNumber?: number; description?: string; allowEmpty?: boolean },
     @Request() req,
   ): Promise<{ message: string; commitHash: string; filesChanged: number }> {
     const userId = req.user.userId;
@@ -47,6 +47,7 @@ export class CheckpointsController {
       userId,
       typeof body?.messageNumber === 'number' ? body.messageNumber : 0,
       body?.description,
+      body?.allowEmpty === true,
     );
   }
 

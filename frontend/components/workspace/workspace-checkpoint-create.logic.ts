@@ -5,6 +5,7 @@ interface CreateWorkspaceCheckpointArgs {
   sessionId: string;
   userId: string;
   description?: string;
+  allowEmpty?: boolean;
   fetchImpl?: typeof fetch;
 }
 
@@ -26,6 +27,9 @@ export async function createWorkspaceCheckpoint(
 
   if (trimmedDescription) {
     body.description = trimmedDescription;
+  }
+  if (args.allowEmpty === true) {
+    body.allowEmpty = true;
   }
 
   const response = await fetchImpl(

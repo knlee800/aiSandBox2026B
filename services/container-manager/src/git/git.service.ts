@@ -62,7 +62,13 @@ export class GitService {
     };
   }
 
-  async commit(sessionId: string, userId: string, messageNumber: number, description?: string) {
+  async commit(
+    sessionId: string,
+    userId: string,
+    messageNumber: number,
+    description?: string,
+    allowEmpty?: boolean,
+  ) {
     await this.ensureGitInitializedInContainer(sessionId);
 
     const statusResult = await this.sessionsService.execInContainer(
@@ -78,14 +84,44 @@ export class GitService {
       .split('\n')
       .map((line) => line.trim())
       .filter((line) => line.length > 0);
+    const commitMessage = description || `Auto-commit: Message ${messageNumber}`;
     if (changedEntries.length === 0) {
+      if (!allowEmpty) {
+        return {
+          message: 'No changes to commit',
+          commitHash: null,
+        };
+      }
+
+      const emptyCommitResult = await this.sessionsService.execInContainer(
+        sessionId,
+        ['sh', '-lc', 'git commit --allow-empty -m "$COMMIT_MESSAGE"'],
+        '/workspace',
+        { COMMIT_MESSAGE: commitMessage },
+      );
+      if (emptyCommitResult.exitCode !== 0) {
+        throw new Error(emptyCommitResult.stderr || 'Failed to create commit');
+      }
+
+      const revParseResult = await this.sessionsService.execInContainer(
+        sessionId,
+        ['sh', '-lc', 'git rev-parse HEAD'],
+        '/workspace',
+      );
+      if (revParseResult.exitCode !== 0) {
+        throw new Error(revParseResult.stderr || 'Failed to resolve commit hash');
+      }
+      const commitHash = revParseResult.stdout.trim();
+
+      await this.createCheckpoint(sessionId, userId, messageNumber, commitHash, commitMessage, 0);
+
       return {
-        message: 'No changes to commit',
-        commitHash: null,
+        message: 'Changes committed successfully',
+        commitHash,
+        filesChanged: 0,
       };
     }
 
-    const commitMessage = description || `Auto-commit: Message ${messageNumber}`;
     const addResult = await this.sessionsService.execInContainer(
       sessionId,
       ['sh', '-lc', 'git add -A'],

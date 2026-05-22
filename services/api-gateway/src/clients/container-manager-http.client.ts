@@ -611,6 +611,7 @@ export class ContainerManagerHttpClient implements OnModuleInit {
     userId: string,
     messageNumber: number = 0,
     description?: string,
+    allowEmpty?: boolean,
   ): Promise<GitCommitResult> {
     if (this.isDisabled) {
       throw new Error(
@@ -622,12 +623,16 @@ export class ContainerManagerHttpClient implements OnModuleInit {
       userId: string;
       messageNumber: number;
       description?: string;
+      allowEmpty?: boolean;
     } = {
       userId,
       messageNumber,
     };
     if (description && description.trim()) {
       payload.description = description.trim();
+    }
+    if (allowEmpty === true) {
+      payload.allowEmpty = true;
     }
 
     try {

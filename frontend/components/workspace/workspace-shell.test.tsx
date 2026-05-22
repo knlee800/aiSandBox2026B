@@ -4933,6 +4933,29 @@ describe('auth module install flow integration — AUTH-MODULE-01D', () => {
     assert.ok(checkpointIndex < applyIndex);
   });
 
+  test('handleInstallAuthModule passes allowEmpty: true for pre-install checkpoint', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(
+      pageSource,
+      /const preinstallResult: WorkspaceCheckpointCreateResult = await createWorkspaceCheckpoint\(\{/,
+    );
+    assert.match(pageSource, /allowEmpty: true,/);
+  });
+
+  test('handleInstallAuthModule checks preinstallResult.commitHash before loading checkpoints', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    const guardIndex = pageSource.indexOf('if (!preinstallResult.commitHash) {');
+    const loadIndex = pageSource.indexOf('await loadCheckpoints(selectedSessionId);', guardIndex);
+
+    assert.ok(guardIndex >= 0);
+    assert.ok(loadIndex >= 0);
+    assert.ok(guardIndex < loadIndex);
+    assert.match(
+      pageSource,
+      /appendAssistantMessage\('Auth module installation failed: unable to create pre-install checkpoint\.'\);/,
+    );
+  });
+
   test('handleInstallAuthModule routes generated actions through maybeApplyExecutionFileActions', () => {
     const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
     assert.match(pageSource, /await maybeApplyExecutionFileActions\(executionId, 'status'\);/);
