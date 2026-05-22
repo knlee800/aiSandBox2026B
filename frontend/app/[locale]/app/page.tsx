@@ -4586,17 +4586,15 @@ export default function AppPage() {
       return;
     }
 
-    let packageJsonContent: string;
+    let packageJsonContent: string | null = null;
     try {
       const packageJsonResponse = await readWorkspaceFile({
         sessionId: selectedSessionId,
         filePath: 'package.json',
       });
       packageJsonContent = packageJsonResponse.content;
-    } catch (error) {
-      const detail = error instanceof Error ? error.message : String(error);
-      appendAssistantMessage(`Auth module installation failed: unable to read package.json (${detail}).`);
-      return;
+    } catch {
+      packageJsonContent = null;
     }
 
     let prismaSchemaContent: string | null = null;
@@ -4637,7 +4635,11 @@ export default function AppPage() {
     });
 
     if (!eligibility.eligible) {
-      appendAssistantMessage(`Auth module installation is not available: ${eligibility.reason}`);
+      const unsupportedReasonMessage =
+        eligibility.code === 'MISSING_PACKAGE_JSON' || eligibility.code === 'MALFORMED_PACKAGE_JSON'
+          ? "This workspace doesn't look like a Next.js project yet. Create or open a Next.js project first, then try adding authentication again."
+          : `Auth module installation is not available: ${eligibility.reason}`;
+      appendAssistantMessage(unsupportedReasonMessage);
       return;
     }
 
@@ -4672,7 +4674,8 @@ export default function AppPage() {
       actions = generateAuthModuleFileActions({
         template,
         eligibility,
-        packageJsonContent,
+        // eligible === true guarantees packageJsonContent is a valid package.json string.
+        packageJsonContent: packageJsonContent!,
         prismaSchemaContent,
         dotEnvExampleContent,
       });

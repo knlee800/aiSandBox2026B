@@ -4914,10 +4914,33 @@ describe('auth module install flow integration — AUTH-MODULE-01D', () => {
     assert.match(pageSource, /const eligibility: AuthModuleEligibilityResult = detectAuthModuleEligibility\(\{/);
   });
 
+  test('handleInstallAuthModule does not surface raw package.json read failure text', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.doesNotMatch(pageSource, /unable to read package\.json/);
+  });
+
+  test('handleInstallAuthModule uses friendly unsupported-project message for missing package.json', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(
+      pageSource,
+      /This workspace doesn't look like a Next\.js project yet\. Create or open a Next\.js project first, then try adding authentication again\./,
+    );
+  });
+
+  test('handleInstallAuthModule checks MISSING_PACKAGE_JSON eligibility code', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(pageSource, /eligibility\.code === 'MISSING_PACKAGE_JSON'/);
+  });
+
+  test('handleInstallAuthModule checks MALFORMED_PACKAGE_JSON eligibility code', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(pageSource, /eligibility\.code === 'MALFORMED_PACKAGE_JSON'/);
+  });
+
   test('handleInstallAuthModule generates auth module file actions', () => {
     const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
     assert.match(pageSource, /actions = generateAuthModuleFileActions\(\{/);
-    assert.match(pageSource, /template,\s+eligibility,\s+packageJsonContent,\s+prismaSchemaContent,\s+dotEnvExampleContent,/);
+    assert.match(pageSource, /packageJsonContent: packageJsonContent!/);
   });
 
   test('handleInstallAuthModule creates pre-install checkpoint before apply', () => {
