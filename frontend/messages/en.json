@@ -157,6 +157,10 @@
     "apply": "Apply",
     "skip": "Skip"
   },
+  "authModule": {
+    "installing": "Installing auth module — preparing your workspace...",
+    "notNextJsProject": "This workspace doesn't look like a Next.js project yet. Create or open a Next.js project first, then try adding authentication again."
+  },
   "errors": {
     "unknown": "Something went wrong.",
     "network": "Network error. Please try again.",

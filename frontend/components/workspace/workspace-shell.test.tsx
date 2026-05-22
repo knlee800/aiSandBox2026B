@@ -4895,6 +4895,53 @@ describe('workspace visual edit i18n wiring — I18N-SHELL-01', () => {
   });
 });
 
+describe('auth module i18n wiring — I18N-PAGE-01', () => {
+  test('locale files define required authModule keys', () => {
+    const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));
+    const zhTw = JSON.parse(readFileSync(new URL('../../messages/zh-TW.json', import.meta.url), 'utf8'));
+    const zhCn = JSON.parse(readFileSync(new URL('../../messages/zh-CN.json', import.meta.url), 'utf8'));
+    const requiredAuthModuleKeys = ['installing', 'notNextJsProject'] as const;
+
+    for (const key of requiredAuthModuleKeys) {
+      assert.ok(typeof en.authModule?.[key] === 'string' && en.authModule[key].length > 0);
+      assert.ok(typeof zhTw.authModule?.[key] === 'string' && zhTw.authModule[key].length > 0);
+      assert.ok(typeof zhCn.authModule?.[key] === 'string' && zhCn.authModule[key].length > 0);
+    }
+  });
+
+  test('page source imports locale files and defines getAuthModuleMessages helper', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(pageSource, /import enMessages from '@\/messages\/en\.json';/);
+    assert.match(pageSource, /import zhTwMessages from '@\/messages\/zh-TW\.json';/);
+    assert.match(pageSource, /import zhCnMessages from '@\/messages\/zh-CN\.json';/);
+    assert.match(
+      pageSource,
+      /function getAuthModuleMessages\(locale: string\): typeof enMessages\.authModule \{/,
+    );
+    assert.match(pageSource, /if \(locale === 'zh-TW'\) return zhTwMessages\.authModule;/);
+    assert.match(pageSource, /if \(locale === 'zh-CN'\) return zhCnMessages\.authModule;/);
+    assert.match(pageSource, /return enMessages\.authModule;/);
+  });
+
+  test('page source removes targeted hardcoded English auth-module strings', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.doesNotMatch(pageSource, /Installing auth module — preparing your workspace\.\.\./);
+    assert.doesNotMatch(
+      pageSource,
+      /This workspace doesn't look like a Next\.js project yet\. Create or open a Next\.js project first, then try adding authentication again\./,
+    );
+  });
+
+  test('handleInstallAuthModule uses authModuleMessages for installing and not-nextjs branch', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(pageSource, /appendAssistantMessage\(authModuleMessages\.installing\);/);
+    assert.match(
+      pageSource,
+      /eligibility\.code === 'MISSING_PACKAGE_JSON' \|\| eligibility\.code === 'MALFORMED_PACKAGE_JSON'\s*\?\s*authModuleMessages\.notNextJsProject/,
+    );
+  });
+});
+
 describe('workspace visual edit checkpoint labeling — UX-IA-17A', () => {
   test('page source defines VISUAL_EDIT_CHECKPOINT_DESCRIPTION', () => {
     const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
@@ -4976,12 +5023,9 @@ describe('auth module install flow integration — AUTH-MODULE-01D', () => {
     assert.doesNotMatch(pageSource, /unable to read package\.json/);
   });
 
-  test('handleInstallAuthModule uses friendly unsupported-project message for missing package.json', () => {
+  test('handleInstallAuthModule uses locale-backed unsupported-project message for missing package.json', () => {
     const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
-    assert.match(
-      pageSource,
-      /This workspace doesn't look like a Next\.js project yet\. Create or open a Next\.js project first, then try adding authentication again\./,
-    );
+    assert.match(pageSource, /authModuleMessages\.notNextJsProject/);
   });
 
   test('handleInstallAuthModule checks MISSING_PACKAGE_JSON eligibility code', () => {
@@ -5098,12 +5142,9 @@ describe('auth module intent recognition — AUTH-MODULE-01E', () => {
     assert.match(branchSource, /return;/);
   });
 
-  test('handleInstallAuthModule posts installing status message', () => {
+  test('handleInstallAuthModule posts locale-backed installing status message', () => {
     const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
-    assert.match(
-      pageSource,
-      /appendAssistantMessage\('Installing auth module — preparing your workspace\.\.\.'\);/,
-    );
+    assert.match(pageSource, /appendAssistantMessage\(authModuleMessages\.installing\);/);
   });
 
   test('completion summary mentions setup steps and SETUP-AUTH.md', () => {

@@ -24897,3 +24897,71 @@ Also wire nearby existing buttons:
 - [ ] No unrelated files changed
 
 **Reference:** See TASKS.md -> I18N-SHELL-01.
+
+---
+
+### I18N-PAGE-01: Wire Auth Module Chat Message i18n Keys
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** I18N-PAGE-01
+**Family:** I18N
+**Priority:** Medium
+**Risk:** Medium
+**Nature:** FRONTEND-ONLY
+**Depends on:** AUTH-MODULE-03 (COMPLETE and LOCKED), I18N-SHELL-01 (COMPLETE and LOCKED)
+**Checkpoint:** `docs/I18N-PAGE-01-CHECKPOINT.md`
+
+**Context:**
+I18N-SHELL-01 is COMPLETE and LOCKED. A read-only multilingual audit found `page.tsx` has hardcoded user-facing auth-module chat messages. This is the next bounded multilingual cleanup slice following the same project invariant: all user-facing UI text must be multilingual-first across all 3 supported locales.
+
+**Primary files:**
+- `frontend/app/[locale]/app/page.tsx`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+**Objective:**
+Replace hardcoded English auth-module chat messages in `page.tsx` with locale-backed strings in all 3 supported languages.
+
+**Target user-facing strings:**
+1. `"Installing auth module — preparing your workspace..."`
+2. `"This workspace doesn't look like a Next.js project yet. Create or open a Next.js project first, then try adding authentication again."`
+
+**Scope:**
+- Add `authModule.*` locale keys to all 3 locale files (`en.json`, `zh-TW.json`, `zh-CN.json`).
+- Add a minimal locale-message selector in `page.tsx` following the existing manual locale-switch pattern used in `workspace-shell.tsx`.
+- Replace the two target hardcoded strings in `handleInstallAuthModule` with locale values.
+- Add/update tests/source assertions proving:
+  - new keys exist in all 3 locale files
+  - `page.tsx` imports/uses locale messages or a locale selector
+  - the two target strings are not hardcoded in `page.tsx` anymore
+
+**Non-goals:**
+- No `workspace-shell.tsx` changes unless tests require source assertions only
+- No auth module logic changes
+- No backend changes
+- No route changes
+- No checkpoint-description translation
+- No broad `page.tsx` i18n migration
+- No `recoveryCopy.ts` work
+- No new dependencies
+- No UI redesign
+- No TASK-73C-1 work
+
+**Validation plan:**
+- `npx tsc --noEmit` from `frontend/`
+- `npm test` from `frontend/`
+- `ReadLints` on touched files
+- `npm run build` only if stable; if Google Fonts TLS/cert issue appears, report as environmental and restore `frontend/tsconfig.tsbuildinfo`
+
+**Acceptance checks:**
+- [x] Both target strings replaced with locale-switch keys in `page.tsx`
+- [x] `authModule.*` keys present in `en.json`, `zh-TW.json`, `zh-CN.json`
+- [x] Locale-message selector added to `page.tsx` following existing pattern
+- [x] Tests/assertions prove no hardcoded English for the two target strings
+- [x] `npx tsc --noEmit` passes
+- [x] `npm test` passes — 451 tests, 0 failed
+- [x] No unrelated files changed
+
+**Reference:** See TASKS.md -> I18N-PAGE-01.

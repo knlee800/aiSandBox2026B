@@ -133,6 +133,9 @@ import {
   generateAuthModuleFileActions,
 } from '@/lib/auth-module/auth-module-generator';
 import { AUTH_TEMPLATES_V1 } from '@/lib/auth-module/auth-template-registry';
+import enMessages from '@/messages/en.json';
+import zhTwMessages from '@/messages/zh-TW.json';
+import zhCnMessages from '@/messages/zh-CN.json';
 
 function getCsrfTokenFromCookie(): string | null {
   const csrfCookie = document.cookie
@@ -191,6 +194,12 @@ const CHAT_MODEL_OPTIONS = [
     label: 'DeepSeek - deepseek-chat',
   },
 ] as const;
+
+function getAuthModuleMessages(locale: string): typeof enMessages.authModule {
+  if (locale === 'zh-TW') return zhTwMessages.authModule;
+  if (locale === 'zh-CN') return zhCnMessages.authModule;
+  return enMessages.authModule;
+}
 
 interface WorkspacePromptNamedFileContent {
   path: string;
@@ -855,6 +864,7 @@ export default function AppPage() {
   const pathname = usePathname();
   const params = useParams();
   const locale = params.locale as string;
+  const authModuleMessages = getAuthModuleMessages(locale);
 
   const [authLoading, setAuthLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
@@ -4549,7 +4559,7 @@ export default function AppPage() {
         },
       ]);
     };
-    appendAssistantMessage('Installing auth module — preparing your workspace...');
+    appendAssistantMessage(authModuleMessages.installing);
 
     if (!userId) {
       appendAssistantMessage('Auth module installation failed: missing authenticated user.');
@@ -4637,7 +4647,7 @@ export default function AppPage() {
     if (!eligibility.eligible) {
       const unsupportedReasonMessage =
         eligibility.code === 'MISSING_PACKAGE_JSON' || eligibility.code === 'MALFORMED_PACKAGE_JSON'
-          ? "This workspace doesn't look like a Next.js project yet. Create or open a Next.js project first, then try adding authentication again."
+          ? authModuleMessages.notNextJsProject
           : `Auth module installation is not available: ${eligibility.reason}`;
       appendAssistantMessage(unsupportedReasonMessage);
       return;

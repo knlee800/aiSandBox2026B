@@ -157,6 +157,10 @@
     "apply": "套用",
     "skip": "略過"
   },
+  "authModule": {
+    "installing": "正在安裝驗證模組 — 正在準備你的工作區...",
+    "notNextJsProject": "這個工作區看起來還不是 Next.js 專案。請先建立或開啟 Next.js 專案，然後再嘗試新增驗證功能。"
+  },
   "errors": {
     "unknown": "發生未知錯誤。",
     "network": "網路錯誤，請稍後再試。",

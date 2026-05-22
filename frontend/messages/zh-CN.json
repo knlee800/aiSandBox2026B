@@ -157,6 +157,10 @@
     "apply": "应用",
     "skip": "跳过"
   },
+  "authModule": {
+    "installing": "正在安装认证模块 — 正在准备你的工作区...",
+    "notNextJsProject": "这个工作区看起来还不是 Next.js 项目。请先创建或打开 Next.js 项目，然后再尝试添加认证功能。"
+  },
   "errors": {
     "unknown": "发生未知错误。",
     "network": "网络错误，请稍后重试。",
