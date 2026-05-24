@@ -15,7 +15,17 @@
     "send": "发送",
     "search": "搜索",
     "refresh": "刷新",
-    "refreshing": "刷新中..."
+    "refreshing": "刷新中...",
+    "creating": "创建中...",
+    "renaming": "重命名中...",
+    "deleting": "删除中...",
+    "opening": "打开中...",
+    "moving": "移动中...",
+    "forking": "分叉中...",
+    "saving": "保存中...",
+    "restoring": "恢复中...",
+    "exporting": "导出中...",
+    "importing": "导入中..."
   },
   "login": {
     "title": "AI 沙盒",
@@ -103,7 +113,16 @@
     "noTemplates": "暂无模板。",
     "buildAnything": "构建任何内容",
     "describeBuild": "描述你想构建的内容...",
-    "start": "开始"
+    "start": "开始",
+    "selectWorkspace": "选择工作区",
+    "newWorkspaceName": "新工作区名称",
+    "createWorkspace": "创建工作区",
+    "renameSelectedWorkspace": "重命名所选工作区",
+    "renameWorkspace": "重命名工作区",
+    "deleteWorkspace": "删除工作区",
+    "selectTargetWorkspace": "选择目标工作区",
+    "noOtherWorkspaces": "没有其他可用工作区",
+    "moveToWorkspace": "移动到工作区"
   },
   "preview": {
     "livePreview": "实时预览",
@@ -124,7 +143,18 @@
     "selectElement": "选取元素",
     "pickerActive": "选取模式 — 在预览中点选元素",
     "elementSelected": "已选取元素",
-    "deselectElement": "清除选取"
+    "deselectElement": "清除选取",
+    "newProjectName": "新项目名称",
+    "createProject": "创建项目",
+    "selectProject": "选择项目",
+    "openProject": "打开项目",
+    "sharingVisibilityOptional": "分享 / 可见性（可选）",
+    "view": "查看",
+    "fork": "分叉",
+    "saveSnapshot": "保存快照",
+    "restoreSnapshot": "恢复快照",
+    "downloadProject": "下载项目",
+    "importProject": "导入项目"
   },
   "tabs": {
     "preview": "预览",

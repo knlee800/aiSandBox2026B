@@ -25105,3 +25105,94 @@ From `C:\Users\knlee\aiSandBox2026B\frontend`:
 
 **Reference:** See TASKS.md -> I18N-SHELL-03.
 **Checkpoint:** `docs/I18N-SHELL-03-CHECKPOINT.md`
+
+---
+
+### I18N-SHELL-04: Workspace/Project Modal Action Button Labels i18n
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** I18N-SHELL-04
+**Family:** I18N
+**Priority:** Medium
+**Risk:** Low-Medium
+**Nature:** FRONTEND-ONLY
+**Depends on:** I18N-SHELL-03 (COMPLETE and LOCKED)
+
+**Context:**
+I18N-SHELL-01, I18N-PAGE-01, I18N-SHELL-02, and I18N-SHELL-03 are COMPLETE and LOCKED. A read-only I18N re-audit found remaining hardcoded English user-facing strings in `WorkspaceProjectPanel` inside `workspace-shell.tsx` covering workspace/project modal action button labels, placeholders, and loading states.
+
+**Primary files:**
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+**Objective:**
+Replace hardcoded English workspace/project management labels, placeholders, dropdown defaults, and button loading states in `WorkspaceProjectPanel` with locale-backed strings.
+
+**Target user-facing strings:**
+1. "Select a workspace"
+2. "New workspace name"
+3. "Creating..." / "Create Workspace"
+4. "Rename selected workspace"
+5. "Renaming..." / "Rename Workspace"
+6. "Deleting..." / "Delete Workspace"
+7. "New project name"
+8. "Creating..." / "Create Project"
+9. "Select a project"
+10. "Opening..." / "Open Project"
+11. "Select target workspace"
+12. "No other workspaces available"
+13. "Moving..." / "Move to Workspace"
+14. "Sharing / Visibility (optional)"
+15. "Loading..." / "View"
+16. "Forking..." / "Fork"
+17. "Saving..." / "Save Snapshot"
+18. "Restoring..." / "Restore Snapshot"
+19. "Exporting..." / "Download Project"
+20. "Importing..." / "Import Project"
+
+**Scope:**
+- `WorkspaceProjectPanel` only
+- Extend existing workspace-shell locale-switch pattern
+- Add missing `workspace.*` or `project.*` keys in all 3 locale files
+- Reuse existing `common.*` keys if already present and appropriate
+- Wire `WorkspaceProjectPanel` through message props, following the `workspaceMessages` pattern used by I18N-SHELL-03
+- Preserve layout, classNames, behavior, and `data-testid` values
+- Add/update source assertions proving:
+  - required keys exist in all 3 locale files
+  - target hardcoded English strings are removed from `WorkspaceProjectPanel` target areas
+  - `WorkspaceProjectPanel` uses locale-backed message values
+
+**Non-goals:**
+- No `recoveryCopy.ts` migration
+- No status panel heading/body/action strings
+- No `page.tsx` error/feedback strings
+- No stop/build/exec button labels
+- No checkpoint/history/revert UI strings
+- No backend changes
+- No UI redesign or layout changes
+- No new dependencies
+- No TASK-73C-1 work
+
+**Validation plan:**
+From `C:\Users\knlee\aiSandBox2026B\frontend`:
+- `npx tsc --noEmit`
+- `npm test`
+- ReadLints on touched files
+- `npm run build` only if stable; if Google Fonts TLS/cert issue appears, report as environmental and restore `frontend/tsconfig.tsbuildinfo`
+
+**Acceptance checks:**
+- [x] No new hardcoded user-facing English copy for the 20 target strings
+- [x] `frontend/messages/en.json` updated with all required keys
+- [x] `frontend/messages/zh-TW.json` updated with matching keys
+- [x] `frontend/messages/zh-CN.json` updated with matching keys
+- [x] `WorkspaceProjectPanel` uses locale message values for all target strings
+- [x] Tests/source assertions confirm keys present and hardcoded strings removed
+- [x] `npx tsc --noEmit` passes
+- [x] `npm test` passes — 461 tests, 0 failed
+- [x] No unrelated files changed
+
+**Reference:** See TASKS.md -> I18N-SHELL-04.
+**Checkpoint:** `docs/I18N-SHELL-04-CHECKPOINT.md`

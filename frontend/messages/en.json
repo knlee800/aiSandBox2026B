@@ -15,7 +15,17 @@
     "send": "Send",
     "search": "Search",
     "refresh": "Refresh",
-    "refreshing": "Refreshing..."
+    "refreshing": "Refreshing...",
+    "creating": "Creating...",
+    "renaming": "Renaming...",
+    "deleting": "Deleting...",
+    "opening": "Opening...",
+    "moving": "Moving...",
+    "forking": "Forking...",
+    "saving": "Saving...",
+    "restoring": "Restoring...",
+    "exporting": "Exporting...",
+    "importing": "Importing..."
   },
   "login": {
     "title": "AI Sandbox",
@@ -103,7 +113,16 @@
     "noTemplates": "No templates available.",
     "buildAnything": "Build anything",
     "describeBuild": "Describe what you want to build...",
-    "start": "Start"
+    "start": "Start",
+    "selectWorkspace": "Select a workspace",
+    "newWorkspaceName": "New workspace name",
+    "createWorkspace": "Create Workspace",
+    "renameSelectedWorkspace": "Rename selected workspace",
+    "renameWorkspace": "Rename Workspace",
+    "deleteWorkspace": "Delete Workspace",
+    "selectTargetWorkspace": "Select target workspace",
+    "noOtherWorkspaces": "No other workspaces available",
+    "moveToWorkspace": "Move to Workspace"
   },
   "preview": {
     "livePreview": "Live Preview",
@@ -124,7 +143,18 @@
     "selectElement": "Select Element",
     "pickerActive": "Picker active — click an element in the preview",
     "elementSelected": "Element selected",
-    "deselectElement": "Clear selection"
+    "deselectElement": "Clear selection",
+    "newProjectName": "New project name",
+    "createProject": "Create Project",
+    "selectProject": "Select a project",
+    "openProject": "Open Project",
+    "sharingVisibilityOptional": "Sharing / Visibility (optional)",
+    "view": "View",
+    "fork": "Fork",
+    "saveSnapshot": "Save Snapshot",
+    "restoreSnapshot": "Restore Snapshot",
+    "downloadProject": "Download Project",
+    "importProject": "Import Project"
   },
   "tabs": {
     "preview": "Preview",

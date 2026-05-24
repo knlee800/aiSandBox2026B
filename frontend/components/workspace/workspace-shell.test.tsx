@@ -5031,6 +5031,208 @@ describe('workspace session and preview controls i18n wiring — I18N-SHELL-03',
   });
 });
 
+describe('workspace/project modal action button labels i18n wiring — I18N-SHELL-04', () => {
+  test('locale files define required workspace/project/common keys for workspace project panel actions', () => {
+    const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));
+    const zhTw = JSON.parse(readFileSync(new URL('../../messages/zh-TW.json', import.meta.url), 'utf8'));
+    const zhCn = JSON.parse(readFileSync(new URL('../../messages/zh-CN.json', import.meta.url), 'utf8'));
+    const requiredWorkspaceKeys = [
+      'selectWorkspace',
+      'newWorkspaceName',
+      'createWorkspace',
+      'renameSelectedWorkspace',
+      'renameWorkspace',
+      'deleteWorkspace',
+      'selectTargetWorkspace',
+      'noOtherWorkspaces',
+      'moveToWorkspace',
+    ] as const;
+    const requiredProjectKeys = [
+      'newProjectName',
+      'createProject',
+      'selectProject',
+      'openProject',
+      'sharingVisibilityOptional',
+      'view',
+      'fork',
+      'saveSnapshot',
+      'restoreSnapshot',
+      'downloadProject',
+      'importProject',
+    ] as const;
+    const requiredCommonKeys = [
+      'creating',
+      'renaming',
+      'deleting',
+      'opening',
+      'moving',
+      'loading',
+      'forking',
+      'saving',
+      'restoring',
+      'exporting',
+      'importing',
+    ] as const;
+
+    for (const key of requiredWorkspaceKeys) {
+      assert.ok(typeof en.workspace?.[key] === 'string' && en.workspace[key].length > 0);
+      assert.ok(typeof zhTw.workspace?.[key] === 'string' && zhTw.workspace[key].length > 0);
+      assert.ok(typeof zhCn.workspace?.[key] === 'string' && zhCn.workspace[key].length > 0);
+    }
+
+    for (const key of requiredProjectKeys) {
+      assert.ok(typeof en.project?.[key] === 'string' && en.project[key].length > 0);
+      assert.ok(typeof zhTw.project?.[key] === 'string' && zhTw.project[key].length > 0);
+      assert.ok(typeof zhCn.project?.[key] === 'string' && zhCn.project[key].length > 0);
+    }
+
+    for (const key of requiredCommonKeys) {
+      assert.ok(typeof en.common?.[key] === 'string' && en.common[key].length > 0);
+      assert.ok(typeof zhTw.common?.[key] === 'string' && zhTw.common[key].length > 0);
+      assert.ok(typeof zhCn.common?.[key] === 'string' && zhCn.common[key].length > 0);
+    }
+  });
+
+  test('workspace shell source removes targeted hardcoded English in workspace project panel action areas', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.doesNotMatch(
+      shellSource,
+      /\{props\.workspaceActionState === 'creating' \? 'Creating\.\.\.' : 'Create Workspace'\}/,
+    );
+    assert.doesNotMatch(
+      shellSource,
+      /\{props\.workspaceActionState === 'renaming' \? 'Renaming\.\.\.' : 'Rename Workspace'\}/,
+    );
+    assert.doesNotMatch(
+      shellSource,
+      /\{props\.workspaceActionState === 'deleting' \? 'Deleting\.\.\.' : 'Delete Workspace'\}/,
+    );
+    assert.doesNotMatch(
+      shellSource,
+      /\{props\.actionState === 'creating' \? 'Creating\.\.\.' : 'Create Project'\}/,
+    );
+    assert.doesNotMatch(shellSource, /<option value="">Select a project<\/option>/);
+    assert.doesNotMatch(shellSource, /\{props\.actionState === 'opening' \? 'Opening\.\.\.' : 'Open Project'\}/);
+    assert.doesNotMatch(shellSource, /\? 'Select target workspace' : 'No other workspaces available'/);
+    assert.doesNotMatch(shellSource, /\{props\.actionState === 'moving' \? 'Moving\.\.\.' : 'Move to Workspace'\}/);
+    assert.doesNotMatch(shellSource, /<p className="text-xs font-semibold text-gray-700">Sharing \/ Visibility \(optional\)<\/p>/);
+    assert.doesNotMatch(
+      shellSource,
+      /\{props\.publicProjectActionState === 'viewing' \? 'Loading\.\.\.' : 'View'\}/,
+    );
+    assert.doesNotMatch(
+      shellSource,
+      /\{props\.publicProjectActionState === 'forking' \? 'Forking\.\.\.' : 'Fork'\}/,
+    );
+    assert.doesNotMatch(shellSource, /\{props\.actionState === 'saving' \? 'Saving\.\.\.' : 'Save Snapshot'\}/);
+    assert.doesNotMatch(
+      shellSource,
+      /\{props\.actionState === 'restoring' \? 'Restoring\.\.\.' : 'Restore Snapshot'\}/,
+    );
+    assert.doesNotMatch(
+      shellSource,
+      /\{props\.actionState === 'exporting' \? 'Exporting\.\.\.' : 'Download Project'\}/,
+    );
+    assert.doesNotMatch(
+      shellSource,
+      /\{props\.actionState === 'importing' \? 'Importing\.\.\.' : 'Import Project'\}/,
+    );
+  });
+
+  test('workspace project panel and snapshot actions use locale-backed message values', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.match(shellSource, /workspaceMessages=\{workspaceMessages\}/);
+    assert.match(shellSource, /projectMessages=\{projectPanelMessages\}/);
+    assert.match(shellSource, /commonMessages=\{commonMessages\}/);
+    assert.match(shellSource, /\{props\.workspaceMessages\.selectWorkspace\}/);
+    assert.match(shellSource, /placeholder=\{props\.workspaceMessages\.newWorkspaceName\}/);
+    assert.match(shellSource, /placeholder=\{props\.workspaceMessages\.renameSelectedWorkspace\}/);
+    assert.match(shellSource, /placeholder=\{props\.projectMessages\.newProjectName\}/);
+    assert.match(shellSource, /<option value="">\{props\.projectMessages\.selectProject\}<\/option>/);
+    assert.match(shellSource, /\?\s*props\.workspaceMessages\.selectTargetWorkspace/);
+    assert.match(shellSource, /:\s*props\.workspaceMessages\.noOtherWorkspaces/);
+    assert.match(shellSource, /\{props\.projectMessages\.sharingVisibilityOptional\}/);
+    assert.match(
+      shellSource,
+      /\{props\.workspaceActionState === 'creating'\s*\?\s*props\.commonMessages\.creating\s*:\s*props\.workspaceMessages\.createWorkspace\}/,
+    );
+    assert.match(
+      shellSource,
+      /\{props\.workspaceActionState === 'renaming'\s*\?\s*props\.commonMessages\.renaming\s*:\s*props\.workspaceMessages\.renameWorkspace\}/,
+    );
+    assert.match(
+      shellSource,
+      /\{props\.workspaceActionState === 'deleting'\s*\?\s*props\.commonMessages\.deleting\s*:\s*props\.workspaceMessages\.deleteWorkspace\}/,
+    );
+    assert.match(
+      shellSource,
+      /\{props\.actionState === 'creating'\s*\?\s*props\.commonMessages\.creating\s*:\s*props\.projectMessages\.createProject\}/,
+    );
+    assert.match(
+      shellSource,
+      /\{props\.actionState === 'opening'\s*\?\s*props\.commonMessages\.opening\s*:\s*props\.projectMessages\.openProject\}/,
+    );
+    assert.match(
+      shellSource,
+      /\{props\.actionState === 'moving'\s*\?\s*props\.commonMessages\.moving\s*:\s*props\.workspaceMessages\.moveToWorkspace\}/,
+    );
+    assert.match(
+      shellSource,
+      /\{props\.publicProjectActionState === 'viewing'\s*\?\s*props\.commonMessages\.loading\s*:\s*props\.projectMessages\.view\}/,
+    );
+    assert.match(
+      shellSource,
+      /\{props\.publicProjectActionState === 'forking'\s*\?\s*props\.commonMessages\.forking\s*:\s*props\.projectMessages\.fork\}/,
+    );
+    assert.match(
+      shellSource,
+      /\{props\.actionState === 'saving'\s*\?\s*props\.commonMessages\.saving\s*:\s*props\.projectMessages\.saveSnapshot\}/,
+    );
+    assert.match(
+      shellSource,
+      /\{props\.actionState === 'restoring'\s*\?\s*props\.commonMessages\.restoring\s*:\s*props\.projectMessages\.restoreSnapshot\}/,
+    );
+    assert.match(
+      shellSource,
+      /\{props\.actionState === 'exporting'\s*\?\s*props\.commonMessages\.exporting\s*:\s*props\.projectMessages\.downloadProject\}/,
+    );
+    assert.match(
+      shellSource,
+      /\{props\.actionState === 'importing'\s*\?\s*props\.commonMessages\.importing\s*:\s*props\.projectMessages\.importProject\}/,
+    );
+  });
+
+  test('workspace project panel keeps existing target data-testid values', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    const expectedTestIds = [
+      'history-workspace-select',
+      'history-workspace-create-input',
+      'history-workspace-create-button',
+      'history-workspace-rename-input',
+      'history-workspace-rename-button',
+      'history-workspace-delete-button',
+      'history-project-name-input',
+      'history-project-create-button',
+      'history-project-select',
+      'history-project-open-button',
+      'history-project-move-workspace-select',
+      'history-project-move-button',
+      'history-project-sharing-surface',
+      'history-public-project-view-button',
+      'history-public-project-fork-button',
+      'history-snapshot-save-button',
+      'history-snapshot-restore-button',
+      'history-archive-export-button',
+      'history-archive-import-label',
+      'history-archive-import-input',
+    ] as const;
+
+    for (const testId of expectedTestIds) {
+      assert.match(shellSource, new RegExp(`data-testid="${testId}"`));
+    }
+  });
+});
+
 describe('auth module i18n wiring — I18N-PAGE-01', () => {
   test('locale files define required authModule keys', () => {
     const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));

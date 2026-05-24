@@ -15,7 +15,17 @@
     "send": "發送",
     "search": "搜尋",
     "refresh": "重新整理",
-    "refreshing": "重新整理中..."
+    "refreshing": "重新整理中...",
+    "creating": "建立中...",
+    "renaming": "重新命名中...",
+    "deleting": "刪除中...",
+    "opening": "開啟中...",
+    "moving": "移動中...",
+    "forking": "分叉中...",
+    "saving": "儲存中...",
+    "restoring": "還原中...",
+    "exporting": "匯出中...",
+    "importing": "匯入中..."
   },
   "login": {
     "title": "AI 沙盒",
@@ -103,7 +113,16 @@
     "noTemplates": "目前沒有模板。",
     "buildAnything": "打造任何內容",
     "describeBuild": "描述你想建立的內容...",
-    "start": "開始"
+    "start": "開始",
+    "selectWorkspace": "選擇工作區",
+    "newWorkspaceName": "新工作區名稱",
+    "createWorkspace": "建立工作區",
+    "renameSelectedWorkspace": "重新命名已選工作區",
+    "renameWorkspace": "重新命名工作區",
+    "deleteWorkspace": "刪除工作區",
+    "selectTargetWorkspace": "選擇目標工作區",
+    "noOtherWorkspaces": "沒有其他可用工作區",
+    "moveToWorkspace": "移動到工作區"
   },
   "preview": {
     "livePreview": "即時預覽",
@@ -124,7 +143,18 @@
     "selectElement": "選取元素",
     "pickerActive": "選取模式 — 在預覽中點選元素",
     "elementSelected": "已選取元素",
-    "deselectElement": "清除選取"
+    "deselectElement": "清除選取",
+    "newProjectName": "新專案名稱",
+    "createProject": "建立專案",
+    "selectProject": "選擇專案",
+    "openProject": "開啟專案",
+    "sharingVisibilityOptional": "分享 / 可見性（選填）",
+    "view": "檢視",
+    "fork": "分叉",
+    "saveSnapshot": "儲存快照",
+    "restoreSnapshot": "還原快照",
+    "downloadProject": "下載專案",
+    "importProject": "匯入專案"
   },
   "tabs": {
     "preview": "預覽",

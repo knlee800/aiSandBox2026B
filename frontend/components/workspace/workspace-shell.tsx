@@ -835,8 +835,13 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
           onSelectPublicProjectId={props.onSelectPublicProjectId}
           onViewPublicProject={props.onViewPublicWorkspaceProject}
           onForkPublicProject={props.onForkPublicWorkspaceProject}
+          workspaceMessages={workspaceMessages}
+          projectMessages={projectPanelMessages}
+          commonMessages={commonMessages}
         />
         <HistorySnapshotPanel
+          projectMessages={projectPanelMessages}
+          commonMessages={commonMessages}
           selectedSessionId={props.selectedSessionId}
           listState={props.snapshotListState ?? 'idle'}
           actionState={props.snapshotActionState ?? 'idle'}
@@ -1691,6 +1696,32 @@ function HistoryProjectPanel(props: {
   onSelectPublicProjectId?: (projectId: string) => void;
   onViewPublicProject?: () => Promise<void>;
   onForkPublicProject?: () => Promise<void>;
+  workspaceMessages: Pick<
+    typeof enMessages.workspace,
+    | 'selectWorkspace'
+    | 'newWorkspaceName'
+    | 'createWorkspace'
+    | 'renameSelectedWorkspace'
+    | 'renameWorkspace'
+    | 'deleteWorkspace'
+    | 'selectTargetWorkspace'
+    | 'noOtherWorkspaces'
+    | 'moveToWorkspace'
+  >;
+  projectMessages: Pick<
+    typeof enMessages.project,
+    | 'newProjectName'
+    | 'createProject'
+    | 'selectProject'
+    | 'openProject'
+    | 'sharingVisibilityOptional'
+    | 'view'
+    | 'fork'
+  >;
+  commonMessages: Pick<
+    typeof enMessages.common,
+    'creating' | 'renaming' | 'deleting' | 'opening' | 'moving' | 'loading' | 'forking'
+  >;
 }) {
   if (
     !props.onProjectNameInputChange ||
@@ -1747,7 +1778,7 @@ function HistoryProjectPanel(props: {
             data-testid="history-workspace-select"
           >
             <option value="" disabled>
-              Select a workspace
+              {props.workspaceMessages.selectWorkspace}
             </option>
             {props.workspaces.map((workspace) => (
               <option key={workspace.id} value={workspace.id}>
@@ -1762,7 +1793,7 @@ function HistoryProjectPanel(props: {
             type="text"
             value={props.workspaceCreateNameInput}
             onChange={(event) => props.onWorkspaceCreateNameInputChange?.(event.target.value)}
-            placeholder="New workspace name"
+            placeholder={props.workspaceMessages.newWorkspaceName}
             className="min-w-0 flex-1 rounded border border-gray-300 bg-white px-2 py-1 text-xs"
             data-testid="history-workspace-create-input"
           />
@@ -1773,7 +1804,9 @@ function HistoryProjectPanel(props: {
             onClick={() => void props.onCreateWorkspace?.()}
             data-testid="history-workspace-create-button"
           >
-            {props.workspaceActionState === 'creating' ? 'Creating...' : 'Create Workspace'}
+            {props.workspaceActionState === 'creating'
+              ? props.commonMessages.creating
+              : props.workspaceMessages.createWorkspace}
           </button>
         </div>
 
@@ -1782,7 +1815,7 @@ function HistoryProjectPanel(props: {
             type="text"
             value={props.workspaceRenameNameInput}
             onChange={(event) => props.onWorkspaceRenameNameInputChange?.(event.target.value)}
-            placeholder="Rename selected workspace"
+            placeholder={props.workspaceMessages.renameSelectedWorkspace}
             className="min-w-0 flex-1 rounded border border-gray-300 bg-white px-2 py-1 text-xs"
             disabled={!props.selectedWorkspaceId || workspaceControlsDisabled}
             data-testid="history-workspace-rename-input"
@@ -1794,7 +1827,9 @@ function HistoryProjectPanel(props: {
             onClick={() => void props.onRenameWorkspace?.()}
             data-testid="history-workspace-rename-button"
           >
-            {props.workspaceActionState === 'renaming' ? 'Renaming...' : 'Rename Workspace'}
+            {props.workspaceActionState === 'renaming'
+              ? props.commonMessages.renaming
+              : props.workspaceMessages.renameWorkspace}
           </button>
           <button
             type="button"
@@ -1803,7 +1838,9 @@ function HistoryProjectPanel(props: {
             onClick={() => void props.onDeleteWorkspace?.()}
             data-testid="history-workspace-delete-button"
           >
-            {props.workspaceActionState === 'deleting' ? 'Deleting...' : 'Delete Workspace'}
+            {props.workspaceActionState === 'deleting'
+              ? props.commonMessages.deleting
+              : props.workspaceMessages.deleteWorkspace}
           </button>
         </div>
         {props.workspaceActionError ? (
@@ -1817,7 +1854,7 @@ function HistoryProjectPanel(props: {
             type="text"
             value={props.projectNameInput}
             onChange={(event) => props.onProjectNameInputChange?.(event.target.value)}
-            placeholder="New project name"
+            placeholder={props.projectMessages.newProjectName}
             className="min-w-0 flex-1 rounded border border-gray-300 bg-white px-2 py-1 text-xs"
             data-testid="history-project-name-input"
           />
@@ -1828,7 +1865,9 @@ function HistoryProjectPanel(props: {
             onClick={() => void props.onCreateProject?.()}
             data-testid="history-project-create-button"
           >
-            {props.actionState === 'creating' ? 'Creating...' : 'Create Project'}
+            {props.actionState === 'creating'
+              ? props.commonMessages.creating
+              : props.projectMessages.createProject}
           </button>
         </div>
 
@@ -1840,7 +1879,7 @@ function HistoryProjectPanel(props: {
             disabled={props.listState === 'loading' || hasProjectActionInFlight}
             data-testid="history-project-select"
           >
-            <option value="">Select a project</option>
+            <option value="">{props.projectMessages.selectProject}</option>
             {props.projects.map((project) => (
               <option key={project.id} value={project.id}>
                 {project.name}
@@ -1854,7 +1893,9 @@ function HistoryProjectPanel(props: {
             onClick={() => void props.onOpenProject?.()}
             data-testid="history-project-open-button"
           >
-            {props.actionState === 'opening' ? 'Opening...' : 'Open Project'}
+            {props.actionState === 'opening'
+              ? props.commonMessages.opening
+              : props.projectMessages.openProject}
           </button>
         </div>
         {props.selectedProjectId ? (
@@ -1870,8 +1911,8 @@ function HistoryProjectPanel(props: {
             >
               <option value="">
                 {availableMoveWorkspaces.length > 0
-                  ? 'Select target workspace'
-                  : 'No other workspaces available'}
+                  ? props.workspaceMessages.selectTargetWorkspace
+                  : props.workspaceMessages.noOtherWorkspaces}
               </option>
               {availableMoveWorkspaces.map((workspace) => (
                 <option key={workspace.id} value={workspace.id}>
@@ -1891,7 +1932,9 @@ function HistoryProjectPanel(props: {
               onClick={() => void props.onMoveWorkspaceProject?.()}
               data-testid="history-project-move-button"
             >
-              {props.actionState === 'moving' ? 'Moving...' : 'Move to Workspace'}
+              {props.actionState === 'moving'
+                ? props.commonMessages.moving
+                : props.workspaceMessages.moveToWorkspace}
             </button>
           </div>
         ) : null}
@@ -1901,7 +1944,7 @@ function HistoryProjectPanel(props: {
         className="mt-2 rounded border border-gray-200 bg-white p-2"
         data-testid="history-project-sharing-surface"
       >
-        <p className="text-xs font-semibold text-gray-700">Sharing / Visibility (optional)</p>
+        <p className="text-xs font-semibold text-gray-700">{props.projectMessages.sharingVisibilityOptional}</p>
         <p className="mt-1 text-[11px] text-gray-500">
           Use this only when you want to change how a selected project is shared.
         </p>
@@ -1959,7 +2002,9 @@ function HistoryProjectPanel(props: {
             onClick={() => void props.onViewPublicProject?.()}
             data-testid="history-public-project-view-button"
           >
-            {props.publicProjectActionState === 'viewing' ? 'Loading...' : 'View'}
+            {props.publicProjectActionState === 'viewing'
+              ? props.commonMessages.loading
+              : props.projectMessages.view}
           </button>
           <button
             type="button"
@@ -1968,7 +2013,9 @@ function HistoryProjectPanel(props: {
             onClick={() => void props.onForkPublicProject?.()}
             data-testid="history-public-project-fork-button"
           >
-            {props.publicProjectActionState === 'forking' ? 'Forking...' : 'Fork'}
+            {props.publicProjectActionState === 'forking'
+              ? props.commonMessages.forking
+              : props.projectMessages.fork}
           </button>
         </div>
         {props.selectedPublicProjectDetail ? (
@@ -2026,6 +2073,11 @@ function HistoryProjectPanel(props: {
 }
 
 function HistorySnapshotPanel(props: {
+  projectMessages: Pick<
+    typeof enMessages.project,
+    'saveSnapshot' | 'restoreSnapshot' | 'downloadProject' | 'importProject'
+  >;
+  commonMessages: Pick<typeof enMessages.common, 'saving' | 'restoring' | 'exporting' | 'importing'>;
   selectedSessionId: string | null;
   listState: 'idle' | 'loading' | 'ready' | 'error';
   actionState:
@@ -2073,7 +2125,9 @@ function HistorySnapshotPanel(props: {
           onClick={() => void props.onSaveSnapshot?.()}
           data-testid="history-snapshot-save-button"
         >
-          {props.actionState === 'saving' ? 'Saving...' : 'Save Snapshot'}
+          {props.actionState === 'saving'
+            ? props.commonMessages.saving
+            : props.projectMessages.saveSnapshot}
         </button>
         <button
           type="button"
@@ -2087,7 +2141,9 @@ function HistorySnapshotPanel(props: {
           onClick={() => void props.onRestoreSnapshot?.()}
           data-testid="history-snapshot-restore-button"
         >
-          {props.actionState === 'restoring' ? 'Restoring...' : 'Restore Snapshot'}
+          {props.actionState === 'restoring'
+            ? props.commonMessages.restoring
+            : props.projectMessages.restoreSnapshot}
         </button>
       </div>
 
@@ -2099,7 +2155,9 @@ function HistorySnapshotPanel(props: {
           onClick={() => void props.onExportArchive?.()}
           data-testid="history-archive-export-button"
         >
-          {props.actionState === 'exporting' ? 'Exporting...' : 'Download Project'}
+          {props.actionState === 'exporting'
+            ? props.commonMessages.exporting
+            : props.projectMessages.downloadProject}
         </button>
         <label
           className={`rounded px-2 py-1 text-xs text-white ${
@@ -2109,7 +2167,9 @@ function HistorySnapshotPanel(props: {
           }`}
           data-testid="history-archive-import-label"
         >
-          {props.actionState === 'importing' ? 'Importing...' : 'Import Project'}
+          {props.actionState === 'importing'
+            ? props.commonMessages.importing
+            : props.projectMessages.importProject}
           <input
             type="file"
             accept=".zip,application/zip"
