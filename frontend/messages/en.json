@@ -13,7 +13,9 @@
     "success": "Success",
     "confirm": "Confirm",
     "send": "Send",
-    "search": "Search"
+    "search": "Search",
+    "refresh": "Refresh",
+    "refreshing": "Refreshing..."
   },
   "login": {
     "title": "AI Sandbox",
@@ -91,6 +93,10 @@
     "recentProjects": "Recent Projects",
     "upgrade": "Upgrade",
     "activeSessions": "Active sessions",
+    "noSessionSelected": "No session selected",
+    "newSession": "New Session",
+    "creatingSession": "Creating...",
+    "stopSessionConfirm": "Stop this session? Unsaved running work in this session may be interrupted.",
     "tokens": "Tokens",
     "newProject": "New Project",
     "noProjects": "No projects yet.",
@@ -98,6 +104,10 @@
     "buildAnything": "Build anything",
     "describeBuild": "Describe what you want to build...",
     "start": "Start"
+  },
+  "preview": {
+    "livePreview": "Live Preview",
+    "startPreview": "Start Preview"
   },
   "project": {
     "chat": "Chat",

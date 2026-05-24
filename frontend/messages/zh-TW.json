@@ -13,7 +13,9 @@
     "success": "成功",
     "confirm": "確認",
     "send": "發送",
-    "search": "搜尋"
+    "search": "搜尋",
+    "refresh": "重新整理",
+    "refreshing": "重新整理中..."
   },
   "login": {
     "title": "AI 沙盒",
@@ -91,6 +93,10 @@
     "recentProjects": "最近專案",
     "upgrade": "升級",
     "activeSessions": "活躍工作階段",
+    "noSessionSelected": "尚未選擇工作階段",
+    "newSession": "新建工作階段",
+    "creatingSession": "建立中...",
+    "stopSessionConfirm": "要停止此工作階段嗎？此工作階段中尚未完成的執行可能會中斷。",
     "tokens": "代幣",
     "newProject": "新建專案",
     "noProjects": "目前沒有專案。",
@@ -98,6 +104,10 @@
     "buildAnything": "打造任何內容",
     "describeBuild": "描述你想建立的內容...",
     "start": "開始"
+  },
+  "preview": {
+    "livePreview": "即時預覽",
+    "startPreview": "啟動預覽"
   },
   "project": {
     "chat": "聊天",

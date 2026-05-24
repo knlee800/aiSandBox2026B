@@ -13,7 +13,9 @@
     "success": "成功",
     "confirm": "确认",
     "send": "发送",
-    "search": "搜索"
+    "search": "搜索",
+    "refresh": "刷新",
+    "refreshing": "刷新中..."
   },
   "login": {
     "title": "AI 沙盒",
@@ -91,6 +93,10 @@
     "recentProjects": "最近项目",
     "upgrade": "升级",
     "activeSessions": "活跃会话",
+    "noSessionSelected": "未选择会话",
+    "newSession": "新建会话",
+    "creatingSession": "创建中...",
+    "stopSessionConfirm": "停止此会话吗？此会话中未完成的运行任务可能会被中断。",
     "tokens": "令牌",
     "newProject": "新建项目",
     "noProjects": "暂无项目。",
@@ -98,6 +104,10 @@
     "buildAnything": "构建任何内容",
     "describeBuild": "描述你想构建的内容...",
     "start": "开始"
+  },
+  "preview": {
+    "livePreview": "实时预览",
+    "startPreview": "启动预览"
   },
   "project": {
     "chat": "聊天",

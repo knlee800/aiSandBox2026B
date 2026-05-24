@@ -107,6 +107,18 @@ function getCommonMessages(locale: string): typeof enMessages.common {
   return enMessages.common;
 }
 
+function getWorkspaceMessages(locale: string): typeof enMessages.workspace {
+  if (locale === 'zh-TW') return zhTwMessages.workspace;
+  if (locale === 'zh-CN') return zhCnMessages.workspace;
+  return enMessages.workspace;
+}
+
+function getPreviewMessages(locale: string): typeof enMessages.preview {
+  if (locale === 'zh-TW') return zhTwMessages.preview;
+  if (locale === 'zh-CN') return zhCnMessages.preview;
+  return enMessages.preview;
+}
+
 function getAiMessages(locale: string): typeof enMessages.ai {
   if (locale === 'zh-TW') return zhTwMessages.ai;
   if (locale === 'zh-CN') return zhCnMessages.ai;
@@ -347,6 +359,7 @@ export function WorkspaceAdvancedDrawer(props: {
   onToggle: () => void;
   sessionId: string | null;
   sessionStatus: string;
+  workspaceMessages: Pick<typeof enMessages.workspace, 'noSessionSelected'>;
   onCopySessionId?: () => Promise<void> | void;
   canStopSession?: boolean;
   isStoppingSession?: boolean;
@@ -386,7 +399,7 @@ export function WorkspaceAdvancedDrawer(props: {
                 className="mt-1 break-all font-mono text-[11px] text-gray-600"
                 data-testid="workspace-advanced-session-id"
               >
-                {props.sessionId ?? 'No session selected'}
+                {props.sessionId ?? props.workspaceMessages.noSessionSelected}
               </p>
             </div>
             {hasSessionId && props.onCopySessionId ? (
@@ -450,6 +463,8 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const tabBarTabs = React.useMemo(() => resolveTabBarTabs(locale), [locale]);
   const projectPanelMessages = React.useMemo(() => getProjectPanelMessages(locale), [locale]);
   const commonMessages = React.useMemo(() => getCommonMessages(locale), [locale]);
+  const workspaceMessages = React.useMemo(() => getWorkspaceMessages(locale), [locale]);
+  const previewMessages = React.useMemo(() => getPreviewMessages(locale), [locale]);
   const aiMessages = React.useMemo(() => getAiMessages(locale), [locale]);
   const comingSoonLabel = React.useMemo(() => getTabMessages(locale).comingSoon, [locale]);
   const activeTabLabel = React.useMemo(
@@ -756,9 +771,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
       confirmStop: () =>
         typeof window === 'undefined'
           ? true
-          : window.confirm(
-              'Stop this session? Unsaved running work in this session may be interrupted.',
-            ),
+          : window.confirm(workspaceMessages.stopSessionConfirm),
       onStopSession: props.onStopSession,
     });
   };
@@ -972,6 +985,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
           state={shellState}
           sessionError={props.sessionError}
           projectFirstUxEnabled={projectFirstUxEnabled}
+          workspaceMessages={workspaceMessages}
           canReopenProject={canReopenProject}
           onReopenProject={canReopenProject ? handleReopenProject : undefined}
           onResumeLatestProject={handleResumeLatestProject}
@@ -1005,6 +1019,8 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
       <WorkspacePreviewPanel
         projectFirstUxEnabled={projectFirstUxEnabled}
         projectMessages={projectPanelMessages}
+        previewMessages={previewMessages}
+        commonMessages={commonMessages}
         selectedSessionId={props.selectedSessionId}
         previewState={props.previewState}
         previewUrl={props.previewUrl}
@@ -1283,7 +1299,9 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                 disabled={props.isCreatingSession}
                 className="w-full rounded bg-blue-600 text-white text-sm py-2 disabled:bg-blue-300"
               >
-                {props.isCreatingSession ? 'Creating...' : 'New Session'}
+                {props.isCreatingSession
+                  ? workspaceMessages.creatingSession
+                  : workspaceMessages.newSession}
               </button>
               <p className="mt-2 text-xs text-gray-500">
                 Active sessions: {activeSessions}/{props.quotaSummary?.maxActiveSessions ?? 5}
@@ -1328,9 +1346,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                               confirmStop: () =>
                                 typeof window === 'undefined'
                                   ? true
-                                  : window.confirm(
-                                      'Stop this session? Unsaved running work in this session may be interrupted.',
-                                    ),
+                                  : window.confirm(workspaceMessages.stopSessionConfirm),
                               onStopSession: props.onStopSession,
                             });
                           }}
@@ -1429,6 +1445,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                 onToggle={() => setAdvancedDrawerOpen((current) => !current)}
                 sessionId={props.selectedSessionId}
                 sessionStatus={selectedSessionStatus}
+                workspaceMessages={workspaceMessages}
                 onCopySessionId={handleCopySelectedSessionId}
                 canStopSession={canStopSelectedSession}
                 isStoppingSession={isStoppingSelectedSession}
@@ -1567,6 +1584,8 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                         <WorkspacePreviewPanel
                           projectFirstUxEnabled={projectFirstUxEnabled}
                           projectMessages={projectPanelMessages}
+                          previewMessages={previewMessages}
+                          commonMessages={commonMessages}
                           selectedSessionId={props.selectedSessionId}
                           previewState={props.previewState}
                           previewUrl={props.previewUrl}
@@ -2976,6 +2995,8 @@ function WorkspacePreviewPanel(props: {
     typeof enMessages.project,
     'selectElement' | 'pickerActive' | 'deselectElement' | 'elementSelected'
   >;
+  previewMessages: Pick<typeof enMessages.preview, 'livePreview' | 'startPreview'>;
+  commonMessages: Pick<typeof enMessages.common, 'refresh' | 'refreshing'>;
   selectedSessionId: string | null;
   previewState: WorkspacePreviewState;
   previewUrl: string | null;
@@ -3008,7 +3029,7 @@ function WorkspacePreviewPanel(props: {
   return (
     <div className={panelClassName} data-testid="workspace-preview-panel">
       <div className="mb-2 flex items-center justify-between gap-2">
-        <p className="text-xs font-semibold text-gray-700">Live Preview</p>
+        <p className="text-xs font-semibold text-gray-700">{props.previewMessages.livePreview}</p>
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -3017,7 +3038,7 @@ function WorkspacePreviewPanel(props: {
             onClick={() => void props.onStartPreview()}
             className="rounded border border-blue-300 bg-white px-3 py-1 text-xs text-blue-700 disabled:border-gray-200 disabled:text-gray-400"
           >
-            Start Preview
+            {props.previewMessages.startPreview}
           </button>
           <button
             type="button"
@@ -3026,7 +3047,9 @@ function WorkspacePreviewPanel(props: {
             onClick={() => void props.onRefreshPreview()}
             className="rounded bg-blue-600 px-3 py-1 text-xs text-white disabled:bg-blue-300"
           >
-            {props.previewState === 'loading' ? 'Refreshing...' : 'Refresh'}
+            {props.previewState === 'loading'
+              ? props.commonMessages.refreshing
+              : props.commonMessages.refresh}
           </button>
           <button
             type="button"
@@ -7373,6 +7396,7 @@ function ShellStateMessage(props: {
   state: 'loading' | 'error' | 'empty' | 'ready';
   sessionError?: string | null;
   projectFirstUxEnabled: boolean;
+  workspaceMessages: Pick<typeof enMessages.workspace, 'noSessionSelected'>;
   canReopenProject: boolean;
   onReopenProject?: () => void;
   onResumeLatestProject?: () => void;
@@ -7381,6 +7405,7 @@ function ShellStateMessage(props: {
     state,
     sessionError,
     projectFirstUxEnabled,
+    workspaceMessages,
     canReopenProject,
     onReopenProject,
     onResumeLatestProject,
@@ -7436,7 +7461,7 @@ function ShellStateMessage(props: {
     return (
       <StateMessage
         tone="neutral"
-        heading={projectFirstUxEnabled ? 'No project open' : 'No session selected'}
+        heading={projectFirstUxEnabled ? 'No project open' : workspaceMessages.noSessionSelected}
         body={
           projectFirstUxEnabled
             ? recoveryCopy.workspace.openProjectToStart

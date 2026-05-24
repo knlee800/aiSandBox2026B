@@ -1644,6 +1644,7 @@ describe('workspace shell component', () => {
         onToggle={() => {}}
         sessionId={session.id}
         sessionStatus="active"
+        workspaceMessages={{ noSessionSelected: 'No session selected' }}
         onCopySessionId={async () => {}}
       />,
     );
@@ -1690,6 +1691,7 @@ describe('workspace shell component', () => {
         onToggle={() => {}}
         sessionId={session.id}
         sessionStatus="active"
+        workspaceMessages={{ noSessionSelected: 'No session selected' }}
         onCopySessionId={async () => {}}
         canStopSession
         isStoppingSession={false}
@@ -1709,6 +1711,7 @@ describe('workspace shell component', () => {
         onToggle={() => {}}
         sessionId={null}
         sessionStatus="not available"
+        workspaceMessages={{ noSessionSelected: 'No session selected' }}
       />,
     );
 
@@ -4949,6 +4952,81 @@ describe('workspace core chat panel i18n wiring — I18N-SHELL-02', () => {
     assert.match(
       shellSource,
       /message\.role === 'user'\s*\?\s*props\.aiMessages\.roleUser\s*:\s*props\.aiMessages\.roleAssistant/,
+    );
+  });
+});
+
+describe('workspace session and preview controls i18n wiring — I18N-SHELL-03', () => {
+  test('locale files define required workspace/preview/common keys for session and preview controls', () => {
+    const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));
+    const zhTw = JSON.parse(readFileSync(new URL('../../messages/zh-TW.json', import.meta.url), 'utf8'));
+    const zhCn = JSON.parse(readFileSync(new URL('../../messages/zh-CN.json', import.meta.url), 'utf8'));
+    const requiredWorkspaceKeys = [
+      'noSessionSelected',
+      'newSession',
+      'creatingSession',
+      'stopSessionConfirm',
+    ] as const;
+    const requiredPreviewKeys = ['livePreview', 'startPreview'] as const;
+    const requiredCommonKeys = ['refresh', 'refreshing'] as const;
+
+    for (const key of requiredWorkspaceKeys) {
+      assert.ok(typeof en.workspace?.[key] === 'string' && en.workspace[key].length > 0);
+      assert.ok(typeof zhTw.workspace?.[key] === 'string' && zhTw.workspace[key].length > 0);
+      assert.ok(typeof zhCn.workspace?.[key] === 'string' && zhCn.workspace[key].length > 0);
+    }
+
+    for (const key of requiredPreviewKeys) {
+      assert.ok(typeof en.preview?.[key] === 'string' && en.preview[key].length > 0);
+      assert.ok(typeof zhTw.preview?.[key] === 'string' && zhTw.preview[key].length > 0);
+      assert.ok(typeof zhCn.preview?.[key] === 'string' && zhCn.preview[key].length > 0);
+    }
+
+    for (const key of requiredCommonKeys) {
+      assert.ok(typeof en.common?.[key] === 'string' && en.common[key].length > 0);
+      assert.ok(typeof zhTw.common?.[key] === 'string' && zhTw.common[key].length > 0);
+      assert.ok(typeof zhCn.common?.[key] === 'string' && zhCn.common[key].length > 0);
+    }
+  });
+
+  test('workspace shell source removes targeted hardcoded English in session/preview control areas', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.doesNotMatch(shellSource, /\{props\.sessionId \?\? 'No session selected'\}/);
+    assert.doesNotMatch(shellSource, /\{props\.isCreatingSession \? 'Creating\.\.\.' : 'New Session'\}/);
+    assert.doesNotMatch(
+      shellSource,
+      /window\.confirm\(\s*'Stop this session\? Unsaved running work in this session may be interrupted\.'/,
+    );
+    assert.doesNotMatch(shellSource, /<p className="text-xs font-semibold text-gray-700">Live Preview<\/p>/);
+    assert.doesNotMatch(shellSource, />\s*Start Preview\s*<\/button>/);
+    assert.doesNotMatch(shellSource, /\{props\.previewState === 'loading' \? 'Refreshing\.\.\.' : 'Refresh'\}/);
+  });
+
+  test('session and preview controls use locale message values', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.match(shellSource, /function getWorkspaceMessages\(locale: string\): typeof enMessages\.workspace \{/);
+    assert.match(shellSource, /function getPreviewMessages\(locale: string\): typeof enMessages\.preview \{/);
+    assert.match(
+      shellSource,
+      /const workspaceMessages = React\.useMemo\(\(\) => getWorkspaceMessages\(locale\), \[locale\]\);/,
+    );
+    assert.match(
+      shellSource,
+      /const previewMessages = React\.useMemo\(\(\) => getPreviewMessages\(locale\), \[locale\]\);/,
+    );
+    assert.match(shellSource, /workspaceMessages=\{workspaceMessages\}/);
+    assert.match(shellSource, /previewMessages=\{previewMessages\}/);
+    assert.match(shellSource, /\{props\.sessionId \?\? props\.workspaceMessages\.noSessionSelected\}/);
+    assert.match(
+      shellSource,
+      /\{props\.isCreatingSession\s*\?\s*workspaceMessages\.creatingSession\s*:\s*workspaceMessages\.newSession\}/,
+    );
+    assert.match(shellSource, /window\.confirm\(workspaceMessages\.stopSessionConfirm\)/);
+    assert.match(shellSource, /\{props\.previewMessages\.livePreview\}/);
+    assert.match(shellSource, /\{props\.previewMessages\.startPreview\}/);
+    assert.match(
+      shellSource,
+      /\{props\.previewState === 'loading'\s*\?\s*props\.commonMessages\.refreshing\s*:\s*props\.commonMessages\.refresh\}/,
     );
   });
 });

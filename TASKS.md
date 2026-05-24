@@ -14759,3 +14759,83 @@ Replace hardcoded English core chat-panel labels and empty/response states in `w
 - [x] `npm run build` — environmental TLS/cert failure (Google Fonts); not a code regression; `tsconfig.tsbuildinfo` restored
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> I18N-SHELL-02.
+
+---
+
+### I18N-SHELL-03: Workspace Session and Preview Controls i18n
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** I18N-SHELL-03
+**Family:** I18N
+**Priority:** Medium
+**Risk:** Low-Medium
+**Nature:** FRONTEND-ONLY
+**Depends on:** I18N-SHELL-02 (COMPLETE and LOCKED)
+
+**Context:**
+I18N-SHELL-01, I18N-PAGE-01, and I18N-SHELL-02 are COMPLETE and LOCKED. A read-only multilingual audit found remaining hardcoded English user-facing strings in `workspace-shell.tsx` covering session management controls and live preview controls. This slice addresses that bounded group.
+
+**Primary files:**
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+**Objective:**
+Replace hardcoded English session/preview control labels in `workspace-shell.tsx` with locale-backed strings.
+
+**Target user-facing strings:**
+1. "No session selected"
+2. "New Session"
+3. "Creating..."
+4. "Stop this session? Unsaved running work in this session may be interrupted."
+5. "Live Preview"
+6. "Start Preview"
+7. "Refresh"
+8. "Refreshing..."
+
+**Scope:**
+- Extend existing workspace-shell locale-switch pattern
+- Add missing `workspace.*` or `preview.*` keys in all 3 locale files
+- Reuse existing `common.*` keys if already present (e.g. `common.refresh`)
+- Wire target session/preview strings through message objects
+- Preserve layout, classNames, behavior, and `data-testid` values
+- Add/update tests/source assertions proving:
+  - required keys exist in all 3 locale files
+  - target hardcoded English strings are removed from `workspace-shell.tsx`
+  - session/preview controls use locale message values
+
+**Non-goals:**
+- No `page.tsx` changes
+- No chat panel strings already handled by I18N-SHELL-01/02
+- No auth-module messages
+- No status panel full migration
+- No workspace/project modal i18n
+- No `recoveryCopy.ts` work
+- No backend changes
+- No new dependencies
+- No UI redesign
+- No TASK-73C-1 work
+
+**Validation plan:**
+From `C:\Users\knlee\aiSandBox2026B\frontend`:
+- `npx tsc --noEmit`
+- `npm test`
+- ReadLints on touched files
+- `npm run build` only if stable; if Google Fonts TLS/cert issue appears, report as environmental and restore `frontend/tsconfig.tsbuildinfo`
+
+**Acceptance checks:**
+- [x] No new hardcoded user-facing English copy for the 8 target strings
+- [x] `frontend/messages/en.json` updated with all required keys
+- [x] `frontend/messages/zh-TW.json` updated with matching keys
+- [x] `frontend/messages/zh-CN.json` updated with matching keys
+- [x] Session/preview controls use locale message values
+- [x] Tests/source assertions confirm keys present and hardcoded strings removed
+- [x] `npx tsc --noEmit` passes
+- [x] `npm test` passes — 457 tests, 0 failed
+- [x] No unrelated files changed
+- [x] `npm run build` — environmental TLS/cert failure (Google Fonts); not a code regression; `tsconfig.tsbuildinfo` restored
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> I18N-SHELL-03.
+**Checkpoint:** `docs/I18N-SHELL-03-CHECKPOINT.md`
