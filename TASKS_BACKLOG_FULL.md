@@ -6762,6 +6762,7 @@ This task is limited to **documentation and planning only**.
 **Phase:** 73  
 **Stage:** 73C-1  
 **Priority:** ???Medium  
+**Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE, BOUNDED)  
 **Dependencies:** TASK-73B (Complete)  
 **Checkpoint:** `docs/PHASE-73C-1-CHECKPOINT.md`
@@ -6841,6 +6842,7 @@ This task is limited to the first bounded commercial-foundation implementation s
 **Phase:** 73  
 **Stage:** 73C-2  
 **Priority:** ???Medium  
+**Status:** COMPLETE and LOCKED
 **Nature:** VALIDATION / DOCUMENTATION (NO NEW IMPLEMENTATION)  
 **Dependencies:** TASK-73C-1 (Complete)  
 **Checkpoint:** `docs/PHASE-73C-2-CHECKPOINT.md`
@@ -6921,6 +6923,7 @@ This task is limited to the second bounded commercial-foundation validation slic
 **Phase:** 73  
 **Stage:** 73C-FINAL  
 **Priority:** ???Medium  
+**Status:** COMPLETE and LOCKED
 **Nature:** VALIDATION / DOCUMENTATION (NO NEW IMPLEMENTATION)  
 **Dependencies:** TASK-73C-1 (Complete), TASK-73C-2 (Complete)  
 **Checkpoint:** `docs/PHASE-73C-FINAL-CHECKPOINT.md`
@@ -7003,6 +7006,7 @@ This task is limited to final consolidation validation for the selected bounded 
 **Phase:** 73  
 **Stage:** 73-FINAL  
 **Priority:** ???Medium  
+**Status:** COMPLETE and LOCKED
 **Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)  
 **Dependencies:** TASK-73A (Complete), TASK-73B (Complete), TASK-73C-1 (Complete), TASK-73C-2 (Complete), TASK-73C-FINAL (Complete)  
 **Checkpoint:** `docs/PHASE-73-FINAL-CHECKPOINT.md`
@@ -7346,6 +7350,7 @@ This task is limited to **bounded implementation or validation on existing surfa
 **Phase:** 74
 **Stage:** 74C-2
 **Priority:** ???Medium
+**Status:** COMPLETE and LOCKED
 **Nature:** VALIDATION / DOCUMENTATION (NO NEW IMPLEMENTATION)
 **Dependencies:** TASK-74C-1 (Complete)
 **Checkpoint:** `docs/PHASE-74C-2-CHECKPOINT.md`
@@ -7432,6 +7437,7 @@ This task is limited to **bounded validation and documentation on existing surfa
 **Phase:** 74
 **Stage:** 74C-FINAL
 **Priority:** ???Medium
+**Status:** COMPLETE and LOCKED
 **Nature:** VALIDATION / DOCUMENTATION (NO NEW IMPLEMENTATION)
 **Dependencies:** TASK-74C-1 (Complete), TASK-74C-2 (Complete)
 **Checkpoint:** `docs/PHASE-74C-FINAL-CHECKPOINT.md`
@@ -7514,6 +7520,7 @@ This task is limited to **final bounded-family consolidation and validation only
 **Phase:** 74
 **Stage:** 74-FINAL
 **Priority:** ???Medium
+**Status:** COMPLETE and LOCKED
 **Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)
 **Dependencies:** TASK-74A (Complete), TASK-74B (Complete), TASK-74C-1 (Complete), TASK-74C-2 (Complete), TASK-74C-FINAL (Complete)
 **Checkpoint:** `docs/PHASE-74-FINAL-CHECKPOINT.md`
@@ -25271,3 +25278,60 @@ From `C:\Users\knlee\aiSandBox2026B\frontend`:
 
 **Reference:** See TASKS.md -> I18N-SHELL-05.
 **Checkpoint:** `docs/I18N-SHELL-05-CHECKPOINT.md`
+
+---
+
+### TASK-CLEANUP-74C-2-001: Debug Fetch Instrumentation Artifact Removal — session.controller.ts
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** TASK-CLEANUP-74C-2-001
+**Family:** CLEANUP
+**Priority:** High
+**Risk:** Low implementation risk / Medium production hygiene risk
+**Nature:** IMPLEMENTATION — BOUNDED CLEANUP, MINIMAL DIFF
+**Depends on:** Phase 74 COMPLETE and LOCKED; Gap-74C-2-001 triage complete
+
+**Context:**
+Phase 74 is COMPLETE and LOCKED. Gap-74C-2-001 was documented in `docs/PHASE-74C-2-CHECKPOINT.md` and `docs/PHASE-74-FINAL-CHECKPOINT.md`. Triage is complete. Inside `execInSession` in `session.controller.ts`, there are 3 hardcoded fire-and-forget `fetch` calls to `http://127.0.0.1:7870/ingest/...` that were left as live debug instrumentation. These calls run on the live user-facing exec endpoint (`POST /api/sessions/:id/exec`) and serialize user command data, sessionId, userId, stdout/stderr lengths, and error details to a hardcoded localhost debug service if anything is listening on that port.
+
+**Primary files:**
+- `services/api-gateway/src/sessions/session.controller.ts`
+- `services/api-gateway/src/sessions/session.controller.spec.ts`
+
+**Objective:**
+Remove hardcoded debug fetch instrumentation artifacts from `execInSession` and add a regression test proving the user-facing exec route does not make unexpected external fetch calls.
+
+**Scope:**
+- Remove all 3 `fetch('http://127.0.0.1:7870/ingest/...')` call blocks from `execInSession`
+- Remove the related `#region agent log` / `#endregion` comment blocks
+- Add one targeted test in the existing PHASE-77A exec `describe` block: `"does not make external fetch calls"`
+- Test must spy on `global.fetch` and assert it is not called during a successful `execInSession` path
+- Preserve exec request/response behavior exactly
+
+**Non-goals:**
+- No telemetry redesign
+- No replacement telemetry
+- No environment flag
+- No new dependencies
+- No endpoint changes
+- No DTO/schema changes
+- No frontend changes
+- No TASK-75A work
+- No Phase 74 reopening
+
+**Validation plan:**
+```powershell
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npx jest session.controller --no-coverage
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm run build
+```
+
+**Acceptance checks:**
+- [x] All 3 hardcoded `http://127.0.0.1:7870/ingest/...` fetch calls removed from `execInSession`
+- [x] All agent-log `#region` / `#endregion` blocks removed from `execInSession`
+- [x] New regression test `"does not make external fetch calls"` added and passing
+- [x] Existing exec route tests pass — 34 tests, 0 failed
+- [x] `api-gateway` build passes — tsc completed successfully
+- [x] No unrelated files changed
+
+**Reference:** See TASKS.md -> TASK-CLEANUP-74C-2-001.
+**Checkpoint:** `docs/TASK-CLEANUP-74C-2-001-CHECKPOINT.md`

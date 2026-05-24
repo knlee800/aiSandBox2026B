@@ -1977,7 +1977,7 @@ Plan the first bounded commercial-foundation work family selected in Phase 73A u
 
 #### TASK-73C-1: Commercial Readiness Contract Baseline
 
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED
 **Nature:** IMPLEMENTATION (MINIMAL, ADDITIVE, BOUNDED)
 **Checkpoint:** `docs/PHASE-73C-1-CHECKPOINT.md`
 
@@ -2006,7 +2006,7 @@ Implement the first non-monetary, architecture-neutral commercial-readiness slic
 
 #### TASK-73C-2: Commercial Readiness Validation Path
 
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED
 **Nature:** VALIDATION / DOCUMENTATION (NO NEW IMPLEMENTATION)
 **Checkpoint:** `docs/PHASE-73C-2-CHECKPOINT.md`
 
@@ -2035,7 +2035,7 @@ Validate the bounded non-monetary commercial-readiness contract baseline complet
 
 #### TASK-73C-FINAL: Commercial Readiness Family Consolidation
 
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED
 **Nature:** VALIDATION / DOCUMENTATION (NO NEW IMPLEMENTATION)
 **Checkpoint:** `docs/PHASE-73C-FINAL-CHECKPOINT.md`
 
@@ -2064,7 +2064,7 @@ Validate and consolidate completed bounded commercial-readiness outputs (`TASK-7
 
 #### TASK-73-FINAL: Phase 73 Final Consolidation
 
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED
 **Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)
 **Checkpoint:** `docs/PHASE-73-FINAL-CHECKPOINT.md`
 
@@ -2184,7 +2184,7 @@ Verify and normalize cross-surface coherence between user-facing usage/quota sur
 
 #### TASK-74C-2: Reporting Contract Determinism Validation
 
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED
 **Nature:** VALIDATION / DOCUMENTATION (NO NEW IMPLEMENTATION)
 **Checkpoint:** `docs/PHASE-74C-2-CHECKPOINT.md`
 
@@ -2216,7 +2216,7 @@ Validate that existing visibility/reporting surfaces produce deterministic, repr
 
 #### TASK-74C-FINAL: Visibility and Usage Reporting Family Consolidation
 
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED
 **Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)
 **Checkpoint:** `docs/PHASE-74C-FINAL-CHECKPOINT.md`
 
@@ -2245,7 +2245,7 @@ Validate and consolidate completed bounded visibility/reporting family outputs (
 
 #### TASK-74-FINAL: Phase 74 Final Consolidation
 
-**Status:** PLANNED
+**Status:** COMPLETE and LOCKED
 **Nature:** DOCUMENTATION / VALIDATION (NO NEW IMPLEMENTATION)
 **Checkpoint:** `docs/PHASE-74-FINAL-CHECKPOINT.md`
 
@@ -15005,3 +15005,60 @@ From `C:\Users\knlee\aiSandBox2026B\frontend`:
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> I18N-SHELL-05.
 **Checkpoint:** `docs/I18N-SHELL-05-CHECKPOINT.md`
+
+---
+
+### TASK-CLEANUP-74C-2-001: Debug Fetch Instrumentation Artifact Removal — session.controller.ts
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** TASK-CLEANUP-74C-2-001
+**Family:** CLEANUP
+**Priority:** High
+**Risk:** Low implementation risk / Medium production hygiene risk
+**Nature:** IMPLEMENTATION — BOUNDED CLEANUP, MINIMAL DIFF
+**Depends on:** Phase 74 COMPLETE and LOCKED; Gap-74C-2-001 triage complete
+
+**Context:**
+Phase 74 is COMPLETE and LOCKED. Gap-74C-2-001 was documented in `docs/PHASE-74C-2-CHECKPOINT.md` and `docs/PHASE-74-FINAL-CHECKPOINT.md`. Triage is complete. Inside `execInSession` in `session.controller.ts`, there are 3 hardcoded fire-and-forget `fetch` calls to `http://127.0.0.1:7870/ingest/...` that were left as live debug instrumentation. These calls run on the live user-facing exec endpoint (`POST /api/sessions/:id/exec`) and serialize user command data, sessionId, userId, stdout/stderr lengths, and error details to a hardcoded localhost debug service if anything is listening on that port.
+
+**Primary files:**
+- `services/api-gateway/src/sessions/session.controller.ts`
+- `services/api-gateway/src/sessions/session.controller.spec.ts`
+
+**Objective:**
+Remove hardcoded debug fetch instrumentation artifacts from `execInSession` and add a regression test proving the user-facing exec route does not make unexpected external fetch calls.
+
+**Scope:**
+- Remove all 3 `fetch('http://127.0.0.1:7870/ingest/...')` call blocks from `execInSession`
+- Remove the related `#region agent log` / `#endregion` comment blocks
+- Add one targeted test in the existing PHASE-77A exec `describe` block: `"does not make external fetch calls"`
+- Test must spy on `global.fetch` and assert it is not called during a successful `execInSession` path
+- Preserve exec request/response behavior exactly
+
+**Non-goals:**
+- No telemetry redesign
+- No replacement telemetry
+- No environment flag
+- No new dependencies
+- No endpoint changes
+- No DTO/schema changes
+- No frontend changes
+- No TASK-75A work
+- No Phase 74 reopening
+
+**Validation plan:**
+```powershell
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npx jest session.controller --no-coverage
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm run build
+```
+
+**Acceptance checks:**
+- [x] All 3 hardcoded `http://127.0.0.1:7870/ingest/...` fetch calls removed from `execInSession`
+- [x] All agent-log `#region` / `#endregion` blocks removed from `execInSession`
+- [x] New regression test `"does not make external fetch calls"` added and passing
+- [x] Existing exec route tests pass — 34 tests, 0 failed
+- [x] `api-gateway` build passes — tsc completed successfully
+- [x] No unrelated files changed
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> TASK-CLEANUP-74C-2-001.
+**Checkpoint:** `docs/TASK-CLEANUP-74C-2-001-CHECKPOINT.md`

@@ -561,6 +561,25 @@ describe('SessionController (PHASE-77A: ISSUE-76-005 exec route)', () => {
     );
   });
 
+  it('does not make external fetch calls', async () => {
+    sessionService.getSessionById.mockResolvedValue(mockActiveSession);
+    containerManagerClient.execInSession.mockResolvedValue({
+      exitCode: 0,
+      stdout: 'hello\n',
+      stderr: '',
+    });
+
+    const fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue({} as Response);
+    try {
+      await controller.execInSession('session-1', 'echo hello', {
+        user: { userId: 'user-1' },
+      });
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
   it('POST /api/sessions/:id/exec returns 410 Gone for terminated session', async () => {
     sessionService.getSessionById.mockResolvedValue(mockTerminatedSession);
 
