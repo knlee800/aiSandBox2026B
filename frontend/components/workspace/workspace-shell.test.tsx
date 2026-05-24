@@ -4841,6 +4841,16 @@ describe('workspace visual edit diff preview wiring — UX-IA-16B', () => {
   });
 });
 
+describe('workspace history revert button styling — UX-IA-19', () => {
+  test('workspace shell source applies distinct danger classes to revert action button', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.match(
+      shellSource,
+      /data-testid=\{`history-revert-button-\$\{checkpoint\.id\}`\}[\s\S]*?className="rounded border border-red-300 bg-red-50 px-3 py-1 text-xs text-red-700 hover:bg-red-100 disabled:border-gray-200 disabled:bg-gray-100 disabled:text-gray-400"/,
+    );
+  });
+});
+
 describe('workspace visual edit i18n wiring — I18N-SHELL-01', () => {
   test('workspace shell source defines getAiMessages helper following locale-switch pattern', () => {
     const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');

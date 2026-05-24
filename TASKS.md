@@ -14044,6 +14044,66 @@ All new visible text must be added to `frontend/messages/en.json`, `frontend/mes
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-18. Depends on: `docs/UX-IA-17-CHECKPOINT.md`.
 
+---
+
+#### UX-IA-19: Checkpoint Revert Button Visual Hierarchy
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** UX-IA-19
+**Family:** UX-IA
+**Priority:** Low
+**Nature:** FRONTEND-ONLY
+**Risk:** Low
+**Depends on:** UX-IA-18 (COMPLETE and LOCKED — `docs/UX-IA-18-CHECKPOINT.md`)
+**Checkpoint:** `docs/UX-IA-19-CHECKPOINT.md`
+
+**Objective:**
+Make the checkpoint Revert action visually distinct from adjacent utility actions so users can identify the recovery/destructive action quickly.
+
+**Files in scope:**
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+
+**Scope:**
+- Locate checkpoint timeline/action row in `workspace-shell.tsx`.
+- Update only the Revert button styling using existing Tailwind classes.
+- Suggested style: `bg-red-50 border-red-300 text-red-700 hover:bg-red-100`
+- Disabled state must remain clear.
+- Preserve button text, behavior, click handlers, `data-testid` values, layout, and surrounding buttons.
+- Add/update a focused source assertion in `workspace-shell.test.tsx` verifying Revert button uses distinct danger-style classes.
+
+**Multilingual invariant:**
+No new user-facing text. If any text changes become necessary, update `en.json`, `zh-TW.json`, and `zh-CN.json` in the same slice.
+
+**Non-goals:**
+- No checkpoint logic changes
+- No revert workflow changes
+- No new modal/dialog
+- No backend changes
+- No i18n cleanup
+- No broad timeline redesign
+- No StateMessage/loading polish
+- No TASK-75A work
+
+**Preserved invariants:**
+- All existing `data-testid` contracts in workspace-shell — unchanged
+- Revert click handler and behavior — unchanged
+- Visual Edit Mode wiring (UX-IA-15/16/17) — untouched
+- Auth-module install flow — untouched
+- Internal session API endpoints — untouched
+
+**Validation:**
+- `npx tsc --noEmit` from `frontend/` — must pass
+- `npm test` from `frontend/` — all tests must pass
+- `ReadLints` on touched files — 0 new errors
+
+**Acceptance checks:**
+- [x] UX-IA-19 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- [x] Implementation complete and validated
+- [x] `docs/UX-IA-19-CHECKPOINT.md` created
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-19. Depends on: `docs/UX-IA-18-CHECKPOINT.md`.
+
 
 
 ## AUTH — aiSandBox First-Party

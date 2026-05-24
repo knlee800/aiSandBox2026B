@@ -6360,7 +6360,7 @@ function HistoryCheckpointList(props: {
                     data-testid={`history-revert-button-${checkpoint.id}`}
                     disabled={!canInitiateRevert}
                     onClick={() => props.onInitiateRevert(checkpoint.id)}
-                    className="rounded bg-blue-600 px-3 py-1 text-xs text-white disabled:bg-blue-300"
+                    className="rounded border border-red-300 bg-red-50 px-3 py-1 text-xs text-red-700 hover:bg-red-100 disabled:border-gray-200 disabled:bg-gray-100 disabled:text-gray-400"
                   >
                     {isReverting && isSelected ? 'Reverting...' : 'Revert'}
                   </button>
