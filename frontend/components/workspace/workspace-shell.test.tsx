@@ -4895,6 +4895,64 @@ describe('workspace visual edit i18n wiring — I18N-SHELL-01', () => {
   });
 });
 
+describe('workspace core chat panel i18n wiring — I18N-SHELL-02', () => {
+  test('locale files define required ai/common keys for core chat panel copy', () => {
+    const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));
+    const zhTw = JSON.parse(readFileSync(new URL('../../messages/zh-TW.json', import.meta.url), 'utf8'));
+    const zhCn = JSON.parse(readFileSync(new URL('../../messages/zh-CN.json', import.meta.url), 'utf8'));
+    const requiredAiKeys = [
+      'promptLabel',
+      'modelProviderLabel',
+      'orchestrationLabel',
+      'messageThread',
+      'noMessages',
+      'roleUser',
+      'roleAssistant',
+      'waitingForResponse',
+      'sending',
+    ] as const;
+
+    for (const key of requiredAiKeys) {
+      assert.ok(typeof en.ai?.[key] === 'string' && en.ai[key].length > 0);
+      assert.ok(typeof zhTw.ai?.[key] === 'string' && zhTw.ai[key].length > 0);
+      assert.ok(typeof zhCn.ai?.[key] === 'string' && zhCn.ai[key].length > 0);
+    }
+
+    assert.ok(typeof en.common?.send === 'string' && en.common.send.length > 0);
+    assert.ok(typeof zhTw.common?.send === 'string' && zhTw.common.send.length > 0);
+    assert.ok(typeof zhCn.common?.send === 'string' && zhCn.common.send.length > 0);
+  });
+
+  test('workspace shell source removes targeted hardcoded English core chat-panel strings', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.doesNotMatch(shellSource, /AI Prompt/);
+    assert.doesNotMatch(shellSource, /Model Provider/);
+    assert.doesNotMatch(shellSource, /Enable bounded orchestration \(up to 3 sequential steps\)/);
+    assert.doesNotMatch(shellSource, /Message Thread/);
+    assert.doesNotMatch(shellSource, /No messages yet\./);
+    assert.doesNotMatch(shellSource, /\(waiting for response\.\.\.\)/);
+    assert.doesNotMatch(shellSource, /\? 'User' : 'Assistant'/);
+    assert.doesNotMatch(shellSource, /\{isSending \? 'Sending\.\.\.' : 'Send'\}/);
+  });
+
+  test('workspace chat panel uses ai/common message values for targeted labels and states', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.match(shellSource, /aiMessages=\{aiMessages\}/);
+    assert.match(shellSource, /commonMessages=\{commonMessages\}/);
+    assert.match(shellSource, /\{props\.aiMessages\.promptLabel\}/);
+    assert.match(shellSource, /\{props\.aiMessages\.modelProviderLabel\}/);
+    assert.match(shellSource, /\{props\.aiMessages\.orchestrationLabel\}/);
+    assert.match(shellSource, /\{isSending \? props\.aiMessages\.sending : props\.commonMessages\.send\}/);
+    assert.match(shellSource, /\{props\.aiMessages\.messageThread\}/);
+    assert.match(shellSource, /\{props\.aiMessages\.noMessages\}/);
+    assert.match(shellSource, /\? props\.aiMessages\.waitingForResponse/);
+    assert.match(
+      shellSource,
+      /message\.role === 'user'\s*\?\s*props\.aiMessages\.roleUser\s*:\s*props\.aiMessages\.roleAssistant/,
+    );
+  });
+});
+
 describe('auth module i18n wiring — I18N-PAGE-01', () => {
   test('locale files define required authModule keys', () => {
     const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));

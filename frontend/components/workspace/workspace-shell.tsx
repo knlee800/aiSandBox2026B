@@ -2329,7 +2329,7 @@ function WorkspaceChatPanel(props: {
     <div className="mb-3 rounded border border-gray-200 bg-gray-50 p-2" data-testid="workspace-chat-ai-panel">
       <form onSubmit={handleSubmit}>
         <label htmlFor="workspace-chat-prompt" className="text-[11px] font-semibold text-gray-700">
-          AI Prompt
+          {props.aiMessages.promptLabel}
         </label>
         <textarea
           id="workspace-chat-prompt"
@@ -2345,7 +2345,7 @@ function WorkspaceChatPanel(props: {
             htmlFor="workspace-chat-model-selector"
             className="text-[11px] font-semibold text-gray-700"
           >
-            Model Provider
+            {props.aiMessages.modelProviderLabel}
           </label>
           <select
             id="workspace-chat-model-selector"
@@ -2378,7 +2378,7 @@ function WorkspaceChatPanel(props: {
               onChange={(event) => props.onOrchestrationEnabledChange?.(event.target.checked)}
               disabled={!props.selectedSessionId || !props.onOrchestrationEnabledChange || isSending}
             />
-            Enable bounded orchestration (up to 3 sequential steps)
+            {props.aiMessages.orchestrationLabel}
           </label>
         </div>
         <div className="mt-2 flex items-center justify-between gap-2">
@@ -2397,15 +2397,15 @@ function WorkspaceChatPanel(props: {
             disabled={!canSubmit}
             className="rounded bg-blue-600 px-3 py-1 text-xs text-white disabled:bg-blue-300"
           >
-            {isSending ? 'Sending...' : 'Send'}
+            {isSending ? props.aiMessages.sending : props.commonMessages.send}
           </button>
         </div>
       </form>
 
       <div className="mt-2 rounded border border-gray-200 bg-white p-2" data-testid="workspace-chat-thread">
-        <p className="text-[11px] font-semibold text-gray-700">Message Thread</p>
+        <p className="text-[11px] font-semibold text-gray-700">{props.aiMessages.messageThread}</p>
         {props.threadMessages.length === 0 ? (
-          <p className="mt-1 text-[11px] text-gray-500">No messages yet.</p>
+          <p className="mt-1 text-[11px] text-gray-500">{props.aiMessages.noMessages}</p>
         ) : (
           <ul className="mt-2 space-y-2" data-testid="workspace-chat-thread-list">
             {props.threadMessages.map((message) => (
@@ -2414,7 +2414,7 @@ function WorkspaceChatPanel(props: {
                   message.content.trim().length > 0
                     ? message.content
                     : message.role === 'assistant'
-                      ? '(waiting for response...)'
+                      ? props.aiMessages.waitingForResponse
                       : '';
                 const usePreformattedAssistantContent =
                   message.role === 'assistant' &&
@@ -2432,7 +2432,9 @@ function WorkspaceChatPanel(props: {
                 }`}
                 data-testid={`workspace-chat-message-${message.role}-${message.id}`}
               >
-                <p className="font-semibold">{message.role === 'user' ? 'User' : 'Assistant'}</p>
+                <p className="font-semibold">
+                  {message.role === 'user' ? props.aiMessages.roleUser : props.aiMessages.roleAssistant}
+                </p>
                 {message.role === 'assistant' && (message.model || message.provider) ? (
                   <p
                     className="mt-1 text-[10px] text-gray-600"

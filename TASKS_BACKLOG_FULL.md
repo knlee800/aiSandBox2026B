@@ -24965,3 +24965,63 @@ Replace hardcoded English auth-module chat messages in `page.tsx` with locale-ba
 - [x] No unrelated files changed
 
 **Reference:** See TASKS.md -> I18N-PAGE-01.
+
+---
+
+### I18N-SHELL-02: Wire Core Chat Panel i18n Keys
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** I18N-SHELL-02
+**Family:** I18N
+**Priority:** Medium
+**Risk:** Low-Medium
+**Nature:** FRONTEND-ONLY
+**Depends on:** I18N-SHELL-01 (COMPLETE and LOCKED), I18N-PAGE-01 (COMPLETE and LOCKED)
+**Checkpoint:** `docs/I18N-SHELL-02-CHECKPOINT.md`
+
+**Context:**
+I18N-SHELL-01 and I18N-PAGE-01 are COMPLETE and LOCKED. A read-only multilingual audit found remaining hardcoded English user-facing chat-panel strings in `workspace-shell.tsx`. This slice addresses the core chat-panel labels and empty/response states: AI Prompt, Model Provider, bounded orchestration toggle, Message Thread, no-messages empty state, User/Assistant role labels, waiting/sending/send states.
+
+**Primary files:**
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+**Objective:**
+Replace hardcoded English core chat-panel labels and empty/response states in `workspace-shell.tsx` with locale-backed strings.
+
+**Target user-facing strings:**
+1. "AI Prompt"
+2. "Model Provider"
+3. "Enable bounded orchestration (up to 3 sequential steps)"
+4. "Message Thread"
+5. "No messages yet."
+6. "User"
+7. "Assistant"
+8. "(waiting for response...)"
+9. "Sending..."
+10. "Send"
+
+**Keys added (all 3 locale files):**
+- `ai.promptLabel`, `ai.modelProviderLabel`, `ai.orchestrationLabel`
+- `ai.messageThread`, `ai.noMessages`
+- `ai.roleUser`, `ai.roleAssistant`, `ai.waitingForResponse`
+
+**Existing keys reused:**
+- `ai.sending`, `common.send`
+
+**Acceptance checks:**
+- [x] No new hardcoded user-facing English copy in `workspace-shell.tsx` for the 10 target strings
+- [x] `frontend/messages/en.json` updated with all required `ai.*` keys
+- [x] `frontend/messages/zh-TW.json` updated with matching keys
+- [x] `frontend/messages/zh-CN.json` updated with matching keys
+- [x] Component uses `aiMessages`/`commonMessages` for all 10 target strings
+- [x] Tests/source assertions confirm keys present and hardcoded strings removed
+- [x] `npx tsc --noEmit` passes
+- [x] `npm test` passes — 454 tests, 0 failed
+- [x] No unrelated files changed
+- [x] `npm run build` — environmental TLS/cert failure (Google Fonts); not a code regression; `tsconfig.tsbuildinfo` restored
+
+**Reference:** See TASKS.md -> I18N-SHELL-02.
