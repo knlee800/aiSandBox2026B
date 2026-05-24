@@ -305,6 +305,7 @@ interface WorkspaceShellProps {
     id: string;
     role: 'user' | 'assistant';
     content: string;
+    messageKind?: 'ai' | 'system';
     executionId?: string;
     provider?: string;
     model?: string;
@@ -2367,6 +2368,7 @@ function WorkspaceChatPanel(props: {
     id: string;
     role: 'user' | 'assistant';
     content: string;
+    messageKind?: 'ai' | 'system';
     executionId?: string;
     provider?: string;
     model?: string;
@@ -2492,7 +2494,25 @@ function WorkspaceChatPanel(props: {
       <div className="mt-2 rounded border border-gray-200 bg-white p-2" data-testid="workspace-chat-thread">
         <p className="text-[11px] font-semibold text-gray-700">{props.aiMessages.messageThread}</p>
         {props.threadMessages.length === 0 ? (
-          <p className="mt-1 text-[11px] text-gray-500">{props.aiMessages.noMessages}</p>
+          <div className="mt-1 space-y-1 text-[11px] text-gray-500" data-testid="workspace-chat-empty-state">
+            <p
+              data-testid={
+                props.selectedSessionId
+                  ? 'workspace-chat-empty-active-session'
+                  : 'workspace-chat-empty-no-session'
+              }
+            >
+              {props.selectedSessionId ? props.aiMessages.emptyWithSession : props.aiMessages.emptyNoSession}
+            </p>
+            {props.selectedSessionId ? (
+              <p
+                className="inline-flex rounded border border-gray-200 bg-gray-50 px-2 py-0.5 text-[10px] text-gray-600"
+                data-testid="workspace-chat-empty-auth-suggestion"
+              >
+                {props.aiMessages.emptyAuthSuggestion}
+              </p>
+            ) : null}
+          </div>
         ) : (
           <ul className="mt-2 space-y-2" data-testid="workspace-chat-thread-list">
             {props.threadMessages.map((message) => (
@@ -2509,18 +2529,30 @@ function WorkspaceChatPanel(props: {
                 const undoCheckpointId = message.executionId
                   ? (props.visualEditCheckpointByExecutionId?.[message.executionId] ?? null)
                   : null;
+                const isSystemMessage = message.role === 'assistant' && message.messageKind === 'system';
+                const messageRoleLabel =
+                  message.role === 'user'
+                    ? props.aiMessages.roleUser
+                    : isSystemMessage
+                      ? props.aiMessages.roleSystem
+                      : props.aiMessages.roleAssistant;
                 return (
               <li
                 key={message.id}
                 className={`rounded border px-2 py-1 text-[11px] ${
                   message.role === 'user'
                     ? 'border-blue-200 bg-blue-50 text-blue-900'
+                    : isSystemMessage
+                      ? 'border-gray-300 bg-gray-100 text-gray-800'
                     : 'border-gray-200 bg-gray-50 text-gray-800'
                 }`}
                 data-testid={`workspace-chat-message-${message.role}-${message.id}`}
+                data-message-kind={
+                  message.role === 'assistant' ? (isSystemMessage ? 'system' : 'ai') : 'user'
+                }
               >
                 <p className="font-semibold">
-                  {message.role === 'user' ? props.aiMessages.roleUser : props.aiMessages.roleAssistant}
+                  {messageRoleLabel}
                 </p>
                 {message.role === 'assistant' && (message.model || message.provider) ? (
                   <p

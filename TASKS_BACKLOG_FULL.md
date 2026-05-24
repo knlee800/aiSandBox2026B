@@ -21991,9 +21991,9 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 
 ## UX-IA ??Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) ?X UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) ?X UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED)
+**Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) ?X UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) ?X UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) ?X UX-IA-18 COMPLETE and LOCKED
 
-**Current stage:** AUTH-MODULE-02B — Checkpoint Revert Has No Effect (ACTIVE)
+**Current stage:** UX-IA-18 COMPLETE and LOCKED — see next active task
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -22030,6 +22030,7 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 18. UX-IA-17 — Visual Edit Undo / Checkpoint Integration (COMPLETE and LOCKED — `docs/UX-IA-17-CHECKPOINT.md`)
     - UX-IA-17A — Visual Edit Checkpoint Labeling (COMPLETE and LOCKED — `docs/UX-IA-17A-CHECKPOINT.md`)
     - UX-IA-17B — Visual Edit Undo Affordance (COMPLETE and LOCKED — `docs/UX-IA-17B-CHECKPOINT.md`)
+19. UX-IA-18 — Multilingual Chat Empty State + System Message Distinction (COMPLETE and LOCKED — `docs/UX-IA-18-CHECKPOINT.md`)
    > AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps (cross-family — COMPLETE and LOCKED — `docs/AUTH-MODULE-01-CHECKPOINT.md` — registered under AUTH family)
    > AUTH-MODULE-02 — Auth Module Live Smoke Blockers (cross-family — COMPLETE and LOCKED — `docs/AUTH-MODULE-02-CHECKPOINT.md` — registered under AUTH family)
 
@@ -24209,6 +24210,81 @@ After a visual-edit apply succeeds, surface an Undo/Revert button in the `Worksp
 - `docs/UX-IA-17B-CHECKPOINT.md` created — DONE
 
 **Reference:** See TASKS.md -> UX-IA-17B. Parent: UX-IA-17. Depends on: `docs/UX-IA-17A-CHECKPOINT.md`.
+
+
+
+### UX-IA-18: Multilingual Chat Empty State + System Message Distinction
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** UX-IA-18
+**Family:** UX-IA
+**Family status:** COMPLETE and LOCKED — UX-IA-18 COMPLETE and LOCKED
+**Priority:** Medium
+**Nature:** FRONTEND-ONLY
+**Risk:** Low-Medium
+**Depends on:** UX-IA-17 (COMPLETE and LOCKED — `docs/UX-IA-17-CHECKPOINT.md`)
+**Checkpoint:** `docs/UX-IA-18-CHECKPOINT.md`
+
+**Objective:**
+Fix the top two post-AUTH UX audit issues:
+1. Chat empty state gives users no guidance when there is no active session or when the session is active but no messages have been sent.
+2. Auth/system messages (install, status, eligibility) look identical to AI assistant replies, causing visual confusion.
+
+**Files in scope:**
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+- `frontend/app/[locale]/app/page.tsx` — only if needed to mark auth-module messages as system kind
+
+**Scope:**
+- Add multilingual empty states in the chat panel:
+  - No-session state: "Open a project to start chatting."
+  - Active-session / no-messages state: "Describe what you want to build, or ask for help with your project."
+  - Optional suggestion prompt: "Try: add authentication to my app"
+- Add optional `messageKind?: 'ai' | 'system'` to message rendering in workspace-shell
+- Render system messages with a translated "System" label and a subtle visual distinction (e.g. muted background or left border accent)
+- Mark auth-module install/status/eligibility messages as `system` kind if feasible without touching auth logic
+
+**Multilingual invariant:**
+All new visible text must be added to `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, and `frontend/messages/zh-CN.json` using the existing locale-switch pattern. No hardcoded English user-facing copy.
+
+**Non-goals:**
+- No backend changes
+- No auth logic changes
+- No StateMessage component redesign
+- No loading skeletons
+- No revert button styling
+- No broad workspace-shell refactor
+- No documentation-heavy planning
+
+**Preserved invariants:**
+- All existing `data-testid` contracts in workspace-shell — unchanged
+- Visual Edit Mode wiring (UX-IA-15/16/17) — untouched
+- Auth-module install flow and guard behavior — untouched
+- Internal session API endpoints — untouched
+
+**Validation:**
+- `npx tsc --noEmit` from `frontend/` — must pass
+- `npm test` from `frontend/` — all tests must pass
+- `ReadLints` on touched files — 0 new errors
+
+**Multilingual acceptance checks:**
+- [x] No new hardcoded user-facing English copy
+- [x] `frontend/messages/en.json` updated
+- [x] `frontend/messages/zh-TW.json` updated
+- [x] `frontend/messages/zh-CN.json` updated
+- [x] Component uses existing translation hook/pattern
+- [x] Tests/source checks cover translation keys or rendered translated copy where practical
+
+**Acceptance checks:**
+- [x] UX-IA-18 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- [x] Status ACTIVE — DONE
+- [x] Implementation complete and validated
+- [x] `docs/UX-IA-18-CHECKPOINT.md` created
+
+**Reference:** See TASKS.md -> UX-IA-18. Depends on: `docs/UX-IA-17-CHECKPOINT.md`.
 
 
 

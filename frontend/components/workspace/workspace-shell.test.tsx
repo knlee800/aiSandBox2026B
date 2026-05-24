@@ -4908,9 +4908,12 @@ describe('workspace core chat panel i18n wiring — I18N-SHELL-02', () => {
       'modelProviderLabel',
       'orchestrationLabel',
       'messageThread',
-      'noMessages',
+      'emptyNoSession',
+      'emptyWithSession',
+      'emptyAuthSuggestion',
       'roleUser',
       'roleAssistant',
+      'roleSystem',
       'waitingForResponse',
       'sending',
     ] as const;
@@ -4933,6 +4936,9 @@ describe('workspace core chat panel i18n wiring — I18N-SHELL-02', () => {
     assert.doesNotMatch(shellSource, /Enable bounded orchestration \(up to 3 sequential steps\)/);
     assert.doesNotMatch(shellSource, /Message Thread/);
     assert.doesNotMatch(shellSource, /No messages yet\./);
+    assert.doesNotMatch(shellSource, /Open a project to start chatting\./);
+    assert.doesNotMatch(shellSource, /Describe what you want to build, or ask for help with your project\./);
+    assert.doesNotMatch(shellSource, /Try: add authentication to my app/);
     assert.doesNotMatch(shellSource, /\(waiting for response\.\.\.\)/);
     assert.doesNotMatch(shellSource, /\? 'User' : 'Assistant'/);
     assert.doesNotMatch(shellSource, /\{isSending \? 'Sending\.\.\.' : 'Send'\}/);
@@ -4947,12 +4953,57 @@ describe('workspace core chat panel i18n wiring — I18N-SHELL-02', () => {
     assert.match(shellSource, /\{props\.aiMessages\.orchestrationLabel\}/);
     assert.match(shellSource, /\{isSending \? props\.aiMessages\.sending : props\.commonMessages\.send\}/);
     assert.match(shellSource, /\{props\.aiMessages\.messageThread\}/);
-    assert.match(shellSource, /\{props\.aiMessages\.noMessages\}/);
-    assert.match(shellSource, /\? props\.aiMessages\.waitingForResponse/);
     assert.match(
       shellSource,
-      /message\.role === 'user'\s*\?\s*props\.aiMessages\.roleUser\s*:\s*props\.aiMessages\.roleAssistant/,
+      /\{\s*props\.selectedSessionId\s*\?\s*props\.aiMessages\.emptyWithSession\s*:\s*props\.aiMessages\.emptyNoSession\s*\}/,
     );
+    assert.match(shellSource, /\{props\.aiMessages\.emptyAuthSuggestion\}/);
+    assert.match(shellSource, /\? props\.aiMessages\.waitingForResponse/);
+    assert.match(shellSource, /message\.messageKind === 'system'/);
+    assert.match(shellSource, /props\.aiMessages\.roleSystem/);
+    assert.match(shellSource, /messageKind\?: 'ai' \| 'system';/);
+  });
+
+  test('renders no-session empty-state guidance and hides auth suggestion', () => {
+    const html = renderWorkspaceShell({
+      selectedSessionId: null,
+      chatThreadMessages: [],
+    });
+
+    assert.match(html, /workspace-chat-empty-state/);
+    assert.match(html, /workspace-chat-empty-no-session/);
+    assert.match(html, /Open a project to start chatting\./);
+    assert.doesNotMatch(html, /workspace-chat-empty-auth-suggestion/);
+  });
+
+  test('renders active-session empty-state guidance with auth suggestion', () => {
+    const html = renderWorkspaceShell({
+      selectedSessionId: session.id,
+      chatThreadMessages: [],
+    });
+
+    assert.match(html, /workspace-chat-empty-state/);
+    assert.match(html, /workspace-chat-empty-active-session/);
+    assert.match(html, /Describe what you want to build, or ask for help with your project\./);
+    assert.match(html, /workspace-chat-empty-auth-suggestion/);
+    assert.match(html, /Try: add authentication to my app/);
+  });
+
+  test('renders assistant system-kind messages with system label and subtle marker', () => {
+    const html = renderWorkspaceShell({
+      chatThreadMessages: [
+        {
+          id: 'system-msg-1',
+          role: 'assistant',
+          content: 'Installing auth module — preparing your workspace...',
+          messageKind: 'system',
+        },
+      ],
+    });
+
+    assert.match(html, /workspace-chat-message-assistant-system-msg-1/);
+    assert.match(html, /data-message-kind="system"/);
+    assert.match(html, />System</);
   });
 });
 
@@ -5420,6 +5471,13 @@ describe('auth module i18n wiring — I18N-PAGE-01', () => {
       pageSource,
       /eligibility\.code === 'MISSING_PACKAGE_JSON' \|\| eligibility\.code === 'MALFORMED_PACKAGE_JSON'\s*\?\s*authModuleMessages\.notNextJsProject/,
     );
+  });
+
+  test('handleInstallAuthModule marks status messages as system-kind chat messages', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(pageSource, /const appendAssistantMessage = \(content: string\): void => \{/);
+    assert.match(pageSource, /role: 'assistant',\s*content,\s*messageKind: 'system',/);
+    assert.match(pageSource, /content: assistantSummary,\s*messageKind: 'system',\s*executionId,/);
   });
 });
 

@@ -201,6 +201,11 @@ function getAuthModuleMessages(locale: string): typeof enMessages.authModule {
   return enMessages.authModule;
 }
 
+type WorkspaceChatMessageKind = 'ai' | 'system';
+type WorkspaceChatThreadUiMessage = WorkspaceChatThreadMessage & {
+  messageKind?: WorkspaceChatMessageKind;
+};
+
 interface WorkspacePromptNamedFileContent {
   path: string;
   content: string;
@@ -986,7 +991,7 @@ export default function AppPage() {
     DEFAULT_CHAT_MODEL_OPTION,
   );
   const [isChatOrchestrationEnabled, setIsChatOrchestrationEnabled] = useState(false);
-  const [chatThreadMessages, setChatThreadMessages] = useState<WorkspaceChatThreadMessage[]>([]);
+  const [chatThreadMessages, setChatThreadMessages] = useState<WorkspaceChatThreadUiMessage[]>([]);
   const [chatExecutionFileActionStates, setChatExecutionFileActionStates] = useState<
     Record<string, WorkspaceExecutionFileActionState>
   >({});
@@ -4556,6 +4561,7 @@ export default function AppPage() {
           id: crypto.randomUUID(),
           role: 'assistant',
           content,
+          messageKind: 'system',
         },
       ]);
     };
@@ -4723,6 +4729,7 @@ export default function AppPage() {
         id: assistantMessageId,
         role: 'assistant',
         content: assistantSummary,
+        messageKind: 'system',
         executionId,
       },
     ]);
