@@ -25196,3 +25196,78 @@ From `C:\Users\knlee\aiSandBox2026B\frontend`:
 
 **Reference:** See TASKS.md -> I18N-SHELL-04.
 **Checkpoint:** `docs/I18N-SHELL-04-CHECKPOINT.md`
+
+---
+
+### I18N-SHELL-05: recoveryCopy.ts Locale Migration
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** I18N-SHELL-05
+**Family:** I18N
+**Priority:** Medium
+**Risk:** Medium
+**Nature:** FRONTEND-ONLY
+**Depends on:** I18N-SHELL-04 (COMPLETE and LOCKED)
+
+**Context:**
+I18N-SHELL-01, I18N-PAGE-01, I18N-SHELL-02, I18N-SHELL-03, and I18N-SHELL-04 are COMPLETE and LOCKED. A read-only I18N re-audit found that `frontend/lib/recovery-copy.ts` remains a plain English-only constant. It is consumed 47 times in `workspace-shell.tsx` and drives critical workspace recovery UX copy, including loading/error states, recovery prompts, history labels, snapshot restore confirmation, named snapshot save prompt, and auto-version labels.
+
+**Primary files:**
+- `frontend/lib/recovery-copy.ts`
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+**Objective:**
+Convert `recoveryCopy.ts` from an English-only constant into a locale-backed recovery copy provider, following the established manual locale-switch pattern. Add the recovery copy keys to all 3 locale files and update `workspace-shell.tsx` render paths to use the locale-backed copy.
+
+**Scope:**
+- Migrate `recoveryCopy` `actions.*`, `status.*`, `detail.*`, and `workspace.*` strings
+- Add corresponding `recovery.*` keys or equivalent structured keys in all 3 locale files
+- Convert `frontend/lib/recovery-copy.ts` to export `getRecoveryCopy(locale)`, following the existing `getWorkspaceMessages`/`getPreviewMessages`/`getCommonMessages` pattern
+- Update `workspace-shell.tsx` consumers currently using `recoveryCopy.*` to use locale-backed recovery copy
+- Ensure native dialog call sites use locale-backed copy:
+  - `window.confirm` restore prompt
+  - `window.prompt` named snapshot/save prompt
+- Add/update source assertions proving:
+  - keys exist in all 3 locale files
+  - `getRecoveryCopy(locale)` exists
+  - targeted direct `recoveryCopy.*` render references are removed or replaced with locale-backed usage
+  - `window.confirm`/`window.prompt` use locale-backed strings
+- Preserve layout, classNames, behavior, and `data-testid` values
+
+**Non-goals:**
+- No status panel StateMessage heading/body/action migration beyond strings already supplied by `recoveryCopy`
+- No `page.tsx` action feedback/error string migration
+- No stop/build/exec button labels unless already within `recoveryCopy` scope
+- No auth-module strings
+- No checkpoint description translation
+- No backend changes
+- No route changes
+- No UI redesign
+- No new dependencies
+- No TASK-73C-1 work
+
+**Validation plan:**
+From `C:\Users\knlee\aiSandBox2026B\frontend`:
+- `npx tsc --noEmit`
+- `npm test`
+- ReadLints on touched files
+- `npm run build` only if stable; if Google Fonts TLS/cert issue appears, report as environmental and restore `frontend/tsconfig.tsbuildinfo`
+
+**Acceptance checks:**
+- [x] `recovery-copy.ts` exports `getRecoveryCopy(locale)`
+- [x] English-only `recoveryCopy` plain-object export is no longer the primary render path
+- [x] All recovery copy strings are present in `en.json`, `zh-TW.json`, and `zh-CN.json`
+- [x] `workspace-shell.tsx` uses locale-backed recovery copy for targeted render paths
+- [x] `window.confirm` and `window.prompt` recovery-copy call sites use locale-backed strings
+- [x] Existing `data-testid` values and layout are preserved
+- [x] `npx tsc --noEmit` passes
+- [x] `npm test` passes — 465 tests, 0 failed
+- [x] ReadLints passes
+- [x] No unrelated files changed
+
+**Reference:** See TASKS.md -> I18N-SHELL-05.
+**Checkpoint:** `docs/I18N-SHELL-05-CHECKPOINT.md`

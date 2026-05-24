@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { PROJECT_FIRST_UX } from '@/lib/feature-flags';
-import { recoveryCopy } from '@/lib/recovery-copy';
+import { getRecoveryCopy } from '@/lib/recovery-copy';
 import WorkspaceSidebar, {
   getWorkspaceScaffoldMessages,
   type WorkspaceSidebarRecentProject,
@@ -76,6 +76,8 @@ import {
   AI_PANEL_COLLAPSED_STORAGE_KEY,
   type TabOrientation,
 } from './workspace-tab-registry';
+
+let recoveryCopy = getRecoveryCopy('en');
 
 const projectFirstUxAnchors = {
   enabled: PROJECT_FIRST_UX,
@@ -466,6 +468,8 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const workspaceMessages = React.useMemo(() => getWorkspaceMessages(locale), [locale]);
   const previewMessages = React.useMemo(() => getPreviewMessages(locale), [locale]);
   const aiMessages = React.useMemo(() => getAiMessages(locale), [locale]);
+  const recoveryMessages = React.useMemo(() => getRecoveryCopy(locale), [locale]);
+  recoveryCopy = recoveryMessages;
   const comingSoonLabel = React.useMemo(() => getTabMessages(locale).comingSoon, [locale]);
   const activeTabLabel = React.useMemo(
     () => tabBarTabs.find((tab) => tab.id === activeTabId)?.label ?? activeTabId,
@@ -526,7 +530,11 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     Boolean(props.onOpenWorkspaceProject);
   const projectHistoryRows =
     projectFirstUxEnabled && props.selectedProjectId
-      ? computeProjectHistoryRows(props.workspaceSnapshots ?? [], props.selectedProjectId)
+      ? computeProjectHistoryRows(
+          props.workspaceSnapshots ?? [],
+          props.selectedProjectId,
+          recoveryMessages,
+        )
       : [];
   const latestProject = projectFirstUxEnabled ? computeLatestProject(workspaceProjects) : null;
   const recentProjects = projectFirstUxEnabled
@@ -7345,7 +7353,10 @@ function parseProjectIdFromProjectScopedSnapshotLabel(label: string | null): str
   return normalizedProjectId ? normalizedProjectId : null;
 }
 
-function formatProjectHistoryFallbackLabel(label: string | null): string {
+function formatProjectHistoryFallbackLabel(
+  label: string | null,
+  recoveryCopy: typeof enMessages.recovery,
+): string {
   const source = parseProjectScopedSnapshotSource(label);
   if (!source) {
     return 'Saved version';
@@ -7371,6 +7382,7 @@ function formatProjectHistoryTimestamp(value: string): string {
 function computeProjectHistoryRows(
   snapshots: WorkspaceSnapshotSummary[],
   projectId: string,
+  recoveryCopy: typeof enMessages.recovery,
 ): ProjectHistoryRow[] {
   const normalizedProjectId = projectId.trim();
   if (!normalizedProjectId) {
@@ -7408,7 +7420,7 @@ function computeProjectHistoryRows(
       id: snapshot.id,
       label:
         parseProjectScopedSnapshotName(snapshot.label) ??
-        formatProjectHistoryFallbackLabel(snapshot.label),
+        formatProjectHistoryFallbackLabel(snapshot.label, recoveryCopy),
       createdAt: snapshot.createdAt,
     }));
 }

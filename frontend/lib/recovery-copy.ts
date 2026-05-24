@@ -1,71 +1,13 @@
-// PROJ-03-A0: Centralized project-first and recovery vocabulary for later
-// Phase A slices. Nothing consumes these strings yet.
-export const recoveryCopy = {
-  actions: {
-    saveNamedSnapshot: 'Save',
-    startNewProject: 'Start a new project',
-    openExistingProject: 'Open existing project',
-    reopenProject: 'Reopen project',
-    resumeLatestProject: 'Resume latest project',
-    restoreSnapshot: 'Restore',
-    tryAgain: 'Try again',
-    openOlderVersion: 'Open older version',
-  },
-  status: {
-    workspaceDisconnected: 'Workspace disconnected',
-    workspaceStoppedDueToInactivity: 'Workspace stopped due to inactivity',
-    workspaceFailedToStart: 'Workspace failed to start',
-    workspaceWasRestarted: 'Workspace was restarted',
-    saving: 'Saving...',
-    allChangesSaved: 'All changes saved',
-    yourWorkIsSaved: 'Your work is saved',
-    saveFailedRetry: 'Save failed - retry',
-  },
-  detail: {
-    workspaceExpired: 'Your workspace expired, but your project can be reopened.',
-    reconnectByReopening: 'Reconnect by reopening your project.',
-    inactivityRecovery: 'Your project is safe. Reopen it to keep working.',
-    failedToStartRecovery: 'Try reopening your project or open an older version.',
-  },
-  workspace: {
-    trustNote:
-      'Your project stays recoverable. If the workspace disconnects, reopen the project to continue.',
-    loading: 'Loading your project and preparing workspace tools.',
-    unavailable: 'We could not load your project workspace.',
-    automaticVersionLabels: {
-      ai: 'AI changes saved',
-      'file-save': 'File saved',
-      preview: 'Preview built',
-      expiry: 'Session ending',
-      initial: 'Project created',
-    },
-    versionsEntryPoint: 'Versions',
-    lastProtected: 'Last protected',
-    noProjectHistoryYet: 'No history yet for this project.',
-    restoreSnapshotConfirm: 'Restore this version? Your current workspace will be replaced.',
-    saveNamedSnapshotPrompt: 'Name this saved version:',
-    openProjectToStart: 'Open a project to start using workspace tools.',
-    ready: 'Your project workspace is ready.',
-    help: 'Use Start a new project or Open existing project in the history panel.',
-    chatReady: 'Prompt runs through the current workspace.',
-    openProjectToSendPrompts: 'Open a project to send prompts.',
-    buildReady: 'Build runs inside the current workspace.',
-    openProjectToRunBuild: 'Open a project to run a build target.',
-    filesLoading: 'Loading your project files.',
-    noFilesAvailable: 'No files were found in this project workspace yet.',
-    filesReady: 'Your project files are ready to browse.',
-    previewLoading: 'Loading the current workspace preview.',
-    previewReady: 'The current workspace preview is rendering.',
-    previewUnavailable: 'No preview is running for this workspace yet.',
-    previewError: 'The preview could not load for this workspace.',
-    openProjectToCreateSavePoint: 'Open a project to create a save point.',
-    openProjectToCompareHistory: 'Open a project to compare checkpoints.',
-    openProjectToInspectDiffs: 'Open a project to inspect checkpoint diffs.',
-    openProjectToInspectSnapshots: 'Open a project to inspect checkpoint history.',
-    openProjectToOpenLiveFile: 'Open a project to open a live file from history.',
-    openProjectToEnableRevert: 'Open a project to enable checkpoint revert.',
-    openOrReopenProject: 'Open or reopen a project to continue.',
-  },
-} as const;
+import enMessages from '@/messages/en.json';
+import zhTwMessages from '@/messages/zh-TW.json';
+import zhCnMessages from '@/messages/zh-CN.json';
 
-export type RecoveryCopy = typeof recoveryCopy;
+export function getRecoveryCopy(locale: string): typeof enMessages.recovery {
+  if (locale === 'zh-TW') return zhTwMessages.recovery;
+  if (locale === 'zh-CN') return zhCnMessages.recovery;
+  return enMessages.recovery;
+}
+
+export const recoveryCopy = enMessages.recovery;
+
+export type RecoveryCopy = typeof enMessages.recovery;

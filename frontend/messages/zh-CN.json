@@ -124,6 +124,72 @@
     "noOtherWorkspaces": "没有其他可用工作区",
     "moveToWorkspace": "移动到工作区"
   },
+  "recovery": {
+    "actions": {
+      "saveNamedSnapshot": "保存",
+      "startNewProject": "开始新项目",
+      "openExistingProject": "打开现有项目",
+      "reopenProject": "重新打开项目",
+      "resumeLatestProject": "继续最新项目",
+      "restoreSnapshot": "恢复",
+      "tryAgain": "再试一次",
+      "openOlderVersion": "打开较旧版本"
+    },
+    "status": {
+      "workspaceDisconnected": "工作区已断开连接",
+      "workspaceStoppedDueToInactivity": "工作区因空闲而停止",
+      "workspaceFailedToStart": "工作区启动失败",
+      "workspaceWasRestarted": "工作区已重新启动",
+      "saving": "保存中...",
+      "allChangesSaved": "所有更改均已保存",
+      "yourWorkIsSaved": "你的工作已保存",
+      "saveFailedRetry": "保存失败 - 请重试"
+    },
+    "detail": {
+      "workspaceExpired": "你的工作区已过期，但仍可重新打开项目。",
+      "reconnectByReopening": "通过重新打开项目重新连接。",
+      "inactivityRecovery": "你的项目是安全的。重新打开即可继续工作。",
+      "failedToStartRecovery": "请尝试重新打开项目，或打开较旧版本。"
+    },
+    "workspace": {
+      "trustNote": "你的项目可持续恢复。若工作区断开，重新打开项目即可继续。",
+      "loading": "正在加载你的项目并准备工作区工具。",
+      "unavailable": "我们无法加载你的项目工作区。",
+      "automaticVersionLabels": {
+        "ai": "AI 更改已保存",
+        "file-save": "文件已保存",
+        "preview": "预览已构建",
+        "expiry": "会话即将结束",
+        "initial": "项目已创建"
+      },
+      "versionsEntryPoint": "版本",
+      "lastProtected": "最近保护时间",
+      "noProjectHistoryYet": "该项目尚无历史记录。",
+      "restoreSnapshotConfirm": "恢复此版本吗？当前工作区将被替换。",
+      "saveNamedSnapshotPrompt": "为此保存版本命名：",
+      "openProjectToStart": "打开项目以开始使用工作区工具。",
+      "ready": "你的项目工作区已就绪。",
+      "help": "请在历史面板使用“开始新项目”或“打开现有项目”。",
+      "chatReady": "提示将在当前工作区中运行。",
+      "openProjectToSendPrompts": "打开项目以发送提示。",
+      "buildReady": "构建将在当前工作区中运行。",
+      "openProjectToRunBuild": "打开项目以运行构建目标。",
+      "filesLoading": "正在加载你的项目文件。",
+      "noFilesAvailable": "该项目工作区目前尚未找到文件。",
+      "filesReady": "你的项目文件已可浏览。",
+      "previewLoading": "正在加载当前工作区预览。",
+      "previewReady": "当前工作区预览正在渲染。",
+      "previewUnavailable": "该工作区目前尚未运行预览。",
+      "previewError": "该工作区的预览无法加载。",
+      "openProjectToCreateSavePoint": "打开项目以创建保存点。",
+      "openProjectToCompareHistory": "打开项目以比较检查点。",
+      "openProjectToInspectDiffs": "打开项目以查看检查点差异。",
+      "openProjectToInspectSnapshots": "打开项目以查看检查点历史。",
+      "openProjectToOpenLiveFile": "打开项目以从历史中打开实时文件。",
+      "openProjectToEnableRevert": "打开项目以启用检查点恢复。",
+      "openOrReopenProject": "打开或重新打开项目以继续。"
+    }
+  },
   "preview": {
     "livePreview": "实时预览",
     "startPreview": "启动预览"

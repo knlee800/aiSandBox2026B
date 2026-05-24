@@ -5233,6 +5233,149 @@ describe('workspace/project modal action button labels i18n wiring — I18N-SHEL
   });
 });
 
+describe('recovery copy locale migration wiring — I18N-SHELL-05', () => {
+  test('locale files define required recovery keys', () => {
+    const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));
+    const zhTw = JSON.parse(readFileSync(new URL('../../messages/zh-TW.json', import.meta.url), 'utf8'));
+    const zhCn = JSON.parse(readFileSync(new URL('../../messages/zh-CN.json', import.meta.url), 'utf8'));
+    const requiredActionKeys = [
+      'saveNamedSnapshot',
+      'startNewProject',
+      'openExistingProject',
+      'reopenProject',
+      'resumeLatestProject',
+      'restoreSnapshot',
+      'tryAgain',
+      'openOlderVersion',
+    ] as const;
+    const requiredStatusKeys = [
+      'workspaceDisconnected',
+      'workspaceStoppedDueToInactivity',
+      'workspaceFailedToStart',
+      'workspaceWasRestarted',
+      'saving',
+      'allChangesSaved',
+      'yourWorkIsSaved',
+      'saveFailedRetry',
+    ] as const;
+    const requiredDetailKeys = [
+      'workspaceExpired',
+      'reconnectByReopening',
+      'inactivityRecovery',
+      'failedToStartRecovery',
+    ] as const;
+    const requiredWorkspaceKeys = [
+      'trustNote',
+      'loading',
+      'unavailable',
+      'versionsEntryPoint',
+      'lastProtected',
+      'noProjectHistoryYet',
+      'restoreSnapshotConfirm',
+      'saveNamedSnapshotPrompt',
+      'openProjectToStart',
+      'ready',
+      'help',
+      'chatReady',
+      'openProjectToSendPrompts',
+      'buildReady',
+      'openProjectToRunBuild',
+      'filesLoading',
+      'noFilesAvailable',
+      'filesReady',
+      'previewLoading',
+      'previewReady',
+      'previewUnavailable',
+      'previewError',
+      'openProjectToCreateSavePoint',
+      'openProjectToCompareHistory',
+      'openProjectToInspectDiffs',
+      'openProjectToInspectSnapshots',
+      'openProjectToOpenLiveFile',
+      'openProjectToEnableRevert',
+      'openOrReopenProject',
+    ] as const;
+    const requiredAutomaticVersionLabels = ['ai', 'file-save', 'preview', 'expiry', 'initial'] as const;
+
+    for (const key of requiredActionKeys) {
+      assert.ok(typeof en.recovery?.actions?.[key] === 'string' && en.recovery.actions[key].length > 0);
+      assert.ok(typeof zhTw.recovery?.actions?.[key] === 'string' && zhTw.recovery.actions[key].length > 0);
+      assert.ok(typeof zhCn.recovery?.actions?.[key] === 'string' && zhCn.recovery.actions[key].length > 0);
+    }
+
+    for (const key of requiredStatusKeys) {
+      assert.ok(typeof en.recovery?.status?.[key] === 'string' && en.recovery.status[key].length > 0);
+      assert.ok(typeof zhTw.recovery?.status?.[key] === 'string' && zhTw.recovery.status[key].length > 0);
+      assert.ok(typeof zhCn.recovery?.status?.[key] === 'string' && zhCn.recovery.status[key].length > 0);
+    }
+
+    for (const key of requiredDetailKeys) {
+      assert.ok(typeof en.recovery?.detail?.[key] === 'string' && en.recovery.detail[key].length > 0);
+      assert.ok(typeof zhTw.recovery?.detail?.[key] === 'string' && zhTw.recovery.detail[key].length > 0);
+      assert.ok(typeof zhCn.recovery?.detail?.[key] === 'string' && zhCn.recovery.detail[key].length > 0);
+    }
+
+    for (const key of requiredWorkspaceKeys) {
+      assert.ok(typeof en.recovery?.workspace?.[key] === 'string' && en.recovery.workspace[key].length > 0);
+      assert.ok(typeof zhTw.recovery?.workspace?.[key] === 'string' && zhTw.recovery.workspace[key].length > 0);
+      assert.ok(typeof zhCn.recovery?.workspace?.[key] === 'string' && zhCn.recovery.workspace[key].length > 0);
+    }
+
+    for (const key of requiredAutomaticVersionLabels) {
+      assert.ok(
+        typeof en.recovery?.workspace?.automaticVersionLabels?.[key] === 'string' &&
+          en.recovery.workspace.automaticVersionLabels[key].length > 0,
+      );
+      assert.ok(
+        typeof zhTw.recovery?.workspace?.automaticVersionLabels?.[key] === 'string' &&
+          zhTw.recovery.workspace.automaticVersionLabels[key].length > 0,
+      );
+      assert.ok(
+        typeof zhCn.recovery?.workspace?.automaticVersionLabels?.[key] === 'string' &&
+          zhCn.recovery.workspace.automaticVersionLabels[key].length > 0,
+      );
+    }
+  });
+
+  test('recovery-copy source imports all locale files and exports getRecoveryCopy(locale)', () => {
+    const recoveryCopySource = readFileSync(new URL('../../lib/recovery-copy.ts', import.meta.url), 'utf8');
+    assert.match(recoveryCopySource, /import enMessages from '@\/messages\/en\.json';/);
+    assert.match(recoveryCopySource, /import zhTwMessages from '@\/messages\/zh-TW\.json';/);
+    assert.match(recoveryCopySource, /import zhCnMessages from '@\/messages\/zh-CN\.json';/);
+    assert.match(
+      recoveryCopySource,
+      /export function getRecoveryCopy\(locale: string\): typeof enMessages\.recovery \{/,
+    );
+    assert.match(recoveryCopySource, /if \(locale === 'zh-TW'\) return zhTwMessages\.recovery;/);
+    assert.match(recoveryCopySource, /if \(locale === 'zh-CN'\) return zhCnMessages\.recovery;/);
+    assert.match(recoveryCopySource, /return enMessages\.recovery;/);
+  });
+
+  test('workspace shell source wires locale-backed recovery copy and removes direct english import path', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.match(shellSource, /import \{ getRecoveryCopy \} from '@\/lib\/recovery-copy';/);
+    assert.doesNotMatch(shellSource, /import \{ recoveryCopy \} from '@\/lib\/recovery-copy';/);
+    assert.match(
+      shellSource,
+      /const recoveryMessages = React\.useMemo\(\(\) => getRecoveryCopy\(locale\), \[locale\]\);/,
+    );
+    assert.match(shellSource, /recoveryCopy = recoveryMessages;/);
+    assert.match(
+      shellSource,
+      /computeProjectHistoryRows\(\s*props\.workspaceSnapshots \?\? \[\],\s*props\.selectedProjectId,\s*recoveryMessages,\s*\)/,
+    );
+  });
+
+  test('workspace shell confirm/prompt and render paths use locale-backed recovery copy', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.match(shellSource, /window\.confirm\(recoveryCopy\.workspace\.restoreSnapshotConfirm\)/);
+    assert.match(shellSource, /window\.prompt\(\s*recoveryCopy\.workspace\.saveNamedSnapshotPrompt,/);
+    assert.match(shellSource, /\{recoveryCopy\.workspace\.versionsEntryPoint\}/);
+    assert.match(shellSource, /\{recoveryCopy\.actions\.saveNamedSnapshot\}/);
+    assert.match(shellSource, /recoveryCopy\.workspace\.openProjectToCompareHistory/);
+  });
+});
+
 describe('auth module i18n wiring — I18N-PAGE-01', () => {
   test('locale files define required authModule keys', () => {
     const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));

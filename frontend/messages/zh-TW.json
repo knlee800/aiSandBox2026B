@@ -124,6 +124,72 @@
     "noOtherWorkspaces": "沒有其他可用工作區",
     "moveToWorkspace": "移動到工作區"
   },
+  "recovery": {
+    "actions": {
+      "saveNamedSnapshot": "儲存",
+      "startNewProject": "開始新專案",
+      "openExistingProject": "開啟既有專案",
+      "reopenProject": "重新開啟專案",
+      "resumeLatestProject": "繼續最新專案",
+      "restoreSnapshot": "還原",
+      "tryAgain": "再試一次",
+      "openOlderVersion": "開啟較舊版本"
+    },
+    "status": {
+      "workspaceDisconnected": "工作區已中斷連線",
+      "workspaceStoppedDueToInactivity": "工作區因閒置而停止",
+      "workspaceFailedToStart": "工作區啟動失敗",
+      "workspaceWasRestarted": "工作區已重新啟動",
+      "saving": "儲存中...",
+      "allChangesSaved": "所有變更都已儲存",
+      "yourWorkIsSaved": "你的工作已儲存",
+      "saveFailedRetry": "儲存失敗 - 請重試"
+    },
+    "detail": {
+      "workspaceExpired": "你的工作區已過期，但仍可重新開啟專案。",
+      "reconnectByReopening": "重新開啟專案即可重新連線。",
+      "inactivityRecovery": "你的專案是安全的。重新開啟即可繼續作業。",
+      "failedToStartRecovery": "請嘗試重新開啟專案，或開啟較舊版本。"
+    },
+    "workspace": {
+      "trustNote": "你的專案可持續復原。若工作區中斷，重新開啟專案即可繼續。",
+      "loading": "正在載入你的專案並準備工作區工具。",
+      "unavailable": "我們無法載入你的專案工作區。",
+      "automaticVersionLabels": {
+        "ai": "AI 變更已儲存",
+        "file-save": "檔案已儲存",
+        "preview": "預覽已建置",
+        "expiry": "工作階段即將結束",
+        "initial": "專案已建立"
+      },
+      "versionsEntryPoint": "版本",
+      "lastProtected": "最近保護時間",
+      "noProjectHistoryYet": "此專案尚無歷史紀錄。",
+      "restoreSnapshotConfirm": "要還原此版本嗎？目前工作區將被取代。",
+      "saveNamedSnapshotPrompt": "為此儲存版本命名：",
+      "openProjectToStart": "開啟專案以開始使用工作區工具。",
+      "ready": "你的專案工作區已就緒。",
+      "help": "請在歷史面板使用「開始新專案」或「開啟既有專案」。",
+      "chatReady": "提示會在目前工作區中執行。",
+      "openProjectToSendPrompts": "開啟專案以發送提示。",
+      "buildReady": "建置會在目前工作區中執行。",
+      "openProjectToRunBuild": "開啟專案以執行建置目標。",
+      "filesLoading": "正在載入你的專案檔案。",
+      "noFilesAvailable": "此專案工作區目前尚未找到檔案。",
+      "filesReady": "你的專案檔案已可瀏覽。",
+      "previewLoading": "正在載入目前工作區預覽。",
+      "previewReady": "目前工作區預覽正在渲染。",
+      "previewUnavailable": "此工作區目前尚未執行預覽。",
+      "previewError": "此工作區的預覽無法載入。",
+      "openProjectToCreateSavePoint": "開啟專案以建立儲存點。",
+      "openProjectToCompareHistory": "開啟專案以比較檢查點。",
+      "openProjectToInspectDiffs": "開啟專案以檢視檢查點差異。",
+      "openProjectToInspectSnapshots": "開啟專案以檢視檢查點歷史。",
+      "openProjectToOpenLiveFile": "開啟專案以從歷史中開啟即時檔案。",
+      "openProjectToEnableRevert": "開啟專案以啟用檢查點還原。",
+      "openOrReopenProject": "開啟或重新開啟專案以繼續。"
+    }
+  },
   "preview": {
     "livePreview": "即時預覽",
     "startPreview": "啟動預覽"
