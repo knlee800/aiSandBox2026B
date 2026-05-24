@@ -12068,9 +12068,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## UX-IA ?X Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) ?X UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) ?X UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) ?X UX-IA-18 COMPLETE and LOCKED
+**Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) ?X UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) ?X UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) ?X UX-IA-18 COMPLETE and LOCKED — UX-IA-19 COMPLETE and LOCKED — UX-IA-20 COMPLETE and LOCKED
 
-**Current stage:** UX-IA-18 COMPLETE and LOCKED — see next active task
+**Current stage:** UX-IA-20 COMPLETE and LOCKED
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -12110,6 +12110,8 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 19. UX-IA-18 — Multilingual Chat Empty State + System Message Distinction (COMPLETE and LOCKED — `docs/UX-IA-18-CHECKPOINT.md`)
    > AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps (cross-family — COMPLETE and LOCKED — `docs/AUTH-MODULE-01-CHECKPOINT.md` — registered under AUTH family)
    > AUTH-MODULE-02 — Auth Module Live Smoke Blockers (cross-family — COMPLETE and LOCKED — `docs/AUTH-MODULE-02-CHECKPOINT.md` — registered under AUTH family)
+20. UX-IA-19 — Checkpoint Revert Button Visual Hierarchy (COMPLETE and LOCKED — `docs/UX-IA-19-CHECKPOINT.md`)
+21. UX-IA-20 — Reduce Healthy-State Noise + Improve Loading Visibility (COMPLETE and LOCKED — `docs/UX-IA-20-CHECKPOINT.md`)
 
 ---
 
@@ -14106,7 +14108,67 @@ No new user-facing text. If any text changes become necessary, update `en.json`,
 
 
 
-## AUTH — aiSandBox First-Party
+#### UX-IA-20: Reduce Healthy-State Noise + Improve Loading Visibility
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** UX-IA-20
+**Family:** UX-IA
+**Priority:** Low
+**Nature:** FRONTEND-ONLY
+**Risk:** Low-Medium
+**Depends on:** UX-IA-19 (COMPLETE and LOCKED — `docs/UX-IA-19-CHECKPOINT.md`)
+**Checkpoint:** `docs/UX-IA-20-CHECKPOINT.md`
+
+**Objective:**
+Finish the remaining bounded post-AUTH UX audit items:
+1. StateMessage success/healthy boxes are too verbose and dominate panels.
+2. Loading states are too visually weak.
+
+**Files in scope:**
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+
+**UX/UI advisory:**
+Impeccable and Emil Kowalski advisory only. Healthy states should be quiet. Loading states should be visible but restrained. No broad redesign.
+
+**Scope:**
+- In shared StateMessage rendering, make `tone === 'success'` visually compact.
+- Suppress verbose body/action for success tone only.
+- Preserve error/warning/loading behavior.
+- Improve identified loading states with existing Tailwind only (e.g. `animate-pulse` dot or subtle skeleton).
+- Preserve layout, behavior, test IDs, and existing text.
+
+**Multilingual invariant:**
+No new user-facing text. If any visible text changes become necessary, update `en.json`, `zh-TW.json`, and `zh-CN.json` in the same slice.
+
+**Non-goals:**
+- No backend changes
+- No page.tsx changes
+- No i18n cleanup
+- No new text unless multilingual
+- No loading system refactor
+- No StateMessage logic rewrite
+- No broad redesign
+- No TASK-75A work
+
+**Preserved invariants:**
+- All existing `data-testid` contracts in workspace-shell — unchanged
+- Visual Edit Mode wiring (UX-IA-15/16/17) — untouched
+- Auth-module install flow — untouched
+- Internal session API endpoints — untouched
+- Error/warning/loading tone behavior — unchanged
+
+**Validation:**
+- `npx tsc --noEmit` from `frontend/` — must pass
+- `npm test` from `frontend/` — all tests must pass
+- `ReadLints` on touched files — 0 new errors
+
+**Acceptance checks:**
+- [x] UX-IA-20 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- [x] Implementation complete and validated
+- [x] `docs/UX-IA-20-CHECKPOINT.md` created
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-20. Depends on: `docs/UX-IA-19-CHECKPOINT.md`.
 
 **Family status:** COMPLETE and LOCKED — AUTH-MODULE-01 COMPLETE and LOCKED — AUTH-MODULE-02 COMPLETE and LOCKED — CHECKPOINT-LEDGER-01 COMPLETE and LOCKED — AUTH-MODULE-03 COMPLETE and LOCKED
 

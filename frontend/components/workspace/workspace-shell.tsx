@@ -2038,8 +2038,9 @@ function HistoryProjectPanel(props: {
       </div>
 
       {props.listState === 'loading' ? (
-        <p className="mt-2 text-[11px] text-gray-500" data-testid="history-project-list-loading">
-          Loading projects...
+        <p className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-gray-500" data-testid="history-project-list-loading">
+          <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-gray-400 animate-pulse" />
+          <span>Loading projects...</span>
         </p>
       ) : null}
       {props.listState === 'error' ? (
@@ -2058,8 +2059,12 @@ function HistoryProjectPanel(props: {
         </p>
       ) : null}
       {props.publicProjectListState === 'loading' ? (
-        <p className="mt-2 text-[11px] text-gray-500" data-testid="history-public-project-list-loading">
-          Loading public projects...
+        <p
+          className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-gray-500"
+          data-testid="history-public-project-list-loading"
+        >
+          <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-gray-400 animate-pulse" />
+          <span>Loading public projects...</span>
         </p>
       ) : null}
       {props.publicProjectListState === 'error' ? (
@@ -2219,8 +2224,9 @@ function HistorySnapshotPanel(props: {
       </div>
 
       {props.listState === 'loading' ? (
-        <p className="mt-2 text-[11px] text-gray-500" data-testid="history-snapshot-list-loading">
-          Loading snapshots...
+        <p className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-gray-500" data-testid="history-snapshot-list-loading">
+          <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-gray-400 animate-pulse" />
+          <span>Loading snapshots...</span>
         </p>
       ) : null}
       {props.listState === 'error' ? (
@@ -7618,29 +7624,42 @@ function StateMessage(props: {
   onPrimaryAction?: () => void;
   primaryActionTestId?: string;
 }) {
+  const isSuccessTone = props.tone === 'success';
   const paletteByTone = {
     neutral: 'border-gray-200 bg-gray-50 text-gray-700',
     error: 'border-red-200 bg-red-50 text-red-700',
-    success: 'border-green-200 bg-green-50 text-green-700',
+    success: 'border-green-100 bg-green-50 text-green-700',
   } as const;
 
   const palette = paletteByTone[props.tone];
+  const containerClassName = isSuccessTone
+    ? `rounded border px-2 py-1.5 text-xs ${palette}`
+    : `rounded border px-3 py-2 text-sm ${palette}`;
 
   return (
-    <div className={`rounded border px-3 py-2 text-sm ${palette}`}>
-      <p className="font-semibold">{props.heading}</p>
-      <p className="mt-1">{props.body}</p>
+    <div className={containerClassName}>
+      {isSuccessTone ? (
+        <div className="inline-flex items-center gap-1.5">
+          <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-green-500" />
+          <p className="font-medium opacity-90">{props.heading}</p>
+        </div>
+      ) : (
+        <>
+          <p className="font-semibold">{props.heading}</p>
+          <p className="mt-1">{props.body}</p>
+        </>
+      )}
       {props.primaryActionLabel && props.onPrimaryAction ? (
         <button
           type="button"
           onClick={props.onPrimaryAction}
           data-testid={props.primaryActionTestId}
-          className="mt-2 rounded bg-blue-600 px-3 py-1 text-xs font-medium text-white"
+          className={`${isSuccessTone ? 'mt-1.5' : 'mt-2'} rounded bg-blue-600 px-3 py-1 text-xs font-medium text-white`}
         >
           {props.primaryActionLabel}
         </button>
       ) : null}
-      <p className="mt-1 text-xs opacity-90">Action: {props.action}</p>
+      {!isSuccessTone ? <p className="mt-1 text-xs opacity-90">Action: {props.action}</p> : null}
     </div>
   );
 }

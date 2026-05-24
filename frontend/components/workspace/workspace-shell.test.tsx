@@ -3240,7 +3240,7 @@ describe('workspace shell component', () => {
 
     assert.match(html, /Preview ready/);
     assert.match(html, /workspace-preview-iframe/);
-    assert.match(html, /Use Refresh to reload only this preview\./);
+    assert.doesNotMatch(html, /Use Refresh to reload only this preview\./);
   });
 
   test('renders preview error state', () => {
@@ -4196,7 +4196,7 @@ describe('workspace shell component', () => {
 
     assert.match(openedHtml, /data-testid="history-open-live-state"/);
     assert.match(openedHtml, /Live workspace file opened/);
-    assert.match(openedHtml, /Editor focus switched to src\/app\.ts using live workspace navigation\./);
+    assert.doesNotMatch(openedHtml, /Editor focus switched to src\/app\.ts using live workspace navigation\./);
     assert.match(openedHtml, /data-testid="history-diff-open-live-src\/app\.ts::modified"/);
     assert.match(openedHtml, /data-testid="history-snapshot-open-live-src\/app\.ts::modified"/);
     assert.match(openedHtml, /data-testid="history-diff-open-live-src\/new-file\.ts::added"[^>]*disabled/);
@@ -4848,6 +4848,60 @@ describe('workspace history revert button styling — UX-IA-19', () => {
       shellSource,
       /data-testid=\{`history-revert-button-\$\{checkpoint\.id\}`\}[\s\S]*?className="rounded border border-red-300 bg-red-50 px-3 py-1 text-xs text-red-700 hover:bg-red-100 disabled:border-gray-200 disabled:bg-gray-100 disabled:text-gray-400"/,
     );
+  });
+});
+
+describe('workspace state-message/loading polish — UX-IA-20', () => {
+  test('workspace shell source renders compact success state message with inline indicator', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.match(shellSource, /const isSuccessTone = props\.tone === 'success';/);
+    assert.match(shellSource, /const containerClassName = isSuccessTone[\s\S]*?px-2 py-1\.5 text-xs/);
+    assert.match(shellSource, /<span aria-hidden="true" className="h-1\.5 w-1\.5 rounded-full bg-green-500" \/>/);
+    assert.match(shellSource, /\{!isSuccessTone \? <p className="mt-1 text-xs opacity-90">Action: \{props\.action\}<\/p> : null\}/);
+  });
+
+  test('non-success state messages keep action copy visible', () => {
+    const html = renderWorkspaceShell({
+      sessionError: 'Failed to load sessions.',
+      userId: null,
+      checkpoints: [],
+      historyError: 'Failed to load checkpoints.',
+      userSummary: null,
+      usageSummary: null,
+      quotaSummary: null,
+      dashboardError: 'Failed to load dashboard summary.',
+      fileSurfaceState: 'error',
+      workspaceFileTree: [],
+      selectedFilePath: null,
+      selectedFileContent: '',
+      fileSurfaceError: 'Failed to load workspace files.',
+    });
+
+    assert.match(html, /Action: Refresh this page to retry\./);
+  });
+
+  test('loading list rows keep existing test ids and add pulse affordance', () => {
+    const html = renderWorkspaceShell({
+      ...projectPanelRenderOverrides,
+      projectListState: 'loading',
+      publicProjectListState: 'loading',
+      snapshotListState: 'loading',
+    });
+
+    assert.match(html, /history-project-list-loading/);
+    assert.match(html, /history-public-project-list-loading/);
+    assert.match(html, /history-snapshot-list-loading/);
+    assert.match(html, /Loading projects\.\.\./);
+    assert.match(html, /Loading public projects\.\.\./);
+    assert.match(html, /Loading snapshots\.\.\./);
+    assert.match(html, /animate-pulse/);
+  });
+
+  test('workspace shell source applies pulse indicator in targeted loading rows', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.match(shellSource, /data-testid="history-project-list-loading"[\s\S]*?animate-pulse/);
+    assert.match(shellSource, /data-testid="history-public-project-list-loading"[\s\S]*?animate-pulse/);
+    assert.match(shellSource, /data-testid="history-snapshot-list-loading"[\s\S]*?animate-pulse/);
   });
 });
 
