@@ -12068,9 +12068,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## UX-IA ?X Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) ?X UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) ?X UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) ?X UX-IA-18 COMPLETE and LOCKED — UX-IA-19 COMPLETE and LOCKED — UX-IA-20 COMPLETE and LOCKED
+**Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) ?X UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) ?X UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) ?X UX-IA-18 COMPLETE and LOCKED — UX-IA-19 COMPLETE and LOCKED — UX-IA-20 COMPLETE and LOCKED — UX-IA-21 COMPLETE and LOCKED
 
-**Current stage:** UX-IA-20 COMPLETE and LOCKED
+**Current stage:** UX-IA-21 COMPLETE and LOCKED
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -12112,6 +12112,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
    > AUTH-MODULE-02 — Auth Module Live Smoke Blockers (cross-family — COMPLETE and LOCKED — `docs/AUTH-MODULE-02-CHECKPOINT.md` — registered under AUTH family)
 20. UX-IA-19 — Checkpoint Revert Button Visual Hierarchy (COMPLETE and LOCKED — `docs/UX-IA-19-CHECKPOINT.md`)
 21. UX-IA-20 — Reduce Healthy-State Noise + Improve Loading Visibility (COMPLETE and LOCKED — `docs/UX-IA-20-CHECKPOINT.md`)
+22. UX-IA-21 — Gate Developer System Controls (COMPLETE and LOCKED — `docs/UX-IA-21-CHECKPOINT.md`)
 
 ---
 
@@ -14169,6 +14170,57 @@ No new user-facing text. If any visible text changes become necessary, update `e
 - [x] `docs/UX-IA-20-CHECKPOINT.md` created
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-20. Depends on: `docs/UX-IA-19-CHECKPOINT.md`.
+
+---
+
+#### UX-IA-21: Gate Developer System Controls
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** UX-IA-21
+**Family:** UX-IA
+**Priority:** Low
+**Nature:** FRONTEND-ONLY
+**Risk:** Low
+**Depends on:** UX-IA-20 (COMPLETE and LOCKED — `docs/UX-IA-20-CHECKPOINT.md`)
+**Checkpoint:** `docs/UX-IA-21-CHECKPOINT.md`
+
+**Objective:**
+Hide the top-right developer/operator controls ("System Ready" and "Config") from normal users. These controls expose internal health, environment variables, and terminal remediation commands, and should only render in development or when explicitly enabled.
+
+**Files in scope:**
+- `frontend/components/SystemReadiness.tsx`
+- `frontend/components/ConfigurationControl.tsx` (only if needed)
+- `frontend/app/[locale]/layout.tsx` (only if needed)
+- Relevant tests if they exist
+
+**Scope:**
+- Gate `SystemReadiness` so it renders only when `NODE_ENV === 'development'` OR `NEXT_PUBLIC_SHOW_DEV_TOOLS === 'true'`
+- `ConfigurationControl` is rendered from `SystemReadiness` and disappears with the same gate — no separate change required
+- No i18n changes required (developer-only gated text is exempt)
+- Preserve developer/operator behavior when the gate is enabled
+- Do not redesign the modal
+- Do not remove functionality
+- Do not change backend behavior
+
+**Non-goals:**
+- No `ConfigurationControl` redesign
+- No `alert()` replacement in this slice
+- No backend changes
+- No i18n migration
+- No broad header redesign
+- No TASK-75A work
+
+**Validation:**
+- `npx tsc --noEmit` from `frontend/` — must pass
+- `npm test` from `frontend/` — all tests must pass
+- `ReadLints` on touched files — 0 new errors
+
+**Acceptance checks:**
+- [x] UX-IA-21 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- [x] Implementation complete and validated
+- [x] `docs/UX-IA-21-CHECKPOINT.md` created
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-21. Depends on: `docs/UX-IA-20-CHECKPOINT.md`.
 
 **Family status:** COMPLETE and LOCKED — AUTH-MODULE-01 COMPLETE and LOCKED — AUTH-MODULE-02 COMPLETE and LOCKED — CHECKPOINT-LEDGER-01 COMPLETE and LOCKED — AUTH-MODULE-03 COMPLETE and LOCKED
 

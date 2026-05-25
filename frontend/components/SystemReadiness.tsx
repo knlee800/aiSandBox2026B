@@ -38,7 +38,15 @@ interface SystemStatus {
   overall: 'ready' | 'not_ready' | 'checking';
 }
 
+function shouldRenderSystemReadiness(): boolean {
+  return (
+    process.env.NODE_ENV === 'development' ||
+    process.env.NEXT_PUBLIC_SHOW_DEV_TOOLS === 'true'
+  );
+}
+
 export default function SystemReadiness() {
+  const shouldRenderControls = shouldRenderSystemReadiness();
   const [status, setStatus] = useState<SystemStatus>({
     apiGateway: { status: 'checking' },
     database: { status: 'checking' },
@@ -144,6 +152,10 @@ export default function SystemReadiness() {
   };
 
   useEffect(() => {
+    if (!shouldRenderControls) {
+      return;
+    }
+
     // Initial check
     checkSystemReadiness();
 
@@ -154,17 +166,25 @@ export default function SystemReadiness() {
     );
 
     return () => clearInterval(interval);
-  }, [status.overall]);
+  }, [status.overall, shouldRenderControls]);
 
   // Auto-collapse when system is ready (after 3 seconds)
   useEffect(() => {
+    if (!shouldRenderControls) {
+      return;
+    }
+
     if (status.overall === 'ready' && !collapsed) {
       const timer = setTimeout(() => {
         setCollapsed(true);
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [status.overall, collapsed]);
+  }, [status.overall, collapsed, shouldRenderControls]);
+
+  if (!shouldRenderControls) {
+    return null;
+  }
 
   // If system is ready and collapsed, show minimal indicator
   if (status.overall === 'ready' && collapsed) {
