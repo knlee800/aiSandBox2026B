@@ -5905,3 +5905,31 @@ describe('workspace visual edit undo affordance — UX-IA-17B', () => {
     assert.doesNotMatch(html, /workspace-chat-file-actions-undo-visual-edit/);
   });
 });
+
+describe('workspace sidebar workspace-label wiring — UX-IA-22', () => {
+  test('locale files define workspace.workspaceLabel in all supported locales', () => {
+    const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));
+    const zhTw = JSON.parse(readFileSync(new URL('../../messages/zh-TW.json', import.meta.url), 'utf8'));
+    const zhCn = JSON.parse(readFileSync(new URL('../../messages/zh-CN.json', import.meta.url), 'utf8'));
+
+    assert.equal(en.workspace?.workspaceLabel, 'Workspace');
+    assert.equal(zhTw.workspace?.workspaceLabel, '工作區');
+    assert.equal(zhCn.workspace?.workspaceLabel, '工作区');
+  });
+
+  test('workspace sidebar source uses workspaceLabel for workspace selector and fallbacks', () => {
+    const sidebarSource = readFileSync(new URL('./workspace-sidebar.tsx', import.meta.url), 'utf8');
+
+    assert.match(sidebarSource, /workspaceLabel: read\('workspace\.workspaceLabel'\),/);
+    assert.match(sidebarSource, /<label[\s\S]*\{messages\.workspaceLabel\}[\s\S]*<\/label>/);
+
+    const workspaceFallbackMatches =
+      sidebarSource.match(/selectedWorkspace\?\.name \?\? messages\.workspaceLabel/g) ?? [];
+    assert.equal(workspaceFallbackMatches.length, 2);
+  });
+
+  test('workspace sidebar projects nav tab remains wired to messages.projects', () => {
+    const sidebarSource = readFileSync(new URL('./workspace-sidebar.tsx', import.meta.url), 'utf8');
+    assert.match(sidebarSource, /\['projects', messages\.projects\]/);
+  });
+});

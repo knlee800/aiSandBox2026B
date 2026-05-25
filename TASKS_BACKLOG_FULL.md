@@ -21991,9 +21991,9 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 
 ## UX-IA ??Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 COMPLETE and LOCKED — UX-IA-09 COMPLETE and LOCKED — UX-IA-10 COMPLETE and LOCKED — UX-IA-11 COMPLETE and LOCKED — UX-IA-12 COMPLETE and LOCKED — UX-IA-13 COMPLETE and LOCKED — 13A COMPLETE and LOCKED — 13B COMPLETE and LOCKED — UX-IA-14 COMPLETE and LOCKED — UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) — UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) — UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) — UX-IA-18 COMPLETE and LOCKED — UX-IA-19 COMPLETE and LOCKED — UX-IA-20 COMPLETE and LOCKED — UX-IA-21 COMPLETE and LOCKED
+**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 COMPLETE and LOCKED — UX-IA-09 COMPLETE and LOCKED — UX-IA-10 COMPLETE and LOCKED — UX-IA-11 COMPLETE and LOCKED — UX-IA-12 COMPLETE and LOCKED — UX-IA-13 COMPLETE and LOCKED — 13A COMPLETE and LOCKED — 13B COMPLETE and LOCKED — UX-IA-14 COMPLETE and LOCKED — UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) — UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) — UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) — UX-IA-18 COMPLETE and LOCKED — UX-IA-19 COMPLETE and LOCKED — UX-IA-20 COMPLETE and LOCKED — UX-IA-21 COMPLETE and LOCKED — UX-IA-22 COMPLETE and LOCKED
 
-**Current stage:** UX-IA-21 COMPLETE and LOCKED
+**Current stage:** UX-IA-22 COMPLETE and LOCKED
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -22036,6 +22036,7 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 20. UX-IA-19 — Checkpoint Revert Button Visual Hierarchy (COMPLETE and LOCKED — `docs/UX-IA-19-CHECKPOINT.md`)
 21. UX-IA-20 — Reduce Healthy-State Noise + Improve Loading Visibility (COMPLETE and LOCKED — `docs/UX-IA-20-CHECKPOINT.md`)
 22. UX-IA-21 — Gate Developer System Controls (COMPLETE and LOCKED — `docs/UX-IA-21-CHECKPOINT.md`)
+23. UX-IA-22 — Fix Sidebar Workspace Selector Label (COMPLETE and LOCKED — `docs/UX-IA-22-CHECKPOINT.md`)
 
 ---
 
@@ -24466,6 +24467,65 @@ Hide the top-right developer/operator controls ("System Ready" and "Config") fro
 - [x] `docs/UX-IA-21-CHECKPOINT.md` created
 
 **Reference:** See TASKS.md -> UX-IA-21. Depends on: `docs/UX-IA-20-CHECKPOINT.md`.
+
+---
+
+### UX-IA-22: Fix Sidebar Workspace Selector Label
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** UX-IA-22
+**Family:** UX-IA
+**Family status:** ACTIVE — UX-IA-22 COMPLETE and LOCKED
+**Priority:** Low
+**Nature:** FRONTEND-ONLY / I18N COPY FIX
+**Risk:** Low
+**Depends on:** UX-IA-21 (COMPLETE and LOCKED — `docs/UX-IA-21-CHECKPOINT.md`)
+**Checkpoint:** `docs/UX-IA-22-CHECKPOINT.md`
+
+**Objective:**
+The sidebar workspace selector `<label>` renders "PROJECTS" (from `workspace.projects`) above a dropdown that selects among workspaces, not projects. This mislabels a workspace control and confuses the Workspace / Project / Session hierarchy. Add a dedicated `workspace.workspaceLabel` i18n key and apply it to the three affected spots in the sidebar selector block.
+
+**Files in scope:**
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+- `frontend/components/workspace/workspace-sidebar.tsx`
+- Relevant tests if they exist
+
+**Scope:**
+- Add new key `workspace.workspaceLabel` to all three locale files:
+  - `en.json`: `"workspaceLabel": "Workspace"`
+  - `zh-TW.json`: `"workspaceLabel": "工作區"`
+  - `zh-CN.json`: `"workspaceLabel": "工作区"`
+- In `workspace-sidebar.tsx`, replace `{messages.projects}` with `{messages.workspaceLabel}` in the three locations within the workspace selector block:
+  - The `<label>` element above the workspace dropdown
+  - The sidebar header subtitle fallback (`selectedWorkspace?.name ?? messages.projects`)
+  - The disabled placeholder `<option>` fallback (`selectedWorkspace?.name ?? messages.projects`)
+- Do not touch the sidebar nav tab entry that correctly says "Projects" (navigates to the project list view)
+- Do not rename any existing i18n key
+- Do not change routes, backend entities, models, or architecture
+
+**Non-goals:**
+- No backend changes
+- No route or entity rename
+- No broad IA redesign
+- No cleanup of other Project/Workspace copy (e.g., hardcoded strings in history panel)
+- No TASK-75A work
+
+**Validation:**
+- `npx tsc --noEmit` from `frontend/` — must pass
+- `npm test` from `frontend/` — all tests must pass
+- `ReadLints` on touched files — 0 new errors
+
+**Acceptance checks:**
+- [x] UX-IA-22 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- [x] `workspace.workspaceLabel` added to all three locale files
+- [x] Sidebar workspace selector label, header subtitle fallback, and placeholder fallback all use `workspaceLabel`
+- [x] Sidebar "Projects" nav tab unchanged
+- [x] tsc, tests, and lints pass
+- [x] `docs/UX-IA-22-CHECKPOINT.md` created
+
+**Reference:** See TASKS.md -> UX-IA-22. Depends on: `docs/UX-IA-21-CHECKPOINT.md`.
 
 **Family status:** COMPLETE and LOCKED — AUTH-MODULE-01 COMPLETE and LOCKED — AUTH-MODULE-02 COMPLETE and LOCKED
 

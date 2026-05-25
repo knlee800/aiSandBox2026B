@@ -78,6 +78,7 @@ export function getWorkspaceScaffoldMessages(locale?: string) {
     search: read('common.search'),
     home: read('workspace.home'),
     projects: read('workspace.projects'),
+    workspaceLabel: read('workspace.workspaceLabel'),
     gridView: read('workspace.gridView'),
     listView: read('workspace.listView'),
     fork: read('workspace.fork'),
@@ -164,7 +165,7 @@ export default function WorkspaceSidebar(props: WorkspaceSidebarProps) {
         <div className="border-b border-gray-100 px-4 py-4">
           <p className="text-sm font-semibold text-gray-900">{messages.appName}</p>
           <p className="mt-1 truncate text-xs text-gray-500">
-            {selectedWorkspace?.name ?? messages.projects}
+            {selectedWorkspace?.name ?? messages.workspaceLabel}
           </p>
         </div>
 
@@ -173,7 +174,7 @@ export default function WorkspaceSidebar(props: WorkspaceSidebarProps) {
             htmlFor="workspace-sidebar-workspace-select"
             className="mb-2 block text-[11px] font-medium uppercase tracking-wide text-gray-500"
           >
-            {messages.projects}
+            {messages.workspaceLabel}
           </label>
           <select
             id="workspace-sidebar-workspace-select"
@@ -183,7 +184,7 @@ export default function WorkspaceSidebar(props: WorkspaceSidebarProps) {
             data-testid="workspace-sidebar-workspace-select"
           >
             <option value="" disabled>
-              {selectedWorkspace?.name ?? messages.projects}
+              {selectedWorkspace?.name ?? messages.workspaceLabel}
             </option>
             {props.workspaces.map((workspace) => (
               <option key={workspace.id} value={workspace.id}>

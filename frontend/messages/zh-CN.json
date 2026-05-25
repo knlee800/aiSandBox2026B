@@ -122,7 +122,8 @@
     "deleteWorkspace": "删除工作区",
     "selectTargetWorkspace": "选择目标工作区",
     "noOtherWorkspaces": "没有其他可用工作区",
-    "moveToWorkspace": "移动到工作区"
+    "moveToWorkspace": "移动到工作区",
+    "workspaceLabel": "工作区"
   },
   "recovery": {
     "actions": {
