@@ -21991,9 +21991,9 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 
 ## UX-IA ??Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 COMPLETE and LOCKED — UX-IA-09 COMPLETE and LOCKED — UX-IA-10 COMPLETE and LOCKED — UX-IA-11 COMPLETE and LOCKED — UX-IA-12 COMPLETE and LOCKED — UX-IA-13 COMPLETE and LOCKED — 13A COMPLETE and LOCKED — 13B COMPLETE and LOCKED — UX-IA-14 COMPLETE and LOCKED — UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) — UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) — UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) — UX-IA-18 COMPLETE and LOCKED — UX-IA-19 COMPLETE and LOCKED — UX-IA-20 COMPLETE and LOCKED — UX-IA-21 COMPLETE and LOCKED — UX-IA-22 COMPLETE and LOCKED — UX-IA-23 COMPLETE and LOCKED — UX-IA-24 COMPLETE and LOCKED
+**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 COMPLETE and LOCKED — UX-IA-09 COMPLETE and LOCKED — UX-IA-10 COMPLETE and LOCKED — UX-IA-11 COMPLETE and LOCKED — UX-IA-12 COMPLETE and LOCKED — UX-IA-13 COMPLETE and LOCKED — 13A COMPLETE and LOCKED — 13B COMPLETE and LOCKED — UX-IA-14 COMPLETE and LOCKED — UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) — UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) — UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) — UX-IA-18 COMPLETE and LOCKED — UX-IA-19 COMPLETE and LOCKED — UX-IA-20 COMPLETE and LOCKED — UX-IA-21 COMPLETE and LOCKED — UX-IA-22 COMPLETE and LOCKED — UX-IA-23 COMPLETE and LOCKED — UX-IA-24 COMPLETE and LOCKED — UX-IA-25 COMPLETE and LOCKED — UX-IA-26 COMPLETE and LOCKED
 
-**Current stage:** UX-IA-24 COMPLETE and LOCKED
+**Current stage:** UX-IA-26 COMPLETE and LOCKED
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -22039,6 +22039,8 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 23. UX-IA-22 — Fix Sidebar Workspace Selector Label (COMPLETE and LOCKED — `docs/UX-IA-22-CHECKPOINT.md`)
 24. UX-IA-23 — Fix Projects Tab New Project Flow (COMPLETE and LOCKED — `docs/UX-IA-23-CHECKPOINT.md`)
 25. UX-IA-24 — Add Create Workspace Option to Workspace Dropdown (COMPLETE and LOCKED — `docs/UX-IA-24-CHECKPOINT.md`)
+26. UX-IA-25 — Projects Page IA Cleanup — Hide Workspace Admin Controls from Projects View (COMPLETE and LOCKED — `docs/UX-IA-25-CHECKPOINT.md`)
+27. UX-IA-26 — Focused Create Workspace Panel from Dropdown (COMPLETE and LOCKED — `docs/UX-IA-26-CHECKPOINT.md`)
 
 ---
 
@@ -24665,6 +24667,155 @@ Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npm test
 
 **Reference:** See TASKS.md -> UX-IA-24.
 **Checkpoint:** `docs/UX-IA-24-CHECKPOINT.md`
+
+---
+
+### UX-IA-25: Projects Page IA Cleanup — Hide Workspace Admin Controls from Projects View
+
+**Task ID:** UX-IA-25
+**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family status:** ACTIVE — UX-IA-25 COMPLETE and LOCKED
+**Status:** COMPLETE and LOCKED
+**Priority:** Medium
+**Nature:** FRONTEND-ONLY / UX IA CLEANUP
+**Risk:** Low
+**Depends on:** UX-IA-24 (COMPLETE and LOCKED — `docs/UX-IA-24-CHECKPOINT.md`)
+
+**Problem:**
+The Projects view (`projectsWorkspaceContent`) appends `historyAndDashboardContent`, which renders `HistoryProjectPanel`. That panel surfaces workspace admin controls — workspace selector, create workspace, rename workspace, delete workspace — that are already available in the sidebar dropdown. These controls pollute the Projects page and make it look unprofessional.
+
+**Objective:**
+Hide workspace admin controls only when `HistoryProjectPanel` is rendered inside the Projects page. Preserve the same controls in the active project/session view and aside panel contexts.
+
+**Files in scope:**
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+
+**Scope:**
+- Add `hideWorkspaceAdminControls?: boolean` prop to `HistoryProjectPanel`.
+- Guard the workspace selector, create workspace, rename workspace, delete workspace, and workspace action error blocks behind `!props.hideWorkspaceAdminControls`.
+- Convert `historyAndDashboardContent` const JSX variable into `makeHistoryAndDashboardContent(opts?)` function so the Projects page call site can pass `hideWorkspaceAdminControls: true`.
+- Keep project/session view and aside panel call sites unchanged (pass nothing / `false`).
+- No new i18n keys.
+- No backend changes.
+
+**Non-goals:**
+- No focused create workspace panel (future Slice B)
+- No project card "..." menu (future Slice C)
+- No public projects relocation (future Slice D)
+- No workspace settings redesign
+- No backend changes
+- No route/model/entity rename
+- No new user-facing copy
+- No TASK-75A work
+
+**Validation:**
+```powershell
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npx tsc --noEmit
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npm test
+```
+- `ReadLints` on touched files — 0 new errors
+
+**Acceptance checks:**
+- [x] UX-IA-25 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- [x] `hideWorkspaceAdminControls` prop added to `HistoryProjectPanel`
+- [x] `history-workspace-select` absent from `workspace-projects-view` render
+- [x] `history-workspace-create-input` absent from `workspace-projects-view` render
+- [x] `history-workspace-rename-input` absent from `workspace-projects-view` render
+- [x] `history-workspace-delete-button` absent from `workspace-projects-view` render
+- [x] Same controls still present in project/session view and aside panel
+- [x] No backend files changed
+- [x] No i18n files changed
+- [x] `npx tsc --noEmit` passes
+- [x] `npm test` passes
+- [x] ReadLints passes
+- [x] `docs/UX-IA-25-CHECKPOINT.md` created
+
+**Reference:** See TASKS.md -> UX-IA-25.
+**Checkpoint:** `docs/UX-IA-25-CHECKPOINT.md`
+
+---
+
+### UX-IA-26: Focused Create Workspace Panel from Dropdown
+
+**Task ID:** UX-IA-26
+**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family status:** COMPLETE and LOCKED — UX-IA-26 COMPLETE and LOCKED
+**Status:** COMPLETE and LOCKED
+**Priority:** Medium
+**Nature:** FRONTEND-ONLY / UX IA CLEANUP
+**Risk:** Low-Medium
+**Depends on:** UX-IA-25 (COMPLETE and LOCKED — `docs/UX-IA-25-CHECKPOINT.md`), UX-IA-24 (COMPLETE and LOCKED — `docs/UX-IA-24-CHECKPOINT.md`)
+
+**Problem:**
+The workspace dropdown has a "Create new workspace" option (UX-IA-24), but selecting it currently routes users to the generic Projects page. The desired UX is a focused workspace creation state — not a page navigation.
+
+**Objective:**
+When users select "Create new workspace" from the workspace dropdown, show a focused create-workspace panel with:
+- Heading: Create a Workspace
+- Subtext: Create a new place to make projects or collaborate with others.
+- Workspace name label + input
+- Cancel button — closes panel, clears input
+- Create button — calls existing workspace creation handler; must not submit empty names
+
+**Files in scope:**
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-sidebar.tsx` (if needed)
+- `frontend/components/workspace/workspace-shell.test.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+**Multilingual rule:**
+All new visible panel text must be added to all three locale files and wired through the existing locale-message pattern. No hardcoded English.
+
+**Scope:**
+- Preserve existing "Create new workspace" dropdown option (UX-IA-24).
+- Selecting it opens a focused create-workspace panel/state instead of routing to the generic Projects page.
+- Panel uses existing workspace creation state/handler where possible.
+- Cancel closes the focused panel and clears the workspace name input.
+- Create calls existing workspace creation handler; empty name must be blocked.
+- After successful creation, focused panel closes if state allows.
+- Preserve normal workspace selection behavior.
+- Preserve Projects nav tab behavior.
+- Preserve backend/API behavior.
+
+**Non-goals:**
+- No backend changes
+- No route/model/entity rename
+- No modal system unless already-existing pattern strongly fits
+- No project card menu work
+- No public projects relocation
+- No workspace settings/rename redesign yet
+- No TASK-75A work
+
+**Validation:**
+```powershell
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npx tsc --noEmit
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npm test
+```
+- `ReadLints` on touched files — 0 new errors
+
+**Acceptance checks:**
+- [x] UX-IA-26 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- [x] Focused create-workspace panel renders on "Create new workspace" dropdown selection
+- [x] Panel shows heading, subtext, name input, Cancel, and Create
+- [x] Cancel closes panel and clears input
+- [x] Create blocked on empty name
+- [x] Create calls existing workspace creation handler
+- [x] Successful creation closes panel
+- [x] Normal workspace selection unaffected
+- [x] Projects nav tab behavior unaffected
+- [x] No backend files changed
+- [x] All new panel text added to en.json, zh-TW.json, zh-CN.json
+- [x] No hardcoded English user-facing copy
+- [x] `npx tsc --noEmit` passes
+- [x] `npm test` passes
+- [x] ReadLints passes
+- [x] `docs/UX-IA-26-CHECKPOINT.md` created
+
+**Reference:** See TASKS.md -> UX-IA-26.
+**Checkpoint:** `docs/UX-IA-26-CHECKPOINT.md`
 
 ---
 

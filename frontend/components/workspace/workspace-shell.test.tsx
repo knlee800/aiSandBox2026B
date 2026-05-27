@@ -1176,6 +1176,29 @@ describe('workspace shell component', () => {
     assert.match(html, /History &amp; Controls/);
   });
 
+  test('hides workspace-admin history controls in projects view', () => {
+    const html = renderWorkspaceShell({
+      ...projectPanelRenderOverrides,
+      projectFirstUxEnabled: true,
+      workspaceView: 'projects',
+    });
+
+    assert.doesNotMatch(html, /history-workspace-select/);
+    assert.doesNotMatch(html, /history-workspace-create-input/);
+    assert.doesNotMatch(html, /history-workspace-rename-input/);
+    assert.doesNotMatch(html, /history-workspace-delete-button/);
+  });
+
+  test('keeps workspace-admin history controls in active project view', () => {
+    const html = renderWorkspaceShell({
+      ...projectPanelRenderOverrides,
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+
+    assert.match(html, /history-workspace-select/);
+  });
+
   test('restore-related buttons and handlers remain wired where statically testable', () => {
     let restoreProjectId = '';
     let restoreSnapshotId = '';
@@ -1788,7 +1811,7 @@ describe('workspace shell component', () => {
 
     (React as typeof React & { useState: typeof React.useState }).useState = ((initialState: unknown) => {
       useStateCalls += 1;
-      if (useStateCalls === 4) {
+      if (useStateCalls === 5) {
         return ['market', () => {}];
       }
       const value = typeof initialState === 'function' ? (initialState as () => unknown)() : initialState;
@@ -5552,6 +5575,17 @@ describe('workspace/project modal action button labels i18n wiring — I18N-SHEL
     );
   });
 
+  test('workspace shell source wires projects-only workspace-admin hiding without new hardcoded copy', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.match(
+      shellSource,
+      /const makeHistoryAndDashboardContent = \(opts\?: \{ hideWorkspaceAdminControls\?: boolean \}\) => \(/,
+    );
+    assert.match(shellSource, /hideWorkspaceAdminControls=\{opts\?\.hideWorkspaceAdminControls \?\? false\}/);
+    assert.match(shellSource, /\{makeHistoryAndDashboardContent\(\{ hideWorkspaceAdminControls: true \}\)\}/);
+    assert.doesNotMatch(shellSource, /Hide workspace admin controls from Projects view/);
+  });
+
   test('workspace project panel keeps existing target data-testid values', () => {
     const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
     const expectedTestIds = [
@@ -6162,6 +6196,27 @@ describe('workspace sidebar workspace-label wiring — UX-IA-22', () => {
     assert.equal(zhCn.workspace?.createNewWorkspace, '创建新工作区');
   });
 
+  test('locale files define focused create-workspace panel keys in all supported locales', () => {
+    const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));
+    const zhTw = JSON.parse(readFileSync(new URL('../../messages/zh-TW.json', import.meta.url), 'utf8'));
+    const zhCn = JSON.parse(readFileSync(new URL('../../messages/zh-CN.json', import.meta.url), 'utf8'));
+
+    assert.equal(en.workspace?.createWorkspaceTitle, 'Create a Workspace');
+    assert.equal(
+      en.workspace?.createWorkspaceDescription,
+      'Create a new place to make projects or collaborate with others.',
+    );
+    assert.equal(en.workspace?.workspaceNameLabel, 'Workspace name');
+
+    assert.equal(zhTw.workspace?.createWorkspaceTitle, '建立工作區');
+    assert.equal(zhTw.workspace?.createWorkspaceDescription, '建立一個新的空間來製作專案或與他人協作。');
+    assert.equal(zhTw.workspace?.workspaceNameLabel, '工作區名稱');
+
+    assert.equal(zhCn.workspace?.createWorkspaceTitle, '创建工作区');
+    assert.equal(zhCn.workspace?.createWorkspaceDescription, '创建一个新的空间来制作项目或与他人协作。');
+    assert.equal(zhCn.workspace?.workspaceNameLabel, '工作区名称');
+  });
+
   test('workspace sidebar source uses workspaceLabel for workspace selector and fallbacks', () => {
     const sidebarSource = readFileSync(new URL('./workspace-sidebar.tsx', import.meta.url), 'utf8');
 
@@ -6188,6 +6243,29 @@ describe('workspace sidebar workspace-label wiring — UX-IA-22', () => {
     );
   });
 
+  test('workspace shell source opens focused create-workspace panel from sidebar dropdown', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+
+    assert.match(
+      shellSource,
+      /const \[isCreateWorkspacePanelOpen, setIsCreateWorkspacePanelOpen\] = React\.useState\(false\);/,
+    );
+    assert.match(shellSource, /onOpenCreateWorkspaceFlow=\{handleOpenCreateWorkspacePanel\}/);
+    assert.match(shellSource, /onWorkspaceViewChange=\{handleWorkspaceViewChange\}/);
+    assert.match(shellSource, /shouldShowFocusedCreateWorkspacePanel \? focusedCreateWorkspaceContent : null/);
+    assert.match(shellSource, /\{workspaceMessages\.createWorkspaceTitle\}/);
+    assert.match(shellSource, /\{workspaceMessages\.createWorkspaceDescription\}/);
+    assert.match(shellSource, /\{workspaceMessages\.workspaceNameLabel\}/);
+    assert.match(
+      shellSource,
+      /previousWorkspaceActionState === 'creating'[\s\S]*workspaceActionState === 'idle'[\s\S]*setIsCreateWorkspacePanelOpen\(false\)/,
+    );
+    assert.doesNotMatch(
+      shellSource,
+      /onOpenCreateWorkspaceFlow=\{\(\) => props\.onWorkspaceViewChange\?\.\('projects'\)\}/,
+    );
+  });
+
   test('workspace sidebar dropdown includes create-new-workspace option in project-first mode', () => {
     const html = renderWorkspaceShell({
       projectFirstUxEnabled: true,
@@ -6199,29 +6277,180 @@ describe('workspace sidebar workspace-label wiring — UX-IA-22', () => {
     assert.match(html, />Create new workspace</);
   });
 
-  test('selecting create-new-workspace routes to projects view without selecting another workspace', () => {
+  test('selecting create-new-workspace opens focused panel without selecting another workspace', () => {
     const selectedWorkspaceIds: string[] = [];
     const changedViews: string[] = [];
-    const select = renderWorkspaceShellElementByTestId('workspace-sidebar-workspace-select', {
-      projectFirstUxEnabled: true,
-      workspaceView: 'home',
-      selectedWorkspaceId: 'workspace-1',
-      onSelectWorkspaceId: (workspaceId: string) => {
-        selectedWorkspaceIds.push(workspaceId);
-      },
-      onWorkspaceViewChange: (view) => {
-        changedViews.push(view);
-      },
+    let isCreatePanelOpen = false;
+
+    withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 4) {
+        const setIsCreatePanelOpen = (value: unknown): void => {
+          if (typeof value === 'function') {
+            const updater = value as (previous: boolean) => boolean;
+            isCreatePanelOpen = updater(isCreatePanelOpen);
+            return;
+          }
+          isCreatePanelOpen = Boolean(value);
+        };
+        return [isCreatePanelOpen, setIsCreatePanelOpen];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () => {
+      const select = findElementByTestId(
+        WorkspaceShell(
+          buildWorkspaceShellProps({
+            projectFirstUxEnabled: true,
+            workspaceView: 'home',
+            selectedWorkspaceId: 'workspace-1',
+            onSelectWorkspaceId: (workspaceId: string) => {
+              selectedWorkspaceIds.push(workspaceId);
+            },
+            onWorkspaceViewChange: (view) => {
+              changedViews.push(view);
+            },
+          }),
+        ),
+        'workspace-sidebar-workspace-select',
+      );
+
+      assert.ok(select);
+      const onChange = select.props.onChange as
+        | ((event: { target: { value: string } }) => void)
+        | undefined;
+      onChange?.({ target: { value: '__create-new-workspace__' } });
     });
 
-    assert.ok(select);
-    const onChange = select.props.onChange as
-      | ((event: { target: { value: string } }) => void)
-      | undefined;
-    onChange?.({ target: { value: '__create-new-workspace__' } });
-
     assert.deepEqual(selectedWorkspaceIds, []);
-    assert.deepEqual(changedViews, ['projects']);
+    assert.deepEqual(changedViews, []);
+    assert.equal(isCreatePanelOpen, true);
+  });
+
+  test('focused create-workspace panel renders i18n-backed title, description, label, and actions', () => {
+    const html = withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 4) {
+        return [true, () => {}];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () =>
+      renderWorkspaceShell({
+        projectFirstUxEnabled: true,
+        workspaceView: 'home',
+        workspaceCreateNameInput: 'Team Workspace',
+      }),
+    );
+
+    assert.match(html, /workspace-create-workspace-panel/);
+    assert.match(html, />Create a Workspace</);
+    assert.match(
+      html,
+      />Create a new place to make projects or collaborate with others\.<\/p>/,
+    );
+    assert.match(html, />Workspace name</);
+    assert.match(html, /workspace-create-workspace-name-input/);
+    assert.match(html, />Cancel</);
+    assert.match(html, />Create Workspace</);
+  });
+
+  test('focused create-workspace panel cancel closes panel and clears name input', () => {
+    let isCreatePanelOpen = true;
+    let clearedValue: string | null = null;
+
+    withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 4) {
+        const setIsCreatePanelOpen = (value: unknown): void => {
+          if (typeof value === 'function') {
+            const updater = value as (previous: boolean) => boolean;
+            isCreatePanelOpen = updater(isCreatePanelOpen);
+            return;
+          }
+          isCreatePanelOpen = Boolean(value);
+        };
+        return [isCreatePanelOpen, setIsCreatePanelOpen];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () => {
+      const cancelButton = findElementByTestId(
+        WorkspaceShell(
+          buildWorkspaceShellProps({
+            projectFirstUxEnabled: true,
+            workspaceView: 'home',
+            workspaceCreateNameInput: 'To clear',
+            onWorkspaceCreateNameInputChange: (value: string) => {
+              clearedValue = value;
+            },
+          }),
+        ),
+        'workspace-create-workspace-cancel-button',
+      );
+
+      assert.ok(cancelButton);
+      cancelButton.props.onClick?.();
+    });
+
+    assert.equal(isCreatePanelOpen, false);
+    assert.equal(clearedValue, '');
+  });
+
+  test('focused create-workspace panel create button calls onCreateWorkspace when name is present', () => {
+    let createCalls = 0;
+
+    withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 4) {
+        return [true, () => {}];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () => {
+      const createButton = findElementByTestId(
+        WorkspaceShell(
+          buildWorkspaceShellProps({
+            projectFirstUxEnabled: true,
+            workspaceView: 'home',
+            workspaceCreateNameInput: 'Team Workspace',
+            onCreateWorkspace: async () => {
+              createCalls += 1;
+            },
+          }),
+        ),
+        'workspace-create-workspace-create-button',
+      );
+
+      assert.ok(createButton);
+      assert.equal(createButton.props.disabled, false);
+      createButton.props.onClick?.();
+    });
+
+    assert.equal(createCalls, 1);
+  });
+
+  test('focused create-workspace panel create button is disabled when name is empty', () => {
+    let createCalls = 0;
+
+    withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 4) {
+        return [true, () => {}];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () => {
+      const createButton = findElementByTestId(
+        WorkspaceShell(
+          buildWorkspaceShellProps({
+            projectFirstUxEnabled: true,
+            workspaceView: 'home',
+            workspaceCreateNameInput: '   ',
+            onCreateWorkspace: async () => {
+              createCalls += 1;
+            },
+          }),
+        ),
+        'workspace-create-workspace-create-button',
+      );
+
+      assert.ok(createButton);
+      assert.equal(createButton.props.disabled, true);
+      createButton.props.onClick?.();
+    });
+
+    assert.equal(createCalls, 0);
   });
 
   test('selecting a normal workspace still calls onSelectWorkspaceId', () => {
@@ -6247,6 +6476,21 @@ describe('workspace sidebar workspace-label wiring — UX-IA-22', () => {
 
     assert.deepEqual(selectedWorkspaceIds, ['workspace-2']);
     assert.deepEqual(changedViews, []);
+  });
+
+  test('projects nav button click still changes workspace view to projects', () => {
+    const changedViews: string[] = [];
+    const projectsNavButton = renderWorkspaceShellElementByTestId('workspace-sidebar-nav-projects', {
+      projectFirstUxEnabled: true,
+      workspaceView: 'home',
+      onWorkspaceViewChange: (view) => {
+        changedViews.push(view);
+      },
+    });
+
+    assert.ok(projectsNavButton);
+    projectsNavButton.props.onClick?.();
+    assert.deepEqual(changedViews, ['projects']);
   });
 
   test('workspace sidebar projects nav tab remains wired to messages.projects', () => {

@@ -452,6 +452,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const [advancedDrawerOpen, setAdvancedDrawerOpen] = React.useState(false);
   const [projectsViewMode, setProjectsViewMode] = React.useState<'grid' | 'list'>('grid');
   const [showNewProjectRow, setShowNewProjectRow] = React.useState(false);
+  const [isCreateWorkspacePanelOpen, setIsCreateWorkspacePanelOpen] = React.useState(false);
   const [templateSearch, setTemplateSearch] = React.useState('');
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const [activeTabId, setActiveTabId] = React.useState(DEFAULT_ACTIVE_TAB_ID);
@@ -485,6 +486,9 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     props.projectActionState === 'creating' ||
     props.projectActionState === 'opening' ||
     props.projectActionState === 'moving';
+  const workspaceActionState = props.workspaceActionState ?? 'idle';
+  const isWorkspaceCreationInFlight = workspaceActionState === 'creating';
+  const trimmedWorkspaceCreateNameInput = (props.workspaceCreateNameInput ?? '').trim();
   const trimmedProjectNameInput = (props.projectNameInput ?? '').trim();
   const workspaceProjects = props.workspaceProjects ?? [];
   const activeProject = props.selectedProjectId
@@ -543,12 +547,65 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const recentProjects = projectFirstUxEnabled
     ? computeRecentProjects(workspaceProjects)
     : [];
+  const previousWorkspaceActionStateRef = React.useRef(workspaceActionState);
 
   React.useEffect(() => {
     if (props.projectActionState === 'success') {
       setShowNewProjectRow(false);
     }
   }, [props.projectActionState]);
+
+  React.useEffect(() => {
+    const previousWorkspaceActionState = previousWorkspaceActionStateRef.current;
+    if (
+      isCreateWorkspacePanelOpen &&
+      previousWorkspaceActionState === 'creating' &&
+      workspaceActionState === 'idle' &&
+      !props.workspaceActionError
+    ) {
+      setIsCreateWorkspacePanelOpen(false);
+      props.onWorkspaceCreateNameInputChange?.('');
+    }
+    previousWorkspaceActionStateRef.current = workspaceActionState;
+  }, [
+    isCreateWorkspacePanelOpen,
+    workspaceActionState,
+    props.workspaceActionError,
+    props.onWorkspaceCreateNameInputChange,
+  ]);
+
+  const handleOpenCreateWorkspacePanel = React.useCallback(() => {
+    setIsCreateWorkspacePanelOpen(true);
+    setIsSidebarOpen(false);
+  }, []);
+
+  const handleCloseCreateWorkspacePanel = React.useCallback(() => {
+    setIsCreateWorkspacePanelOpen(false);
+    props.onWorkspaceCreateNameInputChange?.('');
+  }, [props.onWorkspaceCreateNameInputChange]);
+
+  const handleCreateWorkspaceFromFocusedPanel = React.useCallback(() => {
+    if (isWorkspaceCreationInFlight || trimmedWorkspaceCreateNameInput.length === 0) {
+      return;
+    }
+    void props.onCreateWorkspace?.();
+  }, [isWorkspaceCreationInFlight, trimmedWorkspaceCreateNameInput, props.onCreateWorkspace]);
+
+  const handleWorkspaceViewChange = React.useCallback(
+    (view: WorkspaceView) => {
+      setIsCreateWorkspacePanelOpen(false);
+      props.onWorkspaceViewChange?.(view);
+    },
+    [props.onWorkspaceViewChange],
+  );
+
+  const handleSelectWorkspaceId = React.useCallback(
+    (workspaceId: string) => {
+      setIsCreateWorkspacePanelOpen(false);
+      props.onSelectWorkspaceId?.(workspaceId);
+    },
+    [props.onSelectWorkspaceId],
+  );
   const handleRestoreProjectHistoryRow =
     projectFirstUxEnabled &&
     props.selectedProjectId &&
@@ -793,7 +850,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     });
   };
 
-  const historyAndDashboardContent = (
+  const makeHistoryAndDashboardContent = (opts?: { hideWorkspaceAdminControls?: boolean }) => (
     <>
       <section
         className="mx-2 mb-2 bg-white border border-gray-200 rounded p-3"
@@ -855,6 +912,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
           workspaceMessages={workspaceMessages}
           projectMessages={projectPanelMessages}
           commonMessages={commonMessages}
+          hideWorkspaceAdminControls={opts?.hideWorkspaceAdminControls ?? false}
         />
         <HistorySnapshotPanel
           projectMessages={projectPanelMessages}
@@ -1066,8 +1124,82 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
         {projectEditorSection}
         {projectPreviewSection}
       </div>
-      {historyAndDashboardContent}
+      {makeHistoryAndDashboardContent()}
     </>
+  );
+
+  const focusedCreateWorkspaceContent = (
+    <div className="flex flex-1 min-h-0 flex-col p-4" data-testid="workspace-create-workspace-view">
+      <div className="mx-auto flex w-full max-w-2xl flex-1 items-center justify-center">
+        <section
+          className="w-full rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
+          data-testid="workspace-create-workspace-panel"
+        >
+          <h2
+            className="text-2xl font-semibold text-gray-900"
+            data-testid="workspace-create-workspace-title"
+          >
+            {workspaceMessages.createWorkspaceTitle}
+          </h2>
+          <p
+            className="mt-2 text-sm leading-6 text-gray-600"
+            data-testid="workspace-create-workspace-description"
+          >
+            {workspaceMessages.createWorkspaceDescription}
+          </p>
+          <div className="mt-6">
+            <label
+              htmlFor="workspace-create-workspace-name-input"
+              className="mb-2 block text-sm font-medium text-gray-700"
+            >
+              {workspaceMessages.workspaceNameLabel}
+            </label>
+            <input
+              id="workspace-create-workspace-name-input"
+              type="text"
+              value={props.workspaceCreateNameInput ?? ''}
+              onChange={(event) => props.onWorkspaceCreateNameInputChange?.(event.target.value)}
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900"
+              data-testid="workspace-create-workspace-name-input"
+            />
+          </div>
+          <div className="mt-6 flex flex-wrap items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={handleCloseCreateWorkspacePanel}
+              disabled={isWorkspaceCreationInFlight}
+              className="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
+              data-testid="workspace-create-workspace-cancel-button"
+            >
+              {commonMessages.cancel}
+            </button>
+            <button
+              type="button"
+              onClick={handleCreateWorkspaceFromFocusedPanel}
+              disabled={
+                isWorkspaceCreationInFlight ||
+                trimmedWorkspaceCreateNameInput.length === 0 ||
+                !props.onCreateWorkspace
+              }
+              className="rounded bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-gray-300"
+              data-testid="workspace-create-workspace-create-button"
+            >
+              {workspaceActionState === 'creating'
+                ? commonMessages.creating
+                : workspaceMessages.createWorkspace}
+            </button>
+          </div>
+          {props.workspaceActionError ? (
+            <p
+              className="mt-3 text-sm text-red-700"
+              data-testid="workspace-create-workspace-action-error"
+            >
+              {props.workspaceActionError}
+            </p>
+          ) : null}
+        </section>
+      </div>
+    </div>
   );
 
   const projectsWorkspaceContent = (
@@ -1229,7 +1361,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
           </p>
         )}
       </section>
-      {historyAndDashboardContent}
+      {makeHistoryAndDashboardContent({ hideWorkspaceAdminControls: true })}
     </div>
   );
 
@@ -1468,6 +1600,9 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     );
   }
 
+  const shouldShowFocusedCreateWorkspacePanel =
+    projectFirstUxEnabled && isCreateWorkspacePanelOpen;
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col" data-testid="workspace-shell">
       <div className="border-b border-gray-200 bg-white px-4 py-2 md:hidden">
@@ -1512,10 +1647,10 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
             locale={locale}
             workspaces={props.workspaces ?? []}
             selectedWorkspaceId={props.selectedWorkspaceId ?? null}
-            onSelectWorkspaceId={props.onSelectWorkspaceId}
-            onOpenCreateWorkspaceFlow={() => props.onWorkspaceViewChange?.('projects')}
+            onSelectWorkspaceId={handleSelectWorkspaceId}
+            onOpenCreateWorkspaceFlow={handleOpenCreateWorkspacePanel}
             workspaceView={resolvedWorkspaceView}
-            onWorkspaceViewChange={props.onWorkspaceViewChange}
+            onWorkspaceViewChange={handleWorkspaceViewChange}
             recentProjects={recentProjects}
             onOpenRecentProject={handleOpenRecentProject}
             userSummary={props.userSummary}
@@ -1541,10 +1676,17 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
         </div>
 
         <main className="flex-1 min-w-0 flex flex-col overflow-y-auto" data-testid="workspace-content-shell">
-          {resolvedWorkspaceView === 'home' ? homeWorkspaceContent : null}
-          {resolvedWorkspaceView === 'projects' ? projectsWorkspaceContent : null}
-          {resolvedWorkspaceView === 'templates' ? templatesWorkspaceContent : null}
-          {resolvedWorkspaceView === 'project' ? (
+          {shouldShowFocusedCreateWorkspacePanel ? focusedCreateWorkspaceContent : null}
+          {!shouldShowFocusedCreateWorkspacePanel && resolvedWorkspaceView === 'home'
+            ? homeWorkspaceContent
+            : null}
+          {!shouldShowFocusedCreateWorkspacePanel && resolvedWorkspaceView === 'projects'
+            ? projectsWorkspaceContent
+            : null}
+          {!shouldShowFocusedCreateWorkspacePanel && resolvedWorkspaceView === 'templates'
+            ? templatesWorkspaceContent
+            : null}
+          {!shouldShowFocusedCreateWorkspacePanel && resolvedWorkspaceView === 'project' ? (
             <div data-testid="workspace-project-view" className="flex flex-1 min-h-0 flex-col">
               <header
                 className="flex items-center gap-3 border-b border-gray-200 bg-white px-4 py-2"
@@ -1645,7 +1787,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                           </div>
                         </section>
                       ) : null}
-                      {historyAndDashboardContent}
+                      {makeHistoryAndDashboardContent()}
                     </div>
                   </aside>
                 ) : null}
@@ -1802,6 +1944,7 @@ function HistoryProjectPanel(props: {
     typeof enMessages.common,
     'creating' | 'renaming' | 'deleting' | 'opening' | 'moving' | 'loading' | 'forking'
   >;
+  hideWorkspaceAdminControls?: boolean;
 }) {
   if (
     !props.onProjectNameInputChange ||
@@ -1840,6 +1983,7 @@ function HistoryProjectPanel(props: {
     props.actionState === 'moving';
   const workspaceControlsDisabled = isWorkspaceActionBusy || hasProjectActionInFlight;
   const canDeleteSelectedWorkspace = Boolean(selectedWorkspace && !selectedWorkspace.isDefault);
+  const shouldShowWorkspaceAdminControls = !props.hideWorkspaceAdminControls;
 
   return (
     <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="history-project-surface">
@@ -1849,81 +1993,87 @@ function HistoryProjectPanel(props: {
           Create and open your projects here. New projects are private by default.
         </p>
 
-        <div className="mt-2">
-          <select
-            className="w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs"
-            value={props.selectedWorkspaceId ?? ''}
-            onChange={(event) => props.onSelectWorkspaceId?.(event.target.value)}
-            disabled={workspaceControlsDisabled}
-            data-testid="history-workspace-select"
-          >
-            <option value="" disabled>
-              {props.workspaceMessages.selectWorkspace}
-            </option>
-            {props.workspaces.map((workspace) => (
-              <option key={workspace.id} value={workspace.id}>
-                {workspace.name}
+        {shouldShowWorkspaceAdminControls ? (
+          <div className="mt-2">
+            <select
+              className="w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs"
+              value={props.selectedWorkspaceId ?? ''}
+              onChange={(event) => props.onSelectWorkspaceId?.(event.target.value)}
+              disabled={workspaceControlsDisabled}
+              data-testid="history-workspace-select"
+            >
+              <option value="" disabled>
+                {props.workspaceMessages.selectWorkspace}
               </option>
-            ))}
-          </select>
-        </div>
+              {props.workspaces.map((workspace) => (
+                <option key={workspace.id} value={workspace.id}>
+                  {workspace.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : null}
 
-        <div className="mt-2 flex gap-2">
-          <input
-            type="text"
-            value={props.workspaceCreateNameInput}
-            onChange={(event) => props.onWorkspaceCreateNameInputChange?.(event.target.value)}
-            placeholder={props.workspaceMessages.newWorkspaceName}
-            className="min-w-0 flex-1 rounded border border-gray-300 bg-white px-2 py-1 text-xs"
-            data-testid="history-workspace-create-input"
-          />
-          <button
-            type="button"
-            className="rounded bg-violet-600 px-2 py-1 text-xs text-white disabled:bg-violet-300"
-            disabled={!canMutate || workspaceControlsDisabled}
-            onClick={() => void props.onCreateWorkspace?.()}
-            data-testid="history-workspace-create-button"
-          >
-            {props.workspaceActionState === 'creating'
-              ? props.commonMessages.creating
-              : props.workspaceMessages.createWorkspace}
-          </button>
-        </div>
+        {shouldShowWorkspaceAdminControls ? (
+          <div className="mt-2 flex gap-2">
+            <input
+              type="text"
+              value={props.workspaceCreateNameInput}
+              onChange={(event) => props.onWorkspaceCreateNameInputChange?.(event.target.value)}
+              placeholder={props.workspaceMessages.newWorkspaceName}
+              className="min-w-0 flex-1 rounded border border-gray-300 bg-white px-2 py-1 text-xs"
+              data-testid="history-workspace-create-input"
+            />
+            <button
+              type="button"
+              className="rounded bg-violet-600 px-2 py-1 text-xs text-white disabled:bg-violet-300"
+              disabled={!canMutate || workspaceControlsDisabled}
+              onClick={() => void props.onCreateWorkspace?.()}
+              data-testid="history-workspace-create-button"
+            >
+              {props.workspaceActionState === 'creating'
+                ? props.commonMessages.creating
+                : props.workspaceMessages.createWorkspace}
+            </button>
+          </div>
+        ) : null}
 
-        <div className="mt-2 flex gap-2">
-          <input
-            type="text"
-            value={props.workspaceRenameNameInput}
-            onChange={(event) => props.onWorkspaceRenameNameInputChange?.(event.target.value)}
-            placeholder={props.workspaceMessages.renameSelectedWorkspace}
-            className="min-w-0 flex-1 rounded border border-gray-300 bg-white px-2 py-1 text-xs"
-            disabled={!props.selectedWorkspaceId || workspaceControlsDisabled}
-            data-testid="history-workspace-rename-input"
-          />
-          <button
-            type="button"
-            className="rounded bg-indigo-600 px-2 py-1 text-xs text-white disabled:bg-indigo-300"
-            disabled={!canMutate || !props.selectedWorkspaceId || workspaceControlsDisabled}
-            onClick={() => void props.onRenameWorkspace?.()}
-            data-testid="history-workspace-rename-button"
-          >
-            {props.workspaceActionState === 'renaming'
-              ? props.commonMessages.renaming
-              : props.workspaceMessages.renameWorkspace}
-          </button>
-          <button
-            type="button"
-            className="rounded bg-rose-600 px-2 py-1 text-xs text-white disabled:bg-rose-300"
-            disabled={!canMutate || !canDeleteSelectedWorkspace || workspaceControlsDisabled}
-            onClick={() => void props.onDeleteWorkspace?.()}
-            data-testid="history-workspace-delete-button"
-          >
-            {props.workspaceActionState === 'deleting'
-              ? props.commonMessages.deleting
-              : props.workspaceMessages.deleteWorkspace}
-          </button>
-        </div>
-        {props.workspaceActionError ? (
+        {shouldShowWorkspaceAdminControls ? (
+          <div className="mt-2 flex gap-2">
+            <input
+              type="text"
+              value={props.workspaceRenameNameInput}
+              onChange={(event) => props.onWorkspaceRenameNameInputChange?.(event.target.value)}
+              placeholder={props.workspaceMessages.renameSelectedWorkspace}
+              className="min-w-0 flex-1 rounded border border-gray-300 bg-white px-2 py-1 text-xs"
+              disabled={!props.selectedWorkspaceId || workspaceControlsDisabled}
+              data-testid="history-workspace-rename-input"
+            />
+            <button
+              type="button"
+              className="rounded bg-indigo-600 px-2 py-1 text-xs text-white disabled:bg-indigo-300"
+              disabled={!canMutate || !props.selectedWorkspaceId || workspaceControlsDisabled}
+              onClick={() => void props.onRenameWorkspace?.()}
+              data-testid="history-workspace-rename-button"
+            >
+              {props.workspaceActionState === 'renaming'
+                ? props.commonMessages.renaming
+                : props.workspaceMessages.renameWorkspace}
+            </button>
+            <button
+              type="button"
+              className="rounded bg-rose-600 px-2 py-1 text-xs text-white disabled:bg-rose-300"
+              disabled={!canMutate || !canDeleteSelectedWorkspace || workspaceControlsDisabled}
+              onClick={() => void props.onDeleteWorkspace?.()}
+              data-testid="history-workspace-delete-button"
+            >
+              {props.workspaceActionState === 'deleting'
+                ? props.commonMessages.deleting
+                : props.workspaceMessages.deleteWorkspace}
+            </button>
+          </div>
+        ) : null}
+        {shouldShowWorkspaceAdminControls && props.workspaceActionError ? (
           <p className="mt-2 text-[11px] text-red-700" data-testid="history-workspace-action-error">
             {props.workspaceActionError}
           </p>
