@@ -6152,6 +6152,16 @@ describe('workspace sidebar workspace-label wiring — UX-IA-22', () => {
     assert.equal(zhCn.workspace?.workspaceLabel, '工作区');
   });
 
+  test('locale files define workspace.createNewWorkspace in all supported locales', () => {
+    const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));
+    const zhTw = JSON.parse(readFileSync(new URL('../../messages/zh-TW.json', import.meta.url), 'utf8'));
+    const zhCn = JSON.parse(readFileSync(new URL('../../messages/zh-CN.json', import.meta.url), 'utf8'));
+
+    assert.equal(en.workspace?.createNewWorkspace, 'Create new workspace');
+    assert.equal(zhTw.workspace?.createNewWorkspace, '建立新工作區');
+    assert.equal(zhCn.workspace?.createNewWorkspace, '创建新工作区');
+  });
+
   test('workspace sidebar source uses workspaceLabel for workspace selector and fallbacks', () => {
     const sidebarSource = readFileSync(new URL('./workspace-sidebar.tsx', import.meta.url), 'utf8');
 
@@ -6161,6 +6171,82 @@ describe('workspace sidebar workspace-label wiring — UX-IA-22', () => {
     const workspaceFallbackMatches =
       sidebarSource.match(/selectedWorkspace\?\.name \?\? messages\.workspaceLabel/g) ?? [];
     assert.equal(workspaceFallbackMatches.length, 2);
+  });
+
+  test('workspace sidebar source wires create-new option to create-workspace flow', () => {
+    const sidebarSource = readFileSync(new URL('./workspace-sidebar.tsx', import.meta.url), 'utf8');
+
+    assert.match(sidebarSource, /createNewWorkspace: read\('workspace\.createNewWorkspace'\),/);
+    assert.match(sidebarSource, /const CREATE_NEW_WORKSPACE_OPTION_VALUE = '__create-new-workspace__';/);
+    assert.match(
+      sidebarSource,
+      /if \(workspaceId === CREATE_NEW_WORKSPACE_OPTION_VALUE\) \{\s*props\.onOpenCreateWorkspaceFlow\?\.\(\);\s*return;\s*\}/,
+    );
+    assert.match(
+      sidebarSource,
+      /<option value=\{CREATE_NEW_WORKSPACE_OPTION_VALUE\}>\{messages\.createNewWorkspace\}<\/option>/,
+    );
+  });
+
+  test('workspace sidebar dropdown includes create-new-workspace option in project-first mode', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'home',
+    });
+
+    assert.match(html, /workspace-sidebar-workspace-select/);
+    assert.match(html, /value="__create-new-workspace__"/);
+    assert.match(html, />Create new workspace</);
+  });
+
+  test('selecting create-new-workspace routes to projects view without selecting another workspace', () => {
+    const selectedWorkspaceIds: string[] = [];
+    const changedViews: string[] = [];
+    const select = renderWorkspaceShellElementByTestId('workspace-sidebar-workspace-select', {
+      projectFirstUxEnabled: true,
+      workspaceView: 'home',
+      selectedWorkspaceId: 'workspace-1',
+      onSelectWorkspaceId: (workspaceId: string) => {
+        selectedWorkspaceIds.push(workspaceId);
+      },
+      onWorkspaceViewChange: (view) => {
+        changedViews.push(view);
+      },
+    });
+
+    assert.ok(select);
+    const onChange = select.props.onChange as
+      | ((event: { target: { value: string } }) => void)
+      | undefined;
+    onChange?.({ target: { value: '__create-new-workspace__' } });
+
+    assert.deepEqual(selectedWorkspaceIds, []);
+    assert.deepEqual(changedViews, ['projects']);
+  });
+
+  test('selecting a normal workspace still calls onSelectWorkspaceId', () => {
+    const selectedWorkspaceIds: string[] = [];
+    const changedViews: string[] = [];
+    const select = renderWorkspaceShellElementByTestId('workspace-sidebar-workspace-select', {
+      projectFirstUxEnabled: true,
+      workspaceView: 'home',
+      selectedWorkspaceId: 'workspace-1',
+      onSelectWorkspaceId: (workspaceId: string) => {
+        selectedWorkspaceIds.push(workspaceId);
+      },
+      onWorkspaceViewChange: (view) => {
+        changedViews.push(view);
+      },
+    });
+
+    assert.ok(select);
+    const onChange = select.props.onChange as
+      | ((event: { target: { value: string } }) => void)
+      | undefined;
+    onChange?.({ target: { value: 'workspace-2' } });
+
+    assert.deepEqual(selectedWorkspaceIds, ['workspace-2']);
+    assert.deepEqual(changedViews, []);
   });
 
   test('workspace sidebar projects nav tab remains wired to messages.projects', () => {

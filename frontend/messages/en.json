@@ -117,6 +117,7 @@
     "selectWorkspace": "Select a workspace",
     "newWorkspaceName": "New workspace name",
     "createWorkspace": "Create Workspace",
+    "createNewWorkspace": "Create new workspace",
     "renameSelectedWorkspace": "Rename selected workspace",
     "renameWorkspace": "Rename Workspace",
     "deleteWorkspace": "Delete Workspace",

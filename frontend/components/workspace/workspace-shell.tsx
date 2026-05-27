@@ -1513,6 +1513,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
             workspaces={props.workspaces ?? []}
             selectedWorkspaceId={props.selectedWorkspaceId ?? null}
             onSelectWorkspaceId={props.onSelectWorkspaceId}
+            onOpenCreateWorkspaceFlow={() => props.onWorkspaceViewChange?.('projects')}
             workspaceView={resolvedWorkspaceView}
             onWorkspaceViewChange={props.onWorkspaceViewChange}
             recentProjects={recentProjects}

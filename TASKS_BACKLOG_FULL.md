@@ -21991,9 +21991,9 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 
 ## UX-IA ??Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 COMPLETE and LOCKED — UX-IA-09 COMPLETE and LOCKED — UX-IA-10 COMPLETE and LOCKED — UX-IA-11 COMPLETE and LOCKED — UX-IA-12 COMPLETE and LOCKED — UX-IA-13 COMPLETE and LOCKED — 13A COMPLETE and LOCKED — 13B COMPLETE and LOCKED — UX-IA-14 COMPLETE and LOCKED — UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) — UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) — UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) — UX-IA-18 COMPLETE and LOCKED — UX-IA-19 COMPLETE and LOCKED — UX-IA-20 COMPLETE and LOCKED — UX-IA-21 COMPLETE and LOCKED — UX-IA-22 COMPLETE and LOCKED — UX-IA-23 COMPLETE and LOCKED
+**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 COMPLETE and LOCKED — UX-IA-09 COMPLETE and LOCKED — UX-IA-10 COMPLETE and LOCKED — UX-IA-11 COMPLETE and LOCKED — UX-IA-12 COMPLETE and LOCKED — UX-IA-13 COMPLETE and LOCKED — 13A COMPLETE and LOCKED — 13B COMPLETE and LOCKED — UX-IA-14 COMPLETE and LOCKED — UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) — UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) — UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) — UX-IA-18 COMPLETE and LOCKED — UX-IA-19 COMPLETE and LOCKED — UX-IA-20 COMPLETE and LOCKED — UX-IA-21 COMPLETE and LOCKED — UX-IA-22 COMPLETE and LOCKED — UX-IA-23 COMPLETE and LOCKED — UX-IA-24 COMPLETE and LOCKED
 
-**Current stage:** UX-IA-23 COMPLETE and LOCKED
+**Current stage:** UX-IA-24 COMPLETE and LOCKED
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -22038,6 +22038,7 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 22. UX-IA-21 — Gate Developer System Controls (COMPLETE and LOCKED — `docs/UX-IA-21-CHECKPOINT.md`)
 23. UX-IA-22 — Fix Sidebar Workspace Selector Label (COMPLETE and LOCKED — `docs/UX-IA-22-CHECKPOINT.md`)
 24. UX-IA-23 — Fix Projects Tab New Project Flow (COMPLETE and LOCKED — `docs/UX-IA-23-CHECKPOINT.md`)
+25. UX-IA-24 — Add Create Workspace Option to Workspace Dropdown (COMPLETE and LOCKED — `docs/UX-IA-24-CHECKPOINT.md`)
 
 ---
 
@@ -24597,6 +24598,73 @@ The "New Project" button in the Projects tab (`data-testid="workspace-projects-n
 - [x] `docs/UX-IA-23-CHECKPOINT.md` created
 
 **Reference:** See TASKS.md -> UX-IA-23. Depends on: `docs/UX-IA-22-CHECKPOINT.md`.
+
+---
+
+### UX-IA-24: Add Create Workspace Option to Workspace Dropdown
+
+**Task ID:** UX-IA-24
+**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family status:** COMPLETE and LOCKED — UX-IA-24 COMPLETE and LOCKED
+**Status:** COMPLETE and LOCKED
+**Priority:** Medium
+**Nature:** FRONTEND-ONLY / UX FLOW FIX
+**Risk:** Low-Medium
+**Depends on:** WORKSPACE-DEFAULT-01 (COMPLETE and LOCKED — `docs/WORKSPACE-DEFAULT-01-CHECKPOINT.md`), UX-IA-23 (COMPLETE and LOCKED — `docs/UX-IA-23-CHECKPOINT.md`)
+
+**Problem:**
+The workspace dropdown lets users select existing workspaces, but there is no obvious way to create a new workspace directly from it. Users expect a "Create new workspace" option under the workspace dropdown.
+
+**Objective:**
+Add an obvious "Create new workspace" option to the workspace dropdown and route it to the existing workspace creation flow. Do not create a workspace immediately from the dropdown without a name.
+
+**Files in scope:**
+- `frontend/components/workspace/workspace-sidebar.tsx`
+- `frontend/components/workspace/workspace-shell.tsx` (only if needed)
+- `frontend/components/workspace/workspace-shell.test.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+**Scope:**
+- Add a "Create new workspace" option under the workspace dropdown.
+- Use multilingual key in all three locale files.
+- Selecting it should reveal/open the existing create-workspace UI or trigger the existing create-workspace affordance.
+- Do not create a workspace immediately from the dropdown without a name.
+- Preserve existing workspace selection behavior.
+- Preserve Projects tab behavior.
+- Preserve backend/API behavior.
+
+**Non-goals:**
+- No backend changes
+- No route/model/entity rename
+- No new modal system unless existing flow already uses one
+- No broad sidebar redesign
+- No TASK-75A work
+- No hardcoded English user-facing copy
+
+**Validation:**
+```powershell
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npx tsc --noEmit
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npm test
+```
+- `ReadLints` on touched files — 0 new errors
+
+**Acceptance checks:**
+- [x] UX-IA-24 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- [x] "Create new workspace" option appears in workspace dropdown
+- [x] Multilingual key added to `en.json`, `zh-TW.json`, and `zh-CN.json`
+- [x] Selecting the option opens/reveals existing create-workspace affordance (no immediate creation)
+- [x] Existing workspace selection behavior preserved
+- [x] Projects tab behavior preserved
+- [x] No backend files changed
+- [x] `npx tsc --noEmit` passes
+- [x] `npm test` passes — 489 tests, 0 failed
+- [x] ReadLints passes
+- [x] `docs/UX-IA-24-CHECKPOINT.md` created
+
+**Reference:** See TASKS.md -> UX-IA-24.
+**Checkpoint:** `docs/UX-IA-24-CHECKPOINT.md`
 
 ---
 

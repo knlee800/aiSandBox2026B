@@ -117,6 +117,7 @@
     "selectWorkspace": "選擇工作區",
     "newWorkspaceName": "新工作區名稱",
     "createWorkspace": "建立工作區",
+    "createNewWorkspace": "建立新工作區",
     "renameSelectedWorkspace": "重新命名已選工作區",
     "renameWorkspace": "重新命名工作區",
     "deleteWorkspace": "刪除工作區",

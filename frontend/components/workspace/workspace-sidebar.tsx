@@ -24,6 +24,7 @@ interface WorkspaceSidebarProps {
   workspaces: Workspace[];
   selectedWorkspaceId: string | null;
   onSelectWorkspaceId?: (workspaceId: string) => void;
+  onOpenCreateWorkspaceFlow?: () => void;
   workspaceView: WorkspaceView;
   onWorkspaceViewChange?: (view: WorkspaceView) => void;
   recentProjects: WorkspaceSidebarRecentProject[];
@@ -79,6 +80,7 @@ export function getWorkspaceScaffoldMessages(locale?: string) {
     home: read('workspace.home'),
     projects: read('workspace.projects'),
     workspaceLabel: read('workspace.workspaceLabel'),
+    createNewWorkspace: read('workspace.createNewWorkspace'),
     gridView: read('workspace.gridView'),
     listView: read('workspace.listView'),
     fork: read('workspace.fork'),
@@ -125,6 +127,7 @@ function getUserAvatarInitial(userEmail?: string | null): string {
 }
 
 export default function WorkspaceSidebar(props: WorkspaceSidebarProps) {
+  const CREATE_NEW_WORKSPACE_OPTION_VALUE = '__create-new-workspace__';
   const messages = getWorkspaceScaffoldMessages(props.locale);
   const [accountMenuOpen, setAccountMenuOpen] = React.useState(false);
   const accountMenuRef = React.useRef<HTMLDivElement | null>(null);
@@ -156,6 +159,15 @@ export default function WorkspaceSidebar(props: WorkspaceSidebarProps) {
     };
   }, [accountMenuOpen]);
 
+  const handleWorkspaceSelectorChange = (workspaceId: string): void => {
+    if (workspaceId === CREATE_NEW_WORKSPACE_OPTION_VALUE) {
+      props.onOpenCreateWorkspaceFlow?.();
+      return;
+    }
+
+    props.onSelectWorkspaceId?.(workspaceId);
+  };
+
   return (
     <aside
       className="w-full shrink-0 border-b border-gray-200 bg-white md:w-72 md:border-b-0 md:border-r"
@@ -180,7 +192,7 @@ export default function WorkspaceSidebar(props: WorkspaceSidebarProps) {
             id="workspace-sidebar-workspace-select"
             className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900"
             value={props.selectedWorkspaceId ?? ''}
-            onChange={(event) => props.onSelectWorkspaceId?.(event.target.value)}
+            onChange={(event) => handleWorkspaceSelectorChange(event.target.value)}
             data-testid="workspace-sidebar-workspace-select"
           >
             <option value="" disabled>
@@ -191,6 +203,7 @@ export default function WorkspaceSidebar(props: WorkspaceSidebarProps) {
                 {workspace.name}
               </option>
             ))}
+            <option value={CREATE_NEW_WORKSPACE_OPTION_VALUE}>{messages.createNewWorkspace}</option>
           </select>
         </div>
 
