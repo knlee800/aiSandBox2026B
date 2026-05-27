@@ -57,17 +57,14 @@ export class ProjectsService {
   async createProject(userId: string, name: string, workspaceId?: string): Promise<Project> {
     const normalizedName = name.trim();
     const slug = await this.generateUniqueSlug(normalizedName);
-    const resolvedWorkspaceId =
-      workspaceId ??
-      (await this.workspacesService.listWorkspaces(userId)).find((workspace) => workspace.isDefault)
-        ?.id;
-
-    if (!resolvedWorkspaceId) {
-      throw new NotFoundException(`Default workspace for user ${userId} not found`);
-    }
+    let resolvedWorkspaceId: string;
 
     if (workspaceId) {
       await this.workspacesService.getWorkspaceByIdForUser(userId, workspaceId);
+      resolvedWorkspaceId = workspaceId;
+    } else {
+      const defaultWorkspace = await this.workspacesService.ensureDefaultWorkspaceForUser(userId);
+      resolvedWorkspaceId = defaultWorkspace.id;
     }
 
     const project = this.projectRepository.create({

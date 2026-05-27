@@ -176,8 +176,8 @@ services:
 
   frontend:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: frontend/Dockerfile
       args:
         API_GATEWAY_URL: http://api-gateway:4000
         NEXT_PUBLIC_PROJECT_FIRST_UX: "true"

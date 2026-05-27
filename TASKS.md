@@ -12068,9 +12068,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## UX-IA ?X Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) ?X UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) ?X UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) ?X UX-IA-18 COMPLETE and LOCKED — UX-IA-19 COMPLETE and LOCKED — UX-IA-20 COMPLETE and LOCKED — UX-IA-21 COMPLETE and LOCKED — UX-IA-22 COMPLETE and LOCKED
+**Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) ?X UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) ?X UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) ?X UX-IA-18 COMPLETE and LOCKED — UX-IA-19 COMPLETE and LOCKED — UX-IA-20 COMPLETE and LOCKED — UX-IA-21 COMPLETE and LOCKED — UX-IA-22 COMPLETE and LOCKED — UX-IA-23 COMPLETE and LOCKED
 
-**Current stage:** UX-IA-22 COMPLETE and LOCKED
+**Current stage:** UX-IA-23 COMPLETE and LOCKED
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -12114,6 +12114,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 21. UX-IA-20 — Reduce Healthy-State Noise + Improve Loading Visibility (COMPLETE and LOCKED — `docs/UX-IA-20-CHECKPOINT.md`)
 22. UX-IA-21 — Gate Developer System Controls (COMPLETE and LOCKED — `docs/UX-IA-21-CHECKPOINT.md`)
 23. UX-IA-22 — Fix Sidebar Workspace Selector Label (COMPLETE and LOCKED — `docs/UX-IA-22-CHECKPOINT.md`)
+24. UX-IA-23 — Fix Projects Tab New Project Flow (COMPLETE and LOCKED — `docs/UX-IA-23-CHECKPOINT.md`)
 
 ---
 
@@ -14281,6 +14282,154 @@ The sidebar workspace selector `<label>` renders "PROJECTS" (from `workspace.pro
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-22. Depends on: `docs/UX-IA-21-CHECKPOINT.md`.
 
+---
+
+#### UX-IA-23: Fix Projects Tab New Project Flow
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** UX-IA-23
+**Family:** UX-IA
+**Priority:** High — blocking UX bug
+**Nature:** FRONTEND-ONLY / BLOCKING UX BUG
+**Risk:** Low-Medium
+**Depends on:** UX-IA-22 (COMPLETE and LOCKED — `docs/UX-IA-22-CHECKPOINT.md`)
+**Checkpoint:** `docs/UX-IA-23-CHECKPOINT.md`
+
+**Objective:**
+The "New Project" button in the Projects tab (`data-testid="workspace-projects-new-project-button"`) silently fails on click. It calls `handleCreateWorkspaceProject`, which requires `projectNameInput` to be non-empty, but the Projects tab provides no name input field near the button. Add an inline two-step create flow: clicking the button reveals an input row; confirming with a name calls create; cancelling clears and hides the row.
+
+**Root cause (from UX-IA-23 investigation):**
+`handleCreateWorkspaceProject` (page.tsx) returns early when `projectNameInput` is empty. The only name input in the codebase is in `HistoryProjectPanel` (history side panel), which is not near the "New Project" header button. The error state set by the handler is only displayed in the history panel, invisible to the user near the button.
+
+**Files in scope:**
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+
+**Scope:**
+- Add `const [showNewProjectRow, setShowNewProjectRow] = React.useState(false);` to `WorkspaceShell` local state.
+- In `projectsWorkspaceContent`, replace the single "New Project" button block (lines ~1113–1123) with a two-state inline form:
+  - State 1 (default): "New Project" button sets `showNewProjectRow = true` on click. Preserve `data-testid="workspace-projects-new-project-button"`.
+  - State 2 (row visible): inline input + "Create Project" button + "Cancel" button + optional error display.
+- Inline row bindings (all existing props, no new props required):
+  - Input: `value={props.projectNameInput ?? ''}` / `onChange` → `props.onProjectNameInputChange`
+  - Confirm: `onClick` → `void props.onCreateWorkspaceProject?.()`, disabled when `hasProjectActionInFlight` or name is empty
+  - Cancel: hides row, calls `props.onProjectNameInputChange?.('')`
+  - Error: render `props.projectActionError` inline when set
+- Support Enter key to confirm and Escape key to cancel on the input.
+- Add `useEffect` watching `props.projectActionState === 'success'` to auto-close the row.
+- Reuse existing i18n messages — no new locale keys required:
+  - Placeholder: `projectPanelMessages.newProjectName`
+  - Confirm button: `projectPanelMessages.createProject` / `commonMessages.creating`
+  - Cancel button: `commonMessages.cancel`
+- New test IDs for inline row controls: `workspace-projects-new-project-input`, `workspace-projects-create-confirm-button`, `workspace-projects-create-cancel-button`, `workspace-projects-create-error`
+- Add tests in `workspace-shell.test.tsx`:
+  - Clicking "New Project" button reveals the inline input row
+  - Filling input and clicking confirm calls `onCreateWorkspaceProject`
+  - Clicking cancel hides the row and clears the input
+
+**Non-goals:**
+- No backend changes
+- No new locale keys (all required strings already exist)
+- No modal system
+- No new props on WorkspaceShell
+- No route or entity changes
+- No broad project/workspace redesign
+
+**Validation:**
+- `npx tsc --noEmit` from `frontend/` — must pass
+- `npm test` from `frontend/` — all tests must pass
+- `ReadLints` on touched files — 0 new errors
+
+**Acceptance checks:**
+- [x] UX-IA-23 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- [x] Inline new-project row appears on button click in projects tab
+- [x] Confirm button calls `onCreateWorkspaceProject` with non-empty name
+- [x] Cancel button hides row and clears `projectNameInput`
+- [x] Row auto-closes on `projectActionState === 'success'`
+- [x] `projectActionError` displayed inline in the row
+- [x] `data-testid="workspace-projects-new-project-button"` preserved
+- [x] No new locale keys added
+- [x] tsc, tests, and lints pass
+- [x] `docs/UX-IA-23-CHECKPOINT.md` created
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-23. Depends on: `docs/UX-IA-22-CHECKPOINT.md`.
+
+---
+
+## WORKSPACE — Default Workspace Invariant
+
+**Family status:** COMPLETE and LOCKED — WORKSPACE-DEFAULT-01 COMPLETE and LOCKED
+
+**Current stage:** WORKSPACE-DEFAULT-01 (COMPLETE and LOCKED — `docs/WORKSPACE-DEFAULT-01-CHECKPOINT.md`)
+
+---
+
+#### WORKSPACE-DEFAULT-01: Restore Default Workspace Invariant
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** WORKSPACE-DEFAULT-01
+**Family:** WORKSPACE
+**Priority:** High — blocking user flow
+**Nature:** BACKEND-ONLY / BLOCKING USER FLOW BUG
+**Risk:** Medium
+**Depends on:** UX-IA-23 (COMPLETE and LOCKED — `docs/UX-IA-23-CHECKPOINT.md`)
+
+**Problem:**
+Some users have zero workspaces because the WS-01 migration backfilled existing users only; current user-creation paths in `auth.service.ts` do not create a default workspace for new users. When project creation is called without an explicit `workspaceId`, `ProjectsService.createProject` falls back to a default workspace lookup that throws `NotFoundException("Default workspace for user ... not found.")`, blocking the user from creating any project.
+
+**Root cause (from WORKSPACE-DEFAULT-01 investigation, 2026-05-27):**
+- `AuthService.register`, `AuthService.findOrCreateGoogleUser`, and `AuthService.findOrCreateAppleUser` create users without creating any workspace row.
+- `WorkspacesService.createWorkspace` always sets `isDefault: false`; no auto-default logic exists at user-creation time.
+- WS-01 migration backfill ran once against pre-existing users; post-migration new users have zero workspaces.
+- Live DB confirmed: user `4329e051-ce13-46b5-83ef-357faf749d90` has 0 workspace rows.
+
+**Objective:**
+Restore the backend invariant that every active user can resolve a default Personal workspace. Add a self-healing `ensureDefaultWorkspaceForUser(userId)` helper in `WorkspacesService` and use it in `listWorkspaces` and `ProjectsService.createProject`.
+
+**Files in scope:**
+- `services/api-gateway/src/workspaces/workspaces.service.ts`
+- `services/api-gateway/src/projects/projects.service.ts`
+- `services/api-gateway/src/workspaces/workspaces.service.spec.ts`
+- `services/api-gateway/src/projects/projects.service.spec.ts`
+
+**Scope:**
+- Add private `ensureDefaultWorkspaceForUser(userId: string): Promise<Workspace>` in `WorkspacesService`:
+  - Return existing default workspace if one exists (`isDefault: true`).
+  - If none exists, create one (`name: 'Personal'`, `slug: 'personal'`, `isDefault: true`), respecting slug uniqueness.
+- In `listWorkspaces(userId)`: call `ensureDefaultWorkspaceForUser(userId)` before returning the list.
+- In `ProjectsService.createProject(userId, name, workspaceId?)`: when `workspaceId` is omitted, call `workspacesService.ensureDefaultWorkspaceForUser(userId)` instead of throwing `NotFoundException`.
+- Preserve explicit `workspaceId` ownership validation behavior unchanged.
+- Keep all existing API response shapes stable.
+- Update unit tests in both spec files to cover self-healing behavior.
+
+**Non-goals:**
+- No frontend changes
+- No UI copy changes
+- No route, model, or entity rename
+- No schema migration unless proven strictly necessary
+- No broad workspace/project redesign
+- No TASK-75A work
+
+**Validation:**
+- `Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm test` — must pass
+- `Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm run build` — must pass
+- `ReadLints` on touched files — 0 new errors
+
+**Acceptance checks:**
+- [x] `ensureDefaultWorkspaceForUser` returns existing default without side effects when one exists
+- [x] `ensureDefaultWorkspaceForUser` creates default Personal workspace when none exists
+- [x] `listWorkspaces` triggers self-heal for zero-workspace users
+- [x] `createProject` without `workspaceId` resolves default instead of throwing `NotFoundException`
+- [x] Explicit `workspaceId` ownership validation unchanged
+- [x] All existing workspace/project service tests still pass
+- [x] `npm run build` passes for `api-gateway`; focused specs PASS (26 tests); full-suite pre-existing env failures unrelated to this task
+- [x] No frontend files changed
+- [x] `docs/WORKSPACE-DEFAULT-01-CHECKPOINT.md` created
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> WORKSPACE-DEFAULT-01. Depends on: `docs/UX-IA-23-CHECKPOINT.md`.
+
+---
+
 **Family status:** COMPLETE and LOCKED — AUTH-MODULE-01 COMPLETE and LOCKED — AUTH-MODULE-02 COMPLETE and LOCKED — CHECKPOINT-LEDGER-01 COMPLETE and LOCKED — AUTH-MODULE-03 COMPLETE and LOCKED
 
 **Current stage:** AUTH family COMPLETE and LOCKED — see next active family
@@ -15370,3 +15519,35 @@ Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm run
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> TASK-CLEANUP-74C-2-001.
 **Checkpoint:** `docs/TASK-CLEANUP-74C-2-001-CHECKPOINT.md`
+
+---
+
+## BUILD Family
+
+**Family status:** BUILD-FRONTEND-01 COMPLETE and LOCKED
+
+**Current stage:** BUILD-FRONTEND-01 COMPLETE and LOCKED
+
+**Registered tasks:**
+1. BUILD-FRONTEND-01 — Deterministic Frontend Docker Build (COMPLETE and LOCKED — `docs/BUILD-FRONTEND-01-CHECKPOINT.md`)
+
+---
+
+#### BUILD-FRONTEND-01: Deterministic Frontend Docker Build
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** BUILD-FRONTEND-01
+**Family:** BUILD
+**Nature:** INFRASTRUCTURE / BUILD DETERMINISM HOTFIX
+**Discovered during:** UX-IA-23 validation
+**Checkpoint:** `docs/BUILD-FRONTEND-01-CHECKPOINT.md`
+
+**Root cause:** Frontend Docker build context was `./frontend`; root `package-lock.json` was inaccessible; `npm install` hit the npm registry; environment TLS cert issue caused the fetch to hang/fail.
+
+**Files changed:** `frontend/Dockerfile`, `docker-compose.prod.yml`, `.dockerignore`
+
+**Fix:** Widened build context to repo root; switched both stages to `npm ci --ignore-scripts`; added root `.dockerignore`.
+
+**Validation:** `docker compose build frontend` PASS; `docker compose up -d frontend` PASS; `GET http://localhost:3000` HTTP 200.
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> BUILD-FRONTEND-01.

@@ -451,6 +451,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const scaffoldMessages = getWorkspaceScaffoldMessages(locale);
   const [advancedDrawerOpen, setAdvancedDrawerOpen] = React.useState(false);
   const [projectsViewMode, setProjectsViewMode] = React.useState<'grid' | 'list'>('grid');
+  const [showNewProjectRow, setShowNewProjectRow] = React.useState(false);
   const [templateSearch, setTemplateSearch] = React.useState('');
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const [activeTabId, setActiveTabId] = React.useState(DEFAULT_ACTIVE_TAB_ID);
@@ -484,6 +485,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     props.projectActionState === 'creating' ||
     props.projectActionState === 'opening' ||
     props.projectActionState === 'moving';
+  const trimmedProjectNameInput = (props.projectNameInput ?? '').trim();
   const workspaceProjects = props.workspaceProjects ?? [];
   const activeProject = props.selectedProjectId
     ? workspaceProjects.find((p) => p.id === props.selectedProjectId) ?? null
@@ -541,6 +543,12 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const recentProjects = projectFirstUxEnabled
     ? computeRecentProjects(workspaceProjects)
     : [];
+
+  React.useEffect(() => {
+    if (props.projectActionState === 'success') {
+      setShowNewProjectRow(false);
+    }
+  }, [props.projectActionState]);
   const handleRestoreProjectHistoryRow =
     projectFirstUxEnabled &&
     props.selectedProjectId &&
@@ -1111,15 +1119,77 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
               </button>
             </div>
             {props.onCreateWorkspaceProject ? (
-              <button
-                type="button"
-                onClick={() => void props.onCreateWorkspaceProject?.()}
-                disabled={hasProjectActionInFlight}
-                className="rounded bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-gray-300"
-                data-testid="workspace-projects-new-project-button"
-              >
-                {scaffoldMessages.newProject}
-              </button>
+              showNewProjectRow ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  <input
+                    type="text"
+                    value={props.projectNameInput ?? ''}
+                    onChange={(event) => props.onProjectNameInputChange?.(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Escape') {
+                        setShowNewProjectRow(false);
+                        props.onProjectNameInputChange?.('');
+                        return;
+                      }
+                      if (event.key === 'Enter') {
+                        if (hasProjectActionInFlight || trimmedProjectNameInput.length === 0) {
+                          return;
+                        }
+                        void props.onCreateWorkspaceProject?.();
+                      }
+                    }}
+                    placeholder={projectPanelMessages.newProjectName}
+                    className="min-w-0 rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900"
+                    data-testid="workspace-projects-new-project-input"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (hasProjectActionInFlight || trimmedProjectNameInput.length === 0) {
+                        return;
+                      }
+                      void props.onCreateWorkspaceProject?.();
+                    }}
+                    disabled={hasProjectActionInFlight || trimmedProjectNameInput.length === 0}
+                    className="rounded bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-gray-300"
+                    data-testid="workspace-projects-create-confirm-button"
+                  >
+                    {props.projectActionState === 'creating'
+                      ? commonMessages.creating
+                      : projectPanelMessages.createProject}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowNewProjectRow(false);
+                      props.onProjectNameInputChange?.('');
+                    }}
+                    disabled={hasProjectActionInFlight}
+                    className="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
+                    data-testid="workspace-projects-create-cancel-button"
+                  >
+                    {commonMessages.cancel}
+                  </button>
+                  {props.projectActionError ? (
+                    <p
+                      className="w-full text-sm text-red-700"
+                      data-testid="workspace-projects-create-error"
+                    >
+                      {props.projectActionError}
+                    </p>
+                  ) : null}
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowNewProjectRow(true)}
+                  disabled={hasProjectActionInFlight}
+                  className="rounded bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-gray-300"
+                  data-testid="workspace-projects-new-project-button"
+                >
+                  {scaffoldMessages.newProject}
+                </button>
+              )
             ) : null}
           </div>
         </div>

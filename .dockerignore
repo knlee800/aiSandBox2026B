@@ -1,0 +1,26 @@
+# Exclude all node_modules from Docker build context
+**/node_modules
+
+# Exclude existing Next.js build output (rebuilt fresh inside Docker)
+**/.next
+
+# Exclude git history
+.git
+
+# Exclude local env files
+**/.env
+**/.env.*
+!**/.env.example
+
+# Exclude build artifacts and local tsbuildinfo
+**/tsconfig.tsbuildinfo
+**/dist
+
+# Exclude docs and tooling not needed in image
+docs
+monitoring
+scripts
+database
+
+# Exclude lockfile artifacts not needed in context (root package-lock.json is used directly)
+frontend/package-lock.json

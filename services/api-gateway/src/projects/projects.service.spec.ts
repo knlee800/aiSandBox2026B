@@ -29,6 +29,7 @@ describe('ProjectsService (PR-03-01)', () => {
   let workspacesService: {
     getWorkspaceByIdForUser: jest.Mock;
     listWorkspaces: jest.Mock;
+    ensureDefaultWorkspaceForUser: jest.Mock;
   };
 
   beforeEach(async () => {
@@ -51,6 +52,7 @@ describe('ProjectsService (PR-03-01)', () => {
     workspacesService = {
       getWorkspaceByIdForUser: jest.fn(),
       listWorkspaces: jest.fn(),
+      ensureDefaultWorkspaceForUser: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -113,6 +115,7 @@ describe('ProjectsService (PR-03-01)', () => {
       'user-1',
       'workspace-1',
     );
+    expect(workspacesService.ensureDefaultWorkspaceForUser).not.toHaveBeenCalled();
     expect(workspacesService.listWorkspaces).not.toHaveBeenCalled();
     expect(projectRepository.create).toHaveBeenCalledWith({
       userId: 'user-1',
@@ -126,20 +129,13 @@ describe('ProjectsService (PR-03-01)', () => {
 
   it('creates a named project in the default workspace when workspaceId is omitted', async () => {
     projectRepository.findOne.mockResolvedValue(null);
-    workspacesService.listWorkspaces.mockResolvedValue([
-      {
-        id: 'workspace-default',
-        userId: 'user-1',
-        name: 'Personal',
-        isDefault: true,
-      },
-      {
-        id: 'workspace-other',
-        userId: 'user-1',
-        name: 'Other',
-        isDefault: false,
-      },
-    ]);
+    workspacesService.ensureDefaultWorkspaceForUser.mockResolvedValue({
+      id: 'workspace-default',
+      userId: 'user-1',
+      name: 'Personal',
+      slug: 'personal',
+      isDefault: true,
+    });
     projectRepository.create.mockReturnValue({
       id: 'project-2',
       userId: 'user-1',
@@ -159,7 +155,8 @@ describe('ProjectsService (PR-03-01)', () => {
 
     const result = await service.createProject('user-1', ' Default Project ');
 
-    expect(workspacesService.listWorkspaces).toHaveBeenCalledWith('user-1');
+    expect(workspacesService.ensureDefaultWorkspaceForUser).toHaveBeenCalledWith('user-1');
+    expect(workspacesService.listWorkspaces).not.toHaveBeenCalled();
     expect(workspacesService.getWorkspaceByIdForUser).not.toHaveBeenCalled();
     expect(projectRepository.create).toHaveBeenCalledWith({
       userId: 'user-1',
@@ -171,6 +168,45 @@ describe('ProjectsService (PR-03-01)', () => {
     expect(result.workspaceId).toBe('workspace-default');
   });
 
+  it('auto-recovers default workspace during project creation when none previously existed', async () => {
+    projectRepository.findOne.mockResolvedValue(null);
+    workspacesService.ensureDefaultWorkspaceForUser.mockResolvedValue({
+      id: 'workspace-recovered',
+      userId: 'user-1',
+      name: 'Personal',
+      slug: 'personal',
+      isDefault: true,
+    });
+    projectRepository.create.mockReturnValue({
+      id: 'project-3',
+      userId: 'user-1',
+      name: 'Recovered Workspace Project',
+      slug: 'recovered-workspace-project',
+      visibility: 'private',
+      workspaceId: 'workspace-recovered',
+    });
+    projectRepository.save.mockResolvedValue({
+      id: 'project-3',
+      userId: 'user-1',
+      name: 'Recovered Workspace Project',
+      slug: 'recovered-workspace-project',
+      visibility: 'private',
+      workspaceId: 'workspace-recovered',
+    });
+
+    const result = await service.createProject('user-1', ' Recovered Workspace Project ');
+
+    expect(workspacesService.ensureDefaultWorkspaceForUser).toHaveBeenCalledWith('user-1');
+    expect(projectRepository.create).toHaveBeenCalledWith({
+      userId: 'user-1',
+      name: 'Recovered Workspace Project',
+      slug: 'recovered-workspace-project',
+      visibility: 'private',
+      workspaceId: 'workspace-recovered',
+    });
+    expect(result.workspaceId).toBe('workspace-recovered');
+  });
+
   it('rejects a cross-user workspaceId during project creation', async () => {
     projectRepository.findOne.mockResolvedValue(null);
     workspacesService.getWorkspaceByIdForUser.mockRejectedValue(
@@ -180,23 +216,6 @@ describe('ProjectsService (PR-03-01)', () => {
     await expect(
       service.createProject('user-1', ' Project A ', 'workspace-foreign'),
     ).rejects.toThrow(NotFoundException);
-    expect(projectRepository.create).not.toHaveBeenCalled();
-  });
-
-  it('fails clearly if the default workspace is unexpectedly missing during create', async () => {
-    projectRepository.findOne.mockResolvedValue(null);
-    workspacesService.listWorkspaces.mockResolvedValue([
-      {
-        id: 'workspace-other',
-        userId: 'user-1',
-        name: 'Other',
-        isDefault: false,
-      },
-    ]);
-
-    await expect(service.createProject('user-1', ' Project A ')).rejects.toThrow(
-      NotFoundException,
-    );
     expect(projectRepository.create).not.toHaveBeenCalled();
   });
 

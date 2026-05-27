@@ -69,7 +69,29 @@ export class WorkspacesService {
     return await this.workspaceRepository.save(workspace);
   }
 
+  async ensureDefaultWorkspaceForUser(userId: string): Promise<Workspace> {
+    const existingDefaultWorkspace = await this.workspaceRepository.findOne({
+      where: { userId, isDefault: true },
+    });
+
+    if (existingDefaultWorkspace) {
+      return existingDefaultWorkspace;
+    }
+
+    const slug = await this.generateUniqueSlug(userId, 'Personal');
+    const defaultWorkspace = this.workspaceRepository.create({
+      userId,
+      name: 'Personal',
+      slug,
+      isDefault: true,
+    });
+
+    return await this.workspaceRepository.save(defaultWorkspace);
+  }
+
   async listWorkspaces(userId: string): Promise<Workspace[]> {
+    await this.ensureDefaultWorkspaceForUser(userId);
+
     return await this.workspaceRepository.find({
       where: { userId },
       order: { createdAt: 'ASC' },

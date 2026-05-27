@@ -78,16 +78,93 @@ describe('WorkspacesService (WS-02)', () => {
     expect(result.id).toBe('workspace-1');
   });
 
-  it('lists only current user workspaces', async () => {
-    workspaceRepository.find.mockResolvedValue([{ id: 'workspace-1', userId: 'user-1' }]);
+  it('listWorkspaces creates a default Personal workspace when user has none', async () => {
+    workspaceRepository.findOne.mockResolvedValueOnce(null).mockResolvedValueOnce(null);
+    workspaceRepository.create.mockReturnValue({
+      id: 'workspace-default',
+      userId: 'user-1',
+      name: 'Personal',
+      slug: 'personal',
+      isDefault: true,
+    });
+    workspaceRepository.save.mockResolvedValue({
+      id: 'workspace-default',
+      userId: 'user-1',
+      name: 'Personal',
+      slug: 'personal',
+      isDefault: true,
+    });
+    workspaceRepository.find.mockResolvedValue([
+      {
+        id: 'workspace-default',
+        userId: 'user-1',
+        name: 'Personal',
+        slug: 'personal',
+        isDefault: true,
+      },
+    ]);
 
     const result = await service.listWorkspaces('user-1');
 
+    expect(workspaceRepository.findOne).toHaveBeenNthCalledWith(1, {
+      where: { userId: 'user-1', isDefault: true },
+    });
+    expect(workspaceRepository.create).toHaveBeenCalledWith({
+      userId: 'user-1',
+      name: 'Personal',
+      slug: 'personal',
+      isDefault: true,
+    });
     expect(workspaceRepository.find).toHaveBeenCalledWith({
       where: { userId: 'user-1' },
       order: { createdAt: 'ASC' },
     });
-    expect(result).toHaveLength(1);
+    expect(result).toEqual([
+      expect.objectContaining({
+        id: 'workspace-default',
+        userId: 'user-1',
+        isDefault: true,
+      }),
+    ]);
+  });
+
+  it('listWorkspaces does not create duplicate default workspace when one already exists', async () => {
+    workspaceRepository.findOne.mockResolvedValueOnce({
+      id: 'workspace-default',
+      userId: 'user-1',
+      name: 'Personal',
+      slug: 'personal',
+      isDefault: true,
+    });
+    workspaceRepository.find.mockResolvedValue([
+      {
+        id: 'workspace-default',
+        userId: 'user-1',
+        name: 'Personal',
+        slug: 'personal',
+        isDefault: true,
+      },
+      {
+        id: 'workspace-2',
+        userId: 'user-1',
+        name: 'Other',
+        slug: 'other',
+        isDefault: false,
+      },
+    ]);
+
+    const result = await service.listWorkspaces('user-1');
+
+    expect(workspaceRepository.findOne).toHaveBeenCalledWith({
+      where: { userId: 'user-1', isDefault: true },
+    });
+    expect(workspaceRepository.create).not.toHaveBeenCalled();
+    expect(workspaceRepository.save).not.toHaveBeenCalled();
+    expect(workspaceRepository.find).toHaveBeenCalledWith({
+      where: { userId: 'user-1' },
+      order: { createdAt: 'ASC' },
+    });
+    expect(result).toHaveLength(2);
   });
 
   it('get/update enforce workspace ownership', async () => {

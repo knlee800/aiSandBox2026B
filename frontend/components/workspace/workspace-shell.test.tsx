@@ -660,6 +660,53 @@ function withPatchedReactHooks<T>(run: () => T): T {
   }
 }
 
+function withPatchedReactHooksWithCustomUseState<T>(
+  customUseState: (
+    resolvedInitialState: unknown,
+    useStateCallIndex: number,
+  ) => [unknown, (value: unknown) => void],
+  run: () => T,
+): T {
+  const originalUseState = React.useState;
+  const originalUseMemo = React.useMemo;
+  const originalUseEffect = React.useEffect;
+  const originalUseCallback = React.useCallback;
+  const originalUseRef = React.useRef;
+  let useStateCalls = 0;
+
+  (React as typeof React & {
+    useState: typeof React.useState;
+    useMemo: typeof React.useMemo;
+    useEffect: typeof React.useEffect;
+    useCallback: typeof React.useCallback;
+    useRef: typeof React.useRef;
+  }).useState = ((initialState: unknown) => {
+    useStateCalls += 1;
+    const value = typeof initialState === 'function' ? (initialState as () => unknown)() : initialState;
+    return customUseState(value, useStateCalls);
+  }) as unknown as typeof React.useState;
+  (React as typeof React & { useMemo: typeof React.useMemo }).useMemo = ((factory: () => unknown) =>
+    factory()) as unknown as typeof React.useMemo;
+  (React as typeof React & { useEffect: typeof React.useEffect }).useEffect = (() =>
+    undefined) as unknown as typeof React.useEffect;
+  (React as typeof React & { useCallback: typeof React.useCallback }).useCallback = (<TCallback extends Function>(
+    callback: TCallback,
+  ) => callback) as unknown as typeof React.useCallback;
+  (React as typeof React & { useRef: typeof React.useRef }).useRef = ((initialValue: unknown) => ({
+    current: initialValue,
+  })) as unknown as typeof React.useRef;
+
+  try {
+    return run();
+  } finally {
+    (React as typeof React & { useState: typeof React.useState }).useState = originalUseState;
+    (React as typeof React & { useMemo: typeof React.useMemo }).useMemo = originalUseMemo;
+    (React as typeof React & { useEffect: typeof React.useEffect }).useEffect = originalUseEffect;
+    (React as typeof React & { useCallback: typeof React.useCallback }).useCallback = originalUseCallback;
+    (React as typeof React & { useRef: typeof React.useRef }).useRef = originalUseRef;
+  }
+}
+
 function findElementByTestId(
   node: React.ReactNode,
   testId: string,
@@ -1421,6 +1468,194 @@ describe('workspace shell component', () => {
     assert.match(html, />List view</);
   });
 
+  test('clicking projects new project button reveals inline input row', () => {
+    let showNewProjectRow = false;
+
+    withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 3) {
+        const setShowNewProjectRow = (value: unknown): void => {
+          if (typeof value === 'function') {
+            const updater = value as (previous: boolean) => boolean;
+            showNewProjectRow = updater(showNewProjectRow);
+            return;
+          }
+          showNewProjectRow = Boolean(value);
+        };
+        return [showNewProjectRow, setShowNewProjectRow];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () => {
+      const collapsedButton = findElementByTestId(
+        WorkspaceShell(
+          buildWorkspaceShellProps({
+            projectFirstUxEnabled: true,
+            workspaceView: 'projects',
+            workspaceProjects: projectsViewProjects,
+          }),
+        ),
+        'workspace-projects-new-project-button',
+      );
+      assert.ok(collapsedButton);
+      collapsedButton.props.onClick?.();
+      assert.equal(showNewProjectRow, true);
+    });
+
+    withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 3) {
+        return [showNewProjectRow, () => {}];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () => {
+      const expandedInput = findElementByTestId(
+        WorkspaceShell(
+          buildWorkspaceShellProps({
+            projectFirstUxEnabled: true,
+            workspaceView: 'projects',
+            workspaceProjects: projectsViewProjects,
+          }),
+        ),
+        'workspace-projects-new-project-input',
+      );
+      assert.ok(expandedInput);
+    });
+  });
+
+  test('projects inline create confirm button calls onCreateWorkspaceProject', () => {
+    let createCalls = 0;
+    let capturedProjectName = '';
+
+    withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 3) {
+        return [true, () => {}];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () => {
+      const renderedNode = WorkspaceShell(
+        buildWorkspaceShellProps({
+          projectFirstUxEnabled: true,
+          workspaceView: 'projects',
+          workspaceProjects: projectsViewProjects,
+          projectNameInput: 'Project from projects tab',
+          onCreateWorkspaceProject: async () => {
+            createCalls += 1;
+          },
+          onProjectNameInputChange: (value) => {
+            capturedProjectName = value;
+          },
+        }),
+      );
+      const projectInput = findElementByTestId(
+        renderedNode,
+        'workspace-projects-new-project-input',
+      );
+
+      assert.ok(projectInput);
+      const inputOnChange = projectInput.props.onChange as
+        | ((event: { target: { value: string } }) => void)
+        | undefined;
+      inputOnChange?.({ target: { value: 'Project from projects tab' } });
+      assert.equal(capturedProjectName, 'Project from projects tab');
+
+      const confirmButton = findElementByTestId(
+        renderedNode,
+        'workspace-projects-create-confirm-button',
+      );
+
+      assert.ok(confirmButton);
+      assert.equal(confirmButton.props.disabled, false);
+      confirmButton.props.onClick?.();
+      assert.equal(createCalls, 1);
+    });
+  });
+
+  test('projects inline create cancel button hides row and clears input', () => {
+    let showNewProjectRow = true;
+    let clearedValue: string | null = null;
+
+    withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 3) {
+        const setShowNewProjectRow = (value: unknown): void => {
+          if (typeof value === 'function') {
+            const updater = value as (previous: boolean) => boolean;
+            showNewProjectRow = updater(showNewProjectRow);
+            return;
+          }
+          showNewProjectRow = Boolean(value);
+        };
+        return [showNewProjectRow, setShowNewProjectRow];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () => {
+      const cancelButton = findElementByTestId(
+        WorkspaceShell(
+          buildWorkspaceShellProps({
+            projectFirstUxEnabled: true,
+            workspaceView: 'projects',
+            workspaceProjects: projectsViewProjects,
+            projectNameInput: 'To clear',
+            onProjectNameInputChange: (value) => {
+              clearedValue = value;
+            },
+          }),
+        ),
+        'workspace-projects-create-cancel-button',
+      );
+
+      assert.ok(cancelButton);
+      cancelButton.props.onClick?.();
+      assert.equal(clearedValue, '');
+      assert.equal(showNewProjectRow, false);
+    });
+  });
+
+  test('projects inline input Enter triggers create and Escape cancels', () => {
+    let createCalls = 0;
+    let clearedValue: string | null = null;
+    let showNewProjectRow = true;
+
+    withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 3) {
+        const setShowNewProjectRow = (value: unknown): void => {
+          if (typeof value === 'function') {
+            const updater = value as (previous: boolean) => boolean;
+            showNewProjectRow = updater(showNewProjectRow);
+            return;
+          }
+          showNewProjectRow = Boolean(value);
+        };
+        return [showNewProjectRow, setShowNewProjectRow];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () => {
+      const input = findElementByTestId(
+        WorkspaceShell(
+          buildWorkspaceShellProps({
+            projectFirstUxEnabled: true,
+            workspaceView: 'projects',
+            workspaceProjects: projectsViewProjects,
+            projectNameInput: 'Keyboard project',
+            onCreateWorkspaceProject: async () => {
+              createCalls += 1;
+            },
+            onProjectNameInputChange: (value) => {
+              clearedValue = value;
+            },
+          }),
+        ),
+        'workspace-projects-new-project-input',
+      );
+
+      assert.ok(input);
+      const onKeyDown = input.props.onKeyDown as ((event: { key: string }) => void) | undefined;
+      onKeyDown?.({ key: 'Enter' });
+      assert.equal(createCalls, 1);
+
+      onKeyDown?.({ key: 'Escape' });
+      assert.equal(clearedValue, '');
+      assert.equal(showNewProjectRow, false);
+    });
+  });
+
   test('clicking sidebar recent project calls onResumeWorkspaceProjectById with project id', () => {
     let resumeCalls = 0;
     let resumedProjectId: string | null = null;
@@ -1553,7 +1788,7 @@ describe('workspace shell component', () => {
 
     (React as typeof React & { useState: typeof React.useState }).useState = ((initialState: unknown) => {
       useStateCalls += 1;
-      if (useStateCalls === 3) {
+      if (useStateCalls === 4) {
         return ['market', () => {}];
       }
       const value = typeof initialState === 'function' ? (initialState as () => unknown)() : initialState;
