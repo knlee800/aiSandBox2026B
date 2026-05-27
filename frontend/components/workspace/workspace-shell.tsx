@@ -453,6 +453,10 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const [projectsViewMode, setProjectsViewMode] = React.useState<'grid' | 'list'>('grid');
   const [showNewProjectRow, setShowNewProjectRow] = React.useState(false);
   const [isCreateWorkspacePanelOpen, setIsCreateWorkspacePanelOpen] = React.useState(false);
+  const [focusedProjectAction, setFocusedProjectAction] = React.useState<{
+    type: 'move' | 'visibility';
+    projectId: string;
+  } | null>(null);
   const [templateSearch, setTemplateSearch] = React.useState('');
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const [activeTabId, setActiveTabId] = React.useState(DEFAULT_ACTIVE_TAB_ID);
@@ -491,6 +495,31 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const trimmedWorkspaceCreateNameInput = (props.workspaceCreateNameInput ?? '').trim();
   const trimmedProjectNameInput = (props.projectNameInput ?? '').trim();
   const workspaceProjects = props.workspaceProjects ?? [];
+  const focusedProject = focusedProjectAction
+    ? workspaceProjects.find((project) => project.id === focusedProjectAction.projectId) ?? null
+    : null;
+  const focusedProjectVisibility =
+    props.selectedProjectVisibility ?? (focusedProject?.visibility === 'public' ? 'public' : 'private');
+  const focusedMoveTargetWorkspaceId = props.projectMoveTargetWorkspaceId ?? '';
+  const availableFocusedMoveWorkspaces = focusedProject
+    ? (props.workspaces ?? []).filter((workspace) => workspace.id !== focusedProject.workspaceId)
+    : [];
+  const isFocusedMoveTargetWorkspaceValid = availableFocusedMoveWorkspaces.some(
+    (workspace) => workspace.id === focusedMoveTargetWorkspaceId,
+  );
+  const shouldShowFocusedProjectActionPanel =
+    resolvedWorkspaceView === 'projects' && focusedProjectAction !== null && focusedProject !== null;
+  const canSubmitFocusedMoveAction =
+    focusedProjectAction?.type === 'move' &&
+    !hasProjectActionInFlight &&
+    Boolean(props.onMoveWorkspaceProject) &&
+    isFocusedMoveTargetWorkspaceValid;
+  const focusedProjectDefaultVisibility = focusedProject?.visibility === 'public' ? 'public' : 'private';
+  const canSubmitFocusedVisibilityAction =
+    focusedProjectAction?.type === 'visibility' &&
+    !hasProjectActionInFlight &&
+    Boolean(props.onUpdateWorkspaceProjectVisibility) &&
+    focusedProjectVisibility !== focusedProjectDefaultVisibility;
   const activeProject = props.selectedProjectId
     ? workspaceProjects.find((p) => p.id === props.selectedProjectId) ?? null
     : null;
@@ -552,8 +581,12 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   React.useEffect(() => {
     if (props.projectActionState === 'success') {
       setShowNewProjectRow(false);
+      if (focusedProjectAction) {
+        setFocusedProjectAction(null);
+        props.onWorkspaceViewChange?.('projects');
+      }
     }
-  }, [props.projectActionState]);
+  }, [focusedProjectAction, props.onWorkspaceViewChange, props.projectActionState]);
 
   React.useEffect(() => {
     const previousWorkspaceActionState = previousWorkspaceActionStateRef.current;
@@ -574,8 +607,21 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     props.onWorkspaceCreateNameInputChange,
   ]);
 
+  React.useEffect(() => {
+    if (!focusedProjectAction) {
+      return;
+    }
+    const projectStillExists = workspaceProjects.some(
+      (project) => project.id === focusedProjectAction.projectId,
+    );
+    if (!projectStillExists) {
+      setFocusedProjectAction(null);
+    }
+  }, [focusedProjectAction, workspaceProjects]);
+
   const handleOpenCreateWorkspacePanel = React.useCallback(() => {
     setIsCreateWorkspacePanelOpen(true);
+    setFocusedProjectAction(null);
     setIsSidebarOpen(false);
   }, []);
 
@@ -594,6 +640,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const handleWorkspaceViewChange = React.useCallback(
     (view: WorkspaceView) => {
       setIsCreateWorkspacePanelOpen(false);
+      setFocusedProjectAction(null);
       props.onWorkspaceViewChange?.(view);
     },
     [props.onWorkspaceViewChange],
@@ -602,6 +649,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const handleSelectWorkspaceId = React.useCallback(
     (workspaceId: string) => {
       setIsCreateWorkspacePanelOpen(false);
+      setFocusedProjectAction(null);
       props.onSelectWorkspaceId?.(workspaceId);
     },
     [props.onSelectWorkspaceId],
@@ -803,6 +851,43 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const handleOpenProjectCard = (projectId: string) => {
     handleOpenRecentProject?.(projectId);
   };
+  const handleProjectCardMoveAction = React.useCallback(
+    (project: WorkspaceProjectSummary) => {
+      setShowNewProjectRow(false);
+      setIsCreateWorkspacePanelOpen(false);
+      props.onSelectProjectId?.(project.id);
+      setFocusedProjectAction({ type: 'move', projectId: project.id });
+      props.onWorkspaceViewChange?.('projects');
+    },
+    [props.onSelectProjectId, props.onWorkspaceViewChange],
+  );
+  const handleProjectCardSharingVisibilityAction = React.useCallback(
+    (project: WorkspaceProjectSummary) => {
+      setShowNewProjectRow(false);
+      setIsCreateWorkspacePanelOpen(false);
+      props.onSelectProjectId?.(project.id);
+      props.onSelectedProjectVisibilityChange?.(project.visibility === 'public' ? 'public' : 'private');
+      setFocusedProjectAction({ type: 'visibility', projectId: project.id });
+      props.onWorkspaceViewChange?.('projects');
+    },
+    [props.onSelectProjectId, props.onSelectedProjectVisibilityChange, props.onWorkspaceViewChange],
+  );
+  const handleCloseFocusedProjectAction = React.useCallback(() => {
+    setFocusedProjectAction(null);
+    props.onWorkspaceViewChange?.('projects');
+  }, [props.onWorkspaceViewChange]);
+  const handleSubmitFocusedMoveAction = React.useCallback(() => {
+    if (!canSubmitFocusedMoveAction) {
+      return;
+    }
+    void props.onMoveWorkspaceProject?.();
+  }, [canSubmitFocusedMoveAction, props.onMoveWorkspaceProject]);
+  const handleSubmitFocusedVisibilityAction = React.useCallback(() => {
+    if (!canSubmitFocusedVisibilityAction) {
+      return;
+    }
+    void props.onUpdateWorkspaceProjectVisibility?.();
+  }, [canSubmitFocusedVisibilityAction, props.onUpdateWorkspaceProjectVisibility]);
   const handleTabOrientationToggle = () => {
     setTabOrientation((prev) => {
       const next = prev === 'horizontal' ? 'vertical' : 'horizontal';
@@ -1325,43 +1410,211 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
             ) : null}
           </div>
         </div>
-        {workspaceProjects.length > 0 ? (
-          projectsViewMode === 'grid' ? (
-            <div
-              className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3"
-              data-testid="workspace-projects-grid"
-            >
-              {workspaceProjects.map((project) => (
-                <WorkspaceProjectCard
-                  key={project.id}
-                  project={project}
-                  viewMode="grid"
-                  onOpen={handleOpenProjectCard}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="mt-4 flex flex-col gap-3" data-testid="workspace-projects-list">
-              {workspaceProjects.map((project) => (
-                <WorkspaceProjectCard
-                  key={project.id}
-                  project={project}
-                  viewMode="list"
-                  onOpen={handleOpenProjectCard}
-                />
-              ))}
-            </div>
-          )
-        ) : (
-          <p
-            className="mt-4 rounded-lg border border-dashed border-gray-200 px-4 py-6 text-sm text-gray-500"
-            data-testid="workspace-projects-empty-state"
+        {shouldShowFocusedProjectActionPanel && focusedProjectAction?.type === 'move' ? (
+          <section
+            className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4"
+            data-testid="workspace-projects-focused-move-panel"
           >
-            {scaffoldMessages.noProjects}
-          </p>
-        )}
+            <h3
+              className="text-base font-semibold text-gray-900"
+              data-testid="workspace-projects-focused-move-title"
+            >
+              {projectPanelMessages.movePanelTitle}
+            </h3>
+            <p
+              className="mt-1 text-sm text-gray-600"
+              data-testid="workspace-projects-focused-move-description"
+            >
+              {projectPanelMessages.movePanelDescription}
+            </p>
+            <div className="mt-4">
+              <label
+                htmlFor="workspace-projects-focused-move-workspace-select"
+                className="mb-2 block text-sm font-medium text-gray-700"
+              >
+                {workspaceMessages.selectTargetWorkspace}
+              </label>
+              <select
+                id="workspace-projects-focused-move-workspace-select"
+                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900"
+                value={focusedMoveTargetWorkspaceId}
+                onChange={(event) => props.onProjectMoveTargetWorkspaceIdChange?.(event.target.value)}
+                disabled={hasProjectActionInFlight || availableFocusedMoveWorkspaces.length === 0}
+                data-testid="workspace-projects-focused-move-workspace-select"
+              >
+                <option value="">
+                  {availableFocusedMoveWorkspaces.length > 0
+                    ? workspaceMessages.selectTargetWorkspace
+                    : workspaceMessages.noOtherWorkspaces}
+                </option>
+                {availableFocusedMoveWorkspaces.map((workspace) => (
+                  <option key={workspace.id} value={workspace.id}>
+                    {workspace.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="mt-6 flex flex-wrap items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={handleCloseFocusedProjectAction}
+                disabled={hasProjectActionInFlight}
+                className="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
+                data-testid="workspace-projects-focused-move-cancel-button"
+              >
+                {commonMessages.cancel}
+              </button>
+              <button
+                type="button"
+                onClick={handleSubmitFocusedMoveAction}
+                disabled={!canSubmitFocusedMoveAction}
+                className="rounded bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-gray-300"
+                data-testid="workspace-projects-focused-move-submit-button"
+              >
+                {props.projectActionState === 'moving'
+                  ? commonMessages.moving
+                  : projectPanelMessages.moveToWorkspace}
+              </button>
+            </div>
+            {props.projectActionError ? (
+              <p
+                className="mt-3 text-sm text-red-700"
+                data-testid="workspace-projects-focused-move-error"
+              >
+                {props.projectActionError}
+              </p>
+            ) : null}
+          </section>
+        ) : null}
+        {shouldShowFocusedProjectActionPanel && focusedProjectAction?.type === 'visibility' ? (
+          <section
+            className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4"
+            data-testid="workspace-projects-focused-visibility-panel"
+          >
+            <h3
+              className="text-base font-semibold text-gray-900"
+              data-testid="workspace-projects-focused-visibility-title"
+            >
+              {projectPanelMessages.visibilityPanelTitle}
+            </h3>
+            <p
+              className="mt-1 text-sm text-gray-600"
+              data-testid="workspace-projects-focused-visibility-description"
+            >
+              {projectPanelMessages.visibilityPanelDescription}
+            </p>
+            <div className="mt-4">
+              <label
+                htmlFor="workspace-projects-focused-visibility-select"
+                className="mb-2 block text-sm font-medium text-gray-700"
+              >
+                {projectPanelMessages.sharingVisibility}
+              </label>
+              <select
+                id="workspace-projects-focused-visibility-select"
+                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900"
+                value={focusedProjectVisibility}
+                onChange={(event) =>
+                  props.onSelectedProjectVisibilityChange?.(
+                    event.target.value === 'public' ? 'public' : 'private',
+                  )
+                }
+                disabled={hasProjectActionInFlight}
+                data-testid="workspace-projects-focused-visibility-select"
+              >
+                <option value="private">{projectPanelMessages.privateVisibility}</option>
+                <option value="public">{projectPanelMessages.publicVisibility}</option>
+              </select>
+            </div>
+            <div className="mt-6 flex flex-wrap items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={handleCloseFocusedProjectAction}
+                disabled={hasProjectActionInFlight}
+                className="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
+                data-testid="workspace-projects-focused-visibility-cancel-button"
+              >
+                {commonMessages.cancel}
+              </button>
+              <button
+                type="button"
+                onClick={handleSubmitFocusedVisibilityAction}
+                disabled={!canSubmitFocusedVisibilityAction}
+                className="rounded bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-gray-300"
+                data-testid="workspace-projects-focused-visibility-submit-button"
+              >
+                {hasProjectActionInFlight ? commonMessages.saving : commonMessages.save}
+              </button>
+            </div>
+            {props.projectActionError ? (
+              <p
+                className="mt-3 text-sm text-red-700"
+                data-testid="workspace-projects-focused-visibility-error"
+              >
+                {props.projectActionError}
+              </p>
+            ) : null}
+          </section>
+        ) : null}
+        {!shouldShowFocusedProjectActionPanel
+          ? workspaceProjects.length > 0
+            ? projectsViewMode === 'grid'
+              ? (
+                  <div
+                    className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3"
+                    data-testid="workspace-projects-grid"
+                  >
+                    {workspaceProjects.map((project) => (
+                      <WorkspaceProjectCard
+                        key={project.id}
+                        project={project}
+                        viewMode="grid"
+                        onOpen={handleOpenProjectCard}
+                        onMoveToWorkspaceAction={handleProjectCardMoveAction}
+                        onSharingVisibilityAction={handleProjectCardSharingVisibilityAction}
+                        actionsMenuLabel={projectPanelMessages.actionsMenuLabel}
+                        moveToWorkspaceLabel={projectPanelMessages.moveToWorkspace}
+                        sharingVisibilityLabel={projectPanelMessages.sharingVisibility}
+                        visibilityLabel={projectPanelMessages.visibility}
+                        privateVisibilityLabel={projectPanelMessages.privateVisibility}
+                        publicVisibilityLabel={projectPanelMessages.publicVisibility}
+                      />
+                    ))}
+                  </div>
+                )
+              : (
+                  <div className="mt-4 flex flex-col gap-3" data-testid="workspace-projects-list">
+                    {workspaceProjects.map((project) => (
+                      <WorkspaceProjectCard
+                        key={project.id}
+                        project={project}
+                        viewMode="list"
+                        onOpen={handleOpenProjectCard}
+                        onMoveToWorkspaceAction={handleProjectCardMoveAction}
+                        onSharingVisibilityAction={handleProjectCardSharingVisibilityAction}
+                        actionsMenuLabel={projectPanelMessages.actionsMenuLabel}
+                        moveToWorkspaceLabel={projectPanelMessages.moveToWorkspace}
+                        sharingVisibilityLabel={projectPanelMessages.sharingVisibility}
+                        visibilityLabel={projectPanelMessages.visibility}
+                        privateVisibilityLabel={projectPanelMessages.privateVisibility}
+                        publicVisibilityLabel={projectPanelMessages.publicVisibility}
+                      />
+                    ))}
+                  </div>
+                )
+            : (
+                <p
+                  className="mt-4 rounded-lg border border-dashed border-gray-200 px-4 py-6 text-sm text-gray-500"
+                  data-testid="workspace-projects-empty-state"
+                >
+                  {scaffoldMessages.noProjects}
+                </p>
+              )
+          : null}
       </section>
-      {makeHistoryAndDashboardContent({ hideWorkspaceAdminControls: true })}
+      {!shouldShowFocusedProjectActionPanel
+        ? makeHistoryAndDashboardContent({ hideWorkspaceAdminControls: true })
+        : null}
     </div>
   );
 

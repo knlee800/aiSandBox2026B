@@ -1445,6 +1445,28 @@ describe('workspace shell component', () => {
     assert.match(html, /Support Portal/);
   });
 
+  test('renders actions menu button on project cards in projects view', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'projects',
+      workspaceProjects: projectsViewProjects,
+    });
+
+    assert.match(html, /workspace-project-card-actions-button-projects-view-1/);
+    assert.match(html, /workspace-project-card-actions-button-projects-view-2/);
+  });
+
+  test('project card actions menu exposes move and visibility options', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'projects',
+      workspaceProjects: projectsViewProjects,
+    });
+
+    assert.match(html, /workspace-project-card-actions-move-projects-view-1/);
+    assert.match(html, /workspace-project-card-actions-visibility-projects-view-1/);
+  });
+
   test('renders empty state in projects view when no projects exist', () => {
     const html = renderWorkspaceShell({
       projectFirstUxEnabled: true,
@@ -1476,6 +1498,345 @@ describe('workspace shell component', () => {
     projectCard.props.onClick?.();
     assert.equal(resumeCalls, 1);
     assert.equal(resumedProjectId, 'projects-view-2');
+  });
+
+  test('clicking project card actions button does not call onResumeWorkspaceProjectById', () => {
+    let resumeCalls = 0;
+    let stopPropagationCalls = 0;
+    const projectActionsButton = renderWorkspaceShellElementByTestId(
+      'workspace-project-card-actions-button-projects-view-2',
+      {
+        projectFirstUxEnabled: true,
+        workspaceView: 'projects',
+        workspaceProjects: projectsViewProjects,
+        onResumeWorkspaceProjectById: async () => {
+          resumeCalls += 1;
+        },
+      },
+    );
+
+    assert.ok(projectActionsButton);
+    const onClick = projectActionsButton.props.onClick as
+      | ((event: { stopPropagation: () => void }) => void)
+      | undefined;
+    onClick?.({
+      stopPropagation: () => {
+        stopPropagationCalls += 1;
+      },
+    });
+    assert.equal(stopPropagationCalls, 1);
+    assert.equal(resumeCalls, 0);
+  });
+
+  test('clicking project card move action opens focused move panel state and selects project', () => {
+    let focusedProjectActionState: unknown = null;
+    let stopPropagationCalls = 0;
+    const selectedProjectIds: string[] = [];
+    const changedViews: string[] = [];
+
+    withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 5) {
+        const setFocusedProjectActionState = (value: unknown): void => {
+          if (typeof value === 'function') {
+            const updater = value as (previous: unknown) => unknown;
+            focusedProjectActionState = updater(focusedProjectActionState);
+            return;
+          }
+          focusedProjectActionState = value;
+        };
+        return [focusedProjectActionState, setFocusedProjectActionState];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () => {
+      const moveAction = findElementByTestId(
+        WorkspaceShell(
+          buildWorkspaceShellProps({
+            projectFirstUxEnabled: true,
+            workspaceView: 'projects',
+            workspaceProjects: projectsViewProjects,
+            onSelectProjectId: (projectId: string) => {
+              selectedProjectIds.push(projectId);
+            },
+            onWorkspaceViewChange: (view) => {
+              changedViews.push(view);
+            },
+          }),
+        ),
+        'workspace-project-card-actions-move-projects-view-2',
+      );
+
+      assert.ok(moveAction);
+      const onClick = moveAction.props.onClick as
+        | ((event: { stopPropagation: () => void }) => void)
+        | undefined;
+      onClick?.({
+        stopPropagation: () => {
+          stopPropagationCalls += 1;
+        },
+      });
+    });
+
+    assert.equal(stopPropagationCalls, 1);
+    assert.deepEqual(selectedProjectIds, ['projects-view-2']);
+    assert.deepEqual(changedViews, ['projects']);
+    assert.deepEqual(focusedProjectActionState, { type: 'move', projectId: 'projects-view-2' });
+  });
+
+  test('clicking project card visibility action opens focused visibility panel state and syncs visibility', () => {
+    let focusedProjectActionState: unknown = null;
+    let stopPropagationCalls = 0;
+    const selectedProjectIds: string[] = [];
+    const selectedVisibilityValues: Array<'private' | 'public'> = [];
+    const changedViews: string[] = [];
+
+    withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 5) {
+        const setFocusedProjectActionState = (value: unknown): void => {
+          if (typeof value === 'function') {
+            const updater = value as (previous: unknown) => unknown;
+            focusedProjectActionState = updater(focusedProjectActionState);
+            return;
+          }
+          focusedProjectActionState = value;
+        };
+        return [focusedProjectActionState, setFocusedProjectActionState];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () => {
+      const visibilityAction = findElementByTestId(
+        WorkspaceShell(
+          buildWorkspaceShellProps({
+            projectFirstUxEnabled: true,
+            workspaceView: 'projects',
+            workspaceProjects: projectsViewProjects,
+            onSelectProjectId: (projectId: string) => {
+              selectedProjectIds.push(projectId);
+            },
+            onSelectedProjectVisibilityChange: (visibility) => {
+              selectedVisibilityValues.push(visibility);
+            },
+            onWorkspaceViewChange: (view) => {
+              changedViews.push(view);
+            },
+          }),
+        ),
+        'workspace-project-card-actions-visibility-projects-view-2',
+      );
+
+      assert.ok(visibilityAction);
+      const onClick = visibilityAction.props.onClick as
+        | ((event: { stopPropagation: () => void }) => void)
+        | undefined;
+      onClick?.({
+        stopPropagation: () => {
+          stopPropagationCalls += 1;
+        },
+      });
+    });
+
+    assert.equal(stopPropagationCalls, 1);
+    assert.deepEqual(selectedProjectIds, ['projects-view-2']);
+    assert.deepEqual(selectedVisibilityValues, ['public']);
+    assert.deepEqual(changedViews, ['projects']);
+    assert.deepEqual(focusedProjectActionState, { type: 'visibility', projectId: 'projects-view-2' });
+  });
+
+  test('focused move panel renders title, description, target selector, and action buttons', () => {
+    const html = withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 5) {
+        return [{ type: 'move', projectId: 'projects-view-1' }, () => {}];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () =>
+      renderWorkspaceShell({
+        projectFirstUxEnabled: true,
+        workspaceView: 'projects',
+        workspaceProjects: projectsViewProjects,
+        selectedProjectId: 'projects-view-1',
+        projectMoveTargetWorkspaceId: 'workspace-2',
+      }),
+    );
+
+    assert.match(html, /workspace-projects-focused-move-panel/);
+    assert.match(html, /workspace-projects-focused-move-title/);
+    assert.match(html, />Move to Workspace</);
+    assert.match(html, /workspace-projects-focused-move-description/);
+    assert.match(html, />Choose where to move this project\.</);
+    assert.match(html, /workspace-projects-focused-move-workspace-select/);
+    assert.match(html, /workspace-projects-focused-move-cancel-button/);
+    assert.match(html, /workspace-projects-focused-move-submit-button/);
+  });
+
+  test('focused move panel cancel clears focused action and keeps projects view', () => {
+    let focusedProjectActionState: unknown = { type: 'move', projectId: 'projects-view-1' };
+    const changedViews: string[] = [];
+
+    withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 5) {
+        const setFocusedProjectActionState = (value: unknown): void => {
+          if (typeof value === 'function') {
+            const updater = value as (previous: unknown) => unknown;
+            focusedProjectActionState = updater(focusedProjectActionState);
+            return;
+          }
+          focusedProjectActionState = value;
+        };
+        return [focusedProjectActionState, setFocusedProjectActionState];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () => {
+      const cancelButton = findElementByTestId(
+        WorkspaceShell(
+          buildWorkspaceShellProps({
+            projectFirstUxEnabled: true,
+            workspaceView: 'projects',
+            workspaceProjects: projectsViewProjects,
+            onWorkspaceViewChange: (view) => {
+              changedViews.push(view);
+            },
+          }),
+        ),
+        'workspace-projects-focused-move-cancel-button',
+      );
+
+      assert.ok(cancelButton);
+      cancelButton.props.onClick?.();
+    });
+
+    assert.equal(focusedProjectActionState, null);
+    assert.deepEqual(changedViews, ['projects']);
+  });
+
+  test('focused move panel calls move handler when target workspace is valid', () => {
+    let moveCalls = 0;
+
+    withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 5) {
+        return [{ type: 'move', projectId: 'projects-view-1' }, () => {}];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () => {
+      const moveButton = findElementByTestId(
+        WorkspaceShell(
+          buildWorkspaceShellProps({
+            projectFirstUxEnabled: true,
+            workspaceView: 'projects',
+            workspaceProjects: projectsViewProjects,
+            selectedProjectId: 'projects-view-1',
+            projectMoveTargetWorkspaceId: 'workspace-2',
+            onMoveWorkspaceProject: async () => {
+              moveCalls += 1;
+            },
+          }),
+        ),
+        'workspace-projects-focused-move-submit-button',
+      );
+
+      assert.ok(moveButton);
+      assert.equal(moveButton.props.disabled, false);
+      moveButton.props.onClick?.();
+    });
+
+    assert.equal(moveCalls, 1);
+  });
+
+  test('focused visibility panel renders title, description, visibility selector, and action buttons', () => {
+    const html = withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 5) {
+        return [{ type: 'visibility', projectId: 'projects-view-2' }, () => {}];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () =>
+      renderWorkspaceShell({
+        projectFirstUxEnabled: true,
+        workspaceView: 'projects',
+        workspaceProjects: projectsViewProjects,
+        selectedProjectId: 'projects-view-2',
+        selectedProjectVisibility: 'private',
+      }),
+    );
+
+    assert.match(html, /workspace-projects-focused-visibility-panel/);
+    assert.match(html, /workspace-projects-focused-visibility-title/);
+    assert.match(html, />Sharing \/ Visibility</);
+    assert.match(html, /workspace-projects-focused-visibility-description/);
+    assert.match(html, />Choose who can access this project\.</);
+    assert.match(html, /workspace-projects-focused-visibility-select/);
+    assert.match(html, /workspace-projects-focused-visibility-cancel-button/);
+    assert.match(html, /workspace-projects-focused-visibility-submit-button/);
+  });
+
+  test('focused visibility panel cancel clears focused action and keeps projects view', () => {
+    let focusedProjectActionState: unknown = { type: 'visibility', projectId: 'projects-view-2' };
+    const changedViews: string[] = [];
+
+    withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 5) {
+        const setFocusedProjectActionState = (value: unknown): void => {
+          if (typeof value === 'function') {
+            const updater = value as (previous: unknown) => unknown;
+            focusedProjectActionState = updater(focusedProjectActionState);
+            return;
+          }
+          focusedProjectActionState = value;
+        };
+        return [focusedProjectActionState, setFocusedProjectActionState];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () => {
+      const cancelButton = findElementByTestId(
+        WorkspaceShell(
+          buildWorkspaceShellProps({
+            projectFirstUxEnabled: true,
+            workspaceView: 'projects',
+            workspaceProjects: projectsViewProjects,
+            onWorkspaceViewChange: (view) => {
+              changedViews.push(view);
+            },
+          }),
+        ),
+        'workspace-projects-focused-visibility-cancel-button',
+      );
+
+      assert.ok(cancelButton);
+      cancelButton.props.onClick?.();
+    });
+
+    assert.equal(focusedProjectActionState, null);
+    assert.deepEqual(changedViews, ['projects']);
+  });
+
+  test('focused visibility panel save calls visibility update handler when selection changes', () => {
+    let saveCalls = 0;
+
+    withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 5) {
+        return [{ type: 'visibility', projectId: 'projects-view-2' }, () => {}];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () => {
+      const saveButton = findElementByTestId(
+        WorkspaceShell(
+          buildWorkspaceShellProps({
+            projectFirstUxEnabled: true,
+            workspaceView: 'projects',
+            workspaceProjects: projectsViewProjects,
+            selectedProjectId: 'projects-view-2',
+            selectedProjectVisibility: 'private',
+            onUpdateWorkspaceProjectVisibility: async () => {
+              saveCalls += 1;
+            },
+          }),
+        ),
+        'workspace-projects-focused-visibility-submit-button',
+      );
+
+      assert.ok(saveButton);
+      assert.equal(saveButton.props.disabled, false);
+      saveButton.props.onClick?.();
+    });
+
+    assert.equal(saveCalls, 1);
   });
 
   test('renders grid and list toggle buttons in projects view', () => {
@@ -1811,7 +2172,7 @@ describe('workspace shell component', () => {
 
     (React as typeof React & { useState: typeof React.useState }).useState = ((initialState: unknown) => {
       useStateCalls += 1;
-      if (useStateCalls === 5) {
+      if (useStateCalls === 6) {
         return ['market', () => {}];
       }
       const value = typeof initialState === 'function' ? (initialState as () => unknown)() : initialState;
@@ -2471,6 +2832,17 @@ describe('workspace shell component', () => {
 
     assert.ok(select);
     assert.equal(select.props.value, 'workspace-2');
+  });
+
+  test('keeps history project move and sharing controls in non-projects contexts', () => {
+    const html = renderWorkspaceShell({
+      ...projectPanelRenderOverrides,
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+
+    assert.match(html, /history-project-move-workspace-select/);
+    assert.match(html, /history-project-sharing-surface/);
   });
 
   test('forwards project move target changes and move requests', () => {
@@ -5425,6 +5797,16 @@ describe('workspace/project modal action button labels i18n wiring — I18N-SHEL
       'createProject',
       'selectProject',
       'openProject',
+      'actionsMenuLabel',
+      'moveToWorkspace',
+      'movePanelTitle',
+      'movePanelDescription',
+      'visibility',
+      'sharingVisibility',
+      'visibilityPanelTitle',
+      'visibilityPanelDescription',
+      'privateVisibility',
+      'publicVisibility',
       'sharingVisibilityOptional',
       'view',
       'fork',
@@ -5488,6 +5870,10 @@ describe('workspace/project modal action button labels i18n wiring — I18N-SHEL
     assert.doesNotMatch(shellSource, /\{props\.actionState === 'opening' \? 'Opening\.\.\.' : 'Open Project'\}/);
     assert.doesNotMatch(shellSource, /\? 'Select target workspace' : 'No other workspaces available'/);
     assert.doesNotMatch(shellSource, /\{props\.actionState === 'moving' \? 'Moving\.\.\.' : 'Move to Workspace'\}/);
+    assert.doesNotMatch(shellSource, /<h3[^>]*>\s*Move to Workspace\s*<\/h3>/);
+    assert.doesNotMatch(shellSource, /Choose where to move this project\./);
+    assert.doesNotMatch(shellSource, /<h3[^>]*>\s*Sharing \/ Visibility\s*<\/h3>/);
+    assert.doesNotMatch(shellSource, /Choose who can access this project\./);
     assert.doesNotMatch(shellSource, /<p className="text-xs font-semibold text-gray-700">Sharing \/ Visibility \(optional\)<\/p>/);
     assert.doesNotMatch(
       shellSource,
@@ -5512,11 +5898,32 @@ describe('workspace/project modal action button labels i18n wiring — I18N-SHEL
     );
   });
 
+  test('workspace project card source removes hardcoded English for project-card actions labels', () => {
+    const projectCardSource = readFileSync(new URL('./workspace-project-card.tsx', import.meta.url), 'utf8');
+    assert.doesNotMatch(projectCardSource, /["']Project actions["']/);
+    assert.doesNotMatch(projectCardSource, /["']Move to workspace["']/);
+    assert.doesNotMatch(projectCardSource, /["']Sharing \/ visibility["']/);
+    assert.doesNotMatch(projectCardSource, /["']Visibility["']/);
+    assert.doesNotMatch(projectCardSource, /["']Private["']/);
+    assert.doesNotMatch(projectCardSource, /["']Public["']/);
+  });
+
   test('workspace project panel and snapshot actions use locale-backed message values', () => {
     const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
     assert.match(shellSource, /workspaceMessages=\{workspaceMessages\}/);
     assert.match(shellSource, /projectMessages=\{projectPanelMessages\}/);
     assert.match(shellSource, /commonMessages=\{commonMessages\}/);
+    assert.match(shellSource, /actionsMenuLabel=\{projectPanelMessages\.actionsMenuLabel\}/);
+    assert.match(shellSource, /moveToWorkspaceLabel=\{projectPanelMessages\.moveToWorkspace\}/);
+    assert.match(shellSource, /sharingVisibilityLabel=\{projectPanelMessages\.sharingVisibility\}/);
+    assert.match(shellSource, /visibilityLabel=\{projectPanelMessages\.visibility\}/);
+    assert.match(shellSource, /privateVisibilityLabel=\{projectPanelMessages\.privateVisibility\}/);
+    assert.match(shellSource, /publicVisibilityLabel=\{projectPanelMessages\.publicVisibility\}/);
+    assert.match(shellSource, /\{projectPanelMessages\.movePanelTitle\}/);
+    assert.match(shellSource, /\{projectPanelMessages\.movePanelDescription\}/);
+    assert.match(shellSource, /\{projectPanelMessages\.visibilityPanelTitle\}/);
+    assert.match(shellSource, /\{projectPanelMessages\.visibilityPanelDescription\}/);
+    assert.match(shellSource, /\{hasProjectActionInFlight \? commonMessages\.saving : commonMessages\.save\}/);
     assert.match(shellSource, /\{props\.workspaceMessages\.selectWorkspace\}/);
     assert.match(shellSource, /placeholder=\{props\.workspaceMessages\.newWorkspaceName\}/);
     assert.match(shellSource, /placeholder=\{props\.workspaceMessages\.renameSelectedWorkspace\}/);
@@ -5582,7 +5989,10 @@ describe('workspace/project modal action button labels i18n wiring — I18N-SHEL
       /const makeHistoryAndDashboardContent = \(opts\?: \{ hideWorkspaceAdminControls\?: boolean \}\) => \(/,
     );
     assert.match(shellSource, /hideWorkspaceAdminControls=\{opts\?\.hideWorkspaceAdminControls \?\? false\}/);
-    assert.match(shellSource, /\{makeHistoryAndDashboardContent\(\{ hideWorkspaceAdminControls: true \}\)\}/);
+    assert.match(
+      shellSource,
+      /\{!shouldShowFocusedProjectActionPanel\s*\?\s*makeHistoryAndDashboardContent\(\{ hideWorkspaceAdminControls: true \}\)\s*:\s*null\}/,
+    );
     assert.doesNotMatch(shellSource, /Hide workspace admin controls from Projects view/);
   });
 

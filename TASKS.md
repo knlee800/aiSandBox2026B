@@ -12068,9 +12068,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## UX-IA ?X Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) ?X UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) ?X UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) ?X UX-IA-18 COMPLETE and LOCKED — UX-IA-19 COMPLETE and LOCKED — UX-IA-20 COMPLETE and LOCKED — UX-IA-21 COMPLETE and LOCKED — UX-IA-22 COMPLETE and LOCKED — UX-IA-23 COMPLETE and LOCKED — UX-IA-24 COMPLETE and LOCKED — UX-IA-25 COMPLETE and LOCKED — UX-IA-26 COMPLETE and LOCKED
+**Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) ?X UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) ?X UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) ?X UX-IA-18 COMPLETE and LOCKED — UX-IA-19 COMPLETE and LOCKED — UX-IA-20 COMPLETE and LOCKED — UX-IA-21 COMPLETE and LOCKED — UX-IA-22 COMPLETE and LOCKED — UX-IA-23 COMPLETE and LOCKED — UX-IA-24 COMPLETE and LOCKED — UX-IA-25 COMPLETE and LOCKED — UX-IA-26 COMPLETE and LOCKED — UX-IA-27 COMPLETE and LOCKED — UX-IA-28 COMPLETE and LOCKED
 
-**Current stage:** UX-IA-26 COMPLETE and LOCKED
+**Current stage:** UX-IA-28 COMPLETE and LOCKED
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -12118,6 +12118,8 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 25. UX-IA-24 — Add Create Workspace Option to Workspace Dropdown (COMPLETE and LOCKED — `docs/UX-IA-24-CHECKPOINT.md`)
 26. UX-IA-25 — Projects Page IA Cleanup — Hide Workspace Admin Controls from Projects View (COMPLETE and LOCKED — `docs/UX-IA-25-CHECKPOINT.md`)
 27. UX-IA-26 — Focused Create Workspace Panel from Dropdown (COMPLETE and LOCKED — `docs/UX-IA-26-CHECKPOINT.md`)
+28. UX-IA-27 — Project Card Actions Menu for Move and Visibility (COMPLETE and LOCKED — `docs/UX-IA-27-CHECKPOINT.md`)
+29. UX-IA-28 — Focused Project Action Panels for Move and Visibility (COMPLETE and LOCKED — `docs/UX-IA-28-CHECKPOINT.md`)
 
 ---
 
@@ -14569,6 +14571,154 @@ Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npm test
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-26.
 **Checkpoint:** `docs/UX-IA-26-CHECKPOINT.md`
+
+---
+
+#### UX-IA-27: Project Card Actions Menu for Move and Visibility
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** UX-IA-27
+**Family:** UX-IA
+**Priority:** Medium
+**Nature:** FRONTEND-ONLY / UX IA CLEANUP
+**Risk:** Low-Medium
+**Depends on:** UX-IA-26 (COMPLETE and LOCKED — `docs/UX-IA-26-CHECKPOINT.md`)
+
+**Problem:**
+Project-level secondary actions (Move to workspace, Sharing / visibility) are still in the old admin-style HistoryProjectPanel. These actions belong on each project card in a "..." actions menu, not in the main Projects page admin panel.
+
+**Objective:**
+Add a restrained "..." actions menu to each project card so users can access project-level actions (Move to workspace, Visibility / sharing) from the project itself.
+
+**Files in scope:**
+- `frontend/components/workspace/workspace-project-card.tsx`
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+**Multilingual rule:**
+Any new visible text must be added to all three locale files and wired through the existing message pattern. No hardcoded English.
+
+**Scope:**
+- Add a "..." menu button to each project card.
+- Menu exposes project-level secondary actions: Move to workspace, Visibility / sharing.
+- Reuse existing handlers where possible: `onMoveWorkspaceProject`, `onUpdateWorkspaceProjectVisibility`, and related existing project/workspace state.
+- Preserve card click/open behavior.
+- Preserve grid/list layout.
+- Do not remove old HistoryProjectPanel controls yet unless implementation proves safe; hiding/removal can be a later slice.
+- Keep menu restrained and accessible.
+
+**Non-goals:**
+- No backend changes
+- No route/model/entity rename
+- No broad project card redesign
+- No workspace settings work
+- No public projects relocation
+- No TASK-75A work
+
+**Validation:**
+```powershell
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npx tsc --noEmit
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npm test
+```
+- `ReadLints` on touched files — 0 new errors
+
+**Acceptance checks:**
+- [x] UX-IA-27 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- [x] "..." menu button appears on each project card
+- [x] Menu exposes Move to workspace action
+- [x] Menu exposes Visibility / sharing action
+- [x] Existing handlers reused where available
+- [x] Card click/open behavior unaffected
+- [x] Grid/list layout preserved
+- [x] No backend files changed
+- [x] All new menu text added to en.json, zh-TW.json, zh-CN.json
+- [x] No hardcoded English user-facing copy
+- [x] `npx tsc --noEmit` passes
+- [x] `npm test` passes
+- [x] ReadLints passes
+- [x] `docs/UX-IA-27-CHECKPOINT.md` created
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-27.
+**Checkpoint:** `docs/UX-IA-27-CHECKPOINT.md`
+
+---
+
+#### UX-IA-28: Focused Project Action Panels for Move and Visibility — COMPLETE and LOCKED
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** UX-IA-28
+**Family:** UX-IA
+**Priority:** Medium
+**Nature:** FRONTEND-ONLY / UX IA CLEANUP
+**Risk:** Low-Medium
+**Depends on:** UX-IA-27 (COMPLETE and LOCKED — `docs/UX-IA-27-CHECKPOINT.md`)
+
+**Problem:**
+The project card "..." menu now exposes Move to workspace and Sharing / visibility, but selecting those actions still relies on the old "My Projects" admin-style panel. That panel feels unprofessional and mixes too many unrelated controls.
+
+**Objective:**
+When users click project card menu actions, show a focused action page/panel dedicated only to the selected task:
+- Move to workspace
+- Sharing / visibility
+
+**Files in scope:**
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-project-card.tsx` (only if needed)
+- `frontend/components/workspace/workspace-shell.test.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+**Multilingual rule:**
+All new visible text must be added to en.json, zh-TW.json, zh-CN.json and wired through the existing message pattern. No hardcoded English.
+
+**Scope:**
+- Clicking Move to workspace from a project card menu opens a focused Move Project panel/page.
+- Clicking Sharing / visibility from a project card menu opens a focused Visibility panel/page.
+- Panels reuse existing handlers/state: `onMoveWorkspaceProject`, `onUpdateWorkspaceProjectVisibility`, project move target state, project visibility state.
+- Panels include Cancel and primary action buttons.
+- Cancel returns to the Projects view.
+- Successful action returns to the Projects view if existing state allows.
+- Preserve project card open behavior.
+- Preserve old HistoryProjectPanel controls; do not remove them in this slice.
+
+**Non-goals:**
+- No backend changes
+- No route/model/entity rename
+- No workspace settings work
+- No public projects relocation
+- No removal of old admin controls yet
+- No TASK-75A work
+
+**Validation:**
+```powershell
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npx tsc --noEmit
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npm test
+```
+- `ReadLints` on touched files — 0 new errors
+
+**Acceptance checks:**
+- [x] UX-IA-28 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- [x] Clicking Move to workspace opens focused Move Project panel — DONE
+- [x] Clicking Sharing / visibility opens focused Visibility panel — DONE
+- [x] Existing handlers reused: `onMoveWorkspaceProject`, `onUpdateWorkspaceProjectVisibility` — DONE
+- [x] Panels include Cancel and primary action buttons — DONE
+- [x] Cancel returns to Projects view — DONE
+- [x] Successful action returns to Projects view — DONE
+- [x] Project card open behavior preserved — DONE
+- [x] Old HistoryProjectPanel controls preserved — DONE
+- [x] All new text added to en.json, zh-TW.json, zh-CN.json — DONE
+- [x] No hardcoded English user-facing copy — DONE
+- [x] `npx tsc --noEmit` passes — DONE
+- [x] `npm test` passes (512/512) — DONE
+- [x] ReadLints passes — DONE
+- [x] `docs/UX-IA-28-CHECKPOINT.md` created — DONE
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-28.
+**Checkpoint:** `docs/UX-IA-28-CHECKPOINT.md`
 
 ---
 
