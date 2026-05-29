@@ -9,6 +9,7 @@ import WorkspaceShell, {
   moveHistoryCollapsibleSectionOrderItem,
   resetHistoryCollapsibleSectionOrderToDefault,
   runStopSessionWithConfirmation,
+  shouldCloseFocusedProjectActionOnProjectSuccessTransition,
   WorkspaceAdvancedDrawer,
 } from './workspace-shell';
 import WorkspaceAccountMenu from './workspace-account-menu';
@@ -1523,7 +1524,7 @@ describe('workspace shell component', () => {
     assert.equal(resumeCalls, 0);
   });
 
-  test('clicking project card move action opens focused move panel state and selects project', () => {
+  test('clicking project card move action keeps focused move state when projectActionState is stale success', () => {
     let focusedProjectActionState: unknown = null;
     let stopPropagationCalls = 0;
     const selectedProjectIds: string[] = [];
@@ -1548,6 +1549,7 @@ describe('workspace shell component', () => {
           buildWorkspaceShellProps({
             projectFirstUxEnabled: true,
             workspaceView: 'projects',
+            projectActionState: 'success',
             workspaceProjects: projectsViewProjects,
             onSelectProjectId: (projectId: string) => {
               selectedProjectIds.push(projectId);
@@ -1577,7 +1579,7 @@ describe('workspace shell component', () => {
     assert.deepEqual(focusedProjectActionState, { type: 'move', projectId: 'projects-view-2' });
   });
 
-  test('clicking project card visibility action opens focused visibility panel state and syncs visibility', () => {
+  test('clicking project card visibility action keeps focused visibility state when projectActionState is stale success', () => {
     let focusedProjectActionState: unknown = null;
     let stopPropagationCalls = 0;
     const selectedProjectIds: string[] = [];
@@ -1603,6 +1605,7 @@ describe('workspace shell component', () => {
           buildWorkspaceShellProps({
             projectFirstUxEnabled: true,
             workspaceView: 'projects',
+            projectActionState: 'success',
             workspaceProjects: projectsViewProjects,
             onSelectProjectId: (projectId: string) => {
               selectedProjectIds.push(projectId);
@@ -3267,6 +3270,33 @@ describe('workspace shell component', () => {
     assert.equal(cancelled, false);
     assert.equal(confirmed, true);
     assert.equal(stopCalls, 1);
+  });
+
+  test('focused action close guard only closes on transition into success', () => {
+    assert.equal(
+      shouldCloseFocusedProjectActionOnProjectSuccessTransition({
+        previousProjectActionState: 'success',
+        nextProjectActionState: 'success',
+        hasFocusedProjectAction: true,
+      }),
+      false,
+    );
+    assert.equal(
+      shouldCloseFocusedProjectActionOnProjectSuccessTransition({
+        previousProjectActionState: 'idle',
+        nextProjectActionState: 'success',
+        hasFocusedProjectAction: true,
+      }),
+      true,
+    );
+    assert.equal(
+      shouldCloseFocusedProjectActionOnProjectSuccessTransition({
+        previousProjectActionState: 'opening',
+        nextProjectActionState: 'success',
+        hasFocusedProjectAction: false,
+      }),
+      false,
+    );
   });
 
   test('renders loading shell state', () => {

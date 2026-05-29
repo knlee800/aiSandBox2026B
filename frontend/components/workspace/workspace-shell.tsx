@@ -345,6 +345,20 @@ interface WorkspaceShellProps {
   onSaveWorkspaceFile: () => Promise<void>;
 }
 
+type ProjectActionState = NonNullable<WorkspaceShellProps['projectActionState']>;
+
+export function shouldCloseFocusedProjectActionOnProjectSuccessTransition(args: {
+  previousProjectActionState: ProjectActionState;
+  nextProjectActionState: ProjectActionState;
+  hasFocusedProjectAction: boolean;
+}): boolean {
+  return (
+    args.hasFocusedProjectAction &&
+    args.previousProjectActionState !== 'success' &&
+    args.nextProjectActionState === 'success'
+  );
+}
+
 export function runStopSessionWithConfirmation(args: {
   sessionId: string;
   confirmStop: () => boolean;
@@ -485,11 +499,12 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const homePromptInput = props.chatPromptInput ?? '';
   const trimmedHomePrompt = homePromptInput.trim();
   const normalizedTemplateSearch = templateSearch.trim().toLowerCase();
-  const isCreatingProjectFromPrompt = props.projectActionState === 'creating';
+  const projectActionState: ProjectActionState = props.projectActionState ?? 'idle';
+  const isCreatingProjectFromPrompt = projectActionState === 'creating';
   const hasProjectActionInFlight =
-    props.projectActionState === 'creating' ||
-    props.projectActionState === 'opening' ||
-    props.projectActionState === 'moving';
+    projectActionState === 'creating' ||
+    projectActionState === 'opening' ||
+    projectActionState === 'moving';
   const workspaceActionState = props.workspaceActionState ?? 'idle';
   const isWorkspaceCreationInFlight = workspaceActionState === 'creating';
   const trimmedWorkspaceCreateNameInput = (props.workspaceCreateNameInput ?? '').trim();
@@ -576,17 +591,24 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const recentProjects = projectFirstUxEnabled
     ? computeRecentProjects(workspaceProjects)
     : [];
+  const previousProjectActionStateRef = React.useRef<ProjectActionState>(projectActionState);
   const previousWorkspaceActionStateRef = React.useRef(workspaceActionState);
 
   React.useEffect(() => {
-    if (props.projectActionState === 'success') {
+    const previousProjectActionState = previousProjectActionStateRef.current;
+    const shouldCloseFocusedProjectAction =
+      shouldCloseFocusedProjectActionOnProjectSuccessTransition({
+        previousProjectActionState,
+        nextProjectActionState: projectActionState,
+        hasFocusedProjectAction: focusedProjectAction !== null,
+      });
+    if (shouldCloseFocusedProjectAction) {
       setShowNewProjectRow(false);
-      if (focusedProjectAction) {
-        setFocusedProjectAction(null);
-        props.onWorkspaceViewChange?.('projects');
-      }
+      setFocusedProjectAction(null);
+      props.onWorkspaceViewChange?.('projects');
     }
-  }, [focusedProjectAction, props.onWorkspaceViewChange, props.projectActionState]);
+    previousProjectActionStateRef.current = projectActionState;
+  }, [focusedProjectAction, props.onWorkspaceViewChange, projectActionState]);
 
   React.useEffect(() => {
     const previousWorkspaceActionState = previousWorkspaceActionStateRef.current;
