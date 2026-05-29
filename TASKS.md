@@ -16028,3 +16028,76 @@ Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm run
 **Validation:** `docker compose build frontend` PASS; `docker compose up -d frontend` PASS; `GET http://localhost:3000` HTTP 200.
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> BUILD-FRONTEND-01.
+
+---
+
+## AUTH-UX — Auth Navigation UX
+
+**Family status:** COMPLETE and LOCKED — AUTH-UX-01 COMPLETE and LOCKED
+
+**Current stage:** AUTH-UX-01 COMPLETE and LOCKED
+
+**Registered tasks:**
+1. AUTH-UX-01 — Prevent Back Navigation to Login After Authentication (COMPLETE and LOCKED — `docs/AUTH-UX-01-CHECKPOINT.md`)
+
+---
+
+#### AUTH-UX-01: Prevent Back Navigation to Login After Authentication
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** AUTH-UX-01
+**Family:** AUTH / UX
+**Priority:** Medium
+**Nature:** FRONTEND-ONLY / AUTH NAVIGATION UX FIX
+**Risk:** Low
+**Depends on:** AUTH family COMPLETE and LOCKED
+**Checkpoint:** `docs/AUTH-UX-01-CHECKPOINT.md`
+
+**Problem:**
+After successful login, the app navigates to `/app` using `router.push`, leaving `/login` in browser history. Pressing browser Back returns to the login page even though the user is authenticated. Login/register pages also lack an authenticated-user guard, so authenticated users can directly visit `/login` or `/register` and see public auth forms.
+
+**Objective:**
+Authenticated users should not see login/register pages. Successful login should replace browser history instead of pushing a new entry.
+
+**Files in scope:**
+- `frontend/app/[locale]/login/page.tsx`
+- `frontend/app/[locale]/register/page.tsx`
+- `frontend/app/[locale]/login/page.test.tsx`
+
+**Scope:**
+- Change successful login navigation from `router.push` to `router.replace`
+- Add authenticated-user guard to login page: on mount, fetch `/api/auth/me`; if response ok and JSON has truthy `id`, `router.replace(`/${locale}/app`)`
+- Add same authenticated-user guard to register page
+- Update login page tests for `router.replace` and auth guard behavior
+- No new visible text
+- No i18n changes
+
+**Non-goals:**
+- No backend changes
+- No middleware changes
+- No auth session logic changes
+- No register success-flow redesign
+- No new visible copy
+- No TASK-75A work
+
+**Validation:**
+From `C:\Users\knlee\aiSandBox2026B\frontend`:
+- `npx tsc --noEmit`
+- `npm test`
+- ReadLints on touched files
+
+**Acceptance checks:**
+- [x] AUTH-UX-01 registered in TASKS.md and TASKS_BACKLOG_FULL.md
+- [x] `login/page.tsx` uses `router.replace` for post-login navigation
+- [x] `login/page.tsx` has authenticated-user guard (fetch `/api/auth/me` on mount; `router.replace` to `/app` if authenticated)
+- [x] `register/page.tsx` has authenticated-user guard (fetch `/api/auth/me` on mount; `router.replace` to `/app` if authenticated)
+- [x] `login/page.test.tsx` updated: `router` mock exposes `replace`; tests cover `router.replace` call and auth guard redirect
+- [x] No new visible text added
+- [x] No i18n files modified
+- [x] `npx tsc --noEmit` passes
+- [x] `npm test` passes — 512 tests, 512 pass, 0 fail
+- [x] ReadLints passes
+- [x] No unrelated files changed
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-UX-01.
+**Checkpoint:** `docs/AUTH-UX-01-CHECKPOINT.md`

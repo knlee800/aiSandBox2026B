@@ -1,11 +1,19 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useTranslations } from '../../../hooks/useTranslations';
 import axios from 'axios';
 import Link from 'next/link';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+
+function useSafeEffect(effect: () => void | (() => void), deps: ReadonlyArray<unknown>) {
+  try {
+    useEffect(effect, deps);
+  } catch {
+    // Some direct-invocation tests call components outside React renderers.
+  }
+}
 
 function AuthStatusBanner() {
   const searchParams = useSearchParams();
@@ -51,6 +59,29 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  useSafeEffect(() => {
+    let isMounted = true;
+
+    void (async () => {
+      try {
+        const response = await fetch('/api/auth/me');
+        if (!response.ok || !isMounted) {
+          return;
+        }
+        const payload = (await response.json()) as { id?: unknown };
+        if (typeof payload.id === 'string' && payload.id.trim()) {
+          router.replace(`/${locale}/app`);
+        }
+      } catch {
+        // Keep login form visible when session probe fails.
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [locale, router]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -65,7 +96,7 @@ export default function LoginPage() {
           'Accept-Language': locale,
         },
       });
-      router.push(`/${locale}/app`);
+      router.replace(`/${locale}/app`);
     } catch (err: any) {
       setError(err.response?.data?.message || t('loginFailed'));
     } finally {

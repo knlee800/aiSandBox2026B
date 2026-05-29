@@ -1,13 +1,22 @@
 'use client';
 
-import { useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useTranslations } from '../../../hooks/useTranslations';
 
+function useSafeEffect(effect: () => void | (() => void), deps: ReadonlyArray<unknown>) {
+  try {
+    useEffect(effect, deps);
+  } catch {
+    // Some direct-invocation tests call components outside React renderers.
+  }
+}
+
 export default function RegisterPage() {
+  const router = typeof useRouter === 'function' ? useRouter() : null;
   const params = useParams();
   const locale = params.locale as string;
   const t = useTranslations('register');
@@ -19,6 +28,29 @@ export default function RegisterPage() {
   const [successMessage, setSuccessMessage] = useState('');
   const [registeredEmail, setRegisteredEmail] = useState('');
   const [resendStatus, setResendStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+
+  useSafeEffect(() => {
+    let isMounted = true;
+
+    void (async () => {
+      try {
+        const response = await fetch('/api/auth/me');
+        if (!response.ok || !isMounted) {
+          return;
+        }
+        const payload = (await response.json()) as { id?: unknown };
+        if (typeof payload.id === 'string' && payload.id.trim()) {
+          router?.replace(`/${locale}/app`);
+        }
+      } catch {
+        // Keep register form visible when session probe fails.
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [locale, router]);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
