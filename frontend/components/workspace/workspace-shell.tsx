@@ -1612,9 +1612,6 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
               )
           : null}
       </section>
-      {!shouldShowFocusedProjectActionPanel
-        ? makeHistoryAndDashboardContent({ hideWorkspaceAdminControls: true })
-        : null}
     </div>
   );
 

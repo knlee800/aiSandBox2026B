@@ -12068,9 +12068,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## UX-IA ?X Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) ?X UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) ?X UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) ?X UX-IA-18 COMPLETE and LOCKED — UX-IA-19 COMPLETE and LOCKED — UX-IA-20 COMPLETE and LOCKED — UX-IA-21 COMPLETE and LOCKED — UX-IA-22 COMPLETE and LOCKED — UX-IA-23 COMPLETE and LOCKED — UX-IA-24 COMPLETE and LOCKED — UX-IA-25 COMPLETE and LOCKED — UX-IA-26 COMPLETE and LOCKED — UX-IA-27 COMPLETE and LOCKED — UX-IA-28 COMPLETE and LOCKED
+**Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) ?X UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) ?X UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) ?X UX-IA-18 COMPLETE and LOCKED — UX-IA-19 COMPLETE and LOCKED — UX-IA-20 COMPLETE and LOCKED — UX-IA-21 COMPLETE and LOCKED — UX-IA-22 COMPLETE and LOCKED — UX-IA-23 COMPLETE and LOCKED — UX-IA-24 COMPLETE and LOCKED — UX-IA-25 COMPLETE and LOCKED — UX-IA-26 COMPLETE and LOCKED — UX-IA-27 COMPLETE and LOCKED — UX-IA-28 COMPLETE and LOCKED — UX-IA-29 COMPLETE and LOCKED
 
-**Current stage:** UX-IA-28 COMPLETE and LOCKED
+**Current stage:** UX-IA-29 COMPLETE and LOCKED
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -12120,6 +12120,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 27. UX-IA-26 — Focused Create Workspace Panel from Dropdown (COMPLETE and LOCKED — `docs/UX-IA-26-CHECKPOINT.md`)
 28. UX-IA-27 — Project Card Actions Menu for Move and Visibility (COMPLETE and LOCKED — `docs/UX-IA-27-CHECKPOINT.md`)
 29. UX-IA-28 — Focused Project Action Panels for Move and Visibility (COMPLETE and LOCKED — `docs/UX-IA-28-CHECKPOINT.md`)
+30. UX-IA-29 — Remove Legacy My Projects Admin Panel from Projects Page (COMPLETE and LOCKED — `docs/UX-IA-29-CHECKPOINT.md`)
 
 ---
 
@@ -14719,6 +14720,64 @@ Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npm test
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-28.
 **Checkpoint:** `docs/UX-IA-28-CHECKPOINT.md`
+
+---
+
+#### UX-IA-29: Remove Legacy My Projects Admin Panel from Projects Page — COMPLETE and LOCKED
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** UX-IA-29
+**Family:** UX-IA
+**Priority:** Low
+**Nature:** FRONTEND-ONLY / UX IA CLEANUP
+**Risk:** Low
+**Depends on:** UX-IA-28 (COMPLETE and LOCKED — `docs/UX-IA-28-CHECKPOINT.md`)
+
+**Problem:**
+The Projects page still renders the old HistoryProjectPanel / My Projects admin panel (New project name / Create Project, project selector / Open Project, Move to Workspace, Sharing / Visibility, Public Projects / View / Fork). This surface is now redundant: the workspace dropdown handles workspace selection, the focused Create Workspace panel handles workspace creation, project cards handle open/create, the card "..." menu + focused panels handle Move and Visibility, and Templates & Community is the intended home for public/shared projects.
+
+**Objective:**
+Remove/hide the legacy My Projects admin panel from the Projects page only. Keep HistoryProjectPanel available in active project/session context and aside context.
+
+**Files in scope:**
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+
+**Scope:**
+- Remove the Projects page render of `makeHistoryAndDashboardContent` / `HistoryProjectPanel`.
+- Keep `HistoryProjectPanel` available in active project/session context and aside context.
+- Preserve modern Projects page surface: workspace-projects-surface, New Project inline flow, project cards, card "..." menu, focused Move panel, focused Visibility panel.
+- No new visible text.
+- No i18n changes expected.
+
+**Non-goals:**
+- No backend changes
+- No route/model/entity rename
+- No public projects relocation implementation
+- No Templates & Community changes
+- No workspace settings work
+- No TASK-75A work
+
+**Validation:**
+```powershell
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npx tsc --noEmit
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npm test
+```
+- `ReadLints` on touched files — 0 new errors
+
+**Acceptance checks:**
+- [x] UX-IA-29 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- [x] Legacy My Projects admin panel removed from Projects page render — DONE
+- [x] `HistoryProjectPanel` still present in active project/session and aside context — DONE
+- [x] workspace-projects-surface, project cards, card "..." menu, focused Move and Visibility panels all preserved — DONE
+- [x] No new visible text / no i18n changes — DONE
+- [x] `npx tsc --noEmit` passes — DONE
+- [x] `npm test` passes (511/511) — DONE
+- [x] ReadLints passes — 0 new errors — DONE
+- [x] `docs/UX-IA-29-CHECKPOINT.md` created — DONE
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-29.
+**Checkpoint:** `docs/UX-IA-29-CHECKPOINT.md`
 
 ---
 

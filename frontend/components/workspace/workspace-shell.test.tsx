@@ -1164,29 +1164,28 @@ describe('workspace shell component', () => {
     assert.doesNotMatch(html, /workspace-restore-confirm-bar/);
   });
 
-  test('project history panel still renders in non-project views', () => {
-    const html = renderWorkspaceShell({
-      projectFirstUxEnabled: true,
-      workspaceView: 'projects',
-      selectedProjectId: 'project-1',
-      workspaceSnapshots: projectHistorySnapshots,
-    });
-
-    assert.match(html, /history-project-history-surface/);
-    assert.match(html, /History &amp; Controls/);
-  });
-
-  test('hides workspace-admin history controls in projects view', () => {
+  test('projects view keeps modern projects surface and hides legacy My Projects admin panel', () => {
     const html = renderWorkspaceShell({
       ...projectPanelRenderOverrides,
       projectFirstUxEnabled: true,
       workspaceView: 'projects',
+      workspaceProjects: projectsViewProjects,
     });
 
-    assert.doesNotMatch(html, /history-workspace-select/);
-    assert.doesNotMatch(html, /history-workspace-create-input/);
-    assert.doesNotMatch(html, /history-workspace-rename-input/);
-    assert.doesNotMatch(html, /history-workspace-delete-button/);
+    assert.match(html, /workspace-projects-surface/);
+    assert.match(html, /workspace-project-card-projects-view-1/);
+    assert.match(html, /workspace-projects-new-project-button/);
+    assert.match(html, /workspace-project-card-actions-button-projects-view-1/);
+    assert.doesNotMatch(html, /history-my-projects-surface/);
+    assert.doesNotMatch(html, /history-project-name-input/);
+    assert.doesNotMatch(html, /history-project-create-button/);
+    assert.doesNotMatch(html, /history-project-select/);
+    assert.doesNotMatch(html, /history-project-open-button/);
+    assert.doesNotMatch(html, /history-project-move-button/);
+    assert.doesNotMatch(html, /history-project-sharing-surface/);
+    assert.doesNotMatch(html, /history-public-project-surface/);
+    assert.doesNotMatch(html, /history-project-history-surface/);
+    assert.doesNotMatch(html, /History &amp; Controls/);
   });
 
   test('keeps workspace-admin history controls in active project view', () => {
@@ -1197,31 +1196,27 @@ describe('workspace shell component', () => {
     });
 
     assert.match(html, /history-workspace-select/);
+    assert.match(html, /history-project-name-input/);
+    assert.match(html, /history-project-create-button/);
+    assert.match(html, /history-project-select/);
+    assert.match(html, /history-project-open-button/);
+    assert.match(html, /history-project-move-button/);
+    assert.match(html, /history-project-sharing-surface/);
+    assert.match(html, /history-public-project-surface/);
   });
 
-  test('restore-related buttons and handlers remain wired where statically testable', () => {
-    let restoreProjectId = '';
-    let restoreSnapshotId = '';
-    const restoreButton = renderWorkspaceShellElementByTestId(
-      'history-project-history-restore-snapshot-a',
-      {
-        projectFirstUxEnabled: true,
-        workspaceView: 'projects',
-        selectedProjectId: 'project-1',
-        workspaceSnapshots: projectHistorySnapshots,
-        onRestoreWorkspaceProjectFromSnapshotById: async (projectId, snapshotId) => {
-          restoreProjectId = projectId;
-          restoreSnapshotId = snapshotId;
-        },
-      },
-    );
+  test('renders project history restore controls in active project view', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+      selectedProjectId: 'project-1',
+      workspaceSnapshots: projectHistorySnapshots,
+      onRestoreWorkspaceProjectFromSnapshotById: async () => {},
+    });
 
-    assert.ok(restoreButton);
-    assert.equal(typeof restoreButton.props.onClick, 'function');
-    const onClick = restoreButton.props.onClick as (() => void) | undefined;
-    onClick?.();
-    assert.equal(restoreProjectId, 'project-1');
-    assert.equal(restoreSnapshotId, 'snapshot-a');
+    assert.match(html, /history-project-history-restore-snapshot-a/);
+    assert.match(html, /history-project-history-restore-snapshot-b/);
+    assert.match(html, /history-project-history-restore-snapshot-c/);
   });
 
   test('renders content panel zone in project view', () => {
@@ -3064,83 +3059,88 @@ describe('workspace shell component', () => {
     assert.doesNotMatch(html, />Restore</);
   });
 
-  test('confirms before restoring a project history row and calls handler once on accept', () => {
+  test('project history restore action queues pending restore in active project view', () => {
+    let pendingRestoreSnapshotId: string | null = null;
     let restoreCalls = 0;
-    let restoredProjectId: string | null = null;
-    let restoredSnapshotId: string | null = null;
-    let confirmCalls = 0;
-    let confirmMessage: string | undefined;
-    const onRestoreWorkspaceProjectFromSnapshotById = async (
-      projectId: string,
-      snapshotId: string,
-    ) => {
-      restoreCalls += 1;
-      restoredProjectId = projectId;
-      restoredSnapshotId = snapshotId;
-    };
-    const button = renderWorkspaceShellElementByTestId('history-project-history-restore-snapshot-a', {
-      projectFirstUxEnabled: true,
-      workspaceView: 'projects',
-      selectedProjectId: 'project-1',
-      workspaceSnapshots: projectHistorySnapshots,
-      onRestoreWorkspaceProjectFromSnapshotById,
-    });
 
-    assert.ok(button);
-    const onClick = button.props.onClick;
-    assert.equal(typeof onClick, 'function');
-    if (!onClick) {
-      throw new Error('Expected restore button to expose onClick.');
-    }
-
-    withPatchedWindowConfirm((message) => {
-      confirmCalls += 1;
-      confirmMessage = message;
-      return true;
+    withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 11) {
+        return ['history', () => {}];
+      }
+      if (useStateCallIndex === 14) {
+        const setPendingRestoreSnapshotId = (value: unknown): void => {
+          if (typeof value === 'function') {
+            const updater = value as (previous: string | null) => string | null;
+            pendingRestoreSnapshotId = updater(pendingRestoreSnapshotId);
+            return;
+          }
+          pendingRestoreSnapshotId = value as string | null;
+        };
+        return [pendingRestoreSnapshotId, setPendingRestoreSnapshotId];
+      }
+      return [resolvedInitialState, () => {}];
     }, () => {
-      onClick();
+      const restoreButton = findElementByTestId(
+        WorkspaceShell(
+          buildWorkspaceShellProps({
+            projectFirstUxEnabled: true,
+            workspaceView: 'project',
+            selectedProjectId: 'project-1',
+            workspaceSnapshots: projectHistorySnapshots,
+            onRestoreWorkspaceProjectFromSnapshotById: async () => {
+              restoreCalls += 1;
+            },
+          }),
+        ),
+        'history-project-history-restore-snapshot-a',
+      );
+
+      assert.ok(restoreButton);
+      const onClick = restoreButton.props.onClick as (() => void) | undefined;
+      assert.equal(typeof onClick, 'function');
+      onClick?.();
     });
 
-    assert.equal(confirmCalls, 1);
-    assert.equal(
-      confirmMessage,
-      'Restore this version? Your current workspace will be replaced.',
-    );
-    assert.equal(restoreCalls, 1);
-    assert.equal(restoredProjectId, 'project-1');
-    assert.equal(restoredSnapshotId, 'snapshot-a');
+    assert.equal(pendingRestoreSnapshotId, 'snapshot-a');
+    assert.equal(restoreCalls, 0);
   });
 
-  test('does not call restore handler when project history restore confirmation is declined', () => {
-    let restoreCalls = 0;
-    let confirmCalls = 0;
-    const onRestoreWorkspaceProjectFromSnapshotById = async () => {
-      restoreCalls += 1;
-    };
-    const button = renderWorkspaceShellElementByTestId('history-project-history-restore-snapshot-a', {
-      projectFirstUxEnabled: true,
-      workspaceView: 'projects',
-      selectedProjectId: 'project-1',
-      workspaceSnapshots: projectHistorySnapshots,
-      onRestoreWorkspaceProjectFromSnapshotById,
-    });
+  test('project restore confirm/cancel controls render from pending state and stay wired', () => {
+    let pendingRestoreSnapshotId: string | null = 'snapshot-a';
 
-    assert.ok(button);
-    const onClick = button.props.onClick;
-    assert.equal(typeof onClick, 'function');
-    if (!onClick) {
-      throw new Error('Expected restore button to expose onClick.');
-    }
+    const html = withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 11) {
+        return ['history', () => {}];
+      }
+      if (useStateCallIndex === 14) {
+        const setPendingRestoreSnapshotId = (value: unknown): void => {
+          if (typeof value === 'function') {
+            const updater = value as (previous: string | null) => string | null;
+            pendingRestoreSnapshotId = updater(pendingRestoreSnapshotId);
+            return;
+          }
+          pendingRestoreSnapshotId = value as string | null;
+        };
+        return [pendingRestoreSnapshotId, setPendingRestoreSnapshotId];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () =>
+      renderToStaticMarkup(
+        <WorkspaceShell
+          {...buildWorkspaceShellProps({
+            projectFirstUxEnabled: true,
+            workspaceView: 'project',
+            selectedProjectId: 'project-1',
+            workspaceSnapshots: projectHistorySnapshots,
+            onRestoreWorkspaceProjectFromSnapshotById: async () => {},
+          })}
+        />,
+      ),
+    );
 
-    withPatchedWindowConfirm(() => {
-      confirmCalls += 1;
-      return false;
-    }, () => {
-      onClick();
-    });
-
-    assert.equal(confirmCalls, 1);
-    assert.equal(restoreCalls, 0);
+    assert.match(html, /workspace-restore-confirm-bar/);
+    assert.match(html, /workspace-restore-confirm-button/);
+    assert.match(html, /workspace-restore-cancel-button/);
   });
 
   test('does not call named save handler when project history save prompt is cancelled', () => {
@@ -5982,17 +5982,17 @@ describe('workspace/project modal action button labels i18n wiring — I18N-SHEL
     );
   });
 
-  test('workspace shell source wires projects-only workspace-admin hiding without new hardcoded copy', () => {
+  test('workspace shell source keeps projectsWorkspaceContent free of makeHistoryAndDashboardContent call', () => {
     const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
-    assert.match(
-      shellSource,
-      /const makeHistoryAndDashboardContent = \(opts\?: \{ hideWorkspaceAdminControls\?: boolean \}\) => \(/,
+    const projectsWorkspaceContentStart = shellSource.indexOf('const projectsWorkspaceContent = (');
+    const homeWorkspaceContentStart = shellSource.indexOf('const homeWorkspaceContent = (');
+    assert.ok(projectsWorkspaceContentStart >= 0);
+    assert.ok(homeWorkspaceContentStart > projectsWorkspaceContentStart);
+    const projectsWorkspaceContentSource = shellSource.slice(
+      projectsWorkspaceContentStart,
+      homeWorkspaceContentStart,
     );
-    assert.match(shellSource, /hideWorkspaceAdminControls=\{opts\?\.hideWorkspaceAdminControls \?\? false\}/);
-    assert.match(
-      shellSource,
-      /\{!shouldShowFocusedProjectActionPanel\s*\?\s*makeHistoryAndDashboardContent\(\{ hideWorkspaceAdminControls: true \}\)\s*:\s*null\}/,
-    );
+    assert.doesNotMatch(projectsWorkspaceContentSource, /makeHistoryAndDashboardContent\(/);
     assert.doesNotMatch(shellSource, /Hide workspace admin controls from Projects view/);
   });
 
