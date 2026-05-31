@@ -10,6 +10,7 @@
     "test": "tsx --test components/workspace/*.test.ts* components/public/*.test.ts* lib/auth-module/*.test.ts"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@monaco-editor/react": "^4.6.0",
     "accept-language-parser": "^1.5.0",
     "axios": "^1.6.5",

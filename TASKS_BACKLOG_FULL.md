@@ -21991,9 +21991,9 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 
 ## UX-IA ??Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 COMPLETE and LOCKED — UX-IA-09 COMPLETE and LOCKED — UX-IA-10 COMPLETE and LOCKED — UX-IA-11 COMPLETE and LOCKED — UX-IA-12 COMPLETE and LOCKED — UX-IA-13 COMPLETE and LOCKED — 13A COMPLETE and LOCKED — 13B COMPLETE and LOCKED — UX-IA-14 COMPLETE and LOCKED — UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) — UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) — UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) — UX-IA-18 COMPLETE and LOCKED — UX-IA-19 COMPLETE and LOCKED — UX-IA-20 COMPLETE and LOCKED — UX-IA-21 COMPLETE and LOCKED — UX-IA-22 COMPLETE and LOCKED — UX-IA-23 COMPLETE and LOCKED — UX-IA-24 COMPLETE and LOCKED — UX-IA-25 COMPLETE and LOCKED — UX-IA-26 COMPLETE and LOCKED — UX-IA-27 COMPLETE and LOCKED — UX-IA-28 COMPLETE and LOCKED — UX-IA-29 COMPLETE and LOCKED — UX-IA-30 COMPLETE and LOCKED
+**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 COMPLETE and LOCKED — UX-IA-09 COMPLETE and LOCKED — UX-IA-10 COMPLETE and LOCKED — UX-IA-11 COMPLETE and LOCKED — UX-IA-12 COMPLETE and LOCKED — UX-IA-13 COMPLETE and LOCKED — 13A COMPLETE and LOCKED — 13B COMPLETE and LOCKED — UX-IA-14 COMPLETE and LOCKED — UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) — UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) — UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) — UX-IA-18 COMPLETE and LOCKED — UX-IA-19 COMPLETE and LOCKED — UX-IA-20 COMPLETE and LOCKED — UX-IA-21 COMPLETE and LOCKED — UX-IA-22 COMPLETE and LOCKED — UX-IA-23 COMPLETE and LOCKED — UX-IA-24 COMPLETE and LOCKED — UX-IA-25 COMPLETE and LOCKED — UX-IA-26 COMPLETE and LOCKED — UX-IA-27 COMPLETE and LOCKED — UX-IA-28 COMPLETE and LOCKED — UX-IA-29 COMPLETE and LOCKED — UX-IA-30 COMPLETE and LOCKED — UX-IA-31 COMPLETE and LOCKED
 
-**Current stage:** UX-IA-30 COMPLETE and LOCKED
+**Current stage:** UX-IA-31 COMPLETE and LOCKED — `docs/UX-IA-31-CHECKPOINT.md`
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -22045,6 +22045,7 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 29. UX-IA-28 — Focused Project Action Panels for Move and Visibility (COMPLETE and LOCKED — `docs/UX-IA-28-CHECKPOINT.md`)
 30. UX-IA-29 — Remove Legacy My Projects Admin Panel from Projects Page (COMPLETE and LOCKED — `docs/UX-IA-29-CHECKPOINT.md`)
 31. UX-IA-30 — Fix Focused Project Action Panel Stale Success Clear (COMPLETE and LOCKED — `docs/UX-IA-30-CHECKPOINT.md`)
+32. UX-IA-31 — Sidebar Navigation Icons and Compact Mode (COMPLETE and LOCKED — `docs/UX-IA-31-CHECKPOINT.md`)
 
 ---
 
@@ -25095,6 +25096,86 @@ Make focused Move / Visibility panels appear immediately even when `projectActio
 
 **Reference:** See TASKS.md -> UX-IA-30.
 **Checkpoint:** `docs/UX-IA-30-CHECKPOINT.md`
+
+---
+
+### UX-IA-31: Sidebar Navigation Icons and Compact Mode
+
+**Task ID:** UX-IA-31
+**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family status:** ACTIVE — UX-IA-31 COMPLETE and LOCKED
+**Status:** COMPLETE and LOCKED
+**Priority:** Medium
+**Nature:** FRONTEND-ONLY / UX NAVIGATION POLISH
+**Risk:** Low-Medium
+**Depends on:** AUTH-UX-01 (COMPLETE and LOCKED — `docs/AUTH-UX-01-CHECKPOINT.md`), UX-IA-30 (COMPLETE and LOCKED — `docs/UX-IA-30-CHECKPOINT.md`)
+**Checkpoint:** `docs/UX-IA-31-CHECKPOINT.md`
+
+**Problem:**
+The left sidebar navigation is text-heavy. Main navigation/tool/agent labels lack visual icons and there is no compact icon-only mode, making the sidebar harder to scan and reducing usable horizontal space.
+
+**Objective:**
+Add icons to main sidebar navigation/tool/agent items and add a top-right sidebar toggle that switches between expanded mode (icons + labels, Recent projects/project list/Advanced visible) and compact mode (icons only for main items, Recent projects/project list/Advanced hidden).
+
+**Files in scope:**
+- `frontend/components/workspace/workspace-sidebar.tsx`
+- `frontend/components/workspace/workspace-shell.tsx` (only if sidebar width/layout state is owned there)
+- `frontend/components/workspace/workspace-shell.test.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+**Scope:**
+- Add icons beside main sidebar navigation/tool/agent labels only
+- Do NOT add icons to Recent projects heading, individual recent/project rows, or Advanced
+- Add compact-mode toggle at the top-right of the left sidebar
+- Expanded mode: main items show icon + label; Recent projects section visible; individual project rows visible; Advanced visible
+- Compact mode: main items show icon only; words hidden for main items; Recent projects section hidden; individual project rows hidden; Advanced hidden
+- Preserve existing navigation behavior and active/selected visual state
+- Toggle must be keyboard/click accessible
+- All new visible text, aria-labels, and tooltip strings must be added to all three locale files and wired through existing message pattern — no hardcoded English
+
+**Icon standard:**
+- Use Heroicons v2 Outline icons (`@heroicons/react/24/outline`)
+- Do not use Lucide, Font Awesome, Material Icons, inline SVGs, or emoji unless explicitly approved
+- Match Heroicons outline style: 24×24 viewBox, `stroke="currentColor"`, `fill="none"`, `strokeWidth={2}`, `strokeLinecap="round"`, `strokeLinejoin="round"`
+- Size with Tailwind: `w-4 h-4`, `w-5 h-5`, or `w-6 h-6`
+- Color via Tailwind text classes (e.g. `text-gray-600`, `text-blue-600`)
+- During implementation, first inspect `frontend/package.json` to confirm `@heroicons/react` is already installed; if missing, add it as a frontend dependency using the existing package manager/lockfile pattern
+- Do not add any other icon package
+
+**Non-goals:**
+- No icons for Recent projects / individual projects / Advanced
+- No route changes
+- No backend changes
+- No new sidebar navigation items
+- No agent/tool behavior changes
+- No broad layout redesign
+- No TASK-75A work
+
+**Acceptance criteria:**
+- [x] UX-IA-31 registered in TASKS.md and TASKS_BACKLOG_FULL.md
+- [x] Icons added to main sidebar navigation/tool/agent labels using Heroicons v2 Outline (`@heroicons/react/24/outline`)
+- [x] No icons on Recent projects heading, individual project rows, or Advanced
+- [x] Compact-mode toggle present at top-right of left sidebar, keyboard and click accessible
+- [x] Expanded mode shows icons + labels with Recent projects/project list/Advanced visible
+- [x] Compact mode shows icons only with Recent projects/project list/Advanced hidden
+- [x] Existing navigation behavior and active/selected state preserved
+- [x] All new visible text/aria-labels/tooltips in `en.json`, `zh-TW.json`, `zh-CN.json`
+- [x] `@heroicons/react` confirmed present in `frontend/package.json`; added if missing
+- [x] No other icon packages added
+- [x] `npx tsc --noEmit` passes
+- [x] `npm test` passes
+- [x] ReadLints clean on changed files
+- [x] No unrelated files changed
+
+**Validation:**
+From `C:\Users\knlee\aiSandBox2026B\frontend`:
+- `npx tsc --noEmit`
+- `npm test`
+- ReadLints on touched files
+
+**Reference:** See TASKS.md -> UX-IA-31.
 
 ---
 

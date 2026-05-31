@@ -127,7 +127,9 @@
     "selectTargetWorkspace": "选择目标工作区",
     "noOtherWorkspaces": "没有其他可用工作区",
     "moveToWorkspace": "移动到工作区",
-    "workspaceLabel": "工作区"
+    "workspaceLabel": "工作区",
+    "expandSidebar": "展开侧边栏",
+    "collapseSidebar": "收起侧边栏"
   },
   "recovery": {
     "actions": {

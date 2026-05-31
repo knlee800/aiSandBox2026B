@@ -13,6 +13,7 @@ import WorkspaceShell, {
   WorkspaceAdvancedDrawer,
 } from './workspace-shell';
 import WorkspaceAccountMenu from './workspace-account-menu';
+import WorkspaceSidebar from './workspace-sidebar';
 import type { WorkspaceCheckpoint, WorkspaceShellSession } from './workspace-shell.logic';
 import type { WorkspaceExecState } from './workspace-exec.logic';
 import type { WorkspacePreviewState } from './workspace-preview.logic';
@@ -586,6 +587,42 @@ function renderWorkspaceShell(
   return renderToStaticMarkup(<WorkspaceShell {...buildWorkspaceShellProps(overrides)} />);
 }
 
+function buildWorkspaceSidebarProps(
+  overrides: Partial<React.ComponentProps<typeof WorkspaceSidebar>> = {},
+): React.ComponentProps<typeof WorkspaceSidebar> {
+  return {
+    locale: 'en',
+    workspaces: workspaceOptions,
+    selectedWorkspaceId: 'workspace-1',
+    onSelectWorkspaceId: () => {},
+    onOpenCreateWorkspaceFlow: () => {},
+    workspaceView: 'home',
+    onWorkspaceViewChange: () => {},
+    recentProjects: [
+      {
+        id: 'proj-recent-1',
+        name: 'Recent project',
+        updatedAt: '2026-05-11T09:00:00.000Z',
+      },
+    ],
+    onOpenRecentProject: () => {},
+    userSummary,
+    usageSummary,
+    quotaSummary,
+    activeSessions: 1,
+    onLogout: () => {},
+    onLanguageChange: () => {},
+    footerContent: <div data-testid="workspace-sidebar-advanced">Advanced</div>,
+    ...overrides,
+  };
+}
+
+function renderWorkspaceSidebar(
+  overrides: Partial<React.ComponentProps<typeof WorkspaceSidebar>> = {},
+): string {
+  return renderToStaticMarkup(<WorkspaceSidebar {...buildWorkspaceSidebarProps(overrides)} />);
+}
+
 function buildWorkspaceAccountMenuProps(
   overrides: Partial<React.ComponentProps<typeof WorkspaceAccountMenu>> = {},
 ): React.ComponentProps<typeof WorkspaceAccountMenu> {
@@ -958,6 +995,422 @@ describe('workspace shell component', () => {
     });
 
     assert.match(html, /workspace-sidebar-account-avatar/);
+  });
+
+  test('workspace sidebar renders temporary logo mark and traditional toggle control', () => {
+    const html = renderWorkspaceSidebar({
+      locale: 'en',
+      workspaceView: 'home',
+    });
+
+    assert.match(html, /workspace-sidebar-logo-mark/);
+    assert.match(html, /workspace-sidebar-compact-toggle/);
+    assert.match(html, /workspace-sidebar-compact-toggle-icon/);
+    assert.match(html, /aria-label="Collapse sidebar"/);
+    assert.match(html, /workspace-sidebar-nav-icon-home/);
+    assert.match(html, /workspace-sidebar-nav-icon-projects/);
+    assert.match(html, /workspace-sidebar-nav-icon-templates/);
+    assert.doesNotMatch(html, /<p class="mt-1 truncate text-xs text-gray-500">Personal<\/p>/);
+  });
+
+  test('workspace sidebar compact toggle click flips compact state', () => {
+    let isCompact = false;
+
+    withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 1) {
+        const setIsCompact = (value: unknown): void => {
+          if (typeof value === 'function') {
+            const updater = value as (previous: boolean) => boolean;
+            isCompact = updater(isCompact);
+            return;
+          }
+          isCompact = Boolean(value);
+        };
+        return [isCompact, setIsCompact];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () => {
+      const toggleButton = findElementByTestId(
+        WorkspaceSidebar(buildWorkspaceSidebarProps({ locale: 'en', workspaceView: 'home' })),
+        'workspace-sidebar-compact-toggle',
+      );
+
+      assert.ok(toggleButton);
+      toggleButton.props.onClick?.();
+    });
+
+    assert.equal(isCompact, true);
+  });
+
+  test('workspace sidebar compact mode applies compact rail width class', () => {
+    const html = withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 1) {
+        return [true, () => {}];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () =>
+      renderWorkspaceSidebar({
+        locale: 'en',
+        workspaceView: 'home',
+      }),
+    );
+
+    assert.match(html, /md:w-20/);
+    assert.doesNotMatch(html, /md:w-72/);
+  });
+
+  test('workspace sidebar layout uses resolved full-height chain classes', () => {
+    const html = renderWorkspaceSidebar({
+      locale: 'en',
+      workspaceView: 'home',
+    });
+
+    assert.match(html, /class="h-full w-full shrink-0 border-b border-gray-200 bg-white md:border-b-0 md:border-r md:w-72"/);
+    assert.match(html, /class="flex h-full flex-col"/);
+    assert.doesNotMatch(html, /class="min-h-screen w-full shrink-0/);
+    assert.doesNotMatch(html, /class="flex h-full min-h-screen flex-col"/);
+  });
+
+  test('workspace sidebar compact mode hides visible toggle and renders empty-space expand area', () => {
+    const html = withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 1) {
+        return [true, () => {}];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () =>
+      renderWorkspaceSidebar({
+        locale: 'en',
+        workspaceView: 'home',
+      }),
+    );
+
+    assert.doesNotMatch(html, /workspace-sidebar-compact-toggle/);
+    assert.match(html, /workspace-sidebar-compact-expand-area/);
+    assert.match(html, /aria-label="Expand sidebar"/);
+  });
+
+  test('clicking compact sidebar empty-space expand area expands sidebar', () => {
+    let isCompact = true;
+
+    withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 1) {
+        const setIsCompact = (value: unknown): void => {
+          if (typeof value === 'function') {
+            const updater = value as (previous: boolean) => boolean;
+            isCompact = updater(isCompact);
+            return;
+          }
+          isCompact = Boolean(value);
+        };
+        return [isCompact, setIsCompact];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () => {
+      const compactExpandArea = findElementByTestId(
+        WorkspaceSidebar(buildWorkspaceSidebarProps({ locale: 'en', workspaceView: 'home' })),
+        'workspace-sidebar-compact-expand-area',
+      );
+
+      assert.ok(compactExpandArea);
+      const onExpandAreaClick = compactExpandArea.props.onClick as
+        | ((event: React.MouseEvent<HTMLDivElement>) => void)
+        | undefined;
+      const eventTarget = {};
+      onExpandAreaClick?.({
+        target: eventTarget,
+        currentTarget: eventTarget,
+      } as React.MouseEvent<HTMLDivElement>);
+    });
+
+    assert.equal(isCompact, false);
+  });
+
+  test('clicking compact sidebar non-empty-space child target does not expand sidebar', () => {
+    let isCompact = true;
+
+    withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 1) {
+        const setIsCompact = (value: unknown): void => {
+          if (typeof value === 'function') {
+            const updater = value as (previous: boolean) => boolean;
+            isCompact = updater(isCompact);
+            return;
+          }
+          isCompact = Boolean(value);
+        };
+        return [isCompact, setIsCompact];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () => {
+      const compactExpandArea = findElementByTestId(
+        WorkspaceSidebar(buildWorkspaceSidebarProps({ locale: 'en', workspaceView: 'home' })),
+        'workspace-sidebar-compact-expand-area',
+      );
+
+      assert.ok(compactExpandArea);
+      const onExpandAreaClick = compactExpandArea.props.onClick as
+        | ((event: React.MouseEvent<HTMLDivElement>) => void)
+        | undefined;
+      onExpandAreaClick?.({
+        target: {},
+        currentTarget: {},
+      } as React.MouseEvent<HTMLDivElement>);
+    });
+
+    assert.equal(isCompact, true);
+  });
+
+  test('clicking compact home/projects/templates nav icons does not expand sidebar before navigation handling', () => {
+    let isCompact = true;
+    const changedViews: string[] = [];
+
+    withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 1) {
+        const setIsCompact = (value: unknown): void => {
+          if (typeof value === 'function') {
+            const updater = value as (previous: boolean) => boolean;
+            isCompact = updater(isCompact);
+            return;
+          }
+          isCompact = Boolean(value);
+        };
+        return [isCompact, setIsCompact];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () => {
+      const sidebarElement = WorkspaceSidebar(
+        buildWorkspaceSidebarProps({
+          locale: 'en',
+          workspaceView: 'home',
+          onWorkspaceViewChange: (view) => {
+            changedViews.push(view);
+          },
+        }),
+      );
+      const homeNavButton = findElementByTestId(sidebarElement, 'workspace-sidebar-nav-home');
+      const projectsNavButton = findElementByTestId(sidebarElement, 'workspace-sidebar-nav-projects');
+      const templatesNavButton = findElementByTestId(sidebarElement, 'workspace-sidebar-nav-templates');
+
+      assert.ok(homeNavButton);
+      assert.ok(projectsNavButton);
+      assert.ok(templatesNavButton);
+      homeNavButton.props.onClick?.();
+      projectsNavButton.props.onClick?.();
+      templatesNavButton.props.onClick?.();
+    });
+
+    assert.deepEqual(changedViews, ['home', 'projects', 'templates']);
+    assert.equal(isCompact, true);
+  });
+
+  test('workspace sidebar compact workspace toggle click opens compact workspace menu', () => {
+    let isCompactWorkspaceMenuOpen = false;
+
+    withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 1) {
+        return [true, () => {}];
+      }
+      if (useStateCallIndex === 2) {
+        const setIsCompactWorkspaceMenuOpen = (value: unknown): void => {
+          if (typeof value === 'function') {
+            const updater = value as (previous: boolean) => boolean;
+            isCompactWorkspaceMenuOpen = updater(isCompactWorkspaceMenuOpen);
+            return;
+          }
+          isCompactWorkspaceMenuOpen = Boolean(value);
+        };
+        return [isCompactWorkspaceMenuOpen, setIsCompactWorkspaceMenuOpen];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () => {
+      const workspaceToggle = findElementByTestId(
+        WorkspaceSidebar(buildWorkspaceSidebarProps({ locale: 'en', workspaceView: 'home' })),
+        'workspace-sidebar-compact-workspace-toggle',
+      );
+
+      assert.ok(workspaceToggle);
+      workspaceToggle.props.onClick?.();
+    });
+
+    assert.equal(isCompactWorkspaceMenuOpen, true);
+  });
+
+  test('clicking compact workspace icon does not expand sidebar', () => {
+    let isCompact = true;
+    let isCompactWorkspaceMenuOpen = false;
+
+    withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 1) {
+        const setIsCompact = (value: unknown): void => {
+          if (typeof value === 'function') {
+            const updater = value as (previous: boolean) => boolean;
+            isCompact = updater(isCompact);
+            return;
+          }
+          isCompact = Boolean(value);
+        };
+        return [isCompact, setIsCompact];
+      }
+      if (useStateCallIndex === 2) {
+        const setIsCompactWorkspaceMenuOpen = (value: unknown): void => {
+          if (typeof value === 'function') {
+            const updater = value as (previous: boolean) => boolean;
+            isCompactWorkspaceMenuOpen = updater(isCompactWorkspaceMenuOpen);
+            return;
+          }
+          isCompactWorkspaceMenuOpen = Boolean(value);
+        };
+        return [isCompactWorkspaceMenuOpen, setIsCompactWorkspaceMenuOpen];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () => {
+      const workspaceToggle = findElementByTestId(
+        WorkspaceSidebar(buildWorkspaceSidebarProps({ locale: 'en', workspaceView: 'home' })),
+        'workspace-sidebar-compact-workspace-toggle',
+      );
+
+      assert.ok(workspaceToggle);
+      workspaceToggle.props.onClick?.();
+    });
+
+    assert.equal(isCompact, true);
+  });
+
+  test('clicking compact upgrade icon does not expand sidebar', () => {
+    let isCompact = true;
+
+    withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 1) {
+        const setIsCompact = (value: unknown): void => {
+          if (typeof value === 'function') {
+            const updater = value as (previous: boolean) => boolean;
+            isCompact = updater(isCompact);
+            return;
+          }
+          isCompact = Boolean(value);
+        };
+        return [isCompact, setIsCompact];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () => {
+      const upgradeButton = findElementByTestId(
+        WorkspaceSidebar(buildWorkspaceSidebarProps({ locale: 'en', workspaceView: 'home' })),
+        'workspace-sidebar-upgrade-button',
+      );
+
+      assert.ok(upgradeButton);
+      assert.equal(upgradeButton.props.onClick, undefined);
+    });
+
+    assert.equal(isCompact, true);
+  });
+
+  test('clicking compact avatar does not expand sidebar', () => {
+    let isCompact = true;
+    let accountMenuOpen = false;
+
+    withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 1) {
+        const setIsCompact = (value: unknown): void => {
+          if (typeof value === 'function') {
+            const updater = value as (previous: boolean) => boolean;
+            isCompact = updater(isCompact);
+            return;
+          }
+          isCompact = Boolean(value);
+        };
+        return [isCompact, setIsCompact];
+      }
+      if (useStateCallIndex === 3) {
+        const setAccountMenuOpen = (value: unknown): void => {
+          if (typeof value === 'function') {
+            const updater = value as (previous: boolean) => boolean;
+            accountMenuOpen = updater(accountMenuOpen);
+            return;
+          }
+          accountMenuOpen = Boolean(value);
+        };
+        return [accountMenuOpen, setAccountMenuOpen];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () => {
+      const accountAvatar = findElementByTestId(
+        WorkspaceSidebar(buildWorkspaceSidebarProps({ locale: 'en', workspaceView: 'home' })),
+        'workspace-sidebar-account-avatar',
+      );
+
+      assert.ok(accountAvatar);
+      accountAvatar.props.onClick?.();
+    });
+
+    assert.equal(isCompact, true);
+  });
+
+  test('workspace sidebar compact mode hides recent/projects/advanced and uses icon-only compact entries', () => {
+    const html = withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 1) {
+        return [true, () => {}];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () =>
+      renderWorkspaceSidebar({
+        locale: 'en',
+        workspaceView: 'home',
+      }),
+    );
+
+    assert.doesNotMatch(html, /workspace-sidebar-recent-project-proj-recent-1/);
+    assert.doesNotMatch(html, /Recent Projects/);
+    assert.doesNotMatch(html, /workspace-sidebar-advanced/);
+    assert.doesNotMatch(html, /workspace-sidebar-workspace-select/);
+    assert.doesNotMatch(html, /workspace-sidebar-compact-toggle/);
+    assert.match(html, /workspace-sidebar-compact-expand-area/);
+    assert.match(html, /workspace-sidebar-compact-workspace-toggle/);
+    assert.match(html, /workspace-sidebar-compact-workspace-icon/);
+    assert.match(html, /workspace-sidebar-upgrade-button/);
+    assert.match(html, /workspace-sidebar-upgrade-icon/);
+    assert.match(html, /workspace-sidebar-account-avatar/);
+    assert.doesNotMatch(html, /workspace-sidebar-compact-usage/);
+    assert.match(html, /workspace-sidebar-account-avatar[\s\S]*>U<\/span>/);
+    assert.match(html, /workspace-sidebar-nav-home[\s\S]*<span class="sr-only">Home<\/span>/);
+    assert.match(html, /workspace-sidebar-nav-projects[\s\S]*<span class="sr-only">Projects<\/span>/);
+    assert.match(
+      html,
+      /workspace-sidebar-nav-templates[\s\S]*<span class="sr-only">Templates &amp; Community<\/span>/,
+    );
+  });
+
+  test('workspace sidebar expanded mode shows nav labels, recent projects, and advanced', () => {
+    const html = renderWorkspaceSidebar({
+      locale: 'en',
+      workspaceView: 'home',
+    });
+
+    assert.match(html, /md:w-72/);
+    assert.match(html, /workspace-sidebar-recent-project-proj-recent-1/);
+    assert.match(html, /workspace-sidebar-workspace-select/);
+    assert.match(html, /workspace-sidebar-upgrade-button/);
+    assert.match(html, /workspace-sidebar-account-avatar/);
+    assert.match(html, /workspace-sidebar-compact-usage/);
+    assert.match(html, /workspace-sidebar-advanced/);
+    assert.match(html, /user@example\.com/);
+    assert.match(
+      html,
+      /workspace-sidebar-bottom-controls[\s\S]*workspace-sidebar-upgrade-button[\s\S]*workspace-sidebar-account-avatar/,
+    );
+    assert.match(html, /class="mt-auto border-t border-gray-100 px-4 py-4" data-testid="workspace-sidebar-bottom-controls"/);
+    assert.match(html, /workspace-sidebar-nav-home[\s\S]*<span class="truncate">Home<\/span>/);
+    assert.match(html, /workspace-sidebar-nav-projects[\s\S]*<span class="truncate">Projects<\/span>/);
+  });
+
+  test('workspace sidebar compact toggle aria-label is locale-backed', () => {
+    const enHtml = renderWorkspaceSidebar({ locale: 'en' });
+    const zhTwHtml = renderWorkspaceSidebar({ locale: 'zh-TW' });
+    const zhCnHtml = renderWorkspaceSidebar({ locale: 'zh-CN' });
+
+    assert.match(enHtml, /aria-label="Collapse sidebar"/);
+    assert.match(zhTwHtml, /aria-label="收合側邊欄"/);
+    assert.match(zhCnHtml, /aria-label="收起侧边栏"/);
   });
 
   test('account menu renders user email when open', () => {
@@ -6655,6 +7108,12 @@ describe('workspace sidebar workspace-label wiring — UX-IA-22', () => {
     assert.equal(zhCn.workspace?.createWorkspaceTitle, '创建工作区');
     assert.equal(zhCn.workspace?.createWorkspaceDescription, '创建一个新的空间来制作项目或与他人协作。');
     assert.equal(zhCn.workspace?.workspaceNameLabel, '工作区名称');
+    assert.equal(en.workspace?.expandSidebar, 'Expand sidebar');
+    assert.equal(en.workspace?.collapseSidebar, 'Collapse sidebar');
+    assert.equal(zhTw.workspace?.expandSidebar, '展開側邊欄');
+    assert.equal(zhTw.workspace?.collapseSidebar, '收合側邊欄');
+    assert.equal(zhCn.workspace?.expandSidebar, '展开侧边栏');
+    assert.equal(zhCn.workspace?.collapseSidebar, '收起侧边栏');
   });
 
   test('workspace sidebar source uses workspaceLabel for workspace selector and fallbacks', () => {
@@ -6681,6 +7140,48 @@ describe('workspace sidebar workspace-label wiring — UX-IA-22', () => {
       sidebarSource,
       /<option value=\{CREATE_NEW_WORKSPACE_OPTION_VALUE\}>\{messages\.createNewWorkspace\}<\/option>/,
     );
+  });
+
+  test('workspace sidebar source uses heroicons outline imports, fallback toggle icon choice, and excludes forbidden icon patterns', () => {
+    const sidebarSource = readFileSync(new URL('./workspace-sidebar.tsx', import.meta.url), 'utf8');
+    const heroiconsOutlineSource = readFileSync(
+      new URL('../../../node_modules/@heroicons/react/24/outline/index.js', import.meta.url),
+      'utf8',
+    );
+
+    assert.match(sidebarSource, /from '@heroicons\/react\/24\/outline'/);
+    assert.match(sidebarSource, /expandSidebar: read\('workspace\.expandSidebar'\),/);
+    assert.match(sidebarSource, /collapseSidebar: read\('workspace\.collapseSidebar'\),/);
+    assert.match(sidebarSource, /workspace-sidebar-logo-mark/);
+    assert.match(sidebarSource, /ArrowsRightLeftIcon/);
+    assert.doesNotMatch(sidebarSource, /ToggleLeftIcon/);
+    assert.doesNotMatch(sidebarSource, /ToggleRightIcon/);
+    assert.match(sidebarSource, /className=\{`h-full w-full shrink-0 border-b border-gray-200 bg-white md:border-b-0 md:border-r/);
+    assert.match(sidebarSource, /className="flex h-full flex-col"/);
+    assert.match(sidebarSource, /workspace-sidebar-compact-expand-area/);
+    assert.match(sidebarSource, /handleCompactAreaClick/);
+    assert.match(sidebarSource, /handleCompactAreaKeyDown/);
+    assert.match(sidebarSource, /event\.target !== event\.currentTarget/);
+    assert.doesNotMatch(sidebarSource, /min-h-screen/);
+    assert.match(sidebarSource, /workspace-sidebar-bottom-controls/);
+    assert.match(sidebarSource, /mt-auto/);
+    assert.match(sidebarSource, /data-testid=\{`workspace-sidebar-nav-icon-\$\{view\}`\}/);
+    assert.match(sidebarSource, /workspace-sidebar-compact-toggle/);
+    assert.match(sidebarSource, /setIsCompact\(\(current\) => !current\)/);
+    assert.doesNotMatch(sidebarSource, /onClick=\{\(\) => setIsCompact\(false\)\}/);
+    assert.match(heroiconsOutlineSource, /ArrowsRightLeftIcon/);
+    assert.doesNotMatch(heroiconsOutlineSource, /ToggleLeftIcon/);
+    assert.doesNotMatch(heroiconsOutlineSource, /ToggleRightIcon/);
+    assert.doesNotMatch(sidebarSource, /lucide-react/);
+    assert.doesNotMatch(sidebarSource, /font-awesome/i);
+    assert.doesNotMatch(sidebarSource, /@mui\/icons-material/);
+    assert.doesNotMatch(sidebarSource, /<svg/);
+    assert.doesNotMatch(sidebarSource, /[\u{1F300}-\u{1FAFF}]/u);
+  });
+
+  test('workspace sidebar dependency includes @heroicons/react', () => {
+    const frontendPackage = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8'));
+    assert.equal(frontendPackage.dependencies?.['@heroicons/react'] !== undefined, true);
   });
 
   test('workspace shell source opens focused create-workspace panel from sidebar dropdown', () => {
@@ -6935,6 +7436,6 @@ describe('workspace sidebar workspace-label wiring — UX-IA-22', () => {
 
   test('workspace sidebar projects nav tab remains wired to messages.projects', () => {
     const sidebarSource = readFileSync(new URL('./workspace-sidebar.tsx', import.meta.url), 'utf8');
-    assert.match(sidebarSource, /\['projects', messages\.projects\]/);
+    assert.match(sidebarSource, /\{ view: 'projects' as const, label: messages\.projects, icon: FolderIcon \}/);
   });
 });

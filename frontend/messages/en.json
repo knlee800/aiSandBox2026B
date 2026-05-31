@@ -127,7 +127,9 @@
     "selectTargetWorkspace": "Select target workspace",
     "noOtherWorkspaces": "No other workspaces available",
     "moveToWorkspace": "Move to Workspace",
-    "workspaceLabel": "Workspace"
+    "workspaceLabel": "Workspace",
+    "expandSidebar": "Expand sidebar",
+    "collapseSidebar": "Collapse sidebar"
   },
   "recovery": {
     "actions": {
