@@ -1520,6 +1520,30 @@ describe('workspace shell component', () => {
     assert.equal(submittedPrompt, '');
   });
 
+  test('renders home project action error when create flow fails', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'home',
+      projectActionState: 'error',
+      projectActionError: 'Project name is required.',
+    });
+
+    assert.match(html, /workspace-home-error/);
+    assert.match(html, /Project name is required\./);
+  });
+
+  test('shows starting label on home start button while creating project', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'home',
+      chatPromptInput: 'Build a kanban board',
+      projectActionState: 'creating',
+    });
+
+    assert.match(html, /workspace-home-submit/);
+    assert.match(html, /workspace-home-submit[\s\S]*Starting\.\.\./);
+  });
+
   test('renders existing workspace content when project view is selected', () => {
     const html = renderWorkspaceShell({
       projectFirstUxEnabled: true,
@@ -6744,6 +6768,47 @@ describe('workspace visual edit checkpoint labeling — UX-IA-17A', () => {
     const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
     assert.match(pageSource, /const coherenceResult = await runAiActionCoherence\(\{/);
     assert.match(pageSource, /checkpointDescription,/);
+  });
+});
+
+describe('home one-click start and send wiring — HOME-START-01', () => {
+  test('page source creates workspace project with overrideName and boolean result', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(
+      pageSource,
+      /async function handleCreateWorkspaceProject\(overrideName\?: string\): Promise<boolean> \{/,
+    );
+    assert.match(pageSource, /const trimmedName = \(overrideName \?\? projectNameInput\)\.trim\(\);/);
+  });
+
+  test('page source removes flushSync from home prompt create flow', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.doesNotMatch(pageSource, /import \{ flushSync \} from 'react-dom';/);
+    assert.doesNotMatch(pageSource, /flushSync\(/);
+  });
+
+  test('page source uses one-shot pending auto-send guarded by project view and selected session', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(pageSource, /const pendingAutoSendPromptRef = useRef<string \| null>\(null\);/);
+    assert.match(pageSource, /const \[autoSendFromHomeTick, setAutoSendFromHomeTick\] = useState\(0\);/);
+    assert.match(pageSource, /if \(workspaceView !== 'project' \|\| !selectedSessionId\) \{/);
+    assert.match(pageSource, /pendingAutoSendPromptRef\.current = null;/);
+    assert.match(pageSource, /void handleSubmitChatPrompt\(\);/);
+  });
+
+  test('workspace.starting locale keys exist for home start button loading state', () => {
+    const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));
+    const zhTw = JSON.parse(readFileSync(new URL('../../messages/zh-TW.json', import.meta.url), 'utf8'));
+    const zhCn = JSON.parse(readFileSync(new URL('../../messages/zh-CN.json', import.meta.url), 'utf8'));
+
+    assert.equal(en.workspace?.starting, 'Starting...');
+    assert.equal(zhTw.workspace?.starting, '啟動中...');
+    assert.equal(zhCn.workspace?.starting, '启动中...');
+  });
+
+  test('workspace scaffold messages source maps workspace.starting through helper', () => {
+    const sidebarSource = readFileSync(new URL('./workspace-sidebar.tsx', import.meta.url), 'utf8');
+    assert.match(sidebarSource, /starting: read\('workspace\.starting'\),/);
   });
 });
 

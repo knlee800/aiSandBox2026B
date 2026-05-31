@@ -114,6 +114,7 @@
     "buildAnything": "Build anything",
     "describeBuild": "Describe what you want to build...",
     "start": "Start",
+    "starting": "Starting...",
     "selectWorkspace": "Select a workspace",
     "newWorkspaceName": "New workspace name",
     "createWorkspace": "Create Workspace",

@@ -114,6 +114,7 @@
     "buildAnything": "构建任何内容",
     "describeBuild": "描述你想构建的内容...",
     "start": "开始",
+    "starting": "启动中...",
     "selectWorkspace": "选择工作区",
     "newWorkspaceName": "新工作区名称",
     "createWorkspace": "创建工作区",

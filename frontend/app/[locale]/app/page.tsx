@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { flushSync } from 'react-dom';
 import { usePathname, useRouter, useParams } from 'next/navigation';
 import WorkspaceShell from '@/components/workspace/workspace-shell';
 import { PROJECT_FIRST_UX } from '@/lib/feature-flags';
@@ -999,6 +998,9 @@ export default function AppPage() {
   const chatResponseTextRef = useRef('');
   const skipNextChatThreadPersistRef = useRef(false);
   const pendingAssistantMessageIdRef = useRef<string | null>(null);
+  const pendingAutoSendPromptRef = useRef<string | null>(null);
+  const createProjectFromPromptInFlightRef = useRef(false);
+  const [autoSendFromHomeTick, setAutoSendFromHomeTick] = useState(0);
   const selectedSessionIdRef = useRef<string | null>(null);
   const selectedFilePathRef = useRef<string | null>(null);
   const skipNextSessionEffectFileReloadRef = useRef(false);
@@ -1258,6 +1260,31 @@ export default function AppPage() {
   useEffect(() => {
     selectedSessionIdRef.current = selectedSessionId;
   }, [selectedSessionId]);
+
+  useEffect(() => {
+    if (autoSendFromHomeTick === 0) {
+      return;
+    }
+    if (workspaceView !== 'project' || !selectedSessionId) {
+      return;
+    }
+    const pendingPrompt = pendingAutoSendPromptRef.current;
+    if (!pendingPrompt) {
+      return;
+    }
+    if (chatPromptInput.trim() !== pendingPrompt) {
+      setChatPromptInput(pendingPrompt);
+      return;
+    }
+    pendingAutoSendPromptRef.current = null;
+    void handleSubmitChatPrompt();
+  }, [
+    autoSendFromHomeTick,
+    chatPromptInput,
+    handleSubmitChatPrompt,
+    selectedSessionId,
+    workspaceView,
+  ]);
 
   useEffect(() => {
     selectedFilePathRef.current = selectedFilePath;
@@ -2173,16 +2200,16 @@ export default function AppPage() {
     }
   }
 
-  async function handleCreateWorkspaceProject(): Promise<void> {
+  async function handleCreateWorkspaceProject(overrideName?: string): Promise<boolean> {
     if (!userId) {
-      return;
+      return false;
     }
-    const trimmedName = projectNameInput.trim();
+    const trimmedName = (overrideName ?? projectNameInput).trim();
     if (!trimmedName) {
       setProjectActionState('error');
       setProjectActionMessage(null);
       setProjectActionError('Project name is required.');
-      return;
+      return false;
     }
 
     setProjectActionState('creating');
@@ -2229,7 +2256,7 @@ export default function AppPage() {
           setProjectActionState('success');
           setProjectActionMessage('Project created.');
           setProjectActionError(null);
-          return;
+          return true;
         } finally {
           projectOpenInProgressRef.current = false;
           skipNextSessionEffectFileReloadRef.current = false;
@@ -2269,6 +2296,7 @@ export default function AppPage() {
           : 'Project created.',
       );
       setProjectActionError(null);
+      return true;
     } catch (error) {
       setProjectActionState('error');
       setProjectActionMessage(null);
@@ -2277,6 +2305,7 @@ export default function AppPage() {
           ? error.message
           : 'Failed to create project.',
       );
+      return false;
     }
   }
 
@@ -2285,17 +2314,31 @@ export default function AppPage() {
     if (!trimmedPrompt) {
       return;
     }
+    if (createProjectFromPromptInFlightRef.current) {
+      return;
+    }
+    createProjectFromPromptInFlightRef.current = true;
+    try {
+      const autoProjectName =
+        trimmedPrompt.replace(/\s+/g, ' ').slice(0, 40).trim() || 'New project';
 
-    const autoProjectName =
-      trimmedPrompt.replace(/\s+/g, ' ').slice(0, 40).trim() || 'New project';
-
-    flushSync(() => {
       setProjectNameInput(autoProjectName);
       setChatPromptInput(trimmedPrompt);
-    });
+      pendingAutoSendPromptRef.current = null;
 
-    await handleCreateWorkspaceProject();
-    setChatPromptInput(trimmedPrompt);
+      const created = await handleCreateWorkspaceProject(autoProjectName);
+      if (!created) {
+        pendingAutoSendPromptRef.current = null;
+        setChatPromptInput(trimmedPrompt);
+        return;
+      }
+
+      setChatPromptInput(trimmedPrompt);
+      pendingAutoSendPromptRef.current = trimmedPrompt;
+      setAutoSendFromHomeTick((current) => current + 1);
+    } finally {
+      createProjectFromPromptInFlightRef.current = false;
+    }
   }
 
   async function hydrateWorkspaceForProjectOpen(
@@ -5593,7 +5636,9 @@ export default function AppPage() {
       onMoveWorkspaceProject={() =>
         handleMoveWorkspaceProject(selectedProjectId, projectMoveTargetWorkspaceId)
       }
-      onCreateWorkspaceProject={handleCreateWorkspaceProject}
+      onCreateWorkspaceProject={async () => {
+        await handleCreateWorkspaceProject();
+      }}
       onOpenWorkspaceProject={handleOpenWorkspaceProject}
       onResumeWorkspaceProjectById={handleResumeWorkspaceProjectById}
       onRestoreWorkspaceProjectFromSnapshotById={

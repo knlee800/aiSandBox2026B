@@ -26488,3 +26488,76 @@ From `C:\Users\knlee\aiSandBox2026B\frontend`:
 
 **Reference:** See TASKS.md -> AUTH-UX-01.
 **Checkpoint:** `docs/AUTH-UX-01-CHECKPOINT.md`
+
+---
+
+## HOME-START — Build Anything One-Click Start and Send
+
+**Family status:** COMPLETE and LOCKED — HOME-START-01 COMPLETE and LOCKED
+
+**Current stage:** HOME-START-01 COMPLETE and LOCKED — `docs/HOME-START-01-CHECKPOINT.md`
+
+**Ordered slices (registered so far):**
+1. HOME-START-01 — Build Anything One-Click Start and Send (COMPLETE and LOCKED — `docs/HOME-START-01-CHECKPOINT.md`)
+
+---
+
+### HOME-START-01: Build Anything One-Click Start and Send
+
+**Task ID:** HOME-START-01
+**Family:** HOME-START (Build Anything One-Click Start and Send)
+**Family status:** COMPLETE and LOCKED
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** FRONTEND-ONLY / HOME UX BUG FIX
+**Source:** Read-only investigation (2026-05-31) — stale closure in `handleCreateProjectFromPrompt` confirmed; no auto-send call after project creation confirmed
+**Depends on:** UX-IA-31 (COMPLETE and LOCKED — `docs/UX-IA-31-CHECKPOINT.md`)
+**Checkpoint:** `docs/HOME-START-01-CHECKPOINT.md`
+
+**Problem:**
+The Home page "Build anything" Start flow has two UX bugs:
+
+1. First click appears non-responsive. Root cause: `handleCreateProjectFromPrompt` uses `flushSync` to update `projectNameInput`, then calls `handleCreateWorkspaceProject` from the stale pre-update closure where `projectNameInput` is still empty. The create handler fails the required-name guard and the error is not shown on the Home view — the user sees nothing happen.
+2. After project creation (second click), the typed prompt is copied into the AI Prompt box but is not sent. User must press Send manually.
+
+**Objective:**
+Make "Build anything" a true one-click flow: type prompt → click Start once → create/open project/session → send prompt automatically.
+
+**Files in scope:**
+- `frontend/app/[locale]/app/page.tsx`
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+
+**Scope:**
+- Fix stale closure: add optional `overrideName` parameter to `handleCreateWorkspaceProject`; call it with `autoProjectName` directly from `handleCreateProjectFromPrompt`; remove `flushSync`
+- Auto-send prompt after project/session ready: add `pendingAutoSendPromptRef`; add `useEffect` on `[workspaceView, selectedSessionId]` that consumes ref and calls `handleSubmitChatPrompt()` when view switches to `'project'`
+- Prevent duplicate send: existing `isCreatingProjectFromPrompt` disabled guard is sufficient; ref is consumed on first dispatch
+- Show Home-view creation errors: add `projectActionError` display in `homeWorkspaceContent` in workspace-shell
+- Show loading label on Start while creating: show `workspace.starting` when `isCreatingProjectFromPrompt` is true
+- Add multilingual `workspace.starting` key to en.json, zh-TW.json, zh-CN.json
+- Preserve existing project/session creation behavior
+
+**Non-goals:**
+- No backend changes
+- No broad redesign
+- No new AI execution path
+- No auth/session refactor
+- No unrelated UX-IA work
+
+**Acceptance criteria:**
+- [x] HOME-START-01 registered in TASKS.md and TASKS_BACKLOG_FULL.md
+- [x] Single click on Start creates project and auto-sends prompt — no second click required
+- [x] No duplicate send on double-click
+- [x] Home view shows error if project creation fails
+- [x] Start button shows loading label (`workspace.starting`) during creation
+- [x] All new visible text is multilingual (en, zh-TW, zh-CN)
+- [x] `npx tsc --noEmit` passes
+- [x] `npm test` passes (existing + new tests)
+- [x] ReadLints passes
+- [x] No unrelated files changed
+
+**Reference:** See TASKS.md -> HOME-START-01.
+**Checkpoint:** `docs/HOME-START-01-CHECKPOINT.md`

@@ -1681,9 +1681,14 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                 className="rounded bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-gray-300"
                 data-testid="workspace-home-submit"
               >
-                {scaffoldMessages.start}
+                {isCreatingProjectFromPrompt ? scaffoldMessages.starting : scaffoldMessages.start}
               </button>
             </div>
+            {!isCreatingProjectFromPrompt && props.projectActionError ? (
+              <p className="mt-3 text-sm text-red-700" data-testid="workspace-home-error">
+                {props.projectActionError}
+              </p>
+            ) : null}
           </div>
         </div>
       </div>

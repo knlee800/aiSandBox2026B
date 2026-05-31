@@ -102,6 +102,7 @@ export function getWorkspaceScaffoldMessages(locale?: string) {
     buildAnything: read('workspace.buildAnything'),
     describeBuild: read('workspace.describeBuild'),
     start: read('workspace.start'),
+    starting: read('workspace.starting'),
     logout: read('account.logout'),
     settings: read('account.settings'),
     language: read('account.language'),
