@@ -21991,9 +21991,9 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 
 ## UX-IA ??Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 COMPLETE and LOCKED — UX-IA-09 COMPLETE and LOCKED — UX-IA-10 COMPLETE and LOCKED — UX-IA-11 COMPLETE and LOCKED — UX-IA-12 COMPLETE and LOCKED — UX-IA-13 COMPLETE and LOCKED — 13A COMPLETE and LOCKED — 13B COMPLETE and LOCKED — UX-IA-14 COMPLETE and LOCKED — UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) — UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) — UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) — UX-IA-18 COMPLETE and LOCKED — UX-IA-19 COMPLETE and LOCKED — UX-IA-20 COMPLETE and LOCKED — UX-IA-21 COMPLETE and LOCKED — UX-IA-22 COMPLETE and LOCKED — UX-IA-23 COMPLETE and LOCKED — UX-IA-24 COMPLETE and LOCKED — UX-IA-25 COMPLETE and LOCKED — UX-IA-26 COMPLETE and LOCKED — UX-IA-27 COMPLETE and LOCKED — UX-IA-28 COMPLETE and LOCKED — UX-IA-29 COMPLETE and LOCKED — UX-IA-30 COMPLETE and LOCKED — UX-IA-31 COMPLETE and LOCKED — UX-IA-32 COMPLETE and LOCKED — UX-IA-33 COMPLETE and LOCKED — UX-IA-34 COMPLETE and LOCKED
+**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 COMPLETE and LOCKED — UX-IA-09 COMPLETE and LOCKED — UX-IA-10 COMPLETE and LOCKED — UX-IA-11 COMPLETE and LOCKED — UX-IA-12 COMPLETE and LOCKED — UX-IA-13 COMPLETE and LOCKED — 13A COMPLETE and LOCKED — 13B COMPLETE and LOCKED — UX-IA-14 COMPLETE and LOCKED — UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) — UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) — UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) — UX-IA-18 COMPLETE and LOCKED — UX-IA-19 COMPLETE and LOCKED — UX-IA-20 COMPLETE and LOCKED — UX-IA-21 COMPLETE and LOCKED — UX-IA-22 COMPLETE and LOCKED — UX-IA-23 COMPLETE and LOCKED — UX-IA-24 COMPLETE and LOCKED — UX-IA-25 COMPLETE and LOCKED — UX-IA-26 COMPLETE and LOCKED — UX-IA-27 COMPLETE and LOCKED — UX-IA-28 COMPLETE and LOCKED — UX-IA-29 COMPLETE and LOCKED — UX-IA-30 COMPLETE and LOCKED — UX-IA-31 COMPLETE and LOCKED — UX-IA-32 COMPLETE and LOCKED — UX-IA-33 COMPLETE and LOCKED — UX-IA-34 COMPLETE and LOCKED — UX-IA-35 COMPLETE and LOCKED
 
-**Current stage:** UX-IA-34 COMPLETE and LOCKED — Move Command Input to Advanced Developer Tools
+**Current stage:** UX-IA-35 COMPLETE and LOCKED — Build Targets Placement
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -22049,6 +22049,7 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 33. UX-IA-32 — Auto-Compact Sidebar When Entering Project Workspace (COMPLETE and LOCKED — `docs/UX-IA-32-CHECKPOINT.md`)
 34. UX-IA-33 — Professional AI Conversation Panel Baseline (COMPLETE and LOCKED — `docs/UX-IA-33-CHECKPOINT.md`)
 35. UX-IA-34 — Move Command Input to Advanced Developer Tools (COMPLETE and LOCKED — `docs/UX-IA-34-CHECKPOINT.md`)
+36. UX-IA-35 — Build Targets Placement (COMPLETE and LOCKED — `docs/UX-IA-35-CHECKPOINT.md`)
 
 ---
 
@@ -25392,6 +25393,86 @@ Move Command Input into `WorkspaceAdvancedDrawer` so it is hidden by default and
 - ReadLints — PASS
 
 **Reference:** See TASKS.md -> UX-IA-34. See `docs/UX-IA-34-CHECKPOINT.md`.
+
+---
+
+### UX-IA-35: Build Targets Placement
+
+**Task ID:** UX-IA-35
+**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family status:** ACTIVE — UX-IA-35 COMPLETE and LOCKED
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/UX-IA-35-CHECKPOINT.md`
+**Priority:** Medium
+**Nature:** FRONTEND-ONLY / PROJECT WORKSPACE IA CLEANUP
+**Risk:** Low-Medium
+**Depends on:** UX-IA-34 (COMPLETE and LOCKED — `docs/UX-IA-34-CHECKPOINT.md`)
+
+**Problem:**
+`WorkspaceBuildPanel` / Build Targets is currently rendered inside `projectChatSection`, below the AI chat thread. Build Targets is a project-level action useful for normal users, not part of the AI conversation. Its current placement clutters the chat panel and is architecturally misplaced.
+
+**Objective:**
+Move Build Targets out of the chat panel and into a compact project-level toolbar row, rendered under the Project Workspace header and before `projectTrustNote`. Replace all hardcoded English strings in `WorkspaceBuildPanel` with i18n keys.
+
+**Scope:**
+- Remove `<WorkspaceBuildPanel>` from `projectChatSection`.
+- Create `projectBuildToolbar` rendered between the project mode header and `projectTrustNote`.
+- Preserve existing build behavior and all props unchanged.
+- Preserve existing `data-testid` values:
+  - `workspace-build-panel`
+  - `workspace-build-target-selector`
+  - `workspace-build-trigger`
+  - `workspace-build-status`
+  - `workspace-build-error`
+  - `workspace-build-output`
+- Replace hardcoded English in `WorkspaceBuildPanel` with i18n keys:
+  - `workspace.buildTargets`
+  - `workspace.buildTargetLabel`
+  - `workspace.runBuild`
+  - `workspace.building`
+- Add keys to `en.json`, `zh-TW.json`, `zh-CN.json`.
+- Update affected tests for new DOM placement.
+
+**Non-goals:**
+- No backend changes
+- No routing changes
+- No new dependencies
+- No Command Input changes
+- No History drawer/tab changes
+- No chat panel redesign
+- No sidebar changes
+- No build behavior redesign
+- No unrelated hardcoded-string cleanup outside `WorkspaceBuildPanel`
+
+**Files in scope:**
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+**Acceptance criteria:**
+- [x] UX-IA-35 registered in TASKS.md and TASKS_BACKLOG_FULL.md
+- [x] `WorkspaceBuildPanel` is NOT inside `chat-panel-shell` in rendered output
+- [x] `WorkspaceBuildPanel` renders as a compact toolbar between the project header and trust note
+- [x] All visible text in `WorkspaceBuildPanel` uses i18n keys
+- [x] `workspace.buildTargets`, `workspace.buildTargetLabel`, `workspace.runBuild`, `workspace.building` added to `en.json`, `zh-TW.json`, `zh-CN.json`
+- [x] All `data-testid` values preserved
+- [x] Existing build behavior preserved
+- [x] Tests updated for new placement
+- [x] No new hardcoded user-facing English copy
+- [x] `frontend/messages/en.json` updated
+- [x] `frontend/messages/zh-TW.json` updated
+- [x] `frontend/messages/zh-CN.json` updated
+- [x] Component uses the existing translation hook/pattern
+
+**Validation:**
+- `npx tsc --noEmit` — PASS
+- `npm test` — PASS (567/567)
+- ReadLints — PASS
+- Live browser test — PASS
+
+**Reference:** See TASKS.md -> UX-IA-35. See `docs/UX-IA-35-CHECKPOINT.md`.
 
 ---
 

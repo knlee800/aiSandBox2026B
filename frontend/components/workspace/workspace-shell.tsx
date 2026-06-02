@@ -1126,6 +1126,24 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     </div>
   );
 
+  const projectBuildToolbar = (
+    <div className="border-b border-gray-200 bg-white px-2 py-2">
+      <WorkspaceBuildPanel
+        projectFirstUxEnabled={projectFirstUxEnabled}
+        selectedSessionId={props.selectedSessionId}
+        selectedBuildTarget={props.selectedBuildTarget ?? ''}
+        onSelectedBuildTargetChange={props.onSelectedBuildTargetChange}
+        availableBuildTargets={props.availableBuildTargets ?? []}
+        onRunBuildTarget={props.onRunBuildTarget}
+        buildRequestState={props.buildRequestState ?? 'idle'}
+        buildStatusMessage={props.buildStatusMessage ?? null}
+        buildOutput={props.buildOutput ?? ''}
+        buildError={props.buildError ?? null}
+        workspaceMessages={workspaceMessages}
+      />
+    </div>
+  );
+
   const projectChatSection = (
     <section className="flex flex-col bg-white border border-gray-200 rounded-lg overflow-hidden" data-testid="chat-panel-shell">
       <WorkspaceChatPanel
@@ -1152,18 +1170,6 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
         onConfirmExecutionFileActions={props.onConfirmExecutionFileActions}
         onCancelExecutionFileActions={props.onCancelExecutionFileActions}
         onInitiateCheckpointRevert={props.onInitiateCheckpointRevert}
-      />
-      <WorkspaceBuildPanel
-        projectFirstUxEnabled={projectFirstUxEnabled}
-        selectedSessionId={props.selectedSessionId}
-        selectedBuildTarget={props.selectedBuildTarget ?? ''}
-        onSelectedBuildTargetChange={props.onSelectedBuildTargetChange}
-        availableBuildTargets={props.availableBuildTargets ?? []}
-        onRunBuildTarget={props.onRunBuildTarget}
-        buildRequestState={props.buildRequestState ?? 'idle'}
-        buildStatusMessage={props.buildStatusMessage ?? null}
-        buildOutput={props.buildOutput ?? ''}
-        buildError={props.buildError ?? null}
       />
       <div className="mt-3">
         <ShellStateMessage
@@ -1223,6 +1229,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
 
   const projectWorkspaceContent = (
     <>
+      {projectBuildToolbar}
       {projectTrustNote}
       <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 p-2">
         {projectChatSection}
@@ -2001,6 +2008,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                   {aiPanelCollapsed ? projectPanelMessages.expandPanel : projectPanelMessages.collapsePanel}
                 </button>
               </header>
+              {projectBuildToolbar}
               {projectTrustNote}
               <div className="flex flex-1 min-h-0 flex-col md:flex-row">
                 {!aiPanelCollapsed ? (
@@ -3495,6 +3503,10 @@ function WorkspaceBuildPanel(props: {
   buildStatusMessage: string | null;
   buildOutput: string;
   buildError: string | null;
+  workspaceMessages: Pick<
+    typeof enMessages.workspace,
+    'buildTargets' | 'buildTargetLabel' | 'runBuild' | 'building'
+  >;
 }) {
   const isRunning = props.buildRequestState === 'submitting';
   const canRun =
@@ -3505,10 +3517,10 @@ function WorkspaceBuildPanel(props: {
     !isRunning;
 
   return (
-    <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="workspace-build-panel">
-      <p className="text-[11px] font-semibold text-gray-700">Build Targets</p>
+    <div className="rounded border border-gray-200 bg-gray-50 p-2" data-testid="workspace-build-panel">
+      <p className="text-[11px] font-semibold text-gray-700">{props.workspaceMessages.buildTargets}</p>
       <label htmlFor="workspace-build-target-selector" className="mt-1 block text-[11px] text-gray-700">
-        Build Target
+        {props.workspaceMessages.buildTargetLabel}
       </label>
       <select
         id="workspace-build-target-selector"
@@ -3546,7 +3558,7 @@ function WorkspaceBuildPanel(props: {
           disabled={!canRun}
           className="rounded bg-violet-600 px-3 py-1 text-xs text-white disabled:bg-violet-300"
         >
-          {isRunning ? 'Building...' : 'Run Build'}
+          {isRunning ? props.workspaceMessages.building : props.workspaceMessages.runBuild}
         </button>
       </div>
       {props.buildStatusMessage ? (

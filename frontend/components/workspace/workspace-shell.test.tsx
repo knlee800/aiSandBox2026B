@@ -1813,6 +1813,36 @@ describe('workspace shell component', () => {
     assert.match(html, /workspace-tab-bar/);
   });
 
+  test('renders build targets toolbar between project header and trust note in project view', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+
+    const headerIndex = html.indexOf('workspace-project-mode-header');
+    const buildPanelIndex = html.indexOf('workspace-build-panel');
+    const trustNoteIndex = html.indexOf('workspace-trust-note');
+    assert.ok(headerIndex > -1, 'project mode header should be rendered');
+    assert.ok(buildPanelIndex > -1, 'build panel should be rendered');
+    assert.ok(trustNoteIndex > -1, 'trust note should be rendered');
+    assert.ok(
+      headerIndex < buildPanelIndex && buildPanelIndex < trustNoteIndex,
+      'build panel should be rendered between header and trust note',
+    );
+  });
+
+  test('does not render build targets panel inside chat conversation area', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+
+    assert.match(html, /workspace-ai-panel-chat-content/);
+    assert.match(html, /chat-panel-shell/);
+    assert.doesNotMatch(html, /workspace-ai-panel-chat-content[\s\S]*workspace-build-panel/);
+    assert.doesNotMatch(html, /chat-panel-shell[\s\S]*workspace-build-panel/);
+  });
+
   test('renders project mode header in project view', () => {
     const html = renderWorkspaceShell({
       projectFirstUxEnabled: true,
@@ -6430,6 +6460,39 @@ describe('workspace visual edit i18n wiring — I18N-SHELL-01', () => {
     assert.match(shellSource, /\{props\.aiMessages\.undoRevert\}/);
     assert.match(shellSource, /\{props\.aiMessages\.apply\}/);
     assert.match(shellSource, /\{props\.commonMessages\.cancel\}/);
+  });
+});
+
+describe('workspace build targets i18n wiring — UX-IA-35', () => {
+  test('locale files define required workspace keys for build targets toolbar copy', () => {
+    const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));
+    const zhTw = JSON.parse(readFileSync(new URL('../../messages/zh-TW.json', import.meta.url), 'utf8'));
+    const zhCn = JSON.parse(readFileSync(new URL('../../messages/zh-CN.json', import.meta.url), 'utf8'));
+    const requiredWorkspaceKeys = [
+      'buildTargets',
+      'buildTargetLabel',
+      'runBuild',
+      'building',
+    ] as const;
+
+    for (const key of requiredWorkspaceKeys) {
+      assert.ok(typeof en.workspace?.[key] === 'string' && en.workspace[key].length > 0);
+      assert.ok(typeof zhTw.workspace?.[key] === 'string' && zhTw.workspace[key].length > 0);
+      assert.ok(typeof zhCn.workspace?.[key] === 'string' && zhCn.workspace[key].length > 0);
+    }
+  });
+
+  test('workspace build panel source uses workspace i18n keys for targeted labels', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+
+    assert.match(shellSource, /workspaceMessages=\{workspaceMessages\}/);
+    assert.match(shellSource, /\{props\.workspaceMessages\.buildTargets\}/);
+    assert.match(shellSource, /\{props\.workspaceMessages\.buildTargetLabel\}/);
+    assert.match(shellSource, /\{isRunning \? props\.workspaceMessages\.building : props\.workspaceMessages\.runBuild\}/);
+    assert.doesNotMatch(shellSource, />Build Targets</);
+    assert.doesNotMatch(shellSource, />Build Target</);
+    assert.doesNotMatch(shellSource, /'Run Build'/);
+    assert.doesNotMatch(shellSource, /'Building\.\.\.'/);
   });
 });
 
