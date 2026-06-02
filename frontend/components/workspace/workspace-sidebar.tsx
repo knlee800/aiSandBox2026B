@@ -44,6 +44,7 @@ interface WorkspaceSidebarProps {
   onLogout?: () => void;
   onLanguageChange?: (locale: string) => void;
   footerContent?: ReactNode;
+  initialCompact?: boolean;
 }
 
 function resolveNestedMessage(
@@ -140,9 +141,10 @@ function getUserAvatarInitial(userEmail?: string | null): string {
 export default function WorkspaceSidebar(props: WorkspaceSidebarProps) {
   const CREATE_NEW_WORKSPACE_OPTION_VALUE = '__create-new-workspace__';
   const messages = getWorkspaceScaffoldMessages(props.locale);
-  const [isCompact, setIsCompact] = React.useState(false);
+  const [isCompact, setIsCompact] = React.useState(props.initialCompact ?? false);
   const [isCompactWorkspaceMenuOpen, setIsCompactWorkspaceMenuOpen] = React.useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = React.useState(false);
+  const previousWorkspaceViewRef = React.useRef<WorkspaceView>(props.workspaceView);
   const accountMenuRef = React.useRef<HTMLDivElement | null>(null);
   const compactWorkspaceMenuRef = React.useRef<HTMLDivElement | null>(null);
   const selectedWorkspace =
@@ -153,6 +155,14 @@ export default function WorkspaceSidebar(props: WorkspaceSidebarProps) {
   const accountAvatarInitial = getUserAvatarInitial(props.userSummary?.email);
   const compactToggleLabel = isCompact ? messages.expandSidebar : messages.collapseSidebar;
   const compactWorkspaceMark = selectedWorkspace?.name?.trim().charAt(0).toUpperCase() || 'W';
+
+  React.useEffect(() => {
+    const previousWorkspaceView = previousWorkspaceViewRef.current;
+    if (previousWorkspaceView !== 'project' && props.workspaceView === 'project') {
+      setIsCompact(true);
+    }
+    previousWorkspaceViewRef.current = props.workspaceView;
+  }, [props.workspaceView]);
 
   React.useEffect(() => {
     if (!accountMenuOpen && !isCompactWorkspaceMenuOpen) {

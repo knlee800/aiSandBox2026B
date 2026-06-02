@@ -1927,6 +1927,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
             onSelectWorkspaceId={handleSelectWorkspaceId}
             onOpenCreateWorkspaceFlow={handleOpenCreateWorkspacePanel}
             workspaceView={resolvedWorkspaceView}
+            initialCompact={resolvedWorkspaceView === 'project'}
             onWorkspaceViewChange={handleWorkspaceViewChange}
             recentProjects={recentProjects}
             onOpenRecentProject={handleOpenRecentProject}

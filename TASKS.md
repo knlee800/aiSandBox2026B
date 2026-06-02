@@ -12068,9 +12068,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## UX-IA ?X Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) ?X UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) ?X UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) ?X UX-IA-18 COMPLETE and LOCKED — UX-IA-19 COMPLETE and LOCKED — UX-IA-20 COMPLETE and LOCKED — UX-IA-21 COMPLETE and LOCKED — UX-IA-22 COMPLETE and LOCKED — UX-IA-23 COMPLETE and LOCKED — UX-IA-24 COMPLETE and LOCKED — UX-IA-25 COMPLETE and LOCKED — UX-IA-26 COMPLETE and LOCKED — UX-IA-27 COMPLETE and LOCKED — UX-IA-28 COMPLETE and LOCKED — UX-IA-29 COMPLETE and LOCKED — UX-IA-30 COMPLETE and LOCKED — UX-IA-31 COMPLETE and LOCKED
+**Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) ?X UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) ?X UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) ?X UX-IA-18 COMPLETE and LOCKED — UX-IA-19 COMPLETE and LOCKED — UX-IA-20 COMPLETE and LOCKED — UX-IA-21 COMPLETE and LOCKED — UX-IA-22 COMPLETE and LOCKED — UX-IA-23 COMPLETE and LOCKED — UX-IA-24 COMPLETE and LOCKED — UX-IA-25 COMPLETE and LOCKED — UX-IA-26 COMPLETE and LOCKED — UX-IA-27 COMPLETE and LOCKED — UX-IA-28 COMPLETE and LOCKED — UX-IA-29 COMPLETE and LOCKED — UX-IA-30 COMPLETE and LOCKED — UX-IA-31 COMPLETE and LOCKED — UX-IA-32 COMPLETE and LOCKED
 
-**Current stage:** UX-IA-31 COMPLETE and LOCKED — `docs/UX-IA-31-CHECKPOINT.md`
+**Current stage:** UX-IA-32 COMPLETE and LOCKED — `docs/UX-IA-32-CHECKPOINT.md`
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -12123,6 +12123,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 30. UX-IA-29 — Remove Legacy My Projects Admin Panel from Projects Page (COMPLETE and LOCKED — `docs/UX-IA-29-CHECKPOINT.md`)
 31. UX-IA-30 — Fix Focused Project Action Panel Stale Success Clear (COMPLETE and LOCKED — `docs/UX-IA-30-CHECKPOINT.md`)
 32. UX-IA-31 — Sidebar Navigation Icons and Compact Mode (COMPLETE and LOCKED — `docs/UX-IA-31-CHECKPOINT.md`)
+33. UX-IA-32 — Auto-Compact Sidebar When Entering Project Workspace (COMPLETE and LOCKED — `docs/UX-IA-32-CHECKPOINT.md`)
 
 ---
 
@@ -14910,6 +14911,75 @@ From `C:\Users\knlee\aiSandBox2026B\frontend`:
 - ReadLints on touched files
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-31.
+
+---
+
+#### UX-IA-32: Auto-Compact Sidebar When Entering Project Workspace
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** UX-IA-32
+**Family:** UX-IA
+**Priority:** Medium
+**Nature:** FRONTEND-ONLY / UX NAVIGATION BEHAVIOR
+**Risk:** Low
+**Depends on:** UX-IA-31 (COMPLETE and LOCKED — `docs/UX-IA-31-CHECKPOINT.md`), HOME-START-01 (COMPLETE and LOCKED)
+**Checkpoint:** `docs/UX-IA-32-CHECKPOINT.md`
+
+**Problem:**
+When a user opens or creates a project and enters the Project Workspace view, the left sidebar remains expanded, consuming horizontal space needed by the chat panel and content area. Users must manually compact it every time.
+
+**Objective:**
+When entering the Project Workspace, the sidebar should start in compact mode automatically, while still allowing the user to manually expand/collapse afterward.
+
+**Files in scope:**
+- `frontend/components/workspace/workspace-sidebar.tsx`
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+
+**Scope:**
+- Add `initialCompact?: boolean` prop to `WorkspaceSidebar`
+- `WorkspaceSidebar` `useState` initializer reads `props.initialCompact ?? false`
+- `WorkspaceShell` passes `initialCompact={resolvedWorkspaceView === 'project'}` to `WorkspaceSidebar`
+- Reactive `useEffect` on `props.workspaceView` compacts on non-project → project transition for already-mounted sidebar
+- Home / Projects / Templates views keep existing expanded default behavior
+- User can still manually toggle compact/expanded after initial render
+- No new visible text
+- No i18n changes
+- No backend changes
+
+**Non-goals:**
+- No chat panel layout change
+- No Command Input relocation
+- No Build Targets relocation
+- No History drawer
+- No route/model/entity changes
+- No broad sidebar redesign
+- No new icons
+
+**Acceptance criteria:**
+- [x] UX-IA-32 registered in TASKS.md and TASKS_BACKLOG_FULL.md
+- [x] `initialCompact?: boolean` prop added to `WorkspaceSidebar`
+- [x] `WorkspaceSidebar` `useState` initializer reads `props.initialCompact ?? false`
+- [x] `WorkspaceShell` passes `initialCompact={resolvedWorkspaceView === 'project'}` to `WorkspaceSidebar`
+- [x] Reactive transition auto-compact for already-mounted sidebar
+- [x] Home / Projects / Templates views remain expanded on initial render
+- [x] User can manually toggle compact/expanded after initial render
+- [x] No new visible text added; no i18n files changed
+- [x] No backend files changed
+- [x] `npx tsc --noEmit` passes
+- [x] `npm test` passes
+- [x] ReadLints clean on changed files
+- [x] No unrelated files changed
+- [x] Live browser test passed
+
+**Validation:**
+From `C:\Users\knlee\aiSandBox2026B\frontend`:
+- `npx tsc --noEmit` — PASS
+- `npm test` — PASS
+- ReadLints — PASS
+- Live browser test — PASS
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-32. See `docs/UX-IA-32-CHECKPOINT.md`.
 
 ---
 

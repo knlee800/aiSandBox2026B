@@ -745,6 +745,79 @@ function withPatchedReactHooksWithCustomUseState<T>(
   }
 }
 
+function withPatchedReactHooksWithPersistentState<T>(run: (beginRender: () => void) => T): T {
+  const originalUseState = React.useState;
+  const originalUseMemo = React.useMemo;
+  const originalUseEffect = React.useEffect;
+  const originalUseCallback = React.useCallback;
+  const originalUseRef = React.useRef;
+  let useStateCalls = 0;
+  let useRefCalls = 0;
+  const stateByCallIndex = new Map<number, unknown>();
+  const refByCallIndex = new Map<number, { current: unknown }>();
+
+  const beginRender = (): void => {
+    useStateCalls = 0;
+    useRefCalls = 0;
+  };
+
+  (React as typeof React & {
+    useState: typeof React.useState;
+    useMemo: typeof React.useMemo;
+    useEffect: typeof React.useEffect;
+    useCallback: typeof React.useCallback;
+    useRef: typeof React.useRef;
+  }).useState = ((initialState: unknown) => {
+    useStateCalls += 1;
+    const callIndex = useStateCalls;
+    if (!stateByCallIndex.has(callIndex)) {
+      const resolvedInitialState =
+        typeof initialState === 'function' ? (initialState as () => unknown)() : initialState;
+      stateByCallIndex.set(callIndex, resolvedInitialState);
+    }
+
+    const setState = (value: unknown): void => {
+      const previousState = stateByCallIndex.get(callIndex);
+      stateByCallIndex.set(
+        callIndex,
+        typeof value === 'function'
+          ? (value as (previous: unknown) => unknown)(previousState)
+          : value,
+      );
+    };
+
+    return [stateByCallIndex.get(callIndex), setState];
+  }) as unknown as typeof React.useState;
+  (React as typeof React & { useMemo: typeof React.useMemo }).useMemo = ((factory: () => unknown) =>
+    factory()) as unknown as typeof React.useMemo;
+  (React as typeof React & { useEffect: typeof React.useEffect }).useEffect = ((
+    effect: () => unknown,
+  ) => {
+    effect();
+  }) as unknown as typeof React.useEffect;
+  (React as typeof React & { useCallback: typeof React.useCallback }).useCallback = (<TCallback extends Function>(
+    callback: TCallback,
+  ) => callback) as unknown as typeof React.useCallback;
+  (React as typeof React & { useRef: typeof React.useRef }).useRef = ((initialValue: unknown) => {
+    useRefCalls += 1;
+    const callIndex = useRefCalls;
+    if (!refByCallIndex.has(callIndex)) {
+      refByCallIndex.set(callIndex, { current: initialValue });
+    }
+    return refByCallIndex.get(callIndex);
+  }) as unknown as typeof React.useRef;
+
+  try {
+    return run(beginRender);
+  } finally {
+    (React as typeof React & { useState: typeof React.useState }).useState = originalUseState;
+    (React as typeof React & { useMemo: typeof React.useMemo }).useMemo = originalUseMemo;
+    (React as typeof React & { useEffect: typeof React.useEffect }).useEffect = originalUseEffect;
+    (React as typeof React & { useCallback: typeof React.useCallback }).useCallback = originalUseCallback;
+    (React as typeof React & { useRef: typeof React.useRef }).useRef = originalUseRef;
+  }
+}
+
 function findElementByTestId(
   node: React.ReactNode,
   testId: string,
@@ -951,6 +1024,7 @@ describe('workspace shell component', () => {
     const html = renderWorkspaceShell({
       locale: 'en',
       projectFirstUxEnabled: true,
+      workspaceView: 'home',
       userSummary,
       usageSummary,
       quotaSummary,
@@ -997,6 +1071,141 @@ describe('workspace shell component', () => {
     assert.match(html, /workspace-sidebar-account-avatar/);
   });
 
+  test('workspace shell initializes sidebar compact when workspace view is project', () => {
+    const html = renderWorkspaceShell({
+      locale: 'en',
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+
+    assert.match(html, /md:w-20/);
+    assert.match(html, /workspace-sidebar-compact-expand-area/);
+    assert.doesNotMatch(html, /workspace-sidebar-compact-toggle/);
+    assert.doesNotMatch(html, /md:w-72/);
+  });
+
+  test('workspace shell keeps sidebar expanded for non-project workspace views', () => {
+    const homeHtml = renderWorkspaceShell({
+      locale: 'en',
+      projectFirstUxEnabled: true,
+      workspaceView: 'home',
+    });
+    const projectsHtml = renderWorkspaceShell({
+      locale: 'en',
+      projectFirstUxEnabled: true,
+      workspaceView: 'projects',
+    });
+
+    assert.match(homeHtml, /md:w-72/);
+    assert.match(homeHtml, /workspace-sidebar-compact-toggle/);
+    assert.doesNotMatch(homeHtml, /workspace-sidebar-compact-expand-area/);
+    assert.match(projectsHtml, /md:w-72/);
+    assert.match(projectsHtml, /workspace-sidebar-compact-toggle/);
+    assert.doesNotMatch(projectsHtml, /workspace-sidebar-compact-expand-area/);
+  });
+
+  test('workspace sidebar auto-compacts on mounted transition from home/projects to project view', () => {
+    let homeToProjectSidebar: React.ReactNode = null;
+    let projectsToProjectSidebar: React.ReactNode = null;
+
+    withPatchedReactHooksWithPersistentState((beginRender) => {
+      beginRender();
+      WorkspaceSidebar(buildWorkspaceSidebarProps({ locale: 'en', workspaceView: 'home' }));
+      beginRender();
+      WorkspaceSidebar(buildWorkspaceSidebarProps({ locale: 'en', workspaceView: 'project' }));
+      beginRender();
+      homeToProjectSidebar = WorkspaceSidebar(
+        buildWorkspaceSidebarProps({ locale: 'en', workspaceView: 'project' }),
+      );
+    });
+
+    withPatchedReactHooksWithPersistentState((beginRender) => {
+      beginRender();
+      WorkspaceSidebar(buildWorkspaceSidebarProps({ locale: 'en', workspaceView: 'projects' }));
+      beginRender();
+      WorkspaceSidebar(buildWorkspaceSidebarProps({ locale: 'en', workspaceView: 'project' }));
+      beginRender();
+      projectsToProjectSidebar = WorkspaceSidebar(
+        buildWorkspaceSidebarProps({ locale: 'en', workspaceView: 'project' }),
+      );
+    });
+
+    assert.ok(findElementByTestId(homeToProjectSidebar, 'workspace-sidebar-compact-expand-area'));
+    assert.ok(findElementByTestId(projectsToProjectSidebar, 'workspace-sidebar-compact-expand-area'));
+  });
+
+  test('manual expansion after auto-compact is not immediately overridden while staying in project view', () => {
+    let finalSidebar: React.ReactNode = null;
+
+    withPatchedReactHooksWithPersistentState((beginRender) => {
+      beginRender();
+      WorkspaceSidebar(buildWorkspaceSidebarProps({ locale: 'en', workspaceView: 'home' }));
+      beginRender();
+      WorkspaceSidebar(buildWorkspaceSidebarProps({ locale: 'en', workspaceView: 'project' }));
+      beginRender();
+      const autoCompactedSidebar = WorkspaceSidebar(
+        buildWorkspaceSidebarProps({ locale: 'en', workspaceView: 'project' }),
+      );
+      const compactExpandArea = findElementByTestId(
+        autoCompactedSidebar,
+        'workspace-sidebar-compact-expand-area',
+      );
+      assert.ok(compactExpandArea);
+      const onExpandAreaClick = compactExpandArea.props.onClick as
+        | ((event: React.MouseEvent<HTMLDivElement>) => void)
+        | undefined;
+      const eventTarget = {};
+      onExpandAreaClick?.({
+        target: eventTarget,
+        currentTarget: eventTarget,
+      } as React.MouseEvent<HTMLDivElement>);
+
+      beginRender();
+      finalSidebar = WorkspaceSidebar(buildWorkspaceSidebarProps({ locale: 'en', workspaceView: 'project' }));
+    });
+
+    assert.equal(findElementByTestId(finalSidebar, 'workspace-sidebar-compact-expand-area'), null);
+    assert.ok(findElementByTestId(finalSidebar, 'workspace-sidebar-compact-toggle'));
+  });
+
+  test('switching from project back to home does not force compact mode', () => {
+    let homeSidebarAfterProject: React.ReactNode = null;
+
+    withPatchedReactHooksWithPersistentState((beginRender) => {
+      beginRender();
+      WorkspaceSidebar(buildWorkspaceSidebarProps({ locale: 'en', workspaceView: 'home' }));
+      beginRender();
+      WorkspaceSidebar(buildWorkspaceSidebarProps({ locale: 'en', workspaceView: 'project' }));
+      beginRender();
+      const autoCompactedSidebar = WorkspaceSidebar(
+        buildWorkspaceSidebarProps({ locale: 'en', workspaceView: 'project' }),
+      );
+      const compactExpandArea = findElementByTestId(
+        autoCompactedSidebar,
+        'workspace-sidebar-compact-expand-area',
+      );
+      assert.ok(compactExpandArea);
+      const onExpandAreaClick = compactExpandArea.props.onClick as
+        | ((event: React.MouseEvent<HTMLDivElement>) => void)
+        | undefined;
+      const eventTarget = {};
+      onExpandAreaClick?.({
+        target: eventTarget,
+        currentTarget: eventTarget,
+      } as React.MouseEvent<HTMLDivElement>);
+
+      beginRender();
+      WorkspaceSidebar(buildWorkspaceSidebarProps({ locale: 'en', workspaceView: 'project' }));
+      beginRender();
+      homeSidebarAfterProject = WorkspaceSidebar(
+        buildWorkspaceSidebarProps({ locale: 'en', workspaceView: 'home' }),
+      );
+    });
+
+    assert.equal(findElementByTestId(homeSidebarAfterProject, 'workspace-sidebar-compact-expand-area'), null);
+    assert.ok(findElementByTestId(homeSidebarAfterProject, 'workspace-sidebar-compact-toggle'));
+  });
+
   test('workspace sidebar renders temporary logo mark and traditional toggle control', () => {
     const html = renderWorkspaceSidebar({
       locale: 'en',
@@ -1040,6 +1249,51 @@ describe('workspace shell component', () => {
     });
 
     assert.equal(isCompact, true);
+  });
+
+  test('workspace sidebar still supports manual expansion after project-view auto-compact initialization', () => {
+    let isCompact = true;
+    let capturedInitialCompact: boolean | null = null;
+
+    withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 1) {
+        capturedInitialCompact = Boolean(resolvedInitialState);
+        const setIsCompact = (value: unknown): void => {
+          if (typeof value === 'function') {
+            const updater = value as (previous: boolean) => boolean;
+            isCompact = updater(isCompact);
+            return;
+          }
+          isCompact = Boolean(value);
+        };
+        return [resolvedInitialState, setIsCompact];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () => {
+      const compactExpandArea = findElementByTestId(
+        WorkspaceSidebar(
+          buildWorkspaceSidebarProps({
+            locale: 'en',
+            workspaceView: 'project',
+            initialCompact: true,
+          }),
+        ),
+        'workspace-sidebar-compact-expand-area',
+      );
+
+      assert.ok(compactExpandArea);
+      const onExpandAreaClick = compactExpandArea.props.onClick as
+        | ((event: React.MouseEvent<HTMLDivElement>) => void)
+        | undefined;
+      const eventTarget = {};
+      onExpandAreaClick?.({
+        target: eventTarget,
+        currentTarget: eventTarget,
+      } as React.MouseEvent<HTMLDivElement>);
+    });
+
+    assert.equal(capturedInitialCompact, true);
+    assert.equal(isCompact, false);
   });
 
   test('workspace sidebar compact mode applies compact rail width class', () => {
@@ -2723,6 +2977,7 @@ describe('workspace shell component', () => {
   test('renders advanced drawer collapsed by default behind feature flag', () => {
     const html = renderWorkspaceShell({
       projectFirstUxEnabled: true,
+      workspaceView: 'home',
     });
 
     assert.match(html, /workspace-advanced-drawer/);
@@ -2757,6 +3012,7 @@ describe('workspace shell component', () => {
   test('hides primary sessions list behind feature flag', () => {
     const html = renderWorkspaceShell({
       projectFirstUxEnabled: true,
+      workspaceView: 'home',
       sessions: [session, terminatedSession],
       selectedSessionId: session.id,
     });
