@@ -12068,9 +12068,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## UX-IA ?X Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) ?X UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) ?X UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) ?X UX-IA-18 COMPLETE and LOCKED — UX-IA-19 COMPLETE and LOCKED — UX-IA-20 COMPLETE and LOCKED — UX-IA-21 COMPLETE and LOCKED — UX-IA-22 COMPLETE and LOCKED — UX-IA-23 COMPLETE and LOCKED — UX-IA-24 COMPLETE and LOCKED — UX-IA-25 COMPLETE and LOCKED — UX-IA-26 COMPLETE and LOCKED — UX-IA-27 COMPLETE and LOCKED — UX-IA-28 COMPLETE and LOCKED — UX-IA-29 COMPLETE and LOCKED — UX-IA-30 COMPLETE and LOCKED — UX-IA-31 COMPLETE and LOCKED — UX-IA-32 COMPLETE and LOCKED
+**Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) ?X UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) ?X UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) ?X UX-IA-18 COMPLETE and LOCKED — UX-IA-19 COMPLETE and LOCKED — UX-IA-20 COMPLETE and LOCKED — UX-IA-21 COMPLETE and LOCKED — UX-IA-22 COMPLETE and LOCKED — UX-IA-23 COMPLETE and LOCKED — UX-IA-24 COMPLETE and LOCKED — UX-IA-25 COMPLETE and LOCKED — UX-IA-26 COMPLETE and LOCKED — UX-IA-27 COMPLETE and LOCKED — UX-IA-28 COMPLETE and LOCKED — UX-IA-29 COMPLETE and LOCKED — UX-IA-30 COMPLETE and LOCKED — UX-IA-31 COMPLETE and LOCKED — UX-IA-32 COMPLETE and LOCKED — UX-IA-33 COMPLETE and LOCKED — UX-IA-34 COMPLETE and LOCKED
 
-**Current stage:** UX-IA-33 COMPLETE and LOCKED — Professional AI Conversation Panel Baseline
+**Current stage:** UX-IA-34 COMPLETE and LOCKED — Move Command Input to Advanced Developer Tools
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -12125,6 +12125,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 32. UX-IA-31 — Sidebar Navigation Icons and Compact Mode (COMPLETE and LOCKED — `docs/UX-IA-31-CHECKPOINT.md`)
 33. UX-IA-32 — Auto-Compact Sidebar When Entering Project Workspace (COMPLETE and LOCKED — `docs/UX-IA-32-CHECKPOINT.md`)
 34. UX-IA-33 — Professional AI Conversation Panel Baseline (COMPLETE and LOCKED — `docs/UX-IA-33-CHECKPOINT.md`)
+35. UX-IA-34 — Move Command Input to Advanced Developer Tools (COMPLETE and LOCKED — `docs/UX-IA-34-CHECKPOINT.md`)
 
 ---
 
@@ -15057,6 +15058,70 @@ Restructure `WorkspaceChatPanel` into a professional AI conversation surface:
 - ReadLints
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-33. See `docs/UX-IA-33-CHECKPOINT.md`.
+
+---
+
+#### UX-IA-34: Move Command Input to Advanced Developer Tools
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** UX-IA-34
+**Family:** UX-IA
+**Priority:** Low
+**Nature:** FRONTEND-ONLY / PROJECT WORKSPACE IA CLEANUP
+**Risk:** Low
+**Depends on:** UX-IA-33 (COMPLETE and LOCKED — `docs/UX-IA-33-CHECKPOINT.md`)
+**Checkpoint:** `docs/UX-IA-34-CHECKPOINT.md`
+
+**Problem:**
+Command Input / `WorkspaceExecPanel` is currently rendered in the Project Workspace middle content area, visible to all users. It is a shell/container execution tool for developers and power users, not a normal-user chat control.
+
+**Objective:**
+Move Command Input into `WorkspaceAdvancedDrawer` so it is hidden by default and only accessible to users who open Advanced. Existing command execution behavior, data-testids, and prop contracts are preserved.
+
+**Files in scope:**
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+**Scope:**
+- Remove `WorkspaceExecPanel` and its "Command Input" label from the Project Workspace middle content area
+- Add `WorkspaceExecPanel` inside `WorkspaceAdvancedDrawer` open content (render slot or equivalent minimal approach)
+- Add i18n keys: `workspace.commandInput`, `workspace.commandInputPlaceholder`, `workspace.commandRun`, `workspace.commandRunning` to all three locale files
+- Preserve existing command execution behavior
+- Preserve existing `data-testid` values: `workspace-exec-panel`, `workspace-exec-input`, `workspace-exec-submit`, `workspace-exec-reopen-project`
+- Optional test-support prop `advancedDrawerInitialOpen` allowed (default `false`) for exec-related test rendering
+
+**Non-goals:**
+- No backend changes
+- No routing changes
+- No new dependencies
+- No Command Input behavior redesign
+- No broad Advanced drawer redesign
+- Do not i18n pre-existing Advanced drawer strings (Session ID, Copy, Runtime status, etc.) in this task
+- Do not touch Build Targets
+- Do not touch History drawer/tab behavior
+- Do not touch chat panel UX from UX-IA-33
+
+**Acceptance criteria:**
+- [x] UX-IA-34 registered in TASKS.md and TASKS_BACKLOG_FULL.md
+- [x] Command Input is not visible in the normal Project Workspace middle content area
+- [x] Command Input appears inside Advanced drawer when Advanced is open
+- [x] Existing command execution behavior preserved
+- [x] `data-testid` values `workspace-exec-panel`, `workspace-exec-input`, `workspace-exec-submit`, `workspace-exec-reopen-project` preserved
+- [x] `workspace.commandInput`, `workspace.commandInputPlaceholder`, `workspace.commandRun`, `workspace.commandRunning` added to `en.json`, `zh-TW.json`, `zh-CN.json`
+- [x] `npx tsc --noEmit` passes
+- [x] `npm test` passes
+- [x] ReadLints passes
+- [x] No backend changes
+
+**Validation:**
+- `npx tsc --noEmit` — PASS
+- `npm test` — PASS (563/563)
+- ReadLints — PASS
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-34. See `docs/UX-IA-34-CHECKPOINT.md`.
 
 ---
 

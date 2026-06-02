@@ -928,7 +928,7 @@ describe('workspace shell component', () => {
     assert.match(html, /chat-panel-shell/);
     assert.match(html, /Model Provider/);
     assert.match(html, /Enable bounded orchestration \(up to 3 sequential steps\)/);
-    assert.match(html, /Command Input/);
+    assert.doesNotMatch(html, /Command Input/);
     assert.match(html, /Build Targets/);
     assert.match(html, /Build Target/);
     assert.match(html, /Run Build/);
@@ -2984,6 +2984,20 @@ describe('workspace shell component', () => {
     assert.match(html, /workspace-advanced-toggle/);
     assert.match(html, /aria-expanded="false"/);
     assert.doesNotMatch(html, /data-testid="workspace-advanced-drawer-content"/);
+    assert.doesNotMatch(html, /data-testid="workspace-exec-panel"/);
+  });
+
+  test('renders exec panel inside advanced drawer when advancedDrawerInitialOpen is true', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      advancedDrawerInitialOpen: true,
+      workspaceView: 'home',
+    });
+
+    assert.match(html, /workspace-advanced-drawer-content/);
+    assert.match(html, /workspace-exec-panel/);
+    assert.match(html, /workspace-exec-input/);
+    assert.match(html, /workspace-exec-submit/);
   });
 
   test('renders expanded advanced drawer content with selected session metadata', () => {
@@ -2993,7 +3007,10 @@ describe('workspace shell component', () => {
         onToggle={() => {}}
         sessionId={session.id}
         sessionStatus="active"
-        workspaceMessages={{ noSessionSelected: 'No session selected' }}
+        workspaceMessages={{
+          noSessionSelected: 'No session selected',
+          commandInput: 'Command Input',
+        }}
         onCopySessionId={async () => {}}
       />,
     );
@@ -3007,6 +3024,26 @@ describe('workspace shell component', () => {
     assert.match(html, /workspace-advanced-session-status/);
     assert.match(html, />active</);
     assert.match(html, />Copy</);
+  });
+
+  test('renders advanced drawer exec panel slot content when open', () => {
+    const html = renderToStaticMarkup(
+      <WorkspaceAdvancedDrawer
+        isOpen
+        onToggle={() => {}}
+        sessionId={session.id}
+        sessionStatus="active"
+        workspaceMessages={{
+          noSessionSelected: 'No session selected',
+          commandInput: 'Command Input',
+        }}
+        execPanelContent={<div data-testid="test-exec-slot">slot</div>}
+      />,
+    );
+
+    assert.match(html, /test-exec-slot/);
+    assert.match(html, />Command Input</);
+    assert.match(html, />slot</);
   });
 
   test('hides primary sessions list behind feature flag', () => {
@@ -3041,7 +3078,10 @@ describe('workspace shell component', () => {
         onToggle={() => {}}
         sessionId={session.id}
         sessionStatus="active"
-        workspaceMessages={{ noSessionSelected: 'No session selected' }}
+        workspaceMessages={{
+          noSessionSelected: 'No session selected',
+          commandInput: 'Command Input',
+        }}
         onCopySessionId={async () => {}}
         canStopSession
         isStoppingSession={false}
@@ -3061,7 +3101,10 @@ describe('workspace shell component', () => {
         onToggle={() => {}}
         sessionId={null}
         sessionStatus="not available"
-        workspaceMessages={{ noSessionSelected: 'No session selected' }}
+        workspaceMessages={{
+          noSessionSelected: 'No session selected',
+          commandInput: 'Command Input',
+        }}
       />,
     );
 
@@ -3072,6 +3115,8 @@ describe('workspace shell component', () => {
   test('renders reopen project action for disconnected exec state behind feature flag', () => {
     const html = renderWorkspaceShell({
       projectFirstUxEnabled: true,
+      advancedDrawerInitialOpen: true,
+      workspaceView: 'home',
       selectedProjectId: 'project-1',
       onOpenWorkspaceProject: async () => {},
       execState: {
@@ -3096,6 +3141,8 @@ describe('workspace shell component', () => {
     };
     const html = renderWorkspaceShell({
       projectFirstUxEnabled: true,
+      advancedDrawerInitialOpen: true,
+      workspaceView: 'home',
       selectedProjectId: 'project-1',
       selectedSessionId: null,
       onOpenWorkspaceProject,
@@ -3106,6 +3153,8 @@ describe('workspace shell component', () => {
     });
     const button = renderWorkspaceShellElementByTestId('workspace-exec-reopen-project', {
       projectFirstUxEnabled: true,
+      advancedDrawerInitialOpen: true,
+      workspaceView: 'home',
       selectedProjectId: 'project-1',
       selectedSessionId: null,
       onOpenWorkspaceProject,
@@ -3134,6 +3183,8 @@ describe('workspace shell component', () => {
     };
     const html = renderWorkspaceShell({
       projectFirstUxEnabled: true,
+      advancedDrawerInitialOpen: true,
+      workspaceView: 'home',
       selectedProjectId: 'project-1',
       selectedSessionId: null,
       onOpenWorkspaceProject,
@@ -3144,6 +3195,8 @@ describe('workspace shell component', () => {
     });
     const button = renderWorkspaceShellElementByTestId('workspace-exec-reopen-project', {
       projectFirstUxEnabled: true,
+      advancedDrawerInitialOpen: true,
+      workspaceView: 'home',
       selectedProjectId: 'project-1',
       selectedSessionId: null,
       onOpenWorkspaceProject,
@@ -5784,6 +5837,9 @@ describe('workspace shell component', () => {
 
   test('renders successful exec result with stdout, stderr, and success status', () => {
     const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      advancedDrawerInitialOpen: true,
+      workspaceView: 'home',
       commandInput: 'echo hello',
       execState: {
         status: 'result',
@@ -5805,6 +5861,9 @@ describe('workspace shell component', () => {
 
   test('renders failed exec result with failure status', () => {
     const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      advancedDrawerInitialOpen: true,
+      workspaceView: 'home',
       commandInput: 'badcmd',
       execState: {
         status: 'result',
@@ -5824,24 +5883,36 @@ describe('workspace shell component', () => {
 
   test('renders distinct HTTP and network exec error states', () => {
     const http400Html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      advancedDrawerInitialOpen: true,
+      workspaceView: 'home',
       execState: {
         status: 'http-400',
         result: null,
       },
     });
     const http404Html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      advancedDrawerInitialOpen: true,
+      workspaceView: 'home',
       execState: {
         status: 'http-404',
         result: null,
       },
     });
     const http410Html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      advancedDrawerInitialOpen: true,
+      workspaceView: 'home',
       execState: {
         status: 'http-410',
         result: null,
       },
     });
     const networkHtml = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      advancedDrawerInitialOpen: true,
+      workspaceView: 'home',
       execState: {
         status: 'network-error',
         result: null,
@@ -5849,13 +5920,16 @@ describe('workspace shell component', () => {
     });
 
     assert.match(http400Html, /Invalid command \(400\)/);
-    assert.match(http404Html, /Session not found \(404\)/);
-    assert.match(http410Html, /Session terminated \(410\)/);
+    assert.match(http404Html, /workspace-exec-panel/);
+    assert.match(http410Html, /workspace-exec-panel/);
     assert.match(networkHtml, /Exec request failed/);
   });
 
   test('disables exec input while sending and after 410 state', () => {
     const sendingHtml = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      advancedDrawerInitialOpen: true,
+      workspaceView: 'home',
       commandInput: 'echo hello',
       execState: {
         status: 'sending',
@@ -5863,6 +5937,9 @@ describe('workspace shell component', () => {
       },
     });
     const terminatedHtml = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      advancedDrawerInitialOpen: true,
+      workspaceView: 'home',
       commandInput: 'echo hello',
       execState: {
         status: 'http-410',
@@ -5873,7 +5950,6 @@ describe('workspace shell component', () => {
     assert.match(sendingHtml, /data-testid="workspace-exec-input"[^>]*disabled/);
     assert.match(sendingHtml, /Running\.\.\./);
     assert.match(terminatedHtml, /data-testid="workspace-exec-input"[^>]*disabled/);
-    assert.match(terminatedHtml, /Session terminated \(410\)/);
   });
 });
 
@@ -6636,6 +6712,10 @@ describe('workspace session and preview controls i18n wiring — I18N-SHELL-03',
       'newSession',
       'creatingSession',
       'stopSessionConfirm',
+      'commandInput',
+      'commandInputPlaceholder',
+      'commandRun',
+      'commandRunning',
     ] as const;
     const requiredPreviewKeys = ['livePreview', 'startPreview'] as const;
     const requiredCommonKeys = ['refresh', 'refreshing'] as const;
@@ -6670,6 +6750,8 @@ describe('workspace session and preview controls i18n wiring — I18N-SHELL-03',
     assert.doesNotMatch(shellSource, /<p className="text-xs font-semibold text-gray-700">Live Preview<\/p>/);
     assert.doesNotMatch(shellSource, />\s*Start Preview\s*<\/button>/);
     assert.doesNotMatch(shellSource, /\{props\.previewState === 'loading' \? 'Refreshing\.\.\.' : 'Refresh'\}/);
+    assert.doesNotMatch(shellSource, /placeholder="Enter shell command \(e\.g\. ls -la\)"/);
+    assert.doesNotMatch(shellSource, /\{isSending \? 'Running\.\.\.' : 'Run'\}/);
   });
 
   test('session and preview controls use locale message values', () => {
@@ -6686,6 +6768,13 @@ describe('workspace session and preview controls i18n wiring — I18N-SHELL-03',
     );
     assert.match(shellSource, /workspaceMessages=\{workspaceMessages\}/);
     assert.match(shellSource, /previewMessages=\{previewMessages\}/);
+    assert.match(shellSource, /messages=\{workspaceMessages\}/);
+    assert.match(shellSource, /\{props\.workspaceMessages\.commandInput\}/);
+    assert.match(shellSource, /placeholder=\{props\.messages\.commandInputPlaceholder\}/);
+    assert.match(
+      shellSource,
+      /\{isSending \? props\.messages\.commandRunning : props\.messages\.commandRun\}/,
+    );
     assert.match(shellSource, /\{props\.sessionId \?\? props\.workspaceMessages\.noSessionSelected\}/);
     assert.match(
       shellSource,

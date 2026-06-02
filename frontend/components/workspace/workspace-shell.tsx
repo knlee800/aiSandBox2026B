@@ -150,6 +150,7 @@ function readStoredAiPanelCollapsed(): boolean {
 interface WorkspaceShellProps {
   locale?: string;
   projectFirstUxEnabled?: boolean;
+  advancedDrawerInitialOpen?: boolean;
   workspaceView?: WorkspaceView;
   onWorkspaceViewChange?: (view: WorkspaceView) => void;
   onLogout?: () => void;
@@ -376,7 +377,8 @@ export function WorkspaceAdvancedDrawer(props: {
   onToggle: () => void;
   sessionId: string | null;
   sessionStatus: string;
-  workspaceMessages: Pick<typeof enMessages.workspace, 'noSessionSelected'>;
+  workspaceMessages: Pick<typeof enMessages.workspace, 'noSessionSelected' | 'commandInput'>;
+  execPanelContent?: React.ReactNode;
   onCopySessionId?: () => Promise<void> | void;
   canStopSession?: boolean;
   isStoppingSession?: boolean;
@@ -452,6 +454,12 @@ export function WorkspaceAdvancedDrawer(props: {
               </button>
             </div>
           ) : null}
+          {props.execPanelContent ? (
+            <div className="mt-3">
+              <p className="font-medium text-gray-900">{props.workspaceMessages.commandInput}</p>
+              <div className="mt-1">{props.execPanelContent}</div>
+            </div>
+          ) : null}
         </div>
       ) : null}
     </div>
@@ -463,7 +471,9 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const projectFirstUxEnabled = props.projectFirstUxEnabled ?? PROJECT_FIRST_UX;
   const resolvedWorkspaceView = props.workspaceView ?? 'project';
   const scaffoldMessages = getWorkspaceScaffoldMessages(locale);
-  const [advancedDrawerOpen, setAdvancedDrawerOpen] = React.useState(false);
+  const [advancedDrawerOpen, setAdvancedDrawerOpen] = React.useState(
+    props.advancedDrawerInitialOpen ?? false,
+  );
   const [projectsViewMode, setProjectsViewMode] = React.useState<'grid' | 'list'>('grid');
   const [showNewProjectRow, setShowNewProjectRow] = React.useState(false);
   const [isCreateWorkspacePanelOpen, setIsCreateWorkspacePanelOpen] = React.useState(false);
@@ -1142,17 +1152,6 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
         onConfirmExecutionFileActions={props.onConfirmExecutionFileActions}
         onCancelExecutionFileActions={props.onCancelExecutionFileActions}
         onInitiateCheckpointRevert={props.onInitiateCheckpointRevert}
-      />
-      <p className="text-xs font-semibold text-gray-700 mb-2">Command Input</p>
-      <WorkspaceExecPanel
-        projectFirstUxEnabled={projectFirstUxEnabled}
-        canReopenProject={canReopenProject}
-        onReopenProject={canReopenProject ? handleReopenProject : undefined}
-        selectedSessionId={props.selectedSessionId}
-        commandInput={props.commandInput}
-        onCommandInputChange={props.onCommandInputChange}
-        onExecuteCommand={props.onExecuteCommand}
-        execState={props.execState}
       />
       <WorkspaceBuildPanel
         projectFirstUxEnabled={projectFirstUxEnabled}
@@ -1943,6 +1942,19 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                 sessionId={props.selectedSessionId}
                 sessionStatus={selectedSessionStatus}
                 workspaceMessages={workspaceMessages}
+                execPanelContent={
+                  <WorkspaceExecPanel
+                    projectFirstUxEnabled={projectFirstUxEnabled}
+                    canReopenProject={canReopenProject}
+                    onReopenProject={canReopenProject ? handleReopenProject : undefined}
+                    selectedSessionId={props.selectedSessionId}
+                    commandInput={props.commandInput}
+                    onCommandInputChange={props.onCommandInputChange}
+                    onExecuteCommand={props.onExecuteCommand}
+                    execState={props.execState}
+                    messages={workspaceMessages}
+                  />
+                }
                 onCopySessionId={handleCopySelectedSessionId}
                 canStopSession={canStopSelectedSession}
                 isStoppingSession={isStoppingSelectedSession}
@@ -3568,6 +3580,10 @@ function WorkspaceExecPanel(props: {
   onCommandInputChange: (value: string) => void;
   onExecuteCommand: () => Promise<void>;
   execState: WorkspaceExecState;
+  messages: Pick<
+    typeof enMessages.workspace,
+    'commandInputPlaceholder' | 'commandRun' | 'commandRunning'
+  >;
 }) {
   const isLocked = props.execState.status === 'http-410';
   const isSending = props.execState.status === 'sending';
@@ -3591,7 +3607,7 @@ function WorkspaceExecPanel(props: {
           value={props.commandInput}
           onChange={(event) => props.onCommandInputChange(event.target.value)}
           disabled={isInputDisabled}
-          placeholder="Enter shell command (e.g. ls -la)"
+          placeholder={props.messages.commandInputPlaceholder}
           className="flex-1 rounded border border-gray-300 px-2 py-1 text-xs disabled:bg-gray-100 disabled:text-gray-500"
         />
         <button
@@ -3600,7 +3616,7 @@ function WorkspaceExecPanel(props: {
           disabled={!canSubmit}
           className="rounded bg-blue-600 px-3 py-1 text-xs text-white disabled:bg-blue-300"
         >
-          {isSending ? 'Running...' : 'Run'}
+          {isSending ? props.messages.commandRunning : props.messages.commandRun}
         </button>
       </form>
 
