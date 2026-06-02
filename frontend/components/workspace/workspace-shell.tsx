@@ -1117,8 +1117,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   );
 
   const projectChatSection = (
-    <section className="bg-white border border-gray-200 rounded p-3" data-testid="chat-panel-shell">
-      <p className="text-xs font-semibold text-gray-700 mb-2">Chat Panel</p>
+    <section className="flex flex-col bg-white border border-gray-200 rounded-lg overflow-hidden" data-testid="chat-panel-shell">
       <WorkspaceChatPanel
         projectFirstUxEnabled={projectFirstUxEnabled}
         aiMessages={aiMessages}
@@ -2903,6 +2902,16 @@ function WorkspaceChatPanel(props: {
     props.requestState === 'submitting' ||
     props.requestState === 'queued' ||
     props.requestState === 'running';
+  const promptInputRef = React.useRef<HTMLTextAreaElement | null>(null);
+  const prevIsSendingRef = React.useRef(false);
+
+  React.useEffect(() => {
+    if (prevIsSendingRef.current && !isSending) {
+      promptInputRef.current?.focus();
+    }
+    prevIsSendingRef.current = isSending;
+  }, [isSending]);
+
   const visualEditExecutionIdSet = new Set(props.visualEditExecutionIds);
   const canSubmit =
     Boolean(props.selectedSessionId) &&
@@ -2911,95 +2920,31 @@ function WorkspaceChatPanel(props: {
     props.promptInput.trim().length > 0 &&
     !isSending;
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const submitPromptAndRefocus = () => {
     if (!canSubmit || !props.onSubmitPrompt) {
       return;
     }
     void props.onSubmitPrompt();
   };
 
-  return (
-    <div className="mb-3 rounded border border-gray-200 bg-gray-50 p-2" data-testid="workspace-chat-ai-panel">
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="workspace-chat-prompt" className="text-[11px] font-semibold text-gray-700">
-          {props.aiMessages.promptLabel}
-        </label>
-        <textarea
-          id="workspace-chat-prompt"
-          data-testid="workspace-chat-prompt-input"
-          value={props.promptInput}
-          onChange={(event) => props.onPromptInputChange?.(event.target.value)}
-          disabled={!props.selectedSessionId || !props.onPromptInputChange || isSending}
-          placeholder="Ask the assistant for help with your current workspace task."
-          className="mt-1 h-24 w-full resize-none rounded border border-gray-300 px-2 py-1 text-xs disabled:bg-gray-100 disabled:text-gray-500"
-        />
-        <div className="mt-2">
-          <label
-            htmlFor="workspace-chat-model-selector"
-            className="text-[11px] font-semibold text-gray-700"
-          >
-            {props.aiMessages.modelProviderLabel}
-          </label>
-          <select
-            id="workspace-chat-model-selector"
-            data-testid="workspace-chat-model-selector"
-            value={props.selectedModelOption}
-            onChange={(event) =>
-              props.onSelectedModelOptionChange?.(event.target.value)
-            }
-            disabled={
-              !props.selectedSessionId ||
-              !props.onSelectedModelOptionChange ||
-              props.availableModelOptions.length === 0 ||
-              isSending
-            }
-            className="mt-1 w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs disabled:bg-gray-100 disabled:text-gray-500"
-          >
-            {props.availableModelOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="mt-2">
-          <label className="inline-flex items-center gap-2 text-[11px] text-gray-700">
-            <input
-              type="checkbox"
-              data-testid="workspace-chat-orchestration-toggle"
-              checked={props.orchestrationEnabled}
-              onChange={(event) => props.onOrchestrationEnabledChange?.(event.target.checked)}
-              disabled={!props.selectedSessionId || !props.onOrchestrationEnabledChange || isSending}
-            />
-            {props.aiMessages.orchestrationLabel}
-          </label>
-        </div>
-        <div className="mt-2 flex items-center justify-between gap-2">
-          <p className="text-[11px] text-gray-500" data-testid="workspace-chat-session-hint">
-            {props.selectedSessionId
-              ? props.projectFirstUxEnabled
-                ? recoveryCopy.workspace.chatReady
-                : 'Prompt runs through the existing AI execution flow.'
-              : props.projectFirstUxEnabled
-                ? recoveryCopy.workspace.openProjectToSendPrompts
-                : 'Select an active session to send prompts.'}
-          </p>
-          <button
-            type="submit"
-            data-testid="workspace-chat-submit"
-            disabled={!canSubmit}
-            className="rounded bg-blue-600 px-3 py-1 text-xs text-white disabled:bg-blue-300"
-          >
-            {isSending ? props.aiMessages.sending : props.commonMessages.send}
-          </button>
-        </div>
-      </form>
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    submitPromptAndRefocus();
+  };
 
-      <div className="mt-2 rounded border border-gray-200 bg-white p-2" data-testid="workspace-chat-thread">
-        <p className="text-[11px] font-semibold text-gray-700">{props.aiMessages.messageThread}</p>
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      submitPromptAndRefocus();
+    }
+  };
+
+  return (
+    <div className="flex flex-col" data-testid="workspace-chat-ai-panel">
+      <div className="max-h-[60vh] overflow-y-auto p-3" data-testid="workspace-chat-thread">
+        <p className="sr-only">{props.aiMessages.messageThread}</p>
         {props.threadMessages.length === 0 ? (
-          <div className="mt-1 space-y-1 text-[11px] text-gray-500" data-testid="workspace-chat-empty-state">
+          <div className="mt-1 space-y-2 text-sm text-gray-500" data-testid="workspace-chat-empty-state">
             <p
               data-testid={
                 props.selectedSessionId
@@ -3011,7 +2956,7 @@ function WorkspaceChatPanel(props: {
             </p>
             {props.selectedSessionId ? (
               <p
-                className="inline-flex rounded border border-gray-200 bg-gray-50 px-2 py-0.5 text-[10px] text-gray-600"
+                className="inline-flex rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs text-gray-600"
                 data-testid="workspace-chat-empty-auth-suggestion"
               >
                 {props.aiMessages.emptyAuthSuggestion}
@@ -3019,7 +2964,7 @@ function WorkspaceChatPanel(props: {
             ) : null}
           </div>
         ) : (
-          <ul className="mt-2 space-y-2" data-testid="workspace-chat-thread-list">
+          <ul className="space-y-3" data-testid="workspace-chat-thread-list">
             {props.threadMessages.map((message) => (
               (() => {
                 const displayContent =
@@ -3044,24 +2989,24 @@ function WorkspaceChatPanel(props: {
                 return (
               <li
                 key={message.id}
-                className={`rounded border px-2 py-1 text-[11px] ${
+                className={`rounded-lg px-3 py-2 text-sm ${
                   message.role === 'user'
-                    ? 'border-blue-200 bg-blue-50 text-blue-900'
+                    ? 'ml-8 border border-blue-200 bg-blue-50 text-blue-900'
                     : isSystemMessage
-                      ? 'border-gray-300 bg-gray-100 text-gray-800'
-                    : 'border-gray-200 bg-gray-50 text-gray-800'
+                      ? 'mr-8 border border-gray-300 bg-gray-100 text-gray-700'
+                    : 'mr-8 border border-gray-200 bg-white text-gray-800'
                 }`}
                 data-testid={`workspace-chat-message-${message.role}-${message.id}`}
                 data-message-kind={
                   message.role === 'assistant' ? (isSystemMessage ? 'system' : 'ai') : 'user'
                 }
               >
-                <p className="font-semibold">
+                <p className="text-xs text-gray-500">
                   {messageRoleLabel}
                 </p>
                 {message.role === 'assistant' && (message.model || message.provider) ? (
                   <p
-                    className="mt-1 text-[10px] text-gray-600"
+                    className="mt-0.5 text-[10px] text-gray-400"
                     data-testid={`workspace-chat-message-attribution-${message.id}`}
                   >
                     Model: {message.model ?? 'unknown'} ({message.provider ?? 'unknown'})
@@ -3070,21 +3015,21 @@ function WorkspaceChatPanel(props: {
                 {message.role === 'assistant' ? (
                   usePreformattedAssistantContent ? (
                     <pre
-                      className="mt-1 whitespace-pre-wrap rounded border border-gray-200 bg-white p-2 font-mono text-[11px] text-gray-800"
+                      className="mt-1.5 whitespace-pre-wrap rounded border border-gray-100 bg-gray-50 p-2 font-mono text-xs text-gray-800"
                       data-testid={`workspace-chat-message-content-pre-${message.id}`}
                     >
                       {displayContent}
                     </pre>
                   ) : (
                     <p
-                      className="mt-1 whitespace-pre-wrap text-[11px] text-gray-800"
+                      className="mt-1 whitespace-pre-wrap text-sm text-gray-800"
                       data-testid={`workspace-chat-message-content-prose-${message.id}`}
                     >
                       {displayContent}
                     </p>
                   )
                 ) : (
-                  <pre className="mt-1 whitespace-pre-wrap font-mono">{displayContent}</pre>
+                  <p className="mt-1 whitespace-pre-wrap text-sm">{displayContent}</p>
                 )}
                 {message.role === 'assistant' && message.fileActionState ? (
                   <WorkspaceAssistantFileActionSummary
@@ -3118,43 +3063,124 @@ function WorkspaceChatPanel(props: {
             ))}
           </ul>
         )}
+
+        {isSending && props.responseText.trim().length > 0 ? (
+          <div className="mt-3 mr-8 rounded-lg border border-gray-200 bg-white px-3 py-2" data-testid="workspace-chat-response">
+            {shouldRenderPreformattedChatContent(props.responseText) ? (
+              <pre
+                className="whitespace-pre-wrap rounded border border-gray-100 bg-gray-50 p-2 font-mono text-xs text-gray-800"
+                data-testid="workspace-chat-response-content-pre"
+              >
+                {props.responseText}
+              </pre>
+            ) : (
+              <p
+                className="whitespace-pre-wrap text-sm text-gray-800"
+                data-testid="workspace-chat-response-content-prose"
+              >
+                {props.responseText}
+              </p>
+            )}
+          </div>
+        ) : null}
+
+        {isSending && props.executionId ? (
+          <p className="mt-2 text-xs text-gray-400" data-testid="workspace-chat-execution-id">
+            Execution: {props.executionId}
+          </p>
+        ) : null}
+        {isSending && props.statusMessage ? (
+          <p className="mt-2 text-xs text-blue-600" data-testid="workspace-chat-status">
+            {props.statusMessage}
+          </p>
+        ) : null}
+        {props.errorMessage ? (
+          <p className="mt-2 text-xs text-red-600" data-testid="workspace-chat-error">
+            {props.errorMessage}
+          </p>
+        ) : null}
       </div>
 
-      {props.executionId ? (
-        <p className="mt-2 text-[11px] text-gray-500" data-testid="workspace-chat-execution-id">
-          Execution: {props.executionId}
-        </p>
-      ) : null}
-      {props.statusMessage ? (
-        <p className="mt-2 text-[11px] text-blue-700" data-testid="workspace-chat-status">
-          {props.statusMessage}
-        </p>
-      ) : null}
-      {props.errorMessage ? (
-        <p className="mt-2 text-[11px] text-red-700" data-testid="workspace-chat-error">
-          {props.errorMessage}
-        </p>
-      ) : null}
-      {props.responseText.trim().length > 0 ? (
-        <div className="mt-2 rounded border border-gray-200 bg-white p-2" data-testid="workspace-chat-response">
-          <p className="text-[11px] font-semibold text-gray-700">Assistant Response</p>
-          {shouldRenderPreformattedChatContent(props.responseText) ? (
-            <pre
-              className="mt-1 whitespace-pre-wrap rounded border border-gray-200 bg-gray-50 p-2 font-mono text-[11px] text-gray-800"
-              data-testid="workspace-chat-response-content-pre"
+      <div className="flex-shrink-0 border-t border-gray-200 bg-white px-3 py-2">
+        <form onSubmit={handleSubmit} className="min-w-0 max-w-full">
+          <div className="flex min-w-0 max-w-full items-end gap-2" data-testid="workspace-chat-composer-row">
+            <div className="min-w-0 flex-1">
+              <label htmlFor="workspace-chat-prompt" className="sr-only">
+                {props.aiMessages.promptLabel}
+              </label>
+              <textarea
+                id="workspace-chat-prompt"
+                data-testid="workspace-chat-prompt-input"
+                ref={promptInputRef}
+                value={props.promptInput}
+                onChange={(event) => props.onPromptInputChange?.(event.target.value)}
+                onKeyDown={handleKeyDown}
+                disabled={!props.selectedSessionId || !props.onPromptInputChange || isSending}
+                placeholder={props.aiMessages.chatInputPlaceholder}
+                className="w-full resize-none rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm placeholder:text-gray-400 focus:border-blue-300 focus:bg-white focus:outline-none disabled:bg-gray-100 disabled:text-gray-500"
+                rows={3}
+              />
+            </div>
+            <button
+              type="submit"
+              data-testid="workspace-chat-submit"
+              disabled={!canSubmit}
+              className="shrink-0 rounded-lg bg-blue-600 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
             >
-              {props.responseText}
-            </pre>
-          ) : (
-            <p
-              className="mt-1 whitespace-pre-wrap text-[11px] text-gray-800"
-              data-testid="workspace-chat-response-content-prose"
+              {isSending ? props.aiMessages.sending : props.commonMessages.send}
+            </button>
+          </div>
+          <div
+            className="mt-2 flex min-w-0 max-w-full flex-wrap items-start gap-3"
+            data-testid="workspace-chat-secondary-controls"
+          >
+            <label htmlFor="workspace-chat-model-selector" className="sr-only">
+              {props.aiMessages.modelProviderLabel}
+            </label>
+            <select
+              id="workspace-chat-model-selector"
+              data-testid="workspace-chat-model-selector"
+              value={props.selectedModelOption}
+              onChange={(event) =>
+                props.onSelectedModelOptionChange?.(event.target.value)
+              }
+              disabled={
+                !props.selectedSessionId ||
+                !props.onSelectedModelOptionChange ||
+                props.availableModelOptions.length === 0 ||
+                isSending
+              }
+              className="max-w-full rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-600 disabled:bg-gray-100 disabled:text-gray-400"
             >
-              {props.responseText}
-            </p>
-          )}
-        </div>
-      ) : null}
+              {props.availableModelOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <label className="flex min-w-0 max-w-full items-start gap-1.5 text-xs text-gray-500">
+              <input
+                type="checkbox"
+                data-testid="workspace-chat-orchestration-toggle"
+                checked={props.orchestrationEnabled}
+                onChange={(event) => props.onOrchestrationEnabledChange?.(event.target.checked)}
+                disabled={!props.selectedSessionId || !props.onOrchestrationEnabledChange || isSending}
+                className="mt-0.5 shrink-0"
+              />
+              <span className="min-w-0 break-words">{props.aiMessages.orchestrationLabel}</span>
+            </label>
+          </div>
+          <p className="mt-1.5 text-xs text-gray-400" data-testid="workspace-chat-session-hint">
+            {props.selectedSessionId
+              ? props.projectFirstUxEnabled
+                ? recoveryCopy.workspace.chatReady
+                : 'Prompt runs through the existing AI execution flow.'
+              : props.projectFirstUxEnabled
+                ? recoveryCopy.workspace.openProjectToSendPrompts
+                : 'Select an active session to send prompts.'}
+          </p>
+        </form>
+      </div>
     </div>
   );
 }

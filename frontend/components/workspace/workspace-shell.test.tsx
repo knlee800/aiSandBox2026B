@@ -925,7 +925,7 @@ describe('workspace shell component', () => {
     const html = renderWorkspaceShell();
 
     assert.match(html, /AI Sandbox Workspace/);
-    assert.match(html, /Chat Panel/);
+    assert.match(html, /chat-panel-shell/);
     assert.match(html, /Model Provider/);
     assert.match(html, /Enable bounded orchestration \(up to 3 sequential steps\)/);
     assert.match(html, /Command Input/);
@@ -1805,7 +1805,7 @@ describe('workspace shell component', () => {
     });
 
     assert.match(html, /workspace-project-view/);
-    assert.match(html, /Chat Panel/);
+    assert.match(html, /chat-panel-shell/);
     assert.match(html, /workspace-preview-panel/);
     assert.match(html, /workspace-ai-panel-toggle/);
     assert.match(html, /workspace-ai-panel-view-chat/);
@@ -4382,9 +4382,11 @@ describe('workspace shell component', () => {
   test('renders assistant response prose in normal text and code-fenced response as preformatted', () => {
     const proseHtml = renderWorkspaceShell({
       chatResponseText: 'This is a normal assistant prose response.',
+      chatRequestState: 'running',
     });
     const codeHtml = renderWorkspaceShell({
       chatResponseText: '```bash\\necho hello\\n```',
+      chatRequestState: 'running',
     });
 
     assert.match(proseHtml, /workspace-chat-response-content-prose/);
@@ -6462,6 +6464,166 @@ describe('workspace core chat panel i18n wiring — I18N-SHELL-02', () => {
     assert.match(html, /data-message-kind="system"/);
     assert.match(html, />System</);
   });
+
+  test('chat thread appears before prompt input in DOM order (thread-first layout)', () => {
+    const html = renderWorkspaceShell({
+      chatThreadMessages: [
+        { id: 'layout-1', role: 'user', content: 'Hello' },
+      ],
+    });
+
+    const threadIndex = html.indexOf('workspace-chat-thread');
+    const inputIndex = html.indexOf('workspace-chat-prompt-input');
+    assert.ok(threadIndex > -1 && inputIndex > -1);
+    assert.ok(threadIndex < inputIndex, 'Thread must appear before prompt input in DOM');
+  });
+
+  test('user messages have right-aligned styling (ml-8)', () => {
+    const html = renderWorkspaceShell({
+      chatThreadMessages: [
+        { id: 'align-user-1', role: 'user', content: 'Test message' },
+      ],
+    });
+
+    assert.match(html, /ml-8[\s\S]*?workspace-chat-message-user-align-user-1/);
+  });
+
+  test('assistant messages have left-aligned styling (mr-8)', () => {
+    const html = renderWorkspaceShell({
+      chatThreadMessages: [
+        { id: 'align-asst-1', role: 'assistant', content: 'Test response' },
+      ],
+    });
+
+    assert.match(html, /mr-8[\s\S]*?workspace-chat-message-assistant-align-asst-1/);
+  });
+
+  test('chat panel heading removed — no visible Chat Panel text', () => {
+    const html = renderWorkspaceShell();
+    assert.match(html, /chat-panel-shell/);
+    assert.doesNotMatch(html, />Chat Panel</);
+  });
+
+  test('chatInputPlaceholder i18n key exists in en, zh-TW, and zh-CN locale files', () => {
+    const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));
+    const zhTw = JSON.parse(readFileSync(new URL('../../messages/zh-TW.json', import.meta.url), 'utf8'));
+    const zhCn = JSON.parse(readFileSync(new URL('../../messages/zh-CN.json', import.meta.url), 'utf8'));
+    assert.ok(typeof en.ai?.chatInputPlaceholder === 'string' && en.ai.chatInputPlaceholder.length > 0);
+    assert.ok(typeof zhTw.ai?.chatInputPlaceholder === 'string' && zhTw.ai.chatInputPlaceholder.length > 0);
+    assert.ok(typeof zhCn.ai?.chatInputPlaceholder === 'string' && zhCn.ai.chatInputPlaceholder.length > 0);
+  });
+
+  test('workspace shell source uses ai.chatInputPlaceholder for textarea placeholder', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.match(shellSource, /props\.aiMessages\.chatInputPlaceholder/);
+    assert.doesNotMatch(shellSource, /placeholder="Ask the assistant for help/);
+  });
+
+  test('visible Send button renders in composer with workspace-chat-submit test ID', () => {
+    const html = renderWorkspaceShell({
+      selectedSessionId: session.id,
+      chatPromptInput: 'hello',
+    });
+
+    assert.match(html, /workspace-chat-submit/);
+    assert.match(html, /workspace-chat-submit[\s\S]*?Send</);
+  });
+
+  test('composer row keeps prompt input and Send button together', () => {
+    const html = renderWorkspaceShell({
+      selectedSessionId: session.id,
+      chatPromptInput: 'hello',
+    });
+
+    assert.match(html, /workspace-chat-composer-row/);
+    assert.match(
+      html,
+      /workspace-chat-composer-row[\s\S]*workspace-chat-prompt-input[\s\S]*workspace-chat-submit/,
+    );
+  });
+
+  test('workspace shell source implements Enter-to-send and Shift+Enter newline', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.match(shellSource, /onKeyDown/);
+    assert.match(shellSource, /event\.key === 'Enter'/);
+    assert.match(shellSource, /!event\.shiftKey/);
+    assert.match(shellSource, /event\.preventDefault\(\)/);
+  });
+
+  test('workspace shell source refocuses prompt textarea after valid submit', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.match(shellSource, /const promptInputRef = React\.useRef<HTMLTextAreaElement \| null>\(null\);/);
+    assert.match(shellSource, /ref=\{promptInputRef\}/);
+    assert.match(shellSource, /const prevIsSendingRef = React\.useRef\(false\);/);
+    assert.match(shellSource, /React\.useEffect\(\(\) => \{/);
+    assert.match(shellSource, /if \(prevIsSendingRef\.current && !isSending\) \{\s*promptInputRef\.current\?\.focus\(\);/);
+    assert.match(shellSource, /prevIsSendingRef\.current = isSending;/);
+    assert.doesNotMatch(shellSource, /requestAnimationFrame\(\(\) => \{\s*promptInputRef\.current\?\.focus\(\)/);
+  });
+
+  test('hides response block when requestState is completed even with response text', () => {
+    const html = renderWorkspaceShell({
+      chatRequestState: 'completed',
+      chatResponseText: 'Completed response already committed to thread.',
+    });
+
+    assert.doesNotMatch(html, /workspace-chat-response/);
+  });
+
+  test('shows response block while requestState is running', () => {
+    const html = renderWorkspaceShell({
+      chatRequestState: 'running',
+      chatResponseText: 'Streaming response content.',
+    });
+
+    assert.match(html, /workspace-chat-response/);
+    assert.match(html, /workspace-chat-response-content-prose/);
+  });
+
+  test('hides execution id in completed chat state', () => {
+    const html = renderWorkspaceShell({
+      chatRequestState: 'completed',
+      chatExecutionId: '24de3965-ec05-454a-9dbe-62449b9bd16d',
+    });
+
+    assert.doesNotMatch(html, /workspace-chat-execution-id/);
+  });
+
+  test('hides chat status in completed chat state', () => {
+    const html = renderWorkspaceShell({
+      chatRequestState: 'completed',
+      chatStatusMessage: 'Assistant response received.',
+    });
+
+    assert.doesNotMatch(html, /workspace-chat-status/);
+  });
+
+  test('keeps chat error visible in completed chat state', () => {
+    const html = renderWorkspaceShell({
+      chatRequestState: 'completed',
+      chatError: 'Assistant failed to complete request.',
+    });
+
+    assert.match(html, /workspace-chat-error/);
+    assert.match(html, /Assistant failed to complete request\./);
+  });
+
+  test('workspace shell source uses anti-overflow composer classes', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.match(shellSource, /workspace-chat-composer-row/);
+    assert.match(shellSource, /className="flex min-w-0 max-w-full items-end gap-2"/);
+    assert.match(shellSource, /workspace-chat-submit[\s\S]*shrink-0/);
+    assert.match(shellSource, /workspace-chat-secondary-controls/);
+    assert.match(shellSource, /className="mt-2 flex min-w-0 max-w-full flex-wrap items-start gap-3"/);
+    assert.match(shellSource, /break-words/);
+    assert.doesNotMatch(shellSource, /workspace-chat-secondary-controls[\s\S]*nowrap/);
+  });
+
+  test('workspace shell source preserves response content test ids', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.match(shellSource, /workspace-chat-response-content-pre/);
+    assert.match(shellSource, /workspace-chat-response-content-prose/);
+  });
 });
 
 describe('workspace session and preview controls i18n wiring — I18N-SHELL-03', () => {
@@ -7199,6 +7361,17 @@ describe('auth module intent recognition — AUTH-MODULE-01E', () => {
     assert.match(pageSource, /if \(detectAuthModuleIntent\(trimmedPrompt\)\) \{/);
   });
 
+  test("normal submit path clears prompt immediately after setChatRequestState('submitting')", () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    const submitStateIndex = pageSource.indexOf("setChatRequestState('submitting');");
+    const clearPromptIndex = pageSource.indexOf("setChatPromptInput('');", submitStateIndex);
+    const streamResetIndex = pageSource.indexOf('chatStreamRef.current?.close();', submitStateIndex);
+
+    assert.ok(submitStateIndex >= 0);
+    assert.ok(clearPromptIndex > submitStateIndex);
+    assert.ok(streamResetIndex > clearPromptIndex);
+  });
+
   test('auth intent branch appends user message before calling handleInstallAuthModule', () => {
     const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
     const branchStart = pageSource.indexOf('if (detectAuthModuleIntent(trimmedPrompt)) {');
@@ -7209,6 +7382,17 @@ describe('auth module intent recognition — AUTH-MODULE-01E', () => {
     assert.ok(userRoleIndex >= 0);
     assert.ok(installCallIndex >= 0);
     assert.ok(userRoleIndex < installCallIndex);
+  });
+
+  test('auth intent branch clears prompt before calling handleInstallAuthModule', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    const branchStart = pageSource.indexOf('if (detectAuthModuleIntent(trimmedPrompt)) {');
+    const clearPromptIndex = pageSource.indexOf("setChatPromptInput('');", branchStart);
+    const installCallIndex = pageSource.indexOf('await handleInstallAuthModule();', branchStart);
+
+    assert.ok(branchStart >= 0);
+    assert.ok(clearPromptIndex > branchStart);
+    assert.ok(installCallIndex > clearPromptIndex);
   });
 
   test('auth intent branch returns before normal AI execution paths', () => {

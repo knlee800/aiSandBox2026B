@@ -12070,7 +12070,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 **Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) ?X UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) ?X UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) ?X UX-IA-18 COMPLETE and LOCKED — UX-IA-19 COMPLETE and LOCKED — UX-IA-20 COMPLETE and LOCKED — UX-IA-21 COMPLETE and LOCKED — UX-IA-22 COMPLETE and LOCKED — UX-IA-23 COMPLETE and LOCKED — UX-IA-24 COMPLETE and LOCKED — UX-IA-25 COMPLETE and LOCKED — UX-IA-26 COMPLETE and LOCKED — UX-IA-27 COMPLETE and LOCKED — UX-IA-28 COMPLETE and LOCKED — UX-IA-29 COMPLETE and LOCKED — UX-IA-30 COMPLETE and LOCKED — UX-IA-31 COMPLETE and LOCKED — UX-IA-32 COMPLETE and LOCKED
 
-**Current stage:** UX-IA-32 COMPLETE and LOCKED — `docs/UX-IA-32-CHECKPOINT.md`
+**Current stage:** UX-IA-33 COMPLETE and LOCKED — Professional AI Conversation Panel Baseline
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -12124,6 +12124,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 31. UX-IA-30 — Fix Focused Project Action Panel Stale Success Clear (COMPLETE and LOCKED — `docs/UX-IA-30-CHECKPOINT.md`)
 32. UX-IA-31 — Sidebar Navigation Icons and Compact Mode (COMPLETE and LOCKED — `docs/UX-IA-31-CHECKPOINT.md`)
 33. UX-IA-32 — Auto-Compact Sidebar When Entering Project Workspace (COMPLETE and LOCKED — `docs/UX-IA-32-CHECKPOINT.md`)
+34. UX-IA-33 — Professional AI Conversation Panel Baseline (COMPLETE and LOCKED — `docs/UX-IA-33-CHECKPOINT.md`)
 
 ---
 
@@ -14980,6 +14981,82 @@ From `C:\Users\knlee\aiSandBox2026B\frontend`:
 - Live browser test — PASS
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-32. See `docs/UX-IA-32-CHECKPOINT.md`.
+
+---
+
+#### UX-IA-33: Professional AI Conversation Panel Baseline
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** UX-IA-33
+**Family:** UX-IA
+**Priority:** High
+**Nature:** FRONTEND-ONLY / PROJECT WORKSPACE CHAT UX
+**Risk:** Medium
+**Depends on:** UX-IA-32 (COMPLETE and LOCKED — `docs/UX-IA-32-CHECKPOINT.md`)
+**Checkpoint:** `docs/UX-IA-33-CHECKPOINT.md`
+
+**Problem:**
+The Project Workspace middle chat panel feels like separate prompt/response boxes instead of a professional AI conversation panel. The current layout is input-first, with messages lower down, small 11px content, visible form-like controls, and a separate Assistant Response block.
+
+**Objective:**
+Restructure `WorkspaceChatPanel` into a professional AI conversation surface:
+- Thread-first layout with scrollable conversation area
+- User messages aligned right
+- Assistant/system messages aligned left
+- Readable `text-sm` message content
+- Prompt composer pinned at bottom
+- Model selector and orchestration controls visually secondary
+- In-flight response shown as a live assistant message in the thread
+
+**Files in scope:**
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+**Scope:**
+- Restructure `WorkspaceChatPanel` only
+- Remove the outer "Chat Panel" heading from `projectChatSection`
+- Add `ai.chatInputPlaceholder` in all three locale files
+- Preserve all existing chat behavior: message role rendering, system message distinction, file action summaries, visual edit revert controls, model selector, orchestration checkbox, send disabled/loading state, prompt input change/submission, pre/prose content rendering, empty state variants
+- Preserve all existing `data-testid` attributes
+- If in-flight response is merged into the thread, preserve `workspace-chat-response`, `workspace-chat-response-content-pre`, and `workspace-chat-response-content-prose` inside the live assistant message
+- Do not touch Command Input, Build Targets, or History tab/drawer behavior in this slice
+
+**Non-goals:**
+- No Command Input relocation
+- No Build Targets relocation
+- No History drawer
+- No backend/API changes
+- No broad Project Workspace redesign
+- No sidebar changes
+- No route/model/entity changes
+
+**Acceptance criteria:**
+- [x] UX-IA-33 registered in TASKS.md and TASKS_BACKLOG_FULL.md
+- [x] `WorkspaceChatPanel` renders thread before input composer
+- [x] Prompt composer is visually pinned at bottom
+- [x] User messages are right-aligned
+- [x] Assistant/system messages are left-aligned
+- [x] Message content uses readable `text-sm` styling
+- [x] Model selector and orchestration controls remain functional
+- [x] File action summaries remain functional
+- [x] In-flight response remains visible and preserves response test IDs
+- [x] Empty state variants still render
+- [x] `ai.chatInputPlaceholder` added to `en.json`, `zh-TW.json`, `zh-CN.json`
+- [x] Existing chat test IDs preserved
+- [x] `npx tsc --noEmit` passes
+- [x] `npm test` passes
+- [x] ReadLints passes
+- [x] No backend changes
+
+**Validation:**
+- `npx tsc --noEmit` — frontend
+- `npm test` — frontend
+- ReadLints
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-33. See `docs/UX-IA-33-CHECKPOINT.md`.
 
 ---
 

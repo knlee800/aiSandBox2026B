@@ -291,7 +291,8 @@
     "undoRevert": "撤销 / 回退",
     "approvalRequired": "需要确认",
     "apply": "应用",
-    "skip": "跳过"
+    "skip": "跳过",
+    "chatInputPlaceholder": "向助理询问您当前工作区任务的协助。"
   },
   "authModule": {
     "installing": "正在安装认证模块 — 正在准备你的工作区...",

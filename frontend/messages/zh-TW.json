@@ -291,7 +291,8 @@
     "undoRevert": "還原 / 回退",
     "approvalRequired": "需要確認",
     "apply": "套用",
-    "skip": "略過"
+    "skip": "略過",
+    "chatInputPlaceholder": "向助理詢問您目前工作區任務的協助。"
   },
   "authModule": {
     "installing": "正在安裝驗證模組 — 正在準備你的工作區...",

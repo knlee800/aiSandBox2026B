@@ -4257,6 +4257,7 @@ export default function AppPage() {
           // Keep local thread persistence as compatibility fallback.
         });
       }
+      setChatPromptInput('');
       await handleInstallAuthModule();
       return;
     }
@@ -4267,6 +4268,7 @@ export default function AppPage() {
     const isVisualEditPrompt = selectedPreviewElement !== null;
 
     setChatRequestState('submitting');
+    setChatPromptInput('');
     chatStreamRef.current?.close();
     chatStreamRef.current = null;
     chatResponseTextRef.current = '';

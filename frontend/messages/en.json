@@ -291,7 +291,8 @@
     "undoRevert": "Undo / Revert",
     "approvalRequired": "Approval required",
     "apply": "Apply",
-    "skip": "Skip"
+    "skip": "Skip",
+    "chatInputPlaceholder": "Ask the assistant for help with your current workspace task."
   },
   "authModule": {
     "installing": "Installing auth module — preparing your workspace...",
