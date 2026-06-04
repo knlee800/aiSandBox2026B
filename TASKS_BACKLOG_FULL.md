@@ -21991,9 +21991,9 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 
 ## UX-IA ??Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 COMPLETE and LOCKED — UX-IA-09 COMPLETE and LOCKED — UX-IA-10 COMPLETE and LOCKED — UX-IA-11 COMPLETE and LOCKED — UX-IA-12 COMPLETE and LOCKED — UX-IA-13 COMPLETE and LOCKED — 13A COMPLETE and LOCKED — 13B COMPLETE and LOCKED — UX-IA-14 COMPLETE and LOCKED — UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) — UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) — UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) — UX-IA-18 COMPLETE and LOCKED — UX-IA-19 COMPLETE and LOCKED — UX-IA-20 COMPLETE and LOCKED — UX-IA-21 COMPLETE and LOCKED — UX-IA-22 COMPLETE and LOCKED — UX-IA-23 COMPLETE and LOCKED — UX-IA-24 COMPLETE and LOCKED — UX-IA-25 COMPLETE and LOCKED — UX-IA-26 COMPLETE and LOCKED — UX-IA-27 COMPLETE and LOCKED — UX-IA-28 COMPLETE and LOCKED — UX-IA-29 COMPLETE and LOCKED — UX-IA-30 COMPLETE and LOCKED — UX-IA-31 COMPLETE and LOCKED — UX-IA-32 COMPLETE and LOCKED — UX-IA-33 COMPLETE and LOCKED — UX-IA-34 COMPLETE and LOCKED — UX-IA-35 COMPLETE and LOCKED
+**Family status:** ACTIVE — UX-IA-04 COMPLETE and LOCKED — UX-IA-05 COMPLETE and LOCKED — UX-IA-06 COMPLETE and LOCKED — UX-IA-07 COMPLETE and LOCKED — UX-IA-08 COMPLETE and LOCKED — UX-IA-09 COMPLETE and LOCKED — UX-IA-10 COMPLETE and LOCKED — UX-IA-11 COMPLETE and LOCKED — UX-IA-12 COMPLETE and LOCKED — UX-IA-13 COMPLETE and LOCKED — 13A COMPLETE and LOCKED — 13B COMPLETE and LOCKED — UX-IA-14 COMPLETE and LOCKED — UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) — UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) — UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) — UX-IA-18 COMPLETE and LOCKED — UX-IA-19 COMPLETE and LOCKED — UX-IA-20 COMPLETE and LOCKED — UX-IA-21 COMPLETE and LOCKED — UX-IA-22 COMPLETE and LOCKED — UX-IA-23 COMPLETE and LOCKED — UX-IA-24 COMPLETE and LOCKED — UX-IA-25 COMPLETE and LOCKED — UX-IA-26 COMPLETE and LOCKED — UX-IA-27 COMPLETE and LOCKED — UX-IA-28 COMPLETE and LOCKED — UX-IA-29 COMPLETE and LOCKED — UX-IA-30 COMPLETE and LOCKED — UX-IA-31 COMPLETE and LOCKED — UX-IA-32 COMPLETE and LOCKED — UX-IA-33 COMPLETE and LOCKED — UX-IA-34 COMPLETE and LOCKED — UX-IA-35 COMPLETE and LOCKED — UX-IA-36 COMPLETE and LOCKED — UX-IA-37 COMPLETE and LOCKED — UX-IA-38 COMPLETE and LOCKED
 
-**Current stage:** UX-IA-37 COMPLETE and LOCKED — Hide Workspace Ready Status Box
+**Current stage:** UX-IA-38 COMPLETE and LOCKED — Hide Project Trust Note / Recoverable Box
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -22052,6 +22052,7 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 36. UX-IA-35 — Build Targets Placement (COMPLETE and LOCKED — `docs/UX-IA-35-CHECKPOINT.md`)
 37. UX-IA-36 — History Icon + Chat-History Panel Replacement (COMPLETE and LOCKED — `docs/UX-IA-36-CHECKPOINT.md`)
 38. UX-IA-37 — Hide Workspace Ready Status Box (COMPLETE and LOCKED — `docs/UX-IA-37-CHECKPOINT.md`)
+39. UX-IA-38 — Hide Project Trust Note / Recoverable Box (COMPLETE and LOCKED — `docs/UX-IA-38-CHECKPOINT.md`)
 
 ---
 
@@ -25622,6 +25623,73 @@ git -C "C:\Users\knlee\aiSandBox2026B" restore -- frontend/tsconfig.tsbuildinfo
 ```
 
 **Reference:** See TASKS.md -> UX-IA-37. See `docs/UX-IA-37-CHECKPOINT.md`.
+
+---
+
+### UX-IA-38: Hide Project Trust Note / Recoverable Box
+
+**Task ID:** UX-IA-38
+**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family status:** ACTIVE — UX-IA-38 COMPLETE and LOCKED
+**Status:** COMPLETE and LOCKED
+**Priority:** Low
+**Nature:** FRONTEND-ONLY / PROJECT WORKSPACE CLUTTER CLEANUP
+**Risk:** Low
+**Depends on:** UX-IA-37 (COMPLETE and LOCKED — `docs/UX-IA-37-CHECKPOINT.md`)
+**Checkpoint:** `docs/UX-IA-38-CHECKPOINT.md`
+
+**Problem:**
+The "Your project stays recoverable..." trust note box (`data-testid="workspace-trust-note"`) is non-actionable informational clutter rendered in three locations: the desktop project layout, the mobile project layout, and the projects list view. All actual recovery, history, checkpoint, restore, and reopen capabilities are preserved via the History panel and error-state `StateMessage` components, which are entirely independent of this box.
+
+**Objective:**
+Remove the visual trust note box from all render locations in `workspace-shell.tsx`. Preserve all actual recovery, history, checkpoint, restore, reopen, and error-state behavior. Keep `trustNote` i18n keys in locale files untouched.
+
+**Files in scope:**
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+
+**Scope:**
+- Remove the `projectTrustNote` JSX variable (lines ~1126–1137).
+- Remove `{projectTrustNote}` from `projectWorkspaceContent` (desktop layout, line ~1301).
+- Remove the inline `workspace-trust-note` block from `projectsWorkspaceContent` (lines ~1387–1394).
+- Remove `{projectTrustNote}` from the mobile/responsive project layout (line ~2080).
+- Update test `'renders build targets toolbar between project header and trust note in project view'`: rename to `'renders build targets toolbar after project header in project view'`; remove `trustNoteIndex` variable, `assert.ok(trustNoteIndex > -1, ...)`, and the three-way ordering assertion; replace with `assert.ok(headerIndex < buildPanelIndex, ...)`.
+- Update test `'renders project-first recovery wording in main helper surfaces'`: remove the `assert.match` for `/Your project stays recoverable.../`.
+- Update test `'renders trust note and responsive layout classes'`: rename to `'renders responsive layout classes'`; remove `assert.match(html, /Workspace data is session-scoped\./)`.
+- Add new regression test confirming `workspace-trust-note` is absent in project view.
+- Preserve `trustNote` key in all three locale JSON files — no i18n changes.
+- Preserve all real recovery, checkpoint, history, restore, and error-state behavior.
+
+**Non-goals:**
+- No i18n file changes
+- No backend changes
+- No recovery/checkpoint/history behavior changes
+- No Build Targets changes
+- No Command Input changes
+- No Chat/History replacement changes
+- No sidebar changes
+- No broad Project Workspace redesign
+
+**Acceptance criteria:**
+- [x] UX-IA-38 registered in TASKS.md and TASKS_BACKLOG_FULL.md
+- [x] `workspace-trust-note` box no longer renders in project view, mobile project view, or projects list view
+- [x] History panel, restore snapshot, and reopen project actions unaffected
+- [x] `projectTrustNote` JSX variable removed
+- [x] All three test blocks updated; new regression test added
+- [x] `npx tsc --noEmit` passes
+- [x] `npm test` passes — 577 tests, 577 pass, 0 fail
+- [x] ReadLints passes
+- [x] No i18n files changed
+- [x] No unrelated files changed
+
+**Validation commands:**
+```powershell
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npx tsc --noEmit
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npm test
+git -C "C:\Users\knlee\aiSandBox2026B" restore -- frontend/tsconfig.tsbuildinfo
+```
+
+**Reference:** See TASKS.md -> UX-IA-38. See `docs/UX-IA-38-CHECKPOINT.md`.
 
 ---
 

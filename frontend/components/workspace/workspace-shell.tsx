@@ -1123,19 +1123,6 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     </>
   );
 
-  const projectTrustNote = (
-    <div className="px-2 pt-2">
-      <p
-        className="rounded border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-blue-800"
-        data-testid="workspace-trust-note"
-      >
-        {projectFirstUxEnabled
-          ? recoveryCopy.workspace.trustNote
-          : 'Workspace data is session-scoped. If a state fails, use the suggested retry action below.'}
-      </p>
-    </div>
-  );
-
   const projectBuildToolbar = (
     <div className="border-b border-gray-200 bg-white px-2 py-2">
       <WorkspaceBuildPanel
@@ -1298,7 +1285,6 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const projectWorkspaceContent = (
     <>
       {projectBuildToolbar}
-      {projectTrustNote}
       <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 p-2">
         {projectChatSection}
         {projectEditorSection}
@@ -1384,14 +1370,6 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
 
   const projectsWorkspaceContent = (
     <div className="flex flex-1 min-h-0 flex-col" data-testid="workspace-projects-view">
-      <div className="px-2 pt-2">
-        <p
-          className="rounded border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-blue-800"
-          data-testid="workspace-trust-note"
-        >
-          {recoveryCopy.workspace.trustNote}
-        </p>
-      </div>
       <section
         className="mx-2 mb-2 rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
         data-testid="workspace-projects-surface"
@@ -2077,7 +2055,6 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                 </button>
               </header>
               {projectBuildToolbar}
-              {projectTrustNote}
               <div className="flex flex-1 min-h-0 flex-col md:flex-row">
                 {!aiPanelCollapsed ? (
                   <aside

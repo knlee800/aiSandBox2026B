@@ -1849,7 +1849,7 @@ describe('workspace shell component', () => {
     assert.match(html, /workspace-tab-bar/);
   });
 
-  test('renders build targets toolbar between project header and trust note in project view', () => {
+  test('renders build targets toolbar after project header in project view', () => {
     const html = renderWorkspaceShell({
       projectFirstUxEnabled: true,
       workspaceView: 'project',
@@ -1857,14 +1857,18 @@ describe('workspace shell component', () => {
 
     const headerIndex = html.indexOf('workspace-project-mode-header');
     const buildPanelIndex = html.indexOf('workspace-build-panel');
-    const trustNoteIndex = html.indexOf('workspace-trust-note');
     assert.ok(headerIndex > -1, 'project mode header should be rendered');
     assert.ok(buildPanelIndex > -1, 'build panel should be rendered');
-    assert.ok(trustNoteIndex > -1, 'trust note should be rendered');
-    assert.ok(
-      headerIndex < buildPanelIndex && buildPanelIndex < trustNoteIndex,
-      'build panel should be rendered between header and trust note',
-    );
+    assert.ok(headerIndex < buildPanelIndex, 'build panel should be rendered after project header');
+  });
+
+  test('does not render trust note in project view', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+
+    assert.doesNotMatch(html, /workspace-trust-note/);
   });
 
   test('does not render build targets panel inside chat conversation area', () => {
@@ -3232,10 +3236,6 @@ describe('workspace shell component', () => {
       previewState: 'unavailable',
     });
 
-    assert.match(
-      html,
-      /Your project stays recoverable\. If the workspace disconnects, reopen the project to continue\./,
-    );
     assert.match(html, /Open a project to send prompts\./);
     assert.match(html, /Open a project to run a build target\./);
     assert.match(html, /No project open/);
@@ -4825,12 +4825,11 @@ describe('workspace shell component', () => {
     assert.match(html, /Action: Create or select a session, then retry\./);
   });
 
-  test('renders trust note and responsive layout classes', () => {
+  test('renders responsive layout classes', () => {
     const html = renderWorkspaceShell({
       userId: null,
     });
 
-    assert.match(html, /Workspace data is session-scoped\./);
     assert.ok(html.includes('grid-cols-1'));
     assert.ok(html.includes('md:grid-cols-2'));
     assert.ok(html.includes('xl:grid-cols-3'));
