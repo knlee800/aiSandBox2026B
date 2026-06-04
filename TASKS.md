@@ -12068,9 +12068,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 ## UX-IA ?X Product & UX/UI Redesign (Evolutionary)
 
-**Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) ?X UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) ?X UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) ?X UX-IA-18 COMPLETE and LOCKED — UX-IA-19 COMPLETE and LOCKED — UX-IA-20 COMPLETE and LOCKED — UX-IA-21 COMPLETE and LOCKED — UX-IA-22 COMPLETE and LOCKED — UX-IA-23 COMPLETE and LOCKED — UX-IA-24 COMPLETE and LOCKED — UX-IA-25 COMPLETE and LOCKED — UX-IA-26 COMPLETE and LOCKED — UX-IA-27 COMPLETE and LOCKED — UX-IA-28 COMPLETE and LOCKED — UX-IA-29 COMPLETE and LOCKED — UX-IA-30 COMPLETE and LOCKED — UX-IA-31 COMPLETE and LOCKED — UX-IA-32 COMPLETE and LOCKED — UX-IA-33 COMPLETE and LOCKED — UX-IA-34 COMPLETE and LOCKED — UX-IA-35 COMPLETE and LOCKED — UX-IA-36 COMPLETE and LOCKED — UX-IA-37 COMPLETE and LOCKED — UX-IA-38 COMPLETE and LOCKED — UX-IA-39 COMPLETE and LOCKED
+**Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) ?X UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) ?X UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) ?X UX-IA-18 COMPLETE and LOCKED ?X UX-IA-19 COMPLETE and LOCKED ?X UX-IA-20 COMPLETE and LOCKED ?X UX-IA-21 COMPLETE and LOCKED ?X UX-IA-22 COMPLETE and LOCKED ?X UX-IA-23 COMPLETE and LOCKED ?X UX-IA-24 COMPLETE and LOCKED ?X UX-IA-25 COMPLETE and LOCKED ?X UX-IA-26 COMPLETE and LOCKED ?X UX-IA-27 COMPLETE and LOCKED ?X UX-IA-28 COMPLETE and LOCKED ?X UX-IA-29 COMPLETE and LOCKED ?X UX-IA-30 COMPLETE and LOCKED ?X UX-IA-31 COMPLETE and LOCKED ?X UX-IA-32 COMPLETE and LOCKED ?X UX-IA-33 COMPLETE and LOCKED ?X UX-IA-34 COMPLETE and LOCKED ?X UX-IA-35 COMPLETE and LOCKED ?X UX-IA-36 COMPLETE and LOCKED ?X UX-IA-37 COMPLETE and LOCKED ?X UX-IA-38 COMPLETE and LOCKED ?X UX-IA-39 COMPLETE and LOCKED
 
-**Current stage:** UX-PV-01 PENDING — Preview Auto-Start and First-Load Error Resilience
+**Current stage:** UX-PV-01 COMPLETE and LOCKED ?X Preview Auto-Start and First-Load Error Resilience
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -12101,36 +12101,38 @@ Make normal static HTML relative links and buttons work inside the preview ifram
     - UX-IA-15A ??Preview Picker Infrastructure (COMPLETE and LOCKED ??docs/UX-IA-15A-CHECKPOINT.md)
     - UX-IA-15B ??Cross-Frame Picker Script + postMessage Listener (COMPLETE and LOCKED ??docs/UX-IA-15B-CHECKPOINT.md)
     - UX-IA-15C ??AI Prompt Context Injection + Validation + Consolidation (COMPLETE and LOCKED ??docs/UX-IA-15C-CHECKPOINT.md)
-17. UX-IA-16 — Visual Edit AI Patch Flow (COMPLETE and LOCKED — `docs/UX-IA-16-CHECKPOINT.md`)
-    - UX-IA-16A — Visual Edit Prompt Contract + Force-Confirmation (COMPLETE and LOCKED — `docs/UX-IA-16A-CHECKPOINT.md`)
-    - UX-IA-16B — Visual Edit Diff Preview in Confirmation UI (COMPLETE and LOCKED — `docs/UX-IA-16B-CHECKPOINT.md`)
-18. UX-IA-17 — Visual Edit Undo / Checkpoint Integration (COMPLETE and LOCKED — `docs/UX-IA-17-CHECKPOINT.md`)
-    - UX-IA-17A — Visual Edit Checkpoint Labeling (COMPLETE and LOCKED — `docs/UX-IA-17A-CHECKPOINT.md`)
-    - UX-IA-17B — Visual Edit Undo Affordance (COMPLETE and LOCKED — `docs/UX-IA-17B-CHECKPOINT.md`)
-19. UX-IA-18 — Multilingual Chat Empty State + System Message Distinction (COMPLETE and LOCKED — `docs/UX-IA-18-CHECKPOINT.md`)
-   > AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps (cross-family — COMPLETE and LOCKED — `docs/AUTH-MODULE-01-CHECKPOINT.md` — registered under AUTH family)
-   > AUTH-MODULE-02 — Auth Module Live Smoke Blockers (cross-family — COMPLETE and LOCKED — `docs/AUTH-MODULE-02-CHECKPOINT.md` — registered under AUTH family)
-20. UX-IA-19 — Checkpoint Revert Button Visual Hierarchy (COMPLETE and LOCKED — `docs/UX-IA-19-CHECKPOINT.md`)
-21. UX-IA-20 — Reduce Healthy-State Noise + Improve Loading Visibility (COMPLETE and LOCKED — `docs/UX-IA-20-CHECKPOINT.md`)
-22. UX-IA-21 — Gate Developer System Controls (COMPLETE and LOCKED — `docs/UX-IA-21-CHECKPOINT.md`)
-23. UX-IA-22 — Fix Sidebar Workspace Selector Label (COMPLETE and LOCKED — `docs/UX-IA-22-CHECKPOINT.md`)
-24. UX-IA-23 — Fix Projects Tab New Project Flow (COMPLETE and LOCKED — `docs/UX-IA-23-CHECKPOINT.md`)
-25. UX-IA-24 — Add Create Workspace Option to Workspace Dropdown (COMPLETE and LOCKED — `docs/UX-IA-24-CHECKPOINT.md`)
-26. UX-IA-25 — Projects Page IA Cleanup — Hide Workspace Admin Controls from Projects View (COMPLETE and LOCKED — `docs/UX-IA-25-CHECKPOINT.md`)
-27. UX-IA-26 — Focused Create Workspace Panel from Dropdown (COMPLETE and LOCKED — `docs/UX-IA-26-CHECKPOINT.md`)
-28. UX-IA-27 — Project Card Actions Menu for Move and Visibility (COMPLETE and LOCKED — `docs/UX-IA-27-CHECKPOINT.md`)
-29. UX-IA-28 — Focused Project Action Panels for Move and Visibility (COMPLETE and LOCKED — `docs/UX-IA-28-CHECKPOINT.md`)
-30. UX-IA-29 — Remove Legacy My Projects Admin Panel from Projects Page (COMPLETE and LOCKED — `docs/UX-IA-29-CHECKPOINT.md`)
-31. UX-IA-30 — Fix Focused Project Action Panel Stale Success Clear (COMPLETE and LOCKED — `docs/UX-IA-30-CHECKPOINT.md`)
-32. UX-IA-31 — Sidebar Navigation Icons and Compact Mode (COMPLETE and LOCKED — `docs/UX-IA-31-CHECKPOINT.md`)
-33. UX-IA-32 — Auto-Compact Sidebar When Entering Project Workspace (COMPLETE and LOCKED — `docs/UX-IA-32-CHECKPOINT.md`)
-34. UX-IA-33 — Professional AI Conversation Panel Baseline (COMPLETE and LOCKED — `docs/UX-IA-33-CHECKPOINT.md`)
-35. UX-IA-34 — Move Command Input to Advanced Developer Tools (COMPLETE and LOCKED — `docs/UX-IA-34-CHECKPOINT.md`)
-36. UX-IA-35 — Build Targets Placement (COMPLETE and LOCKED — `docs/UX-IA-35-CHECKPOINT.md`)
-37. UX-IA-36 — History Icon + Chat-History Panel Replacement (COMPLETE and LOCKED — `docs/UX-IA-36-CHECKPOINT.md`)
-38. UX-IA-37 — Hide Workspace Ready Status Box (COMPLETE and LOCKED — `docs/UX-IA-37-CHECKPOINT.md`)
-39. UX-IA-38 — Hide Project Trust Note / Recoverable Box (COMPLETE and LOCKED — `docs/UX-IA-38-CHECKPOINT.md`)
-40. UX-IA-39 — Relocate Build Targets to Preview Panel (COMPLETE and LOCKED — `docs/UX-IA-39-CHECKPOINT.md`)
+17. UX-IA-16 ?X Visual Edit AI Patch Flow (COMPLETE and LOCKED ?X `docs/UX-IA-16-CHECKPOINT.md`)
+    - UX-IA-16A ?X Visual Edit Prompt Contract + Force-Confirmation (COMPLETE and LOCKED ?X `docs/UX-IA-16A-CHECKPOINT.md`)
+    - UX-IA-16B ?X Visual Edit Diff Preview in Confirmation UI (COMPLETE and LOCKED ?X `docs/UX-IA-16B-CHECKPOINT.md`)
+18. UX-IA-17 ?X Visual Edit Undo / Checkpoint Integration (COMPLETE and LOCKED ?X `docs/UX-IA-17-CHECKPOINT.md`)
+    - UX-IA-17A ?X Visual Edit Checkpoint Labeling (COMPLETE and LOCKED ?X `docs/UX-IA-17A-CHECKPOINT.md`)
+    - UX-IA-17B ?X Visual Edit Undo Affordance (COMPLETE and LOCKED ?X `docs/UX-IA-17B-CHECKPOINT.md`)
+19. UX-IA-18 ?X Multilingual Chat Empty State + System Message Distinction (COMPLETE and LOCKED ?X `docs/UX-IA-18-CHECKPOINT.md`)
+   > AUTH-MODULE-01 ?X Reusable App-Auth Module for aiSandBox-Created Apps (cross-family ?X COMPLETE and LOCKED ?X `docs/AUTH-MODULE-01-CHECKPOINT.md` ?X registered under AUTH family)
+   > AUTH-MODULE-02 ?X Auth Module Live Smoke Blockers (cross-family ?X COMPLETE and LOCKED ?X `docs/AUTH-MODULE-02-CHECKPOINT.md` ?X registered under AUTH family)
+20. UX-IA-19 ?X Checkpoint Revert Button Visual Hierarchy (COMPLETE and LOCKED ?X `docs/UX-IA-19-CHECKPOINT.md`)
+21. UX-IA-20 ?X Reduce Healthy-State Noise + Improve Loading Visibility (COMPLETE and LOCKED ?X `docs/UX-IA-20-CHECKPOINT.md`)
+22. UX-IA-21 ?X Gate Developer System Controls (COMPLETE and LOCKED ?X `docs/UX-IA-21-CHECKPOINT.md`)
+23. UX-IA-22 ?X Fix Sidebar Workspace Selector Label (COMPLETE and LOCKED ?X `docs/UX-IA-22-CHECKPOINT.md`)
+24. UX-IA-23 ?X Fix Projects Tab New Project Flow (COMPLETE and LOCKED ?X `docs/UX-IA-23-CHECKPOINT.md`)
+25. UX-IA-24 ?X Add Create Workspace Option to Workspace Dropdown (COMPLETE and LOCKED ?X `docs/UX-IA-24-CHECKPOINT.md`)
+26. UX-IA-25 ?X Projects Page IA Cleanup ?X Hide Workspace Admin Controls from Projects View (COMPLETE and LOCKED ?X `docs/UX-IA-25-CHECKPOINT.md`)
+27. UX-IA-26 ?X Focused Create Workspace Panel from Dropdown (COMPLETE and LOCKED ?X `docs/UX-IA-26-CHECKPOINT.md`)
+28. UX-IA-27 ?X Project Card Actions Menu for Move and Visibility (COMPLETE and LOCKED ?X `docs/UX-IA-27-CHECKPOINT.md`)
+29. UX-IA-28 ?X Focused Project Action Panels for Move and Visibility (COMPLETE and LOCKED ?X `docs/UX-IA-28-CHECKPOINT.md`)
+30. UX-IA-29 ?X Remove Legacy My Projects Admin Panel from Projects Page (COMPLETE and LOCKED ?X `docs/UX-IA-29-CHECKPOINT.md`)
+31. UX-IA-30 ?X Fix Focused Project Action Panel Stale Success Clear (COMPLETE and LOCKED ?X `docs/UX-IA-30-CHECKPOINT.md`)
+32. UX-IA-31 ?X Sidebar Navigation Icons and Compact Mode (COMPLETE and LOCKED ?X `docs/UX-IA-31-CHECKPOINT.md`)
+33. UX-IA-32 ?X Auto-Compact Sidebar When Entering Project Workspace (COMPLETE and LOCKED ?X `docs/UX-IA-32-CHECKPOINT.md`)
+34. UX-IA-33 ?X Professional AI Conversation Panel Baseline (COMPLETE and LOCKED ?X `docs/UX-IA-33-CHECKPOINT.md`)
+35. UX-IA-34 ?X Move Command Input to Advanced Developer Tools (COMPLETE and LOCKED ?X `docs/UX-IA-34-CHECKPOINT.md`)
+36. UX-IA-35 ?X Build Targets Placement (COMPLETE and LOCKED ?X `docs/UX-IA-35-CHECKPOINT.md`)
+37. UX-IA-36 ?X History Icon + Chat-History Panel Replacement (COMPLETE and LOCKED ?X `docs/UX-IA-36-CHECKPOINT.md`)
+38. UX-IA-37 ?X Hide Workspace Ready Status Box (COMPLETE and LOCKED ?X `docs/UX-IA-37-CHECKPOINT.md`)
+39. UX-IA-38 ?X Hide Project Trust Note / Recoverable Box (COMPLETE and LOCKED ?X `docs/UX-IA-38-CHECKPOINT.md`)
+40. UX-IA-39 ?X Relocate Build Targets to Preview Panel (COMPLETE and LOCKED ?X `docs/UX-IA-39-CHECKPOINT.md`)
+
+41. UX-PV-01 ? Preview Auto-Start and First-Load Error Resilience (COMPLETE and LOCKED ? `docs/UX-PV-01-CHECKPOINT.md`)
 
 
 ---
@@ -13638,12 +13640,12 @@ Wire the captured preview element selection into the AI prompt context, validate
 
 **Status:** COMPLETE and LOCKED
 **Task ID:** UX-IA-16
-**Parent:** UX-IA family (UX-IA — Product & UX/UI Redesign — Evolutionary)
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Parent:** UX-IA family (UX-IA ?X Product & UX/UI Redesign ?X Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Priority:** Medium
 **Risk:** Medium
-**Model:** Sonnet 4.6 (plan phase — COMPLETE); implementation per child slice
-**Depends on:** UX-IA-15 (COMPLETE and LOCKED — `docs/UX-IA-15-CHECKPOINT.md`)
+**Model:** Sonnet 4.6 (plan phase ?X COMPLETE); implementation per child slice
+**Depends on:** UX-IA-15 (COMPLETE and LOCKED ?X `docs/UX-IA-15-CHECKPOINT.md`)
 **Checkpoint:** `docs/UX-IA-16-CHECKPOINT.md`
 
 **Objective:**
@@ -13651,13 +13653,13 @@ Wire the visual edit selected-element context (captured in UX-IA-15) into AI pat
 
 **Plan result:**
 - Plan phase COMPLETE (Sonnet 4.6, 2026-05-14)
-- No backend changes required — visual edit context flows entirely through frontend prompt prefix
+- No backend changes required ?X visual edit context flows entirely through frontend prompt prefix
 - Split into two child slices: UX-IA-16A (prompt contract + force-confirmation) and UX-IA-16B (diff preview in confirmation UI)
 - UX-IA-16B may be deferred if force-confirmation with file path list from 16A is sufficient for initial validation
 
 **Child slices:**
-- UX-IA-16A — Visual Edit Prompt Contract + Force-Confirmation (COMPLETE and LOCKED — `docs/UX-IA-16A-CHECKPOINT.md`)
-- UX-IA-16B — Visual Edit Diff Preview in Confirmation UI (COMPLETE and LOCKED — `docs/UX-IA-16B-CHECKPOINT.md`)
+- UX-IA-16A ?X Visual Edit Prompt Contract + Force-Confirmation (COMPLETE and LOCKED ?X `docs/UX-IA-16A-CHECKPOINT.md`)
+- UX-IA-16B ?X Visual Edit Diff Preview in Confirmation UI (COMPLETE and LOCKED ?X `docs/UX-IA-16B-CHECKPOINT.md`)
 
 **Non-goals (parent-level):**
 - No direct DOM mutation as final output
@@ -13671,12 +13673,12 @@ Wire the visual edit selected-element context (captured in UX-IA-15) into AI pat
 - No new dependencies unless explicitly approved
 
 **Acceptance checks:**
-- UX-IA-16 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
-- Plan phase completed and approved — DONE
-- Child slices identified and registered — DONE (16A ACTIVE, 16B PLANNED)
-- UX-IA-16A COMPLETE and LOCKED — `docs/UX-IA-16A-CHECKPOINT.md` — DONE
-- UX-IA-16B COMPLETE and LOCKED — `docs/UX-IA-16B-CHECKPOINT.md` — DONE
-- Parent checkpoint created on all child slices complete — DONE (`docs/UX-IA-16-CHECKPOINT.md`)
+- UX-IA-16 registered in TASKS.md and TASKS_BACKLOG_FULL.md ?X DONE
+- Plan phase completed and approved ?X DONE
+- Child slices identified and registered ?X DONE (16A ACTIVE, 16B PLANNED)
+- UX-IA-16A COMPLETE and LOCKED ?X `docs/UX-IA-16A-CHECKPOINT.md` ?X DONE
+- UX-IA-16B COMPLETE and LOCKED ?X `docs/UX-IA-16B-CHECKPOINT.md` ?X DONE
+- Parent checkpoint created on all child slices complete ?X DONE (`docs/UX-IA-16-CHECKPOINT.md`)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-16. Master plan: `docs/UX-IA-00-MASTER-PLAN.md`. Upstream: `docs/UX-IA-15C-CHECKPOINT.md`.
 
@@ -13686,8 +13688,8 @@ Wire the visual edit selected-element context (captured in UX-IA-15) into AI pat
 
 **Status:** COMPLETE and LOCKED
 **Task ID:** UX-IA-16A
-**Parent:** UX-IA-16 — Visual Edit AI Patch Flow
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Parent:** UX-IA-16 ?X Visual Edit AI Patch Flow
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Priority:** Medium
 **Risk:** Low
 **Model:** GPT-5.3 Codex for implementation
@@ -13701,7 +13703,7 @@ Enhance the visual-edit prompt contract so the AI receives directive instruction
 - Enhance `buildPromptWithSelectedPreviewElement` in `workspace-preview.logic.ts` to include visual-edit-specific AI instructions (directive block prepended when element context is present; element metadata block preserved; original user prompt appended)
 - Add `visualEditExecutionIdsRef` (`useRef<Set<string>>`) in `page.tsx` to track visual-edit-sourced execution IDs
 - Record visual-edit intent on the execution ID at submit time in both non-orchestration and orchestration paths, before any `consumeExecutionFileActions` call
-- In `maybeApplyExecutionFileActions`, check `visualEditExecutionIdsRef` before the `isRiskyFileActionBatch` check — force `awaiting-confirmation` for visual-edit-sourced executions
+- In `maybeApplyExecutionFileActions`, check `visualEditExecutionIdsRef` before the `isRiskyFileActionBatch` check ?X force `awaiting-confirmation` for visual-edit-sourced executions
 - Add minimal visual-edit attribution label to `WorkspaceAssistantFileActionSummary` in `workspace-shell.tsx` when the execution is visual-edit-sourced
 - Clear `visualEditExecutionIdsRef` on chat reset (alongside existing `appliedFileActionsExecutionIdsRef` and `cancelledFileActionsExecutionIdsRef` reset)
 - Add/update focused tests
@@ -13726,38 +13728,38 @@ Enhance the visual-edit prompt contract so the AI receives directive instruction
 **No other files changed.** No backend files. No auth files. No i18n files. No governance docs.
 
 **Preservation invariants:**
-- UX-IA-15A/15B/15C: all types, helpers, postMessage listener, prompt prefix shape — fully preserved
-- `isRiskyFileActionBatch` logic — unchanged; still applies for non-visual-edit executions
-- `acquireExecutionApplyGuard` apply-once safety — unchanged
-- `applySequentialFileActions` per-action session validation — unchanged
-- `maybeRunExecutionCoherence` (file tree refresh, preview refresh, checkpoint, autosave) — unchanged
-- Cancel path — unchanged
-- All prior UX-IA-04 through UX-IA-15 `data-testid` contracts and component interfaces — unaffected
+- UX-IA-15A/15B/15C: all types, helpers, postMessage listener, prompt prefix shape ?X fully preserved
+- `isRiskyFileActionBatch` logic ?X unchanged; still applies for non-visual-edit executions
+- `acquireExecutionApplyGuard` apply-once safety ?X unchanged
+- `applySequentialFileActions` per-action session validation ?X unchanged
+- `maybeRunExecutionCoherence` (file tree refresh, preview refresh, checkpoint, autosave) ?X unchanged
+- Cancel path ?X unchanged
+- All prior UX-IA-04 through UX-IA-15 `data-testid` contracts and component interfaces ?X unaffected
 
 **Tests to add:**
 
 | Test | Assertion |
 |---|---|
 | `buildPromptWithSelectedPreviewElement includes visual-edit instruction block when element present` | Output contains visual-edit directive text, element metadata, and original prompt |
-| `buildPromptWithSelectedPreviewElement unchanged when no element` | Existing test preserved — returns original prompt unchanged |
-| `Visual-edit execution always triggers awaiting-confirmation regardless of action count` | Single small safe write with visual-edit intent → `applyStatus === 'awaiting-confirmation'` |
-| `Non-visual-edit execution follows normal risky-batch logic` | Single small safe write without visual-edit intent → auto-applies |
+| `buildPromptWithSelectedPreviewElement unchanged when no element` | Existing test preserved ?X returns original prompt unchanged |
+| `Visual-edit execution always triggers awaiting-confirmation regardless of action count` | Single small safe write with visual-edit intent ?? `applyStatus === 'awaiting-confirmation'` |
+| `Non-visual-edit execution follows normal risky-batch logic` | Single small safe write without visual-edit intent ?? auto-applies |
 | `visualEditExecutionIdsRef cleared on chat reset` | After reset, visual-edit tracking is empty |
 
 **Validation plan:**
-- `npx tsc --noEmit` from `frontend/` — 0 errors
-- `npm test` from `frontend/` — all tests pass; baseline 353, expect 353 + new tests
-- `npm run build` from `frontend/` — passes
-- `ReadLints` on all touched files — 0 new errors
-- Manual: select element → submit prompt → verify AI prompt in DevTools contains visual-edit instruction block → verify confirmation dialog appears for a single-file safe write
+- `npx tsc --noEmit` from `frontend/` ?X 0 errors
+- `npm test` from `frontend/` ?X all tests pass; baseline 353, expect 353 + new tests
+- `npm run build` from `frontend/` ?X passes
+- `ReadLints` on all touched files ?X 0 new errors
+- Manual: select element ?? submit prompt ?? verify AI prompt in DevTools contains visual-edit instruction block ?? verify confirmation dialog appears for a single-file safe write
 
 **Acceptance checks:**
-- UX-IA-16A registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
-- Status set to ACTIVE — current stage — DONE
-- Scope, non-goals, files, tests, and validation plan recorded — DONE
-- No implementation performed in this registration — DONE
-- Implementation complete and validated — DONE (tsc PASS, 356/356 tests PASS, build PASS, lints PASS)
-- `docs/UX-IA-16A-CHECKPOINT.md` created — DONE
+- UX-IA-16A registered in TASKS.md and TASKS_BACKLOG_FULL.md ?X DONE
+- Status set to ACTIVE ?X current stage ?X DONE
+- Scope, non-goals, files, tests, and validation plan recorded ?X DONE
+- No implementation performed in this registration ?X DONE
+- Implementation complete and validated ?X DONE (tsc PASS, 356/356 tests PASS, build PASS, lints PASS)
+- `docs/UX-IA-16A-CHECKPOINT.md` created ?X DONE
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-16A. Parent: UX-IA-16. Upstream: `docs/UX-IA-15C-CHECKPOINT.md`.
 
@@ -13767,25 +13769,25 @@ Enhance the visual-edit prompt contract so the AI receives directive instruction
 
 **Status:** COMPLETE and LOCKED
 **Task ID:** UX-IA-16B
-**Parent:** UX-IA-16 — Visual Edit AI Patch Flow
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Parent:** UX-IA-16 ?X Visual Edit AI Patch Flow
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Priority:** Medium
 **Risk:** Medium
 **Model:** Sonnet 4.6 (implementation)
-**Depends on:** UX-IA-16A (COMPLETE and LOCKED — `docs/UX-IA-16A-CHECKPOINT.md`)
+**Depends on:** UX-IA-16A (COMPLETE and LOCKED ?X `docs/UX-IA-16A-CHECKPOINT.md`)
 **Checkpoint:** `docs/UX-IA-16B-CHECKPOINT.md`
 
 **Objective:**
 When a visual-edit execution reaches `awaiting-confirmation`, display a diff preview of the proposed file changes so the user can review source diffs before approving. Existing non-visual-edit confirmation behavior is preserved unchanged.
 
 **Scope:**
-- Add a pure line-level unified diff helper (no new npm dependency — implement with string comparison)
+- Add a pure line-level unified diff helper (no new npm dependency ?X implement with string comparison)
 - For visual-edit confirmations: fetch current file content from the session via the existing session file-read API for each file-action path
 - Compute diff between current content and proposed `file-actions` content
 - For `create` actions: display full proposed content as "new file"
 - For `delete` actions: display file path with "delete" marker
 - Cap diff display length to avoid UI overflow
-- Render diff preview only within `WorkspaceAssistantFileActionSummary` for visual-edit executions — non-visual-edit confirmation block is unchanged
+- Render diff preview only within `WorkspaceAssistantFileActionSummary` for visual-edit executions ?X non-visual-edit confirmation block is unchanged
 - Add/update focused tests
 
 **Non-goals:**
@@ -13806,23 +13808,23 @@ When a visual-edit execution reaches `awaiting-confirmation`, display a diff pre
 | `frontend/components/workspace/workspace-shell.test.tsx` | Tests for diff computation and diff display |
 
 **Preservation invariants:**
-- All UX-IA-16A invariants — fully preserved
-- Non-visual-edit confirmation path — unchanged
-- Apply-once guard, cancel path, coherence path — unchanged
+- All UX-IA-16A invariants ?X fully preserved
+- Non-visual-edit confirmation path ?X unchanged
+- Apply-once guard, cancel path, coherence path ?X unchanged
 
 **Validation plan:**
-- `npx tsc --noEmit` from `frontend/` — 0 errors
-- `npm test` from `frontend/` — all tests pass
-- `npm run build` from `frontend/` — passes
-- `ReadLints` on all touched files — 0 new errors
+- `npx tsc --noEmit` from `frontend/` ?X 0 errors
+- `npm test` from `frontend/` ?X all tests pass
+- `npm run build` from `frontend/` ?X passes
+- `ReadLints` on all touched files ?X 0 new errors
 - Manual: visual-edit confirmation dialog shows diff for modified file; non-visual-edit confirmation still shows path list only
 
 **Acceptance checks:**
-- UX-IA-16B registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
-- Status set to PLANNED — DONE
-- Scope, non-goals, files, and validation plan recorded — DONE
-- Implementation complete and validated — DONE (tsc PASS, 370/370 tests PASS, build PASS, lints PASS)
-- `docs/UX-IA-16B-CHECKPOINT.md` created — DONE
+- UX-IA-16B registered in TASKS.md and TASKS_BACKLOG_FULL.md ?X DONE
+- Status set to PLANNED ?X DONE
+- Scope, non-goals, files, and validation plan recorded ?X DONE
+- Implementation complete and validated ?X DONE (tsc PASS, 370/370 tests PASS, build PASS, lints PASS)
+- `docs/UX-IA-16B-CHECKPOINT.md` created ?X DONE
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-16B. Parent: UX-IA-16. Depends on: `docs/UX-IA-16A-CHECKPOINT.md`.
 
@@ -13832,26 +13834,26 @@ When a visual-edit execution reaches `awaiting-confirmation`, display a diff pre
 
 **Status:** COMPLETE and LOCKED
 **Task ID:** UX-IA-17
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Priority:** Medium
-**Risk:** Low–Medium
-**Depends on:** UX-IA-16 (COMPLETE and LOCKED — `docs/UX-IA-16-CHECKPOINT.md`)
+**Risk:** Low?VMedium
+**Depends on:** UX-IA-16 (COMPLETE and LOCKED ?X `docs/UX-IA-16-CHECKPOINT.md`)
 **Checkpoint:** `docs/UX-IA-17-CHECKPOINT.md`
 
 **Objective:**
 Integrate visual-edit apply actions with the existing project history/snapshot checkpoint system. Applied visual edits create a named checkpoint. A safe undo/revert affordance is surfaced in the chat thread after a visual-edit apply, delegating to the existing checkpoint revert flow.
 
 **Plan findings (resolved):**
-- `maybeRunExecutionCoherence` already triggers checkpoint creation for every apply — including visual-edit applies. No new checkpoint trigger is needed.
+- `maybeRunExecutionCoherence` already triggers checkpoint creation for every apply ?X including visual-edit applies. No new checkpoint trigger is needed.
 - `visualEditExecutionIdsRef.current.has(executionId)` is readable inside `maybeRunExecutionCoherence` in `page.tsx` at the point where `checkpointDescription` is passed to `runAiActionCoherence`. This is the correct hook point.
-- Distinct label is passed via the existing `checkpointDescription` parameter — no change to `runAiActionCoherence` or `workspace-ai-coherence.logic.ts`.
-- Undo affordance belongs in `WorkspaceAssistantFileActionSummary` (chat thread post-apply area) for visual-edit executions — not in the Preview tab toolbar.
-- Undo delegates to existing `onInitiateCheckpointRevert(checkpointId)` multi-step flow — no new restore mechanism.
+- Distinct label is passed via the existing `checkpointDescription` parameter ?X no change to `runAiActionCoherence` or `workspace-ai-coherence.logic.ts`.
+- Undo affordance belongs in `WorkspaceAssistantFileActionSummary` (chat thread post-apply area) for visual-edit executions ?X not in the Preview tab toolbar.
+- Undo delegates to existing `onInitiateCheckpointRevert(checkpointId)` multi-step flow ?X no new restore mechanism.
 - No backend changes required.
 
 **Child slices:**
-- UX-IA-17A — Visual Edit Checkpoint Labeling (COMPLETE and LOCKED — `docs/UX-IA-17A-CHECKPOINT.md`)
-- UX-IA-17B — Visual Edit Undo Affordance (COMPLETE and LOCKED — `docs/UX-IA-17B-CHECKPOINT.md`)
+- UX-IA-17A ?X Visual Edit Checkpoint Labeling (COMPLETE and LOCKED ?X `docs/UX-IA-17A-CHECKPOINT.md`)
+- UX-IA-17B ?X Visual Edit Undo Affordance (COMPLETE and LOCKED ?X `docs/UX-IA-17B-CHECKPOINT.md`)
 
 **Non-goals (parent):**
 - No direct DOM rollback
@@ -13861,10 +13863,10 @@ Integrate visual-edit apply actions with the existing project history/snapshot c
 - No auth changes, route changes, drag/drop editor, broad refactor, new dependencies
 
 **Invariants to preserve:**
-- `runAiActionCoherence` — unchanged
-- `acquireExecutionApplyGuard` apply-once safety — unchanged
-- `handleConfirmExecutionFileActions` / `handleCancelExecutionFileActions` — unchanged
-- All UX-IA-15 and UX-IA-16 invariants — fully preserved
+- `runAiActionCoherence` ?X unchanged
+- `acquireExecutionApplyGuard` apply-once safety ?X unchanged
+- `handleConfirmExecutionFileActions` / `handleCancelExecutionFileActions` ?X unchanged
+- All UX-IA-15 and UX-IA-16 invariants ?X fully preserved
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-17. Depends on: `docs/UX-IA-16-CHECKPOINT.md`.
 
@@ -13874,8 +13876,8 @@ Integrate visual-edit apply actions with the existing project history/snapshot c
 
 **Status:** COMPLETE and LOCKED
 **Task ID:** UX-IA-17A
-**Parent:** UX-IA-17 — Visual Edit Undo / Checkpoint Integration
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Parent:** UX-IA-17 ?X Visual Edit Undo / Checkpoint Integration
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Priority:** Medium
 **Risk:** Low
 **Model:** GPT-5.3 Codex (implementation)
@@ -13908,24 +13910,24 @@ When a visual-edit execution's file actions are applied and the coherence checkp
 - No new dependencies
 
 **Invariants to preserve:**
-- `AI_AUTO_CHECKPOINT_DESCRIPTION` — unchanged; still used for non-visual-edit executions
-- `runAiActionCoherence` interface and implementation — unchanged
-- `acquireExecutionCoherenceGuard` — unchanged
-- All UX-IA-15 and UX-IA-16 invariants — fully preserved
+- `AI_AUTO_CHECKPOINT_DESCRIPTION` ?X unchanged; still used for non-visual-edit executions
+- `runAiActionCoherence` interface and implementation ?X unchanged
+- `acquireExecutionCoherenceGuard` ?X unchanged
+- All UX-IA-15 and UX-IA-16 invariants ?X fully preserved
 
 **Validation plan:**
-- `npx tsc --noEmit` from `frontend/` — 0 errors
-- `npm test` from `frontend/` — all tests pass (baseline: 370)
-- `npm run build` from `frontend/` — passes
-- `ReadLints` on touched files — 0 new errors
+- `npx tsc --noEmit` from `frontend/` ?X 0 errors
+- `npm test` from `frontend/` ?X all tests pass (baseline: 370)
+- `npm run build` from `frontend/` ?X passes
+- `ReadLints` on touched files ?X 0 new errors
 - Manual: visual-edit apply creates checkpoint labelled `Visual Edit: applied file changes`; standard AI apply still creates `AI: applied workspace file actions`
 
 **Acceptance checks:**
-- UX-IA-17A registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
-- Status ACTIVE — DONE
-- No implementation performed in registration — DONE
-- Implementation complete and validated — DONE (tsc PASS, 374/374 tests PASS, build PASS, lints PASS)
-- `docs/UX-IA-17A-CHECKPOINT.md` created — DONE
+- UX-IA-17A registered in TASKS.md and TASKS_BACKLOG_FULL.md ?X DONE
+- Status ACTIVE ?X DONE
+- No implementation performed in registration ?X DONE
+- Implementation complete and validated ?X DONE (tsc PASS, 374/374 tests PASS, build PASS, lints PASS)
+- `docs/UX-IA-17A-CHECKPOINT.md` created ?X DONE
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-17A. Parent: UX-IA-17.
 
@@ -13935,12 +13937,12 @@ When a visual-edit execution's file actions are applied and the coherence checkp
 
 **Status:** COMPLETE and LOCKED
 **Task ID:** UX-IA-17B
-**Parent:** UX-IA-17 — Visual Edit Undo / Checkpoint Integration
-**Family:** UX-IA (Product & UX/UI Redesign — Evolutionary)
+**Parent:** UX-IA-17 ?X Visual Edit Undo / Checkpoint Integration
+**Family:** UX-IA (Product & UX/UI Redesign ?X Evolutionary)
 **Priority:** Medium
 **Risk:** Medium
 **Model:** GPT-5.3 Codex
-**Depends on:** UX-IA-17A (COMPLETE and LOCKED — required)
+**Depends on:** UX-IA-17A (COMPLETE and LOCKED ?X required)
 **Checkpoint:** `docs/UX-IA-17B-CHECKPOINT.md`
 
 **Objective:**
@@ -13950,7 +13952,7 @@ After a visual-edit apply succeeds, surface an Undo/Revert button in the `Worksp
 - In `page.tsx`: after `runAiActionCoherence` returns `checkpointCreated: true` for a visual-edit execution, store the resulting `commitHash` in a new ref (`visualEditCheckpointByExecutionIdRef: Record<string, string>`)
 - Thread the checkpoint ID to `WorkspaceAssistantFileActionSummary` via a new optional prop (`onUndoVisualEdit?: () => void`, or by passing `checkpointId: string | null`)
 - In `WorkspaceAssistantFileActionSummary`: render an Undo/Revert button for visual-edit executions when `applyStatus` shows applied results and a checkpoint ID exists; button is disabled/hidden when no checkpoint hash
-- Wire the button to call `onInitiateCheckpointRevert(checkpointId)` — delegates to the existing multi-step revert confirmation dialog
+- Wire the button to call `onInitiateCheckpointRevert(checkpointId)` ?X delegates to the existing multi-step revert confirmation dialog
 - Preserve non-visual-edit file-action result display unchanged
 - Add focused tests for button render, button absence for non-visual-edit, and wiring
 
@@ -13967,28 +13969,28 @@ After a visual-edit apply succeeds, surface an Undo/Revert button in the `Worksp
 - No automatic undo without user confirmation
 - No bypass of checkpoint revert confirmation flow
 - No backend or API changes
-- No new revert mechanism — reuse `onInitiateCheckpointRevert` as-is
+- No new revert mechanism ?X reuse `onInitiateCheckpointRevert` as-is
 - No auth, route, or i18n changes (optional i18n key may be added if scope allows)
 - No new dependencies
 
 **Invariants to preserve:**
-- `handleInitiateCheckpointRevert` / `handleConfirmCheckpointRevert` — unchanged
-- `acquireExecutionApplyGuard` apply-once safety — unchanged
-- Non-visual-edit `WorkspaceAssistantFileActionSummary` rendering — unchanged
-- All UX-IA-15, UX-IA-16, and UX-IA-17A invariants — fully preserved
+- `handleInitiateCheckpointRevert` / `handleConfirmCheckpointRevert` ?X unchanged
+- `acquireExecutionApplyGuard` apply-once safety ?X unchanged
+- Non-visual-edit `WorkspaceAssistantFileActionSummary` rendering ?X unchanged
+- All UX-IA-15, UX-IA-16, and UX-IA-17A invariants ?X fully preserved
 
 **Validation plan:**
-- `npx tsc --noEmit` from `frontend/` — 0 errors
-- `npm test` from `frontend/` — all tests pass (baseline: 370 + count from 17A)
-- `npm run build` from `frontend/` — passes
-- `ReadLints` on touched files — 0 new errors
+- `npx tsc --noEmit` from `frontend/` ?X 0 errors
+- `npm test` from `frontend/` ?X all tests pass (baseline: 370 + count from 17A)
+- `npm run build` from `frontend/` ?X passes
+- `ReadLints` on touched files ?X 0 new errors
 - Manual: after visual-edit apply, undo button appears in chat thread; clicking opens revert confirmation; confirming reverts and refreshes file tree, preview, checkpoints; non-visual-edit file-action results show no undo button
 
 **Acceptance checks:**
-- UX-IA-17B registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
-- Status ACTIVE — DONE
-- Implementation complete and validated — DONE (tsc PASS, 383/383 tests PASS, build PASS, lints PASS)
-- `docs/UX-IA-17B-CHECKPOINT.md` created — DONE
+- UX-IA-17B registered in TASKS.md and TASKS_BACKLOG_FULL.md ?X DONE
+- Status ACTIVE ?X DONE
+- Implementation complete and validated ?X DONE (tsc PASS, 383/383 tests PASS, build PASS, lints PASS)
+- `docs/UX-IA-17B-CHECKPOINT.md` created ?X DONE
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-17B. Parent: UX-IA-17. Depends on: `docs/UX-IA-17A-CHECKPOINT.md`.
 
@@ -14002,7 +14004,7 @@ After a visual-edit apply succeeds, surface an Undo/Revert button in the `Worksp
 **Priority:** Medium
 **Nature:** FRONTEND-ONLY
 **Risk:** Low-Medium
-**Depends on:** UX-IA-17 (COMPLETE and LOCKED — `docs/UX-IA-17-CHECKPOINT.md`)
+**Depends on:** UX-IA-17 (COMPLETE and LOCKED ?X `docs/UX-IA-17-CHECKPOINT.md`)
 **Checkpoint:** `docs/UX-IA-18-CHECKPOINT.md`
 
 **Objective:**
@@ -14016,7 +14018,7 @@ Fix the top two post-AUTH UX audit issues:
 - `frontend/messages/en.json`
 - `frontend/messages/zh-TW.json`
 - `frontend/messages/zh-CN.json`
-- `frontend/app/[locale]/app/page.tsx` — only if needed to mark auth-module messages as system kind
+- `frontend/app/[locale]/app/page.tsx` ?X only if needed to mark auth-module messages as system kind
 
 **Scope:**
 - Add multilingual empty states in the chat panel:
@@ -14040,15 +14042,15 @@ All new visible text must be added to `frontend/messages/en.json`, `frontend/mes
 - No documentation-heavy planning
 
 **Preserved invariants:**
-- All existing `data-testid` contracts in workspace-shell — unchanged
-- Visual Edit Mode wiring (UX-IA-15/16/17) — untouched
-- Auth-module install flow and guard behavior — untouched
-- Internal session API endpoints — untouched
+- All existing `data-testid` contracts in workspace-shell ?X unchanged
+- Visual Edit Mode wiring (UX-IA-15/16/17) ?X untouched
+- Auth-module install flow and guard behavior ?X untouched
+- Internal session API endpoints ?X untouched
 
 **Validation:**
-- `npx tsc --noEmit` from `frontend/` — must pass
-- `npm test` from `frontend/` — all tests must pass
-- `ReadLints` on touched files — 0 new errors
+- `npx tsc --noEmit` from `frontend/` ?X must pass
+- `npm test` from `frontend/` ?X all tests must pass
+- `ReadLints` on touched files ?X 0 new errors
 
 **Multilingual acceptance checks:**
 - [x] No new hardcoded user-facing English copy
@@ -14059,8 +14061,8 @@ All new visible text must be added to `frontend/messages/en.json`, `frontend/mes
 - [x] Tests/source checks cover translation keys or rendered translated copy where practical
 
 **Acceptance checks:**
-- [x] UX-IA-18 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
-- [x] Status ACTIVE — DONE
+- [x] UX-IA-18 registered in TASKS.md and TASKS_BACKLOG_FULL.md ?X DONE
+- [x] Status ACTIVE ?X DONE
 - [x] Implementation complete and validated
 - [x] `docs/UX-IA-18-CHECKPOINT.md` created
 
@@ -14076,7 +14078,7 @@ All new visible text must be added to `frontend/messages/en.json`, `frontend/mes
 **Priority:** Low
 **Nature:** FRONTEND-ONLY
 **Risk:** Low
-**Depends on:** UX-IA-18 (COMPLETE and LOCKED — `docs/UX-IA-18-CHECKPOINT.md`)
+**Depends on:** UX-IA-18 (COMPLETE and LOCKED ?X `docs/UX-IA-18-CHECKPOINT.md`)
 **Checkpoint:** `docs/UX-IA-19-CHECKPOINT.md`
 
 **Objective:**
@@ -14108,19 +14110,19 @@ No new user-facing text. If any text changes become necessary, update `en.json`,
 - No TASK-75A work
 
 **Preserved invariants:**
-- All existing `data-testid` contracts in workspace-shell — unchanged
-- Revert click handler and behavior — unchanged
-- Visual Edit Mode wiring (UX-IA-15/16/17) — untouched
-- Auth-module install flow — untouched
-- Internal session API endpoints — untouched
+- All existing `data-testid` contracts in workspace-shell ?X unchanged
+- Revert click handler and behavior ?X unchanged
+- Visual Edit Mode wiring (UX-IA-15/16/17) ?X untouched
+- Auth-module install flow ?X untouched
+- Internal session API endpoints ?X untouched
 
 **Validation:**
-- `npx tsc --noEmit` from `frontend/` — must pass
-- `npm test` from `frontend/` — all tests must pass
-- `ReadLints` on touched files — 0 new errors
+- `npx tsc --noEmit` from `frontend/` ?X must pass
+- `npm test` from `frontend/` ?X all tests must pass
+- `ReadLints` on touched files ?X 0 new errors
 
 **Acceptance checks:**
-- [x] UX-IA-19 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- [x] UX-IA-19 registered in TASKS.md and TASKS_BACKLOG_FULL.md ?X DONE
 - [x] Implementation complete and validated
 - [x] `docs/UX-IA-19-CHECKPOINT.md` created
 
@@ -14136,7 +14138,7 @@ No new user-facing text. If any text changes become necessary, update `en.json`,
 **Priority:** Low
 **Nature:** FRONTEND-ONLY
 **Risk:** Low-Medium
-**Depends on:** UX-IA-19 (COMPLETE and LOCKED — `docs/UX-IA-19-CHECKPOINT.md`)
+**Depends on:** UX-IA-19 (COMPLETE and LOCKED ?X `docs/UX-IA-19-CHECKPOINT.md`)
 **Checkpoint:** `docs/UX-IA-20-CHECKPOINT.md`
 
 **Objective:**
@@ -14172,19 +14174,19 @@ No new user-facing text. If any visible text changes become necessary, update `e
 - No TASK-75A work
 
 **Preserved invariants:**
-- All existing `data-testid` contracts in workspace-shell — unchanged
-- Visual Edit Mode wiring (UX-IA-15/16/17) — untouched
-- Auth-module install flow — untouched
-- Internal session API endpoints — untouched
-- Error/warning/loading tone behavior — unchanged
+- All existing `data-testid` contracts in workspace-shell ?X unchanged
+- Visual Edit Mode wiring (UX-IA-15/16/17) ?X untouched
+- Auth-module install flow ?X untouched
+- Internal session API endpoints ?X untouched
+- Error/warning/loading tone behavior ?X unchanged
 
 **Validation:**
-- `npx tsc --noEmit` from `frontend/` — must pass
-- `npm test` from `frontend/` — all tests must pass
-- `ReadLints` on touched files — 0 new errors
+- `npx tsc --noEmit` from `frontend/` ?X must pass
+- `npm test` from `frontend/` ?X all tests must pass
+- `ReadLints` on touched files ?X 0 new errors
 
 **Acceptance checks:**
-- [x] UX-IA-20 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- [x] UX-IA-20 registered in TASKS.md and TASKS_BACKLOG_FULL.md ?X DONE
 - [x] Implementation complete and validated
 - [x] `docs/UX-IA-20-CHECKPOINT.md` created
 
@@ -14200,7 +14202,7 @@ No new user-facing text. If any visible text changes become necessary, update `e
 **Priority:** Low
 **Nature:** FRONTEND-ONLY
 **Risk:** Low
-**Depends on:** UX-IA-20 (COMPLETE and LOCKED — `docs/UX-IA-20-CHECKPOINT.md`)
+**Depends on:** UX-IA-20 (COMPLETE and LOCKED ?X `docs/UX-IA-20-CHECKPOINT.md`)
 **Checkpoint:** `docs/UX-IA-21-CHECKPOINT.md`
 
 **Objective:**
@@ -14214,7 +14216,7 @@ Hide the top-right developer/operator controls ("System Ready" and "Config") fro
 
 **Scope:**
 - Gate `SystemReadiness` so it renders only when `NODE_ENV === 'development'` OR `NEXT_PUBLIC_SHOW_DEV_TOOLS === 'true'`
-- `ConfigurationControl` is rendered from `SystemReadiness` and disappears with the same gate — no separate change required
+- `ConfigurationControl` is rendered from `SystemReadiness` and disappears with the same gate ?X no separate change required
 - No i18n changes required (developer-only gated text is exempt)
 - Preserve developer/operator behavior when the gate is enabled
 - Do not redesign the modal
@@ -14230,12 +14232,12 @@ Hide the top-right developer/operator controls ("System Ready" and "Config") fro
 - No TASK-75A work
 
 **Validation:**
-- `npx tsc --noEmit` from `frontend/` — must pass
-- `npm test` from `frontend/` — all tests must pass
-- `ReadLints` on touched files — 0 new errors
+- `npx tsc --noEmit` from `frontend/` ?X must pass
+- `npm test` from `frontend/` ?X all tests must pass
+- `ReadLints` on touched files ?X 0 new errors
 
 **Acceptance checks:**
-- [x] UX-IA-21 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- [x] UX-IA-21 registered in TASKS.md and TASKS_BACKLOG_FULL.md ?X DONE
 - [x] Implementation complete and validated
 - [x] `docs/UX-IA-21-CHECKPOINT.md` created
 
@@ -14251,7 +14253,7 @@ Hide the top-right developer/operator controls ("System Ready" and "Config") fro
 **Priority:** Low
 **Nature:** FRONTEND-ONLY / I18N COPY FIX
 **Risk:** Low
-**Depends on:** UX-IA-21 (COMPLETE and LOCKED — `docs/UX-IA-21-CHECKPOINT.md`)
+**Depends on:** UX-IA-21 (COMPLETE and LOCKED ?X `docs/UX-IA-21-CHECKPOINT.md`)
 **Checkpoint:** `docs/UX-IA-22-CHECKPOINT.md`
 
 **Objective:**
@@ -14267,8 +14269,8 @@ The sidebar workspace selector `<label>` renders "PROJECTS" (from `workspace.pro
 **Scope:**
 - Add new key `workspace.workspaceLabel` to all three locale files:
   - `en.json`: `"workspaceLabel": "Workspace"`
-  - `zh-TW.json`: `"workspaceLabel": "工作區"`
-  - `zh-CN.json`: `"workspaceLabel": "工作?"`
+  - `zh-TW.json`: `"workspaceLabel": "?u?@??"`
+  - `zh-CN.json`: `"workspaceLabel": "?u?@?"`
 - In `workspace-sidebar.tsx`, replace `{messages.projects}` with `{messages.workspaceLabel}` in the three locations within the workspace selector block:
   - The `<label>` element above the workspace dropdown
   - The sidebar header subtitle fallback (`selectedWorkspace?.name ?? messages.projects`)
@@ -14285,12 +14287,12 @@ The sidebar workspace selector `<label>` renders "PROJECTS" (from `workspace.pro
 - No TASK-75A work
 
 **Validation:**
-- `npx tsc --noEmit` from `frontend/` — must pass
-- `npm test` from `frontend/` — all tests must pass
-- `ReadLints` on touched files — 0 new errors
+- `npx tsc --noEmit` from `frontend/` ?X must pass
+- `npm test` from `frontend/` ?X all tests must pass
+- `ReadLints` on touched files ?X 0 new errors
 
 **Acceptance checks:**
-- [x] UX-IA-22 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- [x] UX-IA-22 registered in TASKS.md and TASKS_BACKLOG_FULL.md ?X DONE
 - [x] `workspace.workspaceLabel` added to all three locale files
 - [x] Sidebar workspace selector label, header subtitle fallback, and placeholder fallback all use `workspaceLabel`
 - [x] Sidebar "Projects" nav tab unchanged
@@ -14306,10 +14308,10 @@ The sidebar workspace selector `<label>` renders "PROJECTS" (from `workspace.pro
 **Status:** COMPLETE and LOCKED
 **Task ID:** UX-IA-23
 **Family:** UX-IA
-**Priority:** High — blocking UX bug
+**Priority:** High ?X blocking UX bug
 **Nature:** FRONTEND-ONLY / BLOCKING UX BUG
 **Risk:** Low-Medium
-**Depends on:** UX-IA-22 (COMPLETE and LOCKED — `docs/UX-IA-22-CHECKPOINT.md`)
+**Depends on:** UX-IA-22 (COMPLETE and LOCKED ?X `docs/UX-IA-22-CHECKPOINT.md`)
 **Checkpoint:** `docs/UX-IA-23-CHECKPOINT.md`
 
 **Objective:**
@@ -14324,17 +14326,17 @@ The "New Project" button in the Projects tab (`data-testid="workspace-projects-n
 
 **Scope:**
 - Add `const [showNewProjectRow, setShowNewProjectRow] = React.useState(false);` to `WorkspaceShell` local state.
-- In `projectsWorkspaceContent`, replace the single "New Project" button block (lines ~1113–1123) with a two-state inline form:
+- In `projectsWorkspaceContent`, replace the single "New Project" button block (lines ~1113?V1123) with a two-state inline form:
   - State 1 (default): "New Project" button sets `showNewProjectRow = true` on click. Preserve `data-testid="workspace-projects-new-project-button"`.
   - State 2 (row visible): inline input + "Create Project" button + "Cancel" button + optional error display.
 - Inline row bindings (all existing props, no new props required):
-  - Input: `value={props.projectNameInput ?? ''}` / `onChange` → `props.onProjectNameInputChange`
-  - Confirm: `onClick` → `void props.onCreateWorkspaceProject?.()`, disabled when `hasProjectActionInFlight` or name is empty
+  - Input: `value={props.projectNameInput ?? ''}` / `onChange` ?? `props.onProjectNameInputChange`
+  - Confirm: `onClick` ?? `void props.onCreateWorkspaceProject?.()`, disabled when `hasProjectActionInFlight` or name is empty
   - Cancel: hides row, calls `props.onProjectNameInputChange?.('')`
   - Error: render `props.projectActionError` inline when set
 - Support Enter key to confirm and Escape key to cancel on the input.
 - Add `useEffect` watching `props.projectActionState === 'success'` to auto-close the row.
-- Reuse existing i18n messages — no new locale keys required:
+- Reuse existing i18n messages ?X no new locale keys required:
   - Placeholder: `projectPanelMessages.newProjectName`
   - Confirm button: `projectPanelMessages.createProject` / `commonMessages.creating`
   - Cancel button: `commonMessages.cancel`
@@ -14353,12 +14355,12 @@ The "New Project" button in the Projects tab (`data-testid="workspace-projects-n
 - No broad project/workspace redesign
 
 **Validation:**
-- `npx tsc --noEmit` from `frontend/` — must pass
-- `npm test` from `frontend/` — all tests must pass
-- `ReadLints` on touched files — 0 new errors
+- `npx tsc --noEmit` from `frontend/` ?X must pass
+- `npm test` from `frontend/` ?X all tests must pass
+- `ReadLints` on touched files ?X 0 new errors
 
 **Acceptance checks:**
-- [x] UX-IA-23 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- [x] UX-IA-23 registered in TASKS.md and TASKS_BACKLOG_FULL.md ?X DONE
 - [x] Inline new-project row appears on button click in projects tab
 - [x] Confirm button calls `onCreateWorkspaceProject` with non-empty name
 - [x] Cancel button hides row and clears `projectNameInput`
@@ -14381,7 +14383,7 @@ The "New Project" button in the Projects tab (`data-testid="workspace-projects-n
 **Priority:** Medium
 **Nature:** FRONTEND-ONLY / UX FLOW FIX
 **Risk:** Low-Medium
-**Depends on:** WORKSPACE-DEFAULT-01 (COMPLETE and LOCKED — `docs/WORKSPACE-DEFAULT-01-CHECKPOINT.md`), UX-IA-23 (COMPLETE and LOCKED — `docs/UX-IA-23-CHECKPOINT.md`)
+**Depends on:** WORKSPACE-DEFAULT-01 (COMPLETE and LOCKED ?X `docs/WORKSPACE-DEFAULT-01-CHECKPOINT.md`), UX-IA-23 (COMPLETE and LOCKED ?X `docs/UX-IA-23-CHECKPOINT.md`)
 
 **Problem:**
 The workspace dropdown lets users select existing workspaces, but there is no obvious way to create a new workspace directly from it. Users expect a "Create new workspace" option under the workspace dropdown.
@@ -14419,10 +14421,10 @@ Add an obvious "Create new workspace" option to the workspace dropdown and route
 Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npx tsc --noEmit
 Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npm test
 ```
-- `ReadLints` on touched files — 0 new errors
+- `ReadLints` on touched files ?X 0 new errors
 
 **Acceptance checks:**
-- [x] UX-IA-24 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- [x] UX-IA-24 registered in TASKS.md and TASKS_BACKLOG_FULL.md ?X DONE
 - [x] "Create new workspace" option appears in workspace dropdown
 - [x] Multilingual key added to `en.json`, `zh-TW.json`, and `zh-CN.json`
 - [x] Selecting the option opens/reveals existing create-workspace affordance (no immediate creation)
@@ -14430,7 +14432,7 @@ Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npm test
 - [x] Projects tab behavior preserved
 - [x] No backend files changed
 - [x] `npx tsc --noEmit` passes
-- [x] `npm test` passes — 489 tests, 0 failed
+- [x] `npm test` passes ?X 489 tests, 0 failed
 - [x] ReadLints passes
 - [x] `docs/UX-IA-24-CHECKPOINT.md` created
 
@@ -14439,7 +14441,7 @@ Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npm test
 
 ---
 
-#### UX-IA-25: Projects Page IA Cleanup — Hide Workspace Admin Controls from Projects View
+#### UX-IA-25: Projects Page IA Cleanup ?X Hide Workspace Admin Controls from Projects View
 
 **Status:** COMPLETE and LOCKED
 **Task ID:** UX-IA-25
@@ -14447,10 +14449,10 @@ Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npm test
 **Priority:** Medium
 **Nature:** FRONTEND-ONLY / UX IA CLEANUP
 **Risk:** Low
-**Depends on:** UX-IA-24 (COMPLETE and LOCKED — `docs/UX-IA-24-CHECKPOINT.md`)
+**Depends on:** UX-IA-24 (COMPLETE and LOCKED ?X `docs/UX-IA-24-CHECKPOINT.md`)
 
 **Problem:**
-The Projects view (`projectsWorkspaceContent`) appends `historyAndDashboardContent`, which renders `HistoryProjectPanel`. That panel surfaces workspace admin controls — workspace selector, create workspace, rename workspace, delete workspace — that are already available in the sidebar dropdown. These controls pollute the Projects page and make it look unprofessional.
+The Projects view (`projectsWorkspaceContent`) appends `historyAndDashboardContent`, which renders `HistoryProjectPanel`. That panel surfaces workspace admin controls ?X workspace selector, create workspace, rename workspace, delete workspace ?X that are already available in the sidebar dropdown. These controls pollute the Projects page and make it look unprofessional.
 
 **Objective:**
 Hide workspace admin controls only when `HistoryProjectPanel` is rendered inside the Projects page. Preserve the same controls in the active project/session view and aside panel contexts.
@@ -14482,10 +14484,10 @@ Hide workspace admin controls only when `HistoryProjectPanel` is rendered inside
 Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npx tsc --noEmit
 Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npm test
 ```
-- `ReadLints` on touched files — 0 new errors
+- `ReadLints` on touched files ?X 0 new errors
 
 **Acceptance checks:**
-- [x] UX-IA-25 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- [x] UX-IA-25 registered in TASKS.md and TASKS_BACKLOG_FULL.md ?X DONE
 - [x] `hideWorkspaceAdminControls` prop added to `HistoryProjectPanel`
 - [x] `history-workspace-select` absent from `workspace-projects-view` render
 - [x] `history-workspace-create-input` absent from `workspace-projects-view` render
@@ -14512,18 +14514,18 @@ Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npm test
 **Priority:** Medium
 **Nature:** FRONTEND-ONLY / UX IA CLEANUP
 **Risk:** Low-Medium
-**Depends on:** UX-IA-25 (COMPLETE and LOCKED — `docs/UX-IA-25-CHECKPOINT.md`), UX-IA-24 (COMPLETE and LOCKED — `docs/UX-IA-24-CHECKPOINT.md`)
+**Depends on:** UX-IA-25 (COMPLETE and LOCKED ?X `docs/UX-IA-25-CHECKPOINT.md`), UX-IA-24 (COMPLETE and LOCKED ?X `docs/UX-IA-24-CHECKPOINT.md`)
 
 **Problem:**
-The workspace dropdown has a "Create new workspace" option (UX-IA-24), but selecting it currently routes users to the generic Projects page. The desired UX is a focused workspace creation state — not a page navigation.
+The workspace dropdown has a "Create new workspace" option (UX-IA-24), but selecting it currently routes users to the generic Projects page. The desired UX is a focused workspace creation state ?X not a page navigation.
 
 **Objective:**
 When users select "Create new workspace" from the workspace dropdown, show a focused create-workspace panel with:
 - Heading: Create a Workspace
 - Subtext: Create a new place to make projects or collaborate with others.
 - Workspace name label + input
-- Cancel button — closes panel, clears input
-- Create button — calls existing workspace creation handler; must not submit empty names
+- Cancel button ?X closes panel, clears input
+- Create button ?X calls existing workspace creation handler; must not submit empty names
 
 **Files in scope:**
 - `frontend/components/workspace/workspace-shell.tsx`
@@ -14561,10 +14563,10 @@ All new visible panel text must be added to all three locale files and wired thr
 Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npx tsc --noEmit
 Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npm test
 ```
-- `ReadLints` on touched files — 0 new errors
+- `ReadLints` on touched files ?X 0 new errors
 
 **Acceptance checks:**
-- [x] UX-IA-26 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- [x] UX-IA-26 registered in TASKS.md and TASKS_BACKLOG_FULL.md ?X DONE
 - [x] Focused create-workspace panel renders on "Create new workspace" dropdown selection
 - [x] Panel shows heading, subtext, name input, Cancel, and Create
 - [x] Cancel closes panel and clears input
@@ -14594,7 +14596,7 @@ Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npm test
 **Priority:** Medium
 **Nature:** FRONTEND-ONLY / UX IA CLEANUP
 **Risk:** Low-Medium
-**Depends on:** UX-IA-26 (COMPLETE and LOCKED — `docs/UX-IA-26-CHECKPOINT.md`)
+**Depends on:** UX-IA-26 (COMPLETE and LOCKED ?X `docs/UX-IA-26-CHECKPOINT.md`)
 
 **Problem:**
 Project-level secondary actions (Move to workspace, Sharing / visibility) are still in the old admin-style HistoryProjectPanel. These actions belong on each project card in a "..." actions menu, not in the main Projects page admin panel.
@@ -14635,10 +14637,10 @@ Any new visible text must be added to all three locale files and wired through t
 Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npx tsc --noEmit
 Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npm test
 ```
-- `ReadLints` on touched files — 0 new errors
+- `ReadLints` on touched files ?X 0 new errors
 
 **Acceptance checks:**
-- [x] UX-IA-27 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
+- [x] UX-IA-27 registered in TASKS.md and TASKS_BACKLOG_FULL.md ?X DONE
 - [x] "..." menu button appears on each project card
 - [x] Menu exposes Move to workspace action
 - [x] Menu exposes Visibility / sharing action
@@ -14658,7 +14660,7 @@ Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npm test
 
 ---
 
-#### UX-IA-28: Focused Project Action Panels for Move and Visibility — COMPLETE and LOCKED
+#### UX-IA-28: Focused Project Action Panels for Move and Visibility ?X COMPLETE and LOCKED
 
 **Status:** COMPLETE and LOCKED
 **Task ID:** UX-IA-28
@@ -14666,7 +14668,7 @@ Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npm test
 **Priority:** Medium
 **Nature:** FRONTEND-ONLY / UX IA CLEANUP
 **Risk:** Low-Medium
-**Depends on:** UX-IA-27 (COMPLETE and LOCKED — `docs/UX-IA-27-CHECKPOINT.md`)
+**Depends on:** UX-IA-27 (COMPLETE and LOCKED ?X `docs/UX-IA-27-CHECKPOINT.md`)
 
 **Problem:**
 The project card "..." menu now exposes Move to workspace and Sharing / visibility, but selecting those actions still relies on the old "My Projects" admin-style panel. That panel feels unprofessional and mixes too many unrelated controls.
@@ -14710,31 +14712,31 @@ All new visible text must be added to en.json, zh-TW.json, zh-CN.json and wired 
 Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npx tsc --noEmit
 Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npm test
 ```
-- `ReadLints` on touched files — 0 new errors
+- `ReadLints` on touched files ?X 0 new errors
 
 **Acceptance checks:**
-- [x] UX-IA-28 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
-- [x] Clicking Move to workspace opens focused Move Project panel — DONE
-- [x] Clicking Sharing / visibility opens focused Visibility panel — DONE
-- [x] Existing handlers reused: `onMoveWorkspaceProject`, `onUpdateWorkspaceProjectVisibility` — DONE
-- [x] Panels include Cancel and primary action buttons — DONE
-- [x] Cancel returns to Projects view — DONE
-- [x] Successful action returns to Projects view — DONE
-- [x] Project card open behavior preserved — DONE
-- [x] Old HistoryProjectPanel controls preserved — DONE
-- [x] All new text added to en.json, zh-TW.json, zh-CN.json — DONE
-- [x] No hardcoded English user-facing copy — DONE
-- [x] `npx tsc --noEmit` passes — DONE
-- [x] `npm test` passes (512/512) — DONE
-- [x] ReadLints passes — DONE
-- [x] `docs/UX-IA-28-CHECKPOINT.md` created — DONE
+- [x] UX-IA-28 registered in TASKS.md and TASKS_BACKLOG_FULL.md ?X DONE
+- [x] Clicking Move to workspace opens focused Move Project panel ?X DONE
+- [x] Clicking Sharing / visibility opens focused Visibility panel ?X DONE
+- [x] Existing handlers reused: `onMoveWorkspaceProject`, `onUpdateWorkspaceProjectVisibility` ?X DONE
+- [x] Panels include Cancel and primary action buttons ?X DONE
+- [x] Cancel returns to Projects view ?X DONE
+- [x] Successful action returns to Projects view ?X DONE
+- [x] Project card open behavior preserved ?X DONE
+- [x] Old HistoryProjectPanel controls preserved ?X DONE
+- [x] All new text added to en.json, zh-TW.json, zh-CN.json ?X DONE
+- [x] No hardcoded English user-facing copy ?X DONE
+- [x] `npx tsc --noEmit` passes ?X DONE
+- [x] `npm test` passes (512/512) ?X DONE
+- [x] ReadLints passes ?X DONE
+- [x] `docs/UX-IA-28-CHECKPOINT.md` created ?X DONE
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-28.
 **Checkpoint:** `docs/UX-IA-28-CHECKPOINT.md`
 
 ---
 
-#### UX-IA-29: Remove Legacy My Projects Admin Panel from Projects Page — COMPLETE and LOCKED
+#### UX-IA-29: Remove Legacy My Projects Admin Panel from Projects Page ?X COMPLETE and LOCKED
 
 **Status:** COMPLETE and LOCKED
 **Task ID:** UX-IA-29
@@ -14742,7 +14744,7 @@ Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npm test
 **Priority:** Low
 **Nature:** FRONTEND-ONLY / UX IA CLEANUP
 **Risk:** Low
-**Depends on:** UX-IA-28 (COMPLETE and LOCKED — `docs/UX-IA-28-CHECKPOINT.md`)
+**Depends on:** UX-IA-28 (COMPLETE and LOCKED ?X `docs/UX-IA-28-CHECKPOINT.md`)
 
 **Problem:**
 The Projects page still renders the old HistoryProjectPanel / My Projects admin panel (New project name / Create Project, project selector / Open Project, Move to Workspace, Sharing / Visibility, Public Projects / View / Fork). This surface is now redundant: the workspace dropdown handles workspace selection, the focused Create Workspace panel handles workspace creation, project cards handle open/create, the card "..." menu + focused panels handle Move and Visibility, and Templates & Community is the intended home for public/shared projects.
@@ -14774,18 +14776,18 @@ Remove/hide the legacy My Projects admin panel from the Projects page only. Keep
 Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npx tsc --noEmit
 Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npm test
 ```
-- `ReadLints` on touched files — 0 new errors
+- `ReadLints` on touched files ?X 0 new errors
 
 **Acceptance checks:**
-- [x] UX-IA-29 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
-- [x] Legacy My Projects admin panel removed from Projects page render — DONE
-- [x] `HistoryProjectPanel` still present in active project/session and aside context — DONE
-- [x] workspace-projects-surface, project cards, card "..." menu, focused Move and Visibility panels all preserved — DONE
-- [x] No new visible text / no i18n changes — DONE
-- [x] `npx tsc --noEmit` passes — DONE
-- [x] `npm test` passes (511/511) — DONE
-- [x] ReadLints passes — 0 new errors — DONE
-- [x] `docs/UX-IA-29-CHECKPOINT.md` created — DONE
+- [x] UX-IA-29 registered in TASKS.md and TASKS_BACKLOG_FULL.md ?X DONE
+- [x] Legacy My Projects admin panel removed from Projects page render ?X DONE
+- [x] `HistoryProjectPanel` still present in active project/session and aside context ?X DONE
+- [x] workspace-projects-surface, project cards, card "..." menu, focused Move and Visibility panels all preserved ?X DONE
+- [x] No new visible text / no i18n changes ?X DONE
+- [x] `npx tsc --noEmit` passes ?X DONE
+- [x] `npm test` passes (511/511) ?X DONE
+- [x] ReadLints passes ?X 0 new errors ?X DONE
+- [x] `docs/UX-IA-29-CHECKPOINT.md` created ?X DONE
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-29.
 **Checkpoint:** `docs/UX-IA-29-CHECKPOINT.md`
@@ -14800,7 +14802,7 @@ Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npm test
 **Priority:** Low
 **Nature:** FRONTEND-ONLY / UX REGRESSION FIX
 **Risk:** Low
-**Depends on:** UX-IA-29 (COMPLETE and LOCKED — `docs/UX-IA-29-CHECKPOINT.md`), UX-IA-28 (COMPLETE and LOCKED — `docs/UX-IA-28-CHECKPOINT.md`)
+**Depends on:** UX-IA-29 (COMPLETE and LOCKED ?X `docs/UX-IA-29-CHECKPOINT.md`), UX-IA-28 (COMPLETE and LOCKED ?X `docs/UX-IA-28-CHECKPOINT.md`)
 
 **Problem:**
 On the Projects page, clicking a project card "..." menu action (Move to workspace, Sharing / visibility) does not show the focused panel immediately. The focused panel only appears after refreshing the page.
@@ -14828,15 +14830,15 @@ Make focused Move / Visibility panels appear immediately even when `projectActio
 - No legacy admin panel restoration
 
 **Acceptance criteria:**
-- [x] UX-IA-30 registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
-- [x] Clicking Move to workspace shows focused Move panel immediately even when `projectActionState` is already `'success'` — DONE
-- [x] Clicking Sharing / visibility shows focused Visibility panel immediately even when `projectActionState` is already `'success'` — DONE
-- [x] No regression on focused panel cancel behavior — DONE
-- [x] No regression on success-state panel-close behavior (panel still closes after actual move/visibility update) — DONE
-- [x] No regression on Projects page, card open, card menu — DONE
-- [x] `npx tsc --noEmit` passes — DONE
-- [x] `npm test` passes — DONE
-- [x] ReadLints clean on changed files — DONE
+- [x] UX-IA-30 registered in TASKS.md and TASKS_BACKLOG_FULL.md ?X DONE
+- [x] Clicking Move to workspace shows focused Move panel immediately even when `projectActionState` is already `'success'` ?X DONE
+- [x] Clicking Sharing / visibility shows focused Visibility panel immediately even when `projectActionState` is already `'success'` ?X DONE
+- [x] No regression on focused panel cancel behavior ?X DONE
+- [x] No regression on success-state panel-close behavior (panel still closes after actual move/visibility update) ?X DONE
+- [x] No regression on Projects page, card open, card menu ?X DONE
+- [x] `npx tsc --noEmit` passes ?X DONE
+- [x] `npm test` passes ?X DONE
+- [x] ReadLints clean on changed files ?X DONE
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-30.
 **Checkpoint:** `docs/UX-IA-30-CHECKPOINT.md`
@@ -14851,7 +14853,7 @@ Make focused Move / Visibility panels appear immediately even when `projectActio
 **Priority:** Medium
 **Nature:** FRONTEND-ONLY / UX NAVIGATION POLISH
 **Risk:** Low-Medium
-**Depends on:** AUTH-UX-01 (COMPLETE and LOCKED — `docs/AUTH-UX-01-CHECKPOINT.md`), UX-IA-30 (COMPLETE and LOCKED — `docs/UX-IA-30-CHECKPOINT.md`)
+**Depends on:** AUTH-UX-01 (COMPLETE and LOCKED ?X `docs/AUTH-UX-01-CHECKPOINT.md`), UX-IA-30 (COMPLETE and LOCKED ?X `docs/UX-IA-30-CHECKPOINT.md`)
 **Checkpoint:** `docs/UX-IA-31-CHECKPOINT.md`
 
 **Problem:**
@@ -14876,12 +14878,12 @@ Add icons to main sidebar navigation/tool/agent items and add a top-right sideba
 - Compact mode: main items show icon only; words hidden for main items; Recent projects section hidden; individual project rows hidden; Advanced hidden
 - Preserve existing navigation behavior and active/selected visual state
 - Toggle must be keyboard/click accessible
-- All new visible text, aria-labels, and tooltip strings must be added to all three locale files and wired through existing message pattern — no hardcoded English
+- All new visible text, aria-labels, and tooltip strings must be added to all three locale files and wired through existing message pattern ?X no hardcoded English
 
 **Icon standard:**
 - Use Heroicons v2 Outline icons (`@heroicons/react/24/outline`)
 - Do not use Lucide, Font Awesome, Material Icons, inline SVGs, or emoji unless explicitly approved
-- Match Heroicons outline style: 24×24 viewBox, `stroke="currentColor"`, `fill="none"`, `strokeWidth={2}`, `strokeLinecap="round"`, `strokeLinejoin="round"`
+- Match Heroicons outline style: 24??24 viewBox, `stroke="currentColor"`, `fill="none"`, `strokeWidth={2}`, `strokeLinecap="round"`, `strokeLinejoin="round"`
 - Size with Tailwind: `w-4 h-4`, `w-5 h-5`, or `w-6 h-6`
 - Color via Tailwind text classes (e.g. `text-gray-600`, `text-blue-600`)
 - During implementation, first inspect `frontend/package.json` to confirm `@heroicons/react` is already installed; if missing, add it as a frontend dependency using the existing package manager/lockfile pattern
@@ -14930,7 +14932,7 @@ From `C:\Users\knlee\aiSandBox2026B\frontend`:
 **Priority:** Medium
 **Nature:** FRONTEND-ONLY / UX NAVIGATION BEHAVIOR
 **Risk:** Low
-**Depends on:** UX-IA-31 (COMPLETE and LOCKED — `docs/UX-IA-31-CHECKPOINT.md`), HOME-START-01 (COMPLETE and LOCKED)
+**Depends on:** UX-IA-31 (COMPLETE and LOCKED ?X `docs/UX-IA-31-CHECKPOINT.md`), HOME-START-01 (COMPLETE and LOCKED)
 **Checkpoint:** `docs/UX-IA-32-CHECKPOINT.md`
 
 **Problem:**
@@ -14948,7 +14950,7 @@ When entering the Project Workspace, the sidebar should start in compact mode au
 - Add `initialCompact?: boolean` prop to `WorkspaceSidebar`
 - `WorkspaceSidebar` `useState` initializer reads `props.initialCompact ?? false`
 - `WorkspaceShell` passes `initialCompact={resolvedWorkspaceView === 'project'}` to `WorkspaceSidebar`
-- Reactive `useEffect` on `props.workspaceView` compacts on non-project → project transition for already-mounted sidebar
+- Reactive `useEffect` on `props.workspaceView` compacts on non-project ?? project transition for already-mounted sidebar
 - Home / Projects / Templates views keep existing expanded default behavior
 - User can still manually toggle compact/expanded after initial render
 - No new visible text
@@ -14982,10 +14984,10 @@ When entering the Project Workspace, the sidebar should start in compact mode au
 
 **Validation:**
 From `C:\Users\knlee\aiSandBox2026B\frontend`:
-- `npx tsc --noEmit` — PASS
-- `npm test` — PASS
-- ReadLints — PASS
-- Live browser test — PASS
+- `npx tsc --noEmit` ?X PASS
+- `npm test` ?X PASS
+- ReadLints ?X PASS
+- Live browser test ?X PASS
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-32. See `docs/UX-IA-32-CHECKPOINT.md`.
 
@@ -14999,7 +15001,7 @@ From `C:\Users\knlee\aiSandBox2026B\frontend`:
 **Priority:** High
 **Nature:** FRONTEND-ONLY / PROJECT WORKSPACE CHAT UX
 **Risk:** Medium
-**Depends on:** UX-IA-32 (COMPLETE and LOCKED — `docs/UX-IA-32-CHECKPOINT.md`)
+**Depends on:** UX-IA-32 (COMPLETE and LOCKED ?X `docs/UX-IA-32-CHECKPOINT.md`)
 **Checkpoint:** `docs/UX-IA-33-CHECKPOINT.md`
 
 **Problem:**
@@ -15059,8 +15061,8 @@ Restructure `WorkspaceChatPanel` into a professional AI conversation surface:
 - [x] No backend changes
 
 **Validation:**
-- `npx tsc --noEmit` — frontend
-- `npm test` — frontend
+- `npx tsc --noEmit` ?X frontend
+- `npm test` ?X frontend
 - ReadLints
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-33. See `docs/UX-IA-33-CHECKPOINT.md`.
@@ -15075,7 +15077,7 @@ Restructure `WorkspaceChatPanel` into a professional AI conversation surface:
 **Priority:** Low
 **Nature:** FRONTEND-ONLY / PROJECT WORKSPACE IA CLEANUP
 **Risk:** Low
-**Depends on:** UX-IA-33 (COMPLETE and LOCKED — `docs/UX-IA-33-CHECKPOINT.md`)
+**Depends on:** UX-IA-33 (COMPLETE and LOCKED ?X `docs/UX-IA-33-CHECKPOINT.md`)
 **Checkpoint:** `docs/UX-IA-34-CHECKPOINT.md`
 
 **Problem:**
@@ -15123,9 +15125,9 @@ Move Command Input into `WorkspaceAdvancedDrawer` so it is hidden by default and
 - [x] No backend changes
 
 **Validation:**
-- `npx tsc --noEmit` — PASS
-- `npm test` — PASS (563/563)
-- ReadLints — PASS
+- `npx tsc --noEmit` ?X PASS
+- `npm test` ?X PASS (563/563)
+- ReadLints ?X PASS
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-34. See `docs/UX-IA-34-CHECKPOINT.md`.
 
@@ -15139,7 +15141,7 @@ Move Command Input into `WorkspaceAdvancedDrawer` so it is hidden by default and
 **Priority:** Medium
 **Nature:** FRONTEND-ONLY / PROJECT WORKSPACE IA CLEANUP
 **Risk:** Low-Medium
-**Depends on:** UX-IA-34 (COMPLETE and LOCKED — `docs/UX-IA-34-CHECKPOINT.md`)
+**Depends on:** UX-IA-34 (COMPLETE and LOCKED ?X `docs/UX-IA-34-CHECKPOINT.md`)
 **Checkpoint:** `docs/UX-IA-35-CHECKPOINT.md`
 
 **Problem:**
@@ -15201,10 +15203,10 @@ Move Build Targets out of the chat panel and into a compact project-level toolba
 - [x] Component uses the existing translation hook/pattern
 
 **Validation:**
-- `npx tsc --noEmit` — PASS
-- `npm test` — PASS (567/567)
-- ReadLints — PASS
-- Live browser test — PASS
+- `npx tsc --noEmit` ?X PASS
+- `npm test` ?X PASS (567/567)
+- ReadLints ?X PASS
+- Live browser test ?X PASS
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-35. See `docs/UX-IA-35-CHECKPOINT.md`.
 
@@ -15218,7 +15220,7 @@ Move Build Targets out of the chat panel and into a compact project-level toolba
 **Priority:** Medium
 **Nature:** FRONTEND-ONLY / PROJECT WORKSPACE IA CLEANUP
 **Risk:** Low-Medium
-**Depends on:** UX-IA-35 (COMPLETE and LOCKED — `docs/UX-IA-35-CHECKPOINT.md`)
+**Depends on:** UX-IA-35 (COMPLETE and LOCKED ?X `docs/UX-IA-35-CHECKPOINT.md`)
 **Checkpoint:** `docs/UX-IA-36-CHECKPOINT.md`
 
 **Problem:**
@@ -15236,9 +15238,9 @@ Replace the Chat/History tab toggle with a small History icon button (`ClockIcon
 
 **Scope:**
 - Remove Chat/History segmented tab toggle (`data-testid="workspace-ai-panel-toggle"`) from AI panel
-- Add `ClockIcon` button (`@heroicons/react/24/outline`) to Project Workspace header near the collapse toggle — `data-testid="workspace-history-drawer-toggle"`
-- Add right-side drawer overlay for history content — `data-testid="workspace-history-drawer"`, `data-testid="workspace-history-drawer-backdrop"`
-- Add `XMarkIcon` close button — `data-testid="workspace-history-drawer-close"` — and backdrop click-to-close
+- Add `ClockIcon` button (`@heroicons/react/24/outline`) to Project Workspace header near the collapse toggle ?X `data-testid="workspace-history-drawer-toggle"`
+- Add right-side drawer overlay for history content ?X `data-testid="workspace-history-drawer"`, `data-testid="workspace-history-drawer-backdrop"`
+- Add `XMarkIcon` close button ?X `data-testid="workspace-history-drawer-close"` ?X and backdrop click-to-close
 - Add i18n keys: `project.openHistory`, `project.closeHistory` to `en.json`, `zh-TW.json`, `zh-CN.json`
 - Replace `aiPanelView` state with `historyDrawerOpen` boolean state
 - Chat content always visible in AI panel (no hidden toggle)
@@ -15267,7 +15269,7 @@ Replace the Chat/History tab toggle with a small History icon button (`ClockIcon
 - [x] UX-IA-36 registered in TASKS.md and TASKS_BACKLOG_FULL.md
 - [x] Chat/History segmented tab toggle removed from AI panel
 - [x] `ClockIcon` / `ChatBubbleLeftIcon` toggle button in chat panel top-right (`data-testid="workspace-history-drawer-toggle"`)
-- [x] History content replaces chat panel content in-panel (no drawer — scope evolved from drawer to in-panel replacement after live UX review)
+- [x] History content replaces chat panel content in-panel (no drawer ?X scope evolved from drawer to in-panel replacement after live UX review)
 - [x] Chat content always visible in AI panel without any view toggle
 - [x] `project.openHistory`, `project.closeHistory`, `project.backToChat` added to `en.json`, `zh-TW.json`, `zh-CN.json`
 - [x] All existing `history-*` child data-testid values preserved
@@ -15276,10 +15278,10 @@ Replace the Chat/History tab toggle with a small History icon button (`ClockIcon
 - [x] All existing history/checkpoint/revert/diff/compare/pin/snapshot/project behavior preserved
 - [x] Chat/history panel owns internal scrollbar (top-level height chain fixed via `h-full` on html/body, `h-screen` on workspace-shell)
 - [x] Chat input composer pinned to bottom of chat panel
-- [x] `npx tsc --noEmit` — PASS
-- [x] `npm test` — PASS (576/576)
-- [x] ReadLints — PASS
-- [x] Live browser smoke test — PASS
+- [x] `npx tsc --noEmit` ?X PASS
+- [x] `npm test` ?X PASS (576/576)
+- [x] ReadLints ?X PASS
+- [x] Live browser smoke test ?X PASS
 
 **Validation commands:**
 ```powershell
@@ -15300,7 +15302,7 @@ git -C "C:\Users\knlee\aiSandBox2026B" restore -- frontend/tsconfig.tsbuildinfo
 **Priority:** Low
 **Nature:** FRONTEND-ONLY / PROJECT WORKSPACE CLUTTER CLEANUP
 **Risk:** Low
-**Depends on:** UX-IA-36 (COMPLETE and LOCKED — `docs/UX-IA-36-CHECKPOINT.md`)
+**Depends on:** UX-IA-36 (COMPLETE and LOCKED ?X `docs/UX-IA-36-CHECKPOINT.md`)
 **Checkpoint:** `docs/UX-IA-37-CHECKPOINT.md`
 
 **Problem:**
@@ -15339,10 +15341,10 @@ Hide only the ready-state success box by returning `null` from `ShellStateMessag
 - [x] "Workspace ready" box no longer appears in normal operating state
 - [x] Loading, error, and empty/no-session state messages still render correctly
 - [x] `assert.doesNotMatch(html, /Workspace ready/)` added to baseline ready-state render test
-- [x] `npx tsc --noEmit` — PASS
-- [x] `npm test` — PASS (576/576)
-- [x] ReadLints — PASS
-- [x] Live browser test — PASS
+- [x] `npx tsc --noEmit` ?X PASS
+- [x] `npm test` ?X PASS (576/576)
+- [x] ReadLints ?X PASS
+- [x] Live browser test ?X PASS
 
 **Validation commands:**
 ```powershell
@@ -15363,7 +15365,7 @@ git -C "C:\Users\knlee\aiSandBox2026B" restore -- frontend/tsconfig.tsbuildinfo
 **Priority:** Low
 **Nature:** FRONTEND-ONLY / PROJECT WORKSPACE CLUTTER CLEANUP
 **Risk:** Low
-**Depends on:** UX-IA-37 (COMPLETE and LOCKED — `docs/UX-IA-37-CHECKPOINT.md`)
+**Depends on:** UX-IA-37 (COMPLETE and LOCKED ?X `docs/UX-IA-37-CHECKPOINT.md`)
 **Checkpoint:** `docs/UX-IA-38-CHECKPOINT.md`
 
 **Problem:**
@@ -15377,15 +15379,15 @@ Remove the visual trust note box from all render locations in `workspace-shell.t
 - `frontend/components/workspace/workspace-shell.test.tsx`
 
 **Scope:**
-- Remove the `projectTrustNote` JSX variable (lines ~1126–1137).
+- Remove the `projectTrustNote` JSX variable (lines ~1126?V1137).
 - Remove `{projectTrustNote}` from `projectWorkspaceContent` (desktop layout, line ~1301).
-- Remove the inline `workspace-trust-note` block from `projectsWorkspaceContent` (lines ~1387–1394).
+- Remove the inline `workspace-trust-note` block from `projectsWorkspaceContent` (lines ~1387?V1394).
 - Remove `{projectTrustNote}` from the mobile/responsive project layout (line ~2080).
 - Update test `'renders build targets toolbar between project header and trust note in project view'`: rename, remove trust note ordering assertion.
 - Update test `'renders project-first recovery wording in main helper surfaces'`: remove the `trustNote` text assertion.
 - Update test `'renders trust note and responsive layout classes'`: rename, remove legacy trust note text assertion.
 - Add new regression test confirming `workspace-trust-note` is absent in project view.
-- Preserve `trustNote` key in all three locale JSON files — no i18n changes.
+- Preserve `trustNote` key in all three locale JSON files ?X no i18n changes.
 - Preserve all real recovery, checkpoint, history, restore, and error-state behavior.
 
 **Non-goals:**
@@ -15405,7 +15407,7 @@ Remove the visual trust note box from all render locations in `workspace-shell.t
 - [x] `projectTrustNote` JSX variable removed
 - [x] All three test blocks updated; new regression test added
 - [x] `npx tsc --noEmit` passes
-- [x] `npm test` passes — 577 tests, 577 pass, 0 fail
+- [x] `npm test` passes ?X 577 tests, 577 pass, 0 fail
 - [x] ReadLints passes
 - [x] No i18n files changed
 - [x] No unrelated files changed
@@ -15430,7 +15432,7 @@ git -C "C:\Users\knlee\aiSandBox2026B" restore -- frontend/tsconfig.tsbuildinfo
 **Priority:** Medium
 **Nature:** FRONTEND-ONLY / PROJECT WORKSPACE IA CLEANUP
 **Risk:** Low-Medium
-**Depends on:** UX-IA-38 (COMPLETE and LOCKED — `docs/UX-IA-38-CHECKPOINT.md`)
+**Depends on:** UX-IA-38 (COMPLETE and LOCKED ?X `docs/UX-IA-38-CHECKPOINT.md`)
 
 **Problem:**
 Build Targets currently renders as a full-width `projectBuildToolbar` between the Project Workspace header and the main content split. This visually clutters the whole screen. Build Targets belongs closer to the preview/build surface, not as a global project-level toolbar.
@@ -15442,7 +15444,7 @@ Move `WorkspaceBuildPanel` / Build Targets into the `WorkspacePreviewPanel` head
 - Remove `projectBuildToolbar` from the full-width position between the project mode header and the content split (line ~2057 in `workspace-shell.tsx`).
 - Remove `projectBuildToolbar` from `projectWorkspaceContent` legacy grid fallback (line ~1287).
 - Render `WorkspaceBuildPanel` inside `WorkspacePreviewPanel`'s existing header row (`<div className="mb-2 flex items-center justify-between gap-2">`), threading the required props down through `WorkspacePreviewPanel`.
-- Reuse existing i18n keys (`workspace.buildTargets`, `workspace.buildTargetLabel`, `workspace.runBuild`, `workspace.building`) — no new keys.
+- Reuse existing i18n keys (`workspace.buildTargets`, `workspace.buildTargetLabel`, `workspace.runBuild`, `workspace.building`) ?X no new keys.
 - Preserve all existing build behavior and handlers.
 - Preserve all existing build `data-testid` values: `workspace-build-panel`, `workspace-build-target-selector`, `workspace-build-trigger`, `workspace-build-status`, `workspace-build-error`, `workspace-build-output`.
 - Keep mobile/responsive layout safe.
@@ -15489,11 +15491,89 @@ git -C "C:\Users\knlee\aiSandBox2026B" restore -- frontend/tsconfig.tsbuildinfo
 **Live browser test:** PASS
 ---
 
-## WORKSPACE — Default Workspace Invariant
+#### UX-PV-01: Preview Auto-Start and First-Load Error Resilience
 
-**Family status:** COMPLETE and LOCKED — WORKSPACE-DEFAULT-01 COMPLETE and LOCKED
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/UX-PV-01-CHECKPOINT.md`
+**Task ID:** UX-PV-01
+**Family:** UX-PV
+**Priority:** High
+**Nature:** FRONTEND-ONLY / PREVIEW UX RELIABILITY
+**Risk:** Medium
+**Depends on:** UX-IA-39 (COMPLETE and LOCKED ? `docs/UX-IA-39-CHECKPOINT.md`)
 
-**Current stage:** WORKSPACE-DEFAULT-01 (COMPLETE and LOCKED — `docs/WORKSPACE-DEFAULT-01-CHECKPOINT.md`)
+**Problem:**
+1. When a project is opened, Preview does not auto-start. Users must press Start Preview manually.
+2. After pressing Start Preview, the first iframe load often shows Preview error because the dev server is still booting.
+3. Pressing Refresh usually works because the dev server has finished booting by then.
+4. This creates a broken first-use Preview experience.
+
+**Root cause:**
+- Project open currently checks preview status but does not auto-start preview when unavailable.
+- `GET /status` can return `running: true` while backend preview status is still starting.
+- Frontend renders iframe too early.
+- `handlePreviewError` immediately escalates first iframe failure to `previewState='error'` instead of retrying.
+
+**Objective:**
+Make Preview auto-start when a project/session is opened and make first-load iframe errors retry silently before showing Preview error.
+
+**Files in scope:**
+- `frontend/app/[locale]/app/page.tsx`
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+**Scope:**
+- Auto-start preview when a project/session is opened and preview is unavailable.
+- Keep Preview in loading/starting state during boot.
+- Add short retry behavior for first iframe load failure before showing Preview error.
+- Preserve Start Preview and Refresh as manual fallbacks.
+- Preserve existing preview test IDs and behavior where possible.
+- Add i18n only if new visible text is needed.
+
+**Non-goals:**
+- No backend changes unless implementation proves frontend-only is impossible.
+- No Chat/History changes.
+- No Build Targets changes.
+- No Command Input changes.
+- No sidebar changes.
+- No tab-registry/tab-bar changes.
+- No checkpoint/history/file-tree changes.
+
+**Acceptance criteria:**
+- [x] UX-PV-01 registered in TASKS.md and TASKS_BACKLOG_FULL.md as ACTIVE
+- [x] Preview auto-starts on project open when preview is not already running
+- [x] Preview remains in loading/starting state during dev server boot
+- [x] First iframe load failure retries silently before escalating to error state
+- [x] Start Preview and Refresh manual fallbacks still work
+- [x] Existing preview test IDs preserved
+- [x] `npx tsc --noEmit` PASS
+- [x] `npm test` PASS (589/589, 0 fail)
+- [x] ReadLints PASS
+- [x] Live browser test PASS
+
+**Validation commands:**
+```powershell
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npx tsc --noEmit
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npm test
+git -C "C:\Users\knlee\aiSandBox2026B" restore -- frontend/tsconfig.tsbuildinfo
+```
+
+**Validation results:** `npx tsc --noEmit` PASS. `npm test` 589/589 PASS. ReadLints PASS. tsconfig.tsbuildinfo restored.
+
+**Live browser test:** PASS
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-PV-01. Depends on: `docs/UX-IA-39-CHECKPOINT.md`.
+
+---
+
+## WORKSPACE ?X Default Workspace Invariant
+
+**Family status:** COMPLETE and LOCKED ?X WORKSPACE-DEFAULT-01 COMPLETE and LOCKED
+
+**Current stage:** WORKSPACE-DEFAULT-01 (COMPLETE and LOCKED ?X `docs/WORKSPACE-DEFAULT-01-CHECKPOINT.md`)
 
 ---
 
@@ -15502,10 +15582,10 @@ git -C "C:\Users\knlee\aiSandBox2026B" restore -- frontend/tsconfig.tsbuildinfo
 **Status:** COMPLETE and LOCKED
 **Task ID:** WORKSPACE-DEFAULT-01
 **Family:** WORKSPACE
-**Priority:** High — blocking user flow
+**Priority:** High ?X blocking user flow
 **Nature:** BACKEND-ONLY / BLOCKING USER FLOW BUG
 **Risk:** Medium
-**Depends on:** UX-IA-23 (COMPLETE and LOCKED — `docs/UX-IA-23-CHECKPOINT.md`)
+**Depends on:** UX-IA-23 (COMPLETE and LOCKED ?X `docs/UX-IA-23-CHECKPOINT.md`)
 
 **Problem:**
 Some users have zero workspaces because the WS-01 migration backfilled existing users only; current user-creation paths in `auth.service.ts` do not create a default workspace for new users. When project creation is called without an explicit `workspaceId`, `ProjectsService.createProject` falls back to a default workspace lookup that throws `NotFoundException("Default workspace for user ... not found.")`, blocking the user from creating any project.
@@ -15544,9 +15624,9 @@ Restore the backend invariant that every active user can resolve a default Perso
 - No TASK-75A work
 
 **Validation:**
-- `Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm test` — must pass
-- `Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm run build` — must pass
-- `ReadLints` on touched files — 0 new errors
+- `Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm test` ?X must pass
+- `Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm run build` ?X must pass
+- `ReadLints` on touched files ?X 0 new errors
 
 **Acceptance checks:**
 - [x] `ensureDefaultWorkspaceForUser` returns existing default without side effects when one exists
@@ -15563,25 +15643,25 @@ Restore the backend invariant that every active user can resolve a default Perso
 
 ---
 
-**Family status:** COMPLETE and LOCKED — AUTH-MODULE-01 COMPLETE and LOCKED — AUTH-MODULE-02 COMPLETE and LOCKED — CHECKPOINT-LEDGER-01 COMPLETE and LOCKED — AUTH-MODULE-03 COMPLETE and LOCKED
+**Family status:** COMPLETE and LOCKED ?X AUTH-MODULE-01 COMPLETE and LOCKED ?X AUTH-MODULE-02 COMPLETE and LOCKED ?X CHECKPOINT-LEDGER-01 COMPLETE and LOCKED ?X AUTH-MODULE-03 COMPLETE and LOCKED
 
-**Current stage:** AUTH family COMPLETE and LOCKED — see next active family
+**Current stage:** AUTH family COMPLETE and LOCKED ?X see next active family
 
 **Registered tasks:**
-1. AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps (COMPLETE and LOCKED — `docs/AUTH-MODULE-01-CHECKPOINT.md`)
-   - AUTH-MODULE-01A — Auth Template Registry Foundation (COMPLETE and LOCKED — `docs/AUTH-MODULE-01A-CHECKPOINT.md`)
-   - AUTH-MODULE-01B — Framework Detection & Eligibility Check (COMPLETE and LOCKED — `docs/AUTH-MODULE-01B-CHECKPOINT.md`)
-   - AUTH-MODULE-01C — Template File Generation Engine (COMPLETE and LOCKED — `docs/AUTH-MODULE-01C-CHECKPOINT.md`)
-   - AUTH-MODULE-01D — Auth Module Install Flow Integration (COMPLETE and LOCKED — `docs/AUTH-MODULE-01D-CHECKPOINT.md`)
-   - AUTH-MODULE-01E — AI Prompt Recognition & UX Polish (COMPLETE and LOCKED — `docs/AUTH-MODULE-01E-CHECKPOINT.md`)
-   - AUTH-MODULE-01Z — Validation & Consolidation (COMPLETE and LOCKED — `docs/AUTH-MODULE-01Z-CHECKPOINT.md`)
-2. AUTH-MODULE-02 — Auth Module Live Smoke Blockers (COMPLETE and LOCKED — `docs/AUTH-MODULE-02-CHECKPOINT.md`)
-   - AUTH-MODULE-02A — Support Next.js Bracket Route File Paths (COMPLETE and LOCKED — `docs/AUTH-MODULE-02A-CHECKPOINT.md`)
-   - AUTH-MODULE-02B — Checkpoint Revert Has No Effect (COMPLETE and LOCKED — `docs/AUTH-MODULE-02B-CHECKPOINT.md`)
-3. CHECKPOINT-LEDGER-01 — Fix Internal Git Checkpoint Ledger session_id Null (COMPLETE and LOCKED — `docs/CHECKPOINT-LEDGER-01-CHECKPOINT.md`)
-4. AUTH-MODULE-03 — Auth Module Final Live Smoke Fixes (COMPLETE and LOCKED — `docs/AUTH-MODULE-03-CHECKPOINT.md`)
-   - AUTH-MODULE-03A — Pre-install Auth Module Checkpoint Missing (COMPLETE and LOCKED — `docs/AUTH-MODULE-03A-CHECKPOINT.md`)
-   - AUTH-MODULE-03B — Friendly Unsupported Message for Missing package.json (COMPLETE and LOCKED — `docs/AUTH-MODULE-03B-CHECKPOINT.md`)
+1. AUTH-MODULE-01 ?X Reusable App-Auth Module for aiSandBox-Created Apps (COMPLETE and LOCKED ?X `docs/AUTH-MODULE-01-CHECKPOINT.md`)
+   - AUTH-MODULE-01A ?X Auth Template Registry Foundation (COMPLETE and LOCKED ?X `docs/AUTH-MODULE-01A-CHECKPOINT.md`)
+   - AUTH-MODULE-01B ?X Framework Detection & Eligibility Check (COMPLETE and LOCKED ?X `docs/AUTH-MODULE-01B-CHECKPOINT.md`)
+   - AUTH-MODULE-01C ?X Template File Generation Engine (COMPLETE and LOCKED ?X `docs/AUTH-MODULE-01C-CHECKPOINT.md`)
+   - AUTH-MODULE-01D ?X Auth Module Install Flow Integration (COMPLETE and LOCKED ?X `docs/AUTH-MODULE-01D-CHECKPOINT.md`)
+   - AUTH-MODULE-01E ?X AI Prompt Recognition & UX Polish (COMPLETE and LOCKED ?X `docs/AUTH-MODULE-01E-CHECKPOINT.md`)
+   - AUTH-MODULE-01Z ?X Validation & Consolidation (COMPLETE and LOCKED ?X `docs/AUTH-MODULE-01Z-CHECKPOINT.md`)
+2. AUTH-MODULE-02 ?X Auth Module Live Smoke Blockers (COMPLETE and LOCKED ?X `docs/AUTH-MODULE-02-CHECKPOINT.md`)
+   - AUTH-MODULE-02A ?X Support Next.js Bracket Route File Paths (COMPLETE and LOCKED ?X `docs/AUTH-MODULE-02A-CHECKPOINT.md`)
+   - AUTH-MODULE-02B ?X Checkpoint Revert Has No Effect (COMPLETE and LOCKED ?X `docs/AUTH-MODULE-02B-CHECKPOINT.md`)
+3. CHECKPOINT-LEDGER-01 ?X Fix Internal Git Checkpoint Ledger session_id Null (COMPLETE and LOCKED ?X `docs/CHECKPOINT-LEDGER-01-CHECKPOINT.md`)
+4. AUTH-MODULE-03 ?X Auth Module Final Live Smoke Fixes (COMPLETE and LOCKED ?X `docs/AUTH-MODULE-03-CHECKPOINT.md`)
+   - AUTH-MODULE-03A ?X Pre-install Auth Module Checkpoint Missing (COMPLETE and LOCKED ?X `docs/AUTH-MODULE-03A-CHECKPOINT.md`)
+   - AUTH-MODULE-03B ?X Friendly Unsupported Message for Missing package.json (COMPLETE and LOCKED ?X `docs/AUTH-MODULE-03B-CHECKPOINT.md`)
 
 ---
 
@@ -15591,29 +15671,29 @@ Restore the backend invariant that every active user can resolve a default Perso
 **Task ID:** AUTH-MODULE-01
 **Family:** AUTH
 **Priority:** High
-**Risk:** High — template generation, framework detection, rollback/checkpoint integration
+**Risk:** High ?X template generation, framework detection, rollback/checkpoint integration
 **Model:** GPT-5.3 Codex (confirmed during plan phase)
-**Depends on:** AUTH-APP-01 (VALIDATION COMPLETE — carry-forwards pending); AUTH-APP-02 through AUTH-APP-02D (COMPLETE and LOCKED); UX-IA-08 through UX-IA-10 (COMPLETE and LOCKED); AI-WS file-action system (COMPLETE and LOCKED)
+**Depends on:** AUTH-APP-01 (VALIDATION COMPLETE ?X carry-forwards pending); AUTH-APP-02 through AUTH-APP-02D (COMPLETE and LOCKED); UX-IA-08 through UX-IA-10 (COMPLETE and LOCKED); AI-WS file-action system (COMPLETE and LOCKED)
 **Checkpoint:** `docs/AUTH-MODULE-01-CHECKPOINT.md` (created at AUTH-MODULE-01Z)
 
 **Plan decisions (confirmed 2026-05-19):**
-- Strategy: deterministic frontend template registry — not AI-hallucinated auth code
+- Strategy: deterministic frontend template registry ?X not AI-hallucinated auth code
 - v1 stack: Next.js + Auth.js v5 + PostgreSQL + Prisma adapter
-- Backend changes: none — uses existing writeWorkspaceFile / checkpoint / coherence flow
+- Backend changes: none ?X uses existing writeWorkspaceFile / checkpoint / coherence flow
 - Pre-install checkpoint required before applying template files
 - No auto-run migrations; user runs `npx prisma db push` manually
 - No new aiSandBox platform dependencies
 - Generated apps must not reference `aisandbox_session`, `aisandbox_csrf`, `X-Internal-Service-Key`, `SessionCookieGuard`, `CsrfGuard`, `PreviewOwnershipGuard`, or any platform OAuth/session mechanism
 
 **Child slices:**
-- AUTH-MODULE-01A — Auth Template Registry Foundation (COMPLETE and LOCKED — `docs/AUTH-MODULE-01A-CHECKPOINT.md`)
-- AUTH-MODULE-01B — Framework Detection & Eligibility Check (COMPLETE and LOCKED — `docs/AUTH-MODULE-01B-CHECKPOINT.md`)
-- AUTH-MODULE-01C — Template File Generation Engine (COMPLETE and LOCKED — `docs/AUTH-MODULE-01C-CHECKPOINT.md`)
-- AUTH-MODULE-01D — Auth Module Install Flow Integration (COMPLETE and LOCKED — `docs/AUTH-MODULE-01D-CHECKPOINT.md`)
-- AUTH-MODULE-01E — AI Prompt Recognition & UX Polish (COMPLETE and LOCKED — `docs/AUTH-MODULE-01E-CHECKPOINT.md`)
-- AUTH-MODULE-01Z — Validation & Consolidation (COMPLETE and LOCKED — `docs/AUTH-MODULE-01Z-CHECKPOINT.md`)
+- AUTH-MODULE-01A ?X Auth Template Registry Foundation (COMPLETE and LOCKED ?X `docs/AUTH-MODULE-01A-CHECKPOINT.md`)
+- AUTH-MODULE-01B ?X Framework Detection & Eligibility Check (COMPLETE and LOCKED ?X `docs/AUTH-MODULE-01B-CHECKPOINT.md`)
+- AUTH-MODULE-01C ?X Template File Generation Engine (COMPLETE and LOCKED ?X `docs/AUTH-MODULE-01C-CHECKPOINT.md`)
+- AUTH-MODULE-01D ?X Auth Module Install Flow Integration (COMPLETE and LOCKED ?X `docs/AUTH-MODULE-01D-CHECKPOINT.md`)
+- AUTH-MODULE-01E ?X AI Prompt Recognition & UX Polish (COMPLETE and LOCKED ?X `docs/AUTH-MODULE-01E-CHECKPOINT.md`)
+- AUTH-MODULE-01Z ?X Validation & Consolidation (COMPLETE and LOCKED ?X `docs/AUTH-MODULE-01Z-CHECKPOINT.md`)
 
-**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-MODULE-01. See `docs/UX-IA-00-MASTER-PLAN.md` Section AUTH-MODULE-01. Depends on: AUTH-APP-01 (VALIDATION COMPLETE), AUTH-APP-02D (COMPLETE and LOCKED), UX-IA-08–UX-IA-10 (COMPLETE and LOCKED).
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-MODULE-01. See `docs/UX-IA-00-MASTER-PLAN.md` Section AUTH-MODULE-01. Depends on: AUTH-APP-01 (VALIDATION COMPLETE), AUTH-APP-02D (COMPLETE and LOCKED), UX-IA-08?VUX-IA-10 (COMPLETE and LOCKED).
 
 ---
 
@@ -15621,10 +15701,10 @@ Restore the backend invariant that every active user can resolve a default Perso
 
 **Status:** COMPLETE and LOCKED
 **Task ID:** AUTH-MODULE-01A
-**Parent:** AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps
+**Parent:** AUTH-MODULE-01 ?X Reusable App-Auth Module for aiSandBox-Created Apps
 **Family:** AUTH
 **Priority:** High
-**Risk:** Low-Medium — pure TypeScript definitions and string constants; no runtime integration
+**Risk:** Low-Medium ?X pure TypeScript definitions and string constants; no runtime integration
 **Model:** GPT-5.3 Codex
 **Depends on:** AUTH-MODULE-01 plan phase (COMPLETE)
 **Checkpoint:** `docs/AUTH-MODULE-01A-CHECKPOINT.md`
@@ -15633,11 +15713,11 @@ Restore the backend invariant that every active user can resolve a default Perso
 Define the complete typed template registry for the Next.js + Auth.js v5 + PostgreSQL auth starter. Establish all template file contents as typed constants, define the file manifest and dependency list, and validate that no aiSandBox platform auth references appear in generated content.
 
 **Scope:**
-- `frontend/lib/auth-module/auth-template-types.ts` — type definitions: `AuthTemplate`, `AuthTemplateFile`, `AuthTemplateDependency`, `AuthTemplateEnvVar`, `AuthTemplateManifest`
-- `frontend/lib/auth-module/auth-template-files.ts` — all generated file contents as typed string constants (auth.ts, auth.config.ts, route handler, middleware, Prisma schema models, login/register/logout UI, auth-provider wrapper, server actions, .env.example, SETUP-AUTH.md)
-- `frontend/lib/auth-module/auth-template-registry.ts` — assembled registry: file manifest, dependency list (next-auth@5, @auth/prisma-adapter, @prisma/client, prisma, bcryptjs, @types/bcryptjs), env var manifest, template metadata
-- `frontend/lib/auth-module/auth-template-registry.test.ts` — 8 tests: all template files have valid relative paths, no aiSandBox platform auth references in any template content, dependency list complete, env var manifest present, file manifest complete
-- `frontend/package.json` — test discovery fix: added `lib/auth-module/*.test.ts` to test glob
+- `frontend/lib/auth-module/auth-template-types.ts` ?X type definitions: `AuthTemplate`, `AuthTemplateFile`, `AuthTemplateDependency`, `AuthTemplateEnvVar`, `AuthTemplateManifest`
+- `frontend/lib/auth-module/auth-template-files.ts` ?X all generated file contents as typed string constants (auth.ts, auth.config.ts, route handler, middleware, Prisma schema models, login/register/logout UI, auth-provider wrapper, server actions, .env.example, SETUP-AUTH.md)
+- `frontend/lib/auth-module/auth-template-registry.ts` ?X assembled registry: file manifest, dependency list (next-auth@5, @auth/prisma-adapter, @prisma/client, prisma, bcryptjs, @types/bcryptjs), env var manifest, template metadata
+- `frontend/lib/auth-module/auth-template-registry.test.ts` ?X 8 tests: all template files have valid relative paths, no aiSandBox platform auth references in any template content, dependency list complete, env var manifest present, file manifest complete
+- `frontend/package.json` ?X test discovery fix: added `lib/auth-module/*.test.ts` to test glob
 
 **Non-goals:**
 - No framework detection
@@ -15649,15 +15729,15 @@ Define the complete typed template registry for the Next.js + Auth.js v5 + Postg
 - No changes to any existing frontend or backend files
 
 **Validation results:**
-- `npx tsc --noEmit` from `frontend/` — PASS
-- `npm test` from `frontend/` — PASS (391 tests, 0 failures; was 383 before test discovery fix)
-- `ReadLints` on new files — PASS (0 errors)
+- `npx tsc --noEmit` from `frontend/` ?X PASS
+- `npm test` from `frontend/` ?X PASS (391 tests, 0 failures; was 383 before test discovery fix)
+- `ReadLints` on new files ?X PASS (0 errors)
 
 **Acceptance checks:**
-- AUTH-MODULE-01A registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
-- Status COMPLETE and LOCKED — DONE
-- Implementation complete and validated — DONE (tsc PASS, 391/391 tests PASS, lints PASS)
-- `docs/AUTH-MODULE-01A-CHECKPOINT.md` created — DONE
+- AUTH-MODULE-01A registered in TASKS.md and TASKS_BACKLOG_FULL.md ?X DONE
+- Status COMPLETE and LOCKED ?X DONE
+- Implementation complete and validated ?X DONE (tsc PASS, 391/391 tests PASS, lints PASS)
+- `docs/AUTH-MODULE-01A-CHECKPOINT.md` created ?X DONE
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-MODULE-01A. Parent: AUTH-MODULE-01.
 
@@ -15667,20 +15747,20 @@ Define the complete typed template registry for the Next.js + Auth.js v5 + Postg
 
 **Status:** COMPLETE and LOCKED
 **Task ID:** AUTH-MODULE-01B
-**Parent:** AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps
+**Parent:** AUTH-MODULE-01 ?X Reusable App-Auth Module for aiSandBox-Created Apps
 **Family:** AUTH
 **Priority:** High
-**Risk:** Low-Medium — reads existing workspace files; no writes
+**Risk:** Low-Medium ?X reads existing workspace files; no writes
 **Model:** GPT-5.3 Codex
-**Depends on:** AUTH-MODULE-01A (COMPLETE and LOCKED — required)
+**Depends on:** AUTH-MODULE-01A (COMPLETE and LOCKED ?X required)
 **Checkpoint:** `docs/AUTH-MODULE-01B-CHECKPOINT.md`
 
 **Objective:**
 Implement detection logic that reads the workspace `package.json` to determine whether a project is eligible for the auth starter. Detect Next.js, existing Prisma presence, and package manager. Return a typed eligibility result with clear unsupported-stack messages.
 
 **Scope:**
-- `frontend/lib/auth-module/auth-module-detection.ts` — `detectAuthModuleEligibility()`: reads `/package.json` via existing `readWorkspaceFile`; checks for `next` in deps (Next.js required); checks for `prisma`/`@prisma/client` (Prisma already present flag); checks lockfiles for package manager (pnpm-lock.yaml → pnpm; yarn.lock → yarn; else npm); returns typed `AuthModuleEligibilityResult`
-- `frontend/lib/auth-module/auth-module-detection.test.ts` — tests: Next.js detected, non-Next.js rejected with message, Prisma already present detected, package manager detection (npm/yarn/pnpm), missing package.json handled, malformed package.json handled
+- `frontend/lib/auth-module/auth-module-detection.ts` ?X `detectAuthModuleEligibility()`: reads `/package.json` via existing `readWorkspaceFile`; checks for `next` in deps (Next.js required); checks for `prisma`/`@prisma/client` (Prisma already present flag); checks lockfiles for package manager (pnpm-lock.yaml ?? pnpm; yarn.lock ?? yarn; else npm); returns typed `AuthModuleEligibilityResult`
+- `frontend/lib/auth-module/auth-module-detection.test.ts` ?X tests: Next.js detected, non-Next.js rejected with message, Prisma already present detected, package manager detection (npm/yarn/pnpm), missing package.json handled, malformed package.json handled
 
 **Non-goals:**
 - No template generation
@@ -15688,14 +15768,14 @@ Implement detection logic that reads the workspace `package.json` to determine w
 - No new backend endpoints
 
 **Validation plan:**
-- `npx tsc --noEmit` from `frontend/` — 0 errors
-- `npm test` from `frontend/` — all tests pass
+- `npx tsc --noEmit` from `frontend/` ?X 0 errors
+- `npm test` from `frontend/` ?X all tests pass
 
 **Acceptance checks:**
-- AUTH-MODULE-01B registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
-- Status COMPLETE and LOCKED — DONE
-- Implementation complete and validated — DONE (tsc PASS, 400/400 tests PASS, lints PASS)
-- `docs/AUTH-MODULE-01B-CHECKPOINT.md` created — DONE
+- AUTH-MODULE-01B registered in TASKS.md and TASKS_BACKLOG_FULL.md ?X DONE
+- Status COMPLETE and LOCKED ?X DONE
+- Implementation complete and validated ?X DONE (tsc PASS, 400/400 tests PASS, lints PASS)
+- `docs/AUTH-MODULE-01B-CHECKPOINT.md` created ?X DONE
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-MODULE-01B. Parent: AUTH-MODULE-01.
 
@@ -15705,20 +15785,20 @@ Implement detection logic that reads the workspace `package.json` to determine w
 
 **Status:** COMPLETE and LOCKED
 **Task ID:** AUTH-MODULE-01C
-**Parent:** AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps
+**Parent:** AUTH-MODULE-01 ?X Reusable App-Auth Module for aiSandBox-Created Apps
 **Family:** AUTH
 **Priority:** High
-**Risk:** Medium — package.json merging must not clobber existing deps; path safety must be enforced
+**Risk:** Medium ?X package.json merging must not clobber existing deps; path safety must be enforced
 **Model:** GPT-5.3 Codex
-**Depends on:** AUTH-MODULE-01B (COMPLETE and LOCKED — required)
+**Depends on:** AUTH-MODULE-01B (COMPLETE and LOCKED ?X required)
 **Checkpoint:** `docs/AUTH-MODULE-01C-CHECKPOINT.md`
 
 **Objective:**
 Given a detection result from AUTH-MODULE-01B and the template registry from AUTH-MODULE-01A, produce the complete `WorkspaceFileAction[]` array ready for `applySequentialFileActions`. Handle the clean-project case and the existing-Prisma case. Merge `package.json` dependencies safely.
 
 **Scope:**
-- `frontend/lib/auth-module/auth-module-generator.ts` — `generateAuthModuleFileActions(eligibility, registry)`: produces `WorkspaceFileAction[]`; conditional Prisma datasource block (skip if Prisma already present); `package.json` merge (add auth deps to existing, never remove); all generated paths validated as relative workspace paths with no aiSandBox references
-- `frontend/lib/auth-module/auth-module-generator.test.ts` — tests: clean project generates all expected files, existing-Prisma project skips datasource block, package.json merge adds deps without removing existing, no generated path is absolute or contains `..`, no generated content references `aisandbox_session`/`aisandbox_csrf`/`X-Internal-Service-Key`
+- `frontend/lib/auth-module/auth-module-generator.ts` ?X `generateAuthModuleFileActions(eligibility, registry)`: produces `WorkspaceFileAction[]`; conditional Prisma datasource block (skip if Prisma already present); `package.json` merge (add auth deps to existing, never remove); all generated paths validated as relative workspace paths with no aiSandBox references
+- `frontend/lib/auth-module/auth-module-generator.test.ts` ?X tests: clean project generates all expected files, existing-Prisma project skips datasource block, package.json merge adds deps without removing existing, no generated path is absolute or contains `..`, no generated content references `aisandbox_session`/`aisandbox_csrf`/`X-Internal-Service-Key`
 
 **Non-goals:**
 - No live file apply
@@ -15726,14 +15806,14 @@ Given a detection result from AUTH-MODULE-01B and the template registry from AUT
 - No install flow wiring
 
 **Validation plan:**
-- `npx tsc --noEmit` from `frontend/` — 0 errors
-- `npm test` from `frontend/` — all tests pass
+- `npx tsc --noEmit` from `frontend/` ?X 0 errors
+- `npm test` from `frontend/` ?X all tests pass
 
 **Acceptance checks:**
-- AUTH-MODULE-01C registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
-- Status COMPLETE and LOCKED — DONE
-- Implementation complete and validated — DONE
-- `docs/AUTH-MODULE-01C-CHECKPOINT.md` created — DONE
+- AUTH-MODULE-01C registered in TASKS.md and TASKS_BACKLOG_FULL.md ?X DONE
+- Status COMPLETE and LOCKED ?X DONE
+- Implementation complete and validated ?X DONE
+- `docs/AUTH-MODULE-01C-CHECKPOINT.md` created ?X DONE
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-MODULE-01C. Parent: AUTH-MODULE-01.
 
@@ -15743,20 +15823,20 @@ Given a detection result from AUTH-MODULE-01B and the template registry from AUT
 
 **Status:** COMPLETE and LOCKED
 **Task ID:** AUTH-MODULE-01D
-**Parent:** AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps
+**Parent:** AUTH-MODULE-01 ?X Reusable App-Auth Module for aiSandBox-Created Apps
 **Family:** AUTH
 **Priority:** High
-**Risk:** Medium-High — touches page.tsx; must not bypass existing apply-guard or confirmation safety; pre-install checkpoint must land before file writes
+**Risk:** Medium-High ?X touches page.tsx; must not bypass existing apply-guard or confirmation safety; pre-install checkpoint must land before file writes
 **Model:** GPT-5.3 Codex
-**Depends on:** AUTH-MODULE-01C (COMPLETE and LOCKED — required)
+**Depends on:** AUTH-MODULE-01C (COMPLETE and LOCKED ?X required)
 **Checkpoint:** `docs/AUTH-MODULE-01D-CHECKPOINT.md`
 
 **Objective:**
 Wire the auth module install flow into the workspace. Expose a callable `handleInstallAuthModule` function in `page.tsx` that: creates a pre-install named checkpoint, runs eligibility detection, generates file actions, applies them through the existing `applySequentialFileActions` confirmation flow, then runs post-apply coherence/checkpoint/refresh and surfaces setup instructions in the chat thread.
 
 **Scope:**
-- `frontend/app/[locale]/app/page.tsx` — new `handleInstallAuthModule` function: pre-install `createWorkspaceCheckpoint('Auth Module: pre-install snapshot')`; detection via `detectAuthModuleEligibility`; generation via `generateAuthModuleFileActions`; apply via `applySequentialFileActions` (risky batch — triggers existing confirmation dialog); post-apply `runAiActionCoherence` with description `'Auth Module: installed authentication starter'`; unsupported-stack early exit with chat message
-- `frontend/components/workspace/workspace-shell.tsx` — thread `onInstallAuthModule` prop if needed to surface trigger from UI (minimal change; may be chat-only if not needed)
+- `frontend/app/[locale]/app/page.tsx` ?X new `handleInstallAuthModule` function: pre-install `createWorkspaceCheckpoint('Auth Module: pre-install snapshot')`; detection via `detectAuthModuleEligibility`; generation via `generateAuthModuleFileActions`; apply via `applySequentialFileActions` (risky batch ?X triggers existing confirmation dialog); post-apply `runAiActionCoherence` with description `'Auth Module: installed authentication starter'`; unsupported-stack early exit with chat message
+- `frontend/components/workspace/workspace-shell.tsx` ?X thread `onInstallAuthModule` prop if needed to surface trigger from UI (minimal change; may be chat-only if not needed)
 - Test additions in relevant test file
 
 **Non-goals:**
@@ -15766,16 +15846,16 @@ Wire the auth module install flow into the workspace. Expose a callable `handleI
 - No changes to UX-IA-17 undo/revert behavior
 
 **Validation plan:**
-- `npx tsc --noEmit` from `frontend/` — 0 errors
-- `npm test` from `frontend/` — all tests pass
-- `npm run build` from `frontend/` — passes
-- `ReadLints` on touched files — 0 new errors
+- `npx tsc --noEmit` from `frontend/` ?X 0 errors
+- `npm test` from `frontend/` ?X all tests pass
+- `npm run build` from `frontend/` ?X passes
+- `ReadLints` on touched files ?X 0 new errors
 
 **Acceptance checks:**
-- AUTH-MODULE-01D registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
-- Status COMPLETE and LOCKED — DONE
-- Implementation complete and validated — DONE (tsc PASS, 418/418 tests PASS, build PASS, lints PASS)
-- `docs/AUTH-MODULE-01D-CHECKPOINT.md` created — DONE
+- AUTH-MODULE-01D registered in TASKS.md and TASKS_BACKLOG_FULL.md ?X DONE
+- Status COMPLETE and LOCKED ?X DONE
+- Implementation complete and validated ?X DONE (tsc PASS, 418/418 tests PASS, build PASS, lints PASS)
+- `docs/AUTH-MODULE-01D-CHECKPOINT.md` created ?X DONE
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-MODULE-01D. Parent: AUTH-MODULE-01.
 
@@ -15785,24 +15865,24 @@ Wire the auth module install flow into the workspace. Expose a callable `handleI
 
 **Status:** COMPLETE and LOCKED
 **Task ID:** AUTH-MODULE-01E
-**Parent:** AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps
+**Parent:** AUTH-MODULE-01 ?X Reusable App-Auth Module for aiSandBox-Created Apps
 **Family:** AUTH
 **Priority:** Medium
-**Risk:** Medium — intent recognition must have low false-positive rate; must not hijack unrelated prompts
+**Risk:** Medium ?X intent recognition must have low false-positive rate; must not hijack unrelated prompts
 **Model:** GPT-5.3 Codex
-**Depends on:** AUTH-MODULE-01D (COMPLETE and LOCKED — `docs/AUTH-MODULE-01D-CHECKPOINT.md`)
+**Depends on:** AUTH-MODULE-01D (COMPLETE and LOCKED ?X `docs/AUTH-MODULE-01D-CHECKPOINT.md`)
 **Checkpoint:** `docs/AUTH-MODULE-01E-CHECKPOINT.md`
 
 **Objective:**
 Detect when a user's chat prompt expresses auth module intent ("add authentication", "add login", "add signup", etc.) and route it to the `handleInstallAuthModule` flow instead of raw AI generation. Add chat-thread messaging for install progress and completion. Add i18n keys if needed.
 
 **Scope:**
-- `frontend/lib/auth-module/auth-module-intent.ts` — `detectAuthModuleIntent(prompt): boolean` — pattern list covering common auth request phrasings; conservative false-positive avoidance
-- `frontend/lib/auth-module/auth-module-intent.test.ts` — tests: true positives (add authentication/login/signup/auth), true negatives (unrelated prompts), case-insensitive matching
-- `frontend/app/[locale]/app/page.tsx` — wire intent detection before AI execution dispatch; if intent detected and session active → route to `handleInstallAuthModule`
-- `frontend/messages/en.json` (optional) — auth module i18n keys if chat messages require them
-- `frontend/messages/zh-TW.json` (optional) — same
-- `frontend/messages/zh-CN.json` (optional) — same
+- `frontend/lib/auth-module/auth-module-intent.ts` ?X `detectAuthModuleIntent(prompt): boolean` ?X pattern list covering common auth request phrasings; conservative false-positive avoidance
+- `frontend/lib/auth-module/auth-module-intent.test.ts` ?X tests: true positives (add authentication/login/signup/auth), true negatives (unrelated prompts), case-insensitive matching
+- `frontend/app/[locale]/app/page.tsx` ?X wire intent detection before AI execution dispatch; if intent detected and session active ?? route to `handleInstallAuthModule`
+- `frontend/messages/en.json` (optional) ?X auth module i18n keys if chat messages require them
+- `frontend/messages/zh-TW.json` (optional) ?X same
+- `frontend/messages/zh-CN.json` (optional) ?X same
 
 **Non-goals:**
 - No broad chat or AI execution refactor
@@ -15810,16 +15890,16 @@ Detect when a user's chat prompt expresses auth module intent ("add authenticati
 - No changes to existing AI execution path for non-auth prompts
 
 **Validation plan:**
-- `npx tsc --noEmit` from `frontend/` — 0 errors
-- `npm test` from `frontend/` — all tests pass
-- `npm run build` from `frontend/` — passes
-- `ReadLints` on touched files — 0 new errors
+- `npx tsc --noEmit` from `frontend/` ?X 0 errors
+- `npm test` from `frontend/` ?X all tests pass
+- `npm run build` from `frontend/` ?X passes
+- `ReadLints` on touched files ?X 0 new errors
 
 **Acceptance checks:**
-- AUTH-MODULE-01E registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
-- Status COMPLETE and LOCKED — DONE
-- Implementation complete and validated — DONE (tsc PASS, 437/437 tests PASS, build PASS, lints PASS)
-- `docs/AUTH-MODULE-01E-CHECKPOINT.md` created — DONE
+- AUTH-MODULE-01E registered in TASKS.md and TASKS_BACKLOG_FULL.md ?X DONE
+- Status COMPLETE and LOCKED ?X DONE
+- Implementation complete and validated ?X DONE (tsc PASS, 437/437 tests PASS, build PASS, lints PASS)
+- `docs/AUTH-MODULE-01E-CHECKPOINT.md` created ?X DONE
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-MODULE-01E. Parent: AUTH-MODULE-01.
 
@@ -15829,12 +15909,12 @@ Detect when a user's chat prompt expresses auth module intent ("add authenticati
 
 **Status:** COMPLETE and LOCKED
 **Task ID:** AUTH-MODULE-01Z
-**Parent:** AUTH-MODULE-01 — Reusable App-Auth Module for aiSandBox-Created Apps
+**Parent:** AUTH-MODULE-01 ?X Reusable App-Auth Module for aiSandBox-Created Apps
 **Family:** AUTH
 **Priority:** High
-**Risk:** Low — governance and documentation only unless validation reveals issues
+**Risk:** Low ?X governance and documentation only unless validation reveals issues
 **Model:** GPT-5.3 Codex
-**Depends on:** AUTH-MODULE-01E (COMPLETE and LOCKED — `docs/AUTH-MODULE-01E-CHECKPOINT.md`)
+**Depends on:** AUTH-MODULE-01E (COMPLETE and LOCKED ?X `docs/AUTH-MODULE-01E-CHECKPOINT.md`)
 **Checkpoint:** `docs/AUTH-MODULE-01Z-CHECKPOINT.md` + `docs/AUTH-MODULE-01-CHECKPOINT.md` (not yet created)
 
 **Objective:**
@@ -15842,9 +15922,9 @@ Run the full validation pass across all child slices, execute the manual smoke c
 
 **Scope:**
 - Full tsc + test + build + lint pass across all touched files
-- Manual smoke checklist execution (14 items — defined in plan phase)
-- Create `docs/AUTH-MODULE-01Z-CHECKPOINT.md` — Z-slice record
-- Create `docs/AUTH-MODULE-01-CHECKPOINT.md` — family summary
+- Manual smoke checklist execution (14 items ?X defined in plan phase)
+- Create `docs/AUTH-MODULE-01Z-CHECKPOINT.md` ?X Z-slice record
+- Create `docs/AUTH-MODULE-01-CHECKPOINT.md` ?X family summary
 - Update TASKS.md and TASKS_BACKLOG_FULL.md: all child slices COMPLETE and LOCKED; AUTH-MODULE-01 COMPLETE and LOCKED
 
 **Non-goals:**
@@ -15852,17 +15932,17 @@ Run the full validation pass across all child slices, execute the manual smoke c
 - No new features
 
 **Validation plan:**
-- `npx tsc --noEmit` from `frontend/` — 0 errors
-- `npm test` from `frontend/` — all tests pass
-- `npm run build` from `frontend/` — passes
+- `npx tsc --noEmit` from `frontend/` ?X 0 errors
+- `npm test` from `frontend/` ?X all tests pass
+- `npm run build` from `frontend/` ?X passes
 - Manual smoke: 14-item checklist (see plan phase output)
 
 **Acceptance checks:**
-- AUTH-MODULE-01Z registered in TASKS.md and TASKS_BACKLOG_FULL.md — DONE
-- Status COMPLETE and LOCKED — DONE
-- All child slices validated and COMPLETE and LOCKED — DONE (tsc PASS, 437/437 tests PASS, build PASS, lints PASS)
-- `docs/AUTH-MODULE-01Z-CHECKPOINT.md` created — DONE (`docs/AUTH-MODULE-01Z-CHECKPOINT.md`)
-- `docs/AUTH-MODULE-01-CHECKPOINT.md` created — DONE (`docs/AUTH-MODULE-01-CHECKPOINT.md`)
+- AUTH-MODULE-01Z registered in TASKS.md and TASKS_BACKLOG_FULL.md ?X DONE
+- Status COMPLETE and LOCKED ?X DONE
+- All child slices validated and COMPLETE and LOCKED ?X DONE (tsc PASS, 437/437 tests PASS, build PASS, lints PASS)
+- `docs/AUTH-MODULE-01Z-CHECKPOINT.md` created ?X DONE (`docs/AUTH-MODULE-01Z-CHECKPOINT.md`)
+- `docs/AUTH-MODULE-01-CHECKPOINT.md` created ?X DONE (`docs/AUTH-MODULE-01-CHECKPOINT.md`)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-MODULE-01Z. Parent: AUTH-MODULE-01.
 
@@ -15874,19 +15954,19 @@ Run the full validation pass across all child slices, execute the manual smoke c
 **Task ID:** AUTH-MODULE-02
 **Family:** AUTH
 **Priority:** High
-**Risk:** High — AUTH-MODULE-01 cannot be considered production-ready until these live smoke blockers are fixed and revalidated
+**Risk:** High ?X AUTH-MODULE-01 cannot be considered production-ready until these live smoke blockers are fixed and revalidated
 **Depends on:** AUTH-MODULE-01 (COMPLETE and LOCKED)
 **Reason:** Live manual smoke validation of AUTH-MODULE-01 found two high-severity blockers requiring dedicated fix slices.
 **Checkpoint:** `docs/AUTH-MODULE-02-CHECKPOINT.md`
 
 **Child slices:**
-- AUTH-MODULE-02A — Support Next.js Bracket Route File Paths (COMPLETE and LOCKED — `docs/AUTH-MODULE-02A-CHECKPOINT.md`)
-- AUTH-MODULE-02B — Checkpoint Revert Has No Effect (COMPLETE and LOCKED — `docs/AUTH-MODULE-02B-CHECKPOINT.md`)
+- AUTH-MODULE-02A ?X Support Next.js Bracket Route File Paths (COMPLETE and LOCKED ?X `docs/AUTH-MODULE-02A-CHECKPOINT.md`)
+- AUTH-MODULE-02B ?X Checkpoint Revert Has No Effect (COMPLETE and LOCKED ?X `docs/AUTH-MODULE-02B-CHECKPOINT.md`)
 
 **Acceptance checks:**
-- [x] AUTH-MODULE-02A COMPLETE and verified — bracket route paths accepted by file write API
-- [x] AUTH-MODULE-02B COMPLETE and verified — checkpoint revert restores workspace files correctly
-- [x] Both blockers resolved and revalidated — AUTH-MODULE-01 is now production-ready
+- [x] AUTH-MODULE-02A COMPLETE and verified ?X bracket route paths accepted by file write API
+- [x] AUTH-MODULE-02B COMPLETE and verified ?X checkpoint revert restores workspace files correctly
+- [x] Both blockers resolved and revalidated ?X AUTH-MODULE-01 is now production-ready
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-MODULE-02.
 
@@ -15896,7 +15976,7 @@ Run the full validation pass across all child slices, execute the manual smoke c
 
 **Status:** COMPLETE and LOCKED
 **Task ID:** AUTH-MODULE-02A
-**Parent:** AUTH-MODULE-02 — Auth Module Live Smoke Blockers
+**Parent:** AUTH-MODULE-02 ?X Auth Module Live Smoke Blockers
 **Family:** AUTH
 **Priority:** High
 **Risk:** Medium-High
@@ -15924,12 +16004,12 @@ Impact: Auth.js API route handler is never written, so generated app auth endpoi
 - No generated-app runtime changes beyond allowing safe path names
 
 **Acceptance checks:**
-- File write succeeds for `app/api/auth/[...nextauth]/route.ts` — DONE
-- File write succeeds for `app/[id]/page.tsx` and `app/[[...slug]]/page.tsx` — DONE
-- Malicious paths still rejected (absolute paths, `..` traversal, null bytes, drive letters) — DONE
-- Tests added and passing — DONE (32/32 tests PASS, build PASS, lints PASS)
-- No regression on existing file write behavior — DONE
-- `docs/AUTH-MODULE-02A-CHECKPOINT.md` created — DONE
+- File write succeeds for `app/api/auth/[...nextauth]/route.ts` ?X DONE
+- File write succeeds for `app/[id]/page.tsx` and `app/[[...slug]]/page.tsx` ?X DONE
+- Malicious paths still rejected (absolute paths, `..` traversal, null bytes, drive letters) ?X DONE
+- Tests added and passing ?X DONE (32/32 tests PASS, build PASS, lints PASS)
+- No regression on existing file write behavior ?X DONE
+- `docs/AUTH-MODULE-02A-CHECKPOINT.md` created ?X DONE
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AUTH-MODULE-02A. Parent: AUTH-MODULE-02.
 
@@ -15939,11 +16019,11 @@ Impact: Auth.js API route handler is never written, so generated app auth endpoi
 
 **Status:** COMPLETE and LOCKED
 **Task ID:** AUTH-MODULE-02B
-**Parent:** AUTH-MODULE-02 — Auth Module Live Smoke Blockers
+**Parent:** AUTH-MODULE-02 ?X Auth Module Live Smoke Blockers
 **Family:** AUTH
 **Priority:** High
 **Risk:** High
-**Depends on:** AUTH-MODULE-02A (COMPLETE and LOCKED — `docs/AUTH-MODULE-02A-CHECKPOINT.md`)
+**Depends on:** AUTH-MODULE-02A (COMPLETE and LOCKED ?X `docs/AUTH-MODULE-02A-CHECKPOINT.md`)
 **Checkpoint:** `docs/AUTH-MODULE-02B-CHECKPOINT.md`
 
 **Bug:**
@@ -16018,7 +16098,7 @@ Workspace revert is NOT blocked, but the ledger record is corrupted.
 - [x] `session_id` is non-null in `git_checkpoints` table after a git checkpoint event
 - [x] `POST /api/internal/git-checkpoints` returns 2xx with valid `session_id` payload
 - [x] Container-manager no longer logs 500 error on checkpoint recording
-- [x] Tests added and passing — sessionId forwarded and stored correctly
+- [x] Tests added and passing ?X sessionId forwarded and stored correctly
 - [x] Existing checkpoint create/list/revert behavior unchanged
 - [x] `docs/CHECKPOINT-LEDGER-01-CHECKPOINT.md` created
 
@@ -16036,14 +16116,14 @@ Workspace revert is NOT blocked, but the ledger record is corrupted.
 **Task ID:** AUTH-MODULE-03
 **Family:** AUTH
 **Priority:** High
-**Risk:** High — AUTH-MODULE-01 cannot be considered production-ready until the two remaining live smoke failures are fixed and revalidated
+**Risk:** High ?X AUTH-MODULE-01 cannot be considered production-ready until the two remaining live smoke failures are fixed and revalidated
 **Depends on:** AUTH-MODULE-02 (COMPLETE and LOCKED), CHECKPOINT-LEDGER-01 (COMPLETE and LOCKED)
 **Reason:** Final live smoke validation of AUTH-MODULE-01 (run after AUTH-MODULE-02 fixes) returned 12 PASS, 2 FAIL, 0 BLOCKED, 0 SKIPPED. Both failures resolved.
 **Checkpoint:** `docs/AUTH-MODULE-03-CHECKPOINT.md`
 
 **Child slices:**
-- AUTH-MODULE-03A — Pre-install Auth Module Checkpoint Missing (COMPLETE and LOCKED — `docs/AUTH-MODULE-03A-CHECKPOINT.md`)
-- AUTH-MODULE-03B — Friendly Unsupported Message for Missing package.json (COMPLETE and LOCKED — `docs/AUTH-MODULE-03B-CHECKPOINT.md`)
+- AUTH-MODULE-03A ?X Pre-install Auth Module Checkpoint Missing (COMPLETE and LOCKED ?X `docs/AUTH-MODULE-03A-CHECKPOINT.md`)
+- AUTH-MODULE-03B ?X Friendly Unsupported Message for Missing package.json (COMPLETE and LOCKED ?X `docs/AUTH-MODULE-03B-CHECKPOINT.md`)
 
 **Known pre-existing console noise (not blocking):**
 - Stale background `/api/sessions/.../files/read` 500 for old sessions
@@ -16058,7 +16138,7 @@ Workspace revert is NOT blocked, but the ledger record is corrupted.
 
 **Status:** COMPLETE and LOCKED
 **Task ID:** AUTH-MODULE-03A
-**Parent:** AUTH-MODULE-03 — Auth Module Final Live Smoke Fixes
+**Parent:** AUTH-MODULE-03 ?X Auth Module Final Live Smoke Fixes
 **Family:** AUTH
 **Priority:** High
 **Risk:** High
@@ -16105,11 +16185,11 @@ The intended clean rollback point before auth module file writes is missing. Rev
 
 **Status:** COMPLETE and LOCKED
 **Task ID:** AUTH-MODULE-03B
-**Parent:** AUTH-MODULE-03 — Auth Module Final Live Smoke Fixes
+**Parent:** AUTH-MODULE-03 ?X Auth Module Final Live Smoke Fixes
 **Family:** AUTH
 **Priority:** Medium
 **Risk:** Medium
-**Depends on:** AUTH-MODULE-03A (COMPLETE and LOCKED — `docs/AUTH-MODULE-03A-CHECKPOINT.md`)
+**Depends on:** AUTH-MODULE-03A (COMPLETE and LOCKED ?X `docs/AUTH-MODULE-03A-CHECKPOINT.md`)
 **Checkpoint:** `docs/AUTH-MODULE-03B-CHECKPOINT.md`
 
 **Bug:**
@@ -16181,8 +16261,8 @@ The following hardcoded user-facing strings in `workspace-shell.tsx` must be rep
 5. "Undo / Revert"
 
 Also wire nearby existing buttons:
-6. "Apply" — use existing `ai.apply` if available, or add key if missing
-7. "Cancel" — use existing `common.cancel` if available
+6. "Apply" ?X use existing `ai.apply` if available, or add key if missing
+7. "Cancel" ?X use existing `common.cancel` if available
 
 **Required implementation shape:**
 - Add `getAiMessages(locale)` helper in `workspace-shell.tsx` following the existing `getTabMessages` / `getProjectPanelMessages` / `getCommonMessages` pattern.
@@ -16249,7 +16329,7 @@ I18N-SHELL-01 is COMPLETE and LOCKED. A read-only multilingual audit found `page
 Replace hardcoded English auth-module chat messages in `page.tsx` with locale-backed strings in all 3 supported languages.
 
 **Target user-facing strings:**
-1. `"Installing auth module — preparing your workspace..."`
+1. `"Installing auth module ?X preparing your workspace..."`
 2. `"This workspace doesn't look like a Next.js project yet. Create or open a Next.js project first, then try adding authentication again."`
 
 **Scope:**
@@ -16285,7 +16365,7 @@ Replace hardcoded English auth-module chat messages in `page.tsx` with locale-ba
 - [x] Locale-message selector added to `page.tsx` following existing pattern
 - [x] Tests/assertions prove no hardcoded English for the two target strings
 - [x] `npx tsc --noEmit` passes
-- [x] `npm test` passes — 451 tests, 0 failed
+- [x] `npm test` passes ?X 451 tests, 0 failed
 - [x] No unrelated files changed
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> I18N-PAGE-01.
@@ -16344,9 +16424,9 @@ Replace hardcoded English core chat-panel labels and empty/response states in `w
 - [x] Component uses `aiMessages`/`commonMessages` for all 10 target strings
 - [x] Tests/source assertions confirm keys present and hardcoded strings removed
 - [x] `npx tsc --noEmit` passes
-- [x] `npm test` passes — 454 tests, 0 failed
+- [x] `npm test` passes ?X 454 tests, 0 failed
 - [x] No unrelated files changed
-- [x] `npm run build` — environmental TLS/cert failure (Google Fonts); not a code regression; `tsconfig.tsbuildinfo` restored
+- [x] `npm run build` ?X environmental TLS/cert failure (Google Fonts); not a code regression; `tsconfig.tsbuildinfo` restored
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> I18N-SHELL-02.
 
@@ -16423,9 +16503,9 @@ From `C:\Users\knlee\aiSandBox2026B\frontend`:
 - [x] Session/preview controls use locale message values
 - [x] Tests/source assertions confirm keys present and hardcoded strings removed
 - [x] `npx tsc --noEmit` passes
-- [x] `npm test` passes — 457 tests, 0 failed
+- [x] `npm test` passes ?X 457 tests, 0 failed
 - [x] No unrelated files changed
-- [x] `npm run build` — environmental TLS/cert failure (Google Fonts); not a code regression; `tsconfig.tsbuildinfo` restored
+- [x] `npm run build` ?X environmental TLS/cert failure (Google Fonts); not a code regression; `tsconfig.tsbuildinfo` restored
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> I18N-SHELL-03.
 **Checkpoint:** `docs/I18N-SHELL-03-CHECKPOINT.md`
@@ -16515,7 +16595,7 @@ From `C:\Users\knlee\aiSandBox2026B\frontend`:
 - [x] `WorkspaceProjectPanel` uses locale message values for all target strings
 - [x] Tests/source assertions confirm keys present and hardcoded strings removed
 - [x] `npx tsc --noEmit` passes
-- [x] `npm test` passes — 461 tests, 0 failed
+- [x] `npm test` passes ?X 461 tests, 0 failed
 - [x] No unrelated files changed
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> I18N-SHELL-04.
@@ -16589,7 +16669,7 @@ From `C:\Users\knlee\aiSandBox2026B\frontend`:
 - [x] `window.confirm` and `window.prompt` recovery-copy call sites use locale-backed strings
 - [x] Existing `data-testid` values and layout are preserved
 - [x] `npx tsc --noEmit` passes
-- [x] `npm test` passes — 465 tests, 0 failed
+- [x] `npm test` passes ?X 465 tests, 0 failed
 - [x] ReadLints passes
 - [x] No unrelated files changed
 
@@ -16598,14 +16678,14 @@ From `C:\Users\knlee\aiSandBox2026B\frontend`:
 
 ---
 
-### TASK-CLEANUP-74C-2-001: Debug Fetch Instrumentation Artifact Removal — session.controller.ts
+### TASK-CLEANUP-74C-2-001: Debug Fetch Instrumentation Artifact Removal ?X session.controller.ts
 
 **Status:** COMPLETE and LOCKED
 **Task ID:** TASK-CLEANUP-74C-2-001
 **Family:** CLEANUP
 **Priority:** High
 **Risk:** Low implementation risk / Medium production hygiene risk
-**Nature:** IMPLEMENTATION — BOUNDED CLEANUP, MINIMAL DIFF
+**Nature:** IMPLEMENTATION ?X BOUNDED CLEANUP, MINIMAL DIFF
 **Depends on:** Phase 74 COMPLETE and LOCKED; Gap-74C-2-001 triage complete
 
 **Context:**
@@ -16646,8 +16726,8 @@ Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm run
 - [x] All 3 hardcoded `http://127.0.0.1:7870/ingest/...` fetch calls removed from `execInSession`
 - [x] All agent-log `#region` / `#endregion` blocks removed from `execInSession`
 - [x] New regression test `"does not make external fetch calls"` added and passing
-- [x] Existing exec route tests pass — 34 tests, 0 failed
-- [x] `api-gateway` build passes — tsc completed successfully
+- [x] Existing exec route tests pass ?X 34 tests, 0 failed
+- [x] `api-gateway` build passes ?X tsc completed successfully
 - [x] No unrelated files changed
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> TASK-CLEANUP-74C-2-001.
@@ -16662,7 +16742,7 @@ Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm run
 **Current stage:** BUILD-FRONTEND-01 COMPLETE and LOCKED
 
 **Registered tasks:**
-1. BUILD-FRONTEND-01 — Deterministic Frontend Docker Build (COMPLETE and LOCKED — `docs/BUILD-FRONTEND-01-CHECKPOINT.md`)
+1. BUILD-FRONTEND-01 ?X Deterministic Frontend Docker Build (COMPLETE and LOCKED ?X `docs/BUILD-FRONTEND-01-CHECKPOINT.md`)
 
 ---
 
@@ -16687,14 +16767,14 @@ Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm run
 
 ---
 
-## AUTH-UX — Auth Navigation UX
+## AUTH-UX ?X Auth Navigation UX
 
-**Family status:** COMPLETE and LOCKED — AUTH-UX-01 COMPLETE and LOCKED
+**Family status:** COMPLETE and LOCKED ?X AUTH-UX-01 COMPLETE and LOCKED
 
 **Current stage:** AUTH-UX-01 COMPLETE and LOCKED
 
 **Registered tasks:**
-1. AUTH-UX-01 — Prevent Back Navigation to Login After Authentication (COMPLETE and LOCKED — `docs/AUTH-UX-01-CHECKPOINT.md`)
+1. AUTH-UX-01 ?X Prevent Back Navigation to Login After Authentication (COMPLETE and LOCKED ?X `docs/AUTH-UX-01-CHECKPOINT.md`)
 
 ---
 
@@ -16751,7 +16831,7 @@ From `C:\Users\knlee\aiSandBox2026B\frontend`:
 - [x] No new visible text added
 - [x] No i18n files modified
 - [x] `npx tsc --noEmit` passes
-- [x] `npm test` passes — 512 tests, 512 pass, 0 fail
+- [x] `npm test` passes ?X 512 tests, 512 pass, 0 fail
 - [x] ReadLints passes
 - [x] No unrelated files changed
 
@@ -16760,14 +16840,14 @@ From `C:\Users\knlee\aiSandBox2026B\frontend`:
 
 ---
 
-## HOME-START — Build Anything One-Click Start and Send
+## HOME-START ?X Build Anything One-Click Start and Send
 
-**Family status:** COMPLETE and LOCKED — HOME-START-01 COMPLETE and LOCKED
+**Family status:** COMPLETE and LOCKED ?X HOME-START-01 COMPLETE and LOCKED
 
-**Current stage:** HOME-START-01 COMPLETE and LOCKED — `docs/HOME-START-01-CHECKPOINT.md`
+**Current stage:** HOME-START-01 COMPLETE and LOCKED ?X `docs/HOME-START-01-CHECKPOINT.md`
 
 **Registered tasks:**
-1. HOME-START-01 — Build Anything One-Click Start and Send (COMPLETE and LOCKED — `docs/HOME-START-01-CHECKPOINT.md`)
+1. HOME-START-01 ?X Build Anything One-Click Start and Send (COMPLETE and LOCKED ?X `docs/HOME-START-01-CHECKPOINT.md`)
 
 ---
 
@@ -16779,17 +16859,17 @@ From `C:\Users\knlee\aiSandBox2026B\frontend`:
 **Priority:** High
 **Nature:** FRONTEND-ONLY / HOME UX BUG FIX
 **Risk:** Low-Medium
-**Depends on:** UX-IA-31 (COMPLETE and LOCKED — `docs/UX-IA-31-CHECKPOINT.md`)
+**Depends on:** UX-IA-31 (COMPLETE and LOCKED ?X `docs/UX-IA-31-CHECKPOINT.md`)
 **Checkpoint:** `docs/HOME-START-01-CHECKPOINT.md`
 
 **Problem:**
 The Home page "Build anything" Start flow has two UX bugs:
 
-1. First click appears non-responsive. Root cause: `handleCreateProjectFromPrompt` uses `flushSync` to update `projectNameInput`, then calls `handleCreateWorkspaceProject` from the stale pre-update closure where `projectNameInput` is still empty. The create handler fails the required-name guard and the error is not shown on the Home view — the user sees nothing happen.
+1. First click appears non-responsive. Root cause: `handleCreateProjectFromPrompt` uses `flushSync` to update `projectNameInput`, then calls `handleCreateWorkspaceProject` from the stale pre-update closure where `projectNameInput` is still empty. The create handler fails the required-name guard and the error is not shown on the Home view ?X the user sees nothing happen.
 2. After project creation (second click), the typed prompt is copied into the AI Prompt box but is not sent. User must press Send manually.
 
 **Objective:**
-Make "Build anything" a true one-click flow: type prompt → click Start once → create/open project/session → send prompt automatically.
+Make "Build anything" a true one-click flow: type prompt ?? click Start once ?? create/open project/session ?? send prompt automatically.
 
 **Files in scope:**
 - `frontend/app/[locale]/app/page.tsx`
@@ -16817,7 +16897,7 @@ Make "Build anything" a true one-click flow: type prompt → click Start once → 
 
 **Acceptance criteria:**
 - [x] HOME-START-01 registered in TASKS.md and TASKS_BACKLOG_FULL.md
-- [x] Single click on Start creates project and auto-sends prompt — no second click required
+- [x] Single click on Start creates project and auto-sends prompt ?X no second click required
 - [x] No duplicate send on double-click
 - [x] Home view shows error if project creation fails
 - [x] Start button shows loading label (`workspace.starting`) during creation

@@ -161,6 +161,8 @@ const PENDING_HOME_PROMPT_STORAGE_KEY = 'aisandbox_pending_prompt';
 const CHAT_EXECUTION_POLL_INTERVAL_MS = 3000;
 const PROJECT_OPEN_FILE_REFRESH_RETRY_DELAY_MS = 250;
 const PROJECT_OPEN_FILE_REFRESH_MAX_ATTEMPTS = 6;
+const PREVIEW_FIRST_LOAD_ERROR_RETRY_MAX_ATTEMPTS = 3;
+const PREVIEW_FIRST_LOAD_ERROR_RETRY_DELAY_MS = 2000;
 const AI_AUTO_CHECKPOINT_DESCRIPTION = 'AI: applied workspace file actions';
 const VISUAL_EDIT_CHECKPOINT_DESCRIPTION = 'Visual Edit: applied file changes';
 const AUTH_MODULE_PREINSTALL_CHECKPOINT_DESCRIPTION = 'Auth Module: pre-install snapshot';
@@ -1058,6 +1060,8 @@ export default function AppPage() {
   const [previewState, setPreviewState] = useState<WorkspacePreviewState>('unavailable');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const previewRequestIdRef = useRef(0);
+  const previewErrorRetryCountRef = useRef(0);
+  const previewErrorRetryTimeoutRef = useRef<number | null>(null);
   const [fileSurfaceState, setFileSurfaceState] = useState<WorkspaceFileSurfaceState>('empty');
   const [workspaceFileTree, setWorkspaceFileTree] = useState<WorkspaceFileNode[]>([]);
   const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
@@ -1075,6 +1079,13 @@ export default function AppPage() {
   const checkpointCompareRequestIdRef = useRef(0);
   const checkpointSnapshotRequestIdRef = useRef(0);
   const checkpointLiveOpenRequestIdRef = useRef(0);
+
+  function clearPreviewErrorRetryTimeout(): void {
+    if (previewErrorRetryTimeoutRef.current !== null) {
+      window.clearTimeout(previewErrorRetryTimeoutRef.current);
+      previewErrorRetryTimeoutRef.current = null;
+    }
+  }
 
   function handleWorkspaceUnauthorizedAccess(): void {
     setAuthLoading(true);
@@ -1260,6 +1271,18 @@ export default function AppPage() {
   useEffect(() => {
     selectedSessionIdRef.current = selectedSessionId;
   }, [selectedSessionId]);
+
+  useEffect(() => {
+    previewErrorRetryCountRef.current = 0;
+    clearPreviewErrorRetryTimeout();
+  }, [selectedSessionId]);
+
+  useEffect(
+    () => () => {
+      clearPreviewErrorRetryTimeout();
+    },
+    [],
+  );
 
   useEffect(() => {
     if (autoSendFromHomeTick === 0) {
@@ -1595,12 +1618,14 @@ export default function AppPage() {
     }
 
     if (!selectedSessionId) {
+      previewErrorRetryCountRef.current = 0;
+      clearPreviewErrorRetryTimeout();
       setPreviewState('unavailable');
       setPreviewUrl(null);
       return;
     }
 
-    void refreshPreviewForSession(selectedSessionId);
+    void refreshPreviewForSession(selectedSessionId, true);
   }, [selectedSessionId, userId]);
 
   useEffect(() => {
@@ -2237,7 +2262,7 @@ export default function AppPage() {
 
           await hydrateWorkspaceForProjectOpen(openSessionId, expectsRestoredFiles);
 
-          await refreshPreviewForSession(openSessionId);
+          await refreshPreviewForSession(openSessionId, true);
           await loadCheckpoints(openSessionId);
           await loadSessions();
           setSelectedSessionId((current) => current ?? openSessionId);
@@ -2400,7 +2425,7 @@ export default function AppPage() {
 
         await hydrateWorkspaceForProjectOpen(openSessionId, expectsRestoredFiles);
 
-        await refreshPreviewForSession(openSessionId);
+        await refreshPreviewForSession(openSessionId, true);
         await loadCheckpoints(openSessionId);
         await loadSessions();
         setSelectedSessionId((current) => current ?? openSessionId);
@@ -2453,7 +2478,7 @@ export default function AppPage() {
 
       await hydrateWorkspaceForProjectOpen(openSessionId, expectsRestoredFiles);
 
-      await refreshPreviewForSession(openSessionId);
+      await refreshPreviewForSession(openSessionId, true);
       await loadCheckpoints(openSessionId);
       await loadSessions();
       setSelectedSessionId((current) => current ?? openSessionId);
@@ -2514,7 +2539,7 @@ export default function AppPage() {
 
       await hydrateWorkspaceForProjectOpen(openSessionId, expectsRestoredFiles);
 
-      await refreshPreviewForSession(openSessionId);
+      await refreshPreviewForSession(openSessionId, true);
       await loadCheckpoints(openSessionId);
       await loadSessions();
       setSelectedSessionId((current) => current ?? openSessionId);
@@ -2582,7 +2607,7 @@ export default function AppPage() {
 
       await hydrateWorkspaceForProjectOpen(openSessionId, expectsRestoredFiles);
 
-      await refreshPreviewForSession(openSessionId);
+      await refreshPreviewForSession(openSessionId, true);
       await loadCheckpoints(openSessionId);
       await loadSessions();
       setSelectedSessionId((current) => current ?? openSessionId);
@@ -5443,13 +5468,14 @@ export default function AppPage() {
     await loadWorkspaceFileContent(selectedSessionId, filePath);
   }
 
-  async function refreshPreviewForSession(sessionId: string): Promise<void> {
+  async function refreshPreviewForSession(sessionId: string, autoStart = false): Promise<void> {
     const requestId = previewRequestIdRef.current + 1;
     previewRequestIdRef.current = requestId;
+    clearPreviewErrorRetryTimeout();
     setPreviewState('loading');
     setPreviewUrl(null);
 
-    try {
+    const loadPreviewStatus = async (): Promise<WorkspacePreviewStatusResponse> => {
       const statusResponse = await fetch(`/api/preview/${sessionId}/status`, {
         method: 'GET',
       });
@@ -5458,19 +5484,66 @@ export default function AppPage() {
         throw new Error(`Preview status failed (${statusResponse.status})`);
       }
 
-      const statusData = (await statusResponse.json()) as WorkspacePreviewStatusResponse;
+      return (await statusResponse.json()) as WorkspacePreviewStatusResponse;
+    };
+
+    try {
+      const statusData = await loadPreviewStatus();
 
       if (previewRequestIdRef.current !== requestId) {
         return;
       }
 
-      if (!isPreviewRunning(statusData)) {
+      if (isPreviewRunning(statusData)) {
+        previewErrorRetryCountRef.current = 0;
+        setPreviewUrl(buildPreviewProxyUrl(sessionId, Date.now()));
+        return;
+      }
+
+      if (!autoStart) {
+        previewErrorRetryCountRef.current = 0;
         setPreviewState('unavailable');
         setPreviewUrl(null);
         return;
       }
 
-      setPreviewUrl(buildPreviewProxyUrl(sessionId, Date.now()));
+      try {
+        const startResponse = await fetch(`/api/preview/${sessionId}/start`, {
+          method: 'POST',
+        });
+
+        if (!startResponse.ok) {
+          const detail = await readResponseErrorMessage(startResponse);
+          throw new Error(
+            detail
+              ? `Preview auto-start failed (${startResponse.status}): ${detail}`
+              : `Preview auto-start failed (${startResponse.status})`,
+          );
+        }
+
+        const recheckStatusData = await loadPreviewStatus();
+        if (previewRequestIdRef.current !== requestId) {
+          return;
+        }
+
+        if (isPreviewRunning(recheckStatusData)) {
+          previewErrorRetryCountRef.current = 0;
+          setPreviewUrl(buildPreviewProxyUrl(sessionId, Date.now()));
+          return;
+        }
+
+        previewErrorRetryCountRef.current = 0;
+        setPreviewState('unavailable');
+        setPreviewUrl(null);
+      } catch (startError) {
+        console.error('Failed to auto-start preview:', startError);
+        if (previewRequestIdRef.current !== requestId) {
+          return;
+        }
+        previewErrorRetryCountRef.current = 0;
+        setPreviewState('unavailable');
+        setPreviewUrl(null);
+      }
     } catch (error) {
       console.error('Failed to load preview state:', error);
       if (previewRequestIdRef.current !== requestId) {
@@ -5492,7 +5565,7 @@ export default function AppPage() {
       return;
     }
 
-    await refreshPreviewForSession(selectedSessionId);
+    await refreshPreviewForSession(selectedSessionId, false);
   }
 
   async function handleStartPreview(): Promise<void> {
@@ -5501,11 +5574,15 @@ export default function AppPage() {
     }
 
     if (!selectedSessionId) {
+      previewErrorRetryCountRef.current = 0;
+      clearPreviewErrorRetryTimeout();
       setPreviewState('unavailable');
       setPreviewUrl(null);
       return;
     }
 
+    previewErrorRetryCountRef.current = 0;
+    clearPreviewErrorRetryTimeout();
     setPreviewState('loading');
     setPreviewUrl(null);
 
@@ -5523,7 +5600,7 @@ export default function AppPage() {
         );
       }
 
-      await refreshPreviewForSession(selectedSessionId);
+      await refreshPreviewForSession(selectedSessionId, false);
 
       if (
         PROJECT_FIRST_UX &&
@@ -5562,7 +5639,32 @@ export default function AppPage() {
   }
 
   function handlePreviewError(): void {
+    if (!selectedSessionId) {
+      previewErrorRetryCountRef.current = 0;
+      clearPreviewErrorRetryTimeout();
+      setPreviewState('unavailable');
+      setPreviewUrl(null);
+      return;
+    }
+
+    if (previewErrorRetryCountRef.current < PREVIEW_FIRST_LOAD_ERROR_RETRY_MAX_ATTEMPTS) {
+      const retrySessionId = selectedSessionId;
+      previewErrorRetryCountRef.current += 1;
+      setPreviewState('loading');
+      clearPreviewErrorRetryTimeout();
+      previewErrorRetryTimeoutRef.current = window.setTimeout(() => {
+        if (selectedSessionIdRef.current !== retrySessionId) {
+          return;
+        }
+        void refreshPreviewForSession(retrySessionId, false);
+      }, PREVIEW_FIRST_LOAD_ERROR_RETRY_DELAY_MS);
+      return;
+    }
+
+    previewErrorRetryCountRef.current = 0;
+    clearPreviewErrorRetryTimeout();
     setPreviewState('error');
+    setPreviewUrl(null);
   }
 
   function handlePreviewElementSelected(element: SelectedPreviewElement | null): void {

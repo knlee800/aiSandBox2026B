@@ -6620,6 +6620,73 @@ describe('workspace preview logic — UX-IA-15B helpers', () => {
   });
 });
 
+describe('workspace preview auto-start and retry wiring — UX-PV-01', () => {
+  test('page source supports preview status auto-start fallback with recheck', () => {
+    const pageSource = readFileSync(
+      new URL('../../app/[locale]/app/page.tsx', import.meta.url),
+      'utf8',
+    );
+
+    assert.match(
+      pageSource,
+      /async function refreshPreviewForSession\(sessionId: string, autoStart = false\): Promise<void> \{/,
+    );
+    assert.match(pageSource, /const startResponse = await fetch\(`\/api\/preview\/\$\{sessionId\}\/start`, \{/);
+    assert.match(pageSource, /const recheckStatusData = await loadPreviewStatus\(\);/);
+    assert.match(
+      pageSource,
+      /if \(!autoStart\) \{\s+previewErrorRetryCountRef\.current = 0;\s+setPreviewState\('unavailable'\);\s+setPreviewUrl\(null\);\s+return;\s+\}/,
+    );
+  });
+
+  test('selected session/project open paths refresh preview with autoStart enabled', () => {
+    const pageSource = readFileSync(
+      new URL('../../app/[locale]/app/page.tsx', import.meta.url),
+      'utf8',
+    );
+
+    assert.match(pageSource, /void refreshPreviewForSession\(selectedSessionId, true\);/);
+    assert.match(pageSource, /await refreshPreviewForSession\(openSessionId, true\);/);
+  });
+
+  test('preview iframe error handler retries before transitioning to error state', () => {
+    const pageSource = readFileSync(
+      new URL('../../app/[locale]/app/page.tsx', import.meta.url),
+      'utf8',
+    );
+
+    assert.match(
+      pageSource,
+      /function handlePreviewError\(\): void \{[\s\S]*?previewErrorRetryCountRef\.current < PREVIEW_FIRST_LOAD_ERROR_RETRY_MAX_ATTEMPTS[\s\S]*?window\.setTimeout\(\(\) => \{[\s\S]*?refreshPreviewForSession\(retrySessionId, false\)[\s\S]*?\}, PREVIEW_FIRST_LOAD_ERROR_RETRY_DELAY_MS\);[\s\S]*?setPreviewState\('error'\);[\s\S]*?setPreviewUrl\(null\);[\s\S]*?\}/,
+    );
+  });
+
+  test('preview retry counter is defined and reset on success, unavailable, session change, and start', () => {
+    const pageSource = readFileSync(
+      new URL('../../app/[locale]/app/page.tsx', import.meta.url),
+      'utf8',
+    );
+
+    assert.match(pageSource, /const previewErrorRetryCountRef = useRef\(0\);/);
+    assert.match(
+      pageSource,
+      /if \(isPreviewRunning\(statusData\)\) \{\s+previewErrorRetryCountRef\.current = 0;\s+setPreviewUrl\(buildPreviewProxyUrl\(sessionId, Date\.now\(\)\)\);\s+return;\s+\}/,
+    );
+    assert.match(
+      pageSource,
+      /if \(!autoStart\) \{\s+previewErrorRetryCountRef\.current = 0;\s+setPreviewState\('unavailable'\);\s+setPreviewUrl\(null\);\s+return;\s+\}/,
+    );
+    assert.match(
+      pageSource,
+      /useEffect\(\(\) => \{\s+previewErrorRetryCountRef\.current = 0;\s+clearPreviewErrorRetryTimeout\(\);\s+\}, \[selectedSessionId\]\);/,
+    );
+    assert.match(
+      pageSource,
+      /previewErrorRetryCountRef\.current = 0;\s+clearPreviewErrorRetryTimeout\(\);\s+setPreviewState\('loading'\);\s+setPreviewUrl\(null\);/,
+    );
+  });
+});
+
 describe('workspace prompt context — UX-IA-15C helpers', () => {
   const selectedPreviewElement: SelectedPreviewElement = {
     tagName: 'button',
