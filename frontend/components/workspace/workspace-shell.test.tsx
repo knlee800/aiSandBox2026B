@@ -958,6 +958,7 @@ describe('workspace shell component', () => {
     const html = renderWorkspaceShell();
 
     assert.match(html, /AI Sandbox Workspace/);
+    assert.doesNotMatch(html, /Workspace ready/);
     assert.match(html, /chat-panel-shell/);
     assert.match(html, /Model Provider/);
     assert.match(html, /Enable bounded orchestration \(up to 3 sequential steps\)/);

@@ -8149,6 +8149,8 @@ function ShellStateMessage(props: {
     );
   }
 
+  if (state === 'ready') return null;
+
   return (
     <StateMessage
       tone="success"

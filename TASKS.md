@@ -12070,7 +12070,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 **Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) ?X UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) ?X UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) ?X UX-IA-18 COMPLETE and LOCKED — UX-IA-19 COMPLETE and LOCKED — UX-IA-20 COMPLETE and LOCKED — UX-IA-21 COMPLETE and LOCKED — UX-IA-22 COMPLETE and LOCKED — UX-IA-23 COMPLETE and LOCKED — UX-IA-24 COMPLETE and LOCKED — UX-IA-25 COMPLETE and LOCKED — UX-IA-26 COMPLETE and LOCKED — UX-IA-27 COMPLETE and LOCKED — UX-IA-28 COMPLETE and LOCKED — UX-IA-29 COMPLETE and LOCKED — UX-IA-30 COMPLETE and LOCKED — UX-IA-31 COMPLETE and LOCKED — UX-IA-32 COMPLETE and LOCKED — UX-IA-33 COMPLETE and LOCKED — UX-IA-34 COMPLETE and LOCKED — UX-IA-35 COMPLETE and LOCKED
 
-**Current stage:** UX-IA-36 COMPLETE and LOCKED — History Icon + Chat-History Panel Replacement
+**Current stage:** UX-IA-37 COMPLETE and LOCKED — Hide Workspace Ready Status Box
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -12128,6 +12128,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 35. UX-IA-34 — Move Command Input to Advanced Developer Tools (COMPLETE and LOCKED — `docs/UX-IA-34-CHECKPOINT.md`)
 36. UX-IA-35 — Build Targets Placement (COMPLETE and LOCKED — `docs/UX-IA-35-CHECKPOINT.md`)
 37. UX-IA-36 — History Icon + Chat-History Panel Replacement (COMPLETE and LOCKED — `docs/UX-IA-36-CHECKPOINT.md`)
+38. UX-IA-37 — Hide Workspace Ready Status Box (COMPLETE and LOCKED — `docs/UX-IA-37-CHECKPOINT.md`)
 
 ---
 
@@ -15285,6 +15286,69 @@ git -C "C:\Users\knlee\aiSandBox2026B" restore -- frontend/tsconfig.tsbuildinfo
 ```
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-36. See `docs/UX-IA-36-CHECKPOINT.md`.
+
+----
+
+#### UX-IA-37: Hide Workspace Ready Status Box
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** UX-IA-37
+**Family:** UX-IA
+**Priority:** Low
+**Nature:** FRONTEND-ONLY / PROJECT WORKSPACE CLUTTER CLEANUP
+**Risk:** Low
+**Depends on:** UX-IA-36 (COMPLETE and LOCKED — `docs/UX-IA-36-CHECKPOINT.md`)
+**Checkpoint:** `docs/UX-IA-37-CHECKPOINT.md`
+
+**Problem:**
+The "Workspace ready" success box appears in the Project Workspace chat area during the normal ready state. It is non-actionable and visually clutters the now-clean chat/history panel established by UX-IA-36.
+
+**Objective:**
+Hide only the ready-state success box by returning `null` from `ShellStateMessage` when `state === 'ready'`. Preserve loading, error, and empty/no-session state messages unchanged.
+
+**Files in scope:**
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+
+**Scope:**
+- In `ShellStateMessage`, add `if (state === 'ready') return null;` before the final fallthrough return.
+- Preserve `loading` state message ("Workspace is loading").
+- Preserve `error` state message ("Workspace unavailable").
+- Preserve `empty` state message ("No project open" / "No session selected").
+- Do not change `computeWorkspaceShellState` logic.
+- Do not change `workspace-shell.logic.ts` or `workspace-shell.logic.test.ts`.
+- Add `assert.doesNotMatch(html, /Workspace ready/)` to the existing baseline ready-state render test.
+- No i18n changes.
+- No backend changes.
+
+**Non-goals:**
+- No History/Chat replacement changes
+- No Build Targets changes
+- No Command Input changes
+- No sidebar changes
+- No project trust note changes
+- No broader status-message redesign
+- No locale/message JSON changes
+
+**Acceptance criteria:**
+- [x] UX-IA-37 registered in TASKS.md and TASKS_BACKLOG_FULL.md
+- [x] `ShellStateMessage` returns `null` for `state === 'ready'`
+- [x] "Workspace ready" box no longer appears in normal operating state
+- [x] Loading, error, and empty/no-session state messages still render correctly
+- [x] `assert.doesNotMatch(html, /Workspace ready/)` added to baseline ready-state render test
+- [x] `npx tsc --noEmit` — PASS
+- [x] `npm test` — PASS (576/576)
+- [x] ReadLints — PASS
+- [x] Live browser test — PASS
+
+**Validation commands:**
+```powershell
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npx tsc --noEmit
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npm test
+git -C "C:\Users\knlee\aiSandBox2026B" restore -- frontend/tsconfig.tsbuildinfo
+```
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-37. See `docs/UX-IA-37-CHECKPOINT.md`.
 
 ---
 
