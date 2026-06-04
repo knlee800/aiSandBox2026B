@@ -27,8 +27,8 @@ export default async function LocaleLayout({
   const messages = (await import(`../../messages/${locale}.json`)).default;
 
   return (
-    <html lang={locale} className={inter.variable}>
-      <body>
+    <html lang={locale} className={`${inter.variable} h-full`}>
+      <body className="h-full">
         <TranslationProvider
           locale={locale}
           messages={messages}

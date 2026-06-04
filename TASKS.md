@@ -12070,7 +12070,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 **Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) ?X UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) ?X UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) ?X UX-IA-18 COMPLETE and LOCKED — UX-IA-19 COMPLETE and LOCKED — UX-IA-20 COMPLETE and LOCKED — UX-IA-21 COMPLETE and LOCKED — UX-IA-22 COMPLETE and LOCKED — UX-IA-23 COMPLETE and LOCKED — UX-IA-24 COMPLETE and LOCKED — UX-IA-25 COMPLETE and LOCKED — UX-IA-26 COMPLETE and LOCKED — UX-IA-27 COMPLETE and LOCKED — UX-IA-28 COMPLETE and LOCKED — UX-IA-29 COMPLETE and LOCKED — UX-IA-30 COMPLETE and LOCKED — UX-IA-31 COMPLETE and LOCKED — UX-IA-32 COMPLETE and LOCKED — UX-IA-33 COMPLETE and LOCKED — UX-IA-34 COMPLETE and LOCKED — UX-IA-35 COMPLETE and LOCKED
 
-**Current stage:** UX-IA-35 COMPLETE and LOCKED — Build Targets Placement
+**Current stage:** UX-IA-36 COMPLETE and LOCKED — History Icon + Chat-History Panel Replacement
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -12127,6 +12127,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 34. UX-IA-33 — Professional AI Conversation Panel Baseline (COMPLETE and LOCKED — `docs/UX-IA-33-CHECKPOINT.md`)
 35. UX-IA-34 — Move Command Input to Advanced Developer Tools (COMPLETE and LOCKED — `docs/UX-IA-34-CHECKPOINT.md`)
 36. UX-IA-35 — Build Targets Placement (COMPLETE and LOCKED — `docs/UX-IA-35-CHECKPOINT.md`)
+37. UX-IA-36 — History Icon + Chat-History Panel Replacement (COMPLETE and LOCKED — `docs/UX-IA-36-CHECKPOINT.md`)
 
 ---
 
@@ -15202,6 +15203,88 @@ Move Build Targets out of the chat panel and into a compact project-level toolba
 - Live browser test — PASS
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-35. See `docs/UX-IA-35-CHECKPOINT.md`.
+
+----
+
+#### UX-IA-36: History Icon + Chat-History Panel Replacement
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** UX-IA-36
+**Family:** UX-IA
+**Priority:** Medium
+**Nature:** FRONTEND-ONLY / PROJECT WORKSPACE IA CLEANUP
+**Risk:** Low-Medium
+**Depends on:** UX-IA-35 (COMPLETE and LOCKED — `docs/UX-IA-35-CHECKPOINT.md`)
+**Checkpoint:** `docs/UX-IA-36-CHECKPOINT.md`
+
+**Problem:**
+The Chat/History segmented tab toggle in the Project Workspace AI panel looks unprofessional and gives History equal visual weight with Chat. History is a secondary utility, not a primary view competing with the AI conversation.
+
+**Objective:**
+Replace the Chat/History tab toggle with a small History icon button (`ClockIcon` from `@heroicons/react/24/outline`) in the Project Workspace header bar, near the existing utility controls. Clicking the icon opens a right-side drawer overlay containing the existing history content. Chat becomes always visible as the primary AI conversation panel.
+
+**Files in scope:**
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+**Scope:**
+- Remove Chat/History segmented tab toggle (`data-testid="workspace-ai-panel-toggle"`) from AI panel
+- Add `ClockIcon` button (`@heroicons/react/24/outline`) to Project Workspace header near the collapse toggle — `data-testid="workspace-history-drawer-toggle"`
+- Add right-side drawer overlay for history content — `data-testid="workspace-history-drawer"`, `data-testid="workspace-history-drawer-backdrop"`
+- Add `XMarkIcon` close button — `data-testid="workspace-history-drawer-close"` — and backdrop click-to-close
+- Add i18n keys: `project.openHistory`, `project.closeHistory` to `en.json`, `zh-TW.json`, `zh-CN.json`
+- Replace `aiPanelView` state with `historyDrawerOpen` boolean state
+- Chat content always visible in AI panel (no hidden toggle)
+- Move restore confirm bar and all history content inside the drawer
+- Preserve `data-testid="workspace-ai-panel-history-content"` wrapper inside the drawer
+- Preserve all existing `history-*` child data-testid values unchanged
+- Preserve all existing history/checkpoint/revert/diff/compare/pin/snapshot/project behavior
+
+**Non-goals:**
+- No backend changes
+- No routing changes
+- No new dependencies
+- No chat panel redesign
+- No Build Targets changes
+- No Command Input changes
+- No sidebar changes
+- No broad Project Workspace redesign
+
+**Critical rules:**
+- Heroicons v2 Outline only: `ClockIcon`, `XMarkIcon` from `@heroicons/react/24/outline`
+- No Lucide, Font Awesome, Material Icons, inline SVG, or emoji
+- Multilingual-first: all new `aria-label`/`title` text uses i18n keys only
+- Preserve all existing test IDs on history child components
+
+**Acceptance criteria:**
+- [x] UX-IA-36 registered in TASKS.md and TASKS_BACKLOG_FULL.md
+- [x] Chat/History segmented tab toggle removed from AI panel
+- [x] `ClockIcon` / `ChatBubbleLeftIcon` toggle button in chat panel top-right (`data-testid="workspace-history-drawer-toggle"`)
+- [x] History content replaces chat panel content in-panel (no drawer — scope evolved from drawer to in-panel replacement after live UX review)
+- [x] Chat content always visible in AI panel without any view toggle
+- [x] `project.openHistory`, `project.closeHistory`, `project.backToChat` added to `en.json`, `zh-TW.json`, `zh-CN.json`
+- [x] All existing `history-*` child data-testid values preserved
+- [x] Restore confirm bar (`workspace-restore-confirm-bar`) preserved inside history panel
+- [x] `workspace-ai-panel-history-content` preserved inside history panel
+- [x] All existing history/checkpoint/revert/diff/compare/pin/snapshot/project behavior preserved
+- [x] Chat/history panel owns internal scrollbar (top-level height chain fixed via `h-full` on html/body, `h-screen` on workspace-shell)
+- [x] Chat input composer pinned to bottom of chat panel
+- [x] `npx tsc --noEmit` — PASS
+- [x] `npm test` — PASS (576/576)
+- [x] ReadLints — PASS
+- [x] Live browser smoke test — PASS
+
+**Validation commands:**
+```powershell
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npx tsc --noEmit
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npm test
+git -C "C:\Users\knlee\aiSandBox2026B" restore -- frontend/tsconfig.tsbuildinfo
+```
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-IA-36. See `docs/UX-IA-36-CHECKPOINT.md`.
 
 ---
 

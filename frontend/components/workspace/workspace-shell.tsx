@@ -76,6 +76,7 @@ import {
   AI_PANEL_COLLAPSED_STORAGE_KEY,
   type TabOrientation,
 } from './workspace-tab-registry';
+import { ChatBubbleLeftIcon, ClockIcon } from '@heroicons/react/24/outline';
 
 let recoveryCopy = getRecoveryCopy('en');
 
@@ -486,7 +487,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const [activeTabId, setActiveTabId] = React.useState(DEFAULT_ACTIVE_TAB_ID);
   const [tabOrientation, setTabOrientation] = React.useState<TabOrientation>(readStoredTabOrientation);
   const [aiPanelCollapsed, setAiPanelCollapsed] = React.useState(readStoredAiPanelCollapsed);
-  const [aiPanelView, setAiPanelView] = React.useState<'chat' | 'history'>('chat');
+  const [historyPanelOpen, setHistoryPanelOpen] = React.useState(false);
   const [pickerActive, setPickerActive] = React.useState(false);
   const previewIframeRef = React.useRef<HTMLIFrameElement | null>(null);
   const [selectedPreviewElement, setSelectedPreviewElement] = React.useState<SelectedPreviewElement | null>(null);
@@ -732,6 +733,15 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const handleCancelRestore = () => {
     setPendingRestoreSnapshotId(null);
   };
+  const toggleHistoryPanel = React.useCallback(() => {
+    setHistoryPanelOpen((previous) => {
+      const next = !previous;
+      if (!next) {
+        setPendingRestoreSnapshotId(null);
+      }
+      return next;
+    });
+  }, []);
 
   const injectPickerScript = React.useCallback(() => {
     try {
@@ -1144,43 +1154,101 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     </div>
   );
 
+  const historyToggleLabel = historyPanelOpen
+    ? projectPanelMessages.backToChat
+    : projectPanelMessages.openHistory;
+
   const projectChatSection = (
-    <section className="flex flex-col bg-white border border-gray-200 rounded-lg overflow-hidden" data-testid="chat-panel-shell">
-      <WorkspaceChatPanel
-        projectFirstUxEnabled={projectFirstUxEnabled}
-        aiMessages={aiMessages}
-        commonMessages={commonMessages}
-        selectedSessionId={props.selectedSessionId}
-        promptInput={props.chatPromptInput ?? ''}
-        onPromptInputChange={props.onChatPromptInputChange}
-        selectedModelOption={props.selectedModelOption ?? ''}
-        onSelectedModelOptionChange={props.onSelectedModelOptionChange}
-        availableModelOptions={props.availableModelOptions ?? []}
-        orchestrationEnabled={props.orchestrationEnabled ?? false}
-        onOrchestrationEnabledChange={props.onOrchestrationEnabledChange}
-        onSubmitPrompt={props.onSubmitChatPrompt}
-        requestState={props.chatRequestState ?? 'idle'}
-        executionId={props.chatExecutionId ?? null}
-        statusMessage={props.chatStatusMessage ?? null}
-        responseText={props.chatResponseText ?? ''}
-        errorMessage={props.chatError ?? null}
-        visualEditExecutionIds={props.visualEditExecutionIds ?? []}
-        visualEditCheckpointByExecutionId={props.visualEditCheckpointByExecutionId}
-        threadMessages={props.chatThreadMessages ?? []}
-        onConfirmExecutionFileActions={props.onConfirmExecutionFileActions}
-        onCancelExecutionFileActions={props.onCancelExecutionFileActions}
-        onInitiateCheckpointRevert={props.onInitiateCheckpointRevert}
-      />
-      <div className="mt-3">
-        <ShellStateMessage
-          state={shellState}
-          sessionError={props.sessionError}
-          projectFirstUxEnabled={projectFirstUxEnabled}
-          workspaceMessages={workspaceMessages}
-          canReopenProject={canReopenProject}
-          onReopenProject={canReopenProject ? handleReopenProject : undefined}
-          onResumeLatestProject={handleResumeLatestProject}
-        />
+    <section
+      className="flex flex-col flex-1 min-h-0 bg-white border border-gray-200 rounded-lg overflow-hidden"
+      data-testid="chat-panel-shell"
+    >
+      <div className="flex flex-col flex-1 min-h-0" data-testid="workspace-chat-ai-panel">
+        <div className="flex items-center justify-end px-3 pt-2">
+          <button
+            type="button"
+            onClick={toggleHistoryPanel}
+            className="rounded p-1.5 text-gray-600 hover:bg-gray-100"
+            data-testid="workspace-history-drawer-toggle"
+            aria-label={historyToggleLabel}
+            title={historyToggleLabel}
+          >
+            {historyPanelOpen ? <ChatBubbleLeftIcon className="h-4 w-4" /> : <ClockIcon className="h-4 w-4" />}
+          </button>
+        </div>
+        <div
+          className={historyPanelOpen ? 'hidden flex-1 min-h-0 flex flex-col' : 'flex-1 min-h-0 flex flex-col'}
+          data-testid="workspace-ai-panel-chat-content"
+        >
+          <WorkspaceChatPanel
+            projectFirstUxEnabled={projectFirstUxEnabled}
+            aiMessages={aiMessages}
+            commonMessages={commonMessages}
+            selectedSessionId={props.selectedSessionId}
+            promptInput={props.chatPromptInput ?? ''}
+            onPromptInputChange={props.onChatPromptInputChange}
+            selectedModelOption={props.selectedModelOption ?? ''}
+            onSelectedModelOptionChange={props.onSelectedModelOptionChange}
+            availableModelOptions={props.availableModelOptions ?? []}
+            orchestrationEnabled={props.orchestrationEnabled ?? false}
+            onOrchestrationEnabledChange={props.onOrchestrationEnabledChange}
+            onSubmitPrompt={props.onSubmitChatPrompt}
+            requestState={props.chatRequestState ?? 'idle'}
+            executionId={props.chatExecutionId ?? null}
+            statusMessage={props.chatStatusMessage ?? null}
+            responseText={props.chatResponseText ?? ''}
+            errorMessage={props.chatError ?? null}
+            visualEditExecutionIds={props.visualEditExecutionIds ?? []}
+            visualEditCheckpointByExecutionId={props.visualEditCheckpointByExecutionId}
+            threadMessages={props.chatThreadMessages ?? []}
+            onConfirmExecutionFileActions={props.onConfirmExecutionFileActions}
+            onCancelExecutionFileActions={props.onCancelExecutionFileActions}
+            onInitiateCheckpointRevert={props.onInitiateCheckpointRevert}
+          />
+          <div className="mt-3">
+            <ShellStateMessage
+              state={shellState}
+              sessionError={props.sessionError}
+              projectFirstUxEnabled={projectFirstUxEnabled}
+              workspaceMessages={workspaceMessages}
+              canReopenProject={canReopenProject}
+              onReopenProject={canReopenProject ? handleReopenProject : undefined}
+              onResumeLatestProject={handleResumeLatestProject}
+            />
+          </div>
+        </div>
+        <div
+          className={historyPanelOpen ? 'flex-1 min-h-0 overflow-y-auto' : 'hidden flex-1 min-h-0 overflow-y-auto'}
+          data-testid="workspace-ai-panel-history-content"
+        >
+          {pendingRestoreSnapshotId ? (
+            <section
+              className="mx-2 mt-2 rounded border border-amber-200 bg-amber-50 p-3"
+              data-testid="workspace-restore-confirm-bar"
+            >
+              <p className="text-xs text-amber-900">{projectPanelMessages.restoreConfirm}</p>
+              <div className="mt-2 flex gap-2">
+                <button
+                  type="button"
+                  className="rounded bg-amber-700 px-2 py-1 text-xs font-medium text-white"
+                  data-testid="workspace-restore-confirm-button"
+                  onClick={handleConfirmRestore}
+                >
+                  {projectPanelMessages.restore}
+                </button>
+                <button
+                  type="button"
+                  className="rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-700"
+                  data-testid="workspace-restore-cancel-button"
+                  onClick={handleCancelRestore}
+                >
+                  {commonMessages.cancel}
+                </button>
+              </div>
+            </section>
+          ) : null}
+          {makeHistoryAndDashboardContent()}
+        </div>
       </div>
     </section>
   );
@@ -1752,7 +1820,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
 
   if (!projectFirstUxEnabled) {
     return (
-      <div className="min-h-screen bg-gray-100 flex flex-col" data-testid="workspace-shell">
+      <div className="h-screen bg-gray-100 flex flex-col" data-testid="workspace-shell">
         <header className="h-14 bg-white border-b border-gray-200 px-4 flex items-center justify-between">
           <div>
             <h1 className="text-sm font-semibold text-gray-900">AI Sandbox Workspace</h1>
@@ -1886,7 +1954,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     projectFirstUxEnabled && isCreateWorkspacePanelOpen;
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col" data-testid="workspace-shell">
+    <div className="h-screen bg-gray-100 flex flex-col" data-testid="workspace-shell">
       <div className="border-b border-gray-200 bg-white px-4 py-2 md:hidden">
         <button
           type="button"
@@ -1983,7 +2051,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
             ? templatesWorkspaceContent
             : null}
           {!shouldShowFocusedCreateWorkspacePanel && resolvedWorkspaceView === 'project' ? (
-            <div data-testid="workspace-project-view" className="flex flex-1 min-h-0 flex-col">
+            <div data-testid="workspace-project-view" className="flex flex-1 min-h-0 flex-col overflow-hidden">
               <header
                 className="flex items-center gap-3 border-b border-gray-200 bg-white px-4 py-2"
                 data-testid="workspace-project-mode-header"
@@ -2013,79 +2081,10 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
               <div className="flex flex-1 min-h-0 flex-col md:flex-row">
                 {!aiPanelCollapsed ? (
                   <aside
-                    className="w-full max-h-[50vh] md:w-96 md:max-h-none border-r border-gray-200 bg-white overflow-y-auto flex flex-col gap-2 p-2"
+                    className="w-full max-h-[50vh] md:w-96 md:max-h-none border-r border-gray-200 bg-white overflow-hidden flex flex-col gap-2 p-2"
                     data-testid="workspace-project-ai-panel"
                   >
-                    <div
-                      className="sticky top-0 z-10 -m-2 mb-2 flex border-b border-gray-200 bg-white"
-                      data-testid="workspace-ai-panel-toggle"
-                    >
-                      <button
-                        type="button"
-                        className={`flex-1 px-3 py-2 text-xs font-semibold ${
-                          aiPanelView === 'chat'
-                            ? 'border-b-2 border-gray-900 text-gray-900'
-                            : 'text-gray-600 hover:bg-gray-50'
-                        }`}
-                        data-testid="workspace-ai-panel-view-chat"
-                        onClick={() => {
-                          setAiPanelView('chat');
-                          setPendingRestoreSnapshotId(null);
-                        }}
-                      >
-                        {projectPanelMessages.chat}
-                      </button>
-                      <button
-                        type="button"
-                        className={`flex-1 px-3 py-2 text-xs font-semibold ${
-                          aiPanelView === 'history'
-                            ? 'border-b-2 border-gray-900 text-gray-900'
-                            : 'text-gray-600 hover:bg-gray-50'
-                        }`}
-                        data-testid="workspace-ai-panel-view-history"
-                        onClick={() => setAiPanelView('history')}
-                      >
-                        {projectPanelMessages.history}
-                      </button>
-                    </div>
-                    <div
-                      className={aiPanelView === 'chat' ? '' : 'hidden'}
-                      data-testid="workspace-ai-panel-chat-content"
-                    >
-                      {projectChatSection}
-                    </div>
-                    <div
-                      className={aiPanelView === 'history' ? '' : 'hidden'}
-                      data-testid="workspace-ai-panel-history-content"
-                    >
-                      {pendingRestoreSnapshotId ? (
-                        <section
-                          className="rounded border border-amber-200 bg-amber-50 p-3"
-                          data-testid="workspace-restore-confirm-bar"
-                        >
-                          <p className="text-xs text-amber-900">{projectPanelMessages.restoreConfirm}</p>
-                          <div className="mt-2 flex gap-2">
-                            <button
-                              type="button"
-                              className="rounded bg-amber-700 px-2 py-1 text-xs font-medium text-white"
-                              data-testid="workspace-restore-confirm-button"
-                              onClick={handleConfirmRestore}
-                            >
-                              {projectPanelMessages.restore}
-                            </button>
-                            <button
-                              type="button"
-                              className="rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-700"
-                              data-testid="workspace-restore-cancel-button"
-                              onClick={handleCancelRestore}
-                            >
-                              {commonMessages.cancel}
-                            </button>
-                          </div>
-                        </section>
-                      ) : null}
-                      {makeHistoryAndDashboardContent()}
-                    </div>
+                    {projectChatSection}
                   </aside>
                 ) : null}
                 <main
@@ -2960,8 +2959,8 @@ function WorkspaceChatPanel(props: {
   };
 
   return (
-    <div className="flex flex-col" data-testid="workspace-chat-ai-panel">
-      <div className="max-h-[60vh] overflow-y-auto p-3" data-testid="workspace-chat-thread">
+    <div className="flex flex-col flex-1 min-h-0">
+      <div className="flex-1 min-h-0 overflow-y-auto p-3" data-testid="workspace-chat-thread">
         <p className="sr-only">{props.aiMessages.messageThread}</p>
         {props.threadMessages.length === 0 ? (
           <div className="mt-1 space-y-2 text-sm text-gray-500" data-testid="workspace-chat-empty-state">

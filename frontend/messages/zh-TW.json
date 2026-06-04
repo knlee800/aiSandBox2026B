@@ -213,6 +213,9 @@
   "project": {
     "chat": "聊天",
     "history": "歷史",
+    "openHistory": "開啟歷史",
+    "closeHistory": "關閉歷史",
+    "backToChat": "返回聊天",
     "preview": "預覽",
     "codeFiles": "程式碼與檔案",
     "restore": "還原此版本",

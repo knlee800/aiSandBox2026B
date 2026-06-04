@@ -213,6 +213,9 @@
   "project": {
     "chat": "Chat",
     "history": "History",
+    "openHistory": "Open history",
+    "closeHistory": "Close history",
+    "backToChat": "Back to chat",
     "preview": "Preview",
     "codeFiles": "Code & Files",
     "restore": "Restore this version",

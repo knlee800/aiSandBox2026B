@@ -878,6 +878,39 @@ function withPatchedWindowConfirm<T>(
   }
 }
 
+function withPatchedWorkspaceShellWindow<T>(run: () => T): T {
+  const globalObject = globalThis as typeof globalThis & { window?: unknown };
+  const originalWindow = globalObject.window;
+  const storage = new Map<string, string>();
+  (globalObject as { window?: unknown }).window = {
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    location: { origin: 'http://localhost' },
+    localStorage: {
+      getItem: (key: string) => storage.get(key) ?? null,
+      setItem: (key: string, value: string) => {
+        storage.set(key, value);
+      },
+      removeItem: (key: string) => {
+        storage.delete(key);
+      },
+      clear: () => {
+        storage.clear();
+      },
+    },
+  };
+
+  try {
+    return run();
+  } finally {
+    if (originalWindow === undefined) {
+      delete (globalObject as { window?: unknown }).window;
+    } else {
+      (globalObject as { window?: unknown }).window = originalWindow;
+    }
+  }
+}
+
 function withPatchedWindowPrompt<T>(
   promptImpl: (message?: string, defaultValue?: string) => string | null,
   run: () => T,
@@ -1807,9 +1840,11 @@ describe('workspace shell component', () => {
     assert.match(html, /workspace-project-view/);
     assert.match(html, /chat-panel-shell/);
     assert.match(html, /workspace-preview-panel/);
-    assert.match(html, /workspace-ai-panel-toggle/);
-    assert.match(html, /workspace-ai-panel-view-chat/);
-    assert.match(html, /workspace-ai-panel-view-history/);
+    assert.match(html, /workspace-history-drawer-toggle/);
+    assert.match(html, /workspace-ai-panel-chat-content/);
+    assert.doesNotMatch(html, /workspace-ai-panel-toggle/);
+    assert.doesNotMatch(html, /workspace-ai-panel-view-chat/);
+    assert.doesNotMatch(html, /workspace-ai-panel-view-history/);
     assert.match(html, /workspace-tab-bar/);
   });
 
@@ -1892,27 +1927,247 @@ describe('workspace shell component', () => {
     assert.match(html, /workspace-project-ai-panel/);
   });
 
-  test('renders chat and history toggle buttons in project mode', () => {
+  test('renders history drawer toggle button in workspace chat panel top-right area', () => {
     const html = renderWorkspaceShell({
       projectFirstUxEnabled: true,
       workspaceView: 'project',
     });
 
-    assert.match(html, /workspace-ai-panel-toggle/);
-    assert.match(html, /workspace-ai-panel-view-chat/);
-    assert.match(html, /workspace-ai-panel-view-history/);
-    assert.match(html, />Chat</);
-    assert.match(html, />History</);
+    const headerIndex = html.indexOf('workspace-project-mode-header');
+    const headerEndIndex = html.indexOf('</header>', headerIndex);
+    const headerSegment =
+      headerIndex >= 0 && headerEndIndex >= 0 ? html.slice(headerIndex, headerEndIndex + 9) : '';
+    assert.match(html, /workspace-project-mode-header/);
+    assert.match(html, /workspace-chat-ai-panel[\s\S]*workspace-history-drawer-toggle/);
+    assert.match(html, /workspace-history-drawer-toggle/);
+    assert.match(html, /aria-label="Open history"/);
+    assert.match(html, /title="Open history"/);
+    assert.doesNotMatch(headerSegment, /workspace-history-drawer-toggle/);
+    assert.doesNotMatch(html, /workspace-ai-panel-toggle/);
+    assert.doesNotMatch(html, /workspace-ai-panel-view-chat/);
+    assert.doesNotMatch(html, /workspace-ai-panel-view-history/);
   });
 
-  test('renders chat panel by default in project mode', () => {
+  test('renders chat panel by default in project mode without tab switching', () => {
     const html = renderWorkspaceShell({
       projectFirstUxEnabled: true,
       workspaceView: 'project',
     });
 
     assert.match(html, /chat-panel-shell/);
-    assert.match(html, /workspace-ai-panel-view-chat/);
+    assert.match(html, /workspace-ai-panel-chat-content/);
+    assert.doesNotMatch(html, /workspace-ai-panel-view-chat/);
+  });
+
+  test('history toggle replaces chat content area with history content and toggles back', () => {
+    let initialToggleLabel = '';
+    let initialChatClassName = '';
+    let initialHistoryClassName = '';
+    let openToggleLabel = '';
+    let openChatClassName = '';
+    let openHistoryClassName = '';
+    let closedAgainChatClassName = '';
+    let closedAgainHistoryClassName = '';
+    let hasHistoryControlSliceWhenOpen = false;
+
+    withPatchedWorkspaceShellWindow(() => {
+      withPatchedReactHooksWithPersistentState((beginRender) => {
+        beginRender();
+        const initialTree = WorkspaceShell(
+          buildWorkspaceShellProps({
+            projectFirstUxEnabled: true,
+            workspaceView: 'project',
+          }),
+        );
+        const initialToggleButton = findElementByTestId(initialTree, 'workspace-history-drawer-toggle');
+        assert.ok(initialToggleButton, 'history toggle should be rendered');
+        initialToggleLabel = String(initialToggleButton.props['aria-label'] ?? '');
+        const initialChatContent = findElementByTestId(initialTree, 'workspace-ai-panel-chat-content');
+        const initialHistoryContent = findElementByTestId(initialTree, 'workspace-ai-panel-history-content');
+        assert.ok(initialChatContent, 'chat content should be rendered');
+        assert.ok(initialHistoryContent, 'history content should be rendered');
+        initialChatClassName = String(initialChatContent.props.className ?? '');
+        initialHistoryClassName = String(initialHistoryContent.props.className ?? '');
+        initialToggleButton.props.onClick?.();
+
+        beginRender();
+        const openTree = WorkspaceShell(
+          buildWorkspaceShellProps({
+            projectFirstUxEnabled: true,
+            workspaceView: 'project',
+          }),
+        );
+        const openToggleButton = findElementByTestId(openTree, 'workspace-history-drawer-toggle');
+        assert.ok(openToggleButton, 'history toggle should stay rendered');
+        openToggleLabel = String(openToggleButton.props['aria-label'] ?? '');
+        const openChatContent = findElementByTestId(openTree, 'workspace-ai-panel-chat-content');
+        const openHistoryContent = findElementByTestId(openTree, 'workspace-ai-panel-history-content');
+        assert.ok(openChatContent);
+        assert.ok(openHistoryContent);
+        openChatClassName = String(openChatContent.props.className ?? '');
+        openHistoryClassName = String(openHistoryContent.props.className ?? '');
+        hasHistoryControlSliceWhenOpen = Boolean(findElementByTestId(openTree, 'history-control-slice'));
+        openToggleButton.props.onClick?.();
+
+        beginRender();
+        const closedAgainTree = WorkspaceShell(
+          buildWorkspaceShellProps({
+            projectFirstUxEnabled: true,
+            workspaceView: 'project',
+          }),
+        );
+        const closedAgainChatContent = findElementByTestId(closedAgainTree, 'workspace-ai-panel-chat-content');
+        const closedAgainHistoryContent = findElementByTestId(
+          closedAgainTree,
+          'workspace-ai-panel-history-content',
+        );
+        assert.ok(closedAgainChatContent);
+        assert.ok(closedAgainHistoryContent);
+        closedAgainChatClassName = String(closedAgainChatContent.props.className ?? '');
+        closedAgainHistoryClassName = String(closedAgainHistoryContent.props.className ?? '');
+      });
+    });
+
+    assert.equal(initialToggleLabel, 'Open history');
+    assert.doesNotMatch(initialChatClassName, /hidden/);
+    assert.match(initialHistoryClassName, /hidden/);
+    assert.equal(openToggleLabel, 'Back to chat');
+    assert.match(openChatClassName, /hidden/);
+    assert.doesNotMatch(openHistoryClassName, /hidden/);
+    assert.equal(hasHistoryControlSliceWhenOpen, true);
+    assert.doesNotMatch(closedAgainChatClassName, /hidden/);
+    assert.match(closedAgainHistoryClassName, /hidden/);
+  });
+
+  test('does not render right-side history drawer or backdrop markup', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+
+    assert.doesNotMatch(html, /workspace-history-drawer-backdrop/);
+    assert.doesNotMatch(html, /data-testid="workspace-history-drawer"/);
+    assert.doesNotMatch(html, /workspace-history-drawer-close/);
+  });
+
+  test('openHistory, closeHistory, and backToChat i18n keys exist in en, zh-TW, and zh-CN locale files', () => {
+    const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));
+    const zhTw = JSON.parse(readFileSync(new URL('../../messages/zh-TW.json', import.meta.url), 'utf8'));
+    const zhCn = JSON.parse(readFileSync(new URL('../../messages/zh-CN.json', import.meta.url), 'utf8'));
+
+    assert.equal(en.project.openHistory, 'Open history');
+    assert.equal(en.project.closeHistory, 'Close history');
+    assert.equal(en.project.backToChat, 'Back to chat');
+    assert.equal(zhTw.project.openHistory, '開啟歷史');
+    assert.equal(zhTw.project.closeHistory, '關閉歷史');
+    assert.equal(zhTw.project.backToChat, '返回聊天');
+    assert.equal(zhCn.project.openHistory, '打开历史');
+    assert.equal(zhCn.project.closeHistory, '关闭历史');
+    assert.equal(zhCn.project.backToChat, '返回聊天');
+  });
+
+  test('workspace shell history toggle uses ClockIcon and ChatBubbleLeftIcon from Heroicons outline', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+
+    assert.match(
+      shellSource,
+      /import\s+\{\s*ChatBubbleLeftIcon,\s*ClockIcon\s*\}\s+from\s+'@heroicons\/react\/24\/outline';/,
+    );
+    assert.match(shellSource, /<ClockIcon className="h-4 w-4" \/>/);
+    assert.match(shellSource, /<ChatBubbleLeftIcon className="h-4 w-4" \/>/);
+    assert.match(shellSource, /historyPanelOpen \? <ChatBubbleLeftIcon className="h-4 w-4" \/> : <ClockIcon className="h-4 w-4" \/>/);
+    assert.doesNotMatch(shellSource, /XMarkIcon/);
+  });
+
+  test('chat/history panel and chat thread use independent scroll and full-height layout classes', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    const chatPanelShell = renderWorkspaceShellElementByTestId('chat-panel-shell', {
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+    const chatContent = renderWorkspaceShellElementByTestId('workspace-ai-panel-chat-content', {
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+    const historyContent = renderWorkspaceShellElementByTestId('workspace-ai-panel-history-content', {
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+    const chatThread = renderWorkspaceShellElementByTestId('workspace-chat-thread', {
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+
+    assert.ok(chatPanelShell);
+    assert.ok(chatContent);
+    assert.ok(historyContent);
+    assert.ok(chatThread);
+
+    const chatPanelShellClassName = String(chatPanelShell.props.className ?? '');
+    const chatContentClassName = String(chatContent.props.className ?? '');
+    const historyContentClassName = String(historyContent.props.className ?? '');
+    const chatThreadClassName = String(chatThread.props.className ?? '');
+
+    assert.match(chatPanelShellClassName, /flex-1/);
+    assert.match(chatPanelShellClassName, /min-h-0/);
+    assert.match(chatContentClassName, /flex-1/);
+    assert.match(chatContentClassName, /min-h-0/);
+    assert.match(chatContentClassName, /flex/);
+    assert.match(chatContentClassName, /flex-col/);
+    assert.match(historyContentClassName, /flex-1/);
+    assert.match(historyContentClassName, /min-h-0/);
+    assert.match(historyContentClassName, /overflow-y-auto/);
+    assert.match(chatThreadClassName, /flex-1/);
+    assert.match(chatThreadClassName, /min-h-0/);
+    assert.match(chatThreadClassName, /overflow-y-auto/);
+    assert.doesNotMatch(chatThreadClassName, /max-h-\[60vh\]/);
+
+    assert.match(shellSource, /<div className="flex flex-col flex-1 min-h-0">/);
+    assert.match(shellSource, /data-testid="workspace-chat-thread"/);
+    assert.match(shellSource, /className="flex-1 min-h-0 overflow-y-auto p-3"/);
+  });
+
+  test('workspace-project-view uses overflow-hidden to prevent page-level scroll', () => {
+    const projectView = renderWorkspaceShellElementByTestId('workspace-project-view', {
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+    assert.ok(projectView);
+    const className = String(projectView.props.className ?? '');
+    assert.match(className, /overflow-hidden/);
+    assert.doesNotMatch(className, /overflow-y-auto/);
+  });
+
+  test('workspace-project-ai-panel uses overflow-hidden not overflow-y-auto', () => {
+    const aiPanel = renderWorkspaceShellElementByTestId('workspace-project-ai-panel', {
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+    assert.ok(aiPanel);
+    const className = String(aiPanel.props.className ?? '');
+    assert.match(className, /overflow-hidden/);
+    assert.doesNotMatch(className, /overflow-y-auto/);
+  });
+
+  test('workspace-shell uses h-screen not min-h-screen for definite viewport height', () => {
+    const shell = renderWorkspaceShellElementByTestId('workspace-shell', {
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+    assert.ok(shell);
+    const className = String(shell.props.className ?? '');
+    assert.match(className, /h-screen/);
+    assert.doesNotMatch(className, /min-h-screen/);
+  });
+
+  test('locale layout uses h-full on html and body for height chain', () => {
+    const layoutSource = readFileSync(
+      new URL('../../app/[locale]/layout.tsx', import.meta.url),
+      'utf8',
+    );
+    assert.match(layoutSource, /h-full/);
+    assert.match(layoutSource, /<html[^>]*h-full/);
+    assert.match(layoutSource, /<body className="h-full">/);
   });
 
   test('does not render restore confirm bar without pending restore', () => {
