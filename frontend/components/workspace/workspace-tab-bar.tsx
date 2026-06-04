@@ -1,4 +1,20 @@
 import React from 'react';
+import {
+  EyeIcon,
+  CodeBracketIcon,
+  WrenchScrewdriverIcon,
+  CircleStackIcon,
+  KeyIcon,
+  ShieldExclamationIcon,
+  ChartBarIcon,
+  AdjustmentsHorizontalIcon,
+  CloudArrowUpIcon,
+  RocketLaunchIcon,
+  CreditCardIcon,
+  GlobeAltIcon,
+  ArchiveBoxIcon,
+  CpuChipIcon,
+} from '@heroicons/react/24/outline';
 import type { TabOrientation } from './workspace-tab-registry';
 
 export interface WorkspaceTabBarTab {
@@ -13,6 +29,23 @@ export interface WorkspaceTabBarProps {
   onTabChange: (tabId: string) => void;
   onOrientationToggle: () => void;
 }
+
+const TAB_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  preview: EyeIcon,
+  codeFiles: CodeBracketIcon,
+  buildTargets: WrenchScrewdriverIcon,
+  database: CircleStackIcon,
+  auth: KeyIcon,
+  security: ShieldExclamationIcon,
+  analytics: ChartBarIcon,
+  envVars: AdjustmentsHorizontalIcon,
+  publishing: CloudArrowUpIcon,
+  deploy: RocketLaunchIcon,
+  payment: CreditCardIcon,
+  domain: GlobeAltIcon,
+  appStorage: ArchiveBoxIcon,
+  agentSkills: CpuChipIcon,
+};
 
 export default function WorkspaceTabBar(props: WorkspaceTabBarProps) {
   const isVertical = props.orientation === 'vertical';
@@ -29,22 +62,26 @@ export default function WorkspaceTabBar(props: WorkspaceTabBarProps) {
           isVertical ? 'flex-col overflow-x-visible overflow-y-auto px-1 py-2' : 'flex-1'
         }`}
       >
-        {props.tabs.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => props.onTabChange(tab.id)}
-            className={`whitespace-nowrap rounded px-3 py-1.5 text-xs font-medium transition-colors ${
-              props.activeTabId === tab.id
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
-            }`}
-            data-testid={`workspace-tab-${tab.id}`}
-            aria-selected={props.activeTabId === tab.id}
-          >
-            {tab.label}
-          </button>
-        ))}
+        {props.tabs.map((tab) => {
+          const Icon = TAB_ICONS[tab.id];
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => props.onTabChange(tab.id)}
+              className={`whitespace-nowrap rounded px-3 py-1.5 text-xs font-medium transition-colors ${
+                props.activeTabId === tab.id
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+              }`}
+              data-testid={`workspace-tab-${tab.id}`}
+              aria-selected={props.activeTabId === tab.id}
+              title={tab.label}
+            >
+              {isVertical ? (Icon ? <Icon className="h-5 w-5" /> : <span>{tab.label}</span>) : tab.label}
+            </button>
+          );
+        })}
       </div>
       <button
         type="button"

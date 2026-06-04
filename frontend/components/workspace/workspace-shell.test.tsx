@@ -587,6 +587,18 @@ function renderWorkspaceShell(
   return renderToStaticMarkup(<WorkspaceShell {...buildWorkspaceShellProps(overrides)} />);
 }
 
+function renderWorkspaceShellWithForcedActiveTab(
+  forcedActiveTabId: string,
+  overrides: Partial<React.ComponentProps<typeof WorkspaceShell>> = {},
+): string {
+  return withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+    if (useStateCallIndex === 8) {
+      return [forcedActiveTabId, () => {}];
+    }
+    return [resolvedInitialState, () => {}];
+  }, () => renderWorkspaceShell(overrides));
+}
+
 function buildWorkspaceSidebarProps(
   overrides: Partial<React.ComponentProps<typeof WorkspaceSidebar>> = {},
 ): React.ComponentProps<typeof WorkspaceSidebar> {
@@ -963,9 +975,6 @@ describe('workspace shell component', () => {
     assert.match(html, /Model Provider/);
     assert.match(html, /Enable bounded orchestration \(up to 3 sequential steps\)/);
     assert.doesNotMatch(html, /Command Input/);
-    assert.match(html, /Build Targets/);
-    assert.match(html, /Build Target/);
-    assert.match(html, /Run Build/);
     assert.match(html, /Editor Panel/);
     assert.match(html, /Editor ready/);
     assert.match(html, /Editor clean/);
@@ -1849,17 +1858,39 @@ describe('workspace shell component', () => {
     assert.match(html, /workspace-tab-bar/);
   });
 
-  test('renders build targets toolbar after project header in project view', () => {
-    const html = renderWorkspaceShell({
+  test('renders build targets panel when Build Targets tab is active in project view', () => {
+    const html = renderWorkspaceShellWithForcedActiveTab('buildTargets', {
       projectFirstUxEnabled: true,
       workspaceView: 'project',
     });
 
     const headerIndex = html.indexOf('workspace-project-mode-header');
+    const contentPanelIndex = html.indexOf('workspace-project-content-panel');
+    const buildShellIndex = html.indexOf('build-targets-panel-shell');
     const buildPanelIndex = html.indexOf('workspace-build-panel');
     assert.ok(headerIndex > -1, 'project mode header should be rendered');
+    assert.ok(contentPanelIndex > -1, 'content panel should be rendered');
+    assert.ok(buildShellIndex > -1, 'build targets shell should be rendered');
     assert.ok(buildPanelIndex > -1, 'build panel should be rendered');
-    assert.ok(headerIndex < buildPanelIndex, 'build panel should be rendered after project header');
+    assert.ok(headerIndex < contentPanelIndex, 'content panel should render after project header');
+    assert.ok(contentPanelIndex < buildShellIndex, 'build shell should render inside content panel');
+    assert.ok(buildShellIndex < buildPanelIndex, 'build panel should render inside build shell');
+    assert.doesNotMatch(html, /preview-panel-shell/);
+  });
+
+  test('does not render build targets panel as a full-width toolbar between project header and content panel', () => {
+    const html = renderWorkspaceShellWithForcedActiveTab('buildTargets', {
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+
+    assert.match(html, /workspace-project-mode-header/);
+    assert.match(html, /workspace-project-content-panel/);
+    assert.match(html, /workspace-build-panel/);
+    assert.doesNotMatch(
+      html,
+      /workspace-project-mode-header[\s\S]*workspace-build-panel[\s\S]*workspace-project-content-panel/,
+    );
   });
 
   test('does not render trust note in project view', () => {
@@ -1872,15 +1903,23 @@ describe('workspace shell component', () => {
   });
 
   test('does not render build targets panel inside chat conversation area', () => {
-    const html = renderWorkspaceShell({
+    const html = renderWorkspaceShellWithForcedActiveTab('buildTargets', {
       projectFirstUxEnabled: true,
       workspaceView: 'project',
     });
 
-    assert.match(html, /workspace-ai-panel-chat-content/);
-    assert.match(html, /chat-panel-shell/);
-    assert.doesNotMatch(html, /workspace-ai-panel-chat-content[\s\S]*workspace-build-panel/);
-    assert.doesNotMatch(html, /chat-panel-shell[\s\S]*workspace-build-panel/);
+    const chatPanelIndex = html.indexOf('chat-panel-shell');
+    const buildShellIndex = html.indexOf('build-targets-panel-shell');
+    const buildPanelIndex = html.indexOf('workspace-build-panel');
+
+    assert.ok(chatPanelIndex > -1, 'chat panel should be rendered');
+    assert.ok(buildShellIndex > -1, 'build shell should be rendered');
+    assert.ok(buildPanelIndex > -1, 'build panel should be rendered');
+    assert.ok(buildShellIndex > chatPanelIndex, 'build shell should render after chat panel');
+    assert.ok(buildPanelIndex > buildShellIndex, 'build panel should render inside build shell');
+
+    const chatPanelToBuildShell = html.slice(chatPanelIndex, buildShellIndex);
+    assert.doesNotMatch(chatPanelToBuildShell, /workspace-build-panel/);
   });
 
   test('renders project mode header in project view', () => {
@@ -2279,6 +2318,16 @@ describe('workspace shell component', () => {
     assert.match(html, />Code &amp; Files</);
   });
 
+  test('renders Build Targets tab in tab bar', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+
+    assert.match(html, /workspace-tab-buildTargets/);
+    assert.match(html, />Build Targets</);
+  });
+
   test('renders placeholder tabs with Coming soon text', () => {
     const tabBarHtml = renderWorkspaceTabBar();
     assert.match(tabBarHtml, /workspace-tab-database/);
@@ -2325,7 +2374,21 @@ describe('workspace shell component', () => {
     assert.match(html, /workspace-tab-content/);
     assert.match(html, /preview-panel-shell/);
     assert.match(html, /workspace-preview-panel/);
+    assert.doesNotMatch(html, /build-targets-panel-shell/);
+    assert.doesNotMatch(html, /workspace-build-panel/);
     assert.doesNotMatch(html, />Preview Panel</);
+  });
+
+  test('active tab content shows build panel shell when Build Targets tab is active', () => {
+    const html = renderWorkspaceShellWithForcedActiveTab('buildTargets', {
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+
+    assert.match(html, /workspace-tab-content/);
+    assert.match(html, /build-targets-panel-shell/);
+    assert.match(html, /workspace-build-panel/);
+    assert.doesNotMatch(html, /preview-panel-shell/);
   });
 
   test('tab content wrapper renders with full-height overflow-hidden layout', () => {
@@ -2386,6 +2449,7 @@ describe('workspace shell component', () => {
 
     assert.match(html, /preview-panel-shell/);
     assert.match(html, /editor-panel-shell/);
+    assert.doesNotMatch(html, /workspace-build-panel/);
   });
 
   test('tab orientation toggle renders', () => {
@@ -2395,6 +2459,61 @@ describe('workspace shell component', () => {
     });
 
     assert.match(html, /workspace-tab-orientation-toggle/);
+  });
+
+  test('vertical tab orientation applies flex-row to content panel', () => {
+    const html = withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 9) {
+        return ['vertical', () => {}];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () =>
+      renderWorkspaceShell({
+        projectFirstUxEnabled: true,
+        workspaceView: 'project',
+      }),
+    );
+
+    const contentPanelTestIdIndex = html.indexOf('data-testid="workspace-project-content-panel"');
+    assert.notEqual(contentPanelTestIdIndex, -1);
+    const contentPanelTagStart = html.lastIndexOf('<main', contentPanelTestIdIndex);
+    const contentPanelTagEnd = html.indexOf('>', contentPanelTestIdIndex);
+    const contentPanelOpeningTag = html.slice(contentPanelTagStart, contentPanelTagEnd);
+    assert.match(contentPanelOpeningTag, /flex-row/);
+  });
+
+  test('horizontal tab orientation keeps flex-col on content panel', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+
+    const contentPanelTestIdIndex = html.indexOf('data-testid="workspace-project-content-panel"');
+    assert.notEqual(contentPanelTestIdIndex, -1);
+    const contentPanelTagStart = html.lastIndexOf('<main', contentPanelTestIdIndex);
+    const contentPanelTagEnd = html.indexOf('>', contentPanelTestIdIndex);
+    const contentPanelOpeningTag = html.slice(contentPanelTagStart, contentPanelTagEnd);
+    assert.match(contentPanelOpeningTag, /flex-col/);
+    assert.doesNotMatch(contentPanelOpeningTag, /flex-row/);
+  });
+
+  test('tab bar renders icon-only buttons in vertical mode', () => {
+    const html = withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 9) {
+        return ['vertical', () => {}];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () =>
+      renderWorkspaceShell({
+        projectFirstUxEnabled: true,
+        workspaceView: 'project',
+      }),
+    );
+
+    assert.match(html, /workspace-tab-bar/);
+    assert.match(html, /h-5 w-5/);
+    assert.match(html, /workspace-tab-preview/);
+    assert.match(html, /workspace-tab-buildTargets/);
   });
 
   test('AI panel collapse toggle renders', () => {
@@ -3230,24 +3349,29 @@ describe('workspace shell component', () => {
   });
 
   test('renders project-first recovery wording in main helper surfaces', () => {
-    const html = renderWorkspaceShell({
+    const previewHtml = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      selectedSessionId: null,
+      previewState: 'unavailable',
+    });
+    const buildTabHtml = renderWorkspaceShellWithForcedActiveTab('buildTargets', {
       projectFirstUxEnabled: true,
       selectedSessionId: null,
       previewState: 'unavailable',
     });
 
-    assert.match(html, /Open a project to send prompts\./);
-    assert.match(html, /Open a project to run a build target\./);
-    assert.match(html, /No project open/);
-    assert.match(html, /Open a project to start using workspace tools\./);
-    assert.match(html, /Use Start a new project or Open existing project in the history panel\./);
-    assert.match(html, /No preview is running for this workspace yet\./);
-    assert.match(html, /Open a project to create a save point\./);
-    assert.match(html, /Workspaces: 1/);
-    assert.doesNotMatch(html, /Workspace data is session-scoped\./);
-    assert.doesNotMatch(html, /Select an active session to send prompts\./);
-    assert.doesNotMatch(html, /Select an active session to run a build target\./);
-    assert.doesNotMatch(html, /No session selected/);
+    assert.match(previewHtml, /Open a project to send prompts\./);
+    assert.match(buildTabHtml, /Open a project to run a build target\./);
+    assert.match(previewHtml, /No project open/);
+    assert.match(previewHtml, /Open a project to start using workspace tools\./);
+    assert.match(previewHtml, /Use Start a new project or Open existing project in the history panel\./);
+    assert.match(previewHtml, /No preview is running for this workspace yet\./);
+    assert.match(previewHtml, /Open a project to create a save point\./);
+    assert.match(previewHtml, /Workspaces: 1/);
+    assert.doesNotMatch(previewHtml, /Workspace data is session-scoped\./);
+    assert.doesNotMatch(previewHtml, /Select an active session to send prompts\./);
+    assert.doesNotMatch(buildTabHtml, /Select an active session to run a build target\./);
+    assert.doesNotMatch(previewHtml, /No session selected/);
   });
 
   test('does not render advanced drawer when feature flag is off', () => {
@@ -4736,7 +4860,9 @@ describe('workspace shell component', () => {
   });
 
   test('renders build output and status in bounded build panel', () => {
-    const html = renderWorkspaceShell({
+    const html = renderWorkspaceShellWithForcedActiveTab('buildTargets', {
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
       buildRequestState: 'completed',
       buildStatusMessage: 'ios build completed successfully.',
       buildOutput: 'Build logs\\nArtifact: app.ipa',
@@ -4749,7 +4875,9 @@ describe('workspace shell component', () => {
   });
 
   test('renders bounded build failure message', () => {
-    const html = renderWorkspaceShell({
+    const html = renderWorkspaceShellWithForcedActiveTab('buildTargets', {
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
       buildRequestState: 'failed',
       buildError: 'ios build toolchain is unavailable in this runtime.',
     });
@@ -6748,6 +6876,26 @@ describe('workspace build targets i18n wiring — UX-IA-35', () => {
     assert.doesNotMatch(shellSource, />Build Target</);
     assert.doesNotMatch(shellSource, /'Run Build'/);
     assert.doesNotMatch(shellSource, /'Building\.\.\.'/);
+  });
+
+  test('locale files define tabs.buildTargets key for build targets content-panel tab', () => {
+    const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));
+    const zhTw = JSON.parse(readFileSync(new URL('../../messages/zh-TW.json', import.meta.url), 'utf8'));
+    const zhCn = JSON.parse(readFileSync(new URL('../../messages/zh-CN.json', import.meta.url), 'utf8'));
+
+    assert.ok(typeof en.tabs?.buildTargets === 'string' && en.tabs.buildTargets.length > 0);
+    assert.ok(typeof zhTw.tabs?.buildTargets === 'string' && zhTw.tabs.buildTargets.length > 0);
+    assert.ok(typeof zhCn.tabs?.buildTargets === 'string' && zhCn.tabs.buildTargets.length > 0);
+  });
+
+  test('workspace shell source uses buildTargets tab branch and removes preview-header buildControls slot', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+
+    assert.match(shellSource, /activeTabId === 'buildTargets'/);
+    assert.match(shellSource, /data-testid="build-targets-panel-shell"/);
+    assert.doesNotMatch(shellSource, /buildControls=\{/);
+    assert.doesNotMatch(shellSource, /buildControls\?: React\.ReactNode/);
+    assert.doesNotMatch(shellSource, /props\.buildControls/);
   });
 });
 

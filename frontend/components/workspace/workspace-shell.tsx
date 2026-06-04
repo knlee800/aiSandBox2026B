@@ -1123,24 +1123,6 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     </>
   );
 
-  const projectBuildToolbar = (
-    <div className="border-b border-gray-200 bg-white px-2 py-2">
-      <WorkspaceBuildPanel
-        projectFirstUxEnabled={projectFirstUxEnabled}
-        selectedSessionId={props.selectedSessionId}
-        selectedBuildTarget={props.selectedBuildTarget ?? ''}
-        onSelectedBuildTargetChange={props.onSelectedBuildTargetChange}
-        availableBuildTargets={props.availableBuildTargets ?? []}
-        onRunBuildTarget={props.onRunBuildTarget}
-        buildRequestState={props.buildRequestState ?? 'idle'}
-        buildStatusMessage={props.buildStatusMessage ?? null}
-        buildOutput={props.buildOutput ?? ''}
-        buildError={props.buildError ?? null}
-        workspaceMessages={workspaceMessages}
-      />
-    </div>
-  );
-
   const historyToggleLabel = historyPanelOpen
     ? projectPanelMessages.backToChat
     : projectPanelMessages.openHistory;
@@ -1284,7 +1266,6 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
 
   const projectWorkspaceContent = (
     <>
-      {projectBuildToolbar}
       <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 p-2">
         {projectChatSection}
         {projectEditorSection}
@@ -2054,7 +2035,6 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                   {aiPanelCollapsed ? projectPanelMessages.expandPanel : projectPanelMessages.collapsePanel}
                 </button>
               </header>
-              {projectBuildToolbar}
               <div className="flex flex-1 min-h-0 flex-col md:flex-row">
                 {!aiPanelCollapsed ? (
                   <aside
@@ -2065,7 +2045,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                   </aside>
                 ) : null}
                 <main
-                  className="flex-1 min-w-0 flex flex-col"
+                  className={`flex-1 min-w-0 flex ${tabOrientation === 'vertical' ? 'flex-row' : 'flex-col'}`}
                   data-testid="workspace-project-content-panel"
                 >
                   <WorkspaceTabBar
@@ -2075,7 +2055,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                     onTabChange={setActiveTabId}
                     onOrientationToggle={handleTabOrientationToggle}
                   />
-                  <div className="flex-1 min-h-0 overflow-hidden flex flex-col" data-testid="workspace-tab-content">
+                  <div className="flex-1 min-h-0 min-w-0 overflow-hidden flex flex-col" data-testid="workspace-tab-content">
                     {activeTabId === 'preview' ? (
                       <div
                         className="flex flex-col flex-1 min-h-0 overflow-hidden"
@@ -2122,7 +2102,29 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                         />
                       </div>
                     ) : null}
-                    {activeTabId !== 'preview' && activeTabId !== 'codeFiles' ? (
+                    {activeTabId === 'buildTargets' ? (
+                      <div
+                        className="flex flex-col flex-1 min-h-0 overflow-hidden p-3"
+                        data-testid="build-targets-panel-shell"
+                      >
+                        <WorkspaceBuildPanel
+                          projectFirstUxEnabled={projectFirstUxEnabled}
+                          selectedSessionId={props.selectedSessionId}
+                          selectedBuildTarget={props.selectedBuildTarget ?? ''}
+                          onSelectedBuildTargetChange={props.onSelectedBuildTargetChange}
+                          availableBuildTargets={props.availableBuildTargets ?? []}
+                          onRunBuildTarget={props.onRunBuildTarget}
+                          buildRequestState={props.buildRequestState ?? 'idle'}
+                          buildStatusMessage={props.buildStatusMessage ?? null}
+                          buildOutput={props.buildOutput ?? ''}
+                          buildError={props.buildError ?? null}
+                          workspaceMessages={workspaceMessages}
+                        />
+                      </div>
+                    ) : null}
+                    {activeTabId !== 'preview' &&
+                    activeTabId !== 'codeFiles' &&
+                    activeTabId !== 'buildTargets' ? (
                       <div
                         className="flex flex-col items-center justify-center flex-1 gap-3 p-8"
                         data-testid="workspace-tab-placeholder"

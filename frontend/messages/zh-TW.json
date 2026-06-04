@@ -254,6 +254,7 @@
   "tabs": {
     "preview": "預覽",
     "codeFiles": "程式碼與檔案",
+    "buildTargets": "建構目標",
     "database": "資料庫",
     "auth": "驗證",
     "security": "安全",

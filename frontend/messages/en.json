@@ -254,6 +254,7 @@
   "tabs": {
     "preview": "Preview",
     "codeFiles": "Code & Files",
+    "buildTargets": "Build Targets",
     "database": "Database",
     "auth": "Auth",
     "security": "Security",

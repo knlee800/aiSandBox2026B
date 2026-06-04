@@ -254,6 +254,7 @@
   "tabs": {
     "preview": "预览",
     "codeFiles": "代码与文件",
+    "buildTargets": "构建目标",
     "database": "数据库",
     "auth": "认证",
     "security": "安全",
