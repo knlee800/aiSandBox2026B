@@ -17052,9 +17052,9 @@ Make "Build anything" a true one-click flow: type prompt ?? click Start once ?? 
 
 ## AI-CONTEXT — Global AI Instructions
 
-**Family status:** COMPLETE and LOCKED — all slices AI-CONTEXT-01A through AI-CONTEXT-01E COMPLETE and LOCKED
+**Family status:** ACTIVE — AI-CONTEXT-01A through AI-CONTEXT-02A COMPLETE and LOCKED
 
-**Current stage:** AI-CONTEXT-01E COMPLETE and LOCKED — `docs/AI-CONTEXT-01E-CHECKPOINT.md`
+**Current stage:** AI-CONTEXT-02A COMPLETE and LOCKED — `docs/AI-CONTEXT-02A-CHECKPOINT.md`
 
 **Registered tasks:**
 1. AI-CONTEXT-01A — Global AI Instructions Backend Foundation (COMPLETE and LOCKED — `docs/AI-CONTEXT-01A-CHECKPOINT.md`)
@@ -17062,6 +17062,7 @@ Make "Build anything" a true one-click flow: type prompt ?? click Start once ?? 
 3. AI-CONTEXT-01C — Global AI Instructions Frontend Settings UI (COMPLETE and LOCKED — `docs/AI-CONTEXT-01C-CHECKPOINT.md`)
 4. AI-CONTEXT-01D — Deliver Platform and Global Instructions as System Message (COMPLETE and LOCKED — `docs/AI-CONTEXT-01D-CHECKPOINT.md`)
 5. AI-CONTEXT-01E — Align Browser AI Execution with Session User (COMPLETE and LOCKED — `docs/AI-CONTEXT-01E-CHECKPOINT.md`)
+6. AI-CONTEXT-02A — Project AI Instructions Backend Foundation (COMPLETE and LOCKED — `docs/AI-CONTEXT-02A-CHECKPOINT.md`)
 
 ---
 
@@ -17390,6 +17391,83 @@ Make browser AI execution authenticate as the logged-in session user, while pres
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-CONTEXT-01E.
 **Checkpoint:** `docs/AI-CONTEXT-01E-CHECKPOINT.md`
+
+---
+
+#### AI-CONTEXT-02A: Project AI Instructions Backend Foundation
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** AI-CONTEXT-02A
+**Family:** AI-CONTEXT
+**Priority:** High
+**Nature:** BACKEND / DATABASE / AI CONTEXT FOUNDATION
+**Risk:** Medium
+**Depends on:** AI-CONTEXT-01A through AI-CONTEXT-01E (COMPLETE and LOCKED)
+**Checkpoint:** `docs/AI-CONTEXT-02A-CHECKPOINT.md`
+
+**Problem:**
+Global AI Instructions are now end-to-end complete, but there is no way to define project-specific AI instructions. Agents still cannot receive per-project rules, architecture notes, conventions, or "do/don't" guidance.
+
+**Objective:**
+Create backend infrastructure for project-scoped AI instructions. These instructions will later be editable in the frontend and injected into prompt assembly together with Global AI Instructions.
+
+**Files in scope:**
+- `services/api-gateway/src/migrations/*`
+- `services/api-gateway/src/entities/*`
+- `services/api-gateway/src/project-ai-context/*`
+- `services/api-gateway/src/app.module.ts`
+- `services/api-gateway/src/entities/index.ts`
+- related api-gateway tests
+
+**Scope:**
+- Create `project_ai_context` table via migration
+- Create `ProjectAiContext` TypeORM entity
+- Create DTO(s) with max 4000 char validation for `projectInstructions`
+- Create service with get/upsert by project ID
+- Create controller: `GET /api/projects/:projectId/ai-context` and `PUT /api/projects/:projectId/ai-context`
+- Protect endpoints with existing session auth pattern
+- Enforce project ownership/access using existing project access convention
+- Add targeted service/controller tests
+
+**Non-goals:**
+- No frontend UI
+- No prompt injection yet
+- No repo docs registry yet
+- No repo map yet
+- No validation contract yet
+
+**Suggested table:**
+```
+project_ai_context
+- id UUID primary key default gen_random_uuid()
+- project_id UUID not null unique references projects(id) on delete cascade
+- project_instructions TEXT nullable
+- created_at TIMESTAMPTZ default now()
+- updated_at TIMESTAMPTZ default now()
+```
+
+**Acceptance criteria:**
+- [x] Migration creates `project_ai_context` table with correct schema
+- [x] GET returns current project instructions or null
+- [x] PUT upserts project instructions for the project
+- [x] Max 4000 chars validation works
+- [x] Auth/session guard protects both endpoints
+- [x] Project ownership/access is enforced
+- [x] Targeted tests pass
+- [x] api-gateway build passes
+- [x] No frontend files changed
+- [x] No prompt assembly changed
+- [x] No unrelated files changed
+
+**Validation:**
+- `npm test -- project-ai-context` — PASS (2 suites, 8 tests)
+- `npm run build` — PASS
+- ReadLints on touched files — PASS
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-CONTEXT-02A.
+**Checkpoint:** `docs/AI-CONTEXT-02A-CHECKPOINT.md`
+
+---
 
 **Family status:** COMPLETE and LOCKED — DEVOPS-DOCKER-01 COMPLETE and LOCKED
 

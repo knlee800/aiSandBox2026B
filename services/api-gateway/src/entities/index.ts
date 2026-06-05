@@ -15,6 +15,7 @@ export { ApiKey } from './api-key.entity';
 export { Plan } from './plan.entity';
 export { Workspace } from './workspace.entity';
 export { UserAiInstructions } from './user-ai-instructions.entity';
+export { ProjectAiContext } from './project-ai-context.entity';
 export { UserRole } from './user-role.enum';
 export { SessionStatus } from './session-status.enum';
 export { ChatMessageRole } from './chat-message-role.enum';
