@@ -163,6 +163,20 @@ const PROJECT_OPEN_FILE_REFRESH_RETRY_DELAY_MS = 250;
 const PROJECT_OPEN_FILE_REFRESH_MAX_ATTEMPTS = 6;
 const PREVIEW_FIRST_LOAD_ERROR_RETRY_MAX_ATTEMPTS = 3;
 const PREVIEW_FIRST_LOAD_ERROR_RETRY_DELAY_MS = 2000;
+const PREVIEW_ASK_AI_FIX_PROMPT =
+  `The live preview failed to load after multiple retries. The dev server is not responding or the app is crashing on startup.
+
+Investigate and fix the preview failure by following these steps in order:
+1. Read package.json to identify the start/dev script, framework, and installed dependencies.
+2. Check for missing or mismatched dependencies (package.json vs lock file vs node_modules).
+3. Inspect the framework entry file (e.g. src/index.tsx, src/main.tsx, app/page.tsx, or pages/index.tsx) for import errors, missing exports, or broken references.
+4. Check framework config files (next.config.js, vite.config.ts, etc.) for port, output, or build misconfigurations.
+5. If a .env or .env.local file is expected, verify required environment variables are defined.
+6. If you can run commands, run: npm install, then npm run dev (or the correct start script), and read the output for errors.
+7. Apply targeted file fixes for any issues found.
+8. Confirm the fix by explaining what was wrong and what was changed.
+
+Do not claim the preview is fixed until you have applied concrete file changes or confirmed the environment is correct.`;
 const AI_AUTO_CHECKPOINT_DESCRIPTION = 'AI: applied workspace file actions';
 const VISUAL_EDIT_CHECKPOINT_DESCRIPTION = 'Visual Edit: applied file changes';
 const AUTH_MODULE_PREINSTALL_CHECKPOINT_DESCRIPTION = 'Auth Module: pre-install snapshot';
@@ -1001,8 +1015,11 @@ export default function AppPage() {
   const skipNextChatThreadPersistRef = useRef(false);
   const pendingAssistantMessageIdRef = useRef<string | null>(null);
   const pendingAutoSendPromptRef = useRef<string | null>(null);
+  const pendingPreviewFixPromptRef = useRef<string | null>(null);
+  const previewFixSubmitInFlightRef = useRef(false);
   const createProjectFromPromptInFlightRef = useRef(false);
   const [autoSendFromHomeTick, setAutoSendFromHomeTick] = useState(0);
+  const [previewFixAutoSendTick, setPreviewFixAutoSendTick] = useState(0);
   const selectedSessionIdRef = useRef<string | null>(null);
   const selectedFilePathRef = useRef<string | null>(null);
   const skipNextSessionEffectFileReloadRef = useRef(false);
@@ -1310,6 +1327,34 @@ export default function AppPage() {
   ]);
 
   useEffect(() => {
+    if (previewFixAutoSendTick === 0) {
+      return;
+    }
+    if (workspaceView !== 'project' || !selectedSessionId) {
+      pendingPreviewFixPromptRef.current = null;
+      return;
+    }
+    const pendingPrompt = pendingPreviewFixPromptRef.current;
+    if (!pendingPrompt) {
+      return;
+    }
+    if (chatPromptInput.trim() !== pendingPrompt) {
+      setChatPromptInput(pendingPrompt);
+      return;
+    }
+    pendingPreviewFixPromptRef.current = null;
+    void handleSubmitChatPrompt().finally(() => {
+      previewFixSubmitInFlightRef.current = false;
+    });
+  }, [
+    chatPromptInput,
+    handleSubmitChatPrompt,
+    previewFixAutoSendTick,
+    selectedSessionId,
+    workspaceView,
+  ]);
+
+  useEffect(() => {
     selectedFilePathRef.current = selectedFilePath;
   }, [selectedFilePath]);
 
@@ -1527,6 +1572,8 @@ export default function AppPage() {
 
   useEffect(() => {
     setChatPromptInput('');
+    pendingPreviewFixPromptRef.current = null;
+    previewFixSubmitInFlightRef.current = false;
     chatStreamRef.current?.close();
     chatStreamRef.current = null;
     pendingAssistantMessageIdRef.current = null;
@@ -2364,6 +2411,26 @@ export default function AppPage() {
     } finally {
       createProjectFromPromptInFlightRef.current = false;
     }
+  }
+
+  function handleAskAiToFixPreview(): void {
+    if (!PROJECT_FIRST_UX || workspaceView !== 'project' || !selectedSessionId) {
+      return;
+    }
+    if (
+      previewFixSubmitInFlightRef.current ||
+      pendingPreviewFixPromptRef.current ||
+      chatRequestState === 'submitting' ||
+      chatRequestState === 'queued' ||
+      chatRequestState === 'running'
+    ) {
+      return;
+    }
+
+    previewFixSubmitInFlightRef.current = true;
+    pendingPreviewFixPromptRef.current = PREVIEW_ASK_AI_FIX_PROMPT;
+    setChatPromptInput(PREVIEW_ASK_AI_FIX_PROMPT);
+    setPreviewFixAutoSendTick((current) => current + 1);
   }
 
   async function hydrateWorkspaceForProjectOpen(
@@ -5856,6 +5923,7 @@ export default function AppPage() {
       previewUrl={previewUrl}
       onStartPreview={handleStartPreview}
       onRefreshPreview={handleRefreshPreview}
+      onAskAiToFixPreview={handleAskAiToFixPreview}
       onPreviewLoad={handlePreviewLoad}
       onPreviewError={handlePreviewError}
       onPreviewElementSelected={handlePreviewElementSelected}

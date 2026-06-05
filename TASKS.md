@@ -12070,7 +12070,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 **Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) ?X UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) ?X UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) ?X UX-IA-18 COMPLETE and LOCKED ?X UX-IA-19 COMPLETE and LOCKED ?X UX-IA-20 COMPLETE and LOCKED ?X UX-IA-21 COMPLETE and LOCKED ?X UX-IA-22 COMPLETE and LOCKED ?X UX-IA-23 COMPLETE and LOCKED ?X UX-IA-24 COMPLETE and LOCKED ?X UX-IA-25 COMPLETE and LOCKED ?X UX-IA-26 COMPLETE and LOCKED ?X UX-IA-27 COMPLETE and LOCKED ?X UX-IA-28 COMPLETE and LOCKED ?X UX-IA-29 COMPLETE and LOCKED ?X UX-IA-30 COMPLETE and LOCKED ?X UX-IA-31 COMPLETE and LOCKED ?X UX-IA-32 COMPLETE and LOCKED ?X UX-IA-33 COMPLETE and LOCKED ?X UX-IA-34 COMPLETE and LOCKED ?X UX-IA-35 COMPLETE and LOCKED ?X UX-IA-36 COMPLETE and LOCKED ?X UX-IA-37 COMPLETE and LOCKED ?X UX-IA-38 COMPLETE and LOCKED ?X UX-IA-39 COMPLETE and LOCKED
 
-**Current stage:** UX-PV-02B ACTIVE — Preview Failure Ask AI Fix Prompt
+**Current stage:** UX-PV-02B COMPLETE and LOCKED — Preview Failure Ask AI Fix Prompt
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -12134,7 +12134,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 41. UX-PV-01 — Preview Auto-Start and First-Load Error Resilience (COMPLETE and LOCKED — `docs/UX-PV-01-CHECKPOINT.md`)
 42. UX-PV-02A — Preview Failure Diagnostic Copy (COMPLETE and LOCKED — `docs/UX-PV-02A-CHECKPOINT.md`)
-43. UX-PV-02B — Preview Failure Ask AI Fix Prompt (ACTIVE)
+43. UX-PV-02B — Preview Failure Ask AI Fix Prompt (COMPLETE and LOCKED — `docs/UX-PV-02B-CHECKPOINT.md`)
 
 
 ---
@@ -15634,6 +15634,76 @@ Replace the generic preview error surface with clearer multilingual diagnostic c
 **Live browser test:** PASS
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-PV-02A. Depends on: `docs/UX-PV-01-CHECKPOINT.md`.
+
+---
+
+#### UX-PV-02B: Preview Failure Ask AI Fix Prompt
+
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/UX-PV-02B-CHECKPOINT.md`
+**Task ID:** UX-PV-02B
+**Family:** UX-PV
+**Priority:** High
+**Nature:** FRONTEND-ONLY / PREVIEW UX RECOVERY
+**Risk:** Medium
+**Depends on:** UX-PV-02A (COMPLETE and LOCKED — `docs/UX-PV-02A-CHECKPOINT.md`)
+
+**Problem:**
+After preview auto-start/retry fails, UX-PV-02A now shows clearer diagnostic copy, but the user still has to manually ask AI to investigate/fix the preview failure. This should be a one-click recovery action.
+
+**Objective:**
+Add an "Ask AI to Fix" action to the preview error state. The action should send a structured preview-fix prompt through the existing chat flow without introducing stale-state submit bugs.
+
+**Files in scope:**
+- `frontend/app/[locale]/app/page.tsx`
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+**Scope:**
+- Add `recovery.actions.askAiToFixPreview` i18n key in en / zh-TW / zh-CN.
+- Add `workspace-preview-ask-ai-fix` button in preview error state.
+- Only render the button in project-first mode when an ask-AI callback is provided.
+- Wire the button to a `page.tsx` handler.
+- Handler submits a structured prompt through the existing chat flow.
+- Use the proven ref/tick or equivalent safe pattern to avoid stale `chatPromptInput` submit bugs.
+- Preserve Refresh fallback.
+- Preserve Preview auto-start/retry from UX-PV-01.
+- Preserve diagnostic copy from UX-PV-02A.
+
+**Non-goals:**
+- No backend changes.
+- No preview log API.
+- No preview service changes.
+- No Chat/History layout changes.
+- No Build Targets changes.
+- No Command Input changes.
+- No sidebar changes.
+- No tab-registry/tab-bar changes.
+- No checkpoint/history/file-tree changes.
+
+**Acceptance criteria:**
+- [x] UX-PV-02B registered in TASKS.md and TASKS_BACKLOG_FULL.md as ACTIVE
+- [x] `recovery.actions.askAiToFixPreview` key present in en.json, zh-TW.json, zh-CN.json
+- [x] `workspace-preview-ask-ai-fix` button renders only in project-first mode with ask-AI callback provided
+- [x] Button click sends structured preview-fix prompt through existing chat flow
+- [x] Stale-state submit bug avoided via ref/tick or equivalent safe pattern
+- [x] Refresh fallback button preserved and functional
+- [x] Preview auto-start/retry behavior from UX-PV-01 unchanged
+- [x] Diagnostic copy from UX-PV-02A unchanged
+- [x] No hardcoded English visible text
+- [x] `npx tsc --noEmit` PASS
+- [x] `npm test` PASS
+- [x] ReadLints PASS
+- [x] Live browser test PASS before consolidation
+
+**Validation results:** `npx tsc --noEmit` PASS. `npm test` 599/599 PASS. ReadLints PASS. tsconfig.tsbuildinfo restored.
+
+**Live browser test:** PASS — rapid double-click did not duplicate-send; button disabled while chat submitting/running; structured prompt submitted correctly; Refresh fallback and auto-start/retry unchanged.
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-PV-02B. Depends on: `docs/UX-PV-02A-CHECKPOINT.md`.
 
 ---
 

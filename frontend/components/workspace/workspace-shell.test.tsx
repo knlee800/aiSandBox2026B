@@ -3577,6 +3577,7 @@ describe('workspace shell component', () => {
     assert.match(html, /workspace-exec-reopen-project/);
     assert.match(html, />Reopen project</);
     assert.ok(button);
+    assert.equal(button.props.disabled, false);
     const exec404OnClick = button.props.onClick;
     assert.equal(typeof exec404OnClick, 'function');
     if (!exec404OnClick) {
@@ -5117,6 +5118,66 @@ describe('workspace shell component', () => {
       /The preview failed to connect after multiple retries\. The app may have a build or startup error\./,
     );
     assert.match(html, /Use Refresh to retry, or ask AI to diagnose and fix the issue\./);
+  });
+
+  test('renders Ask AI to Fix button in preview error state when project-first mode and callback are provided', () => {
+    const html = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      selectedSessionId: session.id,
+      previewState: 'error',
+      previewUrl: null,
+      onAskAiToFixPreview: () => {},
+    });
+
+    assert.match(html, /data-testid="workspace-preview-ask-ai-fix"/);
+    assert.match(html, />Ask AI to Fix</);
+  });
+
+  test('does not render Ask AI to Fix button when callback is missing or project-first mode is disabled', () => {
+    const htmlWithoutCallback = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      selectedSessionId: session.id,
+      previewState: 'error',
+      previewUrl: null,
+    });
+    const htmlWithoutProjectFirst = renderWorkspaceShell({
+      projectFirstUxEnabled: false,
+      selectedSessionId: session.id,
+      previewState: 'error',
+      previewUrl: null,
+      onAskAiToFixPreview: () => {},
+    });
+
+    assert.doesNotMatch(htmlWithoutCallback, /data-testid="workspace-preview-ask-ai-fix"/);
+    assert.doesNotMatch(htmlWithoutProjectFirst, /data-testid="workspace-preview-ask-ai-fix"/);
+  });
+
+  test('disables Ask AI to Fix button while chat request is submitting', () => {
+    const askAiFixButton = renderWorkspaceShellElementByTestId('workspace-preview-ask-ai-fix', {
+      projectFirstUxEnabled: true,
+      selectedSessionId: session.id,
+      previewState: 'error',
+      previewUrl: null,
+      onAskAiToFixPreview: () => {},
+      chatRequestState: 'submitting',
+    });
+
+    assert.ok(askAiFixButton);
+    assert.equal(askAiFixButton.props.disabled, true);
+  });
+
+  test('keeps Ask AI to Fix button enabled while chat request state is idle', () => {
+    const askAiFixButton = renderWorkspaceShellElementByTestId('workspace-preview-ask-ai-fix', {
+      projectFirstUxEnabled: true,
+      selectedSessionId: session.id,
+      previewState: 'error',
+      previewUrl: null,
+      onAskAiToFixPreview: () => {},
+      chatRequestState: 'idle',
+    });
+
+    assert.ok(askAiFixButton);
+    assert.equal(askAiFixButton.props.disabled, false);
   });
 
   test('does not render out-of-scope history or dashboard UI', () => {
@@ -6691,6 +6752,72 @@ describe('workspace preview auto-start and retry wiring — UX-PV-01', () => {
   });
 });
 
+describe('preview failure ask AI fix prompt wiring — UX-PV-02B', () => {
+  test('workspace shell StateMessage supports disabled primary action button wiring', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.match(shellSource, /primaryActionDisabled\?: boolean;/);
+    assert.match(shellSource, /disabled=\{props\.primaryActionDisabled \?\? false\}/);
+    assert.match(shellSource, /disabled:cursor-not-allowed/);
+    assert.match(shellSource, /disabled:bg-blue-300/);
+  });
+
+  test('page source defines handleAskAiToFixPreview and improved structured preview-fix prompt', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(
+      pageSource,
+      /const PREVIEW_ASK_AI_FIX_PROMPT =\s*`The live preview failed to load after multiple retries\./,
+    );
+    assert.match(pageSource, /Read package\.json to identify the start\/dev script/);
+    assert.match(pageSource, /run: npm install, then npm run dev/);
+    assert.match(pageSource, /function handleAskAiToFixPreview\(\): void \{/);
+  });
+
+  test('page source uses preview-fix in-flight lock and deferred tick submit pattern', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(pageSource, /const previewFixSubmitInFlightRef = useRef\(false\);/);
+    assert.match(pageSource, /const pendingPreviewFixPromptRef = useRef<string \| null>\(null\);/);
+    assert.match(pageSource, /const \[previewFixAutoSendTick, setPreviewFixAutoSendTick\] = useState\(0\);/);
+    assert.match(
+      pageSource,
+      /if \(chatPromptInput\.trim\(\) !== pendingPrompt\) \{\s+setChatPromptInput\(pendingPrompt\);\s+return;\s+\}/,
+    );
+    assert.match(
+      pageSource,
+      /pendingPreviewFixPromptRef\.current = null;\s+void handleSubmitChatPrompt\(\)\.finally\(\(\) => \{\s+previewFixSubmitInFlightRef\.current = false;\s+\}\);/,
+    );
+  });
+
+  test('handleAskAiToFixPreview sets in-flight lock before setting prompt input', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    const handlerStart = pageSource.indexOf('function handleAskAiToFixPreview(): void {');
+    const handlerEnd = pageSource.indexOf(
+      'async function hydrateWorkspaceForProjectOpen(',
+      handlerStart,
+    );
+
+    assert.ok(handlerStart >= 0);
+    assert.ok(handlerEnd > handlerStart);
+
+    const handlerSource = pageSource.slice(handlerStart, handlerEnd);
+    const lockSetIndex = handlerSource.indexOf('previewFixSubmitInFlightRef.current = true;');
+    const setPromptIndex = handlerSource.indexOf('setChatPromptInput(PREVIEW_ASK_AI_FIX_PROMPT);');
+    assert.ok(lockSetIndex >= 0);
+    assert.ok(setPromptIndex >= 0);
+    assert.ok(lockSetIndex < setPromptIndex);
+    assert.match(handlerSource, /setChatPromptInput\(PREVIEW_ASK_AI_FIX_PROMPT\);/);
+    assert.match(handlerSource, /setPreviewFixAutoSendTick\(\(current\) => current \+ 1\);/);
+    assert.doesNotMatch(handlerSource, /handleSubmitChatPrompt\(\)/);
+  });
+
+  test('session-change reset clears preview-fix pending prompt and in-flight lock refs', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+    assert.match(
+      pageSource,
+      /useEffect\(\(\) => \{\s+setChatPromptInput\(''\);\s+pendingPreviewFixPromptRef\.current = null;\s+previewFixSubmitInFlightRef\.current = false;/,
+    );
+  });
+});
+
 describe('workspace prompt context — UX-IA-15C helpers', () => {
   const selectedPreviewElement: SelectedPreviewElement = {
     tagName: 'button',
@@ -7592,6 +7719,7 @@ describe('recovery copy locale migration wiring — I18N-SHELL-05', () => {
       'restoreSnapshot',
       'tryAgain',
       'openOlderVersion',
+      'askAiToFixPreview',
     ] as const;
     const requiredStatusKeys = [
       'workspaceDisconnected',
@@ -7683,6 +7811,16 @@ describe('recovery copy locale migration wiring — I18N-SHELL-05', () => {
           zhCn.recovery.workspace.automaticVersionLabels[key].length > 0,
       );
     }
+  });
+
+  test('locale files define recovery.actions.askAiToFixPreview copy in en, zh-TW, and zh-CN', () => {
+    const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));
+    const zhTw = JSON.parse(readFileSync(new URL('../../messages/zh-TW.json', import.meta.url), 'utf8'));
+    const zhCn = JSON.parse(readFileSync(new URL('../../messages/zh-CN.json', import.meta.url), 'utf8'));
+
+    assert.equal(en.recovery?.actions?.askAiToFixPreview, 'Ask AI to Fix');
+    assert.equal(zhTw.recovery?.actions?.askAiToFixPreview, '請 AI 修復');
+    assert.equal(zhCn.recovery?.actions?.askAiToFixPreview, '请 AI 修复');
   });
 
   test('recovery-copy source imports all locale files and exports getRecoveryCopy(locale)', () => {

@@ -149,7 +149,8 @@
       "resumeLatestProject": "Resume latest project",
       "restoreSnapshot": "Restore",
       "tryAgain": "Try again",
-      "openOlderVersion": "Open older version"
+      "openOlderVersion": "Open older version",
+      "askAiToFixPreview": "Ask AI to Fix"
     },
     "status": {
       "workspaceDisconnected": "Workspace disconnected",

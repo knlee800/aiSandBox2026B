@@ -149,7 +149,8 @@
       "resumeLatestProject": "继续最新项目",
       "restoreSnapshot": "恢复",
       "tryAgain": "再试一次",
-      "openOlderVersion": "打开较旧版本"
+      "openOlderVersion": "打开较旧版本",
+      "askAiToFixPreview": "请 AI 修复"
     },
     "status": {
       "workspaceDisconnected": "工作区已断开连接",

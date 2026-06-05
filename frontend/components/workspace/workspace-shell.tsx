@@ -332,6 +332,7 @@ interface WorkspaceShellProps {
   previewUrl: string | null;
   onStartPreview: () => Promise<void>;
   onRefreshPreview: () => Promise<void>;
+  onAskAiToFixPreview?: () => void;
   onPreviewLoad: () => void;
   onPreviewError: () => void;
   onPreviewElementSelected?: (element: SelectedPreviewElement | null) => void;
@@ -1249,11 +1250,13 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
         projectMessages={projectPanelMessages}
         previewMessages={previewMessages}
         commonMessages={commonMessages}
+        chatRequestState={props.chatRequestState}
         selectedSessionId={props.selectedSessionId}
         previewState={props.previewState}
         previewUrl={props.previewUrl}
         onStartPreview={props.onStartPreview}
         onRefreshPreview={props.onRefreshPreview}
+        onAskAiToFixPreview={props.onAskAiToFixPreview}
         onPreviewLoad={handlePreviewLoadWithPicker}
         onPreviewError={props.onPreviewError}
         iframeRef={previewIframeRef}
@@ -2066,11 +2069,13 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
                           projectMessages={projectPanelMessages}
                           previewMessages={previewMessages}
                           commonMessages={commonMessages}
+                          chatRequestState={props.chatRequestState}
                           selectedSessionId={props.selectedSessionId}
                           previewState={props.previewState}
                           previewUrl={props.previewUrl}
                           onStartPreview={props.onStartPreview}
                           onRefreshPreview={props.onRefreshPreview}
+                          onAskAiToFixPreview={props.onAskAiToFixPreview}
                           onPreviewLoad={handlePreviewLoadWithPicker}
                           onPreviewError={props.onPreviewError}
                           iframeRef={previewIframeRef}
@@ -3634,11 +3639,13 @@ function WorkspacePreviewPanel(props: {
   >;
   previewMessages: Pick<typeof enMessages.preview, 'livePreview' | 'startPreview'>;
   commonMessages: Pick<typeof enMessages.common, 'refresh' | 'refreshing'>;
+  chatRequestState?: 'idle' | 'submitting' | 'queued' | 'running' | 'completed' | 'failed';
   selectedSessionId: string | null;
   previewState: WorkspacePreviewState;
   previewUrl: string | null;
   onStartPreview: () => Promise<void>;
   onRefreshPreview: () => Promise<void>;
+  onAskAiToFixPreview?: () => void;
   onPreviewLoad: () => void;
   onPreviewError: () => void;
   iframeRef?: React.RefObject<HTMLIFrameElement | null>;
@@ -3704,6 +3711,8 @@ function WorkspacePreviewPanel(props: {
       <PreviewStateMessage
         state={props.previewState}
         projectFirstUxEnabled={props.projectFirstUxEnabled}
+        onAskAiToFixPreview={props.onAskAiToFixPreview}
+        chatRequestState={props.chatRequestState}
       />
       {pickerActive ? (
         <p
@@ -4189,9 +4198,13 @@ function ExecResultOutput(props: { result: NonNullable<WorkspaceExecState['resul
 function PreviewStateMessage({
   state,
   projectFirstUxEnabled,
+  onAskAiToFixPreview,
+  chatRequestState,
 }: {
   state: WorkspacePreviewState;
   projectFirstUxEnabled: boolean;
+  onAskAiToFixPreview?: () => void;
+  chatRequestState?: 'idle' | 'submitting' | 'queued' | 'running' | 'completed' | 'failed';
 }) {
   if (state === 'loading') {
     return (
@@ -4238,6 +4251,13 @@ function PreviewStateMessage({
     );
   }
 
+  const isAiFixPending = Boolean(
+    onAskAiToFixPreview &&
+      (chatRequestState === 'submitting' ||
+        chatRequestState === 'queued' ||
+        chatRequestState === 'running'),
+  );
+
   return (
     <StateMessage
       tone="error"
@@ -4256,6 +4276,18 @@ function PreviewStateMessage({
           ? recoveryCopy.workspace.previewErrorAction
           : 'Use Refresh to retry, or ask AI to diagnose and fix the issue.'
       }
+      primaryActionLabel={
+        projectFirstUxEnabled && onAskAiToFixPreview
+          ? recoveryCopy.actions.askAiToFixPreview
+          : undefined
+      }
+      onPrimaryAction={
+        projectFirstUxEnabled && onAskAiToFixPreview ? onAskAiToFixPreview : undefined
+      }
+      primaryActionTestId={
+        projectFirstUxEnabled && onAskAiToFixPreview ? 'workspace-preview-ask-ai-fix' : undefined
+      }
+      primaryActionDisabled={isAiFixPending}
     />
   );
 }
@@ -8164,6 +8196,7 @@ function StateMessage(props: {
   primaryActionLabel?: string;
   onPrimaryAction?: () => void;
   primaryActionTestId?: string;
+  primaryActionDisabled?: boolean;
 }) {
   const isSuccessTone = props.tone === 'success';
   const paletteByTone = {
@@ -8193,9 +8226,10 @@ function StateMessage(props: {
       {props.primaryActionLabel && props.onPrimaryAction ? (
         <button
           type="button"
+          disabled={props.primaryActionDisabled ?? false}
           onClick={props.onPrimaryAction}
           data-testid={props.primaryActionTestId}
-          className={`${isSuccessTone ? 'mt-1.5' : 'mt-2'} rounded bg-blue-600 px-3 py-1 text-xs font-medium text-white`}
+          className={`${isSuccessTone ? 'mt-1.5' : 'mt-2'} rounded bg-blue-600 px-3 py-1 text-xs font-medium text-white disabled:cursor-not-allowed disabled:bg-blue-300`}
         >
           {props.primaryActionLabel}
         </button>
