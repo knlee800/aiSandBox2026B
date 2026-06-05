@@ -4241,13 +4241,21 @@ function PreviewStateMessage({
   return (
     <StateMessage
       tone="error"
-      heading="Preview error"
+      heading={
+        projectFirstUxEnabled
+          ? recoveryCopy.workspace.previewErrorHeading
+          : 'Preview could not load'
+      }
       body={
         projectFirstUxEnabled
-          ? recoveryCopy.workspace.previewError
-          : 'The preview failed to load for this active session.'
+          ? recoveryCopy.workspace.previewErrorBody
+          : 'The preview failed to connect after multiple retries. The app may have a build or startup error.'
       }
-      action="Choose Refresh to retry the preview surface."
+      action={
+        projectFirstUxEnabled
+          ? recoveryCopy.workspace.previewErrorAction
+          : 'Use Refresh to retry, or ask AI to diagnose and fix the issue.'
+      }
     />
   );
 }

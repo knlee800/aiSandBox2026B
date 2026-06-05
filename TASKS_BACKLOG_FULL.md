@@ -21993,7 +21993,7 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 
 **Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) ?X UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) ?X UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) ?X UX-IA-18 COMPLETE and LOCKED ?X UX-IA-19 COMPLETE and LOCKED ?X UX-IA-20 COMPLETE and LOCKED ?X UX-IA-21 COMPLETE and LOCKED ?X UX-IA-22 COMPLETE and LOCKED ?X UX-IA-23 COMPLETE and LOCKED ?X UX-IA-24 COMPLETE and LOCKED ?X UX-IA-25 COMPLETE and LOCKED ?X UX-IA-26 COMPLETE and LOCKED ?X UX-IA-27 COMPLETE and LOCKED ?X UX-IA-28 COMPLETE and LOCKED ?X UX-IA-29 COMPLETE and LOCKED ?X UX-IA-30 COMPLETE and LOCKED ?X UX-IA-31 COMPLETE and LOCKED ?X UX-IA-32 COMPLETE and LOCKED ?X UX-IA-33 COMPLETE and LOCKED ?X UX-IA-34 COMPLETE and LOCKED ?X UX-IA-35 COMPLETE and LOCKED ?X UX-IA-36 COMPLETE and LOCKED ?X UX-IA-37 COMPLETE and LOCKED ?X UX-IA-38 COMPLETE and LOCKED ?X UX-IA-39 COMPLETE and LOCKED
 
-**Current stage:** UX-PV-01 COMPLETE and LOCKED ?X Preview Auto-Start and First-Load Error Resilience
+**Current stage:** UX-PV-02A COMPLETE and LOCKED — Preview Failure Diagnostic Copy
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -22054,7 +22054,8 @@ Ensure `.git/` and all files/directories under `.git/` are excluded from the use
 38. UX-IA-37 ?X Hide Workspace Ready Status Box (COMPLETE and LOCKED ?X `docs/UX-IA-37-CHECKPOINT.md`)
 39. UX-IA-38 ?X Hide Project Trust Note / Recoverable Box (COMPLETE and LOCKED ?X `docs/UX-IA-38-CHECKPOINT.md`)
 40. UX-IA-39 ?X Relocate Build Targets to Preview Panel (COMPLETE and LOCKED ?X `docs/UX-IA-39-CHECKPOINT.md`)
-41. UX-PV-01 ? Preview Auto-Start and First-Load Error Resilience (COMPLETE and LOCKED ? `docs/UX-PV-01-CHECKPOINT.md`)
+41. UX-PV-01 — Preview Auto-Start and First-Load Error Resilience (COMPLETE and LOCKED — `docs/UX-PV-01-CHECKPOINT.md`)
+42. UX-PV-02A — Preview Failure Diagnostic Copy (COMPLETE and LOCKED — `docs/UX-PV-02A-CHECKPOINT.md`)
 
 ---
 
@@ -25846,6 +25847,80 @@ git -C "C:\Users\knlee\aiSandBox2026B" restore -- frontend/tsconfig.tsbuildinfo
 **Live browser test:** PASS
 
 **Reference:** See TASKS.md -> UX-PV-01. Depends on: `docs/UX-IA-39-CHECKPOINT.md`.
+
+---
+
+### UX-PV-02A: Preview Failure Diagnostic Copy
+
+**Task ID:** UX-PV-02A
+**Family:** UX-PV (Preview UX Reliability)
+**Family status:** ACTIVE — UX-PV-01 COMPLETE and LOCKED, UX-PV-02A COMPLETE and LOCKED
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Checkpoint:** `docs/UX-PV-02A-CHECKPOINT.md`
+**Nature:** FRONTEND-ONLY / PREVIEW UX RECOVERY
+**Risk:** Low
+**Depends on:** UX-PV-01 (COMPLETE and LOCKED — `docs/UX-PV-01-CHECKPOINT.md`)
+
+**Problem:**
+After preview auto-start retries are exhausted, users still see a generic "Preview error" message. The message does not explain that the app may have a build, startup, or runtime problem, leaving users without any guidance on the root cause.
+
+**Background:**
+From UX-PV-02 planning analysis:
+- `PreviewStateMessage` renders a single generic `StateMessage` with `tone="error"`, heading `"Preview error"`, body from `recovery.workspace.previewError`.
+- The `StateMessage` component already accepts `primaryActionLabel` / `onPrimaryAction` / `primaryActionTestId` for optional action buttons.
+- All visible text already flows through `recoveryCopy` / i18n keys in `en.json`, `zh-TW.json`, `zh-CN.json`.
+- Refresh fallback is rendered at the `WorkspacePreviewPanel` level and is independent of `PreviewStateMessage`.
+
+**Objective:**
+Replace the generic preview error surface with clearer multilingual diagnostic copy while preserving the Refresh fallback. Do not add the Ask AI button yet.
+
+**Files in scope:**
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+**Scope:**
+- Update `PreviewStateMessage` error branch to use new i18n keys.
+- Add i18n keys to all three locale files:
+  - `recovery.workspace.previewErrorHeading`
+  - `recovery.workspace.previewErrorBody`
+  - `recovery.workspace.previewErrorAction`
+- Preserve Refresh fallback.
+- Preserve Preview auto-start/retry behavior from UX-PV-01.
+- No backend changes.
+- No Ask AI button yet.
+
+**Non-goals:**
+- No `page.tsx` chat-submit wiring.
+- No "Ask AI to Fix" button (deferred to UX-PV-02B).
+- No backend log API.
+- No Preview service changes.
+- No Chat/History changes.
+- No Build Targets changes.
+- No Command Input changes.
+- No sidebar changes.
+
+**Acceptance criteria:**
+- [x] UX-PV-02A registered in TASKS.md and TASKS_BACKLOG_FULL.md as ACTIVE
+- [x] `PreviewStateMessage` error branch shows new i18n diagnostic heading and body
+- [x] `recovery.workspace.previewErrorHeading`, `previewErrorBody`, `previewErrorAction` keys present in en/zh-TW/zh-CN
+- [x] Refresh fallback button preserved and functional
+- [x] Preview auto-start/retry behavior from UX-PV-01 unchanged
+- [x] No hardcoded English visible text
+- [x] Existing preview test IDs preserved
+- [x] `npx tsc --noEmit` PASS
+- [x] `npm test` PASS
+- [x] ReadLints PASS
+- [x] Live browser test PASS before consolidation
+
+**Validation results:** `npx tsc --noEmit` PASS. `npm test` 589/589 PASS. ReadLints PASS. tsconfig.tsbuildinfo restored.
+
+**Live browser test:** PASS
+
+**Reference:** See TASKS.md -> UX-PV-02A. Depends on: `docs/UX-PV-01-CHECKPOINT.md`.
 
 ---
 

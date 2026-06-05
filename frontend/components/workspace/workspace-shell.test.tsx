@@ -5111,8 +5111,12 @@ describe('workspace shell component', () => {
       previewUrl: null,
     });
 
-    assert.match(html, /Preview error/);
-    assert.match(html, /Choose Refresh to retry the preview surface\./);
+    assert.match(html, /Preview could not load/);
+    assert.match(
+      html,
+      /The preview failed to connect after multiple retries\. The app may have a build or startup error\./,
+    );
+    assert.match(html, /Use Refresh to retry, or ask AI to diagnose and fix the issue\./);
   });
 
   test('does not render out-of-scope history or dashboard UI', () => {
@@ -7628,6 +7632,9 @@ describe('recovery copy locale migration wiring — I18N-SHELL-05', () => {
       'previewReady',
       'previewUnavailable',
       'previewError',
+      'previewErrorHeading',
+      'previewErrorBody',
+      'previewErrorAction',
       'openProjectToCreateSavePoint',
       'openProjectToCompareHistory',
       'openProjectToInspectDiffs',
