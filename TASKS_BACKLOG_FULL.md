@@ -27386,3 +27386,85 @@ Make "Build anything" a true one-click flow: type prompt ?? click Start once ?? 
 
 **Reference:** See TASKS.md -> HOME-START-01.
 **Checkpoint:** `docs/HOME-START-01-CHECKPOINT.md`
+
+---
+
+## AI-CONTEXT — Global AI Instructions
+
+**Family status:** COMPLETE and LOCKED — AI-CONTEXT-01A COMPLETE and LOCKED
+
+**Current stage:** AI-CONTEXT-01A COMPLETE and LOCKED — `docs/AI-CONTEXT-01A-CHECKPOINT.md`
+
+**Ordered slices (registered so far):**
+1. AI-CONTEXT-01A — Global AI Instructions Backend Foundation (COMPLETE and LOCKED — `docs/AI-CONTEXT-01A-CHECKPOINT.md`)
+
+---
+
+### AI-CONTEXT-01A: Global AI Instructions Backend Foundation
+
+**Task ID:** AI-CONTEXT-01A
+**Family:** AI-CONTEXT (Global AI Instructions)
+**Family status:** COMPLETE and LOCKED
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** BACKEND / DATABASE / AI CONTEXT FOUNDATION
+**Risk:** Medium
+**Depends on:** UX-PV-02B (COMPLETE and LOCKED)
+**Checkpoint:** `docs/AI-CONTEXT-01A-CHECKPOINT.md`
+
+**Problem:**
+Agents currently do not auto-read repo docs or user/project instructions. The current AI execution prompt only includes workspace file paths, selected file content, prompt-referenced files, search results, project/workspace names, and the hardcoded file-action contract. There is no persisted global instruction layer for users to configure persistent AI behavior.
+
+**Objective:**
+Create backend infrastructure for user-scoped Global AI Instructions. These instructions will later be injected into AI prompt assembly, but this slice only creates the database/API foundation — migration, entity, DTO, service, controller, guards, and unit tests.
+
+**Files in scope:**
+- `services/api-gateway/src/migrations/*` (new migration)
+- `services/api-gateway/src/entities/user-ai-instructions.entity.ts` (new)
+- `services/api-gateway/src/entities/index.ts` (export new entity)
+- `services/api-gateway/src/user-ai-instructions/user-ai-instructions.service.ts` (new)
+- `services/api-gateway/src/user-ai-instructions/user-ai-instructions.controller.ts` (new)
+- `services/api-gateway/src/user-ai-instructions/dto/upsert-user-ai-instructions.dto.ts` (new)
+- `services/api-gateway/src/user-ai-instructions/user-ai-instructions.module.ts` (new)
+- `services/api-gateway/src/user-ai-instructions/user-ai-instructions.service.spec.ts` (new)
+- `services/api-gateway/src/user-ai-instructions/user-ai-instructions.controller.spec.ts` (new)
+- `services/api-gateway/src/app.module.ts` (register new module)
+
+**Scope:**
+- Create `user_ai_instructions` table via TypeORM migration
+- Create `UserAiInstructions` TypeORM entity with: `id` (uuid PK), `user_id` (unique FK → users), `global_instructions` (text, nullable), `created_at`, `updated_at`
+- Create `UpsertUserAiInstructionsDto` with `@MaxLength(4000)` validation on `globalInstructions`
+- Create `UserAiInstructionsService` with `getByUserId(userId)` and `upsertByUserId(userId, dto)` methods
+- Create `UserAiInstructionsController` exposing:
+  - `GET /api/user/ai-instructions` — returns current instructions or `{ globalInstructions: null }`
+  - `PUT /api/user/ai-instructions` — upserts instructions, returns saved record
+- Protect both endpoints with existing auth/session guard (same pattern as other user-scoped endpoints)
+- Create `UserAiInstructionsModule` and register in `AppModule`
+- Add targeted unit tests for service and controller
+
+**Non-goals:**
+- No frontend UI
+- No AI prompt injection (future slice)
+- No project-scoped instructions (future slice)
+- No repo docs registry (future slice)
+- No rate limiting changes beyond existing patterns
+
+**Acceptance criteria:**
+- [x] AI-CONTEXT-01A registered in TASKS.md and TASKS_BACKLOG_FULL.md
+- [x] Migration creates `user_ai_instructions` table with: `id`, `user_id` (unique FK), `global_instructions`, `created_at`, `updated_at`
+- [x] GET `/api/user/ai-instructions` returns current global instructions or null/empty for authenticated user
+- [x] PUT `/api/user/ai-instructions` upserts global instructions for authenticated user
+- [x] Max 4000 chars validation enforced on PUT; returns 400 on violation
+- [x] Existing auth guard protects both endpoints; unauthenticated requests return 401
+- [x] Unit tests pass
+- [x] `npm run build` passes for api-gateway
+- [x] No unrelated files changed
+
+**Validation:**
+- `npm test -- user-ai-instructions` — PASS (2 suites, 7 tests)
+- `npm run build` — PASS
+- ReadLints on touched files — PASS
+- Full `npm test` — PARTIAL: pre-existing env/connectivity issue (TypeOrmModule DB connection refused, smoke suite hook timeouts). Not a regression from AI-CONTEXT-01A. Consistent with documented carry-forward in AUTH-APP-01H-SECURITY-HARDENING-SPEC.md and WORKSPACE-DEFAULT-01-CHECKPOINT.md.
+
+**Reference:** See TASKS.md -> AI-CONTEXT-01A.
+**Checkpoint:** `docs/AI-CONTEXT-01A-CHECKPOINT.md`

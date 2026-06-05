@@ -26,6 +26,7 @@ import { UsersModule } from './users/users.module';
 import { ProjectsModule } from './projects/projects.module';
 import { PublicApiModule } from './public-api/public-api.module';
 import { WorkspacesModule } from './workspaces/workspaces.module';
+import { UserAiInstructionsModule } from './user-ai-instructions/user-ai-instructions.module';
 import { databaseConfig } from './config/database.config';
 import { InternalServiceAuthGuard } from './guards/internal-service-auth.guard';
 import { IdempotentReplayExceptionFilter } from './filters/idempotent-replay-exception.filter';
@@ -67,6 +68,7 @@ import { IdempotentReplayExceptionFilter } from './filters/idempotent-replay-exc
     InvoiceModule, // Phase 25B-1: Invoice persistence infrastructure
     RuntimeModule, // Phase 41A: Runtime metrics and observability
     UsersModule, // TASK-68B-2: User dashboard endpoints
+    UserAiInstructionsModule, // AI-CONTEXT-01A: User-scoped global AI instruction endpoints
     ProjectsModule, // PR-03-01: Project identity endpoints
     WorkspacesModule, // WS-02: Personal workspace CRUD endpoints
     PublicApiModule, // ADV-04-01: Dedicated /api/v1 public API surface
