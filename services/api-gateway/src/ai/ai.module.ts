@@ -11,6 +11,7 @@ import { IdempotencyGuard } from './idempotency.guard';
 import { QueueModule } from '../queue/queue.module';
 import { ExecutionResultService } from './execution-result.service';
 import { ExecutionStreamService } from '../streaming/execution-stream.service';
+import { UserAiInstructionsModule } from '../user-ai-instructions/user-ai-instructions.module';
 
 /**
  * AIModule
@@ -38,6 +39,7 @@ import { ExecutionStreamService } from '../streaming/execution-stream.service';
     AbortModule, // Phase 28B-2: Abort mode enforcement
     QuotaModule, // Phase 21B: Quota enforcement
     UsageLedgerModule, // Phase 22B: Usage ledger
+    UserAiInstructionsModule, // AI-CONTEXT-01B: User global instruction enrichment
   ],
   controllers: [AIExecutionController],
   providers: [

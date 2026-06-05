@@ -15,6 +15,7 @@ import {
   ConflictException,
   Sse,
   MessageEvent,
+  Optional,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { Observable } from 'rxjs';
@@ -40,6 +41,7 @@ import { IdempotencyGuard } from './idempotency.guard';
 import { QueueService } from '../queue/queue.service';
 import { v4 as uuidv4 } from 'uuid';
 import { ExecutionResultService } from './execution-result.service';
+import { UserAiInstructionsService } from '../user-ai-instructions/user-ai-instructions.service';
 
 const SUPPORTED_AI_PROVIDERS = [
   'stub',
@@ -94,7 +96,19 @@ export class AIExecutionController {
     private readonly queueService: QueueService,
     private readonly executionResultService: ExecutionResultService,
     private readonly executionStreamService: ExecutionStreamService,
+    @Optional()
+    private readonly userAiInstructionsService?: UserAiInstructionsService,
   ) {}
+
+  private normalizeGlobalInstructions(
+    globalInstructions: string | null | undefined,
+  ): string | undefined {
+    if (typeof globalInstructions !== 'string') {
+      return undefined;
+    }
+    const trimmedInstructions = globalInstructions.trim();
+    return trimmedInstructions.length > 0 ? trimmedInstructions : undefined;
+  }
 
   private parseExecutionResultMetadata(
     metadata: Record<string, unknown> | null | undefined,
@@ -240,6 +254,9 @@ export class AIExecutionController {
       typeof request.model === 'string' && request.model.trim().length > 0
         ? request.model.trim()
         : undefined;
+    const globalInstructions = this.normalizeGlobalInstructions(
+      await this.userAiInstructionsService?.getByUserId(identity.userId),
+    );
 
     // Phase 43B-4 HOTFIX: Check if retry after timeout/failed
     // If existing record is timeout/failed, reuse the row instead of inserting new
@@ -344,6 +361,7 @@ export class AIExecutionController {
       prompt: request.prompt,
       workspaceContext: request.workspaceContext,
       model: requestedModel,
+      globalInstructions,
       requestId,
       submittedAt,
     });

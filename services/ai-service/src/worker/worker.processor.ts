@@ -202,25 +202,36 @@ function buildWorkspaceContextBlock(
   return sections.join('\n\n');
 }
 
+function buildGlobalInstructionsBlock(
+  globalInstructions?: string | null,
+): string | null {
+  if (typeof globalInstructions !== 'string') {
+    return null;
+  }
+  const normalizedGlobalInstructions = globalInstructions.trim();
+  if (normalizedGlobalInstructions.length === 0) {
+    return null;
+  }
+  return `Global AI Instructions:\n${normalizedGlobalInstructions}`;
+}
+
 export function buildExecutionPromptWithFileActionContract(
   userPrompt: string,
   workspaceContext?: WorkspaceContext,
+  globalInstructions?: string | null,
 ): string {
   const normalizedPrompt = typeof userPrompt === 'string' ? userPrompt : '';
+  const globalInstructionsBlock = buildGlobalInstructionsBlock(globalInstructions);
   const workspaceContextBlock = buildWorkspaceContextBlock(workspaceContext);
-  if (!workspaceContextBlock) {
-    return `${FILE_ACTION_OUTPUT_CONTRACT}
-
-User request:
-${normalizedPrompt}`;
+  const promptSections: string[] = [FILE_ACTION_OUTPUT_CONTRACT];
+  if (globalInstructionsBlock) {
+    promptSections.push(globalInstructionsBlock);
   }
-
-  return `${workspaceContextBlock}
-
-${FILE_ACTION_OUTPUT_CONTRACT}
-
-User request:
-${normalizedPrompt}`;
+  if (workspaceContextBlock) {
+    promptSections.push(workspaceContextBlock);
+  }
+  promptSections.push(`User request:\n${normalizedPrompt}`);
+  return promptSections.join('\n\n');
 }
 
 interface ExecutionCompletionLog {
@@ -637,6 +648,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
               const executionPrompt = buildExecutionPromptWithFileActionContract(
                 job.data.prompt ?? '',
                 job.data.workspaceContext,
+                job.data.globalInstructions,
               );
               aiResult = await this.aiExecutionService.execute({
                 provider: job.data.provider,

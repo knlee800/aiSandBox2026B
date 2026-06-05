@@ -27391,12 +27391,13 @@ Make "Build anything" a true one-click flow: type prompt ?? click Start once ?? 
 
 ## AI-CONTEXT — Global AI Instructions
 
-**Family status:** COMPLETE and LOCKED — AI-CONTEXT-01A COMPLETE and LOCKED
+**Family status:** COMPLETE and LOCKED — AI-CONTEXT-01B COMPLETE and LOCKED
 
-**Current stage:** AI-CONTEXT-01A COMPLETE and LOCKED — `docs/AI-CONTEXT-01A-CHECKPOINT.md`
+**Current stage:** AI-CONTEXT-01B COMPLETE and LOCKED — `docs/AI-CONTEXT-01B-CHECKPOINT.md`
 
 **Ordered slices (registered so far):**
 1. AI-CONTEXT-01A — Global AI Instructions Backend Foundation (COMPLETE and LOCKED — `docs/AI-CONTEXT-01A-CHECKPOINT.md`)
+2. AI-CONTEXT-01B — Inject Global AI Instructions into Prompt Assembly (COMPLETE and LOCKED — `docs/AI-CONTEXT-01B-CHECKPOINT.md`)
 
 ---
 
@@ -27468,3 +27469,52 @@ Create backend infrastructure for user-scoped Global AI Instructions. These inst
 
 **Reference:** See TASKS.md -> AI-CONTEXT-01A.
 **Checkpoint:** `docs/AI-CONTEXT-01A-CHECKPOINT.md`
+
+---
+
+### AI-CONTEXT-01B: Inject Global AI Instructions into Prompt Assembly
+
+**Task ID:** AI-CONTEXT-01B
+**Family:** AI-CONTEXT (Global AI Instructions)
+**Family status:** COMPLETE and LOCKED
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** BACKEND / AI PROMPT ASSEMBLY
+**Risk:** Medium
+**Depends on:** AI-CONTEXT-01A (COMPLETE and LOCKED)
+**Checkpoint:** `docs/AI-CONTEXT-01B-CHECKPOINT.md`
+
+**Problem:**
+AI-CONTEXT-01A created backend storage/API for user-scoped global AI instructions, but those instructions were not consumed by the AI execution pipeline. Agents did not receive the user's global instructions.
+
+**Objective:**
+Wire saved user global AI instructions into the AI execution prompt assembly path so every AI execution includes them predictably and safely.
+
+**Files changed:**
+- `services/api-gateway/src/ai/ai-execution.controller.ts`
+- `services/api-gateway/src/ai/ai.module.ts`
+- `services/api-gateway/src/ai/__tests__/ai-execution.workspace-context.spec.ts`
+- `services/ai-service/src/queue/job.types.ts`
+- `services/ai-service/src/worker/worker.processor.ts`
+- `services/ai-service/src/worker/worker.processor.spec.ts`
+
+**Acceptance criteria:**
+- [x] Saved global instructions are included in AI execution prompt
+- [x] Empty/null global instructions are omitted (block skipped)
+- [x] Global Instructions block appears above workspace context/user request
+- [x] Existing AI execution behavior still works
+- [x] Targeted tests pass
+- [x] api-gateway build passes
+- [x] ai-service build/tests pass if touched
+- [x] No frontend files changed
+
+**Validation:**
+- `npm test -- src/ai/__tests__/ai-execution.workspace-context.spec.ts src/user-ai-instructions/user-ai-instructions.service.spec.ts` — PASS (2 suites, 7 tests)
+- `npm run build` (api-gateway) — PASS
+- `npm test -- src/worker/worker.processor.spec.ts` (ai-service) — PASS (1 suite, 8 tests)
+- `npm run build` (ai-service) — PASS
+- ReadLints on touched files — PASS
+- Full `npm test` — PARTIAL: pre-existing env/connectivity failures (no DB/Redis, legacy test module setup gaps, external provider calls). Not a regression from AI-CONTEXT-01B. Consistent with documented carry-forward.
+
+**Reference:** See TASKS.md -> AI-CONTEXT-01B.
+**Checkpoint:** `docs/AI-CONTEXT-01B-CHECKPOINT.md`

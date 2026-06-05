@@ -27,7 +27,16 @@ List files`,
         selectedFileContent: 'export const app = true;',
       }),
     ).toBe(
-      `Current project:
+      `Execution output contract:
+- If the user request requires creating, modifying, or deleting files, you MUST emit a fenced code block tagged \`file-actions\`.
+- The \`file-actions\` block content MUST be valid JSON containing an array of actions.
+- Each action MUST use action value "create", "write", "update", or "delete".
+- "create", "write", and "update" actions MUST include string fields: "path" and "content".
+- "delete" actions MUST include string field "path" and MUST NOT include or require "content".
+- Do not claim that files were created, changed, or deleted unless matching \`file-actions\` entries are present.
+- If the user request does not require file creation, modification, or deletion, respond normally in plain conversational text and do not emit \`file-actions\` blocks.
+
+Current project:
 Sandbox Project
 
 Current workspace:
@@ -42,15 +51,6 @@ src/app.ts
 
 Selected file content:
 export const app = true;
-
-Execution output contract:
-- If the user request requires creating, modifying, or deleting files, you MUST emit a fenced code block tagged \`file-actions\`.
-- The \`file-actions\` block content MUST be valid JSON containing an array of actions.
-- Each action MUST use action value "create", "write", "update", or "delete".
-- "create", "write", and "update" actions MUST include string fields: "path" and "content".
-- "delete" actions MUST include string field "path" and MUST NOT include or require "content".
-- Do not claim that files were created, changed, or deleted unless matching \`file-actions\` entries are present.
-- If the user request does not require file creation, modification, or deletion, respond normally in plain conversational text and do not emit \`file-actions\` blocks.
 
 User request:
 List files`,
@@ -97,5 +97,60 @@ export const util = true;`);
     ).toContain(`Workspace search results for: login
 - src/app.ts:12 - const login = true;
 [...results truncated]`);
+  });
+
+  it('includes Global AI Instructions block when provided and trimmed', () => {
+    expect(
+      buildExecutionPromptWithFileActionContract(
+        'Implement feature',
+        {
+          filePaths: ['README.md'],
+          selectedFilePath: 'README.md',
+          selectedFileContent: 'Project docs',
+        },
+        '  Be concise. Always include tests.  ',
+      ),
+    ).toContain(`Global AI Instructions:
+Be concise. Always include tests.`);
+  });
+
+  it('omits Global AI Instructions block when global instructions are empty or whitespace', () => {
+    const emptyPrompt = buildExecutionPromptWithFileActionContract(
+      'Implement feature',
+      {
+        filePaths: ['README.md'],
+      },
+      '   ',
+    );
+    const nullPrompt = buildExecutionPromptWithFileActionContract(
+      'Implement feature',
+      {
+        filePaths: ['README.md'],
+      },
+      null,
+    );
+
+    expect(emptyPrompt).not.toContain('Global AI Instructions:');
+    expect(nullPrompt).not.toContain('Global AI Instructions:');
+  });
+
+  it('keeps file action contract before global instructions, workspace context, and user request', () => {
+    const prompt = buildExecutionPromptWithFileActionContract(
+      'Implement feature',
+      {
+        filePaths: ['src/app.ts'],
+      },
+      'Respect API boundaries',
+    );
+
+    const contractIndex = prompt.indexOf('Execution output contract:');
+    const globalInstructionsIndex = prompt.indexOf('Global AI Instructions:');
+    const workspaceIndex = prompt.indexOf('Current workspace files:');
+    const userRequestIndex = prompt.indexOf('User request:');
+
+    expect(contractIndex).toBeGreaterThanOrEqual(0);
+    expect(globalInstructionsIndex).toBeGreaterThan(contractIndex);
+    expect(workspaceIndex).toBeGreaterThan(globalInstructionsIndex);
+    expect(userRequestIndex).toBeGreaterThan(workspaceIndex);
   });
 });

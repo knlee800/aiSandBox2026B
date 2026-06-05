@@ -11,12 +11,16 @@ describe('AIExecutionController workspaceContext forwarding', () => {
     const queueService = {
       enqueueExecution: jest.fn().mockResolvedValue(undefined),
     };
+    const userAiInstructionsService = {
+      getByUserId: jest.fn().mockResolvedValue(null),
+    };
     const controller = new AIExecutionController(
       usageLedgerService as any,
       {} as any,
       queueService as any,
       {} as any,
       {} as any,
+      userAiInstructionsService as any,
     );
 
     const request: AIExecutionRequest = {
@@ -75,12 +79,16 @@ describe('AIExecutionController workspaceContext forwarding', () => {
     const queueService = {
       enqueueExecution: jest.fn().mockResolvedValue(undefined),
     };
+    const userAiInstructionsService = {
+      getByUserId: jest.fn().mockResolvedValue(null),
+    };
     const controller = new AIExecutionController(
       usageLedgerService as any,
       {} as any,
       queueService as any,
       {} as any,
       {} as any,
+      userAiInstructionsService as any,
     );
 
     const request: AIExecutionRequest = {
@@ -102,6 +110,93 @@ describe('AIExecutionController workspaceContext forwarding', () => {
       expect.objectContaining({
         prompt: request.prompt,
         workspaceContext: undefined,
+      }),
+    );
+  });
+
+  it('includes trimmed globalInstructions in queued payload when user instructions exist', async () => {
+    const usageLedgerService = {
+      findByRequestId: jest.fn().mockResolvedValue(null),
+      writeExecutionIntent: jest.fn().mockResolvedValue(undefined),
+    };
+    const queueService = {
+      enqueueExecution: jest.fn().mockResolvedValue(undefined),
+    };
+    const userAiInstructionsService = {
+      getByUserId: jest.fn().mockResolvedValue('  Use concise responses.  '),
+    };
+    const controller = new AIExecutionController(
+      usageLedgerService as any,
+      {} as any,
+      queueService as any,
+      {} as any,
+      {} as any,
+      userAiInstructionsService as any,
+    );
+
+    const request: AIExecutionRequest = {
+      sessionId: '11111111-1111-4111-8111-111111111111',
+      conversationId: '22222222-2222-4222-8222-222222222222',
+      userId: 'untrusted-user',
+      prompt: 'Explain this file.',
+      provider: 'stub',
+    };
+    const identity: ApiKeyIdentity = {
+      userId: '33333333-3333-4333-8333-333333333333',
+      apiKeyId: '44444444-4444-4444-8444-444444444444',
+      scopes: ['ai:execute'],
+    };
+
+    await controller.execute(request, identity);
+
+    expect(userAiInstructionsService.getByUserId).toHaveBeenCalledWith(
+      identity.userId,
+    );
+    expect(queueService.enqueueExecution).toHaveBeenCalledWith(
+      expect.objectContaining({
+        globalInstructions: 'Use concise responses.',
+      }),
+    );
+  });
+
+  it('omits globalInstructions in queued payload when user instructions are null or whitespace', async () => {
+    const usageLedgerService = {
+      findByRequestId: jest.fn().mockResolvedValue(null),
+      writeExecutionIntent: jest.fn().mockResolvedValue(undefined),
+    };
+    const queueService = {
+      enqueueExecution: jest.fn().mockResolvedValue(undefined),
+    };
+    const userAiInstructionsService = {
+      getByUserId: jest.fn().mockResolvedValue('   '),
+    };
+    const controller = new AIExecutionController(
+      usageLedgerService as any,
+      {} as any,
+      queueService as any,
+      {} as any,
+      {} as any,
+      userAiInstructionsService as any,
+    );
+
+    const request: AIExecutionRequest = {
+      sessionId: '11111111-1111-4111-8111-111111111111',
+      conversationId: '22222222-2222-4222-8222-222222222222',
+      userId: 'untrusted-user',
+      prompt: 'Explain this file.',
+      provider: 'stub',
+    };
+    const identity: ApiKeyIdentity = {
+      userId: '33333333-3333-4333-8333-333333333333',
+      apiKeyId: '44444444-4444-4444-8444-444444444444',
+      scopes: ['ai:execute'],
+    };
+
+    await controller.execute(request, identity);
+
+    expect(queueService.enqueueExecution).toHaveBeenCalledWith(
+      expect.not.objectContaining({
+        globalInstructions: expect.any(String),
       }),
     );
   });
