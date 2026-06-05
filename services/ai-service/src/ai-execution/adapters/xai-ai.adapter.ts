@@ -98,18 +98,36 @@ export class XAIAdapter implements AIAdapter {
     );
 
     try {
+      const normalizedSystemPrompt =
+        typeof request.systemPrompt === 'string'
+          ? request.systemPrompt.trim()
+          : '';
+      const messages: OpenAI.Chat.ChatCompletionCreateParams['messages'] =
+        normalizedSystemPrompt.length > 0
+          ? [
+              {
+                role: 'system',
+                content: normalizedSystemPrompt,
+              },
+              {
+                role: 'user',
+                content: request.prompt ?? '',
+              },
+            ]
+          : [
+              {
+                role: 'user',
+                content: request.prompt ?? '',
+              },
+            ];
+
       // Transform AIExecutionRequest to xAI Chat Completions API format
       // TASK-56A: content must be string (xAI 422 if missing); coerce undefined/null to ''
       const xaiRequest: OpenAI.Chat.ChatCompletionCreateParams = {
         model: this.model,
         max_tokens: this.defaultMaxTokens,
         temperature: this.defaultTemperature,
-        messages: [
-          {
-            role: 'user',
-            content: request.prompt ?? '',
-          },
-        ],
+        messages,
       };
 
       // Execute request via OpenAI SDK with xAI baseURL (Phase 47.4: forward signal for abort)

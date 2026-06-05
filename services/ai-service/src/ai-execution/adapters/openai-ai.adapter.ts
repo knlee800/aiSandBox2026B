@@ -98,17 +98,35 @@ export class OpenAIAdapter implements AIAdapter {
     );
 
     try {
+      const normalizedSystemPrompt =
+        typeof request.systemPrompt === 'string'
+          ? request.systemPrompt.trim()
+          : '';
+      const messages: OpenAI.Chat.ChatCompletionCreateParams['messages'] =
+        normalizedSystemPrompt.length > 0
+          ? [
+              {
+                role: 'system',
+                content: normalizedSystemPrompt,
+              },
+              {
+                role: 'user',
+                content: request.prompt,
+              },
+            ]
+          : [
+              {
+                role: 'user',
+                content: request.prompt,
+              },
+            ];
+
       // Transform AIExecutionRequest to OpenAI Chat Completions API format
       const openaiRequest: OpenAI.Chat.ChatCompletionCreateParams = {
         model: this.model,
         max_tokens: this.defaultMaxTokens,
         temperature: this.defaultTemperature,
-        messages: [
-          {
-            role: 'user',
-            content: request.prompt,
-          },
-        ],
+        messages,
       };
 
       // Execute request via OpenAI SDK (Phase 47.4: forward signal for abort)

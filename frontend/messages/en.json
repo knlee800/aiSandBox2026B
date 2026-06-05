@@ -281,7 +281,19 @@
     "affiliate": "Affiliate",
     "logout": "Log out",
     "light": "Light",
-    "dark": "Dark"
+    "dark": "Dark",
+    "globalAiInstructionsTitle": "Global AI Instructions",
+    "globalAiInstructionsDescription": "These instructions apply across your projects and are injected into AI prompt context.",
+    "globalAiInstructionsPlaceholder": "Add persistent instructions for how the assistant should behave.",
+    "globalAiInstructionsSave": "Save",
+    "globalAiInstructionsClear": "Clear",
+    "globalAiInstructionsLoading": "Loading global instructions...",
+    "globalAiInstructionsSaving": "Saving...",
+    "globalAiInstructionsSaved": "Saved.",
+    "globalAiInstructionsLoadError": "Failed to load Global AI Instructions.",
+    "globalAiInstructionsSaveError": "Failed to save Global AI Instructions.",
+    "globalAiInstructionsCharacterCount": "Character count",
+    "globalAiInstructionsTooLong": "Global AI Instructions cannot exceed 4000 characters."
   },
   "ai": {
     "prompt": "Ask the assistant...",

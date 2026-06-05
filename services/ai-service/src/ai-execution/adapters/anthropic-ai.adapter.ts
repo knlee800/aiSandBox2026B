@@ -96,6 +96,11 @@ export class AnthropicAdapter implements AIAdapter {
     );
 
     try {
+      const normalizedSystemPrompt =
+        typeof request.systemPrompt === 'string'
+          ? request.systemPrompt.trim()
+          : '';
+
       // Transform AIExecutionRequest to Anthropic Messages API format
       const anthropicRequest: Anthropic.MessageCreateParams = {
         model: this.model,
@@ -108,6 +113,9 @@ export class AnthropicAdapter implements AIAdapter {
           },
         ],
       };
+      if (normalizedSystemPrompt.length > 0) {
+        anthropicRequest.system = normalizedSystemPrompt;
+      }
 
       // Execute request via Anthropic SDK (Phase 47.4: forward signal for abort)
       const createOptions = request.signal ? { signal: request.signal } : {};

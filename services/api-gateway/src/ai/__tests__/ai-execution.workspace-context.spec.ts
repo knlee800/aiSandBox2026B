@@ -200,4 +200,51 @@ describe('AIExecutionController workspaceContext forwarding', () => {
       }),
     );
   });
+
+  it('session-based identity (browser-session) fetches global instructions for the session user', async () => {
+    const usageLedgerService = {
+      findByRequestId: jest.fn().mockResolvedValue(null),
+      writeExecutionIntent: jest.fn().mockResolvedValue(undefined),
+    };
+    const queueService = {
+      enqueueExecution: jest.fn().mockResolvedValue(undefined),
+    };
+    const userAiInstructionsService = {
+      getByUserId: jest.fn().mockResolvedValue('Always respond in JSON.'),
+    };
+    const controller = new AIExecutionController(
+      usageLedgerService as any,
+      {} as any,
+      queueService as any,
+      {} as any,
+      {} as any,
+      userAiInstructionsService as any,
+    );
+
+    const request: AIExecutionRequest = {
+      sessionId: '11111111-1111-4111-8111-111111111111',
+      conversationId: '22222222-2222-4222-8222-222222222222',
+      userId: 'untrusted-user',
+      prompt: 'Generate a React component.',
+      provider: 'stub',
+    };
+    const sessionIdentity: ApiKeyIdentity = {
+      userId: '4329e051-ce13-46b5-83ef-357faf749d90',
+      apiKeyId: 'browser-session',
+      scopes: ['ai:execute'],
+      isInternal: true,
+    };
+
+    await controller.execute(request, sessionIdentity);
+
+    expect(userAiInstructionsService.getByUserId).toHaveBeenCalledWith(
+      '4329e051-ce13-46b5-83ef-357faf749d90',
+    );
+    expect(queueService.enqueueExecution).toHaveBeenCalledWith(
+      expect.objectContaining({
+        globalInstructions: 'Always respond in JSON.',
+        userId: '4329e051-ce13-46b5-83ef-357faf749d90',
+      }),
+    );
+  });
 });

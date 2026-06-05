@@ -712,6 +712,7 @@ interface WorkspaceChatExecutionResponse {
   fileActions?: WorkspaceFileAction[];
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const DRIVER_API_KEY_STORAGE_KEY = 'driver_api_key';
 
 function parseSelectedChatModelOption(value: string): {
@@ -3856,20 +3857,10 @@ export default function AppPage() {
     if (!userId) {
       return;
     }
-    const apiKey = localStorage.getItem(DRIVER_API_KEY_STORAGE_KEY)?.trim() ?? '';
-    if (!apiKey) {
-      setChatRequestState('failed');
-      setChatStatusMessage(null);
-      setChatError('Missing API key. Add one in /en/driver, then retry.');
-      return;
-    }
 
     try {
       const response = await fetch(`/api/ai/executions/${encodeURIComponent(executionId)}`, {
         method: 'GET',
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-        },
       });
 
       if (!response.ok) {
@@ -4032,7 +4023,6 @@ export default function AppPage() {
   }
 
   async function submitOrchestratedChatPrompt(input: {
-    apiKey: string;
     prompt: string;
     selectedSessionId: string | null;
     chosenModel: { provider: string; model: string };
@@ -4104,7 +4094,6 @@ export default function AppPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${input.apiKey}`,
         },
         body: JSON.stringify({
           prompt: stepPrompt,
@@ -4184,9 +4173,6 @@ export default function AppPage() {
         await sleepMs(CHAT_EXECUTION_POLL_INTERVAL_MS);
         const statusResponse = await fetch(`/api/ai/executions/${encodeURIComponent(executionId)}`, {
           method: 'GET',
-          headers: {
-            Authorization: `Bearer ${input.apiKey}`,
-          },
         });
         if (!statusResponse.ok) {
           const failureMessage = toChatAssistantFailureMessage({
@@ -4315,13 +4301,6 @@ export default function AppPage() {
     if (!userId) {
       return;
     }
-    const apiKey = localStorage.getItem(DRIVER_API_KEY_STORAGE_KEY)?.trim() ?? '';
-    if (!apiKey) {
-      setChatRequestState('failed');
-      setChatStatusMessage(null);
-      setChatError('Missing API key. Add one in /en/driver, then retry.');
-      return;
-    }
 
     const trimmedPrompt = chatPromptInput.trim();
     if (!trimmedPrompt) {
@@ -4399,7 +4378,6 @@ export default function AppPage() {
 
     if (isChatOrchestrationEnabled) {
       await submitOrchestratedChatPrompt({
-        apiKey,
         prompt: promptWithSelectedPreviewElement,
         selectedSessionId,
         chosenModel,
@@ -4433,7 +4411,6 @@ export default function AppPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
           prompt: promptWithSelectedPreviewElement,

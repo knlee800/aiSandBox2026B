@@ -281,7 +281,19 @@
     "affiliate": "联盟",
     "logout": "退出登录",
     "light": "浅色",
-    "dark": "深色"
+    "dark": "深色",
+    "globalAiInstructionsTitle": "全局 AI 指令",
+    "globalAiInstructionsDescription": "这些指令会应用到你的所有项目，并注入到 AI 提示上下文中。",
+    "globalAiInstructionsPlaceholder": "添加持久化指令，定义助手应如何响应。",
+    "globalAiInstructionsSave": "保存",
+    "globalAiInstructionsClear": "清除",
+    "globalAiInstructionsLoading": "正在加载全局指令...",
+    "globalAiInstructionsSaving": "保存中...",
+    "globalAiInstructionsSaved": "已保存。",
+    "globalAiInstructionsLoadError": "无法加载全局 AI 指令。",
+    "globalAiInstructionsSaveError": "无法保存全局 AI 指令。",
+    "globalAiInstructionsCharacterCount": "字符数",
+    "globalAiInstructionsTooLong": "全局 AI 指令不能超过 4000 个字符。"
   },
   "ai": {
     "prompt": "询问助手...",

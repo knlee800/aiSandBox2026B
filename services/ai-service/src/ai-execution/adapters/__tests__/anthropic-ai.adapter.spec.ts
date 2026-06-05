@@ -131,17 +131,49 @@ describe('AnthropicAdapter', () => {
       await adapter.execute(mockRequest);
 
       // Verify SDK was called with correct format
-      expect(mockMessagesCreate).toHaveBeenCalledWith({
+      expect(mockMessagesCreate).toHaveBeenCalledWith(
+        {
+          model: 'claude-3-5-sonnet-20241022',
+          max_tokens: 4096,
+          temperature: 1.0,
+          messages: [
+            {
+              role: 'user',
+              content: 'Hello, Claude!',
+            },
+          ],
+        },
+        {},
+      );
+    });
+
+    it('should set provider-level system field when systemPrompt is present', async () => {
+      mockMessagesCreate.mockResolvedValue({
+        id: 'msg_123',
+        type: 'message',
+        role: 'assistant',
+        content: [{ type: 'text', text: 'Hello, human!' }],
         model: 'claude-3-5-sonnet-20241022',
-        max_tokens: 4096,
-        temperature: 1.0,
-        messages: [
-          {
-            role: 'user',
-            content: 'Hello, Claude!',
-          },
-        ],
+        usage: { input_tokens: 10, output_tokens: 5 },
       });
+
+      await adapter.execute({
+        ...mockRequest,
+        systemPrompt: '  Follow platform rules first.  ',
+      });
+
+      expect(mockMessagesCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          system: 'Follow platform rules first.',
+          messages: [
+            {
+              role: 'user',
+              content: 'Hello, Claude!',
+            },
+          ],
+        }),
+        {},
+      );
     });
 
     it('should use custom model from adapter options', async () => {
@@ -164,6 +196,7 @@ describe('AnthropicAdapter', () => {
         expect.objectContaining({
           model: 'claude-3-opus-20240229',
         }),
+        {},
       );
     });
 
@@ -194,6 +227,7 @@ describe('AnthropicAdapter', () => {
             },
           ],
         }),
+        {},
       );
     });
   });

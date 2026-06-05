@@ -215,23 +215,27 @@ function buildGlobalInstructionsBlock(
   return `Global AI Instructions:\n${normalizedGlobalInstructions}`;
 }
 
-export function buildExecutionPromptWithFileActionContract(
+export function buildExecutionPromptParts(
   userPrompt: string,
   workspaceContext?: WorkspaceContext,
   globalInstructions?: string | null,
-): string {
+): { system: string; user: string } {
   const normalizedPrompt = typeof userPrompt === 'string' ? userPrompt : '';
   const globalInstructionsBlock = buildGlobalInstructionsBlock(globalInstructions);
   const workspaceContextBlock = buildWorkspaceContextBlock(workspaceContext);
-  const promptSections: string[] = [FILE_ACTION_OUTPUT_CONTRACT];
+  const systemSections: string[] = [FILE_ACTION_OUTPUT_CONTRACT];
   if (globalInstructionsBlock) {
-    promptSections.push(globalInstructionsBlock);
+    systemSections.push(globalInstructionsBlock);
   }
+  const userSections: string[] = [];
   if (workspaceContextBlock) {
-    promptSections.push(workspaceContextBlock);
+    userSections.push(workspaceContextBlock);
   }
-  promptSections.push(`User request:\n${normalizedPrompt}`);
-  return promptSections.join('\n\n');
+  userSections.push(`User request:\n${normalizedPrompt}`);
+  return {
+    system: systemSections.join('\n\n'),
+    user: userSections.join('\n\n'),
+  };
 }
 
 interface ExecutionCompletionLog {
@@ -645,14 +649,15 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
           let lastError: unknown;
           for (let attempt = 0; attempt < EXECUTION_PROVIDER_RETRY_ATTEMPTS; attempt++) {
             try {
-              const executionPrompt = buildExecutionPromptWithFileActionContract(
+              const promptParts = buildExecutionPromptParts(
                 job.data.prompt ?? '',
                 job.data.workspaceContext,
                 job.data.globalInstructions,
               );
               aiResult = await this.aiExecutionService.execute({
                 provider: job.data.provider,
-                prompt: executionPrompt,
+                prompt: promptParts.user,
+                systemPrompt: promptParts.system,
                 sessionId: job.data.sessionId,
                 conversationId: job.data.conversationId,
                 userId: job.data.userId,

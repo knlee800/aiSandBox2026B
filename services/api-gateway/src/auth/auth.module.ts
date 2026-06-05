@@ -6,6 +6,7 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { ApiKeyAuthGuard } from './api-key-auth.guard';
+import { SessionOrApiKeyAuthGuard } from './session-or-api-key.guard';
 import { AuthorizationGuard } from './authorization.guard';
 import { ApiKeyService } from './api-key.service';
 import { ApiKeyController } from './api-key.controller';
@@ -65,6 +66,7 @@ export const appleStrategyProvider = {
     SessionCookieGuard,
     EmailThrottlerGuard,
     ApiKeyAuthGuard,
+    SessionOrApiKeyAuthGuard,
     AuthorizationGuard,
     ApiKeyService,
   ],
@@ -72,6 +74,7 @@ export const appleStrategyProvider = {
     AuthService,
     SessionCookieGuard,
     ApiKeyAuthGuard,
+    SessionOrApiKeyAuthGuard,
     AuthorizationGuard,
     ApiKeyService,
   ],

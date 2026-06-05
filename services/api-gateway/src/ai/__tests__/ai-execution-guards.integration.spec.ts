@@ -27,6 +27,7 @@ import { LaunchConfig } from '../../launch/launch.config';
 import { AbortConfig } from '../../abort/abort.config';
 import { ApiKeyIdentity } from '../../auth/api-key.config';
 import { ApiKeyAuthGuard } from '../../auth/api-key-auth.guard';
+import { SessionOrApiKeyAuthGuard } from '../../auth/session-or-api-key.guard';
 import { GlobalSafetyLimitService } from '../../safety/global-safety-limit.service';
 import { KillSwitchConfig } from '../../safety/kill-switch.config';
 import { AIExecutionController } from '../ai-execution.controller';
@@ -513,33 +514,33 @@ describe('AI Execution Guards Integration (Phase 31B)', () => {
 });
 
 describe('AIExecutionController guard metadata', () => {
-  it('protects cancelExecution with ApiKeyAuthGuard', () => {
+  it('protects cancelExecution with SessionOrApiKeyAuthGuard', () => {
     const guards =
       Reflect.getMetadata(
         GUARDS_METADATA,
         AIExecutionController.prototype.cancelExecution,
       ) ?? [];
 
-    expect(guards).toContain(ApiKeyAuthGuard);
+    expect(guards).toContain(SessionOrApiKeyAuthGuard);
   });
 
-  it('protects getExecution with ApiKeyAuthGuard', () => {
+  it('protects getExecution with SessionOrApiKeyAuthGuard', () => {
     const guards =
       Reflect.getMetadata(
         GUARDS_METADATA,
         AIExecutionController.prototype.getExecution,
       ) ?? [];
 
-    expect(guards).toContain(ApiKeyAuthGuard);
+    expect(guards).toContain(SessionOrApiKeyAuthGuard);
   });
 
-  it('protects streamExecution with ApiKeyAuthGuard', () => {
+  it('protects streamExecution with SessionOrApiKeyAuthGuard', () => {
     const guards =
       Reflect.getMetadata(
         GUARDS_METADATA,
         AIExecutionController.prototype.streamExecution,
       ) ?? [];
 
-    expect(guards).toContain(ApiKeyAuthGuard);
+    expect(guards).toContain(SessionOrApiKeyAuthGuard);
   });
 });

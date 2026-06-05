@@ -51,6 +51,7 @@ import { IdempotencyGuard } from '../idempotency.guard';
 import { UsageLedgerService } from '../../usage-ledger/usage-ledger.service';
 import { AIServiceHttpClient } from '../../clients/ai-service-http.client';
 import { ApiKeyAuthGuard } from '../../auth/api-key-auth.guard';
+import { SessionOrApiKeyAuthGuard } from '../../auth/session-or-api-key.guard';
 import { AuthorizationGuard } from '../../auth/authorization.guard';
 import { ExecutionSafetyGuard } from '../../safety/execution-safety.guard';
 import { LaunchGuard } from '../../launch/launch.guard';
@@ -147,7 +148,7 @@ describe('AI Execution - Orphan Reconciliation (Integration)', () => {
         },
       ],
     })
-      .overrideGuard(ApiKeyAuthGuard)
+      .overrideGuard(SessionOrApiKeyAuthGuard)
       .useValue(mockApiKeyAuthGuard)
       .overrideGuard(AuthorizationGuard)
       .useValue(mockPassthroughGuard)

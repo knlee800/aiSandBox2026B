@@ -8,6 +8,7 @@ describe('AIExecutionController.getExecution fileActions', () => {
       {} as any,
       executionResultService as any,
       {} as any,
+      { getByUserId: jest.fn().mockResolvedValue(null) } as any,
     );
 
   it('returns additive fileActions for completed execution', async () => {

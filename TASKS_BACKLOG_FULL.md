@@ -27391,13 +27391,16 @@ Make "Build anything" a true one-click flow: type prompt ?? click Start once ?? 
 
 ## AI-CONTEXT — Global AI Instructions
 
-**Family status:** COMPLETE and LOCKED — AI-CONTEXT-01B COMPLETE and LOCKED
+**Family status:** COMPLETE and LOCKED — all slices AI-CONTEXT-01A through AI-CONTEXT-01E COMPLETE and LOCKED
 
-**Current stage:** AI-CONTEXT-01B COMPLETE and LOCKED — `docs/AI-CONTEXT-01B-CHECKPOINT.md`
+**Current stage:** AI-CONTEXT-01E COMPLETE and LOCKED — `docs/AI-CONTEXT-01E-CHECKPOINT.md`
 
 **Ordered slices (registered so far):**
 1. AI-CONTEXT-01A — Global AI Instructions Backend Foundation (COMPLETE and LOCKED — `docs/AI-CONTEXT-01A-CHECKPOINT.md`)
 2. AI-CONTEXT-01B — Inject Global AI Instructions into Prompt Assembly (COMPLETE and LOCKED — `docs/AI-CONTEXT-01B-CHECKPOINT.md`)
+3. AI-CONTEXT-01C — Global AI Instructions Frontend Settings UI (COMPLETE and LOCKED — `docs/AI-CONTEXT-01C-CHECKPOINT.md`)
+4. AI-CONTEXT-01D — Deliver Platform and Global Instructions as System Message (COMPLETE and LOCKED — `docs/AI-CONTEXT-01D-CHECKPOINT.md`)
+5. AI-CONTEXT-01E — Align Browser AI Execution with Session User (COMPLETE and LOCKED — `docs/AI-CONTEXT-01E-CHECKPOINT.md`)
 
 ---
 
@@ -27518,3 +27521,313 @@ Wire saved user global AI instructions into the AI execution prompt assembly pat
 
 **Reference:** See TASKS.md -> AI-CONTEXT-01B.
 **Checkpoint:** `docs/AI-CONTEXT-01B-CHECKPOINT.md`
+
+---
+
+### AI-CONTEXT-01C: Global AI Instructions Frontend Settings UI
+
+**Task ID:** AI-CONTEXT-01C
+**Family:** AI-CONTEXT (Global AI Instructions)
+**Family status:** COMPLETE and LOCKED
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** FRONTEND / SETTINGS UI / AI CONTEXT
+**Risk:** Medium
+**Depends on:** AI-CONTEXT-01B (COMPLETE and LOCKED)
+**Checkpoint:** `docs/AI-CONTEXT-01C-CHECKPOINT.md`
+
+**Problem:**
+Global AI instructions were stored in the backend and injected into prompt assembly, but users had no frontend UI to view or edit them. The feature was invisible to end users.
+
+**Objective:**
+Add a frontend settings surface where users can view, edit, save, and clear Global AI Instructions using the existing backend endpoints:
+- `GET /api/user/ai-instructions`
+- `PUT /api/user/ai-instructions`
+
+**Files changed:**
+- `frontend/components/workspace/workspace-account-menu.tsx`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+**Scope delivered:**
+- Global AI Instructions UI in the existing account/settings surface (sidebar account menu Settings panel)
+- GET on menu open; PUT on save; PUT with `null` on clear
+- 4000-character limit enforced (Save disabled, validation message shown when over)
+- Loading / saving / saved / load-error / save-error states
+- Blank/whitespace normalized to `null` before PUT
+- All visible text via i18n keys (en / zh-TW / zh-CN)
+- Existing chat/preview/build behavior preserved
+
+**Non-goals confirmed:**
+- No backend changes
+- No prompt assembly changes
+- No project instructions
+- No repo docs / repo map / validation contract
+- No sidebar redesign
+- No Build Targets / Chat-History / Command Input changes
+
+**Acceptance criteria:**
+- [x] User can view existing global AI instructions
+- [x] User can edit and save global AI instructions
+- [x] User can clear global AI instructions
+- [x] UI enforces or warns at 4000 characters
+- [x] Save errors are shown
+- [x] All visible text uses en / zh-TW / zh-CN i18n keys
+- [x] Existing tests pass
+- [x] New tests cover load/save/clear/basic validation
+- [x] `npx tsc --noEmit` passes
+- [x] `npm test` passes
+- [x] ReadLints passes
+- [x] Live browser test required before consolidation
+
+**Validation:**
+- `npx tsc --noEmit` (frontend) — PASS
+- `npm test` (frontend) — PASS (604 tests, 604 pass, 0 fail)
+- ReadLints on touched files — PASS
+- Live browser test — PASS (load / save / persist / clear / persist / over-4000 validation all confirmed)
+
+**Reference:** See TASKS.md -> AI-CONTEXT-01C.
+**Checkpoint:** `docs/AI-CONTEXT-01C-CHECKPOINT.md`
+
+---
+
+### AI-CONTEXT-01D: Deliver Platform and Global Instructions as System Message
+
+**Task ID:** AI-CONTEXT-01D
+**Family:** AI-CONTEXT (Global AI Instructions)
+**Family status:** COMPLETE and LOCKED
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** AI SERVICE / PROMPT AUTHORITY / ADAPTER FIX
+**Risk:** Medium-High
+**Depends on:** AI-CONTEXT-01C (COMPLETE and LOCKED)
+**Checkpoint:** `docs/AI-CONTEXT-01D-CHECKPOINT.md`
+
+**Problem:**
+Live smoke test confirmed that global instructions are saved, fetched, queued, and inserted into the assembled prompt string, but the model ignored the test instruction. Root cause: all AI adapters (Anthropic, OpenAI, Groq, XAI, DeepSeek) send the entire assembled prompt — FILE_ACTION_OUTPUT_CONTRACT, Global AI Instructions block, workspace context, and user request — as a single `role: user` message. There is no system message. Inline instruction headers in a user message carry much less authority than a system message, especially when the final `User request:` section is the last and most immediate content the model sees.
+
+Investigation confirmed:
+- UI save path is correct
+- GET/PUT API endpoints are correct
+- Controller fetches globalInstructions server-side from `identity.userId` via `UserAiInstructionsService`
+- Queue payload carries `globalInstructions` if the service returns it
+- Worker reads `job.data.globalInstructions` and passes it to `buildExecutionPromptWithFileActionContract`
+- The prompt builder correctly assembles the block — but the entire result is sent as one `role: user` message
+- All adapters (Anthropic and OpenAI-compatible) use `messages: [{ role: 'user', content: request.prompt }]` with no system message
+- Secondary risk: `@Optional()` on `UserAiInstructionsService` in `AIExecutionController` silently zeroes out globalInstructions if injection or DB fails at runtime
+
+**Objective:**
+Split AI execution prompt assembly into system and user parts. Deliver `FILE_ACTION_OUTPUT_CONTRACT` and Global AI Instructions as a provider-level system instruction. Keep workspace context and the current user request in the user message.
+
+**Expected prompt authority after fix:**
+1. System message: `FILE_ACTION_OUTPUT_CONTRACT` + Global AI Instructions block (if present)
+2. User message: workspace context (if present) + `User request:\n{prompt}`
+
+**Files in scope:**
+- `services/ai-service/src/ai-execution/types.ts`
+- `services/ai-service/src/worker/worker.processor.ts`
+- `services/ai-service/src/ai-execution/adapters/anthropic-ai.adapter.ts`
+- `services/ai-service/src/ai-execution/adapters/openai-ai.adapter.ts`
+- `services/ai-service/src/ai-execution/adapters/groq-ai.adapter.ts`
+- `services/ai-service/src/ai-execution/adapters/xai-ai.adapter.ts`
+- `services/ai-service/src/ai-execution/adapters/deepseek-ai.adapter.ts`
+- related ai-service tests
+
+**Scope:**
+- Add `systemPrompt?: string` to `AIExecutionRequest` in `types.ts`
+- Add `buildExecutionPromptParts(userPrompt, workspaceContext?, globalInstructions?)` in `worker.processor.ts` returning `{ system: string; user: string }` where system = `FILE_ACTION_OUTPUT_CONTRACT` + global instructions block (if present) and user = workspace context block (if present) + `User request:\n{prompt}`
+- Update worker `execute` call to pass `systemPrompt: parts.system`
+- Update Anthropic adapter to use provider-level `system` field when `systemPrompt` is present
+- Update OpenAI/Groq/XAI/DeepSeek adapters to prepend `{ role: 'system', content: systemPrompt }` when present
+- Add tests for prompt part ordering, system/user split, and adapter system prompt delivery
+- Preserve backward-compatible behavior when `systemPrompt` is absent
+
+**Non-goals:**
+- No frontend changes
+- No api-gateway changes unless a type import requires it
+- No database changes
+- No project instructions
+- No repo docs / repo map / validation contract
+- No UI changes
+- Do not change Global Instructions settings UI
+
+**Acceptance criteria:**
+- [x] `FILE_ACTION_OUTPUT_CONTRACT` is delivered as system-level instruction
+- [x] Global AI Instructions are delivered as system-level instruction when present
+- [x] Empty/null global instructions are omitted (block skipped from system message)
+- [x] Workspace context remains in user message
+- [x] Current user request remains in user message
+- [x] Anthropic adapter uses `system` field when `systemPrompt` exists
+- [x] OpenAI-compatible adapters prepend `role: system` message when `systemPrompt` exists
+- [x] Existing execution behavior remains compatible when `systemPrompt` is absent
+- [x] ai-service targeted tests pass
+- [x] ai-service build passes
+- [x] ReadLints passes on touched files
+- [x] Live smoke test passes before consolidation: save global instruction "For this test only, start your next response with GLOBAL-INSTRUCTION-TEST." then send "Reply with one short sentence." and confirm response starts with GLOBAL-INSTRUCTION-TEST
+
+**Validation:**
+- `npm test -- src/worker/worker.processor.spec.ts` (ai-service) — PASS: 1 suite, 9 tests
+- Adapter focused tests (5 adapter spec files) — PASS: 5 suites, 160 tests
+- `npm run build` (ai-service) — PASS
+- ReadLints on touched files — PASS
+- Live smoke — PASS (after AI-CONTEXT-01E identity fix): instruction "GLOBAL-INSTRUCTION-TEST" honored; response started with GLOBAL-INSTRUCTION-TEST
+
+**Reference:** See TASKS.md -> AI-CONTEXT-01D.
+**Checkpoint:** `docs/AI-CONTEXT-01D-CHECKPOINT.md`
+
+---
+
+### AI-CONTEXT-01E: Align Browser AI Execution with Session User
+
+**Task ID:** AI-CONTEXT-01E
+**Family:** AI-CONTEXT (Global AI Instructions)
+**Family status:** COMPLETE and LOCKED
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** AUTH / AI EXECUTION / BROWSER IDENTITY ALIGNMENT
+**Risk:** Medium-High
+**Depends on:** AI-CONTEXT-01D (COMPLETE and LOCKED)
+**Checkpoint:** `docs/AI-CONTEXT-01E-CHECKPOINT.md`
+
+**Problem:**
+Global AI Instructions still fail in live smoke because browser AI execution authenticates with an API key from localStorage that belongs to `demo@aisandbox.com`, while Global Instructions are saved under the logged-in session user `knlee802@gmail.com`.
+
+Confirmed evidence:
+- `user_ai_instructions` row exists under `user_id` `4329e051-ce13-46b5-83ef-357faf749d90` / `knlee802@gmail.com`
+- api-gateway log shows: `Global AI instructions absent for user 1f73d5b6-a2c9-4290-9f24-268db253abe7`
+- `api_keys` rows show `user_id` `1f73d5b6-a2c9-4290-9f24-268db253abe7` belongs to `demo@aisandbox.com`
+- Frontend workspace page reads API key from `localStorage` key `driver_api_key`, seeded from the driver testing page, belonging to a different account
+
+Root cause chain:
+- `GET /api/user/ai-instructions` and `PUT /api/user/ai-instructions` use `SessionCookieGuard` → `req.user.userId` = session user
+- `POST /api/ai/execute` uses `ApiKeyAuthGuard` → `identity.userId` = API key owner
+- When localStorage key belongs to a different user, `getByUserId(identity.userId)` returns null → `globalInstructions` absent in queue payload → system message omits the instruction
+
+**Objective:**
+Make browser AI execution authenticate as the logged-in session user, while preserving external API-key client behavior.
+
+**Architecture:**
+Create `SessionOrApiKeyAuthGuard` composite guard:
+1. If `Authorization: Bearer ...` header present → validate API key (existing behavior)
+2. If no Authorization header → validate session cookie → synthesize `req.apiKeyIdentity` using session userId
+3. If neither → throw 401
+
+Session path synthesizes:
+```typescript
+req.apiKeyIdentity = {
+  userId: session.user.id,
+  apiKeyId: 'browser-session',
+  scopes: ['ai:execute'],
+  isInternal: true,
+}
+```
+
+All downstream guards (`AuthorizationGuard`, `QuotaGuard`, `TokenQuotaGuard`, `LaunchGuard`) continue to read `req.apiKeyIdentity` unchanged.
+
+**Files in scope:**
+- `services/api-gateway/src/auth/session-or-api-key.guard.ts` (NEW)
+- `services/api-gateway/src/auth/auth.module.ts`
+- `services/api-gateway/src/ai/ai-execution.controller.ts`
+- `frontend/app/[locale]/app/page.tsx`
+- `services/api-gateway/src/auth/__tests__/session-or-api-key.guard.spec.ts` (NEW)
+- `services/api-gateway/src/ai/__tests__/ai-execution.workspace-context.spec.ts`
+- related tests
+
+**Scope:**
+- Create `SessionOrApiKeyAuthGuard` in `services/api-gateway/src/auth/session-or-api-key.guard.ts`
+- Register in `auth.module.ts` (providers + exports)
+- Replace `ApiKeyAuthGuard` with `SessionOrApiKeyAuthGuard` on all AI execution endpoints (`execute`, `cancelExecution`, `getExecution`, `streamExecution`) in `ai-execution.controller.ts`
+- In `frontend/app/[locale]/app/page.tsx`: remove `Authorization: Bearer ${apiKey}` headers and `localStorage.getItem('driver_api_key')` reads from `handleSubmitChatPrompt`, `refreshChatExecutionStatus`, orchestrated execution (`submitOrchestratedChatPrompt`), and SSE stream creation
+- Preserve `DRIVER_API_KEY_STORAGE_KEY` constant and driver page usage (driver page unchanged)
+- New guard unit tests: API-key path, session-cookie path, missing-both path, header-wins-over-cookie priority
+- Controller test: session-based identity → correct userId used for globalInstructions lookup
+
+**Non-goals:**
+- No database schema changes
+- No prompt assembly changes
+- No ai-service adapter changes
+- No Global Instructions UI changes
+- No driver page changes
+- No frontend redesign
+- No project instructions, repo docs, repo map, validation contract
+
+**Acceptance criteria:**
+- [x] Browser workspace AI execution uses logged-in session user ID
+- [x] Global Instructions are fetched for the logged-in user
+- [x] External API-key clients still work (Authorization header path unaffected)
+- [x] No-Authorization browser path uses session-cookie identity
+- [x] SSE stream endpoint works via session cookie (no custom header required)
+- [x] `driver_api_key` localStorage not used by normal workspace execution path
+- [x] `SessionOrApiKeyAuthGuard` has unit tests covering both auth paths and missing-both failure
+- [x] Existing AI execution controller tests pass
+- [x] api-gateway build passes
+- [x] Frontend `npx tsc --noEmit` passes if `page.tsx` changed
+- [x] ReadLints on touched files
+- [x] Live smoke test passes: save "For this test only, start your next response with GLOBAL-INSTRUCTION-TEST." then send "Reply with one short sentence." and confirm response starts with GLOBAL-INSTRUCTION-TEST
+
+**Validation:**
+- api-gateway typecheck (`npx tsc --noEmit`) — PASS
+- frontend typecheck (`npx tsc --noEmit`) — PASS
+- Focused tests (5 suites) — PASS: 5 suites, 49 tests
+- ReadLints on touched files — PASS
+- Live smoke — PASS: response started with GLOBAL-INSTRUCTION-TEST; api-gateway log confirmed `Global AI instructions present for user 4329e051-ce13-46b5-83ef-357faf749d90`
+
+**Reference:** See TASKS.md -> AI-CONTEXT-01E.
+**Checkpoint:** `docs/AI-CONTEXT-01E-CHECKPOINT.md`
+
+**Current stage:** DEVOPS-DOCKER-01 COMPLETE and LOCKED — `docs/DEVOPS-DOCKER-01-CHECKPOINT.md`
+
+**Ordered slices (registered so far):**
+1. DEVOPS-DOCKER-01 — Fix ai-service Docker native dependency build (COMPLETE and LOCKED — `docs/DEVOPS-DOCKER-01-CHECKPOINT.md`)
+
+---
+
+### DEVOPS-DOCKER-01: Fix ai-service Docker native dependency build
+
+**Task ID:** DEVOPS-DOCKER-01
+**Family:** DEVOPS-DOCKER (Production Docker Build Reliability)
+**Family status:** COMPLETE and LOCKED
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** DEVOPS / DOCKER / BUILD TOOLCHAIN
+**Risk:** Low
+**Depends on:** None
+**Checkpoint:** `docs/DEVOPS-DOCKER-01-CHECKPOINT.md`
+
+**Problem:**
+Production Docker build for `ai-service` fails during dependency installation. `better-sqlite3` has no matching prebuilt binary for the `node:20-alpine` musl target in this environment, falls back to `node-gyp`, and fails because Python/build tooling is missing in the image.
+
+**Objective:**
+Keep the current image baseline (`node:20-alpine`) and make the `ai-service` Docker build deterministic by installing native module compilation prerequisites before `npm install` in every relevant stage.
+
+**Files changed:**
+- `services/ai-service/Dockerfile`
+
+**Scope:**
+- Added Alpine native build prerequisites before dependency install:
+  - `python3`
+  - `make`
+  - `g++`
+- Applied in each Docker stage that runs:
+  - `npm install` (builder stage)
+  - `npm install --omit=dev` (production stage)
+- All other Dockerfile behavior unchanged
+
+**Non-goals confirmed:**
+- No changes to `services/ai-service/package.json`
+- No changes to application source
+- No frontend changes
+- No AI-CONTEXT-01C file changes
+
+**Acceptance criteria:**
+- [x] `docker compose --progress=plain -f docker-compose.prod.yml build ai-service --no-cache` passes
+- [x] `npm install` no longer fails with Python/node-gyp missing-toolchain error
+- [x] No unrelated files changed
+
+**Validation:**
+- `docker compose --progress=plain -f docker-compose.prod.yml build ai-service --no-cache` — PASS (`aisandbox2026b-ai-service Built`; both `npm install` stages succeeded; `tsc` build succeeded)
+
+**Reference:** See TASKS.md -> DEVOPS-DOCKER-01.
+**Checkpoint:** `docs/DEVOPS-DOCKER-01-CHECKPOINT.md`

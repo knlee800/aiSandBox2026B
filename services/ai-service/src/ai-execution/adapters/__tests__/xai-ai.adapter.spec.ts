@@ -12,7 +12,7 @@ describe('XAIAdapter', () => {
     it('should instantiate with valid API key', () => {
       const adapter = new XAIAdapter('xai-test-key-123');
       expect(adapter).toBeInstanceOf(XAIAdapter);
-      expect(adapter.model).toBe('grok-beta');
+      expect(adapter.model).toBe('grok-3');
     });
 
     it('should throw error when API key is undefined', () => {
@@ -35,7 +35,7 @@ describe('XAIAdapter', () => {
 
     it('should use default model when not specified', () => {
       const adapter = new XAIAdapter('xai-test-key-123');
-      expect(adapter.model).toBe('grok-beta');
+      expect(adapter.model).toBe('grok-3');
     });
 
     it('should use custom model when specified', () => {
@@ -102,17 +102,59 @@ describe('XAIAdapter', () => {
 
         await adapter.execute(request);
 
-        expect(mockClient.chat.completions.create).toHaveBeenCalledWith({
+        expect(mockClient.chat.completions.create).toHaveBeenCalledWith(
+          {
+            model: 'grok-3',
+            max_tokens: 4096,
+            temperature: 1.0,
+            messages: [
+              {
+                role: 'user',
+                content: 'Test prompt',
+              },
+            ],
+          },
+          {},
+        );
+      });
+
+      it('should prepend a system message when systemPrompt is present', async () => {
+        const mockResponse = {
+          choices: [{ message: { content: 'Test output' } }],
+          usage: { total_tokens: 100 },
           model: 'grok-beta',
-          max_tokens: 4096,
-          temperature: 1.0,
-          messages: [
-            {
-              role: 'user',
-              content: 'Test prompt',
-            },
-          ],
-        });
+        };
+        mockClient.chat.completions.create.mockResolvedValue(mockResponse);
+
+        const request: AIExecutionRequest = {
+          sessionId: 'session-1',
+          conversationId: 'conv-1',
+          userId: 'user-1',
+          prompt: 'Test prompt',
+          systemPrompt: '  Follow platform contract.  ',
+          provider: 'stub',
+        };
+
+        await adapter.execute(request);
+
+        expect(mockClient.chat.completions.create).toHaveBeenCalledWith(
+          {
+            model: 'grok-3',
+            max_tokens: 4096,
+            temperature: 1.0,
+            messages: [
+              {
+                role: 'system',
+                content: 'Follow platform contract.',
+              },
+              {
+                role: 'user',
+                content: 'Test prompt',
+              },
+            ],
+          },
+          {},
+        );
       });
 
       it('should include content field when prompt is undefined (TASK-56A)', async () => {
@@ -244,7 +286,7 @@ describe('XAIAdapter', () => {
 
         const result = await adapter.execute(request);
 
-        expect(result.model).toBe('grok-beta');
+        expect(result.model).toBe('grok-3');
       });
     });
 

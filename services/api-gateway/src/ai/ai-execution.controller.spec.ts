@@ -3,6 +3,7 @@ import { AIExecutionController } from './ai-execution.controller';
 import { AIServiceHttpClient, AIExecutionRequest, AIExecutionResult } from '../clients/ai-service-http.client';
 import { ApiKeyIdentity } from '../auth/api-key.config';
 import { ApiKeyAuthGuard } from '../auth/api-key-auth.guard';
+import { SessionOrApiKeyAuthGuard } from '../auth/session-or-api-key.guard';
 import { AuthorizationGuard } from '../auth/authorization.guard';
 import { QuotaGuard } from '../quota/quota.guard';
 import { TokenQuotaGuard } from '../quota/token-quota.guard';
@@ -56,7 +57,7 @@ describe('AIExecutionController (Phase 18A + Phase 20A + Phase 20B + Phase 21B +
         },
       ],
     })
-      .overrideGuard(ApiKeyAuthGuard)
+      .overrideGuard(SessionOrApiKeyAuthGuard)
       .useValue(mockGuard)
       .overrideGuard(AuthorizationGuard)
       .useValue(mockGuard)

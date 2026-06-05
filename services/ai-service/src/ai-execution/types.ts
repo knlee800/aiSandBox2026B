@@ -18,6 +18,7 @@ export interface AIExecutionRequest {
   conversationId: string;
   userId: string;
   prompt: string;
+  systemPrompt?: string;
   provider: 'stub' | 'anthropic' | 'openai' | 'groq' | 'xai' | 'deepseek';
   model?: string;
   metadata?: Record<string, unknown>;

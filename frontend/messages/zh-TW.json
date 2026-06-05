@@ -281,7 +281,19 @@
     "affiliate": "聯盟",
     "logout": "登出",
     "light": "淺色",
-    "dark": "深色"
+    "dark": "深色",
+    "globalAiInstructionsTitle": "全域 AI 指令",
+    "globalAiInstructionsDescription": "這些指令會套用到你的所有專案，並注入到 AI 提示內容中。",
+    "globalAiInstructionsPlaceholder": "新增持久化指令，定義助理應如何回應。",
+    "globalAiInstructionsSave": "儲存",
+    "globalAiInstructionsClear": "清除",
+    "globalAiInstructionsLoading": "正在載入全域指令...",
+    "globalAiInstructionsSaving": "儲存中...",
+    "globalAiInstructionsSaved": "已儲存。",
+    "globalAiInstructionsLoadError": "無法載入全域 AI 指令。",
+    "globalAiInstructionsSaveError": "無法儲存全域 AI 指令。",
+    "globalAiInstructionsCharacterCount": "字元數",
+    "globalAiInstructionsTooLong": "全域 AI 指令不可超過 4000 字元。"
   },
   "ai": {
     "prompt": "詢問助理...",

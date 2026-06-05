@@ -100,17 +100,35 @@ export class GroqAdapter implements AIAdapter {
     );
 
     try {
+      const normalizedSystemPrompt =
+        typeof request.systemPrompt === 'string'
+          ? request.systemPrompt.trim()
+          : '';
+      const messages: ChatCompletionCreateParams['messages'] =
+        normalizedSystemPrompt.length > 0
+          ? [
+              {
+                role: 'system',
+                content: normalizedSystemPrompt,
+              },
+              {
+                role: 'user',
+                content: request.prompt,
+              },
+            ]
+          : [
+              {
+                role: 'user',
+                content: request.prompt,
+              },
+            ];
+
       // Transform AIExecutionRequest to Groq Chat Completions API format
       const groqRequest: ChatCompletionCreateParams = {
         model: this.model,
         max_tokens: this.defaultMaxTokens,
         temperature: this.defaultTemperature,
-        messages: [
-          {
-            role: 'user',
-            content: request.prompt,
-          },
-        ],
+        messages,
       };
 
       // Execute request via Groq SDK (Phase 47.4: forward signal for abort)

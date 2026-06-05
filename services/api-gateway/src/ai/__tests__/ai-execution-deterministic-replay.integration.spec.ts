@@ -9,6 +9,7 @@ import { UsageLedgerService } from '../../usage-ledger/usage-ledger.service';
 import { UsageRecord } from '../../entities/usage-record.entity';
 import { AIServiceHttpClient } from '../../clients/ai-service-http.client';
 import { ApiKeyAuthGuard } from '../../auth/api-key-auth.guard';
+import { SessionOrApiKeyAuthGuard } from '../../auth/session-or-api-key.guard';
 import { AuthorizationGuard } from '../../auth/authorization.guard';
 import { QuotaGuard } from '../../quota/quota.guard';
 import { TokenQuotaGuard } from '../../quota/token-quota.guard';
@@ -87,7 +88,7 @@ describe('AIExecutionController - Deterministic Replay (Integration)', () => {
         },
       ],
     })
-      .overrideGuard(ApiKeyAuthGuard)
+      .overrideGuard(SessionOrApiKeyAuthGuard)
       .useValue({
         canActivate: jest.fn((context) => {
           const request = context.switchToHttp().getRequest();

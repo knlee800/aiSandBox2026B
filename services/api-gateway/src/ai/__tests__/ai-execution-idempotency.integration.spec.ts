@@ -5,6 +5,7 @@ import {
   AIExecutionRequest,
 } from '../../clients/ai-service-http.client';
 import { ApiKeyAuthGuard } from '../../auth/api-key-auth.guard';
+import { SessionOrApiKeyAuthGuard } from '../../auth/session-or-api-key.guard';
 import { AuthorizationGuard } from '../../auth/authorization.guard';
 import { QuotaGuard } from '../../quota/quota.guard';
 import { QuotaService } from '../../quota/quota.service';
@@ -122,7 +123,7 @@ describe('AIExecutionController (Phase 43A-2C: Idempotency Short-Circuit)', () =
         Reflector,
       ],
     })
-      .overrideGuard(ApiKeyAuthGuard)
+      .overrideGuard(SessionOrApiKeyAuthGuard)
       .useValue({ canActivate: () => true })
       .overrideGuard(AuthorizationGuard)
       .useValue({ canActivate: () => true })

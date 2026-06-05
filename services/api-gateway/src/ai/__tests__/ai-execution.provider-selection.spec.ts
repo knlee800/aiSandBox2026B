@@ -22,6 +22,7 @@ describe('AIExecutionController provider/model selection (ADV-01-01)', () => {
       queueService as any,
       {} as any,
       {} as any,
+      { getByUserId: jest.fn().mockResolvedValue(null) } as any,
     );
 
     return { controller, usageLedgerService, queueService };

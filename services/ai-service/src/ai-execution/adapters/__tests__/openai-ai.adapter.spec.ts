@@ -95,17 +95,59 @@ describe('OpenAIAdapter', () => {
 
         await adapter.execute(request);
 
-        expect(mockClient.chat.completions.create).toHaveBeenCalledWith({
+        expect(mockClient.chat.completions.create).toHaveBeenCalledWith(
+          {
+            model: 'gpt-4o',
+            max_tokens: 4096,
+            temperature: 1.0,
+            messages: [
+              {
+                role: 'user',
+                content: 'Test prompt',
+              },
+            ],
+          },
+          {},
+        );
+      });
+
+      it('should prepend a system message when systemPrompt is present', async () => {
+        const mockResponse = {
+          choices: [{ message: { content: 'Test output' } }],
+          usage: { total_tokens: 100 },
           model: 'gpt-4o',
-          max_tokens: 4096,
-          temperature: 1.0,
-          messages: [
-            {
-              role: 'user',
-              content: 'Test prompt',
-            },
-          ],
-        });
+        };
+        mockClient.chat.completions.create.mockResolvedValue(mockResponse);
+
+        const request: AIExecutionRequest = {
+          sessionId: 'session-1',
+          conversationId: 'conv-1',
+          userId: 'user-1',
+          prompt: 'Test prompt',
+          systemPrompt: '  Follow platform contract.  ',
+          provider: 'stub',
+        };
+
+        await adapter.execute(request);
+
+        expect(mockClient.chat.completions.create).toHaveBeenCalledWith(
+          {
+            model: 'gpt-4o',
+            max_tokens: 4096,
+            temperature: 1.0,
+            messages: [
+              {
+                role: 'system',
+                content: 'Follow platform contract.',
+              },
+              {
+                role: 'user',
+                content: 'Test prompt',
+              },
+            ],
+          },
+          {},
+        );
       });
 
       it('should extract text content from response.choices[0].message.content', async () => {

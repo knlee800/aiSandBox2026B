@@ -15,7 +15,6 @@ import {
   ConflictException,
   Sse,
   MessageEvent,
-  Optional,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { Observable } from 'rxjs';
@@ -24,7 +23,7 @@ import {
 } from '../clients/ai-service-http.client';
 import { ExecutionStreamService } from '../streaming/execution-stream.service';
 import { ExecutionResultDto, FileActionDto } from './dto/execution-result.dto';
-import { ApiKeyAuthGuard } from '../auth/api-key-auth.guard';
+import { SessionOrApiKeyAuthGuard } from '../auth/session-or-api-key.guard';
 import { AuthorizationGuard } from '../auth/authorization.guard';
 import { QuotaGuard } from '../quota/quota.guard';
 import { TokenQuotaGuard } from '../quota/token-quota.guard';
@@ -96,8 +95,7 @@ export class AIExecutionController {
     private readonly queueService: QueueService,
     private readonly executionResultService: ExecutionResultService,
     private readonly executionStreamService: ExecutionStreamService,
-    @Optional()
-    private readonly userAiInstructionsService?: UserAiInstructionsService,
+    private readonly userAiInstructionsService: UserAiInstructionsService,
   ) {}
 
   private normalizeGlobalInstructions(
@@ -216,7 +214,7 @@ export class AIExecutionController {
    */
   @Post('execute')
   @HttpCode(HttpStatus.ACCEPTED)
-  @UseGuards(ApiKeyAuthGuard, AuthorizationGuard, ExecutionSafetyGuard, LaunchGuard, AbortGuard, IdempotencyGuard, QuotaGuard, TokenQuotaGuard, RateLimitGuard)
+  @UseGuards(SessionOrApiKeyAuthGuard, AuthorizationGuard, ExecutionSafetyGuard, LaunchGuard, AbortGuard, IdempotencyGuard, QuotaGuard, TokenQuotaGuard, RateLimitGuard)
   @RequireScope('ai:execute')
   @RateLimit({ maxRequests: 20, windowMs: 60000 })
   async execute(
@@ -255,7 +253,10 @@ export class AIExecutionController {
         ? request.model.trim()
         : undefined;
     const globalInstructions = this.normalizeGlobalInstructions(
-      await this.userAiInstructionsService?.getByUserId(identity.userId),
+      await this.userAiInstructionsService.getByUserId(identity.userId),
+    );
+    this.logger.debug(
+      `Global AI instructions ${globalInstructions ? 'present' : 'absent'} for user ${identity.userId}`,
     );
 
     // Phase 43B-4 HOTFIX: Check if retry after timeout/failed
@@ -382,7 +383,7 @@ export class AIExecutionController {
    * Returns 409 Conflict if execution cannot be cancelled.
    */
   @Post('executions/:executionId/cancel')
-  @UseGuards(ApiKeyAuthGuard)
+  @UseGuards(SessionOrApiKeyAuthGuard)
   async cancelExecution(
     @Param('executionId') executionId: string,
   ): Promise<{ executionId: string; status: string }> {
@@ -410,7 +411,7 @@ export class AIExecutionController {
    * Throws 404 if execution not found.
    */
   @Get('executions/:executionId')
-  @UseGuards(ApiKeyAuthGuard)
+  @UseGuards(SessionOrApiKeyAuthGuard)
   async getExecution(
     @Param('executionId') executionId: string,
   ): Promise<ExecutionResultDto> {
@@ -492,7 +493,7 @@ export class AIExecutionController {
    * Non-blocking. If no client connects, execution completes normally.
    */
   @Sse('executions/:executionId/stream')
-  @UseGuards(ApiKeyAuthGuard)
+  @UseGuards(SessionOrApiKeyAuthGuard)
   streamExecution(
     @Param('executionId') executionId: string,
   ): Observable<MessageEvent> {

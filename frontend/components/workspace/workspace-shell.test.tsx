@@ -12,7 +12,10 @@ import WorkspaceShell, {
   shouldCloseFocusedProjectActionOnProjectSuccessTransition,
   WorkspaceAdvancedDrawer,
 } from './workspace-shell';
-import WorkspaceAccountMenu from './workspace-account-menu';
+import WorkspaceAccountMenu, {
+  GLOBAL_AI_INSTRUCTIONS_MAX_LENGTH,
+  normalizeGlobalAiInstructionsForApi,
+} from './workspace-account-menu';
 import WorkspaceSidebar from './workspace-sidebar';
 import type { WorkspaceCheckpoint, WorkspaceShellSession } from './workspace-shell.logic';
 import type { WorkspaceExecState } from './workspace-exec.logic';
@@ -890,6 +893,16 @@ function withPatchedWindowConfirm<T>(
   }
 }
 
+function withPatchedFetch<T>(fetchImpl: typeof fetch, run: () => T): T {
+  const originalFetch = globalThis.fetch;
+  (globalThis as typeof globalThis & { fetch: typeof fetch }).fetch = fetchImpl;
+  try {
+    return run();
+  } finally {
+    (globalThis as typeof globalThis & { fetch: typeof fetch }).fetch = originalFetch;
+  }
+}
+
 function withPatchedWorkspaceShellWindow<T>(run: () => T): T {
   const globalObject = globalThis as typeof globalThis & { window?: unknown };
   const originalWindow = globalObject.window;
@@ -1207,8 +1220,11 @@ describe('workspace shell component', () => {
       finalSidebar = WorkspaceSidebar(buildWorkspaceSidebarProps({ locale: 'en', workspaceView: 'project' }));
     });
 
-    assert.equal(findElementByTestId(finalSidebar, 'workspace-sidebar-compact-expand-area'), null);
-    assert.ok(findElementByTestId(finalSidebar, 'workspace-sidebar-compact-toggle'));
+    assert.equal(
+      withPatchedReactHooks(() => findElementByTestId(finalSidebar, 'workspace-sidebar-compact-expand-area')),
+      null,
+    );
+    assert.ok(withPatchedReactHooks(() => findElementByTestId(finalSidebar, 'workspace-sidebar-compact-toggle')));
   });
 
   test('switching from project back to home does not force compact mode', () => {
@@ -1245,8 +1261,13 @@ describe('workspace shell component', () => {
       );
     });
 
-    assert.equal(findElementByTestId(homeSidebarAfterProject, 'workspace-sidebar-compact-expand-area'), null);
-    assert.ok(findElementByTestId(homeSidebarAfterProject, 'workspace-sidebar-compact-toggle'));
+    assert.equal(
+      withPatchedReactHooks(() => findElementByTestId(homeSidebarAfterProject, 'workspace-sidebar-compact-expand-area')),
+      null,
+    );
+    assert.ok(
+      withPatchedReactHooks(() => findElementByTestId(homeSidebarAfterProject, 'workspace-sidebar-compact-toggle')),
+    );
   });
 
   test('workspace sidebar renders temporary logo mark and traditional toggle control', () => {
@@ -1736,7 +1757,7 @@ describe('workspace shell component', () => {
     assert.match(html, />Log out</);
   });
 
-  test('account menu renders settings placeholder', () => {
+  test('account menu renders settings trigger', () => {
     const html = renderWorkspaceAccountMenu();
 
     assert.match(html, /workspace-account-menu-settings/);
@@ -1749,6 +1770,129 @@ describe('workspace shell component', () => {
     assert.match(html, /workspace-account-menu-theme/);
     assert.match(html, />Light</);
     assert.match(html, />Dark</);
+  });
+
+  test('account menu renders global AI instructions controls when settings panel opens', () => {
+    let accountMenuNode: React.ReactNode = null;
+
+    withPatchedFetch(
+      (async () =>
+        ({
+          ok: true,
+          status: 200,
+          json: async () => ({ globalInstructions: 'Stay concise.' }),
+        }) as Response) as typeof fetch,
+      () => {
+        withPatchedReactHooksWithPersistentState((beginRender) => {
+          beginRender();
+          accountMenuNode = WorkspaceAccountMenu(buildWorkspaceAccountMenuProps());
+          const settingsButton = findElementByTestId(accountMenuNode, 'workspace-account-menu-settings');
+          assert.ok(settingsButton);
+          const onClick = settingsButton.props.onClick as (() => void) | undefined;
+          onClick?.();
+
+          beginRender();
+          accountMenuNode = WorkspaceAccountMenu(buildWorkspaceAccountMenuProps());
+        });
+      },
+    );
+
+    assert.ok(findElementByTestId(accountMenuNode, 'workspace-global-ai-instructions-panel'));
+    assert.ok(findElementByTestId(accountMenuNode, 'workspace-global-ai-instructions-title'));
+    assert.ok(findElementByTestId(accountMenuNode, 'workspace-global-ai-instructions-input'));
+    assert.ok(findElementByTestId(accountMenuNode, 'workspace-global-ai-instructions-character-count'));
+    assert.ok(findElementByTestId(accountMenuNode, 'workspace-global-ai-instructions-save'));
+    assert.ok(findElementByTestId(accountMenuNode, 'workspace-global-ai-instructions-clear'));
+  });
+
+  test('account menu disables save when global AI instructions exceed max length', () => {
+    let accountMenuNode: React.ReactNode = null;
+
+    withPatchedFetch(
+      (async () =>
+        ({
+          ok: true,
+          status: 200,
+          json: async () => ({ globalInstructions: null }),
+        }) as Response) as typeof fetch,
+      () => {
+        withPatchedReactHooksWithPersistentState((beginRender) => {
+          beginRender();
+          accountMenuNode = WorkspaceAccountMenu(buildWorkspaceAccountMenuProps());
+          const settingsButton = findElementByTestId(accountMenuNode, 'workspace-account-menu-settings');
+          assert.ok(settingsButton);
+          const settingsClick = settingsButton.props.onClick as (() => void) | undefined;
+          settingsClick?.();
+
+          beginRender();
+          accountMenuNode = WorkspaceAccountMenu(buildWorkspaceAccountMenuProps());
+          const textarea = findElementByTestId(accountMenuNode, 'workspace-global-ai-instructions-input');
+          assert.ok(textarea);
+          const onChange = textarea.props.onChange as
+            | ((event: { target: { value: string } }) => void)
+            | undefined;
+          onChange?.({
+            target: {
+              value: 'x'.repeat(GLOBAL_AI_INSTRUCTIONS_MAX_LENGTH + 1),
+            },
+          });
+
+          beginRender();
+          accountMenuNode = WorkspaceAccountMenu(buildWorkspaceAccountMenuProps());
+        });
+      },
+    );
+
+    const saveButton = findElementByTestId(accountMenuNode, 'workspace-global-ai-instructions-save');
+    assert.ok(saveButton);
+    assert.equal(saveButton.props.disabled, true);
+    assert.ok(findElementByTestId(accountMenuNode, 'workspace-global-ai-instructions-too-long'));
+  });
+
+  test('global AI instructions normalization maps blank values to null', () => {
+    assert.equal(normalizeGlobalAiInstructionsForApi(''), null);
+    assert.equal(normalizeGlobalAiInstructionsForApi('   '), null);
+    assert.equal(normalizeGlobalAiInstructionsForApi('Use terse answers.'), 'Use terse answers.');
+  });
+
+  test('account menu source wires GET and PUT for global AI instructions', () => {
+    const accountMenuSource = readFileSync(new URL('./workspace-account-menu.tsx', import.meta.url), 'utf8');
+
+    assert.match(
+      accountMenuSource,
+      /fetch\('\/api\/user\/ai-instructions',\s*\{\s*method: 'GET',\s*\}\);/,
+    );
+    assert.match(
+      accountMenuSource,
+      /fetch\('\/api\/user\/ai-instructions',\s*\{\s*method: 'PUT',[\s\S]*globalInstructions[\s\S]*\}\);/,
+    );
+    assert.match(accountMenuSource, /await saveGlobalAiInstructionsToApi\(null\);/);
+  });
+
+  test('global AI instructions locale keys exist in en, zh-TW, and zh-CN', () => {
+    const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));
+    const zhTw = JSON.parse(readFileSync(new URL('../../messages/zh-TW.json', import.meta.url), 'utf8'));
+    const zhCn = JSON.parse(readFileSync(new URL('../../messages/zh-CN.json', import.meta.url), 'utf8'));
+    const requiredKeys = [
+      'globalAiInstructionsTitle',
+      'globalAiInstructionsDescription',
+      'globalAiInstructionsPlaceholder',
+      'globalAiInstructionsSave',
+      'globalAiInstructionsClear',
+      'globalAiInstructionsLoading',
+      'globalAiInstructionsSaving',
+      'globalAiInstructionsSaved',
+      'globalAiInstructionsLoadError',
+      'globalAiInstructionsSaveError',
+      'globalAiInstructionsCharacterCount',
+      'globalAiInstructionsTooLong',
+    ] as const;
+
+    for (const key of requiredKeys) {
+      assert.equal(typeof en.account?.[key], 'string');
+      assert.equal(typeof zhTw.account?.[key], 'string');
+      assert.equal(typeof zhCn.account?.[key], 'string');
+    }
   });
 
   test('renders home chatbox when project-first home view is selected', () => {
@@ -3270,15 +3414,17 @@ describe('workspace shell component', () => {
 
   test('clicking logout in account menu calls onLogout', () => {
     let callCount = 0;
-    const logoutButton = findElementByTestId(
-      <WorkspaceAccountMenu
-        {...buildWorkspaceAccountMenuProps({
-          onLogout: () => {
-            callCount += 1;
-          },
-        })}
-      />,
-      'workspace-header-logout-button',
+    const logoutButton = withPatchedReactHooks(() =>
+      findElementByTestId(
+        <WorkspaceAccountMenu
+          {...buildWorkspaceAccountMenuProps({
+            onLogout: () => {
+              callCount += 1;
+            },
+          })}
+        />,
+        'workspace-header-logout-button',
+      ),
     );
 
     assert.ok(logoutButton);
@@ -3288,15 +3434,17 @@ describe('workspace shell component', () => {
 
   test('clicking language option calls onLanguageChange with locale code', () => {
     let changedLocale = '';
-    const languageButton = findElementByTestId(
-      <WorkspaceAccountMenu
-        {...buildWorkspaceAccountMenuProps({
-          onLanguageChange: (locale) => {
-            changedLocale = locale;
-          },
-        })}
-      />,
-      'workspace-account-menu-language-zh-TW',
+    const languageButton = withPatchedReactHooks(() =>
+      findElementByTestId(
+        <WorkspaceAccountMenu
+          {...buildWorkspaceAccountMenuProps({
+            onLanguageChange: (locale) => {
+              changedLocale = locale;
+            },
+          })}
+        />,
+        'workspace-account-menu-language-zh-TW',
+      ),
     );
 
     assert.ok(languageButton);
