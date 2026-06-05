@@ -128,6 +128,46 @@ function getAiMessages(locale: string): typeof enMessages.ai {
   return enMessages.ai;
 }
 
+export const PROJECT_AI_INSTRUCTIONS_MAX_LENGTH = 4000;
+
+interface ProjectAiContextResponse {
+  projectInstructions: string | null;
+}
+
+export function normalizeProjectAiInstructionsForApi(value: string): string | null {
+  return value.trim().length === 0 ? null : value;
+}
+
+export async function fetchProjectAiInstructionsFromApi(projectId: string): Promise<string> {
+  const response = await fetch(`/api/projects/${projectId}/ai-context`, {
+    method: 'GET',
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to load project AI instructions (${response.status})`);
+  }
+
+  const data = (await response.json()) as ProjectAiContextResponse;
+  return typeof data.projectInstructions === 'string' ? data.projectInstructions : '';
+}
+
+export async function saveProjectAiInstructionsToApi(
+  projectId: string,
+  projectInstructions: string | null,
+): Promise<void> {
+  const response = await fetch(`/api/projects/${projectId}/ai-context`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      projectInstructions,
+    }),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to save project AI instructions (${response.status})`);
+  }
+}
+
 function resolveTabBarTabs(locale: string): WorkspaceTabBarTab[] {
   const tabMessages = getTabMessages(locale);
   return TAB_REGISTRY.map((tab) => ({
@@ -2219,6 +2259,18 @@ function HistoryProjectPanel(props: {
     | 'sharingVisibilityOptional'
     | 'view'
     | 'fork'
+    | 'projectAiInstructionsTitle'
+    | 'projectAiInstructionsDescription'
+    | 'projectAiInstructionsPlaceholder'
+    | 'projectAiInstructionsSave'
+    | 'projectAiInstructionsClear'
+    | 'projectAiInstructionsLoading'
+    | 'projectAiInstructionsSaving'
+    | 'projectAiInstructionsSaved'
+    | 'projectAiInstructionsLoadError'
+    | 'projectAiInstructionsSaveError'
+    | 'projectAiInstructionsCharacterCount'
+    | 'projectAiInstructionsTooLong'
   >;
   commonMessages: Pick<
     typeof enMessages.common,
@@ -2264,6 +2316,104 @@ function HistoryProjectPanel(props: {
   const workspaceControlsDisabled = isWorkspaceActionBusy || hasProjectActionInFlight;
   const canDeleteSelectedWorkspace = Boolean(selectedWorkspace && !selectedWorkspace.isDefault);
   const shouldShowWorkspaceAdminControls = !props.hideWorkspaceAdminControls;
+  const [projectInstructionsInput, setProjectInstructionsInput] = React.useState('');
+  const [projectInstructionsLoading, setProjectInstructionsLoading] = React.useState(false);
+  const [projectInstructionsSaving, setProjectInstructionsSaving] = React.useState(false);
+  const [projectInstructionsLoadError, setProjectInstructionsLoadError] = React.useState<string | null>(null);
+  const [projectInstructionsSaveError, setProjectInstructionsSaveError] = React.useState<string | null>(null);
+  const [projectInstructionsSaved, setProjectInstructionsSaved] = React.useState(false);
+  const projectInstructionsCount = projectInstructionsInput.length;
+  const projectInstructionsTooLong = projectInstructionsCount > PROJECT_AI_INSTRUCTIONS_MAX_LENGTH;
+
+  React.useEffect(() => {
+    if (!props.selectedProjectId) {
+      setProjectInstructionsInput('');
+      setProjectInstructionsLoading(false);
+      setProjectInstructionsSaving(false);
+      setProjectInstructionsLoadError(null);
+      setProjectInstructionsSaveError(null);
+      setProjectInstructionsSaved(false);
+      return;
+    }
+
+    const selectedProjectId = props.selectedProjectId;
+    let canceled = false;
+    setProjectInstructionsLoading(true);
+    setProjectInstructionsSaving(false);
+    setProjectInstructionsLoadError(null);
+    setProjectInstructionsSaveError(null);
+    setProjectInstructionsSaved(false);
+
+    void (async () => {
+      try {
+        const loadedInstructions = await fetchProjectAiInstructionsFromApi(selectedProjectId);
+        if (canceled) {
+          return;
+        }
+        setProjectInstructionsInput(loadedInstructions);
+      } catch (error) {
+        console.error('Failed to load project AI instructions:', error);
+        if (canceled) {
+          return;
+        }
+        setProjectInstructionsLoadError(props.projectMessages.projectAiInstructionsLoadError);
+      } finally {
+        if (!canceled) {
+          setProjectInstructionsLoading(false);
+        }
+      }
+    })();
+
+    return () => {
+      canceled = true;
+    };
+  }, [props.projectMessages.projectAiInstructionsLoadError, props.selectedProjectId]);
+
+  async function handleSaveProjectInstructions(): Promise<void> {
+    if (
+      !props.selectedProjectId ||
+      projectInstructionsLoading ||
+      projectInstructionsSaving ||
+      projectInstructionsTooLong
+    ) {
+      return;
+    }
+
+    setProjectInstructionsSaving(true);
+    setProjectInstructionsSaveError(null);
+    setProjectInstructionsSaved(false);
+    try {
+      const normalizedInstructions = normalizeProjectAiInstructionsForApi(projectInstructionsInput);
+      await saveProjectAiInstructionsToApi(props.selectedProjectId, normalizedInstructions);
+      setProjectInstructionsInput(normalizedInstructions ?? '');
+      setProjectInstructionsSaved(true);
+    } catch (error) {
+      console.error('Failed to save project AI instructions:', error);
+      setProjectInstructionsSaveError(props.projectMessages.projectAiInstructionsSaveError);
+    } finally {
+      setProjectInstructionsSaving(false);
+    }
+  }
+
+  async function handleClearProjectInstructions(): Promise<void> {
+    if (!props.selectedProjectId || projectInstructionsLoading || projectInstructionsSaving) {
+      return;
+    }
+
+    setProjectInstructionsSaving(true);
+    setProjectInstructionsSaveError(null);
+    setProjectInstructionsSaved(false);
+    try {
+      await saveProjectAiInstructionsToApi(props.selectedProjectId, null);
+      setProjectInstructionsInput('');
+      setProjectInstructionsSaved(true);
+    } catch (error) {
+      console.error('Failed to clear project AI instructions:', error);
+      setProjectInstructionsSaveError(props.projectMessages.projectAiInstructionsSaveError);
+    } finally {
+      setProjectInstructionsSaving(false);
+    }
+  }
 
   return (
     <div className="mt-2 rounded border border-gray-200 bg-gray-50 p-2" data-testid="history-project-surface">
@@ -2481,6 +2631,95 @@ function HistoryProjectPanel(props: {
             data-testid="history-project-visibility-update-button"
           >
             Update Visibility
+          </button>
+        </div>
+      </div>
+
+      <div
+        className="mt-2 rounded border border-gray-200 bg-white p-2"
+        data-testid="history-project-ai-instructions-surface"
+      >
+        <p className="text-xs font-semibold text-gray-700" data-testid="history-project-ai-instructions-title">
+          {props.projectMessages.projectAiInstructionsTitle}
+        </p>
+        <p
+          className="mt-1 text-[11px] text-gray-500"
+          data-testid="history-project-ai-instructions-description"
+        >
+          {props.projectMessages.projectAiInstructionsDescription}
+        </p>
+        {projectInstructionsLoading ? (
+          <p className="mt-2 text-[11px] text-gray-500" data-testid="history-project-ai-instructions-loading">
+            {props.projectMessages.projectAiInstructionsLoading}
+          </p>
+        ) : null}
+        {projectInstructionsLoadError ? (
+          <p className="mt-2 text-[11px] text-red-700" data-testid="history-project-ai-instructions-load-error">
+            {projectInstructionsLoadError}
+          </p>
+        ) : null}
+        <textarea
+          value={projectInstructionsInput}
+          onChange={(event) => {
+            setProjectInstructionsInput(event.target.value);
+            setProjectInstructionsSaveError(null);
+            setProjectInstructionsSaved(false);
+          }}
+          placeholder={props.projectMessages.projectAiInstructionsPlaceholder}
+          className="mt-2 min-h-[120px] w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900"
+          maxLength={PROJECT_AI_INSTRUCTIONS_MAX_LENGTH + 1}
+          disabled={!props.selectedProjectId || projectInstructionsLoading || projectInstructionsSaving}
+          data-testid="history-project-ai-instructions-input"
+        />
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+          <p
+            className="text-[11px] text-gray-500"
+            data-testid="history-project-ai-instructions-character-count"
+          >
+            {props.projectMessages.projectAiInstructionsCharacterCount}: {projectInstructionsCount} /{' '}
+            {PROJECT_AI_INSTRUCTIONS_MAX_LENGTH}
+          </p>
+          {projectInstructionsTooLong ? (
+            <p className="text-[11px] text-red-700" data-testid="history-project-ai-instructions-too-long">
+              {props.projectMessages.projectAiInstructionsTooLong}
+            </p>
+          ) : null}
+        </div>
+        {projectInstructionsSaved ? (
+          <p className="mt-2 text-[11px] text-emerald-700" data-testid="history-project-ai-instructions-saved">
+            {props.projectMessages.projectAiInstructionsSaved}
+          </p>
+        ) : null}
+        {projectInstructionsSaveError ? (
+          <p className="mt-2 text-[11px] text-red-700" data-testid="history-project-ai-instructions-save-error">
+            {projectInstructionsSaveError}
+          </p>
+        ) : null}
+        <div className="mt-2 flex gap-2">
+          <button
+            type="button"
+            className="rounded bg-gray-900 px-2 py-1 text-xs text-white disabled:bg-gray-300"
+            disabled={
+              !props.selectedProjectId ||
+              projectInstructionsLoading ||
+              projectInstructionsSaving ||
+              projectInstructionsTooLong
+            }
+            onClick={() => void handleSaveProjectInstructions()}
+            data-testid="history-project-ai-instructions-save"
+          >
+            {projectInstructionsSaving
+              ? props.projectMessages.projectAiInstructionsSaving
+              : props.projectMessages.projectAiInstructionsSave}
+          </button>
+          <button
+            type="button"
+            className="rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-700 disabled:bg-gray-100 disabled:text-gray-400"
+            disabled={!props.selectedProjectId || projectInstructionsLoading || projectInstructionsSaving}
+            onClick={() => void handleClearProjectInstructions()}
+            data-testid="history-project-ai-instructions-clear"
+          >
+            {props.projectMessages.projectAiInstructionsClear}
           </button>
         </div>
       </div>

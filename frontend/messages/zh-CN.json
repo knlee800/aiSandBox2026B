@@ -253,7 +253,19 @@
     "saveSnapshot": "保存快照",
     "restoreSnapshot": "恢复快照",
     "downloadProject": "下载项目",
-    "importProject": "导入项目"
+    "importProject": "导入项目",
+    "projectAiInstructionsTitle": "项目 AI 指令",
+    "projectAiInstructionsDescription": "这些指令仅应用于当前选中的项目。",
+    "projectAiInstructionsPlaceholder": "添加此项目专用的助手指令。",
+    "projectAiInstructionsSave": "保存",
+    "projectAiInstructionsClear": "清除",
+    "projectAiInstructionsLoading": "正在加载项目指令...",
+    "projectAiInstructionsSaving": "保存中...",
+    "projectAiInstructionsSaved": "已保存。",
+    "projectAiInstructionsLoadError": "无法加载项目 AI 指令。",
+    "projectAiInstructionsSaveError": "无法保存项目 AI 指令。",
+    "projectAiInstructionsCharacterCount": "字符数",
+    "projectAiInstructionsTooLong": "项目 AI 指令不能超过 4000 个字符。"
   },
   "tabs": {
     "preview": "预览",

@@ -4,6 +4,7 @@ import { describe, test } from 'node:test';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import WorkspaceShell, {
+  normalizeProjectAiInstructionsForApi,
   getDefaultHistorySectionVisibilityPresetState,
   getHistorySectionVisibilityPresetState,
   moveHistoryCollapsibleSectionOrderItem,
@@ -1895,6 +1896,55 @@ describe('workspace shell component', () => {
     }
   });
 
+  test('project AI instructions normalization maps blank values to null', () => {
+    assert.equal(normalizeProjectAiInstructionsForApi(''), null);
+    assert.equal(normalizeProjectAiInstructionsForApi('   '), null);
+    assert.equal(
+      normalizeProjectAiInstructionsForApi('Use stricter linting for this project.'),
+      'Use stricter linting for this project.',
+    );
+  });
+
+  test('workspace shell source wires GET and PUT for project AI instructions', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+
+    assert.match(
+      shellSource,
+      /fetch\(`\/api\/projects\/\$\{projectId\}\/ai-context`,\s*\{\s*method: 'GET',\s*\}\);/,
+    );
+    assert.match(
+      shellSource,
+      /fetch\(`\/api\/projects\/\$\{projectId\}\/ai-context`,\s*\{\s*method: 'PUT',[\s\S]*projectInstructions[\s\S]*\}\);/,
+    );
+    assert.match(shellSource, /await saveProjectAiInstructionsToApi\(props\.selectedProjectId,\s*null\);/);
+  });
+
+  test('project AI instructions locale keys exist in en, zh-TW, and zh-CN', () => {
+    const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));
+    const zhTw = JSON.parse(readFileSync(new URL('../../messages/zh-TW.json', import.meta.url), 'utf8'));
+    const zhCn = JSON.parse(readFileSync(new URL('../../messages/zh-CN.json', import.meta.url), 'utf8'));
+    const requiredKeys = [
+      'projectAiInstructionsTitle',
+      'projectAiInstructionsDescription',
+      'projectAiInstructionsPlaceholder',
+      'projectAiInstructionsSave',
+      'projectAiInstructionsClear',
+      'projectAiInstructionsLoading',
+      'projectAiInstructionsSaving',
+      'projectAiInstructionsSaved',
+      'projectAiInstructionsLoadError',
+      'projectAiInstructionsSaveError',
+      'projectAiInstructionsCharacterCount',
+      'projectAiInstructionsTooLong',
+    ] as const;
+
+    for (const key of requiredKeys) {
+      assert.equal(typeof en.project?.[key], 'string');
+      assert.equal(typeof zhTw.project?.[key], 'string');
+      assert.equal(typeof zhCn.project?.[key], 'string');
+    }
+  });
+
   test('renders home chatbox when project-first home view is selected', () => {
     const html = renderWorkspaceShell({
       projectFirstUxEnabled: true,
@@ -2408,6 +2458,35 @@ describe('workspace shell component', () => {
     assert.match(html, /history-project-move-button/);
     assert.match(html, /history-project-sharing-surface/);
     assert.match(html, /history-public-project-surface/);
+  });
+
+  test('renders project AI instructions controls in active project view', () => {
+    const html = renderWorkspaceShell({
+      ...projectPanelRenderOverrides,
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+
+    assert.match(html, /history-project-ai-instructions-surface/);
+    assert.match(html, /history-project-ai-instructions-title/);
+    assert.match(html, /history-project-ai-instructions-description/);
+    assert.match(html, /history-project-ai-instructions-input/);
+    assert.match(html, /history-project-ai-instructions-character-count/);
+    assert.match(html, /history-project-ai-instructions-save/);
+    assert.match(html, /history-project-ai-instructions-clear/);
+    assert.match(html, /4000/);
+  });
+
+  test('project AI instructions source enforces max-length validation and save disable behavior', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+
+    assert.match(shellSource, /PROJECT_AI_INSTRUCTIONS_MAX_LENGTH = 4000/);
+    assert.match(shellSource, /maxLength=\{PROJECT_AI_INSTRUCTIONS_MAX_LENGTH \+ 1\}/);
+    assert.match(
+      shellSource,
+      /projectInstructionsLoading \|\|\s*projectInstructionsSaving \|\|\s*projectInstructionsTooLong/,
+    );
+    assert.match(shellSource, /history-project-ai-instructions-too-long/);
   });
 
   test('renders project history restore controls in active project view', () => {

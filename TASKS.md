@@ -17052,9 +17052,9 @@ Make "Build anything" a true one-click flow: type prompt ?? click Start once ?? 
 
 ## AI-CONTEXT — Global AI Instructions
 
-**Family status:** ACTIVE — AI-CONTEXT-01A through AI-CONTEXT-02A COMPLETE and LOCKED
+**Family status:** ACTIVE — AI-CONTEXT-01A through AI-CONTEXT-02B COMPLETE and LOCKED
 
-**Current stage:** AI-CONTEXT-02A COMPLETE and LOCKED — `docs/AI-CONTEXT-02A-CHECKPOINT.md`
+**Current stage:** AI-CONTEXT-02B COMPLETE and LOCKED — `docs/AI-CONTEXT-02B-CHECKPOINT.md`
 
 **Registered tasks:**
 1. AI-CONTEXT-01A — Global AI Instructions Backend Foundation (COMPLETE and LOCKED — `docs/AI-CONTEXT-01A-CHECKPOINT.md`)
@@ -17063,6 +17063,7 @@ Make "Build anything" a true one-click flow: type prompt ?? click Start once ?? 
 4. AI-CONTEXT-01D — Deliver Platform and Global Instructions as System Message (COMPLETE and LOCKED — `docs/AI-CONTEXT-01D-CHECKPOINT.md`)
 5. AI-CONTEXT-01E — Align Browser AI Execution with Session User (COMPLETE and LOCKED — `docs/AI-CONTEXT-01E-CHECKPOINT.md`)
 6. AI-CONTEXT-02A — Project AI Instructions Backend Foundation (COMPLETE and LOCKED — `docs/AI-CONTEXT-02A-CHECKPOINT.md`)
+7. AI-CONTEXT-02B — Project AI Instructions Frontend UI (COMPLETE and LOCKED — `docs/AI-CONTEXT-02B-CHECKPOINT.md`)
 
 ---
 
@@ -17466,6 +17467,80 @@ project_ai_context
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-CONTEXT-02A.
 **Checkpoint:** `docs/AI-CONTEXT-02A-CHECKPOINT.md`
+
+---
+
+#### AI-CONTEXT-02B: Project AI Instructions Frontend UI
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** AI-CONTEXT-02B
+**Family:** AI-CONTEXT
+**Priority:** High
+**Nature:** FRONTEND / PROJECT SETTINGS / AI CONTEXT
+**Risk:** Medium
+**Depends on:** AI-CONTEXT-02A (COMPLETE and LOCKED)
+**Checkpoint:** `docs/AI-CONTEXT-02B-CHECKPOINT.md`
+
+**Problem:**
+Project AI Instructions backend/API now exists, but users have no frontend UI to view, edit, save, or clear project-specific AI instructions.
+
+**Objective:**
+Expose Project AI Instructions in the existing project settings surface using:
+- `GET /api/projects/:projectId/ai-context`
+- `PUT /api/projects/:projectId/ai-context`
+
+**Files changed:**
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+**Scope:**
+- Add Project AI Instructions UI in the project settings/project details surface
+- Fetch current project instructions for the selected/open project
+- Save updates through `PUT /api/projects/:projectId/ai-context`
+- Support clearing instructions
+- Enforce/display max 4000 character limit
+- Show loading/saving/saved/error states
+- Use multilingual i18n text
+- Preserve existing Global AI Instructions UI
+- Preserve existing chat/preview/build behavior
+- No backend changes
+- No prompt injection yet
+
+**Non-goals confirmed:**
+- No backend changes
+- No prompt assembly changes
+- No repo docs
+- No repo map
+- No validation contract
+- No sidebar redesign
+- No unrelated settings redesign
+
+**Acceptance criteria:**
+- [x] User can view existing Project AI Instructions for the selected project
+- [x] User can edit and save Project AI Instructions
+- [x] User can clear Project AI Instructions
+- [x] UI enforces or warns at 4000 characters
+- [x] Save/load errors are shown
+- [x] All visible text uses en / zh-TW / zh-CN i18n keys
+- [x] Existing Global AI Instructions UI remains unchanged
+- [x] Existing tests pass
+- [x] New tests cover render/load/save/clear/basic validation where practical
+- [x] `npx tsc --noEmit` passes
+- [x] `npm test` passes
+- [x] ReadLints passes
+- [x] Live browser test required before consolidation
+
+**Validation:**
+- `npx tsc --noEmit` (frontend) — PASS
+- `npm test` (frontend) — PASS (609 tests, 0 failures)
+- ReadLints on touched files — PASS
+- Live browser test — PASS (load, save, persist, clear, persist-cleared, >4000 disable)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-CONTEXT-02B.
+**Checkpoint:** `docs/AI-CONTEXT-02B-CHECKPOINT.md`
 
 ---
 

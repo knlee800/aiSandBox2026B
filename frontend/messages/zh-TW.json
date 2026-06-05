@@ -253,7 +253,19 @@
     "saveSnapshot": "儲存快照",
     "restoreSnapshot": "還原快照",
     "downloadProject": "下載專案",
-    "importProject": "匯入專案"
+    "importProject": "匯入專案",
+    "projectAiInstructionsTitle": "專案 AI 指令",
+    "projectAiInstructionsDescription": "這些指令僅套用於目前選取的專案。",
+    "projectAiInstructionsPlaceholder": "新增此專案專用的助理指令。",
+    "projectAiInstructionsSave": "儲存",
+    "projectAiInstructionsClear": "清除",
+    "projectAiInstructionsLoading": "正在載入專案指令...",
+    "projectAiInstructionsSaving": "儲存中...",
+    "projectAiInstructionsSaved": "已儲存。",
+    "projectAiInstructionsLoadError": "無法載入專案 AI 指令。",
+    "projectAiInstructionsSaveError": "無法儲存專案 AI 指令。",
+    "projectAiInstructionsCharacterCount": "字元數",
+    "projectAiInstructionsTooLong": "專案 AI 指令不可超過 4000 字元。"
   },
   "tabs": {
     "preview": "預覽",

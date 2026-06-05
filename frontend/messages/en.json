@@ -253,7 +253,19 @@
     "saveSnapshot": "Save Snapshot",
     "restoreSnapshot": "Restore Snapshot",
     "downloadProject": "Download Project",
-    "importProject": "Import Project"
+    "importProject": "Import Project",
+    "projectAiInstructionsTitle": "Project AI Instructions",
+    "projectAiInstructionsDescription": "These instructions apply only to the currently selected project.",
+    "projectAiInstructionsPlaceholder": "Add project-specific instructions for the assistant.",
+    "projectAiInstructionsSave": "Save",
+    "projectAiInstructionsClear": "Clear",
+    "projectAiInstructionsLoading": "Loading project instructions...",
+    "projectAiInstructionsSaving": "Saving...",
+    "projectAiInstructionsSaved": "Saved.",
+    "projectAiInstructionsLoadError": "Failed to load Project AI Instructions.",
+    "projectAiInstructionsSaveError": "Failed to save Project AI Instructions.",
+    "projectAiInstructionsCharacterCount": "Character count",
+    "projectAiInstructionsTooLong": "Project AI Instructions cannot exceed 4000 characters."
   },
   "tabs": {
     "preview": "Preview",
