@@ -17052,9 +17052,9 @@ Make "Build anything" a true one-click flow: type prompt ?? click Start once ?? 
 
 ## AI-CONTEXT — Global AI Instructions
 
-**Family status:** ACTIVE — AI-CONTEXT-01A through AI-CONTEXT-02C COMPLETE and LOCKED
+**Family status:** ACTIVE — AI-CONTEXT-01A through AI-CONTEXT-03A COMPLETE and LOCKED — AI-CONTEXT-04A ACTIVE
 
-**Current stage:** AI-CONTEXT-02C COMPLETE and LOCKED — `docs/AI-CONTEXT-02C-CHECKPOINT.md`
+**Current stage:** AI-CONTEXT-04A ACTIVE — Repo Docs Registry Backend Foundation
 
 **Registered tasks:**
 1. AI-CONTEXT-01A — Global AI Instructions Backend Foundation (COMPLETE and LOCKED — `docs/AI-CONTEXT-01A-CHECKPOINT.md`)
@@ -17065,6 +17065,8 @@ Make "Build anything" a true one-click flow: type prompt ?? click Start once ?? 
 6. AI-CONTEXT-02A — Project AI Instructions Backend Foundation (COMPLETE and LOCKED — `docs/AI-CONTEXT-02A-CHECKPOINT.md`)
 7. AI-CONTEXT-02B — Project AI Instructions Frontend UI (COMPLETE and LOCKED — `docs/AI-CONTEXT-02B-CHECKPOINT.md`)
 8. AI-CONTEXT-02C — Inject Project AI Instructions into Prompt Assembly (COMPLETE and LOCKED — `docs/AI-CONTEXT-02C-CHECKPOINT.md`)
+9. AI-CONTEXT-03A — Active Context Indicator (COMPLETE and LOCKED — `docs/AI-CONTEXT-03A-CHECKPOINT.md`)
+10. AI-CONTEXT-04A — Repo Docs Registry Backend Foundation (ACTIVE)
 
 ---
 
@@ -17606,6 +17608,165 @@ Fetch Project AI Instructions for the current project/session and inject them in
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-CONTEXT-02C.
 **Checkpoint:** `docs/AI-CONTEXT-02C-CHECKPOINT.md`
+
+---
+
+#### AI-CONTEXT-03A: Active Context Indicator
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** AI-CONTEXT-03A
+**Family:** AI-CONTEXT
+**Priority:** High
+**Nature:** FRONTEND / AI CONTEXT VISIBILITY / UX TRUST
+**Risk:** Medium
+**Depends on:** AI-CONTEXT-01A through AI-CONTEXT-02C COMPLETE and LOCKED
+**Checkpoint:** `docs/AI-CONTEXT-03A-CHECKPOINT.md`
+
+**Problem:**
+Global AI Instructions and Project AI Instructions now affect the agent, but users cannot easily see which context sources are active before sending a prompt. This can make agent behavior feel confusing or hidden.
+
+**Objective:**
+Add a compact Active Context Indicator near the chat/prompt area that shows whether Global Instructions and Project Instructions are active for the current workspace/project.
+
+**Files in scope:**
+- `frontend/app/[locale]/app/page.tsx`
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+**Scope:**
+- Frontend-only.
+- Show active/inactive status for: Global Instructions and Project Instructions.
+- Place indicator near the chat panel / prompt area where users naturally look before sending prompts.
+- Keep it compact and non-intrusive.
+- Use Heroicons v2 Outline only if icons are needed.
+- Multilingual-first: all visible text in en.json, zh-TW.json, zh-CN.json.
+- Use existing data already available in frontend where possible.
+- If additional lightweight fetches are needed, use existing endpoints: `GET /api/user/ai-instructions` and `GET /api/projects/:projectId/ai-context`.
+- Do not change backend behavior.
+- Do not change prompt assembly.
+
+**Non-goals:**
+- No backend changes.
+- No ai-service changes.
+- No prompt assembly changes.
+- No repo docs.
+- No repo map.
+- No validation contract.
+- No redesign of chat panel.
+- No changes to Global AI Instructions editor.
+- No changes to Project AI Instructions editor unless required for shared state.
+- No unrelated UI polish.
+
+**Acceptance criteria:**
+- [x] Active Context Indicator renders in project workspace near the chat/prompt area.
+- [x] Indicator shows Global Instructions active when saved global instructions are non-empty.
+- [x] Indicator shows Global Instructions inactive when empty/null.
+- [x] Indicator shows Project Instructions active when selected project has non-empty project instructions.
+- [x] Indicator shows Project Instructions inactive when empty/null or no project is selected.
+- [x] All visible text uses i18n keys in en / zh-TW / zh-CN.
+- [x] UI is compact and does not disrupt chat, history, preview, or build layout.
+- [x] Existing Global Instructions and Project Instructions save/clear flows remain unchanged.
+- [x] Tests cover render and active/inactive states where practical.
+- [x] `npx tsc --noEmit` passes.
+- [x] `npm test` passes.
+- [x] ReadLints passes.
+- [x] Live browser test passes (clear both → both inactive; save Global only → Global active; save Project only → Project active; save both → both active; clear both → both inactive).
+
+**Validation:**
+- `npx tsc --noEmit` (frontend) — PASS
+- `npm test` (frontend) — PASS (617 passed, 0 failed)
+- ReadLints on touched files — PASS
+- Live browser smoke — PASS (5-step scenario confirmed)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-CONTEXT-03A.
+**Checkpoint:** `docs/AI-CONTEXT-03A-CHECKPOINT.md`
+
+---
+
+#### AI-CONTEXT-04A: Repo Docs Registry Backend Foundation
+
+**Status:** ACTIVE
+**Task ID:** AI-CONTEXT-04A
+**Family:** AI-CONTEXT
+**Priority:** High
+**Nature:** BACKEND / DATABASE / AI CONTEXT FOUNDATION
+**Risk:** Medium
+**Depends on:** AI-CONTEXT-01A through AI-CONTEXT-03A COMPLETE and LOCKED
+**Checkpoint:** `docs/AI-CONTEXT-04A-CHECKPOINT.md` *(pending)*
+
+**Problem:**
+Agents now receive Global Instructions and Project Instructions, but users cannot mark important repo documents that agents should read. Docs such as README.md, CLAUDE.md, architecture notes, setup docs, and task docs are not registered as active context sources.
+
+**Objective:**
+Create backend infrastructure for a project-scoped Repo Docs Registry. This registry stores selected workspace file paths that should later be shown in UI and injected into prompt context.
+
+**Data model:**
+Table: `project_repo_docs`
+- `id` UUID primary key default gen_random_uuid()
+- `project_id` UUID not null references projects(id) on delete cascade
+- `path` TEXT not null
+- `mode` TEXT not null default 'always'
+- `created_at` TIMESTAMPTZ default now()
+- `updated_at` TIMESTAMPTZ default now()
+- unique(project_id, path)
+
+Allowed mode for this slice: `always`
+
+**Scope:**
+- Add migration creating `project_repo_docs` table
+- Add `ProjectRepoDoc` entity matching table schema
+- Add `project-repo-docs` module with service and controller
+- `GET /api/projects/:projectId/repo-docs` — returns selected repo docs for a project
+- `PUT /api/projects/:projectId/repo-docs` — replaces selected repo docs for a project
+- Enforce project ownership/access
+- Validate paths as safe relative workspace paths
+- Deduplicate or safely reject duplicate paths
+- Reject modes other than `always`
+- Register module in `app.module.ts`
+- Add targeted service/controller tests
+
+**Files likely in scope:**
+- `services/api-gateway/src/migrations/*`
+- `services/api-gateway/src/entities/*`
+- `services/api-gateway/src/project-repo-docs/*`
+- `services/api-gateway/src/app.module.ts`
+- `services/api-gateway/src/entities/index.ts`
+- related api-gateway tests
+
+**Non-goals:**
+- No frontend changes
+- No ai-service changes
+- No prompt assembly changes
+- No repo doc content reading
+- No repo map
+- No validation contract
+- No Active Context indicator changes
+- No unrelated services
+
+**Acceptance criteria:**
+- [ ] Migration creates `project_repo_docs` table
+- [ ] Entity matches table schema
+- [ ] GET endpoint returns selected repo docs for a project
+- [ ] PUT endpoint replaces selected repo docs for a project
+- [ ] Project ownership/access is enforced
+- [ ] Unsafe paths are rejected
+- [ ] Duplicate paths are deduplicated or rejected safely
+- [ ] Only mode `always` is accepted
+- [ ] Targeted tests pass
+- [ ] api-gateway build passes
+- [ ] No frontend or ai-service files changed
+
+**Validation:**
+- Ensure Docker/PostgreSQL is running before backend validation
+- Run targeted api-gateway tests
+- Run api-gateway build
+- Run ReadLints on touched files
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-CONTEXT-04A.
+**Checkpoint:** `docs/AI-CONTEXT-04A-CHECKPOINT.md` *(pending)*
 
 ---
 

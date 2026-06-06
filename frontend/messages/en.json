@@ -332,7 +332,13 @@
     "approvalRequired": "Approval required",
     "apply": "Apply",
     "skip": "Skip",
-    "chatInputPlaceholder": "Ask the assistant for help with your current workspace task."
+    "chatInputPlaceholder": "Ask the assistant for help with your current workspace task.",
+    "contextIndicatorTitle": "Context",
+    "contextIndicatorGlobal": "Global",
+    "contextIndicatorProject": "Project",
+    "contextIndicatorActive": "On",
+    "contextIndicatorInactive": "Off",
+    "contextIndicatorHelp": "Active context is included in agent prompts."
   },
   "authModule": {
     "installing": "Installing auth module — preparing your workspace...",

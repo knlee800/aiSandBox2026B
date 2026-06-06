@@ -6,6 +6,7 @@ import zhTwMessages from '@/messages/zh-TW.json';
 import zhCnMessages from '@/messages/zh-CN.json';
 
 export const GLOBAL_AI_INSTRUCTIONS_MAX_LENGTH = 4000;
+const GLOBAL_AI_INSTRUCTIONS_UPDATED_EVENT = 'workspace:global-ai-instructions-updated';
 
 interface UserAiInstructionsResponse {
   globalInstructions: string | null;
@@ -81,6 +82,16 @@ export async function saveGlobalAiInstructionsToApi(globalInstructions: string |
   });
   if (!response.ok) {
     throw new Error(`Failed to save global AI instructions (${response.status})`);
+  }
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(
+      new CustomEvent(GLOBAL_AI_INSTRUCTIONS_UPDATED_EVENT, {
+        detail: {
+          isActive: typeof globalInstructions === 'string' && globalInstructions.trim().length > 0,
+        },
+      }),
+    );
   }
 }
 

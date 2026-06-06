@@ -129,13 +129,35 @@ function getAiMessages(locale: string): typeof enMessages.ai {
 }
 
 export const PROJECT_AI_INSTRUCTIONS_MAX_LENGTH = 4000;
+export const GLOBAL_AI_INSTRUCTIONS_UPDATED_EVENT = 'workspace:global-ai-instructions-updated';
+export const PROJECT_AI_INSTRUCTIONS_UPDATED_EVENT = 'workspace:project-ai-instructions-updated';
+
+interface UserAiInstructionsResponse {
+  globalInstructions: string | null;
+}
 
 interface ProjectAiContextResponse {
   projectInstructions: string | null;
 }
 
+export function isAiInstructionActive(value: string | null | undefined): boolean {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
 export function normalizeProjectAiInstructionsForApi(value: string): string | null {
   return value.trim().length === 0 ? null : value;
+}
+
+export async function fetchGlobalAiInstructionStatusFromApi(): Promise<boolean> {
+  const response = await fetch('/api/user/ai-instructions', {
+    method: 'GET',
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to load global AI instructions (${response.status})`);
+  }
+
+  const data = (await response.json()) as UserAiInstructionsResponse;
+  return isAiInstructionActive(data.globalInstructions);
 }
 
 export async function fetchProjectAiInstructionsFromApi(projectId: string): Promise<string> {
@@ -165,6 +187,17 @@ export async function saveProjectAiInstructionsToApi(
   });
   if (!response.ok) {
     throw new Error(`Failed to save project AI instructions (${response.status})`);
+  }
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(
+      new CustomEvent(PROJECT_AI_INSTRUCTIONS_UPDATED_EVENT, {
+        detail: {
+          projectId,
+          isActive: isAiInstructionActive(projectInstructions),
+        },
+      }),
+    );
   }
 }
 
@@ -535,6 +568,8 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const [pendingRestoreSnapshotId, setPendingRestoreSnapshotId] = React.useState<string | null>(
     null,
   );
+  const [isGlobalContextActive, setIsGlobalContextActive] = React.useState(false);
+  const [isProjectContextActive, setIsProjectContextActive] = React.useState(false);
   const tabBarTabs = React.useMemo(() => resolveTabBarTabs(locale), [locale]);
   const projectPanelMessages = React.useMemo(() => getProjectPanelMessages(locale), [locale]);
   const commonMessages = React.useMemo(() => getCommonMessages(locale), [locale]);
@@ -595,6 +630,108 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   const filteredTemplateProjects = (props.publicWorkspaceProjects ?? []).filter((project) =>
     project.name.toLowerCase().includes(normalizedTemplateSearch),
   );
+
+  React.useEffect(() => {
+    let canceled = false;
+
+    const refreshGlobalContextStatus = async (): Promise<void> => {
+      try {
+        const isActive = await fetchGlobalAiInstructionStatusFromApi();
+        if (!canceled) {
+          setIsGlobalContextActive(isActive);
+        }
+      } catch (error) {
+        console.error('Failed to load global context indicator status:', error);
+        if (!canceled) {
+          setIsGlobalContextActive(false);
+        }
+      }
+    };
+
+    void refreshGlobalContextStatus();
+
+    const handleGlobalInstructionsUpdated = (event: Event): void => {
+      const detail = (event as CustomEvent<{ isActive?: boolean }>).detail;
+      if (typeof detail?.isActive === 'boolean') {
+        setIsGlobalContextActive(detail.isActive);
+        return;
+      }
+      void refreshGlobalContextStatus();
+    };
+
+    window.addEventListener(
+      GLOBAL_AI_INSTRUCTIONS_UPDATED_EVENT,
+      handleGlobalInstructionsUpdated as EventListener,
+    );
+
+    return () => {
+      canceled = true;
+      window.removeEventListener(
+        GLOBAL_AI_INSTRUCTIONS_UPDATED_EVENT,
+        handleGlobalInstructionsUpdated as EventListener,
+      );
+    };
+  }, []);
+
+  React.useEffect(() => {
+    let canceled = false;
+    const activeProjectId =
+      typeof props.selectedProjectId === 'string' && props.selectedProjectId.trim().length > 0
+        ? props.selectedProjectId
+        : null;
+
+    const refreshProjectContextStatus = async (): Promise<void> => {
+      if (!activeProjectId) {
+        setIsProjectContextActive(false);
+        return;
+      }
+
+      try {
+        const projectInstructions = await fetchProjectAiInstructionsFromApi(activeProjectId);
+        if (!canceled) {
+          setIsProjectContextActive(isAiInstructionActive(projectInstructions));
+        }
+      } catch (error) {
+        console.error('Failed to load project context indicator status:', error);
+        if (!canceled) {
+          setIsProjectContextActive(false);
+        }
+      }
+    };
+
+    void refreshProjectContextStatus();
+
+    const handleProjectInstructionsUpdated = (event: Event): void => {
+      const detail = (event as CustomEvent<{ projectId?: string; isActive?: boolean }>).detail;
+      const detailProjectId =
+        typeof detail?.projectId === 'string' && detail.projectId.trim().length > 0
+          ? detail.projectId
+          : null;
+
+      if (!activeProjectId || detailProjectId !== activeProjectId) {
+        return;
+      }
+      if (typeof detail?.isActive === 'boolean') {
+        setIsProjectContextActive(detail.isActive);
+        return;
+      }
+      void refreshProjectContextStatus();
+    };
+
+    window.addEventListener(
+      PROJECT_AI_INSTRUCTIONS_UPDATED_EVENT,
+      handleProjectInstructionsUpdated as EventListener,
+    );
+
+    return () => {
+      canceled = true;
+      window.removeEventListener(
+        PROJECT_AI_INSTRUCTIONS_UPDATED_EVENT,
+        handleProjectInstructionsUpdated as EventListener,
+      );
+    };
+  }, [props.selectedProjectId]);
+
   const shellState = computeWorkspaceShellState({
     isLoadingSessions: props.isLoadingSessions,
     sessionError: props.sessionError,
@@ -1194,6 +1331,8 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
             projectFirstUxEnabled={projectFirstUxEnabled}
             aiMessages={aiMessages}
             commonMessages={commonMessages}
+            globalContextActive={isGlobalContextActive}
+            projectContextActive={isProjectContextActive}
             selectedSessionId={props.selectedSessionId}
             promptInput={props.chatPromptInput ?? ''}
             onPromptInputChange={props.onChatPromptInputChange}
@@ -3088,6 +3227,8 @@ function WorkspaceChatPanel(props: {
   projectFirstUxEnabled: boolean;
   aiMessages: typeof enMessages.ai;
   commonMessages: typeof enMessages.common;
+  globalContextActive: boolean;
+  projectContextActive: boolean;
   selectedSessionId: string | null;
   promptInput: string;
   onPromptInputChange?: (value: string) => void;
@@ -3180,6 +3321,12 @@ function WorkspaceChatPanel(props: {
       submitPromptAndRefocus();
     }
   };
+  const globalStatusLabel = props.globalContextActive
+    ? props.aiMessages.contextIndicatorActive
+    : props.aiMessages.contextIndicatorInactive;
+  const projectStatusLabel = props.projectContextActive
+    ? props.aiMessages.contextIndicatorActive
+    : props.aiMessages.contextIndicatorInactive;
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
@@ -3345,6 +3492,20 @@ function WorkspaceChatPanel(props: {
 
       <div className="flex-shrink-0 border-t border-gray-200 bg-white px-3 py-2">
         <form onSubmit={handleSubmit} className="min-w-0 max-w-full">
+          <div
+            className="mb-2 flex items-center gap-1.5 text-[11px] text-gray-500"
+            data-testid="workspace-chat-context-indicator"
+            title={props.aiMessages.contextIndicatorHelp}
+          >
+            <span className="font-medium text-gray-600">{props.aiMessages.contextIndicatorTitle}:</span>
+            <span data-testid="workspace-chat-context-global-status">
+              {props.aiMessages.contextIndicatorGlobal} {globalStatusLabel}
+            </span>
+            <span aria-hidden="true">·</span>
+            <span data-testid="workspace-chat-context-project-status">
+              {props.aiMessages.contextIndicatorProject} {projectStatusLabel}
+            </span>
+          </div>
           <div className="flex min-w-0 max-w-full items-end gap-2" data-testid="workspace-chat-composer-row">
             <div className="min-w-0 flex-1">
               <label htmlFor="workspace-chat-prompt" className="sr-only">

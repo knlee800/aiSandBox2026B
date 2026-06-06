@@ -332,7 +332,13 @@
     "approvalRequired": "需要確認",
     "apply": "套用",
     "skip": "略過",
-    "chatInputPlaceholder": "向助理詢問您目前工作區任務的協助。"
+    "chatInputPlaceholder": "向助理詢問您目前工作區任務的協助。",
+    "contextIndicatorTitle": "上下文",
+    "contextIndicatorGlobal": "全域",
+    "contextIndicatorProject": "專案",
+    "contextIndicatorActive": "啟用",
+    "contextIndicatorInactive": "停用",
+    "contextIndicatorHelp": "啟用的上下文會包含在代理提示中。"
   },
   "authModule": {
     "installing": "正在安裝驗證模組 — 正在準備你的工作區...",

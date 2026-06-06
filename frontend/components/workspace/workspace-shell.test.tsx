@@ -4,6 +4,7 @@ import { describe, test } from 'node:test';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import WorkspaceShell, {
+  isAiInstructionActive,
   normalizeProjectAiInstructionsForApi,
   getDefaultHistorySectionVisibilityPresetState,
   getHistorySectionVisibilityPresetState,
@@ -1868,6 +1869,10 @@ describe('workspace shell component', () => {
       /fetch\('\/api\/user\/ai-instructions',\s*\{\s*method: 'PUT',[\s\S]*globalInstructions[\s\S]*\}\);/,
     );
     assert.match(accountMenuSource, /await saveGlobalAiInstructionsToApi\(null\);/);
+    assert.match(
+      accountMenuSource,
+      /window\.dispatchEvent\(\s*new CustomEvent\(GLOBAL_AI_INSTRUCTIONS_UPDATED_EVENT/,
+    );
   });
 
   test('global AI instructions locale keys exist in en, zh-TW, and zh-CN', () => {
@@ -1905,6 +1910,23 @@ describe('workspace shell component', () => {
     );
   });
 
+  test('AI instruction activity helper treats trimmed non-empty values as active', () => {
+    assert.equal(isAiInstructionActive(null), false);
+    assert.equal(isAiInstructionActive(undefined), false);
+    assert.equal(isAiInstructionActive(''), false);
+    assert.equal(isAiInstructionActive('   '), false);
+    assert.equal(isAiInstructionActive('Follow TypeScript strict mode.'), true);
+  });
+
+  test('workspace shell source wires global AI instruction status fetch endpoint', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+
+    assert.match(
+      shellSource,
+      /fetch\('\/api\/user\/ai-instructions',\s*\{\s*method: 'GET',\s*\}\);/,
+    );
+  });
+
   test('workspace shell source wires GET and PUT for project AI instructions', () => {
     const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
 
@@ -1917,6 +1939,7 @@ describe('workspace shell component', () => {
       /fetch\(`\/api\/projects\/\$\{projectId\}\/ai-context`,\s*\{\s*method: 'PUT',[\s\S]*projectInstructions[\s\S]*\}\);/,
     );
     assert.match(shellSource, /await saveProjectAiInstructionsToApi\(props\.selectedProjectId,\s*null\);/);
+    assert.match(shellSource, /window\.dispatchEvent\(\s*new CustomEvent\(PROJECT_AI_INSTRUCTIONS_UPDATED_EVENT/);
   });
 
   test('project AI instructions locale keys exist in en, zh-TW, and zh-CN', () => {
@@ -7471,6 +7494,53 @@ describe('workspace core chat panel i18n wiring — I18N-SHELL-02', () => {
     assert.doesNotMatch(html, />Chat Panel</);
   });
 
+  test('active context indicator renders near chat prompt area', () => {
+    const html = renderWorkspaceShell();
+
+    assert.match(html, /workspace-chat-context-indicator/);
+    assert.match(
+      html,
+      /workspace-chat-context-indicator[\s\S]*workspace-chat-composer-row[\s\S]*workspace-chat-prompt-input/,
+    );
+  });
+
+  test('active context indicator defaults to inactive global and project states', () => {
+    const html = renderWorkspaceShell();
+
+    assert.match(html, /workspace-chat-context-global-status[^>]*>Global Off</);
+    assert.match(html, /workspace-chat-context-project-status[^>]*>Project Off</);
+  });
+
+  test('active context indicator shows mixed global/project activity states', () => {
+    const html = withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 15) {
+        return [true, () => {}];
+      }
+      if (useStateCallIndex === 16) {
+        return [false, () => {}];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () => renderWorkspaceShell());
+
+    assert.match(html, /workspace-chat-context-global-status[^>]*>Global On</);
+    assert.match(html, /workspace-chat-context-project-status[^>]*>Project Off</);
+  });
+
+  test('active context indicator shows project active state', () => {
+    const html = withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 15) {
+        return [false, () => {}];
+      }
+      if (useStateCallIndex === 16) {
+        return [true, () => {}];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () => renderWorkspaceShell());
+
+    assert.match(html, /workspace-chat-context-global-status[^>]*>Global Off</);
+    assert.match(html, /workspace-chat-context-project-status[^>]*>Project On</);
+  });
+
   test('chatInputPlaceholder i18n key exists in en, zh-TW, and zh-CN locale files', () => {
     const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));
     const zhTw = JSON.parse(readFileSync(new URL('../../messages/zh-TW.json', import.meta.url), 'utf8'));
@@ -7480,10 +7550,40 @@ describe('workspace core chat panel i18n wiring — I18N-SHELL-02', () => {
     assert.ok(typeof zhCn.ai?.chatInputPlaceholder === 'string' && zhCn.ai.chatInputPlaceholder.length > 0);
   });
 
+  test('context indicator i18n keys exist in en, zh-TW, and zh-CN locale files', () => {
+    const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));
+    const zhTw = JSON.parse(readFileSync(new URL('../../messages/zh-TW.json', import.meta.url), 'utf8'));
+    const zhCn = JSON.parse(readFileSync(new URL('../../messages/zh-CN.json', import.meta.url), 'utf8'));
+    const requiredKeys = [
+      'contextIndicatorTitle',
+      'contextIndicatorGlobal',
+      'contextIndicatorProject',
+      'contextIndicatorActive',
+      'contextIndicatorInactive',
+      'contextIndicatorHelp',
+    ] as const;
+
+    for (const key of requiredKeys) {
+      assert.equal(typeof en.ai?.[key], 'string');
+      assert.equal(typeof zhTw.ai?.[key], 'string');
+      assert.equal(typeof zhCn.ai?.[key], 'string');
+    }
+  });
+
   test('workspace shell source uses ai.chatInputPlaceholder for textarea placeholder', () => {
     const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
     assert.match(shellSource, /props\.aiMessages\.chatInputPlaceholder/);
     assert.doesNotMatch(shellSource, /placeholder="Ask the assistant for help/);
+  });
+
+  test('workspace shell source uses context indicator i18n keys', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+    assert.match(shellSource, /props\.aiMessages\.contextIndicatorTitle/);
+    assert.match(shellSource, /props\.aiMessages\.contextIndicatorGlobal/);
+    assert.match(shellSource, /props\.aiMessages\.contextIndicatorProject/);
+    assert.match(shellSource, /props\.aiMessages\.contextIndicatorActive/);
+    assert.match(shellSource, /props\.aiMessages\.contextIndicatorInactive/);
+    assert.match(shellSource, /props\.aiMessages\.contextIndicatorHelp/);
   });
 
   test('visible Send button renders in composer with workspace-chat-submit test ID', () => {
