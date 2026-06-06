@@ -27391,9 +27391,9 @@ Make "Build anything" a true one-click flow: type prompt ?? click Start once ?? 
 
 ## AI-CONTEXT — Global AI Instructions
 
-**Family status:** ACTIVE — AI-CONTEXT-01A through AI-CONTEXT-03A COMPLETE and LOCKED — AI-CONTEXT-04A ACTIVE
+**Family status:** ACTIVE — AI-CONTEXT-01A through AI-CONTEXT-04A COMPLETE and LOCKED
 
-**Current stage:** AI-CONTEXT-04A ACTIVE — Repo Docs Registry Backend Foundation
+**Current stage:** AI-CONTEXT-04A COMPLETE and LOCKED — `docs/AI-CONTEXT-04A-CHECKPOINT.md`
 
 **Ordered slices (registered so far):**
 1. AI-CONTEXT-01A — Global AI Instructions Backend Foundation (COMPLETE and LOCKED — `docs/AI-CONTEXT-01A-CHECKPOINT.md`)
@@ -27405,7 +27405,7 @@ Make "Build anything" a true one-click flow: type prompt ?? click Start once ?? 
 7. AI-CONTEXT-02B — Project AI Instructions Frontend UI (COMPLETE and LOCKED — `docs/AI-CONTEXT-02B-CHECKPOINT.md`)
 8. AI-CONTEXT-02C — Inject Project AI Instructions into Prompt Assembly (COMPLETE and LOCKED — `docs/AI-CONTEXT-02C-CHECKPOINT.md`)
 9. AI-CONTEXT-03A — Active Context Indicator (COMPLETE and LOCKED — `docs/AI-CONTEXT-03A-CHECKPOINT.md`)
-10. AI-CONTEXT-04A — Repo Docs Registry Backend Foundation (ACTIVE)
+10. AI-CONTEXT-04A — Repo Docs Registry Backend Foundation (COMPLETE and LOCKED — `docs/AI-CONTEXT-04A-CHECKPOINT.md`)
 
 ---
 
@@ -28088,13 +28088,13 @@ Add a compact Active Context Indicator near the chat/prompt area that shows whet
 
 **Task ID:** AI-CONTEXT-04A
 **Family:** AI-CONTEXT (Global AI Instructions)
-**Family status:** ACTIVE
+**Family status:** ACTIVE — AI-CONTEXT-01A through AI-CONTEXT-04A COMPLETE and LOCKED
 **Priority:** High
-**Status:** ACTIVE
+**Status:** COMPLETE and LOCKED
 **Nature:** BACKEND / DATABASE / AI CONTEXT FOUNDATION
 **Risk:** Medium
 **Depends on:** AI-CONTEXT-01A through AI-CONTEXT-03A COMPLETE and LOCKED
-**Checkpoint:** `docs/AI-CONTEXT-04A-CHECKPOINT.md` *(pending)*
+**Checkpoint:** `docs/AI-CONTEXT-04A-CHECKPOINT.md`
 
 **Problem:**
 Agents now receive Global Instructions and Project Instructions, but users cannot mark important repo documents that agents should read. Docs such as README.md, CLAUDE.md, architecture notes, setup docs, and task docs are not registered as active context sources.
@@ -28146,26 +28146,25 @@ Allowed mode for this slice: `always`
 - No unrelated services
 
 **Acceptance criteria:**
-- [ ] Migration creates `project_repo_docs` table
-- [ ] Entity matches table schema
-- [ ] GET endpoint returns selected repo docs for a project
-- [ ] PUT endpoint replaces selected repo docs for a project
-- [ ] Project ownership/access is enforced
-- [ ] Unsafe paths are rejected
-- [ ] Duplicate paths are deduplicated or rejected safely
-- [ ] Only mode `always` is accepted
-- [ ] Targeted tests pass
-- [ ] api-gateway build passes
-- [ ] No frontend or ai-service files changed
+- [x] Migration creates `project_repo_docs` table
+- [x] Entity matches table schema
+- [x] GET endpoint returns selected repo docs for a project
+- [x] PUT endpoint replaces selected repo docs for a project
+- [x] Project ownership/access is enforced
+- [x] Unsafe paths are rejected
+- [x] Duplicate paths are deduplicated or rejected safely
+- [x] Only mode `always` is accepted
+- [x] Targeted tests pass
+- [x] api-gateway build passes
+- [x] No frontend or ai-service files changed
 
 **Validation:**
-- Ensure Docker/PostgreSQL is running before backend validation
-- Run targeted api-gateway tests
-- Run api-gateway build
-- Run ReadLints on touched files
+- `npm test -- project-repo-docs` — PASS (2 suites, 16 tests)
+- `npm run build` — PASS
+- ReadLints on touched files — PASS (no linter errors)
 
 **Reference:** See TASKS.md -> AI-CONTEXT-04A.
-**Checkpoint:** `docs/AI-CONTEXT-04A-CHECKPOINT.md` *(pending)*
+**Checkpoint:** `docs/AI-CONTEXT-04A-CHECKPOINT.md`
 
 ---
 
