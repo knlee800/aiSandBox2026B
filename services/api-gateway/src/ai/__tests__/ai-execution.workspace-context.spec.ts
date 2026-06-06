@@ -14,6 +14,15 @@ describe('AIExecutionController workspaceContext forwarding', () => {
     const userAiInstructionsService = {
       getByUserId: jest.fn().mockResolvedValue(null),
     };
+    const projectAiContextService = {
+      getByProjectId: jest.fn().mockResolvedValue(null),
+    };
+    const sessionService = {
+      getSessionById: jest.fn().mockResolvedValue({
+        userId: '33333333-3333-4333-8333-333333333333',
+        projectId: null,
+      }),
+    };
     const controller = new AIExecutionController(
       usageLedgerService as any,
       {} as any,
@@ -21,6 +30,8 @@ describe('AIExecutionController workspaceContext forwarding', () => {
       {} as any,
       {} as any,
       userAiInstructionsService as any,
+      projectAiContextService as any,
+      sessionService as any,
     );
 
     const request: AIExecutionRequest = {
@@ -82,6 +93,15 @@ describe('AIExecutionController workspaceContext forwarding', () => {
     const userAiInstructionsService = {
       getByUserId: jest.fn().mockResolvedValue(null),
     };
+    const projectAiContextService = {
+      getByProjectId: jest.fn().mockResolvedValue(null),
+    };
+    const sessionService = {
+      getSessionById: jest.fn().mockResolvedValue({
+        userId: '33333333-3333-4333-8333-333333333333',
+        projectId: null,
+      }),
+    };
     const controller = new AIExecutionController(
       usageLedgerService as any,
       {} as any,
@@ -89,6 +109,8 @@ describe('AIExecutionController workspaceContext forwarding', () => {
       {} as any,
       {} as any,
       userAiInstructionsService as any,
+      projectAiContextService as any,
+      sessionService as any,
     );
 
     const request: AIExecutionRequest = {
@@ -125,6 +147,15 @@ describe('AIExecutionController workspaceContext forwarding', () => {
     const userAiInstructionsService = {
       getByUserId: jest.fn().mockResolvedValue('  Use concise responses.  '),
     };
+    const projectAiContextService = {
+      getByProjectId: jest.fn().mockResolvedValue(null),
+    };
+    const sessionService = {
+      getSessionById: jest.fn().mockResolvedValue({
+        userId: '33333333-3333-4333-8333-333333333333',
+        projectId: null,
+      }),
+    };
     const controller = new AIExecutionController(
       usageLedgerService as any,
       {} as any,
@@ -132,6 +163,8 @@ describe('AIExecutionController workspaceContext forwarding', () => {
       {} as any,
       {} as any,
       userAiInstructionsService as any,
+      projectAiContextService as any,
+      sessionService as any,
     );
 
     const request: AIExecutionRequest = {
@@ -170,6 +203,15 @@ describe('AIExecutionController workspaceContext forwarding', () => {
     const userAiInstructionsService = {
       getByUserId: jest.fn().mockResolvedValue('   '),
     };
+    const projectAiContextService = {
+      getByProjectId: jest.fn().mockResolvedValue(null),
+    };
+    const sessionService = {
+      getSessionById: jest.fn().mockResolvedValue({
+        userId: '33333333-3333-4333-8333-333333333333',
+        projectId: null,
+      }),
+    };
     const controller = new AIExecutionController(
       usageLedgerService as any,
       {} as any,
@@ -177,6 +219,8 @@ describe('AIExecutionController workspaceContext forwarding', () => {
       {} as any,
       {} as any,
       userAiInstructionsService as any,
+      projectAiContextService as any,
+      sessionService as any,
     );
 
     const request: AIExecutionRequest = {
@@ -212,6 +256,15 @@ describe('AIExecutionController workspaceContext forwarding', () => {
     const userAiInstructionsService = {
       getByUserId: jest.fn().mockResolvedValue('Always respond in JSON.'),
     };
+    const projectAiContextService = {
+      getByProjectId: jest.fn().mockResolvedValue(null),
+    };
+    const sessionService = {
+      getSessionById: jest.fn().mockResolvedValue({
+        userId: '4329e051-ce13-46b5-83ef-357faf749d90',
+        projectId: null,
+      }),
+    };
     const controller = new AIExecutionController(
       usageLedgerService as any,
       {} as any,
@@ -219,6 +272,8 @@ describe('AIExecutionController workspaceContext forwarding', () => {
       {} as any,
       {} as any,
       userAiInstructionsService as any,
+      projectAiContextService as any,
+      sessionService as any,
     );
 
     const request: AIExecutionRequest = {
@@ -244,6 +299,169 @@ describe('AIExecutionController workspaceContext forwarding', () => {
       expect.objectContaining({
         globalInstructions: 'Always respond in JSON.',
         userId: '4329e051-ce13-46b5-83ef-357faf749d90',
+      }),
+    );
+  });
+
+  it('includes trimmed projectInstructions in queued payload when project instructions exist', async () => {
+    const usageLedgerService = {
+      findByRequestId: jest.fn().mockResolvedValue(null),
+      writeExecutionIntent: jest.fn().mockResolvedValue(undefined),
+    };
+    const queueService = {
+      enqueueExecution: jest.fn().mockResolvedValue(undefined),
+    };
+    const userAiInstructionsService = {
+      getByUserId: jest.fn().mockResolvedValue(null),
+    };
+    const projectAiContextService = {
+      getByProjectId: jest.fn().mockResolvedValue('  For this project only.  '),
+    };
+    const sessionService = {
+      getSessionById: jest.fn().mockResolvedValue({
+        userId: '33333333-3333-4333-8333-333333333333',
+        projectId: 'project-1',
+      }),
+    };
+    const controller = new AIExecutionController(
+      usageLedgerService as any,
+      {} as any,
+      queueService as any,
+      {} as any,
+      {} as any,
+      userAiInstructionsService as any,
+      projectAiContextService as any,
+      sessionService as any,
+    );
+
+    const request: AIExecutionRequest = {
+      sessionId: '11111111-1111-4111-8111-111111111111',
+      conversationId: '22222222-2222-4222-8222-222222222222',
+      userId: 'untrusted-user',
+      prompt: 'Explain this file.',
+      provider: 'stub',
+    };
+    const identity: ApiKeyIdentity = {
+      userId: '33333333-3333-4333-8333-333333333333',
+      apiKeyId: '44444444-4444-4444-8444-444444444444',
+      scopes: ['ai:execute'],
+    };
+
+    await controller.execute(request, identity);
+
+    expect(sessionService.getSessionById).toHaveBeenCalledWith(request.sessionId);
+    expect(projectAiContextService.getByProjectId).toHaveBeenCalledWith('project-1');
+    expect(queueService.enqueueExecution).toHaveBeenCalledWith(
+      expect.objectContaining({
+        projectInstructions: 'For this project only.',
+      }),
+    );
+  });
+
+  it('omits projectInstructions in queued payload when project instructions are null/empty/whitespace', async () => {
+    const usageLedgerService = {
+      findByRequestId: jest.fn().mockResolvedValue(null),
+      writeExecutionIntent: jest.fn().mockResolvedValue(undefined),
+    };
+    const queueService = {
+      enqueueExecution: jest.fn().mockResolvedValue(undefined),
+    };
+    const userAiInstructionsService = {
+      getByUserId: jest.fn().mockResolvedValue(null),
+    };
+    const projectAiContextService = {
+      getByProjectId: jest.fn().mockResolvedValue('   '),
+    };
+    const sessionService = {
+      getSessionById: jest.fn().mockResolvedValue({
+        userId: '33333333-3333-4333-8333-333333333333',
+        projectId: 'project-1',
+      }),
+    };
+    const controller = new AIExecutionController(
+      usageLedgerService as any,
+      {} as any,
+      queueService as any,
+      {} as any,
+      {} as any,
+      userAiInstructionsService as any,
+      projectAiContextService as any,
+      sessionService as any,
+    );
+
+    const request: AIExecutionRequest = {
+      sessionId: '11111111-1111-4111-8111-111111111111',
+      conversationId: '22222222-2222-4222-8222-222222222222',
+      userId: 'untrusted-user',
+      prompt: 'Explain this file.',
+      provider: 'stub',
+    };
+    const identity: ApiKeyIdentity = {
+      userId: '33333333-3333-4333-8333-333333333333',
+      apiKeyId: '44444444-4444-4444-8444-444444444444',
+      scopes: ['ai:execute'],
+    };
+
+    await controller.execute(request, identity);
+
+    expect(projectAiContextService.getByProjectId).toHaveBeenCalledWith('project-1');
+    expect(queueService.enqueueExecution).toHaveBeenCalledWith(
+      expect.not.objectContaining({
+        projectInstructions: expect.any(String),
+      }),
+    );
+  });
+
+  it('does not fetch project instructions when no project ID can be resolved from session', async () => {
+    const usageLedgerService = {
+      findByRequestId: jest.fn().mockResolvedValue(null),
+      writeExecutionIntent: jest.fn().mockResolvedValue(undefined),
+    };
+    const queueService = {
+      enqueueExecution: jest.fn().mockResolvedValue(undefined),
+    };
+    const userAiInstructionsService = {
+      getByUserId: jest.fn().mockResolvedValue(null),
+    };
+    const projectAiContextService = {
+      getByProjectId: jest.fn().mockResolvedValue('Should not be called'),
+    };
+    const sessionService = {
+      getSessionById: jest.fn().mockResolvedValue({
+        userId: '33333333-3333-4333-8333-333333333333',
+        projectId: null,
+      }),
+    };
+    const controller = new AIExecutionController(
+      usageLedgerService as any,
+      {} as any,
+      queueService as any,
+      {} as any,
+      {} as any,
+      userAiInstructionsService as any,
+      projectAiContextService as any,
+      sessionService as any,
+    );
+
+    const request: AIExecutionRequest = {
+      sessionId: '11111111-1111-4111-8111-111111111111',
+      conversationId: '22222222-2222-4222-8222-222222222222',
+      userId: 'untrusted-user',
+      prompt: 'Explain this file.',
+      provider: 'stub',
+    };
+    const identity: ApiKeyIdentity = {
+      userId: '33333333-3333-4333-8333-333333333333',
+      apiKeyId: '44444444-4444-4444-8444-444444444444',
+      scopes: ['ai:execute'],
+    };
+
+    await controller.execute(request, identity);
+
+    expect(projectAiContextService.getByProjectId).not.toHaveBeenCalled();
+    expect(queueService.enqueueExecution).toHaveBeenCalledWith(
+      expect.not.objectContaining({
+        projectInstructions: expect.any(String),
       }),
     );
   });

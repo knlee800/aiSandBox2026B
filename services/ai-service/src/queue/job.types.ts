@@ -40,6 +40,7 @@ export interface AiExecutionJob {
   prompt: string;
   workspaceContext?: WorkspaceContext;
   globalInstructions?: string;
+  projectInstructions?: string;
   model?: string;
 
   requestId?: string;

@@ -215,17 +215,36 @@ function buildGlobalInstructionsBlock(
   return `Global AI Instructions:\n${normalizedGlobalInstructions}`;
 }
 
+function buildProjectInstructionsBlock(
+  projectInstructions?: string | null,
+): string | null {
+  if (typeof projectInstructions !== 'string') {
+    return null;
+  }
+  const normalizedProjectInstructions = projectInstructions.trim();
+  if (normalizedProjectInstructions.length === 0) {
+    return null;
+  }
+  return `Project AI Instructions:\n${normalizedProjectInstructions}`;
+}
+
 export function buildExecutionPromptParts(
   userPrompt: string,
   workspaceContext?: WorkspaceContext,
   globalInstructions?: string | null,
+  projectInstructions?: string | null,
 ): { system: string; user: string } {
   const normalizedPrompt = typeof userPrompt === 'string' ? userPrompt : '';
   const globalInstructionsBlock = buildGlobalInstructionsBlock(globalInstructions);
+  const projectInstructionsBlock =
+    buildProjectInstructionsBlock(projectInstructions);
   const workspaceContextBlock = buildWorkspaceContextBlock(workspaceContext);
   const systemSections: string[] = [FILE_ACTION_OUTPUT_CONTRACT];
   if (globalInstructionsBlock) {
     systemSections.push(globalInstructionsBlock);
+  }
+  if (projectInstructionsBlock) {
+    systemSections.push(projectInstructionsBlock);
   }
   const userSections: string[] = [];
   if (workspaceContextBlock) {
@@ -653,6 +672,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                 job.data.prompt ?? '',
                 job.data.workspaceContext,
                 job.data.globalInstructions,
+                job.data.projectInstructions,
               );
               aiResult = await this.aiExecutionService.execute({
                 provider: job.data.provider,

@@ -41,6 +41,8 @@ import { QueueService } from '../queue/queue.service';
 import { v4 as uuidv4 } from 'uuid';
 import { ExecutionResultService } from './execution-result.service';
 import { UserAiInstructionsService } from '../user-ai-instructions/user-ai-instructions.service';
+import { ProjectAiContextService } from '../project-ai-context/project-ai-context.service';
+import { SessionService } from '../sessions/session.service';
 
 const SUPPORTED_AI_PROVIDERS = [
   'stub',
@@ -96,6 +98,8 @@ export class AIExecutionController {
     private readonly executionResultService: ExecutionResultService,
     private readonly executionStreamService: ExecutionStreamService,
     private readonly userAiInstructionsService: UserAiInstructionsService,
+    private readonly projectAiContextService: ProjectAiContextService,
+    private readonly sessionService: SessionService,
   ) {}
 
   private normalizeGlobalInstructions(
@@ -106,6 +110,57 @@ export class AIExecutionController {
     }
     const trimmedInstructions = globalInstructions.trim();
     return trimmedInstructions.length > 0 ? trimmedInstructions : undefined;
+  }
+
+  private normalizeProjectInstructions(
+    projectInstructions: string | null | undefined,
+  ): string | undefined {
+    if (typeof projectInstructions !== 'string') {
+      return undefined;
+    }
+    const trimmedInstructions = projectInstructions.trim();
+    return trimmedInstructions.length > 0 ? trimmedInstructions : undefined;
+  }
+
+  private async resolveProjectInstructions(
+    sessionId: string | undefined,
+    userId: string,
+  ): Promise<string | undefined> {
+    if (typeof sessionId !== 'string') {
+      return undefined;
+    }
+
+    const normalizedSessionId = sessionId.trim();
+    if (!normalizedSessionId) {
+      return undefined;
+    }
+
+    try {
+      const session = await this.sessionService.getSessionById(normalizedSessionId);
+      if (session.userId !== userId) {
+        this.logger.warn(
+          `Skipping project instructions: session ${normalizedSessionId} does not belong to user ${userId}`,
+        );
+        return undefined;
+      }
+
+      const projectId =
+        typeof session.projectId === 'string' ? session.projectId.trim() : '';
+      if (!projectId) {
+        return undefined;
+      }
+
+      return this.normalizeProjectInstructions(
+        await this.projectAiContextService.getByProjectId(projectId),
+      );
+    } catch (error) {
+      this.logger.debug(
+        `Project instructions unavailable for session ${normalizedSessionId}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+      return undefined;
+    }
   }
 
   private parseExecutionResultMetadata(
@@ -255,8 +310,15 @@ export class AIExecutionController {
     const globalInstructions = this.normalizeGlobalInstructions(
       await this.userAiInstructionsService.getByUserId(identity.userId),
     );
+    const projectInstructions = await this.resolveProjectInstructions(
+      request.sessionId,
+      identity.userId,
+    );
     this.logger.debug(
       `Global AI instructions ${globalInstructions ? 'present' : 'absent'} for user ${identity.userId}`,
+    );
+    this.logger.debug(
+      `Project AI instructions ${projectInstructions ? 'present' : 'absent'} for session ${request.sessionId}`,
     );
 
     // Phase 43B-4 HOTFIX: Check if retry after timeout/failed
@@ -363,6 +425,7 @@ export class AIExecutionController {
       workspaceContext: request.workspaceContext,
       model: requestedModel,
       globalInstructions,
+      projectInstructions,
       requestId,
       submittedAt,
     });

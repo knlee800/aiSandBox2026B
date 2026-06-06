@@ -112,6 +112,42 @@ Be concise. Always include tests.`);
     expect(nullPrompt.system).not.toContain('Global AI Instructions:');
   });
 
+  it('includes trimmed Project AI Instructions in the system part when provided', () => {
+    const promptParts = buildExecutionPromptParts(
+      'Implement feature',
+      {
+        filePaths: ['README.md'],
+      },
+      'Respect API boundaries',
+      '  For this project only, keep responses short.  ',
+    );
+
+    expect(promptParts.system).toContain(`Project AI Instructions:
+For this project only, keep responses short.`);
+  });
+
+  it('omits Project AI Instructions in the system part when value is null/empty/whitespace', () => {
+    const emptyPrompt = buildExecutionPromptParts(
+      'Implement feature',
+      {
+        filePaths: ['README.md'],
+      },
+      'Respect API boundaries',
+      '   ',
+    );
+    const nullPrompt = buildExecutionPromptParts(
+      'Implement feature',
+      {
+        filePaths: ['README.md'],
+      },
+      'Respect API boundaries',
+      null,
+    );
+
+    expect(emptyPrompt.system).not.toContain('Project AI Instructions:');
+    expect(nullPrompt.system).not.toContain('Project AI Instructions:');
+  });
+
   it('keeps authority boundaries between system and user parts', () => {
     const promptParts = buildExecutionPromptParts(
       'Implement feature',
@@ -119,18 +155,23 @@ Be concise. Always include tests.`);
         filePaths: ['src/app.ts'],
       },
       'Respect API boundaries',
+      'For this project only, prefer minimal changes.',
     );
 
     const contractIndex = promptParts.system.indexOf('Execution output contract:');
     const globalInstructionsIndex = promptParts.system.indexOf('Global AI Instructions:');
+    const projectInstructionsIndex = promptParts.system.indexOf('Project AI Instructions:');
     const workspaceIndex = promptParts.user.indexOf('Current workspace files:');
     const userRequestIndex = promptParts.user.indexOf('User request:');
 
     expect(contractIndex).toBeGreaterThanOrEqual(0);
     expect(globalInstructionsIndex).toBeGreaterThan(contractIndex);
+    expect(projectInstructionsIndex).toBeGreaterThan(globalInstructionsIndex);
     expect(workspaceIndex).toBeGreaterThanOrEqual(0);
     expect(userRequestIndex).toBeGreaterThan(workspaceIndex);
     expect(promptParts.system).not.toContain('User request:');
     expect(promptParts.user).not.toContain('Execution output contract:');
+    expect(promptParts.user).not.toContain('Global AI Instructions:');
+    expect(promptParts.user).not.toContain('Project AI Instructions:');
   });
 });

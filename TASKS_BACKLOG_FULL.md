@@ -27391,9 +27391,9 @@ Make "Build anything" a true one-click flow: type prompt ?? click Start once ?? 
 
 ## AI-CONTEXT — Global AI Instructions
 
-**Family status:** ACTIVE — AI-CONTEXT-01A through AI-CONTEXT-02B COMPLETE and LOCKED
+**Family status:** ACTIVE — AI-CONTEXT-01A through AI-CONTEXT-02C COMPLETE and LOCKED
 
-**Current stage:** AI-CONTEXT-02B COMPLETE and LOCKED — `docs/AI-CONTEXT-02B-CHECKPOINT.md`
+**Current stage:** AI-CONTEXT-02C COMPLETE and LOCKED — `docs/AI-CONTEXT-02C-CHECKPOINT.md`
 
 **Ordered slices (registered so far):**
 1. AI-CONTEXT-01A — Global AI Instructions Backend Foundation (COMPLETE and LOCKED — `docs/AI-CONTEXT-01A-CHECKPOINT.md`)
@@ -27403,6 +27403,7 @@ Make "Build anything" a true one-click flow: type prompt ?? click Start once ?? 
 5. AI-CONTEXT-01E — Align Browser AI Execution with Session User (COMPLETE and LOCKED — `docs/AI-CONTEXT-01E-CHECKPOINT.md`)
 6. AI-CONTEXT-02A — Project AI Instructions Backend Foundation (COMPLETE and LOCKED — `docs/AI-CONTEXT-02A-CHECKPOINT.md`)
 7. AI-CONTEXT-02B — Project AI Instructions Frontend UI (COMPLETE and LOCKED — `docs/AI-CONTEXT-02B-CHECKPOINT.md`)
+8. AI-CONTEXT-02C — Inject Project AI Instructions into Prompt Assembly (COMPLETE and LOCKED — `docs/AI-CONTEXT-02C-CHECKPOINT.md`)
 
 ---
 
@@ -27928,6 +27929,80 @@ Expose Project AI Instructions in the existing project settings surface using:
 
 **Reference:** See TASKS.md -> AI-CONTEXT-02B.
 **Checkpoint:** `docs/AI-CONTEXT-02B-CHECKPOINT.md`
+
+---
+
+### AI-CONTEXT-02C: Inject Project AI Instructions into Prompt Assembly
+
+**Task ID:** AI-CONTEXT-02C
+**Family:** AI-CONTEXT (Global AI Instructions)
+**Family status:** COMPLETE and LOCKED
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** BACKEND / AI PROMPT ASSEMBLY / PROJECT CONTEXT
+**Risk:** Medium
+**Depends on:** AI-CONTEXT-02B (COMPLETE and LOCKED)
+**Checkpoint:** `docs/AI-CONTEXT-02C-CHECKPOINT.md`
+
+**Problem:**
+Project AI Instructions can now be saved and edited in the UI, but they are not yet included in AI execution prompts. Agents still do not receive project-specific guidance.
+
+**Objective:**
+Fetch Project AI Instructions for the current project/session and inject them into AI prompt assembly alongside Global AI Instructions.
+
+**Files changed:**
+- `services/api-gateway/src/ai/ai-execution.controller.ts`
+- `services/api-gateway/src/ai/ai.module.ts`
+- `services/api-gateway/src/ai/__tests__/ai-execution.workspace-context.spec.ts`
+- `services/ai-service/src/queue/job.types.ts`
+- `services/ai-service/src/worker/worker.processor.ts`
+- `services/ai-service/src/worker/worker.processor.spec.ts`
+
+**Scope:**
+- Resolved project ID from session association: `request.sessionId → Session.projectId`.
+- Enforced ownership: only proceeds when `session.userId === identity.userId`.
+- Fetched project instructions with `ProjectAiContextService.getByProjectId(projectId)`.
+- Trimmed/normalized; null/empty/whitespace omitted.
+- Added optional `projectInstructions` to queue payload alongside `globalInstructions`.
+- Added `projectInstructions?: string` to `AiExecutionJob`.
+- Extended `buildExecutionPromptParts` with optional `projectInstructions` parameter.
+- System prompt order: FILE_ACTION_OUTPUT_CONTRACT → Global AI Instructions → Project AI Instructions.
+- User prompt remains: workspace context + User request.
+- No new request field introduced.
+- Targeted tests added for both api-gateway and ai-service.
+
+**Non-goals confirmed:**
+- No frontend UI changes.
+- No database schema changes.
+- No repo docs.
+- No repo map.
+- No validation contract.
+- No adapter changes.
+- No unrelated AI execution refactor.
+
+**Acceptance criteria:**
+- [x] Project AI Instructions are fetched for the selected/current project.
+- [x] Project AI Instructions are included in queue payload when non-empty.
+- [x] Empty/null Project AI Instructions are omitted.
+- [x] AI service system prompt includes Project AI Instructions when provided.
+- [x] Prompt order is FILE_ACTION_OUTPUT_CONTRACT → Global AI Instructions → Project AI Instructions.
+- [x] Workspace context and user request remain in user message.
+- [x] Global AI Instructions behavior remains intact.
+- [x] Targeted api-gateway tests pass.
+- [x] Targeted ai-service tests pass.
+- [x] Relevant builds pass.
+- [x] Live browser smoke test passes: save `For this project only, start your next response with PROJECT-INSTRUCTION-TEST.`, send `Reply with one short sentence.`, response starts with `PROJECT-INSTRUCTION-TEST`.
+
+**Validation:**
+- `npm test -- src/ai/__tests__/ai-execution.workspace-context.spec.ts` (api-gateway) — PASS (8/8)
+- `npm test -- src/worker/worker.processor.spec.ts` (ai-service) — PASS (11/11)
+- `npm run build` (api-gateway) — PASS
+- `npm run build` (ai-service) — PASS
+- ReadLints on touched files — PASS
+- Live browser smoke — PASS (PROJECT-INSTRUCTION-TEST confirmed; global + project priority test passed)
+
+**Reference:** See TASKS.md -> AI-CONTEXT-02C.
+**Checkpoint:** `docs/AI-CONTEXT-02C-CHECKPOINT.md`
 
 ---
 

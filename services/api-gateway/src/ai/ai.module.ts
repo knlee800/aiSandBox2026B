@@ -12,6 +12,8 @@ import { QueueModule } from '../queue/queue.module';
 import { ExecutionResultService } from './execution-result.service';
 import { ExecutionStreamService } from '../streaming/execution-stream.service';
 import { UserAiInstructionsModule } from '../user-ai-instructions/user-ai-instructions.module';
+import { ProjectAiContextModule } from '../project-ai-context/project-ai-context.module';
+import { SessionModule } from '../sessions/session.module';
 
 /**
  * AIModule
@@ -40,6 +42,8 @@ import { UserAiInstructionsModule } from '../user-ai-instructions/user-ai-instru
     QuotaModule, // Phase 21B: Quota enforcement
     UsageLedgerModule, // Phase 22B: Usage ledger
     UserAiInstructionsModule, // AI-CONTEXT-01B: User global instruction enrichment
+    ProjectAiContextModule, // AI-CONTEXT-02C: Project instruction enrichment
+    SessionModule, // AI-CONTEXT-02C: Resolve project via session association
   ],
   controllers: [AIExecutionController],
   providers: [
