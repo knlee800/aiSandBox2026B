@@ -142,6 +142,7 @@ export const REPO_DOC_PATH_MAX_LENGTH = 500;
 export const REPO_DOC_PICKER_MAX_CANDIDATES = 100;
 export const GLOBAL_AI_INSTRUCTIONS_UPDATED_EVENT = 'workspace:global-ai-instructions-updated';
 export const PROJECT_AI_INSTRUCTIONS_UPDATED_EVENT = 'workspace:project-ai-instructions-updated';
+export const PROJECT_REPO_DOCS_UPDATED_EVENT = 'workspace:project-repo-docs-updated';
 
 interface UserAiInstructionsResponse {
   globalInstructions: string | null;
@@ -419,6 +420,17 @@ export async function saveProjectRepoDocsToApi(projectId: string, paths: string[
   });
   if (!response.ok) {
     throw new Error(`Failed to save project repo docs (${response.status})`);
+  }
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(
+      new CustomEvent(PROJECT_REPO_DOCS_UPDATED_EVENT, {
+        detail: {
+          projectId,
+          hasDocs: docs.length > 0,
+        },
+      }),
+    );
   }
 }
 
@@ -791,6 +803,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
   );
   const [isGlobalContextActive, setIsGlobalContextActive] = React.useState(false);
   const [isProjectContextActive, setIsProjectContextActive] = React.useState(false);
+  const [isRepoDocsConfigured, setIsRepoDocsConfigured] = React.useState(false);
   const tabBarTabs = React.useMemo(() => resolveTabBarTabs(locale), [locale]);
   const projectPanelMessages = React.useMemo(() => getProjectPanelMessages(locale), [locale]);
   const commonMessages = React.useMemo(() => getCommonMessages(locale), [locale]);
@@ -953,6 +966,64 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     };
   }, [props.selectedProjectId]);
 
+  React.useEffect(() => {
+    let canceled = false;
+    const activeProjectId =
+      typeof props.selectedProjectId === 'string' && props.selectedProjectId.trim().length > 0
+        ? props.selectedProjectId
+        : null;
+
+    const refreshRepoDocsStatus = async (): Promise<void> => {
+      if (!activeProjectId) {
+        setIsRepoDocsConfigured(false);
+        return;
+      }
+
+      try {
+        const projectRepoDocs = await fetchProjectRepoDocsFromApi(activeProjectId);
+        if (!canceled) {
+          setIsRepoDocsConfigured(projectRepoDocs.length > 0);
+        }
+      } catch (error) {
+        console.error('Failed to load repo docs context indicator status:', error);
+        if (!canceled) {
+          setIsRepoDocsConfigured(false);
+        }
+      }
+    };
+
+    void refreshRepoDocsStatus();
+
+    const handleProjectRepoDocsUpdated = (event: Event): void => {
+      const detail = (event as CustomEvent<{ projectId?: string; hasDocs?: boolean }>).detail;
+      const detailProjectId =
+        typeof detail?.projectId === 'string' && detail.projectId.trim().length > 0
+          ? detail.projectId
+          : null;
+
+      if (!activeProjectId || detailProjectId !== activeProjectId) {
+        return;
+      }
+
+      if (typeof detail?.hasDocs === 'boolean') {
+        setIsRepoDocsConfigured(detail.hasDocs);
+        return;
+      }
+
+      void refreshRepoDocsStatus();
+    };
+
+    window.addEventListener(PROJECT_REPO_DOCS_UPDATED_EVENT, handleProjectRepoDocsUpdated as EventListener);
+
+    return () => {
+      canceled = true;
+      window.removeEventListener(
+        PROJECT_REPO_DOCS_UPDATED_EVENT,
+        handleProjectRepoDocsUpdated as EventListener,
+      );
+    };
+  }, [props.selectedProjectId]);
+
   const shellState = computeWorkspaceShellState({
     isLoadingSessions: props.isLoadingSessions,
     sessionError: props.sessionError,
@@ -979,6 +1050,21 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
     props.selectedSessionId
       ? props.sessions.find((session) => session.id === props.selectedSessionId) ?? null
       : null;
+  const selectedProjectIdForContext =
+    typeof props.selectedProjectId === 'string' && props.selectedProjectId.trim().length > 0
+      ? props.selectedProjectId
+      : null;
+  const selectedSessionProjectId =
+    typeof selectedSession?.projectId === 'string' && selectedSession.projectId.trim().length > 0
+      ? selectedSession.projectId
+      : null;
+  const repoDocsContextState: 'on' | 'off' | 'unavailable' = !isRepoDocsConfigured
+    ? 'off'
+    : selectedSessionProjectId !== null &&
+        selectedProjectIdForContext !== null &&
+        selectedSessionProjectId === selectedProjectIdForContext
+      ? 'on'
+      : 'unavailable';
   const selectedSessionStatus = selectedSession
     ? getSessionLabel(selectedSession)
     : 'not available';
@@ -1555,6 +1641,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
             commonMessages={commonMessages}
             globalContextActive={isGlobalContextActive}
             projectContextActive={isProjectContextActive}
+            repoDocsContextState={repoDocsContextState}
             selectedSessionId={props.selectedSessionId}
             promptInput={props.chatPromptInput ?? ''}
             onPromptInputChange={props.onChatPromptInputChange}
@@ -3862,6 +3949,7 @@ function WorkspaceChatPanel(props: {
   commonMessages: typeof enMessages.common;
   globalContextActive: boolean;
   projectContextActive: boolean;
+  repoDocsContextState: 'on' | 'off' | 'unavailable';
   selectedSessionId: string | null;
   promptInput: string;
   onPromptInputChange?: (value: string) => void;
@@ -3960,6 +4048,12 @@ function WorkspaceChatPanel(props: {
   const projectStatusLabel = props.projectContextActive
     ? props.aiMessages.contextIndicatorActive
     : props.aiMessages.contextIndicatorInactive;
+  const repoDocsStatusLabel =
+    props.repoDocsContextState === 'on'
+      ? props.aiMessages.contextIndicatorActive
+      : props.repoDocsContextState === 'off'
+        ? props.aiMessages.contextIndicatorInactive
+        : props.aiMessages.contextIndicatorUnavailable;
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
@@ -4138,6 +4232,15 @@ function WorkspaceChatPanel(props: {
             <span data-testid="workspace-chat-context-project-status">
               {props.aiMessages.contextIndicatorProject} {projectStatusLabel}
             </span>
+            <span aria-hidden="true">·</span>
+            <span data-testid="workspace-chat-context-repo-docs-status">
+              {props.aiMessages.contextIndicatorRepoDocs} {repoDocsStatusLabel}
+            </span>
+            {props.repoDocsContextState === 'unavailable' ? (
+              <span className="text-amber-700" data-testid="workspace-chat-context-repo-docs-unavailable-message">
+                {props.aiMessages.contextIndicatorRepoDocsUnavailableMessage}
+              </span>
+            ) : null}
           </div>
           <div className="flex min-w-0 max-w-full items-end gap-2" data-testid="workspace-chat-composer-row">
             <div className="min-w-0 flex-1">

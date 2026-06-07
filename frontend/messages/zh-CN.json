@@ -364,8 +364,11 @@
     "contextIndicatorTitle": "上下文",
     "contextIndicatorGlobal": "全局",
     "contextIndicatorProject": "项目",
+    "contextIndicatorRepoDocs": "Repo Docs",
     "contextIndicatorActive": "启用",
     "contextIndicatorInactive": "停用",
+    "contextIndicatorUnavailable": "不可用",
+    "contextIndicatorRepoDocsUnavailableMessage": "Repo Docs 暂时不可用 — 请先在当前会话中打开此项目。",
     "contextIndicatorHelp": "启用的上下文会包含在代理提示中。"
   },
   "authModule": {

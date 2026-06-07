@@ -7729,6 +7729,7 @@ describe('workspace core chat panel i18n wiring — I18N-SHELL-02', () => {
 
     assert.match(html, /workspace-chat-context-global-status[^>]*>Global Off</);
     assert.match(html, /workspace-chat-context-project-status[^>]*>Project Off</);
+    assert.match(html, /workspace-chat-context-repo-docs-status[^>]*>Repo Docs Off</);
   });
 
   test('active context indicator shows mixed global/project activity states', () => {
@@ -7744,6 +7745,7 @@ describe('workspace core chat panel i18n wiring — I18N-SHELL-02', () => {
 
     assert.match(html, /workspace-chat-context-global-status[^>]*>Global On</);
     assert.match(html, /workspace-chat-context-project-status[^>]*>Project Off</);
+    assert.match(html, /workspace-chat-context-repo-docs-status[^>]*>Repo Docs Off</);
   });
 
   test('active context indicator shows project active state', () => {
@@ -7759,6 +7761,49 @@ describe('workspace core chat panel i18n wiring — I18N-SHELL-02', () => {
 
     assert.match(html, /workspace-chat-context-global-status[^>]*>Global Off</);
     assert.match(html, /workspace-chat-context-project-status[^>]*>Project On</);
+    assert.match(html, /workspace-chat-context-repo-docs-status[^>]*>Repo Docs Off</);
+  });
+
+  test('active context indicator shows repo docs on when selected session is linked to selected project', () => {
+    const linkedSession: WorkspaceShellSession = {
+      ...session,
+      projectId: 'project-1',
+    };
+    const html = withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 17) {
+        return [true, () => {}];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () =>
+      renderWorkspaceShell({
+        sessions: [linkedSession],
+        selectedSessionId: linkedSession.id,
+        selectedProjectId: 'project-1',
+      }),
+    );
+
+    assert.match(html, /workspace-chat-context-repo-docs-status[^>]*>Repo Docs On</);
+    assert.doesNotMatch(html, /workspace-chat-context-repo-docs-unavailable-message/);
+  });
+
+  test('active context indicator shows repo docs unavailable when session-project link is missing', () => {
+    const html = withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 17) {
+        return [true, () => {}];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () =>
+      renderWorkspaceShell({
+        selectedSessionId: session.id,
+        selectedProjectId: 'project-1',
+      }),
+    );
+
+    assert.match(html, /workspace-chat-context-repo-docs-status[^>]*>Repo Docs Unavailable</);
+    assert.match(
+      html,
+      /workspace-chat-context-repo-docs-unavailable-message[^>]*>Repo Docs unavailable — open this project in the current session first\.<\/span>/,
+    );
   });
 
   test('chatInputPlaceholder i18n key exists in en, zh-TW, and zh-CN locale files', () => {
@@ -7778,8 +7823,11 @@ describe('workspace core chat panel i18n wiring — I18N-SHELL-02', () => {
       'contextIndicatorTitle',
       'contextIndicatorGlobal',
       'contextIndicatorProject',
+      'contextIndicatorRepoDocs',
       'contextIndicatorActive',
       'contextIndicatorInactive',
+      'contextIndicatorUnavailable',
+      'contextIndicatorRepoDocsUnavailableMessage',
       'contextIndicatorHelp',
     ] as const;
 
@@ -7801,8 +7849,11 @@ describe('workspace core chat panel i18n wiring — I18N-SHELL-02', () => {
     assert.match(shellSource, /props\.aiMessages\.contextIndicatorTitle/);
     assert.match(shellSource, /props\.aiMessages\.contextIndicatorGlobal/);
     assert.match(shellSource, /props\.aiMessages\.contextIndicatorProject/);
+    assert.match(shellSource, /props\.aiMessages\.contextIndicatorRepoDocs/);
     assert.match(shellSource, /props\.aiMessages\.contextIndicatorActive/);
     assert.match(shellSource, /props\.aiMessages\.contextIndicatorInactive/);
+    assert.match(shellSource, /props\.aiMessages\.contextIndicatorUnavailable/);
+    assert.match(shellSource, /props\.aiMessages\.contextIndicatorRepoDocsUnavailableMessage/);
     assert.match(shellSource, /props\.aiMessages\.contextIndicatorHelp/);
   });
 

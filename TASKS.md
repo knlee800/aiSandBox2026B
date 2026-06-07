@@ -17052,9 +17052,9 @@ Make "Build anything" a true one-click flow: type prompt ?? click Start once ?? 
 
 ## AI-CONTEXT — Global AI Instructions
 
-**Family status:** ACTIVE — AI-CONTEXT-01A through AI-CONTEXT-04C COMPLETE and LOCKED
+**Family status:** ACTIVE — AI-CONTEXT-01A through AI-CONTEXT-05A COMPLETE and LOCKED
 
-**Current stage:** AI-CONTEXT-04C COMPLETE and LOCKED
+**Current stage:** AI-CONTEXT-05A COMPLETE and LOCKED — `docs/AI-CONTEXT-05A-CHECKPOINT.md`
 
 **Registered tasks:**
 1. AI-CONTEXT-01A — Global AI Instructions Backend Foundation (COMPLETE and LOCKED — `docs/AI-CONTEXT-01A-CHECKPOINT.md`)
@@ -17070,6 +17070,7 @@ Make "Build anything" a true one-click flow: type prompt ?? click Start once ?? 
 11. AI-CONTEXT-04B — Repo Docs Registry Frontend UI (COMPLETE and LOCKED — `docs/AI-CONTEXT-04B-CHECKPOINT.md`)
 12. AI-CONTEXT-04B1 — Repo Docs File Picker (COMPLETE and LOCKED — `docs/AI-CONTEXT-04B1-CHECKPOINT.md`)
 13. AI-CONTEXT-04C — Inject Repo Docs into Prompt Assembly (COMPLETE and LOCKED — `docs/AI-CONTEXT-04C-CHECKPOINT.md`)
+14. AI-CONTEXT-05A — Context Link Readiness Indicator (COMPLETE and LOCKED — `docs/AI-CONTEXT-05A-CHECKPOINT.md`)
 
 ---
 
@@ -17985,6 +17986,59 @@ During AI execution, resolve the current project, load registered Repo Docs for 
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-CONTEXT-04C.
 **Checkpoint:** `docs/AI-CONTEXT-04C-CHECKPOINT.md`
+
+---
+
+#### AI-CONTEXT-05A: Context Link Readiness Indicator
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** AI-CONTEXT-05A
+**Family:** AI-CONTEXT
+**Priority:** High
+**Nature:** FRONTEND UX/UI / CONTEXT STATE CLARITY / PROJECT-SESSION LINK READINESS
+**Risk:** Medium
+**Depends on:** AI-CONTEXT-04C COMPLETE and LOCKED
+**Checkpoint:** `docs/AI-CONTEXT-05A-CHECKPOINT.md`
+
+**Problem:**
+Repo Docs are registered, selected, safely read server-side, and injected into AI prompt context. However, live smoke exposed a user-facing trap: Repo Docs only inject when the active session is linked to the project because AI-CONTEXT-04C resolves Repo Docs through `session.projectId`. If the user selects a project and saves Repo Docs, but the active session is not linked to that project, the UI can make Repo Docs look configured while the AI execution path receives no Repo Docs.
+
+**Objective:**
+Make context readiness visible and understandable in the workspace UI. The user should be able to see whether Global Instructions, Project Instructions, and Repo Docs are active for the current AI execution context, and whether Repo Docs are unavailable because the current session is not linked to the selected/open project.
+
+**Files changed:**
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+**Acceptance criteria:**
+- [x] Existing Active Context Indicator is extended or refined to include Repo Docs readiness.
+- [x] UI does not show Repo Docs as active when the active session is not linked to the project that owns the Repo Docs.
+- [x] User receives a clear multilingual message when Repo Docs are configured but unavailable because project/session linkage is missing.
+- [x] Global Instructions indicator remains correct.
+- [x] Project Instructions indicator remains correct.
+- [x] Repo Docs Off/On/Unavailable states are covered.
+- [x] No hardcoded English user-facing copy is added.
+- [x] `en.json`, `zh-TW.json`, and `zh-CN.json` are updated for any new visible text.
+- [x] Existing translation hook/pattern is used.
+- [x] Relevant frontend tests pass.
+- [x] Relevant build/typecheck passes.
+- [x] Live browser smoke confirms:
+  1. Repo Docs configured + session linked → Repo Docs On. PASS
+  2. Repo Docs configured + session not linked → unavailable message appears. PASS
+  3. No Repo Docs → Repo Docs Off. PASS
+
+**Validation results:**
+- `npm test -- workspace-shell.test.tsx` (frontend) — PASS (629/629)
+- `npx tsc --noEmit` (frontend) — PASS (0 errors)
+- `npm run build` (frontend) — PASS (compiled successfully, all routes generated)
+- `ReadLints` on touched files — PASS (no linter errors)
+- Live browser smoke — PASS (all 4 scenarios confirmed)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-CONTEXT-05A.
+**Checkpoint:** `docs/AI-CONTEXT-05A-CHECKPOINT.md`
 
 ---
 

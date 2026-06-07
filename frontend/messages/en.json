@@ -364,8 +364,11 @@
     "contextIndicatorTitle": "Context",
     "contextIndicatorGlobal": "Global",
     "contextIndicatorProject": "Project",
+    "contextIndicatorRepoDocs": "Repo Docs",
     "contextIndicatorActive": "On",
     "contextIndicatorInactive": "Off",
+    "contextIndicatorUnavailable": "Unavailable",
+    "contextIndicatorRepoDocsUnavailableMessage": "Repo Docs unavailable — open this project in the current session first.",
     "contextIndicatorHelp": "Active context is included in agent prompts."
   },
   "authModule": {
