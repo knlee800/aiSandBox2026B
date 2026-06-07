@@ -4,7 +4,11 @@ import { describe, test } from 'node:test';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import WorkspaceShell, {
+  buildRepoDocPickerCandidates,
+  dedupeRepoDocPaths,
+  getRepoDocPathValidationError,
   isAiInstructionActive,
+  normalizeRepoDocPathForApi,
   normalizeProjectAiInstructionsForApi,
   getDefaultHistorySectionVisibilityPresetState,
   getHistorySectionVisibilityPresetState,
@@ -1910,6 +1914,90 @@ describe('workspace shell component', () => {
     );
   });
 
+  test('repo doc path normalization trims whitespace', () => {
+    assert.equal(normalizeRepoDocPathForApi('  docs/ARCHITECTURE.md  '), 'docs/ARCHITECTURE.md');
+  });
+
+  test('repo doc path validation rejects invalid examples and accepts valid paths', () => {
+    assert.equal(getRepoDocPathValidationError('../secret.md'), 'invalid');
+    assert.equal(getRepoDocPathValidationError('/absolute.md'), 'invalid');
+    assert.equal(getRepoDocPathValidationError('C:\\secret.md'), 'invalid');
+    assert.equal(getRepoDocPathValidationError(''), 'invalid');
+    assert.equal(getRepoDocPathValidationError('README.md'), null);
+    assert.equal(getRepoDocPathValidationError('docs/ARCHITECTURE.md'), null);
+  });
+
+  test('repo doc path dedupe keeps first normalized occurrence', () => {
+    assert.deepEqual(
+      dedupeRepoDocPaths([' README.md ', 'README.md', 'docs/ARCHITECTURE.md', 'docs/ARCHITECTURE.md']),
+      ['README.md', 'docs/ARCHITECTURE.md'],
+    );
+  });
+
+  test('repo docs picker candidate ordering prioritizes documentation-like files', () => {
+    const candidates = buildRepoDocPickerCandidates([
+      {
+        name: 'src',
+        path: 'src',
+        type: 'directory',
+        children: [
+          {
+            name: 'app.ts',
+            path: 'src/app.ts',
+            type: 'file',
+            children: [],
+          },
+          {
+            name: 'guide.md',
+            path: 'src/guide.md',
+            type: 'file',
+            children: [],
+          },
+        ],
+      },
+      {
+        name: 'docs',
+        path: 'docs',
+        type: 'directory',
+        children: [
+          {
+            name: 'ARCHITECTURE.md',
+            path: 'docs/ARCHITECTURE.md',
+            type: 'file',
+            children: [],
+          },
+        ],
+      },
+      {
+        name: 'README.md',
+        path: 'README.md',
+        type: 'file',
+        children: [],
+      },
+      {
+        name: 'CLAUDE.md',
+        path: 'CLAUDE.md',
+        type: 'file',
+        children: [],
+      },
+      {
+        name: 'notes.txt',
+        path: 'notes.txt',
+        type: 'file',
+        children: [],
+      },
+    ]);
+
+    assert.deepEqual(candidates, [
+      'README.md',
+      'CLAUDE.md',
+      'docs/ARCHITECTURE.md',
+      'src/guide.md',
+      'notes.txt',
+      'src/app.ts',
+    ]);
+  });
+
   test('AI instruction activity helper treats trimmed non-empty values as active', () => {
     assert.equal(isAiInstructionActive(null), false);
     assert.equal(isAiInstructionActive(undefined), false);
@@ -1942,6 +2030,20 @@ describe('workspace shell component', () => {
     assert.match(shellSource, /window\.dispatchEvent\(\s*new CustomEvent\(PROJECT_AI_INSTRUCTIONS_UPDATED_EVENT/);
   });
 
+  test('workspace shell source wires GET and PUT for project repo docs', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+
+    assert.match(
+      shellSource,
+      /fetch\(`\/api\/projects\/\$\{projectId\}\/repo-docs`,\s*\{\s*method: 'GET',\s*\}\);/,
+    );
+    assert.match(
+      shellSource,
+      /fetch\(`\/api\/projects\/\$\{projectId\}\/repo-docs`,\s*\{\s*method: 'PUT',[\s\S]*docs[\s\S]*\}\);/,
+    );
+    assert.match(shellSource, /await saveProjectRepoDocsToApi\(props\.selectedProjectId,\s*\[\]\);/);
+  });
+
   test('project AI instructions locale keys exist in en, zh-TW, and zh-CN', () => {
     const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));
     const zhTw = JSON.parse(readFileSync(new URL('../../messages/zh-TW.json', import.meta.url), 'utf8'));
@@ -1959,6 +2061,48 @@ describe('workspace shell component', () => {
       'projectAiInstructionsSaveError',
       'projectAiInstructionsCharacterCount',
       'projectAiInstructionsTooLong',
+    ] as const;
+
+    for (const key of requiredKeys) {
+      assert.equal(typeof en.project?.[key], 'string');
+      assert.equal(typeof zhTw.project?.[key], 'string');
+      assert.equal(typeof zhCn.project?.[key], 'string');
+    }
+  });
+
+  test('repo docs locale keys exist in en, zh-TW, and zh-CN', () => {
+    const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));
+    const zhTw = JSON.parse(readFileSync(new URL('../../messages/zh-TW.json', import.meta.url), 'utf8'));
+    const zhCn = JSON.parse(readFileSync(new URL('../../messages/zh-CN.json', import.meta.url), 'utf8'));
+    const requiredKeys = [
+      'repoDocsTitle',
+      'repoDocsDescription',
+      'repoDocsInputPlaceholder',
+      'repoDocsAdd',
+      'repoDocsRemove',
+      'repoDocsSave',
+      'repoDocsClearAll',
+      'repoDocsLoading',
+      'repoDocsSaving',
+      'repoDocsSaved',
+      'repoDocsLoadError',
+      'repoDocsSaveError',
+      'repoDocsEmpty',
+      'repoDocsInvalidPath',
+      'repoDocsDuplicatePath',
+      'repoDocsOpenPicker',
+      'repoDocsClosePicker',
+      'repoDocsPickFromFiles',
+      'repoDocsPickerTitle',
+      'repoDocsPickerEmpty',
+      'repoDocsPickerChooseFile',
+      'repoDocsPickerClickToAdd',
+      'repoDocsPickerSelected',
+      'repoDocsPickerNoFiles',
+      'repoDocsPickerNoSession',
+      'repoDocsPickerSearchPlaceholder',
+      'repoDocsPickerAddSelected',
+      'repoDocsPickerAlreadyAdded',
     ] as const;
 
     for (const key of requiredKeys) {
@@ -2330,14 +2474,19 @@ describe('workspace shell component', () => {
   test('workspace shell history toggle uses ClockIcon and ChatBubbleLeftIcon from Heroicons outline', () => {
     const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
 
-    assert.match(
-      shellSource,
-      /import\s+\{\s*ChatBubbleLeftIcon,\s*ClockIcon\s*\}\s+from\s+'@heroicons\/react\/24\/outline';/,
-    );
+    assert.match(shellSource, /from\s+'@heroicons\/react\/24\/outline'/);
+    assert.match(shellSource, /ChatBubbleLeftIcon/);
+    assert.match(shellSource, /ClockIcon/);
+    assert.match(shellSource, /XMarkIcon/);
+    assert.match(shellSource, /ChevronRightIcon/);
+    assert.match(shellSource, /ChevronDownIcon/);
+    assert.match(shellSource, /FolderIcon/);
+    assert.match(shellSource, /FolderOpenIcon/);
+    assert.match(shellSource, /DocumentTextIcon/);
     assert.match(shellSource, /<ClockIcon className="h-4 w-4" \/>/);
     assert.match(shellSource, /<ChatBubbleLeftIcon className="h-4 w-4" \/>/);
     assert.match(shellSource, /historyPanelOpen \? <ChatBubbleLeftIcon className="h-4 w-4" \/> : <ClockIcon className="h-4 w-4" \/>/);
-    assert.doesNotMatch(shellSource, /XMarkIcon/);
+    assert.match(shellSource, /<XMarkIcon className="h-5 w-5" \/>/);
   });
 
   test('chat/history panel and chat thread use independent scroll and full-height layout classes', () => {
@@ -2500,6 +2649,40 @@ describe('workspace shell component', () => {
     assert.match(html, /4000/);
   });
 
+  test('renders repo docs controls near project AI instructions in active project view', () => {
+    const html = renderWorkspaceShell({
+      ...projectPanelRenderOverrides,
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+
+    assert.match(html, /history-project-repo-docs-surface/);
+    assert.match(html, /history-project-repo-docs-title/);
+    assert.match(html, /history-project-repo-docs-description/);
+    assert.match(html, /history-project-repo-docs-list/);
+    assert.match(html, /history-project-repo-docs-input/);
+    assert.match(html, /history-project-repo-docs-add/);
+    assert.match(html, /history-project-repo-docs-save/);
+    assert.match(html, /history-project-repo-docs-clear-all/);
+
+    const aiInstructionsIndex = html.indexOf('history-project-ai-instructions-surface');
+    const repoDocsIndex = html.indexOf('history-project-repo-docs-surface');
+    assert.ok(aiInstructionsIndex >= 0);
+    assert.ok(repoDocsIndex > aiInstructionsIndex);
+  });
+
+  test('renders repo docs picker toggle control with manual input fallback', () => {
+    const html = renderWorkspaceShell({
+      ...projectPanelRenderOverrides,
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+    });
+
+    assert.match(html, /history-project-repo-docs-picker-surface/);
+    assert.match(html, /history-project-repo-docs-picker-toggle/);
+    assert.match(html, /history-project-repo-docs-input/);
+  });
+
   test('project AI instructions source enforces max-length validation and save disable behavior', () => {
     const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
 
@@ -2510,6 +2693,43 @@ describe('workspace shell component', () => {
       /projectInstructionsLoading \|\|\s*projectInstructionsSaving \|\|\s*projectInstructionsTooLong/,
     );
     assert.match(shellSource, /history-project-ai-instructions-too-long/);
+  });
+
+  test('repo docs source enforces client-side path validation and dedupe before save', () => {
+    const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
+
+    assert.match(shellSource, /REPO_DOC_PATH_MAX_LENGTH = 500/);
+    assert.match(shellSource, /if \(path\.startsWith\('\/'\)\)/);
+    assert.match(shellSource, /if \(path\.includes\('\\\\'\)\)/);
+    assert.match(shellSource, /\/\^\[a-zA-Z\]:\//);
+    assert.match(shellSource, /\/\(\^\|\\\/\)\\\.\\\.\(\\\/\|\$\)\//);
+    assert.match(shellSource, /const dedupedPaths = dedupeRepoDocPaths\(repoDocsPaths\);/);
+    assert.match(shellSource, /setRepoDocsPickerMessage\(props\.projectMessages\.repoDocsPickerAlreadyAdded\)/);
+    assert.match(shellSource, /setRepoDocsPickerOpen\(\(current\) => !current\)/);
+    assert.match(shellSource, /data-testid="history-project-repo-docs-picker-file-button"/);
+    assert.match(shellSource, /data-testid="history-project-repo-docs-picker-no-session"/);
+    assert.match(shellSource, /props\.projectMessages\.repoDocsPickerNoSession/);
+    assert.match(shellSource, /props\.workspaceFileTree\.length === 0/);
+    assert.match(shellSource, /data-testid="history-project-repo-docs-picker-modal"/);
+    assert.match(shellSource, /fixed inset-0 z-50/);
+    assert.match(shellSource, /data-testid="history-project-repo-docs-picker-close"/);
+    assert.match(shellSource, /RepoDocsPickerTreeNode/);
+    assert.match(shellSource, /repoDocsPickerExpandedFolders/);
+    assert.match(shellSource, /data-testid="history-project-repo-docs-picker-folder-button"/);
+    assert.match(shellSource, /handleTogglePickerFolder/);
+    assert.match(shellSource, /onSelectFile=\{handleAddRepoDocFromPicker\}/);
+  });
+
+  test('picker shows no-session message when workspaceFileTree is empty', () => {
+    const html = renderWorkspaceShell({
+      ...projectPanelRenderOverrides,
+      projectFirstUxEnabled: true,
+      workspaceView: 'project',
+      workspaceFileTree: [],
+    });
+
+    assert.match(html, /history-project-repo-docs-picker-toggle/);
+    assert.doesNotMatch(html, /history-project-repo-docs-picker-file-button/);
   });
 
   test('renders project history restore controls in active project view', () => {

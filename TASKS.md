@@ -17052,9 +17052,9 @@ Make "Build anything" a true one-click flow: type prompt ?? click Start once ?? 
 
 ## AI-CONTEXT — Global AI Instructions
 
-**Family status:** ACTIVE — AI-CONTEXT-01A through AI-CONTEXT-04A COMPLETE and LOCKED
+**Family status:** ACTIVE — AI-CONTEXT-01A through AI-CONTEXT-04B1 COMPLETE and LOCKED
 
-**Current stage:** AI-CONTEXT-04A COMPLETE and LOCKED — `docs/AI-CONTEXT-04A-CHECKPOINT.md`
+**Current stage:** AI-CONTEXT-04B1 COMPLETE and LOCKED
 
 **Registered tasks:**
 1. AI-CONTEXT-01A — Global AI Instructions Backend Foundation (COMPLETE and LOCKED — `docs/AI-CONTEXT-01A-CHECKPOINT.md`)
@@ -17067,6 +17067,8 @@ Make "Build anything" a true one-click flow: type prompt ?? click Start once ?? 
 8. AI-CONTEXT-02C — Inject Project AI Instructions into Prompt Assembly (COMPLETE and LOCKED — `docs/AI-CONTEXT-02C-CHECKPOINT.md`)
 9. AI-CONTEXT-03A — Active Context Indicator (COMPLETE and LOCKED — `docs/AI-CONTEXT-03A-CHECKPOINT.md`)
 10. AI-CONTEXT-04A — Repo Docs Registry Backend Foundation (COMPLETE and LOCKED — `docs/AI-CONTEXT-04A-CHECKPOINT.md`)
+11. AI-CONTEXT-04B — Repo Docs Registry Frontend UI (COMPLETE and LOCKED — `docs/AI-CONTEXT-04B-CHECKPOINT.md`)
+12. AI-CONTEXT-04B1 — Repo Docs File Picker (COMPLETE and LOCKED — `docs/AI-CONTEXT-04B1-CHECKPOINT.md`)
 
 ---
 
@@ -17766,6 +17768,169 @@ Allowed mode for this slice: `always`
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-CONTEXT-04A.
 **Checkpoint:** `docs/AI-CONTEXT-04A-CHECKPOINT.md`
+
+---
+
+#### AI-CONTEXT-04B: Repo Docs Registry Frontend UI
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** AI-CONTEXT-04B
+**Family:** AI-CONTEXT
+**Priority:** High
+**Nature:** FRONTEND / PROJECT CONTEXT / REPO DOCS SELECTOR
+**Risk:** Medium
+**Depends on:** AI-CONTEXT-04A COMPLETE and LOCKED
+**Checkpoint:** `docs/AI-CONTEXT-04B-CHECKPOINT.md`
+
+**Problem:**
+The backend registry for project-selected repo docs now exists, but users have no frontend UI to view, select, save, or clear repo docs for a project.
+
+**Objective:**
+Add a frontend project settings/control surface for selecting repo-relative documentation files that should later be read/injected into the AI prompt context.
+
+**Files likely in scope:**
+- `frontend/app/[locale]/app/page.tsx`
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+**Scope:**
+- Frontend-only.
+- Add Repo Docs selector UI in the existing project context/settings surface near Project AI Instructions.
+- Use existing backend endpoints:
+  - `GET /api/projects/:projectId/repo-docs`
+  - `PUT /api/projects/:projectId/repo-docs`
+- Show currently registered docs.
+- Allow adding a repo-relative doc path manually.
+- Allow removing selected doc paths.
+- Save registry using replace-all semantics.
+- Show loading/saving/saved/error states.
+- Validate paths client-side consistently with backend:
+  - non-empty
+  - no leading `/`
+  - no backslashes
+  - no `..`
+  - no drive-letter (e.g. `C:`)
+  - max 500 chars
+- Mode is always `always`; no mode UI needed.
+- Deduplicate paths before save.
+- Multilingual-first: all visible text in en / zh-TW / zh-CN.
+- Use Heroicons v2 Outline only if icons are needed.
+- Preserve Project AI Instructions and Global AI Instructions UI.
+- No prompt injection in this slice.
+
+**Non-goals:**
+- No backend changes.
+- No ai-service changes.
+- No prompt assembly changes.
+- No repo docs file-content reading.
+- No repo map.
+- No validation contract.
+- No automatic doc discovery.
+- No file tree picker yet unless already trivial.
+- No unrelated UI redesign.
+
+**Acceptance criteria:**
+- [x] Repo Docs panel renders in project context/settings surface.
+- [x] Existing repo docs are loaded from GET endpoint.
+- [x] User can add valid repo-relative paths.
+- [x] User can remove paths.
+- [x] Save calls PUT endpoint with `{ docs: [{ path, mode: 'always' }] }`.
+- [x] Clear/remove all can save an empty docs array.
+- [x] Invalid paths are rejected client-side with visible validation.
+- [x] Duplicate paths are deduped.
+- [x] All visible text uses i18n keys in en / zh-TW / zh-CN.
+- [x] Existing Project AI Instructions UI remains unchanged.
+- [x] Existing Active Context Indicator remains unchanged for now.
+- [x] `npx tsc --noEmit` passes.
+- [x] `npm test` passes.
+- [x] ReadLints passes.
+- [x] Live browser test required before consolidation.
+
+**Validation results:**
+- `npx tsc --noEmit` — PASS
+- `npm test` — PASS
+- `ReadLints` — PASS (no linter errors)
+- Live browser test — PASS: added README.md and docs/ARCHITECTURE.md, saved, confirmed persistence on reload, removed one doc and confirmed removal persisted, invalid paths rejected with visible error, saved empty array and confirmed empty persisted
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-CONTEXT-04B.
+**Checkpoint:** `docs/AI-CONTEXT-04B-CHECKPOINT.md`
+
+---
+
+#### AI-CONTEXT-04B1: Repo Docs File Picker
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** AI-CONTEXT-04B1
+**Family:** AI-CONTEXT
+**Priority:** High
+**Nature:** FRONTEND / PROJECT CONTEXT / REPO DOCS UX
+**Risk:** Medium
+**Depends on:** AI-CONTEXT-04B COMPLETE and LOCKED
+**Checkpoint:** `docs/AI-CONTEXT-04B1-CHECKPOINT.md`
+
+**Problem:**
+Repo Docs can be added manually, but users cannot easily know the correct repo-relative path or whether the file exists. Manual typing is error-prone.
+
+**Objective:**
+Add a file picker to the Repo Docs panel so users can choose existing workspace files and add them as repo-relative doc paths.
+
+**Files likely in scope:**
+- `frontend/app/[locale]/app/page.tsx`
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-shell.test.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+**Scope:**
+- Frontend-only if existing workspace file tree/file list is already available.
+- Add "Pick from files" button or compact picker UI inside the Repo Docs panel.
+- Reuse existing workspace file tree/state if practical.
+- Show repo-relative file paths.
+- Allow selecting files and adding them to the Repo Docs list.
+- Keep manual path input as fallback.
+- Deduplicate selected paths.
+- Apply existing path validation before adding.
+- Prefer documentation-like files in display/order if practical: README.md, CLAUDE.md, docs/*.md, *.md, *.txt
+- Multilingual-first: all visible text in en / zh-TW / zh-CN.
+- Use Heroicons v2 Outline only if icons are needed.
+- Preserve existing Repo Docs GET/PUT behavior.
+- No backend changes unless investigation proves file tree is not available frontend-side.
+
+**Non-goals:**
+- No prompt injection.
+- No ai-service changes.
+- No backend schema change.
+- No repo docs content reading.
+- No repo map.
+- No validation contract.
+- No broad file-tree redesign.
+
+**Acceptance criteria:**
+- [x] Repo Docs panel includes a file picker or "Pick from files" affordance.
+- [x] User can select an existing workspace file and add it to Repo Docs.
+- [x] Added path is repo-relative.
+- [x] Manual path input still works.
+- [x] Duplicate selected paths are deduped or rejected clearly.
+- [x] Invalid paths are still rejected.
+- [x] All visible text uses i18n keys in en / zh-TW / zh-CN.
+- [x] Existing Repo Docs save/remove/clear behavior remains unchanged.
+- [x] `npx tsc --noEmit` passes.
+- [x] `npm test` passes.
+- [x] ReadLints passes.
+- [x] Live browser test passes.
+
+**Validation results:**
+- `npx tsc --noEmit` — PASS
+- `npm test` — PASS (627/627)
+- `ReadLints` — PASS (no linter errors)
+- Live browser test — PASS: modal opened, folders expanded/collapsed, file clicked and path added, saved and confirmed persistence, duplicate handling confirmed
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-CONTEXT-04B1.
+**Checkpoint:** `docs/AI-CONTEXT-04B1-CHECKPOINT.md`
 
 ---
 

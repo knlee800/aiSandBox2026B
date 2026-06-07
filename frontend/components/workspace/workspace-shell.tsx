@@ -76,7 +76,16 @@ import {
   AI_PANEL_COLLAPSED_STORAGE_KEY,
   type TabOrientation,
 } from './workspace-tab-registry';
-import { ChatBubbleLeftIcon, ClockIcon } from '@heroicons/react/24/outline';
+import {
+  ChatBubbleLeftIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  ClockIcon,
+  DocumentTextIcon,
+  FolderIcon,
+  FolderOpenIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/outline';
 
 let recoveryCopy = getRecoveryCopy('en');
 
@@ -129,6 +138,8 @@ function getAiMessages(locale: string): typeof enMessages.ai {
 }
 
 export const PROJECT_AI_INSTRUCTIONS_MAX_LENGTH = 4000;
+export const REPO_DOC_PATH_MAX_LENGTH = 500;
+export const REPO_DOC_PICKER_MAX_CANDIDATES = 100;
 export const GLOBAL_AI_INSTRUCTIONS_UPDATED_EVENT = 'workspace:global-ai-instructions-updated';
 export const PROJECT_AI_INSTRUCTIONS_UPDATED_EVENT = 'workspace:project-ai-instructions-updated';
 
@@ -140,12 +151,184 @@ interface ProjectAiContextResponse {
   projectInstructions: string | null;
 }
 
+interface ProjectRepoDocPayload {
+  path: string;
+  mode: 'always';
+}
+
+interface ProjectRepoDocsResponse {
+  docs: ProjectRepoDocPayload[];
+}
+
 export function isAiInstructionActive(value: string | null | undefined): boolean {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
 export function normalizeProjectAiInstructionsForApi(value: string): string | null {
   return value.trim().length === 0 ? null : value;
+}
+
+export function normalizeRepoDocPathForApi(value: string): string {
+  return value.trim();
+}
+
+export function getRepoDocPathValidationError(path: string): 'invalid' | null {
+  if (path.length === 0 || path.length > REPO_DOC_PATH_MAX_LENGTH) {
+    return 'invalid';
+  }
+  if (path.startsWith('/')) {
+    return 'invalid';
+  }
+  if (path.includes('\\')) {
+    return 'invalid';
+  }
+  if (/^[a-zA-Z]:/.test(path)) {
+    return 'invalid';
+  }
+  if (/(^|\/)\.\.(\/|$)/.test(path)) {
+    return 'invalid';
+  }
+  return null;
+}
+
+export function dedupeRepoDocPaths(paths: string[]): string[] {
+  const deduped: string[] = [];
+  const seen = new Set<string>();
+
+  for (const path of paths) {
+    const normalizedPath = normalizeRepoDocPathForApi(path);
+    if (normalizedPath.length === 0 || seen.has(normalizedPath)) {
+      continue;
+    }
+    seen.add(normalizedPath);
+    deduped.push(normalizedPath);
+  }
+
+  return deduped;
+}
+
+function collectWorkspaceFilePathsFromTree(nodes: WorkspaceFileNode[], collectedPaths: string[]): void {
+  for (const node of nodes) {
+    if (node.type === 'file') {
+      collectedPaths.push(node.path);
+      continue;
+    }
+    if (node.children.length > 0) {
+      collectWorkspaceFilePathsFromTree(node.children, collectedPaths);
+    }
+  }
+}
+
+function getRepoDocPickerPriority(path: string): number {
+  const lowerPath = path.toLowerCase();
+  const slashIndex = lowerPath.lastIndexOf('/');
+  const fileName = slashIndex >= 0 ? lowerPath.slice(slashIndex + 1) : lowerPath;
+
+  if (fileName === 'readme.md') return 0;
+  if (fileName === 'claude.md') return 1;
+  if (lowerPath.startsWith('docs/') && lowerPath.endsWith('.md')) return 2;
+  if (lowerPath.endsWith('.md')) return 3;
+  if (lowerPath.endsWith('.txt')) return 4;
+  return 5;
+}
+
+export function buildRepoDocPickerCandidates(fileTree: WorkspaceFileNode[]): string[] {
+  const collectedPaths: string[] = [];
+  collectWorkspaceFilePathsFromTree(fileTree, collectedPaths);
+
+  return dedupeRepoDocPaths(collectedPaths)
+    .filter((path) => getRepoDocPathValidationError(path) === null)
+    .sort((leftPath, rightPath) => {
+      const leftPriority = getRepoDocPickerPriority(leftPath);
+      const rightPriority = getRepoDocPickerPriority(rightPath);
+      if (leftPriority !== rightPriority) {
+        return leftPriority - rightPriority;
+      }
+      return leftPath.localeCompare(rightPath);
+    });
+}
+
+function RepoDocsPickerTreeNode(props: {
+  node: WorkspaceFileNode;
+  depth: number;
+  expandedFolders: Set<string>;
+  onToggleFolder: (folderPath: string) => void;
+  selectedPaths: string[];
+  onSelectFile: (filePath: string) => void;
+  selectedLabel: string;
+  disabled: boolean;
+}) {
+  const paddingLeft = `${props.depth * 1}rem`;
+
+  if (props.node.type === 'directory') {
+    const isExpanded = props.expandedFolders.has(props.node.path);
+    return (
+      <li>
+        <button
+          type="button"
+          className="flex w-full items-center gap-1.5 rounded px-2 py-1 text-left text-xs text-gray-700 hover:bg-gray-100"
+          style={{ paddingLeft }}
+          onClick={() => props.onToggleFolder(props.node.path)}
+          data-testid="history-project-repo-docs-picker-folder-button"
+        >
+          {isExpanded ? (
+            <ChevronDownIcon className="h-3.5 w-3.5 flex-shrink-0 text-gray-400" />
+          ) : (
+            <ChevronRightIcon className="h-3.5 w-3.5 flex-shrink-0 text-gray-400" />
+          )}
+          {isExpanded ? (
+            <FolderOpenIcon className="h-4 w-4 flex-shrink-0 text-amber-500" />
+          ) : (
+            <FolderIcon className="h-4 w-4 flex-shrink-0 text-amber-500" />
+          )}
+          <span className="truncate font-medium">{props.node.name}/</span>
+        </button>
+        {isExpanded && props.node.children.length > 0 ? (
+          <ul>
+            {props.node.children.map((child) => (
+              <RepoDocsPickerTreeNode
+                key={child.path}
+                node={child}
+                depth={props.depth + 1}
+                expandedFolders={props.expandedFolders}
+                onToggleFolder={props.onToggleFolder}
+                selectedPaths={props.selectedPaths}
+                onSelectFile={props.onSelectFile}
+                selectedLabel={props.selectedLabel}
+                disabled={props.disabled}
+              />
+            ))}
+          </ul>
+        ) : null}
+      </li>
+    );
+  }
+
+  const alreadyAdded = props.selectedPaths.includes(props.node.path);
+  return (
+    <li>
+      <button
+        type="button"
+        className={`flex w-full items-center gap-1.5 rounded px-2 py-1 text-left text-xs ${
+          alreadyAdded
+            ? 'bg-emerald-50 text-emerald-800'
+            : 'text-gray-700 hover:bg-gray-100'
+        } disabled:text-gray-400`}
+        style={{ paddingLeft }}
+        disabled={props.disabled}
+        onClick={() => props.onSelectFile(props.node.path)}
+        data-testid="history-project-repo-docs-picker-file-button"
+      >
+        <DocumentTextIcon className="h-4 w-4 flex-shrink-0 text-gray-400" />
+        <span className="truncate">{props.node.name}</span>
+        {alreadyAdded ? (
+          <span className="ml-auto flex-shrink-0 text-[10px] text-emerald-600">
+            {props.selectedLabel}
+          </span>
+        ) : null}
+      </button>
+    </li>
+  );
 }
 
 export async function fetchGlobalAiInstructionStatusFromApi(): Promise<boolean> {
@@ -198,6 +381,44 @@ export async function saveProjectAiInstructionsToApi(
         },
       }),
     );
+  }
+}
+
+export async function fetchProjectRepoDocsFromApi(projectId: string): Promise<ProjectRepoDocPayload[]> {
+  const response = await fetch(`/api/projects/${projectId}/repo-docs`, {
+    method: 'GET',
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to load project repo docs (${response.status})`);
+  }
+
+  const data = (await response.json()) as ProjectRepoDocsResponse;
+  if (!Array.isArray(data.docs)) {
+    return [];
+  }
+
+  return data.docs.filter((doc) => typeof doc.path === 'string' && doc.mode === 'always');
+}
+
+export async function saveProjectRepoDocsToApi(projectId: string, paths: string[]): Promise<void> {
+  const docs = dedupeRepoDocPaths(paths)
+    .filter((path) => getRepoDocPathValidationError(path) === null)
+    .map((path) => ({
+      path,
+      mode: 'always' as const,
+    }));
+
+  const response = await fetch(`/api/projects/${projectId}/repo-docs`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      docs,
+    }),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to save project repo docs (${response.status})`);
   }
 }
 
@@ -1201,6 +1422,7 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
           onMoveWorkspaceProject={props.onMoveWorkspaceProject}
           onCreateProject={props.onCreateWorkspaceProject}
           onOpenProject={props.onOpenWorkspaceProject}
+          workspaceFileTree={props.workspaceFileTree}
           selectedProjectVisibility={props.selectedProjectVisibility ?? 'private'}
           onSelectedProjectVisibilityChange={props.onSelectedProjectVisibilityChange}
           onUpdateProjectVisibility={props.onUpdateWorkspaceProjectVisibility}
@@ -2364,6 +2586,7 @@ function HistoryProjectPanel(props: {
   onMoveWorkspaceProject?: () => Promise<void>;
   onCreateProject?: () => Promise<void>;
   onOpenProject?: () => Promise<void>;
+  workspaceFileTree: WorkspaceFileNode[];
   selectedProjectVisibility: 'private' | 'public';
   onSelectedProjectVisibilityChange?: (visibility: 'private' | 'public') => void;
   onUpdateProjectVisibility?: () => Promise<void>;
@@ -2410,6 +2633,34 @@ function HistoryProjectPanel(props: {
     | 'projectAiInstructionsSaveError'
     | 'projectAiInstructionsCharacterCount'
     | 'projectAiInstructionsTooLong'
+    | 'repoDocsTitle'
+    | 'repoDocsDescription'
+    | 'repoDocsInputPlaceholder'
+    | 'repoDocsAdd'
+    | 'repoDocsRemove'
+    | 'repoDocsSave'
+    | 'repoDocsClearAll'
+    | 'repoDocsLoading'
+    | 'repoDocsSaving'
+    | 'repoDocsSaved'
+    | 'repoDocsLoadError'
+    | 'repoDocsSaveError'
+    | 'repoDocsEmpty'
+    | 'repoDocsInvalidPath'
+    | 'repoDocsDuplicatePath'
+    | 'repoDocsOpenPicker'
+    | 'repoDocsClosePicker'
+    | 'repoDocsPickFromFiles'
+    | 'repoDocsPickerTitle'
+    | 'repoDocsPickerEmpty'
+    | 'repoDocsPickerChooseFile'
+    | 'repoDocsPickerClickToAdd'
+    | 'repoDocsPickerSelected'
+    | 'repoDocsPickerNoFiles'
+    | 'repoDocsPickerNoSession'
+    | 'repoDocsPickerSearchPlaceholder'
+    | 'repoDocsPickerAddSelected'
+    | 'repoDocsPickerAlreadyAdded'
   >;
   commonMessages: Pick<
     typeof enMessages.common,
@@ -2463,6 +2714,17 @@ function HistoryProjectPanel(props: {
   const [projectInstructionsSaved, setProjectInstructionsSaved] = React.useState(false);
   const projectInstructionsCount = projectInstructionsInput.length;
   const projectInstructionsTooLong = projectInstructionsCount > PROJECT_AI_INSTRUCTIONS_MAX_LENGTH;
+  const [repoDocsInput, setRepoDocsInput] = React.useState('');
+  const [repoDocsPaths, setRepoDocsPaths] = React.useState<string[]>([]);
+  const [repoDocsLoading, setRepoDocsLoading] = React.useState(false);
+  const [repoDocsSaving, setRepoDocsSaving] = React.useState(false);
+  const [repoDocsLoadError, setRepoDocsLoadError] = React.useState<string | null>(null);
+  const [repoDocsSaveError, setRepoDocsSaveError] = React.useState<string | null>(null);
+  const [repoDocsSaved, setRepoDocsSaved] = React.useState(false);
+  const [repoDocsInputError, setRepoDocsInputError] = React.useState<string | null>(null);
+  const [repoDocsPickerOpen, setRepoDocsPickerOpen] = React.useState(false);
+  const [repoDocsPickerMessage, setRepoDocsPickerMessage] = React.useState<string | null>(null);
+  const [repoDocsPickerExpandedFolders, setRepoDocsPickerExpandedFolders] = React.useState<Set<string>>(new Set());
 
   React.useEffect(() => {
     if (!props.selectedProjectId) {
@@ -2508,6 +2770,64 @@ function HistoryProjectPanel(props: {
     };
   }, [props.projectMessages.projectAiInstructionsLoadError, props.selectedProjectId]);
 
+  React.useEffect(() => {
+    if (!props.selectedProjectId) {
+      setRepoDocsInput('');
+      setRepoDocsPaths([]);
+      setRepoDocsLoading(false);
+      setRepoDocsSaving(false);
+      setRepoDocsLoadError(null);
+      setRepoDocsSaveError(null);
+      setRepoDocsSaved(false);
+      setRepoDocsInputError(null);
+      setRepoDocsPickerOpen(false);
+      setRepoDocsPickerMessage(null);
+      setRepoDocsPickerExpandedFolders(new Set());
+      return;
+    }
+
+    const selectedProjectId = props.selectedProjectId;
+    let canceled = false;
+    setRepoDocsLoading(true);
+    setRepoDocsSaving(false);
+    setRepoDocsLoadError(null);
+    setRepoDocsSaveError(null);
+    setRepoDocsSaved(false);
+    setRepoDocsInputError(null);
+    setRepoDocsPickerOpen(false);
+    setRepoDocsPickerMessage(null);
+    setRepoDocsPickerExpandedFolders(new Set());
+
+    void (async () => {
+      try {
+        const loadedDocs = await fetchProjectRepoDocsFromApi(selectedProjectId);
+        if (canceled) {
+          return;
+        }
+        const loadedPaths = dedupeRepoDocPaths(
+          loadedDocs
+            .map((doc) => normalizeRepoDocPathForApi(doc.path))
+            .filter((path) => getRepoDocPathValidationError(path) === null),
+        );
+        setRepoDocsPaths(loadedPaths);
+      } catch (error) {
+        console.error('Failed to load project repo docs:', error);
+        if (canceled) {
+          return;
+        }
+        setRepoDocsLoadError(props.projectMessages.repoDocsLoadError);
+      } finally {
+        if (!canceled) {
+          setRepoDocsLoading(false);
+        }
+      }
+    })();
+
+    return () => {
+      canceled = true;
+    };
+  }, [props.projectMessages.repoDocsLoadError, props.selectedProjectId]);
+
   async function handleSaveProjectInstructions(): Promise<void> {
     if (
       !props.selectedProjectId ||
@@ -2551,6 +2871,133 @@ function HistoryProjectPanel(props: {
       setProjectInstructionsSaveError(props.projectMessages.projectAiInstructionsSaveError);
     } finally {
       setProjectInstructionsSaving(false);
+    }
+  }
+
+  function handleAddRepoDocPath(): void {
+    if (!props.selectedProjectId || repoDocsLoading || repoDocsSaving) {
+      return;
+    }
+
+    const normalizedPath = normalizeRepoDocPathForApi(repoDocsInput);
+    if (getRepoDocPathValidationError(normalizedPath) !== null) {
+      setRepoDocsInputError(props.projectMessages.repoDocsInvalidPath);
+      setRepoDocsPickerMessage(null);
+      setRepoDocsSaved(false);
+      return;
+    }
+
+    if (repoDocsPaths.includes(normalizedPath)) {
+      setRepoDocsInputError(props.projectMessages.repoDocsDuplicatePath);
+      setRepoDocsPickerMessage(null);
+      setRepoDocsSaved(false);
+      return;
+    }
+
+    setRepoDocsPaths((previousPaths) => [...previousPaths, normalizedPath]);
+    setRepoDocsInput('');
+    setRepoDocsInputError(null);
+    setRepoDocsSaveError(null);
+    setRepoDocsPickerMessage(null);
+    setRepoDocsSaved(false);
+  }
+
+  function handleRemoveRepoDocPath(pathToRemove: string): void {
+    setRepoDocsPaths((previousPaths) => previousPaths.filter((path) => path !== pathToRemove));
+    setRepoDocsInputError(null);
+    setRepoDocsSaveError(null);
+    setRepoDocsSaved(false);
+    setRepoDocsPickerMessage(null);
+  }
+
+  function handleTogglePickerFolder(folderPath: string): void {
+    setRepoDocsPickerExpandedFolders((prev) => {
+      const next = new Set(prev);
+      if (next.has(folderPath)) {
+        next.delete(folderPath);
+      } else {
+        next.add(folderPath);
+      }
+      return next;
+    });
+  }
+
+  function handleAddRepoDocFromPicker(pathToAdd: string): void {
+    if (!props.selectedProjectId || repoDocsLoading || repoDocsSaving) {
+      return;
+    }
+
+    const normalizedPath = normalizeRepoDocPathForApi(pathToAdd);
+    if (getRepoDocPathValidationError(normalizedPath) !== null) {
+      setRepoDocsInputError(props.projectMessages.repoDocsInvalidPath);
+      setRepoDocsPickerMessage(null);
+      setRepoDocsSaved(false);
+      return;
+    }
+
+    if (repoDocsPaths.includes(normalizedPath)) {
+      setRepoDocsInputError(props.projectMessages.repoDocsDuplicatePath);
+      setRepoDocsPickerMessage(props.projectMessages.repoDocsPickerAlreadyAdded);
+      setRepoDocsSaved(false);
+      return;
+    }
+
+    setRepoDocsPaths((previousPaths) => [...previousPaths, normalizedPath]);
+    setRepoDocsInputError(null);
+    setRepoDocsSaveError(null);
+    setRepoDocsPickerMessage(null);
+    setRepoDocsSaved(false);
+  }
+
+  async function handleSaveRepoDocs(): Promise<void> {
+    if (!props.selectedProjectId || repoDocsLoading || repoDocsSaving) {
+      return;
+    }
+
+    const dedupedPaths = dedupeRepoDocPaths(repoDocsPaths);
+    if (dedupedPaths.some((path) => getRepoDocPathValidationError(path) !== null)) {
+      setRepoDocsInputError(props.projectMessages.repoDocsInvalidPath);
+      setRepoDocsSaved(false);
+      return;
+    }
+
+    setRepoDocsSaving(true);
+    setRepoDocsInputError(null);
+    setRepoDocsSaveError(null);
+    setRepoDocsPickerMessage(null);
+    setRepoDocsSaved(false);
+    try {
+      await saveProjectRepoDocsToApi(props.selectedProjectId, dedupedPaths);
+      setRepoDocsPaths(dedupedPaths);
+      setRepoDocsSaved(true);
+    } catch (error) {
+      console.error('Failed to save project repo docs:', error);
+      setRepoDocsSaveError(props.projectMessages.repoDocsSaveError);
+    } finally {
+      setRepoDocsSaving(false);
+    }
+  }
+
+  async function handleClearAllRepoDocs(): Promise<void> {
+    if (!props.selectedProjectId || repoDocsLoading || repoDocsSaving) {
+      return;
+    }
+
+    setRepoDocsSaving(true);
+    setRepoDocsInputError(null);
+    setRepoDocsSaveError(null);
+    setRepoDocsPickerMessage(null);
+    setRepoDocsSaved(false);
+    try {
+      await saveProjectRepoDocsToApi(props.selectedProjectId, []);
+      setRepoDocsInput('');
+      setRepoDocsPaths([]);
+      setRepoDocsSaved(true);
+    } catch (error) {
+      console.error('Failed to clear project repo docs:', error);
+      setRepoDocsSaveError(props.projectMessages.repoDocsSaveError);
+    } finally {
+      setRepoDocsSaving(false);
     }
   }
 
@@ -2859,6 +3306,192 @@ function HistoryProjectPanel(props: {
             data-testid="history-project-ai-instructions-clear"
           >
             {props.projectMessages.projectAiInstructionsClear}
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-2 rounded border border-gray-200 bg-white p-2" data-testid="history-project-repo-docs-surface">
+        <p className="text-xs font-semibold text-gray-700" data-testid="history-project-repo-docs-title">
+          {props.projectMessages.repoDocsTitle}
+        </p>
+        <p className="mt-1 text-[11px] text-gray-500" data-testid="history-project-repo-docs-description">
+          {props.projectMessages.repoDocsDescription}
+        </p>
+        {repoDocsLoading ? (
+          <p className="mt-2 text-[11px] text-gray-500" data-testid="history-project-repo-docs-loading">
+            {props.projectMessages.repoDocsLoading}
+          </p>
+        ) : null}
+        {repoDocsLoadError ? (
+          <p className="mt-2 text-[11px] text-red-700" data-testid="history-project-repo-docs-load-error">
+            {repoDocsLoadError}
+          </p>
+        ) : null}
+        <div className="mt-2 space-y-2" data-testid="history-project-repo-docs-list">
+          {repoDocsPaths.length === 0 ? (
+            <p className="text-[11px] text-gray-500" data-testid="history-project-repo-docs-empty">
+              {props.projectMessages.repoDocsEmpty}
+            </p>
+          ) : (
+            repoDocsPaths.map((path) => (
+              <div
+                key={path}
+                className="flex items-center justify-between gap-2 rounded border border-gray-200 bg-gray-50 px-2 py-1"
+                data-testid="history-project-repo-docs-item"
+              >
+                <span className="truncate text-[11px] text-gray-700">{path}</span>
+                <button
+                  type="button"
+                  className="rounded border border-gray-300 bg-white px-2 py-1 text-[11px] text-gray-700 disabled:bg-gray-100 disabled:text-gray-400"
+                  disabled={!props.selectedProjectId || repoDocsLoading || repoDocsSaving}
+                  onClick={() => handleRemoveRepoDocPath(path)}
+                  data-testid="history-project-repo-docs-remove"
+                >
+                  {props.projectMessages.repoDocsRemove}
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+        <div className="mt-2" data-testid="history-project-repo-docs-picker-surface">
+          <button
+            type="button"
+            className="rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-700 disabled:bg-gray-100 disabled:text-gray-400"
+            disabled={!props.selectedProjectId || repoDocsLoading || repoDocsSaving}
+            onClick={() => {
+              setRepoDocsPickerOpen((current) => !current);
+              setRepoDocsPickerMessage(null);
+            }}
+            data-testid="history-project-repo-docs-picker-toggle"
+          >
+            {repoDocsPickerOpen ? props.projectMessages.repoDocsClosePicker : props.projectMessages.repoDocsOpenPicker}
+          </button>
+          {repoDocsPickerOpen ? (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
+              onClick={() => setRepoDocsPickerOpen(false)}
+              data-testid="history-project-repo-docs-picker-modal"
+            >
+              <div
+                className="flex max-h-[80vh] w-full max-w-lg flex-col rounded-lg bg-white shadow-xl"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
+                  <p
+                    className="text-sm font-semibold text-gray-900"
+                    data-testid="history-project-repo-docs-picker-title"
+                  >
+                    {props.projectMessages.repoDocsPickerChooseFile}
+                  </p>
+                  <button
+                    type="button"
+                    className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                    onClick={() => setRepoDocsPickerOpen(false)}
+                    data-testid="history-project-repo-docs-picker-close"
+                  >
+                    <XMarkIcon className="h-5 w-5" />
+                  </button>
+                </div>
+                <div className="flex-1 overflow-y-auto px-4 py-3">
+                  <p
+                    className="text-xs text-gray-500"
+                    data-testid="history-project-repo-docs-picker-description"
+                  >
+                    {props.projectMessages.repoDocsPickerClickToAdd}
+                  </p>
+                  {props.workspaceFileTree.length === 0 ? (
+                    <p className="mt-4 text-center text-xs text-amber-700" data-testid="history-project-repo-docs-picker-no-session">
+                      {props.projectMessages.repoDocsPickerNoSession}
+                    </p>
+                  ) : (
+                    <ul
+                      className="mt-3 space-y-0.5"
+                      data-testid="history-project-repo-docs-picker-list"
+                    >
+                      {props.workspaceFileTree.map((node) => (
+                        <RepoDocsPickerTreeNode
+                          key={node.path}
+                          node={node}
+                          depth={0}
+                          expandedFolders={repoDocsPickerExpandedFolders}
+                          onToggleFolder={handleTogglePickerFolder}
+                          selectedPaths={repoDocsPaths}
+                          onSelectFile={handleAddRepoDocFromPicker}
+                          selectedLabel={props.projectMessages.repoDocsPickerSelected}
+                          disabled={!props.selectedProjectId || repoDocsLoading || repoDocsSaving}
+                        />
+                      ))}
+                    </ul>
+                  )}
+                  {repoDocsPickerMessage ? (
+                    <p className="mt-3 text-xs text-amber-700" data-testid="history-project-repo-docs-picker-message">
+                      {repoDocsPickerMessage}
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </div>
+        <div className="mt-2 flex gap-2">
+          <input
+            type="text"
+            value={repoDocsInput}
+            onChange={(event) => {
+              setRepoDocsInput(event.target.value);
+              setRepoDocsInputError(null);
+              setRepoDocsSaveError(null);
+              setRepoDocsPickerMessage(null);
+              setRepoDocsSaved(false);
+            }}
+            placeholder={props.projectMessages.repoDocsInputPlaceholder}
+            className="min-w-0 flex-1 rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900"
+            disabled={!props.selectedProjectId || repoDocsLoading || repoDocsSaving}
+            data-testid="history-project-repo-docs-input"
+          />
+          <button
+            type="button"
+            className="rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-700 disabled:bg-gray-100 disabled:text-gray-400"
+            disabled={!props.selectedProjectId || repoDocsLoading || repoDocsSaving}
+            onClick={handleAddRepoDocPath}
+            data-testid="history-project-repo-docs-add"
+          >
+            {props.projectMessages.repoDocsAdd}
+          </button>
+        </div>
+        {repoDocsInputError ? (
+          <p className="mt-2 text-[11px] text-red-700" data-testid="history-project-repo-docs-input-error">
+            {repoDocsInputError}
+          </p>
+        ) : null}
+        {repoDocsSaved ? (
+          <p className="mt-2 text-[11px] text-emerald-700" data-testid="history-project-repo-docs-saved">
+            {props.projectMessages.repoDocsSaved}
+          </p>
+        ) : null}
+        {repoDocsSaveError ? (
+          <p className="mt-2 text-[11px] text-red-700" data-testid="history-project-repo-docs-save-error">
+            {repoDocsSaveError}
+          </p>
+        ) : null}
+        <div className="mt-2 flex gap-2">
+          <button
+            type="button"
+            className="rounded bg-gray-900 px-2 py-1 text-xs text-white disabled:bg-gray-300"
+            disabled={!props.selectedProjectId || repoDocsLoading || repoDocsSaving}
+            onClick={() => void handleSaveRepoDocs()}
+            data-testid="history-project-repo-docs-save"
+          >
+            {repoDocsSaving ? props.projectMessages.repoDocsSaving : props.projectMessages.repoDocsSave}
+          </button>
+          <button
+            type="button"
+            className="rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-700 disabled:bg-gray-100 disabled:text-gray-400"
+            disabled={!props.selectedProjectId || repoDocsLoading || repoDocsSaving}
+            onClick={() => void handleClearAllRepoDocs()}
+            data-testid="history-project-repo-docs-clear-all"
+          >
+            {props.projectMessages.repoDocsClearAll}
           </button>
         </div>
       </div>
