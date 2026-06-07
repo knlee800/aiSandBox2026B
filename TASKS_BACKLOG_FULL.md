@@ -27391,9 +27391,9 @@ Make "Build anything" a true one-click flow: type prompt ?? click Start once ?? 
 
 ## AI-CONTEXT — Global AI Instructions
 
-**Family status:** ACTIVE — AI-CONTEXT-01A through AI-CONTEXT-04B1 COMPLETE and LOCKED
+**Family status:** ACTIVE — AI-CONTEXT-01A through AI-CONTEXT-04C COMPLETE and LOCKED
 
-**Current stage:** AI-CONTEXT-04B1 COMPLETE and LOCKED
+**Current stage:** AI-CONTEXT-04C COMPLETE and LOCKED
 
 **Ordered slices (registered so far):**
 1. AI-CONTEXT-01A — Global AI Instructions Backend Foundation (COMPLETE and LOCKED — `docs/AI-CONTEXT-01A-CHECKPOINT.md`)
@@ -27408,6 +27408,7 @@ Make "Build anything" a true one-click flow: type prompt ?? click Start once ?? 
 10. AI-CONTEXT-04A — Repo Docs Registry Backend Foundation (COMPLETE and LOCKED — `docs/AI-CONTEXT-04A-CHECKPOINT.md`)
 11. AI-CONTEXT-04B — Repo Docs Registry Frontend UI (COMPLETE and LOCKED — `docs/AI-CONTEXT-04B-CHECKPOINT.md`)
 12. AI-CONTEXT-04B1 — Repo Docs File Picker (COMPLETE and LOCKED — `docs/AI-CONTEXT-04B1-CHECKPOINT.md`)
+13. AI-CONTEXT-04C — Inject Repo Docs into Prompt Assembly (COMPLETE and LOCKED — `docs/AI-CONTEXT-04C-CHECKPOINT.md`)
 
 ---
 
@@ -28332,6 +28333,60 @@ Add a file picker to the Repo Docs panel so users can choose existing workspace 
 
 **Reference:** See TASKS.md -> AI-CONTEXT-04B1.
 **Checkpoint:** `docs/AI-CONTEXT-04B1-CHECKPOINT.md`
+
+---
+
+### AI-CONTEXT-04C: Inject Repo Docs into Prompt Assembly
+
+**Task ID:** AI-CONTEXT-04C
+**Family:** AI-CONTEXT (Global AI Instructions)
+**Family status:** ACTIVE — AI-CONTEXT-01A through AI-CONTEXT-04C COMPLETE and LOCKED
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** BACKEND / AI PROMPT ASSEMBLY / REPO DOC CONTEXT
+**Risk:** Medium-High
+**Depends on:** AI-CONTEXT-04B1 COMPLETE and LOCKED
+**Checkpoint:** `docs/AI-CONTEXT-04C-CHECKPOINT.md`
+
+**Problem:**
+Users can now register Repo Docs for a project, but selected docs are not yet read or injected into AI execution prompts. The agent still does not automatically receive registered repo documentation.
+
+**Objective:**
+During AI execution, resolve the current project, load registered Repo Docs for that project, read their file contents from the workspace/session container using existing safe file-read mechanisms, and inject a bounded Repo Docs block into the AI prompt context.
+
+**Files changed:**
+- `services/api-gateway/src/ai/ai.module.ts`
+- `services/api-gateway/src/ai/ai-execution.controller.ts`
+- `services/api-gateway/src/clients/ai-service-http.client.ts`
+- `services/api-gateway/src/ai/__tests__/ai-execution.workspace-context.spec.ts`
+- `services/ai-service/src/queue/job.types.ts`
+- `services/ai-service/src/worker/worker.processor.ts`
+- `services/ai-service/src/worker/worker.processor.spec.ts`
+
+**Acceptance criteria:**
+- [x] Registered Repo Docs are loaded for the current project.
+- [x] Repo Doc contents are read safely using existing workspace/session container file-read mechanism.
+- [x] Missing/unreadable docs do not fail the entire AI request.
+- [x] Repo Docs are bounded by max count/per-doc/total char limits.
+- [x] Queue payload includes repo docs only when at least one doc is readable.
+- [x] AI service prompt user part includes Repo Docs block before workspace context.
+- [x] System part still contains contract/global/project instructions only.
+- [x] Global and Project Instructions remain unchanged.
+- [x] Targeted api-gateway tests pass.
+- [x] Targeted ai-service tests pass.
+- [x] Relevant builds pass.
+- [x] Live browser smoke passes: registered `WorkspaceA/CLAUDE.md`; asked "What repo docs have you read?"; agent responded referencing doc content.
+
+**Validation results:**
+- `npm test -- ai-execution.workspace-context.spec.ts` (api-gateway) — PASS (13/13)
+- `npm test -- worker.processor.spec.ts` (ai-service) — PASS (16/16)
+- `npm run build` (api-gateway) — PASS
+- `npm run build` (ai-service) — PASS
+- `ReadLints` — PASS (no linter errors)
+- Live browser smoke — PASS: registered `WorkspaceA/CLAUDE.md`; agent response: "I've read the content of `WorkspaceA/CLAUDE.md` (the governance/contract document), which was provided directly in this context."
+
+**Reference:** See TASKS.md -> AI-CONTEXT-04C.
+**Checkpoint:** `docs/AI-CONTEXT-04C-CHECKPOINT.md`
 
 ---
 

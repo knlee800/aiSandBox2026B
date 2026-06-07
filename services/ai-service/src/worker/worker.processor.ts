@@ -104,6 +104,26 @@ function buildWorkspaceContextBlock(
         }))
         .filter((file) => file.path.length > 0 && file.content.length > 0)
     : [];
+  const normalizedRepoDocContents = Array.isArray(workspaceContext.repoDocContents)
+    ? workspaceContext.repoDocContents
+        .filter(
+          (
+            doc,
+          ): doc is {
+            path: string;
+            content: string;
+          } =>
+            !!doc &&
+            typeof doc === 'object' &&
+            typeof doc.path === 'string' &&
+            typeof doc.content === 'string',
+        )
+        .map((doc) => ({
+          path: doc.path.trim(),
+          content: doc.content.trim(),
+        }))
+        .filter((doc) => doc.path.length > 0 && doc.content.length > 0)
+    : [];
   const normalizedSearchResults =
     workspaceContext.searchResults &&
     typeof workspaceContext.searchResults === 'object' &&
@@ -154,6 +174,7 @@ function buildWorkspaceContextBlock(
     !normalizedSelectedFilePath &&
     !normalizedSelectedFileContent &&
     normalizedNamedFileContents.length === 0 &&
+    normalizedRepoDocContents.length === 0 &&
     !normalizedSearchResults &&
     !normalizedProjectName &&
     !normalizedWorkspaceName
@@ -162,6 +183,16 @@ function buildWorkspaceContextBlock(
   }
 
   const sections: string[] = [];
+  if (normalizedRepoDocContents.length > 0) {
+    sections.push(
+      [
+        'Repo Docs:',
+        ...normalizedRepoDocContents.map(
+          (doc) => `Repo doc content: ${doc.path}\n${doc.content}`,
+        ),
+      ].join('\n\n'),
+    );
+  }
   if (normalizedProjectName) {
     sections.push(`Current project:\n${normalizedProjectName}`);
   }

@@ -9,6 +9,7 @@ import {
   BadRequestException,
   Req,
   Logger,
+  Optional,
   Get,
   Param,
   NotFoundException,
@@ -43,6 +44,8 @@ import { ExecutionResultService } from './execution-result.service';
 import { UserAiInstructionsService } from '../user-ai-instructions/user-ai-instructions.service';
 import { ProjectAiContextService } from '../project-ai-context/project-ai-context.service';
 import { SessionService } from '../sessions/session.service';
+import { ProjectRepoDocsService } from '../project-repo-docs/project-repo-docs.service';
+import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
 
 const SUPPORTED_AI_PROVIDERS = [
   'stub',
@@ -53,6 +56,10 @@ const SUPPORTED_AI_PROVIDERS = [
   'deepseek',
 ] as const;
 type SupportedAiProvider = (typeof SUPPORTED_AI_PROVIDERS)[number];
+
+const MAX_REPO_DOC_COUNT = 10;
+const MAX_REPO_DOC_CHARS = 8000;
+const REPO_DOC_TRUNCATION_SUFFIX = '[...truncated at 8000 characters]';
 
 /**
  * AIExecutionController
@@ -100,6 +107,10 @@ export class AIExecutionController {
     private readonly userAiInstructionsService: UserAiInstructionsService,
     private readonly projectAiContextService: ProjectAiContextService,
     private readonly sessionService: SessionService,
+    @Optional()
+    private readonly projectRepoDocsService?: ProjectRepoDocsService,
+    @Optional()
+    private readonly containerManagerHttpClient?: ContainerManagerHttpClient,
   ) {}
 
   private normalizeGlobalInstructions(
@@ -161,6 +172,104 @@ export class AIExecutionController {
       );
       return undefined;
     }
+  }
+
+  private async resolveRepoDocContents(
+    sessionId: string | undefined,
+    userId: string,
+  ): Promise<Array<{ path: string; content: string }> | undefined> {
+    if (
+      !this.projectRepoDocsService ||
+      !this.containerManagerHttpClient ||
+      typeof sessionId !== 'string'
+    ) {
+      return undefined;
+    }
+
+    const normalizedSessionId = sessionId.trim();
+    if (!normalizedSessionId) {
+      return undefined;
+    }
+
+    let session: { userId: string; projectId?: string | null };
+    try {
+      session = await this.sessionService.getSessionById(normalizedSessionId);
+    } catch (error) {
+      this.logger.debug(
+        `Repo doc context unavailable for session ${normalizedSessionId}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+      return undefined;
+    }
+
+    if (session.userId !== userId) {
+      this.logger.warn(
+        `Skipping repo doc context: session ${normalizedSessionId} does not belong to user ${userId}`,
+      );
+      return undefined;
+    }
+
+    const projectId =
+      typeof session.projectId === 'string' ? session.projectId.trim() : '';
+    if (!projectId) {
+      return undefined;
+    }
+
+    let registeredDocs: Array<{ path: string }>;
+    try {
+      registeredDocs = await this.projectRepoDocsService.listByProjectId(projectId);
+    } catch (error) {
+      this.logger.warn(
+        `Failed to resolve repo doc registry for project ${projectId}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+      return undefined;
+    }
+    if (registeredDocs.length === 0) {
+      return undefined;
+    }
+
+    const readableDocs: Array<{ path: string; content: string }> = [];
+    const docsToRead = registeredDocs.slice(0, MAX_REPO_DOC_COUNT);
+
+    for (const doc of docsToRead) {
+      const docPath = typeof doc.path === 'string' ? doc.path.trim() : '';
+      if (!docPath) {
+        continue;
+      }
+
+      try {
+        const file = await this.containerManagerHttpClient.readSessionFile(
+          normalizedSessionId,
+          docPath,
+        );
+        const trimmedContent =
+          typeof file.content === 'string' ? file.content.trim() : '';
+        if (!trimmedContent) {
+          continue;
+        }
+
+        const normalizedContent =
+          trimmedContent.length > MAX_REPO_DOC_CHARS
+            ? `${trimmedContent.slice(0, MAX_REPO_DOC_CHARS)}\n${REPO_DOC_TRUNCATION_SUFFIX}`
+            : trimmedContent;
+
+        readableDocs.push({
+          path: docPath,
+          content: normalizedContent,
+        });
+      } catch (error) {
+        this.logger.warn(
+          `Failed to read repo doc ${docPath} for session ${normalizedSessionId}: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+      }
+    }
+
+    return readableDocs.length > 0 ? readableDocs : undefined;
   }
 
   private parseExecutionResultMetadata(
@@ -314,11 +423,28 @@ export class AIExecutionController {
       request.sessionId,
       identity.userId,
     );
+    const repoDocContents = await this.resolveRepoDocContents(
+      request.sessionId,
+      identity.userId,
+    );
+    const enrichedWorkspaceContext =
+      repoDocContents && repoDocContents.length > 0
+        ? {
+            ...(request.workspaceContext ?? { filePaths: [] }),
+            filePaths: Array.isArray(request.workspaceContext?.filePaths)
+              ? request.workspaceContext.filePaths
+              : [],
+            repoDocContents,
+          }
+        : request.workspaceContext;
     this.logger.debug(
       `Global AI instructions ${globalInstructions ? 'present' : 'absent'} for user ${identity.userId}`,
     );
     this.logger.debug(
       `Project AI instructions ${projectInstructions ? 'present' : 'absent'} for session ${request.sessionId}`,
+    );
+    this.logger.debug(
+      `Repo doc context ${repoDocContents ? 'present' : 'absent'} for session ${request.sessionId}`,
     );
 
     // Phase 43B-4 HOTFIX: Check if retry after timeout/failed
@@ -422,7 +548,7 @@ export class AIExecutionController {
       provider,
       adapter: provider,
       prompt: request.prompt,
-      workspaceContext: request.workspaceContext,
+      workspaceContext: enrichedWorkspaceContext,
       model: requestedModel,
       globalInstructions,
       projectInstructions,

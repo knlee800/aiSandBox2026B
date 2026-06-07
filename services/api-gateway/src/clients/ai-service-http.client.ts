@@ -12,6 +12,11 @@ export interface WorkspaceNamedFileContent {
   content: string;
 }
 
+export interface WorkspaceRepoDocContent {
+  path: string;
+  content: string;
+}
+
 export interface WorkspaceSearchMatch {
   path: string;
   line: number;
@@ -29,6 +34,7 @@ export interface WorkspaceContext {
   selectedFilePath?: string;
   selectedFileContent?: string;
   namedFileContents?: WorkspaceNamedFileContent[];
+  repoDocContents?: WorkspaceRepoDocContent[];
   searchResults?: WorkspaceSearchResults;
   projectName?: string;
   workspaceName?: string;
