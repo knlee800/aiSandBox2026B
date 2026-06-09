@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { SessionsService } from '../sessions/sessions.service';
 import { DockerRuntimeService } from '../docker/docker-runtime.service';
+import { PreviewStrategyResolver } from './preview-strategy.resolver';
 import axios from 'axios';
 
 interface PreviewProcess {
@@ -9,6 +10,7 @@ interface PreviewProcess {
   status: 'starting' | 'running' | 'error';
   command: string;
   framework?: string;
+  appRoot?: string;
   startedAt: Date;
 }
 
@@ -22,6 +24,7 @@ export class PreviewService {
   constructor(
     private sessionsService: SessionsService,
     private dockerRuntimeService: DockerRuntimeService,
+    private previewStrategyResolver: PreviewStrategyResolver,
   ) {
     // Initialize port pool
     for (let port = this.PORT_RANGE_START; port <= this.PORT_RANGE_END; port++) {
@@ -45,16 +48,17 @@ export class PreviewService {
       };
     }
 
-    // Auto-detect framework and command if not provided
-    const { detectedCommand, framework } = await this.detectFramework(sessionId, command);
+    const strategy = await this.previewStrategyResolver.resolve(sessionId, command);
 
-    if (!detectedCommand) {
-      if (framework === 'Static HTML (missing-index)') {
+    if (strategy.type === 'unknown') {
+      if (strategy.framework === 'Static HTML (missing-index)') {
         throw new BadRequestException(
           'Static HTML preview requires /workspace/index.html at the workspace root.',
         );
       }
-      throw new BadRequestException('No package.json or start command found. Cannot start preview.');
+      throw new BadRequestException(
+        strategy.diagnosticMessage || 'No package.json or start command found. Cannot start preview.',
+      );
     }
 
     // Allocate a port
@@ -63,6 +67,9 @@ export class PreviewService {
       throw new BadRequestException('No available ports for preview. Maximum concurrent previews reached.');
     }
 
+    const detectedCommand = strategy.command!;
+    const framework = strategy.framework;
+
     console.log(`Starting preview for session ${sessionId} on port ${port} with command: ${detectedCommand}`);
 
     // Replace PORT placeholder with actual port number
@@ -70,12 +77,13 @@ export class PreviewService {
 
     console.log(`Final command: ${finalCommand}`);
 
-    if (framework === 'Static HTML') {
+    if (strategy.type === 'static-html') {
       this.activePreviews.set(sessionId, {
         port,
         status: 'running',
         command: detectedCommand,
         framework,
+        appRoot: strategy.appRoot,
         startedAt: new Date(),
       });
 
@@ -209,10 +217,18 @@ export class PreviewService {
     sessionId: string,
     requestPath: string,
   ): Promise<{ content: string; contentType: string }> {
+    const preview = this.activePreviews.get(sessionId);
     const sanitizedPath = this.sanitizeStaticPath(requestPath);
+
+    let containerRelativePath = sanitizedPath;
+    if (preview?.appRoot && preview.appRoot !== '/workspace') {
+      const subdir = preview.appRoot.replace(/^\/workspace\//, '');
+      containerRelativePath = `${subdir}/${sanitizedPath}`;
+    }
+
     const content = await this.dockerRuntimeService.readFileFromContainer(
       sessionId,
-      sanitizedPath,
+      containerRelativePath,
     );
     const contentType = this.resolveContentType(sanitizedPath);
 
@@ -222,78 +238,6 @@ export class PreviewService {
         : content,
       contentType,
     };
-  }
-
-  /**
-   * Auto-detect framework and command from workspace
-   */
-  private async detectFramework(sessionId: string, providedCommand?: string): Promise<{ detectedCommand: string | null; framework?: string }> {
-    // If command provided, use it
-    if (providedCommand) {
-      return { detectedCommand: providedCommand };
-    }
-
-    const packageJson = await this.readPackageJsonInSession(sessionId);
-
-    if (packageJson) {
-      // Detect framework
-      let framework: string | undefined;
-      let command: string | null = null;
-
-      // Check dependencies for framework detection
-      const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
-
-      if (deps['next']) {
-        framework = 'Next.js';
-        command = 'npm run dev';
-      } else if (deps['react-scripts']) {
-        framework = 'Create React App';
-        command = 'npm start';
-      } else if (deps['vite']) {
-        framework = 'Vite';
-        command = 'npm run dev';
-      } else if (deps['@vue/cli-service']) {
-        framework = 'Vue CLI';
-        command = 'npm run serve';
-      } else if (deps['vue']) {
-        framework = 'Vue';
-        command = 'npm run dev';
-      } else if (deps['express']) {
-        framework = 'Express';
-        command = 'node server.js';
-      }
-
-      // Override with package.json scripts if available
-      if (packageJson.scripts) {
-        if (packageJson.scripts.dev) {
-          command = 'npm run dev';
-        } else if (packageJson.scripts.start) {
-          command = 'npm start';
-        } else if (packageJson.scripts.serve) {
-          command = 'npm run serve';
-        }
-      }
-
-      return { detectedCommand: command, framework };
-    }
-
-    const hasIndexHtml = await this.hasIndexHtmlInSessionWorkspace(sessionId);
-    if (hasIndexHtml) {
-      return {
-        detectedCommand: 'npx serve -s . -l tcp://0.0.0.0:$PORT',
-        framework: 'Static HTML',
-      };
-    }
-
-    const hasAnyHtml = await this.hasAnyHtmlInSessionWorkspace(sessionId);
-    if (hasAnyHtml) {
-      return {
-        detectedCommand: null,
-        framework: 'Static HTML (missing-index)',
-      };
-    }
-
-    return { detectedCommand: null };
   }
 
   /**
@@ -353,54 +297,6 @@ export class PreviewService {
       env,
       timeoutMs,
     );
-  }
-
-  private async readPackageJsonInSession(sessionId: string): Promise<any | null> {
-    const existsResult = await this.runShellInSession(
-      sessionId,
-      '[ -f /workspace/package.json ]',
-      undefined,
-      10000,
-    );
-    if (existsResult.exitCode !== 0) {
-      return null;
-    }
-
-    const readResult = await this.runShellInSession(
-      sessionId,
-      'cat /workspace/package.json',
-      undefined,
-      10000,
-    );
-    if (readResult.exitCode !== 0) {
-      return null;
-    }
-
-    try {
-      return JSON.parse(readResult.stdout);
-    } catch {
-      return null;
-    }
-  }
-
-  private async hasIndexHtmlInSessionWorkspace(sessionId: string): Promise<boolean> {
-    const indexResult = await this.runShellInSession(
-      sessionId,
-      '[ -f /workspace/index.html ]',
-      undefined,
-      10000,
-    );
-    return indexResult.exitCode === 0;
-  }
-
-  private async hasAnyHtmlInSessionWorkspace(sessionId: string): Promise<boolean> {
-    const htmlResult = await this.runShellInSession(
-      sessionId,
-      'ls /workspace/*.html >/dev/null 2>&1',
-      undefined,
-      10000,
-    );
-    return htmlResult.exitCode === 0;
   }
 
   private parsePidFromOutput(output: string): number | undefined {

@@ -12,9 +12,15 @@ describe('PreviewService readStaticPreviewContent', () => {
     readFileFromContainer: jest.fn<(sessionId: string, filePath: string) => Promise<string>>(),
   };
 
+  const previewStrategyResolver = {};
+
   beforeEach(() => {
     jest.clearAllMocks();
-    service = new PreviewService(sessionsService as any, dockerRuntimeService as any);
+    service = new PreviewService(
+      sessionsService as any,
+      dockerRuntimeService as any,
+      previewStrategyResolver as any,
+    );
   });
 
   it('injects a base tag immediately after a plain head tag', async () => {

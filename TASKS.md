@@ -18139,3 +18139,195 @@ Keep the existing `node:20-alpine` image strategy and make `ai-service` Docker b
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> DEVOPS-DOCKER-01.
 **Checkpoint:** `docs/DEVOPS-DOCKER-01-CHECKPOINT.md`
+
+---
+
+**Family status:** ACTIVE — PREVIEW-STATIC-01B ACTIVE
+
+**Current stage:** PREVIEW-STATIC-01B ACTIVE — Static Preview Subdirectory Proxy Routing
+
+**Registered tasks:**
+1. PREVIEW-STRATEGY-01A — Preview Strategy Detection Refactor (COMPLETE and LOCKED — `docs/PREVIEW-STRATEGY-01A-CHECKPOINT.md`)
+2. PREVIEW-STATIC-01B — Static Preview Subdirectory Proxy Routing (ACTIVE)
+
+---
+
+#### PREVIEW-STRATEGY-01A: Preview Strategy Detection Refactor
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** PREVIEW-STRATEGY-01A
+**Family:** PREVIEW / RUNTIME / USER APP EXECUTION
+**Priority:** High
+**Nature:** BACKEND / CONTAINER-MANAGER / PREVIEW STRATEGY DETECTION
+**Risk:** Medium
+**Depends on:** PREV-02-02 COMPLETE and LOCKED
+**Checkpoint:** `docs/PREVIEW-STRATEGY-01A-CHECKPOINT.md`
+
+**Problem:**
+Live preview fails for valid static HTML projects placed in a subdirectory of `/workspace`, for example `/workspace/WorkspaceA/index.html`. The current preview detection only checks `/workspace/package.json`, `/workspace/index.html`, and `/workspace/*.html`. It does not detect `/workspace/<subdir>/index.html`. As a result, aiSandBox incorrectly treats a valid static HTML site in a subdirectory as an unpreviewable app with no start command.
+
+**Objective:**
+Refactor preview detection into a testable `PreviewStrategyResolver` with an explicit `PreviewStrategy` type/interface, while preserving existing framework detection behavior. Add static HTML detection for immediate subdirectories of `/workspace`.
+
+**Scope:**
+- Extract current preview detection logic into a dedicated `PreviewStrategyResolver`.
+- Add explicit `PreviewStrategy` type/interface.
+- Preserve existing package.json / framework detection behavior.
+- Add static HTML detection for `/workspace/index.html` and `/workspace/*/index.html`.
+- Return detected `appRoot` for static HTML projects.
+- Keep current static serving mechanism unchanged as much as possible.
+- Do not introduce dependency-heavy static serving.
+- Add focused unit tests for resolver behavior.
+- Keep this slice small and bounded.
+
+**Expected strategy shape:**
+`PreviewStrategy`:
+- `type`: `static-html` | `node-dev-server` | `unknown`
+- `framework?`: string
+- `command?`: string
+- `port?`: number
+- `appRoot?`: string
+- `servingMode`: `direct-read` | `process-proxy`
+
+**Detection order:**
+1. package.json / framework detection
+2. static HTML at `/workspace/index.html`
+3. static HTML at `/workspace/*/index.html`
+4. unknown with clear diagnostic message
+
+**Files in scope:**
+- `services/container-manager/src/preview/preview-strategy.resolver.ts` (new)
+- `services/container-manager/src/preview/preview-strategy.resolver.spec.ts` (new)
+- `services/container-manager/src/preview/preview.service.ts`
+- `services/container-manager/src/preview/preview.module.ts`
+- Existing preview tests if needed
+
+**Non-goals:**
+- No frontend changes
+- No api-gateway changes
+- No AI service changes
+- No AI prompt assembly changes
+- No AI-CONTEXT changes
+- No database schema changes
+- No project preview settings UI
+- No `.aisandbox/preview.json` yet
+- No Python/Flask/FastAPI implementation yet
+- No SPA routing overhaul
+- No public/share preview
+- No external hosting/deployment
+- No broad preview rewrite
+- No git commit/push steps
+
+**UX/UI multilingual-first rule:**
+This task does not touch UX/UI. If any user-facing frontend text change becomes necessary, stop and report before editing.
+
+**Acceptance criteria:**
+- [x] `PreviewStrategyResolver` exists and is unit-tested
+- [x] `PreviewStrategy` type/interface exists
+- [x] Existing framework detection behavior is preserved
+- [x] Static HTML at `/workspace/index.html` is still detected
+- [x] Static HTML at `/workspace/<subdir>/index.html` is detected
+- [x] Strategy includes `appRoot` for detected static HTML projects
+- [x] Existing preview service behavior remains compatible
+- [x] Existing preview tests pass
+- [x] New resolver tests cover: Next.js/package.json framework case, Vite/dev-script case, static HTML at workspace root, static HTML in immediate subdirectory, unknown/no files case
+- [x] container-manager build passes
+- [x] No frontend/api-gateway/ai-service files are changed
+
+**Files changed:**
+- `services/container-manager/src/preview/preview-strategy.resolver.ts` (created)
+- `services/container-manager/src/preview/preview-strategy.resolver.spec.ts` (created — 10 resolver tests)
+- `services/container-manager/src/preview/preview.service.ts` (modified — resolver integration, appRoot)
+- `services/container-manager/src/preview/preview.service.spec.ts` (modified — resolver mock)
+- `services/container-manager/src/preview/preview.module.ts` (modified — resolver provider)
+- `services/container-manager/Dockerfile` (modified — Alpine python3/make/g++ for better-sqlite3 Docker build blocker)
+
+**Validation results:**
+- `npm test -- --testPathPattern="preview"` (container-manager) — PASS (48/48, 0 failed)
+- `npm run build` (container-manager) — PASS (0 errors)
+- `docker compose -f docker-compose.prod.yml build container-manager --no-cache --progress=plain` — PASS (`aisandbox2026b-container-manager Built`)
+- ReadLints on all touched files — PASS (no linter errors)
+- Live browser smoke — PASS (subdirectory static HTML site loaded and navigated correctly)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PREVIEW-STRATEGY-01A.
+**Checkpoint:** `docs/PREVIEW-STRATEGY-01A-CHECKPOINT.md`
+
+---
+
+#### PREVIEW-STATIC-01B: Static Preview Subdirectory Proxy Routing
+
+**Status:** ACTIVE
+**Task ID:** PREVIEW-STATIC-01B
+**Family:** PREVIEW / RUNTIME / USER APP EXECUTION
+**Priority:** High
+**Nature:** BACKEND / CONTAINER-MANAGER / STATIC PREVIEW ROUTING
+**Risk:** Medium
+**Depends on:** PREVIEW-STRATEGY-01A COMPLETE and LOCKED
+
+**Problem:**
+PREVIEW-STRATEGY-01A added PreviewStrategyResolver and detects static HTML projects in immediate subdirectories such as `/workspace/WorkspaceA/index.html`. It also stores `appRoot` in `PreviewProcess` and updated container-manager static content reads to use `appRoot`. However, the static preview proxy/controller layer may still serve static preview file requests relative to `/workspace` instead of the resolved `appRoot`. This can break linked assets and navigation for subdirectory static HTML projects, especially CSS files, JS files, images, relative links, and page2/page3/page4 navigation.
+
+**Objective:**
+Ensure static HTML preview requests for subdirectory projects resolve all static file paths relative to the detected `PreviewProcess.appRoot`, not always `/workspace`.
+
+**Scope:**
+- Inspect active static preview controller/proxy path.
+- Confirm how iframe requests are mapped to `readStaticPreviewContent`.
+- Pass/respect `appRoot` through the static serving layer.
+- Ensure `index.html` and linked pages/assets resolve from the detected subdirectory.
+- Preserve root-level static HTML behavior.
+- Preserve framework/dev-server proxy behavior.
+- Add targeted tests for subdirectory static asset/page routing.
+- Keep changes minimal and bounded.
+
+**Files likely in scope:**
+- `services/container-manager/src/preview/preview.service.ts`
+- `services/container-manager/src/preview/preview.controller.ts`
+- `services/container-manager/src/preview/preview.service.spec.ts`
+- `services/container-manager/src/preview/preview-strategy.resolver.ts`
+- `services/container-manager/src/preview/preview-strategy.resolver.spec.ts`
+- Existing container-manager preview tests
+
+**Non-goals:**
+- No frontend changes
+- No api-gateway changes unless investigation proves the active proxy API must pass a path differently
+- No AI service changes
+- No AI prompt assembly changes
+- No AI-CONTEXT changes
+- No database schema changes
+- No project preview settings UI
+- No `.aisandbox/preview.json` yet
+- No SPA routing overhaul
+- No public/share preview
+- No external hosting/deployment
+- No broad preview rewrite
+- No new dependencies
+- No git commit/push steps
+
+**Complexity rule:**
+If this requires broader preview architecture changes, stop and propose smaller bounded child tasks. Do not silently expand scope.
+
+**UX/UI multilingual-first rule:**
+This task should not touch UX/UI. If any user-facing frontend text change becomes necessary, stop and report before editing. Any UX/UI source text change must be multilingual-first (update `en.json`, `zh-TW.json`, `zh-CN.json`; use existing translation hook/pattern; no hardcoded English user-facing UI copy).
+
+**Acceptance criteria:**
+- [ ] Static preview for `/workspace/index.html` still works
+- [ ] Static preview for `/workspace/<subdir>/index.html` works
+- [ ] Subdirectory static preview resolves linked pages relative to `appRoot`
+- [ ] Subdirectory static preview resolves linked CSS/JS/images relative to `appRoot`
+- [ ] Existing framework/dev-server preview behavior is unchanged
+- [ ] Existing PREVIEW-STRATEGY-01A resolver tests still pass
+- [ ] Targeted static serving tests cover subdirectory `appRoot` routing
+- [ ] container-manager preview tests pass
+- [ ] container-manager build passes
+- [ ] ReadLints passes
+- [ ] Live browser smoke passes (4-page static HTML site in subdirectory with linked CSS/JS)
+
+**Validation plan:**
+- Run focused container-manager preview tests
+- Run resolver tests
+- Run container-manager build
+- Run ReadLints on touched files
+- Live browser smoke required — Keith must be asked and guided step-by-step
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PREVIEW-STATIC-01B.
