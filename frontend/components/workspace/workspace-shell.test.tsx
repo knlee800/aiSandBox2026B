@@ -7156,7 +7156,7 @@ describe('workspace preview logic — UX-IA-15B helpers', () => {
 });
 
 describe('workspace preview auto-start and retry wiring — UX-PV-01', () => {
-  test('page source supports preview status auto-start fallback with recheck', () => {
+  test('page source supports preview auto-start with status polling after failed POST start', () => {
     const pageSource = readFileSync(
       new URL('../../app/[locale]/app/page.tsx', import.meta.url),
       'utf8',
@@ -7167,10 +7167,40 @@ describe('workspace preview auto-start and retry wiring — UX-PV-01', () => {
       /async function refreshPreviewForSession\(sessionId: string, autoStart = false\): Promise<void> \{/,
     );
     assert.match(pageSource, /const startResponse = await fetch\(`\/api\/preview\/\$\{sessionId\}\/start`, \{/);
-    assert.match(pageSource, /const recheckStatusData = await loadPreviewStatus\(\);/);
+    assert.match(
+      pageSource,
+      /if \(startResponse\.ok\) \{\s+previewErrorRetryCountRef\.current = 0;\s+setPreviewUrl\(buildPreviewProxyUrl\(sessionId, Date\.now\(\)\)\);\s+return;\s+\}/,
+    );
     assert.match(
       pageSource,
       /if \(!autoStart\) \{\s+previewErrorRetryCountRef\.current = 0;\s+setPreviewState\('unavailable'\);\s+setPreviewUrl\(null\);\s+return;\s+\}/,
+    );
+    assert.match(pageSource, /const recovered = await pollPreviewStatusUntilRunning\(sessionId, requestId\);/);
+  });
+
+  test('pollPreviewStatusUntilRunning helper exists with bounded polling constants', () => {
+    const pageSource = readFileSync(
+      new URL('../../app/[locale]/app/page.tsx', import.meta.url),
+      'utf8',
+    );
+
+    assert.match(pageSource, /const PREVIEW_START_STATUS_POLL_MAX_ATTEMPTS = 5;/);
+    assert.match(pageSource, /const PREVIEW_START_STATUS_POLL_DELAY_MS = 800;/);
+    assert.match(
+      pageSource,
+      /async function pollPreviewStatusUntilRunning\(\s*sessionId: string,\s*requestId: number,\s*\): Promise<boolean> \{/,
+    );
+    assert.match(
+      pageSource,
+      /for \(let attempt = 0; attempt < PREVIEW_START_STATUS_POLL_MAX_ATTEMPTS; attempt\+\+\)/,
+    );
+    assert.match(
+      pageSource,
+      /await new Promise\(\(resolve\) => setTimeout\(resolve, PREVIEW_START_STATUS_POLL_DELAY_MS\)\);/,
+    );
+    assert.match(
+      pageSource,
+      /if \(isPreviewRunning\(statusData\)\) \{\s+previewErrorRetryCountRef\.current = 0;\s+setPreviewUrl\(buildPreviewProxyUrl\(sessionId, Date\.now\(\)\)\);\s+return true;\s+\}/,
     );
   });
 
@@ -7182,6 +7212,18 @@ describe('workspace preview auto-start and retry wiring — UX-PV-01', () => {
 
     assert.match(pageSource, /void refreshPreviewForSession\(selectedSessionId, true\);/);
     assert.match(pageSource, /await refreshPreviewForSession\(openSessionId, true\);/);
+  });
+
+  test('AI execution refreshPreview callback uses autoStart true', () => {
+    const pageSource = readFileSync(
+      new URL('../../app/[locale]/app/page.tsx', import.meta.url),
+      'utf8',
+    );
+
+    assert.match(
+      pageSource,
+      /refreshPreview: async \(\) => \{\s+await refreshPreviewForSession\(executionSessionId, true\);/,
+    );
   });
 
   test('preview iframe error handler retries before transitioning to error state', () => {
@@ -7215,9 +7257,74 @@ describe('workspace preview auto-start and retry wiring — UX-PV-01', () => {
       pageSource,
       /useEffect\(\(\) => \{\s+previewErrorRetryCountRef\.current = 0;\s+clearPreviewErrorRetryTimeout\(\);\s+\}, \[selectedSessionId\]\);/,
     );
+  });
+
+  test('handleStartPreview sets previewUrl on success and polls status on failure', () => {
+    const pageSource = readFileSync(
+      new URL('../../app/[locale]/app/page.tsx', import.meta.url),
+      'utf8',
+    );
+
     assert.match(
       pageSource,
-      /previewErrorRetryCountRef\.current = 0;\s+clearPreviewErrorRetryTimeout\(\);\s+setPreviewState\('loading'\);\s+setPreviewUrl\(null\);/,
+      /async function handleStartPreview\(\)[\s\S]*?setPreviewUrl\(buildPreviewProxyUrl\(selectedSessionId, Date\.now\(\)\)\);/,
+    );
+    assert.match(
+      pageSource,
+      /async function handleStartPreview\(\)[\s\S]*?const recovered = await pollPreviewStatusUntilRunning\(selectedSessionId, startRequestId\);/,
+    );
+    assert.doesNotMatch(
+      pageSource,
+      /async function handleStartPreview\(\)[\s\S]*?await refreshPreviewForSession\(selectedSessionId/,
+    );
+  });
+
+  test('handleStartPreview catch block polls status before falling back to unavailable', () => {
+    const pageSource = readFileSync(
+      new URL('../../app/[locale]/app/page.tsx', import.meta.url),
+      'utf8',
+    );
+
+    assert.match(
+      pageSource,
+      /async function handleStartPreview\(\)[\s\S]*?catch \(error\) \{\s+console\.error\('Failed to start preview:', error\);[\s\S]*?const recovered = await pollPreviewStatusUntilRunning\(selectedSessionId, startRequestId\);[\s\S]*?setPreviewState\('unavailable'\);\s+setPreviewUrl\(null\);/,
+    );
+  });
+
+  test('no temporary diagnostic logs remain in page source', () => {
+    const pageSource = readFileSync(
+      new URL('../../app/[locale]/app/page.tsx', import.meta.url),
+      'utf8',
+    );
+
+    assert.doesNotMatch(pageSource, /\[PREVIEW-DIAG\]/);
+    assert.doesNotMatch(pageSource, /\[PREVIEW-START-DIAG\]/);
+    assert.doesNotMatch(pageSource, /BUNDLE MARKER/);
+    assert.doesNotMatch(pageSource, /readResponseBodyForDiagnostics/);
+  });
+
+  test('consumeExecutionFileActions preserves previously captured non-empty actions when later payload is empty', () => {
+    const pageSource = readFileSync(
+      new URL('../../app/[locale]/app/page.tsx', import.meta.url),
+      'utf8',
+    );
+
+    assert.match(
+      pageSource,
+      /const existingFileActions = executionFileActionsByExecutionIdRef\.current\[executionId\] \?\? \[\];\s+const shouldPreserveExistingFileActions = fileActions\.length === 0 && existingFileActions\.length > 0;\s+const effectiveFileActions = shouldPreserveExistingFileActions \? existingFileActions : fileActions;\s+executionFileActionsByExecutionIdRef\.current\[executionId\] = effectiveFileActions;/,
+    );
+    assert.match(pageSource, /fileActions: effectiveFileActions,/);
+  });
+
+  test('confirm apply path reads actions from execution action store', () => {
+    const pageSource = readFileSync(
+      new URL('../../app/[locale]/app/page.tsx', import.meta.url),
+      'utf8',
+    );
+
+    assert.match(
+      pageSource,
+      /async function handleConfirmExecutionFileActions\(executionId: string\): Promise<void> \{[\s\S]*?const actions = executionFileActionsByExecutionIdRef\.current\[executionId\] \?\? \[\];/,
     );
   });
 });

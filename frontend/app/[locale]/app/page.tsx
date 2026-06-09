@@ -163,6 +163,8 @@ const PROJECT_OPEN_FILE_REFRESH_RETRY_DELAY_MS = 250;
 const PROJECT_OPEN_FILE_REFRESH_MAX_ATTEMPTS = 6;
 const PREVIEW_FIRST_LOAD_ERROR_RETRY_MAX_ATTEMPTS = 3;
 const PREVIEW_FIRST_LOAD_ERROR_RETRY_DELAY_MS = 2000;
+const PREVIEW_START_STATUS_POLL_MAX_ATTEMPTS = 5;
+const PREVIEW_START_STATUS_POLL_DELAY_MS = 800;
 const PREVIEW_ASK_AI_FIX_PROMPT =
   `The live preview failed to load after multiple retries. The dev server is not responding or the app is crashing on startup.
 
@@ -842,6 +844,7 @@ async function readResponseErrorMessage(response: Response): Promise<string> {
   return '';
 }
 
+
 function parseHiddenSessionIds(raw: string | null): string[] {
   if (!raw) {
     return [];
@@ -886,7 +889,6 @@ export default function AppPage() {
   const params = useParams();
   const locale = params.locale as string;
   const authModuleMessages = getAuthModuleMessages(locale);
-
   const [authLoading, setAuthLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const [sessions, setSessions] = useState<WorkspaceShellSession[]>([]);
@@ -4949,7 +4951,7 @@ export default function AppPage() {
         await loadWorkspaceFileContent(executionSessionId, filePath);
       },
       refreshPreview: async () => {
-        await refreshPreviewForSession(executionSessionId);
+        await refreshPreviewForSession(executionSessionId, true);
       },
       createCheckpoint: async (description) => {
         const checkpointResult: WorkspaceCheckpointCreateResult = await createWorkspaceCheckpoint({
@@ -5229,7 +5231,10 @@ export default function AppPage() {
     source: 'stream' | 'status',
     fileActions: WorkspaceFileAction[],
   ): void {
-    executionFileActionsByExecutionIdRef.current[executionId] = fileActions;
+    const existingFileActions = executionFileActionsByExecutionIdRef.current[executionId] ?? [];
+    const shouldPreserveExistingFileActions = fileActions.length === 0 && existingFileActions.length > 0;
+    const effectiveFileActions = shouldPreserveExistingFileActions ? existingFileActions : fileActions;
+    executionFileActionsByExecutionIdRef.current[executionId] = effectiveFileActions;
     if (appliedFileActionsExecutionIdsRef.current.has(executionId)) {
       return;
     }
@@ -5237,7 +5242,7 @@ export default function AppPage() {
       setExecutionFileActionState(executionId, {
         executionId,
         source,
-        fileActions,
+        fileActions: effectiveFileActions,
         applyStatus: 'skipped',
         confirmationRequired: false,
         skipReason: 'user-cancelled',
@@ -5249,7 +5254,7 @@ export default function AppPage() {
       setExecutionFileActionState(executionId, {
         executionId,
         source,
-        fileActions,
+        fileActions: effectiveFileActions,
         applyStatus: 'awaiting-confirmation',
         confirmationRequired: true,
         skipReason: null,
@@ -5260,7 +5265,7 @@ export default function AppPage() {
     setExecutionFileActionState(executionId, {
       executionId,
       source,
-      fileActions,
+      fileActions: effectiveFileActions,
       applyStatus: 'pending',
       confirmationRequired: false,
       skipReason: null,
@@ -5512,6 +5517,38 @@ export default function AppPage() {
     await loadWorkspaceFileContent(selectedSessionId, filePath);
   }
 
+  async function pollPreviewStatusUntilRunning(
+    sessionId: string,
+    requestId: number,
+  ): Promise<boolean> {
+    for (let attempt = 0; attempt < PREVIEW_START_STATUS_POLL_MAX_ATTEMPTS; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, PREVIEW_START_STATUS_POLL_DELAY_MS));
+      if (previewRequestIdRef.current !== requestId) {
+        return false;
+      }
+      try {
+        const statusResponse = await fetch(`/api/preview/${sessionId}/status`, {
+          method: 'GET',
+        });
+        if (!statusResponse.ok) {
+          continue;
+        }
+        const statusData = (await statusResponse.json()) as WorkspacePreviewStatusResponse;
+        if (previewRequestIdRef.current !== requestId) {
+          return false;
+        }
+        if (isPreviewRunning(statusData)) {
+          previewErrorRetryCountRef.current = 0;
+          setPreviewUrl(buildPreviewProxyUrl(sessionId, Date.now()));
+          return true;
+        }
+      } catch {
+        // keep polling
+      }
+    }
+    return false;
+  }
+
   async function refreshPreviewForSession(sessionId: string, autoStart = false): Promise<void> {
     const requestId = previewRequestIdRef.current + 1;
     previewRequestIdRef.current = requestId;
@@ -5533,7 +5570,6 @@ export default function AppPage() {
 
     try {
       const statusData = await loadPreviewStatus();
-
       if (previewRequestIdRef.current !== requestId) {
         return;
       }
@@ -5556,32 +5592,30 @@ export default function AppPage() {
           method: 'POST',
         });
 
-        if (!startResponse.ok) {
-          const detail = await readResponseErrorMessage(startResponse);
-          throw new Error(
-            detail
-              ? `Preview auto-start failed (${startResponse.status}): ${detail}`
-              : `Preview auto-start failed (${startResponse.status})`,
-          );
-        }
-
-        const recheckStatusData = await loadPreviewStatus();
         if (previewRequestIdRef.current !== requestId) {
           return;
         }
 
-        if (isPreviewRunning(recheckStatusData)) {
+        if (startResponse.ok) {
           previewErrorRetryCountRef.current = 0;
           setPreviewUrl(buildPreviewProxyUrl(sessionId, Date.now()));
           return;
         }
 
+        const recovered = await pollPreviewStatusUntilRunning(sessionId, requestId);
+        if (recovered || previewRequestIdRef.current !== requestId) {
+          return;
+        }
         previewErrorRetryCountRef.current = 0;
         setPreviewState('unavailable');
         setPreviewUrl(null);
       } catch (startError) {
         console.error('Failed to auto-start preview:', startError);
         if (previewRequestIdRef.current !== requestId) {
+          return;
+        }
+        const recovered = await pollPreviewStatusUntilRunning(sessionId, requestId);
+        if (recovered || previewRequestIdRef.current !== requestId) {
           return;
         }
         previewErrorRetryCountRef.current = 0;
@@ -5625,6 +5659,8 @@ export default function AppPage() {
       return;
     }
 
+    const startRequestId = previewRequestIdRef.current + 1;
+    previewRequestIdRef.current = startRequestId;
     previewErrorRetryCountRef.current = 0;
     clearPreviewErrorRetryTimeout();
     setPreviewState('loading');
@@ -5635,16 +5671,24 @@ export default function AppPage() {
         method: 'POST',
       });
 
-      if (!startResponse.ok) {
-        const detail = await readResponseErrorMessage(startResponse);
-        throw new Error(
-          detail
-            ? `Preview start failed (${startResponse.status}): ${detail}`
-            : `Preview start failed (${startResponse.status})`,
-        );
+      if (previewRequestIdRef.current !== startRequestId) {
+        return;
       }
 
-      await refreshPreviewForSession(selectedSessionId, false);
+      if (startResponse.ok) {
+        previewErrorRetryCountRef.current = 0;
+        setPreviewUrl(buildPreviewProxyUrl(selectedSessionId, Date.now()));
+      } else {
+        const recovered = await pollPreviewStatusUntilRunning(selectedSessionId, startRequestId);
+        if (previewRequestIdRef.current !== startRequestId) {
+          return;
+        }
+        if (!recovered) {
+          setPreviewState('unavailable');
+          setPreviewUrl(null);
+          return;
+        }
+      }
 
       if (
         PROJECT_FIRST_UX &&
@@ -5668,7 +5712,14 @@ export default function AppPage() {
       }
     } catch (error) {
       console.error('Failed to start preview:', error);
-      setPreviewState('error');
+      if (previewRequestIdRef.current !== startRequestId) {
+        return;
+      }
+      const recovered = await pollPreviewStatusUntilRunning(selectedSessionId, startRequestId);
+      if (recovered || previewRequestIdRef.current !== startRequestId) {
+        return;
+      }
+      setPreviewState('unavailable');
       setPreviewUrl(null);
     }
   }

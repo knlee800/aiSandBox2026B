@@ -18142,13 +18142,14 @@ Keep the existing `node:20-alpine` image strategy and make `ai-service` Docker b
 
 ---
 
-**Family status:** ACTIVE — PREVIEW-STATIC-01B ACTIVE
+**Family status:** COMPLETE and LOCKED — All registered PREVIEW family slices complete
 
-**Current stage:** PREVIEW-STATIC-01B ACTIVE — Static Preview Subdirectory Proxy Routing
+**Current stage:** PREVIEW family closed — PREVIEW-STATIC-01B COMPLETE and LOCKED
 
 **Registered tasks:**
 1. PREVIEW-STRATEGY-01A — Preview Strategy Detection Refactor (COMPLETE and LOCKED — `docs/PREVIEW-STRATEGY-01A-CHECKPOINT.md`)
-2. PREVIEW-STATIC-01B — Static Preview Subdirectory Proxy Routing (ACTIVE)
+2. PREVIEW-STATIC-01B — Static Preview Subdirectory Proxy Routing (COMPLETE and LOCKED — `docs/PREVIEW-STATIC-01B-CHECKPOINT.md`)
+3. PREVIEW-AUTOSTART-01A — Restart Preview After AI File Creation (COMPLETE and LOCKED — `docs/PREVIEW-AUTOSTART-01A-CHECKPOINT.md`)
 
 ---
 
@@ -18256,13 +18257,14 @@ This task does not touch UX/UI. If any user-facing frontend text change becomes 
 
 #### PREVIEW-STATIC-01B: Static Preview Subdirectory Proxy Routing
 
-**Status:** ACTIVE
+**Status:** COMPLETE and LOCKED
 **Task ID:** PREVIEW-STATIC-01B
 **Family:** PREVIEW / RUNTIME / USER APP EXECUTION
 **Priority:** High
 **Nature:** BACKEND / CONTAINER-MANAGER / STATIC PREVIEW ROUTING
 **Risk:** Medium
 **Depends on:** PREVIEW-STRATEGY-01A COMPLETE and LOCKED
+**Checkpoint:** `docs/PREVIEW-STATIC-01B-CHECKPOINT.md`
 
 **Problem:**
 PREVIEW-STRATEGY-01A added PreviewStrategyResolver and detects static HTML projects in immediate subdirectories such as `/workspace/WorkspaceA/index.html`. It also stores `appRoot` in `PreviewProcess` and updated container-manager static content reads to use `appRoot`. However, the static preview proxy/controller layer may still serve static preview file requests relative to `/workspace` instead of the resolved `appRoot`. This can break linked assets and navigation for subdirectory static HTML projects, especially CSS files, JS files, images, relative links, and page2/page3/page4 navigation.
@@ -18311,23 +18313,114 @@ If this requires broader preview architecture changes, stop and propose smaller 
 This task should not touch UX/UI. If any user-facing frontend text change becomes necessary, stop and report before editing. Any UX/UI source text change must be multilingual-first (update `en.json`, `zh-TW.json`, `zh-CN.json`; use existing translation hook/pattern; no hardcoded English user-facing UI copy).
 
 **Acceptance criteria:**
-- [ ] Static preview for `/workspace/index.html` still works
-- [ ] Static preview for `/workspace/<subdir>/index.html` works
-- [ ] Subdirectory static preview resolves linked pages relative to `appRoot`
-- [ ] Subdirectory static preview resolves linked CSS/JS/images relative to `appRoot`
-- [ ] Existing framework/dev-server preview behavior is unchanged
-- [ ] Existing PREVIEW-STRATEGY-01A resolver tests still pass
-- [ ] Targeted static serving tests cover subdirectory `appRoot` routing
-- [ ] container-manager preview tests pass
-- [ ] container-manager build passes
-- [ ] ReadLints passes
-- [ ] Live browser smoke passes (4-page static HTML site in subdirectory with linked CSS/JS)
+- [x] Static preview for `/workspace/index.html` still works
+- [x] Static preview for `/workspace/<subdir>/index.html` works
+- [x] Subdirectory static preview resolves linked pages relative to `appRoot`
+- [x] Subdirectory static preview resolves linked CSS/JS/images relative to `appRoot`
+- [x] Existing framework/dev-server preview behavior is unchanged
+- [x] Existing PREVIEW-STRATEGY-01A resolver tests still pass
+- [x] Targeted static serving tests cover subdirectory `appRoot` routing
+- [x] container-manager preview tests pass
+- [x] container-manager build passes
+- [x] ReadLints passes
+- [x] Live browser smoke passes (4-page static HTML site in subdirectory with linked CSS/JS)
 
-**Validation plan:**
-- Run focused container-manager preview tests
-- Run resolver tests
-- Run container-manager build
-- Run ReadLints on touched files
-- Live browser smoke required — Keith must be asked and guided step-by-step
+**Files changed:**
+- `services/container-manager/src/preview/preview.service.spec.ts` (modified — added 11 targeted static preview routing tests)
+
+**Implementation note:**
+Investigation confirmed PREVIEW-STRATEGY-01A already implemented correct runtime subdirectory `appRoot` routing. PREVIEW-STATIC-01B added test coverage only. Initial live smoke failures were resolved by PREVIEW-AUTOSTART-01A (frontend lifecycle fix), not by additional static routing code.
+
+**Validation results:**
+- `npm test -- --testPathPattern="preview"` (container-manager) — PASS (59/59)
+- `npm run build` (container-manager) — PASS
+- ReadLints on touched files — PASS (no linter errors)
+- Live browser smoke — PASS (after PREVIEW-AUTOSTART-01A; auto-start, index/JS/navigation worked without Refresh)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> PREVIEW-STATIC-01B.
+**Checkpoint:** `docs/PREVIEW-STATIC-01B-CHECKPOINT.md`
+
+---
+
+#### PREVIEW-AUTOSTART-01A: Restart Preview After AI File Creation
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** PREVIEW-AUTOSTART-01A
+**Family:** PREVIEW / RUNTIME / USER APP EXECUTION
+**Priority:** High
+**Nature:** FRONTEND / PREVIEW LIFECYCLE / AI EXECUTION COHERENCE
+**Risk:** Low-Medium
+**Depends on:** PREVIEW-STATIC-01B investigation identifying frontend auto-start timing issue
+**Checkpoint:** `docs/PREVIEW-AUTOSTART-01A-CHECKPOINT.md`
+
+**Problem:**
+After the AI creates files, preview can remain unavailable because the preview refresh callback checks preview status without attempting auto-start. The initial preview auto-start may run before files exist and fail with "unknown" strategy. After AI file creation completes, the coherence refresh calls `refreshPreviewForSession(executionSessionId)` with `autoStart` defaulting to `false`, so no preview is started even though the app is now previewable.
+
+Root cause identified during PREVIEW-STATIC-01B live failure investigation:
+In `frontend/app/[locale]/app/page.tsx`, the AI execution `refreshPreview` callback called:
+```
+refreshPreviewForSession(executionSessionId)
+```
+It needed:
+```
+refreshPreviewForSession(executionSessionId, true)
+```
+
+**Objective:**
+Ensure preview refresh after AI file creation attempts auto-start so newly-created previewable apps load without requiring the user to manually click Start Preview.
+
+**Scope:**
+- Cover the one-line frontend preview lifecycle fix.
+- Confirm `refreshPreviewForSession` second argument is `autoStart`.
+- Ensure preview auto-starts after AI file creation.
+- Preserve manual Start Preview behavior.
+- Preserve existing preview status behavior.
+- Add/update focused frontend test only if practical and low-risk.
+- No backend/container-manager changes in this task.
+
+**Files in scope:**
+- `frontend/app/[locale]/app/page.tsx`
+- Related frontend preview/coherence tests only if practical
+
+**Non-goals:**
+- No container-manager changes
+- No api-gateway changes
+- No backend changes
+- No static preview routing changes
+- No broad preview redesign
+- No new preview settings UI
+- No database schema changes
+- No AI-CONTEXT changes
+- No git commit/push steps
+
+**UX/UI multilingual-first rule:**
+This task should not add visible user-facing text. If visible text must change, stop and report first. Any UX/UI text change must update `en.json`, `zh-TW.json`, `zh-CN.json` and use existing translation hooks.
+
+**Acceptance criteria:**
+- [x] After AI creates previewable files, preview refresh attempts auto-start
+- [x] Static HTML project that initially failed before file creation can preview after AI file creation without requiring manual Start Preview
+- [x] Manual Start Preview still works
+- [x] Existing preview status behavior remains stable
+- [x] Targeted frontend tests pass where practical
+- [x] Frontend typecheck passes
+- [x] Frontend build passes or any known local environment blocker is documented
+- [x] ReadLints passes
+- [x] Live browser smoke passes (AI creates static HTML site; preview loads automatically without manual Start Preview)
+
+**Files changed:**
+- `frontend/app/[locale]/app/page.tsx` (modified — auto-start, file-action preservation, bounded status polling after failed start, diagnostic log removal)
+- `frontend/components/workspace/workspace-shell.test.tsx` (modified — source-assertion tests for polling recovery and diagnostic removal)
+- `services/container-manager/src/preview/preview.service.ts` (investigation only — temporary diagnostic logs added then removed; no final runtime behavior change)
+- `services/api-gateway/src/preview/preview.controller.ts` (investigation only — temporary diagnostic logs added then removed; no final runtime behavior change)
+
+**Validation results:**
+- `npx tsc --noEmit` (frontend) — PASS
+- `npm test -- --testPathPattern="workspace-shell"` (frontend) — PASS (637/637)
+- `npm run build` (frontend) — PASS
+- `npm run build` (container-manager) — PASS
+- `npm run build` (api-gateway) — PASS
+- ReadLints on touched files — PASS (no linter errors)
+- Live browser smoke — PASS (auto-start after Apply without Refresh; index/JS/navigation worked)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> PREVIEW-AUTOSTART-01A.
+**Checkpoint:** `docs/PREVIEW-AUTOSTART-01A-CHECKPOINT.md`
