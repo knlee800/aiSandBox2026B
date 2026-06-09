@@ -7806,6 +7806,31 @@ describe('workspace core chat panel i18n wiring — I18N-SHELL-02', () => {
     );
   });
 
+  test('active context indicator shows repo docs unavailable when selected session project mismatches selected project', () => {
+    const mismatchedSession: WorkspaceShellSession = {
+      ...session,
+      projectId: 'project-2',
+    };
+    const html = withPatchedReactHooksWithCustomUseState((resolvedInitialState, useStateCallIndex) => {
+      if (useStateCallIndex === 17) {
+        return [true, () => {}];
+      }
+      return [resolvedInitialState, () => {}];
+    }, () =>
+      renderWorkspaceShell({
+        sessions: [mismatchedSession],
+        selectedSessionId: mismatchedSession.id,
+        selectedProjectId: 'project-1',
+      }),
+    );
+
+    assert.match(html, /workspace-chat-context-repo-docs-status[^>]*>Repo Docs Unavailable</);
+    assert.match(
+      html,
+      /workspace-chat-context-repo-docs-unavailable-message[^>]*>Repo Docs unavailable — open this project in the current session first\.<\/span>/,
+    );
+  });
+
   test('chatInputPlaceholder i18n key exists in en, zh-TW, and zh-CN locale files', () => {
     const en = JSON.parse(readFileSync(new URL('../../messages/en.json', import.meta.url), 'utf8'));
     const zhTw = JSON.parse(readFileSync(new URL('../../messages/zh-TW.json', import.meta.url), 'utf8'));

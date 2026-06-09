@@ -28340,7 +28340,7 @@ Add a file picker to the Repo Docs panel so users can choose existing workspace 
 
 **Task ID:** AI-CONTEXT-04C
 **Family:** AI-CONTEXT (Global AI Instructions)
-**Family status:** ACTIVE — AI-CONTEXT-01A through AI-CONTEXT-05A COMPLETE and LOCKED
+**Family status:** COMPLETE and LOCKED — AI-CONTEXT-01A through AI-CONTEXT-06A COMPLETE and LOCKED
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Nature:** BACKEND / AI PROMPT ASSEMBLY / REPO DOC CONTEXT
@@ -28394,7 +28394,7 @@ During AI execution, resolve the current project, load registered Repo Docs for 
 
 **Task ID:** AI-CONTEXT-05A
 **Family:** AI-CONTEXT (Global AI Instructions)
-**Family status:** ACTIVE — AI-CONTEXT-01A through AI-CONTEXT-05A COMPLETE and LOCKED
+**Family status:** COMPLETE and LOCKED — AI-CONTEXT-01A through AI-CONTEXT-06A COMPLETE and LOCKED
 **Priority:** High
 **Status:** COMPLETE and LOCKED
 **Nature:** FRONTEND UX/UI / CONTEXT STATE CLARITY / PROJECT-SESSION LINK READINESS
@@ -28441,6 +28441,51 @@ Make context readiness visible and understandable in the workspace UI. The user 
 
 **Reference:** See TASKS.md -> AI-CONTEXT-05A.
 **Checkpoint:** `docs/AI-CONTEXT-05A-CHECKPOINT.md`
+
+---
+
+### AI-CONTEXT-06A: Context System Final Hardening / Regression Matrix
+
+**Task ID:** AI-CONTEXT-06A
+**Family:** AI-CONTEXT (Global AI Instructions)
+**Family status:** COMPLETE and LOCKED — AI-CONTEXT-01A through AI-CONTEXT-06A COMPLETE and LOCKED
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** TESTING / DOCUMENTATION / CONTEXT PIPELINE HARDENING
+**Risk:** Low-Medium
+**Depends on:** AI-CONTEXT-05A COMPLETE and LOCKED
+**Checkpoint:** `docs/AI-CONTEXT-06A-CHECKPOINT.md`
+
+**Problem:**
+AI-CONTEXT-01A through AI-CONTEXT-05A built the full AI context pipeline: Global AI Instructions, Project AI Instructions, Repo Docs registry, Repo Docs picker, Repo Docs prompt injection, and Active Context Indicator with Repo Docs readiness. Before moving to another feature family, the context system needed a final hardening slice to document and test the complete expected behavior so future changes do not regress prompt placement, context activation, session/project linkage, or UI readiness states.
+
+**Objective:**
+Create a final regression matrix and add targeted tests/checks where practical to lock down the complete AI-CONTEXT behavior.
+
+**Files changed:**
+- `docs/AI-CONTEXT-REGRESSION-MATRIX.md` (created)
+- `frontend/components/workspace/workspace-shell.test.tsx` (one focused test added)
+
+**Acceptance criteria:**
+- [x] `docs/AI-CONTEXT-REGRESSION-MATRIX.md` exists.
+- [x] Matrix covers Global Instructions, Project Instructions, Repo Docs, linkage states, prompt placement, and UI readiness states.
+- [x] Matrix references relevant existing tests/checkpoints where possible.
+- [x] Any obvious low-risk missing test coverage is added.
+- [x] No behavior changes unless a real regression is found and explicitly reported.
+- [x] Prompt placement invariants are documented.
+- [x] Live smoke procedure is documented.
+- [x] Validation commands/results are documented.
+- [x] TASKS.md and TASKS_BACKLOG_FULL.md updated for registration (complete).
+- [x] AI-CONTEXT-06A is COMPLETE and LOCKED.
+
+**Validation results:**
+- `npm test -- workspace-shell.test.tsx` (frontend) — PASS (630/630, 0 failed)
+- ReadLints on `docs/AI-CONTEXT-REGRESSION-MATRIX.md` — PASS (no linter errors)
+- ReadLints on `frontend/components/workspace/workspace-shell.test.tsx` — PASS (no linter errors)
+- Browser smoke: not required — no runtime behavior changed.
+
+**Reference:** See TASKS.md -> AI-CONTEXT-06A.
+**Checkpoint:** `docs/AI-CONTEXT-06A-CHECKPOINT.md`
 
 ---
 
