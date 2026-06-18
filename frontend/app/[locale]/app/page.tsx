@@ -156,6 +156,7 @@ const CHAT_THREAD_STORAGE_KEY_PREFIX = 'workspace_chat_thread';
 const TAB_SELECTED_SESSION_STORAGE_KEY = 'workspace_tab_selected_session_id';
 const TAB_SELECTED_PROJECT_STORAGE_KEY = 'workspace_tab_selected_project_id';
 const TAB_SELECTED_WORKSPACE_STORAGE_KEY = 'workspace_tab_selected_workspace_id';
+const TAB_SELECTED_VIEW_STORAGE_KEY = 'workspace_tab_view';
 const TAB_EDITOR_DRAFT_STORAGE_KEY = 'workspace_tab_editor_draft';
 const PENDING_HOME_PROMPT_STORAGE_KEY = 'aisandbox_pending_prompt';
 const CHAT_EXECUTION_POLL_INTERVAL_MS = 3000;
@@ -1030,6 +1031,7 @@ export default function AppPage() {
   const coldMountSeededSessionIdRef = useRef<string | null>(null);
   const coldMountSeededProjectIdRef = useRef<string | null>(null);
   const coldMountSeededWorkspaceIdRef = useRef<string | null>(null);
+  const coldMountSeededViewRef = useRef<'project' | null>(null);
   const coldMountEditorDraftRef = useRef<{
     projectId: string;
     sessionId: string;
@@ -1165,6 +1167,8 @@ export default function AppPage() {
         sessionStorage.getItem(TAB_SELECTED_PROJECT_STORAGE_KEY) || null;
       coldMountSeededWorkspaceIdRef.current =
         sessionStorage.getItem(TAB_SELECTED_WORKSPACE_STORAGE_KEY) || null;
+      coldMountSeededViewRef.current =
+        sessionStorage.getItem(TAB_SELECTED_VIEW_STORAGE_KEY) === 'project' ? 'project' : null;
       const storedEditorDraft = sessionStorage.getItem(TAB_EDITOR_DRAFT_STORAGE_KEY);
       if (!storedEditorDraft) {
         coldMountEditorDraftRef.current = null;
@@ -1199,6 +1203,7 @@ export default function AppPage() {
       coldMountSeededSessionIdRef.current = null;
       coldMountSeededProjectIdRef.current = null;
       coldMountSeededWorkspaceIdRef.current = null;
+      coldMountSeededViewRef.current = null;
       coldMountEditorDraftRef.current = null;
     }
 
@@ -1405,6 +1410,49 @@ export default function AppPage() {
 
     sessionStorage.removeItem(TAB_SELECTED_PROJECT_STORAGE_KEY);
   }, [selectedProjectId]);
+
+  useEffect(() => {
+    if (!PROJECT_FIRST_UX) {
+      return;
+    }
+
+    if (workspaceView === 'project') {
+      sessionStorage.setItem(TAB_SELECTED_VIEW_STORAGE_KEY, 'project');
+      return;
+    }
+
+    sessionStorage.removeItem(TAB_SELECTED_VIEW_STORAGE_KEY);
+  }, [workspaceView]);
+
+  useEffect(() => {
+    if (!PROJECT_FIRST_UX) {
+      return;
+    }
+
+    if (coldMountSeededViewRef.current !== 'project') {
+      return;
+    }
+
+    if (!selectedProjectId || !selectedSessionId) {
+      return;
+    }
+
+    const selectedSession = sessions.find((candidate) => candidate.id === selectedSessionId);
+    if (!selectedSession) {
+      if (sessions.length > 0) {
+        coldMountSeededViewRef.current = null;
+      }
+      return;
+    }
+
+    if (!isUsableSession(selectedSession)) {
+      coldMountSeededViewRef.current = null;
+      return;
+    }
+
+    coldMountSeededViewRef.current = null;
+    setWorkspaceView('project');
+  }, [selectedProjectId, selectedSessionId, sessions]);
 
   useEffect(() => {
     setProjectMoveTargetWorkspaceId(null);

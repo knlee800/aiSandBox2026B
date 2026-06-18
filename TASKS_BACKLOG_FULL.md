@@ -28765,8 +28765,8 @@ Investigation confirmed PREVIEW-STRATEGY-01A already implemented correct runtime
 - ReadLints on touched files — PASS (no linter errors)
 - Live browser smoke — PASS (after PREVIEW-AUTOSTART-01A; auto-start, index/JS/navigation worked without Refresh)
 
-**Separate issue discovered (out of scope):**
-Browser-level refresh while inside a project may return to home. Candidate future task: `APP-ROUTE-RESTORE-01A` — Preserve Workspace Route/Session After Browser Reload.
+**Separate issue discovered (resolved separately):**
+Browser-level refresh while inside a project may return to home. Resolved as `APP-ROUTE-RESTORE-01A` — Preserve Workspace Route/Session After Browser Reload (COMPLETE and LOCKED — `docs/APP-ROUTE-RESTORE-01A-CHECKPOINT.md`).
 
 **Reference:** See TASKS.md -> PREVIEW-STATIC-01B.
 **Checkpoint:** `docs/PREVIEW-STATIC-01B-CHECKPOINT.md`
@@ -28857,8 +28857,124 @@ This task should not add visible user-facing text. If visible text must change, 
 - ReadLints on touched files — PASS (no linter errors)
 - Live browser smoke — PASS (auto-start after Apply without Refresh; index/JS/navigation worked)
 
-**Separate issue discovered (out of scope):**
-Browser-level refresh while inside a project may return to home. Candidate future task: `APP-ROUTE-RESTORE-01A` — Preserve Workspace Route/Session After Browser Reload.
+**Separate issue discovered (resolved separately):**
+Browser-level refresh while inside a project may return to home. Resolved as `APP-ROUTE-RESTORE-01A` — Preserve Workspace Route/Session After Browser Reload (COMPLETE and LOCKED — `docs/APP-ROUTE-RESTORE-01A-CHECKPOINT.md`).
 
 **Reference:** See TASKS.md -> PREVIEW-AUTOSTART-01A.
 **Checkpoint:** `docs/PREVIEW-AUTOSTART-01A-CHECKPOINT.md`
+
+---
+
+**Family status:** COMPLETE and LOCKED — APP-ROUTE-RESTORE-01A COMPLETE and LOCKED
+
+**Current stage:** APP-ROUTE-RESTORE-01A COMPLETE and LOCKED — `docs/APP-ROUTE-RESTORE-01A-CHECKPOINT.md`
+
+**Ordered slices (registered so far):**
+1. APP-ROUTE-RESTORE-01A — Preserve Workspace Route/Session After Browser Reload (COMPLETE and LOCKED — `docs/APP-ROUTE-RESTORE-01A-CHECKPOINT.md`)
+
+**Discovery source:** PREVIEW-STATIC-01B and PREVIEW-AUTOSTART-01A live browser smoke — browser refresh inside a project returned to Home instead of restoring workspace/project/session context.
+
+---
+
+### APP-ROUTE-RESTORE-01A: Preserve Workspace Route/Session After Browser Reload
+
+**Task ID:** APP-ROUTE-RESTORE-01A
+**Family:** APP ROUTING / WORKSPACE STATE / SESSION RESTORE
+**Family status:** COMPLETE and LOCKED
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Nature:** FRONTEND / ROUTING / WORKSPACE SESSION RESTORATION
+**Risk:** Medium
+**Depends on:** PREVIEW-AUTOSTART-01A (COMPLETE and LOCKED) — issue discovered during PREVIEW live smoke
+**Checkpoint:** `docs/APP-ROUTE-RESTORE-01A-CHECKPOINT.md`
+
+**Problem:**
+While testing preview behavior, Keith found that pressing the browser refresh button inside a project/workspace can return the app to Home instead of restoring the current workspace/project/session view.
+
+This is confusing because users expect browser reload to preserve their current app context where possible.
+
+**Objective:**
+Investigate and fix browser reload behavior so the app restores the active workspace/project/session route/state instead of falling back to Home unnecessarily.
+
+**Scope:**
+- Inspect current route structure and workspace app entry flow.
+- Determine why browser refresh inside a project returns to Home.
+- Identify source of truth for restoring:
+  - selected project
+  - selected session
+  - current workspace/app view
+  - locale route
+- Preserve valid session/project context across browser reload.
+- Avoid restoring stale or invalid sessions.
+- Add targeted tests where practical.
+- Keep fix small and bounded.
+
+**Files likely in scope:**
+- `frontend/app/[locale]/app/page.tsx`
+- `frontend/middleware.ts`
+- `frontend/lib/feature-flags.ts`
+- `frontend/lib/open-project-in-fresh-session.ts`
+- `frontend/components/workspace/workspace-shell.tsx`
+- `frontend/components/workspace/workspace-projects.logic.ts`
+- related frontend routing/session tests
+
+**Non-goals:**
+- No preview-system changes.
+- No container-manager changes.
+- No api-gateway changes unless investigation proves an API data gap.
+- No backend schema changes.
+- No AI-CONTEXT changes.
+- No broad navigation redesign.
+- No project-first UX redesign.
+- No new major routing architecture.
+- No git commit/push steps.
+
+**Complexity rule:**
+If this becomes larger than a bounded restore fix, stop and propose smaller child slices. Do not silently expand scope.
+
+**UX/UI multilingual-first rule:**
+If any visible user-facing text is added or changed, update all locale files:
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+Use existing translation hook/pattern. No hardcoded English UI copy.
+
+**UX/UI advisory skills:**
+If touching visible navigation/workspace UI behavior, use advisory skills:
+- Impeccable for clarity/regression review.
+- Emil Kowalski design engineering skill for small interaction/state polish.
+Skills are advisory-only and must not override governance, architecture, task scope, or tests.
+
+**Icon rule:**
+If icons are needed, use Heroicons v2 Outline only: `@heroicons/react/24/outline`. Do not use emoji icons or other icon libraries.
+
+**Acceptance criteria:**
+- [x] APP-ROUTE-RESTORE-01A registered in TASKS.md and TASKS_BACKLOG_FULL.md
+- [x] Browser reload inside workspace/project no longer falls back to Home when valid context exists
+- [x] App restores the correct workspace/project/session context where safe
+- [x] Invalid/missing session/project context falls back gracefully
+- [x] Locale route behavior remains correct
+- [x] Existing login/auth/session behavior is not regressed
+- [x] Existing preview behavior is not regressed
+- [x] Targeted frontend tests pass where practical
+- [x] Frontend typecheck/build passes if touched
+- [x] ReadLints passes
+- [x] Manual browser smoke passes:
+  1. Open app workspace/project/session.
+  2. Press browser refresh.
+  3. Confirm app returns to the same workspace/project/session context, not Home.
+  4. Confirm preview and chat area still behave normally after reload.
+
+**Files changed:**
+- `frontend/app/[locale]/app/page.tsx` (modified — added `TAB_SELECTED_VIEW_STORAGE_KEY`, `coldMountSeededViewRef`, cold-mount read, `workspaceView` persistence effect, guarded cold-mount restore effect)
+- `frontend/components/workspace/workspace-shell.test.tsx` (modified — added 3 source-assertion tests for APP-ROUTE-RESTORE-01A wiring)
+
+**Validation results:**
+- `npm test -- --testPathPattern="workspace-shell"` (frontend) — PASS (640/640, 0 failed)
+- `npx tsc --noEmit` (frontend) — PASS
+- `npm run build` (frontend) — PASS
+- ReadLints on touched files — PASS (no linter errors)
+- Live browser smoke — PASS (browser refresh inside project restored project view; same project/session/editor/preview; no errors)
+
+**Reference:** See TASKS.md -> APP-ROUTE-RESTORE-01A.
+**Checkpoint:** `docs/APP-ROUTE-RESTORE-01A-CHECKPOINT.md`

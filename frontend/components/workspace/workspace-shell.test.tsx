@@ -7329,6 +7329,46 @@ describe('workspace preview auto-start and retry wiring — UX-PV-01', () => {
   });
 });
 
+describe('workspace view reload restore wiring — APP-ROUTE-RESTORE-01A', () => {
+  test('page source defines view storage key and cold-mount seeded ref', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+
+    assert.match(pageSource, /const TAB_SELECTED_VIEW_STORAGE_KEY = 'workspace_tab_view';/);
+    assert.match(pageSource, /const coldMountSeededViewRef = useRef<'project' \| null>\(null\);/);
+  });
+
+  test('page source reads and persists project workspace view via sessionStorage', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+
+    assert.match(
+      pageSource,
+      /if \(PROJECT_FIRST_UX\) \{[\s\S]*?coldMountSeededViewRef\.current =\s+sessionStorage\.getItem\(TAB_SELECTED_VIEW_STORAGE_KEY\) === 'project' \? 'project' : null;/,
+    );
+    assert.match(
+      pageSource,
+      /useEffect\(\(\) => \{\s+if \(!PROJECT_FIRST_UX\) \{\s+return;\s+\}\s+if \(workspaceView === 'project'\) \{\s+sessionStorage\.setItem\(TAB_SELECTED_VIEW_STORAGE_KEY, 'project'\);\s+return;\s+\}\s+sessionStorage\.removeItem\(TAB_SELECTED_VIEW_STORAGE_KEY\);\s+\}, \[workspaceView\]\);/,
+    );
+  });
+
+  test('page source restores project workspace view only with valid selected context', () => {
+    const pageSource = readFileSync(new URL('../../app/[locale]/app/page.tsx', import.meta.url), 'utf8');
+
+    assert.match(
+      pageSource,
+      /useEffect\(\(\) => \{\s+if \(!PROJECT_FIRST_UX\) \{\s+return;\s+\}\s+if \(coldMountSeededViewRef\.current !== 'project'\) \{\s+return;\s+\}\s+if \(!selectedProjectId \|\| !selectedSessionId\) \{\s+return;\s+\}\s+const selectedSession = sessions\.find\(\(candidate\) => candidate\.id === selectedSessionId\);/,
+    );
+    assert.match(
+      pageSource,
+      /if \(!selectedSession\) \{\s+if \(sessions\.length > 0\) \{\s+coldMountSeededViewRef\.current = null;\s+\}\s+return;\s+\}/,
+    );
+    assert.match(
+      pageSource,
+      /if \(!isUsableSession\(selectedSession\)\) \{\s+coldMountSeededViewRef\.current = null;\s+return;\s+\}/,
+    );
+    assert.match(pageSource, /coldMountSeededViewRef\.current = null;\s+setWorkspaceView\('project'\);/);
+  });
+});
+
 describe('preview failure ask AI fix prompt wiring — UX-PV-02B', () => {
   test('workspace shell StateMessage supports disabled primary action button wiring', () => {
     const shellSource = readFileSync(new URL('./workspace-shell.tsx', import.meta.url), 'utf8');
