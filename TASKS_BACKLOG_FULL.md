@@ -28983,14 +28983,15 @@ If icons are needed, use Heroicons v2 Outline only: `@heroicons/react/24/outline
 
 ## AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
 
-**Family status:** ACTIVE — AGENT-HARNESS-00 COMPLETE and LOCKED; AGENT-HARNESS-01A COMPLETE and LOCKED; AGENT-HARNESS-01B COMPLETE and LOCKED
+**Family status:** ACTIVE — AGENT-HARNESS-00 COMPLETE and LOCKED; AGENT-HARNESS-01A COMPLETE and LOCKED; AGENT-HARNESS-01B COMPLETE and LOCKED; AGENT-HARNESS-01C COMPLETE and LOCKED
 
-**Current stage:** AGENT-HARNESS-01B COMPLETE and LOCKED — v1 typed contracts/config foundation shipped; next step is AGENT-HARNESS-01C registration
+**Current stage:** AGENT-HARNESS-01C COMPLETE and LOCKED — typed model profile registry foundation shipped; next step is AGENT-HARNESS-01D registration
 
 **Ordered slices (registered so far):**
 1. AGENT-HARNESS-00 — Agent Harness v1 Master Plan (COMPLETE and LOCKED)
 2. AGENT-HARNESS-01A — Per-Request Model Selection Fix (COMPLETE and LOCKED)
 3. AGENT-HARNESS-01B — Agent Harness v1 Contracts + Config Shape (COMPLETE and LOCKED)
+4. AGENT-HARNESS-01C — Model Profile Registry (COMPLETE and LOCKED)
 
 **Completed foundations (prerequisites):**
 - AI-CONTEXT family COMPLETE and LOCKED — global/project AI instructions, repo docs registry, repo docs prompt injection, context indicator, regression matrix
@@ -29379,3 +29380,161 @@ The future implementation must:
 
 **Reference:** See TASKS.md -> AGENT-HARNESS-01B.
 **Checkpoint:** `docs/AGENT-HARNESS-01B-CHECKPOINT.md`
+
+---
+
+### AGENT-HARNESS-01C: Model Profile Registry
+
+**Task ID:** AGENT-HARNESS-01C
+**Family:** AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
+**Family status:** ACTIVE
+**Priority:** High
+**Nature:** BACKEND / AI SERVICE / MODEL CONFIG / REGISTRY FOUNDATION / NO RUNTIME ROUTING CHANGE
+**Risk:** Medium
+**Depends on:** AGENT-HARNESS-00 COMPLETE and LOCKED; AGENT-HARNESS-01A COMPLETE and LOCKED; AGENT-HARNESS-01B COMPLETE and LOCKED
+**Status:** COMPLETE and LOCKED
+
+**Problem:**
+AGENT-HARNESS-01A fixed per-request model propagation, and AGENT-HARNESS-01B added versioned Agent Harness v1 contracts/config defaults. The next foundation needed is a model profile registry so future Agent Harness slices can describe model capabilities, provider mapping, tool support, streaming support, context limits, cost tier, and default behavior without scattering hardcoded model names or model behavior across WorkerProcessor, AIExecutionService, or provider adapters.
+
+**Objective:**
+Create a typed Model Profile Registry foundation for Agent Harness v1. This slice defines model profiles as config/registry data only. It does not change current runtime routing behavior.
+
+**Scope:**
+- Add typed model profile contracts, registry module, and focused tests.
+- Reuse AGENT-HARNESS-01B contracts/config where appropriate.
+- No runtime behavior changes in this slice.
+- No provider adapter behavior changes in this slice.
+- No WorkerProcessor behavior changes in this slice.
+- No AIExecutionService behavior changes in this slice.
+- No queue/SSE/status behavior changes.
+- No prompt assembly behavior changes.
+- No frontend/UI changes.
+- Keep registry data easy to change later.
+- Prepare for later adapter tool-use support and prompt template/profile-aware behavior.
+- Avoid hardcoding model names across unrelated files.
+
+**Likely implementation files:**
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\model-profiles\model-profile.contracts.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\model-profiles\model-profile.registry.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\model-profiles\model-profile.registry.spec.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\index.ts` (updated barrel export)
+
+Alternative path acceptable only if project structure strongly prefers it; implementation must explain why.
+
+**Expected model profile concepts:**
+Each model profile should be typed and include:
+- `id`
+- `provider`
+- `model`
+- `displayName`
+- `family`
+- `purpose`
+- `supportsTools`
+- `supportsStreaming`
+- `supportsJsonMode`
+- `supportsVision` (if useful)
+- `maxInputTokens` or `contextWindowTokens`
+- `maxOutputTokens`
+- `defaultTemperature`
+- `costTier`
+- `enabled`
+- `providerOptions`
+- `promptStyleNotes`
+- `toolCallFormat` (placeholder only, if useful)
+- `fallbackProfileId` (if useful)
+- `tags`
+
+**Expected registry behavior:**
+- Export a stable list/map of model profiles.
+- Export helper functions only if simple and testable:
+  - `getAgentHarnessModelProfile(profileId)`
+  - `listAgentHarnessModelProfiles()`
+  - `isAgentHarnessModelProfileEnabled(profileId)`
+- Keep helper functions pure and data-only.
+- Do not wire helpers into WorkerProcessor or AIExecutionService in this slice.
+- Do not replace existing adapter defaults in this slice.
+- Do not validate external provider availability in this slice.
+
+**Changeability / no-hardcoding requirements:**
+The implementation must:
+- centralize known Agent Harness model profiles in one registry module;
+- avoid scattering model names across WorkerProcessor, AIExecutionService, adapters, or tests;
+- keep provider defaults and model profile registry separate until a future registered slice wires them together;
+- make adding a new model a data/config change, not a broad code change;
+- keep all profiles typed and version-aware;
+- include capability flags for future tool-use/streaming/prompt-template decisions;
+- avoid hardcoded pricing/cost assumptions unless represented as broad cost tiers;
+- avoid hardcoded provider-specific behavior outside provider adapter/profile data.
+
+**Non-goals:**
+- No runtime model routing changes.
+- No provider adapter behavior changes.
+- No WorkerProcessor changes.
+- No AIExecutionService changes.
+- No tool-use/function-calling support.
+- No tool protocol runtime execution.
+- No tool registry implementation.
+- No prompt template registry implementation.
+- No streaming implementation.
+- No repo indexing/search implementation.
+- No validation runner.
+- No browser smoke implementation.
+- No plan/review UI.
+- No database schema changes.
+- No queue architecture changes.
+- No dependency changes.
+- No frontend/UI changes.
+- No changes to existing prompt assembly ordering.
+- No changes to current file-action parser.
+- No changes to checkpoint/revert/coherence flow.
+
+**Validation requirements (for implementation step):**
+- Run focused ai-service tests for new model-profile files.
+- Run ai-service typecheck/build after new exports are added.
+- Tests must prove:
+  1. Registry exports at least the intended initial profiles.
+  2. Each profile has required fields.
+  3. Profile ids are unique.
+  4. Provider/model fields are non-empty.
+  5. Capability flags are booleans.
+  6. Helper lookup returns the expected profile.
+  7. Missing profile lookup is handled safely.
+  8. Registry exports are available from the stable agent-harness index file.
+- Browser smoke: not required (model profile registry config/data only).
+- Frontend validation: not required (no frontend files touched).
+
+**Acceptance criteria:**
+- [x] AGENT-HARNESS-01C registered as ACTIVE in TASKS.md and TASKS_BACKLOG_FULL.md
+- [x] Dependency on AGENT-HARNESS-00 COMPLETE and LOCKED documented
+- [x] Dependency on AGENT-HARNESS-01A COMPLETE and LOCKED documented
+- [x] Dependency on AGENT-HARNESS-01B COMPLETE and LOCKED documented
+- [x] Problem/objective/scope/non-goals documented
+- [x] Changeability/no-hardcoding requirements documented
+- [x] Likely files documented
+- [x] Expected model profile concepts documented
+- [x] Expected registry behavior documented
+- [x] Validation requirements documented
+- [x] Browser smoke requirement documented as not required
+- [x] No source/runtime/test/package files changed (registration step)
+- [x] No checkpoint created (registration step)
+- [x] No implementation performed (registration step)
+- [x] (Implementation) model-profile.contracts.ts exports all profile type names
+- [x] (Implementation) model-profile.registry.ts exports profile list/map and helper functions
+- [x] (Implementation) index.ts re-exports model profile contracts and registry
+- [x] (Implementation) focused ai-service tests pass (1 suite, 9 tests)
+- [x] (Implementation) ai-service build passes (tsc clean)
+
+**Files changed:**
+- `services/ai-service/src/agent-harness/model-profiles/model-profile.contracts.ts` (new — typed v1 model profile contracts)
+- `services/ai-service/src/agent-harness/model-profiles/model-profile.registry.ts` (new — centralized registry data, map, and pure helpers)
+- `services/ai-service/src/agent-harness/model-profiles/model-profile.registry.spec.ts` (new — 9 focused registry tests)
+- `services/ai-service/src/agent-harness/index.ts` (updated — added model-profiles barrel exports)
+
+**Validation results:**
+- `npm test -- src/agent-harness/model-profiles/model-profile.registry.spec.ts` — PASS (1 suite, 9 tests)
+- `npm run build` — PASS (tsc clean)
+- IDE diagnostics on `src/agent-harness/` — PASS (no linter errors)
+
+**Reference:** See TASKS.md -> AGENT-HARNESS-01C.
+**Checkpoint:** `docs/AGENT-HARNESS-01C-CHECKPOINT.md`
