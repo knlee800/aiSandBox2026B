@@ -200,6 +200,29 @@ describe('AnthropicAdapter', () => {
       );
     });
 
+    it('should use requested model when request.model is provided', async () => {
+      mockMessagesCreate.mockResolvedValue({
+        id: 'msg_123',
+        type: 'message',
+        role: 'assistant',
+        content: [{ type: 'text', text: 'Response' }],
+        model: 'claude-3-7-sonnet-latest',
+        usage: { input_tokens: 10, output_tokens: 5 },
+      });
+
+      await adapter.execute({
+        ...mockRequest,
+        model: 'claude-3-7-sonnet-latest',
+      });
+
+      expect(mockMessagesCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          model: 'claude-3-7-sonnet-latest',
+        }),
+        {},
+      );
+    });
+
     it('should map prompt to messages array with user role', async () => {
       mockMessagesCreate.mockResolvedValue({
         id: 'msg_123',
@@ -313,6 +336,24 @@ describe('AnthropicAdapter', () => {
       const result = await adapter.execute(mockRequest);
 
       expect(result.model).toBe('claude-3-5-sonnet-20241022');
+    });
+
+    it('should use requested model as fallback when response.model is empty', async () => {
+      mockMessagesCreate.mockResolvedValue({
+        id: 'msg_123',
+        type: 'message',
+        role: 'assistant',
+        content: [{ type: 'text', text: 'Response' }],
+        model: '',
+        usage: { input_tokens: 10, output_tokens: 5 },
+      });
+
+      const result = await adapter.execute({
+        ...mockRequest,
+        model: 'claude-3-7-sonnet-latest',
+      });
+
+      expect(result.model).toBe('claude-3-7-sonnet-latest');
     });
 
     it('should return empty string for empty text content', async () => {

@@ -400,6 +400,57 @@ describe('AIExecutionService - Phase 16 Contract Verification', () => {
   });
 
   describe('Phase 12: Contract Compliance', () => {
+    it('should forward requested model to adapter when request includes model', async () => {
+      const requestWithModel: AIExecutionRequest = {
+        sessionId: 'session-123',
+        conversationId: 'conv-456',
+        userId: 'user-789',
+        prompt: 'Test',
+        provider: 'stub',
+        model: 'gpt-4.1',
+      };
+      const result: AIExecutionResult = {
+        output: 'Response',
+        tokensUsed: 10,
+        model: 'gpt-4.1',
+      };
+      mockAdapter.execute.mockResolvedValue(result);
+
+      await service.execute(requestWithModel);
+
+      expect(mockAdapter.execute).toHaveBeenCalledWith(
+        expect.objectContaining({
+          provider: 'stub',
+          model: 'gpt-4.1',
+        }),
+      );
+    });
+
+    it('should trim requested model before forwarding it to adapter', async () => {
+      const requestWithWhitespaceModel: AIExecutionRequest = {
+        sessionId: 'session-123',
+        conversationId: 'conv-456',
+        userId: 'user-789',
+        prompt: 'Test',
+        provider: 'stub',
+        model: '  gpt-4.1-mini  ',
+      };
+      const result: AIExecutionResult = {
+        output: 'Response',
+        tokensUsed: 10,
+        model: 'gpt-4.1-mini',
+      };
+      mockAdapter.execute.mockResolvedValue(result);
+
+      await service.execute(requestWithWhitespaceModel);
+
+      expect(mockAdapter.execute).toHaveBeenCalledWith(
+        expect.objectContaining({
+          model: 'gpt-4.1-mini',
+        }),
+      );
+    });
+
     it('should accept valid AIExecutionRequest', async () => {
       // Arrange
       const validRequest: AIExecutionRequest = {
@@ -444,6 +495,27 @@ describe('AIExecutionService - Phase 16 Contract Verification', () => {
       expect(typeof response.output).toBe('string');
       expect(typeof response.tokensUsed).toBe('number');
       expect(typeof response.model).toBe('string');
+    });
+
+    it('should preserve file-action extraction behavior in execute()', async () => {
+      const resultWithFileActions: AIExecutionResult = {
+        output: `Applied changes.\n\n\`\`\`file-actions\n[{"action":"write","path":"src/app.ts","content":"export const ok = true;\\n"}]\n\`\`\``,
+        tokensUsed: 10,
+        model: 'test-model',
+      };
+      mockAdapter.execute.mockResolvedValue(resultWithFileActions);
+
+      const response = await service.execute(mockRequest);
+
+      expect(response.fileActions).toEqual([
+        {
+          action: 'write',
+          path: 'src/app.ts',
+          content: 'export const ok = true;\n',
+        },
+      ]);
+      expect(response.output).toContain('Applied changes.');
+      expect(response.output).not.toContain('```file-actions');
     });
 
     it('should forward metadata from request to adapter', async () => {
@@ -528,7 +600,7 @@ describe('AIExecutionService - Phase 16 Contract Verification', () => {
       expect(mockAdapter.execute).toHaveBeenCalledTimes(1);
     });
 
-    it('should return adapter result without transformation', async () => {
+    it('should normalize adapter result with provider and parsed file-actions', async () => {
       // Arrange
       const adapterResult: AIExecutionResult = {
         output: 'Exact adapter response',
@@ -540,11 +612,12 @@ describe('AIExecutionService - Phase 16 Contract Verification', () => {
       // Act
       const serviceResult = await service.execute(mockRequest);
 
-      // Assert: Result passed through unchanged
-      expect(serviceResult).toBe(adapterResult);
+      // Assert: Result preserves content and enriches execution metadata
       expect(serviceResult.output).toBe('Exact adapter response');
       expect(serviceResult.tokensUsed).toBe(999);
       expect(serviceResult.model).toBe('adapter-model');
+      expect(serviceResult.provider).toBe('stub');
+      expect(serviceResult.fileActions).toEqual([]);
     });
   });
 });

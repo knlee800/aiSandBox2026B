@@ -1,4 +1,47 @@
-import { buildExecutionPromptParts } from './worker.processor';
+import {
+  buildAIExecutionRequest,
+  buildExecutionPromptParts,
+} from './worker.processor';
+
+describe('buildAIExecutionRequest', () => {
+  it('passes requested model from job payload to AIExecutionService request', () => {
+    const request = buildAIExecutionRequest(
+      {
+        provider: 'openai',
+        sessionId: 'session-1',
+        conversationId: 'conv-1',
+        userId: 'user-1',
+        model: 'gpt-4.1',
+      },
+      {
+        system: 'Execution output contract',
+        user: 'User request:\nhello',
+      },
+    );
+
+    expect(request.model).toBe('gpt-4.1');
+    expect(request.provider).toBe('openai');
+    expect(request.systemPrompt).toBe('Execution output contract');
+    expect(request.prompt).toBe('User request:\nhello');
+  });
+
+  it('keeps model undefined when no model is provided in job payload', () => {
+    const request = buildAIExecutionRequest(
+      {
+        provider: 'anthropic',
+        sessionId: 'session-1',
+        conversationId: 'conv-1',
+        userId: 'user-1',
+      },
+      {
+        system: 'Execution output contract',
+        user: 'User request:\nhello',
+      },
+    );
+
+    expect(request.model).toBeUndefined();
+  });
+});
 
 describe('buildExecutionPromptParts', () => {
   it('places the file-action contract in the system part', () => {

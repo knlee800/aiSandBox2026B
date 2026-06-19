@@ -66,6 +66,10 @@ export class AIExecutionService {
     // Phase 28: Get adapter based on request.provider
     const adapter = this.getAdapter(request.provider);
     const provider = request.provider;
+    const requestedModel =
+      typeof request.model === 'string' && request.model.trim().length > 0
+        ? request.model.trim()
+        : undefined;
 
     // Phase 17B: Log execution entry signal (structured)
     this.logger.log({
@@ -73,7 +77,7 @@ export class AIExecutionService {
       executionId,
       adapter: provider,
       provider,
-      model: adapter.model,
+      model: requestedModel ?? adapter.model,
       sessionId: request.sessionId,
       userId: request.userId,
       conversationId: request.conversationId,
@@ -82,13 +86,14 @@ export class AIExecutionService {
 
     // Maintain backward compatibility with existing debug logs
     this.logger.debug(
-      `Executing AI request via adapter (model=${adapter.model}, provider=${provider}, session=${request.sessionId})`,
+      `Executing AI request via adapter (model=${requestedModel ?? adapter.model}, provider=${provider}, session=${request.sessionId})`,
     );
 
     const adapterStartTime = performance.now();
     try {
       const result = await adapter.execute({
         ...request,
+        model: requestedModel,
         signal: request.signal,
       });
       const parsed = extractFileActionsFromOutput(result.output ?? '');
@@ -139,7 +144,7 @@ export class AIExecutionService {
         executionId,
         adapter: provider,
         provider,
-        model: adapter.model,
+        model: requestedModel ?? adapter.model,
         errorType: error?.constructor?.name || 'Error',
         errorCategory: this.categorizeError(error),
         errorMessage: error?.message,

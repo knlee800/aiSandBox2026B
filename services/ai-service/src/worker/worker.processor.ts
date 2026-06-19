@@ -21,6 +21,7 @@ import {
   incrementWorkerClaim,
   incrementStuckRecovered,
 } from '../observability/worker-metrics';
+import type { AIExecutionRequest } from '../ai-execution/types';
 import type { WorkspaceContext } from '../queue/job.types';
 
 /**
@@ -285,6 +286,29 @@ export function buildExecutionPromptParts(
   return {
     system: systemSections.join('\n\n'),
     user: userSections.join('\n\n'),
+  };
+}
+
+export function buildAIExecutionRequest(
+  jobData: {
+    provider: AIExecutionRequest['provider'];
+    sessionId: string;
+    conversationId: string;
+    userId: string;
+    model?: string;
+  },
+  promptParts: { system: string; user: string },
+  signal?: AbortSignal,
+): AIExecutionRequest {
+  return {
+    provider: jobData.provider,
+    prompt: promptParts.user,
+    systemPrompt: promptParts.system,
+    sessionId: jobData.sessionId,
+    conversationId: jobData.conversationId,
+    userId: jobData.userId,
+    model: jobData.model,
+    signal,
   };
 }
 
@@ -705,15 +729,9 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                 job.data.globalInstructions,
                 job.data.projectInstructions,
               );
-              aiResult = await this.aiExecutionService.execute({
-                provider: job.data.provider,
-                prompt: promptParts.user,
-                systemPrompt: promptParts.system,
-                sessionId: job.data.sessionId,
-                conversationId: job.data.conversationId,
-                userId: job.data.userId,
-                signal: abortController.signal,
-              });
+              aiResult = await this.aiExecutionService.execute(
+                buildAIExecutionRequest(job.data, promptParts, abortController.signal),
+              );
               break;
             } catch (err) {
               lastError = err;

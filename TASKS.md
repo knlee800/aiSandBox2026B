@@ -18541,3 +18541,235 @@ If icons are needed, use Heroicons v2 Outline only: `@heroicons/react/24/outline
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> APP-ROUTE-RESTORE-01A.
 **Checkpoint:** `docs/APP-ROUTE-RESTORE-01A-CHECKPOINT.md`
+
+---
+
+## AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
+
+**Family status:** ACTIVE — AGENT-HARNESS-00 COMPLETE and LOCKED; AGENT-HARNESS-01A COMPLETE and LOCKED
+
+**Current stage:** AGENT-HARNESS-01A COMPLETE and LOCKED — per-request model fix shipped; next step is AGENT-HARNESS-01B registration
+
+**Registered tasks:**
+1. AGENT-HARNESS-00 — Agent Harness v1 Master Plan (COMPLETE and LOCKED)
+2. AGENT-HARNESS-01A — Per-Request Model Selection Fix (COMPLETE and LOCKED)
+
+**Completed foundations (prerequisites):**
+- AI-CONTEXT family COMPLETE and LOCKED — global/project AI instructions, repo docs registry, repo docs prompt injection, context indicator, regression matrix
+- PREVIEW family COMPLETE and LOCKED — static preview strategy detection, static subdirectory routing coverage, preview auto-start after Apply
+- APP ROUTING / WORKSPACE STATE / SESSION RESTORE COMPLETE and LOCKED — browser refresh restores project/workspace/session instead of returning Home
+
+---
+
+#### AGENT-HARNESS-00: Agent Harness v1 Master Plan
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** AGENT-HARNESS-00
+**Family:** AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
+**Priority:** Highest
+**Nature:** ARCHITECTURE / PRODUCT SYSTEM DESIGN / GOVERNANCE
+**Risk:** Medium-high
+
+**Problem:**
+aiSandbox has important foundations now: AI-CONTEXT, static preview, preview auto-start, and project route restore. But to feel close to Cursor, it needs a professional agent harness: understand repo → plan → edit safely → run tests → fix → show diff → checkpoint.
+
+**Objective:**
+Design the Agent Harness v1 architecture and split it into safe, bounded implementation slices. The planning pass will produce `docs/AGENT-HARNESS-V1-MASTER-PLAN.md` covering:
+
+1. Tool protocol and model adapter layer
+2. Repo indexing and semantic/code search
+3. Patch/apply engine with checkpoint rollback
+4. Validation runner
+5. Browser smoke tool
+6. Plan/review UI
+7. Continuous evals
+
+**Scope:**
+- Create governance entry for the Agent Harness v1 master plan.
+- Document that the next step after registration is a planning/investigation pass.
+- Define expected future plan output: `docs/AGENT-HARNESS-V1-MASTER-PLAN.md`.
+- Define child slice candidates, but do not implement them yet.
+- Note that large/risky child slices should be split smaller before implementation.
+- Note that future UX/UI slices must follow multilingual-first and UX/UI advisory-skill governance.
+
+**Candidate child slices (not yet registered — pending planning pass):**
+1. AGENT-HARNESS-01 — Tool protocol and model adapter layer
+2. AGENT-HARNESS-02 — Repo indexing and semantic/code search
+3. AGENT-HARNESS-03 — Patch/apply engine with checkpoint rollback
+4. AGENT-HARNESS-04 — Validation runner
+5. AGENT-HARNESS-05 — Browser smoke tool
+6. AGENT-HARNESS-06 — Plan/review UI
+7. AGENT-HARNESS-07 — Continuous evals
+
+Large or risky child slices must be split into smaller bounded sub-slices before implementation.
+
+**Likely future inspection targets:**
+- `services/ai-service`
+- `services/api-gateway`
+- `services/container-manager`
+- `frontend/app/[locale]/app/page.tsx`
+- `frontend/components/workspace`
+- Existing AI-CONTEXT, PREVIEW, APP-ROUTE-RESTORE checkpoint docs
+- `TASKS.md`
+- `TASKS_BACKLOG_FULL.md`
+
+**Non-goals:**
+- No implementation
+- No source/runtime changes
+- No test changes
+- No model adapter code yet
+- No search/index code yet
+- No patch engine code yet
+- No validation runner code yet
+- No UI changes yet
+- No database schema changes
+- No package/dependency changes
+- No checkpoint yet
+- No git commit/push steps
+
+**UX/UI governance note for future child slices:**
+Any future Agent Harness child slice that touches UX/UI must follow multilingual-first governance:
+- Update `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json`
+- Use existing translation hooks/patterns
+- No hardcoded English UX/UI copy
+- Use Heroicons v2 Outline only: `@heroicons/react/24/outline`
+- Use advisory skills where relevant:
+  - Impeccable for broad UX/UI audits
+  - Emil Kowalski design engineering for component/interaction polish
+- Advisory skills are advisory-only and must not override governance, architecture, task scope, or tests
+
+**Next step:**
+Planning/investigation pass to create `docs/AGENT-HARNESS-V1-MASTER-PLAN.md`. This will inspect existing services, AI execution flow, file-action flow, checkpoint system, and design the tool protocol, model adapter layer, and bounded implementation slices.
+
+**Acceptance criteria (registration only):**
+- [x] AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS family added as ACTIVE
+- [x] AGENT-HARNESS-00 registered as ACTIVE
+- [x] Problem/objective/scope/non-goals documented
+- [x] Completed foundations documented
+- [x] Candidate child slices documented
+- [x] Future UX/UI governance note documented
+- [x] Next step clearly says: planning/investigation pass to create AGENT-HARNESS-V1-MASTER-PLAN.md
+- [x] No source/runtime/test/package files modified
+- [x] Task marked COMPLETE/LOCKED after consolidation
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-00.
+**Checkpoint:** `docs/AGENT-HARNESS-00-CHECKPOINT.md`
+
+---
+
+#### AGENT-HARNESS-01A: Per-Request Model Selection Fix
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** AGENT-HARNESS-01A
+**Family:** AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
+**Priority:** High
+**Nature:** BACKEND / AI SERVICE / MODEL ROUTING / MINIMAL FIX
+**Risk:** Medium
+**Depends on:** AGENT-HARNESS-00 COMPLETE and LOCKED
+
+**Problem:**
+The Agent Harness investigation found that frontend and API Gateway accept a per-request model value and store it in the execution ledger/job path, but the selected model is not actually applied at the ai-service adapter layer. Provider adapters currently use constructor default models. This means user/model selection can appear accepted while actual provider execution may still use default configured models.
+
+**Objective:**
+Wire per-request model selection through the existing AI execution path so the requested model is passed from the queued job into AIExecutionService and then into the selected provider adapter execution call.
+
+**Implementation path:**
+`frontend/API request model field` → `API Gateway execution job` → `BullMQ job payload` → `ai-service WorkerProcessor` → `AIExecutionService.execute()` → `provider adapter execute() call`
+
+**Scope:**
+- Wire the requested model field from BullMQ job payload through WorkerProcessor into AIExecutionService.
+- Pass the requested model from AIExecutionService into the selected provider adapter execute() call.
+- Preserve the existing provider adapter pattern — adapters retain their constructor default as fallback.
+- Preserve current prompt assembly behavior.
+- Preserve current file-action parsing behavior.
+- Preserve current queue/SSE/status behavior.
+- Add or update focused ai-service tests proving requested model is used.
+- Keep this slice as a minimal fix only.
+
+**Changeability / no-hardcoding requirements:**
+- Pass the requested model through a single clear contract path.
+- Avoid scattering model-name logic across unrelated files.
+- Preserve provider defaults as fallback only when no model is requested.
+- Prepare for a later AGENT-HARNESS model profile registry without implementing that registry in this slice.
+- Keep changes minimal and test-covered.
+
+**Likely implementation files:**
+- `services/ai-service/src/worker/worker.processor.ts`
+- `services/ai-service/src/worker/worker.processor.spec.ts`
+- `services/ai-service/src/ai-execution/ai-execution.service.ts`
+- `services/ai-service/src/ai-execution/ai-execution.service.spec.ts` (if present)
+- `services/ai-service/src/ai-execution/adapters/ai-adapter.interface.ts`
+- `services/ai-service/src/ai-execution/adapters/anthropic-ai.adapter.ts`
+- `services/ai-service/src/ai-execution/adapters/openai-ai.adapter.ts`
+- Other provider adapter files only if the existing interface change requires them
+
+**Non-goals:**
+- No tool protocol implementation.
+- No tool registry.
+- No model profile registry yet.
+- No prompt template registry yet.
+- No streaming changes.
+- No function-calling/tool-use changes.
+- No repo indexing/search changes.
+- No patch/apply engine changes.
+- No validation runner.
+- No browser smoke tool.
+- No UI changes.
+- No database schema changes.
+- No queue architecture rewrite.
+- No provider migration.
+- No dependency changes.
+- No broad refactor.
+- No changes to Global Instructions, Project Instructions, Repo Docs, or workspace context ordering.
+- No direct mutation of LOCKED execution contracts unless the implementation step proves a minimal compatible type extension is necessary and safe.
+
+**Validation requirements (for implementation step):**
+- Run focused ai-service tests.
+- Add/update tests proving:
+  1. When a job includes a model, WorkerProcessor passes it into AIExecutionService.
+  2. AIExecutionService passes the requested model into the adapter.
+  3. Provider adapter uses requested model when provided.
+  4. Provider adapter falls back to default model when request model is absent.
+  5. Prompt assembly ordering remains unchanged.
+- Run ai-service build if touched files require it.
+- Browser smoke: not required (backend/model-routing only).
+- Frontend validation: not required unless frontend files are unexpectedly touched.
+
+**Acceptance criteria:**
+- [x] AGENT-HARNESS-01A registered as ACTIVE in TASKS.md and TASKS_BACKLOG_FULL.md
+- [x] Dependency on AGENT-HARNESS-00 COMPLETE and LOCKED documented
+- [x] Problem/objective/scope/non-goals documented
+- [x] Changeability/no-hardcoding requirements documented
+- [x] Likely files documented
+- [x] Validation requirements documented
+- [x] Browser smoke requirement documented as not required
+- [x] No source/runtime/test/package files changed (registration step)
+- [x] No checkpoint created (registration step)
+- [x] No implementation performed (registration step)
+- [x] WorkerProcessor passes requested model into AIExecutionService
+- [x] AIExecutionService passes requested model into provider adapter execute() call
+- [x] Provider adapter uses requested model when provided; falls back to default when absent
+- [x] Focused ai-service tests pass (7 suites, 207 tests)
+- [x] ai-service build passes (tsc clean)
+
+**Files changed:**
+- `services/ai-service/src/worker/worker.processor.ts` (added `buildAIExecutionRequest`, includes `model` from job payload)
+- `services/ai-service/src/worker/worker.processor.spec.ts` (added `buildAIExecutionRequest` tests)
+- `services/ai-service/src/ai-execution/ai-execution.service.ts` (added `requestedModel` normalization and propagation)
+- `services/ai-service/src/ai-execution/__tests__/ai-execution-phase16.spec.ts` (added model forwarding/trimming/file-action tests; updated brittle identity test)
+- `services/ai-service/src/ai-execution/adapters/stub-ai.adapter.ts` (uses `request.model ?? this.model`)
+- `services/ai-service/src/ai-execution/adapters/openai-ai.adapter.ts` (uses `request.model ?? this.model`)
+- `services/ai-service/src/ai-execution/adapters/anthropic-ai.adapter.ts` (uses `request.model ?? this.model`)
+- `services/ai-service/src/ai-execution/adapters/groq-ai.adapter.ts` (uses `request.model ?? this.model`)
+- `services/ai-service/src/ai-execution/adapters/xai-ai.adapter.ts` (uses `request.model ?? this.model`)
+- `services/ai-service/src/ai-execution/adapters/deepseek-ai.adapter.ts` (uses `request.model ?? this.model`)
+- `services/ai-service/src/ai-execution/adapters/__tests__/openai-ai.adapter.spec.ts` (added model routing tests)
+- `services/ai-service/src/ai-execution/adapters/__tests__/anthropic-ai.adapter.spec.ts` (added model routing tests)
+
+**Validation results:**
+- `npm test` (focused specs) — PASS (7 suites, 207 tests)
+- `npm run build` — PASS (tsc clean)
+- ReadLints on touched files — PASS (no linter errors)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-01A.
+**Checkpoint:** `docs/AGENT-HARNESS-01A-CHECKPOINT.md`

@@ -37,6 +37,10 @@ export class StubAIAdapter implements AIAdapter {
     this.logger.debug(
       `[Stage C2-D] StubAIAdapter.execute() called for session=${request.sessionId}`,
     );
+    const executionModel =
+      typeof request.model === 'string' && request.model.trim().length > 0
+        ? request.model.trim()
+        : this.model;
 
     // Phase 47.5: Delay for cancellation validation when prompt requests it
     if (request.prompt?.includes('Count slowly')) {
@@ -47,7 +51,7 @@ export class StubAIAdapter implements AIAdapter {
     return {
       output: '[STUB] AI execution not implemented yet',
       tokensUsed: 0,
-      model: this.model,
+      model: executionModel,
     };
   }
 }

@@ -150,6 +150,33 @@ describe('OpenAIAdapter', () => {
         );
       });
 
+      it('should use requested model when request.model is provided', async () => {
+        const mockResponse = {
+          choices: [{ message: { content: 'Test output' } }],
+          usage: { total_tokens: 100 },
+          model: 'gpt-4.1',
+        };
+        mockClient.chat.completions.create.mockResolvedValue(mockResponse);
+
+        const request: AIExecutionRequest = {
+          sessionId: 'session-1',
+          conversationId: 'conv-1',
+          userId: 'user-1',
+          prompt: 'Test prompt',
+          provider: 'stub',
+          model: 'gpt-4.1',
+        };
+
+        await adapter.execute(request);
+
+        expect(mockClient.chat.completions.create).toHaveBeenCalledWith(
+          expect.objectContaining({
+            model: 'gpt-4.1',
+          }),
+          {},
+        );
+      });
+
       it('should extract text content from response.choices[0].message.content', async () => {
         const mockResponse = {
           choices: [{ message: { content: 'Test output from OpenAI' } }],
@@ -257,6 +284,28 @@ describe('OpenAIAdapter', () => {
         const result = await adapter.execute(request);
 
         expect(result.model).toBe('gpt-4o');
+      });
+
+      it('should use requested model as fallback if response.model is undefined', async () => {
+        const mockResponse = {
+          choices: [{ message: { content: 'Test output' } }],
+          usage: { total_tokens: 100 },
+          model: undefined,
+        };
+        mockClient.chat.completions.create.mockResolvedValue(mockResponse);
+
+        const request: AIExecutionRequest = {
+          sessionId: 'session-1',
+          conversationId: 'conv-1',
+          userId: 'user-1',
+          prompt: 'Test prompt',
+          provider: 'stub',
+          model: 'gpt-4.1-mini',
+        };
+
+        const result = await adapter.execute(request);
+
+        expect(result.model).toBe('gpt-4.1-mini');
       });
     });
 

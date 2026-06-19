@@ -96,6 +96,10 @@ export class AnthropicAdapter implements AIAdapter {
     );
 
     try {
+      const executionModel =
+        typeof request.model === 'string' && request.model.trim().length > 0
+          ? request.model.trim()
+          : this.model;
       const normalizedSystemPrompt =
         typeof request.systemPrompt === 'string'
           ? request.systemPrompt.trim()
@@ -103,7 +107,7 @@ export class AnthropicAdapter implements AIAdapter {
 
       // Transform AIExecutionRequest to Anthropic Messages API format
       const anthropicRequest: Anthropic.MessageCreateParams = {
-        model: this.model,
+        model: executionModel,
         max_tokens: this.defaultMaxTokens,
         temperature: this.defaultTemperature,
         messages: [
@@ -125,7 +129,7 @@ export class AnthropicAdapter implements AIAdapter {
       );
 
       // Transform response to AIExecutionResult
-      return this.transformResponse(response);
+      return this.transformResponse(response, executionModel);
     } catch (error) {
       // Transform SDK errors to NestJS exceptions
       this.handleError(error, request);
@@ -146,6 +150,7 @@ export class AnthropicAdapter implements AIAdapter {
    */
   private transformResponse(
     response: Anthropic.Message,
+    fallbackModel: string,
   ): AIExecutionResult {
     // Validate response structure
     if (!response.content || response.content.length === 0) {
@@ -198,7 +203,7 @@ export class AnthropicAdapter implements AIAdapter {
     }
 
     // Extract model identifier (use response model or fallback to instance model)
-    const model = response.model || this.model;
+    const model = response.model || fallbackModel;
 
     this.logger.debug(
       `Anthropic response: output=${output.length} chars, tokens=${tokensUsed}, model=${model}`,

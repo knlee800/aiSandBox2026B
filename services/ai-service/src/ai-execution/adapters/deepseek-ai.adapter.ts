@@ -98,6 +98,10 @@ export class DeepSeekAdapter implements AIAdapter {
     );
 
     try {
+      const executionModel =
+        typeof request.model === 'string' && request.model.trim().length > 0
+          ? request.model.trim()
+          : this.model;
       const normalizedSystemPrompt =
         typeof request.systemPrompt === 'string'
           ? request.systemPrompt.trim()
@@ -123,7 +127,7 @@ export class DeepSeekAdapter implements AIAdapter {
 
       // Transform AIExecutionRequest to DeepSeek Chat Completions API format
       const deepseekRequest: OpenAI.Chat.ChatCompletionCreateParams = {
-        model: this.model,
+        model: executionModel,
         max_tokens: this.defaultMaxTokens,
         temperature: this.defaultTemperature,
         messages,
@@ -137,7 +141,7 @@ export class DeepSeekAdapter implements AIAdapter {
       );
 
       // Transform response to AIExecutionResult
-      return this.transformResponse(response);
+      return this.transformResponse(response, executionModel);
     } catch (error) {
       // Transform SDK errors to NestJS exceptions
       this.handleError(error, request);
@@ -158,6 +162,7 @@ export class DeepSeekAdapter implements AIAdapter {
    */
   private transformResponse(
     response: OpenAI.Chat.ChatCompletion,
+    fallbackModel: string,
   ): AIExecutionResult {
     // Validate response structure
     if (!response.choices || response.choices.length === 0) {
@@ -195,7 +200,7 @@ export class DeepSeekAdapter implements AIAdapter {
     // Extract values
     const output = content;
     const tokensUsed = response.usage.total_tokens;
-    const model = response.model || this.model;
+    const model = response.model || fallbackModel;
 
     this.logger.debug(
       `DeepSeek response: output=${output.length} chars, tokens=${tokensUsed}, model=${model}`,
