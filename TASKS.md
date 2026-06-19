@@ -18546,13 +18546,14 @@ If icons are needed, use Heroicons v2 Outline only: `@heroicons/react/24/outline
 
 ## AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
 
-**Family status:** ACTIVE — AGENT-HARNESS-00 COMPLETE and LOCKED; AGENT-HARNESS-01A COMPLETE and LOCKED
+**Family status:** ACTIVE — AGENT-HARNESS-00 COMPLETE and LOCKED; AGENT-HARNESS-01A COMPLETE and LOCKED; AGENT-HARNESS-01B COMPLETE and LOCKED
 
-**Current stage:** AGENT-HARNESS-01A COMPLETE and LOCKED — per-request model fix shipped; next step is AGENT-HARNESS-01B registration
+**Current stage:** AGENT-HARNESS-01B COMPLETE and LOCKED — v1 typed contracts/config foundation shipped; next step is AGENT-HARNESS-01C registration
 
 **Registered tasks:**
 1. AGENT-HARNESS-00 — Agent Harness v1 Master Plan (COMPLETE and LOCKED)
 2. AGENT-HARNESS-01A — Per-Request Model Selection Fix (COMPLETE and LOCKED)
+3. AGENT-HARNESS-01B — Agent Harness v1 Contracts + Config Shape (COMPLETE and LOCKED)
 
 **Completed foundations (prerequisites):**
 - AI-CONTEXT family COMPLETE and LOCKED — global/project AI instructions, repo docs registry, repo docs prompt injection, context indicator, regression matrix
@@ -18773,3 +18774,168 @@ Wire per-request model selection through the existing AI execution path so the r
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-01A.
 **Checkpoint:** `docs/AGENT-HARNESS-01A-CHECKPOINT.md`
+
+---
+
+#### AGENT-HARNESS-01B: Agent Harness v1 Contracts + Config Shape
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** AGENT-HARNESS-01B
+**Family:** AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
+**Priority:** High
+**Nature:** BACKEND / AI SERVICE / CONTRACTS / CONFIG FOUNDATION / NO RUNTIME BEHAVIOR CHANGE
+**Risk:** Medium
+**Depends on:** AGENT-HARNESS-00 COMPLETE and LOCKED; AGENT-HARNESS-01A COMPLETE and LOCKED
+
+**Problem:**
+AGENT-HARNESS-00 established that future Agent Harness work must avoid hardcoded behavior and should be built around versioned contracts, policy/config objects, registries, adapters, and explicit migration paths. Before implementing tool protocol, model profiles, prompt templates, or multi-turn tool loops, the project needs a small typed foundation that defines Agent Harness v1 contract and config shapes without changing runtime behavior.
+
+**Objective:**
+Define typed Agent Harness v1 contracts and configuration shapes that future slices can use. This slice creates a stable foundation for:
+
+- versioned Agent Harness v1 request/state/tool/config contracts;
+- policy/config defaults;
+- future model profile registry;
+- future tool registry;
+- future prompt template registry;
+- future audit/eval events;
+  without implementing runtime behavior or changing the current AI execution flow.
+
+**Scope:**
+- Add type/config files only under `services/ai-service/src/agent-harness/`.
+- No runtime behavior change in this slice.
+- No provider adapter behavior change in this slice.
+- No WorkerProcessor behavior change unless needed only to export/import types without using them.
+- No queue/SSE/status behavior change.
+- No prompt assembly behavior change.
+- No file-action parsing behavior change.
+- No frontend/UI changes.
+- Keep contracts parallel to existing LOCKED AIExecutionRequest / AIExecutionResult types.
+- Do not mutate locked types directly.
+- Prepare for later AGENT-HARNESS-01C Model Profile Registry and AGENT-HARNESS-01D Tool Registry Contract.
+
+**Expected contract/config concepts:**
+- `AgentHarnessRunRequestV1`
+- `AgentHarnessRunStateV1`
+- `AgentHarnessModeV1`
+- `AgentHarnessToolDefinitionV1`
+- `AgentHarnessToolCallV1`
+- `AgentHarnessToolResultV1`
+- `AgentHarnessToolErrorV1`
+- `AgentHarnessPolicyV1`
+- `AgentHarnessConfigV1`
+- `AgentHarnessAuditEventV1`
+- `AgentHarnessValidationResultV1`
+- `AgentHarnessBrowserSmokeResultV1`
+- `AgentHarnessModelProfileReferenceV1` (placeholder only, if useful)
+
+**Expected config fields:**
+- `maxToolIterations`
+- `maxFileReadBytes`
+- `maxFileWriteBytes`
+- `maxToolResultBytes`
+- `maxValidationOutputBytes`
+- `toolTimeoutMs`
+- `validationTimeoutMs`
+- `browserSmokeTimeoutMs`
+- `allowArbitraryShell` (default: `false`)
+- `allowedValidationCommands`
+- `requireApprovalForDelete`
+- `requireApprovalForPackageInstall`
+- `requireApprovalForEnvFileWrite`
+- `requireApprovalForLargeWrite`
+- `enableBrowserSmoke` (default: `false`)
+- `enableSemanticSearch` (default: `false`)
+- `enableToolLoop` (default: `false`)
+- `auditEventsEnabled`
+
+**Likely implementation files:**
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\contracts\agent-harness.contracts.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\config\agent-harness.config.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\index.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\contracts\agent-harness.contracts.spec.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\config\agent-harness.config.spec.ts`
+
+Alternative path is acceptable if the current project structure strongly prefers another location, but the implementation must explain why.
+
+**Changeability / no-hardcoding requirements:**
+The future implementation must:
+- define versioned v1 contracts, not unversioned loose shapes;
+- keep contracts parallel to locked existing execution types;
+- centralize Agent Harness policy defaults in one config module;
+- avoid hardcoded model names;
+- avoid hardcoded tool lists;
+- avoid hardcoded validation command logic in WorkerProcessor;
+- avoid hardcoded prompt text inside WorkerProcessor;
+- expose config defaults through typed exports;
+- prepare for feature flags without enabling new behavior;
+- keep future migration path explicit.
+
+**Non-goals:**
+- No model profile registry implementation.
+- No tool registry implementation.
+- No prompt template registry implementation.
+- No tool protocol runtime execution.
+- No WorkerProcessor multi-turn loop.
+- No adapter tool-use/function-calling support.
+- No provider streaming.
+- No repo indexing/search implementation.
+- No patch/apply engine implementation.
+- No validation runner implementation.
+- No browser smoke implementation.
+- No plan/review UI.
+- No database schema changes.
+- No queue architecture changes.
+- No dependency changes.
+- No frontend/UI changes.
+- No direct mutation of LOCKED AIExecutionRequest / AIExecutionResult.
+- No changes to current prompt assembly ordering.
+- No changes to current file-action parser.
+- No changes to current checkpoint/revert/coherence flow.
+
+**Validation requirements (for implementation step):**
+- Run focused ai-service tests for new agent-harness files.
+- Run ai-service typecheck/build after new types/config exports are added.
+- Tests must prove:
+  1. Default config is present and typed.
+  2. Safety-sensitive defaults are conservative.
+  3. `allowArbitraryShell` is `false` by default.
+  4. `enableBrowserSmoke`, `enableToolLoop`, `enableSemanticSearch` are `false` by default.
+  5. Validation command allow-list exists as config data, not worker hardcoding.
+  6. v1 contract names are exported from the stable index file.
+- Browser smoke: not required (contracts/config foundation only).
+- Frontend validation: not required (no frontend files touched).
+
+**Acceptance criteria:**
+- [x] AGENT-HARNESS-01B registered as ACTIVE in TASKS.md and TASKS_BACKLOG_FULL.md
+- [x] Dependency on AGENT-HARNESS-00 COMPLETE and LOCKED documented
+- [x] Dependency on AGENT-HARNESS-01A COMPLETE and LOCKED documented
+- [x] Problem/objective/scope/non-goals documented
+- [x] Changeability/no-hardcoding requirements documented
+- [x] Likely files documented
+- [x] Expected contract/config concepts documented
+- [x] Validation requirements documented
+- [x] Browser smoke requirement documented as not required
+- [x] No source/runtime/test/package files changed (registration step)
+- [x] No checkpoint created (registration step)
+- [x] No implementation performed (registration step)
+- [x] (Implementation) contracts file exports all v1 type names
+- [x] (Implementation) config file exports typed defaults
+- [x] (Implementation) index.ts re-exports all v1 contracts and config
+- [x] (Implementation) focused ai-service tests pass (2 suites, 6 tests)
+- [x] (Implementation) ai-service build passes (tsc clean)
+
+**Files changed:**
+- `services/ai-service/src/agent-harness/contracts/agent-harness.contracts.ts` (new — all v1 contract types/interfaces)
+- `services/ai-service/src/agent-harness/config/agent-harness.config.ts` (new — DEFAULT_AGENT_HARNESS_CONFIG_V1)
+- `services/ai-service/src/agent-harness/index.ts` (new — stable barrel export)
+- `services/ai-service/src/agent-harness/contracts/agent-harness.contracts.spec.ts` (new — v1 export and shape tests)
+- `services/ai-service/src/agent-harness/config/agent-harness.config.spec.ts` (new — conservative defaults tests)
+
+**Validation results:**
+- `npm test` (focused agent-harness specs) — PASS (2 suites, 6 tests)
+- `npm run build` — PASS (tsc clean)
+- IDE diagnostics on `src/agent-harness/` — PASS (no linter errors)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-01B.
+**Checkpoint:** `docs/AGENT-HARNESS-01B-CHECKPOINT.md`
