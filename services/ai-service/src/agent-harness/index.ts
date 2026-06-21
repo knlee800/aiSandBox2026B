@@ -7,3 +7,4 @@ export * from './tools/tool-registry';
 export * from './prompts/prompt-template.contracts';
 export * from './prompts/prompt-template.registry';
 export * from './orchestrator/agent-harness-loop';
+export * from './tools/tool-dispatcher';

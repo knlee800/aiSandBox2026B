@@ -2,8 +2,10 @@ import type { AIExecutionRequest, AIExecutionResult } from '../../ai-execution/t
 import type {
   AIAdapterToolUseRequestOptions,
   AIAdapterToolUseResult,
+  AIAdapterToolResultPayload,
 } from '../../ai-execution/adapters/adapter-tool-use.contracts';
 import type { AgentHarnessConfigV1 } from '../contracts/agent-harness.contracts';
+import type { ToolDispatcher } from '../tools/tool-dispatcher';
 
 /**
  * Function signature accepted by the loop helper.
@@ -25,6 +27,7 @@ export interface AgentHarnessLoopOptions {
   readonly request: AIExecutionRequest;
   readonly config: Pick<AgentHarnessConfigV1, 'maxToolIterations'>;
   readonly signal?: AbortSignal;
+  readonly dispatcher?: ToolDispatcher;
 }
 
 export interface AgentHarnessLoopResult {
@@ -41,27 +44,28 @@ const NO_DISPATCHER_FALLBACK =
 /**
  * Bounded multi-turn tool loop foundation for Agent Harness v1.
  *
- * Current behavior (no dispatcher available):
+ * Behavior:
  * - Calls executeFn once.
  * - If the adapter returns no tool calls → returns the completed result.
- * - If the adapter returns tool calls → returns a safe fallback (no_dispatcher).
- *
- * Future behavior (when a dispatcher is wired):
- * - Calls executeFn, dispatches tools, feeds results back, and repeats
- *   until the model finishes or maxToolIterations is reached.
+ * - If the adapter returns tool calls and no dispatcher is provided →
+ *   returns a safe fallback (no_dispatcher).
+ * - If the adapter returns tool calls and a dispatcher is provided →
+ *   dispatches each tool call, collects results, feeds them back into
+ *   the next executeFn call via priorToolResults, and repeats until
+ *   the model finishes or maxToolIterations is reached.
  *
  * Safety invariants:
  * - maxToolIterations is a hard ceiling.
- * - No filesystem/write/delete/validation/browser tool executes.
- * - No tool results are generated.
  * - AbortSignal is checked before each iteration.
+ * - Dispatcher errors are wrapped into typed results, not exceptions.
  */
 export async function executeAgentHarnessLoop(
   options: AgentHarnessLoopOptions,
 ): Promise<AgentHarnessLoopResult> {
-  const { executeFn, request, config, signal } = options;
+  const { executeFn, request, config, signal, dispatcher } = options;
   const maxIterations = Math.max(1, config.maxToolIterations);
   let totalToolCallsReceived = 0;
+  let priorToolResults: AIAdapterToolResultPayload[] | undefined;
 
   for (let iteration = 0; iteration < maxIterations; iteration++) {
     if (signal?.aborted) {
@@ -73,7 +77,12 @@ export async function executeAgentHarnessLoop(
       };
     }
 
-    const adapterResult = await executeFn(request);
+    const executeOptions: AIAdapterToolUseRequestOptions | undefined =
+      priorToolResults && priorToolResults.length > 0
+        ? { toolResults: priorToolResults }
+        : undefined;
+
+    const adapterResult = await executeFn(request, executeOptions);
     const toolCalls = adapterResult.toolCalls ?? [];
     totalToolCallsReceived += toolCalls.length;
 
@@ -92,22 +101,35 @@ export async function executeAgentHarnessLoop(
       };
     }
 
-    // Tool calls requested but no dispatcher exists in this slice.
-    // Future: dispatch tools, collect results, build next request, continue loop.
-    return {
-      result: {
-        output: adapterResult.output
-          ? `${adapterResult.output}\n\n${NO_DISPATCHER_FALLBACK}`
-          : NO_DISPATCHER_FALLBACK,
-        tokensUsed: adapterResult.tokensUsed,
-        model: adapterResult.model,
-        provider: adapterResult.provider,
-        fileActions: adapterResult.fileActions,
-      },
-      iterationsUsed: iteration + 1,
-      terminationReason: 'no_dispatcher',
-      toolCallsReceived: totalToolCallsReceived,
-    };
+    if (!dispatcher) {
+      return {
+        result: {
+          output: adapterResult.output
+            ? `${adapterResult.output}\n\n${NO_DISPATCHER_FALLBACK}`
+            : NO_DISPATCHER_FALLBACK,
+          tokensUsed: adapterResult.tokensUsed,
+          model: adapterResult.model,
+          provider: adapterResult.provider,
+          fileActions: adapterResult.fileActions,
+        },
+        iterationsUsed: iteration + 1,
+        terminationReason: 'no_dispatcher',
+        toolCallsReceived: totalToolCallsReceived,
+      };
+    }
+
+    const results: AIAdapterToolResultPayload[] = [];
+    for (const toolCall of toolCalls) {
+      const dispatchResult = await dispatcher.dispatch(toolCall, signal);
+      results.push({
+        callId: dispatchResult.callId,
+        toolName: dispatchResult.toolName,
+        success: dispatchResult.success,
+        content: dispatchResult.content,
+        errorMessage: dispatchResult.errorMessage,
+      });
+    }
+    priorToolResults = results;
   }
 
   return {

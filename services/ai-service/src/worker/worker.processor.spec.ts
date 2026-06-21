@@ -306,6 +306,39 @@ Project policy`);
   });
 });
 
+describe('Agent Harness empty-dispatcher wiring', () => {
+  it('WorkerProcessor imports ToolDispatcher from agent-harness tools', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    expect(workerSource).toContain("import { ToolDispatcher } from '../agent-harness/tools/tool-dispatcher'");
+  });
+
+  it('WorkerProcessor constructs ToolDispatcher only inside the double-gated harness branch', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    const dispatcherInstantiations = (workerSource.match(/new ToolDispatcher\(\)/g) || []).length;
+    expect(dispatcherInstantiations).toBe(1);
+
+    const harnessGateIndex = workerSource.indexOf("harnessVersion === 'v1'");
+    const dispatcherIndex = workerSource.indexOf('new ToolDispatcher()');
+    expect(harnessGateIndex).toBeGreaterThan(-1);
+    expect(dispatcherIndex).toBeGreaterThan(harnessGateIndex);
+  });
+
+  it('WorkerProcessor passes dispatcher into executeAgentHarnessLoop', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    expect(workerSource).toContain('dispatcher,');
+    expect(workerSource).toContain('dispatcher');
+  });
+});
+
 describe('Agent Harness double-gate config', () => {
   it('enableToolLoop defaults to false in DEFAULT_AGENT_HARNESS_CONFIG_V1', () => {
     expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop).toBe(false);

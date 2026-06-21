@@ -4,7 +4,11 @@ import {
   type AgentHarnessExecuteWithToolsFn,
 } from './agent-harness-loop';
 import type { AIExecutionRequest } from '../../ai-execution/types';
-import type { AIAdapterToolUseResult } from '../../ai-execution/adapters/adapter-tool-use.contracts';
+import type {
+  AIAdapterToolUseResult,
+  AIAdapterToolUseRequestOptions,
+} from '../../ai-execution/adapters/adapter-tool-use.contracts';
+import { ToolDispatcher } from '../tools/tool-dispatcher';
 
 function makeRequest(overrides?: Partial<AIExecutionRequest>): AIExecutionRequest {
   return {
@@ -234,5 +238,160 @@ describe('executeAgentHarnessLoop', () => {
     await expect(
       executeAgentHarnessLoop(makeOptions(executeFn)),
     ).rejects.toThrow('Provider API failed');
+  });
+});
+
+describe('executeAgentHarnessLoop with dispatcher', () => {
+  it('still returns no_dispatcher when no dispatcher is passed and tool calls appear', async () => {
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>().mockResolvedValue(
+      makeToolCallResult(),
+    );
+
+    const loopResult = await executeAgentHarnessLoop(makeOptions(executeFn));
+
+    expect(loopResult.terminationReason).toBe('no_dispatcher');
+    expect(loopResult.result.output).toContain('no tool dispatcher is available');
+  });
+
+  it('dispatches tool calls and feeds results back via priorToolResults', async () => {
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('read_file', async (args) => {
+      return { content: `contents of ${args.path}` };
+    });
+
+    let callCount = 0;
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, [AIExecutionRequest, AIAdapterToolUseRequestOptions?]>(
+      (_req, _opts) => {
+        callCount++;
+        if (callCount === 1) {
+          return Promise.resolve(makeToolCallResult());
+        }
+        return Promise.resolve(makeCompletedResult({ output: 'Done after tool use.' }));
+      },
+    );
+
+    const loopResult = await executeAgentHarnessLoop(
+      makeOptions(executeFn, { dispatcher }),
+    );
+
+    expect(loopResult.terminationReason).toBe('completed');
+    expect(loopResult.iterationsUsed).toBe(2);
+    expect(loopResult.toolCallsReceived).toBe(1);
+    expect(loopResult.result.output).toBe('Done after tool use.');
+    expect(executeFn).toHaveBeenCalledTimes(2);
+
+    const secondCallOpts = executeFn.mock.calls[1][1];
+    expect(secondCallOpts).toBeDefined();
+    expect(secondCallOpts!.toolResults).toBeDefined();
+    expect(secondCallOpts!.toolResults).toHaveLength(1);
+    expect(secondCallOpts!.toolResults![0].callId).toBe('call-1');
+    expect(secondCallOpts!.toolResults![0].success).toBe(true);
+    expect(secondCallOpts!.toolResults![0].content).toEqual({ content: 'contents of README.md' });
+  });
+
+  it('feeds TOOL_NOT_FOUND results back when empty dispatcher receives tool calls', async () => {
+    const dispatcher = new ToolDispatcher();
+
+    let callCount = 0;
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, [AIExecutionRequest, AIAdapterToolUseRequestOptions?]>(
+      (_req, _opts) => {
+        callCount++;
+        if (callCount === 1) {
+          return Promise.resolve(makeToolCallResult());
+        }
+        return Promise.resolve(makeCompletedResult({ output: 'Done.' }));
+      },
+    );
+
+    const loopResult = await executeAgentHarnessLoop(
+      makeOptions(executeFn, { dispatcher }),
+    );
+
+    expect(loopResult.terminationReason).toBe('completed');
+    expect(loopResult.iterationsUsed).toBe(2);
+    expect(executeFn).toHaveBeenCalledTimes(2);
+
+    const secondCallOpts = executeFn.mock.calls[1][1];
+    expect(secondCallOpts!.toolResults).toHaveLength(1);
+    expect(secondCallOpts!.toolResults![0].success).toBe(false);
+    expect(secondCallOpts!.toolResults![0].errorMessage).toContain('read_file');
+  });
+
+  it('enforces maxToolIterations with dispatcher — stops at ceiling', async () => {
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('read_file', async () => ({ content: 'data' }));
+
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>().mockResolvedValue(
+      makeToolCallResult(),
+    );
+
+    const loopResult = await executeAgentHarnessLoop(
+      makeOptions(executeFn, { dispatcher, config: { maxToolIterations: 2 } }),
+    );
+
+    expect(loopResult.terminationReason).toBe('max_iterations');
+    expect(loopResult.iterationsUsed).toBe(2);
+    expect(executeFn).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not pass priorToolResults on the first executeFn call', async () => {
+    const dispatcher = new ToolDispatcher();
+
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, [AIExecutionRequest, AIAdapterToolUseRequestOptions?]>(
+      () => Promise.resolve(makeCompletedResult()),
+    );
+
+    await executeAgentHarnessLoop(makeOptions(executeFn, { dispatcher }));
+
+    const firstCallOpts = executeFn.mock.calls[0][1];
+    expect(firstCallOpts).toBeUndefined();
+  });
+
+  it('empty dispatcher does not execute real tools', async () => {
+    const realToolSpy = jest.fn();
+    const dispatcher = new ToolDispatcher();
+
+    let callCount = 0;
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>(() => {
+      callCount++;
+      if (callCount === 1) {
+        return Promise.resolve(makeToolCallResult({
+          toolCalls: [
+            { callId: 'c1', toolName: 'write_file', arguments: { path: 'a.ts', content: 'x' }, providerKind: 'stub' },
+            { callId: 'c2', toolName: 'delete_file', arguments: { path: 'b.ts' }, providerKind: 'stub' },
+          ],
+        }));
+      }
+      return Promise.resolve(makeCompletedResult());
+    });
+
+    await executeAgentHarnessLoop(makeOptions(executeFn, { dispatcher }));
+
+    expect(realToolSpy).not.toHaveBeenCalled();
+    expect(dispatcher.registeredToolCount).toBe(0);
+  });
+
+  it('preserves fileActions from final adapter result with dispatcher', async () => {
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('read_file', async () => ({ content: 'data' }));
+
+    let callCount = 0;
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>(() => {
+      callCount++;
+      if (callCount === 1) {
+        return Promise.resolve(makeToolCallResult());
+      }
+      return Promise.resolve(makeCompletedResult({
+        fileActions: [{ action: 'write', path: 'out.ts', content: 'code' }],
+      }));
+    });
+
+    const loopResult = await executeAgentHarnessLoop(
+      makeOptions(executeFn, { dispatcher }),
+    );
+
+    expect(loopResult.result.fileActions).toEqual([
+      { action: 'write', path: 'out.ts', content: 'code' },
+    ]);
   });
 });

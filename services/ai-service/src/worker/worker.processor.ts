@@ -25,6 +25,7 @@ import type { AIExecutionRequest } from '../ai-execution/types';
 import type { WorkspaceContext } from '../queue/job.types';
 import { DEFAULT_AGENT_HARNESS_CONFIG_V1 } from '../agent-harness/config/agent-harness.config';
 import { executeAgentHarnessLoop } from '../agent-harness/orchestrator/agent-harness-loop';
+import { ToolDispatcher } from '../agent-harness/tools/tool-dispatcher';
 
 /**
  * Phase-51.3: Conservative classifier for transient (retryable) errors.
@@ -745,11 +746,13 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                   executionRequest.provider,
                 );
                 if (adapter.supportsToolUse && adapter.executeWithTools) {
+                  const dispatcher = new ToolDispatcher();
                   const loopResult = await executeAgentHarnessLoop({
                     executeFn: (req, opts) => adapter.executeWithTools!(req, opts),
                     request: executionRequest,
                     config: DEFAULT_AGENT_HARNESS_CONFIG_V1,
                     signal: abortController.signal,
+                    dispatcher,
                   });
                   aiResult = loopResult.result;
                 } else {

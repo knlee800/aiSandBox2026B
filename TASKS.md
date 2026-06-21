@@ -19719,3 +19719,141 @@ Before implementation, inspect at minimum:
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-02B.
 **Checkpoint:** `docs/AGENT-HARNESS-02B-CHECKPOINT.md`
+
+----
+
+#### AGENT-HARNESS-02C: Tool Dispatcher + Loop Multi-Turn Wiring
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** AGENT-HARNESS-02C
+**Family:** AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
+**Priority:** Critical
+**Nature:** BACKEND / AI SERVICE / TOOL DISPATCHER FOUNDATION / LOOP WIRING / NO REAL TOOL EXECUTION
+**Risk:** High
+**Depends on:** AGENT-HARNESS-00 COMPLETE and LOCKED; AGENT-HARNESS-01A COMPLETE and LOCKED; AGENT-HARNESS-01B COMPLETE and LOCKED; AGENT-HARNESS-01C COMPLETE and LOCKED; AGENT-HARNESS-01D COMPLETE and LOCKED; AGENT-HARNESS-01E COMPLETE and LOCKED; AGENT-HARNESS-02A COMPLETE and LOCKED; AGENT-HARNESS-02B COMPLETE and LOCKED
+
+**Why this task exists:**
+The master plan moves from AGENT-HARNESS-02B to AGENT-HARNESS-03A, but next-slice review found a structural prerequisite. AGENT-HARNESS-01D created a data-only tool registry, and AGENT-HARNESS-02B created a double-gated loop foundation that currently terminates with no_dispatcher when tool calls appear. There is no ToolDispatcher class and no loop path that dispatches tool calls, collects tool results, and feeds them back into the next adapter turn. Implementing read_file and list_files directly in 03A would bundle dispatcher infrastructure, loop result feeding, API boundary work, file handlers, and tests into one oversized slice.
+
+**Problem:**
+Before AGENT-HARNESS-03A can safely implement read_file and list_files tools, Agent Harness needs a small ai-service-only dispatcher foundation and multi-turn loop wiring. This must route tool-call metadata to handlers and feed typed tool results back into the next adapter call, while still executing no real file, shell, validation, browser, or network tools.
+
+**Objective:**
+Add a ToolDispatcher foundation and multi-turn loop result feeding for Agent Harness v1. This slice creates the dispatcher infrastructure with no registered real handlers, preserves the no_dispatcher fallback when no dispatcher is supplied, and keeps all existing safety gates.
+
+**Scope:**
+- Add a ToolDispatcher class in ai-service.
+- Extend executeAgentHarnessLoop so it can use an optional dispatcher.
+- Feed AgentToolResult values back into the next adapter turn using existing AIAdapterToolUseRequestOptions.priorToolResults.
+- Wire an empty dispatcher into WorkerProcessor only inside the existing double-gated harness path.
+- Keep enableToolLoop default false.
+- Keep harnessVersion === 'v1' as the explicit job-level gate.
+- Preserve existing single-shot path.
+- Preserve existing no_dispatcher behavior when no dispatcher is passed.
+- No real tool handlers.
+- No file API client.
+- No api-gateway endpoint changes.
+- No container-manager changes.
+- No frontend/UI changes.
+- No database schema changes.
+- No package/dependency changes.
+
+**Likely implementation files:**
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\tools\tool-dispatcher.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\tools\tool-dispatcher.spec.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\orchestrator\agent-harness-loop.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\orchestrator\agent-harness-loop.spec.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\index.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\worker\worker.processor.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\worker\worker.processor.spec.ts`
+
+**Expected implementation behavior:**
+- ToolDispatcher can register handlers by tool ID.
+- ToolDispatcher.dispatch() returns a typed AgentToolResult.
+- Unknown tools return a safe TOOL_NOT_FOUND style result, not an exception that crashes the loop.
+- Handler errors are wrapped into typed tool error results.
+- Timeout/AbortSignal behavior is respected where practical.
+- executeAgentHarnessLoop with a dispatcher dispatches returned tool calls and feeds results into the next executeFn call as priorToolResults.
+- executeAgentHarnessLoop without a dispatcher keeps the existing no_dispatcher fallback.
+- WorkerProcessor constructs an empty dispatcher in the double-gated harness branch and passes it into the loop.
+- With an empty dispatcher, real tool calls produce TOOL_NOT_FOUND results and still do not execute anything.
+- No real tool execution occurs in this slice.
+
+**Security / safety requirements:**
+- No arbitrary shell execution.
+- No filesystem read/write/delete execution.
+- No validation command execution.
+- No browser automation.
+- No network tool execution.
+- No hidden auto-approval.
+- No real read_file/list_files/write_file/delete_file handlers.
+- No changes to tool registry enabled flags.
+- No direct filesystem access from ai-service.
+- No api-gateway or container-manager changes.
+- No checkpoint/revert bypass.
+- No unbounded loops.
+- maxToolIterations remains enforced.
+- Existing double gate remains enforced.
+- Existing single-shot path remains preserved.
+
+**Non-goals:**
+- No read_file implementation.
+- No list_files implementation.
+- No write_file implementation.
+- No delete_file implementation.
+- No validation runner.
+- No browser smoke runner.
+- No file API client in ai-service.
+- No internal file endpoints in api-gateway.
+- No container-manager changes.
+- No frontend/UI changes.
+- No database schema changes.
+- No package/dependency changes.
+- No approval flow.
+- No checkpoint changes.
+- No SSE event changes.
+- No change to current file-action apply flow.
+
+**Validation requirements (for future implementation step):**
+- Add focused tests for ToolDispatcher.
+- Add focused tests for executeAgentHarnessLoop dispatcher path.
+- Update WorkerProcessor tests for empty-dispatcher wiring and gate preservation.
+- Tests must prove:
+  1. ToolDispatcher.dispatch() returns TOOL_NOT_FOUND when no handler is registered.
+  2. ToolDispatcher.dispatch() routes correctly when a handler is registered.
+  3. Handler errors become typed tool error results.
+  4. executeAgentHarnessLoop without dispatcher still returns no_dispatcher.
+  5. executeAgentHarnessLoop with dispatcher dispatches tool calls.
+  6. executeAgentHarnessLoop feeds tool results back through priorToolResults on the next adapter turn.
+  7. Empty dispatcher does not execute real tools.
+  8. maxToolIterations remains enforced.
+  9. enableToolLoop false still prevents harness path in WorkerProcessor.
+  10. Existing 02B tests remain passing.
+- Run focused ai-service tests for touched files.
+- Run ai-service build/typecheck.
+- No frontend tests.
+- No browser smoke.
+
+**Acceptance criteria:**
+- [x] AGENT-HARNESS-02C registered as ACTIVE in TASKS.md and TASKS_BACKLOG_FULL.md
+- [x] Documented as a prerequisite discovered by next-slice review before AGENT-HARNESS-03A
+- [x] All dependencies through AGENT-HARNESS-02B COMPLETE and LOCKED documented
+- [x] Problem/objective/scope documented
+- [x] High-risk nature documented
+- [x] Likely implementation files documented
+- [x] Expected dispatcher and loop behavior documented
+- [x] Security/safety requirements documented
+- [x] Non-goals documented
+- [x] Validation requirements documented
+- [x] Browser smoke documented as not required
+- [x] No source/runtime/test/package files changed (registration step)
+- [x] No checkpoint created (registration step)
+- [x] No implementation performed (registration step)
+
+**Validation results:**
+- `npx jest --no-cache` (focused 3 specs) — PASS (3 suites, 53 tests)
+- `npm run build` — PASS (tsc clean)
+- ReadLints on all 7 touched files — PASS (no linter errors)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-02C.
+**Checkpoint:** `docs/AGENT-HARNESS-02C-CHECKPOINT.md`
