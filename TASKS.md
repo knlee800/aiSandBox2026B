@@ -19270,3 +19270,173 @@ The implementation must:
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-01D.
 **Checkpoint:** `docs/AGENT-HARNESS-01D-CHECKPOINT.md`
+
+---
+
+#### AGENT-HARNESS-01E: Prompt Template Registry
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** AGENT-HARNESS-01E
+**Family:** AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
+**Priority:** High
+**Nature:** BACKEND / AI SERVICE / PROMPT CONTRACTS / REGISTRY FOUNDATION / NO RUNTIME PROMPT ROUTING CHANGE
+**Risk:** Medium
+**Depends on:** AGENT-HARNESS-00 COMPLETE and LOCKED; AGENT-HARNESS-01A COMPLETE and LOCKED; AGENT-HARNESS-01B COMPLETE and LOCKED; AGENT-HARNESS-01C COMPLETE and LOCKED; AGENT-HARNESS-01D COMPLETE and LOCKED
+
+**Problem:**
+AGENT-HARNESS-01B created Agent Harness v1 contracts/config, AGENT-HARNESS-01C created a model profile registry, and AGENT-HARNESS-01D created a tool registry contract. The next foundation needed is a typed Prompt Template Registry so future Agent Harness slices can manage system prompts, planning prompts, tool-use prompts, repair prompts, validation prompts, and final response prompts without hardcoding prompt text across WorkerProcessor, AIExecutionService, adapters, or future tool loops.
+
+**Objective:**
+Register a bounded implementation slice to create a typed, data-only Prompt Template Registry foundation for Agent Harness v1. This slice defines prompt template contracts and initial registry metadata as data only. It does not change runtime prompt assembly or model behavior.
+
+**Scope:**
+- Add typed prompt template contract files and focused tests.
+- Reuse AGENT-HARNESS-01B contracts/config where appropriate.
+- No runtime behavior changes in this slice.
+- No prompt assembly behavior changes in this slice.
+- No WorkerProcessor behavior changes in this slice.
+- No AIExecutionService behavior changes in this slice.
+- No provider adapter behavior changes in this slice.
+- No tool execution behavior changes in this slice.
+- No queue/SSE/status behavior changes.
+- No frontend/UI changes.
+- Keep prompt template metadata easy to change later.
+- Prepare for later template rendering, versioning, tool-aware prompts, repair prompts, and model-profile-specific overrides.
+- Avoid hardcoding prompt template lists across unrelated files.
+
+**Likely implementation files:**
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\prompts\prompt-template.contracts.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\prompts\prompt-template.registry.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\prompts\prompt-template.registry.spec.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\index.ts` (updated barrel export)
+
+Alternative path acceptable only if project structure strongly prefers it; implementation must explain why.
+
+**Expected prompt template registry concepts:**
+Each prompt template definition should be typed and include:
+- `id`
+- `name`
+- `displayName`
+- `description`
+- `category`
+- `version`
+- `enabled`
+- `implementationStatus` (`planned` / `contract-only` / `implemented`)
+- `inputVariables`
+- `optionalInputVariables`
+- `outputExpectation`
+- `allowedModes`
+- `allowedModelProfiles`
+- `allowedToolIds`
+- `riskLevel` or `safetyScope` if useful
+- `tags`
+- `notes`
+
+**Expected initial registry entries:**
+Contract-only metadata for planned Agent Harness prompts:
+- `system_base`
+- `planning_instruction`
+- `tool_selection`
+- `tool_result_interpretation`
+- `file_change_instruction`
+- `validation_instruction`
+- `repair_instruction`
+- `final_response`
+
+All entries must be marked `contract-only` or `planned`, not wired into runtime prompt assembly.
+
+**Expected registry behavior:**
+- Export a stable list/map of prompt template definitions.
+- Export helper functions only if simple and testable:
+  - `listAgentHarnessPromptTemplates()`
+  - `listEnabledAgentHarnessPromptTemplates()`
+  - `getAgentHarnessPromptTemplate(templateId)`
+  - `isAgentHarnessPromptTemplateEnabled(templateId)`
+- Keep helper functions pure and data-only.
+- Do not wire helpers into WorkerProcessor or AIExecutionService in this slice.
+- Do not render prompt templates in this slice.
+- Do not change existing prompt assembly order.
+- Do not create runtime model-profile prompt routing in this slice.
+
+**Changeability / no-hardcoding requirements:**
+The implementation must:
+- centralize planned Agent Harness prompt templates in one registry module;
+- avoid hardcoded prompt template lists inside WorkerProcessor;
+- avoid hardcoded prompt template lists inside AIExecutionService;
+- make adding a new prompt template a registry/data change plus one focused runtime integration slice later;
+- keep prompt definitions typed and version-aware;
+- include implementation status metadata from the start;
+- keep prompt templates disabled or contract-only until implementation slices explicitly use them;
+- avoid changing runtime prompt behavior in this slice.
+
+**Non-goals:**
+- No runtime prompt assembly changes.
+- No prompt renderer.
+- No template interpolation engine.
+- No WorkerProcessor prompt routing changes.
+- No AIExecutionService prompt routing changes.
+- No adapter prompt behavior changes.
+- No model-profile-specific runtime routing.
+- No tool-use/function-calling support.
+- No runtime tool execution.
+- No database schema changes.
+- No queue architecture changes.
+- No dependency changes.
+- No frontend/UI changes.
+- No changes to current file-action parser.
+- No changes to checkpoint/revert/coherence flow.
+
+**Validation requirements (for implementation step):**
+- Run focused ai-service tests for new prompt-template files.
+- Run ai-service typecheck/build after new exports are added.
+- Tests must prove:
+  1. Registry exports the intended planned prompt templates.
+  2. Each template has required fields.
+  3. Template ids are unique.
+  4. Versions are present.
+  5. Implementation status is present and conservative.
+  6. Helper lookup returns the expected prompt template.
+  7. Missing template lookup is handled safely.
+  8. Enabled/list helper behavior is correct if helpers exist.
+  9. Registry exports are available from the stable agent-harness index file.
+  10. No runtime files import or execute this registry yet.
+- Browser smoke: not required (prompt template registry contracts/data only).
+- Frontend validation: not required (no frontend files touched).
+
+**Acceptance criteria:**
+- [x] AGENT-HARNESS-01E registered as ACTIVE in TASKS.md and TASKS_BACKLOG_FULL.md
+- [x] Dependency on AGENT-HARNESS-00 COMPLETE and LOCKED documented
+- [x] Dependency on AGENT-HARNESS-01A COMPLETE and LOCKED documented
+- [x] Dependency on AGENT-HARNESS-01B COMPLETE and LOCKED documented
+- [x] Dependency on AGENT-HARNESS-01C COMPLETE and LOCKED documented
+- [x] Dependency on AGENT-HARNESS-01D COMPLETE and LOCKED documented
+- [x] Problem/objective/scope/non-goals documented
+- [x] Changeability/no-hardcoding requirements documented
+- [x] Likely files documented
+- [x] Expected prompt template registry concepts documented
+- [x] Expected initial registry entries documented
+- [x] Expected registry behavior documented
+- [x] Validation requirements documented
+- [x] Browser smoke requirement documented as not required
+- [x] No source/runtime/test/package files changed (registration step)
+- [x] No checkpoint created (registration step)
+- [x] No implementation performed (registration step)
+- [x] (Implementation) prompt-template.contracts.ts exports all prompt template type names
+- [x] (Implementation) prompt-template.registry.ts exports template list/map and pure helper functions
+- [x] (Implementation) index.ts re-exports prompt template contracts and registry
+- [x] (Implementation) focused ai-service tests pass (1 suite, 10 tests)
+- [x] (Implementation) ai-service build passes (tsc clean)
+
+**Files changed:**
+- `services/ai-service/src/agent-harness/prompts/prompt-template.contracts.ts` (new — all v1 prompt template typed contracts)
+- `services/ai-service/src/agent-harness/prompts/prompt-template.registry.ts` (new — centralized registry data, map, and pure helpers)
+- `services/ai-service/src/agent-harness/prompts/prompt-template.registry.spec.ts` (new — 10 focused registry tests)
+- `services/ai-service/src/agent-harness/index.ts` (updated — added prompts barrel exports)
+
+**Validation results:**
+- `npm test -- src/agent-harness/prompts/prompt-template.registry.spec.ts` — PASS (1 suite, 10 tests)
+- `npm run build` — PASS (tsc clean)
+- ReadLints on `src/agent-harness/prompts/` and `src/agent-harness/index.ts` — PASS (no linter errors)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-01E.
+**Checkpoint:** `docs/AGENT-HARNESS-01E-CHECKPOINT.md`
