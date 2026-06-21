@@ -9,6 +9,16 @@ import {
 import Anthropic from '@anthropic-ai/sdk';
 import { AIAdapter } from './ai-adapter.interface';
 import { AIExecutionRequest, AIExecutionResult } from '../types';
+import type {
+  AIAdapterToolCallMetadata,
+  AIAdapterToolUseFinishReason,
+  AIAdapterToolUseRequestOptions,
+  AIAdapterToolUseResult,
+} from './adapter-tool-use.contracts';
+import {
+  mapAgentHarnessToolDefinitionsToAdapterToolDeclarations,
+  mapAdapterToolDeclarationsToAnthropicTools,
+} from './adapter-tool-use.mapper';
 
 /**
  * AnthropicAdapter
@@ -44,6 +54,7 @@ export class AnthropicAdapter implements AIAdapter {
   private readonly defaultTemperature = 1.0;
 
   readonly model: string;
+  readonly supportsToolUse = true;
 
   /**
    * Construct AnthropicAdapter
@@ -136,6 +147,61 @@ export class AnthropicAdapter implements AIAdapter {
     }
   }
 
+  async executeWithTools(
+    request: AIExecutionRequest,
+    options?: AIAdapterToolUseRequestOptions,
+  ): Promise<AIAdapterToolUseResult> {
+    this.logger.debug(
+      `Executing Anthropic tool-use request for session=${request.sessionId}, conversation=${request.conversationId}`,
+    );
+
+    try {
+      const executionModel =
+        typeof request.model === 'string' && request.model.trim().length > 0
+          ? request.model.trim()
+          : this.model;
+      const normalizedSystemPrompt =
+        typeof request.systemPrompt === 'string'
+          ? request.systemPrompt.trim()
+          : '';
+      const adapterTools = mapAgentHarnessToolDefinitionsToAdapterToolDeclarations(
+        options?.tools,
+      );
+      const anthropicTools = mapAdapterToolDeclarationsToAnthropicTools(
+        adapterTools,
+      );
+
+      const anthropicRequest: Anthropic.MessageCreateParams = {
+        model: executionModel,
+        max_tokens: this.defaultMaxTokens,
+        temperature: this.defaultTemperature,
+        messages: [
+          {
+            role: 'user',
+            content: request.prompt,
+          },
+        ],
+      };
+      if (normalizedSystemPrompt.length > 0) {
+        anthropicRequest.system = normalizedSystemPrompt;
+      }
+      if (anthropicTools.length > 0) {
+        anthropicRequest.tools =
+          anthropicTools as Anthropic.MessageCreateParams['tools'];
+      }
+
+      const createOptions = request.signal ? { signal: request.signal } : {};
+      const response = await this.client.messages.create(
+        anthropicRequest,
+        createOptions,
+      );
+
+      return this.transformToolUseResponse(response, executionModel);
+    } catch (error) {
+      this.handleError(error, request);
+    }
+  }
+
   /**
    * Transform Anthropic response to AIExecutionResult
    *
@@ -214,6 +280,104 @@ export class AnthropicAdapter implements AIAdapter {
       tokensUsed,
       model,
     };
+  }
+
+  private transformToolUseResponse(
+    response: Anthropic.Message,
+    fallbackModel: string,
+  ): AIAdapterToolUseResult {
+    if (!response.content || response.content.length === 0) {
+      this.logger.error('Anthropic tool-use response missing content field');
+      throw new InternalServerErrorException(
+        'Malformed Anthropic response: missing content',
+      );
+    }
+
+    if (!response.usage) {
+      this.logger.error('Anthropic tool-use response missing usage field');
+      throw new InternalServerErrorException(
+        'Malformed Anthropic response: missing usage',
+      );
+    }
+
+    const textBlocks = response.content
+      .filter((block) => block.type === 'text')
+      .map((block) => (block as Anthropic.TextBlock).text);
+    const output = textBlocks.join('\n\n');
+    const toolCalls = this.extractToolCalls(response.content);
+
+    if (textBlocks.length === 0 && toolCalls.length === 0) {
+      this.logger.error('Anthropic tool-use response contains no usable blocks');
+      throw new InternalServerErrorException(
+        'Malformed Anthropic response: no text or tool_use content',
+      );
+    }
+
+    if (
+      typeof response.usage.input_tokens !== 'number' ||
+      typeof response.usage.output_tokens !== 'number' ||
+      response.usage.input_tokens < 0 ||
+      response.usage.output_tokens < 0
+    ) {
+      this.logger.error('Invalid token counts in Anthropic response', {
+        input_tokens: response.usage.input_tokens,
+        output_tokens: response.usage.output_tokens,
+      });
+      throw new InternalServerErrorException(
+        'Malformed Anthropic response: invalid token counts',
+      );
+    }
+
+    const tokensUsed =
+      response.usage.input_tokens + response.usage.output_tokens;
+    const model = response.model || fallbackModel;
+    const finishReason = this.mapFinishReason(response.stop_reason, toolCalls);
+
+    return {
+      output,
+      tokensUsed,
+      model,
+      finishReason,
+      toolCalls,
+    };
+  }
+
+  private extractToolCalls(
+    blocks: readonly Anthropic.ContentBlock[],
+  ): readonly AIAdapterToolCallMetadata[] {
+    const toolUseBlocks = blocks.filter((block) => block.type === 'tool_use');
+    return toolUseBlocks.map((block, index) => {
+      const toolUseBlock = block as Anthropic.ToolUseBlock;
+      return {
+        callId: toolUseBlock.id || `anthropic-tool-use-${index + 1}`,
+        toolName: toolUseBlock.name,
+        arguments:
+          typeof toolUseBlock.input === 'object' && toolUseBlock.input !== null
+            ? (toolUseBlock.input as Record<string, unknown>)
+            : {},
+        providerKind: 'anthropic-tool_use',
+      };
+    });
+  }
+
+  private mapFinishReason(
+    stopReason: string | null | undefined,
+    toolCalls: readonly AIAdapterToolCallMetadata[],
+  ): AIAdapterToolUseFinishReason {
+    if (toolCalls.length > 0 || stopReason === 'tool_use') {
+      return 'tool_calls';
+    }
+    if (stopReason === 'end_turn') {
+      return 'completed';
+    }
+    if (stopReason === 'max_tokens') {
+      return 'max_tokens';
+    }
+    if (stopReason === 'stop_sequence') {
+      return 'stop';
+    }
+
+    return 'unknown';
   }
 
   /**

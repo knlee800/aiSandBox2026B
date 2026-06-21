@@ -19440,3 +19440,132 @@ The implementation must:
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-01E.
 **Checkpoint:** `docs/AGENT-HARNESS-01E-CHECKPOINT.md`
+
+---
+
+#### AGENT-HARNESS-02A: Adapter Tool-Use Support
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** AGENT-HARNESS-02A
+**Family:** AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
+**Priority:** High
+**Nature:** BACKEND / AI SERVICE / MODEL ADAPTERS / TOOL-USE CONTRACT MAPPING / NO TOOL EXECUTION
+**Risk:** High
+**Depends on:** AGENT-HARNESS-00 COMPLETE and LOCKED; AGENT-HARNESS-01A COMPLETE and LOCKED; AGENT-HARNESS-01B COMPLETE and LOCKED; AGENT-HARNESS-01C COMPLETE and LOCKED; AGENT-HARNESS-01D COMPLETE and LOCKED; AGENT-HARNESS-01E COMPLETE and LOCKED
+
+**Problem:**
+The 01x Agent Harness foundation series created contracts, config, model profiles, tool registry contracts, and prompt template registry contracts. The next stage needs adapter-level tool-use support so model providers can express tool calls and tool results through a shared Agent Harness contract. This must be prepared carefully before runtime tool execution is enabled.
+
+**Objective:**
+Register a bounded implementation slice to add adapter-level tool-use support contracts/mapping for Agent Harness v1. This slice prepares provider adapter request/response shapes for tool-use metadata only. It does not execute tools, start tool loops, or change WorkerProcessor runtime behavior.
+
+**Scope:**
+- Inspect existing AI provider adapter interfaces/classes before editing anything.
+- Extend the `AIAdapter` interface with an optional `executeWithTools()` method.
+- Implement tool-use support for the Anthropic adapter (Anthropic `tool_use` blocks).
+- Implement tool-use support for the OpenAI adapter (OpenAI `tool_calls` / `function_call`).
+- Stub/other adapters return `supportsToolUse: false` until implemented.
+- Add typed shared structures for tool-use request/response mapping if missing.
+- Support conservative metadata conversion from Agent Harness tool definitions into model-adapter tool declarations.
+- Preserve current normal chat/code generation behavior (`execute()` method unchanged).
+- Keep all tool-use support disabled or inert until later runtime slices explicitly enable it.
+- Add focused tests proving mappings are stable and no runtime execution occurs.
+- No runtime tool execution.
+- No tool dispatcher.
+- No WorkerProcessor multi-turn loop.
+- No actual file/read/write/delete/validation/browser tool implementation.
+- No frontend/UI changes.
+- No database schema changes.
+- No queue architecture changes.
+- No dependency changes unless explicitly approved.
+
+**Likely implementation areas:**
+The implementation step must first inspect existing adapter files before deciding exact paths. Likely areas:
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\ai-execution\adapters\ai-adapter.interface.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\ai-execution\adapters\anthropic-ai.adapter.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\ai-execution\adapters\openai-ai.adapter.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\ai-execution\adapters\stub-ai.adapter.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\` (shared tool-use contracts if needed)
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\tools\` (tool definition mapping helpers)
+- Tests for each modified adapter
+
+Exact file paths must be confirmed by inspecting the repo before editing.
+
+**Expected implementation behavior:**
+- Add typed shared structures for tool-use request/response mapping if not already present.
+- Anthropic adapter: parse `tool_use` blocks from response, format `tool_result` messages for future use.
+- OpenAI adapter: parse `tool_calls` / `function_call` from response, format tool result messages for future use.
+- Map Agent Harness tool registry definitions into provider-compatible tool declaration shapes (contract-only conversion, no execution).
+- All new `executeWithTools()` paths remain dormant/inert until AGENT-HARNESS-02B wires them into the tool loop.
+- Legacy `execute()` behavior fully preserved and unchanged.
+
+**Non-goals:**
+- No runtime tool execution.
+- No tool dispatcher.
+- No multi-turn tool loop (that is AGENT-HARNESS-02B).
+- No tool result execution.
+- No file system tool implementation.
+- No validation runner implementation.
+- No browser smoke implementation.
+- No prompt assembly behavior changes unless master plan explicitly requires a tiny contract-only hook.
+- No model routing changes.
+- No provider streaming changes.
+- No frontend/UI changes.
+- No database schema changes.
+- No queue architecture changes.
+- No checkpoint creation during implementation.
+
+**Validation requirements (for implementation step):**
+- Run focused ai-service unit tests for new adapter tool-use mapping.
+- Run ai-service typecheck/build (`npm run build`) after changes.
+- Tests must prove:
+  1. Anthropic adapter correctly parses a mock `tool_use` block response.
+  2. OpenAI adapter correctly parses a mock `tool_calls` response.
+  3. Tool definition conversion produces valid provider-compatible shapes.
+  4. Legacy `execute()` behavior is unaffected.
+  5. Stub/other adapters correctly report `supportsToolUse: false`.
+  6. No runtime tool execution occurs during mapping.
+  7. Mapped tool declarations match Agent Harness tool registry contracts.
+  8. Tool result payload structures are typed correctly.
+- Browser smoke: not required (backend adapter contracts only).
+- Frontend validation: not required (no frontend files touched).
+- No running services required unless implementation unexpectedly touches runtime paths.
+
+**Acceptance criteria:**
+- [x] AGENT-HARNESS-02A registered as ACTIVE in TASKS.md and TASKS_BACKLOG_FULL.md
+- [x] All dependencies through AGENT-HARNESS-01E COMPLETE and LOCKED documented
+- [x] Problem/objective/scope/non-goals documented
+- [x] Likely implementation areas documented with instruction to inspect existing adapters first
+- [x] Validation requirements documented
+- [x] Browser smoke documented as not required
+- [x] No source/runtime/test/package files changed (registration step)
+- [x] No checkpoint created (registration step)
+- [x] No implementation performed (registration step)
+- [x] (Implementation) AIAdapter interface extended with optional executeWithTools()
+- [x] (Implementation) Anthropic adapter supports tool_use block parsing
+- [x] (Implementation) OpenAI adapter supports tool_calls parsing
+- [x] (Implementation) Stub/other adapters return supportsToolUse: false
+- [x] (Implementation) Legacy execute() behavior unchanged
+- [x] (Implementation) Focused ai-service tests pass (4 suites, 82 tests)
+- [x] (Implementation) ai-service build passes (tsc clean)
+
+**Files changed:**
+- `services/ai-service/src/ai-execution/adapters/adapter-tool-use.contracts.ts` (new — all v1 adapter tool-use typed contracts)
+- `services/ai-service/src/ai-execution/adapters/adapter-tool-use.mapper.ts` (new — pure mapping utilities for Anthropic/OpenAI tool declarations and safe argument parsing)
+- `services/ai-service/src/ai-execution/adapters/ai-adapter.interface.ts` (updated — added supportsToolUse? and optional executeWithTools())
+- `services/ai-service/src/ai-execution/adapters/anthropic-ai.adapter.ts` (updated — supportsToolUse, executeWithTools, inert tool_use parsing)
+- `services/ai-service/src/ai-execution/adapters/openai-ai.adapter.ts` (updated — supportsToolUse, executeWithTools, inert tool_calls/function_call parsing)
+- `services/ai-service/src/ai-execution/adapters/stub-ai.adapter.ts` (updated — supportsToolUse = false, deterministic inert executeWithTools)
+- `services/ai-service/src/ai-execution/adapters/index.ts` (updated — barrel exports for new contracts and mapper)
+- `services/ai-service/src/ai-execution/adapters/__tests__/adapter-tool-use.mapper.spec.ts` (new — 5 focused mapping tests)
+- `services/ai-service/src/ai-execution/adapters/__tests__/stub-ai.adapter.spec.ts` (new — 2 stub tool-use tests)
+- `services/ai-service/src/ai-execution/adapters/__tests__/anthropic-ai.adapter.spec.ts` (updated — 3 new executeWithTools tests added)
+- `services/ai-service/src/ai-execution/adapters/__tests__/openai-ai.adapter.spec.ts` (updated — 4 new executeWithTools tests added)
+
+**Validation results:**
+- `npm test` (focused adapter specs) — PASS (4 suites, 82 tests)
+- `npm run build` — PASS (tsc clean)
+- ReadLints on touched adapter files/tests — PASS (no linter errors)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-02A.
+**Checkpoint:** `docs/AGENT-HARNESS-02A-CHECKPOINT.md`

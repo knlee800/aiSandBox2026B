@@ -1,6 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AIAdapter } from './ai-adapter.interface';
 import { AIExecutionRequest, AIExecutionResult } from '../types';
+import type {
+  AIAdapterToolUseRequestOptions,
+  AIAdapterToolUseResult,
+} from './adapter-tool-use.contracts';
 
 /**
  * StubAIAdapter
@@ -23,6 +27,7 @@ export class StubAIAdapter implements AIAdapter {
   private readonly logger = new Logger(StubAIAdapter.name);
 
   readonly model = 'stub';
+  readonly supportsToolUse = false;
 
   /**
    * Execute AI request (stub)
@@ -52,6 +57,18 @@ export class StubAIAdapter implements AIAdapter {
       output: '[STUB] AI execution not implemented yet',
       tokensUsed: 0,
       model: executionModel,
+    };
+  }
+
+  async executeWithTools(
+    request: AIExecutionRequest,
+    _options?: AIAdapterToolUseRequestOptions,
+  ): Promise<AIAdapterToolUseResult> {
+    const baseResult = await this.execute(request);
+    return {
+      ...baseResult,
+      finishReason: 'completed',
+      toolCalls: [],
     };
   }
 }

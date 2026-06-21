@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { OpenAIAdapter } from '../openai-ai.adapter';
 import { AIExecutionRequest } from '../../types';
+import { AGENT_HARNESS_TOOL_DEFINITIONS_V1 } from '../../../agent-harness/tools/tool-registry';
 
 describe('OpenAIAdapter', () => {
   describe('constructor', () => {
@@ -526,6 +527,166 @@ describe('OpenAIAdapter', () => {
         );
         await expect(adapter.execute(request)).rejects.toThrow(
           'Unexpected error during OpenAI API call',
+        );
+      });
+    });
+
+    describe('executeWithTools()', () => {
+      it('should map Agent Harness tool definitions to OpenAI tool declarations', async () => {
+        const toolDefinition = AGENT_HARNESS_TOOL_DEFINITIONS_V1[0];
+        mockClient.chat.completions.create.mockResolvedValue({
+          choices: [
+            {
+              message: { content: 'Tool metadata mapped' },
+              finish_reason: 'stop',
+            },
+          ],
+          usage: { total_tokens: 100 },
+          model: 'gpt-4o',
+        });
+
+        await adapter.executeWithTools(
+          {
+            sessionId: 'session-1',
+            conversationId: 'conv-1',
+            userId: 'user-1',
+            prompt: 'Test prompt',
+            provider: 'stub',
+          },
+          {
+            tools: [toolDefinition],
+          },
+        );
+
+        expect(mockClient.chat.completions.create).toHaveBeenCalledWith(
+          expect.objectContaining({
+            tools: [
+              {
+                type: 'function',
+                function: {
+                  name: toolDefinition.name,
+                  description: toolDefinition.description,
+                  parameters: toolDefinition.inputSchema.schema,
+                },
+              },
+            ],
+            tool_choice: 'auto',
+          }),
+          {},
+        );
+      });
+
+      it('should parse tool_calls metadata without executing tools', async () => {
+        mockClient.chat.completions.create.mockResolvedValue({
+          choices: [
+            {
+              message: {
+                content: null,
+                tool_calls: [
+                  {
+                    id: 'call_123',
+                    type: 'function',
+                    function: {
+                      name: 'read_file',
+                      arguments: '{"path":"README.md"}',
+                    },
+                  },
+                ],
+              },
+              finish_reason: 'tool_calls',
+            },
+          ],
+          usage: { total_tokens: 100 },
+          model: 'gpt-4o',
+        });
+
+        const result = await adapter.executeWithTools(
+          {
+            sessionId: 'session-1',
+            conversationId: 'conv-1',
+            userId: 'user-1',
+            prompt: 'Test prompt',
+            provider: 'stub',
+          },
+          {
+            tools: [AGENT_HARNESS_TOOL_DEFINITIONS_V1[1]],
+          },
+        );
+
+        expect(result.finishReason).toBe('tool_calls');
+        expect(result.output).toBe('');
+        expect(result.toolCalls).toEqual([
+          {
+            callId: 'call_123',
+            toolName: 'read_file',
+            arguments: { path: 'README.md' },
+            providerKind: 'openai-tool_calls',
+          },
+        ]);
+      });
+
+      it('should parse legacy function_call metadata when tool_calls are absent', async () => {
+        mockClient.chat.completions.create.mockResolvedValue({
+          choices: [
+            {
+              message: {
+                content: null,
+                function_call: {
+                  name: 'search_workspace',
+                  arguments: '{"query":"adapter"}',
+                },
+              },
+              finish_reason: 'function_call',
+            },
+          ],
+          usage: { total_tokens: 88 },
+          model: 'gpt-4o',
+        });
+
+        const result = await adapter.executeWithTools({
+          sessionId: 'session-1',
+          conversationId: 'conv-1',
+          userId: 'user-1',
+          prompt: 'Test prompt',
+          provider: 'stub',
+        });
+
+        expect(result.finishReason).toBe('tool_calls');
+        expect(result.toolCalls).toEqual([
+          {
+            callId: 'openai-function-call-1',
+            toolName: 'search_workspace',
+            arguments: { query: 'adapter' },
+            providerKind: 'openai-function_call',
+          },
+        ]);
+      });
+
+      it('should safely handle missing tool definitions', async () => {
+        mockClient.chat.completions.create.mockResolvedValue({
+          choices: [
+            {
+              message: { content: 'No tool metadata' },
+              finish_reason: 'stop',
+            },
+          ],
+          usage: { total_tokens: 42 },
+          model: 'gpt-4o',
+        });
+
+        const result = await adapter.executeWithTools({
+          sessionId: 'session-1',
+          conversationId: 'conv-1',
+          userId: 'user-1',
+          prompt: 'Test prompt',
+          provider: 'stub',
+        });
+
+        expect(result.finishReason).toBe('completed');
+        expect(result.toolCalls).toEqual([]);
+        expect(mockClient.chat.completions.create).toHaveBeenCalledWith(
+          expect.not.objectContaining({ tools: expect.anything() }),
+          {},
         );
       });
     });

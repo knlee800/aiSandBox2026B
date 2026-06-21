@@ -9,6 +9,17 @@ import {
 import OpenAI from 'openai';
 import { AIAdapter } from './ai-adapter.interface';
 import { AIExecutionRequest, AIExecutionResult } from '../types';
+import type {
+  AIAdapterToolCallMetadata,
+  AIAdapterToolUseFinishReason,
+  AIAdapterToolUseRequestOptions,
+  AIAdapterToolUseResult,
+} from './adapter-tool-use.contracts';
+import {
+  mapAgentHarnessToolDefinitionsToAdapterToolDeclarations,
+  mapAdapterToolDeclarationsToOpenAITools,
+  tryParseToolArgumentsToObject,
+} from './adapter-tool-use.mapper';
 
 /**
  * OpenAIAdapter
@@ -44,6 +55,7 @@ export class OpenAIAdapter implements AIAdapter {
   private readonly defaultTemperature = 1.0;
 
   readonly model: string;
+  readonly supportsToolUse = true;
 
   /**
    * Construct OpenAIAdapter
@@ -148,6 +160,70 @@ export class OpenAIAdapter implements AIAdapter {
     }
   }
 
+  async executeWithTools(
+    request: AIExecutionRequest,
+    options?: AIAdapterToolUseRequestOptions,
+  ): Promise<AIAdapterToolUseResult> {
+    this.logger.debug(
+      `Executing OpenAI tool-use request for session=${request.sessionId}, conversation=${request.conversationId}`,
+    );
+
+    try {
+      const executionModel =
+        typeof request.model === 'string' && request.model.trim().length > 0
+          ? request.model.trim()
+          : this.model;
+      const normalizedSystemPrompt =
+        typeof request.systemPrompt === 'string'
+          ? request.systemPrompt.trim()
+          : '';
+      const messages: OpenAI.Chat.ChatCompletionCreateParams['messages'] =
+        normalizedSystemPrompt.length > 0
+          ? [
+              {
+                role: 'system',
+                content: normalizedSystemPrompt,
+              },
+              {
+                role: 'user',
+                content: request.prompt,
+              },
+            ]
+          : [
+              {
+                role: 'user',
+                content: request.prompt,
+              },
+            ];
+      const adapterTools = mapAgentHarnessToolDefinitionsToAdapterToolDeclarations(
+        options?.tools,
+      );
+      const openaiTools = mapAdapterToolDeclarationsToOpenAITools(adapterTools);
+
+      const openaiRequest: OpenAI.Chat.ChatCompletionCreateParams = {
+        model: executionModel,
+        max_tokens: this.defaultMaxTokens,
+        temperature: this.defaultTemperature,
+        messages,
+      };
+      if (openaiTools.length > 0) {
+        openaiRequest.tools =
+          openaiTools as OpenAI.Chat.ChatCompletionCreateParams['tools'];
+        openaiRequest.tool_choice = 'auto';
+      }
+
+      const createOptions = request.signal ? { signal: request.signal } : {};
+      const response = await this.client.chat.completions.create(
+        openaiRequest,
+        createOptions,
+      );
+
+      return this.transformToolUseResponse(response, executionModel);
+    } catch (error) {
+      this.handleError(error, request);
+    }
+  }
+
   /**
    * Transform OpenAI response to AIExecutionResult
    *
@@ -211,6 +287,117 @@ export class OpenAIAdapter implements AIAdapter {
       tokensUsed,
       model,
     };
+  }
+
+  private transformToolUseResponse(
+    response: OpenAI.Chat.ChatCompletion,
+    fallbackModel: string,
+  ): AIAdapterToolUseResult {
+    if (!response.choices || response.choices.length === 0) {
+      this.logger.error('OpenAI response missing choices field');
+      throw new InternalServerErrorException(
+        'Malformed OpenAI response: missing choices',
+      );
+    }
+
+    if (!response.usage || typeof response.usage.total_tokens !== 'number') {
+      this.logger.error('OpenAI response missing usage field');
+      throw new InternalServerErrorException(
+        'Malformed OpenAI response: missing usage',
+      );
+    }
+    if (response.usage.total_tokens < 0) {
+      this.logger.error('Invalid token count in OpenAI response', {
+        total_tokens: response.usage.total_tokens,
+      });
+      throw new InternalServerErrorException(
+        'Malformed OpenAI response: invalid token count',
+      );
+    }
+
+    const firstChoice = response.choices[0];
+    const message = firstChoice.message;
+    const toolCalls = this.extractToolCalls(message);
+    const output = typeof message.content === 'string' ? message.content : '';
+    if (output.trim().length === 0 && toolCalls.length === 0) {
+      this.logger.error('OpenAI tool-use response missing content and tool_calls');
+      throw new InternalServerErrorException(
+        'Malformed OpenAI response: missing content',
+      );
+    }
+
+    const finishReason = this.mapFinishReason(
+      firstChoice.finish_reason,
+      toolCalls,
+    );
+    const model = response.model || fallbackModel;
+
+    return {
+      output,
+      tokensUsed: response.usage.total_tokens,
+      model,
+      finishReason,
+      toolCalls,
+    };
+  }
+
+  private extractToolCalls(
+    message: OpenAI.Chat.ChatCompletionMessage,
+  ): readonly AIAdapterToolCallMetadata[] {
+    const calls: AIAdapterToolCallMetadata[] = [];
+
+    if (Array.isArray(message.tool_calls) && message.tool_calls.length > 0) {
+      for (const call of message.tool_calls) {
+        if (call.type !== 'function') {
+          continue;
+        }
+        calls.push({
+          callId: call.id || `openai-tool-call-${calls.length + 1}`,
+          toolName: call.function.name,
+          arguments: tryParseToolArgumentsToObject(call.function.arguments),
+          providerKind: 'openai-tool_calls',
+        });
+      }
+    }
+
+    if (
+      calls.length === 0 &&
+      message.function_call &&
+      typeof message.function_call.name === 'string'
+    ) {
+      calls.push({
+        callId: 'openai-function-call-1',
+        toolName: message.function_call.name,
+        arguments: tryParseToolArgumentsToObject(message.function_call.arguments),
+        providerKind: 'openai-function_call',
+      });
+    }
+
+    return calls;
+  }
+
+  private mapFinishReason(
+    finishReason: string | null | undefined,
+    toolCalls: readonly AIAdapterToolCallMetadata[],
+  ): AIAdapterToolUseFinishReason {
+    if (
+      toolCalls.length > 0 ||
+      finishReason === 'tool_calls' ||
+      finishReason === 'function_call'
+    ) {
+      return 'tool_calls';
+    }
+    if (finishReason === 'stop') {
+      return 'completed';
+    }
+    if (finishReason === 'length') {
+      return 'max_tokens';
+    }
+    if (finishReason === 'content_filter') {
+      return 'stop';
+    }
+
+    return 'unknown';
   }
 
   /**

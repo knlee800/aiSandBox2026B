@@ -8,6 +8,7 @@ import {
   ServiceUnavailableException,
   InternalServerErrorException,
 } from '@nestjs/common';
+import { AGENT_HARNESS_TOOL_DEFINITIONS_V1 } from '../../../agent-harness/tools/tool-registry';
 
 // Mock the entire Anthropic SDK
 jest.mock('@anthropic-ai/sdk');
@@ -652,6 +653,93 @@ describe('AnthropicAdapter', () => {
       );
       await expect(adapter.execute(mockRequest)).rejects.toThrow(
         'Unexpected error during Anthropic API call',
+      );
+    });
+  });
+
+  describe('executeWithTools()', () => {
+    it('should map Agent Harness tool definitions to Anthropic tools', async () => {
+      const toolDefinition = AGENT_HARNESS_TOOL_DEFINITIONS_V1[0];
+      mockMessagesCreate.mockResolvedValue({
+        id: 'msg_123',
+        type: 'message',
+        role: 'assistant',
+        content: [{ type: 'text', text: 'Mapped tool metadata only' }],
+        model: 'claude-3-5-sonnet-20241022',
+        usage: { input_tokens: 10, output_tokens: 5 },
+        stop_reason: 'end_turn',
+      });
+
+      await adapter.executeWithTools(mockRequest, {
+        tools: [toolDefinition],
+      });
+
+      expect(mockMessagesCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          tools: [
+            {
+              name: toolDefinition.name,
+              description: toolDefinition.description,
+              input_schema: toolDefinition.inputSchema.schema,
+            },
+          ],
+        }),
+        {},
+      );
+    });
+
+    it('should parse tool_use blocks as typed tool-call metadata without executing tools', async () => {
+      mockMessagesCreate.mockResolvedValue({
+        id: 'msg_123',
+        type: 'message',
+        role: 'assistant',
+        content: [
+          {
+            type: 'tool_use',
+            id: 'toolu_abc123',
+            name: 'read_file',
+            input: { path: '/workspace/README.md' },
+          },
+        ],
+        model: 'claude-3-5-sonnet-20241022',
+        usage: { input_tokens: 20, output_tokens: 10 },
+        stop_reason: 'tool_use',
+      });
+
+      const result = await adapter.executeWithTools(mockRequest, {
+        tools: [AGENT_HARNESS_TOOL_DEFINITIONS_V1[1]],
+      });
+
+      expect(result.finishReason).toBe('tool_calls');
+      expect(result.output).toBe('');
+      expect(result.toolCalls).toEqual([
+        {
+          callId: 'toolu_abc123',
+          toolName: 'read_file',
+          arguments: { path: '/workspace/README.md' },
+          providerKind: 'anthropic-tool_use',
+        },
+      ]);
+    });
+
+    it('should safely handle missing tool definitions', async () => {
+      mockMessagesCreate.mockResolvedValue({
+        id: 'msg_123',
+        type: 'message',
+        role: 'assistant',
+        content: [{ type: 'text', text: 'No tools requested' }],
+        model: 'claude-3-5-sonnet-20241022',
+        usage: { input_tokens: 10, output_tokens: 5 },
+        stop_reason: 'end_turn',
+      });
+
+      const result = await adapter.executeWithTools(mockRequest);
+
+      expect(result.finishReason).toBe('completed');
+      expect(result.toolCalls).toEqual([]);
+      expect(mockMessagesCreate).toHaveBeenCalledWith(
+        expect.not.objectContaining({ tools: expect.anything() }),
+        {},
       );
     });
   });

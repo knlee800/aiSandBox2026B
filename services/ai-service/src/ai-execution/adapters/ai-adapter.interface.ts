@@ -1,4 +1,8 @@
 import { AIExecutionRequest, AIExecutionResult } from '../types';
+import type {
+  AIAdapterToolUseRequestOptions,
+  AIAdapterToolUseResult,
+} from './adapter-tool-use.contracts';
 
 /**
  * AIAdapter
@@ -19,6 +23,7 @@ export interface AIAdapter {
    * Examples: 'stub', 'claude-sonnet-4', 'gpt-4'
    */
   readonly model: string;
+  readonly supportsToolUse?: boolean;
 
   /**
    * Execute AI request
@@ -28,4 +33,17 @@ export interface AIAdapter {
    * @throws Error if execution fails
    */
   execute(request: AIExecutionRequest): Promise<AIExecutionResult>;
+
+  /**
+   * Execute AI request with tool metadata support.
+   *
+   * This method is contract-only in AGENT-HARNESS-02A:
+   * - maps tool declarations for provider APIs
+   * - parses provider tool call metadata
+   * - does NOT execute tools or run a loop
+   */
+  executeWithTools?(
+    request: AIExecutionRequest,
+    options?: AIAdapterToolUseRequestOptions,
+  ): Promise<AIAdapterToolUseResult>;
 }

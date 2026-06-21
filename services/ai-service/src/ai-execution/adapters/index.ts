@@ -12,6 +12,8 @@
  */
 
 export * from './ai-adapter.interface';
+export * from './adapter-tool-use.contracts';
+export * from './adapter-tool-use.mapper';
 export * from './tokens';
 export * from './stub-ai.adapter';
 export * from './xai-ai.adapter';
