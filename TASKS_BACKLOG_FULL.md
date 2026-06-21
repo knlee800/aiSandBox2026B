@@ -30013,3 +30013,154 @@ Exact file paths must be confirmed by inspecting the repo before editing.
 
 **Reference:** See TASKS.md -> AGENT-HARNESS-02A.
 **Checkpoint:** `docs/AGENT-HARNESS-02A-CHECKPOINT.md`
+
+---
+
+### AGENT-HARNESS-02B: Worker Multi-Turn Tool Loop
+
+**Task ID:** AGENT-HARNESS-02B
+**Family:** AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
+**Family status:** ACTIVE
+**Priority:** Critical
+**Nature:** BACKEND / AI SERVICE / WORKER ORCHESTRATION / TOOL LOOP FOUNDATION / HIGH RISK
+**Risk:** High
+**Depends on:** AGENT-HARNESS-00 COMPLETE and LOCKED; AGENT-HARNESS-01A COMPLETE and LOCKED; AGENT-HARNESS-01B COMPLETE and LOCKED; AGENT-HARNESS-01C COMPLETE and LOCKED; AGENT-HARNESS-01D COMPLETE and LOCKED; AGENT-HARNESS-01E COMPLETE and LOCKED; AGENT-HARNESS-02A COMPLETE and LOCKED
+**Status:** COMPLETE and LOCKED
+
+**Problem:**
+AGENT-HARNESS-02A added inert adapter-level tool-use metadata support. The next step is to prepare the WorkerProcessor for a bounded multi-turn tool loop so future Agent Harness slices can request tools, receive tool results, and continue model execution. This is high risk because WorkerProcessor controls live AI execution, status events, persistence, error handling, and user-visible behavior.
+
+**Objective:**
+Register a bounded implementation slice for the Worker multi-turn tool loop foundation. This registration requires architecture/security review before implementation. The implementation must be narrowly scoped, disabled or guarded by Agent Harness config, and must preserve existing execution behavior when Agent Harness tool-loop mode is not explicitly active.
+
+**Scope:**
+- Register a bounded implementation task only.
+- Require inspection of WorkerProcessor, AIExecutionService, adapter contracts, Agent Harness config, tool registry, prompt registry, checkpoint/revert flow, and existing tests before implementation.
+- Document a conservative, feature-gated Worker multi-turn loop foundation.
+- The future implementation may add loop orchestration scaffolding, iteration limits, status typing, and inert tool-call handling.
+- The future implementation must not enable real filesystem/write/delete/browser/validation tools unless later tasks explicitly implement them.
+- The future implementation must preserve current normal AI execution behavior.
+- No frontend/UI changes unless explicitly registered later.
+- No database schema changes unless explicitly registered later.
+- No dependency changes unless explicitly approved.
+
+**Likely implementation areas:**
+Exact files must be confirmed by repo inspection before editing. Likely areas include:
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\worker\worker.processor.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\ai-execution\`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\ai-execution\adapters\`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\`
+- Existing worker/AI execution tests
+
+Before implementation, inspect at minimum:
+- WorkerProcessor execution flow
+- AIExecutionService public methods and return contracts
+- Adapter `execute()` and `executeWithTools()` contracts
+- Agent Harness config flags and defaults
+- Tool registry contract-only metadata
+- Prompt template registry metadata
+- Checkpoint/revert/coherence handling
+- Queue/status/SSE event behavior
+- Existing tests around worker execution and AI execution
+
+**Expected implementation behavior:**
+- Add a bounded multi-turn loop foundation behind Agent Harness config or explicit execution mode.
+- Enforce strict max iterations using existing/default Agent Harness config.
+- Treat adapter tool calls as metadata only unless a future registered task provides a real tool dispatcher.
+- Return safe failure or graceful fallback if a tool call is requested but no dispatcher is available.
+- Preserve existing non-Agent-Harness execution path.
+- Preserve existing file-action parsing behavior.
+- Preserve existing checkpoint/revert/coherence flow.
+- Preserve existing queue/status/SSE behavior unless a tiny additive status event is required and tested.
+- Add focused tests for loop guards and no-tool-execution invariants.
+
+**Security / safety requirements:**
+- No arbitrary shell execution.
+- No filesystem read/write/delete tool execution.
+- No browser automation.
+- No network tool execution.
+- No validation command execution.
+- No hidden auto-approval.
+- No bypass of checkpoint/revert flow.
+- No unbounded loops.
+- No unbounded prompt/tool-result growth.
+- No leaking raw provider tool metadata into user-facing output unless already sanitized and expected.
+- Tool calls must remain metadata-only until a later registered tool-dispatcher slice explicitly enables execution.
+- Any future dispatcher must be separate from this registration unless the master plan explicitly says otherwise.
+
+**Non-goals:**
+- No real tool execution.
+- No tool dispatcher implementation.
+- No filesystem tools.
+- No validation runner.
+- No browser smoke runner.
+- No repo search implementation.
+- No frontend/UI changes.
+- No database schema changes.
+- No queue architecture changes.
+- No dependency changes.
+- No provider streaming changes.
+- No model routing changes beyond the minimum guarded loop pathway.
+- No prompt template runtime migration unless explicitly required by the loop foundation and tested.
+- No changes to existing behavior when Agent Harness tool-loop mode is disabled.
+
+**Validation requirements (for future implementation step):**
+- Focused unit tests around WorkerProcessor or the smallest extracted loop helper.
+- Tests must prove:
+  1. Existing normal execution path remains available.
+  2. Agent Harness loop path is gated/disabled unless explicitly active.
+  3. Max iteration guard stops unbounded loops.
+  4. Tool calls from adapters are treated as metadata only.
+  5. Missing dispatcher/tool handler fails safely or falls back cleanly.
+  6. No filesystem/write/delete/validation/browser tool executes.
+  7. Existing checkpoint/revert/coherence flow is not bypassed.
+  8. Existing status/SSE behavior is preserved or additive changes are explicitly tested.
+  9. WorkerProcessor does not hardcode tool definitions already centralized in the registry.
+  10. ai-service build/typecheck passes.
+- Run focused ai-service tests for touched worker/AI execution files.
+- Run ai-service build/typecheck.
+- No frontend tests unless frontend files are unexpectedly touched.
+- Browser smoke: not required for registration.
+
+**Acceptance criteria:**
+- [x] AGENT-HARNESS-02B registered as ACTIVE in TASKS.md and TASKS_BACKLOG_FULL.md
+- [x] All dependencies through AGENT-HARNESS-02A COMPLETE and LOCKED documented
+- [x] Problem/objective/scope documented
+- [x] High-risk nature documented
+- [x] Architecture/security review requirement documented
+- [x] Likely implementation areas documented with instruction to inspect existing worker/AI execution flow first
+- [x] Expected behavior documented
+- [x] Security/safety requirements documented
+- [x] Non-goals documented
+- [x] Validation requirements documented
+- [x] Browser smoke documented as not required for registration
+- [x] No source/runtime/test/package files changed (registration step)
+- [x] No checkpoint created (registration step)
+- [x] No implementation performed (registration step)
+- [x] (Implementation) Architecture/security review completed before implementation
+- [x] (Implementation) WorkerProcessor multi-turn loop foundation added behind Agent Harness config gate
+- [x] (Implementation) Max iteration guard enforced
+- [x] (Implementation) Tool calls treated as metadata only (no real tool execution)
+- [x] (Implementation) Missing dispatcher fails safely or falls back cleanly
+- [x] (Implementation) Existing non-Agent-Harness execution path preserved
+- [x] (Implementation) Existing checkpoint/revert/coherence flow preserved
+- [x] (Implementation) Existing status/SSE behavior preserved or additive changes tested
+- [x] (Implementation) Focused ai-service tests pass (2 suites, 34 tests)
+- [x] (Implementation) ai-service build/typecheck passes
+
+**Files changed:**
+- `services/ai-service/src/agent-harness/orchestrator/agent-harness-loop.ts` (new — bounded multi-turn loop helper and exported types)
+- `services/ai-service/src/agent-harness/orchestrator/agent-harness-loop.spec.ts` (new — 12 focused loop tests)
+- `services/ai-service/src/agent-harness/index.ts` (updated — barrel export for orchestrator module)
+- `services/ai-service/src/queue/job.types.ts` (updated — optional `harnessVersion?: string` added to AiExecutionJob)
+- `services/ai-service/src/worker/worker.processor.ts` (updated — 2 imports and ~20-line double-gated harness branch)
+- `services/ai-service/src/worker/worker.processor.spec.ts` (updated — 5 new tests; 22 existing tests preserved)
+- `services/ai-service/src/ai-execution/ai-execution.service.ts` (updated — getAdapter() visibility from private to public, one-word change)
+
+**Validation results:**
+- `npm test` (focused specs) — PASS (2 suites, 34 tests)
+- `npm run build` — PASS (tsc clean)
+- ReadLints on all 7 touched files — PASS (no linter errors)
+
+**Reference:** See TASKS.md -> AGENT-HARNESS-02B.
+**Checkpoint:** `docs/AGENT-HARNESS-02B-CHECKPOINT.md`

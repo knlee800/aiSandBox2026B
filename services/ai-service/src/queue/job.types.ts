@@ -49,6 +49,9 @@ export interface AiExecutionJob {
   projectInstructions?: string;
   model?: string;
 
+  /** Agent Harness version gate. When set to 'v1', enables the harness execution path. */
+  harnessVersion?: string;
+
   requestId?: string;
 
   submittedAt: string;

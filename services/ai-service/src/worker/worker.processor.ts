@@ -23,6 +23,8 @@ import {
 } from '../observability/worker-metrics';
 import type { AIExecutionRequest } from '../ai-execution/types';
 import type { WorkspaceContext } from '../queue/job.types';
+import { DEFAULT_AGENT_HARNESS_CONFIG_V1 } from '../agent-harness/config/agent-harness.config';
+import { executeAgentHarnessLoop } from '../agent-harness/orchestrator/agent-harness-loop';
 
 /**
  * Phase-51.3: Conservative classifier for transient (retryable) errors.
@@ -729,9 +731,33 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                 job.data.globalInstructions,
                 job.data.projectInstructions,
               );
-              aiResult = await this.aiExecutionService.execute(
-                buildAIExecutionRequest(job.data, promptParts, abortController.signal),
+              const executionRequest = buildAIExecutionRequest(
+                job.data,
+                promptParts,
+                abortController.signal,
               );
+
+              if (
+                job.data.harnessVersion === 'v1' &&
+                DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop
+              ) {
+                const adapter = this.aiExecutionService.getAdapter(
+                  executionRequest.provider,
+                );
+                if (adapter.supportsToolUse && adapter.executeWithTools) {
+                  const loopResult = await executeAgentHarnessLoop({
+                    executeFn: (req, opts) => adapter.executeWithTools!(req, opts),
+                    request: executionRequest,
+                    config: DEFAULT_AGENT_HARNESS_CONFIG_V1,
+                    signal: abortController.signal,
+                  });
+                  aiResult = loopResult.result;
+                } else {
+                  aiResult = await this.aiExecutionService.execute(executionRequest);
+                }
+              } else {
+                aiResult = await this.aiExecutionService.execute(executionRequest);
+              }
               break;
             } catch (err) {
               lastError = err;

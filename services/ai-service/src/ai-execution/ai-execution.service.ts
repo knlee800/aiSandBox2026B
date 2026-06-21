@@ -173,7 +173,7 @@ export class AIExecutionService {
    * @throws ServiceUnavailableException if provider unknown
    * @throws Error if API key missing for non-stub provider
    */
-  private getAdapter(
+  getAdapter(
     provider: AIExecutionRequest['provider'],
   ): AIAdapter {
     switch (provider) {

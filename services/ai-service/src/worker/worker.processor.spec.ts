@@ -2,6 +2,7 @@ import {
   buildAIExecutionRequest,
   buildExecutionPromptParts,
 } from './worker.processor';
+import { DEFAULT_AGENT_HARNESS_CONFIG_V1 } from '../agent-harness/config/agent-harness.config';
 
 describe('buildAIExecutionRequest', () => {
   it('passes requested model from job payload to AIExecutionService request', () => {
@@ -302,5 +303,37 @@ Project policy`);
     expect(promptParts.system).not.toContain('Repo Docs:');
     expect(promptParts.system).not.toContain('Repo doc content:');
     expect(promptParts.system).not.toContain('User request:');
+  });
+});
+
+describe('Agent Harness double-gate config', () => {
+  it('enableToolLoop defaults to false in DEFAULT_AGENT_HARNESS_CONFIG_V1', () => {
+    expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop).toBe(false);
+  });
+
+  it('maxToolIterations defaults to a small positive number', () => {
+    expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.maxToolIterations).toBeGreaterThan(0);
+    expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.maxToolIterations).toBeLessThanOrEqual(25);
+  });
+
+  it('WorkerProcessor does not hardcode tool definitions from the registry', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    expect(workerSource).not.toContain('AGENT_HARNESS_TOOL_DEFINITIONS_V1');
+    expect(workerSource).not.toContain('AGENT_HARNESS_TOOL_DEFINITION_MAP_V1');
+  });
+
+  it('WorkerProcessor does not import filesystem/write/delete/validation/browser tool modules', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    expect(workerSource).not.toContain('write-file.tool');
+    expect(workerSource).not.toContain('delete-file.tool');
+    expect(workerSource).not.toContain('read-file.tool');
+    expect(workerSource).not.toContain('run-validation.tool');
+    expect(workerSource).not.toContain('browser-smoke.tool');
   });
 });
