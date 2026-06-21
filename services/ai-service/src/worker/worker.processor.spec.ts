@@ -358,15 +358,92 @@ describe('Agent Harness double-gate config', () => {
     expect(workerSource).not.toContain('AGENT_HARNESS_TOOL_DEFINITION_MAP_V1');
   });
 
-  it('WorkerProcessor does not import filesystem/write/delete/validation/browser tool modules', () => {
+  it('WorkerProcessor does not import write/delete/validation/browser tool modules', () => {
     const workerSource = require('fs').readFileSync(
       require('path').join(__dirname, 'worker.processor.ts'),
       'utf-8',
     );
-    expect(workerSource).not.toContain('write-file.tool');
-    expect(workerSource).not.toContain('delete-file.tool');
-    expect(workerSource).not.toContain('read-file.tool');
-    expect(workerSource).not.toContain('run-validation.tool');
-    expect(workerSource).not.toContain('browser-smoke.tool');
+    expect(workerSource).not.toContain('write-file');
+    expect(workerSource).not.toContain('delete-file');
+    expect(workerSource).not.toContain('run-validation');
+    expect(workerSource).not.toContain('browser-smoke');
+  });
+});
+
+describe('Agent Harness 03A: read_file/list_files handler registration', () => {
+  it('WorkerProcessor imports file-tool-handlers', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    expect(workerSource).toContain('file-tool-handlers');
+    expect(workerSource).toContain('createReadFileHandler');
+    expect(workerSource).toContain('createListFilesHandler');
+  });
+
+  it('WorkerProcessor registers exactly read_file and list_files handlers', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    const readFileRegistrations = (workerSource.match(/registerHandler\(\s*['"]read_file['"]/g) || []).length;
+    const listFilesRegistrations = (workerSource.match(/registerHandler\(\s*['"]list_files['"]/g) || []).length;
+    expect(readFileRegistrations).toBe(1);
+    expect(listFilesRegistrations).toBe(1);
+  });
+
+  it('WorkerProcessor does not register write_file, delete_file, or other tools', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    expect(workerSource).not.toContain("registerHandler('write_file'");
+    expect(workerSource).not.toContain('registerHandler("write_file"');
+    expect(workerSource).not.toContain("registerHandler('delete_file'");
+    expect(workerSource).not.toContain('registerHandler("delete_file"');
+    expect(workerSource).not.toContain("registerHandler('run_validation'");
+    expect(workerSource).not.toContain("registerHandler('browser_smoke'");
+    expect(workerSource).not.toContain("registerHandler('search_workspace'");
+  });
+
+  it('WorkerProcessor injects ApiGatewayHttpClient via constructor', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    expect(workerSource).toContain('apiGatewayHttpClient');
+    expect(workerSource).toContain('ApiGatewayHttpClient');
+  });
+
+  it('handler registration occurs inside the double-gated harness branch', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    const harnessGateIndex = workerSource.indexOf("harnessVersion === 'v1'");
+    const readFileRegIndex = workerSource.indexOf("'read_file'");
+    const listFilesRegIndex = workerSource.indexOf("'list_files'");
+    expect(readFileRegIndex).toBeGreaterThan(harnessGateIndex);
+    expect(listFilesRegIndex).toBeGreaterThan(harnessGateIndex);
+  });
+
+  it('WorkerProcessor does not access filesystem directly', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    expect(workerSource).not.toContain("from 'fs'");
+    expect(workerSource).not.toContain("from 'fs/promises'");
+    expect(workerSource).not.toContain("require('fs')");
+  });
+
+  it('WorkerProcessor uses API Gateway boundary, not container-manager directly', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    expect(workerSource).toContain('ApiGatewayHttpClient');
+    expect(workerSource).not.toContain('CONTAINER_MANAGER_URL');
+    expect(workerSource).not.toContain('container-manager-http');
   });
 });

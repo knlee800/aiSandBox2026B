@@ -26,6 +26,11 @@ import type { WorkspaceContext } from '../queue/job.types';
 import { DEFAULT_AGENT_HARNESS_CONFIG_V1 } from '../agent-harness/config/agent-harness.config';
 import { executeAgentHarnessLoop } from '../agent-harness/orchestrator/agent-harness-loop';
 import { ToolDispatcher } from '../agent-harness/tools/tool-dispatcher';
+import {
+  createReadFileHandler,
+  createListFilesHandler,
+} from '../agent-harness/tools/handlers/file-tool-handlers';
+import { ApiGatewayHttpClient } from '../clients/api-gateway-http.client';
 
 /**
  * Phase-51.3: Conservative classifier for transient (retryable) errors.
@@ -355,6 +360,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
     private readonly dataSource: DataSource,
     private readonly aiExecutionService: AIExecutionService,
     private readonly executionStreamPublisher: ExecutionStreamPublisher,
+    private readonly apiGatewayHttpClient: ApiGatewayHttpClient,
   ) {}
 
   /**
@@ -747,6 +753,21 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                 );
                 if (adapter.supportsToolUse && adapter.executeWithTools) {
                   const dispatcher = new ToolDispatcher();
+                  dispatcher.registerHandler(
+                    'read_file',
+                    createReadFileHandler({
+                      client: this.apiGatewayHttpClient,
+                      sessionId: job.data.sessionId,
+                      maxFileReadBytes: DEFAULT_AGENT_HARNESS_CONFIG_V1.maxFileReadBytes,
+                    }),
+                  );
+                  dispatcher.registerHandler(
+                    'list_files',
+                    createListFilesHandler({
+                      client: this.apiGatewayHttpClient,
+                      sessionId: job.data.sessionId,
+                    }),
+                  );
                   const loopResult = await executeAgentHarnessLoop({
                     executeFn: (req, opts) => adapter.executeWithTools!(req, opts),
                     request: executionRequest,

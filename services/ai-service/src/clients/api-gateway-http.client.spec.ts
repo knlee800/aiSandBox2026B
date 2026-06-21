@@ -1,0 +1,126 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { HttpService } from '@nestjs/axios';
+import { of, throwError } from 'rxjs';
+import { AxiosResponse, AxiosHeaders } from 'axios';
+import { ApiGatewayHttpClient } from './api-gateway-http.client';
+
+function makeAxiosResponse<T>(data: T): AxiosResponse<T> {
+  return {
+    data,
+    status: 200,
+    statusText: 'OK',
+    headers: {},
+    config: { headers: new AxiosHeaders() },
+  };
+}
+
+describe('ApiGatewayHttpClient - workspace file methods', () => {
+  let client: ApiGatewayHttpClient;
+  let httpService: { get: jest.Mock; post: jest.Mock };
+
+  beforeEach(async () => {
+    process.env.API_GATEWAY_URL = 'http://localhost:4000';
+    process.env.INTERNAL_SERVICE_KEY = 'test-key-123';
+
+    httpService = {
+      get: jest.fn(),
+      post: jest.fn(),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        ApiGatewayHttpClient,
+        { provide: HttpService, useValue: httpService },
+      ],
+    }).compile();
+
+    client = module.get<ApiGatewayHttpClient>(ApiGatewayHttpClient);
+  });
+
+  afterEach(() => {
+    delete process.env.API_GATEWAY_URL;
+    delete process.env.INTERNAL_SERVICE_KEY;
+  });
+
+  describe('readWorkspaceFile', () => {
+    it('calls API Gateway internal workspace read endpoint with correct params', async () => {
+      httpService.get.mockReturnValue(
+        of(makeAxiosResponse({ path: 'src/app.ts', content: 'const x = 1;' })),
+      );
+
+      const result = await client.readWorkspaceFile('session-1', 'src/app.ts');
+
+      expect(httpService.get).toHaveBeenCalledWith(
+        'http://localhost:4000/api/internal/workspace/session-1/read',
+        {
+          params: { path: 'src/app.ts' },
+          headers: { 'X-Internal-Service-Key': 'test-key-123' },
+        },
+      );
+      expect(result).toEqual({ path: 'src/app.ts', content: 'const x = 1;' });
+    });
+
+    it('propagates upstream errors', async () => {
+      httpService.get.mockReturnValue(
+        throwError(() => new Error('Network failure')),
+      );
+
+      await expect(
+        client.readWorkspaceFile('session-1', 'missing.ts'),
+      ).rejects.toThrow('Network failure');
+    });
+  });
+
+  describe('listWorkspaceDirectory', () => {
+    it('calls API Gateway internal workspace list endpoint with correct params', async () => {
+      httpService.get.mockReturnValue(
+        of(
+          makeAxiosResponse({
+            path: 'src',
+            entries: [
+              { name: 'app.ts', type: 'file', size: 100, modifiedAt: '2026-01-01T00:00:00Z' },
+            ],
+          }),
+        ),
+      );
+
+      const result = await client.listWorkspaceDirectory('session-1', 'src');
+
+      expect(httpService.get).toHaveBeenCalledWith(
+        'http://localhost:4000/api/internal/workspace/session-1/list',
+        {
+          params: { path: 'src' },
+          headers: { 'X-Internal-Service-Key': 'test-key-123' },
+        },
+      );
+      expect(result.entries).toHaveLength(1);
+      expect(result.entries[0].name).toBe('app.ts');
+    });
+
+    it('defaults path to / when not provided', async () => {
+      httpService.get.mockReturnValue(
+        of(makeAxiosResponse({ path: '/', entries: [] })),
+      );
+
+      await client.listWorkspaceDirectory('session-1');
+
+      expect(httpService.get).toHaveBeenCalledWith(
+        'http://localhost:4000/api/internal/workspace/session-1/list',
+        {
+          params: { path: '/' },
+          headers: { 'X-Internal-Service-Key': 'test-key-123' },
+        },
+      );
+    });
+
+    it('propagates upstream errors', async () => {
+      httpService.get.mockReturnValue(
+        throwError(() => new Error('Service unavailable')),
+      );
+
+      await expect(
+        client.listWorkspaceDirectory('session-1', 'src'),
+      ).rejects.toThrow('Service unavailable');
+    });
+  });
+});

@@ -123,4 +123,66 @@ export class ApiGatewayHttpClient {
 
     return response.data.totalTokens;
   }
+
+  /**
+   * Read file content from a session workspace via API Gateway.
+   * AGENT-HARNESS-03A: ai-service → API Gateway → container-manager boundary.
+   * @param sessionId - Session UUID
+   * @param path - Relative file path within workspace
+   * @returns File path and content
+   * @throws Error if HTTP request fails
+   */
+  async readWorkspaceFile(
+    sessionId: string,
+    path: string,
+  ): Promise<{ path: string; content: string }> {
+    const response = await firstValueFrom(
+      this.httpService.get(
+        `${this.apiGatewayUrl}/api/internal/workspace/${sessionId}/read`,
+        {
+          params: { path },
+          headers: {
+            'X-Internal-Service-Key': this.internalServiceKey,
+          },
+        },
+      ),
+    );
+
+    return response.data;
+  }
+
+  /**
+   * List directory contents from a session workspace via API Gateway.
+   * AGENT-HARNESS-03A: ai-service → API Gateway → container-manager boundary.
+   * @param sessionId - Session UUID
+   * @param path - Relative directory path within workspace (defaults to root)
+   * @returns Directory path and entries
+   * @throws Error if HTTP request fails
+   */
+  async listWorkspaceDirectory(
+    sessionId: string,
+    path: string = '/',
+  ): Promise<{
+    path: string;
+    entries: Array<{
+      name: string;
+      type: 'file' | 'dir';
+      size: number;
+      modifiedAt: string;
+    }>;
+  }> {
+    const response = await firstValueFrom(
+      this.httpService.get(
+        `${this.apiGatewayUrl}/api/internal/workspace/${sessionId}/list`,
+        {
+          params: { path },
+          headers: {
+            'X-Internal-Service-Key': this.internalServiceKey,
+          },
+        },
+      ),
+    );
+
+    return response.data;
+  }
 }

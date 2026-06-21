@@ -125,10 +125,42 @@ describe('Agent Harness tool registry (v1)', () => {
 
     expect(allTools).toBe(AGENT_HARNESS_TOOL_DEFINITIONS_V1);
     expect(enabledTools).toEqual(expectedEnabledTools);
-    expect(enabledTools).toHaveLength(0);
+    expect(enabledTools).toHaveLength(2);
+
+    const enabledIds = enabledTools.map((t) => t.id);
+    expect(enabledIds).toContain('read_file');
+    expect(enabledIds).toContain('list_files');
 
     for (const tool of enabledTools) {
       expect(isAgentHarnessToolEnabled(tool.id)).toBe(true);
+    }
+  });
+
+  it('marks read_file and list_files as implemented and enabled', () => {
+    const readFile = getAgentHarnessToolDefinition('read_file');
+    const listFiles = getAgentHarnessToolDefinition('list_files');
+
+    expect(readFile?.enabled).toBe(true);
+    expect(readFile?.implementationStatus).toBe('implemented');
+    expect(listFiles?.enabled).toBe(true);
+    expect(listFiles?.implementationStatus).toBe('implemented');
+  });
+
+  it('keeps write/delete/validation/browser/search tools disabled and not implemented', () => {
+    const disabledToolIds = [
+      'write_file',
+      'delete_file',
+      'run_validation',
+      'start_preview',
+      'browser_smoke',
+      'search_workspace',
+    ];
+
+    for (const toolId of disabledToolIds) {
+      const tool = getAgentHarnessToolDefinition(toolId);
+      expect(tool).toBeDefined();
+      expect(tool?.enabled).toBe(false);
+      expect(tool?.implementationStatus).not.toBe('implemented');
     }
   });
 
@@ -137,20 +169,14 @@ describe('Agent Harness tool registry (v1)', () => {
     expect(Object.keys(AGENT_HARNESS_TOOL_DEFINITION_MAP_V1).length).toBeGreaterThan(0);
   });
 
-  it('does not require runtime wiring imports yet', () => {
-    const workerProcessorPath = path.resolve(
-      __dirname,
-      '../../worker/worker.processor.ts',
-    );
+  it('does not import tool-registry into ai-execution.service.ts', () => {
     const aiExecutionServicePath = path.resolve(
       __dirname,
       '../../ai-execution/ai-execution.service.ts',
     );
 
-    const workerProcessorContent = fs.readFileSync(workerProcessorPath, 'utf8');
     const aiExecutionServiceContent = fs.readFileSync(aiExecutionServicePath, 'utf8');
 
-    expect(workerProcessorContent).not.toContain('agent-harness/tools');
-    expect(aiExecutionServiceContent).not.toContain('agent-harness/tools');
+    expect(aiExecutionServiceContent).not.toContain('tool-registry');
   });
 });

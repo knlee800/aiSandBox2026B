@@ -5,6 +5,7 @@ import { AuthModule } from '../auth/auth.module';
 import { SessionRepository } from '../repositories/session.repository';
 import { SessionService } from './session.service';
 import { InternalSessionController } from './internal-session.controller';
+import { InternalWorkspaceFilesController } from './internal-workspace-files.controller';
 import { SessionController } from './session.controller';
 import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
 import { QuotaModule } from '../quota/quota.module';
@@ -24,7 +25,7 @@ import { SnapshotsModule } from '../snapshots/snapshots.module';
     QuotaModule,
     SnapshotsModule,
   ],
-  controllers: [InternalSessionController, SessionController],
+  controllers: [InternalSessionController, InternalWorkspaceFilesController, SessionController],
   providers: [
     SessionRepository,
     SessionService,

@@ -19857,3 +19857,168 @@ Add a ToolDispatcher foundation and multi-turn loop result feeding for Agent Har
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-02C.
 **Checkpoint:** `docs/AGENT-HARNESS-02C-CHECKPOINT.md`
+
+---
+
+#### AGENT-HARNESS-03A: Read-File and List-Files Tools
+
+**Task ID:** AGENT-HARNESS-03A
+**Status:** COMPLETE and LOCKED
+**Priority:** Critical
+**Nature:** BACKEND / AI SERVICE / API GATEWAY / READ-ONLY FILE TOOLS / FIRST REAL TOOL HANDLERS
+**Risk:** High
+**Family:** AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
+
+**Depends on:**
+- AGENT-HARNESS-00 COMPLETE and LOCKED
+- AGENT-HARNESS-01A COMPLETE and LOCKED
+- AGENT-HARNESS-01B COMPLETE and LOCKED
+- AGENT-HARNESS-01C COMPLETE and LOCKED
+- AGENT-HARNESS-01D COMPLETE and LOCKED
+- AGENT-HARNESS-01E COMPLETE and LOCKED
+- AGENT-HARNESS-02A COMPLETE and LOCKED
+- AGENT-HARNESS-02B COMPLETE and LOCKED
+- AGENT-HARNESS-02C COMPLETE and LOCKED
+
+**Problem:**
+Agent Harness now has adapter tool-use support, a double-gated Worker loop, and ToolDispatcher multi-turn result feeding. The next step is to implement the first safe real tools: `read_file` and `list_files`. A next-slice review found that ai-service must not access the filesystem directly and should use the existing service boundary: ai-service → API Gateway internal endpoint → container-manager → workspace.
+
+**Objective:**
+Register a bounded implementation slice for read-only Agent Harness file tools:
+- `read_file`
+- `list_files`
+
+This slice adds the minimum safe API boundary and handlers needed for read-only file access. It must not implement write/delete tools.
+
+**Scope:**
+- Add internal API Gateway endpoints for ai-service read/list access if needed.
+- Add ai-service client methods for internal read/list calls.
+- Add `read_file` and `list_files` tool handlers in ai-service.
+- Register only `read_file` and `list_files` handlers with ToolDispatcher in the double-gated harness path.
+- Enable or mark implemented only `read_file` and `list_files` in the Agent Harness tool registry if required for adapter tool declarations.
+- Keep `write_file`, `delete_file`, `run_validation`, `browser_smoke`, `start_preview`, and `search_workspace` disabled/planned.
+- Preserve existing frontend file-action apply flow.
+- Preserve checkpoint/revert/coherence flow.
+- Preserve existing single-shot path.
+- Preserve `enableToolLoop` default `false`.
+- Preserve `harnessVersion === 'v1'` gate.
+- No direct filesystem access from ai-service.
+- No frontend/UI changes.
+- No database schema changes.
+- No package/dependency changes.
+
+**Likely implementation areas:**
+Exact files must be confirmed by inspection before implementation. Likely areas:
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\`
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\clients\container-manager-http.client.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\container-manager\src\files\files.controller.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\clients\api-gateway-http.client.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\tools\`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\tools\tool-registry.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\worker\worker.processor.ts`
+- Relevant tests in api-gateway and ai-service
+
+**Expected implementation behavior:**
+- `read_file` reads file content through API Gateway/container-manager boundary.
+- `list_files` lists workspace directory contents through API Gateway/container-manager boundary.
+- Both handlers must be session-scoped.
+- Both handlers must validate and normalize paths.
+- Both handlers must reject unsafe paths (e.g. path traversal).
+- Both handlers must return typed `AgentToolResult` values.
+- Errors must be typed and safe for model feedback.
+- `read_file` must enforce reasonable max output/content limits.
+- `list_files` must enforce reasonable listing limits.
+- Tool results must be passed back through the existing 02C loop as `toolResults`.
+- Existing `no_dispatcher` fallback remains preserved when no dispatcher is supplied.
+- Existing single-shot path remains preserved.
+
+**Security/safety requirements:**
+- No `write_file` implementation.
+- No `delete_file` implementation.
+- No filesystem mutation.
+- No direct filesystem access from ai-service.
+- No arbitrary shell execution.
+- No validation command execution.
+- No browser automation.
+- No network tool execution beyond the internal API Gateway boundary.
+- No hidden auto-approval.
+- No checkpoint/revert bypass.
+- No frontend file-action apply flow changes.
+- No database schema changes.
+- No package/dependency changes.
+- Only read-only tools may become implemented/enabled.
+- All paths must stay inside the session workspace.
+
+**Non-goals:**
+- No `write_file` or `delete_file` tools.
+- No approval flow.
+- No validation runner.
+- No browser smoke runner.
+- No preview/start tool.
+- No `search_workspace` implementation unless explicitly split later.
+- No semantic search.
+- No frontend/UI changes.
+- No checkpoint creation changes.
+- No SSE event changes.
+- No queue architecture changes.
+- No provider adapter changes unless a tiny type-only compile fix is required.
+
+**Validation requirements (for implementation step):**
+- Add focused tests for API Gateway internal read/list endpoints or client behavior.
+- Add focused tests for ai-service `ApiGatewayHttpClient` read/list methods.
+- Add focused tests for `read_file`/`list_files` handlers.
+- Add focused tests that ToolDispatcher registers only `read_file`/`list_files` handlers in the harness branch.
+- Tests must prove:
+  1. `read_file` calls API Gateway internal file read boundary.
+  2. `list_files` calls API Gateway internal directory list boundary.
+  3. Unsafe paths are rejected.
+  4. Missing files/directories return typed safe errors.
+  5. Large read output is capped or safely handled.
+  6. Write/delete tools remain unimplemented and unregistered.
+  7. No direct filesystem access from ai-service.
+  8. `enableToolLoop false` still prevents harness path.
+  9. Existing single-shot path remains preserved.
+  10. ai-service build/typecheck passes.
+- Run focused ai-service tests.
+- Run focused api-gateway tests if api-gateway files are touched.
+- Run builds/typechecks for touched services only.
+- No frontend tests unless frontend files are unexpectedly touched.
+- No browser smoke required.
+
+**Acceptance criteria (registration):**
+- [x] AGENT-HARNESS-03A registered as ACTIVE in TASKS.md and TASKS_BACKLOG_FULL.md
+- [x] All dependencies through AGENT-HARNESS-02C COMPLETE and LOCKED documented
+- [x] Problem/objective/scope documented
+- [x] High-risk cross-service nature documented
+- [x] Likely implementation areas documented
+- [x] Expected read/list behavior documented
+- [x] Security/safety requirements documented
+- [x] Non-goals documented
+- [x] Validation requirements documented
+- [x] Browser smoke documented as not required
+- [x] No source/runtime/test/package files changed (registration step)
+- [x] No checkpoint created (registration step)
+- [x] No implementation performed (registration step)
+
+**Acceptance criteria (implementation):**
+- [x] Internal API Gateway workspace file endpoints added and tested (6 tests — PASS)
+- [x] `ApiGatewayHttpClient` read/list methods added and tested (5 tests — PASS)
+- [x] `read_file` and `list_files` tool handler factories implemented and tested (21 tests — PASS)
+- [x] Tool registry updated: `read_file` and `list_files` enabled/implemented (12 tests — PASS)
+- [x] WorkerProcessor registers only `read_file`/`list_files` in double-gated harness branch (32 tests — PASS)
+- [x] Dispatcher + loop tests preserved and passing (28 tests — PASS)
+- [x] ai-service `npm run build` — PASS (tsc clean)
+- [x] api-gateway `npm run build` — PASS (tsc clean)
+- [x] ReadLints on all touched source files — PASS (no linter errors)
+- [x] Path traversal rejected; read output bounded by maxFileReadBytes
+- [x] No write/delete/validation/browser tools implemented or registered
+- [x] All other tools remain disabled/unregistered
+- [x] No direct filesystem access from ai-service confirmed
+- [x] Architecture boundary confirmed: ai-service → API Gateway → container-manager
+- [x] No frontend/UI/package/database changes
+- [x] No checkpoint created during implementation (checkpoint created in consolidation step only)
+- [x] Checkpoint document created: `docs/AGENT-HARNESS-03A-CHECKPOINT.md`
+
+**LOCKED — 2026-06-21. Do not edit.**
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-03A.
