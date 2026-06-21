@@ -19097,3 +19097,176 @@ The implementation must:
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-01C.
 **Checkpoint:** `docs/AGENT-HARNESS-01C-CHECKPOINT.md`
+
+---
+
+#### AGENT-HARNESS-01D: Tool Registry Contract
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** AGENT-HARNESS-01D
+**Family:** AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
+**Priority:** High
+**Nature:** BACKEND / AI SERVICE / TOOL CONTRACTS / REGISTRY FOUNDATION / NO RUNTIME TOOL EXECUTION
+**Risk:** Medium
+**Depends on:** AGENT-HARNESS-00 COMPLETE and LOCKED; AGENT-HARNESS-01A COMPLETE and LOCKED; AGENT-HARNESS-01B COMPLETE and LOCKED; AGENT-HARNESS-01C COMPLETE and LOCKED
+
+**Problem:**
+AGENT-HARNESS-01B created Agent Harness v1 contracts/config, and AGENT-HARNESS-01C created a data-only model profile registry. The next foundation needed is a typed Tool Registry Contract so future Agent Harness slices can describe available tools, tool input schemas, risk levels, approval requirements, timeouts, and execution boundaries without hardcoding tool lists inside WorkerProcessor or future tool loops.
+
+**Objective:**
+Create a typed Tool Registry Contract foundation for Agent Harness v1. This slice defines tool registry contracts and initial registry metadata as data only. It does not implement runtime tool execution.
+
+**Scope:**
+- Add typed tool registry contract files and focused tests.
+- Reuse AGENT-HARNESS-01B contracts/config where appropriate.
+- No runtime behavior changes in this slice.
+- No actual tool execution implemented in this slice.
+- No WorkerProcessor behavior changes in this slice.
+- No AIExecutionService behavior changes in this slice.
+- No provider adapter behavior changes in this slice.
+- No queue/SSE/status behavior changes.
+- No prompt assembly behavior changes.
+- No frontend/UI changes.
+- Keep registry data easy to change later.
+- Prepare for later read/list/write/delete/validation/browser tools.
+- Avoid hardcoding tool lists across unrelated files.
+
+**Likely implementation files:**
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\tools\tool-registry.contracts.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\tools\tool-registry.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\tools\tool-registry.spec.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\index.ts` (updated barrel export)
+
+Alternative path acceptable only if project structure strongly prefers it; implementation must explain why.
+
+**Expected tool registry concepts:**
+Each tool definition should be typed and include:
+- `id`
+- `name`
+- `displayName`
+- `description`
+- `category`
+- `inputSchema`
+- `outputSchema` (if useful)
+- `riskLevel`
+- `requiresApproval`
+- `enabled`
+- `timeoutMs`
+- `maxInputBytes`
+- `maxOutputBytes`
+- `allowedModes`
+- `allowedScopes`
+- `auditEventTypes`
+- `tags`
+- `implementationStatus` (`planned` / `contract-only` / `implemented`)
+
+**Expected initial registry entries:**
+Contract-only metadata for planned Agent Harness tools:
+- `list_files`
+- `read_file`
+- `write_file`
+- `delete_file`
+- `run_validation`
+- `start_preview`
+- `browser_smoke`
+- `search_workspace` (placeholder for future lexical/semantic search)
+
+All entries must be marked `contract-only` or `planned`, not `implemented`.
+
+**Expected registry behavior:**
+- Export a stable list/map of tool definitions.
+- Export helper functions only if simple and testable:
+  - `listAgentHarnessToolDefinitions()`
+  - `listEnabledAgentHarnessToolDefinitions()`
+  - `getAgentHarnessToolDefinition(toolId)`
+  - `isAgentHarnessToolEnabled(toolId)`
+  - `doesAgentHarnessToolRequireApproval(toolId)`
+- Keep helper functions pure and data-only.
+- Do not wire helpers into WorkerProcessor or AIExecutionService in this slice.
+- Do not execute tools in this slice.
+- Do not create tool dispatcher in this slice.
+
+**Changeability / no-hardcoding requirements:**
+The implementation must:
+- centralize planned Agent Harness tool definitions in one registry module;
+- avoid hardcoded tool lists inside WorkerProcessor;
+- avoid hardcoded validation commands inside WorkerProcessor;
+- avoid hardcoded risk/approval logic scattered across future tool handlers;
+- make adding a new tool a registry/data change plus one focused handler slice later;
+- keep tool definitions typed and version-aware;
+- include risk level and approval metadata from the start;
+- keep tools disabled or contract-only until implementation slices explicitly enable them;
+- avoid enabling runtime tool execution in this slice.
+
+**Non-goals:**
+- No runtime tool execution.
+- No tool dispatcher.
+- No WorkerProcessor multi-turn loop.
+- No adapter tool-use/function-calling support.
+- No provider streaming.
+- No actual `read_file`/`list_files`/`write_file`/`delete_file` implementation.
+- No validation runner implementation.
+- No browser smoke implementation.
+- No repo indexing/search implementation.
+- No model profile runtime routing.
+- No prompt template registry implementation.
+- No database schema changes.
+- No queue architecture changes.
+- No dependency changes.
+- No frontend/UI changes.
+- No changes to existing prompt assembly ordering.
+- No changes to current file-action parser.
+- No changes to checkpoint/revert/coherence flow.
+
+**Validation requirements (for implementation step):**
+- Run focused ai-service tests for new tool-registry files.
+- Run ai-service typecheck/build after new exports are added.
+- Tests must prove:
+  1. Registry exports the intended planned tool definitions.
+  2. Each tool has required fields.
+  3. Tool ids are unique.
+  4. Risk levels are present and valid.
+  5. Approval-required metadata is present and conservative for write/delete/package/env-risk tools.
+  6. Helper lookup returns the expected tool definition.
+  7. Missing tool lookup is handled safely.
+  8. Enabled/list helper behavior is correct if helpers exist.
+  9. Registry exports are available from the stable agent-harness index file.
+  10. No runtime files import or execute this registry yet.
+- Browser smoke: not required (tool registry contracts/data only).
+- Frontend validation: not required (no frontend files touched).
+
+**Acceptance criteria:**
+- [x] AGENT-HARNESS-01D registered as ACTIVE in TASKS.md and TASKS_BACKLOG_FULL.md
+- [x] Dependency on AGENT-HARNESS-00 COMPLETE and LOCKED documented
+- [x] Dependency on AGENT-HARNESS-01A COMPLETE and LOCKED documented
+- [x] Dependency on AGENT-HARNESS-01B COMPLETE and LOCKED documented
+- [x] Dependency on AGENT-HARNESS-01C COMPLETE and LOCKED documented
+- [x] Problem/objective/scope/non-goals documented
+- [x] Changeability/no-hardcoding requirements documented
+- [x] Likely files documented
+- [x] Expected tool registry concepts documented
+- [x] Expected initial registry entries documented
+- [x] Expected registry behavior documented
+- [x] Validation requirements documented
+- [x] Browser smoke requirement documented as not required
+- [x] No source/runtime/test/package files changed (registration step)
+- [x] No checkpoint created (registration step)
+- [x] No implementation performed (registration step)
+- [x] (Implementation) tool-registry.contracts.ts exports all tool type names
+- [x] (Implementation) tool-registry.ts exports tool list/map and pure helper functions
+- [x] (Implementation) index.ts re-exports tool registry contracts and registry
+- [x] (Implementation) focused ai-service tests pass (1 suite, 10 tests)
+- [x] (Implementation) ai-service build passes (tsc clean)
+
+**Files changed:**
+- `services/ai-service/src/agent-harness/tools/tool-registry.contracts.ts` (new — all v1 tool registry typed contracts)
+- `services/ai-service/src/agent-harness/tools/tool-registry.ts` (new — centralized registry data, map, and pure helpers)
+- `services/ai-service/src/agent-harness/tools/tool-registry.spec.ts` (new — 10 focused registry tests)
+- `services/ai-service/src/agent-harness/index.ts` (updated — added tools barrel exports)
+
+**Validation results:**
+- `npm test -- src/agent-harness/tools/tool-registry.spec.ts` — PASS (1 suite, 10 tests)
+- `npm run build` — PASS (tsc clean)
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-01D.
+**Checkpoint:** `docs/AGENT-HARNESS-01D-CHECKPOINT.md`
