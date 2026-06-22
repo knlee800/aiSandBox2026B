@@ -16,7 +16,7 @@ function makeAxiosResponse<T>(data: T): AxiosResponse<T> {
 
 describe('ApiGatewayHttpClient - workspace file methods', () => {
   let client: ApiGatewayHttpClient;
-  let httpService: { get: jest.Mock; post: jest.Mock };
+  let httpService: { get: jest.Mock; post: jest.Mock; delete: jest.Mock };
 
   beforeEach(async () => {
     process.env.API_GATEWAY_URL = 'http://localhost:4000';
@@ -25,6 +25,7 @@ describe('ApiGatewayHttpClient - workspace file methods', () => {
     httpService = {
       get: jest.fn(),
       post: jest.fn(),
+      delete: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -121,6 +122,62 @@ describe('ApiGatewayHttpClient - workspace file methods', () => {
       await expect(
         client.listWorkspaceDirectory('session-1', 'src'),
       ).rejects.toThrow('Service unavailable');
+    });
+  });
+
+  describe('writeWorkspaceFile', () => {
+    it('calls API Gateway internal workspace write endpoint with correct body', async () => {
+      httpService.post.mockReturnValue(
+        of(makeAxiosResponse({ ok: true })),
+      );
+
+      await client.writeWorkspaceFile('session-1', 'src/app.ts', 'const x = 1;');
+
+      expect(httpService.post).toHaveBeenCalledWith(
+        'http://localhost:4000/api/internal/workspace/session-1/write',
+        { path: 'src/app.ts', content: 'const x = 1;' },
+        {
+          headers: { 'X-Internal-Service-Key': 'test-key-123' },
+        },
+      );
+    });
+
+    it('propagates upstream errors', async () => {
+      httpService.post.mockReturnValue(
+        throwError(() => new Error('Write failed')),
+      );
+
+      await expect(
+        client.writeWorkspaceFile('session-1', 'file.ts', 'content'),
+      ).rejects.toThrow('Write failed');
+    });
+  });
+
+  describe('deleteWorkspaceFile', () => {
+    it('calls API Gateway internal workspace delete endpoint with correct body', async () => {
+      httpService.delete.mockReturnValue(
+        of(makeAxiosResponse({ ok: true })),
+      );
+
+      await client.deleteWorkspaceFile('session-1', 'src/old.ts');
+
+      expect(httpService.delete).toHaveBeenCalledWith(
+        'http://localhost:4000/api/internal/workspace/session-1/delete',
+        {
+          data: { path: 'src/old.ts' },
+          headers: { 'X-Internal-Service-Key': 'test-key-123' },
+        },
+      );
+    });
+
+    it('propagates upstream errors', async () => {
+      httpService.delete.mockReturnValue(
+        throwError(() => new Error('Delete failed')),
+      );
+
+      await expect(
+        client.deleteWorkspaceFile('session-1', 'missing.ts'),
+      ).rejects.toThrow('Delete failed');
     });
   });
 });

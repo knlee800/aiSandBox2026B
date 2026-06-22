@@ -29,6 +29,8 @@ import { ToolDispatcher } from '../agent-harness/tools/tool-dispatcher';
 import {
   createReadFileHandler,
   createListFilesHandler,
+  createWriteFileHandler,
+  createDeleteFileHandler,
 } from '../agent-harness/tools/handlers/file-tool-handlers';
 import { ApiGatewayHttpClient } from '../clients/api-gateway-http.client';
 
@@ -764,6 +766,21 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                   dispatcher.registerHandler(
                     'list_files',
                     createListFilesHandler({
+                      client: this.apiGatewayHttpClient,
+                      sessionId: job.data.sessionId,
+                    }),
+                  );
+                  dispatcher.registerHandler(
+                    'write_file',
+                    createWriteFileHandler({
+                      client: this.apiGatewayHttpClient,
+                      sessionId: job.data.sessionId,
+                      maxFileWriteBytes: DEFAULT_AGENT_HARNESS_CONFIG_V1.maxFileWriteBytes,
+                    }),
+                  );
+                  dispatcher.registerHandler(
+                    'delete_file',
+                    createDeleteFileHandler({
                       client: this.apiGatewayHttpClient,
                       sessionId: job.data.sessionId,
                     }),

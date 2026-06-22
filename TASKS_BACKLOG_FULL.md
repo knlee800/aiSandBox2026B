@@ -30468,3 +30468,152 @@ Exact files must be confirmed by inspection before implementation. Likely areas:
 **LOCKED — 2026-06-21. Do not edit.**
 
 **Reference:** See TASKS.md -> AGENT-HARNESS-03A.
+
+----
+
+### AGENT-HARNESS-03B: Write-File and Delete-File Tools
+
+**Task ID:** AGENT-HARNESS-03B
+**Status:** COMPLETE and LOCKED
+**Priority:** Critical
+**Nature:** BACKEND / AI SERVICE / API GATEWAY / MUTATING FILE TOOLS / HIGH RISK
+**Risk:** High
+**Family:** AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
+
+**Depends on:**
+- AGENT-HARNESS-00 COMPLETE and LOCKED
+- AGENT-HARNESS-01A COMPLETE and LOCKED
+- AGENT-HARNESS-01B COMPLETE and LOCKED
+- AGENT-HARNESS-01C COMPLETE and LOCKED
+- AGENT-HARNESS-01D COMPLETE and LOCKED
+- AGENT-HARNESS-01E COMPLETE and LOCKED
+- AGENT-HARNESS-02A COMPLETE and LOCKED
+- AGENT-HARNESS-02B COMPLETE and LOCKED
+- AGENT-HARNESS-02C COMPLETE and LOCKED
+- AGENT-HARNESS-03A COMPLETE and LOCKED
+
+**Problem:**
+AGENT-HARNESS-03A implemented the first real read-only Agent Harness tools through the registered architecture boundary: ai-service → API Gateway internal endpoint → container-manager → workspace. The next master-plan task is to add `write_file` and `delete_file` tools. These are high risk because they mutate workspace files and could bypass the existing frontend-owned file-action/checkpoint flow if implemented carelessly.
+
+**Objective:**
+Register a bounded high-risk implementation slice for `write_file` and `delete_file` tools.
+
+This slice must preserve the architecture boundary and must not bypass checkpoint/revert/coherence protections. Before implementation, a separate architecture/security review must confirm whether AGENT-HARNESS-03B can safely implement mutation directly or whether a checkpoint prerequisite is required first.
+
+**Scope:**
+- Add `write_file` and `delete_file` tool handlers in ai-service.
+- Use the same service boundary as 03A: ai-service → API Gateway internal endpoint → container-manager → workspace.
+- Add API Gateway internal write/delete endpoints if needed.
+- Add ai-service `ApiGatewayHttpClient` write/delete methods.
+- Register only `write_file` and `delete_file` handlers in ToolDispatcher inside the double-gated harness path.
+- Update the tool registry only for `write_file` and `delete_file` if safe.
+- Preserve `read_file`/`list_files` behavior from 03A.
+- Preserve existing single-shot path.
+- Preserve `enableToolLoop` default `false`.
+- Preserve `harnessVersion === 'v1'` gate.
+- Preserve `maxToolIterations` guard.
+- No validation/browser/search/preview tools.
+- No frontend/UI changes.
+- No database schema changes.
+- No package/dependency changes.
+
+**Likely implementation areas:**
+Exact files must be confirmed by review before implementation:
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\sessions\` (internal write/delete endpoints)
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\clients\container-manager-http.client.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\clients\api-gateway-http.client.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\tools\handlers\file-tool-handlers.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\tools\tool-registry.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\worker\worker.processor.ts`
+- Relevant api-gateway and ai-service tests
+- Existing checkpoint/git-checkpoint APIs for safety review
+
+**Expected implementation behavior:**
+- `write_file` writes bounded content through API Gateway internal endpoint.
+- `delete_file` deletes a single safe workspace path through API Gateway internal endpoint.
+- Both handlers validate and normalize paths before HTTP calls.
+- Both handlers return typed `ToolDispatchResult` / `AgentToolResult`-compatible output.
+- Errors are safe and typed for model feedback.
+- Only `write_file` and `delete_file` become newly registered for mutation.
+- `read_file` and `list_files` remain implemented and unchanged.
+- `run_validation`, `browser_smoke`, `start_preview`, and `search_workspace` remain disabled/unregistered.
+
+**High-risk safety requirements:**
+- No direct filesystem access from ai-service.
+- No direct ai-service → container-manager mutation calls.
+- No arbitrary shell execution.
+- No validation command execution.
+- No browser automation.
+- No hidden auto-approval.
+- No path traversal.
+- All writes/deletes must be session-scoped.
+- All paths must stay inside the session workspace.
+- `write_file` must enforce content size limits.
+- `delete_file` must reject unsafe root or broad delete targets.
+- Existing checkpoint/revert/coherence flow must not be bypassed without an explicit reviewed plan.
+- If pre-mutation checkpointing is required and not available, implementation must stop and recommend a prerequisite slice instead of proceeding.
+
+**Non-goals:**
+- No validation runner.
+- No browser smoke runner.
+- No preview/start tool.
+- No `search_workspace` implementation.
+- No approval UI.
+- No frontend/UI changes.
+- No database schema changes.
+- No package/dependency changes.
+- No direct filesystem access from ai-service.
+- No direct container-manager mutation call from ai-service.
+- No checkpoint/revert flow changes unless explicitly reviewed and scoped before implementation.
+- No SSE event changes unless explicitly reviewed and tested.
+
+**Validation requirements (for future implementation step):**
+- Add focused tests for API Gateway internal write/delete endpoints or client behavior.
+- Add focused tests for ai-service `ApiGatewayHttpClient` write/delete methods.
+- Add focused tests for `write_file`/`delete_file` handlers.
+- Add focused tests that ToolDispatcher registers only `read_file`, `list_files`, `write_file`, and `delete_file` in harness branch.
+- Tests must prove:
+  1. `write_file` calls API Gateway internal write boundary.
+  2. `delete_file` calls API Gateway internal delete boundary.
+  3. Unsafe traversal paths are rejected.
+  4. Root/broad delete targets are rejected.
+  5. Write content is bounded.
+  6. Upstream errors return typed safe errors.
+  7. No direct filesystem access from ai-service.
+  8. No direct ai-service → container-manager mutation calls.
+  9. Validation/browser/search/preview tools remain unregistered.
+  10. Existing `read_file`/`list_files` tests remain passing.
+  11. `enableToolLoop false` still prevents harness path.
+  12. Existing single-shot path remains preserved.
+- Run focused api-gateway tests if api-gateway files are touched.
+- Run focused ai-service tests.
+- Run builds/typechecks for touched services.
+- No frontend tests unless frontend files are unexpectedly touched.
+- No browser smoke required for registration.
+
+**Architecture/security review requirement:**
+Before implementation begins, a separate architecture/security review step must confirm:
+1. Whether `write_file`/`delete_file` can safely bypass the frontend file-action apply flow within the harness path, or whether a pre-mutation checkpoint mechanism is required first.
+2. Whether the existing `ContainerManagerHttpClient` already supports write/delete operations or whether new container-manager endpoints are needed.
+3. Whether SSE file-action events should be published for harness-initiated writes/deletes.
+4. Whether content size limits and delete-target restrictions are sufficient for safety without an approval UI.
+
+**Acceptance criteria (registration + implementation):**
+- [x] AGENT-HARNESS-03B registered as ACTIVE in TASKS.md and TASKS_BACKLOG_FULL.md
+- [x] All dependencies through AGENT-HARNESS-03A COMPLETE and LOCKED documented
+- [x] Problem/objective/scope documented
+- [x] High-risk mutating-tool nature documented
+- [x] Architecture/security review completed before implementation
+- [x] Likely implementation areas documented and confirmed
+- [x] write_file and delete_file handlers implemented through API Gateway internal boundary
+- [x] Security/safety requirements enforced (path validation, traversal rejection, write bound, delete guards)
+- [x] Non-goals respected — no validation/browser/search/preview tools, no frontend/package/db changes
+- [x] Validation passed: 135 tests across 8 spec files, both service builds clean, no linter errors
+- [x] No browser smoke required (backend-only, double gate prevents any live harness execution)
+- [x] No source/runtime/test/package files changed during consolidation step
+- [x] No checkpoint created before consolidation step
+- [x] Checkpoint document created: `docs/AGENT-HARNESS-03B-CHECKPOINT.md`
+
+**LOCKED — 2026-06-22. Do not edit.**
+
+**Reference:** See TASKS.md -> AGENT-HARNESS-03B.

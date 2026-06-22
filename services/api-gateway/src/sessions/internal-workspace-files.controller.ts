@@ -1,8 +1,11 @@
 import {
   Controller,
   Get,
+  Post,
+  Delete,
   Param,
   Query,
+  Body,
   HttpCode,
   HttpStatus,
   BadRequestException,
@@ -11,11 +14,14 @@ import { ContainerManagerHttpClient } from '../clients/container-manager-http.cl
 
 /**
  * Internal Workspace Files Controller
- * AGENT-HARNESS-03A: Exposes read-only file endpoints for ai-service.
+ * AGENT-HARNESS-03A: Read-only file endpoints for ai-service.
+ * AGENT-HARNESS-03B: Mutating write/delete file endpoints for ai-service.
  *
  * Routes:
- * - GET /api/internal/workspace/:sessionId/read?path=...
- * - GET /api/internal/workspace/:sessionId/list?path=...
+ * - GET  /api/internal/workspace/:sessionId/read?path=...
+ * - GET  /api/internal/workspace/:sessionId/list?path=...
+ * - POST /api/internal/workspace/:sessionId/write  { path, content }
+ * - DELETE /api/internal/workspace/:sessionId/delete  { path }
  *
  * Protected by global InternalServiceAuthGuard (X-Internal-Service-Key).
  * Delegates to ContainerManagerHttpClient which calls container-manager.
@@ -58,5 +64,42 @@ export class InternalWorkspaceFilesController {
       sessionId,
       normalizedPath,
     );
+  }
+
+  @Post(':sessionId/write')
+  @HttpCode(HttpStatus.OK)
+  async writeFile(
+    @Param('sessionId') sessionId: string,
+    @Body('path') filePath?: string,
+    @Body('content') content?: string,
+  ): Promise<{ ok: true }> {
+    if (!filePath || filePath.trim().length === 0) {
+      throw new BadRequestException('Body field "path" is required');
+    }
+
+    if (content === undefined || content === null) {
+      throw new BadRequestException('Body field "content" is required');
+    }
+
+    await this.containerManagerHttpClient.writeSessionFile(
+      sessionId,
+      filePath,
+      content,
+    );
+    return { ok: true };
+  }
+
+  @Delete(':sessionId/delete')
+  @HttpCode(HttpStatus.OK)
+  async deleteFile(
+    @Param('sessionId') sessionId: string,
+    @Body('path') filePath?: string,
+  ): Promise<{ ok: true }> {
+    if (!filePath || filePath.trim().length === 0) {
+      throw new BadRequestException('Body field "path" is required');
+    }
+
+    await this.containerManagerHttpClient.deleteSessionFile(sessionId, filePath);
+    return { ok: true };
   }
 }

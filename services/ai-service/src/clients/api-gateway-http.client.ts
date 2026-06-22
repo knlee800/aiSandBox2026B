@@ -185,4 +185,54 @@ export class ApiGatewayHttpClient {
 
     return response.data;
   }
+
+  /**
+   * Write file content to a session workspace via API Gateway.
+   * AGENT-HARNESS-03B: ai-service → API Gateway → container-manager boundary.
+   * @param sessionId - Session UUID
+   * @param path - Relative file path within workspace
+   * @param content - File content to write
+   * @throws Error if HTTP request fails
+   */
+  async writeWorkspaceFile(
+    sessionId: string,
+    path: string,
+    content: string,
+  ): Promise<void> {
+    await firstValueFrom(
+      this.httpService.post(
+        `${this.apiGatewayUrl}/api/internal/workspace/${sessionId}/write`,
+        { path, content },
+        {
+          headers: {
+            'X-Internal-Service-Key': this.internalServiceKey,
+          },
+        },
+      ),
+    );
+  }
+
+  /**
+   * Delete a file from a session workspace via API Gateway.
+   * AGENT-HARNESS-03B: ai-service → API Gateway → container-manager boundary.
+   * @param sessionId - Session UUID
+   * @param path - Relative file path within workspace
+   * @throws Error if HTTP request fails
+   */
+  async deleteWorkspaceFile(
+    sessionId: string,
+    path: string,
+  ): Promise<void> {
+    await firstValueFrom(
+      this.httpService.delete(
+        `${this.apiGatewayUrl}/api/internal/workspace/${sessionId}/delete`,
+        {
+          data: { path },
+          headers: {
+            'X-Internal-Service-Key': this.internalServiceKey,
+          },
+        },
+      ),
+    );
+  }
 }

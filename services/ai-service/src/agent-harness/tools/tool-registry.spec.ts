@@ -125,31 +125,42 @@ describe('Agent Harness tool registry (v1)', () => {
 
     expect(allTools).toBe(AGENT_HARNESS_TOOL_DEFINITIONS_V1);
     expect(enabledTools).toEqual(expectedEnabledTools);
-    expect(enabledTools).toHaveLength(2);
+    expect(enabledTools).toHaveLength(4);
 
     const enabledIds = enabledTools.map((t) => t.id);
     expect(enabledIds).toContain('read_file');
     expect(enabledIds).toContain('list_files');
+    expect(enabledIds).toContain('write_file');
+    expect(enabledIds).toContain('delete_file');
 
     for (const tool of enabledTools) {
       expect(isAgentHarnessToolEnabled(tool.id)).toBe(true);
     }
   });
 
-  it('marks read_file and list_files as implemented and enabled', () => {
+  it('marks read_file, list_files, write_file, and delete_file as implemented and enabled', () => {
     const readFile = getAgentHarnessToolDefinition('read_file');
     const listFiles = getAgentHarnessToolDefinition('list_files');
+    const writeFile = getAgentHarnessToolDefinition('write_file');
+    const deleteFile = getAgentHarnessToolDefinition('delete_file');
 
     expect(readFile?.enabled).toBe(true);
     expect(readFile?.implementationStatus).toBe('implemented');
     expect(listFiles?.enabled).toBe(true);
     expect(listFiles?.implementationStatus).toBe('implemented');
+    expect(writeFile?.enabled).toBe(true);
+    expect(writeFile?.implementationStatus).toBe('implemented');
+    expect(deleteFile?.enabled).toBe(true);
+    expect(deleteFile?.implementationStatus).toBe('implemented');
   });
 
-  it('keeps write/delete/validation/browser/search tools disabled and not implemented', () => {
+  it('keeps requiresApproval true for write_file and delete_file', () => {
+    expect(doesAgentHarnessToolRequireApproval('write_file')).toBe(true);
+    expect(doesAgentHarnessToolRequireApproval('delete_file')).toBe(true);
+  });
+
+  it('keeps validation/browser/preview/search tools disabled and not implemented', () => {
     const disabledToolIds = [
-      'write_file',
-      'delete_file',
       'run_validation',
       'start_preview',
       'browser_smoke',

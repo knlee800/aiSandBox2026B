@@ -379,30 +379,33 @@ describe('Agent Harness 03A: read_file/list_files handler registration', () => {
     expect(workerSource).toContain('file-tool-handlers');
     expect(workerSource).toContain('createReadFileHandler');
     expect(workerSource).toContain('createListFilesHandler');
+    expect(workerSource).toContain('createWriteFileHandler');
+    expect(workerSource).toContain('createDeleteFileHandler');
   });
 
-  it('WorkerProcessor registers exactly read_file and list_files handlers', () => {
+  it('WorkerProcessor registers read_file, list_files, write_file, and delete_file handlers', () => {
     const workerSource = require('fs').readFileSync(
       require('path').join(__dirname, 'worker.processor.ts'),
       'utf-8',
     );
     const readFileRegistrations = (workerSource.match(/registerHandler\(\s*['"]read_file['"]/g) || []).length;
     const listFilesRegistrations = (workerSource.match(/registerHandler\(\s*['"]list_files['"]/g) || []).length;
+    const writeFileRegistrations = (workerSource.match(/registerHandler\(\s*['"]write_file['"]/g) || []).length;
+    const deleteFileRegistrations = (workerSource.match(/registerHandler\(\s*['"]delete_file['"]/g) || []).length;
     expect(readFileRegistrations).toBe(1);
     expect(listFilesRegistrations).toBe(1);
+    expect(writeFileRegistrations).toBe(1);
+    expect(deleteFileRegistrations).toBe(1);
   });
 
-  it('WorkerProcessor does not register write_file, delete_file, or other tools', () => {
+  it('WorkerProcessor does not register validation, browser, preview, or search tools', () => {
     const workerSource = require('fs').readFileSync(
       require('path').join(__dirname, 'worker.processor.ts'),
       'utf-8',
     );
-    expect(workerSource).not.toContain("registerHandler('write_file'");
-    expect(workerSource).not.toContain('registerHandler("write_file"');
-    expect(workerSource).not.toContain("registerHandler('delete_file'");
-    expect(workerSource).not.toContain('registerHandler("delete_file"');
     expect(workerSource).not.toContain("registerHandler('run_validation'");
     expect(workerSource).not.toContain("registerHandler('browser_smoke'");
+    expect(workerSource).not.toContain("registerHandler('start_preview'");
     expect(workerSource).not.toContain("registerHandler('search_workspace'");
   });
 
@@ -423,8 +426,12 @@ describe('Agent Harness 03A: read_file/list_files handler registration', () => {
     const harnessGateIndex = workerSource.indexOf("harnessVersion === 'v1'");
     const readFileRegIndex = workerSource.indexOf("'read_file'");
     const listFilesRegIndex = workerSource.indexOf("'list_files'");
+    const writeFileRegIndex = workerSource.indexOf("'write_file'");
+    const deleteFileRegIndex = workerSource.indexOf("'delete_file'");
     expect(readFileRegIndex).toBeGreaterThan(harnessGateIndex);
     expect(listFilesRegIndex).toBeGreaterThan(harnessGateIndex);
+    expect(writeFileRegIndex).toBeGreaterThan(harnessGateIndex);
+    expect(deleteFileRegIndex).toBeGreaterThan(harnessGateIndex);
   });
 
   it('WorkerProcessor does not access filesystem directly', () => {

@@ -5,12 +5,14 @@ import { ContainerManagerHttpClient } from '../clients/container-manager-http.cl
 
 describe('InternalWorkspaceFilesController', () => {
   let controller: InternalWorkspaceFilesController;
-  let mockClient: jest.Mocked<Pick<ContainerManagerHttpClient, 'readSessionFile' | 'listSessionDirectory'>>;
+  let mockClient: jest.Mocked<Pick<ContainerManagerHttpClient, 'readSessionFile' | 'listSessionDirectory' | 'writeSessionFile' | 'deleteSessionFile'>>;
 
   beforeEach(async () => {
     mockClient = {
       readSessionFile: jest.fn(),
       listSessionDirectory: jest.fn(),
+      writeSessionFile: jest.fn(),
+      deleteSessionFile: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -102,6 +104,81 @@ describe('InternalWorkspaceFilesController', () => {
         'session-1',
         '/',
       );
+    });
+  });
+
+  describe('writeFile', () => {
+    it('delegates to ContainerManagerHttpClient.writeSessionFile', async () => {
+      mockClient.writeSessionFile.mockResolvedValue(undefined);
+
+      const result = await controller.writeFile('session-1', 'src/app.ts', 'const x = 1;');
+
+      expect(mockClient.writeSessionFile).toHaveBeenCalledWith(
+        'session-1',
+        'src/app.ts',
+        'const x = 1;',
+      );
+      expect(result).toEqual({ ok: true });
+    });
+
+    it('throws BadRequestException when path is missing', async () => {
+      await expect(controller.writeFile('session-1', undefined, 'content')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('throws BadRequestException when path is empty string', async () => {
+      await expect(controller.writeFile('session-1', '  ', 'content')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('throws BadRequestException when content is missing', async () => {
+      await expect(controller.writeFile('session-1', 'file.ts', undefined)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('propagates upstream errors from container-manager client', async () => {
+      mockClient.writeSessionFile.mockRejectedValue(new Error('Container not running'));
+
+      await expect(
+        controller.writeFile('session-1', 'file.ts', 'content'),
+      ).rejects.toThrow('Container not running');
+    });
+  });
+
+  describe('deleteFile', () => {
+    it('delegates to ContainerManagerHttpClient.deleteSessionFile', async () => {
+      mockClient.deleteSessionFile.mockResolvedValue(undefined);
+
+      const result = await controller.deleteFile('session-1', 'src/old.ts');
+
+      expect(mockClient.deleteSessionFile).toHaveBeenCalledWith(
+        'session-1',
+        'src/old.ts',
+      );
+      expect(result).toEqual({ ok: true });
+    });
+
+    it('throws BadRequestException when path is missing', async () => {
+      await expect(controller.deleteFile('session-1', undefined)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('throws BadRequestException when path is empty string', async () => {
+      await expect(controller.deleteFile('session-1', '  ')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('propagates upstream errors from container-manager client', async () => {
+      mockClient.deleteSessionFile.mockRejectedValue(new Error('File not found'));
+
+      await expect(
+        controller.deleteFile('session-1', 'missing.ts'),
+      ).rejects.toThrow('File not found');
     });
   });
 });
