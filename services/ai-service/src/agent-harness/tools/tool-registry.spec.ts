@@ -125,13 +125,14 @@ describe('Agent Harness tool registry (v1)', () => {
 
     expect(allTools).toBe(AGENT_HARNESS_TOOL_DEFINITIONS_V1);
     expect(enabledTools).toEqual(expectedEnabledTools);
-    expect(enabledTools).toHaveLength(4);
+    expect(enabledTools).toHaveLength(5);
 
     const enabledIds = enabledTools.map((t) => t.id);
     expect(enabledIds).toContain('read_file');
     expect(enabledIds).toContain('list_files');
     expect(enabledIds).toContain('write_file');
     expect(enabledIds).toContain('delete_file');
+    expect(enabledIds).toContain('run_validation');
 
     for (const tool of enabledTools) {
       expect(isAgentHarnessToolEnabled(tool.id)).toBe(true);
@@ -159,9 +160,17 @@ describe('Agent Harness tool registry (v1)', () => {
     expect(doesAgentHarnessToolRequireApproval('delete_file')).toBe(true);
   });
 
-  it('keeps validation/browser/preview/search tools disabled and not implemented', () => {
+  it('marks run_validation as enabled and implemented', () => {
+    const tool = getAgentHarnessToolDefinition('run_validation');
+    expect(tool).toBeDefined();
+    expect(tool?.enabled).toBe(true);
+    expect(tool?.implementationStatus).toBe('implemented');
+    expect(tool?.category).toBe('validation');
+    expect(tool?.requiresApproval).toBe(false);
+  });
+
+  it('keeps browser/preview/search tools disabled and not implemented', () => {
     const disabledToolIds = [
-      'run_validation',
       'start_preview',
       'browser_smoke',
       'search_workspace',

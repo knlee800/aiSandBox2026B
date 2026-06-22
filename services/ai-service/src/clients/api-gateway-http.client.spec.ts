@@ -181,6 +181,47 @@ describe('ApiGatewayHttpClient - workspace file methods', () => {
     });
   });
 
+  describe('runWorkspaceValidation', () => {
+    it('calls API Gateway internal workspace validate endpoint with correct body', async () => {
+      httpService.post.mockReturnValue(
+        of(makeAxiosResponse({ exitCode: 0, stdout: 'PASS', stderr: '' })),
+      );
+
+      const result = await client.runWorkspaceValidation('session-1', 'npm test', 60000);
+
+      expect(httpService.post).toHaveBeenCalledWith(
+        'http://localhost:4000/api/internal/workspace/session-1/validate',
+        { command: 'npm test', timeoutMs: 60000 },
+        {
+          headers: { 'X-Internal-Service-Key': 'test-key-123' },
+        },
+      );
+      expect(result).toEqual({ exitCode: 0, stdout: 'PASS', stderr: '' });
+    });
+
+    it('returns exitCode, stdout, and stderr from response', async () => {
+      httpService.post.mockReturnValue(
+        of(makeAxiosResponse({ exitCode: 1, stdout: '', stderr: 'Build error' })),
+      );
+
+      const result = await client.runWorkspaceValidation('session-1', 'npm run build', 120000);
+
+      expect(result.exitCode).toBe(1);
+      expect(result.stdout).toBe('');
+      expect(result.stderr).toBe('Build error');
+    });
+
+    it('propagates upstream errors', async () => {
+      httpService.post.mockReturnValue(
+        throwError(() => new Error('Validation failed')),
+      );
+
+      await expect(
+        client.runWorkspaceValidation('session-1', 'npm test', 60000),
+      ).rejects.toThrow('Validation failed');
+    });
+  });
+
   describe('createWorkspaceCheckpoint', () => {
     it('calls API Gateway internal workspace checkpoint endpoint with internal service key', async () => {
       httpService.post.mockReturnValue(

@@ -32,6 +32,7 @@ import {
   createWriteFileHandler,
   createDeleteFileHandler,
 } from '../agent-harness/tools/handlers/file-tool-handlers';
+import { createRunValidationHandler } from '../agent-harness/tools/handlers/validation-tool-handlers';
 import { ApiGatewayHttpClient } from '../clients/api-gateway-http.client';
 
 /**
@@ -784,6 +785,16 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                     createDeleteFileHandler({
                       client: this.apiGatewayHttpClient,
                       sessionId: job.data.sessionId,
+                    }),
+                  );
+                  dispatcher.registerHandler(
+                    'run_validation',
+                    createRunValidationHandler({
+                      client: this.apiGatewayHttpClient,
+                      sessionId: job.data.sessionId,
+                      allowedValidationCommands: DEFAULT_AGENT_HARNESS_CONFIG_V1.allowedValidationCommands,
+                      validationTimeoutMs: DEFAULT_AGENT_HARNESS_CONFIG_V1.validationTimeoutMs,
+                      maxValidationOutputBytes: DEFAULT_AGENT_HARNESS_CONFIG_V1.maxValidationOutputBytes,
                     }),
                   );
                   let loopOptions: Parameters<typeof executeAgentHarnessLoop>[0] = {

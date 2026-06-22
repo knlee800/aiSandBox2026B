@@ -30777,3 +30777,154 @@ A dedicated architecture and security review is required before implementation b
 
 **Reference:** See TASKS.md -> AGENT-HARNESS-03C.
 **Checkpoint:** `docs/AGENT-HARNESS-03C-CHECKPOINT.md`
+
+----
+
+### AGENT-HARNESS-04A: Validation Runner Tool
+
+**Task ID:** AGENT-HARNESS-04A
+**Status:** COMPLETE and LOCKED
+**Priority:** High
+**Nature:** BACKEND / AI SERVICE / API GATEWAY / CONTAINER MANAGER / VALIDATION TOOL / COMMAND SAFETY
+**Risk:** High
+
+**Depends on:**
+- AGENT-HARNESS-00 — COMPLETE and LOCKED
+- AGENT-HARNESS-01A — COMPLETE and LOCKED
+- AGENT-HARNESS-01B — COMPLETE and LOCKED
+- AGENT-HARNESS-01C — COMPLETE and LOCKED
+- AGENT-HARNESS-01D — COMPLETE and LOCKED
+- AGENT-HARNESS-01E — COMPLETE and LOCKED
+- AGENT-HARNESS-02A — COMPLETE and LOCKED
+- AGENT-HARNESS-02B — COMPLETE and LOCKED
+- AGENT-HARNESS-02C — COMPLETE and LOCKED
+- AGENT-HARNESS-03A — COMPLETE and LOCKED
+- AGENT-HARNESS-03B — COMPLETE and LOCKED
+- AGENT-HARNESS-03C — COMPLETE and LOCKED
+
+**Problem:**
+Agent Harness can now read/list/write/delete workspace files with pre-apply checkpoint safety. The next master-plan step is a validation runner tool so the agent can request safe, bounded validation after making changes. This is high risk because it may execute commands inside project containers. It must use strict allow-lists, timeouts, output limits, and the existing service boundary rather than arbitrary shell execution from ai-service.
+
+**Objective:**
+Register a bounded implementation slice for the `run_validation` Agent Harness tool.
+
+This slice should allow the agent to request pre-approved validation commands only. It must not introduce arbitrary shell execution, package installation, frontend UI changes, or unrestricted command execution.
+
+**Scope:**
+- Register AGENT-HARNESS-04A only.
+- Future implementation must inspect existing executor/container-manager validation or command-running APIs before editing.
+- Future implementation should use existing API Gateway/container-manager boundaries where possible.
+- Future implementation should implement `run_validation` as an allow-listed validation tool.
+- Future implementation should register only `run_validation` in ToolDispatcher in addition to existing read/list/write/delete handlers.
+- Future implementation should update tool registry only for `run_validation` if safe.
+- Must preserve read/list/write/delete behavior from 03A/03B/03C.
+- Must preserve pre-apply checkpoint safety for mutations.
+- Must preserve existing single-shot path.
+- Must preserve `enableToolLoop` default `false`.
+- Must preserve `harnessVersion === 'v1'` gate.
+- Must preserve `maxToolIterations` guard.
+- No frontend/UI changes.
+- No database schema changes.
+- No package/dependency changes unless explicitly reviewed and approved.
+
+**Likely implementation areas (must be confirmed by architecture/security review before implementation):**
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\` — internal validation/exec endpoint if needed
+- `C:\Users\knlee\aiSandBox2026B\services\container-manager\src\` — container exec or command-running APIs
+- `C:\Users\knlee\aiSandBox2026B\services\executor-service\src\` — existing executor if applicable
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\clients\api-gateway-http.client.ts` — validation client method
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\tools\handlers\` — `run_validation` handler
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\tools\tool-registry.ts` — register `run_validation`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\worker\worker.processor.ts` — validation callback wiring
+- Existing tests around validation, execution, preview, or container commands — for reference
+
+**Expected future behavior:**
+- `run_validation` accepts only known validation intents or allow-listed commands.
+- No arbitrary command strings from the model.
+- Validation runs through API Gateway/container-manager/executor boundary, not directly from ai-service.
+- Validation enforces timeout (from policy `validationTimeoutMs`).
+- Validation enforces output size limits.
+- Validation returns typed result data:
+  - command/intention
+  - exit code or success flag
+  - stdout/stderr snippets
+  - truncated flag
+  - duration
+- Validation errors are typed and safe for model feedback.
+- Existing read/list/write/delete handlers remain registered and working.
+- `run_validation` becomes enabled/implemented only when safe.
+- `browser_smoke`, `start_preview`, `search_workspace` remain disabled/unregistered.
+
+**Security / safety requirements:**
+- No arbitrary shell execution from ai-service.
+- No arbitrary command strings from the model.
+- No package install commands.
+- No destructive commands.
+- No network commands unless explicitly allow-listed.
+- No direct ai-service → container execution calls.
+- Commands must be allow-listed by project type or fixed validation intent.
+- Timeouts required.
+- Output limits required.
+- Existing double gate remains enforced.
+- Existing checkpoint safety remains enforced for mutations.
+- Existing single-shot path remains preserved.
+
+**Non-goals:**
+- No browser smoke runner.
+- No preview/start tool.
+- No `search_workspace` implementation.
+- No package installation.
+- No dependency changes unless explicitly approved.
+- No frontend/UI changes.
+- No database schema changes.
+- No SSE event changes unless explicitly reviewed and tested.
+- No provider adapter changes.
+- No model routing changes.
+
+**Validation requirements for future implementation:**
+- Add architecture/security review before implementation.
+- Add focused tests for allow-list enforcement.
+- Add focused tests for ai-service client method if added.
+- Add focused tests for API Gateway/container-manager/executor endpoint if touched.
+- Add focused tests for `run_validation` handler.
+- Add focused tests proving arbitrary commands are rejected.
+- Add focused tests proving output truncation and timeout handling.
+- Add focused tests proving only `run_validation` is newly registered beyond file tools.
+- Add regression tests proving read/list/write/delete and checkpoint behavior remain passing.
+- Run builds/typechecks for touched services.
+- No frontend tests unless frontend files are unexpectedly touched.
+- Browser smoke not required for registration.
+
+**Architecture/security review requirement:**
+A dedicated architecture and security review is required before implementation begins. The review must confirm the command execution path through existing service boundaries, the allow-list enforcement strategy, the timeout/output-limit mechanism, and verify no boundary violations or arbitrary shell execution paths are introduced. Implementation must not start before the review is completed and documented.
+
+**Acceptance criteria (registration):**
+- [x] AGENT-HARNESS-04A registered as ACTIVE in TASKS.md and TASKS_BACKLOG_FULL.md
+- [x] All dependencies through AGENT-HARNESS-03C COMPLETE and LOCKED documented
+- [x] Problem/objective/scope documented
+- [x] High-risk validation runner nature documented
+- [x] Architecture/security review requirement documented before implementation
+- [x] Likely implementation areas documented
+- [x] Expected validation runner behavior documented
+- [x] Security/safety requirements documented
+- [x] Non-goals documented
+- [x] Validation requirements documented
+- [x] Browser smoke documented as not required for registration
+- [x] No source/runtime/test/package files changed
+- [x] No checkpoint created during registration
+- [x] No implementation performed during registration
+- [x] Architecture/security review completed before implementation
+- [x] API Gateway internal validate endpoint implemented and tested (24 tests pass)
+- [x] ai-service runWorkspaceValidation client method implemented and tested (15 tests pass)
+- [x] createRunValidationHandler implemented with exact allow-list enforcement (18 tests pass)
+- [x] Tool registry updated: run_validation enabled/implemented (14 tests pass)
+- [x] WorkerProcessor registers run_validation in double-gated harness branch (43 tests pass)
+- [x] Regression: file-tool-handlers, tool-dispatcher, agent-harness-loop pass (75 tests pass)
+- [x] api-gateway npm run build passes
+- [x] ai-service npm run build passes
+- [x] ReadLints: no errors on touched files
+- [x] Checkpoint document created: docs/AGENT-HARNESS-04A-CHECKPOINT.md
+
+**Checkpoint:** `docs/AGENT-HARNESS-04A-CHECKPOINT.md`
+**Next step:** AGENT-HARNESS-05A — Browser Smoke Tool Investigation (registration required before any implementation).
+
+**Reference:** See TASKS.md -> AGENT-HARNESS-04A.

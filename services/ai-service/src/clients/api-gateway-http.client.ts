@@ -237,6 +237,35 @@ export class ApiGatewayHttpClient {
   }
 
   /**
+   * Run a validation command in a session workspace via API Gateway.
+   * AGENT-HARNESS-04A: ai-service → API Gateway → container-manager boundary.
+   * @param sessionId - Session UUID
+   * @param command - Allow-listed validation command string
+   * @param timeoutMs - Execution timeout in milliseconds
+   * @returns Exit code, stdout, and stderr from the command
+   * @throws Error if HTTP request fails
+   */
+  async runWorkspaceValidation(
+    sessionId: string,
+    command: string,
+    timeoutMs: number = 120_000,
+  ): Promise<{ exitCode: number; stdout: string; stderr: string }> {
+    const response = await firstValueFrom(
+      this.httpService.post(
+        `${this.apiGatewayUrl}/api/internal/workspace/${sessionId}/validate`,
+        { command, timeoutMs },
+        {
+          headers: {
+            'X-Internal-Service-Key': this.internalServiceKey,
+          },
+        },
+      ),
+    );
+
+    return response.data;
+  }
+
+  /**
    * Create a workspace checkpoint via API Gateway.
    * AGENT-HARNESS-03C: Pre-apply checkpoint before first mutating tool call.
    * @param sessionId - Session UUID

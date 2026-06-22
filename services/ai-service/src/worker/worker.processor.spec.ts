@@ -358,14 +358,13 @@ describe('Agent Harness double-gate config', () => {
     expect(workerSource).not.toContain('AGENT_HARNESS_TOOL_DEFINITION_MAP_V1');
   });
 
-  it('WorkerProcessor does not import write/delete/validation/browser tool modules', () => {
+  it('WorkerProcessor does not import standalone write/delete/browser tool modules', () => {
     const workerSource = require('fs').readFileSync(
       require('path').join(__dirname, 'worker.processor.ts'),
       'utf-8',
     );
     expect(workerSource).not.toContain('write-file');
     expect(workerSource).not.toContain('delete-file');
-    expect(workerSource).not.toContain('run-validation');
     expect(workerSource).not.toContain('browser-smoke');
   });
 });
@@ -470,15 +469,44 @@ describe('Agent Harness 03A: read_file/list_files handler registration', () => {
     expect(deleteFileRegistrations).toBe(1);
   });
 
-  it('WorkerProcessor does not register validation, browser, preview, or search tools', () => {
+  it('WorkerProcessor registers run_validation handler in the double-gated harness branch', () => {
     const workerSource = require('fs').readFileSync(
       require('path').join(__dirname, 'worker.processor.ts'),
       'utf-8',
     );
-    expect(workerSource).not.toContain("registerHandler('run_validation'");
+    const harnessGateIndex = workerSource.indexOf("harnessVersion === 'v1'");
+    const runValidationRegIndex = workerSource.indexOf("'run_validation'");
+    expect(runValidationRegIndex).toBeGreaterThan(harnessGateIndex);
+    const registrations = (workerSource.match(/registerHandler\(\s*['"]run_validation['"]/g) || []).length;
+    expect(registrations).toBe(1);
+  });
+
+  it('WorkerProcessor does not register browser, preview, or search tools', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
     expect(workerSource).not.toContain("registerHandler('browser_smoke'");
     expect(workerSource).not.toContain("registerHandler('start_preview'");
     expect(workerSource).not.toContain("registerHandler('search_workspace'");
+  });
+
+  it('WorkerProcessor does not add run_validation to mutatingToolNames', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    expect(workerSource).toContain("mutatingToolNames: new Set(['write_file', 'delete_file'])");
+    expect(workerSource).not.toMatch(/mutatingToolNames.*run_validation/);
+  });
+
+  it('WorkerProcessor imports createRunValidationHandler', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    expect(workerSource).toContain('createRunValidationHandler');
+    expect(workerSource).toContain('validation-tool-handlers');
   });
 
   it('WorkerProcessor injects ApiGatewayHttpClient via constructor', () => {

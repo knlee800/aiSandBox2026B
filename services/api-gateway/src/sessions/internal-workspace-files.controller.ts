@@ -24,6 +24,7 @@ import { ContainerManagerHttpClient } from '../clients/container-manager-http.cl
  * - POST /api/internal/workspace/:sessionId/write  { path, content }
  * - DELETE /api/internal/workspace/:sessionId/delete  { path }
  * - POST /api/internal/workspace/:sessionId/checkpoint  { description? }
+ * - POST /api/internal/workspace/:sessionId/validate  { command, timeoutMs? }
  *
  * Protected by global InternalServiceAuthGuard (X-Internal-Service-Key).
  * Delegates to ContainerManagerHttpClient which calls container-manager.
@@ -103,6 +104,29 @@ export class InternalWorkspaceFilesController {
 
     await this.containerManagerHttpClient.deleteSessionFile(sessionId, filePath);
     return { ok: true };
+  }
+
+  @Post(':sessionId/validate')
+  @HttpCode(HttpStatus.OK)
+  async runValidation(
+    @Param('sessionId') sessionId: string,
+    @Body('command') command?: string,
+    @Body('timeoutMs') timeoutMs?: number,
+  ): Promise<{ exitCode: number; stdout: string; stderr: string }> {
+    if (!command || command.trim().length === 0) {
+      throw new BadRequestException('Body field "command" is required');
+    }
+
+    const effectiveTimeout =
+      typeof timeoutMs === 'number' && timeoutMs > 0 ? timeoutMs : 120_000;
+
+    return this.containerManagerHttpClient.execInSession(
+      sessionId,
+      ['sh', '-lc', command],
+      '/workspace',
+      undefined,
+      effectiveTimeout,
+    );
   }
 
   @Post(':sessionId/checkpoint')

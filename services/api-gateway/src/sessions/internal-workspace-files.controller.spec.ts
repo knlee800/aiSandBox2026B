@@ -5,7 +5,7 @@ import { ContainerManagerHttpClient } from '../clients/container-manager-http.cl
 
 describe('InternalWorkspaceFilesController', () => {
   let controller: InternalWorkspaceFilesController;
-  let mockClient: jest.Mocked<Pick<ContainerManagerHttpClient, 'readSessionFile' | 'listSessionDirectory' | 'writeSessionFile' | 'deleteSessionFile' | 'createManualCheckpoint'>>;
+  let mockClient: jest.Mocked<Pick<ContainerManagerHttpClient, 'readSessionFile' | 'listSessionDirectory' | 'writeSessionFile' | 'deleteSessionFile' | 'createManualCheckpoint' | 'execInSession'>>;
 
   beforeEach(async () => {
     mockClient = {
@@ -14,6 +14,7 @@ describe('InternalWorkspaceFilesController', () => {
       writeSessionFile: jest.fn(),
       deleteSessionFile: jest.fn(),
       createManualCheckpoint: jest.fn(),
+      execInSession: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -180,6 +181,69 @@ describe('InternalWorkspaceFilesController', () => {
       await expect(
         controller.deleteFile('session-1', 'missing.ts'),
       ).rejects.toThrow('File not found');
+    });
+  });
+
+  describe('runValidation', () => {
+    it('delegates to ContainerManagerHttpClient.execInSession with shell wrapper', async () => {
+      mockClient.execInSession.mockResolvedValue({
+        exitCode: 0,
+        stdout: 'PASS',
+        stderr: '',
+      });
+
+      const result = await controller.runValidation('session-1', 'npm test', 60000);
+
+      expect(mockClient.execInSession).toHaveBeenCalledWith(
+        'session-1',
+        ['sh', '-lc', 'npm test'],
+        '/workspace',
+        undefined,
+        60000,
+      );
+      expect(result).toEqual({ exitCode: 0, stdout: 'PASS', stderr: '' });
+    });
+
+    it('throws BadRequestException when command is missing', async () => {
+      await expect(
+        controller.runValidation('session-1', undefined, undefined),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('throws BadRequestException when command is empty string', async () => {
+      await expect(
+        controller.runValidation('session-1', '  ', undefined),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('propagates exec result from container-manager client', async () => {
+      mockClient.execInSession.mockResolvedValue({
+        exitCode: 1,
+        stdout: '',
+        stderr: 'Build failed',
+      });
+
+      const result = await controller.runValidation('session-1', 'npm run build');
+
+      expect(result).toEqual({ exitCode: 1, stdout: '', stderr: 'Build failed' });
+    });
+
+    it('defaults timeoutMs to 120000 when not provided', async () => {
+      mockClient.execInSession.mockResolvedValue({
+        exitCode: 0,
+        stdout: 'ok',
+        stderr: '',
+      });
+
+      await controller.runValidation('session-1', 'npm test');
+
+      expect(mockClient.execInSession).toHaveBeenCalledWith(
+        'session-1',
+        ['sh', '-lc', 'npm test'],
+        '/workspace',
+        undefined,
+        120_000,
+      );
     });
   });
 
