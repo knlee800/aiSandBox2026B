@@ -370,6 +370,78 @@ describe('Agent Harness double-gate config', () => {
   });
 });
 
+describe('Agent Harness 03C: enablePreApplyCheckpoint config', () => {
+  it('enablePreApplyCheckpoint defaults to true in DEFAULT_AGENT_HARNESS_CONFIG_V1', () => {
+    expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.enablePreApplyCheckpoint).toBe(true);
+  });
+});
+
+describe('Agent Harness 03C: checkpoint callback wiring in WorkerProcessor', () => {
+  it('WorkerProcessor passes checkpoint callback inside the double-gated harness branch', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    const harnessGateIndex = workerSource.indexOf("harnessVersion === 'v1'");
+    const checkpointFnIndex = workerSource.indexOf('createCheckpointFn');
+    expect(checkpointFnIndex).toBeGreaterThan(harnessGateIndex);
+  });
+
+  it('WorkerProcessor does not pass checkpoint callback on the normal single-shot path', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    const createCheckpointFnOccurrences = (workerSource.match(/createCheckpointFn/g) || []).length;
+    expect(createCheckpointFnOccurrences).toBeGreaterThanOrEqual(1);
+
+    const singleShotPathIndex = workerSource.lastIndexOf('this.aiExecutionService.execute(executionRequest)');
+    const afterSingleShot = workerSource.substring(singleShotPathIndex);
+    expect(afterSingleShot).not.toContain('createCheckpointFn');
+  });
+
+  it('enableToolLoop false still prevents harness path', () => {
+    expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop).toBe(false);
+  });
+
+  it('WorkerProcessor records preApplyCheckpointHash in execution metadata', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    expect(workerSource).toContain('harnessPreApplyCheckpointHash');
+    expect(workerSource).toContain('preApplyCheckpointHash');
+    expect(workerSource).toContain('nextMetadata.preApplyCheckpointHash');
+  });
+
+  it('WorkerProcessor passes mutatingToolNames with write_file and delete_file', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    expect(workerSource).toContain("mutatingToolNames: new Set(['write_file', 'delete_file'])");
+  });
+
+  it('checkpoint callback uses createWorkspaceCheckpoint from apiGatewayHttpClient', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    expect(workerSource).toContain('this.apiGatewayHttpClient.createWorkspaceCheckpoint');
+  });
+
+  it('checkpoint callback is gated by enablePreApplyCheckpoint', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    expect(workerSource).toContain('enablePreApplyCheckpoint');
+    const enablePreApplyIndex = workerSource.indexOf('DEFAULT_AGENT_HARNESS_CONFIG_V1.enablePreApplyCheckpoint');
+    const createCheckpointFnIndex = workerSource.indexOf('createCheckpointFn', enablePreApplyIndex);
+    expect(createCheckpointFnIndex).toBeGreaterThan(enablePreApplyIndex);
+  });
+});
+
 describe('Agent Harness 03A: read_file/list_files handler registration', () => {
   it('WorkerProcessor imports file-tool-handlers', () => {
     const workerSource = require('fs').readFileSync(

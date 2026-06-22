@@ -5,7 +5,7 @@ import { ContainerManagerHttpClient } from '../clients/container-manager-http.cl
 
 describe('InternalWorkspaceFilesController', () => {
   let controller: InternalWorkspaceFilesController;
-  let mockClient: jest.Mocked<Pick<ContainerManagerHttpClient, 'readSessionFile' | 'listSessionDirectory' | 'writeSessionFile' | 'deleteSessionFile'>>;
+  let mockClient: jest.Mocked<Pick<ContainerManagerHttpClient, 'readSessionFile' | 'listSessionDirectory' | 'writeSessionFile' | 'deleteSessionFile' | 'createManualCheckpoint'>>;
 
   beforeEach(async () => {
     mockClient = {
@@ -13,6 +13,7 @@ describe('InternalWorkspaceFilesController', () => {
       listSessionDirectory: jest.fn(),
       writeSessionFile: jest.fn(),
       deleteSessionFile: jest.fn(),
+      createManualCheckpoint: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -179,6 +180,73 @@ describe('InternalWorkspaceFilesController', () => {
       await expect(
         controller.deleteFile('session-1', 'missing.ts'),
       ).rejects.toThrow('File not found');
+    });
+  });
+
+  describe('createCheckpoint', () => {
+    it('delegates to ContainerManagerHttpClient.createManualCheckpoint', async () => {
+      mockClient.createManualCheckpoint.mockResolvedValue({
+        message: 'Checkpoint created',
+        commitHash: 'abc123',
+        filesChanged: 3,
+      });
+
+      const result = await controller.createCheckpoint('session-1', 'Pre-apply checkpoint');
+
+      expect(mockClient.createManualCheckpoint).toHaveBeenCalledWith(
+        'session-1',
+        'agent-harness',
+        0,
+        'Pre-apply checkpoint',
+        true,
+      );
+      expect(result).toEqual({ commitHash: 'abc123', filesChanged: 3 });
+    });
+
+    it('passes allowEmpty true to createManualCheckpoint', async () => {
+      mockClient.createManualCheckpoint.mockResolvedValue({
+        message: 'Checkpoint created',
+        commitHash: 'def456',
+        filesChanged: 0,
+      });
+
+      await controller.createCheckpoint('session-1', 'test');
+
+      expect(mockClient.createManualCheckpoint).toHaveBeenCalledWith(
+        'session-1',
+        'agent-harness',
+        0,
+        'test',
+        true,
+      );
+    });
+
+    it('accepts optional description and defaults when omitted', async () => {
+      mockClient.createManualCheckpoint.mockResolvedValue({
+        message: 'Checkpoint created',
+        commitHash: 'ghi789',
+        filesChanged: 1,
+      });
+
+      await controller.createCheckpoint('session-1', undefined);
+
+      expect(mockClient.createManualCheckpoint).toHaveBeenCalledWith(
+        'session-1',
+        'agent-harness',
+        0,
+        'Pre-apply checkpoint (Agent Harness)',
+        true,
+      );
+    });
+
+    it('propagates upstream errors from container-manager client', async () => {
+      mockClient.createManualCheckpoint.mockRejectedValue(
+        new Error('Container not running'),
+      );
+
+      await expect(
+        controller.createCheckpoint('session-1', 'test'),
+      ).rejects.toThrow('Container not running');
     });
   });
 });

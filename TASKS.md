@@ -20171,3 +20171,163 @@ Before implementation begins, a separate architecture/security review step must 
 **LOCKED — 2026-06-22. Do not edit.**
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-03B.
+
+----
+
+#### AGENT-HARNESS-03C: Pre-Apply Checkpoint / Mutation Rollback Safety
+
+**Task ID:** AGENT-HARNESS-03C
+**Status:** COMPLETE and LOCKED
+**Priority:** Critical
+**Nature:** BACKEND / AI SERVICE / API GATEWAY / CHECKPOINT SAFETY / MUTATION ROLLBACK
+**Risk:** High
+
+**Depends on:**
+- AGENT-HARNESS-00 — COMPLETE and LOCKED
+- AGENT-HARNESS-01A — COMPLETE and LOCKED
+- AGENT-HARNESS-01B — COMPLETE and LOCKED
+- AGENT-HARNESS-01C — COMPLETE and LOCKED
+- AGENT-HARNESS-01D — COMPLETE and LOCKED
+- AGENT-HARNESS-01E — COMPLETE and LOCKED
+- AGENT-HARNESS-02A — COMPLETE and LOCKED
+- AGENT-HARNESS-02B — COMPLETE and LOCKED
+- AGENT-HARNESS-02C — COMPLETE and LOCKED
+- AGENT-HARNESS-03A — COMPLETE and LOCKED
+- AGENT-HARNESS-03B — COMPLETE and LOCKED
+
+**Problem:**
+AGENT-HARNESS-03B implemented mutating `write_file` and `delete_file` tools behind the double-gated Agent Harness path. These tools preserve the API Gateway boundary and remain gated, but they can mutate workspace files without the existing frontend-owned file-action apply and post-apply checkpoint flow. The master plan defines AGENT-HARNESS-03C as the safety slice to add pre-apply checkpoint and rollback protection before harness mutation tools are considered production-ready.
+
+**Objective:**
+Register a bounded implementation slice to add pre-apply checkpoint / mutation rollback safety for Agent Harness mutating tools.
+
+This slice must ensure `write_file` and `delete_file` tool mutations have a safe checkpoint/revert path. It must preserve the existing frontend checkpoint flow and must not change frontend/UI unless an architecture review proves it is required.
+
+**Scope:**
+- Future implementation must inspect existing checkpoint creation APIs before editing.
+- Future implementation should add or reuse an internal checkpoint endpoint callable from ai-service if needed.
+- Future implementation should create a checkpoint before the first mutating harness tool call in a harness execution.
+- Future implementation should record checkpoint metadata in the harness loop/tool result context where useful.
+- Future implementation should provide a safe rollback path or at minimum a recorded checkpoint reference for rollback.
+- Future implementation should preserve `write_file`/`delete_file` behavior from 03B.
+- Future implementation should preserve `read_file`/`list_files` behavior from 03A.
+- Future implementation should preserve existing frontend checkpoint creation and revert flows.
+- Future implementation should preserve existing single-shot path.
+- Future implementation should preserve `enableToolLoop` default `false`.
+- Future implementation should preserve `harnessVersion === 'v1'` gate.
+- Future implementation should not add frontend/UI changes unless separately reviewed and scoped.
+- No database schema changes unless explicitly reviewed and registered.
+- No package/dependency changes.
+
+**Likely implementation areas (must be confirmed by architecture review before implementation):**
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\**\*checkpoint*`
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\sessions\`
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\clients\container-manager-http.client.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\container-manager\src\**\*git*`
+- `C:\Users\knlee\aiSandBox2026B\services\container-manager\src\**\*checkpoint*`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\clients\api-gateway-http.client.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\orchestrator\agent-harness-loop.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\tools\handlers\file-tool-handlers.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\worker\worker.processor.ts`
+- Existing frontend checkpoint creation/revert logic — for reference only
+
+**Expected future behavior:**
+- Before the first `write_file`/`delete_file` mutation in a harness execution, create a checkpoint.
+- Create at most one pre-apply checkpoint per harness execution unless architecture review proves otherwise.
+- If checkpoint creation fails, mutating tool execution must fail safely before mutation.
+- Tool results should include safe checkpoint metadata when useful.
+- If a mutation fails after checkpoint creation, preserve the checkpoint reference for manual or future automatic rollback.
+- Do not create checkpoints for `read_file`/`list_files`-only executions.
+- Do not change frontend-owned post-apply checkpoint behavior for the existing file-action flow.
+- Do not bypass existing API Gateway/container-manager ownership.
+
+**Security / safety requirements:**
+- No mutation before checkpoint succeeds.
+- No hidden bypass of checkpoint/revert safety for `write_file`/`delete_file`.
+- No direct filesystem access from ai-service.
+- No direct ai-service → container-manager mutation calls.
+- No shell execution from ai-service.
+- No validation/browser/search/preview tool changes.
+- No frontend/UI changes unless explicitly reviewed.
+- No database schema changes unless explicitly reviewed.
+- Existing double gate remains enforced.
+- Existing `maxToolIterations` remains enforced.
+- Existing single-shot path remains preserved.
+
+**Non-goals:**
+- No new write/delete tool behavior beyond checkpoint safety.
+- No approval UI.
+- No frontend redesign.
+- No validation runner.
+- No browser smoke runner.
+- No preview/start tool.
+- No `search_workspace` implementation.
+- No SSE event changes unless explicitly reviewed and tested.
+- No provider adapter changes.
+- No model routing changes.
+- No package/dependency changes.
+
+**Validation requirements for future implementation:**
+- Add focused tests for internal checkpoint endpoint/client behavior if touched.
+- Add focused ai-service tests proving checkpoint is created before first mutating tool call.
+- Add tests proving no checkpoint is created for read-only tool calls.
+- Add tests proving mutating tool call fails safely if checkpoint creation fails.
+- Add tests proving only one pre-apply checkpoint is created per harness execution.
+- Add tests proving `write_file`/`delete_file` behavior from 03B remains passing.
+- Add tests proving `read_file`/`list_files` behavior from 03A remains passing.
+- Add tests proving `enableToolLoop` false still prevents harness path.
+- Run focused api-gateway tests if api-gateway files are touched.
+- Run focused ai-service tests.
+- Run builds/typechecks for touched services.
+- No frontend tests unless frontend files are unexpectedly touched.
+- No browser smoke required for registration.
+
+**Architecture/security review requirement:**
+A dedicated architecture and security review is required before implementation begins. The review must confirm the checkpoint creation strategy, the internal endpoint design, the rollback mechanism, and verify no boundary violations are introduced. Implementation must not start before the review is completed and documented.
+
+**Acceptance criteria (registration):**
+- [x] AGENT-HARNESS-03C registered as ACTIVE in TASKS.md and TASKS_BACKLOG_FULL.md
+- [x] All dependencies through AGENT-HARNESS-03B COMPLETE and LOCKED documented
+- [x] Problem/objective/scope documented
+- [x] High-risk mutation rollback nature documented
+- [x] Architecture/security review requirement documented before implementation
+- [x] Likely implementation areas documented
+- [x] Expected checkpoint/rollback behavior documented
+- [x] Security/safety requirements documented
+- [x] Non-goals documented
+- [x] Validation requirements documented
+- [x] Browser smoke documented as not required for registration
+- [x] No source/runtime/test/package files changed
+- [x] No checkpoint created
+- [x] No implementation performed
+
+**Next step:** Architecture/security review — not direct implementation.
+
+**Acceptance criteria (implementation):**
+- [x] Architecture/security review completed and confirmed — checkpoint before mutation, no boundary violations
+- [x] Internal API Gateway checkpoint endpoint added and tested — `POST /api/internal/workspace/:sessionId/checkpoint` (19 tests — PASS)
+- [x] `ApiGatewayHttpClient.createWorkspaceCheckpoint` added and tested (12 tests — PASS)
+- [x] `enablePreApplyCheckpoint: true` added to `DEFAULT_AGENT_HARNESS_CONFIG_V1`
+- [x] `preApplyCheckpointHash` added to `AgentHarnessLoopResult`; contracts spec 2 tests — PASS
+- [x] Checkpoint-before-mutation logic in `executeAgentHarnessLoop` — 28 tests — PASS
+- [x] WorkerProcessor checkpoint callback wiring — 40 tests — PASS
+- [x] `file-tool-handlers.spec.ts` — 38 tests preserved and passing — PASS
+- [x] `tool-registry.spec.ts` — 13 tests preserved and passing — PASS
+- [x] `tool-dispatcher.spec.ts` — 9 tests preserved and passing — PASS
+- [x] api-gateway `npm run build` — PASS (tsc clean)
+- [x] ai-service `npm run build` — PASS (tsc clean)
+- [x] ReadLints on all 11 touched source/test files — PASS (no linter errors)
+- [x] No mutation before checkpoint succeeds — confirmed by test
+- [x] No checkpoint created for read-only tool calls — confirmed by test
+- [x] Checkpoint created at most once per execution — confirmed by test
+- [x] No automatic rollback implemented — checkpoint hash recorded as reference
+- [x] No frontend/UI/package/database changes
+- [x] No direct ai-service → container-manager calls
+- [x] No checkpoint document created before consolidation
+- [x] Checkpoint document created: `docs/AGENT-HARNESS-03C-CHECKPOINT.md`
+- [x] Correct validated test total: **161 tests** (not 162 — mismatch resolved by live consolidation runs)
+
+**LOCKED — 2026-06-22. Do not edit.**
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-03C.
+**Checkpoint:** `docs/AGENT-HARNESS-03C-CHECKPOINT.md`

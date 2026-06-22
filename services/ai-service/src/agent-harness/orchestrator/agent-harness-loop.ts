@@ -28,6 +28,8 @@ export interface AgentHarnessLoopOptions {
   readonly config: Pick<AgentHarnessConfigV1, 'maxToolIterations'>;
   readonly signal?: AbortSignal;
   readonly dispatcher?: ToolDispatcher;
+  readonly createCheckpointFn?: () => Promise<{ commitHash: string; filesChanged?: number }>;
+  readonly mutatingToolNames?: ReadonlySet<string>;
 }
 
 export interface AgentHarnessLoopResult {
@@ -35,6 +37,7 @@ export interface AgentHarnessLoopResult {
   readonly iterationsUsed: number;
   readonly terminationReason: AgentHarnessLoopTerminationReason;
   readonly toolCallsReceived: number;
+  readonly preApplyCheckpointHash?: string;
 }
 
 const NO_DISPATCHER_FALLBACK =
@@ -62,10 +65,12 @@ const NO_DISPATCHER_FALLBACK =
 export async function executeAgentHarnessLoop(
   options: AgentHarnessLoopOptions,
 ): Promise<AgentHarnessLoopResult> {
-  const { executeFn, request, config, signal, dispatcher } = options;
+  const { executeFn, request, config, signal, dispatcher, createCheckpointFn, mutatingToolNames } = options;
   const maxIterations = Math.max(1, config.maxToolIterations);
   let totalToolCallsReceived = 0;
   let priorToolResults: AIAdapterToolResultPayload[] | undefined;
+  let preApplyCheckpointHash: string | undefined;
+  let checkpointCreated = false;
 
   for (let iteration = 0; iteration < maxIterations; iteration++) {
     if (signal?.aborted) {
@@ -74,6 +79,7 @@ export async function executeAgentHarnessLoop(
         iterationsUsed: iteration,
         terminationReason: 'aborted',
         toolCallsReceived: totalToolCallsReceived,
+        preApplyCheckpointHash,
       };
     }
 
@@ -98,6 +104,7 @@ export async function executeAgentHarnessLoop(
         iterationsUsed: iteration + 1,
         terminationReason: 'completed',
         toolCallsReceived: totalToolCallsReceived,
+        preApplyCheckpointHash,
       };
     }
 
@@ -115,7 +122,36 @@ export async function executeAgentHarnessLoop(
         iterationsUsed: iteration + 1,
         terminationReason: 'no_dispatcher',
         toolCallsReceived: totalToolCallsReceived,
+        preApplyCheckpointHash,
       };
+    }
+
+    const hasMutatingCall =
+      createCheckpointFn &&
+      !checkpointCreated &&
+      mutatingToolNames &&
+      toolCalls.some((tc) => mutatingToolNames.has(tc.toolName));
+
+    if (hasMutatingCall) {
+      try {
+        const cpResult = await createCheckpointFn();
+        preApplyCheckpointHash = cpResult.commitHash;
+        checkpointCreated = true;
+      } catch (cpError) {
+        const errorMsg =
+          cpError instanceof Error ? cpError.message : String(cpError);
+        const results: AIAdapterToolResultPayload[] = toolCalls.map((tc) => ({
+          callId: tc.callId,
+          toolName: tc.toolName,
+          success: false as const,
+          content: undefined,
+          errorMessage: mutatingToolNames.has(tc.toolName)
+            ? `CHECKPOINT_FAILED: Pre-apply checkpoint creation failed: ${errorMsg}. Mutating operation was not executed.`
+            : `CHECKPOINT_FAILED: Pre-apply checkpoint creation failed: ${errorMsg}. Batch aborted.`,
+        }));
+        priorToolResults = results;
+        continue;
+      }
     }
 
     const results: AIAdapterToolResultPayload[] = [];
@@ -141,5 +177,6 @@ export async function executeAgentHarnessLoop(
     iterationsUsed: maxIterations,
     terminationReason: 'max_iterations',
     toolCallsReceived: totalToolCallsReceived,
+    preApplyCheckpointHash,
   };
 }

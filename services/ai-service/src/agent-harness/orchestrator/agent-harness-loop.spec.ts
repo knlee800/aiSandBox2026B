@@ -395,3 +395,305 @@ describe('executeAgentHarnessLoop with dispatcher', () => {
     ]);
   });
 });
+
+describe('executeAgentHarnessLoop with pre-apply checkpoint', () => {
+  const MUTATING_TOOLS = new Set(['write_file', 'delete_file']);
+
+  function makeWriteToolCallResult(
+    overrides?: Partial<AIAdapterToolUseResult>,
+  ): AIAdapterToolUseResult {
+    return {
+      output: 'I want to write a file.',
+      tokensUsed: 50,
+      model: 'stub',
+      finishReason: 'tool_calls',
+      toolCalls: [
+        {
+          callId: 'call-w1',
+          toolName: 'write_file',
+          arguments: { path: 'src/app.ts', content: 'const x = 1;' },
+          providerKind: 'stub',
+        },
+      ],
+      ...overrides,
+    };
+  }
+
+  function makeDeleteToolCallResult(
+    overrides?: Partial<AIAdapterToolUseResult>,
+  ): AIAdapterToolUseResult {
+    return {
+      output: 'I want to delete a file.',
+      tokensUsed: 50,
+      model: 'stub',
+      finishReason: 'tool_calls',
+      toolCalls: [
+        {
+          callId: 'call-d1',
+          toolName: 'delete_file',
+          arguments: { path: 'old.ts' },
+          providerKind: 'stub',
+        },
+      ],
+      ...overrides,
+    };
+  }
+
+  it('calls checkpoint callback before first write_file dispatch', async () => {
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('write_file', async () => ({ ok: true }));
+
+    const callOrder: string[] = [];
+    const createCheckpointFn = jest.fn(async () => {
+      callOrder.push('checkpoint');
+      return { commitHash: 'cp-hash-1', filesChanged: 0 };
+    });
+
+    let callCount = 0;
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>(() => {
+      callCount++;
+      if (callCount === 1) return Promise.resolve(makeWriteToolCallResult());
+      return Promise.resolve(makeCompletedResult({ output: 'Done.' }));
+    });
+
+    const originalDispatch = dispatcher.dispatch.bind(dispatcher);
+    dispatcher.dispatch = async (...args) => {
+      callOrder.push('dispatch');
+      return originalDispatch(...args);
+    };
+
+    const loopResult = await executeAgentHarnessLoop(
+      makeOptions(executeFn, {
+        dispatcher,
+        createCheckpointFn,
+        mutatingToolNames: MUTATING_TOOLS,
+      }),
+    );
+
+    expect(createCheckpointFn).toHaveBeenCalledTimes(1);
+    expect(callOrder[0]).toBe('checkpoint');
+    expect(callOrder[1]).toBe('dispatch');
+    expect(loopResult.preApplyCheckpointHash).toBe('cp-hash-1');
+  });
+
+  it('calls checkpoint callback before first delete_file dispatch', async () => {
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('delete_file', async () => ({ ok: true }));
+
+    const createCheckpointFn = jest.fn(async () => {
+      return { commitHash: 'cp-hash-del', filesChanged: 0 };
+    });
+
+    let callCount = 0;
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>(() => {
+      callCount++;
+      if (callCount === 1) return Promise.resolve(makeDeleteToolCallResult());
+      return Promise.resolve(makeCompletedResult({ output: 'Done.' }));
+    });
+
+    const loopResult = await executeAgentHarnessLoop(
+      makeOptions(executeFn, {
+        dispatcher,
+        createCheckpointFn,
+        mutatingToolNames: MUTATING_TOOLS,
+      }),
+    );
+
+    expect(createCheckpointFn).toHaveBeenCalledTimes(1);
+    expect(loopResult.preApplyCheckpointHash).toBe('cp-hash-del');
+  });
+
+  it('calls checkpoint callback only once per loop execution', async () => {
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('write_file', async () => ({ ok: true }));
+    dispatcher.registerHandler('delete_file', async () => ({ ok: true }));
+
+    const createCheckpointFn = jest.fn(async () => {
+      return { commitHash: 'cp-once', filesChanged: 0 };
+    });
+
+    let callCount = 0;
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>(() => {
+      callCount++;
+      if (callCount === 1) return Promise.resolve(makeWriteToolCallResult());
+      if (callCount === 2) return Promise.resolve(makeDeleteToolCallResult());
+      return Promise.resolve(makeCompletedResult({ output: 'Done.' }));
+    });
+
+    await executeAgentHarnessLoop(
+      makeOptions(executeFn, {
+        dispatcher,
+        createCheckpointFn,
+        mutatingToolNames: MUTATING_TOOLS,
+      }),
+    );
+
+    expect(createCheckpointFn).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not call checkpoint callback for read_file/list_files only', async () => {
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('read_file', async () => ({ content: 'data' }));
+
+    const createCheckpointFn = jest.fn(async () => {
+      return { commitHash: 'should-not', filesChanged: 0 };
+    });
+
+    let callCount = 0;
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>(() => {
+      callCount++;
+      if (callCount === 1) return Promise.resolve(makeToolCallResult());
+      return Promise.resolve(makeCompletedResult({ output: 'Done.' }));
+    });
+
+    const loopResult = await executeAgentHarnessLoop(
+      makeOptions(executeFn, {
+        dispatcher,
+        createCheckpointFn,
+        mutatingToolNames: MUTATING_TOOLS,
+      }),
+    );
+
+    expect(createCheckpointFn).not.toHaveBeenCalled();
+    expect(loopResult.preApplyCheckpointHash).toBeUndefined();
+  });
+
+  it('does not dispatch mutating tool if checkpoint callback fails', async () => {
+    const dispatcher = new ToolDispatcher();
+    const writeHandlerSpy = jest.fn(async () => ({ ok: true }));
+    dispatcher.registerHandler('write_file', writeHandlerSpy);
+
+    const createCheckpointFn = jest.fn(async () => {
+      throw new Error('Checkpoint service unavailable');
+    });
+
+    let callCount = 0;
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>(() => {
+      callCount++;
+      if (callCount === 1) return Promise.resolve(makeWriteToolCallResult());
+      return Promise.resolve(makeCompletedResult({ output: 'Acknowledged error.' }));
+    });
+
+    const loopResult = await executeAgentHarnessLoop(
+      makeOptions(executeFn, {
+        dispatcher,
+        createCheckpointFn,
+        mutatingToolNames: MUTATING_TOOLS,
+      }),
+    );
+
+    expect(writeHandlerSpy).not.toHaveBeenCalled();
+    expect(loopResult.preApplyCheckpointHash).toBeUndefined();
+    expect(loopResult.terminationReason).toBe('completed');
+
+    const secondCallOpts = executeFn.mock.calls[1][1];
+    expect(secondCallOpts!.toolResults).toHaveLength(1);
+    expect(secondCallOpts!.toolResults![0].success).toBe(false);
+    expect(secondCallOpts!.toolResults![0].errorMessage).toContain('CHECKPOINT_FAILED');
+  });
+
+  it('includes preApplyCheckpointHash in AgentHarnessLoopResult after checkpoint creation', async () => {
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('write_file', async () => ({ ok: true }));
+
+    const createCheckpointFn = jest.fn(async () => {
+      return { commitHash: 'result-hash-abc', filesChanged: 2 };
+    });
+
+    let callCount = 0;
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>(() => {
+      callCount++;
+      if (callCount === 1) return Promise.resolve(makeWriteToolCallResult());
+      return Promise.resolve(makeCompletedResult({ output: 'Done.' }));
+    });
+
+    const loopResult = await executeAgentHarnessLoop(
+      makeOptions(executeFn, {
+        dispatcher,
+        createCheckpointFn,
+        mutatingToolNames: MUTATING_TOOLS,
+      }),
+    );
+
+    expect(loopResult.preApplyCheckpointHash).toBe('result-hash-abc');
+  });
+
+  it('preserves no_dispatcher behavior when dispatcher is absent with checkpoint options', async () => {
+    const createCheckpointFn = jest.fn(async () => {
+      return { commitHash: 'unused', filesChanged: 0 };
+    });
+
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>().mockResolvedValue(
+      makeWriteToolCallResult(),
+    );
+
+    const loopResult = await executeAgentHarnessLoop(
+      makeOptions(executeFn, {
+        createCheckpointFn,
+        mutatingToolNames: MUTATING_TOOLS,
+      }),
+    );
+
+    expect(loopResult.terminationReason).toBe('no_dispatcher');
+    expect(createCheckpointFn).not.toHaveBeenCalled();
+  });
+
+  it('still enforces maxToolIterations with checkpoint callback', async () => {
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('write_file', async () => ({ ok: true }));
+
+    const createCheckpointFn = jest.fn(async () => {
+      return { commitHash: 'cp-max', filesChanged: 0 };
+    });
+
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>().mockResolvedValue(
+      makeWriteToolCallResult(),
+    );
+
+    const loopResult = await executeAgentHarnessLoop(
+      makeOptions(executeFn, {
+        dispatcher,
+        createCheckpointFn,
+        mutatingToolNames: MUTATING_TOOLS,
+        config: { maxToolIterations: 2 },
+      }),
+    );
+
+    expect(loopResult.terminationReason).toBe('max_iterations');
+    expect(loopResult.iterationsUsed).toBe(2);
+    expect(executeFn).toHaveBeenCalledTimes(2);
+  });
+
+  it('preserves toolResults field behavior with checkpoint', async () => {
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('write_file', async () => ({ ok: true }));
+
+    const createCheckpointFn = jest.fn(async () => {
+      return { commitHash: 'cp-tr', filesChanged: 0 };
+    });
+
+    let callCount = 0;
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, [AIExecutionRequest, AIAdapterToolUseRequestOptions?]>(
+      (_req, _opts) => {
+        callCount++;
+        if (callCount === 1) return Promise.resolve(makeWriteToolCallResult());
+        return Promise.resolve(makeCompletedResult({ output: 'Done.' }));
+      },
+    );
+
+    await executeAgentHarnessLoop(
+      makeOptions(executeFn, {
+        dispatcher,
+        createCheckpointFn,
+        mutatingToolNames: MUTATING_TOOLS,
+      }),
+    );
+
+    const secondCallOpts = executeFn.mock.calls[1][1];
+    expect(secondCallOpts).toBeDefined();
+    expect(secondCallOpts!.toolResults).toBeDefined();
+    expect(secondCallOpts!.toolResults).toHaveLength(1);
+    expect(secondCallOpts!.toolResults![0].callId).toBe('call-w1');
+    expect(secondCallOpts!.toolResults![0].success).toBe(true);
+  });
+});

@@ -731,6 +731,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
 
         try {
           let aiResult: Awaited<ReturnType<AIExecutionService['execute']>>;
+          let harnessPreApplyCheckpointHash: string | undefined;
           let lastError: unknown;
           for (let attempt = 0; attempt < EXECUTION_PROVIDER_RETRY_ATTEMPTS; attempt++) {
             try {
@@ -785,14 +786,31 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                       sessionId: job.data.sessionId,
                     }),
                   );
-                  const loopResult = await executeAgentHarnessLoop({
+                  let loopOptions: Parameters<typeof executeAgentHarnessLoop>[0] = {
                     executeFn: (req, opts) => adapter.executeWithTools!(req, opts),
                     request: executionRequest,
                     config: DEFAULT_AGENT_HARNESS_CONFIG_V1,
                     signal: abortController.signal,
                     dispatcher,
-                  });
+                  };
+
+                  if (DEFAULT_AGENT_HARNESS_CONFIG_V1.enablePreApplyCheckpoint) {
+                    loopOptions = {
+                      ...loopOptions,
+                      createCheckpointFn: () =>
+                        this.apiGatewayHttpClient.createWorkspaceCheckpoint(
+                          job.data.sessionId,
+                          'Pre-apply checkpoint (Agent Harness)',
+                        ),
+                      mutatingToolNames: new Set(['write_file', 'delete_file']),
+                    };
+                  }
+
+                  const loopResult = await executeAgentHarnessLoop(loopOptions);
                   aiResult = loopResult.result;
+                  if (loopResult.preApplyCheckpointHash) {
+                    harnessPreApplyCheckpointHash = loopResult.preApplyCheckpointHash;
+                  }
                 } else {
                   aiResult = await this.aiExecutionService.execute(executionRequest);
                 }
@@ -906,7 +924,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
             }
           }
 
-          const nextMetadata = {
+          const nextMetadata: Record<string, unknown> = {
             ...existingMetadata,
             aiExecutionResult: {
               output: aiResult.output,
@@ -916,6 +934,10 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
               fileActions: safeFileActions,
             },
           };
+
+          if (harnessPreApplyCheckpointHash) {
+            nextMetadata.preApplyCheckpointHash = harnessPreApplyCheckpointHash;
+          }
 
           await this.dataSource.query(
             `

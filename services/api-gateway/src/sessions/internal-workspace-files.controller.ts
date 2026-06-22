@@ -16,12 +16,14 @@ import { ContainerManagerHttpClient } from '../clients/container-manager-http.cl
  * Internal Workspace Files Controller
  * AGENT-HARNESS-03A: Read-only file endpoints for ai-service.
  * AGENT-HARNESS-03B: Mutating write/delete file endpoints for ai-service.
+ * AGENT-HARNESS-03C: Pre-apply checkpoint endpoint for ai-service.
  *
  * Routes:
  * - GET  /api/internal/workspace/:sessionId/read?path=...
  * - GET  /api/internal/workspace/:sessionId/list?path=...
  * - POST /api/internal/workspace/:sessionId/write  { path, content }
  * - DELETE /api/internal/workspace/:sessionId/delete  { path }
+ * - POST /api/internal/workspace/:sessionId/checkpoint  { description? }
  *
  * Protected by global InternalServiceAuthGuard (X-Internal-Service-Key).
  * Delegates to ContainerManagerHttpClient which calls container-manager.
@@ -101,5 +103,30 @@ export class InternalWorkspaceFilesController {
 
     await this.containerManagerHttpClient.deleteSessionFile(sessionId, filePath);
     return { ok: true };
+  }
+
+  @Post(':sessionId/checkpoint')
+  @HttpCode(HttpStatus.OK)
+  async createCheckpoint(
+    @Param('sessionId') sessionId: string,
+    @Body('description') description?: string,
+  ): Promise<{ commitHash: string; filesChanged: number }> {
+    const normalizedDescription =
+      description && description.trim().length > 0
+        ? description.trim()
+        : 'Pre-apply checkpoint (Agent Harness)';
+
+    const result = await this.containerManagerHttpClient.createManualCheckpoint(
+      sessionId,
+      'agent-harness',
+      0,
+      normalizedDescription,
+      true,
+    );
+
+    return {
+      commitHash: result.commitHash,
+      filesChanged: result.filesChanged,
+    };
   }
 }

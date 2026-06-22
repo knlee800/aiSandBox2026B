@@ -180,4 +180,47 @@ describe('ApiGatewayHttpClient - workspace file methods', () => {
       ).rejects.toThrow('Delete failed');
     });
   });
+
+  describe('createWorkspaceCheckpoint', () => {
+    it('calls API Gateway internal workspace checkpoint endpoint with internal service key', async () => {
+      httpService.post.mockReturnValue(
+        of(makeAxiosResponse({ commitHash: 'abc123', filesChanged: 2 })),
+      );
+
+      const result = await client.createWorkspaceCheckpoint(
+        'session-1',
+        'Pre-apply checkpoint',
+      );
+
+      expect(httpService.post).toHaveBeenCalledWith(
+        'http://localhost:4000/api/internal/workspace/session-1/checkpoint',
+        { description: 'Pre-apply checkpoint' },
+        {
+          headers: { 'X-Internal-Service-Key': 'test-key-123' },
+        },
+      );
+      expect(result).toEqual({ commitHash: 'abc123', filesChanged: 2 });
+    });
+
+    it('returns commitHash and filesChanged from response', async () => {
+      httpService.post.mockReturnValue(
+        of(makeAxiosResponse({ commitHash: 'def456', filesChanged: 0 })),
+      );
+
+      const result = await client.createWorkspaceCheckpoint('session-1');
+
+      expect(result.commitHash).toBe('def456');
+      expect(result.filesChanged).toBe(0);
+    });
+
+    it('propagates non-2xx errors', async () => {
+      httpService.post.mockReturnValue(
+        throwError(() => new Error('Checkpoint failed')),
+      );
+
+      await expect(
+        client.createWorkspaceCheckpoint('session-1', 'test'),
+      ).rejects.toThrow('Checkpoint failed');
+    });
+  });
 });

@@ -87,6 +87,7 @@ export interface AgentHarnessConfigV1 extends AgentHarnessPolicyV1 {
   readonly enableBrowserSmoke: boolean;
   readonly enableSemanticSearch: boolean;
   readonly enableToolLoop: boolean;
+  readonly enablePreApplyCheckpoint: boolean;
   readonly auditEventsEnabled: boolean;
 }
 

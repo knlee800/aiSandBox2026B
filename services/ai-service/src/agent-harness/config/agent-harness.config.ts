@@ -28,5 +28,6 @@ export const DEFAULT_AGENT_HARNESS_CONFIG_V1: AgentHarnessConfigV1 = {
   enableBrowserSmoke: false,
   enableSemanticSearch: false,
   enableToolLoop: false,
+  enablePreApplyCheckpoint: true,
   auditEventsEnabled: true,
 };

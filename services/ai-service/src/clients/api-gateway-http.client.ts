@@ -235,4 +235,31 @@ export class ApiGatewayHttpClient {
       ),
     );
   }
+
+  /**
+   * Create a workspace checkpoint via API Gateway.
+   * AGENT-HARNESS-03C: Pre-apply checkpoint before first mutating tool call.
+   * @param sessionId - Session UUID
+   * @param description - Optional checkpoint description
+   * @returns Commit hash and files changed count
+   * @throws Error if HTTP request fails
+   */
+  async createWorkspaceCheckpoint(
+    sessionId: string,
+    description?: string,
+  ): Promise<{ commitHash: string; filesChanged: number }> {
+    const response = await firstValueFrom(
+      this.httpService.post(
+        `${this.apiGatewayUrl}/api/internal/workspace/${sessionId}/checkpoint`,
+        { description },
+        {
+          headers: {
+            'X-Internal-Service-Key': this.internalServiceKey,
+          },
+        },
+      ),
+    );
+
+    return response.data;
+  }
 }

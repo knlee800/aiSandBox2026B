@@ -92,6 +92,7 @@ describe('Agent Harness v1 contract exports', () => {
       enableBrowserSmoke: false,
       enableSemanticSearch: false,
       enableToolLoop: false,
+      enablePreApplyCheckpoint: true,
       auditEventsEnabled: false,
     };
 
