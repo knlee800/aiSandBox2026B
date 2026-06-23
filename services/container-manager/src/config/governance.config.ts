@@ -54,6 +54,34 @@ export class GovernanceConfig {
    */
   readonly maxConcurrentExecsPerSession: number;
 
+  /**
+   * AGENT-HARNESS-05B1: Browser-capable container CPU limit
+   * Default: 1.0 (one full CPU core)
+   * Applied only to containers created with browserCapable: true
+   */
+  readonly browserContainerCpuLimit: number;
+
+  /**
+   * AGENT-HARNESS-05B1: Browser-capable container memory limit in MB
+   * Default: 768 MB
+   * Chromium + Node + user app require more memory than the standard 512 MB
+   */
+  readonly browserContainerMemoryLimitMb: number;
+
+  /**
+   * AGENT-HARNESS-05B1: Browser-capable container PIDs limit
+   * Default: 512
+   * Chromium spawns multiple processes (browser, GPU, renderer, utility)
+   */
+  readonly browserContainerPidsLimit: number;
+
+  /**
+   * AGENT-HARNESS-05B1: Browser-capable container /dev/shm size in MB
+   * Default: 256 MB
+   * Chromium requires at least 256 MB /dev/shm for stability (Docker default is 64 MB)
+   */
+  readonly browserContainerShmSizeMb: number;
+
   constructor() {
     // Session Limits
     this.sessionMaxLifetimeMs = this.parseEnvInt(
@@ -88,6 +116,27 @@ export class GovernanceConfig {
       2, // 2 concurrent execs
     );
 
+    // AGENT-HARNESS-05B1: Browser-capable container resource limits
+    this.browserContainerCpuLimit = this.parseEnvFloat(
+      'CONTAINER_BROWSER_CPU_LIMIT',
+      1.0,
+    );
+
+    this.browserContainerMemoryLimitMb = this.parseEnvInt(
+      'CONTAINER_BROWSER_MEMORY_LIMIT_MB',
+      768,
+    );
+
+    this.browserContainerPidsLimit = this.parseEnvInt(
+      'CONTAINER_BROWSER_PIDS_LIMIT',
+      512,
+    );
+
+    this.browserContainerShmSizeMb = this.parseEnvInt(
+      'CONTAINER_BROWSER_SHM_SIZE_MB',
+      256,
+    );
+
     // Log configuration on startup
     console.log('✓ Governance config loaded:');
     console.log(`  - Session max lifetime: ${this.sessionMaxLifetimeMs}ms`);
@@ -98,6 +147,10 @@ export class GovernanceConfig {
     console.log(
       `  - Max concurrent execs: ${this.maxConcurrentExecsPerSession}`,
     );
+    console.log(`  - Browser container CPU limit: ${this.browserContainerCpuLimit}`);
+    console.log(`  - Browser container memory limit: ${this.browserContainerMemoryLimitMb}MB`);
+    console.log(`  - Browser container PIDs limit: ${this.browserContainerPidsLimit}`);
+    console.log(`  - Browser container SHM size: ${this.browserContainerShmSizeMb}MB`);
   }
 
   /**
@@ -149,5 +202,19 @@ export class GovernanceConfig {
    */
   getContainerMemoryLimitBytes(): number {
     return this.containerMemoryLimitMb * 1024 * 1024;
+  }
+
+  /**
+   * AGENT-HARNESS-05B1: Get browser container memory limit in bytes (for Docker API)
+   */
+  getBrowserContainerMemoryLimitBytes(): number {
+    return this.browserContainerMemoryLimitMb * 1024 * 1024;
+  }
+
+  /**
+   * AGENT-HARNESS-05B1: Get browser container /dev/shm size in bytes (for Docker API)
+   */
+  getBrowserContainerShmSizeBytes(): number {
+    return this.browserContainerShmSizeMb * 1024 * 1024;
   }
 }

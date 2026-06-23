@@ -31057,3 +31057,139 @@ This slice must produce a feasibility/security report only. It must not implemen
 **Next step:** AGENT-HARNESS-05B1 registration only — Browser Smoke Sandbox Image Prerequisite. Do not implement until registered and approved.
 
 **Reference:** See TASKS.md -> AGENT-HARNESS-05A.
+
+----
+
+### AGENT-HARNESS-05B1: Browser Smoke Sandbox Image Prerequisite
+
+**Task ID:** AGENT-HARNESS-05B1
+**Status:** COMPLETE and LOCKED
+**Priority:** High
+**Nature:** INFRASTRUCTURE / DOCKER IMAGE / BROWSER RUNTIME PREREQUISITE / NO TOOL HANDLER IMPLEMENTATION
+**Risk:** High
+
+**Depends on:**
+- AGENT-HARNESS-00 — COMPLETE and LOCKED
+- AGENT-HARNESS-01A — COMPLETE and LOCKED
+- AGENT-HARNESS-01B — COMPLETE and LOCKED
+- AGENT-HARNESS-01C — COMPLETE and LOCKED
+- AGENT-HARNESS-01D — COMPLETE and LOCKED
+- AGENT-HARNESS-01E — COMPLETE and LOCKED
+- AGENT-HARNESS-02A — COMPLETE and LOCKED
+- AGENT-HARNESS-02B — COMPLETE and LOCKED
+- AGENT-HARNESS-02C — COMPLETE and LOCKED
+- AGENT-HARNESS-03A — COMPLETE and LOCKED
+- AGENT-HARNESS-03B — COMPLETE and LOCKED
+- AGENT-HARNESS-03C — COMPLETE and LOCKED
+- AGENT-HARNESS-04A — COMPLETE and LOCKED
+- AGENT-HARNESS-05A — COMPLETE and LOCKED
+
+**Problem:**
+AGENT-HARNESS-05A determined that `browser_smoke` is feasible later, but the current workspace sandbox image is `node:20-alpine` and cannot safely run Chromium/Playwright without significant browser runtime and Docker resource changes. Before implementing the `browser_smoke` tool handler, the platform needs a bounded sandbox image/runtime prerequisite slice.
+
+**Objective:**
+Register a bounded prerequisite slice to design and prepare the browser-capable sandbox runtime needed for future `browser_smoke` implementation.
+
+This slice must not implement the production `browser_smoke` tool handler and must not enable `browser_smoke` in the registry.
+
+**Scope:**
+- Register AGENT-HARNESS-05B1 only.
+- Future implementation should add or prepare a browser-capable sandbox image or image layer with Chromium + Playwright support.
+- Future implementation should review whether to use Debian slim rather than Alpine for browser compatibility.
+- Future implementation should adjust container resource policy only if needed:
+  - memory
+  - CPU
+  - PID limit
+  - `/dev/shm` or equivalent Chromium shared-memory behavior
+- Future implementation should preserve normal non-browser workspace containers unless explicitly scoped otherwise.
+- Future implementation should not wire `browser_smoke` into ToolDispatcher.
+- Future implementation should not add ai-service `browser_smoke` handler.
+- Future implementation should not add API Gateway browser-smoke endpoint.
+- Future implementation should not add container-manager BrowserSmokeService.
+- Future implementation should not enable `browser_smoke` in `tool-registry.ts`.
+- Future implementation should not run live browser smoke unless Keith explicitly approves a separate smoke step.
+- No frontend/UI changes.
+- No database schema changes.
+
+**Likely implementation areas (exact files must be confirmed by architecture review before implementation):**
+- `C:\Users\knlee\aiSandBox2026B\services\container-manager\Dockerfile`
+- `C:\Users\knlee\aiSandBox2026B\services\container-manager\src\docker\docker-runtime.service.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\container-manager\src\config\governance.config.ts`
+- `C:\Users\knlee\aiSandBox2026B\docker-compose.yml`
+- `C:\Users\knlee\aiSandBox2026B\docker-compose.prod.yml`
+- Any workspace/sandbox image Dockerfile or build script if present
+- Package files only if image build truly requires Playwright/Chromium package metadata
+- Existing tests around container creation and governance config
+
+**Expected future behavior:**
+- A browser-capable sandbox image strategy is implemented or prepared.
+- Chromium/Playwright runtime dependencies are available in the future browser-capable workspace environment.
+- Resource limits required for browser smoke are documented and, if safely scoped, configured.
+- Normal Agent Harness tools remain unchanged.
+- Existing file tools and validation runner remain unchanged.
+- `browser_smoke` remains disabled and unregistered until AGENT-HARNESS-05B2.
+- No production browser automation handler exists yet.
+
+**Security / safety requirements:**
+- No `browser_smoke` tool execution in this slice.
+- No Playwright/Puppeteer run in this slice unless Keith explicitly approves a separate live smoke step.
+- No persistent browser profiles.
+- No credential injection.
+- No external network permission changes unless explicitly reviewed.
+- No registry enablement for `browser_smoke`.
+- No ToolDispatcher registration for `browser_smoke`.
+- Resource limits must prevent runaway Chromium processes.
+- Any future browser runtime must be isolated to workspace/session containers or a clearly scoped browser runtime image.
+
+**Non-goals:**
+- No `browser_smoke` handler.
+- No BrowserSmokeService.
+- No API Gateway browser-smoke endpoint.
+- No ai-service browser smoke client method.
+- No ToolDispatcher `browser_smoke` registration.
+- No tool registry enablement.
+- No frontend/UI changes.
+- No database schema changes.
+- No provider adapter changes.
+- No Agent Harness loop changes.
+- No live browser automation unless separately approved.
+
+**Validation requirements for future implementation:**
+- Architecture/security review before implementation.
+- If Docker/image files are changed, run the narrowest safe build or static validation available.
+- If container-manager runtime config is changed, run focused container-manager tests and build/typecheck.
+- If no runnable image build is possible locally, document why and perform static review.
+- No frontend tests unless frontend files are unexpectedly touched.
+- No browser smoke unless Keith explicitly approves.
+- No ai-service/api-gateway tests unless those files are unexpectedly touched.
+
+**Acceptance criteria (implementation):**
+- [x] AGENT-HARNESS-05B1 registered as ACTIVE in TASKS.md and TASKS_BACKLOG_FULL.md
+- [x] All dependencies through AGENT-HARNESS-05A COMPLETE and LOCKED documented
+- [x] Problem/objective/scope documented
+- [x] High-risk Docker/browser-runtime nature documented
+- [x] Architecture/security review requirement documented before implementation
+- [x] Likely implementation areas documented
+- [x] Expected sandbox image/runtime behavior documented
+- [x] Security/safety requirements documented
+- [x] Non-goals documented
+- [x] Validation requirements documented
+- [x] Browser smoke documented as not allowed during registration
+- [x] `Dockerfile.workspace-browser` created (node:20-slim, Playwright 1.60.0, Chromium)
+- [x] Browser-specific governance config fields added (CPU, memory, PIDs, ShmSize)
+- [x] `getBrowserContainerMemoryLimitBytes()` and `getBrowserContainerShmSizeBytes()` helpers added
+- [x] `CreateContainerOptions` interface and `BROWSER_SANDBOX_IMAGE` constant added
+- [x] `createContainer({ browserCapable: true })` path implemented
+- [x] Default non-browser `createContainer()` path unchanged
+- [x] Tests added: 28/28 pass (spec file), 67/67 pass (full suite)
+- [x] TypeScript build clean
+- [x] No source/runtime files outside container-manager changed
+- [x] No ai-service/api-gateway/frontend/package files changed
+- [x] No browser automation run
+- [x] No Docker image build run
+- [x] `browser_smoke` not implemented, not enabled, not registered with ToolDispatcher
+- [x] Checkpoint created: `docs/AGENT-HARNESS-05B1-CHECKPOINT.md`
+
+**Next step:** AGENT-HARNESS-05B2 registration only — Browser Smoke Handler Implementation. Do not implement until registered and approved.
+
+**Reference:** See TASKS.md -> AGENT-HARNESS-05B1.

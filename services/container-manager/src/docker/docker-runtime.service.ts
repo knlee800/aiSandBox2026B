@@ -4,6 +4,12 @@ import Docker from 'dockerode';
 import { GovernanceConfig } from '../config/governance.config';
 
 const SANDBOX_IMAGE = 'node:20-alpine';
+const BROWSER_SANDBOX_IMAGE = 'aisandbox-workspace-browser:local';
+
+export interface CreateContainerOptions {
+  browserCapable?: boolean;
+}
+
 const WORKSPACE_SEARCH_MAX_QUERY_LENGTH = 120;
 const WORKSPACE_SEARCH_MAX_FILES_SCANNED = 200;
 const WORKSPACE_SEARCH_MAX_MATCHES = 20;
@@ -54,36 +60,58 @@ export class DockerRuntimeService implements OnModuleInit {
    *
    * Task 8.1B: Enforces resource limits from GovernanceConfig
    * TASK-56B: On missing image, pulls then retries once
+   * AGENT-HARNESS-05B1: Optional browserCapable path uses browser sandbox image
+   *   with elevated resource limits and /dev/shm. Default path is unchanged.
    *
    * @param sessionId - Unique session identifier
    * @param workspacePath - Absolute path to session workspace on host
+   * @param options - Optional container creation options
    * @returns Container ID
    */
   async createContainer(
     sessionId: string,
     workspacePath: string,
+    options?: CreateContainerOptions,
   ): Promise<string> {
     const containerName = `sandbox-session-${sessionId}`;
-    const imageName = SANDBOX_IMAGE;
+    const browserCapable = options?.browserCapable === true;
+    const imageName = browserCapable ? BROWSER_SANDBOX_IMAGE : SANDBOX_IMAGE;
 
     const doCreate = async (): Promise<string> => {
-      const memoryBytes = this.governanceConfig.getContainerMemoryLimitBytes();
-      const cpuLimit = this.governanceConfig.containerCpuLimit;
-      const pidsLimit = this.governanceConfig.containerPidsLimit;
+      let memoryBytes: number;
+      let cpuLimit: number;
+      let pidsLimit: number;
+
+      if (browserCapable) {
+        memoryBytes = this.governanceConfig.getBrowserContainerMemoryLimitBytes();
+        cpuLimit = this.governanceConfig.browserContainerCpuLimit;
+        pidsLimit = this.governanceConfig.browserContainerPidsLimit;
+      } else {
+        memoryBytes = this.governanceConfig.getContainerMemoryLimitBytes();
+        cpuLimit = this.governanceConfig.containerCpuLimit;
+        pidsLimit = this.governanceConfig.containerPidsLimit;
+      }
+
       const nanoCpus = Math.floor(cpuLimit * 1e9);
+
+      const hostConfig: Record<string, unknown> = {
+        Binds: [`${workspacePath}:/workspace:rw`],
+        AutoRemove: false,
+        Memory: memoryBytes,
+        NanoCpus: nanoCpus,
+        PidsLimit: pidsLimit,
+      };
+
+      if (browserCapable) {
+        hostConfig.ShmSize = this.governanceConfig.getBrowserContainerShmSizeBytes();
+      }
 
       const container = await this.docker.createContainer({
         name: containerName,
         Image: imageName,
         WorkingDir: '/workspace',
         Cmd: ['/bin/sh', '-c', 'while true; do sleep 3600; done'],
-        HostConfig: {
-          Binds: [`${workspacePath}:/workspace:rw`],
-          AutoRemove: false,
-          Memory: memoryBytes,
-          NanoCpus: nanoCpus,
-          PidsLimit: pidsLimit,
-        },
+        HostConfig: hostConfig as any,
         AttachStdin: false,
         AttachStdout: false,
         AttachStderr: false,
@@ -92,9 +120,17 @@ export class DockerRuntimeService implements OnModuleInit {
       });
 
       console.log(`✓ Container created: ${containerName} (${container.id})`);
-      console.log(`  - Memory limit: ${memoryBytes} bytes (${this.governanceConfig.containerMemoryLimitMb}MB)`);
-      console.log(`  - CPU limit: ${cpuLimit} cores (${nanoCpus} nanocpus)`);
-      console.log(`  - PIDs limit: ${pidsLimit}`);
+      if (browserCapable) {
+        console.log(`  - Image: ${imageName} (browser-capable)`);
+        console.log(`  - Memory limit: ${memoryBytes} bytes (${this.governanceConfig.browserContainerMemoryLimitMb}MB)`);
+        console.log(`  - CPU limit: ${cpuLimit} cores (${nanoCpus} nanocpus)`);
+        console.log(`  - PIDs limit: ${pidsLimit}`);
+        console.log(`  - SHM size: ${this.governanceConfig.getBrowserContainerShmSizeBytes()} bytes (${this.governanceConfig.browserContainerShmSizeMb}MB)`);
+      } else {
+        console.log(`  - Memory limit: ${memoryBytes} bytes (${this.governanceConfig.containerMemoryLimitMb}MB)`);
+        console.log(`  - CPU limit: ${cpuLimit} cores (${nanoCpus} nanocpus)`);
+        console.log(`  - PIDs limit: ${pidsLimit}`);
+      }
       return container.id;
     };
 

@@ -2,6 +2,19 @@ import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { DockerRuntimeService } from './docker-runtime.service';
 
+const DEFAULT_GOVERNANCE_MOCK = {
+  getContainerMemoryLimitBytes: jest.fn().mockReturnValue(256 * 1024 * 1024),
+  containerCpuLimit: 1,
+  containerPidsLimit: 128,
+  containerMemoryLimitMb: 256,
+  browserContainerCpuLimit: 1.0,
+  browserContainerMemoryLimitMb: 768,
+  browserContainerPidsLimit: 512,
+  browserContainerShmSizeMb: 256,
+  getBrowserContainerMemoryLimitBytes: jest.fn().mockReturnValue(768 * 1024 * 1024),
+  getBrowserContainerShmSizeBytes: jest.fn().mockReturnValue(256 * 1024 * 1024),
+};
+
 describe('DockerRuntimeService file operations', () => {
   let service: DockerRuntimeService;
 
@@ -253,5 +266,84 @@ describe('DockerRuntimeService file operations', () => {
 
       expect(execSpy).not.toHaveBeenCalled();
     });
+  });
+});
+
+describe('DockerRuntimeService createContainer browser-capable path', () => {
+  let service: DockerRuntimeService;
+  let mockCreateContainer: jest.Mock<any>;
+
+  beforeEach(() => {
+    service = new DockerRuntimeService({ ...DEFAULT_GOVERNANCE_MOCK } as any);
+    mockCreateContainer = jest.fn<any>().mockResolvedValue({ id: 'container-abc' } as any);
+    (service as any).docker = {
+      createContainer: mockCreateContainer,
+      ping: jest.fn<any>().mockResolvedValue('OK' as any),
+      pull: jest.fn(),
+      modem: { followProgress: jest.fn() },
+    };
+  });
+
+  function getCallArgs(): any {
+    return mockCreateContainer.mock.calls[0][0];
+  }
+
+  it('uses node:20-alpine when browserCapable is not set', async () => {
+    await service.createContainer('sess-1', '/tmp/ws');
+
+    expect(mockCreateContainer).toHaveBeenCalledTimes(1);
+    expect(getCallArgs().Image).toBe('node:20-alpine');
+  });
+
+  it('uses node:20-alpine when browserCapable is false', async () => {
+    await service.createContainer('sess-2', '/tmp/ws', { browserCapable: false });
+
+    expect(getCallArgs().Image).toBe('node:20-alpine');
+  });
+
+  it('applies standard resource limits when browserCapable is not set', async () => {
+    await service.createContainer('sess-3', '/tmp/ws');
+
+    const args = getCallArgs();
+    expect(args.HostConfig.Memory).toBe(256 * 1024 * 1024);
+    expect(args.HostConfig.NanoCpus).toBe(Math.floor(1 * 1e9));
+    expect(args.HostConfig.PidsLimit).toBe(128);
+  });
+
+  it('does not set ShmSize when browserCapable is not set', async () => {
+    await service.createContainer('sess-4', '/tmp/ws');
+
+    expect(getCallArgs().HostConfig.ShmSize).toBeUndefined();
+  });
+
+  it('uses browser sandbox image when browserCapable is true', async () => {
+    await service.createContainer('sess-5', '/tmp/ws', { browserCapable: true });
+
+    expect(getCallArgs().Image).toBe('aisandbox-workspace-browser:local');
+  });
+
+  it('applies browser resource limits when browserCapable is true', async () => {
+    await service.createContainer('sess-6', '/tmp/ws', { browserCapable: true });
+
+    const args = getCallArgs();
+    expect(args.HostConfig.Memory).toBe(768 * 1024 * 1024);
+    expect(args.HostConfig.NanoCpus).toBe(Math.floor(1.0 * 1e9));
+    expect(args.HostConfig.PidsLimit).toBe(512);
+  });
+
+  it('sets ShmSize to browserContainerShmSizeMb in bytes when browserCapable is true', async () => {
+    await service.createContainer('sess-7', '/tmp/ws', { browserCapable: true });
+
+    expect(getCallArgs().HostConfig.ShmSize).toBe(256 * 1024 * 1024);
+  });
+
+  it('preserves common container config for both paths', async () => {
+    await service.createContainer('sess-8', '/tmp/ws', { browserCapable: true });
+
+    const args = getCallArgs();
+    expect(args.WorkingDir).toBe('/workspace');
+    expect(args.Cmd).toEqual(['/bin/sh', '-c', 'while true; do sleep 3600; done']);
+    expect(args.HostConfig.Binds).toEqual(['/tmp/ws:/workspace:rw']);
+    expect(args.HostConfig.AutoRemove).toBe(false);
   });
 });
