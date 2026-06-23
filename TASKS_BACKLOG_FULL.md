@@ -1,4 +1,4 @@
-## Authority Notice
+﻿## Authority Notice
 
 This document is the MASTER task backlog.
 
@@ -30928,3 +30928,132 @@ A dedicated architecture and security review is required before implementation b
 **Next step:** AGENT-HARNESS-05A — Browser Smoke Tool Investigation (registration required before any implementation).
 
 **Reference:** See TASKS.md -> AGENT-HARNESS-04A.
+
+----
+
+### AGENT-HARNESS-05A: Browser Smoke Tool Investigation
+
+**Task ID:** AGENT-HARNESS-05A
+**Status:** COMPLETE and LOCKED
+**Priority:** High
+**Nature:** INVESTIGATION / SECURITY REVIEW / BROWSER AUTOMATION FEASIBILITY / NO PRODUCTION TOOL IMPLEMENTATION
+**Risk:** High
+
+**Depends on:**
+- AGENT-HARNESS-00 — COMPLETE and LOCKED
+- AGENT-HARNESS-01A — COMPLETE and LOCKED
+- AGENT-HARNESS-01B — COMPLETE and LOCKED
+- AGENT-HARNESS-01C — COMPLETE and LOCKED
+- AGENT-HARNESS-01D — COMPLETE and LOCKED
+- AGENT-HARNESS-01E — COMPLETE and LOCKED
+- AGENT-HARNESS-02A — COMPLETE and LOCKED
+- AGENT-HARNESS-02B — COMPLETE and LOCKED
+- AGENT-HARNESS-02C — COMPLETE and LOCKED
+- AGENT-HARNESS-03A — COMPLETE and LOCKED
+- AGENT-HARNESS-03B — COMPLETE and LOCKED
+- AGENT-HARNESS-03C — COMPLETE and LOCKED
+- AGENT-HARNESS-04A — COMPLETE and LOCKED
+
+**Problem:**
+Agent Harness now supports file tools, mutation checkpoint safety, and allow-listed validation. The master plan next defines AGENT-HARNESS-05A as an investigation into a browser smoke tool. Browser automation is high risk because it may require Playwright/Puppeteer, Docker/gVisor compatibility, network access, sandboxing decisions, runtime resource controls, and careful separation between investigation and production implementation.
+
+**Objective:**
+Register an investigation-only slice to determine whether and how Agent Harness should support a `browser_smoke` tool.
+
+This slice must produce a feasibility/security report only. It must not implement production browser automation.
+
+**Scope:**
+- Register AGENT-HARNESS-05A only.
+- Future investigation should inspect existing preview, container, Docker, and browser automation capabilities.
+- Future investigation should determine whether Playwright or Puppeteer can run safely in the current environment.
+- Future investigation should identify whether browser smoke belongs in ai-service, api-gateway, container-manager, preview-service, executor-service, or a separate service.
+- Future investigation should review Docker/gVisor constraints, network restrictions, timeouts, screenshots/log capture, and resource limits.
+- Future investigation may include non-invasive inspection of package files and existing code.
+- Future investigation must not install dependencies.
+- Future investigation must not run browser automation unless Keith explicitly approves a separate live smoke step.
+- Future investigation must not implement `browser_smoke` production handler.
+- Future investigation must not enable `browser_smoke` in the tool registry.
+- Future investigation must not change frontend/UI.
+- Future investigation must not change database schema.
+- Future investigation must not change package/dependency files.
+
+**Likely investigation areas (exact files must be confirmed by inspection):**
+- `C:\Users\knlee\aiSandBox2026B\services\preview-service\` — how preview-service exposes app previews
+- `C:\Users\knlee\aiSandBox2026B\services\container-manager\` — container runtime constraints relevant to browser launch
+- `C:\Users\knlee\aiSandBox2026B\services\executor-service\` — existing executor if applicable
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\` — API Gateway integration points for browser smoke
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\tools\tool-registry.ts` — registry structure for browser_smoke
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\worker\worker.processor.ts` — worker processor wiring
+- Dockerfiles and docker-compose files — Docker/gVisor constraints, network modes, resource limits
+- `package.json` files across services — whether Playwright/Puppeteer are already installed
+- Existing preview/browser/smoke/e2e tests if present — reference only
+
+**Expected investigation questions:**
+1. Is Playwright, Puppeteer, or another browser automation library already installed anywhere?
+2. Does any service currently launch browsers?
+3. How does preview-service expose app previews today?
+4. Can a browser smoke run inside the existing container model safely?
+5. Should browser smoke run against preview-service URLs or directly inside the workspace container?
+6. Which service should own browser automation if implemented?
+7. What sandboxing and network restrictions are required?
+8. What timeout and output/screenshot limits are required?
+9. What artifacts should browser smoke return: status, console errors, screenshot, page title, visible text, network errors?
+10. What risks exist with running untrusted generated code in a browser?
+11. Is a separate browser-worker service needed?
+12. What exact future slice should implement `browser_smoke`, if feasible?
+
+**Security / safety requirements:**
+- No production browser automation implementation in 05A.
+- No dependency installs in 05A.
+- No package/dependency file edits in 05A.
+- No browser automation runs unless Keith explicitly approves a live smoke step.
+- No registry enablement for `browser_smoke`.
+- No direct unrestricted network access.
+- No credential exposure.
+- No persistent browser profiles with user data.
+- Timeouts and artifact limits must be required in any future implementation.
+- Existing Agent Harness tools (file tools, run_validation) must remain unchanged.
+
+**Non-goals:**
+- No `browser_smoke` handler implementation.
+- No Playwright/Puppeteer installation.
+- No Docker image changes.
+- No frontend/UI changes.
+- No database schema changes.
+- No tool registry enabled-state changes.
+- No provider adapter changes.
+- No Agent Harness loop changes.
+- No live browser smoke unless separately approved.
+
+**Validation requirements for future investigation:**
+- No backend tests required unless governance docs or scripts are changed.
+- If an investigation report file is created, inspect it manually.
+- If a markdown lint/readlint command exists, run it on the investigation report only.
+- No frontend tests.
+- No browser smoke.
+- No builds required unless code/package files are unexpectedly touched, which must not happen.
+
+**Acceptance criteria (registration):**
+- [x] AGENT-HARNESS-05A registered as ACTIVE in TASKS.md and TASKS_BACKLOG_FULL.md
+- [x] All dependencies through AGENT-HARNESS-04A COMPLETE and LOCKED documented
+- [x] Problem/objective/scope documented
+- [x] Investigation-only nature documented
+- [x] High-risk browser automation nature documented
+- [x] Likely investigation areas documented
+- [x] Expected investigation questions documented
+- [x] Security/safety requirements documented
+- [x] Non-goals documented
+- [x] Validation requirements documented
+- [x] Browser smoke documented as not allowed during registration
+- [x] No source/runtime/test/package files changed
+- [x] No checkpoint created during registration
+- [x] No implementation performed during registration
+- [x] Investigation report produced and reviewed
+- [x] Feasibility/security findings documented
+- [x] Recommendation for future implementation slice (or explicit rejection) documented
+- [x] Checkpoint document created: docs/AGENT-HARNESS-05A-CHECKPOINT.md
+
+**Checkpoint:** `docs/AGENT-HARNESS-05A-CHECKPOINT.md`
+**Next step:** AGENT-HARNESS-05B1 registration only — Browser Smoke Sandbox Image Prerequisite. Do not implement until registered and approved.
+
+**Reference:** See TASKS.md -> AGENT-HARNESS-05A.

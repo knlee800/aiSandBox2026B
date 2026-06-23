@@ -1,4 +1,4 @@
-#
+﻿#
 (ACTIVE -- plan phase)ity & Scope
 
 This file lists currently ACTIVE and SELECTED tasks.
@@ -12070,7 +12070,7 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 
 **Family status:** ACTIVE ?X UX-IA-04 COMPLETE and LOCKED ?X UX-IA-05 COMPLETE and LOCKED ?X UX-IA-06 COMPLETE and LOCKED ?X UX-IA-07 COMPLETE and LOCKED ?X UX-IA-08 COMPLETE and LOCKED ?X UX-IA-09 COMPLETE and LOCKED ?X UX-IA-10 COMPLETE and LOCKED ?X UX-IA-11 COMPLETE and LOCKED ?X UX-IA-12 COMPLETE and LOCKED ?X UX-IA-13 COMPLETE and LOCKED ?X 13A COMPLETE and LOCKED ?X 13B COMPLETE and LOCKED ?X UX-IA-14 COMPLETE and LOCKED ?X UX-IA-15 COMPLETE and LOCKED (15A COMPLETE and LOCKED, 15B COMPLETE and LOCKED, 15C COMPLETE and LOCKED) ?X UX-IA-16 COMPLETE and LOCKED (16A COMPLETE and LOCKED, 16B COMPLETE and LOCKED) ?X UX-IA-17 COMPLETE and LOCKED (17A COMPLETE and LOCKED, 17B COMPLETE and LOCKED) ?X UX-IA-18 COMPLETE and LOCKED ?X UX-IA-19 COMPLETE and LOCKED ?X UX-IA-20 COMPLETE and LOCKED ?X UX-IA-21 COMPLETE and LOCKED ?X UX-IA-22 COMPLETE and LOCKED ?X UX-IA-23 COMPLETE and LOCKED ?X UX-IA-24 COMPLETE and LOCKED ?X UX-IA-25 COMPLETE and LOCKED ?X UX-IA-26 COMPLETE and LOCKED ?X UX-IA-27 COMPLETE and LOCKED ?X UX-IA-28 COMPLETE and LOCKED ?X UX-IA-29 COMPLETE and LOCKED ?X UX-IA-30 COMPLETE and LOCKED ?X UX-IA-31 COMPLETE and LOCKED ?X UX-IA-32 COMPLETE and LOCKED ?X UX-IA-33 COMPLETE and LOCKED ?X UX-IA-34 COMPLETE and LOCKED ?X UX-IA-35 COMPLETE and LOCKED ?X UX-IA-36 COMPLETE and LOCKED ?X UX-IA-37 COMPLETE and LOCKED ?X UX-IA-38 COMPLETE and LOCKED ?X UX-IA-39 COMPLETE and LOCKED
 
-**Current stage:** UX-PV-02B COMPLETE and LOCKED — Preview Failure Ask AI Fix Prompt
+**Current stage:** UX-PV-02B COMPLETE and LOCKED ??Preview Failure Ask AI Fix Prompt
 
 **Master spec:** `docs/UX-IA-00-MASTER-PLAN.md`
 
@@ -12132,9 +12132,9 @@ Make normal static HTML relative links and buttons work inside the preview ifram
 39. UX-IA-38 ?X Hide Project Trust Note / Recoverable Box (COMPLETE and LOCKED ?X `docs/UX-IA-38-CHECKPOINT.md`)
 40. UX-IA-39 ?X Relocate Build Targets to Preview Panel (COMPLETE and LOCKED ?X `docs/UX-IA-39-CHECKPOINT.md`)
 
-41. UX-PV-01 — Preview Auto-Start and First-Load Error Resilience (COMPLETE and LOCKED — `docs/UX-PV-01-CHECKPOINT.md`)
-42. UX-PV-02A — Preview Failure Diagnostic Copy (COMPLETE and LOCKED — `docs/UX-PV-02A-CHECKPOINT.md`)
-43. UX-PV-02B — Preview Failure Ask AI Fix Prompt (COMPLETE and LOCKED — `docs/UX-PV-02B-CHECKPOINT.md`)
+41. UX-PV-01 ??Preview Auto-Start and First-Load Error Resilience (COMPLETE and LOCKED ??`docs/UX-PV-01-CHECKPOINT.md`)
+42. UX-PV-02A ??Preview Failure Diagnostic Copy (COMPLETE and LOCKED ??`docs/UX-PV-02A-CHECKPOINT.md`)
+43. UX-PV-02B ??Preview Failure Ask AI Fix Prompt (COMPLETE and LOCKED ??`docs/UX-PV-02B-CHECKPOINT.md`)
 
 
 ---
@@ -15580,7 +15580,7 @@ git -C "C:\Users\knlee\aiSandBox2026B" restore -- frontend/tsconfig.tsbuildinfo
 **Priority:** High
 **Nature:** FRONTEND-ONLY / PREVIEW UX RECOVERY
 **Risk:** Low
-**Depends on:** UX-PV-01 (COMPLETE and LOCKED — `docs/UX-PV-01-CHECKPOINT.md`)
+**Depends on:** UX-PV-01 (COMPLETE and LOCKED ??`docs/UX-PV-01-CHECKPOINT.md`)
 
 **Problem:**
 After preview auto-start retries are exhausted, users still see a generic "Preview error" message. The message does not explain that the app may have a build, startup, or runtime problem, leaving users without any guidance on the root cause.
@@ -15646,7 +15646,7 @@ Replace the generic preview error surface with clearer multilingual diagnostic c
 **Priority:** High
 **Nature:** FRONTEND-ONLY / PREVIEW UX RECOVERY
 **Risk:** Medium
-**Depends on:** UX-PV-02A (COMPLETE and LOCKED — `docs/UX-PV-02A-CHECKPOINT.md`)
+**Depends on:** UX-PV-02A (COMPLETE and LOCKED ??`docs/UX-PV-02A-CHECKPOINT.md`)
 
 **Problem:**
 After preview auto-start/retry fails, UX-PV-02A now shows clearer diagnostic copy, but the user still has to manually ask AI to investigate/fix the preview failure. This should be a one-click recovery action.
@@ -15701,7 +15701,7 @@ Add an "Ask AI to Fix" action to the preview error state. The action should send
 
 **Validation results:** `npx tsc --noEmit` PASS. `npm test` 599/599 PASS. ReadLints PASS. tsconfig.tsbuildinfo restored.
 
-**Live browser test:** PASS — rapid double-click did not duplicate-send; button disabled while chat submitting/running; structured prompt submitted correctly; Refresh fallback and auto-start/retry unchanged.
+**Live browser test:** PASS ??rapid double-click did not duplicate-send; button disabled while chat submitting/running; structured prompt submitted correctly; Refresh fallback and auto-start/retry unchanged.
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> UX-PV-02B. Depends on: `docs/UX-PV-02A-CHECKPOINT.md`.
 
@@ -17050,28 +17050,28 @@ Make "Build anything" a true one-click flow: type prompt ?? click Start once ?? 
 
 ---
 
-## AI-CONTEXT — Global AI Instructions
+## AI-CONTEXT ??Global AI Instructions
 
-**Family status:** COMPLETE and LOCKED — AI-CONTEXT-01A through AI-CONTEXT-06A COMPLETE and LOCKED
+**Family status:** COMPLETE and LOCKED ??AI-CONTEXT-01A through AI-CONTEXT-06A COMPLETE and LOCKED
 
-**Current stage:** AI-CONTEXT-06A COMPLETE and LOCKED — `docs/AI-CONTEXT-06A-CHECKPOINT.md`
+**Current stage:** AI-CONTEXT-06A COMPLETE and LOCKED ??`docs/AI-CONTEXT-06A-CHECKPOINT.md`
 
 **Registered tasks:**
-1. AI-CONTEXT-01A — Global AI Instructions Backend Foundation (COMPLETE and LOCKED — `docs/AI-CONTEXT-01A-CHECKPOINT.md`)
-2. AI-CONTEXT-01B — Inject Global AI Instructions into Prompt Assembly (COMPLETE and LOCKED — `docs/AI-CONTEXT-01B-CHECKPOINT.md`)
-3. AI-CONTEXT-01C — Global AI Instructions Frontend Settings UI (COMPLETE and LOCKED — `docs/AI-CONTEXT-01C-CHECKPOINT.md`)
-4. AI-CONTEXT-01D — Deliver Platform and Global Instructions as System Message (COMPLETE and LOCKED — `docs/AI-CONTEXT-01D-CHECKPOINT.md`)
-5. AI-CONTEXT-01E — Align Browser AI Execution with Session User (COMPLETE and LOCKED — `docs/AI-CONTEXT-01E-CHECKPOINT.md`)
-6. AI-CONTEXT-02A — Project AI Instructions Backend Foundation (COMPLETE and LOCKED — `docs/AI-CONTEXT-02A-CHECKPOINT.md`)
-7. AI-CONTEXT-02B — Project AI Instructions Frontend UI (COMPLETE and LOCKED — `docs/AI-CONTEXT-02B-CHECKPOINT.md`)
-8. AI-CONTEXT-02C — Inject Project AI Instructions into Prompt Assembly (COMPLETE and LOCKED — `docs/AI-CONTEXT-02C-CHECKPOINT.md`)
-9. AI-CONTEXT-03A — Active Context Indicator (COMPLETE and LOCKED — `docs/AI-CONTEXT-03A-CHECKPOINT.md`)
-10. AI-CONTEXT-04A — Repo Docs Registry Backend Foundation (COMPLETE and LOCKED — `docs/AI-CONTEXT-04A-CHECKPOINT.md`)
-11. AI-CONTEXT-04B — Repo Docs Registry Frontend UI (COMPLETE and LOCKED — `docs/AI-CONTEXT-04B-CHECKPOINT.md`)
-12. AI-CONTEXT-04B1 — Repo Docs File Picker (COMPLETE and LOCKED — `docs/AI-CONTEXT-04B1-CHECKPOINT.md`)
-13. AI-CONTEXT-04C — Inject Repo Docs into Prompt Assembly (COMPLETE and LOCKED — `docs/AI-CONTEXT-04C-CHECKPOINT.md`)
-14. AI-CONTEXT-05A — Context Link Readiness Indicator (COMPLETE and LOCKED — `docs/AI-CONTEXT-05A-CHECKPOINT.md`)
-15. AI-CONTEXT-06A — Context System Final Hardening / Regression Matrix (COMPLETE and LOCKED — `docs/AI-CONTEXT-06A-CHECKPOINT.md`)
+1. AI-CONTEXT-01A ??Global AI Instructions Backend Foundation (COMPLETE and LOCKED ??`docs/AI-CONTEXT-01A-CHECKPOINT.md`)
+2. AI-CONTEXT-01B ??Inject Global AI Instructions into Prompt Assembly (COMPLETE and LOCKED ??`docs/AI-CONTEXT-01B-CHECKPOINT.md`)
+3. AI-CONTEXT-01C ??Global AI Instructions Frontend Settings UI (COMPLETE and LOCKED ??`docs/AI-CONTEXT-01C-CHECKPOINT.md`)
+4. AI-CONTEXT-01D ??Deliver Platform and Global Instructions as System Message (COMPLETE and LOCKED ??`docs/AI-CONTEXT-01D-CHECKPOINT.md`)
+5. AI-CONTEXT-01E ??Align Browser AI Execution with Session User (COMPLETE and LOCKED ??`docs/AI-CONTEXT-01E-CHECKPOINT.md`)
+6. AI-CONTEXT-02A ??Project AI Instructions Backend Foundation (COMPLETE and LOCKED ??`docs/AI-CONTEXT-02A-CHECKPOINT.md`)
+7. AI-CONTEXT-02B ??Project AI Instructions Frontend UI (COMPLETE and LOCKED ??`docs/AI-CONTEXT-02B-CHECKPOINT.md`)
+8. AI-CONTEXT-02C ??Inject Project AI Instructions into Prompt Assembly (COMPLETE and LOCKED ??`docs/AI-CONTEXT-02C-CHECKPOINT.md`)
+9. AI-CONTEXT-03A ??Active Context Indicator (COMPLETE and LOCKED ??`docs/AI-CONTEXT-03A-CHECKPOINT.md`)
+10. AI-CONTEXT-04A ??Repo Docs Registry Backend Foundation (COMPLETE and LOCKED ??`docs/AI-CONTEXT-04A-CHECKPOINT.md`)
+11. AI-CONTEXT-04B ??Repo Docs Registry Frontend UI (COMPLETE and LOCKED ??`docs/AI-CONTEXT-04B-CHECKPOINT.md`)
+12. AI-CONTEXT-04B1 ??Repo Docs File Picker (COMPLETE and LOCKED ??`docs/AI-CONTEXT-04B1-CHECKPOINT.md`)
+13. AI-CONTEXT-04C ??Inject Repo Docs into Prompt Assembly (COMPLETE and LOCKED ??`docs/AI-CONTEXT-04C-CHECKPOINT.md`)
+14. AI-CONTEXT-05A ??Context Link Readiness Indicator (COMPLETE and LOCKED ??`docs/AI-CONTEXT-05A-CHECKPOINT.md`)
+15. AI-CONTEXT-06A ??Context System Final Hardening / Regression Matrix (COMPLETE and LOCKED ??`docs/AI-CONTEXT-06A-CHECKPOINT.md`)
 
 ---
 
@@ -17127,10 +17127,10 @@ Create backend infrastructure for user-scoped Global AI Instructions. These inst
 - [x] No unrelated files changed
 
 **Validation:**
-- `npm test -- user-ai-instructions` — PASS (2 suites, 7 tests)
-- `npm run build` — PASS
-- ReadLints on touched files — PASS
-- Full `npm test` — PARTIAL: pre-existing env/connectivity issue (TypeOrmModule DB connection refused, smoke suite hook timeouts). Not a regression from AI-CONTEXT-01A. Consistent with documented carry-forward in AUTH-APP-01H-SECURITY-HARDENING-SPEC.md and WORKSPACE-DEFAULT-01-CHECKPOINT.md.
+- `npm test -- user-ai-instructions` ??PASS (2 suites, 7 tests)
+- `npm run build` ??PASS
+- ReadLints on touched files ??PASS
+- Full `npm test` ??PARTIAL: pre-existing env/connectivity issue (TypeOrmModule DB connection refused, smoke suite hook timeouts). Not a regression from AI-CONTEXT-01A. Consistent with documented carry-forward in AUTH-APP-01H-SECURITY-HARDENING-SPEC.md and WORKSPACE-DEFAULT-01-CHECKPOINT.md.
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-CONTEXT-01A.
 **Checkpoint:** `docs/AI-CONTEXT-01A-CHECKPOINT.md`
@@ -17173,12 +17173,12 @@ Wire saved user global AI instructions into the AI execution prompt assembly pat
 - [x] No frontend files changed
 
 **Validation:**
-- `npm test -- src/ai/__tests__/ai-execution.workspace-context.spec.ts src/user-ai-instructions/user-ai-instructions.service.spec.ts` — PASS (2 suites, 7 tests)
-- `npm run build` (api-gateway) — PASS
-- `npm test -- src/worker/worker.processor.spec.ts` (ai-service) — PASS (1 suite, 8 tests)
-- `npm run build` (ai-service) — PASS
-- ReadLints on touched files — PASS
-- Full `npm test` — PARTIAL: pre-existing env/connectivity failures (no DB/Redis, legacy test module setup gaps, external provider calls). Not a regression from AI-CONTEXT-01B. Consistent with documented carry-forward.
+- `npm test -- src/ai/__tests__/ai-execution.workspace-context.spec.ts src/user-ai-instructions/user-ai-instructions.service.spec.ts` ??PASS (2 suites, 7 tests)
+- `npm run build` (api-gateway) ??PASS
+- `npm test -- src/worker/worker.processor.spec.ts` (ai-service) ??PASS (1 suite, 8 tests)
+- `npm run build` (ai-service) ??PASS
+- ReadLints on touched files ??PASS
+- Full `npm test` ??PARTIAL: pre-existing env/connectivity failures (no DB/Redis, legacy test module setup gaps, external provider calls). Not a regression from AI-CONTEXT-01B. Consistent with documented carry-forward.
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-CONTEXT-01B.
 **Checkpoint:** `docs/AI-CONTEXT-01B-CHECKPOINT.md`
@@ -17243,10 +17243,10 @@ Add a frontend settings surface where users can view, edit, save, and clear Glob
 - [x] Live browser test required before consolidation
 
 **Validation:**
-- `npx tsc --noEmit` (frontend) — PASS
-- `npm test` (frontend) — PASS (604 tests, 604 pass, 0 fail)
-- ReadLints on touched files — PASS
-- Live browser test — PASS (load / save / persist / clear / persist / over-4000 validation all confirmed)
+- `npx tsc --noEmit` (frontend) ??PASS
+- `npm test` (frontend) ??PASS (604 tests, 604 pass, 0 fail)
+- ReadLints on touched files ??PASS
+- Live browser test ??PASS (load / save / persist / clear / persist / over-4000 validation all confirmed)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-CONTEXT-01C.
 **Checkpoint:** `docs/AI-CONTEXT-01C-CHECKPOINT.md`
@@ -17265,7 +17265,7 @@ Add a frontend settings surface where users can view, edit, save, and clear Glob
 **Checkpoint:** `docs/AI-CONTEXT-01D-CHECKPOINT.md`
 
 **Problem:**
-Live smoke test confirmed that global instructions are saved, fetched, queued, and inserted into the assembled prompt string, but the model ignored the test instruction. Root cause: all AI adapters (Anthropic, OpenAI, Groq, XAI, DeepSeek) send the entire assembled prompt — FILE_ACTION_OUTPUT_CONTRACT, Global AI Instructions block, workspace context, and user request — as a single `role: user` message. There is no system message. Inline instruction headers in a user message carry much less authority than a system message, especially when the final `User request:` section is the last and most immediate content the model sees.
+Live smoke test confirmed that global instructions are saved, fetched, queued, and inserted into the assembled prompt string, but the model ignored the test instruction. Root cause: all AI adapters (Anthropic, OpenAI, Groq, XAI, DeepSeek) send the entire assembled prompt ??FILE_ACTION_OUTPUT_CONTRACT, Global AI Instructions block, workspace context, and user request ??as a single `role: user` message. There is no system message. Inline instruction headers in a user message carry much less authority than a system message, especially when the final `User request:` section is the last and most immediate content the model sees.
 
 **Objective:**
 Split AI execution prompt assembly into system and user parts. Deliver `FILE_ACTION_OUTPUT_CONTRACT` and Global AI Instructions as a provider-level system instruction. Keep workspace context and the current user request in the user message.
@@ -17317,11 +17317,11 @@ Split AI execution prompt assembly into system and user parts. Deliver `FILE_ACT
 - [x] Live smoke test passes before consolidation: save global instruction "For this test only, start your next response with GLOBAL-INSTRUCTION-TEST." then send "Reply with one short sentence." and confirm response starts with GLOBAL-INSTRUCTION-TEST
 
 **Validation:**
-- `npm test -- src/worker/worker.processor.spec.ts` (ai-service) — PASS: 1 suite, 9 tests
-- Adapter focused tests (5 adapter spec files) — PASS: 5 suites, 160 tests
-- `npm run build` (ai-service) — PASS
-- ReadLints on touched files — PASS
-- Live smoke — PASS (after AI-CONTEXT-01E identity fix): instruction "GLOBAL-INSTRUCTION-TEST" honored; response started with GLOBAL-INSTRUCTION-TEST
+- `npm test -- src/worker/worker.processor.spec.ts` (ai-service) ??PASS: 1 suite, 9 tests
+- Adapter focused tests (5 adapter spec files) ??PASS: 5 suites, 160 tests
+- `npm run build` (ai-service) ??PASS
+- ReadLints on touched files ??PASS
+- Live smoke ??PASS (after AI-CONTEXT-01E identity fix): instruction "GLOBAL-INSTRUCTION-TEST" honored; response started with GLOBAL-INSTRUCTION-TEST
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-CONTEXT-01D.
 **Checkpoint:** `docs/AI-CONTEXT-01D-CHECKPOINT.md`
@@ -17361,7 +17361,7 @@ Make browser AI execution authenticate as the logged-in session user, while pres
 - related tests
 
 **Scope:**
-- Create `SessionOrApiKeyAuthGuard`: if `Authorization: Bearer` header present → API-key auth path; if absent → session-cookie auth path; session path synthesizes `req.apiKeyIdentity = { userId: session.user.id, apiKeyId: 'browser-session', scopes: ['ai:execute'], isInternal: true }`
+- Create `SessionOrApiKeyAuthGuard`: if `Authorization: Bearer` header present ??API-key auth path; if absent ??session-cookie auth path; session path synthesizes `req.apiKeyIdentity = { userId: session.user.id, apiKeyId: 'browser-session', scopes: ['ai:execute'], isInternal: true }`
 - Register new guard in `auth.module.ts` (providers + exports)
 - Replace `ApiKeyAuthGuard` with `SessionOrApiKeyAuthGuard` on all AI execution endpoints in `ai-execution.controller.ts`
 - Remove `Authorization: Bearer ${apiKey}` headers and `localStorage` API-key reads from browser workspace AI execution calls in `page.tsx` (`handleSubmitChatPrompt`, `refreshChatExecutionStatus`, orchestrated execution, SSE stream)
@@ -17392,11 +17392,11 @@ Make browser AI execution authenticate as the logged-in session user, while pres
 - [x] Live smoke test passes: save "For this test only, start your next response with GLOBAL-INSTRUCTION-TEST." then send "Reply with one short sentence." and confirm response starts with GLOBAL-INSTRUCTION-TEST
 
 **Validation:**
-- api-gateway typecheck (`npx tsc --noEmit`) — PASS
-- frontend typecheck (`npx tsc --noEmit`) — PASS
-- Focused tests (5 suites) — PASS: 5 suites, 49 tests
-- ReadLints on touched files — PASS
-- Live smoke — PASS: response started with GLOBAL-INSTRUCTION-TEST; api-gateway log confirmed `Global AI instructions present for user 4329e051-ce13-46b5-83ef-357faf749d90`
+- api-gateway typecheck (`npx tsc --noEmit`) ??PASS
+- frontend typecheck (`npx tsc --noEmit`) ??PASS
+- Focused tests (5 suites) ??PASS: 5 suites, 49 tests
+- ReadLints on touched files ??PASS
+- Live smoke ??PASS: response started with GLOBAL-INSTRUCTION-TEST; api-gateway log confirmed `Global AI instructions present for user 4329e051-ce13-46b5-83ef-357faf749d90`
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-CONTEXT-01E.
 **Checkpoint:** `docs/AI-CONTEXT-01E-CHECKPOINT.md`
@@ -17469,9 +17469,9 @@ project_ai_context
 - [x] No unrelated files changed
 
 **Validation:**
-- `npm test -- project-ai-context` — PASS (2 suites, 8 tests)
-- `npm run build` — PASS
-- ReadLints on touched files — PASS
+- `npm test -- project-ai-context` ??PASS (2 suites, 8 tests)
+- `npm run build` ??PASS
+- ReadLints on touched files ??PASS
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-CONTEXT-02A.
 **Checkpoint:** `docs/AI-CONTEXT-02A-CHECKPOINT.md`
@@ -17542,10 +17542,10 @@ Expose Project AI Instructions in the existing project settings surface using:
 - [x] Live browser test required before consolidation
 
 **Validation:**
-- `npx tsc --noEmit` (frontend) — PASS
-- `npm test` (frontend) — PASS (609 tests, 0 failures)
-- ReadLints on touched files — PASS
-- Live browser test — PASS (load, save, persist, clear, persist-cleared, >4000 disable)
+- `npx tsc --noEmit` (frontend) ??PASS
+- `npm test` (frontend) ??PASS (609 tests, 0 failures)
+- ReadLints on touched files ??PASS
+- Live browser test ??PASS (load, save, persist, clear, persist-cleared, >4000 disable)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-CONTEXT-02B.
 **Checkpoint:** `docs/AI-CONTEXT-02B-CHECKPOINT.md`
@@ -17578,14 +17578,14 @@ Fetch Project AI Instructions for the current project/session and inject them in
 - `services/ai-service/src/worker/worker.processor.spec.ts`
 
 **Scope:**
-- Resolved project ID from session association: `request.sessionId → Session.projectId`.
+- Resolved project ID from session association: `request.sessionId ??Session.projectId`.
 - Enforced ownership: only proceeds when `session.userId === identity.userId`.
 - Fetched project instructions with `ProjectAiContextService.getByProjectId(projectId)`.
 - Trimmed/normalized; null/empty/whitespace omitted.
 - Added optional `projectInstructions` to queue payload alongside `globalInstructions`.
 - Added `projectInstructions?: string` to `AiExecutionJob`.
 - Extended `buildExecutionPromptParts` with optional `projectInstructions` parameter.
-- System prompt order: FILE_ACTION_OUTPUT_CONTRACT → Global AI Instructions → Project AI Instructions.
+- System prompt order: FILE_ACTION_OUTPUT_CONTRACT ??Global AI Instructions ??Project AI Instructions.
 - User prompt remains: workspace context + User request.
 - No new request field introduced.
 - Targeted tests added for both api-gateway and ai-service.
@@ -17595,7 +17595,7 @@ Fetch Project AI Instructions for the current project/session and inject them in
 - [x] Project AI Instructions are included in queue payload when non-empty.
 - [x] Empty/null Project AI Instructions are omitted.
 - [x] AI service system prompt includes Project AI Instructions when provided.
-- [x] Prompt order is FILE_ACTION_OUTPUT_CONTRACT → Global AI Instructions → Project AI Instructions.
+- [x] Prompt order is FILE_ACTION_OUTPUT_CONTRACT ??Global AI Instructions ??Project AI Instructions.
 - [x] Workspace context and user request remain in user message.
 - [x] Global AI Instructions behavior remains intact.
 - [x] Targeted api-gateway tests pass.
@@ -17604,12 +17604,12 @@ Fetch Project AI Instructions for the current project/session and inject them in
 - [x] Live browser smoke test passes: save `For this project only, start your next response with PROJECT-INSTRUCTION-TEST.`, send `Reply with one short sentence.`, response starts with `PROJECT-INSTRUCTION-TEST`.
 
 **Validation:**
-- `npm test -- src/ai/__tests__/ai-execution.workspace-context.spec.ts` (api-gateway) — PASS (8/8)
-- `npm test -- src/worker/worker.processor.spec.ts` (ai-service) — PASS (11/11)
-- `npm run build` (api-gateway) — PASS
-- `npm run build` (ai-service) — PASS
-- ReadLints on touched files — PASS
-- Live browser smoke — PASS (PROJECT-INSTRUCTION-TEST confirmed; global + project priority test passed)
+- `npm test -- src/ai/__tests__/ai-execution.workspace-context.spec.ts` (api-gateway) ??PASS (8/8)
+- `npm test -- src/worker/worker.processor.spec.ts` (ai-service) ??PASS (11/11)
+- `npm run build` (api-gateway) ??PASS
+- `npm run build` (ai-service) ??PASS
+- ReadLints on touched files ??PASS
+- Live browser smoke ??PASS (PROJECT-INSTRUCTION-TEST confirmed; global + project priority test passed)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-CONTEXT-02C.
 **Checkpoint:** `docs/AI-CONTEXT-02C-CHECKPOINT.md`
@@ -17678,13 +17678,13 @@ Add a compact Active Context Indicator near the chat/prompt area that shows whet
 - [x] `npx tsc --noEmit` passes.
 - [x] `npm test` passes.
 - [x] ReadLints passes.
-- [x] Live browser test passes (clear both → both inactive; save Global only → Global active; save Project only → Project active; save both → both active; clear both → both inactive).
+- [x] Live browser test passes (clear both ??both inactive; save Global only ??Global active; save Project only ??Project active; save both ??both active; clear both ??both inactive).
 
 **Validation:**
-- `npx tsc --noEmit` (frontend) — PASS
-- `npm test` (frontend) — PASS (617 passed, 0 failed)
-- ReadLints on touched files — PASS
-- Live browser smoke — PASS (5-step scenario confirmed)
+- `npx tsc --noEmit` (frontend) ??PASS
+- `npm test` (frontend) ??PASS (617 passed, 0 failed)
+- ReadLints on touched files ??PASS
+- Live browser smoke ??PASS (5-step scenario confirmed)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-CONTEXT-03A.
 **Checkpoint:** `docs/AI-CONTEXT-03A-CHECKPOINT.md`
@@ -17724,8 +17724,8 @@ Allowed mode for this slice: `always`
 - Add migration creating `project_repo_docs` table
 - Add `ProjectRepoDoc` entity matching table schema
 - Add `project-repo-docs` module with service and controller
-- `GET /api/projects/:projectId/repo-docs` — returns selected repo docs for a project
-- `PUT /api/projects/:projectId/repo-docs` — replaces selected repo docs for a project
+- `GET /api/projects/:projectId/repo-docs` ??returns selected repo docs for a project
+- `PUT /api/projects/:projectId/repo-docs` ??replaces selected repo docs for a project
 - Enforce project ownership/access
 - Validate paths as safe relative workspace paths
 - Deduplicate or safely reject duplicate paths
@@ -17765,9 +17765,9 @@ Allowed mode for this slice: `always`
 - [x] No frontend or ai-service files changed
 
 **Validation:**
-- `npm test -- project-repo-docs` — PASS (2 suites, 16 tests)
-- `npm run build` — PASS
-- ReadLints on touched files — PASS (no linter errors)
+- `npm test -- project-repo-docs` ??PASS (2 suites, 16 tests)
+- `npm run build` ??PASS
+- ReadLints on touched files ??PASS (no linter errors)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-CONTEXT-04A.
 **Checkpoint:** `docs/AI-CONTEXT-04A-CHECKPOINT.md`
@@ -17853,10 +17853,10 @@ Add a frontend project settings/control surface for selecting repo-relative docu
 - [x] Live browser test required before consolidation.
 
 **Validation results:**
-- `npx tsc --noEmit` — PASS
-- `npm test` — PASS
-- `ReadLints` — PASS (no linter errors)
-- Live browser test — PASS: added README.md and docs/ARCHITECTURE.md, saved, confirmed persistence on reload, removed one doc and confirmed removal persisted, invalid paths rejected with visible error, saved empty array and confirmed empty persisted
+- `npx tsc --noEmit` ??PASS
+- `npm test` ??PASS
+- `ReadLints` ??PASS (no linter errors)
+- Live browser test ??PASS: added README.md and docs/ARCHITECTURE.md, saved, confirmed persistence on reload, removed one doc and confirmed removal persisted, invalid paths rejected with visible error, saved empty array and confirmed empty persisted
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-CONTEXT-04B.
 **Checkpoint:** `docs/AI-CONTEXT-04B-CHECKPOINT.md`
@@ -17927,10 +17927,10 @@ Add a file picker to the Repo Docs panel so users can choose existing workspace 
 - [x] Live browser test passes.
 
 **Validation results:**
-- `npx tsc --noEmit` — PASS
-- `npm test` — PASS (627/627)
-- `ReadLints` — PASS (no linter errors)
-- Live browser test — PASS: modal opened, folders expanded/collapsed, file clicked and path added, saved and confirmed persistence, duplicate handling confirmed
+- `npx tsc --noEmit` ??PASS
+- `npm test` ??PASS (627/627)
+- `ReadLints` ??PASS (no linter errors)
+- Live browser test ??PASS: modal opened, folders expanded/collapsed, file clicked and path added, saved and confirmed persistence, duplicate handling confirmed
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-CONTEXT-04B1.
 **Checkpoint:** `docs/AI-CONTEXT-04B1-CHECKPOINT.md`
@@ -17978,12 +17978,12 @@ During AI execution, resolve the current project, load registered Repo Docs for 
 - [x] Live browser smoke passes: registered `WorkspaceA/CLAUDE.md`; asked "What repo docs have you read?"; agent responded referencing doc content.
 
 **Validation results:**
-- `npm test -- ai-execution.workspace-context.spec.ts` (api-gateway) — PASS (13/13)
-- `npm test -- worker.processor.spec.ts` (ai-service) — PASS (16/16)
-- `npm run build` (api-gateway) — PASS
-- `npm run build` (ai-service) — PASS
-- `ReadLints` — PASS (no linter errors)
-- Live browser smoke — PASS: registered `WorkspaceA/CLAUDE.md`; agent response: "I've read the content of `WorkspaceA/CLAUDE.md` (the governance/contract document), which was provided directly in this context."
+- `npm test -- ai-execution.workspace-context.spec.ts` (api-gateway) ??PASS (13/13)
+- `npm test -- worker.processor.spec.ts` (ai-service) ??PASS (16/16)
+- `npm run build` (api-gateway) ??PASS
+- `npm run build` (ai-service) ??PASS
+- `ReadLints` ??PASS (no linter errors)
+- Live browser smoke ??PASS: registered `WorkspaceA/CLAUDE.md`; agent response: "I've read the content of `WorkspaceA/CLAUDE.md` (the governance/contract document), which was provided directly in this context."
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-CONTEXT-04C.
 **Checkpoint:** `docs/AI-CONTEXT-04C-CHECKPOINT.md`
@@ -18027,16 +18027,16 @@ Make context readiness visible and understandable in the workspace UI. The user 
 - [x] Relevant frontend tests pass.
 - [x] Relevant build/typecheck passes.
 - [x] Live browser smoke confirms:
-  1. Repo Docs configured + session linked → Repo Docs On. PASS
-  2. Repo Docs configured + session not linked → unavailable message appears. PASS
-  3. No Repo Docs → Repo Docs Off. PASS
+  1. Repo Docs configured + session linked ??Repo Docs On. PASS
+  2. Repo Docs configured + session not linked ??unavailable message appears. PASS
+  3. No Repo Docs ??Repo Docs Off. PASS
 
 **Validation results:**
-- `npm test -- workspace-shell.test.tsx` (frontend) — PASS (629/629)
-- `npx tsc --noEmit` (frontend) — PASS (0 errors)
-- `npm run build` (frontend) — PASS (compiled successfully, all routes generated)
-- `ReadLints` on touched files — PASS (no linter errors)
-- Live browser smoke — PASS (all 4 scenarios confirmed)
+- `npm test -- workspace-shell.test.tsx` (frontend) ??PASS (629/629)
+- `npx tsc --noEmit` (frontend) ??PASS (0 errors)
+- `npm run build` (frontend) ??PASS (compiled successfully, all routes generated)
+- `ReadLints` on touched files ??PASS (no linter errors)
+- Live browser smoke ??PASS (all 4 scenarios confirmed)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-CONTEXT-05A.
 **Checkpoint:** `docs/AI-CONTEXT-05A-CHECKPOINT.md`
@@ -18077,22 +18077,22 @@ Create a final regression matrix and add targeted tests/checks where practical t
 - [x] AI-CONTEXT-06A is COMPLETE and LOCKED.
 
 **Validation results:**
-- `npm test -- workspace-shell.test.tsx` (frontend) — PASS (630/630, 0 failed)
-- ReadLints on `docs/AI-CONTEXT-REGRESSION-MATRIX.md` — PASS (no linter errors)
-- ReadLints on `frontend/components/workspace/workspace-shell.test.tsx` — PASS (no linter errors)
-- Browser smoke: not required — no runtime behavior changed.
+- `npm test -- workspace-shell.test.tsx` (frontend) ??PASS (630/630, 0 failed)
+- ReadLints on `docs/AI-CONTEXT-REGRESSION-MATRIX.md` ??PASS (no linter errors)
+- ReadLints on `frontend/components/workspace/workspace-shell.test.tsx` ??PASS (no linter errors)
+- Browser smoke: not required ??no runtime behavior changed.
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AI-CONTEXT-06A.
 **Checkpoint:** `docs/AI-CONTEXT-06A-CHECKPOINT.md`
 
 ---
 
-**Family status:** COMPLETE and LOCKED — DEVOPS-DOCKER-01 COMPLETE and LOCKED
+**Family status:** COMPLETE and LOCKED ??DEVOPS-DOCKER-01 COMPLETE and LOCKED
 
-**Current stage:** DEVOPS-DOCKER-01 COMPLETE and LOCKED — `docs/DEVOPS-DOCKER-01-CHECKPOINT.md`
+**Current stage:** DEVOPS-DOCKER-01 COMPLETE and LOCKED ??`docs/DEVOPS-DOCKER-01-CHECKPOINT.md`
 
 **Registered tasks:**
-1. DEVOPS-DOCKER-01 — Fix ai-service Docker native dependency build (COMPLETE and LOCKED — `docs/DEVOPS-DOCKER-01-CHECKPOINT.md`)
+1. DEVOPS-DOCKER-01 ??Fix ai-service Docker native dependency build (COMPLETE and LOCKED ??`docs/DEVOPS-DOCKER-01-CHECKPOINT.md`)
 
 ---
 
@@ -18135,21 +18135,21 @@ Keep the existing `node:20-alpine` image strategy and make `ai-service` Docker b
 - [x] No unrelated files changed
 
 **Validation:**
-- `docker compose --progress=plain -f docker-compose.prod.yml build ai-service --no-cache` — PASS (`aisandbox2026b-ai-service Built`; both `npm install` stages succeeded; `tsc` build succeeded)
+- `docker compose --progress=plain -f docker-compose.prod.yml build ai-service --no-cache` ??PASS (`aisandbox2026b-ai-service Built`; both `npm install` stages succeeded; `tsc` build succeeded)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> DEVOPS-DOCKER-01.
 **Checkpoint:** `docs/DEVOPS-DOCKER-01-CHECKPOINT.md`
 
 ---
 
-**Family status:** COMPLETE and LOCKED — All registered PREVIEW family slices complete
+**Family status:** COMPLETE and LOCKED ??All registered PREVIEW family slices complete
 
-**Current stage:** PREVIEW family closed — PREVIEW-STATIC-01B COMPLETE and LOCKED
+**Current stage:** PREVIEW family closed ??PREVIEW-STATIC-01B COMPLETE and LOCKED
 
 **Registered tasks:**
-1. PREVIEW-STRATEGY-01A — Preview Strategy Detection Refactor (COMPLETE and LOCKED — `docs/PREVIEW-STRATEGY-01A-CHECKPOINT.md`)
-2. PREVIEW-STATIC-01B — Static Preview Subdirectory Proxy Routing (COMPLETE and LOCKED — `docs/PREVIEW-STATIC-01B-CHECKPOINT.md`)
-3. PREVIEW-AUTOSTART-01A — Restart Preview After AI File Creation (COMPLETE and LOCKED — `docs/PREVIEW-AUTOSTART-01A-CHECKPOINT.md`)
+1. PREVIEW-STRATEGY-01A ??Preview Strategy Detection Refactor (COMPLETE and LOCKED ??`docs/PREVIEW-STRATEGY-01A-CHECKPOINT.md`)
+2. PREVIEW-STATIC-01B ??Static Preview Subdirectory Proxy Routing (COMPLETE and LOCKED ??`docs/PREVIEW-STATIC-01B-CHECKPOINT.md`)
+3. PREVIEW-AUTOSTART-01A ??Restart Preview After AI File Creation (COMPLETE and LOCKED ??`docs/PREVIEW-AUTOSTART-01A-CHECKPOINT.md`)
 
 ---
 
@@ -18237,18 +18237,18 @@ This task does not touch UX/UI. If any user-facing frontend text change becomes 
 
 **Files changed:**
 - `services/container-manager/src/preview/preview-strategy.resolver.ts` (created)
-- `services/container-manager/src/preview/preview-strategy.resolver.spec.ts` (created — 10 resolver tests)
-- `services/container-manager/src/preview/preview.service.ts` (modified — resolver integration, appRoot)
-- `services/container-manager/src/preview/preview.service.spec.ts` (modified — resolver mock)
-- `services/container-manager/src/preview/preview.module.ts` (modified — resolver provider)
-- `services/container-manager/Dockerfile` (modified — Alpine python3/make/g++ for better-sqlite3 Docker build blocker)
+- `services/container-manager/src/preview/preview-strategy.resolver.spec.ts` (created ??10 resolver tests)
+- `services/container-manager/src/preview/preview.service.ts` (modified ??resolver integration, appRoot)
+- `services/container-manager/src/preview/preview.service.spec.ts` (modified ??resolver mock)
+- `services/container-manager/src/preview/preview.module.ts` (modified ??resolver provider)
+- `services/container-manager/Dockerfile` (modified ??Alpine python3/make/g++ for better-sqlite3 Docker build blocker)
 
 **Validation results:**
-- `npm test -- --testPathPattern="preview"` (container-manager) — PASS (48/48, 0 failed)
-- `npm run build` (container-manager) — PASS (0 errors)
-- `docker compose -f docker-compose.prod.yml build container-manager --no-cache --progress=plain` — PASS (`aisandbox2026b-container-manager Built`)
-- ReadLints on all touched files — PASS (no linter errors)
-- Live browser smoke — PASS (subdirectory static HTML site loaded and navigated correctly)
+- `npm test -- --testPathPattern="preview"` (container-manager) ??PASS (48/48, 0 failed)
+- `npm run build` (container-manager) ??PASS (0 errors)
+- `docker compose -f docker-compose.prod.yml build container-manager --no-cache --progress=plain` ??PASS (`aisandbox2026b-container-manager Built`)
+- ReadLints on all touched files ??PASS (no linter errors)
+- Live browser smoke ??PASS (subdirectory static HTML site loaded and navigated correctly)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> PREVIEW-STRATEGY-01A.
 **Checkpoint:** `docs/PREVIEW-STRATEGY-01A-CHECKPOINT.md`
@@ -18326,16 +18326,16 @@ This task should not touch UX/UI. If any user-facing frontend text change become
 - [x] Live browser smoke passes (4-page static HTML site in subdirectory with linked CSS/JS)
 
 **Files changed:**
-- `services/container-manager/src/preview/preview.service.spec.ts` (modified — added 11 targeted static preview routing tests)
+- `services/container-manager/src/preview/preview.service.spec.ts` (modified ??added 11 targeted static preview routing tests)
 
 **Implementation note:**
 Investigation confirmed PREVIEW-STRATEGY-01A already implemented correct runtime subdirectory `appRoot` routing. PREVIEW-STATIC-01B added test coverage only. Initial live smoke failures were resolved by PREVIEW-AUTOSTART-01A (frontend lifecycle fix), not by additional static routing code.
 
 **Validation results:**
-- `npm test -- --testPathPattern="preview"` (container-manager) — PASS (59/59)
-- `npm run build` (container-manager) — PASS
-- ReadLints on touched files — PASS (no linter errors)
-- Live browser smoke — PASS (after PREVIEW-AUTOSTART-01A; auto-start, index/JS/navigation worked without Refresh)
+- `npm test -- --testPathPattern="preview"` (container-manager) ??PASS (59/59)
+- `npm run build` (container-manager) ??PASS
+- ReadLints on touched files ??PASS (no linter errors)
+- Live browser smoke ??PASS (after PREVIEW-AUTOSTART-01A; auto-start, index/JS/navigation worked without Refresh)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> PREVIEW-STATIC-01B.
 **Checkpoint:** `docs/PREVIEW-STATIC-01B-CHECKPOINT.md`
@@ -18408,19 +18408,19 @@ This task should not add visible user-facing text. If visible text must change, 
 - [x] Live browser smoke passes (AI creates static HTML site; preview loads automatically without manual Start Preview)
 
 **Files changed:**
-- `frontend/app/[locale]/app/page.tsx` (modified — auto-start, file-action preservation, bounded status polling after failed start, diagnostic log removal)
-- `frontend/components/workspace/workspace-shell.test.tsx` (modified — source-assertion tests for polling recovery and diagnostic removal)
-- `services/container-manager/src/preview/preview.service.ts` (investigation only — temporary diagnostic logs added then removed; no final runtime behavior change)
-- `services/api-gateway/src/preview/preview.controller.ts` (investigation only — temporary diagnostic logs added then removed; no final runtime behavior change)
+- `frontend/app/[locale]/app/page.tsx` (modified ??auto-start, file-action preservation, bounded status polling after failed start, diagnostic log removal)
+- `frontend/components/workspace/workspace-shell.test.tsx` (modified ??source-assertion tests for polling recovery and diagnostic removal)
+- `services/container-manager/src/preview/preview.service.ts` (investigation only ??temporary diagnostic logs added then removed; no final runtime behavior change)
+- `services/api-gateway/src/preview/preview.controller.ts` (investigation only ??temporary diagnostic logs added then removed; no final runtime behavior change)
 
 **Validation results:**
-- `npx tsc --noEmit` (frontend) — PASS
-- `npm test -- --testPathPattern="workspace-shell"` (frontend) — PASS (637/637)
-- `npm run build` (frontend) — PASS
-- `npm run build` (container-manager) — PASS
-- `npm run build` (api-gateway) — PASS
-- ReadLints on touched files — PASS (no linter errors)
-- Live browser smoke — PASS (auto-start after Apply without Refresh; index/JS/navigation worked)
+- `npx tsc --noEmit` (frontend) ??PASS
+- `npm test -- --testPathPattern="workspace-shell"` (frontend) ??PASS (637/637)
+- `npm run build` (frontend) ??PASS
+- `npm run build` (container-manager) ??PASS
+- `npm run build` (api-gateway) ??PASS
+- ReadLints on touched files ??PASS (no linter errors)
+- Live browser smoke ??PASS (auto-start after Apply without Refresh; index/JS/navigation worked)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> PREVIEW-AUTOSTART-01A.
 **Checkpoint:** `docs/PREVIEW-AUTOSTART-01A-CHECKPOINT.md`
@@ -18429,14 +18429,14 @@ This task should not add visible user-facing text. If visible text must change, 
 
 ## APP ROUTING / WORKSPACE STATE / SESSION RESTORE
 
-**Family status:** COMPLETE and LOCKED — APP-ROUTE-RESTORE-01A COMPLETE and LOCKED
+**Family status:** COMPLETE and LOCKED ??APP-ROUTE-RESTORE-01A COMPLETE and LOCKED
 
-**Current stage:** APP-ROUTE-RESTORE-01A COMPLETE and LOCKED — `docs/APP-ROUTE-RESTORE-01A-CHECKPOINT.md`
+**Current stage:** APP-ROUTE-RESTORE-01A COMPLETE and LOCKED ??`docs/APP-ROUTE-RESTORE-01A-CHECKPOINT.md`
 
 **Registered tasks:**
-1. APP-ROUTE-RESTORE-01A — Preserve Workspace Route/Session After Browser Reload (COMPLETE and LOCKED — `docs/APP-ROUTE-RESTORE-01A-CHECKPOINT.md`)
+1. APP-ROUTE-RESTORE-01A ??Preserve Workspace Route/Session After Browser Reload (COMPLETE and LOCKED ??`docs/APP-ROUTE-RESTORE-01A-CHECKPOINT.md`)
 
-**Discovery source:** PREVIEW-STATIC-01B and PREVIEW-AUTOSTART-01A live browser smoke — browser refresh inside a project returned to Home instead of restoring workspace/project/session context.
+**Discovery source:** PREVIEW-STATIC-01B and PREVIEW-AUTOSTART-01A live browser smoke ??browser refresh inside a project returned to Home instead of restoring workspace/project/session context.
 
 ---
 
@@ -18448,7 +18448,7 @@ This task should not add visible user-facing text. If visible text must change, 
 **Priority:** High
 **Nature:** FRONTEND / ROUTING / WORKSPACE SESSION RESTORATION
 **Risk:** Medium
-**Depends on:** PREVIEW-AUTOSTART-01A (COMPLETE and LOCKED) — issue discovered during PREVIEW live smoke
+**Depends on:** PREVIEW-AUTOSTART-01A (COMPLETE and LOCKED) ??issue discovered during PREVIEW live smoke
 **Checkpoint:** `docs/APP-ROUTE-RESTORE-01A-CHECKPOINT.md`
 
 **Problem:**
@@ -18529,15 +18529,15 @@ If icons are needed, use Heroicons v2 Outline only: `@heroicons/react/24/outline
   4. Confirm preview and chat area still behave normally after reload.
 
 **Files changed:**
-- `frontend/app/[locale]/app/page.tsx` (modified — added `TAB_SELECTED_VIEW_STORAGE_KEY`, `coldMountSeededViewRef`, cold-mount read, `workspaceView` persistence effect, guarded cold-mount restore effect)
-- `frontend/components/workspace/workspace-shell.test.tsx` (modified — added 3 source-assertion tests for APP-ROUTE-RESTORE-01A wiring)
+- `frontend/app/[locale]/app/page.tsx` (modified ??added `TAB_SELECTED_VIEW_STORAGE_KEY`, `coldMountSeededViewRef`, cold-mount read, `workspaceView` persistence effect, guarded cold-mount restore effect)
+- `frontend/components/workspace/workspace-shell.test.tsx` (modified ??added 3 source-assertion tests for APP-ROUTE-RESTORE-01A wiring)
 
 **Validation results:**
-- `npm test -- --testPathPattern="workspace-shell"` (frontend) — PASS (640/640, 0 failed)
-- `npx tsc --noEmit` (frontend) — PASS
-- `npm run build` (frontend) — PASS
-- ReadLints on touched files — PASS (no linter errors)
-- Live browser smoke — PASS (browser refresh inside project restored project view; same project/session/editor/preview; no errors)
+- `npm test -- --testPathPattern="workspace-shell"` (frontend) ??PASS (640/640, 0 failed)
+- `npx tsc --noEmit` (frontend) ??PASS
+- `npm run build` (frontend) ??PASS
+- ReadLints on touched files ??PASS (no linter errors)
+- Live browser smoke ??PASS (browser refresh inside project restored project view; same project/session/editor/preview; no errors)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> APP-ROUTE-RESTORE-01A.
 **Checkpoint:** `docs/APP-ROUTE-RESTORE-01A-CHECKPOINT.md`
@@ -18546,20 +18546,20 @@ If icons are needed, use Heroicons v2 Outline only: `@heroicons/react/24/outline
 
 ## AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
 
-**Family status:** ACTIVE — AGENT-HARNESS-00 COMPLETE and LOCKED; AGENT-HARNESS-01A COMPLETE and LOCKED; AGENT-HARNESS-01B COMPLETE and LOCKED; AGENT-HARNESS-01C COMPLETE and LOCKED
+**Family status:** ACTIVE ??AGENT-HARNESS-00 COMPLETE and LOCKED; AGENT-HARNESS-01A COMPLETE and LOCKED; AGENT-HARNESS-01B COMPLETE and LOCKED; AGENT-HARNESS-01C COMPLETE and LOCKED
 
-**Current stage:** AGENT-HARNESS-01C COMPLETE and LOCKED — typed model profile registry foundation shipped; next step is AGENT-HARNESS-01D registration
+**Current stage:** AGENT-HARNESS-01C COMPLETE and LOCKED ??typed model profile registry foundation shipped; next step is AGENT-HARNESS-01D registration
 
 **Registered tasks:**
-1. AGENT-HARNESS-00 — Agent Harness v1 Master Plan (COMPLETE and LOCKED)
-2. AGENT-HARNESS-01A — Per-Request Model Selection Fix (COMPLETE and LOCKED)
-3. AGENT-HARNESS-01B — Agent Harness v1 Contracts + Config Shape (COMPLETE and LOCKED)
-4. AGENT-HARNESS-01C — Model Profile Registry (COMPLETE and LOCKED)
+1. AGENT-HARNESS-00 ??Agent Harness v1 Master Plan (COMPLETE and LOCKED)
+2. AGENT-HARNESS-01A ??Per-Request Model Selection Fix (COMPLETE and LOCKED)
+3. AGENT-HARNESS-01B ??Agent Harness v1 Contracts + Config Shape (COMPLETE and LOCKED)
+4. AGENT-HARNESS-01C ??Model Profile Registry (COMPLETE and LOCKED)
 
 **Completed foundations (prerequisites):**
-- AI-CONTEXT family COMPLETE and LOCKED — global/project AI instructions, repo docs registry, repo docs prompt injection, context indicator, regression matrix
-- PREVIEW family COMPLETE and LOCKED — static preview strategy detection, static subdirectory routing coverage, preview auto-start after Apply
-- APP ROUTING / WORKSPACE STATE / SESSION RESTORE COMPLETE and LOCKED — browser refresh restores project/workspace/session instead of returning Home
+- AI-CONTEXT family COMPLETE and LOCKED ??global/project AI instructions, repo docs registry, repo docs prompt injection, context indicator, regression matrix
+- PREVIEW family COMPLETE and LOCKED ??static preview strategy detection, static subdirectory routing coverage, preview auto-start after Apply
+- APP ROUTING / WORKSPACE STATE / SESSION RESTORE COMPLETE and LOCKED ??browser refresh restores project/workspace/session instead of returning Home
 
 ---
 
@@ -18573,7 +18573,7 @@ If icons are needed, use Heroicons v2 Outline only: `@heroicons/react/24/outline
 **Risk:** Medium-high
 
 **Problem:**
-aiSandbox has important foundations now: AI-CONTEXT, static preview, preview auto-start, and project route restore. But to feel close to Cursor, it needs a professional agent harness: understand repo → plan → edit safely → run tests → fix → show diff → checkpoint.
+aiSandbox has important foundations now: AI-CONTEXT, static preview, preview auto-start, and project route restore. But to feel close to Cursor, it needs a professional agent harness: understand repo ??plan ??edit safely ??run tests ??fix ??show diff ??checkpoint.
 
 **Objective:**
 Design the Agent Harness v1 architecture and split it into safe, bounded implementation slices. The planning pass will produce `docs/AGENT-HARNESS-V1-MASTER-PLAN.md` covering:
@@ -18594,14 +18594,14 @@ Design the Agent Harness v1 architecture and split it into safe, bounded impleme
 - Note that large/risky child slices should be split smaller before implementation.
 - Note that future UX/UI slices must follow multilingual-first and UX/UI advisory-skill governance.
 
-**Candidate child slices (not yet registered — pending planning pass):**
-1. AGENT-HARNESS-01 — Tool protocol and model adapter layer
-2. AGENT-HARNESS-02 — Repo indexing and semantic/code search
-3. AGENT-HARNESS-03 — Patch/apply engine with checkpoint rollback
-4. AGENT-HARNESS-04 — Validation runner
-5. AGENT-HARNESS-05 — Browser smoke tool
-6. AGENT-HARNESS-06 — Plan/review UI
-7. AGENT-HARNESS-07 — Continuous evals
+**Candidate child slices (not yet registered ??pending planning pass):**
+1. AGENT-HARNESS-01 ??Tool protocol and model adapter layer
+2. AGENT-HARNESS-02 ??Repo indexing and semantic/code search
+3. AGENT-HARNESS-03 ??Patch/apply engine with checkpoint rollback
+4. AGENT-HARNESS-04 ??Validation runner
+5. AGENT-HARNESS-05 ??Browser smoke tool
+6. AGENT-HARNESS-06 ??Plan/review UI
+7. AGENT-HARNESS-07 ??Continuous evals
 
 Large or risky child slices must be split into smaller bounded sub-slices before implementation.
 
@@ -18676,12 +18676,12 @@ The Agent Harness investigation found that frontend and API Gateway accept a per
 Wire per-request model selection through the existing AI execution path so the requested model is passed from the queued job into AIExecutionService and then into the selected provider adapter execution call.
 
 **Implementation path:**
-`frontend/API request model field` → `API Gateway execution job` → `BullMQ job payload` → `ai-service WorkerProcessor` → `AIExecutionService.execute()` → `provider adapter execute() call`
+`frontend/API request model field` ??`API Gateway execution job` ??`BullMQ job payload` ??`ai-service WorkerProcessor` ??`AIExecutionService.execute()` ??`provider adapter execute() call`
 
 **Scope:**
 - Wire the requested model field from BullMQ job payload through WorkerProcessor into AIExecutionService.
 - Pass the requested model from AIExecutionService into the selected provider adapter execute() call.
-- Preserve the existing provider adapter pattern — adapters retain their constructor default as fallback.
+- Preserve the existing provider adapter pattern ??adapters retain their constructor default as fallback.
 - Preserve current prompt assembly behavior.
 - Preserve current file-action parsing behavior.
 - Preserve current queue/SSE/status behavior.
@@ -18769,9 +18769,9 @@ Wire per-request model selection through the existing AI execution path so the r
 - `services/ai-service/src/ai-execution/adapters/__tests__/anthropic-ai.adapter.spec.ts` (added model routing tests)
 
 **Validation results:**
-- `npm test` (focused specs) — PASS (7 suites, 207 tests)
-- `npm run build` — PASS (tsc clean)
-- ReadLints on touched files — PASS (no linter errors)
+- `npm test` (focused specs) ??PASS (7 suites, 207 tests)
+- `npm run build` ??PASS (tsc clean)
+- ReadLints on touched files ??PASS (no linter errors)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-01A.
 **Checkpoint:** `docs/AGENT-HARNESS-01A-CHECKPOINT.md`
@@ -18927,16 +18927,16 @@ The future implementation must:
 - [x] (Implementation) ai-service build passes (tsc clean)
 
 **Files changed:**
-- `services/ai-service/src/agent-harness/contracts/agent-harness.contracts.ts` (new — all v1 contract types/interfaces)
-- `services/ai-service/src/agent-harness/config/agent-harness.config.ts` (new — DEFAULT_AGENT_HARNESS_CONFIG_V1)
-- `services/ai-service/src/agent-harness/index.ts` (new — stable barrel export)
-- `services/ai-service/src/agent-harness/contracts/agent-harness.contracts.spec.ts` (new — v1 export and shape tests)
-- `services/ai-service/src/agent-harness/config/agent-harness.config.spec.ts` (new — conservative defaults tests)
+- `services/ai-service/src/agent-harness/contracts/agent-harness.contracts.ts` (new ??all v1 contract types/interfaces)
+- `services/ai-service/src/agent-harness/config/agent-harness.config.ts` (new ??DEFAULT_AGENT_HARNESS_CONFIG_V1)
+- `services/ai-service/src/agent-harness/index.ts` (new ??stable barrel export)
+- `services/ai-service/src/agent-harness/contracts/agent-harness.contracts.spec.ts` (new ??v1 export and shape tests)
+- `services/ai-service/src/agent-harness/config/agent-harness.config.spec.ts` (new ??conservative defaults tests)
 
 **Validation results:**
-- `npm test` (focused agent-harness specs) — PASS (2 suites, 6 tests)
-- `npm run build` — PASS (tsc clean)
-- IDE diagnostics on `src/agent-harness/` — PASS (no linter errors)
+- `npm test` (focused agent-harness specs) ??PASS (2 suites, 6 tests)
+- `npm run build` ??PASS (tsc clean)
+- IDE diagnostics on `src/agent-harness/` ??PASS (no linter errors)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-01B.
 **Checkpoint:** `docs/AGENT-HARNESS-01B-CHECKPOINT.md`
@@ -19085,15 +19085,15 @@ The implementation must:
 - [x] (Implementation) ai-service build passes (tsc clean)
 
 **Files changed:**
-- `services/ai-service/src/agent-harness/model-profiles/model-profile.contracts.ts` (new — typed v1 model profile contracts)
-- `services/ai-service/src/agent-harness/model-profiles/model-profile.registry.ts` (new — centralized registry data, map, and pure helpers)
-- `services/ai-service/src/agent-harness/model-profiles/model-profile.registry.spec.ts` (new — 9 focused registry tests)
-- `services/ai-service/src/agent-harness/index.ts` (updated — added model-profiles barrel exports)
+- `services/ai-service/src/agent-harness/model-profiles/model-profile.contracts.ts` (new ??typed v1 model profile contracts)
+- `services/ai-service/src/agent-harness/model-profiles/model-profile.registry.ts` (new ??centralized registry data, map, and pure helpers)
+- `services/ai-service/src/agent-harness/model-profiles/model-profile.registry.spec.ts` (new ??9 focused registry tests)
+- `services/ai-service/src/agent-harness/index.ts` (updated ??added model-profiles barrel exports)
 
 **Validation results:**
-- `npm test -- src/agent-harness/model-profiles/model-profile.registry.spec.ts` — PASS (1 suite, 9 tests)
-- `npm run build` — PASS (tsc clean)
-- IDE diagnostics on `src/agent-harness/` — PASS (no linter errors)
+- `npm test -- src/agent-harness/model-profiles/model-profile.registry.spec.ts` ??PASS (1 suite, 9 tests)
+- `npm run build` ??PASS (tsc clean)
+- IDE diagnostics on `src/agent-harness/` ??PASS (no linter errors)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-01C.
 **Checkpoint:** `docs/AGENT-HARNESS-01C-CHECKPOINT.md`
@@ -19259,14 +19259,14 @@ The implementation must:
 - [x] (Implementation) ai-service build passes (tsc clean)
 
 **Files changed:**
-- `services/ai-service/src/agent-harness/tools/tool-registry.contracts.ts` (new — all v1 tool registry typed contracts)
-- `services/ai-service/src/agent-harness/tools/tool-registry.ts` (new — centralized registry data, map, and pure helpers)
-- `services/ai-service/src/agent-harness/tools/tool-registry.spec.ts` (new — 10 focused registry tests)
-- `services/ai-service/src/agent-harness/index.ts` (updated — added tools barrel exports)
+- `services/ai-service/src/agent-harness/tools/tool-registry.contracts.ts` (new ??all v1 tool registry typed contracts)
+- `services/ai-service/src/agent-harness/tools/tool-registry.ts` (new ??centralized registry data, map, and pure helpers)
+- `services/ai-service/src/agent-harness/tools/tool-registry.spec.ts` (new ??10 focused registry tests)
+- `services/ai-service/src/agent-harness/index.ts` (updated ??added tools barrel exports)
 
 **Validation results:**
-- `npm test -- src/agent-harness/tools/tool-registry.spec.ts` — PASS (1 suite, 10 tests)
-- `npm run build` — PASS (tsc clean)
+- `npm test -- src/agent-harness/tools/tool-registry.spec.ts` ??PASS (1 suite, 10 tests)
+- `npm run build` ??PASS (tsc clean)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-01D.
 **Checkpoint:** `docs/AGENT-HARNESS-01D-CHECKPOINT.md`
@@ -19428,15 +19428,15 @@ The implementation must:
 - [x] (Implementation) ai-service build passes (tsc clean)
 
 **Files changed:**
-- `services/ai-service/src/agent-harness/prompts/prompt-template.contracts.ts` (new — all v1 prompt template typed contracts)
-- `services/ai-service/src/agent-harness/prompts/prompt-template.registry.ts` (new — centralized registry data, map, and pure helpers)
-- `services/ai-service/src/agent-harness/prompts/prompt-template.registry.spec.ts` (new — 10 focused registry tests)
-- `services/ai-service/src/agent-harness/index.ts` (updated — added prompts barrel exports)
+- `services/ai-service/src/agent-harness/prompts/prompt-template.contracts.ts` (new ??all v1 prompt template typed contracts)
+- `services/ai-service/src/agent-harness/prompts/prompt-template.registry.ts` (new ??centralized registry data, map, and pure helpers)
+- `services/ai-service/src/agent-harness/prompts/prompt-template.registry.spec.ts` (new ??10 focused registry tests)
+- `services/ai-service/src/agent-harness/index.ts` (updated ??added prompts barrel exports)
 
 **Validation results:**
-- `npm test -- src/agent-harness/prompts/prompt-template.registry.spec.ts` — PASS (1 suite, 10 tests)
-- `npm run build` — PASS (tsc clean)
-- ReadLints on `src/agent-harness/prompts/` and `src/agent-harness/index.ts` — PASS (no linter errors)
+- `npm test -- src/agent-harness/prompts/prompt-template.registry.spec.ts` ??PASS (1 suite, 10 tests)
+- `npm run build` ??PASS (tsc clean)
+- ReadLints on `src/agent-harness/prompts/` and `src/agent-harness/index.ts` ??PASS (no linter errors)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-01E.
 **Checkpoint:** `docs/AGENT-HARNESS-01E-CHECKPOINT.md`
@@ -19550,22 +19550,22 @@ Exact file paths must be confirmed by inspecting the repo before editing.
 - [x] (Implementation) ai-service build passes (tsc clean)
 
 **Files changed:**
-- `services/ai-service/src/ai-execution/adapters/adapter-tool-use.contracts.ts` (new — all v1 adapter tool-use typed contracts)
-- `services/ai-service/src/ai-execution/adapters/adapter-tool-use.mapper.ts` (new — pure mapping utilities for Anthropic/OpenAI tool declarations and safe argument parsing)
-- `services/ai-service/src/ai-execution/adapters/ai-adapter.interface.ts` (updated — added supportsToolUse? and optional executeWithTools())
-- `services/ai-service/src/ai-execution/adapters/anthropic-ai.adapter.ts` (updated — supportsToolUse, executeWithTools, inert tool_use parsing)
-- `services/ai-service/src/ai-execution/adapters/openai-ai.adapter.ts` (updated — supportsToolUse, executeWithTools, inert tool_calls/function_call parsing)
-- `services/ai-service/src/ai-execution/adapters/stub-ai.adapter.ts` (updated — supportsToolUse = false, deterministic inert executeWithTools)
-- `services/ai-service/src/ai-execution/adapters/index.ts` (updated — barrel exports for new contracts and mapper)
-- `services/ai-service/src/ai-execution/adapters/__tests__/adapter-tool-use.mapper.spec.ts` (new — 5 focused mapping tests)
-- `services/ai-service/src/ai-execution/adapters/__tests__/stub-ai.adapter.spec.ts` (new — 2 stub tool-use tests)
-- `services/ai-service/src/ai-execution/adapters/__tests__/anthropic-ai.adapter.spec.ts` (updated — 3 new executeWithTools tests added)
-- `services/ai-service/src/ai-execution/adapters/__tests__/openai-ai.adapter.spec.ts` (updated — 4 new executeWithTools tests added)
+- `services/ai-service/src/ai-execution/adapters/adapter-tool-use.contracts.ts` (new ??all v1 adapter tool-use typed contracts)
+- `services/ai-service/src/ai-execution/adapters/adapter-tool-use.mapper.ts` (new ??pure mapping utilities for Anthropic/OpenAI tool declarations and safe argument parsing)
+- `services/ai-service/src/ai-execution/adapters/ai-adapter.interface.ts` (updated ??added supportsToolUse? and optional executeWithTools())
+- `services/ai-service/src/ai-execution/adapters/anthropic-ai.adapter.ts` (updated ??supportsToolUse, executeWithTools, inert tool_use parsing)
+- `services/ai-service/src/ai-execution/adapters/openai-ai.adapter.ts` (updated ??supportsToolUse, executeWithTools, inert tool_calls/function_call parsing)
+- `services/ai-service/src/ai-execution/adapters/stub-ai.adapter.ts` (updated ??supportsToolUse = false, deterministic inert executeWithTools)
+- `services/ai-service/src/ai-execution/adapters/index.ts` (updated ??barrel exports for new contracts and mapper)
+- `services/ai-service/src/ai-execution/adapters/__tests__/adapter-tool-use.mapper.spec.ts` (new ??5 focused mapping tests)
+- `services/ai-service/src/ai-execution/adapters/__tests__/stub-ai.adapter.spec.ts` (new ??2 stub tool-use tests)
+- `services/ai-service/src/ai-execution/adapters/__tests__/anthropic-ai.adapter.spec.ts` (updated ??3 new executeWithTools tests added)
+- `services/ai-service/src/ai-execution/adapters/__tests__/openai-ai.adapter.spec.ts` (updated ??4 new executeWithTools tests added)
 
 **Validation results:**
-- `npm test` (focused adapter specs) — PASS (4 suites, 82 tests)
-- `npm run build` — PASS (tsc clean)
-- ReadLints on touched adapter files/tests — PASS (no linter errors)
+- `npm test` (focused adapter specs) ??PASS (4 suites, 82 tests)
+- `npm run build` ??PASS (tsc clean)
+- ReadLints on touched adapter files/tests ??PASS (no linter errors)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-02A.
 **Checkpoint:** `docs/AGENT-HARNESS-02A-CHECKPOINT.md`
@@ -19704,18 +19704,18 @@ Before implementation, inspect at minimum:
 - [x] (Implementation) ai-service build/typecheck passes
 
 **Files changed:**
-- `services/ai-service/src/agent-harness/orchestrator/agent-harness-loop.ts` (new — bounded multi-turn loop helper and exported types)
-- `services/ai-service/src/agent-harness/orchestrator/agent-harness-loop.spec.ts` (new — 12 focused loop tests)
-- `services/ai-service/src/agent-harness/index.ts` (updated — barrel export for orchestrator module)
-- `services/ai-service/src/queue/job.types.ts` (updated — optional `harnessVersion?: string` added to AiExecutionJob)
-- `services/ai-service/src/worker/worker.processor.ts` (updated — 2 imports and ~20-line double-gated harness branch)
-- `services/ai-service/src/worker/worker.processor.spec.ts` (updated — 5 new tests; 22 existing tests preserved)
-- `services/ai-service/src/ai-execution/ai-execution.service.ts` (updated — getAdapter() visibility from private to public, one-word change)
+- `services/ai-service/src/agent-harness/orchestrator/agent-harness-loop.ts` (new ??bounded multi-turn loop helper and exported types)
+- `services/ai-service/src/agent-harness/orchestrator/agent-harness-loop.spec.ts` (new ??12 focused loop tests)
+- `services/ai-service/src/agent-harness/index.ts` (updated ??barrel export for orchestrator module)
+- `services/ai-service/src/queue/job.types.ts` (updated ??optional `harnessVersion?: string` added to AiExecutionJob)
+- `services/ai-service/src/worker/worker.processor.ts` (updated ??2 imports and ~20-line double-gated harness branch)
+- `services/ai-service/src/worker/worker.processor.spec.ts` (updated ??5 new tests; 22 existing tests preserved)
+- `services/ai-service/src/ai-execution/ai-execution.service.ts` (updated ??getAdapter() visibility from private to public, one-word change)
 
 **Validation results:**
-- `npm test` (focused specs) — PASS (2 suites, 34 tests)
-- `npm run build` — PASS (tsc clean)
-- ReadLints on all 7 touched files — PASS (no linter errors)
+- `npm test` (focused specs) ??PASS (2 suites, 34 tests)
+- `npm run build` ??PASS (tsc clean)
+- ReadLints on all 7 touched files ??PASS (no linter errors)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-02B.
 **Checkpoint:** `docs/AGENT-HARNESS-02B-CHECKPOINT.md`
@@ -19851,9 +19851,9 @@ Add a ToolDispatcher foundation and multi-turn loop result feeding for Agent Har
 - [x] No implementation performed (registration step)
 
 **Validation results:**
-- `npx jest --no-cache` (focused 3 specs) — PASS (3 suites, 53 tests)
-- `npm run build` — PASS (tsc clean)
-- ReadLints on all 7 touched files — PASS (no linter errors)
+- `npx jest --no-cache` (focused 3 specs) ??PASS (3 suites, 53 tests)
+- `npm run build` ??PASS (tsc clean)
+- ReadLints on all 7 touched files ??PASS (no linter errors)
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-02C.
 **Checkpoint:** `docs/AGENT-HARNESS-02C-CHECKPOINT.md`
@@ -19881,7 +19881,7 @@ Add a ToolDispatcher foundation and multi-turn loop result feeding for Agent Har
 - AGENT-HARNESS-02C COMPLETE and LOCKED
 
 **Problem:**
-Agent Harness now has adapter tool-use support, a double-gated Worker loop, and ToolDispatcher multi-turn result feeding. The next step is to implement the first safe real tools: `read_file` and `list_files`. A next-slice review found that ai-service must not access the filesystem directly and should use the existing service boundary: ai-service → API Gateway internal endpoint → container-manager → workspace.
+Agent Harness now has adapter tool-use support, a double-gated Worker loop, and ToolDispatcher multi-turn result feeding. The next step is to implement the first safe real tools: `read_file` and `list_files`. A next-slice review found that ai-service must not access the filesystem directly and should use the existing service boundary: ai-service ??API Gateway internal endpoint ??container-manager ??workspace.
 
 **Objective:**
 Register a bounded implementation slice for read-only Agent Harness file tools:
@@ -20001,25 +20001,25 @@ Exact files must be confirmed by inspection before implementation. Likely areas:
 - [x] No implementation performed (registration step)
 
 **Acceptance criteria (implementation):**
-- [x] Internal API Gateway workspace file endpoints added and tested (6 tests — PASS)
-- [x] `ApiGatewayHttpClient` read/list methods added and tested (5 tests — PASS)
-- [x] `read_file` and `list_files` tool handler factories implemented and tested (21 tests — PASS)
-- [x] Tool registry updated: `read_file` and `list_files` enabled/implemented (12 tests — PASS)
-- [x] WorkerProcessor registers only `read_file`/`list_files` in double-gated harness branch (32 tests — PASS)
-- [x] Dispatcher + loop tests preserved and passing (28 tests — PASS)
-- [x] ai-service `npm run build` — PASS (tsc clean)
-- [x] api-gateway `npm run build` — PASS (tsc clean)
-- [x] ReadLints on all touched source files — PASS (no linter errors)
+- [x] Internal API Gateway workspace file endpoints added and tested (6 tests ??PASS)
+- [x] `ApiGatewayHttpClient` read/list methods added and tested (5 tests ??PASS)
+- [x] `read_file` and `list_files` tool handler factories implemented and tested (21 tests ??PASS)
+- [x] Tool registry updated: `read_file` and `list_files` enabled/implemented (12 tests ??PASS)
+- [x] WorkerProcessor registers only `read_file`/`list_files` in double-gated harness branch (32 tests ??PASS)
+- [x] Dispatcher + loop tests preserved and passing (28 tests ??PASS)
+- [x] ai-service `npm run build` ??PASS (tsc clean)
+- [x] api-gateway `npm run build` ??PASS (tsc clean)
+- [x] ReadLints on all touched source files ??PASS (no linter errors)
 - [x] Path traversal rejected; read output bounded by maxFileReadBytes
 - [x] No write/delete/validation/browser tools implemented or registered
 - [x] All other tools remain disabled/unregistered
 - [x] No direct filesystem access from ai-service confirmed
-- [x] Architecture boundary confirmed: ai-service → API Gateway → container-manager
+- [x] Architecture boundary confirmed: ai-service ??API Gateway ??container-manager
 - [x] No frontend/UI/package/database changes
 - [x] No checkpoint created during implementation (checkpoint created in consolidation step only)
 - [x] Checkpoint document created: `docs/AGENT-HARNESS-03A-CHECKPOINT.md`
 
-**LOCKED — 2026-06-21. Do not edit.**
+**LOCKED ??2026-06-21. Do not edit.**
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-03A.
 
@@ -20047,7 +20047,7 @@ Exact files must be confirmed by inspection before implementation. Likely areas:
 - AGENT-HARNESS-03A COMPLETE and LOCKED
 
 **Problem:**
-AGENT-HARNESS-03A implemented the first real read-only Agent Harness tools through the registered architecture boundary: ai-service → API Gateway internal endpoint → container-manager → workspace. The next master-plan task is to add `write_file` and `delete_file` tools. These are high risk because they mutate workspace files and could bypass the existing frontend-owned file-action/checkpoint flow if implemented carelessly.
+AGENT-HARNESS-03A implemented the first real read-only Agent Harness tools through the registered architecture boundary: ai-service ??API Gateway internal endpoint ??container-manager ??workspace. The next master-plan task is to add `write_file` and `delete_file` tools. These are high risk because they mutate workspace files and could bypass the existing frontend-owned file-action/checkpoint flow if implemented carelessly.
 
 **Objective:**
 Register a bounded high-risk implementation slice for `write_file` and `delete_file` tools.
@@ -20056,7 +20056,7 @@ This slice must preserve the architecture boundary and must not bypass checkpoin
 
 **Scope:**
 - Add `write_file` and `delete_file` tool handlers in ai-service.
-- Use the same service boundary as 03A: ai-service → API Gateway internal endpoint → container-manager → workspace.
+- Use the same service boundary as 03A: ai-service ??API Gateway internal endpoint ??container-manager ??workspace.
 - Add API Gateway internal write/delete endpoints if needed.
 - Add ai-service `ApiGatewayHttpClient` write/delete methods.
 - Register only `write_file` and `delete_file` handlers in ToolDispatcher inside the double-gated harness path.
@@ -20094,7 +20094,7 @@ Exact files must be confirmed by review before implementation:
 
 **High-risk safety requirements:**
 - No direct filesystem access from ai-service.
-- No direct ai-service → container-manager mutation calls.
+- No direct ai-service ??container-manager mutation calls.
 - No arbitrary shell execution.
 - No validation command execution.
 - No browser automation.
@@ -20134,7 +20134,7 @@ Exact files must be confirmed by review before implementation:
   5. Write content is bounded.
   6. Upstream errors return typed safe errors.
   7. No direct filesystem access from ai-service.
-  8. No direct ai-service → container-manager mutation calls.
+  8. No direct ai-service ??container-manager mutation calls.
   9. Validation/browser/search/preview tools remain unregistered.
   10. Existing `read_file`/`list_files` tests remain passing.
   11. `enableToolLoop false` still prevents harness path.
@@ -20161,14 +20161,14 @@ Before implementation begins, a separate architecture/security review step must 
 - [x] Likely implementation areas documented and confirmed
 - [x] write_file and delete_file handlers implemented through API Gateway internal boundary
 - [x] Security/safety requirements enforced (path validation, traversal rejection, write bound, delete guards)
-- [x] Non-goals respected — no validation/browser/search/preview tools, no frontend/package/db changes
+- [x] Non-goals respected ??no validation/browser/search/preview tools, no frontend/package/db changes
 - [x] Validation passed: 135 tests across 8 spec files, both service builds clean, no linter errors
 - [x] No browser smoke required (backend-only, double gate prevents any live harness execution)
 - [x] No source/runtime/test/package files changed during consolidation step
 - [x] No checkpoint created before consolidation step
 - [x] Checkpoint document created: `docs/AGENT-HARNESS-03B-CHECKPOINT.md`
 
-**LOCKED — 2026-06-22. Do not edit.**
+**LOCKED ??2026-06-22. Do not edit.**
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-03B.
 
@@ -20183,17 +20183,17 @@ Before implementation begins, a separate architecture/security review step must 
 **Risk:** High
 
 **Depends on:**
-- AGENT-HARNESS-00 — COMPLETE and LOCKED
-- AGENT-HARNESS-01A — COMPLETE and LOCKED
-- AGENT-HARNESS-01B — COMPLETE and LOCKED
-- AGENT-HARNESS-01C — COMPLETE and LOCKED
-- AGENT-HARNESS-01D — COMPLETE and LOCKED
-- AGENT-HARNESS-01E — COMPLETE and LOCKED
-- AGENT-HARNESS-02A — COMPLETE and LOCKED
-- AGENT-HARNESS-02B — COMPLETE and LOCKED
-- AGENT-HARNESS-02C — COMPLETE and LOCKED
-- AGENT-HARNESS-03A — COMPLETE and LOCKED
-- AGENT-HARNESS-03B — COMPLETE and LOCKED
+- AGENT-HARNESS-00 ??COMPLETE and LOCKED
+- AGENT-HARNESS-01A ??COMPLETE and LOCKED
+- AGENT-HARNESS-01B ??COMPLETE and LOCKED
+- AGENT-HARNESS-01C ??COMPLETE and LOCKED
+- AGENT-HARNESS-01D ??COMPLETE and LOCKED
+- AGENT-HARNESS-01E ??COMPLETE and LOCKED
+- AGENT-HARNESS-02A ??COMPLETE and LOCKED
+- AGENT-HARNESS-02B ??COMPLETE and LOCKED
+- AGENT-HARNESS-02C ??COMPLETE and LOCKED
+- AGENT-HARNESS-03A ??COMPLETE and LOCKED
+- AGENT-HARNESS-03B ??COMPLETE and LOCKED
 
 **Problem:**
 AGENT-HARNESS-03B implemented mutating `write_file` and `delete_file` tools behind the double-gated Agent Harness path. These tools preserve the API Gateway boundary and remain gated, but they can mutate workspace files without the existing frontend-owned file-action apply and post-apply checkpoint flow. The master plan defines AGENT-HARNESS-03C as the safety slice to add pre-apply checkpoint and rollback protection before harness mutation tools are considered production-ready.
@@ -20229,7 +20229,7 @@ This slice must ensure `write_file` and `delete_file` tool mutations have a safe
 - `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\orchestrator\agent-harness-loop.ts`
 - `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\tools\handlers\file-tool-handlers.ts`
 - `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\worker\worker.processor.ts`
-- Existing frontend checkpoint creation/revert logic — for reference only
+- Existing frontend checkpoint creation/revert logic ??for reference only
 
 **Expected future behavior:**
 - Before the first `write_file`/`delete_file` mutation in a harness execution, create a checkpoint.
@@ -20245,7 +20245,7 @@ This slice must ensure `write_file` and `delete_file` tool mutations have a safe
 - No mutation before checkpoint succeeds.
 - No hidden bypass of checkpoint/revert safety for `write_file`/`delete_file`.
 - No direct filesystem access from ai-service.
-- No direct ai-service → container-manager mutation calls.
+- No direct ai-service ??container-manager mutation calls.
 - No shell execution from ai-service.
 - No validation/browser/search/preview tool changes.
 - No frontend/UI changes unless explicitly reviewed.
@@ -20301,33 +20301,33 @@ A dedicated architecture and security review is required before implementation b
 - [x] No checkpoint created
 - [x] No implementation performed
 
-**Next step:** Architecture/security review — not direct implementation.
+**Next step:** Architecture/security review ??not direct implementation.
 
 **Acceptance criteria (implementation):**
-- [x] Architecture/security review completed and confirmed — checkpoint before mutation, no boundary violations
-- [x] Internal API Gateway checkpoint endpoint added and tested — `POST /api/internal/workspace/:sessionId/checkpoint` (19 tests — PASS)
-- [x] `ApiGatewayHttpClient.createWorkspaceCheckpoint` added and tested (12 tests — PASS)
+- [x] Architecture/security review completed and confirmed ??checkpoint before mutation, no boundary violations
+- [x] Internal API Gateway checkpoint endpoint added and tested ??`POST /api/internal/workspace/:sessionId/checkpoint` (19 tests ??PASS)
+- [x] `ApiGatewayHttpClient.createWorkspaceCheckpoint` added and tested (12 tests ??PASS)
 - [x] `enablePreApplyCheckpoint: true` added to `DEFAULT_AGENT_HARNESS_CONFIG_V1`
-- [x] `preApplyCheckpointHash` added to `AgentHarnessLoopResult`; contracts spec 2 tests — PASS
-- [x] Checkpoint-before-mutation logic in `executeAgentHarnessLoop` — 28 tests — PASS
-- [x] WorkerProcessor checkpoint callback wiring — 40 tests — PASS
-- [x] `file-tool-handlers.spec.ts` — 38 tests preserved and passing — PASS
-- [x] `tool-registry.spec.ts` — 13 tests preserved and passing — PASS
-- [x] `tool-dispatcher.spec.ts` — 9 tests preserved and passing — PASS
-- [x] api-gateway `npm run build` — PASS (tsc clean)
-- [x] ai-service `npm run build` — PASS (tsc clean)
-- [x] ReadLints on all 11 touched source/test files — PASS (no linter errors)
-- [x] No mutation before checkpoint succeeds — confirmed by test
-- [x] No checkpoint created for read-only tool calls — confirmed by test
-- [x] Checkpoint created at most once per execution — confirmed by test
-- [x] No automatic rollback implemented — checkpoint hash recorded as reference
+- [x] `preApplyCheckpointHash` added to `AgentHarnessLoopResult`; contracts spec 2 tests ??PASS
+- [x] Checkpoint-before-mutation logic in `executeAgentHarnessLoop` ??28 tests ??PASS
+- [x] WorkerProcessor checkpoint callback wiring ??40 tests ??PASS
+- [x] `file-tool-handlers.spec.ts` ??38 tests preserved and passing ??PASS
+- [x] `tool-registry.spec.ts` ??13 tests preserved and passing ??PASS
+- [x] `tool-dispatcher.spec.ts` ??9 tests preserved and passing ??PASS
+- [x] api-gateway `npm run build` ??PASS (tsc clean)
+- [x] ai-service `npm run build` ??PASS (tsc clean)
+- [x] ReadLints on all 11 touched source/test files ??PASS (no linter errors)
+- [x] No mutation before checkpoint succeeds ??confirmed by test
+- [x] No checkpoint created for read-only tool calls ??confirmed by test
+- [x] Checkpoint created at most once per execution ??confirmed by test
+- [x] No automatic rollback implemented ??checkpoint hash recorded as reference
 - [x] No frontend/UI/package/database changes
-- [x] No direct ai-service → container-manager calls
+- [x] No direct ai-service ??container-manager calls
 - [x] No checkpoint document created before consolidation
 - [x] Checkpoint document created: `docs/AGENT-HARNESS-03C-CHECKPOINT.md`
-- [x] Correct validated test total: **161 tests** (not 162 — mismatch resolved by live consolidation runs)
+- [x] Correct validated test total: **161 tests** (not 162 ??mismatch resolved by live consolidation runs)
 
-**LOCKED — 2026-06-22. Do not edit.**
+**LOCKED ??2026-06-22. Do not edit.**
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-03C.
 **Checkpoint:** `docs/AGENT-HARNESS-03C-CHECKPOINT.md`
@@ -20343,18 +20343,18 @@ A dedicated architecture and security review is required before implementation b
 **Risk:** High
 
 **Depends on:**
-- AGENT-HARNESS-00 — COMPLETE and LOCKED
-- AGENT-HARNESS-01A — COMPLETE and LOCKED
-- AGENT-HARNESS-01B — COMPLETE and LOCKED
-- AGENT-HARNESS-01C — COMPLETE and LOCKED
-- AGENT-HARNESS-01D — COMPLETE and LOCKED
-- AGENT-HARNESS-01E — COMPLETE and LOCKED
-- AGENT-HARNESS-02A — COMPLETE and LOCKED
-- AGENT-HARNESS-02B — COMPLETE and LOCKED
-- AGENT-HARNESS-02C — COMPLETE and LOCKED
-- AGENT-HARNESS-03A — COMPLETE and LOCKED
-- AGENT-HARNESS-03B — COMPLETE and LOCKED
-- AGENT-HARNESS-03C — COMPLETE and LOCKED
+- AGENT-HARNESS-00 ??COMPLETE and LOCKED
+- AGENT-HARNESS-01A ??COMPLETE and LOCKED
+- AGENT-HARNESS-01B ??COMPLETE and LOCKED
+- AGENT-HARNESS-01C ??COMPLETE and LOCKED
+- AGENT-HARNESS-01D ??COMPLETE and LOCKED
+- AGENT-HARNESS-01E ??COMPLETE and LOCKED
+- AGENT-HARNESS-02A ??COMPLETE and LOCKED
+- AGENT-HARNESS-02B ??COMPLETE and LOCKED
+- AGENT-HARNESS-02C ??COMPLETE and LOCKED
+- AGENT-HARNESS-03A ??COMPLETE and LOCKED
+- AGENT-HARNESS-03B ??COMPLETE and LOCKED
+- AGENT-HARNESS-03C ??COMPLETE and LOCKED
 
 **Problem:**
 Agent Harness can now read/list/write/delete workspace files with pre-apply checkpoint safety. The next master-plan step is a validation runner tool so the agent can request safe, bounded validation after making changes. This is high risk because it may execute commands inside project containers. It must use strict allow-lists, timeouts, output limits, and the existing service boundary rather than arbitrary shell execution from ai-service.
@@ -20382,14 +20382,14 @@ This slice should allow the agent to request pre-approved validation commands on
 - No package/dependency changes unless explicitly reviewed and approved.
 
 **Likely implementation areas (must be confirmed by architecture/security review before implementation):**
-- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\` — internal validation/exec endpoint if needed
-- `C:\Users\knlee\aiSandBox2026B\services\container-manager\src\` — container exec or command-running APIs
-- `C:\Users\knlee\aiSandBox2026B\services\executor-service\src\` — existing executor if applicable
-- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\clients\api-gateway-http.client.ts` — validation client method
-- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\tools\handlers\` — `run_validation` handler
-- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\tools\tool-registry.ts` — register `run_validation`
-- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\worker\worker.processor.ts` — validation callback wiring
-- Existing tests around validation, execution, preview, or container commands — for reference
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\` ??internal validation/exec endpoint if needed
+- `C:\Users\knlee\aiSandBox2026B\services\container-manager\src\` ??container exec or command-running APIs
+- `C:\Users\knlee\aiSandBox2026B\services\executor-service\src\` ??existing executor if applicable
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\clients\api-gateway-http.client.ts` ??validation client method
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\tools\handlers\` ??`run_validation` handler
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\tools\tool-registry.ts` ??register `run_validation`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\worker\worker.processor.ts` ??validation callback wiring
+- Existing tests around validation, execution, preview, or container commands ??for reference
 
 **Expected future behavior:**
 - `run_validation` accepts only known validation intents or allow-listed commands.
@@ -20414,7 +20414,7 @@ This slice should allow the agent to request pre-approved validation commands on
 - No package install commands.
 - No destructive commands.
 - No network commands unless explicitly allow-listed.
-- No direct ai-service → container execution calls.
+- No direct ai-service ??container execution calls.
 - Commands must be allow-listed by project type or fixed validation intent.
 - Timeouts required.
 - Output limits required.
@@ -20479,6 +20479,135 @@ A dedicated architecture and security review is required before implementation b
 - [x] Checkpoint document created: docs/AGENT-HARNESS-04A-CHECKPOINT.md
 
 **Checkpoint:** `docs/AGENT-HARNESS-04A-CHECKPOINT.md`
-**Next step:** AGENT-HARNESS-05A — Browser Smoke Tool Investigation (registration required before any implementation).
+**Next step:** AGENT-HARNESS-05A ??Browser Smoke Tool Investigation (registration required before any implementation).
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-04A.
+
+----
+
+#### AGENT-HARNESS-05A: Browser Smoke Tool Investigation
+
+**Task ID:** AGENT-HARNESS-05A
+**Status:** COMPLETE and LOCKED
+**Priority:** High
+**Nature:** INVESTIGATION / SECURITY REVIEW / BROWSER AUTOMATION FEASIBILITY / NO PRODUCTION TOOL IMPLEMENTATION
+**Risk:** High
+
+**Depends on:**
+- AGENT-HARNESS-00 ??COMPLETE and LOCKED
+- AGENT-HARNESS-01A ??COMPLETE and LOCKED
+- AGENT-HARNESS-01B ??COMPLETE and LOCKED
+- AGENT-HARNESS-01C ??COMPLETE and LOCKED
+- AGENT-HARNESS-01D ??COMPLETE and LOCKED
+- AGENT-HARNESS-01E ??COMPLETE and LOCKED
+- AGENT-HARNESS-02A ??COMPLETE and LOCKED
+- AGENT-HARNESS-02B ??COMPLETE and LOCKED
+- AGENT-HARNESS-02C ??COMPLETE and LOCKED
+- AGENT-HARNESS-03A ??COMPLETE and LOCKED
+- AGENT-HARNESS-03B ??COMPLETE and LOCKED
+- AGENT-HARNESS-03C ??COMPLETE and LOCKED
+- AGENT-HARNESS-04A ??COMPLETE and LOCKED
+
+**Problem:**
+Agent Harness now supports file tools, mutation checkpoint safety, and allow-listed validation. The master plan next defines AGENT-HARNESS-05A as an investigation into a browser smoke tool. Browser automation is high risk because it may require Playwright/Puppeteer, Docker/gVisor compatibility, network access, sandboxing decisions, runtime resource controls, and careful separation between investigation and production implementation.
+
+**Objective:**
+Register an investigation-only slice to determine whether and how Agent Harness should support a `browser_smoke` tool.
+
+This slice must produce a feasibility/security report only. It must not implement production browser automation.
+
+**Scope:**
+- Register AGENT-HARNESS-05A only.
+- Future investigation should inspect existing preview, container, Docker, and browser automation capabilities.
+- Future investigation should determine whether Playwright or Puppeteer can run safely in the current environment.
+- Future investigation should identify whether browser smoke belongs in ai-service, api-gateway, container-manager, preview-service, executor-service, or a separate service.
+- Future investigation should review Docker/gVisor constraints, network restrictions, timeouts, screenshots/log capture, and resource limits.
+- Future investigation may include non-invasive inspection of package files and existing code.
+- Future investigation must not install dependencies.
+- Future investigation must not run browser automation unless Keith explicitly approves a separate live smoke step.
+- Future investigation must not implement `browser_smoke` production handler.
+- Future investigation must not enable `browser_smoke` in the tool registry.
+- Future investigation must not change frontend/UI.
+- Future investigation must not change database schema.
+- Future investigation must not change package/dependency files.
+
+**Likely investigation areas (exact files must be confirmed by inspection):**
+- `C:\Users\knlee\aiSandBox2026B\services\preview-service\` ??how preview-service exposes app previews
+- `C:\Users\knlee\aiSandBox2026B\services\container-manager\` ??container runtime constraints relevant to browser launch
+- `C:\Users\knlee\aiSandBox2026B\services\executor-service\` ??existing executor if applicable
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\` ??API Gateway integration points for browser smoke
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\tools\tool-registry.ts` ??registry structure for browser_smoke
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\worker\worker.processor.ts` ??worker processor wiring
+- Dockerfiles and docker-compose files ??Docker/gVisor constraints, network modes, resource limits
+- `package.json` files across services ??whether Playwright/Puppeteer are already installed
+- Existing preview/browser/smoke/e2e tests if present ??reference only
+
+**Expected investigation questions:**
+1. Is Playwright, Puppeteer, or another browser automation library already installed anywhere?
+2. Does any service currently launch browsers?
+3. How does preview-service expose app previews today?
+4. Can a browser smoke run inside the existing container model safely?
+5. Should browser smoke run against preview-service URLs or directly inside the workspace container?
+6. Which service should own browser automation if implemented?
+7. What sandboxing and network restrictions are required?
+8. What timeout and output/screenshot limits are required?
+9. What artifacts should browser smoke return: status, console errors, screenshot, page title, visible text, network errors?
+10. What risks exist with running untrusted generated code in a browser?
+11. Is a separate browser-worker service needed?
+12. What exact future slice should implement `browser_smoke`, if feasible?
+
+**Security / safety requirements:**
+- No production browser automation implementation in 05A.
+- No dependency installs in 05A.
+- No package/dependency file edits in 05A.
+- No browser automation runs unless Keith explicitly approves a live smoke step.
+- No registry enablement for `browser_smoke`.
+- No direct unrestricted network access.
+- No credential exposure.
+- No persistent browser profiles with user data.
+- Timeouts and artifact limits must be required in any future implementation.
+- Existing Agent Harness tools (file tools, run_validation) must remain unchanged.
+
+**Non-goals:**
+- No `browser_smoke` handler implementation.
+- No Playwright/Puppeteer installation.
+- No Docker image changes.
+- No frontend/UI changes.
+- No database schema changes.
+- No tool registry enabled-state changes.
+- No provider adapter changes.
+- No Agent Harness loop changes.
+- No live browser smoke unless separately approved.
+
+**Validation requirements for future investigation:**
+- No backend tests required unless governance docs or scripts are changed.
+- If an investigation report file is created, inspect it manually.
+- If a markdown lint/readlint command exists, run it on the investigation report only.
+- No frontend tests.
+- No browser smoke.
+- No builds required unless code/package files are unexpectedly touched, which must not happen.
+
+**Acceptance criteria (registration):**
+- [x] AGENT-HARNESS-05A registered as ACTIVE in TASKS.md and TASKS_BACKLOG_FULL.md
+- [x] All dependencies through AGENT-HARNESS-04A COMPLETE and LOCKED documented
+- [x] Problem/objective/scope documented
+- [x] Investigation-only nature documented
+- [x] High-risk browser automation nature documented
+- [x] Likely investigation areas documented
+- [x] Expected investigation questions documented
+- [x] Security/safety requirements documented
+- [x] Non-goals documented
+- [x] Validation requirements documented
+- [x] Browser smoke documented as not allowed during registration
+- [x] No source/runtime/test/package files changed
+- [x] No checkpoint created during registration
+- [x] No implementation performed during registration
+- [x] Investigation report produced and reviewed
+- [x] Feasibility/security findings documented
+- [x] Recommendation for future implementation slice (or explicit rejection) documented
+- [x] Checkpoint document created: docs/AGENT-HARNESS-05A-CHECKPOINT.md
+
+**Checkpoint:** `docs/AGENT-HARNESS-05A-CHECKPOINT.md`
+**Next step:** AGENT-HARNESS-05B1 registration only — Browser Smoke Sandbox Image Prerequisite. Do not implement until registered and approved.
+
+**Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-05A.
