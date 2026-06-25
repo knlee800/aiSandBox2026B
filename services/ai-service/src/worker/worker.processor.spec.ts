@@ -358,14 +358,13 @@ describe('Agent Harness double-gate config', () => {
     expect(workerSource).not.toContain('AGENT_HARNESS_TOOL_DEFINITION_MAP_V1');
   });
 
-  it('WorkerProcessor does not import standalone write/delete/browser tool modules', () => {
+  it('WorkerProcessor does not import standalone write/delete tool modules', () => {
     const workerSource = require('fs').readFileSync(
       require('path').join(__dirname, 'worker.processor.ts'),
       'utf-8',
     );
     expect(workerSource).not.toContain('write-file');
     expect(workerSource).not.toContain('delete-file');
-    expect(workerSource).not.toContain('browser-smoke');
   });
 });
 
@@ -481,14 +480,37 @@ describe('Agent Harness 03A: read_file/list_files handler registration', () => {
     expect(registrations).toBe(1);
   });
 
-  it('WorkerProcessor does not register browser, preview, or search tools', () => {
+  it('WorkerProcessor does not register preview or search tools', () => {
     const workerSource = require('fs').readFileSync(
       require('path').join(__dirname, 'worker.processor.ts'),
       'utf-8',
     );
-    expect(workerSource).not.toContain("registerHandler('browser_smoke'");
     expect(workerSource).not.toContain("registerHandler('start_preview'");
     expect(workerSource).not.toContain("registerHandler('search_workspace'");
+  });
+
+  it('WorkerProcessor registers browser_smoke only when enableBrowserSmoke is true', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    const enableBrowserSmokeIndex = workerSource.indexOf('enableBrowserSmoke');
+    const browserSmokeRegIndex = workerSource.indexOf("'browser_smoke'");
+    expect(enableBrowserSmokeIndex).toBeGreaterThan(-1);
+    expect(browserSmokeRegIndex).toBeGreaterThan(enableBrowserSmokeIndex);
+  });
+
+  it('WorkerProcessor does not add browser_smoke to mutatingToolNames', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    expect(workerSource).toContain("mutatingToolNames: new Set(['write_file', 'delete_file'])");
+    expect(workerSource).not.toMatch(/mutatingToolNames.*browser_smoke/);
+  });
+
+  it('browser_smoke is not registered when enableBrowserSmoke defaults to false', () => {
+    expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.enableBrowserSmoke).toBe(false);
   });
 
   it('WorkerProcessor does not add run_validation to mutatingToolNames', () => {

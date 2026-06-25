@@ -13,6 +13,7 @@ import { PreviewsController } from '../previews/previews.controller';
 import { ProjectsModule } from '../projects/projects.module';
 import { GovernanceEventsService } from '../governance/governance-events.service';
 import { UsageModule } from '../usage/usage.module';
+import { BrowserSmokeService } from '../browser-smoke/browser-smoke.service';
 
 @Module({
   imports: [HttpModule, ClientsModule, DockerModule, ProjectsModule, UsageModule],
@@ -23,7 +24,7 @@ import { UsageModule } from '../usage/usage.module';
     InternalPreviewsProxyController,
     PreviewsController,
   ],
-  providers: [SessionsService, PreviewService, PreviewProxyService, GovernanceEventsService],
+  providers: [SessionsService, PreviewService, PreviewProxyService, GovernanceEventsService, BrowserSmokeService],
   exports: [SessionsService],
 })
 export class SessionsModule {}

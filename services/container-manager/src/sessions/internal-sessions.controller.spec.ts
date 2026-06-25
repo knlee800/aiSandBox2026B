@@ -4,17 +4,21 @@ import { InternalSessionsController } from './internal-sessions.controller';
 
 describe('InternalSessionsController file routes', () => {
   let controller: InternalSessionsController;
-  let sessionsService: {
-    deleteFileFromContainer: jest.Mock;
-    searchFilesInContainer: jest.Mock;
-  };
+  let sessionsService: any;
+  let browserSmokeService: any;
 
   beforeEach(() => {
     sessionsService = {
-      deleteFileFromContainer: jest.fn(),
-      searchFilesInContainer: jest.fn(),
+      deleteFileFromContainer: jest.fn<any>(),
+      searchFilesInContainer: jest.fn<any>(),
     };
-    controller = new InternalSessionsController(sessionsService as any);
+    browserSmokeService = {
+      run: jest.fn<any>(),
+    };
+    controller = new InternalSessionsController(
+      sessionsService,
+      browserSmokeService,
+    );
   });
 
   it('delegates delete requests to SessionsService with session id and path', async () => {
@@ -54,5 +58,39 @@ describe('InternalSessionsController file routes', () => {
     await expect(controller.searchFiles('session-123', undefined)).rejects.toThrow(
       BadRequestException,
     );
+  });
+
+  it('delegates browser-smoke requests to BrowserSmokeService', async () => {
+    const expected = {
+      success: true,
+      url: 'http://172.17.0.2:3000/',
+      pageTitle: 'App',
+      consoleErrors: [],
+      consoleWarnings: [],
+      networkErrors: [],
+      visibleTextSnippet: '',
+      durationMs: 500,
+      truncated: false,
+    };
+    browserSmokeService.run.mockResolvedValue(expected);
+
+    const result = await controller.runBrowserSmoke('session-123', '/', 60000);
+
+    expect(browserSmokeService.run).toHaveBeenCalledWith({
+      sessionId: 'session-123',
+      url: '/',
+      timeoutMs: 60000,
+    });
+    expect(result).toEqual(expected);
+  });
+
+  it('throws BadRequestException for invalid browser-smoke URL', async () => {
+    browserSmokeService.run.mockRejectedValue(
+      new Error('Absolute URLs are not allowed; provide a relative path starting with /'),
+    );
+
+    await expect(
+      controller.runBrowserSmoke('session-123', 'https://evil.com'),
+    ).rejects.toThrow(BadRequestException);
   });
 });

@@ -56,7 +56,7 @@ describe('adapter-tool-use.mapper', () => {
 
   it('should preserve disabled/planned metadata without implying execution enablement', () => {
     const plannedTool = AGENT_HARNESS_TOOL_DEFINITIONS_V1.find(
-      (tool) => tool.id === 'browser_smoke',
+      (tool) => tool.id === 'start_preview',
     );
     expect(plannedTool).toBeDefined();
 

@@ -33,6 +33,7 @@ import {
   createDeleteFileHandler,
 } from '../agent-harness/tools/handlers/file-tool-handlers';
 import { createRunValidationHandler } from '../agent-harness/tools/handlers/validation-tool-handlers';
+import { createBrowserSmokeHandler } from '../agent-harness/tools/handlers/browser-smoke-tool-handlers';
 import { ApiGatewayHttpClient } from '../clients/api-gateway-http.client';
 
 /**
@@ -797,6 +798,16 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                       maxValidationOutputBytes: DEFAULT_AGENT_HARNESS_CONFIG_V1.maxValidationOutputBytes,
                     }),
                   );
+                  if (DEFAULT_AGENT_HARNESS_CONFIG_V1.enableBrowserSmoke) {
+                    dispatcher.registerHandler(
+                      'browser_smoke',
+                      createBrowserSmokeHandler({
+                        client: this.apiGatewayHttpClient,
+                        sessionId: job.data.sessionId,
+                        browserSmokeTimeoutMs: DEFAULT_AGENT_HARNESS_CONFIG_V1.browserSmokeTimeoutMs,
+                      }),
+                    );
+                  }
                   let loopOptions: Parameters<typeof executeAgentHarnessLoop>[0] = {
                     executeFn: (req, opts) => adapter.executeWithTools!(req, opts),
                     request: executionRequest,

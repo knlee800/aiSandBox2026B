@@ -514,6 +514,56 @@ export class ContainerManagerHttpClient implements OnModuleInit {
   }
 
   /**
+   * Run browser smoke check in a session's container
+   * AGENT-HARNESS-05B2: Call browser smoke endpoint
+   * Calls POST /api/internal/sessions/:sessionId/browser-smoke
+   * @param sessionId - Session UUID
+   * @param url - Relative URL path (defaults to "/")
+   * @param timeoutMs - Timeout in milliseconds
+   * @returns BrowserSmokeResult from container-manager
+   * @throws Error on HTTP failure (fail-fast)
+   */
+  async runBrowserSmoke(
+    sessionId: string,
+    url?: string,
+    timeoutMs?: number,
+  ): Promise<BrowserSmokeResult> {
+    if (this.isDisabled) {
+      throw new ServiceUnavailableException(
+        'ContainerManager browser smoke is unavailable (INTERNAL_SERVICE_KEY not configured in api-gateway)',
+      );
+    }
+
+    try {
+      const response = await this.axiosInstance.post(
+        `/api/internal/sessions/${sessionId}/browser-smoke`,
+        { url, timeoutMs },
+        {
+          timeout: (timeoutMs ?? 120_000) + 10_000,
+          headers: {
+            'X-Internal-Service-Key': this.internalServiceKey,
+          },
+        },
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status ?? 502;
+        const responseData = error.response?.data as { message?: string; error?: string } | undefined;
+        const message =
+          responseData?.message ||
+          responseData?.error ||
+          error.message ||
+          `Failed to run browser smoke for session ${sessionId}`;
+        throw new HttpException(message, status);
+      }
+      throw new ServiceUnavailableException(
+        `Failed to run browser smoke for session ${sessionId}`,
+      );
+    }
+  }
+
+  /**
    * Get git diff for a checkpoint from container-manager
    * PHASE-68B: Call git diff endpoint
    * Calls GET /api/git/:sessionId/diff/:commitHash
@@ -751,4 +801,21 @@ export interface GitCommitResult {
   message: string;
   commitHash: string;
   filesChanged: number;
+}
+
+/**
+ * BrowserSmokeResult interface
+ * AGENT-HARNESS-05B2: Type definition for browser smoke response
+ */
+export interface BrowserSmokeResult {
+  success: boolean;
+  url: string;
+  pageTitle: string;
+  consoleErrors: string[];
+  consoleWarnings: string[];
+  networkErrors: string[];
+  visibleTextSnippet: string;
+  durationMs: number;
+  error?: string;
+  truncated: boolean;
 }

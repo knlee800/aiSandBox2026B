@@ -10,7 +10,7 @@ import {
   HttpStatus,
   BadRequestException,
 } from '@nestjs/common';
-import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
+import { ContainerManagerHttpClient, BrowserSmokeResult } from '../clients/container-manager-http.client';
 
 /**
  * Internal Workspace Files Controller
@@ -152,5 +152,26 @@ export class InternalWorkspaceFilesController {
       commitHash: result.commitHash,
       filesChanged: result.filesChanged,
     };
+  }
+
+  /**
+   * POST /api/internal/workspace/:sessionId/browser-smoke
+   * AGENT-HARNESS-05B2: Run browser smoke check via container-manager
+   */
+  @Post(':sessionId/browser-smoke')
+  @HttpCode(HttpStatus.OK)
+  async runBrowserSmoke(
+    @Param('sessionId') sessionId: string,
+    @Body('url') url?: string,
+    @Body('timeoutMs') timeoutMs?: number,
+  ): Promise<BrowserSmokeResult> {
+    const effectiveTimeout =
+      typeof timeoutMs === 'number' && timeoutMs > 0 ? timeoutMs : undefined;
+
+    return this.containerManagerHttpClient.runBrowserSmoke(
+      sessionId,
+      url,
+      effectiveTimeout,
+    );
   }
 }

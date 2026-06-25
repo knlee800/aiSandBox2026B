@@ -291,4 +291,47 @@ export class ApiGatewayHttpClient {
 
     return response.data;
   }
+
+  /**
+   * Run browser smoke check in a session workspace via API Gateway.
+   * AGENT-HARNESS-05B2: ai-service → API Gateway → container-manager boundary.
+   * @param sessionId - Session UUID
+   * @param url - Relative URL path (defaults to "/")
+   * @param timeoutMs - Timeout in milliseconds
+   * @returns BrowserSmokeResult
+   * @throws Error if HTTP request fails
+   */
+  async runBrowserSmoke(
+    sessionId: string,
+    url?: string,
+    timeoutMs?: number,
+  ): Promise<BrowserSmokeResult> {
+    const response = await firstValueFrom(
+      this.httpService.post(
+        `${this.apiGatewayUrl}/api/internal/workspace/${sessionId}/browser-smoke`,
+        { url, timeoutMs },
+        {
+          timeout: (timeoutMs ?? 120_000) + 10_000,
+          headers: {
+            'X-Internal-Service-Key': this.internalServiceKey,
+          },
+        },
+      ),
+    );
+
+    return response.data;
+  }
+}
+
+export interface BrowserSmokeResult {
+  success: boolean;
+  url: string;
+  pageTitle: string;
+  consoleErrors: string[];
+  consoleWarnings: string[];
+  networkErrors: string[];
+  visibleTextSnippet: string;
+  durationMs: number;
+  error?: string;
+  truncated: boolean;
 }

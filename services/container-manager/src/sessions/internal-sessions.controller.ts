@@ -14,6 +14,7 @@ import {
 import { SessionsService } from './sessions.service';
 import { InternalServiceAuthGuard } from '../guards/internal-service-auth.guard';
 import { ExecCommandDto, ExecResultDto } from './dto/exec.dto';
+import { BrowserSmokeService, BrowserSmokeResult } from '../browser-smoke/browser-smoke.service';
 
 /**
  * InternalSessionsController
@@ -28,7 +29,10 @@ import { ExecCommandDto, ExecResultDto } from './dto/exec.dto';
 @Controller('internal/sessions')
 @UseGuards(InternalServiceAuthGuard)
 export class InternalSessionsController {
-  constructor(private sessionsService: SessionsService) {}
+  constructor(
+    private sessionsService: SessionsService,
+    private browserSmokeService: BrowserSmokeService,
+  ) {}
 
   /**
    * DELETE /api/internal/sessions/:id/container
@@ -317,5 +321,36 @@ export class InternalSessionsController {
     }
 
     return this.sessionsService.statPathInContainer(sessionId, filePath);
+  }
+
+  /**
+   * POST /api/internal/sessions/:id/browser-smoke
+   * Run browser smoke check inside a session's browser-capable container
+   * AGENT-HARNESS-05B2: Browser Smoke Handler
+   *
+   * Request body:
+   * - url (optional): Relative path to navigate (defaults to "/")
+   * - timeoutMs (optional): Timeout in milliseconds
+   *
+   * Returns BrowserSmokeResult.
+   */
+  @Post(':id/browser-smoke')
+  @HttpCode(HttpStatus.OK)
+  async runBrowserSmoke(
+    @Param('id') sessionId: string,
+    @Body('url') url?: string,
+    @Body('timeoutMs') timeoutMs?: number,
+  ): Promise<BrowserSmokeResult> {
+    try {
+      return await this.browserSmokeService.run({
+        sessionId,
+        url,
+        timeoutMs: typeof timeoutMs === 'number' && timeoutMs > 0 ? timeoutMs : undefined,
+      });
+    } catch (err) {
+      throw new BadRequestException(
+        err instanceof Error ? err.message : 'Browser smoke request failed',
+      );
+    }
   }
 }

@@ -91,7 +91,7 @@ describe('Agent Harness tool registry (v1)', () => {
     expect(deleteTool?.riskLevel).toBe('destructive');
 
     expect(browserSmokeTool).toBeDefined();
-    expect(browserSmokeTool?.enabled).toBe(false);
+    expect(browserSmokeTool?.riskLevel).toBe('high');
 
     const packageOrEnvRiskTools = AGENT_HARNESS_TOOL_DEFINITIONS_V1.filter((tool) =>
       tool.tags.some((tag) => tag.includes('package') || tag.includes('env')),
@@ -125,7 +125,7 @@ describe('Agent Harness tool registry (v1)', () => {
 
     expect(allTools).toBe(AGENT_HARNESS_TOOL_DEFINITIONS_V1);
     expect(enabledTools).toEqual(expectedEnabledTools);
-    expect(enabledTools).toHaveLength(5);
+    expect(enabledTools).toHaveLength(6);
 
     const enabledIds = enabledTools.map((t) => t.id);
     expect(enabledIds).toContain('read_file');
@@ -133,6 +133,7 @@ describe('Agent Harness tool registry (v1)', () => {
     expect(enabledIds).toContain('write_file');
     expect(enabledIds).toContain('delete_file');
     expect(enabledIds).toContain('run_validation');
+    expect(enabledIds).toContain('browser_smoke');
 
     for (const tool of enabledTools) {
       expect(isAgentHarnessToolEnabled(tool.id)).toBe(true);
@@ -169,10 +170,9 @@ describe('Agent Harness tool registry (v1)', () => {
     expect(tool?.requiresApproval).toBe(false);
   });
 
-  it('keeps browser/preview/search tools disabled and not implemented', () => {
+  it('keeps preview/search tools disabled and not implemented', () => {
     const disabledToolIds = [
       'start_preview',
-      'browser_smoke',
       'search_workspace',
     ];
 
@@ -182,6 +182,21 @@ describe('Agent Harness tool registry (v1)', () => {
       expect(tool?.enabled).toBe(false);
       expect(tool?.implementationStatus).not.toBe('implemented');
     }
+  });
+
+  it('marks browser_smoke as enabled, implemented, high-risk, and read-only', () => {
+    const tool = getAgentHarnessToolDefinition('browser_smoke');
+    expect(tool).toBeDefined();
+    expect(tool?.enabled).toBe(true);
+    expect(tool?.implementationStatus).toBe('implemented');
+    expect(tool?.riskLevel).toBe('high');
+    expect(tool?.requiresApproval).toBe(false);
+    expect(tool?.tags).toContain('read-only');
+    expect(tool?.tags).not.toContain('planned');
+    expect(tool?.tags).not.toContain('metadata-only');
+    expect(tool?.inputSchema.schema).toHaveProperty('properties');
+    expect((tool?.inputSchema.schema as any).properties).toHaveProperty('url');
+    expect((tool?.inputSchema.schema as any).properties).not.toHaveProperty('scenario');
   });
 
   it('makes tool registry exports available from stable agent-harness index', () => {

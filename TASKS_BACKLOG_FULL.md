@@ -31193,3 +31193,306 @@ This slice must not implement the production `browser_smoke` tool handler and mu
 **Next step:** AGENT-HARNESS-05B2 registration only — Browser Smoke Handler Implementation. Do not implement until registered and approved.
 
 **Reference:** See TASKS.md -> AGENT-HARNESS-05B1.
+
+----
+
+### AGENT-HARNESS-05B2: Browser Smoke Handler Implementation
+
+**Task ID:** AGENT-HARNESS-05B2
+**Status:** COMPLETE and LOCKED
+**Priority:** High
+**Nature:** BACKEND / CONTAINER MANAGER / API GATEWAY / AI SERVICE / BROWSER SMOKE TOOL HANDLER
+**Risk:** High
+
+**Depends on:**
+- AGENT-HARNESS-00 — COMPLETE and LOCKED
+- AGENT-HARNESS-01A — COMPLETE and LOCKED
+- AGENT-HARNESS-01B — COMPLETE and LOCKED
+- AGENT-HARNESS-01C — COMPLETE and LOCKED
+- AGENT-HARNESS-01D — COMPLETE and LOCKED
+- AGENT-HARNESS-01E — COMPLETE and LOCKED
+- AGENT-HARNESS-02A — COMPLETE and LOCKED
+- AGENT-HARNESS-02B — COMPLETE and LOCKED
+- AGENT-HARNESS-02C — COMPLETE and LOCKED
+- AGENT-HARNESS-03A — COMPLETE and LOCKED
+- AGENT-HARNESS-03B — COMPLETE and LOCKED
+- AGENT-HARNESS-03C — COMPLETE and LOCKED
+- AGENT-HARNESS-04A — COMPLETE and LOCKED
+- AGENT-HARNESS-05A — COMPLETE and LOCKED
+- AGENT-HARNESS-05B1 — COMPLETE and LOCKED
+
+**Problem:**
+AGENT-HARNESS-05A determined that `browser_smoke` is feasible but requires browser runtime preparation. AGENT-HARNESS-05B1 prepared the browser-capable sandbox image path (`Dockerfile.workspace-browser`, `aisandbox-workspace-browser:local`) and browser-specific resource configuration (`governance.config.ts`, `docker-runtime.service.ts`) without enabling or implementing the `browser_smoke` tool. The next slice is to implement the actual `browser_smoke` handler path while preserving strict safety controls and avoiding live browser execution unless Keith explicitly approves it.
+
+**Objective:**
+Register a bounded implementation slice for the `browser_smoke` Agent Harness tool handler.
+
+The future implementation should add the service boundary and handler code for `browser_smoke`, using the browser-capable runtime prepared in 05B1. It must not run live browser smoke unless explicitly approved.
+
+**Scope:**
+- Register AGENT-HARNESS-05B2 only.
+- Future implementation should add container-manager `BrowserSmokeService` with browser automation logic.
+- Future implementation should add API Gateway internal browser-smoke endpoint/proxy if needed.
+- Future implementation should add ai-service `ApiGatewayHttpClient.runBrowserSmoke()` method.
+- Future implementation should add `browser_smoke` tool handler in ai-service (`browser-smoke-tool-handlers.ts`).
+- Future implementation should register `browser_smoke` in ToolDispatcher only inside the existing double-gated harness branch.
+- Future implementation should enable/mark `browser_smoke` implemented in the tool registry only if architecture/security review confirms safe gating.
+- Future implementation must preserve `enableBrowserSmoke` default `false` unless explicitly reviewed.
+- Future implementation must preserve `enableToolLoop` default `false`.
+- Future implementation must preserve `harnessVersion === 'v1'` gate.
+- Future implementation must preserve read/list/write/delete/validation behavior.
+- Future implementation must preserve pre-apply checkpoint safety for mutations.
+- Future implementation must not add frontend/UI changes.
+- Future implementation must not add database schema changes.
+- Future implementation must not change package/dependency files unless explicitly reviewed and approved.
+- Future implementation must not run browser automation unless Keith explicitly approves a separate live smoke step.
+
+**Likely implementation areas (exact files must be confirmed by architecture/security review before implementation):**
+- `C:\Users\knlee\aiSandBox2026B\services\container-manager\src\browser-smoke\`
+- `C:\Users\knlee\aiSandBox2026B\services\container-manager\src\previews\`
+- `C:\Users\knlee\aiSandBox2026B\services\container-manager\src\docker\docker-runtime.service.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\container-manager\src\config\governance.config.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\sessions\`
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\clients\container-manager-http.client.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\clients\api-gateway-http.client.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\tools\handlers\`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\tools\tool-registry.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\worker\worker.processor.ts`
+- Relevant tests in container-manager, api-gateway, and ai-service
+
+**Expected future behavior:**
+- `browser_smoke` resolves the session preview URL safely.
+- `browser_smoke` navigates only to the session's own preview target or a tightly validated same-session URL.
+- Browser execution happens through container-manager ownership, not directly from ai-service.
+- Browser execution uses the browser-capable sandbox/runtime from 05B1.
+- Browser execution enforces hard timeout.
+- Browser execution captures bounded artifacts:
+  - success/failure
+  - page title
+  - URL tested
+  - console errors/log snippets
+  - network error summary
+  - screenshot metadata or bounded screenshot data, if safe
+  - visible text snippet, if safe
+- Browser smoke output is truncated and safe for model feedback.
+- `browser_smoke` remains gated by:
+  - `harnessVersion === 'v1'`
+  - `enableToolLoop === true`
+  - `enableBrowserSmoke === true`
+  - tool registry enabled/implemented state, if enabled in this slice
+- `browser_smoke` does not trigger pre-apply checkpoint because it is non-mutating.
+- Existing tools remain unchanged.
+
+**Security / safety requirements:**
+- No unrestricted external URLs.
+- No external network access unless explicitly reviewed.
+- No credential injection.
+- No platform cookies or service keys in browser context.
+- No persistent browser profiles.
+- Fresh temporary browser context per run.
+- Hard timeout.
+- Output/artifact size limits.
+- Console/page text truncation.
+- Screenshot size limits.
+- Resource cleanup after each run.
+- No hidden `browser_smoke` execution when `enableBrowserSmoke` is false.
+- No frontend/UI changes.
+- No database schema changes.
+- No provider adapter changes.
+- No direct ai-service browser automation.
+- No direct ai-service to container-manager calls.
+
+**Non-goals:**
+- No browser runtime image work beyond what 05B1 already prepared unless architecture review proves a tiny fix is needed.
+- No Docker image build unless Keith explicitly approves.
+- No live browser smoke unless Keith explicitly approves.
+- No frontend/UI changes.
+- No database schema changes.
+- No provider adapter changes.
+- No model routing changes.
+- No `search_workspace` implementation.
+- No preview/start tool implementation beyond what `browser_smoke` strictly requires.
+- No package/dependency file edits unless explicitly reviewed and approved.
+
+**Validation requirements for future implementation:**
+- Architecture/security review before implementation.
+- Focused tests for container-manager `BrowserSmokeService` with mocked Docker exec / preview resolution.
+- Focused tests for any container-manager internal browser smoke endpoint.
+- Focused tests for API Gateway proxy/client behavior if touched.
+- Focused tests for ai-service `browser_smoke` handler.
+- Focused tests for ToolDispatcher registration gating.
+- Tests proving `browser_smoke` is not registered or executed when `enableBrowserSmoke` is false.
+- Tests proving `browser_smoke` does not enter `mutatingToolNames` and does not trigger pre-apply checkpoint.
+- Tests proving external URLs are rejected.
+- Tests proving timeout/output/artifact limits are enforced.
+- Regression tests for existing file tools, validation runner, checkpoint behavior, and tool loop.
+- Builds/typechecks for touched services.
+- No frontend tests unless frontend files are unexpectedly touched.
+- No live browser smoke unless Keith explicitly approves.
+
+**Acceptance criteria:**
+- [x] AGENT-HARNESS-05B2 registered as ACTIVE in TASKS.md and TASKS_BACKLOG_FULL.md
+- [x] All dependencies through AGENT-HARNESS-05B1 COMPLETE and LOCKED documented
+- [x] Problem/objective/scope documented
+- [x] High-risk browser automation nature documented
+- [x] Architecture/security review completed before implementation
+- [x] Likely implementation areas documented and confirmed
+- [x] `browser_smoke` handler path implemented: ai-service → API Gateway → container-manager → workspace container
+- [x] `BrowserSmokeService` created in container-manager with URL validation, exec, output truncation
+- [x] `POST /api/internal/sessions/:id/browser-smoke` added to container-manager
+- [x] `runBrowserSmoke()` added to API Gateway `ContainerManagerHttpClient`
+- [x] `POST /api/internal/workspace/:sessionId/browser-smoke` added to API Gateway
+- [x] `runBrowserSmoke()` added to ai-service `ApiGatewayHttpClient`
+- [x] `createBrowserSmokeHandler()` created in ai-service
+- [x] `browser_smoke` registry updated: `enabled: true`, `implementationStatus: 'implemented'`, `url?: string` schema
+- [x] `browser_smoke` registered in `WorkerProcessor` gated by `enableBrowserSmoke`
+- [x] `browser_smoke` NOT in `mutatingToolNames`
+- [x] All touched specs PASS; pre-existing DB-dependent failures are pre-existing
+- [x] container-manager build: PASS; tests: PASS all
+- [x] api-gateway build: PASS; relevant tests: PASS (12 pre-existing DB failures not introduced here)
+- [x] ai-service build: PASS; relevant tests: PASS (1 pre-existing DB failure not introduced here)
+- [x] No live browser automation run
+- [x] No Docker image build run
+- [x] No package/dependency files changed
+- [x] No frontend/UI/database changes
+
+**Validation summary:**
+- All three service builds pass.
+- All touched unit specs pass.
+- Pre-existing DB-dependent integration failures in api-gateway (12) and ai-service (1) are pre-existing and not introduced by this task.
+
+**Checkpoint:** `docs/AGENT-HARNESS-05B2-CHECKPOINT.md`
+
+**Lock notice:** AGENT-HARNESS-05B2 is COMPLETE and LOCKED. Do not modify this task entry. Do not reopen or re-implement without explicit approval.
+
+**Next step:** Register AGENT-HARNESS-05B3 (or equivalent) for live browser smoke validation and Docker image build verification — registration only first. Do not implement until registered and explicitly approved.
+
+**Reference:** See TASKS.md -> AGENT-HARNESS-05B2.
+
+---
+
+### AGENT-HARNESS-05B3: Browser Smoke Live Validation / Docker Image Build Verification
+
+**Task ID:** AGENT-HARNESS-05B3
+**Status:** COMPLETE and LOCKED
+**Priority:** High
+**Nature:** VALIDATION / DOCKER IMAGE BUILD / LIVE BROWSER SMOKE
+**Risk:** High
+**Result:** PARTIAL PASS — Dockerfile Playwright module resolution defect found; follow-up fix slice required.
+
+**Depends on:**
+- AGENT-HARNESS-00 — COMPLETE and LOCKED
+- AGENT-HARNESS-01A — COMPLETE and LOCKED
+- AGENT-HARNESS-01B — COMPLETE and LOCKED
+- AGENT-HARNESS-01C — COMPLETE and LOCKED
+- AGENT-HARNESS-01D — COMPLETE and LOCKED
+- AGENT-HARNESS-01E — COMPLETE and LOCKED
+- AGENT-HARNESS-02A — COMPLETE and LOCKED
+- AGENT-HARNESS-02B — COMPLETE and LOCKED
+- AGENT-HARNESS-02C — COMPLETE and LOCKED
+- AGENT-HARNESS-03A — COMPLETE and LOCKED
+- AGENT-HARNESS-03B — COMPLETE and LOCKED
+- AGENT-HARNESS-03C — COMPLETE and LOCKED
+- AGENT-HARNESS-04A — COMPLETE and LOCKED
+- AGENT-HARNESS-05A — COMPLETE and LOCKED
+- AGENT-HARNESS-05B1 — COMPLETE and LOCKED
+- AGENT-HARNESS-05B2 — COMPLETE and LOCKED
+
+**Problem:**
+AGENT-HARNESS-05B1 prepared the browser-capable sandbox image and runtime resource path (`Dockerfile.workspace-browser`, `aisandbox-workspace-browser:local`). AGENT-HARNESS-05B2 implemented the full `browser_smoke` service/handler/proxy chain (container-manager `BrowserSmokeService`, API Gateway proxy, ai-service handler and registry) with mocked unit tests only. No Docker image build, Playwright execution, or live browser smoke has been run yet. The remaining risk is whether the browser-capable image builds successfully and whether Chromium/Playwright can actually run inside the workspace container under the current Docker runtime and host environment.
+
+**Objective:**
+Validate the browser smoke runtime end-to-end under Keith-approved live conditions:
+- Build the browser-capable workspace image.
+- Confirm the image includes Playwright/Chromium.
+- Confirm browser-capable container runtime settings are applied correctly.
+- Run a controlled live browser smoke against a minimal preview app.
+- Confirm `browser_smoke` produces a structured result.
+- Record whether gVisor/Chromium compatibility remains a blocker.
+- Do not make production code changes unless a defect fix is separately approved.
+
+**Scope:**
+- Review AGENT-HARNESS-05B1 and AGENT-HARNESS-05B2 checkpoints before any validation step.
+- Build or verify the browser workspace image.
+- Validate the browser-capable image can run Playwright/Chromium.
+- Record exact commands, output, failures, and environment assumptions.
+- Classify any failures found and produce a recommendation.
+
+**Non-goals:**
+- No production feature expansion.
+- No UI/frontend changes.
+- No agent prompt/registry redesign.
+- No changes to read/write/delete/validation tools.
+- No automatic production enablement.
+- No package dependency changes unless explicitly approved in a later implementation/fix task.
+- No checkpoint/rollback changes.
+- No unrelated Docker Compose refactors.
+- No git commit/push.
+
+**Validation results:**
+
+Phase verdict table:
+
+| Phase | Description                       | Verdict      |
+|-------|-----------------------------------|--------------|
+| 1     | Docker Availability Check         | PASS         |
+| 2     | Browser Workspace Image Build     | PASS         |
+| 3     | Static Image Verification         | PARTIAL PASS |
+| 4     | Minimal Chromium Launch Check     | PASS         |
+| 5     | Service-Chain Smoke               | NOT RUN      |
+
+Phase 1 — Docker Availability Check: PASS
+- Docker CLI v29.2.1 windows/amd64; daemon v29.2.1 linux/amd64, Docker Desktop 4.62.0.
+- Runtime: WSL2, overlayfs, seccomp + cgroupns, runc 1.3.4. gVisor not active.
+
+Phase 2 — Browser Workspace Image Build: PASS
+- Command: `docker build -f Dockerfile.workspace-browser -t aisandbox-workspace-browser:local .`
+- Exit code 0; ~162 seconds; 1.94 GB; node:20-slim (Debian bookworm); Node v20.20.2; Chromium Headless Shell 148.0.7778.96 / playwright chromium-headless-shell v1223.
+
+Phase 3 — Static Image Verification: PARTIAL PASS
+- `node --version` → v20.20.2: PASS.
+- `npx playwright --version` → 1.61.0 (fetched live): PASS.
+- `node -e "require('playwright')"` → MODULE_NOT_FOUND: FAIL.
+- With NODE_PATH workaround → playwright ok: PASS (workaround only, not stable).
+- Root cause: Dockerfile uses `npx playwright@1.60.0 install --with-deps chromium`; this installs the browser binary but leaves the playwright package only in the transient npx cache, not in any standard module resolution path.
+
+Phase 4 — Minimal Chromium Launch Check: PASS
+- With NODE_PATH workaround and `--shm-size=256m`; exit code 0; output `browser-smoke-ok`; ~1.4 seconds.
+- Chromium launched with `--no-sandbox` and `--disable-dev-shm-usage`. No missing shared libs, no crash.
+
+Phase 5 — Service-Chain Smoke: NOT RUN
+- Blocked by Phase 3 defect. Will be re-run in follow-up fix task after Dockerfile is corrected.
+
+**Acceptance criteria (validation):**
+- [x] Keith explicitly approves Docker image build
+- [x] Browser workspace image build result recorded
+- [x] Playwright/Chromium availability verified or failure recorded
+- [x] Keith explicitly approves live browser smoke (Chromium launch validated under controlled conditions)
+- [x] Controlled live browser smoke result recorded (Phase 4)
+- [x] gVisor/runtime compatibility status recorded (not active; runc 1.3.4 used; open risk for production gVisor)
+- [x] Follow-up recommendation documented (Dockerfile fix required)
+- [x] AGENT-HARNESS-05B3 checkpoint created during consolidation
+
+**Defect found:**
+- AGENT-HARNESS-05B3-DEFECT-01: `require('playwright')` fails in image (MODULE_NOT_FOUND).
+- Root cause: Dockerfile uses `npx playwright install` which only places playwright in the transient npx cache, not a resolvable module path.
+- `BrowserSmokeService` injects `const { chromium } = require('playwright')` which will fail without fix.
+- Fix: install playwright in a stable resolvable location (e.g. `npm install -g playwright@1.60.0`) in Dockerfile.
+
+**Confirmations:**
+- [x] No source files modified during validation.
+- [x] No TASKS.md or TASKS_BACKLOG_FULL.md edits during validation.
+- [x] No platform services started.
+- [x] No sessions created.
+- [x] No git commands run.
+- [x] No checkpoint created before consolidation.
+- [x] Phase 5 service-chain smoke was not run.
+- [x] No source/runtime/test/package/Docker/frontend/database files changed during consolidation.
+
+**Checkpoint:** `docs/AGENT-HARNESS-05B3-CHECKPOINT.md`
+
+**Lock notice:** AGENT-HARNESS-05B3 is COMPLETE and LOCKED. Do not modify this task entry. Do not reopen or re-implement without explicit approval.
+
+**Next step:** Register a targeted fix slice (`AGENT-HARNESS-05B4` or equivalent) for `Dockerfile.workspace-browser` Playwright module resolution before service-chain smoke. Do not implement until registered and explicitly approved.
+
+**Reference:** See TASKS.md -> AGENT-HARNESS-05B3.
