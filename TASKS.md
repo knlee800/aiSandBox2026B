@@ -21685,3 +21685,118 @@ AGENT-HARNESS-05B6 investigation identified likely low-risk startup blockers in 
 **Lock notice:** AGENT-HARNESS-05B6A is COMPLETE and LOCKED. Do not modify this entry. Do not reopen or re-implement without explicit approval.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05B6A.
+
+---
+
+#### AGENT-HARNESS-05B6B: Production Compose Runtime Validation
+
+**Task ID:** AGENT-HARNESS-05B6B
+**Status:** COMPLETE and LOCKED
+**Priority:** High
+**Risk:** Medium-High
+**Family:** AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
+**Nature:** RUNTIME VALIDATION / DOCKER COMPOSE / PRODUCTION STARTUP
+**Registered:** 2026-06-26
+**Completed:** 2026-06-26
+**Verdict:** PASS
+
+**Dependencies:**
+- AGENT-HARNESS-05B5 — COMPLETE and LOCKED — browser_smoke service-chain validation PASS
+- AGENT-HARNESS-05B6 — ACTIVE — production compose startup investigation completed
+- AGENT-HARNESS-05B6A — COMPLETE and LOCKED — production compose startup config fix completed
+
+**Problem:**
+AGENT-HARNESS-05B6A fixed the low-risk production compose startup blockers, but actual runtime validation with `docker compose up` has not yet been performed.
+
+**Objective:**
+Confirm that:
+1. `docker-compose.prod.yml` resolves correctly with a real root `.env` file.
+2. api-gateway no longer restart-loops.
+3. container-manager is reachable on host loopback `127.0.0.1:4002`.
+4. container-manager `GET /api/health` works.
+5. container-manager `GET /api/internal/stats` works with `X-Internal-Service-Key`.
+6. Production compose services start cleanly enough for the next validation slice.
+
+**Step 1 / Step 1B — .env preflight and repair:**
+- Root `.env` confirmed present at `C:\Users\knlee\aiSandBox2026B\.env`.
+- Required keys checked with set/not-set reporting only; secret values never printed.
+- Placeholder-like values replaced in `.env` (secrets masked): `INTERNAL_SERVICE_KEY`, `JWT_SECRET`, `POSTGRES_PASSWORD`, `DATABASE_URL`.
+- `LAUNCH_STATE` changed from `PUBLIC` to `INTERNAL` for first validation.
+- `AI_PROVIDER=xai` kept — confirmed production-valid.
+- `DATABASE_URL` uses Docker service name `postgres`; `REDIS_URL` uses Docker service name `redis`.
+- `docker compose config --quiet` passed after Step 1B with exit 0.
+- No `docker compose up/down/start/stop/remove` commands run during Step 1 or Step 1B.
+
+**Step 2 — Initial host port conflicts:**
+- `docker compose up -d --build` initially failed: host `ts-node-dev` processes held ports 4000 and 4002.
+- Keith stopped the two exact host `node.exe` `ts-node-dev` processes.
+- Ports 4000 and 4002 confirmed free. Host environment cleanup only — no source or config change.
+
+**Step 2 retry — Postgres credential mismatch:**
+- `docker compose up -d` re-attempted after port cleanup.
+- `container-manager` started successfully.
+- `api-gateway` entered restart loop: `password authentication failed for user "aisandbox"` (pg error code 28P01).
+- Root cause: existing local Docker Postgres volume (`aisandbox2026b_postgres_data`) was initialized with an old `POSTGRES_PASSWORD`; Step 1B had replaced that password in `.env`. Local Docker volume credential mismatch — not a code regression.
+
+**Step 2B — Local Postgres volume reset:**
+- Keith approved resetting the local production-compose Postgres validation volume.
+- `docker compose down` run.
+- Exact volume removed: `aisandbox2026b_postgres_data`.
+- No other volumes removed. Volumes `aisandbox2026b_ai_service_data`, `aisandbox2026b_api_gateway_data`, `aisandbox2026b_api_gateway_snapshot_store_data`, `aisandbox2026b_container_manager_data`, `aisandbox2026b_redis_data` remained intact.
+- `docker compose config --quiet` re-run — exit 0.
+- `docker compose up -d --build` re-run. Fresh Postgres volume initialized with current `.env` credentials.
+- `.env` was not modified during Step 2B. No source/config fixes applied.
+
+**Final validation summary:**
+- `docker compose config --quiet`: PASS, exit 0.
+- `docker compose up -d --build`: PASS, exit 0.
+- 8/8 containers started — no container in restarting or exited state.
+- Containers: `aisandbox-api-gateway` (Up, healthy, 0.0.0.0:4000), `aisandbox-container-manager` (Up, healthy, 127.0.0.1:4002), `aisandbox-frontend` (Up, 0.0.0.0:3000), `aisandbox2026b-ai-service-1` (Up), `aisandbox-postgres` (Up, healthy), `aisandbox-redis` (Up, healthy), `aisandbox-prometheus` (Up, healthy), `aisandbox-grafana` (Up, healthy).
+- api-gateway: RestartCount 0, ExitCode 0, `/api/health` HTTP 200, all 6 startup phases passed (including database connectivity auth).
+- container-manager: RestartCount 0, ExitCode 0, healthy, `/api/health` HTTP 200, `/api/internal/stats` HTTP 200 with `dockerConnectivity: true`, `runningContainerCount: 8`.
+- container-manager host binding confirmed `127.0.0.1:4002->4002/tcp` (loopback only — correct).
+- Non-fatal warnings: OPENAI key format (non-fatal, xai active), no kill switches (expected), `BILLING_CHARGES_ENABLED=false` (intentional), Redis guard (expected MVP warning).
+
+**Acceptance criteria (registration):**
+- [x] AGENT-HARNESS-05B6B appended to TASKS.md after AGENT-HARNESS-05B6A
+- [x] AGENT-HARNESS-05B6B appended to TASKS_BACKLOG_FULL.md after AGENT-HARNESS-05B6A
+- [x] Status is ACTIVE
+- [x] Dependencies on 05B5, 05B6, and 05B6A documented
+- [x] Runtime validation scope documented
+- [x] .env prerequisite and secret-handling rules documented
+- [x] Non-goals documented
+- [x] No source/runtime/test/package/Docker/frontend/database files modified
+- [x] No docker compose/container commands run
+- [x] No checkpoint document created
+
+**Runtime validation acceptance criteria (all satisfied):**
+- [x] Root `.env` existence checked
+- [x] Required env keys checked as set/not-set only
+- [x] `docker compose config` validation passes
+- [x] `docker compose up -d --build` executed only after Keith approval
+- [x] api-gateway container remains running and does not restart-loop
+- [x] container-manager container remains running
+- [x] api-gateway `/api/health` returns success (HTTP 200)
+- [x] container-manager `/api/health` returns success (HTTP 200)
+- [x] container-manager `/api/internal/stats` returns success with `X-Internal-Service-Key` (HTTP 200, `dockerConnectivity: true`)
+- [x] Logs inspected with secrets masked
+- [x] Any failures classified (port conflict — host env; Postgres mismatch — local volume)
+- [x] No fixes applied without separate approval
+- [x] Cleanup / service state clearly reported
+- [x] Checkpoint created during consolidation
+
+**Out-of-scope items remaining:**
+- `browser_smoke` against production compose — not run; pending separate approval.
+- ai-service provider/model execution validation — not run; pending separate approval.
+- userId / SQLite FK behavior fix — future task.
+- Workspace volume / Docker-in-Docker host-path strategy — future task.
+- Debug telemetry cleanup — future task.
+- Provider validator design smell — future task.
+
+**Checkpoint:** `docs/AGENT-HARNESS-05B6B-CHECKPOINT.md`
+
+**Lock notice:** AGENT-HARNESS-05B6B is COMPLETE and LOCKED. Do not modify this entry. Do not reopen or re-implement without explicit approval.
+
+**Next recommended step:** Choose the next validation slice — either `browser_smoke` against production compose or ai-service/provider runtime validation — but only after Keith approval and with a registered task.
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05B6B.
