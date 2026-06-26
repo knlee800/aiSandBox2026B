@@ -29,7 +29,7 @@ const MAX_VISIBLE_TEXT_CHARS = 2000;
 const MAX_RESULT_JSON_BYTES = 32_768;
 
 const SMOKE_SCRIPT = `
-const { chromium } = require('playwright');
+const { chromium } = require('/opt/browser-smoke/node_modules/playwright');
 const url = process.env.SMOKE_URL;
 const timeoutMs = parseInt(process.env.SMOKE_TIMEOUT_MS || '30000', 10);
 (async () => {

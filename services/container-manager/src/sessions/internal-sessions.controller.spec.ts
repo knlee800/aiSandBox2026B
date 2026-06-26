@@ -9,6 +9,7 @@ describe('InternalSessionsController file routes', () => {
 
   beforeEach(() => {
     sessionsService = {
+      startSessionContainer: jest.fn<any>(),
       deleteFileFromContainer: jest.fn<any>(),
       searchFilesInContainer: jest.fn<any>(),
     };
@@ -92,5 +93,38 @@ describe('InternalSessionsController file routes', () => {
     await expect(
       controller.runBrowserSmoke('session-123', 'https://evil.com'),
     ).rejects.toThrow(BadRequestException);
+  });
+
+  describe('internal start route (AGENT-HARNESS-05B5A)', () => {
+    it('delegates with browserCapable true', async () => {
+      const result = await controller.startContainer('session-123', 'user-1', true);
+
+      expect(sessionsService.startSessionContainer).toHaveBeenCalledWith(
+        'session-123',
+        'user-1',
+        { browserCapable: true },
+      );
+      expect(result).toEqual({ message: 'Session container started successfully' });
+    });
+
+    it('delegates without browserCapable when omitted', async () => {
+      await controller.startContainer('session-123', 'user-1', undefined);
+
+      expect(sessionsService.startSessionContainer).toHaveBeenCalledWith(
+        'session-123',
+        'user-1',
+        undefined,
+      );
+    });
+
+    it('delegates without browserCapable when false', async () => {
+      await controller.startContainer('session-123', 'user-1', false);
+
+      expect(sessionsService.startSessionContainer).toHaveBeenCalledWith(
+        'session-123',
+        'user-1',
+        undefined,
+      );
+    });
   });
 });

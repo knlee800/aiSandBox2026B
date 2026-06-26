@@ -177,6 +177,33 @@ describe('BrowserSmokeService', () => {
     expect(result.truncated).toBe(true);
   });
 
+  it('should use absolute image-owned playwright path in SMOKE_SCRIPT', async () => {
+    mockPreviewProxyService.getProxyTarget.mockResolvedValue('http://172.17.0.2:3000');
+    mockDockerRuntimeService.execInContainerBySessionId.mockResolvedValue({
+      exitCode: 0,
+      stdout: JSON.stringify({
+        success: true,
+        url: 'http://172.17.0.2:3000/',
+        pageTitle: 'Test',
+        consoleErrors: [],
+        consoleWarnings: [],
+        networkErrors: [],
+        visibleTextSnippet: '',
+        durationMs: 100,
+      }),
+      stderr: '',
+    });
+
+    await service.run({ sessionId: 'sess-1', url: '/' });
+
+    const callArgs = mockDockerRuntimeService.execInContainerBySessionId.mock.calls[0];
+    const env = callArgs[3];
+    expect(env.SMOKE_SCRIPT).toContain(
+      "require('/opt/browser-smoke/node_modules/playwright')",
+    );
+    expect(env.SMOKE_SCRIPT).not.toMatch(/require\(\s*['"]playwright['"]\s*\)/);
+  });
+
   it('should pass environment variables without URL interpolation', async () => {
     mockPreviewProxyService.getProxyTarget.mockResolvedValue('http://172.17.0.2:3000');
     mockDockerRuntimeService.execInContainerBySessionId.mockResolvedValue({

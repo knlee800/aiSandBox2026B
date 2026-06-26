@@ -35,6 +35,35 @@ export class InternalSessionsController {
   ) {}
 
   /**
+   * POST /api/internal/sessions/:id/start
+   * Start a session's Docker container with optional browser-capable mode
+   * AGENT-HARNESS-05B5A: Internal-only browser-capable session creation wiring
+   *
+   * Request body:
+   * - userId (optional): User ID to associate with the session
+   * - browserCapable (optional): If true, creates a browser-capable container
+   *   using aisandbox-workspace-browser:local with elevated resource limits
+   *
+   * Errors:
+   * - 403 Forbidden: Missing or invalid X-Internal-Service-Key
+   * - 500 Internal Server Error: Container creation or startup failed
+   */
+  @Post(':id/start')
+  @HttpCode(HttpStatus.OK)
+  async startContainer(
+    @Param('id') sessionId: string,
+    @Body('userId') userId?: string,
+    @Body('browserCapable') browserCapable?: boolean,
+  ): Promise<{ message: string }> {
+    await this.sessionsService.startSessionContainer(
+      sessionId,
+      userId,
+      browserCapable === true ? { browserCapable: true } : undefined,
+    );
+    return { message: 'Session container started successfully' };
+  }
+
+  /**
    * DELETE /api/internal/sessions/:id/container
    * Remove a session's Docker container
    *

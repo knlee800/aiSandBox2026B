@@ -330,7 +330,11 @@ export class SessionsService {
    * Returns only after container is confirmed running
    * @param sessionId - Session UUID
    */
-  async startSessionContainer(sessionId: string, userId?: string): Promise<void> {
+  async startSessionContainer(
+    sessionId: string,
+    userId?: string,
+    options?: { browserCapable?: boolean },
+  ): Promise<void> {
     if (userId) {
       const existing = this.db
         .prepare('SELECT id FROM sessions WHERE id = ?')
@@ -357,6 +361,7 @@ export class SessionsService {
     const containerId = await this.dockerRuntimeService.createContainer(
       sessionId,
       workspacePath,
+      options?.browserCapable === true ? { browserCapable: true } : undefined,
     );
     await this.dockerRuntimeService.startContainer(containerId);
 

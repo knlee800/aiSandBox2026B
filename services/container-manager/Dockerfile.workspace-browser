@@ -1,8 +1,9 @@
-# Browser-capable workspace sandbox image for future browser_smoke tool.
-# AGENT-HARNESS-05B1: Prerequisite image only — browser_smoke is NOT implemented.
+# Browser-capable workspace sandbox image for browser_smoke tool.
+# AGENT-HARNESS-05B4: Fixed Playwright module resolution.
 #
 # Base: node:20-slim (Debian bookworm) for Chromium shared-library compatibility.
-# Playwright 1.60.0 + Chromium installed at build time.
+# Playwright 1.60.0 installed to /opt/browser-smoke/node_modules at build time.
+# NODE_PATH set to /opt/browser-smoke/node_modules.
 # No platform secrets, credentials, or service tokens.
 # No persistent browser profiles.
 #
@@ -15,7 +16,16 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends git ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-RUN npx playwright@1.60.0 install --with-deps chromium
+RUN npm install \
+    --prefix /opt/browser-smoke \
+    --omit=dev \
+    --no-audit \
+    --no-fund \
+    playwright@1.60.0
+
+ENV NODE_PATH=/opt/browser-smoke/node_modules
+
+RUN /opt/browser-smoke/node_modules/.bin/playwright install --with-deps chromium
 
 WORKDIR /workspace
 

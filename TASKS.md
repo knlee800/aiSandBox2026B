@@ -21048,3 +21048,471 @@ Phase 5 — Service-Chain Smoke: NOT RUN
 **Next step:** Register a targeted fix slice (`AGENT-HARNESS-05B4` or equivalent) for `Dockerfile.workspace-browser` Playwright module resolution before service-chain smoke. Do not implement until registered and explicitly approved.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05B3.
+
+---
+
+#### AGENT-HARNESS-05B4: Browser Sandbox Playwright Module Resolution Fix
+
+**Task ID:** AGENT-HARNESS-05B4
+**Status:** COMPLETE and LOCKED
+**Priority:** High
+**Nature:** DOCKER IMAGE / BROWSER RUNTIME FIX / TARGETED DEFECT REMEDIATION
+**Risk:** Medium
+**Completed:** 2026-06-25
+
+**Triggering defect:** AGENT-HARNESS-05B3-DEFECT-01 — RESOLVED
+
+**Depends on:**
+- AGENT-HARNESS-00 — COMPLETE and LOCKED
+- AGENT-HARNESS-01A — COMPLETE and LOCKED
+- AGENT-HARNESS-01B — COMPLETE and LOCKED
+- AGENT-HARNESS-01C — COMPLETE and LOCKED
+- AGENT-HARNESS-01D — COMPLETE and LOCKED
+- AGENT-HARNESS-01E — COMPLETE and LOCKED
+- AGENT-HARNESS-02A — COMPLETE and LOCKED
+- AGENT-HARNESS-02B — COMPLETE and LOCKED
+- AGENT-HARNESS-02C — COMPLETE and LOCKED
+- AGENT-HARNESS-03A — COMPLETE and LOCKED
+- AGENT-HARNESS-03B — COMPLETE and LOCKED
+- AGENT-HARNESS-03C — COMPLETE and LOCKED
+- AGENT-HARNESS-04A — COMPLETE and LOCKED
+- AGENT-HARNESS-05A — COMPLETE and LOCKED
+- AGENT-HARNESS-05B1 — COMPLETE and LOCKED
+- AGENT-HARNESS-05B2 — COMPLETE and LOCKED
+- AGENT-HARNESS-05B3 — COMPLETE and LOCKED with PARTIAL PASS
+- AGENT-HARNESS-05B3-DEFECT-01 — triggering defect (RESOLVED)
+
+**Problem:**
+The browser sandbox image (`aisandbox-workspace-browser:local`) contained a working Chromium installation but not a Playwright Node package on a stable, deterministic module resolution path. `Dockerfile.workspace-browser` installed Playwright via `npx playwright@1.60.0 install --with-deps chromium`, which placed the Playwright Node package only in a transient npx cache (e.g. `/root/.npm/_npx/<hash>/node_modules/playwright`). The `BrowserSmokeService` executed an injected Node script containing `require('playwright')`, which could not resolve the package through the default Node module search path, causing a `MODULE_NOT_FOUND` error at runtime.
+
+**Implementation files changed:**
+- `services/container-manager/Dockerfile.workspace-browser`
+- `services/container-manager/src/browser-smoke/browser-smoke.service.ts`
+- `services/container-manager/src/browser-smoke/browser-smoke.service.spec.ts`
+
+**Implementation summary:**
+- Replaced transient npx installation with pinned `playwright@1.60.0` installed via `npm install --prefix /opt/browser-smoke playwright@1.60.0`.
+- Set `NODE_PATH=/opt/browser-smoke/node_modules` as a permanent `ENV` instruction in the Dockerfile.
+- Used local CLI `/opt/browser-smoke/node_modules/.bin/playwright install --with-deps chromium` for Chromium installation (no npx at any stage).
+- `BrowserSmokeService` now loads `require('/opt/browser-smoke/node_modules/playwright')` via absolute path, preventing workspace package shadowing.
+- Added one focused test verifying the absolute image-owned path.
+
+**Non-Docker validation:**
+- BrowserSmokeService spec: PASS — 12/12 tests
+- Container-manager build: PASS
+- Container-manager full tests: PASS — 81/81 tests across 7 suites
+
+**Docker validation:**
+
+| # | Check | Result |
+|---|-------|--------|
+| 1 | Image build (exit 0, ~125s, 1.93 GB, no transient npx cache) | PASS |
+| 2 | Node version: v20.20.2 | PASS |
+| 3 | Pinned Playwright package: 1.60.0 | PASS |
+| 4 | `require('playwright')` resolves without NODE_PATH workaround | PASS |
+| 5 | Fixed local CLI at `/opt/browser-smoke/node_modules/.bin/playwright --version`: 1.60.0 | PASS |
+| 6 | Deterministic package location: `/opt/browser-smoke/node_modules/playwright/package.json` | PASS |
+| 7 | Minimal Chromium launch (`data:` URL, exit 0, output: `browser-smoke-ok`, 256 MB shm) | PASS |
+
+**Overall result: PASS**
+
+**Defect resolved:** AGENT-HARNESS-05B3-DEFECT-01
+
+**Acceptance criteria:**
+- [x] Architecture/security review completed and strategy selected
+- [x] `Dockerfile.workspace-browser` updated with stable Playwright module installation
+- [x] `aisandbox-workspace-browser:local` image rebuild exits 0
+- [x] `node -e "require('playwright'); console.log('playwright ok')"` passes without npx-cache NODE_PATH
+- [x] Minimal offline Chromium launch test (`data:` URL) passes
+- [x] Static image verification recorded (image size 1.93 GB, node v20.20.2, playwright 1.60.0)
+- [x] Normal non-browser container behavior confirmed unchanged
+- [x] AGENT-HARNESS-05B4 checkpoint created during consolidation
+
+**Phase 5 status:** NOT RUN. Phase 5 full service-chain smoke is outside AGENT-HARNESS-05B4 scope, remains separately gated, and requires explicit registration and approval before execution.
+
+**Checkpoint:** `docs/AGENT-HARNESS-05B4-CHECKPOINT.md`
+
+**Lock notice:** AGENT-HARNESS-05B4 is COMPLETE and LOCKED. Do not modify this task entry. Do not reopen or re-implement without explicit approval.
+
+**Next step:** Register `AGENT-HARNESS-05B5 — Browser Smoke End-to-End Service-Chain Validation` (registration only). Do not implement until registered and explicitly approved.
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05B4.
+
+---
+
+#### AGENT-HARNESS-05B5: Browser Smoke End-to-End Service-Chain Validation
+
+**Task ID:** AGENT-HARNESS-05B5
+**Status:** COMPLETE and LOCKED
+**Completed:** 2026-06-26
+**Priority:** High
+**Nature:** LIVE VALIDATION / SERVICE-CHAIN SMOKE / BROWSER AUTOMATION / END-TO-END PASS
+**Risk:** High
+
+**Depends on:**
+- AGENT-HARNESS-00 — COMPLETE and LOCKED
+- AGENT-HARNESS-01A — COMPLETE and LOCKED
+- AGENT-HARNESS-01B — COMPLETE and LOCKED
+- AGENT-HARNESS-01C — COMPLETE and LOCKED
+- AGENT-HARNESS-01D — COMPLETE and LOCKED
+- AGENT-HARNESS-01E — COMPLETE and LOCKED
+- AGENT-HARNESS-02A — COMPLETE and LOCKED
+- AGENT-HARNESS-02B — COMPLETE and LOCKED
+- AGENT-HARNESS-02C — COMPLETE and LOCKED
+- AGENT-HARNESS-03A — COMPLETE and LOCKED
+- AGENT-HARNESS-03B — COMPLETE and LOCKED
+- AGENT-HARNESS-03C — COMPLETE and LOCKED
+- AGENT-HARNESS-04A — COMPLETE and LOCKED
+- AGENT-HARNESS-05A — COMPLETE and LOCKED
+- AGENT-HARNESS-05B1 — COMPLETE and LOCKED
+- AGENT-HARNESS-05B2 — COMPLETE and LOCKED
+- AGENT-HARNESS-05B3 — COMPLETE and LOCKED with PARTIAL PASS
+- AGENT-HARNESS-05B4 — COMPLETE and LOCKED
+
+**Problem:**
+AGENT-HARNESS-05B2 implemented the `browser_smoke` handler path with mocked tests. AGENT-HARNESS-05B3 validated the browser image and found a Playwright module-resolution defect. AGENT-HARNESS-05B4 fixed that defect and confirmed the browser-capable image builds, Playwright resolves correctly, and Chromium launches against a `data:` URL. The remaining validation gap is the full end-to-end service chain: ai-service → API Gateway → container-manager → browser-capable workspace container → preview target. No live service-chain smoke has been run to date.
+
+**Objective:**
+Register a live validation slice for the `browser_smoke` end-to-end service-chain path.
+
+Future validation must confirm:
+- Platform services can run with the current implementation.
+- A browser-capable session can be created or controlled safely.
+- A minimal preview app can be served.
+- `browser_smoke` can be invoked through the service chain.
+- `BrowserSmokeService` can resolve the session preview target.
+- Chromium can navigate to the session preview target.
+- Structured `browser_smoke` result is returned.
+- All commands, outputs, failures, and environment assumptions are recorded.
+
+**Approval requirement:**
+This task requires Keith's explicit approval before any live validation command is run.
+
+Registration does not grant approval to:
+- Start services.
+- Create sessions.
+- Run Docker commands.
+- Run browser automation.
+- Run Playwright or Chromium.
+- Run `browser_smoke`.
+- Run Phase 5 service-chain smoke.
+
+The next step after registration is a validation plan / approval prompt, not execution.
+
+**Scope:**
+Register AGENT-HARNESS-05B5 only.
+
+Future validation may include, after Keith approval:
+- Confirming required services are running or starting only the required services.
+- Confirming `aisandbox-workspace-browser:local` exists.
+- Creating a controlled browser-capable session.
+- Creating or using a minimal preview app inside that session.
+- Starting/registering preview.
+- Invoking `browser_smoke` through the intended service chain.
+- Recording exact output and final verdict.
+- Classifying any failure by layer:
+  - service startup
+  - browserCapable session creation
+  - preview app creation/start
+  - preview port registration
+  - API Gateway internal proxy
+  - container-manager `BrowserSmokeService`
+  - Docker exec
+  - Playwright/Chromium runtime
+  - URL validation
+  - artifact/result parsing
+
+**Non-goals:**
+- No production feature expansion.
+- No code changes unless a defect is discovered and separately approved in a follow-up task.
+- No frontend/UI changes.
+- No database schema changes.
+- No package/dependency changes.
+- No Dockerfile changes.
+- No registry redesign.
+- No prompt/model adapter changes.
+- No checkpoint/revert changes.
+- No git commit/push.
+- No unbounded external browsing or unrestricted URL validation.
+- No Phase 5 execution during registration.
+
+**Likely future validation areas:**
+Exact files must be confirmed during the validation plan:
+- `services/container-manager/src/browser-smoke/browser-smoke.service.ts`
+- `services/container-manager/src/sessions/internal-sessions.controller.ts`
+- `services/container-manager/src/docker/docker-runtime.service.ts`
+- `services/container-manager/src/previews/`
+- `services/api-gateway/src/sessions/internal-workspace-files.controller.ts`
+- `services/api-gateway/src/clients/container-manager-http.client.ts`
+- `services/ai-service/src/clients/api-gateway-http.client.ts`
+- `services/ai-service/src/agent-harness/tools/handlers/browser-smoke-tool-handlers.ts`
+- `services/ai-service/src/worker/worker.processor.ts`
+- Docker/compose/service startup files only if needed for validation planning.
+
+**Expected future validation phases:**
+1. Read-only environment/service readiness check.
+2. Confirm browser image exists and Playwright/Chromium baseline remains valid.
+3. Start or confirm required platform services only with Keith approval.
+4. Create a controlled browser-capable session only with Keith approval.
+5. Create or serve a minimal preview app only with Keith approval.
+6. Register/confirm preview target.
+7. Invoke `browser_smoke` through the intended service chain.
+8. Record structured result and classify pass/fail.
+9. Stop and produce validation report.
+10. Consolidate/checkpoint only after Keith reviews.
+
+**Security / safety requirements:**
+- Keith explicit approval before any live command.
+- No unrestricted external URL navigation.
+- Use only a controlled local/session preview target.
+- No platform cookies or service keys in browser context.
+- No credentials injected into the browser.
+- No persistent browser profiles.
+- Hard timeout.
+- Bounded output/artifacts.
+- No screenshot expansion unless already implemented and bounded.
+- No frontend/UI changes.
+- No database/schema changes.
+- No Dockerfile changes.
+- No package/dependency changes.
+- No source fixes during validation unless separately approved.
+- Stop immediately on unexpected destructive risk.
+
+**Validation requirements:**
+Registration only now; do not run validation.
+
+Future validation must record:
+- Exact commands run.
+- Service prerequisites.
+- Environment assumptions.
+- Session ID handling without exposing sensitive values.
+- Preview URL handling.
+- `browser_smoke` request and response shape.
+- Exit codes.
+- Logs/errors.
+- Final verdict.
+- Whether a follow-up fix slice is required.
+
+**Acceptance criteria (registration):**
+- [x] AGENT-HARNESS-05B5 appended to TASKS.md after AGENT-HARNESS-05B4
+- [x] AGENT-HARNESS-05B5 appended to TASKS_BACKLOG_FULL.md after AGENT-HARNESS-05B4
+- [x] Status is ACTIVE, not COMPLETE/LOCKED
+- [x] Dependencies through AGENT-HARNESS-05B4 documented as COMPLETE and LOCKED
+- [x] Problem, objective, approval requirement, scope, non-goals, likely validation areas, security requirements, and validation requirements documented
+- [x] Registration explicitly states no live commands may run until Keith approves a validation plan
+- [x] No source/runtime/test/package/Docker/frontend/database files modified
+- [x] No Docker build/run, browser automation, test, build, service startup, or browser smoke executed
+- [x] No checkpoint document created
+
+**Acceptance criteria (validation — all satisfied):**
+- [x] Keith explicitly approved validation plan
+- [x] Required services readiness recorded (Phase 1, Phase 3)
+- [x] Browser image readiness recorded (Phase 2)
+- [x] Browser-capable session creation through platform's own service boundary recorded (Phase 4)
+- [x] Minimal preview app/preview target recorded (Phase 5, Phase 6)
+- [x] `browser_smoke` service-chain invocation recorded (Phase 7)
+- [x] Structured `browser_smoke` result recorded (Phase 7)
+- [x] Final pass/fail verdict recorded — PASS
+- [x] Follow-up defect/fix recommendations documented
+- [x] AGENT-HARNESS-05B5 checkpoint created during consolidation after validation is complete
+
+**Prerequisite resolution:** AGENT-HARNESS-05B5A (COMPLETE and LOCKED, 2026-06-25) resolved the blocker identified during 05B5 planning. Browser-capable sessions are now created via `POST /api/internal/sessions/:id/start` with `{ browserCapable: true }` and `X-Internal-Service-Key`.
+
+**Validation summary:**
+- Phases 1–7 executed. Phase 8 not executed (out of scope).
+- Full service chain validated: API Gateway → container-manager → browser-capable workspace container → preview target → Playwright Chromium → structured BrowserSmokeResult.
+- Session container confirmed running `aisandbox-workspace-browser:local` with `NODE_PATH=/opt/browser-smoke/node_modules`.
+- Preview server (port 3000) confirmed serving correct HTML (`05B5 Smoke` / `Hello from 05B5`).
+- `browser_smoke` invoked via `POST http://localhost:4000/api/internal/workspace/05b5-smoke-test/browser-smoke`.
+
+**Full BrowserSmokeResult (Phase 7):**
+```json
+{
+  "success": true,
+  "url": "http://172.17.0.2:3000/",
+  "pageTitle": "05B5 Smoke",
+  "consoleErrors": [],
+  "consoleWarnings": [],
+  "networkErrors": [],
+  "visibleTextSnippet": "Hello from 05B5",
+  "durationMs": 564,
+  "truncated": false
+}
+```
+
+**Final verdict: PASS**
+
+**Cleanup:** `sandbox-session-05b5-smoke-test` stopped and removed. Workspace path removed. SQLite validation records (`validation-user`, `05b5-smoke-test`) cleaned. Dev services left running.
+
+**Confirmation:** No source/runtime/test/package/Docker/frontend/database files changed during validation or consolidation. No Docker build/service/session/browser/test/build commands were rerun during consolidation. Phase 8 was not executed.
+
+**Follow-up notes:**
+1. Container-manager health log/route mismatch: startup log advertises `/api/health` but that route does not exist; real readiness endpoint is `/api/internal/stats`. Register a small fix task separately — do not register yet.
+2. `userId`/SQLite FK behavior: `POST /api/internal/sessions/:id/start` with a `userId` that does not exist in the `users` table triggers a FOREIGN KEY constraint failure. Register an investigation/fix task separately — do not register yet.
+
+**Checkpoint:** `docs/AGENT-HARNESS-05B5-CHECKPOINT.md`
+
+**Lock notice:** AGENT-HARNESS-05B5 is COMPLETE and LOCKED. Do not modify this task entry. Do not reopen or re-implement without explicit approval.
+
+**Next step:** Register a small follow-up task for the container-manager health route/log mismatch, or investigate the internal start `userId`/FK behavior. Do not register the next task yet.
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05B5.
+
+---
+
+#### AGENT-HARNESS-05B5A: Browser-Capable Session Creation Wiring
+
+**Task ID:** AGENT-HARNESS-05B5A
+**Status:** COMPLETE and LOCKED
+**Completed:** 2026-06-25
+**Priority:** High
+**Risk:** Medium-High
+**Nature:** BACKEND WIRING / INTERNAL SESSION CONTROL / PREREQUISITE FIX / NO LIVE BROWSER SMOKE
+
+**Depends on:**
+- AGENT-HARNESS-00 — COMPLETE and LOCKED
+- AGENT-HARNESS-01A — COMPLETE and LOCKED
+- AGENT-HARNESS-01B — COMPLETE and LOCKED
+- AGENT-HARNESS-01C — COMPLETE and LOCKED
+- AGENT-HARNESS-01D — COMPLETE and LOCKED
+- AGENT-HARNESS-01E — COMPLETE and LOCKED
+- AGENT-HARNESS-02A — COMPLETE and LOCKED
+- AGENT-HARNESS-02B — COMPLETE and LOCKED
+- AGENT-HARNESS-02C — COMPLETE and LOCKED
+- AGENT-HARNESS-03A — COMPLETE and LOCKED
+- AGENT-HARNESS-03B — COMPLETE and LOCKED
+- AGENT-HARNESS-03C — COMPLETE and LOCKED
+- AGENT-HARNESS-04A — COMPLETE and LOCKED
+- AGENT-HARNESS-05A — COMPLETE and LOCKED
+- AGENT-HARNESS-05B1 — COMPLETE and LOCKED
+- AGENT-HARNESS-05B2 — COMPLETE and LOCKED
+- AGENT-HARNESS-05B3 — COMPLETE and LOCKED with PARTIAL PASS
+- AGENT-HARNESS-05B4 — COMPLETE and LOCKED
+- AGENT-HARNESS-05B5 — ACTIVE, BLOCKED BEFORE LIVE EXECUTION (pending 05B5A completion)
+
+**Problem:**
+AGENT-HARNESS-05B5 planning identified a blocker before any live command was run. `SessionsService.startSessionContainer()` in `services/container-manager/src/sessions/sessions.service.ts` calls `DockerRuntimeService.createContainer(sessionId, workspacePath)` without passing `{ browserCapable: true }`. The normal session start path always creates a standard `node:20-alpine` container, not `aisandbox-workspace-browser:local`. No currently exposed API endpoint or service method creates a browser-capable container through the platform's own session boundary.
+
+**Impact:**
+The real end-to-end `browser_smoke` service-chain validation (AGENT-HARNESS-05B5) cannot prove the intended product/runtime flow because the platform cannot yet create browser-capable sessions through its own internal session start path.
+
+**Objective:**
+Add a controlled, internal, test-safe opt-in mechanism for browser-capable session/container creation using existing `DockerRuntimeService` support for `createContainer(..., { browserCapable: true })`. The fix must preserve normal sessions as standard non-browser containers by default and must not expose a public user-facing browser-capable session flag.
+
+**Candidate design options (to be resolved during architecture/security review before implementation):**
+
+1. **Internal-only endpoint option:** Add or extend an internal session start endpoint accepting a typed `browserCapable: true` flag, protected by `X-Internal-Service-Key`. Only the internal route honors this flag; public routes ignore it.
+
+2. **Existing internal endpoint option:** Add an optional typed field to an existing internal session start DTO, honored only on the internal route and ignored on all public routes.
+
+3. **Service-only option:** Add a typed service method used only by internal validation/harness code, with no public HTTP exposure.
+
+4. **Rejected by default:** Do not add a public user-facing `browserCapable` flag. Browser-capable containers are heavier (use `aisandbox-workspace-browser:local`) and must not be available to end users unless separately designed as a product feature.
+
+**Scope:**
+- Inspect existing session start APIs and internal service boundaries.
+- Select the safest internal-only opt-in mechanism for browser-capable session creation.
+- Wire browser-capable creation through the approved controlled internal path.
+- Preserve default non-browser behavior for all existing session creation paths.
+- Add focused tests proving:
+  - Default sessions remain non-browser (standard image, no `browserCapable` flag).
+  - Browser-capable sessions opt in explicitly through the approved path only.
+  - `DockerRuntimeService` receives `{ browserCapable: true }` only through the approved internal path.
+  - Public/user-facing session creation does not gain browser-capable behavior.
+- Do not run AGENT-HARNESS-05B5 Phase 5 service-chain smoke in this task.
+- Do not start services or create live sessions.
+
+**Likely files for implementation review:**
+- `services/container-manager/src/sessions/sessions.service.ts`
+- `services/container-manager/src/sessions/sessions.controller.ts`
+- `services/container-manager/src/sessions/internal-sessions.controller.ts`
+- `services/container-manager/src/sessions/sessions.module.ts`
+- `services/container-manager/src/docker/docker-runtime.service.ts`
+- Relevant specs under `services/container-manager/src/sessions/`
+- Relevant specs under `services/container-manager/src/docker/`
+
+**Non-goals:**
+- No browser_smoke execution.
+- No full AGENT-HARNESS-05B5 service-chain validation.
+- No Docker image changes.
+- No Playwright/Chromium changes.
+- No API Gateway or ai-service changes unless architecture review proves an internal caller path requires it.
+- No frontend/UI changes.
+- No database schema changes unless review proves session state cannot otherwise be represented.
+- No package/dependency changes.
+- No public product feature for users to request browser-capable sessions.
+- No billing changes.
+- No checkpoint/revert redesign.
+- No git commit/push.
+
+**Security / safety requirements:**
+- Browser-capable session creation must be explicit opt-in only.
+- Public routes must not allow arbitrary users to select heavier browser containers unless separately designed as a product feature.
+- If exposed over HTTP, the browser-capable option must be internal-only and protected by existing internal service-key auth.
+- No credentials, cookies, or tokens injected into browser containers.
+- No external URL navigation.
+- No browser smoke during this fix.
+- Preserve resource controls from AGENT-HARNESS-05B1.
+- Preserve default `node:20-alpine` behavior for all ordinary sessions.
+- Stop if implementation would require broad session architecture redesign.
+
+**Validation requirements (future implementation):**
+- Focused unit tests for session service/controller behavior.
+- `DockerRuntimeService` mock assertions confirming correct image option is passed.
+- Regression tests confirming existing `startSession` behavior is unchanged by default.
+- Container-manager build passes.
+- Container-manager targeted tests pass.
+- Full container-manager test suite if the touched area requires it.
+- No live Docker/session/browser commands unless separately approved.
+
+**Acceptance criteria (registration):**
+- [x] AGENT-HARNESS-05B5A appended to TASKS.md after AGENT-HARNESS-05B5
+- [x] AGENT-HARNESS-05B5A appended to TASKS_BACKLOG_FULL.md after AGENT-HARNESS-05B5
+- [x] Status is ACTIVE, not COMPLETE/LOCKED
+- [x] Dependency on AGENT-HARNESS-05B5 planning blocker documented
+- [x] Problem, objective, candidate design options, scope, non-goals, security requirements, validation requirements, and acceptance criteria documented
+- [x] Registration explicitly states AGENT-HARNESS-05B5 remains blocked until 05B5A is complete and locked
+- [x] No source/runtime/test/package/Docker/frontend/database files modified
+- [x] No Docker commands, browser automation, service startup, sessions, tests, builds, or browser smoke executed
+- [x] No checkpoint document created
+
+**Acceptance criteria (implementation — all satisfied):**
+- [x] Architecture/security review selects the internal-only opt-in design option
+- [x] Default session creation remains non-browser
+- [x] Browser-capable session creation is explicitly opt-in
+- [x] Internal route/service-key protection preserved (`InternalServiceAuthGuard` inherited at class level)
+- [x] `DockerRuntimeService` receives `{ browserCapable: true }` only on the approved path
+- [x] Focused tests added/updated
+- [x] Container-manager build passes
+- [x] Relevant targeted tests pass (9/9 controller, 6/6 service, 28/28 docker runtime)
+- [x] Full container-manager tests pass (90/90 across 8 suites)
+- [x] AGENT-HARNESS-05B5 remains ACTIVE (blocked status lifted only after validation plan refresh)
+- [x] Checkpoint created during consolidation
+
+**Implementation summary:**
+- `SessionsService.startSessionContainer()` extended with optional `options?: { browserCapable?: boolean }` third parameter.
+- When `options?.browserCapable === true`, passes `{ browserCapable: true }` to `DockerRuntimeService.createContainer()`.
+- All other cases preserve existing non-browser behavior unchanged.
+- New internal route `POST /api/internal/sessions/:id/start` added to `InternalSessionsController`.
+- Route accepts `{ userId?: string, browserCapable?: boolean }`, normalizes strict `=== true` only.
+- Route protected by existing class-level `InternalServiceAuthGuard` (`X-Internal-Service-Key`).
+- Public `SessionsController` not modified. No public route exposes browser-capable flag.
+- No API Gateway / ai-service / frontend / database / Dockerfile / package / compose / governance config changes.
+
+**Validation summary:**
+- internal-sessions.controller.spec.ts: PASS — 9/9
+- sessions.service.spec.ts: PASS — 6/6
+- docker-runtime.service.spec.ts: PASS — 28/28 (regression)
+- TypeScript build: PASS — clean, exit code 0
+- Full container-manager suite: PASS — 90/90 across 8 suites
+- No Docker commands, service startup, live sessions, browser automation, browser_smoke, or Phase 5 run.
+
+**Checkpoint:** `docs/AGENT-HARNESS-05B5A-CHECKPOINT.md`
+
+**Lock notice:** AGENT-HARNESS-05B5A is COMPLETE and LOCKED. Do not modify this task entry. Do not reopen or re-implement without explicit approval.
+
+**Next step:** Resume AGENT-HARNESS-05B5 with a refreshed validation plan and approval gate using the new internal start route (`POST /api/internal/sessions/:id/start` with `{ browserCapable: true }`). Do not begin live Phase 5 execution before the plan is refreshed and Keith explicitly approves.
+
+**AGENT-HARNESS-05B5 status:** ACTIVE. The prerequisite blocker is resolved. Blocked status can be lifted only after the 05B5 validation plan is refreshed to reference the new internal route and Keith approves.
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05B5A.
