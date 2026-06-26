@@ -32412,3 +32412,113 @@ Added helpers:
 **Next step:** Resume AGENT-HARNESS-05B6C browser_smoke validation against production compose.
 
 **Reference:** See TASKS.md -> AGENT-HARNESS-05B6D.
+
+---
+
+### AGENT-HARNESS-05B7: ai-service Provider/Model Execution Validation Against Production Compose
+
+**Task ID:** AGENT-HARNESS-05B7
+**Title:** ai-service Provider/Model Execution Validation Against Production Compose
+**Status:** COMPLETE and LOCKED
+**Registered:** 2026-06-26
+**Completed:** 2026-06-26
+**Priority:** High
+**Risk:** Medium
+**Family:** AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
+**Nature:** RUNTIME VALIDATION / PRODUCTION COMPOSE / AI-SERVICE / PROVIDER EXECUTION
+
+**Dependencies:**
+- AGENT-HARNESS-05B5 COMPLETE and LOCKED — browser_smoke service-chain validation passed using local dev services.
+- AGENT-HARNESS-05B6 COMPLETE/ACTIVE investigation context — production compose startup issues investigated.
+- AGENT-HARNESS-05B6A COMPLETE and LOCKED — production compose config/startup fixes implemented.
+- AGENT-HARNESS-05B6B COMPLETE and LOCKED — production compose runtime validation passed.
+- AGENT-HARNESS-05B6D COMPLETE and LOCKED — internal session start DB row fix.
+- AGENT-HARNESS-05B6C COMPLETE and LOCKED — browser_smoke infrastructure validated end-to-end through api-gateway -> container-manager -> browser-capable workspace container -> preview -> BrowserSmokeService. PASS.
+
+**Context:**
+AGENT-HARNESS-05B6C confirmed that the browser_smoke infrastructure executes correctly end-to-end through the production compose stack. The remaining unvalidated path is ai-service provider/model execution. ai-service has been implemented with Agent Harness tool infrastructure, but it has not yet been exercised against the production compose stack to confirm that the provider/model execution path reaches completion.
+
+**Objective:**
+Validate — without making source changes — that ai-service can execute an Agent Harness flow through the production compose stack using the implemented tool infrastructure.
+
+**Scope:**
+1. Confirm production compose stack health (all services running, health endpoints returning HTTP 200).
+2. Confirm ai-service container is running and connected to required dependencies (api-gateway, container-manager, message broker if applicable).
+3. Identify the correct production-safe mechanism to enqueue or invoke a minimal ai-service execution job (e.g., via api-gateway AI route, internal queue publish, or direct internal endpoint).
+4. Document exact commands, API calls, expected responses, and cleanup steps for Keith approval before any runtime execution.
+5. Validate the provider/model execution path **only after Keith explicitly approves the runtime step**.
+6. Confirm no source changes are required; if source changes are needed, stop and register a fix slice.
+7. Capture exact commands, API call bodies, responses, error output (if any), and cleanup steps.
+
+**Approval gate — HARD BLOCK:**
+Provider/model execution against the production compose stack must NOT be run until Keith explicitly approves the runtime step. The validation plan must be presented to Keith first. This gate must not be bypassed.
+
+**Risks:**
+- ai-service may require a live provider API key (OPENAI_API_KEY or equivalent) that is not set in the production compose .env; would surface as a provider auth error.
+- ai-service may require a real user session / FK in the database; if so, a minimal safe setup step is needed before execution.
+- Execution may produce a partial or hung run if the message broker or queue consumer is not running in the production compose stack.
+- Any discovered blocker must be registered as a separate fix slice; no in-task fixes are permitted.
+
+**Non-goals:**
+- No source changes during this task.
+- No provider/model execution until Keith approves.
+- No browser_smoke rerun.
+- No Docker rebuilds.
+- No dependency changes.
+- No frontend/UI changes.
+- No checkpoint until task completion.
+- No fixes if validation finds a blocker; register a fix slice instead.
+- No unrelated refactors.
+
+**Validation requirements:**
+1. Production compose stack health confirmed (docker ps, /api/health endpoints).
+2. ai-service container running and healthy (docker ps, ai-service /api/health or equivalent).
+3. ai-service connected to required services (check logs for startup errors if needed).
+4. Minimal execution job mechanism documented and presented for Keith approval.
+5. **After Keith approval only:** invoke minimal job, capture full response/output.
+6. Confirm provider/model execution path reached expected state (job accepted, response returned, or error clearly classified).
+7. Confirm no source changes were made.
+8. Cleanup any test resources created.
+9. Final production compose status confirmed: all production services still running.
+
+**Registration acceptance criteria:**
+- [x] AGENT-HARNESS-05B7 appended to TASKS.md after AGENT-HARNESS-05B6D.
+- [x] AGENT-HARNESS-05B7 appended to TASKS_BACKLOG_FULL.md with mirrored content.
+- [x] Status is ACTIVE.
+- [x] Dependencies through AGENT-HARNESS-05B6C COMPLETE and LOCKED documented.
+- [x] Objective, scope, non-goals, risks, validation requirements, and approval gate documented.
+- [x] Runtime provider/model execution explicitly blocked until Keith approves.
+- [x] No source/runtime/test/package/Docker/frontend/database files modified.
+- [x] No .env changes.
+- [x] No checkpoint created.
+
+**Runtime validation acceptance criteria (verified at completion):**
+- [x] Production compose stack health confirmed — all 8 containers running, api-gateway /api/health HTTP 200.
+- [x] ai-service container running and connected to required services.
+- [x] Minimal execution job mechanism identified and documented — POST /api/ai/execute via cookie auth.
+- [x] Keith approval obtained before runtime execution.
+- [x] Provider/model execution path validated — xAI end-to-end PASS.
+- [x] No source changes made.
+- [x] Test resources cleaned up — temp files deleted, no containers/sessions created.
+- [x] Final production compose status confirmed healthy.
+- [x] Checkpoint created during consolidation.
+
+**Validation summary:**
+- Production compose started successfully (8 containers).
+- api-gateway health: HTTP 200 `{"status":"ok","service":"api-gateway","version":"0.1.0"}`.
+- Blocker: seed password hash mismatch for test@aisandbox.com — resolved by Keith-approved targeted DB data correction.
+- Blocker: non-UUID sessionId — corrected to valid UUID `35d53116-6723-4571-af12-ac256977c007`.
+- Submit: HTTP 202 `{"executionId":"ccc85998-acb4-4611-84a7-d5727a0119e1","status":"queued"}`.
+- Poll: HTTP 200 `{"status":"completed","tokensUsed":472,"output":"05B7 xAI validation passed","model":"grok-4.3","provider":"xai","fileActions":[]}`.
+- usage_records confirmed: execution_status completed, provider xai, tokens_used 472.
+- Queue: no new failures, removeOnComplete true, 4 workers active.
+
+**Final verdict:** PASS
+
+**Lock notice:** This task is COMPLETE and LOCKED. Do not modify.
+
+**Next step:** Register a follow-up fix slice for seed password hash mismatch correction and/or sessionId UUID input validation, after Keith review.
+
+**Checkpoint reference:** docs/AGENT-HARNESS-05B7-CHECKPOINT.md
+
+**Reference:** See TASKS.md -> AGENT-HARNESS-05B7.
