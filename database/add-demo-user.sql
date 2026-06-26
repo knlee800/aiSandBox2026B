@@ -5,7 +5,7 @@
 INSERT INTO users (email, password_hash, auth_provider, role, plan_type, is_active)
 VALUES (
   'demo@aisandbox.com',
-  '$2b$12$EMkNzzhbM9OYHseodQCVc.jNLeYWZA9ibHOkwrj6f.otZS79yc.hS',
+  '$2b$12$DWbQPZwzAAW8s9KRmh30/.7xTIihmziooIXxrxGNVWGj6IyqLwHhi',
   'email',
   'user',
   'free',

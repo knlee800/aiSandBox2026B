@@ -405,7 +405,7 @@ CREATE INDEX idx_orchestrator_conv_pending ON orchestrator_conversations(confirm
 INSERT INTO users (email, password_hash, role, plan_type, is_active)
 VALUES (
   'test@aisandbox.com',
-  '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYIBx8fBmyq',
+  '$2b$12$Euh2JBgTe8dUbsF1VDloVuZbh2tuQMxHT4xODHyDQUqdEXmFI5PL6',
   'admin',
   'enterprise',
   true

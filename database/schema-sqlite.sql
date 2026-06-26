@@ -177,7 +177,7 @@ INSERT OR IGNORE INTO users (id, email, password_hash, role, plan_type, is_activ
 VALUES (
   'test-user-001',
   'test@aisandbox.com',
-  '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYIBx8fBmyq',
+  '$2b$12$Euh2JBgTe8dUbsF1VDloVuZbh2tuQMxHT4xODHyDQUqdEXmFI5PL6',
   'admin',
   'enterprise',
   1
