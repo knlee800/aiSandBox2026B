@@ -32248,3 +32248,198 @@ Confirm that:
 **Next recommended step:** Choose the next validation slice — either `browser_smoke` against production compose or ai-service/provider runtime validation — but only after Keith approval and with a registered task.
 
 **Reference:** See TASKS.md -> AGENT-HARNESS-05B6B.
+
+---
+
+### AGENT-HARNESS-05B6C: Production Compose Browser Smoke Validation
+
+**Task ID:** AGENT-HARNESS-05B6C
+**Status:** ACTIVE
+**Priority:** High
+**Risk:** Medium
+**Family:** AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
+**Nature:** RUNTIME VALIDATION / PRODUCTION COMPOSE / BROWSER_SMOKE / NO FIX YET
+
+**Dependencies:**
+- AGENT-HARNESS-05B5 COMPLETE and LOCKED — browser_smoke service-chain validation passed using local dev services.
+- AGENT-HARNESS-05B6 COMPLETE/ACTIVE investigation context — production compose startup issues investigated.
+- AGENT-HARNESS-05B6A COMPLETE and LOCKED — production compose config/startup fixes implemented.
+- AGENT-HARNESS-05B6B COMPLETE and LOCKED — production compose runtime validation passed.
+
+**Current known runtime state from 05B6B:**
+- docker-compose.prod.yml resolves with real root .env.
+- Production compose stack starts successfully.
+- 8/8 containers are running.
+- api-gateway is healthy on port 4000.
+- container-manager is healthy on loopback-only port 4002.
+- container-manager /api/health returns HTTP 200.
+- container-manager /api/internal/stats returns HTTP 200 with dockerConnectivity true.
+- api-gateway restart loop is resolved.
+- container-manager no-host-port issue is resolved.
+- browser_smoke was not run during 05B6B.
+- ai-service provider/model execution was not run during 05B6B.
+
+**Problem:**
+Production compose startup has now passed, but the browser_smoke service-chain has not yet been validated against the running production compose stack.
+
+**Objective:**
+Validate that browser_smoke works end-to-end through the production compose stack.
+
+**Validation target chain:**
+API Gateway container on host port 4000
+→ container-manager container via Docker service networking
+→ browser-capable sandbox container
+→ minimal preview target
+→ Playwright Chromium
+→ BrowserSmokeResult
+
+**Scope for future execution:**
+1. Verify production compose stack is still running.
+2. Verify api-gateway /api/health.
+3. Verify container-manager /api/health.
+4. Verify container-manager /api/internal/stats with X-Internal-Service-Key.
+5. Create a browser-capable validation session through the official internal route.
+6. Write a minimal preview server through container-manager internal file-write endpoint.
+7. Start preview server through container-manager internal exec endpoint.
+8. Register preview port.
+9. Run browser_smoke through api-gateway: POST http://localhost:4000/api/internal/workspace/<sessionId>/browser-smoke
+10. Confirm success true, correct title/text, no consoleErrors, no networkErrors, truncated false.
+11. Clean up only the test session/container/workspace created by this task.
+
+**Non-goals:**
+- No implementation during registration.
+- No source/config changes.
+- No Dockerfile changes.
+- No compose changes.
+- No .env changes.
+- No provider/model execution.
+- No ai-service validation.
+- No frontend UI validation.
+- No userId / SQLite FK fix.
+- No workspace volume / Docker-in-Docker strategy fix.
+- No debug telemetry cleanup.
+- No git commit/push.
+
+**Registration acceptance criteria:**
+- [x] AGENT-HARNESS-05B6C is appended to TASKS.md after AGENT-HARNESS-05B6B.
+- [x] AGENT-HARNESS-05B6C is appended to TASKS_BACKLOG_FULL.md after AGENT-HARNESS-05B6B.
+- [x] Status is ACTIVE, not COMPLETE/LOCKED.
+- [x] Dependencies on 05B5, 05B6A, and 05B6B are documented.
+- [x] Runtime validation objective and scope are documented.
+- [x] Non-goals are documented.
+- [x] No source/runtime/test/package/Docker/frontend/database files are modified.
+- [x] No docker compose/container commands are run.
+- [x] No browser_smoke is run during registration.
+- [x] No checkpoint document is created.
+
+**Future runtime validation acceptance criteria (unchecked — not yet executed):**
+- [ ] Production compose stack status verified.
+- [ ] api-gateway /api/health returns success.
+- [ ] container-manager /api/health returns success.
+- [ ] container-manager /api/internal/stats returns success with X-Internal-Service-Key.
+- [ ] Browser-capable validation session created through official internal route.
+- [ ] Browser-capable container uses aisandbox-workspace-browser:local.
+- [ ] NODE_PATH includes /opt/browser-smoke/node_modules.
+- [ ] Minimal preview target written and started.
+- [ ] Preview target verified from inside the container.
+- [ ] Preview port registered.
+- [ ] browser_smoke through api-gateway returns success true.
+- [ ] pageTitle and visibleTextSnippet match expected values.
+- [ ] consoleErrors and networkErrors are empty.
+- [ ] Cleanup completed for test resources only.
+- [ ] No provider/model execution run.
+- [ ] No fixes applied without separate approval.
+- [ ] Checkpoint created during consolidation.
+
+**Reference:** See TASKS.md -> AGENT-HARNESS-05B6C.
+
+---
+
+### AGENT-HARNESS-05B6D: Internal Session Start DB Row Fix
+
+**Task ID:** AGENT-HARNESS-05B6D
+**Title:** Internal Session Start DB Row Fix
+**Status:** COMPLETE and LOCKED
+**Completed:** 2026-06-26
+**Priority:** High
+**Risk:** Medium
+**Nature:** BACKEND FIX / CONTAINER-MANAGER / SESSION LIFECYCLE / INTERNAL ROUTE
+
+**Dependencies:**
+- AGENT-HARNESS-05B5 COMPLETE and LOCKED — browser_smoke service-chain validation passed in local dev mode.
+- AGENT-HARNESS-05B6A COMPLETE and LOCKED — production compose config/startup fixes completed.
+- AGENT-HARNESS-05B6B COMPLETE and LOCKED — production compose runtime startup validation passed.
+- AGENT-HARNESS-05B6C ACTIVE — production compose browser_smoke validation blocked at file-write step; this task resolves that blocker.
+
+**Problem:**
+AGENT-HARNESS-05B6C attempted to validate browser_smoke against the running production compose stack.
+
+The following passed:
+- Production compose stack healthy.
+- api-gateway /api/health HTTP 200.
+- container-manager /api/health HTTP 200.
+- container-manager /api/internal/stats HTTP 200 with dockerConnectivity true.
+- Browser-capable validation session start endpoint returned HTTP 200.
+- Docker container sandbox-session-05b6c-smoke-test was created and running.
+- Container image was aisandbox-workspace-browser:local.
+- NODE_PATH included /opt/browser-smoke/node_modules.
+
+The failure:
+POST http://localhost:4002/api/internal/sessions/05b6c-smoke-test/files
+returned:
+HTTP 404
+```json
+{
+  "message": "Session 05b6c-smoke-test not found",
+  "error": "Not Found",
+  "statusCode": 404
+}
+```
+
+**Root cause confirmed:**
+In `services/container-manager/src/sessions/sessions.service.ts`, `startSessionContainer()` created the Docker container but only inserted a SQLite session row when `userId` was provided. In 05B6C, `userId` was intentionally omitted to avoid the earlier validation-user / FK issue. Because no SQLite session row was inserted, downstream methods failed when `assertSessionUsableOrThrow()` queried SQLite and could not find the session.
+
+**Files changed:**
+1. `services/container-manager/src/sessions/sessions.service.ts`
+2. `services/container-manager/src/sessions/sessions.service.spec.ts`
+
+**Implementation summary:**
+`startSessionContainer()` now always checks for local session-row existence before proceeding. If the row is missing, it inserts one using the following priority:
+1. `userId` present — insert with provided `userId` (preserves existing behavior).
+2. `userId` omitted — attempt insert with `null` for `user_id`.
+3. Schema rejects `null` with NOT NULL constraint — fallback to `internal-session-<sessionId>` as local owner.
+
+Added helpers:
+- `isSessionsUserIdNotNullError(error)` — detects SQLite NOT NULL constraint violation on `user_id`.
+- `buildInternalSessionOwnerId(sessionId)` — constructs the deterministic internal owner string.
+
+`assertSessionUsableOrThrow()` remains strict and unweakened. `notifySessionStarted()` remains session-ID-based; no synthetic `userId` is sent cross-service.
+
+**Validation:**
+- `npx tsc --noEmit` — PASS (exit code 0)
+- `npm test` — PASS (exit code 0) — 8 suites, 95 tests passed
+
+**Acceptance criteria:**
+- [x] Root cause confirmed in code.
+- [x] Minimal safe fix selected and documented.
+- [x] Internal start without `userId` creates a usable local session record.
+- [x] `browserCapable: true` behavior preserved.
+- [x] Prior `userId`/FK failure not reintroduced.
+- [x] Downstream file/exec APIs can find the session after internal start.
+- [x] InternalServiceAuthGuard behavior unchanged.
+- [x] Public route behavior unchanged.
+- [x] Relevant tests added/updated.
+- [x] container-manager tests pass.
+- [x] No production compose changes made.
+- [x] No browser_smoke rerun (deferred to 05B6C retry).
+- [x] Checkpoint created during consolidation.
+
+**Checkpoint:** `docs/AGENT-HARNESS-05B6D-CHECKPOINT.md`
+
+**Final verdict:** PASS
+
+**Lock notice:** This task is COMPLETE and LOCKED. Do not modify.
+
+**Next step:** Resume AGENT-HARNESS-05B6C browser_smoke validation against production compose.
+
+**Reference:** See TASKS.md -> AGENT-HARNESS-05B6D.

@@ -335,18 +335,33 @@ export class SessionsService {
     userId?: string,
     options?: { browserCapable?: boolean },
   ): Promise<void> {
-    if (userId) {
-      const existing = this.db
-        .prepare('SELECT id FROM sessions WHERE id = ?')
-        .get(sessionId);
-      if (!existing) {
-        this.db
-          .prepare(
-            `INSERT INTO sessions (id, user_id, status, git_initialized, created_at, expires_at, last_activity_at)
-             VALUES (?, ?, 'active', 0, datetime('now'), datetime('now', '+2 hours'), datetime('now'))`,
-          )
-          .run(sessionId, userId);
+    const existing = this.db
+      .prepare('SELECT id FROM sessions WHERE id = ?')
+      .get(sessionId);
+
+    if (!existing) {
+      const insertSession = this.db.prepare(
+        `INSERT INTO sessions (id, user_id, status, git_initialized, created_at, expires_at, last_activity_at)
+         VALUES (?, ?, 'active', 0, datetime('now'), datetime('now', '+2 hours'), datetime('now'))`,
+      );
+
+      if (userId) {
+        insertSession.run(sessionId, userId);
+      } else {
+        try {
+          // Prefer nullable user_id when schema allows it.
+          insertSession.run(sessionId, null);
+        } catch (error) {
+          // Fallback only when local schema still enforces NOT NULL.
+          if (!this.isSessionsUserIdNotNullError(error)) {
+            throw error;
+          }
+          insertSession.run(sessionId, this.buildInternalSessionOwnerId(sessionId));
+        }
       }
+    }
+
+    if (userId) {
       // #region agent log
       fetch('http://127.0.0.1:7870/ingest/eba94f28-6765-4a01-9905-123e592de80f',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'8262b1'},body:JSON.stringify({sessionId:'8262b1',location:'sessions.service.ts:startSessionContainer',message:'session record ensured in SQLite',data:{sessionId,userId,existed:!!existing},timestamp:Date.now(),runId:'post-fix'})}).catch(()=>{});
       // #endregion
@@ -1041,5 +1056,20 @@ export class SessionsService {
 
   private generateId(): string {
     return Date.now().toString(36) + Math.random().toString(36).substring(2);
+  }
+
+  private isSessionsUserIdNotNullError(error: unknown): boolean {
+    if (!(error instanceof Error)) {
+      return false;
+    }
+
+    return (
+      error.message.includes('NOT NULL constraint failed') &&
+      error.message.includes('sessions.user_id')
+    );
+  }
+
+  private buildInternalSessionOwnerId(sessionId: string): string {
+    return `internal-session-${sessionId}`;
   }
 }
