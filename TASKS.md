@@ -22223,3 +22223,114 @@ Locate the seed file(s) responsible for seeding `test@aisandbox.com` and `demo@a
 ---
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05B8.
+
+---
+
+## AGENT-HARNESS-05B9 — AI Execute SessionId UUID Validation
+
+**Status:** COMPLETE and LOCKED
+**Completed:** 2026-06-26
+**Phase:** API Gateway Hardening
+**Depends on:** AGENT-HARNESS-05B7 (COMPLETE/LOCKED), AGENT-HARNESS-05B8 (COMPLETE/LOCKED)
+
+### Context
+
+During AGENT-HARNESS-05B7 xAI provider/model execution validation, the first execution attempt used a non-UUID sessionId: `"05b7-xai-test"`. That value reached `UsageLedgerService.writeExecutionIntent()` and failed because `usage_records.session_id` is UUID-typed in the database schema. The API returned HTTP 500 instead of a clean client validation error. Correcting the sessionId to a valid UUID (`35d53116-6723-4571-af12-ac256977c007`) allowed the xAI validation to pass.
+
+### Objective
+
+Add explicit sessionId UUID validation at the `POST /api/ai/execute` controller/DTO boundary, returning HTTP 400 with a clear message (`"sessionId must be a valid UUID"`) for any non-UUID value, before any ledger write or queue enqueue occurs.
+
+### Likely Implementation Areas
+
+- `services/api-gateway/src/ai/ai-execution.controller.ts`
+- `services/api-gateway/src/ai/dto/` or related request DTOs
+- `services/api-gateway/src/ai/*.spec.ts`
+- Usage ledger tests if controller delegates validation there
+
+### Candidate Implementation Strategy
+
+1. Add `@IsUUID()` (class-validator) or equivalent explicit guard to the execute request DTO/controller.
+2. If invalid, throw `BadRequestException` with message `"sessionId must be a valid UUID"`.
+3. Validation must occur before: `UsageLedgerService.writeExecutionIntent()` and `QueueService.enqueueExecution()`.
+4. Add focused tests: (a) invalid sessionId → HTTP 400; (b) invalid sessionId → no `writeExecutionIntent()` call; (c) invalid sessionId → no enqueue; (d) valid UUID path unchanged.
+
+### Design Constraints
+
+- No `usage_records` schema changes.
+- No loosening of UUID typing.
+- No queue job shape changes.
+- No provider selection changes.
+- No auth/guard behavior changes.
+- No xAI adapter changes.
+- No live provider execution.
+- No frontend changes.
+- No `harnessVersion` behavior changes.
+- No browser_smoke changes.
+
+### Non-Goals
+
+- No implementation during registration.
+- No runtime DB mutation.
+- No xAI execution rerun.
+- No browser_smoke.
+- No seed password hash changes.
+- No API key changes.
+- No checkpoint during registration.
+
+### Registration Acceptance Criteria
+
+- [x] AGENT-HARNESS-05B9 appended to TASKS.md after AGENT-HARNESS-05B8.
+- [x] AGENT-HARNESS-05B9 appended to TASKS_BACKLOG_FULL.md after AGENT-HARNESS-05B8.
+- [x] Status is ACTIVE.
+- [x] Dependency/context from AGENT-HARNESS-05B7 and 05B8 documented.
+- [x] Invalid sessionId → HTTP 500 finding documented.
+- [x] Objective, scope, constraints, non-goals, and future implementation criteria documented.
+- [x] No source/runtime/test/package/Docker/frontend/database files modified.
+- [x] No .env changes.
+- [x] No runtime validation executed.
+- [x] No checkpoint created.
+
+### Implementation Acceptance Criteria
+
+- [x] Root cause confirmed in source (`AIExecutionRequest` is an interface; `ValidationPipe` cannot validate interfaces; no UUID guard existed).
+- [x] Invalid sessionId returns HTTP 400, not HTTP 500.
+- [x] Invalid sessionId does not call usage ledger write.
+- [x] Invalid sessionId does not enqueue job.
+- [x] Valid UUID sessionId behavior preserved.
+- [x] Auth/guard behavior unchanged.
+- [x] Provider/model execution behavior unchanged.
+- [x] Focused tests added/updated (4 tests: invalid throws, no ledger write, no enqueue, valid path succeeds).
+- [x] api-gateway targeted tests pass (4 new 05B9 tests PASS; legacy 4 FAIL are pre-existing QueueService DI failures, not caused by this task).
+- [x] api-gateway build passes — exit code 0, clean TypeScript compilation.
+- [x] No live provider execution run.
+- [x] Checkpoint created during consolidation.
+
+### Implementation Summary
+
+- `AIExecutionRequest` confirmed as a plain TypeScript interface — `@IsUUID()` cannot apply.
+- Added `validate as uuidValidate` import from `uuid` (existing dependency).
+- Added explicit guard at top of `execute()` in `ai-execution.controller.ts`: if `!uuidValidate(request.sessionId)` → `BadRequestException('sessionId must be a valid UUID')`.
+- Validation fires before idempotency handling, `writeExecutionIntent()`, and `enqueueExecution()`.
+- 4 focused tests added in new describe block `AIExecutionController — sessionId UUID validation (AGENT-HARNESS-05B9)` in `ai-execution.controller.spec.ts`.
+
+### Validation Summary
+
+- Targeted spec: 4 new 05B9 tests PASS. Legacy 4 FAIL = pre-existing QueueService DI failures (not caused by this task).
+- Build: PASS — exit code 0.
+- Lint: no errors on changed files.
+
+### Final Verdict
+
+**PASS** — with known pre-existing legacy test failures noted (QueueService DI failures, present since AGENT-HARNESS-05B8 baseline, unrelated to this task).
+
+---
+
+**Checkpoint:** `docs/AGENT-HARNESS-05B9-CHECKPOINT.md`
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05B9.
+
+**Next recommended task:** Register Agent Harness `harnessVersion` queue/API wiring validation or implementation review — after Keith approval.
+
+---
+*COMPLETE and LOCKED — 2026-06-26. Do not modify this entry.*

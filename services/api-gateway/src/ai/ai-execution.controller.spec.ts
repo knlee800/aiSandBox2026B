@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { BadRequestException } from '@nestjs/common';
 import { AIExecutionController } from './ai-execution.controller';
 import { AIServiceHttpClient, AIExecutionRequest, AIExecutionResult } from '../clients/ai-service-http.client';
 import { ApiKeyIdentity } from '../auth/api-key.config';
@@ -9,6 +10,12 @@ import { QuotaGuard } from '../quota/quota.guard';
 import { TokenQuotaGuard } from '../quota/token-quota.guard';
 import { UsageLedgerService } from '../usage-ledger/usage-ledger.service';
 import { GlobalSafetyLimitService } from '../safety/global-safety-limit.service';
+import { QueueService } from '../queue/queue.service';
+import { ExecutionResultService } from './execution-result.service';
+import { ExecutionStreamService } from '../streaming/execution-stream.service';
+import { UserAiInstructionsService } from '../user-ai-instructions/user-ai-instructions.service';
+import { ProjectAiContextService } from '../project-ai-context/project-ai-context.service';
+import { SessionService } from '../sessions/session.service';
 
 describe('AIExecutionController (Phase 18A + Phase 20A + Phase 20B + Phase 21B + Phase 22B)', () => {
   let controller: AIExecutionController;
@@ -203,5 +210,112 @@ describe('AIExecutionController (Phase 18A + Phase 20A + Phase 20B + Phase 21B +
       expect(calledRequest.metadata?.array).toEqual([1, 2, 3]);
       expect(calledRequest.metadata?.apiKeyId).toBe('key-999'); // INJECTED
     });
+  });
+});
+
+/**
+ * AGENT-HARNESS-05B9: sessionId UUID validation tests
+ *
+ * Verifies that POST /api/ai/execute rejects non-UUID sessionId values
+ * with HTTP 400 before any ledger write or queue enqueue occurs.
+ */
+describe('AIExecutionController — sessionId UUID validation (AGENT-HARNESS-05B9)', () => {
+  let controller: AIExecutionController;
+  let mockUsageLedgerService: Record<string, jest.Mock>;
+  let mockQueueService: Record<string, jest.Mock>;
+
+  const VALID_SESSION_UUID = '35d53116-6723-4571-af12-ac256977c007';
+
+  const defaultIdentity: ApiKeyIdentity = {
+    userId: 'user-uuid-001',
+    apiKeyId: 'key-uuid-001',
+    scopes: ['ai:execute'],
+  };
+
+  function makeRequest(sessionId: string): AIExecutionRequest {
+    return {
+      sessionId,
+      conversationId: 'conv-001',
+      userId: 'ignored',
+      prompt: 'Hello',
+      provider: 'stub',
+    };
+  }
+
+  beforeEach(async () => {
+    mockUsageLedgerService = {
+      findByRequestId: jest.fn().mockResolvedValue(null),
+      reuseExecutionIntent: jest.fn().mockResolvedValue('exec-id'),
+      writeExecutionIntent: jest.fn().mockResolvedValue(undefined),
+      updateExecutionResult: jest.fn().mockResolvedValue(undefined),
+    };
+
+    mockQueueService = {
+      enqueueExecution: jest.fn().mockResolvedValue(undefined),
+    };
+
+    const mockGuard = { canActivate: jest.fn(() => true) };
+
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [AIExecutionController],
+      providers: [
+        { provide: UsageLedgerService, useValue: mockUsageLedgerService },
+        { provide: GlobalSafetyLimitService, useValue: { checkAndRecord: jest.fn(), recordExecutionCost: jest.fn() } },
+        { provide: QueueService, useValue: mockQueueService },
+        { provide: ExecutionResultService, useValue: { getExecution: jest.fn(), requestCancel: jest.fn() } },
+        { provide: ExecutionStreamService, useValue: { subscribe: jest.fn(), unsubscribe: jest.fn() } },
+        { provide: UserAiInstructionsService, useValue: { getByUserId: jest.fn().mockResolvedValue(null) } },
+        { provide: ProjectAiContextService, useValue: { getByProjectId: jest.fn().mockResolvedValue(null) } },
+        { provide: SessionService, useValue: { getSessionById: jest.fn().mockResolvedValue({ userId: defaultIdentity.userId, projectId: null }) } },
+      ],
+    })
+      .overrideGuard(SessionOrApiKeyAuthGuard).useValue(mockGuard)
+      .overrideGuard(AuthorizationGuard).useValue(mockGuard)
+      .overrideGuard(QuotaGuard).useValue(mockGuard)
+      .overrideGuard(TokenQuotaGuard).useValue(mockGuard)
+      .compile();
+
+    controller = module.get<AIExecutionController>(AIExecutionController);
+  });
+
+  it('Test A: invalid sessionId returns BadRequestException (HTTP 400)', async () => {
+    await expect(
+      controller.execute(makeRequest('not-a-uuid'), defaultIdentity),
+    ).rejects.toThrow(BadRequestException);
+
+    await expect(
+      controller.execute(makeRequest('not-a-uuid'), defaultIdentity),
+    ).rejects.toThrow('sessionId must be a valid UUID');
+  });
+
+  it('Test B: invalid sessionId does not call writeExecutionIntent', async () => {
+    try {
+      await controller.execute(makeRequest('05b7-xai-test'), defaultIdentity);
+    } catch {
+      // expected
+    }
+    expect(mockUsageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+    expect(mockUsageLedgerService.reuseExecutionIntent).not.toHaveBeenCalled();
+  });
+
+  it('Test C: invalid sessionId does not call enqueueExecution', async () => {
+    try {
+      await controller.execute(makeRequest('plainstring'), defaultIdentity);
+    } catch {
+      // expected
+    }
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+  });
+
+  it('Test D: valid UUID sessionId proceeds normally', async () => {
+    const result = await controller.execute(
+      makeRequest(VALID_SESSION_UUID),
+      defaultIdentity,
+    );
+
+    expect(result).toHaveProperty('executionId');
+    expect(result.status).toBe('queued');
+    expect(mockUsageLedgerService.writeExecutionIntent).toHaveBeenCalledTimes(1);
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
   });
 });

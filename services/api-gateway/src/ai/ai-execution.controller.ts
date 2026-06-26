@@ -39,7 +39,7 @@ import { AbortGuard } from '../abort/abort.guard';
 import { RateLimitGuard, RateLimit } from '../guards/rate-limit.guard';
 import { IdempotencyGuard } from './idempotency.guard';
 import { QueueService } from '../queue/queue.service';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
 import { ExecutionResultService } from './execution-result.service';
 import { UserAiInstructionsService } from '../user-ai-instructions/user-ai-instructions.service';
 import { ProjectAiContextService } from '../project-ai-context/project-ai-context.service';
@@ -390,6 +390,11 @@ export class AIExecutionController {
     // Phase 43B-2-HOTFIX: IdempotencyGuard now throws IdempotentReplayException
     // instead of attaching to request. No need to check req.idempotentResult.
     // If we reach here, it's NOT a replay (or replay was for 'timeout'/'failed' status).
+
+    // AGENT-HARNESS-05B9: Validate sessionId is a valid UUID before any ledger write or enqueue
+    if (!uuidValidate(request.sessionId)) {
+      throw new BadRequestException('sessionId must be a valid UUID');
+    }
 
     // Phase 43A-2B: Validate and normalize idempotency key
     let requestId: string | undefined;
