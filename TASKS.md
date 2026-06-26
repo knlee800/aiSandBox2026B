@@ -22334,3 +22334,181 @@ Add explicit sessionId UUID validation at the `POST /api/ai/execute` controller/
 
 ---
 *COMPLETE and LOCKED — 2026-06-26. Do not modify this entry.*
+
+---
+
+## AGENT-HARNESS-05C1 — Harness Version Queue/API Wiring Review
+
+**Task ID:** AGENT-HARNESS-05C1
+**Family:** AGENT-HARNESS
+**Phase:** 5C
+**Status:** COMPLETE and LOCKED
+**Completed:** 2026-06-26
+**Priority:** High
+**Nature:** ARCHITECTURE REVIEW / WIRING ANALYSIS
+**Risk:** Medium
+**Depends on:**
+- AGENT-HARNESS-05B7 — COMPLETE and LOCKED (ai-service provider/model execution validated via xAI through production compose)
+- AGENT-HARNESS-05B8 — COMPLETE and LOCKED (seed test user password hash corrected)
+- AGENT-HARNESS-05B9 — COMPLETE and LOCKED (sessionId UUID validation added at controller boundary)
+
+---
+
+### Context and Triggering Finding
+
+AGENT-HARNESS-05B7 validated the plain ai-service provider/model execution path through production compose using xAI. During that validation, the Agent Harness loop was not exercised.
+
+**05B7 finding:** `harnessVersion: "v1"` is not currently passed by api-gateway into the BullMQ execution job payload. The WorkerProcessor in ai-service contains a `harnessVersion` branch that selects between the plain execution path and the Agent Harness loop, but this branch is never reached from the official API Gateway → BullMQ → ai-service worker route because the field is absent from the job data.
+
+As a result, the Agent Harness loop has only been exercisable via direct BullMQ enqueue, which is not the intended long-term validation mechanism.
+
+---
+
+### Objective
+
+Inspect and decide the safest wiring strategy for `harnessVersion` through the API Gateway → BullMQ → ai-service worker path, so future validation can exercise the Agent Harness loop through the official production route rather than via direct BullMQ enqueue.
+
+---
+
+### Scope
+
+**Inspection targets:**
+- `api-gateway` execute controller and `AIExecutionRequest` type — confirm whether `harnessVersion` is accepted, ignored, or absent.
+- `QueueService.enqueueExecution()` and job payload construction — confirm whether `harnessVersion` is forwarded or dropped.
+- `ai-service` `WorkerProcessor` job data contract — confirm the `harnessVersion` field definition and the harness/plain branch condition.
+- Agent Harness config gates: `enableToolLoop`, `enableBrowserSmoke`, `enablePreApplyCheckpoint` — confirm current defaults and gating logic.
+
+**Decision gate — determine which wiring strategy to recommend:**
+1. Accept `harnessVersion` from `POST /api/ai/execute` request body with explicit validation (whitelist, auth-scoped, or role-scoped).
+2. Default `harnessVersion` server-side for specific users or environments (environment variable / feature flag).
+3. Expose `harnessVersion` only on a separate internal/admin validation endpoint, not the main execute route.
+4. Keep `harnessVersion` inaccessible from the API surface until broader rollout controls exist.
+
+**Security and rollout risk analysis:**
+- Risk of exposing harness-mode execution to normal production users.
+- Risk of `enableToolLoop` being activated without pre-apply checkpoint protection.
+- Risk of `enableBrowserSmoke` being triggered without sandbox isolation confirmation.
+- Risk of harness-mode execution bypassing quota or rate-limit enforcement.
+
+**Recommend an implementation slice** if a safe wiring path is identified.
+
+---
+
+### Files to Inspect During Review
+
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\ai\ai-execution.controller.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\queues\queue.service.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\clients\ai-service-http.client.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\worker\worker.processor.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\worker\worker.processor.spec.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\config\agent-harness.config.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\contracts\agent-harness.contracts.ts`
+- `C:\Users\knlee\aiSandBox2026B\docs\AGENT-HARNESS-05B7-CHECKPOINT.md`
+- `C:\Users\knlee\aiSandBox2026B\docs\AGENT-HARNESS-05B9-CHECKPOINT.md`
+
+---
+
+### Design Constraints
+
+- Do not bypass API Gateway.
+- Do not use direct BullMQ enqueue as the long-term validation mechanism.
+- Do not expose mutating harness tools to normal production users unintentionally.
+- Preserve `enableToolLoop` default `false` unless explicitly reviewed and approved.
+- Preserve `enableBrowserSmoke` gating.
+- Preserve pre-apply checkpoint behavior for mutating tools.
+- Preserve existing auth/guard behavior.
+- Preserve existing provider selection behavior.
+- Do not alter `browser_smoke` implementation during this review.
+- Do not run live harness validation during this review step.
+
+---
+
+### Non-Goals
+
+- No implementation during this review step.
+- No live provider execution.
+- No `harnessVersion` runtime test.
+- No `browser_smoke` execution.
+- No Docker compose changes.
+- No frontend UI changes.
+- No checkpoint during review step (checkpoint during consolidation only, after review is complete).
+
+---
+
+### Risks
+
+- If `harnessVersion` is added to the request body without scoping controls, any authenticated user could trigger harness-mode execution with `enableToolLoop` active.
+- If `enableToolLoop` fires without pre-apply checkpoint, mutating tool calls may write workspace files without a recovery point.
+- If `enableBrowserSmoke` fires without confirmed sandbox isolation, browser automation may escape the workspace boundary.
+- If harness mode bypasses quota tracking, execution cost controls are undermined.
+- If validation is performed through a non-gateway route, the test does not prove the production path.
+
+---
+
+### Review Questions
+
+1. Does `AIExecutionRequest` currently include a `harnessVersion` field?
+2. Does `QueueService.enqueueExecution()` forward `harnessVersion` to the BullMQ job payload?
+3. What is the exact condition in `WorkerProcessor` that branches to Agent Harness execution?
+4. What are the current defaults for `enableToolLoop`, `enableBrowserSmoke`, and `enablePreApplyCheckpoint`?
+5. Is there an existing internal/admin endpoint that could safely carry `harnessVersion`?
+6. What auth or role checks would be required before `harnessVersion` can be safely exposed?
+7. What is the minimal safe implementation slice if option 1 (request body) is selected?
+8. What additional tests would be required to cover the `harnessVersion` forwarding path?
+
+---
+
+### Registration Acceptance Criteria
+
+- [x] AGENT-HARNESS-05C1 appended to TASKS.md after AGENT-HARNESS-05B9.
+- [x] AGENT-HARNESS-05C1 appended to TASKS_BACKLOG_FULL.md after AGENT-HARNESS-05B9.
+- [x] Status is ACTIVE.
+- [x] Dependencies through AGENT-HARNESS-05B9 COMPLETE and LOCKED documented.
+- [x] 05B7 finding about `harnessVersion` not reaching the queue payload documented.
+- [x] Objective, scope, constraints, non-goals, risks, and review questions documented.
+- [x] No source/runtime/test/package/Docker/frontend/database files modified.
+- [x] No .env changes.
+- [x] No runtime validation executed.
+- [x] No checkpoint created.
+
+---
+
+### Review Acceptance Criteria — VERIFIED
+
+- [x] Current `harnessVersion` path confirmed in source.
+- [x] Queue payload gap confirmed or disproven.
+- [x] Security implications of exposing `harnessVersion` documented.
+- [x] Recommended wiring strategy selected.
+- [x] Required implementation files identified.
+- [x] Required tests identified.
+- [x] Runtime validation plan identified.
+- [x] No implementation performed during review unless separately approved.
+- [x] Checkpoint created during consolidation.
+
+---
+
+### Review Summary
+
+**Key findings:**
+1. `AIExecutionRequest` does not include `harnessVersion` — field is entirely absent from public request type.
+2. `AIExecutionController` explicitly constructs the BullMQ job payload and does not forward `harnessVersion`.
+3. `QueueService.enqueueExecution(jobData: any)` would accept and pass through the field if provided by the controller.
+4. Consumer-side `AiExecutionJob` already includes `harnessVersion?: string` — ready to receive.
+5. `WorkerProcessor` already branches on `job.data.harnessVersion === 'v1' && DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop`.
+6. `enableToolLoop` defaults `false` — harness loop does not fire even if `harnessVersion` were wired.
+7. `enableBrowserSmoke` defaults `false` — browser automation is safe.
+8. `enablePreApplyCheckpoint` defaults `true` — protective default maintained.
+9. **Gap:** Producer side (api-gateway) is unwired. Consumer side (ai-service) is ready.
+10. Double gate (`harnessVersion === 'v1'` AND `enableToolLoop === true`) means wiring alone does not activate harness execution.
+
+**Final recommendation:** Strategy A — add optional public request body field `harnessVersion?: 'v1'` with controller allow-list validation. `undefined` and `'v1'` accepted; anything else returns `HTTP 400`.
+
+---
+
+**Checkpoint:** `docs/AGENT-HARNESS-05C1-CHECKPOINT.md`
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05C1.
+
+**Next step:** Register AGENT-HARNESS-05C2 — Harness Version API-to-Queue Wiring (registration only; no implementation during registration step).
+
+> LOCKED — do not modify this task entry.
