@@ -21806,102 +21806,71 @@ Confirm that:
 #### AGENT-HARNESS-05B6C: Production Compose Browser Smoke Validation
 
 **Task ID:** AGENT-HARNESS-05B6C
-**Status:** ACTIVE
+**Title:** Production Compose Browser Smoke Runtime Validation
+**Status:** COMPLETE and LOCKED
+**Completed:** 2026-06-26
 **Priority:** High
 **Risk:** Medium
 **Family:** AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
-**Nature:** RUNTIME VALIDATION / PRODUCTION COMPOSE / BROWSER_SMOKE / NO FIX YET
+**Nature:** RUNTIME VALIDATION / PRODUCTION COMPOSE / BROWSER_SMOKE
 
 **Dependencies:**
 - AGENT-HARNESS-05B5 COMPLETE and LOCKED — browser_smoke service-chain validation passed using local dev services.
 - AGENT-HARNESS-05B6 COMPLETE/ACTIVE investigation context — production compose startup issues investigated.
 - AGENT-HARNESS-05B6A COMPLETE and LOCKED — production compose config/startup fixes implemented.
 - AGENT-HARNESS-05B6B COMPLETE and LOCKED — production compose runtime validation passed.
+- AGENT-HARNESS-05B6D COMPLETE and LOCKED — internal session start DB row fix; resolved the file-write 404 blocker.
 
-**Current known runtime state from 05B6B:**
-- docker-compose.prod.yml resolves with real root .env.
-- Production compose stack starts successfully.
-- 8/8 containers are running.
-- api-gateway is healthy on port 4000.
-- container-manager is healthy on loopback-only port 4002.
-- container-manager /api/health returns HTTP 200.
-- container-manager /api/internal/stats returns HTTP 200 with dockerConnectivity true.
-- api-gateway restart loop is resolved.
-- container-manager no-host-port issue is resolved.
-- browser_smoke was not run during 05B6B.
-- ai-service provider/model execution was not run during 05B6B.
+**Final verdict: PASS — 2026-06-26**
 
-**Problem:**
-Production compose startup has now passed, but the browser_smoke service-chain has not yet been validated against the running production compose stack.
+**Validation summary:**
+1. docker ps showed 7 healthy aisandbox-* containers.
+2. GET http://localhost:4000/api/health returned HTTP 200.
+3. GET http://localhost:4002/api/health returned HTTP 200.
+4. INTERNAL_SERVICE_KEY read from .env (masked).
+5. GET http://localhost:4002/api/internal/stats via Node.js returned HTTP 200: `{"dockerConnectivity":true,"runningContainerCount":8}`
+6. No prior sandbox-session-05b6c-smoke-test container existed.
+7. Running container-manager image/start time/git state confirmed 05B6D fix (commit 3477b27) present.
+8. POST http://localhost:4002/api/internal/sessions/05b6c-smoke-test/start returned HTTP 200: `{"message":"Session container started successfully"}`
+9. docker inspect confirmed sandbox-session-05b6c-smoke-test running aisandbox-workspace-browser:local.
+10. docker exec printenv NODE_PATH returned `/opt/browser-smoke/node_modules`.
+11. POST http://localhost:4002/api/internal/sessions/05b6c-smoke-test/files returned HTTP 204.
+12. POST http://localhost:4002/api/internal/sessions/05b6c-smoke-test/exec returned HTTP 200: `{"exitCode":0,"stdout":"Preview server running on port 3000\n","stderr":""}`
+13. In-container HTTP check to http://localhost:3000 returned HTTP 200 with expected HTML.
+14. POST http://localhost:4002/api/internal/sessions/05b6c-smoke-test/previews returned HTTP 200: `{"sessionId":"05b6c-smoke-test","port":3000,"registered":true}`
+15. POST http://localhost:4000/api/internal/workspace/05b6c-smoke-test/browser-smoke returned HTTP 200: `{"success":true,"url":"http://172.17.0.2:3000/","pageTitle":"05B6C Smoke","consoleErrors":[],"consoleWarnings":[],"networkErrors":[],"visibleTextSnippet":"Hello from 05B6C","durationMs":1722,"truncated":false}`
+16. Cleanup: sandbox-session-05b6c-smoke-test stopped and removed. No production services touched.
+17. Final production compose status: all 7 production services remained running and healthy.
 
-**Objective:**
-Validate that browser_smoke works end-to-end through the production compose stack.
+**Runtime validation acceptance criteria:**
+- [x] Production compose stack status verified.
+- [x] api-gateway /api/health returns success.
+- [x] container-manager /api/health returns success.
+- [x] container-manager /api/internal/stats returns success with X-Internal-Service-Key.
+- [x] Browser-capable validation session created through official internal route.
+- [x] Browser-capable container uses aisandbox-workspace-browser:local.
+- [x] NODE_PATH includes /opt/browser-smoke/node_modules.
+- [x] Minimal preview target written and started.
+- [x] Preview target verified from inside the container.
+- [x] Preview port registered.
+- [x] browser_smoke through api-gateway returns success true.
+- [x] pageTitle and visibleTextSnippet match expected values.
+- [x] consoleErrors and networkErrors are empty.
+- [x] Cleanup completed for test resources only.
+- [x] No provider/model execution run.
+- [x] No fixes applied without separate approval.
+- [x] Checkpoint created during consolidation.
 
-**Validation target chain:**
-API Gateway container on host port 4000
-→ container-manager container via Docker service networking
-→ browser-capable sandbox container
-→ minimal preview target
-→ Playwright Chromium
-→ BrowserSmokeResult
+**Non-blocking observation:**
+Windows PowerShell HTTP clients returned HTTP 403 for internal endpoints while Node.js clients returned
+HTTP 200 with the same internal key. All validation was completed via Node.js. Treat as non-blocking;
+register a follow-up task after Keith review if investigation is desired.
 
-**Scope for future execution:**
-1. Verify production compose stack is still running.
-2. Verify api-gateway /api/health.
-3. Verify container-manager /api/health.
-4. Verify container-manager /api/internal/stats with X-Internal-Service-Key.
-5. Create a browser-capable validation session through the official internal route.
-6. Write a minimal preview server through container-manager internal file-write endpoint.
-7. Start preview server through container-manager internal exec endpoint.
-8. Register preview port.
-9. Run browser_smoke through api-gateway: POST http://localhost:4000/api/internal/workspace/<sessionId>/browser-smoke
-10. Confirm success true, correct title/text, no consoleErrors, no networkErrors, truncated false.
-11. Clean up only the test session/container/workspace created by this task.
+**Checkpoint:** docs/AGENT-HARNESS-05B6C-CHECKPOINT.md
 
-**Non-goals:**
-- No implementation during registration.
-- No source/config changes.
-- No Dockerfile changes.
-- No compose changes.
-- No .env changes.
-- No provider/model execution.
-- No ai-service validation.
-- No frontend UI validation.
-- No userId / SQLite FK fix.
-- No workspace volume / Docker-in-Docker strategy fix.
-- No debug telemetry cleanup.
-- No git commit/push.
+**Next step:** Register next Agent Harness follow-up task only after Keith review.
 
-**Registration acceptance criteria:**
-- [x] AGENT-HARNESS-05B6C is appended to TASKS.md after AGENT-HARNESS-05B6B.
-- [x] AGENT-HARNESS-05B6C is appended to TASKS_BACKLOG_FULL.md after AGENT-HARNESS-05B6B.
-- [x] Status is ACTIVE, not COMPLETE/LOCKED.
-- [x] Dependencies on 05B5, 05B6A, and 05B6B are documented.
-- [x] Runtime validation objective and scope are documented.
-- [x] Non-goals are documented.
-- [x] No source/runtime/test/package/Docker/frontend/database files are modified.
-- [x] No docker compose/container commands are run.
-- [x] No browser_smoke is run during registration.
-- [x] No checkpoint document is created.
-
-**Future runtime validation acceptance criteria (unchecked — not yet executed):**
-- [ ] Production compose stack status verified.
-- [ ] api-gateway /api/health returns success.
-- [ ] container-manager /api/health returns success.
-- [ ] container-manager /api/internal/stats returns success with X-Internal-Service-Key.
-- [ ] Browser-capable validation session created through official internal route.
-- [ ] Browser-capable container uses aisandbox-workspace-browser:local.
-- [ ] NODE_PATH includes /opt/browser-smoke/node_modules.
-- [ ] Minimal preview target written and started.
-- [ ] Preview target verified from inside the container.
-- [ ] Preview port registered.
-- [ ] browser_smoke through api-gateway returns success true.
-- [ ] pageTitle and visibleTextSnippet match expected values.
-- [ ] consoleErrors and networkErrors are empty.
-- [ ] Cleanup completed for test resources only.
-- [ ] No provider/model execution run.
-- [ ] No fixes applied without separate approval.
-- [ ] Checkpoint created during consolidation.
+> LOCKED — Do not modify this entry. See checkpoint document for full details.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05B6C.
 
