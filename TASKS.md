@@ -21516,3 +21516,172 @@ Add a controlled, internal, test-safe opt-in mechanism for browser-capable sessi
 **AGENT-HARNESS-05B5 status:** ACTIVE. The prerequisite blocker is resolved. Blocked status can be lifted only after the 05B5 validation plan is refreshed to reference the new internal route and Keith approves.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05B5A.
+
+---
+
+#### AGENT-HARNESS-05B6: Production Docker Compose Startup Investigation
+
+**Task ID:** AGENT-HARNESS-05B6
+**Status:** ACTIVE
+**Priority:** High
+**Risk:** Medium-High
+**Nature:** INVESTIGATION / DOCKER COMPOSE / OPERATIONAL STARTUP / NO FIX YET
+**Family:** AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
+
+**Dependencies:**
+- AGENT-HARNESS-05B4 — COMPLETE and LOCKED (browser image/runtime fixed)
+- AGENT-HARNESS-05B5A — COMPLETE and LOCKED (browser-capable session creation wiring fixed)
+- AGENT-HARNESS-05B5 — COMPLETE and LOCKED (browser_smoke service-chain validation PASS)
+
+**Problem:**
+After AGENT-HARNESS-05B5 passed using local dev services, three remaining operational follow-ups were identified:
+
+1. **container-manager health URL/log mismatch:** container-manager startup log advertises `http://localhost:4002/api/health` but container-manager does not expose that route. The real readiness endpoint used during validation was `http://localhost:4002/api/internal/stats`.
+
+2. **userId / SQLite FK behavior:** `InternalSessionsController.startContainer` optional `userId` behavior triggered a SQLite FOREIGN KEY constraint failure when using a non-existent validation user via `POST /api/internal/sessions/:id/start`.
+
+3. **Production docker-compose startup issues:** Running `docker compose -f C:\Users\knlee\aiSandBox2026B\docker-compose.prod.yml up -d --build` appears to result in:
+   - container-manager starting with no usable/exposed port
+   - api-gateway repeatedly restarting
+
+**Objective:**
+Register an investigation-only slice to determine why the production Docker Compose stack does not start cleanly and to identify the smallest follow-up fixes. No implementation during this task.
+
+**Scope:**
+Investigation only. No implementation.
+
+The investigation should inspect:
+- `C:\Users\knlee\aiSandBox2026B\docker-compose.prod.yml`
+- `C:\Users\knlee\aiSandBox2026B\docker-compose.yml`
+- `.env.example` if present
+- `.env` only for key names and set/not-set checks; do not print secrets
+- `services/container-manager/package.json`
+- `services/container-manager/src/main.ts`
+- `services/api-gateway/package.json`
+- `services/api-gateway/src/main.ts`
+- api-gateway config/client files related to container-manager, database, Redis, and ports
+- container-manager config files related to port binding, Docker access, workspace paths, and internal service key
+- Dockerfiles used by docker-compose.prod.yml for api-gateway and container-manager
+- any healthcheck/restart/depends_on/ports/environment sections in compose files
+
+**Questions to answer during investigation:**
+1. What services does docker-compose.prod.yml define?
+2. What ports are mapped for container-manager and api-gateway?
+3. Does container-manager actually expose/map port 4002 in production compose?
+4. Does api-gateway map port 4000, and is anything else also mapping 4000?
+5. Are restart policies causing crash loops to hide the first error?
+6. What command/script does each container run?
+7. Do those scripts exist in package.json?
+8. Are env vars correctly provided in production compose?
+9. Are DATABASE_URL, REDIS_URL, INTERNAL_SERVICE_KEY, CONTAINER_MANAGER_URL, and API_GATEWAY_URL correct for container-to-container networking?
+10. Is api-gateway incorrectly pointing to localhost from inside a container?
+11. Is container-manager incorrectly pointing to Docker Desktop paths or host paths that do not exist inside the container?
+12. Does container-manager require Docker socket mounting, and is it mounted correctly?
+13. Is the misleading /api/health log only a log issue, or does compose healthcheck depend on it?
+14. Is api-gateway restarting because of database auth, Redis auth, missing env, port conflict, missing build artifact, or bad command?
+15. Is container-manager "starting with no port" because compose lacks ports mapping, app binds wrong host/port, process exits, or healthcheck fails?
+
+**Non-goals:**
+- No code fix during this task.
+- No docker compose execution.
+- No container start/stop.
+- No env secret printing.
+- No database mutation.
+- No browser_smoke validation.
+- No frontend/UI changes.
+- No package changes unless a later approved fix requires it.
+- No git commit/push.
+- No checkpoint creation during registration.
+
+**Acceptance criteria (registration):**
+- [x] AGENT-HARNESS-05B6 appended to TASKS.md after AGENT-HARNESS-05B5
+- [x] AGENT-HARNESS-05B6 appended to TASKS_BACKLOG_FULL.md after AGENT-HARNESS-05B5
+- [x] Status is ACTIVE, not COMPLETE/LOCKED
+- [x] The three follow-up areas documented (health URL/log mismatch, userId/FK behavior, production docker-compose startup)
+- [x] Investigation scope, questions, non-goals, and acceptance criteria documented
+- [x] No source/runtime/test/package/Docker/frontend/database files modified
+- [x] No Docker compose/container commands run
+- [x] No checkpoint document created
+
+**Future investigation acceptance criteria (unchecked):**
+- [ ] docker-compose.prod.yml analyzed
+- [ ] compose service/port/env/restart/healthcheck behavior summarized
+- [ ] api-gateway restart root cause identified or narrowed
+- [ ] container-manager no-port issue identified or narrowed
+- [ ] health URL/log mismatch root cause identified
+- [ ] userId / SQLite FK behavior categorized
+- [ ] Minimum recommended fix slices proposed
+- [ ] No fixes applied without separate approval
+- [ ] Investigation checkpoint created during consolidation
+
+**Next step:** Investigation/review only — not implementation. Read and analyze compose files, Dockerfiles, main.ts, package.json, and env configuration. Do not implement fixes without separate approval.
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05B6.
+
+---
+
+#### AGENT-HARNESS-05B6A: Production Compose Startup Config Fix
+
+**Task ID:** AGENT-HARNESS-05B6A
+**Status:** COMPLETE and LOCKED
+**Completed:** 2026-06-26
+**Priority:** High
+**Risk:** Medium
+**Nature:** CONFIG FIX / DOCKER COMPOSE / STARTUP ENV / HEALTH ROUTE / ENV DOCUMENTATION
+**Family:** AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
+
+**Dependencies:**
+- AGENT-HARNESS-05B5 — COMPLETE and LOCKED (browser_smoke service-chain validation PASS)
+- AGENT-HARNESS-05B6 — ACTIVE (production compose startup investigation completed as read-only review)
+
+**Problem:**
+AGENT-HARNESS-05B6 investigation identified likely low-risk startup blockers in production Docker Compose:
+
+1. **api-gateway restart loop** caused by missing `LAUNCH_STATE` env wiring and stale/incomplete `.env.example`.
+2. **container-manager no host port mapping** — operators could not reach `localhost:4002` from the host.
+3. **container-manager startup log advertises `GET /api/health`** but that route did not exist.
+
+**Implementation acceptance criteria (checked):**
+- [x] Architecture/security review confirms exact config changes
+- [x] LAUNCH_STATE production startup requirement addressed — fail-fast `${LAUNCH_STATE:?...}` wiring added to api-gateway in `docker-compose.prod.yml`
+- [x] AI_PROVIDER documentation/config expectation addressed — corrected to `AI_PROVIDER=anthropic` in root `.env.example`; `stub` removed from production section
+- [x] `.env.example` documents required production keys with placeholders only — all provider keys, LAUNCH_STATE, DB, Redis, JWT, APP_BASE_URL documented
+- [x] container-manager host port mapping added — loopback-only `127.0.0.1:4002:4002`
+- [x] container-manager health route added — public `GET /api/health` returning `{ status, service, timestamp }`
+- [x] No real secrets committed
+- [x] No workspace DinD path redesign attempted
+- [x] Focused validation commands run — `docker compose config`, `tsc --noEmit`, `npm test` all passed
+- [x] Follow-up runtime diagnostic plan prepared — documented in checkpoint, pending Keith approval
+- [x] Checkpoint created — `docs/AGENT-HARNESS-05B6A-CHECKPOINT.md`
+
+**Files changed:**
+1. `docker-compose.prod.yml` — LAUNCH_STATE fail-fast wiring, container-manager loopback port mapping, container-manager healthcheck
+2. `.env.example` (root) — LAUNCH_STATE, corrected AI_PROVIDER, provider key placeholders, Redis URL fix, full production key documentation
+3. `services/api-gateway/.env.example` — replaced invalid LIMITED_AVAILABILITY with INTERNAL; added valid values note
+4. `services/container-manager/src/health/health.controller.ts` — new public liveness endpoint `GET /api/health`
+5. `services/container-manager/src/app.module.ts` — HealthController registered
+
+**Validation summary:**
+- `docker compose -f docker-compose.prod.yml config --quiet` → exit 0 (before and after AI_PROVIDER correction)
+- `npx tsc --noEmit` (container-manager) → exit 0
+- `npm test` (container-manager) → exit 0, 8 suites, 90 tests passed
+- api-gateway tests not run (no api-gateway runtime code changed)
+
+**Correction note:** After initial implementation, `AI_PROVIDER=stub` was corrected to `AI_PROVIDER=anthropic` in root `.env.example`. `stub` is development-only and will fail in production per `provider.validator`. `docker compose config` re-validated after correction: exit 0.
+
+**Remaining out-of-scope items recorded:**
+- userId / SQLite FK behavior
+- Workspace volume / Docker-in-Docker host-path strategy
+- Debug telemetry cleanup
+- Provider validator design smell (both ANTHROPIC_API_KEY and OPENAI_API_KEY required at startup regardless of selected provider)
+- Actual `docker compose up` runtime validation
+
+**Final verdict: PASS**
+
+**Checkpoint:** `docs/AGENT-HARNESS-05B6A-CHECKPOINT.md`
+
+**Next step:** Runtime `docker compose up` validation requires Keith approval and a real root `.env` file with all production secrets/placeholders filled appropriately. Do not begin without explicit approval.
+
+**Lock notice:** AGENT-HARNESS-05B6A is COMPLETE and LOCKED. Do not modify this entry. Do not reopen or re-implement without explicit approval.
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05B6A.

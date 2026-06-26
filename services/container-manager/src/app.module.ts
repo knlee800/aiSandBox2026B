@@ -7,6 +7,7 @@ import { PreviewModule } from './preview/preview.module';
 import { UsageModule } from './usage/usage.module';
 import { BillingModule } from './billing/billing.module';
 import { StatsModule } from './stats/stats.module';
+import { HealthController } from './health/health.controller';
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { StatsModule } from './stats/stats.module';
     BillingModule,
     StatsModule, // Phase 41A: Runtime statistics
   ],
-  controllers: [],
+  controllers: [HealthController],
   providers: [],
 })
 export class AppModule {}

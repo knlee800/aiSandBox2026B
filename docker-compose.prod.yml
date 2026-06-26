@@ -74,6 +74,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 4000
+      LAUNCH_STATE: ${LAUNCH_STATE:?LAUNCH_STATE is required for production startup (CLOSED|INTERNAL|EARLY_ACCESS|PUBLIC)}
       MAX_ACTIVE_SESSIONS_PER_USER: ${MAX_ACTIVE_SESSIONS_PER_USER:-1000000}
       MAX_SESSIONS_PER_24H: ${MAX_SESSIONS_PER_24H:-1000000}
       JWT_EXPIRES_IN: "30d"
@@ -155,6 +156,8 @@ services:
       - ./.env
     security_opt:
       - no-new-privileges:true
+    ports:
+      - "127.0.0.1:4002:4002"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - container_manager_data:/database
@@ -164,6 +167,12 @@ services:
       API_GATEWAY_URL: http://api-gateway:4000
       INTERNAL_SERVICE_KEY: ${INTERNAL_SERVICE_KEY}
       DOCKER_HOST: unix:///var/run/docker.sock
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:4002/api/health',r=>{r.resume();process.exit(r.statusCode===200?0:1);}).on('error',()=>process.exit(1));\""]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     depends_on:
       - api-gateway
     deploy:
