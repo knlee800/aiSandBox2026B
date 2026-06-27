@@ -396,6 +396,13 @@ export class AIExecutionController {
       throw new BadRequestException('sessionId must be a valid UUID');
     }
 
+    // AGENT-HARNESS-05C2: Validate harnessVersion allow-list before any side effects
+    if (request.harnessVersion !== undefined) {
+      if (typeof request.harnessVersion !== 'string' || request.harnessVersion !== 'v1') {
+        throw new BadRequestException("harnessVersion must be 'v1' when provided");
+      }
+    }
+
     // Phase 43A-2B: Validate and normalize idempotency key
     let requestId: string | undefined;
     if (idempotencyKey !== undefined) {
@@ -559,6 +566,7 @@ export class AIExecutionController {
       projectInstructions,
       requestId,
       submittedAt,
+      ...(request.harnessVersion !== undefined && { harnessVersion: request.harnessVersion }),
     });
 
     // Phase 44.4D: Return immediately — do NOT wait for AI execution.

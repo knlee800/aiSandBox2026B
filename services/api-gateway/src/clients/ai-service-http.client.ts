@@ -47,6 +47,7 @@ export interface AIExecutionRequest {
   prompt: string;
   provider?: 'stub' | 'anthropic' | 'openai' | 'groq' | 'xai' | 'deepseek';
   model?: string;
+  harnessVersion?: 'v1';
   workspaceContext?: WorkspaceContext;
   metadata?: Record<string, unknown>;
 }

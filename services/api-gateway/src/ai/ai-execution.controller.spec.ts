@@ -319,3 +319,153 @@ describe('AIExecutionController — sessionId UUID validation (AGENT-HARNESS-05B
     expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
   });
 });
+
+/**
+ * AGENT-HARNESS-05C2: harnessVersion API-to-queue wiring tests
+ *
+ * Verifies that POST /api/ai/execute validates the optional harnessVersion
+ * field (allow-list: undefined | 'v1') and forwards it into the BullMQ job
+ * payload when provided.
+ */
+describe('AIExecutionController — harnessVersion wiring (AGENT-HARNESS-05C2)', () => {
+  let controller: AIExecutionController;
+  let mockUsageLedgerService: Record<string, jest.Mock>;
+  let mockQueueService: Record<string, jest.Mock>;
+
+  const VALID_SESSION_UUID = '35d53116-6723-4571-af12-ac256977c007';
+
+  const defaultIdentity: ApiKeyIdentity = {
+    userId: 'user-uuid-001',
+    apiKeyId: 'key-uuid-001',
+    scopes: ['ai:execute'],
+  };
+
+  function makeRequest(overrides?: Partial<AIExecutionRequest>): AIExecutionRequest {
+    return {
+      sessionId: VALID_SESSION_UUID,
+      conversationId: 'conv-001',
+      userId: 'ignored',
+      prompt: 'Hello',
+      provider: 'stub',
+      ...overrides,
+    };
+  }
+
+  beforeEach(async () => {
+    mockUsageLedgerService = {
+      findByRequestId: jest.fn().mockResolvedValue(null),
+      reuseExecutionIntent: jest.fn().mockResolvedValue('exec-id'),
+      writeExecutionIntent: jest.fn().mockResolvedValue(undefined),
+      updateExecutionResult: jest.fn().mockResolvedValue(undefined),
+    };
+
+    mockQueueService = {
+      enqueueExecution: jest.fn().mockResolvedValue(undefined),
+    };
+
+    const mockGuard = { canActivate: jest.fn(() => true) };
+
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [AIExecutionController],
+      providers: [
+        { provide: UsageLedgerService, useValue: mockUsageLedgerService },
+        { provide: GlobalSafetyLimitService, useValue: { checkAndRecord: jest.fn(), recordExecutionCost: jest.fn() } },
+        { provide: QueueService, useValue: mockQueueService },
+        { provide: ExecutionResultService, useValue: { getExecution: jest.fn(), requestCancel: jest.fn() } },
+        { provide: ExecutionStreamService, useValue: { subscribe: jest.fn(), unsubscribe: jest.fn() } },
+        { provide: UserAiInstructionsService, useValue: { getByUserId: jest.fn().mockResolvedValue(null) } },
+        { provide: ProjectAiContextService, useValue: { getByProjectId: jest.fn().mockResolvedValue(null) } },
+        { provide: SessionService, useValue: { getSessionById: jest.fn().mockResolvedValue({ userId: defaultIdentity.userId, projectId: null }) } },
+      ],
+    })
+      .overrideGuard(SessionOrApiKeyAuthGuard).useValue(mockGuard)
+      .overrideGuard(AuthorizationGuard).useValue(mockGuard)
+      .overrideGuard(QuotaGuard).useValue(mockGuard)
+      .overrideGuard(TokenQuotaGuard).useValue(mockGuard)
+      .compile();
+
+    controller = module.get<AIExecutionController>(AIExecutionController);
+  });
+
+  it('Test A: harnessVersion undefined — proceeds and payload omits harnessVersion', async () => {
+    const result = await controller.execute(makeRequest(), defaultIdentity);
+
+    expect(result).toHaveProperty('executionId');
+    expect(result.status).toBe('queued');
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+
+    const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expect(payload).not.toHaveProperty('harnessVersion');
+  });
+
+  it("Test B: harnessVersion 'v1' — accepted and forwarded in queue payload", async () => {
+    const result = await controller.execute(
+      makeRequest({ harnessVersion: 'v1' }),
+      defaultIdentity,
+    );
+
+    expect(result).toHaveProperty('executionId');
+    expect(result.status).toBe('queued');
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+
+    const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expect(payload.harnessVersion).toBe('v1');
+  });
+
+  it("Test C: harnessVersion 'v2' — rejected with BadRequestException", async () => {
+    await expect(
+      controller.execute(
+        makeRequest({ harnessVersion: 'v2' as any }),
+        defaultIdentity,
+      ),
+    ).rejects.toThrow(BadRequestException);
+
+    await expect(
+      controller.execute(
+        makeRequest({ harnessVersion: 'v2' as any }),
+        defaultIdentity,
+      ),
+    ).rejects.toThrow("harnessVersion must be 'v1' when provided");
+
+    expect(mockUsageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+  });
+
+  it('Test D: harnessVersion non-string (number) — rejected with BadRequestException', async () => {
+    await expect(
+      controller.execute(
+        makeRequest({ harnessVersion: 123 as any }),
+        defaultIdentity,
+      ),
+    ).rejects.toThrow(BadRequestException);
+
+    await expect(
+      controller.execute(
+        makeRequest({ harnessVersion: 123 as any }),
+        defaultIdentity,
+      ),
+    ).rejects.toThrow("harnessVersion must be 'v1' when provided");
+
+    expect(mockUsageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+  });
+
+  it('Test E: invalid sessionId still rejected before harnessVersion check (05B9 intact)', async () => {
+    await expect(
+      controller.execute(
+        makeRequest({ sessionId: 'not-a-uuid', harnessVersion: 'v1' }),
+        defaultIdentity,
+      ),
+    ).rejects.toThrow(BadRequestException);
+
+    await expect(
+      controller.execute(
+        makeRequest({ sessionId: 'not-a-uuid', harnessVersion: 'v1' }),
+        defaultIdentity,
+      ),
+    ).rejects.toThrow('sessionId must be a valid UUID');
+
+    expect(mockUsageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+  });
+});

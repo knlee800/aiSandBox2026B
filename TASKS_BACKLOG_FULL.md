@@ -33002,3 +33002,129 @@ Inspect and decide the safest wiring strategy for `harnessVersion` through the A
 **Next step:** Register AGENT-HARNESS-05C2 — Harness Version API-to-Queue Wiring (registration only; no implementation during registration step).
 
 > LOCKED — do not modify this task entry.
+
+---
+
+## AGENT-HARNESS-05C2 — Harness Version API-to-Queue Wiring
+
+**Task ID:** AGENT-HARNESS-05C2
+**Family:** AGENT-HARNESS
+**Phase:** 5C
+**Status:** COMPLETE and LOCKED
+**Registered:** 2026-06-26
+**Completed:** 2026-06-26
+**Priority:** High
+**Nature:** IMPLEMENTATION
+**Risk:** Low-Medium
+**Depends on:**
+- AGENT-HARNESS-05C1 — COMPLETE and LOCKED (harnessVersion gap reviewed; Strategy A selected)
+
+---
+
+### Context
+
+AGENT-HARNESS-05C1 confirmed the producer/consumer gap:
+
+- **Consumer ready:** `ai-service` `AiExecutionJob` includes `harnessVersion?: string`. `WorkerProcessor` already branches on `job.data.harnessVersion === 'v1' && DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop`.
+- **Producer unwired:** `api-gateway` `AIExecutionRequest` did not include `harnessVersion`. `AIExecutionController` did not validate or forward it. The field never reached the BullMQ job payload.
+
+Double gate confirmed safe: wiring `harnessVersion` alone does not activate the Agent Harness loop because `enableToolLoop` defaults `false`.
+
+**Approved strategy:** Strategy A from 05C1 — add optional `harnessVersion?: 'v1'` to the public request body with explicit allow-list validation in the controller.
+
+---
+
+### Objective
+
+Wire `harnessVersion` from `POST /api/ai/execute` request body through `AIExecutionController` into the BullMQ job payload, with strict allow-list validation. Do not activate the Agent Harness loop in this slice.
+
+---
+
+### Implementation Scope
+
+**Files changed:**
+1. `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\clients\ai-service-http.client.ts` — added `harnessVersion?: 'v1'` to `AIExecutionRequest` interface.
+2. `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\ai\ai-execution.controller.ts` — added allow-list validation (`undefined` | `'v1'`; anything else rejected with HTTP 400) and conditional spread forwarding into `QueueService.enqueueExecution()` payload.
+3. `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\ai\ai-execution.controller.spec.ts` — added describe block `AIExecutionController — harnessVersion wiring (AGENT-HARNESS-05C2)` with 5 targeted tests.
+
+**Files unchanged:**
+- `ai-service` — no changes.
+- `WorkerProcessor` — no changes.
+- `DEFAULT_AGENT_HARNESS_CONFIG_V1` — no changes.
+- All frontend, database, Docker, `.env`, and package files — no changes.
+
+---
+
+### Implementation Summary
+
+- Added `harnessVersion?: 'v1'` to `AIExecutionRequest` interface (type-level only).
+- Added allow-list validation in `AIExecutionController.execute()` after 05B9 `sessionId` UUID check and before any ledger write or queue enqueue.
+- Invalid `harnessVersion` throws `BadRequestException` (HTTP 400) before side effects.
+- Forwarded `harnessVersion` into queue payload via conditional spread: omitted when `undefined`; included only when `=== 'v1'`.
+- Validation order preserved: sessionId → harnessVersion → idempotency → provider → ledger → queue.
+
+---
+
+### Validation Summary
+
+**Targeted tests:**
+```
+npx jest --no-cache --testPathPatterns="ai-execution.controller.spec" --verbose
+```
+- 9 passed (05B9 + 05C2 new tests)
+- 4 failed — pre-existing `QueueService` DI baseline (since 05B8); not introduced by 05C2
+
+**Build:**
+```
+npm run build
+```
+- PASS — exit code 0, clean TypeScript compilation.
+
+**Lint:** No errors on changed files.
+
+**Final verdict: PASS** — new 05C2 tests pass; 4 pre-existing legacy DI failures unchanged; build clean.
+
+---
+
+### Registration Acceptance Criteria
+
+- [x] AGENT-HARNESS-05C2 appended to TASKS.md after AGENT-HARNESS-05C1.
+- [x] AGENT-HARNESS-05C2 appended to TASKS_BACKLOG_FULL.md after AGENT-HARNESS-05C1.
+- [x] Status was ACTIVE at registration.
+- [x] Dependency on AGENT-HARNESS-05C1 COMPLETE and LOCKED documented.
+- [x] Strategy A from 05C1 documented.
+- [x] Objective, implementation scope, constraints, risks, non-goals, and tests documented.
+- [x] No source/runtime/test/package/Docker/frontend/database files modified during registration.
+- [x] No .env changes during registration.
+- [x] No runtime validation executed during registration.
+- [x] No checkpoint created during registration.
+
+---
+
+### Implementation Acceptance Criteria
+
+- [x] `AIExecutionRequest` includes `harnessVersion?: 'v1'`.
+- [x] Controller accepts `undefined` `harnessVersion`.
+- [x] Controller accepts `'v1'`.
+- [x] Controller rejects invalid `harnessVersion` with HTTP 400.
+- [x] Controller rejects non-string `harnessVersion` with HTTP 400.
+- [x] Controller forwards `harnessVersion: 'v1'` into queue payload.
+- [x] Existing 05B9 sessionId UUID validation remains intact.
+- [x] `enableToolLoop` remains `false`.
+- [x] `ai-service` unchanged.
+- [x] Focused tests added/updated in `ai-execution.controller.spec.ts`.
+- [x] Targeted api-gateway tests pass for new cases; baseline failures documented.
+- [x] api-gateway build passes.
+- [x] No live provider execution run.
+- [x] No `browser_smoke` run.
+- [x] Checkpoint created during consolidation.
+
+---
+
+**Reference:** See TASKS.md -> AGENT-HARNESS-05C2.
+
+**Checkpoint:** docs/AGENT-HARNESS-05C2-CHECKPOINT.md
+
+**Next recommended task:** Register AGENT-HARNESS-05C3 — Harness Version Runtime Validation with `enableToolLoop` still `false`, after Keith approval.
+
+> LOCKED — do not modify this task entry.
