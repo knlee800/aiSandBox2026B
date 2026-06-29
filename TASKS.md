@@ -23643,3 +23643,310 @@ Static API-key authentication is unchanged. Static fallback keys use synthetic n
 ---
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05C5.
+
+---
+
+## AGENT-HARNESS-05C5A — Session Ownership Runtime Validation
+
+**Status:** COMPLETE and LOCKED
+**Registered:** 2026-06-29
+**Completed:** 2026-06-29
+**Priority:** Critical
+**Nature:** PRODUCTION-COMPOSE DEPLOYMENT / SECURITY BOUNDARY VALIDATION / EXPLICIT APPROVAL REQUIRED
+**Risk:** Medium
+**Depends on:**
+- AGENT-HARNESS-05C4 — COMPLETE and LOCKED (identified missing session ownership as a critical activation blocker)
+- AGENT-HARNESS-05C5 — COMPLETE and LOCKED (ownership enforcement implemented and statically validated; `session.userId === identity.userId`; missing and mismatched sessions return identical HTTP 404; no isInternal/admin/API-key bypass; production-compose api-gateway not yet rebuilt with 05C5; `enableToolLoop` remains false; `enableBrowserSmoke` remains false)
+
+---
+
+### Objective
+
+Deploy the 05C5 api-gateway change into the local production-compose stack and validate through official application routes that:
+
+1. A user-owned session is accepted.
+2. A cross-user session is rejected with HTTP 404.
+3. A missing valid-UUID session returns the same HTTP 404 response.
+4. Rejected requests do not write usage ledger records.
+5. Rejected requests do not enqueue BullMQ jobs.
+6. `isInternal` does not bypass ownership.
+7. Existing valid owner execution still completes through xAI.
+8. No Agent Harness tools or browser_smoke execute.
+
+---
+
+### Approval Requirement
+
+**No Docker rebuild, container recreation, login, session creation, API request, database inspection, queue inspection, or xAI call may occur until:**
+- a read-only validation plan is produced;
+- exact commands and side effects are presented;
+- Keith explicitly approves execution.
+
+---
+
+### Required Planning Review (read-only, do not execute during registration)
+
+- Determine current production-compose status.
+- Determine exact api-gateway service name/build context.
+- Determine how to verify deployed compiled code contains the 05C5 comparison.
+- Determine official login route and cookie handling.
+- Determine official session creation/listing/termination routes.
+- Determine whether suitable existing sessions owned by two different real UUID-backed users already exist.
+- Determine how to identify session ownership using read-only database inspection.
+- Determine whether creating temporary sessions starts containers.
+- Determine exact cleanup required for task-created sessions and containers.
+- Determine queue and usage-record baseline queries.
+
+---
+
+### Identity Requirements
+
+- Use real database-backed UUID users only.
+- Prefer existing test and demo users if their normal login credentials work.
+- Do not use static fallback API keys for owner-success validation.
+- Do not create synthetic user IDs.
+- Do not create or modify API keys.
+- Do not reset passwords.
+- Do not insert sessions directly into the database.
+- Do not update database records manually.
+
+---
+
+### Candidate Runtime Scenarios
+
+**Scenario A — Owner success:**
+- Authenticate as User A through the normal login endpoint.
+- Use a session whose `Session.userId` equals User A's UUID.
+- Submit one minimal xAI execution.
+- Prefer plain execution unless v1 coverage is specifically justified.
+- Expect HTTP 202 and completed xAI result.
+- Expect exactly one `usage_records` row.
+
+**Scenario B — Cross-user rejection:**
+- Remain authenticated as User A.
+- Submit using a session owned by User B.
+- A valid UUID session must actually exist.
+- Expect HTTP 404: `Session with ID <sessionId> not found`
+- Expect no new `usage_records` row.
+- Expect no new BullMQ job.
+- Expect no provider call.
+
+**Scenario C — Missing-session equivalence:**
+- Authenticate as User A.
+- Generate a valid UUID not present in sessions.
+- Submit the same bounded request.
+- Expect the identical HTTP status and message as Scenario B.
+- Expect no ledger or queue side effects.
+
+**Scenario D — Harness-version rejection boundary:**
+- Submit a cross-user request with `harnessVersion: 'v1'`.
+- Expect rejection before queueing.
+- This scenario must not activate the harness because both gates remain false.
+- No provider cost should occur.
+
+---
+
+### Deployment Scope
+
+- Rebuild only `api-gateway`.
+- Recreate only `api-gateway`.
+- Do not rebuild `ai-service`, `container-manager`, `frontend`, Postgres, Redis, Prometheus, or Grafana.
+- Verify all production services remain running.
+- Use compose service lookup rather than hardcoded generated container IDs.
+
+**Expected deployment pattern (subject to plan verification):**
+```
+docker compose -f "C:\Users\knlee\aiSandBox2026B\docker-compose.prod.yml" build api-gateway
+docker compose -f "C:\Users\knlee\aiSandBox2026B\docker-compose.prod.yml" up -d --no-deps api-gateway
+```
+
+---
+
+### Required Runtime Evidence
+
+- Initial compose status.
+- Existing deployed 05C5 presence/absence.
+- api-gateway rebuild/recreation result.
+- api-gateway health HTTP 200.
+- Compiled controller contains the ownership comparison.
+- Authenticated User A UUID.
+- User A session ID and confirmed owner.
+- User B session ID and confirmed owner.
+- Queue stats before and after each scenario.
+- `usage_records` count before and after each scenario.
+- Exact owner-success submit/poll result.
+- Exact cross-user 404 response.
+- Exact missing-session 404 response.
+- Equivalence comparison between cross-user and missing responses.
+- Exact v1 cross-user rejection.
+- Confirmation no rejected execution ID was created.
+- Confirmation BullMQ failed count did not increase.
+- Confirmation no harness/tool/browser activity.
+- Final compose status.
+
+---
+
+### Provider Restriction
+
+- Use xAI only for the single owner-success execution.
+- Minimal prompt: `Reply with exactly: 05C5A ownership validation passed`
+- Do not use OpenAI, Anthropic, Groq, DeepSeek, or stub.
+- Estimate cost before execution.
+- No provider call should occur for rejected scenarios.
+
+---
+
+### Potential Approved Future Side Effects
+
+- api-gateway image rebuild and container recreation.
+- Normal `auth_sessions` rows from login.
+- One `usage_records` row from owner-success execution.
+- Temporary sessions/containers only if existing suitable sessions are unavailable.
+- No database schema changes.
+- No raw database writes.
+
+---
+
+### Cleanup
+
+- Remove or terminate only sessions/containers created specifically by 05C5A.
+- Do not remove pre-existing sessions.
+- Do not delete usage ledger or auth-session rows unless explicitly approved.
+- Do not stop production services.
+- Do not remove images or volumes.
+- Do not leave session tokens or credentials in temporary files.
+
+---
+
+### Stop Conditions
+
+- Docker unavailable.
+- Required infrastructure unhealthy.
+- api-gateway build/recreation fails.
+- Compiled 05C5 logic absent after deployment.
+- Either harness gate is true.
+- No safe pair of real users/sessions can be obtained.
+- Login requires password mutation.
+- Cross-user request returns anything other than the expected 404.
+- Rejected request creates a usage record or queue job.
+- Owner-success request fails.
+- Any tool, checkpoint, or browser activity occurs.
+
+---
+
+### Non-Goals
+
+- No source implementation.
+- No test changes.
+- No password correction.
+- No API-key creation.
+- No raw DB mutation.
+- No harness activation.
+- No environment-gate implementation.
+- No browser_smoke.
+- No frontend work.
+- No git operations.
+
+---
+
+### Registration Acceptance Criteria
+
+- [x] 05C5A appended after 05C5 in TASKS.md.
+- [x] Mirrored in TASKS_BACKLOG_FULL.md.
+- [x] Status ACTIVE.
+- [x] Critical deployment-pending context documented.
+- [x] Owner, cross-user, missing-session, and v1 rejection scenarios documented.
+- [x] Real UUID-backed identities required.
+- [x] xAI limited to one owner-success request.
+- [x] No raw DB mutation requirement documented.
+- [x] Deployment limited to api-gateway.
+- [x] Queue, ledger, and response evidence documented.
+- [x] Cleanup and stop conditions documented.
+- [x] Explicit Keith approval gate documented.
+- [x] No implementation files changed.
+- [x] No runtime commands executed.
+- [x] No checkpoint created.
+
+### Runtime Validation Acceptance Criteria
+
+- [x] Read-only validation plan completed.
+- [x] Existing sessions/users or safe temporary-session strategy confirmed.
+- [x] Keith explicitly approves runtime execution.
+- [x] Initial compose stack healthy.
+- [x] api-gateway rebuilt/recreated with 05C5.
+- [x] Compiled ownership logic verified.
+- [x] Owner-success request accepted and completed through xAI.
+- [x] Cross-user request rejected with HTTP 404.
+- [x] Missing session rejected with identical HTTP 404.
+- [x] Cross-user v1 request rejected before queueing.
+- [x] Rejected requests create no usage records.
+- [x] Rejected requests create no BullMQ jobs.
+- [x] `isInternal` does not bypass ownership.
+- [x] No harness/tool/checkpoint/browser activity.
+- [x] Queue failure count unchanged.
+- [x] Task-created resources cleaned up.
+- [x] Production services remain healthy.
+- [x] No source or .env changes.
+- [x] Checkpoint created during consolidation.
+
+---
+
+### Deployment Summary
+
+- All eight production-compose services were running before action was taken.
+- api-gateway was rebuilt and recreated successfully; 05C5 ownership logic confirmed present in compiled artifact.
+- No other services were rebuilt or recreated.
+
+### Rejection-Boundary Summary
+
+- **Cross-user:** HTTP 404, no executionId, ledger unchanged, queue unchanged (User B session `7dc2b6ba-e73a-496e-baa0-99a790ead9f3` rejected when accessed as User A).
+- **Missing-session:** HTTP 404, identical normalized response to cross-user.
+- **Cross-user v1:** HTTP 404, no executionId, ledger unchanged, queue unchanged, no provider execution.
+- `isInternal` did not bypass the ownership check.
+- BullMQ failed count remained 3 throughout all rejection scenarios.
+
+### Owner-Success Summary
+
+- User A's session `244bf635-d7e3-4c38-b67c-97ea31800d9f` accepted.
+- HTTP 202; `executionId: 9db7b29d-611c-4a94-af10-be67d74fb7de`; `status: completed`.
+- Provider: xAI; model: grok-4.3; tokensUsed: 495; estimated cost below USD $0.01.
+- Output: `05C5A ownership validation passed`.
+- `fileActions: []`.
+
+### Exact Route Event
+
+```json
+{
+  "event": "agent_harness.route_evaluated",
+  "executionId": "9db7b29d-611c-4a94-af10-be67d74fb7de",
+  "harnessVersion": null,
+  "enableToolLoop": false,
+  "selectedPath": "plain"
+}
+```
+
+Exactly one route event. `enableToolLoop` remained false. `enableBrowserSmoke` remained false. No `preApplyCheckpointHash`.
+
+### Cleanup Summary
+
+- Both task-created temporary sessions (`244bf635-...`, `7dc2b6ba-...`) terminated through official routes.
+- No pre-existing sessions removed.
+- No `usage_records` or `auth_sessions` rows deleted.
+- All eight production-compose services remained running after cleanup.
+- No session tokens or credentials left in temporary files.
+
+### Final Verdict
+
+**PASS** — All eight objective criteria satisfied. No bypass of the ownership boundary observed. 05C5 ownership enforcement confirmed live in the production-compose stack.
+
+---
+
+**Checkpoint:** `docs/AGENT-HARNESS-05C5A-CHECKPOINT.md`
+
+**Lock Notice:** This task is COMPLETE and LOCKED. Do not modify any field, criterion, or summary. Documentation correction requires explicit approval.
+
+**Next Step:** Register AGENT-HARNESS-05C6 — Environment-Backed Feature Gate, registration only.
+
+---
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05C5A.
