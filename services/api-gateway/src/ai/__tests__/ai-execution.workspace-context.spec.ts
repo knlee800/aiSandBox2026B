@@ -1,3 +1,4 @@
+import { NotFoundException } from '@nestjs/common';
 import { AIExecutionController } from '../ai-execution.controller';
 import type { AIExecutionRequest } from '../../clients/ai-service-http.client';
 import type { ApiKeyIdentity } from '../../auth/api-key.config';
@@ -681,9 +682,10 @@ describe('AIExecutionController workspaceContext forwarding', () => {
     expect(enqueuePayload.workspaceContext.repoDocContents).toBeUndefined();
   });
 
-  it('omits repoDocContents when session owner does not match identity user', async () => {
+  it('rejects cross-user session before workspace-context enrichment (AGENT-HARNESS-05C5)', async () => {
     const usageLedgerService = {
       findByRequestId: jest.fn().mockResolvedValue(null),
+      reuseExecutionIntent: jest.fn().mockResolvedValue('exec-id'),
       writeExecutionIntent: jest.fn().mockResolvedValue(undefined),
     };
     const queueService = {
@@ -734,12 +736,21 @@ describe('AIExecutionController workspaceContext forwarding', () => {
       scopes: ['ai:execute'],
     };
 
-    await controller.execute(request, identity);
+    const error = await controller.execute(request, identity).catch((e) => e);
+
+    expect(error).toBeInstanceOf(NotFoundException);
+    expect(error.message).toBe(
+      `Session with ID ${request.sessionId} not found`,
+    );
+    expect(error.message).not.toContain('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa');
 
     expect(projectRepoDocsService.listByProjectId).not.toHaveBeenCalled();
     expect(containerManagerHttpClient.readSessionFile).not.toHaveBeenCalled();
-    const enqueuePayload = queueService.enqueueExecution.mock.calls[0][0];
-    expect(enqueuePayload.workspaceContext.repoDocContents).toBeUndefined();
+    expect(userAiInstructionsService.getByUserId).not.toHaveBeenCalled();
+    expect(projectAiContextService.getByProjectId).not.toHaveBeenCalled();
+    expect(usageLedgerService.reuseExecutionIntent).not.toHaveBeenCalled();
+    expect(usageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+    expect(queueService.enqueueExecution).not.toHaveBeenCalled();
   });
 
   it('omits repoDocContents when project has no registered repo docs', async () => {

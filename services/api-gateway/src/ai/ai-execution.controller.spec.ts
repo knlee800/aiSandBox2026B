@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AIExecutionController } from './ai-execution.controller';
 import { AIServiceHttpClient, AIExecutionRequest, AIExecutionResult } from '../clients/ai-service-http.client';
 import { ApiKeyIdentity } from '../auth/api-key.config';
@@ -467,5 +467,253 @@ describe('AIExecutionController — harnessVersion wiring (AGENT-HARNESS-05C2)',
 
     expect(mockUsageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
     expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * AGENT-HARNESS-05C5: Session ownership enforcement tests
+ *
+ * Verifies that POST /api/ai/execute enforces session ownership
+ * after UUID and harnessVersion validation. Cross-user and missing
+ * sessions must both return HTTP 404 with an identical message,
+ * and no controller-level side effects (enrichment, ledger, queue)
+ * may occur for rejected requests.
+ */
+describe('AIExecutionController — session ownership enforcement (AGENT-HARNESS-05C5)', () => {
+  let controller: AIExecutionController;
+  let mockSessionService: Record<string, jest.Mock>;
+  let mockUsageLedgerService: Record<string, jest.Mock>;
+  let mockQueueService: Record<string, jest.Mock>;
+  let mockUserAiInstructionsService: Record<string, jest.Mock>;
+  let mockProjectAiContextService: Record<string, jest.Mock>;
+
+  const ownerUserId = '38b2bb95-9126-498a-a29f-86c2d335bed6';
+  const otherUserId = '1eb05cfa-af67-428a-bbec-a0ef0163b539';
+  const sessionId = '35d53116-6723-4571-af12-ac256977c007';
+
+  const ownerIdentity: ApiKeyIdentity = {
+    userId: ownerUserId,
+    apiKeyId: 'key-owner-001',
+    scopes: ['ai:execute'],
+  };
+
+  function makeRequest(overrides?: Partial<AIExecutionRequest>): AIExecutionRequest {
+    return {
+      sessionId,
+      conversationId: 'conv-05c5',
+      userId: 'ignored',
+      prompt: 'Hello',
+      provider: 'stub',
+      ...overrides,
+    };
+  }
+
+  beforeEach(async () => {
+    mockSessionService = {
+      getSessionById: jest.fn().mockResolvedValue({ userId: ownerUserId, projectId: null }),
+    };
+
+    mockUsageLedgerService = {
+      findByRequestId: jest.fn().mockResolvedValue(null),
+      reuseExecutionIntent: jest.fn().mockResolvedValue('exec-id'),
+      writeExecutionIntent: jest.fn().mockResolvedValue(undefined),
+      updateExecutionResult: jest.fn().mockResolvedValue(undefined),
+    };
+
+    mockQueueService = {
+      enqueueExecution: jest.fn().mockResolvedValue(undefined),
+    };
+
+    mockUserAiInstructionsService = {
+      getByUserId: jest.fn().mockResolvedValue(null),
+    };
+
+    mockProjectAiContextService = {
+      getByProjectId: jest.fn().mockResolvedValue(null),
+    };
+
+    const mockGuard = { canActivate: jest.fn(() => true) };
+
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [AIExecutionController],
+      providers: [
+        { provide: UsageLedgerService, useValue: mockUsageLedgerService },
+        { provide: GlobalSafetyLimitService, useValue: { checkAndRecord: jest.fn(), recordExecutionCost: jest.fn() } },
+        { provide: QueueService, useValue: mockQueueService },
+        { provide: ExecutionResultService, useValue: { getExecution: jest.fn(), requestCancel: jest.fn() } },
+        { provide: ExecutionStreamService, useValue: { subscribe: jest.fn(), unsubscribe: jest.fn() } },
+        { provide: UserAiInstructionsService, useValue: mockUserAiInstructionsService },
+        { provide: ProjectAiContextService, useValue: mockProjectAiContextService },
+        { provide: SessionService, useValue: mockSessionService },
+      ],
+    })
+      .overrideGuard(SessionOrApiKeyAuthGuard).useValue(mockGuard)
+      .overrideGuard(AuthorizationGuard).useValue(mockGuard)
+      .overrideGuard(QuotaGuard).useValue(mockGuard)
+      .overrideGuard(TokenQuotaGuard).useValue(mockGuard)
+      .compile();
+
+    controller = module.get<AIExecutionController>(AIExecutionController);
+  });
+
+  it('Test A: invalid sessionId throws BadRequestException before session lookup', async () => {
+    await expect(
+      controller.execute(makeRequest({ sessionId: 'not-a-uuid' }), ownerIdentity),
+    ).rejects.toThrow(BadRequestException);
+
+    expect(mockSessionService.getSessionById).not.toHaveBeenCalled();
+    expect(mockUsageLedgerService.reuseExecutionIntent).not.toHaveBeenCalled();
+    expect(mockUsageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+  });
+
+  it('Test B: invalid harnessVersion throws BadRequestException before session lookup', async () => {
+    await expect(
+      controller.execute(makeRequest({ harnessVersion: 'v2' as any }), ownerIdentity),
+    ).rejects.toThrow(BadRequestException);
+
+    expect(mockSessionService.getSessionById).not.toHaveBeenCalled();
+    expect(mockUsageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+  });
+
+  it('Test C: missing session propagates NotFoundException unchanged', async () => {
+    mockSessionService.getSessionById.mockRejectedValue(
+      new NotFoundException(`Session with ID ${sessionId} not found`),
+    );
+
+    await expect(
+      controller.execute(makeRequest(), ownerIdentity),
+    ).rejects.toThrow(NotFoundException);
+
+    await expect(
+      controller.execute(makeRequest(), ownerIdentity),
+    ).rejects.toThrow(`Session with ID ${sessionId} not found`);
+
+    expect(mockUserAiInstructionsService.getByUserId).not.toHaveBeenCalled();
+    expect(mockProjectAiContextService.getByProjectId).not.toHaveBeenCalled();
+    expect(mockUsageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+  });
+
+  it('Test D: cross-user session throws NotFoundException without leaking otherUserId', async () => {
+    mockSessionService.getSessionById.mockResolvedValue({ userId: otherUserId, projectId: null });
+
+    const error = await controller.execute(makeRequest(), ownerIdentity).catch((e) => e);
+
+    expect(error).toBeInstanceOf(NotFoundException);
+    expect(error.message).toBe(`Session with ID ${sessionId} not found`);
+    expect(error.message).not.toContain(otherUserId);
+
+    expect(mockUserAiInstructionsService.getByUserId).not.toHaveBeenCalled();
+    expect(mockUsageLedgerService.reuseExecutionIntent).not.toHaveBeenCalled();
+    expect(mockUsageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+  });
+
+  it('Test E: matching owner, plain execution proceeds with ledger and queue', async () => {
+    const result = await controller.execute(makeRequest(), ownerIdentity);
+
+    expect(result).toHaveProperty('executionId');
+    expect(result.status).toBe('queued');
+    expect(mockUsageLedgerService.writeExecutionIntent).toHaveBeenCalledTimes(1);
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+
+    const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expect(payload).not.toHaveProperty('harnessVersion');
+  });
+
+  it('Test F: matching owner, harnessVersion v1 proceeds and forwards harnessVersion', async () => {
+    const result = await controller.execute(
+      makeRequest({ harnessVersion: 'v1' }),
+      ownerIdentity,
+    );
+
+    expect(result).toHaveProperty('executionId');
+    expect(result.status).toBe('queued');
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+
+    const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expect(payload.harnessVersion).toBe('v1');
+  });
+
+  it('Test G: cross-user harnessVersion v1 throws NotFoundException', async () => {
+    mockSessionService.getSessionById.mockResolvedValue({ userId: otherUserId, projectId: null });
+
+    await expect(
+      controller.execute(makeRequest({ harnessVersion: 'v1' }), ownerIdentity),
+    ).rejects.toThrow(NotFoundException);
+
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+  });
+
+  it('Test H: session-cookie identity — matching userId succeeds, different userId fails, isInternal does not bypass', async () => {
+    const browserIdentity: ApiKeyIdentity = {
+      userId: ownerUserId,
+      apiKeyId: 'browser-session',
+      scopes: ['ai:execute'],
+      isInternal: true,
+    };
+
+    const result = await controller.execute(makeRequest(), browserIdentity);
+    expect(result.status).toBe('queued');
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+
+    mockQueueService.enqueueExecution.mockClear();
+    mockUsageLedgerService.writeExecutionIntent.mockClear();
+    mockSessionService.getSessionById.mockResolvedValue({ userId: otherUserId, projectId: null });
+
+    const browserIdentityOther: ApiKeyIdentity = {
+      userId: otherUserId,
+      apiKeyId: 'browser-session',
+      scopes: ['ai:execute'],
+      isInternal: true,
+    };
+
+    await expect(
+      controller.execute(makeRequest(), { ...browserIdentityOther, userId: ownerUserId }),
+    ).rejects.toThrow(NotFoundException);
+
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+  });
+
+  it('Test I: API-key identity — matching UUID succeeds, different UUID fails, isInternal does not bypass', async () => {
+    mockSessionService.getSessionById.mockResolvedValue({ userId: ownerUserId, projectId: null });
+
+    const apiKeyIdentity: ApiKeyIdentity = {
+      userId: ownerUserId,
+      apiKeyId: 'ak-real-key-001',
+      scopes: ['ai:execute'],
+      isInternal: true,
+    };
+
+    const result = await controller.execute(makeRequest(), apiKeyIdentity);
+    expect(result.status).toBe('queued');
+
+    mockQueueService.enqueueExecution.mockClear();
+    mockUsageLedgerService.writeExecutionIntent.mockClear();
+    mockSessionService.getSessionById.mockResolvedValue({ userId: otherUserId, projectId: null });
+
+    await expect(
+      controller.execute(makeRequest(), apiKeyIdentity),
+    ).rejects.toThrow(NotFoundException);
+
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+  });
+
+  it('Test J: missing and mismatched responses are equivalent (HTTP 404, same message)', async () => {
+    const missingError = new NotFoundException(`Session with ID ${sessionId} not found`);
+    mockSessionService.getSessionById.mockRejectedValue(missingError);
+
+    const missingCaught = await controller.execute(makeRequest(), ownerIdentity).catch((e) => e);
+
+    mockSessionService.getSessionById.mockResolvedValue({ userId: otherUserId, projectId: null });
+
+    const mismatchCaught = await controller.execute(makeRequest(), ownerIdentity).catch((e) => e);
+
+    expect(missingCaught.getStatus()).toBe(404);
+    expect(mismatchCaught.getStatus()).toBe(404);
+    expect(missingCaught.message).toBe(mismatchCaught.message);
+    expect(missingCaught.message).toBe(`Session with ID ${sessionId} not found`);
   });
 });

@@ -403,6 +403,14 @@ export class AIExecutionController {
       }
     }
 
+    // AGENT-HARNESS-05C5: Session ownership enforcement
+    const session = await this.sessionService.getSessionById(request.sessionId);
+    if (session.userId !== identity.userId) {
+      throw new NotFoundException(
+        `Session with ID ${request.sessionId} not found`,
+      );
+    }
+
     // Phase 43A-2B: Validate and normalize idempotency key
     let requestId: string | undefined;
     if (idempotencyKey !== undefined) {

@@ -749,10 +749,19 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                 abortController.signal,
               );
 
-              if (
+              const useHarness =
                 job.data.harnessVersion === 'v1' &&
-                DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop
-              ) {
+                DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop;
+
+              this.logger.log(JSON.stringify({
+                event: 'agent_harness.route_evaluated',
+                executionId: job.data.executionId,
+                harnessVersion: job.data.harnessVersion ?? null,
+                enableToolLoop: DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop,
+                selectedPath: useHarness ? 'harness' : 'plain',
+              }));
+
+              if (useHarness) {
                 const adapter = this.aiExecutionService.getAdapter(
                   executionRequest.provider,
                 );

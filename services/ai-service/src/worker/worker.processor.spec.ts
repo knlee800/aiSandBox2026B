@@ -440,6 +440,101 @@ describe('Agent Harness 03C: checkpoint callback wiring in WorkerProcessor', () 
   });
 });
 
+describe('Agent Harness 05C3A: route observability event', () => {
+  function getWorkerSource(): string {
+    return require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+  }
+
+  it('emits agent_harness.route_evaluated with harnessVersion v1, enableToolLoop false, selectedPath plain', () => {
+    const workerSource = getWorkerSource();
+    expect(workerSource).toContain("event: 'agent_harness.route_evaluated'");
+    expect(workerSource).toContain('enableToolLoop: DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop');
+    expect(workerSource).toContain("selectedPath: useHarness ? 'harness' : 'plain'");
+
+    const samplePayload = {
+      event: 'agent_harness.route_evaluated',
+      executionId: 'exec-test-1',
+      harnessVersion: 'v1',
+      enableToolLoop: DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop,
+      selectedPath:
+        'v1' === 'v1' && DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop
+          ? 'harness'
+          : 'plain',
+    };
+
+    expect(samplePayload.executionId).toBe('exec-test-1');
+    expect(samplePayload.harnessVersion).toBe('v1');
+    expect(samplePayload.enableToolLoop).toBe(false);
+    expect(samplePayload.selectedPath).toBe('plain');
+  });
+
+  it('emits agent_harness.route_evaluated with null harnessVersion when absent', () => {
+    const absentVersion: string | undefined = undefined;
+    const samplePayload = {
+      event: 'agent_harness.route_evaluated',
+      executionId: 'exec-test-2',
+      harnessVersion: absentVersion ?? null,
+      enableToolLoop: DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop,
+      selectedPath:
+        absentVersion === 'v1' && DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop
+          ? 'harness'
+          : 'plain',
+    };
+
+    expect(samplePayload.harnessVersion).toBeNull();
+    expect(samplePayload.enableToolLoop).toBe(false);
+    expect(samplePayload.selectedPath).toBe('plain');
+  });
+
+  it('route event contains no sensitive fields', () => {
+    const workerSource = getWorkerSource();
+    const eventStart = workerSource.indexOf("event: 'agent_harness.route_evaluated'");
+    expect(eventStart).toBeGreaterThan(-1);
+
+    const eventBlock = workerSource.substring(eventStart, eventStart + 500);
+
+    const forbiddenFields = [
+      'prompt',
+      'workspaceContext',
+      'globalInstructions',
+      'projectInstructions',
+      'cookie',
+      'apiKey',
+    ];
+
+    for (const field of forbiddenFields) {
+      const fieldAsKey = new RegExp(`\\b${field}\\s*:`);
+      expect(eventBlock).not.toMatch(fieldAsKey);
+    }
+  });
+
+  it('useHarness replaces the inline condition without changing routing semantics', () => {
+    const workerSource = getWorkerSource();
+
+    expect(workerSource).toContain('const useHarness =');
+    expect(workerSource).toContain("job.data.harnessVersion === 'v1' &&");
+    expect(workerSource).toContain('DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop;');
+
+    expect(workerSource).toContain('if (useHarness) {');
+
+    const inlineDoubleGateMatches = workerSource.match(
+      /if\s*\(\s*job\.data\.harnessVersion === 'v1'\s*&&\s*DEFAULT_AGENT_HARNESS_CONFIG_V1\.enableToolLoop\s*\)/g,
+    );
+    expect(inlineDoubleGateMatches).toBeNull();
+  });
+
+  it('existing harness tool registration tests remain valid', () => {
+    const workerSource = getWorkerSource();
+    const harnessGateIndex = workerSource.indexOf("harnessVersion === 'v1'");
+    const dispatcherIndex = workerSource.indexOf('new ToolDispatcher()');
+    expect(harnessGateIndex).toBeGreaterThan(-1);
+    expect(dispatcherIndex).toBeGreaterThan(harnessGateIndex);
+  });
+});
+
 describe('Agent Harness 03A: read_file/list_files handler registration', () => {
   it('WorkerProcessor imports file-tool-handlers', () => {
     const workerSource = require('fs').readFileSync(

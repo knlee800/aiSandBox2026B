@@ -22638,3 +22638,1008 @@ npm run build
 **Next recommended task:** Register AGENT-HARNESS-05C3 — Harness Version Runtime Validation with `enableToolLoop` still `false`, after Keith approval.
 
 > LOCKED — do not modify this task entry.
+
+---
+
+## AGENT-HARNESS-05C3 — Harness Version Runtime Validation
+
+**Task ID:** AGENT-HARNESS-05C3
+**Family:** AGENT-HARNESS
+**Phase:** 5C
+**Status:** COMPLETE and LOCKED
+**Registered:** 2026-06-27
+**Completed:** 2026-06-27
+**Priority:** High
+**Nature:** RUNTIME VALIDATION / API-TO-QUEUE PROPAGATION / xAI / APPROVAL REQUIRED
+**Risk:** Medium
+**Depends on:**
+- AGENT-HARNESS-05C1 — COMPLETE and LOCKED (architecture review selected public optional harnessVersion with strict allow-list validation)
+- AGENT-HARNESS-05C2 — COMPLETE and LOCKED (harnessVersion API-to-queue wiring implemented and statically validated)
+- AGENT-HARNESS-05C3A — COMPLETE and LOCKED (worker harness route observability event added; resolved observability gap blocking 05C3 runtime validation)
+- AGENT-HARNESS-05B7 — COMPLETE and LOCKED (production xAI provider/model execution path validated)
+- AGENT-HARNESS-05B8 — COMPLETE and LOCKED (seed login password hashes corrected)
+- AGENT-HARNESS-05B9 — COMPLETE and LOCKED (sessionId UUID boundary validation implemented)
+
+---
+
+### Context
+
+AGENT-HARNESS-05C2 added:
+- `harnessVersion?: 'v1'` to `AIExecutionRequest`.
+- Controller allow-list validation: `undefined` or `'v1'` accepted; anything else returns HTTP 400.
+- Forwarding of `harnessVersion` into the BullMQ job payload.
+- Five focused tests covering omission, forwarding, invalid values, and preservation of sessionId validation.
+
+The ai-service consumer already contains:
+- `AiExecutionJob.harnessVersion`.
+- `WorkerProcessor` branch condition: `job.data.harnessVersion === 'v1' && DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop`.
+
+**Current safety configuration:**
+- `enableToolLoop: false`
+- `enableBrowserSmoke: false`
+- `enablePreApplyCheckpoint: true`
+
+Therefore, a request carrying `harnessVersion: 'v1'` should reach the worker, but the harness loop must remain disabled and the normal xAI execution path should complete.
+
+---
+
+### Objective
+
+Prove via runtime validation that:
+
+1. The official `POST /api/ai/execute` route accepts `harnessVersion: 'v1'`.
+2. The api-gateway forwards the field into the BullMQ job.
+3. The ai-service worker receives the field.
+4. The worker evaluates the harness branch gate.
+5. Because `enableToolLoop` remains `false`, the harness loop is not entered.
+6. The request falls through to the normal xAI execution path.
+7. The xAI execution completes and can be retrieved from the polling endpoint.
+8. No tool handler, browser_smoke action, file mutation, or workspace action is executed.
+
+---
+
+### Provider Restriction
+
+- Use xAI only.
+- Do not use stub, OpenAI, Anthropic, Groq, or DeepSeek.
+- Use the configured `XAI_API_KEY` without printing or exposing it.
+- Use a minimal prompt to control cost.
+
+---
+
+### Authentication
+
+- Use the standard session-cookie authentication path with an existing valid UUID-backed test user.
+- Handle session tokens securely and mask them in all reports.
+- Do not create a new API key.
+- Do not perform direct database inserts.
+- Standard login and usage-record writes are permitted only during the separately approved runtime step.
+
+---
+
+### Required Review Before Runtime Approval
+
+- Inspect current source and runtime logging to determine how to prove that `harnessVersion: 'v1'` reached `WorkerProcessor`.
+- Prefer existing structured logs, BullMQ inspection, or existing execution metadata.
+- Do not add temporary telemetry or source logging during validation.
+- Do not publish directly to BullMQ.
+- Do not bypass api-gateway.
+- If propagation cannot be proven using existing observability, stop and recommend a separate telemetry task.
+- Present exact commands, API payloads, expected responses, masking rules, cost estimate, side effects, and cleanup plan to Keith.
+- Obtain explicit approval before starting production compose or making the xAI call.
+
+---
+
+### Likely Inspection Areas for the Future Validation Plan
+
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\ai\ai-execution.controller.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\queue\queue.service.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\queue\job.types.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\worker\worker.processor.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness\config\agent-harness.config.ts`
+- `C:\Users\knlee\aiSandBox2026B\docker-compose.prod.yml`
+- `C:\Users\knlee\aiSandBox2026B\docs\AGENT-HARNESS-05B7-CHECKPOINT.md`
+- `C:\Users\knlee\aiSandBox2026B\docs\AGENT-HARNESS-05C2-CHECKPOINT.md`
+
+---
+
+### Design Constraints
+
+- `enableToolLoop` must remain `false`.
+- `enableBrowserSmoke` must remain `false`.
+- Do not activate the Agent Harness loop.
+- Do not execute any harness tools.
+- Do not change configuration or environment variables.
+- Use a valid UUID `sessionId`.
+- Use xAI only.
+- Use the official api-gateway route.
+- Do not publish directly to Redis or BullMQ.
+- Do not expose credentials or session tokens.
+- No source fix may be applied during runtime validation.
+- Any discovered blocker must be reported and registered separately.
+- Propagation of `harnessVersion: 'v1'` must be proven using existing observability only.
+- Explicit Keith approval required before runtime commands or xAI call.
+
+---
+
+### Non-Goals
+
+- No implementation during registration.
+- No `enableToolLoop` activation.
+- No live harness tool-loop execution.
+- No `browser_smoke`.
+- No file write/delete or validation tools.
+- No direct queue publishing.
+- No frontend changes.
+- No database schema changes.
+- No provider comparison.
+- No git operations.
+
+---
+
+### Risks
+
+- If `enableToolLoop` were inadvertently activated, mutating tools could write workspace files without a recovery point.
+- If `enableBrowserSmoke` were inadvertently activated, browser automation could escape the workspace boundary.
+- If session tokens or `XAI_API_KEY` are not masked, credentials may be logged or exposed.
+- If propagation cannot be proven using existing observability, the runtime step cannot be completed without a separate telemetry task.
+- If any discovered source issue requires a fix, validation must stop and a separate task registered.
+
+---
+
+### Registration Acceptance Criteria
+
+- [x] AGENT-HARNESS-05C3 is appended after AGENT-HARNESS-05C2 in TASKS.md.
+- [x] The same task is mirrored in TASKS_BACKLOG_FULL.md.
+- [x] Status is ACTIVE.
+- [x] Dependencies through AGENT-HARNESS-05C2 are documented.
+- [x] xAI-only provider restriction is documented.
+- [x] `enableToolLoop` and `enableBrowserSmoke` must remain false — documented.
+- [x] Existing-observability requirement is documented.
+- [x] Explicit runtime approval gate is documented.
+- [x] No source/runtime/test/package/Docker/frontend/database files are modified.
+- [x] No runtime validation is executed.
+- [x] No checkpoint is created.
+
+---
+
+### Future Validation Acceptance Criteria
+
+- [x] Production compose prerequisites verified.
+- [x] Existing observability method for `harnessVersion` propagation confirmed.
+- [x] Keith explicitly approves the runtime commands and xAI call.
+- [x] Session-cookie authentication succeeds with a valid UUID-backed user.
+- [x] `POST /api/ai/execute` with `harnessVersion: 'v1'` returns HTTP 202.
+- [x] BullMQ job receives `harnessVersion: 'v1'`.
+- [x] `WorkerProcessor` receives and evaluates the field.
+- [x] `enableToolLoop` remains `false`.
+- [x] Harness loop is not entered.
+- [x] No harness tools or `browser_smoke` execute.
+- [x] Normal xAI execution completes.
+- [x] Poll response reports `completed`, provider `xai`, and a valid model/output.
+- [x] Usage ledger records completion.
+- [x] Secrets and session tokens remain masked.
+- [x] No source or configuration changes are made.
+- [x] Runtime side effects and cleanup are documented.
+- [x] Checkpoint is created during consolidation.
+
+---
+
+### Deployment Summary
+
+- Existing api-gateway image did not contain 05C2 harnessVersion wiring — rebuilt and recreated api-gateway only.
+- Rebuilt and recreated ai-service only to deploy 05C3A `agent_harness.route_evaluated` event.
+- No other service was rebuilt or restarted.
+- All eight production services remained running throughout.
+
+---
+
+### Runtime Validation Summary
+
+- HTTP submit: 202 Accepted.
+- executionId: `18ff206a-80a6-4259-b203-c79f5fe1fec5`
+- status: `completed`
+- provider: `xai`
+- model: `grok-4.3`
+- tokensUsed: `504`
+- output: `05C3 xAI validation passed`
+- fileActions: `[]`
+- `enableToolLoop` remained `false`; harness loop not entered.
+- `enableBrowserSmoke` remained `false`; no browser_smoke activity.
+- No `preApplyCheckpointHash` (confirming plain path).
+- BullMQ failed count remained 3 before and after (pre-existing, unrelated).
+- Queue returned to waiting=0, active=0.
+- One completed `usage_records` row written.
+- Standard login created an auth session; token masked in all outputs.
+- No temporary files remained.
+- Estimated provider cost below USD $0.01.
+- No repository files or `.env` were changed during runtime validation.
+
+---
+
+### Direct Structured Event Evidence
+
+```json
+{
+  "event": "agent_harness.route_evaluated",
+  "executionId": "18ff206a-80a6-4259-b203-c79f5fe1fec5",
+  "harnessVersion": "v1",
+  "enableToolLoop": false,
+  "selectedPath": "plain"
+}
+```
+
+Exactly one matching route event confirmed for this executionId.
+
+---
+
+### Final Verdict
+
+**PASS**
+
+---
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05C3.
+
+**Checkpoint:** docs/AGENT-HARNESS-05C3-CHECKPOINT.md
+
+**Next recommended step:** Register AGENT-HARNESS-05C4 — Controlled Harness Loop Activation Readiness Review, registration only after Keith approval.
+
+> LOCKED — AGENT-HARNESS-05C3 is COMPLETE and LOCKED. Do not modify this entry.
+
+---
+
+## AGENT-HARNESS-05C3A — Worker Harness Route Observability
+
+**Task ID:** AGENT-HARNESS-05C3A
+**Family:** AGENT-HARNESS
+**Phase:** 5C
+**Status:** COMPLETE and LOCKED
+**Registered:** 2026-06-27
+**Completed:** 2026-06-27
+**Priority:** High
+**Nature:** BACKEND OBSERVABILITY / WORKER ROUTING / NO BEHAVIOR CHANGE
+**Risk:** Low
+**Depends on:**
+- AGENT-HARNESS-05C2 — COMPLETE and LOCKED (harnessVersion API-to-queue wiring implemented and statically validated)
+- AGENT-HARNESS-05C3 — ACTIVE (observability review selected Decision B: current runtime observability cannot directly prove harnessVersion reached WorkerProcessor or which route was selected)
+
+---
+
+### Context
+
+AGENT-HARNESS-05C3 requires runtime proof that `harnessVersion: 'v1'` reached `WorkerProcessor` and that the correct execution route was selected.
+
+During the AGENT-HARNESS-05C3 observability review, **Decision B** was selected: existing runtime logs do not include `harnessVersion`, `enableToolLoop`, or the selected execution path. This prevents direct runtime proof.
+
+`WorkerProcessor` currently evaluates:
+
+```typescript
+job.data.harnessVersion === 'v1'
+&& DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop
+```
+
+However, no structured log is emitted containing:
+- `harnessVersion` received by the worker
+- `enableToolLoop` value used
+- whether the harness or plain execution route was selected
+
+Without this log, AGENT-HARNESS-05C3 runtime validation cannot proceed.
+
+---
+
+### Objective
+
+Add one non-sensitive structured routing log to `WorkerProcessor` so runtime validation can directly prove:
+- `harnessVersion` received by the worker
+- `enableToolLoop` value used at route evaluation time
+- selected execution path (`harness` or `plain`)
+
+---
+
+### Recommended Implementation
+
+Immediately before the harness routing condition:
+
+1. Compute a routing boolean:
+   ```typescript
+   const useHarness =
+     job.data.harnessVersion === 'v1'
+     && DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop;
+   ```
+
+2. Emit one structured log containing only:
+   - `event: 'agent_harness.route_evaluated'`
+   - `executionId`
+   - `harnessVersion: job.data.harnessVersion ?? null`
+   - `enableToolLoop`
+   - `selectedPath: useHarness ? 'harness' : 'plain'`
+
+3. Replace the duplicated inline condition with:
+   ```typescript
+   if (useHarness) { ... }
+   ```
+
+---
+
+### Security Requirements
+
+- Do not log prompts.
+- Do not log provider keys.
+- Do not log session cookies.
+- Do not log user instructions or workspace content.
+- Do not log internal service credentials.
+- `harnessVersion` is non-sensitive.
+- `executionId` is already logged elsewhere.
+- Exactly one route log per execution.
+
+---
+
+### Behavioral Invariants
+
+- `enableToolLoop` remains `false`.
+- `enableBrowserSmoke` remains `false`.
+- Harness routing behavior remains identical.
+- Plain execution behavior remains identical.
+- No tool handlers become reachable.
+- No `browser_smoke` registration changes.
+- No API or queue payload changes.
+- No database or metadata changes.
+- No new endpoint.
+- No package dependency changes.
+
+---
+
+### Likely Implementation Files
+
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\worker\worker.processor.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\worker\worker.processor.spec.ts`
+
+---
+
+### Future Tests
+
+- `harnessVersion: 'v1'` with `enableToolLoop: false` logs `selectedPath: 'plain'`.
+- `undefined` `harnessVersion` logs `null` and `selectedPath: 'plain'`.
+- Existing harness routing tests continue passing.
+- Log contains no prompt, cookie, API key, or workspace content.
+- Exactly one routing event is emitted per execution.
+
+---
+
+### Future Validation
+
+- Run focused `WorkerProcessor` tests.
+- Run ai-service build.
+- Run complete ai-service tests and document pre-existing failures separately.
+- No live provider execution during 05C3A implementation.
+- No Docker rebuild during implementation unless separately approved.
+- After 05C3A is COMPLETE and LOCKED, resume AGENT-HARNESS-05C3 with an approved ai-service image rebuild and xAI runtime validation.
+
+---
+
+### Non-Goals
+
+- No behavior change to harness routing.
+- No `enableToolLoop` activation.
+- No `enableBrowserSmoke` activation.
+- No new endpoint.
+- No package dependency additions.
+- No API or queue payload changes.
+- No database or metadata changes.
+- No frontend changes.
+- No git operations during registration.
+
+---
+
+### Registration Acceptance Criteria
+
+- [x] AGENT-HARNESS-05C3A appended after AGENT-HARNESS-05C3 in TASKS.md.
+- [x] Mirrored in TASKS_BACKLOG_FULL.md.
+- [x] Status ACTIVE.
+- [x] AGENT-HARNESS-05C3 observability blocker (Decision B) documented.
+- [x] Structured event fields documented (`event`, `executionId`, `harnessVersion`, `enableToolLoop`, `selectedPath`).
+- [x] Secret-safe logging requirements documented.
+- [x] Behavioral invariants documented.
+- [x] Future tests documented.
+- [x] Future validation documented.
+- [x] No implementation files modified.
+- [x] No runtime commands executed.
+- [x] No checkpoint created.
+
+---
+
+### Implementation Acceptance Criteria
+
+- [x] Root cause confirmed.
+- [x] One structured route event added.
+- [x] Event reports `executionId`, `harnessVersion`, `enableToolLoop`, and `selectedPath`.
+- [x] No sensitive content logged.
+- [x] Routing behavior remains unchanged.
+- [x] `enableToolLoop` remains `false`.
+- [x] `enableBrowserSmoke` remains `false`.
+- [x] Focused `WorkerProcessor` tests pass.
+- [x] ai-service build passes.
+- [x] Full ai-service test result documented.
+- [x] No provider/model execution run.
+- [x] No `browser_smoke` run.
+- [x] Checkpoint created during consolidation.
+
+---
+
+### Implementation Summary
+
+**Files changed:**
+- `services/ai-service/src/worker/worker.processor.ts` — Added `useHarness` boolean (preserving exact double gate: `harnessVersion === 'v1' && enableToolLoop`); added `agent_harness.route_evaluated` structured event immediately before route selection; replaced inline condition with `if (useHarness)`.
+- `services/ai-service/src/worker/worker.processor.spec.ts` — Added five tests under `describe('Agent Harness 05C3A: route observability event')`.
+
+**Event schema:** `{ event: 'agent_harness.route_evaluated', executionId, harnessVersion, enableToolLoop, selectedPath }`. No sensitive content logged.
+
+**Routing behavior:** Unchanged. With `enableToolLoop: false`, all requests take the plain path as before.
+
+### Validation Summary
+
+- Focused WorkerProcessor tests: **51 passed, 0 failed.**
+- Build (`npm run build`): **PASS, exit code 0.**
+- Full ai-service suite: **28 suites passed, 1 failed; 476 tests passed, 3 failed, 1 skipped.** The 3 failures are pre-existing `app.module.spec.ts` REDIS_URL environment failures — unrelated to 05C3A.
+
+**Final verdict: PASS.**
+
+---
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05C3A.
+
+**Checkpoint:** docs/AGENT-HARNESS-05C3A-CHECKPOINT.md
+
+**Next step:** Resume AGENT-HARNESS-05C3 runtime validation after explicit Keith approval and deployment of the updated ai-service image.
+
+> LOCKED — do not modify this task entry.
+
+---
+
+## AGENT-HARNESS-05C4 — Controlled Harness Loop Activation Readiness Review
+
+**Status:** COMPLETE and LOCKED
+**Registered:** 2026-06-29
+**Completed:** 2026-06-29
+**Priority:** High
+**Nature:** ARCHITECTURE / SECURITY / FEATURE-GATE REVIEW / INVESTIGATION ONLY
+**Risk:** High
+**Depends on:**
+- AGENT-HARNESS-05C1 — COMPLETE and LOCKED (selected optional public harnessVersion v1 wiring with a disabled server-side gate)
+- AGENT-HARNESS-05C2 — COMPLETE and LOCKED (harnessVersion API-to-queue wiring implemented)
+- AGENT-HARNESS-05C3A — COMPLETE and LOCKED (worker route observability implemented)
+- AGENT-HARNESS-05C3 — COMPLETE and LOCKED (production runtime confirmed harnessVersion v1 reaches WorkerProcessor while enableToolLoop false selects the plain path)
+- All prerequisite Agent Harness tool, validation, checkpoint, browser-smoke, and model-adapter slices recorded in the existing task ledgers
+
+---
+
+### Current Locked Safety State
+
+- `enableToolLoop`: `false`
+- `enableBrowserSmoke`: `false`
+- `enablePreApplyCheckpoint`: `true`
+- A `harnessVersion: 'v1'` request selects the plain execution path.
+- No harness tools are reachable.
+- Public `harnessVersion` input alone is **not** considered authorization for harness mode.
+
+---
+
+### Context
+
+The production path now accepts `harnessVersion: 'v1'`, forwards it through BullMQ, and logs the worker routing decision. Before any activation, the project requires a dedicated architecture/security review. Setting `enableToolLoop` to `true` without additional controls could allow every authenticated `ai:execute` caller to request harness mode and potentially reach mutating workspace tools.
+
+---
+
+### Objective
+
+Determine whether the Agent Harness loop is ready for a tightly controlled first activation and define the smallest safe implementation/validation slices.
+
+**This task is review-only. It must not activate the loop.**
+
+---
+
+### Required Review Areas
+
+**1. Request Authorization**
+- Who can currently send `harnessVersion: 'v1'`?
+- Does session-cookie authentication automatically grant `ai:execute`?
+- Can regular users, API-key users, admins, or internal identities request it?
+- What role, plan, entitlement, project, or server-side feature flag should authorize harness mode?
+- Should unauthorized v1 requests return 400, 403, or silently use the plain path?
+
+**2. Feature-Gate Design**
+- Current `enableToolLoop` is a compile-time constant.
+- Decide whether activation should use: environment feature flag, internal/admin-only route, user/role entitlement, project/session capability, deployment-level canary, or a combination.
+- Define secure defaults and rollback behavior.
+- Prevent accidental global activation.
+
+**3. Tool Exposure**
+- Enumerate every tool that becomes registered when the loop is enabled.
+- Classify each as read-only, mutating, validation, browser, or planned.
+- Confirm `browser_smoke` remains disabled.
+- Confirm planned/unimplemented tools cannot be dispatched.
+- Confirm arbitrary shell remains disabled.
+
+**4. Approval Enforcement**
+- Verify how `requiresApproval` is enforced at runtime.
+- Determine whether approval is model-side metadata only or a real user/platform authorization boundary.
+- Review delete, large-write, env-file-write, and package-install approval paths.
+- Determine whether mutating tools are safe for the first activation.
+
+**5. Checkpoint Protection**
+- Verify pre-apply checkpoint behavior.
+- Confirm which tools trigger a checkpoint.
+- Analyze failure behavior if checkpoint creation fails.
+- Confirm no mutation proceeds without the required checkpoint.
+
+**6. Session/Workspace Binding**
+- Confirm harness tools operate only on the authenticated execution's `sessionId`.
+- Confirm the session must exist and be usable.
+- Check for cross-session or arbitrary-session access risk.
+- Confirm workspace path validation and traversal protection.
+
+**7. Provider/Model Support**
+- Confirm xAI adapter support for the tool-use protocol.
+- Inspect tool-call mapping and response normalization.
+- Confirm unknown/malformed tool calls fail safely.
+- Confirm the maximum iteration limit is enforced.
+- Confirm token, timeout, retry, and cancellation behavior.
+
+**8. Tool-Result Safety**
+- Review maximum tool-result bytes.
+- Review truncation behavior.
+- Confirm tool outputs cannot inject credentials or uncontrolled binary data.
+- Confirm errors are structured and bounded.
+
+**9. Audit/Observability**
+- Determine which harness lifecycle, tool request, approval, execution, and failure events are currently logged or persisted.
+- Confirm whether `auditEventsEnabled` has a real runtime implementation.
+- Identify observability required before activation.
+- Do not assume contract-only audit types provide runtime auditing.
+
+**10. First Activation Strategy**
+Compare at least:
+- A. Read-only canary: `read_file`/`list_files` only.
+- B. Internal/admin-only full registered tool set.
+- C. Environment-gated activation for a dedicated test user/project.
+- D. Global activation using the existing public `harnessVersion` field.
+- E. Keep disabled until missing controls are implemented.
+
+Recommend one strategy and justify it.
+
+**11. Validation Sequencing**
+Define separate bounded slices for:
+- authorization/feature gate
+- read-only harness activation
+- model/tool-call compatibility
+- mutating-tool approval and checkpoint validation
+- `browser_smoke` activation (must remain a separate task)
+- production canary and rollback
+
+**12. Rollback**
+- Define how to disable the harness immediately.
+- Define behavior for jobs already queued or active during rollback.
+- Determine whether configuration changes require image rebuild/restart.
+- Define evidence that rollback succeeded.
+
+---
+
+### Likely Inspection Areas
+
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\ai\ai-execution.controller.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\auth`
+- `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\guards`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\worker\worker.processor.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\agent-harness`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\ai-execution`
+- `C:\Users\knlee\aiSandBox2026B\services\ai-service\src\queue\job.types.ts`
+- `C:\Users\knlee\aiSandBox2026B\services\container-manager\src\sessions`
+- `C:\Users\knlee\aiSandBox2026B\services\container-manager\src\executor`
+- `C:\Users\knlee\aiSandBox2026B\docs\AGENT-HARNESS-V1-MASTER-PLAN.md`
+- `C:\Users\knlee\aiSandBox2026B\docs\AGENT-HARNESS-05C3-CHECKPOINT.md`
+
+---
+
+### Design Constraints
+
+- Secure default must remain disabled.
+- No global activation during this task.
+- `browser_smoke` remains separately gated and disabled.
+- Public `harnessVersion` input alone must not be treated as sufficient authorization.
+- Existing plain execution behavior must remain available.
+- Activation must be reversible.
+- First live validation should minimize tools, users, sessions, and provider cost.
+- Use xAI for future live provider validation.
+- Mutating-tool validation must not be combined with the first read-only activation unless the review proves it safe.
+- No direct BullMQ publishing as the official validation path.
+
+---
+
+### Non-Goals
+
+- No implementation.
+- No configuration change.
+- No live harness execution.
+- No tool calls.
+- No browser automation.
+- No UI work.
+- No package changes.
+- No database/schema changes.
+- No Docker deployment.
+- No provider call.
+- No git operations.
+
+---
+
+### Registration Acceptance Criteria
+
+- [x] 05C4 appended after 05C3A in TASKS.md.
+- [x] Mirrored in TASKS_BACKLOG_FULL.md.
+- [x] Status ACTIVE.
+- [x] High-risk review nature recorded.
+- [x] Dependencies through 05C3A and 05C3 recorded.
+- [x] Current disabled safety state documented.
+- [x] Authorization, feature-gate, tool, approval, checkpoint, session, provider, audit, validation, and rollback review areas documented.
+- [x] Public `harnessVersion` is explicitly not considered authorization.
+- [x] `browser_smoke` remains separately disabled.
+- [x] Registration-only scope documented.
+- [x] No source or runtime files changed.
+- [x] No runtime commands executed.
+- [x] No checkpoint created.
+
+---
+
+### Future Review Acceptance Criteria
+
+- [x] Current authorization surface documented.
+- [x] All harness-reachable tools enumerated and classified.
+- [x] Approval enforcement verified.
+- [x] Checkpoint failure behavior verified.
+- [x] Session/workspace isolation verified.
+- [x] xAI tool-use compatibility assessed.
+- [x] Iteration, timeout, cancellation, and output bounds assessed.
+- [x] Runtime audit/observability gaps identified.
+- [x] Activation strategies A–E compared.
+- [x] One controlled activation strategy recommended.
+- [x] Required prerequisite implementation slices identified.
+- [x] Read-only and mutating validations separated where appropriate.
+- [x] Browser smoke remains a separate activation task.
+- [x] Rollback procedure defined.
+- [x] No activation performed.
+- [x] Checkpoint created during review consolidation.
+
+---
+
+### Final Verdict
+
+**NOT READY** — prerequisite implementation required before any harness activation.
+
+---
+
+### Blocker and High-Severity Summary
+
+**Critical Blockers:**
+1. Session ownership not enforced on `POST /api/ai/execute` — cross-session harness dispatch possible.
+2. `requiresApproval` is metadata-only — no runtime approval gate; mutating tools dispatch without confirmation.
+3. `XAIAdapter` does not implement `executeWithTools` or tool-call parsing — xAI harness execution fails at runtime.
+4. `AbortSignal` not propagated through tool HTTP handlers; `toolTimeoutMs` unused; in-flight requests outlive the worker watchdog.
+
+**High-Severity Findings:**
+- `enableToolLoop` is a compile-time constant (no environment-backed gate; rollback requires image rebuild).
+- No harness-specific identity entitlement (any authenticated user would reach harness mode).
+- No per-tool structured audit trail (`auditEventsEnabled` is config-only with no runtime implementation).
+- Multi-iteration token accounting records only the final model call.
+- Workspace HTTP methods have no client-side axios timeout.
+
+---
+
+### Recommended Strategy
+
+**Strategy E — Keep disabled.** Resolve all prerequisite slices (05C5–05C10) before any activation. First future activation must be Strategy A: read-only canary with only `read_file` and `list_files`. Mutating tools and `browser_smoke` remain later, separately approved phases.
+
+---
+
+### Prerequisite Task Sequence
+
+| Slice | Task ID | Description |
+|-------|---------|-------------|
+| 1 | 05C5 | Session Ownership Enforcement |
+| 2 | 05C6 | Environment-Backed Feature Gate |
+| 3 | 05C7 | Harness Identity Entitlement |
+| 4 | 05C8 | Execution-Bound Hardening (AbortSignal + toolTimeoutMs) |
+| 5 | 05C9 | Structured Harness Audit Events |
+| 6 | 05C10 | xAI Adapter Tool-Use Implementation |
+| 7 | 05C11 | Read-Only Tool Allow-List Activation |
+| 8 | 05C12 | Live Read-Only xAI Canary |
+| 9 | 05C13 | Runtime Approval Workflow |
+| 10 | 05C14 | Mutating Tool Activation |
+| 11 | 05C15 | browser_smoke Activation |
+| 12 | 05C16 | Production Canary and Rollback Validation |
+
+---
+
+### Corrected Rollback Note
+
+- Current gate: source change, image rebuild, container recreation.
+- Future environment gate (after 05C6): set env var false and recreate ai-service.
+- **`docker compose restart` does NOT apply changed environment configuration** — container recreation is required.
+- Required recreation pattern: `docker compose up -d --no-deps --force-recreate ai-service`
+- Active jobs cannot be assumed to stop until process termination because in-flight tool handler HTTP requests do not receive `AbortSignal` (mitigated by 05C8).
+
+---
+
+### Checkpoint
+
+**docs/AGENT-HARNESS-05C4-CHECKPOINT.md**
+
+---
+
+### Confirmations
+
+- `enableToolLoop` remains `false`.
+- `enableBrowserSmoke` remains `false`.
+- No source, runtime, test, package, Docker, frontend, database, or `.env` files changed.
+- No runtime commands executed.
+
+---
+
+### Next Step
+
+Register **AGENT-HARNESS-05C5 — Session Ownership Enforcement**, registration only.
+
+---
+
+> LOCKED — AGENT-HARNESS-05C4 is COMPLETE and LOCKED. Do not modify this entry.
+
+---
+
+## AGENT-HARNESS-05C5 — Session Ownership Enforcement
+
+**Status:** COMPLETE and LOCKED
+**Registered:** 2026-06-29
+**Completed:** 2026-06-29
+**Priority:** Critical
+**Nature:** SECURITY FIX / API GATEWAY / AUTHORIZATION / CROSS-SESSION ISOLATION
+**Risk:** High
+**Depends on:**
+- AGENT-HARNESS-05C4 — COMPLETE and LOCKED (readiness review; verdict NOT READY; prerequisite slices 05C5–05C16 identified)
+
+---
+
+### Problem
+
+`POST /api/ai/execute` accepts a caller-supplied `sessionId`.
+
+**Current behavior:**
+- UUID syntax is validated.
+- Session ownership is **not** enforced before ledger write and queue enqueue.
+- Optional project/repository enrichment checks ownership but silently returns `undefined` on mismatch.
+- Internal workspace routes trust the authenticated service caller.
+- When the harness is eventually enabled, a caller could target another user's valid session and cause tools to read or mutate that workspace.
+- The same missing authorization boundary also affects plain AI executions today.
+
+**Canonical ownership:**
+`services/api-gateway/src/entities/session.entity.ts` contains:
+`userId: string`
+
+The execution identity contains:
+`identity.userId`
+
+**Required security invariant:**
+AI execution may proceed only when:
+`session.userId === identity.userId`
+
+Missing and mismatched sessions must use the same not-found response so the endpoint does not disclose whether another user's session exists.
+
+---
+
+### Objective
+
+Register a focused security fix ensuring every `POST /api/ai/execute` request verifies session ownership before any ledger write, queue enqueue, provider execution, or optional workspace enrichment.
+
+---
+
+### Likely Implementation Areas
+
+- `services/api-gateway/src/ai/ai-execution.controller.ts`
+- `services/api-gateway/src/ai/ai-execution.controller.spec.ts`
+- `services/api-gateway/src/sessions/session.service.ts`
+- `services/api-gateway/src/entities/session.entity.ts`
+
+SessionService/entity changes should occur only if inspection proves a small helper is required. Prefer a controller-boundary authorization check using existing session lookup behavior.
+
+---
+
+### Required Implementation Review Before Editing
+
+- Confirm the exact SessionService lookup method and exception behavior.
+- Confirm AIExecutionController already has access to SessionService.
+- Confirm whether the returned Session includes `userId` and lifecycle/status fields.
+- Confirm the endpoint's existing missing-session response conventions.
+- Determine whether the loaded Session can be reused for project/repository enrichment without changing behavior.
+- Determine how session-cookie and API-key identities map to `session.userId`.
+- Confirm no legitimate internal caller requires cross-user bypass.
+- Confirm whether terminated sessions require separate handling; do not expand scope unless existing service behavior already enforces it.
+
+---
+
+### Candidate Implementation Strategy
+
+1. Preserve `sessionId` UUID validation as the first boundary check.
+2. Load the session using the canonical `SessionService`.
+3. If no session exists, return `NotFoundException` using the existing non-disclosing message.
+4. If `session.userId !== identity.userId`, return the identical `NotFoundException`.
+5. Perform this check before:
+   - idempotency handling that creates side effects
+   - instruction/context enrichment
+   - usage ledger intent write
+   - BullMQ enqueue
+6. Continue existing execution behavior only after ownership succeeds.
+7. Apply the rule equally to:
+   - plain executions
+   - harnessVersion v1 requests
+   - session-cookie identities
+   - API-key identities
+8. Do not introduce admin/internal bypass in this slice.
+
+---
+
+### Security Requirements
+
+- Do not distinguish "session missing" from "session owned by another user."
+- Do not expose owner `userId`.
+- Do not weaken `InternalServiceAuthGuard`.
+- Do not trust `harnessVersion` as authorization.
+- Do not add a synthetic user.
+- Do not silently fall back to plain execution on mismatch.
+- Do not enqueue rejected requests.
+- Do not write `usage_records` for rejected requests.
+- Do not call providers for rejected requests.
+- Do not change public auth, LaunchGuard, quotas, or rate limits.
+- Do not change internal workspace route trust boundaries in this slice.
+- Do not activate the Agent Harness.
+
+---
+
+### Expected Focused Tests
+
+**A. Invalid sessionId:**
+- Returns HTTP 400 / `BadRequestException`.
+- Session lookup is not called.
+- Ledger and queue are not called.
+
+**B. Missing valid-UUID session:**
+- Returns not found.
+- Ledger and queue are not called.
+
+**C. Session owned by another user:**
+- Returns the same not-found response as a missing session.
+- Owner identity is not exposed.
+- Ledger and queue are not called.
+
+**D. Matching owner:**
+- Execution proceeds.
+- Ledger write occurs once.
+- Queue enqueue occurs once.
+
+**E. harnessVersion v1 with mismatched owner:**
+- Rejected before queueing.
+- No harnessVersion job is produced.
+
+**F. harnessVersion v1 with matching owner:**
+- Existing 05C2 forwarding behavior remains intact.
+
+**G. API-key identity:**
+- Must own the session using the same `userId` equality rule.
+- No internal/admin bypass is introduced.
+
+**H. Existing 05B9 UUID-validation tests and 05C2 harnessVersion tests remain valid.**
+
+---
+
+### Validation
+
+- Focused `AIExecutionController` tests.
+- api-gateway build.
+- Full api-gateway test suite.
+- Document known pre-existing `QueueService` DI failures separately.
+- No live provider execution.
+- No Docker runtime validation during implementation.
+- A later approved runtime check may verify owner success and cross-owner rejection.
+
+---
+
+### Non-Goals
+
+- No environment-backed harness gate.
+- No harness identity entitlement.
+- No xAI tool-use implementation.
+- No approval workflow.
+- No tool activation.
+- No audit implementation.
+- No container-manager authorization redesign.
+- No schema migration.
+- No frontend changes.
+- No `browser_smoke`.
+- No git operations.
+
+---
+
+### Registration Acceptance Criteria
+
+- [x] 05C5 appended after 05C4 in TASKS.md.
+- [x] Mirrored in TASKS_BACKLOG_FULL.md.
+- [x] Status ACTIVE.
+- [x] Critical cross-session security problem documented.
+- [x] Canonical `session.userId` ownership field documented.
+- [x] Identical missing/mismatch not-found behavior required.
+- [x] Check required before ledger and queue side effects.
+- [x] Plain and harness execution paths covered.
+- [x] Session-cookie and API-key identities covered.
+- [x] No bypass documented.
+- [x] Focused tests documented.
+- [x] Non-goals documented.
+- [x] No implementation files changed.
+- [x] No runtime commands executed.
+- [x] No checkpoint created.
+
+### Future Implementation Acceptance Criteria
+
+- [x] Root cause and canonical ownership lookup confirmed.
+- [x] Ownership enforced before side effects.
+- [x] Missing and mismatched sessions return identical non-disclosing responses.
+- [x] Invalid UUID behavior preserved.
+- [x] Rejected requests do not write ledger records.
+- [x] Rejected requests do not enqueue jobs.
+- [x] Matching owners proceed.
+- [x] Plain execution behavior preserved for valid owners.
+- [x] harnessVersion v1 forwarding preserved for valid owners.
+- [x] Session-cookie and API-key ownership rules tested.
+- [x] No internal/admin bypass introduced.
+- [x] Focused tests pass.
+- [x] api-gateway build passes.
+- [x] Full test result documented.
+- [x] No provider/browser runtime executed.
+- [x] Checkpoint created during consolidation.
+
+---
+
+### Implementation Summary
+
+- `SessionService` injected into `AIExecutionController`.
+- Ownership check inserted as step 2 in the execution path: after UUID validation, before idempotency, enrichment, ledger write, and BullMQ enqueue.
+- Missing session and cross-user mismatch both return identical `NotFoundException`: `Session with ID <sessionId> not found`.
+- No bypass for `isInternal`, admin, static API-key, or `harnessVersion`.
+- Static fallback API keys use synthetic non-UUID user IDs and cannot own real UUID-backed sessions — they receive the same HTTP 404. This is correct and expected.
+- Check applies identically to plain and `harnessVersion: 'v1'` requests.
+
+### Validation Summary
+
+- **10 new 05C5 ownership tests:** PASS.
+- **4 existing 05B9 UUID-validation tests:** PASS.
+- **5 existing 05C2 harnessVersion tests:** PASS.
+- **Workspace-context spec:** 13 passed, 0 failed.
+- **Focused controller spec:** 19 passed, 4 pre-existing unrelated DI failures (legacy constructor-test scaffolding, not caused by 05C5).
+- **api-gateway build:** PASS, exit code 0.
+- **Full suite:** 100 suites passed / 12 failed; 1050 tests passed / 110 failed. All 12 remaining failures are pre-existing: missing Redis/database infrastructure, connection failures, and stale constructor-test DI failures unrelated to 05C5.
+
+### Static-Key Compatibility Statement
+
+Static API-key authentication is unchanged. Static fallback keys use synthetic non-UUID user IDs and therefore cannot own real UUID-backed sessions. They receive the same HTTP 404 for real sessions. Database-backed API keys and browser sessions with matching UUID `userId` continue to work. No bypass is permitted.
+
+### Final Verdict: PASS
+
+**Deployment-Pending Note:** Source implementation is complete, but the currently running production-compose api-gateway has not been rebuilt with 05C5 changes during this task. Runtime validation is deferred to AGENT-HARNESS-05C5A.
+
+**Checkpoint:** `docs/AGENT-HARNESS-05C5-CHECKPOINT.md`
+
+**Next Step:** Register AGENT-HARNESS-05C5A — Session Ownership Runtime Validation, registration only, before proceeding to 05C6.
+
+---
+
+> LOCKED — AGENT-HARNESS-05C5 is COMPLETE and LOCKED. Do not modify this entry.
+
+---
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05C5.
