@@ -34446,3 +34446,309 @@ Exactly one route event. `enableToolLoop` remained false. `enableBrowserSmoke` r
 ---
 
 **Reference:** See TASKS.md -> AGENT-HARNESS-05C5A.
+
+---
+
+### AGENT-HARNESS-05C6: Environment-Backed Feature Gate
+
+**Task ID:** AGENT-HARNESS-05C6
+**Status:** COMPLETE and LOCKED
+**Priority:** High
+**Risk:** High
+**Nature:** Backend Configuration / Secure Feature Gate / Rollback Readiness / No Activation
+**Registered:** 2026-06-29
+**Completed:** 2026-06-30
+
+---
+
+#### Dependencies
+
+- AGENT-HARNESS-05C4 COMPLETE and LOCKED — determined the compile-time tool-loop gate is not operationally safe.
+- AGENT-HARNESS-05C5 COMPLETE and LOCKED — session ownership enforcement implemented.
+- AGENT-HARNESS-05C5A COMPLETE and LOCKED — ownership boundary deployed and validated.
+- AGENT-HARNESS-05C7 Harness Identity Entitlement is not yet implemented.
+- `enableToolLoop` remains `false`.
+- `enableBrowserSmoke` remains `false`.
+
+---
+
+#### Problem
+
+Agent Harness tool-loop activation is currently controlled by a hardcoded source constant:
+
+```
+enableToolLoop: false
+```
+
+Changing it requires:
+- Source edit;
+- Image rebuild;
+- ai-service container recreation.
+
+This does not provide a safe operational feature gate or fast rollback.
+
+However, simply reading an environment variable could accidentally expose harness mode to every authenticated `ai:execute` caller before the separate 05C7 identity-entitlement control exists.
+
+---
+
+#### Objective
+
+Implement a bounded slice that makes the tool-loop gate environment-backed with:
+- Secure default of `false`.
+- Strict parsing (no broad Boolean/string truthiness).
+- Test coverage for all edge cases.
+- Documented recreation-based rollback.
+
+The deployed/runtime value must remain `false`. This task implements gate infrastructure only. It must not activate the harness.
+
+---
+
+#### Required Implementation Review
+
+- Inspect current `AgentHarnessConfigV1` construction and imports.
+- Inspect how `DEFAULT_AGENT_HARNESS_CONFIG_V1` is initialized and consumed.
+- Inspect existing environment parsing patterns in ai-service.
+- Inspect ai-service startup/config validation patterns.
+- Inspect `docker-compose.prod.yml` environment and `env_file` precedence.
+- Inspect development compose files and environment templates.
+- Determine whether config is evaluated at module import or application bootstrap.
+- Determine the safest testable design.
+- Determine exact behavior for undefined, `"true"`, `"false"`, whitespace, casing, empty, and invalid values.
+- Determine whether invalid values should fail startup or fail closed to `false`.
+- Determine whether a config factory is preferable to direct `process.env` access.
+- Determine how existing WorkerProcessor tests can remain deterministic.
+
+---
+
+#### Candidate Design
+
+Introduce environment variable:
+
+```
+AGENT_HARNESS_ENABLE_TOOL_LOOP
+```
+
+Secure semantics:
+- Undefined → `false`.
+- Empty → `false` or invalid (to be decided explicitly during review).
+- Exact approved `"true"` representation → `true`.
+- Exact approved `"false"` representation → `false`.
+- Unknown values must never enable the loop.
+- Invalid values must either:
+  - (A) fail startup clearly, or
+  - (B) fail closed to `false` with a structured warning.
+- Silent truthy parsing such as `Boolean(value)` is forbidden.
+- Values such as `"1"`, `"yes"`, `"on"`, or arbitrary text must not enable the loop unless deliberately documented and tested.
+
+Preferred architecture:
+- A small deterministic parser/factory receiving an environment object.
+- Export the resolved immutable config used by WorkerProcessor.
+- Preserve current `AgentHarnessConfigV1` contract.
+- Avoid scattered `process.env` reads.
+- Avoid reading the environment on every job.
+- Preserve `route_evaluated` logging of the resolved `enableToolLoop` value.
+
+---
+
+#### Compose/Environment Considerations
+
+- Add an explicit secure-default mapping only if review confirms it is needed:
+  `AGENT_HARNESS_ENABLE_TOOL_LOOP: ${AGENT_HARNESS_ENABLE_TOOL_LOOP:-false}`
+- Add the variable to the appropriate example/template file with `false`.
+- Never modify the real root `.env`.
+- Document Docker Compose precedence between `env_file` and explicit `environment` entries.
+- Ensure a missing variable cannot activate the feature.
+
+---
+
+#### Critical Safety Constraint
+
+Even after implementation supports `true`, no implementation or validation step in 05C6 may run ai-service with the resolved value `true`.
+
+The first `true` runtime value is forbidden until:
+- AGENT-HARNESS-05C7 identity entitlement is complete and locked;
+- Execution-bound hardening and audit prerequisites are complete as required by 05C4;
+- Keith explicitly approves controlled activation.
+
+---
+
+#### Rollback Requirement
+
+After deployment of the environment-backed implementation, future rollback must be:
+
+1. Set `AGENT_HARNESS_ENABLE_TOOL_LOOP=false`.
+2. Recreate ai-service:
+   `docker compose up -d --no-deps --force-recreate ai-service`
+3. Verify `route_evaluated` reports:
+   `enableToolLoop: false`, `selectedPath: plain`.
+
+Critical notes:
+- `docker compose restart` does not apply changed compose environment values.
+- Environment changes require container recreation.
+- Active in-flight jobs require process termination for guaranteed interruption.
+- Queued jobs evaluate the resolved gate when claimed by the recreated worker.
+
+---
+
+#### Likely Implementation Areas
+
+```
+services/ai-service/src/agent-harness/config/agent-harness.config.ts
+services/ai-service/src/agent-harness/config/agent-harness.config.spec.ts
+services/ai-service/src/worker/worker.processor.spec.ts
+docker-compose.prod.yml
+docker-compose.yml
+.env.example
+```
+
+Only files proven necessary by the review should change.
+
+---
+
+#### Expected Tests
+
+- A. Variable undefined → `enableToolLoop` false.
+- B. Explicit `"false"` → `false`.
+- C. Explicit `"true"` → `true` in isolated configuration-factory testing only.
+- D. Empty value behavior documented and tested.
+- E. Whitespace behavior documented and tested.
+- F. Casing behavior documented and tested.
+- G. Invalid value never enables the loop.
+- H. Browser-smoke gate remains `false` and independent.
+- I. Worker route event still reports resolved `enableToolLoop`.
+- J. Existing default behavior remains plain path when environment is absent.
+- K. No test process leaks environment changes into other suites.
+
+---
+
+#### Validation
+
+- Focused config tests.
+- Focused WorkerProcessor tests.
+- ai-service build.
+- Full ai-service suite with unrelated baseline failures documented.
+- Static compose validation if compose files change.
+- No Docker image rebuild.
+- No container recreation.
+- No provider execution.
+- No live true-gate test.
+- No browser_smoke.
+
+---
+
+#### Security Requirements
+
+- Default `false`.
+- Fail closed.
+- No broad Boolean/string truthiness conversion.
+- No request body may override the server gate.
+- No user-controlled metadata may override it.
+- No dynamic Redis/database setting.
+- No frontend control.
+- No logging of unrelated environment values.
+- `browser_smoke` remains `false`.
+- Session ownership remains enforced in api-gateway.
+- Public v1 requests continue selecting plain path in deployed runtime.
+
+---
+
+#### Non-Goals
+
+- No harness identity entitlement.
+- No tool registration changes.
+- No xAI tool-use implementation.
+- No execution-bound hardening.
+- No audit implementation.
+- No approval workflow.
+- No read-only canary.
+- No mutating tools.
+- No browser-smoke activation.
+- No production deployment or runtime activation.
+- No `.env` modification.
+- No git operations.
+
+---
+
+#### Registration Acceptance Criteria
+
+- [x] 05C6 appended after 05C5A in TASKS.md.
+- [x] Mirrored in TASKS_BACKLOG_FULL.md.
+- [x] Status ACTIVE.
+- [x] Compile-time gate problem documented.
+- [x] Secure-default environment-gate objective documented.
+- [x] Accidental pre-entitlement activation risk documented.
+- [x] Strict parser/factory review documented.
+- [x] Compose precedence and recreation behavior documented.
+- [x] Rollback requirements documented.
+- [x] Tests for undefined/false/true/invalid values documented.
+- [x] No-live-true constraint documented.
+- [x] Non-goals documented.
+- [x] No implementation files changed.
+- [x] No runtime commands executed.
+- [x] No checkpoint created.
+
+---
+
+#### Implementation Acceptance Criteria
+
+- [x] Existing config construction and environment patterns reviewed.
+- [x] Exact parsing semantics selected and documented.
+- [x] Secure default `false` implemented.
+- [x] Invalid values cannot enable the loop.
+- [x] Config remains immutable after initialization.
+- [x] WorkerProcessor consumes the resolved gate.
+- [x] `route_evaluated` reports the resolved value.
+- [x] `browser_smoke` remains `false` and independent.
+- [x] Compose/template changes limited to necessary files.
+- [x] Real `.env` not modified.
+- [x] Focused config tests pass.
+- [x] Focused WorkerProcessor tests pass.
+- [x] ai-service build passes.
+- [x] Full test result documented.
+- [x] Compose static validation passes if applicable.
+- [x] No Docker/provider/browser runtime validation occurs.
+- [x] Runtime gate remains `false`.
+- [x] Checkpoint created during consolidation.
+
+---
+
+#### Implementation Summary
+
+- Added `parseStrictBooleanEnv(variableName, raw, defaultValue)` — strict parser; undefined/null/empty → defaultValue; "true"/"TRUE"/" true " → true; "false"/"FALSE"/" false " → false; any other non-empty value throws (error identifies variable name and accepted values; does not include raw value).
+- Added `createAgentHarnessConfigV1(env)` — factory receiving environment object, evaluated once at module import.
+- `DEFAULT_AGENT_HARNESS_CONFIG_V1` export shape preserved; value now produced by `createAgentHarnessConfigV1(process.env)`.
+- `WorkerProcessor` required no code changes.
+- `docker-compose.prod.yml` ai-service environment block: `AGENT_HARNESS_ENABLE_TOOL_LOOP: ${AGENT_HARNESS_ENABLE_TOOL_LOOP:-false}`.
+- `.env.example`: documents `AGENT_HARNESS_ENABLE_TOOL_LOOP=false`.
+
+---
+
+#### Validation Summary
+
+| Validation | Result |
+|------------|--------|
+| Config spec (23 tests) | PASS |
+| WorkerProcessor spec (51 tests) | PASS |
+| ai-service build | PASS (exit code 0) |
+
+**Final Verdict: PASS**
+
+---
+
+#### Deployment-Pending Note
+
+05C6 is implemented and source-validated, but production runtime deployment/verification remains pending. The production ai-service has not been rebuilt or recreated for 05C6. Full deployment verification is the scope of AGENT-HARNESS-05C6A.
+
+---
+
+#### Next Recommended Task
+
+Register AGENT-HARNESS-05C6A — Environment Gate Runtime Validation, registration only. The validation should rebuild/recreate ai-service with the default-false gate, verify the compiled config resolves `enableToolLoop: false`, confirm `route_evaluated` reports `false`/`plain`, and must not set `AGENT_HARNESS_ENABLE_TOOL_LOOP=true`.
+
+---
+
+**Checkpoint:** docs/AGENT-HARNESS-05C6-CHECKPOINT.md
+
+**Reference:** See TASKS.md -> AGENT-HARNESS-05C6.
+
+**COMPLETE and LOCKED — 2026-06-30. Do not modify this entry.**

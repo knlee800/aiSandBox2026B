@@ -134,6 +134,7 @@ services:
       INTERNAL_SERVICE_KEY: ${INTERNAL_SERVICE_KEY}
       AI_PROVIDER: ${AI_PROVIDER}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      AGENT_HARNESS_ENABLE_TOOL_LOOP: ${AGENT_HARNESS_ENABLE_TOOL_LOOP:-false}
     depends_on:
       redis:
         condition: service_healthy
