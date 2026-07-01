@@ -80,6 +80,7 @@ export class ApiKeyAuthGuard implements CanActivate {
           userId: dbIdentity.userId,
           apiKeyId: dbIdentity.apiKeyId,
           scopes: dbIdentity.scopes,
+          harnessEntitled: dbIdentity.scopes.includes('ai:harness'),
         };
       }
     } catch (error) {

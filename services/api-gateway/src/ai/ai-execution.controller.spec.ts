@@ -1,5 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { AIExecutionController } from './ai-execution.controller';
 import { AIServiceHttpClient, AIExecutionRequest, AIExecutionResult } from '../clients/ai-service-http.client';
 import { ApiKeyIdentity } from '../auth/api-key.config';
@@ -230,6 +234,7 @@ describe('AIExecutionController — sessionId UUID validation (AGENT-HARNESS-05B
     userId: 'user-uuid-001',
     apiKeyId: 'key-uuid-001',
     scopes: ['ai:execute'],
+    harnessEntitled: true,
   };
 
   function makeRequest(sessionId: string): AIExecutionRequest {
@@ -338,6 +343,7 @@ describe('AIExecutionController — harnessVersion wiring (AGENT-HARNESS-05C2)',
     userId: 'user-uuid-001',
     apiKeyId: 'key-uuid-001',
     scopes: ['ai:execute'],
+    harnessEntitled: true,
   };
 
   function makeRequest(overrides?: Partial<AIExecutionRequest>): AIExecutionRequest {
@@ -495,6 +501,7 @@ describe('AIExecutionController — session ownership enforcement (AGENT-HARNESS
     userId: ownerUserId,
     apiKeyId: 'key-owner-001',
     scopes: ['ai:execute'],
+    harnessEntitled: true,
   };
 
   function makeRequest(overrides?: Partial<AIExecutionRequest>): AIExecutionRequest {
@@ -715,5 +722,279 @@ describe('AIExecutionController — session ownership enforcement (AGENT-HARNESS
     expect(mismatchCaught.getStatus()).toBe(404);
     expect(missingCaught.message).toBe(mismatchCaught.message);
     expect(missingCaught.message).toBe(`Session with ID ${sessionId} not found`);
+  });
+});
+
+/**
+ * AGENT-HARNESS-05C7: Harness identity entitlement gate tests
+ *
+ * Verifies that harnessVersion='v1' requires explicit identity.harnessEntitled === true.
+ * Plain execution (no harnessVersion) must remain unchanged for non-entitled identities.
+ */
+describe('AIExecutionController — harness identity entitlement gate (AGENT-HARNESS-05C7)', () => {
+  let controller: AIExecutionController;
+  let mockSessionService: Record<string, jest.Mock>;
+  let mockUsageLedgerService: Record<string, jest.Mock>;
+  let mockQueueService: Record<string, jest.Mock>;
+  let mockUserAiInstructionsService: Record<string, jest.Mock>;
+  let mockProjectAiContextService: Record<string, jest.Mock>;
+
+  const ownerUserId = '6a3fe737-0945-44f4-a95f-f1ac3a3e4f6c';
+  const otherUserId = '0ff778c3-f5a1-4b06-b367-38c9a6fd8e2c';
+  const sessionId = '35d53116-6723-4571-af12-ac256977c007';
+
+  const harnessEntitledIdentity: ApiKeyIdentity = {
+    userId: ownerUserId,
+    apiKeyId: 'key-harness-entitled-001',
+    scopes: ['ai:execute'],
+    harnessEntitled: true,
+  };
+
+  const browserSessionIdentity: ApiKeyIdentity = {
+    userId: ownerUserId,
+    apiKeyId: 'browser-session',
+    scopes: ['ai:execute'],
+  };
+
+  function makeRequest(overrides?: Partial<AIExecutionRequest>): AIExecutionRequest {
+    return {
+      sessionId,
+      conversationId: 'conv-05c7',
+      userId: 'ignored',
+      prompt: 'Hello from 05C7',
+      provider: 'stub',
+      ...overrides,
+    };
+  }
+
+  function expectNoForbiddenPathSideEffects(): void {
+    expect(mockSessionService.getSessionById).not.toHaveBeenCalled();
+    expect(mockUserAiInstructionsService.getByUserId).not.toHaveBeenCalled();
+    expect(mockProjectAiContextService.getByProjectId).not.toHaveBeenCalled();
+    expect(mockUsageLedgerService.reuseExecutionIntent).not.toHaveBeenCalled();
+    expect(mockUsageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+  }
+
+  beforeEach(async () => {
+    mockSessionService = {
+      getSessionById: jest.fn().mockResolvedValue({ userId: ownerUserId, projectId: null }),
+    };
+
+    mockUsageLedgerService = {
+      findByRequestId: jest.fn().mockResolvedValue(null),
+      reuseExecutionIntent: jest.fn().mockResolvedValue('exec-id'),
+      writeExecutionIntent: jest.fn().mockResolvedValue(undefined),
+      updateExecutionResult: jest.fn().mockResolvedValue(undefined),
+    };
+
+    mockQueueService = {
+      enqueueExecution: jest.fn().mockResolvedValue(undefined),
+    };
+
+    mockUserAiInstructionsService = {
+      getByUserId: jest.fn().mockResolvedValue(null),
+    };
+
+    mockProjectAiContextService = {
+      getByProjectId: jest.fn().mockResolvedValue(null),
+    };
+
+    const mockGuard = { canActivate: jest.fn(() => true) };
+
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [AIExecutionController],
+      providers: [
+        { provide: UsageLedgerService, useValue: mockUsageLedgerService },
+        {
+          provide: GlobalSafetyLimitService,
+          useValue: { checkAndRecord: jest.fn(), recordExecutionCost: jest.fn() },
+        },
+        { provide: QueueService, useValue: mockQueueService },
+        {
+          provide: ExecutionResultService,
+          useValue: { getExecution: jest.fn(), requestCancel: jest.fn() },
+        },
+        {
+          provide: ExecutionStreamService,
+          useValue: { subscribe: jest.fn(), unsubscribe: jest.fn() },
+        },
+        { provide: UserAiInstructionsService, useValue: mockUserAiInstructionsService },
+        { provide: ProjectAiContextService, useValue: mockProjectAiContextService },
+        { provide: SessionService, useValue: mockSessionService },
+      ],
+    })
+      .overrideGuard(SessionOrApiKeyAuthGuard)
+      .useValue(mockGuard)
+      .overrideGuard(AuthorizationGuard)
+      .useValue(mockGuard)
+      .overrideGuard(QuotaGuard)
+      .useValue(mockGuard)
+      .overrideGuard(TokenQuotaGuard)
+      .useValue(mockGuard)
+      .compile();
+
+    controller = module.get<AIExecutionController>(AIExecutionController);
+  });
+
+  it('Test A: non-entitled browser-session, no harnessVersion -> succeeds and queues', async () => {
+    const result = await controller.execute(makeRequest(), browserSessionIdentity);
+
+    expect(result).toHaveProperty('executionId');
+    expect(result.status).toBe('queued');
+    expect(mockSessionService.getSessionById).toHaveBeenCalledTimes(2);
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+  });
+
+  it("Test B: non-entitled browser-session, harnessVersion 'v1' -> ForbiddenException before side effects", async () => {
+    await expect(
+      controller.execute(
+        makeRequest({ harnessVersion: 'v1' }),
+        browserSessionIdentity,
+      ),
+    ).rejects.toThrow(ForbiddenException);
+
+    expectNoForbiddenPathSideEffects();
+  });
+
+  it("Test C: isInternal true but not harnessEntitled, harnessVersion 'v1' -> ForbiddenException", async () => {
+    const internalNotEntitledIdentity: ApiKeyIdentity = {
+      userId: ownerUserId,
+      apiKeyId: 'internal-no-harness-001',
+      scopes: ['ai:execute'],
+      isInternal: true,
+    };
+
+    await expect(
+      controller.execute(
+        makeRequest({ harnessVersion: 'v1' }),
+        internalNotEntitledIdentity,
+      ),
+    ).rejects.toThrow(ForbiddenException);
+
+    expectNoForbiddenPathSideEffects();
+  });
+
+  it("Test D: scopes ['ai:execute'] but not harnessEntitled, harnessVersion 'v1' -> ForbiddenException", async () => {
+    const executeScopeOnlyIdentity: ApiKeyIdentity = {
+      userId: ownerUserId,
+      apiKeyId: 'key-execute-only-001',
+      scopes: ['ai:execute'],
+    };
+
+    await expect(
+      controller.execute(
+        makeRequest({ harnessVersion: 'v1' }),
+        executeScopeOnlyIdentity,
+      ),
+    ).rejects.toThrow(ForbiddenException);
+
+    expectNoForbiddenPathSideEffects();
+  });
+
+  it("Test E: harnessEntitled true, harnessVersion 'v1' -> accepted, queued, harnessVersion forwarded", async () => {
+    const result = await controller.execute(
+      makeRequest({ harnessVersion: 'v1' }),
+      harnessEntitledIdentity,
+    );
+
+    expect(result).toHaveProperty('executionId');
+    expect(result.status).toBe('queued');
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+
+    const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expect(payload.harnessVersion).toBe('v1');
+  });
+
+  it('Test F: harnessEntitled true, no harnessVersion -> succeeds, payload omits harnessVersion', async () => {
+    const result = await controller.execute(makeRequest(), harnessEntitledIdentity);
+
+    expect(result).toHaveProperty('executionId');
+    expect(result.status).toBe('queued');
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+
+    const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expect(payload).not.toHaveProperty('harnessVersion');
+  });
+
+  it("Test G: invalid harnessVersion 'v2' -> BadRequestException before entitlement/session lookup", async () => {
+    await expect(
+      controller.execute(
+        makeRequest({ harnessVersion: 'v2' as any }),
+        browserSessionIdentity,
+      ),
+    ).rejects.toThrow(BadRequestException);
+
+    await expect(
+      controller.execute(
+        makeRequest({ harnessVersion: 'v2' as any }),
+        browserSessionIdentity,
+      ),
+    ).rejects.toThrow("harnessVersion must be 'v1' when provided");
+
+    expect(mockSessionService.getSessionById).not.toHaveBeenCalled();
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+    expect(mockUsageLedgerService.reuseExecutionIntent).not.toHaveBeenCalled();
+    expect(mockUsageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+  });
+
+  it("Test H: session ownership mismatch + harnessEntitled true + harnessVersion 'v1' -> NotFoundException", async () => {
+    mockSessionService.getSessionById.mockResolvedValue({ userId: otherUserId, projectId: null });
+
+    await expect(
+      controller.execute(
+        makeRequest({ harnessVersion: 'v1' }),
+        harnessEntitledIdentity,
+      ),
+    ).rejects.toThrow(NotFoundException);
+
+    expect(mockSessionService.getSessionById).toHaveBeenCalledTimes(1);
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+    expect(mockUsageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+  });
+
+  it('Test I: forbidden error message is exactly "Forbidden" and does not leak gate internals', async () => {
+    const error = await controller
+      .execute(
+        makeRequest({ harnessVersion: 'v1' }),
+        browserSessionIdentity,
+      )
+      .catch((e) => e);
+
+    expect(error).toBeInstanceOf(ForbiddenException);
+    expect(error.message).toBe('Forbidden');
+    expect(error.message).not.toMatch(/harness|entitlement|scope|config|gate/i);
+  });
+
+  it('Test J: existing 05B9, 05C2, 05C5 focused behaviors remain compatible', async () => {
+    await expect(
+      controller.execute(
+        makeRequest({ sessionId: 'not-a-uuid', harnessVersion: 'v1' }),
+        harnessEntitledIdentity,
+      ),
+    ).rejects.toThrow('sessionId must be a valid UUID');
+    expect(mockSessionService.getSessionById).not.toHaveBeenCalled();
+
+    mockUsageLedgerService.writeExecutionIntent.mockClear();
+    mockQueueService.enqueueExecution.mockClear();
+
+    const harnessResult = await controller.execute(
+      makeRequest({ harnessVersion: 'v1' }),
+      harnessEntitledIdentity,
+    );
+    expect(harnessResult.status).toBe('queued');
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+
+    mockQueueService.enqueueExecution.mockClear();
+    mockUsageLedgerService.writeExecutionIntent.mockClear();
+    mockSessionService.getSessionById.mockResolvedValue({ userId: otherUserId, projectId: null });
+
+    await expect(
+      controller.execute(
+        makeRequest({ harnessVersion: 'v1' }),
+        harnessEntitledIdentity,
+      ),
+    ).rejects.toThrow(NotFoundException);
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
   });
 });

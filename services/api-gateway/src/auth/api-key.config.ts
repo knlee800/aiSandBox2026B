@@ -17,6 +17,7 @@ export interface ApiKeyIdentity {
   scopes: string[]; // Phase 20B: Authorization scopes
   isInternal?: boolean; // Phase 28B-1: Internal/test key flag (for INTERNAL launch state)
   isEarlyAccess?: boolean; // Phase 28B-1: Early access key flag (for EARLY_ACCESS launch state)
+  harnessEntitled?: boolean; // AGENT-HARNESS-05C7: Explicit harness entitlement
 }
 
 export class ApiKeyConfig {
@@ -28,6 +29,16 @@ export class ApiKeyConfig {
     // Test API keys for development and testing
     // Phase 20B: All keys have 'ai:execute' scope by default
     // Phase 28B-1: Added launch state flags (isInternal, isEarlyAccess)
+    [
+      'test-harness-api-key',
+      {
+        userId: 'user-harness',
+        apiKeyId: 'key-harness',
+        scopes: ['ai:execute', 'ai:harness'],
+        isInternal: true,
+        harnessEntitled: true,
+      },
+    ],
     [
       'test-api-key-user-1',
       {

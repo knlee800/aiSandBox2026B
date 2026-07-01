@@ -14,6 +14,7 @@ import {
   Param,
   NotFoundException,
   ConflictException,
+  ForbiddenException,
   Sse,
   MessageEvent,
 } from '@nestjs/common';
@@ -401,6 +402,11 @@ export class AIExecutionController {
       if (typeof request.harnessVersion !== 'string' || request.harnessVersion !== 'v1') {
         throw new BadRequestException("harnessVersion must be 'v1' when provided");
       }
+    }
+
+    // AGENT-HARNESS-05C7: Require explicit harness entitlement when harnessVersion is present
+    if (request.harnessVersion !== undefined && identity.harnessEntitled !== true) {
+      throw new ForbiddenException('Forbidden');
     }
 
     // AGENT-HARNESS-05C5: Session ownership enforcement

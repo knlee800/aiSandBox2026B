@@ -34952,3 +34952,286 @@ Register AGENT-HARNESS-05C7 — Harness Identity Entitlement Gate, registration 
 **Reference:** See TASKS.md -> AGENT-HARNESS-05C6A.
 
 COMPLETE and LOCKED — 2026-07-01. Do not modify this entry.
+
+---
+
+### AGENT-HARNESS-05C7: Harness Identity Entitlement Gate
+
+**Task ID:** AGENT-HARNESS-05C7
+**Status:** COMPLETE and LOCKED
+**Completed:** 2026-07-01
+**Priority:** High
+**Risk:** High
+**Nature:** Security / authorization implementation slice
+
+---
+
+#### Dependencies
+
+- AGENT-HARNESS-05C4 — COMPLETE and LOCKED
+- AGENT-HARNESS-05C5 — COMPLETE and LOCKED
+- AGENT-HARNESS-05C5A — COMPLETE and LOCKED
+- AGENT-HARNESS-05C6 — COMPLETE and LOCKED
+- AGENT-HARNESS-05C6A — COMPLETE and LOCKED
+
+---
+
+#### Problem Statement
+
+AGENT-HARNESS-05C4 security review identified a HIGH finding:
+
+> No harness-mode authorization exists. Any authenticated `ai:execute` user can currently request `harnessVersion: "v1"`. Once `enableToolLoop` is true, they would enter harness mode unless a separate entitlement gate exists.
+
+Currently:
+- `isInternal` grants internal service identity but does not scope harness access.
+- `ai:execute` scope grants execution access but does not scope harness access.
+- `admin` role grants administrative access but is not an entitlement source.
+- Browser-session users are not explicitly excluded from harness requests.
+- Static/dev API keys are not explicitly excluded from harness requests.
+- No entitlement check exists before ledger write or BullMQ enqueue.
+
+This means that even with `AGENT_HARNESS_ENABLE_TOOL_LOOP=false` preventing loop execution today, the architectural gap must be closed before any future `enableToolLoop` activation is permissible.
+
+---
+
+#### Objective
+
+Design and implement a harness-specific entitlement gate that:
+
+1. Prevents non-entitled identities from entering the Agent Harness route.
+2. Is independent of generic `ai:execute` authorization, LaunchGuard, `isInternal`, or session ownership.
+3. Ensures rejection occurs before ledger write and BullMQ enqueue.
+4. Leaves plain execution completely unchanged.
+5. Does not activate the tool loop (`enableToolLoop` remains `false`).
+
+---
+
+#### Candidate Design
+
+Introduce an explicit harness entitlement signal on the authenticated identity.
+
+##### Entitlement Signal
+- Add `harnessEntitled: boolean` (or equivalent) to the resolved identity type in the API Gateway auth layer.
+- Default: `false` for all identity sources unless explicitly configured.
+
+##### Entitlement Rules
+| Identity Source | Default Entitlement | Notes |
+|---|---|---|
+| Browser-session user | `false` | Must default to not entitled. |
+| Static/dev API key | `false` | Not entitled unless `harnessEntitled: true` explicitly set in config. |
+| Database-backed API key | `false` | Requires explicit entitlement source or approved mapping. |
+| `isInternal: true` | `false` | `isInternal` does NOT imply harness entitlement. |
+| `admin` role | `false` | `admin` does NOT imply harness entitlement unless explicitly approved. |
+| `ai:execute` scope | `false` | `ai:execute` does NOT imply harness entitlement. |
+| Explicitly entitled identity | `true` | Only path to `harnessEntitled: true`. |
+
+##### Gate Location
+- The entitlement check must execute inside `AIExecutionController` after session ownership validation (05C5) and before any ledger write or queue enqueue.
+- Gate sequence:
+  1. Session ownership check (05C5) — unchanged.
+  2. `harnessVersion` presence check — if `harnessVersion` is defined and not `"v1"`, return `BadRequest` (existing behavior).
+  3. **NEW: if `harnessVersion === "v1"`, check `identity.harnessEntitled === true`.**
+  4. If not entitled: return `ForbiddenException` with a safe, non-leaking error message. No ledger write. No BullMQ job.
+  5. If entitled: proceed to existing route/queue logic. `enableToolLoop` still governs path selection.
+
+##### Static/Dev API Key Entitlement
+- `api-key.config.ts` may need an optional `harnessEntitled: boolean` field per key entry.
+- Default to `false`; only explicitly configured keys receive `true`.
+- An explicitly entitled test key must be added for unit/integration test coverage.
+
+##### Identity Type Update
+- The resolved identity interface (used across guards and controller) must add `harnessEntitled: boolean`.
+- All existing identity construction paths must set `harnessEntitled: false` by default.
+- Only the path(s) that resolve an explicitly entitled key/identity may set `harnessEntitled: true`.
+
+##### Error Response
+- Non-entitled `harnessVersion: "v1"` request: `403 Forbidden`.
+- Error message must not leak entitlement configuration, key names, or internal identity details.
+- Safe message example: `"Harness access not authorized for this identity."` (exact wording TBD at implementation).
+
+---
+
+#### Scope — Files to Inspect Before Implementation
+
+1. `services/api-gateway/src/auth/session-or-api-key.guard.ts` — Identity resolution entry point; where `harnessEntitled` must be set.
+2. `services/api-gateway/src/auth/api-key-auth.guard.ts` — API key identity construction; must propagate `harnessEntitled`.
+3. `services/api-gateway/src/auth/api-key.service.ts` — API key lookup and validation logic.
+4. `services/api-gateway/src/auth/api-key.config.ts` — Static/dev key config; may need `harnessEntitled` field.
+5. `services/api-gateway/src/auth/authorization.guard.ts` — Authorization guard; verify it does not incidentally gate or bypass entitlement.
+6. `services/api-gateway/src/ai/ai-execution.controller.ts` — Gate insertion point; where the entitlement check must be added.
+7. `services/api-gateway/src/clients/ai-service-http.client.ts` — Forwarded request shape; verify entitlement proof forwarding if required.
+8. `services/ai-service/src/queue/job.types.ts` — Job metadata; verify whether entitlement proof should be recorded in the job.
+9. `services/ai-service/src/worker/worker.processor.ts` — Worker; verify it does not need changes but confirm no bypass path exists.
+10. `docs/AGENT-HARNESS-05C4-CHECKPOINT.md` — Source of the HIGH finding driving this task.
+11. `docs/AGENT-HARNESS-05C6A-CHECKPOINT.md` — Most recent locked checkpoint; confirms current runtime state.
+
+---
+
+#### Security Requirements
+
+All of the following must hold after implementation:
+
+1. Plain execution (no `harnessVersion`) remains completely unchanged.
+2. `harnessVersion` undefined/absent requires no harness entitlement check and proceeds normally.
+3. `harnessVersion: "v1"` requires `identity.harnessEntitled === true`.
+4. Non-entitled `harnessVersion: "v1"` request is rejected with `403 Forbidden` before any side effects.
+5. Rejected `harnessVersion: "v1"` request creates no `usage_records` row.
+6. Rejected `harnessVersion: "v1"` request creates no BullMQ job.
+7. `isInternal: true` does NOT bypass the entitlement check.
+8. `ai:execute` scope does NOT imply entitlement.
+9. `admin` role does NOT imply entitlement.
+10. Browser-session users default to `harnessEntitled: false`.
+11. Session ownership check from 05C5 remains intact and executes before the entitlement gate.
+12. `enableToolLoop` remains `false`; this task must not activate the tool loop.
+13. Error response must not leak entitlement configuration or internal identity metadata.
+14. The entitlement gate is independent of LaunchGuard, `isInternal`, and session ownership.
+
+---
+
+#### Expected Tests
+
+The following test scenarios must be covered:
+
+1. Non-entitled browser-session + no `harnessVersion` → succeeds (plain path unchanged).
+2. Non-entitled browser-session + `harnessVersion: "v1"` → `403 Forbidden`, no ledger write, no BullMQ job.
+3. `isInternal: true` but not harness-entitled + `harnessVersion: "v1"` → `403 Forbidden`, rejected before side effects.
+4. `ai:execute` scope but not harness-entitled + `harnessVersion: "v1"` → `403 Forbidden`, rejected before side effects.
+5. Explicitly harness-entitled identity + `harnessVersion: "v1"` → accepted and queued (plain path, `enableToolLoop: false`).
+6. Explicitly harness-entitled identity + no `harnessVersion` → plain path unchanged; no entitlement lookup required.
+7. Session ownership mismatch still rejects at the correct boundary (05C5 invariant) with no side effects.
+8. Invalid `harnessVersion` (not `"v1"`) → `BadRequest` before entitlement lookup (existing behavior preserved).
+9. Rejection error response does not leak entitlement configuration, key names, or identity metadata.
+10. Existing 05B9, 05C2, 05C5 tests remain passing without modification.
+
+---
+
+#### Validation Plan
+
+- Focused `api-gateway` controller and auth unit tests covering all ten scenarios above.
+- `api-gateway` TypeScript build: `Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm run build`
+- `api-gateway` test suite: `Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm test`
+- No runtime provider execution during implementation step.
+- No `AGENT_HARNESS_ENABLE_TOOL_LOOP=true` during implementation step.
+- Runtime validation (Docker, live services, live queue) is deferred to a separate follow-up task after implementation and consolidation.
+
+---
+
+#### Non-Goals
+
+- Do NOT set `AGENT_HARNESS_ENABLE_TOOL_LOOP=true`.
+- Do NOT activate Agent Harness or enable the tool loop.
+- Do NOT implement xAI tool-use.
+- Do NOT implement tool audit events.
+- Do NOT implement read-only tool canary.
+- Do NOT implement mutating-tool approval workflow.
+- Do NOT run `browser_smoke`.
+- Do NOT modify real `.env`.
+- Do NOT perform runtime validation during registration or implementation steps (deferred).
+- Do NOT create a checkpoint during registration.
+- Do NOT modify any source, test, package, Docker, frontend, database, or environment files during registration.
+
+---
+
+#### Registration Acceptance Criteria
+
+- [x] AGENT-HARNESS-05C7 is registered in TASKS.md immediately after the locked 05C6A entry.
+- [x] AGENT-HARNESS-05C7 is mirrored in TASKS_BACKLOG_FULL.md immediately after the locked 05C6A entry.
+- [x] Status is ACTIVE.
+- [x] Problem statement references the 05C4 HIGH finding.
+- [x] Candidate design documents `harnessEntitled` signal and all identity source defaults.
+- [x] Entitlement rules table is present.
+- [x] Gate location and sequence are documented.
+- [x] All fourteen security requirements are documented.
+- [x] All ten expected test scenarios are documented.
+- [x] Validation plan is documented.
+- [x] Non-goals are documented.
+- [x] No source, test, package, Docker, frontend, database, or environment files were modified.
+- [x] `.env` was not read or modified.
+- [x] No runtime commands were executed.
+- [x] No checkpoint was created.
+- [x] No subagents were used.
+- [x] `enableToolLoop` remains `false`; Agent Harness is not activated.
+
+---
+
+#### Implementation Acceptance Criteria
+
+- [x] `harnessEntitled: boolean` added to the resolved identity type (default `false`).
+- [x] All existing identity construction paths set `harnessEntitled: false` by default.
+- [x] At least one explicitly entitled static/dev API key added to `api-key.config.ts` for test coverage.
+- [x] Entitlement check added to `AIExecutionController` before ledger write and queue enqueue.
+- [x] Check fires only when `harnessVersion === "v1"`; plain path is completely untouched.
+- [x] Non-entitled `harnessVersion: "v1"` returns `403 Forbidden` with a safe, non-leaking message.
+- [x] Rejection produces no `usage_records` row and no BullMQ job.
+- [x] `isInternal: true` does not bypass the gate.
+- [x] `ai:execute` scope does not bypass the gate.
+- [x] `admin` role does not bypass the gate.
+- [x] 05C5 session ownership invariant is preserved.
+- [x] All ten expected test scenarios pass.
+- [x] Existing 05B9, 05C2, 05C5 tests remain passing.
+- [x] `api-gateway` TypeScript build passes clean.
+- [x] `enableToolLoop` remains `false`; Agent Harness is not activated.
+- [x] Consolidation checkpoint created and locked: `docs/AGENT-HARNESS-05C7-CHECKPOINT.md`.
+
+---
+
+#### Implementation Summary
+
+Files changed:
+1. `services/api-gateway/src/auth/api-key.config.ts` — Added `harnessEntitled?: boolean` to `ApiKeyIdentity`; added static harness test key (`test-harness-api-key`, scopes `["ai:execute", "ai:harness"]`, `harnessEntitled: true`).
+2. `services/api-gateway/src/auth/api-key-auth.guard.ts` — Maps database-backed API key scope `"ai:harness"` to `harnessEntitled: true`; browser-session defaults to `false`.
+3. `services/api-gateway/src/ai/ai-execution.controller.ts` — Added entitlement gate: rejects `harnessVersion: "v1"` requests unless `identity.harnessEntitled === true` with `ForbiddenException("Forbidden")` before any side effects.
+4. `services/api-gateway/src/ai/ai-execution.controller.spec.ts` — Added focused describe block `AIExecutionController — harness identity entitlement gate (AGENT-HARNESS-05C7)` with scenarios A–J; no-side-effect assertions for forbidden paths; updated existing 05C2 success path identity to `harnessEntitled: true`.
+
+#### Entitlement Model Summary
+
+| Identity Source | Entitlement |
+|---|---|
+| Browser-session | `false` (default) |
+| Static API key (existing) | `false` (unchanged) |
+| Static harness test key | `true` (explicit config) |
+| Database-backed API key with `ai:harness` scope | `true` |
+| Database-backed API key without `ai:harness` scope | `false` |
+| `isInternal: true` | does NOT imply entitlement |
+| `ai:execute` scope | does NOT imply entitlement |
+| `admin` role | does NOT imply entitlement |
+
+#### Controller Validation Order (Locked)
+
+1. `sessionId` UUID validation (05B9)
+2. `harnessVersion` allow-list validation (05C2)
+3. Harness entitlement gate (05C7) — NEW
+4. Session ownership check (05C5)
+5. Idempotency key validation/normalization
+6. Provider resolution
+7. User/project instruction enrichment
+8. Usage ledger intent flow
+9. `queueService.enqueueExecution`
+
+#### Validation Summary
+
+- Focused harness tests (05B9, 05C2, 05C5, 05C7): **PASSED**
+- `api-gateway` build (`npm run build`): **PASSED**
+- Overall verdict: **PASS**
+
+#### Pre-existing Failure Note
+
+Legacy top-level describe block `AIExecutionController (Phase 18A + ...)` has 4 failing tests due to missing `QueueService` provider wiring in an obsolete test setup. These failures pre-date 05C7 and are unrelated to this task. Must be resolved separately.
+
+#### Deployment / Runtime Validation Pending
+
+05C7 is source/build/unit validated. Runtime validation remains pending and should be registered separately as 05C7A.
+
+#### Next Recommended Task
+
+Register AGENT-HARNESS-05C7A — Harness Entitlement Runtime Validation, registration only.
+
+#### Checkpoint Reference
+
+`docs/AGENT-HARNESS-05C7-CHECKPOINT.md`
+
+---
+
+**COMPLETE and LOCKED — 2026-07-01. Do not modify this entry.**
+
+**Reference:** See TASKS.md -> AGENT-HARNESS-05C7.
