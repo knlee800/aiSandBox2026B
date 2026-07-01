@@ -24736,3 +24736,127 @@ Register AGENT-HARNESS-05C7A — Harness Entitlement Runtime Validation, registr
 **COMPLETE and LOCKED — 2026-07-01. Do not modify this entry.**
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05C7.
+
+---
+
+## AGENT-HARNESS-05C7A — Harness Entitlement Runtime Validation
+
+**Status:** COMPLETE and LOCKED
+**Completed:** 2026-07-01
+**Priority:** High
+**Risk:** High
+**Nature:** Runtime validation / security boundary verification
+
+### Dependencies
+
+- AGENT-HARNESS-05C4 — COMPLETE and LOCKED
+- AGENT-HARNESS-05C5 — COMPLETE and LOCKED
+- AGENT-HARNESS-05C5A — COMPLETE and LOCKED
+- AGENT-HARNESS-05C6 — COMPLETE and LOCKED
+- AGENT-HARNESS-05C6A — COMPLETE and LOCKED
+- AGENT-HARNESS-05C7 — COMPLETE and LOCKED
+
+### Objective
+
+Runtime-validate AGENT-HARNESS-05C7 in production compose. Confirm that the harness identity entitlement gate operates correctly under live service conditions — non-entitled identities are rejected, explicitly entitled identities are accepted and routed to selectedPath: "plain", and no side effects (tool-dispatch, file action, checkpoint, browser_smoke) occur.
+
+### Scope Executed
+
+**Choice B only — Scenarios A, B, C.**
+Scenario D was not executed. Entitled identity setup requires a supported DB-backed API key that cannot be created without raw DB mutation or an approved application flow. Scenario D is explicitly out of scope for 05C7A. If needed, register a separate task.
+
+### Deployment Verification Summary (Scenario A — PASS)
+
+- All 8 services running before start.
+- Process-local PowerShell override: `AGENT_HARNESS_ENABLE_TOOL_LOOP=false` set before compose; restored in finally block.
+- api-gateway tsc build: clean, exit 0.
+- api-gateway recreated successfully with `--no-deps`.
+- api-gateway health: HTTP 200 `{"status":"ok"}`.
+- Compiled 05C7 gate present: `identity.harnessEntitled !== true` found in `/app/dist/src/ai/ai-execution.controller.js`.
+- ai-service enableToolLoop: false. enableBrowserSmoke: false. AGENT_HARNESS_ENABLE_TOOL_LOOP env: false.
+- Queue baseline: waiting=0, active=0, failed=3. usage_records baseline: 4.
+
+### Plain Execution Summary (Scenario B — PASS)
+
+- User: demo@aisandbox.com (UUID: 1eb05cfa-af67-428a-bbec-a0ef0163b539)
+- Session: 660cf3ca-5498-4829-8f67-2c93e65a42eb
+- conversationId: 7fb21478-2445-4e20-8361-276a366df317
+- executionId: ed3ec014-7cb1-4b38-a30c-bc7cd4d4c930
+- HTTP status: 202 Accepted. Execution status: completed. Provider: xai. Model: grok-4.3. tokensUsed: 510.
+- Output: `05C7A plain validation passed`. fileActions: [].
+- usage_records: 4 → 5 (+1). Queue failed: 3 (unchanged).
+
+#### Exact route_evaluated Event — Scenario B
+
+```json
+{ "harnessVersion": null, "enableToolLoop": false, "selectedPath": "plain" }
+```
+
+### v1 Rejection Summary (Scenario C — PASS)
+
+- Same browser-session identity as Scenario B (isInternal: true, harnessEntitled: undefined / not set).
+- conversationId: 9d03ba9b-8a72-4e92-8a8d-a67ddd758279. harnessVersion: "v1".
+- HTTP status: **403 Forbidden**. Response: `{"message":"Forbidden","error":"Forbidden","statusCode":403}`.
+- No executionId returned. usage_records: 5 (unchanged). Queue: failed=3 (unchanged).
+- No route_evaluated event in ai-service. No ledger row. No BullMQ job.
+
+### isInternal Bypass Proof
+
+- Browser-session identity has `isInternal: true` (Scenarios B and C).
+- v1 request (Scenario C) was rejected HTTP 403 despite `isInternal: true`.
+- **isInternal does not bypass the entitlement gate.** Gate checks `identity.harnessEntitled !== true`. Rejection occurred before route_evaluated, BullMQ job, ledger row, or worker involvement.
+
+### Scenario D — NOT RUN / Out of Scope
+
+Scenario D (explicitly entitled v1 acceptance) was not executed under AGENT-HARNESS-05C7A. Entitled v1 acceptance must not be marked complete under this task. Register a separate task if needed after LaunchGuard compatibility analysis.
+
+### Cleanup / Final Health Summary
+
+- Session 660cf3ca-5498-4829-8f67-2c93e65a42eb stopped and terminated successfully.
+- Temporary cookie/body files removed.
+- All 8 services running after cleanup. api-gateway health: HTTP 200.
+- Queue final: waiting=0, active=0, failed=3 (unchanged).
+- No source files changed. .env not read or modified. AGENT_HARNESS_ENABLE_TOOL_LOOP never set to true.
+- No DB-backed API key created. No raw DB mutation. No Agent Harness activation.
+- No browser_smoke, tool-dispatch, checkpoint, or file actions. No git commit or push. No subagents used.
+- Cost: 1 xAI call; estimated provider cost < $0.01.
+
+### Final Verdict
+
+**PASS**
+
+### Acceptance Criteria
+
+- [x] AGENT-HARNESS-05C7A registered in TASKS.md immediately after locked AGENT-HARNESS-05C7.
+- [x] AGENT-HARNESS-05C7A mirrored in TASKS_BACKLOG_FULL.md immediately after locked AGENT-HARNESS-05C7.
+- [x] api-gateway rebuilds and recreates cleanly with no build errors.
+- [x] Compiled api-gateway controller binary contains 05C7 entitlement gate string.
+- [x] api-gateway health endpoint returns 200.
+- [x] ai-service config confirms enableToolLoop: false.
+- [x] ai-service config confirms enableBrowserSmoke: false.
+- [x] Scenario B: plain execution returns HTTP 202 and completes; route event confirms harnessVersion: null, enableToolLoop: false, selectedPath: plain.
+- [x] Scenario C: v1 request returns HTTP 403 Forbidden; no executionId created; no usage_records row created; queue baseline unchanged; no route_evaluated event emitted.
+- [x] Scenario C: isInternal: true did not bypass the 403.
+- [ ] Scenario D: entitled identity is confirmed available through supported flow — NOT RUN / OUT OF SCOPE.
+- [ ] Scenario D: entitled v1 returns HTTP 202 and completes — NOT RUN / OUT OF SCOPE.
+- [ ] Scenario D: no tool-dispatch, file action, checkpoint, or browser_smoke — NOT RUN / OUT OF SCOPE.
+- [x] Cleanup: only task-created sessions terminated; all services running; queue stable.
+- [x] All executed stop conditions cleared without triggering.
+- [x] No source, test, package, Docker, frontend, database, ai-service, schema, or environment files changed.
+- [x] .env not read or modified.
+- [x] No API keys created. No DB mutation performed.
+- [x] No harness activation. No AGENT_HARNESS_ENABLE_TOOL_LOOP=true.
+
+### Checkpoint Reference
+
+docs/AGENT-HARNESS-05C7A-CHECKPOINT.md
+
+### Next Recommended Task
+
+Register AGENT-HARNESS-05C8 — Execution-Bound Hardening, registration only.
+
+---
+
+**COMPLETE and LOCKED — 2026-07-01. Do not modify this entry.**
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05C7A.
