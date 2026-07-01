@@ -34752,3 +34752,203 @@ Register AGENT-HARNESS-05C6A — Environment Gate Runtime Validation, registrati
 **Reference:** See TASKS.md -> AGENT-HARNESS-05C6.
 
 **COMPLETE and LOCKED — 2026-06-30. Do not modify this entry.**
+
+---
+
+### AGENT-HARNESS-05C6A: Environment Gate Runtime Validation
+
+**Task ID:** AGENT-HARNESS-05C6A
+**Status:** COMPLETE and LOCKED
+**Completed:** 2026-07-01
+**Priority:** High
+**Risk:** Medium
+**Nature:** Runtime validation / deployment verification only
+**Dependencies:**
+- AGENT-HARNESS-05C4 — COMPLETE and LOCKED
+- AGENT-HARNESS-05C5 — COMPLETE and LOCKED
+- AGENT-HARNESS-05C5A — COMPLETE and LOCKED
+- AGENT-HARNESS-05C6 — COMPLETE and LOCKED
+
+---
+
+#### Objective
+
+Validate that the deployed production compose runtime resolves `AGENT_HARNESS_ENABLE_TOOL_LOOP` to false by default and that ordinary xAI execution still routes through the plain path. No harness activation, no true-gate test, no source changes.
+
+---
+
+#### Background from 05C6
+
+AGENT-HARNESS-05C6 implemented an environment-backed feature gate `AGENT_HARNESS_ENABLE_TOOL_LOOP` in the ai-service config. The gate defaults to false. When false, all executions route to the plain path regardless of `harnessVersion`. The gate guards the tool-loop harness against premature activation in production. 05C6 is source-complete and locked, but the ai-service has not yet been rebuilt or recreated against that source in the production compose environment.
+
+---
+
+#### Scope Executed
+
+**Choice B only — Scenario A + Scenario B + Scenario D.**
+
+Scenario C was NOT executed and remains separately approval-gated. It requires explicit Keith approval before execution in any future validation cycle.
+
+---
+
+#### Deployment Verification Summary (Scenario A — PASS)
+
+- All 8 services confirmed running before validation.
+- ai-service rebuild: exit code 0, TypeScript clean.
+- ai-service recreated and started successfully against 05C6 source.
+- Compiled config file confirmed at: `/app/dist/agent-harness/config/agent-harness.config.js`
+- Runtime config values resolved:
+  - `enableToolLoop: false`
+  - `enableBrowserSmoke: false`
+  - `contractVersion: v1`
+- Container environment confirmed: `AGENT_HARNESS_ENABLE_TOOL_LOOP=false`
+- Compiled worker confirmed to contain symbol: `agent_harness.route_evaluated`
+
+---
+
+#### Plain Owner Execution Summary (Scenario B — PASS)
+
+- Task-created session: `247865d7-dff6-47e2-b553-a941670dd3b2`
+- `conversationId`: `ab557637-2475-4fac-a092-40c1231f8793`
+- `executionId`: `bc5ba397-4b97-4e22-8e67-1e8ab66020c3`
+- Submit/poll: HTTP 202 → queued → completed
+- Provider: xai | Model: grok-4.3 | tokensUsed: 500
+- Output: `05C6A environment gate validation passed`
+- `fileActions`: `[]` (empty)
+
+---
+
+#### Exact Route Event
+
+```json
+{
+  "event": "agent_harness.route_evaluated",
+  "executionId": "bc5ba397-4b97-4e22-8e67-1e8ab66020c3",
+  "harnessVersion": null,
+  "enableToolLoop": false,
+  "selectedPath": "plain"
+}
+```
+
+---
+
+#### Harness / Tool / Browser Inactivity Evidence
+
+- tool_dispatch activity: 0
+- browser_smoke activity: 0
+- checkpoint activity: 0
+
+---
+
+#### Final Health and Cleanup Summary (Scenario D — PASS)
+
+- Queue waiting: 0 | Queue active: 0 | Queue failed: 3 (unchanged from baseline, no new failures)
+- Task-created session `247865d7-dff6-47e2-b553-a941670dd3b2` terminated successfully
+- No pre-existing sessions existed; none touched
+- All 8 services confirmed running after validation
+- `AGENT_HARNESS_ENABLE_TOOL_LOOP` restored to original empty value
+- Temporary cookie/header files removed
+
+---
+
+#### Cost and Retained Side Effects
+
+- xAI calls: 1 | Estimated provider cost: < $0.01
+- Retained (expected and intentional):
+  - ai-service Docker image rebuilt with 05C6 config changes
+  - ai-service container recreated and now running 05C6 code
+  - One `auth_sessions` row from login
+  - One `usage_records` row for executionId `bc5ba397-4b97-4e22-8e67-1e8ab66020c3`
+
+---
+
+#### Safety Confirmations
+
+- No source files changed
+- `.env` was not read or modified
+- `AGENT_HARNESS_ENABLE_TOOL_LOOP` was never set to `true`
+- No `harnessVersion` sent in Scenario B request
+- No Agent Harness activation occurred
+- No browser_smoke, tool-dispatch, checkpoint, or file actions observed
+- No git commit or push
+- Scenario C was not executed
+- No subagents were used
+
+---
+
+#### Final Verdict: PASS
+
+All executed scenarios (A, B, D) passed. The production ai-service is running 05C6 code with `enableToolLoop: false`. Plain execution routes correctly through the `plain` path. The environment gate is confirmed active and correct in the deployed runtime.
+
+---
+
+#### Runtime Scenarios
+
+##### Scenario A — Deployment Verification — PASS (see above)
+
+##### Scenario B — Plain Owner Execution — PASS (see above)
+
+##### Scenario C — Optional v1 False-Gate Execution — NOT EXECUTED
+
+- **Only if explicitly approved by Keith in a future validation cycle. Not run in this cycle.**
+- Remains separately approval-gated.
+- Submit one owner-authorized execution with `harnessVersion: "v1"`.
+- Expected route event:
+  - `event: agent_harness.route_evaluated`
+  - `harnessVersion: "v1"`
+  - `enableToolLoop: false`
+  - `selectedPath: plain`
+- Confirm no tool loop activity, no file actions, no checkpoints, no browser_smoke.
+
+##### Scenario D — Final Health and Cleanup — PASS (see above)
+
+---
+
+#### Registration Acceptance Criteria
+
+- [x] AGENT-HARNESS-05C6A is registered in TASKS.md immediately after the locked 05C6 entry.
+- [x] AGENT-HARNESS-05C6A is mirrored in TASKS_BACKLOG_FULL.md immediately after the locked 05C6 entry.
+- [x] Status is ACTIVE.
+- [x] All four runtime scenarios are documented.
+- [x] Approval gate for Scenario C is documented.
+- [x] Stop conditions are documented.
+- [x] Non-goals are documented.
+- [x] No source, test, package, Docker, frontend, database, or environment files were modified.
+- [x] `.env` was not read or modified.
+- [x] No runtime commands were executed.
+- [x] No checkpoint was created.
+- [x] No subagents were used.
+
+---
+
+#### Validation Acceptance Criteria
+
+- [x] ai-service rebuilt and recreated successfully from 05C6 source.
+- [x] Compiled config confirms `enableToolLoop: false` and `enableBrowserSmoke: false`.
+- [x] `AGENT_HARNESS_ENABLE_TOOL_LOOP` absent or false in container environment.
+- [x] Scenario B xAI execution completes successfully.
+- [x] `route_evaluated` event confirms `selectedPath: plain`, `enableToolLoop: false`, `harnessVersion: null`.
+- [x] Scenario C explicitly not executed — remains separately approval-gated (not required for Choice B completion).
+- [ ] If Scenario C run: `route_evaluated` confirms `selectedPath: plain` with `harnessVersion: "v1"`, no tool/harness activity. (NOT RUN — separately approval-gated)
+- [x] Queue stable, no unexpected failures.
+- [x] No browser_smoke, checkpoint, file action, or tool dispatch observed.
+- [x] All services confirmed running after validation.
+- [x] Validation checkpoint created and locked: `docs/AGENT-HARNESS-05C6A-CHECKPOINT.md`
+
+---
+
+#### Checkpoint Reference
+
+`docs/AGENT-HARNESS-05C6A-CHECKPOINT.md`
+
+---
+
+#### Next Recommended Task
+
+Register AGENT-HARNESS-05C7 — Harness Identity Entitlement Gate, registration only.
+
+---
+
+**Reference:** See TASKS.md -> AGENT-HARNESS-05C6A.
+
+COMPLETE and LOCKED — 2026-07-01. Do not modify this entry.
