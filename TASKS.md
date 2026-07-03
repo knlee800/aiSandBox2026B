@@ -24860,3 +24860,185 @@ Register AGENT-HARNESS-05C8 — Execution-Bound Hardening, registration only.
 **COMPLETE and LOCKED — 2026-07-01. Do not modify this entry.**
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05C7A.
+
+---
+
+## AGENT-HARNESS-05C8 — Execution-Bound Hardening
+
+**Status:** COMPLETE and LOCKED — 2026-07-03. Do not modify this entry.
+**Priority:** High
+**Risk:** High
+**Registered:** 2026-07-01
+**Checkpoint:** docs/AGENT-HARNESS-05C8-CHECKPOINT.md
+
+### Dependencies
+
+- AGENT-HARNESS-05C4 — COMPLETE and LOCKED
+- AGENT-HARNESS-05C5 / 05C5A — COMPLETE and LOCKED
+- AGENT-HARNESS-05C6 / 05C6A — COMPLETE and LOCKED
+- AGENT-HARNESS-05C7 / 05C7A — COMPLETE and LOCKED
+
+### Problem Statement
+
+AGENT-HARNESS-05C4 identified execution-bound gaps that remain unaddressed:
+
+1. `toolTimeoutMs` is configured in `DEFAULT_AGENT_HARNESS_CONFIG_V1` but is not enforced by `ToolDispatcher` or the harness loop. Slow or hanging tool handlers can block the loop indefinitely.
+2. `AbortSignal` is not propagated from the worker timeout/abort path through the harness loop, the dispatcher, individual tool handlers, or `ApiGatewayHttpClient`. In-flight workspace HTTP calls can outlive a worker timeout.
+3. Token accounting in the harness loop records only the last model call's token usage, not the cumulative multi-turn total.
+4. `maxToolResultBytes` is configured but is not enforced as an aggregate limit across all tool results accumulated in a harness loop run.
+
+These gaps mean the harness loop can hang past its deadline, leave HTTP requests in flight after a worker abort, under-report token consumption, and accumulate unbounded tool result payloads.
+
+### Objective
+
+Harden Agent Harness tool-loop execution with bounded runtime behavior before any read-only canary:
+
+1. Enforce per-tool timeout using `DEFAULT_AGENT_HARNESS_CONFIG_V1.toolTimeoutMs`.
+2. Propagate `AbortSignal` from worker → harness loop → dispatcher → tool handlers → `ApiGatewayHttpClient` → axios/Nest `HttpService` request config.
+3. Ensure in-flight workspace HTTP calls are cancellable when the worker is aborted.
+4. Track cumulative token usage across all model calls in the harness loop.
+5. Enforce aggregate tool-result byte limits using `maxToolResultBytes`.
+6. Preserve existing default-disabled harness behavior (`enableToolLoop: false`).
+7. Do not activate Agent Harness.
+
+### Scope — Files to Inspect Before Implementation
+
+1. `services/ai-service/src/worker/worker.processor.ts`
+2. `services/ai-service/src/worker/worker.processor.spec.ts`
+3. `services/ai-service/src/agent-harness/config/agent-harness.config.ts`
+4. `services/ai-service/src/agent-harness/orchestrator/agent-harness-loop.ts`
+5. `services/ai-service/src/agent-harness/tools/tool-dispatcher.ts`
+6. `services/ai-service/src/agent-harness/tools/handlers/file-tool-handlers.ts`
+7. `services/ai-service/src/agent-harness/tools/handlers/validation-tool-handlers.ts`
+8. `services/ai-service/src/agent-harness/tools/handlers/browser-smoke-tool-handlers.ts`
+9. `services/ai-service/src/clients/api-gateway-http.client.ts`
+10. `services/ai-service/src/ai-execution/adapters/adapter-tool-use.contracts.ts`
+11. `services/ai-service/src/ai-execution/adapters/ai-adapter.interface.ts`
+12. `docs/AGENT-HARNESS-05C4-CHECKPOINT.md`
+13. `docs/AGENT-HARNESS-05C7A-CHECKPOINT.md`
+
+### Candidate Implementation Areas
+
+- **ToolDispatcher timeout wrapper:** Race each handler invocation against a `Promise` that rejects after `toolTimeoutMs` milliseconds, using `AbortController` to cancel the per-tool signal. Return a structured tool error result on timeout rather than propagating a thrown exception to the loop.
+- **AbortSignal composition:** Compose an external worker `AbortSignal` (passed down from `WorkerProcessor`) with a per-tool deadline signal inside `ToolDispatcher`. Use `AbortSignal.any` (or equivalent polyfill) so either source can abort the tool call.
+- **`ApiGatewayHttpClient` method signatures:** Extend each workspace-call method to accept an optional `AbortSignal` (or `{ signal?: AbortSignal }` options bag). Pass the signal into the axios `cancelToken` / `signal` request config so the HTTP request is cancelled when the signal fires.
+- **File tool handlers:** Thread the dispatcher-provided `AbortSignal` through to every `ApiGatewayHttpClient` workspace call (`readFile`, `writeFile`, `listFiles`, etc.).
+- **Validation tool handler:** Thread the `AbortSignal` through to the lint/validate client call.
+- **Browser-smoke tool handler:** Thread the `AbortSignal` or retain explicit timeout behavior such that cancellation is not weakened.
+- **Harness loop cumulative token accounting:** Replace last-call token assignment with an accumulator that sums `tokensUsed` across every `executeFn` invocation in the loop. Expose cumulative totals in the final harness result.
+- **Harness loop aggregate tool-result byte budget:** After each tool dispatch round, compute the byte size of newly appended tool results (e.g. `JSON.stringify` length or `Buffer.byteLength`). Accumulate against a running total; when the running total exceeds `maxToolResultBytes`, terminate the loop with a controlled budget-exceeded result rather than continuing.
+
+### Design Constraints
+
+- `enableToolLoop` must remain `false`. Do not change `AGENT_HARNESS_ENABLE_TOOL_LOOP` runtime value.
+- Do not activate the harness loop or trigger live execution.
+- Do not change provider behavior outside harness tool-loop paths.
+- Do not change API Gateway service, routes, guards, or controllers.
+- Do not change `container-manager`.
+- Do not change Docker configuration or `.env` files.
+- Do not run live provider validation during implementation.
+- Preserve existing `WorkerProcessor` `route_evaluated` behavior.
+- Preserve existing `maxToolIterations` enforcement behavior.
+- Preserve pre-apply checkpoint behavior.
+- Keep all changes local to `services/ai-service/`.
+
+### Security / Safety Requirements
+
+1. A tool handler exceeding `toolTimeoutMs` must return a controlled tool error/result and must not hang the worker indefinitely.
+2. Worker abort must propagate to in-flight tool HTTP requests; the `AbortSignal` chain must reach axios.
+3. If the worker timeout fires, tool dispatch must stop promptly — no dangling async continuations.
+4. Handler timeout must not crash the worker process; all rejections must be caught and converted to structured results.
+5. Aggregate tool-result bytes must be bounded by `maxToolResultBytes`; exceeding the limit must produce a controlled result or loop termination.
+6. Cumulative token accounting must include every model call made in a harness loop run — not just the last one.
+7. Plain non-harness execution behavior must remain entirely unchanged.
+8. Default-disabled harness state (`enableToolLoop: false`) must remain unchanged.
+9. No `browser_smoke` activation.
+10. No mutating-tool approval changes in this slice.
+
+### Expected Tests
+
+- `ToolDispatcher` aborts or times out a slow handler using `toolTimeoutMs`.
+- `ToolDispatcher` returns a structured timeout error result (not a thrown exception).
+- `ToolDispatcher` respects an already-aborted signal before dispatching a handler.
+- `ToolDispatcher` propagates `AbortSignal` to the handler invocation.
+- File tool handlers pass the signal to `ApiGatewayHttpClient` call arguments.
+- Validation handler passes the signal to `ApiGatewayHttpClient` call arguments.
+- Browser-smoke handler passes signal or retains explicit timeout behavior without weakening cancellation.
+- `ApiGatewayHttpClient` passes signal into axios request config.
+- Harness loop sums `tokensUsed` across multiple `executeFn` calls (cumulative accounting).
+- Harness loop enforces `maxToolResultBytes` aggregate limit across accumulated tool results.
+- Exceeding aggregate result-size limit produces a controlled tool error or triggers loop termination before the next iteration.
+- Existing `WorkerProcessor` `route_evaluated` tests remain passing.
+- Existing `enableToolLoop: false` default test remains passing.
+
+### Validation Plan
+
+- Focused `ai-service` unit tests covering dispatcher, loop, client, and handler changes.
+- `ai-service` TypeScript build (`npm run build`) must pass with no new errors.
+- No Docker, runtime, provider, browser, or live validation during the implementation step.
+- Runtime validation is deferred to a later dedicated task after implementation is locked.
+
+### Non-Goals
+
+- No Agent Harness activation.
+- No `AGENT_HARNESS_ENABLE_TOOL_LOOP=true`.
+- No xAI `executeWithTools` implementation.
+- No read-only canary.
+- No audit event implementation unless strictly required for unit tests.
+- No mutating-tool approval workflow.
+- No `browser_smoke` activation.
+- No API Gateway changes.
+- No `container-manager` changes.
+- No database or schema changes.
+- No `.env` changes.
+- No Docker changes.
+- No runtime provider execution.
+- No checkpoint during implementation (checkpoint is a separate consolidation step after implementation locks).
+
+### Registration Acceptance Criteria
+
+- [x] AGENT-HARNESS-05C8 registered in TASKS.md immediately after the locked AGENT-HARNESS-05C7A entry.
+- [x] AGENT-HARNESS-05C8 mirrored in TASKS_BACKLOG_FULL.md immediately after the locked AGENT-HARNESS-05C7A entry.
+- [x] Status is ACTIVE.
+- [x] Dependencies listed and verified as COMPLETE and LOCKED.
+- [x] Problem statement documents all four execution-bound gaps.
+- [x] Objective documents all five hardening goals.
+- [x] All 13 scope files listed.
+- [x] All eight candidate implementation areas documented.
+- [x] All design constraints documented.
+- [x] All 10 security/safety requirements documented.
+- [x] All 13 expected tests documented.
+- [x] Validation plan documented.
+- [x] Non-goals documented.
+- [x] No source, test, package, Docker, frontend, database, ai-service implementation, schema, or environment files changed.
+- [x] .env not read or modified.
+- [x] No runtime commands executed.
+- [x] No checkpoint created.
+
+### Implementation Acceptance Criteria
+
+- [x] `ToolDispatcher` enforces `toolTimeoutMs` per-tool timeout using signal composition.
+- [x] `ToolDispatcher` returns a structured timeout error result on handler timeout.
+- [x] `ToolDispatcher` short-circuits on already-aborted signal before dispatching.
+- [x] `ToolDispatcher` propagates `AbortSignal` to handler invocation.
+- [x] `ApiGatewayHttpClient` accepts and passes `AbortSignal` into axios request config.
+- [x] File tool handlers pass signal to all `ApiGatewayHttpClient` workspace calls.
+- [x] Validation tool handler passes signal to `ApiGatewayHttpClient` call.
+- [x] Browser-smoke handler passes signal or retains explicit timeout without weakening cancellation.
+- [x] Harness loop accumulates cumulative `tokensUsed` across all `executeFn` invocations.
+- [x] Harness loop enforces `maxToolResultBytes` aggregate limit; exceeding it terminates the loop with a controlled result.
+- [x] All 13 expected unit tests pass.
+- [x] `ai-service` TypeScript build passes with no new errors.
+- [x] Existing `WorkerProcessor` `route_evaluated` tests remain passing.
+- [x] Existing `enableToolLoop: false` default test remains passing.
+- [x] `enableToolLoop` remains `false` in all environments.
+- [x] No harness activation. No `AGENT_HARNESS_ENABLE_TOOL_LOOP=true`.
+- [x] Consolidation checkpoint created and locked: `docs/AGENT-HARNESS-05C8-CHECKPOINT.md`.
+
+### Next Recommended Task
+
+Register AGENT-HARNESS-05C9 — Structured Harness Audit Events, registration only.
+
+---
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05C8.

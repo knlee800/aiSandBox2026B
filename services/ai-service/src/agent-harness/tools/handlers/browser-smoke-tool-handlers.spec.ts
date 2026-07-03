@@ -34,6 +34,7 @@ describe('browser-smoke-tool-handlers', () => {
       'test-session-123',
       '/',
       120_000,
+      undefined,
     );
     expect((result as any).success).toBe(true);
   });
@@ -57,6 +58,7 @@ describe('browser-smoke-tool-handlers', () => {
       'test-session-123',
       '/dashboard',
       120_000,
+      undefined,
     );
   });
 
@@ -126,6 +128,7 @@ describe('browser-smoke-tool-handlers', () => {
       'sess-456',
       '/',
       60_000,
+      undefined,
     );
   });
 
@@ -148,6 +151,31 @@ describe('browser-smoke-tool-handlers', () => {
       'test-session-123',
       '/',
       120_000,
+      undefined,
+    );
+  });
+
+  it('should pass AbortSignal to runBrowserSmoke', async () => {
+    mockClient.runBrowserSmoke.mockResolvedValue({
+      success: true,
+      url: 'http://172.17.0.2:3000/',
+      pageTitle: 'App',
+      consoleErrors: [],
+      consoleWarnings: [],
+      networkErrors: [],
+      visibleTextSnippet: '',
+      durationMs: 100,
+      truncated: false,
+    });
+    const signal = new AbortController().signal;
+
+    await handler({ url: '/' }, signal);
+
+    expect(mockClient.runBrowserSmoke).toHaveBeenCalledWith(
+      'test-session-123',
+      '/',
+      120_000,
+      signal,
     );
   });
 });

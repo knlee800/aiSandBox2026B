@@ -766,7 +766,10 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                   executionRequest.provider,
                 );
                 if (adapter.supportsToolUse && adapter.executeWithTools) {
-                  const dispatcher = new ToolDispatcher();
+                  const dispatcher = new ToolDispatcher({
+                    toolTimeoutMs: DEFAULT_AGENT_HARNESS_CONFIG_V1.toolTimeoutMs,
+                    maxToolResultBytes: DEFAULT_AGENT_HARNESS_CONFIG_V1.maxToolResultBytes,
+                  });
                   dispatcher.registerHandler(
                     'read_file',
                     createReadFileHandler({
@@ -820,7 +823,10 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                   let loopOptions: Parameters<typeof executeAgentHarnessLoop>[0] = {
                     executeFn: (req, opts) => adapter.executeWithTools!(req, opts),
                     request: executionRequest,
-                    config: DEFAULT_AGENT_HARNESS_CONFIG_V1,
+                    config: {
+                      maxToolIterations: DEFAULT_AGENT_HARNESS_CONFIG_V1.maxToolIterations,
+                      maxToolResultBytes: DEFAULT_AGENT_HARNESS_CONFIG_V1.maxToolResultBytes,
+                    },
                     signal: abortController.signal,
                     dispatcher,
                   };
@@ -828,10 +834,11 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                   if (DEFAULT_AGENT_HARNESS_CONFIG_V1.enablePreApplyCheckpoint) {
                     loopOptions = {
                       ...loopOptions,
-                      createCheckpointFn: () =>
+                      createCheckpointFn: (checkpointSignal) =>
                         this.apiGatewayHttpClient.createWorkspaceCheckpoint(
                           job.data.sessionId,
                           'Pre-apply checkpoint (Agent Harness)',
+                          checkpointSignal,
                         ),
                       mutatingToolNames: new Set(['write_file', 'delete_file']),
                     };

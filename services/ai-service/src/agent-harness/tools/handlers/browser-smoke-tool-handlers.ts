@@ -15,7 +15,7 @@ export interface BrowserSmokeToolHandlerDeps {
 export function createBrowserSmokeHandler(
   deps: BrowserSmokeToolHandlerDeps,
 ): ToolHandler {
-  return async (args: Readonly<Record<string, unknown>>) => {
+  return async (args: Readonly<Record<string, unknown>>, signal?: AbortSignal) => {
     const rawUrl = args.url;
     let url = '/';
 
@@ -43,6 +43,7 @@ export function createBrowserSmokeHandler(
       deps.sessionId,
       url,
       deps.browserSmokeTimeoutMs,
+      signal,
     );
 
     return result as unknown as Readonly<Record<string, unknown>>;

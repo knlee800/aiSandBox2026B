@@ -25,10 +25,12 @@ export type AgentHarnessLoopTerminationReason =
 export interface AgentHarnessLoopOptions {
   readonly executeFn: AgentHarnessExecuteWithToolsFn;
   readonly request: AIExecutionRequest;
-  readonly config: Pick<AgentHarnessConfigV1, 'maxToolIterations'>;
+  readonly config: Pick<AgentHarnessConfigV1, 'maxToolIterations' | 'maxToolResultBytes'>;
   readonly signal?: AbortSignal;
   readonly dispatcher?: ToolDispatcher;
-  readonly createCheckpointFn?: () => Promise<{ commitHash: string; filesChanged?: number }>;
+  readonly createCheckpointFn?: (
+    signal?: AbortSignal,
+  ) => Promise<{ commitHash: string; filesChanged?: number }>;
   readonly mutatingToolNames?: ReadonlySet<string>;
 }
 
@@ -67,15 +69,49 @@ export async function executeAgentHarnessLoop(
 ): Promise<AgentHarnessLoopResult> {
   const { executeFn, request, config, signal, dispatcher, createCheckpointFn, mutatingToolNames } = options;
   const maxIterations = Math.max(1, config.maxToolIterations);
+  const maxToolResultBytes =
+    typeof config.maxToolResultBytes === 'number' &&
+    Number.isFinite(config.maxToolResultBytes) &&
+    config.maxToolResultBytes > 0
+      ? config.maxToolResultBytes
+      : undefined;
   let totalToolCallsReceived = 0;
+  let cumulativeTokensUsed = 0;
+  let cumulativeToolResultBytes = 0;
   let priorToolResults: AIAdapterToolResultPayload[] | undefined;
   let preApplyCheckpointHash: string | undefined;
   let checkpointCreated = false;
 
+  const toSerializedBytes = (value: unknown): number =>
+    Buffer.byteLength(JSON.stringify(value ?? {}), 'utf8');
+
+  const enforceAggregateToolResultBudget = (
+    result: AIAdapterToolResultPayload,
+  ): AIAdapterToolResultPayload => {
+    if (maxToolResultBytes === undefined) {
+      return result;
+    }
+
+    const candidateBytes = toSerializedBytes(result);
+    if (cumulativeToolResultBytes + candidateBytes <= maxToolResultBytes) {
+      cumulativeToolResultBytes += candidateBytes;
+      return result;
+    }
+
+    const replacement: AIAdapterToolResultPayload = {
+      callId: result.callId,
+      toolName: result.toolName,
+      success: false,
+      errorMessage: `Tool result exceeds aggregate maximum size (${maxToolResultBytes} bytes)`,
+    };
+    cumulativeToolResultBytes += toSerializedBytes(replacement);
+    return replacement;
+  };
+
   for (let iteration = 0; iteration < maxIterations; iteration++) {
     if (signal?.aborted) {
       return {
-        result: { output: '', tokensUsed: 0, model: '' },
+        result: { output: '', tokensUsed: cumulativeTokensUsed, model: '' },
         iterationsUsed: iteration,
         terminationReason: 'aborted',
         toolCallsReceived: totalToolCallsReceived,
@@ -89,6 +125,7 @@ export async function executeAgentHarnessLoop(
         : undefined;
 
     const adapterResult = await executeFn(request, executeOptions);
+    cumulativeTokensUsed += adapterResult.tokensUsed ?? 0;
     const toolCalls = adapterResult.toolCalls ?? [];
     totalToolCallsReceived += toolCalls.length;
 
@@ -96,7 +133,7 @@ export async function executeAgentHarnessLoop(
       return {
         result: {
           output: adapterResult.output,
-          tokensUsed: adapterResult.tokensUsed,
+          tokensUsed: cumulativeTokensUsed,
           model: adapterResult.model,
           provider: adapterResult.provider,
           fileActions: adapterResult.fileActions,
@@ -114,7 +151,7 @@ export async function executeAgentHarnessLoop(
           output: adapterResult.output
             ? `${adapterResult.output}\n\n${NO_DISPATCHER_FALLBACK}`
             : NO_DISPATCHER_FALLBACK,
-          tokensUsed: adapterResult.tokensUsed,
+          tokensUsed: cumulativeTokensUsed,
           model: adapterResult.model,
           provider: adapterResult.provider,
           fileActions: adapterResult.fileActions,
@@ -134,7 +171,7 @@ export async function executeAgentHarnessLoop(
 
     if (hasMutatingCall) {
       try {
-        const cpResult = await createCheckpointFn();
+        const cpResult = await createCheckpointFn(signal);
         preApplyCheckpointHash = cpResult.commitHash;
         checkpointCreated = true;
       } catch (cpError) {
@@ -149,7 +186,7 @@ export async function executeAgentHarnessLoop(
             ? `CHECKPOINT_FAILED: Pre-apply checkpoint creation failed: ${errorMsg}. Mutating operation was not executed.`
             : `CHECKPOINT_FAILED: Pre-apply checkpoint creation failed: ${errorMsg}. Batch aborted.`,
         }));
-        priorToolResults = results;
+        priorToolResults = results.map(enforceAggregateToolResultBudget);
         continue;
       }
     }
@@ -165,13 +202,13 @@ export async function executeAgentHarnessLoop(
         errorMessage: dispatchResult.errorMessage,
       });
     }
-    priorToolResults = results;
+    priorToolResults = results.map(enforceAggregateToolResultBudget);
   }
 
   return {
     result: {
       output: '[Agent Harness] Maximum tool iterations reached without completion.',
-      tokensUsed: 0,
+      tokensUsed: cumulativeTokensUsed,
       model: '',
     },
     iterationsUsed: maxIterations,

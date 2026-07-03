@@ -33,7 +33,7 @@ function truncateOutput(
 export function createRunValidationHandler(
   deps: ValidationToolHandlerDeps,
 ): ToolHandler {
-  return async (args: Readonly<Record<string, unknown>>) => {
+  return async (args: Readonly<Record<string, unknown>>, signal?: AbortSignal) => {
     if (typeof args.command !== 'string' || args.command.trim().length === 0) {
       throw new Error('command is required and must be a non-empty string');
     }
@@ -62,6 +62,7 @@ export function createRunValidationHandler(
         deps.sessionId,
         matchedCommand,
         deps.validationTimeoutMs,
+        signal,
       );
       exitCode = result.exitCode;
       stdout = result.stdout;

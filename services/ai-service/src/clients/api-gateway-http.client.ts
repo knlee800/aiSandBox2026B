@@ -135,12 +135,14 @@ export class ApiGatewayHttpClient {
   async readWorkspaceFile(
     sessionId: string,
     path: string,
+    signal?: AbortSignal,
   ): Promise<{ path: string; content: string }> {
     const response = await firstValueFrom(
       this.httpService.get(
         `${this.apiGatewayUrl}/api/internal/workspace/${sessionId}/read`,
         {
           params: { path },
+          signal,
           headers: {
             'X-Internal-Service-Key': this.internalServiceKey,
           },
@@ -162,6 +164,7 @@ export class ApiGatewayHttpClient {
   async listWorkspaceDirectory(
     sessionId: string,
     path: string = '/',
+    signal?: AbortSignal,
   ): Promise<{
     path: string;
     entries: Array<{
@@ -176,6 +179,7 @@ export class ApiGatewayHttpClient {
         `${this.apiGatewayUrl}/api/internal/workspace/${sessionId}/list`,
         {
           params: { path },
+          signal,
           headers: {
             'X-Internal-Service-Key': this.internalServiceKey,
           },
@@ -198,12 +202,14 @@ export class ApiGatewayHttpClient {
     sessionId: string,
     path: string,
     content: string,
+    signal?: AbortSignal,
   ): Promise<void> {
     await firstValueFrom(
       this.httpService.post(
         `${this.apiGatewayUrl}/api/internal/workspace/${sessionId}/write`,
         { path, content },
         {
+          signal,
           headers: {
             'X-Internal-Service-Key': this.internalServiceKey,
           },
@@ -222,12 +228,14 @@ export class ApiGatewayHttpClient {
   async deleteWorkspaceFile(
     sessionId: string,
     path: string,
+    signal?: AbortSignal,
   ): Promise<void> {
     await firstValueFrom(
       this.httpService.delete(
         `${this.apiGatewayUrl}/api/internal/workspace/${sessionId}/delete`,
         {
           data: { path },
+          signal,
           headers: {
             'X-Internal-Service-Key': this.internalServiceKey,
           },
@@ -249,12 +257,14 @@ export class ApiGatewayHttpClient {
     sessionId: string,
     command: string,
     timeoutMs: number = 120_000,
+    signal?: AbortSignal,
   ): Promise<{ exitCode: number; stdout: string; stderr: string }> {
     const response = await firstValueFrom(
       this.httpService.post(
         `${this.apiGatewayUrl}/api/internal/workspace/${sessionId}/validate`,
         { command, timeoutMs },
         {
+          signal,
           headers: {
             'X-Internal-Service-Key': this.internalServiceKey,
           },
@@ -276,12 +286,14 @@ export class ApiGatewayHttpClient {
   async createWorkspaceCheckpoint(
     sessionId: string,
     description?: string,
+    signal?: AbortSignal,
   ): Promise<{ commitHash: string; filesChanged: number }> {
     const response = await firstValueFrom(
       this.httpService.post(
         `${this.apiGatewayUrl}/api/internal/workspace/${sessionId}/checkpoint`,
         { description },
         {
+          signal,
           headers: {
             'X-Internal-Service-Key': this.internalServiceKey,
           },
@@ -305,6 +317,7 @@ export class ApiGatewayHttpClient {
     sessionId: string,
     url?: string,
     timeoutMs?: number,
+    signal?: AbortSignal,
   ): Promise<BrowserSmokeResult> {
     const response = await firstValueFrom(
       this.httpService.post(
@@ -312,6 +325,7 @@ export class ApiGatewayHttpClient {
         { url, timeoutMs },
         {
           timeout: (timeoutMs ?? 120_000) + 10_000,
+          signal,
           headers: {
             'X-Internal-Service-Key': this.internalServiceKey,
           },

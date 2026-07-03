@@ -55,10 +55,29 @@ describe('ApiGatewayHttpClient - workspace file methods', () => {
         'http://localhost:4000/api/internal/workspace/session-1/read',
         {
           params: { path: 'src/app.ts' },
+          signal: undefined,
           headers: { 'X-Internal-Service-Key': 'test-key-123' },
         },
       );
       expect(result).toEqual({ path: 'src/app.ts', content: 'const x = 1;' });
+    });
+
+    it('includes AbortSignal in readWorkspaceFile request config', async () => {
+      httpService.get.mockReturnValue(
+        of(makeAxiosResponse({ path: 'src/app.ts', content: 'const x = 1;' })),
+      );
+      const signal = new AbortController().signal;
+
+      await client.readWorkspaceFile('session-1', 'src/app.ts', signal);
+
+      expect(httpService.get).toHaveBeenCalledWith(
+        'http://localhost:4000/api/internal/workspace/session-1/read',
+        {
+          params: { path: 'src/app.ts' },
+          signal,
+          headers: { 'X-Internal-Service-Key': 'test-key-123' },
+        },
+      );
     });
 
     it('propagates upstream errors', async () => {
@@ -91,6 +110,7 @@ describe('ApiGatewayHttpClient - workspace file methods', () => {
         'http://localhost:4000/api/internal/workspace/session-1/list',
         {
           params: { path: 'src' },
+          signal: undefined,
           headers: { 'X-Internal-Service-Key': 'test-key-123' },
         },
       );
@@ -109,6 +129,25 @@ describe('ApiGatewayHttpClient - workspace file methods', () => {
         'http://localhost:4000/api/internal/workspace/session-1/list',
         {
           params: { path: '/' },
+          signal: undefined,
+          headers: { 'X-Internal-Service-Key': 'test-key-123' },
+        },
+      );
+    });
+
+    it('includes AbortSignal in listWorkspaceDirectory request config', async () => {
+      httpService.get.mockReturnValue(
+        of(makeAxiosResponse({ path: 'src', entries: [] })),
+      );
+      const signal = new AbortController().signal;
+
+      await client.listWorkspaceDirectory('session-1', 'src', signal);
+
+      expect(httpService.get).toHaveBeenCalledWith(
+        'http://localhost:4000/api/internal/workspace/session-1/list',
+        {
+          params: { path: 'src' },
+          signal,
           headers: { 'X-Internal-Service-Key': 'test-key-123' },
         },
       );
@@ -137,6 +176,25 @@ describe('ApiGatewayHttpClient - workspace file methods', () => {
         'http://localhost:4000/api/internal/workspace/session-1/write',
         { path: 'src/app.ts', content: 'const x = 1;' },
         {
+          signal: undefined,
+          headers: { 'X-Internal-Service-Key': 'test-key-123' },
+        },
+      );
+    });
+
+    it('includes AbortSignal in writeWorkspaceFile request config', async () => {
+      httpService.post.mockReturnValue(
+        of(makeAxiosResponse({ ok: true })),
+      );
+      const signal = new AbortController().signal;
+
+      await client.writeWorkspaceFile('session-1', 'src/app.ts', 'const x = 1;', signal);
+
+      expect(httpService.post).toHaveBeenCalledWith(
+        'http://localhost:4000/api/internal/workspace/session-1/write',
+        { path: 'src/app.ts', content: 'const x = 1;' },
+        {
+          signal,
           headers: { 'X-Internal-Service-Key': 'test-key-123' },
         },
       );
@@ -165,6 +223,25 @@ describe('ApiGatewayHttpClient - workspace file methods', () => {
         'http://localhost:4000/api/internal/workspace/session-1/delete',
         {
           data: { path: 'src/old.ts' },
+          signal: undefined,
+          headers: { 'X-Internal-Service-Key': 'test-key-123' },
+        },
+      );
+    });
+
+    it('includes AbortSignal in deleteWorkspaceFile request config', async () => {
+      httpService.delete.mockReturnValue(
+        of(makeAxiosResponse({ ok: true })),
+      );
+      const signal = new AbortController().signal;
+
+      await client.deleteWorkspaceFile('session-1', 'src/old.ts', signal);
+
+      expect(httpService.delete).toHaveBeenCalledWith(
+        'http://localhost:4000/api/internal/workspace/session-1/delete',
+        {
+          data: { path: 'src/old.ts' },
+          signal,
           headers: { 'X-Internal-Service-Key': 'test-key-123' },
         },
       );
@@ -193,6 +270,7 @@ describe('ApiGatewayHttpClient - workspace file methods', () => {
         'http://localhost:4000/api/internal/workspace/session-1/validate',
         { command: 'npm test', timeoutMs: 60000 },
         {
+          signal: undefined,
           headers: { 'X-Internal-Service-Key': 'test-key-123' },
         },
       );
@@ -220,6 +298,24 @@ describe('ApiGatewayHttpClient - workspace file methods', () => {
         client.runWorkspaceValidation('session-1', 'npm test', 60000),
       ).rejects.toThrow('Validation failed');
     });
+
+    it('includes AbortSignal in runWorkspaceValidation request config', async () => {
+      httpService.post.mockReturnValue(
+        of(makeAxiosResponse({ exitCode: 0, stdout: 'PASS', stderr: '' })),
+      );
+      const signal = new AbortController().signal;
+
+      await client.runWorkspaceValidation('session-1', 'npm test', 60000, signal);
+
+      expect(httpService.post).toHaveBeenCalledWith(
+        'http://localhost:4000/api/internal/workspace/session-1/validate',
+        { command: 'npm test', timeoutMs: 60000 },
+        {
+          signal,
+          headers: { 'X-Internal-Service-Key': 'test-key-123' },
+        },
+      );
+    });
   });
 
   describe('createWorkspaceCheckpoint', () => {
@@ -237,6 +333,7 @@ describe('ApiGatewayHttpClient - workspace file methods', () => {
         'http://localhost:4000/api/internal/workspace/session-1/checkpoint',
         { description: 'Pre-apply checkpoint' },
         {
+          signal: undefined,
           headers: { 'X-Internal-Service-Key': 'test-key-123' },
         },
       );
@@ -262,6 +359,57 @@ describe('ApiGatewayHttpClient - workspace file methods', () => {
       await expect(
         client.createWorkspaceCheckpoint('session-1', 'test'),
       ).rejects.toThrow('Checkpoint failed');
+    });
+
+    it('includes AbortSignal in createWorkspaceCheckpoint request config', async () => {
+      httpService.post.mockReturnValue(
+        of(makeAxiosResponse({ commitHash: 'ghi789', filesChanged: 1 })),
+      );
+      const signal = new AbortController().signal;
+
+      await client.createWorkspaceCheckpoint('session-1', 'checkpoint', signal);
+
+      expect(httpService.post).toHaveBeenCalledWith(
+        'http://localhost:4000/api/internal/workspace/session-1/checkpoint',
+        { description: 'checkpoint' },
+        {
+          signal,
+          headers: { 'X-Internal-Service-Key': 'test-key-123' },
+        },
+      );
+    });
+  });
+
+  describe('runBrowserSmoke', () => {
+    it('preserves timeout and includes signal in runBrowserSmoke request config', async () => {
+      httpService.post.mockReturnValue(
+        of(
+          makeAxiosResponse({
+            success: true,
+            url: 'http://172.17.0.2:3000/',
+            pageTitle: 'App',
+            consoleErrors: [],
+            consoleWarnings: [],
+            networkErrors: [],
+            visibleTextSnippet: '',
+            durationMs: 1000,
+            truncated: false,
+          }),
+        ),
+      );
+      const signal = new AbortController().signal;
+
+      await client.runBrowserSmoke('session-1', '/', 45_000, signal);
+
+      expect(httpService.post).toHaveBeenCalledWith(
+        'http://localhost:4000/api/internal/workspace/session-1/browser-smoke',
+        { url: '/', timeoutMs: 45_000 },
+        {
+          timeout: 55_000,
+          signal,
+          headers: { 'X-Internal-Service-Key': 'test-key-123' },
+        },
+      );
     });
   });
 });

@@ -40,12 +40,13 @@ export interface FileToolHandlerDeps {
  * Truncates content exceeding maxFileReadBytes.
  */
 export function createReadFileHandler(deps: FileToolHandlerDeps): ToolHandler {
-  return async (args: Readonly<Record<string, unknown>>) => {
+  return async (args: Readonly<Record<string, unknown>>, signal?: AbortSignal) => {
     const normalizedPath = validateAndNormalizePath(args.path);
 
     const result = await deps.client.readWorkspaceFile(
       deps.sessionId,
       normalizedPath,
+      signal,
     );
 
     let content = result.content;
@@ -72,7 +73,7 @@ export interface ListToolHandlerDeps {
  * Lists directory entries from workspace through API Gateway boundary.
  */
 export function createListFilesHandler(deps: ListToolHandlerDeps): ToolHandler {
-  return async (args: Readonly<Record<string, unknown>>) => {
+  return async (args: Readonly<Record<string, unknown>>, signal?: AbortSignal) => {
     const rawPath = args.path;
     const normalizedPath =
       rawPath === undefined || rawPath === null || rawPath === ''
@@ -82,6 +83,7 @@ export function createListFilesHandler(deps: ListToolHandlerDeps): ToolHandler {
     const result = await deps.client.listWorkspaceDirectory(
       deps.sessionId,
       normalizedPath,
+      signal,
     );
 
     const files: string[] = result.entries.map((entry) => {
@@ -105,7 +107,7 @@ export interface WriteToolHandlerDeps {
  * Rejects content exceeding maxFileWriteBytes before the HTTP call.
  */
 export function createWriteFileHandler(deps: WriteToolHandlerDeps): ToolHandler {
-  return async (args: Readonly<Record<string, unknown>>) => {
+  return async (args: Readonly<Record<string, unknown>>, signal?: AbortSignal) => {
     const normalizedPath = validateAndNormalizePath(args.path);
 
     if (typeof args.content !== 'string') {
@@ -123,6 +125,7 @@ export function createWriteFileHandler(deps: WriteToolHandlerDeps): ToolHandler 
       deps.sessionId,
       normalizedPath,
       args.content,
+      signal,
     );
 
     return { ok: true, path: normalizedPath, bytesWritten: contentBytes };
@@ -143,7 +146,7 @@ const GLOB_LIKE_PATTERN = /[*?]/;
  * Rejects root, broad, directory, and glob-like targets.
  */
 export function createDeleteFileHandler(deps: DeleteToolHandlerDeps): ToolHandler {
-  return async (args: Readonly<Record<string, unknown>>) => {
+  return async (args: Readonly<Record<string, unknown>>, signal?: AbortSignal) => {
     const normalizedPath = validateAndNormalizePath(args.path);
 
     if (UNSAFE_DELETE_TARGETS.has(normalizedPath)) {
@@ -158,7 +161,7 @@ export function createDeleteFileHandler(deps: DeleteToolHandlerDeps): ToolHandle
       throw new Error('delete target must not contain glob patterns');
     }
 
-    await deps.client.deleteWorkspaceFile(deps.sessionId, normalizedPath);
+    await deps.client.deleteWorkspaceFile(deps.sessionId, normalizedPath, signal);
 
     return { ok: true, path: normalizedPath };
   };

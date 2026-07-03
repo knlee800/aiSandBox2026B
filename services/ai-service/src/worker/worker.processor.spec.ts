@@ -320,13 +320,15 @@ describe('Agent Harness empty-dispatcher wiring', () => {
       require('path').join(__dirname, 'worker.processor.ts'),
       'utf-8',
     );
-    const dispatcherInstantiations = (workerSource.match(/new ToolDispatcher\(\)/g) || []).length;
+    const dispatcherInstantiations = (workerSource.match(/new ToolDispatcher\(\{/g) || []).length;
     expect(dispatcherInstantiations).toBe(1);
 
     const harnessGateIndex = workerSource.indexOf("harnessVersion === 'v1'");
-    const dispatcherIndex = workerSource.indexOf('new ToolDispatcher()');
+    const dispatcherIndex = workerSource.indexOf('new ToolDispatcher({');
     expect(harnessGateIndex).toBeGreaterThan(-1);
     expect(dispatcherIndex).toBeGreaterThan(harnessGateIndex);
+    expect(workerSource).toContain('toolTimeoutMs: DEFAULT_AGENT_HARNESS_CONFIG_V1.toolTimeoutMs');
+    expect(workerSource).toContain('maxToolResultBytes: DEFAULT_AGENT_HARNESS_CONFIG_V1.maxToolResultBytes');
   });
 
   it('WorkerProcessor passes dispatcher into executeAgentHarnessLoop', () => {
@@ -336,6 +338,15 @@ describe('Agent Harness empty-dispatcher wiring', () => {
     );
     expect(workerSource).toContain('dispatcher,');
     expect(workerSource).toContain('dispatcher');
+  });
+
+  it('WorkerProcessor passes maxToolResultBytes into executeAgentHarnessLoop config', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    expect(workerSource).toContain('maxToolIterations: DEFAULT_AGENT_HARNESS_CONFIG_V1.maxToolIterations');
+    expect(workerSource).toContain('maxToolResultBytes: DEFAULT_AGENT_HARNESS_CONFIG_V1.maxToolResultBytes');
   });
 });
 
@@ -426,6 +437,15 @@ describe('Agent Harness 03C: checkpoint callback wiring in WorkerProcessor', () 
       'utf-8',
     );
     expect(workerSource).toContain('this.apiGatewayHttpClient.createWorkspaceCheckpoint');
+  });
+
+  it('checkpoint callback passes loop signal into createWorkspaceCheckpoint', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    expect(workerSource).toContain('createCheckpointFn: (checkpointSignal) =>');
+    expect(workerSource).toContain('checkpointSignal');
   });
 
   it('checkpoint callback is gated by enablePreApplyCheckpoint', () => {
@@ -529,7 +549,7 @@ describe('Agent Harness 05C3A: route observability event', () => {
   it('existing harness tool registration tests remain valid', () => {
     const workerSource = getWorkerSource();
     const harnessGateIndex = workerSource.indexOf("harnessVersion === 'v1'");
-    const dispatcherIndex = workerSource.indexOf('new ToolDispatcher()');
+    const dispatcherIndex = workerSource.indexOf('new ToolDispatcher({');
     expect(harnessGateIndex).toBeGreaterThan(-1);
     expect(dispatcherIndex).toBeGreaterThan(harnessGateIndex);
   });

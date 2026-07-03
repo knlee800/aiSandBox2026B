@@ -42,6 +42,7 @@ describe('createRunValidationHandler', () => {
         'session-1',
         'npm test',
         120_000,
+        undefined,
       );
     });
 
@@ -157,6 +158,22 @@ describe('createRunValidationHandler', () => {
         'session-1',
         'npm test',
         120_000,
+        undefined,
+      );
+    });
+
+    it('passes AbortSignal to client.runWorkspaceValidation', async () => {
+      const deps = makeDeps();
+      const handler = createRunValidationHandler(deps);
+      const signal = new AbortController().signal;
+
+      await handler({ command: 'npm test' }, signal);
+
+      expect(deps.client.runWorkspaceValidation).toHaveBeenCalledWith(
+        'session-1',
+        'npm test',
+        120_000,
+        signal,
       );
     });
   });

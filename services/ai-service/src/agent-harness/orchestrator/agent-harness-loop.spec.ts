@@ -61,7 +61,7 @@ function makeOptions(
   return {
     executeFn,
     request: makeRequest(),
-    config: { maxToolIterations: 3 },
+    config: { maxToolIterations: 3, maxToolResultBytes: 262_144 },
     ...overrides,
   };
 }
@@ -127,7 +127,7 @@ describe('executeAgentHarnessLoop', () => {
     );
 
     const loopResult = await executeAgentHarnessLoop(
-      makeOptions(executeFn, { config: { maxToolIterations: 1 } }),
+      makeOptions(executeFn, { config: { maxToolIterations: 1, maxToolResultBytes: 262_144 } }),
     );
 
     expect(loopResult.terminationReason).toBe('completed');
@@ -141,7 +141,7 @@ describe('executeAgentHarnessLoop', () => {
     );
 
     const loopResult = await executeAgentHarnessLoop(
-      makeOptions(executeFn, { config: { maxToolIterations: 0 } }),
+      makeOptions(executeFn, { config: { maxToolIterations: 0, maxToolResultBytes: 262_144 } }),
     );
 
     expect(loopResult.terminationReason).toBe('completed');
@@ -241,6 +241,162 @@ describe('executeAgentHarnessLoop', () => {
   });
 });
 
+describe('executeAgentHarnessLoop token accounting and aggregate result budget', () => {
+  it('sums tokensUsed across multiple model calls', async () => {
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('read_file', async () => ({ content: 'ok' }));
+
+    let callCount = 0;
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, [AIExecutionRequest, AIAdapterToolUseRequestOptions?]>(
+      () => {
+        callCount++;
+        if (callCount === 1) {
+          return Promise.resolve(makeToolCallResult({ tokensUsed: 10 }));
+        }
+        return Promise.resolve(makeCompletedResult({ tokensUsed: 15 }));
+      },
+    );
+
+    const loopResult = await executeAgentHarnessLoop(
+      makeOptions(executeFn, { dispatcher }),
+    );
+
+    expect(loopResult.terminationReason).toBe('completed');
+    expect(loopResult.result.tokensUsed).toBe(25);
+  });
+
+  it('treats undefined tokensUsed as 0', async () => {
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('read_file', async () => ({ content: 'ok' }));
+
+    let callCount = 0;
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, [AIExecutionRequest, AIAdapterToolUseRequestOptions?]>(
+      () => {
+        callCount++;
+        if (callCount === 1) {
+          return Promise.resolve(
+            makeToolCallResult({
+              tokensUsed: undefined as unknown as number,
+            }),
+          );
+        }
+        return Promise.resolve(makeCompletedResult({ tokensUsed: 5 }));
+      },
+    );
+
+    const loopResult = await executeAgentHarnessLoop(
+      makeOptions(executeFn, { dispatcher }),
+    );
+
+    expect(loopResult.result.tokensUsed).toBe(5);
+  });
+
+  it('returns cumulative tokensUsed on max_iterations', async () => {
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('read_file', async () => ({ content: 'ok' }));
+
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>().mockResolvedValue(
+      makeToolCallResult({ tokensUsed: 7 }),
+    );
+
+    const loopResult = await executeAgentHarnessLoop(
+      makeOptions(executeFn, {
+        dispatcher,
+        config: { maxToolIterations: 2, maxToolResultBytes: 262_144 },
+      }),
+    );
+
+    expect(loopResult.terminationReason).toBe('max_iterations');
+    expect(loopResult.result.tokensUsed).toBe(14);
+  });
+
+  it('enforces aggregate maxToolResultBytes and replaces over-budget results without ending the loop', async () => {
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('read_file', async (args) => ({
+      content: `payload:${String(args.path)}`,
+    }));
+
+    const firstResultPayload = {
+      callId: 'call-1',
+      toolName: 'read_file',
+      success: true,
+      content: { content: 'payload:README.md' },
+      errorMessage: undefined,
+    };
+    const firstResultBytes = Buffer.byteLength(
+      JSON.stringify(firstResultPayload ?? {}),
+      'utf8',
+    );
+
+    let callCount = 0;
+    const executeFn = jest.fn<
+      Promise<AIAdapterToolUseResult>,
+      [AIExecutionRequest, AIAdapterToolUseRequestOptions?]
+    >(() => {
+      callCount++;
+      if (callCount === 1) {
+        return Promise.resolve(
+          makeToolCallResult({
+            toolCalls: [
+              {
+                callId: 'call-1',
+                toolName: 'read_file',
+                arguments: { path: 'README.md' },
+                providerKind: 'stub',
+              },
+            ],
+            tokensUsed: 3,
+          }),
+        );
+      }
+      if (callCount === 2) {
+        return Promise.resolve(
+          makeToolCallResult({
+            toolCalls: [
+              {
+                callId: 'call-2',
+                toolName: 'read_file',
+                arguments: { path: 'SECOND.md' },
+                providerKind: 'stub',
+              },
+            ],
+            tokensUsed: 4,
+          }),
+        );
+      }
+      return Promise.resolve(makeCompletedResult({ output: 'done', tokensUsed: 5 }));
+    });
+
+    const loopResult = await executeAgentHarnessLoop(
+      makeOptions(executeFn, {
+        dispatcher,
+        config: {
+          maxToolIterations: 4,
+          maxToolResultBytes: firstResultBytes + 1,
+        },
+      }),
+    );
+
+    expect(loopResult.terminationReason).toBe('completed');
+    expect(executeFn).toHaveBeenCalledTimes(3);
+
+    const thirdCallOpts = executeFn.mock.calls[2][1];
+    expect(thirdCallOpts?.toolResults).toHaveLength(1);
+    expect(thirdCallOpts?.toolResults?.[0]).toEqual({
+      callId: 'call-2',
+      toolName: 'read_file',
+      success: false,
+      errorMessage:
+        'Tool result exceeds aggregate maximum size (' +
+        `${firstResultBytes + 1}` +
+        ' bytes)',
+    });
+    expect(thirdCallOpts?.toolResults?.[0].errorMessage).not.toContain(
+      'truncated',
+    );
+  });
+});
+
 describe('executeAgentHarnessLoop with dispatcher', () => {
   it('still returns no_dispatcher when no dispatcher is passed and tool calls appear', async () => {
     const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>().mockResolvedValue(
@@ -326,7 +482,7 @@ describe('executeAgentHarnessLoop with dispatcher', () => {
     );
 
     const loopResult = await executeAgentHarnessLoop(
-      makeOptions(executeFn, { dispatcher, config: { maxToolIterations: 2 } }),
+      makeOptions(executeFn, { dispatcher, config: { maxToolIterations: 2, maxToolResultBytes: 262_144 } }),
     );
 
     expect(loopResult.terminationReason).toBe('max_iterations');
@@ -655,7 +811,7 @@ describe('executeAgentHarnessLoop with pre-apply checkpoint', () => {
         dispatcher,
         createCheckpointFn,
         mutatingToolNames: MUTATING_TOOLS,
-        config: { maxToolIterations: 2 },
+        config: { maxToolIterations: 2, maxToolResultBytes: 262_144 },
       }),
     );
 

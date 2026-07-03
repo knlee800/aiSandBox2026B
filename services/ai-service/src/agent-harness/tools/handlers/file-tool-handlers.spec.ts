@@ -72,8 +72,29 @@ describe('createReadFileHandler', () => {
 
     const result = await handler({ path: '/src/app.ts' });
 
-    expect(mockClient.readWorkspaceFile).toHaveBeenCalledWith('sess-1', 'src/app.ts');
+    expect(mockClient.readWorkspaceFile).toHaveBeenCalledWith('sess-1', 'src/app.ts', undefined);
     expect(result).toEqual({ content: 'const x = 1;', truncated: false });
+  });
+
+  it('passes AbortSignal to client.readWorkspaceFile', async () => {
+    mockClient.readWorkspaceFile.mockResolvedValue({
+      path: 'src/app.ts',
+      content: 'const x = 1;',
+    });
+    const handler = createReadFileHandler({
+      client: mockClient,
+      sessionId: 'sess-1',
+      maxFileReadBytes: 262144,
+    });
+    const signal = new AbortController().signal;
+
+    await handler({ path: 'src/app.ts' }, signal);
+
+    expect(mockClient.readWorkspaceFile).toHaveBeenCalledWith(
+      'sess-1',
+      'src/app.ts',
+      signal,
+    );
   });
 
   it('rejects missing path argument', async () => {
@@ -175,7 +196,7 @@ describe('createListFilesHandler', () => {
 
     const result = await handler({ path: 'src' }) as { files: string[] };
 
-    expect(mockClient.listWorkspaceDirectory).toHaveBeenCalledWith('sess-1', 'src');
+    expect(mockClient.listWorkspaceDirectory).toHaveBeenCalledWith('sess-1', 'src', undefined);
     expect(result.files).toEqual(['app.ts', 'components/']);
   });
 
@@ -192,7 +213,27 @@ describe('createListFilesHandler', () => {
 
     await handler({});
 
-    expect(mockClient.listWorkspaceDirectory).toHaveBeenCalledWith('sess-1', '/');
+    expect(mockClient.listWorkspaceDirectory).toHaveBeenCalledWith('sess-1', '/', undefined);
+  });
+
+  it('passes AbortSignal to client.listWorkspaceDirectory', async () => {
+    mockClient.listWorkspaceDirectory.mockResolvedValue({
+      path: '/',
+      entries: [],
+    });
+    const handler = createListFilesHandler({
+      client: mockClient,
+      sessionId: 'sess-1',
+    });
+    const signal = new AbortController().signal;
+
+    await handler({ path: '/' }, signal);
+
+    expect(mockClient.listWorkspaceDirectory).toHaveBeenCalledWith(
+      'sess-1',
+      '/',
+      signal,
+    );
   });
 
   it('rejects path traversal', async () => {
@@ -262,12 +303,36 @@ describe('createWriteFileHandler', () => {
 
     const result = await handler({ path: '/src/app.ts', content: 'const x = 1;' });
 
-    expect(mockClient.writeWorkspaceFile).toHaveBeenCalledWith('sess-1', 'src/app.ts', 'const x = 1;');
+    expect(mockClient.writeWorkspaceFile).toHaveBeenCalledWith(
+      'sess-1',
+      'src/app.ts',
+      'const x = 1;',
+      undefined,
+    );
     expect(result).toEqual({
       ok: true,
       path: 'src/app.ts',
       bytesWritten: Buffer.byteLength('const x = 1;', 'utf-8'),
     });
+  });
+
+  it('passes AbortSignal to client.writeWorkspaceFile', async () => {
+    mockClient.writeWorkspaceFile.mockResolvedValue(undefined);
+    const handler = createWriteFileHandler({
+      client: mockClient,
+      sessionId: 'sess-1',
+      maxFileWriteBytes: 131072,
+    });
+    const signal = new AbortController().signal;
+
+    await handler({ path: 'file.ts', content: 'data' }, signal);
+
+    expect(mockClient.writeWorkspaceFile).toHaveBeenCalledWith(
+      'sess-1',
+      'file.ts',
+      'data',
+      signal,
+    );
   });
 
   it('rejects missing path argument', async () => {
@@ -374,8 +439,25 @@ describe('createDeleteFileHandler', () => {
 
     const result = await handler({ path: '/src/old.ts' });
 
-    expect(mockClient.deleteWorkspaceFile).toHaveBeenCalledWith('sess-1', 'src/old.ts');
+    expect(mockClient.deleteWorkspaceFile).toHaveBeenCalledWith('sess-1', 'src/old.ts', undefined);
     expect(result).toEqual({ ok: true, path: 'src/old.ts' });
+  });
+
+  it('passes AbortSignal to client.deleteWorkspaceFile', async () => {
+    mockClient.deleteWorkspaceFile.mockResolvedValue(undefined);
+    const handler = createDeleteFileHandler({
+      client: mockClient,
+      sessionId: 'sess-1',
+    });
+    const signal = new AbortController().signal;
+
+    await handler({ path: 'src/old.ts' }, signal);
+
+    expect(mockClient.deleteWorkspaceFile).toHaveBeenCalledWith(
+      'sess-1',
+      'src/old.ts',
+      signal,
+    );
   });
 
   it('rejects path traversal', async () => {
