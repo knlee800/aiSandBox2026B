@@ -25042,3 +25042,104 @@ Register AGENT-HARNESS-05C9 — Structured Harness Audit Events, registration on
 ---
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05C8.
+
+---
+
+## AGENT PLATFORM / AINOW.BIZ MULTI-AGENT
+
+**Family status:** ACTIVE — AGENT-PLATFORM-00 COMPLETE and LOCKED
+
+**Current stage:** AGENT-PLATFORM-01 PENDING — Agent Registry Foundation (next recommended, not yet registered)
+
+**Registered tasks:**
+1. AGENT-PLATFORM-00 — ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED — 2026-07-04)
+
+**Completed foundations (prerequisites):**
+- AGENT HARNESS family foundations COMPLETE and LOCKED — Agent Harness v1 contracts, tool protocol, model adapters, tool dispatcher, orchestrator loop, execution-bound hardening (through AGENT-HARNESS-05C8)
+- AI-CONTEXT family COMPLETE and LOCKED
+- PREVIEW family COMPLETE and LOCKED
+- APP ROUTING / WORKSPACE STATE / SESSION RESTORE COMPLETE and LOCKED
+
+---
+
+#### AGENT-PLATFORM-00: ainow.biz Multi-Agent Platform Master Plan
+
+**Status:** COMPLETE and LOCKED
+**Task ID:** AGENT-PLATFORM-00
+**Family:** AGENT PLATFORM / AINOW.BIZ MULTI-AGENT
+**Priority:** Highest
+**Nature:** ARCHITECTURE / PRODUCT SYSTEM DESIGN / GOVERNANCE / PLANNING ONLY
+**Risk:** Low (documentation only, no implementation)
+**Registered:** 2026-07-04
+**Completed:** 2026-07-04
+**Checkpoint:** docs/AGENT-PLATFORM-00-CHECKPOINT.md
+
+#### Dependencies
+
+- AGENT-HARNESS-05C8 — COMPLETE and LOCKED (execution-bound hardening)
+- All prior AGENT-HARNESS foundations — COMPLETE and LOCKED
+
+#### Problem Statement
+
+aiSandBox is currently a standalone AI coding sandbox. The product vision has evolved: the platform should become ainow.biz — a general-purpose multi-agent work platform where aiSandBox becomes the first real agent module (Builder Agent). There is no master plan documenting this transition, the agent registry model, agent-to-agent collaboration, shared knowledge, work objects, billing structure, or phased delivery roadmap.
+
+#### Objective
+
+Create the master planning document for ainow.biz as a multi-agent platform:
+
+1. Define the product model: ainow.biz platform with aiSandBox as Builder Agent.
+2. Define the agent registry concept and manifest fields.
+3. Define agent-to-agent collaboration, referral, and approval models.
+4. Define common knowledge base and per-agent skills/knowledge scopes.
+5. Define work object types (tickets, decisions, drafts, referrals, etc.).
+6. Define the RPG office/town dashboard UX direction.
+7. Define billing/commercial model direction.
+8. Define what is NOT implemented yet.
+9. Propose a follow-up task roadmap.
+
+#### Scope
+
+- Documentation and governance only.
+- Create `docs/AGENT-PLATFORM-00-AINOW-MULTI-AGENT-PLAN.md`.
+- No implementation source code.
+- No tests.
+- No frontend UI changes.
+- No backend changes.
+- No database/schema changes.
+- No Docker/env changes.
+- No runtime commands.
+
+#### Non-Goals
+
+- No implementation code of any kind.
+- No Agent Harness activation.
+- No registration of follow-up tasks (listed as proposed roadmap only).
+- No AGENT-HARNESS-05C9 registration.
+- No database schema changes.
+- No frontend UI changes.
+- No Docker or runtime changes.
+
+#### Acceptance Criteria
+
+- [x] AGENT-PLATFORM-00 registered in TASKS.md.
+- [x] AGENT-PLATFORM-00 mirrored in TASKS_BACKLOG_FULL.md.
+- [x] `docs/AGENT-PLATFORM-00-AINOW-MULTI-AGENT-PLAN.md` created with complete master plan.
+- [x] `docs/AGENT-PLATFORM-00-CHECKPOINT.md` created.
+- [x] No implementation source files changed.
+- [x] No frontend UI files changed.
+- [x] No package/env/Docker/schema/database files changed.
+- [x] No runtime commands executed.
+
+#### Next Recommended Tasks (proposed roadmap, not registered)
+
+- AGENT-PLATFORM-01 — Agent Registry Foundation
+- AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell
+- AGENT-PLATFORM-03 — Register aiSandBox as Builder Agent
+- AGENT-COLLAB-00 — Agent Referral and Collaboration Protocol Plan
+- AGENT-KNOWLEDGE-00 — Common Knowledge Base Architecture Plan
+- AGENT-SKILLS-00 — Per-Agent Skills and Knowledge Scope Plan
+- BILLING-READY-00 — Billing, Plan, Credit, and Entitlement Audit
+
+---
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-00.
