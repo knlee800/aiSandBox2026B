@@ -35546,15 +35546,113 @@ Register AGENT-HARNESS-05C9 — Structured Harness Audit Events, registration on
 
 ---
 
+### AGENT-HARNESS-05C9: Structured Harness Audit Events
+
+**Task ID:** AGENT-HARNESS-05C9
+**Status:** COMPLETE and LOCKED
+**Completed:** 2026-07-06
+**Checkpoint:** docs/AGENT-HARNESS-05C9-CHECKPOINT.md
+**Priority:** Medium
+**Risk:** Low
+**Registered:** 2026-07-05
+**Family:** AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
+
+#### Dependencies
+
+- AGENT-HARNESS-05C8 — COMPLETE and LOCKED (execution-bound hardening)
+
+#### Problem Statement
+
+Current harness execution has hardening for timeout/signal/token/result-size behavior, but audit/observability events are not yet standardized as a structured contract. Future platform features should consume consistent harness audit events rather than ad-hoc logs.
+
+#### Objective
+
+Design and implement structured audit events for the Agent Harness so every significant harness lifecycle event is consistently represented for future debugging, observability, compliance, analytics, and platform-level monitoring.
+
+#### Scope
+
+- Structured audit event taxonomy.
+- TypeScript interfaces/contracts for audit events.
+- Correlation identifiers.
+- Session identifiers.
+- Execution identifiers.
+- Harness lifecycle events.
+- Tool dispatch/request/result/failure events.
+- Model invocation start/result/failure events.
+- Validation tool events.
+- Controlled error events.
+- Timeout/abort/result-size events where applicable.
+- Optional sink abstraction only if existing architecture supports it cleanly.
+- Focused unit tests.
+
+#### Non-Goals
+
+- No runtime activation.
+- No enableToolLoop changes.
+- No AGENT_HARNESS_ENABLE_TOOL_LOOP=true.
+- No orchestration redesign.
+- No provider behavior changes.
+- No database schema changes.
+- No analytics implementation.
+- No billing implementation.
+- No frontend changes.
+- No dashboard work.
+- No collaboration runtime.
+- No knowledge layer.
+- No live event streaming.
+- No production runtime changes.
+- Do not resume AGENT-PLATFORM-02 in this task.
+
+#### Registration Acceptance Criteria
+
+- [x] AGENT-HARNESS-05C9 registered in TASKS.md with ACTIVE status.
+- [x] AGENT-HARNESS-05C9 mirrored in TASKS_BACKLOG_FULL.md with matching content.
+- [x] Dependency on AGENT-HARNESS-05C8 COMPLETE and LOCKED recorded.
+- [x] Scope clearly limited to structured harness audit events.
+- [x] Non-goals clearly recorded.
+- [x] Implementation acceptance criteria listed for future implementation pass.
+- [x] No implementation performed.
+- [x] No source/test/frontend/package/env/Docker/schema/database files changed.
+- [x] No runtime/provider/database/browser/Docker commands executed.
+- [x] No subagents used.
+
+#### Implementation Acceptance Criteria
+
+- [x] Structured audit event interfaces introduced.
+- [x] Audit event taxonomy documented in code or adjacent harness docs.
+- [x] Event correlation identifiers represented consistently.
+- [x] Session/execution identifiers represented consistently.
+- [x] Harness lifecycle emits or records structured events.
+- [x] Tool execution emits or records structured events.
+- [x] Model invocation emits or records structured events.
+- [x] Validation execution emits or records structured events (via tool dispatch path).
+- [x] Controlled failures emit or record structured events.
+- [x] Timeout/abort/result-size outcomes are represented.
+- [x] Focused tests added.
+- [x] Existing relevant harness tests remain passing.
+- [x] No runtime activation performed.
+- [x] No Agent Harness behavior change outside structured audit event recording.
+
+#### Next Recommended Step
+
+Resume AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell.
+
+---
+
+**Reference:** See TASKS.md -> AGENT-HARNESS-05C9.
+
+---
+
 ## AGENT PLATFORM / AINOW.BIZ MULTI-AGENT
 
-**Family status:** ACTIVE — AGENT-PLATFORM-00 COMPLETE and LOCKED, AGENT-PLATFORM-01 COMPLETE and LOCKED
+**Family status:** ACTIVE — AGENT-PLATFORM-00 COMPLETE and LOCKED, AGENT-PLATFORM-01 COMPLETE and LOCKED, AGENT-PLATFORM-02 PAUSED
 
-**Current stage:** AGENT-PLATFORM-01 COMPLETE and LOCKED — Agent Registry Foundation
+**Current stage:** AGENT-PLATFORM-02 PAUSED — Static RPG Office/Town Dashboard Shell (AGENT-HARNESS-05C9 now COMPLETE and LOCKED; resume AGENT-PLATFORM-02 next)
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 — ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED — 2026-07-04)
 2. AGENT-PLATFORM-01 — Agent Registry Foundation (COMPLETE and LOCKED — 2026-07-04)
+3. AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell (PAUSED — 2026-07-05)
 
 ---
 
@@ -35734,3 +35832,114 @@ Create the first implementation foundation for ainow.biz agents by defining a ty
 ---
 
 **Reference:** See TASKS.md -> AGENT-PLATFORM-01.
+
+---
+
+### AGENT-PLATFORM-02: Static RPG Office/Town Dashboard Shell
+
+**Task ID:** AGENT-PLATFORM-02
+**Family:** AGENT PLATFORM / AINOW.BIZ MULTI-AGENT
+**Family status:** ACTIVE
+**Priority:** Highest
+**Status:** PAUSED
+**Paused:** 2026-07-05
+**Pause reason:** Execution temporarily deferred while AGENT-HARNESS-05C9 is completed. AGENT-PLATFORM-02 will resume immediately afterwards.
+**Nature:** IMPLEMENTATION — static RPG office/town dashboard shell consuming agent registry
+**Risk:** Low (static UI shell, no runtime orchestration, consumes existing registry)
+**Registered:** 2026-07-05
+
+#### Dependencies
+
+- AGENT-PLATFORM-00 — COMPLETE and LOCKED (ainow.biz Multi-Agent Platform Master Plan)
+- AGENT-PLATFORM-01 — COMPLETE and LOCKED (Agent Registry Foundation)
+
+#### Problem Statement
+
+The agent registry foundation exists (AGENT-PLATFORM-01) but there is no visible ainow.biz platform shell. Users cannot see or navigate the multi-agent platform. The master plan (AGENT-PLATFORM-00) defines an RPG office/town dashboard as the navigation UX metaphor. A static shell consuming the registry is the first visible platform surface.
+
+#### Objective
+
+Create the first visible ainow.biz platform shell: a static RPG office/town dashboard that consumes the Agent Registry and renders Builder Agent as active plus coming-soon placeholder agents.
+
+#### Scope
+
+- Build a static dashboard shell using the existing frontend architecture and routing conventions.
+- Consume the static agent registry from `frontend/lib/agent-platform/agent-registry.ts`.
+- Render four agents from registry data:
+  - Builder Agent — active/enabled
+  - Chief of Staff Agent — coming soon/disabled
+  - Product Strategy Agent — coming soon/disabled
+  - Technology Advisor Agent — coming soon/disabled
+- Builder Agent has an active affordance that can navigate toward the existing aiSandBox/Builder workspace route if an existing route is confirmed.
+- Coming-soon agents show disabled/coming-soon state without runtime functionality.
+- Static positioning/layout only. No walking character.
+- Static visual style only. No sprite animation required.
+- Keep UI responsive and avoid overlap/clipping.
+- All user-facing text uses translation keys (multilingual-first).
+- Update translation files together:
+  - `frontend/messages/en.json`
+  - `frontend/messages/zh-TW.json`
+  - `frontend/messages/zh-CN.json`
+- Use the existing translation hook/pattern.
+- Normal UI icons use Heroicons v2 Outline only unless explicitly approved otherwise.
+- Add or update focused tests where practical.
+
+#### Non-Goals
+
+- No walking character.
+- No sprite animation.
+- No real-time agent activity.
+- No real multi-agent runtime orchestration.
+- No work objects, tickets, decisions, referrals, or collaboration runtime.
+- No knowledge ingestion.
+- No Gmail/Slack/Notion integrations.
+- No billing/Stripe/payment.
+- No Agent Harness behavior changes.
+- No Agent Harness activation.
+- Do not register AGENT-PLATFORM-03, AGENT-COLLAB-00, AGENT-KNOWLEDGE-00, AGENT-SKILLS-00, BILLING-READY-00, or AGENT-HARNESS-05C9.
+
+#### UX/UI Advisory
+
+- UX/UI advisory skills (impeccable, Emil Kowalski design engineering) are advisory-only.
+- Advisory skills must not override CLAUDE.md, TASKS.md, registered scope, architecture, or tests.
+- Keep the product serious enough for business use; RPG style is a navigation metaphor, not a game implementation.
+
+#### Acceptance Criteria
+
+- [ ] AGENT-PLATFORM-02 registered in TASKS.md with ACTIVE status.
+- [ ] AGENT-PLATFORM-02 mirrored in TASKS_BACKLOG_FULL.md with matching content.
+- [ ] Dependencies on AGENT-PLATFORM-00 and AGENT-PLATFORM-01 COMPLETE and LOCKED recorded.
+- [ ] Scope clearly limited to static RPG office/town dashboard shell.
+- [ ] UX/UI multilingual-first requirements recorded.
+- [ ] UX/UI advisory skills recorded as advisory-only.
+- [ ] Non-goals clearly recorded.
+- [ ] Implementation acceptance criteria listed for the future implementation pass.
+- [ ] No source/test/frontend/package/env/Docker/schema/database files changed.
+- [ ] No runtime/provider/database/browser/Docker commands executed.
+- [ ] No subagents used.
+
+#### Implementation Acceptance Criteria (for implementation pass)
+
+- [ ] Dashboard shell consumes agent registry instead of hardcoding agent data.
+- [ ] Builder Agent renders as active/enabled.
+- [ ] Chief of Staff, Product Strategy, and Technology Advisor render as coming-soon/disabled.
+- [ ] User-facing dashboard text uses translation keys.
+- [ ] en.json, zh-TW.json, and zh-CN.json updated together for any new UI text.
+- [ ] Existing translation hook/pattern used.
+- [ ] Heroicons v2 Outline used for normal UI icons if icons are added.
+- [ ] Static RPG office/town visual style implemented without walking character or sprite animation.
+- [ ] Layout is responsive and avoids overlap/clipping on desktop, tablet, and mobile.
+- [ ] Builder Agent click/navigation behavior follows existing route conventions.
+- [ ] Coming-soon agents do not expose runtime functionality.
+- [ ] Focused tests or checks added where practical.
+- [ ] No runtime orchestration implemented.
+- [ ] No Agent Harness behavior changed.
+
+#### Next Recommended Tasks (proposed, not registered)
+
+- AGENT-PLATFORM-03 — Register aiSandBox as Builder Agent
+- AGENT-COLLAB-00 — Agent Referral and Collaboration Protocol Plan
+
+---
+
+**Reference:** See TASKS.md -> AGENT-PLATFORM-02.

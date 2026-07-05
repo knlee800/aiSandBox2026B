@@ -9,6 +9,8 @@ import type {
   AIAdapterToolUseRequestOptions,
 } from '../../ai-execution/adapters/adapter-tool-use.contracts';
 import { ToolDispatcher } from '../tools/tool-dispatcher';
+import { InMemoryHarnessAuditRecorder } from '../audit/harness-audit-recorder';
+import type { HarnessAuditEvent } from '../audit/harness-audit-events';
 
 function makeRequest(overrides?: Partial<AIExecutionRequest>): AIExecutionRequest {
   return {
@@ -851,5 +853,334 @@ describe('executeAgentHarnessLoop with pre-apply checkpoint', () => {
     expect(secondCallOpts!.toolResults).toHaveLength(1);
     expect(secondCallOpts!.toolResults![0].callId).toBe('call-w1');
     expect(secondCallOpts!.toolResults![0].success).toBe(true);
+  });
+});
+
+describe('executeAgentHarnessLoop audit events', () => {
+  function getEventTypes(recorder: InMemoryHarnessAuditRecorder): string[] {
+    return recorder.getEvents().map((e) => e.eventType);
+  }
+
+  it('works without recorder (no regression)', async () => {
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>().mockResolvedValue(
+      makeCompletedResult(),
+    );
+
+    const loopResult = await executeAgentHarnessLoop(makeOptions(executeFn));
+
+    expect(loopResult.terminationReason).toBe('completed');
+    expect(loopResult.iterationsUsed).toBe(1);
+  });
+
+  it('emits loop_started event', async () => {
+    const recorder = new InMemoryHarnessAuditRecorder();
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>().mockResolvedValue(
+      makeCompletedResult(),
+    );
+
+    await executeAgentHarnessLoop(makeOptions(executeFn, { recorder }));
+
+    const events = recorder.getEvents();
+    expect(events[0].eventType).toBe('harness.loop_started');
+    const startEvent = events[0] as Extract<HarnessAuditEvent, { eventType: 'harness.loop_started' }>;
+    expect(startEvent.maxToolIterations).toBe(3);
+    expect(startEvent.harnessVersion).toBe('v1');
+    expect(startEvent.sessionId).toBe('sess-1');
+  });
+
+  it('emits model_invocation_started and model_invocation_completed events', async () => {
+    const recorder = new InMemoryHarnessAuditRecorder();
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>().mockResolvedValue(
+      makeCompletedResult({ tokensUsed: 42, model: 'stub', provider: 'test-provider' }),
+    );
+
+    await executeAgentHarnessLoop(makeOptions(executeFn, { recorder }));
+
+    const types = getEventTypes(recorder);
+    expect(types).toContain('harness.model_invocation_started');
+    expect(types).toContain('harness.model_invocation_completed');
+
+    const completed = recorder.getEvents().find(
+      (e) => e.eventType === 'harness.model_invocation_completed',
+    ) as Extract<HarnessAuditEvent, { eventType: 'harness.model_invocation_completed' }>;
+    expect(completed.iteration).toBe(0);
+    expect(completed.model).toBe('stub');
+    expect(completed.tokensUsed).toBe(42);
+    expect(completed.cumulativeTokensUsed).toBe(42);
+    expect(completed.finishReason).toBe('completed');
+  });
+
+  it('emits model_invocation_failed event when executeFn throws', async () => {
+    const recorder = new InMemoryHarnessAuditRecorder();
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>().mockRejectedValue(
+      new Error('Provider API failed'),
+    );
+
+    await expect(
+      executeAgentHarnessLoop(makeOptions(executeFn, { recorder })),
+    ).rejects.toThrow('Provider API failed');
+
+    const failedEvent = recorder.getEvents().find(
+      (e) => e.eventType === 'harness.model_invocation_failed',
+    ) as Extract<HarnessAuditEvent, { eventType: 'harness.model_invocation_failed' }>;
+    expect(failedEvent).toBeDefined();
+    expect(failedEvent.iteration).toBe(0);
+    expect(failedEvent.errorMessage).toBe('Provider API failed');
+  });
+
+  it('emits tool_dispatch_started and tool_dispatch_completed events', async () => {
+    const recorder = new InMemoryHarnessAuditRecorder();
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('read_file', async () => ({ content: 'ok' }));
+
+    let callCount = 0;
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>(() => {
+      callCount++;
+      if (callCount === 1) return Promise.resolve(makeToolCallResult());
+      return Promise.resolve(makeCompletedResult());
+    });
+
+    await executeAgentHarnessLoop(makeOptions(executeFn, { dispatcher, recorder }));
+
+    const types = getEventTypes(recorder);
+    expect(types).toContain('harness.tool_dispatch_started');
+    expect(types).toContain('harness.tool_dispatch_completed');
+
+    const started = recorder.getEvents().find(
+      (e) => e.eventType === 'harness.tool_dispatch_started',
+    ) as Extract<HarnessAuditEvent, { eventType: 'harness.tool_dispatch_started' }>;
+    expect(started.callId).toBe('call-1');
+    expect(started.toolName).toBe('read_file');
+
+    const completed = recorder.getEvents().find(
+      (e) => e.eventType === 'harness.tool_dispatch_completed',
+    ) as Extract<HarnessAuditEvent, { eventType: 'harness.tool_dispatch_completed' }>;
+    expect(completed.callId).toBe('call-1');
+    expect(completed.toolName).toBe('read_file');
+    expect(completed.resultBytes).toBeGreaterThan(0);
+  });
+
+  it('emits tool_dispatch_failed with timeout error code', async () => {
+    const recorder = new InMemoryHarnessAuditRecorder();
+    const dispatcher = new ToolDispatcher({ toolTimeoutMs: 1 });
+    dispatcher.registerHandler('read_file', async () => {
+      await new Promise((r) => setTimeout(r, 100));
+      return { content: 'late' };
+    });
+
+    let callCount = 0;
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>(() => {
+      callCount++;
+      if (callCount === 1) return Promise.resolve(makeToolCallResult());
+      return Promise.resolve(makeCompletedResult());
+    });
+
+    await executeAgentHarnessLoop(makeOptions(executeFn, { dispatcher, recorder }));
+
+    const failedEvent = recorder.getEvents().find(
+      (e) => e.eventType === 'harness.tool_dispatch_failed',
+    ) as Extract<HarnessAuditEvent, { eventType: 'harness.tool_dispatch_failed' }>;
+    expect(failedEvent).toBeDefined();
+    expect(failedEvent.errorCode).toBe('TOOL_TIMEOUT');
+    expect(failedEvent.toolName).toBe('read_file');
+  });
+
+  it('emits tool_dispatch_failed with abort error code', async () => {
+    const recorder = new InMemoryHarnessAuditRecorder();
+    const abortController = new AbortController();
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('read_file', async () => {
+      abortController.abort();
+      return { content: 'data' };
+    });
+
+    let callCount = 0;
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>(() => {
+      callCount++;
+      if (callCount === 1) return Promise.resolve(makeToolCallResult({
+        toolCalls: [
+          { callId: 'c1', toolName: 'read_file', arguments: { path: 'a' }, providerKind: 'stub' },
+          { callId: 'c2', toolName: 'read_file', arguments: { path: 'b' }, providerKind: 'stub' },
+        ],
+      }));
+      return Promise.resolve(makeCompletedResult());
+    });
+
+    await executeAgentHarnessLoop(
+      makeOptions(executeFn, { dispatcher, recorder, signal: abortController.signal }),
+    );
+
+    const failedEvents = recorder.getEvents().filter(
+      (e) => e.eventType === 'harness.tool_dispatch_failed',
+    ) as Extract<HarnessAuditEvent, { eventType: 'harness.tool_dispatch_failed' }>[];
+    const abortEvent = failedEvents.find((e) => e.errorCode === 'ABORTED');
+    expect(abortEvent).toBeDefined();
+  });
+
+  it('emits tool_result_budget_exceeded event', async () => {
+    const recorder = new InMemoryHarnessAuditRecorder();
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('read_file', async () => ({ content: 'payload-data' }));
+
+    const firstResult = {
+      callId: 'call-1',
+      toolName: 'read_file',
+      success: true,
+      content: { content: 'payload-data' },
+      errorMessage: undefined,
+    };
+    const firstBytes = Buffer.byteLength(JSON.stringify(firstResult ?? {}), 'utf8');
+
+    let callCount = 0;
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>(() => {
+      callCount++;
+      if (callCount === 1) return Promise.resolve(makeToolCallResult({ tokensUsed: 3 }));
+      if (callCount === 2) return Promise.resolve(makeToolCallResult({
+        toolCalls: [{ callId: 'call-2', toolName: 'read_file', arguments: { path: 'b' }, providerKind: 'stub' }],
+        tokensUsed: 4,
+      }));
+      return Promise.resolve(makeCompletedResult({ tokensUsed: 5 }));
+    });
+
+    await executeAgentHarnessLoop(
+      makeOptions(executeFn, {
+        dispatcher,
+        recorder,
+        config: { maxToolIterations: 4, maxToolResultBytes: firstBytes + 1 },
+      }),
+    );
+
+    const budgetEvent = recorder.getEvents().find(
+      (e) => e.eventType === 'harness.tool_result_budget_exceeded',
+    ) as Extract<HarnessAuditEvent, { eventType: 'harness.tool_result_budget_exceeded' }>;
+    expect(budgetEvent).toBeDefined();
+    expect(budgetEvent.callId).toBe('call-2');
+    expect(budgetEvent.maxBytes).toBe(firstBytes + 1);
+    expect(budgetEvent.candidateBytes).toBeGreaterThan(0);
+  });
+
+  it('emits loop_completed event', async () => {
+    const recorder = new InMemoryHarnessAuditRecorder();
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>().mockResolvedValue(
+      makeCompletedResult(),
+    );
+
+    await executeAgentHarnessLoop(makeOptions(executeFn, { recorder }));
+
+    const completedEvent = recorder.getEvents().find(
+      (e) => e.eventType === 'harness.loop_completed',
+    ) as Extract<HarnessAuditEvent, { eventType: 'harness.loop_completed' }>;
+    expect(completedEvent).toBeDefined();
+    expect(completedEvent.terminationReason).toBe('completed');
+  });
+
+  it('emits loop_max_turns event', async () => {
+    const recorder = new InMemoryHarnessAuditRecorder();
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('read_file', async () => ({ content: 'data' }));
+
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>().mockResolvedValue(
+      makeToolCallResult(),
+    );
+
+    await executeAgentHarnessLoop(
+      makeOptions(executeFn, {
+        dispatcher,
+        recorder,
+        config: { maxToolIterations: 2, maxToolResultBytes: 262_144 },
+      }),
+    );
+
+    const maxTurnsEvent = recorder.getEvents().find(
+      (e) => e.eventType === 'harness.loop_max_turns',
+    ) as Extract<HarnessAuditEvent, { eventType: 'harness.loop_max_turns' }>;
+    expect(maxTurnsEvent).toBeDefined();
+    expect(maxTurnsEvent.terminationReason).toBe('max_iterations');
+    expect(maxTurnsEvent.maxToolIterations).toBe(2);
+  });
+
+  it('emits loop_aborted event', async () => {
+    const recorder = new InMemoryHarnessAuditRecorder();
+    const abortController = new AbortController();
+    abortController.abort();
+
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>();
+
+    await executeAgentHarnessLoop(
+      makeOptions(executeFn, { recorder, signal: abortController.signal }),
+    );
+
+    const abortedEvent = recorder.getEvents().find(
+      (e) => e.eventType === 'harness.loop_aborted',
+    ) as Extract<HarnessAuditEvent, { eventType: 'harness.loop_aborted' }>;
+    expect(abortedEvent).toBeDefined();
+    expect(abortedEvent.terminationReason).toBe('aborted');
+  });
+
+  it('emits loop_no_dispatcher event', async () => {
+    const recorder = new InMemoryHarnessAuditRecorder();
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>().mockResolvedValue(
+      makeToolCallResult(),
+    );
+
+    await executeAgentHarnessLoop(makeOptions(executeFn, { recorder }));
+
+    const noDispatcherEvent = recorder.getEvents().find(
+      (e) => e.eventType === 'harness.loop_no_dispatcher',
+    ) as Extract<HarnessAuditEvent, { eventType: 'harness.loop_no_dispatcher' }>;
+    expect(noDispatcherEvent).toBeDefined();
+    expect(noDispatcherEvent.terminationReason).toBe('no_dispatcher');
+  });
+
+  it('events do not contain content, output, arguments, prompt, or full result fields', async () => {
+    const recorder = new InMemoryHarnessAuditRecorder();
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('read_file', async () => ({ content: 'secret file data' }));
+
+    let callCount = 0;
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>(() => {
+      callCount++;
+      if (callCount === 1) return Promise.resolve(makeToolCallResult());
+      return Promise.resolve(makeCompletedResult());
+    });
+
+    await executeAgentHarnessLoop(makeOptions(executeFn, { dispatcher, recorder }));
+
+    const allEvents = recorder.getEvents();
+    for (const event of allEvents) {
+      const serialized = JSON.stringify(event);
+      expect(serialized).not.toContain('secret file data');
+      expect(serialized).not.toContain('test prompt');
+      expect(serialized).not.toContain('README.md');
+
+      const eventObj = event as unknown as Record<string, unknown>;
+      expect(eventObj).not.toHaveProperty('content');
+      expect(eventObj).not.toHaveProperty('output');
+      expect(eventObj).not.toHaveProperty('arguments');
+      expect(eventObj).not.toHaveProperty('prompt');
+      expect(eventObj).not.toHaveProperty('result');
+    }
+  });
+
+  it('durationMs is non-negative in all events that have it', async () => {
+    const recorder = new InMemoryHarnessAuditRecorder();
+    const dispatcher = new ToolDispatcher();
+    dispatcher.registerHandler('read_file', async () => ({ content: 'ok' }));
+
+    let callCount = 0;
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>(() => {
+      callCount++;
+      if (callCount === 1) return Promise.resolve(makeToolCallResult());
+      return Promise.resolve(makeCompletedResult());
+    });
+
+    await executeAgentHarnessLoop(makeOptions(executeFn, { dispatcher, recorder }));
+
+    const allEvents = recorder.getEvents();
+    for (const event of allEvents) {
+      if ('durationMs' in event) {
+        expect((event as { durationMs: number }).durationMs).toBeGreaterThanOrEqual(0);
+      }
+    }
   });
 });

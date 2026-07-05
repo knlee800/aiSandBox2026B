@@ -3,6 +3,7 @@ import {
   buildExecutionPromptParts,
 } from './worker.processor';
 import { DEFAULT_AGENT_HARNESS_CONFIG_V1 } from '../agent-harness/config/agent-harness.config';
+import { InMemoryHarnessAuditRecorder } from '../agent-harness/audit';
 
 describe('buildAIExecutionRequest', () => {
   it('passes requested model from job payload to AIExecutionService request', () => {
@@ -689,5 +690,89 @@ describe('Agent Harness 03A: read_file/list_files handler registration', () => {
     expect(workerSource).toContain('ApiGatewayHttpClient');
     expect(workerSource).not.toContain('CONTAINER_MANAGER_URL');
     expect(workerSource).not.toContain('container-manager-http');
+  });
+});
+
+describe('Agent Harness 05C9: structured audit events wiring', () => {
+  function getWorkerSource(): string {
+    return require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+  }
+
+  it('existing route_evaluated behavior remains unchanged', () => {
+    const workerSource = getWorkerSource();
+    expect(workerSource).toContain("event: 'agent_harness.route_evaluated'");
+    expect(workerSource).toContain('enableToolLoop: DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop');
+    expect(workerSource).toContain("selectedPath: useHarness ? 'harness' : 'plain'");
+  });
+
+  it('plain execution path unchanged — no audit recorder on plain path', () => {
+    const workerSource = getWorkerSource();
+    const plainPathIndex = workerSource.lastIndexOf('this.aiExecutionService.execute(executionRequest)');
+    const afterPlainPath = workerSource.substring(plainPathIndex);
+    expect(afterPlainPath).not.toContain('auditRecorder');
+    expect(afterPlainPath).not.toContain('InMemoryHarnessAuditRecorder');
+  });
+
+  it('enableToolLoop false path unchanged — still prevents harness path', () => {
+    expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop).toBe(false);
+  });
+
+  it('auditEventsEnabled defaults to true in DEFAULT_AGENT_HARNESS_CONFIG_V1', () => {
+    expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.auditEventsEnabled).toBe(true);
+  });
+
+  it('WorkerProcessor imports InMemoryHarnessAuditRecorder from audit barrel', () => {
+    const workerSource = getWorkerSource();
+    expect(workerSource).toContain('InMemoryHarnessAuditRecorder');
+    expect(workerSource).toContain("from '../agent-harness/audit'");
+  });
+
+  it('WorkerProcessor creates auditRecorder conditionally on auditEventsEnabled', () => {
+    const workerSource = getWorkerSource();
+    expect(workerSource).toContain('DEFAULT_AGENT_HARNESS_CONFIG_V1.auditEventsEnabled');
+    expect(workerSource).toContain('new InMemoryHarnessAuditRecorder()');
+
+    const auditGateIndex = workerSource.indexOf('auditEventsEnabled');
+    const recorderCreateIndex = workerSource.indexOf('new InMemoryHarnessAuditRecorder()', auditGateIndex);
+    expect(recorderCreateIndex).toBeGreaterThan(auditGateIndex);
+  });
+
+  it('WorkerProcessor passes recorder into executeAgentHarnessLoop options', () => {
+    const workerSource = getWorkerSource();
+    expect(workerSource).toContain('recorder: auditRecorder');
+  });
+
+  it('WorkerProcessor logs audit events after loop completes', () => {
+    const workerSource = getWorkerSource();
+    expect(workerSource).toContain('if (auditRecorder)');
+    expect(workerSource).toContain('auditRecorder.getEvents()');
+    expect(workerSource).toContain('JSON.stringify(event)');
+  });
+
+  it('audit recorder creation is inside the double-gated harness branch', () => {
+    const workerSource = getWorkerSource();
+    const harnessGateIndex = workerSource.indexOf("harnessVersion === 'v1'");
+    const auditRecorderIndex = workerSource.indexOf('new InMemoryHarnessAuditRecorder()');
+    expect(auditRecorderIndex).toBeGreaterThan(harnessGateIndex);
+  });
+
+  it('audit event logging does not contain sensitive fields', () => {
+    const workerSource = getWorkerSource();
+    const auditLogSection = workerSource.substring(
+      workerSource.indexOf('if (auditRecorder)'),
+      workerSource.indexOf('if (auditRecorder)') + 300,
+    );
+    expect(auditLogSection).not.toContain('prompt');
+    expect(auditLogSection).not.toContain('workspaceContext');
+    expect(auditLogSection).not.toContain('apiKey');
+  });
+
+  it('InMemoryHarnessAuditRecorder is importable from audit barrel', () => {
+    const recorder = new InMemoryHarnessAuditRecorder();
+    expect(recorder).toBeDefined();
+    expect(recorder.getEvents()).toEqual([]);
   });
 });

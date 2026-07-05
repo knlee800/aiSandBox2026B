@@ -26,6 +26,7 @@ import type { WorkspaceContext } from '../queue/job.types';
 import { DEFAULT_AGENT_HARNESS_CONFIG_V1 } from '../agent-harness/config/agent-harness.config';
 import { executeAgentHarnessLoop } from '../agent-harness/orchestrator/agent-harness-loop';
 import { ToolDispatcher } from '../agent-harness/tools/tool-dispatcher';
+import { InMemoryHarnessAuditRecorder } from '../agent-harness/audit';
 import {
   createReadFileHandler,
   createListFilesHandler,
@@ -820,6 +821,10 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                       }),
                     );
                   }
+                  const auditRecorder = DEFAULT_AGENT_HARNESS_CONFIG_V1.auditEventsEnabled
+                    ? new InMemoryHarnessAuditRecorder()
+                    : undefined;
+
                   let loopOptions: Parameters<typeof executeAgentHarnessLoop>[0] = {
                     executeFn: (req, opts) => adapter.executeWithTools!(req, opts),
                     request: executionRequest,
@@ -829,6 +834,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                     },
                     signal: abortController.signal,
                     dispatcher,
+                    recorder: auditRecorder,
                   };
 
                   if (DEFAULT_AGENT_HARNESS_CONFIG_V1.enablePreApplyCheckpoint) {
@@ -848,6 +854,12 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                   aiResult = loopResult.result;
                   if (loopResult.preApplyCheckpointHash) {
                     harnessPreApplyCheckpointHash = loopResult.preApplyCheckpointHash;
+                  }
+
+                  if (auditRecorder) {
+                    for (const event of auditRecorder.getEvents()) {
+                      this.logger.log(JSON.stringify(event));
+                    }
                   }
                 } else {
                   aiResult = await this.aiExecutionService.execute(executionRequest);
