@@ -402,6 +402,28 @@
     "session": "工作階段",
     "loadingOlderMessages": "載入較舊的訊息..."
   },
+  "agents": {
+    "builder": {
+      "name": "Builder Agent",
+      "role": "AI 軟體建置代理",
+      "description": "在隔離工作區中進行軟體建置，支援檔案操作、預覽與檢查點。"
+    },
+    "chiefOfStaff": {
+      "name": "Chief of Staff Agent",
+      "role": "日常營運助理",
+      "description": "即將推出的佔位代理，支援日常營運流程、協調與審批。"
+    },
+    "productStrategy": {
+      "name": "Product Strategy Agent",
+      "role": "產品策略助理",
+      "description": "即將推出的佔位代理，支援路線規劃、市場分析與策略決策。"
+    },
+    "technologyAdvisor": {
+      "name": "Technology Advisor Agent",
+      "role": "技術顧問",
+      "description": "即將推出的佔位代理，支援架構審查、技術選型與技術建議。"
+    }
+  },
   "languages": {
     "en": "English",
     "zh-TW": "繁體中文",

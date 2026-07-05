@@ -25047,12 +25047,13 @@ Register AGENT-HARNESS-05C9 — Structured Harness Audit Events, registration on
 
 ## AGENT PLATFORM / AINOW.BIZ MULTI-AGENT
 
-**Family status:** ACTIVE — AGENT-PLATFORM-00 COMPLETE and LOCKED
+**Family status:** ACTIVE — AGENT-PLATFORM-00 COMPLETE and LOCKED, AGENT-PLATFORM-01 COMPLETE and LOCKED
 
-**Current stage:** AGENT-PLATFORM-01 PENDING — Agent Registry Foundation (next recommended, not yet registered)
+**Current stage:** AGENT-PLATFORM-01 COMPLETE and LOCKED — Agent Registry Foundation
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 — ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED — 2026-07-04)
+2. AGENT-PLATFORM-01 — Agent Registry Foundation (COMPLETE and LOCKED — 2026-07-04)
 
 **Completed foundations (prerequisites):**
 - AGENT HARNESS family foundations COMPLETE and LOCKED — Agent Harness v1 contracts, tool protocol, model adapters, tool dispatcher, orchestrator loop, execution-bound hardening (through AGENT-HARNESS-05C8)
@@ -25143,3 +25144,96 @@ Create the master planning document for ainow.biz as a multi-agent platform:
 ---
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-00.
+
+---
+
+#### AGENT-PLATFORM-01: Agent Registry Foundation
+
+**Status:** COMPLETE and LOCKED
+**Completed:** 2026-07-04
+**Checkpoint:** docs/AGENT-PLATFORM-01-CHECKPOINT.md
+**Task ID:** AGENT-PLATFORM-01
+**Family:** AGENT PLATFORM / AINOW.BIZ MULTI-AGENT
+**Priority:** Highest
+**Nature:** IMPLEMENTATION — typed static agent registry and initial agent manifests
+**Risk:** Low (no runtime orchestration, no frontend UI, focused type/registry work)
+**Registered:** 2026-07-04
+
+#### Dependencies
+
+- AGENT-PLATFORM-00 — COMPLETE and LOCKED (ainow.biz Multi-Agent Platform Master Plan)
+
+#### Problem Statement
+
+There is no typed agent registry in the codebase. The master plan (AGENT-PLATFORM-00) defines the concept and manifest fields, but no code exists to enumerate agents, their capabilities, permissions, or status. Future features (dashboard, referral, collaboration, billing) all depend on a canonical registry as their foundation.
+
+#### Objective
+
+Create the first implementation foundation for ainow.biz agents by defining a typed static agent registry and initial agent manifest set.
+
+#### Scope
+
+- Define `AgentManifest` TypeScript type.
+- Define supporting types for: model profile, tool permissions, knowledge scopes, skills, referral rules, approval rules.
+- Create static registry entries for:
+  - Builder Agent — active / enabled / real aiSandBox
+  - Chief of Staff Agent — coming_soon / disabled placeholder
+  - Product Strategy Agent — coming_soon / disabled placeholder
+  - Technology Advisor Agent — coming_soon / disabled placeholder
+- Add registry access helpers/service:
+  - list all agents
+  - get agent by id
+  - list enabled agents
+  - list by status
+- Ensure all user-facing text uses translation keys, not hardcoded display strings.
+- Update translation files if new user-facing keys are introduced:
+  - `frontend/messages/en.json`
+  - `frontend/messages/zh-TW.json`
+  - `frontend/messages/zh-CN.json`
+- Add or update focused tests for registry behavior.
+
+#### Non-Goals
+
+- No RPG dashboard UI.
+- No walking character.
+- No real multi-agent runtime orchestration.
+- No work objects, tickets, decisions, referrals, or collaboration runtime.
+- No knowledge ingestion.
+- No Gmail/Slack/Notion integrations.
+- No billing/Stripe/payment.
+- No Agent Harness activation.
+- Do not register AGENT-PLATFORM-02, AGENT-PLATFORM-03, AGENT-COLLAB-00, AGENT-KNOWLEDGE-00, AGENT-SKILLS-00, BILLING-READY-00, or AGENT-HARNESS-05C9.
+
+#### Acceptance Criteria
+
+- [x] AGENT-PLATFORM-01 registered in TASKS.md with ACTIVE status.
+- [x] AGENT-PLATFORM-01 mirrored in TASKS_BACKLOG_FULL.md with matching content.
+- [x] Dependency on AGENT-PLATFORM-00 COMPLETE and LOCKED recorded.
+- [x] Scope clearly limited to agent registry foundation.
+- [x] Non-goals clearly recorded.
+- [x] No source/test/frontend/package/env/Docker/schema/database files changed (registration step).
+- [x] No runtime/provider/database/browser/Docker commands executed.
+- [x] No subagents used.
+
+#### Implementation Acceptance Criteria (for implementation pass)
+
+- [x] Agent manifest types are defined using existing project TypeScript conventions.
+- [x] Static registry contains Builder Agent, Chief of Staff Agent, Product Strategy Agent, and Technology Advisor Agent.
+- [x] Builder Agent is active/enabled.
+- [x] Placeholder agents are coming_soon/disabled.
+- [x] Registry helpers support list, get by id, list enabled, and list by status.
+- [x] User-facing agent text is represented by translation keys.
+- [x] Translation files are updated if new user-facing keys are introduced.
+- [x] Focused tests cover registry helpers and manifest invariants.
+- [x] No dashboard UI implemented in this task.
+- [x] No runtime orchestration implemented in this task.
+
+#### Next Recommended Tasks (proposed, not registered)
+
+- AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell
+- AGENT-PLATFORM-03 — Register aiSandBox as Builder Agent
+- AGENT-COLLAB-00 — Agent Referral and Collaboration Protocol Plan
+
+---
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-01.

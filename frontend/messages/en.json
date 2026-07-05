@@ -402,6 +402,28 @@
     "session": "Session",
     "loadingOlderMessages": "Loading older messages..."
   },
+  "agents": {
+    "builder": {
+      "name": "Builder Agent",
+      "role": "AI Software Builder",
+      "description": "Builds software inside isolated workspaces with file actions, preview, and checkpoints."
+    },
+    "chiefOfStaff": {
+      "name": "Chief of Staff Agent",
+      "role": "Daily Operations Assistant",
+      "description": "Coming soon placeholder for operations workflows, coordination, and approvals."
+    },
+    "productStrategy": {
+      "name": "Product Strategy Agent",
+      "role": "Product Strategy Assistant",
+      "description": "Coming soon placeholder for roadmap planning, market analysis, and strategic decisions."
+    },
+    "technologyAdvisor": {
+      "name": "Technology Advisor Agent",
+      "role": "Technology Advisor",
+      "description": "Coming soon placeholder for architecture reviews, stack decisions, and technical guidance."
+    }
+  },
   "languages": {
     "en": "English",
     "zh-TW": "繁體中文",

@@ -402,6 +402,28 @@
     "session": "会话",
     "loadingOlderMessages": "加载较旧的消息..."
   },
+  "agents": {
+    "builder": {
+      "name": "Builder Agent",
+      "role": "AI 软件构建代理",
+      "description": "在隔离工作区中进行软件构建，支持文件操作、预览与检查点。"
+    },
+    "chiefOfStaff": {
+      "name": "Chief of Staff Agent",
+      "role": "日常运营助手",
+      "description": "即将推出的占位代理，支持日常运营流程、协作与审批。"
+    },
+    "productStrategy": {
+      "name": "Product Strategy Agent",
+      "role": "产品策略助手",
+      "description": "即将推出的占位代理，支持路线规划、市场分析与策略决策。"
+    },
+    "technologyAdvisor": {
+      "name": "Technology Advisor Agent",
+      "role": "技术顾问",
+      "description": "即将推出的占位代理，支持架构评审、技术选型与技术建议。"
+    }
+  },
   "languages": {
     "en": "English",
     "zh-TW": "繁體中文",
