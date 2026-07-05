@@ -35645,14 +35645,14 @@ Resume AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell.
 
 ## AGENT PLATFORM / AINOW.BIZ MULTI-AGENT
 
-**Family status:** ACTIVE — AGENT-PLATFORM-00 COMPLETE and LOCKED, AGENT-PLATFORM-01 COMPLETE and LOCKED, AGENT-PLATFORM-02 PAUSED
+**Family status:** ACTIVE — AGENT-PLATFORM-00 COMPLETE and LOCKED, AGENT-PLATFORM-01 COMPLETE and LOCKED, AGENT-PLATFORM-02 ACTIVE
 
-**Current stage:** AGENT-PLATFORM-02 PAUSED — Static RPG Office/Town Dashboard Shell (AGENT-HARNESS-05C9 now COMPLETE and LOCKED; resume AGENT-PLATFORM-02 next)
+**Current stage:** AGENT-PLATFORM-02 ACTIVE — Static RPG Office/Town Dashboard Shell (02A complete 2026-07-06; 02B pending)
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 — ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED — 2026-07-04)
 2. AGENT-PLATFORM-01 — Agent Registry Foundation (COMPLETE and LOCKED — 2026-07-04)
-3. AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell (PAUSED — 2026-07-05)
+3. AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell (ACTIVE — resumed 2026-07-06)
 
 ---
 
@@ -35841,9 +35841,11 @@ Create the first implementation foundation for ainow.biz agents by defining a ty
 **Family:** AGENT PLATFORM / AINOW.BIZ MULTI-AGENT
 **Family status:** ACTIVE
 **Priority:** Highest
-**Status:** PAUSED
-**Paused:** 2026-07-05
-**Pause reason:** Execution temporarily deferred while AGENT-HARNESS-05C9 is completed. AGENT-PLATFORM-02 will resume immediately afterwards.
+**Status:** ACTIVE
+**Resumed:** 2026-07-06
+**Resume reason:** AGENT-HARNESS-05C9 is now COMPLETE and LOCKED.
+**Phase 1 (02A) complete:** 2026-07-06 — Checkpoint: docs/AGENT-PLATFORM-02A-CHECKPOINT.md
+**Next step:** AGENT-PLATFORM-02B — Dashboard Navigation, Interactions, and Polish
 **Nature:** IMPLEMENTATION — static RPG office/town dashboard shell consuming agent registry
 **Risk:** Low (static UI shell, no runtime orchestration, consumes existing registry)
 **Registered:** 2026-07-05
@@ -35920,23 +35922,29 @@ Create the first visible ainow.biz platform shell: a static RPG office/town dash
 
 #### Implementation Acceptance Criteria (for implementation pass)
 
-- [ ] Dashboard shell consumes agent registry instead of hardcoding agent data.
-- [ ] Builder Agent renders as active/enabled.
-- [ ] Chief of Staff, Product Strategy, and Technology Advisor render as coming-soon/disabled.
-- [ ] User-facing dashboard text uses translation keys.
-- [ ] en.json, zh-TW.json, and zh-CN.json updated together for any new UI text.
-- [ ] Existing translation hook/pattern used.
-- [ ] Heroicons v2 Outline used for normal UI icons if icons are added.
-- [ ] Static RPG office/town visual style implemented without walking character or sprite animation.
-- [ ] Layout is responsive and avoids overlap/clipping on desktop, tablet, and mobile.
-- [ ] Builder Agent click/navigation behavior follows existing route conventions.
-- [ ] Coming-soon agents do not expose runtime functionality.
-- [ ] Focused tests or checks added where practical.
-- [ ] No runtime orchestration implemented.
-- [ ] No Agent Harness behavior changed.
+- [x] Dashboard shell consumes agent registry instead of hardcoding agent data. *(02A — DONE)*
+- [x] Builder Agent renders as active/enabled. *(02A — DONE)*
+- [x] Chief of Staff, Product Strategy, and Technology Advisor render as coming-soon/disabled. *(02A — DONE)*
+- [x] User-facing dashboard text uses translation keys. *(02A — DONE)*
+- [x] en.json, zh-TW.json, and zh-CN.json updated together for any new UI text. *(02A — DONE)*
+- [x] Existing translation hook/pattern used. *(02A — DONE)*
+- [x] Heroicons v2 Outline used for normal UI icons if icons are added. *(02A — DONE)*
+- [x] Static RPG office/town visual style implemented without walking character or sprite animation. *(02A — DONE)*
+- [x] Layout is responsive and avoids overlap/clipping on desktop, tablet, and mobile. *(02A — DONE)*
+- [ ] Builder Agent click/navigation behavior follows existing route conventions. *(02B — PENDING)*
+- [x] Coming-soon agents do not expose runtime functionality. *(02A — DONE)*
+- [x] Focused tests or checks added where practical. *(02A — DONE)*
+- [x] No runtime orchestration implemented. *(02A — DONE)*
+- [x] No Agent Harness behavior changed. *(02A — DONE)*
+
+#### Phase Progress
+
+- **02A — Static Platform Dashboard Shell:** COMPLETE (2026-07-06) — Checkpoint: docs/AGENT-PLATFORM-02A-CHECKPOINT.md
+- **02B — Dashboard Navigation, Interactions, and Polish:** PENDING (not yet registered)
 
 #### Next Recommended Tasks (proposed, not registered)
 
+- AGENT-PLATFORM-02B — Dashboard Navigation, Interactions, and Polish
 - AGENT-PLATFORM-03 — Register aiSandBox as Builder Agent
 - AGENT-COLLAB-00 — Agent Referral and Collaboration Protocol Plan
 

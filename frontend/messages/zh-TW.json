@@ -424,6 +424,13 @@
       "description": "即將推出的佔位代理，支援架構審查、技術選型與技術建議。"
     }
   },
+  "platform": {
+    "title": "指揮中心",
+    "subtitle": "一覽您的 AI 代理團隊",
+    "agentStationActive": "運作中",
+    "agentStationComingSoon": "即將推出",
+    "agentStationDisabled": "離線"
+  },
   "languages": {
     "en": "English",
     "zh-TW": "繁體中文",

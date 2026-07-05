@@ -424,6 +424,13 @@
       "description": "Coming soon placeholder for architecture reviews, stack decisions, and technical guidance."
     }
   },
+  "platform": {
+    "title": "Command Center",
+    "subtitle": "Your AI agent team at a glance",
+    "agentStationActive": "Active",
+    "agentStationComingSoon": "Coming Soon",
+    "agentStationDisabled": "Offline"
+  },
   "languages": {
     "en": "English",
     "zh-TW": "繁體中文",
