@@ -36168,3 +36168,153 @@ AGENT-COLLAB-00 — Agent Referral and Collaboration Protocol Plan
 ---
 
 **Reference:** See TASKS.md -> AGENT-PLATFORM-03.
+
+---
+
+### AGENT-KNOWLEDGE-00: Common Knowledge Base Architecture Plan
+
+**Task ID:** AGENT-KNOWLEDGE-00
+**Family:** AGENT KNOWLEDGE / COMMON KNOWLEDGE BASE
+**Family status:** COMPLETE and LOCKED
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Completed:** 2026-07-06
+**Registered:** 2026-07-06
+**Nature:** PLANNING/GOVERNANCE — common knowledge base architecture planning
+**Risk:** Low (planning/governance only, no implementation code)
+**Roadmap position:** #4 — after AGENT-PLATFORM-03, before AGENT-COLLAB-00
+
+#### Dependencies
+
+- ROADMAP-00 — docs/AINOW-EXECUTION-ROADMAP.md created (ACTIVE governance document)
+- AGENT-PLATFORM-00 — COMPLETE and LOCKED (ainow.biz Multi-Agent Platform Master Plan)
+- AGENT-PLATFORM-01 — COMPLETE and LOCKED (Agent Registry Foundation)
+- AGENT-PLATFORM-03 — COMPLETE and LOCKED (Builder Agent Route Integration Review)
+- AGENT-HARNESS-05C9 — COMPLETE and LOCKED (Structured Harness Audit Events)
+
+#### Purpose
+
+Create the architecture plan for the common knowledge base layer that will give all future agents shared organizational context while preserving per-agent specialist knowledge scopes, privacy, access control, source traceability, and token efficiency.
+
+#### Scope
+
+- Planning/governance only.
+- Define common knowledge base architecture.
+- Define shared vs specialist knowledge scopes.
+- Define source types:
+  - company monthly reports
+  - three-year goals
+  - strategy documents
+  - policies
+  - meeting summaries
+  - uploaded markdown/text/PDF documents
+  - future connected sources
+- Define ingestion pipeline:
+  - source intake
+  - format detection
+  - markdown normalization
+  - summary extraction
+  - key fact extraction
+  - source traceability
+  - refresh policy
+- Define agent consumption model:
+  - agents read summaries/key facts by default
+  - raw/full content access is controlled separately
+  - access is manifest-scoped
+- Define privacy/access controls:
+  - tenant/organization isolation
+  - knowledge scope access
+  - raw/full content permission
+  - source traceability
+  - retention/deletion policy
+  - no cross-scope leakage
+- Define scheduling concept:
+  - manual upload initially
+  - weekly refresh later
+  - incremental processing
+- Define relationship to:
+  - Agent Registry
+  - Agent Collaboration
+  - Agent Harness
+  - Billing/credits
+  - future integrations
+- Define proposed follow-up implementation tasks.
+- No database schema implementation in this task.
+- No ingestion runtime implementation in this task.
+
+#### Keith's Original Knowledge Architecture Idea
+
+- There should be a common company knowledge layer.
+- Sources may include company monthly reports, three-year goals, strategy documents, policies, and meeting summaries.
+- Sources should be normalized to Markdown.
+- Agents should usually consume extracted summaries/key facts rather than raw documents to reduce token cost.
+- Knowledge refresh should eventually support scheduled weekly scans/updates.
+- The shared knowledge base ensures all agents understand company direction consistently.
+- Each agent may also have private/specialist knowledge scopes.
+
+#### UX/UI Requirements (for future implementation slices)
+
+- The app is multilingual-first.
+- Do not add hardcoded English user-facing UI text.
+- Update locale files together for any future UI:
+  - `frontend/messages/en.json`
+  - `frontend/messages/zh-TW.json`
+  - `frontend/messages/zh-CN.json`
+- Use existing translation hook/pattern.
+- Normal UI icons must use Heroicons v2 Outline only unless explicitly approved otherwise.
+- UX/UI advisory skills are advisory-only.
+
+#### Non-Goals
+
+- Do not implement ingestion runtime.
+- Do not implement database schema.
+- Do not implement vector search.
+- Do not implement embeddings.
+- Do not implement external integrations.
+- Do not implement Notion/Slack/Gmail/Drive connectors.
+- Do not implement agent collaboration runtime.
+- Do not implement billing.
+- Do not modify Agent Harness behavior.
+- Do not activate Agent Harness.
+- Do not modify frontend UI.
+- Do not register AGENT-COLLAB-00, AGENT-SKILLS-00, BILLING-READY-00, or any new Harness task.
+
+#### Registration Acceptance Criteria
+
+- [x] AGENT-KNOWLEDGE-00 registered in TASKS.md with ACTIVE status.
+- [x] AGENT-KNOWLEDGE-00 mirrored in TASKS_BACKLOG_FULL.md with matching content.
+- [x] Dependencies recorded.
+- [x] Roadmap ordering recorded: Knowledge before Collaboration before Billing.
+- [x] Scope clearly limited to common knowledge base architecture planning.
+- [x] Keith's original knowledge architecture idea recorded.
+- [x] Privacy/access-control requirements recorded.
+- [x] Non-goals clearly recorded.
+- [x] Planning acceptance criteria listed.
+- [x] No source/test/frontend/package/env/Docker/schema/database files changed.
+- [x] No runtime/provider/database/browser/Docker commands executed.
+- [x] No subagents used.
+
+#### Planning Acceptance Criteria (for future planning pass)
+
+- [x] Planning document created: docs/AGENT-KNOWLEDGE-00-KNOWLEDGE-ARCHITECTURE-PLAN.md (2026-07-06).
+- [x] Common knowledge base architecture defined.
+- [x] Shared vs specialist knowledge scopes defined.
+- [x] Source type model defined.
+- [x] Markdown normalization concept defined.
+- [x] Summary/key fact extraction concept defined.
+- [x] Agent consumption model defined.
+- [x] Raw/full content access model defined.
+- [x] Tenant/organization isolation model defined.
+- [x] Source traceability model defined.
+- [x] Retention/deletion policy requirements defined.
+- [x] Refresh/scheduling concept defined.
+- [x] Relationship to Agent Registry defined.
+- [x] Relationship to Agent Collaboration defined.
+- [x] Relationship to Agent Harness defined.
+- [x] Relationship to Billing/credits defined.
+- [x] Future implementation roadmap proposed.
+- [x] Explicit non-goals confirmed.
+
+---
+
+**Reference:** See TASKS.md -> AGENT-KNOWLEDGE-00.
