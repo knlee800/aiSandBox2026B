@@ -26190,10 +26190,135 @@ Add the hardening required before a true read-only Agent Harness canary can be p
 
 #### Next Recommended Task
 
-AGENT-HARNESS-06B — Read-Only Harness Canary Plan (not yet registered). After harness canary planning: BILLING-READY-00.
+AGENT-HARNESS-06B — Read-Only Harness Canary Plan — registered and ACTIVE.
 
 ---
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-06A.
+
+---
+
+#### AGENT-HARNESS-06B: Read-Only Harness Canary Plan
+
+**Status:** COMPLETE and LOCKED
+**Registered:** 2026-07-06
+**Completed:** 2026-07-06
+**Task ID:** AGENT-HARNESS-06B
+**Family:** AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
+**Priority:** High
+**Nature:** PLANNING/GOVERNANCE — canary plan document, no runtime activation
+**Risk:** Low (governance only, no runtime activation, no source changes)
+**Roadmap position:** #6B — child of AGENT-HARNESS-06, after AGENT-HARNESS-06A, before BILLING-READY-00
+**Parent:** AGENT-HARNESS-06 — Read-Only Harness Canary Readiness Review (COMPLETE and LOCKED)
+
+#### Dependencies
+
+- AGENT-HARNESS-06A — COMPLETE and LOCKED (Read-Only Canary Hardening Slice)
+- AGENT-HARNESS-06 — COMPLETE and LOCKED (Read-Only Harness Canary Readiness Review)
+- AGENT-HARNESS-05C9 — COMPLETE and LOCKED (Structured Harness Audit Events)
+
+#### Purpose
+
+Create a detailed, approval-gated plan for the first read-only Agent Harness canary. This task plans the canary only; it does not execute the canary or enable runtime flags.
+
+#### Scope (canary plan document)
+
+- Define exact canary objective.
+- Define canary environment requirements.
+- Define env flag requirements:
+  - AGENT_HARNESS_ENABLE_TOOL_LOOP=true only in the approved canary environment.
+  - AGENT_HARNESS_ENABLE_WRITE_TOOLS=false or absent.
+  - AGENT_HARNESS_ENABLE_VALIDATION_TOOLS=false or absent.
+  - Browser smoke remains disabled unless explicitly approved.
+- Define test session/workspace requirements.
+- Define allowed tools:
+  - read_file
+  - list_files
+- Define explicitly blocked tools:
+  - write_file
+  - delete_file
+  - run_validation
+  - browser_smoke
+  - search_workspace
+  - start_preview
+- Define exact canary request/prompt.
+- Define expected audit events.
+- Define success criteria.
+- Define failure criteria.
+- Define rollback procedure.
+- Define observability checklist.
+- Define manual approval steps.
+- Define who performs browser/runtime smoke if needed.
+- Define what must be captured in final canary report.
+- No runtime activation in this planning task.
+
+#### Explicit Non-Goals
+
+- Do not run canary.
+- Do not activate Agent Harness.
+- Do not set AGENT_HARNESS_ENABLE_TOOL_LOOP=true.
+- Do not modify env files.
+- Do not run Docker.
+- Do not run provider/API calls.
+- Do not run database mutations.
+- Do not run queues or live runtime commands.
+- Do not modify source code.
+- Do not modify tests.
+- Do not modify frontend.
+- Do not implement new tools.
+- Do not enable write/validation/browser tools.
+- Do not register BILLING-READY-00.
+- Do not register AGENT-SKILLS-00.
+
+#### Registration Acceptance Criteria
+
+- [x] AGENT-HARNESS-06B registered in TASKS.md with ACTIVE status.
+- [x] AGENT-HARNESS-06B mirrored in TASKS_BACKLOG_FULL.md with matching content.
+- [x] Parent/dependencies recorded.
+- [x] Scope clearly limited to canary planning.
+- [x] Runtime activation explicitly prohibited.
+- [x] Env flag requirements recorded.
+- [x] Allowed/blocked tool sets recorded.
+- [x] Observability/rollback/success/failure criteria required for planning pass.
+- [x] Planning acceptance criteria listed.
+- [x] ROADMAP-00 updated to identify AGENT-HARNESS-06B as ACTIVE.
+- [x] No source/test/frontend/package/env/Docker/schema/database files changed.
+- [x] No runtime/provider/database/browser/Docker commands executed.
+- [x] No subagents used.
+
+#### Planning Acceptance Criteria
+
+- [x] Canary plan document created.
+- [x] Canary objective defined.
+- [x] Canary environment requirements defined.
+- [x] Env flag requirements defined.
+- [x] Allowed read-only tool set defined.
+- [x] Blocked tool set defined.
+- [x] Test session/workspace requirements defined.
+- [x] Exact canary prompt/request defined.
+- [x] Expected audit events defined.
+- [x] Success criteria defined.
+- [x] Failure criteria defined.
+- [x] Rollback procedure defined.
+- [x] Observability checklist defined.
+- [x] Manual approval steps defined.
+- [x] Final report requirements defined.
+- [x] Runtime activation deferred to separate explicit execution task.
+
+#### Checkpoint
+
+**docs/AGENT-HARNESS-06B-CHECKPOINT.md** — created 2026-07-06.
+
+Runtime activation deferred. `AGENT_HARNESS_ENABLE_TOOL_LOOP=true` was not set. No canary execution occurred. No env files modified. No source/test/frontend/package/env/Docker/schema/database files changed. No runtime/provider/database/browser/Docker commands executed. No subagents used.
+
+#### Next Recommended Task
+
+Keith decision required. Two candidates — neither registered:
+1. AGENT-HARNESS-06C — Read-Only Harness Canary Execution
+2. BILLING-READY-00 — Billing, Plan, Credit, and Entitlement Audit
+
+---
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-06B.
 
 ---
