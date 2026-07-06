@@ -36970,3 +36970,157 @@ Keith decision required. Candidates (not registered):
 **Reference:** See TASKS.md -> BILLING-READY-00.
 
 ---
+
+### BILLING-READY-01A: Billing Implementation Architecture Review
+
+**Task ID:** BILLING-READY-01A
+**Family:** BILLING / COMMERCIAL READINESS
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Registered:** 2026-07-06
+**Completed:** 2026-07-06
+**Checkpoint:** docs/BILLING-READY-01A-CHECKPOINT.md
+**Architecture review document:** docs/BILLING-READY-01A-BILLING-IMPLEMENTATION-ARCHITECTURE-REVIEW.md
+**Nature:** READ-ONLY ARCHITECTURE REVIEW — no implementation
+**Risk:** Low (governance only, no source/runtime/database changes)
+**Roadmap position:** After BILLING-READY-00, before BILLING-READY-01 Credit Ledger Foundation
+**Keith decision:** Keith chose BILLING-READY-01A after BILLING-READY-00 (2026-07-06). AGENT-HARNESS-06C remains not registered and deferred.
+
+#### Dependencies
+
+- BILLING-READY-00 — COMPLETE and LOCKED (Billing, Plan, Credit, and Entitlement Audit)
+
+#### Purpose
+
+Perform a read-only architecture review before implementing the credit ledger foundation. The review should inspect existing billing, quota, usage, invoice, plan, database, frontend, and service boundaries and recommend the smallest safe implementation slice for BILLING-READY-01.
+
+This task prevents implementing the credit ledger in the wrong layer or duplicating existing billing infrastructure.
+
+#### Scope
+
+Future architecture review should answer:
+
+1. Current billing architecture:
+   - What billing-related modules already exist?
+   - Which service owns billing visibility?
+   - Which service owns usage records?
+   - Which service owns quota checks?
+   - Which service owns invoices?
+   - Which service owns plan data?
+
+2. Database/schema:
+   - What tables already exist for users, plans, usage, invoices, billing snapshots, tokens, sessions, and workspaces?
+   - Which tables can be reused?
+   - Which tables need extension later?
+   - Is a new credit ledger table needed, or can it initially be represented in existing usage records?
+
+3. Credit ledger placement:
+   - Should the credit ledger live in API Gateway?
+   - Should ai-service only emit usage events?
+   - Should container-manager only report runtime usage?
+   - Should frontend only display billing state?
+   - What is the clean ownership boundary?
+
+4. Existing usage pipeline:
+   - How does UsageLedgerService work?
+   - How does TokenUsageService work?
+   - How does BillingSnapshotService work?
+   - How does InvoiceService work?
+   - How does QuotaService work?
+   - What should be reused?
+
+5. Entitlement boundaries:
+   - Where should plan entitlements be checked?
+   - Where should agent access be checked?
+   - Where should tool access be checked?
+   - Where should knowledge/collaboration limits be checked?
+   - What remains deferred?
+
+6. Migration strategy:
+   - What is the safest first implementation slice?
+   - What should not be migrated yet?
+   - How to avoid breaking current free/pro/enterprise plan behavior?
+   - How to introduce Free/Starter/Pro/Team later?
+
+7. Testing strategy:
+   - Which existing tests should be extended?
+   - What focused tests should BILLING-READY-01 add?
+   - What build/typecheck commands should run?
+
+8. Risk assessment:
+   - What are the data model risks?
+   - What are the entitlement risks?
+   - What are the billing correctness risks?
+   - What are the migration risks?
+   - What are the Stripe deferral risks?
+
+#### Non-Goals
+
+- No implementation.
+- No source code edits.
+- No database migration.
+- No schema changes.
+- No Stripe implementation.
+- No payment provider calls.
+- No frontend billing UI.
+- No entitlement enforcement changes.
+- No Agent Harness activation.
+- No AGENT-HARNESS-06C registration.
+- No BILLING-READY-01 registration.
+- No tests/builds/runtime commands.
+
+#### Registration Acceptance Criteria
+
+- [x] BILLING-READY-01A registered in TASKS.md
+- [x] BILLING-READY-01A mirrored in TASKS_BACKLOG_FULL.md
+- [x] ROADMAP-00 updated to show BILLING-READY-01A ACTIVE
+- [x] Dependencies recorded
+- [x] Scope documented
+- [x] Non-goals documented
+- [x] Review acceptance criteria listed
+- [x] BILLING-READY-01 not registered
+- [x] AGENT-HARNESS-06C not registered
+- [x] No implementation performed
+- [x] No runtime commands executed
+
+#### Review Acceptance Criteria
+
+- [x] Existing billing modules inspected
+- [x] Existing database/schema billing tables inspected
+- [x] Existing usage ledger flow documented
+- [x] Existing token usage flow documented
+- [x] Existing billing snapshot flow documented
+- [x] Existing invoice flow documented
+- [x] Existing quota enforcement flow documented
+- [x] Existing plan model documented
+- [x] Existing frontend billing/quota surfaces inspected
+- [x] Service ownership boundaries recommended
+- [x] Credit ledger placement recommended
+- [x] Entitlement boundary recommendations documented
+- [x] Migration strategy recommended
+- [x] Smallest safe BILLING-READY-01 implementation slice proposed
+- [x] Focused test strategy proposed
+- [x] Risk assessment completed
+- [x] No implementation performed
+- [x] Review document created
+
+#### Expected Review Document
+
+`docs/BILLING-READY-01A-BILLING-IMPLEMENTATION-ARCHITECTURE-REVIEW.md` — **CREATED 2026-07-06.** Architecture review complete. All 18 review acceptance criteria satisfied.
+
+#### Next Step
+
+BILLING-READY-01A COMPLETE and LOCKED (2026-07-06). Architecture review produced `docs/BILLING-READY-01A-BILLING-IMPLEMENTATION-ARCHITECTURE-REVIEW.md` and `docs/BILLING-READY-01A-CHECKPOINT.md`. Recommended next task: BILLING-READY-01 — Credit Ledger Foundation (TypeScript-only, Option A). BILLING-READY-01 is proposed only — not registered. AGENT-HARNESS-06C remains deferred and not registered.
+
+#### Recommended Next Task
+
+**BILLING-READY-01 — Credit Ledger Foundation.** TypeScript-only credit ledger domain/types/config with no database migration (Option A). 10 new files under `services/api-gateway/src/credit-ledger/` + 3 unit test files. Proposed only — not registered. Requires Keith's explicit decision to register.
+
+**AGENT-HARNESS-06C** — Remains deferred and not registered.
+
+---
+
+**Reference:** See TASKS.md -> BILLING-READY-01A.
+
+---

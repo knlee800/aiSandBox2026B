@@ -53,23 +53,31 @@ It establishes the agreed sequence, guardrails, and rules for when that sequence
 | 6A | AGENT-HARNESS-06A | Read-Only Canary Hardening Slice | COMPLETE |
 | 6B | AGENT-HARNESS-06B | Read-Only Harness Canary Plan | COMPLETE and LOCKED |
 | 7 | BILLING-READY-00 | Billing, Plan, Credit, and Entitlement Audit | **COMPLETE and LOCKED** — 2026-07-06. Audit/planning complete. No implementation. See `docs/BILLING-READY-00-CHECKPOINT.md`. |
-| 8 | Beta preparation | Beta readiness checklist | After Billing audit |
+| 7A | BILLING-READY-01A | Billing Implementation Architecture Review | **COMPLETE and LOCKED** — 2026-07-06. Read-only architecture review complete. All 18 criteria satisfied. Option A recommended for BILLING-READY-01. See `docs/BILLING-READY-01A-CHECKPOINT.md`. |
+| 7B | BILLING-READY-01 | Credit Ledger Foundation | **NEXT — recommended, not registered.** TypeScript-only credit ledger domain/types/config (Option A). No database migration. Requires Keith decision to register. |
+| 8 | Beta preparation | Beta readiness checklist | After Billing foundation |
 
 ---
 
 ## 4. Current Next Task
 
-**Keith decision required (2026-07-06). No task currently ACTIVE.**
+**BILLING-READY-01A — COMPLETE and LOCKED (2026-07-06).** Produced `docs/BILLING-READY-01A-BILLING-IMPLEMENTATION-ARCHITECTURE-REVIEW.md` and `docs/BILLING-READY-01A-CHECKPOINT.md`. Read-only architecture review complete. All 18 review acceptance criteria satisfied. Recommended Option A (TypeScript-only) for BILLING-READY-01. No implementation. No Stripe/payment calls. No Agent Harness activation.
+
+**BILLING-READY-01 — NEXT RECOMMENDED (not registered).** Credit Ledger Foundation. TypeScript-only credit ledger domain/types/config (Option A), no database migration. Requires Keith's explicit decision to register.
 
 **BILLING-READY-00 — COMPLETE and LOCKED (2026-07-06).** Produced `docs/BILLING-READY-00-BILLING-ENTITLEMENT-AUDIT.md` and `docs/BILLING-READY-00-CHECKPOINT.md`. Audit and planning complete. No implementation. No Stripe/payment calls. No Agent Harness activation. All 19 audit/planning acceptance criteria satisfied.
 
 **AGENT-HARNESS-06C status:** Not registered. Deferred. Runtime canary execution remains a separate explicit future decision by Keith.
 
-**Candidates for next task (Keith must choose — none are registered):**
+**Keith chose Option C (2026-07-06): BILLING-READY-01A — Billing Implementation Architecture Review. COMPLETE and LOCKED.**
 
-- **Option A — BILLING-READY-01:** Credit Ledger Foundation. TypeScript types, static plan definitions, in-memory/DB-backed credit balance tracking. Risk: Low–Medium.
-- **Option B — AGENT-HARNESS-06C:** Read-Only Harness Canary Execution. Single controlled canary run of Agent Harness tool loop. Risk: Medium (requires Docker + sandbox environment).
-- **Option C — BILLING-READY-01A:** Billing Implementation Architecture Review. Deeper read-only architecture review before any code implementation. Risk: Low.
+**Candidates that were available (Keith chose Option C — all others deferred):**
+
+_Retained for reference only (decision made — Keith chose Option C):_
+
+- **Option A — BILLING-READY-01:** Credit Ledger Foundation. TypeScript types, static plan definitions, in-memory/DB-backed credit balance tracking. Risk: Low–Medium. **Not registered. Now the recommended next task after BILLING-READY-01A completed.**
+- **Option B — AGENT-HARNESS-06C:** Read-Only Harness Canary Execution. Single controlled canary run of Agent Harness tool loop. Risk: Medium (requires Docker + sandbox environment). **Not registered. Deferred.**
+- **Option C — BILLING-READY-01A:** Billing Implementation Architecture Review. Deeper read-only architecture review before any code implementation. Risk: Low. **CHOSEN — COMPLETE and LOCKED.**
 
 **Prior step (for reference):**
 
@@ -155,6 +163,8 @@ The following must not be started until their prerequisites in the strategic seq
 | 5 | AGENT-HARNESS-06A | Read-only canary hardening slice (COMPLETE) |
 | 6 | AGENT-HARNESS-06B | Read-only harness canary plan (COMPLETE and LOCKED) |
 | 7 | BILLING-READY-00 | Audit/planning (COMPLETE and LOCKED) |
+| 7A | BILLING-READY-01A | Read-only architecture review (**COMPLETE and LOCKED**) |
+| 7B | BILLING-READY-01 | Credit Ledger Foundation (**NEXT — recommended, not registered**) |
 
 ---
 
