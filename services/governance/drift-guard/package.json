@@ -1,0 +1,33 @@
+{
+  "name": "@aisandbox/governance-drift-guard",
+  "version": "0.1.0",
+  "description": "Governance drift detection layer for TASKS.md / BACKLOG / ROADMAP consistency",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc --noEmit",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20.11.0",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.6",
+    "typescript": "^5.3.3"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "rootDir": ".",
+    "testMatch": ["**/__tests__/**/*.spec.ts"],
+    "globals": {
+      "ts-jest": {
+        "tsconfig": {
+          "strict": true,
+          "esModuleInterop": true,
+          "module": "commonjs",
+          "target": "ES2021"
+        }
+      }
+    }
+  }
+}

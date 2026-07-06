@@ -37124,3 +37124,172 @@ BILLING-READY-01A COMPLETE and LOCKED (2026-07-06). Architecture review produced
 **Reference:** See TASKS.md -> BILLING-READY-01A.
 
 ---
+
+### BILLING-READY-01: Credit Ledger Foundation
+
+**Task ID:** BILLING-READY-01
+**Family:** BILLING / COMMERCIAL READINESS
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Registered:** 2026-07-06
+**Completed:** 2026-07-06
+**Checkpoint:** docs/BILLING-READY-01-CHECKPOINT.md
+**Nature:** IMPLEMENTATION — TypeScript-only, no database migration
+**Risk:** Low (TypeScript-only domain types and static config, no runtime/database changes)
+**Roadmap position:** After BILLING-READY-01A, before BILLING-READY-02 credit deduction pipeline
+**Keith decision:** Keith registered BILLING-READY-01 (2026-07-06) after BILLING-READY-01A completed. Option A selected. AGENT-HARNESS-06C remains deferred and not registered.
+
+#### Dependencies
+
+- BILLING-READY-01A — COMPLETE and LOCKED (Billing Implementation Architecture Review — Option A recommended)
+- BILLING-READY-00 — COMPLETE and LOCKED (Billing, Plan, Credit, and Entitlement Audit)
+
+#### Purpose
+
+Create the first implementation slice for the ainow.biz credit system by adding TypeScript-only credit ledger domain types, static plan definitions, credit categories, credit rates, and entitlement shape definitions inside api-gateway.
+
+This task is intentionally foundation-only:
+- no database migration
+- no runtime enforcement
+- no Stripe integration
+- no payment provider calls
+- no frontend billing UI
+- no existing billing behavior changes
+
+#### Implementation Strategy
+
+Option A from BILLING-READY-01A: TypeScript-only credit ledger domain/types/config with no database migration.
+
+#### Expected Implementation Files
+
+1. `services/api-gateway/src/credit-ledger/types/credit-category.ts`
+2. `services/api-gateway/src/credit-ledger/types/credit-rate.ts`
+3. `services/api-gateway/src/credit-ledger/types/credit-ledger.ts`
+4. `services/api-gateway/src/credit-ledger/types/plan-definition.ts`
+5. `services/api-gateway/src/credit-ledger/types/user-entitlement.ts`
+6. `services/api-gateway/src/credit-ledger/types/index.ts`
+7. `services/api-gateway/src/credit-ledger/config/plan-definitions.config.ts`
+8. `services/api-gateway/src/credit-ledger/config/credit-rates.config.ts`
+9. `services/api-gateway/src/credit-ledger/config/index.ts`
+10. `services/api-gateway/src/credit-ledger/index.ts`
+
+#### Expected Test Files
+
+1. `services/api-gateway/src/credit-ledger/__tests__/plan-definitions.config.spec.ts`
+2. `services/api-gateway/src/credit-ledger/__tests__/credit-rates.config.spec.ts`
+3. `services/api-gateway/src/credit-ledger/__tests__/credit-category.spec.ts`
+
+#### Scope
+
+Implementation should include:
+
+- Credit category type definitions
+- Credit rate type definitions
+- Credit ledger conceptual types
+- Plan definition types
+- User entitlement types
+- Static Free / Starter / Pro / Team plan definitions
+- Monthly credit allocations:
+  - Free: 500
+  - Starter: 5,000
+  - Pro: 25,000
+  - Team: 100,000
+- Static credit rate definitions for:
+  - model tokens
+  - tool calls
+  - workspace runtime
+  - knowledge ingestion
+  - knowledge summarization
+  - collaboration referrals
+  - collaboration contributions
+  - validation actions
+  - browser actions
+- Agent access entitlement definitions:
+  - Free / Starter: Builder only
+  - Pro: Builder + one future specialist agent allowance
+  - Team: all current/future agents
+- Tool access entitlement definitions
+- Knowledge entitlement definitions
+- Collaboration entitlement definitions
+- Barrel exports
+- Focused tests validating:
+  - all plans exist
+  - monthly credits are positive
+  - plan ordering is stable
+  - credit rates are positive
+  - categories are unique
+  - entitlements match plan expectations
+  - no Stripe/payment/runtime behavior exists
+
+#### Non-Goals
+
+- No database migration.
+- No schema changes.
+- No TypeORM entity changes.
+- No existing UsageRecord changes.
+- No existing BillingSnapshot changes.
+- No existing Invoice changes.
+- No runtime credit deduction.
+- No balance persistence.
+- No entitlement enforcement.
+- No API endpoints.
+- No frontend UI.
+- No Stripe implementation.
+- No payment provider calls.
+- No plan migration from free/pro/enterprise yet.
+- No Agent Harness activation.
+- No AGENT-HARNESS-06C registration.
+
+#### Registration Acceptance Criteria
+
+- [x] BILLING-READY-01 registered in TASKS.md
+- [x] BILLING-READY-01 mirrored in TASKS_BACKLOG_FULL.md
+- [x] ROADMAP-00 updated to show BILLING-READY-01 ACTIVE
+- [x] Dependencies recorded
+- [x] Option A strategy recorded
+- [x] Expected files listed
+- [x] Scope documented
+- [x] Non-goals documented
+- [x] Implementation acceptance criteria listed
+- [x] AGENT-HARNESS-06C not registered
+- [x] No implementation performed
+- [x] No runtime commands executed
+
+#### Implementation Acceptance Criteria
+
+- [x] Credit category types created
+- [x] Credit rate types created
+- [x] Credit ledger conceptual types created
+- [x] Plan definition types created
+- [x] User entitlement types created
+- [x] Static Free / Starter / Pro / Team plan definitions created
+- [x] Static credit rate definitions created
+- [x] Agent access entitlements defined
+- [x] Tool access entitlements defined
+- [x] Knowledge entitlements defined
+- [x] Collaboration entitlements defined
+- [x] Barrel exports created
+- [x] Plan definition tests added
+- [x] Credit rate tests added
+- [x] Credit category tests added
+- [x] Typecheck passes
+- [x] Focused tests pass
+- [x] No database migration added
+- [x] No runtime enforcement added
+- [x] No Stripe/payment/provider behavior added
+- [x] No frontend UI added
+
+#### Next Step
+
+BILLING-READY-01 COMPLETE and LOCKED (2026-07-06). Credit Ledger Foundation implemented. 10 source files + 3 test files. 16 tests pass. Typecheck and build clean. See `docs/BILLING-READY-01-CHECKPOINT.md`.
+
+**BILLING-READY-02** — Credit deduction pipeline. Not registered. Proposed only — after BILLING-READY-01 completes.
+
+**AGENT-HARNESS-06C** — Remains deferred and not registered.
+
+---
+
+**Reference:** See TASKS.md -> BILLING-READY-01.
+
+---

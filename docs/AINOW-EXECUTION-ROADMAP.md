@@ -54,7 +54,7 @@ It establishes the agreed sequence, guardrails, and rules for when that sequence
 | 6B | AGENT-HARNESS-06B | Read-Only Harness Canary Plan | COMPLETE and LOCKED |
 | 7 | BILLING-READY-00 | Billing, Plan, Credit, and Entitlement Audit | **COMPLETE and LOCKED** — 2026-07-06. Audit/planning complete. No implementation. See `docs/BILLING-READY-00-CHECKPOINT.md`. |
 | 7A | BILLING-READY-01A | Billing Implementation Architecture Review | **COMPLETE and LOCKED** — 2026-07-06. Read-only architecture review complete. All 18 criteria satisfied. Option A recommended for BILLING-READY-01. See `docs/BILLING-READY-01A-CHECKPOINT.md`. |
-| 7B | BILLING-READY-01 | Credit Ledger Foundation | **NEXT — recommended, not registered.** TypeScript-only credit ledger domain/types/config (Option A). No database migration. Requires Keith decision to register. |
+| 7B | BILLING-READY-01 | Credit Ledger Foundation | **COMPLETE and LOCKED — 2026-07-06.** TypeScript-only credit ledger domain/types/config (Option A). 10 source files + 3 test files. 16 tests pass. No database migration. See `docs/BILLING-READY-01-CHECKPOINT.md`. |
 | 8 | Beta preparation | Beta readiness checklist | After Billing foundation |
 
 ---
@@ -63,7 +63,7 @@ It establishes the agreed sequence, guardrails, and rules for when that sequence
 
 **BILLING-READY-01A — COMPLETE and LOCKED (2026-07-06).** Produced `docs/BILLING-READY-01A-BILLING-IMPLEMENTATION-ARCHITECTURE-REVIEW.md` and `docs/BILLING-READY-01A-CHECKPOINT.md`. Read-only architecture review complete. All 18 review acceptance criteria satisfied. Recommended Option A (TypeScript-only) for BILLING-READY-01. No implementation. No Stripe/payment calls. No Agent Harness activation.
 
-**BILLING-READY-01 — NEXT RECOMMENDED (not registered).** Credit Ledger Foundation. TypeScript-only credit ledger domain/types/config (Option A), no database migration. Requires Keith's explicit decision to register.
+**BILLING-READY-01 — COMPLETE and LOCKED (2026-07-06).** Credit Ledger Foundation. TypeScript-only credit ledger domain/types/config (Option A), no database migration. 10 source files + 3 test files. 16 tests pass. Typecheck and build clean. See `docs/BILLING-READY-01-CHECKPOINT.md`.
 
 **BILLING-READY-00 — COMPLETE and LOCKED (2026-07-06).** Produced `docs/BILLING-READY-00-BILLING-ENTITLEMENT-AUDIT.md` and `docs/BILLING-READY-00-CHECKPOINT.md`. Audit and planning complete. No implementation. No Stripe/payment calls. No Agent Harness activation. All 19 audit/planning acceptance criteria satisfied.
 
@@ -164,7 +164,7 @@ The following must not be started until their prerequisites in the strategic seq
 | 6 | AGENT-HARNESS-06B | Read-only harness canary plan (COMPLETE and LOCKED) |
 | 7 | BILLING-READY-00 | Audit/planning (COMPLETE and LOCKED) |
 | 7A | BILLING-READY-01A | Read-only architecture review (**COMPLETE and LOCKED**) |
-| 7B | BILLING-READY-01 | Credit Ledger Foundation (**NEXT — recommended, not registered**) |
+| 7B | BILLING-READY-01 | Credit Ledger Foundation (**COMPLETE and LOCKED — 2026-07-06**) |
 
 ---
 
