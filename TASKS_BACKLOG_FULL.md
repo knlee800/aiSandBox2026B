@@ -36828,3 +36828,145 @@ Keith decision required. Two candidates — neither registered:
 **Reference:** See TASKS.md -> AGENT-HARNESS-06B.
 
 ---
+
+### BILLING-READY-00: Billing, Plan, Credit, and Entitlement Audit
+
+**Task ID:** BILLING-READY-00
+**Family:** BILLING / COMMERCIAL READINESS
+**Family status:** ACTIVE
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Registered:** 2026-07-06
+**Completed:** 2026-07-06
+**Nature:** AUDIT/PLANNING — read-only audit and planning, no implementation
+**Risk:** Low (governance only, no source/runtime/database changes)
+**Roadmap position:** #7 — after AGENT-HARNESS-06B, before any Stripe/payment implementation
+**Keith decision:** Keith chose BILLING-READY-00 after AGENT-HARNESS-06B (2026-07-06). AGENT-HARNESS-06C remains not registered and deferred.
+**Checkpoint:** docs/BILLING-READY-00-CHECKPOINT.md
+**Planning document:** docs/BILLING-READY-00-BILLING-ENTITLEMENT-AUDIT.md
+**Implementation performed:** None — audit and planning only.
+**Stripe/payment implementation:** Deferred — StripePaymentProvider remains a safe zero-call stub.
+**AGENT-HARNESS-06C:** Not registered — remains deferred. Keith decision required for next task.
+
+#### Dependencies
+
+- AGENT-HARNESS-06B — COMPLETE and LOCKED (Read-Only Harness Canary Plan)
+- AGENT-KNOWLEDGE-00 — COMPLETE and LOCKED (Common Knowledge Base Architecture Plan)
+- AGENT-COLLAB-00 — COMPLETE and LOCKED (Agent Referral and Collaboration Protocol Plan)
+- AGENT-PLATFORM-03 — COMPLETE and LOCKED (Builder Agent Route Integration Review)
+
+#### Purpose
+
+Create a read-only audit and planning task for the ainow.biz commercial layer before any Stripe/payment implementation. Inspect the existing codebase and define how plans, monthly credits, usage tracking, entitlement gates, agent access, harness usage, knowledge processing, collaboration work, and future billing should fit together.
+
+This is not payment implementation.
+
+#### Scope
+
+- Existing auth/user/session/workspace ownership model
+- Existing entitlement or quota checks
+- Existing usage tracking, if any
+- Existing database models related to users, sessions, workspaces, plans, subscriptions, usage, credits, or limits
+- Existing API Gateway enforcement points
+- Existing ai-service usage/tokens accounting
+- Existing Agent Harness token/tool/audit events
+- Existing frontend plan/account/settings/billing surfaces, if any
+- Proposed Free / Starter / Pro / Team plan model
+- Monthly credit model
+- Credit consumption categories:
+  - model tokens
+  - tool calls
+  - workspace runtime
+  - knowledge ingestion / summarization
+  - collaboration/referral work
+  - future browser/validation actions
+- Entitlement gates:
+  - agent access
+  - Builder Agent access
+  - future Chief of Staff / Product Strategy / Technology Advisor access
+  - Agent Harness access
+  - read-only tools
+  - write tools
+  - validation tools
+  - knowledge sources
+  - collaboration limits
+- Billing safety:
+  - no real charges yet
+  - no Stripe live mode
+  - no production payment mutations
+  - no automatic plan upgrades
+  - clear audit trail
+- Recommended implementation roadmap
+
+#### Non-Goals
+
+- No Stripe implementation.
+- No payment provider calls.
+- No real charging.
+- No subscription creation.
+- No checkout page.
+- No webhook implementation.
+- No database migration.
+- No entitlement enforcement changes.
+- No frontend billing UI implementation.
+- No Agent Harness activation.
+- No canary execution.
+- No provider/model calls.
+- No production data changes.
+- No AGENT-HARNESS-06C registration.
+
+#### Registration Acceptance Criteria
+
+- [x] BILLING-READY-00 registered in TASKS.md
+- [x] BILLING-READY-00 mirrored in TASKS_BACKLOG_FULL.md
+- [x] ROADMAP-00 updated to show BILLING-READY-00 ACTIVE
+- [x] Dependencies recorded
+- [x] Scope documented
+- [x] Non-goals documented
+- [x] Audit/planning acceptance criteria listed
+- [x] AGENT-HARNESS-06C not registered
+- [x] No implementation performed
+- [x] No runtime commands executed
+
+#### Audit/Planning Acceptance Criteria
+
+- [x] Existing billing-related code surfaces inspected
+- [x] Existing entitlement/quota enforcement points documented
+- [x] Existing usage/token accounting documented
+- [x] Existing database models relevant to billing documented
+- [x] Existing API Gateway billing/entitlement boundaries documented
+- [x] Existing ai-service usage and Agent Harness accounting documented
+- [x] Existing frontend account/billing surfaces documented
+- [x] Free / Starter / Pro / Team plan model proposed
+- [x] Monthly credit model proposed
+- [x] Credit consumption categories defined
+- [x] Agent access entitlement model proposed
+- [x] Tool access entitlement model proposed
+- [x] Knowledge processing billing implications documented
+- [x] Collaboration billing implications documented
+- [x] Stripe/payment implementation explicitly deferred
+- [x] Billing safety rules documented
+- [x] Recommended implementation roadmap proposed
+- [x] Planning document created
+- [x] No implementation/source/test/frontend/package/env/Docker/schema/database changes made during planning unless explicitly approved
+
+#### Expected Planning Document
+
+`docs/BILLING-READY-00-BILLING-ENTITLEMENT-AUDIT.md` — **CREATED 2026-07-06.** 27-section planning document. All acceptance criteria satisfied.
+
+#### Checkpoint
+
+`docs/BILLING-READY-00-CHECKPOINT.md` — **CREATED 2026-07-06.** Consolidation/checkpoint complete.
+
+#### Next Step
+
+Keith decision required. Candidates (not registered):
+- Option A: BILLING-READY-01 — Credit Ledger Foundation
+- Option B: AGENT-HARNESS-06C — Read-Only Harness Canary Execution
+- Option C: BILLING-READY-01A — Billing Implementation Architecture Review
+
+---
+
+**Reference:** See TASKS.md -> BILLING-READY-00.
+
+---

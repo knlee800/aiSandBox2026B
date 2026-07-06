@@ -36,6 +36,7 @@ It establishes the agreed sequence, guardrails, and rules for when that sequence
 | AGENT-PLATFORM-01 | Agent Registry Foundation | COMPLETE and LOCKED |
 | AGENT-PLATFORM-02 | Static RPG Office/Town Dashboard Shell | COMPLETE and LOCKED |
 | AGENT-PLATFORM-03 | Builder Agent Route Integration Review | COMPLETE and LOCKED |
+| BILLING-READY-00 | Billing, Plan, Credit, and Entitlement Audit | COMPLETE and LOCKED |
 
 ---
 
@@ -51,31 +52,28 @@ It establishes the agreed sequence, guardrails, and rules for when that sequence
 | 6 | AGENT-HARNESS-06 | Read-Only Harness Canary Readiness Review | COMPLETE — NO-GO finding |
 | 6A | AGENT-HARNESS-06A | Read-Only Canary Hardening Slice | COMPLETE |
 | 6B | AGENT-HARNESS-06B | Read-Only Harness Canary Plan | COMPLETE and LOCKED |
-| 7 | BILLING-READY-00 | Billing, Plan, Credit, and Entitlement Audit | After Harness canary planning |
+| 7 | BILLING-READY-00 | Billing, Plan, Credit, and Entitlement Audit | **COMPLETE and LOCKED** — 2026-07-06. Audit/planning complete. No implementation. See `docs/BILLING-READY-00-CHECKPOINT.md`. |
 | 8 | Beta preparation | Beta readiness checklist | After Billing audit |
 
 ---
 
 ## 4. Current Next Task
 
-**AGENT-HARNESS-06B — Read-Only Harness Canary Plan — COMPLETE and LOCKED (2026-07-06).**
+**Keith decision required (2026-07-06). No task currently ACTIVE.**
 
-AGENT-HARNESS-06B produced the detailed, approval-gated canary plan document (`docs/AGENT-HARNESS-06B-CANARY-PLAN.md`) and checkpoint (`docs/AGENT-HARNESS-06B-CHECKPOINT.md`). Runtime activation was deferred. `AGENT_HARNESS_ENABLE_TOOL_LOOP=true` was not set. No canary execution occurred.
+**BILLING-READY-00 — COMPLETE and LOCKED (2026-07-06).** Produced `docs/BILLING-READY-00-BILLING-ENTITLEMENT-AUDIT.md` and `docs/BILLING-READY-00-CHECKPOINT.md`. Audit and planning complete. No implementation. No Stripe/payment calls. No Agent Harness activation. All 19 audit/planning acceptance criteria satisfied.
 
-**Keith decision required for next step. Two candidates — neither is registered:**
+**AGENT-HARNESS-06C status:** Not registered. Deferred. Runtime canary execution remains a separate explicit future decision by Keith.
 
-1. **AGENT-HARNESS-06C — Read-Only Harness Canary Execution**
-   - Execute the canary as planned in `docs/AGENT-HARNESS-06B-CANARY-PLAN.md`.
-   - Requires Keith review of the canary plan and checkpoint, and explicit approval of environment, provider, prompt, and execution window.
-   - Higher technical risk; directly validates Agent Harness readiness.
+**Candidates for next task (Keith must choose — none are registered):**
 
-2. **BILLING-READY-00 — Billing, Plan, Credit, and Entitlement Audit**
-   - Audit existing billing, plan, credit, and entitlement state.
-   - No dependency on harness execution.
-   - Lower technical risk; advances commercial readiness track.
-   - Can proceed while canary decisions are pending.
+- **Option A — BILLING-READY-01:** Credit Ledger Foundation. TypeScript types, static plan definitions, in-memory/DB-backed credit balance tracking. Risk: Low–Medium.
+- **Option B — AGENT-HARNESS-06C:** Read-Only Harness Canary Execution. Single controlled canary run of Agent Harness tool loop. Risk: Medium (requires Docker + sandbox environment).
+- **Option C — BILLING-READY-01A:** Billing Implementation Architecture Review. Deeper read-only architecture review before any code implementation. Risk: Low.
 
-Do not register either task without Keith's explicit decision.
+**Prior step (for reference):**
+
+AGENT-HARNESS-06B — Read-Only Harness Canary Plan — COMPLETE and LOCKED (2026-07-06). Produced `docs/AGENT-HARNESS-06B-CANARY-PLAN.md` and `docs/AGENT-HARNESS-06B-CHECKPOINT.md`. Runtime activation deferred. `AGENT_HARNESS_ENABLE_TOOL_LOOP=true` was not set. No canary execution occurred.
 
 ---
 
@@ -156,7 +154,7 @@ The following must not be started until their prerequisites in the strategic seq
 | 4 | AGENT-HARNESS-06 | Read-only canary readiness review (COMPLETE — NO-GO) |
 | 5 | AGENT-HARNESS-06A | Read-only canary hardening slice (COMPLETE) |
 | 6 | AGENT-HARNESS-06B | Read-only harness canary plan (COMPLETE and LOCKED) |
-| 7 | BILLING-READY-00 | Audit/planning |
+| 7 | BILLING-READY-00 | Audit/planning (COMPLETE and LOCKED) |
 
 ---
 
