@@ -2,10 +2,12 @@
 
 import React from 'react';
 import type { ReactNode } from 'react';
+import Link from 'next/link';
 import {
   ArrowsRightLeftIcon,
   ArrowUpIcon,
   BriefcaseIcon,
+  BuildingOffice2Icon,
   FolderIcon,
   HomeIcon,
   Squares2X2Icon,
@@ -117,6 +119,7 @@ export function getWorkspaceScaffoldMessages(locale?: string) {
     tokens: read('workspace.tokens'),
     expandSidebar: read('workspace.expandSidebar'),
     collapseSidebar: read('workspace.collapseSidebar'),
+    commandCenter: read('platform.title'),
   };
 }
 
@@ -385,6 +388,21 @@ export default function WorkspaceSidebar(props: WorkspaceSidebarProps) {
                 </button>
               );
             })}
+            <Link
+              href={`/${props.locale ?? 'en'}/platform`}
+              className={`group flex w-full items-center rounded px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 ${isCompact ? 'justify-center' : 'justify-between'}`}
+              data-testid="workspace-sidebar-nav-command-center"
+              title={isCompact ? messages.commandCenter : undefined}
+            >
+              <span className="flex items-center gap-2">
+                <BuildingOffice2Icon
+                  className="h-5 w-5 text-gray-600 group-hover:text-gray-700"
+                  data-testid="workspace-sidebar-nav-icon-command-center"
+                  aria-hidden="true"
+                />
+                <span className={isCompact ? 'sr-only' : 'truncate'}>{messages.commandCenter}</span>
+              </span>
+            </Link>
           </div>
         </div>
 

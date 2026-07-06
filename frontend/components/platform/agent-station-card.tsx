@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import type { AgentStatus } from '@/lib/agent-platform/agent-registry';
 
 export interface AgentStationCardProps {
@@ -11,6 +12,8 @@ export interface AgentStationCardProps {
   status: AgentStatus;
   enabled: boolean;
   statusLabel: string;
+  href?: string;
+  comingSoonMessage?: string;
 }
 
 function getStatusBadgeClasses(status: AgentStatus): string {
@@ -25,11 +28,11 @@ function getStatusBadgeClasses(status: AgentStatus): string {
 
 function getCardClasses(enabled: boolean): string {
   const base =
-    'relative flex flex-col rounded-xl border p-5 shadow-sm transition-colors';
+    'relative flex flex-col rounded-xl border p-5 shadow-sm transition-all duration-150';
   if (enabled) {
-    return `${base} border-gray-200 bg-white`;
+    return `${base} border-gray-200 bg-white hover:border-indigo-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2`;
   }
-  return `${base} border-gray-100 bg-gray-50/70 opacity-75`;
+  return `${base} border-gray-100 bg-gray-50/70 opacity-75 hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2`;
 }
 
 function getAvatarClasses(enabled: boolean): string {
@@ -42,7 +45,8 @@ function getAvatarClasses(enabled: boolean): string {
 }
 
 export default function AgentStationCard(props: AgentStationCardProps) {
-  const { name, role, description, status, enabled, statusLabel } = props;
+  const { name, role, description, status, enabled, statusLabel, href, comingSoonMessage } = props;
+  const [showMessage, setShowMessage] = React.useState(false);
 
   const initials = name
     .split(' ')
@@ -51,13 +55,8 @@ export default function AgentStationCard(props: AgentStationCardProps) {
     .join('')
     .toUpperCase();
 
-  return (
-    <div
-      className={getCardClasses(enabled)}
-      data-testid={`agent-station-card-${props.id}`}
-      data-status={status}
-      data-enabled={enabled}
-    >
+  const cardContent = (
+    <>
       <div className="flex items-start gap-4">
         <div className={getAvatarClasses(enabled)} aria-hidden="true">
           {initials}
@@ -86,6 +85,56 @@ export default function AgentStationCard(props: AgentStationCardProps) {
       <p className="mt-3 line-clamp-2 text-xs leading-relaxed text-gray-600">
         {description}
       </p>
+
+      {showMessage && comingSoonMessage && (
+        <p
+          className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700"
+          data-testid={`agent-coming-soon-message-${props.id}`}
+        >
+          {comingSoonMessage}
+        </p>
+      )}
+    </>
+  );
+
+  if (enabled && href) {
+    return (
+      <Link
+        href={href}
+        className={getCardClasses(enabled)}
+        data-testid={`agent-station-card-${props.id}`}
+        data-status={status}
+        data-enabled={enabled}
+      >
+        {cardContent}
+      </Link>
+    );
+  }
+
+  const isInteractive = !enabled && !!comingSoonMessage;
+
+  return (
+    <div
+      className={`${getCardClasses(enabled)}${isInteractive ? ' cursor-pointer' : ''}`}
+      data-testid={`agent-station-card-${props.id}`}
+      data-status={status}
+      data-enabled={enabled}
+      onClick={isInteractive ? () => setShowMessage((prev) => !prev) : undefined}
+      onKeyDown={
+        isInteractive
+          ? (e: React.KeyboardEvent) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setShowMessage((prev) => !prev);
+              }
+            }
+          : undefined
+      }
+      role={isInteractive ? 'button' : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
+      aria-expanded={isInteractive ? showMessage : undefined}
+    >
+      {cardContent}
     </div>
   );
 }

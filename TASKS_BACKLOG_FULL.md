@@ -35645,14 +35645,14 @@ Resume AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell.
 
 ## AGENT PLATFORM / AINOW.BIZ MULTI-AGENT
 
-**Family status:** ACTIVE — AGENT-PLATFORM-00 COMPLETE and LOCKED, AGENT-PLATFORM-01 COMPLETE and LOCKED, AGENT-PLATFORM-02 ACTIVE
+**Family status:** ACTIVE — AGENT-PLATFORM-00 COMPLETE and LOCKED, AGENT-PLATFORM-01 COMPLETE and LOCKED, AGENT-PLATFORM-02 COMPLETE and LOCKED
 
-**Current stage:** AGENT-PLATFORM-02 ACTIVE — Static RPG Office/Town Dashboard Shell (02A complete 2026-07-06; 02B pending)
+**Current stage:** AGENT-PLATFORM-02 COMPLETE and LOCKED — Static RPG Office/Town Dashboard Shell (02A complete 2026-07-06, 02B complete 2026-07-06)
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 — ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED — 2026-07-04)
 2. AGENT-PLATFORM-01 — Agent Registry Foundation (COMPLETE and LOCKED — 2026-07-04)
-3. AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell (ACTIVE — resumed 2026-07-06)
+3. AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell (COMPLETE and LOCKED — 2026-07-06)
 
 ---
 
@@ -35839,13 +35839,15 @@ Create the first implementation foundation for ainow.biz agents by defining a ty
 
 **Task ID:** AGENT-PLATFORM-02
 **Family:** AGENT PLATFORM / AINOW.BIZ MULTI-AGENT
-**Family status:** ACTIVE
+**Family status:** COMPLETE and LOCKED
 **Priority:** Highest
-**Status:** ACTIVE
+**Status:** COMPLETE and LOCKED
+**Completed:** 2026-07-06
 **Resumed:** 2026-07-06
 **Resume reason:** AGENT-HARNESS-05C9 is now COMPLETE and LOCKED.
 **Phase 1 (02A) complete:** 2026-07-06 — Checkpoint: docs/AGENT-PLATFORM-02A-CHECKPOINT.md
-**Next step:** AGENT-PLATFORM-02B — Dashboard Navigation, Interactions, and Polish
+**Phase 2 (02B) complete:** 2026-07-06 — Checkpoint: docs/AGENT-PLATFORM-02B-CHECKPOINT.md
+**Child tasks:** AGENT-PLATFORM-02A — COMPLETE (2026-07-06), AGENT-PLATFORM-02B — COMPLETE (2026-07-06)
 **Nature:** IMPLEMENTATION — static RPG office/town dashboard shell consuming agent registry
 **Risk:** Low (static UI shell, no runtime orchestration, consumes existing registry)
 **Registered:** 2026-07-05
@@ -35908,17 +35910,17 @@ Create the first visible ainow.biz platform shell: a static RPG office/town dash
 
 #### Acceptance Criteria
 
-- [ ] AGENT-PLATFORM-02 registered in TASKS.md with ACTIVE status.
-- [ ] AGENT-PLATFORM-02 mirrored in TASKS_BACKLOG_FULL.md with matching content.
-- [ ] Dependencies on AGENT-PLATFORM-00 and AGENT-PLATFORM-01 COMPLETE and LOCKED recorded.
-- [ ] Scope clearly limited to static RPG office/town dashboard shell.
-- [ ] UX/UI multilingual-first requirements recorded.
-- [ ] UX/UI advisory skills recorded as advisory-only.
-- [ ] Non-goals clearly recorded.
-- [ ] Implementation acceptance criteria listed for the future implementation pass.
-- [ ] No source/test/frontend/package/env/Docker/schema/database files changed.
-- [ ] No runtime/provider/database/browser/Docker commands executed.
-- [ ] No subagents used.
+- [x] AGENT-PLATFORM-02 registered in TASKS.md with ACTIVE status.
+- [x] AGENT-PLATFORM-02 mirrored in TASKS_BACKLOG_FULL.md with matching content.
+- [x] Dependencies on AGENT-PLATFORM-00 and AGENT-PLATFORM-01 COMPLETE and LOCKED recorded.
+- [x] Scope clearly limited to static RPG office/town dashboard shell.
+- [x] UX/UI multilingual-first requirements recorded.
+- [x] UX/UI advisory skills recorded as advisory-only.
+- [x] Non-goals clearly recorded.
+- [x] Implementation acceptance criteria listed for the future implementation pass.
+- [x] No source/test/frontend/package/env/Docker/schema/database files changed.
+- [x] No runtime/provider/database/browser/Docker commands executed.
+- [x] No subagents used.
 
 #### Implementation Acceptance Criteria (for implementation pass)
 
@@ -35931,7 +35933,7 @@ Create the first visible ainow.biz platform shell: a static RPG office/town dash
 - [x] Heroicons v2 Outline used for normal UI icons if icons are added. *(02A — DONE)*
 - [x] Static RPG office/town visual style implemented without walking character or sprite animation. *(02A — DONE)*
 - [x] Layout is responsive and avoids overlap/clipping on desktop, tablet, and mobile. *(02A — DONE)*
-- [ ] Builder Agent click/navigation behavior follows existing route conventions. *(02B — PENDING)*
+- [x] Builder Agent click/navigation behavior follows existing route conventions. *(02B — DONE)*
 - [x] Coming-soon agents do not expose runtime functionality. *(02A — DONE)*
 - [x] Focused tests or checks added where practical. *(02A — DONE)*
 - [x] No runtime orchestration implemented. *(02A — DONE)*
@@ -35940,14 +35942,118 @@ Create the first visible ainow.biz platform shell: a static RPG office/town dash
 #### Phase Progress
 
 - **02A — Static Platform Dashboard Shell:** COMPLETE (2026-07-06) — Checkpoint: docs/AGENT-PLATFORM-02A-CHECKPOINT.md
-- **02B — Dashboard Navigation, Interactions, and Polish:** PENDING (not yet registered)
+- **02B — Dashboard Navigation, Interactions, and Polish:** COMPLETE (2026-07-06) — Checkpoint: docs/AGENT-PLATFORM-02B-CHECKPOINT.md
 
 #### Next Recommended Tasks (proposed, not registered)
 
-- AGENT-PLATFORM-02B — Dashboard Navigation, Interactions, and Polish
-- AGENT-PLATFORM-03 — Register aiSandBox as Builder Agent
+- AGENT-PLATFORM-03 — Register aiSandBox as Builder Agent / Builder Route Integration Review
 - AGENT-COLLAB-00 — Agent Referral and Collaboration Protocol Plan
+
+**Residual validation gap:** Live browser smoke was not performed. Visual validation of the Command Center link in the workspace sidebar and Builder Agent card navigation in a running browser remains pending before AGENT-PLATFORM-02 is treated as fully validated in production.
 
 ---
 
 **Reference:** See TASKS.md -> AGENT-PLATFORM-02.
+
+---
+
+### AGENT-PLATFORM-02B: Dashboard Navigation, Interactions, and Polish
+
+**Task ID:** AGENT-PLATFORM-02B
+**Parent task:** AGENT-PLATFORM-02
+**Family:** AGENT PLATFORM / AINOW.BIZ MULTI-AGENT
+**Family status:** COMPLETE and LOCKED
+**Priority:** Highest
+**Status:** COMPLETE and LOCKED
+**Completed:** 2026-07-06
+**Registered:** 2026-07-06
+**Checkpoint:** docs/AGENT-PLATFORM-02B-CHECKPOINT.md
+**Nature:** IMPLEMENTATION — dashboard navigation wiring, coming-soon interactions, visual polish
+**Risk:** Low (static UI interactions and routing only, no backend or runtime changes)
+
+#### Dependencies
+
+- AGENT-PLATFORM-00 — COMPLETE and LOCKED (ainow.biz Multi-Agent Platform Master Plan)
+- AGENT-PLATFORM-01 — COMPLETE and LOCKED (Agent Registry Foundation)
+- AGENT-PLATFORM-02A — COMPLETE (Static Platform Dashboard Shell)
+- AGENT-HARNESS-05C9 — COMPLETE and LOCKED (Structured Audit Event Recording)
+
+#### Purpose
+
+Complete the second bounded implementation phase of AGENT-PLATFORM-02 by adding safe dashboard navigation, interaction states, coming-soon handling, and polish to the static RPG office/town dashboard shell.
+
+#### Scope
+
+- Link the platform dashboard from the existing app shell/navigation using existing routing conventions.
+- Add Builder Agent click/navigation behavior to the existing aiSandBox/Builder workspace route after confirming the correct route.
+- Add disabled/coming-soon interaction for Chief of Staff, Product Strategy, and Technology Advisor.
+- Add accessible hover/focus states.
+- Add basic coming-soon message/modal/toast only if an existing project pattern exists; otherwise use a simple bounded inline state.
+- Improve visual polish while preserving the static RPG office/town shell.
+- Keep dashboard consuming the Agent Registry. Do not hardcode agent data.
+- Update translations in all 3 locale files for any new user-facing text.
+- Add focused tests/checks where practical.
+- Run focused frontend validation.
+
+#### UX/UI Requirements
+
+- Multilingual-first: no hardcoded English user-facing UI text.
+- Update all required locale files together:
+  - `frontend/messages/en.json`
+  - `frontend/messages/zh-TW.json`
+  - `frontend/messages/zh-CN.json`
+- Use the existing translation hook/pattern.
+- Normal UI icons use Heroicons v2 Outline only unless explicitly approved otherwise.
+- UX/UI advisory skills (impeccable, Emil Kowalski design engineering) are advisory-only.
+- Advisory skills must not override CLAUDE.md, TASKS.md, registered scope, architecture, or tests.
+- Keep the product serious enough for business use; RPG style remains a navigation metaphor, not gameplay.
+
+#### Non-Goals
+
+- No walking character.
+- No sprite animation.
+- No game engine/canvas/Phaser/PixiJS/Three.js.
+- No real-time agent activity.
+- No multi-agent runtime orchestration.
+- No work objects, tickets, decisions, referrals, or collaboration runtime.
+- No knowledge ingestion.
+- No Gmail/Slack/Notion integrations.
+- No billing/Stripe/payment.
+- No backend service changes.
+- No Agent Harness behavior changes.
+- No Agent Harness activation.
+- Do not register AGENT-PLATFORM-03 or any other follow-up task.
+
+#### Registration Acceptance Criteria
+
+- [x] AGENT-PLATFORM-02B registered in TASKS.md with ACTIVE status.
+- [x] AGENT-PLATFORM-02B mirrored in TASKS_BACKLOG_FULL.md with matching content.
+- [x] Dependencies recorded.
+- [x] Scope clearly limited to dashboard navigation, interactions, and polish.
+- [x] UX/UI multilingual-first requirements recorded.
+- [x] UX/UI advisory skills recorded as advisory-only.
+- [x] Non-goals clearly recorded.
+- [x] Implementation acceptance criteria listed for future implementation pass.
+- [x] No source/test/frontend/package/env/Docker/schema/database files changed.
+- [x] No runtime/provider/database/browser/Docker commands executed.
+- [x] No subagents used.
+
+#### Implementation Acceptance Criteria (for implementation pass)
+
+- [x] Existing platform dashboard remains registry-driven.
+- [x] Platform dashboard is reachable from existing app navigation or an approved entry point.
+- [x] Builder Agent click/navigation uses confirmed existing route convention.
+- [x] Coming-soon agents remain disabled and do not expose runtime functionality.
+- [x] Coming-soon interaction/message uses translations.
+- [x] Hover/focus states are accessible and restrained.
+- [x] User-facing UI text uses translation keys.
+- [x] en.json, zh-TW.json, and zh-CN.json updated together for any new UI text.
+- [x] Heroicons v2 Outline used for normal UI icons if icons are added.
+- [x] Responsive layout remains free of overlap/clipping.
+- [x] Focused tests/checks added where practical.
+- [x] No runtime orchestration implemented.
+- [x] No backend/Agent Harness behavior changed.
+
+---
+
+**Reference:** See TASKS.md -> AGENT-PLATFORM-02B.

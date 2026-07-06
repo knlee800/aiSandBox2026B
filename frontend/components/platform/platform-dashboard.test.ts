@@ -97,3 +97,55 @@ describe('platform dashboard data integration', () => {
     }
   });
 });
+
+describe('platform dashboard navigation integration', () => {
+  const agents: readonly AgentManifest[] = listAgents();
+
+  test('builder agent route matches the existing workspace route /app', () => {
+    const builder = agents.find((a) => a.id === 'builder');
+    assert.ok(builder);
+    assert.equal(builder.route, '/app');
+  });
+
+  test('builder agent is the only enabled agent with a navigable route', () => {
+    const enabledAgents = agents.filter((a) => a.enabled);
+    assert.equal(enabledAgents.length, 1);
+    assert.equal(enabledAgents[0].id, 'builder');
+    assert.ok(enabledAgents[0].route.length > 0);
+  });
+
+  test('coming-soon agents have routes but are not enabled', () => {
+    const comingSoonAgents = agents.filter((a) => a.status === 'coming_soon');
+    assert.equal(comingSoonAgents.length, 3);
+    for (const agent of comingSoonAgents) {
+      assert.equal(agent.enabled, false, `${agent.id} must not be enabled`);
+      assert.ok(agent.route.length > 0, `${agent.id} should have a route defined for future use`);
+    }
+  });
+
+  test('new platform navigation/interaction translation keys exist in all locales', () => {
+    const newKeys = [
+      'platform.backToWorkspace',
+      'platform.comingSoonMessage',
+    ];
+
+    for (const { code, messages } of ALL_LOCALES) {
+      for (const key of newKeys) {
+        const value = resolveNestedString(messages, key);
+        assert.ok(
+          value && value.trim().length > 0,
+          `Missing navigation key "${key}" in locale "${code}"`,
+        );
+      }
+    }
+  });
+
+  test('all agent routes are non-empty strings starting with /', () => {
+    for (const agent of agents) {
+      assert.ok(
+        typeof agent.route === 'string' && agent.route.startsWith('/'),
+        `Agent ${agent.id} route must start with /`,
+      );
+    }
+  });
+});

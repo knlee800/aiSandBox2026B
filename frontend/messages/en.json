@@ -429,7 +429,9 @@
     "subtitle": "Your AI agent team at a glance",
     "agentStationActive": "Active",
     "agentStationComingSoon": "Coming Soon",
-    "agentStationDisabled": "Offline"
+    "agentStationDisabled": "Offline",
+    "backToWorkspace": "Back to Workspace",
+    "comingSoonMessage": "This agent is coming soon. Stay tuned!"
   },
   "languages": {
     "en": "English",

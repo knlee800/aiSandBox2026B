@@ -429,7 +429,9 @@
     "subtitle": "一覽您的 AI 代理團隊",
     "agentStationActive": "運作中",
     "agentStationComingSoon": "即將推出",
-    "agentStationDisabled": "離線"
+    "agentStationDisabled": "離線",
+    "backToWorkspace": "返回工作區",
+    "comingSoonMessage": "此代理即將推出，敬請期待！"
   },
   "languages": {
     "en": "English",
