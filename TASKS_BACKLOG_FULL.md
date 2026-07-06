@@ -36317,4 +36317,5 @@ Create the architecture plan for the common knowledge base layer that will give 
 
 ---
 
+**Checkpoint:** docs/AGENT-KNOWLEDGE-00-CHECKPOINT.md
 **Reference:** See TASKS.md -> AGENT-KNOWLEDGE-00.

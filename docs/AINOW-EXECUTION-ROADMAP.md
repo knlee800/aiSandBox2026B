@@ -1,4 +1,4 @@
-# AINOW-EXECUTION-ROADMAP — ainow.biz Execution Roadmap and Priority Guardrails
+﻿# AINOW-EXECUTION-ROADMAP — ainow.biz Execution Roadmap and Priority Guardrails
 
 **Created:** 2026-07-06
 **Task:** ROADMAP-00
@@ -44,8 +44,8 @@ It establishes the agreed sequence, guardrails, and rules for when that sequence
 | 1 | AGENT-HARNESS-05C9 | Structured Harness Audit Events | COMPLETE |
 | 2 | AGENT-PLATFORM-02 | Static RPG Office/Town Dashboard Shell | COMPLETE |
 | 3 | AGENT-PLATFORM-03 | Builder Agent Route Integration Review | COMPLETE |
-| 4 | AGENT-KNOWLEDGE-00 | Common Knowledge Base Architecture Plan | NEXT |
-| 5 | AGENT-COLLAB-00 | Agent Referral and Collaboration Protocol Plan | After Knowledge |
+| 4 | AGENT-KNOWLEDGE-00 | Common Knowledge Base Architecture Plan | COMPLETE |
+| 5 | AGENT-COLLAB-00 | Agent Referral and Collaboration Protocol Plan | NEXT |
 | 6 | Next Agent Harness slice | TBD — decide after collaboration plan | After Collaboration plan |
 | 7 | BILLING-READY-00 | Billing, Plan, Credit, and Entitlement Audit | After Knowledge + Collaboration |
 | 8 | Beta preparation | Beta readiness checklist | After Billing audit |
@@ -54,9 +54,9 @@ It establishes the agreed sequence, guardrails, and rules for when that sequence
 
 ## 4. Current Next Task
 
-**AGENT-KNOWLEDGE-00 — Common Knowledge Base Architecture Plan**
+**AGENT-COLLAB-00 — Agent Referral and Collaboration Protocol Plan**
 
-This task has not been registered yet. Registration is the next governance action after this roadmap is reviewed and approved.
+AGENT-KNOWLEDGE-00 is COMPLETE and LOCKED (2026-07-06). AGENT-COLLAB-00 is the next task to register and plan.
 
 ---
 

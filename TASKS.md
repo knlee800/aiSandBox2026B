@@ -25673,6 +25673,7 @@ AGENT-COLLAB-00 — Agent Referral and Collaboration Protocol Plan
 #### AGENT-KNOWLEDGE-00: Common Knowledge Base Architecture Plan
 
 **Status:** COMPLETE and LOCKED
+**Completed:** 2026-07-06
 **Registered:** 2026-07-06
 **Task ID:** AGENT-KNOWLEDGE-00
 **Family:** AGENT KNOWLEDGE / COMMON KNOWLEDGE BASE
@@ -25814,4 +25815,5 @@ Create the architecture plan for the common knowledge base layer that will give 
 
 ---
 
+**Checkpoint:** docs/AGENT-KNOWLEDGE-00-CHECKPOINT.md
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-KNOWLEDGE-00.
