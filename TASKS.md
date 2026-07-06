@@ -25817,3 +25817,162 @@ Create the architecture plan for the common knowledge base layer that will give 
 
 **Checkpoint:** docs/AGENT-KNOWLEDGE-00-CHECKPOINT.md
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-KNOWLEDGE-00.
+
+---
+
+#### AGENT-COLLAB-00: Agent Referral and Collaboration Protocol Plan
+
+**Status:** COMPLETE and LOCKED
+**Registered:** 2026-07-06
+**Completed:** 2026-07-06
+**Task ID:** AGENT-COLLAB-00
+**Family:** AGENT COLLABORATION / REFERRAL PROTOCOL
+**Priority:** High
+**Nature:** PLANNING/GOVERNANCE — agent referral and collaboration protocol planning
+**Risk:** Low (planning/governance only, no implementation code)
+**Roadmap position:** #5 — after AGENT-KNOWLEDGE-00, before Next Harness slice
+
+#### Dependencies
+
+- ROADMAP-00 — docs/AINOW-EXECUTION-ROADMAP.md created and updated (ACTIVE governance document)
+- AGENT-PLATFORM-00 — COMPLETE and LOCKED (ainow.biz Multi-Agent Platform Master Plan)
+- AGENT-PLATFORM-01 — COMPLETE and LOCKED (Agent Registry Foundation)
+- AGENT-PLATFORM-03 — COMPLETE and LOCKED (Builder Agent Route Integration Review)
+- AGENT-KNOWLEDGE-00 — COMPLETE and LOCKED (Common Knowledge Base Architecture Plan)
+- AGENT-HARNESS-05C9 — COMPLETE and LOCKED (Structured Harness Audit Events)
+
+#### Purpose
+
+Create the architecture plan for safe multi-agent collaboration, including referrals, shared work objects, agent comments, approval gates, loop prevention, idempotency, auditability, source-linked recommendations, and human-owner control.
+
+#### Scope
+
+- Planning/governance only.
+- Define agent referral lifecycle.
+- Define collaboration safety limits:
+  - max referral depth
+  - max agents per collaboration
+  - duplicate referral detection / idempotency key
+  - referral loop prevention
+  - threshold pause / owner approval
+- Define shared work object concepts:
+  - ticket
+  - decision
+  - draft
+  - referral
+  - meeting topic
+  - agent comment
+  - risk tag
+  - opportunity tag
+  - source link
+  - approval status
+  - audit event
+- Define approval gates:
+  - external emails
+  - contracts
+  - payments
+  - public-facing content
+  - destructive actions
+  - binding commitments
+- Define relationship to:
+  - Agent Registry
+  - Common Knowledge Base
+  - Agent Harness audit events
+  - future Billing / credits
+  - future integrations
+- Define proposed follow-up implementation tasks.
+- No database schema implementation in this task.
+- No runtime orchestration implementation in this task.
+
+#### Keith's Contract-Negotiation Collaboration Scenario
+
+Target scenario: Chief of Staff receives an agency contract negotiation email.
+
+Chief of Staff workflow:
+1. Analyzes the email.
+2. Drafts a reply.
+3. Creates a daily to-do ticket for Keith.
+4. Creates a decision ticket.
+5. Refers the contract to a future Legal Advisor agent.
+6. Sends Slack/app notification.
+7. Product Strategy or Technology Advisor can contribute if relevant.
+8. Keith makes the final approval.
+9. Only after Keith approval may any external reply be sent.
+
+This scenario must inform referral lifecycle design, approval gate requirements, and human-owner control model.
+
+#### UX/UI Requirements (for future implementation slices)
+
+- The app is multilingual-first.
+- Do not add hardcoded English user-facing UI text.
+- Update locale files together for any future UI:
+  - `frontend/messages/en.json`
+  - `frontend/messages/zh-TW.json`
+  - `frontend/messages/zh-CN.json`
+- Use existing translation hook/pattern.
+- Normal UI icons must use Heroicons v2 Outline only unless explicitly approved otherwise.
+- UX/UI advisory skills are advisory-only.
+
+#### Non-Goals
+
+- Do not implement collaboration runtime.
+- Do not implement database schema.
+- Do not implement tickets/decisions in code.
+- Do not implement email/Slack/Notion/Gmail integrations.
+- Do not implement Legal Advisor agent.
+- Do not implement backend routes.
+- Do not modify Agent Harness behavior.
+- Do not activate Agent Harness.
+- Do not implement billing.
+- Do not implement knowledge ingestion.
+- Do not modify frontend UI.
+- Do not register AGENT-SKILLS-00, BILLING-READY-00, AGENT-COLLAB-01, or any new Harness task.
+
+#### Registration Acceptance Criteria
+
+- [x] AGENT-COLLAB-00 registered in TASKS.md with ACTIVE status.
+- [x] AGENT-COLLAB-00 mirrored in TASKS_BACKLOG_FULL.md with matching content.
+- [x] Dependencies recorded.
+- [x] Roadmap ordering confirmed: Collaboration after Knowledge.
+- [x] Scope clearly limited to collaboration protocol planning.
+- [x] Keith's contract-negotiation collaboration scenario recorded.
+- [x] Safety limits recorded.
+- [x] Approval gate requirements recorded.
+- [x] Non-goals clearly recorded.
+- [x] Planning acceptance criteria listed.
+- [x] No source/test/frontend/package/env/Docker/schema/database files changed.
+- [x] No runtime/provider/database/browser/Docker commands executed.
+- [x] No subagents used.
+
+#### Planning Acceptance Criteria
+
+- [x] Planning document created — `docs/AGENT-COLLAB-00-COLLABORATION-PROTOCOL-PLAN.md` (36 sections).
+- [x] Agent referral lifecycle defined.
+- [x] Collaboration safety limits defined.
+- [x] Shared work object concepts defined.
+- [x] Approval gates defined.
+- [x] Idempotency and loop prevention model defined.
+- [x] Agent-to-agent contribution model defined.
+- [x] Human-owner control model defined.
+- [x] Source-linked recommendation model defined.
+- [x] Relationship to Agent Registry defined.
+- [x] Relationship to Common Knowledge Base defined.
+- [x] Relationship to Agent Harness audit events defined.
+- [x] Relationship to Billing/credits defined.
+- [x] Relationship to future integrations defined.
+- [x] Future implementation roadmap proposed.
+- [x] Explicit non-goals confirmed.
+
+#### Checkpoint
+
+**Checkpoint document:** `docs/AGENT-COLLAB-00-CHECKPOINT.md`
+
+#### Next Recommended Task
+
+Next Agent Harness slice — exact task TBD by Keith. Do not register automatically.
+
+---
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-COLLAB-00.
+
+---

@@ -45,8 +45,8 @@ It establishes the agreed sequence, guardrails, and rules for when that sequence
 | 2 | AGENT-PLATFORM-02 | Static RPG Office/Town Dashboard Shell | COMPLETE |
 | 3 | AGENT-PLATFORM-03 | Builder Agent Route Integration Review | COMPLETE |
 | 4 | AGENT-KNOWLEDGE-00 | Common Knowledge Base Architecture Plan | COMPLETE |
-| 5 | AGENT-COLLAB-00 | Agent Referral and Collaboration Protocol Plan | NEXT |
-| 6 | Next Agent Harness slice | TBD — decide after collaboration plan | After Collaboration plan |
+| 5 | AGENT-COLLAB-00 | Agent Referral and Collaboration Protocol Plan | COMPLETE |
+| 6 | Next Agent Harness slice | TBD — decide after collaboration plan | NEXT — exact task TBD by Keith |
 | 7 | BILLING-READY-00 | Billing, Plan, Credit, and Entitlement Audit | After Knowledge + Collaboration |
 | 8 | Beta preparation | Beta readiness checklist | After Billing audit |
 
@@ -54,9 +54,9 @@ It establishes the agreed sequence, guardrails, and rules for when that sequence
 
 ## 4. Current Next Task
 
-**AGENT-COLLAB-00 — Agent Referral and Collaboration Protocol Plan**
+**Next Agent Harness slice — exact task TBD by Keith.**
 
-AGENT-KNOWLEDGE-00 is COMPLETE and LOCKED (2026-07-06). AGENT-COLLAB-00 is the next task to register and plan.
+AGENT-COLLAB-00 is COMPLETE and LOCKED (2026-07-06). The next item in the strategic sequence is the Next Agent Harness slice. Keith must decide and register the exact task before proceeding.
 
 ---
 
