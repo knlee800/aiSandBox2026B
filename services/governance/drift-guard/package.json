@@ -19,15 +19,15 @@
     "testEnvironment": "node",
     "rootDir": ".",
     "testMatch": ["**/__tests__/**/*.spec.ts"],
-    "globals": {
-      "ts-jest": {
+    "transform": {
+      "^.+\\.tsx?$": ["ts-jest", {
         "tsconfig": {
           "strict": true,
           "esModuleInterop": true,
           "module": "commonjs",
           "target": "ES2021"
         }
-      }
+      }]
     }
   }
 }
