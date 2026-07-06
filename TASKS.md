@@ -25143,14 +25143,15 @@ Resume AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell.
 
 ## AGENT PLATFORM / AINOW.BIZ MULTI-AGENT
 
-**Family status:** ACTIVE — AGENT-PLATFORM-00 COMPLETE and LOCKED, AGENT-PLATFORM-01 COMPLETE and LOCKED, AGENT-PLATFORM-02 COMPLETE and LOCKED
+**Family status:** ACTIVE — AGENT-PLATFORM-00 COMPLETE and LOCKED, AGENT-PLATFORM-01 COMPLETE and LOCKED, AGENT-PLATFORM-02 COMPLETE and LOCKED, AGENT-PLATFORM-03 COMPLETE and LOCKED
 
-**Current stage:** AGENT-PLATFORM-02 COMPLETE and LOCKED — Static RPG Office/Town Dashboard Shell (02A complete 2026-07-06, 02B complete 2026-07-06)
+**Current stage:** AGENT-PLATFORM-03 COMPLETE and LOCKED — Register aiSandBox as Builder Agent / Builder Route Integration Review (completed 2026-07-06)
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 — ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED — 2026-07-04)
 2. AGENT-PLATFORM-01 — Agent Registry Foundation (COMPLETE and LOCKED — 2026-07-04)
 3. AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell (COMPLETE and LOCKED — 2026-07-06)
+4. AGENT-PLATFORM-03 — Register aiSandBox as Builder Agent / Builder Route Integration Review (COMPLETE and LOCKED — 2026-07-06)
 
 **Completed foundations (prerequisites):**
 - AGENT HARNESS family foundations COMPLETE and LOCKED — Agent Harness v1 contracts, tool protocol, model adapters, tool dispatcher, orchestrator loop, execution-bound hardening (through AGENT-HARNESS-05C8)
@@ -25557,3 +25558,110 @@ Complete the second bounded implementation phase of AGENT-PLATFORM-02 by adding 
 ---
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-02B.
+
+---
+
+#### AGENT-PLATFORM-03: Register aiSandBox as Builder Agent / Builder Route Integration Review
+
+**Status:** COMPLETE and LOCKED
+**Completed:** 2026-07-06
+**Checkpoint:** docs/AGENT-PLATFORM-03-CHECKPOINT.md
+**Task ID:** AGENT-PLATFORM-03
+**Family:** AGENT PLATFORM / AINOW.BIZ MULTI-AGENT
+**Priority:** High
+**Nature:** REVIEW ONLY — no code changes were needed
+**Risk:** Low (review pass with bounded frontend-only fixes if needed)
+**Registered:** 2026-07-06
+
+#### Dependencies
+
+- AGENT-PLATFORM-00 — COMPLETE and LOCKED (ainow.biz Multi-Agent Platform Master Plan)
+- AGENT-PLATFORM-01 — COMPLETE and LOCKED (Agent Registry Foundation)
+- AGENT-PLATFORM-02 — COMPLETE and LOCKED (Static RPG Office/Town Dashboard Shell)
+- AGENT-HARNESS-05C9 — COMPLETE and LOCKED (Structured Audit Event Recording)
+
+#### Purpose
+
+Confirm and harden the integration between the new ainow.biz platform dashboard and the existing aiSandBox/Builder Agent route, ensuring Builder Agent is correctly represented as the first real agent module without changing Agent Harness runtime behavior. Addresses the residual validation gap from AGENT-PLATFORM-02B: live browser smoke was not performed for the Command Center sidebar link and Builder Agent card navigation.
+
+#### Scope
+
+- Review the existing Builder Agent registry manifest (`frontend/lib/agent-platform/agent-registry.ts`).
+- Confirm registry route `/app` is correct for the existing localized workspace route `/${locale}/app`.
+- Confirm platform dashboard Builder Agent card link behavior (route, click handler, navigation).
+- Confirm workspace sidebar Command Center link behavior.
+- Confirm compact sidebar Command Center icon behavior.
+- Confirm coming-soon agents do not navigate.
+- Perform or guide live browser smoke for:
+  - workspace sidebar → Command Center `/platform`
+  - Command Center → Builder workspace `/app`
+  - compact sidebar Command Center icon
+  - coming-soon agents confirmed non-navigating
+- If small fixes are required, keep them frontend-only and tightly scoped.
+- Update focused tests only if route/navigation behavior changes.
+- Record findings and whether AGENT-PLATFORM-03 requires implementation or is review-only.
+
+#### UX/UI Requirements
+
+- Multilingual-first: no hardcoded English user-facing UI text.
+- Update all required locale files together if any text changes:
+  - `frontend/messages/en.json`
+  - `frontend/messages/zh-TW.json`
+  - `frontend/messages/zh-CN.json`
+- Use the existing translation hook/pattern.
+- Normal UI icons use Heroicons v2 Outline only unless explicitly approved otherwise.
+- UX/UI advisory skills (impeccable, Emil Kowalski design engineering) are advisory-only.
+- Advisory skills must not override CLAUDE.md, TASKS.md, registered scope, architecture, or tests.
+
+#### Non-Goals
+
+- No dashboard redesign.
+- No walking character or sprite animation.
+- No new agents.
+- No runtime orchestration.
+- No backend service changes.
+- No Agent Harness behavior changes.
+- No Agent Harness activation.
+- No work objects, tickets, decisions, or referrals.
+- No knowledge ingestion.
+- No billing, Stripe, or payment.
+- Do not register AGENT-COLLAB-00, AGENT-KNOWLEDGE-00, AGENT-SKILLS-00, BILLING-READY-00, or any new Harness task in this registration.
+
+#### Registration Acceptance Criteria
+
+- [x] AGENT-PLATFORM-03 registered in TASKS.md with ACTIVE status.
+- [x] AGENT-PLATFORM-03 mirrored in TASKS_BACKLOG_FULL.md with matching content.
+- [x] Dependencies recorded.
+- [x] Scope clearly limited to Builder route integration review and small frontend-only fixes if needed.
+- [x] UX/UI multilingual-first requirements recorded.
+- [x] Non-goals clearly recorded.
+- [x] Review/implementation acceptance criteria listed for future pass.
+- [x] No source/test/frontend/package/env/Docker/schema/database files changed.
+- [x] No runtime/provider/database/browser/Docker commands executed.
+- [x] No subagents used.
+
+#### Review / Implementation Acceptance Criteria (for review/implementation pass)
+
+- [x] Builder Agent registry manifest reviewed.
+- [x] Builder route `/app` confirmed against existing `/${locale}/app` route.
+- [x] Platform dashboard Builder Agent navigation reviewed.
+- [x] Workspace sidebar Command Center navigation reviewed.
+- [x] Compact sidebar Command Center behavior reviewed.
+- [x] Coming-soon agents confirmed non-navigating.
+- [x] Live browser smoke DEFERRED — code inspection and local validation (tests, TypeScript, build) all passed. Manual smoke steps recorded in docs/AGENT-PLATFORM-03-CHECKPOINT.md section 10.
+- [x] No fixes required — review was read-only. Integration was already correct from AGENT-PLATFORM-02B.
+- [x] No translation file changes required — no user-facing text was changed.
+- [x] No test changes required — no route/navigation behavior was changed.
+- [x] No backend/Agent Harness/runtime orchestration changes.
+
+#### Residual Validation Gap
+
+Browser smoke was deferred. Code inspection and local validation (platform-dashboard.test.ts PASS 11/11, agent-registry.test.ts PASS 9/9, tsc --noEmit PASS, npm run build PASS) confirmed correctness. Manual smoke steps recorded in docs/AGENT-PLATFORM-03-CHECKPOINT.md section 10. This is not a blocker for locking.
+
+#### Next Recommended Task (proposed, not registered)
+
+AGENT-COLLAB-00 — Agent Referral and Collaboration Protocol Plan
+
+---
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-03.
