@@ -25145,6 +25145,8 @@ Resume AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell.
 
 **Family status:** ACTIVE — AGENT-PLATFORM-00 COMPLETE and LOCKED, AGENT-PLATFORM-01 COMPLETE and LOCKED, AGENT-PLATFORM-02 COMPLETE and LOCKED, AGENT-PLATFORM-03 COMPLETE and LOCKED
 
+**Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` — controls cross-family priority order; Knowledge before Collaboration before Billing.
+
 **Current stage:** AGENT-PLATFORM-03 COMPLETE and LOCKED — Register aiSandBox as Builder Agent / Builder Route Integration Review (completed 2026-07-06)
 
 **Registered tasks:**
