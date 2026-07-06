@@ -84,6 +84,8 @@ describe('createAgentHarnessConfigV1', () => {
   it('returns enableToolLoop false when env is empty', () => {
     const config = createAgentHarnessConfigV1({});
     expect(config.enableToolLoop).toBe(false);
+    expect(config.enableWriteTools).toBe(false);
+    expect(config.enableValidationTools).toBe(false);
   });
 
   it('returns enableToolLoop true when AGENT_HARNESS_ENABLE_TOOL_LOOP is "true"', () => {
@@ -111,11 +113,50 @@ describe('createAgentHarnessConfigV1', () => {
     });
     expect(config.enableBrowserSmoke).toBe(false);
   });
+
+  it('parses enableWriteTools and enableValidationTools true', () => {
+    const config = createAgentHarnessConfigV1({
+      AGENT_HARNESS_ENABLE_WRITE_TOOLS: 'true',
+      AGENT_HARNESS_ENABLE_VALIDATION_TOOLS: 'true',
+    });
+    expect(config.enableWriteTools).toBe(true);
+    expect(config.enableValidationTools).toBe(true);
+  });
+
+  it('parses enableWriteTools and enableValidationTools false', () => {
+    const config = createAgentHarnessConfigV1({
+      AGENT_HARNESS_ENABLE_WRITE_TOOLS: 'false',
+      AGENT_HARNESS_ENABLE_VALIDATION_TOOLS: 'false',
+    });
+    expect(config.enableWriteTools).toBe(false);
+    expect(config.enableValidationTools).toBe(false);
+  });
+
+  it('throws for invalid AGENT_HARNESS_ENABLE_WRITE_TOOLS value', () => {
+    expect(() =>
+      createAgentHarnessConfigV1({
+        AGENT_HARNESS_ENABLE_WRITE_TOOLS: '1',
+      }),
+    ).toThrow(/AGENT_HARNESS_ENABLE_WRITE_TOOLS/);
+  });
+
+  it('throws for invalid AGENT_HARNESS_ENABLE_VALIDATION_TOOLS value', () => {
+    expect(() =>
+      createAgentHarnessConfigV1({
+        AGENT_HARNESS_ENABLE_VALIDATION_TOOLS: 'yes',
+      }),
+    ).toThrow(/AGENT_HARNESS_ENABLE_VALIDATION_TOOLS/);
+  });
 });
 
 describe('DEFAULT_AGENT_HARNESS_CONFIG_V1', () => {
   it('has enableToolLoop false in normal test environment', () => {
     expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop).toBe(false);
+  });
+
+  it('defaults enableWriteTools and enableValidationTools to false', () => {
+    expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.enableWriteTools).toBe(false);
+    expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.enableValidationTools).toBe(false);
   });
 
   it('is frozen', () => {

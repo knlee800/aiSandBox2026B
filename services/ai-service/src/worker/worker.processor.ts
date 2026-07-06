@@ -786,31 +786,35 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                       sessionId: job.data.sessionId,
                     }),
                   );
-                  dispatcher.registerHandler(
-                    'write_file',
-                    createWriteFileHandler({
-                      client: this.apiGatewayHttpClient,
-                      sessionId: job.data.sessionId,
-                      maxFileWriteBytes: DEFAULT_AGENT_HARNESS_CONFIG_V1.maxFileWriteBytes,
-                    }),
-                  );
-                  dispatcher.registerHandler(
-                    'delete_file',
-                    createDeleteFileHandler({
-                      client: this.apiGatewayHttpClient,
-                      sessionId: job.data.sessionId,
-                    }),
-                  );
-                  dispatcher.registerHandler(
-                    'run_validation',
-                    createRunValidationHandler({
-                      client: this.apiGatewayHttpClient,
-                      sessionId: job.data.sessionId,
-                      allowedValidationCommands: DEFAULT_AGENT_HARNESS_CONFIG_V1.allowedValidationCommands,
-                      validationTimeoutMs: DEFAULT_AGENT_HARNESS_CONFIG_V1.validationTimeoutMs,
-                      maxValidationOutputBytes: DEFAULT_AGENT_HARNESS_CONFIG_V1.maxValidationOutputBytes,
-                    }),
-                  );
+                  if (DEFAULT_AGENT_HARNESS_CONFIG_V1.enableWriteTools) {
+                    dispatcher.registerHandler(
+                      'write_file',
+                      createWriteFileHandler({
+                        client: this.apiGatewayHttpClient,
+                        sessionId: job.data.sessionId,
+                        maxFileWriteBytes: DEFAULT_AGENT_HARNESS_CONFIG_V1.maxFileWriteBytes,
+                      }),
+                    );
+                    dispatcher.registerHandler(
+                      'delete_file',
+                      createDeleteFileHandler({
+                        client: this.apiGatewayHttpClient,
+                        sessionId: job.data.sessionId,
+                      }),
+                    );
+                  }
+                  if (DEFAULT_AGENT_HARNESS_CONFIG_V1.enableValidationTools) {
+                    dispatcher.registerHandler(
+                      'run_validation',
+                      createRunValidationHandler({
+                        client: this.apiGatewayHttpClient,
+                        sessionId: job.data.sessionId,
+                        allowedValidationCommands: DEFAULT_AGENT_HARNESS_CONFIG_V1.allowedValidationCommands,
+                        validationTimeoutMs: DEFAULT_AGENT_HARNESS_CONFIG_V1.validationTimeoutMs,
+                        maxValidationOutputBytes: DEFAULT_AGENT_HARNESS_CONFIG_V1.maxValidationOutputBytes,
+                      }),
+                    );
+                  }
                   if (DEFAULT_AGENT_HARNESS_CONFIG_V1.enableBrowserSmoke) {
                     dispatcher.registerHandler(
                       'browser_smoke',
@@ -835,6 +839,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                     signal: abortController.signal,
                     dispatcher,
                     recorder: auditRecorder,
+                    toolTimeoutMs: DEFAULT_AGENT_HARNESS_CONFIG_V1.toolTimeoutMs,
                   };
 
                   if (DEFAULT_AGENT_HARNESS_CONFIG_V1.enablePreApplyCheckpoint) {

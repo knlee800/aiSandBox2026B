@@ -3,6 +3,11 @@ import {
   AgentHarnessConfigV1,
 } from '../contracts/agent-harness.contracts';
 
+export type AgentHarnessRuntimeConfigV1 = AgentHarnessConfigV1 & {
+  readonly enableWriteTools: boolean;
+  readonly enableValidationTools: boolean;
+};
+
 /**
  * Strict boolean parser for environment-backed feature gates.
  * Accepts only "true" / "false" (case-insensitive, trimmed).
@@ -31,14 +36,24 @@ export function parseStrictBooleanEnv(
 
 /**
  * Factory that produces an AgentHarnessConfigV1 from an env-like record.
- * Reads AGENT_HARNESS_ENABLE_TOOL_LOOP only.
+ * Reads strict boolean feature flags for harness gating.
  */
 export function createAgentHarnessConfigV1(
   env: Record<string, string | undefined>,
-): Readonly<AgentHarnessConfigV1> {
+): Readonly<AgentHarnessRuntimeConfigV1> {
   const enableToolLoop = parseStrictBooleanEnv(
     'AGENT_HARNESS_ENABLE_TOOL_LOOP',
     env.AGENT_HARNESS_ENABLE_TOOL_LOOP,
+    false,
+  );
+  const enableWriteTools = parseStrictBooleanEnv(
+    'AGENT_HARNESS_ENABLE_WRITE_TOOLS',
+    env.AGENT_HARNESS_ENABLE_WRITE_TOOLS,
+    false,
+  );
+  const enableValidationTools = parseStrictBooleanEnv(
+    'AGENT_HARNESS_ENABLE_VALIDATION_TOOLS',
+    env.AGENT_HARNESS_ENABLE_VALIDATION_TOOLS,
     false,
   );
 
@@ -48,7 +63,7 @@ export function createAgentHarnessConfigV1(
     'npx tsc --noEmit',
   ]);
 
-  const config: AgentHarnessConfigV1 = {
+  const config: AgentHarnessRuntimeConfigV1 = {
     contractVersion: AGENT_HARNESS_CONTRACT_VERSION_V1,
     maxToolIterations: 3,
     maxFileReadBytes: 262_144,
@@ -66,6 +81,8 @@ export function createAgentHarnessConfigV1(
     requireApprovalForLargeWrite: true,
     enableBrowserSmoke: false,
     enableSemanticSearch: false,
+    enableWriteTools,
+    enableValidationTools,
     enableToolLoop,
     enablePreApplyCheckpoint: true,
     auditEventsEnabled: true,
@@ -80,5 +97,5 @@ export function createAgentHarnessConfigV1(
  * This module intentionally centralizes policy/config data only.
  * Runtime behavior wiring is handled in later slices.
  */
-export const DEFAULT_AGENT_HARNESS_CONFIG_V1: Readonly<AgentHarnessConfigV1> =
+export const DEFAULT_AGENT_HARNESS_CONFIG_V1: Readonly<AgentHarnessRuntimeConfigV1> =
   createAgentHarnessConfigV1(process.env);

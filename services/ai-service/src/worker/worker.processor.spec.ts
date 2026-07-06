@@ -2,7 +2,10 @@ import {
   buildAIExecutionRequest,
   buildExecutionPromptParts,
 } from './worker.processor';
-import { DEFAULT_AGENT_HARNESS_CONFIG_V1 } from '../agent-harness/config/agent-harness.config';
+import {
+  createAgentHarnessConfigV1,
+  DEFAULT_AGENT_HARNESS_CONFIG_V1,
+} from '../agent-harness/config/agent-harness.config';
 import { InMemoryHarnessAuditRecorder } from '../agent-harness/audit';
 
 describe('buildAIExecutionRequest', () => {
@@ -349,6 +352,16 @@ describe('Agent Harness empty-dispatcher wiring', () => {
     expect(workerSource).toContain('maxToolIterations: DEFAULT_AGENT_HARNESS_CONFIG_V1.maxToolIterations');
     expect(workerSource).toContain('maxToolResultBytes: DEFAULT_AGENT_HARNESS_CONFIG_V1.maxToolResultBytes');
   });
+
+  it('WorkerProcessor passes configured toolTimeoutMs into executeAgentHarnessLoop options', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    expect(workerSource).toContain(
+      'toolTimeoutMs: DEFAULT_AGENT_HARNESS_CONFIG_V1.toolTimeoutMs',
+    );
+  });
 });
 
 describe('Agent Harness double-gate config', () => {
@@ -569,31 +582,54 @@ describe('Agent Harness 03A: read_file/list_files handler registration', () => {
     expect(workerSource).toContain('createDeleteFileHandler');
   });
 
-  it('WorkerProcessor registers read_file, list_files, write_file, and delete_file handlers', () => {
+  it('WorkerProcessor always registers read_file and list_files in harness path', () => {
     const workerSource = require('fs').readFileSync(
       require('path').join(__dirname, 'worker.processor.ts'),
       'utf-8',
     );
     const readFileRegistrations = (workerSource.match(/registerHandler\(\s*['"]read_file['"]/g) || []).length;
     const listFilesRegistrations = (workerSource.match(/registerHandler\(\s*['"]list_files['"]/g) || []).length;
-    const writeFileRegistrations = (workerSource.match(/registerHandler\(\s*['"]write_file['"]/g) || []).length;
-    const deleteFileRegistrations = (workerSource.match(/registerHandler\(\s*['"]delete_file['"]/g) || []).length;
     expect(readFileRegistrations).toBe(1);
     expect(listFilesRegistrations).toBe(1);
-    expect(writeFileRegistrations).toBe(1);
-    expect(deleteFileRegistrations).toBe(1);
   });
 
-  it('WorkerProcessor registers run_validation handler in the double-gated harness branch', () => {
+  it('WorkerProcessor gates write_file and delete_file registration behind enableWriteTools', () => {
     const workerSource = require('fs').readFileSync(
       require('path').join(__dirname, 'worker.processor.ts'),
       'utf-8',
     );
-    const harnessGateIndex = workerSource.indexOf("harnessVersion === 'v1'");
-    const runValidationRegIndex = workerSource.indexOf("'run_validation'");
-    expect(runValidationRegIndex).toBeGreaterThan(harnessGateIndex);
-    const registrations = (workerSource.match(/registerHandler\(\s*['"]run_validation['"]/g) || []).length;
-    expect(registrations).toBe(1);
+    expect(workerSource).toContain(
+      'if (DEFAULT_AGENT_HARNESS_CONFIG_V1.enableWriteTools)',
+    );
+    expect(workerSource).toContain("'write_file'");
+    expect(workerSource).toContain("'delete_file'");
+    expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.enableWriteTools).toBe(false);
+  });
+
+  it('WorkerProcessor gates run_validation registration behind enableValidationTools', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    expect(workerSource).toContain(
+      'if (DEFAULT_AGENT_HARNESS_CONFIG_V1.enableValidationTools)',
+    );
+    expect(workerSource).toContain("'run_validation'");
+    expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.enableValidationTools).toBe(false);
+  });
+
+  it('config enables write_file/delete_file when enableWriteTools=true', () => {
+    const config = createAgentHarnessConfigV1({
+      AGENT_HARNESS_ENABLE_WRITE_TOOLS: 'true',
+    });
+    expect(config.enableWriteTools).toBe(true);
+  });
+
+  it('config enables run_validation when enableValidationTools=true', () => {
+    const config = createAgentHarnessConfigV1({
+      AGENT_HARNESS_ENABLE_VALIDATION_TOOLS: 'true',
+    });
+    expect(config.enableValidationTools).toBe(true);
   });
 
   it('WorkerProcessor does not register preview or search tools', () => {
@@ -627,6 +663,21 @@ describe('Agent Harness 03A: read_file/list_files handler registration', () => {
 
   it('browser_smoke is not registered when enableBrowserSmoke defaults to false', () => {
     expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.enableBrowserSmoke).toBe(false);
+  });
+
+  it('plain path remains unchanged and executeAgentHarnessLoop is only used in harness branch', () => {
+    const workerSource = require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+    const harnessBranchIndex = workerSource.indexOf('if (useHarness) {');
+    const executeLoopIndex = workerSource.indexOf('executeAgentHarnessLoop(loopOptions)');
+    const plainExecuteIndex = workerSource.lastIndexOf(
+      'this.aiExecutionService.execute(executionRequest)',
+    );
+    expect(harnessBranchIndex).toBeGreaterThan(-1);
+    expect(executeLoopIndex).toBeGreaterThan(harnessBranchIndex);
+    expect(plainExecuteIndex).toBeGreaterThan(executeLoopIndex);
   });
 
   it('WorkerProcessor does not add run_validation to mutatingToolNames', () => {

@@ -886,6 +886,27 @@ describe('executeAgentHarnessLoop audit events', () => {
     expect(startEvent.maxToolIterations).toBe(3);
     expect(startEvent.harnessVersion).toBe('v1');
     expect(startEvent.sessionId).toBe('sess-1');
+    expect(startEvent.toolTimeoutMs).toBe(0);
+  });
+
+  it('emits configured toolTimeoutMs in loop_started event when provided', async () => {
+    const recorder = new InMemoryHarnessAuditRecorder();
+    const executeFn = jest.fn<Promise<AIAdapterToolUseResult>, any>().mockResolvedValue(
+      makeCompletedResult(),
+    );
+
+    await executeAgentHarnessLoop(
+      makeOptions(executeFn, {
+        recorder,
+        toolTimeoutMs: 30_000,
+      }),
+    );
+
+    const startEvent = recorder.getEvents().find(
+      (e) => e.eventType === 'harness.loop_started',
+    ) as Extract<HarnessAuditEvent, { eventType: 'harness.loop_started' }>;
+    expect(startEvent).toBeDefined();
+    expect(startEvent.toolTimeoutMs).toBe(30_000);
   });
 
   it('emits model_invocation_started and model_invocation_completed events', async () => {

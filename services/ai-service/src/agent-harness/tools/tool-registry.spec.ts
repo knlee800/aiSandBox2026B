@@ -125,7 +125,7 @@ describe('Agent Harness tool registry (v1)', () => {
 
     expect(allTools).toBe(AGENT_HARNESS_TOOL_DEFINITIONS_V1);
     expect(enabledTools).toEqual(expectedEnabledTools);
-    expect(enabledTools).toHaveLength(6);
+    expect(enabledTools).toHaveLength(5);
 
     const enabledIds = enabledTools.map((t) => t.id);
     expect(enabledIds).toContain('read_file');
@@ -133,7 +133,7 @@ describe('Agent Harness tool registry (v1)', () => {
     expect(enabledIds).toContain('write_file');
     expect(enabledIds).toContain('delete_file');
     expect(enabledIds).toContain('run_validation');
-    expect(enabledIds).toContain('browser_smoke');
+    expect(enabledIds).not.toContain('browser_smoke');
 
     for (const tool of enabledTools) {
       expect(isAgentHarnessToolEnabled(tool.id)).toBe(true);
@@ -184,10 +184,11 @@ describe('Agent Harness tool registry (v1)', () => {
     }
   });
 
-  it('marks browser_smoke as enabled, implemented, high-risk, and read-only', () => {
+  it('marks browser_smoke as disabled-by-default metadata while remaining implemented', () => {
     const tool = getAgentHarnessToolDefinition('browser_smoke');
     expect(tool).toBeDefined();
-    expect(tool?.enabled).toBe(true);
+    expect(tool?.enabled).toBe(false);
+    expect(isAgentHarnessToolEnabled('browser_smoke')).toBe(false);
     expect(tool?.implementationStatus).toBe('implemented');
     expect(tool?.riskLevel).toBe('high');
     expect(tool?.requiresApproval).toBe(false);

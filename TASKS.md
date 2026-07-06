@@ -25969,10 +25969,231 @@ This scenario must inform referral lifecycle design, approval gate requirements,
 
 #### Next Recommended Task
 
-Next Agent Harness slice — exact task TBD by Keith. Do not register automatically.
+AGENT-HARNESS-06 — Read-Only Harness Canary Readiness Review — registered and ACTIVE.
 
 ---
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-COLLAB-00.
+
+---
+
+#### AGENT-HARNESS-06: Read-Only Harness Canary Readiness Review
+
+**Status:** COMPLETE and LOCKED
+**Registered:** 2026-07-06
+**Completed:** 2026-07-06
+**Task ID:** AGENT-HARNESS-06
+**Family:** AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
+**Priority:** High
+**Nature:** REVIEW/GOVERNANCE — read-only canary readiness review, no implementation
+**Risk:** Low (read-only review, no runtime activation, no source changes)
+**Roadmap position:** #6 — after AGENT-COLLAB-00, before BILLING-READY-00
+
+#### Dependencies
+
+- AGENT-HARNESS-05C9 — COMPLETE and LOCKED (Structured Harness Audit Events)
+- AGENT-KNOWLEDGE-00 — COMPLETE and LOCKED (Common Knowledge Base Architecture Plan)
+- AGENT-COLLAB-00 — COMPLETE and LOCKED (Agent Referral and Collaboration Protocol Plan)
+- AGENT-PLATFORM-03 — COMPLETE and LOCKED (Builder Agent Route Integration Review)
+
+#### Purpose
+
+Perform a read-only readiness review before any Agent Harness read-only canary or runtime activation. Confirm that the harness is safe to test under controlled conditions, identify any remaining blockers, and define the smallest future canary task.
+
+#### Scope
+
+- Registration/governance only in this task.
+- Future review pass should inspect:
+  - enableToolLoop gate (confirm default false)
+  - entitlement gate
+  - session ownership boundary
+  - tool registry status
+  - read-only tool handlers
+  - write/delete/browser/runtime-risk tools confirmed disabled unless explicitly intended
+  - structured audit events from AGENT-HARNESS-05C9
+  - timeout/signal/result-size hardening
+  - WorkerProcessor harness branch
+  - existing focused tests
+- Future review pass should produce:
+  - canary blocker list
+  - recommendation: proceed to canary or add another hardening slice first
+  - exact future validation/canary plan
+
+#### Non-Goals
+
+- Do not activate Agent Harness.
+- Do not set AGENT_HARNESS_ENABLE_TOOL_LOOP=true.
+- Do not run runtime canary.
+- Do not run Docker.
+- Do not run browser smoke.
+- Do not call providers/APIs.
+- Do not mutate databases.
+- Do not implement new tools.
+- Do not enable write/delete/browser tools.
+- Do not modify source code in this registration task.
+- Do not register BILLING-READY-00.
+- Do not register AGENT-SKILLS-00.
+- Do not start beta preparation.
+
+#### Registration Acceptance Criteria
+
+- [x] AGENT-HARNESS-06 registered in TASKS.md with ACTIVE status.
+- [x] AGENT-HARNESS-06 mirrored in TASKS_BACKLOG_FULL.md with matching content.
+- [x] Dependencies recorded.
+- [x] Scope clearly limited to read-only canary readiness review.
+- [x] Non-goals clearly recorded.
+- [x] Review acceptance criteria listed.
+- [x] ROADMAP-00 updated to identify AGENT-HARNESS-06 as the current next task.
+- [x] No source/test/frontend/package/env/Docker/schema/database files changed.
+- [x] No runtime/provider/database/browser/Docker commands executed.
+- [x] No subagents used.
+
+#### Review Acceptance Criteria
+
+- [x] enableToolLoop gate reviewed and confirmed default false.
+- [x] entitlement gate reviewed.
+- [x] session ownership boundary reviewed.
+- [x] read-only tools reviewed.
+- [x] write/delete/browser/runtime-risk tools confirmed disabled unless explicitly intended.
+- [x] structured audit events reviewed.
+- [x] timeout/signal/result-size hardening reviewed.
+- [x] WorkerProcessor harness branch reviewed.
+- [x] existing focused tests identified.
+- [x] canary blocker list produced.
+- [x] recommendation produced: proceed to canary or add hardening slice.
+- [x] exact future validation/canary plan proposed — AGENT-HARNESS-06A registered.
+- [x] no runtime activation performed.
+
+#### Review Findings
+
+**Decision:** NO-GO for read-only canary as currently implemented.
+
+**Primary blocker:** `write_file`, `delete_file`, and `run_validation` are unconditionally registered when `useHarness=true`.
+
+**Secondary findings:**
+- `browser_smoke` registry metadata says `enabled=true` but runtime gate defaults false.
+- `harness.loop_started` audit event emits `toolTimeoutMs: 0` instead of actual configured timeout.
+
+**Follow-up:** AGENT-HARNESS-06A — Read-Only Canary Hardening Slice — registered as child task.
+
+#### Checkpoint
+
+No checkpoint document for registration-only task. Checkpoint to be created after review pass completes.
+
+#### Next Recommended Task
+
+AGENT-HARNESS-06A — Read-Only Canary Hardening Slice — registered and ACTIVE.
+
+---
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-06.
+
+---
+
+#### AGENT-HARNESS-06A: Read-Only Canary Hardening Slice
+
+**Status:** COMPLETE and LOCKED
+**Registered:** 2026-07-06
+**Completed:** 2026-07-06
+**Task ID:** AGENT-HARNESS-06A
+**Family:** AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
+**Priority:** High
+**Nature:** IMPLEMENTATION — read-only canary hardening, no runtime activation
+**Risk:** Low (source changes only, no runtime activation)
+**Roadmap position:** #6A — child of AGENT-HARNESS-06, before BILLING-READY-00
+**Parent:** AGENT-HARNESS-06 — Read-Only Harness Canary Readiness Review (COMPLETE and LOCKED)
+
+#### Dependencies
+
+- AGENT-HARNESS-06 — COMPLETE and LOCKED (Read-Only Harness Canary Readiness Review, NO-GO finding)
+- AGENT-HARNESS-05C9 — COMPLETE and LOCKED (Structured Harness Audit Events)
+
+#### Review Findings from Parent (AGENT-HARNESS-06)
+
+**Decision:** NO-GO for read-only canary as currently implemented.
+
+**Primary blocker:** `write_file`, `delete_file`, and `run_validation` are unconditionally registered when `useHarness=true`.
+
+**Secondary findings:**
+- `browser_smoke` registry metadata says `enabled=true` but runtime gate defaults false.
+- `harness.loop_started` audit event emits `toolTimeoutMs: 0` instead of actual configured timeout.
+
+#### Purpose
+
+Add the hardening required before a true read-only Agent Harness canary can be planned: gate mutating/validation tool registration behind explicit config flags, align browser_smoke registry metadata with runtime defaults, and fix the loop_started audit event toolTimeoutMs value.
+
+#### Scope
+
+- Add `enableWriteTools` boolean config flag, default `false`.
+- Add `enableValidationTools` boolean config flag, default `false`.
+- Gate `write_file` and `delete_file` registration on `enableWriteTools`.
+- Gate `run_validation` registration on `enableValidationTools`.
+- Keep `read_file` and `list_files` registered when `useHarness` is true.
+- Keep `browser_smoke` gated on `enableBrowserSmoke`, default `false`.
+- Update `browser_smoke` registry metadata to `enabled=false` to match runtime default.
+- Fix `harness.loop_started` audit event to report actual `toolTimeoutMs` instead of `0`.
+- Add focused tests for config defaults and tool registration gating.
+- Keep `enableToolLoop` default `false`.
+- Do not activate Agent Harness.
+
+#### Non-Goals
+
+- Do not run a canary.
+- Do not activate Agent Harness.
+- Do not set `AGENT_HARNESS_ENABLE_TOOL_LOOP=true`.
+- Do not enable write tools by default.
+- Do not enable validation tools by default.
+- Do not enable `browser_smoke` by default.
+- Do not change tool handler behavior except registration gating.
+- Do not modify API Gateway/container-manager.
+- Do not modify frontend.
+- Do not modify database/schema.
+- Do not implement billing.
+- Do not register BILLING-READY-00.
+- Do not register AGENT-SKILLS-00.
+
+#### Registration Acceptance Criteria
+
+- [x] AGENT-HARNESS-06A registered in TASKS.md with ACTIVE status.
+- [x] AGENT-HARNESS-06A mirrored in TASKS_BACKLOG_FULL.md with matching content.
+- [x] Parent/dependencies recorded.
+- [x] NO-GO readiness review finding recorded.
+- [x] Scope clearly limited to read-only canary hardening.
+- [x] Non-goals clearly recorded.
+- [x] Implementation acceptance criteria listed.
+- [x] ROADMAP-00 updated to identify AGENT-HARNESS-06A as the current active harness slice.
+- [x] No source/test/frontend/package/env/Docker/schema/database files changed.
+- [x] No runtime/provider/database/browser/Docker commands executed.
+- [x] No subagents used.
+
+#### Implementation Acceptance Criteria
+
+- [x] enableWriteTools config flag added with default false.
+- [x] enableValidationTools config flag added with default false.
+- [x] write_file registration gated behind enableWriteTools.
+- [x] delete_file registration gated behind enableWriteTools.
+- [x] run_validation registration gated behind enableValidationTools.
+- [x] read_file and list_files remain registered when useHarness is true.
+- [x] browser_smoke remains gated behind enableBrowserSmoke default false.
+- [x] browser_smoke registry metadata aligned with runtime default.
+- [x] harness.loop_started audit event reports actual toolTimeoutMs.
+- [x] Focused tests cover default false gates.
+- [x] Focused tests cover enabled gates.
+- [x] Focused tests confirm read-only canary active tool set is read_file/list_files only.
+- [x] Existing harness tests remain passing.
+- [x] npm run build passes.
+- [x] No runtime activation performed.
+
+#### Checkpoint
+
+**docs/AGENT-HARNESS-06A-CHECKPOINT.md** — created 2026-07-06.
+
+#### Next Recommended Task
+
+AGENT-HARNESS-06B — Read-Only Harness Canary Plan (not yet registered). After harness canary planning: BILLING-READY-00.
+
+---
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-06A.
 
 ---

@@ -27,6 +27,7 @@ export interface AgentHarnessLoopOptions {
   readonly executeFn: AgentHarnessExecuteWithToolsFn;
   readonly request: AIExecutionRequest;
   readonly config: Pick<AgentHarnessConfigV1, 'maxToolIterations' | 'maxToolResultBytes'>;
+  readonly toolTimeoutMs?: number;
   readonly signal?: AbortSignal;
   readonly dispatcher?: ToolDispatcher;
   readonly createCheckpointFn?: (
@@ -69,7 +70,17 @@ const NO_DISPATCHER_FALLBACK =
 export async function executeAgentHarnessLoop(
   options: AgentHarnessLoopOptions,
 ): Promise<AgentHarnessLoopResult> {
-  const { executeFn, request, config, signal, dispatcher, createCheckpointFn, mutatingToolNames, recorder } = options;
+  const {
+    executeFn,
+    request,
+    config,
+    toolTimeoutMs,
+    signal,
+    dispatcher,
+    createCheckpointFn,
+    mutatingToolNames,
+    recorder,
+  } = options;
   const maxIterations = Math.max(1, config.maxToolIterations);
   const maxToolResultBytes =
     typeof config.maxToolResultBytes === 'number' &&
@@ -97,7 +108,7 @@ export async function executeAgentHarnessLoop(
     eventType: 'harness.loop_started' as const,
     maxToolIterations: maxIterations,
     maxToolResultBytes: maxToolResultBytes ?? 0,
-    toolTimeoutMs: 0,
+    toolTimeoutMs: toolTimeoutMs ?? 0,
   });
 
   const toSerializedBytes = (value: unknown): number =>

@@ -284,7 +284,7 @@ export const AGENT_HARNESS_TOOL_DEFINITIONS_V1: readonly AgentHarnessToolRegistr
       },
       riskLevel: 'high',
       requiresApproval: false,
-      enabled: true,
+      enabled: false,
       timeoutMs: DEFAULT_AGENT_HARNESS_CONFIG_V1.browserSmokeTimeoutMs,
       maxInputBytes: DEFAULT_MAX_INPUT_BYTES,
       maxOutputBytes: DEFAULT_MAX_OUTPUT_BYTES,
