@@ -25143,17 +25143,18 @@ Resume AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell.
 
 ## AGENT PLATFORM / AINOW.BIZ MULTI-AGENT
 
-**Family status:** ACTIVE — AGENT-PLATFORM-00 COMPLETE and LOCKED, AGENT-PLATFORM-01 COMPLETE and LOCKED, AGENT-PLATFORM-02 COMPLETE and LOCKED, AGENT-PLATFORM-03 COMPLETE and LOCKED
+**Family status:** ALL REGISTERED TASKS COMPLETE and LOCKED — AGENT-PLATFORM-00 COMPLETE and LOCKED, AGENT-PLATFORM-01 COMPLETE and LOCKED, AGENT-PLATFORM-02 COMPLETE and LOCKED, AGENT-PLATFORM-03 COMPLETE and LOCKED, AGENT-PLATFORM-04 COMPLETE and LOCKED
 
 **Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` — controls cross-family priority order; Knowledge before Collaboration before Billing.
 
-**Current stage:** AGENT-PLATFORM-03 COMPLETE and LOCKED — Register aiSandBox as Builder Agent / Builder Route Integration Review (completed 2026-07-06)
+**Current stage:** AGENT-PLATFORM-04 COMPLETE and LOCKED (2026-07-07) — next recommended: AGENT-HARNESS-07 (not yet registered)
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 — ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED — 2026-07-04)
 2. AGENT-PLATFORM-01 — Agent Registry Foundation (COMPLETE and LOCKED — 2026-07-04)
 3. AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell (COMPLETE and LOCKED — 2026-07-06)
 4. AGENT-PLATFORM-03 — Register aiSandBox as Builder Agent / Builder Route Integration Review (COMPLETE and LOCKED — 2026-07-06)
+5. AGENT-PLATFORM-04 — Multi-Builder Runtime Topology Plan (COMPLETE and LOCKED — 2026-07-07)
 
 **Completed foundations (prerequisites):**
 - AGENT HARNESS family foundations COMPLETE and LOCKED — Agent Harness v1 contracts, tool protocol, model adapters, tool dispatcher, orchestrator loop, execution-bound hardening (through AGENT-HARNESS-05C8)
@@ -25667,6 +25668,117 @@ AGENT-COLLAB-00 — Agent Referral and Collaboration Protocol Plan
 ---
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-03.
+
+---
+
+#### AGENT-PLATFORM-04: Multi-Builder Runtime Topology Plan
+
+**Status:** COMPLETE and LOCKED
+**Completed:** 2026-07-07
+**Task ID:** AGENT-PLATFORM-04
+**Family:** AGENT PLATFORM / MULTI-BUILDER TOPOLOGY
+**Priority:** High
+**Nature:** ARCHITECTURE / PLANNING / GOVERNANCE — multi-builder topology planning only
+**Risk:** HIGH — defines topology before harness activation and multi-agent runtime orchestration
+**Registered:** 2026-07-07
+
+**Topology plan document:** `docs/AGENT-PLATFORM-04-MULTI-BUILDER-TOPOLOGY-PLAN.md`
+
+#### Workflow Steps
+
+1. **Registration** — COMPLETE (2026-07-07)
+2. **Topology/readiness review** — COMPLETE (2026-07-07) — assessed current registry, harness, and session state
+3. **Multi-builder topology plan** — COMPLETE (2026-07-07) — defined role + profile identity model, session isolation, runtime identity flow, harness config handoff, safety boundaries, implementation sequence
+4. **Consolidation/checkpoint** — COMPLETE (2026-07-07)
+
+#### Dependencies
+
+- BILLING-READY-03 — COMPLETE and LOCKED (Credit Balance Persistence Foundation)
+- AGENT-PLATFORM-01 — COMPLETE and LOCKED (Agent Registry Foundation)
+- Existing Agent Platform roadmap/governance state must be preserved
+
+#### Problem Statement
+
+The current aiSandBox platform treats Builder Agent as a single agent with a single harness profile. As the ainow.biz multi-agent platform evolves, support for multiple Builder Agents with different configurations is required — different model profiles, tool permissions, knowledge scopes, skills, referral rules, approval rules, harness profiles, and runtime limits. Before AGENT-HARNESS-07 (Per-Builder Harness Config Adapter) or any multi-agent runtime orchestration proceeds, the topology must be explicitly planned.
+
+This task produces the authoritative plan for how multiple Builder Agents can coexist without implicit file/tool escalation, shared workspace writes without explicit routing, hidden cross-agent tool access, uncontrolled loop/referral recursion, or billing/runtime ambiguity between Builder Agents.
+
+#### Scope
+
+**Multi-Builder Agent differentiation — each Builder Agent may have:**
+- Distinct `modelProfile` (model ID, fallback, max tokens, temperature, cost tier)
+- Distinct `toolPermissions` (allowed, blocked, require-approval tools)
+- Distinct `knowledgeScopes` (specialist scopes per builder)
+- Distinct `skills` (e.g., one builder specializes in frontend, another in backend)
+- Distinct `referralRules` and `approvalRules`
+- Distinct harness profile (runtime limits, timeout policies, tool quotas)
+
+**Per-Builder Agent isolation — each Builder Agent gets:**
+- Separate session identity
+- Separate project/workspace binding
+- Separate container/workspace isolation (no shared `/workspace`)
+- Separate preview/checkpoint ownership
+- Separate audit/event identity (all events attributed to their originating builder)
+
+**Builder-vs-non-Builder runtime distinction:**
+- Builder Agent requires full aiSandBox harness capability (workspace, file ops, preview, checkpoint/revert, Agent Harness tool loop)
+- Chief of Staff / Product Strategy / Technology Advisor Agents may use lightweight runtime first (no Docker container, no workspace, no harness tool loop in initial phase)
+
+**Handoff path after this task:**
+1. AGENT-PLATFORM-04 — Multi-Builder Runtime Topology Plan (this task)
+2. AGENT-HARNESS-07 — Per-Builder Harness Config Adapter (future — not yet registered)
+3. AGENT-HARNESS-06C — Builder harness canary (future — remains deferred)
+4. Multi-builder collaboration/runtime orchestration (future — deferred)
+
+**Decisions to be resolved before harness activation:**
+- How Builder Agent instances are distinguished at the harness layer (by agent ID, session ID, or manifest entry)
+- Whether a single harness implementation serves all Builder Agents via per-call config injection, or each builder binds its own harness instance
+- How billing credit consumption is attributed per Builder Agent (separate credit pools vs shared pool with per-agent ledger lines)
+- Whether container isolation is enforced at the OS/Docker level or at the session/routing level
+
+**Safety boundaries (must be defined explicitly):**
+- No implicit file/tool escalation across Builder Agent instances
+- No shared workspace writes without explicit routing through the platform layer
+- No hidden cross-agent tool access — each Builder Agent's tool permissions are enforced by its manifest entry
+- No uncontrolled loop/referral recursion — referral chain limits apply per AGENT-PLATFORM-00 section 9.6
+- No billing/runtime ambiguity — each Builder Agent's execution is attributed to its own session and credit ledger
+
+#### Non-Goals
+
+- No implementation
+- No harness activation
+- No AGENT-HARNESS-07 registration during this task
+- No AGENT-HARNESS-06C execution
+- No multi-agent runtime orchestration implementation
+- No frontend UI implementation
+- No backend runtime code changes
+- No Docker/Postgres/database commands
+- No billing implementation
+- No Stripe/payment work
+
+#### Acceptance Criteria
+
+- [x] AGENT-PLATFORM-04 registered in TASKS.md with ACTIVE status
+- [x] AGENT-PLATFORM-04 mirrored in TASKS_BACKLOG_FULL.md with matching content
+- [x] AINOW-EXECUTION-ROADMAP.md updated to show AGENT-PLATFORM-04 as current ACTIVE task
+- [x] AGENT-HARNESS-07 remains future/not registered
+- [x] AGENT-HARNESS-06C remains deferred
+- [x] BILLING-READY-03 remains COMPLETE and LOCKED
+- [x] No implementation files changed
+- [x] Multi-Builder Runtime Topology Plan created at `docs/AGENT-PLATFORM-04-MULTI-BUILDER-TOPOLOGY-PLAN.md`
+- [x] Checkpoint document created at `docs/AGENT-PLATFORM-04-CHECKPOINT.md`
+- [x] AGENT-PLATFORM-04 marked COMPLETE and LOCKED in TASKS.md, TASKS_BACKLOG_FULL.md, AINOW-EXECUTION-ROADMAP.md
+
+**Checkpoint:** `docs/AGENT-PLATFORM-04-CHECKPOINT.md` — COMPLETE and LOCKED (2026-07-07)
+
+**AGENT-HARNESS-07 status:** Not registered. Next recommended task — must be registered after AGENT-PLATFORM-04 is COMPLETE and LOCKED.
+**AGENT-HARNESS-06C status:** Not registered. Deferred — must remain deferred until after AGENT-HARNESS-07.
+**Multi-builder collaboration/runtime orchestration status:** Not registered. Deferred — comes after AGENT-HARNESS-07 and AGENT-HARNESS-06C.
+**BILLING-READY-04+ status:** Not registered. Deferred.
+
+---
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-04.
 
 ---
 
