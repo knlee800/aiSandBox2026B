@@ -27037,7 +27037,7 @@ Validate the complete credit deduction pipeline before database persistence is i
 - No invoice generation
 - `creditsOverflow = 0` always (no ceiling enforcement)
 - `balanceAfter = undefined` always (no balance tracking)
-- BILLING-READY-03 not registered
+- BILLING-READY-03 registered (see below)
 
 #### Completion Evidence
 
@@ -27052,3 +27052,205 @@ Validate the complete credit deduction pipeline before database persistence is i
 ---
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-02D.
+
+---
+
+#### BILLING-READY-03: Credit Balance Persistence Foundation
+
+**Status:** ACTIVE
+**Registered:** 2026-07-07
+**Task ID:** BILLING-READY-03
+**Family:** BILLING / CREDIT BALANCE PERSISTENCE
+**Priority:** High
+**Nature:** REGISTRATION + MULTI-SLICE IMPLEMENTATION
+**Risk:** Medium (database schema, migrations, TypeORM entities, repository layer, gateway swap)
+**Roadmap position:** #7E — after BILLING-READY-02D, before BILLING-READY-04
+
+#### Dependencies
+
+- BILLING-READY-00 — COMPLETE and LOCKED
+- BILLING-READY-01 — COMPLETE and LOCKED
+- BILLING-READY-02A — COMPLETE and LOCKED
+- BILLING-READY-02B — COMPLETE and LOCKED
+- BILLING-READY-02C — COMPLETE and LOCKED
+- BILLING-READY-02D — COMPLETE and LOCKED
+
+#### Purpose
+
+Introduce database-backed credit balance persistence. Replace the current calculation-only, no-persistence deduction pipeline with durable storage of credit deduction records, user credit balances, and audit-ready history. Establishes `sourceEventId` idempotency, `balanceAfter` semantics, `creditsOverflow` enforcement, and the persistence layer that all future billing enforcement depends on.
+
+#### Split Decision
+
+BILLING-READY-03 is too broad for one safe implementation slice. It is split into four bounded child slices:
+
+- **BILLING-READY-03A** — Schema and persistence design: Define the DB schema design (`CreditBalance` entity, `CreditDeductionRecord` entity), TypeORM entity shapes, repository interface contracts, and migration plan. Governance/design only; no migrations run, no production code changed.
+- **BILLING-READY-03B** — DB schema/migration/repository foundation: Create TypeORM entities, write and run the database migration, and implement the repository layer (`CreditBalanceRepository`, `CreditDeductionRecordRepository`). No gateway swap yet.
+- **BILLING-READY-03C** — Persistent deduction gateway: Implement `PersistentCreditDeductionGateway` using the repository layer from 03B. Swap `CreditDeductionModule` to bind the persistent gateway. Wire `sourceEventId` idempotency (duplicate detection, `skippedDuplicate = true`). Wire `balanceAfter` population.
+- **BILLING-READY-03D** — Balance/overflow/concurrency semantics: Implement `creditsOverflow` enforcement (balance ceiling), atomic transaction semantics, and concurrency safety. Finalize balance-after correctness under concurrent deduction.
+
+Do not implement any child slice during registration.
+
+#### Scope (Parent)
+
+- Define DB-backed credit balance persistence (`CreditBalance` entity: one per user per billing cycle, tracks current balance)
+- Define durable credit deduction record persistence (`CreditDeductionRecord` entity: immutable append-only rows, one per deduction event)
+- Define `sourceEventId` idempotency and duplicate prevention (second submission with same `sourceEventId` + `source` returns first stored result with `skippedDuplicate = true`, no new row created)
+- Define `balanceAfter` semantics (after each deduction, actual stored balance is returned in `CreditDeductionResult.balanceAfter`)
+- Define `creditsOverflow` semantics (if `totalCreditsApplied` would exceed available balance, excess flows to `creditsOverflow`; actual `creditsApplied` is capped at available balance)
+- Define audit trail requirements (every deduction event permanently stored; no mutation of stored records)
+- Preserve `CreditDeductionGateway` as the single deduction entry point
+- Preserve `UsageLedgerService.updateExecutionResult()` as the single runtime trigger
+- Prepare implementation acceptance criteria for BILLING-READY-03A (the first persistence slice)
+
+#### Non-Goals
+
+- No Stripe/payment processing
+- No subscription billing
+- No frontend billing UI
+- No entitlement enforcement
+- No production billing activation
+- No Agent Harness activation
+- No live billing smoke
+- No runtime execution during registration
+
+#### Registration Acceptance Criteria
+
+- [x] BILLING-READY-03 registered in TASKS.md
+- [x] BILLING-READY-03 registered in TASKS_BACKLOG_FULL.md
+- [x] AINOW-EXECUTION-ROADMAP.md points to BILLING-READY-03 as current ACTIVE task
+- [x] Child slices 03A/03B/03C/03D defined in registration entry
+- [x] AGENT-HARNESS-06C remains deferred and not registered
+- [x] AGENT-PLATFORM-04 noted as future, not registered
+
+#### Implementation Acceptance Criteria (not yet checked)
+
+**BILLING-READY-03A — Schema and persistence design:**
+- [ ] `CreditBalance` entity schema defined (TypeORM shape, fields, constraints)
+- [ ] `CreditDeductionRecord` entity schema defined (TypeORM shape, fields, constraints)
+- [ ] Repository interface contracts defined (`CreditBalanceRepository`, `CreditDeductionRecordRepository`)
+- [ ] Migration plan documented
+- [ ] `sourceEventId` uniqueness constraint design confirmed
+- [ ] `balanceAfter` derivation design confirmed
+- [ ] `creditsOverflow` threshold design confirmed
+- [ ] Schema design document created under `docs/`
+
+**BILLING-READY-03B — DB schema/migration/repository foundation:**
+- [ ] TypeORM entities created
+- [ ] Database migration written and run
+- [ ] `CreditBalanceRepository` implemented
+- [ ] `CreditDeductionRecordRepository` implemented
+- [ ] Repository unit tests pass
+- [ ] No gateway swap yet
+
+**BILLING-READY-03C — Persistent deduction gateway:**
+- [ ] `PersistentCreditDeductionGateway` implemented
+- [ ] `CreditDeductionModule` swapped to bind persistent gateway
+- [ ] `sourceEventId` idempotency: duplicate submission returns `skippedDuplicate = true`, no new row
+- [ ] `balanceAfter` populated from actual stored balance post-deduction
+- [ ] Gateway error remains non-breaking (caught, logged as WARN)
+- [ ] Persistent gateway tests pass
+
+**BILLING-READY-03D — Balance/overflow/concurrency semantics:**
+- [ ] `creditsOverflow` enforced: excess credits flow to overflow when balance insufficient
+- [ ] Atomic transaction: balance deduction + record persistence in one DB transaction
+- [ ] Concurrency safety: concurrent deduction does not over-spend balance
+- [ ] All persistence semantics tests pass
+- [ ] No Stripe/payment behavior added
+- [ ] No entitlement enforcement added
+
+#### Scope Boundaries
+
+- No Stripe/payment integration
+- No subscription/entitlement checks
+- No frontend billing UI
+- No invoice generation
+- No Agent Harness activation
+- BILLING-READY-04+ not registered
+
+---
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-03.
+
+---
+
+#### BILLING-READY-03A: Schema and Persistence Design
+
+**Status:** COMPLETE and LOCKED
+**Completed:** 2026-07-07
+**Registered:** 2026-07-07
+**Task ID:** BILLING-READY-03A
+**Parent:** BILLING-READY-03
+**Family:** BILLING / CREDIT BALANCE PERSISTENCE
+**Priority:** High
+**Nature:** GOVERNANCE/DESIGN — schema design only, no implementation
+**Risk:** Low (design document only, no runtime changes)
+**Roadmap position:** #7E-a — first child slice of BILLING-READY-03
+
+#### Dependencies
+
+- BILLING-READY-03 — ACTIVE (parent registration)
+- BILLING-READY-02D — COMPLETE and LOCKED (pipeline simulation validates pre-persistence behavior)
+- BILLING-READY-02A/02B/02C — COMPLETE and LOCKED (gateway architecture, wiring, calculation)
+
+#### Purpose
+
+Define the DB-backed credit balance persistence design. Produce a comprehensive schema design document covering `CreditBalance` entity, `CreditDeductionRecord` entity, repository contracts, idempotency model, transaction semantics, migration plan, and concrete acceptance criteria for BILLING-READY-03B implementation.
+
+#### Scope
+
+- Define `CreditBalance` entity schema (fields, types, constraints, indexes)
+- Define `CreditDeductionRecord` entity schema (fields, types, constraints, indexes)
+- Define `sourceEventId` uniqueness and idempotency model
+- Define transaction model (atomic deduction + balance update)
+- Define repository interface contracts (`CreditBalanceRepository`, `CreditDeductionRecordRepository`)
+- Define `PersistentCreditDeductionGateway` interaction design
+- Define migration plan for BILLING-READY-03B
+- Define acceptance criteria checklist for BILLING-READY-03B
+- Create `docs/BILLING-READY-03A-SCHEMA-PERSISTENCE-DESIGN.md`
+- Create `docs/BILLING-READY-03A-CHECKPOINT.md`
+
+#### Non-Goals
+
+- No TypeORM entities created
+- No database migrations created or run
+- No repository implementations
+- No gateway implementations
+- No production source files changed
+- No tests created or modified
+- No Stripe/payment processing
+- No frontend billing UI
+- No entitlement enforcement
+- No Agent Harness activation
+
+#### Acceptance Criteria
+
+- [x] `CreditBalance` entity schema defined (fields, types, constraints, indexes)
+- [x] `CreditDeductionRecord` entity schema defined (fields, types, constraints, indexes)
+- [x] Repository interface contracts defined (`CreditBalanceRepository`, `CreditDeductionRecordRepository`)
+- [x] `PersistentCreditDeductionGateway` interaction design documented
+- [x] `sourceEventId` uniqueness constraint design confirmed
+- [x] `balanceAfter` derivation design confirmed
+- [x] `creditsOverflow` threshold design confirmed
+- [x] Transaction model documented (atomic semantics, rollback, concurrency)
+- [x] Migration plan documented for BILLING-READY-03B
+- [x] BILLING-READY-03B acceptance criteria checklist defined
+- [x] Schema design document created: `docs/BILLING-READY-03A-SCHEMA-PERSISTENCE-DESIGN.md`
+- [x] Checkpoint created: `docs/BILLING-READY-03A-CHECKPOINT.md`
+- [x] No implementation files changed
+- [x] TASKS.md and TASKS_BACKLOG_FULL.md updated
+- [x] AINOW-EXECUTION-ROADMAP.md updated
+
+#### Completion Evidence
+
+- Design document: `docs/BILLING-READY-03A-SCHEMA-PERSISTENCE-DESIGN.md`
+- Checkpoint: `docs/BILLING-READY-03A-CHECKPOINT.md`
+- Governance files updated: TASKS.md, TASKS_BACKLOG_FULL.md, AINOW-EXECUTION-ROADMAP.md
+- No source/test/migration/entity files changed
+
+#### Next Step
+
+BILLING-READY-03B — DB schema/migration/repository foundation. Implement the entities, migration, and repositories designed in this slice.
+
+---
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-03A.

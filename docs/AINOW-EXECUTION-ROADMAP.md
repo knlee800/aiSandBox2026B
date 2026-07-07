@@ -60,13 +60,17 @@ It establishes the agreed sequence, guardrails, and rules for when that sequence
 | 7B | BILLING-READY-01 | Credit Ledger Foundation | **COMPLETE and LOCKED — 2026-07-06.** TypeScript-only credit ledger domain/types/config (Option A). 10 source files + 3 test files. 16 tests pass. No database migration. See `docs/BILLING-READY-01-CHECKPOINT.md`. |
 | 7C | BILLING-READY-02A/02B/02C | Credit Deduction Pipeline Foundation | **COMPLETE and LOCKED — 2026-07-07.** Abstract gateway contract, NoOp + calculating implementations, single runtime wiring point in usage-ledger, deterministic credit calculation layer. 9 source files + 5 test files. No persistence, no balance enforcement, no Stripe. See `docs/BILLING-READY-02A-02B-02C-CHECKPOINT.md`. |
 | 7D | BILLING-READY-02D | Credit Deduction Pipeline — Simulation-Only Validation | **COMPLETE and LOCKED — 2026-07-07.** Simulation-only validation of the full `CreditDeductionEvent` → `applyDeduction` → `CreditDeductionResult` pipeline. 1 test file modified, 2 simulation tests added. No production source changes. 4 suites / 53 tests passed. See `docs/BILLING-READY-02D-CHECKPOINT.md`. |
+| 7E | BILLING-READY-03 | Credit Balance Persistence Foundation | **ACTIVE — 2026-07-07.** DB-backed credit balance persistence. Split into 4 child slices: 03A (schema design), 03B (DB migration/repository), 03C (persistent gateway + idempotency), 03D (overflow/concurrency semantics). |
+| 7E-a | BILLING-READY-03A | Schema and Persistence Design | **COMPLETE and LOCKED — 2026-07-07.** Design-only child slice. `CreditBalance` and `CreditDeductionRecord` entity schemas, repository contracts, idempotency model, transaction semantics, migration plan. See `docs/BILLING-READY-03A-CHECKPOINT.md`. |
 | 8 | Beta preparation | Beta readiness checklist | After Billing foundation |
 
 ---
 
 ## 4. Current Next Task
 
-**No task is currently ACTIVE.** BILLING-READY-02D is COMPLETE and LOCKED. BILLING-READY-03 has not been registered. The next task requires an explicit Keith decision to register.
+**BILLING-READY-03 — ACTIVE (registered 2026-07-07).** Credit Balance Persistence Foundation. DB-backed credit balance persistence, durable deduction records, `sourceEventId` idempotency, `balanceAfter` semantics, `creditsOverflow` enforcement, and audit trail. Split into 4 child slices: 03A (schema and persistence design), 03B (DB schema/migration/repository), 03C (persistent deduction gateway), 03D (balance/overflow/concurrency semantics).
+
+**BILLING-READY-03A — COMPLETE and LOCKED (2026-07-07).** Schema and Persistence Design. First child slice of BILLING-READY-03. Governance/design-only. Produced `docs/BILLING-READY-03A-SCHEMA-PERSISTENCE-DESIGN.md` defining `CreditBalance` entity, `CreditDeductionRecord` entity, repository contracts, idempotency model, transaction semantics, migration plan, and BILLING-READY-03B acceptance criteria. No implementation files changed. See `docs/BILLING-READY-03A-CHECKPOINT.md`.
 
 **BILLING-READY-02D — COMPLETE and LOCKED (2026-07-07).** Credit Deduction Pipeline — Simulation-Only Validation. Simulation-only validation of the full `CreditDeductionEvent` → `applyDeduction` → `CreditDeductionResult` pipeline. 1 test file modified (`calculating-credit-deduction.gateway.spec.ts`), 2 simulation tests added. No production source changes. 4 suites / 53 tests passed. No persistence, no balance enforcement, no Stripe. Pre-persistence acceptance criteria for BILLING-READY-03 documented. See `docs/BILLING-READY-02D-CHECKPOINT.md`.
 
@@ -79,6 +83,10 @@ It establishes the agreed sequence, guardrails, and rules for when that sequence
 **BILLING-READY-00 — COMPLETE and LOCKED (2026-07-06).** Produced `docs/BILLING-READY-00-BILLING-ENTITLEMENT-AUDIT.md` and `docs/BILLING-READY-00-CHECKPOINT.md`. Audit and planning complete. No implementation. No Stripe/payment calls. No Agent Harness activation. All 19 audit/planning acceptance criteria satisfied.
 
 **AGENT-HARNESS-06C status:** Not registered. Deferred. Runtime canary execution remains a separate explicit future decision by Keith.
+
+**BILLING-READY-04+ status:** Not registered. Deferred. Balance enforcement, Stripe/payment integration, frontend billing UI, and subscription billing all remain future scope after BILLING-READY-03 is complete.
+
+**AGENT-PLATFORM-04 future sequencing note (not registered):** AGENT-PLATFORM-04 — Multi-Builder Runtime Topology Plan should be planned and registered before any multi-builder runtime orchestration, AGENT-HARNESS-07, billing enforcement, or beta activation work begins. Do not register AGENT-PLATFORM-04 now. Do not edit AGENT-PLATFORM-00.
 
 **Keith chose Option C (2026-07-06): BILLING-READY-01A — Billing Implementation Architecture Review. COMPLETE and LOCKED.**
 
@@ -178,6 +186,8 @@ The following must not be started until their prerequisites in the strategic seq
 | 7B | BILLING-READY-01 | Credit Ledger Foundation (**COMPLETE and LOCKED — 2026-07-06**) |
 | 7C | BILLING-READY-02A/02B/02C | Credit Deduction Pipeline Foundation (**COMPLETE and LOCKED — 2026-07-07**) |
 | 7D | BILLING-READY-02D | Credit Deduction Pipeline — Simulation-Only Validation (**COMPLETE and LOCKED — 2026-07-07**) |
+| 7E | BILLING-READY-03 | Credit Balance Persistence Foundation (**ACTIVE — 2026-07-07** — 4 child slices: 03A/03B/03C/03D.) |
+| 7E-a | BILLING-READY-03A | Schema and Persistence Design (**COMPLETE and LOCKED — 2026-07-07** — governance/design only. See `docs/BILLING-READY-03A-CHECKPOINT.md`.) |
 
 ---
 
