@@ -17,6 +17,8 @@ export { Workspace } from './workspace.entity';
 export { UserAiInstructions } from './user-ai-instructions.entity';
 export { ProjectAiContext } from './project-ai-context.entity';
 export { ProjectRepoDoc } from './project-repo-doc.entity';
+export { CreditBalance } from './credit-balance.entity';
+export { CreditDeductionRecord } from './credit-deduction-record.entity';
 export { UserRole } from './user-role.enum';
 export { SessionStatus } from './session-status.enum';
 export { ChatMessageRole } from './chat-message-role.enum';

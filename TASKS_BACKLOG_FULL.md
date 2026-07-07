@@ -37644,13 +37644,14 @@ Do not implement any child slice during registration.
 - [ ] `creditsOverflow` threshold design confirmed
 - [ ] Schema design document created under `docs/`
 
-**BILLING-READY-03B — DB schema/migration/repository foundation:**
-- [ ] TypeORM entities created
-- [ ] Database migration written and run
-- [ ] `CreditBalanceRepository` implemented
-- [ ] `CreditDeductionRecordRepository` implemented
-- [ ] Repository unit tests pass
-- [ ] No gateway swap yet
+**BILLING-READY-03B — DB schema/migration/repository foundation: COMPLETE and LOCKED (2026-07-07)**
+- [x] TypeORM entities created
+- [x] Database migration written (`gen_random_uuid()`, not `uuid_generate_v4()`)
+- [x] `CreditBalanceRepository` implemented
+- [x] `CreditDeductionRecordRepository` implemented
+- [x] Repository and entity unit tests pass (13 suites, 122 tests)
+- [x] No gateway swap (CalculatingCreditDeductionGateway remains bound)
+- [x] TypeScript typecheck clean; build clean
 
 **BILLING-READY-03C — Persistent deduction gateway:**
 - [ ] `PersistentCreditDeductionGateway` implemented
@@ -37764,3 +37765,94 @@ BILLING-READY-03B — DB schema/migration/repository foundation. Implement the e
 ---
 
 **Reference:** See TASKS.md -> BILLING-READY-03A.
+
+---
+
+### BILLING-READY-03B: DB Schema, Migration, and Repository Foundation
+
+**Status:** COMPLETE and LOCKED
+**Registered:** 2026-07-07
+**Completed:** 2026-07-07
+**Task ID:** BILLING-READY-03B
+**Parent:** BILLING-READY-03
+**Family:** BILLING / CREDIT BALANCE PERSISTENCE
+**Priority:** High
+**Nature:** IMPLEMENTATION — TypeORM entities, database migration, repository layer
+**Risk:** Medium (DB migration, new persistence layer)
+**Roadmap position:** #7E-b — second child slice of BILLING-READY-03
+
+#### Dependencies
+
+- BILLING-READY-03A — COMPLETE and LOCKED (schema and persistence design)
+- BILLING-READY-03 — ACTIVE (parent registration)
+- BILLING-READY-02D — COMPLETE and LOCKED (pipeline simulation validates pre-persistence behavior)
+- BILLING-READY-02A/02B/02C — COMPLETE and LOCKED (gateway architecture, wiring, calculation)
+
+#### Purpose
+
+Implement the DB schema, TypeORM entities, database migration, and repository layer for credit balance persistence, per the design defined in `docs/BILLING-READY-03A-SCHEMA-PERSISTENCE-DESIGN.md`. Establishes the persistence foundation required by BILLING-READY-03C (persistent gateway).
+
+#### Scope
+
+- Add `CreditBalance` TypeORM entity (`services/api-gateway/src/entities/credit-balance.entity.ts`)
+- Add `CreditDeductionRecord` TypeORM entity (`services/api-gateway/src/entities/credit-deduction-record.entity.ts`)
+- Register entities in TypeORM module configuration
+- Add migration: `services/api-gateway/src/migrations/1772100000000-CreateCreditBalanceAndDeductionTables.ts` (UP/DOWN per design doc Section 6)
+- Implement `CreditBalanceRepository` with all methods per design doc Section 5.1
+- Implement `CreditDeductionRecordRepository` with all methods per design doc Section 5.2
+- Register repositories as NestJS providers in a dedicated persistence module
+- Add repository and entity unit tests
+- Preserve `CreditDeductionGateway` public contract unchanged
+- Do not wire `PersistentCreditDeductionGateway` into runtime yet
+
+#### Non-Goals
+
+- No runtime gateway swap (`CalculatingCreditDeductionGateway` remains bound)
+- No live billing deduction
+- No entitlement enforcement
+- No Stripe/payment logic
+- No frontend UI changes
+- No production billing activation
+- No Agent Harness activation
+- No balance enforcement (balance reaching 0 does not block execution)
+
+#### Acceptance Criteria
+
+- [x] `CreditBalance` TypeORM entity created at `services/api-gateway/src/entities/credit-balance.entity.ts`
+- [x] `CreditDeductionRecord` TypeORM entity created at `services/api-gateway/src/entities/credit-deduction-record.entity.ts`
+- [x] Entity field types, column names, constraints, and decorators match design doc Section 2 exactly
+- [x] Entities registered in TypeORM module configuration
+- [x] Migration file created: `services/api-gateway/src/migrations/1772100000000-CreateCreditBalanceAndDeductionTables.ts`
+- [x] Migration UP creates both tables with all columns, constraints, and indexes per design doc Section 6
+- [x] Migration DOWN drops both tables and all indexes cleanly
+- [x] `CreditBalanceRepository` implemented with all methods from design doc Section 5.1
+- [x] `CreditDeductionRecordRepository` implemented with all methods from design doc Section 5.2
+- [x] `findByOwnerForUpdate` correctly uses `SELECT ... FOR UPDATE` within a transaction context
+- [x] Repositories use TypeORM patterns consistent with existing codebase
+- [x] Repositories registered as NestJS providers in a dedicated persistence module
+- [x] Module importable by `CreditDeductionModule` (preparation for 03C)
+- [x] Repository and entity unit tests created and passing
+- [x] No gateway swap (`CalculatingCreditDeductionGateway` remains bound)
+- [x] No balance enforcement (no blocking of execution)
+- [x] Existing tests continue to pass
+- [x] TypeScript typecheck clean (`npx tsc --noEmit`)
+- [x] Build clean (`npm run build`)
+- [x] UUID fix: migration uses `gen_random_uuid()`, not `uuid_generate_v4()`
+
+#### Validation Evidence
+
+- `npx jest --testPathPatterns="credit"`: 13 suites passed, 122 tests passed
+- `npx tsc --noEmit`: clean
+- `npm run build`: clean
+- Migration UUID test (`credit-balance-migration.spec.ts`): `gen_random_uuid()` confirmed present, `uuid_generate_v4` confirmed absent
+- No Docker/Postgres/migration/database commands executed
+
+#### Design Authority
+
+`docs/BILLING-READY-03A-SCHEMA-PERSISTENCE-DESIGN.md` is the authoritative design reference for this task. Section 9 defines the complete acceptance criteria checklist.
+
+**Checkpoint:** `docs/BILLING-READY-03B-CHECKPOINT.md`
+
+---
+
+**Reference:** See TASKS.md -> BILLING-READY-03B.
