@@ -37474,8 +37474,91 @@ Replace `NoOpCreditDeductionGateway` with `CalculatingCreditDeductionGateway`, w
 - No invoice generation
 - `creditsOverflow = 0` always (no ceiling enforcement)
 - `balanceAfter = undefined` always (no balance tracking)
-- BILLING-READY-02D not registered
+- BILLING-READY-02D registered (see below)
 
 ---
 
 **Reference:** See TASKS.md -> BILLING-READY-02C.
+
+---
+
+### BILLING-READY-02D: Credit Deduction Pipeline — Simulation-Only Validation
+
+**Status:** COMPLETE and LOCKED — 2026-07-07
+**Registered:** 2026-07-07
+**Task ID:** BILLING-READY-02D
+**Family:** BILLING / CREDIT DEDUCTION PIPELINE
+**Priority:** High
+**Nature:** VALIDATION — simulation-only pipeline test, no persistence, no DB
+**Risk:** Low (pure test/validation slice, no side effects, no DB access)
+**Roadmap position:** #7D — after BILLING-READY-02C, before BILLING-READY-03
+
+#### Dependencies
+
+- BILLING-READY-02A — COMPLETE and LOCKED (Gateway Architecture Foundation)
+- BILLING-READY-02B — COMPLETE and LOCKED (Runtime Wiring Point)
+- BILLING-READY-02C — COMPLETE and LOCKED (Credit Calculation Layer)
+
+#### Purpose
+
+Validate the complete credit deduction pipeline before database persistence is introduced. Simulation-only validation of the end-to-end pipeline: usage completion event → credit calculation → gateway result → audit-ready deduction result. Confirms deterministic behavior, contract correctness, and pre-persistence readiness for BILLING-READY-03.
+
+#### Scope
+
+- Add simulation-only validation for the credit deduction pipeline
+- Validate deterministic `CreditDeductionEvent` → `CreditDeductionResult` behavior
+- Validate `sourceEventId` contract before persistence
+- Validate duplicate event expectations without DB persistence
+- Validate gateway failure handling remains non-breaking
+- Validate `creditsApplied` / `creditsOverflow` / `balanceAfter` semantics
+- Prepare clear acceptance criteria for BILLING-READY-03 persistence
+
+#### Non-Goals
+
+- No database persistence
+- No migrations
+- No balance table
+- No Stripe/payment logic
+- No subscription billing
+- No frontend billing UI
+- No entitlement enforcement
+- No production billing activation
+
+#### Acceptance Criteria
+
+- [x] Simulation validates `CreditDeductionEvent` → `CreditDeductionResult` end-to-end
+- [x] `sourceEventId` contract verified before persistence layer is introduced
+- [x] Duplicate event behavior validated without DB persistence
+- [x] Gateway failure handling confirmed non-breaking
+- [x] `creditsApplied` / `creditsOverflow` / `balanceAfter` semantics confirmed correct
+- [x] All simulation tests pass
+- [x] No new database tables, migrations, or TypeORM entities introduced
+- [x] No Stripe/payment behavior introduced
+- [x] No entitlement enforcement introduced
+- [x] Acceptance criteria for BILLING-READY-03 documented
+
+#### Scope Boundaries
+
+- No persistence: simulation only
+- No balance ledger deduction
+- No balance tracking or enforcement
+- No Stripe/payment integration
+- No subscription/entitlement checks
+- No invoice generation
+- `creditsOverflow = 0` always (no ceiling enforcement)
+- `balanceAfter = undefined` always (no balance tracking)
+- BILLING-READY-03 not registered
+
+#### Completion Evidence
+
+- Test file changed: `services/api-gateway/src/billing/credit-deduction/__tests__/calculating-credit-deduction.gateway.spec.ts`
+- No production source files changed
+- `npx jest --testPathPatterns="credit-deduction"` — 4 suites passed, 53 tests passed
+- `npx jest --testPathPatterns="usage-ledger"` — 2 suites passed, 43 tests passed
+- `npx tsc --noEmit` — passed
+- Edited-file lint — passed
+- See `docs/BILLING-READY-02D-CHECKPOINT.md`
+
+---
+
+**Reference:** See TASKS.md -> BILLING-READY-02D.

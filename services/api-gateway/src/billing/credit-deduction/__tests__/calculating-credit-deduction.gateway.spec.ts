@@ -304,6 +304,75 @@ describe('CalculatingCreditDeductionGateway', () => {
     });
   });
 
+  describe('BILLING-READY-02D: simulation-only pipeline validation', () => {
+    function makeSimulationEvent(sourceEventId: string): CreditDeductionEvent {
+      return {
+        source: 'usage_ledger',
+        sourceEventId,
+        ownerId: 'user-sim-001',
+        occurredAt: new Date('2026-07-07T00:00:00.000Z'),
+        lineItems: [
+          {
+            category: 'model_tokens',
+            unit: '1K_tokens',
+            unitCount: 8.5,
+            creditsRequested: 0,
+          },
+          {
+            category: 'tool_call',
+            unit: 'call',
+            unitCount: 2,
+            creditsRequested: 0,
+          },
+          {
+            category: 'workspace_runtime',
+            unit: 'minute',
+            unitCount: 1,
+            creditsRequested: 0,
+          },
+        ],
+      };
+    }
+
+    it('simulates CreditDeductionEvent -> applyDeduction -> CreditDeductionResult with deterministic calculated credits', () => {
+      const sourceEventId = 'sim-evt-unique-001';
+      const event = makeSimulationEvent(sourceEventId);
+
+      const result = gateway.applyDeduction(event);
+
+      const expectedPerLine = event.lineItems.map((item) =>
+        calculationService.calculateLineItemCredits(item),
+      );
+      const expectedTotal = expectedPerLine.reduce((sum, credits) => sum + credits, 0);
+
+      expect(result.sourceEventId).toBe(sourceEventId);
+      expect(result.totalCreditsApplied).toBe(expectedTotal);
+      expect(result.totalCreditsRequested).toBe(expectedTotal);
+      expect(result.totalCreditsOverflow).toBe(0);
+      expect(result.balanceAfter).toBeUndefined();
+      expect(result.lineItems).toHaveLength(event.lineItems.length);
+      result.lineItems.forEach((lineItem, index) => {
+        expect(lineItem.creditsApplied).toBe(expectedPerLine[index]);
+        expect(lineItem.creditsOverflow).toBe(0);
+        expect(lineItem.skippedDuplicate).toBe(false);
+      });
+    });
+
+    it('pre-persistence behavior: duplicate sourceEventId is NOT deduplicated and produces two identical calculated results', () => {
+      const duplicateSourceEventId = 'sim-evt-duplicate-001';
+      const event = makeSimulationEvent(duplicateSourceEventId);
+
+      const first = gateway.applyDeduction(event);
+      const second = gateway.applyDeduction(event);
+
+      expect(first.sourceEventId).toBe(duplicateSourceEventId);
+      expect(second.sourceEventId).toBe(duplicateSourceEventId);
+      expect(first).toEqual(second);
+      expect(first.lineItems.every((item) => item.skippedDuplicate === false)).toBe(true);
+      expect(second.lineItems.every((item) => item.skippedDuplicate === false)).toBe(true);
+    });
+  });
+
   describe('realistic scenario: usage-ledger completion', () => {
     it('handles typical AI execution event (tokens + runtime)', () => {
       const event: CreditDeductionEvent = {

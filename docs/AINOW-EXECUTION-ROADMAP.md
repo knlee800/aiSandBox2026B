@@ -39,6 +39,7 @@ It establishes the agreed sequence, guardrails, and rules for when that sequence
 | BILLING-READY-00 | Billing, Plan, Credit, and Entitlement Audit | COMPLETE and LOCKED |
 | BILLING-READY-01 | Credit Ledger Foundation | COMPLETE and LOCKED |
 | BILLING-READY-02A/02B/02C | Credit Deduction Pipeline Foundation | COMPLETE and LOCKED |
+| BILLING-READY-02D | Credit Deduction Pipeline — Simulation-Only Validation | COMPLETE and LOCKED |
 
 ---
 
@@ -58,11 +59,16 @@ It establishes the agreed sequence, guardrails, and rules for when that sequence
 | 7A | BILLING-READY-01A | Billing Implementation Architecture Review | **COMPLETE and LOCKED** — 2026-07-06. Read-only architecture review complete. All 18 criteria satisfied. Option A recommended for BILLING-READY-01. See `docs/BILLING-READY-01A-CHECKPOINT.md`. |
 | 7B | BILLING-READY-01 | Credit Ledger Foundation | **COMPLETE and LOCKED — 2026-07-06.** TypeScript-only credit ledger domain/types/config (Option A). 10 source files + 3 test files. 16 tests pass. No database migration. See `docs/BILLING-READY-01-CHECKPOINT.md`. |
 | 7C | BILLING-READY-02A/02B/02C | Credit Deduction Pipeline Foundation | **COMPLETE and LOCKED — 2026-07-07.** Abstract gateway contract, NoOp + calculating implementations, single runtime wiring point in usage-ledger, deterministic credit calculation layer. 9 source files + 5 test files. No persistence, no balance enforcement, no Stripe. See `docs/BILLING-READY-02A-02B-02C-CHECKPOINT.md`. |
+| 7D | BILLING-READY-02D | Credit Deduction Pipeline — Simulation-Only Validation | **COMPLETE and LOCKED — 2026-07-07.** Simulation-only validation of the full `CreditDeductionEvent` → `applyDeduction` → `CreditDeductionResult` pipeline. 1 test file modified, 2 simulation tests added. No production source changes. 4 suites / 53 tests passed. See `docs/BILLING-READY-02D-CHECKPOINT.md`. |
 | 8 | Beta preparation | Beta readiness checklist | After Billing foundation |
 
 ---
 
 ## 4. Current Next Task
+
+**No task is currently ACTIVE.** BILLING-READY-02D is COMPLETE and LOCKED. BILLING-READY-03 has not been registered. The next task requires an explicit Keith decision to register.
+
+**BILLING-READY-02D — COMPLETE and LOCKED (2026-07-07).** Credit Deduction Pipeline — Simulation-Only Validation. Simulation-only validation of the full `CreditDeductionEvent` → `applyDeduction` → `CreditDeductionResult` pipeline. 1 test file modified (`calculating-credit-deduction.gateway.spec.ts`), 2 simulation tests added. No production source changes. 4 suites / 53 tests passed. No persistence, no balance enforcement, no Stripe. Pre-persistence acceptance criteria for BILLING-READY-03 documented. See `docs/BILLING-READY-02D-CHECKPOINT.md`.
 
 **BILLING-READY-02A/02B/02C — COMPLETE and LOCKED (2026-07-07).** Credit Deduction Pipeline Foundation. Abstract gateway contract (`CreditDeductionGateway`), `NoOpCreditDeductionGateway` and `CalculatingCreditDeductionGateway` implementations, `CreditCalculationService` (deterministic `unitCount × creditsPerUnit` from `CREDIT_RATES`), single runtime wiring point in `UsageLedgerService.updateExecutionResult()`, `CreditDeductionModule` imported into `UsageLedgerModule`. 9 source files + 5 test files. No persistence, no balance enforcement, no Stripe, no entitlement enforcement. See `docs/BILLING-READY-02A-02B-02C-CHECKPOINT.md`.
 
@@ -171,6 +177,7 @@ The following must not be started until their prerequisites in the strategic seq
 | 7A | BILLING-READY-01A | Read-only architecture review (**COMPLETE and LOCKED**) |
 | 7B | BILLING-READY-01 | Credit Ledger Foundation (**COMPLETE and LOCKED — 2026-07-06**) |
 | 7C | BILLING-READY-02A/02B/02C | Credit Deduction Pipeline Foundation (**COMPLETE and LOCKED — 2026-07-07**) |
+| 7D | BILLING-READY-02D | Credit Deduction Pipeline — Simulation-Only Validation (**COMPLETE and LOCKED — 2026-07-07**) |
 
 ---
 
