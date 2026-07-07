@@ -1,7 +1,6 @@
 import { CalculatingCreditDeductionGateway } from '../calculating-credit-deduction.gateway';
 import { CreditCalculationService } from '../credit-calculation.service';
 import { CreditDeductionGateway } from '../credit-deduction.gateway';
-import { CreditDeductionModule } from '../credit-deduction.module';
 import { Test } from '@nestjs/testing';
 import type { CreditDeductionEvent } from '../types';
 
@@ -39,9 +38,15 @@ describe('CalculatingCreditDeductionGateway', () => {
       expect(gateway).toBeInstanceOf(CreditDeductionGateway);
     });
 
-    it('is bound via CreditDeductionModule', async () => {
+    it('can be manually bound to CreditDeductionGateway token', async () => {
       const module = await Test.createTestingModule({
-        imports: [CreditDeductionModule],
+        providers: [
+          CreditCalculationService,
+          {
+            provide: CreditDeductionGateway,
+            useClass: CalculatingCreditDeductionGateway,
+          },
+        ],
       }).compile();
 
       const resolved = module.get(CreditDeductionGateway);

@@ -37597,7 +37597,7 @@ BILLING-READY-03 is too broad for one safe implementation slice. It is split int
 - **BILLING-READY-03B** — DB schema/migration/repository foundation: Create TypeORM entities, write and run the database migration, and implement the repository layer (`CreditBalanceRepository`, `CreditDeductionRecordRepository`). No gateway swap yet.
 - **BILLING-READY-03C** — Persistent deduction gateway (further split into 03C1/03C2):
   - **BILLING-READY-03C1** — Gateway implementation and unit tests, not runtime-bound: Implement `PersistentCreditDeductionGateway`, update `CreditDeductionGateway` base to async, wire `sourceEventId` idempotency and `balanceAfter` population. No module binding swap. Unit tests only.
-  - **BILLING-READY-03C2** — Controlled runtime binding, async `UsageLedgerService` integration, DB validation: Swap `CreditDeductionModule` to bind `PersistentCreditDeductionGateway`, update `UsageLedgerService.emitDeductionAttempt()` to `await`, DB integration validation. Not yet registered.
+  - **BILLING-READY-03C2** — Controlled runtime binding, async `UsageLedgerService` integration, DB validation: Swap `CreditDeductionModule` to bind `PersistentCreditDeductionGateway`, update `UsageLedgerService.emitDeductionAttempt()` to `await`, DB integration validation. **COMPLETE and LOCKED (2026-07-07).**
 - **BILLING-READY-03D** — Balance/overflow/concurrency semantics: Implement `creditsOverflow` enforcement (balance ceiling), atomic transaction semantics, and concurrency safety. Finalize balance-after correctness under concurrent deduction.
 
 Do not implement any child slice during registration.
@@ -37665,11 +37665,18 @@ Do not implement any child slice during registration.
 - [x] `PersistentCreditDeductionGateway` unit tests pass (11 suites / 136 tests)
 - [x] No runtime binding swap (CalculatingCreditDeductionGateway remains bound)
 
-**BILLING-READY-03C2 — Runtime binding and async integration (not yet registered):**
-- [ ] `CreditDeductionModule` swapped to bind `PersistentCreditDeductionGateway`
-- [ ] `UsageLedgerService.emitDeductionAttempt()` updated to `await` gateway call
-- [ ] DB integration validated against local PostgreSQL
-- [ ] All existing tests continue to pass after binding swap
+**BILLING-READY-03C2 — Controlled runtime binding and async integration: COMPLETE and LOCKED (2026-07-07)**
+- [x] `CreditDeductionModule` binding swapped to `PersistentCreditDeductionGateway`
+- [x] `CreditPersistenceModule` imported into `CreditDeductionModule`
+- [x] `UsageLedgerService.emitDeductionAttempt()` updated to `await` gateway call
+- [x] `UsageLedgerService.updateExecutionResult()` preserved as single runtime trigger
+- [x] Gateway errors in `emitDeductionAttempt()` suppressed — do not break `updateExecutionResult()`
+- [x] Gateway errors logged safely (no secret/PII leakage)
+- [x] Duplicate `sourceEventId` returns existing deduction result — no double deduction
+- [x] Migration `1772100000000-CreateCreditBalanceAndDeductionTables` verified applied before DB validation
+- [x] DB integration validated against local PostgreSQL
+- [x] All existing tests continue to pass after binding swap
+- [x] TypeScript typecheck clean (`npx tsc --noEmit`); build clean (`npm run build`)
 
 **BILLING-READY-03D — Balance/overflow/concurrency semantics:**
 - [ ] `creditsOverflow` enforced: excess credits flow to overflow when balance insufficient
@@ -37992,8 +37999,136 @@ Implement `PersistentCreditDeductionGateway` using the repository layer from BIL
 
 #### Next Step
 
-BILLING-READY-03C2 — Controlled runtime binding, async `UsageLedgerService` integration, and DB validation. Register after BILLING-READY-03C1 is COMPLETE and LOCKED.
+BILLING-READY-03C2 — Controlled runtime binding, async `UsageLedgerService` integration, and DB validation. **COMPLETE and LOCKED (2026-07-07).** See `docs/BILLING-READY-03C2-CHECKPOINT.md`.
 
 ---
 
 **Reference:** See TASKS.md -> BILLING-READY-03C1.
+
+---
+
+### BILLING-READY-03C2: Controlled Runtime Binding for Persistent Deduction Gateway
+
+**Status:** COMPLETE and LOCKED
+**Registered:** 2026-07-07
+**Completed:** 2026-07-07
+**Task ID:** BILLING-READY-03C2
+**Parent:** BILLING-READY-03
+**Family:** BILLING / CREDIT BALANCE PERSISTENCE
+**Priority:** High
+**Nature:** IMPLEMENTATION — `CreditDeductionModule` binding swap, `UsageLedgerService` async integration, PostgreSQL validation
+**Risk:** HIGH — first slice where the live `UsageLedgerService` completion path can write persistent credit deduction records to the database
+**Roadmap position:** #7E-d — fourth child slice of BILLING-READY-03
+**Workflow:** 4-step loop (1. Registration ✓ | 2. Stage-start/readiness plan | 3. Implementation | 4. Consolidation/checkpoint)
+
+#### Split Rationale: Why 03C2 is Separate from 03C1
+
+03C1 was purely additive: a new gateway class, a base class generic update, and unit tests — all independently testable without a live database. 03C2 is the first slice where the live execution pipeline can write to the database. Keeping this separate:
+
+- Ensures `PersistentCreditDeductionGateway` is fully validated in isolation before being wired into the runtime.
+- Limits blast radius if the runtime binding requires adjustment.
+- Allows the module binding swap and async integration to be validated as a dedicated bounded slice.
+
+#### Dependencies
+
+- BILLING-READY-03A — COMPLETE and LOCKED (schema and persistence design)
+- BILLING-READY-03B — COMPLETE and LOCKED (entities, migration, repositories, `CreditPersistenceModule`)
+- BILLING-READY-03C1 — COMPLETE and LOCKED (`PersistentCreditDeductionGateway` implementation, generic base class, unit tests)
+- BILLING-READY-03 — ACTIVE (parent registration)
+
+#### Purpose
+
+Swap the `CreditDeductionModule` binding from `CalculatingCreditDeductionGateway` to `PersistentCreditDeductionGateway`. Update `UsageLedgerService.emitDeductionAttempt()` to `await` the gateway call to support `Promise<CreditDeductionResult>`. Validate the full deduction pipeline against a local PostgreSQL database with the migration applied. This is the first slice where the live execution pipeline writes to the database.
+
+#### Scope
+
+- Swap `CreditDeductionModule` to provide `PersistentCreditDeductionGateway` as the `CreditDeductionGateway` token
+- Import `CreditPersistenceModule` into `CreditDeductionModule` for repository access
+- Update `UsageLedgerService.emitDeductionAttempt()` to `await` the gateway call (supports `Promise<CreditDeductionResult>`)
+- Preserve `UsageLedgerService.updateExecutionResult()` as the single runtime trigger — no new trigger paths
+- Preserve `CreditDeductionGateway` as the single deduction entry point — no bypass paths
+- Implement failure-suppression requirement:
+  - Gateway errors inside `emitDeductionAttempt()` must not break or propagate through `updateExecutionResult()`
+  - Errors must be logged safely (no sensitive data or secret leakage in log messages)
+- Validate idempotency enforcement:
+  - Duplicate `sourceEventId` must return existing deduction result (no double deduction)
+  - Idempotency is enforced by `PersistentCreditDeductionGateway` (implemented in 03C1)
+- Define local PostgreSQL validation requirement:
+  - Migration `1772100000000-CreateCreditBalanceAndDeductionTables` must be applied before runtime validation
+  - DB integration test or manual smoke against local PostgreSQL instance required
+- Safety validation:
+  - No entitlement blocking
+  - No Stripe/payment calls
+  - No frontend billing UI changes
+  - No Agent Harness activation
+
+#### Non-Goals
+
+- No entitlement enforcement (execution must not be blocked by zero balance)
+- No billing quota blocking
+- No Stripe/payment processing
+- No subscription billing
+- No frontend billing UI
+- No production billing activation
+- No AGENT-HARNESS-06C activation
+- No AGENT-PLATFORM-04 registration
+- No BILLING-READY-03D implementation (balance/concurrency hardening deferred)
+- No BILLING-READY-04+ registration
+
+#### Registration Acceptance Criteria
+
+- [x] BILLING-READY-03C2 registered in TASKS.md
+- [x] BILLING-READY-03C2 registered in TASKS_BACKLOG_FULL.md
+- [x] AINOW-EXECUTION-ROADMAP.md points to BILLING-READY-03C2 as current ACTIVE child slice
+- [x] BILLING-READY-03C1 confirmed COMPLETE and LOCKED before registration
+- [x] 4-step workflow documented
+- [x] Risk classification HIGH recorded
+- [x] BILLING-READY-03D noted as future, not registered
+- [x] AGENT-HARNESS-06C remains deferred
+- [x] AGENT-PLATFORM-04 remains future, not registered
+- [x] One-active-task rule satisfied
+
+#### Implementation Acceptance Criteria (all satisfied)
+
+- [x] `CreditDeductionModule` provides `PersistentCreditDeductionGateway` as the `CreditDeductionGateway` token
+- [x] `CreditPersistenceModule` imported into `CreditDeductionModule`
+- [x] `UsageLedgerService.emitDeductionAttempt()` awaits the gateway call
+- [x] `UsageLedgerService.updateExecutionResult()` preserved as the single runtime trigger
+- [x] `CreditDeductionGateway` remains the single deduction entry point token
+- [x] Gateway errors inside `emitDeductionAttempt()` are caught and logged — do not propagate through `updateExecutionResult()`
+- [x] Error log does not leak sensitive data (user PII, secrets, credentials)
+- [x] Duplicate `sourceEventId` returns existing deduction result — no double deduction
+- [x] Migration `1772100000000-CreateCreditBalanceAndDeductionTables` verified applied before DB validation
+- [x] DB integration validated against local PostgreSQL
+- [x] All existing tests continue to pass after binding swap (`npx jest --testPathPatterns="credit"`)
+- [x] TypeScript typecheck clean (`npx tsc --noEmit`)
+- [x] Build clean (`npm run build`)
+- [x] No entitlement blocking added
+- [x] No Stripe/payment code added
+- [x] No frontend billing UI added
+- [x] No Agent Harness activation
+
+#### Validation Evidence
+
+- **DB validation:** migration `1772100000000` already applied; `credit_balances` and `credit_deduction_records` tables present; 9 `idx_credit_*` indexes present; expected constraints present; test balance row inserted, verified, deleted, verified removed. Data-source: `/app/dist/data-source.js`. Credentials from `aisandbox-postgres` container env (password masked).
+- `npx jest --testPathPatterns="credit-deduction"`: 11 suites passed, 137 tests passed
+- `npx jest --testPathPatterns="usage-ledger"`: 2 suites passed, 45 tests passed
+- `npx jest --testPathPatterns="credit"`: 14 suites passed, 153 tests passed
+- `npx tsc --noEmit`: clean
+- `npm run build`: clean
+
+#### Scope Boundaries
+
+- No Stripe/payment integration
+- No subscription/entitlement checks
+- No frontend billing UI
+- No entitlement enforcement
+- No Agent Harness activation
+- No BILLING-READY-03D implementation
+- No BILLING-READY-04+ registration
+
+**Checkpoint:** `docs/BILLING-READY-03C2-CHECKPOINT.md`
+
+---
+
+**Reference:** See TASKS.md -> BILLING-READY-03C2.

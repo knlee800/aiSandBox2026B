@@ -1,8 +1,12 @@
 import { CreditDeductionGateway } from '../credit-deduction.gateway';
 import { NoOpCreditDeductionGateway } from '../noop-credit-deduction.gateway';
 import { CalculatingCreditDeductionGateway } from '../calculating-credit-deduction.gateway';
+import { PersistentCreditDeductionGateway } from '../persistent-credit-deduction.gateway';
 import { CreditDeductionModule } from '../credit-deduction.module';
 import { Test } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { CreditBalance } from '../../../entities/credit-balance.entity';
+import { CreditDeductionRecord } from '../../../entities/credit-deduction-record.entity';
 
 describe('CreditDeductionGateway architectural guardrails', () => {
   it('NoOpCreditDeductionGateway extends CreditDeductionGateway', () => {
@@ -15,14 +19,33 @@ describe('CreditDeductionGateway architectural guardrails', () => {
     expect(typeof gateway.applyDeduction).toBe('function');
   });
 
-  it('CreditDeductionModule provides CreditDeductionGateway token with CalculatingCreditDeductionGateway', async () => {
+  it('CreditDeductionModule provides CreditDeductionGateway token with PersistentCreditDeductionGateway (BILLING-READY-03C2)', async () => {
     const module = await Test.createTestingModule({
       imports: [CreditDeductionModule],
-    }).compile();
+    })
+      .overrideProvider(getRepositoryToken(CreditBalance))
+      .useValue({})
+      .overrideProvider(getRepositoryToken(CreditDeductionRecord))
+      .useValue({})
+      .compile();
 
     const gateway = module.get(CreditDeductionGateway);
-    expect(gateway).toBeInstanceOf(CalculatingCreditDeductionGateway);
+    expect(gateway).toBeInstanceOf(PersistentCreditDeductionGateway);
     expect(gateway).toBeInstanceOf(CreditDeductionGateway);
+  });
+
+  it('CreditDeductionModule no longer binds CalculatingCreditDeductionGateway (BILLING-READY-03C2)', async () => {
+    const module = await Test.createTestingModule({
+      imports: [CreditDeductionModule],
+    })
+      .overrideProvider(getRepositoryToken(CreditBalance))
+      .useValue({})
+      .overrideProvider(getRepositoryToken(CreditDeductionRecord))
+      .useValue({})
+      .compile();
+
+    const gateway = module.get(CreditDeductionGateway);
+    expect(gateway).not.toBeInstanceOf(CalculatingCreditDeductionGateway);
   });
 
   it('swapping implementation binds a different class to the same token', async () => {

@@ -6,9 +6,10 @@ import { CreditDeductionRecordRepository } from '../credit-deduction-record.repo
 import { CalculatingCreditDeductionGateway } from '../calculating-credit-deduction.gateway';
 import { CreditDeductionModule } from '../credit-deduction.module';
 import { Test } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import type { CreditDeductionEvent } from '../types';
-import type { CreditBalance } from '../../../entities/credit-balance.entity';
-import type { CreditDeductionRecord } from '../../../entities/credit-deduction-record.entity';
+import { CreditBalance } from '../../../entities/credit-balance.entity';
+import { CreditDeductionRecord } from '../../../entities/credit-deduction-record.entity';
 
 function makeEvent(
   overrides: Partial<CreditDeductionEvent> = {},
@@ -518,14 +519,19 @@ describe('PersistentCreditDeductionGateway', () => {
       expect(result.balanceAfter).toBeUndefined();
     });
 
-    it('CreditDeductionModule still binds CalculatingCreditDeductionGateway', async () => {
+    it('CreditDeductionModule binds PersistentCreditDeductionGateway (BILLING-READY-03C2)', async () => {
       const module = await Test.createTestingModule({
         imports: [CreditDeductionModule],
-      }).compile();
+      })
+        .overrideProvider(getRepositoryToken(CreditBalance))
+        .useValue({})
+        .overrideProvider(getRepositoryToken(CreditDeductionRecord))
+        .useValue({})
+        .compile();
 
       const bound = module.get(CreditDeductionGateway);
-      expect(bound).toBeInstanceOf(CalculatingCreditDeductionGateway);
-      expect(bound).not.toBeInstanceOf(PersistentCreditDeductionGateway);
+      expect(bound).toBeInstanceOf(PersistentCreditDeductionGateway);
+      expect(bound).not.toBeInstanceOf(CalculatingCreditDeductionGateway);
     });
   });
 });

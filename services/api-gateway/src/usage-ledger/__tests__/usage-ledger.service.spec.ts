@@ -562,14 +562,14 @@ describe('UsageLedgerService', () => {
     });
   });
 
-  describe('BILLING-READY-02B: Credit Deduction Gateway Wiring', () => {
+  describe('BILLING-READY-03C2: Async Credit Deduction Gateway Wiring', () => {
     let serviceWithGateway: UsageLedgerService;
     let gatewayRepo: jest.Mocked<Repository<UsageRecord>>;
-    let mockGateway: jest.Mocked<CreditDeductionGateway>;
+    let mockGateway: { applyDeduction: jest.Mock };
 
     beforeEach(async () => {
       mockGateway = {
-        applyDeduction: jest.fn().mockReturnValue({
+        applyDeduction: jest.fn().mockResolvedValue({
           source: 'usage_ledger',
           sourceEventId: 'exec-test',
           ownerId: 'user-123',
@@ -579,7 +579,7 @@ describe('UsageLedgerService', () => {
           totalCreditsOverflow: 0,
           lineItems: [],
         }),
-      } as any;
+      };
 
       const gatewayMockRepo = {
         create: jest.fn(),
@@ -654,10 +654,10 @@ describe('UsageLedgerService', () => {
       expect(event.lineItems[0].creditsRequested).toBe(0);
     });
 
-    it('should NOT break updateExecutionResult if gateway throws', async () => {
-      mockGateway.applyDeduction.mockImplementation(() => {
-        throw new Error('Gateway failure');
-      });
+    it('should NOT break updateExecutionResult if gateway rejects (async failure suppressed)', async () => {
+      mockGateway.applyDeduction.mockRejectedValue(
+        new Error('Async gateway failure'),
+      );
 
       const existingRecord = {
         executionId: 'exec-err',
@@ -689,6 +689,48 @@ describe('UsageLedgerService', () => {
         executionDurationMs: 1500,
         executionStatus: 'completed',
         output: 'out',
+      };
+
+      const result = await serviceWithGateway.updateExecutionResult(dto);
+      expect(result).toBeDefined();
+      expect(result.executionStatus).toBe('completed');
+    });
+
+    it('should NOT break updateExecutionResult if gateway throws synchronously', async () => {
+      mockGateway.applyDeduction.mockImplementation(() => {
+        throw new Error('Sync gateway failure');
+      });
+
+      const existingRecord = {
+        executionId: 'exec-sync-err',
+        userId: 'user-sync',
+        apiKeyId: 'key-sync',
+        sessionId: 'sess-sync',
+        requestId: null,
+        model: null,
+        tokensUsed: null,
+        executionDurationMs: null,
+        executionStatus: 'pending',
+        metadata: {},
+      };
+
+      gatewayRepo.findOne.mockResolvedValue(existingRecord as any);
+      gatewayRepo.save.mockResolvedValue({
+        ...existingRecord,
+        model: 'gpt-4',
+        tokensUsed: 200,
+        executionDurationMs: 1000,
+        executionStatus: 'completed',
+        metadata: { aiExecutionResult: { output: 'sync', tokensUsed: 200, model: 'gpt-4', fileActions: [] } },
+      } as any);
+
+      const dto: UpdateExecutionResultDto = {
+        executionId: 'exec-sync-err',
+        model: 'gpt-4',
+        tokensUsed: 200,
+        executionDurationMs: 1000,
+        executionStatus: 'completed',
+        output: 'sync',
       };
 
       const result = await serviceWithGateway.updateExecutionResult(dto);
@@ -732,6 +774,61 @@ describe('UsageLedgerService', () => {
       const result = await service.updateExecutionResult(dto);
       expect(result).toBeDefined();
       expect(result.executionStatus).toBe('completed');
+    });
+
+    it('should await async gateway resolution before returning (BILLING-READY-03C2)', async () => {
+      const callOrder: string[] = [];
+
+      mockGateway.applyDeduction.mockImplementation(async () => {
+        callOrder.push('gateway_start');
+        await new Promise((r) => setTimeout(r, 10));
+        callOrder.push('gateway_end');
+        return {
+          source: 'usage_ledger',
+          sourceEventId: 'exec-order',
+          ownerId: 'user-order',
+          occurredAt: new Date(),
+          totalCreditsRequested: 0,
+          totalCreditsApplied: 0,
+          totalCreditsOverflow: 0,
+          lineItems: [],
+        };
+      });
+
+      const existingRecord = {
+        executionId: 'exec-order',
+        userId: 'user-order',
+        apiKeyId: 'key-order',
+        sessionId: 'sess-order',
+        requestId: null,
+        model: null,
+        tokensUsed: null,
+        executionDurationMs: null,
+        executionStatus: 'pending',
+        metadata: {},
+      };
+
+      gatewayRepo.findOne.mockResolvedValue(existingRecord as any);
+      gatewayRepo.save.mockResolvedValue({
+        ...existingRecord,
+        model: 'claude-3',
+        tokensUsed: 100,
+        executionDurationMs: 500,
+        executionStatus: 'completed',
+        metadata: { aiExecutionResult: { output: 'ord', tokensUsed: 100, model: 'claude-3', fileActions: [] } },
+      } as any);
+
+      await serviceWithGateway.updateExecutionResult({
+        executionId: 'exec-order',
+        model: 'claude-3',
+        tokensUsed: 100,
+        executionDurationMs: 500,
+        executionStatus: 'completed',
+        output: 'ord',
+      });
+
+      expect(callOrder).toEqual(['gateway_start', 'gateway_end']);
+      expect(mockGateway.applyDeduction).toHaveBeenCalledTimes(1);
     });
 
     it('should use executionId as sourceEventId (single deduction per execution)', async () => {

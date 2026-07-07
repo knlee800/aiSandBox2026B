@@ -4,7 +4,7 @@ import { Repository, LessThan } from 'typeorm';
 import { UsageRecord } from '../entities/usage-record.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { CreditDeductionGateway } from '../billing/credit-deduction';
-import type { CreditDeductionEvent } from '../billing/credit-deduction';
+import type { CreditDeductionEvent, CreditDeductionResult } from '../billing/credit-deduction';
 
 /**
  * CreateUsageRecordDto
@@ -99,7 +99,7 @@ export class UsageLedgerService {
     @InjectRepository(UsageRecord)
     private readonly usageRecordRepository: Repository<UsageRecord>,
     @Optional() @Inject(CreditDeductionGateway)
-    private readonly creditDeductionGateway?: CreditDeductionGateway,
+    private readonly creditDeductionGateway?: CreditDeductionGateway<CreditDeductionResult | Promise<CreditDeductionResult>>,
   ) {}
 
   /**
@@ -272,8 +272,8 @@ export class UsageLedgerService {
         status: dto.executionStatus,
       }));
 
-      // BILLING-READY-02B: Emit deduction attempt after successful completion
-      this.emitDeductionAttempt(updatedRecord);
+      // BILLING-READY-03C2: Await deduction attempt after successful completion
+      await this.emitDeductionAttempt(updatedRecord);
 
       return updatedRecord;
     } catch (error) {
@@ -702,19 +702,19 @@ export class UsageLedgerService {
   }
 
   /**
-   * BILLING-READY-02B: Emit a credit deduction attempt after execution completion.
+   * BILLING-READY-03C2: Emit a credit deduction attempt after execution completion.
    *
    * Guardrails:
    *  - If gateway not bound → silently returns (NoOp fallback)
-   *  - Gateway errors NEVER break the main usage-ledger flow
-   *  - Structured logging only — no real credit computation yet
-   *  - creditsRequested is 0 (rate translation not implemented)
-   *  - Idempotency stub: logs duplicate sourceEventId (no dedup logic yet)
+   *  - Gateway errors (sync throw or async rejection) NEVER break the
+   *    main usage-ledger flow
+   *  - creditsRequested is 0 (rate translation deferred to future slice)
+   *  - Idempotency: PersistentCreditDeductionGateway deduplicates via sourceEventId
    *
    * Wiring point: ONLY called from updateExecutionResult() after successful DB write.
    * This ensures exactly ONE invocation path per completed execution.
    */
-  private emitDeductionAttempt(record: UsageRecord): void {
+  private async emitDeductionAttempt(record: UsageRecord): Promise<void> {
     if (!this.creditDeductionGateway) {
       this.logger.debug(
         JSON.stringify({
@@ -761,7 +761,7 @@ export class UsageLedgerService {
         }),
       );
 
-      const result = this.creditDeductionGateway.applyDeduction(deductionEvent);
+      const result = await this.creditDeductionGateway.applyDeduction(deductionEvent);
 
       this.logger.debug(
         JSON.stringify({
