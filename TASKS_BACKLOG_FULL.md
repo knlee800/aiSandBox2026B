@@ -37567,8 +37567,9 @@ Validate the complete credit deduction pipeline before database persistence is i
 
 ### BILLING-READY-03: Credit Balance Persistence Foundation
 
-**Status:** ACTIVE
+**Status:** COMPLETE and LOCKED
 **Registered:** 2026-07-07
+**Completed:** 2026-07-07
 **Task ID:** BILLING-READY-03
 **Family:** BILLING / CREDIT BALANCE PERSISTENCE
 **Priority:** High
@@ -37601,7 +37602,7 @@ BILLING-READY-03 is too broad for one safe implementation slice. It is split int
 - **BILLING-READY-03D** — Balance/overflow/concurrency semantics (split into 03D1/03D2/03D3):
   - **BILLING-READY-03D1** — Transaction boundary and repository contract hardening. **COMPLETE and LOCKED (2026-07-07).**
   - **BILLING-READY-03D2** — Concurrency/idempotency integration validation. **COMPLETE and LOCKED (2026-07-07).** Second child slice of BILLING-READY-03D.
-  - **BILLING-READY-03D3** — Overflow semantics finalization and checkpoint. *(future — not registered)*
+  - **BILLING-READY-03D3** — Overflow semantics finalization and BILLING-READY-03 close checkpoint. **COMPLETE and LOCKED (2026-07-07).**
 
 Do not implement any child slice during registration.
 
@@ -37704,7 +37705,13 @@ Do not implement any child slice during registration.
 - [x] All validation rows cleaned up from `credit_balances` and `credit_deduction_records` after execution
 - [x] DB validation evidence recorded (row counts, balance state, idempotency results)
 
-**BILLING-READY-03D3 — Overflow semantics finalization and checkpoint:** *(future — not registered)*
+**BILLING-READY-03D3 — Overflow semantics finalization and BILLING-READY-03 close checkpoint: COMPLETE and LOCKED (2026-07-07)**
+- [x] Overflow semantics finalized and recorded (deductions non-blocking; `appliedCredits` capped by available balance; `creditsOverflow` records unmet requested credits; `balanceAfter` never goes negative; zero-balance deduction produces `appliedCredits=0` and `overflowCredits=requestedCredits`; execution not blocked by insufficient balance) — **Step 3 complete (2026-07-07)**
+- [x] All BILLING-READY-03 persistent deduction architecture slices confirmed complete (schema/design, entities/migration/repositories, persistent gateway, runtime binding, transaction hardening, live concurrency/idempotency validation) — **Step 3 complete (2026-07-07)**
+- [x] BILLING-READY-03 close criteria defined — **Step 3 complete (2026-07-07)**
+- [x] Final BILLING-READY-03 close checkpoint requirements prepared — **Step 3 complete (2026-07-07)**
+- [x] BILLING-READY-03D3 marked COMPLETE and LOCKED — **Step 4 complete (2026-07-07)**
+- [x] BILLING-READY-03 marked COMPLETE and LOCKED — **Step 4 complete (2026-07-07)**
 
 #### Scope Boundaries
 
@@ -38424,3 +38431,145 @@ Live DB validation used a one-off `node:20-alpine` container on `aisandbox2026b_
 ---
 
 **Reference:** See TASKS.md -> BILLING-READY-03D2.
+
+---
+
+### BILLING-READY-03D3: Overflow Semantics Finalization and BILLING-READY-03 Close Checkpoint
+
+**Status:** COMPLETE and LOCKED
+**Registered:** 2026-07-07
+**Completed:** 2026-07-07
+**Task ID:** BILLING-READY-03D3
+**Parent:** BILLING-READY-03D (child of BILLING-READY-03)
+**Family:** BILLING / CREDIT BALANCE PERSISTENCE
+**Priority:** High
+**Nature:** GOVERNANCE / DESIGN FINALIZATION — overflow semantics recording, close-readiness review, and BILLING-READY-03 parent close checkpoint
+**Risk:** MEDIUM — governance/design finalization and parent close readiness; no production code expected
+**Roadmap position:** #7E-g — third child slice of BILLING-READY-03D (seventh child slice of BILLING-READY-03)
+**Workflow:** 4-step loop (1. Registration ✓ | 2. Stage-start / close-readiness review ✓ | 3. Overflow semantics finalization and parent close preparation ✓ | 4. Consolidation/checkpoint marking 03D3 and BILLING-READY-03 COMPLETE and LOCKED)
+
+#### Dependencies
+
+- BILLING-READY-03A — COMPLETE and LOCKED (schema and persistence design)
+- BILLING-READY-03B — COMPLETE and LOCKED (entities, migration, repositories, `CreditPersistenceModule`)
+- BILLING-READY-03C1 — COMPLETE and LOCKED (`PersistentCreditDeductionGateway` implementation, idempotency, overflow capping)
+- BILLING-READY-03C2 — COMPLETE and LOCKED (runtime binding swap, `emitDeductionAttempt()` awaits gateway, DB validation)
+- BILLING-READY-03D1 — COMPLETE and LOCKED (atomic transaction boundary, transactional `EntityManager`, overflow enforcement)
+- BILLING-READY-03D2 — COMPLETE and LOCKED (live concurrency/idempotency integration validation)
+- BILLING-READY-03 — COMPLETE and LOCKED (parent)
+
+#### Purpose
+
+Final child slice of BILLING-READY-03. Finalize and record overflow semantics, confirm all persistent deduction architecture slices are complete, define BILLING-READY-03 close criteria, and prepare the final BILLING-READY-03 close checkpoint. Upon completion, BILLING-READY-03D3 and BILLING-READY-03 are both marked COMPLETE and LOCKED, unlocking BILLING-READY-04+ planning.
+
+#### Scope
+
+- Finalize and record overflow semantics:
+  - Deductions are non-blocking (execution not blocked by insufficient balance in BILLING-READY-03)
+  - `appliedCredits` is capped by available balance: `min(requestedCredits, availableBalance)`
+  - `creditsOverflow` records unmet requested credits: `max(0, requestedCredits - availableBalance)`
+  - `balanceAfter` never goes negative: `availableBalance - appliedCredits >= 0`
+  - Zero-balance deductions produce `appliedCredits = 0` and `overflowCredits = requestedCredits`
+  - Execution proceeds regardless of overflow amount
+- Confirm all persistent deduction architecture slices are complete:
+  - Schema/design (BILLING-READY-03A)
+  - Entities/migration/repositories (BILLING-READY-03B)
+  - Persistent gateway (BILLING-READY-03C1)
+  - Runtime binding (BILLING-READY-03C2)
+  - Transaction hardening (BILLING-READY-03D1)
+  - Live concurrency/idempotency validation (BILLING-READY-03D2)
+- Define close criteria for BILLING-READY-03 parent umbrella
+- Prepare final BILLING-READY-03 close checkpoint requirements
+- Preserve BILLING-READY-04+ as not registered/deferred
+
+#### Non-Goals
+
+- No production code changes
+- No new integration tests unless a documented gap is found
+- No entitlement blocking
+- No quota enforcement
+- No Stripe/payment logic
+- No subscription billing
+- No frontend billing UI
+- No Agent Harness activation
+- No AGENT-PLATFORM-04 registration
+- No BILLING-READY-04 registration
+
+#### Registration Acceptance Criteria
+
+- [x] BILLING-READY-03D3 registered in TASKS.md
+- [x] BILLING-READY-03D3 registered in TASKS_BACKLOG_FULL.md
+- [x] AINOW-EXECUTION-ROADMAP.md points to BILLING-READY-03D3 as current ACTIVE child slice
+- [x] BILLING-READY-03D2 confirmed COMPLETE and LOCKED before registration
+- [x] 4-step workflow documented
+- [x] Risk classification MEDIUM recorded
+- [x] BILLING-READY-04+ noted as not registered/deferred
+- [x] AGENT-HARNESS-06C remains deferred
+- [x] AGENT-PLATFORM-04 remains future, not registered
+- [x] One-active-task rule satisfied
+- [x] BILLING-READY-03 remains ACTIVE
+
+#### Implementation Acceptance Criteria
+
+- [x] Overflow semantics finalized and recorded — Step 3 complete (2026-07-07)
+- [x] All BILLING-READY-03 child slices confirmed complete — Step 3 complete (2026-07-07)
+- [x] BILLING-READY-03 close criteria defined — Step 3 complete (2026-07-07)
+- [x] Final BILLING-READY-03 close checkpoint prepared — Step 3 complete (2026-07-07)
+- [x] BILLING-READY-03D3 marked COMPLETE and LOCKED — **Step 4 complete (2026-07-07)**
+- [x] BILLING-READY-03 marked COMPLETE and LOCKED — **Step 4 complete (2026-07-07)**
+
+#### Finalized Overflow Semantics (BILLING-READY-03)
+
+The following overflow semantics are the authoritative final record for BILLING-READY-03 credit balance persistence:
+
+1. **Deductions are non-blocking.** Insufficient balance does not block execution. The platform records the overflow and continues.
+2. **`appliedCredits = Math.min(totalRequestedCredits, availableBalance)`.** The amount actually deducted is capped at the available balance.
+3. **`creditsOverflow = Math.max(totalRequestedCredits - availableBalance, 0)`.** The unmet portion is recorded as overflow.
+4. **`balanceAfter = availableBalance - appliedCredits`.** The post-deduction balance is always computed and stored.
+5. **`balanceAfter` is always >= 0.** The database `CHECK` constraint (`balance >= 0`) and application logic jointly enforce this. No deduction produces a negative balance.
+6. **Zero-balance deductions** produce `appliedCredits = 0`, `creditsOverflow = requestedCredits`, `balanceAfter = 0`. No error is thrown; the deduction record is stored normally.
+7. **Line-item overflow** consumes available budget in line-item order. Earlier line items are satisfied first; later items overflow first when budget is exhausted. Sequential line-item budget allocation is implemented in `PersistentCreditDeductionGateway`.
+8. **Entitlement enforcement is deferred** to BILLING-READY-04+. In BILLING-READY-03, balance exhaustion does not restrict access, gate features, or throttle execution.
+
+**Validation evidence:** These semantics are implemented and validated across:
+- `PersistentCreditDeductionGateway` (BILLING-READY-03C1 — unit tests)
+- `DataSource.transaction()` atomic boundary (BILLING-READY-03D1 — unit tests)
+- Live PostgreSQL concurrency/idempotency integration (BILLING-READY-03D2 — 6/6 scenarios passed)
+- DB `CHECK` constraint `chk_credit_balances_balance_non_negative` (BILLING-READY-03B — migration)
+
+#### BILLING-READY-03 Parent Close Criteria — All Satisfied
+
+All close criteria for BILLING-READY-03 are satisfied. Parent is COMPLETE and LOCKED.
+
+| # | Criterion | Status |
+|---|-----------|--------|
+| 1 | BILLING-READY-03A — Schema and Persistence Design | COMPLETE and LOCKED |
+| 2 | BILLING-READY-03B — DB Schema, Migration, Repository Foundation | COMPLETE and LOCKED |
+| 3 | BILLING-READY-03C1 — Persistent Gateway Implementation | COMPLETE and LOCKED |
+| 4 | BILLING-READY-03C2 — Controlled Runtime Binding | COMPLETE and LOCKED |
+| 5 | BILLING-READY-03D1 — Transaction Boundary Hardening | COMPLETE and LOCKED |
+| 6 | BILLING-READY-03D2 — Concurrency/Idempotency Integration Validation | COMPLETE and LOCKED |
+| 7 | BILLING-READY-03D3 — Overflow Semantics Finalized | COMPLETE and LOCKED (2026-07-07) |
+| 8 | No open production-code gaps | Confirmed — all persistence code implemented and tested |
+| 9 | No open validation gaps | Confirmed — unit tests + integration tests + DB validation passed |
+| 10 | No open governance gaps | Confirmed — all checkpoints and governance docs current |
+| 11 | Final checkpoint created (`docs/BILLING-READY-03D3-CHECKPOINT.md`) | COMPLETE and LOCKED (2026-07-07) |
+
+**All 11 close criteria satisfied. BILLING-READY-03 is COMPLETE and LOCKED.**
+
+#### Scope Boundaries
+
+- No Stripe/payment integration
+- No subscription/entitlement checks
+- No frontend billing UI
+- No entitlement enforcement
+- No Agent Harness activation
+- No BILLING-READY-04+ registration during this task
+
+**Checkpoint:** `docs/BILLING-READY-03D3-CHECKPOINT.md` — created 2026-07-07. See `docs/BILLING-READY-03D3-CHECKPOINT.md`.
+
+**BILLING-READY-04+ status:** Not registered. Deferred. Balance enforcement, entitlement gating, Stripe/payment integration, and frontend billing UI remain future scope.
+
+---
+
+**Reference:** See TASKS.md -> BILLING-READY-03D3.
