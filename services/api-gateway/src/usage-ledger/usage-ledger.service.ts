@@ -1,8 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThan } from 'typeorm';
 import { UsageRecord } from '../entities/usage-record.entity';
 import { v4 as uuidv4 } from 'uuid';
+import { CreditDeductionGateway } from '../billing/credit-deduction';
+import type { CreditDeductionEvent } from '../billing/credit-deduction';
 
 /**
  * CreateUsageRecordDto
@@ -96,6 +98,8 @@ export class UsageLedgerService {
   constructor(
     @InjectRepository(UsageRecord)
     private readonly usageRecordRepository: Repository<UsageRecord>,
+    @Optional() @Inject(CreditDeductionGateway)
+    private readonly creditDeductionGateway?: CreditDeductionGateway,
   ) {}
 
   /**
@@ -267,6 +271,9 @@ export class UsageLedgerService {
         tokensUsed: dto.tokensUsed,
         status: dto.executionStatus,
       }));
+
+      // BILLING-READY-02B: Emit deduction attempt after successful completion
+      this.emitDeductionAttempt(updatedRecord);
 
       return updatedRecord;
     } catch (error) {
@@ -691,6 +698,92 @@ export class UsageLedgerService {
       dto.executionDurationMs < 0
     ) {
       throw new Error('executionDurationMs must be a non-negative number');
+    }
+  }
+
+  /**
+   * BILLING-READY-02B: Emit a credit deduction attempt after execution completion.
+   *
+   * Guardrails:
+   *  - If gateway not bound → silently returns (NoOp fallback)
+   *  - Gateway errors NEVER break the main usage-ledger flow
+   *  - Structured logging only — no real credit computation yet
+   *  - creditsRequested is 0 (rate translation not implemented)
+   *  - Idempotency stub: logs duplicate sourceEventId (no dedup logic yet)
+   *
+   * Wiring point: ONLY called from updateExecutionResult() after successful DB write.
+   * This ensures exactly ONE invocation path per completed execution.
+   */
+  private emitDeductionAttempt(record: UsageRecord): void {
+    if (!this.creditDeductionGateway) {
+      this.logger.debug(
+        JSON.stringify({
+          event: 'deduction_attempt.gateway_not_bound',
+          timestamp: new Date().toISOString(),
+          executionId: record.executionId,
+          reason: 'CreditDeductionGateway not injected, falling back to silent no-op',
+        }),
+      );
+      return;
+    }
+
+    try {
+      const deductionEvent: CreditDeductionEvent = {
+        source: 'usage_ledger',
+        sourceEventId: record.executionId,
+        ownerId: record.userId,
+        occurredAt: new Date(),
+        lineItems: [
+          {
+            category: 'model_tokens',
+            unit: 'token',
+            unitCount: record.tokensUsed ?? 0,
+            creditsRequested: 0,
+          },
+        ],
+        metadata: {
+          model: record.model,
+          executionDurationMs: record.executionDurationMs,
+          sessionId: record.sessionId,
+        },
+      };
+
+      this.logger.log(
+        JSON.stringify({
+          event: 'deduction_attempt',
+          timestamp: new Date().toISOString(),
+          executionId: record.executionId,
+          userId: record.userId,
+          source: 'usage_ledger',
+          tokensUsed: record.tokensUsed ?? 0,
+          creditsRequested: 0,
+          gatewayClass: this.creditDeductionGateway.constructor.name,
+        }),
+      );
+
+      const result = this.creditDeductionGateway.applyDeduction(deductionEvent);
+
+      this.logger.debug(
+        JSON.stringify({
+          event: 'deduction_attempt.result',
+          timestamp: new Date().toISOString(),
+          executionId: record.executionId,
+          totalCreditsApplied: result.totalCreditsApplied,
+          totalCreditsOverflow: result.totalCreditsOverflow,
+        }),
+      );
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.warn(
+        JSON.stringify({
+          event: 'deduction_attempt.error',
+          timestamp: new Date().toISOString(),
+          executionId: record.executionId,
+          errorClass: error instanceof Error ? error.constructor.name : 'Unknown',
+          errorMessage,
+          note: 'Gateway error suppressed — does not affect usage-ledger write',
+        }),
+      );
     }
   }
 }
