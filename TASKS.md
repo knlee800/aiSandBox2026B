@@ -18546,16 +18546,16 @@ If icons are needed, use Heroicons v2 Outline only: `@heroicons/react/24/outline
 
 ## AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
 
-**Family status:** ACTIVE — AGENT-HARNESS-07 ACTIVE (2026-07-07); AGENT-HARNESS-00 COMPLETE and LOCKED; AGENT-HARNESS-01A COMPLETE and LOCKED; AGENT-HARNESS-01B COMPLETE and LOCKED; AGENT-HARNESS-01C COMPLETE and LOCKED
+**Family status:** COMPLETE and LOCKED — AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07); AGENT-HARNESS-00 COMPLETE and LOCKED; AGENT-HARNESS-01A COMPLETE and LOCKED; AGENT-HARNESS-01B COMPLETE and LOCKED; AGENT-HARNESS-01C COMPLETE and LOCKED
 
-**Current stage:** AGENT-HARNESS-07 ACTIVE (2026-07-07) — Per-Builder Harness Config Adapter; AGENT-HARNESS-07B COMPLETE and LOCKED (2026-07-07) — Worker Integration + Resolved Config Flow; AGENT-HARNESS-07A COMPLETE and LOCKED (2026-07-07); AGENT-HARNESS-07C future/not registered; prerequisite AGENT-PLATFORM-04 COMPLETE and LOCKED; AGENT-HARNESS-06B COMPLETE and LOCKED
+**Current stage:** AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07) — Per-Builder Harness Config Adapter; AGENT-HARNESS-07C COMPLETE and LOCKED (2026-07-07) — Validation/Regression Matrix and Parent Close Checkpoint; AGENT-HARNESS-07B COMPLETE and LOCKED (2026-07-07) — Worker Integration + Resolved Config Flow; AGENT-HARNESS-07A COMPLETE and LOCKED (2026-07-07); prerequisite AGENT-PLATFORM-04 COMPLETE and LOCKED; AGENT-HARNESS-06B COMPLETE and LOCKED
 
 **Registered tasks:**
 1. AGENT-HARNESS-00 ??Agent Harness v1 Master Plan (COMPLETE and LOCKED)
 2. AGENT-HARNESS-01A ??Per-Request Model Selection Fix (COMPLETE and LOCKED)
 3. AGENT-HARNESS-01B ??Agent Harness v1 Contracts + Config Shape (COMPLETE and LOCKED)
 4. AGENT-HARNESS-01C ??Model Profile Registry (COMPLETE and LOCKED)
-5. AGENT-HARNESS-07 — Per-Builder Harness Config Adapter (ACTIVE — 2026-07-07)
+5. AGENT-HARNESS-07 — Per-Builder Harness Config Adapter (COMPLETE and LOCKED — 2026-07-07)
 
 **Completed foundations (prerequisites):**
 - AI-CONTEXT family COMPLETE and LOCKED ??global/project AI instructions, repo docs registry, repo docs prompt injection, context indicator, regression matrix
@@ -25148,7 +25148,7 @@ Resume AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell.
 
 **Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` — controls cross-family priority order; Knowledge before Collaboration before Billing.
 
-**Current stage:** AGENT-PLATFORM-04 COMPLETE and LOCKED (2026-07-07) — AGENT-HARNESS-07 ACTIVE (registered 2026-07-07)
+**Current stage:** AGENT-PLATFORM-04 COMPLETE and LOCKED (2026-07-07) — AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07)
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 — ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED — 2026-07-04)
@@ -25772,8 +25772,8 @@ This task produces the authoritative plan for how multiple Builder Agents can co
 
 **Checkpoint:** `docs/AGENT-PLATFORM-04-CHECKPOINT.md` — COMPLETE and LOCKED (2026-07-07)
 
-**AGENT-HARNESS-07 status:** ACTIVE (registered 2026-07-07) — Per-Builder Harness Config Adapter. AGENT-HARNESS-07A COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS-07B COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS-07C future/not registered — awaiting Keith approval.
-**AGENT-HARNESS-06C status:** Not registered. Deferred — must remain deferred until after AGENT-HARNESS-07.
+**AGENT-HARNESS-07 status:** COMPLETE and LOCKED (2026-07-07) — Per-Builder Harness Config Adapter. All 3 child slices COMPLETE and LOCKED: 07A, 07B, 07C. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
+**AGENT-HARNESS-06C status:** Not registered. Deferred — prerequisite (AGENT-HARNESS-07) is now COMPLETE and LOCKED; AGENT-HARNESS-06C still deferred until Keith explicitly approves canary activation.
 **Multi-builder collaboration/runtime orchestration status:** Not registered. Deferred — comes after AGENT-HARNESS-07 and AGENT-HARNESS-06C.
 **BILLING-READY-04+ status:** Not registered. Deferred.
 
@@ -28181,7 +28181,7 @@ All close criteria for BILLING-READY-03 are satisfied. Parent is COMPLETE and LO
 
 #### AGENT-HARNESS-07: Per-Builder Harness Config Adapter
 
-**Status:** ACTIVE — Step 1 COMPLETE (Registration, 2026-07-07); AGENT-HARNESS-07A COMPLETE and LOCKED (2026-07-07); AGENT-HARNESS-07B COMPLETE and LOCKED (2026-07-07); AGENT-HARNESS-07C pending registration
+**Status:** COMPLETE and LOCKED — 2026-07-07. All 3 child slices COMPLETE and LOCKED: 07A, 07B, 07C. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
 **Task ID:** AGENT-HARNESS-07
 **Family:** AGENT HARNESS / MULTI-BUILDER CONFIG
 **Priority:** High
@@ -28217,9 +28217,9 @@ AGENT-HARNESS-07 is split into 3 child slices given HIGH risk and multi-step sco
 
 - **AGENT-HARNESS-07A** — Backend builder profile registry + adapter contract (COMPLETE and LOCKED — 2026-07-07)
 - **AGENT-HARNESS-07B** — Worker integration + resolved config flow (COMPLETE and LOCKED — 2026-07-07)
-- **AGENT-HARNESS-07C** — Validation/regression matrix and checkpoint (not yet registered — future)
+- **AGENT-HARNESS-07C** — Validation/regression matrix and checkpoint (COMPLETE and LOCKED — 2026-07-07)
 
-AGENT-HARNESS-07A is COMPLETE and LOCKED. AGENT-HARNESS-07B is COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS-07C will be registered only after explicit Keith approval.
+AGENT-HARNESS-07A is COMPLETE and LOCKED. AGENT-HARNESS-07B is COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS-07C is COMPLETE and LOCKED (2026-07-07). All 3 child slices COMPLETE and LOCKED. Parent AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07).
 
 #### Non-Goals
 
@@ -28239,7 +28239,7 @@ AGENT-HARNESS-07A is COMPLETE and LOCKED. AGENT-HARNESS-07B is COMPLETE and LOCK
 1. **Registration** — COMPLETE (2026-07-07) — AGENT-HARNESS-07 registered; first active slice: AGENT-HARNESS-07A
 2. **Adapter/readiness review** — COMPLETE (2026-07-07) — AGENT-HARNESS-07A: builder profile contracts, registry, adapter reviewed and implemented
 3. **Implementation (07A)** — COMPLETE and LOCKED (2026-07-07) — AGENT-HARNESS-07A: backend builder profile registry + adapter contract; see `docs/AGENT-HARNESS-07A-CHECKPOINT.md`
-4. **Consolidation/checkpoint** — PARTIAL (07B COMPLETE and LOCKED — 2026-07-07; 07C remains — not registered)
+4. **Consolidation/checkpoint** — COMPLETE and LOCKED (2026-07-07) — 07A, 07B, 07C all COMPLETE and LOCKED; parent checkpoint created; see `docs/AGENT-HARNESS-07-CHECKPOINT.md`
 
 #### Acceptance Criteria
 
@@ -28385,19 +28385,99 @@ Wire the Per-Builder Harness Config Adapter (built in AGENT-HARNESS-07A) into th
 
 **Checkpoint:** `docs/AGENT-HARNESS-07B-CHECKPOINT.md`
 
-##### AGENT-HARNESS-07C — Validation/Regression Matrix and Checkpoint (not yet registered)
+##### AGENT-HARNESS-07C — Validation/Regression Matrix and Checkpoint (COMPLETE and LOCKED — 2026-07-07)
 
-- [ ] Validation/regression matrix defined
-- [ ] All acceptance criteria for 07A and 07B confirmed satisfied
-- [ ] AGENT-HARNESS-07 checkpoint document created
-- [ ] AGENT-HARNESS-07 marked COMPLETE and LOCKED
+**Task ID:** AGENT-HARNESS-07C
+**Status:** COMPLETE and LOCKED — 2026-07-07. All 3 steps complete. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
+**Family:** AGENT HARNESS / MULTI-BUILDER CONFIG
+**Parent:** AGENT-HARNESS-07
+**Risk:** LOW — validation/regression only; no source changes in this step
+**Registered:** 2026-07-07
 
-**AGENT-HARNESS-06C status:** Not registered. Deferred — must remain deferred until AGENT-HARNESS-07 is COMPLETE and LOCKED.
+**Dependencies:**
+- AGENT-HARNESS-07A — COMPLETE and LOCKED (2026-07-07)
+- AGENT-HARNESS-07B — COMPLETE and LOCKED (2026-07-07)
+- AGENT-PLATFORM-04 — COMPLETE and LOCKED (2026-07-07)
+- AGENT-HARNESS-06C — remains deferred until AGENT-HARNESS-07 is COMPLETE and LOCKED
+
+**Purpose:**
+Final validation and regression matrix for AGENT-HARNESS-07, confirming the full 07A + 07B integration is correct and consistent. Closes out AGENT-HARNESS-07 with a parent checkpoint document. AGENT-HARNESS-07 will be marked COMPLETE and LOCKED only after validation passes.
+
+**Scope:**
+- Validate 07A builder profile registry + adapter (contracts, resolution paths, platform safety enforcement).
+- Validate 07B worker integration + resolved config flow (identity field extension, WorkerProcessor call site, resolved config propagation to ToolDispatcher, handlers, loop options, audit gate, checkpoint gate).
+- Confirm optional identity fields are backward-compatible (global fallback when absent).
+- Confirm `DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop` remains the master env gate.
+- Confirm resolved config flows into ToolDispatcher, handlers, `executeAgentHarnessLoop` options, audit recorder gate, and pre-apply checkpoint gate.
+- Confirm no AGENT-HARNESS-06C activation occurred.
+- Create regression matrix document (`docs/AGENT-HARNESS-07C-REGRESSION-MATRIX.md`) in Step 2.
+- Create final AGENT-HARNESS-07 parent checkpoint (`docs/AGENT-HARNESS-07-CHECKPOINT.md`) in Step 3.
+- Mark AGENT-HARNESS-07 COMPLETE and LOCKED after validation passes.
+- Record AGENT-HARNESS-06C as unblocked from a prerequisite standpoint only — still deferred until Keith explicitly approves canary activation.
+
+**Non-Goals:**
+- No AGENT-HARNESS-06C activation
+- No production tool-loop activation
+- No env changes
+- No Docker/Postgres/Redis/runtime commands
+- No frontend UI
+- No API Gateway enqueue wiring
+- No database migration
+- No billing enforcement
+- No Stripe/payment
+- No multi-builder orchestration
+- No broad worker refactor
+
+**Workflow (3-Step Loop):**
+1. **Registration** — COMPLETE (2026-07-07) — AGENT-HARNESS-07C registered; scope defined
+2. **Validation / regression matrix** — COMPLETE (2026-07-07) — regression matrix created at `docs/AGENT-HARNESS-07C-REGRESSION-MATRIX.md`; all 07A + 07B acceptance criteria satisfied
+3. **Consolidation / parent checkpoint** — COMPLETE and LOCKED (2026-07-07) — `docs/AGENT-HARNESS-07-CHECKPOINT.md` created; AGENT-HARNESS-07 marked COMPLETE and LOCKED
+
+**Checkpoint files:**
+- `docs/AGENT-HARNESS-07C-REGRESSION-MATRIX.md`
+- `docs/AGENT-HARNESS-07-CHECKPOINT.md`
+
+**Acceptance Criteria:**
+
+###### Registration (Step 1 — COMPLETE 2026-07-07)
+- [x] AGENT-HARNESS-07C registered in TASKS.md with ACTIVE status
+- [x] AGENT-HARNESS-07C registered in TASKS_BACKLOG_FULL.md with matching content
+- [x] AINOW-EXECUTION-ROADMAP.md updated to reflect AGENT-HARNESS-07C as current ACTIVE child slice
+- [x] AGENT-HARNESS-07A remains COMPLETE and LOCKED
+- [x] AGENT-HARNESS-07B remains COMPLETE and LOCKED
+- [x] AGENT-HARNESS-06C remains deferred
+- [x] AGENT-PLATFORM-04 remains COMPLETE and LOCKED
+- [x] AGENT-HARNESS-07 parent remains ACTIVE
+- [x] One-active-task rule satisfied
+- [x] No implementation files changed
+
+###### Validation / Regression Matrix (Step 2 — COMPLETE 2026-07-07)
+- [x] `docs/AGENT-HARNESS-07C-REGRESSION-MATRIX.md` created
+- [x] 07A builder profile registry — all resolution paths covered in matrix
+- [x] 07A adapter — platform approval floor and allowArbitraryShell veto confirmed
+- [x] 07B identity fields — optional fields backward-compatible
+- [x] 07B WorkerProcessor call site — resolveBuilderHarnessConfig called before harness route decision
+- [x] 07B resolved config — flows into ToolDispatcher, handlers, executeAgentHarnessLoop, audit gate, checkpoint gate
+- [x] DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop confirmed as master env gate
+- [x] No AGENT-HARNESS-06C activation confirmed
+- [x] All 07A and 07B acceptance criteria confirmed satisfied
+
+###### Consolidation / Parent Checkpoint (Step 3 — COMPLETE and LOCKED 2026-07-07)
+- [x] `docs/AGENT-HARNESS-07-CHECKPOINT.md` created
+- [x] AGENT-HARNESS-07 marked COMPLETE and LOCKED in TASKS.md
+- [x] AGENT-HARNESS-07 marked COMPLETE and LOCKED in TASKS_BACKLOG_FULL.md
+- [x] AINOW-EXECUTION-ROADMAP.md updated to reflect AGENT-HARNESS-07 COMPLETE and LOCKED
+- [x] AGENT-HARNESS-06C unblock decision recorded (remains deferred until Keith approves canary)
+
+**AGENT-HARNESS-06C status:** Not registered. Deferred — prerequisite (AGENT-HARNESS-07) is now COMPLETE and LOCKED; AGENT-HARNESS-06C still deferred until Keith explicitly approves canary activation.
 **AGENT-HARNESS-07B status:** COMPLETE and LOCKED (2026-07-07) — Worker Integration + Resolved Config Flow. All 4 steps complete. See `docs/AGENT-HARNESS-07B-CHECKPOINT.md`.
-**AGENT-HARNESS-07C status:** Not registered. Future — will be registered after explicit Keith approval.
+**AGENT-HARNESS-07C status:** COMPLETE and LOCKED (2026-07-07) — All 3 steps complete. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
+**AGENT-HARNESS-07 status:** COMPLETE and LOCKED (2026-07-07) — All 3 child slices (07A, 07B, 07C) COMPLETE and LOCKED. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
 **Multi-builder collaboration/runtime orchestration status:** Not registered. Deferred — comes after AGENT-HARNESS-07 and AGENT-HARNESS-06C.
 **BILLING-READY-04+ status:** Not registered. Deferred.
 
 ---
+
+**Next recommended step:** AGENT-HARNESS-06C — Read-Only Harness Canary Execution. Not registered. Requires explicit Keith approval before registration.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-07.
