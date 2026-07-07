@@ -1,27 +1,29 @@
 import { Module } from '@nestjs/common';
 import { CreditDeductionGateway } from './credit-deduction.gateway';
-import { NoOpCreditDeductionGateway } from './noop-credit-deduction.gateway';
+import { CalculatingCreditDeductionGateway } from './calculating-credit-deduction.gateway';
+import { CreditCalculationService } from './credit-calculation.service';
 
 /**
- * BILLING-READY-02A: Credit Deduction Module.
- * BILLING-READY-02B: Now imported by UsageLedgerModule (single wiring point).
+ * BILLING-READY-02A/02C: Credit Deduction Module.
  *
- * Provides the CreditDeductionGateway token bound to the
- * NoOpCreditDeductionGateway implementation.
+ * Provides the CreditDeductionGateway token bound to
+ * CalculatingCreditDeductionGateway (BILLING-READY-02C).
+ *
+ * The calculating gateway uses CreditCalculationService to apply
+ * deterministic credit rates from CREDIT_RATES config. No persistence,
+ * no balance enforcement, no payment integration.
  *
  * Imported by: UsageLedgerModule (BILLING-READY-02B)
  * Wiring point: UsageLedgerService.updateExecutionResult() completion hook
- *
- * When a real implementation is ready, swap the useClass binding
- * here — all consumers automatically get the new behavior.
  */
 @Module({
   providers: [
+    CreditCalculationService,
     {
       provide: CreditDeductionGateway,
-      useClass: NoOpCreditDeductionGateway,
+      useClass: CalculatingCreditDeductionGateway,
     },
   ],
-  exports: [CreditDeductionGateway],
+  exports: [CreditDeductionGateway, CreditCalculationService],
 })
 export class CreditDeductionModule {}

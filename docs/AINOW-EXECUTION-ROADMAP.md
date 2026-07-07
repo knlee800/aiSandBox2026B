@@ -37,6 +37,8 @@ It establishes the agreed sequence, guardrails, and rules for when that sequence
 | AGENT-PLATFORM-02 | Static RPG Office/Town Dashboard Shell | COMPLETE and LOCKED |
 | AGENT-PLATFORM-03 | Builder Agent Route Integration Review | COMPLETE and LOCKED |
 | BILLING-READY-00 | Billing, Plan, Credit, and Entitlement Audit | COMPLETE and LOCKED |
+| BILLING-READY-01 | Credit Ledger Foundation | COMPLETE and LOCKED |
+| BILLING-READY-02A/02B/02C | Credit Deduction Pipeline Foundation | COMPLETE and LOCKED |
 
 ---
 
@@ -55,11 +57,14 @@ It establishes the agreed sequence, guardrails, and rules for when that sequence
 | 7 | BILLING-READY-00 | Billing, Plan, Credit, and Entitlement Audit | **COMPLETE and LOCKED** — 2026-07-06. Audit/planning complete. No implementation. See `docs/BILLING-READY-00-CHECKPOINT.md`. |
 | 7A | BILLING-READY-01A | Billing Implementation Architecture Review | **COMPLETE and LOCKED** — 2026-07-06. Read-only architecture review complete. All 18 criteria satisfied. Option A recommended for BILLING-READY-01. See `docs/BILLING-READY-01A-CHECKPOINT.md`. |
 | 7B | BILLING-READY-01 | Credit Ledger Foundation | **COMPLETE and LOCKED — 2026-07-06.** TypeScript-only credit ledger domain/types/config (Option A). 10 source files + 3 test files. 16 tests pass. No database migration. See `docs/BILLING-READY-01-CHECKPOINT.md`. |
+| 7C | BILLING-READY-02A/02B/02C | Credit Deduction Pipeline Foundation | **COMPLETE and LOCKED — 2026-07-07.** Abstract gateway contract, NoOp + calculating implementations, single runtime wiring point in usage-ledger, deterministic credit calculation layer. 9 source files + 5 test files. No persistence, no balance enforcement, no Stripe. See `docs/BILLING-READY-02A-02B-02C-CHECKPOINT.md`. |
 | 8 | Beta preparation | Beta readiness checklist | After Billing foundation |
 
 ---
 
 ## 4. Current Next Task
+
+**BILLING-READY-02A/02B/02C — COMPLETE and LOCKED (2026-07-07).** Credit Deduction Pipeline Foundation. Abstract gateway contract (`CreditDeductionGateway`), `NoOpCreditDeductionGateway` and `CalculatingCreditDeductionGateway` implementations, `CreditCalculationService` (deterministic `unitCount × creditsPerUnit` from `CREDIT_RATES`), single runtime wiring point in `UsageLedgerService.updateExecutionResult()`, `CreditDeductionModule` imported into `UsageLedgerModule`. 9 source files + 5 test files. No persistence, no balance enforcement, no Stripe, no entitlement enforcement. See `docs/BILLING-READY-02A-02B-02C-CHECKPOINT.md`.
 
 **BILLING-READY-01A — COMPLETE and LOCKED (2026-07-06).** Produced `docs/BILLING-READY-01A-BILLING-IMPLEMENTATION-ARCHITECTURE-REVIEW.md` and `docs/BILLING-READY-01A-CHECKPOINT.md`. Read-only architecture review complete. All 18 review acceptance criteria satisfied. Recommended Option A (TypeScript-only) for BILLING-READY-01. No implementation. No Stripe/payment calls. No Agent Harness activation.
 
@@ -165,6 +170,7 @@ The following must not be started until their prerequisites in the strategic seq
 | 7 | BILLING-READY-00 | Audit/planning (COMPLETE and LOCKED) |
 | 7A | BILLING-READY-01A | Read-only architecture review (**COMPLETE and LOCKED**) |
 | 7B | BILLING-READY-01 | Credit Ledger Foundation (**COMPLETE and LOCKED — 2026-07-06**) |
+| 7C | BILLING-READY-02A/02B/02C | Credit Deduction Pipeline Foundation (**COMPLETE and LOCKED — 2026-07-07**) |
 
 ---
 

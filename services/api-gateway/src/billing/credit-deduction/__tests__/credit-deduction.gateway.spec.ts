@@ -1,5 +1,6 @@
 import { CreditDeductionGateway } from '../credit-deduction.gateway';
 import { NoOpCreditDeductionGateway } from '../noop-credit-deduction.gateway';
+import { CalculatingCreditDeductionGateway } from '../calculating-credit-deduction.gateway';
 import { CreditDeductionModule } from '../credit-deduction.module';
 import { Test } from '@nestjs/testing';
 
@@ -14,13 +15,13 @@ describe('CreditDeductionGateway architectural guardrails', () => {
     expect(typeof gateway.applyDeduction).toBe('function');
   });
 
-  it('CreditDeductionModule provides CreditDeductionGateway token', async () => {
+  it('CreditDeductionModule provides CreditDeductionGateway token with CalculatingCreditDeductionGateway', async () => {
     const module = await Test.createTestingModule({
       imports: [CreditDeductionModule],
     }).compile();
 
     const gateway = module.get(CreditDeductionGateway);
-    expect(gateway).toBeInstanceOf(NoOpCreditDeductionGateway);
+    expect(gateway).toBeInstanceOf(CalculatingCreditDeductionGateway);
     expect(gateway).toBeInstanceOf(CreditDeductionGateway);
   });
 
@@ -50,5 +51,6 @@ describe('CreditDeductionGateway architectural guardrails', () => {
     expect(gateway).toBeInstanceOf(StubGateway);
     expect(gateway).toBeInstanceOf(CreditDeductionGateway);
     expect(gateway).not.toBeInstanceOf(NoOpCreditDeductionGateway);
+    expect(gateway).not.toBeInstanceOf(CalculatingCreditDeductionGateway);
   });
 });

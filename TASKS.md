@@ -26774,7 +26774,7 @@ Implementation should include:
 
 BILLING-READY-01 COMPLETE and LOCKED (2026-07-06). Credit Ledger Foundation implemented. 10 source files + 3 test files. 16 tests pass. Typecheck and build clean. See `docs/BILLING-READY-01-CHECKPOINT.md`.
 
-**BILLING-READY-02** — Credit deduction pipeline. Not registered. Proposed only — after BILLING-READY-01 completes.
+**BILLING-READY-02A/02B/02C** — COMPLETE and LOCKED (2026-07-07). Credit deduction pipeline foundation implemented. See `docs/BILLING-READY-02A-02B-02C-CHECKPOINT.md`.
 
 **AGENT-HARNESS-06C** — Remains deferred and not registered.
 
@@ -26783,3 +26783,189 @@ BILLING-READY-01 COMPLETE and LOCKED (2026-07-06). Credit Ledger Foundation impl
 **Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-01.
 
 ---
+
+#### BILLING-READY-02A: Credit Deduction Gateway — Architecture Foundation
+
+**Status:** COMPLETE and LOCKED
+**Registered:** 2026-07-07
+**Completed:** 2026-07-07
+**Task ID:** BILLING-READY-02A
+**Family:** BILLING / COMMERCIAL READINESS
+**Priority:** High
+**Nature:** IMPLEMENTATION — TypeScript-only, new module, no database migration
+**Risk:** Low (new module, no existing behavior changed)
+**Roadmap position:** #7C-a — after BILLING-READY-01, first slice of BILLING-READY-02
+**Checkpoint:** docs/BILLING-READY-02A-02B-02C-CHECKPOINT.md
+
+#### Dependencies
+
+- BILLING-READY-01 — COMPLETE and LOCKED (Credit Ledger Foundation)
+
+#### Purpose
+
+Establish the abstract `CreditDeductionGateway` contract and injectable module boundary. Creates the `billing/credit-deduction/` module with the abstract gateway class, `NoOpCreditDeductionGateway` default, canonical event/result types, `CreditDeductionModule`, and barrel exports.
+
+#### Files Changed
+
+**New source files (5):**
+1. `services/api-gateway/src/billing/credit-deduction/types.ts`
+2. `services/api-gateway/src/billing/credit-deduction/credit-deduction.gateway.ts`
+3. `services/api-gateway/src/billing/credit-deduction/noop-credit-deduction.gateway.ts`
+4. `services/api-gateway/src/billing/credit-deduction/credit-deduction.module.ts`
+5. `services/api-gateway/src/billing/credit-deduction/index.ts`
+
+**New test files (1):**
+6. `services/api-gateway/src/billing/credit-deduction/__tests__/noop-credit-deduction.gateway.spec.ts`
+
+#### Acceptance Criteria
+
+- [x] Abstract `CreditDeductionGateway` class created
+- [x] `CreditDeductionEvent` and `CreditDeductionResult` types created
+- [x] `NoOpCreditDeductionGateway` implements contract, applies zero credits
+- [x] `CreditDeductionModule` provides gateway token
+- [x] Barrel exports created
+- [x] NoOp tests added
+- [x] No database migration
+- [x] No persistence
+- [x] No Stripe/payment behavior
+- [x] No entitlement enforcement
+- [x] No frontend UI
+
+#### Scope Boundaries Confirmed
+
+- No balance persistence
+- No balance enforcement
+- No Stripe/payment integration
+- No API endpoints
+- No frontend UI
+- No database migration
+
+---
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-02A.
+
+---
+
+#### BILLING-READY-02B: Credit Deduction Gateway — Single Runtime Wiring Point
+
+**Status:** COMPLETE and LOCKED
+**Registered:** 2026-07-07
+**Completed:** 2026-07-07
+**Task ID:** BILLING-READY-02B
+**Family:** BILLING / COMMERCIAL READINESS
+**Priority:** High
+**Nature:** IMPLEMENTATION — usage-ledger wiring, no new module
+**Risk:** Low (gateway injected @Optional, errors suppressed, existing flow unchanged)
+**Roadmap position:** #7C-b — after BILLING-READY-02A
+**Checkpoint:** docs/BILLING-READY-02A-02B-02C-CHECKPOINT.md
+
+#### Dependencies
+
+- BILLING-READY-02A — COMPLETE and LOCKED (Gateway Architecture Foundation)
+
+#### Purpose
+
+Wire `CreditDeductionGateway` into `UsageLedgerService.updateExecutionResult()` as the single, exclusive call site for all `usage_ledger`-sourced credit deduction events. Gateway is `@Optional()` — missing binding silently no-ops. Gateway errors never break the main usage-ledger write.
+
+#### Files Changed
+
+**Modified source files (2):**
+1. `services/api-gateway/src/usage-ledger/usage-ledger.service.ts`
+2. `services/api-gateway/src/usage-ledger/usage-ledger.module.ts`
+
+**Modified test files (1):**
+3. `services/api-gateway/src/usage-ledger/__tests__/usage-ledger.service.spec.ts`
+
+#### Acceptance Criteria
+
+- [x] `UsageLedgerService` injects `CreditDeductionGateway` via `@Optional()`
+- [x] `emitDeductionAttempt()` called from `updateExecutionResult()` after DB write
+- [x] Gateway errors caught and logged as WARN — never break usage-ledger write
+- [x] `CreditDeductionModule` imported in `UsageLedgerModule`
+- [x] BILLING-READY-02B tests added to usage-ledger spec
+- [x] No database migration
+- [x] No persistence of credit results
+- [x] No Stripe/payment behavior
+- [x] No entitlement enforcement
+
+#### Scope Boundaries Confirmed
+
+- Gateway is optional — silent no-op when not bound
+- One call site only — `updateExecutionResult()` completion hook
+- No balance tracking, no enforcement, no payment calls
+
+---
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-02B.
+
+---
+
+#### BILLING-READY-02C: Credit Deduction Gateway — Credit Calculation Layer
+
+**Status:** COMPLETE and LOCKED
+**Registered:** 2026-07-07
+**Completed:** 2026-07-07
+**Task ID:** BILLING-READY-02C
+**Family:** BILLING / COMMERCIAL READINESS
+**Priority:** High
+**Nature:** IMPLEMENTATION — replaces NoOp with calculating gateway, no persistence
+**Risk:** Low (pure calculation layer, no side effects, no DB access)
+**Roadmap position:** #7C-c — after BILLING-READY-02B
+**Checkpoint:** docs/BILLING-READY-02A-02B-02C-CHECKPOINT.md
+
+#### Dependencies
+
+- BILLING-READY-02B — COMPLETE and LOCKED (Runtime Wiring Point)
+- BILLING-READY-01 — COMPLETE and LOCKED (Credit Ledger Foundation — provides CREDIT_RATES)
+
+#### Purpose
+
+Replace `NoOpCreditDeductionGateway` with `CalculatingCreditDeductionGateway`, which uses `CreditCalculationService` to compute `unitCount × creditsPerUnit` from the static `CREDIT_RATES` config (rate version `2026-07-v1`). Deterministic, pure function, no persistence.
+
+#### Files Changed
+
+**New source files (2):**
+1. `services/api-gateway/src/billing/credit-deduction/calculating-credit-deduction.gateway.ts`
+2. `services/api-gateway/src/billing/credit-deduction/credit-calculation.service.ts`
+
+**Modified source files (2):**
+3. `services/api-gateway/src/billing/credit-deduction/credit-deduction.module.ts`
+4. `services/api-gateway/src/billing/credit-deduction/index.ts`
+
+**New test files (2):**
+5. `services/api-gateway/src/billing/credit-deduction/__tests__/calculating-credit-deduction.gateway.spec.ts`
+6. `services/api-gateway/src/billing/credit-deduction/__tests__/credit-calculation.service.spec.ts`
+
+**Modified test files (1):**
+7. `services/api-gateway/src/billing/credit-deduction/__tests__/credit-deduction.gateway.spec.ts`
+
+#### Acceptance Criteria
+
+- [x] `CalculatingCreditDeductionGateway` implements `CreditDeductionGateway`
+- [x] `CreditCalculationService` provides deterministic `unitCount × creditsPerUnit` calculation
+- [x] `CreditDeductionModule` re-bound to `CalculatingCreditDeductionGateway`
+- [x] Barrel exports updated
+- [x] Architectural guardrail test updated to verify Calculating gateway is bound
+- [x] `CalculatingCreditDeductionGateway` tests added
+- [x] `CreditCalculationService` tests added
+- [x] `balanceAfter` always `undefined`
+- [x] `creditsOverflow` always `0`
+- [x] No persistence
+- [x] No balance enforcement
+- [x] No Stripe/payment behavior
+
+#### Scope Boundaries Confirmed
+
+- No persistence: credits calculated but not stored
+- No balance ledger deduction implemented
+- No balance tracking or enforcement
+- No Stripe/payment integration
+- No subscription/entitlement checks
+- No invoice generation
+- `creditsOverflow = 0` always (no ceiling enforcement)
+- `balanceAfter = undefined` always (no balance tracking)
+- BILLING-READY-02D not registered
+
+---
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-02C.
