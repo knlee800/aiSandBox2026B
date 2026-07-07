@@ -9,6 +9,7 @@ export { CreditDeductionModule } from './credit-deduction.module';
 export { NoOpCreditDeductionGateway } from './noop-credit-deduction.gateway';
 export { CalculatingCreditDeductionGateway } from './calculating-credit-deduction.gateway';
 export { CreditCalculationService } from './credit-calculation.service';
+export { PersistentCreditDeductionGateway } from './persistent-credit-deduction.gateway';
 export { CreditPersistenceModule } from './credit-persistence.module';
 export { CreditBalanceRepository } from './credit-balance.repository';
 export { CreditDeductionRecordRepository } from './credit-deduction-record.repository';

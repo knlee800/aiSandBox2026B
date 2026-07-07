@@ -31,12 +31,17 @@ import type { CreditDeductionEvent, CreditDeductionResult } from './types';
  * This enables safe incremental rollout: wire the call site first,
  * swap the implementation later.
  */
-export abstract class CreditDeductionGateway {
+export abstract class CreditDeductionGateway<
+  TResult extends CreditDeductionResult | Promise<CreditDeductionResult> = CreditDeductionResult,
+> {
   /**
    * Apply a credit deduction event.
+   *
+   * Default contract is synchronous to preserve existing call sites.
+   * Async implementations may opt-in via a Promise result type parameter.
    *
    * @param event — fully pre-translated deduction event
    * @returns deduction result with per-line-item breakdown
    */
-  abstract applyDeduction(event: CreditDeductionEvent): CreditDeductionResult;
+  abstract applyDeduction(event: CreditDeductionEvent): TResult;
 }

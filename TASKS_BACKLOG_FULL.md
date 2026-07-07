@@ -37595,7 +37595,9 @@ BILLING-READY-03 is too broad for one safe implementation slice. It is split int
 
 - **BILLING-READY-03A** — Schema and persistence design: Define the DB schema design (`CreditBalance` entity, `CreditDeductionRecord` entity), TypeORM entity shapes, repository interface contracts, and migration plan. Governance/design only; no migrations run, no production code changed.
 - **BILLING-READY-03B** — DB schema/migration/repository foundation: Create TypeORM entities, write and run the database migration, and implement the repository layer (`CreditBalanceRepository`, `CreditDeductionRecordRepository`). No gateway swap yet.
-- **BILLING-READY-03C** — Persistent deduction gateway: Implement `PersistentCreditDeductionGateway` using the repository layer from 03B. Swap `CreditDeductionModule` to bind the persistent gateway. Wire `sourceEventId` idempotency (duplicate detection, `skippedDuplicate = true`). Wire `balanceAfter` population.
+- **BILLING-READY-03C** — Persistent deduction gateway (further split into 03C1/03C2):
+  - **BILLING-READY-03C1** — Gateway implementation and unit tests, not runtime-bound: Implement `PersistentCreditDeductionGateway`, update `CreditDeductionGateway` base to async, wire `sourceEventId` idempotency and `balanceAfter` population. No module binding swap. Unit tests only.
+  - **BILLING-READY-03C2** — Controlled runtime binding, async `UsageLedgerService` integration, DB validation: Swap `CreditDeductionModule` to bind `PersistentCreditDeductionGateway`, update `UsageLedgerService.emitDeductionAttempt()` to `await`, DB integration validation. Not yet registered.
 - **BILLING-READY-03D** — Balance/overflow/concurrency semantics: Implement `creditsOverflow` enforcement (balance ceiling), atomic transaction semantics, and concurrency safety. Finalize balance-after correctness under concurrent deduction.
 
 Do not implement any child slice during registration.
@@ -37653,13 +37655,21 @@ Do not implement any child slice during registration.
 - [x] No gateway swap (CalculatingCreditDeductionGateway remains bound)
 - [x] TypeScript typecheck clean; build clean
 
-**BILLING-READY-03C — Persistent deduction gateway:**
-- [ ] `PersistentCreditDeductionGateway` implemented
-- [ ] `CreditDeductionModule` swapped to bind persistent gateway
-- [ ] `sourceEventId` idempotency: duplicate submission returns `skippedDuplicate = true`, no new row
-- [ ] `balanceAfter` populated from actual stored balance post-deduction
-- [ ] Gateway error remains non-breaking (caught, logged as WARN)
-- [ ] Persistent gateway tests pass
+**BILLING-READY-03C1 — Persistent gateway implementation, not runtime-bound: COMPLETE and LOCKED (2026-07-07)**
+- [x] `PersistentCreditDeductionGateway` class implemented
+- [x] `CreditDeductionGateway` base class made generic (sync default; async opt-in via type parameter)
+- [x] `sourceEventId` idempotency: duplicate `sourceEventId` returns existing result, no new row, no balance mutation
+- [x] Atomic deduction flow: lock balance → calculate → insert record → update balance → return result
+- [x] `balanceAfter` populated from actual stored balance post-deduction
+- [x] Gateway error propagates as thrown exception (caught non-breakingly by `UsageLedgerService`)
+- [x] `PersistentCreditDeductionGateway` unit tests pass (11 suites / 136 tests)
+- [x] No runtime binding swap (CalculatingCreditDeductionGateway remains bound)
+
+**BILLING-READY-03C2 — Runtime binding and async integration (not yet registered):**
+- [ ] `CreditDeductionModule` swapped to bind `PersistentCreditDeductionGateway`
+- [ ] `UsageLedgerService.emitDeductionAttempt()` updated to `await` gateway call
+- [ ] DB integration validated against local PostgreSQL
+- [ ] All existing tests continue to pass after binding swap
 
 **BILLING-READY-03D — Balance/overflow/concurrency semantics:**
 - [ ] `creditsOverflow` enforced: excess credits flow to overflow when balance insufficient
@@ -37856,3 +37866,134 @@ Implement the DB schema, TypeORM entities, database migration, and repository la
 ---
 
 **Reference:** See TASKS.md -> BILLING-READY-03B.
+
+---
+
+### BILLING-READY-03C1: Persistent Gateway Implementation (Not Runtime-Bound)
+
+**Status:** COMPLETE and LOCKED
+**Registered:** 2026-07-07
+**Completed:** 2026-07-07
+**Task ID:** BILLING-READY-03C1
+**Parent:** BILLING-READY-03
+**Family:** BILLING / CREDIT BALANCE PERSISTENCE
+**Priority:** High
+**Nature:** IMPLEMENTATION — `PersistentCreditDeductionGateway` class, base class async update, unit tests
+**Risk:** Medium (new gateway class; base class contract change; no runtime binding swap)
+**Roadmap position:** #7E-c — third child slice of BILLING-READY-03
+
+#### Split Decision: Why 03C was split into 03C1 and 03C2
+
+BILLING-READY-03C is high risk because it introduces the first real DB write path through the gateway. Splitting isolates risk:
+
+- **03C1** (this task): Purely additive. New `PersistentCreditDeductionGateway` class + async base class update + unit tests. No runtime binding change. Independently testable without live DB. `CalculatingCreditDeductionGateway` remains the live bound gateway throughout. Safe to implement and validate in isolation.
+- **03C2** (not yet registered): Swaps the runtime binding in `CreditDeductionModule` and updates `UsageLedgerService` to `await`. High risk — first time the live execution pipeline writes to the DB. Kept separate and deferred until 03C1 is complete and locked.
+
+#### Dependencies
+
+- BILLING-READY-03A — COMPLETE and LOCKED (schema and persistence design)
+- BILLING-READY-03B — COMPLETE and LOCKED (entities, migration, repositories, `CreditPersistenceModule`)
+- BILLING-READY-03 — ACTIVE (parent registration)
+
+#### Purpose
+
+Implement `PersistentCreditDeductionGateway` using the repository layer from BILLING-READY-03B. Update `CreditDeductionGateway` base class to return `Promise<CreditDeductionResult>` to support async DB operations. Wire `sourceEventId` idempotency (duplicate detection, no double deduction), atomic deduction flow, and `balanceAfter` population. Add comprehensive unit tests. Do not swap the runtime binding in `CreditDeductionModule` — that is deferred to BILLING-READY-03C2.
+
+#### Scope
+
+- Implement `PersistentCreditDeductionGateway` class at `services/api-gateway/src/billing/credit-deduction/persistent-credit-deduction.gateway.ts`
+- Update `CreditDeductionGateway` abstract class: `applyDeduction` returns `Promise<CreditDeductionResult>` (or `CreditDeductionResult | Promise<CreditDeductionResult>`)
+- Wire `sourceEventId` idempotency:
+  - `findBySourceEventId` lookup before any deduction
+  - duplicate `sourceEventId` returns existing deduction result with no balance mutation
+  - no double deduction possible
+- Implement atomic deduction flow:
+  - `findByOwnerForUpdate` — lock owner balance row
+  - `CreditCalculationService` — calculate requested credits
+  - apply overflow logic: `appliedCredits = min(requestedCredits, balance)`, `overflowCredits = requestedCredits - appliedCredits`
+  - `CreditDeductionRecordRepository.create` — insert deduction record
+  - `CreditBalanceRepository.deductBalance` — update balance
+  - return `CreditDeductionResult` with `balanceAfter` from stored balance
+- Inject `CreditPersistenceModule` into `CreditDeductionModule` for repository access
+- Add `PersistentCreditDeductionGateway` unit tests (mocked repositories, mocked DataSource)
+- Update barrel exports in `billing/credit-deduction/index.ts`
+- Preserve `UsageLedgerService` failure suppression semantics (non-breaking error)
+- Preserve `CreditDeductionGateway` as the single deduction entry point token
+
+#### Non-Goals
+
+- No runtime binding swap (`CalculatingCreditDeductionGateway` remains bound in `CreditDeductionModule`)
+- No `UsageLedgerService` async update (deferred to 03C2)
+- No live DB writes during this slice (no runtime gateway activation)
+- No database migration (migration complete from 03B)
+- No entitlement enforcement
+- No Stripe/payment logic
+- No frontend UI changes
+- No production billing activation
+- No Agent Harness activation
+- No BILLING-READY-03C2 registration during this task
+- No BILLING-READY-03D registration during this task
+- No AGENT-PLATFORM-04 registration
+
+#### Acceptance Criteria
+
+##### Registration (checked during registration step)
+
+- [x] BILLING-READY-03C1 registered in TASKS.md
+- [x] BILLING-READY-03C1 registered in TASKS_BACKLOG_FULL.md
+- [x] AINOW-EXECUTION-ROADMAP.md points to BILLING-READY-03C1 as current ACTIVE child slice
+- [x] Split rationale (03C1/03C2) documented
+- [x] BILLING-READY-03C2 noted as future, not registered
+- [x] BILLING-READY-03D noted as future, not registered
+- [x] AGENT-HARNESS-06C remains deferred
+- [x] AGENT-PLATFORM-04 remains future, not registered
+- [x] One-active-task rule satisfied
+
+##### Implementation (satisfied)
+
+- [x] `PersistentCreditDeductionGateway` class implemented at `services/api-gateway/src/billing/credit-deduction/persistent-credit-deduction.gateway.ts`
+- [x] `CreditDeductionGateway` made generic: sync default preserved; `PersistentCreditDeductionGateway` opts into `Promise<CreditDeductionResult>` via type parameter
+- [x] `sourceEventId` idempotency: duplicate `sourceEventId` returns existing result, no new row, no balance mutation
+- [x] Atomic deduction flow: `findByOwnerForUpdate` → calculate → insert record → `deductBalance` → return result
+- [x] `balanceAfter` correctly populated from post-deduction stored balance
+- [x] `overflowCredits` correctly calculated: `max(0, requestedCredits - availableBalance)`
+- [x] `appliedCredits` correctly capped at available balance: `min(requestedCredits, availableBalance)`
+- [x] Unique constraint race condition handled: concurrent duplicate `sourceEventId` falls back to SELECT
+- [x] Gateway error propagates as thrown exception (caught non-breakingly by `UsageLedgerService`)
+- [x] `PersistentCreditDeductionGateway` barrel-exported from `index.ts`
+- [x] Unit tests pass: idempotency path, new deduction path, overflow path, zero-balance path, balance-not-found error path, race condition path, repository failure propagation
+- [x] `CalculatingCreditDeductionGateway` remains the bound runtime gateway (no swap)
+- [x] `NoOpCreditDeductionGateway` compiles cleanly after base class generic change
+- [x] `CalculatingCreditDeductionGateway` compiles cleanly after base class generic change
+- [x] Existing tests continue to pass
+- [x] TypeScript typecheck clean (`npx tsc --noEmit`)
+- [x] Build clean (`npm run build`)
+
+#### Validation Evidence
+
+- `npx jest --testPathPatterns="credit-deduction"`: 11 suites passed, 136 tests passed
+- `npx jest --testPathPatterns="credit"`: 14 suites passed, 152 tests passed
+- `npx tsc --noEmit`: clean
+- `npm run build`: clean
+- No Docker/Postgres/migration/database commands executed
+
+#### Completion Evidence
+
+- Implementation: `services/api-gateway/src/billing/credit-deduction/persistent-credit-deduction.gateway.ts` (created)
+- Implementation: `services/api-gateway/src/billing/credit-deduction/credit-deduction.gateway.ts` (generic base class update)
+- Implementation: `services/api-gateway/src/billing/credit-deduction/index.ts` (barrel export added)
+- Test: `services/api-gateway/src/billing/credit-deduction/__tests__/persistent-credit-deduction.gateway.spec.ts` (created)
+- Checkpoint: `docs/BILLING-READY-03C1-CHECKPOINT.md`
+- Governance files updated: TASKS.md, TASKS_BACKLOG_FULL.md, AINOW-EXECUTION-ROADMAP.md
+
+#### Design Authority
+
+`docs/BILLING-READY-03A-SCHEMA-PERSISTENCE-DESIGN.md` Sections 3 (Idempotency Model), 4 (Transaction Model), and 5.3 (`PersistentCreditDeductionGateway`) are the authoritative design references.
+
+#### Next Step
+
+BILLING-READY-03C2 — Controlled runtime binding, async `UsageLedgerService` integration, and DB validation. Register after BILLING-READY-03C1 is COMPLETE and LOCKED.
+
+---
+
+**Reference:** See TASKS.md -> BILLING-READY-03C1.

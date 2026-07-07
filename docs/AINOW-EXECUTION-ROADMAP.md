@@ -42,6 +42,7 @@ It establishes the agreed sequence, guardrails, and rules for when that sequence
 | BILLING-READY-02D | Credit Deduction Pipeline — Simulation-Only Validation | COMPLETE and LOCKED |
 | BILLING-READY-03A | Schema and Persistence Design | COMPLETE and LOCKED |
 | BILLING-READY-03B | DB Schema, Migration, and Repository Foundation | COMPLETE and LOCKED |
+| BILLING-READY-03C1 | Persistent Gateway Implementation (Not Runtime-Bound) | COMPLETE and LOCKED |
 
 ---
 
@@ -62,20 +63,25 @@ It establishes the agreed sequence, guardrails, and rules for when that sequence
 | 7B | BILLING-READY-01 | Credit Ledger Foundation | **COMPLETE and LOCKED — 2026-07-06.** TypeScript-only credit ledger domain/types/config (Option A). 10 source files + 3 test files. 16 tests pass. No database migration. See `docs/BILLING-READY-01-CHECKPOINT.md`. |
 | 7C | BILLING-READY-02A/02B/02C | Credit Deduction Pipeline Foundation | **COMPLETE and LOCKED — 2026-07-07.** Abstract gateway contract, NoOp + calculating implementations, single runtime wiring point in usage-ledger, deterministic credit calculation layer. 9 source files + 5 test files. No persistence, no balance enforcement, no Stripe. See `docs/BILLING-READY-02A-02B-02C-CHECKPOINT.md`. |
 | 7D | BILLING-READY-02D | Credit Deduction Pipeline — Simulation-Only Validation | **COMPLETE and LOCKED — 2026-07-07.** Simulation-only validation of the full `CreditDeductionEvent` → `applyDeduction` → `CreditDeductionResult` pipeline. 1 test file modified, 2 simulation tests added. No production source changes. 4 suites / 53 tests passed. See `docs/BILLING-READY-02D-CHECKPOINT.md`. |
-| 7E | BILLING-READY-03 | Credit Balance Persistence Foundation | **ACTIVE — 2026-07-07.** DB-backed credit balance persistence. Split into 4 child slices: 03A (schema design), 03B (DB migration/repository), 03C (persistent gateway + idempotency), 03D (overflow/concurrency semantics). |
+| 7E | BILLING-READY-03 | Credit Balance Persistence Foundation | **ACTIVE — 2026-07-07.** DB-backed credit balance persistence. Split into child slices: 03A (schema design — COMPLETE and LOCKED), 03B (DB migration/repository — COMPLETE and LOCKED), 03C1 (persistent gateway — COMPLETE and LOCKED), 03C2 (runtime binding — not registered), 03D (overflow/concurrency semantics — not registered). |
 | 7E-a | BILLING-READY-03A | Schema and Persistence Design | **COMPLETE and LOCKED — 2026-07-07.** Design-only child slice. `CreditBalance` and `CreditDeductionRecord` entity schemas, repository contracts, idempotency model, transaction semantics, migration plan. See `docs/BILLING-READY-03A-CHECKPOINT.md`. |
 | 7E-b | BILLING-READY-03B | DB Schema, Migration, and Repository Foundation | **COMPLETE and LOCKED — 2026-07-07.** TypeORM entities (`CreditBalance`, `CreditDeductionRecord`), migration (`gen_random_uuid()`), `CreditBalanceRepository`, `CreditDeductionRecordRepository`, `CreditPersistenceModule`. 8 source files + 6 test files. 13 suites / 122 tests passed. No gateway swap. See `docs/BILLING-READY-03B-CHECKPOINT.md`. |
+| 7E-c | BILLING-READY-03C1 | Persistent Gateway Implementation (Not Runtime-Bound) | **COMPLETE and LOCKED — 2026-07-07.** Third child slice of BILLING-READY-03. `PersistentCreditDeductionGateway` implementation, generic base class update (sync default preserved), `sourceEventId` idempotency, atomic deduction flow, `balanceAfter` population, overflow capping, race condition fallback, unit tests. 3 source files + 1 test file. 11 suites / 136 tests passed (credit-deduction); 14 suites / 152 tests passed (credit). No runtime binding swap (`CalculatingCreditDeductionGateway` remains bound). See `docs/BILLING-READY-03C1-CHECKPOINT.md`. |
 | 8 | Beta preparation | Beta readiness checklist | After Billing foundation |
 
 ---
 
 ## 4. Current Next Task
 
+**BILLING-READY-03C1 — COMPLETE and LOCKED (2026-07-07).** Persistent Gateway Implementation (Not Runtime-Bound). Third child slice of BILLING-READY-03. `PersistentCreditDeductionGateway` implemented, generic base class update (sync default preserved; async opt-in via type parameter), `sourceEventId` idempotency, atomic deduction flow, `balanceAfter` population, overflow capping, race condition fallback. 3 source files + 1 test file. 11 suites / 136 tests passed; 14 suites / 152 tests passed (credit). No runtime binding swap (`CalculatingCreditDeductionGateway` remains bound). See `docs/BILLING-READY-03C1-CHECKPOINT.md`.
+
+**BILLING-READY-03C2 — Not yet registered.** Controlled runtime binding, async `UsageLedgerService` integration, DB validation. Next slice after BILLING-READY-03C1. Register now that BILLING-READY-03C1 is COMPLETE and LOCKED.
+
 **BILLING-READY-03B — COMPLETE and LOCKED (2026-07-07).** DB Schema, Migration, and Repository Foundation. Second child slice of BILLING-READY-03. TypeORM entities (`CreditBalance`, `CreditDeductionRecord`), database migration (`1772100000000-CreateCreditBalanceAndDeductionTables.ts`, uses `gen_random_uuid()`), `CreditBalanceRepository`, `CreditDeductionRecordRepository`, `CreditPersistenceModule`. 8 source files + 6 test files. 13 suites / 122 tests passed. No gateway swap. See `docs/BILLING-READY-03B-CHECKPOINT.md`.
 
 **BILLING-READY-03A — COMPLETE and LOCKED (2026-07-07).** Schema and Persistence Design. First child slice of BILLING-READY-03. Governance/design-only. Produced `docs/BILLING-READY-03A-SCHEMA-PERSISTENCE-DESIGN.md` defining `CreditBalance` entity, `CreditDeductionRecord` entity, repository contracts, idempotency model, transaction semantics, migration plan, and BILLING-READY-03B acceptance criteria. No implementation files changed. See `docs/BILLING-READY-03A-CHECKPOINT.md`.
 
-**BILLING-READY-03 — ACTIVE (registered 2026-07-07).** Credit Balance Persistence Foundation. DB-backed credit balance persistence, durable deduction records, `sourceEventId` idempotency, `balanceAfter` semantics, `creditsOverflow` enforcement, and audit trail. Split into 4 child slices: 03A (schema and persistence design — COMPLETE and LOCKED), 03B (DB schema/migration/repository — COMPLETE and LOCKED), 03C (persistent deduction gateway — not yet registered), 03D (balance/overflow/concurrency semantics — not yet registered).
+**BILLING-READY-03 — ACTIVE (registered 2026-07-07).** Credit Balance Persistence Foundation. DB-backed credit balance persistence, durable deduction records, `sourceEventId` idempotency, `balanceAfter` semantics, `creditsOverflow` enforcement, and audit trail. Split into child slices: 03A (schema and persistence design — COMPLETE and LOCKED), 03B (DB schema/migration/repository — COMPLETE and LOCKED), 03C1 (persistent gateway implementation — COMPLETE and LOCKED), 03C2 (runtime binding — not registered), 03D (balance/overflow/concurrency semantics — not yet registered).
 
 **BILLING-READY-02D — COMPLETE and LOCKED (2026-07-07).** Credit Deduction Pipeline — Simulation-Only Validation. Simulation-only validation of the full `CreditDeductionEvent` → `applyDeduction` → `CreditDeductionResult` pipeline. 1 test file modified (`calculating-credit-deduction.gateway.spec.ts`), 2 simulation tests added. No production source changes. 4 suites / 53 tests passed. No persistence, no balance enforcement, no Stripe. Pre-persistence acceptance criteria for BILLING-READY-03 documented. See `docs/BILLING-READY-02D-CHECKPOINT.md`.
 
@@ -194,6 +200,7 @@ The following must not be started until their prerequisites in the strategic seq
 | 7E | BILLING-READY-03 | Credit Balance Persistence Foundation (**ACTIVE — 2026-07-07** — 4 child slices: 03A/03B/03C/03D.) |
 | 7E-a | BILLING-READY-03A | Schema and Persistence Design (**COMPLETE and LOCKED — 2026-07-07** — governance/design only. See `docs/BILLING-READY-03A-CHECKPOINT.md`.) |
 | 7E-b | BILLING-READY-03B | DB Schema, Migration, and Repository Foundation (**COMPLETE and LOCKED — 2026-07-07** — TypeORM entities, migration, repositories, `CreditPersistenceModule`. 13 suites / 122 tests. No gateway swap. See `docs/BILLING-READY-03B-CHECKPOINT.md`.) |
+| 7E-c | BILLING-READY-03C1 | Persistent Gateway Implementation, Not Runtime-Bound (**COMPLETE and LOCKED — 2026-07-07** — `PersistentCreditDeductionGateway`, generic base class, `sourceEventId` idempotency, overflow capping, unit tests. 11 suites / 136 tests. No runtime swap. See `docs/BILLING-READY-03C1-CHECKPOINT.md`.) |
 
 ---
 
