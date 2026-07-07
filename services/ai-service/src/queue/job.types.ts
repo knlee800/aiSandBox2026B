@@ -52,6 +52,13 @@ export interface AiExecutionJob {
   /** Agent Harness version gate. When set to 'v1', enables the harness execution path. */
   harnessVersion?: string;
 
+  /** Per-builder identity fields for harness config resolution (AGENT-HARNESS-07B). */
+  agentRole?: string;
+  builderProfileId?: string;
+  harnessProfileId?: string;
+  modelProfileId?: string;
+  toolPermissionProfileId?: string;
+
   requestId?: string;
 
   submittedAt: string;

@@ -102,6 +102,13 @@ export interface AgentHarnessRunRequestV1 {
   readonly systemPrompt?: string;
   readonly modelProfile?: AgentHarnessModelProfileReferenceV1;
   readonly metadata?: Readonly<Record<string, unknown>>;
+
+  /** Per-builder identity fields for config resolution tracing (AGENT-HARNESS-07B). */
+  readonly agentRole?: string;
+  readonly builderProfileId?: string;
+  readonly harnessProfileId?: string;
+  readonly modelProfileId?: string;
+  readonly toolPermissionProfileId?: string;
 }
 
 export interface AgentHarnessRunStateV1 {

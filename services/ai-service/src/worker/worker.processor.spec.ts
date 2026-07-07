@@ -331,8 +331,8 @@ describe('Agent Harness empty-dispatcher wiring', () => {
     const dispatcherIndex = workerSource.indexOf('new ToolDispatcher({');
     expect(harnessGateIndex).toBeGreaterThan(-1);
     expect(dispatcherIndex).toBeGreaterThan(harnessGateIndex);
-    expect(workerSource).toContain('toolTimeoutMs: DEFAULT_AGENT_HARNESS_CONFIG_V1.toolTimeoutMs');
-    expect(workerSource).toContain('maxToolResultBytes: DEFAULT_AGENT_HARNESS_CONFIG_V1.maxToolResultBytes');
+    expect(workerSource).toContain('toolTimeoutMs: resolvedConfig.toolTimeoutMs');
+    expect(workerSource).toContain('maxToolResultBytes: resolvedConfig.maxToolResultBytes');
   });
 
   it('WorkerProcessor passes dispatcher into executeAgentHarnessLoop', () => {
@@ -349,8 +349,8 @@ describe('Agent Harness empty-dispatcher wiring', () => {
       require('path').join(__dirname, 'worker.processor.ts'),
       'utf-8',
     );
-    expect(workerSource).toContain('maxToolIterations: DEFAULT_AGENT_HARNESS_CONFIG_V1.maxToolIterations');
-    expect(workerSource).toContain('maxToolResultBytes: DEFAULT_AGENT_HARNESS_CONFIG_V1.maxToolResultBytes');
+    expect(workerSource).toContain('maxToolIterations: resolvedConfig.maxToolIterations');
+    expect(workerSource).toContain('maxToolResultBytes: resolvedConfig.maxToolResultBytes');
   });
 
   it('WorkerProcessor passes configured toolTimeoutMs into executeAgentHarnessLoop options', () => {
@@ -359,7 +359,7 @@ describe('Agent Harness empty-dispatcher wiring', () => {
       'utf-8',
     );
     expect(workerSource).toContain(
-      'toolTimeoutMs: DEFAULT_AGENT_HARNESS_CONFIG_V1.toolTimeoutMs',
+      'toolTimeoutMs: resolvedConfig.toolTimeoutMs',
     );
   });
 });
@@ -462,13 +462,13 @@ describe('Agent Harness 03C: checkpoint callback wiring in WorkerProcessor', () 
     expect(workerSource).toContain('checkpointSignal');
   });
 
-  it('checkpoint callback is gated by enablePreApplyCheckpoint', () => {
+  it('checkpoint callback is gated by resolvedConfig.enablePreApplyCheckpoint', () => {
     const workerSource = require('fs').readFileSync(
       require('path').join(__dirname, 'worker.processor.ts'),
       'utf-8',
     );
-    expect(workerSource).toContain('enablePreApplyCheckpoint');
-    const enablePreApplyIndex = workerSource.indexOf('DEFAULT_AGENT_HARNESS_CONFIG_V1.enablePreApplyCheckpoint');
+    expect(workerSource).toContain('resolvedConfig.enablePreApplyCheckpoint');
+    const enablePreApplyIndex = workerSource.indexOf('resolvedConfig.enablePreApplyCheckpoint');
     const createCheckpointFnIndex = workerSource.indexOf('createCheckpointFn', enablePreApplyIndex);
     expect(createCheckpointFnIndex).toBeGreaterThan(enablePreApplyIndex);
   });
@@ -593,26 +593,26 @@ describe('Agent Harness 03A: read_file/list_files handler registration', () => {
     expect(listFilesRegistrations).toBe(1);
   });
 
-  it('WorkerProcessor gates write_file and delete_file registration behind enableWriteTools', () => {
+  it('WorkerProcessor gates write_file and delete_file registration behind resolvedConfig.enableWriteTools', () => {
     const workerSource = require('fs').readFileSync(
       require('path').join(__dirname, 'worker.processor.ts'),
       'utf-8',
     );
     expect(workerSource).toContain(
-      'if (DEFAULT_AGENT_HARNESS_CONFIG_V1.enableWriteTools)',
+      'if (resolvedConfig.enableWriteTools)',
     );
     expect(workerSource).toContain("'write_file'");
     expect(workerSource).toContain("'delete_file'");
     expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.enableWriteTools).toBe(false);
   });
 
-  it('WorkerProcessor gates run_validation registration behind enableValidationTools', () => {
+  it('WorkerProcessor gates run_validation registration behind resolvedConfig.enableValidationTools', () => {
     const workerSource = require('fs').readFileSync(
       require('path').join(__dirname, 'worker.processor.ts'),
       'utf-8',
     );
     expect(workerSource).toContain(
-      'if (DEFAULT_AGENT_HARNESS_CONFIG_V1.enableValidationTools)',
+      'if (resolvedConfig.enableValidationTools)',
     );
     expect(workerSource).toContain("'run_validation'");
     expect(DEFAULT_AGENT_HARNESS_CONFIG_V1.enableValidationTools).toBe(false);
@@ -781,12 +781,12 @@ describe('Agent Harness 05C9: structured audit events wiring', () => {
     expect(workerSource).toContain("from '../agent-harness/audit'");
   });
 
-  it('WorkerProcessor creates auditRecorder conditionally on auditEventsEnabled', () => {
+  it('WorkerProcessor creates auditRecorder conditionally on resolvedConfig.auditEventsEnabled', () => {
     const workerSource = getWorkerSource();
-    expect(workerSource).toContain('DEFAULT_AGENT_HARNESS_CONFIG_V1.auditEventsEnabled');
+    expect(workerSource).toContain('resolvedConfig.auditEventsEnabled');
     expect(workerSource).toContain('new InMemoryHarnessAuditRecorder()');
 
-    const auditGateIndex = workerSource.indexOf('auditEventsEnabled');
+    const auditGateIndex = workerSource.indexOf('resolvedConfig.auditEventsEnabled');
     const recorderCreateIndex = workerSource.indexOf('new InMemoryHarnessAuditRecorder()', auditGateIndex);
     expect(recorderCreateIndex).toBeGreaterThan(auditGateIndex);
   });

@@ -24,6 +24,7 @@ import {
 import type { AIExecutionRequest } from '../ai-execution/types';
 import type { WorkspaceContext } from '../queue/job.types';
 import { DEFAULT_AGENT_HARNESS_CONFIG_V1 } from '../agent-harness/config/agent-harness.config';
+import { resolveBuilderHarnessConfig } from '../agent-harness/builder-profiles';
 import { executeAgentHarnessLoop } from '../agent-harness/orchestrator/agent-harness-loop';
 import { ToolDispatcher } from '../agent-harness/tools/tool-dispatcher';
 import { InMemoryHarnessAuditRecorder } from '../agent-harness/audit';
@@ -763,20 +764,39 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
               }));
 
               if (useHarness) {
+                const { config: resolvedConfig, metadata: configResolutionMetadata } =
+                  resolveBuilderHarnessConfig(
+                    {
+                      agentRole: job.data.agentRole,
+                      builderProfileId: job.data.builderProfileId,
+                    },
+                    DEFAULT_AGENT_HARNESS_CONFIG_V1,
+                  );
+
+                this.logger.log(JSON.stringify({
+                  event: 'agent_harness.config_resolved',
+                  executionId: job.data.executionId,
+                  source: configResolutionMetadata.source,
+                  builderProfileId: configResolutionMetadata.builderProfileId ?? null,
+                  harnessProfileId: configResolutionMetadata.harnessProfileId ?? null,
+                  fieldsOverridden: configResolutionMetadata.fieldsOverridden,
+                  warnings: configResolutionMetadata.warnings,
+                }));
+
                 const adapter = this.aiExecutionService.getAdapter(
                   executionRequest.provider,
                 );
                 if (adapter.supportsToolUse && adapter.executeWithTools) {
                   const dispatcher = new ToolDispatcher({
-                    toolTimeoutMs: DEFAULT_AGENT_HARNESS_CONFIG_V1.toolTimeoutMs,
-                    maxToolResultBytes: DEFAULT_AGENT_HARNESS_CONFIG_V1.maxToolResultBytes,
+                    toolTimeoutMs: resolvedConfig.toolTimeoutMs,
+                    maxToolResultBytes: resolvedConfig.maxToolResultBytes,
                   });
                   dispatcher.registerHandler(
                     'read_file',
                     createReadFileHandler({
                       client: this.apiGatewayHttpClient,
                       sessionId: job.data.sessionId,
-                      maxFileReadBytes: DEFAULT_AGENT_HARNESS_CONFIG_V1.maxFileReadBytes,
+                      maxFileReadBytes: resolvedConfig.maxFileReadBytes,
                     }),
                   );
                   dispatcher.registerHandler(
@@ -786,13 +806,13 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                       sessionId: job.data.sessionId,
                     }),
                   );
-                  if (DEFAULT_AGENT_HARNESS_CONFIG_V1.enableWriteTools) {
+                  if (resolvedConfig.enableWriteTools) {
                     dispatcher.registerHandler(
                       'write_file',
                       createWriteFileHandler({
                         client: this.apiGatewayHttpClient,
                         sessionId: job.data.sessionId,
-                        maxFileWriteBytes: DEFAULT_AGENT_HARNESS_CONFIG_V1.maxFileWriteBytes,
+                        maxFileWriteBytes: resolvedConfig.maxFileWriteBytes,
                       }),
                     );
                     dispatcher.registerHandler(
@@ -803,29 +823,29 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                       }),
                     );
                   }
-                  if (DEFAULT_AGENT_HARNESS_CONFIG_V1.enableValidationTools) {
+                  if (resolvedConfig.enableValidationTools) {
                     dispatcher.registerHandler(
                       'run_validation',
                       createRunValidationHandler({
                         client: this.apiGatewayHttpClient,
                         sessionId: job.data.sessionId,
-                        allowedValidationCommands: DEFAULT_AGENT_HARNESS_CONFIG_V1.allowedValidationCommands,
-                        validationTimeoutMs: DEFAULT_AGENT_HARNESS_CONFIG_V1.validationTimeoutMs,
-                        maxValidationOutputBytes: DEFAULT_AGENT_HARNESS_CONFIG_V1.maxValidationOutputBytes,
+                        allowedValidationCommands: resolvedConfig.allowedValidationCommands,
+                        validationTimeoutMs: resolvedConfig.validationTimeoutMs,
+                        maxValidationOutputBytes: resolvedConfig.maxValidationOutputBytes,
                       }),
                     );
                   }
-                  if (DEFAULT_AGENT_HARNESS_CONFIG_V1.enableBrowserSmoke) {
+                  if (resolvedConfig.enableBrowserSmoke) {
                     dispatcher.registerHandler(
                       'browser_smoke',
                       createBrowserSmokeHandler({
                         client: this.apiGatewayHttpClient,
                         sessionId: job.data.sessionId,
-                        browserSmokeTimeoutMs: DEFAULT_AGENT_HARNESS_CONFIG_V1.browserSmokeTimeoutMs,
+                        browserSmokeTimeoutMs: resolvedConfig.browserSmokeTimeoutMs,
                       }),
                     );
                   }
-                  const auditRecorder = DEFAULT_AGENT_HARNESS_CONFIG_V1.auditEventsEnabled
+                  const auditRecorder = resolvedConfig.auditEventsEnabled
                     ? new InMemoryHarnessAuditRecorder()
                     : undefined;
 
@@ -833,16 +853,16 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
                     executeFn: (req, opts) => adapter.executeWithTools!(req, opts),
                     request: executionRequest,
                     config: {
-                      maxToolIterations: DEFAULT_AGENT_HARNESS_CONFIG_V1.maxToolIterations,
-                      maxToolResultBytes: DEFAULT_AGENT_HARNESS_CONFIG_V1.maxToolResultBytes,
+                      maxToolIterations: resolvedConfig.maxToolIterations,
+                      maxToolResultBytes: resolvedConfig.maxToolResultBytes,
                     },
                     signal: abortController.signal,
                     dispatcher,
                     recorder: auditRecorder,
-                    toolTimeoutMs: DEFAULT_AGENT_HARNESS_CONFIG_V1.toolTimeoutMs,
+                    toolTimeoutMs: resolvedConfig.toolTimeoutMs,
                   };
 
-                  if (DEFAULT_AGENT_HARNESS_CONFIG_V1.enablePreApplyCheckpoint) {
+                  if (resolvedConfig.enablePreApplyCheckpoint) {
                     loopOptions = {
                       ...loopOptions,
                       createCheckpointFn: (checkpointSignal) =>
