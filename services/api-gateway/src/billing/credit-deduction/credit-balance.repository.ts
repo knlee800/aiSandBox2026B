@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, EntityManager } from 'typeorm';
 import { CreditBalance } from '../../entities/credit-balance.entity';
 
 /**
@@ -49,14 +49,18 @@ export class CreditBalanceRepository {
 
   /**
    * Acquire row lock (FOR UPDATE) within an active transaction.
-   * Must be called from within a transaction manager context.
+   * When manager is provided, uses the transactional EntityManager
+   * to ensure the lock is held within the caller's transaction.
    */
   async findByOwnerForUpdate(
     ownerId: string,
     ownerType: string = 'user',
+    manager?: EntityManager,
   ): Promise<CreditBalance | null> {
-    return await this.repository
-      .createQueryBuilder('cb')
+    const qb = manager
+      ? manager.createQueryBuilder(CreditBalance, 'cb')
+      : this.repository.createQueryBuilder('cb');
+    return await qb
       .setLock('pessimistic_write')
       .where('cb.owner_id = :ownerId', { ownerId })
       .andWhere('cb.owner_type = :ownerType', { ownerType })
@@ -83,7 +87,16 @@ export class CreditBalanceRepository {
   async deductBalance(
     id: string,
     newBalance: number,
+    manager?: EntityManager,
   ): Promise<CreditBalance> {
+    if (manager) {
+      await manager.update(CreditBalance, { id }, { balance: newBalance });
+      const updated = await manager.findOne(CreditBalance, { where: { id } });
+      if (!updated) {
+        throw new Error(`CreditBalance not found after update: ${id}`);
+      }
+      return updated;
+    }
     await this.repository.update({ id }, { balance: newBalance });
     const updated = await this.repository.findOne({ where: { id } });
     if (!updated) {

@@ -1,3 +1,4 @@
+import { Global, Module } from '@nestjs/common';
 import { CreditDeductionGateway } from '../credit-deduction.gateway';
 import { NoOpCreditDeductionGateway } from '../noop-credit-deduction.gateway';
 import { CalculatingCreditDeductionGateway } from '../calculating-credit-deduction.gateway';
@@ -5,8 +6,16 @@ import { PersistentCreditDeductionGateway } from '../persistent-credit-deduction
 import { CreditDeductionModule } from '../credit-deduction.module';
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { CreditBalance } from '../../../entities/credit-balance.entity';
 import { CreditDeductionRecord } from '../../../entities/credit-deduction-record.entity';
+
+@Global()
+@Module({
+  providers: [{ provide: DataSource, useValue: {} }],
+  exports: [DataSource],
+})
+class MockDataSourceModule {}
 
 describe('CreditDeductionGateway architectural guardrails', () => {
   it('NoOpCreditDeductionGateway extends CreditDeductionGateway', () => {
@@ -21,7 +30,7 @@ describe('CreditDeductionGateway architectural guardrails', () => {
 
   it('CreditDeductionModule provides CreditDeductionGateway token with PersistentCreditDeductionGateway (BILLING-READY-03C2)', async () => {
     const module = await Test.createTestingModule({
-      imports: [CreditDeductionModule],
+      imports: [MockDataSourceModule, CreditDeductionModule],
     })
       .overrideProvider(getRepositoryToken(CreditBalance))
       .useValue({})
@@ -36,7 +45,7 @@ describe('CreditDeductionGateway architectural guardrails', () => {
 
   it('CreditDeductionModule no longer binds CalculatingCreditDeductionGateway (BILLING-READY-03C2)', async () => {
     const module = await Test.createTestingModule({
-      imports: [CreditDeductionModule],
+      imports: [MockDataSourceModule, CreditDeductionModule],
     })
       .overrideProvider(getRepositoryToken(CreditBalance))
       .useValue({})

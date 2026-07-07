@@ -1,5 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import type { EntityManager } from 'typeorm';
 import { CreditDeductionRecord } from '../../../entities/credit-deduction-record.entity';
 import { CreditDeductionRecordRepository } from '../credit-deduction-record.repository';
 
@@ -53,32 +54,32 @@ describe('CreditDeductionRecordRepository', () => {
   });
 
   describe('create', () => {
-    it('creates and saves a new deduction record', async () => {
+    const baseParams = {
+      ownerId: 'user-1',
+      sourceEventId: 'evt-001',
+      sourceEventType: 'usage_ledger',
+      requestedCredits: 10,
+      appliedCredits: 10,
+      overflowCredits: 0,
+      balanceBefore: 100,
+      balanceAfter: 90,
+      lineItems: [
+        {
+          category: 'model_tokens' as const,
+          creditsRequested: 10,
+          creditsApplied: 10,
+          creditsOverflow: 0,
+          skippedDuplicate: false,
+        },
+      ],
+    };
+
+    it('uses default repository when manager is omitted', async () => {
       const entity = new CreditDeductionRecord();
       mockTypeOrmRepo.create.mockReturnValue(entity);
       mockTypeOrmRepo.save.mockResolvedValue(entity);
 
-      const params = {
-        ownerId: 'user-1',
-        sourceEventId: 'evt-001',
-        sourceEventType: 'usage_ledger',
-        requestedCredits: 10,
-        appliedCredits: 10,
-        overflowCredits: 0,
-        balanceBefore: 100,
-        balanceAfter: 90,
-        lineItems: [
-          {
-            category: 'model_tokens' as const,
-            creditsRequested: 10,
-            creditsApplied: 10,
-            creditsOverflow: 0,
-            skippedDuplicate: false,
-          },
-        ],
-      };
-
-      const result = await repo.create(params);
+      const result = await repo.create(baseParams);
 
       expect(mockTypeOrmRepo.create).toHaveBeenCalledWith({
         ownerId: 'user-1',
@@ -93,11 +94,43 @@ describe('CreditDeductionRecordRepository', () => {
         overflowCredits: 0,
         balanceBefore: 100,
         balanceAfter: 90,
-        lineItems: params.lineItems,
+        lineItems: baseParams.lineItems,
         metadata: null,
         status: 'applied',
       });
       expect(mockTypeOrmRepo.save).toHaveBeenCalledWith(entity);
+      expect(result).toBe(entity);
+    });
+
+    it('uses manager when provided', async () => {
+      const entity = new CreditDeductionRecord();
+      const mockManager = {
+        create: jest.fn().mockReturnValue(entity),
+        save: jest.fn().mockResolvedValue(entity),
+      } as unknown as EntityManager;
+
+      const result = await repo.create(baseParams, mockManager);
+
+      expect(mockManager.create).toHaveBeenCalledWith(CreditDeductionRecord, {
+        ownerId: 'user-1',
+        sourceEventId: 'evt-001',
+        sourceEventType: 'usage_ledger',
+        agentId: null,
+        sessionId: null,
+        executionId: null,
+        modelId: null,
+        requestedCredits: 10,
+        appliedCredits: 10,
+        overflowCredits: 0,
+        balanceBefore: 100,
+        balanceAfter: 90,
+        lineItems: baseParams.lineItems,
+        metadata: null,
+        status: 'applied',
+      });
+      expect(mockManager.save).toHaveBeenCalledWith(entity);
+      expect(mockTypeOrmRepo.create).not.toHaveBeenCalled();
+      expect(mockTypeOrmRepo.save).not.toHaveBeenCalled();
       expect(result).toBe(entity);
     });
 

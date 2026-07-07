@@ -1,3 +1,4 @@
+import { Global, Module } from '@nestjs/common';
 import { PersistentCreditDeductionGateway } from '../persistent-credit-deduction.gateway';
 import { CreditDeductionGateway } from '../credit-deduction.gateway';
 import { CreditCalculationService } from '../credit-calculation.service';
@@ -7,9 +8,18 @@ import { CalculatingCreditDeductionGateway } from '../calculating-credit-deducti
 import { CreditDeductionModule } from '../credit-deduction.module';
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import type { EntityManager } from 'typeorm';
 import type { CreditDeductionEvent } from '../types';
 import { CreditBalance } from '../../../entities/credit-balance.entity';
 import { CreditDeductionRecord } from '../../../entities/credit-deduction-record.entity';
+
+@Global()
+@Module({
+  providers: [{ provide: DataSource, useValue: {} }],
+  exports: [DataSource],
+})
+class MockDataSourceModule {}
 
 function makeEvent(
   overrides: Partial<CreditDeductionEvent> = {},
@@ -101,6 +111,8 @@ describe('PersistentCreditDeductionGateway', () => {
   let calculationService: CreditCalculationService;
   let mockBalanceRepo: jest.Mocked<CreditBalanceRepository>;
   let mockRecordRepo: jest.Mocked<CreditDeductionRecordRepository>;
+  let mockDataSource: jest.Mocked<Pick<DataSource, 'transaction'>>;
+  let mockManager: EntityManager;
 
   beforeEach(() => {
     calculationService = new CreditCalculationService();
@@ -121,10 +133,16 @@ describe('PersistentCreditDeductionGateway', () => {
       findByExecution: jest.fn(),
     } as unknown as jest.Mocked<CreditDeductionRecordRepository>;
 
+    mockManager = { _isTransactionalManager: true } as unknown as EntityManager;
+    mockDataSource = {
+      transaction: jest.fn(async (cb: any) => cb(mockManager)),
+    } as any;
+
     gateway = new PersistentCreditDeductionGateway(
       calculationService,
       mockBalanceRepo,
       mockRecordRepo,
+      mockDataSource as unknown as DataSource,
     );
   });
 
@@ -204,15 +222,17 @@ describe('PersistentCreditDeductionGateway', () => {
       expect(result.ownerId).toBe('user-789');
     });
 
-    it('calls findByOwnerForUpdate for row lock', async () => {
+    it('calls findByOwnerForUpdate with transactional manager for row lock', async () => {
       await gateway.applyDeduction(makeEvent());
 
       expect(mockBalanceRepo.findByOwnerForUpdate).toHaveBeenCalledWith(
         'user-500',
+        'user',
+        mockManager,
       );
     });
 
-    it('creates a deduction record', async () => {
+    it('creates a deduction record with transactional manager', async () => {
       await gateway.applyDeduction(makeEvent());
 
       expect(mockRecordRepo.create).toHaveBeenCalledWith(
@@ -227,15 +247,17 @@ describe('PersistentCreditDeductionGateway', () => {
           balanceAfter: 91,
           status: 'applied',
         }),
+        mockManager,
       );
     });
 
-    it('updates balance via deductBalance', async () => {
+    it('updates balance via deductBalance with transactional manager', async () => {
       await gateway.applyDeduction(makeEvent());
 
       expect(mockBalanceRepo.deductBalance).toHaveBeenCalledWith(
         'bal-uuid-001',
         91,
+        mockManager,
       );
     });
 
@@ -250,6 +272,7 @@ describe('PersistentCreditDeductionGateway', () => {
         expect.objectContaining({
           metadata: { model: 'gpt-4', sessionId: 'sess-abc' },
         }),
+        mockManager,
       );
     });
 
@@ -262,6 +285,7 @@ describe('PersistentCreditDeductionGateway', () => {
         expect.objectContaining({
           metadata: null,
         }),
+        mockManager,
       );
     });
   });
@@ -311,7 +335,7 @@ describe('PersistentCreditDeductionGateway', () => {
       expect(result.lineItems[1].creditsOverflow).toBe(4);
     });
 
-    it('creates record with overflow amounts', async () => {
+    it('creates record with overflow amounts via transactional manager', async () => {
       await gateway.applyDeduction(makeEvent());
 
       expect(mockRecordRepo.create).toHaveBeenCalledWith(
@@ -321,15 +345,17 @@ describe('PersistentCreditDeductionGateway', () => {
           balanceBefore: 3,
           balanceAfter: 0,
         }),
+        mockManager,
       );
     });
 
-    it('deducts balance to zero', async () => {
+    it('deducts balance to zero via transactional manager', async () => {
       await gateway.applyDeduction(makeEvent());
 
       expect(mockBalanceRepo.deductBalance).toHaveBeenCalledWith(
         'bal-uuid-001',
         0,
+        mockManager,
       );
     });
   });
@@ -362,6 +388,14 @@ describe('PersistentCreditDeductionGateway', () => {
       expect(result.totalCreditsOverflow).toBe(9);
       expect(result.balanceAfter).toBe(0);
     });
+
+    it('keeps balanceAfter 0 and creditsOverflow > 0', async () => {
+      const result = await gateway.applyDeduction(makeEvent());
+
+      expect(result.balanceAfter).toBe(0);
+      expect(result.totalCreditsOverflow).toBeGreaterThan(0);
+      expect(result.totalCreditsApplied).toBe(0);
+    });
   });
 
   describe('duplicate sourceEventId — idempotency', () => {
@@ -383,6 +417,14 @@ describe('PersistentCreditDeductionGateway', () => {
       const result = await gateway.applyDeduction(makeEvent());
 
       expect(result.lineItems.every((li) => li.skippedDuplicate)).toBe(true);
+    });
+
+    it('does not start a transaction', async () => {
+      mockRecordRepo.findBySourceEventId.mockResolvedValue(makeRecord());
+
+      await gateway.applyDeduction(makeEvent());
+
+      expect(mockDataSource.transaction).not.toHaveBeenCalled();
     });
 
     it('does not call findByOwnerForUpdate', async () => {
@@ -411,7 +453,7 @@ describe('PersistentCreditDeductionGateway', () => {
   });
 
   describe('unique constraint race condition', () => {
-    it('falls back to SELECT when INSERT hits unique violation', async () => {
+    it('falls back to SELECT when INSERT hits unique violation inside transaction', async () => {
       const existingRecord = makeRecord();
       mockRecordRepo.findBySourceEventId
         .mockResolvedValueOnce(null)
@@ -427,6 +469,21 @@ describe('PersistentCreditDeductionGateway', () => {
       expect(result.sourceEventId).toBe('evt-persist-001');
       expect(result.lineItems.every((li) => li.skippedDuplicate)).toBe(true);
       expect(mockBalanceRepo.deductBalance).not.toHaveBeenCalled();
+    });
+
+    it('rethrows 23505 when fallback record is not found', async () => {
+      mockRecordRepo.findBySourceEventId
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(null);
+      mockBalanceRepo.findByOwnerForUpdate.mockResolvedValue(makeBalance());
+
+      const uniqueError = new Error('duplicate key value violates unique constraint');
+      (uniqueError as Error & { code: string }).code = '23505';
+      mockRecordRepo.create.mockRejectedValue(uniqueError);
+
+      await expect(gateway.applyDeduction(makeEvent())).rejects.toThrow(
+        'duplicate key value violates unique constraint',
+      );
     });
   });
 
@@ -454,6 +511,93 @@ describe('PersistentCreditDeductionGateway', () => {
 
       await expect(gateway.applyDeduction(makeEvent())).rejects.toThrow();
       expect(mockBalanceRepo.deductBalance).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('transaction boundary', () => {
+    beforeEach(() => {
+      mockRecordRepo.findBySourceEventId.mockResolvedValue(null);
+      mockBalanceRepo.findByOwnerForUpdate.mockResolvedValue(makeBalance());
+      mockRecordRepo.create.mockImplementation(async (params) =>
+        makeRecord({
+          requestedCredits: params.requestedCredits,
+          appliedCredits: params.appliedCredits,
+          overflowCredits: params.overflowCredits,
+          balanceBefore: params.balanceBefore,
+          balanceAfter: params.balanceAfter,
+          lineItems: params.lineItems,
+        }),
+      );
+      mockBalanceRepo.deductBalance.mockResolvedValue(
+        makeBalance({ balance: 91 }),
+      );
+    });
+
+    it('uses dataSource.transaction() for new deductions', async () => {
+      await gateway.applyDeduction(makeEvent());
+
+      expect(mockDataSource.transaction).toHaveBeenCalledTimes(1);
+      expect(mockDataSource.transaction).toHaveBeenCalledWith(
+        expect.any(Function),
+      );
+    });
+
+    it('passes transactional manager to balance lock', async () => {
+      await gateway.applyDeduction(makeEvent());
+
+      expect(mockBalanceRepo.findByOwnerForUpdate).toHaveBeenCalledWith(
+        'user-500',
+        'user',
+        mockManager,
+      );
+    });
+
+    it('passes transactional manager to record create', async () => {
+      await gateway.applyDeduction(makeEvent());
+
+      const [, managerArg] = mockRecordRepo.create.mock.calls[0];
+      expect(managerArg).toBe(mockManager);
+    });
+
+    it('passes transactional manager to balance update', async () => {
+      await gateway.applyDeduction(makeEvent());
+
+      expect(mockBalanceRepo.deductBalance).toHaveBeenCalledWith(
+        'bal-uuid-001',
+        91,
+        mockManager,
+      );
+    });
+
+    it('create failure prevents balance update and rejects', async () => {
+      mockRecordRepo.create.mockRejectedValue(
+        new Error('Insert failed'),
+      );
+
+      await expect(gateway.applyDeduction(makeEvent())).rejects.toThrow(
+        'Insert failed',
+      );
+      expect(mockBalanceRepo.deductBalance).not.toHaveBeenCalled();
+    });
+
+    it('balance update failure rejects through transaction', async () => {
+      mockBalanceRepo.deductBalance.mockRejectedValue(
+        new Error('Balance update failed'),
+      );
+
+      await expect(gateway.applyDeduction(makeEvent())).rejects.toThrow(
+        'Balance update failed',
+      );
+    });
+
+    it('unexpected transaction error propagates', async () => {
+      mockDataSource.transaction = jest.fn(async () => {
+        throw new Error('Connection reset');
+      }) as any;
+
+      await expect(gateway.applyDeduction(makeEvent())).rejects.toThrow(
+        'Connection reset',
+      );
     });
   });
 
@@ -521,7 +665,7 @@ describe('PersistentCreditDeductionGateway', () => {
 
     it('CreditDeductionModule binds PersistentCreditDeductionGateway (BILLING-READY-03C2)', async () => {
       const module = await Test.createTestingModule({
-        imports: [CreditDeductionModule],
+        imports: [MockDataSourceModule, CreditDeductionModule],
       })
         .overrideProvider(getRepositoryToken(CreditBalance))
         .useValue({})

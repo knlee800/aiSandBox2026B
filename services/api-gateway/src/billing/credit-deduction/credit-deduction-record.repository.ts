@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, EntityManager } from 'typeorm';
 import { CreditDeductionRecord } from '../../entities/credit-deduction-record.entity';
 import type { CreditDeductionLineItemResult } from './types';
 
@@ -53,8 +53,9 @@ export class CreditDeductionRecordRepository {
 
   async create(
     params: CreateDeductionRecordParams,
+    manager?: EntityManager,
   ): Promise<CreditDeductionRecord> {
-    const entity = this.repository.create({
+    const data = {
       ownerId: params.ownerId,
       sourceEventId: params.sourceEventId,
       sourceEventType: params.sourceEventType,
@@ -70,8 +71,12 @@ export class CreditDeductionRecordRepository {
       lineItems: params.lineItems,
       metadata: params.metadata ?? null,
       status: params.status ?? 'applied',
-    });
-
+    };
+    if (manager) {
+      const entity = manager.create(CreditDeductionRecord, data);
+      return await manager.save(entity);
+    }
+    const entity = this.repository.create(data);
     return await this.repository.save(entity);
   }
 

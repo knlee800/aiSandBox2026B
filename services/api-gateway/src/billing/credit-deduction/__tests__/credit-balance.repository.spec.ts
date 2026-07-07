@@ -1,5 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import type { EntityManager } from 'typeorm';
 import { CreditBalance } from '../../../entities/credit-balance.entity';
 import { CreditBalanceRepository } from '../credit-balance.repository';
 
@@ -56,7 +57,7 @@ describe('CreditBalanceRepository', () => {
   });
 
   describe('findByOwnerForUpdate', () => {
-    it('uses pessimistic_write lock via query builder', async () => {
+    it('uses default repository when manager is omitted', async () => {
       const mockQb = {
         setLock: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
@@ -78,6 +79,35 @@ describe('CreditBalanceRepository', () => {
         { ownerType: 'user' },
       );
       expect(mockQb.getOne).toHaveBeenCalled();
+    });
+
+    it('uses manager.createQueryBuilder when manager is provided', async () => {
+      const mockQb = {
+        setLock: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(null),
+      };
+      const mockManager = {
+        createQueryBuilder: jest.fn().mockReturnValue(mockQb),
+      } as unknown as EntityManager;
+
+      await repo.findByOwnerForUpdate('user-123', 'user', mockManager);
+
+      expect(mockManager.createQueryBuilder).toHaveBeenCalledWith(
+        CreditBalance,
+        'cb',
+      );
+      expect(mockTypeOrmRepo.createQueryBuilder).not.toHaveBeenCalled();
+      expect(mockQb.setLock).toHaveBeenCalledWith('pessimistic_write');
+      expect(mockQb.where).toHaveBeenCalledWith(
+        'cb.owner_id = :ownerId',
+        { ownerId: 'user-123' },
+      );
+      expect(mockQb.andWhere).toHaveBeenCalledWith(
+        'cb.owner_type = :ownerType',
+        { ownerType: 'user' },
+      );
     });
   });
 
@@ -116,7 +146,7 @@ describe('CreditBalanceRepository', () => {
   });
 
   describe('deductBalance', () => {
-    it('updates balance and returns the entity', async () => {
+    it('uses default repository when manager is omitted', async () => {
       const entity = new CreditBalance();
       entity.balance = 400;
       mockTypeOrmRepo.update.mockResolvedValue({ affected: 1 });
@@ -128,6 +158,32 @@ describe('CreditBalanceRepository', () => {
         { id: 'balance-id' },
         { balance: 400 },
       );
+      expect(mockTypeOrmRepo.findOne).toHaveBeenCalledWith({
+        where: { id: 'balance-id' },
+      });
+      expect(result).toBe(entity);
+    });
+
+    it('uses manager when provided', async () => {
+      const entity = new CreditBalance();
+      entity.balance = 400;
+      const mockManager = {
+        update: jest.fn().mockResolvedValue({ affected: 1 }),
+        findOne: jest.fn().mockResolvedValue(entity),
+      } as unknown as EntityManager;
+
+      const result = await repo.deductBalance('balance-id', 400, mockManager);
+
+      expect(mockManager.update).toHaveBeenCalledWith(
+        CreditBalance,
+        { id: 'balance-id' },
+        { balance: 400 },
+      );
+      expect(mockManager.findOne).toHaveBeenCalledWith(CreditBalance, {
+        where: { id: 'balance-id' },
+      });
+      expect(mockTypeOrmRepo.update).not.toHaveBeenCalled();
+      expect(mockTypeOrmRepo.findOne).not.toHaveBeenCalled();
       expect(result).toBe(entity);
     });
 
@@ -138,6 +194,17 @@ describe('CreditBalanceRepository', () => {
       await expect(repo.deductBalance('bad-id', 0)).rejects.toThrow(
         'CreditBalance not found after update: bad-id',
       );
+    });
+
+    it('throws if entity not found after update via manager', async () => {
+      const mockManager = {
+        update: jest.fn().mockResolvedValue({ affected: 1 }),
+        findOne: jest.fn().mockResolvedValue(null),
+      } as unknown as EntityManager;
+
+      await expect(
+        repo.deductBalance('bad-id', 0, mockManager),
+      ).rejects.toThrow('CreditBalance not found after update: bad-id');
     });
   });
 

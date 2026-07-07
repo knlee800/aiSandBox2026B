@@ -27088,7 +27088,10 @@ BILLING-READY-03 is too broad for one safe implementation slice. It is split int
 - **BILLING-READY-03C** — Persistent deduction gateway (further split into 03C1/03C2):
   - **BILLING-READY-03C1** — Gateway implementation and unit tests, not runtime-bound: Implement `PersistentCreditDeductionGateway`, update `CreditDeductionGateway` base to async, wire `sourceEventId` idempotency and `balanceAfter` population. No module binding swap. Unit tests only.
   - **BILLING-READY-03C2** — Controlled runtime binding, async `UsageLedgerService` integration, DB validation: Swap `CreditDeductionModule` to bind `PersistentCreditDeductionGateway`, update `UsageLedgerService.emitDeductionAttempt()` to `await`, DB integration validation. **COMPLETE and LOCKED (2026-07-07).**
-- **BILLING-READY-03D** — Balance/overflow/concurrency semantics: Implement `creditsOverflow` enforcement (balance ceiling), atomic transaction semantics, and concurrency safety. Finalize balance-after correctness under concurrent deduction.
+- **BILLING-READY-03D** — Balance/overflow/concurrency semantics (split into 03D1/03D2/03D3):
+  - **BILLING-READY-03D1** — Transaction boundary and repository contract hardening. **COMPLETE and LOCKED (2026-07-07).**
+  - **BILLING-READY-03D2** — Concurrency/idempotency integration validation. *(future — not registered)*
+  - **BILLING-READY-03D3** — Overflow semantics finalization and checkpoint. *(future — not registered)*
 
 Do not implement any child slice during registration.
 
@@ -27168,13 +27171,21 @@ Do not implement any child slice during registration.
 - [x] All existing tests continue to pass after binding swap
 - [x] TypeScript typecheck clean (`npx tsc --noEmit`); build clean (`npm run build`)
 
-**BILLING-READY-03D — Balance/overflow/concurrency semantics:**
-- [ ] `creditsOverflow` enforced: excess credits flow to overflow when balance insufficient
-- [ ] Atomic transaction: balance deduction + record persistence in one DB transaction
-- [ ] Concurrency safety: concurrent deduction does not over-spend balance
-- [ ] All persistence semantics tests pass
-- [ ] No Stripe/payment behavior added
-- [ ] No entitlement enforcement added
+**BILLING-READY-03D — Balance/overflow/concurrency semantics (split into 03D1/03D2/03D3):**
+
+**BILLING-READY-03D1 — Transaction boundary and repository contract hardening: COMPLETE and LOCKED (2026-07-07)**
+- [x] Atomic transaction semantics defined and hardened in `PersistentCreditDeductionGateway`
+- [x] Balance lock/update correctness under DB transaction confirmed
+- [x] Insufficient balance `creditsOverflow` handling defined
+- [x] `CreditDeductionGateway` preserved as single deduction entry point
+- [x] `UsageLedgerService.updateExecutionResult()` preserved as single runtime trigger
+- [x] Failure suppression preserved — billing errors do not break usage recording
+- [x] No Stripe/payment behavior added
+- [x] No entitlement enforcement added
+
+**BILLING-READY-03D2 — Concurrency/idempotency integration validation:** *(future — not registered)*
+
+**BILLING-READY-03D3 — Overflow semantics finalization and checkpoint:** *(future — not registered)*
 
 #### Scope Boundaries
 
@@ -27622,3 +27633,143 @@ Swap the `CreditDeductionModule` binding from `CalculatingCreditDeductionGateway
 ---
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-03C2.
+
+---
+
+#### BILLING-READY-03D1: Transaction Boundary and Repository Contract Hardening
+
+**Status:** COMPLETE and LOCKED
+**Completed:** 2026-07-07
+**Registered:** 2026-07-07
+**Task ID:** BILLING-READY-03D1
+**Parent:** BILLING-READY-03D (child of BILLING-READY-03)
+**Family:** BILLING / CREDIT BALANCE PERSISTENCE
+**Priority:** High
+**Nature:** IMPLEMENTATION — atomic transaction semantics, balance lock/update contract, insufficient balance handling, repository hardening
+**Risk:** HIGH — this slice hardens the live persistent deduction path; incorrect transaction semantics can cause double-deductions or data corruption
+**Roadmap position:** #7E-e — first child slice of BILLING-READY-03D (fifth child slice of BILLING-READY-03)
+**Workflow:** 4-step loop (1. Registration ✓ | 2. Stage-start/readiness plan | 3. Implementation | 4. Consolidation/checkpoint)
+
+#### Split Rationale: Why 03D is Split into 03D1/03D2/03D3
+
+03D covers three distinct concerns that each carry independent risk:
+- **03D1** — Transaction boundary and repository contract: hardening the atomic write path inside `PersistentCreditDeductionGateway`. No concurrency integration test, no final overflow finalization.
+- **03D2** — Concurrency and idempotency integration: DB-level concurrency validation (concurrent deductions, race condition detection). Requires 03D1 to be stable.
+- **03D3** — Overflow semantics finalization and checkpoint: finalizes `creditsOverflow` cap semantics and closes BILLING-READY-03.
+
+Splitting limits blast radius: if atomic transaction hardening requires adjustment, it does not block the concurrency validation slice.
+
+#### Dependencies
+
+- BILLING-READY-03A — COMPLETE and LOCKED (schema and persistence design)
+- BILLING-READY-03B — COMPLETE and LOCKED (entities, migration, repositories, `CreditPersistenceModule`)
+- BILLING-READY-03C1 — COMPLETE and LOCKED (`PersistentCreditDeductionGateway` implementation, idempotency, overflow capping)
+- BILLING-READY-03C2 — COMPLETE and LOCKED (runtime binding swap, `emitDeductionAttempt()` awaits gateway, DB validation)
+- BILLING-READY-03 — ACTIVE (parent registration)
+
+#### Purpose
+
+Define and harden the atomic transaction semantics for persistent credit deduction. Ensure the balance lock, balance deduction, and deduction record write occur in a single DB transaction. Define correct behavior for insufficient balance (balance floor, `creditsOverflow`). Define correct behavior when `sourceEventId` is duplicated under retries. Preserve `CreditDeductionGateway` as the single entry point and `UsageLedgerService.updateExecutionResult()` as the single trigger. Preserve failure suppression.
+
+#### Scope
+
+- Define and harden atomic transaction boundary in `PersistentCreditDeductionGateway`:
+  - Balance read + lock, balance update, and deduction record insert must be atomic (single DB transaction)
+  - Transaction must roll back cleanly on any failure — no partial writes
+- Define balance lock/update correctness:
+  - Balance must be locked (pessimistic read-for-update or equivalent) before deduction
+  - `balance` field must always be non-negative after deduction (DB check constraint `balance >= 0` must be respected)
+- Define insufficient balance handling:
+  - When available balance is zero or insufficient, `creditsOverflow` captures the over-deduction amount
+  - `balance` does not go negative — overflow is recorded separately
+  - Deduction record is written regardless (audit trail preserved)
+- Define duplicate `sourceEventId` behavior under retries:
+  - If a deduction record with matching `sourceEventId` already exists, return the existing result
+  - No second deduction record is written — idempotency is preserved under retry
+  - Race condition: if two concurrent requests race on the same `sourceEventId`, the DB unique constraint on `source_event_id` ensures only one succeeds; the loser returns the existing record
+- Preserve `CreditDeductionGateway` as the single deduction entry point — no bypass paths
+- Preserve `UsageLedgerService.updateExecutionResult()` as the single runtime trigger — no new trigger paths
+- Preserve failure suppression:
+  - Gateway errors inside `emitDeductionAttempt()` must not break or propagate through `updateExecutionResult()`
+  - Errors logged safely (no PII or secret leakage)
+- Define DB integration validation plan for 03D1:
+  - Atomic transaction correctness confirmed via unit tests (mocked repositories)
+  - Balance floor and `creditsOverflow` cap behavior covered by tests
+  - No new DB integration/PostgreSQL smoke required in 03D1 (deferred to 03D2)
+
+#### Non-Goals
+
+- No entitlement enforcement (execution must not be blocked by zero balance)
+- No billing quota blocking
+- No Stripe/payment processing
+- No subscription billing
+- No frontend billing UI
+- No production billing activation
+- No AGENT-HARNESS-06C activation
+- No AGENT-PLATFORM-04 registration
+- No BILLING-READY-04+ registration
+- No DB-level concurrency integration test (deferred to BILLING-READY-03D2)
+- No final `creditsOverflow` finalization checkpoint (deferred to BILLING-READY-03D3)
+
+#### Registration Acceptance Criteria
+
+- [x] BILLING-READY-03D1 registered in TASKS.md
+- [x] BILLING-READY-03D1 registered in TASKS_BACKLOG_FULL.md
+- [x] AINOW-EXECUTION-ROADMAP.md points to BILLING-READY-03D1 as current ACTIVE child slice
+- [x] BILLING-READY-03C2 confirmed COMPLETE and LOCKED before registration
+- [x] 4-step workflow documented
+- [x] Risk classification HIGH recorded
+- [x] Split decision recorded (03D → 03D1/03D2/03D3)
+- [x] BILLING-READY-03D2 and 03D3 noted as future, not registered
+- [x] AGENT-HARNESS-06C remains deferred
+- [x] AGENT-PLATFORM-04 remains future, not registered
+- [x] One-active-task rule satisfied
+
+#### Implementation Acceptance Criteria
+
+- [x] Atomic transaction boundary defined and hardened in `PersistentCreditDeductionGateway`
+- [x] Balance read-lock + update + record insert atomic (single DB transaction)
+- [x] Transaction rolls back cleanly on failure — no partial writes
+- [x] `balance` floor enforced: deduction does not produce negative `balance`
+- [x] Insufficient balance: `creditsOverflow` captures over-deduction amount
+- [x] Duplicate `sourceEventId` under retry returns existing result — no double deduction
+- [x] `CreditDeductionGateway` preserved as single deduction entry point
+- [x] `UsageLedgerService.updateExecutionResult()` preserved as single runtime trigger
+- [x] Gateway errors inside `emitDeductionAttempt()` caught — do not propagate through `updateExecutionResult()`
+- [x] Error log does not leak sensitive data (user PII, secrets, credentials)
+- [x] All relevant unit tests pass (14 suites / 167 tests for `credit` scope)
+- [x] TypeScript typecheck clean (`npx tsc --noEmit`)
+- [x] Build clean (`npm run build`)
+- [x] No entitlement blocking added
+- [x] No Stripe/payment code added
+- [x] No frontend billing UI added
+- [x] No Agent Harness activation
+
+#### Validation Evidence
+
+| Command | Result |
+|---------|--------|
+| `npx jest --testPathPatterns="persistent-credit-deduction.gateway"` | 1 suite, 40 tests passed |
+| `npx jest --testPathPatterns="credit-balance.repository"` | 1 suite, 11 tests passed |
+| `npx jest --testPathPatterns="credit-deduction-record.repository"` | 1 suite, 9 tests passed |
+| `npx jest --testPathPatterns="credit-deduction"` | 11 suites, 151 tests passed |
+| `npx jest --testPathPatterns="usage-ledger"` | 2 suites, 45 tests passed |
+| `npx jest --testPathPatterns="credit"` | 14 suites, 167 tests passed |
+| `npx tsc --noEmit` | Clean — no type errors |
+| `npm run build` | Clean — no build errors |
+
+#### Scope Boundaries
+
+- No Stripe/payment integration
+- No subscription/entitlement checks
+- No frontend billing UI
+- No entitlement enforcement
+- No Agent Harness activation
+- No BILLING-READY-03D2 or 03D3 work
+- No BILLING-READY-04+ registration
+
+**Checkpoint:** `docs/BILLING-READY-03D1-CHECKPOINT.md`
+
+---
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-03D1.
