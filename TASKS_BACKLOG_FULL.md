@@ -37600,7 +37600,7 @@ BILLING-READY-03 is too broad for one safe implementation slice. It is split int
   - **BILLING-READY-03C2** — Controlled runtime binding, async `UsageLedgerService` integration, DB validation: Swap `CreditDeductionModule` to bind `PersistentCreditDeductionGateway`, update `UsageLedgerService.emitDeductionAttempt()` to `await`, DB integration validation. **COMPLETE and LOCKED (2026-07-07).**
 - **BILLING-READY-03D** — Balance/overflow/concurrency semantics (split into 03D1/03D2/03D3):
   - **BILLING-READY-03D1** — Transaction boundary and repository contract hardening. **COMPLETE and LOCKED (2026-07-07).**
-  - **BILLING-READY-03D2** — Concurrency/idempotency integration validation. *(future — not registered)*
+  - **BILLING-READY-03D2** — Concurrency/idempotency integration validation. **COMPLETE and LOCKED (2026-07-07).** Second child slice of BILLING-READY-03D.
   - **BILLING-READY-03D3** — Overflow semantics finalization and checkpoint. *(future — not registered)*
 
 Do not implement any child slice during registration.
@@ -37693,7 +37693,16 @@ Do not implement any child slice during registration.
 - [ ] No Stripe/payment behavior added
 - [ ] No entitlement enforcement added
 
-**BILLING-READY-03D2 — Concurrency/idempotency integration validation:** *(future — not registered)*
+**BILLING-READY-03D2 — Concurrency/idempotency integration validation: COMPLETE and LOCKED (2026-07-07)**
+- [x] `SELECT ... FOR UPDATE` behavior validated against live PostgreSQL under concurrent deductions
+- [x] Concurrent same-event execution produces exactly one deduction record (no double deduction)
+- [x] Concurrent different-event execution: balance remains non-negative (DB `CHECK` constraint respected)
+- [x] `source_event_id` unique constraint prevents double insert under race condition
+- [x] 23505 race fallback returns winning record with `skippedDuplicate = true`
+- [x] One deduction record per unique `sourceEventId` confirmed via DB query
+- [x] Failure suppression at `UsageLedgerService` level unchanged under concurrent scenarios
+- [x] All validation rows cleaned up from `credit_balances` and `credit_deduction_records` after execution
+- [x] DB validation evidence recorded (row counts, balance state, idempotency results)
 
 **BILLING-READY-03D3 — Overflow semantics finalization and checkpoint:** *(future — not registered)*
 
@@ -38283,3 +38292,135 @@ Define and harden the atomic transaction semantics for persistent credit deducti
 ---
 
 **Reference:** See TASKS.md -> BILLING-READY-03D1.
+
+---
+
+### BILLING-READY-03D2: Concurrency and Idempotency Integration Validation
+
+**Status:** COMPLETE and LOCKED
+**Completed:** 2026-07-07
+**Registered:** 2026-07-07
+**Task ID:** BILLING-READY-03D2
+**Parent:** BILLING-READY-03D (child of BILLING-READY-03)
+**Family:** BILLING / CREDIT BALANCE PERSISTENCE
+**Priority:** High
+**Nature:** INTEGRATION VALIDATION — live PostgreSQL validation of transaction locking, duplicate sourceEventId idempotency, concurrent deductions, and retry safety
+**Risk:** HIGH — live PostgreSQL integration validation of concurrent persistent deduction behavior
+**Roadmap position:** #7E-f — second child slice of BILLING-READY-03D (sixth child slice of BILLING-READY-03)
+**Workflow:** 4-step loop (1. Registration ✓ | 2. Stage-start / DB readiness plan | 3. Integration validation implementation/execution | 4. Consolidation/checkpoint)
+
+#### Dependencies
+
+- BILLING-READY-03A — COMPLETE and LOCKED (schema and persistence design)
+- BILLING-READY-03B — COMPLETE and LOCKED (entities, migration, repositories, `CreditPersistenceModule`)
+- BILLING-READY-03C1 — COMPLETE and LOCKED (`PersistentCreditDeductionGateway` implementation, idempotency, overflow capping)
+- BILLING-READY-03C2 — COMPLETE and LOCKED (runtime binding swap, `emitDeductionAttempt()` awaits gateway, DB validation)
+- BILLING-READY-03D1 — COMPLETE and LOCKED (atomic transaction boundary, transactional `EntityManager`, overflow enforcement)
+- BILLING-READY-03 — ACTIVE (parent registration)
+
+#### Purpose
+
+Validate live PostgreSQL integration behavior for concurrent deductions, `sourceEventId` idempotency under race conditions, and retry safety. Confirm that `SELECT ... FOR UPDATE` correctly serializes concurrent balance deductions, that the DB unique constraint on `source_event_id` prevents double deduction under concurrent same-event execution, and that the balance remains non-negative under concurrent different-event execution. Defines cleanup of all local validation rows after execution. All validation artifacts are test-only; no production behavior changes.
+
+#### Scope
+
+- Validate `SELECT ... FOR UPDATE` behavior under concurrent deductions:
+  - Confirm row-level lock serializes concurrent deductions for the same user
+  - Confirm concurrent deductions for different users proceed without contention
+- Validate duplicate `sourceEventId` idempotency under retry/race conditions:
+  - Confirm no double deduction when the same `sourceEventId` is submitted concurrently
+  - Confirm the unique constraint on `source_event_id` ensures only one deduction record per source event
+  - Confirm the 23505 race fallback returns the winning record with `skippedDuplicate = true`
+- Validate no double deduction under concurrent same-event execution:
+  - Two concurrent requests with the same `sourceEventId` must produce exactly one deduction record
+  - The balance must reflect exactly one deduction — not two
+- Validate balance remains non-negative under concurrent different-event execution:
+  - Multiple concurrent deduction events against the same balance must not produce a negative balance
+  - The DB `CHECK (balance >= 0)` constraint must be respected end-to-end
+- Validate one deduction record per unique `sourceEventId`:
+  - Query `credit_deduction_records` after concurrent execution and confirm count matches unique event count
+- Validate failure suppression remains unchanged at `UsageLedgerService` level:
+  - Gateway errors during concurrent scenarios must not propagate through `updateExecutionResult()`
+- Define cleanup of all local validation rows after execution:
+  - All test-inserted rows in `credit_balances` and `credit_deduction_records` must be deleted after validation
+  - No residue left in the database after validation completes
+- Define exact acceptance criteria for DB validation evidence:
+  - Row counts, balance state, and idempotency results must be recorded as checkpoint evidence
+
+#### Non-Goals
+
+- No entitlement enforcement (execution must not be blocked by zero balance)
+- No billing quota blocking
+- No Stripe/payment processing
+- No subscription billing
+- No frontend billing UI
+- No production billing activation
+- No Agent Harness activation (AGENT-HARNESS-06C remains deferred)
+- No AGENT-PLATFORM-04 registration
+- No BILLING-READY-04+ registration
+- No BILLING-READY-03D3 overflow policy finalization (deferred)
+
+#### Registration Acceptance Criteria
+
+- [x] BILLING-READY-03D2 registered in TASKS.md
+- [x] BILLING-READY-03D2 registered in TASKS_BACKLOG_FULL.md
+- [x] AINOW-EXECUTION-ROADMAP.md points to BILLING-READY-03D2 as current ACTIVE child slice
+- [x] BILLING-READY-03D1 confirmed COMPLETE and LOCKED before registration
+- [x] 4-step workflow documented
+- [x] Risk classification HIGH recorded
+- [x] BILLING-READY-03D3 noted as future, not registered
+- [x] AGENT-HARNESS-06C remains deferred
+- [x] AGENT-PLATFORM-04 remains future, not registered
+- [x] One-active-task rule satisfied
+
+#### Implementation Acceptance Criteria
+
+- [x] `SELECT ... FOR UPDATE` behavior validated against live PostgreSQL under concurrent deductions
+- [x] Concurrent same-event execution produces exactly one deduction record (no double deduction)
+- [x] Concurrent different-event execution: balance remains non-negative (DB `CHECK` constraint respected)
+- [x] `source_event_id` unique constraint prevents double insert under race condition
+- [x] 23505 race fallback returns winning record with `skippedDuplicate = true`
+- [x] One deduction record per unique `sourceEventId` confirmed via DB query
+- [x] Failure suppression at `UsageLedgerService` level unchanged under concurrent scenarios
+- [x] All validation rows cleaned up from `credit_balances` and `credit_deduction_records` after execution
+- [x] DB validation evidence recorded (row counts, balance state, idempotency results)
+
+#### Validation Evidence
+
+| Command | Result |
+|---------|--------|
+| `npx jest --testPathPatterns="credit-deduction-concurrency"` (no `RUN_CREDIT_DB_INTEGRATION`) | 1 suite skipped safely, exit 0 |
+| `npx jest --testPathPatterns="credit-deduction"` (no `RUN_CREDIT_DB_INTEGRATION`) | 11 suites, 151 passed, 6 skipped, 0 failures |
+| `npx jest --testPathPatterns="usage-ledger"` | 2 suites, 45 passed, 0 failures |
+| `npx tsc --noEmit` | Clean — no type errors |
+| `npm run build` | Clean — no build errors |
+| Live DB integration with `RUN_CREDIT_DB_INTEGRATION=true` | 6/6 integration scenarios passed |
+
+Live DB validation used a one-off `node:20-alpine` container on `aisandbox2026b_aisandbox-network`. No host DB port exposed.
+
+#### Scenario Results
+
+| Scenario | Result |
+|----------|--------|
+| A. 8 concurrent identical calls | 1 record, balance 1000→900, 7 `skippedDuplicate` |
+| B. 5 serial retries | 1 record, balance 500→450 |
+| C. 10 concurrent unique events | 10 records, `totalApplied=500`, `totalOverflow=500`, `finalBalance=0` |
+| D. Over-balance (200 requested, 50 available) | `appliedCredits=50`, `overflowCredits=150`, `balanceAfter=0` |
+| E. GROUP BY `source_event_id` | `count=1` for every test `sourceEventId` |
+| F. Cleanup | 0 test rows remain for `test-concurrency-%` |
+
+#### Scope Boundaries
+
+- No Stripe/payment integration
+- No subscription/entitlement checks
+- No frontend billing UI
+- No entitlement enforcement
+- No Agent Harness activation
+- No BILLING-READY-03D3 work
+- No BILLING-READY-04+ registration
+
+**Checkpoint:** `docs/BILLING-READY-03D2-CHECKPOINT.md` — CREATED.
+
+---
+
+**Reference:** See TASKS.md -> BILLING-READY-03D2.
