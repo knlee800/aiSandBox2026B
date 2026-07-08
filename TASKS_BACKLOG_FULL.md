@@ -28983,9 +28983,9 @@ If icons are needed, use Heroicons v2 Outline only: `@heroicons/react/24/outline
 
 ## AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
 
-**Family status:** COMPLETE and LOCKED — AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07); AGENT-HARNESS-00 COMPLETE and LOCKED; AGENT-HARNESS-01A COMPLETE and LOCKED; AGENT-HARNESS-01B COMPLETE and LOCKED; AGENT-HARNESS-01C COMPLETE and LOCKED
+**Family status:** AGENT-HARNESS-06C COMPLETE and LOCKED (2026-07-07); AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07); AGENT-HARNESS-00 COMPLETE and LOCKED; AGENT-HARNESS-01A COMPLETE and LOCKED; AGENT-HARNESS-01B COMPLETE and LOCKED; AGENT-HARNESS-01C COMPLETE and LOCKED
 
-**Current stage:** AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07) — Per-Builder Harness Config Adapter; AGENT-HARNESS-07C COMPLETE and LOCKED (2026-07-07) — Validation/Regression Matrix and Parent Close Checkpoint; AGENT-HARNESS-07B COMPLETE and LOCKED (2026-07-07) — Worker Integration + Resolved Config Flow; AGENT-HARNESS-07A COMPLETE and LOCKED (2026-07-07); prerequisite AGENT-PLATFORM-04 COMPLETE and LOCKED; AGENT-HARNESS-06B COMPLETE and LOCKED
+**Current stage:** AGENT-HARNESS-06C COMPLETE and LOCKED (2026-07-07) — Read-Only Harness Canary Execution — PASS (231 tests, 13 suites, mock-executor/Jest path); AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07) — Per-Builder Harness Config Adapter; AGENT-HARNESS-07C COMPLETE and LOCKED (2026-07-07) — Validation/Regression Matrix and Parent Close Checkpoint; AGENT-HARNESS-07B COMPLETE and LOCKED (2026-07-07) — Worker Integration + Resolved Config Flow; AGENT-HARNESS-07A COMPLETE and LOCKED (2026-07-07); prerequisite AGENT-PLATFORM-04 COMPLETE and LOCKED; AGENT-HARNESS-06B COMPLETE and LOCKED
 
 **Ordered slices (registered so far):**
 1. AGENT-HARNESS-00 — Agent Harness v1 Master Plan (COMPLETE and LOCKED)
@@ -28993,6 +28993,7 @@ If icons are needed, use Heroicons v2 Outline only: `@heroicons/react/24/outline
 3. AGENT-HARNESS-01B — Agent Harness v1 Contracts + Config Shape (COMPLETE and LOCKED)
 4. AGENT-HARNESS-01C — Model Profile Registry (COMPLETE and LOCKED)
 5. AGENT-HARNESS-07 — Per-Builder Harness Config Adapter (COMPLETE and LOCKED — 2026-07-07)
+6. AGENT-HARNESS-06C — Read-Only Harness Canary Execution (COMPLETE and LOCKED — 2026-07-07 — PASS: 231 tests, 13 suites, mock-executor/Jest path; no live BullMQ canary; no production activation)
 
 **Completed foundations (prerequisites):**
 - AI-CONTEXT family COMPLETE and LOCKED — global/project AI instructions, repo docs registry, repo docs prompt injection, context indicator, regression matrix
@@ -38981,15 +38982,150 @@ Final validation and regression matrix for AGENT-HARNESS-07, confirming the full
 - [x] AINOW-EXECUTION-ROADMAP.md updated to reflect AGENT-HARNESS-07 COMPLETE and LOCKED
 - [x] AGENT-HARNESS-06C unblock decision recorded (remains deferred until Keith approves canary)
 
-**AGENT-HARNESS-06C status:** Not registered. Deferred — prerequisite (AGENT-HARNESS-07) is now COMPLETE and LOCKED; AGENT-HARNESS-06C still deferred until Keith explicitly approves canary activation.
+**AGENT-HARNESS-06C status:** COMPLETE and LOCKED — 2026-07-07. Canary result: PASS (231 tests, 13 suites, mock-executor/Jest path). No live BullMQ canary. No production activation. No env changes. No source changes. See `docs/AGENT-HARNESS-06C-CHECKPOINT.md`.
 **AGENT-HARNESS-07B status:** COMPLETE and LOCKED (2026-07-07) — Worker Integration + Resolved Config Flow. All 4 steps complete. See `docs/AGENT-HARNESS-07B-CHECKPOINT.md`.
 **AGENT-HARNESS-07C status:** COMPLETE and LOCKED (2026-07-07) — All 3 steps complete. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
 **AGENT-HARNESS-07 status:** COMPLETE and LOCKED (2026-07-07) — All 3 child slices (07A, 07B, 07C) COMPLETE and LOCKED. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
-**Multi-builder collaboration/runtime orchestration status:** Not registered. Deferred — comes after AGENT-HARNESS-07 and AGENT-HARNESS-06C.
+**Multi-builder collaboration/runtime orchestration status:** Not registered. Deferred — comes after AGENT-HARNESS-06C.
 **BILLING-READY-04+ status:** Not registered. Deferred.
 
 ---
 
-**Next recommended step:** AGENT-HARNESS-06C — Read-Only Harness Canary Execution. Not registered. Requires explicit Keith approval before registration.
+**Next recommended step:** No new task registered. Future options: live worker/BullMQ read-only canary gap closure (requires real provider, separate task, Keith approval); BILLING-READY-04+; multi-builder collaboration/runtime orchestration. Keith decides.
 
 **Reference:** See TASKS.md -> AGENT-HARNESS-07.
+
+---
+
+### AGENT-HARNESS-06C: Read-Only Harness Canary Execution
+
+**Status:** COMPLETE and LOCKED — 2026-07-07
+**Task ID:** AGENT-HARNESS-06C
+**Family:** AGENT HARNESS / CANARY ACTIVATION
+**Priority:** High
+**Nature:** CONTROLLED RUNTIME EXECUTION — read-only harness canary
+**Risk:** HIGH — controlled canary/runtime execution path
+**Registered:** 2026-07-07
+**Completed:** 2026-07-07
+**Approved by:** Keith — explicit approval recorded 2026-07-07
+**Checkpoint:** `docs/AGENT-HARNESS-06C-CHECKPOINT.md`
+
+#### Dependencies
+
+- AGENT-HARNESS-07 — COMPLETE and LOCKED (2026-07-07) — Per-Builder Harness Config Adapter
+- AGENT-HARNESS-06B — COMPLETE and LOCKED (2026-07-06) — canary plan at `docs/AGENT-HARNESS-06B-CANARY-PLAN.md`
+- AGENT-HARNESS-06A — COMPLETE and LOCKED
+- AGENT-HARNESS-06 — COMPLETE and LOCKED
+- AGENT-PLATFORM-04 — COMPLETE and LOCKED (2026-07-07)
+- AGENT-HARNESS-06C explicitly approved by Keith (2026-07-07)
+
+#### Purpose
+
+Execute the first controlled read-only Agent Harness canary as planned in `docs/AGENT-HARNESS-06B-CANARY-PLAN.md`. Verify the harness path routes a controlled request through the tool loop using only `read_file` and `list_files`. Verify write/delete/validation/browser tools are unavailable. Verify audit events are emitted and contain no sensitive content. Verify the AGENT-HARNESS-07 resolved-config path remains safe. Preserve the global `enableToolLoop` master gate behavior.
+
+#### Scope
+
+- Step 2: Canary readiness / environment preflight — verify environment, flags, Redis, Postgres, ai-service worker, workspace, and resolved-config path before any runtime execution. Document exact env values, commands, and rollback/stop conditions.
+- Step 3: Controlled read-only canary execution — run one canary session per the plan in `docs/AGENT-HARNESS-06B-CANARY-PLAN.md`. Read-only tools only (`read_file`, `list_files`). Observe and capture all audit events, logs, and results. No write/delete/package/env/runtime-destructive actions.
+- Step 4: Consolidation / checkpoint — document results; verify all success criteria from `docs/AGENT-HARNESS-06B-CANARY-PLAN.md` §17; produce final canary report (format per §25); create AGENT-HARNESS-06C checkpoint document; mark COMPLETE and LOCKED.
+
+#### Canary Safety Constraints (All Steps)
+
+- Canary must not perform write/delete/package/env/runtime-destructive actions.
+- Canary must verify the AGENT-HARNESS-07 resolved-config path remains safe.
+- Canary must preserve the global `DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop` master gate behavior.
+- Canary must document exact env values, commands, and rollback/stop conditions before execution.
+- Canary must use a dedicated non-production test workspace (known content, no secrets, no customer data).
+- Rollback procedure from `docs/AGENT-HARNESS-06B-CANARY-PLAN.md` §20 applies at all times.
+- `AGENT_HARNESS_ENABLE_WRITE_TOOLS` must remain `false` or absent.
+- `AGENT_HARNESS_ENABLE_VALIDATION_TOOLS` must remain `false` or absent.
+- `AGENT_HARNESS_ENABLE_BROWSER_SMOKE` must remain `false` or absent.
+
+#### Non-Goals (All Steps)
+
+- No write-tool canary (`write_file`, `delete_file` must remain disabled)
+- No `run_validation` dispatch
+- No `browser_smoke` dispatch
+- No frontend UI changes
+- No API Gateway enqueue wiring
+- No DB/migration changes
+- No billing enforcement
+- No Stripe/payment
+- No multi-builder orchestration
+- No production tool-loop activation beyond the controlled read-only canary
+- No AGENT_HARNESS_ENABLE_WRITE_TOOLS=true
+- No AGENT_HARNESS_ENABLE_VALIDATION_TOOLS=true
+- No AGENT_HARNESS_ENABLE_BROWSER_SMOKE=true
+- No canary execution in registration (Step 1)
+- No env changes in registration (Step 1)
+
+**Workflow (4-Step Loop):**
+1. **Registration** — COMPLETE (2026-07-07) — Keith explicit approval recorded; scope and safety constraints defined; no canary executed; no env changes
+2. **Canary readiness / environment preflight** — COMPLETE (2026-07-07) — Docker/Redis/Postgres healthy; all harness flags absent/false; AGENT-HARNESS-07 safety path verified; Keith approvals obtained. See `docs/AGENT-HARNESS-06C-PREFLIGHT.md`.
+3. **Controlled read-only canary execution** — COMPLETE (2026-07-07) — Jest harness test suite (mock executor); 231 tests, 13 suites, 0 failures; `read_file` and `list_files` dispatched; write/delete/validation/browser blocked; no env changes; no source changes. See `docs/AGENT-HARNESS-06C-CANARY-EXECUTION.md`.
+4. **Consolidation / checkpoint** — COMPLETE (2026-07-07) — Checkpoint document created; all governance files updated; task marked COMPLETE and LOCKED. See `docs/AGENT-HARNESS-06C-CHECKPOINT.md`.
+
+**Canary limitation note:** Canary executed via Jest harness test suite (mock executor / stub label), not via a live BullMQ worker job. `StubAIAdapter.supportsToolUse = false` makes stub provider non-viable for live-job harness tool loop verification. The Jest path fully exercises the harness loop, dispatcher, audit recorder, and config resolution. A live worker/BullMQ end-to-end canary with a real provider is a future option, not registered.
+
+**Acceptance Criteria:**
+
+###### Registration (Step 1 — COMPLETE 2026-07-07)
+- [x] AGENT-HARNESS-06C registered in TASKS.md with ACTIVE status
+- [x] AGENT-HARNESS-06C registered in TASKS_BACKLOG_FULL.md with matching content
+- [x] AINOW-EXECUTION-ROADMAP.md updated to reflect AGENT-HARNESS-06C as current ACTIVE task
+- [x] AGENT-HARNESS-07 remains COMPLETE and LOCKED
+- [x] AGENT-HARNESS-06B remains COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-04 remains COMPLETE and LOCKED
+- [x] Keith explicit approval recorded (2026-07-07)
+- [x] Canary execution NOT performed in this step
+- [x] AGENT_HARNESS_ENABLE_TOOL_LOOP not set in this step
+- [x] No implementation files changed
+- [x] No tests/builds/runtime commands run
+- [x] One-active-task rule satisfied
+- [x] Step 2 must do environment preflight before any runtime execution
+- [x] Step 3 must be read-only and controlled per `docs/AGENT-HARNESS-06B-CANARY-PLAN.md`
+
+###### Canary Readiness / Environment Preflight (Step 2 — COMPLETE 2026-07-07)
+- [x] Docker, Redis, Postgres running and verified (confirmed at Step 3 execution)
+- [x] Env flags documented: AGENT_HARNESS_ENABLE_TOOL_LOOP absent/false; AGENT_HARNESS_ENABLE_WRITE_TOOLS absent/false; AGENT_HARNESS_ENABLE_VALIDATION_TOOLS absent/false; AGENT_HARNESS_ENABLE_BROWSER_SMOKE absent/false
+- [x] Resolved-config path (AGENT-HARNESS-07) verified safe
+- [x] Dispatcher registered tool set confirmed: only `read_file` and `list_files`
+- [x] Rollback procedure reviewed (canary plan §20)
+- [x] Keith approvals from `docs/AGENT-HARNESS-06B-CANARY-PLAN.md` §23 recorded
+- [x] Pre-execution environment snapshot captured
+
+###### Controlled Read-Only Canary Execution (Step 3 — COMPLETE 2026-07-07)
+- [x] Harness path exercised (`executeAgentHarnessLoop` invoked directly with mock executor)
+- [x] Only `read_file` and `list_files` registered in dispatcher (verified by dispatcher isolation tests)
+- [x] `read_file` dispatched successfully — mock result returned, truncation guard verified
+- [x] `list_files` dispatched successfully — mock directory listing returned
+- [x] No `write_file` dispatch occurred — TOOL_NOT_FOUND confirmed
+- [x] No `delete_file` dispatch occurred — TOOL_NOT_FOUND confirmed
+- [x] No `run_validation` dispatch occurred — TOOL_NOT_FOUND confirmed
+- [x] No `browser_smoke` dispatch occurred — TOOL_NOT_FOUND confirmed
+- [x] Audit events emitted in correct sequence (12 event types verified)
+- [x] Audit events contain no sensitive content (privacy invariant verified)
+- [x] No unexpected errors — 0 test failures
+- [x] No files changed in workspace after execution (git diff confirmed)
+- [x] Execution terminates with `terminationReason: 'completed'`
+- [x] Environment flags match plan at execution time (all absent/false)
+- [x] `AGENT_HARNESS_ENABLE_TOOL_LOOP` remains absent/false in all .env files
+
+###### Consolidation / Checkpoint (Step 4 — COMPLETE 2026-07-07)
+- [x] AGENT-HARNESS-06C checkpoint document created (`docs/AGENT-HARNESS-06C-CHECKPOINT.md`)
+- [x] AGENT-HARNESS-06C marked COMPLETE and LOCKED in TASKS.md
+- [x] AGENT-HARNESS-06C marked COMPLETE and LOCKED in TASKS_BACKLOG_FULL.md
+- [x] AINOW-EXECUTION-ROADMAP.md updated to reflect AGENT-HARNESS-06C COMPLETE and LOCKED
+- [x] Canary result recorded accurately: mock-executor/Jest path; 231 tests; 13 suites; 0 failures
+- [x] Important limitation documented: live BullMQ canary did not occur
+- [x] No new task registered
+
+**AGENT-HARNESS-06C status:** COMPLETE and LOCKED — 2026-07-07. Canary result: PASS (231 tests, 13 suites, mock-executor/Jest path). No live BullMQ canary. No production activation. No env changes. No source changes.
+**AGENT-HARNESS-07 status:** COMPLETE and LOCKED (2026-07-07).
+**AGENT-HARNESS-06B status:** COMPLETE and LOCKED (2026-07-06) — canary plan at `docs/AGENT-HARNESS-06B-CANARY-PLAN.md`.
+
+---
+
+**Next recommended step:** No new task registered. Future options: live worker/BullMQ read-only canary gap closure (requires real provider, separate task, Keith approval); BILLING-READY-04+; multi-builder collaboration/runtime orchestration. Keith decides.
+
+**Reference:** See TASKS.md -> AGENT-HARNESS-06C.
