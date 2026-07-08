@@ -28983,9 +28983,9 @@ If icons are needed, use Heroicons v2 Outline only: `@heroicons/react/24/outline
 
 ## AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
 
-**Family status:** AGENT-HARNESS-06C COMPLETE and LOCKED (2026-07-07); AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07); AGENT-HARNESS-00 COMPLETE and LOCKED; AGENT-HARNESS-01A COMPLETE and LOCKED; AGENT-HARNESS-01B COMPLETE and LOCKED; AGENT-HARNESS-01C COMPLETE and LOCKED
+**Family status:** AGENT-HARNESS-06D COMPLETE and LOCKED (2026-07-08); AGENT-HARNESS-06D1 COMPLETE and LOCKED (2026-07-08; child slice of 06D); AGENT-HARNESS-06C COMPLETE and LOCKED (2026-07-07); AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07); AGENT-HARNESS-00 COMPLETE and LOCKED; AGENT-HARNESS-01A COMPLETE and LOCKED; AGENT-HARNESS-01B COMPLETE and LOCKED; AGENT-HARNESS-01C COMPLETE and LOCKED
 
-**Current stage:** AGENT-HARNESS-06C COMPLETE and LOCKED (2026-07-07) — Read-Only Harness Canary Execution — PASS (231 tests, 13 suites, mock-executor/Jest path); AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07) — Per-Builder Harness Config Adapter; AGENT-HARNESS-07C COMPLETE and LOCKED (2026-07-07) — Validation/Regression Matrix and Parent Close Checkpoint; AGENT-HARNESS-07B COMPLETE and LOCKED (2026-07-07) — Worker Integration + Resolved Config Flow; AGENT-HARNESS-07A COMPLETE and LOCKED (2026-07-07); prerequisite AGENT-PLATFORM-04 COMPLETE and LOCKED; AGENT-HARNESS-06B COMPLETE and LOCKED
+**Current stage:** AGENT-HARNESS-06D COMPLETE and LOCKED (2026-07-08) — Live Worker/BullMQ Read-Only Canary Gap Closure — live canary PASS (provider: test-harness-stub; `selectedPath: 'harness'`; `source: 'builder-profile'`; 3 iterations; 2 tool calls dispatched; `terminationReason: 'completed'`; `durationMs: 33`; HANDLER_ERROR on `list_files`/`read_file` — API Gateway not running, expected per design §7.8); no production activation; no .env changes; no paid provider calls; checkpoint: `docs/AGENT-HARNESS-06D-CHECKPOINT.md`; AGENT-HARNESS-06D1 COMPLETE and LOCKED (2026-07-08) — Test Tool-Capable Stub Adapter for Live Worker Canary — `TestToolCapableStubAdapter` created; `supportsToolUse = true`; deterministic `list_files` → `read_file` → `completed` sequence; zero external API calls; zero billing risk; normal `stub` unchanged; routing/factory supports `test-harness-stub`; 34 suites / 646 tests passed; typecheck and build clean; checkpoint: `docs/AGENT-HARNESS-06D1-CHECKPOINT.md`; AGENT-HARNESS-06C COMPLETE and LOCKED (2026-07-07) — Read-Only Harness Canary Execution — PASS (231 tests, 13 suites, mock-executor/Jest path); AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07) — Per-Builder Harness Config Adapter; AGENT-HARNESS-07C COMPLETE and LOCKED (2026-07-07) — Validation/Regression Matrix and Parent Close Checkpoint; AGENT-HARNESS-07B COMPLETE and LOCKED (2026-07-07) — Worker Integration + Resolved Config Flow; AGENT-HARNESS-07A COMPLETE and LOCKED (2026-07-07); prerequisite AGENT-PLATFORM-04 COMPLETE and LOCKED; AGENT-HARNESS-06B COMPLETE and LOCKED
 
 **Ordered slices (registered so far):**
 1. AGENT-HARNESS-00 — Agent Harness v1 Master Plan (COMPLETE and LOCKED)
@@ -28994,6 +28994,8 @@ If icons are needed, use Heroicons v2 Outline only: `@heroicons/react/24/outline
 4. AGENT-HARNESS-01C — Model Profile Registry (COMPLETE and LOCKED)
 5. AGENT-HARNESS-07 — Per-Builder Harness Config Adapter (COMPLETE and LOCKED — 2026-07-07)
 6. AGENT-HARNESS-06C — Read-Only Harness Canary Execution (COMPLETE and LOCKED — 2026-07-07 — PASS: 231 tests, 13 suites, mock-executor/Jest path; no live BullMQ canary; no production activation)
+7. AGENT-HARNESS-06D — Live Worker/BullMQ Read-Only Canary Gap Closure (COMPLETE and LOCKED — 2026-07-08; live Worker/BullMQ canary PASS; `selectedPath: 'harness'`; HANDLER_ERROR on file tools — API Gateway not running, expected; no paid calls; checkpoint: `docs/AGENT-HARNESS-06D-CHECKPOINT.md`)
+8. AGENT-HARNESS-06D1 — Test Tool-Capable Stub Adapter for Live Worker Canary (COMPLETE and LOCKED — 2026-07-08; child slice of 06D; `TestToolCapableStubAdapter` created; `supportsToolUse = true`; zero billing; no live canary; checkpoint: `docs/AGENT-HARNESS-06D1-CHECKPOINT.md`)
 
 **Completed foundations (prerequisites):**
 - AI-CONTEXT family COMPLETE and LOCKED — global/project AI instructions, repo docs registry, repo docs prompt injection, context indicator, regression matrix
@@ -39126,6 +39128,253 @@ Execute the first controlled read-only Agent Harness canary as planned in `docs/
 
 ---
 
-**Next recommended step:** No new task registered. Future options: live worker/BullMQ read-only canary gap closure (requires real provider, separate task, Keith approval); BILLING-READY-04+; multi-builder collaboration/runtime orchestration. Keith decides.
+**Next recommended step (from AGENT-HARNESS-06C):** AGENT-HARNESS-06D registered as next ACTIVE task — Step 2 (Live worker/BullMQ readiness and execution-path design) is the next action. No runtime execution in Step 2.
 
 **Reference:** See TASKS.md -> AGENT-HARNESS-06C.
+
+---
+
+### AGENT-HARNESS-06D: Live Worker/BullMQ Read-Only Canary Gap Closure
+
+**Status:** COMPLETE and LOCKED — 2026-07-08
+**Task ID:** AGENT-HARNESS-06D
+**Family:** AGENT HARNESS / CANARY ACTIVATION
+**Priority:** High
+**Nature:** CONTROLLED RUNTIME EXECUTION — live worker/BullMQ canary gap closure
+**Risk:** HIGH — live worker/BullMQ runtime path
+**Registered:** 2026-07-08
+**Approved by:** Keith — explicit approval recorded 2026-07-08 ("go" — registration only)
+
+#### Dependencies
+
+- AGENT-HARNESS-06C — COMPLETE and LOCKED (2026-07-07) — Read-Only Harness Canary Execution (Jest/mock-executor path; live BullMQ canary did not occur)
+- AGENT-HARNESS-07 — COMPLETE and LOCKED (2026-07-07) — Per-Builder Harness Config Adapter
+- AGENT-HARNESS-06B — COMPLETE and LOCKED (2026-07-06)
+- Keith approval recorded for registration (2026-07-08)
+
+#### Why This Task Exists
+
+AGENT-HARNESS-06C validated the harness through the Jest harness test suite (mock executor). No live BullMQ worker job was submitted because `StubAIAdapter.supportsToolUse = false` (line 30 of `stub-ai.adapter.ts`). In `worker.processor.ts` line 789, the harness tool loop activates only when `adapter.supportsToolUse && adapter.executeWithTools`. With stub provider, the worker falls through to plain execution without activating the tool loop, dispatcher, or audit recorder.
+
+What was NOT verified in AGENT-HARNESS-06C:
+- Live BullMQ job submission with `harnessVersion: 'v1'`
+- Live `agent_harness.route_evaluated` log emission from a real worker process
+- Live `agent_harness.config_resolved` log emission from a real worker process
+- End-to-end: API → BullMQ → Worker → Harness tool loop → AI provider → result
+
+AGENT-HARNESS-06D closes this gap by identifying a safe live BullMQ canary path (Step 2) and executing at most one controlled live worker/BullMQ read-only canary (Step 3).
+
+#### Purpose
+
+Close the live BullMQ canary gap from AGENT-HARNESS-06C. Identify whether a tool-capable non-billing test adapter/script already exists or whether a small test-only harness path is needed (Step 2). Execute at most one controlled live worker/BullMQ read-only canary (Step 3). Preserve all existing safety constraints and locked invariants.
+
+#### Scope
+
+- Step 2: Live worker/BullMQ readiness and execution-path design — identify a safe live BullMQ canary path; determine whether a tool-capable non-billing test adapter/script exists or whether a small test-only harness path is needed; no runtime execution.
+- Step 3: Controlled live worker/BullMQ read-only canary execution — at most one controlled live worker/BullMQ read-only canary; local dev only; read-only only; no browser smoke; no write/delete/package/env-file tools; no paid/provider calls unless Keith explicitly approves.
+- Step 4: Consolidation/checkpoint — document results; update governance files; mark COMPLETE and LOCKED.
+
+#### Safety Constraints (All Steps)
+
+- No paid/provider calls unless Keith explicitly approves.
+- Local dev only.
+- Read-only only — no write/delete/package/env-file tools.
+- No browser smoke.
+- `AGENT_HARNESS_ENABLE_TOOL_LOOP=true` process-scoped only if needed for Step 3 — must not be written to any .env file.
+- Step 2 must complete before any runtime execution (Step 3).
+- No production activation.
+
+#### Non-Goals (All Steps)
+
+- No runtime execution in registration (Step 1)
+- No env changes in registration
+- No setting `AGENT_HARNESS_ENABLE_TOOL_LOOP=true` in registration
+- No production activation
+- No source/test changes in registration
+- No Docker/Postgres/Redis commands in registration
+- No provider/API calls in registration
+- No frontend UI changes
+- No database migrations
+- No billing enforcement
+- No multi-builder orchestration
+- No write/delete/package/env-file tool operations in the canary
+- No browser smoke
+
+**Workflow (4-Step Loop):**
+1. **Registration** — COMPLETE (2026-07-08) — Keith explicit approval recorded ("go"); scope and safety constraints defined; why-06D-exists documented; no canary executed; no env changes; no implementation files changed.
+2. **Live worker/BullMQ readiness and execution-path design** — COMPLETE (2026-07-08) — No existing tool-capable non-billing adapter found; implementation slice AGENT-HARNESS-06D1 registered; no runtime execution. Design: `docs/AGENT-HARNESS-06D-LIVE-WORKER-CANARY-DESIGN.md`.
+3. **Controlled live worker/BullMQ read-only canary execution** — COMPLETE (2026-07-08) — PASS. Provider: `test-harness-stub`; process-scoped `AGENT_HARNESS_ENABLE_TOOL_LOOP=true` only; `selectedPath: 'harness'`; `source: 'builder-profile'`; 3 iterations; 2 tool calls (`list_files`, `read_file`) dispatched with HANDLER_ERROR (API Gateway not running — expected per design §7.8); `terminationReason: 'completed'`; `durationMs: 33`; no write/delete/validation/browser tools dispatched; no paid provider calls; no .env changes. Execution record: `docs/AGENT-HARNESS-06D-LIVE-CANARY-EXECUTION.md`.
+4. **Consolidation / checkpoint** — COMPLETE (2026-07-08) — checkpoint created; TASKS.md/TASKS_BACKLOG_FULL.md/ROADMAP updated; AGENT-HARNESS-06D marked COMPLETE and LOCKED. No new task registered.
+
+**Acceptance Criteria:**
+
+###### Registration (Step 1 — COMPLETE 2026-07-08)
+- [x] AGENT-HARNESS-06D registered in TASKS.md with ACTIVE status
+- [x] AGENT-HARNESS-06D registered in TASKS_BACKLOG_FULL.md with matching content
+- [x] AINOW-EXECUTION-ROADMAP.md updated to reflect AGENT-HARNESS-06D as current ACTIVE task
+- [x] AGENT-HARNESS-06C remains COMPLETE and LOCKED
+- [x] AGENT-HARNESS-07 remains COMPLETE and LOCKED
+- [x] Keith explicit approval recorded (2026-07-08)
+- [x] Why-06D-exists documented: live BullMQ canary did not occur in 06C due to StubAIAdapter.supportsToolUse = false
+- [x] Execution NOT performed in this step
+- [x] AGENT_HARNESS_ENABLE_TOOL_LOOP not set in this step
+- [x] No implementation files changed
+- [x] No tests/builds/runtime commands run
+- [x] One-active-task rule satisfied
+- [x] Step 2 must determine safe live BullMQ canary path before any runtime
+- [x] Step 3 must not run until Step 2 is complete
+
+###### Live Worker/BullMQ Readiness and Execution-Path Design (Step 2 — COMPLETE 2026-07-08)
+- [x] Safe live BullMQ canary path identified — Option B: create TestToolCapableStubAdapter (design §5)
+- [x] Tool-capable non-billing adapter availability determined — NO existing safe path found (design §4)
+- [x] Whether small test-only harness path is needed — YES: AGENT-HARNESS-06D1 registered (design §8.3)
+- [x] No runtime execution performed in Step 2
+- [x] Keith approvals recorded before Step 3 — AGENT-HARNESS-06D1 COMPLETE and LOCKED (2026-07-08); Step 3 executed 2026-07-08
+
+###### Controlled Live Worker/BullMQ Read-Only Canary Execution (Step 3 — COMPLETE 2026-07-08)
+- [x] At most one controlled live worker/BullMQ read-only canary executed
+- [x] Local dev only
+- [x] Read-only only — only `read_file` and `list_files` dispatched (both returned HANDLER_ERROR — API Gateway not running, expected)
+- [x] No write/delete/package/env-file operations
+- [x] No browser smoke
+- [x] No paid/provider calls
+- [x] Live `agent_harness.route_evaluated` log emission verified from real worker process (`selectedPath: 'harness'`)
+- [x] Live `agent_harness.config_resolved` log emission verified from real worker process (`source: 'builder-profile'`)
+- [x] Harness tool loop exercised via live BullMQ job (3 iterations, 2 tool calls, `terminationReason: 'completed'`)
+- [x] No source files changed after canary
+- [x] No .env files permanently changed after canary
+
+###### Consolidation / Checkpoint (Step 4 — COMPLETE 2026-07-08)
+- [x] AGENT-HARNESS-06D checkpoint document created (`docs/AGENT-HARNESS-06D-CHECKPOINT.md`)
+- [x] AGENT-HARNESS-06D marked COMPLETE and LOCKED in TASKS.md
+- [x] AGENT-HARNESS-06D marked COMPLETE and LOCKED in TASKS_BACKLOG_FULL.md
+- [x] AINOW-EXECUTION-ROADMAP.md updated
+- [x] Live BullMQ canary result recorded accurately (PASS; HANDLER_ERROR on file tools — API Gateway not running, expected per design §7.8)
+- [x] No new task registered
+
+**AGENT-HARNESS-06D status:** COMPLETE and LOCKED — 2026-07-08. All 4 steps complete. Live Worker/BullMQ canary PASS: `selectedPath: 'harness'`; `source: 'builder-profile'`; 3 iterations; 2 tool calls dispatched (`list_files`, `read_file`); HANDLER_ERROR on both (API Gateway not running — expected per design §7.8); `terminationReason: 'completed'`; `durationMs: 33`; no paid calls; no .env changes; no production activation. Checkpoint: `docs/AGENT-HARNESS-06D-CHECKPOINT.md`. No new task registered.
+**AGENT-HARNESS-06D1 status:** COMPLETE and LOCKED — 2026-07-08 (child slice).
+**AGENT-HARNESS-06C status:** COMPLETE and LOCKED — 2026-07-07. Canary result: PASS (231 tests, 13 suites, mock-executor/Jest path). No live BullMQ canary. No production activation.
+**AGENT-HARNESS-07 status:** COMPLETE and LOCKED (2026-07-07).
+
+---
+
+**Next recommended step (not registered):** Full end-to-end live worker + API Gateway/container-manager read-only file success canary. Validates `list_files`/`read_file` handler returning actual file data (not HANDLER_ERROR). Register only if explicitly approved by Keith.
+
+**Reference:** See `docs/AGENT-HARNESS-06D-CHECKPOINT.md` and `docs/AGENT-HARNESS-06D-LIVE-CANARY-EXECUTION.md`.
+
+---
+
+### AGENT-HARNESS-06D1: Test Tool-Capable Stub Adapter for Live Worker Canary
+
+**Status:** COMPLETE and LOCKED — 2026-07-08
+**Task ID:** AGENT-HARNESS-06D1
+**Family:** AGENT HARNESS / CANARY ACTIVATION
+**Parent:** AGENT-HARNESS-06D
+**Priority:** High
+**Nature:** BOUNDED IMPLEMENTATION — test-only tool-capable stub adapter; no runtime execution; no live canary
+**Risk:** HIGH — enables future live Worker/BullMQ canary path; this slice itself did not execute canary
+**Registered:** 2026-07-08
+**Approved by:** Keith — explicit approval recorded 2026-07-08
+**Checkpoint:** `docs/AGENT-HARNESS-06D1-CHECKPOINT.md`
+
+#### Dependencies
+
+- AGENT-HARNESS-06D ACTIVE (parent)
+- AGENT-HARNESS-06D Step 2 design complete (`docs/AGENT-HARNESS-06D-LIVE-WORKER-CANARY-DESIGN.md`)
+- AGENT-HARNESS-06C COMPLETE and LOCKED (2026-07-07)
+- AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07)
+- Keith approval recorded for registration (2026-07-08)
+
+#### Why This Child Slice Exists
+
+AGENT-HARNESS-06D Step 2 (design document `docs/AGENT-HARNESS-06D-LIVE-WORKER-CANARY-DESIGN.md` §4) confirmed: **no existing tool-capable non-billing adapter exists.**
+
+- `StubAIAdapter.supportsToolUse = false` — cannot activate the harness tool loop via live BullMQ job
+- `AnthropicAdapter` and `OpenAIAdapter` have `supportsToolUse = true` but make real external API calls and incur billing
+- `DeepSeekAdapter`, `GroqAdapter`, `XAIAdapter` do not declare `supportsToolUse` — gate at `worker.processor.ts` line 789 fails
+- No scripts or job-submission utilities exist to submit a controlled BullMQ job safely without billing
+
+**Root cause:** `adapter.supportsToolUse && adapter.executeWithTools` gate at `worker.processor.ts` line 789 cannot evaluate `true` without either a real billing provider or a new test-only adapter.
+
+This child slice creates that adapter. Without it, AGENT-HARNESS-06D Step 3 (live canary) cannot proceed safely and without billing risk.
+
+No runtime execution occurred in this registration step. No implementation files changed.
+
+#### Scope (Future Implementation — Step 2)
+
+- Create `TestToolCapableStubAdapter` with `supportsToolUse = true`
+- Return deterministic tool calls: iteration 1 → `list_files`; iteration 2 → `read_file`; iteration 3 → `finishReason: 'completed'`
+- Make zero external API/provider calls — zero billing risk
+- Local/test/canary-only — clearly excluded from production use (guard: `NODE_ENV=production` blocks instantiation, or provider name `'test-harness-stub'` prevents accidental use)
+- Wire into `getAdapter()` switch for `case 'test-harness-stub':` in `ai-execution.service.ts`
+- Add `'test-harness-stub'` to provider/adapter union types in `job.types.ts`
+- Include tests proving: no external provider calls, deterministic tool behavior, adapter isolated from production
+- Estimated scope: ~5 files, ~137 lines (per design document §8.2)
+
+#### Non-Goals (This Slice)
+
+- No runtime execution in registration (Step 1)
+- No live Worker/BullMQ canary execution in this slice
+- No env changes — `AGENT_HARNESS_ENABLE_TOOL_LOOP=true` not set
+- No production activation
+- No paid provider/API calls
+- No frontend UI changes
+- No database migration
+- No billing enforcement
+- No multi-builder orchestration
+- No Docker/Postgres/Redis commands during registration
+- No AGENT-HARNESS-06D Step 3 execution in this slice
+
+**Workflow (3-Step Loop):**
+1. **Registration** — COMPLETE (2026-07-08) — Keith explicit approval recorded ("go"); why-06D1-exists documented; no runtime execution; no implementation files changed.
+2. **Implementation** — COMPLETE (2026-07-08) — `TestToolCapableStubAdapter` created; wired into provider routing; tests added and passing.
+3. **Consolidation/checkpoint** — COMPLETE (2026-07-08) — checkpoint created; TASKS.md/TASKS_BACKLOG_FULL.md/ROADMAP updated; AGENT-HARNESS-06D1 marked COMPLETE and LOCKED.
+
+**Acceptance Criteria:**
+
+###### Registration (Step 1 — COMPLETE 2026-07-08)
+- [x] AGENT-HARNESS-06D1 registered in TASKS.md with ACTIVE status
+- [x] AGENT-HARNESS-06D1 registered in TASKS_BACKLOG_FULL.md with matching content
+- [x] AINOW-EXECUTION-ROADMAP.md updated to reflect AGENT-HARNESS-06D1 as current ACTIVE child slice
+- [x] AGENT-HARNESS-06D remains ACTIVE parent
+- [x] AGENT-HARNESS-06C remains COMPLETE and LOCKED
+- [x] AGENT-HARNESS-07 remains COMPLETE and LOCKED
+- [x] Keith explicit approval recorded (2026-07-08)
+- [x] Why-06D1-exists documented: no existing tool-capable non-billing adapter exists; StubAIAdapter.supportsToolUse = false; AnthropicAdapter/OpenAIAdapter incur billing
+- [x] No runtime execution occurred in this step
+- [x] No implementation files changed
+- [x] No tests/builds/runtime commands run
+- [x] One-active-task rule satisfied (06D1 is current active child slice; 06D parent remains ACTIVE)
+- [x] Live Worker/BullMQ canary not executed
+
+###### Implementation (Step 2 — COMPLETE 2026-07-08)
+- [x] `TestToolCapableStubAdapter` created with `supportsToolUse = true`
+- [x] Deterministic tool calls: `list_files` → `read_file` → `finishReason: 'completed'`
+- [x] Zero external API/provider calls verified
+- [x] Zero billing risk confirmed
+- [x] Wired into `getAdapter()` switch for `'test-harness-stub'` provider
+- [x] `'test-harness-stub'` added to provider/adapter union types in `job.types.ts`
+- [x] Tests prove no external provider calls
+- [x] Tests prove deterministic tool behavior
+- [x] Adapter clearly excluded from production use (provider name `'test-harness-stub'` prevents accidental routing)
+- [x] No live canary executed in this step
+- [x] No env changes
+
+###### Consolidation / Checkpoint (Step 3 — COMPLETE 2026-07-08)
+- [x] AGENT-HARNESS-06D1 checkpoint document created (`docs/AGENT-HARNESS-06D1-CHECKPOINT.md`)
+- [x] AGENT-HARNESS-06D1 marked COMPLETE and LOCKED in TASKS.md
+- [x] AGENT-HARNESS-06D1 marked COMPLETE and LOCKED in TASKS_BACKLOG_FULL.md
+- [x] AINOW-EXECUTION-ROADMAP.md updated (06D1 COMPLETE and LOCKED; 06D COMPLETE and LOCKED; no new task registered)
+- [x] AGENT-HARNESS-06D parent COMPLETE and LOCKED — all 4 steps complete
+
+**AGENT-HARNESS-06D1 status:** COMPLETE and LOCKED — 2026-07-08. All 3 steps complete. `TestToolCapableStubAdapter` created; routing/types wired; 34 suites / 646 tests passed; typecheck and build clean; no live canary; checkpoint: `docs/AGENT-HARNESS-06D1-CHECKPOINT.md`.
+**AGENT-HARNESS-06D status:** COMPLETE and LOCKED — 2026-07-08. All 4 steps complete. Live Worker/BullMQ canary PASS. Checkpoint: `docs/AGENT-HARNESS-06D-CHECKPOINT.md`.
+**AGENT-HARNESS-06C status:** COMPLETE and LOCKED — 2026-07-07.
+**AGENT-HARNESS-07 status:** COMPLETE and LOCKED (2026-07-07).
+
+---
+
+**Next recommended step (not registered):** Full end-to-end live worker + API Gateway/container-manager read-only file success canary. Validates `list_files`/`read_file` handler returning actual file data (not HANDLER_ERROR). Register only if explicitly approved by Keith.
+
+**Reference:** See `docs/AGENT-HARNESS-06D-CHECKPOINT.md` and `docs/AGENT-HARNESS-06D-LIVE-CANARY-EXECUTION.md`.

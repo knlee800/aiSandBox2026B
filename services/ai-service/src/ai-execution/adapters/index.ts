@@ -18,3 +18,4 @@ export * from './tokens';
 export * from './stub-ai.adapter';
 export * from './xai-ai.adapter';
 export * from './deepseek-ai.adapter';
+export * from './test-harness-stub-ai.adapter';

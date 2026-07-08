@@ -40,8 +40,8 @@ export interface AiExecutionJob {
   sessionId: string;
   conversationId: string;
 
-  provider: 'openai' | 'anthropic' | 'groq' | 'xai' | 'deepseek' | 'stub';
-  adapter: 'openai' | 'anthropic' | 'groq' | 'xai' | 'deepseek' | 'stub';
+  provider: 'openai' | 'anthropic' | 'groq' | 'xai' | 'deepseek' | 'stub' | 'test-harness-stub';
+  adapter: 'openai' | 'anthropic' | 'groq' | 'xai' | 'deepseek' | 'stub' | 'test-harness-stub';
 
   prompt: string;
   workspaceContext?: WorkspaceContext;

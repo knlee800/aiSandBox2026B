@@ -15,6 +15,7 @@ import { OpenAIAdapter } from './adapters/openai-ai.adapter';
 import { GroqAdapter } from './adapters/groq-ai.adapter';
 import { XAIAdapter } from './adapters/xai-ai.adapter';
 import { DeepSeekAdapter } from './adapters/deepseek-ai.adapter';
+import { TestToolCapableStubAdapter } from './adapters/test-harness-stub-ai.adapter';
 import { observeProviderLatency } from '../observability/execution-metrics';
 
 /**
@@ -230,9 +231,12 @@ export class AIExecutionService {
         return new DeepSeekAdapter(apiKey);
       }
 
+      case 'test-harness-stub':
+        return new TestToolCapableStubAdapter();
+
       default:
         throw new ServiceUnavailableException(
-          `Unknown AI provider: ${provider}. Supported providers: stub, anthropic, openai, groq, xai, deepseek`,
+          `Unknown AI provider: ${provider}. Supported providers: stub, anthropic, openai, groq, xai, deepseek, test-harness-stub`,
         );
     }
   }

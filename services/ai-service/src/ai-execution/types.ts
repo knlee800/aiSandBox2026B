@@ -19,7 +19,7 @@ export interface AIExecutionRequest {
   userId: string;
   prompt: string;
   systemPrompt?: string;
-  provider: 'stub' | 'anthropic' | 'openai' | 'groq' | 'xai' | 'deepseek';
+  provider: 'stub' | 'anthropic' | 'openai' | 'groq' | 'xai' | 'deepseek' | 'test-harness-stub';
   model?: string;
   metadata?: Record<string, unknown>;
   /** Phase 47.4: Optional AbortSignal for cancellation */
@@ -73,5 +73,5 @@ export interface AIProviderConfig {
    * - 'xai': xAI (Grok) adapter (Phase 19A)
    * - 'deepseek': DeepSeek adapter (Phase 19A)
    */
-  provider: 'stub' | 'anthropic' | 'openai' | 'groq' | 'xai' | 'deepseek';
+  provider: 'stub' | 'anthropic' | 'openai' | 'groq' | 'xai' | 'deepseek' | 'test-harness-stub';
 }
