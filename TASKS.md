@@ -25148,11 +25148,11 @@ Resume AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell.
 
 ## AGENT PLATFORM / AINOW.BIZ MULTI-AGENT
 
-**Family status:** ALL REGISTERED TASKS COMPLETE and LOCKED — AGENT-PLATFORM-00 COMPLETE and LOCKED, AGENT-PLATFORM-01 COMPLETE and LOCKED, AGENT-PLATFORM-02 COMPLETE and LOCKED, AGENT-PLATFORM-03 COMPLETE and LOCKED, AGENT-PLATFORM-04 COMPLETE and LOCKED
+**Family status:** AGENT-PLATFORM-05 COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-00 COMPLETE and LOCKED, AGENT-PLATFORM-01 COMPLETE and LOCKED, AGENT-PLATFORM-02 COMPLETE and LOCKED, AGENT-PLATFORM-03 COMPLETE and LOCKED, AGENT-PLATFORM-04 COMPLETE and LOCKED
 
 **Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` — controls cross-family priority order; Knowledge before Collaboration before Billing.
 
-**Current stage:** AGENT-PLATFORM-04 COMPLETE and LOCKED (2026-07-07) — AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07)
+**Current stage:** AGENT-PLATFORM-05 COMPLETE and LOCKED (2026-07-09) — Multi-Builder Runtime Orchestration Plan — All 4 steps complete. Next recommended: AGENT-PLATFORM-06 — Upstream Identity Propagation (not registered — requires Keith approval)
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 — ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED — 2026-07-04)
@@ -25160,6 +25160,7 @@ Resume AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell.
 3. AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell (COMPLETE and LOCKED — 2026-07-06)
 4. AGENT-PLATFORM-03 — Register aiSandBox as Builder Agent / Builder Route Integration Review (COMPLETE and LOCKED — 2026-07-06)
 5. AGENT-PLATFORM-04 — Multi-Builder Runtime Topology Plan (COMPLETE and LOCKED — 2026-07-07)
+6. AGENT-PLATFORM-05 — Multi-Builder Runtime Orchestration Plan (COMPLETE and LOCKED — 2026-07-09)
 
 **Completed foundations (prerequisites):**
 - AGENT HARNESS family foundations COMPLETE and LOCKED — Agent Harness v1 contracts, tool protocol, model adapters, tool dispatcher, orchestrator loop, execution-bound hardening (through AGENT-HARNESS-05C8)
@@ -25778,12 +25779,112 @@ This task produces the authoritative plan for how multiple Builder Agents can co
 
 **AGENT-HARNESS-07 status:** COMPLETE and LOCKED (2026-07-07) — Per-Builder Harness Config Adapter. All 3 child slices COMPLETE and LOCKED: 07A, 07B, 07C. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
 **AGENT-HARNESS-06C status:** Not registered. Deferred — prerequisite (AGENT-HARNESS-07) is now COMPLETE and LOCKED; AGENT-HARNESS-06C still deferred until Keith explicitly approves canary activation.
-**Multi-builder collaboration/runtime orchestration status:** Not registered. Deferred — comes after AGENT-HARNESS-07 and AGENT-HARNESS-06C.
+**Multi-builder collaboration/runtime orchestration status:** AGENT-PLATFORM-05 COMPLETE and LOCKED — 2026-07-09. Planning/governance only. No implementation. All 4 steps complete. Readiness review: `docs/AGENT-PLATFORM-05-READINESS-REVIEW.md`. Orchestration plan: `docs/AGENT-PLATFORM-05-MULTI-BUILDER-ORCHESTRATION-PLAN.md`. Checkpoint: `docs/AGENT-PLATFORM-05-CHECKPOINT.md`. Next recommended: AGENT-PLATFORM-06 — Upstream Identity Propagation (not registered).
 **BILLING-READY-04+ status:** Not registered. Deferred.
 
 ---
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-04.
+
+---
+
+#### AGENT-PLATFORM-05: Multi-Builder Runtime Orchestration Plan
+
+**Status:** COMPLETE and LOCKED
+**Completed:** 2026-07-09
+**Checkpoint:** docs/AGENT-PLATFORM-05-CHECKPOINT.md
+**Task ID:** AGENT-PLATFORM-05
+**Family:** AGENT PLATFORM / MULTI-BUILDER ORCHESTRATION
+**Priority:** High
+**Nature:** ARCHITECTURE / PLANNING / GOVERNANCE — multi-builder orchestration planning only
+**Risk:** HIGH — future runtime orchestration may involve multiple Builder sessions, shared project state, conflict rules, and safety limits
+**Registered:** 2026-07-09
+**Keith approval:** Registration approved 2026-07-09 ("go")
+
+#### Workflow Steps
+
+1. **Registration** — COMPLETE (2026-07-09)
+2. **Orchestration Readiness Review** — COMPLETE (2026-07-09)
+3. **Multi-Builder Orchestration Plan Document** — COMPLETE (2026-07-09)
+4. **Consolidation/Checkpoint** — COMPLETE (2026-07-09)
+
+#### Dependencies
+
+- AGENT-PLATFORM-04 — COMPLETE and LOCKED (Multi-Builder Runtime Topology Plan)
+- AGENT-HARNESS-07 — COMPLETE and LOCKED (Per-Builder Harness Config Adapter)
+- AGENT-HARNESS-06E — COMPLETE and LOCKED (Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary)
+- Keith approval recorded for registration
+
+#### Problem Statement
+
+The current aiSandBox platform supports a single Builder Agent per session with no defined protocol for multiple Builder Agents collaborating on a shared project. AGENT-PLATFORM-04 established the identity model (agentRole + builderProfileId) and session isolation rules. AGENT-HARNESS-07 implemented the Per-Builder Harness Config Adapter. AGENT-HARNESS-06E validated the full E2E file tool path. The next architectural gap is defining how multiple Builder Agents route jobs, own sessions, share or partition workspace/project state, handle write conflicts, enforce safety limits, and manage referral chains before any multi-builder runtime execution is activated.
+
+#### Scope — Future Steps Must Define
+
+- Builder A/B identity and profile selection
+- Session-per-builder vs shared-session policy
+- Project/workspace ownership model
+- Cross-builder referral flow
+- Queue/job routing model
+- Shared workspace/write conflict rules
+- Read-only vs write-capable builder roles
+- Approval gates for write/delete/high-risk actions
+- Max referral depth
+- Max agents per collaboration
+- Duplicate referral idempotency
+- Referral loop prevention
+- Collaboration run IDs / referral trace IDs
+- Audit/billing attribution
+- Failure/timeout/cancel behavior
+- Handoff back to harness/write canary work if needed
+
+#### Non-Goals
+
+- No implementation
+- No runtime orchestration
+- No canary execution
+- No service startup
+- No Docker/Postgres/Redis commands
+- No frontend UI
+- No database migration
+- No billing enforcement
+- No write_file/delete_file activation
+- No production activation
+- No browser smoke
+- No provider/API calls
+- No multi-builder live execution
+
+#### UX/UI Note
+
+If future UI is added for multi-builder orchestration, aiSandBox is multilingual-first. Any new user-facing text must update:
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impeccable and Emil Kowalski skills are advisory only and must not override governance, scope, architecture, or tests.
+
+#### Acceptance Criteria
+
+- [x] AGENT-PLATFORM-05 registered in TASKS.md as ACTIVE
+- [x] AGENT-PLATFORM-05 mirrored in TASKS_BACKLOG_FULL.md with matching content
+- [x] AINOW-EXECUTION-ROADMAP.md updated to show AGENT-PLATFORM-05 as current ACTIVE task
+- [x] AGENT-PLATFORM-04 remains COMPLETE and LOCKED
+- [x] AGENT-HARNESS-07 remains COMPLETE and LOCKED
+- [x] AGENT-HARNESS-06E remains COMPLETE and LOCKED
+- [x] Registration records this is planning/governance only — no implementation/runtime execution
+- [x] Registration records next step is Orchestration Readiness Review
+- [x] No implementation files changed
+- [x] No commands run
+- [x] One-active-task rule satisfied
+- [x] Orchestration Readiness Review complete (Step 2 — COMPLETE 2026-07-09)
+- [x] Multi-Builder Orchestration Plan Document created (Step 3 — COMPLETE 2026-07-09)
+- [x] Consolidation/Checkpoint complete (Step 4 — COMPLETE 2026-07-09)
+
+#### Next Recommended Task (Not Registered)
+
+AGENT-PLATFORM-06 — Upstream Identity Propagation — wire `agentRole`/`builderProfileId` from frontend → API Gateway → job payload. Requires Keith approval before registration.
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-05.
 
 ---
 
