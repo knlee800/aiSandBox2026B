@@ -35650,11 +35650,11 @@ Resume AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell.
 
 ## AGENT PLATFORM / AINOW.BIZ MULTI-AGENT
 
-**Family status:** AGENT-PLATFORM-06 COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-05 COMPLETE and LOCKED, AGENT-PLATFORM-04 COMPLETE and LOCKED, AGENT-PLATFORM-03 COMPLETE and LOCKED, AGENT-PLATFORM-02 COMPLETE and LOCKED, AGENT-PLATFORM-01 COMPLETE and LOCKED, AGENT-PLATFORM-00 COMPLETE and LOCKED
+**Family status:** AGENT-PLATFORM-07 COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-06 COMPLETE and LOCKED, AGENT-PLATFORM-05 COMPLETE and LOCKED, AGENT-PLATFORM-04 COMPLETE and LOCKED, AGENT-PLATFORM-03 COMPLETE and LOCKED, AGENT-PLATFORM-02 COMPLETE and LOCKED, AGENT-PLATFORM-01 COMPLETE and LOCKED, AGENT-PLATFORM-00 COMPLETE and LOCKED
 
 **Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` — controls cross-family priority order; Knowledge before Collaboration before Billing.
 
-**Current stage:** AGENT-PLATFORM-06 COMPLETE and LOCKED (2026-07-09) — Upstream Identity Propagation — All 4 steps COMPLETE. Next recommended: AGENT-PLATFORM-07 — Read-Only Orchestration Coordinator (not registered). No ACTIVE task.
+**Current stage:** AGENT-PLATFORM-07 COMPLETE and LOCKED (2026-07-09). Read-Only Orchestration Coordinator Planning. All 4 steps complete. Planning/governance only. Checkpoint: `docs/AGENT-PLATFORM-07-CHECKPOINT.md`. Next recommended: AGENT-PLATFORM-07A — Coordinator Contracts/Schema (not registered). No ACTIVE task. Registration requires Keith approval.
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 — ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED — 2026-07-04)
@@ -35664,6 +35664,7 @@ Resume AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell.
 5. AGENT-PLATFORM-04 — Multi-Builder Runtime Topology Plan (COMPLETE and LOCKED — 2026-07-07)
 6. AGENT-PLATFORM-05 — Multi-Builder Runtime Orchestration Plan (COMPLETE and LOCKED — 2026-07-09)
 7. AGENT-PLATFORM-06 — Upstream Identity Propagation (COMPLETE and LOCKED — 2026-07-09)
+8. AGENT-PLATFORM-07 — Read-Only Orchestration Coordinator Planning (COMPLETE and LOCKED — 2026-07-09)
 
 ---
 
@@ -36282,7 +36283,7 @@ This task produces the authoritative plan for how multiple Builder Agents can co
 
 **AGENT-HARNESS-07 status:** COMPLETE and LOCKED (2026-07-07) — Per-Builder Harness Config Adapter. All 3 child slices COMPLETE and LOCKED: 07A, 07B, 07C. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
 **AGENT-HARNESS-06C status:** Not registered. Deferred — prerequisite (AGENT-HARNESS-07) is now COMPLETE and LOCKED; AGENT-HARNESS-06C still deferred until Keith explicitly approves canary activation.
-**Multi-builder collaboration/runtime orchestration status:** AGENT-PLATFORM-05 COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-06 COMPLETE and LOCKED — 2026-07-09. Upstream Identity Propagation — all 4 steps complete. 8 files changed; 34 suites / 654 passed; TypeScript clean. Checkpoint: `docs/AGENT-PLATFORM-06-CHECKPOINT.md`. Next recommended: AGENT-PLATFORM-07 — Read-Only Orchestration Coordinator (not registered).
+**Multi-builder collaboration/runtime orchestration status:** AGENT-PLATFORM-05 COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-06 COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-07 COMPLETE and LOCKED — 2026-07-09. Read-Only Orchestration Coordinator Planning — all 4 steps complete. Planning/governance only. Checkpoint: `docs/AGENT-PLATFORM-07-CHECKPOINT.md`. Next recommended: AGENT-PLATFORM-07A — Coordinator Contracts/Schema (not registered). No ACTIVE task. Registration requires Keith approval.
 **BILLING-READY-04+ status:** Not registered. Deferred.
 
 ---
@@ -36386,7 +36387,7 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 #### Next Recommended Task
 
-AGENT-PLATFORM-06 — Upstream Identity Propagation — COMPLETE and LOCKED (2026-07-09). All 4 steps complete. Identity fields (`agentRole`, `builderProfileId`, `collaborationRunId`, `referralTraceId`) propagated through full execution path. 8 files changed. 34 suites / 654 passed; TypeScript clean. Checkpoint: `docs/AGENT-PLATFORM-06-CHECKPOINT.md`. Next recommended: AGENT-PLATFORM-07 — Read-Only Orchestration Coordinator (not registered).
+AGENT-PLATFORM-06 — Upstream Identity Propagation — COMPLETE and LOCKED (2026-07-09). All 4 steps complete. Identity fields (`agentRole`, `builderProfileId`, `collaborationRunId`, `referralTraceId`) propagated through full execution path. 8 files changed. 34 suites / 654 passed; TypeScript clean. Checkpoint: `docs/AGENT-PLATFORM-06-CHECKPOINT.md`. AGENT-PLATFORM-07 now COMPLETE and LOCKED — Read-Only Orchestration Coordinator Planning (2026-07-09). Next recommended: AGENT-PLATFORM-07A (not registered).
 
 **Reference:** See TASKS.md -> AGENT-PLATFORM-05.
 
@@ -36524,13 +36525,144 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 #### Next Recommended Task (Not Registered)
 
-**AGENT-PLATFORM-07 — Read-Only Orchestration Coordinator Planning or Registration**
+**AGENT-PLATFORM-07 — Read-Only Orchestration Coordinator Planning**
 
-Not registered. Requires Keith approval. Note: AGENT-HARNESS write canary remains a separate track and must not be mixed into AGENT-PLATFORM-07.
+COMPLETE and LOCKED (2026-07-09). All 4 steps complete. Planning/governance only. No implementation. Source-path review: `docs/AGENT-PLATFORM-07-SOURCE-PATH-REVIEW.md`. Coordinator plan (22 sections): `docs/AGENT-PLATFORM-07-READ-ONLY-ORCHESTRATION-COORDINATOR-PLAN.md`. Checkpoint: `docs/AGENT-PLATFORM-07-CHECKPOINT.md`. Next recommended: AGENT-PLATFORM-07A — Coordinator Contracts/Schema (not registered). AGENT-HARNESS write canary remains separate and not registered.
 
-**Checkpoint:** `docs/AGENT-PLATFORM-06-CHECKPOINT.md` — COMPLETE and LOCKED (2026-07-09)
+**Checkpoint:** `docs/AGENT-PLATFORM-07-CHECKPOINT.md` — COMPLETE and LOCKED (2026-07-09)
 
-**Reference:** See TASKS.md -> AGENT-PLATFORM-06.
+**Reference:** See TASKS.md -> AGENT-PLATFORM-07.
+
+---
+
+### AGENT-PLATFORM-07: Read-Only Orchestration Coordinator Planning
+
+**Status:** COMPLETE and LOCKED (2026-07-09)
+**Registered:** 2026-07-09
+**Completed:** 2026-07-09
+**Task ID:** AGENT-PLATFORM-07
+**Family:** AGENT PLATFORM / MULTI-BUILDER ORCHESTRATION
+**Priority:** High
+**Nature:** PLANNING/GOVERNANCE — read-only orchestration coordinator architecture planning
+**Risk:** HIGH — future coordinator work affects multi-builder collaboration routing, referral lifecycle, audit identity, safety limits, and cancellation/failure behavior
+**Keith approval:** Registration approved 2026-07-09 ("Approve registering AGENT-PLATFORM-07 — Read-Only Orchestration Coordinator Planning.")
+
+#### Workflow Steps (4-step loop)
+
+1. **Registration** — COMPLETE (2026-07-09)
+2. **Coordinator readiness / source-path review** — COMPLETE (2026-07-09)
+3. **Read-only orchestration coordinator plan document** — COMPLETE (2026-07-09)
+4. **Consolidation / checkpoint** — COMPLETE (2026-07-09)
+
+#### Dependencies
+
+- AGENT-PLATFORM-06 — COMPLETE and LOCKED (Upstream Identity Propagation)
+- AGENT-PLATFORM-05 — COMPLETE and LOCKED (Multi-Builder Runtime Orchestration Plan)
+- AGENT-PLATFORM-04 — COMPLETE and LOCKED (Multi-Builder Runtime Topology Plan)
+- AGENT-HARNESS-07 — COMPLETE and LOCKED (Per-Builder Harness Config Adapter)
+- AGENT-HARNESS-06E — COMPLETE and LOCKED (Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary)
+- Keith approval recorded for registration
+
+#### Purpose
+
+Plan the read-only orchestration coordinator needed for multi-builder collaboration. This coordinator will later coordinate multiple Builder profiles using identity metadata already propagated by AGENT-PLATFORM-06. Initial orchestration must remain read-only.
+
+AGENT-PLATFORM-05 established the multi-builder orchestration plan. AGENT-PLATFORM-06 wired `agentRole`, `builderProfileId`, `collaborationRunId`, `referralTraceId` through the full execution path. The next architectural gap is defining a coordinator service that can accept multi-builder execution requests, route jobs by builder identity, manage `collaborationRunId` and `referralTraceId` lifecycles, and enforce safety limits — all before any shared workspace writes or runtime execution is activated.
+
+#### Scope
+
+- Planning and governance task only. No implementation during Steps 1–3.
+- Future steps must define the read-only orchestration coordinator architecture.
+- Future steps must use the AGENT-PLATFORM-05 plan and AGENT-PLATFORM-06 identity propagation as the foundation.
+- Future coordinator plan must cover:
+  - `collaborationRunId` lifecycle
+  - `referralTraceId` lifecycle
+  - Source/target builder identity
+  - Builder A/B read-only referral flow
+  - Queue/job routing model
+  - Coordinator service boundary
+  - Project/session/container ownership assumptions
+  - Cancellation/timeout/failure handling
+  - Audit event model
+  - Idempotency and loop prevention
+  - Max referral depth
+  - Max agents per collaboration
+  - Owner approval boundaries
+  - Future implementation sequence
+
+#### Initial Stance
+
+- Read-only orchestration only.
+- No shared workspace writes.
+- No `write_file`/`delete_file`/`run_validation` activation.
+- No AGENT-HARNESS write canary in this task.
+- No runtime execution.
+
+#### Recommended Implementation Sequence (Not Registered — Requires Keith Approval)
+
+- AGENT-PLATFORM-07A — Coordinator contracts/schema (TypeScript types only, Low risk)
+- AGENT-PLATFORM-07B — API Gateway orchestration module skeleton (Medium risk)
+- AGENT-PLATFORM-07C — Read-only referral enqueue flow + cancel redesign (High risk)
+- AGENT-PLATFORM-07D — Collaboration audit events (Low risk)
+- AGENT-PLATFORM-07E — Read-only coordinator canary (High risk)
+
+**AGENT-HARNESS write canary remains a separate track — not registered, not part of AGENT-PLATFORM-07 child slices.**
+
+#### Non-Goals
+
+- No implementation during registration
+- No runtime execution
+- No service startup
+- No Docker / Postgres / Redis commands
+- No database migration
+- No frontend UI
+- No new user-facing UX text (future implementation must be multilingual-first if UX text is added)
+- No `write_file` / `delete_file` / `run_validation` activation
+- No shared workspace writes
+- No AGENT-HARNESS write canary (separate track — must not be mixed into this task)
+- No billing enforcement
+- No provider / API calls
+- No browser smoke
+- No git commits / pushes
+
+#### UX/UI Note
+
+This task should not add user-facing UI text during registration. If future implementation adds user-facing text, aiSandBox is multilingual-first and must update:
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impeccable and Emil Kowalski skills are advisory only.
+
+#### Acceptance Criteria
+
+- [x] AGENT-PLATFORM-07 registered in TASKS.md as ACTIVE (Step 1)
+- [x] AGENT-PLATFORM-07 mirrored in TASKS_BACKLOG_FULL.md (Step 1)
+- [x] AINOW-EXECUTION-ROADMAP.md updated to show AGENT-PLATFORM-07 as current ACTIVE task (Step 1)
+- [x] AGENT-PLATFORM-06 remains COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-05 remains COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-04 remains COMPLETE and LOCKED
+- [x] AGENT-HARNESS-07 remains COMPLETE and LOCKED
+- [x] AGENT-HARNESS-06E remains COMPLETE and LOCKED
+- [x] Registration records this is planning/governance only
+- [x] Registration records read-only orchestration only — no shared workspace writes
+- [x] Registration records AGENT-HARNESS write canary is separate and not part of this task
+- [x] Registration records no implementation/runtime execution occurred
+- [x] Registration records next step is coordinator readiness/source-path review
+- [x] No implementation files changed
+- [x] No commands run
+- [x] One-active-task rule satisfied
+- [x] Coordinator readiness/source-path review document created (Step 2) — `docs/AGENT-PLATFORM-07-SOURCE-PATH-REVIEW.md`
+- [x] Read-only orchestration coordinator plan document created (Step 3) — `docs/AGENT-PLATFORM-07-READ-ONLY-ORCHESTRATION-COORDINATOR-PLAN.md`
+- [x] Checkpoint document created: `docs/AGENT-PLATFORM-07-CHECKPOINT.md` (Step 4)
+- [x] TASKS.md updated COMPLETE and LOCKED (Step 4)
+- [x] TASKS_BACKLOG_FULL.md mirrored (Step 4)
+- [x] AINOW-EXECUTION-ROADMAP.md updated (Step 4)
+- [x] Next recommended task recorded, not registered: AGENT-PLATFORM-07A (Step 4)
+- [x] AGENT-HARNESS write canary confirmed separate and not registered (Step 4)
+- [x] No ACTIVE task (Step 4) — no task registered; registration requires Keith approval
+
+**Reference:** See TASKS.md -> AGENT-PLATFORM-07.
 
 ---
 
