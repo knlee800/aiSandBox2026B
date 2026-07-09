@@ -45,6 +45,12 @@ export interface WriteExecutionIntentDto {
   adapter: string;
   requestId?: string; // Optional idempotency key from client
   metadata?: Record<string, unknown>;
+
+  /** AGENT-PLATFORM-06: Upstream identity propagation (stored in metadata JSONB). */
+  agentRole?: string;
+  builderProfileId?: string;
+  collaborationRunId?: string;
+  referralTraceId?: string;
 }
 
 /**
@@ -126,6 +132,17 @@ export class UsageLedgerService {
   async writeExecutionIntent(
     dto: WriteExecutionIntentDto,
   ): Promise<UsageRecord> {
+    // AGENT-PLATFORM-06: Merge identity fields into metadata JSONB (no migration).
+    const identityFields: Record<string, unknown> = {};
+    if (dto.agentRole !== undefined) identityFields.agentRole = dto.agentRole;
+    if (dto.builderProfileId !== undefined) identityFields.builderProfileId = dto.builderProfileId;
+    if (dto.collaborationRunId !== undefined) identityFields.collaborationRunId = dto.collaborationRunId;
+    if (dto.referralTraceId !== undefined) identityFields.referralTraceId = dto.referralTraceId;
+
+    const mergedMetadata = Object.keys(identityFields).length > 0
+      ? { ...dto.metadata, ...identityFields }
+      : dto.metadata;
+
     // Construct intent record (status: 'pending')
     const record = this.usageRecordRepository.create({
       executionId: dto.executionId,
@@ -136,7 +153,7 @@ export class UsageLedgerService {
       provider: dto.provider,
       adapter: dto.adapter,
       requestId: dto.requestId,
-      metadata: dto.metadata,
+      metadata: mergedMetadata,
       executionStatus: 'pending',
       // model, tokensUsed, executionDurationMs are NULL (not known yet)
     });

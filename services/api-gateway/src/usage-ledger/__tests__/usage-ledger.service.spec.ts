@@ -562,6 +562,89 @@ describe('UsageLedgerService', () => {
     });
   });
 
+  describe('AGENT-PLATFORM-06: writeExecutionIntent identity field propagation', () => {
+    it('should merge identity fields into metadata JSONB when provided', async () => {
+      repository.create.mockReturnValue({} as any);
+      repository.save.mockResolvedValue({} as any);
+
+      await service.writeExecutionIntent({
+        executionId: 'exec-id-06',
+        apiKeyId: 'key-06',
+        userId: 'user-06',
+        sessionId: 'sess-06',
+        conversationId: 'conv-06',
+        provider: 'stub',
+        adapter: 'stub',
+        metadata: { apiKeyId: 'key-06', requestedProvider: 'stub', requestedModel: null },
+        agentRole: 'builder',
+        builderProfileId: 'builder-default',
+        collaborationRunId: 'collab-run-001',
+        referralTraceId: 'ref-trace-001',
+      });
+
+      expect(repository.create).toHaveBeenCalledTimes(1);
+      const createCall = repository.create.mock.calls[0][0];
+      expect(createCall.metadata).toEqual(expect.objectContaining({
+        agentRole: 'builder',
+        builderProfileId: 'builder-default',
+        collaborationRunId: 'collab-run-001',
+        referralTraceId: 'ref-trace-001',
+        apiKeyId: 'key-06',
+        requestedProvider: 'stub',
+        requestedModel: null,
+      }));
+    });
+
+    it('should not add identity keys to metadata when identity fields are absent', async () => {
+      repository.create.mockReturnValue({} as any);
+      repository.save.mockResolvedValue({} as any);
+
+      await service.writeExecutionIntent({
+        executionId: 'exec-id-06b',
+        apiKeyId: 'key-06b',
+        userId: 'user-06b',
+        sessionId: 'sess-06b',
+        conversationId: 'conv-06b',
+        provider: 'stub',
+        adapter: 'stub',
+        metadata: { apiKeyId: 'key-06b' },
+      });
+
+      const createCall = repository.create.mock.calls[0][0];
+      expect(createCall.metadata).toEqual({ apiKeyId: 'key-06b' });
+      expect(createCall.metadata).not.toHaveProperty('agentRole');
+      expect(createCall.metadata).not.toHaveProperty('builderProfileId');
+      expect(createCall.metadata).not.toHaveProperty('collaborationRunId');
+      expect(createCall.metadata).not.toHaveProperty('referralTraceId');
+    });
+
+    it('should merge partial identity fields (only agentRole set)', async () => {
+      repository.create.mockReturnValue({} as any);
+      repository.save.mockResolvedValue({} as any);
+
+      await service.writeExecutionIntent({
+        executionId: 'exec-id-06c',
+        apiKeyId: 'key-06c',
+        userId: 'user-06c',
+        sessionId: 'sess-06c',
+        conversationId: 'conv-06c',
+        provider: 'stub',
+        adapter: 'stub',
+        metadata: { source: 'test' },
+        agentRole: 'reviewer',
+      });
+
+      const createCall = repository.create.mock.calls[0][0];
+      expect(createCall.metadata).toEqual(expect.objectContaining({
+        source: 'test',
+        agentRole: 'reviewer',
+      }));
+      expect(createCall.metadata).not.toHaveProperty('builderProfileId');
+      expect(createCall.metadata).not.toHaveProperty('collaborationRunId');
+      expect(createCall.metadata).not.toHaveProperty('referralTraceId');
+    });
+  });
+
   describe('BILLING-READY-03C2: Async Credit Deduction Gateway Wiring', () => {
     let serviceWithGateway: UsageLedgerService;
     let gatewayRepo: jest.Mocked<Repository<UsageRecord>>;

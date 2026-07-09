@@ -59,6 +59,10 @@ export interface AiExecutionJob {
   modelProfileId?: string;
   toolPermissionProfileId?: string;
 
+  /** AGENT-PLATFORM-06: Collaboration identity fields (future-safe placeholders). */
+  collaborationRunId?: string;
+  referralTraceId?: string;
+
   requestId?: string;
 
   submittedAt: string;

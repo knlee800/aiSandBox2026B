@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { AIExecutionController } from './ai-execution.controller';
-import { AIServiceHttpClient, AIExecutionRequest, AIExecutionResult } from '../clients/ai-service-http.client';
+import { AIExecutionRequest } from '../clients/ai-service-http.client';
 import { ApiKeyIdentity } from '../auth/api-key.config';
 import { ApiKeyAuthGuard } from '../auth/api-key-auth.guard';
 import { SessionOrApiKeyAuthGuard } from '../auth/session-or-api-key.guard';
@@ -23,30 +23,23 @@ import { SessionService } from '../sessions/session.service';
 
 describe('AIExecutionController (Phase 18A + Phase 20A + Phase 20B + Phase 21B + Phase 22B)', () => {
   let controller: AIExecutionController;
-  let httpClient: jest.Mocked<AIServiceHttpClient>;
-  let usageLedgerService: jest.Mocked<UsageLedgerService>;
+  let mockUsageLedgerService: Record<string, jest.Mock>;
+  let mockQueueService: Record<string, jest.Mock>;
+
+  const VALID_SESSION_UUID = '11111111-1111-4111-a111-111111111111';
 
   beforeEach(async () => {
-    // Create mock HTTP client
-    const mockHttpClient = {
-      execute: jest.fn(),
-    };
-
-    // Create mock usage ledger service
-    const mockUsageLedgerService = {
+    mockUsageLedgerService = {
       findByRequestId: jest.fn().mockResolvedValue(null),
       reuseExecutionIntent: jest.fn().mockResolvedValue('execution-id'),
       writeExecutionIntent: jest.fn().mockResolvedValue(undefined),
       updateExecutionResult: jest.fn().mockResolvedValue(undefined),
     };
 
-    // Create mock global safety limit service
-    const mockGlobalSafetyLimitService = {
-      checkAndRecord: jest.fn().mockResolvedValue(undefined),
-      recordExecutionCost: jest.fn().mockResolvedValue(undefined),
+    mockQueueService = {
+      enqueueExecution: jest.fn().mockResolvedValue(undefined),
     };
 
-    // Mock guards (not testing guard logic here)
     const mockGuard = {
       canActivate: jest.fn(() => true),
     };
@@ -54,18 +47,14 @@ describe('AIExecutionController (Phase 18A + Phase 20A + Phase 20B + Phase 21B +
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AIExecutionController],
       providers: [
-        {
-          provide: AIServiceHttpClient,
-          useValue: mockHttpClient,
-        },
-        {
-          provide: UsageLedgerService,
-          useValue: mockUsageLedgerService,
-        },
-        {
-          provide: GlobalSafetyLimitService,
-          useValue: mockGlobalSafetyLimitService,
-        },
+        { provide: UsageLedgerService, useValue: mockUsageLedgerService },
+        { provide: GlobalSafetyLimitService, useValue: { checkAndRecord: jest.fn(), recordExecutionCost: jest.fn() } },
+        { provide: QueueService, useValue: mockQueueService },
+        { provide: ExecutionResultService, useValue: { getExecution: jest.fn(), requestCancel: jest.fn() } },
+        { provide: ExecutionStreamService, useValue: { subscribe: jest.fn(), unsubscribe: jest.fn() } },
+        { provide: UserAiInstructionsService, useValue: { getByUserId: jest.fn().mockResolvedValue(null) } },
+        { provide: ProjectAiContextService, useValue: { getByProjectId: jest.fn().mockResolvedValue(null) } },
+        { provide: SessionService, useValue: { getSessionById: jest.fn().mockImplementation((id: string) => Promise.resolve({ userId: 'verified-user', projectId: null })) } },
       ],
     })
       .overrideGuard(SessionOrApiKeyAuthGuard)
@@ -79,17 +68,14 @@ describe('AIExecutionController (Phase 18A + Phase 20A + Phase 20B + Phase 21B +
       .compile();
 
     controller = module.get<AIExecutionController>(AIExecutionController);
-    httpClient = module.get(AIServiceHttpClient);
-    usageLedgerService = module.get(UsageLedgerService);
   });
 
   describe('POST /api/ai/execute', () => {
-    it('should forward request to ai-service with verified userId and return result on success', async () => {
-      // Arrange
+    it('should replace untrusted userId with verified identity and enqueue with correct metadata', async () => {
       const request: AIExecutionRequest = {
-        sessionId: 'session-123',
+        sessionId: VALID_SESSION_UUID,
         conversationId: 'conv-456',
-        userId: 'untrusted-user', // Will be replaced
+        userId: 'untrusted-user',
         prompt: 'Hello AI',
         provider: 'stub',
         metadata: { source: 'test' },
@@ -98,35 +84,29 @@ describe('AIExecutionController (Phase 18A + Phase 20A + Phase 20B + Phase 21B +
       const identity: ApiKeyIdentity = {
         userId: 'verified-user',
         apiKeyId: 'key-123',
-        scopes: ['ai:execute'], // Phase 20B
+        scopes: ['ai:execute'],
       };
 
-      const expectedResult: AIExecutionResult = {
-        output: 'Hello human',
-        tokensUsed: 42,
-        model: 'claude-3-5-sonnet-20241022',
-      };
-
-      httpClient.execute.mockResolvedValue(expectedResult);
-
-      // Act
       const result = await controller.execute(request, identity);
 
-      // Assert
-      expect(result).toEqual(expectedResult);
-      expect(httpClient.execute).toHaveBeenCalledTimes(1);
+      expect(result).toHaveProperty('executionId');
+      expect(result.status).toBe('queued');
+      expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
 
-      // Verify userId was replaced
-      const calledRequest = httpClient.execute.mock.calls[0][0];
-      expect(calledRequest.userId).toBe('verified-user'); // NOT 'untrusted-user'
-      expect(calledRequest.metadata?.apiKeyId).toBe('key-123');
-      expect(calledRequest.metadata?.source).toBe('test');
+      const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+      expect(payload.userId).toBe('verified-user');
+      expect(payload.apiKeyId).toBe('key-123');
+
+      expect(mockUsageLedgerService.writeExecutionIntent).toHaveBeenCalledTimes(1);
+      const intentDto = mockUsageLedgerService.writeExecutionIntent.mock.calls[0][0];
+      expect(intentDto.userId).toBe('verified-user');
+      expect(intentDto.metadata?.apiKeyId).toBe('key-123');
+      expect(intentDto.metadata?.source).toBe('test');
     });
 
-    it('should propagate exceptions from ai-service unchanged', async () => {
-      // Arrange
+    it('should propagate exceptions from queue service unchanged', async () => {
       const request: AIExecutionRequest = {
-        sessionId: 'session-123',
+        sessionId: VALID_SESSION_UUID,
         conversationId: 'conv-456',
         userId: 'untrusted-user',
         prompt: 'Hello AI',
@@ -136,23 +116,19 @@ describe('AIExecutionController (Phase 18A + Phase 20A + Phase 20B + Phase 21B +
       const identity: ApiKeyIdentity = {
         userId: 'verified-user',
         apiKeyId: 'key-123',
-        scopes: ['ai:execute'], // Phase 20B
+        scopes: ['ai:execute'],
       };
 
-      const aiServiceError = new Error('AI provider unavailable');
-      (aiServiceError as any).status = 503;
+      const queueError = new Error('Queue unavailable');
+      mockQueueService.enqueueExecution.mockRejectedValue(queueError);
 
-      httpClient.execute.mockRejectedValue(aiServiceError);
-
-      // Act & Assert
-      await expect(controller.execute(request, identity)).rejects.toThrow('AI provider unavailable');
-      expect(httpClient.execute).toHaveBeenCalledTimes(1);
+      await expect(controller.execute(request, identity)).rejects.toThrow('Queue unavailable');
+      expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
     });
 
     it('should not retry on failure', async () => {
-      // Arrange
       const request: AIExecutionRequest = {
-        sessionId: 'session-123',
+        sessionId: VALID_SESSION_UUID,
         conversationId: 'conv-456',
         userId: 'untrusted-user',
         prompt: 'Hello AI',
@@ -162,23 +138,19 @@ describe('AIExecutionController (Phase 18A + Phase 20A + Phase 20B + Phase 21B +
       const identity: ApiKeyIdentity = {
         userId: 'verified-user',
         apiKeyId: 'key-123',
-        scopes: ['ai:execute'], // Phase 20B
+        scopes: ['ai:execute'],
       };
 
       const error = new Error('Network timeout');
-      httpClient.execute.mockRejectedValue(error);
+      mockQueueService.enqueueExecution.mockRejectedValue(error);
 
-      // Act & Assert
       await expect(controller.execute(request, identity)).rejects.toThrow('Network timeout');
-
-      // Verify no retry logic - only called once
-      expect(httpClient.execute).toHaveBeenCalledTimes(1);
+      expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
     });
 
     it('should replace userId and inject apiKeyId into metadata', async () => {
-      // Arrange
       const request: AIExecutionRequest = {
-        sessionId: 'session-999',
+        sessionId: VALID_SESSION_UUID,
         conversationId: 'conv-888',
         userId: 'untrusted-user-777',
         prompt: 'Complex prompt with special chars: !@#$%',
@@ -190,29 +162,22 @@ describe('AIExecutionController (Phase 18A + Phase 20A + Phase 20B + Phase 21B +
       };
 
       const identity: ApiKeyIdentity = {
-        userId: 'verified-user-999',
+        userId: 'verified-user',
         apiKeyId: 'key-999',
-        scopes: ['ai:execute'], // Phase 20B
+        scopes: ['ai:execute'],
       };
 
-      const result: AIExecutionResult = {
-        output: 'Response',
-        tokensUsed: 100,
-        model: 'gpt-4',
-      };
-
-      httpClient.execute.mockResolvedValue(result);
-
-      // Act
       await controller.execute(request, identity);
 
-      // Assert - userId replaced, metadata preserved and extended
-      const calledRequest = httpClient.execute.mock.calls[0][0];
-      expect(calledRequest.userId).toBe('verified-user-999'); // REPLACED
-      expect(calledRequest.prompt).toBe('Complex prompt with special chars: !@#$%');
-      expect(calledRequest.metadata?.nested).toEqual({ data: 'value' });
-      expect(calledRequest.metadata?.array).toEqual([1, 2, 3]);
-      expect(calledRequest.metadata?.apiKeyId).toBe('key-999'); // INJECTED
+      const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+      expect(payload.userId).toBe('verified-user');
+      expect(payload.prompt).toBe('Complex prompt with special chars: !@#$%');
+
+      const intentDto = mockUsageLedgerService.writeExecutionIntent.mock.calls[0][0];
+      expect(intentDto.userId).toBe('verified-user');
+      expect(intentDto.metadata?.nested).toEqual({ data: 'value' });
+      expect(intentDto.metadata?.array).toEqual([1, 2, 3]);
+      expect(intentDto.metadata?.apiKeyId).toBe('key-999');
     });
   });
 });
@@ -722,6 +687,156 @@ describe('AIExecutionController — session ownership enforcement (AGENT-HARNESS
     expect(mismatchCaught.getStatus()).toBe(404);
     expect(missingCaught.message).toBe(mismatchCaught.message);
     expect(missingCaught.message).toBe(`Session with ID ${sessionId} not found`);
+  });
+});
+
+/**
+ * AGENT-PLATFORM-06: Upstream identity propagation tests
+ *
+ * Verifies that POST /api/ai/execute forwards optional identity fields
+ * (agentRole, builderProfileId, collaborationRunId, referralTraceId)
+ * into the BullMQ job payload and usage intent metadata, and that
+ * requests without identity fields remain backward compatible.
+ */
+describe('AIExecutionController — upstream identity propagation (AGENT-PLATFORM-06)', () => {
+  let controller: AIExecutionController;
+  let mockUsageLedgerService: Record<string, jest.Mock>;
+  let mockQueueService: Record<string, jest.Mock>;
+
+  const VALID_SESSION_UUID = '35d53116-6723-4571-af12-ac256977c007';
+
+  const defaultIdentity: ApiKeyIdentity = {
+    userId: 'user-uuid-06',
+    apiKeyId: 'key-uuid-06',
+    scopes: ['ai:execute'],
+    harnessEntitled: true,
+  };
+
+  function makeRequest(overrides?: Partial<AIExecutionRequest>): AIExecutionRequest {
+    return {
+      sessionId: VALID_SESSION_UUID,
+      conversationId: 'conv-06',
+      userId: 'ignored',
+      prompt: 'Hello',
+      provider: 'stub',
+      ...overrides,
+    };
+  }
+
+  beforeEach(async () => {
+    mockUsageLedgerService = {
+      findByRequestId: jest.fn().mockResolvedValue(null),
+      reuseExecutionIntent: jest.fn().mockResolvedValue('exec-id'),
+      writeExecutionIntent: jest.fn().mockResolvedValue(undefined),
+      updateExecutionResult: jest.fn().mockResolvedValue(undefined),
+    };
+
+    mockQueueService = {
+      enqueueExecution: jest.fn().mockResolvedValue(undefined),
+    };
+
+    const mockGuard = { canActivate: jest.fn(() => true) };
+
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [AIExecutionController],
+      providers: [
+        { provide: UsageLedgerService, useValue: mockUsageLedgerService },
+        { provide: GlobalSafetyLimitService, useValue: { checkAndRecord: jest.fn(), recordExecutionCost: jest.fn() } },
+        { provide: QueueService, useValue: mockQueueService },
+        { provide: ExecutionResultService, useValue: { getExecution: jest.fn(), requestCancel: jest.fn() } },
+        { provide: ExecutionStreamService, useValue: { subscribe: jest.fn(), unsubscribe: jest.fn() } },
+        { provide: UserAiInstructionsService, useValue: { getByUserId: jest.fn().mockResolvedValue(null) } },
+        { provide: ProjectAiContextService, useValue: { getByProjectId: jest.fn().mockResolvedValue(null) } },
+        { provide: SessionService, useValue: { getSessionById: jest.fn().mockResolvedValue({ userId: defaultIdentity.userId, projectId: null }) } },
+      ],
+    })
+      .overrideGuard(SessionOrApiKeyAuthGuard).useValue(mockGuard)
+      .overrideGuard(AuthorizationGuard).useValue(mockGuard)
+      .overrideGuard(QuotaGuard).useValue(mockGuard)
+      .overrideGuard(TokenQuotaGuard).useValue(mockGuard)
+      .compile();
+
+    controller = module.get<AIExecutionController>(AIExecutionController);
+  });
+
+  it('Test A: identity fields forwarded to enqueueExecution payload', async () => {
+    const result = await controller.execute(
+      makeRequest({
+        agentRole: 'builder',
+        builderProfileId: 'builder-default',
+        collaborationRunId: 'collab-run-001',
+        referralTraceId: 'ref-trace-001',
+      }),
+      defaultIdentity,
+    );
+
+    expect(result.status).toBe('queued');
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+
+    const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expect(payload.agentRole).toBe('builder');
+    expect(payload.builderProfileId).toBe('builder-default');
+    expect(payload.collaborationRunId).toBe('collab-run-001');
+    expect(payload.referralTraceId).toBe('ref-trace-001');
+  });
+
+  it('Test B: identity fields included in writeExecutionIntent call', async () => {
+    await controller.execute(
+      makeRequest({
+        agentRole: 'reviewer',
+        builderProfileId: 'reviewer-profile-001',
+      }),
+      defaultIdentity,
+    );
+
+    expect(mockUsageLedgerService.writeExecutionIntent).toHaveBeenCalledTimes(1);
+    const intentDto = mockUsageLedgerService.writeExecutionIntent.mock.calls[0][0];
+    expect(intentDto.agentRole).toBe('reviewer');
+    expect(intentDto.builderProfileId).toBe('reviewer-profile-001');
+  });
+
+  it('Test C: request without identity fields still succeeds (backward compatible)', async () => {
+    const result = await controller.execute(makeRequest(), defaultIdentity);
+
+    expect(result.status).toBe('queued');
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+
+    const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expect(payload).not.toHaveProperty('agentRole');
+    expect(payload).not.toHaveProperty('builderProfileId');
+    expect(payload).not.toHaveProperty('collaborationRunId');
+    expect(payload).not.toHaveProperty('referralTraceId');
+  });
+
+  it('Test D: partial identity fields forwarded (only agentRole set)', async () => {
+    await controller.execute(
+      makeRequest({ agentRole: 'builder' }),
+      defaultIdentity,
+    );
+
+    const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+    expect(payload.agentRole).toBe('builder');
+    expect(payload).not.toHaveProperty('builderProfileId');
+    expect(payload).not.toHaveProperty('collaborationRunId');
+    expect(payload).not.toHaveProperty('referralTraceId');
+  });
+
+  it('Test E: identity fields propagated through writeExecutionIntent DTO (all four)', async () => {
+    await controller.execute(
+      makeRequest({
+        agentRole: 'builder',
+        builderProfileId: 'bp-1',
+        collaborationRunId: 'cr-1',
+        referralTraceId: 'rt-1',
+      }),
+      defaultIdentity,
+    );
+
+    const intentDto = mockUsageLedgerService.writeExecutionIntent.mock.calls[0][0];
+    expect(intentDto.agentRole).toBe('builder');
+    expect(intentDto.builderProfileId).toBe('bp-1');
+    expect(intentDto.collaborationRunId).toBe('cr-1');
+    expect(intentDto.referralTraceId).toBe('rt-1');
   });
 });
 

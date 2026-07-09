@@ -1010,6 +1010,12 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
             },
           };
 
+          // AGENT-PLATFORM-06: Preserve upstream identity fields in ledger finalization metadata.
+          if (job.data.agentRole !== undefined) nextMetadata.agentRole = job.data.agentRole;
+          if (job.data.builderProfileId !== undefined) nextMetadata.builderProfileId = job.data.builderProfileId;
+          if (job.data.collaborationRunId !== undefined) nextMetadata.collaborationRunId = job.data.collaborationRunId;
+          if (job.data.referralTraceId !== undefined) nextMetadata.referralTraceId = job.data.referralTraceId;
+
           if (harnessPreApplyCheckpointHash) {
             nextMetadata.preApplyCheckpointHash = harnessPreApplyCheckpointHash;
           }

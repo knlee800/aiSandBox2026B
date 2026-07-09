@@ -93,6 +93,87 @@ describe('AGENT-HARNESS-07B: AiExecutionJob identity fields', () => {
   });
 });
 
+describe('AGENT-PLATFORM-06: AiExecutionJob collaboration identity fields', () => {
+  it('AiExecutionJob accepts optional collaborationRunId', () => {
+    const job: AiExecutionJob = {
+      executionId: 'e1',
+      userId: 'u1',
+      apiKeyId: 'k1',
+      sessionId: 's1',
+      conversationId: 'c1',
+      provider: 'stub',
+      adapter: 'stub',
+      prompt: 'test',
+      submittedAt: new Date().toISOString(),
+      collaborationRunId: 'collab-run-001',
+    };
+    expect(job.collaborationRunId).toBe('collab-run-001');
+  });
+
+  it('AiExecutionJob accepts optional referralTraceId', () => {
+    const job: AiExecutionJob = {
+      executionId: 'e1',
+      userId: 'u1',
+      apiKeyId: 'k1',
+      sessionId: 's1',
+      conversationId: 'c1',
+      provider: 'stub',
+      adapter: 'stub',
+      prompt: 'test',
+      submittedAt: new Date().toISOString(),
+      referralTraceId: 'ref-trace-001',
+    };
+    expect(job.referralTraceId).toBe('ref-trace-001');
+  });
+
+  it('AiExecutionJob compiles without collaboration fields (backward compatible)', () => {
+    const job: AiExecutionJob = {
+      executionId: 'e1',
+      userId: 'u1',
+      apiKeyId: 'k1',
+      sessionId: 's1',
+      conversationId: 'c1',
+      provider: 'stub',
+      adapter: 'stub',
+      prompt: 'test',
+      submittedAt: new Date().toISOString(),
+    };
+    expect(job.collaborationRunId).toBeUndefined();
+    expect(job.referralTraceId).toBeUndefined();
+  });
+});
+
+describe('AGENT-PLATFORM-06: WorkerProcessor identity field preservation in ledger finalization', () => {
+  it('WorkerProcessor writes agentRole to nextMetadata during finalization', () => {
+    const workerSource = getWorkerSource();
+    expect(workerSource).toContain("if (job.data.agentRole !== undefined) nextMetadata.agentRole = job.data.agentRole");
+  });
+
+  it('WorkerProcessor writes builderProfileId to nextMetadata during finalization', () => {
+    const workerSource = getWorkerSource();
+    expect(workerSource).toContain("if (job.data.builderProfileId !== undefined) nextMetadata.builderProfileId = job.data.builderProfileId");
+  });
+
+  it('WorkerProcessor writes collaborationRunId to nextMetadata during finalization', () => {
+    const workerSource = getWorkerSource();
+    expect(workerSource).toContain("if (job.data.collaborationRunId !== undefined) nextMetadata.collaborationRunId = job.data.collaborationRunId");
+  });
+
+  it('WorkerProcessor writes referralTraceId to nextMetadata during finalization', () => {
+    const workerSource = getWorkerSource();
+    expect(workerSource).toContain("if (job.data.referralTraceId !== undefined) nextMetadata.referralTraceId = job.data.referralTraceId");
+  });
+
+  it('Identity preservation block appears after nextMetadata construction and before preApplyCheckpointHash', () => {
+    const workerSource = getWorkerSource();
+    const nextMetadataIndex = workerSource.indexOf('const nextMetadata: Record<string, unknown>');
+    const identityBlockIndex = workerSource.indexOf('AGENT-PLATFORM-06: Preserve upstream identity');
+    const checkpointHashIndex = workerSource.indexOf('if (harnessPreApplyCheckpointHash)');
+    expect(identityBlockIndex).toBeGreaterThan(nextMetadataIndex);
+    expect(identityBlockIndex).toBeLessThan(checkpointHashIndex);
+  });
+});
+
 describe('AGENT-HARNESS-07B: AgentHarnessRunRequestV1 identity fields', () => {
   it('AgentHarnessRunRequestV1 accepts optional identity fields', () => {
     const request: AgentHarnessRunRequestV1 = {

@@ -50,6 +50,12 @@ export interface AIExecutionRequest {
   harnessVersion?: 'v1';
   workspaceContext?: WorkspaceContext;
   metadata?: Record<string, unknown>;
+
+  /** AGENT-PLATFORM-06: Upstream identity propagation fields (all optional). */
+  agentRole?: string;
+  builderProfileId?: string;
+  collaborationRunId?: string;
+  referralTraceId?: string;
 }
 
 /**

@@ -35650,11 +35650,11 @@ Resume AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell.
 
 ## AGENT PLATFORM / AINOW.BIZ MULTI-AGENT
 
-**Family status:** AGENT-PLATFORM-05 COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-00 COMPLETE and LOCKED, AGENT-PLATFORM-01 COMPLETE and LOCKED, AGENT-PLATFORM-02 COMPLETE and LOCKED, AGENT-PLATFORM-03 COMPLETE and LOCKED, AGENT-PLATFORM-04 COMPLETE and LOCKED
+**Family status:** AGENT-PLATFORM-06 COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-05 COMPLETE and LOCKED, AGENT-PLATFORM-04 COMPLETE and LOCKED, AGENT-PLATFORM-03 COMPLETE and LOCKED, AGENT-PLATFORM-02 COMPLETE and LOCKED, AGENT-PLATFORM-01 COMPLETE and LOCKED, AGENT-PLATFORM-00 COMPLETE and LOCKED
 
 **Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` — controls cross-family priority order; Knowledge before Collaboration before Billing.
 
-**Current stage:** AGENT-PLATFORM-05 COMPLETE and LOCKED (2026-07-09) — Multi-Builder Runtime Orchestration Plan — All 4 steps complete. Next recommended: AGENT-PLATFORM-06 — Upstream Identity Propagation (not registered — requires Keith approval)
+**Current stage:** AGENT-PLATFORM-06 COMPLETE and LOCKED (2026-07-09) — Upstream Identity Propagation — All 4 steps COMPLETE. Next recommended: AGENT-PLATFORM-07 — Read-Only Orchestration Coordinator (not registered). No ACTIVE task.
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 — ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED — 2026-07-04)
@@ -35663,6 +35663,7 @@ Resume AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell.
 4. AGENT-PLATFORM-03 — Register aiSandBox as Builder Agent / Builder Route Integration Review (COMPLETE and LOCKED — 2026-07-06)
 5. AGENT-PLATFORM-04 — Multi-Builder Runtime Topology Plan (COMPLETE and LOCKED — 2026-07-07)
 6. AGENT-PLATFORM-05 — Multi-Builder Runtime Orchestration Plan (COMPLETE and LOCKED — 2026-07-09)
+7. AGENT-PLATFORM-06 — Upstream Identity Propagation (COMPLETE and LOCKED — 2026-07-09)
 
 ---
 
@@ -36281,7 +36282,7 @@ This task produces the authoritative plan for how multiple Builder Agents can co
 
 **AGENT-HARNESS-07 status:** COMPLETE and LOCKED (2026-07-07) — Per-Builder Harness Config Adapter. All 3 child slices COMPLETE and LOCKED: 07A, 07B, 07C. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
 **AGENT-HARNESS-06C status:** Not registered. Deferred — prerequisite (AGENT-HARNESS-07) is now COMPLETE and LOCKED; AGENT-HARNESS-06C still deferred until Keith explicitly approves canary activation.
-**Multi-builder collaboration/runtime orchestration status:** AGENT-PLATFORM-05 COMPLETE and LOCKED — 2026-07-09. Planning/governance only. No implementation. All 4 steps complete. Readiness review: `docs/AGENT-PLATFORM-05-READINESS-REVIEW.md`. Orchestration plan: `docs/AGENT-PLATFORM-05-MULTI-BUILDER-ORCHESTRATION-PLAN.md`. Checkpoint: `docs/AGENT-PLATFORM-05-CHECKPOINT.md`. Next recommended: AGENT-PLATFORM-06 — Upstream Identity Propagation (not registered).
+**Multi-builder collaboration/runtime orchestration status:** AGENT-PLATFORM-05 COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-06 COMPLETE and LOCKED — 2026-07-09. Upstream Identity Propagation — all 4 steps complete. 8 files changed; 34 suites / 654 passed; TypeScript clean. Checkpoint: `docs/AGENT-PLATFORM-06-CHECKPOINT.md`. Next recommended: AGENT-PLATFORM-07 — Read-Only Orchestration Coordinator (not registered).
 **BILLING-READY-04+ status:** Not registered. Deferred.
 
 ---
@@ -36383,11 +36384,153 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 - [x] Multi-Builder Orchestration Plan Document created (Step 3 — COMPLETE 2026-07-09)
 - [x] Consolidation/Checkpoint complete (Step 4 — COMPLETE 2026-07-09)
 
-#### Next Recommended Task (Not Registered)
+#### Next Recommended Task
 
-AGENT-PLATFORM-06 — Upstream Identity Propagation — wire `agentRole`/`builderProfileId` from frontend → API Gateway → job payload. Requires Keith approval before registration.
+AGENT-PLATFORM-06 — Upstream Identity Propagation — COMPLETE and LOCKED (2026-07-09). All 4 steps complete. Identity fields (`agentRole`, `builderProfileId`, `collaborationRunId`, `referralTraceId`) propagated through full execution path. 8 files changed. 34 suites / 654 passed; TypeScript clean. Checkpoint: `docs/AGENT-PLATFORM-06-CHECKPOINT.md`. Next recommended: AGENT-PLATFORM-07 — Read-Only Orchestration Coordinator (not registered).
 
 **Reference:** See TASKS.md -> AGENT-PLATFORM-05.
+
+---
+
+### AGENT-PLATFORM-06: Upstream Identity Propagation
+
+**Task ID:** AGENT-PLATFORM-06
+**Family:** AGENT PLATFORM / MULTI-BUILDER ORCHESTRATION
+**Family status:** COMPLETE and LOCKED
+**Priority:** High
+**Status:** COMPLETE and LOCKED
+**Completed:** 2026-07-09
+**Nature:** IMPLEMENTATION — bounded upstream identity field propagation through execution path
+**Risk:** HIGH — identity propagation affects execution attribution, future orchestration routing, audit, and billing readiness
+**Registered:** 2026-07-09
+**Keith approval:** Registration approved 2026-07-09 ("Approve registering AGENT-PLATFORM-06 — Upstream Identity Propagation.")
+
+#### Workflow Steps (4-step loop)
+
+1. **Registration** — COMPLETE (2026-07-09)
+2. **Readiness / source-path review** — COMPLETE (2026-07-09) — `docs/AGENT-PLATFORM-06-SOURCE-PATH-REVIEW.md`
+3. **Bounded implementation** — COMPLETE (2026-07-09) — 8 files changed; all tests pass; TypeScript clean
+4. **Consolidation / checkpoint** — COMPLETE (2026-07-09) — `docs/AGENT-PLATFORM-06-CHECKPOINT.md`
+
+#### Dependencies
+
+- AGENT-PLATFORM-05 — COMPLETE and LOCKED (Multi-Builder Runtime Orchestration Plan)
+- AGENT-PLATFORM-04 — COMPLETE and LOCKED (Multi-Builder Runtime Topology Plan)
+- AGENT-HARNESS-07 — COMPLETE and LOCKED (Per-Builder Harness Config Adapter)
+- AGENT-HARNESS-06E — COMPLETE and LOCKED (Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary)
+- Keith approval recorded for registration
+
+#### Problem Statement
+
+The AGENT-PLATFORM-05 orchestration plan identified that upstream identity fields (`agentRole`, `builderProfileId`) are absent from the execution path above the AI Service worker. The API Gateway `enqueueExecution()` path never populates these fields; the `AiExecutionJob` payload does not carry them; the frontend execution request does not submit them; and the `UsageRecord` intent-write path does not record them. Without these fields in the job payload, downstream audit attribution, orchestration routing, and billing attribution cannot be completed. AGENT-HARNESS-07 established the per-builder config resolution path inside the worker but relies on static defaults when identity is not provided upstream.
+
+#### Scope
+
+Propagate optional identity fields through the execution path:
+- `agentRole`
+- `builderProfileId`
+- Future-safe placeholders where appropriate: `collaborationRunId`, `referralTraceId`
+
+Target path (Step 2 will review, Step 3 will implement):
+- Frontend execution request
+- → API Gateway execute/enqueue DTO / controller / service
+- → `enqueueExecution()`
+- → `AiExecutionJob` payload
+- → AI Service worker
+- → `UsageRecord` intent-write / audit attribution path where currently available
+
+#### Future Implementation Constraints (Step 3)
+
+- All identity fields must be optional; single-builder executions must be unaffected
+- Backward-compatible only; no required-field changes at any existing boundary
+- No database migration unless Step 2 proves it necessary
+- Preserve all existing tests; add or update targeted tests for changed behavior
+- Do not implement collaboration coordinator in this task
+- Do not implement multi-builder runtime execution in this task
+- Do not activate write tools in this task
+
+#### Potential Child Slices (Do Not Register Until Step 2 Proves Needed and Keith Approves)
+
+- AGENT-PLATFORM-06A — API Gateway execution DTO / enqueue identity propagation
+- AGENT-PLATFORM-06B — Frontend request identity propagation
+- AGENT-PLATFORM-06C — Usage / audit attribution preservation
+
+#### Non-Goals
+
+- No implementation during registration (Step 1 only)
+- No runtime execution
+- No service startup
+- No Docker / Postgres / Redis commands
+- No frontend UI redesign
+- No new user-facing UX text (future implementation must be multilingual-first if UX text is added)
+- No database migration
+- No collaboration coordinator
+- No multi-builder live execution
+- No write_file / delete_file activation
+- No billing enforcement
+- No provider / API calls
+- No browser smoke
+- No git commits / pushes
+
+#### UX/UI Note
+
+This task should not add user-facing UI text during registration. If future implementation (Step 3) adds user-facing text, aiSandBox is multilingual-first and must update:
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impeccable and Emil Kowalski skills are advisory only.
+
+#### Validation Results
+
+| Command | Result |
+|---------|--------|
+| `npx jest --runInBand "ai-execution.controller.spec"` (api-gateway) | **38 passed, 0 failed** |
+| `npx jest --runInBand "usage-ledger.service.spec"` (api-gateway) | **44 passed, 0 failed** |
+| `npx jest --runInBand "worker.processor.builder-config"` (ai-service) | **43 passed, 0 failed** |
+| `npm test -- --runInBand` (ai-service, full suite) | **34 suites, 654 passed, 1 skipped, 0 failed** |
+| `npx tsc --noEmit` (api-gateway) | **PASS** |
+| `npx tsc --noEmit` (ai-service) | **PASS** |
+
+#### Acceptance Criteria
+
+- [x] AGENT-PLATFORM-06 registered in TASKS.md as ACTIVE (Step 1)
+- [x] AGENT-PLATFORM-06 mirrored in TASKS_BACKLOG_FULL.md with matching content (Step 1)
+- [x] AINOW-EXECUTION-ROADMAP.md updated to show AGENT-PLATFORM-06 as current ACTIVE task (Step 1)
+- [x] AGENT-PLATFORM-05 remains COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-04 remains COMPLETE and LOCKED
+- [x] AGENT-HARNESS-07 remains COMPLETE and LOCKED
+- [x] AGENT-HARNESS-06E remains COMPLETE and LOCKED
+- [x] Source-path review document created: `docs/AGENT-PLATFORM-06-SOURCE-PATH-REVIEW.md` (Step 2)
+- [x] All 8 execution path gaps mapped and confirmed (Step 2)
+- [x] `AIExecutionRequest` extended with `agentRole`, `builderProfileId`, `collaborationRunId`, `referralTraceId` (Step 3)
+- [x] Controller forwards identity to intent write and job payload (Step 3)
+- [x] Usage ledger stores identity in `metadata` JSONB — no migration (Step 3)
+- [x] `AiExecutionJob` includes `collaborationRunId`/`referralTraceId` (Step 3)
+- [x] Worker preserves identity in finalization metadata (Step 3)
+- [x] All three test files pass targeted specs (Step 3)
+- [x] API Gateway typecheck clean (Step 3)
+- [x] AI Service typecheck clean (Step 3)
+- [x] Backward compatibility preserved — single-builder unaffected (Step 3)
+- [x] No database migration (Step 3)
+- [x] No frontend UI / text changes (Step 3)
+- [x] No runtime execution / no service startup (all steps)
+- [x] One-active-task rule satisfied
+- [x] Checkpoint document created: `docs/AGENT-PLATFORM-06-CHECKPOINT.md` (Step 4)
+- [x] TASKS.md updated COMPLETE and LOCKED (Step 4)
+- [x] TASKS_BACKLOG_FULL.md mirrored (Step 4)
+- [x] AINOW-EXECUTION-ROADMAP.md updated (Step 4)
+- [x] Next recommended task recorded, not registered: AGENT-PLATFORM-07 (Step 4)
+
+#### Next Recommended Task (Not Registered)
+
+**AGENT-PLATFORM-07 — Read-Only Orchestration Coordinator Planning or Registration**
+
+Not registered. Requires Keith approval. Note: AGENT-HARNESS write canary remains a separate track and must not be mixed into AGENT-PLATFORM-07.
+
+**Checkpoint:** `docs/AGENT-PLATFORM-06-CHECKPOINT.md` — COMPLETE and LOCKED (2026-07-09)
+
+**Reference:** See TASKS.md -> AGENT-PLATFORM-06.
 
 ---
 

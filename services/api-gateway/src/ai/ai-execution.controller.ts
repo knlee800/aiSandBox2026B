@@ -502,6 +502,10 @@ export class AIExecutionController {
             apiKeyId: identity.apiKeyId, // INJECTED for audit
             requestedProvider: provider,
             requestedModel: requestedModel ?? null,
+            ...(request.agentRole !== undefined && { agentRole: request.agentRole }),
+            ...(request.builderProfileId !== undefined && { builderProfileId: request.builderProfileId }),
+            ...(request.collaborationRunId !== undefined && { collaborationRunId: request.collaborationRunId }),
+            ...(request.referralTraceId !== undefined && { referralTraceId: request.referralTraceId }),
           },
         });
         flow = 'reuse';
@@ -523,6 +527,10 @@ export class AIExecutionController {
             requestedProvider: provider,
             requestedModel: requestedModel ?? null,
           },
+          agentRole: request.agentRole,
+          builderProfileId: request.builderProfileId,
+          collaborationRunId: request.collaborationRunId,
+          referralTraceId: request.referralTraceId,
         });
         flow = 'new';
       }
@@ -544,6 +552,10 @@ export class AIExecutionController {
           requestedProvider: provider,
           requestedModel: requestedModel ?? null,
         },
+        agentRole: request.agentRole,
+        builderProfileId: request.builderProfileId,
+        collaborationRunId: request.collaborationRunId,
+        referralTraceId: request.referralTraceId,
       });
       flow = 'new';
     }
@@ -581,6 +593,10 @@ export class AIExecutionController {
       requestId,
       submittedAt,
       ...(request.harnessVersion !== undefined && { harnessVersion: request.harnessVersion }),
+      ...(request.agentRole !== undefined && { agentRole: request.agentRole }),
+      ...(request.builderProfileId !== undefined && { builderProfileId: request.builderProfileId }),
+      ...(request.collaborationRunId !== undefined && { collaborationRunId: request.collaborationRunId }),
+      ...(request.referralTraceId !== undefined && { referralTraceId: request.referralTraceId }),
     });
 
     // Phase 44.4D: Return immediately — do NOT wait for AI execution.
