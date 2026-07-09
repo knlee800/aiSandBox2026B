@@ -18546,9 +18546,9 @@ If icons are needed, use Heroicons v2 Outline only: `@heroicons/react/24/outline
 
 ## AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
 
-**Family status:** AGENT-HARNESS-06D COMPLETE and LOCKED (2026-07-08); AGENT-HARNESS-06D1 COMPLETE and LOCKED (2026-07-08; child slice of 06D); AGENT-HARNESS-06C COMPLETE and LOCKED (2026-07-07); AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07); AGENT-HARNESS-00 COMPLETE and LOCKED; AGENT-HARNESS-01A COMPLETE and LOCKED; AGENT-HARNESS-01B COMPLETE and LOCKED; AGENT-HARNESS-01C COMPLETE and LOCKED
+**Family status:** AGENT-HARNESS-06E COMPLETE and LOCKED (2026-07-09); AGENT-HARNESS-06D COMPLETE and LOCKED (2026-07-08); AGENT-HARNESS-06D1 COMPLETE and LOCKED (2026-07-08; child slice of 06D); AGENT-HARNESS-06C COMPLETE and LOCKED (2026-07-07); AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07); AGENT-HARNESS-00 COMPLETE and LOCKED; AGENT-HARNESS-01A COMPLETE and LOCKED; AGENT-HARNESS-01B COMPLETE and LOCKED; AGENT-HARNESS-01C COMPLETE and LOCKED
 
-**Current stage:** AGENT-HARNESS-06D COMPLETE and LOCKED (2026-07-08) — Live Worker/BullMQ Read-Only Canary Gap Closure — live canary PASS (provider: test-harness-stub; `selectedPath: 'harness'`; `source: 'builder-profile'`; 3 iterations; 2 tool calls dispatched; `terminationReason: 'completed'`; `durationMs: 33`; HANDLER_ERROR on `list_files`/`read_file` — API Gateway not running, expected per design §7.8); no production activation; no .env changes; no paid provider calls; checkpoint: `docs/AGENT-HARNESS-06D-CHECKPOINT.md`; AGENT-HARNESS-06D1 COMPLETE and LOCKED (2026-07-08) — Test Tool-Capable Stub Adapter for Live Worker Canary — `TestToolCapableStubAdapter` created; `supportsToolUse = true`; deterministic `list_files` → `read_file` → `completed` sequence; zero external API calls; zero billing risk; normal `stub` unchanged; routing/factory supports `test-harness-stub`; 34 suites / 646 tests passed; typecheck and build clean; checkpoint: `docs/AGENT-HARNESS-06D1-CHECKPOINT.md`; AGENT-HARNESS-06C COMPLETE and LOCKED (2026-07-07) — Read-Only Harness Canary Execution — PASS (231 tests, 13 suites, mock-executor/Jest path); AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07) — Per-Builder Harness Config Adapter; AGENT-HARNESS-07C COMPLETE and LOCKED (2026-07-07) — Validation/Regression Matrix and Parent Close Checkpoint; AGENT-HARNESS-07B COMPLETE and LOCKED (2026-07-07) — Worker Integration + Resolved Config Flow; AGENT-HARNESS-07A COMPLETE and LOCKED (2026-07-07); prerequisite AGENT-PLATFORM-04 COMPLETE and LOCKED; AGENT-HARNESS-06B COMPLETE and LOCKED
+**Current stage:** AGENT-HARNESS-06E COMPLETE and LOCKED (2026-07-09) — Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary — All 4 steps COMPLETE. Full E2E canary PASS: `list_files` SUCCESS (actual file data returned, not HANDLER_ERROR); `read_file` SUCCESS (actual README.md content returned, not HANDLER_ERROR); `terminationReason: 'completed'`; `durationMs: 718`; `tokens: 0`; no paid calls; no .env changes; no production activation. No new task registered. Checkpoint: `docs/AGENT-HARNESS-06E-CHECKPOINT.md`. Prior: AGENT-HARNESS-06D COMPLETE and LOCKED (2026-07-08); AGENT-HARNESS-06D1 COMPLETE and LOCKED (2026-07-08); AGENT-HARNESS-06C COMPLETE and LOCKED (2026-07-07); AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07); prerequisite AGENT-PLATFORM-04 COMPLETE and LOCKED; AGENT-HARNESS-06B COMPLETE and LOCKED
 
 **Registered tasks:**
 1. AGENT-HARNESS-00 — Agent Harness v1 Master Plan (COMPLETE and LOCKED)
@@ -18559,6 +18559,7 @@ If icons are needed, use Heroicons v2 Outline only: `@heroicons/react/24/outline
 6. AGENT-HARNESS-06C — Read-Only Harness Canary Execution (COMPLETE and LOCKED — 2026-07-07 — PASS: 231 tests, 13 suites, mock-executor/Jest path; no live BullMQ canary; no production activation)
 7. AGENT-HARNESS-06D — Live Worker/BullMQ Read-Only Canary Gap Closure (COMPLETE and LOCKED — 2026-07-08; live Worker/BullMQ canary PASS; `selectedPath: 'harness'`; HANDLER_ERROR on file tools — API Gateway not running, expected; no paid calls; checkpoint: `docs/AGENT-HARNESS-06D-CHECKPOINT.md`)
 8. AGENT-HARNESS-06D1 — Test Tool-Capable Stub Adapter for Live Worker Canary (COMPLETE and LOCKED — 2026-07-08; child slice of 06D; `TestToolCapableStubAdapter` created; `supportsToolUse = true`; zero billing; no live canary; checkpoint: `docs/AGENT-HARNESS-06D1-CHECKPOINT.md`)
+9. AGENT-HARNESS-06E — Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary (COMPLETE and LOCKED — 2026-07-09; full E2E canary PASS; `list_files`/`read_file` SUCCESS — actual file data returned, not HANDLER_ERROR; `durationMs: 718`; no paid calls; checkpoint: `docs/AGENT-HARNESS-06E-CHECKPOINT.md`)
 
 **Completed foundations (prerequisites):**
 - AI-CONTEXT family COMPLETE and LOCKED ??global/project AI instructions, repo docs registry, repo docs prompt injection, context indicator, regression matrix
@@ -28747,7 +28748,7 @@ Close the live BullMQ canary gap from AGENT-HARNESS-06C. Identify whether a tool
 
 ---
 
-**Next recommended step (not registered):** Full end-to-end live worker + API Gateway/container-manager read-only file success canary. This would require API Gateway to be running. Validates `list_files`/`read_file` tool handler returning actual file data (not HANDLER_ERROR). Register only if explicitly approved by Keith.
+**Next step:** AGENT-HARNESS-06E registered as ACTIVE (2026-07-08). See AGENT-HARNESS-06E section below.
 
 ---
 
@@ -28861,6 +28862,118 @@ No runtime execution occurred in this registration step. No implementation files
 
 ---
 
-**Next recommended step (not registered):** Full end-to-end live worker + API Gateway/container-manager read-only file success canary. Validates `list_files`/`read_file` handler returning actual file data (not HANDLER_ERROR). Register only if explicitly approved by Keith.
+**Next step:** AGENT-HARNESS-06E registered as ACTIVE (2026-07-08). See AGENT-HARNESS-06E section below.
 
 **Reference:** See `docs/AGENT-HARNESS-06D-CHECKPOINT.md` and `docs/AGENT-HARNESS-06D-LIVE-CANARY-EXECUTION.md`.
+
+---
+
+#### AGENT-HARNESS-06E: Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary
+
+**Status:** COMPLETE and LOCKED — 2026-07-09
+**Task ID:** AGENT-HARNESS-06E
+**Family:** AGENT HARNESS / CANARY ACTIVATION
+**Priority:** High
+**Nature:** FULL E2E VALIDATION — live Worker/BullMQ + API Gateway + container-manager read-only file tool success canary
+**Risk:** HIGH — full local E2E runtime path involving Worker, BullMQ, API Gateway, container-manager, Redis, Postgres, and Docker workspace/container services
+**Registered:** 2026-07-08
+**Approved by:** Keith — explicit approval recorded 2026-07-08 (registration); execution approved 2026-07-09
+
+#### Dependencies
+
+- AGENT-HARNESS-06D COMPLETE and LOCKED (2026-07-08)
+- AGENT-HARNESS-06D1 COMPLETE and LOCKED (2026-07-08)
+- AGENT-HARNESS-06C COMPLETE and LOCKED (2026-07-07)
+- AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07)
+- Keith approval recorded for registration (2026-07-08)
+
+#### Why AGENT-HARNESS-06E Exists
+
+AGENT-HARNESS-06D validated the live Worker/BullMQ harness route: the full code path activated (route → config → loop → dispatcher → dispatch). Both `list_files` and `read_file` tool calls were dispatched. However, both returned `HANDLER_ERROR` because the API Gateway was not running during the 06D canary.
+
+**What was NOT validated by AGENT-HARNESS-06D:**
+- Successful file handler response (file list returned, file contents read) via a live API Gateway + container-manager path
+- The tool handler HTTP call successfully reaching API Gateway and container-manager
+- Actual workspace file data returned to the harness loop
+
+**Root cause of the gap:** Tool handlers make HTTP calls to the API Gateway for file operations. With no API Gateway process running during 06D, these calls fail with connection refused → HANDLER_ERROR.
+
+AGENT-HARNESS-06E closes this gap by running a full E2E canary with ALL required services running.
+
+#### Scope
+
+- Validate `list_files` returns actual controlled workspace file list (not HANDLER_ERROR)
+- Validate `read_file` returns actual controlled workspace file content (not HANDLER_ERROR)
+- Full E2E path: BullMQ job → Worker → harness loop → dispatcher → tool handler HTTP → API Gateway → container-manager → workspace filesystem → response back through harness
+- Provider: `test-harness-stub` (zero billing, zero external API calls)
+- Read-only tools only: `list_files` + `read_file`
+- Browser smoke disabled
+- Write/delete/package/env-file/validation tools disabled
+
+#### Non-Goals
+
+- No production activation
+- No paid provider/API calls
+- No browser smoke
+- No write/delete/package/env-file operations
+- No frontend UI
+- No database migration
+- No billing enforcement
+- No multi-builder orchestration
+- No setting `AGENT_HARNESS_ENABLE_TOOL_LOOP=true` in any `.env` file
+
+#### Workflow (4-Step Loop)
+
+1. **Registration** — COMPLETE (2026-07-08) — Keith explicit approval recorded ("approve"); scope, safety constraints, and why-06E-exists documented; no canary executed; no env changes; no implementation files changed; no runtime commands.
+2. **Full E2E readiness / service topology preflight** — COMPLETE (2026-07-08) — Service topology mapped; file tool call path traced; controlled session/workspace plan defined; PASS/FAIL/BLOCKED criteria defined; safety boundaries identified. Doc: `docs/AGENT-HARNESS-06E-E2E-PREFLIGHT.md`.
+3. **Controlled full E2E read-only file canary execution** — COMPLETE (2026-07-09) — Full E2E canary PASS: `list_files` SUCCESS (actual `["README.md", ".git/"]`); `read_file` SUCCESS (actual README.md content, 99 bytes result); `durationMs: 718`; `tokens: 0`; provider `test-harness-stub`; no paid calls; no .env changes; no production activation. Doc: `docs/AGENT-HARNESS-06E-E2E-CANARY-EXECUTION.md`.
+4. **Consolidation / checkpoint** — COMPLETE (2026-07-09) — Checkpoint created; TASKS.md, TASKS_BACKLOG_FULL.md, AINOW-EXECUTION-ROADMAP.md updated; AGENT-HARNESS-06E COMPLETE and LOCKED.
+
+#### Acceptance Criteria
+
+###### Registration (Step 1 — COMPLETE 2026-07-08)
+- [x] AGENT-HARNESS-06E registered in TASKS.md with ACTIVE status
+- [x] AGENT-HARNESS-06E registered in TASKS_BACKLOG_FULL.md with matching content
+- [x] AINOW-EXECUTION-ROADMAP.md updated to reflect AGENT-HARNESS-06E as current ACTIVE task
+- [x] AGENT-HARNESS-06D remains COMPLETE and LOCKED
+- [x] AGENT-HARNESS-06D1 remains COMPLETE and LOCKED
+- [x] AGENT-HARNESS-06C remains COMPLETE and LOCKED
+- [x] AGENT-HARNESS-07 remains COMPLETE and LOCKED
+- [x] Registration records why 06E exists (HANDLER_ERROR on file tools because API Gateway not running during 06D)
+- [x] Registration records execution is NOT performed yet
+- [x] Registration records Step 2 must happen before any runtime/service startup
+- [x] No implementation files changed
+- [x] No commands run
+- [x] Keith approval recorded
+
+###### Full E2E Readiness / Service Topology Preflight (Step 2 — COMPLETE 2026-07-08)
+- [x] Exact local services needed identified (Postgres, Redis, API Gateway, AI Service worker, container-manager, Docker workspace/container)
+- [x] Safe startup commands documented
+- [x] Session/container/workspace setup requirements identified
+- [x] API Gateway health verified before canary
+- [x] Container-manager connectivity verified before canary
+- [x] No runtime execution in Step 2 (planning/preflight only)
+- [x] Keith approval recorded before Step 3
+
+###### Controlled Full E2E Read-Only File Canary Execution (Step 3 — COMPLETE 2026-07-09)
+- [x] `list_files` returns actual controlled workspace file list (not HANDLER_ERROR) — `["README.md", ".git/"]`
+- [x] `read_file` returns actual controlled workspace file content (not HANDLER_ERROR) — README.md, 64 bytes
+- [x] Provider: `test-harness-stub` (zero billing, zero external API calls)
+- [x] `AGENT_HARNESS_ENABLE_TOOL_LOOP` process-scoped only — NOT in any `.env` file
+- [x] No `write_file`, `delete_file`, `run_validation`, `browser_smoke` dispatched
+- [x] No paid provider/API calls
+- [x] No `.env` files modified
+- [x] Job completes without hanging or crashing — 729ms
+
+###### Consolidation / Checkpoint (Step 4 — COMPLETE 2026-07-09)
+- [x] AGENT-HARNESS-06E checkpoint document created — `docs/AGENT-HARNESS-06E-CHECKPOINT.md`
+- [x] AGENT-HARNESS-06E marked COMPLETE and LOCKED in TASKS.md
+- [x] AGENT-HARNESS-06E marked COMPLETE and LOCKED in TASKS_BACKLOG_FULL.md
+- [x] AINOW-EXECUTION-ROADMAP.md updated
+- [x] Full E2E file canary result recorded accurately
+
+**AGENT-HARNESS-06E status:** COMPLETE and LOCKED — 2026-07-09. All 4 steps complete. Full E2E canary PASS: `list_files`/`read_file` SUCCESS (actual file data, not HANDLER_ERROR); `durationMs: 718`; `tokens: 0`; no paid calls; no .env changes; no production activation. Checkpoint: `docs/AGENT-HARNESS-06E-CHECKPOINT.md`.
+**AGENT-HARNESS-06D status:** COMPLETE and LOCKED — 2026-07-08.
+**AGENT-HARNESS-06D1 status:** COMPLETE and LOCKED — 2026-07-08 (child slice).
+**AGENT-HARNESS-06C status:** COMPLETE and LOCKED — 2026-07-07.
+**AGENT-HARNESS-07 status:** COMPLETE and LOCKED (2026-07-07).
