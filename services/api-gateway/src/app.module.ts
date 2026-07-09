@@ -29,6 +29,7 @@ import { WorkspacesModule } from './workspaces/workspaces.module';
 import { UserAiInstructionsModule } from './user-ai-instructions/user-ai-instructions.module';
 import { ProjectAiContextModule } from './project-ai-context/project-ai-context.module';
 import { ProjectRepoDocsModule } from './project-repo-docs/project-repo-docs.module';
+import { OrchestrationModule } from './orchestration/orchestration.module';
 import { databaseConfig } from './config/database.config';
 import { InternalServiceAuthGuard } from './guards/internal-service-auth.guard';
 import { IdempotentReplayExceptionFilter } from './filters/idempotent-replay-exception.filter';
@@ -73,6 +74,7 @@ import { IdempotentReplayExceptionFilter } from './filters/idempotent-replay-exc
     UserAiInstructionsModule, // AI-CONTEXT-01A: User-scoped global AI instruction endpoints
     ProjectAiContextModule, // AI-CONTEXT-02A: Project-scoped AI instruction endpoints
     ProjectRepoDocsModule, // AI-CONTEXT-04A: Project-scoped repo docs registry endpoints
+    OrchestrationModule, // AGENT-PLATFORM-07B: API Gateway orchestration boundary skeleton
     ProjectsModule, // PR-03-01: Project identity endpoints
     WorkspacesModule, // WS-02: Personal workspace CRUD endpoints
     PublicApiModule, // ADV-04-01: Dedicated /api/v1 public API surface

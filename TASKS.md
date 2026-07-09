@@ -25148,11 +25148,11 @@ Resume AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell.
 
 ## AGENT PLATFORM / AINOW.BIZ MULTI-AGENT
 
-**Family status:** AGENT-PLATFORM-07A COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07 COMPLETE and LOCKED, AGENT-PLATFORM-06 COMPLETE and LOCKED, AGENT-PLATFORM-05 COMPLETE and LOCKED, AGENT-PLATFORM-04 COMPLETE and LOCKED, AGENT-PLATFORM-03 COMPLETE and LOCKED, AGENT-PLATFORM-02 COMPLETE and LOCKED, AGENT-PLATFORM-01 COMPLETE and LOCKED, AGENT-PLATFORM-00 COMPLETE and LOCKED
+**Family status:** AGENT-PLATFORM-07B COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07A COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07 COMPLETE and LOCKED, AGENT-PLATFORM-06 COMPLETE and LOCKED, AGENT-PLATFORM-05 COMPLETE and LOCKED, AGENT-PLATFORM-04 COMPLETE and LOCKED, AGENT-PLATFORM-03 COMPLETE and LOCKED, AGENT-PLATFORM-02 COMPLETE and LOCKED, AGENT-PLATFORM-01 COMPLETE and LOCKED, AGENT-PLATFORM-00 COMPLETE and LOCKED
 
 **Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` — controls cross-family priority order; Knowledge before Collaboration before Billing.
 
-**Current stage:** No ACTIVE task. AGENT-PLATFORM-07A COMPLETE and LOCKED (2026-07-09). Coordinator Contracts / Schema. All 3 steps complete. TypeScript-only contracts/schema delivered. TypeScript clean (exit code 0). Checkpoint: `docs/AGENT-PLATFORM-07A-CHECKPOINT.md`. Next recommended: AGENT-PLATFORM-07B — API Gateway Orchestration Module Skeleton (not registered — requires Keith approval). AGENT-HARNESS write canary remains a separate track.
+**Current stage:** AGENT-PLATFORM-07B COMPLETE and LOCKED (2026-07-09). API Gateway Orchestration Module Skeleton. All 3 steps complete. `OrchestrationModule` + `OrchestrationService` skeleton created; registered in `AppModule`. Jest PASS (1 suite, 3 tests). TypeScript clean. Checkpoint: `docs/AGENT-PLATFORM-07B-CHECKPOINT.md`. Next recommended: AGENT-PLATFORM-07C — Read-Only Referral Enqueue Flow + Cancel Redesign (not registered). AGENT-HARNESS write canary remains a separate track. No ACTIVE task.
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 — ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED — 2026-07-04)
@@ -25164,6 +25164,7 @@ Resume AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell.
 7. AGENT-PLATFORM-06 — Upstream Identity Propagation (COMPLETE and LOCKED — 2026-07-09)
 8. AGENT-PLATFORM-07 — Read-Only Orchestration Coordinator Planning (COMPLETE and LOCKED — 2026-07-09)
 9. AGENT-PLATFORM-07A — Coordinator Contracts / Schema (COMPLETE and LOCKED — 2026-07-09)
+10. AGENT-PLATFORM-07B — API Gateway Orchestration Module Skeleton (COMPLETE and LOCKED — 2026-07-09)
 
 **Completed foundations (prerequisites):**
 - AGENT HARNESS family foundations COMPLETE and LOCKED — Agent Harness v1 contracts, tool protocol, model adapters, tool dispatcher, orchestrator loop, execution-bound hardening (through AGENT-HARNESS-05C8)
@@ -25782,7 +25783,7 @@ This task produces the authoritative plan for how multiple Builder Agents can co
 
 **AGENT-HARNESS-07 status:** COMPLETE and LOCKED (2026-07-07) — Per-Builder Harness Config Adapter. All 3 child slices COMPLETE and LOCKED: 07A, 07B, 07C. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
 **AGENT-HARNESS-06C status:** Not registered. Deferred — prerequisite (AGENT-HARNESS-07) is now COMPLETE and LOCKED; AGENT-HARNESS-06C still deferred until Keith explicitly approves canary activation.
-**Multi-builder collaboration/runtime orchestration status:** AGENT-PLATFORM-05 COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-06 COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-07 COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-07A COMPLETE and LOCKED — 2026-07-09. Coordinator Contracts / Schema — All 3 steps complete. TypeScript-only contracts/schema delivered. TypeScript clean. Checkpoint: `docs/AGENT-PLATFORM-07A-CHECKPOINT.md`. Next recommended: AGENT-PLATFORM-07B (not registered).
+**Multi-builder collaboration/runtime orchestration status:** AGENT-PLATFORM-05 COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-06 COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-07 COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-07A COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-07B COMPLETE and LOCKED — 2026-07-09. All 3 steps complete. `OrchestrationModule` + `OrchestrationService` skeleton created; registered in `AppModule`. Jest PASS (1 suite, 3 tests). TypeScript clean. Checkpoint: `docs/AGENT-PLATFORM-07B-CHECKPOINT.md`. Next recommended: AGENT-PLATFORM-07C (not registered). AGENT-HARNESS write canary remains a separate track. No ACTIVE task.
 **BILLING-READY-04+ status:** Not registered. Deferred.
 
 ---
@@ -26294,19 +26295,187 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 - TypeScript errors: None
 - Jest: Not run — no spec file added; pure exported contracts/constants; compile validation sufficient
 
-#### Next Recommended Task (Not Registered)
+#### Next Task
 
-**AGENT-PLATFORM-07B — API Gateway Orchestration Module Skeleton**
+**AGENT-PLATFORM-07B — API Gateway Orchestration Module Skeleton — COMPLETE and LOCKED — 2026-07-09.**
 
-- Nature: Implementation — Medium risk
-- Scope: `OrchestrationModule`, `OrchestrationService` stubs, in-memory referral store, module registration in `AppModule`
-- Registration: Requires Keith approval before registration
+All 3 steps complete. `OrchestrationModule` + `OrchestrationService` created; `AppModule` updated. Jest PASS (1 suite, 3 tests). TypeScript clean (exit code 0). Checkpoint: `docs/AGENT-PLATFORM-07B-CHECKPOINT.md`. AGENT-HARNESS write canary remains a separate track.
 
-**No ACTIVE task exists** until Keith registers the next task.
+**Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-07A.
+
+---
+
+#### AGENT-PLATFORM-07B: API Gateway Orchestration Module Skeleton
+
+**Status:** COMPLETE and LOCKED
+**Completed:** 2026-07-09
+**Registered:** 2026-07-09
+**Task ID:** AGENT-PLATFORM-07B
+**Family:** AGENT PLATFORM / MULTI-BUILDER ORCHESTRATION / READ-ONLY COORDINATOR
+**Priority:** High
+**Nature:** IMPLEMENTATION — NestJS module/service skeleton; read-only orchestration boundary
+**Risk:** MEDIUM — module skeleton only, but it defines the future API Gateway orchestration service boundary
+**Keith approval:** Registration approved 2026-07-09 ("Approve registering AGENT-PLATFORM-07B — API Gateway Orchestration Module Skeleton.")
+**Checkpoint:** `docs/AGENT-PLATFORM-07B-CHECKPOINT.md`
+
+#### Workflow Steps (3-step loop)
+
+1. **Registration** — COMPLETE (2026-07-09)
+2. **Bounded implementation** — COMPLETE (2026-07-09)
+3. **Consolidation / checkpoint** — COMPLETE (2026-07-09)
+
+#### Dependencies
+
+- AGENT-PLATFORM-07A — COMPLETE and LOCKED (Coordinator Contracts / Schema)
+- AGENT-PLATFORM-07 — COMPLETE and LOCKED (Read-Only Orchestration Coordinator Planning)
+- AGENT-PLATFORM-06 — COMPLETE and LOCKED (Upstream Identity Propagation)
+- AGENT-PLATFORM-05 — COMPLETE and LOCKED (Multi-Builder Runtime Orchestration Plan)
+- AGENT-PLATFORM-04 — COMPLETE and LOCKED (Multi-Builder Runtime Topology Plan)
+- AGENT-HARNESS-07 — COMPLETE and LOCKED (Per-Builder Harness Config Adapter)
+- AGENT-HARNESS-06E — COMPLETE and LOCKED (Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary)
+- Keith approval recorded for registration
+
+#### Purpose
+
+Create the API Gateway orchestration module skeleton as the second implementation slice of the read-only orchestration coordinator. This establishes the NestJS module/service boundary for future read-only orchestration, using the contracts created in AGENT-PLATFORM-07A, without any runtime coordinator behavior.
+
+AGENT-PLATFORM-07A delivered the TypeScript-only contracts/schema. This slice wires those contracts into a bounded NestJS module and stub service — the foundation that future slices (AGENT-PLATFORM-07C through 07E) will build coordinator behavior upon.
+
+#### Scope
+
+- Create `OrchestrationModule` (NestJS module) in `services/api-gateway/src/orchestration/`.
+- Create `OrchestrationService` (NestJS injectable service stub) in `services/api-gateway/src/orchestration/`.
+- Use contracts from `services/api-gateway/src/orchestration/orchestration.contracts.ts`.
+- Register `OrchestrationModule` in API Gateway `AppModule`.
+- Expected new files:
+  - `services/api-gateway/src/orchestration/orchestration.module.ts`
+  - `services/api-gateway/src/orchestration/orchestration.service.ts`
+  - `services/api-gateway/src/orchestration/__tests__/orchestration.service.spec.ts`
+  - Optional barrel export only if consistent with existing project patterns.
+- Minimal unit tests for service defaults/contract usage if useful.
+- No controller/endpoints unless Step 2 implementation proves an existing pattern requires it.
+- No queue enqueue flow.
+- No cancel redesign implementation.
+- No runtime coordinator behavior.
+- No database migration.
+- No frontend UI.
+
+#### Implementation Constraints
+
+- Preserve AGENT-PLATFORM-07 decisions: read-only orchestration first, API Gateway orchestration module boundary, single ai-execution queue with metadata routing later, 1 builder = 1 session = 1 container, no shared workspace writes, no write_file/delete_file/run_validation activation.
+- AGENT-HARNESS write canary remains a separate track — must not be mixed into this slice.
+- No new dependencies unless explicitly required and approved.
+- No database migration.
+- No API endpoints (no controller) unless proven necessary by existing patterns.
+
+#### Non-Goals
+
+- No runtime coordinator lifecycle
+- No queue enqueue flow
+- No cancellation redesign
+- No audit event emitter
+- No database migration
+- No frontend UI
+- No user-facing UX text
+- No AGENT-HARNESS write canary
+- No billing enforcement
+- No provider/API calls
+- No browser smoke
+- No git commits/pushes
+
+#### UX/UI Note
+
+No UI text should be added in this task. If future work adds UI text, aiSandBox is multilingual-first and must update:
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impeccable and Emil Kowalski skills are advisory only.
+
+#### Acceptance Criteria
+
+- [x] AGENT-PLATFORM-07B registered as ACTIVE (Step 1 COMPLETE)
+- [x] AGENT-PLATFORM-07A remains COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-07 remains COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-06 remains COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-05 remains COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-04 remains COMPLETE and LOCKED
+- [x] AGENT-HARNESS-07 remains COMPLETE and LOCKED
+- [x] AGENT-HARNESS-06E remains COMPLETE and LOCKED
+- [x] Registration records this is API Gateway orchestration module skeleton only
+- [x] Registration records AGENT-HARNESS write canary remains a separate track
+- [x] Registration records no implementation/runtime execution occurred (Step 1)
+- [x] Registration records next step is bounded implementation
+- [x] No implementation files changed (Step 1)
+- [x] No commands run (Step 1)
+- [x] One-active-task rule satisfied
+- [x] TASKS.md updated ACTIVE (Step 1)
+- [x] TASKS_BACKLOG_FULL.md mirrored (Step 1)
+- [x] AINOW-EXECUTION-ROADMAP.md updated (Step 1)
+- [x] `services/api-gateway/src/orchestration/orchestration.module.ts` created (Step 2)
+- [x] `services/api-gateway/src/orchestration/orchestration.service.ts` created (Step 2)
+- [x] Module registered in `AppModule` (Step 2)
+- [x] TypeScript clean (Step 2) — `npx tsc --noEmit` exit code 0
+- [x] Unit tests pass (Step 2) — 1 suite, 3 tests passed
+- [x] Checkpoint document created: `docs/AGENT-PLATFORM-07B-CHECKPOINT.md` (Step 3)
+- [x] TASKS.md updated COMPLETE and LOCKED (Step 3)
+- [x] TASKS_BACKLOG_FULL.md mirrored (Step 3)
+- [x] AINOW-EXECUTION-ROADMAP.md updated (Step 3)
+
+**Step 1 (Registration) acceptance criteria — all satisfied:**
+- [x] AGENT-PLATFORM-07B registered as ACTIVE
+- [x] AGENT-PLATFORM-07A remains COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-07/06/05/04 remain COMPLETE and LOCKED
+- [x] AGENT-HARNESS-07/06E remain COMPLETE and LOCKED
+- [x] Registration records API Gateway orchestration module skeleton only
+- [x] Registration records AGENT-HARNESS write canary remains a separate track
+- [x] Registration records no implementation/runtime execution occurred
+- [x] Registration records next step is bounded implementation
+- [x] No implementation files changed
+- [x] No commands run
+- [x] One-active-task rule satisfied
+- [x] TASKS.md updated
+- [x] TASKS_BACKLOG_FULL.md mirrored
+- [x] AINOW-EXECUTION-ROADMAP.md updated
+
+**Step 2 (Bounded implementation) acceptance criteria — all satisfied:**
+- [x] `services/api-gateway/src/orchestration/orchestration.module.ts` created
+- [x] `services/api-gateway/src/orchestration/orchestration.service.ts` created
+- [x] `services/api-gateway/src/orchestration/__tests__/orchestration.service.spec.ts` created
+- [x] `OrchestrationModule` registered in `AppModule`
+- [x] `OrchestrationService` uses contracts from `orchestration.contracts.ts`
+- [x] `getDefaultReferralConstraints()` returns correct defaults
+- [x] `getReadOnlyPolicy()` returns correct read-only policy
+- [x] `npx tsc --noEmit` exit code 0 — no TypeScript errors
+- [x] `npx jest --runInBand "orchestration.service"` PASS — 1 suite, 3 tests
+- [x] No controllers/endpoints added
+- [x] No queue enqueue flow added
+- [x] No cancellation redesign added
+- [x] No DB migration added
+- [x] No frontend UI added
+- [x] AGENT-HARNESS write canary remains a separate track
+
+**Step 3 (Consolidation/checkpoint) acceptance criteria — all satisfied:**
+- [x] Checkpoint document created: `docs/AGENT-PLATFORM-07B-CHECKPOINT.md`
+- [x] Validation results recorded in checkpoint
+- [x] TASKS.md updated COMPLETE and LOCKED
+- [x] TASKS_BACKLOG_FULL.md mirrored
+- [x] AINOW-EXECUTION-ROADMAP.md updated
+- [x] Next recommended task recorded (AGENT-PLATFORM-07C, not registered)
+- [x] No implementation files changed during consolidation
+- [x] No tests/builds/runtime/provider calls during consolidation
+
+**Validation results:**
+- Jest: `npx jest --runInBand "orchestration.service"` → PASS, 1 suite, 3 tests passed, 0 failed
+- TypeScript: `npx tsc --noEmit` → exit code 0, no errors
+
+**Next recommended task (not registered):** AGENT-PLATFORM-07C — Read-Only Referral Enqueue Flow + Cancel Redesign. High risk. Requires Keith approval before registration.
 
 **AGENT-HARNESS write canary remains a separate track** — not registered, not part of AGENT-PLATFORM-07 child slices.
 
-**Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-07A.
+**No ACTIVE task exists** until Keith registers the next task.
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-07B.
 
 ---
 
