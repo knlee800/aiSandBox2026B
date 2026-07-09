@@ -1,5 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { randomUUID } from 'crypto';
+import { QueueService } from '../queue/queue.service';
+import { ExecutionResultService } from '../ai/execution-result.service';
 import {
   type BuilderProfileId,
   type CollaborationAgentIdentity,
@@ -91,11 +93,48 @@ export type ValidateReferralResult =
       readonly referral: CollaborationReferral;
     };
 
+export interface StartReferralExecutionInput {
+  readonly referralId: ReferralId;
+  readonly executionId: string;
+  readonly sessionId: string;
+  readonly conversationId: string;
+  readonly userId: string;
+  readonly apiKeyId: string;
+  readonly prompt: string;
+  readonly workspaceContext?: unknown;
+  readonly provider: string;
+  readonly adapter: string;
+  readonly model?: string;
+  readonly harnessVersion?: string;
+  readonly globalInstructions?: string;
+  readonly projectInstructions?: string;
+  readonly submittedAt: string;
+  readonly orchestrationPriority?: number;
+}
+
+export interface CancelReferralInput {
+  readonly referralId: ReferralId;
+  readonly cancelledByUserId: UserId;
+  readonly cancelReason: string;
+}
+
+export interface CancelCollaborationInput {
+  readonly collaborationRunId: CollaborationRunId;
+  readonly cancelledByUserId: UserId;
+  readonly cancelReason: string;
+}
+
 @Injectable()
 export class OrchestrationService {
   private readonly collaborationRunStore = new Map<CollaborationRunId, CollaborationRun>();
   private readonly referralStore = new Map<ReferralId, CollaborationReferral>();
   private readonly idempotencyStore = new Map<IdempotencyKey, ReferralId>();
+  private readonly referralExecutionMap = new Map<ReferralId, string>();
+
+  constructor(
+    @Optional() private readonly queueService?: QueueService,
+    @Optional() private readonly executionResultService?: ExecutionResultService,
+  ) {}
 
   private readonly defaultReferralConstraints: ReferralConstraints = {
     timeoutMs: DEFAULT_REFERRAL_TIMEOUT_MS,
@@ -402,6 +441,159 @@ export class OrchestrationService {
       outcome: 'duplicate',
       referral: this.cloneReferral(existingReferral),
     };
+  }
+
+  async startReferralExecution(
+    input: StartReferralExecutionInput,
+  ): Promise<{ executionId: string }> {
+    if (!this.queueService) {
+      throw new Error('QueueService is required for referral execution');
+    }
+
+    const referral = this.getStoredReferral(input.referralId);
+    this.assertCanStartExecution(referral);
+    this.assertReadOnlyConstraints(referral);
+
+    const now = this.now();
+    const jobPayload = {
+      executionId: input.executionId,
+      userId: input.userId,
+      apiKeyId: input.apiKeyId,
+      sessionId: input.sessionId,
+      conversationId: input.conversationId,
+      provider: input.provider,
+      adapter: input.adapter,
+      prompt: input.prompt,
+      workspaceContext: input.workspaceContext,
+      globalInstructions: input.globalInstructions,
+      projectInstructions: input.projectInstructions,
+      model: input.model,
+      harnessVersion: input.harnessVersion,
+      submittedAt: input.submittedAt,
+      agentRole: referral.targetBuilder.agentRole,
+      builderProfileId: referral.targetBuilder.builderProfileId,
+      collaborationRunId: referral.collaborationRunId,
+      referralTraceId: referral.referralTraceId,
+      parentReferralTraceId: referral.parentReferralTraceId ?? undefined,
+      referringBuilderProfileId: referral.sourceBuilder.builderProfileId,
+      referralId: referral.referralId,
+      isReferralExecution: true,
+      orchestrationPriority: input.orchestrationPriority,
+    };
+
+    this.referralExecutionMap.set(referral.referralId, input.executionId);
+
+    const updated: CollaborationReferral = {
+      ...referral,
+      status: 'in_progress',
+      updatedAt: now,
+    };
+    this.referralStore.set(updated.referralId, updated);
+
+    await this.queueService.enqueueExecution(jobPayload);
+
+    return { executionId: input.executionId };
+  }
+
+  async cancelReferral(input: CancelReferralInput): Promise<CollaborationReferral> {
+    const referral = this.getStoredReferral(input.referralId);
+    const run = this.getStoredCollaborationRun(referral.collaborationRunId);
+
+    if (run.userId !== input.cancelledByUserId) {
+      throw new Error(
+        `User ${input.cancelledByUserId} is not authorized to cancel referral ${input.referralId}`,
+      );
+    }
+
+    const terminalStatuses: readonly CollaborationReferral['status'][] = [
+      'completed',
+      'failed',
+      'cancelled',
+      'timed_out',
+      'rejected',
+    ];
+    if (terminalStatuses.includes(referral.status)) {
+      return this.cloneReferral(referral);
+    }
+
+    const executionId = this.referralExecutionMap.get(input.referralId);
+    if (executionId && this.executionResultService) {
+      await this.executionResultService.requestCancel(executionId);
+    }
+
+    const now = this.now();
+    const updated: CollaborationReferral = {
+      ...referral,
+      status: 'cancelled',
+      cancelStatus: 'cancelled',
+      cancelRequestedAt: now,
+      cancelledByUserId: input.cancelledByUserId,
+      cancelReason: input.cancelReason,
+      updatedAt: now,
+    };
+    this.referralStore.set(updated.referralId, updated);
+
+    return this.cloneReferral(updated);
+  }
+
+  async cancelCollaboration(input: CancelCollaborationInput): Promise<CollaborationRun> {
+    const run = this.getStoredCollaborationRun(input.collaborationRunId);
+
+    if (run.userId !== input.cancelledByUserId) {
+      throw new Error(
+        `User ${input.cancelledByUserId} is not authorized to cancel collaboration ${input.collaborationRunId}`,
+      );
+    }
+
+    const activeStatuses: readonly CollaborationReferral['status'][] = [
+      'pending_approval',
+      'approved',
+      'in_progress',
+    ];
+
+    for (const referralId of run.referralIds) {
+      const referral = this.referralStore.get(referralId);
+      if (referral && activeStatuses.includes(referral.status)) {
+        await this.cancelReferral({
+          referralId,
+          cancelledByUserId: input.cancelledByUserId,
+          cancelReason: input.cancelReason,
+        });
+      }
+    }
+
+    const now = this.now();
+    const updatedRun: CollaborationRun = {
+      ...run,
+      status: 'cancelled',
+      cancelRequestedAt: now,
+      cancelledByUserId: input.cancelledByUserId,
+      cancelReason: input.cancelReason,
+      updatedAt: now,
+    };
+    this.collaborationRunStore.set(updatedRun.collaborationRunId, updatedRun);
+
+    return this.cloneCollaborationRun(updatedRun);
+  }
+
+  private assertCanStartExecution(referral: CollaborationReferral): void {
+    const validStatuses: readonly CollaborationReferral['status'][] = [
+      'pending_approval',
+      'approved',
+    ];
+    if (!validStatuses.includes(referral.status)) {
+      throw new Error(
+        `Referral ${referral.referralId} cannot start execution from status ${referral.status}`,
+      );
+    }
+  }
+
+  private assertReadOnlyConstraints(referral: CollaborationReferral): void {
+    if (!referral.constraints.readOnly || referral.constraints.allowWriteTools) {
+      throw new Error(
+        'Only read-only referrals with no write tools are allowed for execution',
+      );
+    }
   }
 
   private resolveConstraints(

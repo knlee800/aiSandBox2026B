@@ -174,6 +174,143 @@ describe('AGENT-PLATFORM-06: WorkerProcessor identity field preservation in ledg
   });
 });
 
+describe('AGENT-PLATFORM-07C2: AiExecutionJob orchestration referral fields', () => {
+  it('AiExecutionJob accepts optional parentReferralTraceId', () => {
+    const job: AiExecutionJob = {
+      executionId: 'e1',
+      userId: 'u1',
+      apiKeyId: 'k1',
+      sessionId: 's1',
+      conversationId: 'c1',
+      provider: 'stub',
+      adapter: 'stub',
+      prompt: 'test',
+      submittedAt: new Date().toISOString(),
+      parentReferralTraceId: 'parent-trace-001',
+    };
+    expect(job.parentReferralTraceId).toBe('parent-trace-001');
+  });
+
+  it('AiExecutionJob accepts optional referringBuilderProfileId', () => {
+    const job: AiExecutionJob = {
+      executionId: 'e1',
+      userId: 'u1',
+      apiKeyId: 'k1',
+      sessionId: 's1',
+      conversationId: 'c1',
+      provider: 'stub',
+      adapter: 'stub',
+      prompt: 'test',
+      submittedAt: new Date().toISOString(),
+      referringBuilderProfileId: 'builder-a',
+    };
+    expect(job.referringBuilderProfileId).toBe('builder-a');
+  });
+
+  it('AiExecutionJob accepts optional orchestrationPriority', () => {
+    const job: AiExecutionJob = {
+      executionId: 'e1',
+      userId: 'u1',
+      apiKeyId: 'k1',
+      sessionId: 's1',
+      conversationId: 'c1',
+      provider: 'stub',
+      adapter: 'stub',
+      prompt: 'test',
+      submittedAt: new Date().toISOString(),
+      orchestrationPriority: 5,
+    };
+    expect(job.orchestrationPriority).toBe(5);
+  });
+
+  it('AiExecutionJob accepts optional referralId', () => {
+    const job: AiExecutionJob = {
+      executionId: 'e1',
+      userId: 'u1',
+      apiKeyId: 'k1',
+      sessionId: 's1',
+      conversationId: 'c1',
+      provider: 'stub',
+      adapter: 'stub',
+      prompt: 'test',
+      submittedAt: new Date().toISOString(),
+      referralId: 'ref-001',
+    };
+    expect(job.referralId).toBe('ref-001');
+  });
+
+  it('AiExecutionJob accepts optional isReferralExecution', () => {
+    const job: AiExecutionJob = {
+      executionId: 'e1',
+      userId: 'u1',
+      apiKeyId: 'k1',
+      sessionId: 's1',
+      conversationId: 'c1',
+      provider: 'stub',
+      adapter: 'stub',
+      prompt: 'test',
+      submittedAt: new Date().toISOString(),
+      isReferralExecution: true,
+    };
+    expect(job.isReferralExecution).toBe(true);
+  });
+
+  it('AiExecutionJob compiles without orchestration referral fields (backward compatible)', () => {
+    const job: AiExecutionJob = {
+      executionId: 'e1',
+      userId: 'u1',
+      apiKeyId: 'k1',
+      sessionId: 's1',
+      conversationId: 'c1',
+      provider: 'stub',
+      adapter: 'stub',
+      prompt: 'test',
+      submittedAt: new Date().toISOString(),
+    };
+    expect(job.parentReferralTraceId).toBeUndefined();
+    expect(job.referringBuilderProfileId).toBeUndefined();
+    expect(job.orchestrationPriority).toBeUndefined();
+    expect(job.referralId).toBeUndefined();
+    expect(job.isReferralExecution).toBeUndefined();
+  });
+});
+
+describe('AGENT-PLATFORM-07C2: WorkerProcessor orchestration referral field preservation', () => {
+  it('WorkerProcessor writes parentReferralTraceId to nextMetadata during finalization', () => {
+    const workerSource = getWorkerSource();
+    expect(workerSource).toContain("if (job.data.parentReferralTraceId !== undefined) nextMetadata.parentReferralTraceId = job.data.parentReferralTraceId");
+  });
+
+  it('WorkerProcessor writes referringBuilderProfileId to nextMetadata during finalization', () => {
+    const workerSource = getWorkerSource();
+    expect(workerSource).toContain("if (job.data.referringBuilderProfileId !== undefined) nextMetadata.referringBuilderProfileId = job.data.referringBuilderProfileId");
+  });
+
+  it('WorkerProcessor writes orchestrationPriority to nextMetadata during finalization', () => {
+    const workerSource = getWorkerSource();
+    expect(workerSource).toContain("if (job.data.orchestrationPriority !== undefined) nextMetadata.orchestrationPriority = job.data.orchestrationPriority");
+  });
+
+  it('WorkerProcessor writes referralId to nextMetadata during finalization', () => {
+    const workerSource = getWorkerSource();
+    expect(workerSource).toContain("if (job.data.referralId !== undefined) nextMetadata.referralId = job.data.referralId");
+  });
+
+  it('WorkerProcessor writes isReferralExecution to nextMetadata during finalization', () => {
+    const workerSource = getWorkerSource();
+    expect(workerSource).toContain("if (job.data.isReferralExecution !== undefined) nextMetadata.isReferralExecution = job.data.isReferralExecution");
+  });
+
+  it('Orchestration referral preservation block appears after AGENT-PLATFORM-06 block and before preApplyCheckpointHash', () => {
+    const workerSource = getWorkerSource();
+    const platform06Index = workerSource.indexOf('AGENT-PLATFORM-06: Preserve upstream identity');
+    const platform07C2Index = workerSource.indexOf('AGENT-PLATFORM-07C2: Preserve orchestration referral');
+    const checkpointHashIndex = workerSource.indexOf('if (harnessPreApplyCheckpointHash)');
+    expect(platform07C2Index).toBeGreaterThan(platform06Index);
+    expect(platform07C2Index).toBeLessThan(checkpointHashIndex);
+  });
+});
+
 describe('AGENT-HARNESS-07B: AgentHarnessRunRequestV1 identity fields', () => {
   it('AgentHarnessRunRequestV1 accepts optional identity fields', () => {
     const request: AgentHarnessRunRequestV1 = {

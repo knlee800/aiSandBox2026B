@@ -8,13 +8,28 @@ import {
   READ_ONLY_BLOCKED_TOOL_IDS,
   READ_ONLY_MODE_INDICATOR,
 } from '../orchestration.contracts';
+import { QueueService } from '../../queue/queue.service';
+import { ExecutionResultService } from '../../ai/execution-result.service';
 
 describe('OrchestrationService', () => {
   let service: OrchestrationService;
+  let mockQueueService: { enqueueExecution: jest.Mock };
+  let mockExecutionResultService: { requestCancel: jest.Mock };
 
   beforeEach(async () => {
+    mockQueueService = {
+      enqueueExecution: jest.fn().mockResolvedValue(undefined),
+    };
+    mockExecutionResultService = {
+      requestCancel: jest.fn().mockResolvedValue(true),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
-      providers: [OrchestrationService],
+      providers: [
+        OrchestrationService,
+        { provide: QueueService, useValue: mockQueueService },
+        { provide: ExecutionResultService, useValue: mockExecutionResultService },
+      ],
     }).compile();
 
     service = module.get<OrchestrationService>(OrchestrationService);
@@ -422,5 +437,388 @@ describe('OrchestrationService', () => {
     expect(run.collaborationRunId).toBe('collab-10');
     expect(referral.collaborationRunId).toBe('collab-10');
     expect(referral.status).toBe('pending_approval');
+  });
+});
+
+describe('AGENT-PLATFORM-07C2: startReferralExecution', () => {
+  let service: OrchestrationService;
+  let mockQueueService: { enqueueExecution: jest.Mock };
+  let mockExecutionResultService: { requestCancel: jest.Mock };
+
+  beforeEach(async () => {
+    mockQueueService = {
+      enqueueExecution: jest.fn().mockResolvedValue(undefined),
+    };
+    mockExecutionResultService = {
+      requestCancel: jest.fn().mockResolvedValue(true),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        OrchestrationService,
+        { provide: QueueService, useValue: mockQueueService },
+        { provide: ExecutionResultService, useValue: mockExecutionResultService },
+      ],
+    }).compile();
+
+    service = module.get<OrchestrationService>(OrchestrationService);
+  });
+
+  function setupReferral(overrides?: { referralId?: string; collabId?: string }) {
+    const collabId = overrides?.collabId ?? 'collab-exec-01';
+    const refId = overrides?.referralId ?? 'ref-exec-01';
+
+    service.createCollaborationRun({
+      collaborationRunId: collabId,
+      userId: 'user-01',
+      projectId: 'project-01',
+      initiatorAgent: { agentRole: 'builder', builderProfileId: 'builder-a' },
+    });
+
+    return service.createReferral({
+      referralId: refId,
+      referralTraceId: `trace-${refId}`,
+      collaborationRunId: collabId,
+      parentReferralTraceId: 'parent-trace-001',
+      sourceBuilder: { agentRole: 'builder', builderProfileId: 'builder-a' },
+      targetBuilder: { agentRole: 'chief-of-staff', builderProfileId: 'builder-b' },
+      idempotencyKey: `key-${refId}`,
+      referralChain: ['builder-a'],
+      visitedBuilderProfileIds: ['builder-a'],
+      depth: 1,
+    });
+  }
+
+  function baseExecutionInput(referralId: string) {
+    return {
+      referralId,
+      executionId: 'exec-001',
+      sessionId: 'session-001',
+      conversationId: 'conv-001',
+      userId: 'user-01',
+      apiKeyId: 'apikey-01',
+      prompt: 'analyze workspace',
+      provider: 'stub',
+      adapter: 'stub',
+      model: 'test-model',
+      harnessVersion: 'v1',
+      submittedAt: new Date().toISOString(),
+      orchestrationPriority: 10,
+    } as const;
+  }
+
+  it('builds enriched job payload with all orchestration metadata fields', async () => {
+    const referral = setupReferral();
+    await service.startReferralExecution(baseExecutionInput(referral.referralId));
+
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledTimes(1);
+    const payload = mockQueueService.enqueueExecution.mock.calls[0][0];
+
+    expect(payload.executionId).toBe('exec-001');
+    expect(payload.collaborationRunId).toBe('collab-exec-01');
+    expect(payload.referralTraceId).toBe(`trace-${referral.referralId}`);
+    expect(payload.parentReferralTraceId).toBe('parent-trace-001');
+    expect(payload.referringBuilderProfileId).toBe('builder-a');
+    expect(payload.referralId).toBe(referral.referralId);
+    expect(payload.isReferralExecution).toBe(true);
+    expect(payload.orchestrationPriority).toBe(10);
+    expect(payload.agentRole).toBe('chief-of-staff');
+    expect(payload.builderProfileId).toBe('builder-b');
+  });
+
+  it('transitions referral to in_progress', async () => {
+    const referral = setupReferral();
+    await service.startReferralExecution(baseExecutionInput(referral.referralId));
+
+    const updated = service.getReferral(referral.referralId);
+    expect(updated!.status).toBe('in_progress');
+  });
+
+  it('rejects if referral is not in a valid starting state', async () => {
+    const referral = setupReferral();
+    service.completeReferral({
+      referralId: referral.referralId,
+      summary: 'done',
+    });
+
+    await expect(
+      service.startReferralExecution(baseExecutionInput(referral.referralId)),
+    ).rejects.toThrow(/cannot start execution/i);
+  });
+
+  it('records executionId in private map for cancel lookup', async () => {
+    const referral = setupReferral();
+    await service.startReferralExecution(baseExecutionInput(referral.referralId));
+
+    await service.cancelReferral({
+      referralId: referral.referralId,
+      cancelledByUserId: 'user-01',
+      cancelReason: 'testing cancel',
+    });
+
+    expect(mockExecutionResultService.requestCancel).toHaveBeenCalledWith('exec-001');
+  });
+
+  it('enforces read-only constraints before enqueue', async () => {
+    service.createCollaborationRun({
+      collaborationRunId: 'collab-ro-check',
+      userId: 'user-01',
+      projectId: 'project-01',
+      initiatorAgent: { agentRole: 'builder', builderProfileId: 'builder-a' },
+    });
+
+    expect(() =>
+      service.createReferral({
+        referralId: 'ref-ro-check',
+        collaborationRunId: 'collab-ro-check',
+        sourceBuilder: { agentRole: 'builder', builderProfileId: 'builder-a' },
+        targetBuilder: { agentRole: 'chief-of-staff', builderProfileId: 'builder-b' },
+        idempotencyKey: 'key-ro-check',
+        constraints: { readOnly: false, allowWriteTools: true },
+      }),
+    ).toThrow(/read-only/i);
+
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+  });
+});
+
+describe('AGENT-PLATFORM-07C2: cancelReferral', () => {
+  let service: OrchestrationService;
+  let mockQueueService: { enqueueExecution: jest.Mock };
+  let mockExecutionResultService: { requestCancel: jest.Mock };
+
+  beforeEach(async () => {
+    mockQueueService = {
+      enqueueExecution: jest.fn().mockResolvedValue(undefined),
+    };
+    mockExecutionResultService = {
+      requestCancel: jest.fn().mockResolvedValue(true),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        OrchestrationService,
+        { provide: QueueService, useValue: mockQueueService },
+        { provide: ExecutionResultService, useValue: mockExecutionResultService },
+      ],
+    }).compile();
+
+    service = module.get<OrchestrationService>(OrchestrationService);
+  });
+
+  function setupStartedReferral() {
+    service.createCollaborationRun({
+      collaborationRunId: 'collab-cancel-01',
+      userId: 'user-01',
+      projectId: 'project-01',
+      initiatorAgent: { agentRole: 'builder', builderProfileId: 'builder-a' },
+    });
+
+    service.createReferral({
+      referralId: 'ref-cancel-01',
+      referralTraceId: 'trace-cancel-01',
+      collaborationRunId: 'collab-cancel-01',
+      sourceBuilder: { agentRole: 'builder', builderProfileId: 'builder-a' },
+      targetBuilder: { agentRole: 'chief-of-staff', builderProfileId: 'builder-b' },
+      idempotencyKey: 'key-cancel-01',
+      referralChain: ['builder-a'],
+      visitedBuilderProfileIds: ['builder-a'],
+      depth: 1,
+    });
+
+    return service.startReferralExecution({
+      referralId: 'ref-cancel-01',
+      executionId: 'exec-cancel-01',
+      sessionId: 'session-01',
+      conversationId: 'conv-01',
+      userId: 'user-01',
+      apiKeyId: 'apikey-01',
+      prompt: 'test',
+      provider: 'stub',
+      adapter: 'stub',
+      submittedAt: new Date().toISOString(),
+    });
+  }
+
+  it('calls requestCancel with the correct executionId', async () => {
+    await setupStartedReferral();
+
+    await service.cancelReferral({
+      referralId: 'ref-cancel-01',
+      cancelledByUserId: 'user-01',
+      cancelReason: 'user requested',
+    });
+
+    expect(mockExecutionResultService.requestCancel).toHaveBeenCalledWith('exec-cancel-01');
+  });
+
+  it('updates referral cancelStatus and status to cancelled', async () => {
+    await setupStartedReferral();
+
+    const cancelled = await service.cancelReferral({
+      referralId: 'ref-cancel-01',
+      cancelledByUserId: 'user-01',
+      cancelReason: 'user requested',
+    });
+
+    expect(cancelled.status).toBe('cancelled');
+    expect(cancelled.cancelStatus).toBe('cancelled');
+    expect(cancelled.cancelRequestedAt).not.toBeNull();
+    expect(cancelled.cancelledByUserId).toBe('user-01');
+    expect(cancelled.cancelReason).toBe('user requested');
+  });
+
+  it('enforces userId ownership', async () => {
+    await setupStartedReferral();
+
+    await expect(
+      service.cancelReferral({
+        referralId: 'ref-cancel-01',
+        cancelledByUserId: 'user-other',
+        cancelReason: 'unauthorized',
+      }),
+    ).rejects.toThrow(/not authorized/i);
+  });
+
+  it('handles gracefully when execution has already completed', async () => {
+    await setupStartedReferral();
+    mockExecutionResultService.requestCancel.mockResolvedValue(false);
+
+    const cancelled = await service.cancelReferral({
+      referralId: 'ref-cancel-01',
+      cancelledByUserId: 'user-01',
+      cancelReason: 'too late',
+    });
+
+    expect(cancelled.status).toBe('cancelled');
+    expect(cancelled.cancelStatus).toBe('cancelled');
+    expect(mockExecutionResultService.requestCancel).toHaveBeenCalledWith('exec-cancel-01');
+  });
+});
+
+describe('AGENT-PLATFORM-07C2: cancelCollaboration', () => {
+  let service: OrchestrationService;
+  let mockQueueService: { enqueueExecution: jest.Mock };
+  let mockExecutionResultService: { requestCancel: jest.Mock };
+
+  beforeEach(async () => {
+    mockQueueService = {
+      enqueueExecution: jest.fn().mockResolvedValue(undefined),
+    };
+    mockExecutionResultService = {
+      requestCancel: jest.fn().mockResolvedValue(true),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        OrchestrationService,
+        { provide: QueueService, useValue: mockQueueService },
+        { provide: ExecutionResultService, useValue: mockExecutionResultService },
+      ],
+    }).compile();
+
+    service = module.get<OrchestrationService>(OrchestrationService);
+  });
+
+  it('cascade-cancels all active referral executions', async () => {
+    service.createCollaborationRun({
+      collaborationRunId: 'collab-cascade-01',
+      userId: 'user-01',
+      projectId: 'project-01',
+      initiatorAgent: { agentRole: 'builder', builderProfileId: 'builder-a' },
+    });
+
+    service.createReferral({
+      referralId: 'ref-cascade-01',
+      collaborationRunId: 'collab-cascade-01',
+      sourceBuilder: { agentRole: 'builder', builderProfileId: 'builder-a' },
+      targetBuilder: { agentRole: 'chief-of-staff', builderProfileId: 'builder-b' },
+      idempotencyKey: 'key-cascade-01',
+    });
+
+    service.createReferral({
+      referralId: 'ref-cascade-02',
+      collaborationRunId: 'collab-cascade-01',
+      sourceBuilder: { agentRole: 'builder', builderProfileId: 'builder-b' },
+      targetBuilder: { agentRole: 'product-strategy', builderProfileId: 'builder-c' },
+      idempotencyKey: 'key-cascade-02',
+    });
+
+    await service.startReferralExecution({
+      referralId: 'ref-cascade-01',
+      executionId: 'exec-cascade-01',
+      sessionId: 's1',
+      conversationId: 'c1',
+      userId: 'user-01',
+      apiKeyId: 'k1',
+      prompt: 'test',
+      provider: 'stub',
+      adapter: 'stub',
+      submittedAt: new Date().toISOString(),
+    });
+
+    await service.startReferralExecution({
+      referralId: 'ref-cascade-02',
+      executionId: 'exec-cascade-02',
+      sessionId: 's2',
+      conversationId: 'c2',
+      userId: 'user-01',
+      apiKeyId: 'k1',
+      prompt: 'test2',
+      provider: 'stub',
+      adapter: 'stub',
+      submittedAt: new Date().toISOString(),
+    });
+
+    await service.cancelCollaboration({
+      collaborationRunId: 'collab-cascade-01',
+      cancelledByUserId: 'user-01',
+      cancelReason: 'cancel all',
+    });
+
+    expect(mockExecutionResultService.requestCancel).toHaveBeenCalledWith('exec-cascade-01');
+    expect(mockExecutionResultService.requestCancel).toHaveBeenCalledWith('exec-cascade-02');
+
+    const ref1 = service.getReferral('ref-cascade-01');
+    const ref2 = service.getReferral('ref-cascade-02');
+    expect(ref1!.status).toBe('cancelled');
+    expect(ref2!.status).toBe('cancelled');
+  });
+
+  it('updates collaboration run status to cancelled', async () => {
+    service.createCollaborationRun({
+      collaborationRunId: 'collab-cascade-02',
+      userId: 'user-01',
+      projectId: 'project-01',
+      initiatorAgent: { agentRole: 'builder', builderProfileId: 'builder-a' },
+    });
+
+    const cancelledRun = await service.cancelCollaboration({
+      collaborationRunId: 'collab-cascade-02',
+      cancelledByUserId: 'user-01',
+      cancelReason: 'done',
+    });
+
+    expect(cancelledRun.status).toBe('cancelled');
+    expect(cancelledRun.cancelledByUserId).toBe('user-01');
+    expect(cancelledRun.cancelReason).toBe('done');
+    expect(cancelledRun.cancelRequestedAt).not.toBeNull();
+  });
+
+  it('enforces userId ownership', async () => {
+    service.createCollaborationRun({
+      collaborationRunId: 'collab-cascade-03',
+      userId: 'user-01',
+      projectId: 'project-01',
+      initiatorAgent: { agentRole: 'builder', builderProfileId: 'builder-a' },
+    });
+
+    await expect(
+      service.cancelCollaboration({
+        collaborationRunId: 'collab-cascade-03',
+        cancelledByUserId: 'user-other',
+        cancelReason: 'unauthorized',
+      }),
+    ).rejects.toThrow(/not authorized/i);
   });
 });

@@ -1016,6 +1016,13 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
           if (job.data.collaborationRunId !== undefined) nextMetadata.collaborationRunId = job.data.collaborationRunId;
           if (job.data.referralTraceId !== undefined) nextMetadata.referralTraceId = job.data.referralTraceId;
 
+          // AGENT-PLATFORM-07C2: Preserve orchestration referral fields in ledger finalization metadata.
+          if (job.data.parentReferralTraceId !== undefined) nextMetadata.parentReferralTraceId = job.data.parentReferralTraceId;
+          if (job.data.referringBuilderProfileId !== undefined) nextMetadata.referringBuilderProfileId = job.data.referringBuilderProfileId;
+          if (job.data.orchestrationPriority !== undefined) nextMetadata.orchestrationPriority = job.data.orchestrationPriority;
+          if (job.data.referralId !== undefined) nextMetadata.referralId = job.data.referralId;
+          if (job.data.isReferralExecution !== undefined) nextMetadata.isReferralExecution = job.data.isReferralExecution;
+
           if (harnessPreApplyCheckpointHash) {
             nextMetadata.preApplyCheckpointHash = harnessPreApplyCheckpointHash;
           }

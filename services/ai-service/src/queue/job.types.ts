@@ -63,6 +63,13 @@ export interface AiExecutionJob {
   collaborationRunId?: string;
   referralTraceId?: string;
 
+  /** AGENT-PLATFORM-07C2: Orchestration referral metadata fields. */
+  parentReferralTraceId?: string;
+  referringBuilderProfileId?: string;
+  orchestrationPriority?: number;
+  referralId?: string;
+  isReferralExecution?: boolean;
+
   requestId?: string;
 
   submittedAt: string;
