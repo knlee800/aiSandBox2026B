@@ -25148,11 +25148,11 @@ Resume AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell.
 
 ## AGENT PLATFORM / AINOW.BIZ MULTI-AGENT
 
-**Family status:** AGENT-PLATFORM-07E COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07D COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07C COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07C2 COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07C1 COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07B COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07A COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07 COMPLETE and LOCKED, AGENT-PLATFORM-06 COMPLETE and LOCKED, AGENT-PLATFORM-05 COMPLETE and LOCKED, AGENT-PLATFORM-04 COMPLETE and LOCKED, AGENT-PLATFORM-03 COMPLETE and LOCKED, AGENT-PLATFORM-02 COMPLETE and LOCKED, AGENT-PLATFORM-01 COMPLETE and LOCKED, AGENT-PLATFORM-00 COMPLETE and LOCKED. AGENT-HARNESS write canary remains a separate track.
+**Family status:** AGENT-PLATFORM-07F1 COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07F ACTIVE (Step 2 COMPLETE, 2026-07-10, split child slices: 07F1 COMPLETE and LOCKED, 07F2 planned / next recommended, 07F3 planned) — AGENT-PLATFORM-07E COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07D COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07C COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07C2 COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07C1 COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07B COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07A COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07 COMPLETE and LOCKED, AGENT-PLATFORM-06 COMPLETE and LOCKED, AGENT-PLATFORM-05 COMPLETE and LOCKED, AGENT-PLATFORM-04 COMPLETE and LOCKED, AGENT-PLATFORM-03 COMPLETE and LOCKED, AGENT-PLATFORM-02 COMPLETE and LOCKED, AGENT-PLATFORM-01 COMPLETE and LOCKED, AGENT-PLATFORM-00 COMPLETE and LOCKED. AGENT-HARNESS write canary remains a separate track.
 
 **Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` — controls cross-family priority order; Knowledge before Collaboration before Billing.
 
-**Current stage:** AGENT-PLATFORM-07E — Read-Only Coordinator Canary — COMPLETE and LOCKED (2026-07-10). All 4 steps complete. Unit/in-process canary PASS: 16 canary tests + 40 regression tests + TypeScript clean. Checkpoint: `docs/AGENT-PLATFORM-07E-CHECKPOINT.md`. No ACTIVE task. Next recommended: live runtime orchestration integration canary (not yet registered; Keith approval required). AGENT-HARNESS write canary remains a separate track.
+**Current stage:** No ACTIVE task. AGENT-PLATFORM-07F1 COMPLETE and LOCKED (2026-07-10) — Queue Transport + Metadata Preservation Canary — all 4 steps complete — live runtime canary PASS. 9 orchestration fields verified in `usage_records.metadata` JSONB. Execution ID: 8da5403a-f20e-480e-b7d8-196b18f7faef. stub provider; zero tokens; zero provider/API calls. Cleanup complete. Checkpoint: `docs/AGENT-PLATFORM-07F1-CHECKPOINT.md`. Parent: AGENT-PLATFORM-07F ACTIVE (Step 2 COMPLETE, 2026-07-10 — split child slices: 07F1 COMPLETE and LOCKED, 07F2/07F3 planned only). Next recommended: AGENT-PLATFORM-07F2 — Cancel Signal Path Canary — not registered. AGENT-HARNESS write canary remains a separate track.
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 — ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED — 2026-07-04)
@@ -25171,6 +25171,8 @@ Resume AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell.
 14. AGENT-PLATFORM-07C3 — Targeted Tests and Parent Consolidation (COMPLETE and LOCKED — 2026-07-10)
 15. AGENT-PLATFORM-07D — Collaboration Audit Events (COMPLETE and LOCKED — 2026-07-10)
 16. AGENT-PLATFORM-07E — Read-Only Coordinator Canary (COMPLETE and LOCKED — 2026-07-10)
+17. AGENT-PLATFORM-07F — Live Runtime Orchestration Integration Canary (ACTIVE — Step 2 COMPLETE — split to child slices — 2026-07-10)
+18. AGENT-PLATFORM-07F1 — Queue Transport + Metadata Preservation Canary (COMPLETE and LOCKED — 2026-07-10)
 
 **Completed foundations (prerequisites):**
 - AGENT HARNESS family foundations COMPLETE and LOCKED — Agent Harness v1 contracts, tool protocol, model adapters, tool dispatcher, orchestrator loop, execution-bound hardening (through AGENT-HARNESS-05C8)
@@ -25789,7 +25791,7 @@ This task produces the authoritative plan for how multiple Builder Agents can co
 
 **AGENT-HARNESS-07 status:** COMPLETE and LOCKED (2026-07-07) — Per-Builder Harness Config Adapter. All 3 child slices COMPLETE and LOCKED: 07A, 07B, 07C. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
 **AGENT-HARNESS-06C status:** Not registered. Deferred — prerequisite (AGENT-HARNESS-07) is now COMPLETE and LOCKED; AGENT-HARNESS-06C still deferred until Keith explicitly approves canary activation.
-**Multi-builder collaboration/runtime orchestration status:** AGENT-PLATFORM-07E COMPLETE and LOCKED (2026-07-10). All 4 steps complete. Unit/in-process canary PASS: 16 canary tests (orchestration.canary.spec.ts) + 40 regression tests (orchestration.service.spec.ts) + TypeScript clean. Checkpoint: `docs/AGENT-PLATFORM-07E-CHECKPOINT.md`. No ACTIVE task. Next recommended: live runtime orchestration integration canary (not yet registered; Keith approval required). AGENT-HARNESS write canary remains a separate track. AGENT-PLATFORM-07D COMPLETE and LOCKED (2026-07-10). All 4 steps complete. Collaboration/referral audit events: `InMemoryOrchestrationAuditRecorder` created; 8 event types emitted at OrchestrationService lifecycle transitions; 40 tests pass; TypeScript clean. Checkpoint: `docs/AGENT-PLATFORM-07D-CHECKPOINT.md`. AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10). Parent AGENT-PLATFORM-07C COMPLETE and LOCKED (2026-07-10). All 3 child slices COMPLETE and LOCKED: 07C1 COMPLETE and LOCKED (2026-07-09), 07C2 COMPLETE and LOCKED (2026-07-09), 07C3 COMPLETE and LOCKED (2026-07-10). AGENT-PLATFORM-07B COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-07A COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-07 COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-06 COMPLETE and LOCKEDD — 2026-07-09. AGENT-PLATFORM-05 COMPLETE and LOCKED — 2026-07-09. AGENT-HARNESS write canary remains a separate track.
+**Multi-builder collaboration/runtime orchestration status:** AGENT-PLATFORM-07F1 COMPLETE and LOCKED (2026-07-10) — all 4 steps complete. Live runtime canary PASS: queue transport + metadata preservation; 9 orchestration fields survived BullMQ transport; `usage_records.metadata` JSONB verified. Execution ID: 8da5403a-f20e-480e-b7d8-196b18f7faef. stub provider; zero tokens; zero provider/API calls. Cleanup complete. Checkpoint: `docs/AGENT-PLATFORM-07F1-CHECKPOINT.md`. Parent AGENT-PLATFORM-07F ACTIVE (Step 2 COMPLETE, 2026-07-10) — split child slices: 07F1 COMPLETE and LOCKED, 07F2 Cancel Signal Path Canary (planned only / next recommended), 07F3 Consolidation (planned only). No ACTIVE task. Next recommended: AGENT-PLATFORM-07F2 — Cancel Signal Path Canary — not registered. AGENT-HARNESS write canary remains a separate track. AGENT-PLATFORM-07E COMPLETE and LOCKED (2026-07-10). All 4 steps complete. Unit/in-process canary PASS: 16 canary tests (orchestration.canary.spec.ts) + 40 regression tests (orchestration.service.spec.ts) + TypeScript clean. Checkpoint: `docs/AGENT-PLATFORM-07E-CHECKPOINT.md`. AGENT-PLATFORM-07D COMPLETE and LOCKED (2026-07-10). All 4 steps complete. Collaboration/referral audit events: `InMemoryOrchestrationAuditRecorder` created; 8 event types emitted at OrchestrationService lifecycle transitions; 40 tests pass; TypeScript clean. Checkpoint: `docs/AGENT-PLATFORM-07D-CHECKPOINT.md`. AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10). Parent AGENT-PLATFORM-07C COMPLETE and LOCKED (2026-07-10). All 3 child slices COMPLETE and LOCKED: 07C1 COMPLETE and LOCKED (2026-07-09), 07C2 COMPLETE and LOCKED (2026-07-09), 07C3 COMPLETE and LOCKED (2026-07-10). AGENT-PLATFORM-07B COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-07A COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-07 COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-06 COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-05 COMPLETE and LOCKED — 2026-07-09. AGENT-HARNESS write canary remains a separate track.
 **BILLING-READY-04+ status:** Not registered. Deferred.
 
 ---
@@ -26114,7 +26116,9 @@ AGENT-PLATFORM-05 established the multi-builder orchestration plan. AGENT-PLATFO
 - AGENT-PLATFORM-07B — API Gateway orchestration module skeleton (Medium risk)
 - AGENT-PLATFORM-07C — Read-only referral enqueue flow + cancel redesign (High risk)
 - AGENT-PLATFORM-07D — Collaboration audit events (Low risk)
-- AGENT-PLATFORM-07E — Read-only coordinator canary (High risk)
+- AGENT-PLATFORM-07E — Read-only coordinator canary (High risk) — COMPLETE and LOCKED (2026-07-10)
+- AGENT-PLATFORM-07F — Live runtime orchestration integration canary (High risk) — ACTIVE — Step 2 COMPLETE (split child slices: 07F1 COMPLETE and LOCKED, 07F2 planned / next recommended, 07F3 planned)
+- AGENT-PLATFORM-07F1 — Queue Transport + Metadata Preservation Canary (High risk) — COMPLETE and LOCKED (2026-07-10)
 
 **AGENT-HARNESS write canary remains a separate track — not registered, not part of AGENT-PLATFORM-07 child slices.**
 
@@ -27215,9 +27219,271 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 **AGENT-HARNESS write canary remains a separate track** — not registered, not part of AGENT-PLATFORM-07E.
 
-**Next recommended task:** Live runtime orchestration integration canary — validate read-only coordinator with actual API Gateway + BullMQ + Worker (analogous to AGENT-HARNESS-06D/06E for the harness). Not yet registered. Keith approval required. AGENT-HARNESS write canary remains a separate track and is not the next recommended item unless Keith explicitly directs it.
+**Next recommended task:** AGENT-PLATFORM-07F2 — Cancel Signal Path Canary — not registered. AGENT-PLATFORM-07F1 COMPLETE and LOCKED (2026-07-10). Parent AGENT-PLATFORM-07F ACTIVE (Step 2 COMPLETE — split child slices: 07F1 COMPLETE and LOCKED, 07F2/07F3 planned only). AGENT-HARNESS write canary remains a separate track.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-07E.
+
+---
+
+#### AGENT-PLATFORM-07F: Live Runtime Orchestration Integration Canary
+
+**Status:** ACTIVE — Step 2 COMPLETE (Preflight Plan / Split Decision, 2026-07-10)
+**Registered:** 2026-07-10
+**Task ID:** AGENT-PLATFORM-07F
+**Family:** AGENT PLATFORM / MULTI-BUILDER ORCHESTRATION / READ-ONLY COORDINATOR / LIVE RUNTIME CANARY
+**Priority:** High
+**Nature:** CANARY / VALIDATION — live runtime orchestration integration canary — runtime-sensitive
+**Risk:** HIGH — future child slices involve Docker, PostgreSQL, Redis, API Gateway, AI Service Worker, BullMQ queue transport, and PostgreSQL-backed cancel signaling
+**Keith approval:** Keith approved AGENT-PLATFORM-07F registration 2026-07-10 ("approve")
+
+#### Workflow Steps (4-step loop — HIGH risk)
+
+1. **Registration** — COMPLETE (2026-07-10)
+2. **Live runtime canary readiness / preflight plan** — COMPLETE (2026-07-10). Split decision: 07F → child slices 07F1/07F2/07F3. Preflight: `docs/AGENT-PLATFORM-07F-LIVE-RUNTIME-CANARY-PREFLIGHT.md`.
+3. **Live runtime orchestration integration canary execution** — SPLIT to child slices (see below)
+4. **Consolidation / checkpoint** — PENDING (07F3)
+
+#### Split Decision (Step 2 Result)
+
+Step 2 preflight plan decided to split 07F into focused child slices before live execution. Rationale: cancel signal path has timing dependency incompatible with `test-harness-stub` (worker completes <1s); splitting isolates failures; governance alignment (CLAUDE.md prefers smaller bounded child slices for HIGH risk).
+
+| Child Slice | Name | Status |
+|-------------|------|--------|
+| AGENT-PLATFORM-07F1 | Queue Transport + Metadata Preservation Canary | COMPLETE and LOCKED (2026-07-10) — live runtime canary PASS |
+| AGENT-PLATFORM-07F2 | Cancel Signal Path Canary | PLANNED ONLY — not yet registered — next recommended |
+| AGENT-PLATFORM-07F3 | Consolidation Checkpoint | PLANNED ONLY — not yet registered |
+
+#### Dependencies
+
+- AGENT-PLATFORM-07E COMPLETE and LOCKED (2026-07-10)
+- AGENT-PLATFORM-07D COMPLETE and LOCKED (2026-07-10)
+- AGENT-PLATFORM-07C COMPLETE and LOCKED (2026-07-10)
+- AGENT-PLATFORM-07C1 COMPLETE and LOCKED (2026-07-09)
+- AGENT-PLATFORM-07C2 COMPLETE and LOCKED (2026-07-09)
+- AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10)
+- AGENT-PLATFORM-07B COMPLETE and LOCKED (2026-07-09)
+- AGENT-PLATFORM-07A COMPLETE and LOCKED (2026-07-09)
+- AGENT-PLATFORM-07 COMPLETE and LOCKED (2026-07-09)
+- AGENT-PLATFORM-06 COMPLETE and LOCKED (2026-07-09)
+- AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07)
+- AGENT-HARNESS-06E COMPLETE and LOCKED (2026-07-09)
+- Keith approval recorded for 07F registration (2026-07-10)
+
+#### Purpose
+
+Validate the read-only coordinator lifecycle beyond in-process mocks. Following the AGENT-HARNESS-06D/06E precedent (which proved the harness through live BullMQ/Worker/API Gateway after the Jest canary in 06C), this task validates orchestration metadata survival across the enqueue boundary, worker receipt of orchestration fields, audit events, and cancel signal paths — all using actual runtime transport rather than mocked dependencies. Executed as child slices 07F1 (transport + metadata), 07F2 (cancel signal), 07F3 (consolidation).
+
+#### Canary Scope (Split Across Child Slices)
+
+- 07F1: Submit one orchestration-enriched job via real BullMQ; verify orchestration metadata in `usage_records.metadata` JSONB; verify worker receives orchestration fields; clean up test artifacts; `test-harness-stub` only; no container-manager; no provider/API calls
+- 07F2: Verify `ExecutionResultService.requestCancel()` updates `execution_status` in real PostgreSQL via controlled DB row insertion; deterministic (not race-based)
+- 07F3: Consolidation checkpoint; parent close
+
+#### Runtime Safety Note
+
+Before any child-slice Step 3 (runtime execution), verify explicitly with Keith that Docker/PostgreSQL/Redis are running or approved to start. Do not assume runtime services are available. Each child-slice Step 2 must confirm exact runtime readiness and obtain explicit Keith approval before Step 3.
+
+#### Non-Goals
+
+- No implementation during registration or preflight
+- No runtime execution in Steps 1–2
+- No AGENT-HARNESS write canary
+- No billing enforcement
+- No provider/API calls
+- No browser smoke
+- No git commits/pushes
+
+#### UX/UI Note
+
+No UI text should be added in this task. If future work adds UI text, aiSandBox is multilingual-first and must update:
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impeccable and Emil Kowalski skills are advisory only.
+
+#### Acceptance Criteria
+
+- [x] AGENT-PLATFORM-07F registered as ACTIVE parent task
+- [x] AGENT-PLATFORM-07F Step 1 COMPLETE (Registration, 2026-07-10)
+- [x] AGENT-PLATFORM-07F Step 2 COMPLETE (Preflight Plan / Split Decision, 2026-07-10)
+- [x] AGENT-PLATFORM-07E remains COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-07D remains COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-07C/07C1/07C2/07C3 remain COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-07B/07A remain COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-07/06/05/04 remain COMPLETE and LOCKED
+- [x] AGENT-HARNESS-07/06E remain COMPLETE and LOCKED
+- [x] Split decision recorded: 07F1/07F2/07F3 child slices
+- [x] 07F1 ACTIVE, 07F2/07F3 planned only (not registered)
+- [x] AGENT-HARNESS write canary remains separate and not registered
+- [x] No implementation files changed (Steps 1–2)
+- [x] No commands run (Steps 1–2)
+- [x] One-active-task rule satisfied
+- [x] 07F1 — Queue Transport + Metadata Preservation Canary — COMPLETE and LOCKED (2026-07-10) — live runtime canary PASS. Checkpoint: `docs/AGENT-PLATFORM-07F1-CHECKPOINT.md`.
+- [ ] 07F2 — Cancel Signal Path Canary — PLANNED (not registered) — next recommended
+- [ ] 07F3 — Consolidation Checkpoint — PLANNED (not registered)
+
+**AGENT-HARNESS write canary remains a separate track** — not registered, not part of AGENT-PLATFORM-07F.
+
+**Next step:** AGENT-PLATFORM-07F2 — Cancel Signal Path Canary — not registered. AGENT-PLATFORM-07F1 COMPLETE and LOCKED (2026-07-10). Checkpoint: `docs/AGENT-PLATFORM-07F1-CHECKPOINT.md`.
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-07F.
+
+---
+
+#### AGENT-PLATFORM-07F1: Queue Transport + Metadata Preservation Canary
+
+**Status:** COMPLETE and LOCKED (2026-07-10) — all 4 steps complete — live runtime canary PASS
+**Registered:** 2026-07-10
+**Task ID:** AGENT-PLATFORM-07F1
+**Family:** AGENT PLATFORM / MULTI-BUILDER ORCHESTRATION / READ-ONLY COORDINATOR / LIVE RUNTIME CANARY
+**Priority:** High
+**Nature:** CANARY / VALIDATION — live queue transport and orchestration metadata preservation canary — runtime-sensitive
+**Risk:** HIGH — resolved. Live runtime canary PASS. Docker + PostgreSQL + Redis + AI Service Worker used. API Gateway and container-manager not required.
+**Parent:** AGENT-PLATFORM-07F
+**Keith approval:** Keith approved AGENT-PLATFORM-07F1 registration 2026-07-10 ("approve")
+
+#### Workflow Steps (4-step child-slice loop — HIGH risk)
+
+1. **Registration** — COMPLETE (2026-07-10)
+2. **Runtime execution readiness / Keith approval gate** — COMPLETE (2026-07-10). Readiness: `docs/AGENT-PLATFORM-07F1-RUNTIME-EXECUTION-READINESS.md`. Topology: Docker + PostgreSQL + Redis + AI Service Worker (no API Gateway, no container-manager).
+3. **Queue transport + metadata preservation canary execution** — COMPLETE (2026-07-10) — PASS. Execution ID: `8da5403a-f20e-480e-b7d8-196b18f7faef`. Provider: stub. Duration: 18ms. 9 orchestration fields verified in `usage_records.metadata` JSONB. Cleanup complete. Report: `docs/AGENT-PLATFORM-07F1-RUNTIME-CANARY-EXECUTION-REPORT.md`.
+4. **Consolidation / checkpoint** — COMPLETE (2026-07-10). Checkpoint: `docs/AGENT-PLATFORM-07F1-CHECKPOINT.md`.
+
+#### Dependencies
+
+- AGENT-PLATFORM-07F ACTIVE with Step 2 COMPLETE (2026-07-10)
+- AGENT-PLATFORM-07E COMPLETE and LOCKED (2026-07-10)
+- AGENT-PLATFORM-07D COMPLETE and LOCKED (2026-07-10)
+- AGENT-PLATFORM-07C/07C1/07C2/07C3 COMPLETE and LOCKED
+- AGENT-PLATFORM-07B/07A COMPLETE and LOCKED
+- AGENT-PLATFORM-07/06/05/04 COMPLETE and LOCKED
+- AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07)
+- AGENT-HARNESS-06E COMPLETE and LOCKED (2026-07-09)
+- Keith approval recorded for 07F1 registration (2026-07-10)
+
+#### Purpose
+
+Prove orchestration metadata survives the real BullMQ enqueue boundary and that the AI Service Worker correctly writes orchestration fields to `usage_records.metadata` JSONB. Uses the proven AGENT-HARNESS-06E runtime topology (Docker + PostgreSQL + Redis + API Gateway + Worker with process-scoped env). Uses `test-harness-stub` adapter only — no provider/API calls, no billing.
+
+#### Expected Future Canary Scope (Step 3 — Pending Keith Approval)
+
+- Start Docker/PostgreSQL/Redis/API Gateway/AI Service Worker (06E pattern, process-scoped env)
+- Submit one orchestration-enriched job via real `QueueService.enqueueExecution()` with `test-harness-stub` provider
+- Wait for job completion
+- Verify `usage_records.metadata` JSONB contains orchestration fields where preserved by current source path:
+  - `agentRole`
+  - `builderProfileId`
+  - `collaborationRunId`
+  - `referralTraceId`
+  - `parentReferralTraceId`
+  - `referringBuilderProfileId`
+  - `referralId`
+  - `isReferralExecution`
+  - `orchestrationPriority`
+  - model/tool/profile identity fields if already preserved
+- Verify worker receives orchestration fields (structured logs)
+- Verify read-only/no-write policy (no `write_file`, `delete_file`, `run_validation` dispatch)
+- Verify no AGENT-HARNESS write canary
+- Clean up: `DELETE FROM usage_records WHERE execution_id = '<canary-id>'`
+- Stop worker and API Gateway
+- Produce 07F1 runtime canary execution report
+
+#### Expected Future Runtime Dependencies
+
+- Docker
+- PostgreSQL
+- Redis
+- API Gateway runtime (port 4000)
+- AI Service Worker runtime (port 4099, process-scoped env)
+- BullMQ queue: `ai-execution`
+
+#### Expected Future Non-Dependencies
+
+- container-manager NOT required
+- frontend NOT required
+- browser smoke NOT required
+- provider/API keys NOT required
+- AGENT-HARNESS write canary NOT required
+
+#### Future Step 2 Must Decide
+
+Step 2 (runtime execution readiness / Keith approval gate) must determine:
+- Exact service startup sequence
+- Exact env/process-scoped overrides
+- Exact canary script/report files
+- Exact queue/job payload (orchestration fields to include)
+- Exact usage_records lookup/verification method
+- Exact cleanup method
+- Exact PASS/FAIL criteria
+- Exact stop conditions
+- Exact commands
+- Explicit Keith runtime approval wording before Step 3
+
+#### Runtime Safety Note
+
+Before Step 3 (live canary execution), explicitly verify with Keith that Docker/PostgreSQL/Redis are running or approved to start. Do not assume runtime services are available. Do not proceed to Step 3 without explicit Keith approval at Step 2.
+
+#### Non-Goals (Registration Step)
+
+- No implementation during registration
+- No runtime execution during registration
+- No service startup during registration
+- No Docker/Postgres/Redis commands during registration
+- No BullMQ job submission during registration
+- No PostgreSQL query/mutation during registration
+- No database migration
+- No frontend UI
+- No user-facing UX text
+- No write_file/delete_file/run_validation activation
+- No shared workspace writes
+- No cancel signal path canary (belongs to 07F2)
+- No parent consolidation (belongs to 07F3)
+- No AGENT-HARNESS write canary
+- No billing enforcement
+- No provider/API calls
+- No browser smoke
+- No git commits/pushes
+
+#### UX/UI Note
+
+No UI text should be added in this task. If future work adds UI text, aiSandBox is multilingual-first and must update:
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impeccable and Emil Kowalski skills are advisory only.
+
+#### Acceptance Criteria
+
+- [x] AGENT-PLATFORM-07F1 registered as current ACTIVE child slice
+- [x] Parent AGENT-PLATFORM-07F remains ACTIVE with Step 2 COMPLETE
+- [x] AGENT-PLATFORM-07F Step 2 preflight decision recorded
+- [x] AGENT-PLATFORM-07F2 and 07F3 recorded as planned child slices only (not registered)
+- [x] AGENT-PLATFORM-07E remains COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-07D remains COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-07C/07C1/07C2/07C3 remain COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-07B/07A remain COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-07/06/05/04 remain COMPLETE and LOCKED
+- [x] AGENT-HARNESS-07/06E remain COMPLETE and LOCKED
+- [x] Registration records 07F1 is queue transport + metadata preservation canary only
+- [x] Registration records no implementation/runtime execution occurred
+- [x] Registration records AGENT-HARNESS write canary remains separate and not registered
+- [x] Registration records next step is 07F1 runtime execution readiness / Keith approval gate
+- [x] No implementation files changed (registration step)
+- [x] No commands run (registration step)
+- [x] One-active-task rule satisfied
+- [x] Step 2 — Runtime execution readiness / Keith approval gate — COMPLETE (2026-07-10). `docs/AGENT-PLATFORM-07F1-RUNTIME-EXECUTION-READINESS.md`.
+- [x] Step 3 — Queue transport + metadata preservation canary execution — COMPLETE (2026-07-10) — PASS. Execution ID: `8da5403a-f20e-480e-b7d8-196b18f7faef`. All 9 orchestration fields verified. Cleanup complete. `docs/AGENT-PLATFORM-07F1-RUNTIME-CANARY-EXECUTION-REPORT.md`.
+- [x] Step 4 — Consolidation / checkpoint — COMPLETE (2026-07-10). `docs/AGENT-PLATFORM-07F1-CHECKPOINT.md`.
+
+**AGENT-HARNESS write canary remains a separate track** — not registered, not part of AGENT-PLATFORM-07F1.
+
+**AGENT-PLATFORM-07F2 (Cancel Signal Path Canary) and AGENT-PLATFORM-07F3 (Consolidation Checkpoint) are planned only — not yet registered.**
+
+**Next recommended task:** AGENT-PLATFORM-07F2 — Cancel Signal Path Canary — not registered. AGENT-PLATFORM-07F1 COMPLETE and LOCKED (2026-07-10). Parent AGENT-PLATFORM-07F ACTIVE with split child-slice plan.
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-07F1.
 
 ---
 
