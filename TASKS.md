@@ -25148,11 +25148,11 @@ Resume AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell.
 
 ## AGENT PLATFORM / AINOW.BIZ MULTI-AGENT
 
-**Family status:** AGENT-PLATFORM-07C2 COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07C ACTIVE (parent, Step 2 COMPLETE — readiness/design review complete — split approved by Keith — 07C1 COMPLETE and LOCKED — 07C2 COMPLETE and LOCKED — 07C3 next recommended, not registered) — AGENT-PLATFORM-07C1 COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07B COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07A COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07 COMPLETE and LOCKED, AGENT-PLATFORM-06 COMPLETE and LOCKED, AGENT-PLATFORM-05 COMPLETE and LOCKED, AGENT-PLATFORM-04 COMPLETE and LOCKED, AGENT-PLATFORM-03 COMPLETE and LOCKED, AGENT-PLATFORM-02 COMPLETE and LOCKED, AGENT-PLATFORM-01 COMPLETE and LOCKED, AGENT-PLATFORM-00 COMPLETE and LOCKED
+**Family status:** AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07C COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07C2 COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07C1 COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07B COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07A COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07 COMPLETE and LOCKED, AGENT-PLATFORM-06 COMPLETE and LOCKED, AGENT-PLATFORM-05 COMPLETE and LOCKED, AGENT-PLATFORM-04 COMPLETE and LOCKED, AGENT-PLATFORM-03 COMPLETE and LOCKED, AGENT-PLATFORM-02 COMPLETE and LOCKED, AGENT-PLATFORM-01 COMPLETE and LOCKED, AGENT-PLATFORM-00 COMPLETE and LOCKED. Next recommended: AGENT-PLATFORM-07D — Collaboration Audit Events (not registered)
 
 **Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` — controls cross-family priority order; Knowledge before Collaboration before Billing.
 
-**Current stage:** AGENT-PLATFORM-07C2 COMPLETE and LOCKED — 2026-07-09. Referral Enqueue + Cancel + AiExecutionJob Extension. HIGH risk — 4-step loop. All 4 steps complete. Checkpoint: `docs/AGENT-PLATFORM-07C2-CHECKPOINT.md`. Parent: AGENT-PLATFORM-07C (Step 2 COMPLETE — readiness/design review complete; split into 3 child slices approved; 07C1 COMPLETE and LOCKED — 07C2 COMPLETE and LOCKED — 07C3 next recommended, not registered). AGENT-HARNESS write canary remains a separate track.
+**Current stage:** No ACTIVE task. AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10). Parent AGENT-PLATFORM-07C COMPLETE and LOCKED (2026-07-10). All 3 child slices of AGENT-PLATFORM-07C (07C1/07C2/07C3) COMPLETE and LOCKED. Next recommended: AGENT-PLATFORM-07D — Collaboration Audit Events (not registered — pending Keith approval). AGENT-HARNESS write canary remains a separate track.
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 — ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED — 2026-07-04)
@@ -25165,9 +25165,10 @@ Resume AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell.
 8. AGENT-PLATFORM-07 — Read-Only Orchestration Coordinator Planning (COMPLETE and LOCKED — 2026-07-09)
 9. AGENT-PLATFORM-07A — Coordinator Contracts / Schema (COMPLETE and LOCKED — 2026-07-09)
 10. AGENT-PLATFORM-07B — API Gateway Orchestration Module Skeleton (COMPLETE and LOCKED — 2026-07-09)
-11. AGENT-PLATFORM-07C — Read-Only Referral Enqueue Flow + Cancel Redesign (ACTIVE — Step 2 COMPLETE — readiness/design review — parent task — split into child slices approved by Keith — 2026-07-09)
+11. AGENT-PLATFORM-07C — Read-Only Referral Enqueue Flow + Cancel Redesign (COMPLETE and LOCKED — 2026-07-10)
 12. AGENT-PLATFORM-07C1 — Orchestration Core Methods + In-Memory Store (COMPLETE and LOCKED — 2026-07-09)
 13. AGENT-PLATFORM-07C2 — Referral Enqueue + Cancel + AiExecutionJob Extension (COMPLETE and LOCKED — 2026-07-09)
+14. AGENT-PLATFORM-07C3 — Targeted Tests and Parent Consolidation (COMPLETE and LOCKED — 2026-07-10)
 
 **Completed foundations (prerequisites):**
 - AGENT HARNESS family foundations COMPLETE and LOCKED — Agent Harness v1 contracts, tool protocol, model adapters, tool dispatcher, orchestrator loop, execution-bound hardening (through AGENT-HARNESS-05C8)
@@ -25786,7 +25787,7 @@ This task produces the authoritative plan for how multiple Builder Agents can co
 
 **AGENT-HARNESS-07 status:** COMPLETE and LOCKED (2026-07-07) — Per-Builder Harness Config Adapter. All 3 child slices COMPLETE and LOCKED: 07A, 07B, 07C. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
 **AGENT-HARNESS-06C status:** Not registered. Deferred — prerequisite (AGENT-HARNESS-07) is now COMPLETE and LOCKED; AGENT-HARNESS-06C still deferred until Keith explicitly approves canary activation.
-**Multi-builder collaboration/runtime orchestration status:** AGENT-PLATFORM-07C2 COMPLETE and LOCKED — 2026-07-09. Referral Enqueue + Cancel + AiExecutionJob Extension. HIGH risk — 4-step loop. All 4 steps complete. Checkpoint: `docs/AGENT-PLATFORM-07C2-CHECKPOINT.md`. Parent: AGENT-PLATFORM-07C (Step 2 COMPLETE — readiness/design review complete — split approved — 07C1 COMPLETE and LOCKED — 07C2 COMPLETE and LOCKED — 07C3 next recommended, not registered). AGENT-PLATFORM-07B COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-07A COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-07 COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-06 COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-05 COMPLETE and LOCKED — 2026-07-09. AGENT-HARNESS write canary remains a separate track.
+**Multi-builder collaboration/runtime orchestration status:** AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10). Parent AGENT-PLATFORM-07C COMPLETE and LOCKED (2026-07-10). All 3 child slices COMPLETE and LOCKED: 07C1 COMPLETE and LOCKED (2026-07-09), 07C2 COMPLETE and LOCKED (2026-07-09), 07C3 COMPLETE and LOCKED (2026-07-10). Checkpoints: `docs/AGENT-PLATFORM-07C3-CHECKPOINT.md`, `docs/AGENT-PLATFORM-07C-CHECKPOINT.md`, `docs/AGENT-PLATFORM-07C2-CHECKPOINT.md`. AGENT-PLATFORM-07B COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-07A COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-07 COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-06 COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-05 COMPLETE and LOCKED — 2026-07-09. Next recommended: AGENT-PLATFORM-07D — Collaboration Audit Events (not registered — pending Keith approval). AGENT-HARNESS write canary remains a separate track.
 **BILLING-READY-04+ status:** Not registered. Deferred.
 
 ---
@@ -26472,9 +26473,9 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 - Jest: `npx jest --runInBand "orchestration.service"` → PASS, 1 suite, 3 tests passed, 0 failed
 - TypeScript: `npx tsc --noEmit` → exit code 0, no errors
 
-**AGENT-PLATFORM-07C — Read-Only Referral Enqueue Flow + Cancel Redesign — ACTIVE — Step 2 COMPLETE (Readiness/Design Review — 2026-07-09). Parent task. Split into child slices approved by Keith.**
+**AGENT-PLATFORM-07C — Read-Only Referral Enqueue Flow + Cancel Redesign — COMPLETE and LOCKED (2026-07-10). Parent task. All 3 child slices COMPLETE and LOCKED. Parent checkpoint: `docs/AGENT-PLATFORM-07C-CHECKPOINT.md`.**
 
-HIGH risk (parent). 4-step loop. Keith approval recorded 2026-07-09 for registration. Step 2 (readiness/design review) COMPLETE — 2026-07-09. Split decision: 3 child slices approved. AGENT-PLATFORM-07C1 COMPLETE and LOCKED (2026-07-09) — checkpoint: `docs/AGENT-PLATFORM-07C1-CHECKPOINT.md`. AGENT-PLATFORM-07C2 COMPLETE and LOCKED (2026-07-09) — checkpoint: `docs/AGENT-PLATFORM-07C2-CHECKPOINT.md`. AGENT-PLATFORM-07C3 next recommended, not registered. Critical correction: cancel redesign risk downgraded from HIGH to LOW–MEDIUM — obliterate claim from prior source-path review was incorrect; no obliterate call exists; cancel is already per-execution via `ExecutionResultService.requestCancel(executionId)`. AGENT-HARNESS write canary remains a separate track.
+HIGH risk (parent). 4-step loop. Keith approval recorded 2026-07-09 for registration. Step 2 (readiness/design review) COMPLETE — 2026-07-09. Split decision: 3 child slices approved. AGENT-PLATFORM-07C1 COMPLETE and LOCKED (2026-07-09) — checkpoint: `docs/AGENT-PLATFORM-07C1-CHECKPOINT.md`. AGENT-PLATFORM-07C2 COMPLETE and LOCKED (2026-07-09) — checkpoint: `docs/AGENT-PLATFORM-07C2-CHECKPOINT.md`. AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10) — checkpoint: `docs/AGENT-PLATFORM-07C3-CHECKPOINT.md`. Parent COMPLETE and LOCKED — checkpoint: `docs/AGENT-PLATFORM-07C-CHECKPOINT.md`. Critical correction: cancel redesign risk downgraded from HIGH to LOW–MEDIUM — obliterate claim from prior source-path review was incorrect; no obliterate call exists; cancel is already per-execution via `ExecutionResultService.requestCancel(executionId)`. AGENT-HARNESS write canary remains a separate track.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-07B.
 
@@ -26482,21 +26483,21 @@ HIGH risk (parent). 4-step loop. Keith approval recorded 2026-07-09 for registra
 
 #### AGENT-PLATFORM-07C: Read-Only Referral Enqueue Flow + Cancel Redesign
 
-**Status:** ACTIVE — Step 2 COMPLETE (Readiness/Design Review — 2026-07-09) — parent task — split into child slices — 07C1 COMPLETE and LOCKED — 07C2 COMPLETE and LOCKED — 07C3 next recommended, not registered
+**Status:** COMPLETE and LOCKED — 2026-07-10 — all 3 child slices COMPLETE and LOCKED — checkpoint: `docs/AGENT-PLATFORM-07C-CHECKPOINT.md`
 **Registered:** 2026-07-09
 **Task ID:** AGENT-PLATFORM-07C
 **Family:** AGENT PLATFORM / MULTI-BUILDER ORCHESTRATION / READ-ONLY COORDINATOR
 **Priority:** High
 **Nature:** IMPLEMENTATION — Read-only referral enqueue flow + per-execution/per-referral cancel redesign
 **Risk:** HIGH (parent task) — downgraded to MEDIUM for 07C1 child slice; cancel redesign risk downgraded from HIGH to LOW–MEDIUM (obliterate does not exist; cancel is already per-execution)
-**Keith approval:** Registration approved 2026-07-09. Child-slice split and 07C1 registration approved 2026-07-09 ("approved").
+**Keith approval:** Registration approved 2026-07-09. Child-slice split and 07C1 registration approved 2026-07-09 ("approved"). 07C3 registration approved 2026-07-10 ("approve").
 
 #### Workflow Steps (4-step loop — HIGH risk — parent task)
 
 1. **Registration** — COMPLETE (2026-07-09)
 2. **Readiness / design review** — COMPLETE (2026-07-09) — see `docs/AGENT-PLATFORM-07C-READINESS-DESIGN-REVIEW.md` — split decision: 3 child slices (07C1/07C2/07C3)
-3. **Bounded implementation** — IN PROGRESS via child slices — 07C1 COMPLETE and LOCKED (2026-07-09); 07C2 COMPLETE and LOCKED (2026-07-09); 07C3 next recommended, not registered
-4. **Consolidation / checkpoint** — PENDING (gated on all child slices)
+3. **Bounded implementation** — COMPLETE via child slices — 07C1 COMPLETE and LOCKED (2026-07-09); 07C2 COMPLETE and LOCKED (2026-07-09); 07C3 COMPLETE and LOCKED (2026-07-10)
+4. **Consolidation / checkpoint** — COMPLETE (2026-07-10) — checkpoint: `docs/AGENT-PLATFORM-07C-CHECKPOINT.md`
 
 #### Step 2 Split Decision (COMPLETE — 2026-07-09)
 
@@ -26505,12 +26506,13 @@ Based on readiness/design review (`docs/AGENT-PLATFORM-07C-READINESS-DESIGN-REVI
 - **Decision: Split into 3 child slices** (Keith approved 2026-07-09)
 - AGENT-PLATFORM-07C1 — Orchestration Core Methods + In-Memory Store (**COMPLETE and LOCKED — 2026-07-09** — checkpoint: `docs/AGENT-PLATFORM-07C1-CHECKPOINT.md`)
 - AGENT-PLATFORM-07C2 — Referral Enqueue + Cancel + AiExecutionJob Extension (**COMPLETE and LOCKED — 2026-07-09** — checkpoint: `docs/AGENT-PLATFORM-07C2-CHECKPOINT.md`)
-- AGENT-PLATFORM-07C3 — Targeted Tests and Consolidation (NOT registered)
+- AGENT-PLATFORM-07C3 — Targeted Tests and Parent Consolidation (**COMPLETE and LOCKED — 2026-07-10** — checkpoint: `docs/AGENT-PLATFORM-07C3-CHECKPOINT.md`)
 
 **Critical correction recorded:** The AGENT-PLATFORM-07 source-path review (§4.2, §5.4, §7.4, §12.1) incorrectly stated that `QueueService.cancelExecution(sessionId)` calls `this.queue.obliterate({ force: true })`. This is incorrect. No obliterate call exists anywhere in the codebase. Cancel is per-execution via `ExecutionResultService.requestCancel(executionId)` → `usage_records.execution_status = 'cancel_requested'`. Worker polls and aborts via `AbortController`. Cancel redesign risk: **downgraded from HIGH to LOW–MEDIUM**. AGENT-PLATFORM-07C1 does not implement cancel redesign.
 
 #### Dependencies
 
+- AGENT-PLATFORM-07C2 — COMPLETE and LOCKED (Referral Enqueue + Cancel + AiExecutionJob Extension — 2026-07-09)
 - AGENT-PLATFORM-07C1 — COMPLETE and LOCKED (Orchestration Core Methods + In-Memory Store — 2026-07-09)
 - AGENT-PLATFORM-07C Step 2 readiness/design review — COMPLETE (2026-07-09)
 - AGENT-PLATFORM-07B — COMPLETE and LOCKED (API Gateway Orchestration Module Skeleton)
@@ -26523,17 +26525,20 @@ Based on readiness/design review (`docs/AGENT-PLATFORM-07C-READINESS-DESIGN-REVI
 - AGENT-HARNESS-06E — COMPLETE and LOCKED (Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary)
 - Keith approval recorded for registration and child-slice split
 - Keith approval recorded for AGENT-PLATFORM-07C2 registration (2026-07-09)
+- Keith approval recorded for AGENT-PLATFORM-07C3 registration (2026-07-10)
 
 #### Non-Goals (parent task — child slices govern implementation)
 
 - No implementation in parent task directly — implementation via child slices
 - AGENT-PLATFORM-07C1 scope: core methods + in-memory store only (no enqueue, no cancel, no worker changes, no DB migration, no controller/endpoints)
-- AGENT-PLATFORM-07C3 not registered — pending 07C2 completion
+- AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10) — checkpoint: `docs/AGENT-PLATFORM-07C3-CHECKPOINT.md`
 - AGENT-HARNESS write canary remains a separate track
 - No write_file/delete_file/run_validation activation
 - No shared workspace writes
 - No database migration
 - No frontend UI
+
+**AGENT-PLATFORM-07C parent task is now COMPLETE and LOCKED — checkpoint: `docs/AGENT-PLATFORM-07C-CHECKPOINT.md`.**
 
 #### Acceptance Criteria
 
@@ -26546,12 +26551,13 @@ Based on readiness/design review (`docs/AGENT-PLATFORM-07C-READINESS-DESIGN-REVI
 - [x] Split decision recorded — 3 child slices approved (07C1/07C2/07C3)
 - [x] AGENT-PLATFORM-07C1 COMPLETE and LOCKED (2026-07-09) — checkpoint: `docs/AGENT-PLATFORM-07C1-CHECKPOINT.md`
 - [x] AGENT-PLATFORM-07C2 COMPLETE and LOCKED (2026-07-09) — checkpoint: `docs/AGENT-PLATFORM-07C2-CHECKPOINT.md`
-- [x] AGENT-PLATFORM-07C3 NOT registered
+- [x] AGENT-PLATFORM-07C3 ACTIVE — Step 1 COMPLETE (2026-07-10) — Keith approval recorded — now COMPLETE and LOCKED (2026-07-10)
 - [x] Critical correction recorded — obliterate does not exist; cancel redesign risk downgraded
 - [x] AGENT-HARNESS write canary remains a separate track
-- [x] One-active-task rule satisfied (07C2 ACTIVE — Step 1 COMPLETE; one-active-task rule satisfied)
-- [ ] AGENT-PLATFORM-07C3 registration (PENDING — gated on 07C2 COMPLETE)
-- [ ] Step 4 consolidation/checkpoint (PENDING — gated on all child slices)
+- [x] One-active-task rule satisfied
+- [x] AGENT-PLATFORM-07C3 Step 2 (targeted validation/regression) — COMPLETE (2026-07-10)
+- [x] AGENT-PLATFORM-07C3 Step 3 (consolidation/checkpoint) — COMPLETE (2026-07-10)
+- [x] Step 4 consolidation/checkpoint — COMPLETE (2026-07-10) — `docs/AGENT-PLATFORM-07C-CHECKPOINT.md`
 
 **AGENT-HARNESS write canary remains a separate track** — not registered, not part of AGENT-PLATFORM-07 child slices.
 
@@ -26772,7 +26778,7 @@ Second child implementation slice of AGENT-PLATFORM-07C. Extends the orchestrati
 - No browser smoke
 - No git commits/pushes
 - No controller/endpoints added
-- AGENT-PLATFORM-07C3 not registered — pending Keith approval
+- AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10) — checkpoint: `docs/AGENT-PLATFORM-07C3-CHECKPOINT.md` (registered after 07C2 was completed)
 
 #### UX/UI Note
 
@@ -26787,8 +26793,8 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 - [x] AGENT-PLATFORM-07C2 registered as current ACTIVE child slice
 - [x] AGENT-PLATFORM-07C1 remains COMPLETE and LOCKED
-- [x] AGENT-PLATFORM-07C records child-slice status correctly (07C1 COMPLETE and LOCKED, 07C2 COMPLETE and LOCKED, 07C3 next recommended not registered)
-- [x] AGENT-PLATFORM-07C3 NOT registered
+- [x] AGENT-PLATFORM-07C records child-slice status correctly (07C1 COMPLETE and LOCKED, 07C2 COMPLETE and LOCKED, 07C3 ACTIVE Step 1 COMPLETE)
+- [x] AGENT-PLATFORM-07C3 ACTIVE — Step 1 COMPLETE (2026-07-10) — now COMPLETE and LOCKED (2026-07-10)
 - [x] AGENT-PLATFORM-07B remains COMPLETE and LOCKED
 - [x] AGENT-PLATFORM-07A remains COMPLETE and LOCKED
 - [x] AGENT-PLATFORM-07/06/05/04 remain COMPLETE and LOCKED
@@ -26823,13 +26829,141 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 - [x] TASKS.md marked COMPLETE and LOCKED
 - [x] TASKS_BACKLOG_FULL.md mirrored
 - [x] AINOW-EXECUTION-ROADMAP.md updated
-- [ ] AGENT-PLATFORM-07C3 registration (PENDING — gated on Keith approval)
+- [x] AGENT-PLATFORM-07C3 registration COMPLETE (2026-07-10) — Keith approval recorded
 
 **AGENT-HARNESS write canary remains a separate track** — not registered, not part of AGENT-PLATFORM-07 child slices.
 
-**Next recommended task:** AGENT-PLATFORM-07C3 — Targeted Tests and Parent Consolidation. Not registered. Pending Keith approval. AGENT-HARNESS write canary remains a separate track.
+**Next task:** AGENT-PLATFORM-07C3 — Targeted Tests and Parent Consolidation. ACTIVE — Step 1 COMPLETE (2026-07-10). AGENT-HARNESS write canary remains a separate track.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-07C2.
+
+---
+
+#### AGENT-PLATFORM-07C3: Targeted Tests and Parent Consolidation
+
+**Status:** COMPLETE and LOCKED — 2026-07-10 — checkpoint: `docs/AGENT-PLATFORM-07C3-CHECKPOINT.md`
+**Registered:** 2026-07-10
+**Task ID:** AGENT-PLATFORM-07C3
+**Parent:** AGENT-PLATFORM-07C — Read-Only Referral Enqueue Flow + Cancel Redesign
+**Family:** AGENT PLATFORM / MULTI-BUILDER ORCHESTRATION / READ-ONLY COORDINATOR
+**Priority:** High
+**Nature:** VALIDATION + GOVERNANCE — Targeted tests, regression, and parent consolidation. No new implementation.
+**Risk:** MEDIUM — validation and parent consolidation only, but it locks the AGENT-PLATFORM-07C parent task
+**Keith approval:** Registration approved 2026-07-10 ("approve")
+
+#### Workflow Steps (3-step child-slice loop — MEDIUM risk)
+
+1. **Registration** — COMPLETE (2026-07-10)
+2. **Targeted validation / regression** — COMPLETE (2026-07-10)
+3. **Parent + child consolidation / checkpoint** — COMPLETE (2026-07-10)
+
+#### Dependencies
+
+- AGENT-PLATFORM-07C2 — COMPLETE and LOCKED (Referral Enqueue + Cancel + AiExecutionJob Extension — 2026-07-09)
+- AGENT-PLATFORM-07C1 — COMPLETE and LOCKED (Orchestration Core Methods + In-Memory Store — 2026-07-09)
+- AGENT-PLATFORM-07C Step 2 readiness/design review — COMPLETE (2026-07-09)
+- AGENT-PLATFORM-07B — COMPLETE and LOCKED (API Gateway Orchestration Module Skeleton)
+- AGENT-PLATFORM-07A — COMPLETE and LOCKED (Coordinator Contracts / Schema)
+- AGENT-PLATFORM-07 — COMPLETE and LOCKED (Read-Only Orchestration Coordinator Planning)
+- AGENT-PLATFORM-06 — COMPLETE and LOCKED (Upstream Identity Propagation)
+- AGENT-PLATFORM-05 — COMPLETE and LOCKED (Multi-Builder Runtime Orchestration Plan)
+- AGENT-PLATFORM-04 — COMPLETE and LOCKED (Multi-Builder Runtime Topology Plan)
+- AGENT-HARNESS-07 — COMPLETE and LOCKED (Per-Builder Harness Config Adapter)
+- AGENT-HARNESS-06E — COMPLETE and LOCKED (Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary)
+- Keith approval recorded for AGENT-PLATFORM-07C3 registration (2026-07-10)
+
+#### Purpose
+
+Third and final child slice of AGENT-PLATFORM-07C. Validates the combined 07C1 + 07C2 integration, runs targeted regression across both suites, and consolidates/locks the parent AGENT-PLATFORM-07C. No new runtime features or implementation.
+
+#### Planned Scope (Step 2 — not yet executed)
+
+**Target source files to validate (read-only inspection):**
+- `services/api-gateway/src/orchestration/orchestration.service.ts`
+- `services/api-gateway/src/orchestration/__tests__/orchestration.service.spec.ts`
+- `services/ai-service/src/queue/job.types.ts`
+- `services/ai-service/src/worker/worker.processor.ts`
+- `services/ai-service/src/worker/__tests__/worker.processor.builder-config.spec.ts`
+
+**Planned validation commands (Step 2 — not run during registration):**
+- `Set-Location -LiteralPath 'C:\Users\knlee\aiSandBox2026B\services\api-gateway'; npx jest --runInBand "orchestration.service"`
+- `Set-Location -LiteralPath 'C:\Users\knlee\aiSandBox2026B\services\api-gateway'; npx tsc --noEmit`
+- `Set-Location -LiteralPath 'C:\Users\knlee\aiSandBox2026B\services\ai-service'; npx jest --runInBand "worker.processor.builder-config"`
+- `Set-Location -LiteralPath 'C:\Users\knlee\aiSandBox2026B\services\ai-service'; npx tsc --noEmit`
+
+**Step 3 consolidation scope:**
+- AGENT-PLATFORM-07C3 COMPLETE and LOCKED
+- Parent AGENT-PLATFORM-07C COMPLETE and LOCKED
+- Create `docs/AGENT-PLATFORM-07C3-CHECKPOINT.md`
+- Update TASKS.md, TASKS_BACKLOG_FULL.md, AINOW-EXECUTION-ROADMAP.md
+
+#### Critical Correction Preserved
+
+- There is no `queue.obliterate` call anywhere in the codebase.
+- Existing cancel is per-execution through `ExecutionResultService.requestCancel(executionId)`, setting `usage_records.execution_status = cancel_requested`.
+- Worker polls `cancel_requested` and aborts via `AbortController`.
+- AGENT-PLATFORM-07C2 built on the existing per-execution cancel model.
+
+#### Non-Goals (CONFIRMED)
+
+- No new runtime features
+- No new implementation
+- No runtime execution
+- No service startup
+- No Docker/Postgres/Redis commands
+- No database migration
+- No frontend UI
+- No user-facing UX text
+- No write_file/delete_file/run_validation activation
+- No shared workspace writes
+- No AGENT-HARNESS write canary
+- No billing enforcement
+- No provider/API calls
+- No browser smoke
+- No git commits/pushes
+
+#### UX/UI Note
+
+No UI text should be added in this task. If future work adds UI text, aiSandBox is multilingual-first and must update:
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impeccable and Emil Kowalski skills are advisory only.
+
+#### Acceptance Criteria
+
+- [x] AGENT-PLATFORM-07C3 registered as current ACTIVE child slice
+- [x] AGENT-PLATFORM-07C1 remains COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-07C2 remains COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-07C records child-slice status correctly (07C1 COMPLETE and LOCKED, 07C2 COMPLETE and LOCKED, 07C3 ACTIVE Step 1 COMPLETE)
+- [x] AGENT-PLATFORM-07B/07A remain COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-07/06/05/04 remain COMPLETE and LOCKED
+- [x] AGENT-HARNESS-07/06E remain COMPLETE and LOCKED
+- [x] Registration records 07C3 is validation + parent consolidation only
+- [x] Registration records no implementation/runtime execution occurred
+- [x] Registration records AGENT-HARNESS write canary remains separate and not registered
+- [x] Registration records next step is targeted validation/regression
+- [x] No implementation files changed (Step 1)
+- [x] No commands run (Step 1)
+- [x] One-active-task rule satisfied
+- [x] Step 2 — Targeted validation / regression — COMPLETE (2026-07-10)
+- [x] Validation: Jest PASS — `orchestration.service` — 25 tests passed
+- [x] Validation: TypeScript PASS — api-gateway
+- [x] Validation: Jest PASS — `worker.processor.builder-config` — 55 tests passed
+- [x] Validation: TypeScript PASS — ai-service
+- [x] Step 3 — Parent + child consolidation / checkpoint — COMPLETE (2026-07-10)
+- [x] AGENT-PLATFORM-07C3 COMPLETE and LOCKED — checkpoint: `docs/AGENT-PLATFORM-07C3-CHECKPOINT.md`
+- [x] Parent AGENT-PLATFORM-07C COMPLETE and LOCKED — checkpoint: `docs/AGENT-PLATFORM-07C-CHECKPOINT.md`
+- [x] AGENT-PLATFORM-07D recorded as next recommended (not registered)
+
+**AGENT-HARNESS write canary remains a separate track** — not registered, not part of AGENT-PLATFORM-07 child slices.
+
+**Checkpoint:** `docs/AGENT-PLATFORM-07C3-CHECKPOINT.md` — COMPLETE and LOCKED (2026-07-10)
+
+**Next recommended task:** AGENT-PLATFORM-07D — Collaboration Audit Events. Not registered — pending Keith approval. AGENT-HARNESS write canary remains a separate track.
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-07C3.
 
 ---
 
