@@ -35650,11 +35650,11 @@ Resume AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell.
 
 ## AGENT PLATFORM / AINOW.BIZ MULTI-AGENT
 
-**Family status:** AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07C COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07C2 COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07C1 COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07B COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07A COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07 COMPLETE and LOCKED, AGENT-PLATFORM-06 COMPLETE and LOCKED, AGENT-PLATFORM-05 COMPLETE and LOCKED, AGENT-PLATFORM-04 COMPLETE and LOCKED, AGENT-PLATFORM-03 COMPLETE and LOCKED, AGENT-PLATFORM-02 COMPLETE and LOCKED, AGENT-PLATFORM-01 COMPLETE and LOCKED, AGENT-PLATFORM-00 COMPLETE and LOCKED. Next recommended: AGENT-PLATFORM-07D — Collaboration Audit Events (not registered)
+**Family status:** AGENT-PLATFORM-07D COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07C COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07C2 COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07C1 COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07B COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07A COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07 COMPLETE and LOCKED, AGENT-PLATFORM-06 COMPLETE and LOCKED, AGENT-PLATFORM-05 COMPLETE and LOCKED, AGENT-PLATFORM-04 COMPLETE and LOCKED, AGENT-PLATFORM-03 COMPLETE and LOCKED, AGENT-PLATFORM-02 COMPLETE and LOCKED, AGENT-PLATFORM-01 COMPLETE and LOCKED, AGENT-PLATFORM-00 COMPLETE and LOCKED. AGENT-HARNESS write canary remains a separate track. AGENT-PLATFORM-07E not registered.
 
 **Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` — controls cross-family priority order; Knowledge before Collaboration before Billing.
 
-**Current stage:** No ACTIVE task. AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10). Parent AGENT-PLATFORM-07C COMPLETE and LOCKED (2026-07-10). All 3 child slices of AGENT-PLATFORM-07C (07C1/07C2/07C3) COMPLETE and LOCKED. Next recommended: AGENT-PLATFORM-07D — Collaboration Audit Events (not registered — pending Keith approval). AGENT-HARNESS write canary remains a separate track.
+**Current stage:** AGENT-PLATFORM-07D COMPLETE and LOCKED (2026-07-10). All 4 steps complete. Collaboration/referral audit events implemented in API Gateway OrchestrationService only. Jest PASS (1 suite, 40 tests). TypeScript clean. No contract changes, no worker changes, no DB migration. Checkpoint: `docs/AGENT-PLATFORM-07D-CHECKPOINT.md`. No ACTIVE task. Next recommended: AGENT-PLATFORM-07E — Read-Only Coordinator Canary — not registered. AGENT-HARNESS write canary remains a separate track.
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 — ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED — 2026-07-04)
@@ -35671,6 +35671,7 @@ Resume AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell.
 12. AGENT-PLATFORM-07C1 — Orchestration Core Methods + In-Memory Store (COMPLETE and LOCKED — 2026-07-09)
 13. AGENT-PLATFORM-07C2 — Referral Enqueue + Cancel + AiExecutionJob Extension (COMPLETE and LOCKED — 2026-07-09)
 14. AGENT-PLATFORM-07C3 — Targeted Tests and Parent Consolidation (COMPLETE and LOCKED — 2026-07-10)
+15. AGENT-PLATFORM-07D — Collaboration Audit Events (COMPLETE and LOCKED — 2026-07-10)
 
 ---
 
@@ -36289,7 +36290,7 @@ This task produces the authoritative plan for how multiple Builder Agents can co
 
 **AGENT-HARNESS-07 status:** COMPLETE and LOCKED (2026-07-07) — Per-Builder Harness Config Adapter. All 3 child slices COMPLETE and LOCKED: 07A, 07B, 07C. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
 **AGENT-HARNESS-06C status:** Not registered. Deferred — prerequisite (AGENT-HARNESS-07) is now COMPLETE and LOCKED; AGENT-HARNESS-06C still deferred until Keith explicitly approves canary activation.
-**Multi-builder collaboration/runtime orchestration status:** AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10). Parent AGENT-PLATFORM-07C COMPLETE and LOCKED (2026-07-10). All 3 child slices COMPLETE and LOCKED: 07C1 COMPLETE and LOCKED (2026-07-09), 07C2 COMPLETE and LOCKED (2026-07-09), 07C3 COMPLETE and LOCKED (2026-07-10). Checkpoints: `docs/AGENT-PLATFORM-07C3-CHECKPOINT.md`, `docs/AGENT-PLATFORM-07C-CHECKPOINT.md`, `docs/AGENT-PLATFORM-07C2-CHECKPOINT.md`. AGENT-PLATFORM-07B COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-07A COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-07 COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-06 COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-05 COMPLETE and LOCKED — 2026-07-09. Next recommended: AGENT-PLATFORM-07D — Collaboration Audit Events (not registered — pending Keith approval). AGENT-HARNESS write canary remains a separate track.
+**Multi-builder collaboration/runtime orchestration status:** AGENT-PLATFORM-07D COMPLETE and LOCKED (2026-07-10). All 4 steps complete. Collaboration/referral audit events: `InMemoryOrchestrationAuditRecorder` created; 8 event types emitted at OrchestrationService lifecycle transitions; 40 tests pass; TypeScript clean. Checkpoint: `docs/AGENT-PLATFORM-07D-CHECKPOINT.md`. AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10). Parent AGENT-PLATFORM-07C COMPLETE and LOCKED (2026-07-10). All 3 child slices COMPLETE and LOCKED: 07C1 COMPLETE and LOCKED (2026-07-09), 07C2 COMPLETE and LOCKED (2026-07-09), 07C3 COMPLETE and LOCKED (2026-07-10). AGENT-PLATFORM-07B COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-07A COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-07 COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-06 COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-05 COMPLETE and LOCKED — 2026-07-09. No ACTIVE task. Next recommended: AGENT-PLATFORM-07E not registered. AGENT-HARNESS write canary remains a separate track.
 **BILLING-READY-04+ status:** Not registered. Deferred.
 
 ---
@@ -37466,6 +37467,153 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 **Next recommended task:** AGENT-PLATFORM-07D — Collaboration Audit Events. Not registered — pending Keith approval. AGENT-HARNESS write canary remains a separate track.
 
 **Reference:** See TASKS.md -> AGENT-PLATFORM-07C3.
+
+---
+
+### AGENT-PLATFORM-07D: Collaboration Audit Events
+
+**Task ID:** AGENT-PLATFORM-07D
+**Family:** AGENT PLATFORM / MULTI-BUILDER ORCHESTRATION / READ-ONLY COORDINATOR
+**Family status:** COMPLETE and LOCKED — 2026-07-10
+**Priority:** High
+**Status:** COMPLETE and LOCKED — 2026-07-10
+**Registered:** 2026-07-10
+**Completed:** 2026-07-10
+**Nature:** IMPLEMENTATION + GOVERNANCE — structured collaboration/referral audit event emission for the read-only orchestration coordinator path
+**Risk:** MEDIUM/HIGH — audit event work may touch orchestration service boundaries, worker metadata preservation, event contract shape, observability, and future billing attribution
+**Keith approval:** Keith approved AGENT-PLATFORM-07D registration 2026-07-10 ("approve")
+
+#### Workflow Steps (4-step loop — MEDIUM/HIGH risk)
+
+1. **Registration** — COMPLETE (2026-07-10)
+2. **Audit event readiness / source-path review** — COMPLETE (2026-07-10)
+3. **Bounded implementation** — COMPLETE (2026-07-10)
+4. **Consolidation / checkpoint** — COMPLETE (2026-07-10)
+
+#### Dependencies
+
+- AGENT-PLATFORM-07C COMPLETE and LOCKED (2026-07-10)
+- AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10)
+- AGENT-PLATFORM-07C2 COMPLETE and LOCKED (2026-07-09)
+- AGENT-PLATFORM-07C1 COMPLETE and LOCKED (2026-07-09)
+- AGENT-PLATFORM-07B COMPLETE and LOCKED (2026-07-09)
+- AGENT-PLATFORM-07A COMPLETE and LOCKED (2026-07-09)
+- AGENT-PLATFORM-07 COMPLETE and LOCKED (2026-07-09)
+- AGENT-PLATFORM-06 COMPLETE and LOCKED (2026-07-09)
+- AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07)
+- AGENT-HARNESS-06E COMPLETE and LOCKED (2026-07-09)
+- Keith approval recorded for 07D registration (2026-07-10)
+
+#### Purpose
+
+Create bounded structured audit events for collaboration/referral lifecycle transitions. This task covers the read-only orchestration coordinator path only. Emit structured events on collaboration run and referral status transitions; extend existing audit event infrastructure. AGENT-HARNESS write canary is a separate track and must not be mixed into this task.
+
+#### Planned Audit Event Concepts (Step 2 will finalize exact names and contract shape)
+
+- `collaboration_started`
+- `collaboration_completed`
+- `collaboration_cancelled`
+- `referral_created`
+- `referral_enqueued`
+- `referral_started`
+- `referral_completed`
+- `referral_failed`
+- `referral_cancelled`
+- `referral_timeout`
+- `referral_duplicate_detected`
+- `referral_loop_blocked`
+- `referral_depth_blocked`
+- `referral_agent_limit_blocked`
+
+#### Planned Event Metadata (Step 2 will finalize exact fields)
+
+- `collaborationRunId`
+- `referralTraceId`
+- `referralId`
+- `parentReferralTraceId`
+- source builder identity
+- target builder identity
+- `builderProfileId`
+- `agentRole`
+- `userId`
+- `projectId`
+- `sessionId`
+- `executionId` (where available)
+- status/result
+- timestamp
+- reason/error (where applicable)
+
+#### Step 2 Must Decide
+
+- Exact event names
+- Exact event contract shape
+- Exact source-path for emitting events
+- Whether events live in API Gateway orchestration module only
+- Whether AI Service worker needs event preservation only or no change
+- Whether existing audit/logging patterns should be reused
+- Exact files to change
+- Exact tests required
+- Whether database migration is needed
+- Whether implementation should split before Step 3
+
+#### Non-Goals (Registration Step — CONFIRMED)
+
+- No implementation during registration
+- No runtime execution
+- No service startup
+- No Docker/Postgres/Redis commands
+- No database migration during registration
+- No frontend UI
+- No user-facing UX text
+- No write_file/delete_file/run_validation activation
+- No shared workspace writes
+- No AGENT-HARNESS write canary
+- No billing enforcement
+- No provider/API calls
+- No browser smoke
+- No git commits/pushes
+
+#### UX/UI Note
+
+No UI text should be added in this task. If future work adds UI text, aiSandBox is multilingual-first and must update:
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impeccable and Emil Kowalski skills are advisory only.
+
+#### Acceptance Criteria
+
+- [x] AGENT-PLATFORM-07D registered as current ACTIVE task
+- [x] AGENT-PLATFORM-07C remains COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-07C1/07C2/07C3 remain COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-07B/07A remain COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-07/06/05/04 remain COMPLETE and LOCKED
+- [x] AGENT-HARNESS-07/06E remain COMPLETE and LOCKED
+- [x] Registration records 07D is collaboration/referral audit events only
+- [x] Registration records no implementation/runtime execution occurred
+- [x] Registration records AGENT-HARNESS write canary remains separate and not registered
+- [x] Registration records next step is audit event readiness/source-path review
+- [x] No implementation files changed (registration step)
+- [x] No commands run (registration step)
+- [x] One-active-task rule satisfied
+- [x] Step 2 — Audit event readiness / source-path review — COMPLETE (2026-07-10) — `docs/AGENT-PLATFORM-07D-AUDIT-EVENT-READINESS-REVIEW.md`
+- [x] Step 3 — Bounded implementation — COMPLETE (2026-07-10) — `orchestration-audit.recorder.ts` created; `orchestration.service.ts` updated; `orchestration.service.spec.ts` updated
+- [x] Step 3 — Validation: Jest PASS — `orchestration.service` — 1 suite, 40 tests passed
+- [x] Step 3 — Validation: TypeScript PASS — api-gateway `npx tsc --noEmit` exit code 0
+- [x] Step 3 — No contract changes (`orchestration.contracts.ts` unchanged)
+- [x] Step 3 — No worker changes, no DB migration, no runtime execution
+- [x] Step 4 — Consolidation / checkpoint — COMPLETE (2026-07-10) — `docs/AGENT-PLATFORM-07D-CHECKPOINT.md`
+- [x] AGENT-PLATFORM-07E recorded as next recommended, not registered
+- [x] AGENT-HARNESS write canary remains separate and not registered
+
+**AGENT-HARNESS write canary remains a separate track** — not registered, not part of AGENT-PLATFORM-07D.
+
+**Checkpoint:** `docs/AGENT-PLATFORM-07D-CHECKPOINT.md` — COMPLETE and LOCKED (2026-07-10)
+
+**Next recommended task:** AGENT-PLATFORM-07E — Read-Only Coordinator Canary. Not registered. AGENT-HARNESS write canary remains a separate track.
+
+**Reference:** See TASKS.md -> AGENT-PLATFORM-07D.
 
 ---
 

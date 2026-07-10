@@ -4,12 +4,14 @@ import {
   DEFAULT_MAX_AGENTS_PER_COLLABORATION,
   DEFAULT_MAX_REFERRAL_DEPTH,
   NO_WRITE_TOOLS_INDICATOR,
+  type OrchestrationAuditEvent,
   READ_ONLY_ALLOWED_TOOL_IDS,
   READ_ONLY_BLOCKED_TOOL_IDS,
   READ_ONLY_MODE_INDICATOR,
 } from '../orchestration.contracts';
 import { QueueService } from '../../queue/queue.service';
 import { ExecutionResultService } from '../../ai/execution-result.service';
+import { InMemoryOrchestrationAuditRecorder } from '../orchestration-audit.recorder';
 
 describe('OrchestrationService', () => {
   let service: OrchestrationService;
@@ -820,5 +822,418 @@ describe('AGENT-PLATFORM-07C2: cancelCollaboration', () => {
         cancelReason: 'unauthorized',
       }),
     ).rejects.toThrow(/not authorized/i);
+  });
+});
+
+describe('AGENT-PLATFORM-07D: InMemoryOrchestrationAuditRecorder', () => {
+  it('records and returns typed orchestration audit events', () => {
+    const recorder = new InMemoryOrchestrationAuditRecorder();
+    const event: OrchestrationAuditEvent = {
+      eventType: 'orchestration.collaboration_created',
+      collaborationRunId: 'collab-recorder-01',
+      referralTraceId: null,
+      sourceBuilder: {
+        agentRole: 'builder',
+        builderProfileId: 'builder-a',
+      },
+      targetBuilder: null,
+      timestamp: new Date().toISOString(),
+      payload: {
+        lifecycleEvent: 'collaboration_started',
+      },
+    };
+
+    recorder.record(event);
+
+    expect(recorder.getEvents()).toEqual([event]);
+  });
+
+  it('clear removes all in-memory recorded events', () => {
+    const recorder = new InMemoryOrchestrationAuditRecorder();
+    recorder.record({
+      eventType: 'orchestration.collaboration_created',
+      collaborationRunId: 'collab-recorder-02',
+      referralTraceId: null,
+      sourceBuilder: {
+        agentRole: 'builder',
+        builderProfileId: 'builder-a',
+      },
+      targetBuilder: null,
+      timestamp: new Date().toISOString(),
+      payload: {
+        lifecycleEvent: 'collaboration_started',
+      },
+    });
+
+    recorder.clear();
+
+    expect(recorder.getEvents()).toEqual([]);
+  });
+});
+
+describe('AGENT-PLATFORM-07D: OrchestrationService audit emission', () => {
+  let service: OrchestrationService;
+  let auditRecorder: InMemoryOrchestrationAuditRecorder;
+  let mockQueueService: { enqueueExecution: jest.Mock };
+  let mockExecutionResultService: { requestCancel: jest.Mock };
+
+  beforeEach(async () => {
+    mockQueueService = {
+      enqueueExecution: jest.fn().mockResolvedValue(undefined),
+    };
+    mockExecutionResultService = {
+      requestCancel: jest.fn().mockResolvedValue(true),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        OrchestrationService,
+        InMemoryOrchestrationAuditRecorder,
+        { provide: QueueService, useValue: mockQueueService },
+        { provide: ExecutionResultService, useValue: mockExecutionResultService },
+      ],
+    }).compile();
+
+    service = module.get<OrchestrationService>(OrchestrationService);
+    auditRecorder = module.get<InMemoryOrchestrationAuditRecorder>(
+      InMemoryOrchestrationAuditRecorder,
+    );
+    auditRecorder.clear();
+  });
+
+  function createRun(collaborationRunId = 'collab-audit-01') {
+    return service.createCollaborationRun({
+      collaborationRunId,
+      userId: 'user-01',
+      projectId: 'project-01',
+      initiatorAgent: {
+        agentRole: 'builder',
+        builderProfileId: 'builder-a',
+      },
+    });
+  }
+
+  function createReferral(overrides?: {
+    collaborationRunId?: string;
+    referralId?: string;
+    referralTraceId?: string;
+    idempotencyKey?: string;
+  }) {
+    return service.createReferral({
+      referralId: overrides?.referralId ?? 'ref-audit-01',
+      referralTraceId: overrides?.referralTraceId ?? 'trace-audit-01',
+      collaborationRunId: overrides?.collaborationRunId ?? 'collab-audit-01',
+      sourceBuilder: {
+        agentRole: 'builder',
+        builderProfileId: 'builder-a',
+      },
+      targetBuilder: {
+        agentRole: 'chief-of-staff',
+        builderProfileId: 'builder-b',
+      },
+      idempotencyKey: overrides?.idempotencyKey ?? 'key-audit-01',
+    });
+  }
+
+  it('createCollaborationRun emits collaboration_started mapped event', () => {
+    createRun('collab-audit-create-run');
+
+    const events = auditRecorder.getEvents();
+    expect(events).toHaveLength(1);
+    expect(events[0]?.eventType).toBe('orchestration.collaboration_created');
+    expect(events[0]?.payload.lifecycleEvent).toBe('collaboration_started');
+  });
+
+  it('createReferral emits referral_created', () => {
+    createRun();
+    service.clearAuditEvents();
+
+    const referral = createReferral();
+    const events = service.getAuditEvents();
+
+    expect(events).toHaveLength(1);
+    expect(events[0]?.eventType).toBe('orchestration.referral_created');
+    expect(events[0]?.payload.lifecycleEvent).toBe('referral_created');
+    expect(events[0]?.payload.referralId).toBe(referral.referralId);
+  });
+
+  it('duplicate idempotency hit emits referral_duplicate_detected marker', () => {
+    createRun('collab-audit-duplicate');
+    const first = createReferral({
+      collaborationRunId: 'collab-audit-duplicate',
+      referralId: 'ref-audit-dup-first',
+      referralTraceId: 'trace-audit-dup-first',
+      idempotencyKey: 'key-audit-dup',
+    });
+    service.clearAuditEvents();
+
+    const second = createReferral({
+      collaborationRunId: 'collab-audit-duplicate',
+      referralId: 'ref-audit-dup-second',
+      referralTraceId: 'trace-audit-dup-second',
+      idempotencyKey: 'key-audit-dup',
+    });
+    const events = service.getAuditEvents();
+
+    expect(second.referralId).toBe(first.referralId);
+    expect(events).toHaveLength(1);
+    expect(events[0]?.eventType).toBe('orchestration.referral_created');
+    expect(events[0]?.payload.lifecycleEvent).toBe('referral_duplicate_detected');
+    expect(events[0]?.payload.result).toBe('duplicate');
+  });
+
+  it('startReferralExecution emits referral_enqueued/referral_started mapped event', async () => {
+    createRun('collab-audit-start');
+    const referral = createReferral({
+      collaborationRunId: 'collab-audit-start',
+      referralId: 'ref-audit-start',
+      referralTraceId: 'trace-audit-start',
+      idempotencyKey: 'key-audit-start',
+    });
+    service.clearAuditEvents();
+
+    await service.startReferralExecution({
+      referralId: referral.referralId,
+      executionId: 'exec-audit-01',
+      sessionId: 'session-audit-01',
+      conversationId: 'conversation-audit-01',
+      userId: 'user-01',
+      apiKeyId: 'apikey-01',
+      prompt: 'run referral',
+      provider: 'stub',
+      adapter: 'stub',
+      submittedAt: new Date().toISOString(),
+      orchestrationPriority: 1,
+    });
+
+    const events = service.getAuditEvents();
+    expect(events).toHaveLength(1);
+    expect(events[0]?.eventType).toBe('orchestration.referral_started');
+    expect(events[0]?.payload.lifecycleEvent).toBe('referral_started');
+    expect(events[0]?.payload.transitionDetail).toBe('referral_enqueued');
+  });
+
+  it('completeReferral emits referral_completed', () => {
+    createRun('collab-audit-complete');
+    const referral = createReferral({
+      collaborationRunId: 'collab-audit-complete',
+      referralId: 'ref-audit-complete',
+      referralTraceId: 'trace-audit-complete',
+      idempotencyKey: 'key-audit-complete',
+    });
+    service.clearAuditEvents();
+
+    service.completeReferral({
+      referralId: referral.referralId,
+      summary: 'completed',
+      durationMs: 15,
+    });
+
+    const events = service.getAuditEvents();
+    expect(events).toHaveLength(1);
+    expect(events[0]?.eventType).toBe('orchestration.referral_completed');
+    expect(events[0]?.payload.lifecycleEvent).toBe('referral_completed');
+  });
+
+  it('failReferral emits referral_failed', () => {
+    createRun('collab-audit-fail');
+    const referral = createReferral({
+      collaborationRunId: 'collab-audit-fail',
+      referralId: 'ref-audit-fail',
+      referralTraceId: 'trace-audit-fail',
+      idempotencyKey: 'key-audit-fail',
+    });
+    service.clearAuditEvents();
+
+    service.failReferral({
+      referralId: referral.referralId,
+      summary: 'failed',
+      durationMs: 20,
+    });
+
+    const events = service.getAuditEvents();
+    expect(events).toHaveLength(1);
+    expect(events[0]?.eventType).toBe('orchestration.referral_failed');
+    expect(events[0]?.payload.lifecycleEvent).toBe('referral_failed');
+  });
+
+  it('cancelReferral emits referral_cancelled', async () => {
+    createRun('collab-audit-cancel-ref');
+    const referral = createReferral({
+      collaborationRunId: 'collab-audit-cancel-ref',
+      referralId: 'ref-audit-cancel-ref',
+      referralTraceId: 'trace-audit-cancel-ref',
+      idempotencyKey: 'key-audit-cancel-ref',
+    });
+    await service.startReferralExecution({
+      referralId: referral.referralId,
+      executionId: 'exec-audit-cancel-ref',
+      sessionId: 'session-audit-cancel-ref',
+      conversationId: 'conversation-audit-cancel-ref',
+      userId: 'user-01',
+      apiKeyId: 'apikey-01',
+      prompt: 'run referral then cancel',
+      provider: 'stub',
+      adapter: 'stub',
+      submittedAt: new Date().toISOString(),
+    });
+    service.clearAuditEvents();
+
+    await service.cancelReferral({
+      referralId: referral.referralId,
+      cancelledByUserId: 'user-01',
+      cancelReason: 'requested',
+    });
+
+    const events = service.getAuditEvents();
+    expect(events).toHaveLength(1);
+    expect(events[0]?.eventType).toBe('orchestration.referral_cancelled');
+    expect(events[0]?.payload.lifecycleEvent).toBe('referral_cancelled');
+  });
+
+  it('cancelCollaboration emits collaboration_cancelled', async () => {
+    createRun('collab-audit-cancel-collab');
+    service.clearAuditEvents();
+
+    await service.cancelCollaboration({
+      collaborationRunId: 'collab-audit-cancel-collab',
+      cancelledByUserId: 'user-01',
+      cancelReason: 'user cancelled',
+    });
+
+    const events = service.getAuditEvents();
+    expect(events).toHaveLength(1);
+    expect(events[0]?.eventType).toBe('orchestration.collaboration_cancelled');
+    expect(events[0]?.payload.lifecycleEvent).toBe('collaboration_cancelled');
+  });
+
+  it('depth block emits safety_limit_breached with limitType depth', () => {
+    createRun('collab-audit-depth');
+    service.clearAuditEvents();
+
+    expect(() =>
+      service.validateReferral({
+        collaborationRunId: 'collab-audit-depth',
+        sourceBuilderProfileId: 'builder-a',
+        targetBuilderProfileId: 'builder-b',
+        idempotencyKey: 'key-audit-depth',
+        depth: DEFAULT_MAX_REFERRAL_DEPTH,
+      }),
+    ).toThrow(/exceeds max depth/i);
+
+    const events = service.getAuditEvents();
+    expect(events).toHaveLength(1);
+    expect(events[0]?.eventType).toBe('orchestration.safety_limit_breached');
+    expect(events[0]?.payload.limitType).toBe('depth');
+  });
+
+  it('agent-limit block emits safety_limit_breached with limitType agent_limit', () => {
+    createRun('collab-audit-agent-limit');
+
+    service.createReferral({
+      referralId: 'ref-audit-agent-limit-1',
+      collaborationRunId: 'collab-audit-agent-limit',
+      sourceBuilder: { agentRole: 'builder', builderProfileId: 'builder-a' },
+      targetBuilder: { agentRole: 'chief-of-staff', builderProfileId: 'builder-b' },
+      idempotencyKey: 'key-audit-agent-limit-1',
+    });
+    service.createReferral({
+      referralId: 'ref-audit-agent-limit-2',
+      collaborationRunId: 'collab-audit-agent-limit',
+      sourceBuilder: { agentRole: 'builder', builderProfileId: 'builder-b' },
+      targetBuilder: { agentRole: 'product-strategy', builderProfileId: 'builder-c' },
+      idempotencyKey: 'key-audit-agent-limit-2',
+    });
+    service.createReferral({
+      referralId: 'ref-audit-agent-limit-3',
+      collaborationRunId: 'collab-audit-agent-limit',
+      sourceBuilder: { agentRole: 'builder', builderProfileId: 'builder-c' },
+      targetBuilder: { agentRole: 'technology-advisor', builderProfileId: 'builder-d' },
+      idempotencyKey: 'key-audit-agent-limit-3',
+    });
+    service.clearAuditEvents();
+
+    expect(() =>
+      service.validateReferral({
+        collaborationRunId: 'collab-audit-agent-limit',
+        sourceBuilderProfileId: 'builder-d',
+        targetBuilderProfileId: 'builder-e',
+        idempotencyKey: 'key-audit-agent-limit-4',
+      }),
+    ).toThrow(/max agents/i);
+
+    const events = service.getAuditEvents();
+    expect(events).toHaveLength(1);
+    expect(events[0]?.eventType).toBe('orchestration.safety_limit_breached');
+    expect(events[0]?.payload.limitType).toBe('agent_limit');
+  });
+
+  it('loop block emits safety_limit_breached with limitType loop', () => {
+    createRun('collab-audit-loop');
+    service.clearAuditEvents();
+
+    expect(() =>
+      service.validateReferral({
+        collaborationRunId: 'collab-audit-loop',
+        sourceBuilderProfileId: 'builder-b',
+        targetBuilderProfileId: 'builder-a',
+        idempotencyKey: 'key-audit-loop',
+        visitedBuilderProfileIds: ['builder-a', 'builder-b'],
+      }),
+    ).toThrow(/loop detected/i);
+
+    const events = service.getAuditEvents();
+    expect(events).toHaveLength(1);
+    expect(events[0]?.eventType).toBe('orchestration.safety_limit_breached');
+    expect(events[0]?.payload.limitType).toBe('loop');
+  });
+
+  it('payload includes collaboration/referral IDs and source-target builder metadata', () => {
+    createRun('collab-audit-metadata');
+    service.clearAuditEvents();
+
+    const referral = createReferral({
+      collaborationRunId: 'collab-audit-metadata',
+      referralId: 'ref-audit-metadata',
+      referralTraceId: 'trace-audit-metadata',
+      idempotencyKey: 'key-audit-metadata',
+    });
+
+    const event = service.getAuditEvents()[0];
+    expect(event?.payload.collaborationRunId).toBe('collab-audit-metadata');
+    expect(event?.payload.referralTraceId).toBe('trace-audit-metadata');
+    expect(event?.payload.referralId).toBe(referral.referralId);
+    expect(event?.payload.sourceBuilderProfileId).toBe('builder-a');
+    expect(event?.payload.targetBuilderProfileId).toBe('builder-b');
+  });
+
+  it('service remains usable without external runtime/provider dependencies', () => {
+    const localService = new OrchestrationService(undefined, undefined);
+    const run = localService.createCollaborationRun({
+      collaborationRunId: 'collab-audit-local',
+      userId: 'user-local',
+      projectId: 'project-local',
+      initiatorAgent: {
+        agentRole: 'builder',
+        builderProfileId: 'builder-local',
+      },
+    });
+    const referral = localService.createReferral({
+      referralId: 'ref-audit-local',
+      collaborationRunId: run.collaborationRunId,
+      sourceBuilder: {
+        agentRole: 'builder',
+        builderProfileId: 'builder-local',
+      },
+      targetBuilder: {
+        agentRole: 'chief-of-staff',
+        builderProfileId: 'builder-local-target',
+      },
+      idempotencyKey: 'key-audit-local',
+    });
+
+    expect(run.status).toBe('active');
+    expect(referral.status).toBe('pending_approval');
+    expect(localService.getAuditEvents().length).toBeGreaterThan(0);
   });
 });

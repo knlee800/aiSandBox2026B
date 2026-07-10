@@ -3,6 +3,12 @@ import { randomUUID } from 'crypto';
 import { QueueService } from '../queue/queue.service';
 import { ExecutionResultService } from '../ai/execution-result.service';
 import {
+  InMemoryOrchestrationAuditRecorder,
+  type OrchestrationAuditRecorder,
+} from './orchestration-audit.recorder';
+import {
+  type OrchestrationAuditEvent,
+  type OrchestrationAuditEventType,
   type BuilderProfileId,
   type CollaborationAgentIdentity,
   type CollaborationReferral,
@@ -130,11 +136,15 @@ export class OrchestrationService {
   private readonly referralStore = new Map<ReferralId, CollaborationReferral>();
   private readonly idempotencyStore = new Map<IdempotencyKey, ReferralId>();
   private readonly referralExecutionMap = new Map<ReferralId, string>();
+  private readonly auditRecorder: OrchestrationAuditRecorder;
 
   constructor(
     @Optional() private readonly queueService?: QueueService,
     @Optional() private readonly executionResultService?: ExecutionResultService,
-  ) {}
+    @Optional() auditRecorder?: InMemoryOrchestrationAuditRecorder,
+  ) {
+    this.auditRecorder = auditRecorder ?? new InMemoryOrchestrationAuditRecorder();
+  }
 
   private readonly defaultReferralConstraints: ReferralConstraints = {
     timeoutMs: DEFAULT_REFERRAL_TIMEOUT_MS,
@@ -161,6 +171,14 @@ export class OrchestrationService {
       allowedToolIds: [...READ_ONLY_ALLOWED_TOOL_IDS],
       blockedToolIds: [...READ_ONLY_BLOCKED_TOOL_IDS],
     };
+  }
+
+  getAuditEvents(): readonly OrchestrationAuditEvent[] {
+    return this.auditRecorder.getEvents();
+  }
+
+  clearAuditEvents(): void {
+    this.auditRecorder.clear();
   }
 
   createCollaborationRun(input: CreateCollaborationRunInput): CollaborationRun {
@@ -198,6 +216,21 @@ export class OrchestrationService {
     };
 
     this.collaborationRunStore.set(collaborationRunId, run);
+    this.emitAuditEvent({
+      eventType: 'orchestration.collaboration_created',
+      collaborationRunId: run.collaborationRunId,
+      referralTraceId: null,
+      sourceBuilder: run.initiatorAgent,
+      targetBuilder: null,
+      payload: {
+        lifecycleEvent: 'collaboration_started',
+        userId: run.userId,
+        projectId: run.projectId,
+        status: run.status,
+        sourceBuilderProfileId: run.initiatorAgent.builderProfileId,
+        sourceAgentRole: run.initiatorAgent.agentRole,
+      },
+    });
 
     return this.cloneCollaborationRun(run);
   }
@@ -224,6 +257,29 @@ export class OrchestrationService {
     });
 
     if (validation.outcome === 'duplicate') {
+      const run = this.getStoredCollaborationRun(input.collaborationRunId);
+      this.emitAuditEvent({
+        // The current 07A union has no dedicated duplicate type member.
+        // Keep contract compatibility and mark duplicate lifecycle in payload.
+        eventType: 'orchestration.referral_created',
+        collaborationRunId: validation.referral.collaborationRunId,
+        referralTraceId: validation.referral.referralTraceId,
+        sourceBuilder: validation.referral.sourceBuilder,
+        targetBuilder: validation.referral.targetBuilder,
+        payload: {
+          lifecycleEvent: 'referral_duplicate_detected',
+          result: 'duplicate',
+          referralId: validation.referral.referralId,
+          parentReferralTraceId: validation.referral.parentReferralTraceId,
+          idempotencyKey: validation.referral.idempotencyKey,
+          userId: run.userId,
+          projectId: run.projectId,
+          sourceBuilderProfileId: validation.referral.sourceBuilder.builderProfileId,
+          sourceAgentRole: validation.referral.sourceBuilder.agentRole,
+          targetBuilderProfileId: validation.referral.targetBuilder.builderProfileId,
+          targetAgentRole: validation.referral.targetBuilder.agentRole,
+        },
+      });
       return validation.referral;
     }
 
@@ -307,6 +363,26 @@ export class OrchestrationService {
       referral.referralId,
     );
     this.collaborationRunStore.set(updatedRun.collaborationRunId, updatedRun);
+    this.emitAuditEvent({
+      eventType: 'orchestration.referral_created',
+      collaborationRunId: referral.collaborationRunId,
+      referralTraceId: referral.referralTraceId,
+      sourceBuilder: referral.sourceBuilder,
+      targetBuilder: referral.targetBuilder,
+      payload: {
+        lifecycleEvent: 'referral_created',
+        status: referral.status,
+        referralId: referral.referralId,
+        parentReferralTraceId: referral.parentReferralTraceId,
+        idempotencyKey: referral.idempotencyKey,
+        userId: run.userId,
+        projectId: run.projectId,
+        sourceBuilderProfileId: referral.sourceBuilder.builderProfileId,
+        sourceAgentRole: referral.sourceBuilder.agentRole,
+        targetBuilderProfileId: referral.targetBuilder.builderProfileId,
+        targetAgentRole: referral.targetBuilder.agentRole,
+      },
+    });
 
     return this.cloneReferral(referral);
   }
@@ -350,6 +426,27 @@ export class OrchestrationService {
     };
 
     this.referralStore.set(updated.referralId, updated);
+    const run = this.getStoredCollaborationRun(updated.collaborationRunId);
+    this.emitAuditEvent({
+      eventType: 'orchestration.referral_completed',
+      collaborationRunId: updated.collaborationRunId,
+      referralTraceId: updated.referralTraceId,
+      sourceBuilder: updated.sourceBuilder,
+      targetBuilder: updated.targetBuilder,
+      payload: {
+        lifecycleEvent: 'referral_completed',
+        status: updated.status,
+        resultStatus: nextResult.status,
+        referralId: updated.referralId,
+        executionId: this.referralExecutionMap.get(updated.referralId) ?? null,
+        userId: run.userId,
+        projectId: run.projectId,
+        sourceBuilderProfileId: updated.sourceBuilder.builderProfileId,
+        sourceAgentRole: updated.sourceBuilder.agentRole,
+        targetBuilderProfileId: updated.targetBuilder.builderProfileId,
+        targetAgentRole: updated.targetBuilder.agentRole,
+      },
+    });
 
     return this.cloneReferral(updated);
   }
@@ -384,6 +481,28 @@ export class OrchestrationService {
     };
 
     this.referralStore.set(updated.referralId, updated);
+    const run = this.getStoredCollaborationRun(updated.collaborationRunId);
+    this.emitAuditEvent({
+      eventType: 'orchestration.referral_failed',
+      collaborationRunId: updated.collaborationRunId,
+      referralTraceId: updated.referralTraceId,
+      sourceBuilder: updated.sourceBuilder,
+      targetBuilder: updated.targetBuilder,
+      payload: {
+        lifecycleEvent: 'referral_failed',
+        status: updated.status,
+        resultStatus: nextResult.status,
+        summary: input.summary,
+        referralId: updated.referralId,
+        executionId: this.referralExecutionMap.get(updated.referralId) ?? null,
+        userId: run.userId,
+        projectId: run.projectId,
+        sourceBuilderProfileId: updated.sourceBuilder.builderProfileId,
+        sourceAgentRole: updated.sourceBuilder.agentRole,
+        targetBuilderProfileId: updated.targetBuilder.builderProfileId,
+        targetAgentRole: updated.targetBuilder.agentRole,
+      },
+    });
 
     return this.cloneReferral(updated);
   }
@@ -395,6 +514,26 @@ export class OrchestrationService {
     const depth = input.depth ?? 0;
 
     if (depth >= maxDepth) {
+      const sourceBuilder = this.resolveBuilderIdentity(run, input.sourceBuilderProfileId);
+      const targetBuilder = this.resolveBuilderIdentity(run, input.targetBuilderProfileId);
+      this.emitAuditEvent({
+        eventType: 'orchestration.safety_limit_breached',
+        collaborationRunId: input.collaborationRunId,
+        referralTraceId: null,
+        sourceBuilder,
+        targetBuilder,
+        payload: {
+          lifecycleEvent: 'referral_depth_blocked',
+          limitType: 'depth',
+          currentValue: depth,
+          maxValue: maxDepth,
+          reason: 'referral_depth_exceeds_max_depth',
+          userId: run.userId,
+          projectId: run.projectId,
+          sourceBuilderProfileId: input.sourceBuilderProfileId,
+          targetBuilderProfileId: input.targetBuilderProfileId,
+        },
+      });
       throw new Error(
         `Referral depth ${depth} exceeds max depth ${maxDepth} for collaboration ${input.collaborationRunId}`,
       );
@@ -402,6 +541,26 @@ export class OrchestrationService {
 
     const visitedBuilderProfileIds = new Set(input.visitedBuilderProfileIds ?? []);
     if (visitedBuilderProfileIds.has(input.targetBuilderProfileId)) {
+      const sourceBuilder = this.resolveBuilderIdentity(run, input.sourceBuilderProfileId);
+      const targetBuilder = this.resolveBuilderIdentity(run, input.targetBuilderProfileId);
+      this.emitAuditEvent({
+        eventType: 'orchestration.safety_limit_breached',
+        collaborationRunId: input.collaborationRunId,
+        referralTraceId: null,
+        sourceBuilder,
+        targetBuilder,
+        payload: {
+          lifecycleEvent: 'referral_loop_blocked',
+          limitType: 'loop',
+          currentValue: visitedBuilderProfileIds.size,
+          maxValue: visitedBuilderProfileIds.size,
+          reason: 'referral_loop_detected',
+          userId: run.userId,
+          projectId: run.projectId,
+          sourceBuilderProfileId: input.sourceBuilderProfileId,
+          targetBuilderProfileId: input.targetBuilderProfileId,
+        },
+      });
       throw new Error(
         `Referral loop detected for builder ${input.targetBuilderProfileId} in collaboration ${input.collaborationRunId}`,
       );
@@ -413,6 +572,26 @@ export class OrchestrationService {
       input.targetBuilderProfileId,
     ]).length;
     if (projectedAgentCount > resolvedConstraints.maxAgentsPerCollaboration) {
+      const sourceBuilder = this.resolveBuilderIdentity(run, input.sourceBuilderProfileId);
+      const targetBuilder = this.resolveBuilderIdentity(run, input.targetBuilderProfileId);
+      this.emitAuditEvent({
+        eventType: 'orchestration.safety_limit_breached',
+        collaborationRunId: input.collaborationRunId,
+        referralTraceId: null,
+        sourceBuilder,
+        targetBuilder,
+        payload: {
+          lifecycleEvent: 'referral_agent_limit_blocked',
+          limitType: 'agent_limit',
+          currentValue: projectedAgentCount,
+          maxValue: resolvedConstraints.maxAgentsPerCollaboration,
+          reason: 'max_agents_exceeded',
+          userId: run.userId,
+          projectId: run.projectId,
+          sourceBuilderProfileId: input.sourceBuilderProfileId,
+          targetBuilderProfileId: input.targetBuilderProfileId,
+        },
+      });
       throw new Error(
         `Max agents ${resolvedConstraints.maxAgentsPerCollaboration} exceeded for collaboration ${input.collaborationRunId}`,
       );
@@ -491,6 +670,29 @@ export class OrchestrationService {
     this.referralStore.set(updated.referralId, updated);
 
     await this.queueService.enqueueExecution(jobPayload);
+    const run = this.getStoredCollaborationRun(updated.collaborationRunId);
+    this.emitAuditEvent({
+      eventType: 'orchestration.referral_started',
+      collaborationRunId: updated.collaborationRunId,
+      referralTraceId: updated.referralTraceId,
+      sourceBuilder: updated.sourceBuilder,
+      targetBuilder: updated.targetBuilder,
+      payload: {
+        lifecycleEvent: 'referral_started',
+        transitionDetail: 'referral_enqueued',
+        status: updated.status,
+        referralId: updated.referralId,
+        parentReferralTraceId: updated.parentReferralTraceId,
+        executionId: input.executionId,
+        sessionId: input.sessionId,
+        userId: run.userId,
+        projectId: run.projectId,
+        sourceBuilderProfileId: updated.sourceBuilder.builderProfileId,
+        sourceAgentRole: updated.sourceBuilder.agentRole,
+        targetBuilderProfileId: updated.targetBuilder.builderProfileId,
+        targetAgentRole: updated.targetBuilder.agentRole,
+      },
+    });
 
     return { executionId: input.executionId };
   }
@@ -532,6 +734,27 @@ export class OrchestrationService {
       updatedAt: now,
     };
     this.referralStore.set(updated.referralId, updated);
+    this.emitAuditEvent({
+      eventType: 'orchestration.referral_cancelled',
+      collaborationRunId: updated.collaborationRunId,
+      referralTraceId: updated.referralTraceId,
+      sourceBuilder: updated.sourceBuilder,
+      targetBuilder: updated.targetBuilder,
+      payload: {
+        lifecycleEvent: 'referral_cancelled',
+        status: updated.status,
+        referralId: updated.referralId,
+        executionId: executionId ?? null,
+        reason: input.cancelReason,
+        cancelledByUserId: input.cancelledByUserId,
+        userId: run.userId,
+        projectId: run.projectId,
+        sourceBuilderProfileId: updated.sourceBuilder.builderProfileId,
+        sourceAgentRole: updated.sourceBuilder.agentRole,
+        targetBuilderProfileId: updated.targetBuilder.builderProfileId,
+        targetAgentRole: updated.targetBuilder.agentRole,
+      },
+    });
 
     return this.cloneReferral(updated);
   }
@@ -550,10 +773,12 @@ export class OrchestrationService {
       'approved',
       'in_progress',
     ];
+    const affectedReferralIds: ReferralId[] = [];
 
     for (const referralId of run.referralIds) {
       const referral = this.referralStore.get(referralId);
       if (referral && activeStatuses.includes(referral.status)) {
+        affectedReferralIds.push(referralId);
         await this.cancelReferral({
           referralId,
           cancelledByUserId: input.cancelledByUserId,
@@ -572,6 +797,24 @@ export class OrchestrationService {
       updatedAt: now,
     };
     this.collaborationRunStore.set(updatedRun.collaborationRunId, updatedRun);
+    this.emitAuditEvent({
+      eventType: 'orchestration.collaboration_cancelled',
+      collaborationRunId: updatedRun.collaborationRunId,
+      referralTraceId: null,
+      sourceBuilder: updatedRun.initiatorAgent,
+      targetBuilder: null,
+      payload: {
+        lifecycleEvent: 'collaboration_cancelled',
+        status: updatedRun.status,
+        userId: updatedRun.userId,
+        projectId: updatedRun.projectId,
+        cancelledByUserId: input.cancelledByUserId,
+        reason: input.cancelReason,
+        affectedReferralIds,
+        sourceBuilderProfileId: updatedRun.initiatorAgent.builderProfileId,
+        sourceAgentRole: updatedRun.initiatorAgent.agentRole,
+      },
+    });
 
     return this.cloneCollaborationRun(updatedRun);
   }
@@ -695,6 +938,63 @@ export class OrchestrationService {
 
   private uniqueBuilderIds(ids: readonly BuilderProfileId[]): BuilderProfileId[] {
     return Array.from(new Set(ids));
+  }
+
+  private resolveBuilderIdentity(
+    run: CollaborationRun,
+    builderProfileId: BuilderProfileId,
+  ): CollaborationAgentIdentity {
+    if (run.initiatorAgent.builderProfileId === builderProfileId) {
+      return { ...run.initiatorAgent };
+    }
+
+    for (const referralId of run.referralIds) {
+      const referral = this.referralStore.get(referralId);
+      if (!referral) {
+        continue;
+      }
+
+      if (referral.sourceBuilder.builderProfileId === builderProfileId) {
+        return { ...referral.sourceBuilder };
+      }
+
+      if (referral.targetBuilder.builderProfileId === builderProfileId) {
+        return { ...referral.targetBuilder };
+      }
+    }
+
+    return {
+      agentRole: 'builder',
+      builderProfileId,
+    };
+  }
+
+  private emitAuditEvent(input: {
+    eventType: OrchestrationAuditEventType;
+    collaborationRunId: CollaborationRunId;
+    referralTraceId: ReferralTraceId | null;
+    sourceBuilder: SourceBuilderIdentity;
+    targetBuilder: TargetBuilderIdentity | null;
+    payload: Record<string, unknown>;
+  }): void {
+    const event: OrchestrationAuditEvent = {
+      eventType: input.eventType,
+      collaborationRunId: input.collaborationRunId,
+      referralTraceId: input.referralTraceId,
+      sourceBuilder: { ...input.sourceBuilder },
+      targetBuilder: input.targetBuilder ? { ...input.targetBuilder } : null,
+      timestamp: this.now(),
+      payload: {
+        collaborationRunId: input.collaborationRunId,
+        referralTraceId: input.referralTraceId,
+        sourceBuilderProfileId: input.sourceBuilder.builderProfileId,
+        sourceAgentRole: input.sourceBuilder.agentRole,
+        targetBuilderProfileId: input.targetBuilder?.builderProfileId ?? null,
+        targetAgentRole: input.targetBuilder?.agentRole ?? null,
+        ...input.payload,
+      },
+    };
+    this.auditRecorder.record(event);
   }
 
   private generateId(prefix: string): string {
