@@ -16,6 +16,7 @@ import { PublicFilesController } from './public-files.controller';
 import { PublicProjectsController } from './public-projects.controller';
 import { PublicAIController } from './public-ai.controller';
 import { PublicDocsController } from './public-docs.controller';
+import { CreditBalanceGuardModule } from '../billing/credit-balance-guard.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { PublicDocsController } from './public-docs.controller';
     SafetyModule,
     LaunchModule,
     AbortModule,
+    CreditBalanceGuardModule, // BILLING-READY-04A: Credit balance gate
   ],
   controllers: [
     PublicSessionsController,

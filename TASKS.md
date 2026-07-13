@@ -25148,11 +25148,11 @@ Resume AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell.
 
 ## AGENT PLATFORM / AINOW.BIZ MULTI-AGENT
 
-**Family status:** AGENT-PLATFORM-07F3 COMPLETE and LOCKED (2026-07-12) — AGENT-PLATFORM-07F2 COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07F1 COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07F COMPLETE and LOCKED (2026-07-12, all child slices: 07F1 COMPLETE and LOCKED, 07F2 COMPLETE and LOCKED, 07F3 COMPLETE and LOCKED) — AGENT-PLATFORM-07E COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07D COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07C COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07C2 COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07C1 COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07B COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07A COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07 COMPLETE and LOCKED, AGENT-PLATFORM-06 COMPLETE and LOCKED, AGENT-PLATFORM-05 COMPLETE and LOCKED, AGENT-PLATFORM-04 COMPLETE and LOCKED, AGENT-PLATFORM-03 COMPLETE and LOCKED, AGENT-PLATFORM-02 COMPLETE and LOCKED, AGENT-PLATFORM-01 COMPLETE and LOCKED, AGENT-PLATFORM-00 COMPLETE and LOCKED. AGENT-HARNESS write canary remains a separate track. Next recommended roadmap item: BILLING-READY-04+ — not registered.
+**Family status:** BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) — BILLING-READY-04 ACTIVE (Step 3 IN PROGRESS — child-slice split; 04B next recommended, not registered; 04C/04D planned only) — AGENT-PLATFORM-07F3 COMPLETE and LOCKED (2026-07-12) — AGENT-PLATFORM-07F2 COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07F1 COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07F COMPLETE and LOCKED (2026-07-12, all child slices: 07F1 COMPLETE and LOCKED, 07F2 COMPLETE and LOCKED, 07F3 COMPLETE and LOCKED) — AGENT-PLATFORM-07E COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07D COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07C COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07C2 COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07C1 COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07B COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07A COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07 COMPLETE and LOCKED, AGENT-PLATFORM-06 COMPLETE and LOCKED, AGENT-PLATFORM-05 COMPLETE and LOCKED, AGENT-PLATFORM-04 COMPLETE and LOCKED, AGENT-PLATFORM-03 COMPLETE and LOCKED, AGENT-PLATFORM-02 COMPLETE and LOCKED, AGENT-PLATFORM-01 COMPLETE and LOCKED, AGENT-PLATFORM-00 COMPLETE and LOCKED. AGENT-HARNESS write canary remains a separate track.
 
 **Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` — controls cross-family priority order; Knowledge before Collaboration before Billing.
 
-**Current stage:** AGENT-PLATFORM-07F3 COMPLETE and LOCKED (2026-07-12) — all 3 steps complete — parent consolidation checkpoint. AGENT-PLATFORM-07F2 COMPLETE and LOCKED (2026-07-10) — all 4 steps complete — cancel signal path canary PASS. AGENT-PLATFORM-07F1 COMPLETE and LOCKED (2026-07-10) — all 4 steps complete — queue transport + metadata preservation canary PASS. Parent AGENT-PLATFORM-07F COMPLETE and LOCKED (2026-07-12 — all child slices: 07F1 COMPLETE and LOCKED, 07F2 COMPLETE and LOCKED, 07F3 COMPLETE and LOCKED). No ACTIVE task. Next recommended roadmap item: BILLING-READY-04+ — not registered. AGENT-HARNESS write canary remains a separate track.
+**Current stage:** BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) — all 4 steps complete — `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 ACTIVE — Step 3 IN PROGRESS — BILLING-READY-04A COMPLETE and LOCKED; 04B next recommended (not registered); 04C/04D planned only. AGENT-PLATFORM-07F3 COMPLETE and LOCKED (2026-07-12) — all 3 steps complete — parent consolidation checkpoint. AGENT-PLATFORM-07F COMPLETE and LOCKED (2026-07-12 — all child slices: 07F1 COMPLETE and LOCKED, 07F2 COMPLETE and LOCKED, 07F3 COMPLETE and LOCKED). AGENT-HARNESS write canary remains a separate track.
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 — ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED — 2026-07-04)
@@ -25794,7 +25794,7 @@ This task produces the authoritative plan for how multiple Builder Agents can co
 **AGENT-HARNESS-07 status:** COMPLETE and LOCKED (2026-07-07) — Per-Builder Harness Config Adapter. All 3 child slices COMPLETE and LOCKED: 07A, 07B, 07C. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
 **AGENT-HARNESS-06C status:** Not registered. Deferred — prerequisite (AGENT-HARNESS-07) is now COMPLETE and LOCKED; AGENT-HARNESS-06C still deferred until Keith explicitly approves canary activation.
 **Multi-builder collaboration/runtime orchestration status:** AGENT-PLATFORM-07F3 COMPLETE and LOCKED (2026-07-12) — all 3 steps complete — parent consolidation checkpoint. Checkpoint: `docs/AGENT-PLATFORM-07F3-CHECKPOINT.md`. AGENT-PLATFORM-07F2 COMPLETE and LOCKED (2026-07-10) — all 4 steps complete — cancel signal path canary PASS — controlled PostgreSQL cancel SQL validated; `running` → `cancel_requested` transition confirmed; negative test (completed row) confirmed 0 rows updated; cleanup complete. Checkpoint: `docs/AGENT-PLATFORM-07F2-CHECKPOINT.md`. AGENT-PLATFORM-07F1 COMPLETE and LOCKED (2026-07-10) — all 4 steps complete. Live runtime canary PASS: queue transport + metadata preservation; 9 orchestration fields survived BullMQ transport; `usage_records.metadata` JSONB verified. Execution ID: 8da5403a-f20e-480e-b7d8-196b18f7faef. stub provider; zero tokens; zero provider/API calls. Cleanup complete. Checkpoint: `docs/AGENT-PLATFORM-07F1-CHECKPOINT.md`. Parent AGENT-PLATFORM-07F COMPLETE and LOCKED (2026-07-12) — all child slices: 07F1 COMPLETE and LOCKED, 07F2 COMPLETE and LOCKED, 07F3 COMPLETE and LOCKED. Checkpoint: `docs/AGENT-PLATFORM-07F-CHECKPOINT.md`. No ACTIVE task. Next recommended roadmap item: BILLING-READY-04+ — not registered. AGENT-HARNESS write canary remains a separate track. AGENT-PLATFORM-07E COMPLETE and LOCKED (2026-07-10). All 4 steps complete. Unit/in-process canary PASS: 16 canary tests (orchestration.canary.spec.ts) + 40 regression tests (orchestration.service.spec.ts) + TypeScript clean. Checkpoint: `docs/AGENT-PLATFORM-07E-CHECKPOINT.md`. AGENT-PLATFORM-07D COMPLETE and LOCKED (2026-07-10). All 4 steps complete. Collaboration/referral audit events: `InMemoryOrchestrationAuditRecorder` created; 8 event types emitted at OrchestrationService lifecycle transitions; 40 tests pass; TypeScript clean. Checkpoint: `docs/AGENT-PLATFORM-07D-CHECKPOINT.md`. AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10). Parent AGENT-PLATFORM-07C COMPLETE and LOCKED (2026-07-10). All 3 child slices COMPLETE and LOCKED: 07C1 COMPLETE and LOCKED (2026-07-09), 07C2 COMPLETE and LOCKED (2026-07-09), 07C3 COMPLETE and LOCKED (2026-07-10). AGENT-PLATFORM-07B COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-07A COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-07 COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-06 COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-05 COMPLETE and LOCKED — 2026-07-09. AGENT-HARNESS write canary remains a separate track.
-**BILLING-READY-04+ status:** Not registered. Deferred.
+**BILLING-READY-04 status:** ACTIVE — Step 3 IN PROGRESS (child-slice split). BILLING-READY-04A COMPLETE and LOCKED (2026-07-13). 04B next recommended (not registered). 04C/04D planned only. AGENT-HARNESS write canary remains a separate track.
 
 ---
 
@@ -27223,7 +27223,7 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 **AGENT-HARNESS write canary remains a separate track** — not registered, not part of AGENT-PLATFORM-07E.
 
-**Completed task:** AGENT-PLATFORM-07F3 — Parent Consolidation Checkpoint — COMPLETE and LOCKED (2026-07-12). AGENT-PLATFORM-07F2 COMPLETE and LOCKED (2026-07-10). Checkpoint: `docs/AGENT-PLATFORM-07F2-CHECKPOINT.md`. AGENT-PLATFORM-07F1 COMPLETE and LOCKED (2026-07-10). Checkpoint: `docs/AGENT-PLATFORM-07F1-CHECKPOINT.md`. Parent AGENT-PLATFORM-07F COMPLETE and LOCKED (2026-07-12). Checkpoint: `docs/AGENT-PLATFORM-07F-CHECKPOINT.md`. No ACTIVE task. Next recommended roadmap item: BILLING-READY-04+ — not registered. AGENT-HARNESS write canary remains a separate track.
+**Completed task:** BILLING-READY-04A — API Gateway Balance Gate Foundation — COMPLETE and LOCKED (2026-07-13). All 4 steps complete. `CreditBalanceGuard` implemented, `CreditBalanceGuardModule` created, guard wired into both AI execution controllers, 24/24 unit tests PASS, 68/68 controller tests PASS, 30/30 integration tests PASS (after test-only validation fix), 31/31 guard integration tests PASS, 3/3 public-api tests PASS, TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. Parent BILLING-READY-04 remains ACTIVE. BILLING-READY-04B next recommended (not registered). AGENT-HARNESS write canary remains a separate track.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-07E.
 
@@ -27333,7 +27333,7 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 **AGENT-HARNESS write canary remains a separate track** — not registered, not part of AGENT-PLATFORM-07F.
 
-**All child slices COMPLETE and LOCKED.** AGENT-PLATFORM-07F2 COMPLETE and LOCKED (2026-07-10). Checkpoint: `docs/AGENT-PLATFORM-07F2-CHECKPOINT.md`. AGENT-PLATFORM-07F1 COMPLETE and LOCKED (2026-07-10). Checkpoint: `docs/AGENT-PLATFORM-07F1-CHECKPOINT.md`. AGENT-PLATFORM-07F3 COMPLETE and LOCKED (2026-07-12). Checkpoint: `docs/AGENT-PLATFORM-07F3-CHECKPOINT.md`. Parent checkpoint: `docs/AGENT-PLATFORM-07F-CHECKPOINT.md`. No ACTIVE task. Next recommended roadmap item: BILLING-READY-04+ — not registered.
+**All child slices COMPLETE and LOCKED.** AGENT-PLATFORM-07F2 COMPLETE and LOCKED (2026-07-10). Checkpoint: `docs/AGENT-PLATFORM-07F2-CHECKPOINT.md`. AGENT-PLATFORM-07F1 COMPLETE and LOCKED (2026-07-10). Checkpoint: `docs/AGENT-PLATFORM-07F1-CHECKPOINT.md`. AGENT-PLATFORM-07F3 COMPLETE and LOCKED (2026-07-12). Checkpoint: `docs/AGENT-PLATFORM-07F3-CHECKPOINT.md`. Parent checkpoint: `docs/AGENT-PLATFORM-07F-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13). Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 ACTIVE — Step 3 IN PROGRESS (child-slice split). 04B next recommended (not registered).
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-07F.
 
@@ -30126,11 +30126,320 @@ All close criteria for BILLING-READY-03 are satisfied. Parent is COMPLETE and LO
 
 **Checkpoint:** `docs/BILLING-READY-03D3-CHECKPOINT.md` — created 2026-07-07. See `docs/BILLING-READY-03D3-CHECKPOINT.md`.
 
-**BILLING-READY-04+ status:** Not registered. Deferred. Balance enforcement, entitlement gating, Stripe/payment integration, and frontend billing UI remain future scope.
+**BILLING-READY-04 status:** ACTIVE — Step 3 IN PROGRESS (child-slice split). BILLING-READY-04A COMPLETE and LOCKED (2026-07-13). 04B next recommended (not registered). 04C/04D planned only. Future scope: Stripe/payment integration, entitlement enforcement, frontend billing UI. AGENT-HARNESS write canary remains a separate track.
 
 ---
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-03D3.
+
+---
+
+#### BILLING-READY-04: Balance Enforcement, Entitlement Gating, and Billing Foundation Phase 2
+
+**Status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-07-12)
+**Task ID:** BILLING-READY-04
+**Family:** BILLING READY / BALANCE ENFORCEMENT / ENTITLEMENT GATING / PHASE 2
+**Priority:** High
+**Nature:** PLANNING / READINESS — balance enforcement readiness, entitlement gating planning, billing foundation phase 2
+**Risk:** HIGH — future work may affect billing balances, entitlement gates, usage accounting, execution blocking, and beta readiness
+**Registered:** 2026-07-12
+**Keith approval:** Keith approved BILLING-READY-04 registration 2026-07-12
+
+#### Workflow Steps (4-step loop — HIGH risk)
+
+1. **Registration** — COMPLETE (2026-07-12)
+2. **Billing enforcement readiness / source-path review** — COMPLETE (2026-07-12) — Split decision: 4 child slices (04A/04B/04C/04D). See `docs/BILLING-READY-04-ENFORCEMENT-READINESS-REVIEW.md`.
+3. **Bounded implementation — child-slice split** — IN PROGRESS — BILLING-READY-04A COMPLETE and LOCKED (2026-07-13). 04B next recommended (not registered). 04C/04D planned only.
+4. **Consolidation / checkpoint** — PENDING (pending completion of all child slices)
+
+#### Dependencies
+
+- BILLING-READY-03 COMPLETE and LOCKED (2026-07-07)
+- BILLING-READY-03D3 COMPLETE and LOCKED (2026-07-07)
+- AGENT-PLATFORM-07F COMPLETE and LOCKED (2026-07-12)
+- AGENT-PLATFORM-07F1 COMPLETE and LOCKED (2026-07-10)
+- AGENT-PLATFORM-07F2 COMPLETE and LOCKED (2026-07-10)
+- AGENT-PLATFORM-07F3 COMPLETE and LOCKED (2026-07-12)
+- AGENT-PLATFORM-07E COMPLETE and LOCKED (2026-07-10)
+- AGENT-PLATFORM-07D COMPLETE and LOCKED (2026-07-10)
+- AGENT-PLATFORM-07C family COMPLETE and LOCKED (2026-07-10)
+- AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07)
+- AGENT-HARNESS-06E COMPLETE and LOCKED (2026-07-09)
+- Keith approval recorded for registration (2026-07-12)
+
+#### Purpose
+
+BILLING-READY-03 established the credit balance persistence foundation: DB-backed balance tracking, durable deduction records, `sourceEventId` idempotency, `balanceAfter` semantics, `creditsOverflow` recording, and full transaction boundary hardening. Overflow semantics were finalized in BILLING-READY-03D3: deductions are non-blocking; balance exhaustion does not gate execution in BILLING-READY-03; entitlement enforcement was explicitly deferred to BILLING-READY-04+.
+
+BILLING-READY-04 is the planning and readiness task for the next phase: balance enforcement, entitlement gating, and billing foundation hardening for beta readiness. No implementation occurs during registration.
+
+#### Future Step 2 Must Decide
+
+- Exact billing/balance source of truth
+- Exact entitlement gate locations
+- Exact execution paths to block or allow
+- Exact ledger/usage accounting source-path
+- Whether balance checks happen in API Gateway, AI Service, or both
+- How free/beta/internal/test users are handled
+- How zero-token stub/test executions are handled
+- How failed/cancelled executions affect balance
+- Whether DB migration is needed
+- Whether Stripe/payment provider integration is in scope or deferred
+- Exact files to change
+- Exact tests required
+- Whether BILLING-READY-04 must split into child slices before implementation
+
+#### Expected Future Scope
+
+- Balance enforcement planning
+- Entitlement gating planning
+- Usage ledger consistency planning
+- Execution-start gate planning
+- Post-execution usage/balance reconciliation planning
+- Beta readiness billing guardrails
+- No provider/payment calls unless explicitly approved in a later task
+
+#### Non-Goals (Registration Step)
+
+- No implementation during registration
+- No runtime execution during registration
+- No Docker/Postgres/Redis commands during registration
+- No DB query/mutation during registration
+- No database migration during registration
+- No Stripe/payment/provider API calls
+- No frontend UI during registration
+- No user-facing UX text during registration
+- No AGENT-HARNESS write canary
+- No browser smoke
+- No git commits/pushes
+
+#### Runtime Safety Note
+
+Future backend/DB work must explicitly ensure Docker/PostgreSQL/Redis readiness before runtime execution. Do not assume services are running.
+
+#### UX/UI Note
+
+No UI text should be added during registration. If future work adds UI text, aiSandBox is multilingual-first and must update:
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impeccable and Emil Kowalski skills are advisory only.
+
+#### Acceptance Criteria
+
+###### Registration (Step 1 — COMPLETE 2026-07-12)
+- [x] BILLING-READY-04 registered as current ACTIVE task
+- [x] BILLING-READY-03 remains COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-07F remains COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-07F1/07F2/07F3 remain COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-07E/07D/07C family remain COMPLETE and LOCKED
+- [x] AGENT-HARNESS-07/06E remain COMPLETE and LOCKED
+- [x] Registration records BILLING-READY-04 is planning/readiness only
+- [x] Registration records no implementation/runtime execution occurred
+- [x] Registration records no billing provider/payment calls occurred
+- [x] Registration records next step is billing enforcement readiness/source-path review
+- [x] Registration records AGENT-HARNESS write canary remains separate and not registered
+- [x] No implementation files changed
+- [x] No commands run
+- [x] One-active-task rule satisfied
+
+###### Enforcement Readiness / Source-Path Review (Step 2 — COMPLETE 2026-07-12)
+- [x] Step 2 review completed — see `docs/BILLING-READY-04-ENFORCEMENT-READINESS-REVIEW.md`
+- [x] Enforcement boundary decided: Option D — API Gateway pre-execution gate + worker post-execution accounting
+- [x] Source of truth decided: `credit_balances` table via `CreditBalanceRepository`
+- [x] Split decision: 4 child slices (04A/04B/04C/04D) recorded
+- [x] No implementation/runtime execution during Step 2
+- [x] No billing provider/payment calls during Step 2
+- [x] BILLING-READY-04A registration authorized as next step
+
+#### Split Decision (Step 2 — COMPLETE 2026-07-12)
+
+BILLING-READY-04 splits into 4 child slices per `docs/BILLING-READY-04-ENFORCEMENT-READINESS-REVIEW.md` Section 12.
+
+| Slice | Name | Status |
+|-------|------|--------|
+| BILLING-READY-04A | API Gateway Balance Gate Foundation | **COMPLETE and LOCKED — 2026-07-13** |
+| BILLING-READY-04B | Execution-Start Gate Wiring | PLANNED only — next recommended — not registered |
+| BILLING-READY-04C | Worker Finalization / Accounting Guardrails | PLANNED only — not registered |
+| BILLING-READY-04D | Regression Matrix + Parent Consolidation | PLANNED only — not registered |
+
+**AGENT-HARNESS write canary remains a separate track** — not registered, not part of BILLING-READY-04.
+
+**BILLING-READY-04 status:** ACTIVE — Step 3 IN PROGRESS (child-slice split). BILLING-READY-04A COMPLETE and LOCKED (2026-07-13). BILLING-READY-04B next recommended (not registered). 04C/04D planned only. AGENT-HARNESS write canary remains a separate track.
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-04.
+
+---
+
+#### BILLING-READY-04A: API Gateway Balance Gate Foundation
+
+**Status:** COMPLETE and LOCKED — 2026-07-13
+**Task ID:** BILLING-READY-04A
+**Family:** BILLING READY / BALANCE ENFORCEMENT / ENTITLEMENT GATING / PHASE 2
+**Parent:** BILLING-READY-04 — Balance Enforcement, Entitlement Gating, and Billing Foundation Phase 2
+**Priority:** High
+**Nature:** IMPLEMENTATION — API Gateway balance gate foundation, CreditBalanceGuard implementation and wiring
+**Risk:** HIGH — 4-step child-slice loop
+**Registered:** 2026-07-12
+**Completed:** 2026-07-13
+**Checkpoint:** `docs/BILLING-READY-04A-CHECKPOINT.md`
+
+#### Workflow Steps (4-step child-slice loop — HIGH risk)
+
+1. **Registration** — COMPLETE (2026-07-12)
+2. **Implementation readiness / exact file boundary** — COMPLETE (2026-07-12) — See `docs/BILLING-READY-04A-IMPLEMENTATION-READINESS-REVIEW.md`.
+3. **Bounded implementation** — COMPLETE (2026-07-13) — `CreditBalanceGuard` created, `CreditBalanceGuardModule` created, guard wired into `ai-execution.controller.ts` and `public-ai.controller.ts`, modules updated, tests written and passing.
+4. **Consolidation / checkpoint** — COMPLETE (2026-07-13) — See `docs/BILLING-READY-04A-CHECKPOINT.md`.
+
+#### Dependencies
+
+- BILLING-READY-04 ACTIVE with Step 2 COMPLETE and split decision recorded
+- BILLING-READY-03 COMPLETE and LOCKED (2026-07-07)
+- AGENT-PLATFORM-07F COMPLETE and LOCKED (2026-07-12)
+- AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07)
+- AGENT-HARNESS-06E COMPLETE and LOCKED (2026-07-09)
+
+#### Purpose
+
+BILLING-READY-04A is the first child slice of BILLING-READY-04. It defines and implements the API Gateway balance gate foundation: the `CreditBalanceGuard` (or equivalent) that enforces a balance > 0 check before execution is queued.
+
+Per the Step 2 enforcement readiness review (`docs/BILLING-READY-04-ENFORCEMENT-READINESS-REVIEW.md`):
+- Balance source of truth: `credit_balances` table via `CreditBalanceRepository`
+- Enforcement boundary: API Gateway pre-execution gate (Option D — phased approach)
+- Admin role exemption: role=admin bypasses balance check
+- Balance > 0 gate only (no Stripe, no entitlement matrix, no migration)
+- No AGENT-HARNESS write canary involvement
+
+#### Future Step 2 Must Decide
+
+- Exact `CreditBalanceGuard` file path
+- Exact auth/user context source (user object from request context)
+- Exact credit balance lookup path (`CreditBalanceRepository.findByOwner()` or equivalent)
+- Exact API Gateway execution endpoint guard/wiring target (position in guard chain)
+- Exact insufficient-balance error behavior (HTTP 402 or 403, error body structure)
+- Exact admin/internal bypass behavior (role=admin check)
+- Exact stub/zero-token execution behavior (gate passes, deduction=0 post-execution)
+- Exact tests required (unit guard tests + integration enforcement tests)
+- Whether frontend i18n is needed in this child slice or deferred to 04C
+- Whether implementation must split further
+
+#### Expected Scope (Future Steps 2–4)
+
+- Define and implement `CreditBalanceGuard` in API Gateway
+- Wire guard into the execution guard chain (after `IdempotencyGuard`, before `QuotaGuard`)
+- Use `credit_balances` as balance source of truth
+- Use `PLAN_DEFINITIONS` + `user.plan_type` only if needed for minimal entitlement context
+- Enforce balance > 0 gate only
+- Admin bypass: role=admin exempted from balance check
+- Stub/zero-token execution: gate passes (balance check runs), deduction=0 post-execution (no balance impact)
+- Unit tests for guard logic
+- No Stripe/payment provider calls
+- No migration (all schema exists)
+- No worker finalization changes — defer to 04C
+- No broad entitlement matrix — defer unless Step 2/04A readiness proves required
+- No frontend UI — defer to 04C unless Step 2/04A readiness proves required
+
+#### Non-Goals (Registration Step)
+
+- No implementation during registration
+- No runtime execution during registration
+- No Docker/Postgres/Redis commands during registration
+- No DB query/mutation during registration
+- No database migration during registration
+- No Stripe/payment/provider API calls
+- No worker finalization changes (defer to 04C)
+- No broad entitlement matrix
+- No frontend UI during registration
+- No AGENT-HARNESS write canary
+- No browser smoke
+- No git commits/pushes
+
+#### Runtime Safety Note
+
+Future backend/DB work must explicitly ensure Docker/PostgreSQL/Redis readiness before runtime execution. Do not assume services are running.
+
+#### UX/UI Note
+
+No UI text should be added during registration. If future work adds user-facing UX/UI text, aiSandBox is multilingual-first and must update:
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impeccable and Emil Kowalski skills are advisory only.
+
+#### Acceptance Criteria
+
+###### Registration (Step 1 — COMPLETE 2026-07-12)
+- [x] BILLING-READY-04A registered as current ACTIVE child slice
+- [x] Parent BILLING-READY-04 remains ACTIVE with split child-slice status
+- [x] BILLING-READY-04B/04C/04D recorded as planned only, not registered
+- [x] BILLING-READY-03 remains COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-07F remains COMPLETE and LOCKED
+- [x] AGENT-HARNESS-07/06E remain COMPLETE and LOCKED
+- [x] Registration records 04A is API Gateway balance gate foundation only
+- [x] Registration records no implementation/runtime execution occurred
+- [x] Registration records no billing provider/payment calls occurred
+- [x] Registration records next step is 04A implementation readiness / exact file boundary
+- [x] Registration records AGENT-HARNESS write canary remains separate and not registered
+- [x] No implementation files changed
+- [x] No commands run
+- [x] One-active-task rule satisfied
+
+###### Implementation Readiness / Exact File Boundary (Step 2 — COMPLETE 2026-07-12)
+- [x] Readiness review completed — see `docs/BILLING-READY-04A-IMPLEMENTATION-READINESS-REVIEW.md`
+- [x] Exact `CreditBalanceGuard` file path decided: `services/api-gateway/src/billing/credit-balance.guard.ts`
+- [x] Exact dependencies decided: `CreditBalanceRepository` + `Repository<User>` (for admin bypass)
+- [x] Exact guard wiring position decided: after `IdempotencyGuard`, before `QuotaGuard`
+- [x] HTTP 402 behavior decided with structured error body
+- [x] Admin bypass via DB role lookup (`UserRole.ADMIN`) — no `ApiKeyIdentity` extension needed
+- [x] No migration needed (all schema exists)
+- [x] Split decision: no further split — one bounded Step 3 implementation
+- [x] No implementation/runtime execution during Step 2
+- [x] No billing provider/payment calls during Step 2
+
+###### Bounded Implementation (Step 3 — COMPLETE 2026-07-13)
+- [x] `services/api-gateway/src/billing/credit-balance.guard.ts` created — `CreditBalanceGuard implements CanActivate`
+- [x] `services/api-gateway/src/billing/credit-balance-guard.module.ts` created — `CreditBalanceGuardModule`
+- [x] `services/api-gateway/src/billing/__tests__/credit-balance.guard.spec.ts` created — 24 test cases
+- [x] `ai-execution.controller.ts` updated — `CreditBalanceGuard` added after `IdempotencyGuard`
+- [x] `ai.module.ts` updated — `CreditBalanceGuardModule` imported
+- [x] `public-ai.controller.ts` updated — `CreditBalanceGuard` added after `IdempotencyGuard`
+- [x] `public-api.module.ts` updated — `CreditBalanceGuardModule` imported
+- [x] `ai-execution.controller.spec.ts` updated — mock `CreditBalanceGuard` added
+- [x] `ai-execution.controller.integration.spec.ts` updated — test-only validation fix (pre-existing outdated synchronous-controller shape)
+- [x] Guard enforces `balance > 0`, admin bypass, 402 on exhaustion/missing
+- [x] Guard is read-only — no deduction, no locking, no mutation
+- [x] No migration, no frontend, no .env, no docker, no package changes
+- [x] No Stripe/payment/provider/API calls
+
+###### Consolidation / Checkpoint (Step 4 — COMPLETE 2026-07-13)
+- [x] `npx jest --runInBand "credit-balance.guard"` — PASS, 24/24
+- [x] `npx jest --runInBand "public-ai.controller"` — PASS, 3/3
+- [x] `npx jest --runInBand "ai-execution-guards.integration"` — PASS, 31/31
+- [x] `npx jest --runInBand "ai-execution.controller.integration"` — PASS, 30/30 (after test-only validation fix)
+- [x] `npx jest --runInBand "ai-execution.controller"` — PASS, 68/68
+- [x] `npx tsc --noEmit` — PASS, exit 0
+- [x] Linter — PASS, 0 errors
+- [x] Follow-up validation fix recorded: test-only, no production source changed
+- [x] Checkpoint created: `docs/BILLING-READY-04A-CHECKPOINT.md`
+- [x] TASKS.md updated
+- [x] TASKS_BACKLOG_FULL.md updated (mirrors TASKS.md)
+- [x] `docs/AINOW-EXECUTION-ROADMAP.md` updated
+- [x] Parent BILLING-READY-04 remains ACTIVE with child-slice status
+- [x] BILLING-READY-04B recorded as next recommended, not registered
+- [x] BILLING-READY-03 remains COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-07F remains COMPLETE and LOCKED
+- [x] AGENT-HARNESS-07/06E remain COMPLETE and LOCKED
+- [x] AGENT-HARNESS write canary remains separate and not registered
+- [x] No implementation files changed during consolidation
+- [x] No tests/builds/runtime/provider calls during consolidation
+
+**AGENT-HARNESS write canary remains a separate track** — not registered, not part of BILLING-READY-04A.
+
+**BILLING-READY-04A status:** COMPLETE and LOCKED — 2026-07-13. All 4 steps complete. `CreditBalanceGuard` implemented, tested, wired. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. Next recommended: BILLING-READY-04B — not registered.
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-04A.
 
 ---
 
@@ -30429,7 +30738,7 @@ Final validation and regression matrix for AGENT-HARNESS-07, confirming the full
 **AGENT-HARNESS-07C status:** COMPLETE and LOCKED (2026-07-07) — All 3 steps complete. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
 **AGENT-HARNESS-07 status:** COMPLETE and LOCKED (2026-07-07) — All 3 child slices (07A, 07B, 07C) COMPLETE and LOCKED. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
 **Multi-builder collaboration/runtime orchestration status:** Not registered. Deferred — comes after AGENT-HARNESS-06C.
-**BILLING-READY-04+ status:** Not registered. Deferred.
+**BILLING-READY-04 status:** ACTIVE — Step 3 IN PROGRESS (child-slice split). BILLING-READY-04A COMPLETE and LOCKED (2026-07-13). Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. 04B next recommended (not registered). 04C/04D planned only. AGENT-HARNESS write canary remains a separate track.
 
 ---
 

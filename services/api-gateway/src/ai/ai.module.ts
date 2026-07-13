@@ -16,6 +16,7 @@ import { ProjectAiContextModule } from '../project-ai-context/project-ai-context
 import { SessionModule } from '../sessions/session.module';
 import { ProjectRepoDocsModule } from '../project-repo-docs/project-repo-docs.module';
 import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
+import { CreditBalanceGuardModule } from '../billing/credit-balance-guard.module';
 
 /**
  * AIModule
@@ -47,6 +48,7 @@ import { ContainerManagerHttpClient } from '../clients/container-manager-http.cl
     ProjectAiContextModule, // AI-CONTEXT-02C: Project instruction enrichment
     SessionModule, // AI-CONTEXT-02C: Resolve project via session association
     ProjectRepoDocsModule, // AI-CONTEXT-04C: Resolve registered project repo docs
+    CreditBalanceGuardModule, // BILLING-READY-04A: Credit balance gate
   ],
   controllers: [AIExecutionController],
   providers: [

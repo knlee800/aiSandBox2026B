@@ -23,6 +23,7 @@ import { ExecutionSafetyGuard } from '../safety/execution-safety.guard';
 import { LaunchGuard } from '../launch/launch.guard';
 import { AbortGuard } from '../abort/abort.guard';
 import { IdempotencyGuard } from '../ai/idempotency.guard';
+import { CreditBalanceGuard } from '../billing/credit-balance.guard';
 import { AuthenticatedUser } from '../auth/authenticated-user.decorator';
 import { type ApiKeyIdentity } from '../auth/api-key.config';
 import { UsageLedgerService } from '../usage-ledger/usage-ledger.service';
@@ -77,6 +78,7 @@ export class PublicAIController {
     LaunchGuard,
     AbortGuard,
     IdempotencyGuard,
+    CreditBalanceGuard,
     QuotaGuard,
     TokenQuotaGuard,
   )

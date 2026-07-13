@@ -12,6 +12,7 @@ import { SessionOrApiKeyAuthGuard } from '../auth/session-or-api-key.guard';
 import { AuthorizationGuard } from '../auth/authorization.guard';
 import { QuotaGuard } from '../quota/quota.guard';
 import { TokenQuotaGuard } from '../quota/token-quota.guard';
+import { CreditBalanceGuard } from '../billing/credit-balance.guard';
 import { UsageLedgerService } from '../usage-ledger/usage-ledger.service';
 import { GlobalSafetyLimitService } from '../safety/global-safety-limit.service';
 import { QueueService } from '../queue/queue.service';
@@ -64,6 +65,8 @@ describe('AIExecutionController (Phase 18A + Phase 20A + Phase 20B + Phase 21B +
       .overrideGuard(QuotaGuard)
       .useValue(mockGuard)
       .overrideGuard(TokenQuotaGuard)
+      .useValue(mockGuard)
+      .overrideGuard(CreditBalanceGuard)
       .useValue(mockGuard)
       .compile();
 
@@ -243,6 +246,7 @@ describe('AIExecutionController — sessionId UUID validation (AGENT-HARNESS-05B
       .overrideGuard(AuthorizationGuard).useValue(mockGuard)
       .overrideGuard(QuotaGuard).useValue(mockGuard)
       .overrideGuard(TokenQuotaGuard).useValue(mockGuard)
+      .overrideGuard(CreditBalanceGuard).useValue(mockGuard)
       .compile();
 
     controller = module.get<AIExecutionController>(AIExecutionController);
@@ -353,6 +357,7 @@ describe('AIExecutionController — harnessVersion wiring (AGENT-HARNESS-05C2)',
       .overrideGuard(AuthorizationGuard).useValue(mockGuard)
       .overrideGuard(QuotaGuard).useValue(mockGuard)
       .overrideGuard(TokenQuotaGuard).useValue(mockGuard)
+      .overrideGuard(CreditBalanceGuard).useValue(mockGuard)
       .compile();
 
     controller = module.get<AIExecutionController>(AIExecutionController);
@@ -523,6 +528,7 @@ describe('AIExecutionController — session ownership enforcement (AGENT-HARNESS
       .overrideGuard(AuthorizationGuard).useValue(mockGuard)
       .overrideGuard(QuotaGuard).useValue(mockGuard)
       .overrideGuard(TokenQuotaGuard).useValue(mockGuard)
+      .overrideGuard(CreditBalanceGuard).useValue(mockGuard)
       .compile();
 
     controller = module.get<AIExecutionController>(AIExecutionController);
@@ -754,6 +760,7 @@ describe('AIExecutionController — upstream identity propagation (AGENT-PLATFOR
       .overrideGuard(AuthorizationGuard).useValue(mockGuard)
       .overrideGuard(QuotaGuard).useValue(mockGuard)
       .overrideGuard(TokenQuotaGuard).useValue(mockGuard)
+      .overrideGuard(CreditBalanceGuard).useValue(mockGuard)
       .compile();
 
     controller = module.get<AIExecutionController>(AIExecutionController);
@@ -946,6 +953,8 @@ describe('AIExecutionController — harness identity entitlement gate (AGENT-HAR
       .overrideGuard(QuotaGuard)
       .useValue(mockGuard)
       .overrideGuard(TokenQuotaGuard)
+      .useValue(mockGuard)
+      .overrideGuard(CreditBalanceGuard)
       .useValue(mockGuard)
       .compile();
 

@@ -39,6 +39,7 @@ import { LaunchGuard } from '../launch/launch.guard';
 import { AbortGuard } from '../abort/abort.guard';
 import { RateLimitGuard, RateLimit } from '../guards/rate-limit.guard';
 import { IdempotencyGuard } from './idempotency.guard';
+import { CreditBalanceGuard } from '../billing/credit-balance.guard';
 import { QueueService } from '../queue/queue.service';
 import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
 import { ExecutionResultService } from './execution-result.service';
@@ -379,7 +380,7 @@ export class AIExecutionController {
    */
   @Post('execute')
   @HttpCode(HttpStatus.ACCEPTED)
-  @UseGuards(SessionOrApiKeyAuthGuard, AuthorizationGuard, ExecutionSafetyGuard, LaunchGuard, AbortGuard, IdempotencyGuard, QuotaGuard, TokenQuotaGuard, RateLimitGuard)
+  @UseGuards(SessionOrApiKeyAuthGuard, AuthorizationGuard, ExecutionSafetyGuard, LaunchGuard, AbortGuard, IdempotencyGuard, CreditBalanceGuard, QuotaGuard, TokenQuotaGuard, RateLimitGuard)
   @RequireScope('ai:execute')
   @RateLimit({ maxRequests: 20, windowMs: 60000 })
   async execute(
