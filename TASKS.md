@@ -18548,18 +18548,18 @@ If icons are needed, use Heroicons v2 Outline only: `@heroicons/react/24/outline
 
 **Family status:** AGENT-HARNESS-06E COMPLETE and LOCKED (2026-07-09); AGENT-HARNESS-06D COMPLETE and LOCKED (2026-07-08); AGENT-HARNESS-06D1 COMPLETE and LOCKED (2026-07-08; child slice of 06D); AGENT-HARNESS-06C COMPLETE and LOCKED (2026-07-07); AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07); AGENT-HARNESS-00 COMPLETE and LOCKED; AGENT-HARNESS-01A COMPLETE and LOCKED; AGENT-HARNESS-01B COMPLETE and LOCKED; AGENT-HARNESS-01C COMPLETE and LOCKED
 
-**Current stage:** AGENT-HARNESS-06E COMPLETE and LOCKED (2026-07-09) — Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary — All 4 steps COMPLETE. Full E2E canary PASS: `list_files` SUCCESS (actual file data returned, not HANDLER_ERROR); `read_file` SUCCESS (actual README.md content returned, not HANDLER_ERROR); `terminationReason: 'completed'`; `durationMs: 718`; `tokens: 0`; no paid calls; no .env changes; no production activation. No new task registered. Checkpoint: `docs/AGENT-HARNESS-06E-CHECKPOINT.md`. Prior: AGENT-HARNESS-06D COMPLETE and LOCKED (2026-07-08); AGENT-HARNESS-06D1 COMPLETE and LOCKED (2026-07-08); AGENT-HARNESS-06C COMPLETE and LOCKED (2026-07-07); AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07); prerequisite AGENT-PLATFORM-04 COMPLETE and LOCKED; AGENT-HARNESS-06B COMPLETE and LOCKED
+**Current stage:** AGENT-HARNESS-06E COMPLETE and LOCKED (2026-07-09) �X Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary �X All 4 steps COMPLETE. Full E2E canary PASS: `list_files` SUCCESS (actual file data returned, not HANDLER_ERROR); `read_file` SUCCESS (actual README.md content returned, not HANDLER_ERROR); `terminationReason: 'completed'`; `durationMs: 718`; `tokens: 0`; no paid calls; no .env changes; no production activation. No new task registered. Checkpoint: `docs/AGENT-HARNESS-06E-CHECKPOINT.md`. Prior: AGENT-HARNESS-06D COMPLETE and LOCKED (2026-07-08); AGENT-HARNESS-06D1 COMPLETE and LOCKED (2026-07-08); AGENT-HARNESS-06C COMPLETE and LOCKED (2026-07-07); AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07); prerequisite AGENT-PLATFORM-04 COMPLETE and LOCKED; AGENT-HARNESS-06B COMPLETE and LOCKED
 
 **Registered tasks:**
-1. AGENT-HARNESS-00 — Agent Harness v1 Master Plan (COMPLETE and LOCKED)
-2. AGENT-HARNESS-01A — Per-Request Model Selection Fix (COMPLETE and LOCKED)
-3. AGENT-HARNESS-01B — Agent Harness v1 Contracts + Config Shape (COMPLETE and LOCKED)
-4. AGENT-HARNESS-01C — Model Profile Registry (COMPLETE and LOCKED)
-5. AGENT-HARNESS-07 — Per-Builder Harness Config Adapter (COMPLETE and LOCKED — 2026-07-07)
-6. AGENT-HARNESS-06C — Read-Only Harness Canary Execution (COMPLETE and LOCKED — 2026-07-07 — PASS: 231 tests, 13 suites, mock-executor/Jest path; no live BullMQ canary; no production activation)
-7. AGENT-HARNESS-06D — Live Worker/BullMQ Read-Only Canary Gap Closure (COMPLETE and LOCKED — 2026-07-08; live Worker/BullMQ canary PASS; `selectedPath: 'harness'`; HANDLER_ERROR on file tools — API Gateway not running, expected; no paid calls; checkpoint: `docs/AGENT-HARNESS-06D-CHECKPOINT.md`)
-8. AGENT-HARNESS-06D1 — Test Tool-Capable Stub Adapter for Live Worker Canary (COMPLETE and LOCKED — 2026-07-08; child slice of 06D; `TestToolCapableStubAdapter` created; `supportsToolUse = true`; zero billing; no live canary; checkpoint: `docs/AGENT-HARNESS-06D1-CHECKPOINT.md`)
-9. AGENT-HARNESS-06E — Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary (COMPLETE and LOCKED — 2026-07-09; full E2E canary PASS; `list_files`/`read_file` SUCCESS — actual file data returned, not HANDLER_ERROR; `durationMs: 718`; no paid calls; checkpoint: `docs/AGENT-HARNESS-06E-CHECKPOINT.md`)
+1. AGENT-HARNESS-00 �X Agent Harness v1 Master Plan (COMPLETE and LOCKED)
+2. AGENT-HARNESS-01A �X Per-Request Model Selection Fix (COMPLETE and LOCKED)
+3. AGENT-HARNESS-01B �X Agent Harness v1 Contracts + Config Shape (COMPLETE and LOCKED)
+4. AGENT-HARNESS-01C �X Model Profile Registry (COMPLETE and LOCKED)
+5. AGENT-HARNESS-07 �X Per-Builder Harness Config Adapter (COMPLETE and LOCKED �X 2026-07-07)
+6. AGENT-HARNESS-06C �X Read-Only Harness Canary Execution (COMPLETE and LOCKED �X 2026-07-07 �X PASS: 231 tests, 13 suites, mock-executor/Jest path; no live BullMQ canary; no production activation)
+7. AGENT-HARNESS-06D �X Live Worker/BullMQ Read-Only Canary Gap Closure (COMPLETE and LOCKED �X 2026-07-08; live Worker/BullMQ canary PASS; `selectedPath: 'harness'`; HANDLER_ERROR on file tools �X API Gateway not running, expected; no paid calls; checkpoint: `docs/AGENT-HARNESS-06D-CHECKPOINT.md`)
+8. AGENT-HARNESS-06D1 �X Test Tool-Capable Stub Adapter for Live Worker Canary (COMPLETE and LOCKED �X 2026-07-08; child slice of 06D; `TestToolCapableStubAdapter` created; `supportsToolUse = true`; zero billing; no live canary; checkpoint: `docs/AGENT-HARNESS-06D1-CHECKPOINT.md`)
+9. AGENT-HARNESS-06E �X Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary (COMPLETE and LOCKED �X 2026-07-09; full E2E canary PASS; `list_files`/`read_file` SUCCESS �X actual file data returned, not HANDLER_ERROR; `durationMs: 718`; no paid calls; checkpoint: `docs/AGENT-HARNESS-06E-CHECKPOINT.md`)
 
 **Completed foundations (prerequisites):**
 - AI-CONTEXT family COMPLETE and LOCKED ??global/project AI instructions, repo docs registry, repo docs prompt injection, context indicator, regression matrix
@@ -20613,7 +20613,7 @@ This slice must produce a feasibility/security report only. It must not implemen
 - [x] Checkpoint document created: docs/AGENT-HARNESS-05A-CHECKPOINT.md
 
 **Checkpoint:** `docs/AGENT-HARNESS-05A-CHECKPOINT.md`
-**Next step:** AGENT-HARNESS-05B1 registration only — Browser Smoke Sandbox Image Prerequisite. Do not implement until registered and approved.
+**Next step:** AGENT-HARNESS-05B1 registration only �X Browser Smoke Sandbox Image Prerequisite. Do not implement until registered and approved.
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-05A.
 
@@ -20628,20 +20628,20 @@ This slice must produce a feasibility/security report only. It must not implemen
 **Risk:** High
 
 **Depends on:**
-- AGENT-HARNESS-00 — COMPLETE and LOCKED
-- AGENT-HARNESS-01A — COMPLETE and LOCKED
-- AGENT-HARNESS-01B — COMPLETE and LOCKED
-- AGENT-HARNESS-01C — COMPLETE and LOCKED
-- AGENT-HARNESS-01D — COMPLETE and LOCKED
-- AGENT-HARNESS-01E — COMPLETE and LOCKED
-- AGENT-HARNESS-02A — COMPLETE and LOCKED
-- AGENT-HARNESS-02B — COMPLETE and LOCKED
-- AGENT-HARNESS-02C — COMPLETE and LOCKED
-- AGENT-HARNESS-03A — COMPLETE and LOCKED
-- AGENT-HARNESS-03B — COMPLETE and LOCKED
-- AGENT-HARNESS-03C — COMPLETE and LOCKED
-- AGENT-HARNESS-04A — COMPLETE and LOCKED
-- AGENT-HARNESS-05A — COMPLETE and LOCKED
+- AGENT-HARNESS-00 �X COMPLETE and LOCKED
+- AGENT-HARNESS-01A �X COMPLETE and LOCKED
+- AGENT-HARNESS-01B �X COMPLETE and LOCKED
+- AGENT-HARNESS-01C �X COMPLETE and LOCKED
+- AGENT-HARNESS-01D �X COMPLETE and LOCKED
+- AGENT-HARNESS-01E �X COMPLETE and LOCKED
+- AGENT-HARNESS-02A �X COMPLETE and LOCKED
+- AGENT-HARNESS-02B �X COMPLETE and LOCKED
+- AGENT-HARNESS-02C �X COMPLETE and LOCKED
+- AGENT-HARNESS-03A �X COMPLETE and LOCKED
+- AGENT-HARNESS-03B �X COMPLETE and LOCKED
+- AGENT-HARNESS-03C �X COMPLETE and LOCKED
+- AGENT-HARNESS-04A �X COMPLETE and LOCKED
+- AGENT-HARNESS-05A �X COMPLETE and LOCKED
 
 **Problem:**
 AGENT-HARNESS-05A determined that `browser_smoke` is feasible later, but the current workspace sandbox image is `node:20-alpine` and cannot safely run Chromium/Playwright without significant browser runtime and Docker resource changes. Before implementing the `browser_smoke` tool handler, the platform needs a bounded sandbox image/runtime prerequisite slice.
@@ -20749,7 +20749,7 @@ This slice must not implement the production `browser_smoke` tool handler and mu
 - [x] `browser_smoke` not implemented, not enabled, not registered with ToolDispatcher
 - [x] Checkpoint created: `docs/AGENT-HARNESS-05B1-CHECKPOINT.md`
 
-**Next step:** AGENT-HARNESS-05B2 registration only — Browser Smoke Handler Implementation. Do not implement until registered and approved.
+**Next step:** AGENT-HARNESS-05B2 registration only �X Browser Smoke Handler Implementation. Do not implement until registered and approved.
 
 **Reference:** See `TASKS_BACKLOG_FULL.md` -> AGENT-HARNESS-05B1.
 
@@ -20764,21 +20764,21 @@ This slice must not implement the production `browser_smoke` tool handler and mu
 **Risk:** High
 
 **Depends on:**
-- AGENT-HARNESS-00 — COMPLETE and LOCKED
-- AGENT-HARNESS-01A — COMPLETE and LOCKED
-- AGENT-HARNESS-01B — COMPLETE and LOCKED
-- AGENT-HARNESS-01C — COMPLETE and LOCKED
-- AGENT-HARNESS-01D — COMPLETE and LOCKED
-- AGENT-HARNESS-01E — COMPLETE and LOCKED
-- AGENT-HARNESS-02A — COMPLETE and LOCKED
-- AGENT-HARNESS-02B — COMPLETE and LOCKED
-- AGENT-HARNESS-02C — COMPLETE and LOCKED
-- AGENT-HARNESS-03A — COMPLETE and LOCKED
-- AGENT-HARNESS-03B — COMPLETE and LOCKED
-- AGENT-HARNESS-03C — COMPLETE and LOCKED
-- AGENT-HARNESS-04A — COMPLETE and LOCKED
-- AGENT-HARNESS-05A — COMPLETE and LOCKED
-- AGENT-HARNESS-05B1 — COMPLETE and LOCKED
+- AGENT-HARNESS-00 �X COMPLETE and LOCKED
+- AGENT-HARNESS-01A �X COMPLETE and LOCKED
+- AGENT-HARNESS-01B �X COMPLETE and LOCKED
+- AGENT-HARNESS-01C �X COMPLETE and LOCKED
+- AGENT-HARNESS-01D �X COMPLETE and LOCKED
+- AGENT-HARNESS-01E �X COMPLETE and LOCKED
+- AGENT-HARNESS-02A �X COMPLETE and LOCKED
+- AGENT-HARNESS-02B �X COMPLETE and LOCKED
+- AGENT-HARNESS-02C �X COMPLETE and LOCKED
+- AGENT-HARNESS-03A �X COMPLETE and LOCKED
+- AGENT-HARNESS-03B �X COMPLETE and LOCKED
+- AGENT-HARNESS-03C �X COMPLETE and LOCKED
+- AGENT-HARNESS-04A �X COMPLETE and LOCKED
+- AGENT-HARNESS-05A �X COMPLETE and LOCKED
+- AGENT-HARNESS-05B1 �X COMPLETE and LOCKED
 
 **Problem:**
 AGENT-HARNESS-05A determined that `browser_smoke` is feasible but requires browser runtime preparation. AGENT-HARNESS-05B1 prepared the browser-capable sandbox image path (`Dockerfile.workspace-browser`, `aisandbox-workspace-browser:local`) and browser-specific resource configuration (`governance.config.ts`, `docker-runtime.service.ts`) without enabling or implementing the `browser_smoke` tool. The next slice is to implement the actual `browser_smoke` handler path while preserving strict safety controls and avoiding live browser execution unless Keith explicitly approves it.
@@ -20896,7 +20896,7 @@ The future implementation should add the service boundary and handler code for `
 - [x] High-risk browser automation nature documented
 - [x] Architecture/security review completed before implementation
 - [x] Likely implementation areas documented and confirmed
-- [x] `browser_smoke` handler path implemented: ai-service → API Gateway → container-manager → workspace container
+- [x] `browser_smoke` handler path implemented: ai-service �� API Gateway �� container-manager �� workspace container
 - [x] `BrowserSmokeService` created in container-manager with URL validation, exec, output truncation
 - [x] `POST /api/internal/sessions/:id/browser-smoke` added to container-manager
 - [x] `runBrowserSmoke()` added to API Gateway `ContainerManagerHttpClient`
@@ -20924,7 +20924,7 @@ The future implementation should add the service boundary and handler code for `
 
 **Lock notice:** AGENT-HARNESS-05B2 is COMPLETE and LOCKED. Do not modify this task entry. Do not reopen or re-implement without explicit approval.
 
-**Next step:** Register AGENT-HARNESS-05B3 (or equivalent) for live browser smoke validation and Docker image build verification — registration only first. Do not implement until registered and explicitly approved.
+**Next step:** Register AGENT-HARNESS-05B3 (or equivalent) for live browser smoke validation and Docker image build verification �X registration only first. Do not implement until registered and explicitly approved.
 
 ---
 
@@ -20935,25 +20935,25 @@ The future implementation should add the service boundary and handler code for `
 **Priority:** High
 **Nature:** VALIDATION / DOCKER IMAGE BUILD / LIVE BROWSER SMOKE
 **Risk:** High
-**Result:** PARTIAL PASS — Dockerfile Playwright module resolution defect found; follow-up fix slice required.
+**Result:** PARTIAL PASS �X Dockerfile Playwright module resolution defect found; follow-up fix slice required.
 
 **Depends on:**
-- AGENT-HARNESS-00 — COMPLETE and LOCKED
-- AGENT-HARNESS-01A — COMPLETE and LOCKED
-- AGENT-HARNESS-01B — COMPLETE and LOCKED
-- AGENT-HARNESS-01C — COMPLETE and LOCKED
-- AGENT-HARNESS-01D — COMPLETE and LOCKED
-- AGENT-HARNESS-01E — COMPLETE and LOCKED
-- AGENT-HARNESS-02A — COMPLETE and LOCKED
-- AGENT-HARNESS-02B — COMPLETE and LOCKED
-- AGENT-HARNESS-02C — COMPLETE and LOCKED
-- AGENT-HARNESS-03A — COMPLETE and LOCKED
-- AGENT-HARNESS-03B — COMPLETE and LOCKED
-- AGENT-HARNESS-03C — COMPLETE and LOCKED
-- AGENT-HARNESS-04A — COMPLETE and LOCKED
-- AGENT-HARNESS-05A — COMPLETE and LOCKED
-- AGENT-HARNESS-05B1 — COMPLETE and LOCKED
-- AGENT-HARNESS-05B2 — COMPLETE and LOCKED
+- AGENT-HARNESS-00 �X COMPLETE and LOCKED
+- AGENT-HARNESS-01A �X COMPLETE and LOCKED
+- AGENT-HARNESS-01B �X COMPLETE and LOCKED
+- AGENT-HARNESS-01C �X COMPLETE and LOCKED
+- AGENT-HARNESS-01D �X COMPLETE and LOCKED
+- AGENT-HARNESS-01E �X COMPLETE and LOCKED
+- AGENT-HARNESS-02A �X COMPLETE and LOCKED
+- AGENT-HARNESS-02B �X COMPLETE and LOCKED
+- AGENT-HARNESS-02C �X COMPLETE and LOCKED
+- AGENT-HARNESS-03A �X COMPLETE and LOCKED
+- AGENT-HARNESS-03B �X COMPLETE and LOCKED
+- AGENT-HARNESS-03C �X COMPLETE and LOCKED
+- AGENT-HARNESS-04A �X COMPLETE and LOCKED
+- AGENT-HARNESS-05A �X COMPLETE and LOCKED
+- AGENT-HARNESS-05B1 �X COMPLETE and LOCKED
+- AGENT-HARNESS-05B2 �X COMPLETE and LOCKED
 
 **Problem:**
 AGENT-HARNESS-05B1 prepared the browser-capable sandbox image and runtime resource path (`Dockerfile.workspace-browser`, `aisandbox-workspace-browser:local`). AGENT-HARNESS-05B2 implemented the full `browser_smoke` service/handler/proxy chain (container-manager `BrowserSmokeService`, API Gateway proxy, ai-service handler and registry) with mocked unit tests only. No Docker image build, Playwright execution, or live browser smoke has been run yet. The remaining risk is whether the browser-capable image builds successfully and whether Chromium/Playwright can actually run inside the workspace container under the current Docker runtime and host environment.
@@ -20998,26 +20998,26 @@ Phase verdict table:
 | 4     | Minimal Chromium Launch Check     | PASS         |
 | 5     | Service-Chain Smoke               | NOT RUN      |
 
-Phase 1 — Docker Availability Check: PASS
+Phase 1 �X Docker Availability Check: PASS
 - Docker CLI v29.2.1 windows/amd64; daemon v29.2.1 linux/amd64, Docker Desktop 4.62.0.
 - Runtime: WSL2, overlayfs, seccomp + cgroupns, runc 1.3.4. gVisor not active.
 
-Phase 2 — Browser Workspace Image Build: PASS
+Phase 2 �X Browser Workspace Image Build: PASS
 - Command: `docker build -f Dockerfile.workspace-browser -t aisandbox-workspace-browser:local .`
 - Exit code 0; ~162 seconds; 1.94 GB; node:20-slim (Debian bookworm); Node v20.20.2; Chromium Headless Shell 148.0.7778.96 / playwright chromium-headless-shell v1223.
 
-Phase 3 — Static Image Verification: PARTIAL PASS
-- `node --version` → v20.20.2: PASS.
-- `npx playwright --version` → 1.61.0 (fetched live): PASS.
-- `node -e "require('playwright')"` → MODULE_NOT_FOUND: FAIL.
-- With NODE_PATH workaround → playwright ok: PASS (workaround only, not stable).
+Phase 3 �X Static Image Verification: PARTIAL PASS
+- `node --version` �� v20.20.2: PASS.
+- `npx playwright --version` �� 1.61.0 (fetched live): PASS.
+- `node -e "require('playwright')"` �� MODULE_NOT_FOUND: FAIL.
+- With NODE_PATH workaround �� playwright ok: PASS (workaround only, not stable).
 - Root cause: Dockerfile uses `npx playwright@1.60.0 install --with-deps chromium`; this installs the browser binary but leaves the playwright package only in the transient npx cache, not in any standard module resolution path.
 
-Phase 4 — Minimal Chromium Launch Check: PASS
+Phase 4 �X Minimal Chromium Launch Check: PASS
 - With NODE_PATH workaround and `--shm-size=256m`; exit code 0; output `browser-smoke-ok`; ~1.4 seconds.
 - Chromium launched with `--no-sandbox` and `--disable-dev-shm-usage`. No missing shared libs, no crash.
 
-Phase 5 — Service-Chain Smoke: NOT RUN
+Phase 5 �X Service-Chain Smoke: NOT RUN
 - Blocked by Phase 3 defect. Will be re-run in follow-up fix task after Dockerfile is corrected.
 
 **Acceptance criteria (validation):**
@@ -21065,27 +21065,27 @@ Phase 5 — Service-Chain Smoke: NOT RUN
 **Risk:** Medium
 **Completed:** 2026-06-25
 
-**Triggering defect:** AGENT-HARNESS-05B3-DEFECT-01 — RESOLVED
+**Triggering defect:** AGENT-HARNESS-05B3-DEFECT-01 �X RESOLVED
 
 **Depends on:**
-- AGENT-HARNESS-00 — COMPLETE and LOCKED
-- AGENT-HARNESS-01A — COMPLETE and LOCKED
-- AGENT-HARNESS-01B — COMPLETE and LOCKED
-- AGENT-HARNESS-01C — COMPLETE and LOCKED
-- AGENT-HARNESS-01D — COMPLETE and LOCKED
-- AGENT-HARNESS-01E — COMPLETE and LOCKED
-- AGENT-HARNESS-02A — COMPLETE and LOCKED
-- AGENT-HARNESS-02B — COMPLETE and LOCKED
-- AGENT-HARNESS-02C — COMPLETE and LOCKED
-- AGENT-HARNESS-03A — COMPLETE and LOCKED
-- AGENT-HARNESS-03B — COMPLETE and LOCKED
-- AGENT-HARNESS-03C — COMPLETE and LOCKED
-- AGENT-HARNESS-04A — COMPLETE and LOCKED
-- AGENT-HARNESS-05A — COMPLETE and LOCKED
-- AGENT-HARNESS-05B1 — COMPLETE and LOCKED
-- AGENT-HARNESS-05B2 — COMPLETE and LOCKED
-- AGENT-HARNESS-05B3 — COMPLETE and LOCKED with PARTIAL PASS
-- AGENT-HARNESS-05B3-DEFECT-01 — triggering defect (RESOLVED)
+- AGENT-HARNESS-00 �X COMPLETE and LOCKED
+- AGENT-HARNESS-01A �X COMPLETE and LOCKED
+- AGENT-HARNESS-01B �X COMPLETE and LOCKED
+- AGENT-HARNESS-01C �X COMPLETE and LOCKED
+- AGENT-HARNESS-01D �X COMPLETE and LOCKED
+- AGENT-HARNESS-01E �X COMPLETE and LOCKED
+- AGENT-HARNESS-02A �X COMPLETE and LOCKED
+- AGENT-HARNESS-02B �X COMPLETE and LOCKED
+- AGENT-HARNESS-02C �X COMPLETE and LOCKED
+- AGENT-HARNESS-03A �X COMPLETE and LOCKED
+- AGENT-HARNESS-03B �X COMPLETE and LOCKED
+- AGENT-HARNESS-03C �X COMPLETE and LOCKED
+- AGENT-HARNESS-04A �X COMPLETE and LOCKED
+- AGENT-HARNESS-05A �X COMPLETE and LOCKED
+- AGENT-HARNESS-05B1 �X COMPLETE and LOCKED
+- AGENT-HARNESS-05B2 �X COMPLETE and LOCKED
+- AGENT-HARNESS-05B3 �X COMPLETE and LOCKED with PARTIAL PASS
+- AGENT-HARNESS-05B3-DEFECT-01 �X triggering defect (RESOLVED)
 
 **Problem:**
 The browser sandbox image (`aisandbox-workspace-browser:local`) contained a working Chromium installation but not a Playwright Node package on a stable, deterministic module resolution path. `Dockerfile.workspace-browser` installed Playwright via `npx playwright@1.60.0 install --with-deps chromium`, which placed the Playwright Node package only in a transient npx cache (e.g. `/root/.npm/_npx/<hash>/node_modules/playwright`). The `BrowserSmokeService` executed an injected Node script containing `require('playwright')`, which could not resolve the package through the default Node module search path, causing a `MODULE_NOT_FOUND` error at runtime.
@@ -21103,9 +21103,9 @@ The browser sandbox image (`aisandbox-workspace-browser:local`) contained a work
 - Added one focused test verifying the absolute image-owned path.
 
 **Non-Docker validation:**
-- BrowserSmokeService spec: PASS — 12/12 tests
+- BrowserSmokeService spec: PASS �X 12/12 tests
 - Container-manager build: PASS
-- Container-manager full tests: PASS — 81/81 tests across 7 suites
+- Container-manager full tests: PASS �X 81/81 tests across 7 suites
 
 **Docker validation:**
 
@@ -21139,7 +21139,7 @@ The browser sandbox image (`aisandbox-workspace-browser:local`) contained a work
 
 **Lock notice:** AGENT-HARNESS-05B4 is COMPLETE and LOCKED. Do not modify this task entry. Do not reopen or re-implement without explicit approval.
 
-**Next step:** Register `AGENT-HARNESS-05B5 — Browser Smoke End-to-End Service-Chain Validation` (registration only). Do not implement until registered and explicitly approved.
+**Next step:** Register `AGENT-HARNESS-05B5 �X Browser Smoke End-to-End Service-Chain Validation` (registration only). Do not implement until registered and explicitly approved.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05B4.
 
@@ -21155,27 +21155,27 @@ The browser sandbox image (`aisandbox-workspace-browser:local`) contained a work
 **Risk:** High
 
 **Depends on:**
-- AGENT-HARNESS-00 — COMPLETE and LOCKED
-- AGENT-HARNESS-01A — COMPLETE and LOCKED
-- AGENT-HARNESS-01B — COMPLETE and LOCKED
-- AGENT-HARNESS-01C — COMPLETE and LOCKED
-- AGENT-HARNESS-01D — COMPLETE and LOCKED
-- AGENT-HARNESS-01E — COMPLETE and LOCKED
-- AGENT-HARNESS-02A — COMPLETE and LOCKED
-- AGENT-HARNESS-02B — COMPLETE and LOCKED
-- AGENT-HARNESS-02C — COMPLETE and LOCKED
-- AGENT-HARNESS-03A — COMPLETE and LOCKED
-- AGENT-HARNESS-03B — COMPLETE and LOCKED
-- AGENT-HARNESS-03C — COMPLETE and LOCKED
-- AGENT-HARNESS-04A — COMPLETE and LOCKED
-- AGENT-HARNESS-05A — COMPLETE and LOCKED
-- AGENT-HARNESS-05B1 — COMPLETE and LOCKED
-- AGENT-HARNESS-05B2 — COMPLETE and LOCKED
-- AGENT-HARNESS-05B3 — COMPLETE and LOCKED with PARTIAL PASS
-- AGENT-HARNESS-05B4 — COMPLETE and LOCKED
+- AGENT-HARNESS-00 �X COMPLETE and LOCKED
+- AGENT-HARNESS-01A �X COMPLETE and LOCKED
+- AGENT-HARNESS-01B �X COMPLETE and LOCKED
+- AGENT-HARNESS-01C �X COMPLETE and LOCKED
+- AGENT-HARNESS-01D �X COMPLETE and LOCKED
+- AGENT-HARNESS-01E �X COMPLETE and LOCKED
+- AGENT-HARNESS-02A �X COMPLETE and LOCKED
+- AGENT-HARNESS-02B �X COMPLETE and LOCKED
+- AGENT-HARNESS-02C �X COMPLETE and LOCKED
+- AGENT-HARNESS-03A �X COMPLETE and LOCKED
+- AGENT-HARNESS-03B �X COMPLETE and LOCKED
+- AGENT-HARNESS-03C �X COMPLETE and LOCKED
+- AGENT-HARNESS-04A �X COMPLETE and LOCKED
+- AGENT-HARNESS-05A �X COMPLETE and LOCKED
+- AGENT-HARNESS-05B1 �X COMPLETE and LOCKED
+- AGENT-HARNESS-05B2 �X COMPLETE and LOCKED
+- AGENT-HARNESS-05B3 �X COMPLETE and LOCKED with PARTIAL PASS
+- AGENT-HARNESS-05B4 �X COMPLETE and LOCKED
 
 **Problem:**
-AGENT-HARNESS-05B2 implemented the `browser_smoke` handler path with mocked tests. AGENT-HARNESS-05B3 validated the browser image and found a Playwright module-resolution defect. AGENT-HARNESS-05B4 fixed that defect and confirmed the browser-capable image builds, Playwright resolves correctly, and Chromium launches against a `data:` URL. The remaining validation gap is the full end-to-end service chain: ai-service → API Gateway → container-manager → browser-capable workspace container → preview target. No live service-chain smoke has been run to date.
+AGENT-HARNESS-05B2 implemented the `browser_smoke` handler path with mocked tests. AGENT-HARNESS-05B3 validated the browser image and found a Playwright module-resolution defect. AGENT-HARNESS-05B4 fixed that defect and confirmed the browser-capable image builds, Playwright resolves correctly, and Chromium launches against a `data:` URL. The remaining validation gap is the full end-to-end service chain: ai-service �� API Gateway �� container-manager �� browser-capable workspace container �� preview target. No live service-chain smoke has been run to date.
 
 **Objective:**
 Register a live validation slice for the `browser_smoke` end-to-end service-chain path.
@@ -21309,7 +21309,7 @@ Future validation must record:
 - [x] No Docker build/run, browser automation, test, build, service startup, or browser smoke executed
 - [x] No checkpoint document created
 
-**Acceptance criteria (validation — all satisfied):**
+**Acceptance criteria (validation �X all satisfied):**
 - [x] Keith explicitly approved validation plan
 - [x] Required services readiness recorded (Phase 1, Phase 3)
 - [x] Browser image readiness recorded (Phase 2)
@@ -21317,15 +21317,15 @@ Future validation must record:
 - [x] Minimal preview app/preview target recorded (Phase 5, Phase 6)
 - [x] `browser_smoke` service-chain invocation recorded (Phase 7)
 - [x] Structured `browser_smoke` result recorded (Phase 7)
-- [x] Final pass/fail verdict recorded — PASS
+- [x] Final pass/fail verdict recorded �X PASS
 - [x] Follow-up defect/fix recommendations documented
 - [x] AGENT-HARNESS-05B5 checkpoint created during consolidation after validation is complete
 
 **Prerequisite resolution:** AGENT-HARNESS-05B5A (COMPLETE and LOCKED, 2026-06-25) resolved the blocker identified during 05B5 planning. Browser-capable sessions are now created via `POST /api/internal/sessions/:id/start` with `{ browserCapable: true }` and `X-Internal-Service-Key`.
 
 **Validation summary:**
-- Phases 1–7 executed. Phase 8 not executed (out of scope).
-- Full service chain validated: API Gateway → container-manager → browser-capable workspace container → preview target → Playwright Chromium → structured BrowserSmokeResult.
+- Phases 1�V7 executed. Phase 8 not executed (out of scope).
+- Full service chain validated: API Gateway �� container-manager �� browser-capable workspace container �� preview target �� Playwright Chromium �� structured BrowserSmokeResult.
 - Session container confirmed running `aisandbox-workspace-browser:local` with `NODE_PATH=/opt/browser-smoke/node_modules`.
 - Preview server (port 3000) confirmed serving correct HTML (`05B5 Smoke` / `Hello from 05B5`).
 - `browser_smoke` invoked via `POST http://localhost:4000/api/internal/workspace/05b5-smoke-test/browser-smoke`.
@@ -21352,8 +21352,8 @@ Future validation must record:
 **Confirmation:** No source/runtime/test/package/Docker/frontend/database files changed during validation or consolidation. No Docker build/service/session/browser/test/build commands were rerun during consolidation. Phase 8 was not executed.
 
 **Follow-up notes:**
-1. Container-manager health log/route mismatch: startup log advertises `/api/health` but that route does not exist; real readiness endpoint is `/api/internal/stats`. Register a small fix task separately — do not register yet.
-2. `userId`/SQLite FK behavior: `POST /api/internal/sessions/:id/start` with a `userId` that does not exist in the `users` table triggers a FOREIGN KEY constraint failure. Register an investigation/fix task separately — do not register yet.
+1. Container-manager health log/route mismatch: startup log advertises `/api/health` but that route does not exist; real readiness endpoint is `/api/internal/stats`. Register a small fix task separately �X do not register yet.
+2. `userId`/SQLite FK behavior: `POST /api/internal/sessions/:id/start` with a `userId` that does not exist in the `users` table triggers a FOREIGN KEY constraint failure. Register an investigation/fix task separately �X do not register yet.
 
 **Checkpoint:** `docs/AGENT-HARNESS-05B5-CHECKPOINT.md`
 
@@ -21375,25 +21375,25 @@ Future validation must record:
 **Nature:** BACKEND WIRING / INTERNAL SESSION CONTROL / PREREQUISITE FIX / NO LIVE BROWSER SMOKE
 
 **Depends on:**
-- AGENT-HARNESS-00 — COMPLETE and LOCKED
-- AGENT-HARNESS-01A — COMPLETE and LOCKED
-- AGENT-HARNESS-01B — COMPLETE and LOCKED
-- AGENT-HARNESS-01C — COMPLETE and LOCKED
-- AGENT-HARNESS-01D — COMPLETE and LOCKED
-- AGENT-HARNESS-01E — COMPLETE and LOCKED
-- AGENT-HARNESS-02A — COMPLETE and LOCKED
-- AGENT-HARNESS-02B — COMPLETE and LOCKED
-- AGENT-HARNESS-02C — COMPLETE and LOCKED
-- AGENT-HARNESS-03A — COMPLETE and LOCKED
-- AGENT-HARNESS-03B — COMPLETE and LOCKED
-- AGENT-HARNESS-03C — COMPLETE and LOCKED
-- AGENT-HARNESS-04A — COMPLETE and LOCKED
-- AGENT-HARNESS-05A — COMPLETE and LOCKED
-- AGENT-HARNESS-05B1 — COMPLETE and LOCKED
-- AGENT-HARNESS-05B2 — COMPLETE and LOCKED
-- AGENT-HARNESS-05B3 — COMPLETE and LOCKED with PARTIAL PASS
-- AGENT-HARNESS-05B4 — COMPLETE and LOCKED
-- AGENT-HARNESS-05B5 — ACTIVE, BLOCKED BEFORE LIVE EXECUTION (pending 05B5A completion)
+- AGENT-HARNESS-00 �X COMPLETE and LOCKED
+- AGENT-HARNESS-01A �X COMPLETE and LOCKED
+- AGENT-HARNESS-01B �X COMPLETE and LOCKED
+- AGENT-HARNESS-01C �X COMPLETE and LOCKED
+- AGENT-HARNESS-01D �X COMPLETE and LOCKED
+- AGENT-HARNESS-01E �X COMPLETE and LOCKED
+- AGENT-HARNESS-02A �X COMPLETE and LOCKED
+- AGENT-HARNESS-02B �X COMPLETE and LOCKED
+- AGENT-HARNESS-02C �X COMPLETE and LOCKED
+- AGENT-HARNESS-03A �X COMPLETE and LOCKED
+- AGENT-HARNESS-03B �X COMPLETE and LOCKED
+- AGENT-HARNESS-03C �X COMPLETE and LOCKED
+- AGENT-HARNESS-04A �X COMPLETE and LOCKED
+- AGENT-HARNESS-05A �X COMPLETE and LOCKED
+- AGENT-HARNESS-05B1 �X COMPLETE and LOCKED
+- AGENT-HARNESS-05B2 �X COMPLETE and LOCKED
+- AGENT-HARNESS-05B3 �X COMPLETE and LOCKED with PARTIAL PASS
+- AGENT-HARNESS-05B4 �X COMPLETE and LOCKED
+- AGENT-HARNESS-05B5 �X ACTIVE, BLOCKED BEFORE LIVE EXECUTION (pending 05B5A completion)
 
 **Problem:**
 AGENT-HARNESS-05B5 planning identified a blocker before any live command was run. `SessionsService.startSessionContainer()` in `services/container-manager/src/sessions/sessions.service.ts` calls `DockerRuntimeService.createContainer(sessionId, workspacePath)` without passing `{ browserCapable: true }`. The normal session start path always creates a standard `node:20-alpine` container, not `aisandbox-workspace-browser:local`. No currently exposed API endpoint or service method creates a browser-capable container through the platform's own session boundary.
@@ -21481,7 +21481,7 @@ Add a controlled, internal, test-safe opt-in mechanism for browser-capable sessi
 - [x] No Docker commands, browser automation, service startup, sessions, tests, builds, or browser smoke executed
 - [x] No checkpoint document created
 
-**Acceptance criteria (implementation — all satisfied):**
+**Acceptance criteria (implementation �X all satisfied):**
 - [x] Architecture/security review selects the internal-only opt-in design option
 - [x] Default session creation remains non-browser
 - [x] Browser-capable session creation is explicitly opt-in
@@ -21505,11 +21505,11 @@ Add a controlled, internal, test-safe opt-in mechanism for browser-capable sessi
 - No API Gateway / ai-service / frontend / database / Dockerfile / package / compose / governance config changes.
 
 **Validation summary:**
-- internal-sessions.controller.spec.ts: PASS — 9/9
-- sessions.service.spec.ts: PASS — 6/6
-- docker-runtime.service.spec.ts: PASS — 28/28 (regression)
-- TypeScript build: PASS — clean, exit code 0
-- Full container-manager suite: PASS — 90/90 across 8 suites
+- internal-sessions.controller.spec.ts: PASS �X 9/9
+- sessions.service.spec.ts: PASS �X 6/6
+- docker-runtime.service.spec.ts: PASS �X 28/28 (regression)
+- TypeScript build: PASS �X clean, exit code 0
+- Full container-manager suite: PASS �X 90/90 across 8 suites
 - No Docker commands, service startup, live sessions, browser automation, browser_smoke, or Phase 5 run.
 
 **Checkpoint:** `docs/AGENT-HARNESS-05B5A-CHECKPOINT.md`
@@ -21534,9 +21534,9 @@ Add a controlled, internal, test-safe opt-in mechanism for browser-capable sessi
 **Family:** AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
 
 **Dependencies:**
-- AGENT-HARNESS-05B4 — COMPLETE and LOCKED (browser image/runtime fixed)
-- AGENT-HARNESS-05B5A — COMPLETE and LOCKED (browser-capable session creation wiring fixed)
-- AGENT-HARNESS-05B5 — COMPLETE and LOCKED (browser_smoke service-chain validation PASS)
+- AGENT-HARNESS-05B4 �X COMPLETE and LOCKED (browser image/runtime fixed)
+- AGENT-HARNESS-05B5A �X COMPLETE and LOCKED (browser-capable session creation wiring fixed)
+- AGENT-HARNESS-05B5 �X COMPLETE and LOCKED (browser_smoke service-chain validation PASS)
 
 **Problem:**
 After AGENT-HARNESS-05B5 passed using local dev services, three remaining operational follow-ups were identified:
@@ -21619,7 +21619,7 @@ The investigation should inspect:
 - [ ] No fixes applied without separate approval
 - [ ] Investigation checkpoint created during consolidation
 
-**Next step:** Investigation/review only — not implementation. Read and analyze compose files, Dockerfiles, main.ts, package.json, and env configuration. Do not implement fixes without separate approval.
+**Next step:** Investigation/review only �X not implementation. Read and analyze compose files, Dockerfiles, main.ts, package.json, and env configuration. Do not implement fixes without separate approval.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05B6.
 
@@ -21636,40 +21636,40 @@ The investigation should inspect:
 **Family:** AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
 
 **Dependencies:**
-- AGENT-HARNESS-05B5 — COMPLETE and LOCKED (browser_smoke service-chain validation PASS)
-- AGENT-HARNESS-05B6 — ACTIVE (production compose startup investigation completed as read-only review)
+- AGENT-HARNESS-05B5 �X COMPLETE and LOCKED (browser_smoke service-chain validation PASS)
+- AGENT-HARNESS-05B6 �X ACTIVE (production compose startup investigation completed as read-only review)
 
 **Problem:**
 AGENT-HARNESS-05B6 investigation identified likely low-risk startup blockers in production Docker Compose:
 
 1. **api-gateway restart loop** caused by missing `LAUNCH_STATE` env wiring and stale/incomplete `.env.example`.
-2. **container-manager no host port mapping** — operators could not reach `localhost:4002` from the host.
+2. **container-manager no host port mapping** �X operators could not reach `localhost:4002` from the host.
 3. **container-manager startup log advertises `GET /api/health`** but that route did not exist.
 
 **Implementation acceptance criteria (checked):**
 - [x] Architecture/security review confirms exact config changes
-- [x] LAUNCH_STATE production startup requirement addressed — fail-fast `${LAUNCH_STATE:?...}` wiring added to api-gateway in `docker-compose.prod.yml`
-- [x] AI_PROVIDER documentation/config expectation addressed — corrected to `AI_PROVIDER=anthropic` in root `.env.example`; `stub` removed from production section
-- [x] `.env.example` documents required production keys with placeholders only — all provider keys, LAUNCH_STATE, DB, Redis, JWT, APP_BASE_URL documented
-- [x] container-manager host port mapping added — loopback-only `127.0.0.1:4002:4002`
-- [x] container-manager health route added — public `GET /api/health` returning `{ status, service, timestamp }`
+- [x] LAUNCH_STATE production startup requirement addressed �X fail-fast `${LAUNCH_STATE:?...}` wiring added to api-gateway in `docker-compose.prod.yml`
+- [x] AI_PROVIDER documentation/config expectation addressed �X corrected to `AI_PROVIDER=anthropic` in root `.env.example`; `stub` removed from production section
+- [x] `.env.example` documents required production keys with placeholders only �X all provider keys, LAUNCH_STATE, DB, Redis, JWT, APP_BASE_URL documented
+- [x] container-manager host port mapping added �X loopback-only `127.0.0.1:4002:4002`
+- [x] container-manager health route added �X public `GET /api/health` returning `{ status, service, timestamp }`
 - [x] No real secrets committed
 - [x] No workspace DinD path redesign attempted
-- [x] Focused validation commands run — `docker compose config`, `tsc --noEmit`, `npm test` all passed
-- [x] Follow-up runtime diagnostic plan prepared — documented in checkpoint, pending Keith approval
-- [x] Checkpoint created — `docs/AGENT-HARNESS-05B6A-CHECKPOINT.md`
+- [x] Focused validation commands run �X `docker compose config`, `tsc --noEmit`, `npm test` all passed
+- [x] Follow-up runtime diagnostic plan prepared �X documented in checkpoint, pending Keith approval
+- [x] Checkpoint created �X `docs/AGENT-HARNESS-05B6A-CHECKPOINT.md`
 
 **Files changed:**
-1. `docker-compose.prod.yml` — LAUNCH_STATE fail-fast wiring, container-manager loopback port mapping, container-manager healthcheck
-2. `.env.example` (root) — LAUNCH_STATE, corrected AI_PROVIDER, provider key placeholders, Redis URL fix, full production key documentation
-3. `services/api-gateway/.env.example` — replaced invalid LIMITED_AVAILABILITY with INTERNAL; added valid values note
-4. `services/container-manager/src/health/health.controller.ts` — new public liveness endpoint `GET /api/health`
-5. `services/container-manager/src/app.module.ts` — HealthController registered
+1. `docker-compose.prod.yml` �X LAUNCH_STATE fail-fast wiring, container-manager loopback port mapping, container-manager healthcheck
+2. `.env.example` (root) �X LAUNCH_STATE, corrected AI_PROVIDER, provider key placeholders, Redis URL fix, full production key documentation
+3. `services/api-gateway/.env.example` �X replaced invalid LIMITED_AVAILABILITY with INTERNAL; added valid values note
+4. `services/container-manager/src/health/health.controller.ts` �X new public liveness endpoint `GET /api/health`
+5. `services/container-manager/src/app.module.ts` �X HealthController registered
 
 **Validation summary:**
-- `docker compose -f docker-compose.prod.yml config --quiet` → exit 0 (before and after AI_PROVIDER correction)
-- `npx tsc --noEmit` (container-manager) → exit 0
-- `npm test` (container-manager) → exit 0, 8 suites, 90 tests passed
+- `docker compose -f docker-compose.prod.yml config --quiet` �� exit 0 (before and after AI_PROVIDER correction)
+- `npx tsc --noEmit` (container-manager) �� exit 0
+- `npm test` (container-manager) �� exit 0, 8 suites, 90 tests passed
 - api-gateway tests not run (no api-gateway runtime code changed)
 
 **Correction note:** After initial implementation, `AI_PROVIDER=stub` was corrected to `AI_PROVIDER=anthropic` in root `.env.example`. `stub` is development-only and will fail in production per `provider.validator`. `docker compose config` re-validated after correction: exit 0.
@@ -21706,9 +21706,9 @@ AGENT-HARNESS-05B6 investigation identified likely low-risk startup blockers in 
 **Verdict:** PASS
 
 **Dependencies:**
-- AGENT-HARNESS-05B5 — COMPLETE and LOCKED — browser_smoke service-chain validation PASS
-- AGENT-HARNESS-05B6 — ACTIVE — production compose startup investigation completed
-- AGENT-HARNESS-05B6A — COMPLETE and LOCKED — production compose startup config fix completed
+- AGENT-HARNESS-05B5 �X COMPLETE and LOCKED �X browser_smoke service-chain validation PASS
+- AGENT-HARNESS-05B6 �X ACTIVE �X production compose startup investigation completed
+- AGENT-HARNESS-05B6A �X COMPLETE and LOCKED �X production compose startup config fix completed
 
 **Problem:**
 AGENT-HARNESS-05B6A fixed the low-risk production compose startup blockers, but actual runtime validation with `docker compose up` has not yet been performed.
@@ -21722,44 +21722,44 @@ Confirm that:
 5. container-manager `GET /api/internal/stats` works with `X-Internal-Service-Key`.
 6. Production compose services start cleanly enough for the next validation slice.
 
-**Step 1 / Step 1B — .env preflight and repair:**
+**Step 1 / Step 1B �X .env preflight and repair:**
 - Root `.env` confirmed present at `C:\Users\knlee\aiSandBox2026B\.env`.
 - Required keys checked with set/not-set reporting only; secret values never printed.
 - Placeholder-like values replaced in `.env` (secrets masked): `INTERNAL_SERVICE_KEY`, `JWT_SECRET`, `POSTGRES_PASSWORD`, `DATABASE_URL`.
 - `LAUNCH_STATE` changed from `PUBLIC` to `INTERNAL` for first validation.
-- `AI_PROVIDER=xai` kept — confirmed production-valid.
+- `AI_PROVIDER=xai` kept �X confirmed production-valid.
 - `DATABASE_URL` uses Docker service name `postgres`; `REDIS_URL` uses Docker service name `redis`.
 - `docker compose config --quiet` passed after Step 1B with exit 0.
 - No `docker compose up/down/start/stop/remove` commands run during Step 1 or Step 1B.
 
-**Step 2 — Initial host port conflicts:**
+**Step 2 �X Initial host port conflicts:**
 - `docker compose up -d --build` initially failed: host `ts-node-dev` processes held ports 4000 and 4002.
 - Keith stopped the two exact host `node.exe` `ts-node-dev` processes.
-- Ports 4000 and 4002 confirmed free. Host environment cleanup only — no source or config change.
+- Ports 4000 and 4002 confirmed free. Host environment cleanup only �X no source or config change.
 
-**Step 2 retry — Postgres credential mismatch:**
+**Step 2 retry �X Postgres credential mismatch:**
 - `docker compose up -d` re-attempted after port cleanup.
 - `container-manager` started successfully.
 - `api-gateway` entered restart loop: `password authentication failed for user "aisandbox"` (pg error code 28P01).
-- Root cause: existing local Docker Postgres volume (`aisandbox2026b_postgres_data`) was initialized with an old `POSTGRES_PASSWORD`; Step 1B had replaced that password in `.env`. Local Docker volume credential mismatch — not a code regression.
+- Root cause: existing local Docker Postgres volume (`aisandbox2026b_postgres_data`) was initialized with an old `POSTGRES_PASSWORD`; Step 1B had replaced that password in `.env`. Local Docker volume credential mismatch �X not a code regression.
 
-**Step 2B — Local Postgres volume reset:**
+**Step 2B �X Local Postgres volume reset:**
 - Keith approved resetting the local production-compose Postgres validation volume.
 - `docker compose down` run.
 - Exact volume removed: `aisandbox2026b_postgres_data`.
 - No other volumes removed. Volumes `aisandbox2026b_ai_service_data`, `aisandbox2026b_api_gateway_data`, `aisandbox2026b_api_gateway_snapshot_store_data`, `aisandbox2026b_container_manager_data`, `aisandbox2026b_redis_data` remained intact.
-- `docker compose config --quiet` re-run — exit 0.
+- `docker compose config --quiet` re-run �X exit 0.
 - `docker compose up -d --build` re-run. Fresh Postgres volume initialized with current `.env` credentials.
 - `.env` was not modified during Step 2B. No source/config fixes applied.
 
 **Final validation summary:**
 - `docker compose config --quiet`: PASS, exit 0.
 - `docker compose up -d --build`: PASS, exit 0.
-- 8/8 containers started — no container in restarting or exited state.
+- 8/8 containers started �X no container in restarting or exited state.
 - Containers: `aisandbox-api-gateway` (Up, healthy, 0.0.0.0:4000), `aisandbox-container-manager` (Up, healthy, 127.0.0.1:4002), `aisandbox-frontend` (Up, 0.0.0.0:3000), `aisandbox2026b-ai-service-1` (Up), `aisandbox-postgres` (Up, healthy), `aisandbox-redis` (Up, healthy), `aisandbox-prometheus` (Up, healthy), `aisandbox-grafana` (Up, healthy).
 - api-gateway: RestartCount 0, ExitCode 0, `/api/health` HTTP 200, all 6 startup phases passed (including database connectivity auth).
 - container-manager: RestartCount 0, ExitCode 0, healthy, `/api/health` HTTP 200, `/api/internal/stats` HTTP 200 with `dockerConnectivity: true`, `runningContainerCount: 8`.
-- container-manager host binding confirmed `127.0.0.1:4002->4002/tcp` (loopback only — correct).
+- container-manager host binding confirmed `127.0.0.1:4002->4002/tcp` (loopback only �X correct).
 - Non-fatal warnings: OPENAI key format (non-fatal, xai active), no kill switches (expected), `BILLING_CHARGES_ENABLED=false` (intentional), Redis guard (expected MVP warning).
 
 **Acceptance criteria (registration):**
@@ -21785,24 +21785,24 @@ Confirm that:
 - [x] container-manager `/api/health` returns success (HTTP 200)
 - [x] container-manager `/api/internal/stats` returns success with `X-Internal-Service-Key` (HTTP 200, `dockerConnectivity: true`)
 - [x] Logs inspected with secrets masked
-- [x] Any failures classified (port conflict — host env; Postgres mismatch — local volume)
+- [x] Any failures classified (port conflict �X host env; Postgres mismatch �X local volume)
 - [x] No fixes applied without separate approval
 - [x] Cleanup / service state clearly reported
 - [x] Checkpoint created during consolidation
 
 **Out-of-scope items remaining:**
-- `browser_smoke` against production compose — not run; pending separate approval.
-- ai-service provider/model execution validation — not run; pending separate approval.
-- userId / SQLite FK behavior fix — future task.
-- Workspace volume / Docker-in-Docker host-path strategy — future task.
-- Debug telemetry cleanup — future task.
-- Provider validator design smell — future task.
+- `browser_smoke` against production compose �X not run; pending separate approval.
+- ai-service provider/model execution validation �X not run; pending separate approval.
+- userId / SQLite FK behavior fix �X future task.
+- Workspace volume / Docker-in-Docker host-path strategy �X future task.
+- Debug telemetry cleanup �X future task.
+- Provider validator design smell �X future task.
 
 **Checkpoint:** `docs/AGENT-HARNESS-05B6B-CHECKPOINT.md`
 
 **Lock notice:** AGENT-HARNESS-05B6B is COMPLETE and LOCKED. Do not modify this entry. Do not reopen or re-implement without explicit approval.
 
-**Next recommended step:** Choose the next validation slice — either `browser_smoke` against production compose or ai-service/provider runtime validation — but only after Keith approval and with a registered task.
+**Next recommended step:** Choose the next validation slice �X either `browser_smoke` against production compose or ai-service/provider runtime validation �X but only after Keith approval and with a registered task.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05B6B.
 
@@ -21820,13 +21820,13 @@ Confirm that:
 **Nature:** RUNTIME VALIDATION / PRODUCTION COMPOSE / BROWSER_SMOKE
 
 **Dependencies:**
-- AGENT-HARNESS-05B5 COMPLETE and LOCKED — browser_smoke service-chain validation passed using local dev services.
-- AGENT-HARNESS-05B6 COMPLETE/ACTIVE investigation context — production compose startup issues investigated.
-- AGENT-HARNESS-05B6A COMPLETE and LOCKED — production compose config/startup fixes implemented.
-- AGENT-HARNESS-05B6B COMPLETE and LOCKED — production compose runtime validation passed.
-- AGENT-HARNESS-05B6D COMPLETE and LOCKED — internal session start DB row fix; resolved the file-write 404 blocker.
+- AGENT-HARNESS-05B5 COMPLETE and LOCKED �X browser_smoke service-chain validation passed using local dev services.
+- AGENT-HARNESS-05B6 COMPLETE/ACTIVE investigation context �X production compose startup issues investigated.
+- AGENT-HARNESS-05B6A COMPLETE and LOCKED �X production compose config/startup fixes implemented.
+- AGENT-HARNESS-05B6B COMPLETE and LOCKED �X production compose runtime validation passed.
+- AGENT-HARNESS-05B6D COMPLETE and LOCKED �X internal session start DB row fix; resolved the file-write 404 blocker.
 
-**Final verdict: PASS — 2026-06-26**
+**Final verdict: PASS �X 2026-06-26**
 
 **Validation summary:**
 1. docker ps showed 7 healthy aisandbox-* containers.
@@ -21875,7 +21875,7 @@ register a follow-up task after Keith review if investigation is desired.
 
 **Next step:** Register next Agent Harness follow-up task only after Keith review.
 
-> LOCKED — Do not modify this entry. See checkpoint document for full details.
+> LOCKED �X Do not modify this entry. See checkpoint document for full details.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05B6C.
 
@@ -21892,10 +21892,10 @@ register a follow-up task after Keith review if investigation is desired.
 **Nature:** BACKEND FIX / CONTAINER-MANAGER / SESSION LIFECYCLE / INTERNAL ROUTE
 
 **Dependencies:**
-- AGENT-HARNESS-05B5 COMPLETE and LOCKED — browser_smoke service-chain validation passed in local dev mode.
-- AGENT-HARNESS-05B6A COMPLETE and LOCKED — production compose config/startup fixes completed.
-- AGENT-HARNESS-05B6B COMPLETE and LOCKED — production compose runtime startup validation passed.
-- AGENT-HARNESS-05B6C ACTIVE — production compose browser_smoke validation blocked at file-write step; this task resolves that blocker.
+- AGENT-HARNESS-05B5 COMPLETE and LOCKED �X browser_smoke service-chain validation passed in local dev mode.
+- AGENT-HARNESS-05B6A COMPLETE and LOCKED �X production compose config/startup fixes completed.
+- AGENT-HARNESS-05B6B COMPLETE and LOCKED �X production compose runtime startup validation passed.
+- AGENT-HARNESS-05B6C ACTIVE �X production compose browser_smoke validation blocked at file-write step; this task resolves that blocker.
 
 **Problem:**
 AGENT-HARNESS-05B6C attempted to validate browser_smoke against the running production compose stack.
@@ -21931,19 +21931,19 @@ In `services/container-manager/src/sessions/sessions.service.ts`, `startSessionC
 
 **Implementation summary:**
 `startSessionContainer()` now always checks for local session-row existence before proceeding. If the row is missing, it inserts one using the following priority:
-1. `userId` present — insert with provided `userId` (preserves existing behavior).
-2. `userId` omitted — attempt insert with `null` for `user_id`.
-3. Schema rejects `null` with NOT NULL constraint — fallback to `internal-session-<sessionId>` as local owner.
+1. `userId` present �X insert with provided `userId` (preserves existing behavior).
+2. `userId` omitted �X attempt insert with `null` for `user_id`.
+3. Schema rejects `null` with NOT NULL constraint �X fallback to `internal-session-<sessionId>` as local owner.
 
 Added helpers:
-- `isSessionsUserIdNotNullError(error)` — detects SQLite NOT NULL constraint violation on `user_id`.
-- `buildInternalSessionOwnerId(sessionId)` — constructs the deterministic internal owner string.
+- `isSessionsUserIdNotNullError(error)` �X detects SQLite NOT NULL constraint violation on `user_id`.
+- `buildInternalSessionOwnerId(sessionId)` �X constructs the deterministic internal owner string.
 
 `assertSessionUsableOrThrow()` remains strict and unweakened. `notifySessionStarted()` remains session-ID-based; no synthetic `userId` is sent cross-service.
 
 **Validation:**
-- `npx tsc --noEmit` — PASS (exit code 0)
-- `npm test` — PASS (exit code 0) — 8 suites, 95 tests passed
+- `npx tsc --noEmit` �X PASS (exit code 0)
+- `npm test` �X PASS (exit code 0) �X 8 suites, 95 tests passed
 
 **Acceptance criteria:**
 - [x] Root cause confirmed in code.
@@ -21985,18 +21985,18 @@ Added helpers:
 **Nature:** RUNTIME VALIDATION / PRODUCTION COMPOSE / AI-SERVICE / PROVIDER EXECUTION
 
 **Dependencies:**
-- AGENT-HARNESS-05B5 COMPLETE and LOCKED — browser_smoke service-chain validation passed using local dev services.
-- AGENT-HARNESS-05B6 COMPLETE/ACTIVE investigation context — production compose startup issues investigated.
-- AGENT-HARNESS-05B6A COMPLETE and LOCKED — production compose config/startup fixes implemented.
-- AGENT-HARNESS-05B6B COMPLETE and LOCKED — production compose runtime validation passed.
-- AGENT-HARNESS-05B6D COMPLETE and LOCKED — internal session start DB row fix.
-- AGENT-HARNESS-05B6C COMPLETE and LOCKED — browser_smoke infrastructure validated end-to-end through api-gateway -> container-manager -> browser-capable workspace container -> preview -> BrowserSmokeService. PASS.
+- AGENT-HARNESS-05B5 COMPLETE and LOCKED �X browser_smoke service-chain validation passed using local dev services.
+- AGENT-HARNESS-05B6 COMPLETE/ACTIVE investigation context �X production compose startup issues investigated.
+- AGENT-HARNESS-05B6A COMPLETE and LOCKED �X production compose config/startup fixes implemented.
+- AGENT-HARNESS-05B6B COMPLETE and LOCKED �X production compose runtime validation passed.
+- AGENT-HARNESS-05B6D COMPLETE and LOCKED �X internal session start DB row fix.
+- AGENT-HARNESS-05B6C COMPLETE and LOCKED �X browser_smoke infrastructure validated end-to-end through api-gateway -> container-manager -> browser-capable workspace container -> preview -> BrowserSmokeService. PASS.
 
 **Context:**
 AGENT-HARNESS-05B6C confirmed that the browser_smoke infrastructure executes correctly end-to-end through the production compose stack. The remaining unvalidated path is ai-service provider/model execution. ai-service has been implemented with Agent Harness tool infrastructure, but it has not yet been exercised against the production compose stack to confirm that the provider/model execution path reaches completion.
 
 **Objective:**
-Validate — without making source changes — that ai-service can execute an Agent Harness flow through the production compose stack using the implemented tool infrastructure.
+Validate �X without making source changes �X that ai-service can execute an Agent Harness flow through the production compose stack using the implemented tool infrastructure.
 
 **Scope:**
 1. Confirm production compose stack health (all services running, health endpoints returning HTTP 200).
@@ -22007,7 +22007,7 @@ Validate — without making source changes — that ai-service can execute an Ag
 6. Confirm no source changes are required; if source changes are needed, stop and register a fix slice.
 7. Capture exact commands, API call bodies, responses, error output (if any), and cleanup steps.
 
-**Approval gate — HARD BLOCK:**
+**Approval gate �X HARD BLOCK:**
 Provider/model execution against the production compose stack must NOT be run until Keith explicitly approves the runtime step. The validation plan must be presented to Keith first. This gate must not be bypassed.
 
 **Risks:**
@@ -22050,21 +22050,21 @@ Provider/model execution against the production compose stack must NOT be run un
 - [x] No checkpoint created.
 
 **Runtime validation acceptance criteria (verified at completion):**
-- [x] Production compose stack health confirmed — all 8 containers running, api-gateway /api/health HTTP 200.
+- [x] Production compose stack health confirmed �X all 8 containers running, api-gateway /api/health HTTP 200.
 - [x] ai-service container running and connected to required services.
-- [x] Minimal execution job mechanism identified and documented — POST /api/ai/execute via cookie auth.
+- [x] Minimal execution job mechanism identified and documented �X POST /api/ai/execute via cookie auth.
 - [x] Keith approval obtained before runtime execution.
-- [x] Provider/model execution path validated — xAI end-to-end PASS.
+- [x] Provider/model execution path validated �X xAI end-to-end PASS.
 - [x] No source changes made.
-- [x] Test resources cleaned up — temp files deleted, no containers/sessions created.
+- [x] Test resources cleaned up �X temp files deleted, no containers/sessions created.
 - [x] Final production compose status confirmed healthy.
 - [x] Checkpoint created during consolidation.
 
 **Validation summary:**
 - Production compose started successfully (8 containers).
 - api-gateway health: HTTP 200 `{"status":"ok","service":"api-gateway","version":"0.1.0"}`.
-- Blocker: seed password hash mismatch for test@aisandbox.com — resolved by Keith-approved targeted DB data correction.
-- Blocker: non-UUID sessionId — corrected to valid UUID `35d53116-6723-4571-af12-ac256977c007`.
+- Blocker: seed password hash mismatch for test@aisandbox.com �X resolved by Keith-approved targeted DB data correction.
+- Blocker: non-UUID sessionId �X corrected to valid UUID `35d53116-6723-4571-af12-ac256977c007`.
 - Submit: HTTP 202 `{"executionId":"ccc85998-acb4-4611-84a7-d5727a0119e1","status":"queued"}`.
 - Poll: HTTP 200 `{"status":"completed","tokensUsed":472,"output":"05B7 xAI validation passed","model":"grok-4.3","provider":"xai","fileActions":[]}`.
 - usage_records confirmed: execution_status completed, provider xai, tokens_used 472.
@@ -22082,14 +22082,14 @@ Provider/model execution against the production compose stack must NOT be run un
 
 ---
 
-## AGENT-HARNESS-05B8 — Seed Test User Password Hash Correction
+## AGENT-HARNESS-05B8 �X Seed Test User Password Hash Correction
 
 **Status:** COMPLETE and LOCKED
 **Registered:** 2026-06-26
 **Completed:** 2026-06-26
 **Depends on:** AGENT-HARNESS-05B7 (COMPLETE and LOCKED)
 **Type:** Seed-data / source consistency fix
-**Loop:** 3-step (stage-start → implementation → consolidation/checkpoint)
+**Loop:** 3-step (stage-start �� implementation �� consolidation/checkpoint)
 
 ---
 
@@ -22107,7 +22107,7 @@ After that correction login succeeded and 05B7 passed. The root problem is a sou
 
 ### Objective
 
-Locate the seed file(s) responsible for seeding `test@aisandbox.com` and `demo@aisandbox.com`, confirm the hash mismatch, and replace the incorrect hash(es) with a verified bcrypt hash for `password123`. Keep the fix strictly to seed-data/source consistency — no auth logic changes, no production runtime DB mutation, no schema migrations unless the implementation review reveals a structural necessity.
+Locate the seed file(s) responsible for seeding `test@aisandbox.com` and `demo@aisandbox.com`, confirm the hash mismatch, and replace the incorrect hash(es) with a verified bcrypt hash for `password123`. Keep the fix strictly to seed-data/source consistency �X no auth logic changes, no production runtime DB mutation, no schema migrations unless the implementation review reveals a structural necessity.
 
 ---
 
@@ -22117,7 +22117,7 @@ Locate the seed file(s) responsible for seeding `test@aisandbox.com` and `demo@a
 2. Identify where comments/documentation state the password is `password123`.
 3. Confirm the stored hash does not match `password123`.
 4. Replace the incorrect hash with a verified bcrypt hash for `password123`.
-5. Review `demo@aisandbox.com` — if documented with the same password, apply the same correction.
+5. Review `demo@aisandbox.com` �X if documented with the same password, apply the same correction.
 6. Add or update a seed validation test if the repository has existing seed validation coverage.
 
 ---
@@ -22191,11 +22191,11 @@ Locate the seed file(s) responsible for seeding `test@aisandbox.com` and `demo@a
 **Root cause:** All inspected seed files contained bcrypt hashes that did not match their documented passwords. Verified using `bcrypt.compare()` with `bcrypt@5.1.1` from `services/api-gateway/node_modules`. Old hashes for both `test@aisandbox.com` (password123) and `demo@aisandbox.com` (demo123) failed verification.
 
 **Files changed:**
-1. `database/init/001_schema.sql` — corrected `test@aisandbox.com` hash
-2. `database/schema.sql` — corrected `test@aisandbox.com` hash
-3. `database/schema-sqlite.sql` — corrected `test@aisandbox.com` hash
-4. `database/init/003_add_demo_user.sql` — corrected `demo@aisandbox.com` hash
-5. `database/add-demo-user.sql` — corrected `demo@aisandbox.com` hash
+1. `database/init/001_schema.sql` �X corrected `test@aisandbox.com` hash
+2. `database/schema.sql` �X corrected `test@aisandbox.com` hash
+3. `database/schema-sqlite.sql` �X corrected `test@aisandbox.com` hash
+4. `database/init/003_add_demo_user.sql` �X corrected `demo@aisandbox.com` hash
+5. `database/add-demo-user.sql` �X corrected `demo@aisandbox.com` hash
 
 **New verified hashes:**
 - `test@aisandbox.com / password123`: `$2b$12$Euh2JBgTe8dUbsF1VDloVuZbh2tuQMxHT4xODHyDQUqdEXmFI5PL6`
@@ -22213,7 +22213,7 @@ Locate the seed file(s) responsible for seeding `test@aisandbox.com` and `demo@a
 - auth.controller.spec.ts: **PASS**
 - auth.service.reset.spec.ts: **PASS**
 - auth.service.verify.spec.ts: **PASS**
-- 17 pre-existing failures (QueueService DI, Jest worker crashes) — not caused by this task, present before implementation
+- 17 pre-existing failures (QueueService DI, Jest worker crashes) �X not caused by this task, present before implementation
 
 ---
 
@@ -22223,7 +22223,7 @@ Locate the seed file(s) responsible for seeding `test@aisandbox.com` and `demo@a
 
 **Next recommended task:** Register a separate follow-up for sessionId UUID input validation before ledger write, if Keith approves.
 
-> **LOCKED** — This task is COMPLETE and LOCKED. Do not modify.
+> **LOCKED** �X This task is COMPLETE and LOCKED. Do not modify.
 
 ---
 
@@ -22231,7 +22231,7 @@ Locate the seed file(s) responsible for seeding `test@aisandbox.com` and `demo@a
 
 ---
 
-## AGENT-HARNESS-05B9 — AI Execute SessionId UUID Validation
+## AGENT-HARNESS-05B9 �X AI Execute SessionId UUID Validation
 
 **Status:** COMPLETE and LOCKED
 **Completed:** 2026-06-26
@@ -22258,7 +22258,7 @@ Add explicit sessionId UUID validation at the `POST /api/ai/execute` controller/
 1. Add `@IsUUID()` (class-validator) or equivalent explicit guard to the execute request DTO/controller.
 2. If invalid, throw `BadRequestException` with message `"sessionId must be a valid UUID"`.
 3. Validation must occur before: `UsageLedgerService.writeExecutionIntent()` and `QueueService.enqueueExecution()`.
-4. Add focused tests: (a) invalid sessionId → HTTP 400; (b) invalid sessionId → no `writeExecutionIntent()` call; (c) invalid sessionId → no enqueue; (d) valid UUID path unchanged.
+4. Add focused tests: (a) invalid sessionId �� HTTP 400; (b) invalid sessionId �� no `writeExecutionIntent()` call; (c) invalid sessionId �� no enqueue; (d) valid UUID path unchanged.
 
 ### Design Constraints
 
@@ -22289,7 +22289,7 @@ Add explicit sessionId UUID validation at the `POST /api/ai/execute` controller/
 - [x] AGENT-HARNESS-05B9 appended to TASKS_BACKLOG_FULL.md after AGENT-HARNESS-05B8.
 - [x] Status is ACTIVE.
 - [x] Dependency/context from AGENT-HARNESS-05B7 and 05B8 documented.
-- [x] Invalid sessionId → HTTP 500 finding documented.
+- [x] Invalid sessionId �� HTTP 500 finding documented.
 - [x] Objective, scope, constraints, non-goals, and future implementation criteria documented.
 - [x] No source/runtime/test/package/Docker/frontend/database files modified.
 - [x] No .env changes.
@@ -22307,27 +22307,27 @@ Add explicit sessionId UUID validation at the `POST /api/ai/execute` controller/
 - [x] Provider/model execution behavior unchanged.
 - [x] Focused tests added/updated (4 tests: invalid throws, no ledger write, no enqueue, valid path succeeds).
 - [x] api-gateway targeted tests pass (4 new 05B9 tests PASS; legacy 4 FAIL are pre-existing QueueService DI failures, not caused by this task).
-- [x] api-gateway build passes — exit code 0, clean TypeScript compilation.
+- [x] api-gateway build passes �X exit code 0, clean TypeScript compilation.
 - [x] No live provider execution run.
 - [x] Checkpoint created during consolidation.
 
 ### Implementation Summary
 
-- `AIExecutionRequest` confirmed as a plain TypeScript interface — `@IsUUID()` cannot apply.
+- `AIExecutionRequest` confirmed as a plain TypeScript interface �X `@IsUUID()` cannot apply.
 - Added `validate as uuidValidate` import from `uuid` (existing dependency).
-- Added explicit guard at top of `execute()` in `ai-execution.controller.ts`: if `!uuidValidate(request.sessionId)` → `BadRequestException('sessionId must be a valid UUID')`.
+- Added explicit guard at top of `execute()` in `ai-execution.controller.ts`: if `!uuidValidate(request.sessionId)` �� `BadRequestException('sessionId must be a valid UUID')`.
 - Validation fires before idempotency handling, `writeExecutionIntent()`, and `enqueueExecution()`.
-- 4 focused tests added in new describe block `AIExecutionController — sessionId UUID validation (AGENT-HARNESS-05B9)` in `ai-execution.controller.spec.ts`.
+- 4 focused tests added in new describe block `AIExecutionController �X sessionId UUID validation (AGENT-HARNESS-05B9)` in `ai-execution.controller.spec.ts`.
 
 ### Validation Summary
 
 - Targeted spec: 4 new 05B9 tests PASS. Legacy 4 FAIL = pre-existing QueueService DI failures (not caused by this task).
-- Build: PASS — exit code 0.
+- Build: PASS �X exit code 0.
 - Lint: no errors on changed files.
 
 ### Final Verdict
 
-**PASS** — with known pre-existing legacy test failures noted (QueueService DI failures, present since AGENT-HARNESS-05B8 baseline, unrelated to this task).
+**PASS** �X with known pre-existing legacy test failures noted (QueueService DI failures, present since AGENT-HARNESS-05B8 baseline, unrelated to this task).
 
 ---
 
@@ -22335,14 +22335,14 @@ Add explicit sessionId UUID validation at the `POST /api/ai/execute` controller/
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05B9.
 
-**Next recommended task:** Register Agent Harness `harnessVersion` queue/API wiring validation or implementation review — after Keith approval.
+**Next recommended task:** Register Agent Harness `harnessVersion` queue/API wiring validation or implementation review �X after Keith approval.
 
 ---
-*COMPLETE and LOCKED — 2026-06-26. Do not modify this entry.*
+*COMPLETE and LOCKED �X 2026-06-26. Do not modify this entry.*
 
 ---
 
-## AGENT-HARNESS-05C1 — Harness Version Queue/API Wiring Review
+## AGENT-HARNESS-05C1 �X Harness Version Queue/API Wiring Review
 
 **Task ID:** AGENT-HARNESS-05C1
 **Family:** AGENT-HARNESS
@@ -22353,9 +22353,9 @@ Add explicit sessionId UUID validation at the `POST /api/ai/execute` controller/
 **Nature:** ARCHITECTURE REVIEW / WIRING ANALYSIS
 **Risk:** Medium
 **Depends on:**
-- AGENT-HARNESS-05B7 — COMPLETE and LOCKED (ai-service provider/model execution validated via xAI through production compose)
-- AGENT-HARNESS-05B8 — COMPLETE and LOCKED (seed test user password hash corrected)
-- AGENT-HARNESS-05B9 — COMPLETE and LOCKED (sessionId UUID validation added at controller boundary)
+- AGENT-HARNESS-05B7 �X COMPLETE and LOCKED (ai-service provider/model execution validated via xAI through production compose)
+- AGENT-HARNESS-05B8 �X COMPLETE and LOCKED (seed test user password hash corrected)
+- AGENT-HARNESS-05B9 �X COMPLETE and LOCKED (sessionId UUID validation added at controller boundary)
 
 ---
 
@@ -22363,7 +22363,7 @@ Add explicit sessionId UUID validation at the `POST /api/ai/execute` controller/
 
 AGENT-HARNESS-05B7 validated the plain ai-service provider/model execution path through production compose using xAI. During that validation, the Agent Harness loop was not exercised.
 
-**05B7 finding:** `harnessVersion: "v1"` is not currently passed by api-gateway into the BullMQ execution job payload. The WorkerProcessor in ai-service contains a `harnessVersion` branch that selects between the plain execution path and the Agent Harness loop, but this branch is never reached from the official API Gateway → BullMQ → ai-service worker route because the field is absent from the job data.
+**05B7 finding:** `harnessVersion: "v1"` is not currently passed by api-gateway into the BullMQ execution job payload. The WorkerProcessor in ai-service contains a `harnessVersion` branch that selects between the plain execution path and the Agent Harness loop, but this branch is never reached from the official API Gateway �� BullMQ �� ai-service worker route because the field is absent from the job data.
 
 As a result, the Agent Harness loop has only been exercisable via direct BullMQ enqueue, which is not the intended long-term validation mechanism.
 
@@ -22371,19 +22371,19 @@ As a result, the Agent Harness loop has only been exercisable via direct BullMQ 
 
 ### Objective
 
-Inspect and decide the safest wiring strategy for `harnessVersion` through the API Gateway → BullMQ → ai-service worker path, so future validation can exercise the Agent Harness loop through the official production route rather than via direct BullMQ enqueue.
+Inspect and decide the safest wiring strategy for `harnessVersion` through the API Gateway �� BullMQ �� ai-service worker path, so future validation can exercise the Agent Harness loop through the official production route rather than via direct BullMQ enqueue.
 
 ---
 
 ### Scope
 
 **Inspection targets:**
-- `api-gateway` execute controller and `AIExecutionRequest` type — confirm whether `harnessVersion` is accepted, ignored, or absent.
-- `QueueService.enqueueExecution()` and job payload construction — confirm whether `harnessVersion` is forwarded or dropped.
-- `ai-service` `WorkerProcessor` job data contract — confirm the `harnessVersion` field definition and the harness/plain branch condition.
-- Agent Harness config gates: `enableToolLoop`, `enableBrowserSmoke`, `enablePreApplyCheckpoint` — confirm current defaults and gating logic.
+- `api-gateway` execute controller and `AIExecutionRequest` type �X confirm whether `harnessVersion` is accepted, ignored, or absent.
+- `QueueService.enqueueExecution()` and job payload construction �X confirm whether `harnessVersion` is forwarded or dropped.
+- `ai-service` `WorkerProcessor` job data contract �X confirm the `harnessVersion` field definition and the harness/plain branch condition.
+- Agent Harness config gates: `enableToolLoop`, `enableBrowserSmoke`, `enablePreApplyCheckpoint` �X confirm current defaults and gating logic.
 
-**Decision gate — determine which wiring strategy to recommend:**
+**Decision gate �X determine which wiring strategy to recommend:**
 1. Accept `harnessVersion` from `POST /api/ai/execute` request body with explicit validation (whitelist, auth-scoped, or role-scoped).
 2. Default `harnessVersion` server-side for specific users or environments (environment variable / feature flag).
 3. Expose `harnessVersion` only on a separate internal/admin validation endpoint, not the main execute route.
@@ -22478,7 +22478,7 @@ Inspect and decide the safest wiring strategy for `harnessVersion` through the A
 
 ---
 
-### Review Acceptance Criteria — VERIFIED
+### Review Acceptance Criteria �X VERIFIED
 
 - [x] Current `harnessVersion` path confirmed in source.
 - [x] Queue payload gap confirmed or disproven.
@@ -22495,18 +22495,18 @@ Inspect and decide the safest wiring strategy for `harnessVersion` through the A
 ### Review Summary
 
 **Key findings:**
-1. `AIExecutionRequest` does not include `harnessVersion` — field is entirely absent from public request type.
+1. `AIExecutionRequest` does not include `harnessVersion` �X field is entirely absent from public request type.
 2. `AIExecutionController` explicitly constructs the BullMQ job payload and does not forward `harnessVersion`.
 3. `QueueService.enqueueExecution(jobData: any)` would accept and pass through the field if provided by the controller.
-4. Consumer-side `AiExecutionJob` already includes `harnessVersion?: string` — ready to receive.
+4. Consumer-side `AiExecutionJob` already includes `harnessVersion?: string` �X ready to receive.
 5. `WorkerProcessor` already branches on `job.data.harnessVersion === 'v1' && DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop`.
-6. `enableToolLoop` defaults `false` — harness loop does not fire even if `harnessVersion` were wired.
-7. `enableBrowserSmoke` defaults `false` — browser automation is safe.
-8. `enablePreApplyCheckpoint` defaults `true` — protective default maintained.
+6. `enableToolLoop` defaults `false` �X harness loop does not fire even if `harnessVersion` were wired.
+7. `enableBrowserSmoke` defaults `false` �X browser automation is safe.
+8. `enablePreApplyCheckpoint` defaults `true` �X protective default maintained.
 9. **Gap:** Producer side (api-gateway) is unwired. Consumer side (ai-service) is ready.
 10. Double gate (`harnessVersion === 'v1'` AND `enableToolLoop === true`) means wiring alone does not activate harness execution.
 
-**Final recommendation:** Strategy A — add optional public request body field `harnessVersion?: 'v1'` with controller allow-list validation. `undefined` and `'v1'` accepted; anything else returns `HTTP 400`.
+**Final recommendation:** Strategy A �X add optional public request body field `harnessVersion?: 'v1'` with controller allow-list validation. `undefined` and `'v1'` accepted; anything else returns `HTTP 400`.
 
 ---
 
@@ -22514,13 +22514,13 @@ Inspect and decide the safest wiring strategy for `harnessVersion` through the A
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05C1.
 
-**Next step:** Register AGENT-HARNESS-05C2 — Harness Version API-to-Queue Wiring (registration only; no implementation during registration step).
+**Next step:** Register AGENT-HARNESS-05C2 �X Harness Version API-to-Queue Wiring (registration only; no implementation during registration step).
 
-> LOCKED — do not modify this task entry.
+> LOCKED �X do not modify this task entry.
 
 ---
 
-## AGENT-HARNESS-05C2 — Harness Version API-to-Queue Wiring
+## AGENT-HARNESS-05C2 �X Harness Version API-to-Queue Wiring
 
 **Task ID:** AGENT-HARNESS-05C2
 **Family:** AGENT-HARNESS
@@ -22532,7 +22532,7 @@ Inspect and decide the safest wiring strategy for `harnessVersion` through the A
 **Nature:** IMPLEMENTATION
 **Risk:** Low-Medium
 **Depends on:**
-- AGENT-HARNESS-05C1 — COMPLETE and LOCKED (harnessVersion gap reviewed; Strategy A selected)
+- AGENT-HARNESS-05C1 �X COMPLETE and LOCKED (harnessVersion gap reviewed; Strategy A selected)
 
 ---
 
@@ -22545,7 +22545,7 @@ AGENT-HARNESS-05C1 confirmed the producer/consumer gap:
 
 Double gate confirmed safe: wiring `harnessVersion` alone does not activate the Agent Harness loop because `enableToolLoop` defaults `false`.
 
-**Approved strategy:** Strategy A from 05C1 — add optional `harnessVersion?: 'v1'` to the public request body with explicit allow-list validation in the controller.
+**Approved strategy:** Strategy A from 05C1 �X add optional `harnessVersion?: 'v1'` to the public request body with explicit allow-list validation in the controller.
 
 ---
 
@@ -22558,15 +22558,15 @@ Wire `harnessVersion` from `POST /api/ai/execute` request body through `AIExecut
 ### Implementation Scope
 
 **Files changed:**
-1. `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\clients\ai-service-http.client.ts` — added `harnessVersion?: 'v1'` to `AIExecutionRequest` interface.
-2. `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\ai\ai-execution.controller.ts` — added allow-list validation (`undefined` | `'v1'`; anything else rejected with HTTP 400) and conditional spread forwarding into `QueueService.enqueueExecution()` payload.
-3. `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\ai\ai-execution.controller.spec.ts` — added describe block `AIExecutionController — harnessVersion wiring (AGENT-HARNESS-05C2)` with 5 targeted tests.
+1. `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\clients\ai-service-http.client.ts` �X added `harnessVersion?: 'v1'` to `AIExecutionRequest` interface.
+2. `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\ai\ai-execution.controller.ts` �X added allow-list validation (`undefined` | `'v1'`; anything else rejected with HTTP 400) and conditional spread forwarding into `QueueService.enqueueExecution()` payload.
+3. `C:\Users\knlee\aiSandBox2026B\services\api-gateway\src\ai\ai-execution.controller.spec.ts` �X added describe block `AIExecutionController �X harnessVersion wiring (AGENT-HARNESS-05C2)` with 5 targeted tests.
 
 **Files unchanged:**
-- `ai-service` — no changes.
-- `WorkerProcessor` — no changes.
-- `DEFAULT_AGENT_HARNESS_CONFIG_V1` — no changes.
-- All frontend, database, Docker, `.env`, and package files — no changes.
+- `ai-service` �X no changes.
+- `WorkerProcessor` �X no changes.
+- `DEFAULT_AGENT_HARNESS_CONFIG_V1` �X no changes.
+- All frontend, database, Docker, `.env`, and package files �X no changes.
 
 ---
 
@@ -22576,7 +22576,7 @@ Wire `harnessVersion` from `POST /api/ai/execute` request body through `AIExecut
 - Added allow-list validation in `AIExecutionController.execute()` after 05B9 `sessionId` UUID check and before any ledger write or queue enqueue.
 - Invalid `harnessVersion` throws `BadRequestException` (HTTP 400) before side effects.
 - Forwarded `harnessVersion` into queue payload via conditional spread: omitted when `undefined`; included only when `=== 'v1'`.
-- Validation order preserved: sessionId → harnessVersion → idempotency → provider → ledger → queue.
+- Validation order preserved: sessionId �� harnessVersion �� idempotency �� provider �� ledger �� queue.
 
 ---
 
@@ -22587,17 +22587,17 @@ Wire `harnessVersion` from `POST /api/ai/execute` request body through `AIExecut
 npx jest --no-cache --testPathPatterns="ai-execution.controller.spec" --verbose
 ```
 - 9 passed (05B9 + 05C2 new tests)
-- 4 failed — pre-existing `QueueService` DI baseline (since 05B8); not introduced by 05C2
+- 4 failed �X pre-existing `QueueService` DI baseline (since 05B8); not introduced by 05C2
 
 **Build:**
 ```
 npm run build
 ```
-- PASS — exit code 0, clean TypeScript compilation.
+- PASS �X exit code 0, clean TypeScript compilation.
 
 **Lint:** No errors on changed files.
 
-**Final verdict: PASS** — new 05C2 tests pass; 4 pre-existing legacy DI failures unchanged; build clean.
+**Final verdict: PASS** �X new 05C2 tests pass; 4 pre-existing legacy DI failures unchanged; build clean.
 
 ---
 
@@ -22640,13 +22640,13 @@ npm run build
 
 **Checkpoint:** docs/AGENT-HARNESS-05C2-CHECKPOINT.md
 
-**Next recommended task:** Register AGENT-HARNESS-05C3 — Harness Version Runtime Validation with `enableToolLoop` still `false`, after Keith approval.
+**Next recommended task:** Register AGENT-HARNESS-05C3 �X Harness Version Runtime Validation with `enableToolLoop` still `false`, after Keith approval.
 
-> LOCKED — do not modify this task entry.
+> LOCKED �X do not modify this task entry.
 
 ---
 
-## AGENT-HARNESS-05C3 — Harness Version Runtime Validation
+## AGENT-HARNESS-05C3 �X Harness Version Runtime Validation
 
 **Task ID:** AGENT-HARNESS-05C3
 **Family:** AGENT-HARNESS
@@ -22658,12 +22658,12 @@ npm run build
 **Nature:** RUNTIME VALIDATION / API-TO-QUEUE PROPAGATION / xAI / APPROVAL REQUIRED
 **Risk:** Medium
 **Depends on:**
-- AGENT-HARNESS-05C1 — COMPLETE and LOCKED (architecture review selected public optional harnessVersion with strict allow-list validation)
-- AGENT-HARNESS-05C2 — COMPLETE and LOCKED (harnessVersion API-to-queue wiring implemented and statically validated)
-- AGENT-HARNESS-05C3A — COMPLETE and LOCKED (worker harness route observability event added; resolved observability gap blocking 05C3 runtime validation)
-- AGENT-HARNESS-05B7 — COMPLETE and LOCKED (production xAI provider/model execution path validated)
-- AGENT-HARNESS-05B8 — COMPLETE and LOCKED (seed login password hashes corrected)
-- AGENT-HARNESS-05B9 — COMPLETE and LOCKED (sessionId UUID boundary validation implemented)
+- AGENT-HARNESS-05C1 �X COMPLETE and LOCKED (architecture review selected public optional harnessVersion with strict allow-list validation)
+- AGENT-HARNESS-05C2 �X COMPLETE and LOCKED (harnessVersion API-to-queue wiring implemented and statically validated)
+- AGENT-HARNESS-05C3A �X COMPLETE and LOCKED (worker harness route observability event added; resolved observability gap blocking 05C3 runtime validation)
+- AGENT-HARNESS-05B7 �X COMPLETE and LOCKED (production xAI provider/model execution path validated)
+- AGENT-HARNESS-05B8 �X COMPLETE and LOCKED (seed login password hashes corrected)
+- AGENT-HARNESS-05B9 �X COMPLETE and LOCKED (sessionId UUID boundary validation implemented)
 
 ---
 
@@ -22799,7 +22799,7 @@ Prove via runtime validation that:
 - [x] Status is ACTIVE.
 - [x] Dependencies through AGENT-HARNESS-05C2 are documented.
 - [x] xAI-only provider restriction is documented.
-- [x] `enableToolLoop` and `enableBrowserSmoke` must remain false — documented.
+- [x] `enableToolLoop` and `enableBrowserSmoke` must remain false �X documented.
 - [x] Existing-observability requirement is documented.
 - [x] Explicit runtime approval gate is documented.
 - [x] No source/runtime/test/package/Docker/frontend/database files are modified.
@@ -22832,7 +22832,7 @@ Prove via runtime validation that:
 
 ### Deployment Summary
 
-- Existing api-gateway image did not contain 05C2 harnessVersion wiring — rebuilt and recreated api-gateway only.
+- Existing api-gateway image did not contain 05C2 harnessVersion wiring �X rebuilt and recreated api-gateway only.
 - Rebuilt and recreated ai-service only to deploy 05C3A `agent_harness.route_evaluated` event.
 - No other service was rebuilt or restarted.
 - All eight production services remained running throughout.
@@ -22888,13 +22888,13 @@ Exactly one matching route event confirmed for this executionId.
 
 **Checkpoint:** docs/AGENT-HARNESS-05C3-CHECKPOINT.md
 
-**Next recommended step:** Register AGENT-HARNESS-05C4 — Controlled Harness Loop Activation Readiness Review, registration only after Keith approval.
+**Next recommended step:** Register AGENT-HARNESS-05C4 �X Controlled Harness Loop Activation Readiness Review, registration only after Keith approval.
 
-> LOCKED — AGENT-HARNESS-05C3 is COMPLETE and LOCKED. Do not modify this entry.
+> LOCKED �X AGENT-HARNESS-05C3 is COMPLETE and LOCKED. Do not modify this entry.
 
 ---
 
-## AGENT-HARNESS-05C3A — Worker Harness Route Observability
+## AGENT-HARNESS-05C3A �X Worker Harness Route Observability
 
 **Task ID:** AGENT-HARNESS-05C3A
 **Family:** AGENT-HARNESS
@@ -22906,8 +22906,8 @@ Exactly one matching route event confirmed for this executionId.
 **Nature:** BACKEND OBSERVABILITY / WORKER ROUTING / NO BEHAVIOR CHANGE
 **Risk:** Low
 **Depends on:**
-- AGENT-HARNESS-05C2 — COMPLETE and LOCKED (harnessVersion API-to-queue wiring implemented and statically validated)
-- AGENT-HARNESS-05C3 — ACTIVE (observability review selected Decision B: current runtime observability cannot directly prove harnessVersion reached WorkerProcessor or which route was selected)
+- AGENT-HARNESS-05C2 �X COMPLETE and LOCKED (harnessVersion API-to-queue wiring implemented and statically validated)
+- AGENT-HARNESS-05C3 �X ACTIVE (observability review selected Decision B: current runtime observability cannot directly prove harnessVersion reached WorkerProcessor or which route was selected)
 
 ---
 
@@ -23075,8 +23075,8 @@ Immediately before the harness routing condition:
 ### Implementation Summary
 
 **Files changed:**
-- `services/ai-service/src/worker/worker.processor.ts` — Added `useHarness` boolean (preserving exact double gate: `harnessVersion === 'v1' && enableToolLoop`); added `agent_harness.route_evaluated` structured event immediately before route selection; replaced inline condition with `if (useHarness)`.
-- `services/ai-service/src/worker/worker.processor.spec.ts` — Added five tests under `describe('Agent Harness 05C3A: route observability event')`.
+- `services/ai-service/src/worker/worker.processor.ts` �X Added `useHarness` boolean (preserving exact double gate: `harnessVersion === 'v1' && enableToolLoop`); added `agent_harness.route_evaluated` structured event immediately before route selection; replaced inline condition with `if (useHarness)`.
+- `services/ai-service/src/worker/worker.processor.spec.ts` �X Added five tests under `describe('Agent Harness 05C3A: route observability event')`.
 
 **Event schema:** `{ event: 'agent_harness.route_evaluated', executionId, harnessVersion, enableToolLoop, selectedPath }`. No sensitive content logged.
 
@@ -23086,7 +23086,7 @@ Immediately before the harness routing condition:
 
 - Focused WorkerProcessor tests: **51 passed, 0 failed.**
 - Build (`npm run build`): **PASS, exit code 0.**
-- Full ai-service suite: **28 suites passed, 1 failed; 476 tests passed, 3 failed, 1 skipped.** The 3 failures are pre-existing `app.module.spec.ts` REDIS_URL environment failures — unrelated to 05C3A.
+- Full ai-service suite: **28 suites passed, 1 failed; 476 tests passed, 3 failed, 1 skipped.** The 3 failures are pre-existing `app.module.spec.ts` REDIS_URL environment failures �X unrelated to 05C3A.
 
 **Final verdict: PASS.**
 
@@ -23098,11 +23098,11 @@ Immediately before the harness routing condition:
 
 **Next step:** Resume AGENT-HARNESS-05C3 runtime validation after explicit Keith approval and deployment of the updated ai-service image.
 
-> LOCKED — do not modify this task entry.
+> LOCKED �X do not modify this task entry.
 
 ---
 
-## AGENT-HARNESS-05C4 — Controlled Harness Loop Activation Readiness Review
+## AGENT-HARNESS-05C4 �X Controlled Harness Loop Activation Readiness Review
 
 **Status:** COMPLETE and LOCKED
 **Registered:** 2026-06-29
@@ -23111,10 +23111,10 @@ Immediately before the harness routing condition:
 **Nature:** ARCHITECTURE / SECURITY / FEATURE-GATE REVIEW / INVESTIGATION ONLY
 **Risk:** High
 **Depends on:**
-- AGENT-HARNESS-05C1 — COMPLETE and LOCKED (selected optional public harnessVersion v1 wiring with a disabled server-side gate)
-- AGENT-HARNESS-05C2 — COMPLETE and LOCKED (harnessVersion API-to-queue wiring implemented)
-- AGENT-HARNESS-05C3A — COMPLETE and LOCKED (worker route observability implemented)
-- AGENT-HARNESS-05C3 — COMPLETE and LOCKED (production runtime confirmed harnessVersion v1 reaches WorkerProcessor while enableToolLoop false selects the plain path)
+- AGENT-HARNESS-05C1 �X COMPLETE and LOCKED (selected optional public harnessVersion v1 wiring with a disabled server-side gate)
+- AGENT-HARNESS-05C2 �X COMPLETE and LOCKED (harnessVersion API-to-queue wiring implemented)
+- AGENT-HARNESS-05C3A �X COMPLETE and LOCKED (worker route observability implemented)
+- AGENT-HARNESS-05C3 �X COMPLETE and LOCKED (production runtime confirmed harnessVersion v1 reaches WorkerProcessor while enableToolLoop false selects the plain path)
 - All prerequisite Agent Harness tool, validation, checkpoint, browser-smoke, and model-adapter slices recorded in the existing task ledgers
 
 ---
@@ -23305,7 +23305,7 @@ Define separate bounded slices for:
 - [x] xAI tool-use compatibility assessed.
 - [x] Iteration, timeout, cancellation, and output bounds assessed.
 - [x] Runtime audit/observability gaps identified.
-- [x] Activation strategies A–E compared.
+- [x] Activation strategies A�VE compared.
 - [x] One controlled activation strategy recommended.
 - [x] Required prerequisite implementation slices identified.
 - [x] Read-only and mutating validations separated where appropriate.
@@ -23318,16 +23318,16 @@ Define separate bounded slices for:
 
 ### Final Verdict
 
-**NOT READY** — prerequisite implementation required before any harness activation.
+**NOT READY** �X prerequisite implementation required before any harness activation.
 
 ---
 
 ### Blocker and High-Severity Summary
 
 **Critical Blockers:**
-1. Session ownership not enforced on `POST /api/ai/execute` — cross-session harness dispatch possible.
-2. `requiresApproval` is metadata-only — no runtime approval gate; mutating tools dispatch without confirmation.
-3. `XAIAdapter` does not implement `executeWithTools` or tool-call parsing — xAI harness execution fails at runtime.
+1. Session ownership not enforced on `POST /api/ai/execute` �X cross-session harness dispatch possible.
+2. `requiresApproval` is metadata-only �X no runtime approval gate; mutating tools dispatch without confirmation.
+3. `XAIAdapter` does not implement `executeWithTools` or tool-call parsing �X xAI harness execution fails at runtime.
 4. `AbortSignal` not propagated through tool HTTP handlers; `toolTimeoutMs` unused; in-flight requests outlive the worker watchdog.
 
 **High-Severity Findings:**
@@ -23341,7 +23341,7 @@ Define separate bounded slices for:
 
 ### Recommended Strategy
 
-**Strategy E — Keep disabled.** Resolve all prerequisite slices (05C5–05C10) before any activation. First future activation must be Strategy A: read-only canary with only `read_file` and `list_files`. Mutating tools and `browser_smoke` remain later, separately approved phases.
+**Strategy E �X Keep disabled.** Resolve all prerequisite slices (05C5�V05C10) before any activation. First future activation must be Strategy A: read-only canary with only `read_file` and `list_files`. Mutating tools and `browser_smoke` remain later, separately approved phases.
 
 ---
 
@@ -23368,7 +23368,7 @@ Define separate bounded slices for:
 
 - Current gate: source change, image rebuild, container recreation.
 - Future environment gate (after 05C6): set env var false and recreate ai-service.
-- **`docker compose restart` does NOT apply changed environment configuration** — container recreation is required.
+- **`docker compose restart` does NOT apply changed environment configuration** �X container recreation is required.
 - Required recreation pattern: `docker compose up -d --no-deps --force-recreate ai-service`
 - Active jobs cannot be assumed to stop until process termination because in-flight tool handler HTTP requests do not receive `AbortSignal` (mitigated by 05C8).
 
@@ -23391,15 +23391,15 @@ Define separate bounded slices for:
 
 ### Next Step
 
-Register **AGENT-HARNESS-05C5 — Session Ownership Enforcement**, registration only.
+Register **AGENT-HARNESS-05C5 �X Session Ownership Enforcement**, registration only.
 
 ---
 
-> LOCKED — AGENT-HARNESS-05C4 is COMPLETE and LOCKED. Do not modify this entry.
+> LOCKED �X AGENT-HARNESS-05C4 is COMPLETE and LOCKED. Do not modify this entry.
 
 ---
 
-## AGENT-HARNESS-05C5 — Session Ownership Enforcement
+## AGENT-HARNESS-05C5 �X Session Ownership Enforcement
 
 **Status:** COMPLETE and LOCKED
 **Registered:** 2026-06-29
@@ -23408,7 +23408,7 @@ Register **AGENT-HARNESS-05C5 — Session Ownership Enforcement**, registration 
 **Nature:** SECURITY FIX / API GATEWAY / AUTHORIZATION / CROSS-SESSION ISOLATION
 **Risk:** High
 **Depends on:**
-- AGENT-HARNESS-05C4 — COMPLETE and LOCKED (readiness review; verdict NOT READY; prerequisite slices 05C5–05C16 identified)
+- AGENT-HARNESS-05C4 �X COMPLETE and LOCKED (readiness review; verdict NOT READY; prerequisite slices 05C5�V05C16 identified)
 
 ---
 
@@ -23616,7 +23616,7 @@ SessionService/entity changes should occur only if inspection proves a small hel
 - Ownership check inserted as step 2 in the execution path: after UUID validation, before idempotency, enrichment, ledger write, and BullMQ enqueue.
 - Missing session and cross-user mismatch both return identical `NotFoundException`: `Session with ID <sessionId> not found`.
 - No bypass for `isInternal`, admin, static API-key, or `harnessVersion`.
-- Static fallback API keys use synthetic non-UUID user IDs and cannot own real UUID-backed sessions — they receive the same HTTP 404. This is correct and expected.
+- Static fallback API keys use synthetic non-UUID user IDs and cannot own real UUID-backed sessions �X they receive the same HTTP 404. This is correct and expected.
 - Check applies identically to plain and `harnessVersion: 'v1'` requests.
 
 ### Validation Summary
@@ -23639,11 +23639,11 @@ Static API-key authentication is unchanged. Static fallback keys use synthetic n
 
 **Checkpoint:** `docs/AGENT-HARNESS-05C5-CHECKPOINT.md`
 
-**Next Step:** Register AGENT-HARNESS-05C5A — Session Ownership Runtime Validation, registration only, before proceeding to 05C6.
+**Next Step:** Register AGENT-HARNESS-05C5A �X Session Ownership Runtime Validation, registration only, before proceeding to 05C6.
 
 ---
 
-> LOCKED — AGENT-HARNESS-05C5 is COMPLETE and LOCKED. Do not modify this entry.
+> LOCKED �X AGENT-HARNESS-05C5 is COMPLETE and LOCKED. Do not modify this entry.
 
 ---
 
@@ -23651,7 +23651,7 @@ Static API-key authentication is unchanged. Static fallback keys use synthetic n
 
 ---
 
-## AGENT-HARNESS-05C5A — Session Ownership Runtime Validation
+## AGENT-HARNESS-05C5A �X Session Ownership Runtime Validation
 
 **Status:** COMPLETE and LOCKED
 **Registered:** 2026-06-29
@@ -23660,8 +23660,8 @@ Static API-key authentication is unchanged. Static fallback keys use synthetic n
 **Nature:** PRODUCTION-COMPOSE DEPLOYMENT / SECURITY BOUNDARY VALIDATION / EXPLICIT APPROVAL REQUIRED
 **Risk:** Medium
 **Depends on:**
-- AGENT-HARNESS-05C4 — COMPLETE and LOCKED (identified missing session ownership as a critical activation blocker)
-- AGENT-HARNESS-05C5 — COMPLETE and LOCKED (ownership enforcement implemented and statically validated; `session.userId === identity.userId`; missing and mismatched sessions return identical HTTP 404; no isInternal/admin/API-key bypass; production-compose api-gateway not yet rebuilt with 05C5; `enableToolLoop` remains false; `enableBrowserSmoke` remains false)
+- AGENT-HARNESS-05C4 �X COMPLETE and LOCKED (identified missing session ownership as a critical activation blocker)
+- AGENT-HARNESS-05C5 �X COMPLETE and LOCKED (ownership enforcement implemented and statically validated; `session.userId === identity.userId`; missing and mismatched sessions return identical HTTP 404; no isInternal/admin/API-key bypass; production-compose api-gateway not yet rebuilt with 05C5; `enableToolLoop` remains false; `enableBrowserSmoke` remains false)
 
 ---
 
@@ -23719,7 +23719,7 @@ Deploy the 05C5 api-gateway change into the local production-compose stack and v
 
 ### Candidate Runtime Scenarios
 
-**Scenario A — Owner success:**
+**Scenario A �X Owner success:**
 - Authenticate as User A through the normal login endpoint.
 - Use a session whose `Session.userId` equals User A's UUID.
 - Submit one minimal xAI execution.
@@ -23727,7 +23727,7 @@ Deploy the 05C5 api-gateway change into the local production-compose stack and v
 - Expect HTTP 202 and completed xAI result.
 - Expect exactly one `usage_records` row.
 
-**Scenario B — Cross-user rejection:**
+**Scenario B �X Cross-user rejection:**
 - Remain authenticated as User A.
 - Submit using a session owned by User B.
 - A valid UUID session must actually exist.
@@ -23736,14 +23736,14 @@ Deploy the 05C5 api-gateway change into the local production-compose stack and v
 - Expect no new BullMQ job.
 - Expect no provider call.
 
-**Scenario C — Missing-session equivalence:**
+**Scenario C �X Missing-session equivalence:**
 - Authenticate as User A.
 - Generate a valid UUID not present in sessions.
 - Submit the same bounded request.
 - Expect the identical HTTP status and message as Scenario B.
 - Expect no ledger or queue side effects.
 
-**Scenario D — Harness-version rejection boundary:**
+**Scenario D �X Harness-version rejection boundary:**
 - Submit a cross-user request with `harnessVersion: 'v1'`.
 - Expect rejection before queueing.
 - This scenario must not activate the harness because both gates remain false.
@@ -23942,7 +23942,7 @@ Exactly one route event. `enableToolLoop` remained false. `enableBrowserSmoke` r
 
 ### Final Verdict
 
-**PASS** — All eight objective criteria satisfied. No bypass of the ownership boundary observed. 05C5 ownership enforcement confirmed live in the production-compose stack.
+**PASS** �X All eight objective criteria satisfied. No bypass of the ownership boundary observed. 05C5 ownership enforcement confirmed live in the production-compose stack.
 
 ---
 
@@ -23950,7 +23950,7 @@ Exactly one route event. `enableToolLoop` remained false. `enableBrowserSmoke` r
 
 **Lock Notice:** This task is COMPLETE and LOCKED. Do not modify any field, criterion, or summary. Documentation correction requires explicit approval.
 
-**Next Step:** Register AGENT-HARNESS-05C6 — Environment-Backed Feature Gate, registration only.
+**Next Step:** Register AGENT-HARNESS-05C6 �X Environment-Backed Feature Gate, registration only.
 
 ---
 
@@ -23958,7 +23958,7 @@ Exactly one route event. `enableToolLoop` remained false. `enableBrowserSmoke` r
 
 ---
 
-## AGENT-HARNESS-05C6 — Environment-Backed Feature Gate
+## AGENT-HARNESS-05C6 �X Environment-Backed Feature Gate
 
 **Status:** COMPLETE and LOCKED
 **Priority:** High
@@ -23971,9 +23971,9 @@ Exactly one route event. `enableToolLoop` remained false. `enableBrowserSmoke` r
 
 ### Dependencies
 
-- AGENT-HARNESS-05C4 COMPLETE and LOCKED — determined the compile-time tool-loop gate is not operationally safe.
-- AGENT-HARNESS-05C5 COMPLETE and LOCKED — session ownership enforcement implemented.
-- AGENT-HARNESS-05C5A COMPLETE and LOCKED — ownership boundary deployed and validated.
+- AGENT-HARNESS-05C4 COMPLETE and LOCKED �X determined the compile-time tool-loop gate is not operationally safe.
+- AGENT-HARNESS-05C5 COMPLETE and LOCKED �X session ownership enforcement implemented.
+- AGENT-HARNESS-05C5A COMPLETE and LOCKED �X ownership boundary deployed and validated.
 - AGENT-HARNESS-05C7 Harness Identity Entitlement is not yet implemented.
 - `enableToolLoop` remains `false`.
 - `enableBrowserSmoke` remains `false`.
@@ -24037,10 +24037,10 @@ AGENT_HARNESS_ENABLE_TOOL_LOOP
 ```
 
 Secure semantics:
-- Undefined → `false`.
-- Empty → `false` or invalid (to be decided explicitly during review).
-- Exact approved `"true"` representation → `true`.
-- Exact approved `"false"` representation → `false`.
+- Undefined �� `false`.
+- Empty �� `false` or invalid (to be decided explicitly during review).
+- Exact approved `"true"` representation �� `true`.
+- Exact approved `"false"` representation �� `false`.
 - Unknown values must never enable the loop.
 - Invalid values must either:
   - (A) fail startup clearly, or
@@ -24115,9 +24115,9 @@ Only files proven necessary by the review should change.
 
 ### Expected Tests
 
-- A. Variable undefined → `enableToolLoop` false.
-- B. Explicit `"false"` → `false`.
-- C. Explicit `"true"` → `true` in isolated configuration-factory testing only.
+- A. Variable undefined �� `enableToolLoop` false.
+- B. Explicit `"false"` �� `false`.
+- C. Explicit `"true"` �� `true` in isolated configuration-factory testing only.
 - D. Empty value behavior documented and tested.
 - E. Whitespace behavior documented and tested.
 - F. Casing behavior documented and tested.
@@ -24222,8 +24222,8 @@ Only files proven necessary by the review should change.
 
 ### Implementation Summary
 
-- Added `parseStrictBooleanEnv(variableName, raw, defaultValue)` — strict parser; undefined/null/empty → defaultValue; "true"/"TRUE"/" true " → true; "false"/"FALSE"/" false " → false; any other non-empty value throws (error identifies variable name and accepted values; does not include raw value).
-- Added `createAgentHarnessConfigV1(env)` — factory receiving environment object, evaluated once at module import.
+- Added `parseStrictBooleanEnv(variableName, raw, defaultValue)` �X strict parser; undefined/null/empty �� defaultValue; "true"/"TRUE"/" true " �� true; "false"/"FALSE"/" false " �� false; any other non-empty value throws (error identifies variable name and accepted values; does not include raw value).
+- Added `createAgentHarnessConfigV1(env)` �X factory receiving environment object, evaluated once at module import.
 - `DEFAULT_AGENT_HARNESS_CONFIG_V1` export shape preserved; value now produced by `createAgentHarnessConfigV1(process.env)`.
 - `WorkerProcessor` required no code changes.
 - `docker-compose.prod.yml` ai-service environment block: `AGENT_HARNESS_ENABLE_TOOL_LOOP: ${AGENT_HARNESS_ENABLE_TOOL_LOOP:-false}`.
@@ -24251,7 +24251,7 @@ Only files proven necessary by the review should change.
 
 ### Next Recommended Task
 
-Register AGENT-HARNESS-05C6A — Environment Gate Runtime Validation, registration only. The validation should rebuild/recreate ai-service with the default-false gate, verify the compiled config resolves `enableToolLoop: false`, confirm `route_evaluated` reports `false`/`plain`, and must not set `AGENT_HARNESS_ENABLE_TOOL_LOOP=true`.
+Register AGENT-HARNESS-05C6A �X Environment Gate Runtime Validation, registration only. The validation should rebuild/recreate ai-service with the default-false gate, verify the compiled config resolves `enableToolLoop: false`, confirm `route_evaluated` reports `false`/`plain`, and must not set `AGENT_HARNESS_ENABLE_TOOL_LOOP=true`.
 
 ---
 
@@ -24259,11 +24259,11 @@ Register AGENT-HARNESS-05C6A — Environment Gate Runtime Validation, registrati
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05C6.
 
-**COMPLETE and LOCKED — 2026-06-30. Do not modify this entry.**
+**COMPLETE and LOCKED �X 2026-06-30. Do not modify this entry.**
 
 ---
 
-## AGENT-HARNESS-05C6A — Environment Gate Runtime Validation
+## AGENT-HARNESS-05C6A �X Environment Gate Runtime Validation
 
 **Status:** COMPLETE and LOCKED
 **Completed:** 2026-07-01
@@ -24271,10 +24271,10 @@ Register AGENT-HARNESS-05C6A — Environment Gate Runtime Validation, registrati
 **Risk:** Medium
 **Nature:** Runtime validation / deployment verification only
 **Dependencies:**
-- AGENT-HARNESS-05C4 — COMPLETE and LOCKED
-- AGENT-HARNESS-05C5 — COMPLETE and LOCKED
-- AGENT-HARNESS-05C5A — COMPLETE and LOCKED
-- AGENT-HARNESS-05C6 — COMPLETE and LOCKED
+- AGENT-HARNESS-05C4 �X COMPLETE and LOCKED
+- AGENT-HARNESS-05C5 �X COMPLETE and LOCKED
+- AGENT-HARNESS-05C5A �X COMPLETE and LOCKED
+- AGENT-HARNESS-05C6 �X COMPLETE and LOCKED
 
 ---
 
@@ -24292,13 +24292,13 @@ AGENT-HARNESS-05C6 implemented an environment-backed feature gate `AGENT_HARNESS
 
 ### Scope Executed
 
-**Choice B only — Scenario A + Scenario B + Scenario D.**
+**Choice B only �X Scenario A + Scenario B + Scenario D.**
 
 Scenario C was NOT executed and remains separately approval-gated. It requires explicit Keith approval before execution in any future validation cycle.
 
 ---
 
-### Deployment Verification Summary (Scenario A — PASS)
+### Deployment Verification Summary (Scenario A �X PASS)
 
 - All 8 services confirmed running before validation.
 - ai-service rebuild: exit code 0, TypeScript clean.
@@ -24313,12 +24313,12 @@ Scenario C was NOT executed and remains separately approval-gated. It requires e
 
 ---
 
-### Plain Owner Execution Summary (Scenario B — PASS)
+### Plain Owner Execution Summary (Scenario B �X PASS)
 
 - Task-created session: `247865d7-dff6-47e2-b553-a941670dd3b2`
 - `conversationId`: `ab557637-2475-4fac-a092-40c1231f8793`
 - `executionId`: `bc5ba397-4b97-4e22-8e67-1e8ab66020c3`
-- Submit/poll: HTTP 202 → queued → completed
+- Submit/poll: HTTP 202 �� queued �� completed
 - Provider: xai | Model: grok-4.3 | tokensUsed: 500
 - Output: `05C6A environment gate validation passed`
 - `fileActions`: `[]` (empty)
@@ -24347,7 +24347,7 @@ Scenario C was NOT executed and remains separately approval-gated. It requires e
 
 ---
 
-### Final Health and Cleanup Summary (Scenario D — PASS)
+### Final Health and Cleanup Summary (Scenario D �X PASS)
 
 - Queue waiting: 0 | Queue active: 0 | Queue failed: 3 (unchanged from baseline, no new failures)
 - Task-created session `247865d7-dff6-47e2-b553-a941670dd3b2` terminated successfully
@@ -24391,11 +24391,11 @@ All executed scenarios (A, B, D) passed. The production ai-service is running 05
 
 ### Runtime Scenarios
 
-#### Scenario A — Deployment Verification — PASS (see above)
+#### Scenario A �X Deployment Verification �X PASS (see above)
 
-#### Scenario B — Plain Owner Execution — PASS (see above)
+#### Scenario B �X Plain Owner Execution �X PASS (see above)
 
-#### Scenario C — Optional v1 False-Gate Execution — NOT EXECUTED
+#### Scenario C �X Optional v1 False-Gate Execution �X NOT EXECUTED
 
 - **Only if explicitly approved by Keith in a future validation cycle. Not run in this cycle.**
 - Remains separately approval-gated.
@@ -24407,7 +24407,7 @@ All executed scenarios (A, B, D) passed. The production ai-service is running 05
   - `selectedPath: plain`
 - Confirm no tool loop activity, no file actions, no checkpoints, no browser_smoke.
 
-#### Scenario D — Final Health and Cleanup — PASS (see above)
+#### Scenario D �X Final Health and Cleanup �X PASS (see above)
 
 ---
 
@@ -24435,8 +24435,8 @@ All executed scenarios (A, B, D) passed. The production ai-service is running 05
 - [x] `AGENT_HARNESS_ENABLE_TOOL_LOOP` absent or false in container environment.
 - [x] Scenario B xAI execution completes successfully.
 - [x] `route_evaluated` event confirms `selectedPath: plain`, `enableToolLoop: false`, `harnessVersion: null`.
-- [x] Scenario C explicitly not executed — remains separately approval-gated (not required for Choice B completion).
-- [ ] If Scenario C run: `route_evaluated` confirms `selectedPath: plain` with `harnessVersion: "v1"`, no tool/harness activity. (NOT RUN — separately approval-gated)
+- [x] Scenario C explicitly not executed �X remains separately approval-gated (not required for Choice B completion).
+- [ ] If Scenario C run: `route_evaluated` confirms `selectedPath: plain` with `harnessVersion: "v1"`, no tool/harness activity. (NOT RUN �X separately approval-gated)
 - [x] Queue stable, no unexpected failures.
 - [x] No browser_smoke, checkpoint, file action, or tool dispatch observed.
 - [x] All services confirmed running after validation.
@@ -24452,17 +24452,17 @@ All executed scenarios (A, B, D) passed. The production ai-service is running 05
 
 ### Next Recommended Task
 
-Register AGENT-HARNESS-05C7 — Harness Identity Entitlement Gate, registration only.
+Register AGENT-HARNESS-05C7 �X Harness Identity Entitlement Gate, registration only.
 
 ---
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05C6A.
 
-COMPLETE and LOCKED — 2026-07-01. Do not modify this entry.
+COMPLETE and LOCKED �X 2026-07-01. Do not modify this entry.
 
 ---
 
-## AGENT-HARNESS-05C7 — Harness Identity Entitlement Gate
+## AGENT-HARNESS-05C7 �X Harness Identity Entitlement Gate
 
 **Status:** COMPLETE and LOCKED
 **Completed:** 2026-07-01
@@ -24474,11 +24474,11 @@ COMPLETE and LOCKED — 2026-07-01. Do not modify this entry.
 
 ### Dependencies
 
-- AGENT-HARNESS-05C4 — COMPLETE and LOCKED
-- AGENT-HARNESS-05C5 — COMPLETE and LOCKED
-- AGENT-HARNESS-05C5A — COMPLETE and LOCKED
-- AGENT-HARNESS-05C6 — COMPLETE and LOCKED
-- AGENT-HARNESS-05C6A — COMPLETE and LOCKED
+- AGENT-HARNESS-05C4 �X COMPLETE and LOCKED
+- AGENT-HARNESS-05C5 �X COMPLETE and LOCKED
+- AGENT-HARNESS-05C5A �X COMPLETE and LOCKED
+- AGENT-HARNESS-05C6 �X COMPLETE and LOCKED
+- AGENT-HARNESS-05C6A �X COMPLETE and LOCKED
 
 ---
 
@@ -24534,8 +24534,8 @@ Introduce an explicit harness entitlement signal on the authenticated identity.
 #### Gate Location
 - The entitlement check must execute inside `AIExecutionController` after session ownership validation (05C5) and before any ledger write or queue enqueue.
 - Gate sequence:
-  1. Session ownership check (05C5) — unchanged.
-  2. `harnessVersion` presence check — if `harnessVersion` is defined and not `"v1"`, return `BadRequest` (existing behavior).
+  1. Session ownership check (05C5) �X unchanged.
+  2. `harnessVersion` presence check �X if `harnessVersion` is defined and not `"v1"`, return `BadRequest` (existing behavior).
   3. **NEW: if `harnessVersion === "v1"`, check `identity.harnessEntitled === true`.**
   4. If not entitled: return `ForbiddenException` with a safe, non-leaking error message. No ledger write. No BullMQ job.
   5. If entitled: proceed to existing route/queue logic. `enableToolLoop` still governs path selection.
@@ -24557,19 +24557,19 @@ Introduce an explicit harness entitlement signal on the authenticated identity.
 
 ---
 
-### Scope — Files to Inspect Before Implementation
+### Scope �X Files to Inspect Before Implementation
 
-1. `services/api-gateway/src/auth/session-or-api-key.guard.ts` — Identity resolution entry point; where `harnessEntitled` must be set.
-2. `services/api-gateway/src/auth/api-key-auth.guard.ts` — API key identity construction; must propagate `harnessEntitled`.
-3. `services/api-gateway/src/auth/api-key.service.ts` — API key lookup and validation logic.
-4. `services/api-gateway/src/auth/api-key.config.ts` — Static/dev key config; may need `harnessEntitled` field.
-5. `services/api-gateway/src/auth/authorization.guard.ts` — Authorization guard; verify it does not incidentally gate or bypass entitlement.
-6. `services/api-gateway/src/ai/ai-execution.controller.ts` — Gate insertion point; where the entitlement check must be added.
-7. `services/api-gateway/src/clients/ai-service-http.client.ts` — Forwarded request shape; verify entitlement proof forwarding if required.
-8. `services/ai-service/src/queue/job.types.ts` — Job metadata; verify whether entitlement proof should be recorded in the job.
-9. `services/ai-service/src/worker/worker.processor.ts` — Worker; verify it does not need changes but confirm no bypass path exists.
-10. `docs/AGENT-HARNESS-05C4-CHECKPOINT.md` — Source of the HIGH finding driving this task.
-11. `docs/AGENT-HARNESS-05C6A-CHECKPOINT.md` — Most recent locked checkpoint; confirms current runtime state.
+1. `services/api-gateway/src/auth/session-or-api-key.guard.ts` �X Identity resolution entry point; where `harnessEntitled` must be set.
+2. `services/api-gateway/src/auth/api-key-auth.guard.ts` �X API key identity construction; must propagate `harnessEntitled`.
+3. `services/api-gateway/src/auth/api-key.service.ts` �X API key lookup and validation logic.
+4. `services/api-gateway/src/auth/api-key.config.ts` �X Static/dev key config; may need `harnessEntitled` field.
+5. `services/api-gateway/src/auth/authorization.guard.ts` �X Authorization guard; verify it does not incidentally gate or bypass entitlement.
+6. `services/api-gateway/src/ai/ai-execution.controller.ts` �X Gate insertion point; where the entitlement check must be added.
+7. `services/api-gateway/src/clients/ai-service-http.client.ts` �X Forwarded request shape; verify entitlement proof forwarding if required.
+8. `services/ai-service/src/queue/job.types.ts` �X Job metadata; verify whether entitlement proof should be recorded in the job.
+9. `services/ai-service/src/worker/worker.processor.ts` �X Worker; verify it does not need changes but confirm no bypass path exists.
+10. `docs/AGENT-HARNESS-05C4-CHECKPOINT.md` �X Source of the HIGH finding driving this task.
+11. `docs/AGENT-HARNESS-05C6A-CHECKPOINT.md` �X Most recent locked checkpoint; confirms current runtime state.
 
 ---
 
@@ -24598,14 +24598,14 @@ All of the following must hold after implementation:
 
 The following test scenarios must be covered:
 
-1. Non-entitled browser-session + no `harnessVersion` → succeeds (plain path unchanged).
-2. Non-entitled browser-session + `harnessVersion: "v1"` → `403 Forbidden`, no ledger write, no BullMQ job.
-3. `isInternal: true` but not harness-entitled + `harnessVersion: "v1"` → `403 Forbidden`, rejected before side effects.
-4. `ai:execute` scope but not harness-entitled + `harnessVersion: "v1"` → `403 Forbidden`, rejected before side effects.
-5. Explicitly harness-entitled identity + `harnessVersion: "v1"` → accepted and queued (plain path, `enableToolLoop: false`).
-6. Explicitly harness-entitled identity + no `harnessVersion` → plain path unchanged; no entitlement lookup required.
+1. Non-entitled browser-session + no `harnessVersion` �� succeeds (plain path unchanged).
+2. Non-entitled browser-session + `harnessVersion: "v1"` �� `403 Forbidden`, no ledger write, no BullMQ job.
+3. `isInternal: true` but not harness-entitled + `harnessVersion: "v1"` �� `403 Forbidden`, rejected before side effects.
+4. `ai:execute` scope but not harness-entitled + `harnessVersion: "v1"` �� `403 Forbidden`, rejected before side effects.
+5. Explicitly harness-entitled identity + `harnessVersion: "v1"` �� accepted and queued (plain path, `enableToolLoop: false`).
+6. Explicitly harness-entitled identity + no `harnessVersion` �� plain path unchanged; no entitlement lookup required.
 7. Session ownership mismatch still rejects at the correct boundary (05C5 invariant) with no side effects.
-8. Invalid `harnessVersion` (not `"v1"`) → `BadRequest` before entitlement lookup (existing behavior preserved).
+8. Invalid `harnessVersion` (not `"v1"`) �� `BadRequest` before entitlement lookup (existing behavior preserved).
 9. Rejection error response does not leak entitlement configuration, key names, or identity metadata.
 10. Existing 05B9, 05C2, 05C5 tests remain passing without modification.
 
@@ -24684,10 +24684,10 @@ The following test scenarios must be covered:
 ### Implementation Summary
 
 Files changed:
-1. `services/api-gateway/src/auth/api-key.config.ts` — Added `harnessEntitled?: boolean` to `ApiKeyIdentity`; added static harness test key (`test-harness-api-key`, scopes `["ai:execute", "ai:harness"]`, `harnessEntitled: true`).
-2. `services/api-gateway/src/auth/api-key-auth.guard.ts` — Maps database-backed API key scope `"ai:harness"` to `harnessEntitled: true`; browser-session defaults to `false`.
-3. `services/api-gateway/src/ai/ai-execution.controller.ts` — Added entitlement gate: rejects `harnessVersion: "v1"` requests unless `identity.harnessEntitled === true` with `ForbiddenException("Forbidden")` before any side effects.
-4. `services/api-gateway/src/ai/ai-execution.controller.spec.ts` — Added focused describe block `AIExecutionController — harness identity entitlement gate (AGENT-HARNESS-05C7)` with scenarios A–J; no-side-effect assertions for forbidden paths; updated existing 05C2 success path identity to `harnessEntitled: true`.
+1. `services/api-gateway/src/auth/api-key.config.ts` �X Added `harnessEntitled?: boolean` to `ApiKeyIdentity`; added static harness test key (`test-harness-api-key`, scopes `["ai:execute", "ai:harness"]`, `harnessEntitled: true`).
+2. `services/api-gateway/src/auth/api-key-auth.guard.ts` �X Maps database-backed API key scope `"ai:harness"` to `harnessEntitled: true`; browser-session defaults to `false`.
+3. `services/api-gateway/src/ai/ai-execution.controller.ts` �X Added entitlement gate: rejects `harnessVersion: "v1"` requests unless `identity.harnessEntitled === true` with `ForbiddenException("Forbidden")` before any side effects.
+4. `services/api-gateway/src/ai/ai-execution.controller.spec.ts` �X Added focused describe block `AIExecutionController �X harness identity entitlement gate (AGENT-HARNESS-05C7)` with scenarios A�VJ; no-side-effect assertions for forbidden paths; updated existing 05C2 success path identity to `harnessEntitled: true`.
 
 ### Entitlement Model Summary
 
@@ -24706,7 +24706,7 @@ Files changed:
 
 1. `sessionId` UUID validation (05B9)
 2. `harnessVersion` allow-list validation (05C2)
-3. Harness entitlement gate (05C7) — NEW
+3. Harness entitlement gate (05C7) �X NEW
 4. Session ownership check (05C5)
 5. Idempotency key validation/normalization
 6. Provider resolution
@@ -24730,7 +24730,7 @@ Legacy top-level describe block `AIExecutionController (Phase 18A + ...)` has 4 
 
 ### Next Recommended Task
 
-Register AGENT-HARNESS-05C7A — Harness Entitlement Runtime Validation, registration only.
+Register AGENT-HARNESS-05C7A �X Harness Entitlement Runtime Validation, registration only.
 
 ### Checkpoint Reference
 
@@ -24738,13 +24738,13 @@ Register AGENT-HARNESS-05C7A — Harness Entitlement Runtime Validation, registr
 
 ---
 
-**COMPLETE and LOCKED — 2026-07-01. Do not modify this entry.**
+**COMPLETE and LOCKED �X 2026-07-01. Do not modify this entry.**
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05C7.
 
 ---
 
-## AGENT-HARNESS-05C7A — Harness Entitlement Runtime Validation
+## AGENT-HARNESS-05C7A �X Harness Entitlement Runtime Validation
 
 **Status:** COMPLETE and LOCKED
 **Completed:** 2026-07-01
@@ -24754,23 +24754,23 @@ Register AGENT-HARNESS-05C7A — Harness Entitlement Runtime Validation, registr
 
 ### Dependencies
 
-- AGENT-HARNESS-05C4 — COMPLETE and LOCKED
-- AGENT-HARNESS-05C5 — COMPLETE and LOCKED
-- AGENT-HARNESS-05C5A — COMPLETE and LOCKED
-- AGENT-HARNESS-05C6 — COMPLETE and LOCKED
-- AGENT-HARNESS-05C6A — COMPLETE and LOCKED
-- AGENT-HARNESS-05C7 — COMPLETE and LOCKED
+- AGENT-HARNESS-05C4 �X COMPLETE and LOCKED
+- AGENT-HARNESS-05C5 �X COMPLETE and LOCKED
+- AGENT-HARNESS-05C5A �X COMPLETE and LOCKED
+- AGENT-HARNESS-05C6 �X COMPLETE and LOCKED
+- AGENT-HARNESS-05C6A �X COMPLETE and LOCKED
+- AGENT-HARNESS-05C7 �X COMPLETE and LOCKED
 
 ### Objective
 
-Runtime-validate AGENT-HARNESS-05C7 in production compose. Confirm that the harness identity entitlement gate operates correctly under live service conditions — non-entitled identities are rejected, explicitly entitled identities are accepted and routed to selectedPath: "plain", and no side effects (tool-dispatch, file action, checkpoint, browser_smoke) occur.
+Runtime-validate AGENT-HARNESS-05C7 in production compose. Confirm that the harness identity entitlement gate operates correctly under live service conditions �X non-entitled identities are rejected, explicitly entitled identities are accepted and routed to selectedPath: "plain", and no side effects (tool-dispatch, file action, checkpoint, browser_smoke) occur.
 
 ### Scope Executed
 
-**Choice B only — Scenarios A, B, C.**
+**Choice B only �X Scenarios A, B, C.**
 Scenario D was not executed. Entitled identity setup requires a supported DB-backed API key that cannot be created without raw DB mutation or an approved application flow. Scenario D is explicitly out of scope for 05C7A. If needed, register a separate task.
 
-### Deployment Verification Summary (Scenario A — PASS)
+### Deployment Verification Summary (Scenario A �X PASS)
 
 - All 8 services running before start.
 - Process-local PowerShell override: `AGENT_HARNESS_ENABLE_TOOL_LOOP=false` set before compose; restored in finally block.
@@ -24781,7 +24781,7 @@ Scenario D was not executed. Entitled identity setup requires a supported DB-bac
 - ai-service enableToolLoop: false. enableBrowserSmoke: false. AGENT_HARNESS_ENABLE_TOOL_LOOP env: false.
 - Queue baseline: waiting=0, active=0, failed=3. usage_records baseline: 4.
 
-### Plain Execution Summary (Scenario B — PASS)
+### Plain Execution Summary (Scenario B �X PASS)
 
 - User: demo@aisandbox.com (UUID: 1eb05cfa-af67-428a-bbec-a0ef0163b539)
 - Session: 660cf3ca-5498-4829-8f67-2c93e65a42eb
@@ -24789,15 +24789,15 @@ Scenario D was not executed. Entitled identity setup requires a supported DB-bac
 - executionId: ed3ec014-7cb1-4b38-a30c-bc7cd4d4c930
 - HTTP status: 202 Accepted. Execution status: completed. Provider: xai. Model: grok-4.3. tokensUsed: 510.
 - Output: `05C7A plain validation passed`. fileActions: [].
-- usage_records: 4 → 5 (+1). Queue failed: 3 (unchanged).
+- usage_records: 4 �� 5 (+1). Queue failed: 3 (unchanged).
 
-#### Exact route_evaluated Event — Scenario B
+#### Exact route_evaluated Event �X Scenario B
 
 ```json
 { "harnessVersion": null, "enableToolLoop": false, "selectedPath": "plain" }
 ```
 
-### v1 Rejection Summary (Scenario C — PASS)
+### v1 Rejection Summary (Scenario C �X PASS)
 
 - Same browser-session identity as Scenario B (isInternal: true, harnessEntitled: undefined / not set).
 - conversationId: 9d03ba9b-8a72-4e92-8a8d-a67ddd758279. harnessVersion: "v1".
@@ -24811,7 +24811,7 @@ Scenario D was not executed. Entitled identity setup requires a supported DB-bac
 - v1 request (Scenario C) was rejected HTTP 403 despite `isInternal: true`.
 - **isInternal does not bypass the entitlement gate.** Gate checks `identity.harnessEntitled !== true`. Rejection occurred before route_evaluated, BullMQ job, ledger row, or worker involvement.
 
-### Scenario D — NOT RUN / Out of Scope
+### Scenario D �X NOT RUN / Out of Scope
 
 Scenario D (explicitly entitled v1 acceptance) was not executed under AGENT-HARNESS-05C7A. Entitled v1 acceptance must not be marked complete under this task. Register a separate task if needed after LaunchGuard compatibility analysis.
 
@@ -24842,9 +24842,9 @@ Scenario D (explicitly entitled v1 acceptance) was not executed under AGENT-HARN
 - [x] Scenario B: plain execution returns HTTP 202 and completes; route event confirms harnessVersion: null, enableToolLoop: false, selectedPath: plain.
 - [x] Scenario C: v1 request returns HTTP 403 Forbidden; no executionId created; no usage_records row created; queue baseline unchanged; no route_evaluated event emitted.
 - [x] Scenario C: isInternal: true did not bypass the 403.
-- [ ] Scenario D: entitled identity is confirmed available through supported flow — NOT RUN / OUT OF SCOPE.
-- [ ] Scenario D: entitled v1 returns HTTP 202 and completes — NOT RUN / OUT OF SCOPE.
-- [ ] Scenario D: no tool-dispatch, file action, checkpoint, or browser_smoke — NOT RUN / OUT OF SCOPE.
+- [ ] Scenario D: entitled identity is confirmed available through supported flow �X NOT RUN / OUT OF SCOPE.
+- [ ] Scenario D: entitled v1 returns HTTP 202 and completes �X NOT RUN / OUT OF SCOPE.
+- [ ] Scenario D: no tool-dispatch, file action, checkpoint, or browser_smoke �X NOT RUN / OUT OF SCOPE.
 - [x] Cleanup: only task-created sessions terminated; all services running; queue stable.
 - [x] All executed stop conditions cleared without triggering.
 - [x] No source, test, package, Docker, frontend, database, ai-service, schema, or environment files changed.
@@ -24858,19 +24858,19 @@ docs/AGENT-HARNESS-05C7A-CHECKPOINT.md
 
 ### Next Recommended Task
 
-Register AGENT-HARNESS-05C8 — Execution-Bound Hardening, registration only.
+Register AGENT-HARNESS-05C8 �X Execution-Bound Hardening, registration only.
 
 ---
 
-**COMPLETE and LOCKED — 2026-07-01. Do not modify this entry.**
+**COMPLETE and LOCKED �X 2026-07-01. Do not modify this entry.**
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-05C7A.
 
 ---
 
-## AGENT-HARNESS-05C8 — Execution-Bound Hardening
+## AGENT-HARNESS-05C8 �X Execution-Bound Hardening
 
-**Status:** COMPLETE and LOCKED — 2026-07-03. Do not modify this entry.
+**Status:** COMPLETE and LOCKED �X 2026-07-03. Do not modify this entry.
 **Priority:** High
 **Risk:** High
 **Registered:** 2026-07-01
@@ -24878,10 +24878,10 @@ Register AGENT-HARNESS-05C8 — Execution-Bound Hardening, registration only.
 
 ### Dependencies
 
-- AGENT-HARNESS-05C4 — COMPLETE and LOCKED
-- AGENT-HARNESS-05C5 / 05C5A — COMPLETE and LOCKED
-- AGENT-HARNESS-05C6 / 05C6A — COMPLETE and LOCKED
-- AGENT-HARNESS-05C7 / 05C7A — COMPLETE and LOCKED
+- AGENT-HARNESS-05C4 �X COMPLETE and LOCKED
+- AGENT-HARNESS-05C5 / 05C5A �X COMPLETE and LOCKED
+- AGENT-HARNESS-05C6 / 05C6A �X COMPLETE and LOCKED
+- AGENT-HARNESS-05C7 / 05C7A �X COMPLETE and LOCKED
 
 ### Problem Statement
 
@@ -24899,14 +24899,14 @@ These gaps mean the harness loop can hang past its deadline, leave HTTP requests
 Harden Agent Harness tool-loop execution with bounded runtime behavior before any read-only canary:
 
 1. Enforce per-tool timeout using `DEFAULT_AGENT_HARNESS_CONFIG_V1.toolTimeoutMs`.
-2. Propagate `AbortSignal` from worker → harness loop → dispatcher → tool handlers → `ApiGatewayHttpClient` → axios/Nest `HttpService` request config.
+2. Propagate `AbortSignal` from worker �� harness loop �� dispatcher �� tool handlers �� `ApiGatewayHttpClient` �� axios/Nest `HttpService` request config.
 3. Ensure in-flight workspace HTTP calls are cancellable when the worker is aborted.
 4. Track cumulative token usage across all model calls in the harness loop.
 5. Enforce aggregate tool-result byte limits using `maxToolResultBytes`.
 6. Preserve existing default-disabled harness behavior (`enableToolLoop: false`).
 7. Do not activate Agent Harness.
 
-### Scope — Files to Inspect Before Implementation
+### Scope �X Files to Inspect Before Implementation
 
 1. `services/ai-service/src/worker/worker.processor.ts`
 2. `services/ai-service/src/worker/worker.processor.spec.ts`
@@ -24951,10 +24951,10 @@ Harden Agent Harness tool-loop execution with bounded runtime behavior before an
 
 1. A tool handler exceeding `toolTimeoutMs` must return a controlled tool error/result and must not hang the worker indefinitely.
 2. Worker abort must propagate to in-flight tool HTTP requests; the `AbortSignal` chain must reach axios.
-3. If the worker timeout fires, tool dispatch must stop promptly — no dangling async continuations.
+3. If the worker timeout fires, tool dispatch must stop promptly �X no dangling async continuations.
 4. Handler timeout must not crash the worker process; all rejections must be caught and converted to structured results.
 5. Aggregate tool-result bytes must be bounded by `maxToolResultBytes`; exceeding the limit must produce a controlled result or loop termination.
-6. Cumulative token accounting must include every model call made in a harness loop run — not just the last one.
+6. Cumulative token accounting must include every model call made in a harness loop run �X not just the last one.
 7. Plain non-harness execution behavior must remain entirely unchanged.
 8. Default-disabled harness state (`enableToolLoop: false`) must remain unchanged.
 9. No `browser_smoke` activation.
@@ -25042,7 +25042,7 @@ Harden Agent Harness tool-loop execution with bounded runtime behavior before an
 
 ### Next Recommended Task
 
-Register AGENT-HARNESS-05C9 — Structured Harness Audit Events, registration only.
+Register AGENT-HARNESS-05C9 �X Structured Harness Audit Events, registration only.
 
 ---
 
@@ -25050,7 +25050,7 @@ Register AGENT-HARNESS-05C9 — Structured Harness Audit Events, registration on
 
 ---
 
-## AGENT-HARNESS-05C9 — Structured Harness Audit Events
+## AGENT-HARNESS-05C9 �X Structured Harness Audit Events
 
 **Status:** COMPLETE and LOCKED
 **Completed:** 2026-07-06
@@ -25062,7 +25062,7 @@ Register AGENT-HARNESS-05C9 — Structured Harness Audit Events, registration on
 
 ### Dependencies
 
-- AGENT-HARNESS-05C8 — COMPLETE and LOCKED (execution-bound hardening)
+- AGENT-HARNESS-05C8 �X COMPLETE and LOCKED (execution-bound hardening)
 
 ### Problem Statement
 
@@ -25138,7 +25138,7 @@ Design and implement structured audit events for the Agent Harness so every sign
 
 ### Next Recommended Step
 
-Resume AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell.
+Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 
 ---
 
@@ -25148,36 +25148,36 @@ Resume AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell.
 
 ## AGENT PLATFORM / AINOW.BIZ MULTI-AGENT
 
-**Family status:** BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) — BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) — BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) — BILLING-READY-04 ACTIVE (Step 3 IN PROGRESS — child-slice split; 04A COMPLETE and LOCKED; 04B COMPLETE and LOCKED (2026-07-13); 04C COMPLETE and LOCKED (2026-07-13); 04D planned only) — AGENT-PLATFORM-07F3 COMPLETE and LOCKED (2026-07-12) — AGENT-PLATFORM-07F2 COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07F1 COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07F COMPLETE and LOCKED (2026-07-12, all child slices: 07F1 COMPLETE and LOCKED, 07F2 COMPLETE and LOCKED, 07F3 COMPLETE and LOCKED) — AGENT-PLATFORM-07E COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07D COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07C COMPLETE and LOCKED (2026-07-10) — AGENT-PLATFORM-07C2 COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07C1 COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07B COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07A COMPLETE and LOCKED (2026-07-09) — AGENT-PLATFORM-07 COMPLETE and LOCKED, AGENT-PLATFORM-06 COMPLETE and LOCKED, AGENT-PLATFORM-05 COMPLETE and LOCKED, AGENT-PLATFORM-04 COMPLETE and LOCKED, AGENT-PLATFORM-03 COMPLETE and LOCKED, AGENT-PLATFORM-02 COMPLETE and LOCKED, AGENT-PLATFORM-01 COMPLETE and LOCKED, AGENT-PLATFORM-00 COMPLETE and LOCKED. AGENT-HARNESS write canary remains a separate track.
+**Family status:** BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all 4 child slices COMPLETE and LOCKED; 04A COMPLETE and LOCKED (2026-07-13); 04B COMPLETE and LOCKED (2026-07-13); 04C COMPLETE and LOCKED (2026-07-13); 04D COMPLETE and LOCKED (2026-07-13) �X AGENT-PLATFORM-07F3 COMPLETE and LOCKED (2026-07-12) �X AGENT-PLATFORM-07F2 COMPLETE and LOCKED (2026-07-10) �X AGENT-PLATFORM-07F1 COMPLETE and LOCKED (2026-07-10) �X AGENT-PLATFORM-07F COMPLETE and LOCKED (2026-07-12, all child slices: 07F1 COMPLETE and LOCKED, 07F2 COMPLETE and LOCKED, 07F3 COMPLETE and LOCKED) �X AGENT-PLATFORM-07E COMPLETE and LOCKED (2026-07-10) �X AGENT-PLATFORM-07D COMPLETE and LOCKED (2026-07-10) �X AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10) �X AGENT-PLATFORM-07C COMPLETE and LOCKED (2026-07-10) �X AGENT-PLATFORM-07C2 COMPLETE and LOCKED (2026-07-09) �X AGENT-PLATFORM-07C1 COMPLETE and LOCKED (2026-07-09) �X AGENT-PLATFORM-07B COMPLETE and LOCKED (2026-07-09) �X AGENT-PLATFORM-07A COMPLETE and LOCKED (2026-07-09) �X AGENT-PLATFORM-07 COMPLETE and LOCKED, AGENT-PLATFORM-06 COMPLETE and LOCKED, AGENT-PLATFORM-05 COMPLETE and LOCKED, AGENT-PLATFORM-04 COMPLETE and LOCKED, AGENT-PLATFORM-03 COMPLETE and LOCKED, AGENT-PLATFORM-02 COMPLETE and LOCKED, AGENT-PLATFORM-01 COMPLETE and LOCKED, AGENT-PLATFORM-00 COMPLETE and LOCKED. AGENT-HARNESS write canary remains a separate track.
 
-**Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` — controls cross-family priority order; Knowledge before Collaboration before Billing.
+**Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` �X controls cross-family priority order; Knowledge before Collaboration before Billing.
 
-**Current stage:** BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) — all 4 steps complete — finalization bridge implemented (worker → `notifyExecutionComplete` → `/api/internal/executions/:id/finalize-accounting` → `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) — all 4 steps complete — validation-only test slice — 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) — all 4 steps complete — `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 ACTIVE — Step 3 IN PROGRESS — 04A COMPLETE and LOCKED; 04B COMPLETE and LOCKED (2026-07-13); 04C COMPLETE and LOCKED (2026-07-13); 04D planned only. Next recommended: BILLING-READY-04D — Regression Matrix + Parent Consolidation (not registered). AGENT-HARNESS write canary remains a separate track.
+**Current stage:** BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
 
 **Registered tasks:**
-1. AGENT-PLATFORM-00 — ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED — 2026-07-04)
-2. AGENT-PLATFORM-01 — Agent Registry Foundation (COMPLETE and LOCKED — 2026-07-04)
-3. AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell (COMPLETE and LOCKED — 2026-07-06)
-4. AGENT-PLATFORM-03 — Register aiSandBox as Builder Agent / Builder Route Integration Review (COMPLETE and LOCKED — 2026-07-06)
-5. AGENT-PLATFORM-04 — Multi-Builder Runtime Topology Plan (COMPLETE and LOCKED — 2026-07-07)
-6. AGENT-PLATFORM-05 — Multi-Builder Runtime Orchestration Plan (COMPLETE and LOCKED — 2026-07-09)
-7. AGENT-PLATFORM-06 — Upstream Identity Propagation (COMPLETE and LOCKED — 2026-07-09)
-8. AGENT-PLATFORM-07 — Read-Only Orchestration Coordinator Planning (COMPLETE and LOCKED — 2026-07-09)
-9. AGENT-PLATFORM-07A — Coordinator Contracts / Schema (COMPLETE and LOCKED — 2026-07-09)
-10. AGENT-PLATFORM-07B — API Gateway Orchestration Module Skeleton (COMPLETE and LOCKED — 2026-07-09)
-11. AGENT-PLATFORM-07C — Read-Only Referral Enqueue Flow + Cancel Redesign (COMPLETE and LOCKED — 2026-07-10)
-12. AGENT-PLATFORM-07C1 — Orchestration Core Methods + In-Memory Store (COMPLETE and LOCKED — 2026-07-09)
-13. AGENT-PLATFORM-07C2 — Referral Enqueue + Cancel + AiExecutionJob Extension (COMPLETE and LOCKED — 2026-07-09)
-14. AGENT-PLATFORM-07C3 — Targeted Tests and Parent Consolidation (COMPLETE and LOCKED — 2026-07-10)
-15. AGENT-PLATFORM-07D — Collaboration Audit Events (COMPLETE and LOCKED — 2026-07-10)
-16. AGENT-PLATFORM-07E — Read-Only Coordinator Canary (COMPLETE and LOCKED — 2026-07-10)
-17. AGENT-PLATFORM-07F — Live Runtime Orchestration Integration Canary (COMPLETE and LOCKED — 2026-07-12)
-18. AGENT-PLATFORM-07F1 — Queue Transport + Metadata Preservation Canary (COMPLETE and LOCKED — 2026-07-10)
-19. AGENT-PLATFORM-07F2 — Cancel Signal Path Canary (COMPLETE and LOCKED — 2026-07-10)
-20. AGENT-PLATFORM-07F3 — Parent Consolidation Checkpoint (COMPLETE and LOCKED — 2026-07-12)
+1. AGENT-PLATFORM-00 �X ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED �X 2026-07-04)
+2. AGENT-PLATFORM-01 �X Agent Registry Foundation (COMPLETE and LOCKED �X 2026-07-04)
+3. AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell (COMPLETE and LOCKED �X 2026-07-06)
+4. AGENT-PLATFORM-03 �X Register aiSandBox as Builder Agent / Builder Route Integration Review (COMPLETE and LOCKED �X 2026-07-06)
+5. AGENT-PLATFORM-04 �X Multi-Builder Runtime Topology Plan (COMPLETE and LOCKED �X 2026-07-07)
+6. AGENT-PLATFORM-05 �X Multi-Builder Runtime Orchestration Plan (COMPLETE and LOCKED �X 2026-07-09)
+7. AGENT-PLATFORM-06 �X Upstream Identity Propagation (COMPLETE and LOCKED �X 2026-07-09)
+8. AGENT-PLATFORM-07 �X Read-Only Orchestration Coordinator Planning (COMPLETE and LOCKED �X 2026-07-09)
+9. AGENT-PLATFORM-07A �X Coordinator Contracts / Schema (COMPLETE and LOCKED �X 2026-07-09)
+10. AGENT-PLATFORM-07B �X API Gateway Orchestration Module Skeleton (COMPLETE and LOCKED �X 2026-07-09)
+11. AGENT-PLATFORM-07C �X Read-Only Referral Enqueue Flow + Cancel Redesign (COMPLETE and LOCKED �X 2026-07-10)
+12. AGENT-PLATFORM-07C1 �X Orchestration Core Methods + In-Memory Store (COMPLETE and LOCKED �X 2026-07-09)
+13. AGENT-PLATFORM-07C2 �X Referral Enqueue + Cancel + AiExecutionJob Extension (COMPLETE and LOCKED �X 2026-07-09)
+14. AGENT-PLATFORM-07C3 �X Targeted Tests and Parent Consolidation (COMPLETE and LOCKED �X 2026-07-10)
+15. AGENT-PLATFORM-07D �X Collaboration Audit Events (COMPLETE and LOCKED �X 2026-07-10)
+16. AGENT-PLATFORM-07E �X Read-Only Coordinator Canary (COMPLETE and LOCKED �X 2026-07-10)
+17. AGENT-PLATFORM-07F �X Live Runtime Orchestration Integration Canary (COMPLETE and LOCKED �X 2026-07-12)
+18. AGENT-PLATFORM-07F1 �X Queue Transport + Metadata Preservation Canary (COMPLETE and LOCKED �X 2026-07-10)
+19. AGENT-PLATFORM-07F2 �X Cancel Signal Path Canary (COMPLETE and LOCKED �X 2026-07-10)
+20. AGENT-PLATFORM-07F3 �X Parent Consolidation Checkpoint (COMPLETE and LOCKED �X 2026-07-12)
 
 **Completed foundations (prerequisites):**
-- AGENT HARNESS family foundations COMPLETE and LOCKED — Agent Harness v1 contracts, tool protocol, model adapters, tool dispatcher, orchestrator loop, execution-bound hardening (through AGENT-HARNESS-05C8)
+- AGENT HARNESS family foundations COMPLETE and LOCKED �X Agent Harness v1 contracts, tool protocol, model adapters, tool dispatcher, orchestrator loop, execution-bound hardening (through AGENT-HARNESS-05C8)
 - AI-CONTEXT family COMPLETE and LOCKED
 - PREVIEW family COMPLETE and LOCKED
 - APP ROUTING / WORKSPACE STATE / SESSION RESTORE COMPLETE and LOCKED
@@ -25198,12 +25198,12 @@ Resume AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell.
 
 #### Dependencies
 
-- AGENT-HARNESS-05C8 — COMPLETE and LOCKED (execution-bound hardening)
-- All prior AGENT-HARNESS foundations — COMPLETE and LOCKED
+- AGENT-HARNESS-05C8 �X COMPLETE and LOCKED (execution-bound hardening)
+- All prior AGENT-HARNESS foundations �X COMPLETE and LOCKED
 
 #### Problem Statement
 
-aiSandBox is currently a standalone AI coding sandbox. The product vision has evolved: the platform should become ainow.biz — a general-purpose multi-agent work platform where aiSandBox becomes the first real agent module (Builder Agent). There is no master plan documenting this transition, the agent registry model, agent-to-agent collaboration, shared knowledge, work objects, billing structure, or phased delivery roadmap.
+aiSandBox is currently a standalone AI coding sandbox. The product vision has evolved: the platform should become ainow.biz �X a general-purpose multi-agent work platform where aiSandBox becomes the first real agent module (Builder Agent). There is no master plan documenting this transition, the agent registry model, agent-to-agent collaboration, shared knowledge, work objects, billing structure, or phased delivery roadmap.
 
 #### Objective
 
@@ -25254,13 +25254,13 @@ Create the master planning document for ainow.biz as a multi-agent platform:
 
 #### Next Recommended Tasks (proposed roadmap, not registered)
 
-- AGENT-PLATFORM-01 — Agent Registry Foundation
-- AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell
-- AGENT-PLATFORM-03 — Register aiSandBox as Builder Agent
-- AGENT-COLLAB-00 — Agent Referral and Collaboration Protocol Plan
-- AGENT-KNOWLEDGE-00 — Common Knowledge Base Architecture Plan
-- AGENT-SKILLS-00 — Per-Agent Skills and Knowledge Scope Plan
-- BILLING-READY-00 — Billing, Plan, Credit, and Entitlement Audit
+- AGENT-PLATFORM-01 �X Agent Registry Foundation
+- AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell
+- AGENT-PLATFORM-03 �X Register aiSandBox as Builder Agent
+- AGENT-COLLAB-00 �X Agent Referral and Collaboration Protocol Plan
+- AGENT-KNOWLEDGE-00 �X Common Knowledge Base Architecture Plan
+- AGENT-SKILLS-00 �X Per-Agent Skills and Knowledge Scope Plan
+- BILLING-READY-00 �X Billing, Plan, Credit, and Entitlement Audit
 
 ---
 
@@ -25276,13 +25276,13 @@ Create the master planning document for ainow.biz as a multi-agent platform:
 **Task ID:** AGENT-PLATFORM-01
 **Family:** AGENT PLATFORM / AINOW.BIZ MULTI-AGENT
 **Priority:** Highest
-**Nature:** IMPLEMENTATION — typed static agent registry and initial agent manifests
+**Nature:** IMPLEMENTATION �X typed static agent registry and initial agent manifests
 **Risk:** Low (no runtime orchestration, no frontend UI, focused type/registry work)
 **Registered:** 2026-07-04
 
 #### Dependencies
 
-- AGENT-PLATFORM-00 — COMPLETE and LOCKED (ainow.biz Multi-Agent Platform Master Plan)
+- AGENT-PLATFORM-00 �X COMPLETE and LOCKED (ainow.biz Multi-Agent Platform Master Plan)
 
 #### Problem Statement
 
@@ -25297,10 +25297,10 @@ Create the first implementation foundation for ainow.biz agents by defining a ty
 - Define `AgentManifest` TypeScript type.
 - Define supporting types for: model profile, tool permissions, knowledge scopes, skills, referral rules, approval rules.
 - Create static registry entries for:
-  - Builder Agent — active / enabled / real aiSandBox
-  - Chief of Staff Agent — coming_soon / disabled placeholder
-  - Product Strategy Agent — coming_soon / disabled placeholder
-  - Technology Advisor Agent — coming_soon / disabled placeholder
+  - Builder Agent �X active / enabled / real aiSandBox
+  - Chief of Staff Agent �X coming_soon / disabled placeholder
+  - Product Strategy Agent �X coming_soon / disabled placeholder
+  - Technology Advisor Agent �X coming_soon / disabled placeholder
 - Add registry access helpers/service:
   - list all agents
   - get agent by id
@@ -25351,9 +25351,9 @@ Create the first implementation foundation for ainow.biz agents by defining a ty
 
 #### Next Recommended Tasks (proposed, not registered)
 
-- AGENT-PLATFORM-02 — Static RPG Office/Town Dashboard Shell
-- AGENT-PLATFORM-03 — Register aiSandBox as Builder Agent
-- AGENT-COLLAB-00 — Agent Referral and Collaboration Protocol Plan
+- AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell
+- AGENT-PLATFORM-03 �X Register aiSandBox as Builder Agent
+- AGENT-COLLAB-00 �X Agent Referral and Collaboration Protocol Plan
 
 ---
 
@@ -25367,20 +25367,20 @@ Create the first implementation foundation for ainow.biz agents by defining a ty
 **Completed:** 2026-07-06
 **Resumed:** 2026-07-06
 **Resume reason:** AGENT-HARNESS-05C9 is now COMPLETE and LOCKED.
-**Phase 1 (02A) complete:** 2026-07-06 — Checkpoint: docs/AGENT-PLATFORM-02A-CHECKPOINT.md
-**Phase 2 (02B) complete:** 2026-07-06 — Checkpoint: docs/AGENT-PLATFORM-02B-CHECKPOINT.md
-**Child tasks:** AGENT-PLATFORM-02A — COMPLETE (2026-07-06), AGENT-PLATFORM-02B — COMPLETE (2026-07-06)
+**Phase 1 (02A) complete:** 2026-07-06 �X Checkpoint: docs/AGENT-PLATFORM-02A-CHECKPOINT.md
+**Phase 2 (02B) complete:** 2026-07-06 �X Checkpoint: docs/AGENT-PLATFORM-02B-CHECKPOINT.md
+**Child tasks:** AGENT-PLATFORM-02A �X COMPLETE (2026-07-06), AGENT-PLATFORM-02B �X COMPLETE (2026-07-06)
 **Task ID:** AGENT-PLATFORM-02
 **Family:** AGENT PLATFORM / AINOW.BIZ MULTI-AGENT
 **Priority:** Highest
-**Nature:** IMPLEMENTATION — static RPG office/town dashboard shell consuming agent registry
+**Nature:** IMPLEMENTATION �X static RPG office/town dashboard shell consuming agent registry
 **Risk:** Low (static UI shell, no runtime orchestration, consumes existing registry)
 **Registered:** 2026-07-05
 
 #### Dependencies
 
-- AGENT-PLATFORM-00 — COMPLETE and LOCKED (ainow.biz Multi-Agent Platform Master Plan)
-- AGENT-PLATFORM-01 — COMPLETE and LOCKED (Agent Registry Foundation)
+- AGENT-PLATFORM-00 �X COMPLETE and LOCKED (ainow.biz Multi-Agent Platform Master Plan)
+- AGENT-PLATFORM-01 �X COMPLETE and LOCKED (Agent Registry Foundation)
 
 #### Problem Statement
 
@@ -25395,10 +25395,10 @@ Create the first visible ainow.biz platform shell: a static RPG office/town dash
 - Build a static dashboard shell using the existing frontend architecture and routing conventions.
 - Consume the static agent registry from `frontend/lib/agent-platform/agent-registry.ts`.
 - Render four agents from registry data:
-  - Builder Agent — active/enabled
-  - Chief of Staff Agent — coming soon/disabled
-  - Product Strategy Agent — coming soon/disabled
-  - Technology Advisor Agent — coming soon/disabled
+  - Builder Agent �X active/enabled
+  - Chief of Staff Agent �X coming soon/disabled
+  - Product Strategy Agent �X coming soon/disabled
+  - Technology Advisor Agent �X coming soon/disabled
 - Builder Agent has an active affordance that can navigate toward the existing aiSandBox/Builder workspace route if an existing route is confirmed.
 - Coming-soon agents show disabled/coming-soon state without runtime functionality.
 - Static positioning/layout only. No walking character.
@@ -25449,30 +25449,30 @@ Create the first visible ainow.biz platform shell: a static RPG office/town dash
 
 #### Implementation Acceptance Criteria (for implementation pass)
 
-- [x] Dashboard shell consumes agent registry instead of hardcoding agent data. *(02A — DONE)*
-- [x] Builder Agent renders as active/enabled. *(02A — DONE)*
-- [x] Chief of Staff, Product Strategy, and Technology Advisor render as coming-soon/disabled. *(02A — DONE)*
-- [x] User-facing dashboard text uses translation keys. *(02A — DONE)*
-- [x] en.json, zh-TW.json, and zh-CN.json updated together for any new UI text. *(02A — DONE)*
-- [x] Existing translation hook/pattern used. *(02A — DONE)*
-- [x] Heroicons v2 Outline used for normal UI icons if icons are added. *(02A — DONE)*
-- [x] Static RPG office/town visual style implemented without walking character or sprite animation. *(02A — DONE)*
-- [x] Layout is responsive and avoids overlap/clipping on desktop, tablet, and mobile. *(02A — DONE)*
-- [x] Builder Agent click/navigation behavior follows existing route conventions. *(02B — DONE)*
-- [x] Coming-soon agents do not expose runtime functionality. *(02A — DONE)*
-- [x] Focused tests or checks added where practical. *(02A — DONE)*
-- [x] No runtime orchestration implemented. *(02A — DONE)*
-- [x] No Agent Harness behavior changed. *(02A — DONE)*
+- [x] Dashboard shell consumes agent registry instead of hardcoding agent data. *(02A �X DONE)*
+- [x] Builder Agent renders as active/enabled. *(02A �X DONE)*
+- [x] Chief of Staff, Product Strategy, and Technology Advisor render as coming-soon/disabled. *(02A �X DONE)*
+- [x] User-facing dashboard text uses translation keys. *(02A �X DONE)*
+- [x] en.json, zh-TW.json, and zh-CN.json updated together for any new UI text. *(02A �X DONE)*
+- [x] Existing translation hook/pattern used. *(02A �X DONE)*
+- [x] Heroicons v2 Outline used for normal UI icons if icons are added. *(02A �X DONE)*
+- [x] Static RPG office/town visual style implemented without walking character or sprite animation. *(02A �X DONE)*
+- [x] Layout is responsive and avoids overlap/clipping on desktop, tablet, and mobile. *(02A �X DONE)*
+- [x] Builder Agent click/navigation behavior follows existing route conventions. *(02B �X DONE)*
+- [x] Coming-soon agents do not expose runtime functionality. *(02A �X DONE)*
+- [x] Focused tests or checks added where practical. *(02A �X DONE)*
+- [x] No runtime orchestration implemented. *(02A �X DONE)*
+- [x] No Agent Harness behavior changed. *(02A �X DONE)*
 
 #### Phase Progress
 
-- **02A — Static Platform Dashboard Shell:** COMPLETE (2026-07-06) — Checkpoint: docs/AGENT-PLATFORM-02A-CHECKPOINT.md
-- **02B — Dashboard Navigation, Interactions, and Polish:** COMPLETE (2026-07-06) — Checkpoint: docs/AGENT-PLATFORM-02B-CHECKPOINT.md
+- **02A �X Static Platform Dashboard Shell:** COMPLETE (2026-07-06) �X Checkpoint: docs/AGENT-PLATFORM-02A-CHECKPOINT.md
+- **02B �X Dashboard Navigation, Interactions, and Polish:** COMPLETE (2026-07-06) �X Checkpoint: docs/AGENT-PLATFORM-02B-CHECKPOINT.md
 
 #### Next Recommended Tasks (proposed, not registered)
 
-- AGENT-PLATFORM-03 — Register aiSandBox as Builder Agent / Builder Route Integration Review
-- AGENT-COLLAB-00 — Agent Referral and Collaboration Protocol Plan
+- AGENT-PLATFORM-03 �X Register aiSandBox as Builder Agent / Builder Route Integration Review
+- AGENT-COLLAB-00 �X Agent Referral and Collaboration Protocol Plan
 
 **Residual validation gap:** Live browser smoke was not performed. Visual validation of the Command Center link in the workspace sidebar and Builder Agent card navigation in a running browser remains pending before AGENT-PLATFORM-02 is treated as fully validated in production.
 
@@ -25492,15 +25492,15 @@ Create the first visible ainow.biz platform shell: a static RPG office/town dash
 **Parent task:** AGENT-PLATFORM-02
 **Family:** AGENT PLATFORM / AINOW.BIZ MULTI-AGENT
 **Priority:** Highest
-**Nature:** IMPLEMENTATION — dashboard navigation wiring, coming-soon interactions, visual polish
+**Nature:** IMPLEMENTATION �X dashboard navigation wiring, coming-soon interactions, visual polish
 **Risk:** Low (static UI interactions and routing only, no backend or runtime changes)
 
 #### Dependencies
 
-- AGENT-PLATFORM-00 — COMPLETE and LOCKED (ainow.biz Multi-Agent Platform Master Plan)
-- AGENT-PLATFORM-01 — COMPLETE and LOCKED (Agent Registry Foundation)
-- AGENT-PLATFORM-02A — COMPLETE (Static Platform Dashboard Shell)
-- AGENT-HARNESS-05C9 — COMPLETE and LOCKED (Structured Audit Event Recording)
+- AGENT-PLATFORM-00 �X COMPLETE and LOCKED (ainow.biz Multi-Agent Platform Master Plan)
+- AGENT-PLATFORM-01 �X COMPLETE and LOCKED (Agent Registry Foundation)
+- AGENT-PLATFORM-02A �X COMPLETE (Static Platform Dashboard Shell)
+- AGENT-HARNESS-05C9 �X COMPLETE and LOCKED (Structured Audit Event Recording)
 
 #### Purpose
 
@@ -25592,16 +25592,16 @@ Complete the second bounded implementation phase of AGENT-PLATFORM-02 by adding 
 **Task ID:** AGENT-PLATFORM-03
 **Family:** AGENT PLATFORM / AINOW.BIZ MULTI-AGENT
 **Priority:** High
-**Nature:** REVIEW ONLY — no code changes were needed
+**Nature:** REVIEW ONLY �X no code changes were needed
 **Risk:** Low (review pass with bounded frontend-only fixes if needed)
 **Registered:** 2026-07-06
 
 #### Dependencies
 
-- AGENT-PLATFORM-00 — COMPLETE and LOCKED (ainow.biz Multi-Agent Platform Master Plan)
-- AGENT-PLATFORM-01 — COMPLETE and LOCKED (Agent Registry Foundation)
-- AGENT-PLATFORM-02 — COMPLETE and LOCKED (Static RPG Office/Town Dashboard Shell)
-- AGENT-HARNESS-05C9 — COMPLETE and LOCKED (Structured Audit Event Recording)
+- AGENT-PLATFORM-00 �X COMPLETE and LOCKED (ainow.biz Multi-Agent Platform Master Plan)
+- AGENT-PLATFORM-01 �X COMPLETE and LOCKED (Agent Registry Foundation)
+- AGENT-PLATFORM-02 �X COMPLETE and LOCKED (Static RPG Office/Town Dashboard Shell)
+- AGENT-HARNESS-05C9 �X COMPLETE and LOCKED (Structured Audit Event Recording)
 
 #### Purpose
 
@@ -25616,8 +25616,8 @@ Confirm and harden the integration between the new ainow.biz platform dashboard 
 - Confirm compact sidebar Command Center icon behavior.
 - Confirm coming-soon agents do not navigate.
 - Perform or guide live browser smoke for:
-  - workspace sidebar → Command Center `/platform`
-  - Command Center → Builder workspace `/app`
+  - workspace sidebar �� Command Center `/platform`
+  - Command Center �� Builder workspace `/app`
   - compact sidebar Command Center icon
   - coming-soon agents confirmed non-navigating
 - If small fixes are required, keep them frontend-only and tightly scoped.
@@ -25671,10 +25671,10 @@ Confirm and harden the integration between the new ainow.biz platform dashboard 
 - [x] Workspace sidebar Command Center navigation reviewed.
 - [x] Compact sidebar Command Center behavior reviewed.
 - [x] Coming-soon agents confirmed non-navigating.
-- [x] Live browser smoke DEFERRED — code inspection and local validation (tests, TypeScript, build) all passed. Manual smoke steps recorded in docs/AGENT-PLATFORM-03-CHECKPOINT.md section 10.
-- [x] No fixes required — review was read-only. Integration was already correct from AGENT-PLATFORM-02B.
-- [x] No translation file changes required — no user-facing text was changed.
-- [x] No test changes required — no route/navigation behavior was changed.
+- [x] Live browser smoke DEFERRED �X code inspection and local validation (tests, TypeScript, build) all passed. Manual smoke steps recorded in docs/AGENT-PLATFORM-03-CHECKPOINT.md section 10.
+- [x] No fixes required �X review was read-only. Integration was already correct from AGENT-PLATFORM-02B.
+- [x] No translation file changes required �X no user-facing text was changed.
+- [x] No test changes required �X no route/navigation behavior was changed.
 - [x] No backend/Agent Harness/runtime orchestration changes.
 
 #### Residual Validation Gap
@@ -25683,7 +25683,7 @@ Browser smoke was deferred. Code inspection and local validation (platform-dashb
 
 #### Next Recommended Task (proposed, not registered)
 
-AGENT-COLLAB-00 — Agent Referral and Collaboration Protocol Plan
+AGENT-COLLAB-00 �X Agent Referral and Collaboration Protocol Plan
 
 ---
 
@@ -25698,34 +25698,34 @@ AGENT-COLLAB-00 — Agent Referral and Collaboration Protocol Plan
 **Task ID:** AGENT-PLATFORM-04
 **Family:** AGENT PLATFORM / MULTI-BUILDER TOPOLOGY
 **Priority:** High
-**Nature:** ARCHITECTURE / PLANNING / GOVERNANCE — multi-builder topology planning only
-**Risk:** HIGH — defines topology before harness activation and multi-agent runtime orchestration
+**Nature:** ARCHITECTURE / PLANNING / GOVERNANCE �X multi-builder topology planning only
+**Risk:** HIGH �X defines topology before harness activation and multi-agent runtime orchestration
 **Registered:** 2026-07-07
 
 **Topology plan document:** `docs/AGENT-PLATFORM-04-MULTI-BUILDER-TOPOLOGY-PLAN.md`
 
 #### Workflow Steps
 
-1. **Registration** — COMPLETE (2026-07-07)
-2. **Topology/readiness review** — COMPLETE (2026-07-07) — assessed current registry, harness, and session state
-3. **Multi-builder topology plan** — COMPLETE (2026-07-07) — defined role + profile identity model, session isolation, runtime identity flow, harness config handoff, safety boundaries, implementation sequence
-4. **Consolidation/checkpoint** — COMPLETE (2026-07-07)
+1. **Registration** �X COMPLETE (2026-07-07)
+2. **Topology/readiness review** �X COMPLETE (2026-07-07) �X assessed current registry, harness, and session state
+3. **Multi-builder topology plan** �X COMPLETE (2026-07-07) �X defined role + profile identity model, session isolation, runtime identity flow, harness config handoff, safety boundaries, implementation sequence
+4. **Consolidation/checkpoint** �X COMPLETE (2026-07-07)
 
 #### Dependencies
 
-- BILLING-READY-03 — COMPLETE and LOCKED (Credit Balance Persistence Foundation)
-- AGENT-PLATFORM-01 — COMPLETE and LOCKED (Agent Registry Foundation)
+- BILLING-READY-03 �X COMPLETE and LOCKED (Credit Balance Persistence Foundation)
+- AGENT-PLATFORM-01 �X COMPLETE and LOCKED (Agent Registry Foundation)
 - Existing Agent Platform roadmap/governance state must be preserved
 
 #### Problem Statement
 
-The current aiSandBox platform treats Builder Agent as a single agent with a single harness profile. As the ainow.biz multi-agent platform evolves, support for multiple Builder Agents with different configurations is required — different model profiles, tool permissions, knowledge scopes, skills, referral rules, approval rules, harness profiles, and runtime limits. Before AGENT-HARNESS-07 (Per-Builder Harness Config Adapter) or any multi-agent runtime orchestration proceeds, the topology must be explicitly planned.
+The current aiSandBox platform treats Builder Agent as a single agent with a single harness profile. As the ainow.biz multi-agent platform evolves, support for multiple Builder Agents with different configurations is required �X different model profiles, tool permissions, knowledge scopes, skills, referral rules, approval rules, harness profiles, and runtime limits. Before AGENT-HARNESS-07 (Per-Builder Harness Config Adapter) or any multi-agent runtime orchestration proceeds, the topology must be explicitly planned.
 
 This task produces the authoritative plan for how multiple Builder Agents can coexist without implicit file/tool escalation, shared workspace writes without explicit routing, hidden cross-agent tool access, uncontrolled loop/referral recursion, or billing/runtime ambiguity between Builder Agents.
 
 #### Scope
 
-**Multi-Builder Agent differentiation — each Builder Agent may have:**
+**Multi-Builder Agent differentiation �X each Builder Agent may have:**
 - Distinct `modelProfile` (model ID, fallback, max tokens, temperature, cost tier)
 - Distinct `toolPermissions` (allowed, blocked, require-approval tools)
 - Distinct `knowledgeScopes` (specialist scopes per builder)
@@ -25733,7 +25733,7 @@ This task produces the authoritative plan for how multiple Builder Agents can co
 - Distinct `referralRules` and `approvalRules`
 - Distinct harness profile (runtime limits, timeout policies, tool quotas)
 
-**Per-Builder Agent isolation — each Builder Agent gets:**
+**Per-Builder Agent isolation �X each Builder Agent gets:**
 - Separate session identity
 - Separate project/workspace binding
 - Separate container/workspace isolation (no shared `/workspace`)
@@ -25745,10 +25745,10 @@ This task produces the authoritative plan for how multiple Builder Agents can co
 - Chief of Staff / Product Strategy / Technology Advisor Agents may use lightweight runtime first (no Docker container, no workspace, no harness tool loop in initial phase)
 
 **Handoff path after this task:**
-1. AGENT-PLATFORM-04 — Multi-Builder Runtime Topology Plan (this task)
-2. AGENT-HARNESS-07 — Per-Builder Harness Config Adapter (future — not yet registered)
-3. AGENT-HARNESS-06C — Builder harness canary (future — remains deferred)
-4. Multi-builder collaboration/runtime orchestration (future — deferred)
+1. AGENT-PLATFORM-04 �X Multi-Builder Runtime Topology Plan (this task)
+2. AGENT-HARNESS-07 �X Per-Builder Harness Config Adapter (future �X not yet registered)
+3. AGENT-HARNESS-06C �X Builder harness canary (future �X remains deferred)
+4. Multi-builder collaboration/runtime orchestration (future �X deferred)
 
 **Decisions to be resolved before harness activation:**
 - How Builder Agent instances are distinguished at the harness layer (by agent ID, session ID, or manifest entry)
@@ -25759,9 +25759,9 @@ This task produces the authoritative plan for how multiple Builder Agents can co
 **Safety boundaries (must be defined explicitly):**
 - No implicit file/tool escalation across Builder Agent instances
 - No shared workspace writes without explicit routing through the platform layer
-- No hidden cross-agent tool access — each Builder Agent's tool permissions are enforced by its manifest entry
-- No uncontrolled loop/referral recursion — referral chain limits apply per AGENT-PLATFORM-00 section 9.6
-- No billing/runtime ambiguity — each Builder Agent's execution is attributed to its own session and credit ledger
+- No hidden cross-agent tool access �X each Builder Agent's tool permissions are enforced by its manifest entry
+- No uncontrolled loop/referral recursion �X referral chain limits apply per AGENT-PLATFORM-00 section 9.6
+- No billing/runtime ambiguity �X each Builder Agent's execution is attributed to its own session and credit ledger
 
 #### Non-Goals
 
@@ -25789,12 +25789,12 @@ This task produces the authoritative plan for how multiple Builder Agents can co
 - [x] Checkpoint document created at `docs/AGENT-PLATFORM-04-CHECKPOINT.md`
 - [x] AGENT-PLATFORM-04 marked COMPLETE and LOCKED in TASKS.md, TASKS_BACKLOG_FULL.md, AINOW-EXECUTION-ROADMAP.md
 
-**Checkpoint:** `docs/AGENT-PLATFORM-04-CHECKPOINT.md` — COMPLETE and LOCKED (2026-07-07)
+**Checkpoint:** `docs/AGENT-PLATFORM-04-CHECKPOINT.md` �X COMPLETE and LOCKED (2026-07-07)
 
-**AGENT-HARNESS-07 status:** COMPLETE and LOCKED (2026-07-07) — Per-Builder Harness Config Adapter. All 3 child slices COMPLETE and LOCKED: 07A, 07B, 07C. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
-**AGENT-HARNESS-06C status:** Not registered. Deferred — prerequisite (AGENT-HARNESS-07) is now COMPLETE and LOCKED; AGENT-HARNESS-06C still deferred until Keith explicitly approves canary activation.
-**Multi-builder collaboration/runtime orchestration status:** AGENT-PLATFORM-07F3 COMPLETE and LOCKED (2026-07-12) — all 3 steps complete — parent consolidation checkpoint. Checkpoint: `docs/AGENT-PLATFORM-07F3-CHECKPOINT.md`. AGENT-PLATFORM-07F2 COMPLETE and LOCKED (2026-07-10) — all 4 steps complete — cancel signal path canary PASS — controlled PostgreSQL cancel SQL validated; `running` → `cancel_requested` transition confirmed; negative test (completed row) confirmed 0 rows updated; cleanup complete. Checkpoint: `docs/AGENT-PLATFORM-07F2-CHECKPOINT.md`. AGENT-PLATFORM-07F1 COMPLETE and LOCKED (2026-07-10) — all 4 steps complete. Live runtime canary PASS: queue transport + metadata preservation; 9 orchestration fields survived BullMQ transport; `usage_records.metadata` JSONB verified. Execution ID: 8da5403a-f20e-480e-b7d8-196b18f7faef. stub provider; zero tokens; zero provider/API calls. Cleanup complete. Checkpoint: `docs/AGENT-PLATFORM-07F1-CHECKPOINT.md`. Parent AGENT-PLATFORM-07F COMPLETE and LOCKED (2026-07-12) — all child slices: 07F1 COMPLETE and LOCKED, 07F2 COMPLETE and LOCKED, 07F3 COMPLETE and LOCKED. Checkpoint: `docs/AGENT-PLATFORM-07F-CHECKPOINT.md`. No ACTIVE task. Next recommended roadmap item: BILLING-READY-04+ — not registered. AGENT-HARNESS write canary remains a separate track. AGENT-PLATFORM-07E COMPLETE and LOCKED (2026-07-10). All 4 steps complete. Unit/in-process canary PASS: 16 canary tests (orchestration.canary.spec.ts) + 40 regression tests (orchestration.service.spec.ts) + TypeScript clean. Checkpoint: `docs/AGENT-PLATFORM-07E-CHECKPOINT.md`. AGENT-PLATFORM-07D COMPLETE and LOCKED (2026-07-10). All 4 steps complete. Collaboration/referral audit events: `InMemoryOrchestrationAuditRecorder` created; 8 event types emitted at OrchestrationService lifecycle transitions; 40 tests pass; TypeScript clean. Checkpoint: `docs/AGENT-PLATFORM-07D-CHECKPOINT.md`. AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10). Parent AGENT-PLATFORM-07C COMPLETE and LOCKED (2026-07-10). All 3 child slices COMPLETE and LOCKED: 07C1 COMPLETE and LOCKED (2026-07-09), 07C2 COMPLETE and LOCKED (2026-07-09), 07C3 COMPLETE and LOCKED (2026-07-10). AGENT-PLATFORM-07B COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-07A COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-07 COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-06 COMPLETE and LOCKED — 2026-07-09. AGENT-PLATFORM-05 COMPLETE and LOCKED — 2026-07-09. AGENT-HARNESS write canary remains a separate track.
-**BILLING-READY-04 status:** ACTIVE — Step 3 IN PROGRESS (child-slice split). BILLING-READY-04A COMPLETE and LOCKED (2026-07-13). BILLING-READY-04B COMPLETE and LOCKED (2026-07-13). BILLING-READY-04C COMPLETE and LOCKED (2026-07-13). Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. 04D planned only — next recommended (not registered). AGENT-HARNESS write canary remains a separate track.
+**AGENT-HARNESS-07 status:** COMPLETE and LOCKED (2026-07-07) �X Per-Builder Harness Config Adapter. All 3 child slices COMPLETE and LOCKED: 07A, 07B, 07C. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
+**AGENT-HARNESS-06C status:** Not registered. Deferred �X prerequisite (AGENT-HARNESS-07) is now COMPLETE and LOCKED; AGENT-HARNESS-06C still deferred until Keith explicitly approves canary activation.
+**Multi-builder collaboration/runtime orchestration status:** AGENT-PLATFORM-07F3 COMPLETE and LOCKED (2026-07-12) �X all 3 steps complete �X parent consolidation checkpoint. Checkpoint: `docs/AGENT-PLATFORM-07F3-CHECKPOINT.md`. AGENT-PLATFORM-07F2 COMPLETE and LOCKED (2026-07-10) �X all 4 steps complete �X cancel signal path canary PASS �X controlled PostgreSQL cancel SQL validated; `running` �� `cancel_requested` transition confirmed; negative test (completed row) confirmed 0 rows updated; cleanup complete. Checkpoint: `docs/AGENT-PLATFORM-07F2-CHECKPOINT.md`. AGENT-PLATFORM-07F1 COMPLETE and LOCKED (2026-07-10) �X all 4 steps complete. Live runtime canary PASS: queue transport + metadata preservation; 9 orchestration fields survived BullMQ transport; `usage_records.metadata` JSONB verified. Execution ID: 8da5403a-f20e-480e-b7d8-196b18f7faef. stub provider; zero tokens; zero provider/API calls. Cleanup complete. Checkpoint: `docs/AGENT-PLATFORM-07F1-CHECKPOINT.md`. Parent AGENT-PLATFORM-07F COMPLETE and LOCKED (2026-07-12) �X all child slices: 07F1 COMPLETE and LOCKED, 07F2 COMPLETE and LOCKED, 07F3 COMPLETE and LOCKED. Checkpoint: `docs/AGENT-PLATFORM-07F-CHECKPOINT.md`. No ACTIVE task. Next recommended roadmap item: BILLING-READY-04+ �X not registered. AGENT-HARNESS write canary remains a separate track. AGENT-PLATFORM-07E COMPLETE and LOCKED (2026-07-10). All 4 steps complete. Unit/in-process canary PASS: 16 canary tests (orchestration.canary.spec.ts) + 40 regression tests (orchestration.service.spec.ts) + TypeScript clean. Checkpoint: `docs/AGENT-PLATFORM-07E-CHECKPOINT.md`. AGENT-PLATFORM-07D COMPLETE and LOCKED (2026-07-10). All 4 steps complete. Collaboration/referral audit events: `InMemoryOrchestrationAuditRecorder` created; 8 event types emitted at OrchestrationService lifecycle transitions; 40 tests pass; TypeScript clean. Checkpoint: `docs/AGENT-PLATFORM-07D-CHECKPOINT.md`. AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10). Parent AGENT-PLATFORM-07C COMPLETE and LOCKED (2026-07-10). All 3 child slices COMPLETE and LOCKED: 07C1 COMPLETE and LOCKED (2026-07-09), 07C2 COMPLETE and LOCKED (2026-07-09), 07C3 COMPLETE and LOCKED (2026-07-10). AGENT-PLATFORM-07B COMPLETE and LOCKED �X 2026-07-09. AGENT-PLATFORM-07A COMPLETE and LOCKED �X 2026-07-09. AGENT-PLATFORM-07 COMPLETE and LOCKED �X 2026-07-09. AGENT-PLATFORM-06 COMPLETE and LOCKED �X 2026-07-09. AGENT-PLATFORM-05 COMPLETE and LOCKED �X 2026-07-09. AGENT-HARNESS write canary remains a separate track.
+**BILLING-READY-04 status:** COMPLETE and LOCKED — 2026-07-13. All 4 steps complete. All child slices COMPLETE and LOCKED: 04A COMPLETE and LOCKED (2026-07-13), 04B COMPLETE and LOCKED (2026-07-13), 04C COMPLETE and LOCKED (2026-07-13), 04D COMPLETE and LOCKED (2026-07-13). Regression matrix PASS — 12/12 commands. Parent checkpoint: `docs/BILLING-READY-04-CHECKPOINT.md`. Child checkpoints: `docs/BILLING-READY-04A-CHECKPOINT.md`, `docs/BILLING-READY-04B-CHECKPOINT.md`, `docs/BILLING-READY-04C-CHECKPOINT.md`, `docs/BILLING-READY-04D-CHECKPOINT.md`. No Stripe/payment/provider. No migration. No frontend. AGENT-HARNESS write canary remains a separate track. Next recommended roadmap item: BILLING-READY-05 — not registered.
 
 ---
 
@@ -25810,30 +25810,30 @@ This task produces the authoritative plan for how multiple Builder Agents can co
 **Task ID:** AGENT-PLATFORM-05
 **Family:** AGENT PLATFORM / MULTI-BUILDER ORCHESTRATION
 **Priority:** High
-**Nature:** ARCHITECTURE / PLANNING / GOVERNANCE — multi-builder orchestration planning only
-**Risk:** HIGH — future runtime orchestration may involve multiple Builder sessions, shared project state, conflict rules, and safety limits
+**Nature:** ARCHITECTURE / PLANNING / GOVERNANCE �X multi-builder orchestration planning only
+**Risk:** HIGH �X future runtime orchestration may involve multiple Builder sessions, shared project state, conflict rules, and safety limits
 **Registered:** 2026-07-09
 **Keith approval:** Registration approved 2026-07-09 ("go")
 
 #### Workflow Steps
 
-1. **Registration** — COMPLETE (2026-07-09)
-2. **Orchestration Readiness Review** — COMPLETE (2026-07-09)
-3. **Multi-Builder Orchestration Plan Document** — COMPLETE (2026-07-09)
-4. **Consolidation/Checkpoint** — COMPLETE (2026-07-09)
+1. **Registration** �X COMPLETE (2026-07-09)
+2. **Orchestration Readiness Review** �X COMPLETE (2026-07-09)
+3. **Multi-Builder Orchestration Plan Document** �X COMPLETE (2026-07-09)
+4. **Consolidation/Checkpoint** �X COMPLETE (2026-07-09)
 
 #### Dependencies
 
-- AGENT-PLATFORM-04 — COMPLETE and LOCKED (Multi-Builder Runtime Topology Plan)
-- AGENT-HARNESS-07 — COMPLETE and LOCKED (Per-Builder Harness Config Adapter)
-- AGENT-HARNESS-06E — COMPLETE and LOCKED (Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary)
+- AGENT-PLATFORM-04 �X COMPLETE and LOCKED (Multi-Builder Runtime Topology Plan)
+- AGENT-HARNESS-07 �X COMPLETE and LOCKED (Per-Builder Harness Config Adapter)
+- AGENT-HARNESS-06E �X COMPLETE and LOCKED (Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary)
 - Keith approval recorded for registration
 
 #### Problem Statement
 
 The current aiSandBox platform supports a single Builder Agent per session with no defined protocol for multiple Builder Agents collaborating on a shared project. AGENT-PLATFORM-04 established the identity model (agentRole + builderProfileId) and session isolation rules. AGENT-HARNESS-07 implemented the Per-Builder Harness Config Adapter. AGENT-HARNESS-06E validated the full E2E file tool path. The next architectural gap is defining how multiple Builder Agents route jobs, own sessions, share or partition workspace/project state, handle write conflicts, enforce safety limits, and manage referral chains before any multi-builder runtime execution is activated.
 
-#### Scope — Future Steps Must Define
+#### Scope �X Future Steps Must Define
 
 - Builder A/B identity and profile selection
 - Session-per-builder vs shared-session policy
@@ -25885,18 +25885,18 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 - [x] AGENT-PLATFORM-04 remains COMPLETE and LOCKED
 - [x] AGENT-HARNESS-07 remains COMPLETE and LOCKED
 - [x] AGENT-HARNESS-06E remains COMPLETE and LOCKED
-- [x] Registration records this is planning/governance only — no implementation/runtime execution
+- [x] Registration records this is planning/governance only �X no implementation/runtime execution
 - [x] Registration records next step is Orchestration Readiness Review
 - [x] No implementation files changed
 - [x] No commands run
 - [x] One-active-task rule satisfied
-- [x] Orchestration Readiness Review complete (Step 2 — COMPLETE 2026-07-09)
-- [x] Multi-Builder Orchestration Plan Document created (Step 3 — COMPLETE 2026-07-09)
-- [x] Consolidation/Checkpoint complete (Step 4 — COMPLETE 2026-07-09)
+- [x] Orchestration Readiness Review complete (Step 2 �X COMPLETE 2026-07-09)
+- [x] Multi-Builder Orchestration Plan Document created (Step 3 �X COMPLETE 2026-07-09)
+- [x] Consolidation/Checkpoint complete (Step 4 �X COMPLETE 2026-07-09)
 
 #### Next Recommended Task
 
-AGENT-PLATFORM-06 — Upstream Identity Propagation — COMPLETE and LOCKED (2026-07-09). All 4 steps complete. Identity fields (`agentRole`, `builderProfileId`, `collaborationRunId`, `referralTraceId`) propagated through full execution path. 8 files changed. 34 suites / 654 passed; TypeScript clean. Checkpoint: `docs/AGENT-PLATFORM-06-CHECKPOINT.md`. AGENT-PLATFORM-07 now COMPLETE and LOCKED — Read-Only Orchestration Coordinator Planning (2026-07-09). Next recommended: AGENT-PLATFORM-07A (not registered).
+AGENT-PLATFORM-06 �X Upstream Identity Propagation �X COMPLETE and LOCKED (2026-07-09). All 4 steps complete. Identity fields (`agentRole`, `builderProfileId`, `collaborationRunId`, `referralTraceId`) propagated through full execution path. 8 files changed. 34 suites / 654 passed; TypeScript clean. Checkpoint: `docs/AGENT-PLATFORM-06-CHECKPOINT.md`. AGENT-PLATFORM-07 now COMPLETE and LOCKED �X Read-Only Orchestration Coordinator Planning (2026-07-09). Next recommended: AGENT-PLATFORM-07A (not registered).
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-05.
 
@@ -25909,24 +25909,24 @@ AGENT-PLATFORM-06 — Upstream Identity Propagation — COMPLETE and LOCKED (202
 **Task ID:** AGENT-PLATFORM-06
 **Family:** AGENT PLATFORM / MULTI-BUILDER ORCHESTRATION
 **Priority:** High
-**Nature:** IMPLEMENTATION — bounded upstream identity field propagation through execution path
-**Risk:** HIGH — identity propagation affects execution attribution, future orchestration routing, audit, and billing readiness
+**Nature:** IMPLEMENTATION �X bounded upstream identity field propagation through execution path
+**Risk:** HIGH �X identity propagation affects execution attribution, future orchestration routing, audit, and billing readiness
 **Registered:** 2026-07-09
-**Keith approval:** Registration approved 2026-07-09 ("Approve registering AGENT-PLATFORM-06 — Upstream Identity Propagation.")
+**Keith approval:** Registration approved 2026-07-09 ("Approve registering AGENT-PLATFORM-06 �X Upstream Identity Propagation.")
 
 #### Workflow Steps (4-step loop)
 
-1. **Registration** — COMPLETE (2026-07-09)
-2. **Readiness / source-path review** — COMPLETE (2026-07-09) — `docs/AGENT-PLATFORM-06-SOURCE-PATH-REVIEW.md`
-3. **Bounded implementation** — COMPLETE (2026-07-09) — 8 files changed; all tests pass; TypeScript clean
-4. **Consolidation / checkpoint** — COMPLETE (2026-07-09) — `docs/AGENT-PLATFORM-06-CHECKPOINT.md`
+1. **Registration** �X COMPLETE (2026-07-09)
+2. **Readiness / source-path review** �X COMPLETE (2026-07-09) �X `docs/AGENT-PLATFORM-06-SOURCE-PATH-REVIEW.md`
+3. **Bounded implementation** �X COMPLETE (2026-07-09) �X 8 files changed; all tests pass; TypeScript clean
+4. **Consolidation / checkpoint** �X COMPLETE (2026-07-09) �X `docs/AGENT-PLATFORM-06-CHECKPOINT.md`
 
 #### Dependencies
 
-- AGENT-PLATFORM-05 — COMPLETE and LOCKED (Multi-Builder Runtime Orchestration Plan)
-- AGENT-PLATFORM-04 — COMPLETE and LOCKED (Multi-Builder Runtime Topology Plan)
-- AGENT-HARNESS-07 — COMPLETE and LOCKED (Per-Builder Harness Config Adapter)
-- AGENT-HARNESS-06E — COMPLETE and LOCKED (Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary)
+- AGENT-PLATFORM-05 �X COMPLETE and LOCKED (Multi-Builder Runtime Orchestration Plan)
+- AGENT-PLATFORM-04 �X COMPLETE and LOCKED (Multi-Builder Runtime Topology Plan)
+- AGENT-HARNESS-07 �X COMPLETE and LOCKED (Per-Builder Harness Config Adapter)
+- AGENT-HARNESS-06E �X COMPLETE and LOCKED (Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary)
 - Keith approval recorded for registration
 
 #### Problem Statement
@@ -25942,11 +25942,11 @@ Propagate optional identity fields through the execution path:
 
 Target path (Step 2 will review, Step 3 will implement):
 - Frontend execution request
-- → API Gateway execute/enqueue DTO / controller / service
-- → `enqueueExecution()`
-- → `AiExecutionJob` payload
-- → AI Service worker
-- → `UsageRecord` intent-write / audit attribution path where currently available
+- �� API Gateway execute/enqueue DTO / controller / service
+- �� `enqueueExecution()`
+- �� `AiExecutionJob` payload
+- �� AI Service worker
+- �� `UsageRecord` intent-write / audit attribution path where currently available
 
 #### Future Implementation Constraints (Step 3)
 
@@ -25960,9 +25960,9 @@ Target path (Step 2 will review, Step 3 will implement):
 
 #### Potential Child Slices (Do Not Register Until Step 2 Proves Needed and Keith Approves)
 
-- AGENT-PLATFORM-06A — API Gateway execution DTO / enqueue identity propagation
-- AGENT-PLATFORM-06B — Frontend request identity propagation
-- AGENT-PLATFORM-06C — Usage / audit attribution preservation
+- AGENT-PLATFORM-06A �X API Gateway execution DTO / enqueue identity propagation
+- AGENT-PLATFORM-06B �X Frontend request identity propagation
+- AGENT-PLATFORM-06C �X Usage / audit attribution preservation
 
 #### Non-Goals
 
@@ -26020,13 +26020,13 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 - [x] All 8 execution path gaps mapped and confirmed (Step 2)
 - [x] `AIExecutionRequest` extended with `agentRole`, `builderProfileId`, `collaborationRunId`, `referralTraceId` (Step 3)
 - [x] Controller forwards identity to intent write and job payload (Step 3)
-- [x] Usage ledger stores identity in `metadata` JSONB — no migration (Step 3)
+- [x] Usage ledger stores identity in `metadata` JSONB �X no migration (Step 3)
 - [x] `AiExecutionJob` includes `collaborationRunId`/`referralTraceId` (Step 3)
 - [x] Worker preserves identity in finalization metadata (Step 3)
 - [x] All three test files pass targeted specs (Step 3)
 - [x] API Gateway typecheck clean (Step 3)
 - [x] AI Service typecheck clean (Step 3)
-- [x] Backward compatibility preserved — single-builder unaffected (Step 3)
+- [x] Backward compatibility preserved �X single-builder unaffected (Step 3)
 - [x] No database migration (Step 3)
 - [x] No frontend UI / text changes (Step 3)
 - [x] No runtime execution / no service startup (all steps)
@@ -26039,11 +26039,11 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 #### Next Recommended Task (Not Registered)
 
-**AGENT-PLATFORM-07 — Read-Only Orchestration Coordinator Planning**
+**AGENT-PLATFORM-07 �X Read-Only Orchestration Coordinator Planning**
 
-COMPLETE and LOCKED (2026-07-09). All 4 steps complete. Planning/governance only. No implementation. Source-path review: `docs/AGENT-PLATFORM-07-SOURCE-PATH-REVIEW.md`. Coordinator plan (22 sections): `docs/AGENT-PLATFORM-07-READ-ONLY-ORCHESTRATION-COORDINATOR-PLAN.md`. Checkpoint: `docs/AGENT-PLATFORM-07-CHECKPOINT.md`. Next recommended: AGENT-PLATFORM-07A — Coordinator Contracts/Schema (not registered). AGENT-HARNESS write canary remains separate and not registered.
+COMPLETE and LOCKED (2026-07-09). All 4 steps complete. Planning/governance only. No implementation. Source-path review: `docs/AGENT-PLATFORM-07-SOURCE-PATH-REVIEW.md`. Coordinator plan (22 sections): `docs/AGENT-PLATFORM-07-READ-ONLY-ORCHESTRATION-COORDINATOR-PLAN.md`. Checkpoint: `docs/AGENT-PLATFORM-07-CHECKPOINT.md`. Next recommended: AGENT-PLATFORM-07A �X Coordinator Contracts/Schema (not registered). AGENT-HARNESS write canary remains separate and not registered.
 
-**Checkpoint:** `docs/AGENT-PLATFORM-07-CHECKPOINT.md` — COMPLETE and LOCKED (2026-07-09)
+**Checkpoint:** `docs/AGENT-PLATFORM-07-CHECKPOINT.md` �X COMPLETE and LOCKED (2026-07-09)
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-07.
 
@@ -26057,35 +26057,35 @@ COMPLETE and LOCKED (2026-07-09). All 4 steps complete. Planning/governance only
 **Task ID:** AGENT-PLATFORM-07
 **Family:** AGENT PLATFORM / MULTI-BUILDER ORCHESTRATION
 **Priority:** High
-**Nature:** PLANNING/GOVERNANCE — read-only orchestration coordinator architecture planning
-**Risk:** HIGH — future coordinator work affects multi-builder collaboration routing, referral lifecycle, audit identity, safety limits, and cancellation/failure behavior
-**Keith approval:** Registration approved 2026-07-09 ("Approve registering AGENT-PLATFORM-07 — Read-Only Orchestration Coordinator Planning.")
+**Nature:** PLANNING/GOVERNANCE �X read-only orchestration coordinator architecture planning
+**Risk:** HIGH �X future coordinator work affects multi-builder collaboration routing, referral lifecycle, audit identity, safety limits, and cancellation/failure behavior
+**Keith approval:** Registration approved 2026-07-09 ("Approve registering AGENT-PLATFORM-07 �X Read-Only Orchestration Coordinator Planning.")
 
 #### Workflow Steps (4-step loop)
 
-1. **Registration** — COMPLETE (2026-07-09)
-2. **Coordinator readiness / source-path review** — COMPLETE (2026-07-09)
-3. **Read-only orchestration coordinator plan document** — COMPLETE (2026-07-09)
-4. **Consolidation / checkpoint** — COMPLETE (2026-07-09)
+1. **Registration** �X COMPLETE (2026-07-09)
+2. **Coordinator readiness / source-path review** �X COMPLETE (2026-07-09)
+3. **Read-only orchestration coordinator plan document** �X COMPLETE (2026-07-09)
+4. **Consolidation / checkpoint** �X COMPLETE (2026-07-09)
 
 #### Dependencies
 
-- AGENT-PLATFORM-06 — COMPLETE and LOCKED (Upstream Identity Propagation)
-- AGENT-PLATFORM-05 — COMPLETE and LOCKED (Multi-Builder Runtime Orchestration Plan)
-- AGENT-PLATFORM-04 — COMPLETE and LOCKED (Multi-Builder Runtime Topology Plan)
-- AGENT-HARNESS-07 — COMPLETE and LOCKED (Per-Builder Harness Config Adapter)
-- AGENT-HARNESS-06E — COMPLETE and LOCKED (Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary)
+- AGENT-PLATFORM-06 �X COMPLETE and LOCKED (Upstream Identity Propagation)
+- AGENT-PLATFORM-05 �X COMPLETE and LOCKED (Multi-Builder Runtime Orchestration Plan)
+- AGENT-PLATFORM-04 �X COMPLETE and LOCKED (Multi-Builder Runtime Topology Plan)
+- AGENT-HARNESS-07 �X COMPLETE and LOCKED (Per-Builder Harness Config Adapter)
+- AGENT-HARNESS-06E �X COMPLETE and LOCKED (Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary)
 - Keith approval recorded for registration
 
 #### Purpose
 
 Plan the read-only orchestration coordinator needed for multi-builder collaboration. This coordinator will later coordinate multiple Builder profiles using identity metadata already propagated by AGENT-PLATFORM-06. Initial orchestration must remain read-only.
 
-AGENT-PLATFORM-05 established the multi-builder orchestration plan. AGENT-PLATFORM-06 wired `agentRole`, `builderProfileId`, `collaborationRunId`, `referralTraceId` through the full execution path. The next architectural gap is defining a coordinator service that can accept multi-builder execution requests, route jobs by builder identity, manage `collaborationRunId` and `referralTraceId` lifecycles, and enforce safety limits — all before any shared workspace writes or runtime execution is activated.
+AGENT-PLATFORM-05 established the multi-builder orchestration plan. AGENT-PLATFORM-06 wired `agentRole`, `builderProfileId`, `collaborationRunId`, `referralTraceId` through the full execution path. The next architectural gap is defining a coordinator service that can accept multi-builder execution requests, route jobs by builder identity, manage `collaborationRunId` and `referralTraceId` lifecycles, and enforce safety limits �X all before any shared workspace writes or runtime execution is activated.
 
 #### Scope
 
-- Planning and governance task only. No implementation during Steps 1–3.
+- Planning and governance task only. No implementation during Steps 1�V3.
 - Future steps must define the read-only orchestration coordinator architecture.
 - Future steps must use the AGENT-PLATFORM-05 plan and AGENT-PLATFORM-06 identity propagation as the foundation.
 - Future coordinator plan must cover:
@@ -26112,19 +26112,19 @@ AGENT-PLATFORM-05 established the multi-builder orchestration plan. AGENT-PLATFO
 - No AGENT-HARNESS write canary in this task.
 - No runtime execution.
 
-#### Recommended Implementation Sequence (Not Registered — Requires Keith Approval)
+#### Recommended Implementation Sequence (Not Registered �X Requires Keith Approval)
 
-- AGENT-PLATFORM-07A — Coordinator contracts/schema (TypeScript types only, Low risk)
-- AGENT-PLATFORM-07B — API Gateway orchestration module skeleton (Medium risk)
-- AGENT-PLATFORM-07C — Read-only referral enqueue flow + cancel redesign (High risk)
-- AGENT-PLATFORM-07D — Collaboration audit events (Low risk)
-- AGENT-PLATFORM-07E — Read-only coordinator canary (High risk) — COMPLETE and LOCKED (2026-07-10)
-- AGENT-PLATFORM-07F — Live runtime orchestration integration canary (High risk) — COMPLETE and LOCKED (2026-07-12)
-- AGENT-PLATFORM-07F1 — Queue Transport + Metadata Preservation Canary (High risk) — COMPLETE and LOCKED (2026-07-10)
-- AGENT-PLATFORM-07F2 — Cancel Signal Path Canary (High risk) — COMPLETE and LOCKED (2026-07-10)
-- AGENT-PLATFORM-07F3 — Parent Consolidation Checkpoint (Medium risk) — COMPLETE and LOCKED (2026-07-12)
+- AGENT-PLATFORM-07A �X Coordinator contracts/schema (TypeScript types only, Low risk)
+- AGENT-PLATFORM-07B �X API Gateway orchestration module skeleton (Medium risk)
+- AGENT-PLATFORM-07C �X Read-only referral enqueue flow + cancel redesign (High risk)
+- AGENT-PLATFORM-07D �X Collaboration audit events (Low risk)
+- AGENT-PLATFORM-07E �X Read-only coordinator canary (High risk) �X COMPLETE and LOCKED (2026-07-10)
+- AGENT-PLATFORM-07F �X Live runtime orchestration integration canary (High risk) �X COMPLETE and LOCKED (2026-07-12)
+- AGENT-PLATFORM-07F1 �X Queue Transport + Metadata Preservation Canary (High risk) �X COMPLETE and LOCKED (2026-07-10)
+- AGENT-PLATFORM-07F2 �X Cancel Signal Path Canary (High risk) �X COMPLETE and LOCKED (2026-07-10)
+- AGENT-PLATFORM-07F3 �X Parent Consolidation Checkpoint (Medium risk) �X COMPLETE and LOCKED (2026-07-12)
 
-**AGENT-HARNESS write canary remains a separate track — not registered, not part of AGENT-PLATFORM-07 child slices.**
+**AGENT-HARNESS write canary remains a separate track �X not registered, not part of AGENT-PLATFORM-07 child slices.**
 
 #### Non-Goals
 
@@ -26137,7 +26137,7 @@ AGENT-PLATFORM-05 established the multi-builder orchestration plan. AGENT-PLATFO
 - No new user-facing UX text (future implementation must be multilingual-first if UX text is added)
 - No `write_file` / `delete_file` / `run_validation` activation
 - No shared workspace writes
-- No AGENT-HARNESS write canary (separate track — must not be mixed into this task)
+- No AGENT-HARNESS write canary (separate track �X must not be mixed into this task)
 - No billing enforcement
 - No provider / API calls
 - No browser smoke
@@ -26163,22 +26163,22 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 - [x] AGENT-HARNESS-07 remains COMPLETE and LOCKED
 - [x] AGENT-HARNESS-06E remains COMPLETE and LOCKED
 - [x] Registration records this is planning/governance only
-- [x] Registration records read-only orchestration only — no shared workspace writes
+- [x] Registration records read-only orchestration only �X no shared workspace writes
 - [x] Registration records AGENT-HARNESS write canary is separate and not part of this task
 - [x] Registration records no implementation/runtime execution occurred
 - [x] Registration records next step is coordinator readiness/source-path review
 - [x] No implementation files changed
 - [x] No commands run
 - [x] One-active-task rule satisfied
-- [x] Coordinator readiness/source-path review document created (Step 2) — `docs/AGENT-PLATFORM-07-SOURCE-PATH-REVIEW.md`
-- [x] Read-only orchestration coordinator plan document created (Step 3) — `docs/AGENT-PLATFORM-07-READ-ONLY-ORCHESTRATION-COORDINATOR-PLAN.md`
+- [x] Coordinator readiness/source-path review document created (Step 2) �X `docs/AGENT-PLATFORM-07-SOURCE-PATH-REVIEW.md`
+- [x] Read-only orchestration coordinator plan document created (Step 3) �X `docs/AGENT-PLATFORM-07-READ-ONLY-ORCHESTRATION-COORDINATOR-PLAN.md`
 - [x] Checkpoint document created: `docs/AGENT-PLATFORM-07-CHECKPOINT.md` (Step 4)
 - [x] TASKS.md updated COMPLETE and LOCKED (Step 4)
 - [x] TASKS_BACKLOG_FULL.md mirrored (Step 4)
 - [x] AINOW-EXECUTION-ROADMAP.md updated (Step 4)
 - [x] Next recommended task recorded, not registered: AGENT-PLATFORM-07A (Step 4)
 - [x] AGENT-HARNESS write canary confirmed separate and not registered (Step 4)
-- [x] No ACTIVE task (Step 4) — no task registered; registration requires Keith approval
+- [x] No ACTIVE task (Step 4) �X no task registered; registration requires Keith approval
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-07.
 
@@ -26186,52 +26186,52 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 #### AGENT-PLATFORM-07A: Coordinator Contracts / Schema
 
-**Status:** COMPLETE and LOCKED — 2026-07-09
+**Status:** COMPLETE and LOCKED �X 2026-07-09
 **Registered:** 2026-07-09
 **Task ID:** AGENT-PLATFORM-07A
 **Family:** AGENT PLATFORM / MULTI-BUILDER ORCHESTRATION / READ-ONLY COORDINATOR
 **Priority:** High
-**Nature:** IMPLEMENTATION — TypeScript-only orchestration contracts/schema
-**Risk:** MEDIUM — TypeScript contracts only, but these contracts shape future orchestration, audit, referral, and cancellation implementation
-**Keith approval:** Registration approved 2026-07-09 ("Approve registering AGENT-PLATFORM-07A — Coordinator Contracts / Schema")
-**Checkpoint:** `docs/AGENT-PLATFORM-07A-CHECKPOINT.md` — COMPLETE and LOCKED (2026-07-09)
+**Nature:** IMPLEMENTATION �X TypeScript-only orchestration contracts/schema
+**Risk:** MEDIUM �X TypeScript contracts only, but these contracts shape future orchestration, audit, referral, and cancellation implementation
+**Keith approval:** Registration approved 2026-07-09 ("Approve registering AGENT-PLATFORM-07A �X Coordinator Contracts / Schema")
+**Checkpoint:** `docs/AGENT-PLATFORM-07A-CHECKPOINT.md` �X COMPLETE and LOCKED (2026-07-09)
 
 #### Workflow Steps (3-step loop)
 
-1. **Registration** — COMPLETE (2026-07-09)
-2. **Bounded implementation** — COMPLETE (2026-07-09)
-3. **Consolidation / checkpoint** — COMPLETE (2026-07-09)
+1. **Registration** �X COMPLETE (2026-07-09)
+2. **Bounded implementation** �X COMPLETE (2026-07-09)
+3. **Consolidation / checkpoint** �X COMPLETE (2026-07-09)
 
 #### Dependencies
 
-- AGENT-PLATFORM-07 — COMPLETE and LOCKED (Read-Only Orchestration Coordinator Planning)
-- AGENT-PLATFORM-06 — COMPLETE and LOCKED (Upstream Identity Propagation)
-- AGENT-PLATFORM-05 — COMPLETE and LOCKED (Multi-Builder Runtime Orchestration Plan)
-- AGENT-PLATFORM-04 — COMPLETE and LOCKED (Multi-Builder Runtime Topology Plan)
-- AGENT-HARNESS-07 — COMPLETE and LOCKED (Per-Builder Harness Config Adapter)
-- AGENT-HARNESS-06E — COMPLETE and LOCKED (Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary)
+- AGENT-PLATFORM-07 �X COMPLETE and LOCKED (Read-Only Orchestration Coordinator Planning)
+- AGENT-PLATFORM-06 �X COMPLETE and LOCKED (Upstream Identity Propagation)
+- AGENT-PLATFORM-05 �X COMPLETE and LOCKED (Multi-Builder Runtime Orchestration Plan)
+- AGENT-PLATFORM-04 �X COMPLETE and LOCKED (Multi-Builder Runtime Topology Plan)
+- AGENT-HARNESS-07 �X COMPLETE and LOCKED (Per-Builder Harness Config Adapter)
+- AGENT-HARNESS-06E �X COMPLETE and LOCKED (Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary)
 - Keith approval recorded for registration
 
 #### Purpose
 
 Create TypeScript-only orchestration contracts/schema as the first implementation slice after AGENT-PLATFORM-07 planning. These contracts define the bounded type surface for future coordinator implementation slices (AGENT-PLATFORM-07B through 07E) without any runtime behavior, service wiring, database migration, or API endpoint.
 
-AGENT-PLATFORM-07 produced a 22-section read-only orchestration coordinator plan and identified the API Gateway `orchestration/` module boundary, `collaborationRunId`/`referralTraceId` lifecycle, referral object contract, safety limits, and the recommended implementation sequence. This slice delivers only the TypeScript type contracts — the stable foundation that future slices will build on.
+AGENT-PLATFORM-07 produced a 22-section read-only orchestration coordinator plan and identified the API Gateway `orchestration/` module boundary, `collaborationRunId`/`referralTraceId` lifecycle, referral object contract, safety limits, and the recommended implementation sequence. This slice delivers only the TypeScript type contracts �X the stable foundation that future slices will build on.
 
 #### Scope
 
 - TypeScript-only contracts/schema. Pure exported types, interfaces, constants, and enums.
 - Expected new file: `services/api-gateway/src/orchestration/orchestration.contracts.ts`
 - Contract concepts to include as appropriate:
-  - `CollaborationRun` — collaboration run record shape
-  - `CollaborationReferral` — referral step record shape
-  - `ReferralResult` — result returned by a referred builder
-  - `ReferralConstraints` — per-referral execution constraints (`maxDurationMs`, `maxToolIterations`, `readOnly`, `allowedTools`)
-  - `ReferralStatus` — enum: `pending_approval`, `approved`, `in_progress`, `completed`, `failed`, `cancelled`, `timed_out`
-  - `CollaborationRunStatus` — enum for collaboration run lifecycle states
-  - `OrchestrationAuditEvent` — audit event interface
-  - `CollaborationAgentIdentity` — `{ agentRole, builderProfileId }`
-  - `collaborationRunId`, `referralTraceId`, `referralId`, `parentReferralTraceId` — typed field shapes
+  - `CollaborationRun` �X collaboration run record shape
+  - `CollaborationReferral` �X referral step record shape
+  - `ReferralResult` �X result returned by a referred builder
+  - `ReferralConstraints` �X per-referral execution constraints (`maxDurationMs`, `maxToolIterations`, `readOnly`, `allowedTools`)
+  - `ReferralStatus` �X enum: `pending_approval`, `approved`, `in_progress`, `completed`, `failed`, `cancelled`, `timed_out`
+  - `CollaborationRunStatus` �X enum for collaboration run lifecycle states
+  - `OrchestrationAuditEvent` �X audit event interface
+  - `CollaborationAgentIdentity` �X `{ agentRole, builderProfileId }`
+  - `collaborationRunId`, `referralTraceId`, `referralId`, `parentReferralTraceId` �X typed field shapes
   - Source and target builder identity fields
   - Max referral depth, max agents constants
   - Idempotency key shape
@@ -26244,7 +26244,7 @@ AGENT-PLATFORM-07 produced a 22-section read-only orchestration coordinator plan
 
 - TypeScript-only. No runtime coordinator. No service wiring. No database migration. No BullMQ job execution. No API endpoint. No frontend UI.
 - Preserve AGENT-PLATFORM-07 decisions: read-only orchestration first, API Gateway orchestration module boundary, single queue with metadata routing, 1 builder = 1 session = 1 container, no shared workspace writes, cancel/timeout redesign deferred to AGENT-PLATFORM-07C.
-- No AGENT-HARNESS write canary (separate track — must not be mixed into this slice).
+- No AGENT-HARNESS write canary (separate track �X must not be mixed into this slice).
 - No `write_file` / `delete_file` / `run_validation` activation.
 - No new dependencies.
 
@@ -26295,8 +26295,8 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 - [x] AINOW-EXECUTION-ROADMAP.md updated (Step 1)
 - [x] `services/api-gateway/src/orchestration/orchestration.contracts.ts` created (Step 2)
 - [x] Contracts cover all approved concepts from AGENT-PLATFORM-07 plan (Step 2)
-- [x] TypeScript clean (Step 2) — `npx tsc --noEmit` exit code 0, no errors
-- [x] Backward-compatible — no existing type changes (Step 2)
+- [x] TypeScript clean (Step 2) �X `npx tsc --noEmit` exit code 0, no errors
+- [x] Backward-compatible �X no existing type changes (Step 2)
 - [x] Checkpoint document created: `docs/AGENT-PLATFORM-07A-CHECKPOINT.md` (Step 3)
 - [x] TASKS.md updated COMPLETE and LOCKED (Step 3)
 - [x] TASKS_BACKLOG_FULL.md mirrored (Step 3)
@@ -26307,11 +26307,11 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 - Command: `Set-Location -LiteralPath 'C:\Users\knlee\aiSandBox2026B\services\api-gateway'; npx tsc --noEmit`
 - Exit code: `0`
 - TypeScript errors: None
-- Jest: Not run — no spec file added; pure exported contracts/constants; compile validation sufficient
+- Jest: Not run �X no spec file added; pure exported contracts/constants; compile validation sufficient
 
 #### Next Task
 
-**AGENT-PLATFORM-07B — API Gateway Orchestration Module Skeleton — COMPLETE and LOCKED — 2026-07-09.**
+**AGENT-PLATFORM-07B �X API Gateway Orchestration Module Skeleton �X COMPLETE and LOCKED �X 2026-07-09.**
 
 All 3 steps complete. `OrchestrationModule` + `OrchestrationService` created; `AppModule` updated. Jest PASS (1 suite, 3 tests). TypeScript clean (exit code 0). Checkpoint: `docs/AGENT-PLATFORM-07B-CHECKPOINT.md`. AGENT-HARNESS write canary remains a separate track.
 
@@ -26327,33 +26327,33 @@ All 3 steps complete. `OrchestrationModule` + `OrchestrationService` created; `A
 **Task ID:** AGENT-PLATFORM-07B
 **Family:** AGENT PLATFORM / MULTI-BUILDER ORCHESTRATION / READ-ONLY COORDINATOR
 **Priority:** High
-**Nature:** IMPLEMENTATION — NestJS module/service skeleton; read-only orchestration boundary
-**Risk:** MEDIUM — module skeleton only, but it defines the future API Gateway orchestration service boundary
-**Keith approval:** Registration approved 2026-07-09 ("Approve registering AGENT-PLATFORM-07B — API Gateway Orchestration Module Skeleton.")
+**Nature:** IMPLEMENTATION �X NestJS module/service skeleton; read-only orchestration boundary
+**Risk:** MEDIUM �X module skeleton only, but it defines the future API Gateway orchestration service boundary
+**Keith approval:** Registration approved 2026-07-09 ("Approve registering AGENT-PLATFORM-07B �X API Gateway Orchestration Module Skeleton.")
 **Checkpoint:** `docs/AGENT-PLATFORM-07B-CHECKPOINT.md`
 
 #### Workflow Steps (3-step loop)
 
-1. **Registration** — COMPLETE (2026-07-09)
-2. **Bounded implementation** — COMPLETE (2026-07-09)
-3. **Consolidation / checkpoint** — COMPLETE (2026-07-09)
+1. **Registration** �X COMPLETE (2026-07-09)
+2. **Bounded implementation** �X COMPLETE (2026-07-09)
+3. **Consolidation / checkpoint** �X COMPLETE (2026-07-09)
 
 #### Dependencies
 
-- AGENT-PLATFORM-07A — COMPLETE and LOCKED (Coordinator Contracts / Schema)
-- AGENT-PLATFORM-07 — COMPLETE and LOCKED (Read-Only Orchestration Coordinator Planning)
-- AGENT-PLATFORM-06 — COMPLETE and LOCKED (Upstream Identity Propagation)
-- AGENT-PLATFORM-05 — COMPLETE and LOCKED (Multi-Builder Runtime Orchestration Plan)
-- AGENT-PLATFORM-04 — COMPLETE and LOCKED (Multi-Builder Runtime Topology Plan)
-- AGENT-HARNESS-07 — COMPLETE and LOCKED (Per-Builder Harness Config Adapter)
-- AGENT-HARNESS-06E — COMPLETE and LOCKED (Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary)
+- AGENT-PLATFORM-07A �X COMPLETE and LOCKED (Coordinator Contracts / Schema)
+- AGENT-PLATFORM-07 �X COMPLETE and LOCKED (Read-Only Orchestration Coordinator Planning)
+- AGENT-PLATFORM-06 �X COMPLETE and LOCKED (Upstream Identity Propagation)
+- AGENT-PLATFORM-05 �X COMPLETE and LOCKED (Multi-Builder Runtime Orchestration Plan)
+- AGENT-PLATFORM-04 �X COMPLETE and LOCKED (Multi-Builder Runtime Topology Plan)
+- AGENT-HARNESS-07 �X COMPLETE and LOCKED (Per-Builder Harness Config Adapter)
+- AGENT-HARNESS-06E �X COMPLETE and LOCKED (Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary)
 - Keith approval recorded for registration
 
 #### Purpose
 
 Create the API Gateway orchestration module skeleton as the second implementation slice of the read-only orchestration coordinator. This establishes the NestJS module/service boundary for future read-only orchestration, using the contracts created in AGENT-PLATFORM-07A, without any runtime coordinator behavior.
 
-AGENT-PLATFORM-07A delivered the TypeScript-only contracts/schema. This slice wires those contracts into a bounded NestJS module and stub service — the foundation that future slices (AGENT-PLATFORM-07C through 07E) will build coordinator behavior upon.
+AGENT-PLATFORM-07A delivered the TypeScript-only contracts/schema. This slice wires those contracts into a bounded NestJS module and stub service �X the foundation that future slices (AGENT-PLATFORM-07C through 07E) will build coordinator behavior upon.
 
 #### Scope
 
@@ -26377,7 +26377,7 @@ AGENT-PLATFORM-07A delivered the TypeScript-only contracts/schema. This slice wi
 #### Implementation Constraints
 
 - Preserve AGENT-PLATFORM-07 decisions: read-only orchestration first, API Gateway orchestration module boundary, single ai-execution queue with metadata routing later, 1 builder = 1 session = 1 container, no shared workspace writes, no write_file/delete_file/run_validation activation.
-- AGENT-HARNESS write canary remains a separate track — must not be mixed into this slice.
+- AGENT-HARNESS write canary remains a separate track �X must not be mixed into this slice.
 - No new dependencies unless explicitly required and approved.
 - No database migration.
 - No API endpoints (no controller) unless proven necessary by existing patterns.
@@ -26429,14 +26429,14 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 - [x] `services/api-gateway/src/orchestration/orchestration.module.ts` created (Step 2)
 - [x] `services/api-gateway/src/orchestration/orchestration.service.ts` created (Step 2)
 - [x] Module registered in `AppModule` (Step 2)
-- [x] TypeScript clean (Step 2) — `npx tsc --noEmit` exit code 0
-- [x] Unit tests pass (Step 2) — 1 suite, 3 tests passed
+- [x] TypeScript clean (Step 2) �X `npx tsc --noEmit` exit code 0
+- [x] Unit tests pass (Step 2) �X 1 suite, 3 tests passed
 - [x] Checkpoint document created: `docs/AGENT-PLATFORM-07B-CHECKPOINT.md` (Step 3)
 - [x] TASKS.md updated COMPLETE and LOCKED (Step 3)
 - [x] TASKS_BACKLOG_FULL.md mirrored (Step 3)
 - [x] AINOW-EXECUTION-ROADMAP.md updated (Step 3)
 
-**Step 1 (Registration) acceptance criteria — all satisfied:**
+**Step 1 (Registration) acceptance criteria �X all satisfied:**
 - [x] AGENT-PLATFORM-07B registered as ACTIVE
 - [x] AGENT-PLATFORM-07A remains COMPLETE and LOCKED
 - [x] AGENT-PLATFORM-07/06/05/04 remain COMPLETE and LOCKED
@@ -26452,7 +26452,7 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 - [x] TASKS_BACKLOG_FULL.md mirrored
 - [x] AINOW-EXECUTION-ROADMAP.md updated
 
-**Step 2 (Bounded implementation) acceptance criteria — all satisfied:**
+**Step 2 (Bounded implementation) acceptance criteria �X all satisfied:**
 - [x] `services/api-gateway/src/orchestration/orchestration.module.ts` created
 - [x] `services/api-gateway/src/orchestration/orchestration.service.ts` created
 - [x] `services/api-gateway/src/orchestration/__tests__/orchestration.service.spec.ts` created
@@ -26460,8 +26460,8 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 - [x] `OrchestrationService` uses contracts from `orchestration.contracts.ts`
 - [x] `getDefaultReferralConstraints()` returns correct defaults
 - [x] `getReadOnlyPolicy()` returns correct read-only policy
-- [x] `npx tsc --noEmit` exit code 0 — no TypeScript errors
-- [x] `npx jest --runInBand "orchestration.service"` PASS — 1 suite, 3 tests
+- [x] `npx tsc --noEmit` exit code 0 �X no TypeScript errors
+- [x] `npx jest --runInBand "orchestration.service"` PASS �X 1 suite, 3 tests
 - [x] No controllers/endpoints added
 - [x] No queue enqueue flow added
 - [x] No cancellation redesign added
@@ -26469,7 +26469,7 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 - [x] No frontend UI added
 - [x] AGENT-HARNESS write canary remains a separate track
 
-**Step 3 (Consolidation/checkpoint) acceptance criteria — all satisfied:**
+**Step 3 (Consolidation/checkpoint) acceptance criteria �X all satisfied:**
 - [x] Checkpoint document created: `docs/AGENT-PLATFORM-07B-CHECKPOINT.md`
 - [x] Validation results recorded in checkpoint
 - [x] TASKS.md updated COMPLETE and LOCKED
@@ -26480,12 +26480,12 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 - [x] No tests/builds/runtime/provider calls during consolidation
 
 **Validation results:**
-- Jest: `npx jest --runInBand "orchestration.service"` → PASS, 1 suite, 3 tests passed, 0 failed
-- TypeScript: `npx tsc --noEmit` → exit code 0, no errors
+- Jest: `npx jest --runInBand "orchestration.service"` �� PASS, 1 suite, 3 tests passed, 0 failed
+- TypeScript: `npx tsc --noEmit` �� exit code 0, no errors
 
-**AGENT-PLATFORM-07C — Read-Only Referral Enqueue Flow + Cancel Redesign — COMPLETE and LOCKED (2026-07-10). Parent task. All 3 child slices COMPLETE and LOCKED. Parent checkpoint: `docs/AGENT-PLATFORM-07C-CHECKPOINT.md`.**
+**AGENT-PLATFORM-07C �X Read-Only Referral Enqueue Flow + Cancel Redesign �X COMPLETE and LOCKED (2026-07-10). Parent task. All 3 child slices COMPLETE and LOCKED. Parent checkpoint: `docs/AGENT-PLATFORM-07C-CHECKPOINT.md`.**
 
-HIGH risk (parent). 4-step loop. Keith approval recorded 2026-07-09 for registration. Step 2 (readiness/design review) COMPLETE — 2026-07-09. Split decision: 3 child slices approved. AGENT-PLATFORM-07C1 COMPLETE and LOCKED (2026-07-09) — checkpoint: `docs/AGENT-PLATFORM-07C1-CHECKPOINT.md`. AGENT-PLATFORM-07C2 COMPLETE and LOCKED (2026-07-09) — checkpoint: `docs/AGENT-PLATFORM-07C2-CHECKPOINT.md`. AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10) — checkpoint: `docs/AGENT-PLATFORM-07C3-CHECKPOINT.md`. Parent COMPLETE and LOCKED — checkpoint: `docs/AGENT-PLATFORM-07C-CHECKPOINT.md`. Critical correction: cancel redesign risk downgraded from HIGH to LOW–MEDIUM — obliterate claim from prior source-path review was incorrect; no obliterate call exists; cancel is already per-execution via `ExecutionResultService.requestCancel(executionId)`. AGENT-HARNESS write canary remains a separate track.
+HIGH risk (parent). 4-step loop. Keith approval recorded 2026-07-09 for registration. Step 2 (readiness/design review) COMPLETE �X 2026-07-09. Split decision: 3 child slices approved. AGENT-PLATFORM-07C1 COMPLETE and LOCKED (2026-07-09) �X checkpoint: `docs/AGENT-PLATFORM-07C1-CHECKPOINT.md`. AGENT-PLATFORM-07C2 COMPLETE and LOCKED (2026-07-09) �X checkpoint: `docs/AGENT-PLATFORM-07C2-CHECKPOINT.md`. AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10) �X checkpoint: `docs/AGENT-PLATFORM-07C3-CHECKPOINT.md`. Parent COMPLETE and LOCKED �X checkpoint: `docs/AGENT-PLATFORM-07C-CHECKPOINT.md`. Critical correction: cancel redesign risk downgraded from HIGH to LOW�VMEDIUM �X obliterate claim from prior source-path review was incorrect; no obliterate call exists; cancel is already per-execution via `ExecutionResultService.requestCancel(executionId)`. AGENT-HARNESS write canary remains a separate track.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-07B.
 
@@ -26493,62 +26493,62 @@ HIGH risk (parent). 4-step loop. Keith approval recorded 2026-07-09 for registra
 
 #### AGENT-PLATFORM-07C: Read-Only Referral Enqueue Flow + Cancel Redesign
 
-**Status:** COMPLETE and LOCKED — 2026-07-10 — all 3 child slices COMPLETE and LOCKED — checkpoint: `docs/AGENT-PLATFORM-07C-CHECKPOINT.md`
+**Status:** COMPLETE and LOCKED �X 2026-07-10 �X all 3 child slices COMPLETE and LOCKED �X checkpoint: `docs/AGENT-PLATFORM-07C-CHECKPOINT.md`
 **Registered:** 2026-07-09
 **Task ID:** AGENT-PLATFORM-07C
 **Family:** AGENT PLATFORM / MULTI-BUILDER ORCHESTRATION / READ-ONLY COORDINATOR
 **Priority:** High
-**Nature:** IMPLEMENTATION — Read-only referral enqueue flow + per-execution/per-referral cancel redesign
-**Risk:** HIGH (parent task) — downgraded to MEDIUM for 07C1 child slice; cancel redesign risk downgraded from HIGH to LOW–MEDIUM (obliterate does not exist; cancel is already per-execution)
+**Nature:** IMPLEMENTATION �X Read-only referral enqueue flow + per-execution/per-referral cancel redesign
+**Risk:** HIGH (parent task) �X downgraded to MEDIUM for 07C1 child slice; cancel redesign risk downgraded from HIGH to LOW�VMEDIUM (obliterate does not exist; cancel is already per-execution)
 **Keith approval:** Registration approved 2026-07-09. Child-slice split and 07C1 registration approved 2026-07-09 ("approved"). 07C3 registration approved 2026-07-10 ("approve").
 
-#### Workflow Steps (4-step loop — HIGH risk — parent task)
+#### Workflow Steps (4-step loop �X HIGH risk �X parent task)
 
-1. **Registration** — COMPLETE (2026-07-09)
-2. **Readiness / design review** — COMPLETE (2026-07-09) — see `docs/AGENT-PLATFORM-07C-READINESS-DESIGN-REVIEW.md` — split decision: 3 child slices (07C1/07C2/07C3)
-3. **Bounded implementation** — COMPLETE via child slices — 07C1 COMPLETE and LOCKED (2026-07-09); 07C2 COMPLETE and LOCKED (2026-07-09); 07C3 COMPLETE and LOCKED (2026-07-10)
-4. **Consolidation / checkpoint** — COMPLETE (2026-07-10) — checkpoint: `docs/AGENT-PLATFORM-07C-CHECKPOINT.md`
+1. **Registration** �X COMPLETE (2026-07-09)
+2. **Readiness / design review** �X COMPLETE (2026-07-09) �X see `docs/AGENT-PLATFORM-07C-READINESS-DESIGN-REVIEW.md` �X split decision: 3 child slices (07C1/07C2/07C3)
+3. **Bounded implementation** �X COMPLETE via child slices �X 07C1 COMPLETE and LOCKED (2026-07-09); 07C2 COMPLETE and LOCKED (2026-07-09); 07C3 COMPLETE and LOCKED (2026-07-10)
+4. **Consolidation / checkpoint** �X COMPLETE (2026-07-10) �X checkpoint: `docs/AGENT-PLATFORM-07C-CHECKPOINT.md`
 
-#### Step 2 Split Decision (COMPLETE — 2026-07-09)
+#### Step 2 Split Decision (COMPLETE �X 2026-07-09)
 
 Based on readiness/design review (`docs/AGENT-PLATFORM-07C-READINESS-DESIGN-REVIEW.md`):
 
 - **Decision: Split into 3 child slices** (Keith approved 2026-07-09)
-- AGENT-PLATFORM-07C1 — Orchestration Core Methods + In-Memory Store (**COMPLETE and LOCKED — 2026-07-09** — checkpoint: `docs/AGENT-PLATFORM-07C1-CHECKPOINT.md`)
-- AGENT-PLATFORM-07C2 — Referral Enqueue + Cancel + AiExecutionJob Extension (**COMPLETE and LOCKED — 2026-07-09** — checkpoint: `docs/AGENT-PLATFORM-07C2-CHECKPOINT.md`)
-- AGENT-PLATFORM-07C3 — Targeted Tests and Parent Consolidation (**COMPLETE and LOCKED — 2026-07-10** — checkpoint: `docs/AGENT-PLATFORM-07C3-CHECKPOINT.md`)
+- AGENT-PLATFORM-07C1 �X Orchestration Core Methods + In-Memory Store (**COMPLETE and LOCKED �X 2026-07-09** �X checkpoint: `docs/AGENT-PLATFORM-07C1-CHECKPOINT.md`)
+- AGENT-PLATFORM-07C2 �X Referral Enqueue + Cancel + AiExecutionJob Extension (**COMPLETE and LOCKED �X 2026-07-09** �X checkpoint: `docs/AGENT-PLATFORM-07C2-CHECKPOINT.md`)
+- AGENT-PLATFORM-07C3 �X Targeted Tests and Parent Consolidation (**COMPLETE and LOCKED �X 2026-07-10** �X checkpoint: `docs/AGENT-PLATFORM-07C3-CHECKPOINT.md`)
 
-**Critical correction recorded:** The AGENT-PLATFORM-07 source-path review (§4.2, §5.4, §7.4, §12.1) incorrectly stated that `QueueService.cancelExecution(sessionId)` calls `this.queue.obliterate({ force: true })`. This is incorrect. No obliterate call exists anywhere in the codebase. Cancel is per-execution via `ExecutionResultService.requestCancel(executionId)` → `usage_records.execution_status = 'cancel_requested'`. Worker polls and aborts via `AbortController`. Cancel redesign risk: **downgraded from HIGH to LOW–MEDIUM**. AGENT-PLATFORM-07C1 does not implement cancel redesign.
+**Critical correction recorded:** The AGENT-PLATFORM-07 source-path review (��4.2, ��5.4, ��7.4, ��12.1) incorrectly stated that `QueueService.cancelExecution(sessionId)` calls `this.queue.obliterate({ force: true })`. This is incorrect. No obliterate call exists anywhere in the codebase. Cancel is per-execution via `ExecutionResultService.requestCancel(executionId)` �� `usage_records.execution_status = 'cancel_requested'`. Worker polls and aborts via `AbortController`. Cancel redesign risk: **downgraded from HIGH to LOW�VMEDIUM**. AGENT-PLATFORM-07C1 does not implement cancel redesign.
 
 #### Dependencies
 
-- AGENT-PLATFORM-07C2 — COMPLETE and LOCKED (Referral Enqueue + Cancel + AiExecutionJob Extension — 2026-07-09)
-- AGENT-PLATFORM-07C1 — COMPLETE and LOCKED (Orchestration Core Methods + In-Memory Store — 2026-07-09)
-- AGENT-PLATFORM-07C Step 2 readiness/design review — COMPLETE (2026-07-09)
-- AGENT-PLATFORM-07B — COMPLETE and LOCKED (API Gateway Orchestration Module Skeleton)
-- AGENT-PLATFORM-07A — COMPLETE and LOCKED (Coordinator Contracts / Schema)
-- AGENT-PLATFORM-07 — COMPLETE and LOCKED (Read-Only Orchestration Coordinator Planning)
-- AGENT-PLATFORM-06 — COMPLETE and LOCKED (Upstream Identity Propagation)
-- AGENT-PLATFORM-05 — COMPLETE and LOCKED (Multi-Builder Runtime Orchestration Plan)
-- AGENT-PLATFORM-04 — COMPLETE and LOCKED (Multi-Builder Runtime Topology Plan)
-- AGENT-HARNESS-07 — COMPLETE and LOCKED (Per-Builder Harness Config Adapter)
-- AGENT-HARNESS-06E — COMPLETE and LOCKED (Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary)
+- AGENT-PLATFORM-07C2 �X COMPLETE and LOCKED (Referral Enqueue + Cancel + AiExecutionJob Extension �X 2026-07-09)
+- AGENT-PLATFORM-07C1 �X COMPLETE and LOCKED (Orchestration Core Methods + In-Memory Store �X 2026-07-09)
+- AGENT-PLATFORM-07C Step 2 readiness/design review �X COMPLETE (2026-07-09)
+- AGENT-PLATFORM-07B �X COMPLETE and LOCKED (API Gateway Orchestration Module Skeleton)
+- AGENT-PLATFORM-07A �X COMPLETE and LOCKED (Coordinator Contracts / Schema)
+- AGENT-PLATFORM-07 �X COMPLETE and LOCKED (Read-Only Orchestration Coordinator Planning)
+- AGENT-PLATFORM-06 �X COMPLETE and LOCKED (Upstream Identity Propagation)
+- AGENT-PLATFORM-05 �X COMPLETE and LOCKED (Multi-Builder Runtime Orchestration Plan)
+- AGENT-PLATFORM-04 �X COMPLETE and LOCKED (Multi-Builder Runtime Topology Plan)
+- AGENT-HARNESS-07 �X COMPLETE and LOCKED (Per-Builder Harness Config Adapter)
+- AGENT-HARNESS-06E �X COMPLETE and LOCKED (Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary)
 - Keith approval recorded for registration and child-slice split
 - Keith approval recorded for AGENT-PLATFORM-07C2 registration (2026-07-09)
 - Keith approval recorded for AGENT-PLATFORM-07C3 registration (2026-07-10)
 
-#### Non-Goals (parent task — child slices govern implementation)
+#### Non-Goals (parent task �X child slices govern implementation)
 
-- No implementation in parent task directly — implementation via child slices
+- No implementation in parent task directly �X implementation via child slices
 - AGENT-PLATFORM-07C1 scope: core methods + in-memory store only (no enqueue, no cancel, no worker changes, no DB migration, no controller/endpoints)
-- AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10) — checkpoint: `docs/AGENT-PLATFORM-07C3-CHECKPOINT.md`
+- AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10) �X checkpoint: `docs/AGENT-PLATFORM-07C3-CHECKPOINT.md`
 - AGENT-HARNESS write canary remains a separate track
 - No write_file/delete_file/run_validation activation
 - No shared workspace writes
 - No database migration
 - No frontend UI
 
-**AGENT-PLATFORM-07C parent task is now COMPLETE and LOCKED — checkpoint: `docs/AGENT-PLATFORM-07C-CHECKPOINT.md`.**
+**AGENT-PLATFORM-07C parent task is now COMPLETE and LOCKED �X checkpoint: `docs/AGENT-PLATFORM-07C-CHECKPOINT.md`.**
 
 #### Acceptance Criteria
 
@@ -26557,19 +26557,19 @@ Based on readiness/design review (`docs/AGENT-PLATFORM-07C-READINESS-DESIGN-REVI
 - [x] AGENT-PLATFORM-07A remains COMPLETE and LOCKED
 - [x] AGENT-PLATFORM-07/06/05/04 remain COMPLETE and LOCKED
 - [x] AGENT-HARNESS-07/06E remain COMPLETE and LOCKED
-- [x] Step 2 readiness/design review COMPLETE — `docs/AGENT-PLATFORM-07C-READINESS-DESIGN-REVIEW.md`
-- [x] Split decision recorded — 3 child slices approved (07C1/07C2/07C3)
-- [x] AGENT-PLATFORM-07C1 COMPLETE and LOCKED (2026-07-09) — checkpoint: `docs/AGENT-PLATFORM-07C1-CHECKPOINT.md`
-- [x] AGENT-PLATFORM-07C2 COMPLETE and LOCKED (2026-07-09) — checkpoint: `docs/AGENT-PLATFORM-07C2-CHECKPOINT.md`
-- [x] AGENT-PLATFORM-07C3 ACTIVE — Step 1 COMPLETE (2026-07-10) — Keith approval recorded — now COMPLETE and LOCKED (2026-07-10)
-- [x] Critical correction recorded — obliterate does not exist; cancel redesign risk downgraded
+- [x] Step 2 readiness/design review COMPLETE �X `docs/AGENT-PLATFORM-07C-READINESS-DESIGN-REVIEW.md`
+- [x] Split decision recorded �X 3 child slices approved (07C1/07C2/07C3)
+- [x] AGENT-PLATFORM-07C1 COMPLETE and LOCKED (2026-07-09) �X checkpoint: `docs/AGENT-PLATFORM-07C1-CHECKPOINT.md`
+- [x] AGENT-PLATFORM-07C2 COMPLETE and LOCKED (2026-07-09) �X checkpoint: `docs/AGENT-PLATFORM-07C2-CHECKPOINT.md`
+- [x] AGENT-PLATFORM-07C3 ACTIVE �X Step 1 COMPLETE (2026-07-10) �X Keith approval recorded �X now COMPLETE and LOCKED (2026-07-10)
+- [x] Critical correction recorded �X obliterate does not exist; cancel redesign risk downgraded
 - [x] AGENT-HARNESS write canary remains a separate track
 - [x] One-active-task rule satisfied
-- [x] AGENT-PLATFORM-07C3 Step 2 (targeted validation/regression) — COMPLETE (2026-07-10)
-- [x] AGENT-PLATFORM-07C3 Step 3 (consolidation/checkpoint) — COMPLETE (2026-07-10)
-- [x] Step 4 consolidation/checkpoint — COMPLETE (2026-07-10) — `docs/AGENT-PLATFORM-07C-CHECKPOINT.md`
+- [x] AGENT-PLATFORM-07C3 Step 2 (targeted validation/regression) �X COMPLETE (2026-07-10)
+- [x] AGENT-PLATFORM-07C3 Step 3 (consolidation/checkpoint) �X COMPLETE (2026-07-10)
+- [x] Step 4 consolidation/checkpoint �X COMPLETE (2026-07-10) �X `docs/AGENT-PLATFORM-07C-CHECKPOINT.md`
 
-**AGENT-HARNESS write canary remains a separate track** — not registered, not part of AGENT-PLATFORM-07 child slices.
+**AGENT-HARNESS write canary remains a separate track** �X not registered, not part of AGENT-PLATFORM-07 child slices.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-07C.
 
@@ -26577,61 +26577,61 @@ Based on readiness/design review (`docs/AGENT-PLATFORM-07C-READINESS-DESIGN-REVI
 
 #### AGENT-PLATFORM-07C1: Orchestration Core Methods + In-Memory Store
 
-**Status:** COMPLETE and LOCKED — 2026-07-09
+**Status:** COMPLETE and LOCKED �X 2026-07-09
 **Registered:** 2026-07-09
 **Completed:** 2026-07-09
 **Checkpoint:** `docs/AGENT-PLATFORM-07C1-CHECKPOINT.md`
 **Task ID:** AGENT-PLATFORM-07C1
-**Parent:** AGENT-PLATFORM-07C — Read-Only Referral Enqueue Flow + Cancel Redesign
+**Parent:** AGENT-PLATFORM-07C �X Read-Only Referral Enqueue Flow + Cancel Redesign
 **Family:** AGENT PLATFORM / MULTI-BUILDER ORCHESTRATION / READ-ONLY COORDINATOR
 **Priority:** High
-**Nature:** IMPLEMENTATION — In-memory orchestration core methods only
-**Risk:** MEDIUM — substantial new logic but self-contained within `OrchestrationService`; no cross-service changes
+**Nature:** IMPLEMENTATION �X In-memory orchestration core methods only
+**Risk:** MEDIUM �X substantial new logic but self-contained within `OrchestrationService`; no cross-service changes
 **Keith approval:** Child-slice split and 07C1 registration approved 2026-07-09 ("approved")
 
-#### Workflow Steps (3-step child-slice loop — MEDIUM risk)
+#### Workflow Steps (3-step child-slice loop �X MEDIUM risk)
 
-1. **Registration** — COMPLETE (2026-07-09)
-2. **Bounded implementation** — COMPLETE (2026-07-09)
-3. **Consolidation / checkpoint** — COMPLETE (2026-07-09)
+1. **Registration** �X COMPLETE (2026-07-09)
+2. **Bounded implementation** �X COMPLETE (2026-07-09)
+3. **Consolidation / checkpoint** �X COMPLETE (2026-07-09)
 
 #### Dependencies
 
-- AGENT-PLATFORM-07C Step 2 readiness/design review — COMPLETE (2026-07-09)
-- AGENT-PLATFORM-07B — COMPLETE and LOCKED (API Gateway Orchestration Module Skeleton)
-- AGENT-PLATFORM-07A — COMPLETE and LOCKED (Coordinator Contracts / Schema)
-- AGENT-PLATFORM-07 — COMPLETE and LOCKED (Read-Only Orchestration Coordinator Planning)
-- AGENT-PLATFORM-06 — COMPLETE and LOCKED (Upstream Identity Propagation)
-- AGENT-HARNESS-07 — COMPLETE and LOCKED (Per-Builder Harness Config Adapter)
-- AGENT-HARNESS-06E — COMPLETE and LOCKED (Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary)
+- AGENT-PLATFORM-07C Step 2 readiness/design review �X COMPLETE (2026-07-09)
+- AGENT-PLATFORM-07B �X COMPLETE and LOCKED (API Gateway Orchestration Module Skeleton)
+- AGENT-PLATFORM-07A �X COMPLETE and LOCKED (Coordinator Contracts / Schema)
+- AGENT-PLATFORM-07 �X COMPLETE and LOCKED (Read-Only Orchestration Coordinator Planning)
+- AGENT-PLATFORM-06 �X COMPLETE and LOCKED (Upstream Identity Propagation)
+- AGENT-HARNESS-07 �X COMPLETE and LOCKED (Per-Builder Harness Config Adapter)
+- AGENT-HARNESS-06E �X COMPLETE and LOCKED (Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary)
 - Keith approval recorded for child-slice split and 07C1 registration
 
 #### Purpose
 
 First child implementation slice of AGENT-PLATFORM-07C. Extends `OrchestrationService` with pure in-memory core methods for collaboration run and referral lifecycle management. No queue enqueue, no cancel redesign, no worker changes, no database migration, no controller/endpoints, no runtime execution.
 
-#### Implementation Delivered (Step 2 — COMPLETE)
+#### Implementation Delivered (Step 2 �X COMPLETE)
 
-- In-memory collaboration run store: `Map<CollaborationRunId, CollaborationRun>` — DELIVERED
-- In-memory referral store: `Map<ReferralId, CollaborationReferral>` — DELIVERED
-- In-memory idempotency store: `Map<IdempotencyKey, ReferralId>` scoped by `collaborationRunId::idempotencyKey` — DELIVERED
-- `createCollaborationRun()` — generates `collaborationRunId` via `randomUUID()`; caller-provided ID supported — DELIVERED
-- `getCollaborationRun()` — retrieves stored run; returns null if not found — DELIVERED
-- `createReferral()` — generates `referralTraceId`, `referralId`; calls `validateReferral()` first; stores referral — DELIVERED
-- `getReferral()` — retrieves stored referral; returns null if not found — DELIVERED
-- `completeReferral()` — transitions to `completed`; builds `ReferralResult`; idempotent — DELIVERED
-- `failReferral()` — transitions to `failed`; builds `ReferralResult`; idempotent — DELIVERED
-- `getDefaultReferralConstraints()` — already existed (07B); unchanged — PRESERVED
-- `validateReferral()` — enforces max referral depth (3), max agents (4), loop prevention, idempotency — DELIVERED
-- Idempotency key: `collaborationRunId::idempotencyKey` (caller-supplied idempotency key; not SHA-256 hash) — DELIVERED
-- Loop prevention: `visitedBuilderProfileIds` checked against target; throws on loop — DELIVERED
-- Read-only policy enforcement: `readOnly: true`, `allowWriteTools: false`, blocked tool IDs rejected — DELIVERED
-- `orchestration.contracts.ts` — NOT changed; all contracts were already defined (07A) — CONFIRMED
+- In-memory collaboration run store: `Map<CollaborationRunId, CollaborationRun>` �X DELIVERED
+- In-memory referral store: `Map<ReferralId, CollaborationReferral>` �X DELIVERED
+- In-memory idempotency store: `Map<IdempotencyKey, ReferralId>` scoped by `collaborationRunId::idempotencyKey` �X DELIVERED
+- `createCollaborationRun()` �X generates `collaborationRunId` via `randomUUID()`; caller-provided ID supported �X DELIVERED
+- `getCollaborationRun()` �X retrieves stored run; returns null if not found �X DELIVERED
+- `createReferral()` �X generates `referralTraceId`, `referralId`; calls `validateReferral()` first; stores referral �X DELIVERED
+- `getReferral()` �X retrieves stored referral; returns null if not found �X DELIVERED
+- `completeReferral()` �X transitions to `completed`; builds `ReferralResult`; idempotent �X DELIVERED
+- `failReferral()` �X transitions to `failed`; builds `ReferralResult`; idempotent �X DELIVERED
+- `getDefaultReferralConstraints()` �X already existed (07B); unchanged �X PRESERVED
+- `validateReferral()` �X enforces max referral depth (3), max agents (4), loop prevention, idempotency �X DELIVERED
+- Idempotency key: `collaborationRunId::idempotencyKey` (caller-supplied idempotency key; not SHA-256 hash) �X DELIVERED
+- Loop prevention: `visitedBuilderProfileIds` checked against target; throws on loop �X DELIVERED
+- Read-only policy enforcement: `readOnly: true`, `allowWriteTools: false`, blocked tool IDs rejected �X DELIVERED
+- `orchestration.contracts.ts` �X NOT changed; all contracts were already defined (07A) �X CONFIRMED
 
 #### Implementation Files Changed (Step 2)
 
-1. `services/api-gateway/src/orchestration/orchestration.service.ts` — 7 core methods + 3 in-memory stores added
-2. `services/api-gateway/src/orchestration/__tests__/orchestration.service.spec.ts` — 10 new tests; 13 total passing
+1. `services/api-gateway/src/orchestration/orchestration.service.ts` �X 7 core methods + 3 in-memory stores added
+2. `services/api-gateway/src/orchestration/__tests__/orchestration.service.spec.ts` �X 10 new tests; 13 total passing
 
 #### Non-Goals (07C1)
 
@@ -26662,7 +26662,7 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 #### Acceptance Criteria
 
-- [x] AGENT-PLATFORM-07C1 registered as current ACTIVE child slice (Step 1 COMPLETE) — now COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-07C1 registered as current ACTIVE child slice (Step 1 COMPLETE) �X now COMPLETE and LOCKED
 - [x] AGENT-PLATFORM-07C records Step 2 split decision
 - [x] AGENT-PLATFORM-07C records 07C1 as COMPLETE and LOCKED; 07C2 as ACTIVE Step 1 COMPLETE
 - [x] AGENT-PLATFORM-07C3 NOT registered
@@ -26679,22 +26679,22 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 - [x] TASKS.md updated ACTIVE (Step 1)
 - [x] TASKS_BACKLOG_FULL.md mirrored (Step 1)
 - [x] AINOW-EXECUTION-ROADMAP.md updated (Step 1)
-- [x] Step 2 bounded implementation COMPLETE (2026-07-09) — `orchestration.service.ts` and `orchestration.service.spec.ts` changed; 7 core methods added; 3 in-memory stores added
-- [x] Validation: Jest PASS — 1 suite, 13 tests, 0 failed
-- [x] Validation: TypeScript PASS — `npx tsc --noEmit` exit code 0
+- [x] Step 2 bounded implementation COMPLETE (2026-07-09) �X `orchestration.service.ts` and `orchestration.service.spec.ts` changed; 7 core methods added; 3 in-memory stores added
+- [x] Validation: Jest PASS �X 1 suite, 13 tests, 0 failed
+- [x] Validation: TypeScript PASS �X `npx tsc --noEmit` exit code 0
 - [x] No queue enqueue, no cancel redesign, no worker changes, no DB migration, no controller/endpoints confirmed
 - [x] `orchestration.contracts.ts` not changed
 - [x] AGENT-HARNESS write canary confirmed separate and not registered
-- [x] Step 3 consolidation/checkpoint COMPLETE (2026-07-09) — `docs/AGENT-PLATFORM-07C1-CHECKPOINT.md` created
+- [x] Step 3 consolidation/checkpoint COMPLETE (2026-07-09) �X `docs/AGENT-PLATFORM-07C1-CHECKPOINT.md` created
 - [x] TASKS.md marked COMPLETE and LOCKED
 - [x] TASKS_BACKLOG_FULL.md mirrored
 - [x] AINOW-EXECUTION-ROADMAP.md updated
 
-**Checkpoint:** `docs/AGENT-PLATFORM-07C1-CHECKPOINT.md` — COMPLETE and LOCKED (2026-07-09)
+**Checkpoint:** `docs/AGENT-PLATFORM-07C1-CHECKPOINT.md` �X COMPLETE and LOCKED (2026-07-09)
 
-**Next task:** AGENT-PLATFORM-07C2 — Referral Enqueue + Cancel + AiExecutionJob Extension. COMPLETE and LOCKED — 2026-07-09. Checkpoint: `docs/AGENT-PLATFORM-07C2-CHECKPOINT.md`. AGENT-HARNESS write canary remains a separate track.
+**Next task:** AGENT-PLATFORM-07C2 �X Referral Enqueue + Cancel + AiExecutionJob Extension. COMPLETE and LOCKED �X 2026-07-09. Checkpoint: `docs/AGENT-PLATFORM-07C2-CHECKPOINT.md`. AGENT-HARNESS write canary remains a separate track.
 
-**AGENT-HARNESS write canary remains a separate track** — not registered, not part of AGENT-PLATFORM-07 child slices.
+**AGENT-HARNESS write canary remains a separate track** �X not registered, not part of AGENT-PLATFORM-07 child slices.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-07C1.
 
@@ -26702,75 +26702,75 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 #### AGENT-PLATFORM-07C2: Referral Enqueue + Cancel + AiExecutionJob Extension
 
-**Status:** COMPLETE and LOCKED — 2026-07-09
+**Status:** COMPLETE and LOCKED �X 2026-07-09
 **Registered:** 2026-07-09
 **Completed:** 2026-07-09
 **Checkpoint:** `docs/AGENT-PLATFORM-07C2-CHECKPOINT.md`
 **Task ID:** AGENT-PLATFORM-07C2
-**Parent:** AGENT-PLATFORM-07C — Read-Only Referral Enqueue Flow + Cancel Redesign
+**Parent:** AGENT-PLATFORM-07C �X Read-Only Referral Enqueue Flow + Cancel Redesign
 **Family:** AGENT PLATFORM / MULTI-BUILDER ORCHESTRATION / READ-ONLY COORDINATOR
 **Priority:** High
-**Nature:** IMPLEMENTATION — Referral enqueue flow + cancel cascade + AiExecutionJob extension
-**Risk:** HIGH — 4-step loop; cross-service type changes + enqueue/cancel integration
+**Nature:** IMPLEMENTATION �X Referral enqueue flow + cancel cascade + AiExecutionJob extension
+**Risk:** HIGH �X 4-step loop; cross-service type changes + enqueue/cancel integration
 **Keith approval:** Registration approved 2026-07-09 ("approved")
 
-#### Workflow Steps (4-step child-slice loop — HIGH risk)
+#### Workflow Steps (4-step child-slice loop �X HIGH risk)
 
-1. **Registration** — COMPLETE (2026-07-09)
-2. **Implementation readiness / exact source-path review** — COMPLETE (2026-07-09) — see `docs/AGENT-PLATFORM-07C2-IMPLEMENTATION-READINESS-REVIEW.md`
-3. **Bounded implementation** — COMPLETE (2026-07-09)
-4. **Consolidation / checkpoint** — COMPLETE (2026-07-09)
+1. **Registration** �X COMPLETE (2026-07-09)
+2. **Implementation readiness / exact source-path review** �X COMPLETE (2026-07-09) �X see `docs/AGENT-PLATFORM-07C2-IMPLEMENTATION-READINESS-REVIEW.md`
+3. **Bounded implementation** �X COMPLETE (2026-07-09)
+4. **Consolidation / checkpoint** �X COMPLETE (2026-07-09)
 
 #### Dependencies
 
-- AGENT-PLATFORM-07C1 — COMPLETE and LOCKED (Orchestration Core Methods + In-Memory Store — 2026-07-09)
-- AGENT-PLATFORM-07C Step 2 readiness/design review — COMPLETE (2026-07-09)
-- AGENT-PLATFORM-07B — COMPLETE and LOCKED (API Gateway Orchestration Module Skeleton)
-- AGENT-PLATFORM-07A — COMPLETE and LOCKED (Coordinator Contracts / Schema)
-- AGENT-PLATFORM-07 — COMPLETE and LOCKED (Read-Only Orchestration Coordinator Planning)
-- AGENT-PLATFORM-06 — COMPLETE and LOCKED (Upstream Identity Propagation)
-- AGENT-PLATFORM-05 — COMPLETE and LOCKED (Multi-Builder Runtime Orchestration Plan)
-- AGENT-PLATFORM-04 — COMPLETE and LOCKED (Multi-Builder Runtime Topology Plan)
-- AGENT-HARNESS-07 — COMPLETE and LOCKED (Per-Builder Harness Config Adapter)
-- AGENT-HARNESS-06E — COMPLETE and LOCKED (Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary)
+- AGENT-PLATFORM-07C1 �X COMPLETE and LOCKED (Orchestration Core Methods + In-Memory Store �X 2026-07-09)
+- AGENT-PLATFORM-07C Step 2 readiness/design review �X COMPLETE (2026-07-09)
+- AGENT-PLATFORM-07B �X COMPLETE and LOCKED (API Gateway Orchestration Module Skeleton)
+- AGENT-PLATFORM-07A �X COMPLETE and LOCKED (Coordinator Contracts / Schema)
+- AGENT-PLATFORM-07 �X COMPLETE and LOCKED (Read-Only Orchestration Coordinator Planning)
+- AGENT-PLATFORM-06 �X COMPLETE and LOCKED (Upstream Identity Propagation)
+- AGENT-PLATFORM-05 �X COMPLETE and LOCKED (Multi-Builder Runtime Orchestration Plan)
+- AGENT-PLATFORM-04 �X COMPLETE and LOCKED (Multi-Builder Runtime Topology Plan)
+- AGENT-HARNESS-07 �X COMPLETE and LOCKED (Per-Builder Harness Config Adapter)
+- AGENT-HARNESS-06E �X COMPLETE and LOCKED (Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary)
 - Keith approval recorded for AGENT-PLATFORM-07C2 registration (2026-07-09)
 
 #### Purpose
 
-Second child implementation slice of AGENT-PLATFORM-07C. Extends the orchestration enqueue flow (`startReferralExecution()` — enriched referral job payload creation and enqueue), adds per-referral and per-collaboration cancel cascade (using existing `ExecutionResultService.requestCancel(executionId)` per-execution mechanism), extends `AiExecutionJob` type with 5 new optional orchestration fields, and extends worker finalization to preserve new fields in metadata. No database migration. No runtime execution. No write tools activated.
+Second child implementation slice of AGENT-PLATFORM-07C. Extends the orchestration enqueue flow (`startReferralExecution()` �X enriched referral job payload creation and enqueue), adds per-referral and per-collaboration cancel cascade (using existing `ExecutionResultService.requestCancel(executionId)` per-execution mechanism), extends `AiExecutionJob` type with 5 new optional orchestration fields, and extends worker finalization to preserve new fields in metadata. No database migration. No runtime execution. No write tools activated.
 
 #### Critical Correction Preserved
 
 - No `queue.obliterate` call exists anywhere in the codebase.
 - Existing cancel is per-execution: `ExecutionResultService.requestCancel(executionId)` sets `usage_records.execution_status = 'cancel_requested'`.
 - Worker polls `cancel_requested` and aborts via `AbortController`.
-- 07C2 builds on the existing per-execution cancel model — cascade cancel is orchestration-level logic calling existing mechanism per referral `executionId`.
+- 07C2 builds on the existing per-execution cancel model �X cascade cancel is orchestration-level logic calling existing mechanism per referral `executionId`.
 
-#### Implementation Delivered (Step 3 — COMPLETE)
+#### Implementation Delivered (Step 3 �X COMPLETE)
 
-- `OrchestrationService.startReferralExecution()` — validates referral state + read-only constraints; builds enriched job payload with all orchestration metadata; records executionId in `referralExecutionMap`; transitions referral to `in_progress`; calls `QueueService.enqueueExecution()` — DELIVERED
-- `OrchestrationService.cancelReferral()` — ownership check; `ExecutionResultService.requestCancel(executionId)`; referral status transition; graceful handling of already-completed — DELIVERED
-- `OrchestrationService.cancelCollaboration()` — cascade cancel across all active referrals; `CollaborationRun.status = cancelled` — DELIVERED
-- `referralExecutionMap: Map<ReferralId, string>` private store — DELIVERED
-- `OrchestrationModule` wired with `QueueService` and `ExecutionResultService` — DELIVERED
-- `AiExecutionJob` extended with 5 new optional fields: `parentReferralTraceId`, `referringBuilderProfileId`, `orchestrationPriority`, `referralId`, `isReferralExecution` — DELIVERED
-- Worker finalization preserves 5 new fields in `nextMetadata` (~5 lines) — DELIVERED
+- `OrchestrationService.startReferralExecution()` �X validates referral state + read-only constraints; builds enriched job payload with all orchestration metadata; records executionId in `referralExecutionMap`; transitions referral to `in_progress`; calls `QueueService.enqueueExecution()` �X DELIVERED
+- `OrchestrationService.cancelReferral()` �X ownership check; `ExecutionResultService.requestCancel(executionId)`; referral status transition; graceful handling of already-completed �X DELIVERED
+- `OrchestrationService.cancelCollaboration()` �X cascade cancel across all active referrals; `CollaborationRun.status = cancelled` �X DELIVERED
+- `referralExecutionMap: Map<ReferralId, string>` private store �X DELIVERED
+- `OrchestrationModule` wired with `QueueService` and `ExecutionResultService` �X DELIVERED
+- `AiExecutionJob` extended with 5 new optional fields: `parentReferralTraceId`, `referringBuilderProfileId`, `orchestrationPriority`, `referralId`, `isReferralExecution` �X DELIVERED
+- Worker finalization preserves 5 new fields in `nextMetadata` (~5 lines) �X DELIVERED
 
 #### Implementation Files Changed (Step 3)
 
-1. `services/api-gateway/src/orchestration/orchestration.service.ts` — 3 methods + private store + input interfaces added
-2. `services/api-gateway/src/orchestration/orchestration.module.ts` — `QueueService` and `ExecutionResultService` injected
-3. `services/ai-service/src/queue/job.types.ts` — 5 new optional fields added to `AiExecutionJob`
-4. `services/ai-service/src/worker/worker.processor.ts` — 5 new fields read and preserved in `nextMetadata`
-5. `services/api-gateway/src/orchestration/__tests__/orchestration.service.spec.ts` — expanded to 25 tests
-6. `services/ai-service/src/worker/__tests__/worker.processor.builder-config.spec.ts` — expanded to 55 tests
+1. `services/api-gateway/src/orchestration/orchestration.service.ts` �X 3 methods + private store + input interfaces added
+2. `services/api-gateway/src/orchestration/orchestration.module.ts` �X `QueueService` and `ExecutionResultService` injected
+3. `services/ai-service/src/queue/job.types.ts` �X 5 new optional fields added to `AiExecutionJob`
+4. `services/ai-service/src/worker/worker.processor.ts` �X 5 new fields read and preserved in `nextMetadata`
+5. `services/api-gateway/src/orchestration/__tests__/orchestration.service.spec.ts` �X expanded to 25 tests
+6. `services/ai-service/src/worker/__tests__/worker.processor.builder-config.spec.ts` �X expanded to 55 tests
 
-#### Validation Results (Step 3 — all PASS)
+#### Validation Results (Step 3 �X all PASS)
 
-- Jest: `npx jest --runInBand "orchestration.service"` → PASS, 1 suite, 25 tests, 0 failed
-- TypeScript (api-gateway): `npx tsc --noEmit` → exit code 0, no errors
-- TypeScript (ai-service): `npx tsc --noEmit` → exit code 0, no errors
-- Jest: `npx jest --runInBand "worker.processor.builder-config"` → PASS, 1 suite, 55 tests, 0 failed
+- Jest: `npx jest --runInBand "orchestration.service"` �� PASS, 1 suite, 25 tests, 0 failed
+- TypeScript (api-gateway): `npx tsc --noEmit` �� exit code 0, no errors
+- TypeScript (ai-service): `npx tsc --noEmit` �� exit code 0, no errors
+- Jest: `npx jest --runInBand "worker.processor.builder-config"` �� PASS, 1 suite, 55 tests, 0 failed
 
 #### Non-Goals (CONFIRMED)
 
@@ -26788,7 +26788,7 @@ Second child implementation slice of AGENT-PLATFORM-07C. Extends the orchestrati
 - No browser smoke
 - No git commits/pushes
 - No controller/endpoints added
-- AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10) — checkpoint: `docs/AGENT-PLATFORM-07C3-CHECKPOINT.md` (registered after 07C2 was completed)
+- AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10) �X checkpoint: `docs/AGENT-PLATFORM-07C3-CHECKPOINT.md` (registered after 07C2 was completed)
 
 #### UX/UI Note
 
@@ -26804,7 +26804,7 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 - [x] AGENT-PLATFORM-07C2 registered as current ACTIVE child slice
 - [x] AGENT-PLATFORM-07C1 remains COMPLETE and LOCKED
 - [x] AGENT-PLATFORM-07C records child-slice status correctly (07C1 COMPLETE and LOCKED, 07C2 COMPLETE and LOCKED, 07C3 ACTIVE Step 1 COMPLETE)
-- [x] AGENT-PLATFORM-07C3 ACTIVE — Step 1 COMPLETE (2026-07-10) — now COMPLETE and LOCKED (2026-07-10)
+- [x] AGENT-PLATFORM-07C3 ACTIVE �X Step 1 COMPLETE (2026-07-10) �X now COMPLETE and LOCKED (2026-07-10)
 - [x] AGENT-PLATFORM-07B remains COMPLETE and LOCKED
 - [x] AGENT-PLATFORM-07A remains COMPLETE and LOCKED
 - [x] AGENT-PLATFORM-07/06/05/04 remain COMPLETE and LOCKED
@@ -26819,31 +26819,31 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 - [x] TASKS.md updated ACTIVE Step 1 COMPLETE
 - [x] TASKS_BACKLOG_FULL.md mirrored
 - [x] AINOW-EXECUTION-ROADMAP.md updated
-- [x] Step 2 — Implementation readiness / exact source-path review COMPLETE (2026-07-09) — `docs/AGENT-PLATFORM-07C2-IMPLEMENTATION-READINESS-REVIEW.md`
-- [x] Step 3 — Bounded implementation COMPLETE (2026-07-09) — `orchestration.service.ts`, `orchestration.module.ts`, `job.types.ts`, `worker.processor.ts`, `orchestration.service.spec.ts`, `worker.processor.builder-config.spec.ts` changed
-- [x] `startReferralExecution()` delivered — validates state + read-only constraints; builds enriched job payload; records executionId; enqueues via `QueueService`
-- [x] `cancelReferral()` delivered — ownership check; `ExecutionResultService.requestCancel()`; referral status transition; graceful handling of already-completed
-- [x] `cancelCollaboration()` delivered — cascade cancel across all active referrals; `CollaborationRun.status = cancelled`
+- [x] Step 2 �X Implementation readiness / exact source-path review COMPLETE (2026-07-09) �X `docs/AGENT-PLATFORM-07C2-IMPLEMENTATION-READINESS-REVIEW.md`
+- [x] Step 3 �X Bounded implementation COMPLETE (2026-07-09) �X `orchestration.service.ts`, `orchestration.module.ts`, `job.types.ts`, `worker.processor.ts`, `orchestration.service.spec.ts`, `worker.processor.builder-config.spec.ts` changed
+- [x] `startReferralExecution()` delivered �X validates state + read-only constraints; builds enriched job payload; records executionId; enqueues via `QueueService`
+- [x] `cancelReferral()` delivered �X ownership check; `ExecutionResultService.requestCancel()`; referral status transition; graceful handling of already-completed
+- [x] `cancelCollaboration()` delivered �X cascade cancel across all active referrals; `CollaborationRun.status = cancelled`
 - [x] `referralExecutionMap: Map<ReferralId, string>` private store added
 - [x] `OrchestrationModule` wired with `QueueService` and `ExecutionResultService`
 - [x] `AiExecutionJob` extended with 5 new optional fields: `parentReferralTraceId`, `referringBuilderProfileId`, `orchestrationPriority`, `referralId`, `isReferralExecution`
 - [x] Worker finalization preserves 5 new fields in `nextMetadata`
 - [x] No DB migration, no controller/endpoints, no runtime canary, no frontend UI
-- [x] Validation: Jest PASS — `orchestration.service` — 1 suite, 25 tests, 0 failed
-- [x] Validation: TypeScript PASS — api-gateway — `npx tsc --noEmit` exit code 0
-- [x] Validation: TypeScript PASS — ai-service — `npx tsc --noEmit` exit code 0
-- [x] Validation: Jest PASS — `worker.processor.builder-config` — 1 suite, 55 tests, 0 failed
-- [x] Critical cancel correction preserved — no obliterate; per-execution cancel via `ExecutionResultService.requestCancel()`
+- [x] Validation: Jest PASS �X `orchestration.service` �X 1 suite, 25 tests, 0 failed
+- [x] Validation: TypeScript PASS �X api-gateway �X `npx tsc --noEmit` exit code 0
+- [x] Validation: TypeScript PASS �X ai-service �X `npx tsc --noEmit` exit code 0
+- [x] Validation: Jest PASS �X `worker.processor.builder-config` �X 1 suite, 55 tests, 0 failed
+- [x] Critical cancel correction preserved �X no obliterate; per-execution cancel via `ExecutionResultService.requestCancel()`
 - [x] AGENT-HARNESS write canary confirmed separate and not registered
-- [x] Step 4 consolidation/checkpoint COMPLETE (2026-07-09) — `docs/AGENT-PLATFORM-07C2-CHECKPOINT.md` created
+- [x] Step 4 consolidation/checkpoint COMPLETE (2026-07-09) �X `docs/AGENT-PLATFORM-07C2-CHECKPOINT.md` created
 - [x] TASKS.md marked COMPLETE and LOCKED
 - [x] TASKS_BACKLOG_FULL.md mirrored
 - [x] AINOW-EXECUTION-ROADMAP.md updated
-- [x] AGENT-PLATFORM-07C3 registration COMPLETE (2026-07-10) — Keith approval recorded
+- [x] AGENT-PLATFORM-07C3 registration COMPLETE (2026-07-10) �X Keith approval recorded
 
-**AGENT-HARNESS write canary remains a separate track** — not registered, not part of AGENT-PLATFORM-07 child slices.
+**AGENT-HARNESS write canary remains a separate track** �X not registered, not part of AGENT-PLATFORM-07 child slices.
 
-**Next task:** AGENT-PLATFORM-07C3 — Targeted Tests and Parent Consolidation. ACTIVE — Step 1 COMPLETE (2026-07-10). AGENT-HARNESS write canary remains a separate track.
+**Next task:** AGENT-PLATFORM-07C3 �X Targeted Tests and Parent Consolidation. ACTIVE �X Step 1 COMPLETE (2026-07-10). AGENT-HARNESS write canary remains a separate track.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-07C2.
 
@@ -26851,42 +26851,42 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 #### AGENT-PLATFORM-07C3: Targeted Tests and Parent Consolidation
 
-**Status:** COMPLETE and LOCKED — 2026-07-10 — checkpoint: `docs/AGENT-PLATFORM-07C3-CHECKPOINT.md`
+**Status:** COMPLETE and LOCKED �X 2026-07-10 �X checkpoint: `docs/AGENT-PLATFORM-07C3-CHECKPOINT.md`
 **Registered:** 2026-07-10
 **Task ID:** AGENT-PLATFORM-07C3
-**Parent:** AGENT-PLATFORM-07C — Read-Only Referral Enqueue Flow + Cancel Redesign
+**Parent:** AGENT-PLATFORM-07C �X Read-Only Referral Enqueue Flow + Cancel Redesign
 **Family:** AGENT PLATFORM / MULTI-BUILDER ORCHESTRATION / READ-ONLY COORDINATOR
 **Priority:** High
-**Nature:** VALIDATION + GOVERNANCE — Targeted tests, regression, and parent consolidation. No new implementation.
-**Risk:** MEDIUM — validation and parent consolidation only, but it locks the AGENT-PLATFORM-07C parent task
+**Nature:** VALIDATION + GOVERNANCE �X Targeted tests, regression, and parent consolidation. No new implementation.
+**Risk:** MEDIUM �X validation and parent consolidation only, but it locks the AGENT-PLATFORM-07C parent task
 **Keith approval:** Registration approved 2026-07-10 ("approve")
 
-#### Workflow Steps (3-step child-slice loop — MEDIUM risk)
+#### Workflow Steps (3-step child-slice loop �X MEDIUM risk)
 
-1. **Registration** — COMPLETE (2026-07-10)
-2. **Targeted validation / regression** — COMPLETE (2026-07-10)
-3. **Parent + child consolidation / checkpoint** — COMPLETE (2026-07-10)
+1. **Registration** �X COMPLETE (2026-07-10)
+2. **Targeted validation / regression** �X COMPLETE (2026-07-10)
+3. **Parent + child consolidation / checkpoint** �X COMPLETE (2026-07-10)
 
 #### Dependencies
 
-- AGENT-PLATFORM-07C2 — COMPLETE and LOCKED (Referral Enqueue + Cancel + AiExecutionJob Extension — 2026-07-09)
-- AGENT-PLATFORM-07C1 — COMPLETE and LOCKED (Orchestration Core Methods + In-Memory Store — 2026-07-09)
-- AGENT-PLATFORM-07C Step 2 readiness/design review — COMPLETE (2026-07-09)
-- AGENT-PLATFORM-07B — COMPLETE and LOCKED (API Gateway Orchestration Module Skeleton)
-- AGENT-PLATFORM-07A — COMPLETE and LOCKED (Coordinator Contracts / Schema)
-- AGENT-PLATFORM-07 — COMPLETE and LOCKED (Read-Only Orchestration Coordinator Planning)
-- AGENT-PLATFORM-06 — COMPLETE and LOCKED (Upstream Identity Propagation)
-- AGENT-PLATFORM-05 — COMPLETE and LOCKED (Multi-Builder Runtime Orchestration Plan)
-- AGENT-PLATFORM-04 — COMPLETE and LOCKED (Multi-Builder Runtime Topology Plan)
-- AGENT-HARNESS-07 — COMPLETE and LOCKED (Per-Builder Harness Config Adapter)
-- AGENT-HARNESS-06E — COMPLETE and LOCKED (Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary)
+- AGENT-PLATFORM-07C2 �X COMPLETE and LOCKED (Referral Enqueue + Cancel + AiExecutionJob Extension �X 2026-07-09)
+- AGENT-PLATFORM-07C1 �X COMPLETE and LOCKED (Orchestration Core Methods + In-Memory Store �X 2026-07-09)
+- AGENT-PLATFORM-07C Step 2 readiness/design review �X COMPLETE (2026-07-09)
+- AGENT-PLATFORM-07B �X COMPLETE and LOCKED (API Gateway Orchestration Module Skeleton)
+- AGENT-PLATFORM-07A �X COMPLETE and LOCKED (Coordinator Contracts / Schema)
+- AGENT-PLATFORM-07 �X COMPLETE and LOCKED (Read-Only Orchestration Coordinator Planning)
+- AGENT-PLATFORM-06 �X COMPLETE and LOCKED (Upstream Identity Propagation)
+- AGENT-PLATFORM-05 �X COMPLETE and LOCKED (Multi-Builder Runtime Orchestration Plan)
+- AGENT-PLATFORM-04 �X COMPLETE and LOCKED (Multi-Builder Runtime Topology Plan)
+- AGENT-HARNESS-07 �X COMPLETE and LOCKED (Per-Builder Harness Config Adapter)
+- AGENT-HARNESS-06E �X COMPLETE and LOCKED (Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary)
 - Keith approval recorded for AGENT-PLATFORM-07C3 registration (2026-07-10)
 
 #### Purpose
 
 Third and final child slice of AGENT-PLATFORM-07C. Validates the combined 07C1 + 07C2 integration, runs targeted regression across both suites, and consolidates/locks the parent AGENT-PLATFORM-07C. No new runtime features or implementation.
 
-#### Planned Scope (Step 2 — not yet executed)
+#### Planned Scope (Step 2 �X not yet executed)
 
 **Target source files to validate (read-only inspection):**
 - `services/api-gateway/src/orchestration/orchestration.service.ts`
@@ -26895,7 +26895,7 @@ Third and final child slice of AGENT-PLATFORM-07C. Validates the combined 07C1 +
 - `services/ai-service/src/worker/worker.processor.ts`
 - `services/ai-service/src/worker/__tests__/worker.processor.builder-config.spec.ts`
 
-**Planned validation commands (Step 2 — not run during registration):**
+**Planned validation commands (Step 2 �X not run during registration):**
 - `Set-Location -LiteralPath 'C:\Users\knlee\aiSandBox2026B\services\api-gateway'; npx jest --runInBand "orchestration.service"`
 - `Set-Location -LiteralPath 'C:\Users\knlee\aiSandBox2026B\services\api-gateway'; npx tsc --noEmit`
 - `Set-Location -LiteralPath 'C:\Users\knlee\aiSandBox2026B\services\ai-service'; npx jest --runInBand "worker.processor.builder-config"`
@@ -26957,21 +26957,21 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 - [x] No implementation files changed (Step 1)
 - [x] No commands run (Step 1)
 - [x] One-active-task rule satisfied
-- [x] Step 2 — Targeted validation / regression — COMPLETE (2026-07-10)
-- [x] Validation: Jest PASS — `orchestration.service` — 25 tests passed
-- [x] Validation: TypeScript PASS — api-gateway
-- [x] Validation: Jest PASS — `worker.processor.builder-config` — 55 tests passed
-- [x] Validation: TypeScript PASS — ai-service
-- [x] Step 3 — Parent + child consolidation / checkpoint — COMPLETE (2026-07-10)
-- [x] AGENT-PLATFORM-07C3 COMPLETE and LOCKED — checkpoint: `docs/AGENT-PLATFORM-07C3-CHECKPOINT.md`
-- [x] Parent AGENT-PLATFORM-07C COMPLETE and LOCKED — checkpoint: `docs/AGENT-PLATFORM-07C-CHECKPOINT.md`
+- [x] Step 2 �X Targeted validation / regression �X COMPLETE (2026-07-10)
+- [x] Validation: Jest PASS �X `orchestration.service` �X 25 tests passed
+- [x] Validation: TypeScript PASS �X api-gateway
+- [x] Validation: Jest PASS �X `worker.processor.builder-config` �X 55 tests passed
+- [x] Validation: TypeScript PASS �X ai-service
+- [x] Step 3 �X Parent + child consolidation / checkpoint �X COMPLETE (2026-07-10)
+- [x] AGENT-PLATFORM-07C3 COMPLETE and LOCKED �X checkpoint: `docs/AGENT-PLATFORM-07C3-CHECKPOINT.md`
+- [x] Parent AGENT-PLATFORM-07C COMPLETE and LOCKED �X checkpoint: `docs/AGENT-PLATFORM-07C-CHECKPOINT.md`
 - [x] AGENT-PLATFORM-07D recorded as next recommended (not registered)
 
-**AGENT-HARNESS write canary remains a separate track** — not registered, not part of AGENT-PLATFORM-07 child slices.
+**AGENT-HARNESS write canary remains a separate track** �X not registered, not part of AGENT-PLATFORM-07 child slices.
 
-**Checkpoint:** `docs/AGENT-PLATFORM-07C3-CHECKPOINT.md` — COMPLETE and LOCKED (2026-07-10)
+**Checkpoint:** `docs/AGENT-PLATFORM-07C3-CHECKPOINT.md` �X COMPLETE and LOCKED (2026-07-10)
 
-**Next recommended task:** AGENT-PLATFORM-07D — Collaboration Audit Events. Not registered — pending Keith approval. AGENT-HARNESS write canary remains a separate track.
+**Next recommended task:** AGENT-PLATFORM-07D �X Collaboration Audit Events. Not registered �X pending Keith approval. AGENT-HARNESS write canary remains a separate track.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-07C3.
 
@@ -26979,22 +26979,22 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 #### AGENT-PLATFORM-07D: Collaboration Audit Events
 
-**Status:** COMPLETE and LOCKED — 2026-07-10
+**Status:** COMPLETE and LOCKED �X 2026-07-10
 **Registered:** 2026-07-10
 **Completed:** 2026-07-10
 **Task ID:** AGENT-PLATFORM-07D
 **Family:** AGENT PLATFORM / MULTI-BUILDER ORCHESTRATION / READ-ONLY COORDINATOR
 **Priority:** High
-**Nature:** IMPLEMENTATION + GOVERNANCE — structured collaboration/referral audit event emission for the read-only orchestration coordinator path
-**Risk:** MEDIUM/HIGH — audit event work may touch orchestration service boundaries, worker metadata preservation, event contract shape, observability, and future billing attribution
+**Nature:** IMPLEMENTATION + GOVERNANCE �X structured collaboration/referral audit event emission for the read-only orchestration coordinator path
+**Risk:** MEDIUM/HIGH �X audit event work may touch orchestration service boundaries, worker metadata preservation, event contract shape, observability, and future billing attribution
 **Keith approval:** Keith approved AGENT-PLATFORM-07D registration 2026-07-10 ("approve")
 
-#### Workflow Steps (4-step loop — MEDIUM/HIGH risk)
+#### Workflow Steps (4-step loop �X MEDIUM/HIGH risk)
 
-1. **Registration** — COMPLETE (2026-07-10)
-2. **Audit event readiness / source-path review** — COMPLETE (2026-07-10)
-3. **Bounded implementation** — COMPLETE (2026-07-10)
-4. **Consolidation / checkpoint** — COMPLETE (2026-07-10)
+1. **Registration** �X COMPLETE (2026-07-10)
+2. **Audit event readiness / source-path review** �X COMPLETE (2026-07-10)
+3. **Bounded implementation** �X COMPLETE (2026-07-10)
+4. **Consolidation / checkpoint** �X COMPLETE (2026-07-10)
 
 #### Dependencies
 
@@ -27062,7 +27062,7 @@ Create bounded structured audit events for collaboration/referral lifecycle tran
 - Whether database migration is needed
 - Whether implementation should split before Step 3
 
-#### Non-Goals (Registration Step — CONFIRMED)
+#### Non-Goals (Registration Step �X CONFIRMED)
 
 - No implementation during registration
 - No runtime execution
@@ -27103,21 +27103,21 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 - [x] No implementation files changed (registration step)
 - [x] No commands run (registration step)
 - [x] One-active-task rule satisfied
-- [x] Step 2 — Audit event readiness / source-path review — COMPLETE (2026-07-10) — `docs/AGENT-PLATFORM-07D-AUDIT-EVENT-READINESS-REVIEW.md`
-- [x] Step 3 — Bounded implementation — COMPLETE (2026-07-10) — `orchestration-audit.recorder.ts` created; `orchestration.service.ts` updated; `orchestration.service.spec.ts` updated
-- [x] Step 3 — Validation: Jest PASS — `orchestration.service` — 1 suite, 40 tests passed
-- [x] Step 3 — Validation: TypeScript PASS — api-gateway `npx tsc --noEmit` exit code 0
-- [x] Step 3 — No contract changes (`orchestration.contracts.ts` unchanged)
-- [x] Step 3 — No worker changes, no DB migration, no runtime execution
-- [x] Step 4 — Consolidation / checkpoint — COMPLETE (2026-07-10) — `docs/AGENT-PLATFORM-07D-CHECKPOINT.md`
+- [x] Step 2 �X Audit event readiness / source-path review �X COMPLETE (2026-07-10) �X `docs/AGENT-PLATFORM-07D-AUDIT-EVENT-READINESS-REVIEW.md`
+- [x] Step 3 �X Bounded implementation �X COMPLETE (2026-07-10) �X `orchestration-audit.recorder.ts` created; `orchestration.service.ts` updated; `orchestration.service.spec.ts` updated
+- [x] Step 3 �X Validation: Jest PASS �X `orchestration.service` �X 1 suite, 40 tests passed
+- [x] Step 3 �X Validation: TypeScript PASS �X api-gateway `npx tsc --noEmit` exit code 0
+- [x] Step 3 �X No contract changes (`orchestration.contracts.ts` unchanged)
+- [x] Step 3 �X No worker changes, no DB migration, no runtime execution
+- [x] Step 4 �X Consolidation / checkpoint �X COMPLETE (2026-07-10) �X `docs/AGENT-PLATFORM-07D-CHECKPOINT.md`
 - [x] AGENT-PLATFORM-07E recorded as next recommended, not registered
 - [x] AGENT-HARNESS write canary remains separate and not registered
 
-**AGENT-HARNESS write canary remains a separate track** — not registered, not part of AGENT-PLATFORM-07D.
+**AGENT-HARNESS write canary remains a separate track** �X not registered, not part of AGENT-PLATFORM-07D.
 
-**Checkpoint:** `docs/AGENT-PLATFORM-07D-CHECKPOINT.md` — COMPLETE and LOCKED (2026-07-10)
+**Checkpoint:** `docs/AGENT-PLATFORM-07D-CHECKPOINT.md` �X COMPLETE and LOCKED (2026-07-10)
 
-**Next recommended task:** AGENT-PLATFORM-07E — Read-Only Coordinator Canary. REGISTERED — COMPLETE and LOCKED (2026-07-10). AGENT-HARNESS write canary remains a separate track.
+**Next recommended task:** AGENT-PLATFORM-07E �X Read-Only Coordinator Canary. REGISTERED �X COMPLETE and LOCKED (2026-07-10). AGENT-HARNESS write canary remains a separate track.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-07D.
 
@@ -27131,17 +27131,17 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 **Task ID:** AGENT-PLATFORM-07E
 **Family:** AGENT PLATFORM / MULTI-BUILDER ORCHESTRATION / READ-ONLY COORDINATOR
 **Priority:** High
-**Nature:** CANARY / VALIDATION — read-only coordinator lifecycle end-to-end canary — unit/in-process
-**Risk:** HIGH (resolved at Step 2: Option A selected — in-process with mocked dependencies; no runtime infrastructure required)
+**Nature:** CANARY / VALIDATION �X read-only coordinator lifecycle end-to-end canary �X unit/in-process
+**Risk:** HIGH (resolved at Step 2: Option A selected �X in-process with mocked dependencies; no runtime infrastructure required)
 **Keith approval:** Keith approved AGENT-PLATFORM-07E registration 2026-07-10 ("approve")
 **Checkpoint:** `docs/AGENT-PLATFORM-07E-CHECKPOINT.md`
 
-#### Workflow Steps (4-step loop — HIGH risk)
+#### Workflow Steps (4-step loop �X HIGH risk)
 
-1. **Registration** — COMPLETE (2026-07-10)
-2. **Canary readiness / preflight plan** — COMPLETE (2026-07-10) — `docs/AGENT-PLATFORM-07E-CANARY-READINESS-PREFLIGHT.md` — Option A selected: unit/in-process canary with mocked dependencies; no further Keith runtime approval required
-3. **Read-only coordinator canary execution** — COMPLETE (2026-07-10) — PASS — `docs/AGENT-PLATFORM-07E-CANARY-EXECUTION-REPORT.md` — 16 canary tests PASS; 40 regression tests PASS; TypeScript clean
-4. **Consolidation / checkpoint** — COMPLETE (2026-07-10) — `docs/AGENT-PLATFORM-07E-CHECKPOINT.md`
+1. **Registration** �X COMPLETE (2026-07-10)
+2. **Canary readiness / preflight plan** �X COMPLETE (2026-07-10) �X `docs/AGENT-PLATFORM-07E-CANARY-READINESS-PREFLIGHT.md` �X Option A selected: unit/in-process canary with mocked dependencies; no further Keith runtime approval required
+3. **Read-only coordinator canary execution** �X COMPLETE (2026-07-10) �X PASS �X `docs/AGENT-PLATFORM-07E-CANARY-EXECUTION-REPORT.md` �X 16 canary tests PASS; 40 regression tests PASS; TypeScript clean
+4. **Consolidation / checkpoint** �X COMPLETE (2026-07-10) �X `docs/AGENT-PLATFORM-07E-CHECKPOINT.md`
 
 #### Dependencies
 
@@ -27164,7 +27164,7 @@ Validate the read-only coordinator lifecycle end-to-end within the approved boun
 
 #### Canary Approach Executed
 
-- Unit/in-process canary — Option A from preflight (mocked `QueueService` + `ExecutionResultService`)
+- Unit/in-process canary �X Option A from preflight (mocked `QueueService` + `ExecutionResultService`)
 - 15 canary lifecycle scenarios + 1 additional safe check (referral_failed marker)
 - 16 tests total in dedicated `orchestration.canary.spec.ts`
 - No runtime infrastructure: no Docker, no Postgres, no Redis, no BullMQ, no API Gateway, no AI Service
@@ -27211,19 +27211,19 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 - [x] No implementation files changed (registration step)
 - [x] No commands run (registration step)
 - [x] One-active-task rule satisfied
-- [x] Step 2 — Canary readiness / preflight plan — COMPLETE (2026-07-10) — Option A selected — `docs/AGENT-PLATFORM-07E-CANARY-READINESS-PREFLIGHT.md`
-- [x] Step 3 — Read-only coordinator canary execution — COMPLETE (2026-07-10) — PASS — `docs/AGENT-PLATFORM-07E-CANARY-EXECUTION-REPORT.md`
-  - [x] Step 3 — Canary: `npx jest --runInBand "orchestration.canary"` — PASS — 1 suite, 16 tests
-  - [x] Step 3 — Regression: `npx jest --runInBand "orchestration.service"` — PASS — 1 suite, 40 tests
-  - [x] Step 3 — TypeScript: `npx tsc --noEmit` — PASS — 0 errors
-  - [x] Step 3 — No production source changes
-  - [x] Step 3 — No runtime/provider/browser smoke
-  - [x] Step 3 — AGENT-HARNESS write canary not crossed
-- [x] Step 4 — Consolidation / checkpoint — COMPLETE (2026-07-10) — `docs/AGENT-PLATFORM-07E-CHECKPOINT.md`
+- [x] Step 2 �X Canary readiness / preflight plan �X COMPLETE (2026-07-10) �X Option A selected �X `docs/AGENT-PLATFORM-07E-CANARY-READINESS-PREFLIGHT.md`
+- [x] Step 3 �X Read-only coordinator canary execution �X COMPLETE (2026-07-10) �X PASS �X `docs/AGENT-PLATFORM-07E-CANARY-EXECUTION-REPORT.md`
+  - [x] Step 3 �X Canary: `npx jest --runInBand "orchestration.canary"` �X PASS �X 1 suite, 16 tests
+  - [x] Step 3 �X Regression: `npx jest --runInBand "orchestration.service"` �X PASS �X 1 suite, 40 tests
+  - [x] Step 3 �X TypeScript: `npx tsc --noEmit` �X PASS �X 0 errors
+  - [x] Step 3 �X No production source changes
+  - [x] Step 3 �X No runtime/provider/browser smoke
+  - [x] Step 3 �X AGENT-HARNESS write canary not crossed
+- [x] Step 4 �X Consolidation / checkpoint �X COMPLETE (2026-07-10) �X `docs/AGENT-PLATFORM-07E-CHECKPOINT.md`
 
-**AGENT-HARNESS write canary remains a separate track** — not registered, not part of AGENT-PLATFORM-07E.
+**AGENT-HARNESS write canary remains a separate track** �X not registered, not part of AGENT-PLATFORM-07E.
 
-**Completed task:** BILLING-READY-04A — API Gateway Balance Gate Foundation — COMPLETE and LOCKED (2026-07-13). All 4 steps complete. `CreditBalanceGuard` implemented, `CreditBalanceGuardModule` created, guard wired into both AI execution controllers, 24/24 unit tests PASS, 68/68 controller tests PASS, 30/30 integration tests PASS (after test-only validation fix), 31/31 guard integration tests PASS, 3/3 public-api tests PASS, TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. Parent BILLING-READY-04 remains ACTIVE. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13). Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. AGENT-HARNESS write canary remains a separate track.
+**Completed task:** BILLING-READY-04A �X API Gateway Balance Gate Foundation �X COMPLETE and LOCKED (2026-07-13). All 4 steps complete. `CreditBalanceGuard` implemented, `CreditBalanceGuardModule` created, guard wired into both AI execution controllers, 24/24 unit tests PASS, 68/68 controller tests PASS, 30/30 integration tests PASS (after test-only validation fix), 31/31 guard integration tests PASS, 3/3 public-api tests PASS, TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. Parent BILLING-READY-04 remains ACTIVE. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13). Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. AGENT-HARNESS write canary remains a separate track.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-07E.
 
@@ -27231,23 +27231,23 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 #### AGENT-PLATFORM-07F: Live Runtime Orchestration Integration Canary
 
-**Status:** COMPLETE and LOCKED (2026-07-12) — all 4 steps complete — all child slices COMPLETE and LOCKED
+**Status:** COMPLETE and LOCKED (2026-07-12) �X all 4 steps complete �X all child slices COMPLETE and LOCKED
 **Registered:** 2026-07-10
 **Completed:** 2026-07-12
 **Task ID:** AGENT-PLATFORM-07F
 **Family:** AGENT PLATFORM / MULTI-BUILDER ORCHESTRATION / READ-ONLY COORDINATOR / LIVE RUNTIME CANARY
 **Priority:** High
-**Nature:** CANARY / VALIDATION — live runtime orchestration integration canary — runtime-sensitive
-**Risk:** HIGH — resolved via child slices 07F1/07F2/07F3
+**Nature:** CANARY / VALIDATION �X live runtime orchestration integration canary �X runtime-sensitive
+**Risk:** HIGH �X resolved via child slices 07F1/07F2/07F3
 **Keith approval:** Keith approved AGENT-PLATFORM-07F registration 2026-07-10 ("approve")
 **Checkpoint:** `docs/AGENT-PLATFORM-07F-CHECKPOINT.md`
 
-#### Workflow Steps (4-step loop — HIGH risk)
+#### Workflow Steps (4-step loop �X HIGH risk)
 
-1. **Registration** — COMPLETE (2026-07-10)
-2. **Live runtime canary readiness / preflight plan** — COMPLETE (2026-07-10). Split decision: 07F → child slices 07F1/07F2/07F3. Preflight: `docs/AGENT-PLATFORM-07F-LIVE-RUNTIME-CANARY-PREFLIGHT.md`.
-3. **Live runtime orchestration integration canary execution** — SPLIT to child slices (07F1 PASS, 07F2 PASS — see below)
-4. **Consolidation / checkpoint** — COMPLETE (2026-07-12). Via 07F3. Checkpoint: `docs/AGENT-PLATFORM-07F3-CHECKPOINT.md`. Parent checkpoint: `docs/AGENT-PLATFORM-07F-CHECKPOINT.md`.
+1. **Registration** �X COMPLETE (2026-07-10)
+2. **Live runtime canary readiness / preflight plan** �X COMPLETE (2026-07-10). Split decision: 07F �� child slices 07F1/07F2/07F3. Preflight: `docs/AGENT-PLATFORM-07F-LIVE-RUNTIME-CANARY-PREFLIGHT.md`.
+3. **Live runtime orchestration integration canary execution** �X SPLIT to child slices (07F1 PASS, 07F2 PASS �X see below)
+4. **Consolidation / checkpoint** �X COMPLETE (2026-07-12). Via 07F3. Checkpoint: `docs/AGENT-PLATFORM-07F3-CHECKPOINT.md`. Parent checkpoint: `docs/AGENT-PLATFORM-07F-CHECKPOINT.md`.
 
 #### Split Decision (Step 2 Result)
 
@@ -27255,9 +27255,9 @@ Step 2 preflight plan decided to split 07F into focused child slices before live
 
 | Child Slice | Name | Status |
 |-------------|------|--------|
-| AGENT-PLATFORM-07F1 | Queue Transport + Metadata Preservation Canary | **COMPLETE and LOCKED** (2026-07-10) — live runtime canary PASS |
-| AGENT-PLATFORM-07F2 | Cancel Signal Path Canary | **COMPLETE and LOCKED** (2026-07-10) — cancel signal path canary PASS |
-| AGENT-PLATFORM-07F3 | Consolidation Checkpoint | **COMPLETE and LOCKED** (2026-07-12) — parent consolidation checkpoint |
+| AGENT-PLATFORM-07F1 | Queue Transport + Metadata Preservation Canary | **COMPLETE and LOCKED** (2026-07-10) �X live runtime canary PASS |
+| AGENT-PLATFORM-07F2 | Cancel Signal Path Canary | **COMPLETE and LOCKED** (2026-07-10) �X cancel signal path canary PASS |
+| AGENT-PLATFORM-07F3 | Consolidation Checkpoint | **COMPLETE and LOCKED** (2026-07-12) �X parent consolidation checkpoint |
 
 #### Dependencies
 
@@ -27277,7 +27277,7 @@ Step 2 preflight plan decided to split 07F into focused child slices before live
 
 #### Purpose
 
-Validate the read-only coordinator lifecycle beyond in-process mocks. Following the AGENT-HARNESS-06D/06E precedent (which proved the harness through live BullMQ/Worker/API Gateway after the Jest canary in 06C), this task validates orchestration metadata survival across the enqueue boundary, worker receipt of orchestration fields, audit events, and cancel signal paths — all using actual runtime transport rather than mocked dependencies. Executed as child slices 07F1 (transport + metadata), 07F2 (cancel signal), 07F3 (consolidation).
+Validate the read-only coordinator lifecycle beyond in-process mocks. Following the AGENT-HARNESS-06D/06E precedent (which proved the harness through live BullMQ/Worker/API Gateway after the Jest canary in 06C), this task validates orchestration metadata survival across the enqueue boundary, worker receipt of orchestration fields, audit events, and cancel signal paths �X all using actual runtime transport rather than mocked dependencies. Executed as child slices 07F1 (transport + metadata), 07F2 (cancel signal), 07F3 (consolidation).
 
 #### Canary Scope (Split Across Child Slices)
 
@@ -27292,7 +27292,7 @@ Before any child-slice Step 3 (runtime execution), verify explicitly with Keith 
 #### Non-Goals
 
 - No implementation during registration or preflight
-- No runtime execution in Steps 1–2
+- No runtime execution in Steps 1�V2
 - No AGENT-HARNESS write canary
 - No billing enforcement
 - No provider/API calls
@@ -27322,18 +27322,18 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 - [x] Split decision recorded: 07F1/07F2/07F3 child slices
 - [x] 07F1 COMPLETE and LOCKED (2026-07-10), 07F2 COMPLETE and LOCKED (2026-07-10), 07F3 COMPLETE and LOCKED (2026-07-12)
 - [x] AGENT-HARNESS write canary remains separate and not registered
-- [x] No implementation files changed (Steps 1–2)
-- [x] No commands run (Steps 1–2)
+- [x] No implementation files changed (Steps 1�V2)
+- [x] No commands run (Steps 1�V2)
 - [x] One-active-task rule satisfied
-- [x] 07F1 — Queue Transport + Metadata Preservation Canary — COMPLETE and LOCKED (2026-07-10) — live runtime canary PASS. Checkpoint: `docs/AGENT-PLATFORM-07F1-CHECKPOINT.md`. Execution ID: `8da5403a-f20e-480e-b7d8-196b18f7faef`. All 9 orchestration fields verified.
-- [x] 07F2 — Cancel Signal Path Canary — COMPLETE and LOCKED (2026-07-10) — cancel signal path canary PASS. Checkpoint: `docs/AGENT-PLATFORM-07F2-CHECKPOINT.md`. All 18 pass criteria satisfied. `running` → `cancel_requested` confirmed. Negative guard confirmed.
-- [x] 07F3 — Consolidation Checkpoint — COMPLETE and LOCKED (2026-07-12). Checkpoint: `docs/AGENT-PLATFORM-07F3-CHECKPOINT.md`.
-- [x] Step 4 — Consolidation / checkpoint — COMPLETE (2026-07-12). `docs/AGENT-PLATFORM-07F-CHECKPOINT.md`.
-- [x] Next recommended roadmap item recorded: BILLING-READY-04+ — not registered
+- [x] 07F1 �X Queue Transport + Metadata Preservation Canary �X COMPLETE and LOCKED (2026-07-10) �X live runtime canary PASS. Checkpoint: `docs/AGENT-PLATFORM-07F1-CHECKPOINT.md`. Execution ID: `8da5403a-f20e-480e-b7d8-196b18f7faef`. All 9 orchestration fields verified.
+- [x] 07F2 �X Cancel Signal Path Canary �X COMPLETE and LOCKED (2026-07-10) �X cancel signal path canary PASS. Checkpoint: `docs/AGENT-PLATFORM-07F2-CHECKPOINT.md`. All 18 pass criteria satisfied. `running` �� `cancel_requested` confirmed. Negative guard confirmed.
+- [x] 07F3 �X Consolidation Checkpoint �X COMPLETE and LOCKED (2026-07-12). Checkpoint: `docs/AGENT-PLATFORM-07F3-CHECKPOINT.md`.
+- [x] Step 4 �X Consolidation / checkpoint �X COMPLETE (2026-07-12). `docs/AGENT-PLATFORM-07F-CHECKPOINT.md`.
+- [x] Next recommended roadmap item recorded: BILLING-READY-04+ �X not registered
 
-**AGENT-HARNESS write canary remains a separate track** — not registered, not part of AGENT-PLATFORM-07F.
+**AGENT-HARNESS write canary remains a separate track** �X not registered, not part of AGENT-PLATFORM-07F.
 
-**All child slices COMPLETE and LOCKED.** AGENT-PLATFORM-07F2 COMPLETE and LOCKED (2026-07-10). Checkpoint: `docs/AGENT-PLATFORM-07F2-CHECKPOINT.md`. AGENT-PLATFORM-07F1 COMPLETE and LOCKED (2026-07-10). Checkpoint: `docs/AGENT-PLATFORM-07F1-CHECKPOINT.md`. AGENT-PLATFORM-07F3 COMPLETE and LOCKED (2026-07-12). Checkpoint: `docs/AGENT-PLATFORM-07F3-CHECKPOINT.md`. Parent checkpoint: `docs/AGENT-PLATFORM-07F-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13). Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 ACTIVE — Step 3 IN PROGRESS (child-slice split). BILLING-READY-04B COMPLETE and LOCKED (2026-07-13). Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13). Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. 04D planned only — next recommended (not registered).
+**All child slices COMPLETE and LOCKED.** AGENT-PLATFORM-07F2 COMPLETE and LOCKED (2026-07-10). Checkpoint: `docs/AGENT-PLATFORM-07F2-CHECKPOINT.md`. AGENT-PLATFORM-07F1 COMPLETE and LOCKED (2026-07-10). Checkpoint: `docs/AGENT-PLATFORM-07F1-CHECKPOINT.md`. AGENT-PLATFORM-07F3 COMPLETE and LOCKED (2026-07-12). Checkpoint: `docs/AGENT-PLATFORM-07F3-CHECKPOINT.md`. Parent checkpoint: `docs/AGENT-PLATFORM-07F-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13). Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13). BILLING-READY-04B COMPLETE and LOCKED (2026-07-13). Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13). Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. 04D ACTIVE �X Step 1 COMPLETE (Registration).
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-07F.
 
@@ -27341,22 +27341,22 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 #### AGENT-PLATFORM-07F1: Queue Transport + Metadata Preservation Canary
 
-**Status:** COMPLETE and LOCKED (2026-07-10) — all 4 steps complete — live runtime canary PASS
+**Status:** COMPLETE and LOCKED (2026-07-10) �X all 4 steps complete �X live runtime canary PASS
 **Registered:** 2026-07-10
 **Task ID:** AGENT-PLATFORM-07F1
 **Family:** AGENT PLATFORM / MULTI-BUILDER ORCHESTRATION / READ-ONLY COORDINATOR / LIVE RUNTIME CANARY
 **Priority:** High
-**Nature:** CANARY / VALIDATION — live queue transport and orchestration metadata preservation canary — runtime-sensitive
-**Risk:** HIGH — resolved. Live runtime canary PASS. Docker + PostgreSQL + Redis + AI Service Worker used. API Gateway and container-manager not required.
+**Nature:** CANARY / VALIDATION �X live queue transport and orchestration metadata preservation canary �X runtime-sensitive
+**Risk:** HIGH �X resolved. Live runtime canary PASS. Docker + PostgreSQL + Redis + AI Service Worker used. API Gateway and container-manager not required.
 **Parent:** AGENT-PLATFORM-07F
 **Keith approval:** Keith approved AGENT-PLATFORM-07F1 registration 2026-07-10 ("approve")
 
-#### Workflow Steps (4-step child-slice loop — HIGH risk)
+#### Workflow Steps (4-step child-slice loop �X HIGH risk)
 
-1. **Registration** — COMPLETE (2026-07-10)
-2. **Runtime execution readiness / Keith approval gate** — COMPLETE (2026-07-10). Readiness: `docs/AGENT-PLATFORM-07F1-RUNTIME-EXECUTION-READINESS.md`. Topology: Docker + PostgreSQL + Redis + AI Service Worker (no API Gateway, no container-manager).
-3. **Queue transport + metadata preservation canary execution** — COMPLETE (2026-07-10) — PASS. Execution ID: `8da5403a-f20e-480e-b7d8-196b18f7faef`. Provider: stub. Duration: 18ms. 9 orchestration fields verified in `usage_records.metadata` JSONB. Cleanup complete. Report: `docs/AGENT-PLATFORM-07F1-RUNTIME-CANARY-EXECUTION-REPORT.md`.
-4. **Consolidation / checkpoint** — COMPLETE (2026-07-10). Checkpoint: `docs/AGENT-PLATFORM-07F1-CHECKPOINT.md`.
+1. **Registration** �X COMPLETE (2026-07-10)
+2. **Runtime execution readiness / Keith approval gate** �X COMPLETE (2026-07-10). Readiness: `docs/AGENT-PLATFORM-07F1-RUNTIME-EXECUTION-READINESS.md`. Topology: Docker + PostgreSQL + Redis + AI Service Worker (no API Gateway, no container-manager).
+3. **Queue transport + metadata preservation canary execution** �X COMPLETE (2026-07-10) �X PASS. Execution ID: `8da5403a-f20e-480e-b7d8-196b18f7faef`. Provider: stub. Duration: 18ms. 9 orchestration fields verified in `usage_records.metadata` JSONB. Cleanup complete. Report: `docs/AGENT-PLATFORM-07F1-RUNTIME-CANARY-EXECUTION-REPORT.md`.
+4. **Consolidation / checkpoint** �X COMPLETE (2026-07-10). Checkpoint: `docs/AGENT-PLATFORM-07F1-CHECKPOINT.md`.
 
 #### Dependencies
 
@@ -27372,9 +27372,9 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 #### Purpose
 
-Prove orchestration metadata survives the real BullMQ enqueue boundary and that the AI Service Worker correctly writes orchestration fields to `usage_records.metadata` JSONB. Uses the proven AGENT-HARNESS-06E runtime topology (Docker + PostgreSQL + Redis + API Gateway + Worker with process-scoped env). Uses `test-harness-stub` adapter only — no provider/API calls, no billing.
+Prove orchestration metadata survives the real BullMQ enqueue boundary and that the AI Service Worker correctly writes orchestration fields to `usage_records.metadata` JSONB. Uses the proven AGENT-HARNESS-06E runtime topology (Docker + PostgreSQL + Redis + API Gateway + Worker with process-scoped env). Uses `test-harness-stub` adapter only �X no provider/API calls, no billing.
 
-#### Expected Future Canary Scope (Step 3 — Pending Keith Approval)
+#### Expected Future Canary Scope (Step 3 �X Pending Keith Approval)
 
 - Start Docker/PostgreSQL/Redis/API Gateway/AI Service Worker (06E pattern, process-scoped env)
 - Submit one orchestration-enriched job via real `QueueService.enqueueExecution()` with `test-harness-stub` provider
@@ -27481,11 +27481,11 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 - [x] No implementation files changed (registration step)
 - [x] No commands run (registration step)
 - [x] One-active-task rule satisfied
-- [x] Step 2 — Runtime execution readiness / Keith approval gate — COMPLETE (2026-07-10). `docs/AGENT-PLATFORM-07F1-RUNTIME-EXECUTION-READINESS.md`.
-- [x] Step 3 — Queue transport + metadata preservation canary execution — COMPLETE (2026-07-10) — PASS. Execution ID: `8da5403a-f20e-480e-b7d8-196b18f7faef`. All 9 orchestration fields verified. Cleanup complete. `docs/AGENT-PLATFORM-07F1-RUNTIME-CANARY-EXECUTION-REPORT.md`.
-- [x] Step 4 — Consolidation / checkpoint — COMPLETE (2026-07-10). `docs/AGENT-PLATFORM-07F1-CHECKPOINT.md`.
+- [x] Step 2 �X Runtime execution readiness / Keith approval gate �X COMPLETE (2026-07-10). `docs/AGENT-PLATFORM-07F1-RUNTIME-EXECUTION-READINESS.md`.
+- [x] Step 3 �X Queue transport + metadata preservation canary execution �X COMPLETE (2026-07-10) �X PASS. Execution ID: `8da5403a-f20e-480e-b7d8-196b18f7faef`. All 9 orchestration fields verified. Cleanup complete. `docs/AGENT-PLATFORM-07F1-RUNTIME-CANARY-EXECUTION-REPORT.md`.
+- [x] Step 4 �X Consolidation / checkpoint �X COMPLETE (2026-07-10). `docs/AGENT-PLATFORM-07F1-CHECKPOINT.md`.
 
-**AGENT-HARNESS write canary remains a separate track** — not registered, not part of AGENT-PLATFORM-07F1.
+**AGENT-HARNESS write canary remains a separate track** �X not registered, not part of AGENT-PLATFORM-07F1.
 
 **AGENT-PLATFORM-07F2 (Cancel Signal Path Canary) is COMPLETE and LOCKED (2026-07-10). AGENT-PLATFORM-07F3 (Consolidation Checkpoint) is COMPLETE and LOCKED (2026-07-12). Parent AGENT-PLATFORM-07F is COMPLETE and LOCKED (2026-07-12).**
 
@@ -27501,17 +27501,17 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 **Task ID:** AGENT-PLATFORM-07F2
 **Family:** AGENT PLATFORM / MULTI-BUILDER ORCHESTRATION / READ-ONLY COORDINATOR / LIVE RUNTIME CANARY
 **Priority:** High
-**Nature:** CANARY / VALIDATION — cancel signal path live PostgreSQL canary — runtime-sensitive
-**Risk:** HIGH — Docker, PostgreSQL, and real `ExecutionResultService.requestCancel()` SQL validated against `usage_records`.
+**Nature:** CANARY / VALIDATION �X cancel signal path live PostgreSQL canary �X runtime-sensitive
+**Risk:** HIGH �X Docker, PostgreSQL, and real `ExecutionResultService.requestCancel()` SQL validated against `usage_records`.
 **Parent:** AGENT-PLATFORM-07F
 **Checkpoint:** `docs/AGENT-PLATFORM-07F2-CHECKPOINT.md`
 
-#### Workflow Steps (4-step child-slice loop — HIGH risk)
+#### Workflow Steps (4-step child-slice loop �X HIGH risk)
 
-1. **Registration** — COMPLETE (2026-07-10)
-2. **Runtime execution readiness / DB safety gate** — COMPLETE (2026-07-10). Readiness: `docs/AGENT-PLATFORM-07F2-CANCEL-SIGNAL-READINESS.md`. Topology: Docker + PostgreSQL only (no Redis, no BullMQ, no Worker, no API Gateway, no container-manager).
-3. **Cancel signal path canary execution** — COMPLETE (2026-07-10) — PASS. All 18 pass criteria satisfied. Row A: `running` → `cancel_requested` (1 row returned). Row B: `completed` unchanged (0 rows returned). Non-canary rows unchanged (5 throughout). Cleanup: 2 rows deleted, 0 remaining. Report: `docs/AGENT-PLATFORM-07F2-CANCEL-SIGNAL-CANARY-EXECUTION-REPORT.md`.
-4. **Consolidation / checkpoint** — COMPLETE (2026-07-10). Checkpoint: `docs/AGENT-PLATFORM-07F2-CHECKPOINT.md`.
+1. **Registration** �X COMPLETE (2026-07-10)
+2. **Runtime execution readiness / DB safety gate** �X COMPLETE (2026-07-10). Readiness: `docs/AGENT-PLATFORM-07F2-CANCEL-SIGNAL-READINESS.md`. Topology: Docker + PostgreSQL only (no Redis, no BullMQ, no Worker, no API Gateway, no container-manager).
+3. **Cancel signal path canary execution** �X COMPLETE (2026-07-10) �X PASS. All 18 pass criteria satisfied. Row A: `running` �� `cancel_requested` (1 row returned). Row B: `completed` unchanged (0 rows returned). Non-canary rows unchanged (5 throughout). Cleanup: 2 rows deleted, 0 remaining. Report: `docs/AGENT-PLATFORM-07F2-CANCEL-SIGNAL-CANARY-EXECUTION-REPORT.md`.
+4. **Consolidation / checkpoint** �X COMPLETE (2026-07-10). Checkpoint: `docs/AGENT-PLATFORM-07F2-CHECKPOINT.md`.
 
 #### Dependencies
 
@@ -27529,7 +27529,7 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 Verify `ExecutionResultService.requestCancel(executionId)` updates `usage_records.execution_status` to `cancel_requested` in real PostgreSQL via controlled canary-prefixed DB row insertion. Uses a deterministic approach (not race/timing dependent). Produces a 07F2 runtime canary execution report. Part of the AGENT-PLATFORM-07F live runtime canary split.
 
-#### Future Canary Scope (Step 3 — Pending Step 2 DB Safety Gate)
+#### Future Canary Scope (Step 3 �X Pending Step 2 DB Safety Gate)
 
 - Verify `ExecutionResultService.requestCancel(executionId)` updates `usage_records.execution_status` to `cancel_requested`
 - Use controlled canary-prefixed DB row insertion
@@ -27621,11 +27621,11 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 - [x] No implementation files changed (registration step)
 - [x] No commands run (registration step)
 - [x] One-active-task rule satisfied
-- [x] Step 2 — Runtime execution readiness / DB safety gate — COMPLETE (2026-07-10). `docs/AGENT-PLATFORM-07F2-CANCEL-SIGNAL-READINESS.md`.
-- [x] Step 3 — Cancel signal path canary execution — COMPLETE (2026-07-10) — PASS. All 18 pass criteria satisfied. `running` → `cancel_requested` confirmed. Cleanup complete. `docs/AGENT-PLATFORM-07F2-CANCEL-SIGNAL-CANARY-EXECUTION-REPORT.md`.
-- [x] Step 4 — Consolidation / checkpoint — COMPLETE (2026-07-10). `docs/AGENT-PLATFORM-07F2-CHECKPOINT.md`.
+- [x] Step 2 �X Runtime execution readiness / DB safety gate �X COMPLETE (2026-07-10). `docs/AGENT-PLATFORM-07F2-CANCEL-SIGNAL-READINESS.md`.
+- [x] Step 3 �X Cancel signal path canary execution �X COMPLETE (2026-07-10) �X PASS. All 18 pass criteria satisfied. `running` �� `cancel_requested` confirmed. Cleanup complete. `docs/AGENT-PLATFORM-07F2-CANCEL-SIGNAL-CANARY-EXECUTION-REPORT.md`.
+- [x] Step 4 �X Consolidation / checkpoint �X COMPLETE (2026-07-10). `docs/AGENT-PLATFORM-07F2-CHECKPOINT.md`.
 
-**AGENT-HARNESS write canary remains a separate track** — not registered, not part of AGENT-PLATFORM-07F2.
+**AGENT-HARNESS write canary remains a separate track** �X not registered, not part of AGENT-PLATFORM-07F2.
 
 **AGENT-PLATFORM-07F3 (Consolidation Checkpoint) is COMPLETE and LOCKED (2026-07-12). Parent AGENT-PLATFORM-07F is COMPLETE and LOCKED (2026-07-12).**
 
@@ -27635,23 +27635,23 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 #### AGENT-PLATFORM-07F3: Parent Consolidation Checkpoint
 
-**Status:** COMPLETE and LOCKED (2026-07-12) — all 3 steps complete
+**Status:** COMPLETE and LOCKED (2026-07-12) �X all 3 steps complete
 **Registered:** 2026-07-10
 **Completed:** 2026-07-12
 **Task ID:** AGENT-PLATFORM-07F3
 **Family:** AGENT PLATFORM / MULTI-BUILDER ORCHESTRATION / READ-ONLY COORDINATOR / LIVE RUNTIME CANARY
 **Priority:** Medium
-**Nature:** GOVERNANCE / CONSOLIDATION — parent close checkpoint for AGENT-PLATFORM-07F after 07F1 and 07F2 COMPLETE and LOCKED
-**Risk:** MEDIUM — resolved. Governance/checkpoint consolidation only.
+**Nature:** GOVERNANCE / CONSOLIDATION �X parent close checkpoint for AGENT-PLATFORM-07F after 07F1 and 07F2 COMPLETE and LOCKED
+**Risk:** MEDIUM �X resolved. Governance/checkpoint consolidation only.
 **Parent:** AGENT-PLATFORM-07F
 **Checkpoint:** `docs/AGENT-PLATFORM-07F3-CHECKPOINT.md`
 **Parent checkpoint:** `docs/AGENT-PLATFORM-07F-CHECKPOINT.md`
 
 #### Workflow
 3-step child-slice loop:
-1. **Registration** — COMPLETE (2026-07-10)
-2. **Parent consolidation / checkpoint execution** — COMPLETE (2026-07-12)
-3. **Final governance consistency verification** — COMPLETE (2026-07-12)
+1. **Registration** �X COMPLETE (2026-07-10)
+2. **Parent consolidation / checkpoint execution** �X COMPLETE (2026-07-12)
+3. **Final governance consistency verification** �X COMPLETE (2026-07-12)
 
 #### Dependencies
 - AGENT-PLATFORM-07F COMPLETE and LOCKED (2026-07-12)
@@ -27711,28 +27711,28 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 - [x] One-active-task rule satisfied
 
 #### Steps (detail)
-- [x] Step 1 — Registration — COMPLETE (2026-07-10)
-- [x] Step 2 — Parent consolidation / checkpoint execution — COMPLETE (2026-07-12). `docs/AGENT-PLATFORM-07F3-CHECKPOINT.md` created. `docs/AGENT-PLATFORM-07F-CHECKPOINT.md` created. 07F3 COMPLETE and LOCKED. 07F COMPLETE and LOCKED.
-- [x] Step 3 — Final governance consistency verification — COMPLETE (2026-07-12). TASKS.md, TASKS_BACKLOG_FULL.md, docs/AINOW-EXECUTION-ROADMAP.md updated.
+- [x] Step 1 �X Registration �X COMPLETE (2026-07-10)
+- [x] Step 2 �X Parent consolidation / checkpoint execution �X COMPLETE (2026-07-12). `docs/AGENT-PLATFORM-07F3-CHECKPOINT.md` created. `docs/AGENT-PLATFORM-07F-CHECKPOINT.md` created. 07F3 COMPLETE and LOCKED. 07F COMPLETE and LOCKED.
+- [x] Step 3 �X Final governance consistency verification �X COMPLETE (2026-07-12). TASKS.md, TASKS_BACKLOG_FULL.md, docs/AINOW-EXECUTION-ROADMAP.md updated.
 
 #### Step 2 / Step 3 Acceptance Criteria
 - [x] `docs/AGENT-PLATFORM-07F3-CHECKPOINT.md` created
 - [x] `docs/AGENT-PLATFORM-07F-CHECKPOINT.md` created
 - [x] AGENT-PLATFORM-07F3 marked COMPLETE and LOCKED
 - [x] Parent AGENT-PLATFORM-07F marked COMPLETE and LOCKED
-- [x] 07F1 runtime queue metadata canary PASS recorded — Execution ID `8da5403a-f20e-480e-b7d8-196b18f7faef`; all 9 orchestration fields verified
-- [x] 07F2 cancel signal path canary PASS recorded — all 18 pass criteria satisfied; `running` → `cancel_requested` confirmed; negative guard confirmed
+- [x] 07F1 runtime queue metadata canary PASS recorded �X Execution ID `8da5403a-f20e-480e-b7d8-196b18f7faef`; all 9 orchestration fields verified
+- [x] 07F2 cancel signal path canary PASS recorded �X all 18 pass criteria satisfied; `running` �� `cancel_requested` confirmed; negative guard confirmed
 - [x] AGENT-HARNESS write canary remains separate and not registered
-- [x] Next recommended roadmap item recorded: BILLING-READY-04+ — not registered
+- [x] Next recommended roadmap item recorded: BILLING-READY-04+ �X not registered
 - [x] No implementation files changed during consolidation
 - [x] No tests/builds/runtime/provider calls during consolidation
 - [x] TASKS.md updated
 - [x] TASKS_BACKLOG_FULL.md updated (mirrors TASKS.md)
 - [x] docs/AINOW-EXECUTION-ROADMAP.md updated
 
-**AGENT-HARNESS write canary remains a separate track** — not registered, not part of AGENT-PLATFORM-07F3.
+**AGENT-HARNESS write canary remains a separate track** �X not registered, not part of AGENT-PLATFORM-07F3.
 
-**Next recommended roadmap item:** BILLING-READY-04+ — Balance Enforcement, Entitlement Gating, and Billing Foundation Phase 2 — not registered. Requires Keith approval before registration.
+**Next recommended roadmap item:** BILLING-READY-04+ �X Balance Enforcement, Entitlement Gating, and Billing Foundation Phase 2 �X not registered. Requires Keith approval before registration.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-07F3.
 
@@ -27746,17 +27746,17 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 **Task ID:** AGENT-KNOWLEDGE-00
 **Family:** AGENT KNOWLEDGE / COMMON KNOWLEDGE BASE
 **Priority:** High
-**Nature:** PLANNING/GOVERNANCE — common knowledge base architecture planning
+**Nature:** PLANNING/GOVERNANCE �X common knowledge base architecture planning
 **Risk:** Low (planning/governance only, no implementation code)
-**Roadmap position:** #4 — after AGENT-PLATFORM-03, before AGENT-COLLAB-00
+**Roadmap position:** #4 �X after AGENT-PLATFORM-03, before AGENT-COLLAB-00
 
 #### Dependencies
 
-- ROADMAP-00 — docs/AINOW-EXECUTION-ROADMAP.md created (ACTIVE governance document)
-- AGENT-PLATFORM-00 — COMPLETE and LOCKED (ainow.biz Multi-Agent Platform Master Plan)
-- AGENT-PLATFORM-01 — COMPLETE and LOCKED (Agent Registry Foundation)
-- AGENT-PLATFORM-03 — COMPLETE and LOCKED (Builder Agent Route Integration Review)
-- AGENT-HARNESS-05C9 — COMPLETE and LOCKED (Structured Harness Audit Events)
+- ROADMAP-00 �X docs/AINOW-EXECUTION-ROADMAP.md created (ACTIVE governance document)
+- AGENT-PLATFORM-00 �X COMPLETE and LOCKED (ainow.biz Multi-Agent Platform Master Plan)
+- AGENT-PLATFORM-01 �X COMPLETE and LOCKED (Agent Registry Foundation)
+- AGENT-PLATFORM-03 �X COMPLETE and LOCKED (Builder Agent Route Integration Review)
+- AGENT-HARNESS-05C9 �X COMPLETE and LOCKED (Structured Harness Audit Events)
 
 #### Purpose
 
@@ -27896,18 +27896,18 @@ Create the architecture plan for the common knowledge base layer that will give 
 **Task ID:** AGENT-COLLAB-00
 **Family:** AGENT COLLABORATION / REFERRAL PROTOCOL
 **Priority:** High
-**Nature:** PLANNING/GOVERNANCE — agent referral and collaboration protocol planning
+**Nature:** PLANNING/GOVERNANCE �X agent referral and collaboration protocol planning
 **Risk:** Low (planning/governance only, no implementation code)
-**Roadmap position:** #5 — after AGENT-KNOWLEDGE-00, before Next Harness slice
+**Roadmap position:** #5 �X after AGENT-KNOWLEDGE-00, before Next Harness slice
 
 #### Dependencies
 
-- ROADMAP-00 — docs/AINOW-EXECUTION-ROADMAP.md created and updated (ACTIVE governance document)
-- AGENT-PLATFORM-00 — COMPLETE and LOCKED (ainow.biz Multi-Agent Platform Master Plan)
-- AGENT-PLATFORM-01 — COMPLETE and LOCKED (Agent Registry Foundation)
-- AGENT-PLATFORM-03 — COMPLETE and LOCKED (Builder Agent Route Integration Review)
-- AGENT-KNOWLEDGE-00 — COMPLETE and LOCKED (Common Knowledge Base Architecture Plan)
-- AGENT-HARNESS-05C9 — COMPLETE and LOCKED (Structured Harness Audit Events)
+- ROADMAP-00 �X docs/AINOW-EXECUTION-ROADMAP.md created and updated (ACTIVE governance document)
+- AGENT-PLATFORM-00 �X COMPLETE and LOCKED (ainow.biz Multi-Agent Platform Master Plan)
+- AGENT-PLATFORM-01 �X COMPLETE and LOCKED (Agent Registry Foundation)
+- AGENT-PLATFORM-03 �X COMPLETE and LOCKED (Builder Agent Route Integration Review)
+- AGENT-KNOWLEDGE-00 �X COMPLETE and LOCKED (Common Knowledge Base Architecture Plan)
+- AGENT-HARNESS-05C9 �X COMPLETE and LOCKED (Structured Harness Audit Events)
 
 #### Purpose
 
@@ -28014,7 +28014,7 @@ This scenario must inform referral lifecycle design, approval gate requirements,
 
 #### Planning Acceptance Criteria
 
-- [x] Planning document created — `docs/AGENT-COLLAB-00-COLLABORATION-PROTOCOL-PLAN.md` (36 sections).
+- [x] Planning document created �X `docs/AGENT-COLLAB-00-COLLABORATION-PROTOCOL-PLAN.md` (36 sections).
 - [x] Agent referral lifecycle defined.
 - [x] Collaboration safety limits defined.
 - [x] Shared work object concepts defined.
@@ -28037,7 +28037,7 @@ This scenario must inform referral lifecycle design, approval gate requirements,
 
 #### Next Recommended Task
 
-AGENT-HARNESS-06 — Read-Only Harness Canary Readiness Review — registered and ACTIVE.
+AGENT-HARNESS-06 �X Read-Only Harness Canary Readiness Review �X registered and ACTIVE.
 
 ---
 
@@ -28053,16 +28053,16 @@ AGENT-HARNESS-06 — Read-Only Harness Canary Readiness Review — registered an
 **Task ID:** AGENT-HARNESS-06
 **Family:** AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
 **Priority:** High
-**Nature:** REVIEW/GOVERNANCE — read-only canary readiness review, no implementation
+**Nature:** REVIEW/GOVERNANCE �X read-only canary readiness review, no implementation
 **Risk:** Low (read-only review, no runtime activation, no source changes)
-**Roadmap position:** #6 — after AGENT-COLLAB-00, before BILLING-READY-00
+**Roadmap position:** #6 �X after AGENT-COLLAB-00, before BILLING-READY-00
 
 #### Dependencies
 
-- AGENT-HARNESS-05C9 — COMPLETE and LOCKED (Structured Harness Audit Events)
-- AGENT-KNOWLEDGE-00 — COMPLETE and LOCKED (Common Knowledge Base Architecture Plan)
-- AGENT-COLLAB-00 — COMPLETE and LOCKED (Agent Referral and Collaboration Protocol Plan)
-- AGENT-PLATFORM-03 — COMPLETE and LOCKED (Builder Agent Route Integration Review)
+- AGENT-HARNESS-05C9 �X COMPLETE and LOCKED (Structured Harness Audit Events)
+- AGENT-KNOWLEDGE-00 �X COMPLETE and LOCKED (Common Knowledge Base Architecture Plan)
+- AGENT-COLLAB-00 �X COMPLETE and LOCKED (Agent Referral and Collaboration Protocol Plan)
+- AGENT-PLATFORM-03 �X COMPLETE and LOCKED (Builder Agent Route Integration Review)
 
 #### Purpose
 
@@ -28129,7 +28129,7 @@ Perform a read-only readiness review before any Agent Harness read-only canary o
 - [x] existing focused tests identified.
 - [x] canary blocker list produced.
 - [x] recommendation produced: proceed to canary or add hardening slice.
-- [x] exact future validation/canary plan proposed — AGENT-HARNESS-06A registered.
+- [x] exact future validation/canary plan proposed �X AGENT-HARNESS-06A registered.
 - [x] no runtime activation performed.
 
 #### Review Findings
@@ -28142,7 +28142,7 @@ Perform a read-only readiness review before any Agent Harness read-only canary o
 - `browser_smoke` registry metadata says `enabled=true` but runtime gate defaults false.
 - `harness.loop_started` audit event emits `toolTimeoutMs: 0` instead of actual configured timeout.
 
-**Follow-up:** AGENT-HARNESS-06A — Read-Only Canary Hardening Slice — registered as child task.
+**Follow-up:** AGENT-HARNESS-06A �X Read-Only Canary Hardening Slice �X registered as child task.
 
 #### Checkpoint
 
@@ -28150,7 +28150,7 @@ No checkpoint document for registration-only task. Checkpoint to be created afte
 
 #### Next Recommended Task
 
-AGENT-HARNESS-06A — Read-Only Canary Hardening Slice — registered and ACTIVE.
+AGENT-HARNESS-06A �X Read-Only Canary Hardening Slice �X registered and ACTIVE.
 
 ---
 
@@ -28166,15 +28166,15 @@ AGENT-HARNESS-06A — Read-Only Canary Hardening Slice — registered and ACTIVE
 **Task ID:** AGENT-HARNESS-06A
 **Family:** AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
 **Priority:** High
-**Nature:** IMPLEMENTATION — read-only canary hardening, no runtime activation
+**Nature:** IMPLEMENTATION �X read-only canary hardening, no runtime activation
 **Risk:** Low (source changes only, no runtime activation)
-**Roadmap position:** #6A — child of AGENT-HARNESS-06, before BILLING-READY-00
-**Parent:** AGENT-HARNESS-06 — Read-Only Harness Canary Readiness Review (COMPLETE and LOCKED)
+**Roadmap position:** #6A �X child of AGENT-HARNESS-06, before BILLING-READY-00
+**Parent:** AGENT-HARNESS-06 �X Read-Only Harness Canary Readiness Review (COMPLETE and LOCKED)
 
 #### Dependencies
 
-- AGENT-HARNESS-06 — COMPLETE and LOCKED (Read-Only Harness Canary Readiness Review, NO-GO finding)
-- AGENT-HARNESS-05C9 — COMPLETE and LOCKED (Structured Harness Audit Events)
+- AGENT-HARNESS-06 �X COMPLETE and LOCKED (Read-Only Harness Canary Readiness Review, NO-GO finding)
+- AGENT-HARNESS-05C9 �X COMPLETE and LOCKED (Structured Harness Audit Events)
 
 #### Review Findings from Parent (AGENT-HARNESS-06)
 
@@ -28254,11 +28254,11 @@ Add the hardening required before a true read-only Agent Harness canary can be p
 
 #### Checkpoint
 
-**docs/AGENT-HARNESS-06A-CHECKPOINT.md** — created 2026-07-06.
+**docs/AGENT-HARNESS-06A-CHECKPOINT.md** �X created 2026-07-06.
 
 #### Next Recommended Task
 
-AGENT-HARNESS-06B — Read-Only Harness Canary Plan — registered and ACTIVE.
+AGENT-HARNESS-06B �X Read-Only Harness Canary Plan �X registered and ACTIVE.
 
 ---
 
@@ -28274,16 +28274,16 @@ AGENT-HARNESS-06B — Read-Only Harness Canary Plan — registered and ACTIVE.
 **Task ID:** AGENT-HARNESS-06B
 **Family:** AGENT HARNESS / TOOL PROTOCOL / MODEL ADAPTERS
 **Priority:** High
-**Nature:** PLANNING/GOVERNANCE — canary plan document, no runtime activation
+**Nature:** PLANNING/GOVERNANCE �X canary plan document, no runtime activation
 **Risk:** Low (governance only, no runtime activation, no source changes)
-**Roadmap position:** #6B — child of AGENT-HARNESS-06, after AGENT-HARNESS-06A, before BILLING-READY-00
-**Parent:** AGENT-HARNESS-06 — Read-Only Harness Canary Readiness Review (COMPLETE and LOCKED)
+**Roadmap position:** #6B �X child of AGENT-HARNESS-06, after AGENT-HARNESS-06A, before BILLING-READY-00
+**Parent:** AGENT-HARNESS-06 �X Read-Only Harness Canary Readiness Review (COMPLETE and LOCKED)
 
 #### Dependencies
 
-- AGENT-HARNESS-06A — COMPLETE and LOCKED (Read-Only Canary Hardening Slice)
-- AGENT-HARNESS-06 — COMPLETE and LOCKED (Read-Only Harness Canary Readiness Review)
-- AGENT-HARNESS-05C9 — COMPLETE and LOCKED (Structured Harness Audit Events)
+- AGENT-HARNESS-06A �X COMPLETE and LOCKED (Read-Only Canary Hardening Slice)
+- AGENT-HARNESS-06 �X COMPLETE and LOCKED (Read-Only Harness Canary Readiness Review)
+- AGENT-HARNESS-05C9 �X COMPLETE and LOCKED (Structured Harness Audit Events)
 
 #### Purpose
 
@@ -28375,15 +28375,15 @@ Create a detailed, approval-gated plan for the first read-only Agent Harness can
 
 #### Checkpoint
 
-**docs/AGENT-HARNESS-06B-CHECKPOINT.md** — created 2026-07-06.
+**docs/AGENT-HARNESS-06B-CHECKPOINT.md** �X created 2026-07-06.
 
 Runtime activation deferred. `AGENT_HARNESS_ENABLE_TOOL_LOOP=true` was not set. No canary execution occurred. No env files modified. No source/test/frontend/package/env/Docker/schema/database files changed. No runtime/provider/database/browser/Docker commands executed. No subagents used.
 
 #### Next Recommended Task
 
-Keith decision required. Two candidates — neither registered:
-1. AGENT-HARNESS-06C — Read-Only Harness Canary Execution
-2. BILLING-READY-00 — Billing, Plan, Credit, and Entitlement Audit
+Keith decision required. Two candidates �X neither registered:
+1. AGENT-HARNESS-06C �X Read-Only Harness Canary Execution
+2. BILLING-READY-00 �X Billing, Plan, Credit, and Entitlement Audit
 
 ---
 
@@ -28399,22 +28399,22 @@ Keith decision required. Two candidates — neither registered:
 **Task ID:** BILLING-READY-00
 **Family:** BILLING / COMMERCIAL READINESS
 **Priority:** High
-**Nature:** AUDIT/PLANNING — read-only audit and planning, no implementation
+**Nature:** AUDIT/PLANNING �X read-only audit and planning, no implementation
 **Risk:** Low (governance only, no source/runtime/database changes)
-**Roadmap position:** #7 — after AGENT-HARNESS-06B, before any Stripe/payment implementation
+**Roadmap position:** #7 �X after AGENT-HARNESS-06B, before any Stripe/payment implementation
 **Keith decision:** Keith chose BILLING-READY-00 after AGENT-HARNESS-06B (2026-07-06). AGENT-HARNESS-06C remains not registered and deferred.
 **Checkpoint:** docs/BILLING-READY-00-CHECKPOINT.md
 **Planning document:** docs/BILLING-READY-00-BILLING-ENTITLEMENT-AUDIT.md
-**Implementation performed:** None — audit and planning only.
-**Stripe/payment implementation:** Deferred — StripePaymentProvider remains a safe zero-call stub.
-**AGENT-HARNESS-06C:** Not registered — remains deferred. Keith decision required for next task.
+**Implementation performed:** None �X audit and planning only.
+**Stripe/payment implementation:** Deferred �X StripePaymentProvider remains a safe zero-call stub.
+**AGENT-HARNESS-06C:** Not registered �X remains deferred. Keith decision required for next task.
 
 #### Dependencies
 
-- AGENT-HARNESS-06B — COMPLETE and LOCKED (Read-Only Harness Canary Plan)
-- AGENT-KNOWLEDGE-00 — COMPLETE and LOCKED (Common Knowledge Base Architecture Plan)
-- AGENT-COLLAB-00 — COMPLETE and LOCKED (Agent Referral and Collaboration Protocol Plan)
-- AGENT-PLATFORM-03 — COMPLETE and LOCKED (Builder Agent Route Integration Review)
+- AGENT-HARNESS-06B �X COMPLETE and LOCKED (Read-Only Harness Canary Plan)
+- AGENT-KNOWLEDGE-00 �X COMPLETE and LOCKED (Common Knowledge Base Architecture Plan)
+- AGENT-COLLAB-00 �X COMPLETE and LOCKED (Agent Referral and Collaboration Protocol Plan)
+- AGENT-PLATFORM-03 �X COMPLETE and LOCKED (Builder Agent Route Integration Review)
 
 #### Purpose
 
@@ -28513,18 +28513,18 @@ This is not payment implementation.
 
 #### Expected Planning Document
 
-`docs/BILLING-READY-00-BILLING-ENTITLEMENT-AUDIT.md` — **CREATED 2026-07-06.** 27-section planning document. All acceptance criteria satisfied.
+`docs/BILLING-READY-00-BILLING-ENTITLEMENT-AUDIT.md` �X **CREATED 2026-07-06.** 27-section planning document. All acceptance criteria satisfied.
 
 #### Checkpoint
 
-`docs/BILLING-READY-00-CHECKPOINT.md` — **CREATED 2026-07-06.** Consolidation/checkpoint complete.
+`docs/BILLING-READY-00-CHECKPOINT.md` �X **CREATED 2026-07-06.** Consolidation/checkpoint complete.
 
 #### Next Step
 
 Keith decision required. Candidates (not registered):
-- Option A: BILLING-READY-01 — Credit Ledger Foundation
-- Option B: AGENT-HARNESS-06C — Read-Only Harness Canary Execution
-- Option C: BILLING-READY-01A — Billing Implementation Architecture Review
+- Option A: BILLING-READY-01 �X Credit Ledger Foundation
+- Option B: AGENT-HARNESS-06C �X Read-Only Harness Canary Execution
+- Option C: BILLING-READY-01A �X Billing Implementation Architecture Review
 
 ---
 
@@ -28541,14 +28541,14 @@ Keith decision required. Candidates (not registered):
 **Task ID:** BILLING-READY-01A
 **Family:** BILLING / COMMERCIAL READINESS
 **Priority:** High
-**Nature:** READ-ONLY ARCHITECTURE REVIEW — no implementation
+**Nature:** READ-ONLY ARCHITECTURE REVIEW �X no implementation
 **Risk:** Low (governance only, no source/runtime/database changes)
 **Roadmap position:** After BILLING-READY-00, before BILLING-READY-01 Credit Ledger Foundation
 **Keith decision:** Keith chose BILLING-READY-01A after BILLING-READY-00 (2026-07-06). AGENT-HARNESS-06C remains not registered and deferred.
 
 #### Dependencies
 
-- BILLING-READY-00 — COMPLETE and LOCKED (Billing, Plan, Credit, and Entitlement Audit)
+- BILLING-READY-00 �X COMPLETE and LOCKED (Billing, Plan, Credit, and Entitlement Audit)
 
 #### Purpose
 
@@ -28666,17 +28666,17 @@ Future architecture review should answer:
 
 #### Expected Review Document
 
-`docs/BILLING-READY-01A-BILLING-IMPLEMENTATION-ARCHITECTURE-REVIEW.md` — **CREATED 2026-07-06.** Architecture review complete. All 18 review acceptance criteria satisfied.
+`docs/BILLING-READY-01A-BILLING-IMPLEMENTATION-ARCHITECTURE-REVIEW.md` �X **CREATED 2026-07-06.** Architecture review complete. All 18 review acceptance criteria satisfied.
 
 #### Next Step
 
-BILLING-READY-01A COMPLETE and LOCKED (2026-07-06). Architecture review produced `docs/BILLING-READY-01A-BILLING-IMPLEMENTATION-ARCHITECTURE-REVIEW.md` and `docs/BILLING-READY-01A-CHECKPOINT.md`. Recommended next task: BILLING-READY-01 — Credit Ledger Foundation (TypeScript-only, Option A). BILLING-READY-01 is proposed only — not registered. AGENT-HARNESS-06C remains deferred and not registered.
+BILLING-READY-01A COMPLETE and LOCKED (2026-07-06). Architecture review produced `docs/BILLING-READY-01A-BILLING-IMPLEMENTATION-ARCHITECTURE-REVIEW.md` and `docs/BILLING-READY-01A-CHECKPOINT.md`. Recommended next task: BILLING-READY-01 �X Credit Ledger Foundation (TypeScript-only, Option A). BILLING-READY-01 is proposed only �X not registered. AGENT-HARNESS-06C remains deferred and not registered.
 
 #### Recommended Next Task
 
-**BILLING-READY-01 — Credit Ledger Foundation.** TypeScript-only credit ledger domain/types/config with no database migration (Option A). 10 new files under `services/api-gateway/src/credit-ledger/` + 3 unit test files. Proposed only — not registered. Requires Keith's explicit decision to register.
+**BILLING-READY-01 �X Credit Ledger Foundation.** TypeScript-only credit ledger domain/types/config with no database migration (Option A). 10 new files under `services/api-gateway/src/credit-ledger/` + 3 unit test files. Proposed only �X not registered. Requires Keith's explicit decision to register.
 
-**AGENT-HARNESS-06C** — Remains deferred and not registered.
+**AGENT-HARNESS-06C** �X Remains deferred and not registered.
 
 ---
 
@@ -28693,15 +28693,15 @@ BILLING-READY-01A COMPLETE and LOCKED (2026-07-06). Architecture review produced
 **Task ID:** BILLING-READY-01
 **Family:** BILLING / COMMERCIAL READINESS
 **Priority:** High
-**Nature:** IMPLEMENTATION — TypeScript-only, no database migration
+**Nature:** IMPLEMENTATION �X TypeScript-only, no database migration
 **Risk:** Low (TypeScript-only domain types and static config, no runtime/database changes)
 **Roadmap position:** After BILLING-READY-01A, before BILLING-READY-02 credit deduction pipeline
 **Keith decision:** Keith registered BILLING-READY-01 (2026-07-06) after BILLING-READY-01A completed. Option A selected. AGENT-HARNESS-06C remains deferred and not registered.
 
 #### Dependencies
 
-- BILLING-READY-01A — COMPLETE and LOCKED (Billing Implementation Architecture Review — Option A recommended)
-- BILLING-READY-00 — COMPLETE and LOCKED (Billing, Plan, Credit, and Entitlement Audit)
+- BILLING-READY-01A �X COMPLETE and LOCKED (Billing Implementation Architecture Review �X Option A recommended)
+- BILLING-READY-00 �X COMPLETE and LOCKED (Billing, Plan, Credit, and Entitlement Audit)
 
 #### Purpose
 
@@ -28842,9 +28842,9 @@ Implementation should include:
 
 BILLING-READY-01 COMPLETE and LOCKED (2026-07-06). Credit Ledger Foundation implemented. 10 source files + 3 test files. 16 tests pass. Typecheck and build clean. See `docs/BILLING-READY-01-CHECKPOINT.md`.
 
-**BILLING-READY-02A/02B/02C** — COMPLETE and LOCKED (2026-07-07). Credit deduction pipeline foundation implemented. See `docs/BILLING-READY-02A-02B-02C-CHECKPOINT.md`.
+**BILLING-READY-02A/02B/02C** �X COMPLETE and LOCKED (2026-07-07). Credit deduction pipeline foundation implemented. See `docs/BILLING-READY-02A-02B-02C-CHECKPOINT.md`.
 
-**AGENT-HARNESS-06C** — Remains deferred and not registered.
+**AGENT-HARNESS-06C** �X Remains deferred and not registered.
 
 ---
 
@@ -28852,7 +28852,7 @@ BILLING-READY-01 COMPLETE and LOCKED (2026-07-06). Credit Ledger Foundation impl
 
 ---
 
-#### BILLING-READY-02A: Credit Deduction Gateway — Architecture Foundation
+#### BILLING-READY-02A: Credit Deduction Gateway �X Architecture Foundation
 
 **Status:** COMPLETE and LOCKED
 **Registered:** 2026-07-07
@@ -28860,14 +28860,14 @@ BILLING-READY-01 COMPLETE and LOCKED (2026-07-06). Credit Ledger Foundation impl
 **Task ID:** BILLING-READY-02A
 **Family:** BILLING / COMMERCIAL READINESS
 **Priority:** High
-**Nature:** IMPLEMENTATION — TypeScript-only, new module, no database migration
+**Nature:** IMPLEMENTATION �X TypeScript-only, new module, no database migration
 **Risk:** Low (new module, no existing behavior changed)
-**Roadmap position:** #7C-a — after BILLING-READY-01, first slice of BILLING-READY-02
+**Roadmap position:** #7C-a �X after BILLING-READY-01, first slice of BILLING-READY-02
 **Checkpoint:** docs/BILLING-READY-02A-02B-02C-CHECKPOINT.md
 
 #### Dependencies
 
-- BILLING-READY-01 — COMPLETE and LOCKED (Credit Ledger Foundation)
+- BILLING-READY-01 �X COMPLETE and LOCKED (Credit Ledger Foundation)
 
 #### Purpose
 
@@ -28914,7 +28914,7 @@ Establish the abstract `CreditDeductionGateway` contract and injectable module b
 
 ---
 
-#### BILLING-READY-02B: Credit Deduction Gateway — Single Runtime Wiring Point
+#### BILLING-READY-02B: Credit Deduction Gateway �X Single Runtime Wiring Point
 
 **Status:** COMPLETE and LOCKED
 **Registered:** 2026-07-07
@@ -28922,18 +28922,18 @@ Establish the abstract `CreditDeductionGateway` contract and injectable module b
 **Task ID:** BILLING-READY-02B
 **Family:** BILLING / COMMERCIAL READINESS
 **Priority:** High
-**Nature:** IMPLEMENTATION — usage-ledger wiring, no new module
+**Nature:** IMPLEMENTATION �X usage-ledger wiring, no new module
 **Risk:** Low (gateway injected @Optional, errors suppressed, existing flow unchanged)
-**Roadmap position:** #7C-b — after BILLING-READY-02A
+**Roadmap position:** #7C-b �X after BILLING-READY-02A
 **Checkpoint:** docs/BILLING-READY-02A-02B-02C-CHECKPOINT.md
 
 #### Dependencies
 
-- BILLING-READY-02A — COMPLETE and LOCKED (Gateway Architecture Foundation)
+- BILLING-READY-02A �X COMPLETE and LOCKED (Gateway Architecture Foundation)
 
 #### Purpose
 
-Wire `CreditDeductionGateway` into `UsageLedgerService.updateExecutionResult()` as the single, exclusive call site for all `usage_ledger`-sourced credit deduction events. Gateway is `@Optional()` — missing binding silently no-ops. Gateway errors never break the main usage-ledger write.
+Wire `CreditDeductionGateway` into `UsageLedgerService.updateExecutionResult()` as the single, exclusive call site for all `usage_ledger`-sourced credit deduction events. Gateway is `@Optional()` �X missing binding silently no-ops. Gateway errors never break the main usage-ledger write.
 
 #### Files Changed
 
@@ -28948,7 +28948,7 @@ Wire `CreditDeductionGateway` into `UsageLedgerService.updateExecutionResult()` 
 
 - [x] `UsageLedgerService` injects `CreditDeductionGateway` via `@Optional()`
 - [x] `emitDeductionAttempt()` called from `updateExecutionResult()` after DB write
-- [x] Gateway errors caught and logged as WARN — never break usage-ledger write
+- [x] Gateway errors caught and logged as WARN �X never break usage-ledger write
 - [x] `CreditDeductionModule` imported in `UsageLedgerModule`
 - [x] BILLING-READY-02B tests added to usage-ledger spec
 - [x] No database migration
@@ -28958,8 +28958,8 @@ Wire `CreditDeductionGateway` into `UsageLedgerService.updateExecutionResult()` 
 
 #### Scope Boundaries Confirmed
 
-- Gateway is optional — silent no-op when not bound
-- One call site only — `updateExecutionResult()` completion hook
+- Gateway is optional �X silent no-op when not bound
+- One call site only �X `updateExecutionResult()` completion hook
 - No balance tracking, no enforcement, no payment calls
 
 ---
@@ -28968,7 +28968,7 @@ Wire `CreditDeductionGateway` into `UsageLedgerService.updateExecutionResult()` 
 
 ---
 
-#### BILLING-READY-02C: Credit Deduction Gateway — Credit Calculation Layer
+#### BILLING-READY-02C: Credit Deduction Gateway �X Credit Calculation Layer
 
 **Status:** COMPLETE and LOCKED
 **Registered:** 2026-07-07
@@ -28976,19 +28976,19 @@ Wire `CreditDeductionGateway` into `UsageLedgerService.updateExecutionResult()` 
 **Task ID:** BILLING-READY-02C
 **Family:** BILLING / COMMERCIAL READINESS
 **Priority:** High
-**Nature:** IMPLEMENTATION — replaces NoOp with calculating gateway, no persistence
+**Nature:** IMPLEMENTATION �X replaces NoOp with calculating gateway, no persistence
 **Risk:** Low (pure calculation layer, no side effects, no DB access)
-**Roadmap position:** #7C-c — after BILLING-READY-02B
+**Roadmap position:** #7C-c �X after BILLING-READY-02B
 **Checkpoint:** docs/BILLING-READY-02A-02B-02C-CHECKPOINT.md
 
 #### Dependencies
 
-- BILLING-READY-02B — COMPLETE and LOCKED (Runtime Wiring Point)
-- BILLING-READY-01 — COMPLETE and LOCKED (Credit Ledger Foundation — provides CREDIT_RATES)
+- BILLING-READY-02B �X COMPLETE and LOCKED (Runtime Wiring Point)
+- BILLING-READY-01 �X COMPLETE and LOCKED (Credit Ledger Foundation �X provides CREDIT_RATES)
 
 #### Purpose
 
-Replace `NoOpCreditDeductionGateway` with `CalculatingCreditDeductionGateway`, which uses `CreditCalculationService` to compute `unitCount × creditsPerUnit` from the static `CREDIT_RATES` config (rate version `2026-07-v1`). Deterministic, pure function, no persistence.
+Replace `NoOpCreditDeductionGateway` with `CalculatingCreditDeductionGateway`, which uses `CreditCalculationService` to compute `unitCount �� creditsPerUnit` from the static `CREDIT_RATES` config (rate version `2026-07-v1`). Deterministic, pure function, no persistence.
 
 #### Files Changed
 
@@ -29010,7 +29010,7 @@ Replace `NoOpCreditDeductionGateway` with `CalculatingCreditDeductionGateway`, w
 #### Acceptance Criteria
 
 - [x] `CalculatingCreditDeductionGateway` implements `CreditDeductionGateway`
-- [x] `CreditCalculationService` provides deterministic `unitCount × creditsPerUnit` calculation
+- [x] `CreditCalculationService` provides deterministic `unitCount �� creditsPerUnit` calculation
 - [x] `CreditDeductionModule` re-bound to `CalculatingCreditDeductionGateway`
 - [x] Barrel exports updated
 - [x] Architectural guardrail test updated to verify Calculating gateway is bound
@@ -29040,31 +29040,31 @@ Replace `NoOpCreditDeductionGateway` with `CalculatingCreditDeductionGateway`, w
 
 ---
 
-#### BILLING-READY-02D: Credit Deduction Pipeline — Simulation-Only Validation
+#### BILLING-READY-02D: Credit Deduction Pipeline �X Simulation-Only Validation
 
-**Status:** COMPLETE and LOCKED — 2026-07-07
+**Status:** COMPLETE and LOCKED �X 2026-07-07
 **Registered:** 2026-07-07
 **Task ID:** BILLING-READY-02D
 **Family:** BILLING / CREDIT DEDUCTION PIPELINE
 **Priority:** High
-**Nature:** VALIDATION — simulation-only pipeline test, no persistence, no DB
+**Nature:** VALIDATION �X simulation-only pipeline test, no persistence, no DB
 **Risk:** Low (pure test/validation slice, no side effects, no DB access)
-**Roadmap position:** #7D — after BILLING-READY-02C, before BILLING-READY-03
+**Roadmap position:** #7D �X after BILLING-READY-02C, before BILLING-READY-03
 
 #### Dependencies
 
-- BILLING-READY-02A — COMPLETE and LOCKED (Gateway Architecture Foundation)
-- BILLING-READY-02B — COMPLETE and LOCKED (Runtime Wiring Point)
-- BILLING-READY-02C — COMPLETE and LOCKED (Credit Calculation Layer)
+- BILLING-READY-02A �X COMPLETE and LOCKED (Gateway Architecture Foundation)
+- BILLING-READY-02B �X COMPLETE and LOCKED (Runtime Wiring Point)
+- BILLING-READY-02C �X COMPLETE and LOCKED (Credit Calculation Layer)
 
 #### Purpose
 
-Validate the complete credit deduction pipeline before database persistence is introduced. Simulation-only validation of the end-to-end pipeline: usage completion event → credit calculation → gateway result → audit-ready deduction result. Confirms deterministic behavior, contract correctness, and pre-persistence readiness for BILLING-READY-03.
+Validate the complete credit deduction pipeline before database persistence is introduced. Simulation-only validation of the end-to-end pipeline: usage completion event �� credit calculation �� gateway result �� audit-ready deduction result. Confirms deterministic behavior, contract correctness, and pre-persistence readiness for BILLING-READY-03.
 
 #### Scope
 
 - Add simulation-only validation for the credit deduction pipeline
-- Validate deterministic `CreditDeductionEvent` → `CreditDeductionResult` behavior
+- Validate deterministic `CreditDeductionEvent` �� `CreditDeductionResult` behavior
 - Validate `sourceEventId` contract before persistence
 - Validate duplicate event expectations without DB persistence
 - Validate gateway failure handling remains non-breaking
@@ -29084,7 +29084,7 @@ Validate the complete credit deduction pipeline before database persistence is i
 
 #### Acceptance Criteria
 
-- [x] Simulation validates `CreditDeductionEvent` → `CreditDeductionResult` end-to-end
+- [x] Simulation validates `CreditDeductionEvent` �� `CreditDeductionResult` end-to-end
 - [x] `sourceEventId` contract verified before persistence layer is introduced
 - [x] Duplicate event behavior validated without DB persistence
 - [x] Gateway failure handling confirmed non-breaking
@@ -29111,10 +29111,10 @@ Validate the complete credit deduction pipeline before database persistence is i
 
 - Test file changed: `services/api-gateway/src/billing/credit-deduction/__tests__/calculating-credit-deduction.gateway.spec.ts`
 - No production source files changed
-- `npx jest --testPathPatterns="credit-deduction"` — 4 suites passed, 53 tests passed
-- `npx jest --testPathPatterns="usage-ledger"` — 2 suites passed, 43 tests passed
-- `npx tsc --noEmit` — passed
-- Edited-file lint — passed
+- `npx jest --testPathPatterns="credit-deduction"` �X 4 suites passed, 53 tests passed
+- `npx jest --testPathPatterns="usage-ledger"` �X 2 suites passed, 43 tests passed
+- `npx tsc --noEmit` �X passed
+- Edited-file lint �X passed
 - See `docs/BILLING-READY-02D-CHECKPOINT.md`
 
 ---
@@ -29133,16 +29133,16 @@ Validate the complete credit deduction pipeline before database persistence is i
 **Priority:** High
 **Nature:** REGISTRATION + MULTI-SLICE IMPLEMENTATION
 **Risk:** Medium (database schema, migrations, TypeORM entities, repository layer, gateway swap)
-**Roadmap position:** #7E — after BILLING-READY-02D, before BILLING-READY-04
+**Roadmap position:** #7E �X after BILLING-READY-02D, before BILLING-READY-04
 
 #### Dependencies
 
-- BILLING-READY-00 — COMPLETE and LOCKED
-- BILLING-READY-01 — COMPLETE and LOCKED
-- BILLING-READY-02A — COMPLETE and LOCKED
-- BILLING-READY-02B — COMPLETE and LOCKED
-- BILLING-READY-02C — COMPLETE and LOCKED
-- BILLING-READY-02D — COMPLETE and LOCKED
+- BILLING-READY-00 �X COMPLETE and LOCKED
+- BILLING-READY-01 �X COMPLETE and LOCKED
+- BILLING-READY-02A �X COMPLETE and LOCKED
+- BILLING-READY-02B �X COMPLETE and LOCKED
+- BILLING-READY-02C �X COMPLETE and LOCKED
+- BILLING-READY-02D �X COMPLETE and LOCKED
 
 #### Purpose
 
@@ -29152,15 +29152,15 @@ Introduce database-backed credit balance persistence. Replace the current calcul
 
 BILLING-READY-03 is too broad for one safe implementation slice. It is split into four bounded child slices:
 
-- **BILLING-READY-03A** — Schema and persistence design: Define the DB schema design (`CreditBalance` entity, `CreditDeductionRecord` entity), TypeORM entity shapes, repository interface contracts, and migration plan. Governance/design only; no migrations run, no production code changed.
-- **BILLING-READY-03B** — DB schema/migration/repository foundation: Create TypeORM entities, write and run the database migration, and implement the repository layer (`CreditBalanceRepository`, `CreditDeductionRecordRepository`). No gateway swap yet.
-- **BILLING-READY-03C** — Persistent deduction gateway (further split into 03C1/03C2):
-  - **BILLING-READY-03C1** — Gateway implementation and unit tests, not runtime-bound: Implement `PersistentCreditDeductionGateway`, update `CreditDeductionGateway` base to async, wire `sourceEventId` idempotency and `balanceAfter` population. No module binding swap. Unit tests only.
-  - **BILLING-READY-03C2** — Controlled runtime binding, async `UsageLedgerService` integration, DB validation: Swap `CreditDeductionModule` to bind `PersistentCreditDeductionGateway`, update `UsageLedgerService.emitDeductionAttempt()` to `await`, DB integration validation. **COMPLETE and LOCKED (2026-07-07).**
-- **BILLING-READY-03D** — Balance/overflow/concurrency semantics (split into 03D1/03D2/03D3):
-  - **BILLING-READY-03D1** — Transaction boundary and repository contract hardening. **COMPLETE and LOCKED (2026-07-07).**
-  - **BILLING-READY-03D2** — Concurrency/idempotency integration validation. **COMPLETE and LOCKED (2026-07-07).** Second child slice of BILLING-READY-03D.
-  - **BILLING-READY-03D3** — Overflow semantics finalization and BILLING-READY-03 close checkpoint. **COMPLETE and LOCKED (2026-07-07).**
+- **BILLING-READY-03A** �X Schema and persistence design: Define the DB schema design (`CreditBalance` entity, `CreditDeductionRecord` entity), TypeORM entity shapes, repository interface contracts, and migration plan. Governance/design only; no migrations run, no production code changed.
+- **BILLING-READY-03B** �X DB schema/migration/repository foundation: Create TypeORM entities, write and run the database migration, and implement the repository layer (`CreditBalanceRepository`, `CreditDeductionRecordRepository`). No gateway swap yet.
+- **BILLING-READY-03C** �X Persistent deduction gateway (further split into 03C1/03C2):
+  - **BILLING-READY-03C1** �X Gateway implementation and unit tests, not runtime-bound: Implement `PersistentCreditDeductionGateway`, update `CreditDeductionGateway` base to async, wire `sourceEventId` idempotency and `balanceAfter` population. No module binding swap. Unit tests only.
+  - **BILLING-READY-03C2** �X Controlled runtime binding, async `UsageLedgerService` integration, DB validation: Swap `CreditDeductionModule` to bind `PersistentCreditDeductionGateway`, update `UsageLedgerService.emitDeductionAttempt()` to `await`, DB integration validation. **COMPLETE and LOCKED (2026-07-07).**
+- **BILLING-READY-03D** �X Balance/overflow/concurrency semantics (split into 03D1/03D2/03D3):
+  - **BILLING-READY-03D1** �X Transaction boundary and repository contract hardening. **COMPLETE and LOCKED (2026-07-07).**
+  - **BILLING-READY-03D2** �X Concurrency/idempotency integration validation. **COMPLETE and LOCKED (2026-07-07).** Second child slice of BILLING-READY-03D.
+  - **BILLING-READY-03D3** �X Overflow semantics finalization and BILLING-READY-03 close checkpoint. **COMPLETE and LOCKED (2026-07-07).**
 
 Do not implement any child slice during registration.
 
@@ -29198,7 +29198,7 @@ Do not implement any child slice during registration.
 
 #### Implementation Acceptance Criteria (not yet checked)
 
-**BILLING-READY-03A — Schema and persistence design:**
+**BILLING-READY-03A �X Schema and persistence design:**
 - [ ] `CreditBalance` entity schema defined (TypeORM shape, fields, constraints)
 - [ ] `CreditDeductionRecord` entity schema defined (TypeORM shape, fields, constraints)
 - [ ] Repository interface contracts defined (`CreditBalanceRepository`, `CreditDeductionRecordRepository`)
@@ -29208,7 +29208,7 @@ Do not implement any child slice during registration.
 - [ ] `creditsOverflow` threshold design confirmed
 - [ ] Schema design document created under `docs/`
 
-**BILLING-READY-03B — DB schema/migration/repository foundation: COMPLETE and LOCKED (2026-07-07)**
+**BILLING-READY-03B �X DB schema/migration/repository foundation: COMPLETE and LOCKED (2026-07-07)**
 - [x] TypeORM entities created
 - [x] Database migration written (`gen_random_uuid()`, not `uuid_generate_v4()`)
 - [x] `CreditBalanceRepository` implemented
@@ -29217,42 +29217,42 @@ Do not implement any child slice during registration.
 - [x] No gateway swap (CalculatingCreditDeductionGateway remains bound)
 - [x] TypeScript typecheck clean; build clean
 
-**BILLING-READY-03C1 — Persistent gateway implementation, not runtime-bound: COMPLETE and LOCKED (2026-07-07)**
+**BILLING-READY-03C1 �X Persistent gateway implementation, not runtime-bound: COMPLETE and LOCKED (2026-07-07)**
 - [x] `PersistentCreditDeductionGateway` class implemented
 - [x] `CreditDeductionGateway` base class made generic (sync default; async opt-in via type parameter)
 - [x] `sourceEventId` idempotency: duplicate `sourceEventId` returns existing result, no new row, no balance mutation
-- [x] Atomic deduction flow: lock balance → calculate → insert record → update balance → return result
+- [x] Atomic deduction flow: lock balance �� calculate �� insert record �� update balance �� return result
 - [x] `balanceAfter` populated from actual stored balance post-deduction
 - [x] Gateway error propagates as thrown exception (caught non-breakingly by `UsageLedgerService`)
 - [x] `PersistentCreditDeductionGateway` unit tests pass (11 suites / 136 tests)
 - [x] No runtime binding swap (CalculatingCreditDeductionGateway remains bound)
 
-**BILLING-READY-03C2 — Controlled runtime binding and async integration: COMPLETE and LOCKED (2026-07-07)**
+**BILLING-READY-03C2 �X Controlled runtime binding and async integration: COMPLETE and LOCKED (2026-07-07)**
 - [x] `CreditDeductionModule` binding swapped to `PersistentCreditDeductionGateway`
 - [x] `CreditPersistenceModule` imported into `CreditDeductionModule`
 - [x] `UsageLedgerService.emitDeductionAttempt()` updated to `await` gateway call
 - [x] `UsageLedgerService.updateExecutionResult()` preserved as single runtime trigger
-- [x] Gateway errors in `emitDeductionAttempt()` suppressed — do not break `updateExecutionResult()`
+- [x] Gateway errors in `emitDeductionAttempt()` suppressed �X do not break `updateExecutionResult()`
 - [x] Gateway errors logged safely (no secret/PII leakage)
-- [x] Duplicate `sourceEventId` returns existing deduction result — no double deduction
+- [x] Duplicate `sourceEventId` returns existing deduction result �X no double deduction
 - [x] Migration `1772100000000-CreateCreditBalanceAndDeductionTables` verified applied before DB validation
 - [x] DB integration validated against local PostgreSQL
 - [x] All existing tests continue to pass after binding swap
 - [x] TypeScript typecheck clean (`npx tsc --noEmit`); build clean (`npm run build`)
 
-**BILLING-READY-03D — Balance/overflow/concurrency semantics (split into 03D1/03D2/03D3):**
+**BILLING-READY-03D �X Balance/overflow/concurrency semantics (split into 03D1/03D2/03D3):**
 
-**BILLING-READY-03D1 — Transaction boundary and repository contract hardening: COMPLETE and LOCKED (2026-07-07)**
+**BILLING-READY-03D1 �X Transaction boundary and repository contract hardening: COMPLETE and LOCKED (2026-07-07)**
 - [x] Atomic transaction semantics defined and hardened in `PersistentCreditDeductionGateway`
 - [x] Balance lock/update correctness under DB transaction confirmed
 - [x] Insufficient balance `creditsOverflow` handling defined
 - [x] `CreditDeductionGateway` preserved as single deduction entry point
 - [x] `UsageLedgerService.updateExecutionResult()` preserved as single runtime trigger
-- [x] Failure suppression preserved — billing errors do not break usage recording
+- [x] Failure suppression preserved �X billing errors do not break usage recording
 - [x] No Stripe/payment behavior added
 - [x] No entitlement enforcement added
 
-**BILLING-READY-03D2 — Concurrency/idempotency integration validation: COMPLETE and LOCKED (2026-07-07)**
+**BILLING-READY-03D2 �X Concurrency/idempotency integration validation: COMPLETE and LOCKED (2026-07-07)**
 - [x] `SELECT ... FOR UPDATE` behavior validated against live PostgreSQL under concurrent deductions
 - [x] Concurrent same-event execution produces exactly one deduction record (no double deduction)
 - [x] Concurrent different-event execution: balance remains non-negative (DB `CHECK` constraint respected)
@@ -29263,13 +29263,13 @@ Do not implement any child slice during registration.
 - [x] All validation rows cleaned up from `credit_balances` and `credit_deduction_records` after execution
 - [x] DB validation evidence recorded (row counts, balance state, idempotency results)
 
-**BILLING-READY-03D3 — Overflow semantics finalization and BILLING-READY-03 close checkpoint: COMPLETE and LOCKED (2026-07-07)**
-- [x] Overflow semantics finalized and recorded (deductions non-blocking; `appliedCredits` capped by available balance; `creditsOverflow` records unmet requested credits; `balanceAfter` never goes negative; zero-balance deduction produces `appliedCredits=0` and `overflowCredits=requestedCredits`; execution not blocked by insufficient balance) — **Step 3 complete (2026-07-07)**
-- [x] All BILLING-READY-03 persistent deduction architecture slices confirmed complete (schema/design, entities/migration/repositories, persistent gateway, runtime binding, transaction hardening, live concurrency/idempotency validation) — **Step 3 complete (2026-07-07)**
-- [x] BILLING-READY-03 close criteria defined — **Step 3 complete (2026-07-07)**
-- [x] Final BILLING-READY-03 close checkpoint requirements prepared — **Step 3 complete (2026-07-07)**
-- [x] BILLING-READY-03D3 marked COMPLETE and LOCKED — **Step 4 complete (2026-07-07)**
-- [x] BILLING-READY-03 marked COMPLETE and LOCKED — **Step 4 complete (2026-07-07)**
+**BILLING-READY-03D3 �X Overflow semantics finalization and BILLING-READY-03 close checkpoint: COMPLETE and LOCKED (2026-07-07)**
+- [x] Overflow semantics finalized and recorded (deductions non-blocking; `appliedCredits` capped by available balance; `creditsOverflow` records unmet requested credits; `balanceAfter` never goes negative; zero-balance deduction produces `appliedCredits=0` and `overflowCredits=requestedCredits`; execution not blocked by insufficient balance) �X **Step 3 complete (2026-07-07)**
+- [x] All BILLING-READY-03 persistent deduction architecture slices confirmed complete (schema/design, entities/migration/repositories, persistent gateway, runtime binding, transaction hardening, live concurrency/idempotency validation) �X **Step 3 complete (2026-07-07)**
+- [x] BILLING-READY-03 close criteria defined �X **Step 3 complete (2026-07-07)**
+- [x] Final BILLING-READY-03 close checkpoint requirements prepared �X **Step 3 complete (2026-07-07)**
+- [x] BILLING-READY-03D3 marked COMPLETE and LOCKED �X **Step 4 complete (2026-07-07)**
+- [x] BILLING-READY-03 marked COMPLETE and LOCKED �X **Step 4 complete (2026-07-07)**
 
 #### Scope Boundaries
 
@@ -29295,15 +29295,15 @@ Do not implement any child slice during registration.
 **Parent:** BILLING-READY-03
 **Family:** BILLING / CREDIT BALANCE PERSISTENCE
 **Priority:** High
-**Nature:** GOVERNANCE/DESIGN — schema design only, no implementation
+**Nature:** GOVERNANCE/DESIGN �X schema design only, no implementation
 **Risk:** Low (design document only, no runtime changes)
-**Roadmap position:** #7E-a — first child slice of BILLING-READY-03
+**Roadmap position:** #7E-a �X first child slice of BILLING-READY-03
 
 #### Dependencies
 
-- BILLING-READY-03 — ACTIVE (parent registration)
-- BILLING-READY-02D — COMPLETE and LOCKED (pipeline simulation validates pre-persistence behavior)
-- BILLING-READY-02A/02B/02C — COMPLETE and LOCKED (gateway architecture, wiring, calculation)
+- BILLING-READY-03 �X ACTIVE (parent registration)
+- BILLING-READY-02D �X COMPLETE and LOCKED (pipeline simulation validates pre-persistence behavior)
+- BILLING-READY-02A/02B/02C �X COMPLETE and LOCKED (gateway architecture, wiring, calculation)
 
 #### Purpose
 
@@ -29362,7 +29362,7 @@ Define the DB-backed credit balance persistence design. Produce a comprehensive 
 
 #### Next Step
 
-BILLING-READY-03B — DB schema/migration/repository foundation. Implement the entities, migration, and repositories designed in this slice.
+BILLING-READY-03B �X DB schema/migration/repository foundation. Implement the entities, migration, and repositories designed in this slice.
 
 ---
 
@@ -29379,16 +29379,16 @@ BILLING-READY-03B — DB schema/migration/repository foundation. Implement the e
 **Parent:** BILLING-READY-03
 **Family:** BILLING / CREDIT BALANCE PERSISTENCE
 **Priority:** High
-**Nature:** IMPLEMENTATION — TypeORM entities, database migration, repository layer
+**Nature:** IMPLEMENTATION �X TypeORM entities, database migration, repository layer
 **Risk:** Medium (DB migration, new persistence layer)
-**Roadmap position:** #7E-b — second child slice of BILLING-READY-03
+**Roadmap position:** #7E-b �X second child slice of BILLING-READY-03
 
 #### Dependencies
 
-- BILLING-READY-03A — COMPLETE and LOCKED (schema and persistence design)
-- BILLING-READY-03 — ACTIVE (parent registration)
-- BILLING-READY-02D — COMPLETE and LOCKED (pipeline simulation validates pre-persistence behavior)
-- BILLING-READY-02A/02B/02C — COMPLETE and LOCKED (gateway architecture, wiring, calculation)
+- BILLING-READY-03A �X COMPLETE and LOCKED (schema and persistence design)
+- BILLING-READY-03 �X ACTIVE (parent registration)
+- BILLING-READY-02D �X COMPLETE and LOCKED (pipeline simulation validates pre-persistence behavior)
+- BILLING-READY-02A/02B/02C �X COMPLETE and LOCKED (gateway architecture, wiring, calculation)
 
 #### Purpose
 
@@ -29470,26 +29470,26 @@ Implement the DB schema, TypeORM entities, database migration, and repository la
 **Parent:** BILLING-READY-03
 **Family:** BILLING / CREDIT BALANCE PERSISTENCE
 **Priority:** High
-**Nature:** IMPLEMENTATION — `PersistentCreditDeductionGateway` class, base class async update, unit tests
+**Nature:** IMPLEMENTATION �X `PersistentCreditDeductionGateway` class, base class async update, unit tests
 **Risk:** Medium (new gateway class; base class contract change; no runtime binding swap)
-**Roadmap position:** #7E-c — third child slice of BILLING-READY-03
+**Roadmap position:** #7E-c �X third child slice of BILLING-READY-03
 
 #### Split Decision: Why 03C was split into 03C1 and 03C2
 
 BILLING-READY-03C is high risk because it introduces the first real DB write path through the gateway. Splitting isolates risk:
 
 - **03C1** (this task): Purely additive. New `PersistentCreditDeductionGateway` class + async base class update + unit tests. No runtime binding change. Independently testable without live DB. `CalculatingCreditDeductionGateway` remains the live bound gateway throughout. Safe to implement and validate in isolation.
-- **03C2** (not yet registered): Swaps the runtime binding in `CreditDeductionModule` and updates `UsageLedgerService` to `await`. High risk — first time the live execution pipeline writes to the DB. Kept separate and deferred until 03C1 is complete and locked.
+- **03C2** (not yet registered): Swaps the runtime binding in `CreditDeductionModule` and updates `UsageLedgerService` to `await`. High risk �X first time the live execution pipeline writes to the DB. Kept separate and deferred until 03C1 is complete and locked.
 
 #### Dependencies
 
-- BILLING-READY-03A — COMPLETE and LOCKED (schema and persistence design)
-- BILLING-READY-03B — COMPLETE and LOCKED (entities, migration, repositories, `CreditPersistenceModule`)
-- BILLING-READY-03 — ACTIVE (parent registration)
+- BILLING-READY-03A �X COMPLETE and LOCKED (schema and persistence design)
+- BILLING-READY-03B �X COMPLETE and LOCKED (entities, migration, repositories, `CreditPersistenceModule`)
+- BILLING-READY-03 �X ACTIVE (parent registration)
 
 #### Purpose
 
-Implement `PersistentCreditDeductionGateway` using the repository layer from BILLING-READY-03B. Update `CreditDeductionGateway` base class to return `Promise<CreditDeductionResult>` to support async DB operations. Wire `sourceEventId` idempotency (duplicate detection, no double deduction), atomic deduction flow, and `balanceAfter` population. Add comprehensive unit tests. Do not swap the runtime binding in `CreditDeductionModule` — that is deferred to BILLING-READY-03C2.
+Implement `PersistentCreditDeductionGateway` using the repository layer from BILLING-READY-03B. Update `CreditDeductionGateway` base class to return `Promise<CreditDeductionResult>` to support async DB operations. Wire `sourceEventId` idempotency (duplicate detection, no double deduction), atomic deduction flow, and `balanceAfter` population. Add comprehensive unit tests. Do not swap the runtime binding in `CreditDeductionModule` �X that is deferred to BILLING-READY-03C2.
 
 #### Scope
 
@@ -29500,11 +29500,11 @@ Implement `PersistentCreditDeductionGateway` using the repository layer from BIL
   - duplicate `sourceEventId` returns existing deduction result with no balance mutation
   - no double deduction possible
 - Implement atomic deduction flow:
-  - `findByOwnerForUpdate` — lock owner balance row
-  - `CreditCalculationService` — calculate requested credits
+  - `findByOwnerForUpdate` �X lock owner balance row
+  - `CreditCalculationService` �X calculate requested credits
   - apply overflow logic: `appliedCredits = min(requestedCredits, balance)`, `overflowCredits = requestedCredits - appliedCredits`
-  - `CreditDeductionRecordRepository.create` — insert deduction record
-  - `CreditBalanceRepository.deductBalance` — update balance
+  - `CreditDeductionRecordRepository.create` �X insert deduction record
+  - `CreditBalanceRepository.deductBalance` �X update balance
   - return `CreditDeductionResult` with `balanceAfter` from stored balance
 - Inject `CreditPersistenceModule` into `CreditDeductionModule` for repository access
 - Add `PersistentCreditDeductionGateway` unit tests (mocked repositories, mocked DataSource)
@@ -29546,7 +29546,7 @@ Implement `PersistentCreditDeductionGateway` using the repository layer from BIL
 - [x] `PersistentCreditDeductionGateway` class implemented at `services/api-gateway/src/billing/credit-deduction/persistent-credit-deduction.gateway.ts`
 - [x] `CreditDeductionGateway` made generic: sync default preserved; `PersistentCreditDeductionGateway` opts into `Promise<CreditDeductionResult>` via type parameter
 - [x] `sourceEventId` idempotency: duplicate `sourceEventId` returns existing result, no new row, no balance mutation
-- [x] Atomic deduction flow: `findByOwnerForUpdate` → calculate → insert record → `deductBalance` → return result
+- [x] Atomic deduction flow: `findByOwnerForUpdate` �� calculate �� insert record �� `deductBalance` �� return result
 - [x] `balanceAfter` correctly populated from post-deduction stored balance
 - [x] `overflowCredits` correctly calculated: `max(0, requestedCredits - availableBalance)`
 - [x] `appliedCredits` correctly capped at available balance: `min(requestedCredits, availableBalance)`
@@ -29584,7 +29584,7 @@ Implement `PersistentCreditDeductionGateway` using the repository layer from BIL
 
 #### Next Step
 
-BILLING-READY-03C2 — Controlled runtime binding, async `UsageLedgerService` integration, and DB validation. **COMPLETE and LOCKED (2026-07-07).** See `docs/BILLING-READY-03C2-CHECKPOINT.md`.
+BILLING-READY-03C2 �X Controlled runtime binding, async `UsageLedgerService` integration, and DB validation. **COMPLETE and LOCKED (2026-07-07).** See `docs/BILLING-READY-03C2-CHECKPOINT.md`.
 
 ---
 
@@ -29601,14 +29601,14 @@ BILLING-READY-03C2 — Controlled runtime binding, async `UsageLedgerService` in
 **Parent:** BILLING-READY-03
 **Family:** BILLING / CREDIT BALANCE PERSISTENCE
 **Priority:** High
-**Nature:** IMPLEMENTATION — `CreditDeductionModule` binding swap, `UsageLedgerService` async integration, PostgreSQL validation
-**Risk:** HIGH — first slice where the live `UsageLedgerService` completion path can write persistent credit deduction records to the database
-**Roadmap position:** #7E-d — fourth child slice of BILLING-READY-03
-**Workflow:** 4-step loop (1. Registration ✓ | 2. Stage-start/readiness plan | 3. Implementation | 4. Consolidation/checkpoint)
+**Nature:** IMPLEMENTATION �X `CreditDeductionModule` binding swap, `UsageLedgerService` async integration, PostgreSQL validation
+**Risk:** HIGH �X first slice where the live `UsageLedgerService` completion path can write persistent credit deduction records to the database
+**Roadmap position:** #7E-d �X fourth child slice of BILLING-READY-03
+**Workflow:** 4-step loop (1. Registration ? | 2. Stage-start/readiness plan | 3. Implementation | 4. Consolidation/checkpoint)
 
 #### Split Rationale: Why 03C2 is Separate from 03C1
 
-03C1 was purely additive: a new gateway class, a base class generic update, and unit tests — all independently testable without a live database. 03C2 is the first slice where the live execution pipeline can write to the database. Keeping this separate:
+03C1 was purely additive: a new gateway class, a base class generic update, and unit tests �X all independently testable without a live database. 03C2 is the first slice where the live execution pipeline can write to the database. Keeping this separate:
 
 - Ensures `PersistentCreditDeductionGateway` is fully validated in isolation before being wired into the runtime.
 - Limits blast radius if the runtime binding requires adjustment.
@@ -29616,10 +29616,10 @@ BILLING-READY-03C2 — Controlled runtime binding, async `UsageLedgerService` in
 
 #### Dependencies
 
-- BILLING-READY-03A — COMPLETE and LOCKED (schema and persistence design)
-- BILLING-READY-03B — COMPLETE and LOCKED (entities, migration, repositories, `CreditPersistenceModule`)
-- BILLING-READY-03C1 — COMPLETE and LOCKED (`PersistentCreditDeductionGateway` implementation, generic base class, unit tests)
-- BILLING-READY-03 — ACTIVE (parent registration)
+- BILLING-READY-03A �X COMPLETE and LOCKED (schema and persistence design)
+- BILLING-READY-03B �X COMPLETE and LOCKED (entities, migration, repositories, `CreditPersistenceModule`)
+- BILLING-READY-03C1 �X COMPLETE and LOCKED (`PersistentCreditDeductionGateway` implementation, generic base class, unit tests)
+- BILLING-READY-03 �X ACTIVE (parent registration)
 
 #### Purpose
 
@@ -29630,8 +29630,8 @@ Swap the `CreditDeductionModule` binding from `CalculatingCreditDeductionGateway
 - Swap `CreditDeductionModule` to provide `PersistentCreditDeductionGateway` as the `CreditDeductionGateway` token
 - Import `CreditPersistenceModule` into `CreditDeductionModule` for repository access
 - Update `UsageLedgerService.emitDeductionAttempt()` to `await` the gateway call (supports `Promise<CreditDeductionResult>`)
-- Preserve `UsageLedgerService.updateExecutionResult()` as the single runtime trigger — no new trigger paths
-- Preserve `CreditDeductionGateway` as the single deduction entry point — no bypass paths
+- Preserve `UsageLedgerService.updateExecutionResult()` as the single runtime trigger �X no new trigger paths
+- Preserve `CreditDeductionGateway` as the single deduction entry point �X no bypass paths
 - Implement failure-suppression requirement:
   - Gateway errors inside `emitDeductionAttempt()` must not break or propagate through `updateExecutionResult()`
   - Errors must be logged safely (no sensitive data or secret leakage in log messages)
@@ -29680,9 +29680,9 @@ Swap the `CreditDeductionModule` binding from `CalculatingCreditDeductionGateway
 - [x] `UsageLedgerService.emitDeductionAttempt()` awaits the gateway call
 - [x] `UsageLedgerService.updateExecutionResult()` preserved as the single runtime trigger
 - [x] `CreditDeductionGateway` remains the single deduction entry point token
-- [x] Gateway errors inside `emitDeductionAttempt()` are caught and logged — do not propagate through `updateExecutionResult()`
+- [x] Gateway errors inside `emitDeductionAttempt()` are caught and logged �X do not propagate through `updateExecutionResult()`
 - [x] Error log does not leak sensitive data (user PII, secrets, credentials)
-- [x] Duplicate `sourceEventId` returns existing deduction result — no double deduction
+- [x] Duplicate `sourceEventId` returns existing deduction result �X no double deduction
 - [x] Migration `1772100000000-CreateCreditBalanceAndDeductionTables` verified applied before DB validation
 - [x] DB integration validated against local PostgreSQL
 - [x] All existing tests continue to pass after binding swap (`npx jest --testPathPatterns="credit"`)
@@ -29729,27 +29729,27 @@ Swap the `CreditDeductionModule` binding from `CalculatingCreditDeductionGateway
 **Parent:** BILLING-READY-03D (child of BILLING-READY-03)
 **Family:** BILLING / CREDIT BALANCE PERSISTENCE
 **Priority:** High
-**Nature:** IMPLEMENTATION — atomic transaction semantics, balance lock/update contract, insufficient balance handling, repository hardening
-**Risk:** HIGH — this slice hardens the live persistent deduction path; incorrect transaction semantics can cause double-deductions or data corruption
-**Roadmap position:** #7E-e — first child slice of BILLING-READY-03D (fifth child slice of BILLING-READY-03)
-**Workflow:** 4-step loop (1. Registration ✓ | 2. Stage-start/readiness plan | 3. Implementation | 4. Consolidation/checkpoint)
+**Nature:** IMPLEMENTATION �X atomic transaction semantics, balance lock/update contract, insufficient balance handling, repository hardening
+**Risk:** HIGH �X this slice hardens the live persistent deduction path; incorrect transaction semantics can cause double-deductions or data corruption
+**Roadmap position:** #7E-e �X first child slice of BILLING-READY-03D (fifth child slice of BILLING-READY-03)
+**Workflow:** 4-step loop (1. Registration ? | 2. Stage-start/readiness plan | 3. Implementation | 4. Consolidation/checkpoint)
 
 #### Split Rationale: Why 03D is Split into 03D1/03D2/03D3
 
 03D covers three distinct concerns that each carry independent risk:
-- **03D1** — Transaction boundary and repository contract: hardening the atomic write path inside `PersistentCreditDeductionGateway`. No concurrency integration test, no final overflow finalization.
-- **03D2** — Concurrency and idempotency integration: DB-level concurrency validation (concurrent deductions, race condition detection). Requires 03D1 to be stable.
-- **03D3** — Overflow semantics finalization and checkpoint: finalizes `creditsOverflow` cap semantics and closes BILLING-READY-03.
+- **03D1** �X Transaction boundary and repository contract: hardening the atomic write path inside `PersistentCreditDeductionGateway`. No concurrency integration test, no final overflow finalization.
+- **03D2** �X Concurrency and idempotency integration: DB-level concurrency validation (concurrent deductions, race condition detection). Requires 03D1 to be stable.
+- **03D3** �X Overflow semantics finalization and checkpoint: finalizes `creditsOverflow` cap semantics and closes BILLING-READY-03.
 
 Splitting limits blast radius: if atomic transaction hardening requires adjustment, it does not block the concurrency validation slice.
 
 #### Dependencies
 
-- BILLING-READY-03A — COMPLETE and LOCKED (schema and persistence design)
-- BILLING-READY-03B — COMPLETE and LOCKED (entities, migration, repositories, `CreditPersistenceModule`)
-- BILLING-READY-03C1 — COMPLETE and LOCKED (`PersistentCreditDeductionGateway` implementation, idempotency, overflow capping)
-- BILLING-READY-03C2 — COMPLETE and LOCKED (runtime binding swap, `emitDeductionAttempt()` awaits gateway, DB validation)
-- BILLING-READY-03 — ACTIVE (parent registration)
+- BILLING-READY-03A �X COMPLETE and LOCKED (schema and persistence design)
+- BILLING-READY-03B �X COMPLETE and LOCKED (entities, migration, repositories, `CreditPersistenceModule`)
+- BILLING-READY-03C1 �X COMPLETE and LOCKED (`PersistentCreditDeductionGateway` implementation, idempotency, overflow capping)
+- BILLING-READY-03C2 �X COMPLETE and LOCKED (runtime binding swap, `emitDeductionAttempt()` awaits gateway, DB validation)
+- BILLING-READY-03 �X ACTIVE (parent registration)
 
 #### Purpose
 
@@ -29759,20 +29759,20 @@ Define and harden the atomic transaction semantics for persistent credit deducti
 
 - Define and harden atomic transaction boundary in `PersistentCreditDeductionGateway`:
   - Balance read + lock, balance update, and deduction record insert must be atomic (single DB transaction)
-  - Transaction must roll back cleanly on any failure — no partial writes
+  - Transaction must roll back cleanly on any failure �X no partial writes
 - Define balance lock/update correctness:
   - Balance must be locked (pessimistic read-for-update or equivalent) before deduction
   - `balance` field must always be non-negative after deduction (DB check constraint `balance >= 0` must be respected)
 - Define insufficient balance handling:
   - When available balance is zero or insufficient, `creditsOverflow` captures the over-deduction amount
-  - `balance` does not go negative — overflow is recorded separately
+  - `balance` does not go negative �X overflow is recorded separately
   - Deduction record is written regardless (audit trail preserved)
 - Define duplicate `sourceEventId` behavior under retries:
   - If a deduction record with matching `sourceEventId` already exists, return the existing result
-  - No second deduction record is written — idempotency is preserved under retry
+  - No second deduction record is written �X idempotency is preserved under retry
   - Race condition: if two concurrent requests race on the same `sourceEventId`, the DB unique constraint on `source_event_id` ensures only one succeeds; the loser returns the existing record
-- Preserve `CreditDeductionGateway` as the single deduction entry point — no bypass paths
-- Preserve `UsageLedgerService.updateExecutionResult()` as the single runtime trigger — no new trigger paths
+- Preserve `CreditDeductionGateway` as the single deduction entry point �X no bypass paths
+- Preserve `UsageLedgerService.updateExecutionResult()` as the single runtime trigger �X no new trigger paths
 - Preserve failure suppression:
   - Gateway errors inside `emitDeductionAttempt()` must not break or propagate through `updateExecutionResult()`
   - Errors logged safely (no PII or secret leakage)
@@ -29803,7 +29803,7 @@ Define and harden the atomic transaction semantics for persistent credit deducti
 - [x] BILLING-READY-03C2 confirmed COMPLETE and LOCKED before registration
 - [x] 4-step workflow documented
 - [x] Risk classification HIGH recorded
-- [x] Split decision recorded (03D → 03D1/03D2/03D3)
+- [x] Split decision recorded (03D �� 03D1/03D2/03D3)
 - [x] BILLING-READY-03D2 and 03D3 noted as future, not registered
 - [x] AGENT-HARNESS-06C remains deferred
 - [x] AGENT-PLATFORM-04 remains future, not registered
@@ -29813,13 +29813,13 @@ Define and harden the atomic transaction semantics for persistent credit deducti
 
 - [x] Atomic transaction boundary defined and hardened in `PersistentCreditDeductionGateway`
 - [x] Balance read-lock + update + record insert atomic (single DB transaction)
-- [x] Transaction rolls back cleanly on failure — no partial writes
+- [x] Transaction rolls back cleanly on failure �X no partial writes
 - [x] `balance` floor enforced: deduction does not produce negative `balance`
 - [x] Insufficient balance: `creditsOverflow` captures over-deduction amount
-- [x] Duplicate `sourceEventId` under retry returns existing result — no double deduction
+- [x] Duplicate `sourceEventId` under retry returns existing result �X no double deduction
 - [x] `CreditDeductionGateway` preserved as single deduction entry point
 - [x] `UsageLedgerService.updateExecutionResult()` preserved as single runtime trigger
-- [x] Gateway errors inside `emitDeductionAttempt()` caught — do not propagate through `updateExecutionResult()`
+- [x] Gateway errors inside `emitDeductionAttempt()` caught �X do not propagate through `updateExecutionResult()`
 - [x] Error log does not leak sensitive data (user PII, secrets, credentials)
 - [x] All relevant unit tests pass (14 suites / 167 tests for `credit` scope)
 - [x] TypeScript typecheck clean (`npx tsc --noEmit`)
@@ -29839,8 +29839,8 @@ Define and harden the atomic transaction semantics for persistent credit deducti
 | `npx jest --testPathPatterns="credit-deduction"` | 11 suites, 151 tests passed |
 | `npx jest --testPathPatterns="usage-ledger"` | 2 suites, 45 tests passed |
 | `npx jest --testPathPatterns="credit"` | 14 suites, 167 tests passed |
-| `npx tsc --noEmit` | Clean — no type errors |
-| `npm run build` | Clean — no build errors |
+| `npx tsc --noEmit` | Clean �X no type errors |
+| `npm run build` | Clean �X no build errors |
 
 #### Scope Boundaries
 
@@ -29869,19 +29869,19 @@ Define and harden the atomic transaction semantics for persistent credit deducti
 **Parent:** BILLING-READY-03D (child of BILLING-READY-03)
 **Family:** BILLING / CREDIT BALANCE PERSISTENCE
 **Priority:** High
-**Nature:** INTEGRATION VALIDATION — live PostgreSQL validation of transaction locking, duplicate sourceEventId idempotency, concurrent deductions, and retry safety
-**Risk:** HIGH — live PostgreSQL integration validation of concurrent persistent deduction behavior
-**Roadmap position:** #7E-f — second child slice of BILLING-READY-03D (sixth child slice of BILLING-READY-03)
-**Workflow:** 4-step loop (1. Registration ✓ | 2. Stage-start / DB readiness plan | 3. Integration validation implementation/execution | 4. Consolidation/checkpoint)
+**Nature:** INTEGRATION VALIDATION �X live PostgreSQL validation of transaction locking, duplicate sourceEventId idempotency, concurrent deductions, and retry safety
+**Risk:** HIGH �X live PostgreSQL integration validation of concurrent persistent deduction behavior
+**Roadmap position:** #7E-f �X second child slice of BILLING-READY-03D (sixth child slice of BILLING-READY-03)
+**Workflow:** 4-step loop (1. Registration ? | 2. Stage-start / DB readiness plan | 3. Integration validation implementation/execution | 4. Consolidation/checkpoint)
 
 #### Dependencies
 
-- BILLING-READY-03A — COMPLETE and LOCKED (schema and persistence design)
-- BILLING-READY-03B — COMPLETE and LOCKED (entities, migration, repositories, `CreditPersistenceModule`)
-- BILLING-READY-03C1 — COMPLETE and LOCKED (`PersistentCreditDeductionGateway` implementation, idempotency, overflow capping)
-- BILLING-READY-03C2 — COMPLETE and LOCKED (runtime binding swap, `emitDeductionAttempt()` awaits gateway, DB validation)
-- BILLING-READY-03D1 — COMPLETE and LOCKED (atomic transaction boundary, transactional `EntityManager`, overflow enforcement)
-- BILLING-READY-03 — ACTIVE (parent registration)
+- BILLING-READY-03A �X COMPLETE and LOCKED (schema and persistence design)
+- BILLING-READY-03B �X COMPLETE and LOCKED (entities, migration, repositories, `CreditPersistenceModule`)
+- BILLING-READY-03C1 �X COMPLETE and LOCKED (`PersistentCreditDeductionGateway` implementation, idempotency, overflow capping)
+- BILLING-READY-03C2 �X COMPLETE and LOCKED (runtime binding swap, `emitDeductionAttempt()` awaits gateway, DB validation)
+- BILLING-READY-03D1 �X COMPLETE and LOCKED (atomic transaction boundary, transactional `EntityManager`, overflow enforcement)
+- BILLING-READY-03 �X ACTIVE (parent registration)
 
 #### Purpose
 
@@ -29898,7 +29898,7 @@ Validate live PostgreSQL integration behavior for concurrent deductions, `source
   - Confirm the 23505 race fallback returns the winning record with `skippedDuplicate = true`
 - Validate no double deduction under concurrent same-event execution:
   - Two concurrent requests with the same `sourceEventId` must produce exactly one deduction record
-  - The balance must reflect exactly one deduction — not two
+  - The balance must reflect exactly one deduction �X not two
 - Validate balance remains non-negative under concurrent different-event execution:
   - Multiple concurrent deduction events against the same balance must not produce a negative balance
   - The DB `CHECK (balance >= 0)` constraint must be respected end-to-end
@@ -29957,8 +29957,8 @@ Validate live PostgreSQL integration behavior for concurrent deductions, `source
 | `npx jest --testPathPatterns="credit-deduction-concurrency"` (no `RUN_CREDIT_DB_INTEGRATION`) | 1 suite skipped safely, exit 0 |
 | `npx jest --testPathPatterns="credit-deduction"` (no `RUN_CREDIT_DB_INTEGRATION`) | 11 suites, 151 passed, 6 skipped, 0 failures |
 | `npx jest --testPathPatterns="usage-ledger"` | 2 suites, 45 passed, 0 failures |
-| `npx tsc --noEmit` | Clean — no type errors |
-| `npm run build` | Clean — no build errors |
+| `npx tsc --noEmit` | Clean �X no type errors |
+| `npm run build` | Clean �X no build errors |
 | Live DB integration with `RUN_CREDIT_DB_INTEGRATION=true` | 6/6 integration scenarios passed |
 
 Live DB validation used a one-off `node:20-alpine` container on `aisandbox2026b_aisandbox-network`. No host DB port exposed.
@@ -29967,8 +29967,8 @@ Live DB validation used a one-off `node:20-alpine` container on `aisandbox2026b_
 
 | Scenario | Result |
 |----------|--------|
-| A. 8 concurrent identical calls | 1 record, balance 1000→900, 7 `skippedDuplicate` |
-| B. 5 serial retries | 1 record, balance 500→450 |
+| A. 8 concurrent identical calls | 1 record, balance 1000��900, 7 `skippedDuplicate` |
+| B. 5 serial retries | 1 record, balance 500��450 |
 | C. 10 concurrent unique events | 10 records, `totalApplied=500`, `totalOverflow=500`, `finalBalance=0` |
 | D. Over-balance (200 requested, 50 available) | `appliedCredits=50`, `overflowCredits=150`, `balanceAfter=0` |
 | E. GROUP BY `source_event_id` | `count=1` for every test `sourceEventId` |
@@ -29984,7 +29984,7 @@ Live DB validation used a one-off `node:20-alpine` container on `aisandbox2026b_
 - No BILLING-READY-03D3 work
 - No BILLING-READY-04+ registration
 
-**Checkpoint:** `docs/BILLING-READY-03D2-CHECKPOINT.md` — CREATED.
+**Checkpoint:** `docs/BILLING-READY-03D2-CHECKPOINT.md` �X CREATED.
 
 ---
 
@@ -30001,20 +30001,20 @@ Live DB validation used a one-off `node:20-alpine` container on `aisandbox2026b_
 **Parent:** BILLING-READY-03D (child of BILLING-READY-03)
 **Family:** BILLING / CREDIT BALANCE PERSISTENCE
 **Priority:** High
-**Nature:** GOVERNANCE / DESIGN FINALIZATION — overflow semantics recording, close-readiness review, and BILLING-READY-03 parent close checkpoint
-**Risk:** MEDIUM — governance/design finalization and parent close readiness; no production code expected
-**Roadmap position:** #7E-g — third child slice of BILLING-READY-03D (seventh child slice of BILLING-READY-03)
-**Workflow:** 4-step loop (1. Registration ✓ | 2. Stage-start / close-readiness review ✓ | 3. Overflow semantics finalization and parent close preparation ✓ | 4. Consolidation/checkpoint marking 03D3 and BILLING-READY-03 COMPLETE and LOCKED)
+**Nature:** GOVERNANCE / DESIGN FINALIZATION �X overflow semantics recording, close-readiness review, and BILLING-READY-03 parent close checkpoint
+**Risk:** MEDIUM �X governance/design finalization and parent close readiness; no production code expected
+**Roadmap position:** #7E-g �X third child slice of BILLING-READY-03D (seventh child slice of BILLING-READY-03)
+**Workflow:** 4-step loop (1. Registration ? | 2. Stage-start / close-readiness review ? | 3. Overflow semantics finalization and parent close preparation ? | 4. Consolidation/checkpoint marking 03D3 and BILLING-READY-03 COMPLETE and LOCKED)
 
 #### Dependencies
 
-- BILLING-READY-03A — COMPLETE and LOCKED (schema and persistence design)
-- BILLING-READY-03B — COMPLETE and LOCKED (entities, migration, repositories, `CreditPersistenceModule`)
-- BILLING-READY-03C1 — COMPLETE and LOCKED (`PersistentCreditDeductionGateway` implementation, idempotency, overflow capping)
-- BILLING-READY-03C2 — COMPLETE and LOCKED (runtime binding swap, `emitDeductionAttempt()` awaits gateway, DB validation)
-- BILLING-READY-03D1 — COMPLETE and LOCKED (atomic transaction boundary, transactional `EntityManager`, overflow enforcement)
-- BILLING-READY-03D2 — COMPLETE and LOCKED (live concurrency/idempotency integration validation)
-- BILLING-READY-03 — COMPLETE and LOCKED (parent)
+- BILLING-READY-03A �X COMPLETE and LOCKED (schema and persistence design)
+- BILLING-READY-03B �X COMPLETE and LOCKED (entities, migration, repositories, `CreditPersistenceModule`)
+- BILLING-READY-03C1 �X COMPLETE and LOCKED (`PersistentCreditDeductionGateway` implementation, idempotency, overflow capping)
+- BILLING-READY-03C2 �X COMPLETE and LOCKED (runtime binding swap, `emitDeductionAttempt()` awaits gateway, DB validation)
+- BILLING-READY-03D1 �X COMPLETE and LOCKED (atomic transaction boundary, transactional `EntityManager`, overflow enforcement)
+- BILLING-READY-03D2 �X COMPLETE and LOCKED (live concurrency/idempotency integration validation)
+- BILLING-READY-03 �X COMPLETE and LOCKED (parent)
 
 #### Purpose
 
@@ -30069,12 +30069,12 @@ Final child slice of BILLING-READY-03. Finalize and record overflow semantics, c
 
 #### Implementation Acceptance Criteria
 
-- [x] Overflow semantics finalized and recorded — Step 3 complete (2026-07-07)
-- [x] All BILLING-READY-03 child slices confirmed complete — Step 3 complete (2026-07-07)
-- [x] BILLING-READY-03 close criteria defined — Step 3 complete (2026-07-07)
-- [x] Final BILLING-READY-03 close checkpoint prepared — Step 3 complete (2026-07-07)
-- [x] BILLING-READY-03D3 marked COMPLETE and LOCKED — **Step 4 complete (2026-07-07)**
-- [x] BILLING-READY-03 marked COMPLETE and LOCKED — **Step 4 complete (2026-07-07)**
+- [x] Overflow semantics finalized and recorded �X Step 3 complete (2026-07-07)
+- [x] All BILLING-READY-03 child slices confirmed complete �X Step 3 complete (2026-07-07)
+- [x] BILLING-READY-03 close criteria defined �X Step 3 complete (2026-07-07)
+- [x] Final BILLING-READY-03 close checkpoint prepared �X Step 3 complete (2026-07-07)
+- [x] BILLING-READY-03D3 marked COMPLETE and LOCKED �X **Step 4 complete (2026-07-07)**
+- [x] BILLING-READY-03 marked COMPLETE and LOCKED �X **Step 4 complete (2026-07-07)**
 
 #### Finalized Overflow Semantics (BILLING-READY-03)
 
@@ -30090,27 +30090,27 @@ The following overflow semantics are the authoritative final record for BILLING-
 8. **Entitlement enforcement is deferred** to BILLING-READY-04+. In BILLING-READY-03, balance exhaustion does not restrict access, gate features, or throttle execution.
 
 **Validation evidence:** These semantics are implemented and validated across:
-- `PersistentCreditDeductionGateway` (BILLING-READY-03C1 — unit tests)
-- `DataSource.transaction()` atomic boundary (BILLING-READY-03D1 — unit tests)
-- Live PostgreSQL concurrency/idempotency integration (BILLING-READY-03D2 — 6/6 scenarios passed)
-- DB `CHECK` constraint `chk_credit_balances_balance_non_negative` (BILLING-READY-03B — migration)
+- `PersistentCreditDeductionGateway` (BILLING-READY-03C1 �X unit tests)
+- `DataSource.transaction()` atomic boundary (BILLING-READY-03D1 �X unit tests)
+- Live PostgreSQL concurrency/idempotency integration (BILLING-READY-03D2 �X 6/6 scenarios passed)
+- DB `CHECK` constraint `chk_credit_balances_balance_non_negative` (BILLING-READY-03B �X migration)
 
-#### BILLING-READY-03 Parent Close Criteria — All Satisfied
+#### BILLING-READY-03 Parent Close Criteria �X All Satisfied
 
 All close criteria for BILLING-READY-03 are satisfied. Parent is COMPLETE and LOCKED.
 
 | # | Criterion | Status |
 |---|-----------|--------|
-| 1 | BILLING-READY-03A — Schema and Persistence Design | COMPLETE and LOCKED |
-| 2 | BILLING-READY-03B — DB Schema, Migration, Repository Foundation | COMPLETE and LOCKED |
-| 3 | BILLING-READY-03C1 — Persistent Gateway Implementation | COMPLETE and LOCKED |
-| 4 | BILLING-READY-03C2 — Controlled Runtime Binding | COMPLETE and LOCKED |
-| 5 | BILLING-READY-03D1 — Transaction Boundary Hardening | COMPLETE and LOCKED |
-| 6 | BILLING-READY-03D2 — Concurrency/Idempotency Integration Validation | COMPLETE and LOCKED |
-| 7 | BILLING-READY-03D3 — Overflow Semantics Finalized | COMPLETE and LOCKED (2026-07-07) |
-| 8 | No open production-code gaps | Confirmed — all persistence code implemented and tested |
-| 9 | No open validation gaps | Confirmed — unit tests + integration tests + DB validation passed |
-| 10 | No open governance gaps | Confirmed — all checkpoints and governance docs current |
+| 1 | BILLING-READY-03A �X Schema and Persistence Design | COMPLETE and LOCKED |
+| 2 | BILLING-READY-03B �X DB Schema, Migration, Repository Foundation | COMPLETE and LOCKED |
+| 3 | BILLING-READY-03C1 �X Persistent Gateway Implementation | COMPLETE and LOCKED |
+| 4 | BILLING-READY-03C2 �X Controlled Runtime Binding | COMPLETE and LOCKED |
+| 5 | BILLING-READY-03D1 �X Transaction Boundary Hardening | COMPLETE and LOCKED |
+| 6 | BILLING-READY-03D2 �X Concurrency/Idempotency Integration Validation | COMPLETE and LOCKED |
+| 7 | BILLING-READY-03D3 �X Overflow Semantics Finalized | COMPLETE and LOCKED (2026-07-07) |
+| 8 | No open production-code gaps | Confirmed �X all persistence code implemented and tested |
+| 9 | No open validation gaps | Confirmed �X unit tests + integration tests + DB validation passed |
+| 10 | No open governance gaps | Confirmed �X all checkpoints and governance docs current |
 | 11 | Final checkpoint created (`docs/BILLING-READY-03D3-CHECKPOINT.md`) | COMPLETE and LOCKED (2026-07-07) |
 
 **All 11 close criteria satisfied. BILLING-READY-03 is COMPLETE and LOCKED.**
@@ -30124,9 +30124,9 @@ All close criteria for BILLING-READY-03 are satisfied. Parent is COMPLETE and LO
 - No Agent Harness activation
 - No BILLING-READY-04+ registration during this task
 
-**Checkpoint:** `docs/BILLING-READY-03D3-CHECKPOINT.md` — created 2026-07-07. See `docs/BILLING-READY-03D3-CHECKPOINT.md`.
+**Checkpoint:** `docs/BILLING-READY-03D3-CHECKPOINT.md` �X created 2026-07-07. See `docs/BILLING-READY-03D3-CHECKPOINT.md`.
 
-**BILLING-READY-04 status:** ACTIVE — Step 3 IN PROGRESS (child-slice split). BILLING-READY-04A COMPLETE and LOCKED (2026-07-13). BILLING-READY-04B COMPLETE and LOCKED (2026-07-13). BILLING-READY-04C COMPLETE and LOCKED (2026-07-13). Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. 04D planned only — next recommended (not registered). Future scope: Stripe/payment integration, entitlement enforcement, frontend billing UI. AGENT-HARNESS write canary remains a separate track.
+**BILLING-READY-04 status:** ACTIVE �X Step 3 IN PROGRESS (child-slice split). BILLING-READY-04A COMPLETE and LOCKED (2026-07-13). BILLING-READY-04B COMPLETE and LOCKED (2026-07-13). BILLING-READY-04C COMPLETE and LOCKED (2026-07-13). Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. 04D ACTIVE �X Step 1 COMPLETE (Registration). Future scope: Stripe/payment integration, entitlement enforcement, frontend billing UI. AGENT-HARNESS write canary remains a separate track.
 
 ---
 
@@ -30136,21 +30136,22 @@ All close criteria for BILLING-READY-03 are satisfied. Parent is COMPLETE and LO
 
 #### BILLING-READY-04: Balance Enforcement, Entitlement Gating, and Billing Foundation Phase 2
 
-**Status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-07-12)
+**Status:** COMPLETE and LOCKED — 2026-07-13
 **Task ID:** BILLING-READY-04
+**Completed:** 2026-07-13
 **Family:** BILLING READY / BALANCE ENFORCEMENT / ENTITLEMENT GATING / PHASE 2
 **Priority:** High
-**Nature:** PLANNING / READINESS — balance enforcement readiness, entitlement gating planning, billing foundation phase 2
-**Risk:** HIGH — future work may affect billing balances, entitlement gates, usage accounting, execution blocking, and beta readiness
+**Nature:** PLANNING / READINESS �X balance enforcement readiness, entitlement gating planning, billing foundation phase 2
+**Risk:** HIGH �X future work may affect billing balances, entitlement gates, usage accounting, execution blocking, and beta readiness
 **Registered:** 2026-07-12
 **Keith approval:** Keith approved BILLING-READY-04 registration 2026-07-12
 
-#### Workflow Steps (4-step loop — HIGH risk)
+#### Workflow Steps (4-step loop �X HIGH risk)
 
-1. **Registration** — COMPLETE (2026-07-12)
-2. **Billing enforcement readiness / source-path review** — COMPLETE (2026-07-12) — Split decision: 4 child slices (04A/04B/04C/04D). See `docs/BILLING-READY-04-ENFORCEMENT-READINESS-REVIEW.md`.
-3. **Bounded implementation — child-slice split** — IN PROGRESS — BILLING-READY-04A COMPLETE and LOCKED (2026-07-13). BILLING-READY-04B COMPLETE and LOCKED (2026-07-13). BILLING-READY-04C COMPLETE and LOCKED (2026-07-13). 04D planned only — next recommended (not registered).
-4. **Consolidation / checkpoint** — PENDING (pending completion of all child slices)
+1. **Registration** �X COMPLETE (2026-07-12)
+2. **Billing enforcement readiness / source-path review** �X COMPLETE (2026-07-12) �X Split decision: 4 child slices (04A/04B/04C/04D). See `docs/BILLING-READY-04-ENFORCEMENT-READINESS-REVIEW.md`.
+3. **Bounded implementation — child-slice split** — COMPLETE (2026-07-13) — All 4 child slices COMPLETE and LOCKED: 04A COMPLETE and LOCKED (2026-07-13), 04B COMPLETE and LOCKED (2026-07-13), 04C COMPLETE and LOCKED (2026-07-13), 04D COMPLETE and LOCKED (2026-07-13).
+4. **Consolidation / checkpoint** — COMPLETE (2026-07-13) — See `docs/BILLING-READY-04-CHECKPOINT.md`.
 
 #### Dependencies
 
@@ -30228,7 +30229,7 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 #### Acceptance Criteria
 
-###### Registration (Step 1 — COMPLETE 2026-07-12)
+###### Registration (Step 1 �X COMPLETE 2026-07-12)
 - [x] BILLING-READY-04 registered as current ACTIVE task
 - [x] BILLING-READY-03 remains COMPLETE and LOCKED
 - [x] AGENT-PLATFORM-07F remains COMPLETE and LOCKED
@@ -30244,29 +30245,29 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 - [x] No commands run
 - [x] One-active-task rule satisfied
 
-###### Enforcement Readiness / Source-Path Review (Step 2 — COMPLETE 2026-07-12)
-- [x] Step 2 review completed — see `docs/BILLING-READY-04-ENFORCEMENT-READINESS-REVIEW.md`
-- [x] Enforcement boundary decided: Option D — API Gateway pre-execution gate + worker post-execution accounting
+###### Enforcement Readiness / Source-Path Review (Step 2 �X COMPLETE 2026-07-12)
+- [x] Step 2 review completed �X see `docs/BILLING-READY-04-ENFORCEMENT-READINESS-REVIEW.md`
+- [x] Enforcement boundary decided: Option D �X API Gateway pre-execution gate + worker post-execution accounting
 - [x] Source of truth decided: `credit_balances` table via `CreditBalanceRepository`
 - [x] Split decision: 4 child slices (04A/04B/04C/04D) recorded
 - [x] No implementation/runtime execution during Step 2
 - [x] No billing provider/payment calls during Step 2
 - [x] BILLING-READY-04A registration authorized as next step
 
-#### Split Decision (Step 2 — COMPLETE 2026-07-12)
+#### Split Decision (Step 2 �X COMPLETE 2026-07-12)
 
 BILLING-READY-04 splits into 4 child slices per `docs/BILLING-READY-04-ENFORCEMENT-READINESS-REVIEW.md` Section 12.
 
 | Slice | Name | Status |
 |-------|------|--------|
-| BILLING-READY-04A | API Gateway Balance Gate Foundation | **COMPLETE and LOCKED — 2026-07-13** |
-| BILLING-READY-04B | Execution-Start Gate Wiring | **COMPLETE and LOCKED — 2026-07-13** |
-| BILLING-READY-04C | Worker Finalization / Accounting Guardrails | **COMPLETE and LOCKED — 2026-07-13** |
-| BILLING-READY-04D | Regression Matrix + Parent Consolidation | PLANNED only — not registered (next recommended) |
+| BILLING-READY-04A | API Gateway Balance Gate Foundation | **COMPLETE and LOCKED �X 2026-07-13** |
+| BILLING-READY-04B | Execution-Start Gate Wiring | **COMPLETE and LOCKED �X 2026-07-13** |
+| BILLING-READY-04C | Worker Finalization / Accounting Guardrails | **COMPLETE and LOCKED �X 2026-07-13** |
+| BILLING-READY-04D | Regression Matrix + Parent Consolidation | **COMPLETE and LOCKED ? 2026-07-13** |
 
-**AGENT-HARNESS write canary remains a separate track** — not registered, not part of BILLING-READY-04.
+**AGENT-HARNESS write canary remains a separate track** �X not registered, not part of BILLING-READY-04.
 
-**BILLING-READY-04 status:** ACTIVE — Step 3 IN PROGRESS (child-slice split). BILLING-READY-04A COMPLETE and LOCKED (2026-07-13). BILLING-READY-04B COMPLETE and LOCKED (2026-07-13). BILLING-READY-04C COMPLETE and LOCKED (2026-07-13). Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. 04D planned only — next recommended (not registered). AGENT-HARNESS write canary remains a separate track.
+**BILLING-READY-04 status:** COMPLETE and LOCKED ? 2026-07-13. All 4 steps complete. All child slices COMPLETE and LOCKED: 04A COMPLETE and LOCKED (2026-07-13), 04B COMPLETE and LOCKED (2026-07-13), 04C COMPLETE and LOCKED (2026-07-13), 04D COMPLETE and LOCKED (2026-07-13). Regression matrix: PASS ? 12/12 commands. Checkpoint: `docs/BILLING-READY-04-CHECKPOINT.md`. Child checkpoints: `docs/BILLING-READY-04A-CHECKPOINT.md`, `docs/BILLING-READY-04B-CHECKPOINT.md`, `docs/BILLING-READY-04C-CHECKPOINT.md`, `docs/BILLING-READY-04D-CHECKPOINT.md`. No Stripe/payment/provider. No migration. No frontend. AGENT-HARNESS write canary remains a separate track. Next recommended roadmap item: BILLING-READY-05 (Stripe/payment provider integration, subscription lifecycle, credit top-up) ? not registered.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-04.
 
@@ -30274,23 +30275,23 @@ BILLING-READY-04 splits into 4 child slices per `docs/BILLING-READY-04-ENFORCEME
 
 #### BILLING-READY-04A: API Gateway Balance Gate Foundation
 
-**Status:** COMPLETE and LOCKED — 2026-07-13
+**Status:** COMPLETE and LOCKED �X 2026-07-13
 **Task ID:** BILLING-READY-04A
 **Family:** BILLING READY / BALANCE ENFORCEMENT / ENTITLEMENT GATING / PHASE 2
-**Parent:** BILLING-READY-04 — Balance Enforcement, Entitlement Gating, and Billing Foundation Phase 2
+**Parent:** BILLING-READY-04 �X Balance Enforcement, Entitlement Gating, and Billing Foundation Phase 2
 **Priority:** High
-**Nature:** IMPLEMENTATION — API Gateway balance gate foundation, CreditBalanceGuard implementation and wiring
-**Risk:** HIGH — 4-step child-slice loop
+**Nature:** IMPLEMENTATION �X API Gateway balance gate foundation, CreditBalanceGuard implementation and wiring
+**Risk:** HIGH �X 4-step child-slice loop
 **Registered:** 2026-07-12
 **Completed:** 2026-07-13
 **Checkpoint:** `docs/BILLING-READY-04A-CHECKPOINT.md`
 
-#### Workflow Steps (4-step child-slice loop — HIGH risk)
+#### Workflow Steps (4-step child-slice loop �X HIGH risk)
 
-1. **Registration** — COMPLETE (2026-07-12)
-2. **Implementation readiness / exact file boundary** — COMPLETE (2026-07-12) — See `docs/BILLING-READY-04A-IMPLEMENTATION-READINESS-REVIEW.md`.
-3. **Bounded implementation** — COMPLETE (2026-07-13) — `CreditBalanceGuard` created, `CreditBalanceGuardModule` created, guard wired into `ai-execution.controller.ts` and `public-ai.controller.ts`, modules updated, tests written and passing.
-4. **Consolidation / checkpoint** — COMPLETE (2026-07-13) — See `docs/BILLING-READY-04A-CHECKPOINT.md`.
+1. **Registration** �X COMPLETE (2026-07-12)
+2. **Implementation readiness / exact file boundary** �X COMPLETE (2026-07-12) �X See `docs/BILLING-READY-04A-IMPLEMENTATION-READINESS-REVIEW.md`.
+3. **Bounded implementation** �X COMPLETE (2026-07-13) �X `CreditBalanceGuard` created, `CreditBalanceGuardModule` created, guard wired into `ai-execution.controller.ts` and `public-ai.controller.ts`, modules updated, tests written and passing.
+4. **Consolidation / checkpoint** �X COMPLETE (2026-07-13) �X See `docs/BILLING-READY-04A-CHECKPOINT.md`.
 
 #### Dependencies
 
@@ -30306,7 +30307,7 @@ BILLING-READY-04A is the first child slice of BILLING-READY-04. It defines and i
 
 Per the Step 2 enforcement readiness review (`docs/BILLING-READY-04-ENFORCEMENT-READINESS-REVIEW.md`):
 - Balance source of truth: `credit_balances` table via `CreditBalanceRepository`
-- Enforcement boundary: API Gateway pre-execution gate (Option D — phased approach)
+- Enforcement boundary: API Gateway pre-execution gate (Option D �X phased approach)
 - Admin role exemption: role=admin bypasses balance check
 - Balance > 0 gate only (no Stripe, no entitlement matrix, no migration)
 - No AGENT-HARNESS write canary involvement
@@ -30324,7 +30325,7 @@ Per the Step 2 enforcement readiness review (`docs/BILLING-READY-04-ENFORCEMENT-
 - Whether frontend i18n is needed in this child slice or deferred to 04C
 - Whether implementation must split further
 
-#### Expected Scope (Future Steps 2–4)
+#### Expected Scope (Future Steps 2�V4)
 
 - Define and implement `CreditBalanceGuard` in API Gateway
 - Wire guard into the execution guard chain (after `IdempotencyGuard`, before `QuotaGuard`)
@@ -30336,9 +30337,9 @@ Per the Step 2 enforcement readiness review (`docs/BILLING-READY-04-ENFORCEMENT-
 - Unit tests for guard logic
 - No Stripe/payment provider calls
 - No migration (all schema exists)
-- No worker finalization changes — defer to 04C
-- No broad entitlement matrix — defer unless Step 2/04A readiness proves required
-- No frontend UI — defer to 04C unless Step 2/04A readiness proves required
+- No worker finalization changes �X defer to 04C
+- No broad entitlement matrix �X defer unless Step 2/04A readiness proves required
+- No frontend UI �X defer to 04C unless Step 2/04A readiness proves required
 
 #### Non-Goals (Registration Step)
 
@@ -30370,7 +30371,7 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 #### Acceptance Criteria
 
-###### Registration (Step 1 — COMPLETE 2026-07-12)
+###### Registration (Step 1 �X COMPLETE 2026-07-12)
 - [x] BILLING-READY-04A registered as current ACTIVE child slice
 - [x] Parent BILLING-READY-04 remains ACTIVE with split child-slice status
 - [x] BILLING-READY-04B/04C/04D recorded as planned only, not registered
@@ -30386,41 +30387,41 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 - [x] No commands run
 - [x] One-active-task rule satisfied
 
-###### Implementation Readiness / Exact File Boundary (Step 2 — COMPLETE 2026-07-12)
-- [x] Readiness review completed — see `docs/BILLING-READY-04A-IMPLEMENTATION-READINESS-REVIEW.md`
+###### Implementation Readiness / Exact File Boundary (Step 2 �X COMPLETE 2026-07-12)
+- [x] Readiness review completed �X see `docs/BILLING-READY-04A-IMPLEMENTATION-READINESS-REVIEW.md`
 - [x] Exact `CreditBalanceGuard` file path decided: `services/api-gateway/src/billing/credit-balance.guard.ts`
 - [x] Exact dependencies decided: `CreditBalanceRepository` + `Repository<User>` (for admin bypass)
 - [x] Exact guard wiring position decided: after `IdempotencyGuard`, before `QuotaGuard`
 - [x] HTTP 402 behavior decided with structured error body
-- [x] Admin bypass via DB role lookup (`UserRole.ADMIN`) — no `ApiKeyIdentity` extension needed
+- [x] Admin bypass via DB role lookup (`UserRole.ADMIN`) �X no `ApiKeyIdentity` extension needed
 - [x] No migration needed (all schema exists)
-- [x] Split decision: no further split — one bounded Step 3 implementation
+- [x] Split decision: no further split �X one bounded Step 3 implementation
 - [x] No implementation/runtime execution during Step 2
 - [x] No billing provider/payment calls during Step 2
 
-###### Bounded Implementation (Step 3 — COMPLETE 2026-07-13)
-- [x] `services/api-gateway/src/billing/credit-balance.guard.ts` created — `CreditBalanceGuard implements CanActivate`
-- [x] `services/api-gateway/src/billing/credit-balance-guard.module.ts` created — `CreditBalanceGuardModule`
-- [x] `services/api-gateway/src/billing/__tests__/credit-balance.guard.spec.ts` created — 24 test cases
-- [x] `ai-execution.controller.ts` updated — `CreditBalanceGuard` added after `IdempotencyGuard`
-- [x] `ai.module.ts` updated — `CreditBalanceGuardModule` imported
-- [x] `public-ai.controller.ts` updated — `CreditBalanceGuard` added after `IdempotencyGuard`
-- [x] `public-api.module.ts` updated — `CreditBalanceGuardModule` imported
-- [x] `ai-execution.controller.spec.ts` updated — mock `CreditBalanceGuard` added
-- [x] `ai-execution.controller.integration.spec.ts` updated — test-only validation fix (pre-existing outdated synchronous-controller shape)
+###### Bounded Implementation (Step 3 �X COMPLETE 2026-07-13)
+- [x] `services/api-gateway/src/billing/credit-balance.guard.ts` created �X `CreditBalanceGuard implements CanActivate`
+- [x] `services/api-gateway/src/billing/credit-balance-guard.module.ts` created �X `CreditBalanceGuardModule`
+- [x] `services/api-gateway/src/billing/__tests__/credit-balance.guard.spec.ts` created �X 24 test cases
+- [x] `ai-execution.controller.ts` updated �X `CreditBalanceGuard` added after `IdempotencyGuard`
+- [x] `ai.module.ts` updated �X `CreditBalanceGuardModule` imported
+- [x] `public-ai.controller.ts` updated �X `CreditBalanceGuard` added after `IdempotencyGuard`
+- [x] `public-api.module.ts` updated �X `CreditBalanceGuardModule` imported
+- [x] `ai-execution.controller.spec.ts` updated �X mock `CreditBalanceGuard` added
+- [x] `ai-execution.controller.integration.spec.ts` updated �X test-only validation fix (pre-existing outdated synchronous-controller shape)
 - [x] Guard enforces `balance > 0`, admin bypass, 402 on exhaustion/missing
-- [x] Guard is read-only — no deduction, no locking, no mutation
+- [x] Guard is read-only �X no deduction, no locking, no mutation
 - [x] No migration, no frontend, no .env, no docker, no package changes
 - [x] No Stripe/payment/provider/API calls
 
-###### Consolidation / Checkpoint (Step 4 — COMPLETE 2026-07-13)
-- [x] `npx jest --runInBand "credit-balance.guard"` — PASS, 24/24
-- [x] `npx jest --runInBand "public-ai.controller"` — PASS, 3/3
-- [x] `npx jest --runInBand "ai-execution-guards.integration"` — PASS, 31/31
-- [x] `npx jest --runInBand "ai-execution.controller.integration"` — PASS, 30/30 (after test-only validation fix)
-- [x] `npx jest --runInBand "ai-execution.controller"` — PASS, 68/68
-- [x] `npx tsc --noEmit` — PASS, exit 0
-- [x] Linter — PASS, 0 errors
+###### Consolidation / Checkpoint (Step 4 �X COMPLETE 2026-07-13)
+- [x] `npx jest --runInBand "credit-balance.guard"` �X PASS, 24/24
+- [x] `npx jest --runInBand "public-ai.controller"` �X PASS, 3/3
+- [x] `npx jest --runInBand "ai-execution-guards.integration"` �X PASS, 31/31
+- [x] `npx jest --runInBand "ai-execution.controller.integration"` �X PASS, 30/30 (after test-only validation fix)
+- [x] `npx jest --runInBand "ai-execution.controller"` �X PASS, 68/68
+- [x] `npx tsc --noEmit` �X PASS, exit 0
+- [x] Linter �X PASS, 0 errors
 - [x] Follow-up validation fix recorded: test-only, no production source changed
 - [x] Checkpoint created: `docs/BILLING-READY-04A-CHECKPOINT.md`
 - [x] TASKS.md updated
@@ -30435,9 +30436,9 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 - [x] No implementation files changed during consolidation
 - [x] No tests/builds/runtime/provider calls during consolidation
 
-**AGENT-HARNESS write canary remains a separate track** — not registered, not part of BILLING-READY-04A.
+**AGENT-HARNESS write canary remains a separate track** �X not registered, not part of BILLING-READY-04A.
 
-**BILLING-READY-04A status:** COMPLETE and LOCKED — 2026-07-13. All 4 steps complete. `CreditBalanceGuard` implemented, tested, wired. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. Next: BILLING-READY-04B — COMPLETE and LOCKED (2026-07-13). Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04C next recommended (not registered).
+**BILLING-READY-04A status:** COMPLETE and LOCKED �X 2026-07-13. All 4 steps complete. `CreditBalanceGuard` implemented, tested, wired. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. Next: BILLING-READY-04B �X COMPLETE and LOCKED (2026-07-13). Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04C next recommended (not registered).
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-04A.
 
@@ -30445,24 +30446,24 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 #### BILLING-READY-04B: Execution-Start Gate Wiring
 
-**Status:** COMPLETE and LOCKED — 2026-07-13
+**Status:** COMPLETE and LOCKED �X 2026-07-13
 **Task ID:** BILLING-READY-04B
 **Family:** BILLING READY / BALANCE ENFORCEMENT / ENTITLEMENT GATING / PHASE 2
-**Parent:** BILLING-READY-04 — Balance Enforcement, Entitlement Gating, and Billing Foundation Phase 2
+**Parent:** BILLING-READY-04 �X Balance Enforcement, Entitlement Gating, and Billing Foundation Phase 2
 **Priority:** High
-**Nature:** EXECUTION-START GATE WIRING — validation-only test slice; real CreditBalanceGuard at execution-start boundary, guard order metadata assertions, enqueue/no-enqueue assertions
-**Risk:** HIGH — 4-step child-slice loop
+**Nature:** EXECUTION-START GATE WIRING �X validation-only test slice; real CreditBalanceGuard at execution-start boundary, guard order metadata assertions, enqueue/no-enqueue assertions
+**Risk:** HIGH �X 4-step child-slice loop
 **Registered:** 2026-07-13
 **Completed:** 2026-07-13
 **Keith approval:** Keith approved BILLING-READY-04B registration 2026-07-13
 **Checkpoint:** `docs/BILLING-READY-04B-CHECKPOINT.md`
 
-#### Workflow Steps (4-step child-slice loop — HIGH risk)
+#### Workflow Steps (4-step child-slice loop �X HIGH risk)
 
-1. **Registration** — COMPLETE (2026-07-13)
-2. **Execution-start wiring readiness / gap review** — COMPLETE (2026-07-13) — See `docs/BILLING-READY-04B-EXECUTION-START-WIRING-READINESS.md`. Decision: validation-only. No production changes required. 8 gaps identified, all closeable by integration tests.
-3. **Validation-only — integration test creation** — COMPLETE (2026-07-13) — 1 new test file created: `services/api-gateway/src/billing/__tests__/credit-balance-guard-execution-start.integration.spec.ts`. 13/13 tests PASS. Zero production files changed.
-4. **Consolidation / checkpoint** — COMPLETE (2026-07-13) — See `docs/BILLING-READY-04B-CHECKPOINT.md`.
+1. **Registration** �X COMPLETE (2026-07-13)
+2. **Execution-start wiring readiness / gap review** �X COMPLETE (2026-07-13) �X See `docs/BILLING-READY-04B-EXECUTION-START-WIRING-READINESS.md`. Decision: validation-only. No production changes required. 8 gaps identified, all closeable by integration tests.
+3. **Validation-only �X integration test creation** �X COMPLETE (2026-07-13) �X 1 new test file created: `services/api-gateway/src/billing/__tests__/credit-balance-guard-execution-start.integration.spec.ts`. 13/13 tests PASS. Zero production files changed.
+4. **Consolidation / checkpoint** �X COMPLETE (2026-07-13) �X See `docs/BILLING-READY-04B-CHECKPOINT.md`.
 
 #### Dependencies
 
@@ -30475,22 +30476,22 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 #### Purpose
 
-BILLING-READY-04B is the second child slice of BILLING-READY-04. Scope: execution-start gate wiring validation — verifying and proving the balance gate coverage at all execution-start entry points after BILLING-READY-04A's `CreditBalanceGuard` foundation.
+BILLING-READY-04B is the second child slice of BILLING-READY-04. Scope: execution-start gate wiring validation �X verifying and proving the balance gate coverage at all execution-start entry points after BILLING-READY-04A's `CreditBalanceGuard` foundation.
 
-Decision (Step 2): validation-only — all production wiring was completed in 04A. The gap was test coverage: no existing test proved the real guard blocks enqueue. 04B closes all 8 identified gaps with 13 integration tests.
+Decision (Step 2): validation-only �X all production wiring was completed in 04A. The gap was test coverage: no existing test proved the real guard blocks enqueue. 04B closes all 8 identified gaps with 13 integration tests.
 
 #### Step 2 Decisions (Recorded)
 
-- 04B is **validation-only** — no production source changes required
+- 04B is **validation-only** �X no production source changes required
 - All HTTP execution-start paths protected: `POST /api/ai/execute` and `POST /v1/ai/execute`
-- Guard order confirmed correct in both controllers: `IdempotencyGuard → CreditBalanceGuard → QuotaGuard`
+- Guard order confirmed correct in both controllers: `IdempotencyGuard �� CreditBalanceGuard �� QuotaGuard`
 - Orchestration referral path excluded by design (service-level call, not user-initiated)
-- No further split required — one bounded Step 3
+- No further split required �X one bounded Step 3
 
 #### Step 3 File Boundary (Recorded)
 
 **File created:**
-- `services/api-gateway/src/billing/__tests__/credit-balance-guard-execution-start.integration.spec.ts` — 13 test cases
+- `services/api-gateway/src/billing/__tests__/credit-balance-guard-execution-start.integration.spec.ts` �X 13 test cases
 
 **Files modified:** none
 
@@ -30499,8 +30500,8 @@ Decision (Step 2): validation-only — all production wiring was completed in 04
 - No production source changes
 - No migration
 - No frontend/i18n
-- No worker/finalization accounting changes — defer to 04C
-- No parent regression matrix/consolidation — defer to 04D
+- No worker/finalization accounting changes �X defer to 04C
+- No parent regression matrix/consolidation �X defer to 04D
 - No Stripe/payment/provider API calls
 - No Docker/Postgres/Redis/runtime commands
 - No AGENT-HARNESS write canary
@@ -30509,7 +30510,7 @@ Decision (Step 2): validation-only — all production wiring was completed in 04
 
 #### Acceptance Criteria
 
-###### Registration (Step 1 — COMPLETE 2026-07-13)
+###### Registration (Step 1 �X COMPLETE 2026-07-13)
 - [x] BILLING-READY-04B registered as current ACTIVE child slice
 - [x] Parent BILLING-READY-04 remains ACTIVE with child-slice status
 - [x] BILLING-READY-04A remains COMPLETE and LOCKED
@@ -30526,50 +30527,50 @@ Decision (Step 2): validation-only — all production wiring was completed in 04
 - [x] No commands run
 - [x] One-active-task rule satisfied
 
-###### Step 2 — Readiness / Gap Review (COMPLETE 2026-07-13)
+###### Step 2 �X Readiness / Gap Review (COMPLETE 2026-07-13)
 - [x] Readiness review document created: `docs/BILLING-READY-04B-EXECUTION-START-WIRING-READINESS.md`
-- [x] Decision: validation-only — no production changes required
+- [x] Decision: validation-only �X no production changes required
 - [x] 04A foundation summary confirmed (guard behavior, module wiring, controller wiring)
 - [x] Execution-start entry-point coverage confirmed: 2 HTTP paths protected; 1 service-level path excluded by design
 - [x] Guard order confirmed correct in both controllers
-- [x] 8 gaps identified (G1–G8); all closeable by integration tests
+- [x] 8 gaps identified (G1�VG8); all closeable by integration tests
 - [x] Exact Step 3 file boundary defined: 1 new test file, 0 production files
 - [x] No split required
 
-###### Step 3 — Validation-Only Integration Tests (COMPLETE 2026-07-13)
+###### Step 3 �X Validation-Only Integration Tests (COMPLETE 2026-07-13)
 - [x] Test file created: `services/api-gateway/src/billing/__tests__/credit-balance-guard-execution-start.integration.spec.ts`
-- [x] Guard order — AIExecutionController: `IdempotencyGuard` before `CreditBalanceGuard` — PASS
-- [x] Guard order — AIExecutionController: `CreditBalanceGuard` before `QuotaGuard` — PASS
-- [x] Guard order — PublicAIController: `IdempotencyGuard` before `CreditBalanceGuard` — PASS
-- [x] Guard order — PublicAIController: `CreditBalanceGuard` before `QuotaGuard` — PASS
-- [x] Sufficient balance queues — PASS
-- [x] Admin bypass queues — PASS
-- [x] Missing balance blocks and does not enqueue — PASS
-- [x] Zero balance blocks and does not enqueue — PASS
-- [x] Negative balance blocks and does not enqueue — PASS
-- [x] 402 occurs before queue submission — PASS
-- [x] Public API parity: `CreditBalanceGuard` in `PublicAIController.execute` — PASS
-- [x] Public API parity: same relative position as main controller — PASS
-- [x] No Stripe/payment/provider calls — PASS
-- [x] `npx jest --runInBand "credit-balance-guard-execution-start.integration"` — PASS 13/13
-- [x] `npx jest --runInBand "credit-balance.guard"` — PASS 37/37
-- [x] `npx jest --runInBand "ai-execution.controller"` — PASS 68/68
-- [x] `npx jest --runInBand "public-ai.controller"` — PASS 3/3
-- [x] `npx tsc --noEmit` — PASS exit 0
+- [x] Guard order �X AIExecutionController: `IdempotencyGuard` before `CreditBalanceGuard` �X PASS
+- [x] Guard order �X AIExecutionController: `CreditBalanceGuard` before `QuotaGuard` �X PASS
+- [x] Guard order �X PublicAIController: `IdempotencyGuard` before `CreditBalanceGuard` �X PASS
+- [x] Guard order �X PublicAIController: `CreditBalanceGuard` before `QuotaGuard` �X PASS
+- [x] Sufficient balance queues �X PASS
+- [x] Admin bypass queues �X PASS
+- [x] Missing balance blocks and does not enqueue �X PASS
+- [x] Zero balance blocks and does not enqueue �X PASS
+- [x] Negative balance blocks and does not enqueue �X PASS
+- [x] 402 occurs before queue submission �X PASS
+- [x] Public API parity: `CreditBalanceGuard` in `PublicAIController.execute` �X PASS
+- [x] Public API parity: same relative position as main controller �X PASS
+- [x] No Stripe/payment/provider calls �X PASS
+- [x] `npx jest --runInBand "credit-balance-guard-execution-start.integration"` �X PASS 13/13
+- [x] `npx jest --runInBand "credit-balance.guard"` �X PASS 37/37
+- [x] `npx jest --runInBand "ai-execution.controller"` �X PASS 68/68
+- [x] `npx jest --runInBand "public-ai.controller"` �X PASS 3/3
+- [x] `npx tsc --noEmit` �X PASS exit 0
 - [x] Zero production files changed
 - [x] Zero governance files changed during Step 3
 - [x] Zero frontend/env/docker/package/migration changes
 
-###### Consolidation / Checkpoint (Step 4 — COMPLETE 2026-07-13)
+###### Consolidation / Checkpoint (Step 4 �X COMPLETE 2026-07-13)
 - [x] `docs/BILLING-READY-04B-CHECKPOINT.md` created
 - [x] BILLING-READY-04B marked COMPLETE and LOCKED in TASKS.md
 - [x] BILLING-READY-04B marked COMPLETE and LOCKED in TASKS_BACKLOG_FULL.md
-- [x] `docs/AINOW-EXECUTION-ROADMAP.md` updated — 04B COMPLETE and LOCKED
+- [x] `docs/AINOW-EXECUTION-ROADMAP.md` updated �X 04B COMPLETE and LOCKED
 - [x] Parent BILLING-READY-04 remains ACTIVE with child-slice plan
 - [x] BILLING-READY-04A remains COMPLETE and LOCKED
 - [x] BILLING-READY-04C planned only, next recommended, not registered
-- [x] BILLING-READY-04D planned only, not registered
-- [x] All 8 Step 2 gaps closed by integration tests — recorded
+- [x] BILLING-READY-04D planned only, not registered at time of 04B consolidation
+- [x] All 8 Step 2 gaps closed by integration tests �X recorded
 - [x] All validation results recorded
 - [x] BILLING-READY-03 remains COMPLETE and LOCKED
 - [x] AGENT-PLATFORM-07F remains COMPLETE and LOCKED
@@ -30578,9 +30579,9 @@ Decision (Step 2): validation-only — all production wiring was completed in 04
 - [x] No implementation files changed during consolidation
 - [x] No tests/builds/runtime/provider calls during consolidation
 
-**AGENT-HARNESS write canary remains a separate track** — not registered, not part of BILLING-READY-04B.
+**AGENT-HARNESS write canary remains a separate track** �X not registered, not part of BILLING-READY-04B.
 
-**BILLING-READY-04B status:** COMPLETE and LOCKED — 2026-07-13. All 4 steps complete. Validation-only. 13/13 integration tests PASS. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04C COMPLETE and LOCKED — 2026-07-13. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. Next recommended: BILLING-READY-04D — Regression Matrix + Parent Consolidation (not registered).
+**BILLING-READY-04B status:** COMPLETE and LOCKED �X 2026-07-13. All 4 steps complete. Validation-only. 13/13 integration tests PASS. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04C COMPLETE and LOCKED �X 2026-07-13. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04D COMPLETE and LOCKED (2026-07-13).
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-04B.
 
@@ -30588,24 +30589,24 @@ Decision (Step 2): validation-only — all production wiring was completed in 04
 
 #### BILLING-READY-04C: Worker Finalization / Accounting Guardrails
 
-**Status:** COMPLETE and LOCKED — 2026-07-13
+**Status:** COMPLETE and LOCKED �X 2026-07-13
 **Task ID:** BILLING-READY-04C
 **Family:** BILLING READY / BALANCE ENFORCEMENT / ENTITLEMENT GATING / PHASE 2
-**Parent:** BILLING-READY-04 — Balance Enforcement, Entitlement Gating, and Billing Foundation Phase 2
+**Parent:** BILLING-READY-04 �X Balance Enforcement, Entitlement Gating, and Billing Foundation Phase 2
 **Priority:** High
-**Nature:** IMPLEMENTATION — worker finalization accounting guardrails; finalization bridge from BullMQ worker completion to credit deduction; `triggerDeductionForExecution` method; `InternalAccountingController`; `notifyExecutionComplete` in ai-service HTTP client; worker success-path notification
-**Risk:** HIGH — 4-step child-slice loop
+**Nature:** IMPLEMENTATION �X worker finalization accounting guardrails; finalization bridge from BullMQ worker completion to credit deduction; `triggerDeductionForExecution` method; `InternalAccountingController`; `notifyExecutionComplete` in ai-service HTTP client; worker success-path notification
+**Risk:** HIGH �X 4-step child-slice loop
 **Registered:** 2026-07-13
 **Completed:** 2026-07-13
 **Keith approval:** Keith approved BILLING-READY-04C registration 2026-07-13
 **Checkpoint:** `docs/BILLING-READY-04C-CHECKPOINT.md`
 
-#### Workflow Steps (4-step child-slice loop — HIGH risk)
+#### Workflow Steps (4-step child-slice loop �X HIGH risk)
 
-1. **Registration** — COMPLETE (2026-07-13)
-2. **Worker finalization / accounting readiness review** — COMPLETE (2026-07-13) — Critical finding: credit deduction had never fired in async BullMQ flow; missing link between worker finalization and `emitDeductionAttempt`. See `docs/BILLING-READY-04C-WORKER-FINALIZATION-ACCOUNTING-READINESS.md`.
-3. **Bounded implementation** — COMPLETE (2026-07-13) — `triggerDeductionForExecution` exposed; `InternalAccountingController` created; `ai.module.ts` updated; `notifyExecutionComplete` added to `ApiGatewayHttpClient`; worker success path calls `notifyExecutionComplete` after post-completion cancel check. 5 production files + 4 test files.
-4. **Consolidation / checkpoint** — COMPLETE (2026-07-13) — See `docs/BILLING-READY-04C-CHECKPOINT.md`.
+1. **Registration** �X COMPLETE (2026-07-13)
+2. **Worker finalization / accounting readiness review** �X COMPLETE (2026-07-13) �X Critical finding: credit deduction had never fired in async BullMQ flow; missing link between worker finalization and `emitDeductionAttempt`. See `docs/BILLING-READY-04C-WORKER-FINALIZATION-ACCOUNTING-READINESS.md`.
+3. **Bounded implementation** �X COMPLETE (2026-07-13) �X `triggerDeductionForExecution` exposed; `InternalAccountingController` created; `ai.module.ts` updated; `notifyExecutionComplete` added to `ApiGatewayHttpClient`; worker success path calls `notifyExecutionComplete` after post-completion cancel check. 5 production files + 4 test files.
+4. **Consolidation / checkpoint** �X COMPLETE (2026-07-13) �X See `docs/BILLING-READY-04C-CHECKPOINT.md`.
 
 #### Dependencies
 
@@ -30660,8 +30661,8 @@ No implementation occurs during registration.
 - No DB query/mutation during registration
 - No database migration during registration
 - No Stripe/payment/provider API calls
-- No execution-start guard changes — completed in 04A/04B
-- No parent regression matrix/consolidation — defer to 04D
+- No execution-start guard changes �X completed in 04A/04B
+- No parent regression matrix/consolidation �X defer to 04D
 - No frontend UI during registration
 - No user-facing UX text during registration
 - No AGENT-HARNESS write canary
@@ -30683,12 +30684,12 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 #### Acceptance Criteria
 
-###### Registration (Step 1 — COMPLETE 2026-07-13)
+###### Registration (Step 1 �X COMPLETE 2026-07-13)
 - [x] BILLING-READY-04C registered as current ACTIVE child slice
 - [x] Parent BILLING-READY-04 remains ACTIVE with child-slice status
 - [x] BILLING-READY-04A remains COMPLETE and LOCKED
 - [x] BILLING-READY-04B remains COMPLETE and LOCKED
-- [x] BILLING-READY-04D remains planned only, not registered
+- [x] BILLING-READY-04D registered ACTIVE �X Step 1 COMPLETE (Registration)
 - [x] BILLING-READY-03 remains COMPLETE and LOCKED
 - [x] AGENT-PLATFORM-07F remains COMPLETE and LOCKED
 - [x] AGENT-HARNESS-07/06E remain COMPLETE and LOCKED
@@ -30701,21 +30702,21 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 - [x] No commands run
 - [x] One-active-task rule satisfied
 
-###### Worker Finalization / Accounting Readiness Review (Step 2 — COMPLETE 2026-07-13)
-- [x] Worker finalization source path fully mapped — `worker.processor.ts` all paths reviewed
-- [x] Credit deduction source path fully mapped — `emitDeductionAttempt`, `PersistentCreditDeductionGateway` reviewed
+###### Worker Finalization / Accounting Readiness Review (Step 2 �X COMPLETE 2026-07-13)
+- [x] Worker finalization source path fully mapped �X `worker.processor.ts` all paths reviewed
+- [x] Credit deduction source path fully mapped �X `emitDeductionAttempt`, `PersistentCreditDeductionGateway` reviewed
 - [x] **CRITICAL FINDING recorded:** credit deduction never fired in async BullMQ execution flow
 - [x] Broken chain documented: worker writes SQL directly, never calls `UsageLedgerService`
-- [x] Failed/cancelled accounting decided — no deduction for any non-completed status
-- [x] Zero-token/stub accounting decided — deduction fires, 0 credits, audit record created
-- [x] Idempotency/double-deduction decided — `sourceEventId = executionId` sufficient; no new guardrails needed
-- [x] Migration decision — none needed (all schema exists)
-- [x] Implementation vs validation-only decided — **small implementation required** (Option B)
-- [x] Step 3 file boundary defined — 5 production files + 4 test files
+- [x] Failed/cancelled accounting decided �X no deduction for any non-completed status
+- [x] Zero-token/stub accounting decided �X deduction fires, 0 credits, audit record created
+- [x] Idempotency/double-deduction decided �X `sourceEventId = executionId` sufficient; no new guardrails needed
+- [x] Migration decision �X none needed (all schema exists)
+- [x] Implementation vs validation-only decided �X **small implementation required** (Option B)
+- [x] Step 3 file boundary defined �X 5 production files + 4 test files
 - [x] No implementation/runtime execution during Step 2
 - [x] Readiness review: `docs/BILLING-READY-04C-WORKER-FINALIZATION-ACCOUNTING-READINESS.md`
 
-###### Bounded Implementation (Step 3 — COMPLETE 2026-07-13)
+###### Bounded Implementation (Step 3 �X COMPLETE 2026-07-13)
 - [x] `UsageLedgerService.triggerDeductionForExecution(executionId)` implemented and exposed
 - [x] `InternalAccountingController` created with `POST /api/internal/executions/:executionId/finalize-accounting`
 - [x] Internal endpoint guarded by existing `InternalServiceAuthGuard` pattern
@@ -30724,25 +30725,25 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 - [x] Worker success path calls `notifyExecutionComplete` after post-completion cancel check
 - [x] Cancel-win path returns before `notifyExecutionComplete` call
 - [x] Failed/cancelled/timeout/AbortError paths do not call `notifyExecutionComplete`
-- [x] `notifyExecutionComplete` errors suppressed — do not fail completed BullMQ job
+- [x] `notifyExecutionComplete` errors suppressed �X do not fail completed BullMQ job
 - [x] All metadata/orchestration finalization (AGENT-PLATFORM-06/07C2) preserved
 - [x] AGENT-HARNESS behavior preserved
 - [x] No migration, no frontend, no Stripe/payment/provider calls
-- [x] `npx jest --runInBand "usage-ledger.service"` — PASS, 56/56
-- [x] `npx jest --runInBand "internal-accounting"` — PASS, 6/6
-- [x] `npx tsc --noEmit` in api-gateway — PASS, exit 0
-- [x] `npx jest --runInBand "api-gateway-http.client"` — PASS, 25/25
-- [x] `npx jest --runInBand "worker.processor"` — PASS, 135/135
-- [x] `npx tsc --noEmit` in ai-service — PASS, exit 0
-- [x] Linter on all 5 production files — PASS, 0 errors
+- [x] `npx jest --runInBand "usage-ledger.service"` �X PASS, 56/56
+- [x] `npx jest --runInBand "internal-accounting"` �X PASS, 6/6
+- [x] `npx tsc --noEmit` in api-gateway �X PASS, exit 0
+- [x] `npx jest --runInBand "api-gateway-http.client"` �X PASS, 25/25
+- [x] `npx jest --runInBand "worker.processor"` �X PASS, 135/135
+- [x] `npx tsc --noEmit` in ai-service �X PASS, exit 0
+- [x] Linter on all 5 production files �X PASS, 0 errors
 
-###### Consolidation / Checkpoint (Step 4 — COMPLETE 2026-07-13)
+###### Consolidation / Checkpoint (Step 4 �X COMPLETE 2026-07-13)
 - [x] `docs/BILLING-READY-04C-CHECKPOINT.md` created
-- [x] TASKS.md updated — 04C COMPLETE and LOCKED, split table updated, checkpoint reference added, validation results recorded
+- [x] TASKS.md updated �X 04C COMPLETE and LOCKED, split table updated, checkpoint reference added, validation results recorded
 - [x] TASKS_BACKLOG_FULL.md mirrored
-- [x] `docs/AINOW-EXECUTION-ROADMAP.md` updated — 04C COMPLETE and LOCKED; parent 04 remains ACTIVE
+- [x] `docs/AINOW-EXECUTION-ROADMAP.md` updated �X 04C COMPLETE and LOCKED; parent 04 remains ACTIVE
 - [x] BILLING-READY-04A/04B remain COMPLETE and LOCKED
-- [x] BILLING-READY-04D remains planned only, not registered
+- [x] BILLING-READY-04D registered ACTIVE �X Step 1 COMPLETE (Registration)
 - [x] BILLING-READY-03 remains COMPLETE and LOCKED
 - [x] AGENT-PLATFORM-07F remains COMPLETE and LOCKED
 - [x] AGENT-HARNESS-07/06E remain COMPLETE and LOCKED
@@ -30750,30 +30751,181 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 - [x] No implementation files changed during consolidation
 - [x] No tests/builds/runtime/provider calls during consolidation
 
-**AGENT-HARNESS write canary remains a separate track** — not registered, not part of BILLING-READY-04C.
+**AGENT-HARNESS write canary remains a separate track** �X not registered, not part of BILLING-READY-04C.
 
-**BILLING-READY-04C status:** COMPLETE and LOCKED — 2026-07-13. All 4 steps complete. Finalization bridge implemented. 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. Next recommended: BILLING-READY-04D — Regression Matrix + Parent Consolidation (not registered).
+**BILLING-READY-04C status:** COMPLETE and LOCKED �X 2026-07-13. All 4 steps complete. Finalization bridge implemented. 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04D COMPLETE and LOCKED (2026-07-13).
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-04C.
 
 ---
 
+#### BILLING-READY-04D: Regression Matrix + Parent Consolidation
+
+**Status:** COMPLETE and LOCKED — 2026-07-13
+**Task ID:** BILLING-READY-04D
+**Completed:** 2026-07-13
+**Checkpoint:** `docs/BILLING-READY-04D-CHECKPOINT.md`
+**Family:** BILLING READY / BALANCE ENFORCEMENT / ENTITLEMENT GATING / PHASE 2
+**Parent:** BILLING-READY-04 -- Balance Enforcement, Entitlement Gating, and Billing Foundation Phase 2
+**Priority:** High
+**Nature:** REGRESSION MATRIX / PARENT CONSOLIDATION -- final regression matrix across 04A/04B/04C; parent BILLING-READY-04 close checkpoint
+**Risk:** HIGH -- 4-step child-slice loop
+**Registered:** 2026-07-13
+**Keith approval:** Keith instructed to proceed with registration without approval
+
+#### Workflow Steps (4-step child-slice loop -- HIGH risk)
+
+1. **Registration** -- COMPLETE (2026-07-13)
+2. **Regression matrix readiness / validation plan** -- COMPLETE (2026-07-13) -- See `docs/BILLING-READY-04D-REGRESSION-MATRIX-READINESS.md`.
+3. **Targeted regression validation** -- COMPLETE (2026-07-13) -- PASS -- See `docs/BILLING-READY-04D-REGRESSION-VALIDATION-REPORT.md`.
+4. **Parent consolidation / checkpoint** -- COMPLETE (2026-07-13) -- See `docs/BILLING-READY-04D-CHECKPOINT.md`.
+
+#### Dependencies
+
+- BILLING-READY-04 ACTIVE with child-slice split decision recorded
+- BILLING-READY-04A COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-04B COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-04C COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-03 COMPLETE and LOCKED (2026-07-07)
+- AGENT-PLATFORM-07F COMPLETE and LOCKED (2026-07-12)
+- AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07)
+- AGENT-HARNESS-06E COMPLETE and LOCKED (2026-07-09)
+
+#### Purpose
+
+BILLING-READY-04D is the final child slice of BILLING-READY-04. It creates and executes the final regression matrix validating the full balance enforcement / entitlement gating implementation across all three prior slices (04A/04B/04C), then locks the parent BILLING-READY-04 task.
+
+04A established the API Gateway balance gate (CreditBalanceGuard). 04B validated execution-start gate wiring. 04C implemented the worker finalization accounting bridge. 04D validates that all three enforcement surfaces are correct, non-overlapping, non-duplicating, and production-safe before parent close.
+
+No implementation occurs during registration.
+
+#### Future Step 2 Must Decide
+
+- Exact regression command matrix
+- Exact API Gateway tests to run
+- Exact AI Service tests to run
+- Whether full service typechecks are required
+- Whether any broader regression suite is needed
+- Whether Docker/Postgres/Redis/runtime validation is required or explicitly deferred
+- Whether browser smoke is needed or not
+- Whether parent BILLING-READY-04 consolidation should happen in 04D Step 4
+- Exact checkpoint files required
+- Whether any issue blocks parent lock
+
+#### Future Step 3 Scope (Targeted Regression Validation)
+
+- Validate 04A execution-start balance gate behavior remains covered
+- Validate 04B execution-start enqueue/no-enqueue behavior remains covered
+- Validate 04C worker finalization/accounting bridge behavior remains covered
+- Confirm no Stripe/payment/provider calls
+- Confirm no migration/frontend/i18n is required
+- Confirm AGENT-HARNESS write canary remains separate
+
+#### Future Step 4 Scope (Parent Consolidation/Checkpoint)
+
+- Create final BILLING-READY-04D checkpoint
+- Create or update parent BILLING-READY-04 checkpoint
+- Mark parent BILLING-READY-04 COMPLETE and LOCKED only after regression matrix passes
+
+#### Non-Goals (Registration Step)
+
+- No implementation during registration
+- No runtime execution during registration
+- No Docker/Postgres/Redis commands during registration
+- No DB query/mutation during registration
+- No database migration during registration
+- No Stripe/payment/provider API calls
+- No frontend UI during registration
+- No AGENT-HARNESS write canary
+- No browser smoke
+- No git commits/pushes
+- Do not mark BILLING-READY-04 parent COMPLETE during registration
+
+#### Runtime Safety Note
+
+Future backend/DB/runtime validation must explicitly ensure Docker/PostgreSQL/Redis readiness before execution. Do not assume services are running. If Step 2 recommends live/runtime validation, stop and ask Keith for explicit browser/runtime guidance before proceeding.
+
+#### UX/UI Note
+
+No UI text should be added during registration. If future work adds UI text, aiSandBox is multilingual-first and must update:
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impeccable and Emil Kowalski skills are advisory only.
+
+#### Acceptance Criteria
+
+###### Registration (Step 1 -- COMPLETE 2026-07-13)
+- [x] BILLING-READY-04D registered as current ACTIVE child slice
+- [x] Parent BILLING-READY-04 remains ACTIVE with child-slice status
+- [x] BILLING-READY-04A remains COMPLETE and LOCKED
+- [x] BILLING-READY-04B remains COMPLETE and LOCKED
+- [x] BILLING-READY-04C remains COMPLETE and LOCKED
+- [x] BILLING-READY-03 remains COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-07F remains COMPLETE and LOCKED
+- [x] AGENT-HARNESS-07/06E remain COMPLETE and LOCKED
+- [x] Registration records 04D is regression matrix + parent consolidation only
+- [x] Registration records no implementation/runtime execution occurred
+- [x] Registration records no billing provider/payment calls occurred
+- [x] Registration records next step is 04D regression matrix readiness / validation plan
+- [x] Registration records AGENT-HARNESS write canary remains separate and not registered
+- [x] No implementation files changed
+- [x] No commands run
+- [x] One-active-task rule satisfied
+- [x] Parent BILLING-READY-04 was not marked COMPLETE during registration
+
+###### Regression Matrix Readiness / Validation Plan (Step 2 -- COMPLETE 2026-07-13)
+- [x] Exact regression command matrix defined
+- [x] Exact API Gateway tests identified
+- [x] Exact AI Service tests identified
+- [x] Full service typecheck requirement decided
+- [x] Docker/Postgres/Redis/runtime requirement decided -- NOT REQUIRED
+- [x] Browser smoke requirement decided -- NOT NEEDED
+- [x] Parent consolidation scope decided
+- [x] Exact checkpoint files required listed
+- [x] No implementation/runtime execution during Step 2
+
+###### Targeted Regression Validation (Step 3 -- COMPLETE 2026-07-13)
+- [x] 04A balance gate behavior validated -- PASS
+- [x] 04B execution-start enqueue/no-enqueue behavior validated -- PASS
+- [x] 04C worker finalization/accounting bridge behavior validated -- PASS
+- [x] No Stripe/payment/provider calls confirmed
+- [x] No migration/frontend/i18n required confirmed
+- [x] AGENT-HARNESS write canary remains separate confirmed
+
+###### Parent Consolidation / Checkpoint (Step 4 -- COMPLETE 2026-07-13)
+- [x] BILLING-READY-04D checkpoint created -- `docs/BILLING-READY-04D-CHECKPOINT.md`\r
+- [x] Parent BILLING-READY-04 checkpoint created -- `docs/BILLING-READY-04-CHECKPOINT.md`\r
+- [x] Parent BILLING-READY-04 marked COMPLETE and LOCKED
+- [x] TASKS.md updated
+- [x] TASKS_BACKLOG_FULL.md mirrored
+- [x] docs/AINOW-EXECUTION-ROADMAP.md updated
+
+**AGENT-HARNESS write canary remains a separate track** -- not registered, not part of BILLING-READY-04D.
+
+**BILLING-READY-04D status:** COMPLETE and LOCKED — 2026-07-13. All 4 steps complete. Regression matrix PASS — 12/12 commands. Checkpoint: `docs/BILLING-READY-04D-CHECKPOINT.md`. Parent BILLING-READY-04 COMPLETE and LOCKED. AGENT-HARNESS write canary remains a separate track. Next recommended roadmap item: BILLING-READY-05 (Stripe/payment provider integration, subscription lifecycle, credit top-up) — not registered.
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-04D.
+
+---
+
 #### AGENT-HARNESS-07: Per-Builder Harness Config Adapter
 
-**Status:** COMPLETE and LOCKED — 2026-07-07. All 3 child slices COMPLETE and LOCKED: 07A, 07B, 07C. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
+**Status:** COMPLETE and LOCKED �X 2026-07-07. All 3 child slices COMPLETE and LOCKED: 07A, 07B, 07C. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
 **Task ID:** AGENT-HARNESS-07
 **Family:** AGENT HARNESS / MULTI-BUILDER CONFIG
 **Priority:** High
-**Nature:** ARCHITECTURE / IMPLEMENTATION — per-builder harness config adapter
-**Risk:** HIGH — changes how harness runtime config is selected before Builder canary activation
+**Nature:** ARCHITECTURE / IMPLEMENTATION �X per-builder harness config adapter
+**Risk:** HIGH �X changes how harness runtime config is selected before Builder canary activation
 **Registered:** 2026-07-07
 
 #### Dependencies
 
-- AGENT-PLATFORM-04 — COMPLETE and LOCKED (Multi-Builder Runtime Topology Plan — 2026-07-07)
+- AGENT-PLATFORM-04 �X COMPLETE and LOCKED (Multi-Builder Runtime Topology Plan �X 2026-07-07)
 - AGENT-PLATFORM-04 topology plan created at `docs/AGENT-PLATFORM-04-MULTI-BUILDER-TOPOLOGY-PLAN.md`
-- AGENT-HARNESS-06C — remains deferred until AGENT-HARNESS-07 is COMPLETE and LOCKED
-- BILLING-READY-03 — COMPLETE and LOCKED (Credit Balance Persistence Foundation — 2026-07-07)
+- AGENT-HARNESS-06C �X remains deferred until AGENT-HARNESS-07 is COMPLETE and LOCKED
+- BILLING-READY-03 �X COMPLETE and LOCKED (Credit Balance Persistence Foundation �X 2026-07-07)
 
 #### Purpose
 
@@ -30794,9 +30946,9 @@ Implement the Per-Builder Harness Config Adapter that translates Builder profile
 
 AGENT-HARNESS-07 is split into 3 child slices given HIGH risk and multi-step scope:
 
-- **AGENT-HARNESS-07A** — Backend builder profile registry + adapter contract (COMPLETE and LOCKED — 2026-07-07)
-- **AGENT-HARNESS-07B** — Worker integration + resolved config flow (COMPLETE and LOCKED — 2026-07-07)
-- **AGENT-HARNESS-07C** — Validation/regression matrix and checkpoint (COMPLETE and LOCKED — 2026-07-07)
+- **AGENT-HARNESS-07A** �X Backend builder profile registry + adapter contract (COMPLETE and LOCKED �X 2026-07-07)
+- **AGENT-HARNESS-07B** �X Worker integration + resolved config flow (COMPLETE and LOCKED �X 2026-07-07)
+- **AGENT-HARNESS-07C** �X Validation/regression matrix and checkpoint (COMPLETE and LOCKED �X 2026-07-07)
 
 AGENT-HARNESS-07A is COMPLETE and LOCKED. AGENT-HARNESS-07B is COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS-07C is COMPLETE and LOCKED (2026-07-07). All 3 child slices COMPLETE and LOCKED. Parent AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07).
 
@@ -30815,59 +30967,59 @@ AGENT-HARNESS-07A is COMPLETE and LOCKED. AGENT-HARNESS-07B is COMPLETE and LOCK
 
 #### Workflow (4-Step Loop)
 
-1. **Registration** — COMPLETE (2026-07-07) — AGENT-HARNESS-07 registered; first active slice: AGENT-HARNESS-07A
-2. **Adapter/readiness review** — COMPLETE (2026-07-07) — AGENT-HARNESS-07A: builder profile contracts, registry, adapter reviewed and implemented
-3. **Implementation (07A)** — COMPLETE and LOCKED (2026-07-07) — AGENT-HARNESS-07A: backend builder profile registry + adapter contract; see `docs/AGENT-HARNESS-07A-CHECKPOINT.md`
-4. **Consolidation/checkpoint** — COMPLETE and LOCKED (2026-07-07) — 07A, 07B, 07C all COMPLETE and LOCKED; parent checkpoint created; see `docs/AGENT-HARNESS-07-CHECKPOINT.md`
+1. **Registration** �X COMPLETE (2026-07-07) �X AGENT-HARNESS-07 registered; first active slice: AGENT-HARNESS-07A
+2. **Adapter/readiness review** �X COMPLETE (2026-07-07) �X AGENT-HARNESS-07A: builder profile contracts, registry, adapter reviewed and implemented
+3. **Implementation (07A)** �X COMPLETE and LOCKED (2026-07-07) �X AGENT-HARNESS-07A: backend builder profile registry + adapter contract; see `docs/AGENT-HARNESS-07A-CHECKPOINT.md`
+4. **Consolidation/checkpoint** �X COMPLETE and LOCKED (2026-07-07) �X 07A, 07B, 07C all COMPLETE and LOCKED; parent checkpoint created; see `docs/AGENT-HARNESS-07-CHECKPOINT.md`
 
 #### Acceptance Criteria
 
-##### Registration (Step 1 — COMPLETE 2026-07-07)
+##### Registration (Step 1 �X COMPLETE 2026-07-07)
 
 - [x] AGENT-HARNESS-07 registered in TASKS.md with ACTIVE status
 - [x] AGENT-HARNESS-07 registered in TASKS_BACKLOG_FULL.md with matching content
 - [x] AINOW-EXECUTION-ROADMAP.md points to AGENT-HARNESS-07 as current ACTIVE task
 - [x] AGENT-PLATFORM-04 remains COMPLETE and LOCKED
-- [x] AGENT-HARNESS-06C remains deferred — not registered
+- [x] AGENT-HARNESS-06C remains deferred �X not registered
 - [x] BILLING-READY-03 remains COMPLETE and LOCKED
-- [x] Split decision recorded (07A/07B/07C) — 07A as first active slice
+- [x] Split decision recorded (07A/07B/07C) �X 07A as first active slice
 - [x] AGENT-HARNESS-07B and 07C noted as future, not yet registered
 - [x] One-active-task rule satisfied
 - [x] No implementation files changed
 
-##### AGENT-HARNESS-07A — Backend Builder Profile Registry + Adapter Contract (COMPLETE and LOCKED — 2026-07-07)
+##### AGENT-HARNESS-07A �X Backend Builder Profile Registry + Adapter Contract (COMPLETE and LOCKED �X 2026-07-07)
 
 - [x] Backend builder profile registry defined at `services/ai-service/src/agent-harness/builder-profiles/`
-- [x] Adapter contract defined — accepts `builderProfileId`/`agentRole` and returns `AgentHarnessRuntimeConfigV1` with resolution metadata
+- [x] Adapter contract defined �X accepts `builderProfileId`/`agentRole` and returns `AgentHarnessRuntimeConfigV1` with resolution metadata
 - [x] Adapter translates `BuilderHarnessProfileV1` fields to `AgentHarnessRuntimeConfigV1`
-- [x] Global fallback config preserved — global default used when `builderProfileId` not provided, not resolved, or non-builder role
-- [x] Unit tests cover adapter resolution — per-profile config, fallback path, field-level fallback, platform approval floors, allowArbitraryShell veto
+- [x] Global fallback config preserved �X global default used when `builderProfileId` not provided, not resolved, or non-builder role
+- [x] Unit tests cover adapter resolution �X per-profile config, fallback path, field-level fallback, platform approval floors, allowArbitraryShell veto
 - [x] Typecheck clean
 - [x] Build clean
 
 **Validation evidence (2026-07-07):**
-- `npx jest --testPathPatterns="builder-profile"` — passed
-- `npx jest --testPathPatterns="builder-harness-config-adapter"` — passed
-- `npx jest --testPathPatterns="app.module"` — passed (validation blocker fix: app.module spec made deterministic and infra-independent; no production config weakened)
-- `npm test` — passed: 32 suites, 594 tests, 1 skipped
-- `npx tsc --noEmit` — passed
-- `npm run build` — passed
+- `npx jest --testPathPatterns="builder-profile"` �X passed
+- `npx jest --testPathPatterns="builder-harness-config-adapter"` �X passed
+- `npx jest --testPathPatterns="app.module"` �X passed (validation blocker fix: app.module spec made deterministic and infra-independent; no production config weakened)
+- `npm test` �X passed: 32 suites, 594 tests, 1 skipped
+- `npx tsc --noEmit` �X passed
+- `npm run build` �X passed
 
 **Checkpoint:** `docs/AGENT-HARNESS-07A-CHECKPOINT.md`
 
-##### AGENT-HARNESS-07B — Worker Integration + Resolved Config Flow (COMPLETE and LOCKED — 2026-07-07)
+##### AGENT-HARNESS-07B �X Worker Integration + Resolved Config Flow (COMPLETE and LOCKED �X 2026-07-07)
 
 **Task ID:** AGENT-HARNESS-07B
-**Status:** COMPLETE and LOCKED — 2026-07-07
+**Status:** COMPLETE and LOCKED �X 2026-07-07
 **Family:** AGENT HARNESS / MULTI-BUILDER CONFIG
 **Parent:** AGENT-HARNESS-07
-**Risk:** HIGH — changes worker harness config resolution before canary activation
+**Risk:** HIGH �X changes worker harness config resolution before canary activation
 **Registered:** 2026-07-07
 
 **Dependencies:**
-- AGENT-HARNESS-07A — COMPLETE and LOCKED (2026-07-07)
-- AGENT-PLATFORM-04 — COMPLETE and LOCKED (2026-07-07)
-- AGENT-HARNESS-06C — remains deferred until AGENT-HARNESS-07 is COMPLETE and LOCKED
+- AGENT-HARNESS-07A �X COMPLETE and LOCKED (2026-07-07)
+- AGENT-PLATFORM-04 �X COMPLETE and LOCKED (2026-07-07)
+- AGENT-HARNESS-06C �X remains deferred until AGENT-HARNESS-07 is COMPLETE and LOCKED
 
 **Purpose:**
 Wire the Per-Builder Harness Config Adapter (built in AGENT-HARNESS-07A) into the ai-service worker path. `WorkerProcessor` must call `resolveBuilderHarnessConfig()` before making harness route decisions, replacing static use of `DEFAULT_AGENT_HARNESS_CONFIG_V1` with the resolved per-builder config. Backward compatibility and global fallback behavior must be preserved.
@@ -30884,9 +31036,9 @@ Wire the Per-Builder Harness Config Adapter (built in AGENT-HARNESS-07A) into th
 - Keep `enableToolLoop` env gate behavior safe and unchanged
 
 **Unit test scope (for implementation in step 3):**
-- No identity fields provided → global fallback used
-- `builderProfileId: 'builder-default'` → same behavior as current defaults
-- Unknown `builderProfileId` → global fallback + warning logged
+- No identity fields provided �� global fallback used
+- `builderProfileId: 'builder-default'` �� same behavior as current defaults
+- Unknown `builderProfileId` �� global fallback + warning logged
 - Resolved config controls worker harness path (not hardcoded global)
 - `ToolDispatcher` receives resolved config values
 - `AgentHarnessRunRequestV1` carries optional identity fields
@@ -30906,14 +31058,14 @@ Wire the Per-Builder Harness Config Adapter (built in AGENT-HARNESS-07A) into th
 - No AGENT-HARNESS-07C registration (future)
 
 **Workflow (4-Step Loop):**
-1. **Registration** — COMPLETE (2026-07-07) — AGENT-HARNESS-07B registered; scope defined
-2. **Worker integration readiness review** — COMPLETE (2026-07-07) — WorkerProcessor adapter call site, identity field extensions, config flow, and fallback path reviewed
-3. **Implementation** — COMPLETE (2026-07-07) — identity fields extended, resolveBuilderHarnessConfig wired, resolved config flows to ToolDispatcher and executeAgentHarnessLoop; see implementation files
-4. **Consolidation/checkpoint** — COMPLETE and LOCKED (2026-07-07) — see `docs/AGENT-HARNESS-07B-CHECKPOINT.md`
+1. **Registration** �X COMPLETE (2026-07-07) �X AGENT-HARNESS-07B registered; scope defined
+2. **Worker integration readiness review** �X COMPLETE (2026-07-07) �X WorkerProcessor adapter call site, identity field extensions, config flow, and fallback path reviewed
+3. **Implementation** �X COMPLETE (2026-07-07) �X identity fields extended, resolveBuilderHarnessConfig wired, resolved config flows to ToolDispatcher and executeAgentHarnessLoop; see implementation files
+4. **Consolidation/checkpoint** �X COMPLETE and LOCKED (2026-07-07) �X see `docs/AGENT-HARNESS-07B-CHECKPOINT.md`
 
 **Acceptance Criteria:**
 
-###### Registration (Step 1 — COMPLETE 2026-07-07)
+###### Registration (Step 1 �X COMPLETE 2026-07-07)
 - [x] AGENT-HARNESS-07B registered in TASKS.md with ACTIVE status
 - [x] AGENT-HARNESS-07B registered in TASKS_BACKLOG_FULL.md with matching content
 - [x] AINOW-EXECUTION-ROADMAP.md points to AGENT-HARNESS-07B as current ACTIVE child slice
@@ -30924,15 +31076,15 @@ Wire the Per-Builder Harness Config Adapter (built in AGENT-HARNESS-07A) into th
 - [x] One-active-task rule satisfied
 - [x] No implementation files changed
 
-###### Worker Integration Readiness Review (Step 2 — COMPLETE 2026-07-07)
-- [x] WorkerProcessor file reviewed — adapter call site, config flow, fallback path identified
-- [x] AiExecutionJob shape reviewed — optional identity fields defined
-- [x] AgentHarnessRunRequestV1 shape reviewed — optional identity fields defined
+###### Worker Integration Readiness Review (Step 2 �X COMPLETE 2026-07-07)
+- [x] WorkerProcessor file reviewed �X adapter call site, config flow, fallback path identified
+- [x] AiExecutionJob shape reviewed �X optional identity fields defined
+- [x] AgentHarnessRunRequestV1 shape reviewed �X optional identity fields defined
 - [x] ToolDispatcher config pass-through point identified
 - [x] No unintended side effects on enableToolLoop env gate identified
 - [x] Readiness review summary recorded
 
-###### Implementation (Step 3 — COMPLETE 2026-07-07)
+###### Implementation (Step 3 �X COMPLETE 2026-07-07)
 - [x] `AiExecutionJob` extended with optional identity fields (agentRole, builderProfileId, harnessProfileId, modelProfileId, toolPermissionProfileId)
 - [x] `AgentHarnessRunRequestV1` extended with matching optional identity fields
 - [x] `resolveBuilderHarnessConfig()` called in `WorkerProcessor` before harness route decision
@@ -30940,9 +31092,9 @@ Wire the Per-Builder Harness Config Adapter (built in AGENT-HARNESS-07A) into th
 - [x] Resolved config passed into `ToolDispatcher` and `executeAgentHarnessLoop`
 - [x] Global config fallback preserved when no identity fields provided
 - [x] `enableToolLoop` env gate behavior preserved
-- [x] Unit tests: no identity fields → global fallback
-- [x] Unit tests: builder-default → same behavior as current defaults
-- [x] Unit tests: unknown builderProfileId → fallback + warning
+- [x] Unit tests: no identity fields �� global fallback
+- [x] Unit tests: builder-default �� same behavior as current defaults
+- [x] Unit tests: unknown builderProfileId �� fallback + warning
 - [x] Unit tests: resolved config controls worker harness path
 - [x] Unit tests: ToolDispatcher receives resolved config values
 - [x] Unit tests: AgentHarnessRunRequestV1 carries optional identity fields
@@ -30951,33 +31103,33 @@ Wire the Per-Builder Harness Config Adapter (built in AGENT-HARNESS-07A) into th
 - [x] Build clean
 
 **Validation evidence (2026-07-07):**
-- `npx jest --testPathPatterns="worker.processor"` — passed: 33 suites, 629 tests, 1 skipped
-- `npx jest --testPathPatterns="builder-profile"` — passed
-- `npx jest --testPathPatterns="builder-harness-config-adapter"` — passed
-- `npm test` — passed: 33 suites, 629 tests, 1 skipped
-- `npx tsc --noEmit` — passed
-- `npm run build` — passed
+- `npx jest --testPathPatterns="worker.processor"` �X passed: 33 suites, 629 tests, 1 skipped
+- `npx jest --testPathPatterns="builder-profile"` �X passed
+- `npx jest --testPathPatterns="builder-harness-config-adapter"` �X passed
+- `npm test` �X passed: 33 suites, 629 tests, 1 skipped
+- `npx tsc --noEmit` �X passed
+- `npm run build` �X passed
 
-###### Consolidation/Checkpoint (Step 4 — COMPLETE and LOCKED 2026-07-07)
+###### Consolidation/Checkpoint (Step 4 �X COMPLETE and LOCKED 2026-07-07)
 - [x] AGENT-HARNESS-07B checkpoint document created
 - [x] AGENT-HARNESS-07B marked COMPLETE and LOCKED
 
 **Checkpoint:** `docs/AGENT-HARNESS-07B-CHECKPOINT.md`
 
-##### AGENT-HARNESS-07C — Validation/Regression Matrix and Checkpoint (COMPLETE and LOCKED — 2026-07-07)
+##### AGENT-HARNESS-07C �X Validation/Regression Matrix and Checkpoint (COMPLETE and LOCKED �X 2026-07-07)
 
 **Task ID:** AGENT-HARNESS-07C
-**Status:** COMPLETE and LOCKED — 2026-07-07. All 3 steps complete. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
+**Status:** COMPLETE and LOCKED �X 2026-07-07. All 3 steps complete. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
 **Family:** AGENT HARNESS / MULTI-BUILDER CONFIG
 **Parent:** AGENT-HARNESS-07
-**Risk:** LOW — validation/regression only; no source changes in this step
+**Risk:** LOW �X validation/regression only; no source changes in this step
 **Registered:** 2026-07-07
 
 **Dependencies:**
-- AGENT-HARNESS-07A — COMPLETE and LOCKED (2026-07-07)
-- AGENT-HARNESS-07B — COMPLETE and LOCKED (2026-07-07)
-- AGENT-PLATFORM-04 — COMPLETE and LOCKED (2026-07-07)
-- AGENT-HARNESS-06C — remains deferred until AGENT-HARNESS-07 is COMPLETE and LOCKED
+- AGENT-HARNESS-07A �X COMPLETE and LOCKED (2026-07-07)
+- AGENT-HARNESS-07B �X COMPLETE and LOCKED (2026-07-07)
+- AGENT-PLATFORM-04 �X COMPLETE and LOCKED (2026-07-07)
+- AGENT-HARNESS-06C �X remains deferred until AGENT-HARNESS-07 is COMPLETE and LOCKED
 
 **Purpose:**
 Final validation and regression matrix for AGENT-HARNESS-07, confirming the full 07A + 07B integration is correct and consistent. Closes out AGENT-HARNESS-07 with a parent checkpoint document. AGENT-HARNESS-07 will be marked COMPLETE and LOCKED only after validation passes.
@@ -30992,7 +31144,7 @@ Final validation and regression matrix for AGENT-HARNESS-07, confirming the full
 - Create regression matrix document (`docs/AGENT-HARNESS-07C-REGRESSION-MATRIX.md`) in Step 2.
 - Create final AGENT-HARNESS-07 parent checkpoint (`docs/AGENT-HARNESS-07-CHECKPOINT.md`) in Step 3.
 - Mark AGENT-HARNESS-07 COMPLETE and LOCKED after validation passes.
-- Record AGENT-HARNESS-06C as unblocked from a prerequisite standpoint only — still deferred until Keith explicitly approves canary activation.
+- Record AGENT-HARNESS-06C as unblocked from a prerequisite standpoint only �X still deferred until Keith explicitly approves canary activation.
 
 **Non-Goals:**
 - No AGENT-HARNESS-06C activation
@@ -31008,9 +31160,9 @@ Final validation and regression matrix for AGENT-HARNESS-07, confirming the full
 - No broad worker refactor
 
 **Workflow (3-Step Loop):**
-1. **Registration** — COMPLETE (2026-07-07) — AGENT-HARNESS-07C registered; scope defined
-2. **Validation / regression matrix** — COMPLETE (2026-07-07) — regression matrix created at `docs/AGENT-HARNESS-07C-REGRESSION-MATRIX.md`; all 07A + 07B acceptance criteria satisfied
-3. **Consolidation / parent checkpoint** — COMPLETE and LOCKED (2026-07-07) — `docs/AGENT-HARNESS-07-CHECKPOINT.md` created; AGENT-HARNESS-07 marked COMPLETE and LOCKED
+1. **Registration** �X COMPLETE (2026-07-07) �X AGENT-HARNESS-07C registered; scope defined
+2. **Validation / regression matrix** �X COMPLETE (2026-07-07) �X regression matrix created at `docs/AGENT-HARNESS-07C-REGRESSION-MATRIX.md`; all 07A + 07B acceptance criteria satisfied
+3. **Consolidation / parent checkpoint** �X COMPLETE and LOCKED (2026-07-07) �X `docs/AGENT-HARNESS-07-CHECKPOINT.md` created; AGENT-HARNESS-07 marked COMPLETE and LOCKED
 
 **Checkpoint files:**
 - `docs/AGENT-HARNESS-07C-REGRESSION-MATRIX.md`
@@ -31018,7 +31170,7 @@ Final validation and regression matrix for AGENT-HARNESS-07, confirming the full
 
 **Acceptance Criteria:**
 
-###### Registration (Step 1 — COMPLETE 2026-07-07)
+###### Registration (Step 1 �X COMPLETE 2026-07-07)
 - [x] AGENT-HARNESS-07C registered in TASKS.md with ACTIVE status
 - [x] AGENT-HARNESS-07C registered in TASKS_BACKLOG_FULL.md with matching content
 - [x] AINOW-EXECUTION-ROADMAP.md updated to reflect AGENT-HARNESS-07C as current ACTIVE child slice
@@ -31030,34 +31182,34 @@ Final validation and regression matrix for AGENT-HARNESS-07, confirming the full
 - [x] One-active-task rule satisfied
 - [x] No implementation files changed
 
-###### Validation / Regression Matrix (Step 2 — COMPLETE 2026-07-07)
+###### Validation / Regression Matrix (Step 2 �X COMPLETE 2026-07-07)
 - [x] `docs/AGENT-HARNESS-07C-REGRESSION-MATRIX.md` created
-- [x] 07A builder profile registry — all resolution paths covered in matrix
-- [x] 07A adapter — platform approval floor and allowArbitraryShell veto confirmed
-- [x] 07B identity fields — optional fields backward-compatible
-- [x] 07B WorkerProcessor call site — resolveBuilderHarnessConfig called before harness route decision
-- [x] 07B resolved config — flows into ToolDispatcher, handlers, executeAgentHarnessLoop, audit gate, checkpoint gate
+- [x] 07A builder profile registry �X all resolution paths covered in matrix
+- [x] 07A adapter �X platform approval floor and allowArbitraryShell veto confirmed
+- [x] 07B identity fields �X optional fields backward-compatible
+- [x] 07B WorkerProcessor call site �X resolveBuilderHarnessConfig called before harness route decision
+- [x] 07B resolved config �X flows into ToolDispatcher, handlers, executeAgentHarnessLoop, audit gate, checkpoint gate
 - [x] DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop confirmed as master env gate
 - [x] No AGENT-HARNESS-06C activation confirmed
 - [x] All 07A and 07B acceptance criteria confirmed satisfied
 
-###### Consolidation / Parent Checkpoint (Step 3 — COMPLETE and LOCKED 2026-07-07)
+###### Consolidation / Parent Checkpoint (Step 3 �X COMPLETE and LOCKED 2026-07-07)
 - [x] `docs/AGENT-HARNESS-07-CHECKPOINT.md` created
 - [x] AGENT-HARNESS-07 marked COMPLETE and LOCKED in TASKS.md
 - [x] AGENT-HARNESS-07 marked COMPLETE and LOCKED in TASKS_BACKLOG_FULL.md
 - [x] AINOW-EXECUTION-ROADMAP.md updated to reflect AGENT-HARNESS-07 COMPLETE and LOCKED
 - [x] AGENT-HARNESS-06C unblock decision recorded (remains deferred until Keith approves canary)
 
-**AGENT-HARNESS-06C status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-07-07). Keith explicit approval recorded. Canary execution NOT yet performed. Step 2 (environment preflight) is next.
-**AGENT-HARNESS-07B status:** COMPLETE and LOCKED (2026-07-07) — Worker Integration + Resolved Config Flow. All 4 steps complete. See `docs/AGENT-HARNESS-07B-CHECKPOINT.md`.
-**AGENT-HARNESS-07C status:** COMPLETE and LOCKED (2026-07-07) — All 3 steps complete. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
-**AGENT-HARNESS-07 status:** COMPLETE and LOCKED (2026-07-07) — All 3 child slices (07A, 07B, 07C) COMPLETE and LOCKED. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
-**Multi-builder collaboration/runtime orchestration status:** Not registered. Deferred — comes after AGENT-HARNESS-06C.
-**BILLING-READY-04 status:** ACTIVE — Step 3 IN PROGRESS (child-slice split). BILLING-READY-04A COMPLETE and LOCKED (2026-07-13). Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13). Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13). Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. 04D planned only — next recommended (not registered). AGENT-HARNESS write canary remains a separate track.
+**AGENT-HARNESS-06C status:** ACTIVE �X Step 1 COMPLETE (Registration �X 2026-07-07). Keith explicit approval recorded. Canary execution NOT yet performed. Step 2 (environment preflight) is next.
+**AGENT-HARNESS-07B status:** COMPLETE and LOCKED (2026-07-07) �X Worker Integration + Resolved Config Flow. All 4 steps complete. See `docs/AGENT-HARNESS-07B-CHECKPOINT.md`.
+**AGENT-HARNESS-07C status:** COMPLETE and LOCKED (2026-07-07) �X All 3 steps complete. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
+**AGENT-HARNESS-07 status:** COMPLETE and LOCKED (2026-07-07) �X All 3 child slices (07A, 07B, 07C) COMPLETE and LOCKED. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
+**Multi-builder collaboration/runtime orchestration status:** Not registered. Deferred �X comes after AGENT-HARNESS-06C.
+**BILLING-READY-04 status:** ACTIVE �X Step 3 IN PROGRESS (child-slice split). BILLING-READY-04A COMPLETE and LOCKED (2026-07-13). Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13). Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13). Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
 
 ---
 
-**Next recommended step:** AGENT-HARNESS-06C Step 2 — Canary readiness / environment preflight. Verify Docker/Redis/Postgres; verify env flags; verify resolved-config path; document exact env values before any runtime execution.
+**Next recommended step:** AGENT-HARNESS-06C Step 2 �X Canary readiness / environment preflight. Verify Docker/Redis/Postgres; verify env flags; verify resolved-config path; document exact env values before any runtime execution.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-07.
 
@@ -31065,24 +31217,24 @@ Final validation and regression matrix for AGENT-HARNESS-07, confirming the full
 
 #### AGENT-HARNESS-06C: Read-Only Harness Canary Execution
 
-**Status:** COMPLETE and LOCKED — 2026-07-07
+**Status:** COMPLETE and LOCKED �X 2026-07-07
 **Task ID:** AGENT-HARNESS-06C
 **Family:** AGENT HARNESS / CANARY ACTIVATION
 **Priority:** High
-**Nature:** CONTROLLED RUNTIME EXECUTION — read-only harness canary
-**Risk:** HIGH — controlled canary/runtime execution path
+**Nature:** CONTROLLED RUNTIME EXECUTION �X read-only harness canary
+**Risk:** HIGH �X controlled canary/runtime execution path
 **Registered:** 2026-07-07
 **Completed:** 2026-07-07
-**Approved by:** Keith — explicit approval recorded 2026-07-07
+**Approved by:** Keith �X explicit approval recorded 2026-07-07
 **Checkpoint:** `docs/AGENT-HARNESS-06C-CHECKPOINT.md`
 
 #### Dependencies
 
-- AGENT-HARNESS-07 — COMPLETE and LOCKED (2026-07-07) — Per-Builder Harness Config Adapter
-- AGENT-HARNESS-06B — COMPLETE and LOCKED (2026-07-06) — canary plan at `docs/AGENT-HARNESS-06B-CANARY-PLAN.md`
-- AGENT-HARNESS-06A — COMPLETE and LOCKED
-- AGENT-HARNESS-06 — COMPLETE and LOCKED
-- AGENT-PLATFORM-04 — COMPLETE and LOCKED (2026-07-07)
+- AGENT-HARNESS-07 �X COMPLETE and LOCKED (2026-07-07) �X Per-Builder Harness Config Adapter
+- AGENT-HARNESS-06B �X COMPLETE and LOCKED (2026-07-06) �X canary plan at `docs/AGENT-HARNESS-06B-CANARY-PLAN.md`
+- AGENT-HARNESS-06A �X COMPLETE and LOCKED
+- AGENT-HARNESS-06 �X COMPLETE and LOCKED
+- AGENT-PLATFORM-04 �X COMPLETE and LOCKED (2026-07-07)
 - AGENT-HARNESS-06C explicitly approved by Keith (2026-07-07)
 
 #### Purpose
@@ -31091,9 +31243,9 @@ Execute the first controlled read-only Agent Harness canary as planned in `docs/
 
 #### Scope
 
-- Step 2: Canary readiness / environment preflight — verify environment, flags, Redis, Postgres, ai-service worker, workspace, and resolved-config path before any runtime execution. Document exact env values, commands, and rollback/stop conditions.
-- Step 3: Controlled read-only canary execution — run one canary session per the plan in `docs/AGENT-HARNESS-06B-CANARY-PLAN.md`. Read-only tools only (`read_file`, `list_files`). Observe and capture all audit events, logs, and results. No write/delete/package/env/runtime-destructive actions.
-- Step 4: Consolidation / checkpoint — document results; verify all success criteria from `docs/AGENT-HARNESS-06B-CANARY-PLAN.md` §17; produce final canary report (format per §25); create AGENT-HARNESS-06C checkpoint document; mark COMPLETE and LOCKED.
+- Step 2: Canary readiness / environment preflight �X verify environment, flags, Redis, Postgres, ai-service worker, workspace, and resolved-config path before any runtime execution. Document exact env values, commands, and rollback/stop conditions.
+- Step 3: Controlled read-only canary execution �X run one canary session per the plan in `docs/AGENT-HARNESS-06B-CANARY-PLAN.md`. Read-only tools only (`read_file`, `list_files`). Observe and capture all audit events, logs, and results. No write/delete/package/env/runtime-destructive actions.
+- Step 4: Consolidation / checkpoint �X document results; verify all success criteria from `docs/AGENT-HARNESS-06B-CANARY-PLAN.md` ��17; produce final canary report (format per ��25); create AGENT-HARNESS-06C checkpoint document; mark COMPLETE and LOCKED.
 
 #### Canary Safety Constraints (All Steps)
 
@@ -31102,7 +31254,7 @@ Execute the first controlled read-only Agent Harness canary as planned in `docs/
 - Canary must preserve the global `DEFAULT_AGENT_HARNESS_CONFIG_V1.enableToolLoop` master gate behavior.
 - Canary must document exact env values, commands, and rollback/stop conditions before execution.
 - Canary must use a dedicated non-production test workspace (known content, no secrets, no customer data).
-- Rollback procedure from `docs/AGENT-HARNESS-06B-CANARY-PLAN.md` §20 applies at all times.
+- Rollback procedure from `docs/AGENT-HARNESS-06B-CANARY-PLAN.md` ��20 applies at all times.
 - `AGENT_HARNESS_ENABLE_WRITE_TOOLS` must remain `false` or absent.
 - `AGENT_HARNESS_ENABLE_VALIDATION_TOOLS` must remain `false` or absent.
 - `AGENT_HARNESS_ENABLE_BROWSER_SMOKE` must remain `false` or absent.
@@ -31126,16 +31278,16 @@ Execute the first controlled read-only Agent Harness canary as planned in `docs/
 - No env changes in registration (Step 1)
 
 **Workflow (4-Step Loop):**
-1. **Registration** — COMPLETE (2026-07-07) — Keith explicit approval recorded; scope and safety constraints defined; no canary executed; no env changes
-2. **Canary readiness / environment preflight** — COMPLETE (2026-07-07) — Docker/Redis/Postgres healthy; all harness flags absent/false; AGENT-HARNESS-07 safety path verified; Keith approvals obtained. See `docs/AGENT-HARNESS-06C-PREFLIGHT.md`.
-3. **Controlled read-only canary execution** — COMPLETE (2026-07-07) — Jest harness test suite (mock executor); 231 tests, 13 suites, 0 failures; `read_file` and `list_files` dispatched; write/delete/validation/browser blocked; no env changes; no source changes. See `docs/AGENT-HARNESS-06C-CANARY-EXECUTION.md`.
-4. **Consolidation / checkpoint** — COMPLETE (2026-07-07) — Checkpoint document created; all governance files updated; task marked COMPLETE and LOCKED. See `docs/AGENT-HARNESS-06C-CHECKPOINT.md`.
+1. **Registration** �X COMPLETE (2026-07-07) �X Keith explicit approval recorded; scope and safety constraints defined; no canary executed; no env changes
+2. **Canary readiness / environment preflight** �X COMPLETE (2026-07-07) �X Docker/Redis/Postgres healthy; all harness flags absent/false; AGENT-HARNESS-07 safety path verified; Keith approvals obtained. See `docs/AGENT-HARNESS-06C-PREFLIGHT.md`.
+3. **Controlled read-only canary execution** �X COMPLETE (2026-07-07) �X Jest harness test suite (mock executor); 231 tests, 13 suites, 0 failures; `read_file` and `list_files` dispatched; write/delete/validation/browser blocked; no env changes; no source changes. See `docs/AGENT-HARNESS-06C-CANARY-EXECUTION.md`.
+4. **Consolidation / checkpoint** �X COMPLETE (2026-07-07) �X Checkpoint document created; all governance files updated; task marked COMPLETE and LOCKED. See `docs/AGENT-HARNESS-06C-CHECKPOINT.md`.
 
 **Canary limitation note:** Canary executed via Jest harness test suite (mock executor / stub label), not via a live BullMQ worker job. `StubAIAdapter.supportsToolUse = false` makes stub provider non-viable for live-job harness tool loop verification. The Jest path fully exercises the harness loop, dispatcher, audit recorder, and config resolution. A live worker/BullMQ end-to-end canary with a real provider is a future option, not registered.
 
 **Acceptance Criteria:**
 
-###### Registration (Step 1 — COMPLETE 2026-07-07)
+###### Registration (Step 1 �X COMPLETE 2026-07-07)
 - [x] AGENT-HARNESS-06C registered in TASKS.md with ACTIVE status
 - [x] AGENT-HARNESS-06C registered in TASKS_BACKLOG_FULL.md with matching content
 - [x] AINOW-EXECUTION-ROADMAP.md updated to reflect AGENT-HARNESS-06C as current ACTIVE task
@@ -31151,33 +31303,33 @@ Execute the first controlled read-only Agent Harness canary as planned in `docs/
 - [x] Step 2 must do environment preflight before any runtime execution
 - [x] Step 3 must be read-only and controlled per `docs/AGENT-HARNESS-06B-CANARY-PLAN.md`
 
-###### Canary Readiness / Environment Preflight (Step 2 — COMPLETE 2026-07-07)
+###### Canary Readiness / Environment Preflight (Step 2 �X COMPLETE 2026-07-07)
 - [x] Docker, Redis, Postgres running and verified (confirmed at Step 3 execution)
 - [x] Env flags documented: AGENT_HARNESS_ENABLE_TOOL_LOOP absent/false; AGENT_HARNESS_ENABLE_WRITE_TOOLS absent/false; AGENT_HARNESS_ENABLE_VALIDATION_TOOLS absent/false; AGENT_HARNESS_ENABLE_BROWSER_SMOKE absent/false
 - [x] Resolved-config path (AGENT-HARNESS-07) verified safe
 - [x] Dispatcher registered tool set confirmed: only `read_file` and `list_files`
-- [x] Rollback procedure reviewed (canary plan §20)
-- [x] Keith approvals from `docs/AGENT-HARNESS-06B-CANARY-PLAN.md` §23 recorded
+- [x] Rollback procedure reviewed (canary plan ��20)
+- [x] Keith approvals from `docs/AGENT-HARNESS-06B-CANARY-PLAN.md` ��23 recorded
 - [x] Pre-execution environment snapshot captured
 
-###### Controlled Read-Only Canary Execution (Step 3 — COMPLETE 2026-07-07)
+###### Controlled Read-Only Canary Execution (Step 3 �X COMPLETE 2026-07-07)
 - [x] Harness path exercised (`executeAgentHarnessLoop` invoked directly with mock executor)
 - [x] Only `read_file` and `list_files` registered in dispatcher (verified by dispatcher isolation tests)
-- [x] `read_file` dispatched successfully — mock result returned, truncation guard verified
-- [x] `list_files` dispatched successfully — mock directory listing returned
-- [x] No `write_file` dispatch occurred — TOOL_NOT_FOUND confirmed
-- [x] No `delete_file` dispatch occurred — TOOL_NOT_FOUND confirmed
-- [x] No `run_validation` dispatch occurred — TOOL_NOT_FOUND confirmed
-- [x] No `browser_smoke` dispatch occurred — TOOL_NOT_FOUND confirmed
+- [x] `read_file` dispatched successfully �X mock result returned, truncation guard verified
+- [x] `list_files` dispatched successfully �X mock directory listing returned
+- [x] No `write_file` dispatch occurred �X TOOL_NOT_FOUND confirmed
+- [x] No `delete_file` dispatch occurred �X TOOL_NOT_FOUND confirmed
+- [x] No `run_validation` dispatch occurred �X TOOL_NOT_FOUND confirmed
+- [x] No `browser_smoke` dispatch occurred �X TOOL_NOT_FOUND confirmed
 - [x] Audit events emitted in correct sequence (12 event types verified)
 - [x] Audit events contain no sensitive content (privacy invariant verified)
-- [x] No unexpected errors — 0 test failures
+- [x] No unexpected errors �X 0 test failures
 - [x] No files changed in workspace after execution (git diff confirmed)
 - [x] Execution terminates with `terminationReason: 'completed'`
 - [x] Environment flags match plan at execution time (all absent/false)
 - [x] `AGENT_HARNESS_ENABLE_TOOL_LOOP` remains absent/false in all .env files
 
-###### Consolidation / Checkpoint (Step 4 — COMPLETE 2026-07-07)
+###### Consolidation / Checkpoint (Step 4 �X COMPLETE 2026-07-07)
 - [x] AGENT-HARNESS-06C checkpoint document created (`docs/AGENT-HARNESS-06C-CHECKPOINT.md`)
 - [x] AGENT-HARNESS-06C marked COMPLETE and LOCKED in TASKS.md
 - [x] AGENT-HARNESS-06C marked COMPLETE and LOCKED in TASKS_BACKLOG_FULL.md
@@ -31186,13 +31338,13 @@ Execute the first controlled read-only Agent Harness canary as planned in `docs/
 - [x] Important limitation documented: live BullMQ canary did not occur
 - [x] No new task registered
 
-**AGENT-HARNESS-06C status:** COMPLETE and LOCKED — 2026-07-07. Canary result: PASS (231 tests, 13 suites, mock-executor/Jest path). No live BullMQ canary. No production activation. No env changes. No source changes.
+**AGENT-HARNESS-06C status:** COMPLETE and LOCKED �X 2026-07-07. Canary result: PASS (231 tests, 13 suites, mock-executor/Jest path). No live BullMQ canary. No production activation. No env changes. No source changes.
 **AGENT-HARNESS-07 status:** COMPLETE and LOCKED (2026-07-07).
-**AGENT-HARNESS-06B status:** COMPLETE and LOCKED (2026-07-06) — canary plan at `docs/AGENT-HARNESS-06B-CANARY-PLAN.md`.
+**AGENT-HARNESS-06B status:** COMPLETE and LOCKED (2026-07-06) �X canary plan at `docs/AGENT-HARNESS-06B-CANARY-PLAN.md`.
 
 ---
 
-**Next recommended step (from AGENT-HARNESS-06C):** AGENT-HARNESS-06D registered as next ACTIVE task — Step 2 (Live worker/BullMQ readiness and execution-path design) is the next action. No runtime execution in Step 2.
+**Next recommended step (from AGENT-HARNESS-06C):** AGENT-HARNESS-06D registered as next ACTIVE task �X Step 2 (Live worker/BullMQ readiness and execution-path design) is the next action. No runtime execution in Step 2.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-HARNESS-06C.
 
@@ -31200,20 +31352,20 @@ Execute the first controlled read-only Agent Harness canary as planned in `docs/
 
 #### AGENT-HARNESS-06D: Live Worker/BullMQ Read-Only Canary Gap Closure
 
-**Status:** COMPLETE and LOCKED — 2026-07-08
+**Status:** COMPLETE and LOCKED �X 2026-07-08
 **Task ID:** AGENT-HARNESS-06D
 **Family:** AGENT HARNESS / CANARY ACTIVATION
 **Priority:** High
-**Nature:** CONTROLLED RUNTIME EXECUTION — live worker/BullMQ canary gap closure
-**Risk:** HIGH — live worker/BullMQ runtime path
+**Nature:** CONTROLLED RUNTIME EXECUTION �X live worker/BullMQ canary gap closure
+**Risk:** HIGH �X live worker/BullMQ runtime path
 **Registered:** 2026-07-08
-**Approved by:** Keith — explicit approval recorded 2026-07-08 ("go" — registration only)
+**Approved by:** Keith �X explicit approval recorded 2026-07-08 ("go" �X registration only)
 
 #### Dependencies
 
-- AGENT-HARNESS-06C — COMPLETE and LOCKED (2026-07-07) — Read-Only Harness Canary Execution (Jest/mock-executor path; live BullMQ canary did not occur)
-- AGENT-HARNESS-07 — COMPLETE and LOCKED (2026-07-07) — Per-Builder Harness Config Adapter
-- AGENT-HARNESS-06B — COMPLETE and LOCKED (2026-07-06)
+- AGENT-HARNESS-06C �X COMPLETE and LOCKED (2026-07-07) �X Read-Only Harness Canary Execution (Jest/mock-executor path; live BullMQ canary did not occur)
+- AGENT-HARNESS-07 �X COMPLETE and LOCKED (2026-07-07) �X Per-Builder Harness Config Adapter
+- AGENT-HARNESS-06B �X COMPLETE and LOCKED (2026-07-06)
 - Keith approval recorded for registration (2026-07-08)
 
 #### Why This Task Exists
@@ -31224,7 +31376,7 @@ What was NOT verified in AGENT-HARNESS-06C:
 - Live BullMQ job submission with `harnessVersion: 'v1'`
 - Live `agent_harness.route_evaluated` log emission from a real worker process
 - Live `agent_harness.config_resolved` log emission from a real worker process
-- End-to-end: API → BullMQ → Worker → Harness tool loop → AI provider → result
+- End-to-end: API �� BullMQ �� Worker �� Harness tool loop �� AI provider �� result
 
 AGENT-HARNESS-06D closes this gap by identifying a safe live BullMQ canary path (Step 2) and executing at most one controlled live worker/BullMQ read-only canary (Step 3).
 
@@ -31234,17 +31386,17 @@ Close the live BullMQ canary gap from AGENT-HARNESS-06C. Identify whether a tool
 
 #### Scope
 
-- Step 2: Live worker/BullMQ readiness and execution-path design — identify a safe live BullMQ canary path; determine whether a tool-capable non-billing test adapter/script exists or whether a small test-only harness path is needed; no runtime execution.
-- Step 3: Controlled live worker/BullMQ read-only canary execution — at most one controlled live worker/BullMQ read-only canary; local dev only; read-only only; no browser smoke; no write/delete/package/env-file tools; no paid/provider calls unless Keith explicitly approves.
-- Step 4: Consolidation/checkpoint — document results; update governance files; mark COMPLETE and LOCKED.
+- Step 2: Live worker/BullMQ readiness and execution-path design �X identify a safe live BullMQ canary path; determine whether a tool-capable non-billing test adapter/script exists or whether a small test-only harness path is needed; no runtime execution.
+- Step 3: Controlled live worker/BullMQ read-only canary execution �X at most one controlled live worker/BullMQ read-only canary; local dev only; read-only only; no browser smoke; no write/delete/package/env-file tools; no paid/provider calls unless Keith explicitly approves.
+- Step 4: Consolidation/checkpoint �X document results; update governance files; mark COMPLETE and LOCKED.
 
 #### Safety Constraints (All Steps)
 
 - No paid/provider calls unless Keith explicitly approves.
 - Local dev only.
-- Read-only only — no write/delete/package/env-file tools.
+- Read-only only �X no write/delete/package/env-file tools.
 - No browser smoke.
-- `AGENT_HARNESS_ENABLE_TOOL_LOOP=true` process-scoped only if needed for Step 3 — must not be written to any .env file.
+- `AGENT_HARNESS_ENABLE_TOOL_LOOP=true` process-scoped only if needed for Step 3 �X must not be written to any .env file.
 - Step 2 must complete before any runtime execution (Step 3).
 - No production activation.
 
@@ -31265,14 +31417,14 @@ Close the live BullMQ canary gap from AGENT-HARNESS-06C. Identify whether a tool
 - No browser smoke
 
 **Workflow (4-Step Loop):**
-1. **Registration** — COMPLETE (2026-07-08) — Keith explicit approval recorded ("go"); scope and safety constraints defined; why-06D-exists documented; no canary executed; no env changes; no implementation files changed.
-2. **Live worker/BullMQ readiness and execution-path design** — COMPLETE (2026-07-08) — No existing tool-capable non-billing adapter found; implementation slice AGENT-HARNESS-06D1 registered; no runtime execution. Design: `docs/AGENT-HARNESS-06D-LIVE-WORKER-CANARY-DESIGN.md`.
-3. **Controlled live worker/BullMQ read-only canary execution** — COMPLETE (2026-07-08) — PASS. Provider: `test-harness-stub`; process-scoped `AGENT_HARNESS_ENABLE_TOOL_LOOP=true` only; `selectedPath: 'harness'`; `source: 'builder-profile'`; 3 iterations; 2 tool calls (`list_files`, `read_file`) dispatched with HANDLER_ERROR (API Gateway not running — expected per design §7.8); `terminationReason: 'completed'`; `durationMs: 33`; no write/delete/validation/browser tools dispatched; no paid provider calls; no .env changes. Execution record: `docs/AGENT-HARNESS-06D-LIVE-CANARY-EXECUTION.md`.
-4. **Consolidation / checkpoint** — COMPLETE (2026-07-08) — checkpoint created; TASKS.md/TASKS_BACKLOG_FULL.md/ROADMAP updated; AGENT-HARNESS-06D marked COMPLETE and LOCKED. No new task registered.
+1. **Registration** �X COMPLETE (2026-07-08) �X Keith explicit approval recorded ("go"); scope and safety constraints defined; why-06D-exists documented; no canary executed; no env changes; no implementation files changed.
+2. **Live worker/BullMQ readiness and execution-path design** �X COMPLETE (2026-07-08) �X No existing tool-capable non-billing adapter found; implementation slice AGENT-HARNESS-06D1 registered; no runtime execution. Design: `docs/AGENT-HARNESS-06D-LIVE-WORKER-CANARY-DESIGN.md`.
+3. **Controlled live worker/BullMQ read-only canary execution** �X COMPLETE (2026-07-08) �X PASS. Provider: `test-harness-stub`; process-scoped `AGENT_HARNESS_ENABLE_TOOL_LOOP=true` only; `selectedPath: 'harness'`; `source: 'builder-profile'`; 3 iterations; 2 tool calls (`list_files`, `read_file`) dispatched with HANDLER_ERROR (API Gateway not running �X expected per design ��7.8); `terminationReason: 'completed'`; `durationMs: 33`; no write/delete/validation/browser tools dispatched; no paid provider calls; no .env changes. Execution record: `docs/AGENT-HARNESS-06D-LIVE-CANARY-EXECUTION.md`.
+4. **Consolidation / checkpoint** �X COMPLETE (2026-07-08) �X checkpoint created; TASKS.md/TASKS_BACKLOG_FULL.md/ROADMAP updated; AGENT-HARNESS-06D marked COMPLETE and LOCKED. No new task registered.
 
 **Acceptance Criteria:**
 
-###### Registration (Step 1 — COMPLETE 2026-07-08)
+###### Registration (Step 1 �X COMPLETE 2026-07-08)
 - [x] AGENT-HARNESS-06D registered in TASKS.md with ACTIVE status
 - [x] AGENT-HARNESS-06D registered in TASKS_BACKLOG_FULL.md with matching content
 - [x] AINOW-EXECUTION-ROADMAP.md updated to reflect AGENT-HARNESS-06D as current ACTIVE task
@@ -31288,17 +31440,17 @@ Close the live BullMQ canary gap from AGENT-HARNESS-06C. Identify whether a tool
 - [x] Step 2 must determine safe live BullMQ canary path before any runtime
 - [x] Step 3 must not run until Step 2 is complete
 
-###### Live Worker/BullMQ Readiness and Execution-Path Design (Step 2 — COMPLETE 2026-07-08)
-- [x] Safe live BullMQ canary path identified — Option B: create TestToolCapableStubAdapter (design §5)
-- [x] Tool-capable non-billing adapter availability determined — NO existing safe path found (design §4)
-- [x] Whether small test-only harness path is needed — YES: AGENT-HARNESS-06D1 registered (design §8.3)
+###### Live Worker/BullMQ Readiness and Execution-Path Design (Step 2 �X COMPLETE 2026-07-08)
+- [x] Safe live BullMQ canary path identified �X Option B: create TestToolCapableStubAdapter (design ��5)
+- [x] Tool-capable non-billing adapter availability determined �X NO existing safe path found (design ��4)
+- [x] Whether small test-only harness path is needed �X YES: AGENT-HARNESS-06D1 registered (design ��8.3)
 - [x] No runtime execution performed in Step 2
-- [x] Keith approvals recorded before Step 3 — AGENT-HARNESS-06D1 COMPLETE and LOCKED (2026-07-08); Step 3 executed 2026-07-08
+- [x] Keith approvals recorded before Step 3 �X AGENT-HARNESS-06D1 COMPLETE and LOCKED (2026-07-08); Step 3 executed 2026-07-08
 
-###### Controlled Live Worker/BullMQ Read-Only Canary Execution (Step 3 — COMPLETE 2026-07-08)
+###### Controlled Live Worker/BullMQ Read-Only Canary Execution (Step 3 �X COMPLETE 2026-07-08)
 - [x] At most one controlled live worker/BullMQ read-only canary executed
 - [x] Local dev only
-- [x] Read-only only — only `read_file` and `list_files` dispatched (both returned HANDLER_ERROR — API Gateway not running, expected)
+- [x] Read-only only �X only `read_file` and `list_files` dispatched (both returned HANDLER_ERROR �X API Gateway not running, expected)
 - [x] No write/delete/package/env-file operations
 - [x] No browser smoke
 - [x] No paid/provider calls
@@ -31308,17 +31460,17 @@ Close the live BullMQ canary gap from AGENT-HARNESS-06C. Identify whether a tool
 - [x] No source files changed after canary
 - [x] No .env files permanently changed after canary
 
-###### Consolidation / Checkpoint (Step 4 — COMPLETE 2026-07-08)
+###### Consolidation / Checkpoint (Step 4 �X COMPLETE 2026-07-08)
 - [x] AGENT-HARNESS-06D checkpoint document created (`docs/AGENT-HARNESS-06D-CHECKPOINT.md`)
 - [x] AGENT-HARNESS-06D marked COMPLETE and LOCKED in TASKS.md
 - [x] AGENT-HARNESS-06D marked COMPLETE and LOCKED in TASKS_BACKLOG_FULL.md
 - [x] AINOW-EXECUTION-ROADMAP.md updated
-- [x] Live BullMQ canary result recorded accurately (PASS; HANDLER_ERROR on file tools — API Gateway not running, expected per design §7.8)
+- [x] Live BullMQ canary result recorded accurately (PASS; HANDLER_ERROR on file tools �X API Gateway not running, expected per design ��7.8)
 - [x] No new task registered
 
-**AGENT-HARNESS-06D status:** COMPLETE and LOCKED — 2026-07-08. All 4 steps complete. Live Worker/BullMQ canary PASS: `selectedPath: 'harness'`; `source: 'builder-profile'`; 3 iterations; 2 tool calls dispatched (`list_files`, `read_file`); HANDLER_ERROR on both (API Gateway not running — expected per design §7.8); `terminationReason: 'completed'`; `durationMs: 33`; no paid calls; no .env changes; no production activation. Checkpoint: `docs/AGENT-HARNESS-06D-CHECKPOINT.md`. No new task registered.
-**AGENT-HARNESS-06D1 status:** COMPLETE and LOCKED — 2026-07-08 (child slice).
-**AGENT-HARNESS-06C status:** COMPLETE and LOCKED — 2026-07-07. Canary result: PASS (231 tests, 13 suites, mock-executor/Jest path). No live BullMQ canary. No production activation.
+**AGENT-HARNESS-06D status:** COMPLETE and LOCKED �X 2026-07-08. All 4 steps complete. Live Worker/BullMQ canary PASS: `selectedPath: 'harness'`; `source: 'builder-profile'`; 3 iterations; 2 tool calls dispatched (`list_files`, `read_file`); HANDLER_ERROR on both (API Gateway not running �X expected per design ��7.8); `terminationReason: 'completed'`; `durationMs: 33`; no paid calls; no .env changes; no production activation. Checkpoint: `docs/AGENT-HARNESS-06D-CHECKPOINT.md`. No new task registered.
+**AGENT-HARNESS-06D1 status:** COMPLETE and LOCKED �X 2026-07-08 (child slice).
+**AGENT-HARNESS-06C status:** COMPLETE and LOCKED �X 2026-07-07. Canary result: PASS (231 tests, 13 suites, mock-executor/Jest path). No live BullMQ canary. No production activation.
 **AGENT-HARNESS-07 status:** COMPLETE and LOCKED (2026-07-07).
 
 ---
@@ -31329,15 +31481,15 @@ Close the live BullMQ canary gap from AGENT-HARNESS-06C. Identify whether a tool
 
 #### AGENT-HARNESS-06D1: Test Tool-Capable Stub Adapter for Live Worker Canary
 
-**Status:** COMPLETE and LOCKED — 2026-07-08
+**Status:** COMPLETE and LOCKED �X 2026-07-08
 **Task ID:** AGENT-HARNESS-06D1
 **Family:** AGENT HARNESS / CANARY ACTIVATION
 **Parent:** AGENT-HARNESS-06D
 **Priority:** High
-**Nature:** BOUNDED IMPLEMENTATION — test-only tool-capable stub adapter; no runtime execution; no live canary
-**Risk:** HIGH — enables future live Worker/BullMQ canary path; this slice itself did not execute canary
+**Nature:** BOUNDED IMPLEMENTATION �X test-only tool-capable stub adapter; no runtime execution; no live canary
+**Risk:** HIGH �X enables future live Worker/BullMQ canary path; this slice itself did not execute canary
 **Registered:** 2026-07-08
-**Approved by:** Keith — explicit approval recorded 2026-07-08
+**Approved by:** Keith �X explicit approval recorded 2026-07-08
 **Checkpoint:** `docs/AGENT-HARNESS-06D1-CHECKPOINT.md`
 
 #### Dependencies
@@ -31350,11 +31502,11 @@ Close the live BullMQ canary gap from AGENT-HARNESS-06C. Identify whether a tool
 
 #### Why This Child Slice Exists
 
-AGENT-HARNESS-06D Step 2 (design document `docs/AGENT-HARNESS-06D-LIVE-WORKER-CANARY-DESIGN.md` §4) confirmed: **no existing tool-capable non-billing adapter exists.**
+AGENT-HARNESS-06D Step 2 (design document `docs/AGENT-HARNESS-06D-LIVE-WORKER-CANARY-DESIGN.md` ��4) confirmed: **no existing tool-capable non-billing adapter exists.**
 
-- `StubAIAdapter.supportsToolUse = false` — cannot activate the harness tool loop via live BullMQ job
+- `StubAIAdapter.supportsToolUse = false` �X cannot activate the harness tool loop via live BullMQ job
 - `AnthropicAdapter` and `OpenAIAdapter` have `supportsToolUse = true` but make real external API calls and incur billing
-- `DeepSeekAdapter`, `GroqAdapter`, `XAIAdapter` do not declare `supportsToolUse` — gate at `worker.processor.ts` line 789 fails
+- `DeepSeekAdapter`, `GroqAdapter`, `XAIAdapter` do not declare `supportsToolUse` �X gate at `worker.processor.ts` line 789 fails
 - No scripts or job-submission utilities exist to submit a controlled BullMQ job safely without billing
 
 **Root cause:** `adapter.supportsToolUse && adapter.executeWithTools` gate at `worker.processor.ts` line 789 cannot evaluate `true` without either a real billing provider or a new test-only adapter.
@@ -31363,22 +31515,22 @@ This child slice creates that adapter. Without it, AGENT-HARNESS-06D Step 3 (liv
 
 No runtime execution occurred in this registration step. No implementation files changed.
 
-#### Scope (Future Implementation — Step 2)
+#### Scope (Future Implementation �X Step 2)
 
 - Create `TestToolCapableStubAdapter` with `supportsToolUse = true`
-- Return deterministic tool calls: iteration 1 → `list_files`; iteration 2 → `read_file`; iteration 3 → `finishReason: 'completed'`
-- Make zero external API/provider calls — zero billing risk
-- Local/test/canary-only — clearly excluded from production use (guard: `NODE_ENV=production` blocks instantiation, or provider name `'test-harness-stub'` prevents accidental use)
+- Return deterministic tool calls: iteration 1 �� `list_files`; iteration 2 �� `read_file`; iteration 3 �� `finishReason: 'completed'`
+- Make zero external API/provider calls �X zero billing risk
+- Local/test/canary-only �X clearly excluded from production use (guard: `NODE_ENV=production` blocks instantiation, or provider name `'test-harness-stub'` prevents accidental use)
 - Wire into `getAdapter()` switch for `case 'test-harness-stub':` in `ai-execution.service.ts`
 - Add `'test-harness-stub'` to provider/adapter union types in `job.types.ts`
 - Include tests proving: no external provider calls, deterministic tool behavior, adapter isolated from production
-- Estimated scope: ~5 files, ~137 lines (per design document §8.2)
+- Estimated scope: ~5 files, ~137 lines (per design document ��8.2)
 
 #### Non-Goals (This Slice)
 
 - No runtime execution in registration (Step 1)
 - No live Worker/BullMQ canary execution in this slice
-- No env changes — `AGENT_HARNESS_ENABLE_TOOL_LOOP=true` not set
+- No env changes �X `AGENT_HARNESS_ENABLE_TOOL_LOOP=true` not set
 - No production activation
 - No paid provider/API calls
 - No frontend UI changes
@@ -31389,13 +31541,13 @@ No runtime execution occurred in this registration step. No implementation files
 - No AGENT-HARNESS-06D Step 3 execution in this slice
 
 **Workflow (3-Step Loop):**
-1. **Registration** — COMPLETE (2026-07-08) — Keith explicit approval recorded ("go"); why-06D1-exists documented; no runtime execution; no implementation files changed.
-2. **Implementation** — COMPLETE (2026-07-08) — `TestToolCapableStubAdapter` created; wired into provider routing; tests added and passing.
-3. **Consolidation/checkpoint** — COMPLETE (2026-07-08) — checkpoint created; TASKS.md/TASKS_BACKLOG_FULL.md/ROADMAP updated; AGENT-HARNESS-06D1 marked COMPLETE and LOCKED.
+1. **Registration** �X COMPLETE (2026-07-08) �X Keith explicit approval recorded ("go"); why-06D1-exists documented; no runtime execution; no implementation files changed.
+2. **Implementation** �X COMPLETE (2026-07-08) �X `TestToolCapableStubAdapter` created; wired into provider routing; tests added and passing.
+3. **Consolidation/checkpoint** �X COMPLETE (2026-07-08) �X checkpoint created; TASKS.md/TASKS_BACKLOG_FULL.md/ROADMAP updated; AGENT-HARNESS-06D1 marked COMPLETE and LOCKED.
 
 **Acceptance Criteria:**
 
-###### Registration (Step 1 — COMPLETE 2026-07-08)
+###### Registration (Step 1 �X COMPLETE 2026-07-08)
 - [x] AGENT-HARNESS-06D1 registered in TASKS.md with ACTIVE status
 - [x] AGENT-HARNESS-06D1 registered in TASKS_BACKLOG_FULL.md with matching content
 - [x] AINOW-EXECUTION-ROADMAP.md updated to reflect AGENT-HARNESS-06D1 as current ACTIVE child slice
@@ -31410,9 +31562,9 @@ No runtime execution occurred in this registration step. No implementation files
 - [x] One-active-task rule satisfied (06D1 is current active child slice; 06D parent remains ACTIVE)
 - [x] Live Worker/BullMQ canary not executed
 
-###### Implementation (Step 2 — COMPLETE 2026-07-08)
+###### Implementation (Step 2 �X COMPLETE 2026-07-08)
 - [x] `TestToolCapableStubAdapter` created with `supportsToolUse = true`
-- [x] Deterministic tool calls: `list_files` → `read_file` → `finishReason: 'completed'`
+- [x] Deterministic tool calls: `list_files` �� `read_file` �� `finishReason: 'completed'`
 - [x] Zero external API/provider calls verified
 - [x] Zero billing risk confirmed
 - [x] Wired into `getAdapter()` switch for `'test-harness-stub'` provider
@@ -31423,16 +31575,16 @@ No runtime execution occurred in this registration step. No implementation files
 - [x] No live canary executed in this step
 - [x] No env changes
 
-###### Consolidation / Checkpoint (Step 3 — COMPLETE 2026-07-08)
+###### Consolidation / Checkpoint (Step 3 �X COMPLETE 2026-07-08)
 - [x] AGENT-HARNESS-06D1 checkpoint document created (`docs/AGENT-HARNESS-06D1-CHECKPOINT.md`)
 - [x] AGENT-HARNESS-06D1 marked COMPLETE and LOCKED in TASKS.md
 - [x] AGENT-HARNESS-06D1 marked COMPLETE and LOCKED in TASKS_BACKLOG_FULL.md
 - [x] AINOW-EXECUTION-ROADMAP.md updated (06D1 COMPLETE and LOCKED; 06D ACTIVE; next step 06D Step 3 pending Keith approval)
 - [x] AGENT-HARNESS-06D parent remains ACTIVE (Step 3 not yet executed)
 
-**AGENT-HARNESS-06D1 status:** COMPLETE and LOCKED — 2026-07-08. All 3 steps complete. `TestToolCapableStubAdapter` created; routing/types wired; 34 suites / 646 tests passed; typecheck and build clean; no live canary; checkpoint: `docs/AGENT-HARNESS-06D1-CHECKPOINT.md`.
-**AGENT-HARNESS-06D status:** COMPLETE and LOCKED — 2026-07-08. All 4 steps complete. Live Worker/BullMQ canary PASS. Checkpoint: `docs/AGENT-HARNESS-06D-CHECKPOINT.md`.
-**AGENT-HARNESS-06C status:** COMPLETE and LOCKED — 2026-07-07.
+**AGENT-HARNESS-06D1 status:** COMPLETE and LOCKED �X 2026-07-08. All 3 steps complete. `TestToolCapableStubAdapter` created; routing/types wired; 34 suites / 646 tests passed; typecheck and build clean; no live canary; checkpoint: `docs/AGENT-HARNESS-06D1-CHECKPOINT.md`.
+**AGENT-HARNESS-06D status:** COMPLETE and LOCKED �X 2026-07-08. All 4 steps complete. Live Worker/BullMQ canary PASS. Checkpoint: `docs/AGENT-HARNESS-06D-CHECKPOINT.md`.
+**AGENT-HARNESS-06C status:** COMPLETE and LOCKED �X 2026-07-07.
 **AGENT-HARNESS-07 status:** COMPLETE and LOCKED (2026-07-07).
 
 ---
@@ -31445,14 +31597,14 @@ No runtime execution occurred in this registration step. No implementation files
 
 #### AGENT-HARNESS-06E: Full E2E Worker + API Gateway + Container-Manager Read-Only File Canary
 
-**Status:** COMPLETE and LOCKED — 2026-07-09
+**Status:** COMPLETE and LOCKED �X 2026-07-09
 **Task ID:** AGENT-HARNESS-06E
 **Family:** AGENT HARNESS / CANARY ACTIVATION
 **Priority:** High
-**Nature:** FULL E2E VALIDATION — live Worker/BullMQ + API Gateway + container-manager read-only file tool success canary
-**Risk:** HIGH — full local E2E runtime path involving Worker, BullMQ, API Gateway, container-manager, Redis, Postgres, and Docker workspace/container services
+**Nature:** FULL E2E VALIDATION �X live Worker/BullMQ + API Gateway + container-manager read-only file tool success canary
+**Risk:** HIGH �X full local E2E runtime path involving Worker, BullMQ, API Gateway, container-manager, Redis, Postgres, and Docker workspace/container services
 **Registered:** 2026-07-08
-**Approved by:** Keith — explicit approval recorded 2026-07-08 (registration); execution approved 2026-07-09
+**Approved by:** Keith �X explicit approval recorded 2026-07-08 (registration); execution approved 2026-07-09
 
 #### Dependencies
 
@@ -31464,14 +31616,14 @@ No runtime execution occurred in this registration step. No implementation files
 
 #### Why AGENT-HARNESS-06E Exists
 
-AGENT-HARNESS-06D validated the live Worker/BullMQ harness route: the full code path activated (route → config → loop → dispatcher → dispatch). Both `list_files` and `read_file` tool calls were dispatched. However, both returned `HANDLER_ERROR` because the API Gateway was not running during the 06D canary.
+AGENT-HARNESS-06D validated the live Worker/BullMQ harness route: the full code path activated (route �� config �� loop �� dispatcher �� dispatch). Both `list_files` and `read_file` tool calls were dispatched. However, both returned `HANDLER_ERROR` because the API Gateway was not running during the 06D canary.
 
 **What was NOT validated by AGENT-HARNESS-06D:**
 - Successful file handler response (file list returned, file contents read) via a live API Gateway + container-manager path
 - The tool handler HTTP call successfully reaching API Gateway and container-manager
 - Actual workspace file data returned to the harness loop
 
-**Root cause of the gap:** Tool handlers make HTTP calls to the API Gateway for file operations. With no API Gateway process running during 06D, these calls fail with connection refused → HANDLER_ERROR.
+**Root cause of the gap:** Tool handlers make HTTP calls to the API Gateway for file operations. With no API Gateway process running during 06D, these calls fail with connection refused �� HANDLER_ERROR.
 
 AGENT-HARNESS-06E closes this gap by running a full E2E canary with ALL required services running.
 
@@ -31479,7 +31631,7 @@ AGENT-HARNESS-06E closes this gap by running a full E2E canary with ALL required
 
 - Validate `list_files` returns actual controlled workspace file list (not HANDLER_ERROR)
 - Validate `read_file` returns actual controlled workspace file content (not HANDLER_ERROR)
-- Full E2E path: BullMQ job → Worker → harness loop → dispatcher → tool handler HTTP → API Gateway → container-manager → workspace filesystem → response back through harness
+- Full E2E path: BullMQ job �� Worker �� harness loop �� dispatcher �� tool handler HTTP �� API Gateway �� container-manager �� workspace filesystem �� response back through harness
 - Provider: `test-harness-stub` (zero billing, zero external API calls)
 - Read-only tools only: `list_files` + `read_file`
 - Browser smoke disabled
@@ -31499,14 +31651,14 @@ AGENT-HARNESS-06E closes this gap by running a full E2E canary with ALL required
 
 #### Workflow (4-Step Loop)
 
-1. **Registration** — COMPLETE (2026-07-08) — Keith explicit approval recorded ("approve"); scope, safety constraints, and why-06E-exists documented; no canary executed; no env changes; no implementation files changed; no runtime commands.
-2. **Full E2E readiness / service topology preflight** — COMPLETE (2026-07-08) — Service topology mapped; file tool call path traced; controlled session/workspace plan defined; PASS/FAIL/BLOCKED criteria defined; safety boundaries identified. Doc: `docs/AGENT-HARNESS-06E-E2E-PREFLIGHT.md`.
-3. **Controlled full E2E read-only file canary execution** — COMPLETE (2026-07-09) — Full E2E canary PASS: `list_files` SUCCESS (actual `["README.md", ".git/"]`); `read_file` SUCCESS (actual README.md content, 99 bytes result); `durationMs: 718`; `tokens: 0`; provider `test-harness-stub`; no paid calls; no .env changes; no production activation. Doc: `docs/AGENT-HARNESS-06E-E2E-CANARY-EXECUTION.md`.
-4. **Consolidation / checkpoint** — COMPLETE (2026-07-09) — Checkpoint created; TASKS.md, TASKS_BACKLOG_FULL.md, AINOW-EXECUTION-ROADMAP.md updated; AGENT-HARNESS-06E COMPLETE and LOCKED.
+1. **Registration** �X COMPLETE (2026-07-08) �X Keith explicit approval recorded ("approve"); scope, safety constraints, and why-06E-exists documented; no canary executed; no env changes; no implementation files changed; no runtime commands.
+2. **Full E2E readiness / service topology preflight** �X COMPLETE (2026-07-08) �X Service topology mapped; file tool call path traced; controlled session/workspace plan defined; PASS/FAIL/BLOCKED criteria defined; safety boundaries identified. Doc: `docs/AGENT-HARNESS-06E-E2E-PREFLIGHT.md`.
+3. **Controlled full E2E read-only file canary execution** �X COMPLETE (2026-07-09) �X Full E2E canary PASS: `list_files` SUCCESS (actual `["README.md", ".git/"]`); `read_file` SUCCESS (actual README.md content, 99 bytes result); `durationMs: 718`; `tokens: 0`; provider `test-harness-stub`; no paid calls; no .env changes; no production activation. Doc: `docs/AGENT-HARNESS-06E-E2E-CANARY-EXECUTION.md`.
+4. **Consolidation / checkpoint** �X COMPLETE (2026-07-09) �X Checkpoint created; TASKS.md, TASKS_BACKLOG_FULL.md, AINOW-EXECUTION-ROADMAP.md updated; AGENT-HARNESS-06E COMPLETE and LOCKED.
 
 #### Acceptance Criteria
 
-###### Registration (Step 1 — COMPLETE 2026-07-08)
+###### Registration (Step 1 �X COMPLETE 2026-07-08)
 - [x] AGENT-HARNESS-06E registered in TASKS.md with ACTIVE status
 - [x] AGENT-HARNESS-06E registered in TASKS_BACKLOG_FULL.md with matching content
 - [x] AINOW-EXECUTION-ROADMAP.md updated to reflect AGENT-HARNESS-06E as current ACTIVE task
@@ -31521,7 +31673,7 @@ AGENT-HARNESS-06E closes this gap by running a full E2E canary with ALL required
 - [x] No commands run
 - [x] Keith approval recorded
 
-###### Full E2E Readiness / Service Topology Preflight (Step 2 — COMPLETE 2026-07-08)
+###### Full E2E Readiness / Service Topology Preflight (Step 2 �X COMPLETE 2026-07-08)
 - [x] Exact local services needed identified (Postgres, Redis, API Gateway, AI Service worker, container-manager, Docker workspace/container)
 - [x] Safe startup commands documented
 - [x] Session/container/workspace setup requirements identified
@@ -31530,25 +31682,25 @@ AGENT-HARNESS-06E closes this gap by running a full E2E canary with ALL required
 - [x] No runtime execution in Step 2 (planning/preflight only)
 - [x] Keith approval recorded before Step 3
 
-###### Controlled Full E2E Read-Only File Canary Execution (Step 3 — COMPLETE 2026-07-09)
-- [x] `list_files` returns actual controlled workspace file list (not HANDLER_ERROR) — `["README.md", ".git/"]`
-- [x] `read_file` returns actual controlled workspace file content (not HANDLER_ERROR) — README.md, 64 bytes
+###### Controlled Full E2E Read-Only File Canary Execution (Step 3 �X COMPLETE 2026-07-09)
+- [x] `list_files` returns actual controlled workspace file list (not HANDLER_ERROR) �X `["README.md", ".git/"]`
+- [x] `read_file` returns actual controlled workspace file content (not HANDLER_ERROR) �X README.md, 64 bytes
 - [x] Provider: `test-harness-stub` (zero billing, zero external API calls)
-- [x] `AGENT_HARNESS_ENABLE_TOOL_LOOP` process-scoped only — NOT in any `.env` file
+- [x] `AGENT_HARNESS_ENABLE_TOOL_LOOP` process-scoped only �X NOT in any `.env` file
 - [x] No `write_file`, `delete_file`, `run_validation`, `browser_smoke` dispatched
 - [x] No paid provider/API calls
 - [x] No `.env` files modified
-- [x] Job completes without hanging or crashing — 729ms
+- [x] Job completes without hanging or crashing �X 729ms
 
-###### Consolidation / Checkpoint (Step 4 — COMPLETE 2026-07-09)
-- [x] AGENT-HARNESS-06E checkpoint document created — `docs/AGENT-HARNESS-06E-CHECKPOINT.md`
+###### Consolidation / Checkpoint (Step 4 �X COMPLETE 2026-07-09)
+- [x] AGENT-HARNESS-06E checkpoint document created �X `docs/AGENT-HARNESS-06E-CHECKPOINT.md`
 - [x] AGENT-HARNESS-06E marked COMPLETE and LOCKED in TASKS.md
 - [x] AGENT-HARNESS-06E marked COMPLETE and LOCKED in TASKS_BACKLOG_FULL.md
 - [x] AINOW-EXECUTION-ROADMAP.md updated
 - [x] Full E2E file canary result recorded accurately
 
-**AGENT-HARNESS-06E status:** COMPLETE and LOCKED — 2026-07-09. All 4 steps complete. Full E2E canary PASS: `list_files`/`read_file` SUCCESS (actual file data, not HANDLER_ERROR); `durationMs: 718`; `tokens: 0`; no paid calls; no .env changes; no production activation. Checkpoint: `docs/AGENT-HARNESS-06E-CHECKPOINT.md`.
-**AGENT-HARNESS-06D status:** COMPLETE and LOCKED — 2026-07-08.
-**AGENT-HARNESS-06D1 status:** COMPLETE and LOCKED — 2026-07-08 (child slice).
-**AGENT-HARNESS-06C status:** COMPLETE and LOCKED — 2026-07-07.
+**AGENT-HARNESS-06E status:** COMPLETE and LOCKED �X 2026-07-09. All 4 steps complete. Full E2E canary PASS: `list_files`/`read_file` SUCCESS (actual file data, not HANDLER_ERROR); `durationMs: 718`; `tokens: 0`; no paid calls; no .env changes; no production activation. Checkpoint: `docs/AGENT-HARNESS-06E-CHECKPOINT.md`.
+**AGENT-HARNESS-06D status:** COMPLETE and LOCKED �X 2026-07-08.
+**AGENT-HARNESS-06D1 status:** COMPLETE and LOCKED �X 2026-07-08 (child slice).
+**AGENT-HARNESS-06C status:** COMPLETE and LOCKED �X 2026-07-07.
 **AGENT-HARNESS-07 status:** COMPLETE and LOCKED (2026-07-07).
