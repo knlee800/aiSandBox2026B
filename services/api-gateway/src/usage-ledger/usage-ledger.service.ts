@@ -719,6 +719,65 @@ export class UsageLedgerService {
   }
 
   /**
+   * BILLING-READY-04C: Trigger credit deduction for a completed execution.
+   *
+   * Called by the internal accounting endpoint after worker finalization.
+   * Reads the usage record by executionId, validates status is 'completed',
+   * then delegates to the existing emitDeductionAttempt() path.
+   *
+   * Guardrails:
+   *  - Missing record → safe skip (returns result indicating skipped)
+   *  - Non-completed status → safe skip (no deduction)
+   *  - Completed status → calls emitDeductionAttempt (existing deduction path)
+   *  - Zero-token completed → still triggers deduction (produces 0-credit audit record)
+   *  - Does not mutate execution_status
+   *  - Idempotency: PersistentCreditDeductionGateway deduplicates via sourceEventId
+   */
+  async triggerDeductionForExecution(
+    executionId: string,
+  ): Promise<{ triggered: boolean; reason: string }> {
+    const record = await this.usageRecordRepository.findOne({
+      where: { executionId },
+    });
+
+    if (!record) {
+      this.logger.warn(
+        JSON.stringify({
+          event: 'finalize_accounting.record_not_found',
+          timestamp: new Date().toISOString(),
+          executionId,
+        }),
+      );
+      return { triggered: false, reason: 'record_not_found' };
+    }
+
+    if (record.executionStatus !== 'completed') {
+      this.logger.log(
+        JSON.stringify({
+          event: 'finalize_accounting.skipped_non_completed',
+          timestamp: new Date().toISOString(),
+          executionId,
+          executionStatus: record.executionStatus,
+        }),
+      );
+      return { triggered: false, reason: `status_${record.executionStatus}` };
+    }
+
+    await this.emitDeductionAttempt(record);
+
+    this.logger.log(
+      JSON.stringify({
+        event: 'finalize_accounting.deduction_triggered',
+        timestamp: new Date().toISOString(),
+        executionId,
+        tokensUsed: record.tokensUsed ?? 0,
+      }),
+    );
+
+    return { triggered: true, reason: 'completed' };
+  }
+
+  /**
    * BILLING-READY-03C2: Emit a credit deduction attempt after execution completion.
    *
    * Guardrails:

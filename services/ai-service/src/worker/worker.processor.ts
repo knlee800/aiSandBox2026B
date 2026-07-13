@@ -1057,6 +1057,18 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
           });
 
           this.logger.log(`Ledger finalized executionId=${executionId}`);
+
+          // BILLING-READY-04C: Notify API Gateway to trigger credit deduction.
+          // Placed AFTER post-completion cancel check (lines above) and AFTER
+          // completion SQL write. If cancel won, we returned early above.
+          // Errors are suppressed — must not fail the completed job.
+          try {
+            await this.apiGatewayHttpClient.notifyExecutionComplete(executionId);
+          } catch (notifyError) {
+            this.logger.warn(
+              `Accounting notification failed (suppressed) executionId=${executionId}: ${notifyError?.message ?? String(notifyError)}`,
+            );
+          }
         } catch (error) {
           cancelled = true;
 

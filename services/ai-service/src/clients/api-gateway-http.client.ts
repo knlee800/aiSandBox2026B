@@ -335,6 +335,36 @@ export class ApiGatewayHttpClient {
 
     return response.data;
   }
+  /**
+   * BILLING-READY-04C: Notify API Gateway that an execution completed successfully
+   * so the accounting finalization path can trigger credit deduction.
+   *
+   * Errors are caught and logged — they must not propagate to the worker
+   * finalization flow, since the execution is already completed in the DB.
+   *
+   * @param executionId - Execution UUID that completed
+   */
+  async notifyExecutionComplete(executionId: string): Promise<void> {
+    try {
+      await firstValueFrom(
+        this.httpService.post(
+          `${this.apiGatewayUrl}/api/internal/executions/${executionId}/finalize-accounting`,
+          {},
+          {
+            headers: {
+              'X-Internal-Service-Key': this.internalServiceKey,
+            },
+          },
+        ),
+      );
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      // Suppressed: accounting notification failure must not break completed execution
+      console.warn(
+        `[ApiGatewayHttpClient] notifyExecutionComplete failed for executionId=${executionId}: ${errorMessage}`,
+      );
+    }
+  }
 }
 
 export interface BrowserSmokeResult {

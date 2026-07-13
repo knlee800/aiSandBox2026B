@@ -914,6 +914,44 @@ describe('UsageLedgerService', () => {
       expect(mockGateway.applyDeduction).toHaveBeenCalledTimes(1);
     });
 
+    it('should use zero tokensUsed when record.tokensUsed is null', async () => {
+      const existingRecord = {
+        executionId: 'exec-null-tokens',
+        userId: 'user-null',
+        apiKeyId: 'key-null',
+        sessionId: 'sess-null',
+        requestId: null,
+        model: 'claude-3',
+        tokensUsed: null,
+        executionDurationMs: 1000,
+        executionStatus: 'pending',
+        metadata: {},
+      };
+
+      gatewayRepo.findOne.mockResolvedValue(existingRecord as any);
+      gatewayRepo.save.mockResolvedValue({
+        ...existingRecord,
+        model: 'claude-3',
+        tokensUsed: 0,
+        executionDurationMs: 1000,
+        executionStatus: 'completed',
+        metadata: { aiExecutionResult: { output: 'test', tokensUsed: 0, model: 'claude-3', fileActions: [] } },
+      } as any);
+
+      await serviceWithGateway.updateExecutionResult({
+        executionId: 'exec-null-tokens',
+        model: 'claude-3',
+        tokensUsed: 0,
+        executionDurationMs: 1000,
+        executionStatus: 'completed',
+        output: 'test',
+      });
+
+      expect(mockGateway.applyDeduction).toHaveBeenCalledTimes(1);
+      const event = mockGateway.applyDeduction.mock.calls[0][0];
+      expect(event.lineItems[0].unitCount).toBe(0);
+    });
+
     it('should use executionId as sourceEventId (single deduction per execution)', async () => {
       const existingRecord = {
         executionId: 'unique-exec-id-42',
@@ -949,6 +987,259 @@ describe('UsageLedgerService', () => {
 
       expect(mockGateway.applyDeduction).toHaveBeenCalledTimes(1);
       expect(mockGateway.applyDeduction.mock.calls[0][0].sourceEventId).toBe('unique-exec-id-42');
+    });
+  });
+
+  describe('BILLING-READY-04C: triggerDeductionForExecution', () => {
+    let serviceWithGateway: UsageLedgerService;
+    let gatewayRepo: jest.Mocked<Repository<UsageRecord>>;
+    let mockGateway: { applyDeduction: jest.Mock };
+
+    beforeEach(async () => {
+      mockGateway = {
+        applyDeduction: jest.fn().mockResolvedValue({
+          source: 'usage_ledger',
+          sourceEventId: 'exec-trigger',
+          ownerId: 'user-trigger',
+          occurredAt: new Date(),
+          totalCreditsRequested: 0,
+          totalCreditsApplied: 0,
+          totalCreditsOverflow: 0,
+          lineItems: [],
+        }),
+      };
+
+      const gatewayMockRepo = {
+        create: jest.fn(),
+        save: jest.fn(),
+        findOne: jest.fn(),
+        find: jest.fn(),
+        update: jest.fn(),
+        createQueryBuilder: jest.fn(),
+      };
+
+      const module: TestingModule = await Test.createTestingModule({
+        providers: [
+          UsageLedgerService,
+          {
+            provide: getRepositoryToken(UsageRecord),
+            useValue: gatewayMockRepo,
+          },
+          {
+            provide: CreditDeductionGateway,
+            useValue: mockGateway,
+          },
+        ],
+      }).compile();
+
+      serviceWithGateway = module.get<UsageLedgerService>(UsageLedgerService);
+      gatewayRepo = module.get(getRepositoryToken(UsageRecord));
+    });
+
+    it('should call existing deduction path for completed execution', async () => {
+      const completedRecord = {
+        executionId: 'exec-trigger-1',
+        userId: 'user-trigger-1',
+        apiKeyId: 'key-1',
+        sessionId: 'sess-1',
+        model: 'claude-3',
+        tokensUsed: 500,
+        executionDurationMs: 2000,
+        executionStatus: 'completed',
+        metadata: {},
+      };
+
+      gatewayRepo.findOne.mockResolvedValue(completedRecord as any);
+
+      const result = await serviceWithGateway.triggerDeductionForExecution('exec-trigger-1');
+
+      expect(result.triggered).toBe(true);
+      expect(result.reason).toBe('completed');
+      expect(mockGateway.applyDeduction).toHaveBeenCalledTimes(1);
+      const event = mockGateway.applyDeduction.mock.calls[0][0];
+      expect(event.sourceEventId).toBe('exec-trigger-1');
+      expect(event.ownerId).toBe('user-trigger-1');
+      expect(event.lineItems[0].unitCount).toBe(500);
+    });
+
+    it('should trigger deduction for completed zero-token execution', async () => {
+      const zeroTokenRecord = {
+        executionId: 'exec-zero-tok',
+        userId: 'user-zero',
+        apiKeyId: 'key-zero',
+        sessionId: 'sess-zero',
+        model: 'stub',
+        tokensUsed: 0,
+        executionDurationMs: 100,
+        executionStatus: 'completed',
+        metadata: {},
+      };
+
+      gatewayRepo.findOne.mockResolvedValue(zeroTokenRecord as any);
+
+      const result = await serviceWithGateway.triggerDeductionForExecution('exec-zero-tok');
+
+      expect(result.triggered).toBe(true);
+      expect(result.reason).toBe('completed');
+      expect(mockGateway.applyDeduction).toHaveBeenCalledTimes(1);
+      const event = mockGateway.applyDeduction.mock.calls[0][0];
+      expect(event.lineItems[0].unitCount).toBe(0);
+    });
+
+    it('should NOT deduct for failed execution', async () => {
+      const failedRecord = {
+        executionId: 'exec-failed',
+        userId: 'user-failed',
+        executionStatus: 'failed',
+        metadata: {},
+      };
+
+      gatewayRepo.findOne.mockResolvedValue(failedRecord as any);
+
+      const result = await serviceWithGateway.triggerDeductionForExecution('exec-failed');
+
+      expect(result.triggered).toBe(false);
+      expect(result.reason).toBe('status_failed');
+      expect(mockGateway.applyDeduction).not.toHaveBeenCalled();
+    });
+
+    it('should NOT deduct for cancelled execution', async () => {
+      const cancelledRecord = {
+        executionId: 'exec-cancelled',
+        userId: 'user-cancelled',
+        executionStatus: 'cancelled',
+        metadata: {},
+      };
+
+      gatewayRepo.findOne.mockResolvedValue(cancelledRecord as any);
+
+      const result = await serviceWithGateway.triggerDeductionForExecution('exec-cancelled');
+
+      expect(result.triggered).toBe(false);
+      expect(result.reason).toBe('status_cancelled');
+      expect(mockGateway.applyDeduction).not.toHaveBeenCalled();
+    });
+
+    it('should NOT deduct for cancel_requested execution', async () => {
+      const cancelRequestedRecord = {
+        executionId: 'exec-cancel-req',
+        userId: 'user-cancel-req',
+        executionStatus: 'cancel_requested',
+        metadata: {},
+      };
+
+      gatewayRepo.findOne.mockResolvedValue(cancelRequestedRecord as any);
+
+      const result = await serviceWithGateway.triggerDeductionForExecution('exec-cancel-req');
+
+      expect(result.triggered).toBe(false);
+      expect(result.reason).toBe('status_cancel_requested');
+      expect(mockGateway.applyDeduction).not.toHaveBeenCalled();
+    });
+
+    it('should safely skip when no usage record exists', async () => {
+      gatewayRepo.findOne.mockResolvedValue(null);
+
+      const result = await serviceWithGateway.triggerDeductionForExecution('exec-missing');
+
+      expect(result.triggered).toBe(false);
+      expect(result.reason).toBe('record_not_found');
+      expect(mockGateway.applyDeduction).not.toHaveBeenCalled();
+    });
+
+    it('should use executionId as sourceEventId (idempotency key)', async () => {
+      const record = {
+        executionId: 'exec-idemp-04c',
+        userId: 'user-idemp',
+        apiKeyId: 'key-idemp',
+        sessionId: 'sess-idemp',
+        model: 'claude-3',
+        tokensUsed: 100,
+        executionDurationMs: 500,
+        executionStatus: 'completed',
+        metadata: {},
+      };
+
+      gatewayRepo.findOne.mockResolvedValue(record as any);
+
+      await serviceWithGateway.triggerDeductionForExecution('exec-idemp-04c');
+
+      expect(mockGateway.applyDeduction).toHaveBeenCalledTimes(1);
+      expect(mockGateway.applyDeduction.mock.calls[0][0].sourceEventId).toBe('exec-idemp-04c');
+    });
+
+    it('should NOT deduct for timeout execution', async () => {
+      const timeoutRecord = {
+        executionId: 'exec-timeout',
+        userId: 'user-timeout',
+        executionStatus: 'timeout',
+        metadata: {},
+      };
+
+      gatewayRepo.findOne.mockResolvedValue(timeoutRecord as any);
+
+      const result = await serviceWithGateway.triggerDeductionForExecution('exec-timeout');
+
+      expect(result.triggered).toBe(false);
+      expect(result.reason).toBe('status_timeout');
+      expect(mockGateway.applyDeduction).not.toHaveBeenCalled();
+    });
+
+    it('should NOT deduct for pending execution', async () => {
+      const pendingRecord = {
+        executionId: 'exec-pending',
+        userId: 'user-pending',
+        executionStatus: 'pending',
+        metadata: {},
+      };
+
+      gatewayRepo.findOne.mockResolvedValue(pendingRecord as any);
+
+      const result = await serviceWithGateway.triggerDeductionForExecution('exec-pending');
+
+      expect(result.triggered).toBe(false);
+      expect(result.reason).toBe('status_pending');
+      expect(mockGateway.applyDeduction).not.toHaveBeenCalled();
+    });
+
+    it('should NOT deduct for running execution', async () => {
+      const runningRecord = {
+        executionId: 'exec-running',
+        userId: 'user-running',
+        executionStatus: 'running',
+        metadata: {},
+      };
+
+      gatewayRepo.findOne.mockResolvedValue(runningRecord as any);
+
+      const result = await serviceWithGateway.triggerDeductionForExecution('exec-running');
+
+      expect(result.triggered).toBe(false);
+      expect(result.reason).toBe('status_running');
+      expect(mockGateway.applyDeduction).not.toHaveBeenCalled();
+    });
+
+    it('should handle null tokensUsed as 0 for completed execution', async () => {
+      const nullTokensRecord = {
+        executionId: 'exec-null-tokens-04c',
+        userId: 'user-null-tok',
+        apiKeyId: 'key-null-tok',
+        sessionId: 'sess-null-tok',
+        model: 'claude-3',
+        tokensUsed: null,
+        executionDurationMs: 500,
+        executionStatus: 'completed',
+        metadata: {},
+      };
+
+      gatewayRepo.findOne.mockResolvedValue(nullTokensRecord as any);
+
+      const result = await serviceWithGateway.triggerDeductionForExecution('exec-null-tokens-04c');
+
+      expect(result.triggered).toBe(true);
+      expect(mockGateway.applyDeduction).toHaveBeenCalledTimes(1);
+      const event = mockGateway.applyDeduction.mock.calls[0][0];
+      expect(event.lineItems[0].unitCount).toBe(0);
     });
   });
 });

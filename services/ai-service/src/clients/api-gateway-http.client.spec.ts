@@ -380,6 +380,46 @@ describe('ApiGatewayHttpClient - workspace file methods', () => {
     });
   });
 
+  describe('notifyExecutionComplete', () => {
+    it('posts to /api/internal/executions/:executionId/finalize-accounting with internal service key', async () => {
+      httpService.post.mockReturnValue(
+        of(makeAxiosResponse({ executionId: 'exec-1', triggered: true, reason: 'completed' })),
+      );
+
+      await client.notifyExecutionComplete('exec-1');
+
+      expect(httpService.post).toHaveBeenCalledWith(
+        'http://localhost:4000/api/internal/executions/exec-1/finalize-accounting',
+        {},
+        {
+          headers: { 'X-Internal-Service-Key': 'test-key-123' },
+        },
+      );
+    });
+
+    it('suppresses errors and does not throw', async () => {
+      httpService.post.mockReturnValue(
+        throwError(() => new Error('Network failure')),
+      );
+
+      await expect(client.notifyExecutionComplete('exec-err')).resolves.toBeUndefined();
+    });
+
+    it('logs warning on failure', async () => {
+      const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+      httpService.post.mockReturnValue(
+        throwError(() => new Error('Service unavailable')),
+      );
+
+      await client.notifyExecutionComplete('exec-warn');
+
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('notifyExecutionComplete failed for executionId=exec-warn'),
+      );
+      warnSpy.mockRestore();
+    });
+  });
+
   describe('runBrowserSmoke', () => {
     it('preserves timeout and includes signal in runBrowserSmoke request config', async () => {
       httpService.post.mockReturnValue(

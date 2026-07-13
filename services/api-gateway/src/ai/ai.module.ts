@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AIExecutionController } from './ai-execution.controller';
+import { InternalAccountingController } from './internal-accounting.controller';
 import { AIServiceHttpClient } from '../clients/ai-service-http.client';
 import { AuthModule } from '../auth/auth.module';
 import { QuotaModule } from '../quota/quota.module';
@@ -50,7 +51,7 @@ import { CreditBalanceGuardModule } from '../billing/credit-balance-guard.module
     ProjectRepoDocsModule, // AI-CONTEXT-04C: Resolve registered project repo docs
     CreditBalanceGuardModule, // BILLING-READY-04A: Credit balance gate
   ],
-  controllers: [AIExecutionController],
+  controllers: [AIExecutionController, InternalAccountingController],
   providers: [
     AIServiceHttpClient,
     ContainerManagerHttpClient,

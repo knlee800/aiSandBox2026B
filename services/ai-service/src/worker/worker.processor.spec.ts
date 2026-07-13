@@ -744,6 +744,146 @@ describe('Agent Harness 03A: read_file/list_files handler registration', () => {
   });
 });
 
+describe('BILLING-READY-04C: worker accounting notification placement', () => {
+  function getWorkerSource(): string {
+    return require('fs').readFileSync(
+      require('path').join(__dirname, 'worker.processor.ts'),
+      'utf-8',
+    );
+  }
+
+  it('calls notifyExecutionComplete after the post-completion cancel check passes', () => {
+    const workerSource = getWorkerSource();
+
+    const postCompletionCancelCheck = workerSource.indexOf(
+      "if (statusCheck[0]?.execution_status === 'cancel_requested')",
+    );
+    expect(postCompletionCancelCheck).toBeGreaterThan(-1);
+
+    const completionSqlWrite = workerSource.indexOf(
+      "SET execution_status = 'completed'",
+    );
+    expect(completionSqlWrite).toBeGreaterThan(-1);
+
+    const notifyCall = workerSource.indexOf('this.apiGatewayHttpClient.notifyExecutionComplete(executionId)');
+    expect(notifyCall).toBeGreaterThan(-1);
+
+    expect(notifyCall).toBeGreaterThan(postCompletionCancelCheck);
+    expect(notifyCall).toBeGreaterThan(completionSqlWrite);
+  });
+
+  it('does not call notifyExecutionComplete in failed execution path', () => {
+    const workerSource = getWorkerSource();
+
+    const failedPathStart = workerSource.indexOf("execution_status = 'failed'");
+    expect(failedPathStart).toBeGreaterThan(-1);
+
+    const failedSection = workerSource.substring(
+      workerSource.lastIndexOf("SET execution_status = 'failed'"),
+    );
+    const throwIndex = failedSection.indexOf('throw error');
+    const failedBlock = failedSection.substring(0, throwIndex + 50);
+
+    expect(failedBlock).not.toContain('notifyExecutionComplete');
+  });
+
+  it('does not call notifyExecutionComplete in post-completion cancel-win path', () => {
+    const workerSource = getWorkerSource();
+
+    const cancelCheckIndex = workerSource.indexOf(
+      "if (statusCheck[0]?.execution_status === 'cancel_requested')",
+    );
+    expect(cancelCheckIndex).toBeGreaterThan(-1);
+
+    const cancelBlock = workerSource.substring(cancelCheckIndex, cancelCheckIndex + 500);
+    const returnIndex = cancelBlock.indexOf('return;');
+    const cancelWinBlock = cancelBlock.substring(0, returnIndex + 10);
+
+    expect(cancelWinBlock).not.toContain('notifyExecutionComplete');
+  });
+
+  it('wraps notifyExecutionComplete in try/catch for error suppression', () => {
+    const workerSource = getWorkerSource();
+
+    const notifyIndex = workerSource.indexOf('notifyExecutionComplete(executionId)');
+    expect(notifyIndex).toBeGreaterThan(-1);
+
+    const surroundingCode = workerSource.substring(notifyIndex - 200, notifyIndex + 300);
+    expect(surroundingCode).toContain('try {');
+    expect(surroundingCode).toContain('} catch (notifyError)');
+    expect(surroundingCode).toContain('suppressed');
+  });
+
+  it('notifyExecutionComplete is called for both harness and plain execution paths', () => {
+    const workerSource = getWorkerSource();
+    const notifyOccurrences = (workerSource.match(/notifyExecutionComplete\(executionId\)/g) || []).length;
+    expect(notifyOccurrences).toBe(1);
+
+    const completionSqlIndex = workerSource.indexOf("SET execution_status = 'completed'");
+    const notifyIndex = workerSource.indexOf('notifyExecutionComplete(executionId)');
+    expect(notifyIndex).toBeGreaterThan(completionSqlIndex);
+  });
+
+  it('does not call notifyExecutionComplete in timeout path', () => {
+    const workerSource = getWorkerSource();
+    const timeoutSection = workerSource.substring(
+      workerSource.indexOf("SET execution_status = 'timeout'"),
+      workerSource.indexOf("SET execution_status = 'timeout'") + 400,
+    );
+    expect(timeoutSection).not.toContain('notifyExecutionComplete');
+  });
+
+  it('does not call notifyExecutionComplete in AbortError cancel path', () => {
+    const workerSource = getWorkerSource();
+    const abortSection = workerSource.substring(
+      workerSource.indexOf("error.name === 'AbortError'"),
+    );
+    const abortReturnIndex = abortSection.indexOf('return;');
+    const abortBlock = abortSection.substring(0, abortReturnIndex + 10);
+    expect(abortBlock).not.toContain('notifyExecutionComplete');
+  });
+
+  it('does not call notifyExecutionComplete in cancel-before-start path', () => {
+    const workerSource = getWorkerSource();
+    const cancelBeforeStartIndex = workerSource.indexOf('Execution cancelled before start');
+    expect(cancelBeforeStartIndex).toBeGreaterThan(-1);
+
+    const cancelBeforeStartBlock = workerSource.substring(
+      cancelBeforeStartIndex - 300,
+      cancelBeforeStartIndex + 50,
+    );
+    expect(cancelBeforeStartBlock).not.toContain('notifyExecutionComplete');
+  });
+
+  it('preserves AGENT-PLATFORM-06 identity fields in completion metadata', () => {
+    const workerSource = getWorkerSource();
+    expect(workerSource).toContain('nextMetadata.agentRole');
+    expect(workerSource).toContain('nextMetadata.builderProfileId');
+    expect(workerSource).toContain('nextMetadata.collaborationRunId');
+    expect(workerSource).toContain('nextMetadata.referralTraceId');
+  });
+
+  it('preserves AGENT-PLATFORM-07C2 orchestration fields in completion metadata', () => {
+    const workerSource = getWorkerSource();
+    expect(workerSource).toContain('nextMetadata.parentReferralTraceId');
+    expect(workerSource).toContain('nextMetadata.referringBuilderProfileId');
+    expect(workerSource).toContain('nextMetadata.orchestrationPriority');
+    expect(workerSource).toContain('nextMetadata.referralId');
+    expect(workerSource).toContain('nextMetadata.isReferralExecution');
+  });
+
+  it('does not touch AGENT-HARNESS write canary', () => {
+    const workerSource = getWorkerSource();
+    const notifySection = workerSource.substring(
+      workerSource.indexOf('notifyExecutionComplete'),
+      workerSource.indexOf('notifyExecutionComplete') + 500,
+    );
+    expect(notifySection).not.toContain('AGENT_HARNESS_ENABLE_TOOL_LOOP');
+    expect(notifySection).not.toContain('writeCanary');
+    expect(notifySection).not.toContain('enableToolLoop');
+  });
+});
+
 describe('Agent Harness 05C9: structured audit events wiring', () => {
   function getWorkerSource(): string {
     return require('fs').readFileSync(
