@@ -35654,7 +35654,7 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 
 **Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` �X controls cross-family priority order; Knowledge before Collaboration before Billing.
 
-**Current stage:** BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
+**Current stage:** BILLING-READY-05A ACTIVE — Step 1 COMPLETE (Registration — 2026-07-13). BILLING-READY-05 ACTIVE — Steps 1–2 COMPLETE (2026-07-13) — Keith approved split into 05A–05G — next: 05A Step 2 provider configuration/contracts readiness review. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 �X ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED �X 2026-07-04)
@@ -36296,7 +36296,7 @@ This task produces the authoritative plan for how multiple Builder Agents can co
 **AGENT-HARNESS-07 status:** COMPLETE and LOCKED (2026-07-07) �X Per-Builder Harness Config Adapter. All 3 child slices COMPLETE and LOCKED: 07A, 07B, 07C. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
 **AGENT-HARNESS-06C status:** Not registered. Deferred �X prerequisite (AGENT-HARNESS-07) is now COMPLETE and LOCKED; AGENT-HARNESS-06C still deferred until Keith explicitly approves canary activation.
 **Multi-builder collaboration/runtime orchestration status:** AGENT-PLATFORM-07F3 COMPLETE and LOCKED (2026-07-12) �X all 3 steps complete �X parent consolidation checkpoint. Checkpoint: `docs/AGENT-PLATFORM-07F3-CHECKPOINT.md`. AGENT-PLATFORM-07F2 COMPLETE and LOCKED (2026-07-10) �X all 4 steps complete �X cancel signal path canary PASS �X controlled PostgreSQL cancel SQL validated; `running` �� `cancel_requested` transition confirmed; negative test (completed row) confirmed 0 rows updated; cleanup complete. Checkpoint: `docs/AGENT-PLATFORM-07F2-CHECKPOINT.md`. AGENT-PLATFORM-07F1 COMPLETE and LOCKED (2026-07-10) �X all 4 steps complete. Live runtime canary PASS: queue transport + metadata preservation; 9 orchestration fields survived BullMQ transport; `usage_records.metadata` JSONB verified. Execution ID: 8da5403a-f20e-480e-b7d8-196b18f7faef. stub provider; zero tokens; zero provider/API calls. Cleanup complete. Checkpoint: `docs/AGENT-PLATFORM-07F1-CHECKPOINT.md`. Parent AGENT-PLATFORM-07F COMPLETE and LOCKED (2026-07-12) �X all child slices: 07F1 COMPLETE and LOCKED, 07F2 COMPLETE and LOCKED, 07F3 COMPLETE and LOCKED. Checkpoint: `docs/AGENT-PLATFORM-07F-CHECKPOINT.md`. No ACTIVE task. Next recommended roadmap item: BILLING-READY-04+ �X not registered. AGENT-HARNESS write canary remains a separate track. AGENT-PLATFORM-07E COMPLETE and LOCKED (2026-07-10). All 4 steps complete. Unit/in-process canary PASS: 16 canary tests (orchestration.canary.spec.ts) + 40 regression tests (orchestration.service.spec.ts) + TypeScript clean. Checkpoint: `docs/AGENT-PLATFORM-07E-CHECKPOINT.md`. AGENT-PLATFORM-07D COMPLETE and LOCKED (2026-07-10). All 4 steps complete. Collaboration/referral audit events: `InMemoryOrchestrationAuditRecorder` created; 8 event types emitted at OrchestrationService lifecycle transitions; 40 tests pass; TypeScript clean. Checkpoint: `docs/AGENT-PLATFORM-07D-CHECKPOINT.md`. AGENT-PLATFORM-07C3 COMPLETE and LOCKED (2026-07-10). Parent AGENT-PLATFORM-07C COMPLETE and LOCKED (2026-07-10). All 3 child slices COMPLETE and LOCKED: 07C1 COMPLETE and LOCKED (2026-07-09), 07C2 COMPLETE and LOCKED (2026-07-09), 07C3 COMPLETE and LOCKED (2026-07-10). AGENT-PLATFORM-07B COMPLETE and LOCKED �X 2026-07-09. AGENT-PLATFORM-07A COMPLETE and LOCKED �X 2026-07-09. AGENT-PLATFORM-07 COMPLETE and LOCKED �X 2026-07-09. AGENT-PLATFORM-06 COMPLETE and LOCKED �X 2026-07-09. AGENT-PLATFORM-05 COMPLETE and LOCKED �X 2026-07-09. AGENT-HARNESS write canary remains a separate track.
-**BILLING-READY-04 status:** COMPLETE and LOCKED — 2026-07-13. All 4 steps complete. All child slices COMPLETE and LOCKED: 04A COMPLETE and LOCKED (2026-07-13), 04B COMPLETE and LOCKED (2026-07-13), 04C COMPLETE and LOCKED (2026-07-13), 04D COMPLETE and LOCKED (2026-07-13). Regression matrix PASS — 12/12 commands. Parent checkpoint: `docs/BILLING-READY-04-CHECKPOINT.md`. Child checkpoints: `docs/BILLING-READY-04A-CHECKPOINT.md`, `docs/BILLING-READY-04B-CHECKPOINT.md`, `docs/BILLING-READY-04C-CHECKPOINT.md`, `docs/BILLING-READY-04D-CHECKPOINT.md`. No Stripe/payment/provider. No migration. No frontend. AGENT-HARNESS write canary remains a separate track. Next recommended roadmap item: BILLING-READY-05 — not registered.
+**BILLING-READY-04 status:** COMPLETE and LOCKED — 2026-07-13. All 4 steps complete. All child slices COMPLETE and LOCKED: 04A COMPLETE and LOCKED (2026-07-13), 04B COMPLETE and LOCKED (2026-07-13), 04C COMPLETE and LOCKED (2026-07-13), 04D COMPLETE and LOCKED (2026-07-13). Regression matrix PASS — 12/12 commands. Parent checkpoint: `docs/BILLING-READY-04-CHECKPOINT.md`. Child checkpoints: `docs/BILLING-READY-04A-CHECKPOINT.md`, `docs/BILLING-READY-04B-CHECKPOINT.md`, `docs/BILLING-READY-04C-CHECKPOINT.md`, `docs/BILLING-READY-04D-CHECKPOINT.md`. No Stripe/payment/provider. No migration. No frontend. AGENT-HARNESS write canary remains a separate track. **BILLING-READY-05 ACTIVE — Step 1 COMPLETE (Registration — 2026-07-13).**
 
 ---
 
@@ -40643,7 +40643,7 @@ All close criteria for BILLING-READY-03 are satisfied. Parent is COMPLETE and LO
 
 **Checkpoint:** `docs/BILLING-READY-03D3-CHECKPOINT.md` �X created 2026-07-07. See `docs/BILLING-READY-03D3-CHECKPOINT.md`.
 
-**BILLING-READY-04 status:** COMPLETE and LOCKED — 2026-07-13. All 4 steps complete. All child slices COMPLETE and LOCKED: 04A/04B/04C/04D. Parent checkpoint: `docs/BILLING-READY-04-CHECKPOINT.md`. AGENT-HARNESS write canary remains a separate track. Next recommended roadmap item: BILLING-READY-05 — not registered.
+**BILLING-READY-04 status:** COMPLETE and LOCKED — 2026-07-13. All 4 steps complete. All child slices COMPLETE and LOCKED: 04A/04B/04C/04D. Parent checkpoint: `docs/BILLING-READY-04-CHECKPOINT.md`. AGENT-HARNESS write canary remains a separate track. **BILLING-READY-05 ACTIVE — Step 1 COMPLETE (Registration — 2026-07-13).**
 
 ---
 
@@ -40783,7 +40783,7 @@ BILLING-READY-04 splits into 4 child slices per `docs/BILLING-READY-04-ENFORCEME
 
 **AGENT-HARNESS write canary remains a separate track** �X not registered, not part of BILLING-READY-04.
 
-**BILLING-READY-04 status:** COMPLETE and LOCKED — 2026-07-13. All 4 steps complete. All child slices COMPLETE and LOCKED: 04A COMPLETE and LOCKED (2026-07-13), 04B COMPLETE and LOCKED (2026-07-13), 04C COMPLETE and LOCKED (2026-07-13), 04D COMPLETE and LOCKED (2026-07-13). Regression matrix PASS — 12/12 commands. Parent checkpoint: `docs/BILLING-READY-04-CHECKPOINT.md`. Child checkpoints: `docs/BILLING-READY-04A-CHECKPOINT.md`, `docs/BILLING-READY-04B-CHECKPOINT.md`, `docs/BILLING-READY-04C-CHECKPOINT.md`, `docs/BILLING-READY-04D-CHECKPOINT.md`. No Stripe/payment/provider. No migration. No frontend. AGENT-HARNESS write canary remains a separate track. Next recommended roadmap item: BILLING-READY-05 — not registered.
+**BILLING-READY-04 status:** COMPLETE and LOCKED — 2026-07-13. All 4 steps complete. All child slices COMPLETE and LOCKED: 04A COMPLETE and LOCKED (2026-07-13), 04B COMPLETE and LOCKED (2026-07-13), 04C COMPLETE and LOCKED (2026-07-13), 04D COMPLETE and LOCKED (2026-07-13). Regression matrix PASS — 12/12 commands. Parent checkpoint: `docs/BILLING-READY-04-CHECKPOINT.md`. Child checkpoints: `docs/BILLING-READY-04A-CHECKPOINT.md`, `docs/BILLING-READY-04B-CHECKPOINT.md`, `docs/BILLING-READY-04C-CHECKPOINT.md`, `docs/BILLING-READY-04D-CHECKPOINT.md`. No Stripe/payment/provider. No migration. No frontend. AGENT-HARNESS write canary remains a separate track. **BILLING-READY-05 ACTIVE — Step 1 COMPLETE (Registration — 2026-07-13).**
 
 **Reference:** See TASKS.md -> BILLING-READY-04.
 
@@ -41370,9 +41370,303 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 **AGENT-HARNESS write canary remains a separate track** -- not registered, not part of BILLING-READY-04D.
 
-**BILLING-READY-04D status:** COMPLETE and LOCKED — 2026-07-13. All 4 steps complete. Regression matrix PASS — 12/12 commands. Checkpoint: `docs/BILLING-READY-04D-CHECKPOINT.md`. Parent BILLING-READY-04 COMPLETE and LOCKED. AGENT-HARNESS write canary remains a separate track. Next recommended roadmap item: BILLING-READY-05 — not registered.
+**BILLING-READY-04D status:** COMPLETE and LOCKED — 2026-07-13. All 4 steps complete. Regression matrix PASS — 12/12 commands. Checkpoint: `docs/BILLING-READY-04D-CHECKPOINT.md`. Parent BILLING-READY-04 COMPLETE and LOCKED. AGENT-HARNESS write canary remains a separate track. **BILLING-READY-05 ACTIVE — Step 1 COMPLETE (Registration — 2026-07-13).**
 
 **Reference:** See TASKS.md -> BILLING-READY-04D.
+
+---
+
+### BILLING-READY-05: Stripe / Payment Provider Integration, Subscription Lifecycle, Credit Top-Up
+
+**Status:** ACTIVE — Steps 1–2 COMPLETE. Step 3 IN PROGRESS via child slices. 05A COMPLETE and LOCKED (2026-07-15). Step 2 COMPLETE (Payment Provider Readiness / Source-Path Review — 2026-07-13). Keith approved split into child slices 05A–05G.
+**Task ID:** BILLING-READY-05
+**Family:** BILLING READY / STRIPE PAYMENT PROVIDER / SUBSCRIPTION LIFECYCLE / CREDIT TOP-UP
+**Priority:** High
+**Nature:** PLANNING / READINESS — Stripe/payment provider integration, subscription lifecycle, credit top-up, webhook/payment event handling, paid billing foundation
+**Risk:** HIGH — future work may affect real payment provider integration, subscription state, credit top-up, billing correctness, webhook idempotency, env secrets, customer billing records, and launch readiness
+**Registered:** 2026-07-13
+**Keith approval:** Keith explicitly approved BILLING-READY-05 registration 2026-07-13. Keith explicitly approved split into child slices 05A–05G 2026-07-13.
+
+#### Workflow Steps (4-step loop — HIGH risk — CHILD-SLICE SPLIT APPROVED)
+
+1. **Registration** — COMPLETE (2026-07-13)
+2. **Payment provider readiness / source-path review** — COMPLETE (2026-07-13). See `docs/BILLING-READY-05-PAYMENT-PROVIDER-READINESS-REVIEW.md`. Stripe selected. Split into 05A–05G approved.
+3. **Bounded implementation — executed via child slices 05A–05G** — IN PROGRESS. 05A COMPLETE and LOCKED (2026-07-15). 05B next recommended, not registered.
+4. **Consolidation / checkpoint** — PENDING (deferred to 05G)
+
+##### Approved Child-Slice Plan (05A–05G — Keith approval 2026-07-13)
+
+| Slice | Name | Status |
+|-------|------|--------|
+| 05A | Provider Configuration / Contracts / Readiness | **COMPLETE and LOCKED — 2026-07-15** |
+| 05B | Customer / Subscription Persistence | Planned only — next recommended — not registered |
+| 05C | Checkout / Credit Top-Up Session Creation | Planned only — not registered |
+| 05D | Webhook Event Ingestion / Idempotency | Planned only — not registered |
+| 05E | Credit Grant / Top-Up Accounting | Planned only — not registered |
+| 05F | Billing UI / Customer Portal | Planned only — not registered |
+| 05G | Regression / Runtime Validation + Parent Consolidation | Planned only — not registered |
+
+#### Dependencies
+
+- BILLING-READY-04 COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-04A COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-04B COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-04C COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-04D COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-03 COMPLETE and LOCKED (2026-07-07)
+- AGENT-PLATFORM-07F COMPLETE and LOCKED (2026-07-12)
+- AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07)
+- AGENT-HARNESS-06E COMPLETE and LOCKED (2026-07-09)
+- Keith approval recorded for registration (2026-07-13)
+
+#### Purpose
+
+BILLING-READY-04 established balance enforcement, entitlement gating, and billing foundation phase 2: API Gateway pre-execution balance gate, execution-start gate wiring, worker finalization accounting bridge, and regression matrix validation. All internal credit enforcement is now in place. No Stripe or external payment provider was involved.
+
+BILLING-READY-05 is the planning and readiness task for the next phase: Stripe/payment provider integration, subscription lifecycle, credit top-up, webhook/payment event handling, and paid billing foundation beyond the internal credit enforcement work completed in BILLING-READY-04.
+
+#### Future Step 2 Must Decide
+
+- Whether Stripe is the selected payment provider for this phase
+- Whether Stripe remains stubbed, read-only, test-mode only, or integration-ready
+- Exact subscription lifecycle scope
+- Exact credit top-up scope
+- Exact webhook/payment event scope
+- Exact customer/user mapping
+- Exact price/product/plan mapping
+- Exact env/secrets needed ? do not add them in Step 2 unless separately approved
+- Exact DB tables/columns/migrations needed
+- Exact idempotency model for payment/webhook events
+- Exact refund/chargeback/cancel subscription behavior
+- Exact beta/free/admin/internal/test user handling
+- Exact frontend/customer billing portal/UI scope, if any
+- Exact files and tests required
+- Whether provider API calls are allowed in future implementation
+- Whether runtime/webhook validation is required
+- Whether BILLING-READY-05 must split into child slices before implementation
+
+#### Expected Future Scope
+
+- Payment provider readiness planning
+- Stripe/payment provider source-path review
+- Subscription lifecycle planning
+- Credit top-up planning
+- Webhook/event handling planning
+- Customer billing identity mapping
+- Plan/product/price mapping
+- Payment event idempotency
+- Beta/launch billing guardrails
+- Provider boundary and safety controls
+
+#### Non-Goals (Registration Step)
+
+- No implementation during registration
+- No runtime execution during registration
+- No Docker/Postgres/Redis commands during registration
+- No DB query/mutation during registration
+- No database migration during registration
+- No Stripe/payment/provider API calls during registration
+- No env/secrets changes during registration
+- No package/dependency changes during registration
+- No frontend UI during registration
+- No user-facing UX text during registration
+- No AGENT-HARNESS write canary
+- No browser smoke
+- No git commits/pushes
+
+#### Runtime Safety Note
+
+Future backend/DB/runtime validation must explicitly ensure Docker/PostgreSQL/Redis readiness before execution. Do not assume services are running.
+
+#### Payment Provider Safety Note
+
+BILLING-READY-05 registration approval does not approve live Stripe/payment provider calls. Any future provider call, webhook test against real provider infrastructure, env secret change, or live payment action must be explicitly approved in a later step.
+
+#### UX/UI Note
+
+No UI text should be added during registration. If future work adds user-facing UX/UI text, aiSandBox is multilingual-first and must update:
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impeccable and Emil Kowalski skills are advisory only.
+
+#### Acceptance Criteria
+
+###### Registration (Step 1 ? COMPLETE 2026-07-13)
+- [x] BILLING-READY-05 registered as current ACTIVE task
+- [x] BILLING-READY-04 remains COMPLETE and LOCKED
+- [x] BILLING-READY-04A/04B/04C/04D remain COMPLETE and LOCKED
+- [x] BILLING-READY-03 remains COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-07F remains COMPLETE and LOCKED
+- [x] AGENT-HARNESS-07/06E remain COMPLETE and LOCKED
+- [x] Registration records BILLING-READY-05 is payment provider/subscription/credit top-up planning only
+- [x] Registration records no implementation/runtime execution occurred
+- [x] Registration records no billing provider/payment calls occurred
+- [x] Registration records no env/secrets/package changes occurred
+- [x] Registration records next step is payment provider readiness / source-path review
+- [x] Registration records AGENT-HARNESS write canary remains separate and not registered
+- [x] No implementation files changed
+- [x] No commands run
+- [x] One-active-task rule satisfied
+
+**AGENT-HARNESS write canary remains a separate track** — not registered, not part of BILLING-READY-05.
+
+**BILLING-READY-05 status:** ACTIVE — Steps 1–2 COMPLETE (2026-07-13). Step 3 in progress via child slices. Step 2: payment provider readiness review complete — Stripe selected — split into 05A–05G approved by Keith 2026-07-13. BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). Step 2 readiness review: `docs/BILLING-READY-05-PAYMENT-PROVIDER-READINESS-REVIEW.md`. No implementation, no runtime execution, no billing provider/payment calls, no env/secrets/package changes occurred during Steps 1–2. BILLING-READY-05B/05C/05D/05E/05F/05G are planned only and not registered. AGENT-HARNESS write canary remains a separate track. Next recommended child slice: BILLING-READY-05B — Customer / Subscription Persistence — not registered.
+
+**Reference:** See TASKS.md -> BILLING-READY-05.
+
+---
+
+### BILLING-READY-05A: Provider Configuration / Contracts / Readiness
+
+**Status:** COMPLETE and LOCKED — 2026-07-15
+**Task ID:** BILLING-READY-05A
+**Family:** BILLING READY / STRIPE PAYMENT PROVIDER / PROVIDER CONFIGURATION / CONTRACTS
+**Parent:** BILLING-READY-05
+**Priority:** High
+**Nature:** PROVIDER CONFIGURATION / CONTRACTS / READINESS — review existing PaymentsModule and StripePaymentProvider stub; define provider configuration contract; define disabled/stub/test-mode/live-mode behavior; define ChargeReadinessService / kill-switch relationship; define provider client interface and no-live-call safety
+**Risk:** HIGH — future work may define payment-provider contracts, Stripe configuration boundaries, disabled/test-mode/live-mode safety, env requirements, and provider call safety gates
+**Registered:** 2026-07-13
+**Keith approval:** Keith explicitly approved splitting BILLING-READY-05 into 05A–05G and registering 05A 2026-07-13.
+
+#### Workflow Steps (4-step child-slice loop — HIGH risk)
+
+1. **Registration** — COMPLETE (2026-07-13)
+2. **Provider configuration/contracts readiness / exact file boundary** — COMPLETE (2026-07-15). See `docs/BILLING-READY-05A-PROVIDER-CONTRACTS-READINESS.md`.
+3. **Bounded implementation — contracts and mode infrastructure** — COMPLETE (2026-07-15). 4 production files. 3 test files. 79 tests PASS.
+4. **Consolidation / checkpoint** — COMPLETE (2026-07-15). See `docs/BILLING-READY-05A-CHECKPOINT.md`.
+
+#### Dependencies
+
+- BILLING-READY-05 ACTIVE with Step 2 readiness review complete and split decision approved
+- BILLING-READY-04 COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-04A COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-04B COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-04C COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-04D COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-03 COMPLETE and LOCKED (2026-07-07)
+- AGENT-PLATFORM-07F COMPLETE and LOCKED (2026-07-12)
+- AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07)
+- AGENT-HARNESS-06E COMPLETE and LOCKED (2026-07-09)
+
+#### Purpose
+
+BILLING-READY-05A is the first child slice of BILLING-READY-05. The Step 2 readiness review (`docs/BILLING-READY-05-PAYMENT-PROVIDER-READINESS-REVIEW.md`) confirmed: Stripe is the selected provider; existing `StripePaymentProvider` and `PaymentsModule` are stub-only with no SDK; `ChargeReadinessService` is the financial kill-switch gate; no `stripe` npm package is installed; no Stripe env keys exist. 05A defines the provider configuration contract, disabled/stub/test-mode/live-mode behavior, and provider client interface boundaries before any SDK installation or live-provider work begins.
+
+#### Future Step 2 Must Decide
+
+- Exact existing payment module source path
+- Exact provider interface/contract source path
+- Exact Stripe stub source path
+- Exact ChargeReadinessService source path
+- Exact config/env source path
+- Exact disabled state behavior
+- Exact test-mode-ready behavior
+- Exact live-mode blocked behavior
+- Exact package dependency decision
+- Exact env key list for later (do not add during registration)
+- Exact tests required
+- Whether 05A needs implementation or validation-only
+- Whether 05A must split further before Step 3
+
+#### Non-Goals (Registration Step)
+
+- No implementation during registration
+- No runtime execution during registration
+- No Docker/Postgres/Redis commands during registration
+- No DB query/mutation during registration
+- No database migration during registration
+- No Stripe/payment/provider API calls during registration
+- No env/secrets changes during registration
+- No package/dependency changes during registration
+- No checkout/session creation (defer to 05C)
+- No webhook ingestion (defer to 05D)
+- No credit grant/top-up accounting (defer to 05E)
+- No frontend UI (defer to 05F)
+- No parent regression/consolidation (defer to 05G)
+- No AGENT-HARNESS write canary
+- No browser smoke
+- No git commits/pushes
+
+#### Runtime Safety Note
+
+Future backend/DB/runtime validation must explicitly ensure Docker/PostgreSQL/Redis readiness before execution. Do not assume services are running.
+
+#### Payment Provider Safety Note
+
+BILLING-READY-05A registration does not approve live Stripe/payment provider calls. Any future provider call, webhook test against real provider infrastructure, env secret change, package install, or live payment action must be explicitly approved in a later step.
+
+#### UX/UI Note
+
+No UI text should be added during registration. If future work adds user-facing UX/UI text, aiSandBox is multilingual-first and must update:
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impeccable and Emil Kowalski skills are advisory only.
+
+#### Acceptance Criteria
+
+###### Registration (Step 1 — COMPLETE 2026-07-13)
+- [x] BILLING-READY-05A registered as current ACTIVE child slice
+- [x] Parent BILLING-READY-05 remains ACTIVE with split child-slice status
+- [x] BILLING-READY-05B/05C/05D/05E/05F/05G recorded as planned only and not registered
+- [x] BILLING-READY-04 remains COMPLETE and LOCKED
+- [x] BILLING-READY-04A/04B/04C/04D remain COMPLETE and LOCKED
+- [x] BILLING-READY-03 remains COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-07F remains COMPLETE and LOCKED
+- [x] AGENT-HARNESS-07/06E remain COMPLETE and LOCKED
+- [x] Registration records 05A is provider configuration/contracts/readiness only
+- [x] Registration records no implementation/runtime execution occurred
+- [x] Registration records no billing provider/payment calls occurred
+- [x] Registration records no env/secrets/package changes occurred
+- [x] Registration records next step is 05A provider configuration/contracts readiness review
+- [x] Registration records AGENT-HARNESS write canary remains separate and not registered
+- [x] No implementation files changed
+- [x] No commands run
+- [x] One-active-task rule satisfied
+
+###### Step 2 — Readiness Review (COMPLETE 2026-07-15)
+- [x] `docs/BILLING-READY-05A-PROVIDER-CONTRACTS-READINESS.md` created
+- [x] Provider mode contract decided: `disabled` / `stub` / `test` / `live`
+- [x] Default mode: `disabled` when `STRIPE_PROVIDER_MODE` absent/empty/whitespace
+- [x] Invalid mode degrades to `disabled` with warning
+- [x] `test`/`live` without `STRIPE_SECRET_KEY` degrade to `disabled`
+- [x] `test` mode with `sk_live_*` key degrades to `disabled`
+- [x] `ProviderResult<T>` and `ProviderErrorCode` contract decided
+- [x] Exact file boundary for Step 3 defined (4 production files, 3 test files)
+- [x] Decision: bounded implementation — no further split required
+- [x] No Stripe SDK, no package change, no env change, no migration, no frontend
+
+###### Step 3 — Implementation (COMPLETE 2026-07-15)
+- [x] `payment-provider.interface.ts` extended with `ProviderMode`, `ProviderResult<T>`, `ProviderErrorCode`, new method signatures
+- [x] `stripe-payment.provider.ts` refactored — mode-aware, `ConfigService` injection, NestJS Logger
+- [x] `payments.module.ts` — `ConfigService` available via constructor injection, no structural changes
+- [x] `charge-readiness.service.ts` — `SystemChargeReadiness` extended with `providerMode` and `providerModeValid`
+- [x] `stripe-payment.provider.spec.ts` created — 49 tests PASS
+- [x] `charge-readiness.service.spec.ts` created — 15 tests PASS
+- [x] `payment-provider.contracts.spec.ts` created — 15 tests PASS
+- [x] `npx tsc --noEmit` PASS — exit code 0
+- [x] No Stripe SDK, no provider API calls, no env changes, no migrations, no frontend
+
+###### Step 4 — Consolidation / Checkpoint (COMPLETE 2026-07-15)
+- [x] `docs/BILLING-READY-05A-CHECKPOINT.md` created
+- [x] BILLING-READY-05A marked COMPLETE and LOCKED
+- [x] Parent BILLING-READY-05 remains ACTIVE with updated child-slice split table
+- [x] TASKS.md updated — 05A COMPLETE and LOCKED, split table updated, validation results recorded
+- [x] TASKS_BACKLOG_FULL.md updated — mirrors TASKS.md
+- [x] `docs/AINOW-EXECUTION-ROADMAP.md` updated — 05A COMPLETE and LOCKED
+- [x] BILLING-READY-05B recorded as next recommended — not registered
+- [x] Provider/payment calls remain not approved
+- [x] AGENT-HARNESS write canary remains separate and not registered
+- [x] No implementation files changed during consolidation
+
+**AGENT-HARNESS write canary remains a separate track** — not registered, not part of BILLING-READY-05A.
+
+**BILLING-READY-05A status:** COMPLETE and LOCKED — 2026-07-15. All 4 steps complete. Production files changed: 4. Test files created: 3. Total targeted tests: 79 PASS (`stripe-payment.provider` 49, `charge-readiness.service` 15, `payment-provider.contracts` 15). TypeScript clean. No Stripe SDK. No provider API calls. No env/secrets changes. No migrations. No frontend. Checkpoint: `docs/BILLING-READY-05A-CHECKPOINT.md`. Parent BILLING-READY-05 remains ACTIVE. Next recommended: BILLING-READY-05B — Customer / Subscription Persistence — not registered. AGENT-HARNESS write canary remains a separate track.
+
+**Reference:** See TASKS.md -> BILLING-READY-05A.
 
 ---
 
@@ -41672,7 +41966,7 @@ Final validation and regression matrix for AGENT-HARNESS-07, confirming the full
 **AGENT-HARNESS-07C status:** COMPLETE and LOCKED (2026-07-07) �X All 3 steps complete. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
 **AGENT-HARNESS-07 status:** COMPLETE and LOCKED (2026-07-07) �X All 3 child slices (07A, 07B, 07C) COMPLETE and LOCKED. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
 **Multi-builder collaboration/runtime orchestration status:** Not registered. Deferred �X comes after AGENT-HARNESS-06C.
-**BILLING-READY-04 status:** COMPLETE and LOCKED — 2026-07-13. All 4 steps complete. All child slices COMPLETE and LOCKED: 04A/04B/04C/04D. Parent checkpoint: `docs/BILLING-READY-04-CHECKPOINT.md`. Child checkpoints: `docs/BILLING-READY-04A-CHECKPOINT.md`, `docs/BILLING-READY-04B-CHECKPOINT.md`, `docs/BILLING-READY-04C-CHECKPOINT.md`, `docs/BILLING-READY-04D-CHECKPOINT.md`. AGENT-HARNESS write canary remains a separate track. Next recommended roadmap item: BILLING-READY-05 — not registered. AGENT-HARNESS write canary remains a separate track.
+**BILLING-READY-04 status:** COMPLETE and LOCKED — 2026-07-13. All 4 steps complete. All child slices COMPLETE and LOCKED: 04A/04B/04C/04D. Parent checkpoint: `docs/BILLING-READY-04-CHECKPOINT.md`. Child checkpoints: `docs/BILLING-READY-04A-CHECKPOINT.md`, `docs/BILLING-READY-04B-CHECKPOINT.md`, `docs/BILLING-READY-04C-CHECKPOINT.md`, `docs/BILLING-READY-04D-CHECKPOINT.md`. AGENT-HARNESS write canary remains a separate track. **BILLING-READY-05 ACTIVE — Step 1 COMPLETE (Registration — 2026-07-13).** AGENT-HARNESS write canary remains a separate track.
 
 ---
 

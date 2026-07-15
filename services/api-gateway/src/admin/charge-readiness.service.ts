@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ReconciliationService } from './reconciliation.service';
 import { StripePaymentProvider } from '../payments/providers/stripe-payment.provider';
+import type { ProviderMode } from '../payments/interfaces/payment-provider.interface';
 
 /**
  * ChargeReadinessService (Task 12B2)
@@ -191,10 +192,8 @@ export class ChargeReadinessService {
   }
 
   /**
-   * Get detailed system-level charge readiness (Task 12B2)
-   * Returns comprehensive status about charging prerequisites
-   *
-   * This is useful for admin dashboards or monitoring
+   * Get detailed system-level charge readiness (Task 12B2, extended BILLING-READY-05A)
+   * Returns comprehensive status about charging prerequisites including provider mode.
    *
    * @returns System-level charge readiness status
    */
@@ -206,11 +205,20 @@ export class ChargeReadinessService {
       blockingReasons.push('BILLING_CHARGES_ENABLED=false');
     }
 
-    // Check payment provider configuration
+    // Check payment provider configuration (mode-aware since 05A)
     const providerConfigValid =
       this.stripePaymentProvider.validateConfiguration();
     if (!providerConfigValid) {
       blockingReasons.push('Payment provider not configured');
+    }
+
+    const providerMode = this.stripePaymentProvider.getProviderMode();
+    if (providerMode === 'disabled') {
+      if (
+        !blockingReasons.includes('Payment provider not configured')
+      ) {
+        blockingReasons.push('Payment provider mode is disabled');
+      }
     }
 
     const ready = blockingReasons.length === 0;
@@ -218,6 +226,8 @@ export class ChargeReadinessService {
     return {
       chargesEnabledAtSystemLevel: this.chargesEnabled,
       paymentProviderConfigured: providerConfigValid,
+      providerMode,
+      providerModeValid: providerConfigValid,
       ready,
       blockingReasons,
     };
@@ -235,12 +245,14 @@ export interface ChargeReadinessGate {
 }
 
 /**
- * SystemChargeReadiness interface (Task 12B2)
+ * SystemChargeReadiness interface (Task 12B2, extended BILLING-READY-05A)
  * Result of system-level charge readiness check
  */
 export interface SystemChargeReadiness {
-  chargesEnabledAtSystemLevel: boolean; // BILLING_CHARGES_ENABLED value
-  paymentProviderConfigured: boolean; // Payment provider config valid
-  ready: boolean; // True if system is ready for charging (all prerequisites met)
-  blockingReasons: string[]; // Human-readable reasons why charging is blocked
+  chargesEnabledAtSystemLevel: boolean;
+  paymentProviderConfigured: boolean;
+  providerMode: ProviderMode;
+  providerModeValid: boolean;
+  ready: boolean;
+  blockingReasons: string[];
 }
