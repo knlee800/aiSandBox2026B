@@ -5,6 +5,7 @@ import { createHash } from 'crypto';
 import { StripePaymentProvider } from '../../payments/providers/stripe-payment.provider';
 import { SubscriptionRepository } from '../subscription/subscription.repository';
 import { WebhookEventRepository } from './webhook-event.repository';
+import { CreditGrantService } from '../credit-grant/credit-grant.service';
 import { User } from '../../entities/user.entity';
 import type { InternalEventType } from '../../payments/interfaces/payment-provider.interface';
 
@@ -53,6 +54,7 @@ export class WebhookService {
     private readonly subscriptionRepository: SubscriptionRepository,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly creditGrantService: CreditGrantService,
   ) {}
 
   /**
@@ -157,7 +159,12 @@ export class WebhookService {
     );
 
     try {
-      await this.routeEvent(mapped.internal, parsed.data, webhookEvent.id);
+      await this.routeEvent(
+        mapped.internal,
+        parsed.data,
+        webhookEvent.id,
+        parsed.eventId,
+      );
       await this.webhookEventRepository.updateEventStatus(
         webhookEvent.id,
         'processed',
@@ -190,11 +197,16 @@ export class WebhookService {
   private async routeEvent(
     internalType: InternalEventType,
     data: Record<string, unknown>,
-    _eventId: string,
+    webhookEventId: string,
+    providerEventId?: string,
   ): Promise<void> {
     switch (internalType) {
       case 'checkout_completed':
-        await this.handleCheckoutCompleted(data);
+        await this.handleCheckoutCompleted(
+          data,
+          webhookEventId,
+          providerEventId,
+        );
         break;
       case 'subscription_created':
         await this.handleSubscriptionCreated(data);
@@ -206,7 +218,7 @@ export class WebhookService {
         await this.handleSubscriptionDeleted(data);
         break;
       case 'invoice_paid':
-        await this.handleInvoicePaid(data);
+        await this.handleInvoicePaid(data, webhookEventId, providerEventId);
         break;
       case 'invoice_payment_failed':
         await this.handleInvoicePaymentFailed(data);
@@ -222,19 +234,43 @@ export class WebhookService {
 
   private async handleCheckoutCompleted(
     data: Record<string, unknown>,
+    webhookEventId?: string,
+    providerEventId?: string,
   ): Promise<void> {
     const mode = data.mode as string | undefined;
+    const customerId = data.customer as string | undefined;
 
-    // Top-up checkouts (mode = 'payment') are deferred to 05E
+    // Top-up checkouts (mode = 'payment') — 05E credit grant
     if (mode === 'payment') {
-      this.logger.log(
-        'Top-up checkout completed — credit grant deferred to 05E',
-      );
+      if (!customerId) {
+        throw new WebhookProcessingError(
+          'UNKNOWN_CUSTOMER',
+          'checkout_completed payment event missing customer field',
+        );
+      }
+      const user = await this.findUserByCustomerId(customerId);
+      const metadata = (data.metadata as Record<string, unknown>) ?? {};
+
+      try {
+        await this.creditGrantService.processGrant({
+          ownerId: user.id,
+          grantType: 'topup',
+          sourceEventId: providerEventId ?? `checkout_topup_${webhookEventId}`,
+          providerEventId: providerEventId ?? null,
+          webhookEventId: webhookEventId ?? null,
+          topUpPackId:
+            (metadata.aisandbox_topup_pack_id as string) ?? null,
+          metadata,
+        });
+      } catch (grantError) {
+        this.logger.error(
+          `Top-up credit grant failed: ${grantError instanceof Error ? grantError.message : 'Unknown'}`,
+        );
+      }
       return;
     }
 
     const subscriptionId = data.subscription as string | undefined;
-    const customerId = data.customer as string | undefined;
 
     if (!customerId) {
       throw new WebhookProcessingError(
@@ -264,6 +300,26 @@ export class WebhookService {
     }
 
     await this.updateUserPlan(user.id, this.resolvePlanType(data), 'active');
+
+    // 05E: Initial subscription credit grant
+    if (mode === 'subscription') {
+      const planType = this.resolvePlanType(data);
+      try {
+        await this.creditGrantService.processGrant({
+          ownerId: user.id,
+          grantType: 'subscription_initial',
+          sourceEventId:
+            providerEventId ?? `checkout_sub_${webhookEventId}`,
+          providerEventId: providerEventId ?? null,
+          webhookEventId: webhookEventId ?? null,
+          planType,
+        });
+      } catch (grantError) {
+        this.logger.error(
+          `Initial subscription credit grant failed: ${grantError instanceof Error ? grantError.message : 'Unknown'}`,
+        );
+      }
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -448,14 +504,39 @@ export class WebhookService {
 
   private async handleInvoicePaid(
     data: Record<string, unknown>,
+    webhookEventId?: string,
+    providerEventId?: string,
   ): Promise<void> {
     const subscriptionId = data.subscription as string | undefined;
 
     if (!subscriptionId) {
-      // Non-subscription invoice (e.g., one-time payment / top-up) — deferred to 05E
-      this.logger.log(
-        'invoice_paid without subscription — top-up credit grant deferred to 05E',
-      );
+      // Non-subscription invoice (e.g., one-time payment / top-up) — 05E credit grant
+      const customerId = data.customer as string | undefined;
+      if (customerId) {
+        try {
+          const user = await this.findUserByCustomerId(customerId);
+          const metadata = (data.metadata as Record<string, unknown>) ?? {};
+          await this.creditGrantService.processGrant({
+            ownerId: user.id,
+            grantType: 'topup',
+            sourceEventId:
+              providerEventId ?? `invoice_topup_${webhookEventId}`,
+            providerEventId: providerEventId ?? null,
+            webhookEventId: webhookEventId ?? null,
+            topUpPackId:
+              (metadata.aisandbox_topup_pack_id as string) ?? null,
+            metadata,
+          });
+        } catch (grantError) {
+          this.logger.error(
+            `Non-subscription invoice credit grant failed: ${grantError instanceof Error ? grantError.message : 'Unknown'}`,
+          );
+        }
+      } else {
+        this.logger.log(
+          'invoice_paid without subscription or customer — skipping credit grant',
+        );
+      }
       return;
     }
 
@@ -488,6 +569,27 @@ export class WebhookService {
         existing.id,
         updates as any,
       );
+    }
+
+    // 05E: Subscription renewal credit grant
+    const customerId = data.customer as string | undefined;
+    if (customerId) {
+      try {
+        const user = await this.findUserByCustomerId(customerId);
+        await this.creditGrantService.processGrant({
+          ownerId: user.id,
+          grantType: 'subscription_monthly',
+          sourceEventId:
+            providerEventId ?? `invoice_renewal_${webhookEventId}`,
+          providerEventId: providerEventId ?? null,
+          webhookEventId: webhookEventId ?? null,
+          planType: existing.planType,
+        });
+      } catch (grantError) {
+        this.logger.error(
+          `Subscription renewal credit grant failed: ${grantError instanceof Error ? grantError.message : 'Unknown'}`,
+        );
+      }
     }
   }
 

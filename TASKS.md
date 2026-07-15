@@ -25152,7 +25152,7 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 
 **Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` �X controls cross-family priority order; Knowledge before Collaboration before Billing.
 
-**Current stage:** BILLING-READY-05C COMPLETE and LOCKED (2026-07-15) — all 4 steps complete — 9 production files created + 1 production file modified (`app.module.ts`) + 4 test files — 58/58 checkout tests PASS — `stripe-payment.provider` 49/49 PASS — `charge-readiness.service` 15/15 PASS — `credit-balance` 74/74 regression PASS — TypeScript clean — linter 0 errors. Checkpoint: `docs/BILLING-READY-05C-CHECKPOINT.md`. BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-05 ACTIVE — Steps 1–2 COMPLETE (2026-07-13) — Keith approved split into 05A–05G — 05A COMPLETE and LOCKED — 05B COMPLETE and LOCKED — 05C COMPLETE and LOCKED — 05D ACTIVE — Step 1 COMPLETE (Registration — 2026-07-15). AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
+**Current stage:** BILLING-READY-05E COMPLETE and LOCKED (2026-07-15) — all 4 steps complete — Credit Grant / Top-Up Accounting — fifth child slice of BILLING-READY-05 — 6 production files created + 4 modified (`entities/index.ts`, `credit-balance.repository.ts`, `webhook.service.ts`, `webhook.module.ts`) + 6 test files — 96 new + 300 regression = 396/396 PASS — TypeScript clean — linter 0 errors. Checkpoint: `docs/BILLING-READY-05E-CHECKPOINT.md`. BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-05 ACTIVE — Steps 1–2 COMPLETE (2026-07-13) — Keith approved split into 05A–05G — 05A COMPLETE and LOCKED — 05B COMPLETE and LOCKED — 05C COMPLETE and LOCKED — 05D COMPLETE and LOCKED — 05E COMPLETE and LOCKED (2026-07-15) — 05F planned / next recommended — 05G planned. No ACTIVE child slice. Next recommended: BILLING-READY-05F — Billing UI / Customer Portal — not registered. AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 �X ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED �X 2026-07-04)
@@ -30912,7 +30912,7 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 #### BILLING-READY-05: Stripe / Payment Provider Integration, Subscription Lifecycle, Credit Top-Up
 
-**Status:** ACTIVE — Steps 1–2 COMPLETE. Step 3 IN PROGRESS via child slices. 05A COMPLETE and LOCKED (2026-07-15). Step 2 COMPLETE (Payment Provider Readiness / Source-Path Review — 2026-07-13). Keith approved split into child slices 05A–05G.
+**Status:** ACTIVE — Steps 1–2 COMPLETE. Step 3 IN PROGRESS via child slices. 05A COMPLETE and LOCKED (2026-07-15). 05B COMPLETE and LOCKED (2026-07-15). 05C COMPLETE and LOCKED (2026-07-15). 05D COMPLETE and LOCKED (2026-07-15). 05E ACTIVE — Step 1 COMPLETE (Registration — 2026-07-15). Step 2 COMPLETE (Payment Provider Readiness / Source-Path Review — 2026-07-13). Keith approved split into child slices 05A–05G.
 **Task ID:** BILLING-READY-05
 **Family:** BILLING READY / STRIPE PAYMENT PROVIDER / SUBSCRIPTION LIFECYCLE / CREDIT TOP-UP
 **Priority:** High
@@ -30925,7 +30925,7 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 1. **Registration** — COMPLETE (2026-07-13)
 2. **Payment provider readiness / source-path review** — COMPLETE (2026-07-13). See `docs/BILLING-READY-05-PAYMENT-PROVIDER-READINESS-REVIEW.md`. Stripe selected. Split into 05A–05G approved.
-3. **Bounded implementation — executed via child slices 05A–05G** — IN PROGRESS. 05A COMPLETE and LOCKED (2026-07-15). 05B next recommended, not registered.
+3. **Bounded implementation — executed via child slices 05A–05G** — IN PROGRESS. 05A COMPLETE and LOCKED (2026-07-15). 05B COMPLETE and LOCKED (2026-07-15). 05C COMPLETE and LOCKED (2026-07-15). 05D COMPLETE and LOCKED (2026-07-15). 05E ACTIVE — Step 1 COMPLETE (Registration — 2026-07-15).
 4. **Consolidation / checkpoint** — PENDING (deferred to 05G)
 
 ##### Approved Child-Slice Plan (05A–05G — Keith approval 2026-07-13)
@@ -30933,10 +30933,10 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 | Slice | Name | Status |
 |-------|------|--------|
 | 05A | Provider Configuration / Contracts / Readiness | **COMPLETE and LOCKED — 2026-07-15** |
-| 05B | Customer / Subscription Persistence | Planned only — next recommended — not registered |
-| 05C | Checkout / Credit Top-Up Session Creation | Planned only — not registered |
-| 05D | Webhook Event Ingestion / Idempotency | Planned only — not registered |
-| 05E | Credit Grant / Top-Up Accounting | Planned only — not registered |
+| 05B | Customer / Subscription Persistence | **COMPLETE and LOCKED — 2026-07-15** |
+| 05C | Checkout / Credit Top-Up Session Creation | **COMPLETE and LOCKED — 2026-07-15** |
+| 05D | Webhook Event Ingestion / Idempotency | **COMPLETE and LOCKED — 2026-07-15** |
+| 05E | Credit Grant / Top-Up Accounting | **ACTIVE — Step 1 COMPLETE (Registration — 2026-07-15)** |
 | 05F | Billing UI / Customer Portal | Planned only — not registered |
 | 05G | Regression / Runtime Validation + Parent Consolidation | Planned only — not registered |
 
@@ -31046,7 +31046,7 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 **AGENT-HARNESS write canary remains a separate track** — not registered, not part of BILLING-READY-05.
 
-**BILLING-READY-05 status:** ACTIVE — Steps 1–2 COMPLETE (2026-07-13). Step 3 IN PROGRESS via child slices. Step 2: payment provider readiness review complete — Stripe selected — split into 05A–05G approved by Keith 2026-07-13. Child-slice split table: 05A COMPLETE and LOCKED (2026-07-15) | 05B COMPLETE and LOCKED (2026-07-15) | 05C COMPLETE and LOCKED (2026-07-15) | 05D COMPLETE and LOCKED (2026-07-15) | 05E planned / next recommended | 05F planned | 05G planned. Step 2 readiness review: `docs/BILLING-READY-05-PAYMENT-PROVIDER-READINESS-REVIEW.md`. BILLING-READY-05E/05F/05G are planned only and not registered. BILLING-READY-05D COMPLETE and LOCKED — 2026-07-15. Checkpoint: `docs/BILLING-READY-05D-CHECKPOINT.md`. Next recommended: BILLING-READY-05E — Credit Grant / Top-Up Accounting — not registered. AGENT-HARNESS write canary remains a separate track. Provider/payment calls remain not approved. Env/secrets/package changes remain not approved. Stripe SDK/package install remains not approved. Stripe CLI/webhook tests remain not approved. AGENT-HARNESS write canary remains separate and not registered.
+**BILLING-READY-05 status:** ACTIVE — Steps 1–2 COMPLETE (2026-07-13). Step 3 IN PROGRESS via child slices. Step 2: payment provider readiness review complete — Stripe selected — split into 05A–05G approved by Keith 2026-07-13. Child-slice split table: 05A COMPLETE and LOCKED (2026-07-15) | 05B COMPLETE and LOCKED (2026-07-15) | 05C COMPLETE and LOCKED (2026-07-15) | 05D COMPLETE and LOCKED (2026-07-15) | 05E COMPLETE and LOCKED (2026-07-15) | 05F planned / next recommended | 05G planned. Step 2 readiness review: `docs/BILLING-READY-05-PAYMENT-PROVIDER-READINESS-REVIEW.md`. BILLING-READY-05F/05G are planned only and not registered. BILLING-READY-05E COMPLETE and LOCKED — 2026-07-15. Checkpoint: `docs/BILLING-READY-05E-CHECKPOINT.md`. BILLING-READY-05D COMPLETE and LOCKED — 2026-07-15. Checkpoint: `docs/BILLING-READY-05D-CHECKPOINT.md`. No current ACTIVE child slice. Next recommended: BILLING-READY-05F — Billing UI / Customer Portal — not registered. AGENT-HARNESS write canary remains a separate track. Provider/payment calls remain not approved. Env/secrets/package changes remain not approved. Stripe SDK/package install remains not approved. Stripe CLI/webhook tests remain not approved. AGENT-HARNESS write canary remains separate and not registered.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-05.
 
@@ -31770,9 +31770,232 @@ Future backend/DB/runtime validation must explicitly ensure Docker/PostgreSQL/Re
 
 **AGENT-HARNESS write canary remains a separate track** — not registered, not part of BILLING-READY-05D.
 
-**BILLING-READY-05D status:** COMPLETE and LOCKED — 2026-07-15. All 4 steps complete. Production files created: 6 (`webhook-event.entity.ts`, `webhook.controller.ts`, `webhook.service.ts`, `webhook-event.repository.ts`, `webhook.module.ts`, migration `1772300000000-CreateWebhookEventsTable.ts`). Production files modified: 3 (`entities/index.ts`, `main.ts` — rawBody: true, `app.module.ts` — WebhookModule import). Test files created: 6. Tests: webhook 108/108 PASS (6 suites). Regression: `stripe-payment.provider` 49/49 PASS, `subscription` 53/53 PASS, `checkout` 58/58 PASS, `credit-balance` 74/74 PASS. Total: 342/342 PASS. `npx tsc --noEmit` exit 0. Linter 0 errors. No Stripe SDK. No provider API calls. No env/secrets changes. No migrations executed. No real DB calls. No frontend. No AGENT-HARNESS write canary. Checkpoint: `docs/BILLING-READY-05D-CHECKPOINT.md`. Parent BILLING-READY-05 remains ACTIVE with child-slice execution in progress. 05A COMPLETE and LOCKED. 05B COMPLETE and LOCKED. 05C COMPLETE and LOCKED. 05E/05F/05G planned only and not registered. Next recommended: BILLING-READY-05E — Credit Grant / Top-Up Accounting — not registered. Provider/payment calls remain not approved. Env/secrets/package changes remain not approved. Stripe SDK/package install remains not approved. Stripe CLI/webhook tests remain not approved. AGENT-HARNESS write canary remains a separate track.
+**BILLING-READY-05D status:** COMPLETE and LOCKED — 2026-07-15. All 4 steps complete. Production files created: 6 (`webhook-event.entity.ts`, `webhook.controller.ts`, `webhook.service.ts`, `webhook-event.repository.ts`, `webhook.module.ts`, migration `1772300000000-CreateWebhookEventsTable.ts`). Production files modified: 3 (`entities/index.ts`, `main.ts` — rawBody: true, `app.module.ts` — WebhookModule import). Test files created: 6. Tests: webhook 108/108 PASS (6 suites). Regression: `stripe-payment.provider` 49/49 PASS, `subscription` 53/53 PASS, `checkout` 58/58 PASS, `credit-balance` 74/74 PASS. Total: 342/342 PASS. `npx tsc --noEmit` exit 0. Linter 0 errors. No Stripe SDK. No provider API calls. No env/secrets changes. No migrations executed. No real DB calls. No frontend. No AGENT-HARNESS write canary. Checkpoint: `docs/BILLING-READY-05D-CHECKPOINT.md`. Parent BILLING-READY-05 remains ACTIVE with child-slice execution in progress. 05A COMPLETE and LOCKED. 05B COMPLETE and LOCKED. 05C COMPLETE and LOCKED. 05F/05G planned only and not registered. Next: BILLING-READY-05E — Credit Grant / Top-Up Accounting — ACTIVE — Step 1 COMPLETE (Registration — 2026-07-15). Provider/payment calls remain not approved. Env/secrets/package changes remain not approved. Stripe SDK/package install remains not approved. Stripe CLI/webhook tests remain not approved. AGENT-HARNESS write canary remains a separate track.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-05D.
+
+---
+
+#### BILLING-READY-05E: Credit Grant / Top-Up Accounting
+
+**Status:** COMPLETE and LOCKED — 2026-07-15
+**Task ID:** BILLING-READY-05E
+**Family:** BILLING READY / STRIPE PAYMENT PROVIDER / CREDIT GRANT / TOP-UP ACCOUNTING
+**Parent:** BILLING-READY-05
+**Priority:** High
+**Nature:** ARCHITECTURE / IMPLEMENTATION — credit grant / top-up accounting, subscription credit allocation, idempotent financial ledger
+**Risk:** HIGH — 4-step child-slice loop
+**Registered:** 2026-07-15
+**Completed:** 2026-07-15
+**Keith approval:** Keith explicitly approved BILLING-READY-05E registration 2026-07-15. Keith explicitly approved `credit_grants` migration and credit balance accounting implementation before Step 3.
+
+#### Workflow Steps (4-step loop — HIGH risk — CHILD SLICE of BILLING-READY-05)
+
+1. **Registration** — COMPLETE (2026-07-15)
+2. **Credit grant / top-up accounting readiness / exact ledger boundary** — COMPLETE (2026-07-15). See `docs/BILLING-READY-05E-CREDIT-GRANT-TOP-UP-ACCOUNTING-READINESS.md`.
+3. **Bounded implementation — entity, repository, service, module, migration, addBalance, webhook integration, tests** — COMPLETE (2026-07-15). 6 production files created. 4 production files modified. 6 test files created. 396/396 PASS.
+4. **Consolidation / checkpoint** — COMPLETE (2026-07-15). See `docs/BILLING-READY-05E-CHECKPOINT.md`.
+
+#### Dependencies
+
+- BILLING-READY-05 ACTIVE with 05A–05G split approved
+- BILLING-READY-05A COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-05B COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-05C COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-05D COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-04 COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-04A COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-04B COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-04C COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-04D COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-03 COMPLETE and LOCKED (2026-07-07)
+- AGENT-PLATFORM-07F COMPLETE and LOCKED (2026-07-12)
+- AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07)
+- AGENT-HARNESS-06E COMPLETE and LOCKED (2026-07-09)
+- Keith approval recorded for registration (2026-07-15)
+
+#### Purpose
+
+BILLING-READY-05D established webhook event ingestion and idempotency: `WebhookEvent` entity, `WebhookService`, `WebhookController`, `WebhookEventRepository`, raw body parsing (`rawBody: true` in `main.ts`), idempotent event persistence with `processed_at` and `processing_status`, and deferred handling of credit top-up accounting.
+
+BILLING-READY-05E covers the credit grant and top-up accounting layer: the `credit_grants` schema/entity/migration requirements, `CreditGrantService`, paid top-up grant model, subscription monthly credit grant model, idempotency model for no-double-credit, credit balance mutation boundary, and transaction boundary for grant creation and balance update. Exact scope and implementation vs. further split decisions will be determined in Step 2.
+
+#### Future Step 2 Must Decide
+
+- Exact source paths for 04 credit balance repository/gateway/deduction system
+- Exact source paths for 05C top-up package mapping
+- Exact source paths for 05D webhook service/event repository
+- Exact credit_grants schema/entity/migration requirements
+- Exact credit grant status model
+- Exact grant source/event idempotency model
+- Exact top-up package to credit amount mapping
+- Exact subscription renewal/monthly credit model
+- Exact credit_balances mutation model
+- Exact transaction boundary
+- Exact handling for duplicate webhook events
+- Exact failure/retry behavior
+- Exact tests required
+- Whether 05E is one bounded implementation, migration-only, validation-only, provider-call implementation, or must split further before Step 3
+
+#### Expected Future Scope
+
+- Review 04 credit balance/deduction foundations
+- Review 05C checkout top-up package mapping
+- Review 05D webhook event ingestion and top-up deferral
+- Decide exact credit_grants schema/entity/migration requirements
+- Decide exact paid top-up grant model
+- Decide exact subscription monthly credit grant model
+- Decide exact idempotency model for no-double-credit
+- Decide exact credit_balances mutation boundary
+- Decide whether purchased credits and subscription credits are separate fields or combined
+- Decide exact transaction boundary for grant creation + balance update
+- Decide how webhook_events relates to credit_grants
+- Decide audit/error/retry behavior
+- Decide whether Step 3 can proceed without real provider calls
+- Preserve safety: no provider/payment API calls, no Stripe CLI tests, no env/package changes unless later explicitly approved
+
+#### Non-Goals (Registration Step)
+
+- No implementation during registration
+- No runtime execution during registration
+- No Docker/Postgres/Redis commands during registration
+- No DB query/mutation during registration
+- No migration creation or execution during registration
+- No Stripe/payment/provider API calls during registration
+- No Stripe CLI/webhook tests during registration
+- No env/secrets changes during registration
+- No package/dependency changes during registration
+- No Stripe SDK installation during registration
+- No checkout session creation changes (already covered by 05C)
+- No webhook ingestion/idempotency changes unless Step 2 later approves a bounded 05D integration point
+- No frontend UI (defer to 05F)
+- No parent regression/consolidation (defer to 05G)
+- No AGENT-HARNESS write canary
+- No browser smoke
+- No git commits/pushes
+
+#### Runtime Safety Note
+
+Future backend/DB/runtime validation must explicitly ensure Docker/PostgreSQL/Redis readiness before execution. Do not assume services are running.
+
+#### Payment / Accounting Safety Note
+
+BILLING-READY-05E registration does not approve live or test-mode Stripe/payment provider calls. It also does not approve real credit balance mutation, DB migration execution, Stripe CLI/webhook tests, env secret changes, package install, Stripe SDK import, or live payment action. Any future financial ledger mutation/runtime validation must be explicitly approved in a later step.
+
+#### UX/UI Note
+
+No UI text should be added during registration. If future work adds user-facing UX/UI text, aiSandBox is multilingual-first and must update:
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impeccable and Emil Kowalski skills are advisory only.
+
+#### Acceptance Criteria
+
+###### Registration (Step 1 — COMPLETE 2026-07-15)
+- [x] BILLING-READY-05E registered as current ACTIVE child slice
+- [x] Parent BILLING-READY-05 remains ACTIVE with split child-slice status
+- [x] BILLING-READY-05A remains COMPLETE and LOCKED
+- [x] BILLING-READY-05B remains COMPLETE and LOCKED
+- [x] BILLING-READY-05C remains COMPLETE and LOCKED
+- [x] BILLING-READY-05D remains COMPLETE and LOCKED
+- [x] BILLING-READY-05F/05G remain planned only and not registered
+- [x] BILLING-READY-04 remains COMPLETE and LOCKED
+- [x] BILLING-READY-04A/04B/04C/04D remain COMPLETE and LOCKED
+- [x] BILLING-READY-03 remains COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-07F remains COMPLETE and LOCKED
+- [x] AGENT-HARNESS-07/06E remain COMPLETE and LOCKED
+- [x] Registration records 05E is credit grant / top-up accounting planning only
+- [x] Registration records no implementation/runtime execution occurred
+- [x] Registration records no billing provider/payment calls occurred
+- [x] Registration records no env/secrets/package changes occurred
+- [x] Registration records no Stripe SDK/package approval occurred
+- [x] Registration records no Stripe CLI/webhook tests occurred
+- [x] Registration records no migrations were created or executed
+- [x] Registration records no credit balance mutation occurred
+- [x] Registration records no credit grant/accounting source changes occurred
+- [x] Registration records next step is 05E credit grant / top-up accounting readiness review
+- [x] Registration records AGENT-HARNESS write canary remains separate and not registered
+- [x] No implementation files changed
+- [x] No commands run
+- [x] One-active-task rule satisfied
+
+###### Step 2 — Readiness Review (COMPLETE 2026-07-15)
+- [x] `docs/BILLING-READY-05E-CREDIT-GRANT-TOP-UP-ACCOUNTING-READINESS.md` created
+- [x] `credit_grants` table/entity/migration requirements decided
+- [x] Credit grant status model decided: `pending` / `granted` / `failed` / `ignored`
+- [x] Top-up pack → credit amount mapping decided: `TOP_UP_PACK_MAP` from 05C
+- [x] Subscription monthly credit allocation decided: `MONTHLY_CREDIT_ALLOCATIONS`
+- [x] Initial subscription grant trigger decided: `checkout.session.completed` subscription mode
+- [x] Renewal grant trigger decided: `invoice_paid` with valid `subscriptionId`
+- [x] `CreditBalanceRepository.addBalance()` new method decided
+- [x] `DataSource.transaction()` boundary decided — same pattern as deduction gateway
+- [x] Three-layer idempotency model decided
+- [x] Webhook integration boundary decided — bounded modification to 05D files
+- [x] Keith explicitly approved `credit_grants` migration and credit balance accounting implementation before Step 3
+- [x] No Stripe SDK / package / env changes in Step 2 — confirmed
+- [x] Migration file to be created but NOT executed — confirmed
+- [x] Further split not required — single bounded Step 3 sufficient
+- [x] No provider API calls in Step 2
+- [x] No env/secrets/package/governance changes in Step 2
+
+###### Step 3 — Implementation (COMPLETE 2026-07-15)
+- [x] `services/api-gateway/src/entities/credit-grant.entity.ts` created — `@Entity('credit_grants')`, 20 columns, status default `pending`, `source_event_id` unique, CHECK constraints, constants
+- [x] `services/api-gateway/src/billing/credit-grant/credit-grant.repository.ts` created — `findBySourceEventId()`, `findByWebhookEventId()`, `createGrant()`, `markGranted()`, `markFailed()`, `markIgnored()`
+- [x] `services/api-gateway/src/billing/credit-grant/credit-grant.service.ts` created — `processGrant()`, `resolveTopUpAmount()`, `resolveSubscriptionAmount()`, `DataSource.transaction()`, three-layer idempotency
+- [x] `services/api-gateway/src/billing/credit-grant/credit-grant.module.ts` created — imports `CreditPersistenceModule`, `TypeOrmModule.forFeature([CreditGrant, WebhookEvent])`
+- [x] `services/api-gateway/src/billing/credit-grant/index.ts` created — barrel export
+- [x] `services/api-gateway/src/migrations/1772400000000-CreateCreditGrantsTable.ts` created — NOT executed
+- [x] `services/api-gateway/src/entities/index.ts` modified — `CreditGrant` export added
+- [x] `services/api-gateway/src/billing/credit-deduction/credit-balance.repository.ts` modified — `addBalance()` added
+- [x] `services/api-gateway/src/billing/webhook/webhook.service.ts` modified — `CreditGrantService` injected; `handleCheckoutCompleted()` and `handleInvoicePaid()` call grant service
+- [x] `services/api-gateway/src/billing/webhook/webhook.module.ts` modified — `CreditGrantModule` imported
+- [x] `credit-grant.entity.spec.ts` created — 10 tests PASS
+- [x] `credit-grant.repository.spec.ts` created — 13 tests PASS
+- [x] `credit-grant.service.spec.ts` created — 27 tests PASS
+- [x] `credit-grant.module.spec.ts` created — 5 tests PASS
+- [x] `credit-grant-migration.spec.ts` created — 17 tests PASS
+- [x] `credit-grant-integration.spec.ts` created — 24 tests PASS
+- [x] `npx jest --runInBand "credit-grant"` — PASS 96/96, 6 suites
+- [x] `npx jest --runInBand "webhook"` — PASS 108/108, 6 suites
+- [x] `npx jest --runInBand "credit-balance"` — PASS 74/74, 5 suites
+- [x] `npx jest --runInBand "checkout"` — PASS 58/58, 4 suites
+- [x] `npx jest --runInBand "usage-ledger"` — PASS 60/60, 2 suites
+- [x] Total: 96 new + 300 regression = 396/396 PASS
+- [x] `npx tsc --noEmit` — PASS exit code 0
+- [x] Linter (new/changed files) — PASS 0 errors
+- [x] No Stripe SDK / package added
+- [x] No provider API calls in Step 3
+- [x] No env/secrets/package changes in Step 3
+- [x] Migration file created but NOT executed
+- [x] No frontend changes in Step 3
+- [x] No governance files changed during Step 3
+- [x] No Docker/Postgres/Redis/runtime calls in Step 3
+- [x] No real provider/payment validation in Step 3
+- [x] No AGENT-HARNESS write canary in Step 3
+
+###### Step 4 — Consolidation / Checkpoint (COMPLETE 2026-07-15)
+- [x] `docs/BILLING-READY-05E-CHECKPOINT.md` created
+- [x] BILLING-READY-05E marked COMPLETE and LOCKED
+- [x] Parent BILLING-READY-05 remains ACTIVE with updated child-slice split table (05E COMPLETE and LOCKED, 05F planned / next recommended)
+- [x] TASKS.md updated — 05E COMPLETE and LOCKED, split table updated, validation results recorded
+- [x] TASKS_BACKLOG_FULL.md mirrors TASKS.md
+- [x] `docs/AINOW-EXECUTION-ROADMAP.md` updated — 05E COMPLETE and LOCKED, 05F next recommended not registered
+- [x] BILLING-READY-05F recorded as next recommended — not registered
+- [x] Provider/payment calls remain not approved
+- [x] Env/secrets/package changes remain not approved
+- [x] Stripe SDK/package install remains not approved
+- [x] Stripe CLI/webhook tests remain not approved
+- [x] AGENT-HARNESS write canary remains separate and not registered
+- [x] No implementation files changed during consolidation
+- [x] No tests/builds/runtime/provider/accounting calls during consolidation
+
+**AGENT-HARNESS write canary remains a separate track** — not registered, not part of BILLING-READY-05E.
+
+**BILLING-READY-05E status:** COMPLETE and LOCKED — 2026-07-15. All 4 steps complete. Production files created: 6 (`credit-grant.entity.ts`, `credit-grant.repository.ts`, `credit-grant.service.ts`, `credit-grant.module.ts`, `index.ts`, migration `1772400000000-CreateCreditGrantsTable.ts`). Production files modified: 4 (`entities/index.ts` — CreditGrant export, `credit-balance.repository.ts` — addBalance() added, `webhook.service.ts` — CreditGrantService injected + grant calls, `webhook.module.ts` — CreditGrantModule imported). Test files created: 6. Tests: `credit-grant` 96/96 PASS (6 suites). Regression: `webhook` 108/108 PASS, `credit-balance` 74/74 PASS, `checkout` 58/58 PASS, `usage-ledger` 60/60 PASS. Total: 96 new + 300 regression = 396/396 PASS. `npx tsc --noEmit` exit 0. Linter 0 errors. No Stripe SDK. No provider API calls. No env/secrets changes. Migration created, NOT executed. No real DB calls. No frontend. No AGENT-HARNESS write canary. Checkpoint: `docs/BILLING-READY-05E-CHECKPOINT.md`. Parent BILLING-READY-05 remains ACTIVE with child-slice execution in progress. 05A COMPLETE and LOCKED. 05B COMPLETE and LOCKED. 05C COMPLETE and LOCKED. 05D COMPLETE and LOCKED. 05F/05G planned only and not registered. Next recommended: BILLING-READY-05F — Billing UI / Customer Portal — not registered. Provider/payment calls remain not approved. Env/secrets/package changes remain not approved. Stripe SDK/package install remains not approved. Stripe CLI/webhook tests remain not approved. AGENT-HARNESS write canary remains a separate track.
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-05E.
 
 ---
 

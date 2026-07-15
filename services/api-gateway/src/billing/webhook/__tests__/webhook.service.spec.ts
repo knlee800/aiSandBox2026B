@@ -2,6 +2,7 @@ import { WebhookService, WebhookVerificationError } from '../webhook.service';
 import type { WebhookEventRepository } from '../webhook-event.repository';
 import type { SubscriptionRepository } from '../../subscription/subscription.repository';
 import type { StripePaymentProvider } from '../../../payments/providers/stripe-payment.provider';
+import type { CreditGrantService } from '../../credit-grant/credit-grant.service';
 import type { Repository } from 'typeorm';
 import type { User } from '../../../entities/user.entity';
 import type { WebhookEvent } from '../../../entities/webhook-event.entity';
@@ -12,6 +13,7 @@ describe('WebhookService (05D)', () => {
   let mockWebhookRepo: jest.Mocked<Partial<WebhookEventRepository>>;
   let mockSubRepo: jest.Mocked<Partial<SubscriptionRepository>>;
   let mockUserRepo: jest.Mocked<Partial<Repository<User>>>;
+  let mockCreditGrantService: jest.Mocked<Partial<CreditGrantService>>;
 
   const testUser = {
     id: 'user-uuid-1',
@@ -85,11 +87,22 @@ describe('WebhookService (05D)', () => {
       update: jest.fn().mockResolvedValue(undefined),
     };
 
+    mockCreditGrantService = {
+      processGrant: jest.fn().mockResolvedValue({
+        grantId: 'grant-uuid-stub',
+        status: 'granted',
+        amount: 0,
+        balanceBefore: 0,
+        balanceAfter: 0,
+      }),
+    };
+
     service = new WebhookService(
       mockProvider as any,
       mockWebhookRepo as any,
       mockSubRepo as any,
       mockUserRepo as any,
+      mockCreditGrantService as any,
     );
   });
 
@@ -696,18 +709,20 @@ describe('WebhookService (05D)', () => {
   // No credit balance mutation
   // ---------------------------------------------------------------------------
 
-  describe('no credit balance mutation in any handler', () => {
-    it('service source does not reference credit_balances or credit_deduction_records', () => {
+  describe('no direct credit balance mutation in any handler', () => {
+    it('service source does not directly reference credit_balances or credit_deduction_records', () => {
       const source = require('fs').readFileSync(
         require('path').resolve(__dirname, '../webhook.service.ts'),
         'utf-8',
       );
+      // 05E: WebhookService delegates to CreditGrantService for credit mutations.
+      // It must NOT directly reference balance or deduction entities/repositories.
       expect(source).not.toContain('credit_balance');
       expect(source).not.toContain('CreditBalance');
       expect(source).not.toContain('credit_deduction');
       expect(source).not.toContain('CreditDeduction');
-      expect(source).not.toContain('creditGrant');
-      expect(source).not.toContain('CreditGrant');
+      // 05E: CreditGrantService is now injected — this is the approved integration
+      expect(source).toContain('CreditGrantService');
     });
   });
 

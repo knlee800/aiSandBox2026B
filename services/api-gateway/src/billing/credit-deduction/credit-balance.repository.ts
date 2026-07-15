@@ -105,6 +105,32 @@ export class CreditBalanceRepository {
     return updated;
   }
 
+  /**
+   * BILLING-READY-05E: Increment balance for credit grants.
+   * Symmetric to deductBalance(). Uses the same EntityManager pattern
+   * for transactional atomicity with FOR UPDATE locks.
+   */
+  async addBalance(
+    id: string,
+    newBalance: number,
+    manager?: EntityManager,
+  ): Promise<CreditBalance> {
+    if (manager) {
+      await manager.update(CreditBalance, { id }, { balance: newBalance });
+      const updated = await manager.findOne(CreditBalance, { where: { id } });
+      if (!updated) {
+        throw new Error(`CreditBalance not found after update: ${id}`);
+      }
+      return updated;
+    }
+    await this.repository.update({ id }, { balance: newBalance });
+    const updated = await this.repository.findOne({ where: { id } });
+    if (!updated) {
+      throw new Error(`CreditBalance not found after update: ${id}`);
+    }
+    return updated;
+  }
+
   async resetForNewPeriod(
     id: string,
     params: ResetBalanceParams,

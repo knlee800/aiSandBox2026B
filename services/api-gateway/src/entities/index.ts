@@ -37,6 +37,17 @@ export type {
   WebhookEventStatus,
   WebhookProvider,
 } from './webhook-event.entity';
+export { CreditGrant } from './credit-grant.entity';
+export {
+  CREDIT_GRANT_STATUSES,
+  CREDIT_GRANT_TYPES,
+  CREDIT_GRANT_SOURCE_TYPES,
+} from './credit-grant.entity';
+export type {
+  CreditGrantStatus,
+  CreditGrantType,
+  CreditGrantSourceType,
+} from './credit-grant.entity';
 export { UserRole } from './user-role.enum';
 export { SessionStatus } from './session-status.enum';
 export { ChatMessageRole } from './chat-message-role.enum';
