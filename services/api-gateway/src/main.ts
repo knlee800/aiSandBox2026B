@@ -15,6 +15,7 @@ import { HttpExceptionFilter } from './filters/http-exception.filter';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ['log', 'error', 'warn', 'debug'],
+    rawBody: true,
   });
 
   // Enable CORS for frontend

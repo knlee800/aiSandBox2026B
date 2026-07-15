@@ -28,6 +28,15 @@ export type {
   SubscriptionStatus,
   SubscriptionPlanType,
 } from './subscription.entity';
+export { WebhookEvent } from './webhook-event.entity';
+export {
+  WEBHOOK_EVENT_STATUSES,
+  WEBHOOK_PROVIDERS,
+} from './webhook-event.entity';
+export type {
+  WebhookEventStatus,
+  WebhookProvider,
+} from './webhook-event.entity';
 export { UserRole } from './user-role.enum';
 export { SessionStatus } from './session-status.enum';
 export { ChatMessageRole } from './chat-message-role.enum';

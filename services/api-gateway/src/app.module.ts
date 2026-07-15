@@ -27,6 +27,7 @@ import { ProjectsModule } from './projects/projects.module';
 import { PublicApiModule } from './public-api/public-api.module';
 import { WorkspacesModule } from './workspaces/workspaces.module';
 import { CheckoutModule } from './billing/checkout/checkout.module';
+import { WebhookModule } from './billing/webhook/webhook.module';
 import { UserAiInstructionsModule } from './user-ai-instructions/user-ai-instructions.module';
 import { ProjectAiContextModule } from './project-ai-context/project-ai-context.module';
 import { ProjectRepoDocsModule } from './project-repo-docs/project-repo-docs.module';
@@ -80,6 +81,7 @@ import { IdempotentReplayExceptionFilter } from './filters/idempotent-replay-exc
     WorkspacesModule, // WS-02: Personal workspace CRUD endpoints
     PublicApiModule, // ADV-04-01: Dedicated /api/v1 public API surface
     CheckoutModule, // BILLING-READY-05C: Checkout / credit top-up session creation
+    WebhookModule, // BILLING-READY-05D: Webhook event ingestion / idempotency
   ],
   controllers: [],
   providers: [
