@@ -25152,7 +25152,7 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 
 **Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` �X controls cross-family priority order; Knowledge before Collaboration before Billing.
 
-**Current stage:** BILLING-READY-05E COMPLETE and LOCKED (2026-07-15) — all 4 steps complete — Credit Grant / Top-Up Accounting — fifth child slice of BILLING-READY-05 — 6 production files created + 4 modified (`entities/index.ts`, `credit-balance.repository.ts`, `webhook.service.ts`, `webhook.module.ts`) + 6 test files — 96 new + 300 regression = 396/396 PASS — TypeScript clean — linter 0 errors. Checkpoint: `docs/BILLING-READY-05E-CHECKPOINT.md`. BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-05 ACTIVE — Steps 1–2 COMPLETE (2026-07-13) — Keith approved split into 05A–05G — 05A COMPLETE and LOCKED — 05B COMPLETE and LOCKED — 05C COMPLETE and LOCKED — 05D COMPLETE and LOCKED — 05E COMPLETE and LOCKED (2026-07-15) — 05F planned / next recommended — 05G planned. No ACTIVE child slice. Next recommended: BILLING-READY-05F — Billing UI / Customer Portal — not registered. AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
+**Current stage:** BILLING-READY-05F COMPLETE and LOCKED (2026-07-15) — all 4 steps complete — Billing UI / Customer Portal — sixth child slice of BILLING-READY-05 — 3 backend files created (billing-read.controller.ts, billing-read.module.ts, billing-read.controller.spec.ts) + 1 modified (app.module.ts) + 7 frontend files created (billing/page.tsx, billing-page-client.tsx, billing-balance-card.tsx, billing-subscription-card.tsx, billing-topup-section.tsx, useBillingData.ts, billing-page-client.test.tsx) + 3 translation files modified (en.json, zh-TW.json, zh-CN.json, 30 keys per locale) — billing-read 12/12 PASS — checkout 58/58 PASS — frontend 640/640 PASS — TypeScript clean — linter 0 errors. Checkpoint: `docs/BILLING-READY-05F-CHECKPOINT.md`. BILLING-READY-05E COMPLETE and LOCKED (2026-07-15). BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-05 ACTIVE — Steps 1–2 COMPLETE (2026-07-13) — Keith approved split into 05A–05G — 05A COMPLETE and LOCKED — 05B COMPLETE and LOCKED — 05C COMPLETE and LOCKED — 05D COMPLETE and LOCKED — 05E COMPLETE and LOCKED (2026-07-15) — 05F COMPLETE and LOCKED (2026-07-15) — 05G planned / next recommended. BILLING-READY-05G planned only — next recommended — not registered. AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 �X ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED �X 2026-07-04)
@@ -30912,7 +30912,7 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 #### BILLING-READY-05: Stripe / Payment Provider Integration, Subscription Lifecycle, Credit Top-Up
 
-**Status:** ACTIVE — Steps 1–2 COMPLETE. Step 3 IN PROGRESS via child slices. 05A COMPLETE and LOCKED (2026-07-15). 05B COMPLETE and LOCKED (2026-07-15). 05C COMPLETE and LOCKED (2026-07-15). 05D COMPLETE and LOCKED (2026-07-15). 05E ACTIVE — Step 1 COMPLETE (Registration — 2026-07-15). Step 2 COMPLETE (Payment Provider Readiness / Source-Path Review — 2026-07-13). Keith approved split into child slices 05A–05G.
+**Status:** ACTIVE — Steps 1–2 COMPLETE. Step 3 IN PROGRESS via child slices. 05A COMPLETE and LOCKED (2026-07-15). 05B COMPLETE and LOCKED (2026-07-15). 05C COMPLETE and LOCKED (2026-07-15). 05D COMPLETE and LOCKED (2026-07-15). 05E COMPLETE and LOCKED (2026-07-15). 05F ACTIVE — Step 1 COMPLETE (Registration — 2026-07-15). Step 2 COMPLETE (Payment Provider Readiness / Source-Path Review — 2026-07-13). Keith approved split into child slices 05A–05G.
 **Task ID:** BILLING-READY-05
 **Family:** BILLING READY / STRIPE PAYMENT PROVIDER / SUBSCRIPTION LIFECYCLE / CREDIT TOP-UP
 **Priority:** High
@@ -30925,7 +30925,7 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 1. **Registration** — COMPLETE (2026-07-13)
 2. **Payment provider readiness / source-path review** — COMPLETE (2026-07-13). See `docs/BILLING-READY-05-PAYMENT-PROVIDER-READINESS-REVIEW.md`. Stripe selected. Split into 05A–05G approved.
-3. **Bounded implementation — executed via child slices 05A–05G** — IN PROGRESS. 05A COMPLETE and LOCKED (2026-07-15). 05B COMPLETE and LOCKED (2026-07-15). 05C COMPLETE and LOCKED (2026-07-15). 05D COMPLETE and LOCKED (2026-07-15). 05E ACTIVE — Step 1 COMPLETE (Registration — 2026-07-15).
+3. **Bounded implementation — executed via child slices 05A–05G** — IN PROGRESS. 05A COMPLETE and LOCKED (2026-07-15). 05B COMPLETE and LOCKED (2026-07-15). 05C COMPLETE and LOCKED (2026-07-15). 05D COMPLETE and LOCKED (2026-07-15). 05E COMPLETE and LOCKED (2026-07-15). 05F ACTIVE — Step 1 COMPLETE (Registration — 2026-07-15).
 4. **Consolidation / checkpoint** — PENDING (deferred to 05G)
 
 ##### Approved Child-Slice Plan (05A–05G — Keith approval 2026-07-13)
@@ -30936,8 +30936,8 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 | 05B | Customer / Subscription Persistence | **COMPLETE and LOCKED — 2026-07-15** |
 | 05C | Checkout / Credit Top-Up Session Creation | **COMPLETE and LOCKED — 2026-07-15** |
 | 05D | Webhook Event Ingestion / Idempotency | **COMPLETE and LOCKED — 2026-07-15** |
-| 05E | Credit Grant / Top-Up Accounting | **ACTIVE — Step 1 COMPLETE (Registration — 2026-07-15)** |
-| 05F | Billing UI / Customer Portal | Planned only — not registered |
+| 05E | Credit Grant / Top-Up Accounting | **COMPLETE and LOCKED — 2026-07-15** |
+| 05F | Billing UI / Customer Portal | **ACTIVE — Step 1 COMPLETE (Registration — 2026-07-15)** |
 | 05G | Regression / Runtime Validation + Parent Consolidation | Planned only — not registered |
 
 #### Dependencies
@@ -31046,7 +31046,7 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 **AGENT-HARNESS write canary remains a separate track** — not registered, not part of BILLING-READY-05.
 
-**BILLING-READY-05 status:** ACTIVE — Steps 1–2 COMPLETE (2026-07-13). Step 3 IN PROGRESS via child slices. Step 2: payment provider readiness review complete — Stripe selected — split into 05A–05G approved by Keith 2026-07-13. Child-slice split table: 05A COMPLETE and LOCKED (2026-07-15) | 05B COMPLETE and LOCKED (2026-07-15) | 05C COMPLETE and LOCKED (2026-07-15) | 05D COMPLETE and LOCKED (2026-07-15) | 05E COMPLETE and LOCKED (2026-07-15) | 05F planned / next recommended | 05G planned. Step 2 readiness review: `docs/BILLING-READY-05-PAYMENT-PROVIDER-READINESS-REVIEW.md`. BILLING-READY-05F/05G are planned only and not registered. BILLING-READY-05E COMPLETE and LOCKED — 2026-07-15. Checkpoint: `docs/BILLING-READY-05E-CHECKPOINT.md`. BILLING-READY-05D COMPLETE and LOCKED — 2026-07-15. Checkpoint: `docs/BILLING-READY-05D-CHECKPOINT.md`. No current ACTIVE child slice. Next recommended: BILLING-READY-05F — Billing UI / Customer Portal — not registered. AGENT-HARNESS write canary remains a separate track. Provider/payment calls remain not approved. Env/secrets/package changes remain not approved. Stripe SDK/package install remains not approved. Stripe CLI/webhook tests remain not approved. AGENT-HARNESS write canary remains separate and not registered.
+**BILLING-READY-05 status:** ACTIVE — Steps 1–2 COMPLETE (2026-07-13). Step 3 IN PROGRESS via child slices. Step 2: payment provider readiness review complete — Stripe selected — split into 05A–05G approved by Keith 2026-07-13. Child-slice split table: 05A COMPLETE and LOCKED (2026-07-15) | 05B COMPLETE and LOCKED (2026-07-15) | 05C COMPLETE and LOCKED (2026-07-15) | 05D COMPLETE and LOCKED (2026-07-15) | 05E COMPLETE and LOCKED (2026-07-15) | 05F COMPLETE and LOCKED (2026-07-15) | 05G planned / next recommended. Step 2 readiness review: `docs/BILLING-READY-05-PAYMENT-PROVIDER-READINESS-REVIEW.md`. BILLING-READY-05F COMPLETE and LOCKED — 2026-07-15. Checkpoint: `docs/BILLING-READY-05F-CHECKPOINT.md`. BILLING-READY-05G planned only — next recommended — not registered. BILLING-READY-05E COMPLETE and LOCKED — 2026-07-15. Checkpoint: `docs/BILLING-READY-05E-CHECKPOINT.md`. BILLING-READY-05D COMPLETE and LOCKED — 2026-07-15. Checkpoint: `docs/BILLING-READY-05D-CHECKPOINT.md`. No current ACTIVE child slice — 05G not yet registered. AGENT-HARNESS write canary remains a separate track. Provider/payment calls remain not approved. Env/secrets/package changes remain not approved. Stripe SDK/package install remains not approved. Stripe CLI/webhook tests remain not approved. Browser smoke was not performed. AGENT-HARNESS write canary remains separate and not registered.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-05.
 
@@ -31996,6 +31996,231 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 **BILLING-READY-05E status:** COMPLETE and LOCKED — 2026-07-15. All 4 steps complete. Production files created: 6 (`credit-grant.entity.ts`, `credit-grant.repository.ts`, `credit-grant.service.ts`, `credit-grant.module.ts`, `index.ts`, migration `1772400000000-CreateCreditGrantsTable.ts`). Production files modified: 4 (`entities/index.ts` — CreditGrant export, `credit-balance.repository.ts` — addBalance() added, `webhook.service.ts` — CreditGrantService injected + grant calls, `webhook.module.ts` — CreditGrantModule imported). Test files created: 6. Tests: `credit-grant` 96/96 PASS (6 suites). Regression: `webhook` 108/108 PASS, `credit-balance` 74/74 PASS, `checkout` 58/58 PASS, `usage-ledger` 60/60 PASS. Total: 96 new + 300 regression = 396/396 PASS. `npx tsc --noEmit` exit 0. Linter 0 errors. No Stripe SDK. No provider API calls. No env/secrets changes. Migration created, NOT executed. No real DB calls. No frontend. No AGENT-HARNESS write canary. Checkpoint: `docs/BILLING-READY-05E-CHECKPOINT.md`. Parent BILLING-READY-05 remains ACTIVE with child-slice execution in progress. 05A COMPLETE and LOCKED. 05B COMPLETE and LOCKED. 05C COMPLETE and LOCKED. 05D COMPLETE and LOCKED. 05F/05G planned only and not registered. Next recommended: BILLING-READY-05F — Billing UI / Customer Portal — not registered. Provider/payment calls remain not approved. Env/secrets/package changes remain not approved. Stripe SDK/package install remains not approved. Stripe CLI/webhook tests remain not approved. AGENT-HARNESS write canary remains a separate track.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-05E.
+
+---
+
+#### BILLING-READY-05F: Billing UI / Customer Portal
+
+**Status:** COMPLETE and LOCKED — 2026-07-15
+**Task ID:** BILLING-READY-05F
+**Family:** BILLING READY / STRIPE PAYMENT PROVIDER / BILLING UI / CUSTOMER PORTAL
+**Parent:** BILLING-READY-05
+**Priority:** High
+**Nature:** ARCHITECTURE / PLANNING + IMPLEMENTATION — billing UI, customer portal entry points, checkout flow, credit balance/top-up display, subscription status display
+**Risk:** HIGH — 4-step child-slice loop
+**Registered:** 2026-07-15
+**Completed:** 2026-07-15
+**Keith approval:** Keith explicitly approved BILLING-READY-05F registration 2026-07-15.
+
+#### Workflow Steps (4-step loop — HIGH risk — CHILD SLICE of BILLING-READY-05)
+
+1. **Registration** — COMPLETE (2026-07-15)
+2. **Billing UI / customer portal readiness / exact UX and API boundary** — COMPLETE (2026-07-15). See `docs/BILLING-READY-05F-BILLING-UI-CUSTOMER-PORTAL-READINESS.md`.
+3. **Bounded implementation — frontend+backend billing UI** — COMPLETE (2026-07-15). 3 backend files + 1 modified + 7 frontend files + 3 translation files. 12 backend tests + 22 frontend tests PASS.
+4. **Consolidation / checkpoint** — COMPLETE (2026-07-15). See `docs/BILLING-READY-05F-CHECKPOINT.md`.
+
+#### Dependencies
+
+- BILLING-READY-05 ACTIVE with 05A–05G split approved
+- BILLING-READY-05A COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-05B COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-05C COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-05D COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-05E COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-04 COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-04A COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-04B COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-04C COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-04D COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-03 COMPLETE and LOCKED (2026-07-07)
+- AGENT-PLATFORM-07F COMPLETE and LOCKED (2026-07-12)
+- AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07)
+- AGENT-HARNESS-06E COMPLETE and LOCKED (2026-07-09)
+- Keith approval recorded for registration (2026-07-15)
+
+#### Purpose
+
+BILLING-READY-05E established the credit grant and top-up accounting layer: `CreditGrant` entity, `CreditGrantRepository`, `CreditGrantService`, paid top-up grant model, subscription monthly credit grant model, three-layer idempotency, credit balance mutation via `addBalance()`, and transaction boundary for grant creation and balance update.
+
+BILLING-READY-05F covers the billing UI and customer portal surface: exact frontend route/page/component boundaries, checkout entry point UX, credit balance/top-up display, subscription status display, customer portal behavior (likely stub/deferred unless provider portal SDK/env is later approved), and frontend/backend API contract needs. Exact scope, UX/UI advisory skill usage, and implementation vs. further split decisions will be determined in Step 2.
+
+#### Future Step 2 Must Decide
+
+- Exact frontend route/page/component source paths
+- Exact existing billing/account/settings UI source paths
+- Exact checkout API client/source path
+- Exact credit balance/subscription/top-up data source paths
+- Whether 05F needs backend read endpoints or can use existing endpoints
+- Exact billing UI content and translation keys
+- Exact multilingual update boundary:
+  - `C:\Users\knlee\aiSandBox2026B\frontend\messages\en.json`
+  - `C:\Users\knlee\aiSandBox2026B\frontend\messages\zh-TW.json`
+  - `C:\Users\knlee\aiSandBox2026B\frontend\messages\zh-CN.json`
+- Exact Heroicons v2 Outline icon choices
+- Exact UX/UI advisory skill usage:
+  - Impeccable for broad billing/account page audit
+  - Emil Kowalski for component polish
+- Exact customer portal scope
+- Exact checkout button flow
+- Exact top-up package display model
+- Exact subscription status display model
+- Exact loading/error/empty states
+- Exact tests required
+- Whether 05F is one bounded implementation, frontend-only, frontend+backend, validation-only, or must split further before Step 3
+
+#### Expected Future Scope
+
+- Review 05C checkout endpoints and response contracts
+- Review 05E credit grant/top-up accounting
+- Review existing frontend account/settings/billing pages
+- Decide exact billing UI surface and route boundary
+- Decide exact checkout entry point UX
+- Decide exact customer portal behavior; likely stub/deferred unless provider portal SDK/env is later approved
+- Decide exact credit balance/subscription/top-up display model
+- Decide exact frontend/backend API contract needs
+- Decide exact translation key namespace and copy boundary
+- Decide exact Heroicons v2 Outline icon usage
+- Decide whether Impeccable or Emil Kowalski advisory UX/UI skill review is needed in Step 2
+- Decide if Step 3 is frontend-only, frontend+backend, or must split further
+- Preserve payment safety: no provider/payment calls, no Stripe SDK, no env/package changes unless later explicitly approved
+
+#### Non-Goals (Registration Step)
+
+- No implementation during registration
+- No runtime execution during registration
+- No Docker/Postgres/Redis commands during registration
+- No DB query/mutation during registration
+- No migration creation or execution during registration
+- No Stripe/payment/provider API calls during registration
+- No Stripe CLI/webhook tests during registration
+- No env/secrets changes during registration
+- No package/dependency changes during registration
+- No Stripe SDK installation during registration
+- No frontend code changes during registration
+- No translation file changes during registration
+- No checkout/backend behavior changes during registration
+- No credit grant/accounting changes during registration
+- No parent regression/consolidation (defer to 05G)
+- No AGENT-HARNESS write canary
+- No browser smoke
+- No git commits/pushes
+
+#### Runtime Safety Note
+
+Future backend/DB/runtime validation must explicitly ensure Docker/PostgreSQL/Redis readiness before execution. Do not assume services are running.
+
+#### Payment / Provider Safety Note
+
+BILLING-READY-05F registration does not approve live or test-mode Stripe/payment provider calls. It also does not approve Stripe customer portal API calls, env secret changes, package install, Stripe SDK import, Stripe CLI/webhook tests, real payment validation, or live payment action. Any future provider/customer portal call or env/package work must be explicitly approved in a later step.
+
+#### UX/UI Note
+
+aiSandBox is multilingual-first. Any future user-facing UX/UI text must update all three translation files at the same time:
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+Use existing translation hooks/patterns. Do not add hardcoded English UI copy.
+
+Icons must use Heroicons v2 Outline only (`@heroicons/react/24/outline`). Do not use Lucide, Font Awesome, Material Icons, or emoji unless explicitly approved. Use `currentColor` stroke, no fill, Tailwind sizing/color classes.
+
+UX/UI advisory skills:
+- Impeccable may be used for broad billing/account page audit.
+- Emil Kowalski may be used for bounded component polish.
+- Skills are advisory only and must never override CLAUDE.md, TASKS.md, TASKS_BACKLOG_FULL.md, current registered scope, architecture, or tests.
+- Do not use skills to trigger broad redesigns, dependency additions, routing changes, backend work, or architecture refactors unless explicitly approved.
+
+#### Acceptance Criteria
+
+###### Registration (Step 1 — COMPLETE 2026-07-15)
+- [x] BILLING-READY-05F registered as current ACTIVE child slice
+- [x] Parent BILLING-READY-05 remains ACTIVE with split child-slice status
+- [x] BILLING-READY-05A remains COMPLETE and LOCKED
+- [x] BILLING-READY-05B remains COMPLETE and LOCKED
+- [x] BILLING-READY-05C remains COMPLETE and LOCKED
+- [x] BILLING-READY-05D remains COMPLETE and LOCKED
+- [x] BILLING-READY-05E remains COMPLETE and LOCKED
+- [x] BILLING-READY-05G remains planned only and not registered
+- [x] BILLING-READY-04 remains COMPLETE and LOCKED
+- [x] BILLING-READY-04A/04B/04C/04D remain COMPLETE and LOCKED
+- [x] BILLING-READY-03 remains COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-07F remains COMPLETE and LOCKED
+- [x] AGENT-HARNESS-07/06E remain COMPLETE and LOCKED
+- [x] Registration records 05F is billing UI / customer portal planning only
+- [x] Registration records multilingual-first UI rule
+- [x] Registration records Heroicons v2 Outline icon rule
+- [x] Registration records Impeccable/Emil advisory skill constraints
+- [x] Registration records no implementation/runtime execution occurred
+- [x] Registration records no billing provider/payment/customer portal calls occurred
+- [x] Registration records no env/secrets/package changes occurred
+- [x] Registration records no Stripe SDK/package approval occurred
+- [x] Registration records no Stripe CLI/webhook tests occurred
+- [x] Registration records no migrations were created or executed
+- [x] Registration records no frontend/translation source changes occurred
+- [x] Registration records no credit balance mutation occurred
+- [x] Registration records next step is 05F billing UI / customer portal readiness review
+- [x] Registration records AGENT-HARNESS write canary remains separate and not registered
+- [x] No implementation files changed
+- [x] No commands run
+- [x] No subagents used
+- [x] One-active-task rule satisfied
+
+###### Step 2 — Billing UI / Customer Portal Readiness Review (COMPLETE 2026-07-15)
+- [x] Exact frontend route/page/component source paths decided
+- [x] Existing billing/account/settings UI source paths reviewed
+- [x] Checkout API client/source path decided
+- [x] Credit balance/subscription/top-up data source paths decided
+- [x] Backend read endpoint need decided (new endpoints required)
+- [x] Exact billing UI content and translation keys decided
+- [x] Multilingual update boundary confirmed (en.json, zh-TW.json, zh-CN.json)
+- [x] Heroicons v2 Outline icon choices decided
+- [x] Impeccable/Emil advisory skill usage decided
+- [x] Customer portal scope decided (disabled/stub only)
+- [x] Checkout button flow decided
+- [x] Top-up package display model decided
+- [x] Subscription status display model decided
+- [x] Loading/error/empty states decided
+- [x] Tests required decided
+- [x] Step 3 scope decided: one bounded frontend+backend Step 3
+
+###### Step 3 — Bounded Implementation — Frontend+Backend Billing UI (COMPLETE 2026-07-15)
+- [x] Billing UI implementation complete per Step 2 decisions
+- [x] All translation files updated (en.json, zh-TW.json, zh-CN.json) — 30 keys per locale, `billing` namespace
+- [x] Tests PASS — billing-read 12/12 PASS; billing-page-client 22/22 PASS; checkout regression 58/58 PASS; frontend 640/640 PASS
+- [x] TypeScript clean — api-gateway exit 0; frontend exit 0
+- [x] Linter 0 errors
+- [x] No Stripe SDK / package added
+- [x] No provider API calls
+- [x] No env/secrets/package changes
+- [x] No AGENT-HARNESS write canary
+- [x] Heroicons v2 Outline only (CreditCardIcon, BanknotesIcon, ArrowPathIcon, SparklesIcon, ArrowLeftIcon, CheckCircleIcon, XCircleIcon, ExclamationTriangleIcon)
+- [x] No hardcoded English UI copy — all text via useTranslations('billing')
+- [x] Customer portal disabled/stub — no backend endpoint — no provider/portal call
+- [x] No browser smoke performed
+- [x] No navigation/sidebar/account menu changes
+
+###### Step 4 — Consolidation / Checkpoint (COMPLETE 2026-07-15)
+- [x] `docs/BILLING-READY-05F-CHECKPOINT.md` created
+- [x] BILLING-READY-05F marked COMPLETE and LOCKED
+- [x] Parent BILLING-READY-05 remains ACTIVE with updated child-slice split table (05F COMPLETE and LOCKED, 05G planned / next recommended)
+- [x] TASKS.md updated — 05F COMPLETE and LOCKED, split table updated, validation recorded
+- [x] TASKS_BACKLOG_FULL.md mirrors TASKS.md
+- [x] `docs/AINOW-EXECUTION-ROADMAP.md` updated
+- [x] BILLING-READY-05G recorded as next recommended — not registered
+- [x] AGENT-HARNESS write canary remains separate and not registered
+- [x] Multilingual translation updates recorded (30 keys, billing namespace, all 3 locales)
+- [x] Heroicons v2 Outline usage recorded
+- [x] Validation results recorded
+- [x] Browser smoke not performed — recorded
+- [x] Provider/payment/customer portal calls remain not approved — recorded
+- [x] Env/secrets/package changes remain not approved — recorded
+- [x] Stripe SDK/package install remains not approved — recorded
+
+**AGENT-HARNESS write canary remains a separate track** — not registered, not part of BILLING-READY-05F.
+
+**BILLING-READY-05F status:** COMPLETE and LOCKED — 2026-07-15. All 4 steps complete. Backend files created: 3 (`billing-read.controller.ts`, `billing-read.module.ts`, `billing-read.controller.spec.ts`). Backend file modified: 1 (`app.module.ts` — BillingReadModule import). Frontend files created: 7 (`app/[locale]/billing/page.tsx`, `billing-page-client.tsx`, `billing-balance-card.tsx`, `billing-subscription-card.tsx`, `billing-topup-section.tsx`, `useBillingData.ts`, `billing-page-client.test.tsx`). Translation files modified: 3 (`en.json`, `zh-TW.json`, `zh-CN.json` — 30 keys each, billing namespace). Tests: `billing-read` 12/12 PASS; `billing-page-client` 22/22 PASS; `checkout` regression 58/58 PASS; frontend 640/640 PASS. `npx tsc --noEmit` exit 0 (api-gateway and frontend). Linter 0 errors. No Stripe SDK. No provider API calls. No env/secrets/package changes. No migrations. No customer portal backend endpoint. No real DB calls. No browser smoke. No AGENT-HARNESS write canary. Checkpoint: `docs/BILLING-READY-05F-CHECKPOINT.md`. Next recommended: BILLING-READY-05G — Regression / Runtime Validation + Parent Consolidation — not registered. AGENT-HARNESS write canary remains a separate track.
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-05F.
 
 ---
 
