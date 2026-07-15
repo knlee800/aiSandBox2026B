@@ -19,6 +19,15 @@ export { ProjectAiContext } from './project-ai-context.entity';
 export { ProjectRepoDoc } from './project-repo-doc.entity';
 export { CreditBalance } from './credit-balance.entity';
 export { CreditDeductionRecord } from './credit-deduction-record.entity';
+export { Subscription } from './subscription.entity';
+export {
+  SUBSCRIPTION_STATUSES,
+  SUBSCRIPTION_PLAN_TYPES,
+} from './subscription.entity';
+export type {
+  SubscriptionStatus,
+  SubscriptionPlanType,
+} from './subscription.entity';
 export { UserRole } from './user-role.enum';
 export { SessionStatus } from './session-status.enum';
 export { ChatMessageRole } from './chat-message-role.enum';

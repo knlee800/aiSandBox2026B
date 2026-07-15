@@ -25152,7 +25152,7 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 
 **Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` �X controls cross-family priority order; Knowledge before Collaboration before Billing.
 
-**Current stage:** BILLING-READY-05A ACTIVE — Step 1 COMPLETE (Registration — 2026-07-13). BILLING-READY-05 ACTIVE — Steps 1–2 COMPLETE (2026-07-13) — Keith approved split into 05A–05G — next: 05A Step 2 provider configuration/contracts readiness review. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
+**Current stage:** BILLING-READY-05B COMPLETE and LOCKED (2026-07-15) — all 4 steps complete — 4 production files + 2 migration files (not executed) + 4 test files — 53/53 subscription tests PASS — 74/74 credit-balance regression PASS — TypeScript clean — linter 0 errors. Checkpoint: `docs/BILLING-READY-05B-CHECKPOINT.md`. BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-05 ACTIVE — Steps 1–2 COMPLETE (2026-07-13) — Keith approved split into 05A–05G — 05A COMPLETE and LOCKED — 05B COMPLETE and LOCKED — next recommended: 05C NOT REGISTERED. No current ACTIVE child slice. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 �X ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED �X 2026-07-04)
@@ -31046,7 +31046,7 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 **AGENT-HARNESS write canary remains a separate track** — not registered, not part of BILLING-READY-05.
 
-**BILLING-READY-05 status:** ACTIVE — Steps 1–2 COMPLETE (2026-07-13). Step 3 in progress via child slices. Step 2: payment provider readiness review complete — Stripe selected — split into 05A–05G approved by Keith 2026-07-13. BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). Step 2 readiness review: `docs/BILLING-READY-05-PAYMENT-PROVIDER-READINESS-REVIEW.md`. No implementation, no runtime execution, no billing provider/payment calls, no env/secrets/package changes occurred during Steps 1–2. BILLING-READY-05B/05C/05D/05E/05F/05G are planned only and not registered. AGENT-HARNESS write canary remains a separate track. Next recommended child slice: BILLING-READY-05B — Customer / Subscription Persistence — not registered.
+**BILLING-READY-05 status:** ACTIVE — Steps 1–2 COMPLETE (2026-07-13). Step 3 IN PROGRESS via child slices. Step 2: payment provider readiness review complete — Stripe selected — split into 05A–05G approved by Keith 2026-07-13. Child-slice split table: 05A COMPLETE and LOCKED (2026-07-15) | 05B COMPLETE and LOCKED (2026-07-15) | 05C planned / next recommended | 05D planned | 05E planned | 05F planned | 05G planned. Step 2 readiness review: `docs/BILLING-READY-05-PAYMENT-PROVIDER-READINESS-REVIEW.md`. No implementation, no runtime execution, no billing provider/payment calls, no env/secrets/package changes occurred during Steps 1–2. BILLING-READY-05C/05D/05E/05F/05G are planned only and not registered. AGENT-HARNESS write canary remains a separate track. No current ACTIVE child slice — next recommended: BILLING-READY-05C — Checkout / Credit Top-Up Session Creation — NOT REGISTERED. Provider/payment calls remain not approved. Env/secrets/package changes remain not approved. AGENT-HARNESS write canary remains separate and not registered.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-05.
 
@@ -31198,9 +31198,174 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 **AGENT-HARNESS write canary remains a separate track** — not registered, not part of BILLING-READY-05A.
 
-**BILLING-READY-05A status:** COMPLETE and LOCKED — 2026-07-15. All 4 steps complete. Production files changed: 4. Test files created: 3. Total targeted tests: 79 PASS (`stripe-payment.provider` 49, `charge-readiness.service` 15, `payment-provider.contracts` 15). TypeScript clean. No Stripe SDK. No provider API calls. No env/secrets changes. No migrations. No frontend. Checkpoint: `docs/BILLING-READY-05A-CHECKPOINT.md`. Parent BILLING-READY-05 remains ACTIVE. Next recommended: BILLING-READY-05B — Customer / Subscription Persistence — not registered. AGENT-HARNESS write canary remains a separate track.
+**BILLING-READY-05A status:** COMPLETE and LOCKED — 2026-07-15. All 4 steps complete. Production files changed: 4. Test files created: 3. Total targeted tests: 79 PASS (`stripe-payment.provider` 49, `charge-readiness.service` 15, `payment-provider.contracts` 15). TypeScript clean. No Stripe SDK. No provider API calls. No env/secrets changes. No migrations. No frontend. Checkpoint: `docs/BILLING-READY-05A-CHECKPOINT.md`. Parent BILLING-READY-05 remains ACTIVE. Next child slice: BILLING-READY-05B — COMPLETE and LOCKED (2026-07-15). AGENT-HARNESS write canary remains a separate track.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-05A.
+
+---
+
+#### BILLING-READY-05B: Customer / Subscription Persistence
+
+**Status:** COMPLETE and LOCKED — 2026-07-15
+**Task ID:** BILLING-READY-05B
+**Family:** BILLING READY / STRIPE PAYMENT PROVIDER / CUSTOMER SUBSCRIPTION PERSISTENCE
+**Parent:** BILLING-READY-05
+**Priority:** High
+**Nature:** CUSTOMER / SUBSCRIPTION PERSISTENCE — TypeORM Subscription entity, SubscriptionRepository, SubscriptionModule, two migration files (subscription table alignment + customer ID unique index), unit tests
+**Risk:** HIGH — 4-step child-slice loop
+**Registered:** 2026-07-15
+**Completed:** 2026-07-15
+**Keith approval:** Keith explicitly approved BILLING-READY-05B registration 2026-07-15. Migration approved by Keith before Step 3 execution.
+
+#### Workflow Steps (4-step child-slice loop — HIGH risk)
+
+1. **Registration** — COMPLETE (2026-07-15)
+2. **Customer/subscription persistence readiness / exact schema boundary** — COMPLETE (2026-07-15). See `docs/BILLING-READY-05B-CUSTOMER-SUBSCRIPTION-PERSISTENCE-READINESS.md`.
+3. **Bounded implementation — entity, repository, module, migrations, tests** — COMPLETE (2026-07-15)
+4. **Consolidation / checkpoint** — COMPLETE (2026-07-15). See `docs/BILLING-READY-05B-CHECKPOINT.md`.
+
+#### Dependencies
+
+- BILLING-READY-05 ACTIVE with 05A–05G split approved
+- BILLING-READY-05A COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-04 COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-04A COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-04B COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-04C COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-04D COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-03 COMPLETE and LOCKED (2026-07-07)
+- AGENT-PLATFORM-07F COMPLETE and LOCKED (2026-07-12)
+- AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07)
+- AGENT-HARNESS-06E COMPLETE and LOCKED (2026-07-09)
+
+#### Purpose
+
+BILLING-READY-05B is the second child slice of BILLING-READY-05. BILLING-READY-05A established the provider configuration contract, disabled/stub/test-mode/live-mode behavior, provider client interface, and ChargeReadinessService kill-switch gate. 05B covers the customer and subscription persistence layer: TypeORM `Subscription` entity (aligning the existing raw SQL `subscriptions` table), `SubscriptionRepository`, `SubscriptionModule`, two migration files (subscription table alignment + customer ID unique index), and unit tests. No live provider calls, no Stripe SDK, no env changes, no migration execution occurred.
+
+#### Production Files Created / Changed
+
+| # | File | Action |
+|---|------|--------|
+| 1 | `services/api-gateway/src/entities/subscription.entity.ts` | CREATED — `@Entity('subscriptions')`, UUID PK, userId FK, ManyToOne User, all status/plan/period/cancellation fields |
+| 2 | `services/api-gateway/src/entities/index.ts` | EXTENDED — added `Subscription` export |
+| 3 | `services/api-gateway/src/billing/subscription/subscription.repository.ts` | CREATED — `findActiveByUserId`, `findByStripeSubscriptionId`, `findByUserId`, `createSubscription`, `updateSubscription` |
+| 4 | `services/api-gateway/src/billing/subscription/subscription.module.ts` | CREATED — `TypeOrmModule.forFeature([Subscription])`, provides/exports `SubscriptionRepository` |
+
+#### Migration Files Created (Not Executed)
+
+| # | File | Purpose |
+|---|------|---------|
+| 1 | `services/api-gateway/src/migrations/1772200000000-AlignSubscriptionsTableWithTypeORM.ts` | Align raw SQL `subscriptions` table; add columns; update CHECK constraints; add indexes |
+| 2 | `services/api-gateway/src/migrations/1772200100000-AddStripeCustomerIdUniqueIndex.ts` | Add `idx_users_stripe_customer_id` unique partial index on `users.stripe_customer_id` |
+
+Migration files are created but **not executed**. No live DB migration occurred in 05B.
+
+#### Test Files Created
+
+| # | File | Tests |
+|---|------|-------|
+| 1 | `services/api-gateway/src/billing/subscription/__tests__/subscription.entity.spec.ts` | 16 tests |
+| 2 | `services/api-gateway/src/billing/subscription/__tests__/subscription.repository.spec.ts` | 14 tests |
+| 3 | `services/api-gateway/src/billing/subscription/__tests__/subscription.module.spec.ts` | 3 tests |
+| 4 | `services/api-gateway/src/billing/subscription/__tests__/subscription-migration.spec.ts` | 20 tests |
+
+#### Subscription Entity — Plan Type / Status Values
+
+- Plan types: `free` | `starter` | `pro` | `team` (exported as `SUBSCRIPTION_PLAN_TYPES`)
+- Statuses: `active` | `trialing` | `past_due` | `cancelled` | `expired` | `unpaid` (exported as `SUBSCRIPTION_STATUSES`)
+- Auto-loaded by existing `database.config.ts` entity glob pattern
+
+#### Customer Identity Persistence
+
+- `users.stripe_customer_id` remains nullable `varchar(255)` — 1:1 user-to-customer mapping
+- Unique partial index `idx_users_stripe_customer_id` UNIQUE WHERE NOT NULL added by Migration 2
+- Multiple NULL values allowed (free/admin/beta/internal users)
+- No Stripe customer creation in 05B — deferred to 05C
+
+#### Non-Goals (This Task)
+
+- No Stripe SDK/package
+- No provider API calls
+- No env/secrets changes
+- No real DB migration execution
+- No checkout implementation (defer to 05C)
+- No webhook implementation (defer to 05D)
+- No credit-grant/top-up implementation (defer to 05E)
+- No `webhook_events` or `credit_grants` entities (defer to 05D/05E)
+- No frontend UI (defer to 05F)
+- No AGENT-HARNESS write canary
+
+#### Acceptance Criteria
+
+###### Registration (Step 1 — COMPLETE 2026-07-15)
+- [x] BILLING-READY-05B registered as current ACTIVE child slice
+- [x] Parent BILLING-READY-05 remains ACTIVE with split child-slice status
+- [x] BILLING-READY-05A remains COMPLETE and LOCKED
+- [x] BILLING-READY-05C/05D/05E/05F/05G recorded as planned only and not registered
+- [x] BILLING-READY-04 remains COMPLETE and LOCKED
+- [x] BILLING-READY-04A/04B/04C/04D remain COMPLETE and LOCKED
+- [x] BILLING-READY-03 remains COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-07F remains COMPLETE and LOCKED
+- [x] AGENT-HARNESS-07/06E remain COMPLETE and LOCKED
+- [x] Registration records 05B is customer/subscription persistence planning only
+- [x] Registration records no implementation/runtime execution occurred
+- [x] Registration records no billing provider/payment calls occurred
+- [x] Registration records no env/secrets/package changes occurred
+- [x] Registration records no migration was created
+- [x] Registration records next step is 05B customer/subscription persistence readiness review
+- [x] Registration records AGENT-HARNESS write canary remains separate and not registered
+- [x] No implementation files changed
+- [x] No commands run
+- [x] One-active-task rule satisfied
+
+###### Step 2 — Readiness Review (COMPLETE 2026-07-15)
+- [x] `docs/BILLING-READY-05B-CUSTOMER-SUBSCRIPTION-PERSISTENCE-READINESS.md` created
+- [x] Source-path review complete — users.stripe_customer_id, existing subscriptions table, TypeORM entity gap confirmed
+- [x] Decision: one bounded Step 3 implementation (no further split)
+- [x] Migration scope confirmed — subscription alignment + customer ID unique index
+- [x] Migration approved by Keith before Step 3
+- [x] No provider API calls in readiness review
+- [x] No env/secrets/package/governance changes in Step 2
+
+###### Step 3 — Implementation (COMPLETE 2026-07-15)
+- [x] `services/api-gateway/src/entities/subscription.entity.ts` created
+- [x] `services/api-gateway/src/entities/index.ts` extended with `Subscription` export
+- [x] `services/api-gateway/src/billing/subscription/subscription.repository.ts` created
+- [x] `services/api-gateway/src/billing/subscription/subscription.module.ts` created
+- [x] `services/api-gateway/src/migrations/1772200000000-AlignSubscriptionsTableWithTypeORM.ts` created
+- [x] `services/api-gateway/src/migrations/1772200100000-AddStripeCustomerIdUniqueIndex.ts` created
+- [x] `subscription.entity.spec.ts` created — 16 tests PASS
+- [x] `subscription.repository.spec.ts` created — 14 tests PASS
+- [x] `subscription.module.spec.ts` created — 3 tests PASS
+- [x] `subscription-migration.spec.ts` created — 20 tests PASS
+- [x] `npx jest --runInBand "subscription"` — PASS 53/53
+- [x] `npx jest --runInBand "migration"` — PASS 39/39
+- [x] `npx jest --runInBand "credit-balance"` — PASS 74/74 regression
+- [x] `npx tsc --noEmit` — PASS exit code 0
+- [x] Linter on new/changed files — PASS 0 errors
+- [x] No provider API calls in Step 3
+- [x] No env/secrets/package/governance changes in Step 3
+- [x] No real migration execution in Step 3
+
+###### Step 4 — Consolidation / Checkpoint (COMPLETE 2026-07-15)
+- [x] `docs/BILLING-READY-05B-CHECKPOINT.md` created
+- [x] BILLING-READY-05B marked COMPLETE and LOCKED
+- [x] Parent BILLING-READY-05 remains ACTIVE with updated child-slice split table
+- [x] TASKS.md updated — 05B COMPLETE and LOCKED, split table updated, validation results recorded
+- [x] TASKS_BACKLOG_FULL.md mirrors TASKS.md
+- [x] AINOW-EXECUTION-ROADMAP.md updated — 05B COMPLETE and LOCKED, 05C next recommended not registered
+- [x] BILLING-READY-05C recorded as next recommended — not registered
+- [x] Provider/payment calls remain not approved
+- [x] Env/secrets/package changes remain not approved
+- [x] AGENT-HARNESS write canary remains separate and not registered
+- [x] No implementation files changed during consolidation
+- [x] No tests/builds/runtime/provider calls during consolidation
+
+**AGENT-HARNESS write canary remains a separate track** — not registered, not part of BILLING-READY-05B.
+
+**BILLING-READY-05B status:** COMPLETE and LOCKED — 2026-07-15. All 4 steps complete. Production files changed: 4. Migration files created (not executed): 2. Test files created: 4. Tests: `subscription.entity` 16 PASS, `subscription.repository` 14 PASS, `subscription.module` 3 PASS, `subscription-migration` 20 PASS, `npx jest "subscription"` 53/53 PASS, `npx jest "migration"` 39/39 PASS, `credit-balance` regression 74/74 PASS, `npx tsc --noEmit` exit 0, linter 0 errors. No Stripe SDK. No provider API calls. No env/secrets changes. No real migration execution. No frontend. No AGENT-HARNESS write canary. Checkpoint: `docs/BILLING-READY-05B-CHECKPOINT.md`. Parent BILLING-READY-05 remains ACTIVE. Next child slice: BILLING-READY-05C — Checkout / Credit Top-Up Session Creation — NOT REGISTERED. AGENT-HARNESS write canary remains a separate track.
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-05B.
 
 ---
 
