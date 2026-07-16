@@ -35654,7 +35654,7 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 
 **Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` �X controls cross-family priority order; Knowledge before Collaboration before Billing.
 
-**Current stage:** BILLING-READY-05F COMPLETE and LOCKED (2026-07-15) — all 4 steps complete — Billing UI / Customer Portal — sixth child slice of BILLING-READY-05 — 3 backend files created (billing-read.controller.ts, billing-read.module.ts, billing-read.controller.spec.ts) + 1 modified (app.module.ts) + 7 frontend files created (billing/page.tsx, billing-page-client.tsx, billing-balance-card.tsx, billing-subscription-card.tsx, billing-topup-section.tsx, useBillingData.ts, billing-page-client.test.tsx) + 3 translation files modified (en.json, zh-TW.json, zh-CN.json, 30 keys per locale) — billing-read 12/12 PASS — checkout 58/58 PASS — frontend 640/640 PASS — TypeScript clean — linter 0 errors. Checkpoint: `docs/BILLING-READY-05F-CHECKPOINT.md`. BILLING-READY-05E COMPLETE and LOCKED (2026-07-15). BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-05 ACTIVE — Steps 1–2 COMPLETE (2026-07-13) — Keith approved split into 05A–05G — 05A COMPLETE and LOCKED — 05B COMPLETE and LOCKED — 05C COMPLETE and LOCKED — 05D COMPLETE and LOCKED — 05E COMPLETE and LOCKED (2026-07-15) — 05F COMPLETE and LOCKED (2026-07-15) — 05G planned / next recommended. BILLING-READY-05G planned only — next recommended — not registered. AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
+**Current stage:** BILLING-READY-06 ACTIVE — Step 1 COMPLETE (Registration — 2026-07-16) — Step 2 COMPLETE (Decision B split: 06A/06B) — readiness: `docs/BILLING-READY-06-RUNTIME-MIGRATION-BROWSER-SMOKE-READINESS.md` — BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — Docker/PostgreSQL/Redis readiness PASS — all 4 billing migrations executed successfully locally (24/24, 0 pending) — containers stopped, volumes preserved — Checkpoint: `docs/BILLING-READY-06A-CHECKPOINT.md` — BILLING-READY-06B planned only / next recommended / not registered — requires Keith explicit approval before registration/execution. BILLING-READY-05 COMPLETE and LOCKED (2026-07-16) — all 4 parent steps complete — all child slices 05A–05G COMPLETE and LOCKED — Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`. BILLING-READY-05G COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-05G-CHECKPOINT.md`. BILLING-READY-05F COMPLETE and LOCKED (2026-07-15). Checkpoint: `docs/BILLING-READY-05F-CHECKPOINT.md`. BILLING-READY-05E COMPLETE and LOCKED (2026-07-15). BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-04 COMPLETE and LOCKED (2026-07-13). BILLING-READY-03 COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 �X ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED �X 2026-07-04)
@@ -41378,7 +41378,7 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 ### BILLING-READY-05: Stripe / Payment Provider Integration, Subscription Lifecycle, Credit Top-Up
 
-**Status:** ACTIVE — Steps 1–2 COMPLETE. Step 3 IN PROGRESS via child slices. 05A COMPLETE and LOCKED (2026-07-15). 05B COMPLETE and LOCKED (2026-07-15). 05C COMPLETE and LOCKED (2026-07-15). 05D COMPLETE and LOCKED (2026-07-15). 05E COMPLETE and LOCKED (2026-07-15). 05F ACTIVE — Step 1 COMPLETE (Registration — 2026-07-15). Step 2 COMPLETE (Payment Provider Readiness / Source-Path Review — 2026-07-13). Keith approved split into child slices 05A–05G.
+**Status:** COMPLETE and LOCKED — 2026-07-16. All 4 parent steps complete. All child slices 05A–05G COMPLETE and LOCKED. Static regression validation PASS. Deferred items recorded. Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`.
 **Task ID:** BILLING-READY-05
 **Family:** BILLING READY / STRIPE PAYMENT PROVIDER / SUBSCRIPTION LIFECYCLE / CREDIT TOP-UP
 **Priority:** High
@@ -41391,8 +41391,8 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 1. **Registration** — COMPLETE (2026-07-13)
 2. **Payment provider readiness / source-path review** — COMPLETE (2026-07-13). See `docs/BILLING-READY-05-PAYMENT-PROVIDER-READINESS-REVIEW.md`. Stripe selected. Split into 05A–05G approved.
-3. **Bounded implementation — executed via child slices 05A–05G** — IN PROGRESS. 05A COMPLETE and LOCKED (2026-07-15). 05B COMPLETE and LOCKED (2026-07-15). 05C COMPLETE and LOCKED (2026-07-15). 05D COMPLETE and LOCKED (2026-07-15). 05E COMPLETE and LOCKED (2026-07-15). 05F ACTIVE — Step 1 COMPLETE (Registration — 2026-07-15).
-4. **Consolidation / checkpoint** — PENDING (deferred to 05G)
+3. **Bounded implementation — executed via child slices 05A–05G** — COMPLETE. 05A COMPLETE and LOCKED (2026-07-15). 05B COMPLETE and LOCKED (2026-07-15). 05C COMPLETE and LOCKED (2026-07-15). 05D COMPLETE and LOCKED (2026-07-15). 05E COMPLETE and LOCKED (2026-07-15). 05F COMPLETE and LOCKED (2026-07-15). 05G COMPLETE and LOCKED (2026-07-16).
+4. **Consolidation / checkpoint** — COMPLETE (2026-07-16). See `docs/BILLING-READY-05-CHECKPOINT.md`.
 
 ##### Approved Child-Slice Plan (05A–05G — Keith approval 2026-07-13)
 
@@ -41403,8 +41403,8 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 | 05C | Checkout / Credit Top-Up Session Creation | **COMPLETE and LOCKED — 2026-07-15** |
 | 05D | Webhook Event Ingestion / Idempotency | **COMPLETE and LOCKED — 2026-07-15** |
 | 05E | Credit Grant / Top-Up Accounting | **COMPLETE and LOCKED — 2026-07-15** |
-| 05F | Billing UI / Customer Portal | **ACTIVE — Step 1 COMPLETE (Registration — 2026-07-15)** |
-| 05G | Regression / Runtime Validation + Parent Consolidation | Planned only — not registered |
+| 05F | Billing UI / Customer Portal | **COMPLETE and LOCKED — 2026-07-15** |
+| 05G | Regression / Runtime Validation + Parent Consolidation | **COMPLETE and LOCKED — 2026-07-16** |
 
 #### Dependencies
 
@@ -41512,7 +41512,7 @@ Use existing translation hooks. Icons must use Heroicons v2 Outline only. Impecc
 
 **AGENT-HARNESS write canary remains a separate track** — not registered, not part of BILLING-READY-05.
 
-**BILLING-READY-05 status:** ACTIVE — Steps 1–2 COMPLETE (2026-07-13). Step 3 IN PROGRESS via child slices. Step 2: payment provider readiness review complete — Stripe selected — split into 05A–05G approved by Keith 2026-07-13. Child-slice split table: 05A COMPLETE and LOCKED (2026-07-15) | 05B COMPLETE and LOCKED (2026-07-15) | 05C COMPLETE and LOCKED (2026-07-15) | 05D COMPLETE and LOCKED (2026-07-15) | 05E COMPLETE and LOCKED (2026-07-15) | 05F COMPLETE and LOCKED (2026-07-15) | 05G planned / next recommended. Step 2 readiness review: `docs/BILLING-READY-05-PAYMENT-PROVIDER-READINESS-REVIEW.md`. BILLING-READY-05F COMPLETE and LOCKED — 2026-07-15. Checkpoint: `docs/BILLING-READY-05F-CHECKPOINT.md`. BILLING-READY-05G planned only — next recommended — not registered. BILLING-READY-05E COMPLETE and LOCKED — 2026-07-15. Checkpoint: `docs/BILLING-READY-05E-CHECKPOINT.md`. BILLING-READY-05D COMPLETE and LOCKED — 2026-07-15. Checkpoint: `docs/BILLING-READY-05D-CHECKPOINT.md`. No current ACTIVE child slice — 05G not yet registered. AGENT-HARNESS write canary remains a separate track. Provider/payment calls remain not approved. Env/secrets/package changes remain not approved. Stripe SDK/package install remains not approved. Stripe CLI/webhook tests remain not approved. Browser smoke was not performed. AGENT-HARNESS write canary remains separate and not registered.
+**BILLING-READY-05 status:** COMPLETE and LOCKED — 2026-07-16. All 4 parent steps complete. Step 2: payment provider readiness review complete — Stripe selected — split into 05A–05G approved by Keith 2026-07-13. Child-slice split table: 05A COMPLETE and LOCKED (2026-07-15) | 05B COMPLETE and LOCKED (2026-07-15) | 05C COMPLETE and LOCKED (2026-07-15) | 05D COMPLETE and LOCKED (2026-07-15) | 05E COMPLETE and LOCKED (2026-07-15) | 05F COMPLETE and LOCKED (2026-07-15) | 05G COMPLETE and LOCKED (2026-07-16). All child slices COMPLETE and LOCKED. No ACTIVE child slice remains. Static regression matrix PASS (R1–R13 621 tests, T1–T3, F1 corrected 22 tests, F2 640 tests, B1). Migration execution deferred — deferred items owned by BILLING-READY-06. Docker/Postgres/Redis/runtime/browser smoke/provider/payment/customer portal deferred — owned by BILLING-READY-06. Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`. Step 2 readiness review: `docs/BILLING-READY-05-PAYMENT-PROVIDER-READINESS-REVIEW.md`. BILLING-READY-05F COMPLETE and LOCKED — 2026-07-15. Checkpoint: `docs/BILLING-READY-05F-CHECKPOINT.md`. BILLING-READY-05G COMPLETE and LOCKED — 2026-07-16. Checkpoint: `docs/BILLING-READY-05G-CHECKPOINT.md`. BILLING-READY-05E COMPLETE and LOCKED — 2026-07-15. Checkpoint: `docs/BILLING-READY-05E-CHECKPOINT.md`. BILLING-READY-05D COMPLETE and LOCKED — 2026-07-15. Checkpoint: `docs/BILLING-READY-05D-CHECKPOINT.md`. **BILLING-READY-06 ACTIVE — Step 1 COMPLETE (Registration — 2026-07-16).** AGENT-HARNESS write canary remains a separate track.
 
 **Reference:** See TASKS.md -> BILLING-READY-05.
 
@@ -42655,9 +42655,556 @@ UX/UI advisory skills:
 
 **AGENT-HARNESS write canary remains a separate track** — not registered, not part of BILLING-READY-05F.
 
-**BILLING-READY-05F status:** COMPLETE and LOCKED — 2026-07-15. All 4 steps complete. Backend files created: 3 (`billing-read.controller.ts`, `billing-read.module.ts`, `billing-read.controller.spec.ts`). Backend file modified: 1 (`app.module.ts` — BillingReadModule import). Frontend files created: 7 (`app/[locale]/billing/page.tsx`, `billing-page-client.tsx`, `billing-balance-card.tsx`, `billing-subscription-card.tsx`, `billing-topup-section.tsx`, `useBillingData.ts`, `billing-page-client.test.tsx`). Translation files modified: 3 (`en.json`, `zh-TW.json`, `zh-CN.json` — 30 keys each, billing namespace). Tests: `billing-read` 12/12 PASS; `billing-page-client` 22/22 PASS; `checkout` regression 58/58 PASS; frontend 640/640 PASS. `npx tsc --noEmit` exit 0 (api-gateway and frontend). Linter 0 errors. No Stripe SDK. No provider API calls. No env/secrets/package changes. No migrations. No customer portal backend endpoint. No real DB calls. No browser smoke. No AGENT-HARNESS write canary. Checkpoint: `docs/BILLING-READY-05F-CHECKPOINT.md`. Next recommended: BILLING-READY-05G — Regression / Runtime Validation + Parent Consolidation — not registered. AGENT-HARNESS write canary remains a separate track.
+**BILLING-READY-05F status:** COMPLETE and LOCKED — 2026-07-15. All 4 steps complete. Backend files created: 3 (`billing-read.controller.ts`, `billing-read.module.ts`, `billing-read.controller.spec.ts`). Backend file modified: 1 (`app.module.ts` — BillingReadModule import). Frontend files created: 7 (`app/[locale]/billing/page.tsx`, `billing-page-client.tsx`, `billing-balance-card.tsx`, `billing-subscription-card.tsx`, `billing-topup-section.tsx`, `useBillingData.ts`, `billing-page-client.test.tsx`). Translation files modified: 3 (`en.json`, `zh-TW.json`, `zh-CN.json` — 30 keys each, billing namespace). Tests: `billing-read` 12/12 PASS; `billing-page-client` 22/22 PASS; `checkout` regression 58/58 PASS; frontend 640/640 PASS. `npx tsc --noEmit` exit 0 (api-gateway and frontend). Linter 0 errors. No Stripe SDK. No provider API calls. No env/secrets/package changes. No migrations. No customer portal backend endpoint. No real DB calls. No browser smoke. No AGENT-HARNESS write canary. Checkpoint: `docs/BILLING-READY-05F-CHECKPOINT.md`. Next child slice: BILLING-READY-05G — COMPLETE and LOCKED (2026-07-16). Checkpoint: `docs/BILLING-READY-05G-CHECKPOINT.md`. AGENT-HARNESS write canary remains a separate track.
 
 **Reference:** See TASKS.md -> BILLING-READY-05F.
+
+---
+
+### BILLING-READY-05G: Regression / Runtime Validation + Parent Consolidation
+
+**Status:** COMPLETE and LOCKED — 2026-07-16
+**Task ID:** BILLING-READY-05G
+**Family:** BILLING READY / STRIPE PAYMENT PROVIDER / REGRESSION / RUNTIME VALIDATION / PARENT CONSOLIDATION
+**Parent:** BILLING-READY-05
+**Priority:** High
+**Nature:** REGRESSION / RUNTIME VALIDATION / PARENT CONSOLIDATION — final planned child slice under BILLING-READY-05; full regression matrix across 05A–05F; decide runtime/migration/browser-smoke/provider-safety boundaries; parent BILLING-READY-05 completion decision
+**Risk:** HIGH — future work may involve full regression matrix, Docker/PostgreSQL/Redis readiness, possible migration validation, backend/frontend runtime checks, browser smoke, billing UI checkout flow verification, provider-safety boundaries, and parent BILLING-READY-05 completion
+**Registered:** 2026-07-16
+**Keith approval:** Keith explicitly approved BILLING-READY-05G registration 2026-07-16.
+
+#### Workflow Steps (4-step child-slice loop — HIGH risk)
+
+1. **Registration** — COMPLETE (2026-07-16)
+2. **Regression / runtime validation readiness and exact safety plan** — COMPLETE (2026-07-16). See `docs/BILLING-READY-05G-REGRESSION-RUNTIME-VALIDATION-READINESS.md`. Decision A: static/test-only. 19-command matrix approved.
+3. **Bounded static validation execution** — COMPLETE (2026-07-16). See `docs/BILLING-READY-05G-VALIDATION-REPORT.md`. R1–R13 PASS (621 tests), T1–T3 PASS, F1 corrected PASS (22 tests), F2 PASS (640 tests), B1 PASS. No source defects.
+4. **Consolidation / checkpoint and parent BILLING-READY-05 completion decision** — COMPLETE (2026-07-16). See `docs/BILLING-READY-05G-CHECKPOINT.md` and `docs/BILLING-READY-05-CHECKPOINT.md`.
+
+#### Dependencies
+
+- BILLING-READY-05 COMPLETE and LOCKED (2026-07-16)
+- BILLING-READY-05A COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-05B COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-05C COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-05D COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-05E COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-05F COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-04 COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-04A COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-04B COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-04C COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-04D COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-03 COMPLETE and LOCKED (2026-07-07)
+- AGENT-PLATFORM-07F COMPLETE and LOCKED (2026-07-12)
+- AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07)
+- AGENT-HARNESS-06E COMPLETE and LOCKED (2026-07-09)
+- Keith approval recorded for registration (2026-07-16)
+
+#### Purpose
+
+BILLING-READY-05G is the final planned child slice of BILLING-READY-05. After 05A–05F COMPLETE and LOCKED, 05G owns regression / runtime validation planning and parent consolidation readiness.
+
+05A established provider configuration/contracts. 05B established customer/subscription persistence (migrations created, not executed). 05C established checkout / credit top-up session creation. 05D established webhook event ingestion / idempotency (migration created, not executed). 05E established credit grant / top-up accounting (migration created, not executed). 05F established billing UI / customer portal surface (customer portal stub only; no browser smoke).
+
+05G will review all 05A–05F checkpoints, decide the exact regression and TypeScript/lint/frontend/backend validation matrices, decide Docker/PostgreSQL/Redis runtime and migration validation needs, decide browser smoke and provider-safety boundaries, decide how to validate billing UI without live provider calls, decide whether parent BILLING-READY-05 can be marked COMPLETE and LOCKED after validation, and decide whether 05G must split further before Step 3.
+
+Registration is planning-only. No implementation, runtime execution, tests/builds, provider calls, migrations, or parent completion occurs during Step 1.
+
+#### Future Scope (05G)
+
+- Review all 05A–05F checkpoints
+- Review migrations created but not executed:
+  - `1772200000000-AlignSubscriptionsTableWithTypeORM.ts`
+  - `1772200100000-AddStripeCustomerIdUniqueIndex.ts`
+  - `1772300000000-CreateWebhookEventsTable.ts`
+  - `1772400000000-CreateCreditGrantsTable.ts`
+- Decide exact regression test matrix
+- Decide exact TypeScript/lint/frontend/backend validation matrix
+- Decide whether Docker/PostgreSQL/Redis runtime validation is required
+- Decide whether real DB migration validation is required
+- Decide whether browser smoke is required
+- Decide exact provider-safety configuration:
+  - no live Stripe calls
+  - no test Stripe calls unless later explicitly approved
+  - no Stripe CLI unless later explicitly approved
+  - no customer portal API calls unless later explicitly approved
+- Decide how to validate billing UI without live provider calls
+- Decide whether parent BILLING-READY-05 can be marked COMPLETE and LOCKED after validation
+- Decide whether 05G must split further before Step 3
+
+#### Future Step 2 Must Decide
+
+- Exact backend test commands
+- Exact frontend test commands
+- Exact TypeScript commands
+- Exact lint commands
+- Exact migration validation approach
+- Exact Docker/PostgreSQL/Redis readiness requirements
+- Exact runtime service startup requirements, if any
+- Exact browser smoke plan, if any
+- Exact provider/payment/customer portal safety plan
+- Exact env/secrets safety plan
+- Exact rollback/stop conditions
+- Exact parent consolidation criteria
+- Whether Step 3 can be static-only, tests-only, runtime validation, browser smoke, or must split further
+
+#### Non-Goals (Registration Step)
+
+- No implementation during registration
+- No runtime execution during registration
+- No tests/builds during registration
+- No Docker/Postgres/Redis commands during registration
+- No DB query/mutation during registration
+- No migration execution during registration
+- No Stripe/payment/provider API calls during registration
+- No Stripe customer portal API calls during registration
+- No Stripe CLI/webhook tests during registration
+- No env/secrets changes during registration
+- No package/dependency changes during registration
+- No Stripe SDK installation during registration
+- No frontend/backend source changes during registration
+- No translation changes during registration
+- No browser smoke during registration
+- Do not complete parent BILLING-READY-05 during registration
+- Do not register any task after 05G
+- No AGENT-HARNESS write canary
+- No git commits/pushes
+
+#### Runtime Safety Note
+
+Future backend/DB/runtime validation must explicitly ensure Docker/PostgreSQL/Redis readiness before execution. Do not assume services are running. Docker/PostgreSQL/Redis readiness must be explicitly decided in Step 2 before any runtime validation.
+
+#### Payment / Provider Safety Note
+
+BILLING-READY-05G registration does not approve live or test-mode Stripe/payment provider calls. It also does not approve Stripe customer portal API calls, Stripe CLI/webhook tests, env secret changes, package install, Stripe SDK import, real payment validation, or live payment action. Any future provider/customer portal call or env/package work must be explicitly approved in a later step.
+
+#### UX/UI Note
+
+05G may later validate billing UI, but registration must not change UI files. If any future user-facing UX/UI text change is needed, aiSandBox is multilingual-first and must update all three files:
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+Use existing translation hooks/patterns. Do not add hardcoded English UI copy.
+
+Icons must use Heroicons v2 Outline only (`@heroicons/react/24/outline`). Do not use Lucide, Font Awesome, Material Icons, or emoji unless explicitly approved.
+
+#### Acceptance Criteria
+
+###### Registration (Step 1 — COMPLETE 2026-07-16)
+- [x] BILLING-READY-05G registered as current ACTIVE child slice
+- [x] Parent BILLING-READY-05 remains ACTIVE with split child-slice status
+- [x] BILLING-READY-05A remains COMPLETE and LOCKED
+- [x] BILLING-READY-05B remains COMPLETE and LOCKED
+- [x] BILLING-READY-05C remains COMPLETE and LOCKED
+- [x] BILLING-READY-05D remains COMPLETE and LOCKED
+- [x] BILLING-READY-05E remains COMPLETE and LOCKED
+- [x] BILLING-READY-05F remains COMPLETE and LOCKED
+- [x] BILLING-READY-04 remains COMPLETE and LOCKED
+- [x] BILLING-READY-04A/04B/04C/04D remain COMPLETE and LOCKED
+- [x] BILLING-READY-03 remains COMPLETE and LOCKED
+- [x] AGENT-PLATFORM-07F remains COMPLETE and LOCKED
+- [x] AGENT-HARNESS-07/06E remain COMPLETE and LOCKED
+- [x] Registration records 05G is regression/runtime validation/parent consolidation planning only
+- [x] Registration records no implementation/runtime execution occurred
+- [x] Registration records no tests/builds occurred
+- [x] Registration records no Docker/Postgres/Redis commands occurred
+- [x] Registration records no billing provider/payment/customer portal calls occurred
+- [x] Registration records no env/secrets/package changes occurred
+- [x] Registration records no Stripe SDK/package approval occurred
+- [x] Registration records no Stripe CLI/webhook tests occurred
+- [x] Registration records no migrations were executed
+- [x] Registration records no frontend/backend/translation source changes occurred
+- [x] Registration records no browser smoke occurred
+- [x] Registration records parent BILLING-READY-05 was not completed during registration
+- [x] Registration records next step is 05G regression/runtime validation readiness review
+- [x] Registration records AGENT-HARNESS write canary remains separate and not registered
+- [x] No implementation files changed
+- [x] No commands run
+- [x] No subagents used
+- [x] One-active-task rule satisfied
+
+###### Step 2 — Regression / Runtime Validation Readiness and Exact Safety Plan (COMPLETE 2026-07-16)
+- [x] Exact backend test commands decided (R1–R13)
+- [x] Exact frontend test commands decided (F1–F2)
+- [x] Exact TypeScript commands decided (T1–T3)
+- [x] Lint not included in approved matrix — recorded
+- [x] Migration validation approach decided — shape tests only, real execution deferred
+- [x] Docker/PostgreSQL/Redis not required for Step 3 — Decision A static-only
+- [x] No runtime service startup required
+- [x] Browser smoke deferred — explicitly recorded
+- [x] Provider/payment/customer portal safety plan decided — all deferred
+- [x] Env/secrets safety plan decided — no changes approved
+- [x] Stop conditions decided
+- [x] Parent consolidation criteria decided
+- [x] Step 3 decided as static/test-only — no runtime/browser/provider
+
+###### Step 3 — Bounded Static Validation Execution (COMPLETE 2026-07-16)
+- [x] R1–R13 backend suites PASS (621/621 tests)
+- [x] T1–T3 TypeScript checks PASS (exit 0)
+- [x] F1 corrected PASS (22/22 — tsx runner; original Jest command had TSX/JSX transform mismatch, no source defect)
+- [x] F2 frontend full suite PASS (640/640)
+- [x] B1 api-gateway build PASS (exit 0)
+- [x] No provider/payment/customer portal calls
+- [x] No env/secrets/package changes
+- [x] No Stripe SDK/package install
+- [x] No Stripe CLI/webhook tests
+- [x] No migration execution
+- [x] No browser smoke
+- [x] No Docker/PostgreSQL/Redis used
+
+###### Step 4 — Consolidation / Checkpoint and Parent BILLING-READY-05 Completion Decision (COMPLETE 2026-07-16)
+- [x] `docs/BILLING-READY-05G-CHECKPOINT.md` created
+- [x] BILLING-READY-05G marked COMPLETE and LOCKED — 2026-07-16
+- [x] Parent BILLING-READY-05 COMPLETE and LOCKED — 2026-07-16. Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`
+- [x] TASKS.md / TASKS_BACKLOG_FULL.md / roadmap updated
+- [x] AGENT-HARNESS write canary remains separate and not registered
+- [x] No task after 05G registered
+
+**AGENT-HARNESS write canary remains a separate track** — not registered, not part of BILLING-READY-05G.
+
+**BILLING-READY-05G status:** COMPLETE and LOCKED — 2026-07-16. All 4 steps complete. Step 2 COMPLETE — static/test-only readiness plan — `docs/BILLING-READY-05G-REGRESSION-RUNTIME-VALIDATION-READINESS.md`. Step 3 COMPLETE — 19-command static regression matrix — R1–R13 PASS (621 backend tests), T1–T3 PASS, F1 corrected PASS (22 tests), F2 PASS (640 tests), B1 PASS — `docs/BILLING-READY-05G-VALIDATION-REPORT.md`. Step 4 COMPLETE — consolidation — `docs/BILLING-READY-05G-CHECKPOINT.md`. No implementation. No runtime/Docker/Postgres/Redis/migration/provider/browser/source changes. No subagents. Parent BILLING-READY-05 COMPLETE and LOCKED — 2026-07-16. Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`. Deferred runtime/migration/browser/provider items owned by BILLING-READY-06. **BILLING-READY-06 ACTIVE — Step 1 COMPLETE (Registration — 2026-07-16).** AGENT-HARNESS write canary remains a separate track.
+
+**Reference:** See TASKS.md -> BILLING-READY-05G.
+
+---
+
+### BILLING-READY-06: Local Runtime / Migration / Browser Smoke Validation Plan
+
+**Status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-07-16). Step 2 COMPLETE (2026-07-16). Decision B split approved. BILLING-READY-06A COMPLETE and LOCKED (2026-07-16). BILLING-READY-06B planned only / next recommended / not registered.
+**Task ID:** BILLING-READY-06
+**Family:** BILLING READY / LOCAL RUNTIME VALIDATION / MIGRATION VALIDATION / BROWSER SMOKE / PROVIDER SAFETY
+**Priority:** High
+**Nature:** PLANNING / READINESS — local runtime, migration, browser smoke validation plan for deferred BILLING-READY-05 items; Step 2 readiness complete; child-slice split Decision B; 06A Docker/DB/migration validation complete
+**Risk:** HIGH — future steps may involve Docker/PostgreSQL/Redis readiness, real DB migration validation, runtime service startup, frontend browser smoke, and strict provider/payment safety boundaries
+**Registered:** 2026-07-16
+**Keith approval:** Keith explicitly approved BILLING-READY-06 registration 2026-07-16. Keith explicitly approved BILLING-READY-06A registration for Docker/DB/Migration validation (Decision B split) 2026-07-16.
+
+#### Naming note
+
+Historical BILLING-READY-00 audit docs proposed `BILLING-READY-06` as “Stripe Integration.” That provider-integration scope was delivered as BILLING-READY-05 (COMPLETE and LOCKED). This registration reuses the ID for **Local Runtime / Migration / Browser Smoke Validation Plan**, as recommended by `docs/BILLING-READY-05G-REGRESSION-RUNTIME-VALIDATION-READINESS.md` after parent BILLING-READY-05 closed. BILLING-READY-05 is not reopened.
+
+#### Workflow Steps (4-step loop — HIGH risk — CHILD-SLICE SPLIT APPROVED)
+
+1. **Registration** — COMPLETE (2026-07-16)
+2. **Runtime / migration / browser smoke readiness and exact safety plan** — COMPLETE (2026-07-16). See `docs/BILLING-READY-06-RUNTIME-MIGRATION-BROWSER-SMOKE-READINESS.md`. Decision B: split into 06A (Docker/DB/Migration) + 06B (Backend Runtime + Frontend Browser Smoke).
+3. **Bounded validation execution — via child slices 06A/06B** — IN PROGRESS — BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-06A-CHECKPOINT.md`. BILLING-READY-06B planned only / next recommended / not registered.
+4. **Consolidation / checkpoint** — NOT STARTED (parent; awaits 06B + parent consolidation)
+
+##### Approved Child-Slice Plan (06A/06B — Decision B — Keith approval 2026-07-16)
+
+| Slice | Name | Status |
+|-------|------|--------|
+| 06A | Docker / Local DB / Migration Validation | **COMPLETE and LOCKED — 2026-07-16** — Checkpoint: `docs/BILLING-READY-06A-CHECKPOINT.md` |
+| 06B | Backend Runtime + Frontend Browser Smoke | Planned only / next recommended / not registered |
+
+#### Dependencies
+
+- BILLING-READY-05 COMPLETE and LOCKED (2026-07-16)
+- BILLING-READY-05A COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-05B COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-05C COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-05D COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-05E COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-05F COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-05G COMPLETE and LOCKED (2026-07-16)
+- BILLING-READY-04 COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-03 COMPLETE and LOCKED (2026-07-07)
+- AGENT-HARNESS write canary remains separate and not registered
+- Keith approval recorded for registration (2026-07-16)
+
+#### Purpose
+
+BILLING-READY-05 and child slices 05A–05G are COMPLETE and LOCKED. Static regression validation passed. The following were explicitly deferred and are owned by this task’s planning track (not reopening 05):
+
+- Real DB migration execution (4 migrations created, not executed)
+- Docker/PostgreSQL/Redis runtime validation
+- API Gateway runtime startup
+- Frontend dev server / browser smoke
+- Stripe/provider/customer portal validation
+- Stripe CLI / webhook runtime testing
+
+BILLING-READY-06 is the planning and readiness task to define a safe local runtime / migration / browser smoke validation plan before any of those deferred validations execute.
+
+#### Future Step 2 Must Decide
+
+- Exact Docker/PostgreSQL/Redis readiness checks
+- Exact local database target and safety boundary
+- Exact migration validation approach
+- Whether migrations are executed against local dev DB or only inspected
+- Exact API Gateway runtime startup plan, if any
+- Exact frontend dev server startup plan, if any
+- Exact browser smoke scenarios, if any
+- Exact provider/payment/customer portal safety settings
+- Whether Stripe provider mode remains disabled/stub only
+- Whether Stripe CLI is still forbidden
+- Exact env/secrets safety plan
+- Exact stop conditions
+- Exact rollback/cleanup plan
+- Exact validation evidence/report file
+- Whether Step 3 must split into:
+  - 06A DB migration validation
+  - 06B backend runtime smoke
+  - 06C frontend browser smoke
+  - 06D provider-safety verification
+- Whether any source fixes must be separate tasks
+
+#### Future Validation Scope Candidates
+
+- Validate the four migrations from BILLING-READY-05:
+  - `1772200000000-AlignSubscriptionsTableWithTypeORM.ts`
+  - `1772200100000-AddStripeCustomerIdUniqueIndex.ts`
+  - `1772300000000-CreateWebhookEventsTable.ts`
+  - `1772400000000-CreateCreditGrantsTable.ts`
+- Confirm local DB migration status safely
+- Confirm API Gateway can start locally without provider calls
+- Confirm billing read endpoints are reachable locally
+- Confirm billing page can load locally
+- Confirm checkout buttons fail safely when provider is disabled/unconfigured
+- Confirm customer portal remains disabled/stubbed
+- Confirm no live/test Stripe call occurs
+- Confirm browser smoke is documented, guided, and approved before execution
+
+#### Non-Goals (Registration Step)
+
+- No implementation during registration
+- No runtime execution during registration
+- No tests/builds during registration
+- No Docker/Postgres/Redis commands during registration
+- No DB query/mutation during registration
+- No migration execution during registration
+- No browser smoke during registration
+- No provider/payment/customer portal calls during registration
+- No Stripe CLI/webhook tests during registration
+- No env/secrets/package changes during registration
+- No Stripe SDK/package install during registration
+- No source/frontend/backend/translation changes during registration
+- No child-slice registration during registration (06A–06D deferred to Step 2 decision)
+- No AGENT-HARNESS write canary
+- No git commits/pushes
+- Do not reopen BILLING-READY-05
+
+#### Runtime Safety Note
+
+Any future Docker/PostgreSQL/Redis/runtime validation requires explicit Keith approval. Production DB must never be used. No destructive DB command is approved by registration. Do not assume services are running.
+
+#### Browser Smoke Safety Note
+
+Any future browser/live smoke requires explicit Keith approval and step-by-step guidance before execution.
+
+#### Payment / Provider Safety Note
+
+Provider/payment/customer portal validation remains not approved by registration. Stripe CLI/webhook tests remain not approved. Stripe provider mode is expected to remain disabled/stub unless a later step explicitly approves otherwise. No live or test Stripe/payment/customer portal API calls are approved by registration.
+
+#### Source Defect Rule
+
+If source defects are found during future validation, stop and register a separate bounded fix task. Do not silently widen BILLING-READY-06 into implementation.
+
+#### UX/UI Note
+
+No UI text should be added during registration. If future browser smoke or UI fixes touch user-facing copy, aiSandBox is multilingual-first and must update:
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+Use existing translation hooks. Do not add hardcoded English UI copy. Icons must use Heroicons v2 Outline only (`@heroicons/react/24/outline`). Impeccable and Emil Kowalski skills are advisory only.
+
+#### Acceptance Criteria
+
+###### Registration (Step 1 — COMPLETE 2026-07-16)
+- [x] BILLING-READY-06 registered as current ACTIVE task
+- [x] BILLING-READY-05 remains COMPLETE and LOCKED
+- [x] BILLING-READY-05A–05G remain COMPLETE and LOCKED
+- [x] BILLING-READY-04 remains COMPLETE and LOCKED
+- [x] BILLING-READY-03 remains COMPLETE and LOCKED
+- [x] Registration records BILLING-READY-06 is planning only
+- [x] Registration records future Docker/PostgreSQL/Redis/runtime validation needs explicit Keith approval
+- [x] Registration records future browser smoke needs explicit Keith approval and guided steps
+- [x] Registration records provider/payment/customer portal validation remains not approved
+- [x] Registration records Stripe CLI/webhook tests remain not approved
+- [x] Registration records no implementation/runtime/tests/builds occurred
+- [x] Registration records no commands run
+- [x] Registration records no source/frontend/backend/translation/env/package/migration files changed
+- [x] Registration records no subagents used
+- [x] Registration records AGENT-HARNESS write canary remains separate
+- [x] One-active-task rule satisfied
+
+**AGENT-HARNESS write canary remains a separate track** — not registered, not part of BILLING-READY-06.
+
+**BILLING-READY-06 status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-07-16). Step 2 COMPLETE (2026-07-16) — `docs/BILLING-READY-06-RUNTIME-MIGRATION-BROWSER-SMOKE-READINESS.md` — Decision B split into 06A/06B. BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — Docker/PostgreSQL/Redis PASS — all 4 billing migrations executed successfully locally (migration:show BEFORE 20/4 pending; AFTER 24/24, 0 pending) — local-only DB (`localhost:5432`) — containers stopped, volumes preserved for 06B — Checkpoint: `docs/BILLING-READY-06A-CHECKPOINT.md`. Preflight: `docs/BILLING-READY-06A-DOCKER-DB-MIGRATION-PREFLIGHT.md`. BILLING-READY-06B planned only / next recommended / not registered — requires Keith explicit approval before registration/execution. Deferred to 06B: backend runtime smoke, frontend browser smoke. Provider/payment/customer portal and Stripe CLI/webhook remain deferred. BILLING-READY-05 / 05A–05G / 04 / 03 remain COMPLETE and LOCKED. AGENT-HARNESS write canary remains a separate track.
+
+**Reference:** See TASKS.md -> BILLING-READY-06.
+
+---
+
+### BILLING-READY-06A: Docker / Local DB / Migration Validation
+
+**Status:** COMPLETE and LOCKED — 2026-07-16. All 4 steps complete. Checkpoint: `docs/BILLING-READY-06A-CHECKPOINT.md`.
+**Task ID:** BILLING-READY-06A
+**Family:** BILLING READY / LOCAL RUNTIME VALIDATION / DOCKER / LOCAL DB / MIGRATION VALIDATION
+**Parent:** BILLING-READY-06
+**Priority:** High
+**Nature:** DOCKER / LOCAL DB / MIGRATION VALIDATION — Docker/PostgreSQL/Redis readiness and local-only forward migration validation for four deferred BILLING-READY-05 billing migrations
+**Risk:** HIGH — 4-step child-slice loop — Docker/PostgreSQL/Redis, local-only DB, schema migrations; production DB, destructive DB commands, real secrets, and provider calls forbidden
+**Registered:** 2026-07-16
+**Completed:** 2026-07-16
+**Checkpoint:** `docs/BILLING-READY-06A-CHECKPOINT.md`
+**Keith approval:** Keith explicitly approved BILLING-READY-06A registration for Docker/DB/Migration validation 2026-07-16. Keith approved Step 3 execution after Step 2 preflight.
+
+#### Workflow Steps (4-step child-slice loop — HIGH risk)
+
+1. **Registration** — COMPLETE (2026-07-16)
+2. **Docker / DB / Migration execution preflight and exact command plan** — COMPLETE (2026-07-16). See `docs/BILLING-READY-06A-DOCKER-DB-MIGRATION-PREFLIGHT.md`. Decision: `docker-compose.yml` only; postgres + redis only; local-only DATABASE_URL; forward-only migration:run; down migrations deferred; volumes preserved for 06B.
+3. **Bounded local validation execution** — COMPLETE (2026-07-16). Docker v29.2.1 / Compose v5.0.2 PASS. PostgreSQL (`aisandbox-postgres`) healthy. Redis (`aisandbox-redis`) healthy and password-protected. 14 commands, all exit code 0. All 4 billing migrations executed successfully. migration:show AFTER 24/24, 0 pending. Evidence: 34 tables, 132 indexes, 24 migration records. Containers stopped; volumes preserved.
+4. **Consolidation / checkpoint** — COMPLETE (2026-07-16). See `docs/BILLING-READY-06A-CHECKPOINT.md`.
+
+#### Dependencies
+
+- BILLING-READY-06 ACTIVE
+- BILLING-READY-06 Step 2 readiness complete — `docs/BILLING-READY-06-RUNTIME-MIGRATION-BROWSER-SMOKE-READINESS.md` — Decision B
+- BILLING-READY-05 COMPLETE and LOCKED (2026-07-16)
+- BILLING-READY-05A COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-05B COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-05C COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-05D COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-05E COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-05F COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-05G COMPLETE and LOCKED (2026-07-16)
+- BILLING-READY-04 COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-03 COMPLETE and LOCKED (2026-07-07)
+- BILLING-READY-06B not registered yet
+- AGENT-HARNESS write canary remains separate and not registered
+- Keith approval recorded for 06A registration (2026-07-16)
+
+#### Purpose
+
+BILLING-READY-06A is the first child slice of BILLING-READY-06 under Decision B. It owns Docker/PostgreSQL/Redis readiness and local-only migration validation for the four deferred BILLING-READY-05 migrations. Backend runtime startup, frontend browser smoke, and provider/payment/customer portal validation are deferred to BILLING-READY-06B (planned only / not registered).
+
+#### Future 06A Scope
+
+- Confirm Docker compose file and services:
+  - `docker-compose.yml`
+  - `postgres`
+  - `redis`
+- Confirm local-only DB target
+- Confirm safe readiness checks
+- Confirm no production DB risk
+- Confirm no destructive DB commands
+- Confirm process-scoped `DATABASE_URL` if needed
+- Execute approved local migration validation only after later explicit Step 3 approval
+- Validate these migrations locally only if later approved:
+  - `1772200000000-AlignSubscriptionsTableWithTypeORM.ts`
+  - `1772200100000-AddStripeCustomerIdUniqueIndex.ts`
+  - `1772300000000-CreateWebhookEventsTable.ts`
+  - `1772400000000-CreateCreditGrantsTable.ts`
+- Capture evidence for migration success/failure
+- Stop before browser/runtime/provider validation; defer to 06B
+
+#### Future Step 2 Must Decide
+
+- Exact Docker startup commands
+- Exact Docker readiness commands
+- Exact Postgres readiness commands
+- Exact Redis readiness commands
+- Exact local `DATABASE_URL` handling without opening secret env files
+- Exact migration command sequence
+- Exact migration status/evidence commands
+- Exact cleanup commands
+- Exact rollback/down migration policy
+- Exact stop conditions
+- Exact report file
+- Whether Step 3 requires Keith at keyboard
+- Whether Step 3 can proceed without touching source files
+- Whether 06B can start only after 06A completes
+
+#### Non-Goals (Registration Step)
+
+- No Docker/Postgres/Redis execution during registration
+- No DB commands during registration
+- No migration execution during registration
+- No tests/builds during registration
+- No runtime service startup during registration
+- No browser smoke during registration
+- No provider/payment/customer portal calls during registration
+- No Stripe CLI/webhook tests during registration
+- No env/secrets/package changes during registration
+- No real secret env files opened
+- No source/frontend/backend/translation/migration changes during registration
+- No parent BILLING-READY-06 completion during registration
+- No 06B registration during this prompt
+- No AGENT-HARNESS write canary
+- No git commits/pushes
+
+#### Runtime Safety Note
+
+Future Docker/PostgreSQL/Redis execution requires explicit Keith approval. Future real local migration execution requires explicit Keith approval. Production DB must never be used. No destructive DB command is approved by registration. Real secret env files must not be opened. Do not assume services are running.
+
+#### Browser / Provider Safety Note
+
+Provider/payment/customer portal validation remains out of scope for 06A. Browser smoke remains out of scope for 06A and deferred to 06B. Stripe CLI/webhook tests remain not approved.
+
+#### Source Defect Rule
+
+If source defects are found later, stop and register a separate bounded fix task. Do not silently widen BILLING-READY-06A into implementation.
+
+#### Acceptance Criteria
+
+###### Registration (Step 1 — COMPLETE 2026-07-16)
+- [x] BILLING-READY-06A registered as current ACTIVE child slice
+- [x] Parent BILLING-READY-06 remains ACTIVE
+- [x] BILLING-READY-06 Step 2 readiness doc is referenced — `docs/BILLING-READY-06-RUNTIME-MIGRATION-BROWSER-SMOKE-READINESS.md`
+- [x] BILLING-READY-06B remains planned only and not registered
+- [x] BILLING-READY-05 remains COMPLETE and LOCKED
+- [x] BILLING-READY-05A–05G remain COMPLETE and LOCKED
+- [x] BILLING-READY-04 remains COMPLETE and LOCKED
+- [x] BILLING-READY-03 remains COMPLETE and LOCKED
+- [x] Registration records 06A is registration/planning only
+- [x] Registration records no Docker/PostgreSQL/Redis execution occurred
+- [x] Registration records no DB commands/migrations occurred
+- [x] Registration records no runtime/browser/provider calls occurred
+- [x] Registration records no tests/builds occurred
+- [x] Registration records no source/frontend/backend/translation/env/package/migration files changed
+- [x] Registration records no real secret env files opened
+- [x] Registration records no commands run
+- [x] Registration records no subagents used
+- [x] Registration records AGENT-HARNESS write canary remains separate
+- [x] One-active-task rule satisfied
+
+###### Step 2 — Preflight (COMPLETE 2026-07-16)
+- [x] `docs/BILLING-READY-06A-DOCKER-DB-MIGRATION-PREFLIGHT.md` created
+- [x] Decision: use `docker-compose.yml` only; postgres + redis only
+- [x] Local-only DATABASE_URL; forward-only migration:run; down migrations deferred; volumes preserved for 06B
+
+###### Step 3 — Execution (COMPLETE 2026-07-16)
+- [x] Docker readiness PASS (v29.2.1) / Compose v5.0.2
+- [x] PostgreSQL readiness PASS — `aisandbox-postgres` healthy
+- [x] Redis readiness PASS — `aisandbox-redis` healthy and password-protected
+- [x] DATABASE_URL host `localhost:5432` local only confirmed
+- [x] 14 commands run, all exit code 0
+- [x] migration:show BEFORE: 20 executed, 4 billing pending
+- [x] All 4 billing migrations executed successfully
+- [x] migration:show AFTER: 24/24 executed, 0 pending
+- [x] Evidence: 34 tables, 132 indexes, 24 migration records
+- [x] Containers stopped; volumes preserved for 06B
+- [x] No production DB; no destructive DB commands; no `docker compose down -v`; no `migration:revert`
+- [x] No real secret env files opened; no source/governance changes during Step 3
+- [x] No API Gateway / frontend / browser / provider / Stripe CLI / tests / builds / subagents
+
+###### Step 4 — Consolidation (COMPLETE 2026-07-16)
+- [x] `docs/BILLING-READY-06A-CHECKPOINT.md` updated to final consolidation checkpoint
+- [x] BILLING-READY-06A marked COMPLETE and LOCKED
+- [x] Parent BILLING-READY-06 remains ACTIVE with updated child-slice split table
+- [x] TASKS.md / TASKS_BACKLOG_FULL.md / AINOW-EXECUTION-ROADMAP.md updated
+- [x] BILLING-READY-06B recorded as next recommended — not registered
+- [x] No implementation/source files changed during consolidation
+- [x] No tests/builds/runtime/provider/browser calls during consolidation
+- [x] No subagents used
+
+**AGENT-HARNESS write canary remains a separate track** — not registered, not part of BILLING-READY-06A.
+
+**BILLING-READY-06A status:** COMPLETE and LOCKED — 2026-07-16. All 4 steps complete. Docker/PostgreSQL/Redis PASS. All 4 billing migrations executed successfully locally (`AlignSubscriptionsTableWithTypeORM`, `AddStripeCustomerIdUniqueIndex`, `CreateWebhookEventsTable`, `CreateCreditGrantsTable`). migration:show AFTER 24/24, 0 pending. Evidence: 34 tables, 132 indexes, 24 migration records. Local-only DB (`localhost:5432`). Containers stopped; volumes preserved for 06B. No production DB. No destructive DB commands. No real secret env files opened. No source/frontend/backend/translation/env/package/migration changes. No API Gateway/frontend/browser/provider/Stripe CLI. No tests/builds during consolidation. No subagents. Checkpoint: `docs/BILLING-READY-06A-CHECKPOINT.md`. Preflight: `docs/BILLING-READY-06A-DOCKER-DB-MIGRATION-PREFLIGHT.md`. Parent BILLING-READY-06 remains ACTIVE. BILLING-READY-06B planned only / next recommended / not registered. BILLING-READY-05 / 05A–05G / 04 / 03 remain COMPLETE and LOCKED. AGENT-HARNESS write canary remains a separate track.
+
+**Reference:** See TASKS.md -> BILLING-READY-06A.
 
 ---
 
