@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AIExecutionController } from './ai-execution.controller';
 import { InternalAccountingController } from './internal-accounting.controller';
 import { AIServiceHttpClient } from '../clients/ai-service-http.client';
@@ -18,6 +19,8 @@ import { SessionModule } from '../sessions/session.module';
 import { ProjectRepoDocsModule } from '../project-repo-docs/project-repo-docs.module';
 import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
 import { CreditBalanceGuardModule } from '../billing/credit-balance-guard.module';
+import { CreditPersistenceModule } from '../billing/credit-deduction/credit-persistence.module';
+import { User } from '../entities/user.entity';
 
 /**
  * AIModule
@@ -49,6 +52,8 @@ import { CreditBalanceGuardModule } from '../billing/credit-balance-guard.module
     ProjectAiContextModule, // AI-CONTEXT-02C: Project instruction enrichment
     SessionModule, // AI-CONTEXT-02C: Resolve project via session association
     ProjectRepoDocsModule, // AI-CONTEXT-04C: Resolve registered project repo docs
+    TypeOrmModule.forFeature([User]), // Expose UserRepository in AIModule context
+    CreditPersistenceModule, // Expose CreditBalanceRepository in AIModule context
     CreditBalanceGuardModule, // BILLING-READY-04A: Credit balance gate
   ],
   controllers: [AIExecutionController, InternalAccountingController],

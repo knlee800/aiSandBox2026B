@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';
 import { SessionModule } from '../sessions/session.module';
 import { ProjectsModule } from '../projects/projects.module';
@@ -17,6 +18,8 @@ import { PublicProjectsController } from './public-projects.controller';
 import { PublicAIController } from './public-ai.controller';
 import { PublicDocsController } from './public-docs.controller';
 import { CreditBalanceGuardModule } from '../billing/credit-balance-guard.module';
+import { CreditPersistenceModule } from '../billing/credit-deduction/credit-persistence.module';
+import { User } from '../entities/user.entity';
 
 @Module({
   imports: [
@@ -29,7 +32,9 @@ import { CreditBalanceGuardModule } from '../billing/credit-balance-guard.module
     SafetyModule,
     LaunchModule,
     AbortModule,
+    TypeOrmModule.forFeature([User]), // Expose UserRepository in PublicApiModule context
     CreditBalanceGuardModule, // BILLING-READY-04A: Credit balance gate
+    CreditPersistenceModule, // Expose CreditBalanceRepository in PublicApiModule context
   ],
   controllers: [
     PublicSessionsController,

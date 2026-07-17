@@ -25152,7 +25152,7 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 
 **Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` �X controls cross-family priority order; Knowledge before Collaboration before Billing.
 
-**Current stage:** BILLING-READY-06 ACTIVE — Step 1 COMPLETE (Registration — 2026-07-16) — Step 2 COMPLETE (Decision B split: 06A/06B) — readiness: `docs/BILLING-READY-06-RUNTIME-MIGRATION-BROWSER-SMOKE-READINESS.md` — BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — Docker/PostgreSQL/Redis readiness PASS — all 4 billing migrations executed successfully locally (24/24, 0 pending) — containers stopped, volumes preserved — Checkpoint: `docs/BILLING-READY-06A-CHECKPOINT.md` — BILLING-READY-06B planned only / next recommended / not registered — requires Keith explicit approval before registration/execution. BILLING-READY-05 COMPLETE and LOCKED (2026-07-16) — all 4 parent steps complete — all child slices 05A–05G COMPLETE and LOCKED — Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`. BILLING-READY-05G COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-05G-CHECKPOINT.md`. BILLING-READY-05F COMPLETE and LOCKED (2026-07-15). BILLING-READY-05E COMPLETE and LOCKED (2026-07-15). BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-04 COMPLETE and LOCKED (2026-07-13). BILLING-READY-03 COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
+**Current stage:** BILLING-READY-06 COMPLETE and LOCKED (2026-07-17) — all 4 steps complete — BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — Docker/PostgreSQL/Redis readiness PASS — all 4 billing migrations executed successfully locally (24/24, 0 pending) — containers stopped, volumes preserved — Checkpoint: `docs/BILLING-READY-06A-CHECKPOINT.md` — BILLING-READY-06B COMPLETE and LOCKED (2026-07-17) — API Gateway startup PASS — all health endpoints 200 — all billing endpoints 401 (correctly guarded) — frontend browser smoke PASS with documented unauthenticated limitations — Checkpoint: `docs/BILLING-READY-06B-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-06-CHECKPOINT.md` — Deferred provider/authenticated checks recorded as separate future tasks. BILLING-READY-05 COMPLETE and LOCKED (2026-07-16) — all 4 parent steps complete — all child slices 05A–05G COMPLETE and LOCKED — Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`. BILLING-READY-05G COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-05G-CHECKPOINT.md`. BILLING-READY-05F COMPLETE and LOCKED (2026-07-15). BILLING-READY-05E COMPLETE and LOCKED (2026-07-15). BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-04 COMPLETE and LOCKED (2026-07-13). BILLING-READY-03 COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 �X ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED �X 2026-07-04)
@@ -32434,14 +32434,14 @@ Icons must use Heroicons v2 Outline only (`@heroicons/react/24/outline`). Do not
 
 #### BILLING-READY-06: Local Runtime / Migration / Browser Smoke Validation Plan
 
-**Status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-07-16). Step 2 COMPLETE (2026-07-16). Decision B split approved. BILLING-READY-06A COMPLETE and LOCKED (2026-07-16). BILLING-READY-06B planned only / next recommended / not registered.
+**Status:** COMPLETE and LOCKED — 2026-07-17. All 4 steps complete. BILLING-READY-06A COMPLETE and LOCKED (2026-07-16). BILLING-READY-06B COMPLETE and LOCKED (2026-07-17). Checkpoint: `docs/BILLING-READY-06-CHECKPOINT.md`.
 **Task ID:** BILLING-READY-06
 **Family:** BILLING READY / LOCAL RUNTIME VALIDATION / MIGRATION VALIDATION / BROWSER SMOKE / PROVIDER SAFETY
 **Priority:** High
-**Nature:** PLANNING / READINESS — local runtime, migration, browser smoke validation plan for deferred BILLING-READY-05 items; Step 2 readiness complete; child-slice split Decision B; 06A Docker/DB/migration validation complete
+**Nature:** PLANNING / READINESS — local runtime, migration, browser smoke validation plan for deferred BILLING-READY-05 items; Step 2 readiness complete; child-slice split Decision B; 06A Docker/DB/migration validation complete; 06B Backend Runtime + Frontend Browser Smoke ACTIVE (registration only)
 **Risk:** HIGH — future steps may involve Docker/PostgreSQL/Redis readiness, real DB migration validation, runtime service startup, frontend browser smoke, and strict provider/payment safety boundaries
 **Registered:** 2026-07-16
-**Keith approval:** Keith explicitly approved BILLING-READY-06 registration 2026-07-16. Keith explicitly approved BILLING-READY-06A registration for Docker/DB/Migration validation (Decision B split) 2026-07-16.
+**Keith approval:** Keith explicitly approved BILLING-READY-06 registration 2026-07-16. Keith explicitly approved BILLING-READY-06A registration for Docker/DB/Migration validation (Decision B split) 2026-07-16. Keith explicitly approved BILLING-READY-06B registration after 06A COMPLETE and LOCKED 2026-07-16.
 
 #### Naming note
 
@@ -32451,15 +32451,15 @@ Historical BILLING-READY-00 audit docs proposed `BILLING-READY-06` as “Stripe 
 
 1. **Registration** — COMPLETE (2026-07-16)
 2. **Runtime / migration / browser smoke readiness and exact safety plan** — COMPLETE (2026-07-16). See `docs/BILLING-READY-06-RUNTIME-MIGRATION-BROWSER-SMOKE-READINESS.md`. Decision B: split into 06A (Docker/DB/Migration) + 06B (Backend Runtime + Frontend Browser Smoke).
-3. **Bounded validation execution — via child slices 06A/06B** — IN PROGRESS — BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-06A-CHECKPOINT.md`. BILLING-READY-06B planned only / next recommended / not registered.
-4. **Consolidation / checkpoint** — NOT STARTED (parent; awaits 06B + parent consolidation)
+3. **Bounded validation execution — via child slices 06A/06B** — COMPLETE — BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-06A-CHECKPOINT.md`. BILLING-READY-06B COMPLETE and LOCKED (2026-07-17) — Checkpoint: `docs/BILLING-READY-06B-CHECKPOINT.md`.
+4. **Consolidation / checkpoint** — COMPLETE (2026-07-17). See `docs/BILLING-READY-06-CHECKPOINT.md`.
 
 ##### Approved Child-Slice Plan (06A/06B — Decision B — Keith approval 2026-07-16)
 
 | Slice | Name | Status |
 |-------|------|--------|
 | 06A | Docker / Local DB / Migration Validation | **COMPLETE and LOCKED — 2026-07-16** — Checkpoint: `docs/BILLING-READY-06A-CHECKPOINT.md` |
-| 06B | Backend Runtime + Frontend Browser Smoke | Planned only / next recommended / not registered |
+| 06B | Backend Runtime + Frontend Browser Smoke | **COMPLETE and LOCKED — 2026-07-17** — Checkpoint: `docs/BILLING-READY-06B-CHECKPOINT.md` |
 
 #### Dependencies
 
@@ -32594,7 +32594,7 @@ Use existing translation hooks. Do not add hardcoded English UI copy. Icons must
 
 **AGENT-HARNESS write canary remains a separate track** — not registered, not part of BILLING-READY-06.
 
-**BILLING-READY-06 status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-07-16). Step 2 COMPLETE (2026-07-16) — `docs/BILLING-READY-06-RUNTIME-MIGRATION-BROWSER-SMOKE-READINESS.md` — Decision B split into 06A/06B. BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — Docker/PostgreSQL/Redis PASS — all 4 billing migrations executed successfully locally (migration:show BEFORE 20/4 pending; AFTER 24/24, 0 pending) — local-only DB (`localhost:5432`) — containers stopped, volumes preserved for 06B — Checkpoint: `docs/BILLING-READY-06A-CHECKPOINT.md`. Preflight: `docs/BILLING-READY-06A-DOCKER-DB-MIGRATION-PREFLIGHT.md`. BILLING-READY-06B planned only / next recommended / not registered — requires Keith explicit approval before registration/execution. Deferred to 06B: backend runtime smoke, frontend browser smoke. Provider/payment/customer portal and Stripe CLI/webhook remain deferred. BILLING-READY-05 / 05A–05G / 04 / 03 remain COMPLETE and LOCKED. AGENT-HARNESS write canary remains a separate track.
+**BILLING-READY-06 status:** COMPLETE and LOCKED — 2026-07-17. All 4 steps complete. Decision B split: 06A COMPLETE and LOCKED (2026-07-16) — Docker/PostgreSQL/Redis PASS — all 4 billing migrations executed successfully locally (24/24, 0 pending) — Checkpoint: `docs/BILLING-READY-06A-CHECKPOINT.md`. 06B COMPLETE and LOCKED (2026-07-17) — API Gateway startup PASS (after targeted DI fixes) — health endpoints 200 — billing endpoints 401 (correctly guarded) — frontend browser smoke PASS with documented unauthenticated limitations — DI fixes: `public-api.module.ts` and `ai.module.ts` (CreditPersistenceModule + TypeOrmModule.forFeature([User])) — Checkpoint: `docs/BILLING-READY-06B-CHECKPOINT.md`. Parent checkpoint: `docs/BILLING-READY-06-CHECKPOINT.md`. Deferred items: real Stripe live/test validation, Stripe CLI/webhook runtime tests, customer portal API validation, full authenticated billing data smoke — recorded as separate future tasks. Provider/payment/customer portal and Stripe CLI/webhook remain deferred. BILLING-READY-05 / 05A–05G / 04 / 03 remain COMPLETE and LOCKED. AGENT-HARNESS write canary remains a separate track.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-06.
 
@@ -32635,13 +32635,13 @@ Use existing translation hooks. Do not add hardcoded English UI copy. Icons must
 - BILLING-READY-05G COMPLETE and LOCKED (2026-07-16)
 - BILLING-READY-04 COMPLETE and LOCKED (2026-07-13)
 - BILLING-READY-03 COMPLETE and LOCKED (2026-07-07)
-- BILLING-READY-06B not registered yet
+- BILLING-READY-06B ACTIVE — Step 1 COMPLETE (Registration — 2026-07-16) — was not registered at 06A registration time
 - AGENT-HARNESS write canary remains separate and not registered
 - Keith approval recorded for 06A registration (2026-07-16)
 
 #### Purpose
 
-BILLING-READY-06A is the first child slice of BILLING-READY-06 under Decision B. It owns Docker/PostgreSQL/Redis readiness and local-only migration validation for the four deferred BILLING-READY-05 migrations. Backend runtime startup, frontend browser smoke, and provider/payment/customer portal validation are deferred to BILLING-READY-06B (planned only / not registered).
+BILLING-READY-06A is the first child slice of BILLING-READY-06 under Decision B. It owns Docker/PostgreSQL/Redis readiness and local-only migration validation for the four deferred BILLING-READY-05 migrations. Backend runtime startup, frontend browser smoke, and provider/payment/customer portal validation are owned by BILLING-READY-06B (now ACTIVE — Step 1 COMPLETE Registration).
 
 #### Future 06A Scope
 
@@ -32765,9 +32765,168 @@ If source defects are found later, stop and register a separate bounded fix task
 
 **AGENT-HARNESS write canary remains a separate track** — not registered, not part of BILLING-READY-06A.
 
-**BILLING-READY-06A status:** COMPLETE and LOCKED — 2026-07-16. All 4 steps complete. Docker/PostgreSQL/Redis PASS. All 4 billing migrations executed successfully locally (`AlignSubscriptionsTableWithTypeORM`, `AddStripeCustomerIdUniqueIndex`, `CreateWebhookEventsTable`, `CreateCreditGrantsTable`). migration:show AFTER 24/24, 0 pending. Evidence: 34 tables, 132 indexes, 24 migration records. Local-only DB (`localhost:5432`). Containers stopped; volumes preserved for 06B. No production DB. No destructive DB commands. No real secret env files opened. No source/frontend/backend/translation/env/package/migration changes. No API Gateway/frontend/browser/provider/Stripe CLI. No tests/builds during consolidation. No subagents. Checkpoint: `docs/BILLING-READY-06A-CHECKPOINT.md`. Preflight: `docs/BILLING-READY-06A-DOCKER-DB-MIGRATION-PREFLIGHT.md`. Parent BILLING-READY-06 remains ACTIVE. BILLING-READY-06B planned only / next recommended / not registered. BILLING-READY-05 / 05A–05G / 04 / 03 remain COMPLETE and LOCKED. AGENT-HARNESS write canary remains a separate track.
+**BILLING-READY-06A status:** COMPLETE and LOCKED — 2026-07-16. All 4 steps complete. Docker/PostgreSQL/Redis PASS. All 4 billing migrations executed successfully locally (`AlignSubscriptionsTableWithTypeORM`, `AddStripeCustomerIdUniqueIndex`, `CreateWebhookEventsTable`, `CreateCreditGrantsTable`). migration:show AFTER 24/24, 0 pending. Evidence: 34 tables, 132 indexes, 24 migration records. Local-only DB (`localhost:5432`). Containers stopped; volumes preserved for 06B. No production DB. No destructive DB commands. No real secret env files opened. No source/frontend/backend/translation/env/package/migration changes. No API Gateway/frontend/browser/provider/Stripe CLI. No tests/builds during consolidation. No subagents. Checkpoint: `docs/BILLING-READY-06A-CHECKPOINT.md`. Preflight: `docs/BILLING-READY-06A-DOCKER-DB-MIGRATION-PREFLIGHT.md`. Parent BILLING-READY-06 COMPLETE and LOCKED (2026-07-17). BILLING-READY-06B COMPLETE and LOCKED (2026-07-17). BILLING-READY-05 / 05A–05G / 04 / 03 remain COMPLETE and LOCKED. AGENT-HARNESS write canary remains a separate track.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-06A.
+
+---
+
+#### BILLING-READY-06B: Backend Runtime + Frontend Browser Smoke
+
+**Status:** COMPLETE and LOCKED — 2026-07-17. All 4 steps complete. Checkpoint: `docs/BILLING-READY-06B-CHECKPOINT.md`.
+**Task ID:** BILLING-READY-06B
+**Family:** BILLING READY / LOCAL RUNTIME VALIDATION / BACKEND RUNTIME / FRONTEND BROWSER SMOKE / PROVIDER SAFETY
+**Parent:** BILLING-READY-06 (COMPLETE and LOCKED — 2026-07-17)
+**Priority:** High
+**Nature:** BACKEND RUNTIME + FRONTEND BROWSER SMOKE — API Gateway startup, health endpoints, billing endpoint 401 smoke, frontend browser smoke across locales, DI blocker fixes, provider-disabled safety confirmed
+**Risk:** HIGH — future steps may start API Gateway and frontend dev server, use Docker/PostgreSQL/Redis volumes preserved from 06A, validate billing endpoints, perform guided browser smoke, and must avoid real provider/payment/customer portal calls
+**Registered:** 2026-07-16
+**Keith approval:** Keith explicitly requested the next prompt after BILLING-READY-06A was COMPLETE and LOCKED (2026-07-16). BILLING-READY-06B registration approved.
+
+#### Workflow Steps (4-step child-slice loop — HIGH risk)
+
+1. **Registration** — COMPLETE (2026-07-16)
+2. **Backend runtime / browser smoke preflight and exact safety plan** — COMPLETE (2026-07-17). See `docs/BILLING-READY-06B-BACKEND-BROWSER-SMOKE-PREFLIGHT.md`.
+3. **Bounded runtime/browser validation execution** — COMPLETE (2026-07-17). API Gateway startup PASS (after targeted DI fixes); health endpoints 200; billing endpoints 401; frontend browser smoke PASS with documented unauthenticated limitations. See `docs/BILLING-READY-06B-CHECKPOINT.md` sections 1–17.
+4. **Consolidation / checkpoint and parent BILLING-READY-06 completion** — COMPLETE (2026-07-17). See `docs/BILLING-READY-06B-CHECKPOINT.md` section 18–19. Parent checkpoint: `docs/BILLING-READY-06-CHECKPOINT.md`.
+
+#### Dependencies
+
+- BILLING-READY-06 ACTIVE
+- BILLING-READY-06 Step 2 readiness complete — `docs/BILLING-READY-06-RUNTIME-MIGRATION-BROWSER-SMOKE-READINESS.md` — Decision B
+- BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-06A-CHECKPOINT.md`
+- BILLING-READY-05 COMPLETE and LOCKED (2026-07-16)
+- BILLING-READY-05A COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-05B COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-05C COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-05D COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-05E COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-05F COMPLETE and LOCKED (2026-07-15)
+- BILLING-READY-05G COMPLETE and LOCKED (2026-07-16)
+- BILLING-READY-04 COMPLETE and LOCKED (2026-07-13)
+- BILLING-READY-03 COMPLETE and LOCKED (2026-07-07)
+- AGENT-HARNESS write canary remains separate and not registered
+- Keith approval recorded for 06B registration (2026-07-16)
+
+#### Purpose
+
+BILLING-READY-06B is the second child slice of BILLING-READY-06 under Decision B. It owns backend runtime smoke (API Gateway startup, health endpoints, billing endpoint behavior) and frontend browser smoke (billing page locales, checkout/provider-disabled safety, customer portal stub) after 06A completed Docker/PostgreSQL/Redis readiness and local migration validation. Parent BILLING-READY-06 remains ACTIVE. This registration step is planning-only.
+
+#### Future 06B Scope
+
+- Confirm Docker/PostgreSQL/Redis state from 06A
+- Confirm whether containers need to be restarted safely
+- Confirm API Gateway startup command and health endpoints:
+  - `/api/health`
+  - `/api/health/db`
+  - `/api/health/ready`
+- Confirm frontend dev server startup command
+- Confirm billing page routes:
+  - `/en/billing`
+  - `/zh-TW/billing`
+  - `/zh-CN/billing`
+- Confirm billing API endpoint behavior:
+  - `GET /api/billing/balance`
+  - `GET /api/billing/subscription`
+  - `POST /api/billing/checkout/subscription`
+  - `POST /api/billing/checkout/topup`
+- Confirm auth/session constraints and expected unauthenticated behavior
+- Confirm checkout buttons fail safely when provider is disabled/unconfigured
+- Confirm customer portal remains disabled/stubbed
+- Confirm no Stripe live/test/provider/customer portal call occurs
+- Confirm browser smoke scenarios and evidence
+- Decide whether parent BILLING-READY-06 can complete after 06B passes
+
+#### Future Step 2 Must Decide
+
+- Exact Docker/PostgreSQL/Redis restart/readiness commands, if needed
+- Exact API Gateway startup command
+- Exact frontend startup command
+- Exact health endpoint smoke commands
+- Exact billing endpoint smoke commands
+- Exact auth/session strategy
+- Exact browser smoke scenarios
+- Exact provider disabled/stub safety checks
+- Exact env/secrets handling without opening real env files
+- Exact stop conditions
+- Exact report/checkpoint file
+- Whether Step 3 requires Keith at keyboard
+- Whether Step 3 must split into backend runtime smoke and frontend browser smoke
+- Whether browser smoke can be completed by Keith manually with step-by-step guidance
+- Whether any source fix must become a separate task
+
+#### Non-Goals (Registration Step)
+
+- No Docker/PostgreSQL/Redis execution during registration
+- No DB commands during registration
+- No migration execution during registration
+- No tests/builds during registration
+- No runtime service startup during registration
+- No browser smoke during registration
+- No provider/payment/customer portal calls during registration
+- No Stripe CLI/webhook tests during registration
+- No env/secrets/package changes during registration
+- No real secret env files opened
+- No source/frontend/backend/translation/migration changes during registration
+- No parent BILLING-READY-06 completion during registration
+- No AGENT-HARNESS write canary
+- No git commits/pushes
+
+#### Runtime / Browser / Provider Safety Notes
+
+- Future runtime/browser validation requires explicit Keith approval
+- Keith must be guided step-by-step for browser/live smoke
+- Production DB must never be used
+- Real secret env files must not be opened
+- Provider mode must remain disabled/stub unless explicitly approved later
+- No live Stripe calls
+- No test Stripe calls unless explicitly approved later
+- No customer portal API calls
+- No Stripe CLI/webhook runtime tests
+- No real payment validation
+- If source defects are found later, stop and register a separate bounded fix task
+
+#### UX/UI Note
+
+Because 06B includes billing UI browser smoke:
+- aiSandBox is multilingual-first
+- Any new user-facing UI text must update all three translation files:
+  - `frontend/messages/en.json`
+  - `frontend/messages/zh-TW.json`
+  - `frontend/messages/zh-CN.json`
+- Use existing translation hooks
+- Do not add hardcoded English UI copy
+- Icons must remain Heroicons v2 Outline only
+- Impeccable and Emil Kowalski skills are advisory only
+- No broad redesign or UI source edits during registration
+
+#### Acceptance Criteria
+
+###### Registration (Step 1 — COMPLETE 2026-07-16)
+- [x] BILLING-READY-06B registered as current ACTIVE child slice
+- [x] Parent BILLING-READY-06 remains ACTIVE
+- [x] BILLING-READY-06A remains COMPLETE and LOCKED
+- [x] BILLING-READY-05 remains COMPLETE and LOCKED
+- [x] BILLING-READY-05A–05G remain COMPLETE and LOCKED
+- [x] BILLING-READY-04 remains COMPLETE and LOCKED
+- [x] BILLING-READY-03 remains COMPLETE and LOCKED
+- [x] Registration records 06B is registration/planning only
+- [x] Registration records no Docker/PostgreSQL/Redis execution occurred
+- [x] Registration records no DB commands/migrations occurred
+- [x] Registration records no runtime/browser/provider calls occurred
+- [x] Registration records no tests/builds occurred
+- [x] Registration records no source/frontend/backend/translation/env/package/migration files changed
+- [x] Registration records no real secret env files opened
+- [x] Registration records no commands run
+- [x] Registration records no subagents used
+- [x] Registration records AGENT-HARNESS write canary remains separate
+- [x] One-active-task rule satisfied
+
+**AGENT-HARNESS write canary remains a separate track** — not registered, not part of BILLING-READY-06B.
+
+**BILLING-READY-06B status:** COMPLETE and LOCKED — 2026-07-17. All 4 steps complete. DI blocker fixes applied to `public-api.module.ts` and `ai.module.ts` (CreditPersistenceModule + TypeOrmModule.forFeature([User])). API Gateway startup PASS (`http://localhost:4000`); health endpoints 200 (health/health/db/health/ready); billing endpoints 401 (balance/subscription/checkout/subscription/checkout/topup); provider disabled/stub; BILLING_CHARGES_ENABLED=false. Frontend browser smoke: /en/billing PASS; /zh-TW/billing PASS/PARTIAL; /zh-CN/billing PASS/PARTIAL; checkout banners PARTIAL; customer portal BLOCKED — all due unauthenticated limitation. Cleanup: frontend/API/postgres/redis stopped; volumes preserved. No provider/payment/customer portal calls. No Stripe CLI. No env secrets opened. No source changes during Step 4 consolidation. No subagents. Parent BILLING-READY-06 COMPLETE and LOCKED (2026-07-17). Checkpoint: `docs/BILLING-READY-06B-CHECKPOINT.md`. Parent checkpoint: `docs/BILLING-READY-06-CHECKPOINT.md`. Deferred items: real Stripe live/test, Stripe CLI/webhook, customer portal API, full authenticated billing data smoke — registered as separate future tasks. BILLING-READY-06A remains COMPLETE and LOCKED. BILLING-READY-05 / 05A–05G / 04 / 03 remain COMPLETE and LOCKED. AGENT-HARNESS write canary remains a separate track.
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-06B.
 
 ---
 
