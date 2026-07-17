@@ -3,10 +3,11 @@ import {
   Get,
   UseGuards,
   Req,
+  Res,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { SessionCookieGuard } from '../auth/session-cookie.guard';
 import { CreditBalanceRepository } from './credit-deduction/credit-balance.repository';
 import { SubscriptionRepository } from './subscription/subscription.repository';
@@ -87,20 +88,22 @@ export class BillingReadController {
   @HttpCode(HttpStatus.OK)
   async getSubscription(
     @Req() req: AuthenticatedRequest,
-  ): Promise<BillingSubscriptionResponse | null> {
+    @Res() res: Response,
+  ): Promise<void> {
     const subscription =
       await this.subscriptionRepository.findActiveByUserId(req.user.userId);
 
     if (!subscription) {
-      return null;
+      res.status(HttpStatus.OK).json(null);
+      return;
     }
 
-    return {
+    res.status(HttpStatus.OK).json({
       planType: subscription.planType,
       status: subscription.status,
       currentPeriodStart: subscription.currentPeriodStart.toISOString(),
       currentPeriodEnd: subscription.currentPeriodEnd.toISOString(),
       cancelAt: subscription.cancelAt?.toISOString() ?? null,
-    };
+    });
   }
 }
