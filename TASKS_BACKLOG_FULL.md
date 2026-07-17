@@ -35654,7 +35654,7 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 
 **Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` �X controls cross-family priority order; Knowledge before Collaboration before Billing.
 
-**Current stage:** BILLING-READY-07 ACTIVE — Steps 1–4 COMPLETE (2026-07-17) — Outcome B — PASS WITH LIMITATIONS — Pending BILLING-READY-07A (Authenticated Billing Visual Browser Confirmation) — ANOMALY-01 (Auth route UX/UI regression) recorded — not fixed — separate future task — Consolidation document: `docs/BILLING-READY-07-CONSOLIDATION-DECISION.md` — BILLING-READY-06 COMPLETE and LOCKED (2026-07-17) — BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — BILLING-READY-06B COMPLETE and LOCKED (2026-07-17) — Checkpoint: `docs/BILLING-READY-06B-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-06-CHECKPOINT.md` — Next recommended: register BILLING-READY-07A — Authenticated Billing Visual Browser Confirmationgistered). BILLING-READY-05 COMPLETE and LOCKED (2026-07-16) — all 4 parent steps complete — all child slices 05A–05G COMPLETE and LOCKED — Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`. BILLING-READY-05G COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-05G-CHECKPOINT.md`. BILLING-READY-05F COMPLETE and LOCKED (2026-07-15). Checkpoint: `docs/BILLING-READY-05F-CHECKPOINT.md`. BILLING-READY-05E COMPLETE and LOCKED (2026-07-15). BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-04 COMPLETE and LOCKED (2026-07-13). BILLING-READY-03 COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
+**Current stage:** BILLING-READY-07 ACTIVE — Steps 1–4 COMPLETE (2026-07-17) — Outcome B — PASS WITH LIMITATIONS — Pending BILLING-READY-07A visual confirmation — BILLING-READY-07A BLOCKED — Steps 1 and 2 COMPLETE — Step 3 BLOCKED (BR07A-DEFECT-01) — Step 4 consolidation complete — 2026-07-17 — current child slice (BLOCKED) — Authenticated Billing Visual Browser Confirmation — ANOMALY-01 (Auth route UX/UI regression) recorded — deferred — not registered — Consolidation document: `docs/BILLING-READY-07-CONSOLIDATION-DECISION.md` — BILLING-READY-06 COMPLETE and LOCKED (2026-07-17) — BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — BILLING-READY-06B COMPLETE and LOCKED (2026-07-17) — Checkpoint: `docs/BILLING-READY-06B-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-06-CHECKPOINT.md` — Next recommended: Register BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200 — Subscription Free-State JSON Response Fix. BILLING-READY-05 COMPLETE and LOCKED (2026-07-16) — all 4 parent steps complete — all child slices 05A–05G COMPLETE and LOCKED — Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`. BILLING-READY-05G COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-05G-CHECKPOINT.md`. BILLING-READY-05F COMPLETE and LOCKED (2026-07-15). Checkpoint: `docs/BILLING-READY-05F-CHECKPOINT.md`. BILLING-READY-05E COMPLETE and LOCKED (2026-07-15). BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-04 COMPLETE and LOCKED (2026-07-13). BILLING-READY-03 COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 �X ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED �X 2026-07-04)
@@ -43369,14 +43369,14 @@ Because 06B includes billing UI browser smoke:
 
 ### BILLING-READY-07: Authenticated Billing Data Smoke
 
-**Status:** ACTIVE — Steps 1–4 COMPLETE (2026-07-17) — Outcome B — PASS WITH LIMITATIONS — Pending BILLING-READY-07A (Authenticated Billing Visual Browser Confirmation)
+**Status:** ACTIVE — Steps 1–4 COMPLETE (2026-07-17) — Outcome B — PASS WITH LIMITATIONS — Pending BILLING-READY-07A visual confirmation — BILLING-READY-07A BLOCKED — Steps 1 and 2 COMPLETE — Step 3 BLOCKED (BR07A-DEFECT-01) — Step 4 consolidation complete — 2026-07-17
 **Task ID:** BILLING-READY-07
 **Family:** BILLING READY / AUTHENTICATED BILLING DATA / LOCAL AUTH SESSION / FRONTEND BROWSER SMOKE / PROVIDER SAFETY
 **Priority:** High
 **Nature:** PLANNING / PREFLIGHT / LOCAL AUTHENTICATED RUNTIME VALIDATION
 **Risk:** HIGH — four-step task loop because later work may involve authentication, local runtime services, local billing data and Keith-guided browser smoke. No runtime action is approved by this registration.
 **Registered:** 2026-07-17
-**Keith approval:** Keith explicitly approved registering BILLING-READY-07 as the next task after BILLING-READY-06 and all its child slices were completed and locked — 2026-07-17.
+**Keith approval:** Keith explicitly approved registering BILLING-READY-07 as the next task after BILLING-READY-06 and all its child slices were completed and locked — 2026-07-17. Keith approved continuing the BILLING-READY-07 lifecycle and registering BILLING-READY-07A after Outcome B consolidation — 2026-07-17.
 
 #### Naming note
 
@@ -43733,9 +43733,275 @@ Step 2 must determine:
 
 **AGENT-HARNESS write canary remains a separate track** — not registered, not part of BILLING-READY-07.
 
-**BILLING-READY-07 status:** ACTIVE — Steps 1–4 COMPLETE (2026-07-17) — Outcome B — PASS WITH LIMITATIONS — Pending BILLING-READY-07A (Authenticated Billing Visual Browser Confirmation). Steps 1 (Registration), 2 (Preflight), 3 (Runtime smoke), and 4 (Consolidation) COMPLETE. Runtime, session, authenticated billing-data, provider-safety, and API checks PASSED. Visual browser confirmation of banners (en/zh-TW/zh-CN), zh-TW and zh-CN billing copy, customer portal disabled state, hardcoded-English visual review, and 390 px responsive layout DEFERRED to BILLING-READY-07A. ANOMALY-01 (Auth route UX/UI regression — functional auth working, legacy UI on active routes) recorded — non-blocking for billing data validation — separate future task after BILLING-READY-07A. BILLING-READY-06 / 06A / 06B remain COMPLETE and LOCKED. BILLING-READY-05 / 05A–05G / 04 / 03 remain COMPLETE and LOCKED. No source/test/translation/package/migration/env/Docker changes during Step 4. No provider/payment/Stripe/webhook activity. No secrets exposed. No subagents. No git commit/push. Consolidation document: `docs/BILLING-READY-07-CONSOLIDATION-DECISION.md`. AGENT-HARNESS write canary remains a separate track. Next recommended: register BILLING-READY-07A — Authenticated Billing Visual Browser Confirmation.
+**BILLING-READY-07 status:** ACTIVE — Steps 1–4 COMPLETE (2026-07-17) — Outcome B — PASS WITH LIMITATIONS — Pending BILLING-READY-07A visual confirmation. Steps 1 (Registration), 2 (Preflight), 3 (Runtime smoke), and 4 (Consolidation) COMPLETE. Runtime, session, authenticated billing-data, provider-safety, and API checks PASSED. Visual browser confirmation of banners (en/zh-TW/zh-CN), zh-TW and zh-CN billing copy, customer portal disabled state, hardcoded-English visual review, and 390 px responsive layout DEFERRED to BILLING-READY-07A. BILLING-READY-07A is the current child slice — BLOCKED — Steps 1 and 2 COMPLETE — Step 3 BLOCKED by BR07A-DEFECT-01 (`GET /api/billing/subscription` returns HTTP 200 with `content-length: 0` and empty body; frontend renders "Failed to load billing information") — Step 4 consolidation complete — 2026-07-17. ANOMALY-01 (Auth route UX/UI regression — functional auth working, legacy UI on active routes) recorded — non-blocking — remains deferred and not registered. Parent cannot complete until backend defect is fixed and BILLING-READY-07A Step 3 is rerun. BILLING-READY-06 / 06A / 06B remain COMPLETE and LOCKED. BILLING-READY-05 / 05A–05G / 04 / 03 remain COMPLETE and LOCKED. No source/test/translation/package/migration/env/Docker changes during Step 4. No provider/payment/Stripe/webhook activity. No secrets exposed. No subagents. No git commit/push. Consolidation document: `docs/BILLING-READY-07-CONSOLIDATION-DECISION.md`. AGENT-HARNESS write canary remains a separate track. Next recommended: Register BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200 — Subscription Free-State JSON Response Fix as a separate bounded backend fix task.
 
 **Reference:** See TASKS.md -> BILLING-READY-07.
+
+---
+
+### BILLING-READY-07A: Authenticated Billing Visual Browser Confirmation
+
+**Status:** BLOCKED — Step 3 visual execution stopped by BR07A-DEFECT-01; Step 4 consolidation complete — 2026-07-17
+**Task ID:** BILLING-READY-07A
+**Family:** BILLING READY / AUTHENTICATED BILLING / VISUAL BROWSER CONFIRMATION / MULTILINGUAL UX / PROVIDER SAFETY
+**Parent:** BILLING-READY-07 — Authenticated Billing Data Smoke (ACTIVE — Outcome B — PASS WITH LIMITATIONS)
+**Priority:** High
+**Nature:** OBSERVATION-ONLY VISUAL BROWSER VALIDATION
+**Risk:** HIGH — authenticated runtime browser validation with strict payment/provider safety boundaries.
+**Registered:** 2026-07-17
+**Keith approval:** Keith approved continuing the BILLING-READY-07 task lifecycle and registering the bounded visual-confirmation child slice identified by the completed consolidation decision — 2026-07-17.
+
+#### Naming note
+
+Parent BILLING-READY-07 registration listed a hypothetical evaluation-only candidate named `BILLING-READY-07A — Local Authenticated Session and Billing Data Readiness` under “Possible structure for evaluation only (do not register now).” That candidate was never registered, never activated, and never locked. Step 2 of BILLING-READY-07 chose Option A (single parent execution track). The Outcome B consolidation decision reuses `BILLING-READY-07A` for **Authenticated Billing Visual Browser Confirmation** — the sole authoritative registered BILLING-READY-07A entry.
+
+#### Workflow Steps (4-step child-slice loop — HIGH risk)
+
+Selected because CLAUDE.md requires a 4-step loop for risky/security-sensitive work, and BILLING-READY-06A / 06B / 07 precedent uses the same HIGH-risk pattern. Smallest 3-step loop was considered and rejected for this authenticated runtime browser slice.
+
+1. **Registration** — COMPLETE (2026-07-17).
+2. **Visual-smoke readiness/preflight** — COMPLETE (2026-07-17). See `docs/BILLING-READY-07A-VISUAL-BROWSER-PREFLIGHT.md`.
+3. **Runtime and browser execution** — BLOCKED — 2026-07-17. BR07A-DEFECT-01: `GET /api/billing/subscription` returns HTTP 200 with `content-length: 0` and empty body; frontend renders "Failed to load billing information". Runtime infrastructure started safely; provider-disabled/charges-disabled confirmed; authentication passed; cleanup completed. All visual checks blocked. See `docs/BILLING-READY-07A-CONSOLIDATION-DECISION.md`.
+4. **Consolidation/checkpoint and BILLING-READY-07 parent completion decision** — COMPLETE — BLOCKED outcome — 2026-07-17. See `docs/BILLING-READY-07A-CONSOLIDATION-DECISION.md`.
+
+#### Dependencies
+
+- BILLING-READY-07 ACTIVE — Steps 1–4 COMPLETE (2026-07-17) — Outcome B — PASS WITH LIMITATIONS
+- `docs/BILLING-READY-07-CONSOLIDATION-DECISION.md` — Outcome B selected; visual gaps deferred to this child slice
+- `docs/BILLING-READY-07-AUTHENTICATED-BILLING-SMOKE-EXECUTION.md` — Step 3 PASS WITH LIMITATIONS evidence
+- `docs/BILLING-READY-07-AUTHENTICATED-BILLING-SMOKE-PREFLIGHT.md` — Step 2 safety plan / routes
+- BILLING-READY-06 COMPLETE and LOCKED — 2026-07-17
+- BILLING-READY-06A COMPLETE and LOCKED — 2026-07-16
+- BILLING-READY-06B COMPLETE and LOCKED — 2026-07-17
+- BILLING-READY-05 / 05A–05G COMPLETE and LOCKED
+- BILLING-READY-04 COMPLETE and LOCKED
+- BILLING-READY-03 COMPLETE and LOCKED
+- Keith approval for BILLING-READY-07A registration — 2026-07-17
+- AGENT-HARNESS write canary remains separate and unregistered
+- ANOMALY-01 remains deferred and not registered during this registration
+
+#### Purpose
+
+BILLING-READY-07 validated local registration/login, authenticated session, authenticated billing API reads, free-state balance/subscription responses, all nine required billing URLs returning HTTP 200, provider-disabled/stub mode, `BILLING_CHARGES_ENABLED=false`, and no checkout/top-up/customer-portal/webhook/provider requests.
+
+BILLING-READY-07 did not directly visually confirm the rendered client UI. BILLING-READY-07A exists only to close those visual evidence gaps. HTTP 200 is not proof of visible React rendering. Do not invent browser evidence from HTTP responses or source inspection.
+
+#### Outcome B Dependency
+
+- Parent remains ACTIVE until this child slice completes and the parent completion decision is made.
+- Outcome B / PASS WITH LIMITATIONS history is preserved.
+- This child slice is observation-only visual confirmation of deferred Step 3 items.
+
+#### Bounded Future Scope (Steps 2–3 — not approved for execution by registration)
+
+1. Visually confirm the authenticated English billing page.
+2. Visually confirm the authenticated Traditional Chinese billing page.
+3. Visually confirm the authenticated Simplified Chinese billing page.
+4. Visually confirm success banners in all three locales.
+5. Visually confirm cancelled banners in all three locales.
+6. Visually confirm Traditional Chinese billing copy.
+7. Visually confirm Simplified Chinese billing copy.
+8. Visually confirm customer portal card visibility.
+9. Visually confirm customer portal button is disabled.
+10. Visually confirm “Coming soon” or equivalent localized copy.
+11. Perform a runtime hardcoded-English visual review on zh-TW and zh-CN.
+12. Confirm desktop visual usability.
+13. Confirm approximately 390 px mobile-width usability.
+14. Confirm no checkout, top-up, customer-portal, webhook or provider request occurs.
+15. Record evidence without exposing credentials, cookies, tokens or headers.
+
+#### Expected Routes (future checks — no browser work during registration)
+
+- `http://localhost:3002/en/billing`
+- `http://localhost:3002/en/billing?checkout=success`
+- `http://localhost:3002/en/billing?checkout=cancelled`
+- `http://localhost:3002/zh-TW/billing`
+- `http://localhost:3002/zh-TW/billing?checkout=success`
+- `http://localhost:3002/zh-TW/billing?checkout=cancelled`
+- `http://localhost:3002/zh-CN/billing`
+- `http://localhost:3002/zh-CN/billing?checkout=success`
+- `http://localhost:3002/zh-CN/billing?checkout=cancelled`
+
+#### Browser Execution Rule (future Step 3)
+
+- First use Cursor browser automation if it is genuinely available and capable of visual inspection.
+- If browser automation is unavailable or cannot use the authenticated session safely, Keith must perform the remaining browser observations manually with exact step-by-step guidance.
+- Do not ask Keith to perform checks that Cursor can reliably perform itself.
+- Do not invent browser evidence from HTTP responses or source inspection.
+
+#### Payment / Provider Safety
+
+- Provider must remain disabled/stub.
+- `BILLING_CHARGES_ENABLED` must remain false.
+- Do not click Upgrade.
+- Do not click Top up.
+- Do not click Buy Credits.
+- Do not click Subscribe.
+- Do not click Manage Subscription.
+- Do not force-enable disabled controls.
+- Do not edit DOM attributes.
+- Do not call checkout APIs.
+- Do not call top-up APIs.
+- Do not call customer-portal APIs.
+- Do not call webhook endpoints.
+- Do not use Stripe CLI.
+- Do not navigate to Stripe or another payment provider.
+- No real or test payment activity is permitted.
+
+#### Multilingual-First Requirements
+
+- aiSandBox is multilingual-first.
+- No hardcoded English user-facing billing copy.
+- Visual checks required for en, zh-TW and zh-CN.
+- Use existing translation hooks and patterns.
+- If a future defect fix changes visible copy, all three files must be updated together:
+  - `frontend/messages/en.json`
+  - `frontend/messages/zh-TW.json`
+  - `frontend/messages/zh-CN.json`
+- Translation checks/tests required where practical.
+- No translation changes are part of BILLING-READY-07A unless a separate fix task is registered.
+
+#### UX/UI Advisory Skills
+
+#### Impeccable
+
+Path: `C:\Users\knlee\aiSandBox2026B\.agents\skills\impeccable`
+
+Relevant for broad page/screen visual audit, layout, spacing and hierarchy.
+
+#### Emil Kowalski design-engineering skill
+
+Skills directory: `C:\Users\knlee\aiSandBox2026B\.agents\skills`
+
+Relevant for component interaction, loading/empty/error/success states and bounded polish.
+
+Constraints:
+
+- Advisory only.
+- Must not override `CLAUDE.md`, `TASKS.md`, `TASKS_BACKLOG_FULL.md`, or `AINOW-EXECUTION-ROADMAP.md`.
+- Must not expand scope, trigger redesign, add dependencies, change routing, trigger backend work, or cause source changes during observation-only validation.
+- Neither skill is required for basic functional visual confirmation. Use only if needed to classify a discovered visual defect, not to redesign or implement.
+
+#### UI Icon Rule
+
+Any future separately approved icon change must use Heroicons v2 Outline: `@heroicons/react/24/outline`.
+
+No icon changes occur in BILLING-READY-07A registration or visual validation.
+
+#### Source-Defect Boundary
+
+BILLING-READY-07A is observation-only.
+
+If a defect is found:
+
+- Do not fix it.
+- Record exact route, locale, viewport and visible result.
+- Capture evidence without secrets.
+- Determine whether it blocks BILLING-READY-07 completion.
+- Recommend one separate bounded fix task.
+- Handle one issue at a time.
+
+#### ANOMALY-01 Sequencing
+
+ANOMALY-01 — Auth route UX/UI regression remains deferred.
+
+It must not be registered during BILLING-READY-07A registration.
+
+Expected sequence:
+
+1. Register BILLING-READY-07A. (this step)
+2. Complete visual billing confirmation.
+3. Consolidate BILLING-READY-07A.
+4. Make the BILLING-READY-07 parent completion decision.
+5. Register ANOMALY-01 as a separate multilingual UX/UI regression investigation.
+
+#### Non-Goals (Registration Step)
+
+- No source changes.
+- No test changes.
+- No translation changes.
+- No package changes.
+- No migration changes.
+- No environment changes.
+- No Docker configuration changes.
+- No authentication redesign.
+- No billing redesign.
+- No frontend redesign.
+- No route changes.
+- No ANOMALY-01 investigation.
+- No provider/payment work.
+- No Stripe CLI.
+- No webhook testing.
+- No checkout/top-up/customer-portal calls.
+- No database migration.
+- No destructive DB action.
+- No `docker compose down -v`.
+- No git commit or push.
+- No subagents.
+- No runtime or browser work during registration.
+
+#### Acceptance Criteria
+
+###### Step 1 — Registration (COMPLETE 2026-07-17)
+- [x] BILLING-READY-07A added to TASKS_BACKLOG_FULL.md.
+- [x] BILLING-READY-07A activated in TASKS.md.
+- [x] Parent BILLING-READY-07 remains ACTIVE.
+- [x] BILLING-READY-07A is the current ACTIVE child slice.
+- [x] Outcome B dependency recorded.
+- [x] Visual-only bounded scope recorded.
+- [x] All nine billing routes recorded.
+- [x] Three-locale visual validation recorded.
+- [x] Success/cancelled banner checks recorded.
+- [x] Customer portal disabled/Coming soon visual check recorded.
+- [x] Runtime hardcoded-English visual review recorded.
+- [x] Desktop and 390 px checks recorded.
+- [x] Browser automation/manual fallback rule recorded.
+- [x] Multilingual-first requirements recorded.
+- [x] UX/UI advisory skills recorded.
+- [x] Heroicons v2 Outline rule recorded.
+- [x] Provider/payment safety constraints recorded.
+- [x] Observation-only/source-defect boundary recorded.
+- [x] ANOMALY-01 sequencing recorded.
+- [x] No implementation or runtime occurred.
+- [x] No source, test, translation, package, migration, environment or Docker files changed.
+- [x] No secret files opened.
+- [x] No subagents used.
+- [x] No git commit or push occurred.
+
+###### Step 2 — Visual-Smoke Readiness / Preflight (COMPLETE 2026-07-17)
+- [x] Exact runtime readiness and authenticated-session reuse strategy recorded
+- [x] Browser automation availability vs Keith manual fallback plan recorded
+- [x] Exact stop conditions and provider/payment safety checks recorded
+- [x] Exact evidence recording plan recorded without exposing secrets
+
+###### Step 3 — Runtime and Browser Execution (BLOCKED — 2026-07-17)
+- [x] Runtime infrastructure started safely
+- [x] Provider-disabled and charges-disabled state confirmed
+- [x] Authentication succeeded
+- [x] Blocking runtime evidence recorded — BR07A-DEFECT-01: `GET /api/billing/subscription` returns HTTP 200 with `content-length: 0` and empty body
+- [x] No provider/payment/customer-portal activity occurred
+- [x] Cleanup completed
+- [ ] Authenticated English / zh-TW / zh-CN billing pages visually confirmed
+- [ ] Success and cancelled banners visually confirmed in all three locales
+- [ ] zh-TW and zh-CN billing copy visually confirmed
+- [ ] Customer portal card visible; button disabled; Coming soon / equivalent localized copy confirmed
+- [ ] Runtime hardcoded-English visual review completed on zh-TW and zh-CN
+- [ ] Desktop and ~390 px mobile-width usability confirmed
+- [ ] No checkout / top-up / customer-portal / webhook / provider request occurred
+- [ ] Evidence recorded without exposing credentials, cookies, tokens or headers
+
+###### Step 4 — Consolidation / Checkpoint and Parent Completion Decision (COMPLETE — BLOCKED outcome — 2026-07-17)
+- [x] BLOCKED consolidation decision created — `docs/BILLING-READY-07A-CONSOLIDATION-DECISION.md`
+- [x] Governance files updated consistently
+- [x] BR07A-DEFECT-01 recorded
+- [x] Separate bounded backend fix registration recommended — BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200
+- [ ] BILLING-READY-07A COMPLETE and LOCKED — blocked pending fix and rerun
+
+**AGENT-HARNESS write canary remains a separate track** — not registered, not part of BILLING-READY-07A.
+
+**BILLING-READY-07A status:** BLOCKED — Step 3 visual execution stopped by BR07A-DEFECT-01; Step 4 consolidation complete — 2026-07-17. Steps 1 (Registration — 2026-07-17) and 2 (Preflight — 2026-07-17) COMPLETE. Step 3 BLOCKED — runtime infrastructure started safely; provider-disabled/BILLING_CHARGES_ENABLED=false confirmed; authentication passed; cleanup completed; all visual checks blocked by `GET /api/billing/subscription` returning HTTP 200 with `content-length: 0` and empty body (frontend renders "Failed to load billing information"). Step 4 consolidation COMPLETE with BLOCKED outcome. BR07A-DEFECT-01 recorded. Parent BILLING-READY-07 remains ACTIVE — cannot complete until backend defect is fixed and BILLING-READY-07A Step 3 is rerun. ANOMALY-01 remains deferred and not registered. Consolidation document: `docs/BILLING-READY-07A-CONSOLIDATION-DECISION.md`. AGENT-HARNESS write canary remains a separate track. Next recommended action: register BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200 — Subscription Free-State JSON Response Fix as a separate bounded backend fix task.
+
+**Reference:** See TASKS.md -> BILLING-READY-07A.
 
 ---
 
