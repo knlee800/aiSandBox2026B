@@ -25152,7 +25152,7 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 
 **Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` �X controls cross-family priority order; Knowledge before Collaboration before Billing.
 
-**Current stage:** ANOMALY-01 — Auth Route Multilingual UX/UI Regression Investigation — COMPLETE and LOCKED — 2026-07-19 — all 4 steps complete — root cause: design-language drift — bounded visual refresh implemented — 640/640 tests PASS — visual smoke rerun PASS (all six locale routes) — Checkpoint: `docs/ANOMALY-01-CHECKPOINT.md` — BILLING-READY-07 COMPLETE and LOCKED — 2026-07-17 — Outcome B — PASS WITH LIMITATIONS — BILLING-READY-07A COMPLETE and LOCKED — 2026-07-17 — Step 3 rerun PASS (2026-07-19) — BR07A-DEFECT-01 resolved — BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200 COMPLETE and LOCKED — 2026-07-17 — Checkpoint: `docs/BILLING-READY-07A-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-07-CHECKPOINT.md` — Consolidation document: `docs/BILLING-READY-07-CONSOLIDATION-DECISION.md` — BILLING-READY-06 COMPLETE and LOCKED (2026-07-17) — BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — BILLING-READY-06B COMPLETE and LOCKED (2026-07-17) — Checkpoint: `docs/BILLING-READY-06B-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-06-CHECKPOINT.md` — Next action: Register Beta preparation task (entry 22 of Near-Term Sequence, `docs/AINOW-EXECUTION-ROADMAP.md`) — requires Keith explicit approval. BILLING-READY-05 COMPLETE and LOCKED (2026-07-16) — all 4 parent steps complete — all child slices 05A–05G COMPLETE and LOCKED — Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`. BILLING-READY-05G COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-05G-CHECKPOINT.md`. BILLING-READY-05F COMPLETE and LOCKED (2026-07-15). BILLING-READY-05E COMPLETE and LOCKED (2026-07-15). BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-04 COMPLETE and LOCKED (2026-07-13). BILLING-READY-03 COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
+**Current stage:** BETA-READY-00 — Beta Readiness Checklist — COMPLETE and LOCKED — 2026-07-19 — all 3 steps complete — checklist created (`docs/BETA-READY-00-CHECKLIST.md`) — launch decision: READY FOR LIMITED BETA WITH LIMITATIONS — 15 gates (7 PASS, 8 needs verification) — blockers: B1 (write path), B2 (deployment), B3 (pre-beta smoke) — next recommended task: T1 Agent Harness Write Canary + Production Activation (requires Keith explicit approval) — Checkpoint: `docs/BETA-READY-00-CHECKPOINT.md` — ANOMALY-01 COMPLETE and LOCKED — 2026-07-19 — Checkpoint: `docs/ANOMALY-01-CHECKPOINT.md` — BILLING-READY-07 COMPLETE and LOCKED — 2026-07-17 — Outcome B — PASS WITH LIMITATIONS — BILLING-READY-07A COMPLETE and LOCKED — 2026-07-17 — Step 3 rerun PASS (2026-07-19) — BR07A-DEFECT-01 resolved — BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200 COMPLETE and LOCKED — 2026-07-17 — Checkpoint: `docs/BILLING-READY-07A-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-07-CHECKPOINT.md` — Consolidation document: `docs/BILLING-READY-07-CONSOLIDATION-DECISION.md` — BILLING-READY-06 COMPLETE and LOCKED (2026-07-17) — BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — BILLING-READY-06B COMPLETE and LOCKED (2026-07-17) — Checkpoint: `docs/BILLING-READY-06B-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-06-CHECKPOINT.md` — Next action: T1 Agent Harness Write Canary + Production Activation — requires Keith explicit approval before registration. AGENT-HARNESS write canary remains a separate track. BILLING-READY-05 COMPLETE and LOCKED (2026-07-16) — all 4 parent steps complete — all child slices 05A–05G COMPLETE and LOCKED — Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`. BILLING-READY-05G COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-05G-CHECKPOINT.md`. BILLING-READY-05F COMPLETE and LOCKED (2026-07-15). BILLING-READY-05E COMPLETE and LOCKED (2026-07-15). BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-04 COMPLETE and LOCKED (2026-07-13). BILLING-READY-03 COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 �X ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED �X 2026-07-04)
@@ -34042,6 +34042,152 @@ The following skills are advisory only for future investigation/implementation s
 **ANOMALY-01 status:** COMPLETE and LOCKED — 2026-07-19. All 4 steps complete. Step 1 (Registration — 2026-07-19): COMPLETE. Step 2 (Investigation / Preflight — 2026-07-19): COMPLETE — root cause: design-language drift. Step 3 (Implementation — 2026-07-19): COMPLETE — 8 files changed; 640/640 tests PASS; TypeScript clean; build PASS. Step 3B (Visual smoke rerun — 2026-07-19): PASS — all six locale routes PASS; desktop/mobile PASS; zh-TW/zh-CN PASS. Step 4 (Consolidation — 2026-07-19): COMPLETE. BILLING-READY-07 COMPLETE and LOCKED. BILLING-READY-07A COMPLETE and LOCKED. No source/test/translation/package/migration/entity/environment/Docker files changed during consolidation. No secrets opened. No subagents. No git commit/push. Checkpoint: `docs/ANOMALY-01-CHECKPOINT.md`. Do not modify after locking except by explicitly approved follow-up task. Next action: Register Beta preparation task (entry 22 of Near-Term Sequence) — requires Keith explicit approval.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> ANOMALY-01.
+
+---
+
+#### BETA-READY-00: Beta Readiness Checklist
+
+**Status:** COMPLETE and LOCKED — 2026-07-19
+**Task ID:** BETA-READY-00
+**Title:** Beta Readiness Checklist
+**Family:** BETA READINESS / LAUNCH GATE / CHECKLIST / PRODUCTION READINESS
+**Priority:** High
+**Nature:** GOVERNANCE / READINESS CHECKLIST / LAUNCH-GATE PLANNING
+**Risk:** HIGH — beta launch readiness affects real-user exposure, safety, auth, billing, workspace, agent, and deployment confidence.
+**Registered:** 2026-07-19
+**Keith approval:** Keith explicitly approved registration by replying "ok, go" after ANOMALY-01 was completed and locked — 2026-07-19.
+
+#### Dependencies
+
+- BILLING-READY-03 through BILLING-READY-07A COMPLETE and LOCKED
+- AGENT-PLATFORM-04 through AGENT-PLATFORM-07F COMPLETE and LOCKED
+- ANOMALY-01 COMPLETE and LOCKED — 2026-07-19
+- No Stripe/provider/payment/customer-portal/webhook work registered by this task
+- AGENT-HARNESS write canary remains separate and unregistered
+
+#### Purpose
+
+Register a bounded beta readiness checklist task. Step 2 creates a concrete beta launch-readiness checklist covering all launch gates, known blockers, acceptable limitations, and exact next tasks before inviting beta users.
+
+#### Workflow Steps (3-step loop — GOVERNANCE / READINESS CHECKLIST)
+
+1. **Registration** — COMPLETE (2026-07-19).
+2. **Beta readiness checklist drafting / launch-gate review** — pending. Document/checklist creation only unless a blocker requires separate task registration.
+3. **Consolidation / checkpoint / next-task decision** — pending.
+
+#### Checklist Scope (Step 2)
+
+Step 2 must cover:
+
+1. Must-pass beta launch gates.
+2. Known blockers.
+3. Acceptable limitations for limited beta.
+4. Auth readiness.
+5. Billing readiness.
+6. Agent platform readiness.
+7. Workspace/project/session readiness.
+8. Preview/runtime safety readiness.
+9. Repo-doc/context readiness.
+10. Deployment/environment readiness.
+11. Observability/logging/error-handling readiness.
+12. Security and secret-handling readiness.
+13. Data safety and destructive-command boundaries.
+14. Multilingual UX/UI readiness.
+15. Manual smoke-test checklist.
+16. Rollback/stop-beta criteria.
+17. What must remain deferred.
+18. Exact next tasks before inviting beta users.
+
+#### Multilingual Requirements
+
+aiSandBox is multilingual-first. Any future user-facing UX/UI copy change must update all three files together:
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+Use the existing translation hook/pattern. Do not add hardcoded English UX/UI copy.
+
+Any future icon changes must use Heroicons v2 Outline only:
+- `@heroicons/react/24/outline`
+
+UX/UI advisory skills are advisory only:
+- Impeccable: `C:\Users\knlee\aiSandBox2026B\.agents\skills\impeccable`
+- Emil Kowalski design engineering skill: `C:\Users\knlee\aiSandBox2026B\.agents\skills\emil-design-eng`
+
+#### Non-Goals
+
+- No live Stripe/payment/provider/customer-portal/webhook work.
+- No AGENT-HARNESS write canary.
+- No backend implementation.
+- No frontend implementation.
+- No auth policy change.
+- No billing provider activation.
+- No deployment changes.
+- No environment/secret changes.
+- No migration/entity/schema changes.
+- No package/dependency changes.
+- No app-wide redesign.
+- No runtime/browser smoke.
+- No beta user invitation.
+- No git commit or push.
+- If Step 2 finds implementation work, do not fix it inside the checklist task — register separate bounded tasks.
+
+#### Safety Boundaries
+
+- Do not open secret-bearing environment files.
+- Do not run tests, build, lint, or typecheck during registration.
+- Do not start runtime, Docker, or database during registration.
+- Do not perform browser validation during registration.
+- Do not call APIs during registration.
+
+#### Acceptance Criteria
+
+###### Step 1 — Registration (COMPLETE 2026-07-19)
+- [x] BETA-READY-00 added to TASKS_BACKLOG_FULL.md.
+- [x] BETA-READY-00 activated in TASKS.md.
+- [x] Roadmap updated to show BETA-READY-00 ACTIVE.
+- [x] ANOMALY-01 remains COMPLETE and LOCKED.
+- [x] BILLING-READY-07 remains COMPLETE and LOCKED.
+- [x] BILLING-READY-07A remains COMPLETE and LOCKED.
+- [x] Scope limited to beta readiness checklist / launch-gate planning.
+- [x] Implementation work excluded.
+- [x] Stripe/provider/payment/customer-portal/webhook work excluded.
+- [x] AGENT-HARNESS write canary excluded.
+- [x] Multilingual UX/UI requirements recorded.
+- [x] Future blockers must become separate bounded tasks.
+- [x] No source/test/translation/package/migration/entity/environment/Docker files changed.
+- [x] No runtime, Docker, DB, browser, API, test, build, provider, payment, Stripe CLI, webhook, git commit, or git push occurred.
+- [x] No secret-bearing environment file opened.
+- [x] No subagents used.
+
+###### Step 2 — Beta Readiness Checklist Drafting / Launch-Gate Review (COMPLETE 2026-07-19)
+- [x] Beta readiness checklist document created — `docs/BETA-READY-00-CHECKLIST.md`.
+- [x] Must-pass beta launch gates identified — G1–G15 (15 gates; 7 PASS, 8 Needs verification, 0 FAIL).
+- [x] Known blockers listed — B1 (write path), B2 (deployment), B3 (pre-beta smoke).
+- [x] Acceptable limitations for limited beta recorded — L1–L11 (11 limitations).
+- [x] Auth, billing, agent platform, workspace, runtime, deployment, observability, security, multilingual, and data safety readiness assessed — all 18 domains covered.
+- [x] Manual smoke-test checklist defined — S1–S33 (33 smoke tests).
+- [x] Rollback/stop-beta criteria defined — R1–R9.
+- [x] Deferred items recorded — D1–D13.
+- [x] Exact next tasks before inviting beta users listed — T1–T8.
+- [x] Any implementation work found must become separate registered tasks — not fixed inside this checklist task. CONFIRMED.
+
+###### Step 3 — Consolidation / Checkpoint / Next-Task Decision (COMPLETE 2026-07-19)
+- [x] Checkpoint document created — `docs/BETA-READY-00-CHECKPOINT.md`.
+- [x] TASKS.md updated — BETA-READY-00 COMPLETE and LOCKED.
+- [x] TASKS_BACKLOG_FULL.md updated — BETA-READY-00 COMPLETE and LOCKED.
+- [x] AINOW-EXECUTION-ROADMAP.md updated — BETA-READY-00 COMPLETE and LOCKED, next action recorded.
+- [x] No new tasks registered in this step — registration belongs to a separate step after Keith approval.
+- [x] No source/test/translation/package/migration/entity/environment/Docker files changed.
+- [x] No runtime, Docker, DB, browser, API, test, build, provider, payment, Stripe CLI, webhook, git commit, or git push occurred.
+- [x] No secret-bearing environment file opened.
+- [x] No subagents used.
+
+**AGENT-HARNESS write canary remains a separate track** — not registered, not part of BETA-READY-00.
+
+**BETA-READY-00 status:** COMPLETE and LOCKED — 2026-07-19. Step 1 COMPLETE (Registration — 2026-07-19). Step 2 COMPLETE (checklist created — `docs/BETA-READY-00-CHECKLIST.md`). Step 3 COMPLETE (checkpoint created — `docs/BETA-READY-00-CHECKPOINT.md`). Launch decision: READY FOR LIMITED BETA WITH LIMITATIONS. Known blockers: B1 (write path), B2 (deployment), B3 (pre-beta smoke). No source/test/translation/package/migration/entity/environment/Docker files changed. No secrets opened. No subagents. No git commit/push. Do not modify after locking except by explicitly approved follow-up task.
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> BETA-READY-00.
 
 ---
 
