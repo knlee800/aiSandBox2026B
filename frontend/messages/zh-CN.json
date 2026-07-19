@@ -43,10 +43,12 @@
     "startHere": "从这里开始",
     "forgotPassword": "忘记密码？",
     "resetIt": "重置",
-    "emailVerified": "邮箱已验证。您现在可以登录。"
+    "emailVerified": "邮箱已验证。您现在可以登录。",
+    "subtitle": "登录以继续构建"
   },
   "register": {
     "title": "创建账号",
+    "subtitle": "创建账号以开始使用",
     "name": "名称",
     "email": "电子邮件",
     "password": "密码",

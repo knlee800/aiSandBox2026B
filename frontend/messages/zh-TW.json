@@ -43,10 +43,12 @@
     "startHere": "從這裡開始",
     "forgotPassword": "忘記密碼？",
     "resetIt": "重設",
-    "emailVerified": "電子郵件已驗證。您現在可以登入。"
+    "emailVerified": "電子郵件已驗證。您現在可以登入。",
+    "subtitle": "登入以繼續建構"
   },
   "register": {
     "title": "建立帳號",
+    "subtitle": "建立帳號以開始使用",
     "name": "名稱",
     "email": "電子郵件",
     "password": "密碼",

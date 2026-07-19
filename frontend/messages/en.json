@@ -43,10 +43,12 @@
     "startHere": "Start here",
     "forgotPassword": "Forgot your password?",
     "resetIt": "Reset it",
-    "emailVerified": "Email verified. You can now sign in."
+    "emailVerified": "Email verified. You can now sign in.",
+    "subtitle": "Sign in to continue building"
   },
   "register": {
     "title": "Create account",
+    "subtitle": "Create your account to get started",
     "name": "Name",
     "email": "Email",
     "password": "Password",

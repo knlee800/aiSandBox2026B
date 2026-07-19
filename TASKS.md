@@ -25152,7 +25152,7 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 
 **Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` �X controls cross-family priority order; Knowledge before Collaboration before Billing.
 
-**Current stage:** BILLING-READY-07 COMPLETE and LOCKED — 2026-07-17 — Outcome B — PASS WITH LIMITATIONS — BILLING-READY-07A COMPLETE and LOCKED — 2026-07-17 — Step 3 rerun PASS (2026-07-19) — BR07A-DEFECT-01 resolved — BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200 COMPLETE and LOCKED — 2026-07-17 — Checkpoint: `docs/BILLING-READY-07A-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-07-CHECKPOINT.md` — ANOMALY-01 (Auth route UX/UI regression) deferred — not registered — Consolidation document: `docs/BILLING-READY-07-CONSOLIDATION-DECISION.md` — BILLING-READY-06 COMPLETE and LOCKED (2026-07-17) — BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — BILLING-READY-06B COMPLETE and LOCKED (2026-07-17) — Checkpoint: `docs/BILLING-READY-06B-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-06-CHECKPOINT.md` — Next recommended: Register ANOMALY-01 as separate bounded multilingual UX/UI regression investigation (requires Keith approval). BILLING-READY-05 COMPLETE and LOCKED (2026-07-16) — all 4 parent steps complete — all child slices 05A–05G COMPLETE and LOCKED — Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`. BILLING-READY-05G COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-05G-CHECKPOINT.md`. BILLING-READY-05F COMPLETE and LOCKED (2026-07-15). BILLING-READY-05E COMPLETE and LOCKED (2026-07-15). BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-04 COMPLETE and LOCKED (2026-07-13). BILLING-READY-03 COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
+**Current stage:** ANOMALY-01 — Auth Route Multilingual UX/UI Regression Investigation — COMPLETE and LOCKED — 2026-07-19 — all 4 steps complete — root cause: design-language drift — bounded visual refresh implemented — 640/640 tests PASS — visual smoke rerun PASS (all six locale routes) — Checkpoint: `docs/ANOMALY-01-CHECKPOINT.md` — BILLING-READY-07 COMPLETE and LOCKED — 2026-07-17 — Outcome B — PASS WITH LIMITATIONS — BILLING-READY-07A COMPLETE and LOCKED — 2026-07-17 — Step 3 rerun PASS (2026-07-19) — BR07A-DEFECT-01 resolved — BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200 COMPLETE and LOCKED — 2026-07-17 — Checkpoint: `docs/BILLING-READY-07A-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-07-CHECKPOINT.md` — Consolidation document: `docs/BILLING-READY-07-CONSOLIDATION-DECISION.md` — BILLING-READY-06 COMPLETE and LOCKED (2026-07-17) — BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — BILLING-READY-06B COMPLETE and LOCKED (2026-07-17) — Checkpoint: `docs/BILLING-READY-06B-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-06-CHECKPOINT.md` — Next action: Register Beta preparation task (entry 22 of Near-Term Sequence, `docs/AINOW-EXECUTION-ROADMAP.md`) — requires Keith explicit approval. BILLING-READY-05 COMPLETE and LOCKED (2026-07-16) — all 4 parent steps complete — all child slices 05A–05G COMPLETE and LOCKED — Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`. BILLING-READY-05G COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-05G-CHECKPOINT.md`. BILLING-READY-05F COMPLETE and LOCKED (2026-07-15). BILLING-READY-05E COMPLETE and LOCKED (2026-07-15). BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-04 COMPLETE and LOCKED (2026-07-13). BILLING-READY-03 COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 �X ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED �X 2026-07-04)
@@ -33849,6 +33849,199 @@ BILLING-READY-07A may resume only after:
 **BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200 status:** COMPLETE and LOCKED — 2026-07-17. All 3 steps complete. BR07A-DEFECT-01 fixed: `GET /api/billing/subscription` no-subscription branch now returns explicit `res.status(200).json(null)`. Source files changed: `services/api-gateway/src/billing/billing-read.controller.ts`, `services/api-gateway/src/billing/__tests__/billing-read.controller.spec.ts`. Validation: `npm test -- billing-read.controller.spec.ts` PASS (16/16), `npm run build` PASS. Checkpoint: `docs/BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200-CHECKPOINT.md`. BILLING-READY-07A Step 3 rerun PASS (2026-07-19) — BILLING-READY-07A COMPLETE and LOCKED (2026-07-17) — Parent BILLING-READY-07 COMPLETE and LOCKED (2026-07-17) — Outcome B — PASS WITH LIMITATIONS. ANOMALY-01 remains deferred and not registered. No migration/entity/schema/package/environment/Docker/frontend/translation change. No provider/payment/Stripe/webhook activity. No runtime/browser/API/manual smoke. No secret files opened. No subagents. No git commit/push.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200.
+
+---
+
+#### ANOMALY-01: Auth Route Multilingual UX/UI Regression Investigation
+
+**Status:** COMPLETE and LOCKED — 2026-07-19
+**Task ID:** ANOMALY-01
+**Title:** Auth Route Multilingual UX/UI Regression Investigation
+**Family:** ANOMALY / AUTH ROUTES / MULTILINGUAL UX/UI / REGRESSION INVESTIGATION
+**Priority:** High
+**Nature:** BOUNDED UX/UI REGRESSION INVESTIGATION
+**Risk:** HIGH — active authentication routes affect first-run user experience, login/register trust, and multilingual production UX.
+**Registered:** 2026-07-19
+**Keith approval:** Keith explicitly approved registration by replying "go" after BILLING-READY-07 and BILLING-READY-07A were completed and locked — 2026-07-19.
+
+#### Observed Anomaly Evidence
+
+- **Finding:** Active localized login and registration routes (`/en/login`, `/en/register`, and corresponding zh-TW/zh-CN routes) render the older/legacy auth UI instead of the previously implemented/approved multilingual auth UI.
+- **Functional authentication:** PASS — registration, login, and authenticated sessions work correctly.
+- **Effect:** Real user-facing UX/UI regression. Non-blocking for authenticated billing-data validation.
+- **First observed:** During BILLING-READY-07 Step 3 visual smoke (2026-07-17).
+- **Deferred during:** BILLING-READY-07 consolidation and BILLING-READY-07A. Not fixed. Record-only during those tasks.
+- **Registration status:** Now registered — ACTIVE — 2026-07-19. Keith approval received.
+
+#### Dependencies
+
+- BILLING-READY-07 COMPLETE and LOCKED — 2026-07-17 — Outcome B — PASS WITH LIMITATIONS
+- BILLING-READY-07A COMPLETE and LOCKED — 2026-07-17 — Step 3 rerun PASS (2026-07-19)
+- BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200 COMPLETE and LOCKED — 2026-07-17
+- BILLING-READY-06 / 06A / 06B COMPLETE and LOCKED
+- BILLING-READY-05 / 05A–05G COMPLETE and LOCKED
+- AGENT-HARNESS write canary remains separate and unregistered
+- No Stripe/provider/payment/customer-portal/webhook work registered by this task
+
+#### Purpose
+
+Investigate why the active `/[locale]/login` and `/[locale]/register` routes render the older/legacy auth UI. Identify the smallest safe future fix without introducing broad redesigns, routing changes, backend auth changes, or session/cookie guard changes.
+
+#### Investigation Questions (Step 2)
+
+1. Which component/page currently renders `/[locale]/login`?
+2. Which component/page currently renders `/[locale]/register`?
+3. What is the intended current auth UI?
+4. Is the legacy UI caused by stale route wiring, duplicate auth pages, layout mismatch, import mismatch, or locale-routing mismatch?
+5. Are `/zh-TW/login`, `/zh-TW/register`, `/zh-CN/login`, and `/zh-CN/register` affected too?
+6. Is authentication functionality still safe and unchanged?
+7. What is the smallest safe future fix?
+8. What tests/checks are needed before fixing?
+
+#### Routes in Scope (investigation only — no source changes during Step 1)
+
+- `frontend` route for `/[locale]/login`
+- `frontend` route for `/[locale]/register`
+- corresponding `zh-TW` and `zh-CN` auth routes if present
+- locale routing/auth layout components needed to understand the regression
+- current expected auth UI components/design source
+- current active auth UI components/design source
+- translation files (`en.json`, `zh-TW.json`, `zh-CN.json`) — for future implementation reference only, not during registration
+
+#### Workflow Steps (4-step loop — HIGH risk)
+
+Selected because the regression affected active auth routes with multilingual UX scope. Expanded from 3-step to 4-step when visual smoke and consolidation were separated.
+
+1. **Registration** — COMPLETE (2026-07-19).
+2. **Investigation / preflight / fix proposal** — COMPLETE (2026-07-19). Root cause: design-language drift. Bounded visual refresh proposed. See `docs/ANOMALY-01-INVESTIGATION-PREFLIGHT.md`.
+3. **Implementation + validation** — COMPLETE (2026-07-19). Visual refresh implemented. 640/640 tests PASS. TypeScript clean. Build PASS. Visual smoke rerun PASS. See `docs/ANOMALY-01-IMPLEMENTATION.md`. Step 3B first: BLOCKED (frontend-only). Step 3B rerun: PASS (API Gateway allowed). See `docs/ANOMALY-01-VISUAL-SMOKE.md`, `docs/ANOMALY-01-VISUAL-SMOKE-RERUN.md`.
+4. **Consolidation / checkpoint** — COMPLETE (2026-07-19). Checkpoint: `docs/ANOMALY-01-CHECKPOINT.md`.
+
+#### Multilingual Requirements
+
+The app is multilingual-first. Any future user-facing auth copy change must update all three files together:
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+Use the existing translation hook/pattern. Do not add hardcoded English UX/UI copy.
+
+Any future icon changes must use Heroicons v2 Outline only:
+- `@heroicons/react/24/outline`
+- no Lucide
+- no Font Awesome
+- no Material Icons
+- no emoji icons unless explicitly approved
+
+#### UX/UI Advisory Skills
+
+The following skills are advisory only for future investigation/implementation steps. They must not override CLAUDE.md, TASKS.md, TASKS_BACKLOG_FULL.md, the current registered scope, architecture, or tests:
+- Impeccable: `C:\Users\knlee\aiSandBox2026B\.agents\skills\impeccable`
+- Emil Kowalski design engineering skill: `C:\Users\knlee\aiSandBox2026B\.agents\skills\emil-design-eng`
+
+#### Non-Goals
+
+- No backend auth redesign.
+- No session/cookie guard changes.
+- No billing work.
+- No payment/provider/Stripe work.
+- No customer portal work.
+- No signup policy change.
+- No CAPTCHA/SMS change.
+- No database or migration work.
+- No package/dependency changes.
+- No app-wide redesign.
+- No broad navigation redesign.
+- No RPG/platform shell work.
+- No AGENT-HARNESS write canary.
+- No implementation during registration.
+
+#### Safety Boundaries
+
+- Do not touch backend auth, session lifecycle, or SessionCookieGuard.
+- Do not open secret-bearing environment files.
+- Do not run tests, build, lint, or typecheck during registration.
+- Do not start runtime, Docker, or database during registration.
+- Do not perform browser validation during registration.
+- Do not call APIs during registration.
+- Do not fix ANOMALY-01 during registration.
+
+#### Acceptance Criteria
+
+###### Step 1 — Registration (COMPLETE 2026-07-19)
+- [x] ANOMALY-01 added to TASKS_BACKLOG_FULL.md.
+- [x] ANOMALY-01 activated in TASKS.md.
+- [x] BILLING-READY-07 remains COMPLETE and LOCKED.
+- [x] BILLING-READY-07A remains COMPLETE and LOCKED.
+- [x] Observed legacy login/register UI evidence recorded.
+- [x] Functional auth remains non-blocking and unchanged.
+- [x] Scope limited to multilingual auth route UX/UI regression investigation.
+- [x] Backend/auth/session/payment/provider work excluded.
+- [x] Multilingual requirements recorded.
+- [x] Heroicons v2 Outline requirement recorded for any future icon change.
+- [x] UX/UI advisory skills recorded as advisory only.
+- [x] Future implementation must be separately bounded.
+- [x] No source/test/translation/package/migration/entity/environment/Docker files changed.
+- [x] No runtime, Docker, DB, browser, API, test, build, provider, payment, Stripe CLI, webhook, git commit, or git push occurred.
+- [x] No secret-bearing environment file opened.
+- [x] No subagents used.
+
+###### Step 2 — Investigation / Preflight / Fix Proposal (COMPLETE 2026-07-19)
+- [x] Root cause identified: design-language drift.
+- [x] Active rendering component/page for `/[locale]/login` identified: `frontend/app/[locale]/login/page.tsx`.
+- [x] Active rendering component/page for `/[locale]/register` identified: `frontend/app/[locale]/register/page.tsx`.
+- [x] Intended current auth UI identified: same page files — no separate newer implementation exists.
+- [x] zh-TW and zh-CN auth routes assessed: affected through the same `[locale]` dynamic segment.
+- [x] Authentication functionality confirmed safe and unchanged.
+- [x] Smallest safe fix proposed: bounded visual refresh of login/register pages.
+- [x] Required tests/checks identified: tsc, npm test, npm run build, ReadLints.
+- [x] Fix scope confirmed as bounded — no child task split needed.
+- [x] No source changes made during investigation.
+
+###### Step 3 — Implementation + Validation (COMPLETE 2026-07-19)
+- [x] Fix implemented (bounded visual refresh).
+- [x] Multilingual files updated together (en.json, zh-TW.json, zh-CN.json — 2 new keys: `login.subtitle`, `register.subtitle`).
+- [x] Heroicons v2 Outline used for all icon additions (`EnvelopeIcon`, `LockClosedIcon`, `ExclamationTriangleIcon`, `CheckCircleIcon`).
+- [x] Tests added/updated for changed behavior (Heroicons module mocks in 3 test files).
+- [x] TypeScript validation passes: `npx tsc --noEmit` — exit code 0.
+- [x] Build passes: `npm run build` — compiled successfully, all routes generated.
+- [x] ReadLints: 0 linter errors on changed production files.
+- [x] npm test: 640/640 PASS, 53 suites, 0 failures.
+- [x] tsconfig.tsbuildinfo restored.
+
+###### Step 3B — Visual Smoke Rerun (PASS 2026-07-19)
+- [x] First visual smoke BLOCKED: frontend-only, API Gateway unavailable (`docs/ANOMALY-01-VISUAL-SMOKE.md`).
+- [x] Rerun executed with API Gateway + Postgres/Redis allowed.
+- [x] Health endpoints 200: `/api/health`, `/api/health/db`, `/api/health/ready`.
+- [x] `/en/login` returned 200 before visual checks.
+- [x] All six locale routes PASS: `/en/login`, `/en/register`, `/zh-TW/login`, `/zh-TW/register`, `/zh-CN/login`, `/zh-CN/register`.
+- [x] Desktop layout PASS.
+- [x] ~390 px mobile PASS.
+- [x] zh-TW localized copy PASS.
+- [x] zh-CN localized copy PASS.
+- [x] No obvious hardcoded English in primary zh-TW/zh-CN UI.
+- [x] No new defects found.
+- [x] Cleanup PASS — ports 3002 and 4000 confirmed closed.
+- [x] No source/governance files changed during rerun.
+
+###### Step 4 — Consolidation / Checkpoint (COMPLETE and LOCKED 2026-07-19)
+- [x] Checkpoint document created: `docs/ANOMALY-01-CHECKPOINT.md`.
+- [x] TASKS.md updated — ANOMALY-01 COMPLETE and LOCKED.
+- [x] TASKS_BACKLOG_FULL.md updated — ANOMALY-01 COMPLETE and LOCKED.
+- [x] AINOW-EXECUTION-ROADMAP.md updated — ANOMALY-01 COMPLETE and LOCKED, next action recorded.
+- [x] BILLING-READY-07 remains COMPLETE and LOCKED.
+- [x] BILLING-READY-07A remains COMPLETE and LOCKED.
+- [x] No source/test/translation/package/migration/entity/environment/Docker files changed in this consolidation step.
+- [x] No runtime, Docker, DB, browser, API, test, build, provider, payment, Stripe CLI, webhook, git commit, or git push occurred in this consolidation step.
+- [x] No secret-bearing environment file opened.
+- [x] No subagents used.
+- [x] ANOMALY-01 marked COMPLETE and LOCKED.
+
+**AGENT-HARNESS write canary remains a separate track** — not registered, not part of ANOMALY-01.
+
+**ANOMALY-01 status:** COMPLETE and LOCKED — 2026-07-19. All 4 steps complete. Step 1 (Registration — 2026-07-19): COMPLETE. Step 2 (Investigation / Preflight — 2026-07-19): COMPLETE — root cause: design-language drift. Step 3 (Implementation — 2026-07-19): COMPLETE — 8 files changed; 640/640 tests PASS; TypeScript clean; build PASS. Step 3B (Visual smoke rerun — 2026-07-19): PASS — all six locale routes PASS; desktop/mobile PASS; zh-TW/zh-CN PASS. Step 4 (Consolidation — 2026-07-19): COMPLETE. BILLING-READY-07 COMPLETE and LOCKED. BILLING-READY-07A COMPLETE and LOCKED. No source/test/translation/package/migration/entity/environment/Docker files changed during consolidation. No secrets opened. No subagents. No git commit/push. Checkpoint: `docs/ANOMALY-01-CHECKPOINT.md`. Do not modify after locking except by explicitly approved follow-up task. Next action: Register Beta preparation task (entry 22 of Near-Term Sequence) — requires Keith explicit approval.
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> ANOMALY-01.
 
 ---
 

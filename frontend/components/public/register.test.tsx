@@ -128,6 +128,17 @@ function createRegisterHarness() {
       };
     }
 
+    if (request === '@heroicons/react/24/outline') {
+      const IconStub = () => React.createElement('span');
+      return {
+        __esModule: true,
+        EnvelopeIcon: IconStub,
+        LockClosedIcon: IconStub,
+        ExclamationTriangleIcon: IconStub,
+        CheckCircleIcon: IconStub,
+      };
+    }
+
     if (request.includes('hooks/useTranslations')) {
       return {
         useTranslations: (namespace?: string) => (key: string) => `${namespace}.${key}`,
