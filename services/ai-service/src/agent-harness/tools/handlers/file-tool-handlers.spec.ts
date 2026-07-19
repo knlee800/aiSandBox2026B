@@ -415,6 +415,58 @@ describe('createWriteFileHandler', () => {
       'Container write failed',
     );
   });
+
+  it('normalizes absolute-looking path to relative (host path neutralization)', async () => {
+    mockClient.writeWorkspaceFile.mockResolvedValue(undefined);
+
+    const handler = createWriteFileHandler({
+      client: mockClient,
+      sessionId: 'sess-1',
+      maxFileWriteBytes: 131072,
+    });
+
+    const result = await handler({ path: '/etc/important.conf', content: 'data' });
+
+    expect(mockClient.writeWorkspaceFile).toHaveBeenCalledWith(
+      'sess-1',
+      'etc/important.conf',
+      'data',
+      undefined,
+    );
+    expect(result).toEqual({ ok: true, path: 'etc/important.conf', bytesWritten: 4 });
+  });
+
+  it('rejects backslash-based path traversal', async () => {
+    const handler = createWriteFileHandler({
+      client: mockClient,
+      sessionId: 'sess-1',
+      maxFileWriteBytes: 131072,
+    });
+
+    await expect(
+      handler({ path: 'src\\..\\..\\etc\\passwd', content: 'bad' }),
+    ).rejects.toThrow('unsafe traversal');
+  });
+
+  it('accepts empty string content (empty file creation)', async () => {
+    mockClient.writeWorkspaceFile.mockResolvedValue(undefined);
+
+    const handler = createWriteFileHandler({
+      client: mockClient,
+      sessionId: 'sess-1',
+      maxFileWriteBytes: 131072,
+    });
+
+    const result = await handler({ path: 'empty.txt', content: '' });
+
+    expect(mockClient.writeWorkspaceFile).toHaveBeenCalledWith(
+      'sess-1',
+      'empty.txt',
+      '',
+      undefined,
+    );
+    expect(result).toEqual({ ok: true, path: 'empty.txt', bytesWritten: 0 });
+  });
 });
 
 describe('createDeleteFileHandler', () => {
@@ -537,6 +589,53 @@ describe('createDeleteFileHandler', () => {
 
     await expect(handler({ path: 'some-dir' })).rejects.toThrow(
       'Directory delete is not supported',
+    );
+  });
+
+  it('rejects missing path argument', async () => {
+    const handler = createDeleteFileHandler({
+      client: mockClient,
+      sessionId: 'sess-1',
+    });
+
+    await expect(handler({})).rejects.toThrow('path is required');
+  });
+
+  it('rejects empty string path', async () => {
+    const handler = createDeleteFileHandler({
+      client: mockClient,
+      sessionId: 'sess-1',
+    });
+
+    await expect(handler({ path: '' })).rejects.toThrow('path is required');
+  });
+
+  it('normalizes absolute-leading path for delete (host path neutralization)', async () => {
+    mockClient.deleteWorkspaceFile.mockResolvedValue(undefined);
+
+    const handler = createDeleteFileHandler({
+      client: mockClient,
+      sessionId: 'sess-1',
+    });
+
+    const result = await handler({ path: '/etc/old-config.txt' });
+
+    expect(mockClient.deleteWorkspaceFile).toHaveBeenCalledWith(
+      'sess-1',
+      'etc/old-config.txt',
+      undefined,
+    );
+    expect(result).toEqual({ ok: true, path: 'etc/old-config.txt' });
+  });
+
+  it('rejects backslash-based path traversal', async () => {
+    const handler = createDeleteFileHandler({
+      client: mockClient,
+      sessionId: 'sess-1',
+    });
+
+    await expect(handler({ path: 'src\\..\\..\\etc\\passwd' })).rejects.toThrow(
+      'unsafe traversal',
     );
   });
 });

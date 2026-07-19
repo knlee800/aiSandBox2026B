@@ -35654,7 +35654,7 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 
 **Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` �X controls cross-family priority order; Knowledge before Collaboration before Billing.
 
-**Current stage:** BETA-READY-00 — Beta Readiness Checklist — COMPLETE and LOCKED — 2026-07-19 — all 3 steps complete — checklist created (`docs/BETA-READY-00-CHECKLIST.md`) — launch decision: READY FOR LIMITED BETA WITH LIMITATIONS — 15 gates (7 PASS, 8 needs verification) — blockers: B1 (write path), B2 (deployment), B3 (pre-beta smoke) — next recommended task: T1 Agent Harness Write Canary + Production Activation (requires Keith explicit approval) — Checkpoint: `docs/BETA-READY-00-CHECKPOINT.md` — ANOMALY-01 COMPLETE and LOCKED — 2026-07-19 — Checkpoint: `docs/ANOMALY-01-CHECKPOINT.md` — BILLING-READY-07 COMPLETE and LOCKED — 2026-07-17 — Outcome B — PASS WITH LIMITATIONS — BILLING-READY-07A COMPLETE and LOCKED — 2026-07-17 — Step 3 rerun PASS (2026-07-19) — BR07A-DEFECT-01 resolved — BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200 COMPLETE and LOCKED — 2026-07-17 — Checkpoint: `docs/BILLING-READY-07A-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-07-CHECKPOINT.md` — Consolidation document: `docs/BILLING-READY-07-CONSOLIDATION-DECISION.md` — BILLING-READY-06 COMPLETE and LOCKED (2026-07-17) — BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — BILLING-READY-06B COMPLETE and LOCKED (2026-07-17) — Checkpoint: `docs/BILLING-READY-06B-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-06-CHECKPOINT.md` — Next action: T1 Agent Harness Write Canary + Production Activation — requires Keith explicit approval before registration. AGENT-HARNESS write canary remains a separate track. BILLING-READY-05 COMPLETE and LOCKED (2026-07-16) — all 4 parent steps complete — all child slices 05A–05G COMPLETE and LOCKED — Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`. BILLING-READY-05G COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-05G-CHECKPOINT.md`. BILLING-READY-05F COMPLETE and LOCKED (2026-07-15). Checkpoint: `docs/BILLING-READY-05F-CHECKPOINT.md`. BILLING-READY-05E COMPLETE and LOCKED (2026-07-15). BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-04 COMPLETE and LOCKED (2026-07-13). BILLING-READY-03 COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
+**Current stage:** AGENT-HARNESS-WRITE-CANARY — Agent Harness Write Canary + Production Activation — ACTIVE — Step 1 COMPLETE (Registration — 2026-07-19) — Step 2 COMPLETE (Preflight — 2026-07-19) — AGENT-HARNESS-WRITE-CANARY-A COMPLETE and LOCKED (2026-07-19) — child A: 35 suites / 702 tests PASS / 24 new tests / no runtime — AGENT-HARNESS-WRITE-CANARY-B pending registration (requires Keith explicit approval) — Checkpoint: `docs/AGENT-HARNESS-WRITE-CANARY-A-CHECKPOINT.md` — next recommended: AGENT-HARNESS-WRITE-CANARY-B registration with Keith explicit approval — BETA-READY-00 — Beta Readiness Checklist — COMPLETE and LOCKED — 2026-07-19 — all 3 steps complete — checklist created (`docs/BETA-READY-00-CHECKLIST.md`) — launch decision: READY FOR LIMITED BETA WITH LIMITATIONS — 15 gates (7 PASS, 8 needs verification) — blockers: B1 (write path, now registered as AGENT-HARNESS-WRITE-CANARY ACTIVE), B2 (deployment), B3 (pre-beta smoke) — next recommended step: Step 2 Preflight / stage-start / safety design (AGENT-HARNESS-WRITE-CANARY) — Checkpoint: `docs/BETA-READY-00-CHECKPOINT.md` — ANOMALY-01 COMPLETE and LOCKED — 2026-07-19 — Checkpoint: `docs/ANOMALY-01-CHECKPOINT.md` — BILLING-READY-07 COMPLETE and LOCKED — 2026-07-17 — Outcome B — PASS WITH LIMITATIONS — BILLING-READY-07A COMPLETE and LOCKED — 2026-07-17 — Step 3 rerun PASS (2026-07-19) — BR07A-DEFECT-01 resolved — BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200 COMPLETE and LOCKED — 2026-07-17 — Checkpoint: `docs/BILLING-READY-07A-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-07-CHECKPOINT.md` — Consolidation document: `docs/BILLING-READY-07-CONSOLIDATION-DECISION.md` — BILLING-READY-06 COMPLETE and LOCKED (2026-07-17) — BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — BILLING-READY-06B COMPLETE and LOCKED (2026-07-17) — Checkpoint: `docs/BILLING-READY-06B-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-06-CHECKPOINT.md` — Next action: T1 Agent Harness Write Canary + Production Activation — requires Keith explicit approval before registration. AGENT-HARNESS write canary remains a separate track. BILLING-READY-05 COMPLETE and LOCKED (2026-07-16) — all 4 parent steps complete — all child slices 05A–05G COMPLETE and LOCKED — Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`. BILLING-READY-05G COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-05G-CHECKPOINT.md`. BILLING-READY-05F COMPLETE and LOCKED (2026-07-15). Checkpoint: `docs/BILLING-READY-05F-CHECKPOINT.md`. BILLING-READY-05E COMPLETE and LOCKED (2026-07-15). BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-04 COMPLETE and LOCKED (2026-07-13). BILLING-READY-03 COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 �X ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED �X 2026-07-04)
@@ -44626,6 +44626,322 @@ UX/UI advisory skills are advisory only:
 **BETA-READY-00 status:** COMPLETE and LOCKED — 2026-07-19. Step 1 COMPLETE (Registration — 2026-07-19). Step 2 COMPLETE (checklist created — `docs/BETA-READY-00-CHECKLIST.md`). Step 3 COMPLETE (checkpoint created — `docs/BETA-READY-00-CHECKPOINT.md`). Launch decision: READY FOR LIMITED BETA WITH LIMITATIONS. Known blockers: B1 (write path), B2 (deployment), B3 (pre-beta smoke). No source/test/translation/package/migration/entity/environment/Docker files changed. No secrets opened. No subagents. No git commit/push. Do not modify after locking except by explicitly approved follow-up task.
 
 **Reference:** See TASKS.md -> BETA-READY-00.
+
+---
+
+### AGENT-HARNESS-WRITE-CANARY: Agent Harness Write Canary + Production Activation
+
+**Status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-07-19) — Step 2 COMPLETE (Preflight — 2026-07-19) — split into child slices A and B — AGENT-HARNESS-WRITE-CANARY-A COMPLETE and LOCKED (2026-07-19) — AGENT-HARNESS-WRITE-CANARY-B pending registration
+**Task ID:** AGENT-HARNESS-WRITE-CANARY
+**Title:** Agent Harness Write Canary + Production Activation
+**Family:** AGENT HARNESS / WRITE PATH / BETA READINESS / PRODUCTION ACTIVATION / CANARY
+**Priority:** CRITICAL
+**Nature:** HIGH-RISK BACKEND / HARNESS / RUNTIME SAFETY ACTIVATION
+**Risk:** HIGH — enables real file-write/build behaviour through the agent harness. Must preserve safety boundaries, auditability, rollback, and no destructive operations.
+**Registered:** 2026-07-19
+**Keith approval:** Keith explicitly approved registration by replying "go" after BETA-READY-00 was completed and locked — 2026-07-19.
+**Preflight:** `docs/AGENT-HARNESS-WRITE-CANARY-PREFLIGHT.md` — Step 2 COMPLETE 2026-07-19.
+**Split decision:** Step 3 split into two child slices — AGENT-HARNESS-WRITE-CANARY-A (Write Stub + Unit Test Coverage Verification) and AGENT-HARNESS-WRITE-CANARY-B (Live E2E Write Canary Execution) — approved by Keith ("go") 2026-07-19.
+
+#### Dependencies
+
+- AGENT-HARNESS-06E COMPLETE and LOCKED (2026-07-09) — Full E2E read-only file canary PASS
+- AGENT-HARNESS-06D COMPLETE and LOCKED (2026-07-08) — Live Worker/BullMQ read-only canary PASS
+- AGENT-HARNESS-06C COMPLETE and LOCKED (2026-07-07) — Read-only harness canary PASS
+- AGENT-HARNESS-07 COMPLETE and LOCKED (2026-07-07) — Per-builder harness config adapter COMPLETE
+- BETA-READY-00 COMPLETE and LOCKED (2026-07-19) — Beta readiness checklist; T1 identified as CRITICAL blocker B1
+- ANOMALY-01 COMPLETE and LOCKED (2026-07-19)
+- BILLING-READY-07 COMPLETE and LOCKED (2026-07-17) — Outcome B — PASS WITH LIMITATIONS
+
+#### Purpose
+
+BETA-READY-00 identified the Agent Harness write path as blocker B1 (CRITICAL) and recommended T1 — Agent Harness Write Canary + Production Activation — as the first task before inviting beta users.
+
+Beta users cannot realistically build software unless the real agent harness write/build path is safely activated and verified. The read-only harness canary passed (AGENT-HARNESS-06C/06D/06E). The write path has not been activated in production and has not been canary-tested.
+
+#### Workflow (4-Step HIGH-risk loop)
+
+1. **Registration** — COMPLETE (2026-07-19) — Keith explicit approval recorded ("go"); scope, safety constraints, safety boundaries, non-goals, and context documented; no implementation; no runtime execution; no source changes.
+2. **Preflight / stage-start / safety design** — COMPLETE (2026-07-19) — write-path state, tool gating, safety boundaries, sandbox path validation, audit events, rollback/checkpoint behaviour, validation bounds, canary operation design, kill-switch plan, targeted tests, and runtime smoke all documented. Split decision: Step 3 → child slices A + B. Preflight: `docs/AGENT-HARNESS-WRITE-CANARY-PREFLIGHT.md`.
+3. **Implementation + targeted validation** — PARTIAL — split into: AGENT-HARNESS-WRITE-CANARY-A (Write Stub + Unit Test Coverage Verification — COMPLETE and LOCKED — 2026-07-19 — 35 suites / 702 tests PASS / build PASS / 24 new tests / no runtime) and AGENT-HARNESS-WRITE-CANARY-B (Live E2E Write Canary Execution — not yet registered — requires Keith explicit approval).
+4. **Consolidation / checkpoint / beta-readiness decision** — PENDING — cannot proceed until child B is complete and locked.
+
+#### Step 2 Scope (Preflight — Future)
+
+Step 2 must determine:
+
+1. Current write-path state.
+2. Current `enableToolLoop` / write-tool gating state.
+3. Which write tools are available, disabled, stubbed, or guarded.
+4. Whether file writes are limited to workspace/project sandbox paths.
+5. Whether path traversal and destructive operations are blocked.
+6. Whether audit events exist for write attempts and write results.
+7. Whether rollback/checkpoint behaviour exists before or after writes.
+8. Whether validation commands are allowed and bounded.
+9. Whether preview/build integration is safe after write operations.
+10. Whether runtime feature flags must remain off until canary passes.
+11. What minimal canary operation proves write-path readiness.
+12. What rollback/kill-switch exists if the canary fails.
+13. What targeted tests are required before runtime smoke.
+14. Whether browser/manual smoke is required.
+
+#### Step 3 Scope (Implementation — Future)
+
+Step 3 implements only the smallest safe activation/canary path approved by Step 2.
+
+#### Safety Boundaries
+
+- No destructive DB commands.
+- Never use `docker compose down -v`.
+- No arbitrary host filesystem writes.
+- No writes outside approved workspace/project sandbox roots.
+- No secrets opened, copied, printed, or written.
+- No provider/payment/Stripe/customer-portal/webhook work.
+- No broad agent architecture rewrite.
+- No unbounded command execution.
+- No subagents.
+- No git commit or push.
+- Any runtime/browser smoke must be explicitly guided and recorded.
+- Docker/Postgres/Redis may be required in later steps; not during registration.
+- If backend/runtime/DB work is involved in later steps, Docker/Postgres/Redis may need to be running.
+
+#### Non-Goals
+
+- No Stripe/payment/provider activation.
+- No customer portal work.
+- No webhook live testing.
+- No unrelated billing work.
+- No auth UI work.
+- No RPG/platform shell work.
+- No multi-agent collaboration changes.
+- No deployment configuration.
+- No production secrets setup.
+- No package/dependency upgrades.
+- No schema/migration/entity changes unless separately proven and approved.
+- No broad refactor.
+- No app-wide redesign.
+- No beta user invitation.
+- No git commit or push.
+
+#### Multilingual / UX Boundary
+
+This task is not expected to change UX/UI copy. If future implementation introduces any user-facing UX/UI text:
+- Update `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json` together.
+- Use existing translation hooks.
+- Do not add hardcoded English UX/UI copy.
+- Use Heroicons v2 Outline only for any icon changes.
+
+#### Acceptance Criteria
+
+###### Step 1 — Registration (COMPLETE 2026-07-19)
+- [x] Agent Harness Write Canary task added to TASKS_BACKLOG_FULL.md.
+- [x] Agent Harness Write Canary task activated in TASKS.md.
+- [x] Roadmap updated to show this task ACTIVE.
+- [x] BETA-READY-00 remains COMPLETE and LOCKED.
+- [x] ANOMALY-01 remains COMPLETE and LOCKED.
+- [x] BILLING-READY-07 remains COMPLETE and LOCKED.
+- [x] Scope limited to write-path canary / production activation readiness.
+- [x] 4-step HIGH-risk workflow recorded.
+- [x] Safety boundaries recorded.
+- [x] No provider/payment/Stripe/customer-portal/webhook work registered.
+- [x] No deployment configuration work registered.
+- [x] No implementation during registration.
+- [x] No source/test/translation/package/migration/entity/environment/Docker files changed.
+- [x] No runtime, Docker, DB, browser, API, test, build, provider, payment, Stripe CLI, webhook, git commit, or git push occurred.
+- [x] No secret-bearing environment file opened.
+- [x] No subagents used.
+
+###### Step 2 — Preflight / Stage-Start / Safety Design
+- [ ] Current write-path state determined.
+- [ ] Current `enableToolLoop` / write-tool gating state determined.
+- [ ] Write tools inventory (available, disabled, stubbed, guarded) completed.
+- [ ] Sandbox path validation confirmed.
+- [ ] Path traversal / destructive operation blocking confirmed.
+- [ ] Audit events for write attempts/results confirmed.
+- [ ] Rollback/checkpoint behaviour before/after writes confirmed.
+- [ ] Validation command bounds confirmed.
+- [ ] Preview/build integration safety confirmed.
+- [ ] Runtime feature flags review completed.
+- [ ] Minimal canary operation design approved.
+- [ ] Rollback/kill-switch plan documented.
+- [ ] Targeted tests identified.
+- [ ] Browser/manual smoke requirements determined.
+- [ ] Preflight document created.
+
+###### Step 3 — Implementation + Targeted Validation
+- [ ] Smallest safe activation/canary path implemented as approved by Step 2.
+- [ ] Targeted tests pass.
+- [ ] No regressions.
+- [ ] Safety boundaries preserved.
+- [ ] Runtime smoke (if required by Step 2) executed and recorded.
+
+###### Step 4 — Consolidation / Checkpoint / Beta-Readiness Decision
+- [ ] Checkpoint document created.
+- [ ] TASKS.md updated — AGENT-HARNESS-WRITE-CANARY COMPLETE and LOCKED.
+- [ ] TASKS_BACKLOG_FULL.md updated — AGENT-HARNESS-WRITE-CANARY COMPLETE and LOCKED.
+- [ ] AINOW-EXECUTION-ROADMAP.md updated.
+- [ ] Beta-readiness blocker B1 disposition recorded.
+- [ ] No source changes during consolidation.
+- [ ] No secrets opened.
+- [ ] No subagents used.
+- [ ] No git commit or push.
+
+**AGENT-HARNESS-WRITE-CANARY status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-07-19) — Step 2 COMPLETE (Preflight — 2026-07-19) — child A COMPLETE and LOCKED (2026-07-19) — child B not yet registered — Step 4 Consolidation PENDING. Keith explicit approval ("go") 2026-07-19. 4-step HIGH-risk loop. Step 3 split: child A COMPLETE and LOCKED (unit safety, no runtime) → child B pending registration (live E2E canary, runtime). No source/test/translation/package/migration/entity/environment/Docker files changed. No secrets opened. No subagents. No git commit/push.
+
+**Reference:** See TASKS.md -> AGENT-HARNESS-WRITE-CANARY.
+
+---
+
+### AGENT-HARNESS-WRITE-CANARY-A: Write Stub + Unit Test Coverage Verification
+
+**Status:** COMPLETE and LOCKED — 2026-07-19 — all 3 steps complete
+**Task ID:** AGENT-HARNESS-WRITE-CANARY-A
+**Title:** Write Stub + Unit Test Coverage Verification
+**Family:** AGENT HARNESS / WRITE PATH / UNIT SAFETY / STUB CANARY / BETA READINESS
+**Parent:** AGENT-HARNESS-WRITE-CANARY
+**Priority:** CRITICAL
+**Nature:** BOUNDED BACKEND TEST/STUB VERIFICATION — NO RUNTIME
+**Risk:** HIGH — prepares write-path activation by verifying safety coverage before any live write canary.
+**Registered:** 2026-07-19
+**Keith approval:** Keith explicitly approved proceeding by replying "go" after Step 2 preflight recommended splitting Step 3 into child slices — 2026-07-19.
+
+#### Dependencies
+
+- AGENT-HARNESS-WRITE-CANARY ACTIVE (parent) — Step 2 Preflight COMPLETE — `docs/AGENT-HARNESS-WRITE-CANARY-PREFLIGHT.md`
+- AGENT-HARNESS-06D1 COMPLETE and LOCKED (2026-07-08) — `TestToolCapableStubAdapter` created
+- AGENT-HARNESS-06E COMPLETE and LOCKED (2026-07-09) — Full E2E read-only file canary PASS
+- BETA-READY-00 COMPLETE and LOCKED (2026-07-19)
+- Keith approval recorded — 2026-07-19
+
+#### Why This Child Slice Exists
+
+AGENT-HARNESS-WRITE-CANARY Step 2 preflight (`docs/AGENT-HARNESS-WRITE-CANARY-PREFLIGHT.md` §20) determined that Step 3 crosses two distinct operational contexts:
+
+1. **Test stub extension + unit test verification** — purely code/test work; validates safety coverage without runtime.
+2. **Live E2E runtime canary** — requires Docker/PostgreSQL/Redis + all three backend services.
+
+Splitting prevents conflating no-runtime unit safety work with infrastructure-dependent live canary work. Child A completes unit-level safety verification and prepares the stub; child B executes the live canary after child A passes.
+
+#### Scope
+
+Child slice A verifies and fills unit-level safety coverage for the existing write path without live runtime. Future Step 2 may inspect and modify only the minimal source/test files required to cover:
+
+1. `write_file` handler safety.
+2. `delete_file` handler safety.
+3. Write-tool conditional registration when `enableWriteTools=false`.
+4. Write-tool conditional registration when `enableWriteTools=true`.
+5. `enableToolLoop` interaction if currently testable without runtime.
+6. Path traversal rejection.
+7. Absolute host path rejection.
+8. Env/secret path rejection where implemented.
+9. File-size limit rejection.
+10. Delete safety guard (no root delete, no directory delete, no glob/wildcard delete, no traversal delete).
+11. Checkpoint-before-mutating-tool behaviour.
+12. Audit event coverage for attempted/completed/failed write dispatch if existing unit harness supports it.
+13. `TestToolCapableStubAdapter` or equivalent stub coverage needed for future runtime canary.
+14. No provider call.
+15. No real filesystem write outside test temp/sandbox mocks.
+
+#### Approved Future Step 2 Source/Test Areas
+
+Step 2 may inspect and modify only if needed:
+
+- `services/ai-service/src/agent-harness/tools`
+- `services/ai-service/src/agent-harness/tools/handlers`
+- `services/ai-service/src/agent-harness/orchestrator`
+- `services/ai-service/src/agent-harness/audit`
+- `services/ai-service/src/agent-harness/config`
+- Relevant existing ai-service unit tests
+
+Do not modify API Gateway, container-manager, frontend, migrations, packages, environment, or Docker files in child A unless Step 2 stops and requests scope revision.
+
+#### Workflow (3-Step bounded loop)
+
+1. **Registration** — COMPLETE (2026-07-19) — child slice registered; scope, safety constraints, safety boundaries, non-goals, and workflow recorded; no implementation; no runtime execution; no source changes.
+2. **Implementation / unit coverage verification** — COMPLETE (2026-07-19) — 9 coverage gaps found; 8 gaps resolved; 1 gap (G9: TestToolCapableStubAdapter write extension) deferred to child B; 24 new tests added (8 to file-tool-handlers.spec.ts + 16 in tool-registration-gates.spec.ts); npm test PASS (35 suites / 702 tests / 1 skipped); npm run build PASS (exit 0, zero TypeScript errors); no production source changes; no runtime/Docker/DB/browser/API used. Evidence: `docs/AGENT-HARNESS-WRITE-CANARY-A-IMPLEMENTATION.md`.
+3. **Consolidation / checkpoint / parent handoff** — COMPLETE (2026-07-19) — checkpoint document created (`docs/AGENT-HARNESS-WRITE-CANARY-A-CHECKPOINT.md`); TASKS.md and TASKS_BACKLOG_FULL.md updated; AINOW-EXECUTION-ROADMAP.md updated; parent AGENT-HARNESS-WRITE-CANARY notified for child B registration.
+
+#### Safety Boundaries
+
+- No runtime.
+- No Docker.
+- No PostgreSQL or Redis.
+- No API Gateway.
+- No frontend.
+- No live canary write.
+- No live delete.
+- No writes through actual running harness.
+- No arbitrary host filesystem writes.
+- No secrets opened, copied, printed, or written.
+- No provider/payment/Stripe/customer-portal/webhook work.
+- No broad harness architecture rewrite.
+- No unbounded command execution.
+- No git commit or push.
+- No subagents.
+
+#### Non-Goals
+
+- Live E2E write canary.
+- Production activation.
+- Runtime feature-flag enabling.
+- Docker/container-manager runtime validation.
+- API Gateway runtime validation.
+- Browser smoke.
+- Deployment configuration.
+- Stripe/payment/provider work.
+- Billing work.
+- Auth UI work.
+- Package/dependency upgrades.
+- Migrations/entities/schema changes.
+- Broad refactor.
+- Beta user invitation.
+- Child B registration.
+
+#### Acceptance Criteria
+
+###### Step 1 — Registration (COMPLETE 2026-07-19)
+- [x] AGENT-HARNESS-WRITE-CANARY-A added to TASKS_BACKLOG_FULL.md.
+- [x] AGENT-HARNESS-WRITE-CANARY-A activated in TASKS.md.
+- [x] Parent AGENT-HARNESS-WRITE-CANARY remains ACTIVE.
+- [x] Preflight split decision recorded.
+- [x] Scope limited to write stub + unit test coverage verification.
+- [x] Runtime/Docker/API/browser canary excluded.
+- [x] Child B not registered.
+- [x] Safety boundaries recorded.
+- [x] No implementation during registration.
+- [x] No source/test/translation/package/migration/entity/environment/Docker files changed.
+- [x] No runtime, Docker, DB, browser, API, test, build, provider, payment, Stripe CLI, webhook, git commit, or git push occurred.
+- [x] No secret-bearing environment file opened.
+- [x] No subagents used.
+
+###### Step 2 — Implementation / Unit Coverage Verification (COMPLETE 2026-07-19)
+- [x] Existing unit tests inspected — coverage gaps identified (9 gaps found).
+- [x] No duplicate tests added where coverage already exists.
+- [x] Missing targeted tests added (write handler safety, delete handler safety, conditional registration, path traversal/absolute/size rejection, delete safety guards, config factory env var tests).
+- [x] `TestToolCapableStubAdapter` confirmed ready for read-only runtime canary (write extension deferred to child B as approved).
+- [x] Implementation evidence document created (`docs/AGENT-HARNESS-WRITE-CANARY-A-IMPLEMENTATION.md`).
+- [x] Targeted tests pass (file-tool-handlers: PASS; tool-registration-gates: PASS).
+- [x] Broader ai-service test/build validation run — npm test: 35 suites / 702 tests PASS; npm run build: PASS.
+- [x] No production behaviour changes — no production source files modified.
+- [x] No source changes outside approved areas.
+- [x] No runtime/Docker/DB/browser/API used.
+- [x] No secrets opened.
+- [x] No subagents used.
+
+###### Step 3 — Consolidation / Checkpoint / Parent Handoff (COMPLETE 2026-07-19)
+- [x] Checkpoint document created (`docs/AGENT-HARNESS-WRITE-CANARY-A-CHECKPOINT.md`).
+- [x] TASKS.md updated — AGENT-HARNESS-WRITE-CANARY-A COMPLETE and LOCKED.
+- [x] TASKS_BACKLOG_FULL.md updated — AGENT-HARNESS-WRITE-CANARY-A COMPLETE and LOCKED.
+- [x] AINOW-EXECUTION-ROADMAP.md updated.
+- [x] Parent AGENT-HARNESS-WRITE-CANARY remains ACTIVE — child B registration noted as next step.
+- [x] No source changes during consolidation.
+- [x] No secrets opened.
+- [x] No subagents used.
+- [x] No git commit or push.
+
+**AGENT-HARNESS-WRITE-CANARY-A status:** COMPLETE and LOCKED — 2026-07-19. Parent: AGENT-HARNESS-WRITE-CANARY (ACTIVE — Step 2 Preflight COMPLETE — child A COMPLETE and LOCKED — child B pending registration). Keith approval recorded ("go") 2026-07-19. 3-step bounded loop. All 3 steps complete. 24 new tests added. npm test PASS (35 suites / 702 tests). npm run build PASS. No runtime. No Docker. No source/test/translation/package/migration/entity/environment/Docker files changed. No secrets opened. No subagents. No git commit/push. Checkpoint: `docs/AGENT-HARNESS-WRITE-CANARY-A-CHECKPOINT.md`. Do not modify after locking except by explicitly approved follow-up task.
+
+**Reference:** See TASKS.md -> AGENT-HARNESS-WRITE-CANARY-A.
 
 ---
 
