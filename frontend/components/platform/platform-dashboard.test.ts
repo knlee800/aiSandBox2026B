@@ -72,9 +72,23 @@ describe('platform dashboard data integration', () => {
     const platformKeys = [
       'platform.title',
       'platform.subtitle',
+      'platform.commandDeckLabel',
+      'platform.commandDeckIntro',
+      'platform.commandCenterStatusTitle',
+      'platform.commandCenterStatusBody',
+      'platform.stationsTitle',
+      'platform.stationsSubtitle',
       'platform.agentStationActive',
       'platform.agentStationComingSoon',
       'platform.agentStationDisabled',
+      'platform.activeStationsLabel',
+      'platform.reserveStationsLabel',
+      'platform.selectedStationLabel',
+      'platform.noStationSelected',
+      'platform.openAgentDetailActive',
+      'platform.openAgentDetailComingSoon',
+      'platform.backToWorkspace',
+      'platform.comingSoonMessage',
     ];
 
     for (const { code, messages } of ALL_LOCALES) {
@@ -123,18 +137,34 @@ describe('platform dashboard navigation integration', () => {
     }
   });
 
-  test('new platform navigation/interaction translation keys exist in all locales', () => {
-    const newKeys = [
-      'platform.backToWorkspace',
-      'platform.comingSoonMessage',
+  test('platform detail panel translation keys exist in all locales', () => {
+    const detailKeys = [
+      'platform.detail.title',
+      'platform.detail.subtitle',
+      'platform.detail.intentLabel',
+      'platform.detail.capabilitiesLabel',
+      'platform.detail.close',
+      'platform.detail.emptyTitle',
+      'platform.detail.emptyBody',
+      'platform.detail.startBuilding',
+      'platform.detail.comingSoonTitle',
+      'platform.detail.comingSoonBody',
+      'platform.detail.builderIntent',
+      'platform.detail.placeholderIntent',
+      'platform.detail.builderCapabilityOne',
+      'platform.detail.builderCapabilityTwo',
+      'platform.detail.builderCapabilityThree',
+      'platform.detail.placeholderCapabilityOne',
+      'platform.detail.placeholderCapabilityTwo',
+      'platform.detail.placeholderCapabilityThree',
     ];
 
     for (const { code, messages } of ALL_LOCALES) {
-      for (const key of newKeys) {
+      for (const key of detailKeys) {
         const value = resolveNestedString(messages, key);
         assert.ok(
           value && value.trim().length > 0,
-          `Missing navigation key "${key}" in locale "${code}"`,
+          `Missing detail key "${key}" in locale "${code}"`,
         );
       }
     }

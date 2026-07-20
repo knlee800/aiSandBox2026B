@@ -1,7 +1,5 @@
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
 import type { AgentStatus } from '@/lib/agent-platform/agent-registry';
 
 export interface AgentStationCardProps {
@@ -12,8 +10,9 @@ export interface AgentStationCardProps {
   status: AgentStatus;
   enabled: boolean;
   statusLabel: string;
-  href?: string;
-  comingSoonMessage?: string;
+  actionHint: string;
+  selected: boolean;
+  onSelect: (agentId: string) => void;
 }
 
 function getStatusBadgeClasses(status: AgentStatus): string {
@@ -26,13 +25,19 @@ function getStatusBadgeClasses(status: AgentStatus): string {
   return 'bg-gray-100 text-gray-500 border-gray-200';
 }
 
-function getCardClasses(enabled: boolean): string {
+function getCardClasses(enabled: boolean, selected: boolean): string {
   const base =
-    'relative flex flex-col rounded-xl border p-5 shadow-sm transition-all duration-150';
+    'relative flex min-h-44 w-full flex-col rounded-xl border p-5 text-left shadow-sm transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2';
+
+  const selectedState = selected
+    ? 'border-indigo-300 bg-indigo-50/70 shadow-md ring-1 ring-indigo-200'
+    : '';
+
   if (enabled) {
-    return `${base} border-gray-200 bg-white hover:border-indigo-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2`;
+    return `${base} border-gray-200 bg-white hover:border-indigo-300 hover:shadow-md ${selectedState}`;
   }
-  return `${base} border-gray-100 bg-gray-50/70 opacity-75 hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2`;
+
+  return `${base} border-gray-200 bg-gray-50/80 text-gray-700 hover:border-amber-300 hover:bg-amber-50/40 ${selectedState}`;
 }
 
 function getAvatarClasses(enabled: boolean): string {
@@ -45,8 +50,7 @@ function getAvatarClasses(enabled: boolean): string {
 }
 
 export default function AgentStationCard(props: AgentStationCardProps) {
-  const { name, role, description, status, enabled, statusLabel, href, comingSoonMessage } = props;
-  const [showMessage, setShowMessage] = React.useState(false);
+  const { name, role, description, status, enabled, statusLabel, actionHint, selected, onSelect } = props;
 
   const initials = name
     .split(' ')
@@ -86,55 +90,27 @@ export default function AgentStationCard(props: AgentStationCardProps) {
         {description}
       </p>
 
-      {showMessage && comingSoonMessage && (
-        <p
-          className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700"
-          data-testid={`agent-coming-soon-message-${props.id}`}
-        >
-          {comingSoonMessage}
-        </p>
-      )}
+      <p className="mt-4 text-xs font-medium text-indigo-700">
+        {actionHint}
+      </p>
     </>
   );
 
-  if (enabled && href) {
-    return (
-      <Link
-        href={href}
-        className={getCardClasses(enabled)}
-        data-testid={`agent-station-card-${props.id}`}
-        data-status={status}
-        data-enabled={enabled}
-      >
-        {cardContent}
-      </Link>
-    );
-  }
-
-  const isInteractive = !enabled && !!comingSoonMessage;
-
   return (
-    <div
-      className={`${getCardClasses(enabled)}${isInteractive ? ' cursor-pointer' : ''}`}
+    <button
+      type="button"
+      className={`${getCardClasses(enabled, selected)} cursor-pointer`}
       data-testid={`agent-station-card-${props.id}`}
       data-status={status}
       data-enabled={enabled}
-      onClick={isInteractive ? () => setShowMessage((prev) => !prev) : undefined}
-      onKeyDown={
-        isInteractive
-          ? (e: React.KeyboardEvent) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                setShowMessage((prev) => !prev);
-              }
-            }
-          : undefined
-      }
-      role={isInteractive ? 'button' : undefined}
-      tabIndex={isInteractive ? 0 : undefined}
-      aria-expanded={isInteractive ? showMessage : undefined}
+      onClick={() => onSelect(props.id)}
+      aria-pressed={selected}
+      aria-describedby={`agent-station-hint-${props.id}`}
     >
       {cardContent}
-    </div>
+      <span id={`agent-station-hint-${props.id}`} className="sr-only">
+        {actionHint}
+      </span>
+    </button>
   );
 }
