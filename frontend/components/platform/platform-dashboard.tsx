@@ -6,15 +6,22 @@ import { useRouter } from 'next/navigation';
 import {
   ArrowLeftIcon,
   BuildingOffice2Icon,
+  ExclamationTriangleIcon,
+  PlusIcon,
   SignalIcon,
   Squares2X2Icon,
   UserCircleIcon,
+  UserGroupIcon,
 } from '@heroicons/react/24/outline';
 import { listAgents } from '@/lib/agent-platform/agent-registry';
 import type { AgentStatus } from '@/lib/agent-platform/agent-registry';
+import { useUserAgents } from '@/hooks/useUserAgents';
+import type { UserAgent } from '@/hooks/useUserAgents';
 import AgentStationCard from './agent-station-card';
 import AgentDetailPanel from './agent-detail-panel';
 import type { AgentDetailViewModel } from './agent-detail-panel';
+import CreateAgentForm from './create-agent-form';
+import type { CreateAgentFormLabels } from './create-agent-form';
 
 import enMessages from '@/messages/en.json';
 import zhTwMessages from '@/messages/zh-TW.json';
@@ -59,13 +66,32 @@ export interface PlatformDashboardProps {
   locale?: string;
 }
 
+function getUserAgentStatusLabel(
+  status: string,
+  messages: LocaleMessages,
+): string {
+  if (status === 'active') return resolveNestedMessage(messages, 'platform.agentCreate.agentStatusActive');
+  if (status === 'draft') return resolveNestedMessage(messages, 'platform.agentCreate.agentStatusDraft');
+  return resolveNestedMessage(messages, 'platform.agentCreate.agentStatusDisabled');
+}
+
 export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
   const router = useRouter();
   const messages = getLocaleMessages(locale);
-  const agents = listAgents();
+  const staticAgents = listAgents();
   const [selectedAgentId, setSelectedAgentId] = React.useState<string | null>(null);
+  const [selectedUserAgentId, setSelectedUserAgentId] = React.useState<string | null>(null);
+  const [showCreateForm, setShowCreateForm] = React.useState(false);
   const [authReady, setAuthReady] = React.useState(false);
   const resolvedLocale = locale ?? 'en';
+
+  const {
+    agents: userAgents,
+    loading: userAgentsLoading,
+    error: userAgentsError,
+    createAgent,
+    refetch: refetchUserAgents,
+  } = useUserAgents();
 
   const title = resolveNestedMessage(messages, 'platform.title');
   const subtitle = resolveNestedMessage(messages, 'platform.subtitle');
@@ -95,6 +121,35 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
   const selectedStationLabel = resolveNestedMessage(messages, 'platform.selectedStationLabel');
   const noStationSelected = resolveNestedMessage(messages, 'platform.noStationSelected');
   const loadingLabel = resolveNestedMessage(messages, 'common.loading');
+
+  const acSectionTitle = resolveNestedMessage(messages, 'platform.agentCreate.sectionTitle');
+  const acSectionSubtitle = resolveNestedMessage(messages, 'platform.agentCreate.sectionSubtitle');
+  const acCreateButton = resolveNestedMessage(messages, 'platform.agentCreate.createButton');
+  const acEmptyTitle = resolveNestedMessage(messages, 'platform.agentCreate.emptyTitle');
+  const acEmptyBody = resolveNestedMessage(messages, 'platform.agentCreate.emptyBody');
+  const acLoadError = resolveNestedMessage(messages, 'platform.agentCreate.loadError');
+  const acRetry = resolveNestedMessage(messages, 'platform.agentCreate.retry');
+
+  const formLabels: CreateAgentFormLabels = {
+    formTitle: resolveNestedMessage(messages, 'platform.agentCreate.formTitle'),
+    nameLabel: resolveNestedMessage(messages, 'platform.agentCreate.nameLabel'),
+    namePlaceholder: resolveNestedMessage(messages, 'platform.agentCreate.namePlaceholder'),
+    roleLabel: resolveNestedMessage(messages, 'platform.agentCreate.roleLabel'),
+    rolePlaceholder: resolveNestedMessage(messages, 'platform.agentCreate.rolePlaceholder'),
+    descriptionLabel: resolveNestedMessage(messages, 'platform.agentCreate.descriptionLabel'),
+    descriptionPlaceholder: resolveNestedMessage(messages, 'platform.agentCreate.descriptionPlaceholder'),
+    submitButton: resolveNestedMessage(messages, 'platform.agentCreate.submitButton'),
+    cancelButton: resolveNestedMessage(messages, 'platform.agentCreate.cancelButton'),
+    submitting: resolveNestedMessage(messages, 'platform.agentCreate.submitting'),
+    nameRequired: resolveNestedMessage(messages, 'platform.agentCreate.nameRequired'),
+    nameTooLong: resolveNestedMessage(messages, 'platform.agentCreate.nameTooLong'),
+    roleRequired: resolveNestedMessage(messages, 'platform.agentCreate.roleRequired'),
+    roleTooLong: resolveNestedMessage(messages, 'platform.agentCreate.roleTooLong'),
+    descriptionRequired: resolveNestedMessage(messages, 'platform.agentCreate.descriptionRequired'),
+    descriptionTooLong: resolveNestedMessage(messages, 'platform.agentCreate.descriptionTooLong'),
+    createError: resolveNestedMessage(messages, 'platform.agentCreate.createError'),
+    createSuccess: resolveNestedMessage(messages, 'platform.agentCreate.createSuccess'),
+  };
 
   React.useEffect(() => {
     let isMounted = true;
@@ -126,37 +181,103 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
     };
   }, [resolvedLocale, router]);
 
+  React.useEffect(() => {
+    if (userAgentsError === 'AUTH_EXPIRED') {
+      router.replace(`/${resolvedLocale}/login`);
+    }
+  }, [userAgentsError, resolvedLocale, router]);
+
   const localePrefix = locale ? `/${locale}` : '';
-  const activeAgents = agents.filter((agent) => agent.enabled).length;
-  const reserveAgents = agents.length - activeAgents;
+  const activeAgents = staticAgents.filter((agent) => agent.enabled).length;
+  const reserveAgents = staticAgents.length - activeAgents;
 
-  const selectedAgent = selectedAgentId
-    ? agents.find((agent) => agent.id === selectedAgentId) ?? null
+  const selectedStaticAgent = selectedAgentId
+    ? staticAgents.find((agent) => agent.id === selectedAgentId) ?? null
     : null;
 
-  const selectedAgentDetail: AgentDetailViewModel | null = selectedAgent
-    ? {
-        id: selectedAgent.id,
-        name: resolveNestedMessage(messages, selectedAgent.nameKey),
-        role: resolveNestedMessage(messages, selectedAgent.roleKey),
-        description: resolveNestedMessage(messages, selectedAgent.descriptionKey),
-        statusLabel: getStatusLabel(selectedAgent.status, messages),
-        intent: selectedAgent.enabled ? builderIntent : placeholderIntent,
-        capabilities: selectedAgent.enabled
-          ? [
-              resolveNestedMessage(messages, 'platform.detail.builderCapabilityOne'),
-              resolveNestedMessage(messages, 'platform.detail.builderCapabilityTwo'),
-              resolveNestedMessage(messages, 'platform.detail.builderCapabilityThree'),
-            ]
-          : [
-              resolveNestedMessage(messages, 'platform.detail.placeholderCapabilityOne'),
-              resolveNestedMessage(messages, 'platform.detail.placeholderCapabilityTwo'),
-              resolveNestedMessage(messages, 'platform.detail.placeholderCapabilityThree'),
-            ],
-        isBuilder: selectedAgent.id === 'builder',
-        isComingSoon: selectedAgent.status === 'coming_soon',
+  const selectedUserAgent: UserAgent | null = selectedUserAgentId
+    ? userAgents.find((ua) => ua.id === selectedUserAgentId) ?? null
+    : null;
+
+  function handleSelectStaticAgent(id: string) {
+    setSelectedAgentId(id);
+    setSelectedUserAgentId(null);
+    setShowCreateForm(false);
+  }
+
+  function handleSelectUserAgent(id: string) {
+    setSelectedUserAgentId(id);
+    setSelectedAgentId(null);
+    setShowCreateForm(false);
+  }
+
+  function handleOpenCreateForm() {
+    setShowCreateForm(true);
+    setSelectedAgentId(null);
+    setSelectedUserAgentId(null);
+  }
+
+  function handleCloseDetail() {
+    setSelectedAgentId(null);
+    setSelectedUserAgentId(null);
+    setShowCreateForm(false);
+  }
+
+  async function handleCreateAgent(data: { name: string; role: string; description: string }) {
+    const result = await createAgent(data);
+    if (result.error) {
+      if (result.error === 'AUTH_EXPIRED') {
+        router.replace(`/${resolvedLocale}/login`);
       }
-    : null;
+      return { error: result.error };
+    }
+    return {};
+  }
+
+  let detailPanelContent: AgentDetailViewModel | null = null;
+
+  if (selectedStaticAgent) {
+    detailPanelContent = {
+      id: selectedStaticAgent.id,
+      name: resolveNestedMessage(messages, selectedStaticAgent.nameKey),
+      role: resolveNestedMessage(messages, selectedStaticAgent.roleKey),
+      description: resolveNestedMessage(messages, selectedStaticAgent.descriptionKey),
+      statusLabel: getStatusLabel(selectedStaticAgent.status, messages),
+      intent: selectedStaticAgent.enabled ? builderIntent : placeholderIntent,
+      capabilities: selectedStaticAgent.enabled
+        ? [
+            resolveNestedMessage(messages, 'platform.detail.builderCapabilityOne'),
+            resolveNestedMessage(messages, 'platform.detail.builderCapabilityTwo'),
+            resolveNestedMessage(messages, 'platform.detail.builderCapabilityThree'),
+          ]
+        : [
+            resolveNestedMessage(messages, 'platform.detail.placeholderCapabilityOne'),
+            resolveNestedMessage(messages, 'platform.detail.placeholderCapabilityTwo'),
+            resolveNestedMessage(messages, 'platform.detail.placeholderCapabilityThree'),
+          ],
+      isBuilder: selectedStaticAgent.id === 'builder',
+      isComingSoon: selectedStaticAgent.status === 'coming_soon',
+    };
+  } else if (selectedUserAgent) {
+    detailPanelContent = {
+      id: selectedUserAgent.id,
+      name: selectedUserAgent.name,
+      role: selectedUserAgent.role,
+      description: selectedUserAgent.description,
+      statusLabel: getUserAgentStatusLabel(selectedUserAgent.status, messages),
+      intent: selectedUserAgent.role,
+      capabilities: [],
+      isBuilder: false,
+      isComingSoon: false,
+      isUserCreated: true,
+    };
+  }
+
+  const displaySelectedName = selectedStaticAgent
+    ? resolveNestedMessage(messages, selectedStaticAgent.nameKey)
+    : selectedUserAgent
+      ? selectedUserAgent.name
+      : noStationSelected;
 
   if (!authReady) {
     return (
@@ -223,9 +344,7 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
                 <div className="rounded-lg border border-slate-700 bg-slate-800/80 px-3 py-2">
                   <p className="text-xs uppercase tracking-wide text-slate-300">{selectedStationLabel}</p>
                   <p className="mt-1 truncate text-sm font-semibold text-white">
-                    {selectedAgent
-                      ? resolveNestedMessage(messages, selectedAgent.nameKey)
-                      : noStationSelected}
+                    {displaySelectedName}
                   </p>
                 </div>
               </div>
@@ -244,7 +363,7 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
                 </div>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {agents.map((agent) => (
+                {staticAgents.map((agent) => (
                   <AgentStationCard
                     key={agent.id}
                     id={agent.id}
@@ -255,10 +374,95 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
                     enabled={agent.enabled}
                     statusLabel={getStatusLabel(agent.status, messages)}
                     selected={selectedAgentId === agent.id}
-                    onSelect={setSelectedAgentId}
+                    onSelect={handleSelectStaticAgent}
                     actionHint={agent.enabled ? openAgentDetailActive : openAgentDetailComingSoon}
                   />
                 ))}
+              </div>
+
+              <div className="mt-6 border-t border-slate-700 pt-5">
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="flex items-start gap-2">
+                    <UserGroupIcon className="mt-0.5 h-4 w-4 text-indigo-300" aria-hidden="true" />
+                    <div>
+                      <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-200">
+                        {acSectionTitle}
+                      </h3>
+                      <p className="mt-1 text-sm text-slate-400">{acSectionSubtitle}</p>
+                    </div>
+                  </div>
+                  {!showCreateForm && (
+                    <button
+                      type="button"
+                      onClick={handleOpenCreateForm}
+                      className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                      data-testid="create-agent-cta"
+                    >
+                      <PlusIcon className="h-4 w-4" aria-hidden="true" />
+                      {acCreateButton}
+                    </button>
+                  )}
+                </div>
+
+                {userAgentsLoading && (
+                  <div className="rounded-lg border border-slate-700 bg-slate-800/60 px-4 py-6 text-center" data-testid="user-agents-loading">
+                    <p className="text-sm text-slate-400">{loadingLabel}</p>
+                  </div>
+                )}
+
+                {!userAgentsLoading && userAgentsError && userAgentsError !== 'AUTH_EXPIRED' && (
+                  <div className="rounded-lg border border-red-700/40 bg-red-950/30 px-4 py-4" data-testid="user-agents-error">
+                    <div className="flex items-center gap-2">
+                      <ExclamationTriangleIcon className="h-4 w-4 text-red-400" aria-hidden="true" />
+                      <p className="text-sm text-red-300">{acLoadError}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => refetchUserAgents()}
+                      className="mt-2 text-sm font-medium text-indigo-300 hover:text-indigo-200"
+                      data-testid="user-agents-retry"
+                    >
+                      {acRetry}
+                    </button>
+                  </div>
+                )}
+
+                {!userAgentsLoading && !userAgentsError && userAgents.length === 0 && !showCreateForm && (
+                  <div className="rounded-lg border border-dashed border-slate-600 bg-slate-800/40 px-4 py-6 text-center" data-testid="user-agents-empty">
+                    <UserGroupIcon className="mx-auto h-8 w-8 text-slate-500" aria-hidden="true" />
+                    <p className="mt-2 text-sm font-medium text-slate-300">{acEmptyTitle}</p>
+                    <p className="mt-1 text-sm text-slate-400">{acEmptyBody}</p>
+                    <button
+                      type="button"
+                      onClick={handleOpenCreateForm}
+                      className="mt-3 inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                      data-testid="create-agent-empty-cta"
+                    >
+                      <PlusIcon className="h-4 w-4" aria-hidden="true" />
+                      {acCreateButton}
+                    </button>
+                  </div>
+                )}
+
+                {!userAgentsLoading && !userAgentsError && userAgents.length > 0 && (
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2" data-testid="user-agents-list">
+                    {userAgents.map((ua) => (
+                      <AgentStationCard
+                        key={ua.id}
+                        id={`user-${ua.id}`}
+                        name={ua.name}
+                        role={ua.role}
+                        description={ua.description}
+                        status={ua.status === 'active' ? 'active' : 'disabled'}
+                        enabled={ua.status === 'active'}
+                        statusLabel={getUserAgentStatusLabel(ua.status, messages)}
+                        selected={selectedUserAgentId === ua.id}
+                        onSelect={() => handleSelectUserAgent(ua.id)}
+                        actionHint={openAgentDetailActive}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             </section>
 
@@ -267,21 +471,29 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
                 <UserCircleIcon className="h-5 w-5 text-indigo-300" aria-hidden="true" />
                 <h2 className="text-sm font-semibold uppercase tracking-wide">{detailLabel}</h2>
               </div>
-              <AgentDetailPanel
-                agent={selectedAgentDetail}
-                localePrefix={localePrefix}
-                title={detailLabel}
-                subtitle={detailSubtitle}
-                intentLabel={detailIntentLabel}
-                capabilitiesLabel={detailCapabilitiesLabel}
-                closeLabel={detailCloseLabel}
-                emptyTitle={detailEmptyTitle}
-                emptyBody={detailEmptyBody}
-                startBuildingLabel={detailStartBuilding}
-                comingSoonLabel={detailComingSoonTitle}
-                comingSoonBody={detailComingSoonBody}
-                onClose={() => setSelectedAgentId(null)}
-              />
+              {showCreateForm ? (
+                <CreateAgentForm
+                  labels={formLabels}
+                  onSubmit={handleCreateAgent}
+                  onCancel={() => setShowCreateForm(false)}
+                />
+              ) : (
+                <AgentDetailPanel
+                  agent={detailPanelContent}
+                  localePrefix={localePrefix}
+                  title={detailLabel}
+                  subtitle={detailSubtitle}
+                  intentLabel={detailIntentLabel}
+                  capabilitiesLabel={detailCapabilitiesLabel}
+                  closeLabel={detailCloseLabel}
+                  emptyTitle={detailEmptyTitle}
+                  emptyBody={detailEmptyBody}
+                  startBuildingLabel={detailStartBuilding}
+                  comingSoonLabel={detailComingSoonTitle}
+                  comingSoonBody={detailComingSoonBody}
+                  onClose={handleCloseDetail}
+                />
+              )}
             </section>
           </div>
         </div>

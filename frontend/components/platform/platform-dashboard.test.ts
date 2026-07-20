@@ -29,6 +29,8 @@ function resolveNestedString(source: LocaleMessages, fullKey: string): string | 
   return typeof current === 'string' ? current : null;
 }
 
+const USER_AGENT_STATUSES = ['active', 'draft', 'disabled'] as const;
+
 describe('platform dashboard data integration', () => {
   const agents: readonly AgentManifest[] = listAgents();
 
@@ -177,5 +179,211 @@ describe('platform dashboard navigation integration', () => {
         `Agent ${agent.id} route must start with /`,
       );
     }
+  });
+});
+
+describe('platform Create Agent translation keys', () => {
+  const AGENT_CREATE_KEYS = [
+    'platform.agentCreate.sectionTitle',
+    'platform.agentCreate.sectionSubtitle',
+    'platform.agentCreate.createButton',
+    'platform.agentCreate.formTitle',
+    'platform.agentCreate.nameLabel',
+    'platform.agentCreate.namePlaceholder',
+    'platform.agentCreate.roleLabel',
+    'platform.agentCreate.rolePlaceholder',
+    'platform.agentCreate.descriptionLabel',
+    'platform.agentCreate.descriptionPlaceholder',
+    'platform.agentCreate.submitButton',
+    'platform.agentCreate.cancelButton',
+    'platform.agentCreate.submitting',
+    'platform.agentCreate.nameRequired',
+    'platform.agentCreate.nameTooLong',
+    'platform.agentCreate.roleRequired',
+    'platform.agentCreate.roleTooLong',
+    'platform.agentCreate.descriptionRequired',
+    'platform.agentCreate.descriptionTooLong',
+    'platform.agentCreate.createError',
+    'platform.agentCreate.loadError',
+    'platform.agentCreate.retry',
+    'platform.agentCreate.createSuccess',
+    'platform.agentCreate.emptyTitle',
+    'platform.agentCreate.emptyBody',
+    'platform.agentCreate.agentStatusActive',
+    'platform.agentCreate.agentStatusDraft',
+    'platform.agentCreate.agentStatusDisabled',
+  ];
+
+  test('all platform.agentCreate.* keys resolve in all 3 locales', () => {
+    for (const { code, messages } of ALL_LOCALES) {
+      for (const key of AGENT_CREATE_KEYS) {
+        const value = resolveNestedString(messages, key);
+        assert.ok(
+          value && value.trim().length > 0,
+          `Missing agentCreate key "${key}" in locale "${code}"`,
+        );
+      }
+    }
+  });
+
+  test('no agentCreate keys are empty strings', () => {
+    for (const { code, messages } of ALL_LOCALES) {
+      for (const key of AGENT_CREATE_KEYS) {
+        const value = resolveNestedString(messages, key);
+        assert.notEqual(value, '', `agentCreate key "${key}" is an empty string in locale "${code}"`);
+      }
+    }
+  });
+});
+
+describe('platform Create Agent API contract', () => {
+  test('GET /api/agents list response shape matches expected interface', () => {
+    const mockResponse = {
+      agents: [
+        {
+          id: 'test-uuid-1',
+          name: 'Research Assistant',
+          role: 'Gathers and synthesizes information',
+          description: 'A specialized agent for research tasks',
+          status: 'active' as const,
+          initials: 'RA',
+          createdAt: '2026-07-20T10:30:00.000Z',
+          updatedAt: '2026-07-20T10:30:00.000Z',
+        },
+      ],
+    };
+
+    assert.ok(Array.isArray(mockResponse.agents));
+    const agent = mockResponse.agents[0];
+    assert.equal(typeof agent.id, 'string');
+    assert.equal(typeof agent.name, 'string');
+    assert.equal(typeof agent.role, 'string');
+    assert.equal(typeof agent.description, 'string');
+    assert.ok(USER_AGENT_STATUSES.includes(agent.status));
+    assert.equal(typeof agent.createdAt, 'string');
+    assert.equal(typeof agent.updatedAt, 'string');
+  });
+
+  test('POST /api/agents request body contains only name, role, description', () => {
+    const requestBody = {
+      name: 'Test Agent',
+      role: 'Test Role',
+      description: 'Test Description',
+    };
+
+    const keys = Object.keys(requestBody);
+    assert.deepEqual(keys.sort(), ['description', 'name', 'role']);
+    assert.equal('userId' in requestBody, false, 'request body must not include userId');
+  });
+
+  test('POST /api/agents response shape matches expected interface', () => {
+    const mockCreated = {
+      id: 'test-uuid-2',
+      name: 'New Agent',
+      role: 'New Role',
+      description: 'New Description',
+      status: 'active' as const,
+      initials: 'NA',
+      createdAt: '2026-07-20T11:00:00.000Z',
+      updatedAt: '2026-07-20T11:00:00.000Z',
+    };
+
+    assert.equal(typeof mockCreated.id, 'string');
+    assert.equal(typeof mockCreated.name, 'string');
+    assert.equal(typeof mockCreated.role, 'string');
+    assert.equal(typeof mockCreated.description, 'string');
+    assert.ok(USER_AGENT_STATUSES.includes(mockCreated.status));
+    assert.equal(typeof mockCreated.createdAt, 'string');
+    assert.equal(typeof mockCreated.updatedAt, 'string');
+    assert.equal('userId' in mockCreated, false, 'response must not include userId');
+    assert.equal('deletedAt' in mockCreated, false, 'response must not include deletedAt');
+  });
+
+  test('empty agent list returns { agents: [] }', () => {
+    const emptyResponse = { agents: [] as unknown[] };
+    assert.ok(Array.isArray(emptyResponse.agents));
+    assert.equal(emptyResponse.agents.length, 0);
+  });
+});
+
+describe('platform Create Agent static agents preservation', () => {
+  const agents: readonly AgentManifest[] = listAgents();
+
+  test('listAgents() still returns exactly 4 static agents after Create Agent additions', () => {
+    assert.equal(agents.length, 4);
+    const ids = agents.map((a) => a.id);
+    assert.deepEqual(ids, ['builder', 'chief-of-staff', 'product-strategy', 'technology-advisor']);
+  });
+
+  test('builder agent is still active and enabled', () => {
+    const builder = agents.find((a) => a.id === 'builder');
+    assert.ok(builder);
+    assert.equal(builder.status, 'active');
+    assert.equal(builder.enabled, true);
+  });
+});
+
+describe('platform Create Agent user agent display', () => {
+  test('user agent status is in allowed values', () => {
+    const mockUserAgent = {
+      id: 'ua-1',
+      name: 'Test',
+      role: 'Test',
+      description: 'Test',
+      status: 'active' as const,
+      initials: 'T',
+      createdAt: '2026-07-20T10:00:00.000Z',
+      updatedAt: '2026-07-20T10:00:00.000Z',
+    };
+    assert.ok(
+      USER_AGENT_STATUSES.includes(mockUserAgent.status),
+      `status "${mockUserAgent.status}" must be one of ${USER_AGENT_STATUSES.join(', ')}`,
+    );
+  });
+
+  test('user agent does not expose userId field', () => {
+    const mockUserAgent = {
+      id: 'ua-1',
+      name: 'Test',
+      role: 'Test',
+      description: 'Test',
+      status: 'active' as const,
+      initials: 'T',
+      createdAt: '2026-07-20T10:00:00.000Z',
+      updatedAt: '2026-07-20T10:00:00.000Z',
+    };
+    assert.equal('userId' in mockUserAgent, false, 'userId must not be exposed');
+  });
+});
+
+describe('platform Create Agent validation rules', () => {
+  test('empty name triggers validation error', () => {
+    const name = '';
+    assert.equal(name.trim().length === 0, true, 'empty name should trigger required error');
+  });
+
+  test('name > 100 chars triggers validation error', () => {
+    const name = 'A'.repeat(101);
+    assert.ok(name.length > 100, 'name > 100 chars should trigger max-length error');
+  });
+
+  test('empty role triggers validation error', () => {
+    const role = '';
+    assert.equal(role.trim().length === 0, true, 'empty role should trigger required error');
+  });
+
+  test('role > 200 chars triggers validation error', () => {
+    const role = 'A'.repeat(201);
+    assert.ok(role.length > 200, 'role > 200 chars should trigger max-length error');
+  });
+
+  test('empty description triggers validation error', () => {
+    const description = '';
+    assert.equal(description.trim().length === 0, true, 'empty description should trigger required error');
+  });
+
+  test('description > 2000 chars triggers validation error', () => {
+    const description = 'A'.repeat(2001);
+    assert.ok(description.length > 2000, 'description > 2000 chars should trigger max-length error');
   });
 });

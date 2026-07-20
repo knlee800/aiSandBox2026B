@@ -20,6 +20,7 @@ export interface AgentDetailViewModel {
   capabilities: string[];
   isBuilder: boolean;
   isComingSoon: boolean;
+  isUserCreated?: boolean;
 }
 
 export interface AgentDetailPanelProps {
@@ -72,7 +73,9 @@ export default function AgentDetailPanel(props: AgentDetailPanelProps) {
 
   const statusBadgeClass = agent.isComingSoon
     ? 'border-amber-200 bg-amber-50 text-amber-800'
-    : 'border-emerald-200 bg-emerald-50 text-emerald-800';
+    : agent.isUserCreated
+      ? 'border-indigo-200 bg-indigo-50 text-indigo-800'
+      : 'border-emerald-200 bg-emerald-50 text-emerald-800';
 
   return (
     <aside
@@ -136,6 +139,16 @@ export default function AgentDetailPanel(props: AgentDetailPanelProps) {
           <span>{startBuildingLabel}</span>
           <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />
         </Link>
+      ) : agent.isUserCreated ? (
+        <div
+          className="mt-6 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3"
+          data-testid="agent-detail-user-created"
+        >
+          <p className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-800">
+            <RocketLaunchIcon className="h-4 w-4" aria-hidden="true" />
+            <span>{agent.statusLabel}</span>
+          </p>
+        </div>
       ) : (
         <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
           <p className="inline-flex items-center gap-2 text-sm font-semibold text-amber-800">
