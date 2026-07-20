@@ -143,6 +143,109 @@ describe('TestToolCapableStubAdapter', () => {
   });
 });
 
+describe('TestToolCapableStubAdapter write mode', () => {
+  const originalEnv = process.env.AGENT_HARNESS_STUB_WRITE_MODE;
+
+  afterEach(() => {
+    if (originalEnv === undefined) {
+      delete process.env.AGENT_HARNESS_STUB_WRITE_MODE;
+    } else {
+      process.env.AGENT_HARNESS_STUB_WRITE_MODE = originalEnv;
+    }
+  });
+
+  describe('write mode: iteration 0 returns write_file tool call', () => {
+    it('should emit write_file on first call when AGENT_HARNESS_STUB_WRITE_MODE=true', async () => {
+      process.env.AGENT_HARNESS_STUB_WRITE_MODE = 'true';
+      const adapter = new TestToolCapableStubAdapter();
+      const result = await adapter.executeWithTools(REQUEST);
+      expect(result.finishReason).toBe('tool_calls');
+      expect(result.toolCalls).toHaveLength(1);
+      expect(result.toolCalls[0].toolName).toBe('write_file');
+      expect(result.toolCalls[0].providerKind).toBe('stub');
+      expect(result.toolCalls[0].callId).toContain('test-harness-write-call-');
+    });
+  });
+
+  describe('write mode: iteration 1 returns read_file for canary file', () => {
+    it('should emit read_file for canary-write-test.md on second call', async () => {
+      process.env.AGENT_HARNESS_STUB_WRITE_MODE = 'true';
+      const adapter = new TestToolCapableStubAdapter();
+      await adapter.executeWithTools(REQUEST);
+      const result = await adapter.executeWithTools(REQUEST, { toolResults: [] });
+      expect(result.finishReason).toBe('tool_calls');
+      expect(result.toolCalls).toHaveLength(1);
+      expect(result.toolCalls[0].toolName).toBe('read_file');
+      expect(result.toolCalls[0].arguments).toEqual({ path: 'canary-write-test.md' });
+    });
+  });
+
+  describe('write mode: iteration 2 returns completed', () => {
+    it('should return completed with no tool calls on third call', async () => {
+      process.env.AGENT_HARNESS_STUB_WRITE_MODE = 'true';
+      const adapter = new TestToolCapableStubAdapter();
+      await adapter.executeWithTools(REQUEST);
+      await adapter.executeWithTools(REQUEST, { toolResults: [] });
+      const result = await adapter.executeWithTools(REQUEST, { toolResults: [] });
+      expect(result.finishReason).toBe('completed');
+      expect(result.toolCalls).toEqual([]);
+      expect(result.output).toContain('write canary complete');
+    });
+  });
+
+  describe('write mode: content includes timestamp and agent identifier', () => {
+    it('should include ISO timestamp and agent name in write_file content', async () => {
+      process.env.AGENT_HARNESS_STUB_WRITE_MODE = 'true';
+      const adapter = new TestToolCapableStubAdapter();
+      const result = await adapter.executeWithTools(REQUEST);
+      const content = result.toolCalls[0].arguments.content as string;
+      expect(content).toContain('# Write Canary');
+      expect(content).toContain('Timestamp:');
+      expect(content).toContain('Agent: test-harness-stub');
+      expect(content).toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
+    });
+  });
+
+  describe('write mode: canary file path is canary-write-test.md', () => {
+    it('should use path canary-write-test.md for write_file call', async () => {
+      process.env.AGENT_HARNESS_STUB_WRITE_MODE = 'true';
+      const adapter = new TestToolCapableStubAdapter();
+      const result = await adapter.executeWithTools(REQUEST);
+      expect(result.toolCalls[0].arguments.path).toBe('canary-write-test.md');
+    });
+  });
+
+  describe('default mode: unchanged behavior when AGENT_HARNESS_STUB_WRITE_MODE is not set', () => {
+    it('should emit list_files on first call when env is not set', async () => {
+      delete process.env.AGENT_HARNESS_STUB_WRITE_MODE;
+      const adapter = new TestToolCapableStubAdapter();
+      const result = await adapter.executeWithTools(REQUEST);
+      expect(result.toolCalls[0].toolName).toBe('list_files');
+    });
+
+    it('should emit list_files on first call when env is false', async () => {
+      process.env.AGENT_HARNESS_STUB_WRITE_MODE = 'false';
+      const adapter = new TestToolCapableStubAdapter();
+      const result = await adapter.executeWithTools(REQUEST);
+      expect(result.toolCalls[0].toolName).toBe('list_files');
+    });
+  });
+
+  describe('write mode: zero tokens and correct model', () => {
+    it('all write-mode calls should report zero tokens and correct model', async () => {
+      process.env.AGENT_HARNESS_STUB_WRITE_MODE = 'true';
+      const adapter = new TestToolCapableStubAdapter();
+      const r0 = await adapter.executeWithTools(REQUEST);
+      const r1 = await adapter.executeWithTools(REQUEST, { toolResults: [] });
+      const r2 = await adapter.executeWithTools(REQUEST, { toolResults: [] });
+      for (const r of [r0, r1, r2]) {
+        expect(r.tokensUsed).toBe(0);
+        expect(r.model).toBe('test-harness-stub');
+      }
+    });
+  });
+});
+
 describe('Provider routing supports test-harness-stub', () => {
   it('AIExecutionService.getAdapter returns TestToolCapableStubAdapter for test-harness-stub', async () => {
     const { AIExecutionService } = await import('../../ai-execution.service');
