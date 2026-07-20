@@ -35654,7 +35654,7 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 
 **Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` �X controls cross-family priority order; Knowledge before Collaboration before Billing.
 
-**Current stage:** AGENT-HARNESS-WRITE-CANARY — Agent Harness Write Canary + Production Activation — COMPLETE and LOCKED — 2026-07-20 — all 4 parent steps complete — child A COMPLETE and LOCKED (2026-07-19) — child B COMPLETE and LOCKED (2026-07-20) — first live E2E write canary PASS — safe default remains disabled — no permanent production flag activation — Checkpoint: `docs/AGENT-HARNESS-WRITE-CANARY-CHECKPOINT.md` — BETA-READY-00 blocker B1 resolved at canary-readiness level — next recommended: T2 — Production Deployment Configuration (requires Keith explicit approval before registration) — BETA-READY-00 — Beta Readiness Checklist — COMPLETE and LOCKED — 2026-07-19 — all 3 steps complete — checklist created (`docs/BETA-READY-00-CHECKLIST.md`) — launch decision: READY FOR LIMITED BETA WITH LIMITATIONS — 15 gates (7 PASS, 8 needs verification) — blockers: B1 (resolved at canary-readiness level; permanent deployment flag activation still separate), B2 (deployment), B3 (pre-beta smoke) — Checkpoint: `docs/BETA-READY-00-CHECKPOINT.md` — ANOMALY-01 COMPLETE and LOCKED — 2026-07-19 — Checkpoint: `docs/ANOMALY-01-CHECKPOINT.md` — BILLING-READY-07 COMPLETE and LOCKED — 2026-07-17 — Outcome B — PASS WITH LIMITATIONS — BILLING-READY-07A COMPLETE and LOCKED — 2026-07-17 — Step 3 rerun PASS (2026-07-19) — BR07A-DEFECT-01 resolved — BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200 COMPLETE and LOCKED — 2026-07-17 — Checkpoint: `docs/BILLING-READY-07A-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-07-CHECKPOINT.md` — Consolidation document: `docs/BILLING-READY-07-CONSOLIDATION-DECISION.md` — BILLING-READY-06 COMPLETE and LOCKED (2026-07-17) — BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — BILLING-READY-06B COMPLETE and LOCKED (2026-07-17) — Checkpoint: `docs/BILLING-READY-06B-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-06-CHECKPOINT.md` — AGENT-HARNESS write canary remains a separate track. BILLING-READY-05 COMPLETE and LOCKED (2026-07-16) — all 4 parent steps complete — all child slices 05A–05G COMPLETE and LOCKED — Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`. BILLING-READY-05G COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-05G-CHECKPOINT.md`. BILLING-READY-05F COMPLETE and LOCKED (2026-07-15). Checkpoint: `docs/BILLING-READY-05F-CHECKPOINT.md`. BILLING-READY-05E COMPLETE and LOCKED (2026-07-15). BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-04 COMPLETE and LOCKED (2026-07-13). BILLING-READY-03 COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
+**Current stage:** BETA-READY-DEPLOYMENT-CONFIG — Production Deployment Configuration — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — B2 resolved at documentation/template-readiness level — Checkpoint: `docs/BETA-READY-DEPLOYMENT-CONFIG-CHECKPOINT.md` — B3 pre-beta full-stack live smoke remains pending — requires Keith explicit approval before registration — AGENT-HARNESS-WRITE-CANARY — Agent Harness Write Canary + Production Activation — COMPLETE and LOCKED — 2026-07-20 — all 4 parent steps complete — child A COMPLETE and LOCKED (2026-07-19) — child B COMPLETE and LOCKED (2026-07-20) — first live E2E write canary PASS — safe default remains disabled — no permanent production flag activation — Checkpoint: `docs/AGENT-HARNESS-WRITE-CANARY-CHECKPOINT.md` — BETA-READY-00 blocker B1 resolved at canary-readiness level — BETA-READY-00 — Beta Readiness Checklist — COMPLETE and LOCKED — 2026-07-19 — all 3 steps complete — checklist created (`docs/BETA-READY-00-CHECKLIST.md`) — launch decision: READY FOR LIMITED BETA WITH LIMITATIONS — 15 gates (7 PASS, 8 needs verification) — blockers: B1 (resolved at canary-readiness level; permanent deployment flag activation still separate), B2 (deployment), B3 (pre-beta smoke) — Checkpoint: `docs/BETA-READY-00-CHECKPOINT.md` — ANOMALY-01 COMPLETE and LOCKED — 2026-07-19 — Checkpoint: `docs/ANOMALY-01-CHECKPOINT.md` — BILLING-READY-07 COMPLETE and LOCKED — 2026-07-17 — Outcome B — PASS WITH LIMITATIONS — BILLING-READY-07A COMPLETE and LOCKED — 2026-07-17 — Step 3 rerun PASS (2026-07-19) — BR07A-DEFECT-01 resolved — BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200 COMPLETE and LOCKED — 2026-07-17 — Checkpoint: `docs/BILLING-READY-07A-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-07-CHECKPOINT.md` — Consolidation document: `docs/BILLING-READY-07-CONSOLIDATION-DECISION.md` — BILLING-READY-06 COMPLETE and LOCKED (2026-07-17) — BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — BILLING-READY-06B COMPLETE and LOCKED (2026-07-17) — Checkpoint: `docs/BILLING-READY-06B-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-06-CHECKPOINT.md` — AGENT-HARNESS write canary remains a separate track. BILLING-READY-05 COMPLETE and LOCKED (2026-07-16) — all 4 parent steps complete — all child slices 05A–05G COMPLETE and LOCKED — Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`. BILLING-READY-05G COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-05G-CHECKPOINT.md`. BILLING-READY-05F COMPLETE and LOCKED (2026-07-15). Checkpoint: `docs/BILLING-READY-05F-CHECKPOINT.md`. BILLING-READY-05E COMPLETE and LOCKED (2026-07-15). BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-04 COMPLETE and LOCKED (2026-07-13). BILLING-READY-03 COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 �X ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED �X 2026-07-04)
@@ -45141,6 +45141,174 @@ This task is not expected to change UX/UI copy. If future implementation introdu
 **AGENT-HARNESS-WRITE-CANARY-B status:** COMPLETE and LOCKED — 2026-07-20. Parent: AGENT-HARNESS-WRITE-CANARY (ACTIVE — Step 1 COMPLETE — Step 2 COMPLETE — child A COMPLETE and LOCKED — child B COMPLETE and LOCKED — parent Step 4 PENDING). Keith approval recorded ("go") 2026-07-20. 4-step HIGH-risk loop. All 4 steps complete. First live E2E write canary PASS. No delete canary. Attempt 1 403 disposed as runtime configuration alignment (not a source defect). Checkpoint: `docs/AGENT-HARNESS-WRITE-CANARY-B-CHECKPOINT.md`. Do not modify after locking except by explicitly approved follow-up task. No secrets opened. No subagents. No git commit/push.
 
 **Reference:** See TASKS.md -> AGENT-HARNESS-WRITE-CANARY-B.
+
+---
+
+### BETA-READY-DEPLOYMENT-CONFIG: Production Deployment Configuration
+
+**Status:** COMPLETE and LOCKED — 2026-07-20
+**Task ID:** BETA-READY-DEPLOYMENT-CONFIG
+**Title:** Production Deployment Configuration
+**Family:** BETA READINESS / DEPLOYMENT / PRODUCTION CONFIGURATION / LAUNCH SAFETY
+**Priority:** CRITICAL
+**Nature:** HIGH-RISK DEPLOYMENT PLANNING AND CONFIGURATION GOVERNANCE
+**Risk:** HIGH — deployment configuration can affect production safety, secrets, service exposure, billing/provider gates, runtime flags, database connectivity, and beta launch readiness.
+**Registered:** 2026-07-20
+**Keith approval:** Keith explicitly approved proceeding by replying "go" after AGENT-HARNESS-WRITE-CANARY completed and locked — 2026-07-20.
+**Addresses:** BETA-READY-00 blocker B2 — Production/staging deployment configuration
+**Roadmap alias:** BETA-READY-00 recommended task T2 — Production Deployment Configuration
+
+#### Dependencies
+
+- BETA-READY-00 COMPLETE and LOCKED (2026-07-19) — Beta readiness checklist; B2 identified as MEDIUM blocker requiring separate deployment task
+- AGENT-HARNESS-WRITE-CANARY COMPLETE and LOCKED (2026-07-20) — B1 resolved at canary-readiness level; safe defaults remain disabled; no permanent production flag activation
+- AGENT-HARNESS-WRITE-CANARY-A COMPLETE and LOCKED (2026-07-19)
+- AGENT-HARNESS-WRITE-CANARY-B COMPLETE and LOCKED (2026-07-20)
+- ANOMALY-01 COMPLETE and LOCKED (2026-07-19)
+- BILLING-READY-07 COMPLETE and LOCKED (2026-07-17) — Outcome B — PASS WITH LIMITATIONS
+- B3 pre-beta full-stack live smoke remains pending — not started by this task
+
+#### Purpose
+
+BETA-READY-00 identified production/staging deployment configuration as blocker B2 and recommended T2 — Production Deployment Configuration — after T1 (Agent Harness Write Canary).
+
+AGENT-HARNESS-WRITE-CANARY completed and locked B1 at canary-readiness level. Safe defaults remain disabled. Permanent production/staging write-flag activation remains a deployment/configuration decision under this (or a related approved) deployment task.
+
+This task prepares production/staging deployment configuration for limited beta readiness. It does not invite beta users, does not claim full beta readiness, and does not execute B3 pre-beta full-stack live smoke.
+
+#### Workflow (4-Step HIGH-risk loop)
+
+1. **Registration** — COMPLETE (2026-07-20) — Keith explicit approval recorded ("go"); scope, safety boundaries, non-goals, and context documented; no implementation; no runtime execution; no source/env/Docker changes; no secrets opened.
+2. **Stage-start / deployment topology / secrets and flag plan** — COMPLETE (2026-07-20) — Topology defined; single-server self-hosted; env key checklist (9A–9G); write-tool decision; secret-handling plan; health/readiness, startup/shutdown, rollback, monitoring documented. Stage-start document: `docs/BETA-READY-DEPLOYMENT-CONFIG-STAGE-START.md`.
+3. **Implementation / configuration documentation / validation plan** — COMPLETE (2026-07-20) — `.env.staging.example` (252 lines, 8 sections), `.env.production.example` (277 lines, 8 sections), `docs/DEPLOYMENT-GUIDE.md` (22 sections). V1–V8 validation PASS. No secrets, no source changes, no runtime.
+4. **Consolidation / checkpoint / beta-readiness handoff** — COMPLETE (2026-07-20) — Checkpoint: `docs/BETA-READY-DEPLOYMENT-CONFIG-CHECKPOINT.md`. BETA-READY-DEPLOYMENT-CONFIG COMPLETE and LOCKED. B2 resolved at documentation/template-readiness level. B3 remains pending, requires Keith explicit approval.
+
+#### Scope (Future Steps May Cover)
+
+1. Define target deployment topology.
+2. Define required services for limited beta:
+   - frontend
+   - API Gateway
+   - ai-service worker
+   - container-manager
+   - PostgreSQL
+   - Redis
+   - Docker/runtime host if applicable
+3. Define production/staging environment variable checklist by key name only.
+4. Define safe feature-flag state for beta.
+5. Define whether and how write tools are enabled for beta.
+6. Define startup order and health checks.
+7. Define deployment readiness checks.
+8. Define rollback/kill-switch plan.
+9. Define monitoring/logging minimums.
+10. Define secret-handling boundaries.
+11. Define what remains local-only vs hosted.
+12. Define what must not be activated yet.
+13. Prepare deployment configuration docs or templates without secret values.
+14. Validate configuration using safe commands only in later steps.
+15. Hand off to B3 pre-beta full-stack live smoke after completion.
+
+#### Safety Boundaries
+
+- No secrets opened, copied, printed, or written.
+- No `.env` real secret files modified.
+- Only document/config templates may list env key names, never values.
+- No Stripe/payment/provider activation unless separately approved.
+- No customer portal/webhook activation.
+- No real production deployment in registration.
+- No permanent write-tool activation in registration.
+- No Docker/runtime/DB/browser/API in registration.
+- No destructive DB commands.
+- Never use `docker compose down -v`.
+- No package/dependency upgrades unless later approved as required.
+- No schema/migration/entity changes unless later approved as required.
+- No git commit or push.
+- No subagents.
+- Docker/Postgres/Redis may be required in later steps; not during registration.
+- If backend/runtime/DB work is involved in later steps, Docker/Postgres/Redis may need to be running.
+
+#### Non-Goals
+
+- No Stripe live activation.
+- No payment/customer portal/webhook live testing.
+- No beta user invitation.
+- No public launch.
+- No app-wide redesign.
+- No auth UI changes.
+- No RPG/platform shell work.
+- No multi-agent collaboration changes.
+- No unrelated billing work.
+- No production data migration.
+- No secret creation or secret rotation.
+- No live smoke execution.
+- No full beta readiness declaration.
+- No deployment to real production during registration.
+- No B3 pre-beta full-stack live smoke started by this registration.
+- No git commit or push.
+
+#### Multilingual / UX Boundary
+
+This task is not expected to change UX/UI copy. If future implementation introduces any user-facing UX/UI text:
+- Update `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json` together.
+- Use existing translation hooks.
+- Do not add hardcoded English UX/UI copy.
+- Use Heroicons v2 Outline only for any icon changes.
+
+#### Acceptance Criteria
+
+###### Step 1 — Registration (COMPLETE 2026-07-20)
+- [x] BETA-READY-DEPLOYMENT-CONFIG added to TASKS_BACKLOG_FULL.md.
+- [x] BETA-READY-DEPLOYMENT-CONFIG activated in TASKS.md.
+- [x] BETA-READY-00 remains COMPLETE and LOCKED.
+- [x] AGENT-HARNESS-WRITE-CANARY remains COMPLETE and LOCKED.
+- [x] Scope limited to B2 Production Deployment Configuration.
+- [x] B3 pre-beta full-stack live smoke remains pending.
+- [x] 4-step HIGH-risk workflow recorded.
+- [x] Secret-handling boundaries recorded.
+- [x] Provider/payment/Stripe/customer-portal/webhook exclusions recorded.
+- [x] No implementation during registration.
+- [x] No source/test/translation/package/migration/entity/environment/Docker files changed.
+- [x] No runtime, Docker, DB, browser, API, test, build, provider, payment, Stripe CLI, webhook, git commit, or git push occurred.
+- [x] No secret-bearing environment file opened.
+- [x] No subagents used.
+
+###### Step 2 — Stage-Start / Deployment Topology / Secrets and Flag Plan (COMPLETE 2026-07-20)
+- [x] Target deployment topology defined.
+- [x] Required services for limited beta defined.
+- [x] Production/staging environment variable checklist defined by key name only (no values).
+- [x] Safe feature-flag state for beta defined.
+- [x] Write-tool enablement decision for beta documented.
+- [x] Startup order and health checks defined.
+- [x] Deployment readiness checks defined.
+- [x] Rollback/kill-switch plan defined.
+- [x] Monitoring/logging minimums defined.
+- [x] Secret-handling boundaries confirmed.
+- [x] Local-only vs hosted boundaries defined.
+- [x] Items that must not be activated yet documented.
+- [x] Stage-start / plan document created: `docs/BETA-READY-DEPLOYMENT-CONFIG-STAGE-START.md`.
+
+###### Step 3 — Implementation / Configuration Documentation / Validation Plan (COMPLETE 2026-07-20)
+- [x] Deployment configuration docs or templates prepared without secret values.
+- [x] Validation plan using safe commands only defined.
+- [x] Safety boundaries preserved.
+- [x] No secret values written.
+- [x] No Stripe/payment/provider/customer-portal/webhook activation unless separately approved.
+
+###### Step 4 — Consolidation / Checkpoint / Beta-Readiness Handoff (COMPLETE 2026-07-20)
+- [x] Checkpoint document created: `docs/BETA-READY-DEPLOYMENT-CONFIG-CHECKPOINT.md`.
+- [x] TASKS.md updated — BETA-READY-DEPLOYMENT-CONFIG COMPLETE and LOCKED.
+- [x] TASKS_BACKLOG_FULL.md updated — BETA-READY-DEPLOYMENT-CONFIG COMPLETE and LOCKED.
+- [x] AINOW-EXECUTION-ROADMAP.md updated.
+- [x] Beta-readiness blocker B2 disposition recorded.
+- [x] Handoff to B3 pre-beta full-stack live smoke recorded (registration of B3 remains a separate approved step).
+- [x] No source changes during consolidation unless explicitly required and approved.
+- [x] No secrets opened.
+- [x] No subagents used.
+- [x] No git commit or push.
+
+**BETA-READY-DEPLOYMENT-CONFIG status:** COMPLETE and LOCKED — 2026-07-20. All 4 steps complete. Step 1 Registration COMPLETE (2026-07-20). Step 2 Stage-Start COMPLETE (2026-07-20). Step 3 Implementation COMPLETE (2026-07-20). Step 4 Consolidation/Checkpoint COMPLETE (2026-07-20). B2 Production/staging deployment configuration resolved at documentation/template-readiness level. B3 pre-beta full-stack live smoke remains pending — requires Keith explicit approval before registration. Checkpoint: `docs/BETA-READY-DEPLOYMENT-CONFIG-CHECKPOINT.md`. No Stripe/payment/provider/customer-portal/webhook activation. No real production deployment. No secrets written. No source/test/translation/package/migration/entity/environment/Docker files changed. No subagents. No git commit/push. Do not modify after locking except by explicitly approved follow-up task.
+
+**Reference:** See TASKS.md -> BETA-READY-DEPLOYMENT-CONFIG.
 
 ---
 
