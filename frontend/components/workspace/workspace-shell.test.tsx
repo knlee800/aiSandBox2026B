@@ -2125,6 +2125,23 @@ describe('workspace shell component', () => {
     assert.doesNotMatch(html, /Chat Panel/);
   });
 
+  test('renders localized command center CTA on home view', () => {
+    const englishHtml = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'home',
+      locale: 'en',
+    });
+    assert.match(englishHtml, /workspace-home-command-center-link/);
+    assert.match(englishHtml, /href="\/en\/platform"/);
+
+    const zhTwHtml = renderWorkspaceShell({
+      projectFirstUxEnabled: true,
+      workspaceView: 'home',
+      locale: 'zh-TW',
+    });
+    assert.match(zhTwHtml, /href="\/zh-TW\/platform"/);
+  });
+
   test('wires home prompt input and submit in project-first home view', () => {
     let changedPrompt = '';
     const input = renderWorkspaceShellElementByTestId('workspace-home-input', {

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { PROJECT_FIRST_UX } from '@/lib/feature-flags';
 import { getRecoveryCopy } from '@/lib/recovery-copy';
 import WorkspaceSidebar, {
@@ -77,6 +78,7 @@ import {
   type TabOrientation,
 } from './workspace-tab-registry';
 import {
+  BuildingOffice2Icon,
   ChatBubbleLeftIcon,
   ChevronDownIcon,
   ChevronRightIcon,
@@ -2171,6 +2173,19 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
             {scaffoldMessages.buildAnything}
           </h2>
           <p className="mt-2 text-sm text-gray-600">{scaffoldMessages.describeBuild}</p>
+          <div
+            className="mt-4 rounded-lg border border-indigo-200 bg-indigo-50/60 p-3"
+            data-testid="workspace-home-command-center-cta"
+          >
+            <Link
+              href={`/${locale}/platform`}
+              className="inline-flex items-center gap-2 rounded-md border border-indigo-300 bg-white px-3 py-1.5 text-sm font-medium text-indigo-700 transition-colors hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+              data-testid="workspace-home-command-center-link"
+            >
+              <BuildingOffice2Icon className="h-4 w-4" aria-hidden="true" />
+              <span>{scaffoldMessages.commandCenter}</span>
+            </Link>
+          </div>
           <div className="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-4">
             <textarea
               value={homePromptInput}

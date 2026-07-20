@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   ArrowLeftIcon,
   BuildingOffice2Icon,
@@ -59,9 +60,12 @@ export interface PlatformDashboardProps {
 }
 
 export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
+  const router = useRouter();
   const messages = getLocaleMessages(locale);
   const agents = listAgents();
   const [selectedAgentId, setSelectedAgentId] = React.useState<string | null>(null);
+  const [authReady, setAuthReady] = React.useState(false);
+  const resolvedLocale = locale ?? 'en';
 
   const title = resolveNestedMessage(messages, 'platform.title');
   const subtitle = resolveNestedMessage(messages, 'platform.subtitle');
@@ -90,6 +94,37 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
   const reserveStationsLabel = resolveNestedMessage(messages, 'platform.reserveStationsLabel');
   const selectedStationLabel = resolveNestedMessage(messages, 'platform.selectedStationLabel');
   const noStationSelected = resolveNestedMessage(messages, 'platform.noStationSelected');
+  const loadingLabel = resolveNestedMessage(messages, 'common.loading');
+
+  React.useEffect(() => {
+    let isMounted = true;
+
+    void (async () => {
+      try {
+        const response = await fetch('/api/auth/me');
+        if (!response.ok) {
+          router.replace(`/${resolvedLocale}/login`);
+          return;
+        }
+
+        const payload = (await response.json()) as { id?: unknown };
+        if (typeof payload.id !== 'string' || !payload.id.trim()) {
+          router.replace(`/${resolvedLocale}/login`);
+          return;
+        }
+
+        if (isMounted) {
+          setAuthReady(true);
+        }
+      } catch {
+        router.replace(`/${resolvedLocale}/login`);
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [resolvedLocale, router]);
 
   const localePrefix = locale ? `/${locale}` : '';
   const activeAgents = agents.filter((agent) => agent.enabled).length;
@@ -122,6 +157,17 @@ export default function PlatformDashboard({ locale }: PlatformDashboardProps) {
         isComingSoon: selectedAgent.status === 'coming_soon',
       }
     : null;
+
+  if (!authReady) {
+    return (
+      <div
+        className="flex min-h-screen items-center justify-center bg-slate-950 px-6"
+        data-testid="platform-auth-loading"
+      >
+        <p className="text-sm font-medium text-slate-200">{loadingLabel}</p>
+      </div>
+    );
+  }
 
   return (
     <div
