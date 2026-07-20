@@ -25152,7 +25152,7 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 
 **Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` �X controls cross-family priority order; Knowledge before Collaboration before Billing.
 
-**Current stage:** BETA-READY-DEPLOYMENT-CONFIG — Production Deployment Configuration — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — B2 resolved at documentation/template-readiness level — Checkpoint: `docs/BETA-READY-DEPLOYMENT-CONFIG-CHECKPOINT.md` — B3 pre-beta full-stack live smoke remains pending — requires Keith explicit approval before registration — AGENT-HARNESS-WRITE-CANARY — Agent Harness Write Canary + Production Activation — COMPLETE and LOCKED — 2026-07-20 — all 4 parent steps complete — child A COMPLETE and LOCKED (2026-07-19) — child B COMPLETE and LOCKED (2026-07-20) — first live E2E write canary PASS — safe default remains disabled — no permanent production flag activation — Checkpoint: `docs/AGENT-HARNESS-WRITE-CANARY-CHECKPOINT.md` — BETA-READY-00 blocker B1 resolved at canary-readiness level — BETA-READY-00 — Beta Readiness Checklist — COMPLETE and LOCKED — 2026-07-19 — all 3 steps complete — checklist created (`docs/BETA-READY-00-CHECKLIST.md`) — launch decision: READY FOR LIMITED BETA WITH LIMITATIONS — 15 gates (7 PASS, 8 needs verification) — blockers: B1 (resolved at canary-readiness level; permanent deployment flag activation still separate), B2 (deployment), B3 (pre-beta smoke) — Checkpoint: `docs/BETA-READY-00-CHECKPOINT.md` — ANOMALY-01 COMPLETE and LOCKED — 2026-07-19 — Checkpoint: `docs/ANOMALY-01-CHECKPOINT.md` — BILLING-READY-07 COMPLETE and LOCKED — 2026-07-17 — Outcome B — PASS WITH LIMITATIONS — BILLING-READY-07A COMPLETE and LOCKED — 2026-07-17 — Step 3 rerun PASS (2026-07-19) — BR07A-DEFECT-01 resolved — BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200 COMPLETE and LOCKED — 2026-07-17 — Checkpoint: `docs/BILLING-READY-07A-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-07-CHECKPOINT.md` — Consolidation document: `docs/BILLING-READY-07-CONSOLIDATION-DECISION.md` — BILLING-READY-06 COMPLETE and LOCKED (2026-07-17) — BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — BILLING-READY-06B COMPLETE and LOCKED (2026-07-17) — Checkpoint: `docs/BILLING-READY-06B-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-06-CHECKPOINT.md` — AGENT-HARNESS write canary remains a separate track. BILLING-READY-05 COMPLETE and LOCKED (2026-07-16) — all 4 parent steps complete — all child slices 05A–05G COMPLETE and LOCKED — Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`. BILLING-READY-05G COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-05G-CHECKPOINT.md`. BILLING-READY-05F COMPLETE and LOCKED (2026-07-15). BILLING-READY-05E COMPLETE and LOCKED (2026-07-15). BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-04 COMPLETE and LOCKED (2026-07-13). BILLING-READY-03 COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
+**Current stage:** AGENT-PLATFORM-RPG-MVP-RESET — RPG UX/UI and Agent Creation Beta Readiness Reset — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — B3 remains paused — chosen path: AGENT-PLATFORM-RPG-03A → RPG-03B → CREATE-01A → CREATE-01B → BETA-READY-SMOKE — next: AGENT-PLATFORM-RPG-03A registration (requires Keith explicit approval) — Checkpoint: `docs/AGENT-PLATFORM-RPG-MVP-RESET-CHECKPOINT.md` — BETA-READY-DEPLOYMENT-CONFIG — Production Deployment Configuration — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — B2 resolved at documentation/template-readiness level — Checkpoint: `docs/BETA-READY-DEPLOYMENT-CONFIG-CHECKPOINT.md` — B3 pre-beta full-stack live smoke remains pending — requires Keith explicit approval before registration — AGENT-HARNESS-WRITE-CANARY — Agent Harness Write Canary + Production Activation — COMPLETE and LOCKED — 2026-07-20 — all 4 parent steps complete — child A COMPLETE and LOCKED (2026-07-19) — child B COMPLETE and LOCKED (2026-07-20) — first live E2E write canary PASS — safe default remains disabled — no permanent production flag activation — Checkpoint: `docs/AGENT-HARNESS-WRITE-CANARY-CHECKPOINT.md` — BETA-READY-00 blocker B1 resolved at canary-readiness level — BETA-READY-00 — Beta Readiness Checklist — COMPLETE and LOCKED — 2026-07-19 — all 3 steps complete — checklist created (`docs/BETA-READY-00-CHECKLIST.md`) — launch decision: READY FOR LIMITED BETA WITH LIMITATIONS — 15 gates (7 PASS, 8 needs verification) — blockers: B1 (resolved at canary-readiness level; permanent deployment flag activation still separate), B2 (deployment), B3 (pre-beta smoke) — Checkpoint: `docs/BETA-READY-00-CHECKPOINT.md` — ANOMALY-01 COMPLETE and LOCKED — 2026-07-19 — Checkpoint: `docs/ANOMALY-01-CHECKPOINT.md` — BILLING-READY-07 COMPLETE and LOCKED — 2026-07-17 — Outcome B — PASS WITH LIMITATIONS — BILLING-READY-07A COMPLETE and LOCKED — 2026-07-17 — Step 3 rerun PASS (2026-07-19) — BR07A-DEFECT-01 resolved — BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200 COMPLETE and LOCKED — 2026-07-17 — Checkpoint: `docs/BILLING-READY-07A-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-07-CHECKPOINT.md` — Consolidation document: `docs/BILLING-READY-07-CONSOLIDATION-DECISION.md` — BILLING-READY-06 COMPLETE and LOCKED (2026-07-17) — BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — BILLING-READY-06B COMPLETE and LOCKED (2026-07-17) — Checkpoint: `docs/BILLING-READY-06B-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-06-CHECKPOINT.md` — AGENT-HARNESS write canary remains a separate track. BILLING-READY-05 COMPLETE and LOCKED (2026-07-16) — all 4 parent steps complete — all child slices 05A–05G COMPLETE and LOCKED — Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`. BILLING-READY-05G COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-05G-CHECKPOINT.md`. BILLING-READY-05F COMPLETE and LOCKED (2026-07-15). BILLING-READY-05E COMPLETE and LOCKED (2026-07-15). BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-04 COMPLETE and LOCKED (2026-07-13). BILLING-READY-03 COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 �X ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED �X 2026-07-04)
@@ -25174,6 +25174,8 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 17. AGENT-PLATFORM-07F �X Live Runtime Orchestration Integration Canary (COMPLETE and LOCKED �X 2026-07-12)
 18. AGENT-PLATFORM-07F1 �X Queue Transport + Metadata Preservation Canary (COMPLETE and LOCKED �X 2026-07-10)
 19. AGENT-PLATFORM-07F2 �X Cancel Signal Path Canary (COMPLETE and LOCKED �X 2026-07-10)
+21. AGENT-PLATFORM-RPG-MVP-RESET — RPG UX/UI and Agent Creation Beta Readiness Reset (COMPLETE and LOCKED — 2026-07-20)
+
 20. AGENT-PLATFORM-07F3 �X Parent Consolidation Checkpoint (COMPLETE and LOCKED �X 2026-07-12)
 
 **Completed foundations (prerequisites):**
@@ -34871,6 +34873,175 @@ This task is not expected to change UX/UI copy. If future implementation introdu
 **BETA-READY-DEPLOYMENT-CONFIG status:** COMPLETE and LOCKED — 2026-07-20. All 4 steps complete. Step 1 Registration COMPLETE (2026-07-20). Step 2 Stage-Start COMPLETE (2026-07-20). Step 3 Implementation COMPLETE (2026-07-20). Step 4 Consolidation/Checkpoint COMPLETE (2026-07-20). B2 Production/staging deployment configuration resolved at documentation/template-readiness level. B3 pre-beta full-stack live smoke remains pending — requires Keith explicit approval before registration. Checkpoint: `docs/BETA-READY-DEPLOYMENT-CONFIG-CHECKPOINT.md`. No Stripe/payment/provider/customer-portal/webhook activation. No real production deployment. No secrets written. No source/test/translation/package/migration/entity/environment/Docker files changed. No subagents. No git commit/push. Do not modify after locking except by explicitly approved follow-up task.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> BETA-READY-DEPLOYMENT-CONFIG.
+
+---
+
+#### AGENT-PLATFORM-RPG-MVP-RESET: RPG UX/UI and Agent Creation Beta Readiness Reset
+
+**Status:** COMPLETE and LOCKED — 2026-07-20
+**Task ID:** AGENT-PLATFORM-RPG-MVP-RESET
+**Title:** RPG UX/UI and Agent Creation Beta Readiness Reset
+**Family:** AGENT PLATFORM / RPG UX/UI / AGENT CREATION / BETA READINESS
+**Priority:** CRITICAL
+**Nature:** HIGH-RISK PRODUCT/UX ROADMAP RESET — PLANNING ONLY
+**Risk:** HIGH — determines whether the product is ready for beta, which UX/UI work is mandatory, and whether public testing is months away.
+**Registered:** 2026-07-20
+**Completed:** 2026-07-20
+**Checkpoint:** docs/AGENT-PLATFORM-RPG-MVP-RESET-CHECKPOINT.md
+**Keith Approval:** "go" — 2026-07-20 (after deciding to pause B3 and reassess RPG UX/UI + agent creation path before public/beta testing)
+
+#### Why This Task Exists
+
+BETA-READY-FULL-STACK-SMOKE (B3) should wait because it only proves technical full-stack readiness. The bigger blocker is product readiness:
+- RPG-style UX/UI is not finished.
+- Agent creation features are not finished.
+- Public testing may be months away if the UX/product direction remains unresolved.
+
+This task decides the correct product path before B3.
+
+#### Dependencies
+
+- BETA-READY-DEPLOYMENT-CONFIG COMPLETE and LOCKED (2026-07-20) — B2 resolved at documentation/template-readiness level
+- AGENT-HARNESS-WRITE-CANARY COMPLETE and LOCKED (2026-07-20) — B1 resolved at canary-readiness level
+- BETA-READY-00 COMPLETE and LOCKED (2026-07-19) — beta readiness checklist
+- AGENT-PLATFORM-01 COMPLETE and LOCKED — Agent Registry Foundation
+- AGENT-PLATFORM-02 COMPLETE and LOCKED — Static RPG Office/Town Dashboard Shell
+- UX-IA-01 COMPLETE and LOCKED — i18n foundation
+- UX-IA-02 COMPLETE and LOCKED — design tokens
+
+#### Scope
+
+This task decides the product/UX path before B3. It answers:
+
+1. What RPG UX/UI was already planned?
+2. What has already been implemented?
+3. What is missing?
+4. What is required before private beta?
+5. What can wait until after private beta?
+6. Is public testing realistically months away?
+7. What is the smallest usable RPG MVP?
+8. What is the smallest usable agent creation MVP?
+9. Should AGENT-PLATFORM-02 be resumed, revised, or superseded?
+10. Should UX-IA tasks be resumed first?
+11. What exact implementation slices should come next?
+12. When should B3 full-stack smoke happen?
+
+#### Candidate MVP Direction (to evaluate in Step 2)
+
+1. RPG-style dashboard / office map.
+2. Visible agent characters.
+3. Click-to-talk or walk-to-talk interaction.
+4. Builder Agent works for real.
+5. Placeholder agents clearly marked coming soon.
+6. Agent profile/detail panel.
+7. Simple Create Agent flow.
+8. Created agents saved through the safest existing path (existing registry/config if persistence is not ready; database-backed persistence only if already safely supported).
+9. Multilingual UI from day one.
+10. No heavy game engine.
+11. No complex animation before beta.
+12. No broad redesign unrelated to RPG shell / agent creation.
+
+#### Agent Creation Target Capabilities (to evaluate in Step 2)
+
+Agent configuration: name, role, description, avatar/sprite, model profile, tool permissions, knowledge scopes, skills, referral rules, approval rules, enabled/disabled status.
+
+Agent collaboration: referrals between agents, max referral depth, max agents per collaboration, duplicate referral detection, loop prevention, owner approval thresholds.
+
+#### UX/UI Project Rules (Recorded)
+
+- Multilingual-first: all user-facing UI text must use existing translation hooks.
+- Translation keys must update: `frontend/messages/en.json`, `frontend/messages/zh-TW.json`, `frontend/messages/zh-CN.json`.
+- No hardcoded English UI copy.
+- UI icons: Heroicons v2 Outline (`@heroicons/react/24/outline`) only. Do not use Lucide, Font Awesome, Material Icons, or emoji unless explicitly approved.
+- Advisory UX/UI skills: Impeccable (broad UI audit / visual hierarchy / spacing / anti-AI-slop / bounded polish); Emil Kowalski (component polish / interaction quality / motion restraint / empty/loading/error states). Skills are advisory only and must not override CLAUDE.md, TASKS.md, TASKS_BACKLOG_FULL.md, registered scope, architecture, or tests.
+
+#### Safety Boundaries
+
+- No implementation during registration.
+- No source/test/translation/package/migration/entity/environment/Docker changes.
+- No runtime, Docker, DB, browser, API, test, build, provider, payment, Stripe CLI, webhook, git commit, or git push.
+- No B3 registration.
+- No deployment work.
+- No public beta readiness claim.
+- No broad redesign implementation.
+- No game-engine dependency decision during registration.
+- No package/dependency changes.
+- No subagents.
+
+#### Non-Goals
+
+- B3 full-stack smoke
+- Production deployment
+- Stripe/payment/provider/customer portal/webhook work
+- Billing activation
+- Public beta launch / beta invitations
+- Auth UI fixes unless directly blocking RPG MVP decision
+- Game engine installation / dependency upgrades
+- Database schema/migration implementation
+- Source/frontend/translation/visual asset/sprite production
+- Broad unrelated UX redesign
+
+#### Workflow
+
+4-step HIGH-risk planning workflow:
+
+1. Registration — COMPLETE (2026-07-20)
+2. Discovery / current-state audit / prior-plan recall
+3. RPG MVP + agent creation beta-readiness plan
+4. Consolidation / checkpoint / next implementation task recommendation
+
+###### Step 1 — Registration (COMPLETE 2026-07-20)
+- [x] AGENT-PLATFORM-RPG-MVP-RESET added to TASKS_BACKLOG_FULL.md.
+- [x] AGENT-PLATFORM-RPG-MVP-RESET activated in TASKS.md.
+- [x] BETA-READY-DEPLOYMENT-CONFIG remains COMPLETE and LOCKED.
+- [x] AGENT-HARNESS-WRITE-CANARY remains COMPLETE and LOCKED.
+- [x] B3 remains unregistered / pending.
+- [x] Scope limited to RPG UX/UI + agent creation readiness planning.
+- [x] 4-step HIGH-risk planning workflow recorded.
+- [x] Multilingual-first UX/UI rule recorded.
+- [x] Heroicons v2 Outline rule recorded.
+- [x] Impeccable and Emil Kowalski advisory skills recorded.
+- [x] No implementation during registration.
+- [x] No source/test/translation/package/migration/entity/environment/Docker files changed.
+- [x] No runtime, Docker, DB, browser, API, test, build, provider, payment, Stripe CLI, webhook, git commit, or git push occurred.
+- [x] No secret-bearing environment file opened.
+- [x] No subagents used.
+- [x] AINOW-EXECUTION-ROADMAP.md updated.
+
+###### Step 2 — Discovery / Current-State Audit / Prior-Plan Recall (COMPLETE)
+- [x] UX-IA-00, UX-IA-01, UX-IA-02 checkpoints reviewed.
+- [x] AGENT-PLATFORM-00, AGENT-PLATFORM-01, AGENT-PLATFORM-02 checkpoints reviewed.
+- [x] Current RPG UX/UI implementation state assessed.
+- [x] Current agent creation implementation state assessed.
+- [x] Missing pieces identified.
+- [x] Prior planned but unimplemented features identified.
+- [x] Public testing timeline assessed.
+- [x] Discovery summary prepared — `docs/AGENT-PLATFORM-RPG-MVP-RESET-DISCOVERY.md` created.
+
+###### Step 3 — RPG MVP + Agent Creation Beta-Readiness Plan (COMPLETE)
+- [x] Candidate MVP direction evaluated (items 1–12 above).
+- [x] Required-before-private-beta items identified.
+- [x] Can-wait-until-after-private-beta items identified.
+- [x] AGENT-PLATFORM-02 resume/revise/supersede decision recorded — superseded.
+- [x] UX-IA task resume decision recorded — no resume needed.
+- [x] Exact next implementation slices identified (5 slices).
+- [x] B3 timing recommendation recorded — after Slices 1–4.
+- [x] Beta-readiness plan prepared — `docs/AGENT-PLATFORM-RPG-MVP-RESET-PLAN.md` created.
+
+###### Step 4 — Consolidation / Checkpoint / Next Implementation Task Recommendation (COMPLETE)
+- [x] Checkpoint document created — `docs/AGENT-PLATFORM-RPG-MVP-RESET-CHECKPOINT.md`.
+- [x] TASKS.md updated.
+- [x] TASKS_BACKLOG_FULL.md updated.
+- [x] AINOW-EXECUTION-ROADMAP.md updated.
+- [x] Next implementation task(s) identified and recommended — AGENT-PLATFORM-RPG-03A.
+- [x] No source/test/translation/package/migration/entity/environment/Docker files changed.
+- [x] No secrets opened.
+- [x] No subagents used.
+- [x] No git commit or push.
+
+**AGENT-PLATFORM-RPG-MVP-RESET status:** COMPLETE and LOCKED — 2026-07-20. All 4 steps complete. B3 remains paused. Chosen path: AGENT-PLATFORM-RPG-03A → RPG-03B → CREATE-01A → CREATE-01B → BETA-READY-SMOKE. Next: AGENT-PLATFORM-RPG-03A registration requires Keith explicit approval. BETA-READY-DEPLOYMENT-CONFIG remains COMPLETE and LOCKED. AGENT-HARNESS-WRITE-CANARY remains COMPLETE and LOCKED. No source/test/translation/package/migration/entity/environment/Docker files changed. No secrets opened. No subagents. No git commit/push. Do not modify after locking except by explicitly approved follow-up task.
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-RPG-MVP-RESET. See `docs/AGENT-PLATFORM-RPG-MVP-RESET-CHECKPOINT.md`.
 
 ---
 
