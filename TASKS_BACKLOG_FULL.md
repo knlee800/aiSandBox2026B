@@ -35654,7 +35654,7 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 
 **Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` �X controls cross-family priority order; Knowledge before Collaboration before Billing.
 
-**Current stage:** AGENT-PLATFORM-RPG-03B — Platform Link from Workspace + Auth Guard Review — COMPLETE and LOCKED — 2026-07-20 — all 3 steps complete — workspace/home platform CTA implemented — `/[locale]/platform` auth guard added — manual smoke PASS WITH LIMITATION (unauthenticated redirect PASS; authenticated access smoke deferred) — Checkpoint: `docs/AGENT-PLATFORM-RPG-03B-CHECKPOINT.md` — Next recommended: AGENT-PLATFORM-CREATE-01A registration requires Keith explicit approval — B3 remains paused — Create Agent backend/UI remains future — AGENT-PLATFORM-RPG-03A — Platform Dashboard Visual Identity + Agent Detail Panel — COMPLETE and LOCKED — 2026-07-20 — all 3 steps complete — Checkpoint: `docs/AGENT-PLATFORM-RPG-03A-CHECKPOINT.md` — AGENT-PLATFORM-RPG-MVP-RESET — RPG UX/UI and Agent Creation Beta Readiness Reset — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — B3 remains paused — chosen path: RPG-03A (COMPLETE and LOCKED) → RPG-03B → CREATE-01A → CREATE-01B → BETA-READY-SMOKE — Checkpoint: `docs/AGENT-PLATFORM-RPG-MVP-RESET-CHECKPOINT.md` — BETA-READY-DEPLOYMENT-CONFIG — Production Deployment Configuration — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — B2 resolved at documentation/template-readiness level — Checkpoint: `docs/BETA-READY-DEPLOYMENT-CONFIG-CHECKPOINT.md` — B3 pre-beta full-stack live smoke remains pending — requires Keith explicit approval before registration — AGENT-HARNESS-WRITE-CANARY — Agent Harness Write Canary + Production Activation — COMPLETE and LOCKED — 2026-07-20 — all 4 parent steps complete — child A COMPLETE and LOCKED (2026-07-19) — child B COMPLETE and LOCKED (2026-07-20) — first live E2E write canary PASS — safe default remains disabled — no permanent production flag activation — Checkpoint: `docs/AGENT-HARNESS-WRITE-CANARY-CHECKPOINT.md` — BETA-READY-00 blocker B1 resolved at canary-readiness level — BETA-READY-00 — Beta Readiness Checklist — COMPLETE and LOCKED — 2026-07-19 — all 3 steps complete — checklist created (`docs/BETA-READY-00-CHECKLIST.md`) — launch decision: READY FOR LIMITED BETA WITH LIMITATIONS — 15 gates (7 PASS, 8 needs verification) — blockers: B1 (resolved at canary-readiness level; permanent deployment flag activation still separate), B2 (deployment), B3 (pre-beta smoke) — Checkpoint: `docs/BETA-READY-00-CHECKPOINT.md` — ANOMALY-01 COMPLETE and LOCKED — 2026-07-19 — Checkpoint: `docs/ANOMALY-01-CHECKPOINT.md` — BILLING-READY-07 COMPLETE and LOCKED — 2026-07-17 — Outcome B — PASS WITH LIMITATIONS — BILLING-READY-07A COMPLETE and LOCKED — 2026-07-17 — Step 3 rerun PASS (2026-07-19) — BR07A-DEFECT-01 resolved — BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200 COMPLETE and LOCKED — 2026-07-17 — Checkpoint: `docs/BILLING-READY-07A-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-07-CHECKPOINT.md` — Consolidation document: `docs/BILLING-READY-07-CONSOLIDATION-DECISION.md` — BILLING-READY-06 COMPLETE and LOCKED (2026-07-17) — BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — BILLING-READY-06B COMPLETE and LOCKED (2026-07-17) — Checkpoint: `docs/BILLING-READY-06B-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-06-CHECKPOINT.md` — AGENT-HARNESS write canary remains a separate track. BILLING-READY-05 COMPLETE and LOCKED (2026-07-16) — all 4 parent steps complete — all child slices 05A–05G COMPLETE and LOCKED — Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`. BILLING-READY-05G COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-05G-CHECKPOINT.md`. BILLING-READY-05F COMPLETE and LOCKED (2026-07-15). Checkpoint: `docs/BILLING-READY-05F-CHECKPOINT.md`. BILLING-READY-05E COMPLETE and LOCKED (2026-07-15). BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-04 COMPLETE and LOCKED (2026-07-13). BILLING-READY-03 COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
+**Current stage:** AGENT-PLATFORM-CREATE-01A — Create Agent Backend Minimal Persistence — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — `UserAgent` entity implemented — `user_agents` migration created (NOT executed) — `POST /api/agents`, `GET /api/agents`, `GET /api/agents/:id` implemented — user ownership/scoping enforced — 30/30 tests PASS — TypeScript clean — Build clean — Checkpoint: `docs/AGENT-PLATFORM-CREATE-01A-CHECKPOINT.md` — Next recommended: AGENT-PLATFORM-CREATE-01B (Create Agent MVP UI — requires Keith explicit approval) — B3 remains paused — AGENT-PLATFORM-RPG-03B — Platform Link from Workspace + Auth Guard Review — COMPLETE and LOCKED — 2026-07-20 — all 3 steps complete — workspace/home platform CTA implemented — `/[locale]/platform` auth guard added — manual smoke PASS WITH LIMITATION (unauthenticated redirect PASS; authenticated access smoke deferred) — Checkpoint: `docs/AGENT-PLATFORM-RPG-03B-CHECKPOINT.md` — AGENT-PLATFORM-RPG-03A — Platform Dashboard Visual Identity + Agent Detail Panel — COMPLETE and LOCKED — 2026-07-20 — all 3 steps complete — Checkpoint: `docs/AGENT-PLATFORM-RPG-03A-CHECKPOINT.md` — AGENT-PLATFORM-RPG-MVP-RESET — RPG UX/UI and Agent Creation Beta Readiness Reset — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — B3 remains paused — chosen path: RPG-03A (COMPLETE and LOCKED) → RPG-03B → CREATE-01A → CREATE-01B → BETA-READY-SMOKE — Checkpoint: `docs/AGENT-PLATFORM-RPG-MVP-RESET-CHECKPOINT.md` — BETA-READY-DEPLOYMENT-CONFIG — Production Deployment Configuration — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — B2 resolved at documentation/template-readiness level — Checkpoint: `docs/BETA-READY-DEPLOYMENT-CONFIG-CHECKPOINT.md` — B3 pre-beta full-stack live smoke remains pending — requires Keith explicit approval before registration — AGENT-HARNESS-WRITE-CANARY — Agent Harness Write Canary + Production Activation — COMPLETE and LOCKED — 2026-07-20 — all 4 parent steps complete — child A COMPLETE and LOCKED (2026-07-19) — child B COMPLETE and LOCKED (2026-07-20) — first live E2E write canary PASS — safe default remains disabled — no permanent production flag activation — Checkpoint: `docs/AGENT-HARNESS-WRITE-CANARY-CHECKPOINT.md` — BETA-READY-00 blocker B1 resolved at canary-readiness level — BETA-READY-00 — Beta Readiness Checklist — COMPLETE and LOCKED — 2026-07-19 — all 3 steps complete — checklist created (`docs/BETA-READY-00-CHECKLIST.md`) — launch decision: READY FOR LIMITED BETA WITH LIMITATIONS — 15 gates (7 PASS, 8 needs verification) — blockers: B1 (resolved at canary-readiness level; permanent deployment flag activation still separate), B2 (deployment), B3 (pre-beta smoke) — Checkpoint: `docs/BETA-READY-00-CHECKPOINT.md` — ANOMALY-01 COMPLETE and LOCKED — 2026-07-19 — Checkpoint: `docs/ANOMALY-01-CHECKPOINT.md` — BILLING-READY-07 COMPLETE and LOCKED — 2026-07-17 — Outcome B — PASS WITH LIMITATIONS — BILLING-READY-07A COMPLETE and LOCKED — 2026-07-17 — Step 3 rerun PASS (2026-07-19) — BR07A-DEFECT-01 resolved — BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200 COMPLETE and LOCKED — 2026-07-17 — Checkpoint: `docs/BILLING-READY-07A-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-07-CHECKPOINT.md` — Consolidation document: `docs/BILLING-READY-07-CONSOLIDATION-DECISION.md` — BILLING-READY-06 COMPLETE and LOCKED (2026-07-17) — BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — BILLING-READY-06B COMPLETE and LOCKED (2026-07-17) — Checkpoint: `docs/BILLING-READY-06B-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-06-CHECKPOINT.md` — AGENT-HARNESS write canary remains a separate track. BILLING-READY-05 COMPLETE and LOCKED (2026-07-16) — all 4 parent steps complete — all child slices 05A–05G COMPLETE and LOCKED — Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`. BILLING-READY-05G COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-05G-CHECKPOINT.md`. BILLING-READY-05F COMPLETE and LOCKED (2026-07-15). Checkpoint: `docs/BILLING-READY-05F-CHECKPOINT.md`. BILLING-READY-05E COMPLETE and LOCKED (2026-07-15). BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-04 COMPLETE and LOCKED (2026-07-13). BILLING-READY-03 COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 �X ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED �X 2026-07-04)
@@ -45817,6 +45817,219 @@ Do not modify backend, DB, migrations, packages, Docker, environment, billing, p
 **AGENT-PLATFORM-RPG-03B status:** COMPLETE and LOCKED — 2026-07-20. All 3 steps complete. Step 1 Registration COMPLETE (2026-07-20). Step 2 Implementation / frontend link + auth guard review COMPLETE (2026-07-20). Step 3 Consolidation / checkpoint COMPLETE (2026-07-20). Workspace/home platform CTA implemented. `/[locale]/platform` auth guard added (existing-pattern client-side session probe). Manual smoke PASS WITH LIMITATION — unauthenticated redirect PASS; authenticated access smoke deferred to later local/full-stack smoke. No new translation keys. No backend/DB/migration/entity/schema/package changes. No subagents. No git commit/push. B3 remains paused. Create Agent backend/UI remains future. Next: AGENT-PLATFORM-CREATE-01A registration requires Keith explicit approval. Do not modify after locking except by explicitly approved follow-up task.
 
 **Reference:** See TASKS.md -> AGENT-PLATFORM-RPG-03B. Checkpoint: `docs/AGENT-PLATFORM-RPG-03B-CHECKPOINT.md`.
+
+---
+
+### AGENT-PLATFORM-CREATE-01A: Create Agent Backend Minimal Persistence
+
+**Status:** COMPLETE and LOCKED — 2026-07-20
+**Task ID:** AGENT-PLATFORM-CREATE-01A
+**Title:** Create Agent Backend Minimal Persistence
+**Family:** AGENT PLATFORM / CREATE AGENT / BACKEND PERSISTENCE / PRIVATE BETA
+**Family status:** ACTIVE
+**Priority:** CRITICAL
+**Nature:** HIGH-RISK BACKEND + MIGRATION + API FOUNDATION
+**Risk:** HIGH — backend persistence, migration/entity/API work, user ownership/scoping, auth/security behavior, and future frontend integration depend on this foundation.
+**Registered:** 2026-07-20
+**Keith Approval:** "go" — 2026-07-20 (Keith explicitly approved registering AGENT-PLATFORM-CREATE-01A by replying "go" after AGENT-PLATFORM-RPG-03B completed and locked)
+**Predecessor:** AGENT-PLATFORM-RPG-03B — COMPLETE and LOCKED — 2026-07-20 — Checkpoint: `docs/AGENT-PLATFORM-RPG-03B-CHECKPOINT.md`
+
+#### Why This Task Exists
+
+The RPG platform shell (AGENT-PLATFORM-RPG-03A) and discoverability (AGENT-PLATFORM-RPG-03B) slices are complete. The next private-beta blocker is agent creation persistence.
+
+AGENT-PLATFORM-RPG-MVP-RESET selected Option B — DB-backed minimal agent persistence — because:
+
+- Config-only created agents are too fake for beta.
+- Created agents must survive refresh and login.
+- Fields must remain minimal to avoid broad agent-platform scope expansion.
+
+This task is backend-only and prepares the data/API foundation for the later Create Agent UI slice (AGENT-PLATFORM-CREATE-01B).
+
+#### Scope (Steps 2–3 — Future Implementation)
+
+Step 2 design topics:
+
+1. Existing API Gateway entity/migration patterns.
+2. Existing authenticated user/session pattern.
+3. Minimal `UserAgent` persistence model.
+4. User ownership / tenant scoping.
+5. Minimal status model.
+6. API contract for list/create/get.
+7. Validation rules.
+8. Safe defaults.
+9. Migration strategy.
+10. Test strategy.
+11. How static registry and user-created agents will later be merged by frontend/API.
+12. What remains for CREATE-01B.
+
+Expected minimal backend fields (subject to Step 2 confirmation):
+
+- `id`
+- owner / user id
+- `name`
+- `role`
+- `description`
+- `status`
+- avatar / initials metadata
+- `createdAt`
+- `updatedAt`
+
+Expected minimal endpoints (subject to Step 2 confirmation):
+
+- List current user's created agents
+- Create a current user-owned agent
+- Get one current user-owned agent
+
+#### Expected Future Implementation Files (Steps 2–3 only if needed)
+
+1. `services/api-gateway/src` — entity, controller, service, module, spec files
+2. `services/api-gateway/src/**/*.entity.ts`
+3. `services/api-gateway/src/**/*.controller.ts`
+4. `services/api-gateway/src/**/*.service.ts`
+5. `services/api-gateway/src/**/*.module.ts`
+6. `services/api-gateway/src/**/*.spec.ts`
+7. `services/api-gateway/migrations`
+8. `services/api-gateway/package.json` — read-only for script inspection; do not modify
+
+Do not modify frontend, ai-service, container-manager, billing, provider/payment, Docker, environment, deployment, or package/dependency files in this task unless Step 2 stops and requests explicit scope revision.
+
+#### Security Requirements
+
+- Created agents must be user-owned / scoped.
+- Users must not read other users' created agents.
+- Users must not create agents for other users.
+- Backend must validate input.
+- Backend must not expose internal tool permissions.
+- Backend must not activate tools, knowledge scopes, skills, referrals, or approval rules.
+- Backend must not call AI providers.
+- Backend must not perform agent execution.
+- Backend must not affect static system agents.
+- No secrets opened, copied, printed, or written.
+
+#### Non-Goals
+
+- Create Agent frontend UI (deferred to AGENT-PLATFORM-CREATE-01B)
+- Dynamic dashboard merge UI
+- Platform dashboard redesign
+- Agent detail panel changes
+- Tool permission config
+- Knowledge scope config
+- Skills config
+- Referral rules config
+- Approval rules config
+- Agent-to-agent collaboration UI
+- Agent execution
+- AI provider calls
+- Billing/payment/provider/customer portal/webhook work
+- Stripe work
+- B3 full-stack smoke
+- Production deployment
+- Public beta launch
+- Walking character / pixel-art map / sprite pipeline / game engine
+- Avatar upload
+- Package/dependency upgrades
+- Broad auth/session redesign
+- Broad database refactor
+
+#### Safety Boundaries
+
+- No implementation during registration.
+- Future implementation is backend/API Gateway persistence only.
+- Migration/entity/API work requires Step 2 design first.
+- No frontend Create Agent UI in this slice.
+- No ai-service or container-manager changes unless separately approved.
+- No package/dependency changes.
+- No Docker/runtime/API/browser/test/build during registration.
+- No B3 registration.
+- No public beta readiness claim.
+- No provider/payment/Stripe/customer-portal/webhook activation.
+- No git commit or push.
+- No subagents.
+
+#### Workflow
+
+4-step HIGH-risk backend workflow:
+
+1. Registration
+2. Stage-start / persistence design / API contract plan
+3. Implementation / backend persistence + validation
+4. Consolidation / checkpoint / Create Agent UI handoff
+
+#### Steps
+
+###### Step 1 — Registration (COMPLETE 2026-07-20)
+- [x] AGENT-PLATFORM-CREATE-01A added to TASKS_BACKLOG_FULL.md.
+- [x] AGENT-PLATFORM-CREATE-01A activated in TASKS.md.
+- [x] AGENT-PLATFORM-RPG-03B remains COMPLETE and LOCKED.
+- [x] AGENT-PLATFORM-RPG-03A remains COMPLETE and LOCKED.
+- [x] AGENT-PLATFORM-RPG-MVP-RESET remains COMPLETE and LOCKED.
+- [x] B3 remains paused / unregistered.
+- [x] Scope limited to Create Agent backend minimal persistence.
+- [x] 4-step HIGH-risk backend workflow recorded.
+- [x] User ownership/scoping requirement recorded.
+- [x] Security requirements recorded.
+- [x] Create Agent frontend UI explicitly excluded.
+- [x] Tool/knowledge/skills/referral/approval config explicitly excluded.
+- [x] Backend/DB/migration/entity/API work deferred to Step 2/3.
+- [x] No implementation during registration.
+- [x] No source/test/translation/package/migration/entity/environment/Docker files changed.
+- [x] No runtime, Docker, DB, browser, API, test, build, provider, payment, Stripe CLI, webhook, git commit, or git push occurred.
+- [x] No secret-bearing environment file opened.
+- [x] No subagents used.
+- [x] AINOW-EXECUTION-ROADMAP.md updated.
+
+###### Step 2 — Stage-Start / Persistence Design / API Contract Plan (COMPLETE 2026-07-20)
+- [x] Inspect existing API Gateway entity/migration patterns.
+- [x] Inspect existing authenticated user/session pattern.
+- [x] Design minimal `UserAgent` persistence model.
+- [x] Define user ownership / tenant scoping strategy.
+- [x] Define minimal status model.
+- [x] Define API contract for list/create/get.
+- [x] Define validation rules.
+- [x] Define safe defaults.
+- [x] Define migration strategy.
+- [x] Define test strategy.
+- [x] Document how static registry and user-created agents will later be merged.
+- [x] Document what remains for CREATE-01B.
+- [x] Record design decisions in stage-start document.
+- [x] No implementation during Step 2.
+- [x] No secrets opened.
+- [x] No subagents.
+
+###### Step 3 — Implementation / Backend Persistence + Validation (COMPLETE 2026-07-20)
+- [x] Implement minimal `UserAgent` entity and migration.
+- [x] Implement user-owned/scoped repository.
+- [x] Implement controller with list/create/get endpoints.
+- [x] Implement service with validation and safe defaults.
+- [x] Wire module into API Gateway.
+- [x] Add tests for entity, repository, service, controller (30 tests, 30 passed).
+- [x] TypeScript clean (`npx tsc --noEmit` exit code 0).
+- [x] Targeted tests pass (30/30).
+- [x] No frontend/ai-service/container-manager/billing/provider/payment/Docker/environment files changed.
+- [x] No package/dependency changes.
+- [x] No secrets opened.
+- [x] No subagents.
+
+**Limitations (Step 3):**
+- Migration created but NOT executed. Requires Docker + PostgreSQL + `npm run migration:run`.
+- Live DB/runtime validation deferred.
+- Full API Gateway suite (`npm test`) has 10 pre-existing integration failures requiring Docker/PostgreSQL — not caused by this task.
+
+###### Step 4 — Consolidation / Checkpoint / Create Agent UI Handoff (COMPLETE 2026-07-20)
+- [x] Checkpoint document created — `docs/AGENT-PLATFORM-CREATE-01A-CHECKPOINT.md`.
+- [x] TASKS.md updated — AGENT-PLATFORM-CREATE-01A COMPLETE and LOCKED.
+- [x] TASKS_BACKLOG_FULL.md updated — mirrored.
+- [x] AINOW-EXECUTION-ROADMAP.md updated.
+- [x] Next slice handoff recorded — AGENT-PLATFORM-CREATE-01B (Create Agent MVP UI — not registered; requires Keith explicit approval).
+- [x] No implementation during consolidation.
+- [x] No secrets opened.
+- [x] No subagents.
+- [x] No git commit or push.
+
+**AGENT-PLATFORM-CREATE-01A status:** COMPLETE and LOCKED — 2026-07-20. All 4 steps complete. Step 1 Registration COMPLETE (2026-07-20). Step 2 Stage-start / persistence design / API contract plan COMPLETE (2026-07-20). Step 3 Implementation / backend persistence + validation COMPLETE (2026-07-20). Step 4 Consolidation / checkpoint COMPLETE (2026-07-20). `UserAgent` entity implemented. `user_agents` migration created (NOT executed). `POST /api/agents`, `GET /api/agents`, `GET /api/agents/:id` implemented. User ownership/scoping implemented. Cross-user isolation tested (30/30 tests PASS). TypeScript clean. Build clean. Linter 0 errors. Full suite has pre-existing Docker/PostgreSQL integration failures. Live migration/runtime verification deferred. Next recommended: AGENT-PLATFORM-CREATE-01B (Create Agent MVP UI — requires Keith explicit approval). B3 remains paused. Do not modify after locking except by explicitly approved follow-up task.
+
+**Reference:** See TASKS.md -> AGENT-PLATFORM-CREATE-01A. Checkpoint: `docs/AGENT-PLATFORM-CREATE-01A-CHECKPOINT.md`.
 
 ---
 
