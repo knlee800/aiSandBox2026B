@@ -35654,7 +35654,7 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 
 **Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` �X controls cross-family priority order; Knowledge before Collaboration before Billing.
 
-**Current stage:** BETA-READY-SMOKE — Pre-Beta Full-Stack Live Smoke — COMPLETE and LOCKED — 2026-07-21 — Final verdict PASS — all 4 steps complete — local pre-beta full-stack smoke for bounded RPG/Create Agent MVP path PASS — Checkpoint: `docs/BETA-READY-SMOKE-CHECKPOINT.md` — Stage-start: `docs/BETA-READY-SMOKE-STAGE-START.md` — Execution: `docs/BETA-READY-SMOKE-EXECUTION.md` — migration verified (Keith compiled TypeORM path) — `user_agents` table exists — API Gateway + frontend started — health/guards PASS — Keith browser smoke ALL PASS — Create Agent DB-backed create/list/refresh/detail PASS — no deployment — no public beta launch — next: Keith decision (limited private beta handoff/checklist OR tiny follow-up for TypeORM ts-node CLI path) — AGENT-PLATFORM-CREATE-01B — Create Agent MVP UI — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — Create Agent CTA implemented — inline form implemented — user-created agents list implemented — 28 translation keys per locale — `useUserAgents` hook — mocked `GET /api/agents` and `POST /api/agents` tests passed (641/641 frontend) — TypeScript clean — Build clean — Linter 0 errors — live DB-backed smoke deferred — migration NOT executed — Checkpoint: `docs/AGENT-PLATFORM-CREATE-01B-CHECKPOINT.md` — AGENT-PLATFORM-CREATE-01A — Create Agent Backend Minimal Persistence — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — `UserAgent` entity implemented — `user_agents` migration created (NOT executed) — `POST /api/agents`, `GET /api/agents`, `GET /api/agents/:id` implemented — user ownership/scoping enforced — 30/30 tests PASS — TypeScript clean — Build clean — Checkpoint: `docs/AGENT-PLATFORM-CREATE-01A-CHECKPOINT.md` — B3 remains paused — AGENT-PLATFORM-RPG-03B — Platform Link from Workspace + Auth Guard Review — COMPLETE and LOCKED — 2026-07-20 — all 3 steps complete — workspace/home platform CTA implemented — `/[locale]/platform` auth guard added — manual smoke PASS WITH LIMITATION (unauthenticated redirect PASS; authenticated access smoke deferred) — Checkpoint: `docs/AGENT-PLATFORM-RPG-03B-CHECKPOINT.md` — AGENT-PLATFORM-RPG-03A — Platform Dashboard Visual Identity + Agent Detail Panel — COMPLETE and LOCKED — 2026-07-20 — all 3 steps complete — Checkpoint: `docs/AGENT-PLATFORM-RPG-03A-CHECKPOINT.md` — AGENT-PLATFORM-RPG-MVP-RESET — RPG UX/UI and Agent Creation Beta Readiness Reset — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — B3 remains paused — chosen path: RPG-03A (COMPLETE and LOCKED) → RPG-03B → CREATE-01A → CREATE-01B → BETA-READY-SMOKE — Checkpoint: `docs/AGENT-PLATFORM-RPG-MVP-RESET-CHECKPOINT.md` — BETA-READY-DEPLOYMENT-CONFIG — Production Deployment Configuration — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — B2 resolved at documentation/template-readiness level — Checkpoint: `docs/BETA-READY-DEPLOYMENT-CONFIG-CHECKPOINT.md` — B3 pre-beta full-stack live smoke remains pending — requires Keith explicit approval before registration — AGENT-HARNESS-WRITE-CANARY — Agent Harness Write Canary + Production Activation — COMPLETE and LOCKED — 2026-07-20 — all 4 parent steps complete — child A COMPLETE and LOCKED (2026-07-19) — child B COMPLETE and LOCKED (2026-07-20) — first live E2E write canary PASS — safe default remains disabled — no permanent production flag activation — Checkpoint: `docs/AGENT-HARNESS-WRITE-CANARY-CHECKPOINT.md` — BETA-READY-00 blocker B1 resolved at canary-readiness level — BETA-READY-00 — Beta Readiness Checklist — COMPLETE and LOCKED — 2026-07-19 — all 3 steps complete — checklist created (`docs/BETA-READY-00-CHECKLIST.md`) — launch decision: READY FOR LIMITED BETA WITH LIMITATIONS — 15 gates (7 PASS, 8 needs verification) — blockers: B1 (resolved at canary-readiness level; permanent deployment flag activation still separate), B2 (deployment), B3 (pre-beta smoke) — Checkpoint: `docs/BETA-READY-00-CHECKPOINT.md` — ANOMALY-01 COMPLETE and LOCKED — 2026-07-19 — Checkpoint: `docs/ANOMALY-01-CHECKPOINT.md` — BILLING-READY-07 COMPLETE and LOCKED — 2026-07-17 — Outcome B — PASS WITH LIMITATIONS — BILLING-READY-07A COMPLETE and LOCKED — 2026-07-17 — Step 3 rerun PASS (2026-07-19) — BR07A-DEFECT-01 resolved — BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200 COMPLETE and LOCKED — 2026-07-17 — Checkpoint: `docs/BILLING-READY-07A-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-07-CHECKPOINT.md` — Consolidation document: `docs/BILLING-READY-07-CONSOLIDATION-DECISION.md` — BILLING-READY-06 COMPLETE and LOCKED (2026-07-17) — BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — BILLING-READY-06B COMPLETE and LOCKED (2026-07-17) — Checkpoint: `docs/BILLING-READY-06B-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-06-CHECKPOINT.md` — AGENT-HARNESS write canary remains a separate track. BILLING-READY-05 COMPLETE and LOCKED (2026-07-16) — all 4 parent steps complete — all child slices 05A–05G COMPLETE and LOCKED — Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`. BILLING-READY-05G COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-05G-CHECKPOINT.md`. BILLING-READY-05F COMPLETE and LOCKED (2026-07-15). Checkpoint: `docs/BILLING-READY-05F-CHECKPOINT.md`. BILLING-READY-05E COMPLETE and LOCKED (2026-07-15). BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-04 COMPLETE and LOCKED (2026-07-13). BILLING-READY-03 COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
+**Current stage:** BETA-READY-MIGRATION-CLI-01 — TypeORM Migration CLI Path Fix — COMPLETE and LOCKED — 2026-07-21 — all 3 steps complete — TINY TOOLING FOLLOW-UP — `"ts-node": "^10.9.2"` added to `devDependencies` in `services/api-gateway/package.json` — `npx typeorm-ts-node-commonjs --help` PASS — `npm run build` PASS — no migration execution — B3 PASS unchanged — Checkpoint: `docs/BETA-READY-MIGRATION-CLI-01-CHECKPOINT.md` — next: limited private beta handoff/checklist — requires Keith explicit approval — BETA-READY-SMOKE — Pre-Beta Full-Stack Live Smoke — COMPLETE and LOCKED — 2026-07-21 — Final verdict PASS — all 4 steps complete — local pre-beta full-stack smoke for bounded RPG/Create Agent MVP path PASS — Checkpoint: `docs/BETA-READY-SMOKE-CHECKPOINT.md` — Stage-start: `docs/BETA-READY-SMOKE-STAGE-START.md` — Execution: `docs/BETA-READY-SMOKE-EXECUTION.md` — migration verified (Keith compiled TypeORM path) — `user_agents` table exists — API Gateway + frontend started — health/guards PASS — Keith browser smoke ALL PASS — Create Agent DB-backed create/list/refresh/detail PASS — no deployment — no public beta launch — AGENT-PLATFORM-CREATE-01B — Create Agent MVP UI — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — Create Agent CTA implemented — inline form implemented — user-created agents list implemented — 28 translation keys per locale — `useUserAgents` hook — mocked `GET /api/agents` and `POST /api/agents` tests passed (641/641 frontend) — TypeScript clean — Build clean — Linter 0 errors — live DB-backed smoke deferred — migration NOT executed — Checkpoint: `docs/AGENT-PLATFORM-CREATE-01B-CHECKPOINT.md` — AGENT-PLATFORM-CREATE-01A — Create Agent Backend Minimal Persistence — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — `UserAgent` entity implemented — `user_agents` migration created (NOT executed) — `POST /api/agents`, `GET /api/agents`, `GET /api/agents/:id` implemented — user ownership/scoping enforced — 30/30 tests PASS — TypeScript clean — Build clean — Checkpoint: `docs/AGENT-PLATFORM-CREATE-01A-CHECKPOINT.md` — B3 remains paused — AGENT-PLATFORM-RPG-03B — Platform Link from Workspace + Auth Guard Review — COMPLETE and LOCKED — 2026-07-20 — all 3 steps complete — workspace/home platform CTA implemented — `/[locale]/platform` auth guard added — manual smoke PASS WITH LIMITATION (unauthenticated redirect PASS; authenticated access smoke deferred) — Checkpoint: `docs/AGENT-PLATFORM-RPG-03B-CHECKPOINT.md` — AGENT-PLATFORM-RPG-03A — Platform Dashboard Visual Identity + Agent Detail Panel — COMPLETE and LOCKED — 2026-07-20 — all 3 steps complete — Checkpoint: `docs/AGENT-PLATFORM-RPG-03A-CHECKPOINT.md` — AGENT-PLATFORM-RPG-MVP-RESET — RPG UX/UI and Agent Creation Beta Readiness Reset — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — B3 remains paused — chosen path: RPG-03A (COMPLETE and LOCKED) → RPG-03B → CREATE-01A → CREATE-01B → BETA-READY-SMOKE — Checkpoint: `docs/AGENT-PLATFORM-RPG-MVP-RESET-CHECKPOINT.md` — BETA-READY-DEPLOYMENT-CONFIG — Production Deployment Configuration — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — B2 resolved at documentation/template-readiness level — Checkpoint: `docs/BETA-READY-DEPLOYMENT-CONFIG-CHECKPOINT.md` — B3 pre-beta full-stack live smoke remains pending — requires Keith explicit approval before registration — AGENT-HARNESS-WRITE-CANARY — Agent Harness Write Canary + Production Activation — COMPLETE and LOCKED — 2026-07-20 — all 4 parent steps complete — child A COMPLETE and LOCKED (2026-07-19) — child B COMPLETE and LOCKED (2026-07-20) — first live E2E write canary PASS — safe default remains disabled — no permanent production flag activation — Checkpoint: `docs/AGENT-HARNESS-WRITE-CANARY-CHECKPOINT.md` — BETA-READY-00 blocker B1 resolved at canary-readiness level — BETA-READY-00 — Beta Readiness Checklist — COMPLETE and LOCKED — 2026-07-19 — all 3 steps complete — checklist created (`docs/BETA-READY-00-CHECKLIST.md`) — launch decision: READY FOR LIMITED BETA WITH LIMITATIONS — 15 gates (7 PASS, 8 needs verification) — blockers: B1 (resolved at canary-readiness level; permanent deployment flag activation still separate), B2 (deployment), B3 (pre-beta smoke) — Checkpoint: `docs/BETA-READY-00-CHECKPOINT.md` — ANOMALY-01 COMPLETE and LOCKED — 2026-07-19 — Checkpoint: `docs/ANOMALY-01-CHECKPOINT.md` — BILLING-READY-07 COMPLETE and LOCKED — 2026-07-17 — Outcome B — PASS WITH LIMITATIONS — BILLING-READY-07A COMPLETE and LOCKED — 2026-07-17 — Step 3 rerun PASS (2026-07-19) — BR07A-DEFECT-01 resolved — BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200 COMPLETE and LOCKED — 2026-07-17 — Checkpoint: `docs/BILLING-READY-07A-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-07-CHECKPOINT.md` — Consolidation document: `docs/BILLING-READY-07-CONSOLIDATION-DECISION.md` — BILLING-READY-06 COMPLETE and LOCKED (2026-07-17) — BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — BILLING-READY-06B COMPLETE and LOCKED (2026-07-17) — Checkpoint: `docs/BILLING-READY-06B-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-06-CHECKPOINT.md` — AGENT-HARNESS write canary remains a separate track. BILLING-READY-05 COMPLETE and LOCKED (2026-07-16) — all 4 parent steps complete — all child slices 05A–05G COMPLETE and LOCKED — Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`. BILLING-READY-05G COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-05G-CHECKPOINT.md`. BILLING-READY-05F COMPLETE and LOCKED (2026-07-15). Checkpoint: `docs/BILLING-READY-05F-CHECKPOINT.md`. BILLING-READY-05E COMPLETE and LOCKED (2026-07-15). BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-04 COMPLETE and LOCKED (2026-07-13). BILLING-READY-03 COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 �X ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED �X 2026-07-04)
@@ -35682,6 +35682,7 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 24. AGENT-PLATFORM-CREATE-01A — Create Agent Backend Minimal Persistence (COMPLETE and LOCKED — 2026-07-20)
 25. AGENT-PLATFORM-CREATE-01B — Create Agent MVP UI (COMPLETE and LOCKED — 2026-07-20)
 26. BETA-READY-SMOKE — Pre-Beta Full-Stack Live Smoke (COMPLETE and LOCKED — 2026-07-21 — Final verdict PASS)
+27. BETA-READY-MIGRATION-CLI-01 — TypeORM Migration CLI Path Fix (COMPLETE and LOCKED — 2026-07-21)
 
 20. AGENT-PLATFORM-07F3 �X Parent Consolidation Checkpoint (COMPLETE and LOCKED �X 2026-07-12)
 
@@ -46457,9 +46458,155 @@ B3 verifies the integrated pre-beta path:
 - [x] No subagents.
 - [x] No git commit or push.
 
-**BETA-READY-SMOKE status:** COMPLETE and LOCKED — 2026-07-21. Final verdict PASS. All 4 steps complete. Step 1 Registration COMPLETE (2026-07-21). Step 2 Stage-start COMPLETE (2026-07-21) — `docs/BETA-READY-SMOKE-STAGE-START.md`. Step 3 Execution COMPLETE (2026-07-21) — `docs/BETA-READY-SMOKE-EXECUTION.md` — PASS. Step 4 Consolidation/Checkpoint COMPLETE (2026-07-21) — `docs/BETA-READY-SMOKE-CHECKPOINT.md`. Full RPG/Create Agent MVP local full-stack smoke passed. Local pre-beta runtime readiness confirmed for this bounded scope. Migration verified; `user_agents` exists; API Gateway + frontend started; health/guards PASS; Keith browser smoke ALL PASS; Create Agent DB-backed create/list/refresh/detail PASS; static agents unchanged; desktop/~390px PASS; zh hardcoded-English check PASS. Limitations: test agent ID not recorded; smoke-created agent remains in local DB; ts-node TypeORM CLI path remains broken for future command review. No production/staging deployment. No public beta launch. Actual beta rollout requires Keith explicit approval. No source/test/translation/package/migration/entity/environment/Docker files changed during consolidation. No secrets opened. No subagents. No git commit/push. Do not modify after locking except by explicitly approved follow-up task. See `TASKS.md` — BETA-READY-SMOKE.
+**BETA-READY-SMOKE status:** COMPLETE and LOCKED — 2026-07-21. Final verdict PASS. All 4 steps complete. Step 1 Registration COMPLETE (2026-07-21). Step 2 Stage-start COMPLETE (2026-07-21) — `docs/BETA-READY-SMOKE-STAGE-START.md`. Step 3 Execution COMPLETE (2026-07-21) — `docs/BETA-READY-SMOKE-EXECUTION.md` — PASS. Step 4 Consolidation/Checkpoint COMPLETE (2026-07-21) — `docs/BETA-READY-SMOKE-CHECKPOINT.md`. Full RPG/Create Agent MVP local full-stack smoke passed. Local pre-beta runtime readiness confirmed for this bounded scope. Migration verified; `user_agents` exists; API Gateway + frontend started; health/guards PASS; Keith browser smoke ALL PASS; Create Agent DB-backed create/list/refresh/detail PASS; static agents unchanged; desktop/~390px PASS; zh hardcoded-English check PASS. Limitations: test agent ID not recorded; smoke-created agent remains in local DB; ts-node TypeORM CLI path remains broken for future command review. No production/staging deployment. No public beta launch. Actual beta rollout requires Keith explicit approval. No source/test/translation/package/migration/entity/environment/Docker files changed during consolidation. No secrets opened. No subagents. No git commit/push. Do not modify after locking except by explicitly approved follow-up task. See `TASKS.md` — BETA-READY-SMOKE. Tiny follow-up registered: BETA-READY-MIGRATION-CLI-01 (ACTIVE — Step 1 COMPLETE — Registration — 2026-07-21).
 
 **Reference:** See TASKS.md -> BETA-READY-SMOKE.
+
+---
+
+### BETA-READY-MIGRATION-CLI-01: TypeORM Migration CLI Path Fix
+
+**Status:** COMPLETE and LOCKED — 2026-07-21
+**Task ID:** BETA-READY-MIGRATION-CLI-01
+**Title:** TypeORM Migration CLI Path Fix
+**Family:** BETA READY / MIGRATION TOOLING / DEVELOPER EXPERIENCE
+**Priority:** HIGH
+**Nature:** TINY TOOLING FOLLOW-UP
+**Risk:** MEDIUM — package/script tooling may be touched in future implementation, but no DB/migration execution should occur.
+**Registered:** 2026-07-21
+**Keith Approval:** "go" — 2026-07-21 (Keith explicitly approved registering this tiny follow-up by replying "go" after BETA-READY-SMOKE / B3 completed and locked)
+**Predecessor:** BETA-READY-SMOKE / B3 — COMPLETE and LOCKED — PASS — 2026-07-21
+
+#### Dependencies
+
+- BETA-READY-SMOKE / B3 — COMPLETE and LOCKED — PASS — 2026-07-21 — local pre-beta full-stack smoke passed; `user_agents` migration verified via Keith compiled TypeORM path; `typeorm-ts-node-commonjs` / missing `ts-node` tooling limitation remains
+- AGENT-PLATFORM-CREATE-01B — COMPLETE and LOCKED — 2026-07-20
+- AGENT-PLATFORM-CREATE-01A — COMPLETE and LOCKED — 2026-07-20
+- AGENT-PLATFORM-RPG-03B — COMPLETE and LOCKED — 2026-07-20
+- AGENT-PLATFORM-RPG-03A — COMPLETE and LOCKED — 2026-07-20
+- AGENT-PLATFORM-RPG-MVP-RESET — COMPLETE and LOCKED — 2026-07-20
+
+#### Purpose
+
+During BETA-READY-SMOKE / B3, live smoke passed, but one tooling limitation remained:
+
+- `typeorm-ts-node-commonjs` failed with `Cannot find module 'ts-node'`
+- Keith manually completed migration successfully using the compiled TypeORM path: `npx typeorm migration:run -d dist/data-source.js`
+- `user_agents` table was verified present
+- This was not a product failure, but it may confuse future migration work
+
+This follow-up should fix or document the intended local migration CLI path so future migrations are not blocked by the `ts-node` path issue.
+
+This task does **not** change the B3 PASS result and does **not** block the B3 PASS result.
+
+#### Observed Tooling Context (registration only — package.json read for context; not modified)
+
+From `services/api-gateway/package.json` (read-only during registration):
+
+- `migration:run` → `typeorm-ts-node-commonjs migration:run -d data-source.ts`
+- `migration:run:prod` → `typeorm migration:run -d dist/data-source.js`
+- `migration:revert` / `migration:show` also use `typeorm-ts-node-commonjs`
+- Successful B3 path preserved: compiled TypeORM via `dist/data-source.js`
+
+#### Workflow (3-Step Bounded Tooling Loop)
+
+1. **Registration** — COMPLETE (2026-07-21) — Keith explicit approval recorded ("go"); scope, non-goals, safety boundaries, and future Step 2 options documented; no implementation; no package/source changes; no migration execution; no Docker/DB/runtime.
+2. **Diagnosis + implementation / migration CLI fix** — pending. Diagnose why `typeorm-ts-node-commonjs` resolves without `ts-node`. Decide the smallest safe fix (add missing dev dependency if consistent with conventions, OR update API Gateway migration scripts to use the compiled TypeORM path, OR document compiled migration path as the supported local path if no package change is needed). Preserve the successful compiled migration path. Avoid live DB or migration execution. Avoid Docker/PostgreSQL/Redis. Avoid opening `.env`. Validate with non-secret, non-destructive checks only.
+3. **Consolidation / checkpoint / beta handoff continuation** — pending. Checkpoint the tooling decision/fix. Confirm B3 PASS unchanged. Record next action toward limited private beta handoff/checklist.
+
+#### Scope (Future Step 2)
+
+1. Diagnose why `typeorm-ts-node-commonjs` resolves without `ts-node`.
+2. Decide the smallest safe fix:
+   - add missing dev dependency if consistent with project conventions, or
+   - update API Gateway migration scripts to use the compiled TypeORM path, or
+   - document compiled migration path as the supported local path if no package change is needed.
+3. Preserve the successful compiled migration path (`npx typeorm migration:run -d dist/data-source.js` / `migration:run:prod`).
+4. Avoid live DB or migration execution.
+5. Avoid Docker/PostgreSQL/Redis.
+6. Avoid opening `.env`.
+7. Validate with non-secret, non-destructive checks only.
+
+#### Non-Goals
+
+- No new migrations
+- No migration execution
+- No DB schema changes
+- No Docker changes
+- No environment file edits
+- No source feature changes
+- No frontend changes
+- No backend feature changes
+- No Create Agent changes
+- No auth changes
+- No deployment
+- No production/staging migration
+- No destructive DB cleanup
+- No provider/payment/Stripe/webhook work
+- No package upgrades unrelated to the migration CLI issue
+- No broad tooling refactor
+
+#### Safety Boundaries
+
+- No implementation during registration.
+- Future implementation must be tiny and bounded.
+- Do not execute migrations in this follow-up.
+- Do not start Docker/PostgreSQL/Redis.
+- Do not open or print secrets.
+- Do not edit environment files.
+- Do not run destructive DB commands.
+- Never run `docker compose down -v`.
+- No deployment.
+- No git commit or push.
+- No subagents.
+
+#### Acceptance Criteria
+
+###### Step 1 — Registration (COMPLETE 2026-07-21)
+
+- [x] BETA-READY-MIGRATION-CLI-01 added to TASKS_BACKLOG_FULL.md.
+- [x] BETA-READY-MIGRATION-CLI-01 activated in TASKS.md.
+- [x] BETA-READY-SMOKE / B3 remains COMPLETE and LOCKED.
+- [x] Scope limited to TypeORM migration CLI path fix.
+- [x] 3-step bounded tooling workflow recorded.
+- [x] No migration execution during this task.
+- [x] No Docker/PostgreSQL/Redis during registration.
+- [x] No `.env` or secret-bearing file opened.
+- [x] No implementation during registration.
+- [x] No source/test/package/migration/entity/environment/Docker files changed.
+- [x] No runtime, Docker, DB, browser, API, test, build, migration execution, provider, payment, Stripe CLI, webhook, git commit, or git push occurred.
+- [x] No subagents used.
+
+###### Step 2 — Diagnosis + Implementation / Migration CLI Fix (COMPLETE 2026-07-21)
+
+- [x] Root cause of `typeorm-ts-node-commonjs` / missing `ts-node` diagnosed.
+- [x] Smallest safe fix selected and applied (`"ts-node": "^10.9.2"` added to `devDependencies` in `services/api-gateway/package.json`).
+- [x] Successful compiled TypeORM migration path preserved (`migration:run:prod` / `npx typeorm migration:run -d dist/data-source.js`).
+- [x] No migration execution.
+- [x] No Docker/PostgreSQL/Redis started.
+- [x] No `.env` or secret-bearing file opened.
+- [x] Non-secret, non-destructive validation only (`require.resolve('ts-node')` PASS; `npx typeorm-ts-node-commonjs --help` PASS; `npm run build` PASS).
+- [x] Scope remains tiny and bounded.
+- [x] `services/api-gateway/package.json` — `"ts-node": "^10.9.2"` added to `devDependencies`.
+- [x] `services/api-gateway/package-lock.json` — updated on disk by `npm install`; gitignored (`.gitignore:6:package-lock.json`); not a tracked change.
+- [x] Root `package-lock.json` — no change.
+- [x] No unexpected package files changed.
+
+###### Step 3 — Consolidation / Checkpoint / Beta Handoff Continuation (COMPLETE 2026-07-21)
+
+- [x] Checkpoint document created: `docs/BETA-READY-MIGRATION-CLI-01-CHECKPOINT.md`.
+- [x] TASKS.md updated — task COMPLETE and LOCKED.
+- [x] TASKS_BACKLOG_FULL.md mirrored.
+- [x] AINOW-EXECUTION-ROADMAP.md updated.
+- [x] B3 PASS result confirmed unchanged.
+- [x] Next action toward limited private beta handoff/checklist recorded.
+- [x] No secrets opened.
+- [x] No subagents.
+- [x] No git commit or push.
+
+**BETA-READY-MIGRATION-CLI-01 status:** COMPLETE and LOCKED — 2026-07-21. Step 1 Registration COMPLETE (2026-07-21). Step 2 Diagnosis + implementation / migration CLI fix COMPLETE (2026-07-21) — `"ts-node": "^10.9.2"` added to `devDependencies` in `services/api-gateway/package.json`; `require.resolve('ts-node')` PASS; `npx typeorm-ts-node-commonjs --help` PASS; `npm run build` PASS. Step 3 Consolidation / checkpoint COMPLETE (2026-07-21) — `docs/BETA-READY-MIGRATION-CLI-01-CHECKPOINT.md` created. TypeORM `ts-node` migration CLI path fixed. B3 PASS remains valid and unchanged. Compiled migration path (`migration:run:prod`) remains valid. No migration execution occurred. No Docker/PostgreSQL/Redis used. `services/api-gateway/package-lock.json` updated on disk by `npm install`; gitignored — not a tracked change. Root `package-lock.json` unchanged. No `.env` or secret-bearing file opened. No source/test/frontend/backend feature files changed. No deployment, git commit, or git push occurred. No subagents used. Next: limited private beta handoff/checklist — requires Keith explicit approval.
+
+**Reference:** See TASKS.md -> BETA-READY-MIGRATION-CLI-01.
 
 ---
 
