@@ -25152,7 +25152,7 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 
 **Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` �X controls cross-family priority order; Knowledge before Collaboration before Billing.
 
-**Current stage:** AGENT-PLATFORM-CREATE-01B — Create Agent MVP UI — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — Create Agent CTA implemented — inline form implemented — user-created agents list implemented — 28 translation keys per locale — `useUserAgents` hook — mocked `GET /api/agents` and `POST /api/agents` tests passed (641/641 frontend) — TypeScript clean — Build clean — Linter 0 errors — live DB-backed smoke deferred — migration NOT executed — B3 remains paused — Checkpoint: `docs/AGENT-PLATFORM-CREATE-01B-CHECKPOINT.md` — Next recommended: B3 / BETA-READY-SMOKE registration — requires Keith explicit approval — AGENT-PLATFORM-CREATE-01A — Create Agent Backend Minimal Persistence — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — `UserAgent` entity implemented — `user_agents` migration created (NOT executed) — `POST /api/agents`, `GET /api/agents`, `GET /api/agents/:id` implemented — user ownership/scoping enforced — 30/30 tests PASS — TypeScript clean — Build clean — Checkpoint: `docs/AGENT-PLATFORM-CREATE-01A-CHECKPOINT.md` — Next recommended: AGENT-PLATFORM-CREATE-01B (Create Agent MVP UI — requires Keith explicit approval) — B3 remains paused — AGENT-PLATFORM-RPG-03B — Platform Link from Workspace + Auth Guard Review — COMPLETE and LOCKED — 2026-07-20 — all 3 steps complete — workspace/home platform CTA implemented — `/[locale]/platform` auth guard added — manual smoke PASS WITH LIMITATION (unauthenticated redirect PASS; authenticated access smoke deferred) — Checkpoint: `docs/AGENT-PLATFORM-RPG-03B-CHECKPOINT.md` — AGENT-PLATFORM-RPG-03A — Platform Dashboard Visual Identity + Agent Detail Panel — COMPLETE and LOCKED — 2026-07-20 — all 3 steps complete — Checkpoint: `docs/AGENT-PLATFORM-RPG-03A-CHECKPOINT.md` — AGENT-PLATFORM-RPG-MVP-RESET — RPG UX/UI and Agent Creation Beta Readiness Reset — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — B3 remains paused — chosen path: RPG-03A (COMPLETE and LOCKED) → RPG-03B → CREATE-01A → CREATE-01B → BETA-READY-SMOKE — Checkpoint: `docs/AGENT-PLATFORM-RPG-MVP-RESET-CHECKPOINT.md` — BETA-READY-DEPLOYMENT-CONFIG — Production Deployment Configuration — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — B2 resolved at documentation/template-readiness level — Checkpoint: `docs/BETA-READY-DEPLOYMENT-CONFIG-CHECKPOINT.md` — B3 pre-beta full-stack live smoke remains pending — requires Keith explicit approval before registration — AGENT-HARNESS-WRITE-CANARY — Agent Harness Write Canary + Production Activation — COMPLETE and LOCKED — 2026-07-20 — all 4 parent steps complete — child A COMPLETE and LOCKED (2026-07-19) — child B COMPLETE and LOCKED (2026-07-20) — first live E2E write canary PASS — safe default remains disabled — no permanent production flag activation — Checkpoint: `docs/AGENT-HARNESS-WRITE-CANARY-CHECKPOINT.md` — BETA-READY-00 blocker B1 resolved at canary-readiness level — BETA-READY-00 — Beta Readiness Checklist — COMPLETE and LOCKED — 2026-07-19 — all 3 steps complete — checklist created (`docs/BETA-READY-00-CHECKLIST.md`) — launch decision: READY FOR LIMITED BETA WITH LIMITATIONS — 15 gates (7 PASS, 8 needs verification) — blockers: B1 (resolved at canary-readiness level; permanent deployment flag activation still separate), B2 (deployment), B3 (pre-beta smoke) — Checkpoint: `docs/BETA-READY-00-CHECKPOINT.md` — ANOMALY-01 COMPLETE and LOCKED — 2026-07-19 — Checkpoint: `docs/ANOMALY-01-CHECKPOINT.md` — BILLING-READY-07 COMPLETE and LOCKED — 2026-07-17 — Outcome B — PASS WITH LIMITATIONS — BILLING-READY-07A COMPLETE and LOCKED — 2026-07-17 — Step 3 rerun PASS (2026-07-19) — BR07A-DEFECT-01 resolved — BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200 COMPLETE and LOCKED — 2026-07-17 — Checkpoint: `docs/BILLING-READY-07A-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-07-CHECKPOINT.md` — Consolidation document: `docs/BILLING-READY-07-CONSOLIDATION-DECISION.md` — BILLING-READY-06 COMPLETE and LOCKED (2026-07-17) — BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — BILLING-READY-06B COMPLETE and LOCKED (2026-07-17) — Checkpoint: `docs/BILLING-READY-06B-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-06-CHECKPOINT.md` — AGENT-HARNESS write canary remains a separate track. BILLING-READY-05 COMPLETE and LOCKED (2026-07-16) — all 4 parent steps complete — all child slices 05A–05G COMPLETE and LOCKED — Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`. BILLING-READY-05G COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-05G-CHECKPOINT.md`. BILLING-READY-05F COMPLETE and LOCKED (2026-07-15). BILLING-READY-05E COMPLETE and LOCKED (2026-07-15). BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-04 COMPLETE and LOCKED (2026-07-13). BILLING-READY-03 COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
+**Current stage:** BETA-READY-SMOKE — Pre-Beta Full-Stack Live Smoke — COMPLETE and LOCKED — 2026-07-21 — Final verdict PASS — all 4 steps complete — local pre-beta full-stack smoke for bounded RPG/Create Agent MVP path PASS — Checkpoint: `docs/BETA-READY-SMOKE-CHECKPOINT.md` — Stage-start: `docs/BETA-READY-SMOKE-STAGE-START.md` — Execution: `docs/BETA-READY-SMOKE-EXECUTION.md` — migration verified (Keith compiled TypeORM path) — `user_agents` table exists — API Gateway + frontend started — health/guards PASS — Keith browser smoke ALL PASS — Create Agent DB-backed create/list/refresh/detail PASS — no deployment — no public beta launch — next: Keith decision (limited private beta handoff/checklist OR tiny follow-up for TypeORM ts-node CLI path) — AGENT-PLATFORM-CREATE-01B — Create Agent MVP UI — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — Create Agent CTA implemented — inline form implemented — user-created agents list implemented — 28 translation keys per locale — `useUserAgents` hook — mocked `GET /api/agents` and `POST /api/agents` tests passed (641/641 frontend) — TypeScript clean — Build clean — Linter 0 errors — live DB-backed smoke deferred — migration NOT executed — Checkpoint: `docs/AGENT-PLATFORM-CREATE-01B-CHECKPOINT.md` — AGENT-PLATFORM-CREATE-01A — Create Agent Backend Minimal Persistence — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — `UserAgent` entity implemented — `user_agents` migration created (NOT executed) — `POST /api/agents`, `GET /api/agents`, `GET /api/agents/:id` implemented — user ownership/scoping enforced — 30/30 tests PASS — TypeScript clean — Build clean — Checkpoint: `docs/AGENT-PLATFORM-CREATE-01A-CHECKPOINT.md` — Next recommended: AGENT-PLATFORM-CREATE-01B (Create Agent MVP UI — requires Keith explicit approval) — B3 remains paused — AGENT-PLATFORM-RPG-03B — Platform Link from Workspace + Auth Guard Review — COMPLETE and LOCKED — 2026-07-20 — all 3 steps complete — workspace/home platform CTA implemented — `/[locale]/platform` auth guard added — manual smoke PASS WITH LIMITATION (unauthenticated redirect PASS; authenticated access smoke deferred) — Checkpoint: `docs/AGENT-PLATFORM-RPG-03B-CHECKPOINT.md` — AGENT-PLATFORM-RPG-03A — Platform Dashboard Visual Identity + Agent Detail Panel — COMPLETE and LOCKED — 2026-07-20 — all 3 steps complete — Checkpoint: `docs/AGENT-PLATFORM-RPG-03A-CHECKPOINT.md` — AGENT-PLATFORM-RPG-MVP-RESET — RPG UX/UI and Agent Creation Beta Readiness Reset — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — B3 remains paused — chosen path: RPG-03A (COMPLETE and LOCKED) → RPG-03B → CREATE-01A → CREATE-01B → BETA-READY-SMOKE — Checkpoint: `docs/AGENT-PLATFORM-RPG-MVP-RESET-CHECKPOINT.md` — BETA-READY-DEPLOYMENT-CONFIG — Production Deployment Configuration — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — B2 resolved at documentation/template-readiness level — Checkpoint: `docs/BETA-READY-DEPLOYMENT-CONFIG-CHECKPOINT.md` — B3 pre-beta full-stack live smoke remains pending — requires Keith explicit approval before registration — AGENT-HARNESS-WRITE-CANARY — Agent Harness Write Canary + Production Activation — COMPLETE and LOCKED — 2026-07-20 — all 4 parent steps complete — child A COMPLETE and LOCKED (2026-07-19) — child B COMPLETE and LOCKED (2026-07-20) — first live E2E write canary PASS — safe default remains disabled — no permanent production flag activation — Checkpoint: `docs/AGENT-HARNESS-WRITE-CANARY-CHECKPOINT.md` — BETA-READY-00 blocker B1 resolved at canary-readiness level — BETA-READY-00 — Beta Readiness Checklist — COMPLETE and LOCKED — 2026-07-19 — all 3 steps complete — checklist created (`docs/BETA-READY-00-CHECKLIST.md`) — launch decision: READY FOR LIMITED BETA WITH LIMITATIONS — 15 gates (7 PASS, 8 needs verification) — blockers: B1 (resolved at canary-readiness level; permanent deployment flag activation still separate), B2 (deployment), B3 (pre-beta smoke) — Checkpoint: `docs/BETA-READY-00-CHECKPOINT.md` — ANOMALY-01 COMPLETE and LOCKED — 2026-07-19 — Checkpoint: `docs/ANOMALY-01-CHECKPOINT.md` — BILLING-READY-07 COMPLETE and LOCKED — 2026-07-17 — Outcome B — PASS WITH LIMITATIONS — BILLING-READY-07A COMPLETE and LOCKED — 2026-07-17 — Step 3 rerun PASS (2026-07-19) — BR07A-DEFECT-01 resolved — BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200 COMPLETE and LOCKED — 2026-07-17 — Checkpoint: `docs/BILLING-READY-07A-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-07-CHECKPOINT.md` — Consolidation document: `docs/BILLING-READY-07-CONSOLIDATION-DECISION.md` — BILLING-READY-06 COMPLETE and LOCKED (2026-07-17) — BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — BILLING-READY-06B COMPLETE and LOCKED (2026-07-17) — Checkpoint: `docs/BILLING-READY-06B-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-06-CHECKPOINT.md` — AGENT-HARNESS write canary remains a separate track. BILLING-READY-05 COMPLETE and LOCKED (2026-07-16) — all 4 parent steps complete — all child slices 05A–05G COMPLETE and LOCKED — Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`. BILLING-READY-05G COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-05G-CHECKPOINT.md`. BILLING-READY-05F COMPLETE and LOCKED (2026-07-15). BILLING-READY-05E COMPLETE and LOCKED (2026-07-15). BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-04 COMPLETE and LOCKED (2026-07-13). BILLING-READY-03 COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 �X ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED �X 2026-07-04)
@@ -25179,6 +25179,7 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 23. AGENT-PLATFORM-RPG-03B — Platform Link from Workspace + Auth Guard Review (COMPLETE and LOCKED — 2026-07-20)
 24. AGENT-PLATFORM-CREATE-01A — Create Agent Backend Minimal Persistence (COMPLETE and LOCKED — 2026-07-20)
 25. AGENT-PLATFORM-CREATE-01B — Create Agent MVP UI (COMPLETE and LOCKED — 2026-07-20)
+26. BETA-READY-SMOKE — Pre-Beta Full-Stack Live Smoke (COMPLETE and LOCKED — 2026-07-21 — Final verdict PASS)
 
 20. AGENT-PLATFORM-07F3 �X Parent Consolidation Checkpoint (COMPLETE and LOCKED �X 2026-07-12)
 
@@ -35810,6 +35811,208 @@ Do not modify: backend/API Gateway source, migrations/entities/schema, ai-servic
 **AGENT-PLATFORM-CREATE-01B status:** COMPLETE and LOCKED — 2026-07-20. All 4 steps complete. Step 1 Registration COMPLETE (2026-07-20). Step 2 Stage-start / frontend UX + API integration plan COMPLETE (2026-07-20). Step 3 Implementation / Create Agent MVP UI + validation COMPLETE (2026-07-20). Step 4 Consolidation / checkpoint COMPLETE (2026-07-20). Frontend Create Agent MVP implemented. `useUserAgents` hook implemented. Create Agent CTA + inline form implemented. User-created agents list implemented. 28 translation keys per locale. Heroicons v2 Outline only. 641/641 frontend tests PASS. TypeScript clean. Build clean. Linter 0 errors. Live DB-backed Create Agent flow NOT verified — migration NOT executed — full-stack smoke deferred. B3 remains paused. Do not modify after locking except by explicitly approved follow-up task. Checkpoint: `docs/AGENT-PLATFORM-CREATE-01B-CHECKPOINT.md`.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> AGENT-PLATFORM-CREATE-01B.
+
+---
+
+#### BETA-READY-SMOKE: Pre-Beta Full-Stack Live Smoke
+
+**Status:** COMPLETE and LOCKED — 2026-07-21 — Final verdict PASS
+**Task ID:** BETA-READY-SMOKE
+**Alias:** B3
+**Title:** Pre-Beta Full-Stack Live Smoke
+**Family:** BETA READY / FULL-STACK SMOKE / CREATE AGENT LIVE VALIDATION
+**Priority:** CRITICAL
+**Nature:** HIGH-RISK FULL-STACK RUNTIME + MIGRATION + AUTHENTICATED LIVE SMOKE
+**Risk:** HIGH — requires local runtime coordination, Docker/PostgreSQL/Redis readiness if applicable, migration execution, authenticated browser/API validation, and careful non-destructive smoke behavior.
+**Registered:** 2026-07-21
+**Completed:** 2026-07-21
+**Checkpoint:** `docs/BETA-READY-SMOKE-CHECKPOINT.md`
+**Stage-Start:** `docs/BETA-READY-SMOKE-STAGE-START.md`
+**Execution:** `docs/BETA-READY-SMOKE-EXECUTION.md`
+**Keith Approval:** "go" — 2026-07-21 (Keith explicitly approved registering B3 / BETA-READY-SMOKE by replying "go" after AGENT-PLATFORM-CREATE-01B completed and locked)
+**Addresses:** BETA-READY-00 blocker B3 — Pre-Beta Full-Stack Live Smoke
+**Final Verdict:** PASS
+
+#### Dependencies
+
+- AGENT-PLATFORM-CREATE-01B — COMPLETE and LOCKED (2026-07-20) — Create Agent MVP UI; frontend Create Agent MVP implemented; 641/641 tests PASS; migration NOT executed; live DB-backed smoke deferred
+- AGENT-PLATFORM-CREATE-01A — COMPLETE and LOCKED (2026-07-20) — Create Agent Backend Minimal Persistence; `UserAgent` entity implemented; `user_agents` migration created (NOT executed); `POST /api/agents`, `GET /api/agents`, `GET /api/agents/:id` implemented
+- AGENT-PLATFORM-RPG-03B — COMPLETE and LOCKED (2026-07-20) — Platform Link from Workspace + Auth Guard Review
+- AGENT-PLATFORM-RPG-03A — COMPLETE and LOCKED (2026-07-20) — Platform Dashboard Visual Identity + Agent Detail Panel
+- AGENT-PLATFORM-RPG-MVP-RESET — COMPLETE and LOCKED (2026-07-20) — RPG UX/UI and Agent Creation Beta Readiness Reset
+- BETA-READY-DEPLOYMENT-CONFIG — COMPLETE and LOCKED (2026-07-20) — B2 resolved at documentation/template-readiness level
+- AGENT-HARNESS-WRITE-CANARY — COMPLETE and LOCKED (2026-07-20) — B1 resolved at canary-readiness level
+- BETA-READY-00 — COMPLETE and LOCKED (2026-07-19) — Beta readiness checklist; B3 identified as remaining blocker
+
+#### Purpose
+
+All four RPG/Create Agent MVP slices are now COMPLETE and LOCKED (RPG-03A, RPG-03B, CREATE-01A, CREATE-01B). B1 (write path canary) and B2 (deployment configuration) are resolved. The remaining beta readiness blocker is B3: the pre-beta full-stack live smoke.
+
+B3 verifies the integrated pre-beta path:
+- CREATE-01A migration execution (not yet run — `user_agents` table must exist before Create Agent DB smoke)
+- Authenticated full-stack `/[locale]/platform` access
+- Real DB-backed Create Agent create/list flow
+- Cross-locale UI verification (en, zh-TW, zh-CN)
+- Remaining beta readiness blockers recorded
+
+#### Critical Migration/Runtime Limitation
+
+`services/api-gateway/src/migrations/1772500000000-CreateUserAgentsTable.ts` was created by AGENT-PLATFORM-CREATE-01A and **executed during B3 Step 3** (Keith manual compiled TypeORM path after Cursor `ts-node` CLI path failed).
+
+- Migration verified — `user_agents` table exists.
+- Future migration commands should prefer a working TypeORM path; `ts-node` CLI path remains broken for future command review.
+- Do not run destructive DB commands.
+- Never run `docker compose down -v` without Keith explicit approval.
+- Do not open or print secrets.
+- Do not edit environment files unless explicitly approved.
+
+#### Workflow (4-Step HIGH-risk Full-Stack Loop)
+
+1. **Registration** — COMPLETE (2026-07-21) — Keith explicit approval recorded ("go"); scope, safety boundaries, non-goals, and migration/runtime limitations documented; no implementation; no runtime execution; no source/env/Docker changes; no secrets opened.
+2. **Stage-start / runtime + migration + smoke plan** — COMPLETE (2026-07-21) — Full smoke plan documented in `docs/BETA-READY-SMOKE-STAGE-START.md`: services/ports, Docker/PostgreSQL/Redis, Redis required for API Gateway BullMQ startup, non-destructive migration commands, health checks, startup commands, Keith browser checklist, safe API checks, test data plan, auth verification, cross-locale UI, Create Agent DB-backed flow, PASS/FAIL criteria, stop conditions, safety boundaries.
+3. **Execution / full-stack live smoke** — COMPLETE (2026-07-21) — Final verdict PASS — evidence in `docs/BETA-READY-SMOKE-EXECUTION.md`: Docker/PostgreSQL/Redis healthy, migration verified (Keith compiled TypeORM path), API Gateway + frontend started, health/guards PASS, Keith browser smoke ALL PASS, Create Agent DB-backed create/list/refresh/detail PASS.
+4. **Consolidation / checkpoint / beta readiness decision** — COMPLETE (2026-07-21) — Checkpoint: `docs/BETA-READY-SMOKE-CHECKPOINT.md`. TASKS.md and TASKS_BACKLOG_FULL.md updated. AINOW-EXECUTION-ROADMAP.md updated. Final verdict PASS. Limitations recorded. BETA-READY-SMOKE / B3 COMPLETE and LOCKED.
+
+#### Scope (Future Steps Should Verify)
+
+1. Confirm required services and ports.
+2. Confirm Docker/PostgreSQL/Redis requirements.
+3. Confirm safe migration command and status.
+4. Execute CREATE-01A migration only after explicit Step 3 prompt.
+5. Start required backend/frontend services.
+6. Verify health endpoints.
+7. Verify registration/login or authenticated session.
+8. Verify `/en/platform`, `/zh-TW/platform`, `/zh-CN/platform` authenticated access.
+9. Verify workspace/home CTA routes to locale-correct platform page.
+10. Verify Create Agent form renders.
+11. Verify real DB-backed `POST /api/agents`.
+12. Verify real DB-backed `GET /api/agents`.
+13. Verify newly created agent appears without page refresh or after refetch.
+14. Verify user-created agent detail panel.
+15. Verify static system agents remain unchanged.
+16. Verify no hardcoded English on zh routes.
+17. Verify desktop and around 390px mobile layout.
+18. Record limitations, blockers, and beta readiness decision.
+
+#### Safety Boundaries
+
+- No implementation during registration.
+- No runtime or Docker during registration.
+- No migration execution during registration.
+- No source/test/translation/package/migration/entity/environment/Docker changes during registration.
+- Future smoke must use non-destructive commands only.
+- Never run `docker compose down -v` without Keith explicit approval.
+- Do not open or print secrets.
+- Do not edit environment files unless explicitly approved.
+- Do not claim beta readiness until full-stack smoke evidence supports it.
+- Do not deploy.
+- Do not commit or push git changes.
+- Do not use subagents.
+
+#### Non-Goals
+
+- No new feature implementation.
+- No source code changes.
+- No frontend changes.
+- No backend/API Gateway changes.
+- No migration/entity/schema changes.
+- No new migrations.
+- No destructive DB cleanup.
+- No broad data reset.
+- No production deployment.
+- No staging deployment unless separately approved.
+- No provider/payment/Stripe/customer portal/webhook work.
+- No billing changes.
+- No AI provider calls.
+- No agent execution.
+- No tool permission config changes.
+- No knowledge scope config changes.
+- No skills config changes.
+- No referral rules config changes.
+- No approval rules config changes.
+- No walking character, pixel-art map, sprite pipeline, or game engine work.
+- No package/dependency upgrades.
+- No broad auth/session redesign.
+- No broad platform/dashboard redesign.
+
+#### Acceptance Criteria
+
+###### Step 1 — Registration (COMPLETE 2026-07-21)
+
+- [x] BETA-READY-SMOKE / B3 added to TASKS_BACKLOG_FULL.md.
+- [x] BETA-READY-SMOKE / B3 activated in TASKS.md.
+- [x] AGENT-PLATFORM-CREATE-01B remains COMPLETE and LOCKED.
+- [x] AGENT-PLATFORM-CREATE-01A remains COMPLETE and LOCKED.
+- [x] AGENT-PLATFORM-RPG-03B remains COMPLETE and LOCKED.
+- [x] AGENT-PLATFORM-RPG-03A remains COMPLETE and LOCKED.
+- [x] AGENT-PLATFORM-RPG-MVP-RESET remains COMPLETE and LOCKED.
+- [x] Scope limited to pre-beta full-stack smoke.
+- [x] 4-step high-risk full-stack workflow recorded.
+- [x] Migration/runtime limitation recorded.
+- [x] Non-destructive migration/smoke safety boundaries recorded.
+- [x] Docker/PostgreSQL/Redis future requirement recorded.
+- [x] Full beta readiness not claimed.
+- [x] No implementation during registration.
+- [x] No source/test/translation/package/migration/entity/environment/Docker files changed.
+- [x] No runtime, Docker, DB, browser, API, test, build, provider, payment, Stripe CLI, webhook, migration execution, git commit, or git push occurred.
+- [x] No secret-bearing environment file opened.
+- [x] No subagents used.
+
+###### Step 2 — Stage-start / Runtime + Migration + Smoke Plan (COMPLETE 2026-07-21)
+
+- [x] Smoke plan document created — `docs/BETA-READY-SMOKE-STAGE-START.md`.
+- [x] All required services and ports identified.
+- [x] Docker/PostgreSQL/Redis requirements confirmed.
+- [x] Whether Redis is actually required for this smoke confirmed — YES (API Gateway BullMQ/queue startup).
+- [x] Non-destructive migration command documented.
+- [x] Health check commands documented.
+- [x] Browser/manual smoke checklist for Keith defined.
+- [x] API checks Cursor can safely perform defined.
+- [x] Auth verification approach (without exposing secrets) defined.
+- [x] Cross-locale UI verification approach defined.
+- [x] Test data creation plan defined.
+- [x] Cleanup plan documented (noting if delete endpoint is unavailable).
+- [x] How to document test-created data if cleanup is impossible noted.
+- [x] Classification criteria (PASS / PASS WITH LIMITATION / FAIL) defined.
+- [x] Stop conditions defined.
+- [x] Rollback/non-destructive safety boundaries confirmed.
+- [x] Keith approval recorded before Step 3.
+
+###### Step 3 — Execution / Full-Stack Live Smoke (COMPLETE 2026-07-21 — Final verdict PASS)
+
+- [x] Migration executed successfully (non-destructive; Keith compiled TypeORM path after `ts-node` CLI failed).
+- [x] All required services started and healthy — PostgreSQL, Redis, API Gateway, frontend.
+- [x] Health endpoints verified — `/api/health`, `/api/health/db`, `/api/health/ready` all 200.
+- [x] Authenticated session verified — Keith browser smoke.
+- [x] `/en/platform`, `/zh-TW/platform`, `/zh-CN/platform` authenticated access verified.
+- [x] Workspace/home CTA routing verified — en / zh-TW / zh-CN.
+- [x] Create Agent form renders verified.
+- [x] Real DB-backed `POST /api/agents` verified — Create Agent live create PASS.
+- [x] Real DB-backed `GET /api/agents` verified — appears in “Your Agents” PASS.
+- [x] Newly created agent appears verified — refresh persistence PASS.
+- [x] User-created agent detail panel verified.
+- [x] Static system agents verified unchanged.
+- [x] No hardcoded English on zh routes verified.
+- [x] Desktop and ~390px mobile layout verified.
+- [x] Smoke result recorded — PASS.
+- [x] Limitations and blockers recorded — test agent ID not recorded; smoke-created agent remains in local DB; ts-node TypeORM CLI path remains broken for future command review.
+- [x] Cleanup performed where safe; test-created data documented if cleanup impossible — no delete endpoint; “Beta Smoke Test Agent” retained in local DB.
+
+###### Step 4 — Consolidation / Checkpoint / Beta Readiness Decision (COMPLETE 2026-07-21)
+
+- [x] Checkpoint document created — `docs/BETA-READY-SMOKE-CHECKPOINT.md`.
+- [x] TASKS.md updated — BETA-READY-SMOKE COMPLETE and LOCKED.
+- [x] TASKS_BACKLOG_FULL.md updated — mirrored.
+- [x] AINOW-EXECUTION-ROADMAP.md updated.
+- [x] Beta readiness decision recorded — Local pre-beta full-stack smoke for the bounded RPG/Create Agent MVP path: PASS. Supports proceeding toward a limited private beta handoff/checklist. No production/staging deployment or public beta launch was performed. Actual beta rollout requires Keith explicit approval.
+- [x] No source changes during consolidation unless explicitly required and approved.
+- [x] No secrets opened.
+- [x] No subagents.
+- [x] No git commit or push.
+
+**BETA-READY-SMOKE status:** COMPLETE and LOCKED — 2026-07-21. Final verdict PASS. All 4 steps complete. Step 1 Registration COMPLETE (2026-07-21). Step 2 Stage-start COMPLETE (2026-07-21) — `docs/BETA-READY-SMOKE-STAGE-START.md`. Step 3 Execution COMPLETE (2026-07-21) — `docs/BETA-READY-SMOKE-EXECUTION.md` — PASS. Step 4 Consolidation/Checkpoint COMPLETE (2026-07-21) — `docs/BETA-READY-SMOKE-CHECKPOINT.md`. Full RPG/Create Agent MVP local full-stack smoke passed. Local pre-beta runtime readiness confirmed for this bounded scope. Migration verified; `user_agents` exists; API Gateway + frontend started; health/guards PASS; Keith browser smoke ALL PASS; Create Agent DB-backed create/list/refresh/detail PASS; static agents unchanged; desktop/~390px PASS; zh hardcoded-English check PASS. Limitations: test agent ID not recorded; smoke-created agent remains in local DB; ts-node TypeORM CLI path remains broken for future command review. No production/staging deployment. No public beta launch. Actual beta rollout requires Keith explicit approval. No source/test/translation/package/migration/entity/environment/Docker files changed during consolidation. No secrets opened. No subagents. No git commit/push. Do not modify after locking except by explicitly approved follow-up task.
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> BETA-READY-SMOKE.
 
 ---
 
