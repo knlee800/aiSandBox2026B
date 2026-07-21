@@ -25152,7 +25152,7 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 
 **Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` �X controls cross-family priority order; Knowledge before Collaboration before Billing.
 
-**Current stage:** PRIVATE-BETA-STAGING-SETUP-02 — Server Baseline and SSH Access Plan — COMPLETE and LOCKED — 2026-07-21 — All 3 steps COMPLETE — Checkpoint: docs/PRIVATE-BETA-STAGING-SETUP-02-CHECKPOINT.md — Server baseline plan: docs/PRIVATE-BETA-STAGING-SETUP-02-SERVER-BASELINE-PLAN.md — No server created — No static IP created — No firewall changed — No SSH occurred — No implementation — Parent: PRIVATE-BETA-STAGING-SETUP — ACTIVE — Steps 1–2 COMPLETE — Step 3 executing via 8 child tasks — SETUP-01 COMPLETE and LOCKED (2026-07-21) — SETUP-02 COMPLETE and LOCKED (2026-07-21) — Next action: register PRIVATE-BETA-STAGING-SETUP-03 — Domain / DNS / TLS Plan for staging.ainow.biz — requires Keith explicit approval — PRIVATE-BETA-DEPLOYMENT-READINESS BLOCKED / PAUSED after Step 2 — blocker: no staging/production-like target exists; target URL undecided; backend/frontend deployment unknown — resume Step 3 only after PRIVATE-BETA-STAGING-SETUP completes or produces verified target — Stage-start plan: docs/PRIVATE-BETA-DEPLOYMENT-READINESS-STAGE-START.md — PRIVATE-BETA-DEPLOYMENT-READINESS — Private Beta Deployment / Staging Readiness Check — BLOCKED / PAUSED — Steps 1–2 COMPLETE — Step 2 COMPLETE (Stage-start/staging readiness plan — 2026-07-21) — docs/PRIVATE-BETA-DEPLOYMENT-READINESS-STAGE-START.md — Step 3 BLOCKED: no staging target — resumes after PRIVATE-BETA-STAGING-SETUP — no implementation — no source changes — LIMITED-PRIVATE-BETA-HANDOFF — Limited Private Beta Handoff / Checklist — COMPLETE and LOCKED — 2026-07-21 — all 3 steps complete — Checklist: docs/LIMITED-PRIVATE-BETA-HANDOFF-CHECKLIST.md — Checkpoint: docs/LIMITED-PRIVATE-BETA-HANDOFF-CHECKPOINT.md — BETA-READY-MIGRATION-CLI-01 — TypeORM Migration CLI Path Fix — COMPLETE and LOCKED — 2026-07-21 — all 3 steps complete — TINY TOOLING FOLLOW-UP — `"ts-node": "^10.9.2"` added to `devDependencies` in `services/api-gateway/package.json` — `npx typeorm-ts-node-commonjs --help` PASS — `npm run build` PASS — no migration execution — B3 PASS unchanged — Checkpoint: `docs/BETA-READY-MIGRATION-CLI-01-CHECKPOINT.md` — next: limited private beta handoff/checklist — requires Keith explicit approval — BETA-READY-SMOKE — Pre-Beta Full-Stack Live Smoke — COMPLETE and LOCKED — 2026-07-21 — Final verdict PASS — all 4 steps complete — local pre-beta full-stack smoke for bounded RPG/Create Agent MVP path PASS — Checkpoint: `docs/BETA-READY-SMOKE-CHECKPOINT.md` — Stage-start: `docs/BETA-READY-SMOKE-STAGE-START.md` — Execution: `docs/BETA-READY-SMOKE-EXECUTION.md` — migration verified (Keith compiled TypeORM path) — `user_agents` table exists — API Gateway + frontend started — health/guards PASS — Keith browser smoke ALL PASS — Create Agent DB-backed create/list/refresh/detail PASS — no deployment — no public beta launch — AGENT-PLATFORM-CREATE-01B — Create Agent MVP UI — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — Create Agent CTA implemented — inline form implemented — user-created agents list implemented — 28 translation keys per locale — `useUserAgents` hook — mocked `GET /api/agents` and `POST /api/agents` tests passed (641/641 frontend) — TypeScript clean — Build clean — Linter 0 errors — live DB-backed smoke deferred — migration NOT executed — Checkpoint: `docs/AGENT-PLATFORM-CREATE-01B-CHECKPOINT.md` — AGENT-PLATFORM-CREATE-01A — Create Agent Backend Minimal Persistence — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — `UserAgent` entity implemented — `user_agents` migration created (NOT executed) — `POST /api/agents`, `GET /api/agents`, `GET /api/agents/:id` implemented — user ownership/scoping enforced — 30/30 tests PASS — TypeScript clean — Build clean — Checkpoint: `docs/AGENT-PLATFORM-CREATE-01A-CHECKPOINT.md` — Next recommended: AGENT-PLATFORM-CREATE-01B (Create Agent MVP UI — requires Keith explicit approval) — B3 remains paused — AGENT-PLATFORM-RPG-03B — Platform Link from Workspace + Auth Guard Review — COMPLETE and LOCKED — 2026-07-20 — all 3 steps complete — workspace/home platform CTA implemented — `/[locale]/platform` auth guard added — manual smoke PASS WITH LIMITATION (unauthenticated redirect PASS; authenticated access smoke deferred) — Checkpoint: `docs/AGENT-PLATFORM-RPG-03B-CHECKPOINT.md` — AGENT-PLATFORM-RPG-03A — Platform Dashboard Visual Identity + Agent Detail Panel — COMPLETE and LOCKED — 2026-07-20 — all 3 steps complete — Checkpoint: `docs/AGENT-PLATFORM-RPG-03A-CHECKPOINT.md` — AGENT-PLATFORM-RPG-MVP-RESET — RPG UX/UI and Agent Creation Beta Readiness Reset — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — B3 remains paused — chosen path: RPG-03A (COMPLETE and LOCKED) → RPG-03B → CREATE-01A → CREATE-01B → BETA-READY-SMOKE — Checkpoint: `docs/AGENT-PLATFORM-RPG-MVP-RESET-CHECKPOINT.md` — BETA-READY-DEPLOYMENT-CONFIG — Production Deployment Configuration — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — B2 resolved at documentation/template-readiness level — Checkpoint: `docs/BETA-READY-DEPLOYMENT-CONFIG-CHECKPOINT.md` — B3 pre-beta full-stack live smoke remains pending — requires Keith explicit approval before registration — AGENT-HARNESS-WRITE-CANARY — Agent Harness Write Canary + Production Activation — COMPLETE and LOCKED — 2026-07-20 — all 4 parent steps complete — child A COMPLETE and LOCKED (2026-07-19) — child B COMPLETE and LOCKED (2026-07-20) — first live E2E write canary PASS — safe default remains disabled — no permanent production flag activation — Checkpoint: `docs/AGENT-HARNESS-WRITE-CANARY-CHECKPOINT.md` — BETA-READY-00 blocker B1 resolved at canary-readiness level — BETA-READY-00 — Beta Readiness Checklist — COMPLETE and LOCKED — 2026-07-19 — all 3 steps complete — checklist created (`docs/BETA-READY-00-CHECKLIST.md`) — launch decision: READY FOR LIMITED BETA WITH LIMITATIONS — 15 gates (7 PASS, 8 needs verification) — blockers: B1 (resolved at canary-readiness level; permanent deployment flag activation still separate), B2 (deployment), B3 (pre-beta smoke) — Checkpoint: `docs/BETA-READY-00-CHECKPOINT.md` — ANOMALY-01 COMPLETE and LOCKED — 2026-07-19 — Checkpoint: `docs/ANOMALY-01-CHECKPOINT.md` — BILLING-READY-07 COMPLETE and LOCKED — 2026-07-17 — Outcome B — PASS WITH LIMITATIONS — BILLING-READY-07A COMPLETE and LOCKED — 2026-07-17 — Step 3 rerun PASS (2026-07-19) — BR07A-DEFECT-01 resolved — BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200 COMPLETE and LOCKED — 2026-07-17 — Checkpoint: `docs/BILLING-READY-07A-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-07-CHECKPOINT.md` — Consolidation document: `docs/BILLING-READY-07-CONSOLIDATION-DECISION.md` — BILLING-READY-06 COMPLETE and LOCKED (2026-07-17) — BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — BILLING-READY-06B COMPLETE and LOCKED (2026-07-17) — Checkpoint: `docs/BILLING-READY-06B-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-06-CHECKPOINT.md` — AGENT-HARNESS write canary remains a separate track. BILLING-READY-05 COMPLETE and LOCKED (2026-07-16) — all 4 parent steps complete — all child slices 05A–05G COMPLETE and LOCKED — Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`. BILLING-READY-05G COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-05G-CHECKPOINT.md`. BILLING-READY-05F COMPLETE and LOCKED (2026-07-15). BILLING-READY-05E COMPLETE and LOCKED (2026-07-15). BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-04 COMPLETE and LOCKED (2026-07-13). BILLING-READY-03 COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
+**Current stage:** PRIVATE-BETA-STAGING-SETUP-03 — Domain / DNS / TLS Plan for staging.ainow.biz — COMPLETE and LOCKED — 2026-07-21 — All 3 steps COMPLETE — Checkpoint: docs/PRIVATE-BETA-STAGING-SETUP-03-CHECKPOINT.md — DNS/TLS plan: docs/PRIVATE-BETA-STAGING-SETUP-03-DNS-TLS-PLAN.md — staging.ainow.biz confirmed as staging/private beta URL — app.ainow.biz confirmed as future production app URL — No DNS change — No TLS certificate requested — No Caddy install/config — No AWS/server/static IP/firewall/SSH action — No implementation — Parent: PRIVATE-BETA-STAGING-SETUP — ACTIVE — Steps 1–2 COMPLETE — Step 3 executing via 8 child tasks — SETUP-01 COMPLETE and LOCKED (2026-07-21) — SETUP-02 COMPLETE and LOCKED (2026-07-21) — SETUP-03 COMPLETE and LOCKED (2026-07-21) — PRIVATE-BETA-DEPLOYMENT-READINESS BLOCKED / PAUSED after Step 2 — blocker: no staging/production-like target exists; target URL undecided; backend/frontend deployment unknown — resume Step 3 only after PRIVATE-BETA-STAGING-SETUP completes or produces verified target — Stage-start plan: docs/PRIVATE-BETA-DEPLOYMENT-READINESS-STAGE-START.md — Next recommended action: register PRIVATE-BETA-STAGING-SETUP-04 — Runtime / Container Deployment Plan — requires Keith explicit approval Deployment / Staging Readiness Check — BLOCKED / PAUSED — Steps 1–2 COMPLETE — Step 2 COMPLETE (Stage-start/staging readiness plan — 2026-07-21) — docs/PRIVATE-BETA-DEPLOYMENT-READINESS-STAGE-START.md — Step 3 BLOCKED: no staging target — resumes after PRIVATE-BETA-STAGING-SETUP — no implementation — no source changes — LIMITED-PRIVATE-BETA-HANDOFF — Limited Private Beta Handoff / Checklist — COMPLETE and LOCKED — 2026-07-21 — all 3 steps complete — Checklist: docs/LIMITED-PRIVATE-BETA-HANDOFF-CHECKLIST.md — Checkpoint: docs/LIMITED-PRIVATE-BETA-HANDOFF-CHECKPOINT.md — BETA-READY-MIGRATION-CLI-01 — TypeORM Migration CLI Path Fix — COMPLETE and LOCKED — 2026-07-21 — all 3 steps complete — TINY TOOLING FOLLOW-UP — `"ts-node": "^10.9.2"` added to `devDependencies` in `services/api-gateway/package.json` — `npx typeorm-ts-node-commonjs --help` PASS — `npm run build` PASS — no migration execution — B3 PASS unchanged — Checkpoint: `docs/BETA-READY-MIGRATION-CLI-01-CHECKPOINT.md` — next: limited private beta handoff/checklist — requires Keith explicit approval — BETA-READY-SMOKE — Pre-Beta Full-Stack Live Smoke — COMPLETE and LOCKED — 2026-07-21 — Final verdict PASS — all 4 steps complete — local pre-beta full-stack smoke for bounded RPG/Create Agent MVP path PASS — Checkpoint: `docs/BETA-READY-SMOKE-CHECKPOINT.md` — Stage-start: `docs/BETA-READY-SMOKE-STAGE-START.md` — Execution: `docs/BETA-READY-SMOKE-EXECUTION.md` — migration verified (Keith compiled TypeORM path) — `user_agents` table exists — API Gateway + frontend started — health/guards PASS — Keith browser smoke ALL PASS — Create Agent DB-backed create/list/refresh/detail PASS — no deployment — no public beta launch — AGENT-PLATFORM-CREATE-01B — Create Agent MVP UI — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — Create Agent CTA implemented — inline form implemented — user-created agents list implemented — 28 translation keys per locale — `useUserAgents` hook — mocked `GET /api/agents` and `POST /api/agents` tests passed (641/641 frontend) — TypeScript clean — Build clean — Linter 0 errors — live DB-backed smoke deferred — migration NOT executed — Checkpoint: `docs/AGENT-PLATFORM-CREATE-01B-CHECKPOINT.md` — AGENT-PLATFORM-CREATE-01A — Create Agent Backend Minimal Persistence — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — `UserAgent` entity implemented — `user_agents` migration created (NOT executed) — `POST /api/agents`, `GET /api/agents`, `GET /api/agents/:id` implemented — user ownership/scoping enforced — 30/30 tests PASS — TypeScript clean — Build clean — Checkpoint: `docs/AGENT-PLATFORM-CREATE-01A-CHECKPOINT.md` — Next recommended: AGENT-PLATFORM-CREATE-01B (Create Agent MVP UI — requires Keith explicit approval) — B3 remains paused — AGENT-PLATFORM-RPG-03B — Platform Link from Workspace + Auth Guard Review — COMPLETE and LOCKED — 2026-07-20 — all 3 steps complete — workspace/home platform CTA implemented — `/[locale]/platform` auth guard added — manual smoke PASS WITH LIMITATION (unauthenticated redirect PASS; authenticated access smoke deferred) — Checkpoint: `docs/AGENT-PLATFORM-RPG-03B-CHECKPOINT.md` — AGENT-PLATFORM-RPG-03A — Platform Dashboard Visual Identity + Agent Detail Panel — COMPLETE and LOCKED — 2026-07-20 — all 3 steps complete — Checkpoint: `docs/AGENT-PLATFORM-RPG-03A-CHECKPOINT.md` — AGENT-PLATFORM-RPG-MVP-RESET — RPG UX/UI and Agent Creation Beta Readiness Reset — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — B3 remains paused — chosen path: RPG-03A (COMPLETE and LOCKED) → RPG-03B → CREATE-01A → CREATE-01B → BETA-READY-SMOKE — Checkpoint: `docs/AGENT-PLATFORM-RPG-MVP-RESET-CHECKPOINT.md` — BETA-READY-DEPLOYMENT-CONFIG — Production Deployment Configuration — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — B2 resolved at documentation/template-readiness level — Checkpoint: `docs/BETA-READY-DEPLOYMENT-CONFIG-CHECKPOINT.md` — B3 pre-beta full-stack live smoke remains pending — requires Keith explicit approval before registration — AGENT-HARNESS-WRITE-CANARY — Agent Harness Write Canary + Production Activation — COMPLETE and LOCKED — 2026-07-20 — all 4 parent steps complete — child A COMPLETE and LOCKED (2026-07-19) — child B COMPLETE and LOCKED (2026-07-20) — first live E2E write canary PASS — safe default remains disabled — no permanent production flag activation — Checkpoint: `docs/AGENT-HARNESS-WRITE-CANARY-CHECKPOINT.md` — BETA-READY-00 blocker B1 resolved at canary-readiness level — BETA-READY-00 — Beta Readiness Checklist — COMPLETE and LOCKED — 2026-07-19 — all 3 steps complete — checklist created (`docs/BETA-READY-00-CHECKLIST.md`) — launch decision: READY FOR LIMITED BETA WITH LIMITATIONS — 15 gates (7 PASS, 8 needs verification) — blockers: B1 (resolved at canary-readiness level; permanent deployment flag activation still separate), B2 (deployment), B3 (pre-beta smoke) — Checkpoint: `docs/BETA-READY-00-CHECKPOINT.md` — ANOMALY-01 COMPLETE and LOCKED — 2026-07-19 — Checkpoint: `docs/ANOMALY-01-CHECKPOINT.md` — BILLING-READY-07 COMPLETE and LOCKED — 2026-07-17 — Outcome B — PASS WITH LIMITATIONS — BILLING-READY-07A COMPLETE and LOCKED — 2026-07-17 — Step 3 rerun PASS (2026-07-19) — BR07A-DEFECT-01 resolved — BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200 COMPLETE and LOCKED — 2026-07-17 — Checkpoint: `docs/BILLING-READY-07A-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-07-CHECKPOINT.md` — Consolidation document: `docs/BILLING-READY-07-CONSOLIDATION-DECISION.md` — BILLING-READY-06 COMPLETE and LOCKED (2026-07-17) — BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — BILLING-READY-06B COMPLETE and LOCKED (2026-07-17) — Checkpoint: `docs/BILLING-READY-06B-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-06-CHECKPOINT.md` — AGENT-HARNESS write canary remains a separate track. BILLING-READY-05 COMPLETE and LOCKED (2026-07-16) — all 4 parent steps complete — all child slices 05A–05G COMPLETE and LOCKED — Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`. BILLING-READY-05G COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-05G-CHECKPOINT.md`. BILLING-READY-05F COMPLETE and LOCKED (2026-07-15). BILLING-READY-05E COMPLETE and LOCKED (2026-07-15). BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-04 COMPLETE and LOCKED (2026-07-13). BILLING-READY-03 COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 �X ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED �X 2026-07-04)
@@ -25186,6 +25186,7 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 30. PRIVATE-BETA-STAGING-SETUP — Staging / Production-like Deployment Target Setup (ACTIVE — Steps 1–2 COMPLETE — Step 2 COMPLETE Stage-start / AWS Lightsail Staging Setup Plan — 2026-07-21 — Step 3 executing via 8 child tasks)
 30a. PRIVATE-BETA-STAGING-SETUP-01 — AWS Lightsail Account / Region / Instance Decision (COMPLETE and LOCKED — 2026-07-21 — All 3 steps COMPLETE — Checkpoint: docs/PRIVATE-BETA-STAGING-SETUP-01-CHECKPOINT.md)
 30b. PRIVATE-BETA-STAGING-SETUP-02 — Server Baseline and SSH Access Plan (COMPLETE and LOCKED — 2026-07-21 — All 3 steps COMPLETE — Checkpoint: docs/PRIVATE-BETA-STAGING-SETUP-02-CHECKPOINT.md)
+30c. PRIVATE-BETA-STAGING-SETUP-03 — Domain / DNS / TLS Plan for staging.ainow.biz (COMPLETE and LOCKED — 2026-07-21 — All 3 steps COMPLETE — Checkpoint: docs/PRIVATE-BETA-STAGING-SETUP-03-CHECKPOINT.md)
 
 20. AGENT-PLATFORM-07F3 �X Parent Consolidation Checkpoint (COMPLETE and LOCKED �X 2026-07-12)
 
@@ -36473,7 +36474,7 @@ The local bounded RPG/Create Agent MVP path has passed full-stack local smoke (B
 
 #### PRIVATE-BETA-STAGING-SETUP: Staging / Production-like Deployment Target Setup
 
-**Status:** ACTIVE — Steps 1–2 COMPLETE — Step 3 executing via 8 child tasks — PRIVATE-BETA-STAGING-SETUP-02 is the current ACTIVE child task
+**Status:** ACTIVE — Steps 1–2 COMPLETE — Step 3 executing via 8 child tasks — PRIVATE-BETA-STAGING-SETUP-03 COMPLETE and LOCKED (2026-07-21) — next child task: register PRIVATE-BETA-STAGING-SETUP-04 (requires Keith explicit approval)
 **Task ID:** PRIVATE-BETA-STAGING-SETUP
 **Title:** Staging / Production-like Deployment Target Setup
 **Family:** BETA READY / PRIVATE BETA / STAGING SETUP / DEPLOYMENT TARGET
@@ -36511,7 +36512,7 @@ PRIVATE-BETA-DEPLOYMENT-READINESS Step 3 must not begin until:
 
 1. **Registration** — COMPLETE (2026-07-21) — Keith explicit approval recorded ("go"); scope, safety boundaries, non-goals, and migration/runtime limitations documented; no implementation; no runtime execution; no source/env/Docker changes; no secrets opened.
 2. **Stage-start / hosting target decision + setup plan** — COMPLETE (2026-07-21) — AWS Lightsail staging setup plan created in `docs/PRIVATE-BETA-STAGING-SETUP-STAGE-START.md`. Keith decisions recorded: Provider AWS Lightsail; Region ap-southeast-1 Singapore; Instance 8 GB / 2 vCPU / 160 GB SSD; Budget ~$40/month; Domain staging.ainow.biz; Architecture single VPS; Reverse proxy Caddy; PostgreSQL 15 self-hosted; Redis 7 self-hosted; PM2 process manager; AI Service / Container Manager deploy with kill switches; 8 child tasks recommended (SETUP-01 through SETUP-08).
-3. **Execution / staging target setup** — IN PROGRESS — Executing via 8 child tasks (SETUP-01 through SETUP-08). PRIVATE-BETA-STAGING-SETUP-01 COMPLETE and LOCKED (2026-07-21). PRIVATE-BETA-STAGING-SETUP-02 (Server Baseline and SSH Access Plan) is the current ACTIVE child task — Step 1 COMPLETE (Registration — 2026-07-21) — Step 2 (Server Baseline and SSH Access Plan) pending Keith explicit approval.
+3. **Execution / staging target setup** — IN PROGRESS — Executing via 8 child tasks (SETUP-01 through SETUP-08). PRIVATE-BETA-STAGING-SETUP-01 COMPLETE and LOCKED (2026-07-21). PRIVATE-BETA-STAGING-SETUP-02 COMPLETE and LOCKED (2026-07-21). PRIVATE-BETA-STAGING-SETUP-03 COMPLETE and LOCKED (2026-07-21) — Domain / DNS / TLS Plan — All 3 steps COMPLETE — Checkpoint: docs/PRIVATE-BETA-STAGING-SETUP-03-CHECKPOINT.md — DNS/TLS plan: docs/PRIVATE-BETA-STAGING-SETUP-03-DNS-TLS-PLAN.md. Next: PRIVATE-BETA-STAGING-SETUP-04 (Runtime / Container Deployment Plan) — not yet registered — requires Keith explicit approval.
 4. **Consolidation / handoff back to deployment readiness verification** — PENDING — Record verified staging target, confirm PRIVATE-BETA-DEPLOYMENT-READINESS Step 3 may proceed, produce handoff notes.
 
 #### Scope (All Steps)
@@ -36614,7 +36615,7 @@ PRIVATE-BETA-DEPLOYMENT-READINESS Step 3 must not begin until:
 - [ ] Step 3 — Execution / staging target setup — IN PROGRESS (executing via 8 child tasks SETUP-01 through SETUP-08 — SETUP-01 COMPLETE and LOCKED — SETUP-02 ACTIVE — Step 1 COMPLETE (Registration — 2026-07-21) — Step 2 pending Keith approval).
 - [ ] Step 4 — Consolidation / handoff back to deployment readiness verification — PENDING.
 
-**PRIVATE-BETA-STAGING-SETUP status:** ACTIVE — Steps 1–2 COMPLETE — Step 3 executing via 8 child tasks. Step 1 Registration COMPLETE (2026-07-21). Step 2 Stage-start COMPLETE (2026-07-21) — `docs/PRIVATE-BETA-STAGING-SETUP-STAGE-START.md`. Keith decisions recorded: AWS Lightsail / ap-southeast-1 Singapore / 8 GB instance / ~$40/month / staging.ainow.biz / Caddy / PostgreSQL 15 / Redis 7 / PM2 / AI Service + Container Manager with kill switches / 8 child tasks / migration execution separate / beta invite separate. PRIVATE-BETA-STAGING-SETUP-01 COMPLETE and LOCKED (2026-07-21) — Keith manual confirmations PASS — all 8 checks Yes — Checkpoint: `docs/PRIVATE-BETA-STAGING-SETUP-01-CHECKPOINT.md` — No server created. PRIVATE-BETA-STAGING-SETUP-02 ACTIVE (2026-07-21) — Step 1 COMPLETE (Registration) — Server Baseline and SSH Access Plan — planning only — no server created — Step 2 pending Keith explicit approval. PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — blocker: no verified staging target yet. LIMITED-PRIVATE-BETA-HANDOFF remains COMPLETE and LOCKED. BETA-READY-SMOKE / B3 remains COMPLETE and LOCKED — PASS. No implementation occurred. No source/test/package/migration/entity/environment/Docker files changed. No secrets opened. No subagents. No git commit/push.
+**PRIVATE-BETA-STAGING-SETUP status:** ACTIVE — Steps 1–2 COMPLETE — Step 3 executing via 8 child tasks. Step 1 Registration COMPLETE (2026-07-21). Step 2 Stage-start COMPLETE (2026-07-21) — `docs/PRIVATE-BETA-STAGING-SETUP-STAGE-START.md`. Keith decisions recorded: AWS Lightsail / ap-southeast-1 Singapore / 8 GB instance / ~$40/month / staging.ainow.biz / Caddy / PostgreSQL 15 / Redis 7 / PM2 / AI Service + Container Manager with kill switches / 8 child tasks / migration execution separate / beta invite separate. PRIVATE-BETA-STAGING-SETUP-01 COMPLETE and LOCKED (2026-07-21) — Keith manual confirmations PASS — all 8 checks Yes — Checkpoint: `docs/PRIVATE-BETA-STAGING-SETUP-01-CHECKPOINT.md` — No server created. PRIVATE-BETA-STAGING-SETUP-02 COMPLETE and LOCKED (2026-07-21) — All 3 steps COMPLETE — Server baseline plan: `docs/PRIVATE-BETA-STAGING-SETUP-02-SERVER-BASELINE-PLAN.md` — Step 2 verdict PASS — No server created. PRIVATE-BETA-STAGING-SETUP-03 COMPLETE and LOCKED (2026-07-21) — All 3 steps COMPLETE — DNS/TLS plan: `docs/PRIVATE-BETA-STAGING-SETUP-03-DNS-TLS-PLAN.md` — Step 2 verdict PASS — Checkpoint: `docs/PRIVATE-BETA-STAGING-SETUP-03-CHECKPOINT.md` — staging.ainow.biz confirmed — No DNS change — No TLS certificate — No Caddy install/config — No AWS/server/static IP/firewall/SSH action. PRIVATE-BETA-STAGING-SETUP-04 (Runtime / Container Deployment Plan) is the next child task — not yet registered — requires Keith explicit approval. PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — blocker: no verified staging target yet. LIMITED-PRIVATE-BETA-HANDOFF remains COMPLETE and LOCKED. BETA-READY-SMOKE / B3 remains COMPLETE and LOCKED — PASS. No implementation occurred. No source/test/package/migration/entity/environment/Docker files changed. No secrets opened. No subagents. No git commit/push.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> PRIVATE-BETA-STAGING-SETUP.
 
@@ -36879,7 +36880,162 @@ Second child task of PRIVATE-BETA-STAGING-SETUP Step 3 (Execution). Creates a co
 
 ---
 
-#### AGENT-HARNESS-07: Per-Builder Harness Config Adapter
+#### PRIVATE-BETA-STAGING-SETUP-03: Domain / DNS / TLS Plan for staging.ainow.biz
+
+**Status:** COMPLETE and LOCKED — 2026-07-21 — All 3 steps COMPLETE
+**Task ID:** PRIVATE-BETA-STAGING-SETUP-03
+**Family:** PRIVATE BETA STAGING SETUP
+**Priority:** Critical
+**Nature:** DOMAIN / DNS / TLS PLANNING — planning only — no DNS/TLS/server/Caddy changes
+**Risk:** MEDIUM — planning only; no DNS/TLS/Caddy/server/static IP/firewall/SSH action occurred
+**Registered:** 2026-07-21
+**Completed:** 2026-07-21
+**Approved by:** Keith — explicit approval recorded 2026-07-21 ("go")
+**Checkpoint:** `docs/PRIVATE-BETA-STAGING-SETUP-03-CHECKPOINT.md`
+**DNS/TLS Plan:** `docs/PRIVATE-BETA-STAGING-SETUP-03-DNS-TLS-PLAN.md`
+**Parent task:** PRIVATE-BETA-STAGING-SETUP — ACTIVE — Steps 1–2 COMPLETE — Step 3 executing via 8 child tasks
+
+#### Why PRIVATE-BETA-STAGING-SETUP-03 Exists
+
+SETUP-01 and SETUP-02 are COMPLETE and LOCKED. The staging target needs a confirmed domain/DNS/TLS plan before server provisioning and runtime deployment can proceed. staging.ainow.biz has been confirmed as the staging/private beta URL. This task creates the complete DNS and TLS plan covering registrar discovery, Lightsail static IP dependency, DNS A record strategy, Caddy reverse proxy/TLS plan, routing, cookies, CORS, propagation expectations, and Keith manual actions. No DNS or TLS changes are made during planning.
+
+#### Confirmed Decisions Carried Forward
+
+- Provider: AWS Lightsail
+- Region: Singapore / ap-southeast-1
+- Instance: 8 GB RAM / 2 vCPU / 160 GB SSD
+- Budget: ~$40–44/month
+- Staging domain: staging.ainow.biz
+- Future production app domain: app.ainow.biz
+- Root domain later: ainow.biz (marketing/landing)
+- Reverse proxy/TLS: Caddy (automatic Let's Encrypt)
+- Database: self-host PostgreSQL 15 on same VPS
+- Redis: self-host Redis 7 on same VPS
+- Process manager: PM2
+- Public ports: 80 and 443
+- Internal/app ports closed externally: 3002, 4000, 4001, 4002, 5432, 6379
+
+#### Recommended DNS/TLS Defaults (recorded for Step 2)
+
+- Staging domain: staging.ainow.biz
+- Production app domain (future): app.ainow.biz
+- Root domain (future): ainow.biz
+- DNS record type: A record
+- DNS target: Lightsail static IP (from SETUP-02 future execution)
+- Reverse proxy: Caddy
+- TLS: automatic Let's Encrypt via Caddy
+- Public ports: 80, 443
+- Route plan: staging.ainow.biz → frontend; staging.ainow.biz/api/* → API Gateway
+
+#### Scope (Future Step 2)
+
+1. Confirmed staging domain: staging.ainow.biz
+2. Future production app domain: app.ainow.biz
+3. Root domain role: ainow.biz as marketing/landing later
+4. DNS registrar / DNS hosting discovery checklist
+5. Lightsail static IP dependency
+6. DNS A record plan
+7. Caddy reverse proxy plan
+8. Automatic Let's Encrypt TLS plan
+9. HTTP → HTTPS redirect plan
+10. Frontend route proxy plan
+11. API Gateway /api/* proxy plan
+12. Internal service ports that must remain closed
+13. Cookie/session/domain implications
+14. CORS/origin implications
+15. DNS propagation expectations
+16. Keith manual DNS actions
+17. Validation checks after DNS/TLS setup
+18. What must not happen yet
+19. Handoff to SETUP-04 — Runtime / Container Deployment Plan
+
+#### Non-Goals (All Steps)
+
+- No DNS changes during registration
+- No TLS changes during registration
+- No Caddy installation/configuration during registration
+- No server creation
+- No static IP creation
+- No firewall changes
+- No SSH
+- No deployment
+- No source changes
+- No package changes
+- No environment edits
+- No secret exposure
+- No migration execution
+- No Docker/runtime work
+- No beta invite
+- No public launch
+- No production domain cutover
+- No git commit or push
+
+#### Safety Boundaries
+
+- No DNS changes during registration.
+- No TLS changes during registration.
+- No Caddy config changes during registration.
+- No AWS changes during registration.
+- No server/static IP/firewall/SSH action during registration.
+- No secrets opened or printed.
+- No `.env` editing.
+- Future DNS changes require Keith explicit approval.
+- Future TLS/Caddy setup requires Keith explicit approval.
+- Future migration execution requires separate explicit Keith approval.
+- Never run `docker compose down -v` without Keith explicit approval.
+- No git commit or push.
+- No subagents.
+
+#### Workflow (3-Step Loop)
+
+1. **Registration** — COMPLETE (2026-07-21) — Keith explicit approval recorded ("go"); scope, safety boundaries, non-goals, recommended defaults, and domain decisions documented; no DNS/TLS/Caddy/server/AWS action; no implementation files changed; no secrets opened.
+2. **Domain / DNS / TLS plan** — COMPLETE (2026-07-21) — Plan document created: `docs/PRIVATE-BETA-STAGING-SETUP-03-DNS-TLS-PLAN.md`. Step 2 verdict: PASS. All 19 scope items covered. No DNS/TLS/Caddy/server/static IP/firewall/SSH action occurred.
+3. **Consolidation / handoff to SETUP-04** — COMPLETE (2026-07-21) — Checkpoint: `docs/PRIVATE-BETA-STAGING-SETUP-03-CHECKPOINT.md`. TASKS.md, TASKS_BACKLOG_FULL.md, AINOW-EXECUTION-ROADMAP.md updated. SETUP-03 marked COMPLETE and LOCKED. SETUP-04 not registered in this step.
+
+#### Acceptance Criteria
+
+###### Registration (Step 1 — COMPLETE 2026-07-21)
+- [x] PRIVATE-BETA-STAGING-SETUP-03 added to TASKS_BACKLOG_FULL.md.
+- [x] PRIVATE-BETA-STAGING-SETUP-03 activated in TASKS.md.
+- [x] PRIVATE-BETA-STAGING-SETUP-01 remains COMPLETE and LOCKED.
+- [x] PRIVATE-BETA-STAGING-SETUP-02 remains COMPLETE and LOCKED.
+- [x] Parent PRIVATE-BETA-STAGING-SETUP remains ACTIVE.
+- [x] Scope limited to domain/DNS/TLS planning.
+- [x] 3-step child workflow recorded.
+- [x] staging.ainow.biz recorded as staging/private beta URL.
+- [x] app.ainow.biz recorded as future production app URL.
+- [x] ainow.biz recorded as future root/marketing domain.
+- [x] Recommended DNS/TLS defaults recorded.
+- [x] No DNS/TLS/Caddy/AWS/server action claimed.
+- [x] No implementation during registration.
+- [x] No source/test/package/migration/entity/environment/Docker/deployment files changed.
+- [x] No runtime, Docker, DB, browser, API, test, build, migration execution, deployment, git commit, or git push occurred.
+- [x] No secret-bearing environment file opened.
+- [x] No subagents used.
+- [x] AINOW-EXECUTION-ROADMAP.md updated.
+
+###### Domain / DNS / TLS Plan (Step 2 — COMPLETE 2026-07-21)
+- [x] Plan document created covering all 19 scope items — `docs/PRIVATE-BETA-STAGING-SETUP-03-DNS-TLS-PLAN.md`.
+- [x] DNS registrar / DNS hosting discovery checklist included.
+- [x] Lightsail static IP dependency documented.
+- [x] Caddy reverse proxy and Let's Encrypt TLS plan documented.
+- [x] Keith manual DNS actions checklist included.
+- [x] No DNS/TLS/Caddy/server changes occurred.
+- [x] Keith explicit approval recorded before this step.
+
+###### Consolidation / Handoff to SETUP-04 (Step 3 — COMPLETE 2026-07-21)
+- [x] Checkpoint document created — `docs/PRIVATE-BETA-STAGING-SETUP-03-CHECKPOINT.md`.
+- [x] PRIVATE-BETA-STAGING-SETUP-03 marked COMPLETE and LOCKED in TASKS.md.
+- [x] PRIVATE-BETA-STAGING-SETUP-03 marked COMPLETE and LOCKED in TASKS_BACKLOG_FULL.md.
+- [x] AINOW-EXECUTION-ROADMAP.md updated.
+- [x] Parent PRIVATE-BETA-STAGING-SETUP remains ACTIVE.
+- [x] SETUP-04 not registered in this step.
+
+**PRIVATE-BETA-STAGING-SETUP-03 status:** COMPLETE and LOCKED — 2026-07-21 — All 3 steps COMPLETE. Step 1 Registration COMPLETE (2026-07-21). Step 2 Domain / DNS / TLS Plan COMPLETE (2026-07-21) — `docs/PRIVATE-BETA-STAGING-SETUP-03-DNS-TLS-PLAN.md` — Step 2 verdict PASS. Step 3 Consolidation COMPLETE (2026-07-21) — `docs/PRIVATE-BETA-STAGING-SETUP-03-CHECKPOINT.md`. staging.ainow.biz confirmed as staging/private beta URL. app.ainow.biz confirmed as future production app URL. DNS A record plan recorded. Lightsail static IP dependency recorded. Caddy / Let's Encrypt / HTTP→HTTPS plan recorded. Frontend/API route plan recorded. Internal ports closed externally recorded. No DNS change. No TLS certificate requested. No Caddy install/config. No AWS/server/static IP/firewall/SSH action. No implementation. No source/test/package/migration/entity/environment/Docker files changed. No secrets opened. No subagents. No git commit/push. Parent PRIVATE-BETA-STAGING-SETUP remains ACTIVE — Step 3 continues via remaining child tasks (SETUP-04 through SETUP-08). Next recommended action: register PRIVATE-BETA-STAGING-SETUP-04 — Runtime / Container Deployment Plan — requires Keith explicit approval.
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> PRIVATE-BETA-STAGING-SETUP-03. Parent: PRIVATE-BETA-STAGING-SETUP.
+
+---
 
 **Status:** COMPLETE and LOCKED �X 2026-07-07. All 3 child slices COMPLETE and LOCKED: 07A, 07B, 07C. See `docs/AGENT-HARNESS-07-CHECKPOINT.md`.
 **Task ID:** AGENT-HARNESS-07
