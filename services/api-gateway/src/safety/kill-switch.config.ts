@@ -15,7 +15,7 @@ export class KillSwitchConfig {
    * Implemented as a static getter so jest.spyOn(..., 'get') works in tests.
    */
   static get GLOBAL_EXECUTION_ENABLED(): boolean {
-    return process.env.GLOBAL_EXECUTION_ENABLED !== 'false'; // Default: true
+    return process.env.GLOBAL_EXECUTION_ENABLED === 'true'; // Default: false (fail-safe)
   }
 
   /**

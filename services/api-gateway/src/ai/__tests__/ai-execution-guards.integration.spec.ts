@@ -62,6 +62,7 @@ describe('AI Execution Guards Integration (Phase 31B)', () => {
     LaunchConfig.reset();
     AbortConfig.reset();
     process.env.AI_PROVIDER = 'stub';
+    process.env.GLOBAL_EXECUTION_ENABLED = 'true';
 
     quotaServiceMock = {
       getCurrentUsage: jest.fn().mockReturnValue({ requests: 0, tokens: 0 }),

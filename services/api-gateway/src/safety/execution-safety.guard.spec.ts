@@ -559,4 +559,53 @@ describe('ExecutionSafetyGuard', () => {
       expect(recordSpy).not.toHaveBeenCalled();
     });
   });
+
+  describe('P0 Kill-switch default-disabled behavior', () => {
+    it('should throw ServiceUnavailableException when GLOBAL_EXECUTION_ENABLED is unset (fail-safe default)', () => {
+      delete process.env.GLOBAL_EXECUTION_ENABLED;
+      jest.restoreAllMocks();
+
+      const context = createMockExecutionContext({});
+
+      expect(() => {
+        guard.canActivate(context);
+      }).toThrow(ServiceUnavailableException);
+
+      expect(() => {
+        guard.canActivate(context);
+      }).toThrow('AI execution temporarily disabled for maintenance');
+    });
+
+    it('should block before any safety-limit or recording side effect when disabled by default', () => {
+      delete process.env.GLOBAL_EXECUTION_ENABLED;
+      jest.restoreAllMocks();
+
+      const checkSpy = jest.spyOn(globalSafetyLimitService, 'checkExecutionAllowed');
+      const recordSpy = jest.spyOn(globalSafetyLimitService, 'recordExecution');
+
+      const context = createMockExecutionContext({
+        provider: 'anthropic',
+        max_tokens: 1000,
+      });
+
+      try {
+        guard.canActivate(context);
+      } catch (e) {
+        // Expected to throw
+      }
+
+      expect(checkSpy).not.toHaveBeenCalled();
+      expect(recordSpy).not.toHaveBeenCalled();
+    });
+
+    it('should allow execution when GLOBAL_EXECUTION_ENABLED is explicitly set to true', () => {
+      process.env.GLOBAL_EXECUTION_ENABLED = 'true';
+
+      const context = createMockExecutionContext({});
+
+      expect(() => {
+        guard.canActivate(context);
+      }).not.toThrow();
+    });
+  });
 });

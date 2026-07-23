@@ -10,27 +10,31 @@ describe('KillSwitchConfig', () => {
   });
 
   describe('GLOBAL_EXECUTION_ENABLED', () => {
-    it('should default to true when not set', () => {
+    it('should default to false when not set (fail-safe)', () => {
       delete process.env.GLOBAL_EXECUTION_ENABLED;
-      // Re-evaluate the static property
       expect(process.env.GLOBAL_EXECUTION_ENABLED).toBeUndefined();
-      // Default behavior: enabled (true)
-      expect(
-        KillSwitchConfig.GLOBAL_EXECUTION_ENABLED !== false,
-      ).toBe(true);
+      expect(KillSwitchConfig.GLOBAL_EXECUTION_ENABLED).toBe(false);
     });
 
     it('should be false when explicitly set to false', () => {
       process.env.GLOBAL_EXECUTION_ENABLED = 'false';
-      // Test the actual config logic
-      const isEnabled = process.env.GLOBAL_EXECUTION_ENABLED !== 'false';
-      expect(isEnabled).toBe(false);
+      expect(KillSwitchConfig.GLOBAL_EXECUTION_ENABLED).toBe(false);
     });
 
-    it('should be true when set to true', () => {
+    it('should be true when explicitly set to true', () => {
       process.env.GLOBAL_EXECUTION_ENABLED = 'true';
-      const isEnabled = process.env.GLOBAL_EXECUTION_ENABLED !== 'false';
-      expect(isEnabled).toBe(true);
+      expect(KillSwitchConfig.GLOBAL_EXECUTION_ENABLED).toBe(true);
+    });
+
+    it('should be false for any value other than "true"', () => {
+      process.env.GLOBAL_EXECUTION_ENABLED = 'yes';
+      expect(KillSwitchConfig.GLOBAL_EXECUTION_ENABLED).toBe(false);
+
+      process.env.GLOBAL_EXECUTION_ENABLED = '1';
+      expect(KillSwitchConfig.GLOBAL_EXECUTION_ENABLED).toBe(false);
+
+      process.env.GLOBAL_EXECUTION_ENABLED = 'TRUE';
+      expect(KillSwitchConfig.GLOBAL_EXECUTION_ENABLED).toBe(false);
     });
   });
 

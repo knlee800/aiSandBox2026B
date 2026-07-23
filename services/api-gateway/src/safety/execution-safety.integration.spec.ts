@@ -22,6 +22,7 @@ describe('ExecutionSafetyGuard Integration Tests', () => {
   let aiServiceHttpClient: AIServiceHttpClient;
   let usageLedgerService: UsageLedgerService;
   let globalSafetyLimitService: GlobalSafetyLimitService;
+  const savedGlobalExecutionEnabled = process.env.GLOBAL_EXECUTION_ENABLED;
 
   // Mock AI service response
   const mockAIResponse = {
@@ -41,6 +42,8 @@ describe('ExecutionSafetyGuard Integration Tests', () => {
   };
 
   beforeEach(async () => {
+    process.env.GLOBAL_EXECUTION_ENABLED = 'true';
+
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AIExecutionController],
       providers: [
@@ -105,6 +108,11 @@ describe('ExecutionSafetyGuard Integration Tests', () => {
   afterEach(async () => {
     jest.clearAllMocks();
     jest.restoreAllMocks();
+    if (savedGlobalExecutionEnabled === undefined) {
+      delete process.env.GLOBAL_EXECUTION_ENABLED;
+    } else {
+      process.env.GLOBAL_EXECUTION_ENABLED = savedGlobalExecutionEnabled;
+    }
     await app.close();
   });
 
