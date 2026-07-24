@@ -12,29 +12,44 @@ import * as path from 'path';
  */
 
 // Load environment variables ONCE at startup BEFORE any module imports
-const envPath = path.resolve(process.cwd(), '.env');
-const envExists = fs.existsSync(envPath);
+// Order matters: load service-local .env first, then root .env as fallback.
+const envPaths = [
+  path.resolve(process.cwd(), '.env'),
+  path.resolve(process.cwd(), '..', '..', '.env'),
+];
+const existingEnvPaths = [...new Set(envPaths)].filter((envPath) =>
+  fs.existsSync(envPath),
+);
 
-if (envExists) {
-  const result = dotenv.config({ path: envPath });
+if (existingEnvPaths.length > 0) {
+  let loadedAnyKeys = false;
 
-  // Fail-fast if .env exists but loads zero variables
-  const loadedKeys = Object.keys(result.parsed || {}).length;
-  if (loadedKeys === 0) {
-    console.error('❌ STARTUP ABORTED: .env file exists but loaded 0 variables');
-    console.error(`   Path: ${envPath}`);
+  for (const envPath of existingEnvPaths) {
+    const result = dotenv.config({ path: envPath, override: false });
+    const loadedKeys = Object.keys(result.parsed || {}).length;
+
+    if (loadedKeys > 0) {
+      loadedAnyKeys = true;
+      console.log(`✓ Loaded ${loadedKeys} environment variables from ${envPath}`);
+      continue;
+    }
+
+    console.warn(`⚠️  .env file exists but loaded 0 variables: ${envPath}`);
+    if (result.error) {
+      console.warn(`   dotenv warning: ${result.error.message}`);
+    }
+  }
+
+  // Fail-fast only if .env files existed but none loaded usable variables
+  if (!loadedAnyKeys) {
+    console.error('❌ STARTUP ABORTED: .env files exist but loaded 0 variables');
     console.error('   Possible causes:');
-    console.error('   - Empty .env file');
+    console.error('   - Empty .env file(s)');
     console.error('   - File encoding issue (Windows CRLF vs LF)');
     console.error('   - File permissions');
     console.error('   - Invalid .env syntax');
-    if (result.error) {
-      console.error(`   Error: ${result.error.message}`);
-    }
     process.exit(1);
   }
-
-  console.log(`✓ Loaded ${loadedKeys} environment variables from .env`);
 } else {
   // Production/Docker: .env not required (env vars from container)
   console.log('ℹ️  No .env file found - using environment variables');
