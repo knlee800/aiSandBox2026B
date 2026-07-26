@@ -35654,7 +35654,7 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 
 **Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` �X controls cross-family priority order; Knowledge before Collaboration before Billing.
 
-**Current stage:** CLOUD STAGING EXECUTION — PRIVATE-BETA-STAGING-EXECUTION-04A — Redis Gate + Repo Clone Baseline — COMPLETE and LOCKED — 2026-07-25 — All 4 steps COMPLETE — Evidence verdict PASS — Redis Gate Outcome A accepted — Repo cloned to /opt/aisandbox — owner ubuntu:ubuntu — branch main — latest commit c55a278 Register staging execution 04A repo clone baseline — git status clean — Snapshot aisandbox-staging-preclone-2026-07-25 Available — All 4 snapshots Available — No .env / No dependencies / No build / No app services / No migrations / No DNS/TLS / No secrets disclosed — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04A-CHECKPOINT.md — PRIVATE-BETA-STAGING-EXECUTION-03 COMPLETE and LOCKED — 2026-07-24 — All 4 steps COMPLETE — DB/Redis installation baseline PASS WITH VERSION DEVIATION — PostgreSQL 15.18 installed and verified — Redis 8.8.0 installed and verified (target was 7.x — version deviation recorded — compatibility guardrail required before app deployment) — aisandbox database/user created — credentials private — ports 5432/6379 closed externally — Snapshot aisandbox-staging-db-redis-2026-07-24 Available — PRIVATE-BETA-STAGING-EXECUTION-02 COMPLETE and LOCKED — 2026-07-24 — All 4 steps COMPLETE — Runtime installation baseline PASS — Snapshot aisandbox-staging-runtime-2026-07-24 Available — PRIVATE-BETA-STAGING-EXECUTION-04 — Repo Clone + Private Env Preparation + App Deployment Baseline — ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — Manual execution split into bounded child slices (04A: COMPLETE and LOCKED 2026-07-25; 04B: Private Env Preparation — PENDING registration; 04C: Dependency Install + Build — PENDING registration; 04D: PM2 Service Start + Health-Only Smoke — PENDING registration) — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — LOCAL-PRIVATE-BETA-READINESS-01 — Local Machine Rebaseline + Private Beta Gap Review — COMPLETE and LOCKED — 2026-07-23 — All 3 steps COMPLETE — Verdict: BLOCKED for private-beta progression — P0: authenticated /api/ai/execute returned 402 not kill-switch 503 — Checkpoint: docs/LOCAL-PRIVATE-BETA-READINESS-01-CHECKPOINT.md — LOCAL-PRIVATE-BETA-READINESS-01-FIX-EXECUTION-KILLSWITCH-LOCAL — COMPLETE and LOCKED — 2026-07-23 — All 3 steps COMPLETE — PASS — P0 blocker fixed: authenticated POST /api/ai/execute now returns 503 — GLOBAL_EXECUTION_ENABLED default changed to fail-safe opt-in — 129/129 targeted tests PASS — Checkpoint: docs/LOCAL-PRIVATE-BETA-READINESS-01-FIX-EXECUTION-KILLSWITCH-LOCAL-CHECKPOINT.md — LOCAL-PRIVATE-BETA-READINESS-02 — PAUSED / PARTIALLY COMPLETE — 2026-07-23 — Container Manager PASS — AI Service local runtime unresolved due staging parity decision — LOCAL-PRIVATE-BETA-READINESS-02-FIX-AI-SERVICE-REDIS-ENV-LOCAL — PAUSED / SUPERSEDED by staging-environment parity decision — 2026-07-23 — cloud staging resumed — PRIVATE-BETA-STAGING-EXECUTION-02 ACTIVE — Step 1 COMPLETE (Registration — 2026-07-23) — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED/PAUSED — Cloud Pause Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-PAUSE-CHECKPOINT.md — Previous completed cloud stage: PRIVATE-BETA-STAGING-EXECUTION-01 — Create AWS Lightsail Staging Server + Static IP + Baseline — COMPLETE and LOCKED — 2026-07-23 — All 4 steps COMPLETE — Keith manual execution PASS — AWS Lightsail instance aisandbox-staging created — Region: Singapore / ap-southeast-1 — Plan: 8 GB RAM / 2 vCPU / 160 GB SSD — OS: Ubuntu 24.04.4 LTS / noble — Static IP: aisandbox-staging-ip attached (value not recorded in tracked docs) — Firewall: TCP 22/80/443 open; 3002/4000/4001/4002/5432/6379 closed externally — Browser SSH succeeded — apt update/upgrade succeeded — Timezone: Asia/Hong_Kong (HKT, +0800) synchronized — Reboot completed — Manual snapshot aisandbox-staging-baseline-2026-07-23 Available — Automatic snapshots enabled — No DNS/TLS/runtime/database/app/migration/env/secret action occurred — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-01-RUNBOOK.md — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-01-CHECKPOINT.md — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED until real app deployment and verification evidence exists — Next recommended action: Register PRIVATE-BETA-STAGING-EXECUTION-02 — Previous stage: PRIVATE-BETA-STAGING-SETUP — Staging / Production-like Deployment Target Setup — COMPLETE and LOCKED — 2026-07-23 — All 4 steps COMPLETE — All 8 child tasks COMPLETE and LOCKED (SETUP-01 through SETUP-08) — Staging setup planning chain complete — provider/domain/runtime/database/env/deployment/migration decisions consolidated — No AWS/server/static IP/DNS/TLS/runtime/deployment/migration action occurred — No staging target is live — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED until real staging target is created and verified — Parent checkpoint: `docs/PRIVATE-BETA-STAGING-SETUP-CHECKPOINT.md` — Previous stage: PRIVATE-BETA-STAGING-SETUP-08 — Migration Readiness / Verification Plan — COMPLETE and LOCKED — 2026-07-23 — All 3 steps COMPLETE — Step 2 verdict PASS — 25 migration files inventoried — migration command `npm run migration:run:prod` confirmed — `migration:revert:prod` NOT FOUND (manual fallback documented) — TypeORM `data-source.ts`: `DATABASE_URL` only, `synchronize: false` — 26 entities mapped — mandatory backup/snapshot/approval gates documented — no migration execution occurred — no DB connection occurred — no backup/snapshot creation occurred — no env file created/opened/edited — no secrets printed/requested/generated — no implementation — Checkpoint: `docs/PRIVATE-BETA-STAGING-SETUP-08-CHECKPOINT.md` — Parent: PRIVATE-BETA-STAGING-SETUP — ACTIVE — Steps 1–2 COMPLETE — Step 3 complete (all 8 child tasks COMPLETE and LOCKED) — SETUP-01 through SETUP-08 all COMPLETE and LOCKED — Next recommended action: Parent PRIVATE-BETA-STAGING-SETUP Step 4 — Final Consolidation / Handoff to PRIVATE-BETA-DEPLOYMENT-READINESS (requires Keith explicit approval) — Previous stage: PRIVATE-BETA-STAGING-SETUP-07 — App Deployment / Health Smoke Plan — COMPLETE and LOCKED — 2026-07-22 — All 3 steps COMPLETE — Step 2 verdict PASS — App deployment / health smoke plan created: docs/PRIVATE-BETA-STAGING-SETUP-07-APP-DEPLOYMENT-HEALTH-SMOKE-PLAN.md — 27 pre-deployment readiness gate checks documented — Service startup order documented — Health endpoints source-verified — All smoke plans documented — Migration boundary documented — Checkpoint: docs/PRIVATE-BETA-STAGING-SETUP-07-CHECKPOINT.md — No deployment occurred — No app/API/browser smoke occurred — No PostgreSQL/Redis action or command occurred — No migration execution occurred — No env file created/opened/edited — No secrets printed/requested/generated — No implementation — Previous stage: PRIVATE-BETA-STAGING-SETUP-06 COMPLETE and LOCKED (2026-07-22) — PRIVATE-BETA-DEPLOYMENT-READINESS BLOCKED / PAUSED after Step 2 — blocker: no staging/production-like target exists — resume Step 3 only after PRIVATE-BETA-STAGING-SETUP completes or produces verified target — Stage-start plan: docs/PRIVATE-BETA-DEPLOYMENT-READINESS-STAGE-START.md — Deployment / Staging Readiness Check — BLOCKED / PAUSED — Steps 1–2 COMPLETE — Step 2 COMPLETE (Stage-start/staging readiness plan — 2026-07-21) — docs/PRIVATE-BETA-DEPLOYMENT-READINESS-STAGE-START.md — Step 3 BLOCKED: no staging target — resumes after PRIVATE-BETA-STAGING-SETUP — no implementation — no source changes — LIMITED-PRIVATE-BETA-HANDOFF — Limited Private Beta Handoff / Checklist — COMPLETE and LOCKED — 2026-07-21 — all 3 steps complete — Checklist: docs/LIMITED-PRIVATE-BETA-HANDOFF-CHECKLIST.md — Checkpoint: docs/LIMITED-PRIVATE-BETA-HANDOFF-CHECKPOINT.md — BETA-READY-MIGRATION-CLI-01 — TypeORM Migration CLI Path Fix — COMPLETE and LOCKED — 2026-07-21 — all 3 steps complete — TINY TOOLING FOLLOW-UP — `"ts-node": "^10.9.2"` added to `devDependencies` in `services/api-gateway/package.json` — `npx typeorm-ts-node-commonjs --help` PASS — `npm run build` PASS — no migration execution — B3 PASS unchanged — Checkpoint: `docs/BETA-READY-MIGRATION-CLI-01-CHECKPOINT.md` — next: limited private beta handoff/checklist — requires Keith explicit approval — BETA-READY-SMOKE — Pre-Beta Full-Stack Live Smoke — COMPLETE and LOCKED — 2026-07-21 — Final verdict PASS — all 4 steps complete — local pre-beta full-stack smoke for bounded RPG/Create Agent MVP path PASS — Checkpoint: `docs/BETA-READY-SMOKE-CHECKPOINT.md` — Stage-start: `docs/BETA-READY-SMOKE-STAGE-START.md` — Execution: `docs/BETA-READY-SMOKE-EXECUTION.md` — migration verified (Keith compiled TypeORM path) — `user_agents` table exists — API Gateway + frontend started — health/guards PASS — Keith browser smoke ALL PASS — Create Agent DB-backed create/list/refresh/detail PASS — no deployment — no public beta launch — AGENT-PLATFORM-CREATE-01B — Create Agent MVP UI — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — Create Agent CTA implemented — inline form implemented — user-created agents list implemented — 28 translation keys per locale — `useUserAgents` hook — mocked `GET /api/agents` and `POST /api/agents` tests passed (641/641 frontend) — TypeScript clean — Build clean — Linter 0 errors — live DB-backed smoke deferred — migration NOT executed — Checkpoint: `docs/AGENT-PLATFORM-CREATE-01B-CHECKPOINT.md` — AGENT-PLATFORM-CREATE-01A — Create Agent Backend Minimal Persistence — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — `UserAgent` entity implemented — `user_agents` migration created (NOT executed) — `POST /api/agents`, `GET /api/agents`, `GET /api/agents/:id` implemented — user ownership/scoping enforced — 30/30 tests PASS — TypeScript clean — Build clean — Checkpoint: `docs/AGENT-PLATFORM-CREATE-01A-CHECKPOINT.md` — B3 remains paused — AGENT-PLATFORM-RPG-03B — Platform Link from Workspace + Auth Guard Review — COMPLETE and LOCKED — 2026-07-20 — all 3 steps complete — workspace/home platform CTA implemented — `/[locale]/platform` auth guard added — manual smoke PASS WITH LIMITATION (unauthenticated redirect PASS; authenticated access smoke deferred) — Checkpoint: `docs/AGENT-PLATFORM-RPG-03B-CHECKPOINT.md` — AGENT-PLATFORM-RPG-03A — Platform Dashboard Visual Identity + Agent Detail Panel — COMPLETE and LOCKED — 2026-07-20 — all 3 steps complete — Checkpoint: `docs/AGENT-PLATFORM-RPG-03A-CHECKPOINT.md` — AGENT-PLATFORM-RPG-MVP-RESET — RPG UX/UI and Agent Creation Beta Readiness Reset — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — B3 remains paused — chosen path: RPG-03A (COMPLETE and LOCKED) → RPG-03B → CREATE-01A → CREATE-01B → BETA-READY-SMOKE — Checkpoint: `docs/AGENT-PLATFORM-RPG-MVP-RESET-CHECKPOINT.md` — BETA-READY-DEPLOYMENT-CONFIG — Production Deployment Configuration — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — B2 resolved at documentation/template-readiness level — Checkpoint: `docs/BETA-READY-DEPLOYMENT-CONFIG-CHECKPOINT.md` — B3 pre-beta full-stack live smoke remains pending — requires Keith explicit approval before registration — AGENT-HARNESS-WRITE-CANARY — Agent Harness Write Canary + Production Activation — COMPLETE and LOCKED — 2026-07-20 — all 4 parent steps complete — child A COMPLETE and LOCKED (2026-07-19) — child B COMPLETE and LOCKED (2026-07-20) — first live E2E write canary PASS — safe default remains disabled — no permanent production flag activation — Checkpoint: `docs/AGENT-HARNESS-WRITE-CANARY-CHECKPOINT.md` — BETA-READY-00 blocker B1 resolved at canary-readiness level — BETA-READY-00 — Beta Readiness Checklist — COMPLETE and LOCKED — 2026-07-19 — all 3 steps complete — checklist created (`docs/BETA-READY-00-CHECKLIST.md`) — launch decision: READY FOR LIMITED BETA WITH LIMITATIONS — 15 gates (7 PASS, 8 needs verification) — blockers: B1 (resolved at canary-readiness level; permanent deployment flag activation still separate), B2 (deployment), B3 (pre-beta smoke) — Checkpoint: `docs/BETA-READY-00-CHECKPOINT.md` — ANOMALY-01 COMPLETE and LOCKED — 2026-07-19 — Checkpoint: `docs/ANOMALY-01-CHECKPOINT.md` — BILLING-READY-07 COMPLETE and LOCKED — 2026-07-17 — Outcome B — PASS WITH LIMITATIONS — BILLING-READY-07A COMPLETE and LOCKED — 2026-07-17 — Step 3 rerun PASS (2026-07-19) — BR07A-DEFECT-01 resolved — BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200 COMPLETE and LOCKED — 2026-07-17 — Checkpoint: `docs/BILLING-READY-07A-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-07-CHECKPOINT.md` — Consolidation document: `docs/BILLING-READY-07-CONSOLIDATION-DECISION.md` — BILLING-READY-06 COMPLETE and LOCKED (2026-07-17) — BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — BILLING-READY-06B COMPLETE and LOCKED (2026-07-17) — Checkpoint: `docs/BILLING-READY-06B-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-06-CHECKPOINT.md` — AGENT-HARNESS write canary remains a separate track. BILLING-READY-05 COMPLETE and LOCKED (2026-07-16) — all 4 parent steps complete — all child slices 05A–05G COMPLETE and LOCKED — Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`. BILLING-READY-05G COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-05G-CHECKPOINT.md`. BILLING-READY-05F COMPLETE and LOCKED (2026-07-15). Checkpoint: `docs/BILLING-READY-05F-CHECKPOINT.md`. BILLING-READY-05E COMPLETE and LOCKED (2026-07-15). BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-04 COMPLETE and LOCKED (2026-07-13). BILLING-READY-03 COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
+**Current stage:** CLOUD STAGING EXECUTION — PRIVATE-BETA-STAGING-EXECUTION-04A — Redis Gate + Repo Clone Baseline — COMPLETE and LOCKED — 2026-07-25 — All 4 steps COMPLETE — Evidence verdict PASS — Redis Gate Outcome A accepted — Repo cloned to /opt/aisandbox — owner ubuntu:ubuntu — branch main — latest commit c55a278 Register staging execution 04A repo clone baseline — git status clean — Snapshot aisandbox-staging-preclone-2026-07-25 Available — All 4 snapshots Available — No .env / No dependencies / No build / No app services / No migrations / No DNS/TLS / No secrets disclosed — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04A-CHECKPOINT.md — PRIVATE-BETA-STAGING-EXECUTION-03 COMPLETE and LOCKED — 2026-07-24 — All 4 steps COMPLETE — DB/Redis installation baseline PASS WITH VERSION DEVIATION — PostgreSQL 15.18 installed and verified — Redis 8.8.0 installed and verified (target was 7.x — version deviation recorded — compatibility guardrail required before app deployment) — aisandbox database/user created — credentials private — ports 5432/6379 closed externally — Snapshot aisandbox-staging-db-redis-2026-07-24 Available — PRIVATE-BETA-STAGING-EXECUTION-02 COMPLETE and LOCKED — 2026-07-24 — All 4 steps COMPLETE — Runtime installation baseline PASS — Snapshot aisandbox-staging-runtime-2026-07-24 Available — PRIVATE-BETA-STAGING-EXECUTION-04 — Repo Clone + Private Env Preparation + App Deployment Baseline — ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — Manual execution split into bounded child slices (04A: COMPLETE and LOCKED 2026-07-25; 04B: Private Env Preparation — COMPLETE and LOCKED — 2026-07-26 — Evidence verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md — /opt/aisandbox/.env created privately — 47 required non-Google keys present — Google OAuth deferred; 04C: Dependency Install + Build — PENDING registration; 04D: PM2 Service Start + Health-Only Smoke — PENDING registration) — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — LOCAL-PRIVATE-BETA-READINESS-01 — Local Machine Rebaseline + Private Beta Gap Review — COMPLETE and LOCKED — 2026-07-23 — All 3 steps COMPLETE — Verdict: BLOCKED for private-beta progression — P0: authenticated /api/ai/execute returned 402 not kill-switch 503 — Checkpoint: docs/LOCAL-PRIVATE-BETA-READINESS-01-CHECKPOINT.md — LOCAL-PRIVATE-BETA-READINESS-01-FIX-EXECUTION-KILLSWITCH-LOCAL — COMPLETE and LOCKED — 2026-07-23 — All 3 steps COMPLETE — PASS — P0 blocker fixed: authenticated POST /api/ai/execute now returns 503 — GLOBAL_EXECUTION_ENABLED default changed to fail-safe opt-in — 129/129 targeted tests PASS — Checkpoint: docs/LOCAL-PRIVATE-BETA-READINESS-01-FIX-EXECUTION-KILLSWITCH-LOCAL-CHECKPOINT.md — LOCAL-PRIVATE-BETA-READINESS-02 — PAUSED / PARTIALLY COMPLETE — 2026-07-23 — Container Manager PASS — AI Service local runtime unresolved due staging parity decision — LOCAL-PRIVATE-BETA-READINESS-02-FIX-AI-SERVICE-REDIS-ENV-LOCAL — PAUSED / SUPERSEDED by staging-environment parity decision — 2026-07-23 — cloud staging resumed — PRIVATE-BETA-STAGING-EXECUTION-02 ACTIVE — Step 1 COMPLETE (Registration — 2026-07-23) — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED/PAUSED — Cloud Pause Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-PAUSE-CHECKPOINT.md — Previous completed cloud stage: PRIVATE-BETA-STAGING-EXECUTION-01 — Create AWS Lightsail Staging Server + Static IP + Baseline — COMPLETE and LOCKED — 2026-07-23 — All 4 steps COMPLETE — Keith manual execution PASS — AWS Lightsail instance aisandbox-staging created — Region: Singapore / ap-southeast-1 — Plan: 8 GB RAM / 2 vCPU / 160 GB SSD — OS: Ubuntu 24.04.4 LTS / noble — Static IP: aisandbox-staging-ip attached (value not recorded in tracked docs) — Firewall: TCP 22/80/443 open; 3002/4000/4001/4002/5432/6379 closed externally — Browser SSH succeeded — apt update/upgrade succeeded — Timezone: Asia/Hong_Kong (HKT, +0800) synchronized — Reboot completed — Manual snapshot aisandbox-staging-baseline-2026-07-23 Available — Automatic snapshots enabled — No DNS/TLS/runtime/database/app/migration/env/secret action occurred — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-01-RUNBOOK.md — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-01-CHECKPOINT.md — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED until real app deployment and verification evidence exists — Next recommended action: Register PRIVATE-BETA-STAGING-EXECUTION-02 — Previous stage: PRIVATE-BETA-STAGING-SETUP — Staging / Production-like Deployment Target Setup — COMPLETE and LOCKED — 2026-07-23 — All 4 steps COMPLETE — All 8 child tasks COMPLETE and LOCKED (SETUP-01 through SETUP-08) — Staging setup planning chain complete — provider/domain/runtime/database/env/deployment/migration decisions consolidated — No AWS/server/static IP/DNS/TLS/runtime/deployment/migration action occurred — No staging target is live — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED until real staging target is created and verified — Parent checkpoint: `docs/PRIVATE-BETA-STAGING-SETUP-CHECKPOINT.md` — Previous stage: PRIVATE-BETA-STAGING-SETUP-08 — Migration Readiness / Verification Plan — COMPLETE and LOCKED — 2026-07-23 — All 3 steps COMPLETE — Step 2 verdict PASS — 25 migration files inventoried — migration command `npm run migration:run:prod` confirmed — `migration:revert:prod` NOT FOUND (manual fallback documented) — TypeORM `data-source.ts`: `DATABASE_URL` only, `synchronize: false` — 26 entities mapped — mandatory backup/snapshot/approval gates documented — no migration execution occurred — no DB connection occurred — no backup/snapshot creation occurred — no env file created/opened/edited — no secrets printed/requested/generated — no implementation — Checkpoint: `docs/PRIVATE-BETA-STAGING-SETUP-08-CHECKPOINT.md` — Parent: PRIVATE-BETA-STAGING-SETUP — ACTIVE — Steps 1–2 COMPLETE — Step 3 complete (all 8 child tasks COMPLETE and LOCKED) — SETUP-01 through SETUP-08 all COMPLETE and LOCKED — Next recommended action: Parent PRIVATE-BETA-STAGING-SETUP Step 4 — Final Consolidation / Handoff to PRIVATE-BETA-DEPLOYMENT-READINESS (requires Keith explicit approval) — Previous stage: PRIVATE-BETA-STAGING-SETUP-07 — App Deployment / Health Smoke Plan — COMPLETE and LOCKED — 2026-07-22 — All 3 steps COMPLETE — Step 2 verdict PASS — App deployment / health smoke plan created: docs/PRIVATE-BETA-STAGING-SETUP-07-APP-DEPLOYMENT-HEALTH-SMOKE-PLAN.md — 27 pre-deployment readiness gate checks documented — Service startup order documented — Health endpoints source-verified — All smoke plans documented — Migration boundary documented — Checkpoint: docs/PRIVATE-BETA-STAGING-SETUP-07-CHECKPOINT.md — No deployment occurred — No app/API/browser smoke occurred — No PostgreSQL/Redis action or command occurred — No migration execution occurred — No env file created/opened/edited — No secrets printed/requested/generated — No implementation — Previous stage: PRIVATE-BETA-STAGING-SETUP-06 COMPLETE and LOCKED (2026-07-22) — PRIVATE-BETA-DEPLOYMENT-READINESS BLOCKED / PAUSED after Step 2 — blocker: no staging/production-like target exists — resume Step 3 only after PRIVATE-BETA-STAGING-SETUP completes or produces verified target — Stage-start plan: docs/PRIVATE-BETA-DEPLOYMENT-READINESS-STAGE-START.md — Deployment / Staging Readiness Check — BLOCKED / PAUSED — Steps 1–2 COMPLETE — Step 2 COMPLETE (Stage-start/staging readiness plan — 2026-07-21) — docs/PRIVATE-BETA-DEPLOYMENT-READINESS-STAGE-START.md — Step 3 BLOCKED: no staging target — resumes after PRIVATE-BETA-STAGING-SETUP — no implementation — no source changes — LIMITED-PRIVATE-BETA-HANDOFF — Limited Private Beta Handoff / Checklist — COMPLETE and LOCKED — 2026-07-21 — all 3 steps complete — Checklist: docs/LIMITED-PRIVATE-BETA-HANDOFF-CHECKLIST.md — Checkpoint: docs/LIMITED-PRIVATE-BETA-HANDOFF-CHECKPOINT.md — BETA-READY-MIGRATION-CLI-01 — TypeORM Migration CLI Path Fix — COMPLETE and LOCKED — 2026-07-21 — all 3 steps complete — TINY TOOLING FOLLOW-UP — `"ts-node": "^10.9.2"` added to `devDependencies` in `services/api-gateway/package.json` — `npx typeorm-ts-node-commonjs --help` PASS — `npm run build` PASS — no migration execution — B3 PASS unchanged — Checkpoint: `docs/BETA-READY-MIGRATION-CLI-01-CHECKPOINT.md` — next: limited private beta handoff/checklist — requires Keith explicit approval — BETA-READY-SMOKE — Pre-Beta Full-Stack Live Smoke — COMPLETE and LOCKED — 2026-07-21 — Final verdict PASS — all 4 steps complete — local pre-beta full-stack smoke for bounded RPG/Create Agent MVP path PASS — Checkpoint: `docs/BETA-READY-SMOKE-CHECKPOINT.md` — Stage-start: `docs/BETA-READY-SMOKE-STAGE-START.md` — Execution: `docs/BETA-READY-SMOKE-EXECUTION.md` — migration verified (Keith compiled TypeORM path) — `user_agents` table exists — API Gateway + frontend started — health/guards PASS — Keith browser smoke ALL PASS — Create Agent DB-backed create/list/refresh/detail PASS — no deployment — no public beta launch — AGENT-PLATFORM-CREATE-01B — Create Agent MVP UI — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — Create Agent CTA implemented — inline form implemented — user-created agents list implemented — 28 translation keys per locale — `useUserAgents` hook — mocked `GET /api/agents` and `POST /api/agents` tests passed (641/641 frontend) — TypeScript clean — Build clean — Linter 0 errors — live DB-backed smoke deferred — migration NOT executed — Checkpoint: `docs/AGENT-PLATFORM-CREATE-01B-CHECKPOINT.md` — AGENT-PLATFORM-CREATE-01A — Create Agent Backend Minimal Persistence — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — `UserAgent` entity implemented — `user_agents` migration created (NOT executed) — `POST /api/agents`, `GET /api/agents`, `GET /api/agents/:id` implemented — user ownership/scoping enforced — 30/30 tests PASS — TypeScript clean — Build clean — Checkpoint: `docs/AGENT-PLATFORM-CREATE-01A-CHECKPOINT.md` — B3 remains paused — AGENT-PLATFORM-RPG-03B — Platform Link from Workspace + Auth Guard Review — COMPLETE and LOCKED — 2026-07-20 — all 3 steps complete — workspace/home platform CTA implemented — `/[locale]/platform` auth guard added — manual smoke PASS WITH LIMITATION (unauthenticated redirect PASS; authenticated access smoke deferred) — Checkpoint: `docs/AGENT-PLATFORM-RPG-03B-CHECKPOINT.md` — AGENT-PLATFORM-RPG-03A — Platform Dashboard Visual Identity + Agent Detail Panel — COMPLETE and LOCKED — 2026-07-20 — all 3 steps complete — Checkpoint: `docs/AGENT-PLATFORM-RPG-03A-CHECKPOINT.md` — AGENT-PLATFORM-RPG-MVP-RESET — RPG UX/UI and Agent Creation Beta Readiness Reset — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — B3 remains paused — chosen path: RPG-03A (COMPLETE and LOCKED) → RPG-03B → CREATE-01A → CREATE-01B → BETA-READY-SMOKE — Checkpoint: `docs/AGENT-PLATFORM-RPG-MVP-RESET-CHECKPOINT.md` — BETA-READY-DEPLOYMENT-CONFIG — Production Deployment Configuration — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — B2 resolved at documentation/template-readiness level — Checkpoint: `docs/BETA-READY-DEPLOYMENT-CONFIG-CHECKPOINT.md` — B3 pre-beta full-stack live smoke remains pending — requires Keith explicit approval before registration — AGENT-HARNESS-WRITE-CANARY — Agent Harness Write Canary + Production Activation — COMPLETE and LOCKED — 2026-07-20 — all 4 parent steps complete — child A COMPLETE and LOCKED (2026-07-19) — child B COMPLETE and LOCKED (2026-07-20) — first live E2E write canary PASS — safe default remains disabled — no permanent production flag activation — Checkpoint: `docs/AGENT-HARNESS-WRITE-CANARY-CHECKPOINT.md` — BETA-READY-00 blocker B1 resolved at canary-readiness level — BETA-READY-00 — Beta Readiness Checklist — COMPLETE and LOCKED — 2026-07-19 — all 3 steps complete — checklist created (`docs/BETA-READY-00-CHECKLIST.md`) — launch decision: READY FOR LIMITED BETA WITH LIMITATIONS — 15 gates (7 PASS, 8 needs verification) — blockers: B1 (resolved at canary-readiness level; permanent deployment flag activation still separate), B2 (deployment), B3 (pre-beta smoke) — Checkpoint: `docs/BETA-READY-00-CHECKPOINT.md` — ANOMALY-01 COMPLETE and LOCKED — 2026-07-19 — Checkpoint: `docs/ANOMALY-01-CHECKPOINT.md` — BILLING-READY-07 COMPLETE and LOCKED — 2026-07-17 — Outcome B — PASS WITH LIMITATIONS — BILLING-READY-07A COMPLETE and LOCKED — 2026-07-17 — Step 3 rerun PASS (2026-07-19) — BR07A-DEFECT-01 resolved — BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200 COMPLETE and LOCKED — 2026-07-17 — Checkpoint: `docs/BILLING-READY-07A-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-07-CHECKPOINT.md` — Consolidation document: `docs/BILLING-READY-07-CONSOLIDATION-DECISION.md` — BILLING-READY-06 COMPLETE and LOCKED (2026-07-17) — BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — BILLING-READY-06B COMPLETE and LOCKED (2026-07-17) — Checkpoint: `docs/BILLING-READY-06B-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-06-CHECKPOINT.md` — AGENT-HARNESS write canary remains a separate track. BILLING-READY-05 COMPLETE and LOCKED (2026-07-16) — all 4 parent steps complete — all child slices 05A–05G COMPLETE and LOCKED — Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`. BILLING-READY-05G COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-05G-CHECKPOINT.md`. BILLING-READY-05F COMPLETE and LOCKED (2026-07-15). Checkpoint: `docs/BILLING-READY-05F-CHECKPOINT.md`. BILLING-READY-05E COMPLETE and LOCKED (2026-07-15). BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-04 COMPLETE and LOCKED (2026-07-13). BILLING-READY-03 COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 �X ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED �X 2026-07-04)
@@ -35698,7 +35698,9 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 32. PRIVATE-BETA-STAGING-EXECUTION-02 — Runtime Installation Baseline (COMPLETE and LOCKED — 2026-07-24 — All 4 steps COMPLETE — Keith manual execution PASS — Node.js v20.20.2 — npm 10.8.2 — Docker Engine 29.6.2 — Docker Compose v5.3.1 — PM2 7.0.3 — Caddy v2.11.4 — Snapshot aisandbox-staging-runtime-2026-07-24 Available — No app deployed / No DB / No Redis / No DNS / No TLS / No repo / No .env — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-02-CHECKPOINT.md)
 32b. PRIVATE-BETA-STAGING-EXECUTION-03 — PostgreSQL + Redis Installation Baseline (COMPLETE and LOCKED — 2026-07-24 — All 4 steps COMPLETE — Evidence verdict: PASS WITH VERSION DEVIATION — PostgreSQL 15.18 installed from PGDG APT noble channel — PostgreSQL 15/main cluster online on localhost 127.0.0.1:5432 only — aisandbox database/user created — DB password set privately and not disclosed — Redis 8.8.0 installed from official Redis APT repo — Redis target was 7.x — Redis version deviation recorded — compatibility guardrail required before app deployment — Redis active/running — bound to 127.0.0.1/::1 only — protected-mode yes — requirepass configured and redacted — unauthenticated ping blocked — authenticated ping passed — Redis password set privately and not disclosed — Lightsail firewall remains 22/80/443 only — ports 5432/6379 closed externally — No repo / No .env / No app / No migration / No DNS / No TLS — Snapshot aisandbox-staging-db-redis-2026-07-24 Available — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-03-DB-REDIS-INSTALL-RUNBOOK.md — Evidence review: docs/PRIVATE-BETA-STAGING-EXECUTION-03-EVIDENCE-REVIEW.md — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-03-DB-REDIS-CHECKPOINT.md — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next: PRIVATE-BETA-STAGING-EXECUTION-04 — ACTIVE — Step 1 COMPLETE (Registration — 2026-07-25))
 32c. PRIVATE-BETA-STAGING-EXECUTION-04 — Repo Clone + Private Env Preparation + App Deployment Baseline (ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — 4-step workflow — Manual execution split into bounded child slices: 04A (Redis Gate + Repo Clone Baseline), 04B (Private Env Preparation), 04C (Dependency Install + Build), 04D (PM2 Service Start + Health-Only Smoke) — No server action yet — Predecessor: PRIVATE-BETA-STAGING-EXECUTION-03 COMPLETE and LOCKED — 2026-07-24 — PostgreSQL 15.18 online on localhost 127.0.0.1:5432 only — Redis 8.8.0 online on 127.0.0.1/::1 only — credentials private — ports 5432/6379 closed externally — All 3 snapshots Available (aisandbox-staging-baseline-2026-07-23, aisandbox-staging-runtime-2026-07-24, aisandbox-staging-db-redis-2026-07-24) — Redis 8.8.0 compatibility static assessment: LIKELY COMPATIBLE (ioredis ^5.3.2/^5.9.3; BullMQ ^5.70.1; BullMQ requires Redis 7.0+; Redis 8.8.0 satisfies — no Redis-version-gated feature usage detected) — No repo / No app .env / No app services / No migrations / No DNS / No TLS — Credential safety: Keith keeps DB/Redis passwords privately; no paste of .env/DATABASE_URL/REDIS_URL/provider keys — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next action: EXECUTION-04A Step 2 — Redis Gate + Repo Clone Runbook)
-32d. PRIVATE-BETA-STAGING-EXECUTION-04A — Redis Gate + Repo Clone Baseline (COMPLETE and LOCKED — 2026-07-25 — All 4 steps COMPLETE — Evidence verdict: PASS — All 45 checks passed — No deviations — No warnings — No stop conditions — Redis Gate Outcome A accepted — Static assessment LIKELY COMPATIBLE — ioredis v5 / BullMQ v5 / Redis 8.8.0 satisfy compatibility conditions — Repo cloned to /opt/aisandbox — owner ubuntu:ubuntu — branch main — latest commit c55a278 Register staging execution 04A repo clone baseline — git status clean — services/ai-service, api-gateway, container-manager, governance, frontend all present — No .env created — No dependencies installed — No build run — No app services started — No migrations run — No DNS/TLS configured — No secrets disclosed — Snapshot aisandbox-staging-preclone-2026-07-25 Available — All 4 snapshots Available — PostgreSQL active/local-only — Redis active/local-only/protected-mode/requirepass — Firewall 22/80/443 only — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04A-CHECKPOINT.md — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next child: PRIVATE-BETA-STAGING-EXECUTION-04B — Private Env Preparation)DINESS remains BLOCKED / PAUSED — Next action: Step 2 — Repo Clone + Private Env + App Deployment Baseline Runbook — Future Step 2 runbook file: docs/PRIVATE-BETA-STAGING-EXECUTION-04-APP-DEPLOYMENT-BASELINE-RUNBOOK.md)
+32d. PRIVATE-BETA-STAGING-EXECUTION-04A — Redis Gate + Repo Clone Baseline (COMPLETE and LOCKED — 2026-07-25 — All 4 steps COMPLETE — Evidence verdict: PASS — All 45 checks passed — No deviations — No warnings — No stop conditions — Redis Gate Outcome A accepted — Static assessment LIKELY COMPATIBLE — ioredis v5 / BullMQ v5 / Redis 8.8.0 satisfy compatibility conditions — Repo cloned to /opt/aisandbox — owner ubuntu:ubuntu — branch main — latest commit c55a278 Register staging execution 04A repo clone baseline — git status clean — services/ai-service, api-gateway, container-manager, governance, frontend all present — No .env created — No dependencies installed — No build run — No app services started — No migrations run — No DNS/TLS configured — No secrets disclosed — Snapshot aisandbox-staging-preclone-2026-07-25 Available — All 4 snapshots Available — PostgreSQL active/local-only — Redis active/local-only/protected-mode/requirepass — Firewall 22/80/443 only — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04A-CHECKPOINT.md — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next child: PRIVATE-BETA-STAGING-EXECUTION-04B — Private Env Preparation)
+32e. PRIVATE-BETA-STAGING-EXECUTION-04B — Private Env Preparation (COMPLETE and LOCKED — 2026-07-26 — All 4 steps COMPLETE — Evidence review verdict PASS — Step 1 Registration complete — Step 2 Runbook complete — Google OAuth decision complete and locked (Outcome B) — Step 3 Evidence review complete — verdict PASS — Step 4 Consolidation/checkpoint complete — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md — Pre-env snapshot aisandbox-staging-postclone-preenv-2026-07-26 Available — /opt/aisandbox/.env created privately — owner ubuntu:ubuntu — chmod 600 — 47 required non-Google keys present — Google OAuth deferred / omitted intentionally — no fake placeholders — email/password intended staging auth path — all kill switches false — no dependency install — no build — no app services started — no migrations — no DNS/TLS — no secrets disclosed — PostgreSQL warning non-blocking — stop conditions none — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next child: PRIVATE-BETA-STAGING-EXECUTION-04C — Dependency Install + Build)
+32f. PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION — Staging Google OAuth Requirement Decision (COMPLETE and LOCKED — 2026-07-26 — All 3 steps COMPLETE — Outcome B — Google OAuth can be deferred — Decision report: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION-REPORT.md — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION-CHECKPOINT.md — 04B runbook amended — no source code changed — no env files opened/created/edited — no env values printed — no secrets disclosed)
 33. LOCAL-PRIVATE-BETA-READINESS-01 — Local Machine Rebaseline + Private Beta Gap Review (COMPLETE and LOCKED — 2026-07-23 — All 3 steps COMPLETE — Verdict: BLOCKED for private-beta progression — P0: authenticated /api/ai/execute returned 402 not kill-switch 503 — Checkpoint: docs/LOCAL-PRIVATE-BETA-READINESS-01-CHECKPOINT.md — Step 2 report: docs/LOCAL-PRIVATE-BETA-READINESS-01-LOCAL-REBASELINE-REPORT.md — Next: LOCAL-PRIVATE-BETA-READINESS-01-FIX-EXECUTION-KILLSWITCH-LOCAL — ACTIVE)
 34. LOCAL-PRIVATE-BETA-READINESS-01-FIX-EXECUTION-KILLSWITCH-LOCAL — Fix Authenticated Execution Kill Switch — Local Private Beta P0 Fix (COMPLETE and LOCKED — 2026-07-23 — All 3 steps COMPLETE — PASS — P0 blocker fixed: authenticated POST /api/ai/execute now returns 503 (not 402) — GLOBAL_EXECUTION_ENABLED default changed to fail-safe opt-in — kill-switch fires before quota/payment/provider/container logic — 129/129 targeted tests PASS — /api/health/ready 200 — Checkpoint: docs/LOCAL-PRIVATE-BETA-READINESS-01-FIX-EXECUTION-KILLSWITCH-LOCAL-CHECKPOINT.md — Next: LOCAL-PRIVATE-BETA-READINESS-02 — ACTIVE — Step 1 COMPLETE (Registration — 2026-07-23))
 35. LOCAL-PRIVATE-BETA-READINESS-02 — Local Runtime Services Health Validation (PAUSED / PARTIALLY COMPLETE — 2026-07-23 — Container Manager local health PASS (GET http://localhost:4002/api/health 200); AI Service local runtime unresolved due staging parity decision — reason: local Windows env mismatch not equivalent to future staging environment — superseded by cloud staging resumption — Checkpoint: docs/LOCAL-TO-STAGING-PARITY-PIVOT-CHECKPOINT.md)
@@ -36507,7 +36509,7 @@ Redis target in the runbook was Redis 7.x. The official Redis APT repository ins
 **LOCAL-PRIVATE-BETA-READINESS-02 status:** PAUSED / PARTIALLY COMPLETE — 2026-07-23.
 **LOCAL-PRIVATE-BETA-READINESS-02-FIX-AI-SERVICE-REDIS-ENV-LOCAL status:** PAUSED / SUPERSEDED by staging-environment parity decision.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next task:** PRIVATE-BETA-STAGING-EXECUTION-04B — Private Env Preparation — PENDING registration. EXECUTION-04A COMPLETE and LOCKED — 2026-07-25 — All 4 steps COMPLETE — Evidence verdict PASS — Redis Gate Outcome A accepted — Repo cloned to /opt/aisandbox — owner ubuntu:ubuntu — branch main — commit c55a278 — git status clean — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04A-CHECKPOINT.md. EXECUTION-04 remains ACTIVE — child 04A COMPLETE and LOCKED — next child: 04B. See PRIVATE-BETA-STAGING-EXECUTION-04A section below.
+**Next task:** PRIVATE-BETA-STAGING-EXECUTION-04C — Dependency Install + Build (PENDING registration / requires Keith explicit approval). EXECUTION-04B COMPLETE and LOCKED — 2026-07-26 — Evidence verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md. EXECUTION-04A COMPLETE and LOCKED — 2026-07-25. EXECUTION-04 remains ACTIVE — child 04A COMPLETE and LOCKED — child 04B COMPLETE and LOCKED — remaining children: 04C, 04D. See PRIVATE-BETA-STAGING-EXECUTION-04B section below.
 
 **Reference:** Predecessor: PRIVATE-BETA-STAGING-EXECUTION-02. Checkpoint (predecessor): `docs/PRIVATE-BETA-STAGING-EXECUTION-02-CHECKPOINT.md`. Checkpoint (this task): `docs/PRIVATE-BETA-STAGING-EXECUTION-03-DB-REDIS-CHECKPOINT.md`. DB/Redis plan: `docs/PRIVATE-BETA-STAGING-SETUP-06-DB-REDIS-PLAN.md`. Pivot checkpoint: `docs/LOCAL-TO-STAGING-PARITY-PIVOT-CHECKPOINT.md`.
 
@@ -36607,8 +36609,8 @@ If compatibility cannot be confirmed safely, stop and register a bounded follow-
 
 SPLIT ACTIVATED — 2026-07-25. The Step 2 runbook (docs/PRIVATE-BETA-STAGING-EXECUTION-04-APP-DEPLOYMENT-BASELINE-RUNBOOK.md) recommended splitting manual execution into bounded child slices due to HIGH-risk scope. Keith accepted the safer split (2026-07-25). Manual execution is now divided into:
 - PRIVATE-BETA-STAGING-EXECUTION-04A — Redis Gate + Repo Clone Baseline (COMPLETE and LOCKED — 2026-07-25 — All 4 steps COMPLETE — Evidence verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04A-CHECKPOINT.md)
-- PRIVATE-BETA-STAGING-EXECUTION-04B — Private Env Preparation (PENDING registration)
-- PRIVATE-BETA-STAGING-EXECUTION-04C — Dependency Install + Build (PENDING registration)
+- PRIVATE-BETA-STAGING-EXECUTION-04B — Private Env Preparation (COMPLETE and LOCKED — 2026-07-26 — All 4 steps COMPLETE — Evidence review verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md)
+- PRIVATE-BETA-STAGING-EXECUTION-04C — Dependency Install + Build (PENDING registration — next recommended child)
 - PRIVATE-BETA-STAGING-EXECUTION-04D — PM2 Service Start + Health-Only Smoke (PENDING registration)
 
 #### Non-Goals
@@ -36701,15 +36703,17 @@ Redis 8.8.0 compatibility static assessment: LIKELY COMPATIBLE — ioredis ^5.3.
 - [ ] TASKS.md updated. TASKS_BACKLOG_FULL.md updated. Roadmap updated.
 - [ ] PRIVATE-BETA-STAGING-EXECUTION-05 registered or deferred.
 
-**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — Child 04A COMPLETE and LOCKED (2026-07-25) — Next child: 04B Private Env Preparation — Remaining children: 04B, 04C, 04D — Manual execution split into child slices (04A/04B/04C/04D).
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — Child 04A COMPLETE and LOCKED (2026-07-25) — Child 04B COMPLETE and LOCKED (2026-07-26) — Full app deployment still not complete — Remaining children: 04C, 04D — Manual execution split into child slices (04A/04B/04C/04D).
 **PRIVATE-BETA-STAGING-EXECUTION-04A status:** COMPLETE and LOCKED — 2026-07-25 — All 4 steps COMPLETE — Evidence verdict: PASS — Redis Gate Outcome A accepted — Repo cloned /opt/aisandbox — owner ubuntu:ubuntu — branch main — commit c55a278 — git status clean — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04A-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04B status:** COMPLETE and LOCKED — 2026-07-26 — All 4 steps COMPLETE — Evidence review verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md — /opt/aisandbox/.env created privately — owner ubuntu:ubuntu — chmod 600 — 47 required non-Google keys present — Google OAuth deferred / omitted intentionally — no fake placeholders — all kill switches false — no dependency install / build / app services / migrations / DNS/TLS — no secrets disclosed.
+**PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION status:** COMPLETE and LOCKED — 2026-07-26 — Outcome B — Google OAuth can be deferred — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-03 status:** COMPLETE and LOCKED — 2026-07-24.
 **PRIVATE-BETA-STAGING-EXECUTION-02 status:** COMPLETE and LOCKED — 2026-07-24.
 **PRIVATE-BETA-STAGING-EXECUTION-01 status:** COMPLETE and LOCKED — 2026-07-23.
 **LOCAL-PRIVATE-BETA-READINESS-02 status:** PAUSED / PARTIALLY COMPLETE — 2026-07-23.
 **LOCAL-PRIVATE-BETA-READINESS-02-FIX-AI-SERVICE-REDIS-ENV-LOCAL status:** PAUSED / SUPERSEDED by staging-environment parity decision.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04B Registration — Private Env Preparation.
+**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04C — Dependency Install + Build (PENDING registration / requires Keith explicit approval).
 
 ---
 
@@ -36967,12 +36971,422 @@ Every server command section must clearly say: Run inside AWS Lightsail browser 
 - [x] PRIVATE-BETA-STAGING-EXECUTION-04B recorded as next child (PENDING registration).
 
 **PRIVATE-BETA-STAGING-EXECUTION-04A status:** COMPLETE and LOCKED — 2026-07-25 — All 4 steps COMPLETE — Evidence verdict: PASS — Redis Gate Outcome A accepted — Repo cloned /opt/aisandbox — owner ubuntu:ubuntu — branch main — latest commit c55a278 Register staging execution 04A repo clone baseline — git status clean — No .env / No dependencies / No build / No app services / No migrations / No DNS/TLS / No secrets disclosed — Snapshot aisandbox-staging-preclone-2026-07-25 Available — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04A-CHECKPOINT.md.
-**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — Child 04A COMPLETE and LOCKED (2026-07-25) — Next child: 04B Private Env Preparation — Remaining children: 04B, 04C, 04D.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — Child 04A COMPLETE and LOCKED (2026-07-25) — Child 04B COMPLETE and LOCKED (2026-07-26) — Full app deployment still not complete — Remaining children: 04C, 04D.
 **PRIVATE-BETA-STAGING-EXECUTION-03 status:** COMPLETE and LOCKED — 2026-07-24.
 **PRIVATE-BETA-STAGING-EXECUTION-02 status:** COMPLETE and LOCKED — 2026-07-24.
 **PRIVATE-BETA-STAGING-EXECUTION-01 status:** COMPLETE and LOCKED — 2026-07-23.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04B Registration — Private Env Preparation.
+**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04C — Dependency Install + Build (PENDING registration / requires Keith explicit approval).
+
+---
+
+### PRIVATE-BETA-STAGING-EXECUTION-04B: Private Env Preparation
+
+**Status:** COMPLETE and LOCKED — 2026-07-26 — All 4 steps COMPLETE — Evidence review verdict: PASS
+**Task ID:** PRIVATE-BETA-STAGING-EXECUTION-04B
+**Family:** PRIVATE BETA / STAGING EXECUTION
+**Priority:** CRITICAL
+**Nature:** REAL STAGING EXECUTION — Private /opt/aisandbox/.env preparation on Lightsail instance
+**Risk:** HIGH — secret handling; staging app environment file creation
+**Registered:** 2026-07-26
+**Completed:** 2026-07-26
+**Parent:** PRIVATE-BETA-STAGING-EXECUTION-04
+**Checkpoint:** docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md
+**Evidence review:** docs/PRIVATE-BETA-STAGING-EXECUTION-04B-EVIDENCE-REVIEW.md
+**Google OAuth decision:** PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION — COMPLETE and LOCKED — 2026-07-26 — OUTCOME B — Google OAuth deferred — 04B runbook amended — omit GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET / GOOGLE_CALLBACK_URL — do not use fake placeholder values — email/password login is intended staging auth path
+
+#### Purpose
+
+Prepare the staging app environment file privately on the VPS after the repo clone baseline is complete. This child task covers only: creating `/opt/aisandbox/.env` privately on VPS — Keith enters all secret values manually and privately inside the Lightsail browser SSH session — listing required env key names only — validating key presence without printing values — enforcing credential safety — confirming no dependency install, no build, no app service start, no migrations, no DNS/TLS.
+
+#### Predecessor State Carried Forward
+
+- PRIVATE-BETA-STAGING-EXECUTION-04A: COMPLETE and LOCKED — 2026-07-25 — All 4 steps COMPLETE — Evidence verdict: PASS
+- PRIVATE-BETA-STAGING-EXECUTION-04: ACTIVE — Step 2 COMPLETE (2026-07-25)
+- PRIVATE-BETA-STAGING-EXECUTION-03: COMPLETE and LOCKED — 2026-07-24
+- PRIVATE-BETA-STAGING-EXECUTION-02: COMPLETE and LOCKED — 2026-07-24
+- PRIVATE-BETA-STAGING-EXECUTION-01: COMPLETE and LOCKED — 2026-07-23
+
+#### Runtime Baseline Carried Forward
+
+- Ubuntu 24.04.4 LTS / noble
+- Node.js v20.20.2
+- npm 10.8.2
+- Docker Engine 29.6.2
+- Docker Compose v5.3.1
+- PM2 7.0.3
+- Caddy v2.11.4
+
+#### PostgreSQL Baseline Carried Forward
+
+- PostgreSQL 15.18 installed and verified.
+- PostgreSQL 15/main cluster online. Port 5432 bound to 127.0.0.1 only.
+- Lightsail firewall does not expose 5432.
+- `aisandbox` database created. `aisandbox` user created.
+- No migrations run. No tables created. Database table count = 0.
+- DB password held privately by Keith — not disclosed.
+
+#### Redis Baseline Carried Forward
+
+- Redis 8.8.0 installed and verified. Redis Gate Outcome A — Accepted.
+- Redis service active/running. Port 6379 bound to 127.0.0.1 and ::1 only.
+- Lightsail firewall does not expose 6379.
+- `protected-mode yes`. `requirepass` configured.
+- Redis password held privately by Keith — not disclosed.
+
+#### Snapshots Available
+
+- `aisandbox-staging-baseline-2026-07-23` — Available.
+- `aisandbox-staging-runtime-2026-07-24` — Available.
+- `aisandbox-staging-db-redis-2026-07-24` — Available.
+- `aisandbox-staging-preclone-2026-07-25` — Available.
+- `aisandbox-staging-postclone-preenv-2026-07-26` — Available (created before `.env`).
+
+#### Final State (after 04B COMPLETE and LOCKED)
+
+- Repo cloned to `/opt/aisandbox` — owner `ubuntu:ubuntu` — branch `main` — commit `c55a278` — unchanged from 04A.
+- `/opt/aisandbox/.env` created privately — owner `ubuntu:ubuntu` — chmod `600`.
+- 47 required non-Google keys present — Google OAuth omitted intentionally.
+- No dependencies installed.
+- No build run.
+- No app services started.
+- No migrations run — database table count = 0.
+- No DNS configured.
+- No TLS configured.
+
+#### Scope
+
+1. Create a precise manual runbook for Keith to follow inside AWS Lightsail browser SSH.
+2. Confirm EXECUTION-04A is COMPLETE and LOCKED.
+3. Confirm `/opt/aisandbox` exists and git state is clean.
+4. Recommend creating a pre-env snapshot before writing `.env` (suggested name: `aisandbox-staging-postclone-preenv-YYYY-MM-DD`).
+5. Identify required env key names from source/config/docs without printing values.
+6. Produce a key-name-only env checklist.
+7. Instruct Keith to create `/opt/aisandbox/.env` privately inside Lightsail browser SSH.
+8. Instruct Keith to set file owner `ubuntu:ubuntu` and permissions `chmod 600`.
+9. Provide safe command patterns that check key presence without printing values.
+10. Confirm no dependency install.
+11. Confirm no build.
+12. Confirm no app services started.
+13. Confirm no migrations.
+14. Confirm no DNS/TLS.
+15. Confirm no secrets disclosed.
+16. Collect safe Yes/No evidence only.
+
+#### Strict Non-Goals
+
+- No dependency install (no npm install / npm ci).
+- No build (no npm run build).
+- No app service start.
+- No PM2 app process creation.
+- No migrations or schema migration.
+- No database table creation.
+- No DNS A record setup.
+- No Caddy site config.
+- No TLS certificate issuance.
+- No billing/payment enablement.
+- No real AI execution enablement.
+- No real container execution enablement.
+- No source code changes.
+- No secret disclosure.
+- No printing `.env` values, `DATABASE_URL`, `REDIS_URL`, DB password, Redis password, provider keys, JWT/session secrets.
+- No `cat /opt/aisandbox/.env`.
+- No `grep` commands that print env values.
+- No git commit or push.
+
+#### Credential Safety Rules
+
+- Keith creates `/opt/aisandbox/.env` privately inside AWS Lightsail browser SSH.
+- Keith enters all secret values manually and privately.
+- Do not ask Keith to paste `.env`.
+- Do not ask Keith to paste `DATABASE_URL`.
+- Do not ask Keith to paste `REDIS_URL`.
+- Do not ask Keith to paste DB password.
+- Do not ask Keith to paste Redis password.
+- Do not ask Keith to paste GitHub tokens.
+- Do not ask Keith to paste JWT/session secrets.
+- Do not ask Keith to paste provider keys.
+- Do not ask Keith to paste any private key.
+- Do not print connection strings.
+- Do not include commands that echo secrets into terminal output.
+- Evidence reports only: `/opt/aisandbox/.env` created privately Yes/No — permissions set to 600 Yes/No — owner ubuntu:ubuntu Yes/No — `DATABASE_URL` configured privately Yes/No — `REDIS_URL` configured privately Yes/No — auth/session secrets configured privately Yes/No — provider keys configured privately or intentionally disabled Yes/No — kill-switch keys configured safely Yes/No — secrets disclosed No.
+
+#### Env Key Categories (Names Only — No Values)
+
+1. Runtime: `NODE_ENV` — service ports
+2. Database: `DATABASE_URL`
+3. Redis: `REDIS_URL`
+4. Auth/session: JWT/session/cookie/OAuth state secrets as used by source
+5. Internal service auth: internal service keys if used
+6. Public/frontend URLs: `NEXT_PUBLIC_*` key names if required
+7. Service URLs: frontend/API gateway/AI service/container manager URLs if required
+8. Provider and kill-switch safety: AI provider keys disabled or omitted unless explicitly needed — billing/payment provider keys disabled or omitted unless explicitly needed — execution kill-switches false
+9. CORS/origin: allowed origins if required
+10. Any app-specific required keys found in source/config
+
+#### Kill-Switch / Provider-Safety Posture
+
+04B must keep private beta staging safe. Step 2 should include a key-name-only checklist for disabling or keeping false:
+
+- `GLOBAL_EXECUTION_ENABLED`
+- `PROVIDER_OPENAI_ENABLED`
+- `PROVIDER_ANTHROPIC_ENABLED`
+- `PROVIDER_GOOGLE_ENABLED`
+- `PROVIDER_OPENROUTER_ENABLED`
+- `PROVIDER_XAI_ENABLED`
+- `BILLING_CHARGES_ENABLED`
+- `BILLING_CHECKOUT_ENABLED`
+- `PAYMENT_EXECUTION_ENABLED`
+- `AGENT_HARNESS_ENABLED`
+- `AGENT_HARNESS_TOOL_LOOP_ENABLED`
+- Any container execution enablement flag found in source/config
+
+If actual key names differ, Step 2 should use source-derived names.
+
+#### Stop Conditions
+
+The 04B runbook must instruct Keith to stop and report if:
+
+- `/opt/aisandbox` is missing.
+- Git state is not clean before env creation.
+- Required env key names cannot be identified enough to create a safe checklist.
+- Keith does not have a required secret value.
+- Any command would print `.env` values.
+- Any command would print `DATABASE_URL` or `REDIS_URL`.
+- Any command would print a password, token, key, or secret.
+- `.env` would need to be pasted into AI chat.
+- Dependency install begins.
+- Build begins.
+- App service starts.
+- Migration command appears.
+- Database table count is not 0.
+- DNS/TLS command appears.
+- Billing/payment, AI, or container execution enablement appears.
+- Permissions cannot be set to 600.
+- Ownership cannot be set to `ubuntu:ubuntu`.
+- Any secret is accidentally disclosed.
+
+#### Accepted Evidence Summary (2026-07-26)
+
+- Date: 2026-07-26 — Instance: `aisandbox-staging`
+- Pre-env snapshot created: Yes — `aisandbox-staging-postclone-preenv-2026-07-26` — Available
+- Repo baseline unchanged from 04A: `/opt/aisandbox` — owner `ubuntu:ubuntu` — branch `main` — commit `c55a278` — git status clean before `.env` creation — no `.env` existed before creation
+- `/opt/aisandbox/.env` created privately — owner `ubuntu:ubuntu` — chmod `600` — stat `ubuntu ubuntu 600 /opt/aisandbox/.env`
+- Required key presence: PASS — all 47 required non-Google keys present
+- Google OAuth deferred — `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `GOOGLE_CALLBACK_URL` omitted intentionally — no fake placeholders — email/password intended staging auth path
+- Secrets configured privately (values not disclosed): `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET`, `SESSION_SECRET`, `OAUTH_STATE_SECRET`, `INTERNAL_SERVICE_KEY`
+- Kill-switch/provider-safety: all listed execution/provider/billing/agent kill switches confirmed false
+- Non-goals: no dependency install — no build — no app services started — no migrations (table count = 0) — no DNS/TLS — no secrets disclosed
+- PostgreSQL warning: non-blocking (query returned table count 0)
+- Stop conditions: none
+- Evidence review: `docs/PRIVATE-BETA-STAGING-EXECUTION-04B-EVIDENCE-REVIEW.md` — verdict PASS
+- Checkpoint: `docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md`
+
+#### 4-Step Workflow
+
+1. **Step 1: Registration** — COMPLETE (2026-07-26) — Governance only. No server action. No source changes. No env files opened/created.
+2. **Step 2: 04B Private Env Preparation Runbook** — COMPLETE (2026-07-26) — Runbook created: `docs/PRIVATE-BETA-STAGING-EXECUTION-04B-PRIVATE-ENV-PREPARATION-RUNBOOK.md`. Manual execution was PAUSED for Google OAuth blocker — resolved by PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION (Outcome B). Runbook amended 2026-07-26 — Google OAuth deferred.
+3. **Step 3: Keith Manual 04B Evidence Review** — COMPLETE (2026-07-26) — Evidence review verdict PASS — Report: `docs/PRIVATE-BETA-STAGING-EXECUTION-04B-EVIDENCE-REVIEW.md`.
+4. **Step 4: 04B Consolidation / Handoff to EXECUTION-04C** — COMPLETE (2026-07-26) — 04B COMPLETE and LOCKED — Checkpoint: `docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md` — Next child: PRIVATE-BETA-STAGING-EXECUTION-04C — Dependency Install + Build.
+
+#### Acceptance Criteria
+
+###### Step 1 (Registration — COMPLETE 2026-07-26)
+- [x] PRIVATE-BETA-STAGING-EXECUTION-04B added to TASKS_BACKLOG_FULL.md.
+- [x] PRIVATE-BETA-STAGING-EXECUTION-04B activated in TASKS.md.
+- [x] PRIVATE-BETA-STAGING-EXECUTION-04A remains COMPLETE and LOCKED.
+- [x] PRIVATE-BETA-STAGING-EXECUTION-04 remains ACTIVE.
+- [x] 04B scope recorded.
+- [x] 04B strict non-goals recorded.
+- [x] 04B credential safety rules recorded.
+- [x] 04B 4-step workflow recorded.
+- [x] pre-env snapshot recommendation recorded.
+- [x] env key names only rule recorded.
+- [x] no secret values rule recorded.
+- [x] no dependency install/build/service/migration/DNS/TLS rule recorded.
+- [x] kill-switch/provider-safety posture recorded.
+- [x] Roadmap updated.
+- [x] PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.
+- [x] No source code changed. No env files created/opened/edited. No env values opened/printed.
+- [x] No local runtime/test/build action occurred.
+- [x] No server/SSH/AWS/DNS/TLS action occurred.
+- [x] No Docker/PostgreSQL/Redis action occurred.
+- [x] No git commit or push occurred. No subagents used.
+
+###### Step 2 — COMPLETE (2026-07-26)
+- [x] Runbook `docs/PRIVATE-BETA-STAGING-EXECUTION-04B-PRIVATE-ENV-PREPARATION-RUNBOOK.md` created.
+- [x] Required env key names identified from source/config — names only, no values.
+- [x] Key-name-only checklist produced.
+- [x] Kill-switch/provider-safety posture documented in runbook.
+- [x] Pre-env snapshot recommendation included.
+- [x] Safe key-presence validation patterns included.
+- [x] Every server command section says: Run inside AWS Lightsail browser SSH — not PowerShell.
+- [x] Stop conditions documented.
+- [x] No env files opened/created/edited. No env values printed. No source changes.
+- [x] Google OAuth blocker resolved by PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION — Outcome B — runbook amended 2026-07-26 — Google OAuth deferred — keys omitted intentionally — no fake placeholders.
+
+###### Step 3 — COMPLETE (2026-07-26)
+- [x] Keith safe evidence reviewed — verdict PASS.
+- [x] `/opt/aisandbox/.env` created privately: Yes.
+- [x] Permissions set to 600: Yes.
+- [x] Owner ubuntu:ubuntu: Yes.
+- [x] `DATABASE_URL` configured privately: Yes — value not disclosed.
+- [x] `REDIS_URL` configured privately: Yes — value not disclosed.
+- [x] Auth/session secrets configured privately: Yes — value not disclosed.
+- [x] Provider keys configured privately or intentionally disabled: Yes.
+- [x] Kill-switch keys configured safely: Yes — all listed kill switches false.
+- [x] Google OAuth deferred / omitted intentionally: Yes.
+- [x] No fake Google OAuth placeholder values used: Yes.
+- [x] Email/password login remains intended staging auth path: Yes.
+- [x] No dependency install: confirmed.
+- [x] No build: confirmed.
+- [x] No app services started: confirmed.
+- [x] No migrations run: confirmed — database table count = 0.
+- [x] No DNS/TLS: confirmed.
+- [x] Secrets disclosed: No.
+- [x] PostgreSQL warning recorded as non-blocking.
+- [x] Stop conditions: none.
+
+###### Step 4 — COMPLETE (2026-07-26)
+- [x] PRIVATE-BETA-STAGING-EXECUTION-04B checkpoint created: `docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md`.
+- [x] PRIVATE-BETA-STAGING-EXECUTION-04B marked COMPLETE and LOCKED — 2026-07-26.
+- [x] TASKS.md updated. TASKS_BACKLOG_FULL.md updated. Roadmap updated.
+- [x] PRIVATE-BETA-STAGING-EXECUTION-04C recorded as next recommended child (PENDING registration).
+
+**PRIVATE-BETA-STAGING-EXECUTION-04B status:** COMPLETE and LOCKED — 2026-07-26 — All 4 steps COMPLETE — Evidence review verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md — Pre-env snapshot aisandbox-staging-postclone-preenv-2026-07-26 Available — /opt/aisandbox/.env created privately — owner ubuntu:ubuntu — chmod 600 — 47 required non-Google keys present — Google OAuth deferred / omitted intentionally — no fake placeholders — email/password intended staging auth path — all kill switches false — no dependency install — no build — no app services started — no migrations — no DNS/TLS — no secrets disclosed — PostgreSQL warning non-blocking — stop conditions none — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next child: PRIVATE-BETA-STAGING-EXECUTION-04C — Dependency Install + Build.
+**PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION status:** COMPLETE and LOCKED — 2026-07-26 — Outcome B — Google OAuth can be deferred — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04A status:** COMPLETE and LOCKED — 2026-07-25 — All 4 steps COMPLETE — Evidence verdict: PASS — Redis Gate Outcome A accepted — Repo cloned /opt/aisandbox — owner ubuntu:ubuntu — branch main — commit c55a278 — git status clean — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04A-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — Child 04A COMPLETE and LOCKED (2026-07-25) — Child 04B COMPLETE and LOCKED (2026-07-26) — Full app deployment still not complete — Remaining children: 04C, 04D.
+**PRIVATE-BETA-STAGING-EXECUTION-03 status:** COMPLETE and LOCKED — 2026-07-24.
+**PRIVATE-BETA-STAGING-EXECUTION-02 status:** COMPLETE and LOCKED — 2026-07-24.
+**PRIVATE-BETA-STAGING-EXECUTION-01 status:** COMPLETE and LOCKED — 2026-07-23.
+**PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
+**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04C — Dependency Install + Build (PENDING registration / requires Keith explicit approval).
+
+---
+
+#### PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION: Staging Google OAuth Requirement Decision
+
+**Status:** COMPLETE and LOCKED — 2026-07-26
+**Task ID:** PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION
+**Family:** PRIVATE BETA / STAGING EXECUTION
+**Priority:** CRITICAL BLOCKER
+**Nature:** GOVERNANCE / DECISION ONLY — Google OAuth blocker resolution for EXECUTION-04B
+**Risk:** LOW — governance and source review only — no source changes — no server actions
+**Registered:** 2026-07-26
+**Completed:** 2026-07-26
+**Parent:** PRIVATE-BETA-STAGING-EXECUTION-04B
+**Decision outcome:** OUTCOME B — Google OAuth can be deferred
+**Decision report:** docs/PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION-REPORT.md
+**Checkpoint:** docs/PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION-CHECKPOINT.md
+
+#### Purpose
+
+Resolve the Google OAuth blocker before continuing EXECUTION-04B manual execution. Keith does not currently have GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET. The 04B runbook classifies these keys as required (Yes — SECRET). The 04B stop condition was triggered before .env evidence could be collected.
+
+This task must answer:
+1. Is real Google OAuth required for staging app startup?
+2. Is real Google OAuth required for private beta login flow now?
+3. Can Google OAuth keys be safely omitted for 04B?
+4. Can non-secret placeholders be used without breaking startup?
+5. Can email/password login remain sufficient for staging validation?
+6. If real Google OAuth is required, what exact Google Cloud Console setup does Keith need to do manually?
+7. What is the safest way to resume 04B without exposing secrets?
+
+#### Current Blocker State
+
+- PRIVATE-BETA-STAGING-EXECUTION-04B manual execution PAUSED — 2026-07-26.
+- Keith does not have GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET.
+- 04B runbook section 11F classifies GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET as "Yes — SECRET" (required).
+- 04B presence-check script includes GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in required key list.
+- 04B stop condition: "Keith does not have a required secret value" — triggered.
+- No dependency install occurred. No build occurred. No app services started. No migrations ran. No DNS/TLS configured. No secrets disclosed.
+- PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.
+
+#### Decision Outcomes
+
+**Outcome A — Google OAuth required now**
+- 04B remains PAUSED.
+- Keith must create Google OAuth credentials manually in Google Cloud Console.
+- Authorized redirect URI: `https://staging.ainow.biz/api/auth/google/callback`
+- Do not paste GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET into AI chat.
+- Resume 04B only after Keith has values privately.
+
+**Outcome B — Google OAuth can be deferred**
+- Google OAuth keys can be omitted or set to safe non-secret placeholders only if source validation supports it.
+- 04B runbook should be amended to mark GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET as deferred or conditional.
+- 04B can resume without real Google OAuth credentials.
+- Evidence should state: Google OAuth deferred: Yes.
+
+**Outcome C — Source unclear**
+- 04B remains PAUSED.
+- Do not guess.
+- Recommend either Google OAuth setup or a small source/config validation task before continuing.
+
+#### Secret Safety Rules
+
+Do not ask Keith to paste: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, `.env`, DATABASE_URL, REDIS_URL, passwords, tokens, provider keys, or private keys.
+Do not generate fake production credentials.
+Do not create `.env`.
+Do not change source code in this registration task.
+
+#### Future Step 2 Report File
+
+Step 2 must create: `docs/PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION-REPORT.md`
+
+#### 3-Step Workflow
+
+1. **Step 1: Registration** — COMPLETE (2026-07-26) — Governance only. No server action. No source changes. No env files opened/created. No secrets disclosed. No subagents.
+2. **Step 2: Source/Config Decision Report** — COMPLETE (2026-07-26) — Decision report created: `docs/PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION-REPORT.md`. Recommended decision: OUTCOME B — Google OAuth can be deferred.
+3. **Step 3: Consolidation / 04B Runbook Amendment or Handoff** — COMPLETE (2026-07-26) — Outcome B consolidated. 04B runbook amended. Governance updated. Checkpoint created: `docs/PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION-CHECKPOINT.md`. 04B resumed as ACTIVE. Decision task COMPLETE and LOCKED.
+
+#### Acceptance Criteria
+
+###### Step 1 (Registration — COMPLETE 2026-07-26)
+- [x] PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION registered in TASKS.md.
+- [x] PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION registered in TASKS_BACKLOG_FULL.md.
+- [x] AINOW-EXECUTION-ROADMAP.md updated to reflect decision task ACTIVE.
+- [x] 04B pause reason recorded (missing Google OAuth values).
+- [x] 04B manual execution PAUSED status recorded.
+- [x] No dependency install / No build / No app services / No migrations / No DNS/TLS recorded.
+- [x] No secrets disclosed recorded.
+- [x] Decision outcomes A/B/C recorded.
+- [x] Secret safety rules recorded.
+- [x] 3-step workflow recorded.
+- [x] Future Step 2 report file path recorded.
+- [x] 04A remains COMPLETE and LOCKED.
+- [x] 04B remains ACTIVE / PAUSED pending decision.
+- [x] PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.
+- [x] No source code changed. No env files created/opened/edited. No env values opened/printed.
+- [x] No local runtime/test/build action occurred.
+- [x] No server/SSH/AWS/DNS/TLS action occurred.
+- [x] No Docker/PostgreSQL/Redis action occurred.
+- [x] No git commit or push occurred. No subagents used.
+
+###### Step 2 — COMPLETE (2026-07-26)
+- [x] `docs/PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION-REPORT.md` created.
+- [x] Auth strategy documented. Google OAuth env keys identified (names only).
+- [x] Whether Google OAuth required at startup: No — with source evidence.
+- [x] Whether Google OAuth required for private beta login: No — with source evidence.
+- [x] Whether email/password login available: Yes.
+- [x] Whether placeholder values safe: No — omission safer — with source evidence.
+- [x] Whether keys can be omitted: Yes — with source evidence.
+- [x] Recommended decision (Outcome B).
+- [x] Required 04B runbook amendment described.
+- [x] Manual Google Cloud Console steps documented as deferred (not Outcome A).
+- [x] No source changes. No env files created/opened/edited. No env values printed. No server/SSH/AWS actions.
+
+###### Step 3 — COMPLETE (2026-07-26)
+- [x] Governance updated.
+- [x] Outcome B: 04B runbook amended to defer Google OAuth.
+- [x] Checkpoint created: `docs/PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION-CHECKPOINT.md`.
+- [x] 04B status updated: PAUSED → ACTIVE — resumed after Google OAuth decision.
+- [x] PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION marked COMPLETE and LOCKED.
+- [x] Decision outcome recorded: OUTCOME B — Google OAuth can be deferred.
+- [x] No source code changed. No env files opened/created/edited. No env values printed. No secrets disclosed.
+- [x] Next action recorded: resume 04B Step 3 — Keith Manual 04B Evidence Review.
+
+**PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION status:** COMPLETE and LOCKED — 2026-07-26 — All 3 steps COMPLETE — OUTCOME B — Google OAuth can be deferred — Decision report: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION-REPORT.md — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION-CHECKPOINT.md — 04B runbook amended — 04B ACTIVE / resumed — No source code changed — No env files opened/created/edited — No env values printed — No secrets disclosed.
 
 ---
 
