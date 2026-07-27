@@ -35697,7 +35697,7 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 31. PRIVATE-BETA-STAGING-EXECUTION-01 — Create AWS Lightsail Staging Server + Static IP + Baseline (COMPLETE and LOCKED — 2026-07-23 — All 4 steps COMPLETE — Keith manual execution PASS — aisandbox-staging Running / ap-southeast-1 / Ubuntu 24.04.4 LTS — Static IP attached — Firewall 22/80/443 open; internal ports closed — snapshot aisandbox-staging-baseline-2026-07-23 Available — auto-snapshots enabled — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-01-RUNBOOK.md — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-01-CHECKPOINT.md)
 32. PRIVATE-BETA-STAGING-EXECUTION-02 — Runtime Installation Baseline (COMPLETE and LOCKED — 2026-07-24 — All 4 steps COMPLETE — Keith manual execution PASS — Node.js v20.20.2 — npm 10.8.2 — Docker Engine 29.6.2 — Docker Compose v5.3.1 — PM2 7.0.3 — Caddy v2.11.4 — Snapshot aisandbox-staging-runtime-2026-07-24 Available — No app deployed / No DB / No Redis / No DNS / No TLS / No repo / No .env — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-02-CHECKPOINT.md)
 32b. PRIVATE-BETA-STAGING-EXECUTION-03 — PostgreSQL + Redis Installation Baseline (COMPLETE and LOCKED — 2026-07-24 — All 4 steps COMPLETE — Evidence verdict: PASS WITH VERSION DEVIATION — PostgreSQL 15.18 installed from PGDG APT noble channel — PostgreSQL 15/main cluster online on localhost 127.0.0.1:5432 only — aisandbox database/user created — DB password set privately and not disclosed — Redis 8.8.0 installed from official Redis APT repo — Redis target was 7.x — Redis version deviation recorded — compatibility guardrail required before app deployment — Redis active/running — bound to 127.0.0.1/::1 only — protected-mode yes — requirepass configured and redacted — unauthenticated ping blocked — authenticated ping passed — Redis password set privately and not disclosed — Lightsail firewall remains 22/80/443 only — ports 5432/6379 closed externally — No repo / No .env / No app / No migration / No DNS / No TLS — Snapshot aisandbox-staging-db-redis-2026-07-24 Available — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-03-DB-REDIS-INSTALL-RUNBOOK.md — Evidence review: docs/PRIVATE-BETA-STAGING-EXECUTION-03-EVIDENCE-REVIEW.md — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-03-DB-REDIS-CHECKPOINT.md — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next: PRIVATE-BETA-STAGING-EXECUTION-04 — ACTIVE — Step 1 COMPLETE (Registration — 2026-07-25))
-32c. PRIVATE-BETA-STAGING-EXECUTION-04 — Repo Clone + Private Env Preparation + App Deployment Baseline (ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — 4-step workflow — Manual execution split into bounded child slices: 04A COMPLETE and LOCKED (2026-07-25), 04B COMPLETE and LOCKED (2026-07-26), 04C COMPLETE and LOCKED (2026-07-26), 04D ACTIVE and ready to resume PM2 health-only smoke, 04E COMPLETE and LOCKED (2026-07-27) — Full app deployment still not complete — Predecessor: PRIVATE-BETA-STAGING-EXECUTION-03 COMPLETE and LOCKED — 2026-07-24 — PostgreSQL 15.18 online on localhost 127.0.0.1:5432 only — Redis 8.8.0 online on 127.0.0.1/::1 only — credentials private — ports 5432/6379 closed externally — Snapshots through pre-migration Available including aisandbox-staging-premigration-2026-07-27 — Repo cloned /opt/aisandbox — owner ubuntu:ubuntu — branch main — VPS commit 3da1b7c — /opt/aisandbox/.env created privately — 47 required non-Google keys present — Google OAuth deferred — Dependencies installed (npm ci PASS) — Builds PASS (api-gateway/ai-service/container-manager/frontend) — Generated artifacts present — Staging DB migration baseline COMPLETE — required tables usage_records/billing_snapshots/invoices present — migrations count 25 — 04D migration blocker cleared — 04D1/04D2 ACTIVE pending final consolidation — 04D3 ACTIVE pending final consolidation — Outcome A — No DNS / No TLS — Credential safety: Keith keeps DB/Redis passwords privately; no paste of .env/DATABASE_URL/REDIS_URL/provider keys — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next action: PRIVATE-BETA-STAGING-EXECUTION-04D — Resume PM2 Health-Only Smoke after 04E)
+32c. PRIVATE-BETA-STAGING-EXECUTION-04 — Repo Clone + Private Env Preparation + App Deployment Baseline (ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — 4-step workflow — Manual execution split into bounded child slices: 04A COMPLETE and LOCKED (2026-07-25), 04B COMPLETE and LOCKED (2026-07-26), 04C COMPLETE and LOCKED (2026-07-26), 04D COMPLETE and LOCKED (2026-07-27), 04E COMPLETE and LOCKED (2026-07-27) — Full app deployment still not complete — Predecessor: PRIVATE-BETA-STAGING-EXECUTION-03 COMPLETE and LOCKED — 2026-07-24 — PostgreSQL 15.18 online on localhost 127.0.0.1:5432 only — Redis 8.8.0 online on 127.0.0.1/::1 only — credentials private — ports 5432/6379 closed externally — Snapshots through pre-migration Available including aisandbox-staging-premigration-2026-07-27 — Repo cloned /opt/aisandbox — owner ubuntu:ubuntu — branch main — VPS commit 3da1b7c — /opt/aisandbox/.env created privately — 47 required non-Google keys present — Google OAuth deferred — Dependencies installed (npm ci PASS) — Builds PASS (api-gateway/ai-service/container-manager/frontend) — Generated artifacts present — Staging DB migration baseline COMPLETE — required tables usage_records/billing_snapshots/invoices present — migrations count 25 — 04D PM2 health-only smoke PASS — all four PM2 services online — restarts 0 — API_HEALTH/API_DB_HEALTH/API_READY/CONTAINER_HEALTH=200 — FRONTEND_ROOT=307 accepted as locale redirect — final public table count 26 — 04D1/04D2/04D3 COMPLETE and LOCKED — PM2 persistence / boot persistence not yet done — No DNS / No TLS — Credential safety: Keith keeps DB/Redis passwords privately; no paste of .env/DATABASE_URL/REDIS_URL/provider keys — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next action: Register PRIVATE-BETA-STAGING-EXECUTION-04F — PM2 Persistence / Boot Persistence)
 32d. PRIVATE-BETA-STAGING-EXECUTION-04A — Redis Gate + Repo Clone Baseline (COMPLETE and LOCKED — 2026-07-25 — All 4 steps COMPLETE — Evidence verdict: PASS — All 45 checks passed — No deviations — No warnings — No stop conditions — Redis Gate Outcome A accepted — Static assessment LIKELY COMPATIBLE — ioredis v5 / BullMQ v5 / Redis 8.8.0 satisfy compatibility conditions — Repo cloned to /opt/aisandbox — owner ubuntu:ubuntu — branch main — latest commit c55a278 Register staging execution 04A repo clone baseline — git status clean — services/ai-service, api-gateway, container-manager, governance, frontend all present — No .env created — No dependencies installed — No build run — No app services started — No migrations run — No DNS/TLS configured — No secrets disclosed — Snapshot aisandbox-staging-preclone-2026-07-25 Available — All 4 snapshots Available — PostgreSQL active/local-only — Redis active/local-only/protected-mode/requirepass — Firewall 22/80/443 only — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04A-CHECKPOINT.md — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next child: PRIVATE-BETA-STAGING-EXECUTION-04B — Private Env Preparation)
 32e. PRIVATE-BETA-STAGING-EXECUTION-04B — Private Env Preparation (COMPLETE and LOCKED — 2026-07-26 — All 4 steps COMPLETE — Evidence review verdict PASS — Step 1 Registration complete — Step 2 Runbook complete — Google OAuth decision complete and locked (Outcome B) — Step 3 Evidence review complete — verdict PASS — Step 4 Consolidation/checkpoint complete — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md — Pre-env snapshot aisandbox-staging-postclone-preenv-2026-07-26 Available — /opt/aisandbox/.env created privately — owner ubuntu:ubuntu — chmod 600 — 47 required non-Google keys present — Google OAuth deferred / omitted intentionally — no fake placeholders — email/password intended staging auth path — all kill switches false — no dependency install — no build — no app services started — no migrations — no DNS/TLS — no secrets disclosed — PostgreSQL warning non-blocking — stop conditions none — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next child: PRIVATE-BETA-STAGING-EXECUTION-04C — ACTIVE)
 32f. PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION — Staging Google OAuth Requirement Decision (COMPLETE and LOCKED — 2026-07-26 — All 3 steps COMPLETE — Outcome B — Google OAuth can be deferred — Decision report: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION-REPORT.md — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION-CHECKPOINT.md — 04B runbook amended — no source code changed — no env files opened/created/edited — no env values printed — no secrets disclosed)
@@ -35705,10 +35705,10 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 32h. PRIVATE-BETA-STAGING-EXECUTION-04C-PACKAGE-MANAGER-DECISION — Package Manager / Lockfile Decision (COMPLETE and LOCKED — 2026-07-26 — Outcome E — Source unclear — Report: docs/PRIVATE-BETA-STAGING-EXECUTION-04C-PACKAGE-MANAGER-DECISION-REPORT.md — superseded for policy choice by 04C-PACKAGE-MANAGER-POLICY Outcome A)
 32i. PRIVATE-BETA-STAGING-EXECUTION-04C-PACKAGE-MANAGER-POLICY — Package Manager Policy Registration + Decision (COMPLETE and LOCKED — 2026-07-27 — Outcome A — npm policy with tracked lockfile — Official staging package manager: npm — packageManager=bun@1.x treated as local-dev only — root package-lock.json must be tracked — Policy: docs/PRIVATE-BETA-STAGING-EXECUTION-04C-PACKAGE-MANAGER-POLICY.md — Outcome A applied; 04C subsequently COMPLETE and LOCKED — 2026-07-26 — No secrets disclosed — No subagents)
 32j. PRIVATE-BETA-STAGING-EXECUTION-04C-NPM-LOCKFILE-TRACKING — Track/Refresh Root package-lock.json for Staging npm ci (COMPLETE — Outcome A implemented locally and pushed to main — .gitignore allows root package-lock.json via !/package-lock.json — root package-lock.json refreshed — lockfileVersion 3 — workspaces present — VPS synced to 3da1b7c — 04C install/build subsequently PASS — Checkpoint handoff via docs/PRIVATE-BETA-STAGING-EXECUTION-04C-CHECKPOINT.md)
-32k. PRIVATE-BETA-STAGING-EXECUTION-04D — PM2 Service Start + Health-Only Smoke (ACTIVE — 2026-07-27 — Parent: PRIVATE-BETA-STAGING-EXECUTION-04 — Child slice 4 of 4 — Migration blocker cleared by 04E COMPLETE and LOCKED — 2026-07-27 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md — Manual PM2 start previously attempted — 04D1 SQLite blocker passed — 04D2 provider validation blocker passed on VPS retry (stub permitted in health-only mode) — Prior StartupGuard missing-table failure resolved by 04E migration baseline — 04D3 Outcome A — Separate approved migration slice — 04D PM2 health-only smoke may resume next — No health smoke completion yet — Not marked complete — Required tables now present (usage_records/billing_snapshots/invoices) — migrations count 25 — PM2 services remained stopped after 04E — No DNS/TLS / No billing/payment/AI/container execution — No secrets disclosed — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-PM2-HEALTH-SMOKE-RUNBOOK.md — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next: PRIVATE-BETA-STAGING-EXECUTION-04D — Resume PM2 Health-Only Smoke after 04E)
-32l. PRIVATE-BETA-STAGING-EXECUTION-04D1 — API Gateway Reconciliation SQLite Runtime Path Fix (ACTIVE pending final consolidation — 2026-07-27 — Parent: PRIVATE-BETA-STAGING-EXECUTION-04D — Tiny blocker child slice — Fix: shared prepareSqliteDatabasePath() resolves repo-root database/aisandbox.db from cwd walk (not compiled __dirname) and mkdirSync parent before better-sqlite3 open — Updated ReconciliationService / AdminService / InvoicesService — Tests 6/6 PASS — api-gateway build PASS — VPS retry evidence: original SQLite missing-directory blocker passed — Provider blocker also passed (04D2) — 04E migration baseline COMPLETE and LOCKED — parent 04D ready to resume PM2 health-only smoke — No .env / No migrations / No Docker/PostgreSQL/Redis — No git commit/push — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED)
-32m. PRIVATE-BETA-STAGING-EXECUTION-04D2 — StartupGuard Private-Beta Stub Provider Policy (ACTIVE pending final consolidation — 2026-07-27 — Parent: PRIVATE-BETA-STAGING-EXECUTION-04D — Blocker child slice — Fix: ProviderValidator allows AI_PROVIDER=stub in production/staging only when GLOBAL_EXECUTION_ENABLED=false — VPS retry evidence: provider validation blocker PASSED — stub permitted for private-beta health-only startup; AI execution remains blocked by kill switch; Production guardrails validated — Database reachable / auth successful / schema exists — Then blocked by required schema validation — 04D3 Outcome A selected — 04E COMPLETE and LOCKED — parent 04D ready to resume — No .env / No migrations / No server/SSH / No Docker/PostgreSQL/Redis / No frontend — No git commit/push — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED)
-32n. PRIVATE-BETA-STAGING-EXECUTION-04D3 — StartupGuard Required Schema / Migration Boundary Decision (ACTIVE pending final consolidation — 2026-07-27 — Parent: PRIVATE-BETA-STAGING-EXECUTION-04D — Decision Outcome A complete — Separate approved migration slice — Decision report: docs/PRIVATE-BETA-STAGING-EXECUTION-04D3-MIGRATION-BOUNDARY-DECISION-REPORT.md — Missing tables resolved by 04E: usage_records, billing_snapshots, invoices — Prefer migration:run:prod on built VPS — 04E COMPLETE and LOCKED — 2026-07-27 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md — Parent 04D ready to resume PM2 health-only smoke — No .env — No source changes in this decision slice — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED)
+32k. PRIVATE-BETA-STAGING-EXECUTION-04D — PM2 Service Start + Health-Only Smoke (COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. — Parent: PRIVATE-BETA-STAGING-EXECUTION-04 — Child slice 4 of 4 — Evidence review verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-CHECKPOINT.md — 04E COMPLETE and LOCKED prerequisite — Required tables present — migrations count 25 — PM2 all four online — restarts 0 — API Gateway CPU not stuck at 100% — API_HEALTH=200 — API_DB_HEALTH=200 — API_READY=200 — CONTAINER_HEALTH=200 — FRONTEND_ROOT=307 accepted as locale redirect — final public table count 26 — git status clean based on no output — no secrets printed — no DNS/TLS — no AI execution — no billing/payment execution — no container execution beyond Container Manager health endpoint — no Google OAuth enablement — 04D1/04D2/04D3 COMPLETE and LOCKED — PM2 persistence / boot persistence not yet done — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-PM2-HEALTH-SMOKE-RUNBOOK.md — Evidence review: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-PM2-HEALTH-SMOKE-EVIDENCE-REVIEW.md — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next: Register PRIVATE-BETA-STAGING-EXECUTION-04F — PM2 Persistence / Boot Persistence)
+32l. PRIVATE-BETA-STAGING-EXECUTION-04D1 — API Gateway Reconciliation SQLite Runtime Path Fix (COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. — Parent: PRIVATE-BETA-STAGING-EXECUTION-04D — Tiny blocker child slice — SQLite runtime path blocker cleared — API Gateway progressed past the prior SQLite failure — Final 04D PM2 health smoke passed after 04E — Fix: shared prepareSqliteDatabasePath() resolves repo-root database/aisandbox.db from cwd walk (not compiled __dirname) and mkdirSync parent before better-sqlite3 open — Tests 6/6 PASS — api-gateway build PASS — No .env / No migrations / No Docker/PostgreSQL/Redis — No git commit/push — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED)
+32m. PRIVATE-BETA-STAGING-EXECUTION-04D2 — StartupGuard Private-Beta Stub Provider Policy (COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. — Parent: PRIVATE-BETA-STAGING-EXECUTION-04D — Blocker child slice — Stub provider StartupGuard blocker cleared — StartupGuard accepted stub in private-beta health-only mode with GLOBAL_EXECUTION_ENABLED=false — AI execution remained blocked — Final 04D PM2 health smoke passed after 04E — Fix: ProviderValidator allows AI_PROVIDER=stub in production/staging only when GLOBAL_EXECUTION_ENABLED=false — No .env / No migrations / No server/SSH / No Docker/PostgreSQL/Redis / No frontend — No git commit/push — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED)
+32n. PRIVATE-BETA-STAGING-EXECUTION-04D3 — StartupGuard Required Schema / Migration Boundary Decision (COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. — Parent: PRIVATE-BETA-STAGING-EXECUTION-04D — Decision Outcome A selected — Separate approved migration slice — 04E migration slice completed — Required-table blocker cleared — Final 04D PM2 health smoke passed after 04E — Decision report: docs/PRIVATE-BETA-STAGING-EXECUTION-04D3-MIGRATION-BOUNDARY-DECISION-REPORT.md — Prefer migration:run:prod on built VPS — 04E Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md — No .env — No source changes in this decision slice — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED)
 32o. PRIVATE-BETA-STAGING-EXECUTION-04E — Staging Database Migration Baseline (COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. — Parent: PRIVATE-BETA-STAGING-EXECUTION-04 — Separate approved migration slice after 04D3 Outcome A — Snapshot aisandbox-staging-premigration-2026-07-27 Available before migration — Keith approved via go — Command: npm run migration:run:prod — MIGRATION_RUN_PROD_EXIT=0 — Migration CreateUserAgentsTable1772500000000 executed successfully — query COMMIT — Required tables present: usage_records=yes, billing_snapshots=yes, invoices=yes — migrations table count 25 — Required table row counts 0 — PM2 services remained stopped — No secrets printed — No DNS/TLS / No AI / No billing/payment / No container / No Google OAuth enablement — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-MIGRATION-BASELINE-RUNBOOK.md — Evidence review: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-MIGRATION-EXECUTION-EVIDENCE-REVIEW.md — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next: PRIVATE-BETA-STAGING-EXECUTION-04D — Resume PM2 Health-Only Smoke after 04E)
 33. LOCAL-PRIVATE-BETA-READINESS-01 — Local Machine Rebaseline + Private Beta Gap Review (COMPLETE and LOCKED — 2026-07-23 — All 3 steps COMPLETE — Verdict: BLOCKED for private-beta progression — P0: authenticated /api/ai/execute returned 402 not kill-switch 503 — Checkpoint: docs/LOCAL-PRIVATE-BETA-READINESS-01-CHECKPOINT.md — Step 2 report: docs/LOCAL-PRIVATE-BETA-READINESS-01-LOCAL-REBASELINE-REPORT.md — Next: LOCAL-PRIVATE-BETA-READINESS-01-FIX-EXECUTION-KILLSWITCH-LOCAL — ACTIVE)
 34. LOCAL-PRIVATE-BETA-READINESS-01-FIX-EXECUTION-KILLSWITCH-LOCAL — Fix Authenticated Execution Kill Switch — Local Private Beta P0 Fix (COMPLETE and LOCKED — 2026-07-23 — All 3 steps COMPLETE — PASS — P0 blocker fixed: authenticated POST /api/ai/execute now returns 503 (not 402) — GLOBAL_EXECUTION_ENABLED default changed to fail-safe opt-in — kill-switch fires before quota/payment/provider/container logic — 129/129 targeted tests PASS — /api/health/ready 200 — Checkpoint: docs/LOCAL-PRIVATE-BETA-READINESS-01-FIX-EXECUTION-KILLSWITCH-LOCAL-CHECKPOINT.md — Next: LOCAL-PRIVATE-BETA-READINESS-02 — ACTIVE — Step 1 COMPLETE (Registration — 2026-07-23))
@@ -36518,7 +36518,7 @@ Redis target in the runbook was Redis 7.x. The official Redis APT repository ins
 **LOCAL-PRIVATE-BETA-READINESS-02 status:** PAUSED / PARTIALLY COMPLETE — 2026-07-23.
 **LOCAL-PRIVATE-BETA-READINESS-02-FIX-AI-SERVICE-REDIS-ENV-LOCAL status:** PAUSED / SUPERSEDED by staging-environment parity decision.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next task:** PRIVATE-BETA-STAGING-EXECUTION-04D — Resume PM2 Health-Only Smoke after 04E (ACTIVE — migration blocker cleared). EXECUTION-04E COMPLETE and LOCKED — 2026-07-27 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md — Snapshot aisandbox-staging-premigration-2026-07-27 Available — Keith approved via go — npm run migration:run:prod — MIGRATION_RUN_PROD_EXIT=0 — required tables present — migrations count 25 — required row counts 0 — PM2 remained stopped — no secrets printed. EXECUTION-04D ACTIVE and ready to resume — No health smoke completion yet — Not marked complete — 04D1/04D2 ACTIVE pending final consolidation — 04D3 ACTIVE pending final consolidation — Outcome A. EXECUTION-04C COMPLETE and LOCKED — 2026-07-26 — Evidence verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04C-CHECKPOINT.md. EXECUTION-04B COMPLETE and LOCKED — 2026-07-26. EXECUTION-04A COMPLETE and LOCKED — 2026-07-25. EXECUTION-04 remains ACTIVE — child 04A/04B/04C COMPLETE and LOCKED — child 04D ACTIVE and ready to resume — child 04E COMPLETE and LOCKED. See PRIVATE-BETA-STAGING-EXECUTION-04D section below.
+**Next task:** Register PRIVATE-BETA-STAGING-EXECUTION-04F — PM2 Persistence / Boot Persistence. EXECUTION-04D COMPLETE and LOCKED — 2026-07-27 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-CHECKPOINT.md — Evidence review PASS — all four PM2 services online — restarts 0 — API_HEALTH/API_DB_HEALTH/API_READY/CONTAINER_HEALTH=200 — FRONTEND_ROOT=307 accepted as locale redirect — final public table count 26 — no secrets printed — no DNS/TLS / AI / billing / container workflow / Google OAuth. 04D1/04D2/04D3 COMPLETE and LOCKED — 2026-07-27. EXECUTION-04E COMPLETE and LOCKED — 2026-07-27 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md. EXECUTION-04C COMPLETE and LOCKED — 2026-07-26. EXECUTION-04B COMPLETE and LOCKED — 2026-07-26. EXECUTION-04A COMPLETE and LOCKED — 2026-07-25. EXECUTION-04 remains ACTIVE — child 04A/04B/04C/04D/04E COMPLETE and LOCKED — PM2 persistence / boot persistence not yet done — Full app deployment still not complete. See PRIVATE-BETA-STAGING-EXECUTION-04D section below.
 
 **Reference:** Predecessor: PRIVATE-BETA-STAGING-EXECUTION-02. Checkpoint (predecessor): `docs/PRIVATE-BETA-STAGING-EXECUTION-02-CHECKPOINT.md`. Checkpoint (this task): `docs/PRIVATE-BETA-STAGING-EXECUTION-03-DB-REDIS-CHECKPOINT.md`. DB/Redis plan: `docs/PRIVATE-BETA-STAGING-SETUP-06-DB-REDIS-PLAN.md`. Pivot checkpoint: `docs/LOCAL-TO-STAGING-PARITY-PIVOT-CHECKPOINT.md`.
 
@@ -36620,10 +36620,10 @@ SPLIT ACTIVATED — 2026-07-25. The Step 2 runbook (docs/PRIVATE-BETA-STAGING-EX
 - PRIVATE-BETA-STAGING-EXECUTION-04A — Redis Gate + Repo Clone Baseline (COMPLETE and LOCKED — 2026-07-25 — All 4 steps COMPLETE — Evidence verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04A-CHECKPOINT.md)
 - PRIVATE-BETA-STAGING-EXECUTION-04B — Private Env Preparation (COMPLETE and LOCKED — 2026-07-26 — All 4 steps COMPLETE — Evidence review verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md)
 - PRIVATE-BETA-STAGING-EXECUTION-04C — Dependency Install + Build (COMPLETE and LOCKED — 2026-07-26 — All steps COMPLETE — Evidence review verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04C-CHECKPOINT.md)
-- PRIVATE-BETA-STAGING-EXECUTION-04D — PM2 Service Start + Health-Only Smoke (ACTIVE — 2026-07-27 — Migration blocker cleared by 04E COMPLETE and LOCKED — PM2 health-only smoke may resume next — Not marked complete)
-- PRIVATE-BETA-STAGING-EXECUTION-04D1 — API Gateway Reconciliation SQLite Runtime Path Fix (ACTIVE pending final consolidation — 2026-07-27 — SQLite blocker passed)
-- PRIVATE-BETA-STAGING-EXECUTION-04D2 — StartupGuard Private-Beta Stub Provider Policy (ACTIVE pending final consolidation — 2026-07-27 — provider validation blocker passed)
-- PRIVATE-BETA-STAGING-EXECUTION-04D3 — StartupGuard Required Schema / Migration Boundary Decision (ACTIVE pending final consolidation — 2026-07-27 — Decision Outcome A complete)
+- PRIVATE-BETA-STAGING-EXECUTION-04D — PM2 Service Start + Health-Only Smoke (COMPLETE and LOCKED — 2026-07-27 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-CHECKPOINT.md)
+- PRIVATE-BETA-STAGING-EXECUTION-04D1 — API Gateway Reconciliation SQLite Runtime Path Fix (COMPLETE and LOCKED — 2026-07-27 — SQLite blocker cleared)
+- PRIVATE-BETA-STAGING-EXECUTION-04D2 — StartupGuard Private-Beta Stub Provider Policy (COMPLETE and LOCKED — 2026-07-27 — Stub provider StartupGuard blocker cleared)
+- PRIVATE-BETA-STAGING-EXECUTION-04D3 — StartupGuard Required Schema / Migration Boundary Decision (COMPLETE and LOCKED — 2026-07-27 — Decision Outcome A — 04E completed)
 - PRIVATE-BETA-STAGING-EXECUTION-04E — Staging Database Migration Baseline (COMPLETE and LOCKED — 2026-07-27 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md)
 
 #### Non-Goals
@@ -36704,11 +36704,12 @@ Redis 8.8.0 compatibility static assessment: LIKELY COMPATIBLE — ioredis ^5.3.
 - [x] No server action in Step 2. No source changes. No env files opened/created.
 
 ###### Step 3 — PENDING (Deferred to child slice completions)
-- [ ] Child slices 04A through 04D complete.
-- [ ] Safe evidence from all child slices reviewed.
-- [ ] No secrets disclosed: confirmed.
-- [ ] App services started: Yes/No recorded.
-- [ ] Health endpoints passed: Yes/No recorded.
+- [x] Child slices 04A through 04D complete (also 04E COMPLETE and LOCKED).
+- [x] Safe evidence from completed child slices reviewed (through 04D health-only smoke PASS).
+- [x] No secrets disclosed: confirmed for completed slices.
+- [x] App services started: Yes — PM2 four services online after 04D.
+- [x] Health endpoints passed: Yes — API health/db/ready 200; container health 200; frontend root 307 accepted.
+- [ ] Parent-level remaining deployment baseline work still open (PM2 persistence / DNS-TLS / broader smoke not complete).
 
 ###### Step 4 — PENDING
 - [ ] PRIVATE-BETA-STAGING-EXECUTION-04 checkpoint created.
@@ -36716,14 +36717,14 @@ Redis 8.8.0 compatibility static assessment: LIKELY COMPATIBLE — ioredis ^5.3.
 - [ ] TASKS.md updated. TASKS_BACKLOG_FULL.md updated. Roadmap updated.
 - [ ] PRIVATE-BETA-STAGING-EXECUTION-05 registered or deferred.
 
-**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — Child 04A COMPLETE and LOCKED (2026-07-25) — Child 04B COMPLETE and LOCKED (2026-07-26) — Child 04C COMPLETE and LOCKED (2026-07-26) — Child 04D ACTIVE and ready to resume PM2 health-only smoke — Child 04E COMPLETE and LOCKED (2026-07-27) — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md — Full app deployment still not complete — Manual execution split into child slices (04A/04B/04C/04D) + migration sibling 04E COMPLETE and LOCKED — 04D3 Outcome A recorded.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — Child 04A COMPLETE and LOCKED (2026-07-25) — Child 04B COMPLETE and LOCKED (2026-07-26) — Child 04C COMPLETE and LOCKED (2026-07-26) — Child 04D COMPLETE and LOCKED (2026-07-27) — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-CHECKPOINT.md — Child 04E COMPLETE and LOCKED (2026-07-27) — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md — Full app deployment still not complete — PM2 persistence / boot persistence not yet done — Manual execution split into child slices (04A/04B/04C/04D) + migration sibling 04E COMPLETE and LOCKED.
 **PRIVATE-BETA-STAGING-EXECUTION-04A status:** COMPLETE and LOCKED — 2026-07-25 — All 4 steps COMPLETE — Evidence verdict: PASS — Redis Gate Outcome A accepted — Repo cloned /opt/aisandbox — owner ubuntu:ubuntu — branch main — commit c55a278 — git status clean — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04A-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04B status:** COMPLETE and LOCKED — 2026-07-26 — All 4 steps COMPLETE — Evidence review verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md — /opt/aisandbox/.env created privately — owner ubuntu:ubuntu — chmod 600 — 47 required non-Google keys present — Google OAuth deferred / omitted intentionally — no fake placeholders — all kill switches false — no dependency install / build / app services / migrations / DNS/TLS — no secrets disclosed.
 **PRIVATE-BETA-STAGING-EXECUTION-04C status:** COMPLETE and LOCKED — 2026-07-26 — All steps COMPLETE — Evidence review verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04C-CHECKPOINT.md — npm ci PASS — all four builds PASS — generated artifacts present — no services / migrations / DNS/TLS — no secrets disclosed.
-**PRIVATE-BETA-STAGING-EXECUTION-04D status:** ACTIVE — 2026-07-27 — Migration blocker cleared by 04E COMPLETE and LOCKED — PM2 health-only smoke may resume next — No health smoke completion yet — Not marked complete — 04D1 SQLite blocker passed — 04D2 provider validation blocker passed — 04D3 Outcome A.
-**PRIVATE-BETA-STAGING-EXECUTION-04D1 status:** ACTIVE pending final consolidation — SQLite blocker passed.
-**PRIVATE-BETA-STAGING-EXECUTION-04D2 status:** ACTIVE pending final consolidation — provider validation blocker passed on VPS retry.
-**PRIVATE-BETA-STAGING-EXECUTION-04D3 status:** ACTIVE pending final consolidation — Decision Outcome A complete — Decision report: docs/PRIVATE-BETA-STAGING-EXECUTION-04D3-MIGRATION-BOUNDARY-DECISION-REPORT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04D status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04D1 status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. — SQLite runtime path blocker cleared.
+**PRIVATE-BETA-STAGING-EXECUTION-04D2 status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. — Stub provider StartupGuard blocker cleared.
+**PRIVATE-BETA-STAGING-EXECUTION-04D3 status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. — Decision Outcome A — required-table blocker cleared via 04E.
 **PRIVATE-BETA-STAGING-EXECUTION-04E status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-03 status:** COMPLETE and LOCKED — 2026-07-24.
 **PRIVATE-BETA-STAGING-EXECUTION-02 status:** COMPLETE and LOCKED — 2026-07-24.
@@ -36731,7 +36732,7 @@ Redis 8.8.0 compatibility static assessment: LIKELY COMPATIBLE — ioredis ^5.3.
 **LOCAL-PRIVATE-BETA-READINESS-02 status:** PAUSED / PARTIALLY COMPLETE — 2026-07-23.
 **LOCAL-PRIVATE-BETA-READINESS-02-FIX-AI-SERVICE-REDIS-ENV-LOCAL status:** PAUSED / SUPERSEDED by staging-environment parity decision.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04D — Resume PM2 Health-Only Smoke after 04E.
+**Next action:** Register PRIVATE-BETA-STAGING-EXECUTION-04F — PM2 Persistence / Boot Persistence.
 
 ---
 
@@ -37740,20 +37741,23 @@ The runbook should include:
 
 #### PRIVATE-BETA-STAGING-EXECUTION-04D: PM2 Service Start + Health-Only Smoke
 
-**Status:** ACTIVE — 2026-07-27 — Migration blocker cleared by 04E COMPLETE and LOCKED — PM2 health-only smoke may resume next — No health smoke completion yet — Not marked complete
+**Status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry.
 **Task ID:** PRIVATE-BETA-STAGING-EXECUTION-04D
 **Family:** PRIVATE BETA / STAGING EXECUTION
 **Priority:** CRITICAL
 **Nature:** REAL STAGING EXECUTION — PM2 service start + health-only smoke on Lightsail instance
 **Risk:** HIGH — first app process start on production-like staging VPS; secret-bearing runtime env; migration/DNS/TLS/paid-execution stop conditions
 **Registered:** 2026-07-26
+**Completed:** 2026-07-27
 **Parent:** PRIVATE-BETA-STAGING-EXECUTION-04
 **Child slice:** 4 of 4 of EXECUTION-04 manual execution split
-**Blocker child (prior):** PRIVATE-BETA-STAGING-EXECUTION-04D1 — ACTIVE pending final consolidation — SQLite missing-directory blocker passed
-**Blocker child (prior):** PRIVATE-BETA-STAGING-EXECUTION-04D2 — ACTIVE pending final consolidation — provider validation blocker passed on VPS retry
-**Blocker child (prior):** PRIVATE-BETA-STAGING-EXECUTION-04D3 — ACTIVE pending final consolidation — Decision Outcome A complete — Separate approved migration slice
+**Blocker child (locked):** PRIVATE-BETA-STAGING-EXECUTION-04D1 — COMPLETE and LOCKED — 2026-07-27 — SQLite runtime path blocker cleared
+**Blocker child (locked):** PRIVATE-BETA-STAGING-EXECUTION-04D2 — COMPLETE and LOCKED — 2026-07-27 — Stub provider StartupGuard blocker cleared
+**Blocker child (locked):** PRIVATE-BETA-STAGING-EXECUTION-04D3 — COMPLETE and LOCKED — 2026-07-27 — Decision Outcome A — required-table blocker cleared via 04E
 **Cleared sibling (migration baseline):** PRIVATE-BETA-STAGING-EXECUTION-04E — COMPLETE and LOCKED — 2026-07-27 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md
 **Runbook:** docs/PRIVATE-BETA-STAGING-EXECUTION-04D-PM2-HEALTH-SMOKE-RUNBOOK.md
+**Evidence review:** docs/PRIVATE-BETA-STAGING-EXECUTION-04D-PM2-HEALTH-SMOKE-EVIDENCE-REVIEW.md
+**Checkpoint:** docs/PRIVATE-BETA-STAGING-EXECUTION-04D-CHECKPOINT.md
 **Future snapshot recommendation:** aisandbox-staging-prepm2-health-2026-07-26
 
 #### Purpose
@@ -37773,7 +37777,7 @@ The task must remain bounded to:
 
 #### Prior Blocker — 04E (CLEARED — 2026-07-27)
 
-04E migration baseline is COMPLETE and LOCKED — 2026-07-27. Migration blocker cleared. 04D PM2 health-only smoke may resume next. 04D is not marked complete.
+04E migration baseline is COMPLETE and LOCKED — 2026-07-27. Migration blocker cleared. 04D PM2 health-only smoke subsequently completed and passed.
 
 04E evidence recorded:
 
@@ -37787,6 +37791,34 @@ Migrations count: 25
 Required row counts: 0
 PM2 after migration: all four app processes stopped
 Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md
+```
+
+#### 04D Final Health-Only Smoke Evidence (2026-07-27 — PASS)
+
+```text
+04D PM2 restart evidence:
+- aisandbox-ai-service online, restarts 0, CPU 0%, memory about 108.4mb
+- aisandbox-api-gateway online, restarts 0, CPU 0%, memory about 154.9mb
+- aisandbox-container-manager online, restarts 0, CPU 0%, memory about 90.5mb
+- aisandbox-frontend online, restarts 0, CPU 0%, memory about 58.2mb
+- host CPU about 2.1%, RAM usage about 13.4%
+
+Health-only smoke:
+- API_HEALTH=200
+- API_DB_HEALTH=200
+- API_READY=200
+- CONTAINER_HEALTH=200
+- FRONTEND_ROOT=307
+
+Final checks:
+- git status --short showed no output, treated as clean.
+- Final PM2 state:
+  - aisandbox-ai-service online, restarts 0, CPU 0%, memory about 108.2mb
+  - aisandbox-api-gateway online, restarts 0, CPU 0%, memory about 118.2mb
+  - aisandbox-container-manager online, restarts 0, CPU 0%, memory about 90.6mb
+  - aisandbox-frontend online, restarts 0, CPU 0%, memory about 57.7mb
+  - host CPU about 0.6%, RAM usage about 12.7%
+- Final public table count: 26
 ```
 
 04D3 decision (Outcome A) recorded and executed via 04E:
@@ -38050,9 +38082,9 @@ The runbook should include:
 #### 4-Step Workflow
 
 1. **Step 1: Registration** — COMPLETE (2026-07-26) — Governance only. No server action. No source changes. No env files opened/created. No PM2 start. No health smoke. No subagents.
-2. **Step 2: PM2 Service Start + Health-Only Smoke Runbook** — PENDING — Create runbook only: `docs/PRIVATE-BETA-STAGING-EXECUTION-04D-PM2-HEALTH-SMOKE-RUNBOOK.md`.
-3. **Step 3: Manual Execution + Evidence Review** — PENDING — Keith manual execution inside AWS Lightsail browser SSH, followed by evidence review.
-4. **Step 4: Consolidation / Checkpoint** — PENDING — Mark 04D COMPLETE and LOCKED if evidence passes.
+2. **Step 2: PM2 Service Start + Health-Only Smoke Runbook** — COMPLETE — Runbook created: `docs/PRIVATE-BETA-STAGING-EXECUTION-04D-PM2-HEALTH-SMOKE-RUNBOOK.md`.
+3. **Step 3: Manual Execution + Evidence Review** — COMPLETE — Keith manual execution PASS after 04E — Evidence review verdict PASS — `docs/PRIVATE-BETA-STAGING-EXECUTION-04D-PM2-HEALTH-SMOKE-EVIDENCE-REVIEW.md`.
+4. **Step 4: Consolidation / Checkpoint** — COMPLETE — 04D COMPLETE and LOCKED — Checkpoint: `docs/PRIVATE-BETA-STAGING-EXECUTION-04D-CHECKPOINT.md`.
 
 #### Acceptance Criteria
 
@@ -38083,42 +38115,51 @@ The runbook should include:
 - [x] No git commit or push occurred.
 - [x] No subagents used.
 
-###### Step 2 — PENDING
-- [ ] Runbook `docs/PRIVATE-BETA-STAGING-EXECUTION-04D-PM2-HEALTH-SMOKE-RUNBOOK.md` created.
+###### Step 2 — COMPLETE
+- [x] Runbook `docs/PRIVATE-BETA-STAGING-EXECUTION-04D-PM2-HEALTH-SMOKE-RUNBOOK.md` created.
 
-###### Step 3 — PENDING
-- [ ] Keith manual PM2 start + health-only smoke evidence reviewed.
-- [ ] Evidence review report created.
-- [ ] Pre-PM2-start snapshot Available (recommended name: `aisandbox-staging-prepm2-health-2026-07-26`).
-- [ ] PM2 process status verified safely.
-- [ ] Local health-only smoke completed within recorded boundaries.
-- [ ] No migrations / no DNS/TLS / no billing/payment/AI/container execution enablement confirmed.
-- [ ] No secrets disclosed.
+###### Step 3 — COMPLETE
+- [x] Keith manual PM2 start + health-only smoke evidence reviewed.
+- [x] Evidence review report created — `docs/PRIVATE-BETA-STAGING-EXECUTION-04D-PM2-HEALTH-SMOKE-EVIDENCE-REVIEW.md` — verdict PASS.
+- [x] All four PM2 services online.
+- [x] Restarts 0 for all four.
+- [x] API Gateway CPU not stuck at 100%.
+- [x] API_HEALTH=200.
+- [x] API_DB_HEALTH=200.
+- [x] API_READY=200.
+- [x] CONTAINER_HEALTH=200.
+- [x] FRONTEND_ROOT=307, accepted as locale redirect.
+- [x] Final public table count 26.
+- [x] git status clean based on no output.
+- [x] No secrets printed.
+- [x] No migrations / no DNS/TLS / no billing/payment/AI/container execution enablement / no Google OAuth enablement confirmed.
+- [x] No secrets disclosed.
 
-###### Step 4 — PENDING
-- [ ] PRIVATE-BETA-STAGING-EXECUTION-04D checkpoint created.
-- [ ] PRIVATE-BETA-STAGING-EXECUTION-04D marked COMPLETE and LOCKED if evidence passes.
-- [ ] TASKS.md updated. TASKS_BACKLOG_FULL.md updated. Roadmap updated.
-- [ ] Parent 04 remains ACTIVE until remaining parent Step 3/4 complete.
-- [ ] PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.
+###### Step 4 — COMPLETE
+- [x] PRIVATE-BETA-STAGING-EXECUTION-04D checkpoint created — `docs/PRIVATE-BETA-STAGING-EXECUTION-04D-CHECKPOINT.md`.
+- [x] PRIVATE-BETA-STAGING-EXECUTION-04D marked COMPLETE and LOCKED — 2026-07-27.
+- [x] 04D1 / 04D2 / 04D3 marked COMPLETE and LOCKED — 2026-07-27.
+- [x] TASKS.md updated. TASKS_BACKLOG_FULL.md updated. Roadmap updated.
+- [x] Parent 04 remains ACTIVE until remaining parent Step 3/4 / persistence/DNS-TLS work complete.
+- [x] PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.
 
-**PRIVATE-BETA-STAGING-EXECUTION-04D status:** ACTIVE — 2026-07-27 — Migration blocker cleared by 04E COMPLETE and LOCKED — PM2 health-only smoke may resume next — No health smoke completion yet — Not marked complete — 04D1 SQLite blocker passed — 04D2 provider validation blocker passed — 04D3 Outcome A — 04E COMPLETE and LOCKED.
-**PRIVATE-BETA-STAGING-EXECUTION-04D1 status:** ACTIVE pending final consolidation — SQLite blocker passed.
-**PRIVATE-BETA-STAGING-EXECUTION-04D2 status:** ACTIVE pending final consolidation — provider validation blocker passed on VPS retry.
-**PRIVATE-BETA-STAGING-EXECUTION-04D3 status:** ACTIVE pending final consolidation — Decision Outcome A complete.
+**PRIVATE-BETA-STAGING-EXECUTION-04D status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04D1 status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. — SQLite runtime path blocker cleared — Final 04D PM2 health smoke passed after 04E.
+**PRIVATE-BETA-STAGING-EXECUTION-04D2 status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. — Stub provider StartupGuard blocker cleared — AI execution remained blocked — Final 04D PM2 health smoke passed after 04E.
+**PRIVATE-BETA-STAGING-EXECUTION-04D3 status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. — Decision Outcome A selected — 04E migration slice completed — Required-table blocker cleared — Final 04D PM2 health smoke passed after 04E.
 **PRIVATE-BETA-STAGING-EXECUTION-04E status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04C status:** COMPLETE and LOCKED — 2026-07-26 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04C-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04B status:** COMPLETE and LOCKED — 2026-07-26 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04A status:** COMPLETE and LOCKED — 2026-07-25 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04A-CHECKPOINT.md.
-**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A COMPLETE and LOCKED — 04B COMPLETE and LOCKED — 04C COMPLETE and LOCKED — 04D ACTIVE and ready to resume — 04E COMPLETE and LOCKED — Full app deployment still not complete.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A COMPLETE and LOCKED — 04B COMPLETE and LOCKED — 04C COMPLETE and LOCKED — 04D COMPLETE and LOCKED — 04E COMPLETE and LOCKED — Full app deployment still not complete — Next: register PM2 persistence / boot persistence.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04D — Resume PM2 Health-Only Smoke after 04E.
+**Next action:** Register PRIVATE-BETA-STAGING-EXECUTION-04F — PM2 Persistence / Boot Persistence.
 
 ---
 
 #### PRIVATE-BETA-STAGING-EXECUTION-04D1: API Gateway Reconciliation SQLite Runtime Path Fix
 
-**Status:** ACTIVE pending final consolidation — 2026-07-27 — SQLite blocker passed; provider blocker passed (04D2); 04E migration baseline COMPLETE and LOCKED — parent 04D ready to resume PM2 health-only smoke
+**Status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry.
 **Task ID:** PRIVATE-BETA-STAGING-EXECUTION-04D1
 **Title:** API Gateway Reconciliation SQLite Runtime Path Fix
 **Family:** PRIVATE BETA / STAGING EXECUTION
@@ -38126,6 +38167,7 @@ The runbook should include:
 **Nature:** TINY BLOCKER SOURCE FIX — API Gateway startup under PM2 blocked by ReconciliationService SQLite path/directory assumption
 **Risk:** MEDIUM — touches API Gateway startup path used on staging VPS; must remain minimal and reversible
 **Registered:** 2026-07-27
+**Completed:** 2026-07-27
 **Parent:** PRIVATE-BETA-STAGING-EXECUTION-04D
 **Grandparent:** PRIVATE-BETA-STAGING-EXECUTION-04
 
@@ -38134,6 +38176,13 @@ The runbook should include:
 Fix the API Gateway startup blocker caused by the billing/admin reconciliation SQLite path assuming a runtime database directory exists.
 
 This task must choose and implement the smallest safe source-controlled fix so API Gateway can start under PM2 without manual server-only tweaks.
+
+#### Final Consolidation Record (2026-07-27)
+
+* SQLite runtime path blocker cleared.
+* API Gateway progressed past the prior SQLite failure.
+* Final 04D PM2 health smoke passed after 04E.
+* Absorbed into successful 04D resume path and locked with 04D consolidation.
 
 #### Blocker Evidence (Keith — safe summary)
 
@@ -38341,20 +38390,20 @@ The next implementation prompt should require:
 - No git commit or push
 - No subagents used
 
-**PRIVATE-BETA-STAGING-EXECUTION-04D1 status:** ACTIVE pending final consolidation — SQLite blocker passed; provider blocker passed (04D2); 04E COMPLETE and LOCKED — parent 04D ready to resume PM2 health-only smoke.
-**PRIVATE-BETA-STAGING-EXECUTION-04D status:** ACTIVE — 2026-07-27 — Migration blocker cleared by 04E COMPLETE and LOCKED — PM2 health-only smoke may resume next — No health smoke completion yet — Not marked complete.
-**PRIVATE-BETA-STAGING-EXECUTION-04D2 status:** ACTIVE pending final consolidation — provider validation blocker passed on VPS retry.
-**PRIVATE-BETA-STAGING-EXECUTION-04D3 status:** ACTIVE pending final consolidation — Decision Outcome A complete.
+**PRIVATE-BETA-STAGING-EXECUTION-04D1 status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. — SQLite runtime path blocker cleared — API Gateway progressed past the prior SQLite failure — Final 04D PM2 health smoke passed after 04E.
+**PRIVATE-BETA-STAGING-EXECUTION-04D status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04D2 status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry.
+**PRIVATE-BETA-STAGING-EXECUTION-04D3 status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry.
 **PRIVATE-BETA-STAGING-EXECUTION-04E status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md.
-**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C COMPLETE and LOCKED — 04D ACTIVE and ready to resume — 04E COMPLETE and LOCKED.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E COMPLETE and LOCKED — Full app deployment still not complete — Next: register PM2 persistence / boot persistence.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04D — Resume PM2 Health-Only Smoke after 04E.
+**Next action:** Register PRIVATE-BETA-STAGING-EXECUTION-04F — PM2 Persistence / Boot Persistence.
 
 ---
 
 #### PRIVATE-BETA-STAGING-EXECUTION-04D2: StartupGuard Private-Beta Stub Provider Policy
 
-**Status:** ACTIVE pending final consolidation — 2026-07-27 — provider validation blocker passed on VPS retry; 04E COMPLETE and LOCKED — parent 04D ready to resume PM2 health-only smoke
+**Status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry.
 **Task ID:** PRIVATE-BETA-STAGING-EXECUTION-04D2
 **Title:** StartupGuard Private-Beta Stub Provider Policy
 **Family:** PRIVATE BETA / STAGING EXECUTION
@@ -38362,6 +38411,7 @@ The next implementation prompt should require:
 **Nature:** TINY BLOCKER SOURCE/POLICY FIX — StartupGuard blocks private-beta health-only PM2 startup when AI_PROVIDER=stub in production/staging
 **Risk:** MEDIUM — touches API Gateway StartupGuard / provider validation; must remain narrow, explicit, test-covered, and reversible; must not weaken true production safety broadly
 **Registered:** 2026-07-27
+**Completed:** 2026-07-27
 **Parent:** PRIVATE-BETA-STAGING-EXECUTION-04D
 **Grandparent:** PRIVATE-BETA-STAGING-EXECUTION-04
 
@@ -38370,6 +38420,14 @@ The next implementation prompt should require:
 Resolve the startup guard policy conflict where production/staging startup blocks `AI_PROVIDER=stub`, while 04D private-beta health-only smoke intentionally forbids enabling real AI provider execution.
 
 The goal is to allow safe PM2 health-only startup for private-beta staging without enabling AI execution, billing/payment execution, container execution, Google OAuth, migrations, DNS/TLS, or secret output.
+
+#### Final Consolidation Record (2026-07-27)
+
+* Stub provider StartupGuard blocker cleared.
+* StartupGuard accepted stub in private-beta health-only mode with `GLOBAL_EXECUTION_ENABLED=false`.
+* AI execution remained blocked.
+* Final 04D PM2 health smoke passed after 04E.
+* Absorbed into successful 04D resume path and locked with 04D consolidation.
 
 #### Blocker Evidence (Keith — safe summary — 2026-07-27)
 
@@ -38573,25 +38631,28 @@ New blocker (handed to 04D3):
 - [x] 04D2 remains ACTIVE (not COMPLETE and LOCKED).
 - [x] 04D remains ACTIVE / BLOCKED by 04D2.
 
-###### Later steps — PENDING
-- [ ] Step 3 — Local validation / evidence review (local evidence review doc exists; VPS provider-pass evidence recorded).
-- [ ] Step 4 — Final consolidation/checkpoint after 04D path unblocks or explicitly approved.
-- [ ] Do not mark COMPLETE and LOCKED while 04D3 remains the active PM2 blocker and 04D health smoke is incomplete.
+###### Later steps — COMPLETE
+- [x] Step 3 — Local validation / evidence review (local evidence review doc exists; VPS provider-pass evidence recorded).
+- [x] Step 4 — Final consolidation/checkpoint after 04D path unblocked — COMPLETE and LOCKED with 04D consolidation — 2026-07-27.
+- [x] Stub provider StartupGuard blocker cleared.
+- [x] StartupGuard accepted stub in private-beta health-only mode with GLOBAL_EXECUTION_ENABLED=false.
+- [x] AI execution remained blocked.
+- [x] Final 04D PM2 health smoke passed after 04E.
 
-**PRIVATE-BETA-STAGING-EXECUTION-04D2 status:** ACTIVE pending final consolidation — 2026-07-27 — provider validation blocker passed on VPS retry.
-**PRIVATE-BETA-STAGING-EXECUTION-04D status:** ACTIVE — 2026-07-27 — Migration blocker cleared by 04E COMPLETE and LOCKED — PM2 health-only smoke may resume next — No health smoke completion yet — Not marked complete.
-**PRIVATE-BETA-STAGING-EXECUTION-04D1 status:** ACTIVE pending final consolidation — SQLite blocker passed.
-**PRIVATE-BETA-STAGING-EXECUTION-04D3 status:** ACTIVE pending final consolidation — Decision Outcome A complete.
+**PRIVATE-BETA-STAGING-EXECUTION-04D2 status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. — Stub provider StartupGuard blocker cleared — AI execution remained blocked — Final 04D PM2 health smoke passed after 04E.
+**PRIVATE-BETA-STAGING-EXECUTION-04D status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04D1 status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry.
+**PRIVATE-BETA-STAGING-EXECUTION-04D3 status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry.
 **PRIVATE-BETA-STAGING-EXECUTION-04E status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md.
-**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C COMPLETE and LOCKED — 04D ACTIVE and ready to resume — 04E COMPLETE and LOCKED.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E COMPLETE and LOCKED — Full app deployment still not complete — Next: register PM2 persistence / boot persistence.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04D — Resume PM2 Health-Only Smoke after 04E.
+**Next action:** Register PRIVATE-BETA-STAGING-EXECUTION-04F — PM2 Persistence / Boot Persistence.
 
 ---
 
 #### PRIVATE-BETA-STAGING-EXECUTION-04D3: StartupGuard Required Schema / Migration Boundary Decision
 
-**Status:** ACTIVE pending final consolidation — Decision Outcome A complete — Separate approved migration slice (2026-07-27) — 04E COMPLETE and LOCKED — parent 04D ready to resume PM2 health-only smoke
+**Status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry.
 **Task ID:** PRIVATE-BETA-STAGING-EXECUTION-04D3
 **Title:** StartupGuard Required Schema / Migration Boundary Decision
 **Family:** PRIVATE BETA / STAGING EXECUTION
@@ -38599,6 +38660,7 @@ New blocker (handed to 04D3):
 **Nature:** GOVERNANCE / DECISION ONLY — StartupGuard required-tables vs 04D no-migration boundary
 **Risk:** MEDIUM — deployment-boundary decision that may authorize a separate migration slice or a narrow health-only schema-check exception; must not run migrations inside registration or decision without explicit approval
 **Registered:** 2026-07-27
+**Completed:** 2026-07-27
 **Parent:** PRIVATE-BETA-STAGING-EXECUTION-04D
 **Grandparent:** PRIVATE-BETA-STAGING-EXECUTION-04
 **Decision report:** docs/PRIVATE-BETA-STAGING-EXECUTION-04D3-MIGRATION-BOUNDARY-DECISION-REPORT.md
@@ -38608,6 +38670,14 @@ New blocker (handed to 04D3):
 #### Purpose
 
 Resolve the deployment boundary decision created by StartupGuard requiring database tables before API Gateway can complete startup, while 04D currently forbids migrations and table creation.
+
+#### Final Consolidation Record (2026-07-27)
+
+* Decision Outcome A selected.
+* 04E migration slice completed.
+* Required-table blocker cleared.
+* Final 04D PM2 health smoke passed after 04E.
+* Absorbed into successful 04D resume path and locked with 04D consolidation.
 
 #### Blocker Evidence (Keith — safe summary — 2026-07-27)
 
@@ -38747,18 +38817,22 @@ The next decision prompt should require:
 - [x] Step 2 — Decision report — COMPLETE (2026-07-27) — Outcome A — Separate approved migration slice — Report: docs/PRIVATE-BETA-STAGING-EXECUTION-04D3-MIGRATION-BOUNDARY-DECISION-REPORT.md.
 - [x] Step 3 — If migration slice approved: register separate migration task — COMPLETE (2026-07-27) — PRIVATE-BETA-STAGING-EXECUTION-04E registered.
 - [ ] Step 4 — If health-only exception approved: register narrow source/test implementation task — N/A (Outcome B rejected).
-- [x] Step 5 — Resume 04D PM2 health-only smoke only after approved blocker path is complete — 04E COMPLETE and LOCKED — 2026-07-27 — 04D may resume next.
-- [ ] Step 6 — Evidence review.
-- [ ] Step 7 — Consolidation/checkpoint.
+- [x] Step 5 — Resume 04D PM2 health-only smoke only after approved blocker path is complete — 04E COMPLETE and LOCKED — 2026-07-27 — 04D health smoke subsequently PASS.
+- [x] Step 6 — Evidence review — COMPLETE via 04D evidence review PASS.
+- [x] Step 7 — Consolidation/checkpoint — COMPLETE and LOCKED — 2026-07-27 with 04D consolidation.
+- [x] Decision Outcome A selected.
+- [x] 04E migration slice completed.
+- [x] Required-table blocker cleared.
+- [x] Final 04D PM2 health smoke passed after 04E.
 
-**PRIVATE-BETA-STAGING-EXECUTION-04D3 status:** ACTIVE pending final consolidation — Decision Outcome A complete — Separate approved migration slice.
-**PRIVATE-BETA-STAGING-EXECUTION-04D status:** ACTIVE — 2026-07-27 — Migration blocker cleared by 04E COMPLETE and LOCKED — PM2 health-only smoke may resume next — No health smoke completion yet — Not marked complete.
-**PRIVATE-BETA-STAGING-EXECUTION-04D1 status:** ACTIVE pending final consolidation — SQLite blocker passed.
-**PRIVATE-BETA-STAGING-EXECUTION-04D2 status:** ACTIVE pending final consolidation — provider validation blocker passed on VPS retry.
+**PRIVATE-BETA-STAGING-EXECUTION-04D3 status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. — Decision Outcome A selected — 04E migration slice completed — Required-table blocker cleared — Final 04D PM2 health smoke passed after 04E.
+**PRIVATE-BETA-STAGING-EXECUTION-04D status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04D1 status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry.
+**PRIVATE-BETA-STAGING-EXECUTION-04D2 status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry.
 **PRIVATE-BETA-STAGING-EXECUTION-04E status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md.
-**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C COMPLETE and LOCKED — 04D ACTIVE and ready to resume — 04E COMPLETE and LOCKED.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E COMPLETE and LOCKED — Full app deployment still not complete — Next: register PM2 persistence / boot persistence.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04D — Resume PM2 Health-Only Smoke after 04E.
+**Next action:** Register PRIVATE-BETA-STAGING-EXECUTION-04F — PM2 Persistence / Boot Persistence.
 
 ---
 
@@ -39073,16 +39147,17 @@ The snapshot must be created in AWS Lightsail UI and must be Available before an
 - [x] No subagents used.
 
 ###### Outside 04E — NEXT
-- [ ] Resume 04D PM2 Health-Only Smoke after 04E.
+- [x] Resume 04D PM2 Health-Only Smoke after 04E — COMPLETE — 04D COMPLETE and LOCKED — 2026-07-27.
+- [ ] Register PRIVATE-BETA-STAGING-EXECUTION-04F — PM2 Persistence / Boot Persistence.
 
 **PRIVATE-BETA-STAGING-EXECUTION-04E status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md.
-**PRIVATE-BETA-STAGING-EXECUTION-04D status:** ACTIVE — 2026-07-27 — Migration blocker cleared by 04E COMPLETE and LOCKED — PM2 health-only smoke may resume next — Not marked complete.
-**PRIVATE-BETA-STAGING-EXECUTION-04D1 status:** ACTIVE pending final consolidation.
-**PRIVATE-BETA-STAGING-EXECUTION-04D2 status:** ACTIVE pending final consolidation.
-**PRIVATE-BETA-STAGING-EXECUTION-04D3 status:** ACTIVE pending final consolidation — Outcome A complete.
-**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C COMPLETE and LOCKED — 04D ACTIVE and ready to resume — 04E COMPLETE and LOCKED.
+**PRIVATE-BETA-STAGING-EXECUTION-04D status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04D1 status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry.
+**PRIVATE-BETA-STAGING-EXECUTION-04D2 status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry.
+**PRIVATE-BETA-STAGING-EXECUTION-04D3 status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E COMPLETE and LOCKED — Full app deployment still not complete — Next: register PM2 persistence / boot persistence.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04D — Resume PM2 Health-Only Smoke after 04E.
+**Next action:** Register PRIVATE-BETA-STAGING-EXECUTION-04F — PM2 Persistence / Boot Persistence.
 
 ---
 
