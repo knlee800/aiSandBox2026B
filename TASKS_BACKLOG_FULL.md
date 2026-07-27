@@ -35697,7 +35697,7 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 31. PRIVATE-BETA-STAGING-EXECUTION-01 — Create AWS Lightsail Staging Server + Static IP + Baseline (COMPLETE and LOCKED — 2026-07-23 — All 4 steps COMPLETE — Keith manual execution PASS — aisandbox-staging Running / ap-southeast-1 / Ubuntu 24.04.4 LTS — Static IP attached — Firewall 22/80/443 open; internal ports closed — snapshot aisandbox-staging-baseline-2026-07-23 Available — auto-snapshots enabled — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-01-RUNBOOK.md — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-01-CHECKPOINT.md)
 32. PRIVATE-BETA-STAGING-EXECUTION-02 — Runtime Installation Baseline (COMPLETE and LOCKED — 2026-07-24 — All 4 steps COMPLETE — Keith manual execution PASS — Node.js v20.20.2 — npm 10.8.2 — Docker Engine 29.6.2 — Docker Compose v5.3.1 — PM2 7.0.3 — Caddy v2.11.4 — Snapshot aisandbox-staging-runtime-2026-07-24 Available — No app deployed / No DB / No Redis / No DNS / No TLS / No repo / No .env — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-02-CHECKPOINT.md)
 32b. PRIVATE-BETA-STAGING-EXECUTION-03 — PostgreSQL + Redis Installation Baseline (COMPLETE and LOCKED — 2026-07-24 — All 4 steps COMPLETE — Evidence verdict: PASS WITH VERSION DEVIATION — PostgreSQL 15.18 installed from PGDG APT noble channel — PostgreSQL 15/main cluster online on localhost 127.0.0.1:5432 only — aisandbox database/user created — DB password set privately and not disclosed — Redis 8.8.0 installed from official Redis APT repo — Redis target was 7.x — Redis version deviation recorded — compatibility guardrail required before app deployment — Redis active/running — bound to 127.0.0.1/::1 only — protected-mode yes — requirepass configured and redacted — unauthenticated ping blocked — authenticated ping passed — Redis password set privately and not disclosed — Lightsail firewall remains 22/80/443 only — ports 5432/6379 closed externally — No repo / No .env / No app / No migration / No DNS / No TLS — Snapshot aisandbox-staging-db-redis-2026-07-24 Available — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-03-DB-REDIS-INSTALL-RUNBOOK.md — Evidence review: docs/PRIVATE-BETA-STAGING-EXECUTION-03-EVIDENCE-REVIEW.md — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-03-DB-REDIS-CHECKPOINT.md — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next: PRIVATE-BETA-STAGING-EXECUTION-04 — ACTIVE — Step 1 COMPLETE (Registration — 2026-07-25))
-32c. PRIVATE-BETA-STAGING-EXECUTION-04 — Repo Clone + Private Env Preparation + App Deployment Baseline (ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — 4-step workflow — Manual execution split into bounded child slices: 04A COMPLETE and LOCKED (2026-07-25), 04B COMPLETE and LOCKED (2026-07-26), 04C COMPLETE and LOCKED (2026-07-26), 04D ACTIVE / BLOCKED by 04D1 — Full app deployment still not complete — Predecessor: PRIVATE-BETA-STAGING-EXECUTION-03 COMPLETE and LOCKED — 2026-07-24 — PostgreSQL 15.18 online on localhost 127.0.0.1:5432 only — Redis 8.8.0 online on 127.0.0.1/::1 only — credentials private — ports 5432/6379 closed externally — Snapshots through pre-install Available — Repo cloned /opt/aisandbox — owner ubuntu:ubuntu — branch main — VPS commit 3da1b7c — /opt/aisandbox/.env created privately — 47 required non-Google keys present — Google OAuth deferred — Dependencies installed (npm ci PASS) — Builds PASS (api-gateway/ai-service/container-manager/frontend) — Generated artifacts present — 04D PM2 health smoke paused — API Gateway restart loop due compiled SQLite path → services/database missing — No migrations — No DNS / No TLS — Credential safety: Keith keeps DB/Redis passwords privately; no paste of .env/DATABASE_URL/REDIS_URL/provider keys — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next action: PRIVATE-BETA-STAGING-EXECUTION-04D1 Step 3 — Local validation/evidence review)
+32c. PRIVATE-BETA-STAGING-EXECUTION-04 — Repo Clone + Private Env Preparation + App Deployment Baseline (ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — 4-step workflow — Manual execution split into bounded child slices: 04A COMPLETE and LOCKED (2026-07-25), 04B COMPLETE and LOCKED (2026-07-26), 04C COMPLETE and LOCKED (2026-07-26), 04D ACTIVE / BLOCKED by 04D2 — Full app deployment still not complete — Predecessor: PRIVATE-BETA-STAGING-EXECUTION-03 COMPLETE and LOCKED — 2026-07-24 — PostgreSQL 15.18 online on localhost 127.0.0.1:5432 only — Redis 8.8.0 online on 127.0.0.1/::1 only — credentials private — ports 5432/6379 closed externally — Snapshots through pre-install Available — Repo cloned /opt/aisandbox — owner ubuntu:ubuntu — branch main — VPS commit 3da1b7c — /opt/aisandbox/.env created privately — 47 required non-Google keys present — Google OAuth deferred — Dependencies installed (npm ci PASS) — Builds PASS (api-gateway/ai-service/container-manager/frontend) — Generated artifacts present — 04D PM2 health smoke paused — 04D1 SQLite missing-directory blocker passed far enough to reach StartupGuard — Current blocker 04D2 StartupGuard stub provider policy — No migrations — No DNS / No TLS — Credential safety: Keith keeps DB/Redis passwords privately; no paste of .env/DATABASE_URL/REDIS_URL/provider keys — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next action: PRIVATE-BETA-STAGING-EXECUTION-04D2 Step 2 — Implementation)
 32d. PRIVATE-BETA-STAGING-EXECUTION-04A — Redis Gate + Repo Clone Baseline (COMPLETE and LOCKED — 2026-07-25 — All 4 steps COMPLETE — Evidence verdict: PASS — All 45 checks passed — No deviations — No warnings — No stop conditions — Redis Gate Outcome A accepted — Static assessment LIKELY COMPATIBLE — ioredis v5 / BullMQ v5 / Redis 8.8.0 satisfy compatibility conditions — Repo cloned to /opt/aisandbox — owner ubuntu:ubuntu — branch main — latest commit c55a278 Register staging execution 04A repo clone baseline — git status clean — services/ai-service, api-gateway, container-manager, governance, frontend all present — No .env created — No dependencies installed — No build run — No app services started — No migrations run — No DNS/TLS configured — No secrets disclosed — Snapshot aisandbox-staging-preclone-2026-07-25 Available — All 4 snapshots Available — PostgreSQL active/local-only — Redis active/local-only/protected-mode/requirepass — Firewall 22/80/443 only — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04A-CHECKPOINT.md — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next child: PRIVATE-BETA-STAGING-EXECUTION-04B — Private Env Preparation)
 32e. PRIVATE-BETA-STAGING-EXECUTION-04B — Private Env Preparation (COMPLETE and LOCKED — 2026-07-26 — All 4 steps COMPLETE — Evidence review verdict PASS — Step 1 Registration complete — Step 2 Runbook complete — Google OAuth decision complete and locked (Outcome B) — Step 3 Evidence review complete — verdict PASS — Step 4 Consolidation/checkpoint complete — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md — Pre-env snapshot aisandbox-staging-postclone-preenv-2026-07-26 Available — /opt/aisandbox/.env created privately — owner ubuntu:ubuntu — chmod 600 — 47 required non-Google keys present — Google OAuth deferred / omitted intentionally — no fake placeholders — email/password intended staging auth path — all kill switches false — no dependency install — no build — no app services started — no migrations — no DNS/TLS — no secrets disclosed — PostgreSQL warning non-blocking — stop conditions none — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next child: PRIVATE-BETA-STAGING-EXECUTION-04C — ACTIVE)
 32f. PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION — Staging Google OAuth Requirement Decision (COMPLETE and LOCKED — 2026-07-26 — All 3 steps COMPLETE — Outcome B — Google OAuth can be deferred — Decision report: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION-REPORT.md — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION-CHECKPOINT.md — 04B runbook amended — no source code changed — no env files opened/created/edited — no env values printed — no secrets disclosed)
@@ -35705,8 +35705,9 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 32h. PRIVATE-BETA-STAGING-EXECUTION-04C-PACKAGE-MANAGER-DECISION — Package Manager / Lockfile Decision (COMPLETE and LOCKED — 2026-07-26 — Outcome E — Source unclear — Report: docs/PRIVATE-BETA-STAGING-EXECUTION-04C-PACKAGE-MANAGER-DECISION-REPORT.md — superseded for policy choice by 04C-PACKAGE-MANAGER-POLICY Outcome A)
 32i. PRIVATE-BETA-STAGING-EXECUTION-04C-PACKAGE-MANAGER-POLICY — Package Manager Policy Registration + Decision (COMPLETE and LOCKED — 2026-07-27 — Outcome A — npm policy with tracked lockfile — Official staging package manager: npm — packageManager=bun@1.x treated as local-dev only — root package-lock.json must be tracked — Policy: docs/PRIVATE-BETA-STAGING-EXECUTION-04C-PACKAGE-MANAGER-POLICY.md — Outcome A applied; 04C subsequently COMPLETE and LOCKED — 2026-07-26 — No secrets disclosed — No subagents)
 32j. PRIVATE-BETA-STAGING-EXECUTION-04C-NPM-LOCKFILE-TRACKING — Track/Refresh Root package-lock.json for Staging npm ci (COMPLETE — Outcome A implemented locally and pushed to main — .gitignore allows root package-lock.json via !/package-lock.json — root package-lock.json refreshed — lockfileVersion 3 — workspaces present — VPS synced to 3da1b7c — 04C install/build subsequently PASS — Checkpoint handoff via docs/PRIVATE-BETA-STAGING-EXECUTION-04C-CHECKPOINT.md)
-32k. PRIVATE-BETA-STAGING-EXECUTION-04D — PM2 Service Start + Health-Only Smoke (ACTIVE / BLOCKED by 04D1 — 2026-07-27 — Parent: PRIVATE-BETA-STAGING-EXECUTION-04 — Child slice 4 of 4 — Manual PM2 start attempted — API Gateway entered restart loop (restart count 150 / CPU 100%) and was stopped manually — AI Service, Container Manager, and Frontend had started — 04D health smoke paused — No health smoke completion yet — Blocker: ReconciliationService opens SQLite under missing services/database (compiled __dirname depth) — DB table count 0 — No migrations / No DNS/TLS / No billing/payment/AI/container execution — No secrets disclosed — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-PM2-HEALTH-SMOKE-RUNBOOK.md — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next: PRIVATE-BETA-STAGING-EXECUTION-04D1 Step 3 — Local validation/evidence review)
-32l. PRIVATE-BETA-STAGING-EXECUTION-04D1 — API Gateway Reconciliation SQLite Runtime Path Fix (ACTIVE — Step 2 COMPLETE (Implementation — 2026-07-27) — Parent: PRIVATE-BETA-STAGING-EXECUTION-04D — Tiny blocker child slice — Fix: shared prepareSqliteDatabasePath() resolves repo-root database/aisandbox.db from cwd walk (not compiled __dirname) and mkdirSync parent before better-sqlite3 open — Updated ReconciliationService / AdminService / InvoicesService — Tests 6/6 PASS — api-gateway build PASS — No .env / No migrations / No Docker/PostgreSQL/Redis / No server/SSH — No git commit/push — Next: Step 3 — Local validation/evidence review — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED)
+32k. PRIVATE-BETA-STAGING-EXECUTION-04D — PM2 Service Start + Health-Only Smoke (ACTIVE / BLOCKED by 04D2 — 2026-07-27 — Parent: PRIVATE-BETA-STAGING-EXECUTION-04 — Child slice 4 of 4 — Manual PM2 start attempted — 04D1 VPS sync/rebuild/PM2 retry passed original SQLite missing-directory blocker far enough to reach StartupGuardService — API Gateway then restart-looped on StartupGuard stub provider policy (restart count 175) and was stopped manually — AI Service, Container Manager, and Frontend had been online — 04D health smoke paused — No health smoke completion yet — Current active blocker: 04D2 — DB table count 0 — No migrations / No DNS/TLS / No billing/payment/AI/container execution — No secrets disclosed — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-PM2-HEALTH-SMOKE-RUNBOOK.md — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next: PRIVATE-BETA-STAGING-EXECUTION-04D2 Step 3 — Local validation / evidence review)
+32l. PRIVATE-BETA-STAGING-EXECUTION-04D1 — API Gateway Reconciliation SQLite Runtime Path Fix (ACTIVE pending final VPS evidence/consolidation — 2026-07-27 — Parent: PRIVATE-BETA-STAGING-EXECUTION-04D — Tiny blocker child slice — Fix: shared prepareSqliteDatabasePath() resolves repo-root database/aisandbox.db from cwd walk (not compiled __dirname) and mkdirSync parent before better-sqlite3 open — Updated ReconciliationService / AdminService / InvoicesService — Tests 6/6 PASS — api-gateway build PASS — VPS retry evidence: original SQLite missing-directory blocker passed; API Gateway progressed to StartupGuardService — PM2 startup now blocked by StartupGuard provider policy (04D2) — No .env / No migrations / No Docker/PostgreSQL/Redis — No git commit/push — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED)
+32m. PRIVATE-BETA-STAGING-EXECUTION-04D2 — StartupGuard Private-Beta Stub Provider Policy (ACTIVE — Step 2 COMPLETE (Implementation — 2026-07-27) — Parent: PRIVATE-BETA-STAGING-EXECUTION-04D — Blocker child slice — Fix: ProviderValidator allows AI_PROVIDER=stub in production/staging only when GLOBAL_EXECUTION_ENABLED=false (private-beta health-only / execution-disabled); still rejects stub when execution enabled — StartupGuard remains enabled — Tests: provider.validator + startup-failfast 55/55 PASS — api-gateway build PASS — No .env / No migrations / No server/SSH / No Docker/PostgreSQL/Redis / No frontend — No git commit/push — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next: Step 3 — Local validation / evidence review)
 33. LOCAL-PRIVATE-BETA-READINESS-01 — Local Machine Rebaseline + Private Beta Gap Review (COMPLETE and LOCKED — 2026-07-23 — All 3 steps COMPLETE — Verdict: BLOCKED for private-beta progression — P0: authenticated /api/ai/execute returned 402 not kill-switch 503 — Checkpoint: docs/LOCAL-PRIVATE-BETA-READINESS-01-CHECKPOINT.md — Step 2 report: docs/LOCAL-PRIVATE-BETA-READINESS-01-LOCAL-REBASELINE-REPORT.md — Next: LOCAL-PRIVATE-BETA-READINESS-01-FIX-EXECUTION-KILLSWITCH-LOCAL — ACTIVE)
 34. LOCAL-PRIVATE-BETA-READINESS-01-FIX-EXECUTION-KILLSWITCH-LOCAL — Fix Authenticated Execution Kill Switch — Local Private Beta P0 Fix (COMPLETE and LOCKED — 2026-07-23 — All 3 steps COMPLETE — PASS — P0 blocker fixed: authenticated POST /api/ai/execute now returns 503 (not 402) — GLOBAL_EXECUTION_ENABLED default changed to fail-safe opt-in — kill-switch fires before quota/payment/provider/container logic — 129/129 targeted tests PASS — /api/health/ready 200 — Checkpoint: docs/LOCAL-PRIVATE-BETA-READINESS-01-FIX-EXECUTION-KILLSWITCH-LOCAL-CHECKPOINT.md — Next: LOCAL-PRIVATE-BETA-READINESS-02 — ACTIVE — Step 1 COMPLETE (Registration — 2026-07-23))
 35. LOCAL-PRIVATE-BETA-READINESS-02 — Local Runtime Services Health Validation (PAUSED / PARTIALLY COMPLETE — 2026-07-23 — Container Manager local health PASS (GET http://localhost:4002/api/health 200); AI Service local runtime unresolved due staging parity decision — reason: local Windows env mismatch not equivalent to future staging environment — superseded by cloud staging resumption — Checkpoint: docs/LOCAL-TO-STAGING-PARITY-PIVOT-CHECKPOINT.md)
@@ -36515,7 +36516,7 @@ Redis target in the runbook was Redis 7.x. The official Redis APT repository ins
 **LOCAL-PRIVATE-BETA-READINESS-02 status:** PAUSED / PARTIALLY COMPLETE — 2026-07-23.
 **LOCAL-PRIVATE-BETA-READINESS-02-FIX-AI-SERVICE-REDIS-ENV-LOCAL status:** PAUSED / SUPERSEDED by staging-environment parity decision.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next task:** PRIVATE-BETA-STAGING-EXECUTION-04D1 — API Gateway Reconciliation SQLite Runtime Path Fix (ACTIVE — Step 2 COMPLETE (Implementation — 2026-07-27)). EXECUTION-04D ACTIVE / BLOCKED by 04D1 — PM2 health smoke paused. EXECUTION-04C COMPLETE and LOCKED — 2026-07-26 — Evidence verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04C-CHECKPOINT.md. EXECUTION-04B COMPLETE and LOCKED — 2026-07-26. EXECUTION-04A COMPLETE and LOCKED — 2026-07-25. EXECUTION-04 remains ACTIVE — child 04A COMPLETE and LOCKED — child 04B COMPLETE and LOCKED — child 04C COMPLETE and LOCKED — child 04D ACTIVE / BLOCKED by 04D1. See PRIVATE-BETA-STAGING-EXECUTION-04D1 section below.
+**Next task:** PRIVATE-BETA-STAGING-EXECUTION-04D2 — StartupGuard Private-Beta Stub Provider Policy (ACTIVE — Step 2 COMPLETE (Implementation — 2026-07-27)). EXECUTION-04D ACTIVE / BLOCKED by 04D2 — PM2 health smoke paused — 04D1 SQLite blocker passed far enough to reach StartupGuard. EXECUTION-04C COMPLETE and LOCKED — 2026-07-26 — Evidence verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04C-CHECKPOINT.md. EXECUTION-04B COMPLETE and LOCKED — 2026-07-26. EXECUTION-04A COMPLETE and LOCKED — 2026-07-25. EXECUTION-04 remains ACTIVE — child 04A COMPLETE and LOCKED — child 04B COMPLETE and LOCKED — child 04C COMPLETE and LOCKED — child 04D ACTIVE / BLOCKED by 04D2. See PRIVATE-BETA-STAGING-EXECUTION-04D2 section below.
 
 **Reference:** Predecessor: PRIVATE-BETA-STAGING-EXECUTION-02. Checkpoint (predecessor): `docs/PRIVATE-BETA-STAGING-EXECUTION-02-CHECKPOINT.md`. Checkpoint (this task): `docs/PRIVATE-BETA-STAGING-EXECUTION-03-DB-REDIS-CHECKPOINT.md`. DB/Redis plan: `docs/PRIVATE-BETA-STAGING-SETUP-06-DB-REDIS-PLAN.md`. Pivot checkpoint: `docs/LOCAL-TO-STAGING-PARITY-PIVOT-CHECKPOINT.md`.
 
@@ -36617,8 +36618,9 @@ SPLIT ACTIVATED — 2026-07-25. The Step 2 runbook (docs/PRIVATE-BETA-STAGING-EX
 - PRIVATE-BETA-STAGING-EXECUTION-04A — Redis Gate + Repo Clone Baseline (COMPLETE and LOCKED — 2026-07-25 — All 4 steps COMPLETE — Evidence verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04A-CHECKPOINT.md)
 - PRIVATE-BETA-STAGING-EXECUTION-04B — Private Env Preparation (COMPLETE and LOCKED — 2026-07-26 — All 4 steps COMPLETE — Evidence review verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md)
 - PRIVATE-BETA-STAGING-EXECUTION-04C — Dependency Install + Build (COMPLETE and LOCKED — 2026-07-26 — All steps COMPLETE — Evidence review verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04C-CHECKPOINT.md)
-- PRIVATE-BETA-STAGING-EXECUTION-04D — PM2 Service Start + Health-Only Smoke (ACTIVE / BLOCKED by 04D1 — 2026-07-27 — PM2 health smoke paused)
-- PRIVATE-BETA-STAGING-EXECUTION-04D1 — API Gateway Reconciliation SQLite Runtime Path Fix (ACTIVE — Step 2 COMPLETE (Implementation — 2026-07-27))
+- PRIVATE-BETA-STAGING-EXECUTION-04D — PM2 Service Start + Health-Only Smoke (ACTIVE / BLOCKED by 04D2 — 2026-07-27 — PM2 health smoke paused)
+- PRIVATE-BETA-STAGING-EXECUTION-04D1 — API Gateway Reconciliation SQLite Runtime Path Fix (ACTIVE pending final VPS evidence/consolidation — 2026-07-27 — original SQLite blocker passed; now blocked downstream by 04D2)
+- PRIVATE-BETA-STAGING-EXECUTION-04D2 — StartupGuard Private-Beta Stub Provider Policy (ACTIVE — Step 2 COMPLETE (Implementation — 2026-07-27))
 
 #### Non-Goals
 
@@ -36710,20 +36712,21 @@ Redis 8.8.0 compatibility static assessment: LIKELY COMPATIBLE — ioredis ^5.3.
 - [ ] TASKS.md updated. TASKS_BACKLOG_FULL.md updated. Roadmap updated.
 - [ ] PRIVATE-BETA-STAGING-EXECUTION-05 registered or deferred.
 
-**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — Child 04A COMPLETE and LOCKED (2026-07-25) — Child 04B COMPLETE and LOCKED (2026-07-26) — Child 04C COMPLETE and LOCKED (2026-07-26) — Child 04D ACTIVE / BLOCKED by 04D1 — Full app deployment still not complete — Manual execution split into child slices (04A/04B/04C/04D) — Blocker child 04D1 ACTIVE.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — Child 04A COMPLETE and LOCKED (2026-07-25) — Child 04B COMPLETE and LOCKED (2026-07-26) — Child 04C COMPLETE and LOCKED (2026-07-26) — Child 04D ACTIVE / BLOCKED by 04D2 — Full app deployment still not complete — Manual execution split into child slices (04A/04B/04C/04D) — Blocker child 04D2 ACTIVE.
 **PRIVATE-BETA-STAGING-EXECUTION-04A status:** COMPLETE and LOCKED — 2026-07-25 — All 4 steps COMPLETE — Evidence verdict: PASS — Redis Gate Outcome A accepted — Repo cloned /opt/aisandbox — owner ubuntu:ubuntu — branch main — commit c55a278 — git status clean — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04A-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04B status:** COMPLETE and LOCKED — 2026-07-26 — All 4 steps COMPLETE — Evidence review verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md — /opt/aisandbox/.env created privately — owner ubuntu:ubuntu — chmod 600 — 47 required non-Google keys present — Google OAuth deferred / omitted intentionally — no fake placeholders — all kill switches false — no dependency install / build / app services / migrations / DNS/TLS — no secrets disclosed.
 **PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION status:** COMPLETE and LOCKED — 2026-07-26 — Outcome B — Google OAuth can be deferred — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04C status:** COMPLETE and LOCKED — 2026-07-26 — All steps COMPLETE — Evidence review verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04C-CHECKPOINT.md — npm ci PASS — all four builds PASS — generated artifacts present — no services / migrations / DNS/TLS — no secrets disclosed.
-**PRIVATE-BETA-STAGING-EXECUTION-04D status:** ACTIVE / BLOCKED by 04D1 — Manual PM2 health smoke paused (2026-07-27).
-**PRIVATE-BETA-STAGING-EXECUTION-04D1 status:** ACTIVE — Step 2 COMPLETE (Implementation — 2026-07-27).
+**PRIVATE-BETA-STAGING-EXECUTION-04D status:** ACTIVE / BLOCKED by 04D2 — Manual PM2 health smoke paused (2026-07-27) — No health smoke completion yet — 04D1 SQLite blocker passed far enough to reach StartupGuard.
+**PRIVATE-BETA-STAGING-EXECUTION-04D1 status:** ACTIVE pending final VPS evidence/consolidation — original SQLite blocker passed on VPS retry; PM2 now blocked by 04D2 StartupGuard provider policy.
+**PRIVATE-BETA-STAGING-EXECUTION-04D2 status:** ACTIVE — Step 2 COMPLETE (Implementation — 2026-07-27).
 **PRIVATE-BETA-STAGING-EXECUTION-03 status:** COMPLETE and LOCKED — 2026-07-24.
 **PRIVATE-BETA-STAGING-EXECUTION-02 status:** COMPLETE and LOCKED — 2026-07-24.
 **PRIVATE-BETA-STAGING-EXECUTION-01 status:** COMPLETE and LOCKED — 2026-07-23.
 **LOCAL-PRIVATE-BETA-READINESS-02 status:** PAUSED / PARTIALLY COMPLETE — 2026-07-23.
 **LOCAL-PRIVATE-BETA-READINESS-02-FIX-AI-SERVICE-REDIS-ENV-LOCAL status:** PAUSED / SUPERSEDED by staging-environment parity decision.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04D1 Step 3 — Local validation/evidence review.
+**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04D2 Step 3 — Local validation / evidence review.
 
 ---
 
@@ -37713,7 +37716,7 @@ The runbook should include:
 
 ### PRIVATE-BETA-STAGING-EXECUTION-04D: PM2 Service Start + Health-Only Smoke
 
-**Status:** ACTIVE / BLOCKED by 04D1 — Manual PM2 health smoke paused (2026-07-27)
+**Status:** ACTIVE / BLOCKED by 04D2 — Manual PM2 health smoke paused (2026-07-27)
 **Task ID:** PRIVATE-BETA-STAGING-EXECUTION-04D
 **Family:** PRIVATE BETA / STAGING EXECUTION
 **Priority:** CRITICAL
@@ -37722,7 +37725,8 @@ The runbook should include:
 **Registered:** 2026-07-26
 **Parent:** PRIVATE-BETA-STAGING-EXECUTION-04
 **Child slice:** 4 of 4 of EXECUTION-04 manual execution split
-**Blocker child:** PRIVATE-BETA-STAGING-EXECUTION-04D1 — ACTIVE — Step 2 COMPLETE (Implementation — 2026-07-27)
+**Blocker child (prior):** PRIVATE-BETA-STAGING-EXECUTION-04D1 — ACTIVE pending final VPS evidence/consolidation — original SQLite missing-directory blocker passed far enough to reach StartupGuardService
+**Blocker child (current):** PRIVATE-BETA-STAGING-EXECUTION-04D2 — ACTIVE — Step 2 COMPLETE (Implementation — 2026-07-27)
 **Runbook:** docs/PRIVATE-BETA-STAGING-EXECUTION-04D-PM2-HEALTH-SMOKE-RUNBOOK.md
 **Future snapshot recommendation:** aisandbox-staging-prepm2-health-2026-07-26
 
@@ -37741,11 +37745,64 @@ The task must remain bounded to:
 * no paid execution enablement
 * no secret output
 
-#### Current Blocker — 04D1
+#### Current Blocker — 04D2 (active)
 
-Manual PM2 execution during 04D hit an API Gateway startup blocker. 04D remains ACTIVE but is BLOCKED by PRIVATE-BETA-STAGING-EXECUTION-04D1 until the Reconciliation SQLite runtime path fix ships and Keith can resume PM2 health smoke.
+04D1 VPS sync/rebuild/PM2 retry evidence indicates the original SQLite missing-directory blocker was passed far enough for API Gateway to progress through route mapping and reach StartupGuardService. PM2 health smoke remains paused. No health smoke completion yet. Current active blocker is PRIVATE-BETA-STAGING-EXECUTION-04D2 — StartupGuard Private-Beta Stub Provider Policy.
 
-Safe Keith evidence (2026-07-27):
+Policy conflict:
+
+* StartupGuard disallows `AI_PROVIDER=stub` in production/staging.
+* 04D explicitly forbids enabling real AI provider execution.
+* Therefore `.env` must not be changed to a real provider for 04D.
+
+Safe Keith evidence (2026-07-27 — 04D1 VPS retry / StartupGuard failure):
+
+```text
+During 04D1 VPS sync/rebuild/PM2 retry, API Gateway no longer failed with the previous better-sqlite3 missing-directory error.
+
+API Gateway progressed through route mapping and reached StartupGuardService.
+
+PM2 observation:
+- aisandbox-api-gateway entered/re-entered restart loop.
+- Restart count increased to 175.
+- API Gateway was stopped manually.
+- AI Service, Container Manager, and Frontend had been online, but health smoke was stopped.
+
+Safe log summary:
+- StartupGuardService started production hardening checks.
+- Environment: production.
+- Working directory: /opt/aisandbox/services/api-gateway.
+- Required environment variables present.
+- Database URL format valid.
+- Kill switch configuration valid.
+- Safety limit configuration valid.
+- Port configuration valid.
+- Startup failure: Provider configuration invalid.
+- Reason: Stub provider not allowed in production/staging.
+- Provider: stub.
+- Expected: Real AI provider such as openai, anthropic, groq, xai, deepseek.
+- Actual: stub.
+- Exit code: 1.
+
+Important 04D policy conflict:
+- 04D is health-only PM2 startup.
+- 04D explicitly must not enable real AI provider execution.
+- Therefore changing .env from stub to a real provider is not allowed for 04D.
+- The blocker needs a source/policy decision for private-beta health-only staging startup without enabling real AI execution.
+
+Safety:
+- No health smoke was completed.
+- No migrations were run.
+- DB table count previously remained 0.
+- No DNS/TLS configured.
+- No secrets printed.
+```
+
+#### Prior Blocker — 04D1 (SQLite path — passed far enough)
+
+Manual PM2 execution during 04D originally hit an API Gateway startup blocker in ReconciliationService SQLite path. 04D1 implemented a source fix. VPS retry evidence indicates that original SQLite missing-directory blocker was passed; API Gateway now reaches StartupGuardService. 04D1 remains ACTIVE pending final VPS evidence/consolidation and is no longer the current blocking cause for PM2 health smoke.
+
+Original safe Keith evidence (2026-07-27 — SQLite missing directory):
 
 ```text
 During 04D manual PM2 start, API Gateway failed to start correctly.
@@ -37971,20 +38028,21 @@ The runbook should include:
 - [ ] Parent 04 remains ACTIVE until remaining parent Step 3/4 complete.
 - [ ] PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.
 
-**PRIVATE-BETA-STAGING-EXECUTION-04D status:** ACTIVE / BLOCKED by 04D1 — Manual PM2 health smoke paused (2026-07-27) — No health smoke completion yet — API Gateway restart loop due missing SQLite database directory (compiled path → services/database).
-**PRIVATE-BETA-STAGING-EXECUTION-04D1 status:** ACTIVE — Step 2 COMPLETE (Implementation — 2026-07-27).
+**PRIVATE-BETA-STAGING-EXECUTION-04D status:** ACTIVE / BLOCKED by 04D2 — Manual PM2 health smoke paused (2026-07-27) — No health smoke completion yet — 04D1 SQLite blocker passed far enough to reach StartupGuard — Current active blocker 04D2 StartupGuard stub provider policy.
+**PRIVATE-BETA-STAGING-EXECUTION-04D1 status:** ACTIVE pending final VPS evidence/consolidation — VPS retry indicates original SQLite blocker passed; PM2 now blocked by 04D2.
+**PRIVATE-BETA-STAGING-EXECUTION-04D2 status:** ACTIVE — Step 2 COMPLETE (Implementation — 2026-07-27).
 **PRIVATE-BETA-STAGING-EXECUTION-04C status:** COMPLETE and LOCKED — 2026-07-26 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04C-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04B status:** COMPLETE and LOCKED — 2026-07-26 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04A status:** COMPLETE and LOCKED — 2026-07-25 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04A-CHECKPOINT.md.
-**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A COMPLETE and LOCKED — 04B COMPLETE and LOCKED — 04C COMPLETE and LOCKED — 04D ACTIVE / BLOCKED by 04D1 — Full app deployment still not complete.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A COMPLETE and LOCKED — 04B COMPLETE and LOCKED — 04C COMPLETE and LOCKED — 04D ACTIVE / BLOCKED by 04D2 — Full app deployment still not complete.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04D1 Step 3 — Local validation/evidence review.
+**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04D2 Step 3 — Local validation / evidence review.
 
 ---
 
 ### PRIVATE-BETA-STAGING-EXECUTION-04D1: API Gateway Reconciliation SQLite Runtime Path Fix
 
-**Status:** ACTIVE — Step 2 COMPLETE (Implementation — 2026-07-27)
+**Status:** ACTIVE pending final VPS evidence/consolidation — 2026-07-27 — VPS retry indicates original SQLite blocker passed; PM2 startup now blocked by 04D2 StartupGuard provider policy
 **Task ID:** PRIVATE-BETA-STAGING-EXECUTION-04D1
 **Title:** API Gateway Reconciliation SQLite Runtime Path Fix
 **Family:** PRIVATE BETA / STAGING EXECUTION
@@ -38026,6 +38084,51 @@ Safe log summary:
 - No DNS/TLS was configured.
 - No secrets were printed.
 ```
+
+#### VPS Retry Evidence Update (Keith — 2026-07-27 — safe summary)
+
+```text
+During 04D1 VPS sync/rebuild/PM2 retry, API Gateway no longer failed with the previous better-sqlite3 missing-directory error.
+
+API Gateway progressed through route mapping and reached StartupGuardService.
+
+PM2 observation:
+- aisandbox-api-gateway entered/re-entered restart loop.
+- Restart count increased to 175.
+- API Gateway was stopped manually.
+- AI Service, Container Manager, and Frontend had been online, but health smoke was stopped.
+
+Safe log summary:
+- StartupGuardService started production hardening checks.
+- Environment: production.
+- Working directory: /opt/aisandbox/services/api-gateway.
+- Required environment variables present.
+- Database URL format valid.
+- Kill switch configuration valid.
+- Safety limit configuration valid.
+- Port configuration valid.
+- Startup failure: Provider configuration invalid.
+- Reason: Stub provider not allowed in production/staging.
+- Provider: stub.
+- Expected: Real AI provider such as openai, anthropic, groq, xai, deepseek.
+- Actual: stub.
+- Exit code: 1.
+
+Important 04D policy conflict:
+- 04D is health-only PM2 startup.
+- 04D explicitly must not enable real AI provider execution.
+- Therefore changing .env from stub to a real provider is not allowed for 04D.
+- The blocker needs a source/policy decision for private-beta health-only staging startup without enabling real AI execution.
+
+Safety:
+- No health smoke was completed.
+- No migrations were run.
+- DB table count previously remained 0.
+- No DNS/TLS configured.
+- No secrets printed.
+```
+
+**04D1 status implication:** Original SQLite missing-directory blocker appears passed on VPS retry. 04D1 remains ACTIVE pending final VPS evidence/consolidation. Current PM2 startup blocker is now registered as PRIVATE-BETA-STAGING-EXECUTION-04D2.
 
 #### Scope
 
@@ -38162,11 +38265,221 @@ The next implementation prompt should require:
 - No git commit or push
 - No subagents used
 
-**PRIVATE-BETA-STAGING-EXECUTION-04D1 status:** ACTIVE — Step 2 COMPLETE (Implementation — 2026-07-27).
-**PRIVATE-BETA-STAGING-EXECUTION-04D status:** ACTIVE / BLOCKED by 04D1 — Manual PM2 health smoke paused (2026-07-27).
-**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C COMPLETE and LOCKED — 04D ACTIVE / BLOCKED by 04D1.
+**PRIVATE-BETA-STAGING-EXECUTION-04D1 status:** ACTIVE pending final VPS evidence/consolidation — VPS retry indicates original SQLite blocker passed; PM2 now blocked by 04D2 StartupGuard provider policy.
+**PRIVATE-BETA-STAGING-EXECUTION-04D status:** ACTIVE / BLOCKED by 04D2 — Manual PM2 health smoke paused (2026-07-27) — No health smoke completion yet.
+**PRIVATE-BETA-STAGING-EXECUTION-04D2 status:** ACTIVE — Step 2 COMPLETE (Implementation — 2026-07-27).
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C COMPLETE and LOCKED — 04D ACTIVE / BLOCKED by 04D2.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04D1 Step 3 — Local validation/evidence review.
+**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04D2 Step 3 — Local validation / evidence review.
+
+---
+
+### PRIVATE-BETA-STAGING-EXECUTION-04D2: StartupGuard Private-Beta Stub Provider Policy
+
+**Status:** ACTIVE — Step 2 COMPLETE (Implementation — 2026-07-27)
+**Task ID:** PRIVATE-BETA-STAGING-EXECUTION-04D2
+**Title:** StartupGuard Private-Beta Stub Provider Policy
+**Family:** PRIVATE BETA / STAGING EXECUTION
+**Priority:** CRITICAL BLOCKER
+**Nature:** TINY BLOCKER SOURCE/POLICY FIX — StartupGuard blocks private-beta health-only PM2 startup when AI_PROVIDER=stub in production/staging
+**Risk:** MEDIUM — touches API Gateway StartupGuard / provider validation; must remain narrow, explicit, test-covered, and reversible; must not weaken true production safety broadly
+**Registered:** 2026-07-27
+**Parent:** PRIVATE-BETA-STAGING-EXECUTION-04D
+**Grandparent:** PRIVATE-BETA-STAGING-EXECUTION-04
+
+#### Purpose
+
+Resolve the startup guard policy conflict where production/staging startup blocks `AI_PROVIDER=stub`, while 04D private-beta health-only smoke intentionally forbids enabling real AI provider execution.
+
+The goal is to allow safe PM2 health-only startup for private-beta staging without enabling AI execution, billing/payment execution, container execution, Google OAuth, migrations, DNS/TLS, or secret output.
+
+#### Blocker Evidence (Keith — safe summary — 2026-07-27)
+
+```text
+During 04D1 VPS sync/rebuild/PM2 retry, API Gateway no longer failed with the previous better-sqlite3 missing-directory error.
+
+API Gateway progressed through route mapping and reached StartupGuardService.
+
+PM2 observation:
+- aisandbox-api-gateway entered/re-entered restart loop.
+- Restart count increased to 175.
+- API Gateway was stopped manually.
+- AI Service, Container Manager, and Frontend had been online, but health smoke was stopped.
+
+Safe log summary:
+- StartupGuardService started production hardening checks.
+- Environment: production.
+- Working directory: /opt/aisandbox/services/api-gateway.
+- Required environment variables present.
+- Database URL format valid.
+- Kill switch configuration valid.
+- Safety limit configuration valid.
+- Port configuration valid.
+- Startup failure: Provider configuration invalid.
+- Reason: Stub provider not allowed in production/staging.
+- Provider: stub.
+- Expected: Real AI provider such as openai, anthropic, groq, xai, deepseek.
+- Actual: stub.
+- Exit code: 1.
+
+Important 04D policy conflict:
+- 04D is health-only PM2 startup.
+- 04D explicitly must not enable real AI provider execution.
+- Therefore changing .env from stub to a real provider is not allowed for 04D.
+- The blocker needs a source/policy decision for private-beta health-only staging startup without enabling real AI execution.
+
+Safety:
+- No health smoke was completed.
+- No migrations were run.
+- DB table count previously remained 0.
+- No DNS/TLS configured.
+- No secrets printed.
+```
+
+#### Policy Conflict
+
+* StartupGuardService / ProviderValidator disallow `AI_PROVIDER=stub` in production/staging.
+* 04D forbids enabling real AI provider execution.
+* Therefore `.env` should not be changed to a real provider for 04D.
+* A source/policy decision is required for private-beta health-only staging startup without enabling real AI execution.
+
+#### Scope
+
+04D2 is limited to one issue:
+
+* StartupGuardService blocks API Gateway startup because `AI_PROVIDER=stub` is not allowed in production/staging, but 04D cannot switch to a real AI provider.
+
+#### Step 2 Implementation Record (2026-07-27)
+
+**Root cause confirmed:** `ProviderValidator.validateProviderConfiguration()` unconditionally rejected `AI_PROVIDER=stub` when `NODE_ENV` is `production` or `staging`, even though 04D health-only staging keeps `GLOBAL_EXECUTION_ENABLED=false` and forbids real AI provider enablement.
+
+**Chosen fix:** Narrow private-beta health-only exception in `ProviderValidator`:
+* Allow `AI_PROVIDER=stub` in production/staging only when `KillSwitchConfig.GLOBAL_EXECUTION_ENABLED === false`.
+* Still reject stub when `GLOBAL_EXECUTION_ENABLED=true`.
+* Emit audit warn: "stub provider permitted for private-beta health-only startup because execution remains disabled."
+* Uses the same kill-switch signal enforced by `ExecutionSafetyGuard` (503 when false).
+* StartupGuard remains enabled; provider validation remains enabled; no new env flag; no `.env` change.
+
+**Exact files changed (Step 2):**
+1. `services/api-gateway/src/startup/provider.validator.ts`
+2. `services/api-gateway/src/startup/provider.validator.spec.ts`
+3. `services/api-gateway/src/startup/startup-failfast.integration.spec.ts`
+4. `TASKS.md` / `TASKS_BACKLOG_FULL.md` / `docs/AINOW-EXECUTION-ROADMAP.md` (governance progress only)
+
+**Validation:**
+* `npx jest --testPathPatterns="provider.validator|startup-failfast" --no-coverage` → 55/55 PASS
+* `npm run build` (api-gateway) → PASS
+* No Docker/PostgreSQL/Redis
+* No `.env` opened/created/edited
+* No env values printed
+* No migrations
+* No server/SSH/AWS/DNS/TLS
+* No frontend changes
+* No git commit or push
+
+**04D2 remains ACTIVE** pending Step 3 local validation / evidence review and later VPS retry. Do not mark COMPLETE and LOCKED.
+**04D remains ACTIVE / BLOCKED by 04D2.**
+
+#### Non-Goals
+
+04D2 must not:
+
+* Modify `.env`.
+* Print env values.
+* Add real AI provider keys.
+* Enable real AI provider calls.
+* Enable billing/payment execution.
+* Enable container execution.
+* Enable Google OAuth.
+* Run migrations.
+* Create PostgreSQL tables.
+* Configure DNS/TLS.
+* Change PM2 permanently.
+* Change frontend UX/UI.
+* Broaden private beta deployment scope.
+* Weaken production safety broadly.
+* Allow stub provider in true production without a narrow private-beta/health-only guard.
+* Disable StartupGuard entirely.
+* Remove safety checks.
+* Touch unrelated billing/admin/reconciliation logic.
+* Add new dependencies unless absolutely unavoidable.
+* Commit or push git.
+* Mark 04D complete.
+
+#### Expected Workflow
+
+1. **Registration** — COMPLETE (2026-07-27).
+2. **Implementation** — COMPLETE (2026-07-27) — this step.
+3. **Local validation** — targeted tests/build only.
+4. **VPS sync/rebuild/PM2 retry evidence by Keith.**
+5. **Evidence review.**
+6. **Consolidation/checkpoint.**
+
+#### Acceptance Criteria
+
+###### Step 1 (Registration — COMPLETE 2026-07-27)
+- [x] 04D2 registered under 04D.
+- [x] 04D2 status set to ACTIVE — Step 1 COMPLETE (Registration — 2026-07-27).
+- [x] 04D2 blocker evidence recorded.
+- [x] Scope limited to StartupGuard stub provider private-beta health-smoke policy.
+- [x] Non-goals recorded.
+- [x] Expected workflow recorded.
+- [x] Implementation guardrails recorded.
+- [x] 04D remains ACTIVE / BLOCKED.
+- [x] 04D1 remains ACTIVE pending its final VPS evidence/consolidation.
+- [x] Parent 04 remains ACTIVE.
+- [x] PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.
+- [x] TASKS.md updated.
+- [x] TASKS_BACKLOG_FULL.md updated.
+- [x] Roadmap updated.
+- [x] No source code changed.
+- [x] No env files opened/created/edited.
+- [x] No env values opened/printed.
+- [x] No local runtime/test/build action occurred.
+- [x] No server/SSH/AWS/DNS/TLS action occurred.
+- [x] No Docker/PostgreSQL/Redis action occurred.
+- [x] No git commit or push occurred.
+- [x] No subagents used.
+
+###### Step 2 (Implementation — COMPLETE 2026-07-27)
+- [x] StartupGuard provider policy conflict fixed in source.
+- [x] Fix is narrow, explicit, source-grounded, and reversible.
+- [x] Stub provider is not broadly allowed in true production (rejected when GLOBAL_EXECUTION_ENABLED=true).
+- [x] Stub provider is allowed only when GLOBAL_EXECUTION_ENABLED=false (health-only / execution-disabled).
+- [x] Real providers remain accepted.
+- [x] Invalid providers remain rejected.
+- [x] StartupGuard remains enabled.
+- [x] AI execution not enabled by the fix.
+- [x] Billing/payment execution not enabled by the fix.
+- [x] Container execution not enabled by the fix.
+- [x] Google OAuth not enabled.
+- [x] No `.env` files opened/created/edited.
+- [x] No env values opened/printed.
+- [x] No migrations.
+- [x] No Docker/PostgreSQL/Redis.
+- [x] No server/SSH/AWS/DNS/TLS.
+- [x] No frontend changes.
+- [x] No broad refactor.
+- [x] Targeted tests pass (55/55).
+- [x] API Gateway build passes.
+- [x] Governance updated.
+- [x] No git commit or push.
+- [x] No subagents used.
+- [x] 04D2 remains ACTIVE (not COMPLETE and LOCKED).
+- [x] 04D remains ACTIVE / BLOCKED by 04D2.
+
+###### Later steps — PENDING
+- [ ] Step 3 — Local validation.
+- [ ] Step 4 — VPS sync/rebuild/PM2 retry evidence by Keith.
+- [ ] Step 5 — Evidence review.
+- [ ] Step 6 — Consolidation/checkpoint.
+
+**PRIVATE-BETA-STAGING-EXECUTION-04D2 status:** ACTIVE — Step 2 COMPLETE (Implementation — 2026-07-27).
+**PRIVATE-BETA-STAGING-EXECUTION-04D status:** ACTIVE / BLOCKED by 04D2 — Manual PM2 health smoke paused (2026-07-27) — No health smoke completion yet.
+**PRIVATE-BETA-STAGING-EXECUTION-04D1 status:** ACTIVE pending final VPS evidence/consolidation — original SQLite blocker passed; current PM2 blocker is 04D2.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C COMPLETE and LOCKED — 04D ACTIVE / BLOCKED by 04D2.
+**PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
+**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04D2 Step 3 — Local validation / evidence review.
 
 ---
 

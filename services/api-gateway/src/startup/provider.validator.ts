@@ -2,24 +2,29 @@
  * Provider Configuration Validator
  *
  * Phase 32A: Deployment Hardening
+ * PRIVATE-BETA-STAGING-EXECUTION-04D2: Private-beta health-only stub exception
  *
  * Validates AI provider configuration at startup to prevent misconfiguration.
  *
  * LOCKED GUARANTEES:
  * - AI_PROVIDER must be set and valid (no defaulting in production/staging)
  * - Required provider API key must exist for selected provider
- * - Stub provider allowed only in development
+ * - Stub provider allowed in development
+ * - Stub provider allowed in production/staging ONLY when GLOBAL_EXECUTION_ENABLED
+ *   is false (private-beta health-only / execution-disabled startup)
+ * - Stub provider rejected in production/staging when AI execution is enabled
  * - Invalid provider configuration → immediate crash (exit 1)
  *
  * FAIL-FAST TRAPS:
  * - Missing AI_PROVIDER in production/staging
  * - Invalid provider name
  * - Missing API key for selected provider
- * - Stub provider in production/staging
+ * - Stub provider in production/staging with AI execution enabled
  * - Empty/whitespace provider values
  */
 
 import { EnvironmentValidator } from './environment.validator';
+import { KillSwitchConfig } from '../safety/kill-switch.config';
 
 export type ValidProvider =
   | 'stub'
@@ -151,18 +156,34 @@ export class ProviderValidator {
 
     const providerConfig = this.PROVIDERS[provider as ValidProvider];
 
-    // Phase 32A Trap: Stub provider in production/staging
+    // Phase 32A Trap + 04D2 exception:
+    // Stub provider in production/staging is rejected unless AI execution is
+    // proven disabled via GLOBAL_EXECUTION_ENABLED (private-beta health-only).
     if (provider === 'stub' && (env === 'production' || env === 'staging')) {
+      if (this.isPrivateBetaHealthOnlyStubPermitted()) {
+        console.warn(
+          '[STARTUP POLICY] stub provider permitted for private-beta health-only startup because execution remains disabled.\n' +
+            `Environment: ${env}\n` +
+            'Provider: stub\n' +
+            'Condition: GLOBAL_EXECUTION_ENABLED=false\n' +
+            'Security: AI execution remains blocked by kill switch; stub does not enable provider calls, billing, or container execution.',
+        );
+        // Stub needs no API key; skip allowedEnvironments (dev-only) for this narrow exception.
+        return;
+      }
+
       throw new Error(
         '[STARTUP FAILURE] Provider configuration invalid\n' +
           'Reason: Stub provider not allowed in production/staging\n' +
           `Environment: ${env}\n` +
           `Provider: ${provider}\n` +
           'Expected: Real AI provider (openai, anthropic, groq, xai, deepseek)\n' +
-          'Actual: stub\n' +
-          'Remediation: Configure real AI provider\n' +
+          '  OR stub only when GLOBAL_EXECUTION_ENABLED=false (private-beta health-only)\n' +
+          'Actual: stub with AI execution enabled\n' +
+          'Remediation: Configure real AI provider, or disable AI execution for health-only startup\n' +
           '  Example: export AI_PROVIDER=anthropic\n' +
-          'Security: Stub provider is for development/testing only\n' +
+          '  Health-only: export GLOBAL_EXECUTION_ENABLED=false\n' +
+          'Security: Stub provider is for development/testing or private-beta health-only when execution is disabled\n' +
           'Exit Code: 1',
       );
     }
@@ -182,6 +203,21 @@ export class ProviderValidator {
     if (provider !== 'stub') {
       this.validateProviderApiKey(provider as ValidProvider, env);
     }
+  }
+
+  /**
+   * PRIVATE-BETA-STAGING-EXECUTION-04D2
+   *
+   * Narrow exception: allow AI_PROVIDER=stub in production/staging only when
+   * the existing GLOBAL_EXECUTION_ENABLED kill switch proves AI execution is
+   * disabled. Uses the same KillSwitchConfig signal that ExecutionSafetyGuard
+   * enforces at request time (503 when false).
+   *
+   * Does NOT enable AI/billing/container execution.
+   * Does NOT disable StartupGuard or provider validation.
+   */
+  private static isPrivateBetaHealthOnlyStubPermitted(): boolean {
+    return KillSwitchConfig.GLOBAL_EXECUTION_ENABLED === false;
   }
 
   /**

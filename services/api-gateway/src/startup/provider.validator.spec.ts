@@ -2,11 +2,13 @@
  * Provider Validator Tests
  *
  * Phase 32A: Deployment Hardening
+ * PRIVATE-BETA-STAGING-EXECUTION-04D2: Private-beta health-only stub exception
  *
  * Tests provider configuration validation and fail-fast behavior.
  */
 
 import { ProviderValidator } from './provider.validator';
+import { KillSwitchConfig } from '../safety/kill-switch.config';
 
 describe('ProviderValidator', () => {
   let originalEnv: NodeJS.ProcessEnv;
@@ -62,12 +64,46 @@ describe('ProviderValidator', () => {
         }).toThrow('not a valid provider');
       });
 
-      it('should fail when AI_PROVIDER is stub', () => {
+      it('should fail when AI_PROVIDER is stub and AI execution is enabled', () => {
         process.env.AI_PROVIDER = 'stub';
+        process.env.GLOBAL_EXECUTION_ENABLED = 'true';
 
+        expect(KillSwitchConfig.GLOBAL_EXECUTION_ENABLED).toBe(true);
         expect(() => {
           ProviderValidator.validateProviderConfiguration();
         }).toThrow('Stub provider not allowed in production/staging');
+      });
+
+      it('should fail when AI_PROVIDER is stub and execution is not proven disabled (enabled)', () => {
+        process.env.AI_PROVIDER = 'stub';
+        process.env.GLOBAL_EXECUTION_ENABLED = 'true';
+
+        expect(() => {
+          ProviderValidator.validateProviderConfiguration();
+        }).toThrow('stub with AI execution enabled');
+      });
+
+      it('should allow AI_PROVIDER=stub in production when GLOBAL_EXECUTION_ENABLED=false (private-beta health-only)', () => {
+        process.env.AI_PROVIDER = 'stub';
+        process.env.GLOBAL_EXECUTION_ENABLED = 'false';
+
+        expect(KillSwitchConfig.GLOBAL_EXECUTION_ENABLED).toBe(false);
+        expect(() => {
+          ProviderValidator.validateProviderConfiguration();
+        }).not.toThrow();
+        // Exception does not flip execution on
+        expect(KillSwitchConfig.GLOBAL_EXECUTION_ENABLED).toBe(false);
+      });
+
+      it('should allow AI_PROVIDER=stub when GLOBAL_EXECUTION_ENABLED is unset (fail-safe execution disabled)', () => {
+        process.env.AI_PROVIDER = 'stub';
+        delete process.env.GLOBAL_EXECUTION_ENABLED;
+
+        expect(KillSwitchConfig.GLOBAL_EXECUTION_ENABLED).toBe(false);
+        expect(() => {
+          ProviderValidator.validateProviderConfiguration();
+        }).not.toThrow();
+        expect(KillSwitchConfig.GLOBAL_EXECUTION_ENABLED).toBe(false);
       });
 
       it('should fail when provider API key missing', () => {
@@ -123,6 +159,16 @@ describe('ProviderValidator', () => {
           ProviderValidator.validateProviderConfiguration();
         }).not.toThrow();
       });
+
+      it('should still succeed with real provider when GLOBAL_EXECUTION_ENABLED=true', () => {
+        process.env.AI_PROVIDER = 'anthropic';
+        process.env.ANTHROPIC_API_KEY = 'sk-ant-api03-1234567890abcdef1234567890abcdef1234567890abcdef';
+        process.env.GLOBAL_EXECUTION_ENABLED = 'true';
+
+        expect(() => {
+          ProviderValidator.validateProviderConfiguration();
+        }).not.toThrow();
+      });
     });
 
     describe('Staging Environment', () => {
@@ -138,12 +184,24 @@ describe('ProviderValidator', () => {
         }).toThrow('AI_PROVIDER not set');
       });
 
-      it('should fail when AI_PROVIDER is stub', () => {
+      it('should fail when AI_PROVIDER is stub and AI execution is enabled', () => {
         process.env.AI_PROVIDER = 'stub';
+        process.env.GLOBAL_EXECUTION_ENABLED = 'true';
 
         expect(() => {
           ProviderValidator.validateProviderConfiguration();
         }).toThrow('Stub provider not allowed');
+      });
+
+      it('should allow AI_PROVIDER=stub in staging when GLOBAL_EXECUTION_ENABLED=false (private-beta health-only)', () => {
+        process.env.AI_PROVIDER = 'stub';
+        process.env.GLOBAL_EXECUTION_ENABLED = 'false';
+
+        expect(KillSwitchConfig.GLOBAL_EXECUTION_ENABLED).toBe(false);
+        expect(() => {
+          ProviderValidator.validateProviderConfiguration();
+        }).not.toThrow();
+        expect(KillSwitchConfig.GLOBAL_EXECUTION_ENABLED).toBe(false);
       });
 
       it('should succeed with valid provider', () => {
@@ -195,6 +253,35 @@ describe('ProviderValidator', () => {
         expect(() => {
           ProviderValidator.validateProviderConfiguration();
         }).not.toThrow();
+      });
+    });
+
+    describe('04D2 private-beta health-only stub policy invariants', () => {
+      it('does not enable AI execution when stub is permitted', () => {
+        process.env.NODE_ENV = 'production';
+        process.env.AI_PROVIDER = 'stub';
+        process.env.GLOBAL_EXECUTION_ENABLED = 'false';
+        process.env.BILLING_SNAPSHOT_ENABLED = 'false';
+        process.env.PAYMENT_EXECUTION_ENABLED = 'false';
+
+        expect(() => {
+          ProviderValidator.validateProviderConfiguration();
+        }).not.toThrow();
+
+        expect(KillSwitchConfig.GLOBAL_EXECUTION_ENABLED).toBe(false);
+        expect(process.env.GLOBAL_EXECUTION_ENABLED).toBe('false');
+        expect(process.env.BILLING_SNAPSHOT_ENABLED).toBe('false');
+        expect(process.env.PAYMENT_EXECUTION_ENABLED).toBe('false');
+      });
+
+      it('does not disable provider validation — invalid provider still rejected', () => {
+        process.env.NODE_ENV = 'production';
+        process.env.GLOBAL_EXECUTION_ENABLED = 'false';
+        process.env.AI_PROVIDER = 'not-a-provider';
+
+        expect(() => {
+          ProviderValidator.validateProviderConfiguration();
+        }).toThrow('not a valid provider');
       });
     });
   });

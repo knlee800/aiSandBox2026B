@@ -134,12 +134,22 @@ describe('Startup Fail-Fast Integration', () => {
       }).toThrow('AI_PROVIDER not set');
     });
 
-    it('should fail when AI_PROVIDER is stub in production', () => {
+    it('should fail when AI_PROVIDER is stub in production with AI execution enabled', () => {
       process.env.AI_PROVIDER = 'stub';
+      process.env.GLOBAL_EXECUTION_ENABLED = 'true';
 
       expect(() => {
         ProviderValidator.validateProviderConfiguration();
       }).toThrow('Stub provider not allowed in production/staging');
+    });
+
+    it('should allow AI_PROVIDER=stub in production when GLOBAL_EXECUTION_ENABLED=false (04D2 health-only)', () => {
+      process.env.AI_PROVIDER = 'stub';
+      process.env.GLOBAL_EXECUTION_ENABLED = 'false';
+
+      expect(() => {
+        ProviderValidator.validateProviderConfiguration();
+      }).not.toThrow();
     });
 
     it('should fail when provider API key missing', () => {
