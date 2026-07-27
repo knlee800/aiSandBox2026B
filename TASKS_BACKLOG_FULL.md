@@ -35654,7 +35654,7 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 
 **Execution sequence governance:** See `docs/AINOW-EXECUTION-ROADMAP.md` �X controls cross-family priority order; Knowledge before Collaboration before Billing.
 
-**Current stage:** CLOUD STAGING EXECUTION — PRIVATE-BETA-STAGING-EXECUTION-04A — Redis Gate + Repo Clone Baseline — COMPLETE and LOCKED — 2026-07-25 — All 4 steps COMPLETE — Evidence verdict PASS — Redis Gate Outcome A accepted — Repo cloned to /opt/aisandbox — owner ubuntu:ubuntu — branch main — latest commit c55a278 Register staging execution 04A repo clone baseline — git status clean — Snapshot aisandbox-staging-preclone-2026-07-25 Available — All 4 snapshots Available — No .env / No dependencies / No build / No app services / No migrations / No DNS/TLS / No secrets disclosed — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04A-CHECKPOINT.md — PRIVATE-BETA-STAGING-EXECUTION-03 COMPLETE and LOCKED — 2026-07-24 — All 4 steps COMPLETE — DB/Redis installation baseline PASS WITH VERSION DEVIATION — PostgreSQL 15.18 installed and verified — Redis 8.8.0 installed and verified (target was 7.x — version deviation recorded — compatibility guardrail required before app deployment) — aisandbox database/user created — credentials private — ports 5432/6379 closed externally — Snapshot aisandbox-staging-db-redis-2026-07-24 Available — PRIVATE-BETA-STAGING-EXECUTION-02 COMPLETE and LOCKED — 2026-07-24 — All 4 steps COMPLETE — Runtime installation baseline PASS — Snapshot aisandbox-staging-runtime-2026-07-24 Available — PRIVATE-BETA-STAGING-EXECUTION-04 — Repo Clone + Private Env Preparation + App Deployment Baseline — ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — Manual execution split into bounded child slices (04A: COMPLETE and LOCKED 2026-07-25; 04B: Private Env Preparation — COMPLETE and LOCKED — 2026-07-26 — Evidence verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md — /opt/aisandbox/.env created privately — 47 required non-Google keys present — Google OAuth deferred; 04C: Dependency Install + Build — COMPLETE and LOCKED 2026-07-26 — Evidence verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04C-CHECKPOINT.md — npm ci PASS — all four builds PASS; 04D: PM2 Service Start + Health-Only Smoke — PENDING registration / next) — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — LOCAL-PRIVATE-BETA-READINESS-01 — Local Machine Rebaseline + Private Beta Gap Review — COMPLETE and LOCKED — 2026-07-23 — All 3 steps COMPLETE — Verdict: BLOCKED for private-beta progression — P0: authenticated /api/ai/execute returned 402 not kill-switch 503 — Checkpoint: docs/LOCAL-PRIVATE-BETA-READINESS-01-CHECKPOINT.md — LOCAL-PRIVATE-BETA-READINESS-01-FIX-EXECUTION-KILLSWITCH-LOCAL — COMPLETE and LOCKED — 2026-07-23 — All 3 steps COMPLETE — PASS — P0 blocker fixed: authenticated POST /api/ai/execute now returns 503 — GLOBAL_EXECUTION_ENABLED default changed to fail-safe opt-in — 129/129 targeted tests PASS — Checkpoint: docs/LOCAL-PRIVATE-BETA-READINESS-01-FIX-EXECUTION-KILLSWITCH-LOCAL-CHECKPOINT.md — LOCAL-PRIVATE-BETA-READINESS-02 — PAUSED / PARTIALLY COMPLETE — 2026-07-23 — Container Manager PASS — AI Service local runtime unresolved due staging parity decision — LOCAL-PRIVATE-BETA-READINESS-02-FIX-AI-SERVICE-REDIS-ENV-LOCAL — PAUSED / SUPERSEDED by staging-environment parity decision — 2026-07-23 — cloud staging resumed — PRIVATE-BETA-STAGING-EXECUTION-02 ACTIVE — Step 1 COMPLETE (Registration — 2026-07-23) — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED/PAUSED — Cloud Pause Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-PAUSE-CHECKPOINT.md — Previous completed cloud stage: PRIVATE-BETA-STAGING-EXECUTION-01 — Create AWS Lightsail Staging Server + Static IP + Baseline — COMPLETE and LOCKED — 2026-07-23 — All 4 steps COMPLETE — Keith manual execution PASS — AWS Lightsail instance aisandbox-staging created — Region: Singapore / ap-southeast-1 — Plan: 8 GB RAM / 2 vCPU / 160 GB SSD — OS: Ubuntu 24.04.4 LTS / noble — Static IP: aisandbox-staging-ip attached (value not recorded in tracked docs) — Firewall: TCP 22/80/443 open; 3002/4000/4001/4002/5432/6379 closed externally — Browser SSH succeeded — apt update/upgrade succeeded — Timezone: Asia/Hong_Kong (HKT, +0800) synchronized — Reboot completed — Manual snapshot aisandbox-staging-baseline-2026-07-23 Available — Automatic snapshots enabled — No DNS/TLS/runtime/database/app/migration/env/secret action occurred — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-01-RUNBOOK.md — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-01-CHECKPOINT.md — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED until real app deployment and verification evidence exists — Next recommended action: Register PRIVATE-BETA-STAGING-EXECUTION-02 — Previous stage: PRIVATE-BETA-STAGING-SETUP — Staging / Production-like Deployment Target Setup — COMPLETE and LOCKED — 2026-07-23 — All 4 steps COMPLETE — All 8 child tasks COMPLETE and LOCKED (SETUP-01 through SETUP-08) — Staging setup planning chain complete — provider/domain/runtime/database/env/deployment/migration decisions consolidated — No AWS/server/static IP/DNS/TLS/runtime/deployment/migration action occurred — No staging target is live — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED until real staging target is created and verified — Parent checkpoint: `docs/PRIVATE-BETA-STAGING-SETUP-CHECKPOINT.md` — Previous stage: PRIVATE-BETA-STAGING-SETUP-08 — Migration Readiness / Verification Plan — COMPLETE and LOCKED — 2026-07-23 — All 3 steps COMPLETE — Step 2 verdict PASS — 25 migration files inventoried — migration command `npm run migration:run:prod` confirmed — `migration:revert:prod` NOT FOUND (manual fallback documented) — TypeORM `data-source.ts`: `DATABASE_URL` only, `synchronize: false` — 26 entities mapped — mandatory backup/snapshot/approval gates documented — no migration execution occurred — no DB connection occurred — no backup/snapshot creation occurred — no env file created/opened/edited — no secrets printed/requested/generated — no implementation — Checkpoint: `docs/PRIVATE-BETA-STAGING-SETUP-08-CHECKPOINT.md` — Parent: PRIVATE-BETA-STAGING-SETUP — ACTIVE — Steps 1–2 COMPLETE — Step 3 complete (all 8 child tasks COMPLETE and LOCKED) — SETUP-01 through SETUP-08 all COMPLETE and LOCKED — Next recommended action: Parent PRIVATE-BETA-STAGING-SETUP Step 4 — Final Consolidation / Handoff to PRIVATE-BETA-DEPLOYMENT-READINESS (requires Keith explicit approval) — Previous stage: PRIVATE-BETA-STAGING-SETUP-07 — App Deployment / Health Smoke Plan — COMPLETE and LOCKED — 2026-07-22 — All 3 steps COMPLETE — Step 2 verdict PASS — App deployment / health smoke plan created: docs/PRIVATE-BETA-STAGING-SETUP-07-APP-DEPLOYMENT-HEALTH-SMOKE-PLAN.md — 27 pre-deployment readiness gate checks documented — Service startup order documented — Health endpoints source-verified — All smoke plans documented — Migration boundary documented — Checkpoint: docs/PRIVATE-BETA-STAGING-SETUP-07-CHECKPOINT.md — No deployment occurred — No app/API/browser smoke occurred — No PostgreSQL/Redis action or command occurred — No migration execution occurred — No env file created/opened/edited — No secrets printed/requested/generated — No implementation — Previous stage: PRIVATE-BETA-STAGING-SETUP-06 COMPLETE and LOCKED (2026-07-22) — PRIVATE-BETA-DEPLOYMENT-READINESS BLOCKED / PAUSED after Step 2 — blocker: no staging/production-like target exists — resume Step 3 only after PRIVATE-BETA-STAGING-SETUP completes or produces verified target — Stage-start plan: docs/PRIVATE-BETA-DEPLOYMENT-READINESS-STAGE-START.md — Deployment / Staging Readiness Check — BLOCKED / PAUSED — Steps 1–2 COMPLETE — Step 2 COMPLETE (Stage-start/staging readiness plan — 2026-07-21) — docs/PRIVATE-BETA-DEPLOYMENT-READINESS-STAGE-START.md — Step 3 BLOCKED: no staging target — resumes after PRIVATE-BETA-STAGING-SETUP — no implementation — no source changes — LIMITED-PRIVATE-BETA-HANDOFF — Limited Private Beta Handoff / Checklist — COMPLETE and LOCKED — 2026-07-21 — all 3 steps complete — Checklist: docs/LIMITED-PRIVATE-BETA-HANDOFF-CHECKLIST.md — Checkpoint: docs/LIMITED-PRIVATE-BETA-HANDOFF-CHECKPOINT.md — BETA-READY-MIGRATION-CLI-01 — TypeORM Migration CLI Path Fix — COMPLETE and LOCKED — 2026-07-21 — all 3 steps complete — TINY TOOLING FOLLOW-UP — `"ts-node": "^10.9.2"` added to `devDependencies` in `services/api-gateway/package.json` — `npx typeorm-ts-node-commonjs --help` PASS — `npm run build` PASS — no migration execution — B3 PASS unchanged — Checkpoint: `docs/BETA-READY-MIGRATION-CLI-01-CHECKPOINT.md` — next: limited private beta handoff/checklist — requires Keith explicit approval — BETA-READY-SMOKE — Pre-Beta Full-Stack Live Smoke — COMPLETE and LOCKED — 2026-07-21 — Final verdict PASS — all 4 steps complete — local pre-beta full-stack smoke for bounded RPG/Create Agent MVP path PASS — Checkpoint: `docs/BETA-READY-SMOKE-CHECKPOINT.md` — Stage-start: `docs/BETA-READY-SMOKE-STAGE-START.md` — Execution: `docs/BETA-READY-SMOKE-EXECUTION.md` — migration verified (Keith compiled TypeORM path) — `user_agents` table exists — API Gateway + frontend started — health/guards PASS — Keith browser smoke ALL PASS — Create Agent DB-backed create/list/refresh/detail PASS — no deployment — no public beta launch — AGENT-PLATFORM-CREATE-01B — Create Agent MVP UI — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — Create Agent CTA implemented — inline form implemented — user-created agents list implemented — 28 translation keys per locale — `useUserAgents` hook — mocked `GET /api/agents` and `POST /api/agents` tests passed (641/641 frontend) — TypeScript clean — Build clean — Linter 0 errors — live DB-backed smoke deferred — migration NOT executed — Checkpoint: `docs/AGENT-PLATFORM-CREATE-01B-CHECKPOINT.md` — AGENT-PLATFORM-CREATE-01A — Create Agent Backend Minimal Persistence — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — `UserAgent` entity implemented — `user_agents` migration created (NOT executed) — `POST /api/agents`, `GET /api/agents`, `GET /api/agents/:id` implemented — user ownership/scoping enforced — 30/30 tests PASS — TypeScript clean — Build clean — Checkpoint: `docs/AGENT-PLATFORM-CREATE-01A-CHECKPOINT.md` — B3 remains paused — AGENT-PLATFORM-RPG-03B — Platform Link from Workspace + Auth Guard Review — COMPLETE and LOCKED — 2026-07-20 — all 3 steps complete — workspace/home platform CTA implemented — `/[locale]/platform` auth guard added — manual smoke PASS WITH LIMITATION (unauthenticated redirect PASS; authenticated access smoke deferred) — Checkpoint: `docs/AGENT-PLATFORM-RPG-03B-CHECKPOINT.md` — AGENT-PLATFORM-RPG-03A — Platform Dashboard Visual Identity + Agent Detail Panel — COMPLETE and LOCKED — 2026-07-20 — all 3 steps complete — Checkpoint: `docs/AGENT-PLATFORM-RPG-03A-CHECKPOINT.md` — AGENT-PLATFORM-RPG-MVP-RESET — RPG UX/UI and Agent Creation Beta Readiness Reset — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — B3 remains paused — chosen path: RPG-03A (COMPLETE and LOCKED) → RPG-03B → CREATE-01A → CREATE-01B → BETA-READY-SMOKE — Checkpoint: `docs/AGENT-PLATFORM-RPG-MVP-RESET-CHECKPOINT.md` — BETA-READY-DEPLOYMENT-CONFIG — Production Deployment Configuration — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — B2 resolved at documentation/template-readiness level — Checkpoint: `docs/BETA-READY-DEPLOYMENT-CONFIG-CHECKPOINT.md` — B3 pre-beta full-stack live smoke remains pending — requires Keith explicit approval before registration — AGENT-HARNESS-WRITE-CANARY — Agent Harness Write Canary + Production Activation — COMPLETE and LOCKED — 2026-07-20 — all 4 parent steps complete — child A COMPLETE and LOCKED (2026-07-19) — child B COMPLETE and LOCKED (2026-07-20) — first live E2E write canary PASS — safe default remains disabled — no permanent production flag activation — Checkpoint: `docs/AGENT-HARNESS-WRITE-CANARY-CHECKPOINT.md` — BETA-READY-00 blocker B1 resolved at canary-readiness level — BETA-READY-00 — Beta Readiness Checklist — COMPLETE and LOCKED — 2026-07-19 — all 3 steps complete — checklist created (`docs/BETA-READY-00-CHECKLIST.md`) — launch decision: READY FOR LIMITED BETA WITH LIMITATIONS — 15 gates (7 PASS, 8 needs verification) — blockers: B1 (resolved at canary-readiness level; permanent deployment flag activation still separate), B2 (deployment), B3 (pre-beta smoke) — Checkpoint: `docs/BETA-READY-00-CHECKPOINT.md` — ANOMALY-01 COMPLETE and LOCKED — 2026-07-19 — Checkpoint: `docs/ANOMALY-01-CHECKPOINT.md` — BILLING-READY-07 COMPLETE and LOCKED — 2026-07-17 — Outcome B — PASS WITH LIMITATIONS — BILLING-READY-07A COMPLETE and LOCKED — 2026-07-17 — Step 3 rerun PASS (2026-07-19) — BR07A-DEFECT-01 resolved — BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200 COMPLETE and LOCKED — 2026-07-17 — Checkpoint: `docs/BILLING-READY-07A-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-07-CHECKPOINT.md` — Consolidation document: `docs/BILLING-READY-07-CONSOLIDATION-DECISION.md` — BILLING-READY-06 COMPLETE and LOCKED (2026-07-17) — BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — BILLING-READY-06B COMPLETE and LOCKED (2026-07-17) — Checkpoint: `docs/BILLING-READY-06B-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-06-CHECKPOINT.md` — AGENT-HARNESS write canary remains a separate track. BILLING-READY-05 COMPLETE and LOCKED (2026-07-16) — all 4 parent steps complete — all child slices 05A–05G COMPLETE and LOCKED — Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`. BILLING-READY-05G COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-05G-CHECKPOINT.md`. BILLING-READY-05F COMPLETE and LOCKED (2026-07-15). Checkpoint: `docs/BILLING-READY-05F-CHECKPOINT.md`. BILLING-READY-05E COMPLETE and LOCKED (2026-07-15). BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-04 COMPLETE and LOCKED (2026-07-13). BILLING-READY-03 COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
+**Current stage:** CLOUD STAGING EXECUTION — PRIVATE-BETA-STAGING-EXECUTION-04A — Redis Gate + Repo Clone Baseline — COMPLETE and LOCKED — 2026-07-25 — All 4 steps COMPLETE — Evidence verdict PASS — Redis Gate Outcome A accepted — Repo cloned to /opt/aisandbox — owner ubuntu:ubuntu — branch main — latest commit c55a278 Register staging execution 04A repo clone baseline — git status clean — Snapshot aisandbox-staging-preclone-2026-07-25 Available — All 4 snapshots Available — No .env / No dependencies / No build / No app services / No migrations / No DNS/TLS / No secrets disclosed — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04A-CHECKPOINT.md — PRIVATE-BETA-STAGING-EXECUTION-03 COMPLETE and LOCKED — 2026-07-24 — All 4 steps COMPLETE — DB/Redis installation baseline PASS WITH VERSION DEVIATION — PostgreSQL 15.18 installed and verified — Redis 8.8.0 installed and verified (target was 7.x — version deviation recorded — compatibility guardrail required before app deployment) — aisandbox database/user created — credentials private — ports 5432/6379 closed externally — Snapshot aisandbox-staging-db-redis-2026-07-24 Available — PRIVATE-BETA-STAGING-EXECUTION-02 COMPLETE and LOCKED — 2026-07-24 — All 4 steps COMPLETE — Runtime installation baseline PASS — Snapshot aisandbox-staging-runtime-2026-07-24 Available — PRIVATE-BETA-STAGING-EXECUTION-04 — Repo Clone + Private Env Preparation + App Deployment Baseline — ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — Manual execution split into bounded child slices (04A: COMPLETE and LOCKED 2026-07-25; 04B: Private Env Preparation — COMPLETE and LOCKED — 2026-07-26 — Evidence verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md — /opt/aisandbox/.env created privately — 47 required non-Google keys present — Google OAuth deferred; 04C: Dependency Install + Build — COMPLETE and LOCKED 2026-07-26 — Evidence verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04C-CHECKPOINT.md — npm ci PASS — all four builds PASS; 04D: PM2 Service Start + Health-Only Smoke — ACTIVE / BLOCKED by 04D1 — Manual PM2 health smoke paused — API Gateway restart loop due missing SQLite database directory — 04D1 ACTIVE — Step 1 COMPLETE (Registration — 2026-07-27) — Next: 04D1 Step 2 Implementation) — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — LOCAL-PRIVATE-BETA-READINESS-01 — Local Machine Rebaseline + Private Beta Gap Review — COMPLETE and LOCKED — 2026-07-23 — All 3 steps COMPLETE — Verdict: BLOCKED for private-beta progression — P0: authenticated /api/ai/execute returned 402 not kill-switch 503 — Checkpoint: docs/LOCAL-PRIVATE-BETA-READINESS-01-CHECKPOINT.md — LOCAL-PRIVATE-BETA-READINESS-01-FIX-EXECUTION-KILLSWITCH-LOCAL — COMPLETE and LOCKED — 2026-07-23 — All 3 steps COMPLETE — PASS — P0 blocker fixed: authenticated POST /api/ai/execute now returns 503 — GLOBAL_EXECUTION_ENABLED default changed to fail-safe opt-in — 129/129 targeted tests PASS — Checkpoint: docs/LOCAL-PRIVATE-BETA-READINESS-01-FIX-EXECUTION-KILLSWITCH-LOCAL-CHECKPOINT.md — LOCAL-PRIVATE-BETA-READINESS-02 — PAUSED / PARTIALLY COMPLETE — 2026-07-23 — Container Manager PASS — AI Service local runtime unresolved due staging parity decision — LOCAL-PRIVATE-BETA-READINESS-02-FIX-AI-SERVICE-REDIS-ENV-LOCAL — PAUSED / SUPERSEDED by staging-environment parity decision — 2026-07-23 — cloud staging resumed — PRIVATE-BETA-STAGING-EXECUTION-02 ACTIVE — Step 1 COMPLETE (Registration — 2026-07-23) — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED/PAUSED — Cloud Pause Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-PAUSE-CHECKPOINT.md — Previous completed cloud stage: PRIVATE-BETA-STAGING-EXECUTION-01 — Create AWS Lightsail Staging Server + Static IP + Baseline — COMPLETE and LOCKED — 2026-07-23 — All 4 steps COMPLETE — Keith manual execution PASS — AWS Lightsail instance aisandbox-staging created — Region: Singapore / ap-southeast-1 — Plan: 8 GB RAM / 2 vCPU / 160 GB SSD — OS: Ubuntu 24.04.4 LTS / noble — Static IP: aisandbox-staging-ip attached (value not recorded in tracked docs) — Firewall: TCP 22/80/443 open; 3002/4000/4001/4002/5432/6379 closed externally — Browser SSH succeeded — apt update/upgrade succeeded — Timezone: Asia/Hong_Kong (HKT, +0800) synchronized — Reboot completed — Manual snapshot aisandbox-staging-baseline-2026-07-23 Available — Automatic snapshots enabled — No DNS/TLS/runtime/database/app/migration/env/secret action occurred — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-01-RUNBOOK.md — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-01-CHECKPOINT.md — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED until real app deployment and verification evidence exists — Next recommended action: Register PRIVATE-BETA-STAGING-EXECUTION-02 — Previous stage: PRIVATE-BETA-STAGING-SETUP — Staging / Production-like Deployment Target Setup — COMPLETE and LOCKED — 2026-07-23 — All 4 steps COMPLETE — All 8 child tasks COMPLETE and LOCKED (SETUP-01 through SETUP-08) — Staging setup planning chain complete — provider/domain/runtime/database/env/deployment/migration decisions consolidated — No AWS/server/static IP/DNS/TLS/runtime/deployment/migration action occurred — No staging target is live — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED until real staging target is created and verified — Parent checkpoint: `docs/PRIVATE-BETA-STAGING-SETUP-CHECKPOINT.md` — Previous stage: PRIVATE-BETA-STAGING-SETUP-08 — Migration Readiness / Verification Plan — COMPLETE and LOCKED — 2026-07-23 — All 3 steps COMPLETE — Step 2 verdict PASS — 25 migration files inventoried — migration command `npm run migration:run:prod` confirmed — `migration:revert:prod` NOT FOUND (manual fallback documented) — TypeORM `data-source.ts`: `DATABASE_URL` only, `synchronize: false` — 26 entities mapped — mandatory backup/snapshot/approval gates documented — no migration execution occurred — no DB connection occurred — no backup/snapshot creation occurred — no env file created/opened/edited — no secrets printed/requested/generated — no implementation — Checkpoint: `docs/PRIVATE-BETA-STAGING-SETUP-08-CHECKPOINT.md` — Parent: PRIVATE-BETA-STAGING-SETUP — ACTIVE — Steps 1–2 COMPLETE — Step 3 complete (all 8 child tasks COMPLETE and LOCKED) — SETUP-01 through SETUP-08 all COMPLETE and LOCKED — Next recommended action: Parent PRIVATE-BETA-STAGING-SETUP Step 4 — Final Consolidation / Handoff to PRIVATE-BETA-DEPLOYMENT-READINESS (requires Keith explicit approval) — Previous stage: PRIVATE-BETA-STAGING-SETUP-07 — App Deployment / Health Smoke Plan — COMPLETE and LOCKED — 2026-07-22 — All 3 steps COMPLETE — Step 2 verdict PASS — App deployment / health smoke plan created: docs/PRIVATE-BETA-STAGING-SETUP-07-APP-DEPLOYMENT-HEALTH-SMOKE-PLAN.md — 27 pre-deployment readiness gate checks documented — Service startup order documented — Health endpoints source-verified — All smoke plans documented — Migration boundary documented — Checkpoint: docs/PRIVATE-BETA-STAGING-SETUP-07-CHECKPOINT.md — No deployment occurred — No app/API/browser smoke occurred — No PostgreSQL/Redis action or command occurred — No migration execution occurred — No env file created/opened/edited — No secrets printed/requested/generated — No implementation — Previous stage: PRIVATE-BETA-STAGING-SETUP-06 COMPLETE and LOCKED (2026-07-22) — PRIVATE-BETA-DEPLOYMENT-READINESS BLOCKED / PAUSED after Step 2 — blocker: no staging/production-like target exists — resume Step 3 only after PRIVATE-BETA-STAGING-SETUP completes or produces verified target — Stage-start plan: docs/PRIVATE-BETA-DEPLOYMENT-READINESS-STAGE-START.md — Deployment / Staging Readiness Check — BLOCKED / PAUSED — Steps 1–2 COMPLETE — Step 2 COMPLETE (Stage-start/staging readiness plan — 2026-07-21) — docs/PRIVATE-BETA-DEPLOYMENT-READINESS-STAGE-START.md — Step 3 BLOCKED: no staging target — resumes after PRIVATE-BETA-STAGING-SETUP — no implementation — no source changes — LIMITED-PRIVATE-BETA-HANDOFF — Limited Private Beta Handoff / Checklist — COMPLETE and LOCKED — 2026-07-21 — all 3 steps complete — Checklist: docs/LIMITED-PRIVATE-BETA-HANDOFF-CHECKLIST.md — Checkpoint: docs/LIMITED-PRIVATE-BETA-HANDOFF-CHECKPOINT.md — BETA-READY-MIGRATION-CLI-01 — TypeORM Migration CLI Path Fix — COMPLETE and LOCKED — 2026-07-21 — all 3 steps complete — TINY TOOLING FOLLOW-UP — `"ts-node": "^10.9.2"` added to `devDependencies` in `services/api-gateway/package.json` — `npx typeorm-ts-node-commonjs --help` PASS — `npm run build` PASS — no migration execution — B3 PASS unchanged — Checkpoint: `docs/BETA-READY-MIGRATION-CLI-01-CHECKPOINT.md` — next: limited private beta handoff/checklist — requires Keith explicit approval — BETA-READY-SMOKE — Pre-Beta Full-Stack Live Smoke — COMPLETE and LOCKED — 2026-07-21 — Final verdict PASS — all 4 steps complete — local pre-beta full-stack smoke for bounded RPG/Create Agent MVP path PASS — Checkpoint: `docs/BETA-READY-SMOKE-CHECKPOINT.md` — Stage-start: `docs/BETA-READY-SMOKE-STAGE-START.md` — Execution: `docs/BETA-READY-SMOKE-EXECUTION.md` — migration verified (Keith compiled TypeORM path) — `user_agents` table exists — API Gateway + frontend started — health/guards PASS — Keith browser smoke ALL PASS — Create Agent DB-backed create/list/refresh/detail PASS — no deployment — no public beta launch — AGENT-PLATFORM-CREATE-01B — Create Agent MVP UI — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — Create Agent CTA implemented — inline form implemented — user-created agents list implemented — 28 translation keys per locale — `useUserAgents` hook — mocked `GET /api/agents` and `POST /api/agents` tests passed (641/641 frontend) — TypeScript clean — Build clean — Linter 0 errors — live DB-backed smoke deferred — migration NOT executed — Checkpoint: `docs/AGENT-PLATFORM-CREATE-01B-CHECKPOINT.md` — AGENT-PLATFORM-CREATE-01A — Create Agent Backend Minimal Persistence — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — `UserAgent` entity implemented — `user_agents` migration created (NOT executed) — `POST /api/agents`, `GET /api/agents`, `GET /api/agents/:id` implemented — user ownership/scoping enforced — 30/30 tests PASS — TypeScript clean — Build clean — Checkpoint: `docs/AGENT-PLATFORM-CREATE-01A-CHECKPOINT.md` — B3 remains paused — AGENT-PLATFORM-RPG-03B — Platform Link from Workspace + Auth Guard Review — COMPLETE and LOCKED — 2026-07-20 — all 3 steps complete — workspace/home platform CTA implemented — `/[locale]/platform` auth guard added — manual smoke PASS WITH LIMITATION (unauthenticated redirect PASS; authenticated access smoke deferred) — Checkpoint: `docs/AGENT-PLATFORM-RPG-03B-CHECKPOINT.md` — AGENT-PLATFORM-RPG-03A — Platform Dashboard Visual Identity + Agent Detail Panel — COMPLETE and LOCKED — 2026-07-20 — all 3 steps complete — Checkpoint: `docs/AGENT-PLATFORM-RPG-03A-CHECKPOINT.md` — AGENT-PLATFORM-RPG-MVP-RESET — RPG UX/UI and Agent Creation Beta Readiness Reset — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — B3 remains paused — chosen path: RPG-03A (COMPLETE and LOCKED) → RPG-03B → CREATE-01A → CREATE-01B → BETA-READY-SMOKE — Checkpoint: `docs/AGENT-PLATFORM-RPG-MVP-RESET-CHECKPOINT.md` — BETA-READY-DEPLOYMENT-CONFIG — Production Deployment Configuration — COMPLETE and LOCKED — 2026-07-20 — all 4 steps complete — B2 resolved at documentation/template-readiness level — Checkpoint: `docs/BETA-READY-DEPLOYMENT-CONFIG-CHECKPOINT.md` — B3 pre-beta full-stack live smoke remains pending — requires Keith explicit approval before registration — AGENT-HARNESS-WRITE-CANARY — Agent Harness Write Canary + Production Activation — COMPLETE and LOCKED — 2026-07-20 — all 4 parent steps complete — child A COMPLETE and LOCKED (2026-07-19) — child B COMPLETE and LOCKED (2026-07-20) — first live E2E write canary PASS — safe default remains disabled — no permanent production flag activation — Checkpoint: `docs/AGENT-HARNESS-WRITE-CANARY-CHECKPOINT.md` — BETA-READY-00 blocker B1 resolved at canary-readiness level — BETA-READY-00 — Beta Readiness Checklist — COMPLETE and LOCKED — 2026-07-19 — all 3 steps complete — checklist created (`docs/BETA-READY-00-CHECKLIST.md`) — launch decision: READY FOR LIMITED BETA WITH LIMITATIONS — 15 gates (7 PASS, 8 needs verification) — blockers: B1 (resolved at canary-readiness level; permanent deployment flag activation still separate), B2 (deployment), B3 (pre-beta smoke) — Checkpoint: `docs/BETA-READY-00-CHECKPOINT.md` — ANOMALY-01 COMPLETE and LOCKED — 2026-07-19 — Checkpoint: `docs/ANOMALY-01-CHECKPOINT.md` — BILLING-READY-07 COMPLETE and LOCKED — 2026-07-17 — Outcome B — PASS WITH LIMITATIONS — BILLING-READY-07A COMPLETE and LOCKED — 2026-07-17 — Step 3 rerun PASS (2026-07-19) — BR07A-DEFECT-01 resolved — BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200 COMPLETE and LOCKED — 2026-07-17 — Checkpoint: `docs/BILLING-READY-07A-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-07-CHECKPOINT.md` — Consolidation document: `docs/BILLING-READY-07-CONSOLIDATION-DECISION.md` — BILLING-READY-06 COMPLETE and LOCKED (2026-07-17) — BILLING-READY-06A COMPLETE and LOCKED (2026-07-16) — BILLING-READY-06B COMPLETE and LOCKED (2026-07-17) — Checkpoint: `docs/BILLING-READY-06B-CHECKPOINT.md` — Parent checkpoint: `docs/BILLING-READY-06-CHECKPOINT.md` — AGENT-HARNESS write canary remains a separate track. BILLING-READY-05 COMPLETE and LOCKED (2026-07-16) — all 4 parent steps complete — all child slices 05A–05G COMPLETE and LOCKED — Checkpoint: `docs/BILLING-READY-05-CHECKPOINT.md`. BILLING-READY-05G COMPLETE and LOCKED (2026-07-16) — Checkpoint: `docs/BILLING-READY-05G-CHECKPOINT.md`. BILLING-READY-05F COMPLETE and LOCKED (2026-07-15). Checkpoint: `docs/BILLING-READY-05F-CHECKPOINT.md`. BILLING-READY-05E COMPLETE and LOCKED (2026-07-15). BILLING-READY-05D COMPLETE and LOCKED (2026-07-15). BILLING-READY-05C COMPLETE and LOCKED (2026-07-15). BILLING-READY-05B COMPLETE and LOCKED (2026-07-15). BILLING-READY-05A COMPLETE and LOCKED (2026-07-15). BILLING-READY-04 COMPLETE and LOCKED (2026-07-13). BILLING-READY-03 COMPLETE and LOCKED (2026-07-07). AGENT-HARNESS write canary remains a separate track. BILLING-READY-04C COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X finalization bridge implemented (worker �� `notifyExecutionComplete` �� `/api/internal/executions/:id/finalize-accounting` �� `triggerDeductionForExecution`); 56/56 usage-ledger tests PASS; 6/6 internal-accounting tests PASS; 25/25 api-gateway-http.client tests PASS; 135/135 worker.processor tests PASS; TypeScript clean in both services; linter 0 errors. Checkpoint: `docs/BILLING-READY-04C-CHECKPOINT.md`. BILLING-READY-04B COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X validation-only test slice �X 13/13 integration tests PASS; 37/37 guard unit tests PASS; 68/68 controller tests PASS; 3/3 public-api tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04B-CHECKPOINT.md`. BILLING-READY-04A COMPLETE and LOCKED (2026-07-13) �X all 4 steps complete �X `CreditBalanceGuard` implemented and wired; 24/24 unit tests PASS; 68/68 controller tests PASS; 30/30 integration tests PASS (after test-only validation fix); 31/31 guard integration tests PASS; TypeScript clean. Checkpoint: `docs/BILLING-READY-04A-CHECKPOINT.md`. BILLING-READY-04 COMPLETE and LOCKED (2026-07-13) — all child slices COMPLETE and LOCKED; 04C COMPLETE and LOCKED (2026-07-13); 04D ACTIVE �X Step 1 COMPLETE (Registration). AGENT-HARNESS write canary remains a separate track.
 
 **Registered tasks:**
 1. AGENT-PLATFORM-00 �X ainow.biz Multi-Agent Platform Master Plan (COMPLETE and LOCKED �X 2026-07-04)
@@ -35697,7 +35697,7 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 31. PRIVATE-BETA-STAGING-EXECUTION-01 — Create AWS Lightsail Staging Server + Static IP + Baseline (COMPLETE and LOCKED — 2026-07-23 — All 4 steps COMPLETE — Keith manual execution PASS — aisandbox-staging Running / ap-southeast-1 / Ubuntu 24.04.4 LTS — Static IP attached — Firewall 22/80/443 open; internal ports closed — snapshot aisandbox-staging-baseline-2026-07-23 Available — auto-snapshots enabled — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-01-RUNBOOK.md — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-01-CHECKPOINT.md)
 32. PRIVATE-BETA-STAGING-EXECUTION-02 — Runtime Installation Baseline (COMPLETE and LOCKED — 2026-07-24 — All 4 steps COMPLETE — Keith manual execution PASS — Node.js v20.20.2 — npm 10.8.2 — Docker Engine 29.6.2 — Docker Compose v5.3.1 — PM2 7.0.3 — Caddy v2.11.4 — Snapshot aisandbox-staging-runtime-2026-07-24 Available — No app deployed / No DB / No Redis / No DNS / No TLS / No repo / No .env — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-02-CHECKPOINT.md)
 32b. PRIVATE-BETA-STAGING-EXECUTION-03 — PostgreSQL + Redis Installation Baseline (COMPLETE and LOCKED — 2026-07-24 — All 4 steps COMPLETE — Evidence verdict: PASS WITH VERSION DEVIATION — PostgreSQL 15.18 installed from PGDG APT noble channel — PostgreSQL 15/main cluster online on localhost 127.0.0.1:5432 only — aisandbox database/user created — DB password set privately and not disclosed — Redis 8.8.0 installed from official Redis APT repo — Redis target was 7.x — Redis version deviation recorded — compatibility guardrail required before app deployment — Redis active/running — bound to 127.0.0.1/::1 only — protected-mode yes — requirepass configured and redacted — unauthenticated ping blocked — authenticated ping passed — Redis password set privately and not disclosed — Lightsail firewall remains 22/80/443 only — ports 5432/6379 closed externally — No repo / No .env / No app / No migration / No DNS / No TLS — Snapshot aisandbox-staging-db-redis-2026-07-24 Available — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-03-DB-REDIS-INSTALL-RUNBOOK.md — Evidence review: docs/PRIVATE-BETA-STAGING-EXECUTION-03-EVIDENCE-REVIEW.md — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-03-DB-REDIS-CHECKPOINT.md — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next: PRIVATE-BETA-STAGING-EXECUTION-04 — ACTIVE — Step 1 COMPLETE (Registration — 2026-07-25))
-32c. PRIVATE-BETA-STAGING-EXECUTION-04 — Repo Clone + Private Env Preparation + App Deployment Baseline (ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — 4-step workflow — Manual execution split into bounded child slices: 04A COMPLETE and LOCKED (2026-07-25), 04B COMPLETE and LOCKED (2026-07-26), 04C COMPLETE and LOCKED (2026-07-26), 04D PENDING registration / next — Full app deployment still not complete — Predecessor: PRIVATE-BETA-STAGING-EXECUTION-03 COMPLETE and LOCKED — 2026-07-24 — PostgreSQL 15.18 online on localhost 127.0.0.1:5432 only — Redis 8.8.0 online on 127.0.0.1/::1 only — credentials private — ports 5432/6379 closed externally — Snapshots through pre-install Available — Repo cloned /opt/aisandbox — owner ubuntu:ubuntu — branch main — VPS commit 3da1b7c — /opt/aisandbox/.env created privately — 47 required non-Google keys present — Google OAuth deferred — Dependencies installed (npm ci PASS) — Builds PASS (api-gateway/ai-service/container-manager/frontend) — Generated artifacts present — No app services — No migrations — No DNS / No TLS — Credential safety: Keith keeps DB/Redis passwords privately; no paste of .env/DATABASE_URL/REDIS_URL/provider keys — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next action: EXECUTION-04D — PM2 Service Start + Health-Only Smoke — PENDING registration)
+32c. PRIVATE-BETA-STAGING-EXECUTION-04 — Repo Clone + Private Env Preparation + App Deployment Baseline (ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — 4-step workflow — Manual execution split into bounded child slices: 04A COMPLETE and LOCKED (2026-07-25), 04B COMPLETE and LOCKED (2026-07-26), 04C COMPLETE and LOCKED (2026-07-26), 04D ACTIVE / BLOCKED by 04D1 — Full app deployment still not complete — Predecessor: PRIVATE-BETA-STAGING-EXECUTION-03 COMPLETE and LOCKED — 2026-07-24 — PostgreSQL 15.18 online on localhost 127.0.0.1:5432 only — Redis 8.8.0 online on 127.0.0.1/::1 only — credentials private — ports 5432/6379 closed externally — Snapshots through pre-install Available — Repo cloned /opt/aisandbox — owner ubuntu:ubuntu — branch main — VPS commit 3da1b7c — /opt/aisandbox/.env created privately — 47 required non-Google keys present — Google OAuth deferred — Dependencies installed (npm ci PASS) — Builds PASS (api-gateway/ai-service/container-manager/frontend) — Generated artifacts present — 04D PM2 health smoke paused — API Gateway restart loop due compiled SQLite path → services/database missing — No migrations — No DNS / No TLS — Credential safety: Keith keeps DB/Redis passwords privately; no paste of .env/DATABASE_URL/REDIS_URL/provider keys — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next action: PRIVATE-BETA-STAGING-EXECUTION-04D1 Step 3 — Local validation/evidence review)
 32d. PRIVATE-BETA-STAGING-EXECUTION-04A — Redis Gate + Repo Clone Baseline (COMPLETE and LOCKED — 2026-07-25 — All 4 steps COMPLETE — Evidence verdict: PASS — All 45 checks passed — No deviations — No warnings — No stop conditions — Redis Gate Outcome A accepted — Static assessment LIKELY COMPATIBLE — ioredis v5 / BullMQ v5 / Redis 8.8.0 satisfy compatibility conditions — Repo cloned to /opt/aisandbox — owner ubuntu:ubuntu — branch main — latest commit c55a278 Register staging execution 04A repo clone baseline — git status clean — services/ai-service, api-gateway, container-manager, governance, frontend all present — No .env created — No dependencies installed — No build run — No app services started — No migrations run — No DNS/TLS configured — No secrets disclosed — Snapshot aisandbox-staging-preclone-2026-07-25 Available — All 4 snapshots Available — PostgreSQL active/local-only — Redis active/local-only/protected-mode/requirepass — Firewall 22/80/443 only — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04A-CHECKPOINT.md — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next child: PRIVATE-BETA-STAGING-EXECUTION-04B — Private Env Preparation)
 32e. PRIVATE-BETA-STAGING-EXECUTION-04B — Private Env Preparation (COMPLETE and LOCKED — 2026-07-26 — All 4 steps COMPLETE — Evidence review verdict PASS — Step 1 Registration complete — Step 2 Runbook complete — Google OAuth decision complete and locked (Outcome B) — Step 3 Evidence review complete — verdict PASS — Step 4 Consolidation/checkpoint complete — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md — Pre-env snapshot aisandbox-staging-postclone-preenv-2026-07-26 Available — /opt/aisandbox/.env created privately — owner ubuntu:ubuntu — chmod 600 — 47 required non-Google keys present — Google OAuth deferred / omitted intentionally — no fake placeholders — email/password intended staging auth path — all kill switches false — no dependency install — no build — no app services started — no migrations — no DNS/TLS — no secrets disclosed — PostgreSQL warning non-blocking — stop conditions none — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next child: PRIVATE-BETA-STAGING-EXECUTION-04C — ACTIVE)
 32f. PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION — Staging Google OAuth Requirement Decision (COMPLETE and LOCKED — 2026-07-26 — All 3 steps COMPLETE — Outcome B — Google OAuth can be deferred — Decision report: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION-REPORT.md — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION-CHECKPOINT.md — 04B runbook amended — no source code changed — no env files opened/created/edited — no env values printed — no secrets disclosed)
@@ -35705,6 +35705,8 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 32h. PRIVATE-BETA-STAGING-EXECUTION-04C-PACKAGE-MANAGER-DECISION — Package Manager / Lockfile Decision (COMPLETE and LOCKED — 2026-07-26 — Outcome E — Source unclear — Report: docs/PRIVATE-BETA-STAGING-EXECUTION-04C-PACKAGE-MANAGER-DECISION-REPORT.md — superseded for policy choice by 04C-PACKAGE-MANAGER-POLICY Outcome A)
 32i. PRIVATE-BETA-STAGING-EXECUTION-04C-PACKAGE-MANAGER-POLICY — Package Manager Policy Registration + Decision (COMPLETE and LOCKED — 2026-07-27 — Outcome A — npm policy with tracked lockfile — Official staging package manager: npm — packageManager=bun@1.x treated as local-dev only — root package-lock.json must be tracked — Policy: docs/PRIVATE-BETA-STAGING-EXECUTION-04C-PACKAGE-MANAGER-POLICY.md — Outcome A applied; 04C subsequently COMPLETE and LOCKED — 2026-07-26 — No secrets disclosed — No subagents)
 32j. PRIVATE-BETA-STAGING-EXECUTION-04C-NPM-LOCKFILE-TRACKING — Track/Refresh Root package-lock.json for Staging npm ci (COMPLETE — Outcome A implemented locally and pushed to main — .gitignore allows root package-lock.json via !/package-lock.json — root package-lock.json refreshed — lockfileVersion 3 — workspaces present — VPS synced to 3da1b7c — 04C install/build subsequently PASS — Checkpoint handoff via docs/PRIVATE-BETA-STAGING-EXECUTION-04C-CHECKPOINT.md)
+32k. PRIVATE-BETA-STAGING-EXECUTION-04D — PM2 Service Start + Health-Only Smoke (ACTIVE / BLOCKED by 04D1 — 2026-07-27 — Parent: PRIVATE-BETA-STAGING-EXECUTION-04 — Child slice 4 of 4 — Manual PM2 start attempted — API Gateway entered restart loop (restart count 150 / CPU 100%) and was stopped manually — AI Service, Container Manager, and Frontend had started — 04D health smoke paused — No health smoke completion yet — Blocker: ReconciliationService opens SQLite under missing services/database (compiled __dirname depth) — DB table count 0 — No migrations / No DNS/TLS / No billing/payment/AI/container execution — No secrets disclosed — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-PM2-HEALTH-SMOKE-RUNBOOK.md — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next: PRIVATE-BETA-STAGING-EXECUTION-04D1 Step 3 — Local validation/evidence review)
+32l. PRIVATE-BETA-STAGING-EXECUTION-04D1 — API Gateway Reconciliation SQLite Runtime Path Fix (ACTIVE — Step 2 COMPLETE (Implementation — 2026-07-27) — Parent: PRIVATE-BETA-STAGING-EXECUTION-04D — Tiny blocker child slice — Fix: shared prepareSqliteDatabasePath() resolves repo-root database/aisandbox.db from cwd walk (not compiled __dirname) and mkdirSync parent before better-sqlite3 open — Updated ReconciliationService / AdminService / InvoicesService — Tests 6/6 PASS — api-gateway build PASS — No .env / No migrations / No Docker/PostgreSQL/Redis / No server/SSH — No git commit/push — Next: Step 3 — Local validation/evidence review — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED)
 33. LOCAL-PRIVATE-BETA-READINESS-01 — Local Machine Rebaseline + Private Beta Gap Review (COMPLETE and LOCKED — 2026-07-23 — All 3 steps COMPLETE — Verdict: BLOCKED for private-beta progression — P0: authenticated /api/ai/execute returned 402 not kill-switch 503 — Checkpoint: docs/LOCAL-PRIVATE-BETA-READINESS-01-CHECKPOINT.md — Step 2 report: docs/LOCAL-PRIVATE-BETA-READINESS-01-LOCAL-REBASELINE-REPORT.md — Next: LOCAL-PRIVATE-BETA-READINESS-01-FIX-EXECUTION-KILLSWITCH-LOCAL — ACTIVE)
 34. LOCAL-PRIVATE-BETA-READINESS-01-FIX-EXECUTION-KILLSWITCH-LOCAL — Fix Authenticated Execution Kill Switch — Local Private Beta P0 Fix (COMPLETE and LOCKED — 2026-07-23 — All 3 steps COMPLETE — PASS — P0 blocker fixed: authenticated POST /api/ai/execute now returns 503 (not 402) — GLOBAL_EXECUTION_ENABLED default changed to fail-safe opt-in — kill-switch fires before quota/payment/provider/container logic — 129/129 targeted tests PASS — /api/health/ready 200 — Checkpoint: docs/LOCAL-PRIVATE-BETA-READINESS-01-FIX-EXECUTION-KILLSWITCH-LOCAL-CHECKPOINT.md — Next: LOCAL-PRIVATE-BETA-READINESS-02 — ACTIVE — Step 1 COMPLETE (Registration — 2026-07-23))
 35. LOCAL-PRIVATE-BETA-READINESS-02 — Local Runtime Services Health Validation (PAUSED / PARTIALLY COMPLETE — 2026-07-23 — Container Manager local health PASS (GET http://localhost:4002/api/health 200); AI Service local runtime unresolved due staging parity decision — reason: local Windows env mismatch not equivalent to future staging environment — superseded by cloud staging resumption — Checkpoint: docs/LOCAL-TO-STAGING-PARITY-PIVOT-CHECKPOINT.md)
@@ -36513,7 +36515,7 @@ Redis target in the runbook was Redis 7.x. The official Redis APT repository ins
 **LOCAL-PRIVATE-BETA-READINESS-02 status:** PAUSED / PARTIALLY COMPLETE — 2026-07-23.
 **LOCAL-PRIVATE-BETA-READINESS-02-FIX-AI-SERVICE-REDIS-ENV-LOCAL status:** PAUSED / SUPERSEDED by staging-environment parity decision.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next task:** PRIVATE-BETA-STAGING-EXECUTION-04D — PM2 Service Start + Health-Only Smoke (PENDING registration). EXECUTION-04C COMPLETE and LOCKED — 2026-07-26 — Evidence verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04C-CHECKPOINT.md. EXECUTION-04B COMPLETE and LOCKED — 2026-07-26. EXECUTION-04A COMPLETE and LOCKED — 2026-07-25. EXECUTION-04 remains ACTIVE — child 04A COMPLETE and LOCKED — child 04B COMPLETE and LOCKED — child 04C COMPLETE and LOCKED — remaining child: 04D. See PRIVATE-BETA-STAGING-EXECUTION-04C section below.
+**Next task:** PRIVATE-BETA-STAGING-EXECUTION-04D1 — API Gateway Reconciliation SQLite Runtime Path Fix (ACTIVE — Step 2 COMPLETE (Implementation — 2026-07-27)). EXECUTION-04D ACTIVE / BLOCKED by 04D1 — PM2 health smoke paused. EXECUTION-04C COMPLETE and LOCKED — 2026-07-26 — Evidence verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04C-CHECKPOINT.md. EXECUTION-04B COMPLETE and LOCKED — 2026-07-26. EXECUTION-04A COMPLETE and LOCKED — 2026-07-25. EXECUTION-04 remains ACTIVE — child 04A COMPLETE and LOCKED — child 04B COMPLETE and LOCKED — child 04C COMPLETE and LOCKED — child 04D ACTIVE / BLOCKED by 04D1. See PRIVATE-BETA-STAGING-EXECUTION-04D1 section below.
 
 **Reference:** Predecessor: PRIVATE-BETA-STAGING-EXECUTION-02. Checkpoint (predecessor): `docs/PRIVATE-BETA-STAGING-EXECUTION-02-CHECKPOINT.md`. Checkpoint (this task): `docs/PRIVATE-BETA-STAGING-EXECUTION-03-DB-REDIS-CHECKPOINT.md`. DB/Redis plan: `docs/PRIVATE-BETA-STAGING-SETUP-06-DB-REDIS-PLAN.md`. Pivot checkpoint: `docs/LOCAL-TO-STAGING-PARITY-PIVOT-CHECKPOINT.md`.
 
@@ -36615,7 +36617,8 @@ SPLIT ACTIVATED — 2026-07-25. The Step 2 runbook (docs/PRIVATE-BETA-STAGING-EX
 - PRIVATE-BETA-STAGING-EXECUTION-04A — Redis Gate + Repo Clone Baseline (COMPLETE and LOCKED — 2026-07-25 — All 4 steps COMPLETE — Evidence verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04A-CHECKPOINT.md)
 - PRIVATE-BETA-STAGING-EXECUTION-04B — Private Env Preparation (COMPLETE and LOCKED — 2026-07-26 — All 4 steps COMPLETE — Evidence review verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md)
 - PRIVATE-BETA-STAGING-EXECUTION-04C — Dependency Install + Build (COMPLETE and LOCKED — 2026-07-26 — All steps COMPLETE — Evidence review verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04C-CHECKPOINT.md)
-- PRIVATE-BETA-STAGING-EXECUTION-04D — PM2 Service Start + Health-Only Smoke (PENDING registration / next)
+- PRIVATE-BETA-STAGING-EXECUTION-04D — PM2 Service Start + Health-Only Smoke (ACTIVE / BLOCKED by 04D1 — 2026-07-27 — PM2 health smoke paused)
+- PRIVATE-BETA-STAGING-EXECUTION-04D1 — API Gateway Reconciliation SQLite Runtime Path Fix (ACTIVE — Step 2 COMPLETE (Implementation — 2026-07-27))
 
 #### Non-Goals
 
@@ -36707,18 +36710,20 @@ Redis 8.8.0 compatibility static assessment: LIKELY COMPATIBLE — ioredis ^5.3.
 - [ ] TASKS.md updated. TASKS_BACKLOG_FULL.md updated. Roadmap updated.
 - [ ] PRIVATE-BETA-STAGING-EXECUTION-05 registered or deferred.
 
-**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — Child 04A COMPLETE and LOCKED (2026-07-25) — Child 04B COMPLETE and LOCKED (2026-07-26) — Child 04C COMPLETE and LOCKED (2026-07-26) — Full app deployment still not complete — Remaining child: 04D pending / next — Manual execution split into child slices (04A/04B/04C/04D).
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — Child 04A COMPLETE and LOCKED (2026-07-25) — Child 04B COMPLETE and LOCKED (2026-07-26) — Child 04C COMPLETE and LOCKED (2026-07-26) — Child 04D ACTIVE / BLOCKED by 04D1 — Full app deployment still not complete — Manual execution split into child slices (04A/04B/04C/04D) — Blocker child 04D1 ACTIVE.
 **PRIVATE-BETA-STAGING-EXECUTION-04A status:** COMPLETE and LOCKED — 2026-07-25 — All 4 steps COMPLETE — Evidence verdict: PASS — Redis Gate Outcome A accepted — Repo cloned /opt/aisandbox — owner ubuntu:ubuntu — branch main — commit c55a278 — git status clean — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04A-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04B status:** COMPLETE and LOCKED — 2026-07-26 — All 4 steps COMPLETE — Evidence review verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md — /opt/aisandbox/.env created privately — owner ubuntu:ubuntu — chmod 600 — 47 required non-Google keys present — Google OAuth deferred / omitted intentionally — no fake placeholders — all kill switches false — no dependency install / build / app services / migrations / DNS/TLS — no secrets disclosed.
 **PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION status:** COMPLETE and LOCKED — 2026-07-26 — Outcome B — Google OAuth can be deferred — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04C status:** COMPLETE and LOCKED — 2026-07-26 — All steps COMPLETE — Evidence review verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04C-CHECKPOINT.md — npm ci PASS — all four builds PASS — generated artifacts present — no services / migrations / DNS/TLS — no secrets disclosed.
+**PRIVATE-BETA-STAGING-EXECUTION-04D status:** ACTIVE / BLOCKED by 04D1 — Manual PM2 health smoke paused (2026-07-27).
+**PRIVATE-BETA-STAGING-EXECUTION-04D1 status:** ACTIVE — Step 2 COMPLETE (Implementation — 2026-07-27).
 **PRIVATE-BETA-STAGING-EXECUTION-03 status:** COMPLETE and LOCKED — 2026-07-24.
 **PRIVATE-BETA-STAGING-EXECUTION-02 status:** COMPLETE and LOCKED — 2026-07-24.
 **PRIVATE-BETA-STAGING-EXECUTION-01 status:** COMPLETE and LOCKED — 2026-07-23.
 **LOCAL-PRIVATE-BETA-READINESS-02 status:** PAUSED / PARTIALLY COMPLETE — 2026-07-23.
 **LOCAL-PRIVATE-BETA-READINESS-02-FIX-AI-SERVICE-REDIS-ENV-LOCAL status:** PAUSED / SUPERSEDED by staging-environment parity decision.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04D — PM2 Service Start + Health-Only Smoke — PENDING registration.
+**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04D1 Step 3 — Local validation/evidence review.
 
 ---
 
@@ -36981,7 +36986,7 @@ Every server command section must clearly say: Run inside AWS Lightsail browser 
 **PRIVATE-BETA-STAGING-EXECUTION-02 status:** COMPLETE and LOCKED — 2026-07-24.
 **PRIVATE-BETA-STAGING-EXECUTION-01 status:** COMPLETE and LOCKED — 2026-07-23.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04D — PM2 Service Start + Health-Only Smoke — PENDING registration.
+**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04D Step 2 — PM2 Service Start + Health-Only Smoke Runbook.
 
 ---
 
@@ -37267,7 +37272,7 @@ The 04B runbook must instruct Keith to stop and report if:
 **PRIVATE-BETA-STAGING-EXECUTION-02 status:** COMPLETE and LOCKED — 2026-07-24.
 **PRIVATE-BETA-STAGING-EXECUTION-01 status:** COMPLETE and LOCKED — 2026-07-23.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04D — PM2 Service Start + Health-Only Smoke — PENDING registration.
+**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04D Step 2 — PM2 Service Start + Health-Only Smoke Runbook.
 
 ---
 
@@ -37634,9 +37639,9 @@ The runbook should include:
 **PRIVATE-BETA-STAGING-EXECUTION-04B status:** COMPLETE and LOCKED — 2026-07-26 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION status:** COMPLETE and LOCKED — 2026-07-26 — Outcome B.
 **PRIVATE-BETA-STAGING-EXECUTION-04A status:** COMPLETE and LOCKED — 2026-07-25 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04A-CHECKPOINT.md.
-**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A COMPLETE and LOCKED — 04B COMPLETE and LOCKED — 04C COMPLETE and LOCKED — 04D PENDING / next — Full app deployment still not complete.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A COMPLETE and LOCKED — 04B COMPLETE and LOCKED — 04C COMPLETE and LOCKED — 04D ACTIVE — Step 1 COMPLETE (Registration — 2026-07-26) — Full app deployment still not complete.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04D — PM2 Service Start + Health-Only Smoke — PENDING registration.
+**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04D Step 2 — PM2 Service Start + Health-Only Smoke Runbook.
 
 ---
 
@@ -37676,7 +37681,7 @@ The runbook should include:
 - [x] TASKS.md / TASKS_BACKLOG_FULL.md / roadmap updated
 
 **PRIVATE-BETA-STAGING-EXECUTION-04C-PACKAGE-MANAGER-POLICY status:** COMPLETE and LOCKED — 2026-07-27 — Outcome A.
-**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04D — PM2 Service Start + Health-Only Smoke — PENDING registration (04C COMPLETE and LOCKED — 2026-07-26).
+**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04D Step 2 — PM2 Service Start + Health-Only Smoke Runbook (04C COMPLETE and LOCKED — 2026-07-26).
 
 ---
 
@@ -37702,7 +37707,466 @@ The runbook should include:
 6. `packageManager=bun@1.x` left unchanged — treated as local-dev only for staging until separately changed.
 
 **PRIVATE-BETA-STAGING-EXECUTION-04C-NPM-LOCKFILE-TRACKING status:** COMPLETE — Outcome A implemented locally and pushed to main — VPS synced to `3da1b7c` — 04C install/build subsequently PASS.
-**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04D — PM2 Service Start + Health-Only Smoke — PENDING registration.
+**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04D Step 2 — PM2 Service Start + Health-Only Smoke Runbook.
+
+---
+
+### PRIVATE-BETA-STAGING-EXECUTION-04D: PM2 Service Start + Health-Only Smoke
+
+**Status:** ACTIVE / BLOCKED by 04D1 — Manual PM2 health smoke paused (2026-07-27)
+**Task ID:** PRIVATE-BETA-STAGING-EXECUTION-04D
+**Family:** PRIVATE BETA / STAGING EXECUTION
+**Priority:** CRITICAL
+**Nature:** REAL STAGING EXECUTION — PM2 service start + health-only smoke on Lightsail instance
+**Risk:** HIGH — first app process start on production-like staging VPS; secret-bearing runtime env; migration/DNS/TLS/paid-execution stop conditions
+**Registered:** 2026-07-26
+**Parent:** PRIVATE-BETA-STAGING-EXECUTION-04
+**Child slice:** 4 of 4 of EXECUTION-04 manual execution split
+**Blocker child:** PRIVATE-BETA-STAGING-EXECUTION-04D1 — ACTIVE — Step 2 COMPLETE (Implementation — 2026-07-27)
+**Runbook:** docs/PRIVATE-BETA-STAGING-EXECUTION-04D-PM2-HEALTH-SMOKE-RUNBOOK.md
+**Future snapshot recommendation:** aisandbox-staging-prepm2-health-2026-07-26
+
+#### Purpose
+
+Start the built staging app services under PM2 and perform health-only smoke checks on the staging VPS.
+
+The task must remain bounded to:
+
+* PM2 service start
+* PM2 process verification
+* local-only health smoke
+* safe logs only
+* no migrations
+* no DNS/TLS
+* no paid execution enablement
+* no secret output
+
+#### Current Blocker — 04D1
+
+Manual PM2 execution during 04D hit an API Gateway startup blocker. 04D remains ACTIVE but is BLOCKED by PRIVATE-BETA-STAGING-EXECUTION-04D1 until the Reconciliation SQLite runtime path fix ships and Keith can resume PM2 health smoke.
+
+Safe Keith evidence (2026-07-27):
+
+```text
+During 04D manual PM2 start, API Gateway failed to start correctly.
+
+PM2 observation:
+- aisandbox-api-gateway entered restart loop.
+- Restart count reached 150.
+- CPU reached 100%.
+- API Gateway was stopped manually.
+- AI Service, Container Manager, and Frontend had started, but 04D health smoke was stopped.
+
+Safe log summary:
+- Error: Cannot open database because the directory does not exist.
+- Error source: better-sqlite3.
+- Stack points to ReconciliationService constructor.
+- Source path: services/api-gateway/src/admin/reconciliation.service.ts:38.
+- Source constructs SQLite path:
+  path.join(__dirname, '../../../..', 'database', 'aisandbox.db')
+- The expected runtime directory /opt/aisandbox/database does not exist.
+- Database public table count remained 0.
+- No migrations were run.
+- No DNS/TLS was configured.
+- No secrets were printed.
+```
+
+#### Authoritative Predecessor State
+
+* PRIVATE-BETA-STAGING-EXECUTION-04A is COMPLETE and LOCKED — 2026-07-25.
+* PRIVATE-BETA-STAGING-EXECUTION-04B is COMPLETE and LOCKED — 2026-07-26.
+* PRIVATE-BETA-STAGING-EXECUTION-04C is COMPLETE and LOCKED — 2026-07-26.
+* PRIVATE-BETA-STAGING-EXECUTION-04 remains ACTIVE.
+* PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.
+
+#### 04C Final State Inherited for 04D
+
+* VPS repo path: `/opt/aisandbox`
+* VPS repo commit after sync: `3da1b7c Implement staging npm lockfile policy`
+* Root `package-lock.json` present on VPS.
+* Dependencies installed successfully with root `npm ci`.
+* `NPM_CI_EXIT=0`
+* Generated dependency state: `ROOT_NODE_MODULES=yes`
+* Builds completed successfully:
+  * API Gateway: `API_GATEWAY_BUILD_EXIT=0`
+  * AI Service: `AI_SERVICE_BUILD_EXIT=0`
+  * Container Manager: `CONTAINER_MANAGER_BUILD_EXIT=0`
+  * Frontend: `FRONTEND_BUILD_EXIT=0`
+* Generated artifacts present:
+  * `services/api-gateway/dist`
+  * `services/ai-service/dist`
+  * `services/container-manager/dist`
+  * `frontend/.next`
+* `/opt/aisandbox/.env` exists privately.
+* `.env` owner/mode: `ubuntu ubuntu 600 /opt/aisandbox/.env`
+* `.env` values were not printed.
+* Google OAuth remains deferred.
+* `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `GOOGLE_CALLBACK_URL` intentionally omitted.
+* No fake Google OAuth placeholders.
+* PM2 app list remained empty after 04C.
+* App systemd services remained inactive after 04C.
+* Database public table count remained `0`.
+* No DNS/TLS configured.
+* No billing/payment/AI/container execution enabled.
+* No secrets disclosed.
+
+#### Scope
+
+04D may include, in later runbook/manual execution steps:
+
+1. Verify 04C final state.
+2. Verify `/opt/aisandbox/.env` exists with `600` without printing values.
+3. Verify Google OAuth remains deferred.
+4. Verify PostgreSQL and Redis baselines are active/local-only if needed for app startup.
+5. Start only the approved app services under PM2.
+6. Verify PM2 process status.
+7. Run local health-only smoke checks.
+8. Capture safe logs/summaries only.
+9. Confirm no migrations ran.
+10. Confirm database table count remains `0` unless a later explicit migration task changes this.
+11. Confirm no DNS/TLS configured.
+12. Confirm no billing/payment/AI/container execution enabled.
+13. Confirm no secrets printed.
+
+#### Explicit Non-Goals
+
+04D must not:
+
+* Run database migrations
+* Create database tables
+* Configure DNS A records
+* Configure TLS / Caddy site routes / certificates
+* Enable real AI provider calls
+* Enable billing/payment execution
+* Enable container execution
+* Enable Google OAuth
+* Print `.env`
+* Print `DATABASE_URL`
+* Print `REDIS_URL`
+* Print passwords, keys, tokens, or OAuth secrets
+* Modify source code
+* Install dependencies
+* Build app again unless the future runbook explicitly needs a verification-only rebuild, which should be avoided
+* Commit or push git
+* Mark PRIVATE-BETA-DEPLOYMENT-READINESS ready
+
+#### Secret Safety Requirements
+
+* Commands must be run inside AWS Lightsail browser SSH only, not PowerShell.
+* `/opt/aisandbox/.env` may be used by app processes as runtime input, but must never be printed.
+* Do not run `cat /opt/aisandbox/.env`.
+* Do not echo secret env values.
+* Do not paste PM2 logs if they contain secrets.
+* If logs show secrets, stop immediately and rotate exposed secrets.
+* If startup triggers migrations, stop.
+* If startup creates database tables, stop and report.
+* If startup attempts DNS/TLS configuration, stop.
+* If startup enables billing/payment/AI/container execution, stop.
+* If app services fail to start, capture only safe error summaries.
+* Health smoke must be local-only until a later DNS/TLS/public smoke task.
+
+#### Health-Only Smoke Boundaries
+
+* Health smoke should use localhost endpoints only unless a later task explicitly approves public URL/DNS/TLS checks.
+* Health smoke should avoid auth flows that require secret values.
+* Health smoke should avoid actions that create data, trigger AI calls, run containers, charge money, send emails, or use provider APIs.
+* Health smoke should prefer safe endpoints such as service health/readiness endpoints if available.
+* If health checks require database migrations, stop and report instead of running migrations.
+
+#### Future Snapshot Recommendation
+
+The future 04D runbook should recommend creating a pre-PM2-start snapshot before starting app services.
+
+Recommended snapshot name: `aisandbox-staging-prepm2-health-2026-07-26`
+
+Do not create it during registration.
+
+#### Future Step 2 Runbook File
+
+Future Step 2 should create:
+
+`docs/PRIVATE-BETA-STAGING-EXECUTION-04D-PM2-HEALTH-SMOKE-RUNBOOK.md`
+
+The runbook should include:
+
+1. Task identity
+2. Purpose
+3. What 04D does
+4. What 04D does not do
+5. Preconditions from 04A/04B/04C
+6. Lightsail browser SSH instruction
+7. Secret safety rules
+8. Pre-PM2-start snapshot recommendation
+9. Repo/build/artifact verification
+10. `.env` existence and permission verification without printing values
+11. Google OAuth deferred verification
+12. PostgreSQL/Redis local service readiness checks
+13. PM2 startup command discovery
+14. PM2 start command selection
+15. Safe PM2 service start
+16. PM2 status verification
+17. Local health-only smoke checks
+18. Safe log capture
+19. Confirm no migrations
+20. Confirm no DNS/TLS
+21. Confirm no billing/payment/AI/container execution enablement
+22. Confirm no secrets printed
+23. Stop conditions
+24. Expected final state
+25. Safe evidence template
+26. Exact next action
+
+#### 4-Step Workflow
+
+1. **Step 1: Registration** — COMPLETE (2026-07-26) — Governance only. No server action. No source changes. No env files opened/created. No PM2 start. No health smoke. No subagents.
+2. **Step 2: PM2 Service Start + Health-Only Smoke Runbook** — PENDING — Create runbook only: `docs/PRIVATE-BETA-STAGING-EXECUTION-04D-PM2-HEALTH-SMOKE-RUNBOOK.md`.
+3. **Step 3: Manual Execution + Evidence Review** — PENDING — Keith manual execution inside AWS Lightsail browser SSH, followed by evidence review.
+4. **Step 4: Consolidation / Checkpoint** — PENDING — Mark 04D COMPLETE and LOCKED if evidence passes.
+
+#### Acceptance Criteria
+
+###### Step 1 (Registration — COMPLETE 2026-07-26)
+- [x] 04D registered.
+- [x] 04D status set to ACTIVE — Step 1 COMPLETE (Registration — 2026-07-26).
+- [x] 04A COMPLETE and LOCKED state carried forward.
+- [x] 04B COMPLETE and LOCKED state carried forward.
+- [x] 04C COMPLETE and LOCKED state carried forward.
+- [x] 04D scope limited to PM2 service start + health-only smoke.
+- [x] 04D non-goals recorded.
+- [x] 04D workflow recorded.
+- [x] Future runbook file path recorded.
+- [x] Future snapshot recommendation recorded.
+- [x] Secret safety requirements recorded.
+- [x] Health-only smoke boundaries recorded.
+- [x] Parent 04 remains ACTIVE.
+- [x] PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.
+- [x] TASKS.md updated.
+- [x] TASKS_BACKLOG_FULL.md updated.
+- [x] Roadmap updated.
+- [x] No source code changed.
+- [x] No env files opened/created/edited.
+- [x] No env values opened/printed.
+- [x] No local runtime/test/build action occurred.
+- [x] No server/SSH/AWS/DNS/TLS action occurred.
+- [x] No Docker/PostgreSQL/Redis action occurred.
+- [x] No git commit or push occurred.
+- [x] No subagents used.
+
+###### Step 2 — PENDING
+- [ ] Runbook `docs/PRIVATE-BETA-STAGING-EXECUTION-04D-PM2-HEALTH-SMOKE-RUNBOOK.md` created.
+
+###### Step 3 — PENDING
+- [ ] Keith manual PM2 start + health-only smoke evidence reviewed.
+- [ ] Evidence review report created.
+- [ ] Pre-PM2-start snapshot Available (recommended name: `aisandbox-staging-prepm2-health-2026-07-26`).
+- [ ] PM2 process status verified safely.
+- [ ] Local health-only smoke completed within recorded boundaries.
+- [ ] No migrations / no DNS/TLS / no billing/payment/AI/container execution enablement confirmed.
+- [ ] No secrets disclosed.
+
+###### Step 4 — PENDING
+- [ ] PRIVATE-BETA-STAGING-EXECUTION-04D checkpoint created.
+- [ ] PRIVATE-BETA-STAGING-EXECUTION-04D marked COMPLETE and LOCKED if evidence passes.
+- [ ] TASKS.md updated. TASKS_BACKLOG_FULL.md updated. Roadmap updated.
+- [ ] Parent 04 remains ACTIVE until remaining parent Step 3/4 complete.
+- [ ] PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.
+
+**PRIVATE-BETA-STAGING-EXECUTION-04D status:** ACTIVE / BLOCKED by 04D1 — Manual PM2 health smoke paused (2026-07-27) — No health smoke completion yet — API Gateway restart loop due missing SQLite database directory (compiled path → services/database).
+**PRIVATE-BETA-STAGING-EXECUTION-04D1 status:** ACTIVE — Step 2 COMPLETE (Implementation — 2026-07-27).
+**PRIVATE-BETA-STAGING-EXECUTION-04C status:** COMPLETE and LOCKED — 2026-07-26 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04C-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04B status:** COMPLETE and LOCKED — 2026-07-26 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04A status:** COMPLETE and LOCKED — 2026-07-25 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04A-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A COMPLETE and LOCKED — 04B COMPLETE and LOCKED — 04C COMPLETE and LOCKED — 04D ACTIVE / BLOCKED by 04D1 — Full app deployment still not complete.
+**PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
+**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04D1 Step 3 — Local validation/evidence review.
+
+---
+
+### PRIVATE-BETA-STAGING-EXECUTION-04D1: API Gateway Reconciliation SQLite Runtime Path Fix
+
+**Status:** ACTIVE — Step 2 COMPLETE (Implementation — 2026-07-27)
+**Task ID:** PRIVATE-BETA-STAGING-EXECUTION-04D1
+**Title:** API Gateway Reconciliation SQLite Runtime Path Fix
+**Family:** PRIVATE BETA / STAGING EXECUTION
+**Priority:** CRITICAL BLOCKER
+**Nature:** TINY BLOCKER SOURCE FIX — API Gateway startup under PM2 blocked by ReconciliationService SQLite path/directory assumption
+**Risk:** MEDIUM — touches API Gateway startup path used on staging VPS; must remain minimal and reversible
+**Registered:** 2026-07-27
+**Parent:** PRIVATE-BETA-STAGING-EXECUTION-04D
+**Grandparent:** PRIVATE-BETA-STAGING-EXECUTION-04
+
+#### Purpose
+
+Fix the API Gateway startup blocker caused by the billing/admin reconciliation SQLite path assuming a runtime database directory exists.
+
+This task must choose and implement the smallest safe source-controlled fix so API Gateway can start under PM2 without manual server-only tweaks.
+
+#### Blocker Evidence (Keith — safe summary)
+
+```text
+During 04D manual PM2 start, API Gateway failed to start correctly.
+
+PM2 observation:
+- aisandbox-api-gateway entered restart loop.
+- Restart count reached 150.
+- CPU reached 100%.
+- API Gateway was stopped manually.
+- AI Service, Container Manager, and Frontend had started, but 04D health smoke was stopped.
+
+Safe log summary:
+- Error: Cannot open database because the directory does not exist.
+- Error source: better-sqlite3.
+- Stack points to ReconciliationService constructor.
+- Source path: services/api-gateway/src/admin/reconciliation.service.ts:38.
+- Source constructs SQLite path:
+  path.join(__dirname, '../../../..', 'database', 'aisandbox.db')
+- The expected runtime directory /opt/aisandbox/database does not exist.
+- Database public table count remained 0.
+- No migrations were run.
+- No DNS/TLS was configured.
+- No secrets were printed.
+```
+
+#### Scope
+
+04D1 is limited to one issue:
+
+* API Gateway cannot start because `ReconciliationService` opens a SQLite database file under a missing `database` directory.
+
+The future implementation should inspect source and tests, then apply the smallest safe fix.
+
+Likely acceptable fix directions include one of:
+
+1. Ensure the SQLite parent directory is created safely before `new Database(dbPath)`, if that matches intended runtime behavior.
+2. Make the SQLite path configurable with a safe default and ensure parent directory creation.
+3. Defer/lazily open the reconciliation SQLite database only when reconciliation endpoints are used, if safer.
+4. Disable/admin-gate reconciliation startup behavior when billing/payment execution is disabled, if supported by existing feature flags.
+
+Do not decide the exact fix during registration. The implementation step must inspect code and choose the smallest safe approach.
+
+#### Non-Goals
+
+04D1 must not:
+
+* Run migrations.
+* Create PostgreSQL tables.
+* Modify `.env`.
+* Print env values.
+* Change billing enablement.
+* Enable payment execution.
+* Enable AI provider calls.
+* Enable container execution.
+* Enable Google OAuth.
+* Configure DNS/TLS.
+* Change PM2 service definitions permanently.
+* Change frontend UX/UI.
+* Perform broad billing/admin refactors.
+* Touch unrelated reconciliation logic.
+* Touch unrelated invoices logic.
+* Add new dependencies unless absolutely unavoidable.
+* Modify package manager policy.
+* Commit or push git.
+* Mark 04D complete.
+
+#### Expected Implementation Workflow
+
+1. **Registration** — COMPLETE (2026-07-27) — this step.
+2. **Implementation** — source/test fix only.
+3. **Local validation** — targeted tests/build only.
+4. **04D runbook amendment** if PM2 command/path evidence needs updating.
+5. **Manual VPS sync/rebuild/restart evidence by Keith.**
+6. **Evidence review.**
+7. **Consolidation/checkpoint.**
+
+#### Implementation Guardrails (Next Step)
+
+The next implementation prompt should require:
+
+* Use GPT-5.3 Codex unless the implementer recommends Opus for messy architecture.
+* Do not use subagents.
+* Inspect `reconciliation.service.ts`, related admin/invoice tests, and any runtime path conventions.
+* Keep fix minimal and reversible.
+* Prefer source-controlled fix over manual server directory creation.
+* Add/update targeted tests.
+* Build only affected service if needed.
+* No env file access.
+* No migrations.
+* No Docker/PostgreSQL/Redis unless tests already require them and are explicitly approved.
+* No frontend changes.
+* No broad refactor.
+* No commit/push.
+
+#### Acceptance Criteria
+
+###### Step 1 (Registration — COMPLETE 2026-07-27)
+- [x] 04D1 registered under 04D.
+- [x] 04D1 status set to ACTIVE — Step 1 COMPLETE (Registration — 2026-07-27).
+- [x] 04D blocker evidence recorded.
+- [x] Scope limited to API Gateway Reconciliation SQLite runtime path/startup fix.
+- [x] Non-goals recorded.
+- [x] Expected workflow recorded.
+- [x] Implementation guardrails recorded.
+- [x] Parent 04D remains ACTIVE / BLOCKED by 04D1.
+- [x] Parent 04 remains ACTIVE.
+- [x] PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.
+- [x] TASKS.md updated.
+- [x] TASKS_BACKLOG_FULL.md updated.
+- [x] Roadmap updated.
+- [x] No source code changed.
+- [x] No env files opened/created/edited.
+- [x] No env values opened/printed.
+- [x] No local runtime/test/build action occurred.
+- [x] No server/SSH/AWS/DNS/TLS action occurred.
+- [x] No Docker/PostgreSQL/Redis action occurred.
+- [x] No git commit or push occurred.
+- [x] No subagents used.
+
+###### Later steps — PENDING
+- [x] Step 2 — Implementation — COMPLETE (2026-07-27).
+- [ ] Step 3 — Local validation/evidence review.
+- [ ] Step 4 — 04D runbook amendment if needed.
+- [ ] Step 5 — Manual VPS sync/rebuild/restart evidence by Keith.
+- [ ] Step 6 — Evidence review.
+- [ ] Step 7 — Consolidation/checkpoint.
+
+#### Step 2 Implementation Record (2026-07-27)
+
+**Root cause confirmed:**
+- Source `path.join(__dirname, '../../../..', 'database', 'aisandbox.db')` from `src/admin` resolves to repo-root `database/aisandbox.db`.
+- Compiled Nest output lives under `dist/src/admin`, so the same `../../../..` resolves to `services/database/aisandbox.db`.
+- On VPS that parent (`/opt/aisandbox/services/database`) is missing → better-sqlite3 throws `Cannot open database because the directory does not exist` → API Gateway PM2 restart loop.
+- Initial registration inferred `/opt/aisandbox/database`; compiled-runtime verification shows the missing directory is `services/database`.
+
+**Fix chosen:**
+- Added `prepareSqliteDatabasePath()` helper that walks upward from `process.cwd()` for `services/api-gateway/package.json` (PM2 `--cwd .../services/api-gateway`), resolves repo-root `database/aisandbox.db`, and `mkdirSync(..., { recursive: true })` before open.
+- Updated all three API Gateway better-sqlite3 startup call sites: ReconciliationService, AdminService, InvoicesService.
+
+**Files changed:**
+- `services/api-gateway/src/common/sqlite-database-path.ts` (new)
+- `services/api-gateway/src/common/sqlite-database-path.spec.ts` (new)
+- `services/api-gateway/src/admin/reconciliation.service.ts`
+- `services/api-gateway/src/admin/admin.service.ts`
+- `services/api-gateway/src/invoices/invoices.service.ts`
+- `TASKS.md` / `TASKS_BACKLOG_FULL.md` / `docs/AINOW-EXECUTION-ROADMAP.md` (governance)
+
+**Validation:**
+- `npm test -- sqlite-database-path` → 6/6 PASS
+- `npm run build` (api-gateway) → PASS
+- No `.env` files opened/created/edited
+- No env values printed
+- No migrations
+- No Docker/PostgreSQL/Redis
+- No server/SSH/AWS/DNS/TLS
+- No frontend changes
+- No broad refactor
+- No git commit or push
+- No subagents used
+
+**PRIVATE-BETA-STAGING-EXECUTION-04D1 status:** ACTIVE — Step 2 COMPLETE (Implementation — 2026-07-27).
+**PRIVATE-BETA-STAGING-EXECUTION-04D status:** ACTIVE / BLOCKED by 04D1 — Manual PM2 health smoke paused (2026-07-27).
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C COMPLETE and LOCKED — 04D ACTIVE / BLOCKED by 04D1.
+**PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
+**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04D1 Step 3 — Local validation/evidence review.
 
 ---
 

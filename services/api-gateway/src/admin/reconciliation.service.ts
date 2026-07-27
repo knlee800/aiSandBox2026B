@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import Database from 'better-sqlite3';
-import * as path from 'path';
 import {
   ContainerManagerHttpClient,
   BillingUsageExport,
 } from '../clients/container-manager-http.client';
+import { prepareSqliteDatabasePath } from '../common/sqlite-database-path';
 
 /**
  * ReconciliationService (Task 12A)
@@ -33,8 +33,10 @@ export class ReconciliationService {
   private readonly GOVERNANCE_TOLERANCE = 0; // Exact match required
 
   constructor(private containerManagerClient: ContainerManagerHttpClient) {
-    // Connect to SQLite database (read-only operations)
-    const dbPath = path.join(__dirname, '../../../..', 'database', 'aisandbox.db');
+    // Connect to SQLite database (read-only operations).
+    // Path must not use compiled __dirname depth — Nest emits dist/src/...
+    // so ../../../.. would resolve to services/database (missing on VPS).
+    const dbPath = prepareSqliteDatabasePath();
     this.db = new Database(dbPath);
   }
 

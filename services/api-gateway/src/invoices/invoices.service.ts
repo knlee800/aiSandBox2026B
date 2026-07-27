@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import Database from 'better-sqlite3';
-import * as path from 'path';
 import {
   ContainerManagerHttpClient,
   BillingUsageExport,
 } from '../clients/container-manager-http.client';
+import { prepareSqliteDatabasePath } from '../common/sqlite-database-path';
 import { StripePaymentProvider } from '../payments/providers/stripe-payment.provider';
 
 /**
@@ -32,8 +32,9 @@ export class InvoicesService {
     private containerManagerClient: ContainerManagerHttpClient,
     private stripePaymentProvider: StripePaymentProvider, // Task 10B2: Injected but NOT used yet
   ) {
-    // Connect to SQLite database
-    const dbPath = path.join(__dirname, '../../../..', 'database', 'aisandbox.db');
+    // Connect to SQLite database.
+    // Shared helper avoids fragile compiled __dirname traversal.
+    const dbPath = prepareSqliteDatabasePath();
     this.db = new Database(dbPath);
 
     // Task 10B2: Validate provider configuration (static check only, no API calls)

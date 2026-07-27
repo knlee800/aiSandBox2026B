@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import Database from 'better-sqlite3';
-import * as path from 'path';
 import axios, { AxiosInstance } from 'axios';
 import {
   ContainerManagerHttpClient,
   BillingUsageExport,
 } from '../clients/container-manager-http.client';
+import { prepareSqliteDatabasePath } from '../common/sqlite-database-path';
 import { ReconciliationService } from './reconciliation.service';
 
 /**
@@ -36,8 +36,9 @@ export class AdminService {
     private containerManagerClient: ContainerManagerHttpClient,
     private reconciliationService: ReconciliationService,
   ) {
-    // Connect to SQLite database (read-only operations)
-    const dbPath = path.join(__dirname, '../../../..', 'database', 'aisandbox.db');
+    // Connect to SQLite database (read-only operations).
+    // Shared helper avoids fragile compiled __dirname traversal.
+    const dbPath = prepareSqliteDatabasePath();
     this.db = new Database(dbPath);
 
     // Setup axios for direct quota visibility API calls
