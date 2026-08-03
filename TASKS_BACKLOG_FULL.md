@@ -35697,7 +35697,7 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 31. PRIVATE-BETA-STAGING-EXECUTION-01 — Create AWS Lightsail Staging Server + Static IP + Baseline (COMPLETE and LOCKED — 2026-07-23 — All 4 steps COMPLETE — Keith manual execution PASS — aisandbox-staging Running / ap-southeast-1 / Ubuntu 24.04.4 LTS — Static IP attached — Firewall 22/80/443 open; internal ports closed — snapshot aisandbox-staging-baseline-2026-07-23 Available — auto-snapshots enabled — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-01-RUNBOOK.md — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-01-CHECKPOINT.md)
 32. PRIVATE-BETA-STAGING-EXECUTION-02 — Runtime Installation Baseline (COMPLETE and LOCKED — 2026-07-24 — All 4 steps COMPLETE — Keith manual execution PASS — Node.js v20.20.2 — npm 10.8.2 — Docker Engine 29.6.2 — Docker Compose v5.3.1 — PM2 7.0.3 — Caddy v2.11.4 — Snapshot aisandbox-staging-runtime-2026-07-24 Available — No app deployed / No DB / No Redis / No DNS / No TLS / No repo / No .env — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-02-CHECKPOINT.md)
 32b. PRIVATE-BETA-STAGING-EXECUTION-03 — PostgreSQL + Redis Installation Baseline (COMPLETE and LOCKED — 2026-07-24 — All 4 steps COMPLETE — Evidence verdict: PASS WITH VERSION DEVIATION — PostgreSQL 15.18 installed from PGDG APT noble channel — PostgreSQL 15/main cluster online on localhost 127.0.0.1:5432 only — aisandbox database/user created — DB password set privately and not disclosed — Redis 8.8.0 installed from official Redis APT repo — Redis target was 7.x — Redis version deviation recorded — compatibility guardrail required before app deployment — Redis active/running — bound to 127.0.0.1/::1 only — protected-mode yes — requirepass configured and redacted — unauthenticated ping blocked — authenticated ping passed — Redis password set privately and not disclosed — Lightsail firewall remains 22/80/443 only — ports 5432/6379 closed externally — No repo / No .env / No app / No migration / No DNS / No TLS — Snapshot aisandbox-staging-db-redis-2026-07-24 Available — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-03-DB-REDIS-INSTALL-RUNBOOK.md — Evidence review: docs/PRIVATE-BETA-STAGING-EXECUTION-03-EVIDENCE-REVIEW.md — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-03-DB-REDIS-CHECKPOINT.md — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next: PRIVATE-BETA-STAGING-EXECUTION-04 — ACTIVE — Step 1 COMPLETE (Registration — 2026-07-25))
-32c. PRIVATE-BETA-STAGING-EXECUTION-04 — Repo Clone + Private Env Preparation + App Deployment Baseline (ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — 4-step workflow — Manual execution split into bounded child slices: 04A COMPLETE and LOCKED (2026-07-25), 04B COMPLETE and LOCKED (2026-07-26), 04C COMPLETE and LOCKED (2026-07-26), 04D COMPLETE and LOCKED (2026-07-27), 04E COMPLETE and LOCKED (2026-07-27), 04F COMPLETE and LOCKED — 2026-07-29 — 04F1 COMPLETE and LOCKED — 2026-07-29 — Boot persistence systemd-active but not reboot-proven — Full app deployment still not complete — Predecessor: PRIVATE-BETA-STAGING-EXECUTION-03 COMPLETE and LOCKED — 2026-07-24 — PostgreSQL 15.18 online on localhost 127.0.0.1:5432 only — Redis 8.8.0 online on 127.0.0.1/::1 only — credentials private — ports 5432/6379 closed externally — Snapshots through pre-migration Available including aisandbox-staging-premigration-2026-07-27 — Repo cloned /opt/aisandbox — owner ubuntu:ubuntu — branch main — VPS commit 3da1b7c — /opt/aisandbox/.env created privately — 47 required non-Google keys present — Google OAuth deferred — Dependencies installed (npm ci PASS) — Builds PASS (api-gateway/ai-service/container-manager/frontend) — Generated artifacts present — Staging DB migration baseline COMPLETE — required tables usage_records/billing_snapshots/invoices present — migrations count 25 — 04D PM2 health-only smoke PASS — all four PM2 services online — restarts 0 — API_HEALTH/API_DB_HEALTH/API_READY/CONTAINER_HEALTH=200 — FRONTEND_ROOT=307 accepted as locale redirect — final public table count 26 — 04D1/04D2/04D3 COMPLETE and LOCKED — 04F COMPLETE and LOCKED — 2026-07-29: PM2_SAVE_EXIT=0 / dump present / startup systemd unit installed / 04F1 cleared Result=protocol / pm2-ubuntu enabled and active Result=success / all four apps online/ok / health PASS / no reboot validation — No DNS / No TLS — Credential safety: Keith keeps DB/Redis passwords privately; no paste of .env/DATABASE_URL/REDIS_URL/provider keys — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next action: Register PRIVATE-BETA-STAGING-EXECUTION-04G — Reboot Persistence Validation)
+32c. PRIVATE-BETA-STAGING-EXECUTION-04 — Repo Clone + Private Env Preparation + App Deployment Baseline (ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — 4-step workflow — Manual execution split into bounded child slices: 04A COMPLETE and LOCKED (2026-07-25), 04B COMPLETE and LOCKED (2026-07-26), 04C COMPLETE and LOCKED (2026-07-26), 04D COMPLETE and LOCKED (2026-07-27), 04E COMPLETE and LOCKED (2026-07-27), 04F COMPLETE and LOCKED — 2026-07-29 — 04F1 COMPLETE and LOCKED — 2026-07-29 — 04G COMPLETE and LOCKED — 2026-07-29 — PM2 persistence reboot-proven — 04H COMPLETE and LOCKED — 2026-08-03 — Public routing / DNS / TLS baseline established — staging.ainow.biz externally resolves to 18.136.141.186 — Caddy enabled/active/valid — public HTTPS health-only smoke PASS — full app deployment still not complete — Predecessor: PRIVATE-BETA-STAGING-EXECUTION-03 COMPLETE and LOCKED — 2026-07-24 — PostgreSQL 15.18 online on localhost 127.0.0.1:5432 only — Redis 8.8.0 online on 127.0.0.1/::1 only — credentials private — ports 5432/6379 closed externally — Snapshots through pre-migration Available including aisandbox-staging-premigration-2026-07-27 — Repo cloned /opt/aisandbox — owner ubuntu:ubuntu — branch main — VPS commit 3da1b7c — /opt/aisandbox/.env created privately — 47 required non-Google keys present — Google OAuth deferred — Dependencies installed (npm ci PASS) — Builds PASS (api-gateway/ai-service/container-manager/frontend) — Generated artifacts present — Staging DB migration baseline COMPLETE — required tables usage_records/billing_snapshots/invoices present — migrations count 25 — 04D PM2 health-only smoke PASS — all four PM2 services online — restarts 0 — API_HEALTH/API_DB_HEALTH/API_READY/CONTAINER_HEALTH=200 — FRONTEND_ROOT=307 accepted as locale redirect — final public table count 26 — 04D1/04D2/04D3 COMPLETE and LOCKED — 04F COMPLETE and LOCKED — 2026-07-29: PM2_SAVE_EXIT=0 / dump present / startup systemd unit installed / 04F1 cleared Result=protocol / pm2-ubuntu enabled and active Result=success / all four apps online/ok / health PASS / 04G reboot-proven — 04H COMPLETE and LOCKED — 2026-08-03: DNS A record staging.ainow.biz → 18.136.141.186 / external DNS confirmed via 1.1.1.1 and 8.8.8.8 / Caddy configured for staging.ainow.biz / Caddyfile backup at /etc/caddy/Caddyfile.backup-04H-20260803-133529 / Caddy validate returned Valid configuration / Caddy enabled and active / public HTTP root=308 / public HTTPS root=307 / public HTTPS API health/db/ready=200 / final local health PASS / public table count remained 26 / no secrets printed / no AI/billing/container/OAuth enablement / no source/migration/env changes / Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04H-CHECKPOINT.md — Credential safety: Keith keeps DB/Redis passwords privately; no paste of .env/DATABASE_URL/REDIS_URL/provider keys — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next action: Register next safe deployment baseline slice for browser/user-facing smoke only)
 32d. PRIVATE-BETA-STAGING-EXECUTION-04A — Redis Gate + Repo Clone Baseline (COMPLETE and LOCKED — 2026-07-25 — All 4 steps COMPLETE — Evidence verdict: PASS — All 45 checks passed — No deviations — No warnings — No stop conditions — Redis Gate Outcome A accepted — Static assessment LIKELY COMPATIBLE — ioredis v5 / BullMQ v5 / Redis 8.8.0 satisfy compatibility conditions — Repo cloned to /opt/aisandbox — owner ubuntu:ubuntu — branch main — latest commit c55a278 Register staging execution 04A repo clone baseline — git status clean — services/ai-service, api-gateway, container-manager, governance, frontend all present — No .env created — No dependencies installed — No build run — No app services started — No migrations run — No DNS/TLS configured — No secrets disclosed — Snapshot aisandbox-staging-preclone-2026-07-25 Available — All 4 snapshots Available — PostgreSQL active/local-only — Redis active/local-only/protected-mode/requirepass — Firewall 22/80/443 only — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04A-CHECKPOINT.md — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next child: PRIVATE-BETA-STAGING-EXECUTION-04B — Private Env Preparation)
 32e. PRIVATE-BETA-STAGING-EXECUTION-04B — Private Env Preparation (COMPLETE and LOCKED — 2026-07-26 — All 4 steps COMPLETE — Evidence review verdict PASS — Step 1 Registration complete — Step 2 Runbook complete — Google OAuth decision complete and locked (Outcome B) — Step 3 Evidence review complete — verdict PASS — Step 4 Consolidation/checkpoint complete — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md — Pre-env snapshot aisandbox-staging-postclone-preenv-2026-07-26 Available — /opt/aisandbox/.env created privately — owner ubuntu:ubuntu — chmod 600 — 47 required non-Google keys present — Google OAuth deferred / omitted intentionally — no fake placeholders — email/password intended staging auth path — all kill switches false — no dependency install — no build — no app services started — no migrations — no DNS/TLS — no secrets disclosed — PostgreSQL warning non-blocking — stop conditions none — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next child: PRIVATE-BETA-STAGING-EXECUTION-04C — ACTIVE)
 32f. PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION — Staging Google OAuth Requirement Decision (COMPLETE and LOCKED — 2026-07-26 — All 3 steps COMPLETE — Outcome B — Google OAuth can be deferred — Decision report: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION-REPORT.md — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION-CHECKPOINT.md — 04B runbook amended — no source code changed — no env files opened/created/edited — no env values printed — no secrets disclosed)
@@ -35710,8 +35710,10 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 32m. PRIVATE-BETA-STAGING-EXECUTION-04D2 — StartupGuard Private-Beta Stub Provider Policy (COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. — Parent: PRIVATE-BETA-STAGING-EXECUTION-04D — Blocker child slice — Stub provider StartupGuard blocker cleared — StartupGuard accepted stub in private-beta health-only mode with GLOBAL_EXECUTION_ENABLED=false — AI execution remained blocked — Final 04D PM2 health smoke passed after 04E — Fix: ProviderValidator allows AI_PROVIDER=stub in production/staging only when GLOBAL_EXECUTION_ENABLED=false — No .env / No migrations / No server/SSH / No Docker/PostgreSQL/Redis / No frontend — No git commit/push — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED)
 32n. PRIVATE-BETA-STAGING-EXECUTION-04D3 — StartupGuard Required Schema / Migration Boundary Decision (COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. — Parent: PRIVATE-BETA-STAGING-EXECUTION-04D — Decision Outcome A selected — Separate approved migration slice — 04E migration slice completed — Required-table blocker cleared — Final 04D PM2 health smoke passed after 04E — Decision report: docs/PRIVATE-BETA-STAGING-EXECUTION-04D3-MIGRATION-BOUNDARY-DECISION-REPORT.md — Prefer migration:run:prod on built VPS — 04E Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md — No .env — No source changes in this decision slice — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED)
 32o. PRIVATE-BETA-STAGING-EXECUTION-04E — Staging Database Migration Baseline (COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. — Parent: PRIVATE-BETA-STAGING-EXECUTION-04 — Separate approved migration slice after 04D3 Outcome A — Snapshot aisandbox-staging-premigration-2026-07-27 Available before migration — Keith approved via go — Command: npm run migration:run:prod — MIGRATION_RUN_PROD_EXIT=0 — Migration CreateUserAgentsTable1772500000000 executed successfully — query COMMIT — Required tables present: usage_records=yes, billing_snapshots=yes, invoices=yes — migrations table count 25 — Required table row counts 0 — PM2 services remained stopped — No secrets printed — No DNS/TLS / No AI / No billing/payment / No container / No Google OAuth enablement — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-MIGRATION-BASELINE-RUNBOOK.md — Evidence review: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-MIGRATION-EXECUTION-EVIDENCE-REVIEW.md — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next: PRIVATE-BETA-STAGING-EXECUTION-04D — Resume PM2 Health-Only Smoke after 04E)
-32p. PRIVATE-BETA-STAGING-EXECUTION-04F — PM2 Persistence / Boot Persistence (COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. — Parent: PRIVATE-BETA-STAGING-EXECUTION-04 — After 04D/04E COMPLETE and LOCKED — Purpose: persist validated PM2 runtime process list and prepare/verify boot persistence safely — 04D PM2 health-only smoke PASS carried forward — 04E migration baseline PASS carried forward — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-04F-PM2-PERSISTENCE-RUNBOOK.md — Evidence review: docs/PRIVATE-BETA-STAGING-EXECUTION-04F-PM2-PERSISTENCE-EVIDENCE-REVIEW.md — verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F-CHECKPOINT.md — PM2_SAVE_EXIT=0 — PM2 dump present at /home/ubuntu/.pm2/dump.pm2 — PM2 startup systemd unit installed for ubuntu — initial Result=protocol blocker resolved through 04F1 — pm2-ubuntu enabled and active — systemd Result=success — PM2 ping=pong — all four apps online/ok — health checks PASS — FRONTEND_ROOT=307 accepted as locale redirect — public table count 26 — no reboot validation — no secrets printed — no DNS/TLS/AI/billing/container workflow/OAuth enablement — 04F1 COMPLETE and LOCKED — 2026-07-29 — No DNS/TLS / No migrations / No .env / No AI / No billing/payment / No container / No Google OAuth / No source changes — Parent 04 remains ACTIVE — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next: Register PRIVATE-BETA-STAGING-EXECUTION-04G — Reboot Persistence Validation)
-32q. PRIVATE-BETA-STAGING-EXECUTION-04F1 — PM2 systemd Adoption Recovery (COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. — Parent: PRIVATE-BETA-STAGING-EXECUTION-04F — Blocker child slice — Evidence review verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-CHECKPOINT.md — Pre-recovery: PM2 dump present — pm2 ping=pong — all four apps online/ok restarts=0 — pm2-ubuntu ActiveState=failed / SubState=failed / Result=protocol / MainPID=0 — Keith approved runtime-impacting recovery — PM2_RESAVE_EXIT=0 — pm2 kill temporary stop as expected — pm2-ubuntu enabled and active — Result=success — MainPID=87688 — PM2 dump present — all four apps online/ok — API_HEALTH/API_DB_HEALTH/API_READY/CONTAINER_HEALTH=200 — FRONTEND_ROOT=307 accepted as locale redirect — public table count 26 — no reboot — no secrets printed — no DNS/TLS / AI / billing / container workflow / Google OAuth enablement — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-PM2-SYSTEMD-ADOPTION-RECOVERY-RUNBOOK.md — Evidence review: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-PM2-SYSTEMD-ADOPTION-RECOVERY-EVIDENCE-REVIEW.md — Parent 04F COMPLETE and LOCKED — 2026-07-29 — Parent 04 remains ACTIVE — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next: Register PRIVATE-BETA-STAGING-EXECUTION-04G — Reboot Persistence Validation)
+32p. PRIVATE-BETA-STAGING-EXECUTION-04F — PM2 Persistence / Boot Persistence (COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. — Parent: PRIVATE-BETA-STAGING-EXECUTION-04 — After 04D/04E COMPLETE and LOCKED — Purpose: persist validated PM2 runtime process list and prepare/verify boot persistence safely — 04D PM2 health-only smoke PASS carried forward — 04E migration baseline PASS carried forward — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-04F-PM2-PERSISTENCE-RUNBOOK.md — Evidence review: docs/PRIVATE-BETA-STAGING-EXECUTION-04F-PM2-PERSISTENCE-EVIDENCE-REVIEW.md — verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F-CHECKPOINT.md — PM2_SAVE_EXIT=0 — PM2 dump present at /home/ubuntu/.pm2/dump.pm2 — PM2 startup systemd unit installed for ubuntu — initial Result=protocol blocker resolved through 04F1 — pm2-ubuntu enabled and active — systemd Result=success — PM2 ping=pong — all four apps online/ok — health checks PASS — FRONTEND_ROOT=307 accepted as locale redirect — public table count 26 — no reboot validation — no secrets printed — no DNS/TLS/AI/billing/container workflow/OAuth enablement — 04F1 COMPLETE and LOCKED — 2026-07-29 — No DNS/TLS / No migrations / No .env / No AI / No billing/payment / No container / No Google OAuth / No source changes — Parent 04 remains ACTIVE — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next: PRIVATE-BETA-STAGING-EXECUTION-04G — ACTIVE — Step 1 COMPLETE (Registration — 2026-07-29))
+32q. PRIVATE-BETA-STAGING-EXECUTION-04F1 — PM2 systemd Adoption Recovery (COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. — Parent: PRIVATE-BETA-STAGING-EXECUTION-04F — Blocker child slice — Evidence review verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-CHECKPOINT.md — Pre-recovery: PM2 dump present — pm2 ping=pong — all four apps online/ok restarts=0 — pm2-ubuntu ActiveState=failed / SubState=failed / Result=protocol / MainPID=0 — Keith approved runtime-impacting recovery — PM2_RESAVE_EXIT=0 — pm2 kill temporary stop as expected — pm2-ubuntu enabled and active — Result=success — MainPID=87688 — PM2 dump present — all four apps online/ok — API_HEALTH/API_DB_HEALTH/API_READY/CONTAINER_HEALTH=200 — FRONTEND_ROOT=307 accepted as locale redirect — public table count 26 — no reboot — no secrets printed — no DNS/TLS / AI / billing / container workflow / Google OAuth enablement — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-PM2-SYSTEMD-ADOPTION-RECOVERY-RUNBOOK.md — Evidence review: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-PM2-SYSTEMD-ADOPTION-RECOVERY-EVIDENCE-REVIEW.md — Parent 04F COMPLETE and LOCKED — 2026-07-29 — Parent 04 remains ACTIVE — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next: Register next safe deployment baseline slice for public routing / DNS / TLS)
+32r. PRIVATE-BETA-STAGING-EXECUTION-04G — Reboot Persistence Validation (COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. — Parent: PRIVATE-BETA-STAGING-EXECUTION-04 — After 04F/04F1 COMPLETE and LOCKED — Evidence review verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04G-CHECKPOINT.md — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-04G-REBOOT-PERSISTENCE-VALIDATION-RUNBOOK.md — Evidence review: docs/PRIVATE-BETA-STAGING-EXECUTION-04G-REBOOT-PERSISTENCE-VALIDATION-EVIDENCE-REVIEW.md — Pre-reboot checks passed — Keith approved reboot — sudo reboot ran — SSH disconnected/reconnected as expected — uptime changed from 5 days to 1 min — post-reboot pm2-ubuntu enabled and active — systemd Result=success — pm2 resurrect exited 0/SUCCESS — PM2 dump remained present — PM2 ping=pong — all four apps online/ok — health-only smoke passed — FRONTEND_ROOT=307 accepted as locale redirect — public table count remained 26 — no PM2 recovery commands needed — no secrets printed — no DNS/TLS/AI/billing/container workflow/OAuth enablement — Parent 04 remains ACTIVE — PM2 persistence reboot-proven — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next: PRIVATE-BETA-STAGING-EXECUTION-04H — ACTIVE — Step 1 COMPLETE (Registration — 2026-07-29))
+32s. PRIVATE-BETA-STAGING-EXECUTION-04H — Public Routing / DNS / TLS Baseline (COMPLETE and LOCKED — 2026-08-03. Do not modify this entry. — Parent: PRIVATE-BETA-STAGING-EXECUTION-04 — After 04G COMPLETE and LOCKED — All 5 steps COMPLETE — Evidence review verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04H-CHECKPOINT.md — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-04H-PUBLIC-ROUTING-DNS-TLS-RUNBOOK.md — Evidence review: docs/PRIVATE-BETA-STAGING-EXECUTION-04H-PUBLIC-ROUTING-DNS-TLS-EVIDENCE-REVIEW.md — Source-grounded hostname: staging.ainow.biz (PRIVATE-BETA-STAGING-SETUP-03 COMPLETE and LOCKED) — Local baseline passed: date=Wed Jul 29 18:13:46 HKT 2026 / uptime=57 min / pm2-ubuntu enabled and active / systemd Result=success / PM2_DUMP_PRESENT=yes / pm2 ping=pong / all four apps online/ok restarts=0 / API_HEALTH/API_DB_HEALTH/API_READY/CONTAINER_HEALTH=200 / FRONTEND_ROOT=307 / public table count 26 — Caddy v2.11.4 installed/enabled/active/valid — Initial Caddyfile: default :80 static file server — DNS initially unresolved — Keith approved: go — approve 04H DNS record change — DNS A record: staging.ainow.biz → 18.136.141.186 — External DNS confirmed: dig @1.1.1.1=18.136.141.186 / dig @8.8.8.8=18.136.141.186 — Keith approved: go — approve 04H Caddy public route change and TLS public validation — Caddyfile backup: /etc/caddy/Caddyfile.backup-04H-20260803-133529 — Caddy configured staging.ainow.biz: /api/* reverse_proxy 127.0.0.1:4000 / all other reverse_proxy 127.0.0.1:3002 — Caddy validate returned Valid configuration — Caddy remained enabled and active — PUBLIC_HTTP_ROOT_FORCED=308 / PUBLIC_HTTPS_ROOT_FORCED=307 / PUBLIC_HTTPS_API_HEALTH_FORCED=200 / PUBLIC_HTTPS_API_DB_HEALTH_FORCED=200 / PUBLIC_HTTPS_API_READY_FORCED=200 — Final local health PASS — public table count remained 26 — no secrets printed — no AI/billing/container/OAuth enablement — no source/migration/env changes — Parent 04 remains ACTIVE — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED)
 33. LOCAL-PRIVATE-BETA-READINESS-01 — Local Machine Rebaseline + Private Beta Gap Review (COMPLETE and LOCKED — 2026-07-23 — All 3 steps COMPLETE — Verdict: BLOCKED for private-beta progression — P0: authenticated /api/ai/execute returned 402 not kill-switch 503 — Checkpoint: docs/LOCAL-PRIVATE-BETA-READINESS-01-CHECKPOINT.md — Step 2 report: docs/LOCAL-PRIVATE-BETA-READINESS-01-LOCAL-REBASELINE-REPORT.md — Next: LOCAL-PRIVATE-BETA-READINESS-01-FIX-EXECUTION-KILLSWITCH-LOCAL — ACTIVE)
 34. LOCAL-PRIVATE-BETA-READINESS-01-FIX-EXECUTION-KILLSWITCH-LOCAL — Fix Authenticated Execution Kill Switch — Local Private Beta P0 Fix (COMPLETE and LOCKED — 2026-07-23 — All 3 steps COMPLETE — PASS — P0 blocker fixed: authenticated POST /api/ai/execute now returns 503 (not 402) — GLOBAL_EXECUTION_ENABLED default changed to fail-safe opt-in — kill-switch fires before quota/payment/provider/container logic — 129/129 targeted tests PASS — /api/health/ready 200 — Checkpoint: docs/LOCAL-PRIVATE-BETA-READINESS-01-FIX-EXECUTION-KILLSWITCH-LOCAL-CHECKPOINT.md — Next: LOCAL-PRIVATE-BETA-READINESS-02 — ACTIVE — Step 1 COMPLETE (Registration — 2026-07-23))
 35. LOCAL-PRIVATE-BETA-READINESS-02 — Local Runtime Services Health Validation (PAUSED / PARTIALLY COMPLETE — 2026-07-23 — Container Manager local health PASS (GET http://localhost:4002/api/health 200); AI Service local runtime unresolved due staging parity decision — reason: local Windows env mismatch not equivalent to future staging environment — superseded by cloud staging resumption — Checkpoint: docs/LOCAL-TO-STAGING-PARITY-PIVOT-CHECKPOINT.md)
@@ -36520,7 +36522,7 @@ Redis target in the runbook was Redis 7.x. The official Redis APT repository ins
 **LOCAL-PRIVATE-BETA-READINESS-02 status:** PAUSED / PARTIALLY COMPLETE — 2026-07-23.
 **LOCAL-PRIVATE-BETA-READINESS-02-FIX-AI-SERVICE-REDIS-ENV-LOCAL status:** PAUSED / SUPERSEDED by staging-environment parity decision.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next task:** Register PRIVATE-BETA-STAGING-EXECUTION-04G — Reboot Persistence Validation. EXECUTION-04F COMPLETE and LOCKED — 2026-07-29 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F-CHECKPOINT.md — Evidence review PASS — PM2_SAVE_EXIT=0 — dump present at /home/ubuntu/.pm2/dump.pm2 — PM2 startup systemd unit installed for ubuntu — initial Result=protocol blocker resolved through 04F1 — pm2-ubuntu enabled and active — Result=success — PM2 ping=pong — all four apps online/ok — health checks PASS — FRONTEND_ROOT=307 accepted as locale redirect — public table count 26 — no reboot validation — no secrets printed. EXECUTION-04F1 COMPLETE and LOCKED — 2026-07-29 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-CHECKPOINT.md. EXECUTION-04D COMPLETE and LOCKED — 2026-07-27 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-CHECKPOINT.md. EXECUTION-04E COMPLETE and LOCKED — 2026-07-27 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md. EXECUTION-04C COMPLETE and LOCKED — 2026-07-26. EXECUTION-04B COMPLETE and LOCKED — 2026-07-26. EXECUTION-04A COMPLETE and LOCKED — 2026-07-25. EXECUTION-04 remains ACTIVE — child 04A/04B/04C/04D/04E/04F COMPLETE and LOCKED — 04F1 COMPLETE and LOCKED — Boot persistence systemd-active but not reboot-proven — Full app deployment still not complete. See PRIVATE-BETA-STAGING-EXECUTION-04F section below.
+**Next task:** PRIVATE-BETA-STAGING-EXECUTION-04H Step 2 — Public Routing / DNS / TLS Runbook. EXECUTION-04H ACTIVE — Step 1 COMPLETE (Registration — 2026-07-29). EXECUTION-04G COMPLETE and LOCKED — 2026-07-29 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04G-CHECKPOINT.md — PM2 persistence reboot-proven. EXECUTION-04F COMPLETE and LOCKED — 2026-07-29 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F-CHECKPOINT.md — Evidence review PASS — PM2_SAVE_EXIT=0 — dump present at /home/ubuntu/.pm2/dump.pm2 — PM2 startup systemd unit installed for ubuntu — initial Result=protocol blocker resolved through 04F1 — pm2-ubuntu enabled and active — Result=success — PM2 ping=pong — all four apps online/ok — health checks PASS — FRONTEND_ROOT=307 accepted as locale redirect — public table count 26 — no secrets printed. EXECUTION-04F1 COMPLETE and LOCKED — 2026-07-29 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-CHECKPOINT.md. EXECUTION-04D COMPLETE and LOCKED — 2026-07-27 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-CHECKPOINT.md. EXECUTION-04E COMPLETE and LOCKED — 2026-07-27 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md. EXECUTION-04C COMPLETE and LOCKED — 2026-07-26. EXECUTION-04B COMPLETE and LOCKED — 2026-07-26. EXECUTION-04A COMPLETE and LOCKED — 2026-07-25. EXECUTION-04 remains ACTIVE — child 04A/04B/04C/04D/04E/04F/04G COMPLETE and LOCKED — 04F1 COMPLETE and LOCKED — 04H ACTIVE — PM2 persistence reboot-proven — Public routing / DNS / TLS not yet configured — Full app deployment still not complete. See PRIVATE-BETA-STAGING-EXECUTION-04H section below.
 
 **Reference:** Predecessor: PRIVATE-BETA-STAGING-EXECUTION-02. Checkpoint (predecessor): `docs/PRIVATE-BETA-STAGING-EXECUTION-02-CHECKPOINT.md`. Checkpoint (this task): `docs/PRIVATE-BETA-STAGING-EXECUTION-03-DB-REDIS-CHECKPOINT.md`. DB/Redis plan: `docs/PRIVATE-BETA-STAGING-SETUP-06-DB-REDIS-PLAN.md`. Pivot checkpoint: `docs/LOCAL-TO-STAGING-PARITY-PIVOT-CHECKPOINT.md`.
 
@@ -36629,12 +36631,14 @@ SPLIT ACTIVATED — 2026-07-25. The Step 2 runbook (docs/PRIVATE-BETA-STAGING-EX
 - PRIVATE-BETA-STAGING-EXECUTION-04E — Staging Database Migration Baseline (COMPLETE and LOCKED — 2026-07-27 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md)
 - PRIVATE-BETA-STAGING-EXECUTION-04F — PM2 Persistence / Boot Persistence (COMPLETE and LOCKED — 2026-07-29 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F-CHECKPOINT.md — PM2_SAVE_EXIT=0 — dump present — pm2-ubuntu enabled/active Result=success — 04F1 COMPLETE and LOCKED — no reboot validation)
 - PRIVATE-BETA-STAGING-EXECUTION-04F1 — PM2 systemd Adoption Recovery (COMPLETE and LOCKED — 2026-07-29 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-CHECKPOINT.md)
+- PRIVATE-BETA-STAGING-EXECUTION-04G — Reboot Persistence Validation (COMPLETE and LOCKED — 2026-07-29 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04G-CHECKPOINT.md — PM2 persistence reboot-proven)
+- PRIVATE-BETA-STAGING-EXECUTION-04H — Public Routing / DNS / TLS Baseline (ACTIVE — Step 1 COMPLETE (Registration — 2026-07-29) — after 04G reboot-proven PM2/systemd persistence)
 
 #### Non-Goals
 
-- No DNS A record setup.
-- No Caddy site config for staging.ainow.biz.
-- No TLS certificate issuance.
+- No DNS A record setup (deferred to 04H; not yet configured).
+- No Caddy site config for staging.ainow.biz (deferred to 04H; not yet configured).
+- No TLS certificate issuance (deferred to 04H; not yet configured).
 - No database migrations.
 - No schema migration.
 - No production data import.
@@ -36713,7 +36717,8 @@ Redis 8.8.0 compatibility static assessment: LIKELY COMPATIBLE — ioredis ^5.3.
 - [x] No secrets disclosed: confirmed for completed slices.
 - [x] App services started: Yes — PM2 four services online after 04D.
 - [x] Health endpoints passed: Yes — API health/db/ready 200; container health 200; frontend root 307 accepted.
-- [ ] Parent-level remaining deployment baseline work still open (reboot persistence validation / DNS-TLS / broader smoke not complete).
+- [x] Reboot persistence validation complete (04G COMPLETE and LOCKED — 2026-07-29 — PM2 persistence reboot-proven).
+- [ ] Parent-level remaining deployment baseline work still open (DNS-TLS / public routing / broader smoke not complete).
 
 ###### Step 4 — PENDING
 - [ ] PRIVATE-BETA-STAGING-EXECUTION-04 checkpoint created.
@@ -36721,7 +36726,7 @@ Redis 8.8.0 compatibility static assessment: LIKELY COMPATIBLE — ioredis ^5.3.
 - [ ] TASKS.md updated. TASKS_BACKLOG_FULL.md updated. Roadmap updated.
 - [ ] PRIVATE-BETA-STAGING-EXECUTION-05 registered or deferred.
 
-**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — Child 04A COMPLETE and LOCKED (2026-07-25) — Child 04B COMPLETE and LOCKED (2026-07-26) — Child 04C COMPLETE and LOCKED (2026-07-26) — Child 04D COMPLETE and LOCKED (2026-07-27) — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-CHECKPOINT.md — Child 04E COMPLETE and LOCKED (2026-07-27) — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md — Child 04F COMPLETE and LOCKED (2026-07-29) — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F-CHECKPOINT.md — Child 04F1 COMPLETE and LOCKED (2026-07-29) — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-CHECKPOINT.md — Boot persistence systemd-active but not reboot-proven — Full app deployment still not complete — Manual execution split into child slices (04A/04B/04C/04D) + migration sibling 04E COMPLETE and LOCKED + persistence sibling 04F COMPLETE and LOCKED + recovery sibling 04F1 COMPLETE and LOCKED.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — Child 04A COMPLETE and LOCKED (2026-07-25) — Child 04B COMPLETE and LOCKED (2026-07-26) — Child 04C COMPLETE and LOCKED (2026-07-26) — Child 04D COMPLETE and LOCKED (2026-07-27) — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-CHECKPOINT.md — Child 04E COMPLETE and LOCKED (2026-07-27) — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md — Child 04F COMPLETE and LOCKED (2026-07-29) — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F-CHECKPOINT.md — Child 04F1 COMPLETE and LOCKED (2026-07-29) — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-CHECKPOINT.md — Child 04G COMPLETE and LOCKED (2026-07-29) — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04G-CHECKPOINT.md — PM2 persistence reboot-proven — Child 04H ACTIVE — Step 1 COMPLETE (Registration — 2026-07-29) — Public routing / DNS / TLS not yet configured — Full app deployment still not complete — Manual execution split into child slices (04A/04B/04C/04D) + migration sibling 04E COMPLETE and LOCKED + persistence sibling 04F COMPLETE and LOCKED + recovery sibling 04F1 COMPLETE and LOCKED + reboot-validation sibling 04G COMPLETE and LOCKED + public-routing sibling 04H ACTIVE.
 **PRIVATE-BETA-STAGING-EXECUTION-04A status:** COMPLETE and LOCKED — 2026-07-25 — All 4 steps COMPLETE — Evidence verdict: PASS — Redis Gate Outcome A accepted — Repo cloned /opt/aisandbox — owner ubuntu:ubuntu — branch main — commit c55a278 — git status clean — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04A-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04B status:** COMPLETE and LOCKED — 2026-07-26 — All 4 steps COMPLETE — Evidence review verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md — /opt/aisandbox/.env created privately — owner ubuntu:ubuntu — chmod 600 — 47 required non-Google keys present — Google OAuth deferred / omitted intentionally — no fake placeholders — all kill switches false — no dependency install / build / app services / migrations / DNS/TLS — no secrets disclosed.
 **PRIVATE-BETA-STAGING-EXECUTION-04C status:** COMPLETE and LOCKED — 2026-07-26 — All steps COMPLETE — Evidence review verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04C-CHECKPOINT.md — npm ci PASS — all four builds PASS — generated artifacts present — no services / migrations / DNS/TLS — no secrets disclosed.
@@ -36732,13 +36737,15 @@ Redis 8.8.0 compatibility static assessment: LIKELY COMPATIBLE — ioredis ^5.3.
 **PRIVATE-BETA-STAGING-EXECUTION-04E status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04F status:** COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04F1 status:** COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04G status:** COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04G-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04H status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-07-29).
 **PRIVATE-BETA-STAGING-EXECUTION-03 status:** COMPLETE and LOCKED — 2026-07-24.
 **PRIVATE-BETA-STAGING-EXECUTION-02 status:** COMPLETE and LOCKED — 2026-07-24.
 **PRIVATE-BETA-STAGING-EXECUTION-01 status:** COMPLETE and LOCKED — 2026-07-23.
 **LOCAL-PRIVATE-BETA-READINESS-02 status:** PAUSED / PARTIALLY COMPLETE — 2026-07-23.
 **LOCAL-PRIVATE-BETA-READINESS-02-FIX-AI-SERVICE-REDIS-ENV-LOCAL status:** PAUSED / SUPERSEDED by staging-environment parity decision.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next action:** Register PRIVATE-BETA-STAGING-EXECUTION-04G — Reboot Persistence Validation.
+**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04H Step 2 — Public Routing / DNS / TLS Runbook.
 
 ---
 
@@ -38157,9 +38164,9 @@ The runbook should include:
 **PRIVATE-BETA-STAGING-EXECUTION-04C status:** COMPLETE and LOCKED — 2026-07-26 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04C-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04B status:** COMPLETE and LOCKED — 2026-07-26 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04A status:** COMPLETE and LOCKED — 2026-07-25 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04A-CHECKPOINT.md.
-**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A COMPLETE and LOCKED — 04B COMPLETE and LOCKED — 04C COMPLETE and LOCKED — 04D COMPLETE and LOCKED — 04E COMPLETE and LOCKED — 04F COMPLETE and LOCKED — 2026-07-29 — 04F1 COMPLETE and LOCKED — 2026-07-29 — Boot persistence systemd-active but not reboot-proven — Full app deployment still not complete — Next: Register PRIVATE-BETA-STAGING-EXECUTION-04G — Reboot Persistence Validation.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A COMPLETE and LOCKED — 04B COMPLETE and LOCKED — 04C COMPLETE and LOCKED — 04D COMPLETE and LOCKED — 04E COMPLETE and LOCKED — 04F COMPLETE and LOCKED — 2026-07-29 — 04F1 COMPLETE and LOCKED — 2026-07-29 — 04G COMPLETE and LOCKED — 2026-07-29 — PM2 persistence reboot-proven — Full app deployment still not complete — Next: Register next safe deployment baseline slice for public routing / DNS / TLS.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next action:** Register PRIVATE-BETA-STAGING-EXECUTION-04G — Reboot Persistence Validation.
+**Next action:** Register next safe deployment baseline slice for public routing / DNS / TLS.
 
 ---
 
@@ -39166,9 +39173,9 @@ The snapshot must be created in AWS Lightsail UI and must be Available before an
 **PRIVATE-BETA-STAGING-EXECUTION-04D3 status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry.
 **PRIVATE-BETA-STAGING-EXECUTION-04F status:** COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04F1 status:** COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-CHECKPOINT.md.
-**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E COMPLETE and LOCKED — 04F COMPLETE and LOCKED — 2026-07-29 — 04F1 COMPLETE and LOCKED — 2026-07-29 — Boot persistence systemd-active but not reboot-proven — Full app deployment still not complete — Next: Register PRIVATE-BETA-STAGING-EXECUTION-04G — Reboot Persistence Validation.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E COMPLETE and LOCKED — 04F COMPLETE and LOCKED — 2026-07-29 — 04F1 COMPLETE and LOCKED — 2026-07-29 — 04G COMPLETE and LOCKED — 2026-07-29 — PM2 persistence reboot-proven — Full app deployment still not complete — Next: Register next safe deployment baseline slice for public routing / DNS / TLS.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next action:** Register PRIVATE-BETA-STAGING-EXECUTION-04G — Reboot Persistence Validation.
+**Next action:** Register next safe deployment baseline slice for public routing / DNS / TLS.
 
 ---
 
@@ -39501,9 +39508,9 @@ Final safe state:
 **PRIVATE-BETA-STAGING-EXECUTION-04F1 status:** COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04D status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04E status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md.
-**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E/04F COMPLETE and LOCKED — 04F1 COMPLETE and LOCKED — 2026-07-29 — Boot persistence systemd-active but not reboot-proven — Full app deployment still not complete — Next: register PRIVATE-BETA-STAGING-EXECUTION-04G — Reboot Persistence Validation.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E/04F COMPLETE and LOCKED — 04F1 COMPLETE and LOCKED — 2026-07-29 — 04G COMPLETE and LOCKED — 2026-07-29 — PM2 persistence reboot-proven — Full app deployment still not complete — Next: Register next safe deployment baseline slice for public routing / DNS / TLS.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next action:** Register PRIVATE-BETA-STAGING-EXECUTION-04G — Reboot Persistence Validation.
+**Next action:** Register next safe deployment baseline slice for public routing / DNS / TLS.
 
 ---
 
@@ -39773,9 +39780,478 @@ docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-CHECKPOINT.md
 **PRIVATE-BETA-STAGING-EXECUTION-04F status:** COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04D status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04E status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md.
-**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E COMPLETE and LOCKED — 04F COMPLETE and LOCKED — 2026-07-29 — 04F1 COMPLETE and LOCKED — 2026-07-29 — Boot persistence systemd-active but not reboot-proven — Full app deployment still not complete.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E COMPLETE and LOCKED — 04F COMPLETE and LOCKED — 2026-07-29 — 04F1 COMPLETE and LOCKED — 2026-07-29 — 04G COMPLETE and LOCKED — 2026-07-29 — PM2 persistence reboot-proven — Full app deployment still not complete.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next action:** Register PRIVATE-BETA-STAGING-EXECUTION-04G — Reboot Persistence Validation.
+**Next action:** Register next safe deployment baseline slice for public routing / DNS / TLS.
+
+---
+
+#### PRIVATE-BETA-STAGING-EXECUTION-04G: Reboot Persistence Validation
+
+**Status:** COMPLETE and LOCKED — 2026-07-29. Do not modify this entry.
+**Task ID:** PRIVATE-BETA-STAGING-EXECUTION-04G
+**Title:** Reboot Persistence Validation
+**Family:** PRIVATE BETA / STAGING EXECUTION
+**Priority:** CRITICAL
+**Nature:** REAL STAGING EXECUTION — reboot persistence planning / runbook / controlled manual reboot validation / evidence / consolidation
+**Risk:** HIGH — instance reboot interrupts staging runtime and browser SSH; incorrect post-reboot recovery can leave boot persistence broken
+**Registered:** 2026-07-29
+**Completed:** 2026-07-29
+**Parent:** PRIVATE-BETA-STAGING-EXECUTION-04
+**Predecessors:** PRIVATE-BETA-STAGING-EXECUTION-04F COMPLETE and LOCKED — 2026-07-29; PRIVATE-BETA-STAGING-EXECUTION-04F1 COMPLETE and LOCKED — 2026-07-29
+**Runbook:** docs/PRIVATE-BETA-STAGING-EXECUTION-04G-REBOOT-PERSISTENCE-VALIDATION-RUNBOOK.md
+**Evidence review:** docs/PRIVATE-BETA-STAGING-EXECUTION-04G-REBOOT-PERSISTENCE-VALIDATION-EVIDENCE-REVIEW.md — verdict PASS
+**Checkpoint:** docs/PRIVATE-BETA-STAGING-EXECUTION-04G-CHECKPOINT.md
+
+#### Purpose
+
+Validate that PM2/systemd boot persistence survives an actual instance reboot and restores the four validated app processes plus health-only smoke.
+
+#### Authoritative State Carried Forward
+
+* PRIVATE-BETA-STAGING-EXECUTION-04A is COMPLETE and LOCKED — 2026-07-25.
+* PRIVATE-BETA-STAGING-EXECUTION-04B is COMPLETE and LOCKED — 2026-07-26.
+* PRIVATE-BETA-STAGING-EXECUTION-04C is COMPLETE and LOCKED — 2026-07-26.
+* PRIVATE-BETA-STAGING-EXECUTION-04D is COMPLETE and LOCKED — 2026-07-27.
+* PRIVATE-BETA-STAGING-EXECUTION-04D1 is COMPLETE and LOCKED — 2026-07-27.
+* PRIVATE-BETA-STAGING-EXECUTION-04D2 is COMPLETE and LOCKED — 2026-07-27.
+* PRIVATE-BETA-STAGING-EXECUTION-04D3 is COMPLETE and LOCKED — 2026-07-27.
+* PRIVATE-BETA-STAGING-EXECUTION-04E is COMPLETE and LOCKED — 2026-07-27.
+* PRIVATE-BETA-STAGING-EXECUTION-04F is COMPLETE and LOCKED — 2026-07-29.
+* PRIVATE-BETA-STAGING-EXECUTION-04F1 is COMPLETE and LOCKED — 2026-07-29.
+* Parent PRIVATE-BETA-STAGING-EXECUTION-04 remains ACTIVE.
+* PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.
+
+#### Evidence Carried Forward from 04F
+
+```text
+PM2 persistence succeeded:
+- PM2_SAVE_EXIT=0.
+- PM2 dump present at /home/ubuntu/.pm2/dump.pm2.
+- PM2 startup/systemd unit installed for user ubuntu.
+- 04F1 cleared initial pm2-ubuntu Result=protocol blocker.
+- pm2-ubuntu enabled and active.
+- systemd Result=success.
+- PM2 ping=pong.
+- all four apps online/ok:
+  - aisandbox-api-gateway
+  - aisandbox-ai-service
+  - aisandbox-container-manager
+  - aisandbox-frontend
+- health-only smoke passed:
+  - API_HEALTH=200
+  - API_DB_HEALTH=200
+  - API_READY=200
+  - CONTAINER_HEALTH=200
+  - FRONTEND_ROOT=307 accepted as locale redirect
+- public table count 26.
+- git status clean based on no output.
+- no reboot validation performed.
+- no secrets printed.
+- no DNS/TLS.
+- no AI execution.
+- no billing/payment execution.
+- no container workflow beyond health check.
+- no Google OAuth enablement.
+```
+
+#### 04F1 Historical Blocker Context
+
+* 04F1 was needed because `pm2-ubuntu.service` initially failed with `Result=protocol`.
+* Recovery later made `pm2-ubuntu` enabled/active with Result=success.
+* 04F1 remains COMPLETE and LOCKED — 2026-07-29.
+* Residual gap for 04G: closed — PM2/systemd boot persistence is now reboot-proven.
+
+#### Scope
+
+04G is limited to reboot persistence planning, runbook, controlled manual reboot validation, evidence review, and consolidation.
+
+Future 04G steps may include:
+
+1. Reboot validation runbook.
+2. Pre-reboot PM2/systemd/app/health verification.
+3. Explicit Keith approval before reboot.
+4. Controlled instance reboot.
+5. Reconnect after reboot.
+6. Verify `pm2-ubuntu` enabled and active.
+7. Verify PM2 dump remains present.
+8. Verify all four app processes are online.
+9. Verify health-only smoke.
+10. Evidence review.
+11. Consolidation/checkpoint.
+
+#### Non-Goals
+
+04G must not:
+
+* Configure DNS/TLS.
+* Configure Caddy public routing.
+* Run migrations.
+* Create database tables.
+* Modify `.env`.
+* Print `.env` or secret values.
+* Enable AI execution.
+* Enable billing/payment execution.
+* Enable container execution workflows.
+* Enable Google OAuth.
+* Run browser/user-facing smoke beyond local health-only checks unless a later step explicitly scopes it.
+* Run payment/billing checkout.
+* Run AI provider calls.
+* Run container jobs.
+* Modify source code.
+* Modify migration files.
+* Modify PM2/systemd config unless a future recovery path explicitly scopes it.
+* Mark PRIVATE-BETA-DEPLOYMENT-READINESS ready.
+* Commit or push git.
+
+#### Future Runbook Path
+
+```text
+C:\Users\knlee\aiSandBox2026B\docs\PRIVATE-BETA-STAGING-EXECUTION-04G-REBOOT-PERSISTENCE-VALIDATION-RUNBOOK.md
+```
+
+#### Future Checkpoint Path
+
+```text
+C:\Users\knlee\aiSandBox2026B\docs\PRIVATE-BETA-STAGING-EXECUTION-04G-CHECKPOINT.md
+```
+
+#### Required Future Guardrails
+
+* Keith explicit approval required before reboot.
+* Reboot interrupts the instance and browser SSH connection.
+* No `.env` printing.
+* No secret output.
+* Do not run `env`, `printenv`, `cat .env`, `echo $DATABASE_URL`, or `echo $REDIS_URL`.
+* Pre-reboot checks must confirm:
+  * `pm2-ubuntu` enabled and active.
+  * PM2 dump present.
+  * all four app processes online.
+  * health-only smoke passing.
+  * public table count 26.
+* Reboot must be the only runtime-impacting action in the validation.
+* After reconnect, verify:
+  * instance is reachable.
+  * `pm2-ubuntu` enabled and active.
+  * PM2 ping works.
+  * PM2 dump present.
+  * all four app processes online.
+  * API_HEALTH=200.
+  * API_DB_HEALTH=200.
+  * API_READY=200.
+  * CONTAINER_HEALTH=200.
+  * FRONTEND_ROOT is 2xx/3xx, with 307 acceptable as locale redirect.
+* Do not run `pm2 save`, `pm2 startup`, `pm2 kill`, or PM2 recovery commands unless post-reboot verification fails and a separate recovery path is approved.
+* Keep DNS/TLS disabled.
+* Keep AI execution disabled.
+* Keep billing/payment execution disabled.
+* Keep Google OAuth deferred.
+* Keep PRIVATE-BETA-DEPLOYMENT-READINESS BLOCKED / PAUSED.
+
+#### Proposed Workflow
+
+1. Registration — COMPLETE (2026-07-29).
+2. Reboot Persistence Validation Runbook — COMPLETE.
+3. Manual Reboot Validation + Evidence — COMPLETE.
+4. Evidence Review — COMPLETE — verdict PASS.
+5. Consolidation / Checkpoint — COMPLETE — docs/PRIVATE-BETA-STAGING-EXECUTION-04G-CHECKPOINT.md.
+6. Continue to next deployment baseline slice — DEFERRED — recommend register next safe deployment baseline slice for public routing / DNS / TLS.
+
+#### Acceptance Criteria
+
+###### Step 1 (Registration — COMPLETE 2026-07-29)
+- [x] 04G registered.
+- [x] 04G status set to ACTIVE — Step 1 COMPLETE (Registration — 2026-07-29).
+- [x] 04F/04F1 completion state recorded.
+- [x] PM2 persistence evidence carried forward.
+- [x] 04G purpose recorded.
+- [x] 04G scope recorded.
+- [x] 04G non-goals recorded.
+- [x] Future runbook path recorded.
+- [x] Future checkpoint path recorded.
+- [x] reboot validation guardrails recorded.
+- [x] proposed workflow recorded.
+- [x] Parent 04 remains ACTIVE.
+- [x] PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.
+- [x] TASKS.md updated.
+- [x] TASKS_BACKLOG_FULL.md updated.
+- [x] Roadmap updated.
+- [x] No source code changed.
+- [x] No migration files changed.
+- [x] No env files opened/created/edited.
+- [x] No env values opened/printed.
+- [x] No runtime/server action occurred.
+- [x] No Docker/PostgreSQL/Redis action occurred.
+- [x] No git commit or push occurred.
+- [x] No subagents used.
+
+###### Step 2 — Reboot Persistence Validation Runbook — COMPLETE
+- [x] Runbook `docs/PRIVATE-BETA-STAGING-EXECUTION-04G-REBOOT-PERSISTENCE-VALIDATION-RUNBOOK.md` created.
+
+###### Step 3 — Manual Reboot Validation + Evidence — COMPLETE
+- [x] Pre-reboot checks recorded / passed.
+- [x] Keith explicit reboot approval recorded (`go — approve 04G reboot persistence validation`).
+- [x] Controlled reboot executed (`sudo reboot`).
+- [x] SSH disconnected/reconnected as expected; uptime changed from 5 days to 1 min.
+- [x] Post-reboot reconnect and verification evidence collected.
+
+###### Step 4 — Evidence Review — COMPLETE
+- [x] Evidence review report created with explicit PASS verdict — `docs/PRIVATE-BETA-STAGING-EXECUTION-04G-REBOOT-PERSISTENCE-VALIDATION-EVIDENCE-REVIEW.md`.
+
+###### Step 5 — Consolidation / Checkpoint — COMPLETE
+- [x] Checkpoint `docs/PRIVATE-BETA-STAGING-EXECUTION-04G-CHECKPOINT.md` created.
+- [x] 04G marked COMPLETE and LOCKED — 2026-07-29 after successful validation.
+- [x] Reboot persistence evidence recorded: pre-reboot checks passed; Keith approved reboot; `sudo reboot` ran; SSH disconnected/reconnected; uptime 5 days → 1 min; post-reboot `pm2-ubuntu` enabled and active; systemd Result=success; `pm2 resurrect` exited 0/SUCCESS; PM2 dump remained present; PM2 ping=pong; all four apps online/ok; health-only smoke passed; `FRONTEND_ROOT=307` accepted as locale redirect; public table count remained 26; no PM2 recovery commands needed; no secrets printed; no DNS/TLS/AI/billing/container workflow/OAuth enablement.
+- [x] TASKS.md updated.
+- [x] TASKS_BACKLOG_FULL.md updated.
+- [x] Roadmap updated.
+- [x] 04F and 04F1 remain COMPLETE and LOCKED.
+- [x] Parent 04 remains ACTIVE — 04A/04B/04C/04D/04E/04F/04G COMPLETE and LOCKED — 04F1 COMPLETE and LOCKED — PM2 persistence reboot-proven — full app deployment still not complete.
+- [x] PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.
+- [x] No source code changed.
+- [x] No migration files changed.
+- [x] No env files opened/created/edited.
+- [x] No env values opened/printed.
+- [x] No runtime/server action occurred by Cursor.
+- [x] No Docker/PostgreSQL/Redis action occurred by Cursor.
+- [x] No git commit --trailer "Co-authored-by: Cursor <cursoragent@cursor.com>" or push occurred.
+- [x] No subagents used.
+
+###### Step 6 — Continue to next deployment baseline slice — DEFERRED
+- [x] Next deployment baseline slice deferred — recommend register next safe deployment baseline slice for public routing / DNS / TLS.
+- [x] Follow-up registration complete — PRIVATE-BETA-STAGING-EXECUTION-04H ACTIVE — Step 1 COMPLETE (Registration — 2026-07-29).
+
+**PRIVATE-BETA-STAGING-EXECUTION-04G status:** COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04G-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04F status:** COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04F1 status:** COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04D status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04E status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04H status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-07-29).
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E/04F COMPLETE and LOCKED — 04F1 COMPLETE and LOCKED — 04G COMPLETE and LOCKED — 2026-07-29 — PM2 persistence reboot-proven — 04H ACTIVE — Public routing / DNS / TLS not yet configured — Full app deployment still not complete.
+**PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
+**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04H Step 2 — Public Routing / DNS / TLS Runbook.
+
+---
+
+#### PRIVATE-BETA-STAGING-EXECUTION-04H: Public Routing / DNS / TLS Baseline
+
+**Status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-07-29)
+**Task ID:** PRIVATE-BETA-STAGING-EXECUTION-04H
+**Title:** Public Routing / DNS / TLS Baseline
+**Family:** PRIVATE BETA / STAGING EXECUTION
+**Priority:** CRITICAL
+**Nature:** REAL STAGING EXECUTION — public routing / DNS / TLS planning / runbook / controlled manual execution / evidence / consolidation
+**Risk:** HIGH — DNS/Caddy/TLS changes affect public reachability; incorrect routing or cert issuance can break staging access or expose misconfigured routes
+**Registered:** 2026-07-29
+**Parent:** PRIVATE-BETA-STAGING-EXECUTION-04
+**Predecessors:** PRIVATE-BETA-STAGING-EXECUTION-04G COMPLETE and LOCKED — 2026-07-29; PRIVATE-BETA-STAGING-EXECUTION-04F COMPLETE and LOCKED — 2026-07-29; PRIVATE-BETA-STAGING-EXECUTION-04F1 COMPLETE and LOCKED — 2026-07-29
+**Future runbook:** docs/PRIVATE-BETA-STAGING-EXECUTION-04H-PUBLIC-ROUTING-DNS-TLS-RUNBOOK.md
+**Future checkpoint:** docs/PRIVATE-BETA-STAGING-EXECUTION-04H-CHECKPOINT.md
+**Source-grounded hostname plan:** staging.ainow.biz (PRIVATE-BETA-STAGING-SETUP-03 COMPLETE and LOCKED — 2026-07-21 — Checkpoint: docs/PRIVATE-BETA-STAGING-SETUP-03-CHECKPOINT.md — Plan: docs/PRIVATE-BETA-STAGING-SETUP-03-DNS-TLS-PLAN.md)
+**Runtime carry-forward:** Caddy v2.11.4 installed (PRIVATE-BETA-STAGING-EXECUTION-02 COMPLETE and LOCKED) — Lightsail firewall 22/80/443 — public routing / DNS / TLS not yet configured
+
+#### Purpose
+
+Safely prepare and validate public routing for the staging deployment through Caddy, DNS, and TLS, after PM2/systemd boot persistence has been reboot-proven.
+
+#### Authoritative State Carried Forward
+
+* PRIVATE-BETA-STAGING-EXECUTION-04A is COMPLETE and LOCKED — 2026-07-25.
+* PRIVATE-BETA-STAGING-EXECUTION-04B is COMPLETE and LOCKED — 2026-07-26.
+* PRIVATE-BETA-STAGING-EXECUTION-04C is COMPLETE and LOCKED — 2026-07-26.
+* PRIVATE-BETA-STAGING-EXECUTION-04D is COMPLETE and LOCKED — 2026-07-27.
+* PRIVATE-BETA-STAGING-EXECUTION-04D1 is COMPLETE and LOCKED — 2026-07-27.
+* PRIVATE-BETA-STAGING-EXECUTION-04D2 is COMPLETE and LOCKED — 2026-07-27.
+* PRIVATE-BETA-STAGING-EXECUTION-04D3 is COMPLETE and LOCKED — 2026-07-27.
+* PRIVATE-BETA-STAGING-EXECUTION-04E is COMPLETE and LOCKED — 2026-07-27.
+* PRIVATE-BETA-STAGING-EXECUTION-04F is COMPLETE and LOCKED — 2026-07-29.
+* PRIVATE-BETA-STAGING-EXECUTION-04F1 is COMPLETE and LOCKED — 2026-07-29.
+* PRIVATE-BETA-STAGING-EXECUTION-04G is COMPLETE and LOCKED — 2026-07-29.
+* Parent PRIVATE-BETA-STAGING-EXECUTION-04 remains ACTIVE.
+* PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.
+* Public routing / DNS / TLS is not yet configured.
+* PM2/systemd boot persistence is reboot-proven.
+
+#### Evidence Carried Forward from 04G
+
+```text
+04G reboot persistence validation passed:
+- reboot was approved by Keith.
+- sudo reboot was run.
+- instance rebooted and Lightsail browser SSH reconnected.
+- uptime changed from 5 days to 1 min.
+- pm2-ubuntu enabled and active after reboot.
+- systemd Result=success after reboot.
+- pm2 resurrect exited 0/SUCCESS.
+- PM2_DUMP_PRESENT=yes.
+- pm2 ping=pong.
+- all four apps online/ok after reboot:
+  - aisandbox-api-gateway
+  - aisandbox-ai-service
+  - aisandbox-container-manager
+  - aisandbox-frontend
+- health-only smoke passed after reboot:
+  - API_HEALTH=200
+  - API_DB_HEALTH=200
+  - API_READY=200
+  - CONTAINER_HEALTH=200
+  - FRONTEND_ROOT=307 accepted as locale redirect
+- public table count remained 26.
+- no PM2 recovery commands were needed.
+- no secrets printed.
+- no DNS/TLS.
+- no AI execution.
+- no billing/payment execution.
+- no container workflow beyond health check.
+- no Google OAuth enablement.
+```
+
+#### Scope
+
+04H is limited to planning, runbook creation, controlled manual public routing/DNS/TLS execution, evidence review, and consolidation.
+
+Future 04H steps may include:
+
+1. Public routing / DNS / TLS runbook.
+2. Source-grounded confirmation of target domain/subdomain.
+3. Pre-change local health verification.
+4. Caddy status/config discovery without secret output.
+5. DNS target verification.
+6. Explicit Keith approval before any DNS/Caddy/TLS change.
+7. Controlled Caddy public route configuration.
+8. DNS record change instructions if needed.
+9. TLS certificate issuance validation.
+10. Public HTTPS health-only smoke.
+11. Evidence review.
+12. Consolidation/checkpoint.
+
+#### Non-Goals
+
+04H must not:
+
+* Enable AI execution.
+* Enable billing/payment execution.
+* Enable container execution workflows.
+* Enable Google OAuth.
+* Run migrations.
+* Create database tables.
+* Modify `.env`.
+* Print `.env` or secret values.
+* Perform browser/user-facing smoke beyond public health-only or route smoke unless later scoped.
+* Run payment/billing checkout.
+* Run AI provider calls.
+* Run container jobs.
+* Modify source code.
+* Modify migration files.
+* Mark PRIVATE-BETA-DEPLOYMENT-READINESS ready.
+* Commit or push git.
+
+#### Future Runbook Path
+
+```text
+C:\Users\knlee\aiSandBox2026B\docs\PRIVATE-BETA-STAGING-EXECUTION-04H-PUBLIC-ROUTING-DNS-TLS-RUNBOOK.md
+```
+
+#### Future Checkpoint Path
+
+```text
+C:\Users\knlee\aiSandBox2026B\docs\PRIVATE-BETA-STAGING-EXECUTION-04H-CHECKPOINT.md
+```
+
+#### Required Future Guardrails
+
+* Keith explicit approval required before any DNS record change.
+* Keith explicit approval required before any Caddy config write/reload.
+* Keith explicit approval required before any TLS certificate request if it can affect public routing.
+* Confirm exact intended hostname from source docs before changes.
+* If hostname is not source-grounded, stop and record a decision point.
+* Do not print DNS provider secrets, API keys, cert private keys, `.env`, or environment values.
+* Do not run `env`, `printenv`, `cat .env`, `echo $DATABASE_URL`, `echo $REDIS_URL`, or secret-printing commands.
+* Pre-change checks must confirm:
+  * `pm2-ubuntu` enabled and active.
+  * PM2 dump present.
+  * all four app processes online.
+  * local health-only smoke passing.
+  * public table count 26.
+  * ports 80/443 expected firewall state is source-grounded.
+  * Caddy installed/active state is discovered safely.
+* Public routing changes must be small, reversible, and health-only.
+* If public route or TLS validation fails, stop and capture safe evidence only.
+* Do not enable AI execution.
+* Do not enable billing/payment execution.
+* Do not enable container execution workflows.
+* Do not enable Google OAuth.
+* Keep PRIVATE-BETA-DEPLOYMENT-READINESS BLOCKED / PAUSED.
+
+#### Proposed Workflow
+
+1. Registration — this step — COMPLETE (2026-07-29).
+2. Public Routing / DNS / TLS Runbook.
+3. Manual Public Routing / DNS / TLS Execution + Evidence.
+4. Evidence Review.
+5. Consolidation / Checkpoint.
+6. Continue to next deployment baseline slice.
+
+#### Acceptance Criteria
+
+###### Step 1 (Registration — COMPLETE 2026-07-29)
+- [x] 04H registered.
+- [x] 04H status set to ACTIVE — Step 1 COMPLETE (Registration — 2026-07-29).
+- [x] 04G completion state recorded.
+- [x] reboot-proven PM2/systemd persistence carried forward.
+- [x] 04H purpose recorded.
+- [x] 04H scope recorded.
+- [x] 04H non-goals recorded.
+- [x] future runbook path recorded.
+- [x] future checkpoint path recorded.
+- [x] public routing/DNS/TLS guardrails recorded.
+- [x] proposed workflow recorded.
+- [x] parent 04 remains ACTIVE.
+- [x] PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.
+- [x] TASKS.md updated.
+- [x] TASKS_BACKLOG_FULL.md updated.
+- [x] roadmap updated.
+- [x] no source code changed.
+- [x] no migration files changed.
+- [x] no env files opened/created/edited.
+- [x] no env values opened/printed.
+- [x] no runtime/server action occurred.
+- [x] no Docker/PostgreSQL/Redis action occurred.
+- [x] no git commit or push occurred.
+- [x] no subagents used.
+
+###### Step 2 — Public Routing / DNS / TLS Runbook — PENDING
+- [ ] Runbook `docs/PRIVATE-BETA-STAGING-EXECUTION-04H-PUBLIC-ROUTING-DNS-TLS-RUNBOOK.md` created.
+
+###### Step 3 — Manual Public Routing / DNS / TLS Execution + Evidence — PENDING
+- [ ] Pre-change checks recorded / passed.
+- [ ] Keith explicit DNS/Caddy/TLS approvals recorded as required.
+- [ ] Controlled public routing / DNS / TLS execution evidence collected.
+
+###### Step 4 — Evidence Review — PENDING
+- [ ] Evidence review report created with explicit PASS/FAIL/BLOCKED verdict.
+
+###### Step 5 — Consolidation / Checkpoint — PENDING
+- [ ] Checkpoint `docs/PRIVATE-BETA-STAGING-EXECUTION-04H-CHECKPOINT.md` created.
+- [ ] 04H marked COMPLETE and LOCKED after successful validation (or blocked state recorded).
+- [ ] TASKS.md updated.
+- [ ] TASKS_BACKLOG_FULL.md updated.
+- [ ] Roadmap updated.
+- [ ] Parent 04 remains ACTIVE until remaining baseline work closes.
+- [ ] PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.
+
+###### Step 6 — Continue to next deployment baseline slice — PENDING
+- [ ] Next deployment baseline slice registered or deferred.
+
+**PRIVATE-BETA-STAGING-EXECUTION-04H status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-07-29).
+**PRIVATE-BETA-STAGING-EXECUTION-04G status:** COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04G-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04F status:** COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04F1 status:** COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04D status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04E status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E/04F COMPLETE and LOCKED — 04F1 COMPLETE and LOCKED — 04G COMPLETE and LOCKED — 2026-07-29 — PM2 persistence reboot-proven — 04H ACTIVE — Public routing / DNS / TLS not yet configured — Full app deployment still not complete.
+**PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
+**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04H Step 2 — Public Routing / DNS / TLS Runbook.
 
 ---
 
