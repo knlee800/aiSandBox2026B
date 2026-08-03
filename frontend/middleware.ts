@@ -31,9 +31,12 @@ export function middleware(request: NextRequest) {
   }
 
   if (pathname === '/') {
-    const url = request.nextUrl.clone();
-    url.pathname = `/${DEFAULT_LOCALE}`;
-    return NextResponse.redirect(url);
+    return new NextResponse(null, {
+      status: 307,
+      headers: {
+        Location: `/${DEFAULT_LOCALE}`,
+      },
+    });
   }
 
   const url = request.nextUrl.clone();

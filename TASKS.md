@@ -25197,7 +25197,7 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 31. PRIVATE-BETA-STAGING-EXECUTION-01 — Create AWS Lightsail Staging Server + Static IP + Baseline (COMPLETE and LOCKED — 2026-07-23 — All 4 steps COMPLETE — Keith manual execution PASS — aisandbox-staging Running / ap-southeast-1 / Ubuntu 24.04.4 LTS — Static IP attached — Firewall 22/80/443 open; internal ports closed — snapshot aisandbox-staging-baseline-2026-07-23 Available — auto-snapshots enabled — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-01-RUNBOOK.md — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-01-CHECKPOINT.md)
 32. PRIVATE-BETA-STAGING-EXECUTION-02 — Runtime Installation Baseline (COMPLETE and LOCKED — 2026-07-24 — All 4 steps COMPLETE — Keith manual execution PASS — Node.js v20.20.2 — npm 10.8.2 — Docker Engine 29.6.2 — Docker Compose v5.3.1 — PM2 7.0.3 — Caddy v2.11.4 — Snapshot aisandbox-staging-runtime-2026-07-24 Available — No app deployed / No DB / No Redis / No DNS / No TLS / No repo / No .env — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-02-CHECKPOINT.md)
 32b. PRIVATE-BETA-STAGING-EXECUTION-03 — PostgreSQL + Redis Installation Baseline (COMPLETE and LOCKED — 2026-07-24 — All 4 steps COMPLETE — Evidence verdict: PASS WITH VERSION DEVIATION — PostgreSQL 15.18 installed from PGDG APT noble channel — PostgreSQL 15/main cluster online on localhost 127.0.0.1:5432 only — aisandbox database/user created — DB password set privately and not disclosed — Redis 8.8.0 installed from official Redis APT repo — Redis target was 7.x — Redis version deviation recorded — compatibility guardrail required before app deployment — Redis active/running — bound to 127.0.0.1/::1 only — protected-mode yes — requirepass configured and redacted — unauthenticated ping blocked — authenticated ping passed — Redis password set privately and not disclosed — Lightsail firewall remains 22/80/443 only — ports 5432/6379 closed externally — No repo / No .env / No app / No migration / No DNS / No TLS — Snapshot aisandbox-staging-db-redis-2026-07-24 Available — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-03-DB-REDIS-INSTALL-RUNBOOK.md — Evidence review: docs/PRIVATE-BETA-STAGING-EXECUTION-03-EVIDENCE-REVIEW.md — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-03-DB-REDIS-CHECKPOINT.md — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next: PRIVATE-BETA-STAGING-EXECUTION-04 — ACTIVE — Step 1 COMPLETE (Registration — 2026-07-25))
-32c. PRIVATE-BETA-STAGING-EXECUTION-04 — Repo Clone + Private Env Preparation + App Deployment Baseline (ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — 4-step workflow — Manual execution split into bounded child slices: 04A COMPLETE and LOCKED (2026-07-25), 04B COMPLETE and LOCKED (2026-07-26), 04C COMPLETE and LOCKED (2026-07-26), 04D COMPLETE and LOCKED (2026-07-27), 04E COMPLETE and LOCKED (2026-07-27), 04F COMPLETE and LOCKED — 2026-07-29 — 04F1 COMPLETE and LOCKED — 2026-07-29 — 04G COMPLETE and LOCKED — 2026-07-29 — PM2 persistence reboot-proven — 04H COMPLETE and LOCKED — 2026-08-03 — Public routing / DNS / TLS baseline established — staging.ainow.biz externally resolves to 18.136.141.186 — Caddy enabled/active/valid — public HTTPS health-only smoke PASS — full app deployment still not complete — Predecessor: PRIVATE-BETA-STAGING-EXECUTION-03 COMPLETE and LOCKED — 2026-07-24 — PostgreSQL 15.18 online on localhost 127.0.0.1:5432 only — Redis 8.8.0 online on 127.0.0.1/::1 only — credentials private — ports 5432/6379 closed externally — Snapshots through pre-migration Available including aisandbox-staging-premigration-2026-07-27 — Repo cloned /opt/aisandbox — owner ubuntu:ubuntu — branch main — VPS commit 3da1b7c — /opt/aisandbox/.env created privately — 47 required non-Google keys present — Google OAuth deferred — Dependencies installed (npm ci PASS) — Builds PASS (api-gateway/ai-service/container-manager/frontend) — Generated artifacts present — Staging DB migration baseline COMPLETE — required tables usage_records/billing_snapshots/invoices present — migrations count 25 — 04D PM2 health-only smoke PASS — all four PM2 services online — restarts 0 — API_HEALTH/API_DB_HEALTH/API_READY/CONTAINER_HEALTH=200 — FRONTEND_ROOT=307 accepted as locale redirect — final public table count 26 — 04D1/04D2/04D3 COMPLETE and LOCKED — 04F COMPLETE and LOCKED — 2026-07-29: PM2_SAVE_EXIT=0 / dump present / startup systemd unit installed / 04F1 cleared Result=protocol / pm2-ubuntu enabled and active Result=success / all four apps online/ok / health PASS / 04G reboot-proven — 04H COMPLETE and LOCKED — 2026-08-03: DNS A record staging.ainow.biz → 18.136.141.186 / external DNS confirmed via 1.1.1.1 and 8.8.8.8 / Caddy configured for staging.ainow.biz / Caddyfile backup at /etc/caddy/Caddyfile.backup-04H-20260803-133529 / Caddy validate returned Valid configuration / Caddy enabled and active / public HTTP root=308 / public HTTPS root=307 / public HTTPS API health/db/ready=200 / final local health PASS / public table count remained 26 / no secrets printed / no AI/billing/container/OAuth enablement / no source/migration/env changes / Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04H-CHECKPOINT.md — Credential safety: Keith keeps DB/Redis passwords privately; no paste of .env/DATABASE_URL/REDIS_URL/provider keys — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next action: Register next safe deployment baseline slice for browser/user-facing smoke only)
+32c. PRIVATE-BETA-STAGING-EXECUTION-04 — Repo Clone + Private Env Preparation + App Deployment Baseline (ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — 4-step workflow — Manual execution split into bounded child slices: 04A COMPLETE and LOCKED (2026-07-25), 04B COMPLETE and LOCKED (2026-07-26), 04C COMPLETE and LOCKED (2026-07-26), 04D COMPLETE and LOCKED (2026-07-27), 04E COMPLETE and LOCKED (2026-07-27), 04F COMPLETE and LOCKED — 2026-07-29 — 04F1 COMPLETE and LOCKED — 2026-07-29 — 04G COMPLETE and LOCKED — 2026-07-29 — PM2 persistence reboot-proven — 04H COMPLETE and LOCKED — 2026-08-03 — Public routing / DNS / TLS baseline established — staging.ainow.biz externally resolves to 18.136.141.186 — Caddy enabled/active/valid — public HTTPS health-only smoke PASS — full app deployment still not complete — Predecessor: PRIVATE-BETA-STAGING-EXECUTION-03 COMPLETE and LOCKED — 2026-07-24 — PostgreSQL 15.18 online on localhost 127.0.0.1:5432 only — Redis 8.8.0 online on 127.0.0.1/::1 only — credentials private — ports 5432/6379 closed externally — Snapshots through pre-migration Available including aisandbox-staging-premigration-2026-07-27 — Repo cloned /opt/aisandbox — owner ubuntu:ubuntu — branch main — VPS commit 3da1b7c — /opt/aisandbox/.env created privately — 47 required non-Google keys present — Google OAuth deferred — Dependencies installed (npm ci PASS) — Builds PASS (api-gateway/ai-service/container-manager/frontend) — Generated artifacts present — Staging DB migration baseline COMPLETE — required tables usage_records/billing_snapshots/invoices present — migrations count 25 — 04D PM2 health-only smoke PASS — all four PM2 services online — restarts 0 — API_HEALTH/API_DB_HEALTH/API_READY/CONTAINER_HEALTH=200 — FRONTEND_ROOT=307 accepted as locale redirect — final public table count 26 — 04D1/04D2/04D3 COMPLETE and LOCKED — 04F COMPLETE and LOCKED — 2026-07-29: PM2_SAVE_EXIT=0 / dump present / startup systemd unit installed / 04F1 cleared Result=protocol / pm2-ubuntu enabled and active Result=success / all four apps online/ok / health PASS / 04G reboot-proven — 04H COMPLETE and LOCKED — 2026-08-03: DNS A record staging.ainow.biz → 18.136.141.186 / external DNS confirmed via 1.1.1.1 and 8.8.8.8 / Caddy configured for staging.ainow.biz / Caddyfile backup at /etc/caddy/Caddyfile.backup-04H-20260803-133529 / Caddy validate returned Valid configuration / Caddy enabled and active / public HTTP root=308 / public HTTPS root=307 / public HTTPS API health/db/ready=200 / final local health PASS / public table count remained 26 / no secrets printed / no AI/billing/container/OAuth enablement / no source/migration/env changes / Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04H-CHECKPOINT.md — Credential safety: Keith keeps DB/Redis passwords privately; no paste of .env/DATABASE_URL/REDIS_URL/provider keys — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — 04I ACTIVE / BLOCKED by 04I1/04I2/04I2A — Step 2 COMPLETE (Runbook — 2026-08-03) — Step 3 partial / stopped at root browser failure — 04I1 ACTIVE — Steps 1–4 COMPLETE — evidence review verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — root Location https://localhost:3002/en — expected /en or https://staging.ainow.biz/en — 04I2 ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — 04I2A ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03) — Selected fix path: Option B — Next.js middleware relative/public redirect correction — Next action: PRIVATE-BETA-STAGING-EXECUTION-04I2A Step 2 — Bounded Middleware Implementation)
 32d. PRIVATE-BETA-STAGING-EXECUTION-04A — Redis Gate + Repo Clone Baseline (COMPLETE and LOCKED — 2026-07-25 — All 4 steps COMPLETE — Evidence verdict: PASS — All 45 checks passed — No deviations — No warnings — No stop conditions — Redis Gate Outcome A accepted — Static assessment LIKELY COMPATIBLE — ioredis v5 / BullMQ v5 / Redis 8.8.0 satisfy compatibility conditions — Repo cloned to /opt/aisandbox — owner ubuntu:ubuntu — branch main — latest commit c55a278 Register staging execution 04A repo clone baseline — git status clean — services/ai-service, api-gateway, container-manager, governance, frontend all present — No .env created — No dependencies installed — No build run — No app services started — No migrations run — No DNS/TLS configured — No secrets disclosed — Snapshot aisandbox-staging-preclone-2026-07-25 Available — All 4 snapshots Available — PostgreSQL active/local-only — Redis active/local-only/protected-mode/requirepass — Firewall 22/80/443 only — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04A-CHECKPOINT.md — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next child: PRIVATE-BETA-STAGING-EXECUTION-04B — Private Env Preparation)
 32e. PRIVATE-BETA-STAGING-EXECUTION-04B — Private Env Preparation (COMPLETE and LOCKED — 2026-07-26 — All 4 steps COMPLETE — Evidence review verdict PASS — Step 1 Registration complete — Step 2 Runbook complete — Google OAuth decision complete and locked (Outcome B) — Step 3 Evidence review complete — verdict PASS — Step 4 Consolidation/checkpoint complete — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md — Pre-env snapshot aisandbox-staging-postclone-preenv-2026-07-26 Available — /opt/aisandbox/.env created privately — owner ubuntu:ubuntu — chmod 600 — 47 required non-Google keys present — Google OAuth deferred / omitted intentionally — no fake placeholders — email/password intended staging auth path — all kill switches false — no dependency install — no build — no app services started — no migrations — no DNS/TLS — no secrets disclosed — PostgreSQL warning non-blocking — stop conditions none — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next child: PRIVATE-BETA-STAGING-EXECUTION-04C — ACTIVE)
 32f. PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION — Staging Google OAuth Requirement Decision (COMPLETE and LOCKED — 2026-07-26 — All 3 steps COMPLETE — Outcome B — Google OAuth can be deferred — Decision report: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION-REPORT.md — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION-CHECKPOINT.md — 04B runbook amended — no source code changed — no env files opened/created/edited — no env values printed — no secrets disclosed)
@@ -25214,6 +25214,10 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 32q. PRIVATE-BETA-STAGING-EXECUTION-04F1 — PM2 systemd Adoption Recovery (COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. — Parent: PRIVATE-BETA-STAGING-EXECUTION-04F — Blocker child slice — Evidence review verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-CHECKPOINT.md — Pre-recovery: PM2 dump present — pm2 ping=pong — all four apps online/ok restarts=0 — pm2-ubuntu ActiveState=failed / SubState=failed / Result=protocol / MainPID=0 — Keith approved runtime-impacting recovery — PM2_RESAVE_EXIT=0 — pm2 kill temporary stop as expected — pm2-ubuntu enabled and active — Result=success — MainPID=87688 — PM2 dump present — all four apps online/ok — API_HEALTH/API_DB_HEALTH/API_READY/CONTAINER_HEALTH=200 — FRONTEND_ROOT=307 accepted as locale redirect — public table count 26 — no reboot — no secrets printed — no DNS/TLS / AI / billing / container workflow / Google OAuth enablement — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-PM2-SYSTEMD-ADOPTION-RECOVERY-RUNBOOK.md — Evidence review: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-PM2-SYSTEMD-ADOPTION-RECOVERY-EVIDENCE-REVIEW.md — Parent 04F COMPLETE and LOCKED — 2026-07-29 — Parent 04 remains ACTIVE — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next: Register next safe deployment baseline slice for public routing / DNS / TLS)
 32r. PRIVATE-BETA-STAGING-EXECUTION-04G — Reboot Persistence Validation (COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. — Parent: PRIVATE-BETA-STAGING-EXECUTION-04 — After 04F/04F1 COMPLETE and LOCKED — Evidence review verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04G-CHECKPOINT.md — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-04G-REBOOT-PERSISTENCE-VALIDATION-RUNBOOK.md — Evidence review: docs/PRIVATE-BETA-STAGING-EXECUTION-04G-REBOOT-PERSISTENCE-VALIDATION-EVIDENCE-REVIEW.md — Pre-reboot checks passed — Keith approved reboot — sudo reboot ran — SSH disconnected/reconnected as expected — uptime changed from 5 days to 1 min — post-reboot pm2-ubuntu enabled and active — systemd Result=success — pm2 resurrect exited 0/SUCCESS — PM2 dump remained present — PM2 ping=pong — all four apps online/ok — health-only smoke passed — FRONTEND_ROOT=307 accepted as locale redirect — public table count remained 26 — no PM2 recovery commands needed — no secrets printed — no DNS/TLS/AI/billing/container workflow/OAuth enablement — Parent 04 remains ACTIVE — PM2 persistence reboot-proven — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next: PRIVATE-BETA-STAGING-EXECUTION-04H — ACTIVE — Step 1 COMPLETE (Registration — 2026-07-29))
 32s. PRIVATE-BETA-STAGING-EXECUTION-04H — Public Routing / DNS / TLS Baseline (COMPLETE and LOCKED — 2026-08-03. Do not modify this entry. — Parent: PRIVATE-BETA-STAGING-EXECUTION-04 — After 04G COMPLETE and LOCKED — All 5 steps COMPLETE — Evidence review verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04H-CHECKPOINT.md — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-04H-PUBLIC-ROUTING-DNS-TLS-RUNBOOK.md — Evidence review: docs/PRIVATE-BETA-STAGING-EXECUTION-04H-PUBLIC-ROUTING-DNS-TLS-EVIDENCE-REVIEW.md — Source-grounded hostname: staging.ainow.biz (PRIVATE-BETA-STAGING-SETUP-03 COMPLETE and LOCKED) — Local baseline passed: date=Wed Jul 29 18:13:46 HKT 2026 / uptime=57 min / pm2-ubuntu enabled and active / systemd Result=success / PM2_DUMP_PRESENT=yes / pm2 ping=pong / all four apps online/ok restarts=0 / API_HEALTH/API_DB_HEALTH/API_READY/CONTAINER_HEALTH=200 / FRONTEND_ROOT=307 / public table count 26 — Caddy v2.11.4 installed/enabled/active/valid — Initial Caddyfile: default :80 static file server — DNS initially unresolved — Keith approved: go — approve 04H DNS record change — DNS A record: staging.ainow.biz → 18.136.141.186 — External DNS confirmed: dig @1.1.1.1=18.136.141.186 / dig @8.8.8.8=18.136.141.186 — Keith approved: go — approve 04H Caddy public route change and TLS public validation — Caddyfile backup: /etc/caddy/Caddyfile.backup-04H-20260803-133529 — Caddy configured staging.ainow.biz: /api/* reverse_proxy 127.0.0.1:4000 / all other reverse_proxy 127.0.0.1:3002 — Caddy validate returned Valid configuration — Caddy remained enabled and active — PUBLIC_HTTP_ROOT_FORCED=308 / PUBLIC_HTTPS_ROOT_FORCED=307 / PUBLIC_HTTPS_API_HEALTH_FORCED=200 / PUBLIC_HTTPS_API_DB_HEALTH_FORCED=200 / PUBLIC_HTTPS_API_READY_FORCED=200 — Final local health PASS — public table count remained 26 — no secrets printed — no AI/billing/container/OAuth enablement — no source/migration/env changes — Parent 04 remains ACTIVE — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED)
+32t. PRIVATE-BETA-STAGING-EXECUTION-04I — Browser / User-Facing Smoke Baseline (ACTIVE / BLOCKED by 04I1/04I2/04I2A — Step 2 COMPLETE (Runbook — 2026-08-03) — Step 3 partial / stopped at root browser failure — 2026-08-03. Parent: PRIVATE-BETA-STAGING-EXECUTION-04. After 04H COMPLETE and LOCKED — 2026-08-03 — public routing / DNS / TLS baseline established — staging.ainow.biz externally resolves to 18.136.141.186 — Caddy enabled/active/valid — public HTTPS health-only smoke PASS. Runbook created: docs/PRIVATE-BETA-STAGING-EXECUTION-04I-BROWSER-USER-FACING-SMOKE-RUNBOOK.md. Step 3 partial / stopped evidence: pre-smoke health PASS (PUBLIC_HTTPS_ROOT_FORCED=307 / PUBLIC_HTTPS_API_HEALTH/DB/READY=200 / LOCAL_API_HEALTH/DB_HEALTH/READY=200 / LOCAL_CONTAINER_HEALTH=200 / LOCAL_FRONTEND_ROOT=307 / pm2-ubuntu enabled/active / caddy enabled/active / public table count 26 / date Mon Aug 3 15:12:07 HKT 2026). Browser evidence: https://staging.ainow.biz/en works — https://staging.ainow.biz root does not work as expected — 04I Path A was not PASS — 04I stopped at Path A — Paths B/C/D/E/F not completed — no account created — no login — no persistent data — no AI/billing/container/OAuth execution. BLOCKED by 04I1/04I2/04I2A. 04I1 evidence review verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS. Root redirect actual Location: https://localhost:3002/en — expected: /en or https://staging.ainow.biz/en. 04I should not continue until 04I2A implementation and 04I2 validation/evidence review are complete. Future checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04I-CHECKPOINT.md. Non-goals: no AI/billing/container/OAuth enablement — no migrations — no source/env changes — no production domain cutover — no git commit/push. Parent 04 remains ACTIVE. PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.)
+32u. PRIVATE-BETA-STAGING-EXECUTION-04I1 — Public Root / Locale Redirect Browser Smoke Failure Investigation (ACTIVE — Steps 1–4 COMPLETE (Registration / Runbook / Investigation / Evidence Review — 2026-08-03). Verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS. Root Location header actual: https://localhost:3002/en — expected: /en or https://staging.ainow.biz/en. Parent: PRIVATE-BETA-STAGING-EXECUTION-04I. Registered 2026-08-03. Evidence review file: docs/PRIVATE-BETA-STAGING-EXECUTION-04I1-PUBLIC-ROOT-LOCALE-REDIRECT-EVIDENCE-REVIEW.md. Bounded fix/recovery slice 04I2 registered ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03). Child implementation slice 04I2A registered ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03). Selected fix path: Option B — Next.js middleware relative/public redirect correction. 04I remains ACTIVE / BLOCKED by 04I1/04I2/04I2A. Parent 04 remains ACTIVE. PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.)
+32v. PRIVATE-BETA-STAGING-EXECUTION-04I2 — Public Root Redirect Location Header Fix (ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03). Parent: PRIVATE-BETA-STAGING-EXECUTION-04I. Registered 2026-08-03. Bounded fix/recovery slice registered after 04I1 evidence review verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS. Root redirect actual Location: https://localhost:3002/en — expected: /en or https://staging.ainow.biz/en. Purpose: correct the public root redirect so https://staging.ainow.biz redirects to /en or https://staging.ainow.biz/en and not https://localhost:3002/en. Fix runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-04I2-PUBLIC-ROOT-REDIRECT-LOCATION-HEADER-FIX-RUNBOOK.md. Child implementation slice 04I2A registered ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03). Selected fix path: Option B — Next.js middleware relative/public redirect correction. Reason: middleware.ts uses request.nextUrl.clone() and evidence shows root Location becomes https://localhost:3002/en. Future checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04I2-CHECKPOINT.md. 04I remains ACTIVE / BLOCKED by 04I1/04I2/04I2A. Parent 04 remains ACTIVE. PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.)
+32w. PRIVATE-BETA-STAGING-EXECUTION-04I2A — Middleware Root Redirect Relative Location Fix (ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03). Parent: PRIVATE-BETA-STAGING-EXECUTION-04I2. Registered 2026-08-03. Selected implementation child slice for Option B fix path. Purpose: implement the smallest safe source-code fix so root locale redirect emits /en or https://staging.ainow.biz/en and not https://localhost:3002/en. Selected fix path: Option B — Next.js middleware relative/public redirect correction. Reason: frontend/middleware.ts uses request.nextUrl.clone() for root redirect and evidence shows root Location becomes https://localhost:3002/en because Caddy reverse_proxy does not forward the original public Host header to Next.js. Scope: edit frontend/middleware.ts only — replace root redirect that uses request.nextUrl.clone() with safe relative redirect — preserve existing locale behavior — preserve /en, /en/login, /en/register — preserve API route behavior — focused local validation only. Non-goals: no Caddy change — no DNS change — no SSH — no deployment — no account creation — no login — no AI/billing/container/OAuth — no production domains — no secret printing — no migrations — no git commit/push. Future checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04I2A-CHECKPOINT.md. Guardrails: no Caddy/runtime change — no SSH — no deployment unless explicitly approved — no env files opened/printed — prefer smallest safe source-code fix — keep 04I ACTIVE / BLOCKED until 04I2A and 04I2 validation resolved — keep parent 04 ACTIVE — keep PRIVATE-BETA-DEPLOYMENT-READINESS BLOCKED / PAUSED. Proposed workflow: 1. Registration (this step) — 2. Bounded middleware implementation — 3. Focused local validation — 4. Deployment/runtime validation prompt if needed and explicitly approved — 5. 04I2 evidence review — 6. 04I2/04I2A consolidation — 7. Resume 04I browser smoke from Path A. 04I remains ACTIVE / BLOCKED by 04I1/04I2/04I2A. Parent 04 remains ACTIVE. PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.)
 33. LOCAL-PRIVATE-BETA-READINESS-01 — Local Machine Rebaseline + Private Beta Gap Review (COMPLETE and LOCKED — 2026-07-23 — All 3 steps COMPLETE — Verdict: BLOCKED for private-beta progression — P0: authenticated /api/ai/execute returned 402 not kill-switch 503 — Checkpoint: docs/LOCAL-PRIVATE-BETA-READINESS-01-CHECKPOINT.md — Step 2 report: docs/LOCAL-PRIVATE-BETA-READINESS-01-LOCAL-REBASELINE-REPORT.md — Next: LOCAL-PRIVATE-BETA-READINESS-01-FIX-EXECUTION-KILLSWITCH-LOCAL — ACTIVE)
 34. LOCAL-PRIVATE-BETA-READINESS-01-FIX-EXECUTION-KILLSWITCH-LOCAL — Fix Authenticated Execution Kill Switch — Local Private Beta P0 Fix (COMPLETE and LOCKED — 2026-07-23 — All 3 steps COMPLETE — PASS — P0 blocker fixed: authenticated POST /api/ai/execute now returns 503 (not 402) — GLOBAL_EXECUTION_ENABLED default changed to fail-safe opt-in — kill-switch fires before quota/payment/provider/container logic — 129/129 targeted tests PASS — /api/health/ready 200 — Checkpoint: docs/LOCAL-PRIVATE-BETA-READINESS-01-FIX-EXECUTION-KILLSWITCH-LOCAL-CHECKPOINT.md — Next: LOCAL-PRIVATE-BETA-READINESS-02 — ACTIVE — Step 1 COMPLETE (Registration — 2026-07-23))
 35. LOCAL-PRIVATE-BETA-READINESS-02 — Local Runtime Services Health Validation (PAUSED / PARTIALLY COMPLETE — 2026-07-23 — Container Manager local health PASS (GET http://localhost:4002/api/health 200); AI Service local runtime unresolved due staging parity decision — reason: local Windows env mismatch not equivalent to future staging environment — superseded by cloud staging resumption — Checkpoint: docs/LOCAL-TO-STAGING-PARITY-PIVOT-CHECKPOINT.md)
@@ -26011,7 +26015,7 @@ Redis target in the runbook was Redis 7.x. The official Redis APT repository ins
 **LOCAL-PRIVATE-BETA-READINESS-02 status:** PAUSED / PARTIALLY COMPLETE — 2026-07-23.
 **LOCAL-PRIVATE-BETA-READINESS-02-FIX-AI-SERVICE-REDIS-ENV-LOCAL status:** PAUSED / SUPERSEDED by staging-environment parity decision.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next task:** PRIVATE-BETA-STAGING-EXECUTION-04H Step 2 — Public Routing / DNS / TLS Runbook. EXECUTION-04H ACTIVE — Step 1 COMPLETE (Registration — 2026-07-29). EXECUTION-04G COMPLETE and LOCKED — 2026-07-29 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04G-CHECKPOINT.md — PM2 persistence reboot-proven. EXECUTION-04F COMPLETE and LOCKED — 2026-07-29 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F-CHECKPOINT.md — Evidence review PASS — PM2_SAVE_EXIT=0 — dump present at /home/ubuntu/.pm2/dump.pm2 — PM2 startup systemd unit installed for ubuntu — initial Result=protocol blocker resolved through 04F1 — pm2-ubuntu enabled and active — Result=success — PM2 ping=pong — all four apps online/ok — health checks PASS — FRONTEND_ROOT=307 accepted as locale redirect — public table count 26 — no secrets printed. EXECUTION-04F1 COMPLETE and LOCKED — 2026-07-29 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-CHECKPOINT.md. EXECUTION-04D COMPLETE and LOCKED — 2026-07-27 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-CHECKPOINT.md. EXECUTION-04E COMPLETE and LOCKED — 2026-07-27 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md. EXECUTION-04C COMPLETE and LOCKED — 2026-07-26. EXECUTION-04B COMPLETE and LOCKED — 2026-07-26. EXECUTION-04A COMPLETE and LOCKED — 2026-07-25. EXECUTION-04 remains ACTIVE — child 04A/04B/04C/04D/04E/04F/04G COMPLETE and LOCKED — 04F1 COMPLETE and LOCKED — 04H ACTIVE — PM2 persistence reboot-proven — Public routing / DNS / TLS not yet configured — Full app deployment still not complete. See PRIVATE-BETA-STAGING-EXECUTION-04H section below.
+**Next task:** PRIVATE-BETA-STAGING-EXECUTION-04I2A Step 2 — Bounded Middleware Implementation. EXECUTION-04I2A ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03) — Option B selected — Next.js middleware relative/public redirect correction. EXECUTION-04I2 ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — 04I2A registered as implementation child slice. EXECUTION-04I1 ACTIVE — Steps 1–4 COMPLETE — Verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — root Location https://localhost:3002/en — expected /en or https://staging.ainow.biz/en. EXECUTION-04I ACTIVE / BLOCKED by 04I1/04I2/04I2A — Step 2 COMPLETE (Runbook — 2026-08-03) — Step 3 partial / stopped at root browser failure — https://staging.ainow.biz/en works — https://staging.ainow.biz root does not work as expected — 04I should not continue until 04I2A implementation and 04I2 validation/evidence review are complete. EXECUTION-04H COMPLETE and LOCKED — 2026-08-03 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04H-CHECKPOINT.md — public routing / DNS / TLS baseline established — staging.ainow.biz externally resolves to 18.136.141.186 — Caddy enabled/active/valid — public HTTPS health-only smoke PASS. EXECUTION-04G COMPLETE and LOCKED — 2026-07-29 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04G-CHECKPOINT.md — PM2 persistence reboot-proven. EXECUTION-04F COMPLETE and LOCKED — 2026-07-29 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F-CHECKPOINT.md — Evidence review PASS — PM2_SAVE_EXIT=0 — dump present at /home/ubuntu/.pm2/dump.pm2 — PM2 startup systemd unit installed for ubuntu — initial Result=protocol blocker resolved through 04F1 — pm2-ubuntu enabled and active — Result=success — PM2 ping=pong — all four apps online/ok — health checks PASS — FRONTEND_ROOT=307 accepted as locale redirect — public table count 26 — no secrets printed. EXECUTION-04F1 COMPLETE and LOCKED — 2026-07-29 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-CHECKPOINT.md. EXECUTION-04D COMPLETE and LOCKED — 2026-07-27 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-CHECKPOINT.md. EXECUTION-04E COMPLETE and LOCKED — 2026-07-27 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md. EXECUTION-04C COMPLETE and LOCKED — 2026-07-26. EXECUTION-04B COMPLETE and LOCKED — 2026-07-26. EXECUTION-04A COMPLETE and LOCKED — 2026-07-25. EXECUTION-04 remains ACTIVE — child 04A/04B/04C/04D/04E/04F/04G/04H COMPLETE and LOCKED — 04F1 COMPLETE and LOCKED — 04I ACTIVE / BLOCKED by 04I1/04I2/04I2A — 04I1 ACTIVE — Steps 1–4 COMPLETE — 04I2 ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — 04I2A ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03) — PM2 persistence reboot-proven — Public routing / DNS / TLS baseline established — Root redirect Location header wrong — Fix in progress via 04I2A (Option B middleware fix) — Full app deployment still not complete. See PRIVATE-BETA-STAGING-EXECUTION-04I, 04I1, 04I2, and 04I2A sections below.
 
 **Reference:** Predecessor: PRIVATE-BETA-STAGING-EXECUTION-02. Checkpoint (predecessor): `docs/PRIVATE-BETA-STAGING-EXECUTION-02-CHECKPOINT.md`. Checkpoint (this task): `docs/PRIVATE-BETA-STAGING-EXECUTION-03-DB-REDIS-CHECKPOINT.md`. DB/Redis plan: `docs/PRIVATE-BETA-STAGING-SETUP-06-DB-REDIS-PLAN.md`. Pivot checkpoint: `docs/LOCAL-TO-STAGING-PARITY-PIVOT-CHECKPOINT.md`.
 
@@ -26121,7 +26125,11 @@ SPLIT ACTIVATED — 2026-07-25. The Step 2 runbook (docs/PRIVATE-BETA-STAGING-EX
 - PRIVATE-BETA-STAGING-EXECUTION-04F — PM2 Persistence / Boot Persistence (COMPLETE and LOCKED — 2026-07-29 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F-CHECKPOINT.md — PM2_SAVE_EXIT=0 — dump present — pm2-ubuntu enabled/active Result=success — 04F1 COMPLETE and LOCKED — no reboot validation)
 - PRIVATE-BETA-STAGING-EXECUTION-04F1 — PM2 systemd Adoption Recovery (COMPLETE and LOCKED — 2026-07-29 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-CHECKPOINT.md)
 - PRIVATE-BETA-STAGING-EXECUTION-04G — Reboot Persistence Validation (COMPLETE and LOCKED — 2026-07-29 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04G-CHECKPOINT.md — PM2 persistence reboot-proven)
-- PRIVATE-BETA-STAGING-EXECUTION-04H — Public Routing / DNS / TLS Baseline (ACTIVE — Step 1 COMPLETE (Registration — 2026-07-29) — after 04G reboot-proven PM2/systemd persistence)
+- PRIVATE-BETA-STAGING-EXECUTION-04H — Public Routing / DNS / TLS Baseline (COMPLETE and LOCKED — 2026-08-03 — All 5 steps COMPLETE — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04H-CHECKPOINT.md — staging.ainow.biz → 18.136.141.186 — Caddy enabled/active/valid — public HTTPS health-only smoke PASS)
+- PRIVATE-BETA-STAGING-EXECUTION-04I — Browser / User-Facing Smoke Baseline (ACTIVE / BLOCKED by 04I1/04I2/04I2A — Step 2 COMPLETE (Runbook — 2026-08-03) — Step 3 partial / stopped at root browser failure — https://staging.ainow.biz/en works — https://staging.ainow.biz root does not work as expected — root Location https://localhost:3002/en — expected /en or https://staging.ainow.biz/en — 04I should not continue until 04I2A implementation and 04I2 validation/evidence review are complete)
+- PRIVATE-BETA-STAGING-EXECUTION-04I1 — Public Root / Locale Redirect Browser Smoke Failure Investigation (ACTIVE — Steps 1–4 COMPLETE (Registration / Runbook / Investigation / Evidence Review — 2026-08-03) — Verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — 04I BLOCKED by 04I1/04I2/04I2A)
+- PRIVATE-BETA-STAGING-EXECUTION-04I2 — Public Root Redirect Location Header Fix (ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — bounded fix/recovery slice — Option B selected — 04I2A child implementation slice registered ACTIVE — 04I BLOCKED until 04I2A/04I2 resolved)
+- PRIVATE-BETA-STAGING-EXECUTION-04I2A — Middleware Root Redirect Relative Location Fix (ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03) — implementation child slice of 04I2 — Option B — Next.js middleware relative/public redirect correction — frontend/middleware.ts root redirect fix — 04I BLOCKED until 04I2A resolved)
 
 #### Non-Goals
 
@@ -26215,7 +26223,7 @@ Redis 8.8.0 compatibility static assessment: LIKELY COMPATIBLE — ioredis ^5.3.
 - [ ] TASKS.md updated. TASKS_BACKLOG_FULL.md updated. Roadmap updated.
 - [ ] PRIVATE-BETA-STAGING-EXECUTION-05 registered or deferred.
 
-**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — Child 04A COMPLETE and LOCKED (2026-07-25) — Child 04B COMPLETE and LOCKED (2026-07-26) — Child 04C COMPLETE and LOCKED (2026-07-26) — Child 04D COMPLETE and LOCKED (2026-07-27) — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-CHECKPOINT.md — Child 04E COMPLETE and LOCKED (2026-07-27) — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md — Child 04F COMPLETE and LOCKED (2026-07-29) — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F-CHECKPOINT.md — Child 04F1 COMPLETE and LOCKED (2026-07-29) — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-CHECKPOINT.md — Child 04G COMPLETE and LOCKED (2026-07-29) — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04G-CHECKPOINT.md — PM2 persistence reboot-proven — Child 04H ACTIVE — Step 1 COMPLETE (Registration — 2026-07-29) — Public routing / DNS / TLS not yet configured — Full app deployment still not complete — Manual execution split into child slices (04A/04B/04C/04D) + migration sibling 04E COMPLETE and LOCKED + persistence sibling 04F COMPLETE and LOCKED + recovery sibling 04F1 COMPLETE and LOCKED + reboot-validation sibling 04G COMPLETE and LOCKED + public-routing sibling 04H ACTIVE.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — Child 04A COMPLETE and LOCKED (2026-07-25) — Child 04B COMPLETE and LOCKED (2026-07-26) — Child 04C COMPLETE and LOCKED (2026-07-26) — Child 04D COMPLETE and LOCKED (2026-07-27) — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-CHECKPOINT.md — Child 04E COMPLETE and LOCKED (2026-07-27) — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md — Child 04F COMPLETE and LOCKED (2026-07-29) — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F-CHECKPOINT.md — Child 04F1 COMPLETE and LOCKED (2026-07-29) — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-CHECKPOINT.md — Child 04G COMPLETE and LOCKED (2026-07-29) — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04G-CHECKPOINT.md — PM2 persistence reboot-proven — Child 04H COMPLETE and LOCKED (2026-08-03) — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04H-CHECKPOINT.md — Public routing / DNS / TLS baseline established — staging.ainow.biz → 18.136.141.186 — Caddy enabled/active/valid — public HTTPS health-only smoke PASS — Child 04I ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03) — Browser/user-facing smoke not yet performed — Full app deployment still not complete — Manual execution split into child slices (04A/04B/04C/04D) + migration sibling 04E COMPLETE and LOCKED + persistence sibling 04F COMPLETE and LOCKED + recovery sibling 04F1 COMPLETE and LOCKED + reboot-validation sibling 04G COMPLETE and LOCKED + public-routing sibling 04H COMPLETE and LOCKED + browser-smoke sibling 04I ACTIVE.
 **PRIVATE-BETA-STAGING-EXECUTION-04A status:** COMPLETE and LOCKED — 2026-07-25 — All 4 steps COMPLETE — Evidence verdict: PASS — Redis Gate Outcome A accepted — Repo cloned /opt/aisandbox — owner ubuntu:ubuntu — branch main — commit c55a278 — git status clean — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04A-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04B status:** COMPLETE and LOCKED — 2026-07-26 — All 4 steps COMPLETE — Evidence review verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md — /opt/aisandbox/.env created privately — owner ubuntu:ubuntu — chmod 600 — 47 required non-Google keys present — Google OAuth deferred / omitted intentionally — no fake placeholders — all kill switches false — no dependency install / build / app services / migrations / DNS/TLS — no secrets disclosed.
 **PRIVATE-BETA-STAGING-EXECUTION-04C status:** COMPLETE and LOCKED — 2026-07-26 — All steps COMPLETE — Evidence review verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04C-CHECKPOINT.md — npm ci PASS — all four builds PASS — generated artifacts present — no services / migrations / DNS/TLS — no secrets disclosed.
@@ -26227,14 +26235,18 @@ Redis 8.8.0 compatibility static assessment: LIKELY COMPATIBLE — ioredis ^5.3.
 **PRIVATE-BETA-STAGING-EXECUTION-04F status:** COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04F1 status:** COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04G status:** COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04G-CHECKPOINT.md.
-**PRIVATE-BETA-STAGING-EXECUTION-04H status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-07-29).
+**PRIVATE-BETA-STAGING-EXECUTION-04H status:** COMPLETE and LOCKED — 2026-08-03. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04H-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04I status:** ACTIVE / BLOCKED by 04I1/04I2/04I2A — Step 2 COMPLETE (Runbook — 2026-08-03) — Step 3 partial / stopped at root browser failure.
+**PRIVATE-BETA-STAGING-EXECUTION-04I1 status:** ACTIVE — Steps 1–4 COMPLETE — Verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — root Location https://localhost:3002/en.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2 status:** ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — Option B selected — 04I2A child implementation slice ACTIVE.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2A status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03).
 **PRIVATE-BETA-STAGING-EXECUTION-03 status:** COMPLETE and LOCKED — 2026-07-24.
 **PRIVATE-BETA-STAGING-EXECUTION-02 status:** COMPLETE and LOCKED — 2026-07-24.
 **PRIVATE-BETA-STAGING-EXECUTION-01 status:** COMPLETE and LOCKED — 2026-07-23.
 **LOCAL-PRIVATE-BETA-READINESS-02 status:** PAUSED / PARTIALLY COMPLETE — 2026-07-23.
 **LOCAL-PRIVATE-BETA-READINESS-02-FIX-AI-SERVICE-REDIS-ENV-LOCAL status:** PAUSED / SUPERSEDED by staging-environment parity decision.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04H Step 2 — Public Routing / DNS / TLS Runbook.
+**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04I2A Step 2 — Bounded Middleware Implementation.
 
 ---
 
@@ -29522,7 +29534,7 @@ C:\Users\knlee\aiSandBox2026B\docs\PRIVATE-BETA-STAGING-EXECUTION-04G-CHECKPOINT
 
 #### PRIVATE-BETA-STAGING-EXECUTION-04H: Public Routing / DNS / TLS Baseline
 
-**Status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-07-29)
+**Status:** COMPLETE and LOCKED — 2026-08-03. Do not modify this entry.
 **Task ID:** PRIVATE-BETA-STAGING-EXECUTION-04H
 **Title:** Public Routing / DNS / TLS Baseline
 **Family:** PRIVATE BETA / STAGING EXECUTION
@@ -29707,38 +29719,1079 @@ C:\Users\knlee\aiSandBox2026B\docs\PRIVATE-BETA-STAGING-EXECUTION-04H-CHECKPOINT
 - [x] no git commit or push occurred.
 - [x] no subagents used.
 
-###### Step 2 — Public Routing / DNS / TLS Runbook — PENDING
-- [ ] Runbook `docs/PRIVATE-BETA-STAGING-EXECUTION-04H-PUBLIC-ROUTING-DNS-TLS-RUNBOOK.md` created.
+###### Step 2 — Public Routing / DNS / TLS Runbook — COMPLETE (2026-08-03)
+- [x] Runbook `docs/PRIVATE-BETA-STAGING-EXECUTION-04H-PUBLIC-ROUTING-DNS-TLS-RUNBOOK.md` created.
 
-###### Step 3 — Manual Public Routing / DNS / TLS Execution + Evidence — PENDING
-- [ ] Pre-change checks recorded / passed.
-- [ ] Keith explicit DNS/Caddy/TLS approvals recorded as required.
-- [ ] Controlled public routing / DNS / TLS execution evidence collected.
+###### Step 3 — Manual Public Routing / DNS / TLS Execution + Evidence — COMPLETE (2026-08-03)
+- [x] Pre-change checks recorded / passed.
+- [x] Keith explicit DNS/Caddy/TLS approvals recorded as required.
+- [x] Controlled public routing / DNS / TLS execution evidence collected.
+
+###### Step 4 — Evidence Review — COMPLETE (2026-08-03)
+- [x] Evidence review report created with explicit PASS/FAIL/BLOCKED verdict — verdict PASS.
+
+###### Step 5 — Consolidation / Checkpoint — COMPLETE (2026-08-03)
+- [x] Checkpoint `docs/PRIVATE-BETA-STAGING-EXECUTION-04H-CHECKPOINT.md` created.
+- [x] 04H marked COMPLETE and LOCKED — 2026-08-03.
+- [x] TASKS.md updated.
+- [x] TASKS_BACKLOG_FULL.md updated.
+- [x] Roadmap updated.
+- [x] Parent 04 remains ACTIVE until remaining baseline work closes.
+- [x] PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.
+
+###### Step 6 — Continue to next deployment baseline slice — COMPLETE (2026-08-03)
+- [x] Next deployment baseline slice registered: PRIVATE-BETA-STAGING-EXECUTION-04I — ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03).
+
+**PRIVATE-BETA-STAGING-EXECUTION-04H status:** COMPLETE and LOCKED — 2026-08-03. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04H-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04I status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03).
+**PRIVATE-BETA-STAGING-EXECUTION-04G status:** COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04G-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04F status:** COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04F1 status:** COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04D status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04E status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E/04F COMPLETE and LOCKED — 04F1 COMPLETE and LOCKED — 04G COMPLETE and LOCKED — 2026-07-29 — PM2 persistence reboot-proven — 04H COMPLETE and LOCKED — 2026-08-03 — Public routing / DNS / TLS baseline established — 04I ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03) — Browser/user-facing smoke not yet performed — Full app deployment still not complete.
+**PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
+**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04I Step 2 — Browser / User-Facing Smoke Runbook.
+
+---
+
+#### PRIVATE-BETA-STAGING-EXECUTION-04I: Browser / User-Facing Smoke Baseline
+
+**Status:** ACTIVE / BLOCKED by 04I1/04I2/04I2A — Step 2 COMPLETE (Runbook — 2026-08-03) — Step 3 partial / stopped at root browser failure — 2026-08-03
+**Task ID:** PRIVATE-BETA-STAGING-EXECUTION-04I
+**Title:** Browser / User-Facing Smoke Baseline
+**Family:** PRIVATE BETA / STAGING EXECUTION
+**Priority:** CRITICAL
+**Nature:** REAL STAGING EXECUTION — browser/user-facing smoke planning / runbook / controlled manual smoke / evidence / consolidation
+**Risk:** MEDIUM — controlled browser smoke only; no AI/billing/container/OAuth execution; no source/env changes
+**Registered:** 2026-08-03
+**Parent:** PRIVATE-BETA-STAGING-EXECUTION-04
+**Predecessors:** PRIVATE-BETA-STAGING-EXECUTION-04H COMPLETE and LOCKED — 2026-08-03; PRIVATE-BETA-STAGING-EXECUTION-04G COMPLETE and LOCKED — 2026-07-29; PRIVATE-BETA-STAGING-EXECUTION-04F / 04F1 COMPLETE and LOCKED — 2026-07-29
+**Future runbook:** docs/PRIVATE-BETA-STAGING-EXECUTION-04I-BROWSER-USER-FACING-SMOKE-RUNBOOK.md
+**Future checkpoint:** docs/PRIVATE-BETA-STAGING-EXECUTION-04I-CHECKPOINT.md
+
+#### Purpose
+
+Validate that the public HTTPS staging site is usable in a browser for safe user-facing private beta paths after DNS/TLS and public health-only routing are complete.
+
+#### Authoritative State Carried Forward
+
+* PRIVATE-BETA-STAGING-EXECUTION-04A is COMPLETE and LOCKED — 2026-07-25.
+* PRIVATE-BETA-STAGING-EXECUTION-04B is COMPLETE and LOCKED — 2026-07-26.
+* PRIVATE-BETA-STAGING-EXECUTION-04C is COMPLETE and LOCKED — 2026-07-26.
+* PRIVATE-BETA-STAGING-EXECUTION-04D is COMPLETE and LOCKED — 2026-07-27.
+* PRIVATE-BETA-STAGING-EXECUTION-04D1 is COMPLETE and LOCKED — 2026-07-27.
+* PRIVATE-BETA-STAGING-EXECUTION-04D2 is COMPLETE and LOCKED — 2026-07-27.
+* PRIVATE-BETA-STAGING-EXECUTION-04D3 is COMPLETE and LOCKED — 2026-07-27.
+* PRIVATE-BETA-STAGING-EXECUTION-04E is COMPLETE and LOCKED — 2026-07-27.
+* PRIVATE-BETA-STAGING-EXECUTION-04F is COMPLETE and LOCKED — 2026-07-29.
+* PRIVATE-BETA-STAGING-EXECUTION-04F1 is COMPLETE and LOCKED — 2026-07-29.
+* PRIVATE-BETA-STAGING-EXECUTION-04G is COMPLETE and LOCKED — 2026-07-29.
+* PRIVATE-BETA-STAGING-EXECUTION-04H is COMPLETE and LOCKED — 2026-08-03.
+* Parent PRIVATE-BETA-STAGING-EXECUTION-04 remains ACTIVE.
+* PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.
+* Public routing / DNS / TLS baseline is established.
+* Browser/user-facing smoke has not yet been performed.
+
+#### Evidence Carried Forward from 04H
+
+```text
+04H public routing / DNS / TLS baseline passed:
+- source-grounded hostname: staging.ainow.biz.
+- staging.ainow.biz externally resolves to 18.136.141.186.
+- Caddy configured for staging.ainow.biz.
+- Caddy enabled and active.
+- Caddy validate returned Valid configuration.
+- Public health-only smoke passed:
+  - PUBLIC_HTTP_ROOT_FORCED=308
+  - PUBLIC_HTTPS_ROOT_FORCED=307
+  - PUBLIC_HTTPS_API_HEALTH_FORCED=200
+  - PUBLIC_HTTPS_API_DB_HEALTH_FORCED=200
+  - PUBLIC_HTTPS_API_READY_FORCED=200
+- Final local health passed:
+  - LOCAL_API_HEALTH=200
+  - LOCAL_API_DB_HEALTH=200
+  - LOCAL_API_READY=200
+  - LOCAL_CONTAINER_HEALTH=200
+  - LOCAL_FRONTEND_ROOT=307
+- pm2-ubuntu enabled and active.
+- Caddy enabled and active.
+- public table count remained 26.
+- no secrets printed.
+- no AI execution.
+- no billing/payment execution.
+- no container workflow beyond health check.
+- no Google OAuth enablement.
+- no source/migration/env changes.
+```
+
+#### Scope
+
+04I is limited to planning, runbook creation, controlled manual browser/user-facing smoke, evidence review, and consolidation.
+
+Future 04I steps may include:
+
+1. Browser / user-facing smoke runbook.
+2. Pre-smoke local and public health verification.
+3. Browser smoke through `https://staging.ainow.biz`.
+4. Root/locale redirect verification.
+5. Login/register page render verification.
+6. Controlled registration/login smoke only if a test account path is source-grounded and approved.
+7. Authenticated workspace/dashboard render verification.
+8. Safe Create Agent UI smoke, only up to the non-executing boundary unless the runbook explicitly scopes a harmless test record.
+9. Evidence review.
+10. Consolidation/checkpoint.
+
+#### Non-Goals
+
+04I must not:
+
+* Enable AI execution.
+* Run AI provider calls.
+* Enable billing/payment execution.
+* Run checkout, payment, invoice, or subscription flows.
+* Enable container execution workflows.
+* Run container jobs.
+* Enable Google OAuth.
+* Modify `.env`.
+* Print `.env` or secret values.
+* Configure DNS/TLS/Caddy.
+* Modify source code.
+* Modify migration files.
+* Run migrations.
+* Create database tables.
+* Perform production domain cutover.
+* Mark PRIVATE-BETA-DEPLOYMENT-READINESS ready.
+* Commit or push git.
+
+#### Future Runbook Path
+
+```text
+C:\Users\knlee\aiSandBox2026B\docs\PRIVATE-BETA-STAGING-EXECUTION-04I-BROWSER-USER-FACING-SMOKE-RUNBOOK.md
+```
+
+#### Future Checkpoint Path
+
+```text
+C:\Users\knlee\aiSandBox2026B\docs\PRIVATE-BETA-STAGING-EXECUTION-04I-CHECKPOINT.md
+```
+
+#### Required Future Guardrails
+
+* Keith explicit approval required before creating any new test account or persistent user/workspace/agent data.
+* Prefer existing safe test account if source-grounded and available without secret disclosure.
+* Do not print passwords, session cookies, JWTs, API keys, provider keys, or `.env` values.
+* Do not run `env`, `printenv`, `cat .env`, `echo $DATABASE_URL`, `echo $REDIS_URL`, or secret-printing commands.
+* Pre-smoke checks must confirm:
+  * `pm2-ubuntu` enabled and active.
+  * Caddy enabled and active.
+  * public HTTPS health-only smoke passing.
+  * local health-only smoke passing.
+  * public table count 26 unless an approved smoke intentionally creates test data later.
+* Browser smoke should be public HTTPS only:
+  * `https://staging.ainow.biz`
+* Browser smoke should verify only safe user-facing paths:
+  * root/locale redirect
+  * login page render
+  * register page render
+  * successful register/login only if approved
+  * workspace/dashboard render
+  * Create Agent UI availability without AI execution
+* If Create Agent requires writing a harmless test record, stop for explicit approval before creating it.
+* Do not trigger AI execution.
+* Do not trigger billing/payment execution.
+* Do not trigger container workflow execution.
+* Do not enable Google OAuth.
+* Do not test production domains: app.ainow.biz / ainow.biz.
+* Do not mark PRIVATE-BETA-DEPLOYMENT-READINESS ready from 04I alone.
+* If smoke fails, stop and capture safe evidence only.
+* Failed 04I execution should trigger a separate bounded recovery slice if needed.
+
+#### Proposed Workflow
+
+1. Registration — this step — COMPLETE (2026-08-03).
+2. Browser / User-Facing Smoke Runbook.
+3. Manual Browser Smoke + Evidence.
+4. Evidence Review.
+5. Consolidation / Checkpoint.
+6. Continue to next deployment baseline slice.
+
+#### Acceptance Criteria
+
+###### Step 1 — Registration — COMPLETE (2026-08-03)
+- [x] 04I registered.
+- [x] 04I status set to ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03).
+- [x] 04H completion state recorded.
+- [x] public routing / DNS / TLS evidence carried forward.
+- [x] 04I purpose recorded.
+- [x] 04I scope recorded.
+- [x] 04I non-goals recorded.
+- [x] future runbook path recorded.
+- [x] future checkpoint path recorded.
+- [x] browser/user-facing smoke guardrails recorded.
+- [x] proposed workflow recorded.
+- [x] parent 04 remains ACTIVE.
+- [x] PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.
+- [x] TASKS.md updated.
+- [x] TASKS_BACKLOG_FULL.md updated.
+- [x] roadmap updated.
+- [x] no source code changed.
+- [x] no migration files changed.
+- [x] no env files opened/created/edited.
+- [x] no env values opened/printed.
+- [x] no runtime/server action occurred.
+- [x] no Docker/PostgreSQL/Redis action occurred.
+- [x] no git commit or push occurred.
+- [x] no subagents used.
+
+###### Step 2 — Browser / User-Facing Smoke Runbook — COMPLETE (2026-08-03)
+- [x] Runbook `docs/PRIVATE-BETA-STAGING-EXECUTION-04I-BROWSER-USER-FACING-SMOKE-RUNBOOK.md` created.
+
+###### Step 3 — Manual Browser Smoke + Evidence — PARTIAL / STOPPED (2026-08-03)
+- [x] Pre-smoke local and public health checks recorded / passed.
+
+```text
+04I Step 3 partial browser smoke evidence:
+
+Pre-smoke health:
+- date: Mon Aug 3 15:12:07 HKT 2026
+- public table count: 26
+- pm2-ubuntu enabled
+- pm2-ubuntu active
+- caddy enabled
+- caddy active
+- PUBLIC_HTTPS_ROOT_FORCED=307
+- PUBLIC_HTTPS_API_HEALTH_FORCED=200
+- PUBLIC_HTTPS_API_DB_HEALTH_FORCED=200
+- PUBLIC_HTTPS_API_READY_FORCED=200
+- LOCAL_API_HEALTH=200
+- LOCAL_API_DB_HEALTH=200
+- LOCAL_API_READY=200
+- LOCAL_CONTAINER_HEALTH=200
+- LOCAL_FRONTEND_ROOT=307
+
+Browser evidence:
+- https://staging.ainow.biz/en works.
+- https://staging.ainow.biz root does not work as expected.
+- 04I Path A was not PASS.
+- 04I stopped at Path A.
+- Paths B/C/D/E/F were not completed.
+- No account was created.
+- No login was performed.
+- No workspace data was created.
+- No agent data was created.
+- No AI execution occurred.
+- No billing/payment execution occurred.
+- No container workflow execution occurred.
+- No Google OAuth occurred.
+- No secrets were printed.
+```
+
+Stop condition triggered: 04I runbook requires public root to load over HTTPS and redirect to /en. Root does not work as expected in browser. 04I blocked — child investigation slice 04I1 registered.
+
+- [ ] Keith explicit approval recorded for any new test account creation. (DEFERRED — BLOCKED by 04I1)
+- [ ] Controlled browser smoke evidence collected. (DEFERRED — BLOCKED by 04I1)
 
 ###### Step 4 — Evidence Review — PENDING
 - [ ] Evidence review report created with explicit PASS/FAIL/BLOCKED verdict.
 
 ###### Step 5 — Consolidation / Checkpoint — PENDING
-- [ ] Checkpoint `docs/PRIVATE-BETA-STAGING-EXECUTION-04H-CHECKPOINT.md` created.
-- [ ] 04H marked COMPLETE and LOCKED after successful validation (or blocked state recorded).
-- [ ] TASKS.md updated.
-- [ ] TASKS_BACKLOG_FULL.md updated.
-- [ ] Roadmap updated.
+- [ ] Checkpoint `docs/PRIVATE-BETA-STAGING-EXECUTION-04I-CHECKPOINT.md` created.
+- [ ] 04I marked COMPLETE and LOCKED after successful validation (or blocked state recorded).
+- [ ] TASKS.md updated. TASKS_BACKLOG_FULL.md updated. Roadmap updated.
 - [ ] Parent 04 remains ACTIVE until remaining baseline work closes.
 - [ ] PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.
 
 ###### Step 6 — Continue to next deployment baseline slice — PENDING
 - [ ] Next deployment baseline slice registered or deferred.
 
-**PRIVATE-BETA-STAGING-EXECUTION-04H status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-07-29).
+**PRIVATE-BETA-STAGING-EXECUTION-04I status:** ACTIVE / BLOCKED by 04I1/04I2/04I2A — Step 2 COMPLETE (Runbook — 2026-08-03) — Step 3 partial / stopped at root browser failure — 04I should not continue until 04I2A implementation and 04I2 validation/evidence review are complete.
+**PRIVATE-BETA-STAGING-EXECUTION-04I1 status:** ACTIVE — Steps 1–4 COMPLETE (Registration / Runbook / Investigation / Evidence Review — 2026-08-03) — Verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — root Location https://localhost:3002/en — expected /en or https://staging.ainow.biz/en. See PRIVATE-BETA-STAGING-EXECUTION-04I1 section below. See also 04I2 and 04I2A sections below.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2 status:** ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — Option B selected — 04I2A child implementation slice ACTIVE. See PRIVATE-BETA-STAGING-EXECUTION-04I2 section below.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2A status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03) — Option B — Next.js middleware relative/public redirect correction. See PRIVATE-BETA-STAGING-EXECUTION-04I2A section below.
+**PRIVATE-BETA-STAGING-EXECUTION-04H status:** COMPLETE and LOCKED — 2026-08-03. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04H-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04G status:** COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04G-CHECKPOINT.md.
-**PRIVATE-BETA-STAGING-EXECUTION-04F status:** COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F-CHECKPOINT.md.
-**PRIVATE-BETA-STAGING-EXECUTION-04F1 status:** COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-CHECKPOINT.md.
-**PRIVATE-BETA-STAGING-EXECUTION-04D status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-CHECKPOINT.md.
-**PRIVATE-BETA-STAGING-EXECUTION-04E status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md.
-**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E/04F COMPLETE and LOCKED — 04F1 COMPLETE and LOCKED — 04G COMPLETE and LOCKED — 2026-07-29 — PM2 persistence reboot-proven — 04H ACTIVE — Public routing / DNS / TLS not yet configured — Full app deployment still not complete.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E/04F COMPLETE and LOCKED — 04F1 COMPLETE and LOCKED — 04G COMPLETE and LOCKED — 2026-07-29 — PM2 persistence reboot-proven — 04H COMPLETE and LOCKED — 2026-08-03 — Public routing / DNS / TLS baseline established — 04I ACTIVE / BLOCKED by 04I1/04I2/04I2A — Step 3 partial / stopped at root browser failure — 04I1 ACTIVE — Steps 1–4 COMPLETE — evidence review verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — root Location https://localhost:3002/en — expected /en or https://staging.ainow.biz/en — 04I2 ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — Option B selected — 04I2A ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03) — Fix in progress via 04I2A (Option B middleware fix) — Full app deployment still not complete.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04H Step 2 — Public Routing / DNS / TLS Runbook.
+**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04I2A Step 2 — Bounded Middleware Implementation.
+
+---
+
+#### PRIVATE-BETA-STAGING-EXECUTION-04I1: Public Root / Locale Redirect Browser Smoke Failure Investigation
+
+**Status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03)
+**Task ID:** PRIVATE-BETA-STAGING-EXECUTION-04I1
+**Title:** Public Root / Locale Redirect Browser Smoke Failure Investigation
+**Family:** PRIVATE BETA / STAGING EXECUTION
+**Priority:** CRITICAL
+**Nature:** REAL STAGING EXECUTION — bounded recovery/investigation slice after 04I Step 3 stop condition
+**Risk:** MEDIUM — investigation and evidence only; any fix requires separate approval
+**Registered:** 2026-08-03
+**Parent:** PRIVATE-BETA-STAGING-EXECUTION-04I
+**Future runbook:** docs/PRIVATE-BETA-STAGING-EXECUTION-04I1-PUBLIC-ROOT-LOCALE-REDIRECT-INVESTIGATION-RUNBOOK.md
+**Future checkpoint:** docs/PRIVATE-BETA-STAGING-EXECUTION-04I1-CHECKPOINT.md
+
+#### Why 04I1 Exists
+
+04I Step 3 pre-smoke health passed. `https://staging.ainow.biz/en` works. However, `https://staging.ainow.biz` root does not work as expected in the browser. The 04I runbook Path A requires the public root to load over HTTPS and redirect to `/en`. This stop condition triggers a separate bounded recovery/investigation slice per 04I runbook rules.
+
+Source-grounded root cause context: `frontend/middleware.ts` handles `/` → `/en` redirect via `NextResponse.redirect()`. The `PUBLIC_HTTPS_ROOT_FORCED=307` curl test passes, but the browser-visible behavior differs. The investigation must determine whether the failure is in Caddy config, middleware behavior under browser conditions, TLS redirect chain, cookie/session handling, or another cause before any fix is applied.
+
+#### 04I Step 3 Partial / Stopped Evidence
+
+```text
+04I Step 3 partial browser smoke evidence:
+
+Pre-smoke health:
+- date: Mon Aug 3 15:12:07 HKT 2026
+- public table count: 26
+- pm2-ubuntu enabled
+- pm2-ubuntu active
+- caddy enabled
+- caddy active
+- PUBLIC_HTTPS_ROOT_FORCED=307
+- PUBLIC_HTTPS_API_HEALTH_FORCED=200
+- PUBLIC_HTTPS_API_DB_HEALTH_FORCED=200
+- PUBLIC_HTTPS_API_READY_FORCED=200
+- LOCAL_API_HEALTH=200
+- LOCAL_API_DB_HEALTH=200
+- LOCAL_API_READY=200
+- LOCAL_CONTAINER_HEALTH=200
+- LOCAL_FRONTEND_ROOT=307
+
+Browser evidence:
+- https://staging.ainow.biz/en works.
+- https://staging.ainow.biz root does not work as expected.
+- 04I Path A was not PASS.
+- 04I stopped at Path A.
+- Paths B/C/D/E/F were not completed.
+- No account was created.
+- No login was performed.
+- No workspace data was created.
+- No agent data was created.
+- No AI execution occurred.
+- No billing/payment execution occurred.
+- No container workflow execution occurred.
+- No Google OAuth occurred.
+- No secrets were printed.
+```
+
+#### Purpose
+
+Investigate and recover the public browser root behavior for `https://staging.ainow.biz` so 04I Path A can pass safely before continuing browser/user-facing smoke.
+
+#### Scope
+
+04I1 is limited to:
+
+1. Runbook creation.
+2. Safe evidence gathering for root URL behavior.
+3. Comparing browser behavior vs curl / forced-resolve behavior.
+4. Source-grounded route/middleware/Caddy behavior review.
+5. Controlled manual fix only if future runbook scopes it and Keith approves.
+6. Evidence review.
+7. Consolidation/checkpoint.
+8. Returning to 04I browser smoke after 04I1 is locked.
+
+#### Non-Goals
+
+04I1 must not:
+
+* Continue 04I browser smoke directly.
+* Create accounts.
+* Log in.
+* Create workspace data.
+* Create agent data.
+* Trigger AI execution.
+* Trigger billing/payment execution.
+* Trigger container workflow execution.
+* Enable Google OAuth.
+* Enable or test production domains: app.ainow.biz / ainow.biz.
+* Modify `.env`.
+* Print `.env` or secret values.
+* Run migrations.
+* Create database tables.
+* Run broad redesign.
+* Change unrelated routing.
+* Mark PRIVATE-BETA-DEPLOYMENT-READINESS ready.
+* Commit or push git.
+
+#### Future Runbook Path
+
+```text
+C:\Users\knlee\aiSandBox2026B\docs\PRIVATE-BETA-STAGING-EXECUTION-04I1-PUBLIC-ROOT-LOCALE-REDIRECT-INVESTIGATION-RUNBOOK.md
+```
+
+#### Future Checkpoint Path
+
+```text
+C:\Users\knlee\aiSandBox2026B\docs\PRIVATE-BETA-STAGING-EXECUTION-04I1-CHECKPOINT.md
+```
+
+#### Required Guardrails
+
+* No account creation.
+* No login.
+* No persistent test data.
+* No AI/billing/container/OAuth.
+* No production domains.
+* No secret printing.
+* Do not open or print `.env`.
+* Do not run `env`, `printenv`, `cat .env`, `echo $DATABASE_URL`, `echo $REDIS_URL`, or token-printing commands.
+* Any server/runtime change requires explicit Keith approval.
+* Any Caddy change requires explicit Keith approval.
+* Any source code change requires a later implementation slice.
+* If browser root failure is due to app code/middleware, register a separate implementation fix slice before editing source.
+* If browser root failure is due to Caddy config, register or execute only a bounded Caddy recovery path after approval.
+* Keep 04I ACTIVE / BLOCKED by 04I1.
+* Keep parent 04 ACTIVE.
+* Keep PRIVATE-BETA-DEPLOYMENT-READINESS BLOCKED / PAUSED.
+
+#### Proposed Workflow
+
+1. Registration — this step — COMPLETE (2026-08-03).
+2. Public Root / Locale Redirect Investigation Runbook.
+3. Manual Investigation + Evidence.
+4. Evidence Review.
+5. If needed: bounded recovery/fix slice.
+6. Consolidation / Checkpoint.
+7. Resume 04I browser smoke from Path A.
+
+#### Acceptance Criteria
+
+###### Step 1 — Registration — COMPLETE (2026-08-03)
+- [x] 04I1 registered.
+- [x] 04I1 status set to ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03).
+- [x] 04I Step 3 partial / stopped evidence recorded.
+- [x] Root browser failure recorded.
+- [x] 04I marked ACTIVE / BLOCKED by 04I1.
+- [x] 04I1 purpose recorded.
+- [x] 04I1 scope recorded.
+- [x] 04I1 non-goals recorded.
+- [x] future runbook path recorded.
+- [x] future checkpoint path recorded.
+- [x] investigation/recovery guardrails recorded.
+- [x] proposed workflow recorded.
+- [x] parent 04 remains ACTIVE.
+- [x] PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.
+- [x] TASKS.md updated.
+- [x] TASKS_BACKLOG_FULL.md updated.
+- [x] roadmap updated.
+- [x] no source code changed.
+- [x] no migration files changed.
+- [x] no env files opened/created/edited.
+- [x] no env values opened/printed.
+- [x] no runtime/server action occurred.
+- [x] no Docker/PostgreSQL/Redis action occurred.
+- [x] no git commit or push occurred.
+- [x] no subagents used.
+
+###### Step 2 — Public Root / Locale Redirect Investigation Runbook — COMPLETE (2026-08-03)
+- [x] Runbook `docs/PRIVATE-BETA-STAGING-EXECUTION-04I1-PUBLIC-ROOT-LOCALE-REDIRECT-INVESTIGATION-RUNBOOK.md` created.
+
+###### Step 3 — Manual Investigation + Evidence — COMPLETE (2026-08-03)
+- [x] Safe evidence gathered for root URL behavior.
+- [x] Browser vs curl behavior compared.
+- [x] Source-grounded route/middleware/Caddy review complete.
+
+###### Step 4 — Evidence Review — COMPLETE (2026-08-03)
+- [x] Evidence review report created: `docs/PRIVATE-BETA-STAGING-EXECUTION-04I1-PUBLIC-ROOT-LOCALE-REDIRECT-EVIDENCE-REVIEW.md`.
+- [x] Verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS.
+- [x] Root cause determined: Caddy/Next.js reverse-proxy forwarded-host/proto mismatch. `request.nextUrl.clone()` in `middleware.ts` lines 33–37 constructs redirect URL from internal `localhost:3002` host rather than public `staging.ainow.biz` because Caddy does not forward the original public Host header to the Next.js upstream.
+- [x] Actual root Location header: `https://localhost:3002/en`. Expected: `/en` or `https://staging.ainow.biz/en`.
+- [x] Bounded fix/recovery slice 04I2 registered as next action.
+
+###### Step 5 — Bounded Recovery/Fix Slice — REGISTERED AS 04I2 (2026-08-03)
+- [x] Fix slice registered: PRIVATE-BETA-STAGING-EXECUTION-04I2 — ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03).
+
+###### Step 6 — Consolidation / Checkpoint — PENDING (after 04I2 resolves)
+- [ ] Checkpoint `docs/PRIVATE-BETA-STAGING-EXECUTION-04I1-CHECKPOINT.md` created.
+- [ ] 04I1 marked COMPLETE and LOCKED after 04I2 resolution.
+- [ ] TASKS.md updated. TASKS_BACKLOG_FULL.md updated. Roadmap updated.
+
+###### Step 7 — Resume 04I browser smoke — PENDING (after 04I2 resolves)
+- [ ] 04I browser smoke resumes from Path A after 04I1 is COMPLETE and LOCKED and 04I2 fix is validated.
+
+**PRIVATE-BETA-STAGING-EXECUTION-04I1 status:** ACTIVE — Steps 1–4 COMPLETE (Registration / Runbook / Investigation / Evidence Review — 2026-08-03) — Verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — root Location https://localhost:3002/en — expected /en or https://staging.ainow.biz/en — bounded fix/recovery slice 04I2 registered ACTIVE.
+**PRIVATE-BETA-STAGING-EXECUTION-04I status:** ACTIVE / BLOCKED by 04I1/04I2/04I2A. Do not continue 04I browser smoke until 04I2A implementation and 04I2 validation/evidence review are complete.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E/04F/04G/04H COMPLETE and LOCKED — 04F1 COMPLETE and LOCKED — 04I ACTIVE / BLOCKED by 04I1/04I2/04I2A — 04I1 ACTIVE — Steps 1–4 COMPLETE — 04I2 ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — 04I2A ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03).
+**PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
+**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04I2A Step 2 — Bounded Middleware Implementation.
+
+---
+
+#### PRIVATE-BETA-STAGING-EXECUTION-04I2: Public Root Redirect Location Header Fix
+
+**Status:** ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03)
+**Task ID:** PRIVATE-BETA-STAGING-EXECUTION-04I2
+**Title:** Public Root Redirect Location Header Fix
+**Family:** PRIVATE BETA / STAGING EXECUTION
+**Priority:** CRITICAL
+**Nature:** REAL STAGING EXECUTION — bounded fix/recovery slice after 04I1 evidence review verdict
+**Risk:** MEDIUM — fix targets Caddy reverse-proxy config or Next.js middleware redirect construction; requires approval gate before implementation
+**Registered:** 2026-08-03
+**Parent:** PRIVATE-BETA-STAGING-EXECUTION-04I
+**Runbook:** docs/PRIVATE-BETA-STAGING-EXECUTION-04I2-PUBLIC-ROOT-REDIRECT-LOCATION-HEADER-FIX-RUNBOOK.md
+**Future checkpoint:** docs/PRIVATE-BETA-STAGING-EXECUTION-04I2-CHECKPOINT.md
+**Selected fix path:** Option B — Next.js middleware relative/public redirect correction
+**Implementation child slice:** PRIVATE-BETA-STAGING-EXECUTION-04I2A — ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03)
+
+#### Why 04I2 Exists
+
+04I1 evidence review (Step 4 — COMPLETE 2026-08-03) concluded:
+
+**Verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS**
+
+The public root `https://staging.ainow.biz` returns HTTP/2 307 with a wrong `Location` header:
+
+- **Actual:** `https://localhost:3002/en`
+- **Expected:** `/en` or `https://staging.ainow.biz/en`
+
+Any browser on a machine other than the staging server follows this redirect to `https://localhost:3002/en`, which is the internal address of the Next.js process and is not publicly reachable. The connection fails.
+
+Root cause (source-grounded): `frontend/middleware.ts` lines 33–37 use `request.nextUrl.clone()` for the root redirect. `request.nextUrl` in Next.js reflects the request URL as seen by the Next.js process. Behind Caddy's `reverse_proxy 127.0.0.1:3002` without explicit host header forwarding, `request.nextUrl.host` resolves to `localhost:3002`. The cloned URL with `pathname = /en` produces `https://localhost:3002/en`.
+
+04I2 is registered to determine and implement the smallest safe fix and validate the corrected redirect Location header.
+
+Known-good state carried forward from 04I1 evidence review:
+- DNS: dig @1.1.1.1 staging.ainow.biz A = 18.136.141.186 / dig @8.8.8.8 = 18.136.141.186 — PASS
+- pm2-ubuntu enabled and active — PASS
+- Caddy enabled and active — PASS
+- Public table count: 26 — PASS
+- PUBLIC_HTTPS_API_HEALTH/DB/READY_FORCED = 200 — PASS
+- LOCAL_API/DB/READY/CONTAINER health = 200 — PASS
+- /en, /en/login, /en/register all return HTTP/2 200 via Caddy — PASS
+
+#### 04I1 Evidence Review Summary
+
+```text
+04I1 evidence review summary:
+
+Known-good:
+- DNS resolves:
+  - dig @1.1.1.1 staging.ainow.biz A = 18.136.141.186
+  - dig @8.8.8.8 staging.ainow.biz A = 18.136.141.186
+- pm2-ubuntu enabled and active.
+- Caddy enabled and active.
+- public table count = 26.
+- Public health:
+  - PUBLIC_HTTPS_ROOT_FORCED=307
+  - PUBLIC_HTTPS_API_HEALTH_FORCED=200
+  - PUBLIC_HTTPS_API_DB_HEALTH_FORCED=200
+  - PUBLIC_HTTPS_API_READY_FORCED=200
+- Local health:
+  - LOCAL_API_HEALTH=200
+  - LOCAL_API_DB_HEALTH=200
+  - LOCAL_API_READY=200
+  - LOCAL_CONTAINER_HEALTH=200
+  - LOCAL_FRONTEND_ROOT=307
+- Direct public routes:
+  - /en returned HTTP/2 200
+  - /en/login returned HTTP/2 200
+  - /en/register returned HTTP/2 200
+
+Failure:
+- Root / returns HTTP/2 307.
+- Root Location header is:
+  - https://localhost:3002/en
+- Browser follows root to:
+  - https://localhost:3002/en
+- This breaks external browser use.
+- Expected root redirect target:
+  - /en
+  - or https://staging.ainow.biz/en
+
+Classification:
+- Likely Caddy/Next.js reverse-proxy forwarded-host/proto mismatch.
+- Evidence points to incorrect public Location header generated for root redirect.
+- Not likely DNS failure.
+- Not likely TLS failure.
+- Not likely direct /en route failure.
+- Not likely login/register route failure.
+- Not likely general app outage.
+
+Safety:
+- No account created.
+- No login performed.
+- No workspace data created.
+- No agent data created.
+- No AI execution.
+- No billing/payment execution.
+- No container workflow execution.
+- No Google OAuth.
+- No secrets printed.
+- No source/migration/env changes.
+- No runtime/server changes by Cursor.
+```
+
+#### Purpose
+
+Correct the public root redirect so:
+
+```text
+https://staging.ainow.biz
+```
+
+redirects to:
+
+```text
+/en
+```
+
+or:
+
+```text
+https://staging.ainow.biz/en
+```
+
+and not:
+
+```text
+https://localhost:3002/en
+```
+
+#### Scope
+
+04I2 is limited to:
+
+1. Runbook creation.
+2. Determining the smallest safe fix:
+   * Caddy reverse proxy forwarded host/proto/header correction, or
+   * Next.js middleware relative redirect correction, or
+   * another source-grounded minimal correction.
+3. Controlled implementation only in a later step after the runbook and approval gates.
+4. Validation that root redirect Location is browser-safe.
+5. Validation that `/en`, `/en/login`, `/en/register`, API health, local health, PM2, Caddy, and table count remain safe.
+6. Evidence review.
+7. Consolidation/checkpoint.
+8. Returning to 04I browser smoke from Path A.
+
+#### Non-Goals
+
+04I2 must not:
+
+* Continue 04I browser smoke directly.
+* Create accounts.
+* Log in.
+* Create workspace data.
+* Create agent data.
+* Trigger AI execution.
+* Trigger billing/payment execution.
+* Trigger container workflow execution.
+* Enable Google OAuth.
+* Enable or test production domains: app.ainow.biz / ainow.biz.
+* Modify `.env`.
+* Print `.env` or secret values.
+* Run migrations.
+* Create database tables.
+* Run broad redesign.
+* Change unrelated routing.
+* Mark PRIVATE-BETA-DEPLOYMENT-READINESS ready.
+* Commit or push git.
+
+#### Future Runbook Path
+
+```text
+C:\Users\knlee\aiSandBox2026B\docs\PRIVATE-BETA-STAGING-EXECUTION-04I2-PUBLIC-ROOT-REDIRECT-LOCATION-HEADER-FIX-RUNBOOK.md
+```
+
+#### Future Checkpoint Path
+
+```text
+C:\Users\knlee\aiSandBox2026B\docs\PRIVATE-BETA-STAGING-EXECUTION-04I2-CHECKPOINT.md
+```
+
+#### Required Guardrails
+
+* No account creation.
+* No login.
+* No persistent test data.
+* No AI/billing/container/OAuth.
+* No production domains.
+* No secret printing.
+* Do not open or print `.env`.
+* Do not run `env`, `printenv`, `cat .env`, `echo $DATABASE_URL`, `echo $REDIS_URL`, or token-printing commands.
+* Any Caddy/runtime change requires explicit Keith approval.
+* Any source code change requires implementation-slice scope and validation.
+* Prefer the smallest safe fix.
+* Do not modify both Caddy and source code unless evidence proves one alone is insufficient.
+* Do not broaden into unrelated routing changes.
+* Preserve existing `/en`, `/en/login`, `/en/register`, API health, and local health behavior.
+* Keep 04I ACTIVE / BLOCKED until 04I2 is resolved and 04I smoke can resume.
+* Keep parent 04 ACTIVE.
+* Keep PRIVATE-BETA-DEPLOYMENT-READINESS BLOCKED / PAUSED.
+
+#### Proposed Workflow
+
+1. Registration — this step — COMPLETE (2026-08-03).
+2. Public Root Redirect Location Header Fix Runbook.
+3. Approval-gated implementation:
+   * either bounded Caddy runtime correction,
+   * or bounded Next.js middleware/source correction,
+   * or source-grounded alternative minimal fix.
+4. Manual validation / evidence.
+5. Evidence review.
+6. Consolidation / checkpoint.
+7. Resume 04I browser smoke from Path A.
+
+#### Acceptance Criteria
+
+###### Step 1 — Registration — COMPLETE (2026-08-03)
+- [x] 04I2 registered.
+- [x] 04I2 status set to ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03).
+- [x] 04I1 evidence review verdict recorded.
+- [x] root redirect wrong Location header recorded: `https://localhost:3002/en`.
+- [x] expected redirect target recorded: `/en` or `https://staging.ainow.biz/en`.
+- [x] 04I marked ACTIVE / BLOCKED by 04I1/04I2.
+- [x] 04I2 purpose recorded.
+- [x] 04I2 scope recorded.
+- [x] 04I2 non-goals recorded.
+- [x] future runbook path recorded.
+- [x] future checkpoint path recorded.
+- [x] fix/recovery guardrails recorded.
+- [x] proposed workflow recorded.
+- [x] parent 04 remains ACTIVE.
+- [x] PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.
+- [x] TASKS.md updated.
+- [x] TASKS_BACKLOG_FULL.md updated.
+- [x] roadmap updated.
+- [x] no source code changed.
+- [x] no migration files changed.
+- [x] no env files opened/created/edited.
+- [x] no env values opened/printed.
+- [x] no runtime/server action occurred.
+- [x] no Docker/PostgreSQL/Redis action occurred.
+- [x] no git commit or push occurred.
+- [x] no subagents used.
+
+###### Step 2 — Public Root Redirect Location Header Fix Runbook — COMPLETE (2026-08-03)
+- [x] Runbook `docs/PRIVATE-BETA-STAGING-EXECUTION-04I2-PUBLIC-ROOT-REDIRECT-LOCATION-HEADER-FIX-RUNBOOK.md` created.
+- [x] Fix options analyzed: Option A (Caddy header correction) and Option B (Next.js middleware relative/public redirect correction).
+- [x] Option B selected as primary fix path — implementation child slice 04I2A registered ACTIVE.
+
+###### Step 3 — Approval-Gated Implementation — IN PROGRESS via 04I2A
+- [x] Smallest safe fix determined: Option B — Next.js middleware relative/public redirect correction.
+- [ ] 04I2A bounded middleware implementation COMPLETE.
+- [ ] Keith approval recorded before any deployment/runtime action.
+- [ ] Implementation validated.
+
+###### Step 4 — Manual Validation / Evidence — PENDING
+- [ ] Root redirect Location header confirmed browser-safe after fix.
+- [ ] `/en`, `/en/login`, `/en/register`, API health, local health, PM2, Caddy, table count verified safe.
+
+###### Step 5 — Evidence Review — PENDING
+- [ ] Evidence review document created.
+- [ ] Verdict: root redirect Location browser-safe.
+
+###### Step 6 — Consolidation / Checkpoint — PENDING
+- [ ] Checkpoint `docs/PRIVATE-BETA-STAGING-EXECUTION-04I2-CHECKPOINT.md` created.
+- [ ] 04I2 marked COMPLETE and LOCKED.
+- [ ] TASKS.md updated. TASKS_BACKLOG_FULL.md updated. Roadmap updated.
+
+###### Step 7 — Resume 04I browser smoke from Path A — PENDING
+- [ ] 04I Path A re-executed and PASS after 04I2 fix validated.
+- [ ] 04I smoke continues from Path B onward.
+
+**PRIVATE-BETA-STAGING-EXECUTION-04I2 status:** ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — Option B selected — 04I2A child implementation slice ACTIVE.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2A status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03). See PRIVATE-BETA-STAGING-EXECUTION-04I2A section below.
+**PRIVATE-BETA-STAGING-EXECUTION-04I1 status:** ACTIVE — Steps 1–4 COMPLETE — Verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — bounded fix/recovery slice 04I2 registered ACTIVE — implementation child slice 04I2A registered ACTIVE. Consolidation/checkpoint pending after 04I2A/04I2 resolution.
+**PRIVATE-BETA-STAGING-EXECUTION-04I status:** ACTIVE / BLOCKED by 04I1/04I2/04I2A. Do not continue 04I browser smoke until 04I2A implementation and 04I2 validation/evidence review are complete.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E/04F/04G/04H COMPLETE and LOCKED — 04F1 COMPLETE and LOCKED — 04I ACTIVE / BLOCKED by 04I1/04I2/04I2A — 04I1 ACTIVE — Steps 1–4 COMPLETE — 04I2 ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — 04I2A ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03).
+**PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
+**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04I2A Step 2 — Bounded Middleware Implementation.
+
+---
+
+#### PRIVATE-BETA-STAGING-EXECUTION-04I2A: Middleware Root Redirect Relative Location Fix
+
+**Status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03)
+**Task ID:** PRIVATE-BETA-STAGING-EXECUTION-04I2A
+**Title:** Middleware Root Redirect Relative Location Fix
+**Family:** PRIVATE BETA / STAGING EXECUTION
+**Priority:** CRITICAL
+**Nature:** REAL STAGING EXECUTION — bounded implementation child slice — Option B source-code fix
+**Risk:** MEDIUM — edits frontend/middleware.ts root redirect behavior; requires local validation before deployment
+**Registered:** 2026-08-03
+**Parent:** PRIVATE-BETA-STAGING-EXECUTION-04I2
+**Future checkpoint:** docs/PRIVATE-BETA-STAGING-EXECUTION-04I2A-CHECKPOINT.md
+
+#### Why 04I2A Exists
+
+04I2 runbook (Step 2 — COMPLETE 2026-08-03) determined that Option B (Next.js middleware relative/public redirect correction) is the selected primary fix path.
+
+The root cause (source-grounded): `frontend/middleware.ts` uses `request.nextUrl.clone()` for the root locale redirect. `request.nextUrl` in Next.js reflects the request URL as seen by the Next.js process. Behind Caddy's `reverse_proxy 127.0.0.1:3002` without explicit host header forwarding, `request.nextUrl.host` resolves to `localhost:3002`. The cloned URL with `pathname = /en` produces `https://localhost:3002/en`.
+
+**04I2 selected fix path evidence:**
+
+```text
+Known-good:
+- DNS resolves staging.ainow.biz to 18.136.141.186 through 1.1.1.1 and 8.8.8.8.
+- pm2-ubuntu enabled and active.
+- Caddy enabled and active.
+- Public table count = 26.
+- Public API health/db/ready = 200.
+- Local API/db/ready/container health = 200.
+- /en returned HTTP/2 200.
+- /en/login returned HTTP/2 200.
+- /en/register returned HTTP/2 200.
+
+Failure:
+- Root / returns HTTP/2 307.
+- Root Location header is https://localhost:3002/en.
+- Browser follows root to https://localhost:3002/en and fails externally.
+- Expected Location is /en or https://staging.ainow.biz/en.
+
+Selected fix path:
+- Option B — Next.js middleware relative/public redirect correction.
+- Reason: middleware.ts uses request.nextUrl.clone() for the root redirect and is source-grounded as the producer of the bad absolute redirect.
+- Option A Caddy header correction remains a fallback only if Option B is insufficient.
+```
+
+04I2A creates the bounded implementation slice to apply this fix to `frontend/middleware.ts`.
+
+#### Purpose
+
+Implement the smallest safe source-code fix so the root locale redirect emits a browser-safe target:
+
+```text
+/en
+```
+
+or:
+
+```text
+https://staging.ainow.biz/en
+```
+
+instead of:
+
+```text
+https://localhost:3002/en
+```
+
+#### Scope
+
+04I2A is limited to:
+
+1. Editing `C:\Users\knlee\aiSandBox2026B\frontend\middleware.ts`.
+2. Replacing the root redirect behavior that currently uses `request.nextUrl.clone()` with a safe relative redirect or source-grounded public-origin-safe redirect.
+3. Preserving existing locale behavior.
+4. Preserving `/en`, `/en/login`, `/en/register`.
+5. Preserving API route behavior.
+6. Adding/updating focused tests only if a relevant existing test pattern exists.
+7. Running focused local validation only.
+8. Preparing deployment/manual validation instructions after implementation.
+9. No runtime deployment unless explicitly approved later.
+
+#### Non-Goals
+
+04I2A must not:
+
+* Modify Caddy.
+* Modify DNS.
+* SSH into the server.
+* Restart/reload PM2, Caddy, systemd, or app services.
+* Deploy to staging.
+* Continue 04I browser smoke directly.
+* Create accounts.
+* Log in.
+* Create workspace data.
+* Create agent data.
+* Trigger AI execution.
+* Trigger billing/payment execution.
+* Trigger container workflow execution.
+* Enable Google OAuth.
+* Enable or test production domains: app.ainow.biz / ainow.biz.
+* Modify `.env`.
+* Print `.env` or secret values.
+* Run migrations.
+* Create database tables.
+* Run broad redesign.
+* Change unrelated routing.
+* Add hardcoded production/staging domains unless explicitly justified.
+* Mark PRIVATE-BETA-DEPLOYMENT-READINESS ready.
+* Commit or push git.
+
+#### Future Implementation Target
+
+Future Step 2 should implement only the selected source-code fix in:
+
+```text
+C:\Users\knlee\aiSandBox2026B\frontend\middleware.ts
+```
+
+Preferred implementation direction:
+
+```text
+Use a relative redirect for root locale routing so / redirects to /en without cloning an upstream-local absolute origin.
+```
+
+Example conceptual direction only — implementation must inspect actual code first:
+
+```ts
+return NextResponse.redirect(new URL('/en', request.url))
+```
+
+or, if that still risks upstream-local origin in deployed proxy context:
+
+```ts
+return NextResponse.redirect('/en')
+```
+
+Use the smallest Next.js-valid approach compatible with the installed Next.js version and existing middleware behavior.
+
+Do not hardcode `https://staging.ainow.biz`.
+
+#### Future Checkpoint Path
+
+```text
+C:\Users\knlee\aiSandBox2026B\docs\PRIVATE-BETA-STAGING-EXECUTION-04I2A-CHECKPOINT.md
+```
+
+#### Required Guardrails
+
+* No Caddy/runtime change in 04I2A.
+* No SSH in 04I2A.
+* No deployment in 04I2A unless a later explicit approval prompt scopes it.
+* No account creation.
+* No login.
+* No persistent test data.
+* No AI/billing/container/OAuth.
+* No production domains.
+* No secret printing.
+* Do not open or print `.env`.
+* Do not run `env`, `printenv`, `cat .env`, `echo $DATABASE_URL`, `echo $REDIS_URL`, or token-printing commands.
+* Prefer the smallest safe source-code fix.
+* Do not modify both Caddy and source in this child slice.
+* Do not broaden into unrelated routing changes.
+* Keep 04I ACTIVE / BLOCKED until 04I2A and 04I2 validation are resolved.
+* Keep parent 04 ACTIVE.
+* Keep PRIVATE-BETA-DEPLOYMENT-READINESS BLOCKED / PAUSED.
+
+#### Proposed Workflow
+
+1. Registration — COMPLETE (2026-08-03).
+2. Bounded middleware implementation.
+3. Focused local validation.
+4. Deployment/runtime validation prompt, only if needed and explicitly approved.
+5. 04I2 evidence review.
+6. 04I2 / 04I2A consolidation.
+7. Resume 04I browser smoke from Path A.
+
+#### Required Future Validation
+
+Future implementation must validate:
+
+* `frontend/middleware.ts` changed only for root redirect fix.
+* No unrelated locale behavior changed.
+* No hardcoded staging/production domain added.
+* Existing route expectations preserved:
+  * `/` redirects to `/en`.
+  * `/en` remains valid.
+  * `/en/login` remains valid.
+  * `/en/register` remains valid.
+* Focused tests or static validation run successfully.
+* No source files other than required middleware/test file changed unless justified.
+* No env files opened/changed.
+* No env values printed.
+* No runtime/server commands run by Cursor.
+* No Docker/PostgreSQL/Redis used.
+* No git commit or push.
+
+#### Later Staging Validation Boundary
+
+After source implementation is complete, staging deployment/restart/manual validation must be handled as a separate approved runtime/deployment step if required.
+
+Manual validation must eventually prove:
+
+```text
+https://staging.ainow.biz/
+```
+
+returns:
+
+```text
+Location: /en
+```
+
+or:
+
+```text
+Location: https://staging.ainow.biz/en
+```
+
+and not:
+
+```text
+Location: https://localhost:3002/en
+```
+
+#### Acceptance Criteria
+
+###### Step 1 — Registration — COMPLETE (2026-08-03)
+- [x] 04I2A registered.
+- [x] 04I2A status set to ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03).
+- [x] Option B selected and recorded.
+- [x] `frontend/middleware.ts` source-grounded reason recorded.
+- [x] current wrong Location `https://localhost:3002/en` recorded.
+- [x] expected redirect target recorded: `/en` or `https://staging.ainow.biz/en`.
+- [x] 04I marked ACTIVE / BLOCKED by 04I1/04I2/04I2A.
+- [x] 04I2A purpose recorded.
+- [x] 04I2A scope recorded.
+- [x] 04I2A non-goals recorded.
+- [x] future checkpoint path recorded.
+- [x] guardrails recorded.
+- [x] proposed workflow recorded.
+- [x] parent 04 remains ACTIVE.
+- [x] PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.
+- [x] TASKS.md updated.
+- [x] TASKS_BACKLOG_FULL.md updated.
+- [x] roadmap updated.
+- [x] no source code changed.
+- [x] no migration files changed.
+- [x] no env files opened/created/edited.
+- [x] no env values opened/printed.
+- [x] no runtime/server action occurred.
+- [x] no Docker/PostgreSQL/Redis action occurred.
+- [x] no git commit or push occurred.
+- [x] no subagents used.
+
+###### Step 2 — Bounded Middleware Implementation — PENDING
+- [ ] `frontend/middleware.ts` root redirect fixed to emit `/en` or `https://staging.ainow.biz/en`.
+- [ ] No hardcoded staging/production domain added.
+- [ ] Existing locale and API route behavior preserved.
+- [ ] Focused tests or static validation run and pass.
+
+###### Step 3 — Focused Local Validation — PENDING
+- [ ] TypeScript typecheck clean (`npx tsc --noEmit`).
+- [ ] Relevant tests pass.
+- [ ] No unrelated files changed.
+
+###### Step 4 — Deployment/Runtime Validation (if needed, explicit approval required) — PENDING
+- [ ] Keith explicit approval recorded before any staging deployment/restart.
+- [ ] Staging deployment/restart executed only if explicitly approved.
+- [ ] Manual validation proves root redirect Location header is browser-safe.
+
+###### Step 5 — 04I2 Evidence Review — PENDING
+- [ ] Evidence review document created.
+- [ ] Verdict: root redirect Location browser-safe.
+
+###### Step 6 — 04I2 / 04I2A Consolidation / Checkpoint — PENDING
+- [ ] Checkpoint `docs/PRIVATE-BETA-STAGING-EXECUTION-04I2A-CHECKPOINT.md` created.
+- [ ] 04I2A marked COMPLETE and LOCKED.
+- [ ] TASKS.md updated. TASKS_BACKLOG_FULL.md updated. Roadmap updated.
+
+###### Step 7 — Resume 04I browser smoke from Path A — PENDING
+- [ ] 04I Path A re-executed and PASS after 04I2A fix validated.
+- [ ] 04I smoke continues from Path B onward.
+
+**PRIVATE-BETA-STAGING-EXECUTION-04I2A status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03).
+**PRIVATE-BETA-STAGING-EXECUTION-04I2 status:** ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — Option B selected — 04I2A child implementation slice ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03).
+**PRIVATE-BETA-STAGING-EXECUTION-04I1 status:** ACTIVE — Steps 1–4 COMPLETE — Verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — bounded fix/recovery slice 04I2 registered ACTIVE — implementation child slice 04I2A registered ACTIVE. Consolidation/checkpoint pending after 04I2A/04I2 resolution.
+**PRIVATE-BETA-STAGING-EXECUTION-04I status:** ACTIVE / BLOCKED by 04I1/04I2/04I2A. Do not continue 04I browser smoke until 04I2A implementation and 04I2 validation/evidence review are complete.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E/04F/04G/04H COMPLETE and LOCKED — 04F1 COMPLETE and LOCKED — 04I ACTIVE / BLOCKED by 04I1/04I2/04I2A — 04I1 ACTIVE — Steps 1–4 COMPLETE — 04I2 ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — 04I2A ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03).
+**PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
+**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04I2A Step 2 — Bounded Middleware Implementation.
 
 ---
 
