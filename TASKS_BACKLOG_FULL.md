@@ -35697,7 +35697,7 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 31. PRIVATE-BETA-STAGING-EXECUTION-01 — Create AWS Lightsail Staging Server + Static IP + Baseline (COMPLETE and LOCKED — 2026-07-23 — All 4 steps COMPLETE — Keith manual execution PASS — aisandbox-staging Running / ap-southeast-1 / Ubuntu 24.04.4 LTS — Static IP attached — Firewall 22/80/443 open; internal ports closed — snapshot aisandbox-staging-baseline-2026-07-23 Available — auto-snapshots enabled — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-01-RUNBOOK.md — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-01-CHECKPOINT.md)
 32. PRIVATE-BETA-STAGING-EXECUTION-02 — Runtime Installation Baseline (COMPLETE and LOCKED — 2026-07-24 — All 4 steps COMPLETE — Keith manual execution PASS — Node.js v20.20.2 — npm 10.8.2 — Docker Engine 29.6.2 — Docker Compose v5.3.1 — PM2 7.0.3 — Caddy v2.11.4 — Snapshot aisandbox-staging-runtime-2026-07-24 Available — No app deployed / No DB / No Redis / No DNS / No TLS / No repo / No .env — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-02-CHECKPOINT.md)
 32b. PRIVATE-BETA-STAGING-EXECUTION-03 — PostgreSQL + Redis Installation Baseline (COMPLETE and LOCKED — 2026-07-24 — All 4 steps COMPLETE — Evidence verdict: PASS WITH VERSION DEVIATION — PostgreSQL 15.18 installed from PGDG APT noble channel — PostgreSQL 15/main cluster online on localhost 127.0.0.1:5432 only — aisandbox database/user created — DB password set privately and not disclosed — Redis 8.8.0 installed from official Redis APT repo — Redis target was 7.x — Redis version deviation recorded — compatibility guardrail required before app deployment — Redis active/running — bound to 127.0.0.1/::1 only — protected-mode yes — requirepass configured and redacted — unauthenticated ping blocked — authenticated ping passed — Redis password set privately and not disclosed — Lightsail firewall remains 22/80/443 only — ports 5432/6379 closed externally — No repo / No .env / No app / No migration / No DNS / No TLS — Snapshot aisandbox-staging-db-redis-2026-07-24 Available — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-03-DB-REDIS-INSTALL-RUNBOOK.md — Evidence review: docs/PRIVATE-BETA-STAGING-EXECUTION-03-EVIDENCE-REVIEW.md — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-03-DB-REDIS-CHECKPOINT.md — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next: PRIVATE-BETA-STAGING-EXECUTION-04 — ACTIVE — Step 1 COMPLETE (Registration — 2026-07-25))
-32c. PRIVATE-BETA-STAGING-EXECUTION-04 — Repo Clone + Private Env Preparation + App Deployment Baseline (ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — 4-step workflow — Manual execution split into bounded child slices: 04A COMPLETE and LOCKED (2026-07-25), 04B COMPLETE and LOCKED (2026-07-26), 04C COMPLETE and LOCKED (2026-07-26), 04D COMPLETE and LOCKED (2026-07-27), 04E COMPLETE and LOCKED (2026-07-27), 04F COMPLETE and LOCKED — 2026-07-29 — 04F1 COMPLETE and LOCKED — 2026-07-29 — 04G COMPLETE and LOCKED — 2026-07-29 — PM2 persistence reboot-proven — 04H COMPLETE and LOCKED — 2026-08-03 — Public routing / DNS / TLS baseline established — staging.ainow.biz externally resolves to 18.136.141.186 — Caddy enabled/active/valid — public HTTPS health-only smoke PASS — full app deployment still not complete — Predecessor: PRIVATE-BETA-STAGING-EXECUTION-03 COMPLETE and LOCKED — 2026-07-24 — PostgreSQL 15.18 online on localhost 127.0.0.1:5432 only — Redis 8.8.0 online on 127.0.0.1/::1 only — credentials private — ports 5432/6379 closed externally — Snapshots through pre-migration Available including aisandbox-staging-premigration-2026-07-27 — Repo cloned /opt/aisandbox — owner ubuntu:ubuntu — branch main — VPS commit 3da1b7c — /opt/aisandbox/.env created privately — 47 required non-Google keys present — Google OAuth deferred — Dependencies installed (npm ci PASS) — Builds PASS (api-gateway/ai-service/container-manager/frontend) — Generated artifacts present — Staging DB migration baseline COMPLETE — required tables usage_records/billing_snapshots/invoices present — migrations count 25 — 04D PM2 health-only smoke PASS — all four PM2 services online — restarts 0 — API_HEALTH/API_DB_HEALTH/API_READY/CONTAINER_HEALTH=200 — FRONTEND_ROOT=307 accepted as locale redirect — final public table count 26 — 04D1/04D2/04D3 COMPLETE and LOCKED — 04F COMPLETE and LOCKED — 2026-07-29: PM2_SAVE_EXIT=0 / dump present / startup systemd unit installed / 04F1 cleared Result=protocol / pm2-ubuntu enabled and active Result=success / all four apps online/ok / health PASS / 04G reboot-proven — 04H COMPLETE and LOCKED — 2026-08-03: DNS A record staging.ainow.biz → 18.136.141.186 / external DNS confirmed via 1.1.1.1 and 8.8.8.8 / Caddy configured for staging.ainow.biz / Caddyfile backup at /etc/caddy/Caddyfile.backup-04H-20260803-133529 / Caddy validate returned Valid configuration / Caddy enabled and active / public HTTP root=308 / public HTTPS root=307 / public HTTPS API health/db/ready=200 / final local health PASS / public table count remained 26 / no secrets printed / no AI/billing/container/OAuth enablement / no source/migration/env changes / Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04H-CHECKPOINT.md — Credential safety: Keith keeps DB/Redis passwords privately; no paste of .env/DATABASE_URL/REDIS_URL/provider keys — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — 04I ACTIVE / BLOCKED by 04I1/04I2/04I2A — Step 2 COMPLETE (Runbook — 2026-08-03) — Step 3 partial / stopped at root browser failure — 04I1 ACTIVE — Steps 1–4 COMPLETE — evidence review verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — root Location https://localhost:3002/en — expected /en or https://staging.ainow.biz/en — 04I2 ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — 04I2A ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03) — Selected fix path: Option B — Next.js middleware relative/public redirect correction — Next action: PRIVATE-BETA-STAGING-EXECUTION-04I2A Step 2 — Bounded Middleware Implementation)
+32c. PRIVATE-BETA-STAGING-EXECUTION-04 — Repo Clone + Private Env Preparation + App Deployment Baseline (ACTIVE — Step 2 COMPLETE (App Deployment Baseline Runbook — 2026-07-25) — 4-step workflow — Manual execution split into bounded child slices: 04A COMPLETE and LOCKED (2026-07-25), 04B COMPLETE and LOCKED (2026-07-26), 04C COMPLETE and LOCKED (2026-07-26), 04D COMPLETE and LOCKED (2026-07-27), 04E COMPLETE and LOCKED (2026-07-27), 04F COMPLETE and LOCKED — 2026-07-29 — 04F1 COMPLETE and LOCKED — 2026-07-29 — 04G COMPLETE and LOCKED — 2026-07-29 — PM2 persistence reboot-proven — 04H COMPLETE and LOCKED — 2026-08-03 — Public routing / DNS / TLS baseline established — staging.ainow.biz externally resolves to 18.136.141.186 — Caddy enabled/active/valid — public HTTPS health-only smoke PASS — full app deployment still not complete — Predecessor: PRIVATE-BETA-STAGING-EXECUTION-03 COMPLETE and LOCKED — 2026-07-24 — PostgreSQL 15.18 online on localhost 127.0.0.1:5432 only — Redis 8.8.0 online on 127.0.0.1/::1 only — credentials private — ports 5432/6379 closed externally — Snapshots through pre-migration Available including aisandbox-staging-premigration-2026-07-27 — Repo cloned /opt/aisandbox — owner ubuntu:ubuntu — branch main — VPS commit 3da1b7c — /opt/aisandbox/.env created privately — 47 required non-Google keys present — Google OAuth deferred — Dependencies installed (npm ci PASS) — Builds PASS (api-gateway/ai-service/container-manager/frontend) — Generated artifacts present — Staging DB migration baseline COMPLETE — required tables usage_records/billing_snapshots/invoices present — migrations count 25 — 04D PM2 health-only smoke PASS — all four PM2 services online — restarts 0 — API_HEALTH/API_DB_HEALTH/API_READY/CONTAINER_HEALTH=200 — FRONTEND_ROOT=307 accepted as locale redirect — final public table count 26 — 04D1/04D2/04D3 COMPLETE and LOCKED — 04F COMPLETE and LOCKED — 2026-07-29: PM2_SAVE_EXIT=0 / dump present / startup systemd unit installed / 04F1 cleared Result=protocol / pm2-ubuntu enabled and active Result=success / all four apps online/ok / health PASS / 04G reboot-proven — 04H COMPLETE and LOCKED — 2026-08-03: DNS A record staging.ainow.biz → 18.136.141.186 / external DNS confirmed via 1.1.1.1 and 8.8.8.8 / Caddy configured for staging.ainow.biz / Caddyfile backup at /etc/caddy/Caddyfile.backup-04H-20260803-133529 / Caddy validate returned Valid configuration / Caddy enabled and active / public HTTP root=308 / public HTTPS root=307 / public HTTPS API health/db/ready=200 / final local health PASS / public table count remained 26 / no secrets printed / no AI/billing/container/OAuth enablement / no source/migration/env changes / Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04H-CHECKPOINT.md — Credential safety: Keith keeps DB/Redis passwords privately; no paste of .env/DATABASE_URL/REDIS_URL/provider keys — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — 04I ACTIVE / BLOCKED by 04I2C — Step 2 COMPLETE (Runbook — 2026-08-03) — Step 3 partial / stopped at root browser failure — 04I1 ACTIVE — Steps 1–4 COMPLETE — evidence review verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — root Location https://localhost:3002/en — expected /en or https://staging.ainow.biz/en — 04I2 ACTIVE / BLOCKED by 04I2C — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — 04I2A FAILED — Option B source fix — root HTTP/2 500 — rolled back — 04I2B FAILED — Option A Caddy forwarded header fix — Location still https://localhost:3002/en — rolled back — 04I2C ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03) — Root Redirect Origin Strategy Reset — local/main contains failed 04I2A commit — VPS intentionally dirty — do not reconcile until 04I2C decides safe path — Next action: PRIVATE-BETA-STAGING-EXECUTION-04I2C Step 2 — Root Redirect Strategy Review)
 32d. PRIVATE-BETA-STAGING-EXECUTION-04A — Redis Gate + Repo Clone Baseline (COMPLETE and LOCKED — 2026-07-25 — All 4 steps COMPLETE — Evidence verdict: PASS — All 45 checks passed — No deviations — No warnings — No stop conditions — Redis Gate Outcome A accepted — Static assessment LIKELY COMPATIBLE — ioredis v5 / BullMQ v5 / Redis 8.8.0 satisfy compatibility conditions — Repo cloned to /opt/aisandbox — owner ubuntu:ubuntu — branch main — latest commit c55a278 Register staging execution 04A repo clone baseline — git status clean — services/ai-service, api-gateway, container-manager, governance, frontend all present — No .env created — No dependencies installed — No build run — No app services started — No migrations run — No DNS/TLS configured — No secrets disclosed — Snapshot aisandbox-staging-preclone-2026-07-25 Available — All 4 snapshots Available — PostgreSQL active/local-only — Redis active/local-only/protected-mode/requirepass — Firewall 22/80/443 only — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04A-CHECKPOINT.md — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next child: PRIVATE-BETA-STAGING-EXECUTION-04B — Private Env Preparation)
 32e. PRIVATE-BETA-STAGING-EXECUTION-04B — Private Env Preparation (COMPLETE and LOCKED — 2026-07-26 — All 4 steps COMPLETE — Evidence review verdict PASS — Step 1 Registration complete — Step 2 Runbook complete — Google OAuth decision complete and locked (Outcome B) — Step 3 Evidence review complete — verdict PASS — Step 4 Consolidation/checkpoint complete — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-CHECKPOINT.md — Pre-env snapshot aisandbox-staging-postclone-preenv-2026-07-26 Available — /opt/aisandbox/.env created privately — owner ubuntu:ubuntu — chmod 600 — 47 required non-Google keys present — Google OAuth deferred / omitted intentionally — no fake placeholders — email/password intended staging auth path — all kill switches false — no dependency install — no build — no app services started — no migrations — no DNS/TLS — no secrets disclosed — PostgreSQL warning non-blocking — stop conditions none — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next child: PRIVATE-BETA-STAGING-EXECUTION-04C — ACTIVE)
 32f. PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION — Staging Google OAuth Requirement Decision (COMPLETE and LOCKED — 2026-07-26 — All 3 steps COMPLETE — Outcome B — Google OAuth can be deferred — Decision report: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION-REPORT.md — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04B-GOOGLE-OAUTH-DECISION-CHECKPOINT.md — 04B runbook amended — no source code changed — no env files opened/created/edited — no env values printed — no secrets disclosed)
@@ -35714,10 +35714,14 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 32q. PRIVATE-BETA-STAGING-EXECUTION-04F1 — PM2 systemd Adoption Recovery (COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. — Parent: PRIVATE-BETA-STAGING-EXECUTION-04F — Blocker child slice — Evidence review verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-CHECKPOINT.md — Pre-recovery: PM2 dump present — pm2 ping=pong — all four apps online/ok restarts=0 — pm2-ubuntu ActiveState=failed / SubState=failed / Result=protocol / MainPID=0 — Keith approved runtime-impacting recovery — PM2_RESAVE_EXIT=0 — pm2 kill temporary stop as expected — pm2-ubuntu enabled and active — Result=success — MainPID=87688 — PM2 dump present — all four apps online/ok — API_HEALTH/API_DB_HEALTH/API_READY/CONTAINER_HEALTH=200 — FRONTEND_ROOT=307 accepted as locale redirect — public table count 26 — no reboot — no secrets printed — no DNS/TLS / AI / billing / container workflow / Google OAuth enablement — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-PM2-SYSTEMD-ADOPTION-RECOVERY-RUNBOOK.md — Evidence review: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-PM2-SYSTEMD-ADOPTION-RECOVERY-EVIDENCE-REVIEW.md — Parent 04F COMPLETE and LOCKED — 2026-07-29 — Parent 04 remains ACTIVE — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next: Register next safe deployment baseline slice for public routing / DNS / TLS)
 32r. PRIVATE-BETA-STAGING-EXECUTION-04G — Reboot Persistence Validation (COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. — Parent: PRIVATE-BETA-STAGING-EXECUTION-04 — After 04F/04F1 COMPLETE and LOCKED — Evidence review verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04G-CHECKPOINT.md — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-04G-REBOOT-PERSISTENCE-VALIDATION-RUNBOOK.md — Evidence review: docs/PRIVATE-BETA-STAGING-EXECUTION-04G-REBOOT-PERSISTENCE-VALIDATION-EVIDENCE-REVIEW.md — Pre-reboot checks passed — Keith approved reboot — sudo reboot ran — SSH disconnected/reconnected as expected — uptime changed from 5 days to 1 min — post-reboot pm2-ubuntu enabled and active — systemd Result=success — pm2 resurrect exited 0/SUCCESS — PM2 dump remained present — PM2 ping=pong — all four apps online/ok — health-only smoke passed — FRONTEND_ROOT=307 accepted as locale redirect — public table count remained 26 — no PM2 recovery commands needed — no secrets printed — no DNS/TLS/AI/billing/container workflow/OAuth enablement — Parent 04 remains ACTIVE — PM2 persistence reboot-proven — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED — Next: PRIVATE-BETA-STAGING-EXECUTION-04H — ACTIVE — Step 1 COMPLETE (Registration — 2026-07-29))
 32s. PRIVATE-BETA-STAGING-EXECUTION-04H — Public Routing / DNS / TLS Baseline (COMPLETE and LOCKED — 2026-08-03. Do not modify this entry. — Parent: PRIVATE-BETA-STAGING-EXECUTION-04 — After 04G COMPLETE and LOCKED — All 5 steps COMPLETE — Evidence review verdict PASS — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04H-CHECKPOINT.md — Runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-04H-PUBLIC-ROUTING-DNS-TLS-RUNBOOK.md — Evidence review: docs/PRIVATE-BETA-STAGING-EXECUTION-04H-PUBLIC-ROUTING-DNS-TLS-EVIDENCE-REVIEW.md — Source-grounded hostname: staging.ainow.biz (PRIVATE-BETA-STAGING-SETUP-03 COMPLETE and LOCKED) — Local baseline passed: date=Wed Jul 29 18:13:46 HKT 2026 / uptime=57 min / pm2-ubuntu enabled and active / systemd Result=success / PM2_DUMP_PRESENT=yes / pm2 ping=pong / all four apps online/ok restarts=0 / API_HEALTH/API_DB_HEALTH/API_READY/CONTAINER_HEALTH=200 / FRONTEND_ROOT=307 / public table count 26 — Caddy v2.11.4 installed/enabled/active/valid — Initial Caddyfile: default :80 static file server — DNS initially unresolved — Keith approved: go — approve 04H DNS record change — DNS A record: staging.ainow.biz → 18.136.141.186 — External DNS confirmed: dig @1.1.1.1=18.136.141.186 / dig @8.8.8.8=18.136.141.186 — Keith approved: go — approve 04H Caddy public route change and TLS public validation — Caddyfile backup: /etc/caddy/Caddyfile.backup-04H-20260803-133529 — Caddy configured staging.ainow.biz: /api/* reverse_proxy 127.0.0.1:4000 / all other reverse_proxy 127.0.0.1:3002 — Caddy validate returned Valid configuration — Caddy remained enabled and active — PUBLIC_HTTP_ROOT_FORCED=308 / PUBLIC_HTTPS_ROOT_FORCED=307 / PUBLIC_HTTPS_API_HEALTH_FORCED=200 / PUBLIC_HTTPS_API_DB_HEALTH_FORCED=200 / PUBLIC_HTTPS_API_READY_FORCED=200 — Final local health PASS — public table count remained 26 — no secrets printed — no AI/billing/container/OAuth enablement — no source/migration/env changes — Parent 04 remains ACTIVE — PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED)
-32t. PRIVATE-BETA-STAGING-EXECUTION-04I — Browser / User-Facing Smoke Baseline (ACTIVE / BLOCKED by 04I1/04I2/04I2A — Step 2 COMPLETE (Runbook — 2026-08-03) — Step 3 partial / stopped at root browser failure — 2026-08-03. Parent: PRIVATE-BETA-STAGING-EXECUTION-04. After 04H COMPLETE and LOCKED — 2026-08-03 — public routing / DNS / TLS baseline established — staging.ainow.biz externally resolves to 18.136.141.186 — Caddy enabled/active/valid — public HTTPS health-only smoke PASS. Runbook created: docs/PRIVATE-BETA-STAGING-EXECUTION-04I-BROWSER-USER-FACING-SMOKE-RUNBOOK.md. Step 3 partial / stopped evidence: pre-smoke health PASS (PUBLIC_HTTPS_ROOT_FORCED=307 / PUBLIC_HTTPS_API_HEALTH/DB/READY=200 / LOCAL_API_HEALTH/DB_HEALTH/READY=200 / LOCAL_CONTAINER_HEALTH=200 / LOCAL_FRONTEND_ROOT=307 / pm2-ubuntu enabled/active / caddy enabled/active / public table count 26 / date Mon Aug 3 15:12:07 HKT 2026). Browser evidence: https://staging.ainow.biz/en works — https://staging.ainow.biz root does not work as expected — 04I Path A was not PASS — 04I stopped at Path A — Paths B/C/D/E/F not completed — no account created — no login — no persistent data — no AI/billing/container/OAuth execution. BLOCKED by 04I1/04I2/04I2A. 04I1 evidence review verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS. Root redirect actual Location: https://localhost:3002/en — expected: /en or https://staging.ainow.biz/en. 04I should not continue until 04I2A implementation and 04I2 validation/evidence review are complete. Future checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04I-CHECKPOINT.md. Non-goals: no AI/billing/container/OAuth enablement — no migrations — no source/env changes — no production domain cutover — no git commit/push. Parent 04 remains ACTIVE. PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.)
-32u. PRIVATE-BETA-STAGING-EXECUTION-04I1 — Public Root / Locale Redirect Browser Smoke Failure Investigation (ACTIVE — Steps 1–4 COMPLETE (Registration / Runbook / Investigation / Evidence Review — 2026-08-03). Verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS. Root Location header actual: https://localhost:3002/en — expected: /en or https://staging.ainow.biz/en. Parent: PRIVATE-BETA-STAGING-EXECUTION-04I. Registered 2026-08-03. Evidence review file: docs/PRIVATE-BETA-STAGING-EXECUTION-04I1-PUBLIC-ROOT-LOCALE-REDIRECT-EVIDENCE-REVIEW.md. Bounded fix/recovery slice 04I2 registered ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03). Child implementation slice 04I2A registered ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03). Selected fix path: Option B — Next.js middleware relative/public redirect correction. 04I remains ACTIVE / BLOCKED by 04I1/04I2/04I2A. Parent 04 remains ACTIVE. PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.)
-32v. PRIVATE-BETA-STAGING-EXECUTION-04I2 — Public Root Redirect Location Header Fix (ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03). Parent: PRIVATE-BETA-STAGING-EXECUTION-04I. Registered 2026-08-03. Bounded fix/recovery slice registered after 04I1 evidence review verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS. Root redirect actual Location: https://localhost:3002/en — expected: /en or https://staging.ainow.biz/en. Purpose: correct the public root redirect so https://staging.ainow.biz redirects to /en or https://staging.ainow.biz/en and not https://localhost:3002/en. Fix runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-04I2-PUBLIC-ROOT-REDIRECT-LOCATION-HEADER-FIX-RUNBOOK.md. Child implementation slice 04I2A registered ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03). Selected fix path: Option B — Next.js middleware relative/public redirect correction. Reason: middleware.ts uses request.nextUrl.clone() and evidence shows root Location becomes https://localhost:3002/en. Future checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04I2-CHECKPOINT.md. 04I remains ACTIVE / BLOCKED by 04I1/04I2/04I2A. Parent 04 remains ACTIVE. PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.)
-32w. PRIVATE-BETA-STAGING-EXECUTION-04I2A — Middleware Root Redirect Relative Location Fix (ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03). Parent: PRIVATE-BETA-STAGING-EXECUTION-04I2. Registered 2026-08-03. Selected implementation child slice for Option B fix path. Purpose: implement the smallest safe source-code fix so root locale redirect emits /en or https://staging.ainow.biz/en and not https://localhost:3002/en. Selected fix path: Option B — Next.js middleware relative/public redirect correction. Reason: frontend/middleware.ts uses request.nextUrl.clone() for root redirect and evidence shows root Location becomes https://localhost:3002/en because Caddy reverse_proxy does not forward the original public Host header to Next.js. Scope: edit frontend/middleware.ts only — replace root redirect that uses request.nextUrl.clone() with safe relative redirect — preserve existing locale behavior — preserve /en, /en/login, /en/register — preserve API route behavior — focused local validation only. Non-goals: no Caddy change — no DNS change — no SSH — no deployment — no account creation — no login — no AI/billing/container/OAuth — no production domains — no secret printing — no migrations — no git commit/push. Future checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04I2A-CHECKPOINT.md. Guardrails: no Caddy/runtime change — no SSH — no deployment unless explicitly approved — no env files opened/printed — prefer smallest safe source-code fix — keep 04I ACTIVE / BLOCKED until 04I2A and 04I2 validation resolved — keep parent 04 ACTIVE — keep PRIVATE-BETA-DEPLOYMENT-READINESS BLOCKED / PAUSED. Proposed workflow: 1. Registration (this step) — 2. Bounded middleware implementation — 3. Focused local validation — 4. Deployment/runtime validation prompt if needed and explicitly approved — 5. 04I2 evidence review — 6. 04I2/04I2A consolidation — 7. Resume 04I browser smoke from Path A. 04I remains ACTIVE / BLOCKED by 04I1/04I2/04I2A. Parent 04 remains ACTIVE. PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.)
+32t. PRIVATE-BETA-STAGING-EXECUTION-04I — Browser / User-Facing Smoke Baseline (ACTIVE / pending 04I2E safe git/VPS sync before normal smoke resumes — Step 2 COMPLETE (Runbook — 2026-08-03) — Step 3 partial / stopped at root browser failure — 2026-08-03. Parent: PRIVATE-BETA-STAGING-EXECUTION-04. After 04H COMPLETE and LOCKED — 2026-08-03 — public routing / DNS / TLS baseline established — staging.ainow.biz externally resolves to 18.136.141.186 — Caddy enabled/active/valid — public HTTPS health-only smoke PASS. Runbook created: docs/PRIVATE-BETA-STAGING-EXECUTION-04I-BROWSER-USER-FACING-SMOKE-RUNBOOK.md. Step 3 partial / stopped evidence: pre-smoke health PASS (PUBLIC_HTTPS_ROOT_FORCED=307 / PUBLIC_HTTPS_API_HEALTH/DB/READY=200 / LOCAL_API_HEALTH/DB_HEALTH/READY=200 / LOCAL_CONTAINER_HEALTH=200 / LOCAL_FRONTEND_ROOT=307 / pm2-ubuntu enabled/active / caddy enabled/active / public table count 26 / date Mon Aug 3 15:12:07 HKT 2026). Browser evidence: https://staging.ainow.biz/en works — https://staging.ainow.biz root does not work as expected — 04I Path A was not PASS — 04I stopped at Path A — Paths B/C/D/E/F not completed — no account created — no login — no persistent data — no AI/billing/container/OAuth execution. 04I1 evidence review verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS. Root redirect actual Location: https://localhost:3002/en — expected: /en or https://staging.ainow.biz/en. 04I2A FAILED — Option B source fix — root HTTP/2 500 — rolled back. 04I2B FAILED — Option A Caddy forwarded header fix — Location still https://localhost:3002/en — rolled back. 04I2C COMPLETE and LOCKED — 2026-08-03 — Caddy exact-root redirect redir / /en 307 — runtime fix PASS — 04I Path A root access prerequisite now passes. 04I2D COMPLETE and LOCKED — 2026-08-04 — local source reconciliation PASS — middleware.ts restored — TypeScript PASS. 04I2E REGISTERED — Safe Git/VPS State Synchronization — must complete before 04I browser smoke resumes. Future checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04I-CHECKPOINT.md. Non-goals: no AI/billing/container/OAuth enablement — no migrations — no source/env changes — no production domain cutover — no git commit/push. Parent 04 remains ACTIVE. PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.)
+32u. PRIVATE-BETA-STAGING-EXECUTION-04I1 — Public Root / Locale Redirect Browser Smoke Failure Investigation (ACTIVE — Steps 1–4 COMPLETE (Registration / Runbook / Investigation / Evidence Review — 2026-08-03). Verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS. Root Location header actual: https://localhost:3002/en — expected: /en or https://staging.ainow.biz/en. Parent: PRIVATE-BETA-STAGING-EXECUTION-04I. Registered 2026-08-03. Evidence review file: docs/PRIVATE-BETA-STAGING-EXECUTION-04I1-PUBLIC-ROOT-LOCALE-REDIRECT-EVIDENCE-REVIEW.md. Bounded fix/recovery slice 04I2 registered ACTIVE — pending 04I2E. Child implementation slice 04I2A FAILED — Option B source fix failed at staging runtime — root HTTP/2 500 — rolled back — 2026-08-03. Child implementation slice 04I2B FAILED — Option A Caddy forwarded header fix did not fix root redirect — Location remained https://localhost:3002/en — rolled back — 2026-08-03. Child investigation/recovery slice 04I2C COMPLETE and LOCKED — 2026-08-03 — Caddy exact-root redirect redir / /en 307 — PASS. Child cleanup slice 04I2D COMPLETE and LOCKED — 2026-08-04 — local source reconciliation PASS. 04I2E REGISTERED — Safe Git/VPS State Synchronization — pending. Consolidation/checkpoint pending after 04I2E safe sync completion. 04I remains ACTIVE — pending 04I2E safe git/VPS sync. Parent 04 remains ACTIVE. PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.)
+32v. PRIVATE-BETA-STAGING-EXECUTION-04I2 — Public Root Redirect Location Header Fix (ACTIVE / pending 04I2E safe git/VPS sync — Step 2 COMPLETE (Fix Runbook — 2026-08-03). Parent: PRIVATE-BETA-STAGING-EXECUTION-04I. Registered 2026-08-03. Bounded fix/recovery slice registered after 04I1 evidence review verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS. Root redirect actual Location: https://localhost:3002/en — expected: /en or https://staging.ainow.biz/en. Purpose: correct the public root redirect so https://staging.ainow.biz redirects to /en or https://staging.ainow.biz/en and not https://localhost:3002/en. Fix runbook: docs/PRIVATE-BETA-STAGING-EXECUTION-04I2-PUBLIC-ROOT-REDIRECT-LOCATION-HEADER-FIX-RUNBOOK.md. Child implementation slice 04I2A FAILED — Option B source fix failed at staging runtime — root HTTP/2 500 — rolled back — 2026-08-03. Child implementation slice 04I2B FAILED — Option A Caddy forwarded header fix did not fix root redirect — Location remained https://localhost:3002/en — rolled back — 2026-08-03. Both Option A and Option B failed individually. Child investigation/recovery slice 04I2C COMPLETE and LOCKED — 2026-08-03 — Caddy exact-root redirect redir / /en 307 — runtime fix PASS — 04I Path A root access prerequisite now passes — accepted runtime fix: Caddy redir / /en 307. Child cleanup slice 04I2D COMPLETE and LOCKED — 2026-08-04 — local source reconciliation PASS — frontend/middleware.ts restored to request.nextUrl.clone() pattern — TypeScript PASS — VPS remains dirty (M frontend/middleware.ts M frontend/tsconfig.tsbuildinfo) — Keith must commit/push locally before VPS sync. 04I2E REGISTERED — Safe Git/VPS State Synchronization — pending full consolidation. Future checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04I2-CHECKPOINT.md. 04I remains ACTIVE — pending 04I2E safe git/VPS sync. Parent 04 remains ACTIVE. PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.)
+32w. PRIVATE-BETA-STAGING-EXECUTION-04I2A — Middleware Root Redirect Relative Location Fix (FAILED — Option B source fix failed at staging runtime — root HTTP/2 500 — rolled back — 2026-08-03. Parent: PRIVATE-BETA-STAGING-EXECUTION-04I2. Registered 2026-08-03. Selected implementation child slice for Option B fix path. Implementation: frontend/middleware.ts root redirect changed from request.nextUrl.clone() to relative Location: /en — local TypeScript passed — local scoped lint passed. Staging runtime result: git pull fast-forwarded to commit 41b8603 — frontend build passed — pm2 restart aisandbox-frontend succeeded — aisandbox-frontend online — /en=200 — /en/login=200 — /en/register=200 — root slash returned HTTP/2 500 — root no-slash returned HTTP/2 500 — Option B made root worse at staging runtime. Rollback: frontend/middleware.ts rolled back on VPS via git checkout HEAD~1 -- frontend/middleware.ts — frontend build passed after rollback — pm2 restart aisandbox-frontend succeeded — aisandbox-frontend online — root restored to old known failure: HTTP/2 307 Location: https://localhost:3002/en — /en=200 — /en/login=200 — /en/register=200 — VPS working tree dirty after rollback: M frontend/middleware.ts M frontend/tsconfig.tsbuildinfo. Conclusion: Option B relative Location implementation is not acceptable as deployed — staging runtime is no longer root-500 after rollback — root still fails 04I Path A due to localhost Location header — next candidate is Option A: Caddy forwarded host/proto/header correction. Successor: PRIVATE-BETA-STAGING-EXECUTION-04I2B — ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03) — Option A Caddy forwarded header fix. Original scope: edit frontend/middleware.ts only — replace root redirect that uses request.nextUrl.clone() with safe relative redirect — preserve existing locale behavior — preserve /en, /en/login, /en/register — preserve API route behavior — focused local validation only. Non-goals: no Caddy change — no DNS change — no SSH — no deployment — no account creation — no login — no AI/billing/container/OAuth — no production domains — no secret printing — no migrations — no git commit/push. Future checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04I2A-CHECKPOINT.md. Guardrails: no Caddy/runtime change — no SSH — no deployment unless explicitly approved — no env files opened/printed — prefer smallest safe source-code fix — keep 04I ACTIVE / BLOCKED until 04I2C resolves root redirect strategy — keep parent 04 ACTIVE — keep PRIVATE-BETA-DEPLOYMENT-READINESS BLOCKED / PAUSED. Proposed workflow: 1. Registration (this step) — 2. Bounded middleware implementation — 3. Focused local validation — 4. Deployment/runtime validation prompt if needed and explicitly approved — 5. 04I2 evidence review — 6. 04I2/04I2A consolidation — 7. Resume 04I browser smoke from Path A. 04I remains ACTIVE / BLOCKED by 04I2C. Parent 04 remains ACTIVE. PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.)
+32x. PRIVATE-BETA-STAGING-EXECUTION-04I2B — Caddy Forwarded Header Redirect Fix (FAILED — Option A Caddy forwarded header fix did not fix root redirect — Location remained https://localhost:3002/en — rolled back successfully — 2026-08-03. Parent: PRIVATE-BETA-STAGING-EXECUTION-04I2. Registered 2026-08-03. Implementation child slice — Option A Caddy forwarded host/proto header correction. Pre-change: date Mon Aug 3 20:55:51 HKT 2026 — VPS git dirty: M frontend/middleware.ts M frontend/tsconfig.tsbuildinfo — table count 26 — pm2-ubuntu enabled/active — caddy enabled/active — Caddyfile had reverse_proxy 127.0.0.1:3002. Change: backup created /etc/caddy/Caddyfile.backup-04I2B-20260803-205858 — frontend Caddy reverse_proxy changed to add header_up Host/X-Forwarded-Host/X-Forwarded-Proto — Caddy validate Valid configuration — Caddy reload active — warnings: X-Forwarded-Host unnecessary, X-Forwarded-Proto unnecessary, formatting warning. Validation: root slash HTTP/2 307 Location https://localhost:3002/en — root no-slash HTTP/2 307 Location https://localhost:3002/en — root follow failed SSL wrong version number — EN=200 — LOGIN=200 — REGISTER=200 — PUBLIC_HTTPS_API_HEALTH/DB/READY=200 — LOCAL_API_HEALTH/DB_HEALTH/READY=200 — LOCAL_CONTAINER_HEALTH=200 — LOCAL_FRONTEND_ROOT=307 — table count 26 — pm2-ubuntu enabled/active — caddy enabled/active. Conclusion: Caddy forwarded header change did not fix root redirect — Location still https://localhost:3002/en. Rollback: restored /etc/caddy/Caddyfile.backup-04I2B-20260803-205858 — Caddy validate Valid configuration — Caddy reload active — root after rollback HTTP/2 307 Location https://localhost:3002/en — EN=200 — LOGIN=200 — REGISTER=200 — API=200. Rollback succeeded — staging back to safe known failure. Evidence review: docs/PRIVATE-BETA-STAGING-EXECUTION-04I2B-CADDY-FORWARDED-HEADER-EVIDENCE-REVIEW.md. Successor: PRIVATE-BETA-STAGING-EXECUTION-04I2C — Root Redirect Origin Strategy Reset — ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03). 04I remains ACTIVE / BLOCKED by 04I2C. Parent 04 remains ACTIVE. PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.)
+32y. PRIVATE-BETA-STAGING-EXECUTION-04I2C — Root Redirect Origin Strategy Reset (COMPLETE and LOCKED — 2026-08-03 — All 4 steps COMPLETE (Registration — 2026-08-03, Strategy Review — 2026-08-03, Caddy Exact-Root Redirect Implementation — 2026-08-03, Evidence Review/Checkpoint — 2026-08-03). Do not modify this entry. Parent: PRIVATE-BETA-STAGING-EXECUTION-04I2. Registered 2026-08-03. Approval: Keith approved go — approve 04I2C Caddy exact-root redirect implementation. Pre-change: date Mon Aug 3 21:56:01 HKT 2026 / VPS git dirty M frontend/middleware.ts M frontend/tsconfig.tsbuildinfo / table count 26 / pm2-ubuntu enabled/active / caddy enabled/active. Runtime change: backup /etc/caddy/Caddyfile.backup-04I2C-20260803-215649 / added redir / /en 307 / caddy validate Valid configuration / caddy reload active / formatting warning non-blocking. SSH validation: root slash HTTP/2 307 Location /en PASS — root no-slash HTTP/2 307 Location /en PASS — root follow HTTP/2 307 → /en → HTTP/2 200 PASS — EN/LOGIN/REGISTER=200 — all API health endpoints 200 — all local health endpoints 200 — LOCAL_FRONTEND_ROOT=307 — table count 26 — pm2-ubuntu enabled/active — caddy enabled/active. Browser validation: https://staging.ainow.biz redirects to https://staging.ainow.biz/en PASS — no localhost redirect — HTTPS lock valid — /en /en/login /en/register all load — no account created — no login — no persistent data — no AI/billing/container/OAuth execution. Conclusion: 04I2C runtime fix PASS — root redirect blocker fixed at Caddy exact-root layer — 04I Path A root access prerequisite now passes — 04I2A source fix remains FAILED must not be deployed — 04I2B Caddy forwarded-header fix remains FAILED and rolled back — VPS remains intentionally dirty M frontend/middleware.ts M frontend/tsconfig.tsbuildinfo — local/main still contains failed 04I2A commit — cleanup/reconciliation slice 04I2D required before normal git-based deployment resumes. Evidence review: docs/PRIVATE-BETA-STAGING-EXECUTION-04I2C-CADDY-EXACT-ROOT-REDIRECT-EVIDENCE-REVIEW.md. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04I2C-CHECKPOINT.md. Strategy review: docs/PRIVATE-BETA-STAGING-EXECUTION-04I2C-ROOT-REDIRECT-STRATEGY-REVIEW.md. 04I2A remains FAILED. 04I2B remains FAILED. 04I2 remains ACTIVE pending 04I2D cleanup before full consolidation. 04I ACTIVE — root redirect prerequisite now passes — blocked by 04I2D cleanup before resuming normal smoke. Parent 04 remains ACTIVE. PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED. Next recommended action: Register PRIVATE-BETA-STAGING-EXECUTION-04I2D — Main/VPS Redirect State Reconciliation.)
+32z. PRIVATE-BETA-STAGING-EXECUTION-04I2D — Main/VPS Redirect State Reconciliation (COMPLETE and LOCKED — 2026-08-04. Do not modify this entry. Parent: PRIVATE-BETA-STAGING-EXECUTION-04I2. Registered 2026-08-03. Completed 2026-08-04. All 3 steps COMPLETE (Registration — 2026-08-03, Implementation/local source reconciliation — 2026-08-04, Consolidation/Checkpoint — 2026-08-04). Purpose: reconcile local/main and VPS state after 04I2C Caddy exact-root redirect succeeds. Implementation: reverted failed 04I2A middleware root redirect block (new NextResponse(null, { status: 307, headers: { Location: '/en' } })) — restored supported pattern: const url = request.nextUrl.clone(); url.pathname = /${DEFAULT_LOCALE}; return NextResponse.redirect(url) — no other middleware branches changed — one hunk in frontend/middleware.ts only. Validation: Set-Location -LiteralPath "C:\Users\knlee\aiSandBox2026B\frontend"; npx tsc --noEmit — exit code 0 — PASS — no TypeScript errors. Accepted runtime fix: Caddy redir / /en 307 — remains active on VPS — do not remove without explicit approval. Remaining local state: changes not yet committed/pushed — Keith must commit/push manually. Remaining VPS state: intentionally dirty M frontend/middleware.ts M frontend/tsconfig.tsbuildinfo — do not run git pull on VPS until Keith commits/pushes and 04I2E safe sync plan is issued. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04I2D-CHECKPOINT.md. No SSH/AWS CLI/Caddy/PM2/Docker/Redis/secrets/env actions occurred. No git commit or push. No subagents. 04I2 ACTIVE pending 04I2E. 04I ACTIVE pending 04I2E safe git/VPS sync before normal smoke resumes. Parent 04 remains ACTIVE. PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED. Next: 04I2E — Safe Git/VPS State Synchronization.)
+32z2. PRIVATE-BETA-STAGING-EXECUTION-04I2E — Safe Git/VPS State Synchronization (REGISTERED — 2026-08-04. Parent: PRIVATE-BETA-STAGING-EXECUTION-04I2. Registered after 04I2D COMPLETE and LOCKED. Purpose: safely align local/main and VPS after 04I2D source reconciliation — without losing the accepted live Caddy exact-root redirect or reintroducing the failed 04I2A middleware change. Scope: confirm local git status — confirm reconciled middleware source is included in local changes — Keith manually commits/pushes local docs/source changes — prepare VPS commands to safely handle dirty middleware and tsconfig state — ensure VPS can pull reconciled main without reintroducing failed source — preserve live Caddy redir / /en 307 — revalidate root redirect and direct/public/local health after sync. Non-goals: no source changes in registration — no Caddy edits unless explicitly approved later — no PM2 restart unless sync validation requires it — no account/login/data creation — no AI/billing/container/OAuth execution — no env/secret access — no production domain testing — no deployment readiness approval. Prerequisite: Keith must commit/push locally before VPS sync can proceed. 04I2D COMPLETE and LOCKED — local source reconciled — TypeScript PASS. 04I ACTIVE pending safe git/VPS sync. 04I2 ACTIVE pending 04I2E. Parent 04 remains ACTIVE. PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.)
 33. LOCAL-PRIVATE-BETA-READINESS-01 — Local Machine Rebaseline + Private Beta Gap Review (COMPLETE and LOCKED — 2026-07-23 — All 3 steps COMPLETE — Verdict: BLOCKED for private-beta progression — P0: authenticated /api/ai/execute returned 402 not kill-switch 503 — Checkpoint: docs/LOCAL-PRIVATE-BETA-READINESS-01-CHECKPOINT.md — Step 2 report: docs/LOCAL-PRIVATE-BETA-READINESS-01-LOCAL-REBASELINE-REPORT.md — Next: LOCAL-PRIVATE-BETA-READINESS-01-FIX-EXECUTION-KILLSWITCH-LOCAL — ACTIVE)
 34. LOCAL-PRIVATE-BETA-READINESS-01-FIX-EXECUTION-KILLSWITCH-LOCAL — Fix Authenticated Execution Kill Switch — Local Private Beta P0 Fix (COMPLETE and LOCKED — 2026-07-23 — All 3 steps COMPLETE — PASS — P0 blocker fixed: authenticated POST /api/ai/execute now returns 503 (not 402) — GLOBAL_EXECUTION_ENABLED default changed to fail-safe opt-in — kill-switch fires before quota/payment/provider/container logic — 129/129 targeted tests PASS — /api/health/ready 200 — Checkpoint: docs/LOCAL-PRIVATE-BETA-READINESS-01-FIX-EXECUTION-KILLSWITCH-LOCAL-CHECKPOINT.md — Next: LOCAL-PRIVATE-BETA-READINESS-02 — ACTIVE — Step 1 COMPLETE (Registration — 2026-07-23))
 35. LOCAL-PRIVATE-BETA-READINESS-02 — Local Runtime Services Health Validation (PAUSED / PARTIALLY COMPLETE — 2026-07-23 — Container Manager local health PASS (GET http://localhost:4002/api/health 200); AI Service local runtime unresolved due staging parity decision — reason: local Windows env mismatch not equivalent to future staging environment — superseded by cloud staging resumption — Checkpoint: docs/LOCAL-TO-STAGING-PARITY-PIVOT-CHECKPOINT.md)
@@ -36637,10 +36641,11 @@ SPLIT ACTIVATED — 2026-07-25. The Step 2 runbook (docs/PRIVATE-BETA-STAGING-EX
 - PRIVATE-BETA-STAGING-EXECUTION-04F1 — PM2 systemd Adoption Recovery (COMPLETE and LOCKED — 2026-07-29 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-CHECKPOINT.md)
 - PRIVATE-BETA-STAGING-EXECUTION-04G — Reboot Persistence Validation (COMPLETE and LOCKED — 2026-07-29 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04G-CHECKPOINT.md — PM2 persistence reboot-proven)
 - PRIVATE-BETA-STAGING-EXECUTION-04H — Public Routing / DNS / TLS Baseline (COMPLETE and LOCKED — 2026-08-03 — All 5 steps COMPLETE — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04H-CHECKPOINT.md — staging.ainow.biz → 18.136.141.186 — Caddy enabled/active/valid — public HTTPS health-only smoke PASS)
-- PRIVATE-BETA-STAGING-EXECUTION-04I — Browser / User-Facing Smoke Baseline (ACTIVE / BLOCKED by 04I1/04I2/04I2A — Step 2 COMPLETE (Runbook — 2026-08-03) — Step 3 partial / stopped at root browser failure — https://staging.ainow.biz/en works — https://staging.ainow.biz root does not work as expected — root Location https://localhost:3002/en — expected /en or https://staging.ainow.biz/en — 04I should not continue until 04I2A implementation and 04I2 validation/evidence review are complete)
-- PRIVATE-BETA-STAGING-EXECUTION-04I1 — Public Root / Locale Redirect Browser Smoke Failure Investigation (ACTIVE — Steps 1–4 COMPLETE (Registration / Runbook / Investigation / Evidence Review — 2026-08-03) — Verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — 04I BLOCKED by 04I1/04I2/04I2A)
-- PRIVATE-BETA-STAGING-EXECUTION-04I2 — Public Root Redirect Location Header Fix (ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — bounded fix/recovery slice — Option B selected — 04I2A child implementation slice registered ACTIVE — 04I BLOCKED until 04I2A/04I2 resolved)
-- PRIVATE-BETA-STAGING-EXECUTION-04I2A — Middleware Root Redirect Relative Location Fix (ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03) — implementation child slice of 04I2 — Option B — Next.js middleware relative/public redirect correction — frontend/middleware.ts root redirect fix — 04I BLOCKED until 04I2A resolved)
+- PRIVATE-BETA-STAGING-EXECUTION-04I — Browser / User-Facing Smoke Baseline (ACTIVE / BLOCKED by 04I2C — Step 2 COMPLETE (Runbook — 2026-08-03) — Step 3 partial / stopped at root browser failure — https://staging.ainow.biz/en works — https://staging.ainow.biz root does not work as expected — root Location https://localhost:3002/en — expected /en or https://staging.ainow.biz/en — 04I should not continue until 04I2C resolves the root redirect strategy and 04I2 validation/evidence review are complete)
+- PRIVATE-BETA-STAGING-EXECUTION-04I1 — Public Root / Locale Redirect Browser Smoke Failure Investigation (ACTIVE — Steps 1–4 COMPLETE (Registration / Runbook / Investigation / Evidence Review — 2026-08-03) — Verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — 04I BLOCKED by 04I2C)
+- PRIVATE-BETA-STAGING-EXECUTION-04I2 — Public Root Redirect Location Header Fix (ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — bounded fix/recovery slice — Option B FAILED at staging runtime — Option A selected next — 04I2A FAILED — 04I2B child implementation slice registered ACTIVE — 04I BLOCKED until 04I2B/04I2 resolved)
+- PRIVATE-BETA-STAGING-EXECUTION-04I2A — Middleware Root Redirect Relative Location Fix (FAILED — Option B source fix failed at staging runtime — root HTTP/2 500 — rolled back — 2026-08-03 — implementation child slice of 04I2 — Option B — successor: 04I2B)
+- PRIVATE-BETA-STAGING-EXECUTION-04I2B — Caddy Forwarded Header Redirect Fix (ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03) — implementation child slice of 04I2 — Option A — Caddy forwarded host/proto header correction — 04I BLOCKED until 04I2B resolved)
 
 #### Non-Goals
 
@@ -40035,13 +40040,17 @@ C:\Users\knlee\aiSandBox2026B\docs\PRIVATE-BETA-STAGING-EXECUTION-04G-CHECKPOINT
 **PRIVATE-BETA-STAGING-EXECUTION-04D status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04E status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04H status:** COMPLETE and LOCKED — 2026-08-03. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04H-CHECKPOINT.md.
-**PRIVATE-BETA-STAGING-EXECUTION-04I status:** ACTIVE / BLOCKED by 04I1/04I2/04I2A — Step 2 COMPLETE (Runbook — 2026-08-03) — Step 3 partial / stopped at root browser failure.
-**PRIVATE-BETA-STAGING-EXECUTION-04I1 status:** ACTIVE — Steps 1–4 COMPLETE (Registration / Runbook / Investigation / Evidence Review — 2026-08-03) — Verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — root Location https://localhost:3002/en — expected /en or https://staging.ainow.biz/en.
-**PRIVATE-BETA-STAGING-EXECUTION-04I2 status:** ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — Option B selected — 04I2A child implementation slice ACTIVE.
-**PRIVATE-BETA-STAGING-EXECUTION-04I2A status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03).
-**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E/04F COMPLETE and LOCKED — 04F1 COMPLETE and LOCKED — 04G COMPLETE and LOCKED — 2026-07-29 — PM2 persistence reboot-proven — 04H COMPLETE and LOCKED — 2026-08-03 — Public routing / DNS / TLS baseline established — 04I ACTIVE / BLOCKED by 04I1/04I2/04I2A — Step 3 partial / stopped at root browser failure — 04I1 ACTIVE — Steps 1–4 COMPLETE — evidence review verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — root Location https://localhost:3002/en — expected /en or https://staging.ainow.biz/en — 04I2 ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — Option B selected — 04I2A ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03) — Fix in progress via 04I2A (Option B middleware fix) — Full app deployment still not complete.
+**PRIVATE-BETA-STAGING-EXECUTION-04I status:** ACTIVE — pending 04I2E safe git/VPS sync before normal smoke resumes — Step 2 COMPLETE (Runbook — 2026-08-03) — Step 3 partial / stopped at root browser failure.
+**PRIVATE-BETA-STAGING-EXECUTION-04I1 status:** ACTIVE — Steps 1–4 COMPLETE (Registration / Runbook / Investigation / Evidence Review — 2026-08-03) — Verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — root Location https://localhost:3002/en was expected /en or https://staging.ainow.biz/en — fixed at Caddy layer by 04I2C.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2 status:** ACTIVE — pending 04I2E safe git/VPS sync — 04I2A FAILED — 04I2B FAILED — 04I2C COMPLETE and LOCKED — 2026-08-03 — 04I2D COMPLETE and LOCKED — 2026-08-04 — 04I2E REGISTERED.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2A status:** FAILED — Option B source fix failed at staging runtime — root HTTP/2 500 — rolled back — 2026-08-03.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2B status:** FAILED — Option A Caddy forwarded header fix — Location remained https://localhost:3002/en — rolled back — 2026-08-03.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2C status:** COMPLETE and LOCKED — 2026-08-03 — Caddy exact-root redirect redir / /en 307 — runtime fix PASS — 04I Path A now passes — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04I2C-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2D status:** COMPLETE and LOCKED — 2026-08-04 — local source reconciliation PASS — middleware.ts restored — TypeScript PASS — no runtime action — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04I2D-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2E status:** REGISTERED — 2026-08-04 — Safe Git/VPS State Synchronization — prerequisite: Keith must commit/push locally before VPS sync.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E/04F COMPLETE and LOCKED — 04F1 COMPLETE and LOCKED — 04G COMPLETE and LOCKED — 2026-07-29 — PM2 persistence reboot-proven — 04H COMPLETE and LOCKED — 2026-08-03 — Public routing / DNS / TLS baseline established — 04I ACTIVE / pending 04I2E — Step 3 partial / stopped at root browser failure — 04I1 ACTIVE — Steps 1–4 COMPLETE — evidence review verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — root redirect fixed at Caddy layer by 04I2C — 04I2 ACTIVE / pending 04I2E — 04I2A FAILED — 04I2B FAILED — 04I2C COMPLETE and LOCKED — 2026-08-03 — 04I2D COMPLETE and LOCKED — 2026-08-04 — 04I2E REGISTERED — Full app deployment still not complete.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04I2A Step 2 — Bounded Middleware Implementation.
+**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04I2E — Safe Git/VPS State Synchronization.
 
 ---
 
@@ -40256,24 +40265,28 @@ C:\Users\knlee\aiSandBox2026B\docs\PRIVATE-BETA-STAGING-EXECUTION-04H-CHECKPOINT
 - [x] Next deployment baseline slice registered: PRIVATE-BETA-STAGING-EXECUTION-04I — ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03).
 
 **PRIVATE-BETA-STAGING-EXECUTION-04H status:** COMPLETE and LOCKED — 2026-08-03. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04H-CHECKPOINT.md.
-**PRIVATE-BETA-STAGING-EXECUTION-04I status:** ACTIVE / BLOCKED by 04I1/04I2/04I2A — Step 2 COMPLETE (Runbook — 2026-08-03) — Step 3 partial / stopped at root browser failure.
-**PRIVATE-BETA-STAGING-EXECUTION-04I1 status:** ACTIVE — Steps 1–4 COMPLETE (Registration / Runbook / Investigation / Evidence Review — 2026-08-03) — Verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — root Location https://localhost:3002/en — expected /en or https://staging.ainow.biz/en.
-**PRIVATE-BETA-STAGING-EXECUTION-04I2 status:** ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — Option B selected — 04I2A child implementation slice ACTIVE.
-**PRIVATE-BETA-STAGING-EXECUTION-04I2A status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03).
+**PRIVATE-BETA-STAGING-EXECUTION-04I status:** ACTIVE — pending 04I2E safe git/VPS sync before normal smoke resumes — Step 2 COMPLETE (Runbook — 2026-08-03) — Step 3 partial / stopped at root browser failure.
+**PRIVATE-BETA-STAGING-EXECUTION-04I1 status:** ACTIVE — Steps 1–4 COMPLETE (Registration / Runbook / Investigation / Evidence Review — 2026-08-03) — Verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — root Location https://localhost:3002/en was expected /en or https://staging.ainow.biz/en — fixed at Caddy layer by 04I2C.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2 status:** ACTIVE — pending 04I2E safe git/VPS sync — 04I2A FAILED — 04I2B FAILED — 04I2C COMPLETE and LOCKED — 2026-08-03 — 04I2D COMPLETE and LOCKED — 2026-08-04 — 04I2E REGISTERED.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2A status:** FAILED — Option B source fix failed at staging runtime — root HTTP/2 500 — rolled back — 2026-08-03.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2B status:** FAILED — Option A Caddy forwarded header fix — Location remained https://localhost:3002/en — rolled back — 2026-08-03.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2C status:** COMPLETE and LOCKED — 2026-08-03 — Caddy exact-root redirect redir / /en 307 — runtime fix PASS — 04I Path A now passes — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04I2C-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2D status:** COMPLETE and LOCKED — 2026-08-04 — local source reconciliation PASS — middleware.ts restored — TypeScript PASS — no runtime action — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04I2D-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2E status:** REGISTERED — 2026-08-04 — Safe Git/VPS State Synchronization — prerequisite: Keith must commit/push locally before VPS sync.
 **PRIVATE-BETA-STAGING-EXECUTION-04G status:** COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04G-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04F status:** COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04F1 status:** COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04F1-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04D status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04D-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04E status:** COMPLETE and LOCKED — 2026-07-27. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04E-CHECKPOINT.md.
-**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E/04F COMPLETE and LOCKED — 04F1 COMPLETE and LOCKED — 04G COMPLETE and LOCKED — 2026-07-29 — PM2 persistence reboot-proven — 04H COMPLETE and LOCKED — 2026-08-03 — Public routing / DNS / TLS baseline established — 04I ACTIVE / BLOCKED by 04I1/04I2/04I2A — Step 3 partial / stopped at root browser failure — 04I1 ACTIVE — Steps 1–4 COMPLETE — evidence review verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — root Location https://localhost:3002/en — expected /en or https://staging.ainow.biz/en — 04I2 ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — Option B selected — 04I2A ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03) — Fix in progress via 04I2A (Option B middleware fix) — Full app deployment still not complete.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E/04F COMPLETE and LOCKED — 04F1 COMPLETE and LOCKED — 04G COMPLETE and LOCKED — 2026-07-29 — PM2 persistence reboot-proven — 04H COMPLETE and LOCKED — 2026-08-03 — Public routing / DNS / TLS baseline established — 04I ACTIVE / pending 04I2E — Step 3 partial / stopped at root browser failure — 04I1 ACTIVE — Steps 1–4 COMPLETE — evidence review verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — root redirect fixed at Caddy layer by 04I2C — 04I2 ACTIVE / pending 04I2E — 04I2A FAILED — 04I2B FAILED — 04I2C COMPLETE and LOCKED — 2026-08-03 — 04I2D COMPLETE and LOCKED — 2026-08-04 — 04I2E REGISTERED — Full app deployment still not complete.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04I2A Step 2 — Bounded Middleware Implementation.
+**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04I2E — Safe Git/VPS State Synchronization.
 
 ---
 
 #### PRIVATE-BETA-STAGING-EXECUTION-04I: Browser / User-Facing Smoke Baseline
 
-**Status:** ACTIVE / BLOCKED by 04I1/04I2/04I2A — Step 2 COMPLETE (Runbook — 2026-08-03) — Step 3 partial / stopped at root browser failure — 2026-08-03
+**Status:** ACTIVE / BLOCKED by 04I2C — Step 2 COMPLETE (Runbook — 2026-08-03) — Step 3 partial / stopped at root browser failure — 2026-08-03
 **Task ID:** PRIVATE-BETA-STAGING-EXECUTION-04I
 **Title:** Browser / User-Facing Smoke Baseline
 **Family:** PRIVATE BETA / STAGING EXECUTION
@@ -40520,15 +40533,19 @@ Stop condition triggered: 04I runbook requires public root to load over HTTPS an
 ###### Step 6 — Continue to next deployment baseline slice — PENDING
 - [ ] Next deployment baseline slice registered or deferred.
 
-**PRIVATE-BETA-STAGING-EXECUTION-04I status:** ACTIVE / BLOCKED by 04I1/04I2/04I2A — Step 2 COMPLETE (Runbook — 2026-08-03) — Step 3 partial / stopped at root browser failure — 04I should not continue until 04I2A implementation and 04I2 validation/evidence review are complete.
-**PRIVATE-BETA-STAGING-EXECUTION-04I1 status:** ACTIVE — Steps 1–4 COMPLETE (Registration / Runbook / Investigation / Evidence Review — 2026-08-03) — Verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — root Location https://localhost:3002/en — expected /en or https://staging.ainow.biz/en. See PRIVATE-BETA-STAGING-EXECUTION-04I1 section below. See also 04I2 and 04I2A sections below.
-**PRIVATE-BETA-STAGING-EXECUTION-04I2 status:** ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — Option B selected — 04I2A child implementation slice ACTIVE. See PRIVATE-BETA-STAGING-EXECUTION-04I2 section below.
-**PRIVATE-BETA-STAGING-EXECUTION-04I2A status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03) — Option B — Next.js middleware relative/public redirect correction. See PRIVATE-BETA-STAGING-EXECUTION-04I2A section below.
+**PRIVATE-BETA-STAGING-EXECUTION-04I status:** ACTIVE — pending 04I2E safe git/VPS sync before normal smoke resumes — Step 2 COMPLETE (Runbook — 2026-08-03) — Step 3 partial / stopped at root browser failure.
+**PRIVATE-BETA-STAGING-EXECUTION-04I1 status:** ACTIVE — Steps 1–4 COMPLETE (Registration / Runbook / Investigation / Evidence Review — 2026-08-03) — Verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — root Location https://localhost:3002/en was expected /en or https://staging.ainow.biz/en — fixed at Caddy layer by 04I2C. See PRIVATE-BETA-STAGING-EXECUTION-04I1 section below. See also 04I2, 04I2A, 04I2B, 04I2C, 04I2D, 04I2E sections below.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2 status:** ACTIVE — pending 04I2E safe git/VPS sync — 04I2A FAILED — 04I2B FAILED — 04I2C COMPLETE and LOCKED — 2026-08-03 — 04I2D COMPLETE and LOCKED — 2026-08-04 — 04I2E REGISTERED. See PRIVATE-BETA-STAGING-EXECUTION-04I2 section below.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2A status:** FAILED — Option B source fix failed at staging runtime — root HTTP/2 500 — rolled back — 2026-08-03. See PRIVATE-BETA-STAGING-EXECUTION-04I2A section below.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2B status:** FAILED — Option A Caddy forwarded header fix — Location remained https://localhost:3002/en — rolled back — 2026-08-03. See PRIVATE-BETA-STAGING-EXECUTION-04I2B section below.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2C status:** COMPLETE and LOCKED — 2026-08-03 — Caddy exact-root redirect redir / /en 307 — runtime fix PASS — 04I Path A now passes — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04I2C-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2D status:** COMPLETE and LOCKED — 2026-08-04 — local source reconciliation PASS — middleware.ts restored — TypeScript PASS — no runtime action — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04I2D-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2E status:** REGISTERED — 2026-08-04 — Safe Git/VPS State Synchronization — prerequisite: Keith must commit/push locally before VPS sync.
 **PRIVATE-BETA-STAGING-EXECUTION-04H status:** COMPLETE and LOCKED — 2026-08-03. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04H-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04G status:** COMPLETE and LOCKED — 2026-07-29. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04G-CHECKPOINT.md.
-**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E/04F COMPLETE and LOCKED — 04F1 COMPLETE and LOCKED — 04G COMPLETE and LOCKED — 2026-07-29 — PM2 persistence reboot-proven — 04H COMPLETE and LOCKED — 2026-08-03 — Public routing / DNS / TLS baseline established — 04I ACTIVE / BLOCKED by 04I1/04I2/04I2A — Step 3 partial / stopped at root browser failure — 04I1 ACTIVE — Steps 1–4 COMPLETE — evidence review verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — root Location https://localhost:3002/en — expected /en or https://staging.ainow.biz/en — 04I2 ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — Option B selected — 04I2A ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03) — Fix in progress via 04I2A (Option B middleware fix) — Full app deployment still not complete.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E/04F COMPLETE and LOCKED — 04F1 COMPLETE and LOCKED — 04G COMPLETE and LOCKED — 2026-07-29 — PM2 persistence reboot-proven — 04H COMPLETE and LOCKED — 2026-08-03 — Public routing / DNS / TLS baseline established — 04I ACTIVE / pending 04I2E — Step 3 partial / stopped at root browser failure — 04I1 ACTIVE — Steps 1–4 COMPLETE — evidence review verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — root redirect fixed at Caddy layer by 04I2C — 04I2 ACTIVE / pending 04I2E — 04I2A FAILED — 04I2B FAILED — 04I2C COMPLETE and LOCKED — 2026-08-03 — 04I2D COMPLETE and LOCKED — 2026-08-04 — 04I2E REGISTERED — Full app deployment still not complete.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04I2A Step 2 — Bounded Middleware Implementation.
+**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04I2E — Safe Git/VPS State Synchronization.
 
 ---
 
@@ -40727,17 +40744,17 @@ C:\Users\knlee\aiSandBox2026B\docs\PRIVATE-BETA-STAGING-EXECUTION-04I1-CHECKPOIN
 ###### Step 7 — Resume 04I browser smoke — PENDING (after 04I2 resolves)
 - [ ] 04I browser smoke resumes from Path A after 04I1 is COMPLETE and LOCKED and 04I2 fix is validated.
 
-**PRIVATE-BETA-STAGING-EXECUTION-04I1 status:** ACTIVE — Steps 1–4 COMPLETE (Registration / Runbook / Investigation / Evidence Review — 2026-08-03) — Verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — root Location https://localhost:3002/en — expected /en or https://staging.ainow.biz/en — bounded fix/recovery slice 04I2 registered ACTIVE — implementation child slice 04I2A registered ACTIVE.
-**PRIVATE-BETA-STAGING-EXECUTION-04I status:** ACTIVE / BLOCKED by 04I1/04I2/04I2A. Do not continue 04I browser smoke until 04I2A implementation and 04I2 validation/evidence review are complete.
-**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E/04F/04G/04H COMPLETE and LOCKED — 04F1 COMPLETE and LOCKED — 04I ACTIVE / BLOCKED by 04I1/04I2/04I2A — 04I1 ACTIVE — Steps 1–4 COMPLETE — 04I2 ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — 04I2A ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03).
+**PRIVATE-BETA-STAGING-EXECUTION-04I1 status:** ACTIVE — Steps 1–4 COMPLETE (Registration / Runbook / Investigation / Evidence Review — 2026-08-03) — Verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — root Location https://localhost:3002/en was expected /en or https://staging.ainow.biz/en — fixed at Caddy layer by 04I2C — bounded fix/recovery slice 04I2 ACTIVE — 04I2A FAILED — 04I2B FAILED — 04I2C COMPLETE and LOCKED.
+**PRIVATE-BETA-STAGING-EXECUTION-04I status:** ACTIVE — root redirect prerequisite now passes — blocked by 04I2D cleanup before resuming normal smoke.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E/04F/04G/04H COMPLETE and LOCKED — 04F1 COMPLETE and LOCKED — 04I ACTIVE / blocked by 04I2D cleanup — 04I1 ACTIVE — Steps 1–4 COMPLETE — 04I2 ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — 04I2A FAILED — 04I2B FAILED — 04I2C COMPLETE and LOCKED — 2026-08-03 — 04I2D REGISTERED.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04I2A Step 2 — Bounded Middleware Implementation.
+**Next action:** Register PRIVATE-BETA-STAGING-EXECUTION-04I2D — Main/VPS Redirect State Reconciliation.
 
 ---
 
 #### PRIVATE-BETA-STAGING-EXECUTION-04I2: Public Root Redirect Location Header Fix
 
-**Status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03)
+**Status:** ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — Option B FAILED at staging runtime — Option A selected next
 **Task ID:** PRIVATE-BETA-STAGING-EXECUTION-04I2
 **Title:** Public Root Redirect Location Header Fix
 **Family:** PRIVATE BETA / STAGING EXECUTION
@@ -40746,8 +40763,12 @@ C:\Users\knlee\aiSandBox2026B\docs\PRIVATE-BETA-STAGING-EXECUTION-04I1-CHECKPOIN
 **Risk:** MEDIUM — fix targets Caddy reverse-proxy config or Next.js middleware redirect construction; requires approval gate before implementation
 **Registered:** 2026-08-03
 **Parent:** PRIVATE-BETA-STAGING-EXECUTION-04I
-**Future runbook:** docs/PRIVATE-BETA-STAGING-EXECUTION-04I2-PUBLIC-ROOT-REDIRECT-LOCATION-HEADER-FIX-RUNBOOK.md
+**Runbook:** docs/PRIVATE-BETA-STAGING-EXECUTION-04I2-PUBLIC-ROOT-REDIRECT-LOCATION-HEADER-FIX-RUNBOOK.md
 **Future checkpoint:** docs/PRIVATE-BETA-STAGING-EXECUTION-04I2-CHECKPOINT.md
+**Previously selected fix path:** Option B — Next.js middleware relative/public redirect correction — FAILED at staging runtime
+**Now selected fix path:** Option A — Caddy forwarded host/proto header correction
+**Failed child slice:** PRIVATE-BETA-STAGING-EXECUTION-04I2A — FAILED — Option B source fix failed at staging runtime — root HTTP/2 500 — rolled back — 2026-08-03
+**Active implementation child slice:** PRIVATE-BETA-STAGING-EXECUTION-04I2B — ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03)
 
 #### Why 04I2 Exists
 
@@ -41002,19 +41023,23 @@ C:\Users\knlee\aiSandBox2026B\docs\PRIVATE-BETA-STAGING-EXECUTION-04I2-CHECKPOIN
 - [ ] 04I Path A re-executed and PASS after 04I2 fix validated.
 - [ ] 04I smoke continues from Path B onward.
 
-**PRIVATE-BETA-STAGING-EXECUTION-04I2 status:** ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — Option B selected — 04I2A child implementation slice ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03).
-**PRIVATE-BETA-STAGING-EXECUTION-04I2A status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03). See PRIVATE-BETA-STAGING-EXECUTION-04I2A section below.
-**PRIVATE-BETA-STAGING-EXECUTION-04I1 status:** ACTIVE — Steps 1–4 COMPLETE — Verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — bounded fix/recovery slice 04I2 registered ACTIVE — implementation child slice 04I2A registered ACTIVE. Consolidation/checkpoint pending after 04I2A/04I2 resolution.
-**PRIVATE-BETA-STAGING-EXECUTION-04I status:** ACTIVE / BLOCKED by 04I1/04I2/04I2A. Do not continue 04I browser smoke until 04I2A implementation and 04I2 validation/evidence review are complete.
-**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E/04F/04G/04H COMPLETE and LOCKED — 04F1 COMPLETE and LOCKED — 04I ACTIVE / BLOCKED by 04I1/04I2/04I2A — 04I1 ACTIVE — Steps 1–4 COMPLETE — 04I2 ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — 04I2A ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03).
+**PRIVATE-BETA-STAGING-EXECUTION-04I2 status:** ACTIVE — pending 04I2E safe git/VPS sync — 04I2A FAILED — 04I2B FAILED — 04I2C COMPLETE and LOCKED — 2026-08-03 — 04I2D COMPLETE and LOCKED — 2026-08-04 — 04I2E REGISTERED.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2A status:** FAILED — Option B source fix failed at staging runtime — root HTTP/2 500 — rolled back — 2026-08-03.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2B status:** FAILED — Option A Caddy forwarded header fix — Location remained https://localhost:3002/en — rolled back — 2026-08-03.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2C status:** COMPLETE and LOCKED — 2026-08-03 — Caddy exact-root redirect redir / /en 307 — runtime fix PASS — 04I Path A now passes — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04I2C-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2D status:** COMPLETE and LOCKED — 2026-08-04 — local source reconciliation PASS — middleware.ts restored — TypeScript PASS — no runtime action — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04I2D-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2E status:** REGISTERED — 2026-08-04 — Safe Git/VPS State Synchronization — prerequisite: Keith must commit/push locally before VPS sync.
+**PRIVATE-BETA-STAGING-EXECUTION-04I1 status:** ACTIVE — Steps 1–4 COMPLETE — Verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — root Location https://localhost:3002/en was expected — fixed at Caddy layer by 04I2C — 04I2A FAILED — 04I2B FAILED — 04I2C COMPLETE and LOCKED — 04I2D COMPLETE and LOCKED.
+**PRIVATE-BETA-STAGING-EXECUTION-04I status:** ACTIVE — pending 04I2E safe git/VPS sync before normal smoke resumes — Step 2 COMPLETE (Runbook — 2026-08-03) — Step 3 partial / stopped at root browser failure.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E/04F/04G/04H COMPLETE and LOCKED — 04F1 COMPLETE and LOCKED — 04I ACTIVE / pending 04I2E — 04I1 ACTIVE — Steps 1–4 COMPLETE — 04I2 ACTIVE / pending 04I2E — 04I2A FAILED — 04I2B FAILED — 04I2C COMPLETE and LOCKED — 2026-08-03 — 04I2D COMPLETE and LOCKED — 2026-08-04 — 04I2E REGISTERED.
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04I2A Step 2 — Bounded Middleware Implementation.
+**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04I2E — Safe Git/VPS State Synchronization.
 
 ---
 
 #### PRIVATE-BETA-STAGING-EXECUTION-04I2A: Middleware Root Redirect Relative Location Fix
 
-**Status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03)
+**Status:** FAILED — Option B source fix failed at staging runtime — root HTTP/2 500 — rolled back — 2026-08-03
 **Task ID:** PRIVATE-BETA-STAGING-EXECUTION-04I2A
 **Title:** Middleware Root Redirect Relative Location Fix
 **Family:** PRIVATE BETA / STAGING EXECUTION
@@ -41142,7 +41167,7 @@ C:\Users\knlee\aiSandBox2026B\docs\PRIVATE-BETA-STAGING-EXECUTION-04I2A-CHECKPOI
 * Prefer the smallest safe source-code fix.
 * Do not modify both Caddy and source in this child slice.
 * Do not broaden into unrelated routing changes.
-* Keep 04I ACTIVE / BLOCKED until 04I2A and 04I2 validation are resolved.
+* Keep 04I ACTIVE / BLOCKED until 04I2B and 04I2 validation are resolved.
 * Keep parent 04 ACTIVE.
 * Keep PRIVATE-BETA-DEPLOYMENT-READINESS BLOCKED / PAUSED.
 
@@ -41165,7 +41190,7 @@ C:\Users\knlee\aiSandBox2026B\docs\PRIVATE-BETA-STAGING-EXECUTION-04I2A-CHECKPOI
 - [x] `frontend/middleware.ts` source-grounded reason recorded.
 - [x] current wrong Location `https://localhost:3002/en` recorded.
 - [x] expected redirect target recorded: `/en` or `https://staging.ainow.biz/en`.
-- [x] 04I marked ACTIVE / BLOCKED by 04I1/04I2/04I2A.
+- [x] 04I marked ACTIVE / BLOCKED by 04I2C.
 - [x] 04I2A purpose recorded.
 - [x] 04I2A scope recorded.
 - [x] 04I2A non-goals recorded.
@@ -41215,13 +41240,236 @@ C:\Users\knlee\aiSandBox2026B\docs\PRIVATE-BETA-STAGING-EXECUTION-04I2A-CHECKPOI
 - [ ] 04I Path A re-executed and PASS after 04I2A fix validated.
 - [ ] 04I smoke continues from Path B onward.
 
-**PRIVATE-BETA-STAGING-EXECUTION-04I2A status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03).
-**PRIVATE-BETA-STAGING-EXECUTION-04I2 status:** ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — Option B selected — 04I2A child implementation slice ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03).
-**PRIVATE-BETA-STAGING-EXECUTION-04I1 status:** ACTIVE — Steps 1–4 COMPLETE — Verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — bounded fix/recovery slice 04I2 registered ACTIVE — implementation child slice 04I2A registered ACTIVE. Consolidation/checkpoint pending after 04I2A/04I2 resolution.
-**PRIVATE-BETA-STAGING-EXECUTION-04I status:** ACTIVE / BLOCKED by 04I1/04I2/04I2A. Do not continue 04I browser smoke until 04I2A implementation and 04I2 validation/evidence review are complete.
-**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E/04F/04G/04H COMPLETE and LOCKED — 04F1 COMPLETE and LOCKED — 04I ACTIVE / BLOCKED by 04I1/04I2/04I2A — 04I1 ACTIVE — Steps 1–4 COMPLETE — 04I2 ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — 04I2A ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03).
+**PRIVATE-BETA-STAGING-EXECUTION-04I2A status:** FAILED — Option B source fix failed at staging runtime — root HTTP/2 500 — rolled back — 2026-08-03.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2B status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03) — Option A — Caddy forwarded host/proto header correction.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2 status:** ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — Option B FAILED (04I2A) — Option A FAILED (04I2B) — both individual fix paths exhausted — 04I2C ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03).
+**PRIVATE-BETA-STAGING-EXECUTION-04I1 status:** ACTIVE — Steps 1–4 COMPLETE — Verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — bounded fix/recovery slice 04I2 registered ACTIVE — 04I2A FAILED — 04I2B FAILED — 04I2C ACTIVE. Consolidation/checkpoint pending after 04I2B/04I2 resolution.
+**PRIVATE-BETA-STAGING-EXECUTION-04I status:** ACTIVE / BLOCKED by 04I2C. Do not continue 04I browser smoke until 04I2C resolves the root redirect strategy and 04I2 validation/evidence review are complete.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E/04F/04G/04H COMPLETE and LOCKED — 04F1 COMPLETE and LOCKED — 04I ACTIVE / BLOCKED by 04I2C — 04I1 ACTIVE — Steps 1–4 COMPLETE — 04I2 ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — 04I2A FAILED — 04I2B FAILED — 04I2C ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03).
 **PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04I2A Step 2 — Bounded Middleware Implementation.
+**Next action:** Register PRIVATE-BETA-STAGING-EXECUTION-04I2D — Main/VPS Redirect State Reconciliation.
+
+---
+
+#### PRIVATE-BETA-STAGING-EXECUTION-04I2B: Caddy Forwarded Header Redirect Fix
+
+**Status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03)
+**Task ID:** PRIVATE-BETA-STAGING-EXECUTION-04I2B
+**Title:** Caddy Forwarded Header Redirect Fix
+**Family:** PRIVATE BETA / STAGING EXECUTION
+**Priority:** CRITICAL
+**Nature:** REAL STAGING EXECUTION — bounded implementation child slice — Option A Caddy fix — after Option B failed at staging runtime
+**Risk:** MEDIUM — edits Caddy reverse proxy header forwarding for frontend; requires explicit Keith approval before any runtime command
+**Registered:** 2026-08-03
+**Parent:** PRIVATE-BETA-STAGING-EXECUTION-04I2
+**Future checkpoint:** docs/PRIVATE-BETA-STAGING-EXECUTION-04I2B-CHECKPOINT.md
+
+#### Why 04I2B Exists
+
+04I2A (Option B — Next.js middleware relative/public redirect correction) was attempted and FAILED at staging runtime:
+
+```text
+04I2A Option B middleware source fix result:
+
+Implementation:
+- frontend/middleware.ts root redirect changed from request.nextUrl.clone() to relative Location: /en.
+- Local TypeScript passed.
+- Local scoped lint passed.
+- No Caddy/DNS/runtime/server change occurred during local implementation.
+
+Deployment/runtime validation:
+- git pull on VPS fast-forwarded to commit 41b8603.
+- frontend build passed.
+- pm2 restart aisandbox-frontend succeeded.
+- aisandbox-frontend online.
+- /en = 200.
+- /en/login = 200.
+- /en/register = 200.
+- root slash returned HTTP/2 500.
+- root no-slash returned HTTP/2 500.
+- Option B made root worse at staging runtime.
+
+Rollback:
+- frontend/middleware.ts rolled back on VPS to previous commit using:
+  git checkout HEAD~1 -- frontend/middleware.ts
+- frontend build passed after rollback.
+- pm2 restart aisandbox-frontend succeeded.
+- aisandbox-frontend online.
+- root restored to old known failure:
+  HTTP/2 307
+  Location: https://localhost:3002/en
+- /en = 200.
+- /en/login = 200.
+- /en/register = 200.
+- VPS working tree is dirty after rollback:
+  M frontend/middleware.ts
+  M frontend/tsconfig.tsbuildinfo
+
+Conclusion:
+- Option B relative Location implementation is not acceptable as deployed.
+- Staging runtime is no longer root-500 after rollback.
+- Root still fails 04I Path A due to localhost Location header.
+- Next candidate is Option A: Caddy forwarded host/proto/header correction.
+```
+
+04I2B applies Option A (Caddy forwarded header correction) to resolve the root redirect Location header.
+
+#### Purpose
+
+Apply the smallest safe Caddy reverse proxy header correction so Next.js receives the public host/proto and root redirects to:
+
+```text
+/en
+```
+
+or:
+
+```text
+https://staging.ainow.biz/en
+```
+
+instead of:
+
+```text
+https://localhost:3002/en
+```
+
+#### Scope
+
+04I2B is limited to:
+
+1. Caddy-focused runbook or direct approval-gated Caddy runtime correction.
+2. Backup of `/etc/caddy/Caddyfile` before any change.
+3. Add/preserve forwarded public host/proto headers for frontend `reverse_proxy 127.0.0.1:3002`.
+4. Preserve API reverse proxy behavior.
+5. Validate Caddy config before reload.
+6. Reload Caddy only if validation passes.
+7. Validate root redirect Location header.
+8. Validate `/en`, `/en/login`, `/en/register`.
+9. Validate public API health/db/ready.
+10. Validate local health and safe state.
+11. Evidence review.
+12. Consolidation/checkpoint.
+13. Then resume 04I browser smoke from Path A.
+
+#### Non-Goals
+
+04I2B must not:
+
+* Modify source code.
+* Modify DNS.
+* Create accounts.
+* Log in.
+* Create workspace data.
+* Create agent data.
+* Trigger AI execution.
+* Trigger billing/payment execution.
+* Trigger container workflow execution.
+* Enable Google OAuth.
+* Test production domains.
+* Modify `.env`.
+* Print `.env` or secret values.
+* Run migrations.
+* Create database tables.
+* Run broad redesign.
+* Change unrelated routing.
+* Mark PRIVATE-BETA-DEPLOYMENT-READINESS ready.
+* Commit or push git.
+
+#### Future Checkpoint Path
+
+```text
+C:\Users\knlee\aiSandBox2026B\docs\PRIVATE-BETA-STAGING-EXECUTION-04I2B-CHECKPOINT.md
+```
+
+#### Required Guardrails
+
+* Explicit Keith approval required before any Caddy/runtime command.
+* Backup `/etc/caddy/Caddyfile` before change.
+* Validate Caddy config before reload.
+* Reload, do not restart, if validation passes.
+* Preserve API route.
+* Preserve frontend route.
+* Do not print cert private keys.
+* Do not print env values.
+* Do not touch `.env`.
+* Do not use Docker/PostgreSQL/Redis.
+* Do not create accounts/logins/data.
+* Do not trigger AI/billing/container/OAuth.
+* Do not resume 04I until 04I2B passes evidence review.
+* Keep parent 04 ACTIVE.
+* Keep PRIVATE-BETA-DEPLOYMENT-READINESS BLOCKED / PAUSED.
+
+#### Proposed Workflow
+
+1. Registration — COMPLETE (2026-08-03).
+2. Approval-gated Caddy runtime fix.
+3. Runtime validation / evidence.
+4. Evidence review.
+5. Consolidation/checkpoint.
+6. Resume 04I browser smoke from Path A.
+
+#### Acceptance Criteria
+
+###### Step 1 — Registration — COMPLETE (2026-08-03)
+- [x] 04I2B registered.
+- [x] 04I2B status set to ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03).
+- [x] 04I2A failure recorded.
+- [x] rollback result recorded.
+- [x] current root known failure recorded.
+- [x] VPS dirty working tree recorded.
+- [x] Caddy forwarded header fix selected.
+- [x] 04I blocked status updated.
+- [x] parent 04 remains ACTIVE.
+- [x] PRIVATE-BETA-DEPLOYMENT-READINESS remains BLOCKED / PAUSED.
+- [x] TASKS.md updated.
+- [x] TASKS_BACKLOG_FULL.md updated.
+- [x] roadmap updated.
+- [x] no source code changed by Cursor in this step.
+- [x] no migration files changed.
+- [x] no env files opened/changed.
+- [x] no env values printed.
+- [x] no runtime/server action occurred by Cursor.
+- [x] no Docker/PostgreSQL/Redis action occurred.
+- [x] no git commit or push.
+- [x] no subagents used.
+
+###### Step 2 — Approval-Gated Caddy Runtime Fix — PENDING
+- [ ] Keith explicit approval recorded before any Caddy/runtime command.
+- [ ] Caddyfile backup created.
+- [ ] Caddy reverse_proxy header_up directives added for frontend proxy.
+- [ ] Caddy config validated before reload.
+- [ ] Caddy reloaded (not restarted).
+
+###### Step 3 — Runtime Validation / Evidence — PENDING
+- [ ] Root redirect Location header confirmed browser-safe after fix.
+- [ ] `/en`, `/en/login`, `/en/register` return 200.
+- [ ] Public API health/db/ready = 200.
+- [ ] Local health endpoints pass.
+- [ ] PM2 and Caddy remain enabled/active.
+- [ ] Public table count remains 26.
+
+###### Step 4 — Evidence Review — PENDING
+- [ ] Evidence review document created.
+- [ ] Verdict: root redirect Location browser-safe.
+
+###### Step 5 — Consolidation / Checkpoint — PENDING
+- [ ] Checkpoint `docs/PRIVATE-BETA-STAGING-EXECUTION-04I2B-CHECKPOINT.md` created.
+- [ ] 04I2B marked COMPLETE and LOCKED.
+- [ ] TASKS.md updated. TASKS_BACKLOG_FULL.md updated. Roadmap updated.
+
+###### Step 6 — Resume 04I browser smoke from Path A — PENDING
+- [ ] 04I Path A re-executed and PASS after 04I2B fix validated.
+- [ ] 04I smoke continues from Path B onward.
+
+**PRIVATE-BETA-STAGING-EXECUTION-04I2B status:** ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03).
+**PRIVATE-BETA-STAGING-EXECUTION-04I2A status:** FAILED — Option B source fix failed at staging runtime — root HTTP/2 500 — rolled back — 2026-08-03.
+**PRIVATE-BETA-STAGING-EXECUTION-04I2 status:** ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — Option B FAILED (04I2A) — Option A FAILED (04I2B) — both individual fix paths exhausted — 04I2C ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03).
+**PRIVATE-BETA-STAGING-EXECUTION-04I1 status:** ACTIVE — Steps 1–4 COMPLETE — Verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — bounded fix/recovery slice 04I2 registered ACTIVE — 04I2A FAILED — 04I2B FAILED — 04I2C ACTIVE. Consolidation/checkpoint pending after 04I2B/04I2 resolution.
+**PRIVATE-BETA-STAGING-EXECUTION-04I status:** ACTIVE / BLOCKED by 04I2C. Do not continue 04I browser smoke until 04I2C resolves the root redirect strategy and 04I2 validation/evidence review are complete.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E/04F/04G/04H COMPLETE and LOCKED — 04F1 COMPLETE and LOCKED — 04I ACTIVE / BLOCKED by 04I2C — 04I1 ACTIVE — Steps 1–4 COMPLETE — 04I2 ACTIVE — Step 2 COMPLETE (Fix Runbook — 2026-08-03) — 04I2A FAILED — 04I2B FAILED — 04I2C ACTIVE — Step 1 COMPLETE (Registration — 2026-08-03).
+**PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
+**Next action:** Register PRIVATE-BETA-STAGING-EXECUTION-04I2D — Main/VPS Redirect State Reconciliation.
 
 ---
 
