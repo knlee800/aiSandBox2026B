@@ -25184,7 +25184,7 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 26. BETA-READY-SMOKE — Pre-Beta Full-Stack Live Smoke (COMPLETE and LOCKED — 2026-07-21 — Final verdict PASS)
 27. BETA-READY-MIGRATION-CLI-01 — TypeORM Migration CLI Path Fix (COMPLETE and LOCKED — 2026-07-21)
 28. LIMITED-PRIVATE-BETA-HANDOFF — Limited Private Beta Handoff / Checklist (COMPLETE and LOCKED — 2026-07-21)
-29. PRIVATE-BETA-DEPLOYMENT-READINESS — Private Beta Deployment / Staging Readiness Check (BLOCKED / PAUSED — Steps 1–2 COMPLETE — no longer blocked by PRIVATE-BETA-STAGING-EXECUTION-04 — 04 COMPLETE and LOCKED — 2026-08-04 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04-CHECKPOINT.md — resumes next — optional 04J UI version mismatch investigation if team decides it blocks private beta)
+29. PRIVATE-BETA-DEPLOYMENT-READINESS — Private Beta Deployment / Staging Readiness Check (BLOCKED / PAUSED — Steps 1–2 COMPLETE — 04 COMPLETE and LOCKED — 2026-08-04 — 04J ACTIVE Step 6A COMPLETE — migration created — pending 04J Step 6B staging migration run + project API/browser smoke — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04-CHECKPOINT.md)
 30. PRIVATE-BETA-STAGING-SETUP — Staging / Production-like Deployment Target Setup (COMPLETE and LOCKED — 2026-07-23 — All 4 steps COMPLETE — All 8 child tasks COMPLETE and LOCKED — Checkpoint: docs/PRIVATE-BETA-STAGING-SETUP-CHECKPOINT.md)
 30a. PRIVATE-BETA-STAGING-SETUP-01 — AWS Lightsail Account / Region / Instance Decision (COMPLETE and LOCKED — 2026-07-21 — All 3 steps COMPLETE — Checkpoint: docs/PRIVATE-BETA-STAGING-SETUP-01-CHECKPOINT.md)
 30b. PRIVATE-BETA-STAGING-SETUP-02 — Server Baseline and SSH Access Plan (COMPLETE and LOCKED — 2026-07-21 — All 3 steps COMPLETE — Checkpoint: docs/PRIVATE-BETA-STAGING-SETUP-02-CHECKPOINT.md)
@@ -26022,9 +26022,11 @@ Redis target in the runbook was Redis 7.x. The official Redis APT repository ins
 **PRIVATE-BETA-STAGING-EXECUTION-01 status:** COMPLETE and LOCKED — 2026-07-23.
 **LOCAL-PRIVATE-BETA-READINESS-02 status:** PAUSED / PARTIALLY COMPLETE — 2026-07-23.
 **LOCAL-PRIVATE-BETA-READINESS-02-FIX-AI-SERVICE-REDIS-ENV-LOCAL status:** PAUSED / SUPERSEDED by staging-environment parity decision.
-**PRIVATE-BETA-STAGING-EXECUTION-04 status:** COMPLETE and LOCKED — 2026-08-04. Do not modify this entry. All child slices 04A/04B/04C/04D/04E/04F/04F1/04G/04H/04I COMPLETE and LOCKED. All 6 browser smoke Paths A/B/C/D/E/F PASS. Accepted runtime fixes: Caddy redir / /en 307 (04I2C) / Resend email enabled (04I3A) / Caddy redir /app /en/app 307 (04I4A). PM2 lesson: pm2 restart --update-env required for env changes. UI/version mismatch recorded separately as future 04J. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04-CHECKPOINT.md.
-**PRIVATE-BETA-DEPLOYMENT-READINESS status:** no longer blocked by PRIVATE-BETA-STAGING-EXECUTION-04 — resumes next.
-**Next action:** Resume PRIVATE-BETA-DEPLOYMENT-READINESS. Optional: register PRIVATE-BETA-STAGING-EXECUTION-04J if UI/version mismatch must be resolved before private beta.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** COMPLETE and LOCKED — 2026-08-04. Do not modify this entry. All child slices 04A/04B/04C/04D/04E/04F/04F1/04G/04H/04I COMPLETE and LOCKED. All 6 browser smoke Paths A/B/C/D/E/F PASS. Accepted runtime fixes: Caddy redir / /en 307 (04I2C) / Resend email enabled (04I3A) / Caddy redir /app /en/app 307 (04I4A). PM2 lesson: pm2 restart --update-env required for env changes. UI/version mismatch recorded separately — 04J ACTIVE — Step 1 COMPLETE (Registration + Investigation — 2026-08-04). Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04I status:** COMPLETE and LOCKED — 2026-08-04. Do not modify this entry. All 6 browser smoke Paths A/B/C/D/E/F PASS. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04I-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04J status:** ACTIVE — Step 6A COMPLETE (AddProjectSlug Migration Creation — 2026-08-05) — migration `1772600000000-AddProjectSlug.ts` created — tsc PASS — no DB writes — no migration execution — Step 6B PENDING (staging migration run + project API/browser smoke — requires separate approval).
+**PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED — pending Step 6B staging migration run — "Build anything" UI visible — workspace page not usable — migration file created but not yet run — 04 COMPLETE and LOCKED — 04I COMPLETE and LOCKED.
+**Next action:** 04J Step 6B — approval-gated staging migration run + project API/browser smoke — suggested approval phrase: `go — approve 04J Step 6B staging migration run + project API browser smoke`.
 
 **Reference:** Predecessor: PRIVATE-BETA-STAGING-EXECUTION-02. Checkpoint (predecessor): `docs/PRIVATE-BETA-STAGING-EXECUTION-02-CHECKPOINT.md`. Checkpoint (this task): `docs/PRIVATE-BETA-STAGING-EXECUTION-03-DB-REDIS-CHECKPOINT.md`. DB/Redis plan: `docs/PRIVATE-BETA-STAGING-SETUP-06-DB-REDIS-PLAN.md`. Pivot checkpoint: `docs/LOCAL-TO-STAGING-PARITY-PIVOT-CHECKPOINT.md`.
 
@@ -31050,9 +31052,145 @@ C:\Users\knlee\aiSandBox2026B\docs\PRIVATE-BETA-STAGING-EXECUTION-04I2B-CHECKPOI
 **PRIVATE-BETA-STAGING-EXECUTION-04I2 status:** COMPLETE and LOCKED — 2026-08-04 — root redirect fix objective achieved — 04I2A FAILED — 04I2B FAILED — 04I2C COMPLETE and LOCKED — 2026-08-03 — 04I2D COMPLETE and LOCKED — 2026-08-04 — 04I2E COMPLETE and LOCKED — 2026-08-04 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04I2E-CHECKPOINT.md.
 **PRIVATE-BETA-STAGING-EXECUTION-04I1 status:** ACTIVE — Steps 1–4 COMPLETE — Verdict: INVESTIGATION PASS — ROOT BEHAVIOR FAILS — root Location https://localhost:3002/en was expected — fixed at Caddy layer by 04I2C — 04I2A FAILED — 04I2B FAILED — 04I2C COMPLETE and LOCKED — 04I2D COMPLETE and LOCKED.
 **PRIVATE-BETA-STAGING-EXECUTION-04I status:** ACTIVE — 04I2E COMPLETE and LOCKED — 2026-08-04 — VPS sync PASS — root redirect blocker resolved — ready to resume browser smoke from Path A — Step 2 COMPLETE (Runbook — 2026-08-03) — Step 3 partial / stopped at root browser failure — root redirect now fixed.
-**PRIVATE-BETA-STAGING-EXECUTION-04 status:** ACTIVE — 04A/04B/04C/04D/04E/04F/04G/04H COMPLETE and LOCKED — 04F1 COMPLETE and LOCKED — 04I ACTIVE / ready to resume browser smoke from Path A — 04I1 ACTIVE — Steps 1–4 COMPLETE — 04I2 COMPLETE and LOCKED — 2026-08-04 — 04I2A FAILED — 04I2B FAILED — 04I2C COMPLETE and LOCKED — 2026-08-03 — 04I2D COMPLETE and LOCKED — 2026-08-04 — 04I2E COMPLETE and LOCKED — 2026-08-04 — root redirect blocker resolved — VPS git clean at 40c43af — Caddy redir / /en 307 active — Full app deployment still not complete.
-**PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED.
-**Next action:** PRIVATE-BETA-STAGING-EXECUTION-04I Step 3 Resume — Browser/User-Facing Smoke Baseline — root redirect blocker resolved — 04I2E COMPLETE and LOCKED — 2026-08-04 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04I2E-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** COMPLETE and LOCKED — 2026-08-04. All child slices 04A/04B/04C/04D/04E/04F/04F1/04G/04H/04I COMPLETE and LOCKED. All 6 browser smoke Paths A/B/C/D/E/F PASS. 04J ACTIVE — Step 3 COMPLETE (Browser Evidence Correction + Option A Runbook — 2026-08-04). Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04I status:** COMPLETE and LOCKED — 2026-08-04. All 6 browser smoke Paths A/B/C/D/E/F PASS. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04I-CHECKPOINT.md.
+**PRIVATE-BETA-STAGING-EXECUTION-04J status:** ACTIVE — Step 6A COMPLETE (AddProjectSlug Migration Creation — 2026-08-05) — migration `1772600000000-AddProjectSlug.ts` created — tsc PASS — no DB writes — no migration execution — Step 6B PENDING (staging migration run + project API/browser smoke — requires separate approval).
+**PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED — pending Step 6B staging migration run — migration file created but not yet run.
+**Next action:** 04J Step 6B — approval-gated staging migration run + project API/browser smoke — suggested approval phrase: `go — approve 04J Step 6B staging migration run + project API browser smoke`.
+
+---
+
+#### PRIVATE-BETA-STAGING-EXECUTION-04J: Staging App UI Version Mismatch Investigation
+
+**Status:** ACTIVE — Step 6A COMPLETE (AddProjectSlug Migration Creation — 2026-08-05) — Step 6B PENDING (staging migration run + project API/browser smoke — requires separate approval)
+**Task ID:** PRIVATE-BETA-STAGING-EXECUTION-04J
+**Family:** PRIVATE BETA / STAGING EXECUTION
+**Priority:** HIGH
+**Nature:** INVESTIGATION + RUNBOOK — staging UI version mismatch at https://staging.ainow.biz/en/app — root cause: PROJECT_FIRST_UX=false
+**Risk:** LOW for Steps 1–3 (documentation only — no source/server/env changes)
+**Registered:** 2026-08-04
+**Parent:** PRIVATE-BETA-STAGING-EXECUTION-04 (COMPLETE and LOCKED — 2026-08-04)
+**Predecessor:** PRIVATE-BETA-STAGING-EXECUTION-04I (COMPLETE and LOCKED — 2026-08-04)
+
+#### Origin
+
+During 04I Path F browser validation, Keith observed: "Visible page is latest expected UI: NO" at `https://staging.ainow.biz/en/app`. Step 1 investigated feature flag and route wiring causes. Step 2 amended investigation based on new evidence: Keith clarified the expected UI is the `Build anything` home view, and staging currently shows `Loading workspace...`.
+
+#### New Evidence (Step 2)
+
+- **Expected UI:** Authenticated WorkspaceShell home view with `Build anything` heading
+- **Observed UI:** `Loading workspace...` (stuck)
+- **Previous Option A (enable PROJECT_FIRST_UX) reassessed:** Possibly helpful but insufficient — does not fix loading state hang
+
+#### TWO Distinct Issues Identified
+
+1. **"Loading workspace..." stuck** — `authLoading` gate at `page.tsx` line 5819 never clears — `setAuthLoading(false)` only fires after `/api/auth/me` returns ok with valid user ID (line 1223) — if fetch hangs: no timeout, no abort, no error fallback — **most likely Category B (API call hang)**
+
+2. **"Build anything" not rendered** — `workspace-shell.tsx` line 2173 is inside the `projectFirstUxEnabled === true` branch (line 2416+) — non-project-first branch (line 2286) renders "AI Sandbox Workspace" without `Build anything` — **Category H (NEXT_PUBLIC_PROJECT_FIRST_UX missing at build time)**
+
+#### Investigation Findings (Step 2 Amended Summary)
+
+- **`Loading workspace...` source:** `page.tsx` line 5822 — hardcoded English — `authLoading === true` gate
+- **`Build anything` source:** `workspace-shell.tsx` line 2173 — `scaffoldMessages.buildAnything` — project-first branch only
+- **Auth gate:** `fetch('/api/auth/me')` at line 1212 → Next.js rewrites → `API_GATEWAY_URL/api/auth/me` → API Gateway (port 4000)
+- **Only stuck path:** fetch promise never settles — no timeout, no AbortController, no retry
+- **PROJECT_FIRST_UX impact on loading:** NONE — only affects post-auth rendering
+- **i18n violation:** "Loading workspace..." is hardcoded English — must be i18n'd in any future fix
+
+#### Root-Cause Category (Amended)
+
+**Category B (most likely for loading stuck) + Category H (for missing Build anything).**
+
+Previous D+C assessment remains valid for the "Build anything" issue but does NOT explain the loading state.
+
+#### Acceptance Criteria
+
+##### Step 1 — Registration + Investigation (COMPLETE — 2026-08-04)
+- [x] 04J registered in TASKS.md with ACTIVE status
+- [x] Investigation doc created: `docs/PRIVATE-BETA-STAGING-EXECUTION-04J-STAGING-APP-UI-VERSION-MISMATCH-INVESTIGATION.md`
+- [x] Route source, feature flag, auth redirect, deployment state assessed
+- [x] No source code / env / runtime changes
+
+##### Step 2 — Amended Loading-State Investigation (COMPLETE — 2026-08-04)
+- [x] Amended investigation doc created: `docs/PRIVATE-BETA-STAGING-EXECUTION-04J-WORKSPACE-LOADING-STATE-INVESTIGATION.md`
+- [x] `Build anything` authenticated source identified: workspace-shell.tsx line 2173
+- [x] `Loading workspace...` source identified: page.tsx line 5822
+- [x] Loading state control flow mapped
+- [x] Initialization API calls/hooks identified
+- [x] Failure/stuck paths identified
+- [x] PROJECT_FIRST_UX relevance reassessed
+- [x] Option A reassessed as possibly helpful but insufficient
+- [x] Smallest safe next step recommended
+- [x] No source code / env / runtime changes
+
+##### Step 3 — Browser Evidence Correction + Option A Runbook (COMPLETE — 2026-08-04)
+- [x] Corrected browser evidence recorded: /en/app NOT stuck loading — non-project-first WorkspaceShell renders
+- [x] Network evidence recorded: me (304) / sessions / usage / quotas / ai-instructions all 200/304
+- [x] Step 2 loading-hang theory (Category B) superseded by new screenshot evidence
+- [x] `me` Network name interpretation documented: Chrome shortens `/api/auth/me` to `me` in Name column
+- [x] Root cause corrected: PROJECT_FIRST_UX=false only (Category H)
+- [x] Option A runbook created: docs/PRIVATE-BETA-STAGING-EXECUTION-04J-BROWSER-EVIDENCE-CORRECTION-OPTION-A-RUNBOOK.md
+- [x] Approval phrase documented: go — approve 04J Option A project-first staging fix
+- [x] No source code / env / runtime changes
+
+##### Step 4 — Option A Execution + Evidence Review (COMPLETE — 2026-08-05)
+- [x] NEXT_PUBLIC_PROJECT_FIRST_UX=true set on staging
+- [x] Frontend rebuilt: FRONTEND_BUILD_EXIT=0
+- [x] aisandbox-frontend restarted with --update-env
+- [x] SSH validation PASS: API_HEALTH/API_DB_HEALTH/API_READY=200 / ROOT_REDIRECT=307 / APP_REDIRECT=307 / EN_LOGIN/EN_REGISTER/EN_APP=200
+- [x] Browser validation: "Build anything" visible — YES / old "AI Sandbox Workspace" gone — YES / page loaded — YES / HTTPS lock valid / no localhost
+- [x] New blocker recorded: /api/projects/public 500 / /api/projects?workspaceId=<redacted> 500
+- [x] workspaceId redacted
+- [x] Evidence review doc created: docs/PRIVATE-BETA-STAGING-EXECUTION-04J-PROJECT-API-500-EVIDENCE-REVIEW.md
+
+##### Step 5 — Project API 500 Runtime DB Diagnosis (COMPLETE — 2026-08-05)
+- [x] Keith provided approval phrase: "go — approve 04J Step 5 project API 500 runtime diagnosis"
+- [x] Root cause identified: Project.slug column absent from staging DB — no migration in source adds slug to projects table — migration gap
+- [x] All 25 migrations audited — zero add slug to projects table
+- [x] TypeORM entity `project.entity.ts` confirms slug is non-nullable and expected in all queries
+- [x] Diagnosis doc created: docs/PRIVATE-BETA-STAGING-EXECUTION-04J-PROJECT-API-500-RUNTIME-DB-DIAGNOSIS.md
+- [x] Fix scope confirmed for Step 6: create migration AddProjectSlug — requires separate approval
+
+##### Step 6A — AddProjectSlug Migration Creation Only (COMPLETE — 2026-08-05)
+- [x] Keith provides approval phrase: `go — approve 04J Step 6A AddProjectSlug migration creation only`
+- [x] Migration `1772600000000-AddProjectSlug.ts` created (nullable add → backfill from name → deduplicate → set NOT NULL → index)
+- [x] Migration validated locally: `npm run build` (tsc) exit 0
+- [x] Step 6A doc created: `docs/PRIVATE-BETA-STAGING-EXECUTION-04J-STEP-6A-ADD-PROJECT-SLUG-MIGRATION.md`
+- [x] No DB writes / no migration execution / no Docker/PostgreSQL/Redis / no SSH/AWS / no env files
+
+##### Step 6B — Staging Migration Run + Project API/Browser Smoke (PENDING — requires separate Keith approval)
+- [ ] Keith provides approval phrase: `go — approve 04J Step 6B staging migration run + project API browser smoke`
+- [ ] Migration committed and pushed to main
+- [ ] Staging VPS pulled, rebuilt, snapshot taken
+- [ ] Migration run on staging: `npm run migration:run:prod`
+- [ ] API Gateway restarted
+- [ ] SSH validation: project APIs return 200
+- [ ] Browser validation: workspace page usable
+
+##### Step 7 — Consolidation/Checkpoint (PENDING)
+- [ ] 04J checkpoint document created
+- [ ] 04J marked COMPLETE and LOCKED
+- [ ] PRIVATE-BETA-DEPLOYMENT-READINESS unblocked
+
+#### Workflow
+
+Updated to 7-step loop:
+
+1. **Registration + Investigation** — COMPLETE (2026-08-04)
+2. **Amended Investigation** — COMPLETE (2026-08-04)
+3. **Browser Evidence Correction + Option A Runbook** — COMPLETE (2026-08-04)
+4. **Option A Execution + Evidence Review** — COMPLETE (2026-08-05)
+5. **Project API 500 Runtime Diagnosis** — **COMPLETE (2026-08-05)** — root cause confirmed: migration gap — Project.slug absent from staging DB — no migration in source adds slug to projects table — Diagnosis: docs/PRIVATE-BETA-STAGING-EXECUTION-04J-PROJECT-API-500-RUNTIME-DB-DIAGNOSIS.md
+6. **AddProjectSlug Migration** — split into 6A/6B:
+   - **6A — Migration Creation Only** — **COMPLETE (2026-08-05)** — `1772600000000-AddProjectSlug.ts` created — tsc PASS — Doc: docs/PRIVATE-BETA-STAGING-EXECUTION-04J-STEP-6A-ADD-PROJECT-SLUG-MIGRATION.md
+   - **6B — Staging Migration Run + Project API/Browser Smoke** — PENDING (requires separate Keith approval)
+7. **Consolidation/Checkpoint** — PENDING
+
+**PRIVATE-BETA-STAGING-EXECUTION-04J status:** ACTIVE — Step 6A COMPLETE (AddProjectSlug Migration Creation — 2026-08-05) — migration `1772600000000-AddProjectSlug.ts` created — tsc PASS — no DB writes — no migration execution — Step 6B PENDING (staging migration run + project API/browser smoke — requires separate approval).
+**PRIVATE-BETA-STAGING-EXECUTION-04I status:** COMPLETE and LOCKED — 2026-08-04. Do not modify this entry.
+**PRIVATE-BETA-STAGING-EXECUTION-04 status:** COMPLETE and LOCKED — 2026-08-04. Do not modify this entry.
+**PRIVATE-BETA-DEPLOYMENT-READINESS status:** BLOCKED / PAUSED — pending Step 6B staging migration run — "Build anything" UI visible — workspace page not usable — migration file created but not yet run.
+**Next action:** 04J Step 6B — approval-gated staging migration run + project API/browser smoke — suggested approval phrase: `go — approve 04J Step 6B staging migration run + project API browser smoke`.
 
 ---
 

@@ -35684,7 +35684,7 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 26. BETA-READY-SMOKE — Pre-Beta Full-Stack Live Smoke (COMPLETE and LOCKED — 2026-07-21 — Final verdict PASS)
 27. BETA-READY-MIGRATION-CLI-01 — TypeORM Migration CLI Path Fix (COMPLETE and LOCKED — 2026-07-21)
 28. LIMITED-PRIVATE-BETA-HANDOFF — Limited Private Beta Handoff / Checklist (COMPLETE and LOCKED — 2026-07-21)
-29. PRIVATE-BETA-DEPLOYMENT-READINESS — Private Beta Deployment / Staging Readiness Check (BLOCKED / PAUSED — Steps 1–2 COMPLETE — no longer blocked by PRIVATE-BETA-STAGING-EXECUTION-04 — 04 COMPLETE and LOCKED — 2026-08-04 — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04-CHECKPOINT.md — resumes next — optional 04J UI version mismatch investigation if team decides it blocks private beta)
+29. PRIVATE-BETA-DEPLOYMENT-READINESS — Private Beta Deployment / Staging Readiness Check (BLOCKED / PAUSED — Steps 1–2 COMPLETE — 04 COMPLETE and LOCKED — 2026-08-04 — 04J ACTIVE Step 6A COMPLETE — migration created — pending 04J Step 6B staging migration run + project API/browser smoke — Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04-CHECKPOINT.md)
 30. PRIVATE-BETA-STAGING-SETUP — Staging / Production-like Deployment Target Setup (COMPLETE and LOCKED — 2026-07-23 — All 4 steps COMPLETE — All 8 child tasks COMPLETE and LOCKED — Checkpoint: docs/PRIVATE-BETA-STAGING-SETUP-CHECKPOINT.md)
 30a. PRIVATE-BETA-STAGING-SETUP-01 — AWS Lightsail Account / Region / Instance Decision (COMPLETE and LOCKED — 2026-07-21 — All 3 steps COMPLETE — Checkpoint: docs/PRIVATE-BETA-STAGING-SETUP-01-CHECKPOINT.md)
 30b. PRIVATE-BETA-STAGING-SETUP-02 — Server Baseline and SSH Access Plan (COMPLETE and LOCKED — 2026-07-21 — All 3 steps COMPLETE — Checkpoint: docs/PRIVATE-BETA-STAGING-SETUP-02-CHECKPOINT.md)
@@ -40333,8 +40333,9 @@ Validate that the public HTTPS staging site is usable in a browser for safe user
 * PRIVATE-BETA-STAGING-EXECUTION-04I is COMPLETE and LOCKED — 2026-08-04. All 6 browser smoke Paths A/B/C/D/E/F PASS. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04I-CHECKPOINT.md.
 * Parent PRIVATE-BETA-STAGING-EXECUTION-04 is COMPLETE and LOCKED — 2026-08-04. Do not modify this entry. Checkpoint: docs/PRIVATE-BETA-STAGING-EXECUTION-04-CHECKPOINT.md.
 * Accepted runtime fixes: Caddy redir / /en 307 (04I2C) / Resend email enabled (04I3A) / Caddy redir /app /en/app 307 (04I4A). PM2 lesson: pm2 restart --update-env required for env changes.
-* UI/version mismatch recorded separately as future 04J.
-* PRIVATE-BETA-DEPLOYMENT-READINESS no longer blocked by 04 — resumes next.
+* UI/version mismatch investigation — PRIVATE-BETA-STAGING-EXECUTION-04J ACTIVE — Step 6A COMPLETE (AddProjectSlug Migration Creation — 2026-08-05).
+* PRIVATE-BETA-STAGING-EXECUTION-04J Step 6A result: Migration `1772600000000-AddProjectSlug.ts` created — nullable add → backfill from name → deduplicate → set NOT NULL → index — tsc PASS — no DB writes — no migration execution — Doc: docs/PRIVATE-BETA-STAGING-EXECUTION-04J-STEP-6A-ADD-PROJECT-SLUG-MIGRATION.md. Step 6B PENDING (staging migration run + project API/browser smoke — requires separate Keith approval — suggested phrase: `go — approve 04J Step 6B staging migration run + project API browser smoke`).
+* PRIVATE-BETA-DEPLOYMENT-READINESS BLOCKED / PAUSED — pending Step 6B staging migration run — "Build anything" UI visible — workspace page not usable — migration file created but not yet run — infrastructure smoke PASS — auth healthy.
 
 #### Evidence Carried Forward from 04H
 
