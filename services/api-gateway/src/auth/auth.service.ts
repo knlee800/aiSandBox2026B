@@ -1,14 +1,16 @@
 import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ILike, IsNull, MoreThan, Repository } from 'typeorm';
+import { DataSource, EntityManager, ILike, IsNull, MoreThan, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { createHash, randomBytes } from 'crypto';
 import i18n from '../config/i18n';
 import { User } from '../entities/user.entity';
 import { AuthSession } from '../entities/auth-session.entity';
 import { OauthAccount } from '../entities/oauth-account.entity';
+import { CreditBalance } from '../entities/credit-balance.entity';
 import { VerificationToken } from '../entities/verification-token.entity';
 import { EMAIL_PROVIDER, EmailProvider } from '../email/email-provider.interface';
+import { MONTHLY_CREDIT_ALLOCATIONS } from '../credit-ledger/types';
 
 export interface GoogleProfileInput {
   googleId: string;
@@ -41,6 +43,7 @@ export class AuthService {
     private authSessionRepository: Repository<AuthSession>,
     @InjectRepository(VerificationToken)
     private readonly verificationTokenRepository: Repository<VerificationToken>,
+    private readonly dataSource: DataSource,
     @Inject(EMAIL_PROVIDER)
     private readonly emailProvider: EmailProvider,
   ) {}
@@ -91,21 +94,28 @@ export class AuthService {
     type: string,
     ttlMs: number,
     locale: string,
+    manager?: EntityManager,
   ): Promise<string> {
     const rawToken = randomBytes(32).toString('base64url');
     const tokenHash = this.hashToken(rawToken);
     const expiresAt = new Date(Date.now() + ttlMs);
     const safeLocale = locale?.trim() ? locale.trim() : 'en';
 
-    const verificationToken = this.verificationTokenRepository.create({
+    const tokenPayload = {
       userId,
       tokenHash,
       type,
       expiresAt,
       locale: safeLocale,
       usedAt: null,
-    });
-    await this.verificationTokenRepository.save(verificationToken);
+    };
+    if (manager) {
+      const verificationToken = manager.create(VerificationToken, tokenPayload);
+      await manager.save(VerificationToken, verificationToken);
+    } else {
+      const verificationToken = this.verificationTokenRepository.create(tokenPayload);
+      await this.verificationTokenRepository.save(verificationToken);
+    }
 
     return rawToken;
   }
@@ -342,30 +352,105 @@ export class AuthService {
     userId: string,
     googleId: string,
     providerEmail: string | null,
+    manager?: EntityManager,
   ): Promise<void> {
-    const oauthAccount = this.oauthAccountRepository.create({
-      userId,
-      provider: 'google',
-      providerAccountId: googleId,
-      providerEmail,
-    });
-
-    await this.oauthAccountRepository.save(oauthAccount);
+    if (manager) {
+      const oauthAccount = manager.create(OauthAccount, {
+        userId,
+        provider: 'google',
+        providerAccountId: googleId,
+        providerEmail,
+      });
+      await manager.save(OauthAccount, oauthAccount);
+    } else {
+      const oauthAccount = this.oauthAccountRepository.create({
+        userId,
+        provider: 'google',
+        providerAccountId: googleId,
+        providerEmail,
+      });
+      await this.oauthAccountRepository.save(oauthAccount);
+    }
   }
 
   private async createAppleOauthLink(
     userId: string,
     appleId: string,
     providerEmail: string | null,
+    manager?: EntityManager,
   ): Promise<void> {
-    const oauthAccount = this.oauthAccountRepository.create({
-      userId,
-      provider: 'apple',
-      providerAccountId: appleId,
-      providerEmail,
+    if (manager) {
+      const oauthAccount = manager.create(OauthAccount, {
+        userId,
+        provider: 'apple',
+        providerAccountId: appleId,
+        providerEmail,
+      });
+      await manager.save(OauthAccount, oauthAccount);
+    } else {
+      const oauthAccount = this.oauthAccountRepository.create({
+        userId,
+        provider: 'apple',
+        providerAccountId: appleId,
+        providerEmail,
+      });
+      await this.oauthAccountRepository.save(oauthAccount);
+    }
+  }
+
+  private async createFreePlanBalanceRow(manager: EntityManager, userId: string): Promise<void> {
+    const now = new Date();
+    const periodStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+    const periodEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+    const freePlanAllocation = MONTHLY_CREDIT_ALLOCATIONS.free;
+
+    const creditBalance = manager.create(CreditBalance, {
+      ownerId: userId,
+      ownerType: 'user',
+      planId: 'free',
+      balance: freePlanAllocation,
+      monthlyAllocation: freePlanAllocation,
+      rolloverBalance: 0,
+      status: 'active',
+      periodStart,
+      periodEnd,
+      resetAt: null,
     });
 
-    await this.oauthAccountRepository.save(oauthAccount);
+    await manager.save(CreditBalance, creditBalance);
+  }
+
+  private isUniqueConstraintViolation(error: unknown): boolean {
+    if (!(error instanceof Error)) {
+      return false;
+    }
+    const pgCode = (error as Error & { code?: string }).code;
+    if (pgCode === '23505') {
+      return true;
+    }
+    const message = error.message.toLowerCase();
+    return message.includes('duplicate key') || message.includes('unique constraint');
+  }
+
+  private async findActiveOauthRaceWinner(
+    provider: 'google' | 'apple',
+    providerAccountId: string,
+  ): Promise<User | null> {
+    const linkedAccount = await this.oauthAccountRepository.findOne({
+      where: {
+        provider,
+        providerAccountId,
+      },
+      relations: {
+        user: true,
+      },
+    });
+
+    if (!linkedAccount?.user?.isActive) {
+      return null;
+    }
+
+    return linkedAccount.user;
   }
 
   private isApplePrivateRelayEmail(email: string | null): boolean {
@@ -408,21 +493,34 @@ export class AuthService {
       return this.touchLastLogin(existingUser);
     }
 
-    const newUser = this.userRepository.create({
-      email: normalizedEmail,
-      passwordHash: null,
-      authProvider: 'google',
-      oauthId: profile.googleId,
-      emailVerified: true,
-      role: 'user' as any,
-      planType: 'free',
-      isActive: true,
-      lastLoginAt: new Date(),
-    });
-    const savedUser = await this.userRepository.save(newUser);
+    try {
+      return await this.dataSource.transaction(async (manager: EntityManager) => {
+        const newUser = manager.create(User, {
+          email: normalizedEmail,
+          passwordHash: null,
+          authProvider: 'google',
+          oauthId: profile.googleId,
+          emailVerified: true,
+          role: 'user' as any,
+          planType: 'free',
+          isActive: true,
+          lastLoginAt: new Date(),
+        });
+        const savedUser = await manager.save(User, newUser);
 
-    await this.createGoogleOauthLink(savedUser.id, profile.googleId, normalizedEmail);
-    return savedUser;
+        await this.createFreePlanBalanceRow(manager, savedUser.id);
+        await this.createGoogleOauthLink(savedUser.id, profile.googleId, normalizedEmail, manager);
+        return savedUser;
+      });
+    } catch (error) {
+      if (this.isUniqueConstraintViolation(error)) {
+        const raceWinner = await this.findActiveOauthRaceWinner('google', profile.googleId);
+        if (raceWinner) {
+          return this.touchLastLogin(raceWinner);
+        }
+      }
+      throw error;
+    }
   }
 
   async findOrCreateAppleUser(profile: AppleProfileInput): Promise<User> {
@@ -456,22 +554,38 @@ export class AuthService {
     const isPrivateRelayEmail =
       profile.isPrivateEmail || this.isApplePrivateRelayEmail(normalizedEmail);
 
-    if (isPrivateRelayEmail) {
-      const newUser = this.userRepository.create({
-        email: normalizedEmail,
-        passwordHash: null,
-        authProvider: 'apple',
-        oauthId: appleId,
-        emailVerified: true,
-        role: 'user' as any,
-        planType: 'free',
-        isActive: true,
-        lastLoginAt: new Date(),
-      });
-      const savedUser = await this.userRepository.save(newUser);
+    const createNewAppleUser = async (): Promise<User> =>
+      this.dataSource.transaction(async (manager: EntityManager) => {
+        const newUser = manager.create(User, {
+          email: normalizedEmail,
+          passwordHash: null,
+          authProvider: 'apple',
+          oauthId: appleId,
+          emailVerified: true,
+          role: 'user' as any,
+          planType: 'free',
+          isActive: true,
+          lastLoginAt: new Date(),
+        });
+        const savedUser = await manager.save(User, newUser);
 
-      await this.createAppleOauthLink(savedUser.id, appleId, normalizedEmail);
-      return savedUser;
+        await this.createFreePlanBalanceRow(manager, savedUser.id);
+        await this.createAppleOauthLink(savedUser.id, appleId, normalizedEmail, manager);
+        return savedUser;
+      });
+
+    if (isPrivateRelayEmail) {
+      try {
+        return await createNewAppleUser();
+      } catch (error) {
+        if (this.isUniqueConstraintViolation(error)) {
+          const raceWinner = await this.findActiveOauthRaceWinner('apple', appleId);
+          if (raceWinner) {
+            return this.touchLastLogin(raceWinner);
+          }
+        }
+        throw error;
+      }
     }
 
     const existingUser = await this.userRepository.findOne({
@@ -487,21 +601,17 @@ export class AuthService {
       return this.touchLastLogin(existingUser);
     }
 
-    const newUser = this.userRepository.create({
-      email: normalizedEmail,
-      passwordHash: null,
-      authProvider: 'apple',
-      oauthId: appleId,
-      emailVerified: true,
-      role: 'user' as any,
-      planType: 'free',
-      isActive: true,
-      lastLoginAt: new Date(),
-    });
-    const savedUser = await this.userRepository.save(newUser);
-
-    await this.createAppleOauthLink(savedUser.id, appleId, normalizedEmail);
-    return savedUser;
+    try {
+      return await createNewAppleUser();
+    } catch (error) {
+      if (this.isUniqueConstraintViolation(error)) {
+        const raceWinner = await this.findActiveOauthRaceWinner('apple', appleId);
+        if (raceWinner) {
+          return this.touchLastLogin(raceWinner);
+        }
+      }
+      throw error;
+    }
   }
 
   async login(email: string, password: string, lang: string = 'en') {
@@ -532,24 +642,48 @@ export class AuthService {
     // Hash password
     const passwordHash = await bcrypt.hash(password, 12);
 
-    // Create new user with email auth provider
-    const user = this.userRepository.create({
-      email,
-      passwordHash,
-      authProvider: 'email',
-      oauthId: null,
-      role: 'user' as any,
-      planType: 'free',
-      isActive: true,
-    });
+    let savedUser: User;
+    let rawToken: string;
 
-    const savedUser = await this.userRepository.save(user);
-    const rawToken = await this.generateAndStoreVerificationToken(
-      savedUser.id,
-      'email_verify',
-      AuthService.EMAIL_VERIFICATION_TTL_MS,
-      locale,
-    );
+    try {
+      const transactionResult = await this.dataSource.transaction(
+        async (manager: EntityManager): Promise<{ savedUser: User; rawToken: string }> => {
+          const user = manager.create(User, {
+            email,
+            passwordHash,
+            authProvider: 'email',
+            oauthId: null,
+            role: 'user' as any,
+            planType: 'free',
+            isActive: true,
+          });
+
+          const persistedUser = await manager.save(User, user);
+          await this.createFreePlanBalanceRow(manager, persistedUser.id);
+          const token = await this.generateAndStoreVerificationToken(
+            persistedUser.id,
+            'email_verify',
+            AuthService.EMAIL_VERIFICATION_TTL_MS,
+            locale,
+            manager,
+          );
+          return { savedUser: persistedUser, rawToken: token };
+        },
+      );
+      savedUser = transactionResult.savedUser;
+      rawToken = transactionResult.rawToken;
+    } catch (error) {
+      if (this.isUniqueConstraintViolation(error)) {
+        const concurrentUser = await this.userRepository.findOne({
+          where: { email },
+        });
+        if (concurrentUser) {
+          throw new UnauthorizedException('User already exists');
+        }
+      }
+      throw error;
+    }
+
     await this.sendVerificationEmail(savedUser.email, rawToken, locale);
 
     return {

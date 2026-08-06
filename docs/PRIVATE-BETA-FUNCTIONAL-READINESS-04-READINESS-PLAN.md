@@ -2,15 +2,16 @@
 
 **Task ID:** PRIVATE-BETA-FUNCTIONAL-READINESS-04
 **Type:** Controlled Staging AI Execution Enablement and Core Product Loop Smoke
-**Status:** ACTIVE — BLOCKED pending FR-04C — 2026-08-06 — Step 1 COMPLETE — FR-04A COMPLETE and LOCKED — PASS — Optional Anthropic readiness only — FR-04B COMPLETE and LOCKED — PASS — Stale provider/model catalogue blocker RESOLVED in source — FR-04 source prerequisites COMPLETE — Staging finding: deployed builds older than FR-04A/04B (API Gateway lacks `grok-4.5`; AI Service still has stale `grok-3`) — FR-04 Step 3a stopped before PM2 restart — `/opt/aisandbox/.env` restored to safe posture — Child FR-04C ACTIVE — Step 1 COMPLETE — Runtime execution remains disabled and unauthorized — No private-beta users may be invited — AI execution remains disabled
-**Author:** Cursor / Sonnet 4.6 (amended 2026-08-06 — xAI / multi-model audit correction; amended 2026-08-06 — FR-04B registration; amended 2026-08-06 — FR-04B COMPLETE and LOCKED; amended 2026-08-06 — FR-04C registration)
+**Status:** ACTIVE — 2026-08-06 — Step 1 COMPLETE — FR-04A COMPLETE and LOCKED — PASS — Optional Anthropic readiness only — FR-04B COMPLETE and LOCKED — PASS — Stale provider/model catalogue blocker RESOLVED in source — FR-04 source prerequisites COMPLETE — Child FR-04C COMPLETE and LOCKED — PASS — Staging catalogues deployed at `df9a9ff` — Child FR-04D ACTIVE — Outcome A — `/[locale]/app` is canonical Build anything — FR-04 Step 3c remains BLOCKED — Operator-reported: `GLOBAL_EXECUTION_ENABLED=false`, `AI_PROVIDER=xai`, `PROVIDER_XAI_ENABLED=true` — no inference request — xAI configuration remains present — global execution remains disabled — No private-beta users may be invited — No new runtime enablement authorized
+**Author:** Cursor / Sonnet 4.6 (amended 2026-08-06 — xAI / multi-model audit correction; amended 2026-08-06 — FR-04B registration; amended 2026-08-06 — FR-04B COMPLETE and LOCKED; amended 2026-08-06 — FR-04C registration; amended 2026-08-06 — FR-04C COMPLETE and LOCKED; amended 2026-08-06 — FR-04D route audit)
 **Date:** 2026-08-06
 **Keith approval:** Registration approved 2026-08-06
 **Child:** PRIVATE-BETA-FUNCTIONAL-READINESS-04A — COMPLETE and LOCKED — 2026-08-06 — PASS — Checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04A-CHECKPOINT.md` — **Scope retained as optional Anthropic configuration hardening only. Do not treat FR-04A as selecting Anthropic for FR-04 smoke. Do not modify the locked FR-04A checkpoint.**
 **Child:** PRIVATE-BETA-FUNCTIONAL-READINESS-04B — COMPLETE and LOCKED — 2026-08-06 — PASS — Provider Model Catalogue and Selection Hardening — Checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04B-CHECKPOINT.md` — Plan: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04B-IMPLEMENTATION-PLAN.md` — **Stale catalogue blocker resolved in source. FR-04 source prerequisites complete.**
-**Child:** PRIVATE-BETA-FUNCTIONAL-READINESS-04C — ACTIVE — Step 1 COMPLETE — Controlled Staging Deployment of FR-04A/04B — Plan: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04C-DEPLOYMENT-PLAN.md` — **Does not enable xAI execution. Deploys application code/artifacts only while preserving safe env posture.**
-**Audit outcome (2026-08-06):** **Outcome A amended** — Existing xAI path and per-request provider/model selection exist in source. FR-04B catalogue/default hardening is now COMPLETE and LOCKED. Staging still requires FR-04C deployment before FR-04 Step 2/3a.
-**Exact next action:** PRIVATE-BETA-FUNCTIONAL-READINESS-04C Step 2a — deployment readiness and artifact verification (no staging mutation)
+**Child:** PRIVATE-BETA-FUNCTIONAL-READINESS-04C — COMPLETE and LOCKED — 2026-08-06 — PASS — Controlled Staging Deployment of FR-04A/04B — Checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04C-CHECKPOINT.md` — Plan: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04C-DEPLOYMENT-PLAN.md` — **Staging deployed at `df9a9ff`. Did not enable xAI execution. Safe env posture preserved at FR-04C close.**
+**Child:** PRIVATE-BETA-FUNCTIONAL-READINESS-04D — ACTIVE — 2026-08-06 — Build Workspace Route and Legacy `/app` Audit — Outcome A — Audit: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04D-ROUTE-AUDIT.md` — **Canonical Build anything route is `/[locale]/app`. No source route change required. Step 3c can resume on existing route after Keith approval.**
+**Audit outcome (2026-08-06):** **Outcome A amended** — Existing xAI path and per-request provider/model selection exist in source. FR-04B catalogue/default hardening is now COMPLETE and LOCKED. FR-04C staging deployment is now COMPLETE and LOCKED. FR-04D route audit Outcome A — `/[locale]/app` canonical. FR-04 Step 3c remains BLOCKED. Global execution remains disabled.
+**Exact next action:** Accept FR-04D Outcome A; resume FR-04 Step 3c on existing `https://staging.ainow.biz/en/app` project view without source route changes (requires separate Keith approval; no new runtime enablement authorized by FR-04D)
 
 ---
 
@@ -422,11 +423,12 @@ Each slice requires **separate explicit Keith approval** before execution.
 | FR-04A — Anthropic Model Configuration Hardening | **COMPLETE and LOCKED — 2026-08-06 — PASS** | Optional Anthropic readiness only. Checkpoint locked — do not modify. |
 | Step 1b — xAI / multi-model source audit + plan correction | **COMPLETE — 2026-08-06** | This amendment. Outcome A. No runtime action. |
 | FR-04B — Provider Model Catalogue and Selection Hardening | **COMPLETE and LOCKED — 2026-08-06 — PASS** | Catalogue + dual-layer validation + frontend mirror. Checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04B-CHECKPOINT.md`. |
-| FR-04C — Controlled Staging Deployment of FR-04A/04B | **ACTIVE — Step 1 COMPLETE — 2026-08-06** | Deploy source catalogues to staging without enabling execution. Plan: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04C-DEPLOYMENT-PLAN.md`. Exact next: Step 2a readiness (no staging mutation). |
-| Step 2 — Keith reviews amended plan + verifies staging xAI config path | **BLOCKED pending FR-04C** | Resume only after FR-04C proves deployed catalogues. |
-| Step 3a — PM2 env configuration + service restart | **NOT STARTED — not authorized** | Requires Step 2 approval + separate explicit runtime approval. Out of FR-04C scope. |
-| Step 3b — Execution health verification | **NOT STARTED** | Requires Step 3a complete + Keith approval. |
-| Step 3c — Core product loop smoke | **NOT STARTED** | Requires Step 3b complete + Keith approval. |
+| FR-04C — Controlled Staging Deployment of FR-04A/04B | **COMPLETE and LOCKED — 2026-08-06 — PASS** | Staging catalogues deployed at `df9a9ff`. Checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04C-CHECKPOINT.md`. Plan: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04C-DEPLOYMENT-PLAN.md`. Did not enable execution. |
+| FR-04D — Build Workspace Route and Legacy `/app` Audit | **ACTIVE — 2026-08-06 — Outcome A** | Canonical Build anything = `/[locale]/app`. Audit: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04D-ROUTE-AUDIT.md`. No source route change required. |
+| Step 2 — Keith reviews amended plan + verifies staging xAI config path | **IN PROGRESS / partial (operator)** | xAI path configured per operator report during Step 3c attempt; global execution remains disabled. |
+| Step 3a — PM2 env configuration + service restart | **PARTIAL (operator)** | Operator-reported `AI_PROVIDER=xai` / `PROVIDER_XAI_ENABLED=true` with `GLOBAL_EXECUTION_ENABLED=false`. No inference. Not re-authorized by FR-04D. |
+| Step 3b — Execution health verification | **NOT STARTED / blocked** | Requires kill-switch lift authorization separately. |
+| Step 3c — Core product loop smoke | **BLOCKED** | Stopped before inference due to route/workspace confusion. Resume on `/en/app` project view without source changes after Keith approval. |
 | Step 4 — Rollback + evidence consolidation + checkpoint | **NOT STARTED** | Requires Step 3c complete. Rollback mandatory regardless of outcome. |
 
 ---
@@ -453,9 +455,10 @@ Each slice requires **separate explicit Keith approval** before execution.
 - ✅ `GLOBAL_EXECUTION_ENABLED` remains `false`
 - ✅ `AI_PROVIDER` remains `stub` (documented staging posture; not re-verified live)
 - ✅ FR-04B COMPLETE and LOCKED — 2026-08-06 — PASS — stale catalogue blocker resolved in source — FR-04 source prerequisites complete
-- ✅ FR-04C ACTIVE — Step 1 COMPLETE — 2026-08-06 — controlled staging deployment planned; no deployment executed in registration
+- ✅ FR-04C COMPLETE and LOCKED — 2026-08-06 — PASS — staging catalogues deployed at `df9a9ff`; Step 2b/2c PASS; safe env posture preserved
 - ✅ Runtime execution remains disabled and unauthorized
-- ✅ Staging deployed builds still older than FR-04A/04B until FR-04C completes
+- ✅ Runtime AI enablement remains NOT STARTED
+- ✅ Staging deployed builds now match FR-04A/04B catalogues (`grok-4.5` / `grok-4.20` present; `grok-3` absent)
 - ✅ No private-beta users may be invited
 - ✅ PRIVATE-BETA-INVITE-01 NOT REGISTERED — no invitation authorized
 
@@ -467,12 +470,12 @@ Each slice requires **separate explicit Keith approval** before execution.
 |---|---|
 | FR-04B Step 2a/2b source implementation (after official model ID verification) | **COMPLETE and LOCKED — 2026-08-06 — PASS** |
 | FR-04C registration + deployment plan | **COMPLETE — 2026-08-06** |
-| FR-04C Step 2a — deployment readiness and artifact verification | **NOT STARTED — exact next action** — no staging mutation |
-| FR-04C Step 2b — backend deploy | **NOT APPROVED yet** |
-| FR-04C Step 2c — frontend deploy | **NOT APPROVED yet** |
-| FR-04C Step 2d — deployment verification / checkpoint | After 2b/2c |
-| Review and approve amended readiness plan (FR-04 Step 2) | **BLOCKED pending FR-04C** |
-| Verify current staging xAI configuration path (`XAI_API_KEY` names-only in gateway + ai-service; `PROVIDER_XAI_ENABLED`; supported model ID `grok-4.5`) | **BLOCKED pending FR-04C** — Keith action before Step 3a |
+| FR-04C Step 2a — deployment readiness and artifact verification | **COMPLETE — READY — 2026-08-06** |
+| FR-04C Step 2b — backend deploy | **COMPLETE — PASS — 2026-08-06** |
+| FR-04C Step 2c — frontend deploy | **COMPLETE — PASS — 2026-08-06** |
+| FR-04C Step 2d — deployment verification / checkpoint | **COMPLETE and LOCKED — PASS — 2026-08-06** — Checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04C-CHECKPOINT.md` |
+| Review and approve amended readiness plan (FR-04 Step 2) | **NOT STARTED — exact next action** — requires separate Keith approval |
+| Verify current staging xAI configuration path (`XAI_API_KEY` names-only in gateway + ai-service; `PROVIDER_XAI_ENABLED`; supported model ID `grok-4.5`) | **NOT STARTED** — Keith action before Step 3a; runtime AI enablement remains NOT STARTED |
 | Verify xAI account has sufficient credit for one smoke call | **PENDING — Keith action before Step 3a** |
 | Supply or confirm real `XAI_API_KEY` privately during later approved runtime step | **PENDING — not authorized yet** |
 | Step 3a: PM2 env config (`GLOBAL_EXECUTION_ENABLED=true`, `AI_PROVIDER=xai`, `XAI_API_KEY`, provider kill switch) + restart | **NOT APPROVED — runtime still unauthorized** |
@@ -484,9 +487,39 @@ Each slice requires **separate explicit Keith approval** before execution.
 
 ---
 
+## 6A. BILLING-READY-08 Dependency (2026-08-06, amended v3)
+
+FR-04 Step 3c controlled xAI smoke reached aiSandBox execution billing enforcement but failed with HTTP 402 — `Credit balance not provisioned`. Root cause: registration paths create the `users` row but never create a `credit_balances` row. This affects both future registrations AND all existing historical users without a balance row.
+
+**Blocker:** BILLING-READY-08 — Free-Plan Credit Balance Provisioning — ACTIVE — `docs/BILLING-READY-08-IMPLEMENTATION-PLAN.md`
+
+**Architecture (amended v4 2026-08-06):**
+1. **New-user provisioning:** Atomic `DataSource.transaction()` in `AuthService` — User + CreditBalance commit or roll back together. Any insert failure rolls back all writes. Concurrent-registration races handled outside the failed transaction via refetch. No in-transaction 23505 catch. Post-commit side effects only (verification email). `auth.module.ts` NOT modified.
+2. **Historical-user backfill:** TypeORM migration inserts balance rows for all eligible existing users, deriving allocation from actual `plan_type` via `MONTHLY_CREDIT_ALLOCATIONS`. Unknown plan types excluded. Idempotent. Irreversible no-op `down()` — no automatic destructive rollback. Dry-run inventory before execution. Operational correction of incorrect data requires a separately reviewed, approval-gated data-fix procedure.
+
+Previous designs rejected:
+- v1: log-and-continue (recreates the exact production defect).
+- v2: catch 23505 inside transaction (PostgreSQL aborted-transaction state makes this invalid; balance UNIQUE conflict for a new UUID is an invariant failure).
+- v3: destructive `down()` on migration (backfilled rows may receive grants/deductions and become indistinguishable from production rows; no provenance to safely identify them).
+
+**BILLING-READY-08 Step 2a — COMPLETE AND LOCKED 2026-08-06.** `auth.service.ts` + `auth.service.spec.ts` modified. Atomic `DataSource.transaction()` implemented in all new-user paths. 22 tests PASS; tsc + build PASS. Checkpoint: `docs/BILLING-READY-08-STEP-2A-CHECKPOINT.md`.
+
+**BILLING-READY-08 Step 2b — COMPLETE AND LOCKED 2026-08-06.** Migration `1772700000000-BackfillCreditBalancesForExistingUsers.ts` created. Backfill migration spec created (8 tests). `npm test -- backfill-credit-balances-migration` PASS; tsc + build PASS. Checkpoint: `docs/BILLING-READY-08-STEP-2B-CHECKPOINT.md`. **Step 2 COMPLETE.**
+
+FR-04 Step 3c remains BLOCKED pending:
+1. ~~BILLING-READY-08 Step 2a (new-user provisioning source + tests)~~ — **COMPLETE AND LOCKED 2026-08-06**
+2. ~~BILLING-READY-08 Step 2b (historical backfill migration + tests)~~ — **COMPLETE AND LOCKED 2026-08-06**
+3. BILLING-READY-08 Step 3 (staging deployment + migration:run) — **NOT STARTED — requires Keith approval**
+4. BILLING-READY-08 Step 4 (runtime smoke with `GLOBAL_EXECUTION_ENABLED=true` + consolidation) — **NOT STARTED — requires Keith approval**
+
+`GLOBAL_EXECUTION_ENABLED` must remain `false` until BILLING-READY-08 implementation, deployment, and migration are all complete.
+
+---
+
 ## 7. Related Documents
 
-- Child FR-04C deployment plan (ACTIVE): `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04C-DEPLOYMENT-PLAN.md`
+- Child FR-04C checkpoint (locked): `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04C-CHECKPOINT.md`
+- Child FR-04C deployment plan: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04C-DEPLOYMENT-PLAN.md`
 - Child FR-04B checkpoint (locked): `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04B-CHECKPOINT.md`
 - Child FR-04B implementation plan: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04B-IMPLEMENTATION-PLAN.md`
 - Child FR-04A checkpoint (locked; optional Anthropic readiness only): `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04A-CHECKPOINT.md`

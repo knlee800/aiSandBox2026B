@@ -16,7 +16,7 @@ Rules:
 
 If conflicts exist, TASKS_BACKLOG_FULL.md takes precedence.
 
-**Program status:** PRIVATE-BETA-FUNCTIONAL-READINESS-04 ACTIVE — BLOCKED pending FR-04C — FR-04C ACTIVE — Step 2a COMPLETE — outcome **BLOCKED** — 2026-08-06 — Required FR-04A/04B files absent from `origin/main` (local HEAD `9b7e72c`; `origin/main` `53369dc`) — No staging mutation — AI execution remains disabled — safe env posture preserved — No users invited — PRIVATE-BETA-INVITE-01 NOT REGISTERED — Exact next action: Keith commit + push all required FR-04A/04B files to `origin/main`, then re-verify Step 2a READY before any Step 2b approval — Deployment plan: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04C-DEPLOYMENT-PLAN.md — Readiness plan: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-READINESS-PLAN.md — FR-04B checkpoint: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04B-CHECKPOINT.md — FR-04A checkpoint: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04A-CHECKPOINT.md
+**Program status:** BILLING-READY-08 ACTIVE — 2026-08-06, AMENDED (v4) — Free-Plan Credit Balance Provisioning — Step 1 COMPLETE — **Step 2a COMPLETE AND LOCKED 2026-08-06** — **Step 2b COMPLETE AND LOCKED 2026-08-06** — **Step 2 COMPLETE** — Step 3 NOT STARTED (requires Keith approval) — PRIVATE-BETA-FUNCTIONAL-READINESS-04 ACTIVE and BLOCKED pending BILLING-READY-08 — FR-04 Step 3c reached billing enforcement and failed HTTP 402 `Credit balance not provisioned` — Root cause: registration creates `users` but not `credit_balances`; historical users also affected — Fix: (1) atomic `DataSource.transaction()` in `AuthService` — any insert failure rolls back all writes; concurrent races handled outside transaction; no in-transaction 23505 catch — COMPLETE; (2) TypeORM migration backfills all eligible historical users with plan-type-aware allocation; irreversible no-op `down()` — COMPLETE — `auth.module.ts` NOT modified — Step 2a validation: `npm test -- auth.service.spec` PASS (22 tests); `npx tsc --noEmit` PASS; `npm run build` PASS — Step 2b validation: `npm test -- backfill-credit-balances-migration` PASS (8 tests); `npx tsc --noEmit` PASS; `npm run build` PASS — Operator-reported posture: `GLOBAL_EXECUTION_ENABLED=false`, `AI_PROVIDER=xai`, `PROVIDER_XAI_ENABLED=true` — no inference request authorized — No users invited — PRIVATE-BETA-INVITE-01 NOT REGISTERED — No new runtime enablement authorized — Exact next action: BILLING-READY-08 Step 2b — Checkpoint: docs/BILLING-READY-08-STEP-2A-CHECKPOINT.md — Implementation plan: docs/BILLING-READY-08-IMPLEMENTATION-PLAN.md — FR-04 readiness plan: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-READINESS-PLAN.md
 
 
 \# TASKS.md ??Master Task Index
@@ -25237,10 +25237,12 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 38. PRIVATE-BETA-FUNCTIONAL-READINESS-03 — Staging File-Backed Workspace Tree and Editor Smoke (COMPLETE and LOCKED — 2026-08-06 — PASS — File-tree/editor objective proven through child PRIVATE-BETA-FUNCTIONAL-READINESS-03A — Step 1 COMPLETE Outcome B (no supported file-backed path without AI/unsupported steps) — Direct FR-03 browser smoke not executed as standalone runbook (blocked by Outcome B) — Child 03A COMPLETE and LOCKED PASS — Proven: ZIP import path AI panel → Open history → Project Snapshots → Import Project (no dedicated URL); file tree shows README.md; editor loads expected content; refresh reconnect preserves tree/editor — Preview GET /api/preview/<session-id>/status HTTP 404 remains separate unresolved staging finding (not fixed/investigated) — AI execution remains disabled — PRIVATE-BETA-INVITE-01 not registered — no invitations authorized — Next recommended (NOT REGISTERED): PRIVATE-BETA-FUNCTIONAL-READINESS-04 — Controlled Staging AI Execution Enablement and Core Product Loop Smoke — Investigation: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-03-STAGING-FILE-TREE-EDITOR-SMOKE-RUNBOOK.md — Child checkpoint: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-03A-CHECKPOINT.md — Checkpoint: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-03-CHECKPOINT.md — Predecessor: PRIVATE-BETA-FUNCTIONAL-READINESS-02 COMPLETE and LOCKED)
 39. PRIVATE-BETA-FUNCTIONAL-READINESS-03A — Disposable ZIP Fixture Import Smoke (COMPLETE and LOCKED — 2026-08-06 — PASS — All 3 steps COMPLETE — Step 1 COMPLETE (registration + ZIP-path investigation + route/access amendment) — Step 2 COMPLETE (Keith manual staging browser smoke) — Step 3 COMPLETE (evidence consolidation) — Outcome A — ZIP import supported — No dedicated Import URL — Supported path: AI panel → clock Open history → Project Snapshots → Import Project → POST /api/sessions/:id/import — All approved checks PASS: ZIP import; README.md in file tree; README.md opens in editor with expected readable content; no blocking application error; no HTTP 5xx on approved flow; refresh reconnects to same project/session; file tree usable after refresh; README.md remains visible/openable after refresh — AI execution remained disabled — No users invited — Persistent disposable staging project/session/file records may remain — Preview HTTP 404 remains separate unresolved finding — Parent FR-03 COMPLETE and LOCKED (objective proven through this child) — Successor: PRIVATE-BETA-FUNCTIONAL-READINESS-04 ACTIVE — Runbook: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-03A-ZIP-FIXTURE-IMPORT-SMOKE-RUNBOOK.md — Checkpoint: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-03A-CHECKPOINT.md)
 
-40. PRIVATE-BETA-FUNCTIONAL-READINESS-04 — Controlled Staging AI Execution Enablement and Core Product Loop Smoke (ACTIVE — 2026-08-06 — BLOCKED pending FR-04C — Step 1 COMPLETE — Step 1b COMPLETE — FR-04A COMPLETE and LOCKED — FR-04B COMPLETE and LOCKED — FR-04 source prerequisites COMPLETE — Staging finding: deployed builds older than FR-04A/04B — Child FR-04C ACTIVE — Step 2a COMPLETE — outcome BLOCKED — required FR-04A/04B files absent from `origin/main` (local HEAD `9b7e72c`; `origin/main` `53369dc`) — Runtime execution remains disabled and unauthorized — AI execution remains disabled — No users invited — PRIVATE-BETA-INVITE-01 NOT REGISTERED — Exact next action: Keith commit + push FR-04A/04B to `origin/main`, then re-verify FR-04C Step 2a READY — Deployment plan: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04C-DEPLOYMENT-PLAN.md — Readiness plan: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-READINESS-PLAN.md — Child checkpoint: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04B-CHECKPOINT.md — Child checkpoint: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04A-CHECKPOINT.md — Predecessor: FR-03A COMPLETE and LOCKED — 2026-08-06 — PASS)
+40. PRIVATE-BETA-FUNCTIONAL-READINESS-04 — Controlled Staging AI Execution Enablement and Core Product Loop Smoke (ACTIVE — 2026-08-06 — Step 1 COMPLETE — Step 1b COMPLETE — FR-04A COMPLETE and LOCKED — FR-04B COMPLETE and LOCKED — FR-04 source prerequisites COMPLETE — Child FR-04C COMPLETE and LOCKED — PASS — Staging catalogues deployed at `df9a9ff` — Child FR-04D ACTIVE — Outcome A — `/[locale]/app` is canonical Build anything — FR-04 Step 3c remains BLOCKED — Operator-reported: `GLOBAL_EXECUTION_ENABLED=false`, `AI_PROVIDER=xai`, `PROVIDER_XAI_ENABLED=true` — no inference request — xAI config present — global execution disabled — No users invited — PRIVATE-BETA-INVITE-01 NOT REGISTERED — No new runtime enablement authorized — Exact next action: complete BILLING-READY-08 (source implementation → staging deployment → staging backfill), then resume FR-04 Step 3c — FR-04 Step 3c BLOCKED by BILLING-READY-08 (HTTP 402 credit_balance_not_provisioned) — Audit: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04D-ROUTE-AUDIT.md — Checkpoint: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04C-CHECKPOINT.md — Deployment plan: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04C-DEPLOYMENT-PLAN.md — Readiness plan: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-READINESS-PLAN.md — Child checkpoint: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04B-CHECKPOINT.md — Child checkpoint: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04A-CHECKPOINT.md — Predecessor: FR-03A COMPLETE and LOCKED — 2026-08-06 — PASS)
 41. PRIVATE-BETA-FUNCTIONAL-READINESS-04A — Anthropic Model Configuration Hardening (COMPLETE and LOCKED — 2026-08-06 — PASS — All 3 steps COMPLETE — Explicit `ANTHROPIC_MODEL` required — Deprecated hardcoded `claude-3-5-sonnet-20241022` fallback removed — AnthropicAdapter requires non-empty trimmed model — AIExecutionService reads/trims `ANTHROPIC_MODEL` and fails clearly before provider execution on missing/empty/whitespace — Request-level model override preserved — No replacement model hardcoded — Stub/execution-disabled posture unchanged — Anthropic tests mock `@anthropic-ai/sdk` — Config failures asserted before adapter execute / SDK messages.create — `ANTHROPIC_MODEL=` added to root and ai-service `.env.example` only — api-gateway `.env.example` deliberately unchanged — Validation PASS: Anthropic adapter 2 suites/65 tests; focused AI execution Anthropic tests; `npx tsc --noEmit`; AI Service build; lint clean — AI execution remained disabled — No staging/PM2/credential/runtime/provider/browser/invitation action — Parent FR-04 ACTIVE — Checkpoint: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04A-CHECKPOINT.md)
 42. PRIVATE-BETA-FUNCTIONAL-READINESS-04B — Provider Model Catalogue and Selection Hardening (COMPLETE and LOCKED — 2026-08-06 — PASS — All steps COMPLETE — Step 1 COMPLETE — Step 2a Backend COMPLETE — Step 2b Frontend COMPLETE — Step 3 Consolidation COMPLETE — Approved catalogue: xAI default `grok-4.5` allowed `grok-4.5`/`grok-4.20`; Groq default `openai/gpt-oss-120b` allowed `openai/gpt-oss-120b`/`openai/gpt-oss-20b`; DeepSeek default `deepseek-v4-flash` allowed `deepseek-v4-flash`/`deepseek-v4-pro`; OpenAI `gpt-4o`; Anthropic via `ANTHROPIC_MODEL`; Stub preserved — Dual-layer validation (API Gateway + AI Service) — Frontend catalogue matches backend — Default `xai:grok-4.5` — Stale IDs removed — Anthropic not frontend-selectable without authoritative configured model ID — Validation PASS: focused AI Service tests; focused API Gateway tests; AI Service tsc + build; API Gateway tsc + build; frontend 462 tests PASS; frontend tsc + build; lint clean — AI execution remained disabled — No staging/PM2/credential/runtime/provider/browser/invitation action — Parent FR-04 ACTIVE — FR-04 source prerequisites COMPLETE — Checkpoint: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04B-CHECKPOINT.md — Plan: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04B-IMPLEMENTATION-PLAN.md)
-43. PRIVATE-BETA-FUNCTIONAL-READINESS-04C — Controlled Staging Deployment of FR-04A/04B (ACTIVE — 2026-08-06 — Step 1 COMPLETE — Step 2a COMPLETE — outcome **BLOCKED** — Required FR-04A/04B source/catalogue/checkpoint files absent from `origin/main` — Verified local HEAD `9b7e72c38de2393ed9265d2c01c7606ef7fd0fb6`; `origin/main` `53369dca7759258edfcbe31dbe2a3fcc3680eba6` — No package/lockfile/migration/DB/Container Manager/staging `.env` action required — Deploy mapping prepared: AI Service / API Gateway / Frontend build+PM2; backups/rollback/stop conditions defined — No staging mutation — Exact next action: Keith commit + push all required FR-04A/04B files to `origin/main`, then re-verify Step 2a READY before Step 2b approval — Parent FR-04 BLOCKED pending FR-04C — Does not enable xAI execution — No users invited — Plan: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04C-DEPLOYMENT-PLAN.md)
+43. PRIVATE-BETA-FUNCTIONAL-READINESS-04C — Controlled Staging Deployment of FR-04A/04B (COMPLETE and LOCKED — 2026-08-06 — PASS — All steps COMPLETE — Step 1 COMPLETE — Step 2a READY — Step 2b Backend PASS — Step 2c Frontend PASS — Step 2d Consolidation COMPLETE — Staging deployed HEAD `df9a9ff582321a1c54e3b3566322ed70da175c19` matches origin/main — Backup `/opt/aisandbox-backups/fr-04c-20260806-151147` (ai-service-dist, api-gateway-dist, predeploy-head.txt) — Backend: ai-service + api-gateway build PASS; restarted; AI messages health HTTP 201 ok; API gateway health HTTP 200 ok — Frontend: build PASS; .next has grok-4.5/grok-4.20, grok-3 absent; restarted; /en/app HTTP 200 — Safe posture preserved: GLOBAL_EXECUTION_ENABLED=false, AI_PROVIDER=stub, PROVIDER_XAI_ENABLED=false — No provider API calls — No AI execution enabled — No users invited — Parent FR-04 ACTIVE — Runtime AI enablement remains NOT STARTED — Checkpoint: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04C-CHECKPOINT.md — Plan: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04C-DEPLOYMENT-PLAN.md)
+44. PRIVATE-BETA-FUNCTIONAL-READINESS-04D — Build Workspace Route and Legacy `/app` Audit (ACTIVE — 2026-08-06 — Source-only route/UX audit — Step 1 COMPLETE — Outcome A — `/[locale]/app` is the canonical Build anything workspace (`AppPage` → `WorkspaceShell`) — `/[locale]/platform` is Agent Command Center only — legacy session shell is same `/app` URL when `PROJECT_FIRST_UX=false` — `/driver` is non-canonical Phase 37C driver — FR-04 Step 3c remains BLOCKED — can resume without source changes on `https://staging.ainow.biz/en/app` project view — xAI config present — global execution disabled — no inference — no users invited — no runtime enablement authorized — No source/tests/translations/middleware/env/packages/migrations/entities/staging/browser/provider/DB/Git action — Parent FR-04 ACTIVE — Audit: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04D-ROUTE-AUDIT.md)
+45. BILLING-READY-08 — Free-Plan Credit Balance Provisioning (ACTIVE — 2026-08-06, AMENDED v4 — Step 1 COMPLETE — **Step 2a COMPLETE AND LOCKED 2026-08-06** — **Step 2b COMPLETE AND LOCKED 2026-08-06** — **Step 2 COMPLETE** — Step 3 NOT STARTED (requires Keith approval) — Root cause: registration creates `users` but not `credit_balances`; historical users also affected — Fix: (1) atomic `DataSource.transaction()` in `AuthService` — `auth.service.ts` + `auth.service.spec.ts` modified; 22 tests PASS; tsc + build PASS; Checkpoint: docs/BILLING-READY-08-STEP-2A-CHECKPOINT.md — COMPLETE; (2) TypeORM migration `1772700000000-BackfillCreditBalancesForExistingUsers.ts` created; 8 migration tests PASS; tsc + build PASS; Checkpoint: docs/BILLING-READY-08-STEP-2B-CHECKPOINT.md — COMPLETE — `auth.module.ts` NOT modified — FR-04 Step 3c BLOCKED pending BILLING-READY-08 — Implementation plan: docs/BILLING-READY-08-IMPLEMENTATION-PLAN.md)
 
 20. AGENT-PLATFORM-07F3 �X Parent Consolidation Checkpoint (COMPLETE and LOCKED �X 2026-07-12)
 
@@ -39267,6 +39269,165 @@ BILLING-READY-07A may resume only after:
 **BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200 status:** COMPLETE and LOCKED — 2026-07-17. All 3 steps complete. BR07A-DEFECT-01 fixed: `GET /api/billing/subscription` no-subscription branch now returns explicit `res.status(200).json(null)`. Source files changed: `services/api-gateway/src/billing/billing-read.controller.ts`, `services/api-gateway/src/billing/__tests__/billing-read.controller.spec.ts`. Validation: `npm test -- billing-read.controller.spec.ts` PASS (16/16), `npm run build` PASS. Checkpoint: `docs/BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200-CHECKPOINT.md`. BILLING-READY-07A Step 3 rerun PASS (2026-07-19) — BILLING-READY-07A COMPLETE and LOCKED (2026-07-17) — Parent BILLING-READY-07 COMPLETE and LOCKED (2026-07-17) — Outcome B — PASS WITH LIMITATIONS. ANOMALY-01 remains deferred and not registered. No migration/entity/schema/package/environment/Docker/frontend/translation change. No provider/payment/Stripe/webhook activity. No runtime/browser/API/manual smoke. No secret files opened. No subagents. No git commit/push.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-07A-FIX-SUBSCRIPTION-EMPTY-200.
+
+---
+
+#### BILLING-READY-08: Free-Plan Credit Balance Provisioning
+
+**Status:** ACTIVE — 2026-08-06 — Step 1 COMPLETE — **Step 2a COMPLETE AND LOCKED 2026-08-06** — **Step 2b COMPLETE AND LOCKED 2026-08-06** — **Step 2 COMPLETE** — Step 3 NOT STARTED (requires Keith approval)
+**Task ID:** BILLING-READY-08
+**Title:** Free-Plan Credit Balance Provisioning
+**Family:** BILLING READY / CREDIT BALANCE / USER REGISTRATION / PROVISIONING
+**Priority:** CRITICAL — blocks FR-04 Step 3c AI execution smoke
+**Nature:** BOUNDED BACKEND IMPLEMENTATION — auth/billing cross-module wiring + dedicated provisioning method
+**Risk:** HIGH — modifies user registration flow across email/Google/Apple paths; touches billing persistence
+**Registered:** 2026-08-06
+**Keith approval:** Required — 2026-08-06
+**Checkpoint:** Step 2a checkpoint: `docs/BILLING-READY-08-STEP-2A-CHECKPOINT.md` — Step 2b checkpoint: `docs/BILLING-READY-08-STEP-2B-CHECKPOINT.md` — Final checkpoint: pending Step 4
+**Implementation plan:** `docs/BILLING-READY-08-IMPLEMENTATION-PLAN.md`
+
+#### Root Cause
+
+Registration paths (`AuthService.register`, `findOrCreateGoogleUser`, `findOrCreateAppleUser`) create the `users` row but never create a corresponding `credit_balances` row. `CreditBalanceGuard.canActivate()` calls `creditBalanceRepository.findByOwner(userId, 'user')` and rejects with HTTP 402 `credit_balance_not_provisioned` when no row exists. `CreditGrantService.processGrant()` also requires a pre-existing balance row (fails with `BALANCE_NOT_FOUND`). Normal non-admin users cannot execute AI.
+
+#### Dependencies
+
+- BILLING-READY-07 COMPLETE and LOCKED — 2026-07-17 — Outcome B
+- BILLING-READY-07A COMPLETE and LOCKED — 2026-07-17
+- BILLING-READY-04 COMPLETE and LOCKED — 2026-07-13 (CreditBalanceGuard)
+- BILLING-READY-03B COMPLETE and LOCKED — 2026-07-07 (CreditBalanceRepository, CreditPersistenceModule)
+- FR-04 ACTIVE — Step 3c BLOCKED pending this task
+
+#### Architecture Decision — AMENDED 2026-08-06 (v4)
+
+- **Atomic transaction:** Wrap new-user creation in `DataSource.transaction()` — User + CreditBalance (+ OauthAccount + VerificationToken where applicable) commit or roll back together.
+- Add `DataSource` injection + `createFreePlanBalanceRow(manager, userId)` private helper to `AuthService`.
+- `auth.module.ts` is NOT modified — `DataSource` is auto-provided; `CreditPersistenceModule` import not needed.
+- Use `MONTHLY_CREDIT_ALLOCATIONS.free` (500) — no hardcoded values.
+- UTC calendar-month billing period boundaries.
+- Two-layer idempotency: pre-transaction lookups + UNIQUE constraints. No in-transaction 23505 catch — any insert failure rolls back the transaction.
+- **Balance creation failure rolls back the user row.** No newly created user is ever returned without a balance row.
+- Concurrent-registration races handled OUTSIDE the failed transaction: roll back → refetch committed winner → return only if valid.
+- Non-duplicate provisioning errors propagate — not swallowed.
+- Post-commit side effects only: verification email sent after successful transaction commit.
+- **Historical-user backfill:** TypeORM migration inserts balance rows for all eligible existing users, deriving allocation from actual `plan_type` via `MONTHLY_CREDIT_ALLOCATIONS`. Unknown plan types excluded (require manual review).
+- No guard weakening. No auto-provisioning inside guard. No per-request provisioning.
+
+#### Expected initial values for free-plan credit_balances row
+
+| Field | Value |
+|-------|-------|
+| `ownerId` | `savedUser.id` |
+| `ownerType` | `'user'` |
+| `planId` | `'free'` |
+| `balance` | `MONTHLY_CREDIT_ALLOCATIONS.free` (500) |
+| `monthlyAllocation` | `MONTHLY_CREDIT_ALLOCATIONS.free` (500) |
+| `rolloverBalance` | `0` |
+| `status` | `'active'` |
+| `periodStart` | Start of current UTC month |
+| `periodEnd` | Start of next UTC month |
+| `resetAt` | `null` |
+
+#### Workflow (4-Step High-Risk Loop)
+
+1. **Registration and implementation plan** — COMPLETE (2026-08-06). Implementation plan: `docs/BILLING-READY-08-IMPLEMENTATION-PLAN.md`.
+2. **Permanent source implementation and focused tests:**
+   - **2a — New-user provisioning (`auth.service.ts`, `auth.service.spec.ts`)** — **COMPLETE AND LOCKED 2026-08-06**. `npm test -- auth.service.spec` PASS (22 tests); `npx tsc --noEmit` PASS; `npm run build` PASS. Checkpoint: `docs/BILLING-READY-08-STEP-2A-CHECKPOINT.md`.
+   - **2b — Historical backfill migration + migration spec** — **COMPLETE AND LOCKED 2026-08-06**. `npm test -- backfill-credit-balances-migration` PASS (8 tests); `npx tsc --noEmit` PASS; `npm run build` PASS. Checkpoint: `docs/BILLING-READY-08-STEP-2B-CHECKPOINT.md`.
+3. **Approval-gated staging deployment + migration** — push, pull, run `migration:run` (backfills all eligible users), rebuild, restart. Dry-run inventory first. Requires Keith approval. **NOT STARTED.**
+4. **Runtime smoke, rollback of execution switch, consolidation and checkpoint** — requires Keith approval.
+
+#### Implementation files (Step 2)
+
+| File | Action | Slice |
+|------|--------|-------|
+| `services/api-gateway/src/auth/auth.service.ts` | MODIFY — inject `DataSource`, add `createFreePlanBalanceRow(manager, userId)` + `isUniqueConstraintViolation()` helpers, restructure new-user branches with `dataSource.transaction()`, add concurrent-race handler, move `sendVerificationEmail` after commit | 2a |
+| `services/api-gateway/src/auth/auth.service.spec.ts` | MODIFY — add `DataSource` mock with transaction callback, add 10 atomic-transaction test cases | 2a |
+| `services/api-gateway/src/migrations/1772700000000-BackfillCreditBalancesForExistingUsers.ts` | CREATE — historical-user backfill migration | 2b |
+| `services/api-gateway/src/billing/credit-deduction/__tests__/backfill-credit-balances-migration.spec.ts` | CREATE — migration spec | 2b |
+
+#### Validation commands (Step 2)
+
+```powershell
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm test -- auth.service.spec
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm test -- backfill-credit-balances-migration
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm test -- credit-balance.guard.spec
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npx tsc --noEmit
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm run build
+```
+
+#### Historical-user backfill (Step 3 — replaces previous single-user insert)
+
+- **Mechanism:** TypeORM migration `1772700000000-BackfillCreditBalancesForExistingUsers.ts` — follows existing migration convention.
+- **Dry-run:** Manual inventory queries before migration to identify eligible users and any unsupported plan types.
+- **Scope:** All active users with `plan_type IN ('free', 'starter', 'pro', 'team')` missing a `credit_balances` row.
+- **Allocation:** Derived from actual `plan_type` via CASE mapping matching `MONTHLY_CREDIT_ALLOCATIONS` — not assumed free.
+- **Unknown plans:** Users with `plan_type` outside `PLAN_IDS` are excluded; require manual review before private beta.
+- **Idempotency:** `NOT EXISTS` subquery + UNIQUE constraint prevent duplicates on repeated runs.
+- **Existing balances:** Preserved unchanged — migration only INSERTs, never UPDATEs.
+- **Rollback:** `down()` is a documented no-op — no destructive database operation. `migration:revert` only removes the migration tracking record. Operational correction of incorrect data requires a separately reviewed, approval-gated data-fix procedure.
+- **Execution:** Via `npm run migration:run` during staging deployment.
+- Requires separate explicit Keith approval.
+
+#### Runtime safety record
+
+- `GLOBAL_EXECUTION_ENABLED` must remain `false` (operator-reported posture at registration time).
+- `AI_PROVIDER=xai` may remain configured.
+- `PROVIDER_XAI_ENABLED=true` may remain configured.
+- No inference retry is authorized.
+- FR-04 Step 3c remains BLOCKED pending BILLING-READY-08.
+- No private-beta users may be invited.
+- PRIVATE-BETA-INVITE-01 NOT REGISTERED.
+- Kill-switch state is operator-reported — staging verification required before Step 3/4.
+
+#### Non-goals
+
+- No `CreditBalanceGuard` weakening or auto-provisioning inside guard.
+- No per-request provisioning.
+- No staging user → admin promotion.
+- No staging-only user bypass.
+- No billing guard disabling.
+- No provider-specific billing behavior.
+- No hardcoded `500` — use `MONTHLY_CREDIT_ALLOCATIONS.free` (source) and CASE mapping (migration SQL).
+- No modification of locked BILLING-READY-03/04/05 checkpoints.
+- No AI execution enablement during registration.
+- No provider API calls.
+- No user invitations.
+- No catching 23505 inside a transaction and continuing.
+- No manual savepoints.
+- No returning a newly created user without a valid balance row.
+- No invented allocations for unknown plan types.
+- No modification of `auth.module.ts`.
+- No destructive migration `down()` — backfill is irreversible by design.
+- No provenance column or audit table for backfilled rows.
+
+#### Acceptance Criteria
+
+###### Step 1 — Registration / Planning (COMPLETE 2026-08-06)
+- [x] BILLING-READY-08 registered in TASKS.md with ACTIVE status
+- [x] BILLING-READY-08 registered in TASKS_BACKLOG_FULL.md with matching content
+- [x] Implementation plan created: `docs/BILLING-READY-08-IMPLEMENTATION-PLAN.md`
+- [x] AINOW-EXECUTION-ROADMAP.md updated
+- [x] FR-04 readiness plan updated with BILLING-READY-08 dependency
+- [x] FR-04 remains ACTIVE and BLOCKED pending BILLING-READY-08
+- [x] Root cause investigation complete — all 15 investigation items resolved
+- [x] Architecture decision documented — atomic `DataSource.transaction()` in `AuthService` (AMENDED v4 2026-08-06)
+- [x] Transaction and failure semantics documented — user + balance commit or roll back together; no in-transaction 23505 catch
+- [x] Concurrent-race handler documented — roll back, refetch committed winner, return only if valid
+- [x] Idempotency strategy documented — pre-transaction lookups + UNIQUE constraints (two layers)
+- [x] Historical-user backfill migration designed — TypeORM migration with plan-type-aware allocation; irreversible no-op `down()`
+- [x] Implementation files identified (Step 2a: auth.service.ts/spec; Step 2b: migration + migration spec)
+- [x] Tests required identified (15 total: 10 auth service + 5 migration)
+- [x] Runtime safety record documented
+- [x] Child-slice structure documented (Step 2 split into 2a + 2b; Step 3 uses migration)
+- [x] Module scope reassessed — `auth.module.ts` NOT modified
+- [x] Exact next bounded action set: Step 2a new-user provisioning + Step 2b backfill migration
+- [x] No terminal/Git/source/runtime/environment/database/provider/invitation action occurred
+- [x] BILLING-READY-03/04/05 locked checkpoints not modified
+
+**BILLING-READY-08 status:** ACTIVE — 2026-08-06 — Step 1 (Registration/Planning) COMPLETE, AMENDED (v4). **Step 2a COMPLETE AND LOCKED 2026-08-06.** **Step 2b COMPLETE AND LOCKED 2026-08-06.** **Step 2 COMPLETE.** Root cause proven: registration creates `users` but not `credit_balances`. Fix: (1) atomic `DataSource.transaction()` in `AuthService` — any insert failure rolls back all writes; concurrent races handled outside transaction via refetch; no in-transaction 23505 catch — COMPLETE. (2) Historical-user backfill via TypeORM migration `1772700000000-BackfillCreditBalancesForExistingUsers.ts` — derives allocation from actual `plan_type`; unknown plan types excluded; irreversible no-op `down()` — no automatic destructive rollback — COMPLETE. `auth.module.ts` NOT modified. No guard weakening. FR-04 Step 3c BLOCKED pending BILLING-READY-08 Steps 3 and 4. Exact next action: Step 3 staging deployment + migration (requires Keith approval). Checkpoints: `docs/BILLING-READY-08-STEP-2A-CHECKPOINT.md`, `docs/BILLING-READY-08-STEP-2B-CHECKPOINT.md`. Implementation plan: `docs/BILLING-READY-08-IMPLEMENTATION-PLAN.md`.
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-08.
 
 ---
 
