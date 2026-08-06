@@ -17,6 +17,10 @@ import { XAIAdapter } from './adapters/xai-ai.adapter';
 import { DeepSeekAdapter } from './adapters/deepseek-ai.adapter';
 import { TestToolCapableStubAdapter } from './adapters/test-harness-stub-ai.adapter';
 import { observeProviderLatency } from '../observability/execution-metrics';
+import {
+  ProviderModelValidationError,
+  resolveProviderModelSelection,
+} from './provider-model.catalogue';
 
 /**
  * AIExecutionService
@@ -58,19 +62,22 @@ export class AIExecutionService {
     const executionStartTime = performance.now();
 
     // Phase 28: Validate provider is present
-    if (!request.provider) {
+    if (
+      typeof request.provider !== 'string' ||
+      request.provider.trim().length === 0
+    ) {
       throw new BadRequestException(
         'Provider field is required in execution request',
       );
     }
 
-    // Phase 28: Get adapter based on request.provider
-    const adapter = this.getAdapter(request.provider);
-    const provider = request.provider;
-    const requestedModel =
-      typeof request.model === 'string' && request.model.trim().length > 0
-        ? request.model.trim()
-        : undefined;
+    const selection = this.resolveProviderModelOrThrow(
+      request.provider,
+      request.model,
+    );
+    const adapter = this.getAdapter(selection.provider, selection.model);
+    const provider = selection.provider;
+    const executionModel = selection.model;
 
     // Phase 17B: Log execution entry signal (structured)
     this.logger.log({
@@ -78,7 +85,7 @@ export class AIExecutionService {
       executionId,
       adapter: provider,
       provider,
-      model: requestedModel ?? adapter.model,
+      model: executionModel,
       sessionId: request.sessionId,
       userId: request.userId,
       conversationId: request.conversationId,
@@ -87,14 +94,15 @@ export class AIExecutionService {
 
     // Maintain backward compatibility with existing debug logs
     this.logger.debug(
-      `Executing AI request via adapter (model=${requestedModel ?? adapter.model}, provider=${provider}, session=${request.sessionId})`,
+      `Executing AI request via adapter (model=${executionModel}, provider=${provider}, session=${request.sessionId})`,
     );
 
     const adapterStartTime = performance.now();
     try {
       const result = await adapter.execute({
         ...request,
-        model: requestedModel,
+        provider,
+        model: executionModel,
         signal: request.signal,
       });
       const parsed = extractFileActionsFromOutput(result.output ?? '');
@@ -145,7 +153,7 @@ export class AIExecutionService {
         executionId,
         adapter: provider,
         provider,
-        model: requestedModel ?? adapter.model,
+        model: executionModel,
         errorType: error?.constructor?.name || 'Error',
         errorCategory: this.categorizeError(error),
         errorMessage: error?.message,
@@ -175,9 +183,12 @@ export class AIExecutionService {
    * @throws Error if API key missing for non-stub provider
    */
   getAdapter(
-    provider: AIExecutionRequest['provider'],
+    provider: AIExecutionRequest['provider'] | string,
+    resolvedModel?: string,
   ): AIAdapter {
-    switch (provider) {
+    const selection = this.resolveProviderModelOrThrow(provider, resolvedModel);
+
+    switch (selection.provider) {
       case 'stub':
         return new StubAIAdapter();
 
@@ -188,7 +199,9 @@ export class AIExecutionService {
             'ANTHROPIC_API_KEY environment variable is required when provider is "anthropic"',
           );
         }
-        return new AnthropicAdapter(apiKey);
+        return new AnthropicAdapter(apiKey, {
+          model: selection.model,
+        });
       }
 
       case 'openai': {
@@ -198,7 +211,9 @@ export class AIExecutionService {
             'OPENAI_API_KEY environment variable is required when provider is "openai"',
           );
         }
-        return new OpenAIAdapter(apiKey);
+        return new OpenAIAdapter(apiKey, {
+          model: selection.model,
+        });
       }
 
       case 'groq': {
@@ -208,7 +223,9 @@ export class AIExecutionService {
             'GROQ_API_KEY environment variable is required when provider is "groq"',
           );
         }
-        return new GroqAdapter(apiKey);
+        return new GroqAdapter(apiKey, {
+          model: selection.model,
+        });
       }
 
       case 'xai': {
@@ -218,7 +235,9 @@ export class AIExecutionService {
             'XAI_API_KEY environment variable is required when provider is "xai"',
           );
         }
-        return new XAIAdapter(apiKey);
+        return new XAIAdapter(apiKey, {
+          model: selection.model,
+        });
       }
 
       case 'deepseek': {
@@ -228,7 +247,9 @@ export class AIExecutionService {
             'DEEPSEEK_API_KEY environment variable is required when provider is "deepseek"',
           );
         }
-        return new DeepSeekAdapter(apiKey);
+        return new DeepSeekAdapter(apiKey, {
+          model: selection.model,
+        });
       }
 
       case 'test-harness-stub':
@@ -238,6 +259,28 @@ export class AIExecutionService {
         throw new ServiceUnavailableException(
           `Unknown AI provider: ${provider}. Supported providers: stub, anthropic, openai, groq, xai, deepseek, test-harness-stub`,
         );
+    }
+  }
+
+  private resolveProviderModelOrThrow(
+    provider: unknown,
+    model: unknown,
+  ): { provider: AIExecutionRequest['provider']; model: string } {
+    try {
+      const selection = resolveProviderModelSelection({
+        provider,
+        model,
+        anthropicModel: this.configService.get<string>('ANTHROPIC_MODEL'),
+      });
+      return {
+        provider: selection.provider,
+        model: selection.model,
+      };
+    } catch (error) {
+      if (error instanceof ProviderModelValidationError) {
+        throw new BadRequestException(error.message);
+      }
+      throw error;
     }
   }
 

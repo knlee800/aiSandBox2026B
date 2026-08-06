@@ -20,6 +20,7 @@ import {
   mapAdapterToolDeclarationsToOpenAITools,
   tryParseToolArgumentsToObject,
 } from './adapter-tool-use.mapper';
+import { getStaticDefaultModel } from '../provider-model.catalogue';
 
 /**
  * OpenAIAdapter
@@ -50,7 +51,7 @@ import {
 export class OpenAIAdapter implements AIAdapter {
   private readonly logger = new Logger(OpenAIAdapter.name);
   private readonly client: OpenAI;
-  private readonly defaultModel = 'gpt-4o';
+  private readonly defaultModel = getStaticDefaultModel('openai');
   private readonly defaultMaxTokens = 4096;
   private readonly defaultTemperature = 1.0;
 

@@ -56,7 +56,9 @@ describe('AnthropicAdapter - Phase 16 Failure Taxonomy', () => {
         }) as unknown as Anthropic,
     );
 
-    adapter = new AnthropicAdapter('test-api-key');
+    adapter = new AnthropicAdapter('test-api-key', {
+      model: 'test-configured-anthropic-model',
+    });
   });
 
   describe('Phase 15C: Failure Category - validation', () => {

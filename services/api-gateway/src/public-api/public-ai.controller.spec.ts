@@ -35,7 +35,7 @@ describe('PublicAIController', () => {
         conversationId: 'conv-1',
         prompt: 'Build a todo app',
         provider: 'openai',
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o',
       } as any,
       identity as any,
     );
@@ -54,7 +54,7 @@ describe('PublicAIController', () => {
       expect.objectContaining({
         userId: 'user-1',
         provider: 'openai',
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o',
       }),
     );
   });
@@ -66,13 +66,13 @@ describe('PublicAIController', () => {
       execution_status: 'completed',
       user_id: 'user-1',
       provider: 'openai',
-      model: 'gpt-4o-mini',
+      model: 'gpt-4o',
       tokens_used: 99,
       metadata: {
         aiExecutionResult: {
           output: 'ok',
           provider: 'openai',
-          model: 'gpt-4o-mini',
+          model: 'gpt-4o',
         },
       },
     });
@@ -88,7 +88,7 @@ describe('PublicAIController', () => {
       status: 'completed',
       output: 'ok',
       provider: 'openai',
-      model: 'gpt-4o-mini',
+      model: 'gpt-4o',
       tokensUsed: 99,
     });
   });
@@ -108,5 +108,48 @@ describe('PublicAIController', () => {
         scopes: ['ai:execute'],
       } as any),
     ).rejects.toThrow(NotFoundException);
+  });
+
+  it('resolves omitted xAI model to grok-4.5', async () => {
+    const { controller, queueService } = buildController();
+    const identity = { userId: 'user-1', apiKeyId: 'key-1', scopes: ['ai:execute'] };
+
+    await controller.execute(
+      {
+        sessionId: 'session-1',
+        conversationId: 'conv-1',
+        prompt: 'Build a todo app',
+        provider: 'xai',
+      } as any,
+      identity as any,
+    );
+
+    expect(queueService.enqueueExecution).toHaveBeenCalledWith(
+      expect.objectContaining({
+        provider: 'xai',
+        model: 'grok-4.5',
+      }),
+    );
+  });
+
+  it('rejects unsupported model/provider pairs before queueing', async () => {
+    const { controller, usageLedgerService, queueService } = buildController();
+    const identity = { userId: 'user-1', apiKeyId: 'key-1', scopes: ['ai:execute'] };
+
+    await expect(
+      controller.execute(
+        {
+          sessionId: 'session-1',
+          conversationId: 'conv-1',
+          prompt: 'Build a todo app',
+          provider: 'xai',
+          model: 'grok-3',
+        } as any,
+        identity as any,
+      ),
+    ).rejects.toThrow('Model "grok-3" is not valid for provider "xai".');
+
+    expect(usageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+    expect(queueService.enqueueExecution).not.toHaveBeenCalled();
   });
 });

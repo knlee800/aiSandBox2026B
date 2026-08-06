@@ -34,16 +34,12 @@ import {
   PublicApiRateLimitGuard,
 } from './public-api-rate-limit.guard';
 import { AIExecutionRequest } from '../clients/ai-service-http.client';
-
-const SUPPORTED_AI_PROVIDERS = [
-  'stub',
-  'anthropic',
-  'openai',
-  'groq',
-  'xai',
-  'deepseek',
-] as const;
-type SupportedAiProvider = (typeof SUPPORTED_AI_PROVIDERS)[number];
+import {
+  GatewayAIProvider,
+  GatewayProviderModelValidationError,
+  normalizeModelInput,
+  resolveGatewayProviderModelSelection,
+} from '../ai/provider-model.catalogue';
 
 @Controller('v1/ai')
 @UseGuards(ApiKeyAuthGuard, PublicApiRateLimitGuard)
@@ -54,20 +50,33 @@ export class PublicAIController {
     private readonly executionResultService: ExecutionResultService,
   ) {}
 
-  private resolveProvider(provider: string | undefined): SupportedAiProvider {
-    if (!provider) {
-      const envProvider = process.env.AI_PROVIDER;
-      if (envProvider && SUPPORTED_AI_PROVIDERS.includes(envProvider as SupportedAiProvider)) {
-        return envProvider as SupportedAiProvider;
+  private resolveProviderAndModel(
+    requestProvider: unknown,
+    requestModel: unknown,
+  ): {
+    provider: GatewayAIProvider;
+    resolvedModel: string;
+    requestedModel: string | undefined;
+  } {
+    const requestedModel = normalizeModelInput(requestModel);
+    try {
+      const selection = resolveGatewayProviderModelSelection({
+        provider: requestProvider,
+        model: requestModel,
+        fallbackProviderEnv: process.env.AI_PROVIDER,
+        anthropicModel: process.env.ANTHROPIC_MODEL,
+      });
+      return {
+        provider: selection.provider,
+        resolvedModel: selection.model,
+        requestedModel,
+      };
+    } catch (error) {
+      if (error instanceof GatewayProviderModelValidationError) {
+        throw new BadRequestException(error.message);
       }
-      return 'stub';
+      throw error;
     }
-    if (!SUPPORTED_AI_PROVIDERS.includes(provider as SupportedAiProvider)) {
-      throw new BadRequestException(
-        `provider must be one of: ${SUPPORTED_AI_PROVIDERS.join(', ')}`,
-      );
-    }
-    return provider as SupportedAiProvider;
   }
 
   @Post('execute')
@@ -112,11 +121,11 @@ export class PublicAIController {
       requestId = normalized;
     }
 
-    const provider = this.resolveProvider(request.provider);
-    const requestedModel =
-      typeof request.model === 'string' && request.model.trim().length > 0
-        ? request.model.trim()
-        : undefined;
+    const {
+      provider,
+      resolvedModel,
+      requestedModel,
+    } = this.resolveProviderAndModel(request.provider, request.model);
     const executionId = uuidv4();
 
     await this.usageLedgerService.writeExecutionIntent({
@@ -145,7 +154,7 @@ export class PublicAIController {
       prompt: request.prompt,
       provider,
       adapter: provider,
-      model: requestedModel,
+      model: resolvedModel,
       metadata: request.metadata,
     });
 

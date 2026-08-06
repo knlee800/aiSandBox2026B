@@ -9,6 +9,7 @@ import {
 import OpenAI from 'openai';
 import { AIAdapter } from './ai-adapter.interface';
 import { AIExecutionRequest, AIExecutionResult } from '../types';
+import { getStaticDefaultModel } from '../provider-model.catalogue';
 
 /**
  * XAIAdapter
@@ -40,7 +41,7 @@ import { AIExecutionRequest, AIExecutionResult } from '../types';
 export class XAIAdapter implements AIAdapter {
   private readonly logger = new Logger(XAIAdapter.name);
   private readonly client: OpenAI;
-  private readonly defaultModel = 'grok-3';
+  private readonly defaultModel = getStaticDefaultModel('xai');
   private readonly defaultMaxTokens = 4096;
   private readonly defaultTemperature = 1.0;
   private readonly defaultBaseURL = 'https://api.x.ai/v1';

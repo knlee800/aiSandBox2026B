@@ -32,6 +32,7 @@ describe('AnthropicAdapter', () => {
   let mockMessagesCreate: jest.Mock;
 
   const validApiKey = 'test-api-key';
+  const configuredModel = 'test-configured-anthropic-model';
   const mockRequest: AIExecutionRequest = {
     sessionId: 'session-123',
     conversationId: 'conv-456',
@@ -58,16 +59,20 @@ describe('AnthropicAdapter', () => {
     );
 
     // Create adapter instance
-    adapter = new AnthropicAdapter(validApiKey);
+    adapter = new AnthropicAdapter(validApiKey, {
+      model: configuredModel,
+    });
     mockClient = (adapter as any).client;
   });
 
   describe('Constructor', () => {
-    it('should construct successfully with valid API key', () => {
-      const adapter = new AnthropicAdapter('valid-key');
+    it('should construct successfully with valid API key and model', () => {
+      const adapter = new AnthropicAdapter('valid-key', {
+        model: configuredModel,
+      });
 
       expect(adapter).toBeDefined();
-      expect(adapter.model).toBe('claude-3-5-sonnet-20241022');
+      expect(adapter.model).toBe(configuredModel);
     });
 
     it('should throw error if API key is missing', () => {
@@ -82,6 +87,38 @@ describe('AnthropicAdapter', () => {
       );
     });
 
+    it('should throw error if model is missing', () => {
+      expect(() => new AnthropicAdapter('valid-key')).toThrow(
+        'Anthropic model is required',
+      );
+    });
+
+    it('should throw error if model is empty', () => {
+      expect(
+        () =>
+          new AnthropicAdapter('valid-key', {
+            model: '',
+          }),
+      ).toThrow('Anthropic model is required');
+    });
+
+    it('should throw error if model is whitespace only', () => {
+      expect(
+        () =>
+          new AnthropicAdapter('valid-key', {
+            model: '   ',
+          }),
+      ).toThrow('Anthropic model is required');
+    });
+
+    it('should trim model value', () => {
+      const adapter = new AnthropicAdapter('valid-key', {
+        model: '  trimmed-anthropic-model  ',
+      });
+
+      expect(adapter.model).toBe('trimmed-anthropic-model');
+    });
+
     it('should accept custom model in options', () => {
       const adapter = new AnthropicAdapter('valid-key', {
         model: 'claude-3-opus-20240229',
@@ -92,6 +129,7 @@ describe('AnthropicAdapter', () => {
 
     it('should pass timeout to Anthropic client', () => {
       new AnthropicAdapter('valid-key', {
+        model: configuredModel,
         timeout: 30000,
       });
 
@@ -105,6 +143,7 @@ describe('AnthropicAdapter', () => {
 
     it('should pass baseURL to Anthropic client', () => {
       new AnthropicAdapter('valid-key', {
+        model: configuredModel,
         baseURL: 'https://custom-api.example.com',
       });
 
@@ -134,7 +173,7 @@ describe('AnthropicAdapter', () => {
       // Verify SDK was called with correct format
       expect(mockMessagesCreate).toHaveBeenCalledWith(
         {
-          model: 'claude-3-5-sonnet-20241022',
+          model: configuredModel,
           max_tokens: 4096,
           temperature: 1.0,
           messages: [

@@ -343,6 +343,36 @@
     "sending": "Sending...",
     "modelProvider": "Model",
     "modelProviderLabel": "Model Provider",
+    "modelLabel": "Model",
+    "providerOptionLabels": {
+      "xai": "xAI",
+      "groq": "Groq",
+      "deepseek": "DeepSeek",
+      "openai": "OpenAI",
+      "anthropic": "Anthropic",
+      "stub": "Stub"
+    },
+    "modelOptionLabels": {
+      "xai": {
+        "grok-4.5": "grok-4.5",
+        "grok-4.20": "grok-4.20"
+      },
+      "groq": {
+        "openai/gpt-oss-120b": "openai/gpt-oss-120b",
+        "openai/gpt-oss-20b": "openai/gpt-oss-20b"
+      },
+      "deepseek": {
+        "deepseek-v4-flash": "deepseek-v4-flash",
+        "deepseek-v4-pro": "deepseek-v4-pro"
+      },
+      "openai": {
+        "gpt-4o": "gpt-4o"
+      },
+      "anthropic": {},
+      "stub": {
+        "stub": "stub"
+      }
+    },
     "orchestrationLabel": "Enable bounded orchestration (up to 3 sequential steps)",
     "messageThread": "Message Thread",
     "noMessages": "No messages yet.",

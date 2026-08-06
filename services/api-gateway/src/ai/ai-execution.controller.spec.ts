@@ -1122,3 +1122,174 @@ describe('AIExecutionController — harness identity entitlement gate (AGENT-HAR
     expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
   });
 });
+
+describe('AIExecutionController provider/model catalogue validation (FR-04B Step 2a)', () => {
+  let controller: AIExecutionController;
+  let mockUsageLedgerService: Record<string, jest.Mock>;
+  let mockQueueService: Record<string, jest.Mock>;
+  let originalAnthropicModel: string | undefined;
+
+  const VALID_SESSION_UUID = '35d53116-6723-4571-af12-ac256977c007';
+  const identity: ApiKeyIdentity = {
+    userId: 'provider-validation-user',
+    apiKeyId: 'provider-validation-key',
+    scopes: ['ai:execute'],
+    harnessEntitled: true,
+  };
+
+  function makeRequest(overrides?: Partial<AIExecutionRequest>): AIExecutionRequest {
+    return {
+      sessionId: VALID_SESSION_UUID,
+      conversationId: 'conv-provider-validation',
+      userId: 'ignored',
+      prompt: 'Provider/model validation',
+      provider: 'xai',
+      ...overrides,
+    };
+  }
+
+  beforeEach(async () => {
+    originalAnthropicModel = process.env.ANTHROPIC_MODEL;
+    delete process.env.AI_PROVIDER;
+    delete process.env.ANTHROPIC_MODEL;
+
+    mockUsageLedgerService = {
+      findByRequestId: jest.fn().mockResolvedValue(null),
+      reuseExecutionIntent: jest.fn().mockResolvedValue('exec-id'),
+      writeExecutionIntent: jest.fn().mockResolvedValue(undefined),
+      updateExecutionResult: jest.fn().mockResolvedValue(undefined),
+    };
+
+    mockQueueService = {
+      enqueueExecution: jest.fn().mockResolvedValue(undefined),
+    };
+
+    const mockGuard = { canActivate: jest.fn(() => true) };
+
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [AIExecutionController],
+      providers: [
+        { provide: UsageLedgerService, useValue: mockUsageLedgerService },
+        { provide: GlobalSafetyLimitService, useValue: { checkAndRecord: jest.fn(), recordExecutionCost: jest.fn() } },
+        { provide: QueueService, useValue: mockQueueService },
+        { provide: ExecutionResultService, useValue: { getExecution: jest.fn(), requestCancel: jest.fn() } },
+        { provide: ExecutionStreamService, useValue: { subscribe: jest.fn(), unsubscribe: jest.fn() } },
+        { provide: UserAiInstructionsService, useValue: { getByUserId: jest.fn().mockResolvedValue(null) } },
+        { provide: ProjectAiContextService, useValue: { getByProjectId: jest.fn().mockResolvedValue(null) } },
+        { provide: SessionService, useValue: { getSessionById: jest.fn().mockResolvedValue({ userId: identity.userId, projectId: null }) } },
+      ],
+    })
+      .overrideGuard(SessionOrApiKeyAuthGuard).useValue(mockGuard)
+      .overrideGuard(AuthorizationGuard).useValue(mockGuard)
+      .overrideGuard(QuotaGuard).useValue(mockGuard)
+      .overrideGuard(TokenQuotaGuard).useValue(mockGuard)
+      .overrideGuard(CreditBalanceGuard).useValue(mockGuard)
+      .compile();
+
+    controller = module.get<AIExecutionController>(AIExecutionController);
+  });
+
+  afterEach(() => {
+    if (originalAnthropicModel === undefined) {
+      delete process.env.ANTHROPIC_MODEL;
+    } else {
+      process.env.ANTHROPIC_MODEL = originalAnthropicModel;
+    }
+  });
+
+  it('resolves omitted xAI model to grok-4.5 before enqueue', async () => {
+    await controller.execute(
+      makeRequest({
+        provider: 'xai',
+        model: undefined,
+      }),
+      identity,
+    );
+
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledWith(
+      expect.objectContaining({
+        provider: 'xai',
+        model: 'grok-4.5',
+      }),
+    );
+  });
+
+  it('accepts xAI grok-4.20', async () => {
+    await controller.execute(
+      makeRequest({
+        provider: 'xai',
+        model: 'grok-4.20',
+      }),
+      identity,
+    );
+
+    expect(mockQueueService.enqueueExecution).toHaveBeenCalledWith(
+      expect.objectContaining({
+        provider: 'xai',
+        model: 'grok-4.20',
+      }),
+    );
+  });
+
+  it('rejects xAI grok-3 before ledger and queue', async () => {
+    await expect(
+      controller.execute(
+        makeRequest({
+          provider: 'xai',
+          model: 'grok-3',
+        }),
+        identity,
+      ),
+    ).rejects.toThrow(BadRequestException);
+
+    expect(mockUsageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+  });
+
+  it('rejects cross-provider model mismatch before queue submission', async () => {
+    await expect(
+      controller.execute(
+        makeRequest({
+          provider: 'xai',
+          model: 'gpt-4o',
+        }),
+        identity,
+      ),
+    ).rejects.toThrow('Model "gpt-4o" is not valid for provider "xai".');
+
+    expect(mockUsageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+  });
+
+  it('rejects unknown model IDs before queue submission', async () => {
+    await expect(
+      controller.execute(
+        makeRequest({
+          provider: 'deepseek',
+          model: 'unknown-model-id',
+        }),
+        identity,
+      ),
+    ).rejects.toThrow(BadRequestException);
+
+    expect(mockUsageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+  });
+
+  it('fails Anthropic requests when ANTHROPIC_MODEL is missing', async () => {
+    await expect(
+      controller.execute(
+        makeRequest({
+          provider: 'anthropic',
+          model: undefined,
+        }),
+        identity,
+      ),
+    ).rejects.toThrow(
+      'ANTHROPIC_MODEL environment variable is required when provider is "anthropic"',
+    );
+
+    expect(mockUsageLedgerService.writeExecutionIntent).not.toHaveBeenCalled();
+    expect(mockQueueService.enqueueExecution).not.toHaveBeenCalled();
+  });
+});

@@ -48,16 +48,12 @@ import { ProjectAiContextService } from '../project-ai-context/project-ai-contex
 import { SessionService } from '../sessions/session.service';
 import { ProjectRepoDocsService } from '../project-repo-docs/project-repo-docs.service';
 import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
-
-const SUPPORTED_AI_PROVIDERS = [
-  'stub',
-  'anthropic',
-  'openai',
-  'groq',
-  'xai',
-  'deepseek',
-] as const;
-type SupportedAiProvider = (typeof SUPPORTED_AI_PROVIDERS)[number];
+import {
+  GatewayAIProvider,
+  GatewayProviderModelValidationError,
+  normalizeModelInput,
+  resolveGatewayProviderModelSelection,
+} from './provider-model.catalogue';
 
 const MAX_REPO_DOC_COUNT = 10;
 const MAX_REPO_DOC_CHARS = 8000;
@@ -330,24 +326,33 @@ export class AIExecutionController {
     return { output, model, provider, fileActions };
   }
 
-  private resolveProvider(
-    requestProvider: string | undefined,
-  ): SupportedAiProvider {
-    if (!requestProvider) {
-      const envProvider = process.env.AI_PROVIDER;
-      if (envProvider && SUPPORTED_AI_PROVIDERS.includes(envProvider as SupportedAiProvider)) {
-        return envProvider as SupportedAiProvider;
+  private resolveProviderAndModel(
+    requestProvider: unknown,
+    requestModel: unknown,
+  ): {
+    provider: GatewayAIProvider;
+    resolvedModel: string;
+    requestedModel: string | undefined;
+  } {
+    const requestedModel = normalizeModelInput(requestModel);
+    try {
+      const selection = resolveGatewayProviderModelSelection({
+        provider: requestProvider,
+        model: requestModel,
+        fallbackProviderEnv: process.env.AI_PROVIDER,
+        anthropicModel: process.env.ANTHROPIC_MODEL,
+      });
+      return {
+        provider: selection.provider,
+        resolvedModel: selection.model,
+        requestedModel,
+      };
+    } catch (error) {
+      if (error instanceof GatewayProviderModelValidationError) {
+        throw new BadRequestException(error.message);
       }
-      return 'stub';
+      throw error;
     }
-
-    if (!SUPPORTED_AI_PROVIDERS.includes(requestProvider as SupportedAiProvider)) {
-      throw new BadRequestException(
-        `provider must be one of: ${SUPPORTED_AI_PROVIDERS.join(', ')}`,
-      );
-    }
-
-    return requestProvider as SupportedAiProvider;
   }
 
   /**
@@ -410,6 +415,12 @@ export class AIExecutionController {
       throw new ForbiddenException('Forbidden');
     }
 
+    const {
+      provider,
+      resolvedModel,
+      requestedModel,
+    } = this.resolveProviderAndModel(request.provider, request.model);
+
     // AGENT-HARNESS-05C5: Session ownership enforcement
     const session = await this.sessionService.getSessionById(request.sessionId);
     if (session.userId !== identity.userId) {
@@ -437,12 +448,6 @@ export class AIExecutionController {
       requestId = normalized;
     }
 
-    // ADV-01-01: Request-level provider selection with bounded allow-list.
-    const provider = this.resolveProvider(request.provider);
-    const requestedModel =
-      typeof request.model === 'string' && request.model.trim().length > 0
-        ? request.model.trim()
-        : undefined;
     const globalInstructions = this.normalizeGlobalInstructions(
       await this.userAiInstructionsService.getByUserId(identity.userId),
     );
@@ -588,7 +593,7 @@ export class AIExecutionController {
       adapter: provider,
       prompt: request.prompt,
       workspaceContext: enrichedWorkspaceContext,
-      model: requestedModel,
+      model: resolvedModel,
       globalInstructions,
       projectInstructions,
       requestId,

@@ -132,6 +132,13 @@ import {
   generateAuthModuleFileActions,
 } from '@/lib/auth-module/auth-module-generator';
 import { AUTH_TEMPLATES_V1 } from '@/lib/auth-module/auth-template-registry';
+import {
+  FRONTEND_PRIVATE_BETA_DEFAULT_SELECTION,
+  getSelectableFrontendModelEntriesForProvider,
+  getSelectableFrontendProviderEntries,
+  resolveFrontendProviderModelPayload,
+  resolveFrontendProviderModelSelection,
+} from '@/lib/ai/provider-model.catalogue';
 import enMessages from '@/messages/en.json';
 import zhTwMessages from '@/messages/zh-TW.json';
 import zhCnMessages from '@/messages/zh-CN.json';
@@ -185,38 +192,21 @@ const VISUAL_EDIT_CHECKPOINT_DESCRIPTION = 'Visual Edit: applied file changes';
 const AUTH_MODULE_PREINSTALL_CHECKPOINT_DESCRIPTION = 'Auth Module: pre-install snapshot';
 const AUTH_MODULE_INSTALL_CHECKPOINT_DESCRIPTION =
   'Auth Module: installed authentication starter';
-const DEFAULT_CHAT_MODEL_OPTION = 'xai:grok-3';
 const WORKSPACE_CONTEXT_MAX_FILE_PATHS = 200;
 const WORKSPACE_CONTEXT_MAX_SELECTED_FILE_CHARS = 8000;
 const WORKSPACE_CONTEXT_MAX_NAMED_FILES = 3;
 const WORKSPACE_CONTEXT_MAX_SEARCH_QUERY_CHARS = 120;
-const CHAT_MODEL_OPTIONS = [
-  { value: 'xai:grok-3', provider: 'xai', model: 'grok-3', label: 'xAI - grok-3' },
-  {
-    value: 'anthropic:claude-3-5-sonnet-20241022',
-    provider: 'anthropic',
-    model: 'claude-3-5-sonnet-20241022',
-    label: 'Anthropic - claude-3-5-sonnet-20241022',
-  },
-  { value: 'openai:gpt-4o', provider: 'openai', model: 'gpt-4o', label: 'OpenAI - gpt-4o' },
-  {
-    value: 'groq:mixtral-8x7b-32768',
-    provider: 'groq',
-    model: 'mixtral-8x7b-32768',
-    label: 'Groq - mixtral-8x7b-32768',
-  },
-  {
-    value: 'deepseek:deepseek-chat',
-    provider: 'deepseek',
-    model: 'deepseek-chat',
-    label: 'DeepSeek - deepseek-chat',
-  },
-] as const;
 
 function getAuthModuleMessages(locale: string): typeof enMessages.authModule {
   if (locale === 'zh-TW') return zhTwMessages.authModule;
   if (locale === 'zh-CN') return zhCnMessages.authModule;
   return enMessages.authModule;
+}
+
+function getAiMessages(locale: string): typeof enMessages.ai {
+  if (locale === 'zh-TW') return zhTwMessages.ai;
+  if (locale === 'zh-CN') return zhCnMessages.ai;
+  return enMessages.ai;
 }
 
 type WorkspaceChatMessageKind = 'ai' | 'system';
@@ -718,28 +708,6 @@ interface WorkspaceChatExecutionResponse {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const DRIVER_API_KEY_STORAGE_KEY = 'driver_api_key';
 
-function parseSelectedChatModelOption(value: string): {
-  provider: string;
-  model: string;
-  optionValue: string;
-} {
-  const matched = CHAT_MODEL_OPTIONS.find((option) => option.value === value);
-  if (matched) {
-    return {
-      provider: matched.provider,
-      model: matched.model,
-      optionValue: matched.value,
-    };
-  }
-
-  const fallback = CHAT_MODEL_OPTIONS[0];
-  return {
-    provider: fallback.provider,
-    model: fallback.model,
-    optionValue: fallback.value,
-  };
-}
-
 function resolveSelectedWorkspaceId(args: {
   workspaces: Workspace[];
   currentSelectedWorkspaceId: string | null;
@@ -890,6 +858,7 @@ export default function AppPage() {
   const params = useParams();
   const locale = params.locale as string;
   const authModuleMessages = getAuthModuleMessages(locale);
+  const aiMessages = getAiMessages(locale);
   const [authLoading, setAuthLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const [sessions, setSessions] = useState<WorkspaceShellSession[]>([]);
@@ -1006,8 +975,11 @@ export default function AppPage() {
   const [chatExecutionId, setChatExecutionId] = useState<string | null>(null);
   const [chatStatusMessage, setChatStatusMessage] = useState<string | null>(null);
   const [chatError, setChatError] = useState<string | null>(null);
-  const [selectedChatModelOption, setSelectedChatModelOption] = useState<string>(
-    DEFAULT_CHAT_MODEL_OPTION,
+  const [selectedChatProviderId, setSelectedChatProviderId] = useState<string>(
+    FRONTEND_PRIVATE_BETA_DEFAULT_SELECTION.providerId,
+  );
+  const [selectedChatModelId, setSelectedChatModelId] = useState<string>(
+    FRONTEND_PRIVATE_BETA_DEFAULT_SELECTION.modelId,
   );
   const [isChatOrchestrationEnabled, setIsChatOrchestrationEnabled] = useState(false);
   const [chatThreadMessages, setChatThreadMessages] = useState<WorkspaceChatThreadUiMessage[]>([]);
@@ -1042,6 +1014,58 @@ export default function AppPage() {
   const sessionsRef = useRef<WorkspaceShellSession[]>([]);
   const executionSessionIdByExecutionIdRef = useRef<Record<string, string>>({});
   const executionAssistantMessageIdByExecutionIdRef = useRef<Record<string, string>>({});
+
+  const resolvedChatModelSelection = resolveFrontendProviderModelSelection({
+    providerId: selectedChatProviderId,
+    modelId: selectedChatModelId,
+  });
+  const selectedChatModelProviderId = resolvedChatModelSelection.providerId;
+  const selectedResolvedChatModelId = resolvedChatModelSelection.modelId;
+  const providerOptionLabels = aiMessages.providerOptionLabels as Record<string, string>;
+  const modelOptionLabels = aiMessages.modelOptionLabels as Record<string, Record<string, string>>;
+  const availableChatProviderOptions = getSelectableFrontendProviderEntries().map((provider) => ({
+    value: provider.providerId,
+    label: providerOptionLabels[provider.labelKey] ?? provider.providerId,
+  }));
+  const availableChatModelOptions = getSelectableFrontendModelEntriesForProvider(
+    selectedChatModelProviderId,
+  ).map((model) => ({
+    value: model.modelId,
+    label: modelOptionLabels[model.providerId]?.[model.labelKey] ?? model.modelId,
+  }));
+
+  useEffect(() => {
+    if (
+      selectedChatProviderId === selectedChatModelProviderId &&
+      selectedChatModelId === selectedResolvedChatModelId
+    ) {
+      return;
+    }
+    setSelectedChatProviderId(selectedChatModelProviderId);
+    setSelectedChatModelId(selectedResolvedChatModelId);
+  }, [
+    selectedChatProviderId,
+    selectedChatModelProviderId,
+    selectedChatModelId,
+    selectedResolvedChatModelId,
+  ]);
+
+  function handleSelectedChatProviderOptionChange(nextProviderId: string): void {
+    const resolvedSelection = resolveFrontendProviderModelSelection({
+      providerId: nextProviderId,
+    });
+    setSelectedChatProviderId(resolvedSelection.providerId);
+    setSelectedChatModelId(resolvedSelection.modelId);
+  }
+
+  function handleSelectedChatModelOptionChange(nextModelId: string): void {
+    const resolvedSelection = resolveFrontendProviderModelSelection({
+      providerId: selectedChatModelProviderId,
+      modelId: nextModelId,
+    });
+    setSelectedChatProviderId(resolvedSelection.providerId);
+    setSelectedChatModelId(resolvedSelection.modelId);
+  }
 
   const applyAssistantAttributionToExecutionMessage = (
     executionId: string,
@@ -4397,7 +4421,10 @@ export default function AppPage() {
     setChatExecutionId(null);
     setChatStatusMessage('Submitting prompt...');
     setChatError(null);
-    const chosenModel = parseSelectedChatModelOption(selectedChatModelOption);
+    const chosenModel = resolveFrontendProviderModelPayload({
+      providerId: selectedChatModelProviderId,
+      modelId: selectedResolvedChatModelId,
+    });
     const userMessageId = crypto.randomUUID();
     const assistantMessageId = crypto.randomUUID();
     pendingAssistantMessageIdRef.current = isChatOrchestrationEnabled ? null : assistantMessageId;
@@ -5955,14 +5982,14 @@ export default function AppPage() {
       chatPromptInput={chatPromptInput}
       onChatPromptInputChange={setChatPromptInput}
       onCreateProjectFromPrompt={handleCreateProjectFromPrompt}
-      selectedModelOption={selectedChatModelOption}
-      onSelectedModelOptionChange={setSelectedChatModelOption}
+      selectedModelProvider={selectedChatModelProviderId}
+      onSelectedModelProviderChange={handleSelectedChatProviderOptionChange}
+      availableModelProviders={availableChatProviderOptions}
+      selectedModelOption={selectedResolvedChatModelId}
+      onSelectedModelOptionChange={handleSelectedChatModelOptionChange}
       orchestrationEnabled={isChatOrchestrationEnabled}
       onOrchestrationEnabledChange={setIsChatOrchestrationEnabled}
-      availableModelOptions={CHAT_MODEL_OPTIONS.map((option) => ({
-        value: option.value,
-        label: option.label,
-      }))}
+      availableModelOptions={availableChatModelOptions}
       onSubmitChatPrompt={handleSubmitChatPrompt}
       onInstallAuthModule={handleInstallAuthModule}
       onConfirmExecutionFileActions={(executionId) => {

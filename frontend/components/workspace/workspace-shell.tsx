@@ -592,6 +592,12 @@ interface WorkspaceShellProps {
   chatPromptInput?: string;
   onChatPromptInputChange?: (value: string) => void;
   onCreateProjectFromPrompt?: (prompt: string) => Promise<void>;
+  selectedModelProvider?: string;
+  onSelectedModelProviderChange?: (value: string) => void;
+  availableModelProviders?: Array<{
+    value: string;
+    label: string;
+  }>;
   selectedModelOption?: string;
   onSelectedModelOptionChange?: (value: string) => void;
   availableModelOptions?: Array<{
@@ -1647,6 +1653,9 @@ export default function WorkspaceShell(props: WorkspaceShellProps) {
             selectedSessionId={props.selectedSessionId}
             promptInput={props.chatPromptInput ?? ''}
             onPromptInputChange={props.onChatPromptInputChange}
+            selectedModelProvider={props.selectedModelProvider ?? ''}
+            onSelectedModelProviderChange={props.onSelectedModelProviderChange}
+            availableModelProviders={props.availableModelProviders ?? []}
             selectedModelOption={props.selectedModelOption ?? ''}
             onSelectedModelOptionChange={props.onSelectedModelOptionChange}
             availableModelOptions={props.availableModelOptions ?? []}
@@ -3968,6 +3977,12 @@ function WorkspaceChatPanel(props: {
   selectedSessionId: string | null;
   promptInput: string;
   onPromptInputChange?: (value: string) => void;
+  selectedModelProvider: string;
+  onSelectedModelProviderChange?: (value: string) => void;
+  availableModelProviders: Array<{
+    value: string;
+    label: string;
+  }>;
   selectedModelOption: string;
   onSelectedModelOptionChange?: (value: string) => void;
   availableModelOptions: Array<{
@@ -4288,8 +4303,32 @@ function WorkspaceChatPanel(props: {
             className="mt-2 flex min-w-0 max-w-full flex-wrap items-start gap-3"
             data-testid="workspace-chat-secondary-controls"
           >
-            <label htmlFor="workspace-chat-model-selector" className="sr-only">
+            <label htmlFor="workspace-chat-provider-selector" className="sr-only">
               {props.aiMessages.modelProviderLabel}
+            </label>
+            <select
+              id="workspace-chat-provider-selector"
+              data-testid="workspace-chat-provider-selector"
+              value={props.selectedModelProvider}
+              onChange={(event) =>
+                props.onSelectedModelProviderChange?.(event.target.value)
+              }
+              disabled={
+                !props.selectedSessionId ||
+                !props.onSelectedModelProviderChange ||
+                props.availableModelProviders.length === 0 ||
+                isSending
+              }
+              className="max-w-full rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-600 disabled:bg-gray-100 disabled:text-gray-400"
+            >
+              {props.availableModelProviders.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <label htmlFor="workspace-chat-model-selector" className="sr-only">
+              {props.aiMessages.modelLabel}
             </label>
             <select
               id="workspace-chat-model-selector"

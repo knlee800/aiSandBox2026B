@@ -13,6 +13,7 @@ import type {
 } from 'groq-sdk/resources/chat/completions';
 import { AIAdapter } from './ai-adapter.interface';
 import { AIExecutionRequest, AIExecutionResult } from '../types';
+import { getStaticDefaultModel } from '../provider-model.catalogue';
 
 /**
  * GroqAdapter
@@ -43,7 +44,7 @@ import { AIExecutionRequest, AIExecutionResult } from '../types';
 export class GroqAdapter implements AIAdapter {
   private readonly logger = new Logger(GroqAdapter.name);
   private readonly client: Groq;
-  private readonly defaultModel = 'mixtral-8x7b-32768';
+  private readonly defaultModel = getStaticDefaultModel('groq');
   private readonly defaultMaxTokens = 4096;
   private readonly defaultTemperature = 1.0;
 

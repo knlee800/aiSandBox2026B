@@ -12,7 +12,7 @@ describe('DeepSeekAdapter', () => {
     it('should instantiate with valid API key', () => {
       const adapter = new DeepSeekAdapter('sk-test-key-123');
       expect(adapter).toBeInstanceOf(DeepSeekAdapter);
-      expect(adapter.model).toBe('deepseek-chat');
+      expect(adapter.model).toBe('deepseek-v4-flash');
     });
 
     it('should throw error when API key is undefined', () => {
@@ -35,7 +35,7 @@ describe('DeepSeekAdapter', () => {
 
     it('should use default model when not specified', () => {
       const adapter = new DeepSeekAdapter('sk-test-key-123');
-      expect(adapter.model).toBe('deepseek-chat');
+      expect(adapter.model).toBe('deepseek-v4-flash');
     });
 
     it('should use custom model when specified', () => {
@@ -104,7 +104,7 @@ describe('DeepSeekAdapter', () => {
 
         expect(mockClient.chat.completions.create).toHaveBeenCalledWith(
           {
-            model: 'deepseek-chat',
+            model: 'deepseek-v4-flash',
             max_tokens: 4096,
             temperature: 1.0,
             messages: [
@@ -139,7 +139,7 @@ describe('DeepSeekAdapter', () => {
 
         expect(mockClient.chat.completions.create).toHaveBeenCalledWith(
           {
-            model: 'deepseek-chat',
+            model: 'deepseek-v4-flash',
             max_tokens: 4096,
             temperature: 1.0,
             messages: [
@@ -263,7 +263,7 @@ describe('DeepSeekAdapter', () => {
 
         const result = await adapter.execute(request);
 
-        expect(result.model).toBe('deepseek-chat');
+        expect(result.model).toBe('deepseek-v4-flash');
       });
     });
 

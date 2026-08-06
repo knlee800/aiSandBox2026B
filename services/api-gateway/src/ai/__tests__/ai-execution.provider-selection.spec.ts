@@ -1,6 +1,8 @@
 import { AIExecutionController } from '../ai-execution.controller';
 
 describe('AIExecutionController provider/model selection (ADV-01-01)', () => {
+  const VALID_SESSION_UUID = '35d53116-6723-4571-af12-ac256977c007';
+
   const makeController = (overrides?: {
     writeExecutionIntent?: jest.Mock;
     enqueueExecution?: jest.Mock;
@@ -15,14 +17,35 @@ describe('AIExecutionController provider/model selection (ADV-01-01)', () => {
       enqueueExecution:
         overrides?.enqueueExecution ?? jest.fn().mockResolvedValue(undefined),
     };
+    const executionResultService = {
+      getExecution: jest.fn(),
+      requestCancel: jest.fn(),
+    };
+    const executionStreamService = {
+      subscribe: jest.fn(),
+      unsubscribe: jest.fn(),
+    };
+    const userAiInstructionsService = {
+      getByUserId: jest.fn().mockResolvedValue(null),
+    };
+    const projectAiContextService = {
+      getByProjectId: jest.fn().mockResolvedValue(null),
+    };
+    const sessionService = {
+      getSessionById: jest
+        .fn()
+        .mockResolvedValue({ userId: 'user-1', projectId: null }),
+    };
 
     const controller = new AIExecutionController(
       usageLedgerService as any,
       {} as any,
       queueService as any,
-      {} as any,
-      {} as any,
-      { getByUserId: jest.fn().mockResolvedValue(null) } as any,
+      executionResultService as any,
+      executionStreamService as any,
+      userAiInstructionsService as any,
+      projectAiContextService as any,
+      sessionService as any,
     );
 
     return { controller, usageLedgerService, queueService };
@@ -38,7 +61,7 @@ describe('AIExecutionController provider/model selection (ADV-01-01)', () => {
 
     const result = await controller.execute(
       {
-        sessionId: 'session-1',
+        sessionId: VALID_SESSION_UUID,
         conversationId: 'conv-1',
         userId: 'untrusted',
         prompt: 'hello',
@@ -76,7 +99,7 @@ describe('AIExecutionController provider/model selection (ADV-01-01)', () => {
 
     await controller.execute(
       {
-        sessionId: 'session-1',
+        sessionId: VALID_SESSION_UUID,
         conversationId: 'conv-1',
         userId: 'untrusted',
         prompt: 'hello',
@@ -87,7 +110,7 @@ describe('AIExecutionController provider/model selection (ADV-01-01)', () => {
     expect(queueService.enqueueExecution).toHaveBeenCalledWith(
       expect.objectContaining({
         provider: 'xai',
-        model: undefined,
+        model: 'grok-4.5',
       }),
     );
     process.env.AI_PROVIDER = previous;

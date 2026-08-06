@@ -12,7 +12,7 @@ describe('GroqAdapter', () => {
     it('should instantiate with valid API key', () => {
       const adapter = new GroqAdapter('gsk-test-key-123');
       expect(adapter).toBeInstanceOf(GroqAdapter);
-      expect(adapter.model).toBe('mixtral-8x7b-32768');
+      expect(adapter.model).toBe('openai/gpt-oss-120b');
     });
 
     it('should throw error when API key is undefined', () => {
@@ -35,7 +35,7 @@ describe('GroqAdapter', () => {
 
     it('should use default model when not specified', () => {
       const adapter = new GroqAdapter('gsk-test-key-123');
-      expect(adapter.model).toBe('mixtral-8x7b-32768');
+      expect(adapter.model).toBe('openai/gpt-oss-120b');
     });
 
     it('should use custom model when specified', () => {
@@ -97,7 +97,7 @@ describe('GroqAdapter', () => {
 
         expect(mockClient.chat.completions.create).toHaveBeenCalledWith(
           {
-            model: 'mixtral-8x7b-32768',
+            model: 'openai/gpt-oss-120b',
             max_tokens: 4096,
             temperature: 1.0,
             messages: [
@@ -132,7 +132,7 @@ describe('GroqAdapter', () => {
 
         expect(mockClient.chat.completions.create).toHaveBeenCalledWith(
           {
-            model: 'mixtral-8x7b-32768',
+            model: 'openai/gpt-oss-120b',
             max_tokens: 4096,
             temperature: 1.0,
             messages: [
@@ -256,7 +256,7 @@ describe('GroqAdapter', () => {
 
         const result = await adapter.execute(request);
 
-        expect(result.model).toBe('mixtral-8x7b-32768');
+        expect(result.model).toBe('openai/gpt-oss-120b');
       });
     });
 

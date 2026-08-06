@@ -2,7 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
 import { AIExecutionService } from '../ai-execution.service';
 import { AIExecutionRequest } from '../types';
-import { ServiceUnavailableException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
+import { AnthropicAdapter } from '../adapters/anthropic-ai.adapter';
+import Anthropic from '@anthropic-ai/sdk';
+
+jest.mock('@anthropic-ai/sdk');
 
 /**
  * Phase 30C: Multi-Provider Runtime Neutrality Tests
@@ -24,6 +28,7 @@ import { ServiceUnavailableException } from '@nestjs/common';
 describe('AIExecutionService Phase 30C Multi-Provider Neutrality', () => {
   let service: AIExecutionService;
   let module: TestingModule;
+  let mockAnthropicMessagesCreate: jest.Mock;
 
   // Base request template
   const baseRequest: AIExecutionRequest = {
@@ -35,9 +40,21 @@ describe('AIExecutionService Phase 30C Multi-Provider Neutrality', () => {
   };
 
   beforeEach(async () => {
+    jest.restoreAllMocks();
+    mockAnthropicMessagesCreate = jest.fn();
+    (Anthropic as jest.MockedClass<typeof Anthropic>).mockImplementation(
+      () =>
+        ({
+          messages: {
+            create: mockAnthropicMessagesCreate,
+          },
+        }) as unknown as Anthropic,
+    );
+
     // Clear environment variables to ensure clean state
     delete process.env.OPENAI_API_KEY;
     delete process.env.ANTHROPIC_API_KEY;
+    delete process.env.ANTHROPIC_MODEL;
     delete process.env.DEEPSEEK_API_KEY;
     delete process.env.XAI_API_KEY;
     delete process.env.GROQ_API_KEY;
@@ -112,7 +129,7 @@ describe('AIExecutionService Phase 30C Multi-Provider Neutrality', () => {
       await expect(service.execute(request)).rejects.toThrow();
 
       // Verify OpenAI adapter was selected
-      expect(getAdapterSpy).toHaveBeenCalledWith('openai');
+      expect(getAdapterSpy).toHaveBeenCalledWith('openai', 'gpt-4o');
       const adapter = getAdapterSpy.mock.results[0].value;
       expect(adapter.constructor.name).toBe('OpenAIAdapter');
     });
@@ -121,64 +138,135 @@ describe('AIExecutionService Phase 30C Multi-Provider Neutrality', () => {
   describe('Anthropic adapter selection (Phase 30C-2)', () => {
     it('should fail fast when ANTHROPIC_API_KEY is missing', async () => {
       // Arrange
+      process.env.ANTHROPIC_MODEL = 'claude-test-model';
       const request: AIExecutionRequest = {
         ...baseRequest,
         provider: 'anthropic',
       };
+      const executeSpy = jest.spyOn(AnthropicAdapter.prototype, 'execute');
 
       // Act & Assert
       await expect(service.execute(request)).rejects.toThrow(
         'ANTHROPIC_API_KEY environment variable is required when provider is "anthropic"',
       );
+      expect(executeSpy).not.toHaveBeenCalled();
+      expect(mockAnthropicMessagesCreate).not.toHaveBeenCalled();
     });
 
     it('should fail fast when ANTHROPIC_API_KEY is empty string', async () => {
       // Arrange
       process.env.ANTHROPIC_API_KEY = '';
+      process.env.ANTHROPIC_MODEL = 'claude-test-model';
       const request: AIExecutionRequest = {
         ...baseRequest,
         provider: 'anthropic',
       };
+      const executeSpy = jest.spyOn(AnthropicAdapter.prototype, 'execute');
 
       // Act & Assert
       await expect(service.execute(request)).rejects.toThrow(
         'ANTHROPIC_API_KEY environment variable is required when provider is "anthropic"',
       );
+      expect(executeSpy).not.toHaveBeenCalled();
+      expect(mockAnthropicMessagesCreate).not.toHaveBeenCalled();
     });
 
     it('should fail fast when ANTHROPIC_API_KEY is whitespace only', async () => {
       // Arrange
       process.env.ANTHROPIC_API_KEY = '   ';
+      process.env.ANTHROPIC_MODEL = 'claude-test-model';
       const request: AIExecutionRequest = {
         ...baseRequest,
         provider: 'anthropic',
       };
+      const executeSpy = jest.spyOn(AnthropicAdapter.prototype, 'execute');
 
       // Act & Assert
       await expect(service.execute(request)).rejects.toThrow(
         'ANTHROPIC_API_KEY environment variable is required when provider is "anthropic"',
       );
+      expect(executeSpy).not.toHaveBeenCalled();
+      expect(mockAnthropicMessagesCreate).not.toHaveBeenCalled();
     });
 
-    it('should select Anthropic adapter when provider is "anthropic"', async () => {
+    it('should fail fast when ANTHROPIC_MODEL is missing', async () => {
       // Arrange
       process.env.ANTHROPIC_API_KEY = 'sk-ant-test-key';
       const request: AIExecutionRequest = {
         ...baseRequest,
         provider: 'anthropic',
       };
+      const executeSpy = jest.spyOn(AnthropicAdapter.prototype, 'execute');
 
-      // Spy on private getAdapter method
-      const getAdapterSpy = jest.spyOn(service as any, 'getAdapter');
+      // Act & Assert
+      await expect(service.execute(request)).rejects.toThrow(
+        'ANTHROPIC_MODEL environment variable is required when provider is "anthropic"',
+      );
+      expect(executeSpy).not.toHaveBeenCalled();
+      expect(mockAnthropicMessagesCreate).not.toHaveBeenCalled();
+    });
 
-      // Act & Assert: Will fail with network error since we're not mocking Anthropic SDK,
-      // but we can verify the adapter was selected
-      await expect(service.execute(request)).rejects.toThrow();
+    it('should fail fast when ANTHROPIC_MODEL is empty string', async () => {
+      // Arrange
+      process.env.ANTHROPIC_API_KEY = 'sk-ant-test-key';
+      process.env.ANTHROPIC_MODEL = '';
+      const request: AIExecutionRequest = {
+        ...baseRequest,
+        provider: 'anthropic',
+      };
+      const executeSpy = jest.spyOn(AnthropicAdapter.prototype, 'execute');
 
-      // Verify Anthropic adapter was selected
-      expect(getAdapterSpy).toHaveBeenCalledWith('anthropic');
-      const adapter = getAdapterSpy.mock.results[0].value;
+      // Act & Assert
+      await expect(service.execute(request)).rejects.toThrow(
+        'ANTHROPIC_MODEL environment variable is required when provider is "anthropic"',
+      );
+      expect(executeSpy).not.toHaveBeenCalled();
+      expect(mockAnthropicMessagesCreate).not.toHaveBeenCalled();
+    });
+
+    it('should fail fast when ANTHROPIC_MODEL is whitespace only', async () => {
+      // Arrange
+      process.env.ANTHROPIC_API_KEY = 'sk-ant-test-key';
+      process.env.ANTHROPIC_MODEL = '   ';
+      const request: AIExecutionRequest = {
+        ...baseRequest,
+        provider: 'anthropic',
+      };
+      const executeSpy = jest.spyOn(AnthropicAdapter.prototype, 'execute');
+
+      // Act & Assert
+      await expect(service.execute(request)).rejects.toThrow(
+        'ANTHROPIC_MODEL environment variable is required when provider is "anthropic"',
+      );
+      expect(executeSpy).not.toHaveBeenCalled();
+      expect(mockAnthropicMessagesCreate).not.toHaveBeenCalled();
+    });
+
+    it('should trim and use configured ANTHROPIC_MODEL', () => {
+      // Arrange
+      process.env.ANTHROPIC_API_KEY = 'sk-ant-test-key';
+      process.env.ANTHROPIC_MODEL = '  claude-test-model  ';
+
+      // Act
+      const adapter = service.getAdapter('anthropic');
+
+      // Assert
       expect(adapter.constructor.name).toBe('AnthropicAdapter');
+      expect(adapter.model).toBe('claude-test-model');
+      expect(mockAnthropicMessagesCreate).not.toHaveBeenCalled();
+    });
+
+    it('should select Anthropic adapter when provider is "anthropic"', () => {
+      // Arrange
+      process.env.ANTHROPIC_API_KEY = 'sk-ant-test-key';
+      process.env.ANTHROPIC_MODEL = 'claude-test-model';
+      // Act
+      const adapter = service.getAdapter('anthropic');
+
+      // Assert
+      expect(adapter.constructor.name).toBe('AnthropicAdapter');
+      expect(adapter.model).toBe('claude-test-model');
+      expect(mockAnthropicMessagesCreate).not.toHaveBeenCalled();
     });
   });
 
@@ -240,7 +328,10 @@ describe('AIExecutionService Phase 30C Multi-Provider Neutrality', () => {
       await expect(service.execute(request)).rejects.toThrow();
 
       // Verify DeepSeek adapter was selected
-      expect(getAdapterSpy).toHaveBeenCalledWith('deepseek');
+      expect(getAdapterSpy).toHaveBeenCalledWith(
+        'deepseek',
+        'deepseek-v4-flash',
+      );
       const adapter = getAdapterSpy.mock.results[0].value;
       expect(adapter.constructor.name).toBe('DeepSeekAdapter');
     });
@@ -279,32 +370,28 @@ describe('AIExecutionService Phase 30C Multi-Provider Neutrality', () => {
       await expect(service.execute(request)).rejects.toThrow();
 
       // Verify xAI adapter was selected
-      expect(getAdapterSpy).toHaveBeenCalledWith('xai');
+      expect(getAdapterSpy).toHaveBeenCalledWith('xai', 'grok-4.5');
       const adapter = getAdapterSpy.mock.results[0].value;
       expect(adapter.constructor.name).toBe('XAIAdapter');
     });
   });
 
   describe('Provider isolation (no cross-provider leakage)', () => {
-    it('should not use OpenAI adapter when provider is "anthropic"', async () => {
+    it('should not use OpenAI adapter when provider is "anthropic"', () => {
       // Arrange
       process.env.OPENAI_API_KEY = 'sk-test-openai-key';
       process.env.ANTHROPIC_API_KEY = 'sk-ant-test-key';
-      const request: AIExecutionRequest = {
-        ...baseRequest,
-        provider: 'anthropic',
-      };
-
-      // Spy on private getAdapter method
-      const getAdapterSpy = jest.spyOn(service as any, 'getAdapter');
+      process.env.ANTHROPIC_MODEL = 'claude-test-model';
+      const executeSpy = jest.spyOn(AnthropicAdapter.prototype, 'execute');
 
       // Act
-      await expect(service.execute(request)).rejects.toThrow();
+      const adapter = service.getAdapter('anthropic');
 
-      // Assert: Anthropic adapter selected, NOT OpenAI
-      const adapter = getAdapterSpy.mock.results[0].value;
+      // Assert: Anthropic adapter selected and no provider execution occurred
       expect(adapter.constructor.name).toBe('AnthropicAdapter');
       expect(adapter.constructor.name).not.toBe('OpenAIAdapter');
+      expect(executeSpy).not.toHaveBeenCalled();
+      expect(mockAnthropicMessagesCreate).not.toHaveBeenCalled();
     });
 
     it('should not use Anthropic adapter when provider is "openai"', async () => {
@@ -351,7 +438,7 @@ describe('AIExecutionService Phase 30C Multi-Provider Neutrality', () => {
   });
 
   describe('Unknown provider handling', () => {
-    it('should throw ServiceUnavailableException for unknown provider', async () => {
+    it('should throw BadRequestException for unknown provider', async () => {
       // Arrange
       const request: AIExecutionRequest = {
         ...baseRequest,
@@ -360,10 +447,10 @@ describe('AIExecutionService Phase 30C Multi-Provider Neutrality', () => {
 
       // Act & Assert
       await expect(service.execute(request)).rejects.toThrow(
-        ServiceUnavailableException,
+        BadRequestException,
       );
       await expect(service.execute(request)).rejects.toThrow(
-        'Unknown AI provider: unknown-provider',
+        'Unsupported provider "unknown-provider".',
       );
     });
   });
@@ -383,7 +470,7 @@ describe('AIExecutionService Phase 30C Multi-Provider Neutrality', () => {
       const result = await service.execute(request);
 
       // Assert: Stub adapter selected
-      expect(getAdapterSpy).toHaveBeenCalledWith('stub');
+      expect(getAdapterSpy).toHaveBeenCalledWith('stub', 'stub');
       const adapter = getAdapterSpy.mock.results[0].value;
       expect(adapter.constructor.name).toBe('StubAIAdapter');
 

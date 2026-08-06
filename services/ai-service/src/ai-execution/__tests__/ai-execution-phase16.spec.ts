@@ -172,8 +172,20 @@ describe('AIExecutionService - Phase 16 Contract Verification', () => {
       // Assert: Each execution is independent
       expect(response1).not.toEqual(response2);
       expect(mockAdapter.execute).toHaveBeenCalledTimes(2);
-      expect(mockAdapter.execute).toHaveBeenNthCalledWith(1, request1);
-      expect(mockAdapter.execute).toHaveBeenNthCalledWith(2, request2);
+      expect(mockAdapter.execute).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          ...request1,
+          model: 'stub',
+        }),
+      );
+      expect(mockAdapter.execute).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          ...request2,
+          model: 'stub',
+        }),
+      );
     });
 
     it('should not aggregate or track execution history', async () => {
@@ -280,7 +292,7 @@ describe('AIExecutionService - Phase 16 Contract Verification', () => {
       expect(loggerSpy).toHaveBeenCalled();
       const logCall = loggerSpy.mock.calls[0][0];
       expect(logCall).toContain('Executing AI request');
-      expect(logCall).toContain('model=test-model');
+      expect(logCall).toContain('model=stub');
       expect(logCall).toContain('session=session-123');
     });
 
@@ -473,7 +485,12 @@ describe('AIExecutionService - Phase 16 Contract Verification', () => {
       await service.execute(validRequest);
 
       // Assert: Request accepted and passed to adapter
-      expect(mockAdapter.execute).toHaveBeenCalledWith(validRequest);
+      expect(mockAdapter.execute).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ...validRequest,
+          model: 'stub',
+        }),
+      );
     });
 
     it('should return valid AIExecutionResult on success', async () => {
@@ -544,7 +561,12 @@ describe('AIExecutionService - Phase 16 Contract Verification', () => {
       await service.execute(requestWithMetadata);
 
       // Assert: Metadata forwarded to adapter
-      expect(mockAdapter.execute).toHaveBeenCalledWith(requestWithMetadata);
+      expect(mockAdapter.execute).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ...requestWithMetadata,
+          model: 'stub',
+        }),
+      );
     });
   });
 
@@ -596,7 +618,12 @@ describe('AIExecutionService - Phase 16 Contract Verification', () => {
       await service.execute(mockRequest);
 
       // Assert: Service delegates to adapter
-      expect(mockAdapter.execute).toHaveBeenCalledWith(mockRequest);
+      expect(mockAdapter.execute).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ...mockRequest,
+          model: 'stub',
+        }),
+      );
       expect(mockAdapter.execute).toHaveBeenCalledTimes(1);
     });
 

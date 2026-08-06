@@ -12,7 +12,7 @@ describe('XAIAdapter', () => {
     it('should instantiate with valid API key', () => {
       const adapter = new XAIAdapter('xai-test-key-123');
       expect(adapter).toBeInstanceOf(XAIAdapter);
-      expect(adapter.model).toBe('grok-3');
+      expect(adapter.model).toBe('grok-4.5');
     });
 
     it('should throw error when API key is undefined', () => {
@@ -35,7 +35,7 @@ describe('XAIAdapter', () => {
 
     it('should use default model when not specified', () => {
       const adapter = new XAIAdapter('xai-test-key-123');
-      expect(adapter.model).toBe('grok-3');
+      expect(adapter.model).toBe('grok-4.5');
     });
 
     it('should use custom model when specified', () => {
@@ -104,7 +104,7 @@ describe('XAIAdapter', () => {
 
         expect(mockClient.chat.completions.create).toHaveBeenCalledWith(
           {
-            model: 'grok-3',
+            model: 'grok-4.5',
             max_tokens: 4096,
             temperature: 1.0,
             messages: [
@@ -139,7 +139,7 @@ describe('XAIAdapter', () => {
 
         expect(mockClient.chat.completions.create).toHaveBeenCalledWith(
           {
-            model: 'grok-3',
+            model: 'grok-4.5',
             max_tokens: 4096,
             temperature: 1.0,
             messages: [
@@ -286,7 +286,7 @@ describe('XAIAdapter', () => {
 
         const result = await adapter.execute(request);
 
-        expect(result.model).toBe('grok-3');
+        expect(result.model).toBe('grok-4.5');
       });
     });
 

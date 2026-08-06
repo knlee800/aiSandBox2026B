@@ -9,6 +9,7 @@ import {
 import OpenAI from 'openai';
 import { AIAdapter } from './ai-adapter.interface';
 import { AIExecutionRequest, AIExecutionResult } from '../types';
+import { getStaticDefaultModel } from '../provider-model.catalogue';
 
 /**
  * DeepSeekAdapter
@@ -40,7 +41,7 @@ import { AIExecutionRequest, AIExecutionResult } from '../types';
 export class DeepSeekAdapter implements AIAdapter {
   private readonly logger = new Logger(DeepSeekAdapter.name);
   private readonly client: OpenAI;
-  private readonly defaultModel = 'deepseek-chat';
+  private readonly defaultModel = getStaticDefaultModel('deepseek');
   private readonly defaultMaxTokens = 4096;
   private readonly defaultTemperature = 1.0;
   private readonly defaultBaseURL = 'https://api.deepseek.com';

@@ -785,6 +785,7 @@ export class WorkerProcessor implements OnModuleInit, OnModuleDestroy {
 
                 const adapter = this.aiExecutionService.getAdapter(
                   executionRequest.provider,
+                  executionRequest.model,
                 );
                 if (adapter.supportsToolUse && adapter.executeWithTools) {
                   const dispatcher = new ToolDispatcher({

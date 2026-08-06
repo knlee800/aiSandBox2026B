@@ -49,7 +49,6 @@ import {
 export class AnthropicAdapter implements AIAdapter {
   private readonly logger = new Logger(AnthropicAdapter.name);
   private readonly client: Anthropic;
-  private readonly defaultModel = 'claude-3-5-sonnet-20241022';
   private readonly defaultMaxTokens = 4096;
   private readonly defaultTemperature = 1.0;
 
@@ -76,8 +75,11 @@ export class AnthropicAdapter implements AIAdapter {
     if (!apiKey || apiKey.trim().length === 0) {
       throw new Error('Anthropic API key is required');
     }
+    if (!options?.model || options.model.trim().length === 0) {
+      throw new Error('Anthropic model is required');
+    }
 
-    this.model = options?.model ?? this.defaultModel;
+    this.model = options.model.trim();
 
     this.client = new Anthropic({
       apiKey,
