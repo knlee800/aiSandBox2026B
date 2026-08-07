@@ -15,6 +15,9 @@ import { Plan } from '../entities/plan.entity';
 import { AuthModule } from '../auth/auth.module';
 import { SessionModule } from '../sessions/session.module';
 import { AdminOperationalController } from './admin-operational.controller';
+import { CreditGrantModule } from '../billing/credit-grant/credit-grant.module';
+import { CreditPersistenceModule } from '../billing/credit-deduction/credit-persistence.module';
+import { AdminCreditGrantService } from './admin-credit-grant.service';
 
 /**
  * AdminModule (Task 11A + Task 11B + Task 12A + Task 12B1 + Task 12B2)
@@ -49,6 +52,8 @@ import { AdminOperationalController } from './admin-operational.controller';
     AuthModule,
     PaymentsModule,
     SessionModule,
+    CreditGrantModule,
+    CreditPersistenceModule,
     TypeOrmModule.forFeature([User, Session, UsageRecord, Plan]),
   ],
   controllers: [
@@ -62,6 +67,7 @@ import { AdminOperationalController } from './admin-operational.controller';
     ReconciliationService,
     ChargeReadinessService,
     AdminDashboardService,
+    AdminCreditGrantService,
   ],
   exports: [
     AdminService,

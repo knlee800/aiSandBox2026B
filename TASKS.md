@@ -16,7 +16,7 @@ Rules:
 
 If conflicts exist, TASKS_BACKLOG_FULL.md takes precedence.
 
-**Program status:** **BILLING-READY-08 COMPLETE AND LOCKED 2026-08-07** — Controlled xAI smoke PASS — Execution ID `83acc0e9-84de-4f94-9e41-294701e38393` — tokens_used=598 — `smoke-test.txt` created with correct content — persists after refresh — credit deduction applied (500 credits) — overflow 98 ACCEPTED BY DESIGN — balance reached 0 correctly — `GLOBAL_EXECUTION_ENABLED=false` verified in .env and PM2 — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — QuotaGuard browser-session bypass — Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md` — **BILLING-READY-08B COMPLETE AND LOCKED 2026-08-07** — usage_records.created_at schema remediation — Checkpoint: `docs/BILLING-READY-08B-CHECKPOINT.md` — Final checkpoint: `docs/BILLING-READY-08-CHECKPOINT.md` — **PRIVATE-BETA-FUNCTIONAL-READINESS-04 COMPLETE AND LOCKED 2026-08-07** — All acceptance criteria satisfied — FR-04 parent checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-CHECKPOINT.md` — **ADMIN-CONSOLE-01 ACTIVE** — **ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07** — Admin credit grant domain + audit schema — SOURCE MIGRATION COMPLETE / STAGING APPLICATION DEFERRED — Checkpoint: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md` — Exact next child: ADMIN-CONSOLE-01B — PRIVATE-BETA-INVITE-01 NOT STARTED (blocked until ADMIN-CONSOLE-01 COMPLETE AND LOCKED) — No users invited — No new runtime enablement authorized without Keith approval
+**Program status:** **BILLING-READY-08 COMPLETE AND LOCKED 2026-08-07** — Controlled xAI smoke PASS — Execution ID `83acc0e9-84de-4f94-9e41-294701e38393` — tokens_used=598 — `smoke-test.txt` created with correct content — persists after refresh — credit deduction applied (500 credits) — overflow 98 ACCEPTED BY DESIGN — balance reached 0 correctly — `GLOBAL_EXECUTION_ENABLED=false` verified in .env and PM2 — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — QuotaGuard browser-session bypass — Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md` — **BILLING-READY-08B COMPLETE AND LOCKED 2026-08-07** — usage_records.created_at schema remediation — Checkpoint: `docs/BILLING-READY-08B-CHECKPOINT.md` — Final checkpoint: `docs/BILLING-READY-08-CHECKPOINT.md` — **PRIVATE-BETA-FUNCTIONAL-READINESS-04 COMPLETE AND LOCKED 2026-08-07** — All acceptance criteria satisfied — FR-04 parent checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-CHECKPOINT.md` — **ADMIN-CONSOLE-01 ACTIVE** — **ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07** — Checkpoint: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md` — **ADMIN-CONSOLE-01B COMPLETE AND LOCKED 2026-08-07** — Authenticated Admin Credit Grant API — Checkpoint: `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md` — Exact next child: ADMIN-CONSOLE-01C — Admin Console Shell + Users/Sessions — PRIVATE-BETA-INVITE-01 NOT STARTED (blocked until ADMIN-CONSOLE-01 COMPLETE AND LOCKED) — No users invited — No new runtime enablement authorized without Keith approval — 01A migration NOT applied to staging
 
 
 \# TASKS.md ??Master Task Index
@@ -45144,7 +45144,7 @@ AGENT-HARNESS-06E closes this gap by running a full E2E canary with ALL required
 
 ## ADMIN-CONSOLE-01 — Private Beta Operator Console
 
-**Status:** ACTIVE — 01A COMPLETE AND LOCKED (2026-08-07); exact next child ADMIN-CONSOLE-01B
+**Status:** ACTIVE — 01A + 01B COMPLETE AND LOCKED (2026-08-07); exact next: ADMIN-CONSOLE-01C
 **Task ID:** ADMIN-CONSOLE-01
 **Family:** ADMIN CONSOLE / PRIVATE BETA OPERATIONS
 **Priority:** HIGH — blocks PRIVATE-BETA-INVITE-01
@@ -45195,7 +45195,7 @@ Provide the minimum safe browser-based admin console required to operate private
 | Slice | Title | Status | Workflow | Model | Depends On |
 |-------|-------|--------|----------|-------|------------|
 | ADMIN-CONSOLE-01A | Admin Credit Grant Domain + Audit Schema | COMPLETE AND LOCKED — 2026-08-07 | 4-step | GPT-5.3 Codex High | None |
-| ADMIN-CONSOLE-01B | Authenticated Admin Credit Grant API | NOT STARTED (exact next) | 3-step | GPT-5.3 Codex | 01A COMPLETE |
+| ADMIN-CONSOLE-01B | Authenticated Admin Credit Grant API | COMPLETE AND LOCKED — 2026-08-07 | 3-step | GPT-5.3 Codex | 01A COMPLETE |
 | ADMIN-CONSOLE-01C | Admin Console Shell + Users/Sessions | NOT STARTED | 3-step | GPT-5.3 Codex | 01B COMPLETE |
 | ADMIN-CONSOLE-01D | Admin Credit Grant UI | NOT STARTED | 3-step | GPT-5.3 Codex | 01B + 01C COMPLETE |
 | ADMIN-CONSOLE-01E | Staging Validation + Parent Consolidation | NOT STARTED | 2-step | Sonnet 4.6 | 01A-01D COMPLETE |
@@ -45224,7 +45224,7 @@ Provide the minimum safe browser-based admin console required to operate private
 - en / zh-TW / zh-CN render correctly
 - No direct PostgreSQL access required for any operation
 
-**ADMIN-CONSOLE-01 status:** ACTIVE — Registration COMPLETE 2026-08-07. ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07. Exact next child: ADMIN-CONSOLE-01B. Checkpoint: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md`.
+**ADMIN-CONSOLE-01 status:** ACTIVE — Registration COMPLETE 2026-08-07. ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07. ADMIN-CONSOLE-01B COMPLETE AND LOCKED 2026-08-07. Checkpoints: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md`, `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md`. Exact next child: ADMIN-CONSOLE-01C.
 **PRIVATE-BETA-INVITE-01 status:** NOT STARTED — blocked until ADMIN-CONSOLE-01 COMPLETE AND LOCKED.
 
 ---
@@ -45317,32 +45317,265 @@ Provide the minimum safe browser-based admin console required to operate private
 - No admin API yet (01B). No frontend admin console yet (01C/01D).
 - Acceptance criteria: 20 / 20 satisfied
 
-**ADMIN-CONSOLE-01 status:** ACTIVE — 01A locked; exact next child ADMIN-CONSOLE-01B.
+**ADMIN-CONSOLE-01 status:** ACTIVE — 01A + 01B locked; exact next child ADMIN-CONSOLE-01C.
 **PRIVATE-BETA-INVITE-01 status:** NOT STARTED — blocked until ADMIN-CONSOLE-01 COMPLETE AND LOCKED.
 
 ---
 
 #### ADMIN-CONSOLE-01B — Authenticated Admin Credit Grant API
 
-**Status:** NOT STARTED — exact next child after ADMIN-CONSOLE-01A COMPLETE AND LOCKED
+**Status:** COMPLETE AND LOCKED — 2026-08-07
 **Task ID:** ADMIN-CONSOLE-01B
 **Parent:** ADMIN-CONSOLE-01
 **Family:** ADMIN CONSOLE / CREDIT GRANT API
-**Risk:** NORMAL — bounded backend endpoint reusing existing guards
+**Risk:** NORMAL — bounded backend endpoint reusing existing guards + CreditGrantService
 **Workflow:** 3-step (registration → implementation → checkpoint)
-**Model:** GPT-5.3 Codex
+**Model:** GPT-5.3 Codex (implementation); Grok 4.5 High (registration + consolidation)
 **Registered:** 2026-08-07
 **Depends On:** ADMIN-CONSOLE-01A COMPLETE AND LOCKED
+**Registration Verdict:** READY
+**Stage-Start Required:** NO — architecture unambiguous after source inspection
+**Checkpoint:** `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md`
 
-**Scope:**
-- POST /api/admin/users/:userId/credits: SessionCookieGuard + AdminRoleGuard; validates amount (positive integer), reason (non-empty, max 500 chars), idempotencyKey (UUID format); extracts grantedByUserId from request.user.userId; calls CreditGrantService.processGrant(); returns grantId/status/amount/balanceBefore/balanceAfter/grantedAt
-- GET /api/admin/users/:userId: extend response to include creditBalance nested DTO (currentBalance from credit_balances)
-- AdminModule: import CreditGrantModule and CreditPersistenceModule
-- Tests: happy path, duplicate idempotency, invalid input (400), non-admin (403), unknown user (404)
+##### Registration Verdict / Architecture Evidence (Step 1 COMPLETE — 2026-08-07)
 
-**Non-Goals:** No frontend. No migration. No env changes.
+Source inspection confirmed:
+- `AdminOperationalController` already hosts browser-admin `GET /admin/users/:userId` under `@UseGuards(SessionCookieGuard, AdminRoleGuard)` — extend this controller (no new controller)
+- `SessionCookieGuard` sets `request.user.userId` from session — authoritative admin actor source
+- `AdminRoleGuard` rejects missing role (401) and non-admin (403)
+- `CreditGrantService.processGrant()` is the only sanctioned credit mutation path; supports `grantType='admin'`
+- `CreditGrantResult` = `{ grantId, status, amount, balanceBefore, balanceAfter, errorCode?, errorMessage? }` — **no `grantedAt`** — omit from API response (no domain expansion)
+- Duplicate successful grant → `status='duplicate'` with original balances; no second mutation
+- Prior failed grant same `sourceEventId` → service returns `status='failed'` (no auto-retry) — API returns HTTP 200 with `status:'failed'` (do not invent ConflictException contrary to service)
+- `CreditGrantModule` exports `CreditGrantService` only; does not import AdminModule — no cycle
+- `CreditPersistenceModule` exports `CreditBalanceRepository` — required for admin user-detail balance read
+- `AdminModule` currently imports neither CreditGrantModule nor CreditPersistenceModule
+- `CreditBalance` entity fields usable for admin detail: `balance`, `monthlyAllocation`, `rolloverBalance`, `planId`, `status`
+- Global `ValidationPipe({ whitelist: true, transform: true })` — DTO whitelist strips caller-controlled actor/source/provider/grantType
+- 01A migration source exists; staging application remains deferred — do not apply in 01B
+
+##### Locked Endpoint
+
+`POST /api/admin/users/:userId/credits`
+
+(Global prefix `api` + `@Controller('admin')` + `@Post('users/:userId/credits')`)
+
+##### Locked Controller / Service Architecture
+
+1. **Controller:** extend `AdminOperationalController` — same class-level `SessionCookieGuard` + `AdminRoleGuard`
+2. **Grant orchestration:** new thin `AdminCreditGrantService`
+   - target-user existence check
+   - map authenticated `request.user.userId` → `grantedByUserId`
+   - call `CreditGrantService.processGrant()` as ONLY credit mutation path
+   - map `CreditGrantResult` → response DTO
+3. **User detail credit balance:** extend existing `AdminDashboardService.getAdminUserDetail()` via `CreditBalanceRepository.findByOwner(userId, 'user')`
+4. **Do NOT** create `AdminCreditGrantController`
+5. **Do NOT** use `/api/internal/admin` for this browser operation
+6. **Do NOT** expand `CreditGrantResult` / 01A domain for `grantedAt`
+
+##### Locked Request DTO — `AdminCreditGrantRequestDto`
+
+```ts
+{
+  amount: number;          // @IsInt() @Min(1) — required positive integer; no hard ceiling
+  reason: string;          // @IsString() @IsNotEmpty() @MaxLength(500) — trim before/via transform
+  idempotencyKey: string;  // @IsUUID() — required UUID
+}
+```
+
+Forbidden in body (must not be accepted / must be stripped by whitelist):
+- `grantedByUserId`
+- `sourceType`
+- `provider`
+- `grantType`
+- `ownerId` (comes from path `:userId`)
+
+##### Locked Response DTO — `AdminCreditGrantResponseDto`
+
+```ts
+{
+  grantId: string;
+  status: 'granted' | 'duplicate' | 'failed';
+  amount: number;
+  balanceBefore: number;
+  balanceAfter: number;
+}
+```
+
+**`grantedAt` intentionally omitted** — `CreditGrantResult` does not expose it; retrieving it would require unnecessary domain expansion.
+
+Do not expose `errorCode` / `errorMessage` on the public response body (log server-side only).
+
+##### Locked Auth / Actor Extraction
+
+1. Guards: `SessionCookieGuard` then `AdminRoleGuard` (controller-level, existing)
+2. Actor: `grantedByUserId = request.user.userId` (string from session)
+3. If `request.user?.userId` missing after guards: treat as 401 Unauthorized (defensive)
+4. Never accept actor from request body
+5. Service call must use:
+   - `grantType: 'admin'`
+   - `ownerId: :userId` (path)
+   - `amount`, `reason` (from validated DTO; reason trimmed)
+   - `grantedByUserId: request.user.userId`
+   - `sourceEventId: idempotencyKey` (exact equality; no server-generated replacement key)
+
+##### Locked Error Mapping
+
+| Condition | HTTP | Notes |
+|-----------|------|-------|
+| Invalid amount / reason / idempotencyKey (DTO ValidationPipe) | 400 | class-validator messages; no stack |
+| Unauthenticated / missing session / missing userId | 401 | SessionCookieGuard / defensive |
+| Authenticated non-admin | 403 | AdminRoleGuard — `Admin access required` |
+| Target user does not exist | 404 | `User with ID ${userId} not found` (match existing AdminDashboardService wording) |
+| `processGrant` → `granted` | 200 | response DTO |
+| `processGrant` → `duplicate` | 200 | response DTO; no second credit mutation |
+| `processGrant` → `failed` (incl. prior-failed same key, `BALANCE_NOT_FOUND`, unexpected domain fail) | 200 | response DTO `status:'failed'`; do not expose internal error details |
+
+Do not invent 409 Conflict for prior-failed grants — service returns `status:'failed'` without throwing.
+
+##### Locked Target-User Existence Contract
+
+Before `processGrant`:
+- `userRepository.findOne({ where: { id: userId } })` (same pattern as `AdminDashboardService.getAdminUserDetail`)
+- Missing user → 404; do not call CreditGrantService
+- Do not create a new broad admin-user service
+
+##### Locked Admin User-Detail `creditBalance` Contract
+
+Extend `GET /api/admin/users/:userId` / `AdminUserDetailDto`:
+
+```ts
+creditBalance: {
+  balance: number;
+  monthlyAllocation: number;
+  rolloverBalance: number;
+  planId: string;
+  status: string;
+} | null
+```
+
+- Source: `CreditBalanceRepository.findByOwner(userId, 'user')` — no raw SQL in controller
+- Row present → map the five fields above from entity
+- Row absent → `creditBalance: null` (admin-honest; distinct from user-billing empty defaults)
+- Preserve all existing `AdminUserDetailDto` fields (`quotas`, plan/session/token visibility)
+- Do not lock `periodStart` / `periodEnd` into this admin detail contract
+
+##### Locked Module Wiring
+
+`AdminModule` imports:
+1. `CreditGrantModule` — for `CreditGrantService`
+2. `CreditPersistenceModule` — for `CreditBalanceRepository` (CreditGrantModule does not re-export it)
+
+Providers: add `AdminCreditGrantService`
+Controllers: keep `AdminOperationalController` (no new controller)
+Verify: no Admin ↔ CreditGrant dependency cycle
+
+##### Locked Idempotency Contract
+
+- Body `idempotencyKey` maps 1:1 to `sourceEventId`
+- Existing 01A / CreditGrantService 3-layer semantics remain authoritative
+- Duplicate successful grant → `status:'duplicate'`, original balances, no second mutation, no server-side replacement key
+- Prior failed same key → `status:'failed'` (no auto-retry)
+
+##### Implementation File Allowlist
+
+May create/modify:
+- `services/api-gateway/src/admin/admin-operational.controller.ts`
+- `services/api-gateway/src/admin/admin-credit-grant.service.ts` (new)
+- `services/api-gateway/src/admin/admin-dashboard.service.ts`
+- `services/api-gateway/src/admin/admin.module.ts`
+- `services/api-gateway/src/admin/dto/admin-credit-grant.dto.ts` (new request/response DTOs)
+- `services/api-gateway/src/admin/dto/admin-users-response.dto.ts` (add `creditBalance`)
+- `services/api-gateway/src/admin/admin-operational.controller.spec.ts`
+- `services/api-gateway/src/admin/admin-credit-grant.service.spec.ts` (new)
+- `services/api-gateway/src/admin/admin-dashboard.service.spec.ts`
+- Optionally focused: `services/api-gateway/src/admin/__tests__/admin-credit-grant*.spec.ts` if HTTP-guard integration style is preferred for 401/403
+
+##### Explicit Forbidden Scope
+
+- No frontend / translations / `/platform`
+- No 01A migration edit/run; no staging/DB/`.env`/Docker/Postgres/Redis
+- No Stripe/webhooks/rollover/plan/subscription mutation
+- No role-administration endpoints
+- No `/api/internal/admin` merge or parallel auth mechanism
+- No CreditGrantService / entity / repository domain expansion unless genuine 01A defect found
+- No hard admin credit amount ceiling
+- No provider calls / service restarts / Git commit/push
+
+##### Per-Criterion Tests (required)
+
+Admin credit grant endpoint / service:
+1. Admin happy path → 200 `status:'granted'` with balances
+2. Authenticated `request.user.userId` mapped to `grantedByUserId` (not body)
+3. Amount validation rejects non-integer / ≤0 / missing → 400
+4. Reason required / empty-after-trim → 400
+5. Reason >500 → 400
+6. Invalid `idempotencyKey` (non-UUID) → 400
+7. Non-admin → 403
+8. Unauthenticated → 401
+9. Unknown target user → 404; CreditGrantService not called
+10. Duplicate → `status:'duplicate'` with original balances
+11. Duplicate does not trigger second credit mutation (assert single `processGrant` / service contract)
+12. `processGrant` called with `grantType:'admin'`
+13. `sourceEventId` exactly equals `idempotencyKey`
+14. Caller-controlled `grantedByUserId` / `sourceType` / `provider` / `grantType` not accepted into service call
+15. Controller retains SessionCookieGuard + AdminRoleGuard metadata
+
+Admin user detail:
+16. Existing user with balance row → `creditBalance` populated with locked fields
+17. Existing user with no balance row → `creditBalance: null`
+18. Existing user-detail fields preserved (`quotas`, plan/session/token fields)
+
+Existing admin operational / dashboard tests must remain green.
+
+##### Validation Commands
+
+```powershell
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npx jest --testPathPatterns="admin-operational|admin-credit-grant|admin-dashboard.service" --runInBand
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npx tsc --noEmit
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm run build
+```
+
+Optional regression if time permits:
+```powershell
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npx jest --testPathPatterns="credit-grant" --runInBand
+```
+
+##### Acceptance Criteria
+
+1. `POST /api/admin/users/:userId/credits` exists on `AdminOperationalController` with SessionCookieGuard + AdminRoleGuard
+2. Request DTO validates amount (positive integer), reason (trimmed non-empty, max 500), idempotencyKey (UUID)
+3. `grantedByUserId` taken only from `request.user.userId`
+4. Only mutation path is `CreditGrantService.processGrant({ grantType:'admin', ... })`
+5. `sourceEventId` equals request `idempotencyKey` exactly
+6. Response returns `grantId`, `status` (`granted`|`duplicate`|`failed`), `amount`, `balanceBefore`, `balanceAfter` — no `grantedAt`
+7. Unknown target user → 404 before grant
+8. Unauthenticated → 401; non-admin → 403; invalid body → 400
+9. Duplicate returns `status:'duplicate'` without double-credit
+10. `GET /api/admin/users/:userId` includes locked `creditBalance` shape (or `null`)
+11. AdminModule imports CreditGrantModule + CreditPersistenceModule without cycles
+12. Focused tests for all per-criterion items pass
+13. `npx tsc --noEmit` and `npm run build` pass for api-gateway
+14. No frontend/migration/staging/DB/provider/Docker action during implementation
+15. No role mutation capability added
+
+##### Workflow Status
+
+- Step 1 Registration COMPLETE — 2026-08-07 — READY
+- Step 2 Implementation COMPLETE — validated (3 suites / 30 tests PASS; tsc PASS; build PASS)
+- Step 3 Consolidation/checkpoint COMPLETE — 2026-08-07 — `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md`
+
+**Non-Goals:** No frontend. No migration apply/edit. No env/staging/DB. No CreditGrant domain expansion. No internal-admin route.
+
+**Optional CreditBalanceRepository DI gate (consolidation):** Verdict A — SAFE under locked `AdminModule` → `CreditPersistenceModule` wiring; `@Optional()` is test-compat only and does not suppress production injection when the provider is present. Absent-repo path returns `creditBalance=null` (skip lookup) but is not reachable on the supported AppModule runtime path.
+
+**ADMIN-CONSOLE-01B status:** COMPLETE AND LOCKED — 2026-08-07. Checkpoint: `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md`. Acceptance criteria: 15 / 15.
+**ADMIN-CONSOLE-01 status:** ACTIVE — 01A + 01B locked; exact next child ADMIN-CONSOLE-01C; 01D–01E NOT STARTED.
+**PRIVATE-BETA-INVITE-01 status:** NOT STARTED — blocked until ADMIN-CONSOLE-01 COMPLETE AND LOCKED.
+**01A staging migration:** SOURCE COMPLETE / NOT APPLIED.
 
 ---
+
 
 #### ADMIN-CONSOLE-01C — Admin Console Shell + Users/Sessions
 

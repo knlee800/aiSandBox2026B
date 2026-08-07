@@ -9,6 +9,7 @@ import { Plan } from '../entities/plan.entity';
 import { AdminDashboardService } from './admin-dashboard.service';
 import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
 import { SessionService } from '../sessions/session.service';
+import { CreditBalanceRepository } from '../billing/credit-deduction/credit-balance.repository';
 
 describe('AdminDashboardService (TASK-68B-3)', () => {
   let service: AdminDashboardService;
@@ -18,6 +19,7 @@ describe('AdminDashboardService (TASK-68B-3)', () => {
   let planRepository: jest.Mocked<Repository<Plan>>;
   let containerClient: jest.Mocked<ContainerManagerHttpClient>;
   let sessionService: jest.Mocked<SessionService>;
+  let creditBalanceRepository: jest.Mocked<CreditBalanceRepository>;
 
   beforeEach(async () => {
     const mockUserRepository = {
@@ -39,6 +41,9 @@ describe('AdminDashboardService (TASK-68B-3)', () => {
     };
     const mockSessionService = {
       terminateSession: jest.fn(),
+    };
+    const mockCreditBalanceRepository = {
+      findByOwner: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -68,6 +73,10 @@ describe('AdminDashboardService (TASK-68B-3)', () => {
           provide: SessionService,
           useValue: mockSessionService,
         },
+        {
+          provide: CreditBalanceRepository,
+          useValue: mockCreditBalanceRepository,
+        },
       ],
     }).compile();
 
@@ -78,6 +87,7 @@ describe('AdminDashboardService (TASK-68B-3)', () => {
     planRepository = module.get(getRepositoryToken(Plan));
     containerClient = module.get(ContainerManagerHttpClient);
     sessionService = module.get(SessionService);
+    creditBalanceRepository = module.get(CreditBalanceRepository);
   });
 
   afterEach(() => {
@@ -270,6 +280,21 @@ describe('AdminDashboardService (TASK-68B-3)', () => {
         tokensUsed24h: '9000',
       }),
     };
+    creditBalanceRepository.findByOwner.mockResolvedValue({
+      id: 'balance-1',
+      ownerId: 'user-1',
+      ownerType: 'user',
+      planId: 'pro',
+      balance: 1200,
+      monthlyAllocation: 25000,
+      rolloverBalance: 300,
+      status: 'active',
+      periodStart: new Date('2026-03-01T00:00:00.000Z'),
+      periodEnd: new Date('2026-04-01T00:00:00.000Z'),
+      resetAt: null,
+      createdAt: new Date('2026-03-01T00:00:00.000Z'),
+      updatedAt: new Date('2026-03-10T00:00:00.000Z'),
+    } as any);
     sessionRepository.createQueryBuilder.mockReturnValue(sessionQb);
     usageRecordRepository.createQueryBuilder.mockReturnValue(usageQb);
 
@@ -280,6 +305,67 @@ describe('AdminDashboardService (TASK-68B-3)', () => {
     expect(detail.planStatus).toBe('active');
     expect(detail.quotas.maxTokens24h).toBe(500000);
     expect(detail.quotas.currentTokens24h).toBe(9000);
+    expect(detail.creditBalance).toEqual({
+      balance: 1200,
+      monthlyAllocation: 25000,
+      rolloverBalance: 300,
+      planId: 'pro',
+      status: 'active',
+    });
+  });
+
+  it('returns null creditBalance when no credit balance row exists', async () => {
+    planRepository.find.mockResolvedValue([
+      {
+        code: 'pro',
+        name: 'Pro',
+        maxActiveSessions: 10,
+        maxSessions24h: 50,
+        maxTokens24h: 500000,
+      } as Plan,
+    ]);
+    userRepository.findOne = jest.fn().mockResolvedValue({
+      id: 'user-2',
+      email: 'user2@example.com',
+      role: 'user',
+      planType: 'pro',
+      planStatus: 'active',
+      isActive: true,
+      createdAt: new Date('2026-03-11T10:00:00.000Z'),
+    } as User);
+
+    const sessionQb: any = {
+      select: jest.fn().mockReturnThis(),
+      addSelect: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
+      setParameter: jest.fn().mockReturnThis(),
+      groupBy: jest.fn().mockReturnThis(),
+      getRawOne: jest.fn().mockResolvedValue({
+        totalSessions: '1',
+        activeSessions: '1',
+        sessionsCreated24h: '1',
+      }),
+    };
+    const usageQb: any = {
+      select: jest.fn().mockReturnThis(),
+      addSelect: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
+      groupBy: jest.fn().mockReturnThis(),
+      getRawOne: jest.fn().mockResolvedValue({
+        tokensUsed24h: '150',
+      }),
+    };
+    creditBalanceRepository.findByOwner.mockResolvedValue(null);
+
+    sessionRepository.createQueryBuilder.mockReturnValue(sessionQb);
+    usageRecordRepository.createQueryBuilder.mockReturnValue(usageQb);
+
+    const detail = await service.getAdminUserDetail('user-2');
+
+    expect(detail.userId).toBe('user-2');
+    expect(detail.quotas.currentTokens24h).toBe(150);
+    expect(detail.creditBalance).toBeNull();
   });
 
   it('terminates session using existing semantics path', async () => {

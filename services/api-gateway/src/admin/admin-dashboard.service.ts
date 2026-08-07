@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+  Optional,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
@@ -7,6 +13,7 @@ import { UsageRecord } from '../entities/usage-record.entity';
 import { Plan } from '../entities/plan.entity';
 import { QuotaConfig } from '../quota/quota.config';
 import {
+  AdminUserCreditBalanceDto,
   AdminUserDetailDto,
   AdminUserSummaryDto,
   AdminUsersResponseDto,
@@ -17,6 +24,7 @@ import {
 } from './dto/admin-sessions-response.dto';
 import { ContainerManagerHttpClient } from '../clients/container-manager-http.client';
 import { SessionService } from '../sessions/session.service';
+import { CreditBalanceRepository } from '../billing/credit-deduction/credit-balance.repository';
 
 export interface AdminUsersQuery {
   search?: string;
@@ -47,6 +55,8 @@ export class AdminDashboardService {
     private readonly planRepository: Repository<Plan>,
     private readonly containerManagerHttpClient: ContainerManagerHttpClient,
     private readonly sessionService: SessionService,
+    @Optional()
+    private readonly creditBalanceRepository?: CreditBalanceRepository,
   ) {}
 
   async getAdminUsers(query: AdminUsersQuery): Promise<AdminUsersResponseDto> {
@@ -208,10 +218,11 @@ export class AdminDashboardService {
       throw new NotFoundException(`User with ID ${userId} not found`);
     }
 
-    const [sessionStats, tokensUsed24h, planByCode] = await Promise.all([
+    const [sessionStats, tokensUsed24h, planByCode, creditBalance] = await Promise.all([
       this.getSessionStatsForUser(user.id),
       this.getTokensUsed24hForUser(user.id),
       this.getPlanByCodeMap(),
+      this.getCreditBalanceForUser(user.id),
     ]);
 
     const summary = this.toAdminUserSummary(
@@ -232,6 +243,7 @@ export class AdminDashboardService {
         currentSessions24h: summary.sessionsCreated24h,
         currentTokens24h: summary.tokensUsed24h,
       },
+      creditBalance,
     };
   }
 
@@ -445,6 +457,27 @@ export class AdminDashboardService {
       maxActiveSessions: plan.maxActiveSessions,
       maxSessions24h: plan.maxSessions24h,
       maxTokens24h: plan.maxTokens24h,
+    };
+  }
+
+  private async getCreditBalanceForUser(
+    userId: string,
+  ): Promise<AdminUserCreditBalanceDto | null> {
+    if (!this.creditBalanceRepository) {
+      return null;
+    }
+
+    const creditBalance = await this.creditBalanceRepository.findByOwner(userId, 'user');
+    if (!creditBalance) {
+      return null;
+    }
+
+    return {
+      balance: creditBalance.balance,
+      monthlyAllocation: creditBalance.monthlyAllocation,
+      rolloverBalance: creditBalance.rolloverBalance,
+      planId: creditBalance.planId,
+      status: creditBalance.status,
     };
   }
 }

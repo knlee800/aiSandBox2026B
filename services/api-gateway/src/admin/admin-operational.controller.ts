@@ -1,12 +1,15 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
   HttpCode,
   HttpStatus,
   Param,
+  Post,
   Query,
   Req,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -21,11 +24,27 @@ import {
 import { AdminSessionsResponseDto } from './dto/admin-sessions-response.dto';
 import { SessionCookieGuard } from '../auth/session-cookie.guard';
 import { AdminRoleGuard } from '../guards/admin-role.guard';
+import {
+  AdminCreditGrantRequestDto,
+  AdminCreditGrantResponseDto,
+} from './dto/admin-credit-grant.dto';
+import { AdminCreditGrantService } from './admin-credit-grant.service';
+
+type AdminRequestContext = {
+  user?: {
+    userId?: string;
+    email?: string;
+    role?: string;
+  };
+};
 
 @Controller('admin')
 @UseGuards(SessionCookieGuard, AdminRoleGuard)
 export class AdminOperationalController {
-  constructor(private readonly adminDashboardService: AdminDashboardService) {}
+  constructor(
+    private readonly adminDashboardService: AdminDashboardService,
+    private readonly adminCreditGrantService: AdminCreditGrantService,
+  ) {}
 
   @Get('users')
   @HttpCode(HttpStatus.OK)
@@ -41,6 +60,25 @@ export class AdminOperationalController {
   @HttpCode(HttpStatus.OK)
   async getUserDetail(@Param('userId') userId: string): Promise<AdminUserDetailDto> {
     return await this.adminDashboardService.getAdminUserDetail(userId);
+  }
+
+  @Post('users/:userId/credits')
+  @HttpCode(HttpStatus.OK)
+  async grantUserCredits(
+    @Param('userId') userId: string,
+    @Body() dto: AdminCreditGrantRequestDto,
+    @Req() request: AdminRequestContext,
+  ): Promise<AdminCreditGrantResponseDto> {
+    const authenticatedAdminId = request.user?.userId;
+    if (!authenticatedAdminId) {
+      throw new UnauthorizedException('Authentication required');
+    }
+
+    return await this.adminCreditGrantService.grantCredits(
+      userId,
+      authenticatedAdminId,
+      dto,
+    );
   }
 
   @Get('sessions')
@@ -66,7 +104,7 @@ export class AdminOperationalController {
   @HttpCode(HttpStatus.OK)
   async terminateSession(
     @Param('sessionId') sessionId: string,
-    @Req() request: { user: { userId?: string; email?: string } },
+    @Req() request: AdminRequestContext,
   ): Promise<{ message: string }> {
     const adminActor = request.user?.email || request.user?.userId || 'admin';
     return await this.adminDashboardService.terminateSessionAsAdmin(

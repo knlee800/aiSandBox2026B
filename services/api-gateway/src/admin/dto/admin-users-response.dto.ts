@@ -32,6 +32,15 @@ export class AdminUserQuotaVisibilityDto {
   currentTokens24h: number;
 }
 
+export class AdminUserCreditBalanceDto {
+  balance: number;
+  monthlyAllocation: number;
+  rolloverBalance: number;
+  planId: string;
+  status: string;
+}
+
 export class AdminUserDetailDto extends AdminUserSummaryDto {
   quotas: AdminUserQuotaVisibilityDto;
+  creditBalance: AdminUserCreditBalanceDto | null;
 }
