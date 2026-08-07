@@ -1,4 +1,4 @@
-﻿#
+#
 (ACTIVE -- plan phase)ity & Scope
 
 This file lists currently ACTIVE and SELECTED tasks.
@@ -16,7 +16,7 @@ Rules:
 
 If conflicts exist, TASKS_BACKLOG_FULL.md takes precedence.
 
-**Program status:** **BILLING-READY-08 COMPLETE AND LOCKED 2026-08-07** — Controlled xAI smoke PASS — Execution ID `83acc0e9-84de-4f94-9e41-294701e38393` — tokens_used=598 — `smoke-test.txt` created with correct content — persists after refresh — credit deduction applied (500 credits) — overflow 98 ACCEPTED BY DESIGN — balance reached 0 correctly — `GLOBAL_EXECUTION_ENABLED=false` verified in .env and PM2 — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — QuotaGuard browser-session bypass — Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md` — **BILLING-READY-08B COMPLETE AND LOCKED 2026-08-07** — usage_records.created_at schema remediation — Checkpoint: `docs/BILLING-READY-08B-CHECKPOINT.md` — Final checkpoint: `docs/BILLING-READY-08-CHECKPOINT.md` — **PRIVATE-BETA-FUNCTIONAL-READINESS-04 COMPLETE AND LOCKED 2026-08-07** — All acceptance criteria satisfied — FR-04 parent checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-CHECKPOINT.md` — **ADMIN-CONSOLE-01 ACTIVE** — **ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07** — Checkpoint: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md` — **ADMIN-CONSOLE-01B COMPLETE AND LOCKED 2026-08-07** — Authenticated Admin Credit Grant API — Checkpoint: `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md` — **ADMIN-CONSOLE-01C COMPLETE AND LOCKED 2026-08-07** — Admin Console Shell + Users/Sessions — Checkpoint: `docs/ADMIN-CONSOLE-01C-CHECKPOINT.md` — Exact next: ADMIN-CONSOLE-01D — Admin Credit Grant UI — PRIVATE-BETA-INVITE-01 NOT STARTED (blocked until ADMIN-CONSOLE-01 COMPLETE AND LOCKED) — No users invited — No new runtime enablement authorized without Keith approval — 01A migration NOT applied to staging
+**Program status:** **BILLING-READY-08 COMPLETE AND LOCKED 2026-08-07** — Controlled xAI smoke PASS — Execution ID `83acc0e9-84de-4f94-9e41-294701e38393` — tokens_used=598 — `smoke-test.txt` created with correct content — persists after refresh — credit deduction applied (500 credits) — overflow 98 ACCEPTED BY DESIGN — balance reached 0 correctly — `GLOBAL_EXECUTION_ENABLED=false` verified in .env and PM2 — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — QuotaGuard browser-session bypass — Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md` — **BILLING-READY-08B COMPLETE AND LOCKED 2026-08-07** — usage_records.created_at schema remediation — Checkpoint: `docs/BILLING-READY-08B-CHECKPOINT.md` — Final checkpoint: `docs/BILLING-READY-08-CHECKPOINT.md` — **PRIVATE-BETA-FUNCTIONAL-READINESS-04 COMPLETE AND LOCKED 2026-08-07** — All acceptance criteria satisfied — FR-04 parent checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-CHECKPOINT.md` — **ADMIN-CONSOLE-01 ACTIVE** — **ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07** — Checkpoint: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md` — **ADMIN-CONSOLE-01B COMPLETE AND LOCKED 2026-08-07** — Authenticated Admin Credit Grant API — Checkpoint: `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md` — **ADMIN-CONSOLE-01C COMPLETE AND LOCKED 2026-08-07** — Admin Console Shell + Users/Sessions — Checkpoint: `docs/ADMIN-CONSOLE-01C-CHECKPOINT.md` — **ADMIN-CONSOLE-01D COMPLETE AND LOCKED 2026-08-07** — Admin Credit Grant UI — Checkpoint: `docs/ADMIN-CONSOLE-01D-CHECKPOINT.md` — Exact next: ADMIN-CONSOLE-01E Staging Operator Validation + Parent Consolidation — PRIVATE-BETA-INVITE-01 NOT STARTED (blocked until ADMIN-CONSOLE-01 COMPLETE AND LOCKED) — No users invited — No new runtime enablement authorized without Keith approval — 01A migration NOT applied to staging
 
 
 \# TASKS.md ??Master Task Index
@@ -45144,7 +45144,7 @@ AGENT-HARNESS-06E closes this gap by running a full E2E canary with ALL required
 
 ## ADMIN-CONSOLE-01 — Private Beta Operator Console
 
-**Status:** ACTIVE — 01A + 01B + 01C COMPLETE AND LOCKED (2026-08-07); exact next: ADMIN-CONSOLE-01D — Admin Credit Grant UI
+**Status:** ACTIVE — 01A + 01B + 01C + 01D COMPLETE AND LOCKED (2026-08-07); exact next: ADMIN-CONSOLE-01E Staging Operator Validation + Parent Consolidation
 **Task ID:** ADMIN-CONSOLE-01
 **Family:** ADMIN CONSOLE / PRIVATE BETA OPERATIONS
 **Priority:** HIGH — blocks PRIVATE-BETA-INVITE-01
@@ -45197,8 +45197,8 @@ Provide the minimum safe browser-based admin console required to operate private
 | ADMIN-CONSOLE-01A | Admin Credit Grant Domain + Audit Schema | COMPLETE AND LOCKED — 2026-08-07 | 4-step | GPT-5.3 Codex High | None |
 | ADMIN-CONSOLE-01B | Authenticated Admin Credit Grant API | COMPLETE AND LOCKED — 2026-08-07 | 3-step | GPT-5.3 Codex | 01A COMPLETE |
 | ADMIN-CONSOLE-01C | Admin Console Shell + Users/Sessions | COMPLETE AND LOCKED — 2026-08-07 | 3-step | GPT-5.3 Codex | 01B COMPLETE |
-| ADMIN-CONSOLE-01D | Admin Credit Grant UI | NOT STARTED | 3-step | GPT-5.3 Codex | 01B + 01C COMPLETE |
-| ADMIN-CONSOLE-01E | Staging Validation + Parent Consolidation | NOT STARTED | 2-step | Sonnet 4.6 | 01A-01D COMPLETE |
+| ADMIN-CONSOLE-01D | Admin Credit Grant UI | COMPLETE AND LOCKED — 2026-08-07 | 3-step | GPT-5.3 Codex (implementation); Grok 4.5 High (registration + consolidation) | 01B + 01C COMPLETE |
+| ADMIN-CONSOLE-01E | Staging Validation + Parent Consolidation | NOT STARTED — exact next | 2-step | Sonnet 4.6 | 01A-01D COMPLETE |
 
 ### Key Architecture Decisions (locked at registration)
 
@@ -45224,7 +45224,7 @@ Provide the minimum safe browser-based admin console required to operate private
 - en / zh-TW / zh-CN render correctly
 - No direct PostgreSQL access required for any operation
 
-**ADMIN-CONSOLE-01 status:** ACTIVE — Registration COMPLETE 2026-08-07. ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07. ADMIN-CONSOLE-01B COMPLETE AND LOCKED 2026-08-07. ADMIN-CONSOLE-01C COMPLETE AND LOCKED 2026-08-07. Checkpoints: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md`, `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md`, `docs/ADMIN-CONSOLE-01C-CHECKPOINT.md`. Exact next: ADMIN-CONSOLE-01D — Admin Credit Grant UI.
+**ADMIN-CONSOLE-01 status:** ACTIVE — Registration COMPLETE 2026-08-07. ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07. ADMIN-CONSOLE-01B COMPLETE AND LOCKED 2026-08-07. ADMIN-CONSOLE-01C COMPLETE AND LOCKED 2026-08-07. ADMIN-CONSOLE-01D COMPLETE AND LOCKED 2026-08-07. Checkpoints: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md`, `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md`, `docs/ADMIN-CONSOLE-01C-CHECKPOINT.md`, `docs/ADMIN-CONSOLE-01D-CHECKPOINT.md`. Exact next: ADMIN-CONSOLE-01E Staging Operator Validation + Parent Consolidation.
 **PRIVATE-BETA-INVITE-01 status:** NOT STARTED — blocked until ADMIN-CONSOLE-01 COMPLETE AND LOCKED.
 **01A staging migration:** SOURCE COMPLETE / NOT APPLIED TO STAGING.
 
@@ -45747,7 +45747,7 @@ Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npx tsx --test "com
 **Browser/live smoke:** Deferred by design — source/test validation only in 01C. Required staging/browser evidence recorded for ADMIN-CONSOLE-01E (admin login → `/admin`, users/detail/sessions terminate, locale visuals, ~390px).
 
 **ADMIN-CONSOLE-01C status:** COMPLETE AND LOCKED — 2026-08-07. Checkpoint: `docs/ADMIN-CONSOLE-01C-CHECKPOINT.md`. Acceptance criteria: 11 / 11.
-**ADMIN-CONSOLE-01 status:** ACTIVE — 01A + 01B + 01C locked; exact next ADMIN-CONSOLE-01D — Admin Credit Grant UI; 01E NOT STARTED.
+**ADMIN-CONSOLE-01 status:** ACTIVE — 01A + 01B + 01C + 01D locked; exact next ADMIN-CONSOLE-01E Staging Operator Validation + Parent Consolidation; PRIVATE-BETA-INVITE-01 remains blocked.
 **PRIVATE-BETA-INVITE-01 status:** NOT STARTED — blocked until ADMIN-CONSOLE-01 COMPLETE AND LOCKED.
 **01A staging migration:** SOURCE COMPLETE / NOT APPLIED TO STAGING.
 
@@ -45756,34 +45756,246 @@ Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npx tsx --test "com
 
 #### ADMIN-CONSOLE-01D — Admin Credit Grant UI
 
-**Status:** NOT STARTED
+**Status:** COMPLETE AND LOCKED — 2026-08-07
 **Task ID:** ADMIN-CONSOLE-01D
 **Parent:** ADMIN-CONSOLE-01
 **Family:** ADMIN CONSOLE / CREDIT GRANT UI
-**Risk:** NORMAL — frontend-only, bounded form
+**Risk:** NORMAL — frontend-only, bounded form; financial mutation UX (irreversible without compensating grant)
 **Workflow:** 3-step (registration → implementation → checkpoint)
-**Model:** GPT-5.3 Codex
+**Model:** GPT-5.3 Codex (implementation); Grok 4.5 High (registration + consolidation)
 **Registered:** 2026-08-07
-**Depends On:** ADMIN-CONSOLE-01B + ADMIN-CONSOLE-01C COMPLETE AND LOCKED
+**Depends On:** ADMIN-CONSOLE-01B COMPLETE AND LOCKED + ADMIN-CONSOLE-01C COMPLETE AND LOCKED
+**Registration Verdict:** READY
+**Stage-Start Required:** NO — idempotency/retry contract resolved by repository evidence (01A/01B CreditGrantService + 01C admin UI patterns)
+**Checkpoint:** `docs/ADMIN-CONSOLE-01D-CHECKPOINT.md`
 
-**Scope:**
-- Credit balance display on user detail (currentBalance + monthlyAllocation context)
-- "Add Credits" action opens grant form
-- Form: positive integer amount field, required reason textarea (max 500 chars)
-- Current-period note (admin.creditGrant.currentPeriodNote key)
-- Confirmation step: shows amount, balanceBefore, projected balanceAfter, reason
-- crypto.randomUUID() generated per submit attempt as idempotencyKey
-- Duplicate-submit protection (disable button on in-flight)
-- Result states: granted (success + balanceBefore/After), duplicate (informational), failed (error + retry)
-- All copy via useTranslations('admin'); en/zh-TW/zh-CN keys complete
+##### Registration Verdict / Architecture Evidence (Step 1 COMPLETE — 2026-08-07)
 
-**Non-Goals:** No backend changes. No migration. No admin list redesign.
+Source inspection confirmed:
+
+**Placement / host page:**
+- Existing route `/{locale}/admin/users/{userId}` via thin page + `frontend/components/admin/admin-user-detail-client.tsx`
+- Credit balance already rendered in `data-testid="admin-user-detail-credit-balance"` section
+- No new app route required
+- Do not create a broad billing-management screen
+
+**API (reuse 01B — no backend changes):**
+- `POST /api/admin/users/:userId/credits`
+- Request: `{ amount: number; reason: string; idempotencyKey: string }` (`credentials: 'include'`; JSON body; no CSRF guard on admin controller — same as terminate)
+- Response HTTP 200: `{ grantId, status: 'granted'|'duplicate'|'failed', amount, balanceBefore, balanceAfter }` — no `grantedAt`; no HTTP 409
+- HTTP 400 invalid body; 401 unauthenticated; 403 non-admin; 404 unknown target user
+- Caller cannot control: `grantedByUserId`, `grantType`, `sourceType`, `provider`
+- Backend remains authoritative: `SessionCookieGuard` + `AdminRoleGuard`
+
+**Auth (reuse 01C Outcome B — no new role checks):**
+- Client gate already on detail page via `GET /api/auth/me`
+- Admin API 401/403 → existing `redirectForUnauthorizedStatus` (login / platform)
+- 01D must not weaken or duplicate auth architecture
+
+**Confirmation pattern evidence:**
+- 01C terminate uses `window.confirm` (simple yes/no)
+- No reusable Dialog/Modal component exists under `frontend/`
+- Credit-grant confirmation must show amount + reason + current balance + projected balance clearly
+- Lock: **inline confirmation state** inside the grant panel (not `window.confirm`, not new modal dependency)
+
+**Idempotency backend evidence (locks retry key policy):**
+- `idempotencyKey` → `sourceEventId` 1:1
+- Existing grant with `status='granted'` → response `duplicate` (no double-credit)
+- Existing grant with `status='failed'` → response `failed` again; **not auto-retried** (same key cannot succeed a new grant)
+- Therefore uncertain network/5xx retry must **reuse** the same key (safe against double-credit); after definitive `failed` HTTP 200, next operator grant attempt must use a **new** key
+
+**Character-limit UI pattern:** account-menu global instructions uses `maxLength` + character count — reason field may show `N / 500` guidance.
+
+**i18n:** `admin.creditGrant.*` keys do not yet exist — must be added to en / zh-TW / zh-CN simultaneously. No hardcoded English credit-grant copy.
+
+**Icons:** `@heroicons/react/24/outline` only (Plus / Banknotes / CheckCircle / ExclamationTriangle / ArrowPath as needed).
+
+##### Locked Implementation Contracts
+
+**A. UI placement / component architecture**
+- Primary host: credit-balance section of `AdminUserDetailClient` on `/{locale}/admin/users/{userId}`
+- Prefer optional focused component `frontend/components/admin/admin-credit-grant-panel.tsx` (+ helpers/tests) composed into the credit-balance section
+- Panel phases: `closed` → `form` → `confirm` → `submitting` → `result`
+- **Add Credits CTA visible only when `userDetail.creditBalance !== null`** (confirmation requires current balance; null keeps existing empty state, no grant CTA)
+- No new routes; no list-page grant UI
+
+**B. Form validation contract**
+- `amount`: number input; required; integer; minimum 1; no hard maximum; reject empty / NaN / zero / negative / fractional
+- `reason`: textarea; required; trimmed non-empty; max 500 characters; `maxLength={500}`; optional `N / 500` count via translation key
+- Do not expose: `grantedByUserId`, `grantType`, `provider`, `sourceType`, or operator-editable `idempotencyKey`
+
+**C. Idempotency-key lifecycle (LOCKED)**
+1. Do **not** generate on panel open, amount/reason edit, or re-render
+2. Generate **once** with `crypto.randomUUID()` when a confirmed POST attempt begins (confirm → submit)
+3. Store in a React ref (or equivalent stable holder); same key for the in-flight request
+4. After definitive completed response (`granted` / `duplicate` / `failed` HTTP 200, or definitive HTTP 400 / 404), clear the held key; next new grant action generates a new key
+5. After operator cancels confirm or closes panel without POST, discard any held key (none should exist yet if cancel-before-submit)
+6. Never regenerate solely because of React re-render
+
+**D. Network retry contract (LOCKED)**
+- While in-flight: submit disabled; no second concurrent POST; rapid double-click = one request
+- Explicit Retry after **network error / abort / 5xx / parse failure where server receipt is uncertain**: **reuse the same idempotencyKey** (safety against double-credit)
+- Explicit Retry / new attempt after definitive HTTP 200 `status:'failed'`: **generate a new key** (backend will not auto-retry same `sourceEventId`)
+- After definitive HTTP 400: fix form; new attempt → new key
+- After `granted` / `duplicate`: do not auto-send a second grant; new Add Credits flow → new key
+- Never silently regenerate a key on retry when the prior attempt may have reached the server
+
+**E. Confirmation interaction contract**
+- Before POST, enter inline confirm state showing: target email (from loaded detail), amount, reason, current balance, projected balanceAfter = currentBalance + amount
+- Projected balance labeled as projected / estimate — not authoritative
+- Confirm → begin POST; Cancel → return to form, no POST
+- Do not use `window.confirm` for credit grant
+- Do not add modal libraries / dependencies
+
+**F. Submission contract**
+- `POST /api/admin/users/{userId}/credits` with `credentials: 'include'`
+- Headers: existing JSON fetch conventions (`Content-Type: application/json`)
+- Body only: `{ amount, reason, idempotencyKey }` (`reason` trimmed; `amount` integer)
+- No direct frontend balance mutation except applying API result fields
+
+**G. Result behavior**
+- `granted`: success state; show amount + actual balanceBefore/balanceAfter; update visible balance to `balanceAfter`
+- `duplicate`: informational (not error); say already processed; show original balanceBefore/balanceAfter; update visible balance to `balanceAfter`; no automatic second grant
+- `failed` (HTTP 200): translated failure; do not assume balance changed; preserve enough result context; Retry uses new key per D
+- HTTP 400: translated validation/API error
+- HTTP 401/403: existing unauthorized redirect handling
+- HTTP 404: translated target-user-missing error
+- 5xx/network: translated error; Retry reuses same key per D
+
+**H. Visible balance update strategy**
+- On `granted` / `duplicate`: set `userDetail.creditBalance.balance = response.balanceAfter` locally
+- Do **not** refetch entire user detail by default (avoid double-fetch races)
+- Preserve unchanged: `monthlyAllocation`, `rolloverBalance`, `planId`, `status`
+- No optimistic pre-POST balance mutation
+
+**I. Current-period note semantic contract**
+- Always visible in form/confirm using `admin.creditGrant.currentPeriodNote`
+- Meaning: admin-added credits increase the **current usable balance only** and remain subject to existing billing-period reset behavior
+- Do not claim rollover credits; do not claim they survive reset; no technical DB language
+
+**J. Auth / error handling**
+- Reuse 01C Outcome B + `shouldTreatAdminStatusAsUnauthorized` / redirect helpers
+- No new role checks; no Next.js server role middleware
+
+**K. i18n key groups (add to en / zh-TW / zh-CN under `admin.creditGrant`)**
+- `title`, `addCredits`, `amount`, `reason`, `reasonPlaceholder`, `reasonCount` (or equivalent for N/500 if shown)
+- `confirm`, `cancel`, `confirmTitle`, `projectedBalance`, `projectedBalanceNote` (projected ≠ authoritative)
+- `currentPeriodNote`, `submitting`, `granted`, `duplicate`, `failed`, `retry`
+- `balanceBefore`, `balanceAfter`, `targetUser` (or reuse userDetail.email label)
+- `validation.amountRequired`, `validation.amountInteger`, `validation.amountMin`, `validation.reasonRequired`, `validation.reasonMax`
+- `error.http400`, `error.http404`, `error.network`, `error.generic` (as needed)
+- All via `useTranslations('admin')`; no hardcoded English credit-grant UI copy
+
+**L. Responsive / visual**
+- Utilitarian compact 01C admin language; stacked form/confirm usable at ~390px; full-width buttons on narrow width
+- No RPG / Command Center styling; no dependency additions
+- Emil Kowalski advisory-only for confirmation / in-flight / retry; Impeccable advisory-only for hierarchy
+
+##### Exact Implementation File Allowlist
+
+**Modify (expected):**
+- `frontend/components/admin/admin-user-detail-client.tsx`
+- `frontend/components/admin/admin-console.test.ts` (and/or new focused admin credit-grant test file under `frontend/components/admin/`)
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+
+**Create (optional, preferred if panel would bloat detail client):**
+- `frontend/components/admin/admin-credit-grant-panel.tsx` (or similarly focused name)
+- `frontend/components/admin/admin-credit-grant*.test.ts*` (or extend `admin-console.test.ts`)
+
+**No route file changes expected.**
+
+##### Explicit Forbidden Scope / Files
+
+- Any `services/api-gateway/**` or other backend change
+- Migration create/edit/apply; staging/DB/.env; Docker/Postgres/Redis; service restarts; provider calls
+- Applying 01A migration
+- Plans UI / billing reconciliation / role changes / sessions architecture changes
+- Agent Platform / Harness UI / global admin redesign
+- New dependencies / modal libraries
+- New admin routes unless repository evidence forces it (it does not)
+- Inventing Next.js middleware/server role auth
+- Git commit/push
+- Live browser smoke (deferred to ADMIN-CONSOLE-01E)
+
+##### Focused Tests (minimum)
+
+1. Add Credits action visible on admin user detail (when creditBalance present)
+2. Amount required
+3. Amount zero rejected
+4. Fractional amount rejected
+5. Reason required
+6. Whitespace reason rejected
+7. Reason >500 rejected or constrained (`maxLength` / validation)
+8. Confirmation displays amount
+9. Confirmation displays reason
+10. Confirmation displays current balance
+11. Confirmation displays projected balance
+12. Cancel confirmation sends no POST
+13. POST path uses selected userId
+14. POST body contains only amount/reason/idempotencyKey
+15. `crypto.randomUUID`-generated idempotency key used
+16. Double click / in-flight cannot send duplicate request
+17. `granted` displays actual balanceBefore/balanceAfter
+18. `granted` updates visible balance
+19. `duplicate` treated as informational, not failure
+20. `duplicate` updates visible balance from API result
+21. `failed` displays translated failure
+22. Network/API failure displays translated error
+23. 401/403 uses existing unauthorized behavior
+24. Current-period note visible
+25. en / zh-TW / zh-CN keys aligned
+26. No hardcoded English credit-grant UI copy
+27. Preserve existing 01C admin tests
+
+Prefer helper-exported pure functions + source wiring assertions matching `admin-console.test.ts` node:test style.
+
+##### Validation Commands (PowerShell 5.x)
+
+```powershell
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npx tsc --noEmit
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npx tsx --test "components/admin/**/*.test.ts*" "components/admin/**/*.test.tsx" "components/admin/**/__tests__/**/*.test.ts*" "components/admin/**/__tests__/**/*.test.tsx"
+```
+
+Restore `frontend/tsconfig.tsbuildinfo` if unintentionally dirty. No live browser smoke in 01D.
+
+##### Acceptance Criteria
+
+1. Add Credits UI on `/{locale}/admin/users/{userId}` credit-balance area; multilingual-first; no new route required
+2. Form validates positive integer amount + required trimmed reason (max 500)
+3. Inline confirmation shows email/amount/reason/current balance/projected balance before POST; cancel sends no request
+4. POST uses existing 01B endpoint with `{ amount, reason, idempotencyKey }`; idempotency lifecycle + network-retry reuse locked above
+5. Handles `granted` / `duplicate` / `failed` + HTTP 400/401/403/404/5xx/network per contract
+6. Visible balance updates from actual `balanceAfter` on granted/duplicate; other creditBalance fields preserved
+7. Current-period note shown with locked semantics
+8. In-flight duplicate submission prevented
+9. Auth reuses 01C Outcome B; no new role architecture
+10. `admin.creditGrant.*` keys present and aligned in en / zh-TW / zh-CN; no hardcoded English credit-grant copy
+11. Heroicons v2 Outline only; utilitarian mobile-safe UI
+12. Focused tests cover registered cases; existing 01C admin tests preserved
+13. `npx tsc --noEmit` and focused admin tests PASS
+14. No backend/migration/staging/env/Docker/provider/Git commit during implementation
+
+##### Workflow Status
+
+- Step 1 Registration COMPLETE — 2026-08-07 — READY
+- Step 2 Implementation COMPLETE — includes same-task idempotency correction (closePanel/openForm clear retained key)
+- Step 3 Consolidation/checkpoint COMPLETE — 2026-08-07 — first consolidation NOT READY (abandoned-uncertain key reuse); re-consolidation READY after correction — Checkpoint: `docs/ADMIN-CONSOLE-01D-CHECKPOINT.md`
+
+**Non-Goals:** No backend changes. No migration apply. No stage-start. No live browser smoke (01E). No plans/role/session architecture work.
+
+**ADMIN-CONSOLE-01D status:** COMPLETE AND LOCKED — 2026-08-07. Checkpoint: `docs/ADMIN-CONSOLE-01D-CHECKPOINT.md`. Browser/live staging validation deferred to ADMIN-CONSOLE-01E.
+**ADMIN-CONSOLE-01 status:** ACTIVE — 01A + 01B + 01C + 01D locked; exact next ADMIN-CONSOLE-01E; PRIVATE-BETA-INVITE-01 remains blocked.
+**PRIVATE-BETA-INVITE-01 status:** NOT STARTED — blocked until ADMIN-CONSOLE-01 COMPLETE AND LOCKED.
+**01A staging migration:** SOURCE COMPLETE / NOT APPLIED TO STAGING.
 
 ---
 
+
 #### ADMIN-CONSOLE-01E — Staging Validation + Parent Consolidation
 
-**Status:** NOT STARTED
+**Status:** NOT STARTED — exact next after ADMIN-CONSOLE-01D COMPLETE AND LOCKED
 **Task ID:** ADMIN-CONSOLE-01E
 **Parent:** ADMIN-CONSOLE-01
 **Family:** ADMIN CONSOLE / VALIDATION + CONSOLIDATION

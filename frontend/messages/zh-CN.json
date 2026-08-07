@@ -618,6 +618,41 @@
       "planId": "方案 ID",
       "status": "状态"
     },
+    "creditGrant": {
+      "title": "点数发放",
+      "addCredits": "新增点数",
+      "amount": "点数数量",
+      "reason": "原因",
+      "reasonPlaceholder": "请输入本次发放的操作原因。",
+      "reasonCount": "{count} / {max}",
+      "confirm": "确认",
+      "cancel": "取消",
+      "confirmTitle": "确认点数发放",
+      "targetUser": "目标用户",
+      "projectedBalance": "预计余额",
+      "projectedBalanceNote": "预计余额仅供参考，需以 API 成功返回结果为准。",
+      "currentPeriodNote": "管理员新增的点数只会增加当前可用余额，并仍受正常计费周期重置规则约束。",
+      "submitting": "正在提交点数发放...",
+      "granted": "点数发放成功。",
+      "duplicate": "该请求此前已处理完成。",
+      "failed": "点数发放失败。如需继续，请发起新的发放请求。",
+      "retry": "重试",
+      "balanceBefore": "发放前余额",
+      "balanceAfter": "发放后余额",
+      "validation": {
+        "amountRequired": "请输入点数数量。",
+        "amountInteger": "点数数量必须是整数。",
+        "amountMin": "点数数量至少为 1。",
+        "reasonRequired": "请输入原因。",
+        "reasonMax": "原因不能超过 500 个字符。"
+      },
+      "error": {
+        "http400": "点数发放请求无效，请检查输入后重试。",
+        "http404": "未找到目标用户。",
+        "network": "由于网络或服务器问题，当前无法确认点数发放结果。重试会复用同一个请求键。",
+        "generic": "点数发放发生未知错误。"
+      }
+    },
     "sessions": {
       "title": "会话",
       "sessionId": "会话 ID",

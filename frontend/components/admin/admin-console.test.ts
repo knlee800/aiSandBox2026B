@@ -26,6 +26,7 @@ const zhCnMessages = JSON.parse(readFileSync(resolve(messagesDir, 'zh-CN.json'),
 
 const adminPageSource = readFileSync(resolve(__dirname, './admin-page-client.tsx'), 'utf-8');
 const adminDetailSource = readFileSync(resolve(__dirname, './admin-user-detail-client.tsx'), 'utf-8');
+const adminCreditGrantSource = readFileSync(resolve(__dirname, './admin-credit-grant-panel.tsx'), 'utf-8');
 
 function readNested(source: JsonObject, fullKey: string): unknown {
   const keyParts = fullKey.split('.');
@@ -225,6 +226,12 @@ describe('admin component source wiring checks', () => {
     assert.match(adminDetailSource, /admin-user-detail-credit-balance-empty/);
   });
 
+  test('detail page composes credit grant panel near credit balance', () => {
+    assert.match(adminDetailSource, /AdminCreditGrantPanel/);
+    assert.match(adminDetailSource, /admin-user-detail-credit-balance/);
+    assert.match(adminDetailSource, /shouldShowAdminCreditGrantPanel\(userDetail\.creditBalance\)/);
+  });
+
   test('detail page uses window.confirm before session termination', () => {
     assert.match(adminDetailSource, /window\.confirm\(t\('confirm\.terminateSession'\)\)/);
   });
@@ -237,6 +244,25 @@ describe('admin component source wiring checks', () => {
   test('detail page has terminate success and error feedback states', () => {
     assert.match(adminDetailSource, /admin-user-detail-terminate-success/);
     assert.match(adminDetailSource, /admin-user-detail-terminate-error/);
+  });
+
+  test('credit grant source includes required panel phases', () => {
+    assert.match(adminCreditGrantSource, /'closed' \| 'form' \| 'confirm' \| 'submitting' \| 'result'/);
+  });
+
+  test('credit grant source shows current-period note and projected-balance note', () => {
+    assert.match(adminCreditGrantSource, /creditGrant\.currentPeriodNote/);
+    assert.match(adminCreditGrantSource, /creditGrant\.projectedBalanceNote/);
+  });
+
+  test('credit grant source uses POST with credentials include and JSON content type', () => {
+    assert.match(adminCreditGrantSource, /method: 'POST'/);
+    assert.match(adminCreditGrantSource, /credentials: 'include'/);
+    assert.match(adminCreditGrantSource, /'Content-Type': 'application\/json'/);
+  });
+
+  test('credit grant source uses crypto.randomUUID for idempotency key', () => {
+    assert.match(adminCreditGrantSource, /crypto\.randomUUID\(\)/);
   });
 });
 
@@ -254,6 +280,37 @@ describe('i18n admin namespace checks', () => {
     'admin.success.sessionTerminated',
     'admin.error.usersLoad',
     'admin.unauthorized.loginRedirect',
+  ];
+  const requiredCreditGrantKeys = [
+    'admin.creditGrant.title',
+    'admin.creditGrant.addCredits',
+    'admin.creditGrant.amount',
+    'admin.creditGrant.reason',
+    'admin.creditGrant.reasonPlaceholder',
+    'admin.creditGrant.reasonCount',
+    'admin.creditGrant.confirm',
+    'admin.creditGrant.cancel',
+    'admin.creditGrant.confirmTitle',
+    'admin.creditGrant.targetUser',
+    'admin.creditGrant.projectedBalance',
+    'admin.creditGrant.projectedBalanceNote',
+    'admin.creditGrant.currentPeriodNote',
+    'admin.creditGrant.submitting',
+    'admin.creditGrant.granted',
+    'admin.creditGrant.duplicate',
+    'admin.creditGrant.failed',
+    'admin.creditGrant.retry',
+    'admin.creditGrant.balanceBefore',
+    'admin.creditGrant.balanceAfter',
+    'admin.creditGrant.validation.amountRequired',
+    'admin.creditGrant.validation.amountInteger',
+    'admin.creditGrant.validation.amountMin',
+    'admin.creditGrant.validation.reasonRequired',
+    'admin.creditGrant.validation.reasonMax',
+    'admin.creditGrant.error.http400',
+    'admin.creditGrant.error.http404',
+    'admin.creditGrant.error.network',
+    'admin.creditGrant.error.generic',
   ];
 
   test('en.json contains required admin namespace keys', () => {
@@ -276,6 +333,27 @@ describe('i18n admin namespace checks', () => {
       assert.equal(typeof value, 'string', `Missing zh-CN key: ${key}`);
     }
   });
+
+  test('en.json contains required admin credit grant keys', () => {
+    for (const key of requiredCreditGrantKeys) {
+      const value = readNested(enMessages, key);
+      assert.equal(typeof value, 'string', `Missing en key: ${key}`);
+    }
+  });
+
+  test('zh-TW.json contains required admin credit grant keys', () => {
+    for (const key of requiredCreditGrantKeys) {
+      const value = readNested(zhTwMessages, key);
+      assert.equal(typeof value, 'string', `Missing zh-TW key: ${key}`);
+    }
+  });
+
+  test('zh-CN.json contains required admin credit grant keys', () => {
+    for (const key of requiredCreditGrantKeys) {
+      const value = readNested(zhCnMessages, key);
+      assert.equal(typeof value, 'string', `Missing zh-CN key: ${key}`);
+    }
+  });
 });
 
 describe('no hardcoded English admin UI copy', () => {
@@ -292,6 +370,27 @@ describe('no hardcoded English admin UI copy', () => {
     for (const pattern of hardcodedPatterns) {
       assert.equal(pattern.test(adminPageSource), false, `Hardcoded copy found in admin page: ${pattern}`);
       assert.equal(pattern.test(adminDetailSource), false, `Hardcoded copy found in admin detail: ${pattern}`);
+      assert.equal(pattern.test(adminCreditGrantSource), false, `Hardcoded copy found in admin credit grant: ${pattern}`);
+    }
+  });
+
+  test('credit-grant component avoids hardcoded English grant labels', () => {
+    const hardcodedGrantPatterns = [
+      /['"]Add Credits['"]/,
+      /['"]Credit Grant['"]/,
+      /['"]Confirm credit grant['"]/,
+      /['"]Projected Balance['"]/,
+      /['"]Balance Before['"]/,
+      /['"]Balance After['"]/,
+      /['"]Retry['"]/,
+    ];
+
+    for (const pattern of hardcodedGrantPatterns) {
+      assert.equal(
+        pattern.test(adminCreditGrantSource),
+        false,
+        `Hardcoded grant copy found in admin credit grant: ${pattern}`,
+      );
     }
   });
 });

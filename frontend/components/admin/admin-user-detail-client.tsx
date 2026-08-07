@@ -9,6 +9,9 @@ import {
   StopCircleIcon,
 } from '@heroicons/react/24/outline';
 import { useLocale, useTranslations } from '@/hooks/useTranslations';
+import AdminCreditGrantPanel, {
+  shouldShowAdminCreditGrantPanel,
+} from './admin-credit-grant-panel';
 import {
   resolveAdminAuthOutcome,
   type AdminAuthMeResponse,
@@ -88,6 +91,23 @@ export function applySessionTerminationUpdate(
       terminationReason: session.terminationReason ?? fallbackReason,
     };
   });
+}
+
+export function applyCreditBalanceAfterGrant(
+  userDetail: AdminUserDetail | null,
+  balanceAfter: number,
+): AdminUserDetail | null {
+  if (!userDetail || !userDetail.creditBalance) {
+    return userDetail;
+  }
+
+  return {
+    ...userDetail,
+    creditBalance: {
+      ...userDetail.creditBalance,
+      balance: balanceAfter,
+    },
+  };
 }
 
 export function normalizeUserIdParam(value: string | string[] | undefined): string | null {
@@ -361,6 +381,10 @@ export default function AdminUserDetailClient() {
     [redirectForUnauthorizedStatus, t, updateTerminatingSessionIds],
   );
 
+  const handleCreditBalanceUpdated = React.useCallback((balanceAfter: number) => {
+    setUserDetail((currentUserDetail) => applyCreditBalanceAfterGrant(currentUserDetail, balanceAfter));
+  }, []);
+
   if (authState === 'checking') {
     return (
       <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6" data-testid="admin-user-detail-auth-loading">
@@ -469,28 +493,39 @@ export default function AdminUserDetailClient() {
           <section className="rounded-xl border border-gray-200 bg-white p-4 lg:col-span-2" data-testid="admin-user-detail-credit-balance">
             <h2 className="text-sm font-semibold text-gray-900">{t('creditBalance.title')}</h2>
             {userDetail.creditBalance ? (
-              <dl className="mt-3 grid grid-cols-1 gap-2 text-sm text-gray-700 sm:grid-cols-2">
-                <div className="flex justify-between gap-2 sm:block">
-                  <dt className="text-gray-500">{t('creditBalance.balance')}</dt>
-                  <dd>{userDetail.creditBalance.balance}</dd>
-                </div>
-                <div className="flex justify-between gap-2 sm:block">
-                  <dt className="text-gray-500">{t('creditBalance.monthlyAllocation')}</dt>
-                  <dd>{userDetail.creditBalance.monthlyAllocation}</dd>
-                </div>
-                <div className="flex justify-between gap-2 sm:block">
-                  <dt className="text-gray-500">{t('creditBalance.rolloverBalance')}</dt>
-                  <dd>{userDetail.creditBalance.rolloverBalance}</dd>
-                </div>
-                <div className="flex justify-between gap-2 sm:block">
-                  <dt className="text-gray-500">{t('creditBalance.planId')}</dt>
-                  <dd>{userDetail.creditBalance.planId}</dd>
-                </div>
-                <div className="flex justify-between gap-2 sm:block">
-                  <dt className="text-gray-500">{t('creditBalance.status')}</dt>
-                  <dd>{userDetail.creditBalance.status}</dd>
-                </div>
-              </dl>
+              <>
+                <dl className="mt-3 grid grid-cols-1 gap-2 text-sm text-gray-700 sm:grid-cols-2">
+                  <div className="flex justify-between gap-2 sm:block">
+                    <dt className="text-gray-500">{t('creditBalance.balance')}</dt>
+                    <dd>{userDetail.creditBalance.balance}</dd>
+                  </div>
+                  <div className="flex justify-between gap-2 sm:block">
+                    <dt className="text-gray-500">{t('creditBalance.monthlyAllocation')}</dt>
+                    <dd>{userDetail.creditBalance.monthlyAllocation}</dd>
+                  </div>
+                  <div className="flex justify-between gap-2 sm:block">
+                    <dt className="text-gray-500">{t('creditBalance.rolloverBalance')}</dt>
+                    <dd>{userDetail.creditBalance.rolloverBalance}</dd>
+                  </div>
+                  <div className="flex justify-between gap-2 sm:block">
+                    <dt className="text-gray-500">{t('creditBalance.planId')}</dt>
+                    <dd>{userDetail.creditBalance.planId}</dd>
+                  </div>
+                  <div className="flex justify-between gap-2 sm:block">
+                    <dt className="text-gray-500">{t('creditBalance.status')}</dt>
+                    <dd>{userDetail.creditBalance.status}</dd>
+                  </div>
+                </dl>
+                {shouldShowAdminCreditGrantPanel(userDetail.creditBalance) ? (
+                  <AdminCreditGrantPanel
+                    userId={userDetail.userId}
+                    targetUserEmail={userDetail.email}
+                    creditBalance={userDetail.creditBalance}
+                    onUnauthorizedStatus={redirectForUnauthorizedStatus}
+                    onBalanceUpdated={handleCreditBalanceUpdated}
+                  />
+                ) : null}
+              </>
             ) : (
               <p className="mt-2 text-sm text-gray-600" data-testid="admin-user-detail-credit-balance-empty">
                 {t('empty.creditBalance')}

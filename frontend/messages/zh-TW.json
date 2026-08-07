@@ -618,6 +618,41 @@
       "planId": "方案 ID",
       "status": "狀態"
     },
+    "creditGrant": {
+      "title": "點數加值",
+      "addCredits": "新增點數",
+      "amount": "點數數量",
+      "reason": "原因",
+      "reasonPlaceholder": "請輸入本次加值的操作原因。",
+      "reasonCount": "{count} / {max}",
+      "confirm": "確認",
+      "cancel": "取消",
+      "confirmTitle": "確認點數加值",
+      "targetUser": "目標使用者",
+      "projectedBalance": "預估餘額",
+      "projectedBalanceNote": "預估餘額僅供參考，需以 API 成功回應為準。",
+      "currentPeriodNote": "管理員新增的點數只會增加目前可用餘額，並仍受一般帳務週期重置規則約束。",
+      "submitting": "送出點數加值中...",
+      "granted": "點數已成功新增。",
+      "duplicate": "此請求先前已處理完成。",
+      "failed": "點數加值失敗。如需再次操作，請發起新的加值請求。",
+      "retry": "重試",
+      "balanceBefore": "加值前餘額",
+      "balanceAfter": "加值後餘額",
+      "validation": {
+        "amountRequired": "請輸入點數數量。",
+        "amountInteger": "點數數量必須為整數。",
+        "amountMin": "點數數量至少要 1。",
+        "reasonRequired": "請輸入原因。",
+        "reasonMax": "原因不可超過 500 個字元。"
+      },
+      "error": {
+        "http400": "點數加值請求無效，請檢查輸入後再試一次。",
+        "http404": "找不到目標使用者。",
+        "network": "因網路或伺服器問題，目前無法確認點數加值結果。重試會沿用同一個請求鍵。",
+        "generic": "點數加值發生未預期錯誤。"
+      }
+    },
     "sessions": {
       "title": "工作階段",
       "sessionId": "工作階段 ID",

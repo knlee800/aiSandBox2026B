@@ -618,6 +618,41 @@
       "planId": "Plan ID",
       "status": "Status"
     },
+    "creditGrant": {
+      "title": "Credit Grant",
+      "addCredits": "Add Credits",
+      "amount": "Amount",
+      "reason": "Reason",
+      "reasonPlaceholder": "Enter a concise operator reason for this grant.",
+      "reasonCount": "{count} / {max}",
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "confirmTitle": "Confirm credit grant",
+      "targetUser": "Target User",
+      "projectedBalance": "Projected Balance",
+      "projectedBalanceNote": "Projected balance is an estimate until the API request succeeds.",
+      "currentPeriodNote": "Admin-added credits increase the current usable balance only and remain subject to the normal billing-period reset.",
+      "submitting": "Submitting credit grant...",
+      "granted": "Credits granted successfully.",
+      "duplicate": "This request was already processed previously.",
+      "failed": "Credit grant failed. Start a new grant attempt if needed.",
+      "retry": "Retry",
+      "balanceBefore": "Balance Before",
+      "balanceAfter": "Balance After",
+      "validation": {
+        "amountRequired": "Amount is required.",
+        "amountInteger": "Amount must be a whole number.",
+        "amountMin": "Amount must be at least 1.",
+        "reasonRequired": "Reason is required.",
+        "reasonMax": "Reason cannot exceed 500 characters."
+      },
+      "error": {
+        "http400": "Credit grant request is invalid. Please review the input and try again.",
+        "http404": "Target user was not found.",
+        "network": "Credit grant result is uncertain due to a network or server issue. Retry will reuse the same request key.",
+        "generic": "Credit grant failed unexpectedly."
+      }
+    },
     "sessions": {
       "title": "Sessions",
       "sessionId": "Session ID",
