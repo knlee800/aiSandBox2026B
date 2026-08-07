@@ -2,16 +2,16 @@
 
 **Task ID:** PRIVATE-BETA-FUNCTIONAL-READINESS-04
 **Type:** Controlled Staging AI Execution Enablement and Core Product Loop Smoke
-**Status:** ACTIVE — 2026-08-06 — Step 1 COMPLETE — FR-04A COMPLETE and LOCKED — PASS — Optional Anthropic readiness only — FR-04B COMPLETE and LOCKED — PASS — Stale provider/model catalogue blocker RESOLVED in source — FR-04 source prerequisites COMPLETE — Child FR-04C COMPLETE and LOCKED — PASS — Staging catalogues deployed at `df9a9ff` — Child FR-04D ACTIVE — Outcome A — `/[locale]/app` is canonical Build anything — FR-04 Step 3c remains BLOCKED — Operator-reported: `GLOBAL_EXECUTION_ENABLED=false`, `AI_PROVIDER=xai`, `PROVIDER_XAI_ENABLED=true` — no inference request — xAI configuration remains present — global execution remains disabled — No private-beta users may be invited — No new runtime enablement authorized
-**Author:** Cursor / Sonnet 4.6 (amended 2026-08-06 — xAI / multi-model audit correction; amended 2026-08-06 — FR-04B registration; amended 2026-08-06 — FR-04B COMPLETE and LOCKED; amended 2026-08-06 — FR-04C registration; amended 2026-08-06 — FR-04C COMPLETE and LOCKED; amended 2026-08-06 — FR-04D route audit)
+**Status:** COMPLETE AND LOCKED — 2026-08-07 — PASS — All acceptance criteria satisfied — Step 1 COMPLETE — FR-04A COMPLETE and LOCKED — PASS — Optional Anthropic readiness only — FR-04B COMPLETE and LOCKED — PASS — Stale provider/model catalogue blocker RESOLVED in source — FR-04 source prerequisites COMPLETE — Child FR-04C COMPLETE and LOCKED — PASS — Staging catalogues deployed at `df9a9ff` — Child FR-04D COMPLETE AND LOCKED — Outcome A — `/[locale]/app` is canonical Build anything — FR-04 Step 3c PASS — Execution ID `83acc0e9-84de-4f94-9e41-294701e38393` — tokens_used=598 — `smoke-test.txt` created with correct content — persists after refresh — credit deduction applied (balance 500→0) — overflow 98 ACCEPTED BY DESIGN — `GLOBAL_EXECUTION_ENABLED=false` verified in .env and PM2 — BILLING-READY-08 dependency RESOLVED — Step 4 COMPLETE — Checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-CHECKPOINT.md` — No private-beta users may be invited — PRIVATE-BETA-INVITE-01 NOT REGISTERED
+**Author:** Cursor / Sonnet 4.6 (amended 2026-08-06 — xAI / multi-model audit correction; amended 2026-08-06 — FR-04B registration; amended 2026-08-06 — FR-04B COMPLETE and LOCKED; amended 2026-08-06 — FR-04C registration; amended 2026-08-06 — FR-04C COMPLETE and LOCKED; amended 2026-08-06 — FR-04D route audit; amended 2026-08-07 — Step 4 consolidation + COMPLETE AND LOCKED)
 **Date:** 2026-08-06
 **Keith approval:** Registration approved 2026-08-06
 **Child:** PRIVATE-BETA-FUNCTIONAL-READINESS-04A — COMPLETE and LOCKED — 2026-08-06 — PASS — Checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04A-CHECKPOINT.md` — **Scope retained as optional Anthropic configuration hardening only. Do not treat FR-04A as selecting Anthropic for FR-04 smoke. Do not modify the locked FR-04A checkpoint.**
 **Child:** PRIVATE-BETA-FUNCTIONAL-READINESS-04B — COMPLETE and LOCKED — 2026-08-06 — PASS — Provider Model Catalogue and Selection Hardening — Checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04B-CHECKPOINT.md` — Plan: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04B-IMPLEMENTATION-PLAN.md` — **Stale catalogue blocker resolved in source. FR-04 source prerequisites complete.**
 **Child:** PRIVATE-BETA-FUNCTIONAL-READINESS-04C — COMPLETE and LOCKED — 2026-08-06 — PASS — Controlled Staging Deployment of FR-04A/04B — Checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04C-CHECKPOINT.md` — Plan: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04C-DEPLOYMENT-PLAN.md` — **Staging deployed at `df9a9ff`. Did not enable xAI execution. Safe env posture preserved at FR-04C close.**
-**Child:** PRIVATE-BETA-FUNCTIONAL-READINESS-04D — ACTIVE — 2026-08-06 — Build Workspace Route and Legacy `/app` Audit — Outcome A — Audit: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04D-ROUTE-AUDIT.md` — **Canonical Build anything route is `/[locale]/app`. No source route change required. Step 3c can resume on existing route after Keith approval.**
-**Audit outcome (2026-08-06):** **Outcome A amended** — Existing xAI path and per-request provider/model selection exist in source. FR-04B catalogue/default hardening is now COMPLETE and LOCKED. FR-04C staging deployment is now COMPLETE and LOCKED. FR-04D route audit Outcome A — `/[locale]/app` canonical. FR-04 Step 3c remains BLOCKED. Global execution remains disabled.
-**Exact next action:** Accept FR-04D Outcome A; resume FR-04 Step 3c on existing `https://staging.ainow.biz/en/app` project view without source route changes (requires separate Keith approval; no new runtime enablement authorized by FR-04D)
+**Child:** PRIVATE-BETA-FUNCTIONAL-READINESS-04D — COMPLETE AND LOCKED — 2026-08-06 — Outcome A — Build Workspace Route and Legacy `/app` Audit — Audit: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04D-ROUTE-AUDIT.md` — **Canonical Build anything route is `/[locale]/app`. No source route change required. Step 3c resumed on `/en/app` after Keith approval.**
+**Audit outcome (2026-08-06):** **Outcome A amended** — Existing xAI path and per-request provider/model selection exist in source. FR-04B catalogue/default hardening is now COMPLETE and LOCKED. FR-04C staging deployment is now COMPLETE and LOCKED. FR-04D route audit Outcome A — `/[locale]/app` canonical. FR-04 Step 3c PASS — Execution ID `83acc0e9-84de-4f94-9e41-294701e38393` — GLOBAL_EXECUTION_ENABLED returned to false. FR-04 COMPLETE AND LOCKED 2026-08-07.
+**Exact next action:** FR-04 COMPLETE AND LOCKED — 2026-08-07. Next recommended: PRIVATE-BETA-INVITE-01 registration (requires Keith explicit approval — NOT REGISTERED — no invitations authorized).
 
 ---
 
@@ -424,23 +424,23 @@ Each slice requires **separate explicit Keith approval** before execution.
 | Step 1b — xAI / multi-model source audit + plan correction | **COMPLETE — 2026-08-06** | This amendment. Outcome A. No runtime action. |
 | FR-04B — Provider Model Catalogue and Selection Hardening | **COMPLETE and LOCKED — 2026-08-06 — PASS** | Catalogue + dual-layer validation + frontend mirror. Checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04B-CHECKPOINT.md`. |
 | FR-04C — Controlled Staging Deployment of FR-04A/04B | **COMPLETE and LOCKED — 2026-08-06 — PASS** | Staging catalogues deployed at `df9a9ff`. Checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04C-CHECKPOINT.md`. Plan: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04C-DEPLOYMENT-PLAN.md`. Did not enable execution. |
-| FR-04D — Build Workspace Route and Legacy `/app` Audit | **ACTIVE — 2026-08-06 — Outcome A** | Canonical Build anything = `/[locale]/app`. Audit: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04D-ROUTE-AUDIT.md`. No source route change required. |
-| Step 2 — Keith reviews amended plan + verifies staging xAI config path | **IN PROGRESS / partial (operator)** | xAI path configured per operator report during Step 3c attempt; global execution remains disabled. |
-| Step 3a — PM2 env configuration + service restart | **PARTIAL (operator)** | Operator-reported `AI_PROVIDER=xai` / `PROVIDER_XAI_ENABLED=true` with `GLOBAL_EXECUTION_ENABLED=false`. No inference. Not re-authorized by FR-04D. |
-| Step 3b — Execution health verification | **NOT STARTED / blocked** | Requires kill-switch lift authorization separately. |
-| Step 3c — Core product loop smoke | **BLOCKED** | Stopped before inference due to route/workspace confusion. Resume on `/en/app` project view without source changes after Keith approval. |
-| Step 4 — Rollback + evidence consolidation + checkpoint | **NOT STARTED** | Requires Step 3c complete. Rollback mandatory regardless of outcome. |
+| FR-04D — Build Workspace Route and Legacy `/app` Audit | **COMPLETE AND LOCKED — 2026-08-06 — Outcome A** | Canonical Build anything = `/[locale]/app`. Audit: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04D-ROUTE-AUDIT.md`. No source route change required. Step 3c resumed on existing route after Keith approval. |
+| Step 2 — Keith reviews amended plan + verifies staging xAI config path | **COMPLETE (operator)** | xAI path configured per operator report; `GLOBAL_EXECUTION_ENABLED=false` verified prior to smoke. |
+| Step 3a — PM2 env configuration + service restart | **COMPLETE (operator)** | `GLOBAL_EXECUTION_ENABLED=true`, `AI_PROVIDER=xai`, `PROVIDER_XAI_ENABLED=true` set; services restarted for smoke window. |
+| Step 3b — Execution health verification | **COMPLETE** | Kill switch confirmed lifted; authenticated AI request no longer 503; ai-service worker confirmed alive. |
+| Step 3c — Core product loop smoke | **PASS — 2026-08-07** | xAI model selector grok-4.5; bounded prompt submitted; `smoke-test.txt` created with correct content; persists after refresh; credit deduction applied. Execution ID: `83acc0e9-84de-4f94-9e41-294701e38393`. |
+| Step 4 — Rollback + evidence consolidation + checkpoint | **COMPLETE AND LOCKED — 2026-08-07** | `GLOBAL_EXECUTION_ENABLED=false` verified in .env and PM2. All evidence consolidated. Checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-CHECKPOINT.md`. |
 
 ---
 
-## 5. Safety Confirmations (Step 1b audit amendment)
+## 5. Safety Confirmations (Step 1b audit amendment + Step 4 consolidation)
 
 - ✅ No source code changed
 - ✅ No locked FR-04A checkpoint modified
 - ✅ No `.env*` files opened or changed
 - ✅ No env values printed or recorded
-- ✅ No runtime or server action taken
-- ✅ No SSH / AWS CLI / PM2 / systemd / Caddy action
+- ✅ No runtime or server action taken in consolidation step
+- ✅ No SSH / AWS CLI / PM2 / systemd / Caddy action in consolidation step
 - ✅ No Docker / PostgreSQL / Redis action
 - ✅ No terminal commands run
 - ✅ No git commit or push
@@ -510,14 +510,19 @@ Previous designs rejected:
 
 **BILLING-READY-08A — COMPLETE AND LOCKED 2026-08-07.** Step 4A sub-fix: `QuotaGuard` browser-session bypass. Root cause: `QuotaGuard` applied legacy Phase 21B API-key quota to `browser-session` sentinel identity, causing execution pipeline failure for browser users after `CreditBalanceGuard` passed. Fix: `QuotaGuard.canActivate()` bypasses all legacy quota checks and usage recording for `apiKeyId === 'browser-session'`. Genuine API-key behavior unchanged. Guard ordering unchanged. Files changed: `quota.guard.ts`, `quota.guard.spec.ts`, `ai-execution-guards.integration.spec.ts`. 2 suites, 52 tests PASS; tsc PASS; build PASS; lint PASS. Step 4A smoke remains FAIL — blocker resolved in source. Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md`.
 
-FR-04 Step 3c remains BLOCKED pending:
+FR-04 Step 3c was BLOCKED pending BILLING-READY-08. All blockers are now resolved:
+
 1. ~~BILLING-READY-08 Step 2a (new-user provisioning source + tests)~~ — **COMPLETE AND LOCKED 2026-08-06**
 2. ~~BILLING-READY-08 Step 2b (historical backfill migration + tests)~~ — **COMPLETE AND LOCKED 2026-08-06**
 3. ~~BILLING-READY-08 Step 3 (staging deployment + migration:run)~~ — **COMPLETE AND LOCKED 2026-08-07**
 4. ~~BILLING-READY-08A (QuotaGuard browser-session bypass source + tests)~~ — **COMPLETE AND LOCKED 2026-08-07**
-5. BILLING-READY-08 Step 4B (commit/push 08A → staging deployment → controlled runtime retry + consolidation) — **ACTIVE — pending deployment + controlled retry; requires Keith approval**
+5. ~~BILLING-READY-08 Step 4B (commit/push 08A → staging deployment → controlled runtime retry + consolidation)~~ — **COMPLETE AND LOCKED 2026-08-07**
 
-`GLOBAL_EXECUTION_ENABLED` must remain `false` until BILLING-READY-08 08A is deployed and Step 4B runtime retry completes.
+**FR-04 Step 3c: PASS** — Controlled xAI smoke PASS — Execution ID `83acc0e9-84de-4f94-9e41-294701e38393` — tokens_used=598 — `smoke-test.txt` created with correct content — persists after refresh — credit deduction applied (balance 500→0) — overflow 98 ACCEPTED BY DESIGN — `GLOBAL_EXECUTION_ENABLED=false` verified in .env and PM2. Final checkpoint: `docs/BILLING-READY-08-CHECKPOINT.md`.
+
+**BILLING-READY-08 COMPLETE AND LOCKED — 2026-08-07.** FR-04 BILLING-READY-08 blocking dependency RESOLVED.
+
+**Exact next FR-04 lifecycle step:** FR-04 Step 4 — Rollback + Evidence Consolidation + Checkpoint (requires Keith explicit approval — new window).
 
 ---
 

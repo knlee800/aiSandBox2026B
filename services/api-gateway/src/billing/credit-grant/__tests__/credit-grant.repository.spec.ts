@@ -19,6 +19,8 @@ describe('CreditGrantRepository (05E)', () => {
     webhookEventId: 'webhook-evt-uuid-1',
     planType: null,
     topUpPackId: 'topup_1000',
+    grantedByUserId: null,
+    reason: null,
     amount: 1000,
     balanceBefore: 500,
     balanceAfter: 1500,
@@ -144,6 +146,29 @@ describe('CreditGrantRepository (05E)', () => {
           webhookEventId: null,
           planType: null,
           topUpPackId: null,
+          grantedByUserId: null,
+          reason: null,
+        }),
+      );
+    });
+
+    it('should persist admin audit fields when provided', async () => {
+      await repo.createGrant({
+        ownerId: 'user-uuid-1',
+        grantType: 'admin',
+        sourceType: 'admin',
+        sourceEventId: 'evt_admin_001',
+        provider: 'admin',
+        grantedByUserId: 'admin-user-uuid-1',
+        reason: 'manual adjustment',
+        amount: 250,
+        balanceBefore: 1000,
+        balanceAfter: 1250,
+      });
+      expect(mockTypeOrmRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          grantedByUserId: 'admin-user-uuid-1',
+          reason: 'manual adjustment',
         }),
       );
     });

@@ -31,6 +31,8 @@ describe('CreditGrant Entity (05E)', () => {
       entity.webhookEventId = 'wh-uuid';
       entity.planType = 'starter';
       entity.topUpPackId = 'topup_1000';
+      entity.grantedByUserId = 'admin-user-uuid-1';
+      entity.reason = 'manual correction';
       entity.amount = 1000;
       entity.balanceBefore = 500;
       entity.balanceAfter = 1500;
@@ -108,6 +110,8 @@ describe('CreditGrant Entity (05E)', () => {
       entity.webhookEventId = null;
       entity.planType = null;
       entity.topUpPackId = null;
+      entity.grantedByUserId = null;
+      entity.reason = null;
       entity.errorCode = null;
       entity.errorMessage = null;
       entity.grantedAt = null;
@@ -116,6 +120,8 @@ describe('CreditGrant Entity (05E)', () => {
       expect(entity.webhookEventId).toBeNull();
       expect(entity.planType).toBeNull();
       expect(entity.topUpPackId).toBeNull();
+      expect(entity.grantedByUserId).toBeNull();
+      expect(entity.reason).toBeNull();
       expect(entity.errorCode).toBeNull();
       expect(entity.errorMessage).toBeNull();
       expect(entity.grantedAt).toBeNull();

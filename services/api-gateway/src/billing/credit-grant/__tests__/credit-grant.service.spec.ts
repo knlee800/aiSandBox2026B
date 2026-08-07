@@ -42,6 +42,8 @@ describe('CreditGrantService (05E)', () => {
     webhookEventId: 'webhook-evt-uuid-1',
     planType: null,
     topUpPackId: 'topup_1000',
+    grantedByUserId: null,
+    reason: null,
     amount: 1000,
     balanceBefore: 5000,
     balanceAfter: 6000,
@@ -68,6 +70,7 @@ describe('CreditGrantService (05E)', () => {
         ...stubBalance,
         balance: 6000,
       }),
+      resetForNewPeriod: jest.fn(),
     };
 
     // transaction() executes the callback directly (simulates single-connection transaction)
@@ -234,6 +237,202 @@ describe('CreditGrantService (05E)', () => {
       });
       expect(result.status).toBe('failed');
       expect(result.errorCode).toBe('AMOUNT_RESOLUTION_FAILED');
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Admin grant
+  // -------------------------------------------------------------------------
+
+  describe('admin grant', () => {
+    it('should grant admin credits with exact balance increment', async () => {
+      const result = await service.processGrant({
+        ownerId: 'user-uuid-1',
+        grantType: 'admin',
+        sourceEventId: 'evt_admin_happy_1',
+        amount: 250,
+        grantedByUserId: 'admin-user-uuid-1',
+        reason: '  manual adjustment for support case  ',
+      });
+
+      expect(result.status).toBe('granted');
+      expect(result.amount).toBe(250);
+      expect(result.balanceBefore).toBe(5000);
+      expect(result.balanceAfter).toBe(5250);
+
+      expect(mockGrantRepo.createGrant).toHaveBeenCalledWith(
+        expect.objectContaining({
+          grantType: 'admin',
+          sourceType: 'admin',
+          provider: 'admin',
+          amount: 250,
+          balanceBefore: 5000,
+          balanceAfter: 5250,
+          grantedByUserId: 'admin-user-uuid-1',
+          reason: 'manual adjustment for support case',
+        }),
+        expect.anything(),
+      );
+
+      expect(mockBalanceRepo.addBalance).toHaveBeenCalledWith(
+        'bal-uuid-1',
+        5250,
+        expect.anything(),
+      );
+      expect(mockBalanceRepo.resetForNewPeriod).not.toHaveBeenCalled();
+    });
+
+    it('should reject amount=0', async () => {
+      const result = await service.processGrant({
+        ownerId: 'user-uuid-1',
+        grantType: 'admin',
+        sourceEventId: 'evt_admin_bad_amt_0',
+        amount: 0,
+        grantedByUserId: 'admin-user-uuid-1',
+        reason: 'reason',
+      });
+      expect(result.status).toBe('failed');
+      expect(result.errorCode).toBe('INVALID_AMOUNT');
+      expect(result.errorMessage).toBe(
+        'Admin grant amount must be a positive integer',
+      );
+    });
+
+    it('should reject negative amount', async () => {
+      const result = await service.processGrant({
+        ownerId: 'user-uuid-1',
+        grantType: 'admin',
+        sourceEventId: 'evt_admin_bad_amt_neg',
+        amount: -10,
+        grantedByUserId: 'admin-user-uuid-1',
+        reason: 'reason',
+      });
+      expect(result.status).toBe('failed');
+      expect(result.errorCode).toBe('INVALID_AMOUNT');
+      expect(result.errorMessage).toBe(
+        'Admin grant amount must be a positive integer',
+      );
+    });
+
+    it('should reject fractional amount', async () => {
+      const result = await service.processGrant({
+        ownerId: 'user-uuid-1',
+        grantType: 'admin',
+        sourceEventId: 'evt_admin_bad_amt_fraction',
+        amount: 1.5,
+        grantedByUserId: 'admin-user-uuid-1',
+        reason: 'reason',
+      });
+      expect(result.status).toBe('failed');
+      expect(result.errorCode).toBe('INVALID_AMOUNT');
+      expect(result.errorMessage).toBe(
+        'Admin grant amount must be a positive integer',
+      );
+    });
+
+    it('should reject missing amount', async () => {
+      const result = await service.processGrant({
+        ownerId: 'user-uuid-1',
+        grantType: 'admin',
+        sourceEventId: 'evt_admin_bad_amt_missing',
+        grantedByUserId: 'admin-user-uuid-1',
+        reason: 'reason',
+      });
+      expect(result.status).toBe('failed');
+      expect(result.errorCode).toBe('INVALID_AMOUNT');
+      expect(result.errorMessage).toBe(
+        'Admin grant amount must be a positive integer',
+      );
+    });
+
+    it('should reject missing reason', async () => {
+      const result = await service.processGrant({
+        ownerId: 'user-uuid-1',
+        grantType: 'admin',
+        sourceEventId: 'evt_admin_bad_reason_missing',
+        amount: 100,
+        grantedByUserId: 'admin-user-uuid-1',
+      });
+      expect(result.status).toBe('failed');
+      expect(result.errorCode).toBe('INVALID_REASON');
+      expect(result.errorMessage).toBe('Admin grant reason is required');
+    });
+
+    it('should reject blank reason', async () => {
+      const result = await service.processGrant({
+        ownerId: 'user-uuid-1',
+        grantType: 'admin',
+        sourceEventId: 'evt_admin_bad_reason_blank',
+        amount: 100,
+        grantedByUserId: 'admin-user-uuid-1',
+        reason: '',
+      });
+      expect(result.status).toBe('failed');
+      expect(result.errorCode).toBe('INVALID_REASON');
+      expect(result.errorMessage).toBe('Admin grant reason is required');
+    });
+
+    it('should reject whitespace-only reason', async () => {
+      const result = await service.processGrant({
+        ownerId: 'user-uuid-1',
+        grantType: 'admin',
+        sourceEventId: 'evt_admin_bad_reason_ws',
+        amount: 100,
+        grantedByUserId: 'admin-user-uuid-1',
+        reason: '   ',
+      });
+      expect(result.status).toBe('failed');
+      expect(result.errorCode).toBe('INVALID_REASON');
+      expect(result.errorMessage).toBe('Admin grant reason is required');
+    });
+
+    it('should reject missing grantedByUserId', async () => {
+      const result = await service.processGrant({
+        ownerId: 'user-uuid-1',
+        grantType: 'admin',
+        sourceEventId: 'evt_admin_bad_granted_by_missing',
+        amount: 100,
+        reason: 'manual correction',
+      });
+      expect(result.status).toBe('failed');
+      expect(result.errorCode).toBe('MISSING_GRANTED_BY_USER_ID');
+      expect(result.errorMessage).toBe(
+        'Admin grant grantedByUserId is required',
+      );
+    });
+
+    it('should return duplicate and not double-credit for duplicate sourceEventId', async () => {
+      mockGrantRepo.findBySourceEventId!.mockResolvedValue({
+        ...stubGrantRecord,
+        id: 'grant-admin-original',
+        grantType: 'admin',
+        sourceType: 'admin',
+        provider: 'admin',
+        sourceEventId: 'evt_admin_dupe',
+        amount: 333,
+        balanceBefore: 5000,
+        balanceAfter: 5333,
+        status: 'granted',
+        grantedByUserId: 'admin-user-uuid-1',
+        reason: 'manual correction',
+      });
+
+      const result = await service.processGrant({
+        ownerId: 'user-uuid-1',
+        grantType: 'admin',
+        sourceEventId: 'evt_admin_dupe',
+        amount: 333,
+        grantedByUserId: 'admin-user-uuid-1',
+        reason: 'manual correction',
+      });
+
+      expect(result.status).toBe('duplicate');
+      expect(result.grantId).toBe('grant-admin-original');
+      expect(result.amount).toBe(333);
+      expect(result.balanceBefore).toBe(5000);
+      expect(result.balanceAfter).toBe(5333);
+      expect(mockBalanceRepo.addBalance).not.toHaveBeenCalled();
+      expect(mockGrantRepo.createGrant).not.toHaveBeenCalled();
     });
   });
 

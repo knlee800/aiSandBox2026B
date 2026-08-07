@@ -104,6 +104,20 @@ export class CreditGrant {
   })
   topUpPackId: string | null;
 
+  @Column({
+    type: 'uuid',
+    name: 'granted_by_user_id',
+    nullable: true,
+  })
+  grantedByUserId: string | null;
+
+  @Column({
+    type: 'text',
+    name: 'reason',
+    nullable: true,
+  })
+  reason: string | null;
+
   @Column({ type: 'integer' })
   amount: number;
 

@@ -13,12 +13,15 @@ import type { CreditGrant } from '../../entities/credit-grant.entity';
 export interface CreditGrantRequest {
   ownerId: string;
   ownerType?: string;
-  grantType: 'topup' | 'subscription_monthly' | 'subscription_initial';
+  grantType: 'topup' | 'subscription_monthly' | 'subscription_initial' | 'admin';
   sourceEventId: string;
   providerEventId?: string | null;
   webhookEventId?: string | null;
   topUpPackId?: string | null;
   planType?: string | null;
+  amount?: number;
+  grantedByUserId?: string | null;
+  reason?: string | null;
   metadata?: Record<string, unknown>;
 }
 
@@ -55,6 +58,8 @@ export class CreditGrantService {
 
   async processGrant(request: CreditGrantRequest): Promise<CreditGrantResult> {
     const ownerType = request.ownerType ?? 'user';
+    const sourceType = request.grantType === 'admin' ? 'admin' : 'webhook';
+    const provider = request.grantType === 'admin' ? 'admin' : 'stripe';
 
     // Layer 2: pre-transaction source_event_id check
     const existingGrant =
@@ -95,9 +100,16 @@ export class CreditGrantService {
     let amount: number;
     let topUpPackId: string | null = null;
     let planType: string | null = request.planType ?? null;
+    let grantedByUserId: string | null = null;
+    let reason: string | null = null;
 
     try {
-      if (request.grantType === 'topup') {
+      if (request.grantType === 'admin') {
+        const resolved = this.resolveAdminGrant(request);
+        amount = resolved.amount;
+        grantedByUserId = resolved.grantedByUserId;
+        reason = resolved.reason;
+      } else if (request.grantType === 'topup') {
         const resolved = this.resolveTopUpAmount(request);
         amount = resolved.amount;
         topUpPackId = resolved.packId;
@@ -107,7 +119,12 @@ export class CreditGrantService {
         planType = resolved.planType;
       }
     } catch (error) {
-      return this.recordFailedGrant(request, ownerType, error);
+      return this.recordFailedGrant(request, ownerType, error, {
+        sourceType,
+        provider,
+        grantedByUserId,
+        reason,
+      });
     }
 
     // Atomic transaction: lock balance → insert grant → update balance → mark granted
@@ -127,12 +144,15 @@ export class CreditGrantService {
                 ownerId: request.ownerId,
                 ownerType,
                 grantType: request.grantType,
-                sourceType: 'webhook',
+                sourceType,
                 sourceEventId: request.sourceEventId,
+                provider,
                 providerEventId: request.providerEventId ?? null,
                 webhookEventId: request.webhookEventId ?? null,
                 planType,
                 topUpPackId,
+                grantedByUserId,
+                reason,
                 amount,
                 balanceBefore: 0,
                 balanceAfter: 0,
@@ -168,12 +188,15 @@ export class CreditGrantService {
               ownerId: request.ownerId,
               ownerType,
               grantType: request.grantType,
-              sourceType: 'webhook',
+              sourceType,
               sourceEventId: request.sourceEventId,
+              provider,
               providerEventId: request.providerEventId ?? null,
               webhookEventId: request.webhookEventId ?? null,
               planType,
               topUpPackId,
+              grantedByUserId,
+              reason,
               amount,
               balanceBefore,
               balanceAfter,
@@ -231,8 +254,58 @@ export class CreditGrantService {
         `Credit grant transaction failed for sourceEventId=${request.sourceEventId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
 
-      return this.recordFailedGrant(request, ownerType, error);
+      return this.recordFailedGrant(request, ownerType, error, {
+        sourceType,
+        provider,
+        grantedByUserId,
+        reason,
+      });
     }
+  }
+
+  private resolveAdminGrant(request: CreditGrantRequest): {
+    amount: number;
+    grantedByUserId: string;
+    reason: string;
+  } {
+    const amount = request.amount;
+    if (
+      amount === undefined ||
+      typeof amount !== 'number' ||
+      !Number.isInteger(amount) ||
+      amount <= 0
+    ) {
+      throw new CreditGrantAmountError(
+        'INVALID_AMOUNT',
+        'Admin grant amount must be a positive integer',
+      );
+    }
+
+    if (
+      typeof request.reason !== 'string' ||
+      request.reason.trim().length === 0
+    ) {
+      throw new CreditGrantAmountError(
+        'INVALID_REASON',
+        'Admin grant reason is required',
+      );
+    }
+
+    if (
+      typeof request.grantedByUserId !== 'string' ||
+      request.grantedByUserId.trim().length === 0
+    ) {
+      throw new CreditGrantAmountError(
+        'MISSING_GRANTED_BY_USER_ID',
+        'Admin grant grantedByUserId is required',
+      );
+    }
+
+    return {
+      amount,
+      grantedByUserId: request.grantedByUserId.trim(),
+      reason: request.reason.trim(),
+    };
   }
 
   private resolveTopUpAmount(
@@ -287,6 +360,12 @@ export class CreditGrantService {
     request: CreditGrantRequest,
     ownerType: string,
     error: unknown,
+    params?: {
+      sourceType: 'admin' | 'webhook';
+      provider: 'admin' | 'stripe';
+      grantedByUserId: string | null;
+      reason: string | null;
+    },
   ): Promise<CreditGrantResult> {
     const errorCode =
       error instanceof CreditGrantAmountError
@@ -294,6 +373,10 @@ export class CreditGrantService {
         : 'TRANSACTION_ERROR';
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown error';
+    const sourceType = params?.sourceType ?? 'webhook';
+    const provider = params?.provider ?? 'stripe';
+    const grantedByUserId = params?.grantedByUserId ?? null;
+    const reason = params?.reason ?? null;
 
     try {
       const grantRecord =
@@ -301,12 +384,15 @@ export class CreditGrantService {
           ownerId: request.ownerId,
           ownerType,
           grantType: request.grantType,
-          sourceType: 'webhook',
+          sourceType,
           sourceEventId: request.sourceEventId,
+          provider,
           providerEventId: request.providerEventId ?? null,
           webhookEventId: request.webhookEventId ?? null,
           planType: request.planType ?? null,
           topUpPackId: request.topUpPackId ?? null,
+          grantedByUserId,
+          reason,
           amount: 1, // placeholder — failed grants need a positive amount for CHECK constraint
           balanceBefore: 0,
           balanceAfter: 0,

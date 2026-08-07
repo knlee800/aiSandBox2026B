@@ -18,6 +18,8 @@ export interface CreateCreditGrantParams {
   balanceBefore: number;
   balanceAfter: number;
   status?: string;
+  grantedByUserId?: string | null;
+  reason?: string | null;
 }
 
 /**
@@ -68,6 +70,8 @@ export class CreditGrantRepository {
       webhookEventId: params.webhookEventId ?? null,
       planType: params.planType ?? null,
       topUpPackId: params.topUpPackId ?? null,
+      grantedByUserId: params.grantedByUserId ?? null,
+      reason: params.reason ?? null,
       amount: params.amount,
       balanceBefore: params.balanceBefore,
       balanceAfter: params.balanceAfter,

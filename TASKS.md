@@ -16,7 +16,7 @@ Rules:
 
 If conflicts exist, TASKS_BACKLOG_FULL.md takes precedence.
 
-**Program status:** BILLING-READY-08 ACTIVE — Step 4B BLOCKED by **BILLING-READY-08B REGISTERED 2026-08-07** — usage_records.created_at schema missing from TypeORM migration chain — worker.processor.ts fails immediately after claim (before provider) with `column "created_at" does not exist` — confirmed on staging — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — QuotaGuard browser-session bypass — `browser-session` identity now bypasses legacy Phase 21B API-key quota; genuine API-key behavior unchanged; guard ordering unchanged — Files: `quota.guard.ts`, `quota.guard.spec.ts`, `ai-execution-guards.integration.spec.ts` — 2 suites, 52 tests PASS; tsc PASS; build PASS — Step 4A smoke remains FAIL (QuotaGuard blocker resolved; schema blocker now registered as 08B) — Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md` — Exact next action: implement BILLING-READY-08B (TypeORM migration for usage_records.created_at) → staging deployment of 08A + 08B → schema migration → Step 4B controlled retry (requires Keith approval) — PRIVATE-BETA-FUNCTIONAL-READINESS-04 ACTIVE and BLOCKED pending BILLING-READY-08 (including 08B) — Operator-reported posture: `GLOBAL_EXECUTION_ENABLED=false`, `AI_PROVIDER=xai`, `PROVIDER_XAI_ENABLED=true` — No users invited — PRIVATE-BETA-INVITE-01 NOT REGISTERED — No new runtime enablement authorized — No xAI retry authorized until 08B fully implemented, migrated, validated, and explicitly approved — Implementation plan: docs/BILLING-READY-08-IMPLEMENTATION-PLAN.md — FR-04 readiness plan: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-READINESS-PLAN.md
+**Program status:** **BILLING-READY-08 COMPLETE AND LOCKED 2026-08-07** — Controlled xAI smoke PASS — Execution ID `83acc0e9-84de-4f94-9e41-294701e38393` — tokens_used=598 — `smoke-test.txt` created with correct content — persists after refresh — credit deduction applied (500 credits) — overflow 98 ACCEPTED BY DESIGN — balance reached 0 correctly — `GLOBAL_EXECUTION_ENABLED=false` verified in .env and PM2 — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — QuotaGuard browser-session bypass — Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md` — **BILLING-READY-08B COMPLETE AND LOCKED 2026-08-07** — usage_records.created_at schema remediation — Checkpoint: `docs/BILLING-READY-08B-CHECKPOINT.md` — Final checkpoint: `docs/BILLING-READY-08-CHECKPOINT.md` — **PRIVATE-BETA-FUNCTIONAL-READINESS-04 COMPLETE AND LOCKED 2026-08-07** — All acceptance criteria satisfied — FR-04 parent checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-CHECKPOINT.md` — **ADMIN-CONSOLE-01 ACTIVE** — **ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07** — Admin credit grant domain + audit schema — SOURCE MIGRATION COMPLETE / STAGING APPLICATION DEFERRED — Checkpoint: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md` — Exact next child: ADMIN-CONSOLE-01B — PRIVATE-BETA-INVITE-01 NOT STARTED (blocked until ADMIN-CONSOLE-01 COMPLETE AND LOCKED) — No users invited — No new runtime enablement authorized without Keith approval
 
 
 \# TASKS.md ??Master Task Index
@@ -25237,13 +25237,13 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 38. PRIVATE-BETA-FUNCTIONAL-READINESS-03 — Staging File-Backed Workspace Tree and Editor Smoke (COMPLETE and LOCKED — 2026-08-06 — PASS — File-tree/editor objective proven through child PRIVATE-BETA-FUNCTIONAL-READINESS-03A — Step 1 COMPLETE Outcome B (no supported file-backed path without AI/unsupported steps) — Direct FR-03 browser smoke not executed as standalone runbook (blocked by Outcome B) — Child 03A COMPLETE and LOCKED PASS — Proven: ZIP import path AI panel → Open history → Project Snapshots → Import Project (no dedicated URL); file tree shows README.md; editor loads expected content; refresh reconnect preserves tree/editor — Preview GET /api/preview/<session-id>/status HTTP 404 remains separate unresolved staging finding (not fixed/investigated) — AI execution remains disabled — PRIVATE-BETA-INVITE-01 not registered — no invitations authorized — Next recommended (NOT REGISTERED): PRIVATE-BETA-FUNCTIONAL-READINESS-04 — Controlled Staging AI Execution Enablement and Core Product Loop Smoke — Investigation: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-03-STAGING-FILE-TREE-EDITOR-SMOKE-RUNBOOK.md — Child checkpoint: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-03A-CHECKPOINT.md — Checkpoint: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-03-CHECKPOINT.md — Predecessor: PRIVATE-BETA-FUNCTIONAL-READINESS-02 COMPLETE and LOCKED)
 39. PRIVATE-BETA-FUNCTIONAL-READINESS-03A — Disposable ZIP Fixture Import Smoke (COMPLETE and LOCKED — 2026-08-06 — PASS — All 3 steps COMPLETE — Step 1 COMPLETE (registration + ZIP-path investigation + route/access amendment) — Step 2 COMPLETE (Keith manual staging browser smoke) — Step 3 COMPLETE (evidence consolidation) — Outcome A — ZIP import supported — No dedicated Import URL — Supported path: AI panel → clock Open history → Project Snapshots → Import Project → POST /api/sessions/:id/import — All approved checks PASS: ZIP import; README.md in file tree; README.md opens in editor with expected readable content; no blocking application error; no HTTP 5xx on approved flow; refresh reconnects to same project/session; file tree usable after refresh; README.md remains visible/openable after refresh — AI execution remained disabled — No users invited — Persistent disposable staging project/session/file records may remain — Preview HTTP 404 remains separate unresolved finding — Parent FR-03 COMPLETE and LOCKED (objective proven through this child) — Successor: PRIVATE-BETA-FUNCTIONAL-READINESS-04 ACTIVE — Runbook: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-03A-ZIP-FIXTURE-IMPORT-SMOKE-RUNBOOK.md — Checkpoint: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-03A-CHECKPOINT.md)
 
-40. PRIVATE-BETA-FUNCTIONAL-READINESS-04 — Controlled Staging AI Execution Enablement and Core Product Loop Smoke (ACTIVE — 2026-08-06 — Step 1 COMPLETE — Step 1b COMPLETE — FR-04A COMPLETE and LOCKED — FR-04B COMPLETE and LOCKED — FR-04 source prerequisites COMPLETE — Child FR-04C COMPLETE and LOCKED — PASS — Staging catalogues deployed at `df9a9ff` — Child FR-04D ACTIVE — Outcome A — `/[locale]/app` is canonical Build anything — FR-04 Step 3c remains BLOCKED — Operator-reported: `GLOBAL_EXECUTION_ENABLED=false`, `AI_PROVIDER=xai`, `PROVIDER_XAI_ENABLED=true` — no inference request — xAI config present — global execution disabled — No users invited — PRIVATE-BETA-INVITE-01 NOT REGISTERED — No new runtime enablement authorized — Exact next action: complete BILLING-READY-08 (source implementation → staging deployment → staging backfill), then resume FR-04 Step 3c — FR-04 Step 3c BLOCKED by BILLING-READY-08 (HTTP 402 credit_balance_not_provisioned) — Audit: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04D-ROUTE-AUDIT.md — Checkpoint: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04C-CHECKPOINT.md — Deployment plan: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04C-DEPLOYMENT-PLAN.md — Readiness plan: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-READINESS-PLAN.md — Child checkpoint: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04B-CHECKPOINT.md — Child checkpoint: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04A-CHECKPOINT.md — Predecessor: FR-03A COMPLETE and LOCKED — 2026-08-06 — PASS)
+40. PRIVATE-BETA-FUNCTIONAL-READINESS-04 — Controlled Staging AI Execution Enablement and Core Product Loop Smoke (COMPLETE AND LOCKED — 2026-08-07 — PASS — All acceptance criteria satisfied — Step 1 COMPLETE — Step 1b COMPLETE — FR-04A COMPLETE and LOCKED — FR-04B COMPLETE and LOCKED — FR-04 source prerequisites COMPLETE — Child FR-04C COMPLETE and LOCKED — PASS — Staging catalogues deployed at `df9a9ff` — Child FR-04D COMPLETE AND LOCKED — Outcome A — `/[locale]/app` is canonical Build anything — **FR-04 Step 3c PASS** — xAI controlled smoke PASS — Execution ID `83acc0e9-84de-4f94-9e41-294701e38393` — tokens_used=598 — `smoke-test.txt` created with correct content — persists after refresh — credit deduction applied (balance 500→0) — overflow 98 ACCEPTED BY DESIGN — `GLOBAL_EXECUTION_ENABLED=false` verified in .env and PM2 — BILLING-READY-08 blocking dependency RESOLVED — Step 4 COMPLETE — No users invited — PRIVATE-BETA-INVITE-01 NOT REGISTERED — Checkpoint: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-CHECKPOINT.md — Audit: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04D-ROUTE-AUDIT.md — Deployment plan: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04C-DEPLOYMENT-PLAN.md — Readiness plan: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-READINESS-PLAN.md — Child checkpoint: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04C-CHECKPOINT.md — Child checkpoint: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04B-CHECKPOINT.md — Child checkpoint: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04A-CHECKPOINT.md — Predecessor: FR-03A COMPLETE and LOCKED — 2026-08-06 — PASS)
 41. PRIVATE-BETA-FUNCTIONAL-READINESS-04A — Anthropic Model Configuration Hardening (COMPLETE and LOCKED — 2026-08-06 — PASS — All 3 steps COMPLETE — Explicit `ANTHROPIC_MODEL` required — Deprecated hardcoded `claude-3-5-sonnet-20241022` fallback removed — AnthropicAdapter requires non-empty trimmed model — AIExecutionService reads/trims `ANTHROPIC_MODEL` and fails clearly before provider execution on missing/empty/whitespace — Request-level model override preserved — No replacement model hardcoded — Stub/execution-disabled posture unchanged — Anthropic tests mock `@anthropic-ai/sdk` — Config failures asserted before adapter execute / SDK messages.create — `ANTHROPIC_MODEL=` added to root and ai-service `.env.example` only — api-gateway `.env.example` deliberately unchanged — Validation PASS: Anthropic adapter 2 suites/65 tests; focused AI execution Anthropic tests; `npx tsc --noEmit`; AI Service build; lint clean — AI execution remained disabled — No staging/PM2/credential/runtime/provider/browser/invitation action — Parent FR-04 ACTIVE — Checkpoint: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04A-CHECKPOINT.md)
 42. PRIVATE-BETA-FUNCTIONAL-READINESS-04B — Provider Model Catalogue and Selection Hardening (COMPLETE and LOCKED — 2026-08-06 — PASS — All steps COMPLETE — Step 1 COMPLETE — Step 2a Backend COMPLETE — Step 2b Frontend COMPLETE — Step 3 Consolidation COMPLETE — Approved catalogue: xAI default `grok-4.5` allowed `grok-4.5`/`grok-4.20`; Groq default `openai/gpt-oss-120b` allowed `openai/gpt-oss-120b`/`openai/gpt-oss-20b`; DeepSeek default `deepseek-v4-flash` allowed `deepseek-v4-flash`/`deepseek-v4-pro`; OpenAI `gpt-4o`; Anthropic via `ANTHROPIC_MODEL`; Stub preserved — Dual-layer validation (API Gateway + AI Service) — Frontend catalogue matches backend — Default `xai:grok-4.5` — Stale IDs removed — Anthropic not frontend-selectable without authoritative configured model ID — Validation PASS: focused AI Service tests; focused API Gateway tests; AI Service tsc + build; API Gateway tsc + build; frontend 462 tests PASS; frontend tsc + build; lint clean — AI execution remained disabled — No staging/PM2/credential/runtime/provider/browser/invitation action — Parent FR-04 ACTIVE — FR-04 source prerequisites COMPLETE — Checkpoint: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04B-CHECKPOINT.md — Plan: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04B-IMPLEMENTATION-PLAN.md)
 43. PRIVATE-BETA-FUNCTIONAL-READINESS-04C — Controlled Staging Deployment of FR-04A/04B (COMPLETE and LOCKED — 2026-08-06 — PASS — All steps COMPLETE — Step 1 COMPLETE — Step 2a READY — Step 2b Backend PASS — Step 2c Frontend PASS — Step 2d Consolidation COMPLETE — Staging deployed HEAD `df9a9ff582321a1c54e3b3566322ed70da175c19` matches origin/main — Backup `/opt/aisandbox-backups/fr-04c-20260806-151147` (ai-service-dist, api-gateway-dist, predeploy-head.txt) — Backend: ai-service + api-gateway build PASS; restarted; AI messages health HTTP 201 ok; API gateway health HTTP 200 ok — Frontend: build PASS; .next has grok-4.5/grok-4.20, grok-3 absent; restarted; /en/app HTTP 200 — Safe posture preserved: GLOBAL_EXECUTION_ENABLED=false, AI_PROVIDER=stub, PROVIDER_XAI_ENABLED=false — No provider API calls — No AI execution enabled — No users invited — Parent FR-04 ACTIVE — Runtime AI enablement remains NOT STARTED — Checkpoint: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04C-CHECKPOINT.md — Plan: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04C-DEPLOYMENT-PLAN.md)
-44. PRIVATE-BETA-FUNCTIONAL-READINESS-04D — Build Workspace Route and Legacy `/app` Audit (ACTIVE — 2026-08-06 — Source-only route/UX audit — Step 1 COMPLETE — Outcome A — `/[locale]/app` is the canonical Build anything workspace (`AppPage` → `WorkspaceShell`) — `/[locale]/platform` is Agent Command Center only — legacy session shell is same `/app` URL when `PROJECT_FIRST_UX=false` — `/driver` is non-canonical Phase 37C driver — FR-04 Step 3c remains BLOCKED — can resume without source changes on `https://staging.ainow.biz/en/app` project view — xAI config present — global execution disabled — no inference — no users invited — no runtime enablement authorized — No source/tests/translations/middleware/env/packages/migrations/entities/staging/browser/provider/DB/Git action — Parent FR-04 ACTIVE — Audit: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04D-ROUTE-AUDIT.md)
-45. BILLING-READY-08 — Free-Plan Credit Balance Provisioning (ACTIVE — 2026-08-06, AMENDED v4 — Step 1 COMPLETE — **Step 2a COMPLETE AND LOCKED 2026-08-06** — **Step 2b COMPLETE AND LOCKED 2026-08-06** — **Step 2 COMPLETE** — **Step 3 COMPLETE AND LOCKED 2026-08-07** — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — Step 4B BLOCKED pending **BILLING-READY-08B** — Root cause: registration creates `users` but not `credit_balances`; historical users also affected — Fix: (1) atomic `DataSource.transaction()` in `AuthService` — COMPLETE; (2) TypeORM migration `1772700000000-BackfillCreditBalancesForExistingUsers.ts` — COMPLETE; (3) staging deployed HEAD `96fe52749df2f9599bf7faa3a5dca5f594fa232b`; migration executed; 2 rows inserted; 0 missing post-migration; `GLOBAL_EXECUTION_ENABLED=false` preserved — COMPLETE; (4a) QuotaGuard browser-session bypass — `quota.guard.ts`, `quota.guard.spec.ts`, `ai-execution-guards.integration.spec.ts` — 52 tests PASS; tsc + build PASS — COMPLETE — `auth.module.ts` NOT modified — Step 4A smoke remains FAIL — Step 4B BLOCKED by BILLING-READY-08B (usage_records.created_at schema) — No xAI retry until 08B complete and explicitly approved — Step 3 Checkpoint: docs/BILLING-READY-08-STEP-3-CHECKPOINT.md — 08A Checkpoint: docs/BILLING-READY-08A-CHECKPOINT.md — Implementation plan: docs/BILLING-READY-08-IMPLEMENTATION-PLAN.md)
-46. BILLING-READY-08B — usage_records.created_at Schema Remediation (REGISTERED — 2026-08-07 — Child of BILLING-READY-08 — Root cause: `worker.processor.ts` (ai-service, line 616) queries `SELECT execution_status, created_at FROM usage_records` but `created_at` column is absent from the TypeORM migration chain — `1738843200000-CreateUsageRecordsTable.ts` did not include `created_at`; no subsequent migration adds it — Standalone scripts `database/090_usage_records_created_at.sql` and `database/init/100_usage_records_created_at.sql` exist but were not applied to staging (staging uses TypeORM migration chain only) — Staging confirmed: `ERROR: column "created_at" does not exist` — Worker failure sequence: pending → running/claimed → immediate BullMQ failure before provider execution — Affected executions: 56f8c37a-7161-4df3-b379-8ab261fcfff4, a9a3ba5f-5571-4209-880c-f42298e1e20f — No xAI provider call from either — Scope: add `usage_records.created_at` via TypeORM migration `1772800000000-AddCreatedAtToUsageRecords.ts` using `ADD COLUMN IF NOT EXISTS` (idempotent; safe for fresh installs); backfill from `timestamp` column; `DEFAULT now()` NOT NULL; migration spec — No worker behavior change; no billing/credit/quota/auth/frontend/provider changes — `GLOBAL_EXECUTION_ENABLED=false` must remain false throughout — No xAI retry until 08B fully implemented, migrated, validated, and explicitly approved by Keith — Parent BILLING-READY-08 ACTIVE; FR-04 Step 3c remains BLOCKED pending BILLING-READY-08 including 08B — Implementation step: source + tests; Staging gate: commit/push 08A+08B → API Gateway build → migration run → schema verify → Step 4B retry approval — Rollback: `down()` drops column; reversible while no additional code dependency — Acceptance: migration tsc+build PASS; migration spec PASS; staging migration applies cleanly; `SELECT created_at FROM usage_records` no error; worker unblock verified in Step 4B smoke)
+44. PRIVATE-BETA-FUNCTIONAL-READINESS-04D — Build Workspace Route and Legacy `/app` Audit (COMPLETE AND LOCKED — 2026-08-06 — Outcome A — Source-only route/UX audit — Step 1 COMPLETE — Outcome A — `/[locale]/app` is the canonical Build anything workspace (`AppPage` → `WorkspaceShell`) — `/[locale]/platform` is Agent Command Center only — legacy session shell is same `/app` URL when `PROJECT_FIRST_UX=false` — `/driver` is non-canonical Phase 37C driver — No source route change required — FR-04 Step 3c PASS on existing route — xAI config present — no inference in audit step — no users invited — no runtime enablement authorized — No source/tests/translations/middleware/env/packages/migrations/entities/staging/browser/provider/DB/Git action — Parent FR-04 COMPLETE AND LOCKED — Audit: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04D-ROUTE-AUDIT.md)
+45. BILLING-READY-08 — Free-Plan Credit Balance Provisioning (**COMPLETE AND LOCKED — 2026-08-07** — Step 1 COMPLETE — **Step 2a COMPLETE AND LOCKED 2026-08-06** — **Step 2b COMPLETE AND LOCKED 2026-08-06** — **Step 2 COMPLETE** — **Step 3 COMPLETE AND LOCKED 2026-08-07** — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — **BILLING-READY-08B COMPLETE AND LOCKED 2026-08-07** — **Step 4B Controlled xAI Smoke PASS** — Execution ID `83acc0e9-84de-4f94-9e41-294701e38393` — tokens_used=598 — `smoke-test.txt` created with correct content — persists after refresh — credit deduction applied (balance 500→0) — overflow 98 ACCEPTED BY DESIGN — `GLOBAL_EXECUTION_ENABLED=false` verified in .env and PM2 — FR-04 BILLING-READY-08 dependency RESOLVED — FR-04 Step 3c PASS — Final checkpoint: docs/BILLING-READY-08-CHECKPOINT.md — Step 3 Checkpoint: docs/BILLING-READY-08-STEP-3-CHECKPOINT.md — 08A Checkpoint: docs/BILLING-READY-08A-CHECKPOINT.md — 08B Checkpoint: docs/BILLING-READY-08B-CHECKPOINT.md — Implementation plan: docs/BILLING-READY-08-IMPLEMENTATION-PLAN.md)
+46. BILLING-READY-08B — usage_records.created_at Schema Remediation (**COMPLETE AND LOCKED — 2026-08-07** — Child of BILLING-READY-08 — Schema blocker REMEDIATED — TypeORM migration `1772800000000-AddCreatedAtToUsageRecords.ts` + spec created — `up()`: ADD COLUMN IF NOT EXISTS, backfill from `timestamp`, SET DEFAULT now(), SET NOT NULL — `down()`: DROP COLUMN IF EXISTS — 1 suite, 9/9 tests PASS; tsc PASS; build PASS — Staging migration applied transactionally; `created_at` column present with correct type/default/not-null; 0 NULL rows post-backfill — commit `fb63d87349bfa3891eb9f70be2feb9d00828c575` — `GLOBAL_EXECUTION_ENABLED=false` preserved throughout; no xAI provider call during 08B — Historical failed executions 56f8c37a-7161-4df3-b379-8ab261fcfff4 and a9a3ba5f-5571-4209-880c-f42298e1e20f not retried — BILLING-READY-08 parent COMPLETE AND LOCKED 2026-08-07 — FR-04 Step 3c PASS — Checkpoint: docs/BILLING-READY-08B-CHECKPOINT.md)
 
 20. AGENT-PLATFORM-07F3 �X Parent Consolidation Checkpoint (COMPLETE and LOCKED �X 2026-07-12)
 
@@ -39275,7 +39275,7 @@ BILLING-READY-07A may resume only after:
 
 #### BILLING-READY-08: Free-Plan Credit Balance Provisioning
 
-**Status:** ACTIVE — 2026-08-06 — Step 1 COMPLETE — **Step 2a COMPLETE AND LOCKED 2026-08-06** — **Step 2b COMPLETE AND LOCKED 2026-08-06** — **Step 2 COMPLETE** — **Step 3 COMPLETE AND LOCKED 2026-08-07** — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — Step 4B BLOCKED pending **BILLING-READY-08B** (usage_records.created_at schema) — REGISTERED 2026-08-07
+**Status:** **COMPLETE AND LOCKED — 2026-08-07** — All steps COMPLETE — Controlled xAI smoke PASS — FR-04 BILLING-READY-08 dependency RESOLVED
 **Task ID:** BILLING-READY-08
 **Title:** Free-Plan Credit Balance Provisioning
 **Family:** BILLING READY / CREDIT BALANCE / USER REGISTRATION / PROVISIONING
@@ -39284,7 +39284,7 @@ BILLING-READY-07A may resume only after:
 **Risk:** HIGH — modifies user registration flow across email/Google/Apple paths; touches billing persistence
 **Registered:** 2026-08-06
 **Keith approval:** Required — 2026-08-06 (Steps 1–3 approved); Step 4 requires separate Keith approval
-**Checkpoint:** Step 2a: `docs/BILLING-READY-08-STEP-2A-CHECKPOINT.md` — Step 2b: `docs/BILLING-READY-08-STEP-2B-CHECKPOINT.md` — **Step 3: `docs/BILLING-READY-08-STEP-3-CHECKPOINT.md`** — Final checkpoint: pending Step 4
+**Checkpoint:** Step 2a: `docs/BILLING-READY-08-STEP-2A-CHECKPOINT.md` — Step 2b: `docs/BILLING-READY-08-STEP-2B-CHECKPOINT.md` — Step 3: `docs/BILLING-READY-08-STEP-3-CHECKPOINT.md` — 08A: `docs/BILLING-READY-08A-CHECKPOINT.md` — 08B: `docs/BILLING-READY-08B-CHECKPOINT.md` — **Final: `docs/BILLING-READY-08-CHECKPOINT.md`**
 **Implementation plan:** `docs/BILLING-READY-08-IMPLEMENTATION-PLAN.md`
 
 #### Root Cause
@@ -39336,9 +39336,10 @@ Registration paths (`AuthService.register`, `findOrCreateGoogleUser`, `findOrCre
    - **2a — New-user provisioning (`auth.service.ts`, `auth.service.spec.ts`)** — **COMPLETE AND LOCKED 2026-08-06**. `npm test -- auth.service.spec` PASS (22 tests); `npx tsc --noEmit` PASS; `npm run build` PASS. Checkpoint: `docs/BILLING-READY-08-STEP-2A-CHECKPOINT.md`.
    - **2b — Historical backfill migration + migration spec** — **COMPLETE AND LOCKED 2026-08-06**. `npm test -- backfill-credit-balances-migration` PASS (8 tests); `npx tsc --noEmit` PASS; `npm run build` PASS. Checkpoint: `docs/BILLING-READY-08-STEP-2B-CHECKPOINT.md`.
 3. **Approval-gated staging deployment + migration** — **COMPLETE AND LOCKED 2026-08-07**. Deployed HEAD `96fe52749df2f9599bf7faa3a5dca5f594fa232b`; backup `/opt/aisandbox-backups/billing-ready-08-step3a-20260806T133718Z`; API Gateway build + restart PASS; health HTTP 200; `BackfillCreditBalancesForExistingUsers1772700000000` executed; 2 rows inserted; 0 missing post-migration; `GLOBAL_EXECUTION_ENABLED=false` preserved. Checkpoint: `docs/BILLING-READY-08-STEP-3-CHECKPOINT.md`.
-4. **Runtime smoke, rollback of execution switch, consolidation and checkpoint** — **Step 4B BLOCKED pending BILLING-READY-08B** — secondary root cause identified from Step 4A controlled retry: `worker.processor.ts` queries `usage_records.created_at` which is absent from TypeORM migration chain — staging confirmed `ERROR: column "created_at" does not exist` — BILLING-READY-08B registered 2026-08-07 — No xAI retry authorized until 08B fully implemented, migrated, validated, and explicitly approved.
+4. **Runtime smoke, rollback of execution switch, consolidation and checkpoint** — **COMPLETE AND LOCKED 2026-08-07** — Controlled xAI smoke PASS — Execution ID `83acc0e9-84de-4f94-9e41-294701e38393` — tokens_used=598 — `smoke-test.txt` created with correct content — persists after refresh — credit deduction applied (applied=500, overflow=98 ACCEPTED BY DESIGN, balance_after=0) — `GLOBAL_EXECUTION_ENABLED=false` verified in .env and PM2 — FR-04 Step 3c PASS.
    - **Step 4A sub-fix — BILLING-READY-08A — COMPLETE AND LOCKED 2026-08-07**: QuotaGuard browser-session bypass. Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md`.
-   - **Step 4B — BLOCKED by BILLING-READY-08B** — commit/push 08A+08B → staging deployment → schema migration → controlled runtime retry (requires Keith approval).
+   - **Step 4B schema sub-fix — BILLING-READY-08B — COMPLETE AND LOCKED 2026-08-07**: usage_records.created_at TypeORM migration. Checkpoint: `docs/BILLING-READY-08B-CHECKPOINT.md`.
+   - **Step 4B controlled xAI smoke — COMPLETE AND LOCKED 2026-08-07**: Execution PASS. Checkpoint: `docs/BILLING-READY-08-CHECKPOINT.md`.
 
 #### Implementation files (Step 2)
 
@@ -39378,10 +39379,10 @@ Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm run
 - `AI_PROVIDER=xai` may remain configured.
 - `PROVIDER_XAI_ENABLED=true` may remain configured.
 - No inference retry is authorized.
-- FR-04 Step 3c remains BLOCKED pending BILLING-READY-08.
+- FR-04 Step 3c PASS — BILLING-READY-08 dependency RESOLVED.
 - No private-beta users may be invited.
 - PRIVATE-BETA-INVITE-01 NOT REGISTERED.
-- Kill-switch state is operator-reported — staging verification required before Step 3/4.
+- `GLOBAL_EXECUTION_ENABLED=false` verified in .env and PM2 after Step 4B smoke.
 
 #### Non-goals
 
@@ -39428,7 +39429,7 @@ Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm run
 - [x] No terminal/Git/source/runtime/environment/database/provider/invitation action occurred
 - [x] BILLING-READY-03/04/05 locked checkpoints not modified
 
-**BILLING-READY-08 status:** ACTIVE — 2026-08-06 — Step 1 (Registration/Planning) COMPLETE, AMENDED (v4). **Step 2a COMPLETE AND LOCKED 2026-08-06.** **Step 2b COMPLETE AND LOCKED 2026-08-06.** **Step 2 COMPLETE.** **Step 3 COMPLETE AND LOCKED 2026-08-07.** **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07.** Root cause: registration creates `users` but not `credit_balances`. Fix: (1) atomic `DataSource.transaction()` in `AuthService` — COMPLETE. (2) Historical-user backfill via TypeORM migration `1772700000000-BackfillCreditBalancesForExistingUsers.ts` — COMPLETE. (3) Staging deployed HEAD `96fe52749df2f9599bf7faa3a5dca5f594fa232b`; migration executed; 2 rows inserted — COMPLETE. (4a) QuotaGuard browser-session bypass — COMPLETE AND LOCKED. Step 4B BLOCKED by **BILLING-READY-08B** (usage_records.created_at absent from TypeORM migration chain — staging confirmed). BILLING-READY-08B REGISTERED 2026-08-07. No xAI retry authorized until 08B complete and approved. FR-04 Step 3c BLOCKED. Checkpoints: `docs/BILLING-READY-08-STEP-2A-CHECKPOINT.md`, `docs/BILLING-READY-08-STEP-2B-CHECKPOINT.md`, `docs/BILLING-READY-08-STEP-3-CHECKPOINT.md`, `docs/BILLING-READY-08A-CHECKPOINT.md`. Implementation plan: `docs/BILLING-READY-08-IMPLEMENTATION-PLAN.md`.
+**BILLING-READY-08 status:** **COMPLETE AND LOCKED — 2026-08-07.** All steps COMPLETE. Root cause: registration creates `users` but not `credit_balances`. Fix: (1) atomic `DataSource.transaction()` in `AuthService` — COMPLETE AND LOCKED. (2) Historical-user backfill via TypeORM migration `1772700000000-BackfillCreditBalancesForExistingUsers.ts` — COMPLETE AND LOCKED. (3) Staging deployed HEAD `96fe52749df2f9599bf7faa3a5dca5f594fa232b`; migration executed; 2 rows inserted — COMPLETE AND LOCKED. (4a) QuotaGuard browser-session bypass — COMPLETE AND LOCKED. (4b schema) `1772800000000-AddCreatedAtToUsageRecords.ts` — staging migration applied; 0 NULL rows — COMPLETE AND LOCKED. (4b smoke) Controlled xAI smoke PASS — Execution ID `83acc0e9-84de-4f94-9e41-294701e38393` — tokens_used=598 — `smoke-test.txt` created with correct content — persists after refresh — credit deduction applied (balance 500→0) — overflow 98 ACCEPTED BY DESIGN — `GLOBAL_EXECUTION_ENABLED=false` verified in .env and PM2 — FR-04 Step 3c PASS. Checkpoints: `docs/BILLING-READY-08-STEP-2A-CHECKPOINT.md`, `docs/BILLING-READY-08-STEP-2B-CHECKPOINT.md`, `docs/BILLING-READY-08-STEP-3-CHECKPOINT.md`, `docs/BILLING-READY-08A-CHECKPOINT.md`, `docs/BILLING-READY-08B-CHECKPOINT.md`, **`docs/BILLING-READY-08-CHECKPOINT.md`** (final). Implementation plan: `docs/BILLING-READY-08-IMPLEMENTATION-PLAN.md`.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-08.
 
@@ -39436,7 +39437,7 @@ Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm run
 
 #### BILLING-READY-08B: usage_records.created_at Schema Remediation
 
-**Status:** REGISTERED — 2026-08-07
+**Status:** COMPLETE AND LOCKED — 2026-08-07
 **Task ID:** BILLING-READY-08B
 **Title:** usage_records.created_at Schema Remediation
 **Family:** BILLING READY / SCHEMA / AI-SERVICE WORKER / USAGE RECORDS
@@ -39444,8 +39445,9 @@ Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm run
 **Nature:** BOUNDED SCHEMA MIGRATION — single column addition to existing table
 **Risk:** MEDIUM — modifies production table; migration must be idempotent; no usage data loss permitted
 **Registered:** 2026-08-07
+**Completed:** 2026-08-07
 **Parent:** BILLING-READY-08
-**Keith approval:** Required before staging migration execution and before Step 4B controlled retry
+**Implementation commit:** `fb63d87349bfa3891eb9f70be2feb9d00828c575`
 **Staging HEAD at registration:** `4288373f5570e93d570705d73f28cccc3cab0fc9`
 
 #### Root Cause and Evidence
@@ -39496,16 +39498,16 @@ The `queueWaitMs` telemetry path (lines 624–627) is null-safe (`if (queueWaitM
 
 #### Acceptance Criteria
 
-- [ ] `1772800000000-AddCreatedAtToUsageRecords.ts` created with correct `up()` and reversible `down()`
-- [ ] Migration spec created covering: `IF NOT EXISTS` idempotency, backfill logic, `NOT NULL` + `DEFAULT`, `down()` reversibility, no data destruction
-- [ ] `npx tsc --noEmit` — PASS (api-gateway)
-- [ ] `npm run build` — PASS (api-gateway)
-- [ ] Migration spec — PASS
-- [ ] Staging migration applies cleanly via `npm run migration:run`
-- [ ] Post-migration: `SELECT column_name FROM information_schema.columns WHERE table_name = 'usage_records' AND column_name = 'created_at'` returns 1 row
-- [ ] Worker no longer fails with schema error after migration
-- [ ] `GLOBAL_EXECUTION_ENABLED=false` preserved throughout implementation and migration
-- [ ] No xAI provider call occurred during 08B implementation
+- [x] `1772800000000-AddCreatedAtToUsageRecords.ts` created with correct `up()` and reversible `down()`
+- [x] Migration spec created covering: `IF NOT EXISTS` idempotency, backfill logic, `NOT NULL` + `DEFAULT`, `down()` reversibility, no data destruction
+- [x] `npx tsc --noEmit` — PASS (api-gateway)
+- [x] `npm run build` — PASS (api-gateway)
+- [x] Migration spec — PASS (1 suite, 9/9 tests)
+- [x] Staging migration applies cleanly via `npm run migration:run` — SUCCESS, committed transactionally
+- [x] Post-migration: `created_at` column present — `data_type=timestamp without time zone`, `column_default=now()`, `is_nullable=NO`
+- [x] `SELECT COUNT(*) FROM usage_records WHERE created_at IS NULL` = 0
+- [x] `GLOBAL_EXECUTION_ENABLED=false` preserved throughout implementation and migration
+- [x] No xAI provider call occurred during 08B implementation
 
 #### Validation Requirements
 
@@ -39558,21 +39560,22 @@ Executions 56f8c37a-7161-4df3-b379-8ab261fcfff4 and a9a3ba5f-5571-4209-880c-f422
 
 #### Parent / FR-04 Dependency State
 
-- BILLING-READY-08 parent remains ACTIVE — Step 4B blocked by this task
-- BILLING-READY-08A remains COMPLETE AND LOCKED 2026-08-07 — not modified
-- FR-04 Step 3c remains BLOCKED pending BILLING-READY-08 (including 08B)
-- BILLING-READY-08B must be fully complete before Step 4B controlled retry
+- BILLING-READY-08B — **COMPLETE AND LOCKED 2026-08-07** — schema blocker remediated
+- BILLING-READY-08 parent — **COMPLETE AND LOCKED 2026-08-07** — controlled xAI smoke PASS — FR-04 dependency RESOLVED
+- BILLING-READY-08A — COMPLETE AND LOCKED 2026-08-07 — not modified by 08B
+- FR-04 Step 3c — **PASS** — BILLING-READY-08 dependency resolved — next: FR-04 Step 4 consolidation
 - PRIVATE-BETA-INVITE-01 NOT REGISTERED — no users invited
+- No xAI execution retry is authorized without explicit Keith approval for Step 4B
 
-#### Implementation Workflow (3-Step Normal Loop)
+#### Implementation Workflow (3-Step Normal Loop) — COMPLETE
 
-1. **Source implementation + tests** — Create migration + spec; validate tsc, build, spec.
-2. **Staging deployment + migration** — Commit/push 08A+08B → pull → rebuild API Gateway → `migration:run` → verify schema. Requires Keith approval.
-3. **Consolidation checkpoint** — Checkpoint doc; update TASKS.md + TASKS_BACKLOG_FULL.md; BILLING-READY-08B COMPLETE AND LOCKED.
+1. **Source implementation + tests** — **COMPLETE** — Migration `1772800000000-AddCreatedAtToUsageRecords.ts` + spec created; 1 suite, 9/9 tests PASS; tsc PASS; build PASS. Commit `fb63d87349bfa3891eb9f70be2feb9d00828c575`.
+2. **Staging deployment + migration** — **COMPLETE** — Staging migration applied transactionally; `created_at` column present; 0 NULL rows; `GLOBAL_EXECUTION_ENABLED=false` preserved.
+3. **Consolidation checkpoint** — **COMPLETE** — Checkpoint: `docs/BILLING-READY-08B-CHECKPOINT.md`; TASKS.md and TASKS_BACKLOG_FULL.md updated; BILLING-READY-08B COMPLETE AND LOCKED 2026-08-07.
 
-**After 08B consolidation:** Resume BILLING-READY-08 Step 4B controlled retry (separate Keith approval required).
+**After 08B consolidation:** BILLING-READY-08 Step 4B controlled retry executed and PASS. BILLING-READY-08 COMPLETE AND LOCKED. FR-04 Step 3c PASS. Next: FR-04 Step 4 consolidation (requires Keith approval).
 
-**BILLING-READY-08B status:** REGISTERED — 2026-08-07. Implementation NOT STARTED. Staging HEAD at registration: `4288373f5570e93d570705d73f28cccc3cab0fc9`. `GLOBAL_EXECUTION_ENABLED=false`. No implementation, runtime, or database action occurred during registration.
+**BILLING-READY-08B status:** COMPLETE AND LOCKED — 2026-08-07. Schema blocker remediated. Staging migration verified. `GLOBAL_EXECUTION_ENABLED=false` preserved. No provider call occurred during 08B. Checkpoint: `docs/BILLING-READY-08B-CHECKPOINT.md`.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-08B.
 
@@ -45135,3 +45138,287 @@ AGENT-HARNESS-06E closes this gap by running a full E2E canary with ALL required
 **AGENT-HARNESS-06D1 status:** COMPLETE and LOCKED �X 2026-07-08 (child slice).
 **AGENT-HARNESS-06C status:** COMPLETE and LOCKED �X 2026-07-07.
 **AGENT-HARNESS-07 status:** COMPLETE and LOCKED (2026-07-07).
+
+
+---
+
+## ADMIN-CONSOLE-01 — Private Beta Operator Console
+
+**Status:** ACTIVE — 01A COMPLETE AND LOCKED (2026-08-07); exact next child ADMIN-CONSOLE-01B
+**Task ID:** ADMIN-CONSOLE-01
+**Family:** ADMIN CONSOLE / PRIVATE BETA OPERATIONS
+**Priority:** HIGH — blocks PRIVATE-BETA-INVITE-01
+**Nature:** MULTI-SLICE PARENT — browser-based operator console for private beta user management
+**Risk:** HIGH — schema migration + new frontend surface + credit write path
+**Registered:** 2026-08-07
+**Keith Approval:** Required before each child slice implementation step
+
+### Dependencies
+
+- PRIVATE-BETA-FUNCTIONAL-READINESS-04 — COMPLETE AND LOCKED (2026-08-07)
+- BILLING-READY-08 — COMPLETE AND LOCKED (2026-08-07)
+- PRIVATE-BETA-INVITE-01 — NOT STARTED (blocked until ADMIN-CONSOLE-01 COMPLETE AND LOCKED)
+
+### Goal
+
+Provide the minimum safe browser-based admin console required to operate private beta users without direct database access.
+
+### Scope
+
+- Authenticated admin-only frontend shell at /[locale]/admin
+- User list with search and quota filter
+- User detail with current credit balance visibility
+- Safe audited admin credit grant (grantType=admin, actor + reason audit)
+- Session list and termination
+- Admin-role access protection (server-enforced at all write operations)
+- Multilingual UI (en / zh-TW / zh-CN)
+- Reuse existing SessionCookieGuard + AdminRoleGuard
+
+### Explicit Exclusions
+
+- /platform redesign
+- Agent Harness instructions/settings UI
+- Agent Skills/models/knowledge configuration
+- Billing invoice/reconciliation UI
+- Plan management UI
+- Infrastructure/system-health dashboard
+- Provider secret management
+- Execution kill-switch UI
+- Broad admin-dashboard redesign
+- Stripe flow changes
+- User-role administration
+- Historical overflow recovery
+- Rollover/persistent grant types
+
+### Child Slices (dependency order)
+
+| Slice | Title | Status | Workflow | Model | Depends On |
+|-------|-------|--------|----------|-------|------------|
+| ADMIN-CONSOLE-01A | Admin Credit Grant Domain + Audit Schema | COMPLETE AND LOCKED — 2026-08-07 | 4-step | GPT-5.3 Codex High | None |
+| ADMIN-CONSOLE-01B | Authenticated Admin Credit Grant API | NOT STARTED (exact next) | 3-step | GPT-5.3 Codex | 01A COMPLETE |
+| ADMIN-CONSOLE-01C | Admin Console Shell + Users/Sessions | NOT STARTED | 3-step | GPT-5.3 Codex | 01B COMPLETE |
+| ADMIN-CONSOLE-01D | Admin Credit Grant UI | NOT STARTED | 3-step | GPT-5.3 Codex | 01B + 01C COMPLETE |
+| ADMIN-CONSOLE-01E | Staging Validation + Parent Consolidation | NOT STARTED | 2-step | Sonnet 4.6 | 01A-01D COMPLETE |
+
+### Key Architecture Decisions (locked at registration)
+
+1. Schema: Add granted_by_user_id (uuid nullable) and reason (text nullable) to credit_grants via new migration 1772900000000-AddAdminGrantAuditColumns.ts. No FK constraint (consistent with webhook_event_id pattern). No changes to existing CHECK constraints (grant_type and source_type already include 'admin').
+2. Service: Extend CreditGrantRequest to support grantType='admin' with explicit amount, grantedByUserId, reason. Admin grants use sourceType='admin', provider='admin'. Existing topup/subscription paths unchanged.
+3. API: POST /api/admin/users/:userId/credits under existing /admin prefix. SessionCookieGuard + AdminRoleGuard. idempotencyKey from frontend (crypto.randomUUID() per submit). No hard amount ceiling for private beta — API validation (positive integer) + UI confirmation sufficient.
+4. Balance semantics: Admin grant adds to current balance only. Does not modify monthly_allocation, rollover_balance, plan, or period. Current-period only.
+5. Idempotency: Reuse existing source_event_id unique contract (3-layer). idempotencyKey from request body = sourceEventId.
+6. Frontend: New /[locale]/admin route. Admin nav link in account dropdown (role-gated). Utilitarian operator UI. Heroicons v2 Outline only. useTranslations('admin') for all copy.
+7. i18n: New 'admin' namespace in en.json, zh-TW.json, zh-CN.json. No hardcoded English copy.
+8. Internal API separation: /api/internal/admin/* and /api/admin/* remain separate. No merge.
+
+### Parent Acceptance Criteria
+
+- Admin navigates to /[locale]/admin, views user list
+- Opens user detail, sees current credit balance and plan info
+- Adds credits: positive integer amount + required reason + confirmation step
+- Sees balanceBefore and balanceAfter in result
+- Duplicate submit returns status:duplicate — no double-credit
+- credit_grants audit record has grant_type='admin', granted_by_user_id, reason
+- Views and terminates sessions
+- Non-admin denied: 403 at API, redirect at frontend
+- en / zh-TW / zh-CN render correctly
+- No direct PostgreSQL access required for any operation
+
+**ADMIN-CONSOLE-01 status:** ACTIVE — Registration COMPLETE 2026-08-07. ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07. Exact next child: ADMIN-CONSOLE-01B. Checkpoint: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md`.
+**PRIVATE-BETA-INVITE-01 status:** NOT STARTED — blocked until ADMIN-CONSOLE-01 COMPLETE AND LOCKED.
+
+---
+
+#### ADMIN-CONSOLE-01A — Admin Credit Grant Domain + Audit Schema
+
+**Status:** COMPLETE AND LOCKED — 2026-08-07
+**Task ID:** ADMIN-CONSOLE-01A
+**Parent:** ADMIN-CONSOLE-01
+**Family:** ADMIN CONSOLE / CREDIT GRANT DOMAIN
+**Risk:** HIGH — database schema migration + service extension
+**Workflow:** 4-step (registration → stage-start → implementation → checkpoint)
+**Model:** GPT-5.3 Codex High
+**Registered:** 2026-08-07
+**Checkpoint:** `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md`
+
+**Scope:**
+- Migration 1772900000000-AddAdminGrantAuditColumns.ts: add granted_by_user_id (uuid nullable) and reason (text nullable) to credit_grants; add partial index idx_credit_grants_granted_by WHERE granted_by_user_id IS NOT NULL
+- Update CreditGrant entity: add grantedByUserId (uuid nullable) and reason (text nullable) fields
+- Extend CreditGrantRequest: widen grantType union to include 'admin'; add amount?, grantedByUserId?, reason? fields
+- Extend CreditGrantService.processGrant(): admin branch — explicit amount (positive integer), required reason, required grantedByUserId, sourceType='admin', provider='admin'; balance += amount; no monthly_allocation/rollover/plan mutation
+- Extend CreateCreditGrantParams: add grantedByUserId and reason
+- Extend CreditGrantRepository.createGrant(): persist grantedByUserId and reason
+- Preserve all existing topup/subscription_monthly/subscription_initial paths unchanged
+- New focused tests: admin grant happy path, invalid amount, missing reason, missing grantedByUserId, duplicate idempotencyKey
+- Migration spec: AddAdminGrantAuditColumns — covers up()/down(), new columns, partial index
+
+**Non-Goals:** No API endpoint. No frontend. No translations. No env changes. No provider calls. No staging migration execution.
+
+**Acceptance Criteria:**
+- migration 1772900000000-AddAdminGrantAuditColumns.ts: idempotent up() adds granted_by_user_id (uuid nullable), reason (text nullable), idx_credit_grants_granted_by partial index WHERE granted_by_user_id IS NOT NULL; safe down() drops index then columns
+- CreditGrant entity maps grantedByUserId and reason fields
+- CreditGrantRequest grantType union includes 'admin'; amount, grantedByUserId, reason fields present
+- Admin grant: amount must be explicit positive integer (validated at service boundary)
+- Admin grant: reason required and non-empty (validated at service boundary)
+- Admin grant: grantedByUserId required (validated at service boundary)
+- Admin grant: sourceType='admin', provider='admin' set internally — not caller-controlled
+- Admin grant: current balance incremented atomically (transaction: credit_grants insert + credit_balances update)
+- Admin grant: monthly_allocation unchanged
+- Admin grant: rollover_balance unchanged
+- Admin grant: plan/subscription unchanged
+- Admin grant: historical overflow not applied
+- source_event_id idempotency contract preserved (3-layer: pre-check, unique insert, 23505 race fallback)
+- Existing topup/subscription_monthly/subscription_initial paths behaviorally unchanged
+- Focused tests pass: admin happy path, amount validation, reason validation, grantedByUserId validation, duplicate idempotency
+- `npx tsc --noEmit` passes for api-gateway
+- `npm run build` passes for api-gateway
+- `npm test` passes (credit-grant suite + migration spec)
+- No runtime/database/provider/Docker action during implementation
+- Staging migration execution deferred to a later approved deployment step
+
+**Stage-Start Locked Decisions (Step 2 COMPLETE — 2026-08-07):**
+1. **up() SQL (quoted identifiers, repo convention):** `ADD COLUMN IF NOT EXISTS "granted_by_user_id" uuid`; `ADD COLUMN IF NOT EXISTS "reason" TEXT`; `CREATE INDEX IF NOT EXISTS "idx_credit_grants_granted_by" ON "credit_grants" ("granted_by_user_id") WHERE "granted_by_user_id" IS NOT NULL`
+2. **Partial index:** matches existing `idx_credit_grants_webhook_event` `CREATE INDEX IF NOT EXISTS ... WHERE ... IS NOT NULL` pattern
+3. **down() order:** `DROP INDEX IF EXISTS "idx_credit_grants_granted_by"` → `DROP COLUMN IF EXISTS "reason"` → `DROP COLUMN IF EXISTS "granted_by_user_id"`
+4. **Amount errors:** reuse `CreditGrantAmountError`; code `INVALID_AMOUNT`; message pattern `Admin grant amount must be a positive integer`; require `Number.isInteger(amount) && amount > 0`; no max
+5. **Reason:** service requires `typeof reason === 'string' && reason.trim().length > 0`; persist trimmed; max length deferred to 01B API DTO (500); error code `INVALID_REASON`
+6. **grantedByUserId:** presence-only (`typeof === 'string' && trim().length > 0`); no UUID format check in 01A; error code `MISSING_GRANTED_BY_USER_ID`
+7. **provider/sourceType:** derive internally — admin → `sourceType='admin'`, `provider='admin'`; non-admin keep `sourceType='webhook'` + repository/default `provider='stripe'`; never caller-controlled
+8. **Idempotency:** same 3-layer `source_event_id` path; duplicate → no second balance mutation; return stored amount/balanceBefore/balanceAfter
+9. **Duplicate audit:** DB preserves original `grantedByUserId`/`reason`; do **not** expand `CreditGrantResult` in 01A
+10. **Tests:** new migration spec file + extend service/repository/entity specs; keep existing topup/subscription tests unchanged
+
+**Acceptance criteria corrections (locked):**
+- Idempotency key wording is `source_event_id` (not a separate `idempotencyKey`)
+- `CreditGrantResult` unchanged in 01A
+- Entity: no `@Index` for `idx_credit_grants_granted_by` (migration-only partial index)
+- Staging migration execution remains deferred
+
+**Explicit Exclusions:**
+- No HTTP controllers or API DTOs
+- No admin route or endpoint
+- No frontend or translations
+- No /platform changes
+- No session management
+- No Stripe or webhook behavior changes
+- No plan or subscription changes
+- No rollover behavior
+- No promotional grant activation
+- No broad refactors
+- No staging or database actions
+
+**ADMIN-CONSOLE-01A status:** COMPLETE AND LOCKED — 2026-08-07.
+- Step 1 Registration COMPLETE — 2026-08-07
+- Step 2 Stage-Start COMPLETE — 2026-08-07
+- Step 3 Implementation COMPLETE — validated (7 suites / 113 tests PASS; tsc PASS; build PASS)
+- Step 4 Checkpoint COMPLETE — 2026-08-07 — `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md`
+- SOURCE MIGRATION COMPLETE — `1772900000000-AddAdminGrantAuditColumns.ts`
+- STAGING APPLICATION DEFERRED — intentional; migration NOT applied to staging; must be applied before staging validation of admin credit grants
+- No admin API yet (01B). No frontend admin console yet (01C/01D).
+- Acceptance criteria: 20 / 20 satisfied
+
+**ADMIN-CONSOLE-01 status:** ACTIVE — 01A locked; exact next child ADMIN-CONSOLE-01B.
+**PRIVATE-BETA-INVITE-01 status:** NOT STARTED — blocked until ADMIN-CONSOLE-01 COMPLETE AND LOCKED.
+
+---
+
+#### ADMIN-CONSOLE-01B — Authenticated Admin Credit Grant API
+
+**Status:** NOT STARTED — exact next child after ADMIN-CONSOLE-01A COMPLETE AND LOCKED
+**Task ID:** ADMIN-CONSOLE-01B
+**Parent:** ADMIN-CONSOLE-01
+**Family:** ADMIN CONSOLE / CREDIT GRANT API
+**Risk:** NORMAL — bounded backend endpoint reusing existing guards
+**Workflow:** 3-step (registration → implementation → checkpoint)
+**Model:** GPT-5.3 Codex
+**Registered:** 2026-08-07
+**Depends On:** ADMIN-CONSOLE-01A COMPLETE AND LOCKED
+
+**Scope:**
+- POST /api/admin/users/:userId/credits: SessionCookieGuard + AdminRoleGuard; validates amount (positive integer), reason (non-empty, max 500 chars), idempotencyKey (UUID format); extracts grantedByUserId from request.user.userId; calls CreditGrantService.processGrant(); returns grantId/status/amount/balanceBefore/balanceAfter/grantedAt
+- GET /api/admin/users/:userId: extend response to include creditBalance nested DTO (currentBalance from credit_balances)
+- AdminModule: import CreditGrantModule and CreditPersistenceModule
+- Tests: happy path, duplicate idempotency, invalid input (400), non-admin (403), unknown user (404)
+
+**Non-Goals:** No frontend. No migration. No env changes.
+
+---
+
+#### ADMIN-CONSOLE-01C — Admin Console Shell + Users/Sessions
+
+**Status:** NOT STARTED
+**Task ID:** ADMIN-CONSOLE-01C
+**Parent:** ADMIN-CONSOLE-01
+**Family:** ADMIN CONSOLE / FRONTEND SHELL
+**Risk:** NORMAL — frontend-only, new routes
+**Workflow:** 3-step (registration → implementation → checkpoint)
+**Model:** GPT-5.3 Codex
+**Registered:** 2026-08-07
+**Depends On:** ADMIN-CONSOLE-01B COMPLETE AND LOCKED
+
+**Scope:**
+- frontend/app/[locale]/admin/page.tsx: user list (email, role, plan, quota status, active sessions)
+- frontend/app/[locale]/admin/users/[userId]/page.tsx: user detail (plan, quota, credit balance, sessions tab)
+- Server-side admin role check; redirect non-admin to /[locale]/platform
+- Session list and terminate session action (DELETE /api/admin/sessions/:sessionId)
+- Admin nav link in header/account dropdown (role-gated, admin.nav.console key)
+- New 'admin' i18n namespace: en.json, zh-TW.json, zh-CN.json
+- useTranslations('admin') for all UI copy; no hardcoded English
+- Heroicons v2 Outline only
+
+**Non-Goals:** No credit grant form (that is 01D). No backend changes. No migration.
+
+---
+
+#### ADMIN-CONSOLE-01D — Admin Credit Grant UI
+
+**Status:** NOT STARTED
+**Task ID:** ADMIN-CONSOLE-01D
+**Parent:** ADMIN-CONSOLE-01
+**Family:** ADMIN CONSOLE / CREDIT GRANT UI
+**Risk:** NORMAL — frontend-only, bounded form
+**Workflow:** 3-step (registration → implementation → checkpoint)
+**Model:** GPT-5.3 Codex
+**Registered:** 2026-08-07
+**Depends On:** ADMIN-CONSOLE-01B + ADMIN-CONSOLE-01C COMPLETE AND LOCKED
+
+**Scope:**
+- Credit balance display on user detail (currentBalance + monthlyAllocation context)
+- "Add Credits" action opens grant form
+- Form: positive integer amount field, required reason textarea (max 500 chars)
+- Current-period note (admin.creditGrant.currentPeriodNote key)
+- Confirmation step: shows amount, balanceBefore, projected balanceAfter, reason
+- crypto.randomUUID() generated per submit attempt as idempotencyKey
+- Duplicate-submit protection (disable button on in-flight)
+- Result states: granted (success + balanceBefore/After), duplicate (informational), failed (error + retry)
+- All copy via useTranslations('admin'); en/zh-TW/zh-CN keys complete
+
+**Non-Goals:** No backend changes. No migration. No admin list redesign.
+
+---
+
+#### ADMIN-CONSOLE-01E — Staging Validation + Parent Consolidation
+
+**Status:** NOT STARTED
+**Task ID:** ADMIN-CONSOLE-01E
+**Parent:** ADMIN-CONSOLE-01
+**Family:** ADMIN CONSOLE / VALIDATION + CONSOLIDATION
+**Risk:** LOW — validation and governance only
+**Workflow:** 2-step (validation → consolidation)
+**Model:** Sonnet 4.6
+**Registered:** 2026-08-07
+**Depends On:** ADMIN-CONSOLE-01A + 01B + 01C + 01D COMPLETE AND LOCKED
+
+**Scope:**
+- Staging deployment of all 01A-01D changes
+- Browser validation: admin auth, user list, user detail with credit balance
+- Controlled admin credit grant smoke: amount=1000, reason recorded, audit record verified
+- Duplicate submit verified: status=duplicate, balance unchanged
+- Non-admin denial verified: 403 at API, redirect at frontend
+- Session visibility and termination (if active session available)
+- en/zh-TW/zh-CN locale switch verified
+- All existing tests green
+- ADMIN-CONSOLE-01 marked COMPLETE AND LOCKED
+- PRIVATE-BETA-INVITE-01 unblocked
+
+**Non-Goals:** No implementation. No migration execution (already done in 01A step). No source changes.
