@@ -16,7 +16,7 @@ Rules:
 
 If conflicts exist, TASKS_BACKLOG_FULL.md takes precedence.
 
-**Program status:** BILLING-READY-08 ACTIVE — Step 4 ACTIVE (pending deployment + controlled retry) — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — QuotaGuard browser-session bypass — `browser-session` identity now bypasses legacy Phase 21B API-key quota; genuine API-key behavior unchanged; guard ordering unchanged — Files: `quota.guard.ts`, `quota.guard.spec.ts`, `ai-execution-guards.integration.spec.ts` — 2 suites, 52 tests PASS; tsc PASS; build PASS — Step 4A smoke remains FAIL (blocker resolved in source) — Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md` — Exact next action: commit/push 08A → staging deployment → Step 4B controlled retry (requires Keith approval) — PRIVATE-BETA-FUNCTIONAL-READINESS-04 ACTIVE and BLOCKED pending BILLING-READY-08 Step 4B — Operator-reported posture: `GLOBAL_EXECUTION_ENABLED=false`, `AI_PROVIDER=xai`, `PROVIDER_XAI_ENABLED=true` — No users invited — PRIVATE-BETA-INVITE-01 NOT REGISTERED — No new runtime enablement authorized — Implementation plan: docs/BILLING-READY-08-IMPLEMENTATION-PLAN.md — FR-04 readiness plan: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-READINESS-PLAN.mdECUTION_ENABLED=false` preserved — COMPLETE — `auth.module.ts` NOT modified — Operator-reported posture: `GLOBAL_EXECUTION_ENABLED=false`, `AI_PROVIDER=xai`, `PROVIDER_XAI_ENABLED=true` — no inference request authorized — No users invited — PRIVATE-BETA-INVITE-01 NOT REGISTERED — No new runtime enablement authorized — Exact next action: BILLING-READY-08 Step 4 (requires Keith approval) — Step 3 Checkpoint: docs/BILLING-READY-08-STEP-3-CHECKPOINT.md — Implementation plan: docs/BILLING-READY-08-IMPLEMENTATION-PLAN.md — FR-04 readiness plan: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-READINESS-PLAN.md
+**Program status:** BILLING-READY-08 ACTIVE — Step 4B BLOCKED by **BILLING-READY-08B REGISTERED 2026-08-07** — usage_records.created_at schema missing from TypeORM migration chain — worker.processor.ts fails immediately after claim (before provider) with `column "created_at" does not exist` — confirmed on staging — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — QuotaGuard browser-session bypass — `browser-session` identity now bypasses legacy Phase 21B API-key quota; genuine API-key behavior unchanged; guard ordering unchanged — Files: `quota.guard.ts`, `quota.guard.spec.ts`, `ai-execution-guards.integration.spec.ts` — 2 suites, 52 tests PASS; tsc PASS; build PASS — Step 4A smoke remains FAIL (QuotaGuard blocker resolved; schema blocker now registered as 08B) — Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md` — Exact next action: implement BILLING-READY-08B (TypeORM migration for usage_records.created_at) → staging deployment of 08A + 08B → schema migration → Step 4B controlled retry (requires Keith approval) — PRIVATE-BETA-FUNCTIONAL-READINESS-04 ACTIVE and BLOCKED pending BILLING-READY-08 (including 08B) — Operator-reported posture: `GLOBAL_EXECUTION_ENABLED=false`, `AI_PROVIDER=xai`, `PROVIDER_XAI_ENABLED=true` — No users invited — PRIVATE-BETA-INVITE-01 NOT REGISTERED — No new runtime enablement authorized — No xAI retry authorized until 08B fully implemented, migrated, validated, and explicitly approved — Implementation plan: docs/BILLING-READY-08-IMPLEMENTATION-PLAN.md — FR-04 readiness plan: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-READINESS-PLAN.md
 
 
 \# TASKS.md ??Master Task Index
@@ -25242,7 +25242,8 @@ Resume AGENT-PLATFORM-02 �X Static RPG Office/Town Dashboard Shell.
 42. PRIVATE-BETA-FUNCTIONAL-READINESS-04B — Provider Model Catalogue and Selection Hardening (COMPLETE and LOCKED — 2026-08-06 — PASS — All steps COMPLETE — Step 1 COMPLETE — Step 2a Backend COMPLETE — Step 2b Frontend COMPLETE — Step 3 Consolidation COMPLETE — Approved catalogue: xAI default `grok-4.5` allowed `grok-4.5`/`grok-4.20`; Groq default `openai/gpt-oss-120b` allowed `openai/gpt-oss-120b`/`openai/gpt-oss-20b`; DeepSeek default `deepseek-v4-flash` allowed `deepseek-v4-flash`/`deepseek-v4-pro`; OpenAI `gpt-4o`; Anthropic via `ANTHROPIC_MODEL`; Stub preserved — Dual-layer validation (API Gateway + AI Service) — Frontend catalogue matches backend — Default `xai:grok-4.5` — Stale IDs removed — Anthropic not frontend-selectable without authoritative configured model ID — Validation PASS: focused AI Service tests; focused API Gateway tests; AI Service tsc + build; API Gateway tsc + build; frontend 462 tests PASS; frontend tsc + build; lint clean — AI execution remained disabled — No staging/PM2/credential/runtime/provider/browser/invitation action — Parent FR-04 ACTIVE — FR-04 source prerequisites COMPLETE — Checkpoint: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04B-CHECKPOINT.md — Plan: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04B-IMPLEMENTATION-PLAN.md)
 43. PRIVATE-BETA-FUNCTIONAL-READINESS-04C — Controlled Staging Deployment of FR-04A/04B (COMPLETE and LOCKED — 2026-08-06 — PASS — All steps COMPLETE — Step 1 COMPLETE — Step 2a READY — Step 2b Backend PASS — Step 2c Frontend PASS — Step 2d Consolidation COMPLETE — Staging deployed HEAD `df9a9ff582321a1c54e3b3566322ed70da175c19` matches origin/main — Backup `/opt/aisandbox-backups/fr-04c-20260806-151147` (ai-service-dist, api-gateway-dist, predeploy-head.txt) — Backend: ai-service + api-gateway build PASS; restarted; AI messages health HTTP 201 ok; API gateway health HTTP 200 ok — Frontend: build PASS; .next has grok-4.5/grok-4.20, grok-3 absent; restarted; /en/app HTTP 200 — Safe posture preserved: GLOBAL_EXECUTION_ENABLED=false, AI_PROVIDER=stub, PROVIDER_XAI_ENABLED=false — No provider API calls — No AI execution enabled — No users invited — Parent FR-04 ACTIVE — Runtime AI enablement remains NOT STARTED — Checkpoint: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04C-CHECKPOINT.md — Plan: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04C-DEPLOYMENT-PLAN.md)
 44. PRIVATE-BETA-FUNCTIONAL-READINESS-04D — Build Workspace Route and Legacy `/app` Audit (ACTIVE — 2026-08-06 — Source-only route/UX audit — Step 1 COMPLETE — Outcome A — `/[locale]/app` is the canonical Build anything workspace (`AppPage` → `WorkspaceShell`) — `/[locale]/platform` is Agent Command Center only — legacy session shell is same `/app` URL when `PROJECT_FIRST_UX=false` — `/driver` is non-canonical Phase 37C driver — FR-04 Step 3c remains BLOCKED — can resume without source changes on `https://staging.ainow.biz/en/app` project view — xAI config present — global execution disabled — no inference — no users invited — no runtime enablement authorized — No source/tests/translations/middleware/env/packages/migrations/entities/staging/browser/provider/DB/Git action — Parent FR-04 ACTIVE — Audit: docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04D-ROUTE-AUDIT.md)
-45. BILLING-READY-08 — Free-Plan Credit Balance Provisioning (ACTIVE — 2026-08-06, AMENDED v4 — Step 1 COMPLETE — **Step 2a COMPLETE AND LOCKED 2026-08-06** — **Step 2b COMPLETE AND LOCKED 2026-08-06** — **Step 2 COMPLETE** — **Step 3 COMPLETE AND LOCKED 2026-08-07** — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — Step 4 ACTIVE / pending deployment + controlled retry (requires Keith approval) — Root cause: registration creates `users` but not `credit_balances`; historical users also affected — Fix: (1) atomic `DataSource.transaction()` in `AuthService` — COMPLETE; (2) TypeORM migration `1772700000000-BackfillCreditBalancesForExistingUsers.ts` — COMPLETE; (3) staging deployed HEAD `96fe52749df2f9599bf7faa3a5dca5f594fa232b`; migration executed; 2 rows inserted; 0 missing post-migration; `GLOBAL_EXECUTION_ENABLED=false` preserved — COMPLETE; (4a) QuotaGuard browser-session bypass — `quota.guard.ts`, `quota.guard.spec.ts`, `ai-execution-guards.integration.spec.ts` — 52 tests PASS; tsc + build PASS — COMPLETE — `auth.module.ts` NOT modified — Step 4A smoke remains FAIL — Exact next action: commit/push 08A → staging deploy → Step 4B controlled retry — Step 3 Checkpoint: docs/BILLING-READY-08-STEP-3-CHECKPOINT.md — 08A Checkpoint: docs/BILLING-READY-08A-CHECKPOINT.md — Implementation plan: docs/BILLING-READY-08-IMPLEMENTATION-PLAN.md)
+45. BILLING-READY-08 — Free-Plan Credit Balance Provisioning (ACTIVE — 2026-08-06, AMENDED v4 — Step 1 COMPLETE — **Step 2a COMPLETE AND LOCKED 2026-08-06** — **Step 2b COMPLETE AND LOCKED 2026-08-06** — **Step 2 COMPLETE** — **Step 3 COMPLETE AND LOCKED 2026-08-07** — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — Step 4B BLOCKED pending **BILLING-READY-08B** — Root cause: registration creates `users` but not `credit_balances`; historical users also affected — Fix: (1) atomic `DataSource.transaction()` in `AuthService` — COMPLETE; (2) TypeORM migration `1772700000000-BackfillCreditBalancesForExistingUsers.ts` — COMPLETE; (3) staging deployed HEAD `96fe52749df2f9599bf7faa3a5dca5f594fa232b`; migration executed; 2 rows inserted; 0 missing post-migration; `GLOBAL_EXECUTION_ENABLED=false` preserved — COMPLETE; (4a) QuotaGuard browser-session bypass — `quota.guard.ts`, `quota.guard.spec.ts`, `ai-execution-guards.integration.spec.ts` — 52 tests PASS; tsc + build PASS — COMPLETE — `auth.module.ts` NOT modified — Step 4A smoke remains FAIL — Step 4B BLOCKED by BILLING-READY-08B (usage_records.created_at schema) — No xAI retry until 08B complete and explicitly approved — Step 3 Checkpoint: docs/BILLING-READY-08-STEP-3-CHECKPOINT.md — 08A Checkpoint: docs/BILLING-READY-08A-CHECKPOINT.md — Implementation plan: docs/BILLING-READY-08-IMPLEMENTATION-PLAN.md)
+46. BILLING-READY-08B — usage_records.created_at Schema Remediation (REGISTERED — 2026-08-07 — Child of BILLING-READY-08 — Root cause: `worker.processor.ts` (ai-service, line 616) queries `SELECT execution_status, created_at FROM usage_records` but `created_at` column is absent from the TypeORM migration chain — `1738843200000-CreateUsageRecordsTable.ts` did not include `created_at`; no subsequent migration adds it — Standalone scripts `database/090_usage_records_created_at.sql` and `database/init/100_usage_records_created_at.sql` exist but were not applied to staging (staging uses TypeORM migration chain only) — Staging confirmed: `ERROR: column "created_at" does not exist` — Worker failure sequence: pending → running/claimed → immediate BullMQ failure before provider execution — Affected executions: 56f8c37a-7161-4df3-b379-8ab261fcfff4, a9a3ba5f-5571-4209-880c-f42298e1e20f — No xAI provider call from either — Scope: add `usage_records.created_at` via TypeORM migration `1772800000000-AddCreatedAtToUsageRecords.ts` using `ADD COLUMN IF NOT EXISTS` (idempotent; safe for fresh installs); backfill from `timestamp` column; `DEFAULT now()` NOT NULL; migration spec — No worker behavior change; no billing/credit/quota/auth/frontend/provider changes — `GLOBAL_EXECUTION_ENABLED=false` must remain false throughout — No xAI retry until 08B fully implemented, migrated, validated, and explicitly approved by Keith — Parent BILLING-READY-08 ACTIVE; FR-04 Step 3c remains BLOCKED pending BILLING-READY-08 including 08B — Implementation step: source + tests; Staging gate: commit/push 08A+08B → API Gateway build → migration run → schema verify → Step 4B retry approval — Rollback: `down()` drops column; reversible while no additional code dependency — Acceptance: migration tsc+build PASS; migration spec PASS; staging migration applies cleanly; `SELECT created_at FROM usage_records` no error; worker unblock verified in Step 4B smoke)
 
 20. AGENT-PLATFORM-07F3 �X Parent Consolidation Checkpoint (COMPLETE and LOCKED �X 2026-07-12)
 
@@ -39274,7 +39275,7 @@ BILLING-READY-07A may resume only after:
 
 #### BILLING-READY-08: Free-Plan Credit Balance Provisioning
 
-**Status:** ACTIVE — 2026-08-06 — Step 1 COMPLETE — **Step 2a COMPLETE AND LOCKED 2026-08-06** — **Step 2b COMPLETE AND LOCKED 2026-08-06** — **Step 2 COMPLETE** — **Step 3 COMPLETE AND LOCKED 2026-08-07** — Step 4 NOT STARTED (requires Keith approval)
+**Status:** ACTIVE — 2026-08-06 — Step 1 COMPLETE — **Step 2a COMPLETE AND LOCKED 2026-08-06** — **Step 2b COMPLETE AND LOCKED 2026-08-06** — **Step 2 COMPLETE** — **Step 3 COMPLETE AND LOCKED 2026-08-07** — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — Step 4B BLOCKED pending **BILLING-READY-08B** (usage_records.created_at schema) — REGISTERED 2026-08-07
 **Task ID:** BILLING-READY-08
 **Title:** Free-Plan Credit Balance Provisioning
 **Family:** BILLING READY / CREDIT BALANCE / USER REGISTRATION / PROVISIONING
@@ -39335,7 +39336,9 @@ Registration paths (`AuthService.register`, `findOrCreateGoogleUser`, `findOrCre
    - **2a — New-user provisioning (`auth.service.ts`, `auth.service.spec.ts`)** — **COMPLETE AND LOCKED 2026-08-06**. `npm test -- auth.service.spec` PASS (22 tests); `npx tsc --noEmit` PASS; `npm run build` PASS. Checkpoint: `docs/BILLING-READY-08-STEP-2A-CHECKPOINT.md`.
    - **2b — Historical backfill migration + migration spec** — **COMPLETE AND LOCKED 2026-08-06**. `npm test -- backfill-credit-balances-migration` PASS (8 tests); `npx tsc --noEmit` PASS; `npm run build` PASS. Checkpoint: `docs/BILLING-READY-08-STEP-2B-CHECKPOINT.md`.
 3. **Approval-gated staging deployment + migration** — **COMPLETE AND LOCKED 2026-08-07**. Deployed HEAD `96fe52749df2f9599bf7faa3a5dca5f594fa232b`; backup `/opt/aisandbox-backups/billing-ready-08-step3a-20260806T133718Z`; API Gateway build + restart PASS; health HTTP 200; `BackfillCreditBalancesForExistingUsers1772700000000` executed; 2 rows inserted; 0 missing post-migration; `GLOBAL_EXECUTION_ENABLED=false` preserved. Checkpoint: `docs/BILLING-READY-08-STEP-3-CHECKPOINT.md`.
-4. **Runtime smoke, rollback of execution switch, consolidation and checkpoint** — **NOT STARTED** — requires separate Keith approval.
+4. **Runtime smoke, rollback of execution switch, consolidation and checkpoint** — **Step 4B BLOCKED pending BILLING-READY-08B** — secondary root cause identified from Step 4A controlled retry: `worker.processor.ts` queries `usage_records.created_at` which is absent from TypeORM migration chain — staging confirmed `ERROR: column "created_at" does not exist` — BILLING-READY-08B registered 2026-08-07 — No xAI retry authorized until 08B fully implemented, migrated, validated, and explicitly approved.
+   - **Step 4A sub-fix — BILLING-READY-08A — COMPLETE AND LOCKED 2026-08-07**: QuotaGuard browser-session bypass. Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md`.
+   - **Step 4B — BLOCKED by BILLING-READY-08B** — commit/push 08A+08B → staging deployment → schema migration → controlled runtime retry (requires Keith approval).
 
 #### Implementation files (Step 2)
 
@@ -39425,9 +39428,153 @@ Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm run
 - [x] No terminal/Git/source/runtime/environment/database/provider/invitation action occurred
 - [x] BILLING-READY-03/04/05 locked checkpoints not modified
 
-**BILLING-READY-08 status:** ACTIVE — 2026-08-06 — Step 1 (Registration/Planning) COMPLETE, AMENDED (v4). **Step 2a COMPLETE AND LOCKED 2026-08-06.** **Step 2b COMPLETE AND LOCKED 2026-08-06.** **Step 2 COMPLETE.** **Step 3 COMPLETE AND LOCKED 2026-08-07.** Root cause proven: registration creates `users` but not `credit_balances`. Fix: (1) atomic `DataSource.transaction()` in `AuthService` — COMPLETE. (2) Historical-user backfill via TypeORM migration `1772700000000-BackfillCreditBalancesForExistingUsers.ts` — COMPLETE. (3) Staging deployed HEAD `96fe52749df2f9599bf7faa3a5dca5f594fa232b`; `BackfillCreditBalancesForExistingUsers1772700000000` executed; 2 rows inserted; 0 missing post-migration; `GLOBAL_EXECUTION_ENABLED=false` preserved — COMPLETE. `auth.module.ts` NOT modified. No guard weakening. FR-04 Step 3c BLOCKED pending BILLING-READY-08 Step 4. Exact next action: Step 4 runtime smoke (requires Keith approval). Checkpoints: `docs/BILLING-READY-08-STEP-2A-CHECKPOINT.md`, `docs/BILLING-READY-08-STEP-2B-CHECKPOINT.md`, `docs/BILLING-READY-08-STEP-3-CHECKPOINT.md`. Implementation plan: `docs/BILLING-READY-08-IMPLEMENTATION-PLAN.md`.
+**BILLING-READY-08 status:** ACTIVE — 2026-08-06 — Step 1 (Registration/Planning) COMPLETE, AMENDED (v4). **Step 2a COMPLETE AND LOCKED 2026-08-06.** **Step 2b COMPLETE AND LOCKED 2026-08-06.** **Step 2 COMPLETE.** **Step 3 COMPLETE AND LOCKED 2026-08-07.** **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07.** Root cause: registration creates `users` but not `credit_balances`. Fix: (1) atomic `DataSource.transaction()` in `AuthService` — COMPLETE. (2) Historical-user backfill via TypeORM migration `1772700000000-BackfillCreditBalancesForExistingUsers.ts` — COMPLETE. (3) Staging deployed HEAD `96fe52749df2f9599bf7faa3a5dca5f594fa232b`; migration executed; 2 rows inserted — COMPLETE. (4a) QuotaGuard browser-session bypass — COMPLETE AND LOCKED. Step 4B BLOCKED by **BILLING-READY-08B** (usage_records.created_at absent from TypeORM migration chain — staging confirmed). BILLING-READY-08B REGISTERED 2026-08-07. No xAI retry authorized until 08B complete and approved. FR-04 Step 3c BLOCKED. Checkpoints: `docs/BILLING-READY-08-STEP-2A-CHECKPOINT.md`, `docs/BILLING-READY-08-STEP-2B-CHECKPOINT.md`, `docs/BILLING-READY-08-STEP-3-CHECKPOINT.md`, `docs/BILLING-READY-08A-CHECKPOINT.md`. Implementation plan: `docs/BILLING-READY-08-IMPLEMENTATION-PLAN.md`.
 
 **Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-08.
+
+---
+
+#### BILLING-READY-08B: usage_records.created_at Schema Remediation
+
+**Status:** REGISTERED — 2026-08-07
+**Task ID:** BILLING-READY-08B
+**Title:** usage_records.created_at Schema Remediation
+**Family:** BILLING READY / SCHEMA / AI-SERVICE WORKER / USAGE RECORDS
+**Priority:** CRITICAL — blocks BILLING-READY-08 Step 4B and FR-04 Step 3c
+**Nature:** BOUNDED SCHEMA MIGRATION — single column addition to existing table
+**Risk:** MEDIUM — modifies production table; migration must be idempotent; no usage data loss permitted
+**Registered:** 2026-08-07
+**Parent:** BILLING-READY-08
+**Keith approval:** Required before staging migration execution and before Step 4B controlled retry
+**Staging HEAD at registration:** `4288373f5570e93d570705d73f28cccc3cab0fc9`
+
+#### Root Cause and Evidence
+
+`worker.processor.ts` (ai-service) at line 616 executes:
+
+```sql
+SELECT execution_status, created_at
+FROM usage_records
+WHERE execution_id = $1
+```
+
+The `usage_records` table was created by `1738843200000-CreateUsageRecordsTable.ts` which does NOT include a `created_at` column. No subsequent TypeORM migration (`AddRequestIdToUsageRecords`, `AddExecutionStatusToUsageRecords`, `BackfillCreditBalancesForExistingUsers`) adds `created_at`.
+
+Standalone scripts `database/090_usage_records_created_at.sql` and `database/init/100_usage_records_created_at.sql` define the intended addition using `ADD COLUMN IF NOT EXISTS`, but these were NOT applied to staging — staging is managed exclusively via the TypeORM migration chain.
+
+Staging confirmation: `ERROR: column "created_at" does not exist` when querying `usage_records.created_at`.
+
+Worker failure sequence for executions 56f8c37a-7161-4df3-b379-8ab261fcfff4 and a9a3ba5f-5571-4209-880c-f42298e1e20f:
+- Worker received job ✓
+- Worker claimed job ✓
+- BullMQ job immediately failed (schema error) ✗
+- No provider execution — no xAI API call — no tokens consumed
+
+The `queueWaitMs` telemetry path (lines 624–627) is null-safe (`if (queueWaitMs != null)`), so no worker behavior change is required beyond the schema fix.
+
+#### Exact Bounded Scope
+
+**Files to CREATE:**
+- `services/api-gateway/src/migrations/1772800000000-AddCreatedAtToUsageRecords.ts` — TypeORM migration
+- `services/api-gateway/src/billing/credit-deduction/__tests__/add-created-at-usage-records-migration.spec.ts` — migration spec
+
+**Files NOT modified:**
+- `services/ai-service/src/worker/worker.processor.ts` — no change required; telemetry path already null-safe
+- Any locked checkpoint or task document
+- Any billing/credit/quota/auth/frontend/provider file
+- Any other schema or migration file
+
+#### Migration Safety Requirements
+
+- Use `ADD COLUMN IF NOT EXISTS` — idempotent; safe for environments that already have the column (e.g., fresh installs that applied `database/init/100_usage_records_created_at.sql`)
+- Backfill existing rows: `UPDATE usage_records SET created_at = "timestamp" WHERE created_at IS NULL` — preserves all existing usage data
+- Set `DEFAULT now()` so new rows auto-populate
+- Set `NOT NULL` after backfill completes (safe: backfill ensures no NULLs remain)
+- `down()`: reversible — drop `DEFAULT`, drop `NOT NULL`, drop column
+- Must NOT DELETE, TRUNCATE, or DROP any existing data
+- Migration timestamp: `1772800000000` (next available after `1772700000000`)
+
+#### Acceptance Criteria
+
+- [ ] `1772800000000-AddCreatedAtToUsageRecords.ts` created with correct `up()` and reversible `down()`
+- [ ] Migration spec created covering: `IF NOT EXISTS` idempotency, backfill logic, `NOT NULL` + `DEFAULT`, `down()` reversibility, no data destruction
+- [ ] `npx tsc --noEmit` — PASS (api-gateway)
+- [ ] `npm run build` — PASS (api-gateway)
+- [ ] Migration spec — PASS
+- [ ] Staging migration applies cleanly via `npm run migration:run`
+- [ ] Post-migration: `SELECT column_name FROM information_schema.columns WHERE table_name = 'usage_records' AND column_name = 'created_at'` returns 1 row
+- [ ] Worker no longer fails with schema error after migration
+- [ ] `GLOBAL_EXECUTION_ENABLED=false` preserved throughout implementation and migration
+- [ ] No xAI provider call occurred during 08B implementation
+
+#### Validation Requirements
+
+**Source validation (before staging):**
+```powershell
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm test -- add-created-at-usage-records-migration
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npx tsc --noEmit
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm run build
+```
+
+**Staging validation (after migration):**
+- `SELECT column_name FROM information_schema.columns WHERE table_name = 'usage_records' AND column_name = 'created_at'` — must return `created_at`
+- `SELECT created_at FROM usage_records LIMIT 5` — must succeed with no error
+- Worker unblock: no schema error in worker logs during Step 4B controlled retry
+
+#### Staging Deployment / Migration Gate
+
+1. Implement source + tests (BILLING-READY-08B step 1)
+2. Source validation PASS (tsc, build, migration spec)
+3. Keith approval for staging migration execution
+4. Staging backup before migration
+5. Commit/push 08A + 08B source changes to `origin/main`
+6. Pull on staging; rebuild API Gateway
+7. Run `npm run migration:run` in api-gateway on staging
+8. Verify schema: `created_at` column present, existing rows backfilled
+9. Confirm `GLOBAL_EXECUTION_ENABLED=false` preserved
+10. Only then: Keith approval for Step 4B controlled xAI retry
+
+**Note:** Do NOT apply `database/090_usage_records_created_at.sql` manually on staging as the permanent fix. The TypeORM migration chain must be authoritative so fresh and existing deployments converge correctly.
+
+#### Rollback Considerations
+
+- `down()` removes `created_at` column — simple and safe if migration causes unexpected problems
+- Rollback restores pre-fix behavior (worker fails on schema error — known state)
+- `migration:revert` requires Keith approval
+- No data loss risk from rollback (column has no foreign key dependencies)
+
+#### GLOBAL_EXECUTION_ENABLED Constraint
+
+`GLOBAL_EXECUTION_ENABLED` must remain `false` throughout the entire 08B implementation and staging migration phases. No inference, no provider calls, no execution enablement until Step 4B is explicitly approved post-08B.
+
+#### No Further xAI Retry
+
+No xAI execution retry is authorized until BILLING-READY-08B is:
+1. Fully implemented (source + tests PASS)
+2. Staged migration applied and schema verified
+3. Explicitly approved by Keith for Step 4B controlled retry
+
+Executions 56f8c37a-7161-4df3-b379-8ab261fcfff4 and a9a3ba5f-5571-4209-880c-f42298e1e20f are failed — no automatic retry.
+
+#### Parent / FR-04 Dependency State
+
+- BILLING-READY-08 parent remains ACTIVE — Step 4B blocked by this task
+- BILLING-READY-08A remains COMPLETE AND LOCKED 2026-08-07 — not modified
+- FR-04 Step 3c remains BLOCKED pending BILLING-READY-08 (including 08B)
+- BILLING-READY-08B must be fully complete before Step 4B controlled retry
+- PRIVATE-BETA-INVITE-01 NOT REGISTERED — no users invited
+
+#### Implementation Workflow (3-Step Normal Loop)
+
+1. **Source implementation + tests** — Create migration + spec; validate tsc, build, spec.
+2. **Staging deployment + migration** — Commit/push 08A+08B → pull → rebuild API Gateway → `migration:run` → verify schema. Requires Keith approval.
+3. **Consolidation checkpoint** — Checkpoint doc; update TASKS.md + TASKS_BACKLOG_FULL.md; BILLING-READY-08B COMPLETE AND LOCKED.
+
+**After 08B consolidation:** Resume BILLING-READY-08 Step 4B controlled retry (separate Keith approval required).
+
+**BILLING-READY-08B status:** REGISTERED — 2026-08-07. Implementation NOT STARTED. Staging HEAD at registration: `4288373f5570e93d570705d73f28cccc3cab0fc9`. `GLOBAL_EXECUTION_ENABLED=false`. No implementation, runtime, or database action occurred during registration.
+
+**Reference:** See TASKS_BACKLOG_FULL.md -> BILLING-READY-08B.
 
 ---
 
