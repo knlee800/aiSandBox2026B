@@ -567,6 +567,103 @@
     "checkoutError": "結帳失敗，請再試一次。",
     "backToWorkspace": "返回工作區"
   },
+  "admin": {
+    "nav": {
+      "console": "管理主控台",
+      "backToWorkspace": "返回工作區"
+    },
+    "users": {
+      "title": "使用者",
+      "subtitle": "搜尋並檢視使用者帳號與配額狀態。",
+      "searchLabel": "搜尋使用者",
+      "searchPlaceholder": "以電子郵件搜尋",
+      "quotaFilterLabel": "配額狀態",
+      "quotaFilterAll": "全部",
+      "quotaFilterOk": "OK",
+      "quotaFilterWarn": "WARN",
+      "quotaFilterExceeded": "EXCEEDED",
+      "role": "角色",
+      "plan": "方案",
+      "planStatus": "方案狀態",
+      "quotaStatus": "配額狀態",
+      "activeSessions": "活躍工作階段",
+      "tokensUsed24h": "24 小時代幣用量",
+      "createdAt": "建立時間"
+    },
+    "userDetail": {
+      "title": "使用者詳情",
+      "backToUsers": "返回使用者列表",
+      "summary": "帳號摘要",
+      "email": "電子郵件",
+      "role": "角色",
+      "plan": "方案",
+      "planStatus": "方案狀態",
+      "accountStatus": "帳號狀態",
+      "accountActive": "啟用",
+      "accountInactive": "停用",
+      "createdAt": "建立時間",
+      "quotas": "配額快照",
+      "maxActiveSessions": "活躍工作階段上限",
+      "currentActiveSessions": "目前活躍工作階段",
+      "maxSessions24h": "24 小時工作階段上限",
+      "currentSessions24h": "目前 24 小時工作階段",
+      "maxTokens24h": "24 小時代幣上限",
+      "currentTokens24h": "目前 24 小時代幣"
+    },
+    "creditBalance": {
+      "title": "點數餘額",
+      "balance": "餘額",
+      "monthlyAllocation": "每月配額",
+      "rolloverBalance": "結轉餘額",
+      "planId": "方案 ID",
+      "status": "狀態"
+    },
+    "sessions": {
+      "title": "工作階段",
+      "sessionId": "工作階段 ID",
+      "status": "狀態",
+      "isTerminated": "已終止",
+      "terminationReason": "終止原因",
+      "createdAt": "建立時間",
+      "lastActivityAt": "最後活動時間",
+      "expiresAt": "到期時間",
+      "yes": "是",
+      "no": "否"
+    },
+    "terminate": {
+      "action": "終止",
+      "inProgress": "終止中...",
+      "alreadyTerminated": "已終止"
+    },
+    "confirm": {
+      "terminateSession": "要終止這個工作階段嗎？"
+    },
+    "loading": {
+      "authCheck": "正在檢查工作階段...",
+      "redirecting": "重新導向中...",
+      "users": "載入使用者中...",
+      "userDetail": "載入使用者詳情中...",
+      "sessions": "載入工作階段中..."
+    },
+    "empty": {
+      "users": "目前篩選條件沒有符合的使用者。",
+      "creditBalance": "此使用者目前沒有可用的點數餘額資料。",
+      "sessions": "此使用者目前沒有工作階段。"
+    },
+    "success": {
+      "sessionTerminated": "工作階段已成功終止。"
+    },
+    "error": {
+      "usersLoad": "無法載入使用者。",
+      "userDetailLoad": "無法載入使用者詳情。",
+      "sessionsLoad": "無法載入工作階段。",
+      "sessionTerminate": "無法終止工作階段。"
+    },
+    "unauthorized": {
+      "loginRedirect": "登入狀態已失效，正在導向登入頁。",
+      "adminRedirect": "需要管理員權限，正在重新導向。"
+    }
+  },
   "languages": {
     "en": "English",
     "zh-TW": "繁體中文",

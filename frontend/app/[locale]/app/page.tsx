@@ -861,6 +861,7 @@ export default function AppPage() {
   const aiMessages = getAiMessages(locale);
   const [authLoading, setAuthLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [sessions, setSessions] = useState<WorkspaceShellSession[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [isLoadingSessions, setIsLoadingSessions] = useState(true);
@@ -1136,6 +1137,7 @@ export default function AppPage() {
   function handleWorkspaceUnauthorizedAccess(): void {
     setAuthLoading(true);
     setUserId(null);
+    setUserRole(null);
     setWorkspaces([]);
     setSelectedWorkspaceId(null);
     setWorkspaceCreateNameInput('');
@@ -1238,12 +1240,13 @@ export default function AppPage() {
           router.push(`/${locale}/login`);
           return;
         }
-        const me = (await meResponse.json()) as { id?: unknown };
+        const me = (await meResponse.json()) as { id?: unknown; role?: unknown };
         if (typeof me.id !== 'string' || !me.id.trim()) {
           router.push(`/${locale}/login`);
           return;
         }
         setUserId(me.id);
+        setUserRole(typeof me.role === 'string' ? me.role : null);
         setAuthLoading(false);
         void loadSessions();
         void loadDashboardSlice();
@@ -5975,6 +5978,7 @@ export default function AppPage() {
       canOpenCheckpointFileInLiveWorkspace={canOpenCheckpointFileInLiveWorkspace}
       onOpenCheckpointFileInLiveWorkspace={handleOpenCheckpointFileInLiveWorkspace}
       userSummary={userSummary}
+      userRole={userRole}
       usageSummary={usageSummary}
       quotaSummary={quotaSummary}
       isLoadingDashboard={isLoadingDashboard}

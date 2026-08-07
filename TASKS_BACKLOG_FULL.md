@@ -55306,7 +55306,7 @@ AGENT-HARNESS-06E closes this gap by running a full E2E canary with ALL required
 
 ## ADMIN-CONSOLE-01 — Private Beta Operator Console
 
-**Status:** ACTIVE — 01A + 01B COMPLETE AND LOCKED (2026-08-07); exact next: ADMIN-CONSOLE-01C
+**Status:** ACTIVE — 01A + 01B + 01C COMPLETE AND LOCKED (2026-08-07); exact next: ADMIN-CONSOLE-01D — Admin Credit Grant UI
 **Task ID:** ADMIN-CONSOLE-01
 **Family:** ADMIN CONSOLE / PRIVATE BETA OPERATIONS
 **Priority:** HIGH — blocks PRIVATE-BETA-INVITE-01
@@ -55332,7 +55332,7 @@ Architecture audit at registration confirmed:
 |-------|-------|--------|----------|-------|
 | ADMIN-CONSOLE-01A | Admin Credit Grant Domain + Audit Schema | COMPLETE AND LOCKED — 2026-08-07 | 4-step | GPT-5.3 Codex High |
 | ADMIN-CONSOLE-01B | Authenticated Admin Credit Grant API | COMPLETE AND LOCKED — 2026-08-07 | 3-step | GPT-5.3 Codex |
-| ADMIN-CONSOLE-01C | Admin Console Shell + Users/Sessions | NOT STARTED | 3-step | GPT-5.3 Codex |
+| ADMIN-CONSOLE-01C | Admin Console Shell + Users/Sessions | COMPLETE AND LOCKED — 2026-08-07 | 3-step | GPT-5.3 Codex |
 | ADMIN-CONSOLE-01D | Admin Credit Grant UI | NOT STARTED | 3-step | GPT-5.3 Codex |
 | ADMIN-CONSOLE-01E | Staging Validation + Parent Consolidation | NOT STARTED | 2-step | Sonnet 4.6 |
 
@@ -55346,10 +55346,12 @@ Architecture audit at registration confirmed:
 - No hard amount ceiling for private beta; API validates positive integer + UI confirmation
 - Current-period balance grant only; no rollover/persistent types
 - Frontend: /[locale]/admin; admin nav link in header/account dropdown (role-gated); useTranslations('admin'); Heroicons v2 Outline only
+- Frontend admin route UX protection: client-side `/api/auth/me` role check (Outcome B) — no invented Next.js server role middleware; API Gateway remains authoritative security boundary
 - /api/internal/admin/* and /api/admin/* remain separate
 
-**ADMIN-CONSOLE-01 status:** ACTIVE — Registration COMPLETE 2026-08-07. ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07. ADMIN-CONSOLE-01B COMPLETE AND LOCKED 2026-08-07. Checkpoints: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md`, `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md`. Exact next child: ADMIN-CONSOLE-01C.
+**ADMIN-CONSOLE-01 status:** ACTIVE — Registration COMPLETE 2026-08-07. ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07. ADMIN-CONSOLE-01B COMPLETE AND LOCKED 2026-08-07. ADMIN-CONSOLE-01C COMPLETE AND LOCKED 2026-08-07. Checkpoints: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md`, `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md`, `docs/ADMIN-CONSOLE-01C-CHECKPOINT.md`. Exact next: ADMIN-CONSOLE-01D — Admin Credit Grant UI.
 **PRIVATE-BETA-INVITE-01 status:** NOT STARTED — blocked until ADMIN-CONSOLE-01 COMPLETE AND LOCKED.
+**01A staging migration:** SOURCE COMPLETE / NOT APPLIED TO STAGING.
 
 ---
 
@@ -55491,7 +55493,7 @@ CreditGrant entity gains:
 - No admin API yet (01B). No frontend admin console yet (01C/01D).
 - Acceptance criteria: 20 / 20 satisfied
 
-**ADMIN-CONSOLE-01 status:** ACTIVE — 01A + 01B locked; exact next child ADMIN-CONSOLE-01C. 01D–01E NOT STARTED.
+**ADMIN-CONSOLE-01 status:** ACTIVE — 01A + 01B locked; ADMIN-CONSOLE-01C REGISTERED — Step 1 COMPLETE — READY; exact next ADMIN-CONSOLE-01C Step 2 Implementation. 01D–01E NOT STARTED.
 **PRIVATE-BETA-INVITE-01 status:** NOT STARTED — blocked until ADMIN-CONSOLE-01 COMPLETE AND LOCKED.
 
 ---
@@ -55653,6 +55655,131 @@ Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm run
 **Optional CreditBalanceRepository DI gate (consolidation):** Verdict A — SAFE under locked `AdminModule` → `CreditPersistenceModule` wiring; `@Optional()` is test-compat only and does not suppress production injection when the provider is present. Absent-repo path returns `creditBalance=null` (skip lookup) but is not reachable on the supported AppModule runtime path.
 
 **ADMIN-CONSOLE-01B status:** COMPLETE AND LOCKED — 2026-08-07. Checkpoint: `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md`. Acceptance criteria: 15 / 15.
-**ADMIN-CONSOLE-01 status:** ACTIVE — 01A + 01B locked; exact next child ADMIN-CONSOLE-01C; 01D–01E NOT STARTED.
+**ADMIN-CONSOLE-01 status:** ACTIVE — 01A + 01B locked; ADMIN-CONSOLE-01C REGISTERED — Step 1 COMPLETE — READY; exact next ADMIN-CONSOLE-01C Step 2 Implementation; 01D–01E NOT STARTED.
 **PRIVATE-BETA-INVITE-01 status:** NOT STARTED — blocked until ADMIN-CONSOLE-01 COMPLETE AND LOCKED.
 **01A staging migration:** SOURCE COMPLETE / NOT APPLIED.
+
+---
+
+#### ADMIN-CONSOLE-01C — Admin Console Shell + Users/Sessions
+
+**Status:** COMPLETE AND LOCKED — 2026-08-07
+**Task ID:** ADMIN-CONSOLE-01C
+**Parent:** ADMIN-CONSOLE-01
+**Family:** ADMIN CONSOLE / FRONTEND SHELL
+**Risk:** NORMAL — frontend-only, new routes
+**Workflow:** 3-step (registration → implementation → checkpoint)
+**Model:** GPT-5.3 Codex (implementation); Grok 4.5 High (registration + consolidation)
+**Registered:** 2026-08-07
+**Depends On:** ADMIN-CONSOLE-01B COMPLETE AND LOCKED
+**Registration Verdict:** READY
+**Stage-Start Required:** NO — auth architecture resolved by repository evidence (Outcome B)
+**Checkpoint:** `docs/ADMIN-CONSOLE-01C-CHECKPOINT.md`
+
+### Context
+
+ADMIN-CONSOLE-01B COMPLETE AND LOCKED delivered browser-admin credit grant API and user-detail `creditBalance` read visibility. No frontend admin console exists yet. Existing operational endpoints already provide users list, user detail, sessions list (with `userId` filter), and session terminate. Parent stub language mentioning “server-side” admin route protection is **corrected** by registration evidence: the current Next.js frontend has no reliable reusable server-side session/role pattern.
+
+### Registration Evidence (Step 1 COMPLETE — 2026-08-07)
+
+**Auth architecture — Outcome B:**
+- `frontend/middleware.ts` = locale redirect only
+- No existing Next.js server component / middleware role gate reusable for admin
+- Product pages use client `GET /api/auth/me`
+- `/api/auth/me` returns `role`; `/api/users/me` does not
+- API Gateway remains authoritative via `SessionCookieGuard` + `AdminRoleGuard`
+- Frontend must hide admin UI from known non-admins (client gate + redirect) without duplicating backend authorization architecture
+
+**API reuse (no backend changes in 01C):**
+- `GET /api/admin/users` supports `search`, `quotaStatus`
+- `GET /api/admin/users/:userId` includes locked `creditBalance` shape or `null`
+- `GET /api/admin/sessions` supports `userId` (+ optional status/date filters)
+- `DELETE /api/admin/sessions/:sessionId` — no `CsrfGuard` on admin controller; use `credentials: 'include'`
+- Next rewrite proxies `/api/*` to API Gateway
+
+**UI patterns:**
+- Thin page + client component (billing / platform style)
+- Destructive confirm via existing `window.confirm` pattern
+- Account-menu nav entry only; not main sidebar
+- Utilitarian operator UI; Heroicons v2 Outline; `useTranslations('admin')`
+- Responsive stacked list/cards (~390px)
+
+### Locked Contracts
+
+**Routes:**
+- `/{locale}/admin` — users list landing
+- `/{locale}/admin/users/[userId]` — detail + credit visibility + sessions
+
+**Auth gate:**
+- loading → translated loading
+- unauthenticated → `/{locale}/login`
+- non-admin → `/{locale}/platform` (no admin content)
+- admin → render; still respect API 401/403
+
+**Users list fields:** from `AdminUserSummaryDto` only; search + quotaStatus via API query params
+
+**User detail:** from `AdminUserDetailDto`; creditBalance display or null empty; no grant form (01D)
+
+**Sessions:** `GET /api/admin/sessions?userId=:userId`; terminate with confirm + in-flight guard + UI update
+
+**i18n groups under `admin`:** nav, users, userDetail, creditBalance, sessions, terminate/confirm, loading/empty/success/error/unauthorized
+
+### Implementation Allowlist
+
+Create:
+- `frontend/app/[locale]/admin/page.tsx`
+- `frontend/app/[locale]/admin/users/[userId]/page.tsx`
+- `frontend/components/admin/admin-page-client.tsx`
+- `frontend/components/admin/admin-user-detail-client.tsx`
+- optional bounded `frontend/components/admin/*` helpers + focused tests
+
+Modify:
+- `frontend/components/workspace/workspace-account-menu.tsx`
+- `frontend/messages/en.json`, `zh-TW.json`, `zh-CN.json`
+- minimal account-menu wiring files only if needed (`workspace-sidebar.tsx` / shell / app page)
+- `frontend/package.json` only if adding admin test glob (no new dependencies)
+
+### Forbidden
+
+- `services/api-gateway/**`
+- migration/staging/DB/.env/Docker/Postgres/Redis/provider/service restart/Git commit
+- credit grant UI (01D)
+- Agent Platform / Harness / billing recon / plan / role / health dashboards
+- invented server-side Next role middleware
+- dependency additions / broad nav redesign
+
+### Acceptance Criteria
+
+1. Admin routes exist and are multilingual-first
+2. Client `/api/auth/me` role gate; non-admin no admin content; unauthenticated → login
+3. Users list + search/quotaStatus via existing API; empty/loading/error
+4. User detail + creditBalance or null empty; no grant form
+5. Sessions by userId; terminate confirm + DELETE + in-flight + UI update
+6. Account menu admin link only when `role === 'admin'`
+7. Heroicons Outline only; utilitarian UI
+8. `admin` keys in en/zh-TW/zh-CN; no hardcoded English admin UI
+9. Focused tests for auth/nav, list, detail/balance, sessions/terminate, i18n
+10. `npx tsc --noEmit` + focused admin tests PASS
+11. No backend/migration/staging/env/Docker/provider/Git during implementation
+
+### Validation
+
+```powershell
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npx tsc --noEmit
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npx tsx --test "components/admin/**/*.test.ts*" "components/admin/**/*.test.tsx" "components/admin/**/__tests__/**/*.test.ts*" "components/admin/**/__tests__/**/*.test.tsx"
+```
+
+### Workflow Status
+
+- Step 1 Registration COMPLETE — 2026-08-07 — READY
+- Step 2 Implementation COMPLETE — validated (focused admin 34 PASS; workspace/account-menu 447 PASS; `npx tsc --noEmit` PASS)
+- Step 3 Consolidation/checkpoint COMPLETE — 2026-08-07 — `docs/ADMIN-CONSOLE-01C-CHECKPOINT.md`
+
+**Non-Goals:** No credit grant form (01D). No backend changes. No migration apply. No stage-start.
+
+**Browser/live smoke:** Deferred by design — source/test validation only in 01C. Required staging/browser evidence recorded for ADMIN-CONSOLE-01E (admin login → `/admin`, users/detail/sessions terminate, locale visuals, ~390px).
+
+**ADMIN-CONSOLE-01C status:** COMPLETE AND LOCKED — 2026-08-07. Checkpoint: `docs/ADMIN-CONSOLE-01C-CHECKPOINT.md`. Acceptance criteria: 11 / 11.
+**ADMIN-CONSOLE-01 status:** ACTIVE — 01A + 01B + 01C locked; exact next ADMIN-CONSOLE-01D — Admin Credit Grant UI; 01E NOT STARTED.
+**PRIVATE-BETA-INVITE-01 status:** NOT STARTED — blocked until ADMIN-CONSOLE-01 COMPLETE AND LOCKED.
+**01A staging migration:** SOURCE COMPLETE / NOT APPLIED TO STAGING.

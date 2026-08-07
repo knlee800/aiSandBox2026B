@@ -27,6 +27,7 @@ interface WorkspaceAccountMenuProps {
   logoutLabel?: string;
   lightLabel?: string;
   darkLabel?: string;
+  userRole?: string | null;
 }
 
 const localeOptions = [
@@ -52,6 +53,16 @@ function getAccountMessages(locale?: string): typeof enMessages.account {
     return zhCnMessages.account;
   }
   return enMessages.account;
+}
+
+function getAdminMessages(locale?: string): typeof enMessages.admin {
+  if (locale === 'zh-TW') {
+    return zhTwMessages.admin;
+  }
+  if (locale === 'zh-CN') {
+    return zhCnMessages.admin;
+  }
+  return enMessages.admin;
 }
 
 export function normalizeGlobalAiInstructionsForApi(value: string): string | null {
@@ -100,6 +111,10 @@ export default function WorkspaceAccountMenu(props: WorkspaceAccountMenuProps) {
     () => getAccountMessages(props.currentLocale),
     [props.currentLocale],
   );
+  const adminMessages = React.useMemo(
+    () => getAdminMessages(props.currentLocale),
+    [props.currentLocale],
+  );
   const [globalInstructionsPanelOpen, setGlobalInstructionsPanelOpen] = React.useState(false);
   const [globalInstructionsInput, setGlobalInstructionsInput] = React.useState('');
   const [globalInstructionsLoading, setGlobalInstructionsLoading] = React.useState(false);
@@ -110,6 +125,7 @@ export default function WorkspaceAccountMenu(props: WorkspaceAccountMenuProps) {
   const avatarInitial = getAvatarInitial(props.userEmail);
   const globalInstructionsCount = globalInstructionsInput.length;
   const globalInstructionsTooLong = globalInstructionsCount > GLOBAL_AI_INSTRUCTIONS_MAX_LENGTH;
+  const localePrefix = props.currentLocale ? `/${props.currentLocale}` : '/en';
 
   React.useEffect(() => {
     if (!props.isOpen) {
@@ -262,6 +278,18 @@ export default function WorkspaceAccountMenu(props: WorkspaceAccountMenuProps) {
       </div>
 
       <div className="mt-4 space-y-2 border-t border-gray-100 pt-4">
+        {props.userRole === 'admin' ? (
+          <a
+            href={`${localePrefix}/admin`}
+            onClick={() => {
+              props.onClose?.();
+            }}
+            className="block w-full rounded border border-gray-200 px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+            data-testid="workspace-account-menu-admin-link"
+          >
+            {adminMessages.nav.console}
+          </a>
+        ) : null}
         <button
           type="button"
           onClick={() => setGlobalInstructionsPanelOpen((current) => !current)}

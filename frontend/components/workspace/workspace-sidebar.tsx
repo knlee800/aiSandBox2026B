@@ -45,6 +45,7 @@ interface WorkspaceSidebarProps {
   activeSessions?: number;
   onLogout?: () => void;
   onLanguageChange?: (locale: string) => void;
+  userRole?: string | null;
   footerContent?: ReactNode;
   initialCompact?: boolean;
 }
@@ -540,6 +541,7 @@ export default function WorkspaceSidebar(props: WorkspaceSidebarProps) {
               onLogout={props.onLogout}
               currentLocale={props.locale}
               onLanguageChange={props.onLanguageChange}
+              userRole={props.userRole}
               settingsLabel={messages.settings}
               languageLabel={messages.language}
               themeLabel={messages.theme}

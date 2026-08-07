@@ -567,6 +567,103 @@
     "checkoutError": "结账失败，请重试。",
     "backToWorkspace": "返回工作区"
   },
+  "admin": {
+    "nav": {
+      "console": "管理控制台",
+      "backToWorkspace": "返回工作区"
+    },
+    "users": {
+      "title": "用户",
+      "subtitle": "搜索并查看用户账号和配额状态。",
+      "searchLabel": "搜索用户",
+      "searchPlaceholder": "按邮箱搜索",
+      "quotaFilterLabel": "配额状态",
+      "quotaFilterAll": "全部",
+      "quotaFilterOk": "OK",
+      "quotaFilterWarn": "WARN",
+      "quotaFilterExceeded": "EXCEEDED",
+      "role": "角色",
+      "plan": "方案",
+      "planStatus": "方案状态",
+      "quotaStatus": "配额状态",
+      "activeSessions": "活跃会话",
+      "tokensUsed24h": "24 小时令牌用量",
+      "createdAt": "创建时间"
+    },
+    "userDetail": {
+      "title": "用户详情",
+      "backToUsers": "返回用户列表",
+      "summary": "账号摘要",
+      "email": "电子邮件",
+      "role": "角色",
+      "plan": "方案",
+      "planStatus": "方案状态",
+      "accountStatus": "账号状态",
+      "accountActive": "启用",
+      "accountInactive": "停用",
+      "createdAt": "创建时间",
+      "quotas": "配额快照",
+      "maxActiveSessions": "活跃会话上限",
+      "currentActiveSessions": "当前活跃会话",
+      "maxSessions24h": "24 小时会话上限",
+      "currentSessions24h": "当前 24 小时会话",
+      "maxTokens24h": "24 小时令牌上限",
+      "currentTokens24h": "当前 24 小时令牌"
+    },
+    "creditBalance": {
+      "title": "点数余额",
+      "balance": "余额",
+      "monthlyAllocation": "每月配额",
+      "rolloverBalance": "结转余额",
+      "planId": "方案 ID",
+      "status": "状态"
+    },
+    "sessions": {
+      "title": "会话",
+      "sessionId": "会话 ID",
+      "status": "状态",
+      "isTerminated": "已终止",
+      "terminationReason": "终止原因",
+      "createdAt": "创建时间",
+      "lastActivityAt": "最后活动时间",
+      "expiresAt": "到期时间",
+      "yes": "是",
+      "no": "否"
+    },
+    "terminate": {
+      "action": "终止",
+      "inProgress": "终止中...",
+      "alreadyTerminated": "已终止"
+    },
+    "confirm": {
+      "terminateSession": "确认要终止这个会话吗？"
+    },
+    "loading": {
+      "authCheck": "正在检查会话...",
+      "redirecting": "跳转中...",
+      "users": "正在加载用户...",
+      "userDetail": "正在加载用户详情...",
+      "sessions": "正在加载会话..."
+    },
+    "empty": {
+      "users": "当前筛选条件下没有匹配用户。",
+      "creditBalance": "该用户暂无可用点数余额数据。",
+      "sessions": "该用户暂无会话。"
+    },
+    "success": {
+      "sessionTerminated": "会话已成功终止。"
+    },
+    "error": {
+      "usersLoad": "加载用户失败。",
+      "userDetailLoad": "加载用户详情失败。",
+      "sessionsLoad": "加载会话失败。",
+      "sessionTerminate": "终止会话失败。"
+    },
+    "unauthorized": {
+      "loginRedirect": "登录状态已失效，正在跳转到登录页。",
+      "adminRedirect": "需要管理员权限，正在跳转。"
+    }
+  },
   "languages": {
     "en": "English",
     "zh-TW": "繁體中文",

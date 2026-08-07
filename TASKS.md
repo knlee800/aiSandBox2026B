@@ -16,7 +16,7 @@ Rules:
 
 If conflicts exist, TASKS_BACKLOG_FULL.md takes precedence.
 
-**Program status:** **BILLING-READY-08 COMPLETE AND LOCKED 2026-08-07** — Controlled xAI smoke PASS — Execution ID `83acc0e9-84de-4f94-9e41-294701e38393` — tokens_used=598 — `smoke-test.txt` created with correct content — persists after refresh — credit deduction applied (500 credits) — overflow 98 ACCEPTED BY DESIGN — balance reached 0 correctly — `GLOBAL_EXECUTION_ENABLED=false` verified in .env and PM2 — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — QuotaGuard browser-session bypass — Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md` — **BILLING-READY-08B COMPLETE AND LOCKED 2026-08-07** — usage_records.created_at schema remediation — Checkpoint: `docs/BILLING-READY-08B-CHECKPOINT.md` — Final checkpoint: `docs/BILLING-READY-08-CHECKPOINT.md` — **PRIVATE-BETA-FUNCTIONAL-READINESS-04 COMPLETE AND LOCKED 2026-08-07** — All acceptance criteria satisfied — FR-04 parent checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-CHECKPOINT.md` — **ADMIN-CONSOLE-01 ACTIVE** — **ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07** — Checkpoint: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md` — **ADMIN-CONSOLE-01B COMPLETE AND LOCKED 2026-08-07** — Authenticated Admin Credit Grant API — Checkpoint: `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md` — Exact next child: ADMIN-CONSOLE-01C — Admin Console Shell + Users/Sessions — PRIVATE-BETA-INVITE-01 NOT STARTED (blocked until ADMIN-CONSOLE-01 COMPLETE AND LOCKED) — No users invited — No new runtime enablement authorized without Keith approval — 01A migration NOT applied to staging
+**Program status:** **BILLING-READY-08 COMPLETE AND LOCKED 2026-08-07** — Controlled xAI smoke PASS — Execution ID `83acc0e9-84de-4f94-9e41-294701e38393` — tokens_used=598 — `smoke-test.txt` created with correct content — persists after refresh — credit deduction applied (500 credits) — overflow 98 ACCEPTED BY DESIGN — balance reached 0 correctly — `GLOBAL_EXECUTION_ENABLED=false` verified in .env and PM2 — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — QuotaGuard browser-session bypass — Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md` — **BILLING-READY-08B COMPLETE AND LOCKED 2026-08-07** — usage_records.created_at schema remediation — Checkpoint: `docs/BILLING-READY-08B-CHECKPOINT.md` — Final checkpoint: `docs/BILLING-READY-08-CHECKPOINT.md` — **PRIVATE-BETA-FUNCTIONAL-READINESS-04 COMPLETE AND LOCKED 2026-08-07** — All acceptance criteria satisfied — FR-04 parent checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-CHECKPOINT.md` — **ADMIN-CONSOLE-01 ACTIVE** — **ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07** — Checkpoint: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md` — **ADMIN-CONSOLE-01B COMPLETE AND LOCKED 2026-08-07** — Authenticated Admin Credit Grant API — Checkpoint: `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md` — **ADMIN-CONSOLE-01C COMPLETE AND LOCKED 2026-08-07** — Admin Console Shell + Users/Sessions — Checkpoint: `docs/ADMIN-CONSOLE-01C-CHECKPOINT.md` — Exact next: ADMIN-CONSOLE-01D — Admin Credit Grant UI — PRIVATE-BETA-INVITE-01 NOT STARTED (blocked until ADMIN-CONSOLE-01 COMPLETE AND LOCKED) — No users invited — No new runtime enablement authorized without Keith approval — 01A migration NOT applied to staging
 
 
 \# TASKS.md ??Master Task Index
@@ -45144,7 +45144,7 @@ AGENT-HARNESS-06E closes this gap by running a full E2E canary with ALL required
 
 ## ADMIN-CONSOLE-01 — Private Beta Operator Console
 
-**Status:** ACTIVE — 01A + 01B COMPLETE AND LOCKED (2026-08-07); exact next: ADMIN-CONSOLE-01C
+**Status:** ACTIVE — 01A + 01B + 01C COMPLETE AND LOCKED (2026-08-07); exact next: ADMIN-CONSOLE-01D — Admin Credit Grant UI
 **Task ID:** ADMIN-CONSOLE-01
 **Family:** ADMIN CONSOLE / PRIVATE BETA OPERATIONS
 **Priority:** HIGH — blocks PRIVATE-BETA-INVITE-01
@@ -45196,7 +45196,7 @@ Provide the minimum safe browser-based admin console required to operate private
 |-------|-------|--------|----------|-------|------------|
 | ADMIN-CONSOLE-01A | Admin Credit Grant Domain + Audit Schema | COMPLETE AND LOCKED — 2026-08-07 | 4-step | GPT-5.3 Codex High | None |
 | ADMIN-CONSOLE-01B | Authenticated Admin Credit Grant API | COMPLETE AND LOCKED — 2026-08-07 | 3-step | GPT-5.3 Codex | 01A COMPLETE |
-| ADMIN-CONSOLE-01C | Admin Console Shell + Users/Sessions | NOT STARTED | 3-step | GPT-5.3 Codex | 01B COMPLETE |
+| ADMIN-CONSOLE-01C | Admin Console Shell + Users/Sessions | COMPLETE AND LOCKED — 2026-08-07 | 3-step | GPT-5.3 Codex | 01B COMPLETE |
 | ADMIN-CONSOLE-01D | Admin Credit Grant UI | NOT STARTED | 3-step | GPT-5.3 Codex | 01B + 01C COMPLETE |
 | ADMIN-CONSOLE-01E | Staging Validation + Parent Consolidation | NOT STARTED | 2-step | Sonnet 4.6 | 01A-01D COMPLETE |
 
@@ -45224,8 +45224,9 @@ Provide the minimum safe browser-based admin console required to operate private
 - en / zh-TW / zh-CN render correctly
 - No direct PostgreSQL access required for any operation
 
-**ADMIN-CONSOLE-01 status:** ACTIVE — Registration COMPLETE 2026-08-07. ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07. ADMIN-CONSOLE-01B COMPLETE AND LOCKED 2026-08-07. Checkpoints: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md`, `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md`. Exact next child: ADMIN-CONSOLE-01C.
+**ADMIN-CONSOLE-01 status:** ACTIVE — Registration COMPLETE 2026-08-07. ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07. ADMIN-CONSOLE-01B COMPLETE AND LOCKED 2026-08-07. ADMIN-CONSOLE-01C COMPLETE AND LOCKED 2026-08-07. Checkpoints: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md`, `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md`, `docs/ADMIN-CONSOLE-01C-CHECKPOINT.md`. Exact next: ADMIN-CONSOLE-01D — Admin Credit Grant UI.
 **PRIVATE-BETA-INVITE-01 status:** NOT STARTED — blocked until ADMIN-CONSOLE-01 COMPLETE AND LOCKED.
+**01A staging migration:** SOURCE COMPLETE / NOT APPLIED TO STAGING.
 
 ---
 
@@ -45317,7 +45318,7 @@ Provide the minimum safe browser-based admin console required to operate private
 - No admin API yet (01B). No frontend admin console yet (01C/01D).
 - Acceptance criteria: 20 / 20 satisfied
 
-**ADMIN-CONSOLE-01 status:** ACTIVE — 01A + 01B locked; exact next child ADMIN-CONSOLE-01C.
+**ADMIN-CONSOLE-01 status:** ACTIVE — 01A + 01B locked; ADMIN-CONSOLE-01C REGISTERED — Step 1 COMPLETE — READY; exact next ADMIN-CONSOLE-01C Step 2 Implementation.
 **PRIVATE-BETA-INVITE-01 status:** NOT STARTED — blocked until ADMIN-CONSOLE-01 COMPLETE AND LOCKED.
 
 ---
@@ -45570,7 +45571,7 @@ Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npx jes
 **Optional CreditBalanceRepository DI gate (consolidation):** Verdict A — SAFE under locked `AdminModule` → `CreditPersistenceModule` wiring; `@Optional()` is test-compat only and does not suppress production injection when the provider is present. Absent-repo path returns `creditBalance=null` (skip lookup) but is not reachable on the supported AppModule runtime path.
 
 **ADMIN-CONSOLE-01B status:** COMPLETE AND LOCKED — 2026-08-07. Checkpoint: `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md`. Acceptance criteria: 15 / 15.
-**ADMIN-CONSOLE-01 status:** ACTIVE — 01A + 01B locked; exact next child ADMIN-CONSOLE-01C; 01D–01E NOT STARTED.
+**ADMIN-CONSOLE-01 status:** ACTIVE — 01A + 01B locked; ADMIN-CONSOLE-01C REGISTERED — Step 1 COMPLETE — READY; exact next ADMIN-CONSOLE-01C Step 2 Implementation; 01D–01E NOT STARTED.
 **PRIVATE-BETA-INVITE-01 status:** NOT STARTED — blocked until ADMIN-CONSOLE-01 COMPLETE AND LOCKED.
 **01A staging migration:** SOURCE COMPLETE / NOT APPLIED.
 
@@ -45579,29 +45580,179 @@ Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npx jes
 
 #### ADMIN-CONSOLE-01C — Admin Console Shell + Users/Sessions
 
-**Status:** NOT STARTED
+**Status:** COMPLETE AND LOCKED — 2026-08-07
 **Task ID:** ADMIN-CONSOLE-01C
 **Parent:** ADMIN-CONSOLE-01
 **Family:** ADMIN CONSOLE / FRONTEND SHELL
 **Risk:** NORMAL — frontend-only, new routes
 **Workflow:** 3-step (registration → implementation → checkpoint)
-**Model:** GPT-5.3 Codex
+**Model:** GPT-5.3 Codex (implementation); Grok 4.5 High (registration + consolidation)
 **Registered:** 2026-08-07
 **Depends On:** ADMIN-CONSOLE-01B COMPLETE AND LOCKED
+**Registration Verdict:** READY
+**Stage-Start Required:** NO — auth architecture resolved by repository evidence (Outcome B)
+**Checkpoint:** `docs/ADMIN-CONSOLE-01C-CHECKPOINT.md`
 
-**Scope:**
-- frontend/app/[locale]/admin/page.tsx: user list (email, role, plan, quota status, active sessions)
-- frontend/app/[locale]/admin/users/[userId]/page.tsx: user detail (plan, quota, credit balance, sessions tab)
-- Server-side admin role check; redirect non-admin to /[locale]/platform
-- Session list and terminate session action (DELETE /api/admin/sessions/:sessionId)
-- Admin nav link in header/account dropdown (role-gated, admin.nav.console key)
-- New 'admin' i18n namespace: en.json, zh-TW.json, zh-CN.json
-- useTranslations('admin') for all UI copy; no hardcoded English
-- Heroicons v2 Outline only
+##### Registration Verdict / Architecture Evidence (Step 1 COMPLETE — 2026-08-07)
 
-**Non-Goals:** No credit grant form (that is 01D). No backend changes. No migration.
+Source inspection confirmed:
+
+**Auth / role protection — Outcome B (LOCKED):**
+- `frontend/middleware.ts` performs locale prefixing only — no session/role reading
+- No reusable Next.js server-side session/role pattern exists for route protection
+- Authenticated product pages (`platform`, `app`, billing surfaces) consistently use client-side `GET /api/auth/me`
+- `/api/auth/me` returns `{ id, email, role, plan_type, emailVerified }` via `AuthService.getUserById`
+- `GET /api/users/me` does **not** return `role` — do not use it for admin gating
+- Admin API security remains authoritative: `SessionCookieGuard` + `AdminRoleGuard` (`role === 'admin'`)
+- Frontend must not display admin content to known non-admins; do not invent parallel server auth architecture
+
+**API contracts (reuse 01B / existing operational endpoints — no backend changes):**
+- `GET /api/admin/users?search=&quotaStatus=OK|WARN|EXCEEDED` → `{ users: AdminUserSummaryDto[] }`
+- `GET /api/admin/users/:userId` → `AdminUserDetailDto` including `quotas` + `creditBalance | null`
+- `GET /api/admin/sessions?userId=&status=&dateRange=&startDate=&endDate=` → `{ sessions: AdminSessionVisibilityDto[] }`
+- `DELETE /api/admin/sessions/:sessionId` → `{ message: string }` (already-terminated returns success message)
+- Admin controller has **no** `CsrfGuard`; terminate uses session cookie + admin role only (`credentials: 'include'`)
+- Frontend API base: Next rewrite `/api/:path*` → API Gateway (`frontend/next.config.js`)
+
+**AdminUserSummaryDto fields (list):**
+`userId`, `email`, `role`, `planCode`, `planName`, `planType`, `planStatus`, `isActive`, `activeSessions`, `totalSessions`, `sessionsCreated24h`, `tokensUsed24h`, `estimatedCost`, `quotaStatus` (`OK`|`WARN`|`EXCEEDED`), `createdAt`
+
+**AdminUserDetailDto extras:**
+`quotas` (`maxActiveSessions`, `maxSessions24h`, `maxTokens24h`, `currentActiveSessions`, `currentSessions24h`, `currentTokens24h`), `creditBalance: { balance, monthlyAllocation, rolloverBalance, planId, status } | null`
+
+**AdminSessionVisibilityDto fields:**
+`sessionId`, `userId`, `userEmail`, `status`, `isTerminated`, `terminationReason`, `createdAt`, `lastActivityAt`, `expiresAt`
+
+**Search / quota filter:** Backend already supports `search` + `quotaStatus` query params — register as API-backed list controls (no backend expansion).
+
+**Sessions for selected user:** Use `GET /api/admin/sessions?userId=:userId` (API supports filter). Do not fetch all sessions and invent unsafe broad client filtering as primary path.
+
+**Confirmation pattern:** Existing project uses `window.confirm(...)` for destructive actions (`workspace-shell`). Lock same smallest confirmation — no new UI dependency / modal library.
+
+**Navigation:** Admin link only in `workspace-account-menu.tsx` when `role === 'admin'`; target `/{locale}/admin`. Not in workspace sidebar nav. No navigation redesign.
+
+**Visual direction:** Utilitarian/compact operator UI using existing design tokens. Explicitly NOT RPG / Command Center / Agent Station card treatment.
+
+##### Locked Implementation Contracts
+
+**Routes:**
+- `frontend/app/[locale]/admin/page.tsx` → `/{locale}/admin` (users list / landing)
+- `frontend/app/[locale]/admin/users/[userId]/page.tsx` → `/{locale}/admin/users/[userId]` (detail + credit visibility + sessions)
+
+**Component architecture (billing-style thin pages + client components):**
+- `frontend/components/admin/admin-page-client.tsx` — auth gate + users list + search/quota filters
+- `frontend/components/admin/admin-user-detail-client.tsx` — auth gate + detail + creditBalance + sessions + terminate
+- Optional small presentational helpers under `frontend/components/admin/` only if needed (e.g. list row, sessions list) — no admin design system
+- `frontend/components/workspace/workspace-account-menu.tsx` — role-gated Admin Console link
+- Supporting wiring only as required to pass locale/role into account menu (prefer optional `userRole` prop and/or bounded `/api/auth/me` check inside account menu — same client pattern)
+
+**Auth gate behavior (client):**
+1. Auth loading → translated loading state; do not render admin data
+2. Unauthenticated / auth error → redirect `/{locale}/login`
+3. Authenticated `role !== 'admin'` → redirect `/{locale}/platform`; do not render admin content
+4. Authenticated admin → render admin UI; admin API 401/403 still treated as unauthorized (redirect / error state)
+
+**Users list:**
+- Fetch `GET /api/admin/users` with optional `search`, `quotaStatus`
+- Display: email, role, planName/planCode, quotaStatus, activeSessions, userId (short/full as compact UI allows), createdAt
+- Empty / loading / error states translated
+- Row click → `/{locale}/admin/users/[userId]`
+
+**User detail:**
+- Fetch `GET /api/admin/users/:userId`
+- Display identity + role + isActive + plan/quota fields already returned + creditBalance
+- `creditBalance === null` → translated neutral unavailable/empty (do not create balance)
+- No Add Credits form/button (01D). Optional quiet layout reservation only — no non-functional CTA
+
+**Sessions + terminate:**
+- Fetch `GET /api/admin/sessions?userId=:userId` on detail page
+- Display existing session fields only
+- Terminate: clear translated destructive label → `window.confirm` → `DELETE /api/admin/sessions/:sessionId` with `credentials: 'include'`
+- In-flight disable / no duplicate request; success updates list (mark terminated / remove active); error state translated
+
+**i18n:** New top-level `admin` namespace in `en.json` / `zh-TW.json` / `zh-CN.json`; `useTranslations('admin')`; no hardcoded English user-facing strings.
+
+**Icons:** `@heroicons/react/24/outline` only.
+
+**Responsive:** Compact stacked list/cards usable at ~390px; avoid desktop-only wide unbroken tables. Desktop may use denser row layout within same stacked-list vocabulary.
+
+**Tests:** Focused `tsx --test` suites under `frontend/components/admin/` (+ account-menu coverage for admin link visibility), matching billing/workspace node:test conventions.
+
+##### Exact Implementation File Allowlist
+
+**Create (expected):**
+- `frontend/app/[locale]/admin/page.tsx`
+- `frontend/app/[locale]/admin/users/[userId]/page.tsx`
+- `frontend/components/admin/admin-page-client.tsx`
+- `frontend/components/admin/admin-user-detail-client.tsx`
+- Optional bounded helpers under `frontend/components/admin/*` only if needed for list/detail/sessions presentation or shared admin types
+- `frontend/components/admin/*.test.ts*` (and/or `__tests__/` equivalents)
+
+**Modify (expected):**
+- `frontend/components/workspace/workspace-account-menu.tsx`
+- `frontend/messages/en.json`
+- `frontend/messages/zh-TW.json`
+- `frontend/messages/zh-CN.json`
+- Minimal wiring files only if required to supply `userRole` / locale to account menu (`workspace-sidebar.tsx` and/or `workspace-shell*.tsx` / `app/[locale]/app/page.tsx`) — no sidebar redesign
+- `frontend/package.json` **only if** needed to include admin test glob in `npm test` script (no dependency additions)
+
+##### Explicit Forbidden Scope / Files
+
+- Any `services/api-gateway/**` change
+- Migration create/edit/apply; staging/DB/.env; Docker/Postgres/Redis; service restarts; provider calls
+- Credit grant POST UI / Add Credits form (ADMIN-CONSOLE-01D)
+- Agent Platform / Harness / billing invoice-reconciliation / plan-management / role-management / system health UI
+- New dependencies / modal libraries
+- Broad navigation or product redesign
+- Inventing Next.js middleware/server role auth
+- Applying 01A migration
+
+##### Validation Commands (PowerShell 5.x)
+
+```powershell
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npx tsc --noEmit
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npx tsx --test "components/admin/**/*.test.ts*" "components/admin/**/*.test.tsx" "components/admin/**/__tests__/**/*.test.ts*" "components/admin/**/__tests__/**/*.test.tsx"
+```
+
+Also run account-menu-related existing suite if admin-link assertions land there:
+
+```powershell
+Set-Location -Path "C:\Users\knlee\aiSandBox2026B\frontend"; npx tsx --test "components/workspace/workspace-shell.test.tsx"
+```
+
+(or a focused admin-account-menu test file if extracted). Restore `frontend/tsconfig.tsbuildinfo` if unintentionally dirty. No live browser smoke in 01C unless later requested.
+
+##### Acceptance Criteria
+
+1. `/{locale}/admin` and `/{locale}/admin/users/[userId]` exist and are multilingual-first
+2. Client auth gate uses `/api/auth/me` role; non-admin does not see admin content (redirect to platform); unauthenticated → login
+3. Admin users list renders API fields; supports search + quotaStatus via existing query params; empty/loading/error states present
+4. User detail shows identity/plan/quota + creditBalance or null empty state; no grant form
+5. User sessions load via `?userId=`; terminate uses confirm + DELETE + in-flight guard + UI update
+6. Account menu Admin Console link visible only when `role === 'admin'`
+7. Heroicons v2 Outline only; utilitarian UI (not Command Center / RPG)
+8. Required `admin` i18n keys present in en / zh-TW / zh-CN; no new hardcoded English admin UI copy
+9. Focused frontend tests cover auth/nav, list, detail/creditBalance, sessions/terminate, i18n keys
+10. `npx tsc --noEmit` and focused admin tests PASS
+11. No backend/migration/staging/env/Docker/provider/Git commit during implementation
+
+##### Workflow Status
+
+- Step 1 Registration COMPLETE — 2026-08-07 — READY
+- Step 2 Implementation COMPLETE — validated (focused admin 34 PASS; workspace/account-menu 447 PASS; `npx tsc --noEmit` PASS)
+- Step 3 Consolidation/checkpoint COMPLETE — 2026-08-07 — `docs/ADMIN-CONSOLE-01C-CHECKPOINT.md`
+
+**Non-Goals:** No credit grant form (01D). No backend changes. No migration apply. No stage-start.
+
+**Browser/live smoke:** Deferred by design — source/test validation only in 01C. Required staging/browser evidence recorded for ADMIN-CONSOLE-01E (admin login → `/admin`, users/detail/sessions terminate, locale visuals, ~390px).
+
+**ADMIN-CONSOLE-01C status:** COMPLETE AND LOCKED — 2026-08-07. Checkpoint: `docs/ADMIN-CONSOLE-01C-CHECKPOINT.md`. Acceptance criteria: 11 / 11.
+**ADMIN-CONSOLE-01 status:** ACTIVE — 01A + 01B + 01C locked; exact next ADMIN-CONSOLE-01D — Admin Credit Grant UI; 01E NOT STARTED.
+**PRIVATE-BETA-INVITE-01 status:** NOT STARTED — blocked until ADMIN-CONSOLE-01 COMPLETE AND LOCKED.
+**01A staging migration:** SOURCE COMPLETE / NOT APPLIED TO STAGING.
 
 ---
+
 
 #### ADMIN-CONSOLE-01D — Admin Credit Grant UI
 

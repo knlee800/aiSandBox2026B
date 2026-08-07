@@ -567,6 +567,103 @@
     "checkoutError": "Checkout failed. Please try again.",
     "backToWorkspace": "Back to Workspace"
   },
+  "admin": {
+    "nav": {
+      "console": "Admin Console",
+      "backToWorkspace": "Back to Workspace"
+    },
+    "users": {
+      "title": "Users",
+      "subtitle": "Search and inspect user accounts and quota posture.",
+      "searchLabel": "Search users",
+      "searchPlaceholder": "Search by email",
+      "quotaFilterLabel": "Quota Status",
+      "quotaFilterAll": "All",
+      "quotaFilterOk": "OK",
+      "quotaFilterWarn": "WARN",
+      "quotaFilterExceeded": "EXCEEDED",
+      "role": "Role",
+      "plan": "Plan",
+      "planStatus": "Plan Status",
+      "quotaStatus": "Quota Status",
+      "activeSessions": "Active Sessions",
+      "tokensUsed24h": "Tokens Used (24h)",
+      "createdAt": "Created"
+    },
+    "userDetail": {
+      "title": "User Detail",
+      "backToUsers": "Back to Users",
+      "summary": "Account Summary",
+      "email": "Email",
+      "role": "Role",
+      "plan": "Plan",
+      "planStatus": "Plan Status",
+      "accountStatus": "Account Status",
+      "accountActive": "Active",
+      "accountInactive": "Inactive",
+      "createdAt": "Created",
+      "quotas": "Quota Snapshot",
+      "maxActiveSessions": "Max Active Sessions",
+      "currentActiveSessions": "Current Active Sessions",
+      "maxSessions24h": "Max Sessions (24h)",
+      "currentSessions24h": "Current Sessions (24h)",
+      "maxTokens24h": "Max Tokens (24h)",
+      "currentTokens24h": "Current Tokens (24h)"
+    },
+    "creditBalance": {
+      "title": "Credit Balance",
+      "balance": "Balance",
+      "monthlyAllocation": "Monthly Allocation",
+      "rolloverBalance": "Rollover Balance",
+      "planId": "Plan ID",
+      "status": "Status"
+    },
+    "sessions": {
+      "title": "Sessions",
+      "sessionId": "Session ID",
+      "status": "Status",
+      "isTerminated": "Terminated",
+      "terminationReason": "Termination Reason",
+      "createdAt": "Created",
+      "lastActivityAt": "Last Activity",
+      "expiresAt": "Expires",
+      "yes": "Yes",
+      "no": "No"
+    },
+    "terminate": {
+      "action": "Terminate",
+      "inProgress": "Terminating...",
+      "alreadyTerminated": "Terminated"
+    },
+    "confirm": {
+      "terminateSession": "Terminate this session?"
+    },
+    "loading": {
+      "authCheck": "Checking session...",
+      "redirecting": "Redirecting...",
+      "users": "Loading users...",
+      "userDetail": "Loading user details...",
+      "sessions": "Loading sessions..."
+    },
+    "empty": {
+      "users": "No users matched your current filters.",
+      "creditBalance": "Credit balance is unavailable for this user.",
+      "sessions": "No sessions were found for this user."
+    },
+    "success": {
+      "sessionTerminated": "Session terminated successfully."
+    },
+    "error": {
+      "usersLoad": "Failed to load users.",
+      "userDetailLoad": "Failed to load user details.",
+      "sessionsLoad": "Failed to load sessions.",
+      "sessionTerminate": "Failed to terminate the session."
+    },
+    "unauthorized": {
+      "loginRedirect": "Your session expired. Redirecting to login.",
+      "adminRedirect": "Admin access is required. Redirecting."
+    }
+  },
   "languages": {
     "en": "English",
     "zh-TW": "繁體中文",
