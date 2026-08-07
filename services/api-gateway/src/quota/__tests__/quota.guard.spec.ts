@@ -52,6 +52,45 @@ describe('QuotaGuard', () => {
       expect(result).toBe(true);
     });
 
+    it('should bypass legacy request quota for browser-session identity', () => {
+      const apiKeyId = 'browser-session';
+      const limits = QuotaConfig.getQuotaLimits(apiKeyId);
+      mockRequest.apiKeyIdentity.apiKeyId = apiKeyId;
+
+      // Saturate legacy request quota to prove browser-session bypass.
+      for (let i = 0; i < limits.requestsPerMinute; i++) {
+        quotaService.recordRequest(apiKeyId);
+      }
+
+      expect(quotaGuard.canActivate(mockExecutionContext)).toBe(true);
+    });
+
+    it('should bypass legacy token quota for browser-session identity', () => {
+      const apiKeyId = 'browser-session';
+      const limits = QuotaConfig.getQuotaLimits(apiKeyId);
+      mockRequest.apiKeyIdentity.apiKeyId = apiKeyId;
+
+      // Exceed legacy token quota to prove browser-session bypass.
+      quotaService.recordTokens(apiKeyId, limits.tokensPerDay);
+
+      expect(quotaGuard.canActivate(mockExecutionContext)).toBe(true);
+    });
+
+    it('should not record legacy usage for browser-session identity', () => {
+      const apiKeyId = 'browser-session';
+      mockRequest.apiKeyIdentity.apiKeyId = apiKeyId;
+
+      quotaService.recordRequest(apiKeyId);
+      quotaService.recordTokens(apiKeyId, 1234);
+
+      const before = quotaService.getCurrentUsage(apiKeyId);
+      expect(quotaGuard.canActivate(mockExecutionContext)).toBe(true);
+      const after = quotaService.getCurrentUsage(apiKeyId);
+
+      expect(after.requests).toBe(before.requests);
+      expect(after.tokens).toBe(before.tokens);
+    });
+
     it('should throw 429 when request count quota exceeded', () => {
       const apiKeyId = 'key-test';
       const limits = QuotaConfig.getQuotaLimits(apiKeyId);
@@ -95,6 +134,46 @@ describe('QuotaGuard', () => {
       const usage = quotaService.getCurrentUsage(apiKeyId);
       expect(usage.requests).toBe(1);
       expect(usage.tokens).toBe(QuotaConfig.estimateTokens());
+    });
+
+    it('should enforce request quota for genuine API-key identity', () => {
+      const apiKeyId = 'key-genuine-request';
+      const limits = QuotaConfig.getQuotaLimits(apiKeyId);
+      mockRequest.apiKeyIdentity.apiKeyId = apiKeyId;
+
+      for (let i = 0; i < limits.requestsPerMinute; i++) {
+        quotaService.recordRequest(apiKeyId);
+      }
+
+      expect(() => quotaGuard.canActivate(mockExecutionContext)).toThrow(
+        new HttpException('Quota exceeded', HttpStatus.TOO_MANY_REQUESTS),
+      );
+    });
+
+    it('should enforce token quota for genuine API-key identity', () => {
+      const apiKeyId = 'key-genuine-token';
+      const limits = QuotaConfig.getQuotaLimits(apiKeyId);
+      const estimatedTokens = QuotaConfig.estimateTokens();
+      mockRequest.apiKeyIdentity.apiKeyId = apiKeyId;
+
+      quotaService.recordTokens(apiKeyId, limits.tokensPerDay - estimatedTokens + 1);
+
+      expect(() => quotaGuard.canActivate(mockExecutionContext)).toThrow(
+        new HttpException('Quota exceeded', HttpStatus.TOO_MANY_REQUESTS),
+      );
+    });
+
+    it('should record legacy usage for successful genuine API-key request', () => {
+      const apiKeyId = 'key-genuine-success';
+      mockRequest.apiKeyIdentity.apiKeyId = apiKeyId;
+      expect(quotaService.getCurrentUsage(apiKeyId)).toEqual({ requests: 0, tokens: 0 });
+
+      expect(quotaGuard.canActivate(mockExecutionContext)).toBe(true);
+
+      expect(quotaService.getCurrentUsage(apiKeyId)).toEqual({
+        requests: 1,
+        tokens: QuotaConfig.estimateTokens(),
+      });
     });
 
     it('should throw 500 when identity is missing', () => {

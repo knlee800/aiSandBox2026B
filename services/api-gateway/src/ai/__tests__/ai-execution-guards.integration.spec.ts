@@ -26,11 +26,15 @@ import { QuotaService } from '../../quota/quota.service';
 import { LaunchConfig } from '../../launch/launch.config';
 import { AbortConfig } from '../../abort/abort.config';
 import { ApiKeyIdentity } from '../../auth/api-key.config';
-import { ApiKeyAuthGuard } from '../../auth/api-key-auth.guard';
+import { AuthorizationGuard } from '../../auth/authorization.guard';
 import { SessionOrApiKeyAuthGuard } from '../../auth/session-or-api-key.guard';
 import { GlobalSafetyLimitService } from '../../safety/global-safety-limit.service';
 import { KillSwitchConfig } from '../../safety/kill-switch.config';
 import { AIExecutionController } from '../ai-execution.controller';
+import { IdempotencyGuard } from '../idempotency.guard';
+import { CreditBalanceGuard } from '../../billing/credit-balance.guard';
+import { TokenQuotaGuard } from '../../quota/token-quota.guard';
+import { RateLimitGuard } from '../../guards/rate-limit.guard';
 
 describe('AI Execution Guards Integration (Phase 31B)', () => {
   type MockRequest = {
@@ -45,6 +49,7 @@ describe('AI Execution Guards Integration (Phase 31B)', () => {
   let launchGuard: LaunchGuard;
   let abortGuard: AbortGuard;
   let executionSafetyGuard: ExecutionSafetyGuard;
+  let quotaGuard: QuotaGuard;
   let quotaService: QuotaService;
   let mockContext: ExecutionContext;
   let mockRequest: MockRequest;
@@ -92,6 +97,7 @@ describe('AI Execution Guards Integration (Phase 31B)', () => {
     launchGuard = module.get<LaunchGuard>(LaunchGuard);
     abortGuard = module.get<AbortGuard>(AbortGuard);
     executionSafetyGuard = module.get<ExecutionSafetyGuard>(ExecutionSafetyGuard);
+    quotaGuard = module.get<QuotaGuard>(QuotaGuard);
     quotaService = module.get<QuotaService>(QuotaService);
 
     // Setup mock request
@@ -512,9 +518,58 @@ describe('AI Execution Guards Integration (Phase 31B)', () => {
     });
   });
 
+  describe('Browser Session Legacy Quota Bypass', () => {
+    beforeEach(() => {
+      process.env.LAUNCH_STATE = 'PUBLIC';
+      process.env.ABORT_MODE = 'NONE';
+      process.env.GLOBAL_EXECUTION_ENABLED = 'true';
+      LaunchConfig.reset();
+      LaunchConfig.initialize();
+      AbortConfig.reset();
+      AbortConfig.initialize();
+    });
+
+    it('allows browser-session identity even when legacy API-key quota checks would fail', () => {
+      mockRequest.apiKeyIdentity = {
+        userId: 'session-user',
+        apiKeyId: 'browser-session',
+        scopes: ['ai:execute'],
+      };
+      quotaServiceMock.checkRequestQuota.mockReturnValue(false);
+      quotaServiceMock.checkTokenQuota.mockReturnValue(false);
+
+      expect(quotaGuard.canActivate(mockContext)).toBe(true);
+      expect(quotaServiceMock.checkRequestQuota).not.toHaveBeenCalled();
+      expect(quotaServiceMock.checkTokenQuota).not.toHaveBeenCalled();
+      expect(quotaServiceMock.recordRequest).not.toHaveBeenCalled();
+      expect(quotaServiceMock.recordTokens).not.toHaveBeenCalled();
+    });
+  });
+
 });
 
 describe('AIExecutionController guard metadata', () => {
+  it('protects execute with unchanged guard ordering', () => {
+    const guards =
+      Reflect.getMetadata(
+        GUARDS_METADATA,
+        AIExecutionController.prototype.execute,
+      ) ?? [];
+
+    expect(guards).toEqual([
+      SessionOrApiKeyAuthGuard,
+      AuthorizationGuard,
+      ExecutionSafetyGuard,
+      LaunchGuard,
+      AbortGuard,
+      IdempotencyGuard,
+      CreditBalanceGuard,
+      QuotaGuard,
+      TokenQuotaGuard,
+      RateLimitGuard,
+    ]);
+  });
+
   it('protects cancelExecution with SessionOrApiKeyAuthGuard', () => {
     const guards =
       Reflect.getMetadata(

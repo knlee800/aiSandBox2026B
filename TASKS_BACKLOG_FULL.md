@@ -49499,7 +49499,7 @@ BILLING-READY-07A may resume only after:
 
 ### BILLING-READY-08: Free-Plan Credit Balance Provisioning
 
-**Status:** ACTIVE — 2026-08-06 — Step 1 COMPLETE — **Step 2a COMPLETE AND LOCKED 2026-08-06** — **Step 2b COMPLETE AND LOCKED 2026-08-06** — **Step 2 COMPLETE** — Step 3 NOT STARTED (requires Keith approval)
+**Status:** ACTIVE — 2026-08-06 — Step 1 COMPLETE — **Step 2a COMPLETE AND LOCKED 2026-08-06** — **Step 2b COMPLETE AND LOCKED 2026-08-06** — **Step 2 COMPLETE** — **Step 3 COMPLETE AND LOCKED 2026-08-07** — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — Step 4 ACTIVE / pending deployment + controlled retry (requires Keith approval)
 **Task ID:** BILLING-READY-08
 **Title:** Free-Plan Credit Balance Provisioning
 **Family:** BILLING READY / CREDIT BALANCE / USER REGISTRATION / PROVISIONING
@@ -49510,6 +49510,8 @@ BILLING-READY-07A may resume only after:
 **Keith approval:** Required — 2026-08-06
 **Step 2a checkpoint:** `docs/BILLING-READY-08-STEP-2A-CHECKPOINT.md`
 **Step 2b checkpoint:** `docs/BILLING-READY-08-STEP-2B-CHECKPOINT.md`
+**Step 3 checkpoint:** `docs/BILLING-READY-08-STEP-3-CHECKPOINT.md`
+**Step 4A (08A) checkpoint:** `docs/BILLING-READY-08A-CHECKPOINT.md`
 **Implementation plan:** `docs/BILLING-READY-08-IMPLEMENTATION-PLAN.md`
 
 #### Root Cause
@@ -49529,8 +49531,10 @@ Registration paths (`AuthService.register`, `findOrCreateGoogleUser`, `findOrCre
 2. **Permanent source implementation and focused tests:**
    - **2a — New-user provisioning (`auth.service.ts`, `auth.service.spec.ts`)** — **COMPLETE AND LOCKED 2026-08-06**. `npm test -- auth.service.spec` PASS (22 tests); `npx tsc --noEmit` PASS; `npm run build` PASS. Checkpoint: `docs/BILLING-READY-08-STEP-2A-CHECKPOINT.md`.
    - **2b — Historical backfill migration + migration spec** — **COMPLETE AND LOCKED 2026-08-06**. `npm test -- backfill-credit-balances-migration` PASS (8 tests); `npx tsc --noEmit` PASS; `npm run build` PASS. Checkpoint: `docs/BILLING-READY-08-STEP-2B-CHECKPOINT.md`.
-3. **Approval-gated staging deployment + migration** — push, pull, run `migration:run` (backfills all eligible users), rebuild, restart. Dry-run inventory first. Requires Keith approval. **NOT STARTED.**
-4. **Runtime smoke, rollback of execution switch, consolidation and checkpoint** — requires Keith approval. **NOT STARTED.**
+3. **Approval-gated staging deployment + migration** — **COMPLETE AND LOCKED 2026-08-07**. Deployed HEAD `96fe52749df2f9599bf7faa3a5dca5f594fa232b`; backup `/opt/aisandbox-backups/billing-ready-08-step3a-20260806T133718Z`; API Gateway build + restart PASS; health HTTP 200; `BackfillCreditBalancesForExistingUsers1772700000000` executed; 2 rows inserted; 0 missing post-migration; `GLOBAL_EXECUTION_ENABLED=false` preserved. Checkpoint: `docs/BILLING-READY-08-STEP-3-CHECKPOINT.md`.
+4. **Runtime smoke, rollback of execution switch, consolidation and checkpoint** — **ACTIVE (Step 4B pending after 08A deployment)** — requires separate Keith approval.
+   - **Step 4A sub-fix — BILLING-READY-08A — COMPLETE AND LOCKED 2026-08-07**: `QuotaGuard` browser-session bypass. Root cause: `QuotaGuard` applied legacy Phase 21B API-key quota to `browser-session` sentinel identity. Fix: bypass in `canActivate()` for `apiKeyId === 'browser-session'`. Files: `quota.guard.ts`, `quota.guard.spec.ts`, `ai-execution-guards.integration.spec.ts`. 2 suites, 52 tests PASS; tsc PASS; build PASS; lint PASS. Step 4A smoke remains FAIL. Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md`.
+   - **Step 4B** — commit/push 08A → staging deployment → controlled runtime retry (requires Keith approval).
 
 #### Architecture — AMENDED 2026-08-06 (v4)
 
@@ -49586,7 +49590,7 @@ Registration paths (`AuthService.register`, `findOrCreateGoogleUser`, `findOrCre
 - [x] Checkpoint: `docs/BILLING-READY-08-STEP-2B-CHECKPOINT.md`
 - [x] No existing source file modified; no migration executed; no database, runtime, environment, provider, or Git action
 
-**BILLING-READY-08 status:** ACTIVE — 2026-08-06 — Step 1 COMPLETE — **Step 2a COMPLETE AND LOCKED 2026-08-06** — **Step 2b COMPLETE AND LOCKED 2026-08-06** — **Step 2 COMPLETE** — Step 3 NOT STARTED (requires Keith approval). Root cause: registration creates `users` but not `credit_balances`; historical users also affected. Fix: (1) atomic `DataSource.transaction()` in `AuthService` — COMPLETE; (2) TypeORM migration `1772700000000-BackfillCreditBalancesForExistingUsers.ts` — derives allocation from actual `plan_type`; irreversible no-op `down()` — COMPLETE. `auth.module.ts` NOT modified. FR-04 Step 3c BLOCKED pending BILLING-READY-08 Steps 3 and 4. Next action: Step 3 (requires Keith approval). Checkpoints: `docs/BILLING-READY-08-STEP-2A-CHECKPOINT.md`, `docs/BILLING-READY-08-STEP-2B-CHECKPOINT.md`.
+**BILLING-READY-08 status:** ACTIVE — 2026-08-06 — Step 1 COMPLETE — **Step 2a COMPLETE AND LOCKED 2026-08-06** — **Step 2b COMPLETE AND LOCKED 2026-08-06** — **Step 2 COMPLETE** — **Step 3 COMPLETE AND LOCKED 2026-08-07** — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — Step 4 ACTIVE / pending deployment + controlled retry (requires Keith approval). Root cause: registration creates `users` but not `credit_balances`; historical users also affected. Fix: (1) atomic `DataSource.transaction()` in `AuthService` — COMPLETE; (2) TypeORM migration `1772700000000-BackfillCreditBalancesForExistingUsers.ts` — derives allocation from actual `plan_type`; irreversible no-op `down()` — COMPLETE; (3) staging deployed HEAD `96fe52749df2f9599bf7faa3a5dca5f594fa232b`; `BackfillCreditBalancesForExistingUsers1772700000000` executed; 2 rows inserted; 0 missing post-migration; `GLOBAL_EXECUTION_ENABLED=false` preserved — COMPLETE; (4a) `QuotaGuard` browser-session bypass — `quota.guard.ts`, `quota.guard.spec.ts`, `ai-execution-guards.integration.spec.ts` — 52 tests PASS; tsc + build PASS — COMPLETE — Step 4A smoke remains FAIL. `auth.module.ts` NOT modified. FR-04 Step 3c BLOCKED pending BILLING-READY-08 Step 4B. Next action: commit/push 08A → staging deployment → Step 4B runtime retry (requires Keith approval). Checkpoints: `docs/BILLING-READY-08-STEP-2A-CHECKPOINT.md`, `docs/BILLING-READY-08-STEP-2B-CHECKPOINT.md`, `docs/BILLING-READY-08-STEP-3-CHECKPOINT.md`, `docs/BILLING-READY-08A-CHECKPOINT.md`.
 
 **Reference:** See TASKS.md -> BILLING-READY-08.
 

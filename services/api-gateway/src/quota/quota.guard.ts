@@ -49,6 +49,12 @@ export class QuotaGuard implements CanActivate {
 
     const apiKeyId = identity.apiKeyId;
 
+    // Browser sessions are enforced by modern guards (credit/token/rate-limit),
+    // so skip legacy API-key quota checks/usage accounting for this identity.
+    if (apiKeyId === 'browser-session') {
+      return true;
+    }
+
     // 1. Check request count quota
     if (!this.quotaService.checkRequestQuota(apiKeyId)) {
       throw new HttpException('Quota exceeded', HttpStatus.TOO_MANY_REQUESTS);

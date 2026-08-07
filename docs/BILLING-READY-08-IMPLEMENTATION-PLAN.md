@@ -2,7 +2,7 @@
 
 **Task ID:** BILLING-READY-08
 **Type:** Free-Plan Credit Balance Provisioning
-**Status:** ACTIVE — Step 1 COMPLETE — Step 2a COMPLETE AND LOCKED 2026-08-06 — **Step 2b COMPLETE AND LOCKED 2026-08-06** — **Step 2 COMPLETE** — Step 3 NOT STARTED (requires Keith approval)
+**Status:** ACTIVE — Step 1 COMPLETE — Step 2a COMPLETE AND LOCKED 2026-08-06 — **Step 2b COMPLETE AND LOCKED 2026-08-06** — **Step 2 COMPLETE** — **Step 3 COMPLETE AND LOCKED 2026-08-07** — **Step 4A COMPLETE AND LOCKED 2026-08-07** — Step 4 ACTIVE (pending deployment + controlled retry; requires Keith approval)
 **Author:** Cursor / Opus 4.6
 **Date:** 2026-08-06
 **Amended:** 2026-08-06 — Atomic transaction architecture correction
@@ -551,22 +551,38 @@ Set-Location -Path "C:\Users\knlee\aiSandBox2026B\services\api-gateway"; npm run
 - Checkpoint: `docs/BILLING-READY-08-STEP-2B-CHECKPOINT.md`
 - **Boundary:** source only — migration is not executed until staging deployment (Step 3, requires Keith approval).
 
-### Slice 3 — Staging Deployment + Migration (Step 3)
-- Push to main → pull on VPS → rebuild api-gateway.
-- Run dry-run inventory queries (§4.4) to verify eligible users and identify any unsupported plan types.
-- Execute `npm run migration:run` — this runs both the backfill migration and any other pending migrations.
-- Verify affected-row count matches dry-run inventory.
-- Verify via read-only SELECT that all eligible users now have correct balance rows.
-- Restart PM2. Verify api-gateway health.
-- **Requires:** separate Keith approval.
+### Slice 3 — Staging Deployment + Migration (Step 3) — **COMPLETE AND LOCKED 2026-08-07**
+- Pre-deployment staging HEAD: `df9a9ff582321a1c54e3b3566322ed70da175c19`.
+- Deployed HEAD: `96fe52749df2f9599bf7faa3a5dca5f594fa232b` (matched `origin/main`).
+- Backup: `/opt/aisandbox-backups/billing-ready-08-step3a-20260806T133718Z`.
+- API Gateway build PASS; compiled layout confirmed `dist/src/migrations/1772700000000-BackfillCreditBalancesForExistingUsers.js` present.
+- API Gateway restart PASS; PM2 `aisandbox-api-gateway` online; health HTTP 200.
+- Runtime safety: `GLOBAL_EXECUTION_ENABLED=false` confirmed before and after migration.
+- Dry-run inventory: 2 eligible free-plan users missing balance; 0 already provisioned; 0 unsupported plans; 0 duplicates; 0 orphans. Predicted insert: 2.
+- FR-04 smoke user UUID confirmed in migration scope.
+- Migration executed: `BackfillCreditBalancesForExistingUsers1772700000000`. TypeORM reported successful execution and transaction commit. Post-migration status: `[X] 27`.
+- Post-migration: 2 eligible users have balance; 0 missing. Smoke user: plan=free, balance=500, monthly_allocation=500, status=active, period 2026-08-01–2026-09-01.
+- No inference occurred. No users invited.
+- Checkpoint: `docs/BILLING-READY-08-STEP-3-CHECKPOINT.md`
 - **Boundary:** deployment + data migration only — no AI execution enablement.
 
-### Slice 4 — Runtime Smoke + Consolidation (Step 4)
+### Slice 4A — QuotaGuard Browser-Session Bypass (Step 4A sub-fix) — **COMPLETE AND LOCKED 2026-08-07**
+- Root cause: `QuotaGuard` applied legacy Phase 21B API-key quota to `browser-session` sentinel identity. Browser users were never intended for the legacy quota path — `CreditBalanceGuard` + `TokenQuotaGuard` + `RateLimitGuard` govern browser users.
+- Fix: `QuotaGuard.canActivate()` now checks `apiKeyId === 'browser-session'` and returns `true` early, bypassing all legacy quota checks and usage recording. Genuine API-key behavior unchanged. Guard ordering unchanged.
+- Files changed: `quota.guard.ts`, `quota.guard.spec.ts`, `ai-execution-guards.integration.spec.ts`.
+- Validation: 2 suites, 52 tests PASS; `npx tsc --noEmit` PASS; `npm run build` PASS; lint PASS.
+- Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md`
+- **Boundary:** source only — no runtime, staging, database, provider, or invitation action. Step 4A smoke remains FAIL — one controlled retry required after deployment.
+
+### Slice 4B — Runtime Smoke + Consolidation (Step 4B)
+- Deploy 08A fix to staging (commit/push → pull → rebuild API Gateway).
 - Resume FR-04 Step 3c with `GLOBAL_EXECUTION_ENABLED=true` (requires Keith approval).
-- Controlled xAI execution smoke.
+- Controlled xAI execution smoke (single bounded prompt).
 - Verify HTTP 200 (not 402) on authenticated AI execute.
+- Verify credit deduction recorded.
 - Rollback `GLOBAL_EXECUTION_ENABLED=false` after smoke.
 - Consolidation checkpoint.
+- BILLING-READY-08 marked COMPLETE AND LOCKED after successful smoke.
 
 **Note:** The previous single-user staging SQL insert (Step 3b from prior plan) is superseded by Slice 3. The migration handles all eligible users consistently. If the general migration cannot be safely completed first, the single-user insert may remain as an emergency smoke-only alternative, but the preferred sequence is the migration.
 
@@ -640,4 +656,6 @@ The kill-switch state is operator-reported at registration time. Staging verific
 
 **Step 2 COMPLETE — both 2a and 2b locked.**
 
-**Step 3 — Staging Deployment + Migration — NOT STARTED — requires Keith approval.**
+**Step 3 — Staging Deployment + Migration — COMPLETE AND LOCKED 2026-08-07.** Checkpoint: `docs/BILLING-READY-08-STEP-3-CHECKPOINT.md`. Deployed HEAD `96fe52749df2f9599bf7faa3a5dca5f594fa232b`. Migration `BackfillCreditBalancesForExistingUsers1772700000000` executed; 2 rows inserted; 0 missing post-migration. `GLOBAL_EXECUTION_ENABLED=false` preserved.
+
+**Step 4A — QuotaGuard Browser-Session Bypass — COMPLETE AND LOCKED 2026-08-07.** Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md`. Files changed: `quota.guard.ts`, `quota.guard.spec.ts`, `ai-execution-guards.integration.spec.ts`. 2 suites, 52 tests PASS; tsc PASS; build PASS; lint PASS. Step 4A smoke remains FAIL — blocker resolved in source. Exact next action: commit/push 08A → staging deployment → Step 4B controlled runtime retry (requires Keith approval).

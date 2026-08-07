@@ -506,13 +506,18 @@ Previous designs rejected:
 
 **BILLING-READY-08 Step 2b — COMPLETE AND LOCKED 2026-08-06.** Migration `1772700000000-BackfillCreditBalancesForExistingUsers.ts` created. Backfill migration spec created (8 tests). `npm test -- backfill-credit-balances-migration` PASS; tsc + build PASS. Checkpoint: `docs/BILLING-READY-08-STEP-2B-CHECKPOINT.md`. **Step 2 COMPLETE.**
 
+**BILLING-READY-08 Step 3 — COMPLETE AND LOCKED 2026-08-07.** Deployed HEAD `96fe52749df2f9599bf7faa3a5dca5f594fa232b` (fast-forward from `df9a9ff`). Backup `/opt/aisandbox-backups/billing-ready-08-step3a-20260806T133718Z`. API Gateway build + restart PASS; health HTTP 200. `BackfillCreditBalancesForExistingUsers1772700000000` executed; 2 rows inserted; 0 eligible users missing balance post-migration. FR-04 smoke user (UUID `7f772841-7844-401b-a3da-e928b0c7b79c`) confirmed: plan=free, balance=500, status=active. `GLOBAL_EXECUTION_ENABLED=false` preserved. No inference. No users invited. Checkpoint: `docs/BILLING-READY-08-STEP-3-CHECKPOINT.md`.
+
+**BILLING-READY-08A — COMPLETE AND LOCKED 2026-08-07.** Step 4A sub-fix: `QuotaGuard` browser-session bypass. Root cause: `QuotaGuard` applied legacy Phase 21B API-key quota to `browser-session` sentinel identity, causing execution pipeline failure for browser users after `CreditBalanceGuard` passed. Fix: `QuotaGuard.canActivate()` bypasses all legacy quota checks and usage recording for `apiKeyId === 'browser-session'`. Genuine API-key behavior unchanged. Guard ordering unchanged. Files changed: `quota.guard.ts`, `quota.guard.spec.ts`, `ai-execution-guards.integration.spec.ts`. 2 suites, 52 tests PASS; tsc PASS; build PASS; lint PASS. Step 4A smoke remains FAIL — blocker resolved in source. Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md`.
+
 FR-04 Step 3c remains BLOCKED pending:
 1. ~~BILLING-READY-08 Step 2a (new-user provisioning source + tests)~~ — **COMPLETE AND LOCKED 2026-08-06**
 2. ~~BILLING-READY-08 Step 2b (historical backfill migration + tests)~~ — **COMPLETE AND LOCKED 2026-08-06**
-3. BILLING-READY-08 Step 3 (staging deployment + migration:run) — **NOT STARTED — requires Keith approval**
-4. BILLING-READY-08 Step 4 (runtime smoke with `GLOBAL_EXECUTION_ENABLED=true` + consolidation) — **NOT STARTED — requires Keith approval**
+3. ~~BILLING-READY-08 Step 3 (staging deployment + migration:run)~~ — **COMPLETE AND LOCKED 2026-08-07**
+4. ~~BILLING-READY-08A (QuotaGuard browser-session bypass source + tests)~~ — **COMPLETE AND LOCKED 2026-08-07**
+5. BILLING-READY-08 Step 4B (commit/push 08A → staging deployment → controlled runtime retry + consolidation) — **ACTIVE — pending deployment + controlled retry; requires Keith approval**
 
-`GLOBAL_EXECUTION_ENABLED` must remain `false` until BILLING-READY-08 implementation, deployment, and migration are all complete.
+`GLOBAL_EXECUTION_ENABLED` must remain `false` until BILLING-READY-08 08A is deployed and Step 4B runtime retry completes.
 
 ---
 
