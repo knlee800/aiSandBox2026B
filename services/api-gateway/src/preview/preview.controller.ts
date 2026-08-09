@@ -29,7 +29,7 @@ export function sanitizeProxyHeaders(
 @UseGuards(SessionCookieGuard, PreviewOwnershipGuard)
 @Controller('preview')
 export class PreviewController {
-  private readonly containerManagerUrl = process.env.CONTAINER_MANAGER_URL || 'http://localhost:4001';
+  private readonly containerManagerUrl = process.env.CONTAINER_MANAGER_URL || 'http://localhost:4002';
 
   @All('*')
   async proxyToContainerManager(
