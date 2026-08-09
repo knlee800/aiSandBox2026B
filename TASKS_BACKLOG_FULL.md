@@ -56363,5 +56363,55 @@ Canonical routes: `/[locale]` → `PublicLandingSlice` (public, always "Build an
 Step 2 scope: add middleware root tests, route-level canary test, staging rebuild with correct env, browser validation of both surfaces.
 
 **PRIVATE-BETA-BLOCKER-01 status:** COMPLETE AND LOCKED — 2026-08-09. Implementation commit: `651f723447a85ec5d22139d6ba60be6680a0f8c6`. All 20/20 acceptance criteria satisfied. Staging HEAD `651f723447a85ec5d22139d6ba60be6680a0f8c6`. All locales PASS. Legacy workspace absent. Build-independence proven. No rollback. Checkpoint: `docs/PRIVATE-BETA-BLOCKER-01-CHECKPOINT.md`.
-**PRIVATE-BETA-INVITE-01 status:** BLOCKED — landing page regression resolved — separate unresolved preview runtime failure remains. Exact next task: PRIVATE-BETA-BLOCKER-02 — Preview Runtime Failure.
-**Preview failure:** Separate unresolved private-beta blocker — not investigated here.
+**PRIVATE-BETA-INVITE-01 status:** UNBLOCKED for registration — landing-page and preview blockers resolved via PRIVATE-BETA-BLOCKER-01 / PRIVATE-BETA-BLOCKER-02. Do not execute invitations without registration and Keith explicit approval.
+**Preview failure:** Resolved by PRIVATE-BETA-BLOCKER-02 — COMPLETE AND LOCKED — 2026-08-09 — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-02-CHECKPOINT.md`.
+
+---
+
+### PRIVATE-BETA-BLOCKER-02: Preview Runtime Failure
+
+**Status:** COMPLETE and LOCKED — 2026-08-09
+**Task ID:** PRIVATE-BETA-BLOCKER-02
+**Family:** PRIVATE-BETA-BLOCKER
+**Risk:** HIGH — blocked PRIVATE-BETA-INVITE-01
+**Workflow:** 4-step HIGH-RISK (registration + investigation → bounded implementation + regression tests → controlled staging deployment + live preview validation → consolidation / lock)
+**Registered:** 2026-08-09
+**Completed:** 2026-08-09
+**Checkpoint:** `docs/PRIVATE-BETA-BLOCKER-02-CHECKPOINT.md`
+
+Root cause: API Gateway `PreviewController` fallback incorrectly defaulted to `http://localhost:4001` (AI Service) instead of `http://localhost:4002` (Container Manager). Staging did not define `CONTAINER_MANAGER_URL`, so preview traffic hit AI Service and returned Nest 404. Not a session/project mismatch, auth/guard defect, or nested-static detection defect.
+
+Bounded fix commit: `f73da07ef8d1acc70d43d6b4980fd1d0d57e2883` — `fix(preview): route preview proxy to container manager`.
+
+Files: `preview.controller.ts` (4001→4002); `.env.example` (`CONTAINER_MANAGER_URL`); new `preview.proxy-target.spec.ts` + `preview.endpoint-contract.spec.ts`.
+
+Local focused validation: 43/43 preview PASS; TypeScript PASS; API Gateway build PASS. Full suite 1927 PASS / 96 FAIL / 6 SKIPPED — 96 FAIL VERIFIED UNRELATED pre-existing debt; does not block this task.
+
+Staging 2026-08-09: FF deploy to `f73da07`; backup `/opt/aisandbox-backups/private-beta-blocker-02`; only API Gateway restarted (216→217); health HTTP 200; public root 307→`/en`; staging `.env` unchanged; AI remained OFF. Live preview PASS — session `eb2bb0d7-7c26-4543-b432-c839f78d7d7d` — proxy HTTP 304 — content visible — Refresh PASS — no wrong-service Nest 404 — no localhost leak.
+
+#### Acceptance Criteria
+
+- [x] Root cause identified as PreviewController wrong default port (4001 → AI Service)
+- [x] PreviewController fallback fixed to Container Manager `localhost:4002`
+- [x] `.env.example` documents `CONTAINER_MANAGER_URL=http://localhost:4002`
+- [x] Proxy-target regression tests added and PASS (3/3)
+- [x] Endpoint-contract tests added and PASS (5/5)
+- [x] Existing preview security/guard tests PASS (35/35)
+- [x] Focused preview total PASS (43/43)
+- [x] TypeScript PASS
+- [x] API Gateway build PASS
+- [x] Controlled staging deploy of expected commits only (`350b789` + `f73da07`)
+- [x] Backup / rollback readiness established
+- [x] Only API Gateway restarted
+- [x] API health HTTP 200
+- [x] Public staging healthy (307 → `/en`)
+- [x] Old wrong-service Nest 404 gone
+- [x] Live authenticated preview renders real content
+- [x] Preview Refresh PASS
+- [x] No localhost URL leak
+- [x] AI execution remained OFF / `GLOBAL_EXECUTION_ENABLED` unchanged
+- [x] Staging `.env` not changed
+- [x] Checkpoint created: `docs/PRIVATE-BETA-BLOCKER-02-CHECKPOINT.md`
+
+**PRIVATE-BETA-BLOCKER-02 status:** COMPLETE AND LOCKED — 2026-08-09. All acceptance criteria satisfied. Staging live preview PASS. Implementation commit: `f73da07ef8d1acc70d43d6b4980fd1d0d57e2883`. Staging HEAD: `f73da07ef8d1acc70d43d6b4980fd1d0d57e2883`. Full-suite 96 FAIL preserved as unrelated pre-existing debt. Checkpoint: `docs/PRIVATE-BETA-BLOCKER-02-CHECKPOINT.md`.
+**PRIVATE-BETA-INVITE-01 status:** UNBLOCKED for registration — preview runtime failure resolved. Do not execute invitations without registration and Keith explicit approval.

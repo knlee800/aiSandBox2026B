@@ -16,7 +16,7 @@ Rules:
 
 If conflicts exist, TASKS_BACKLOG_FULL.md takes precedence.
 
-**Program status:** **BILLING-READY-08 COMPLETE AND LOCKED 2026-08-07** — Controlled xAI smoke PASS — Execution ID `83acc0e9-84de-4f94-9e41-294701e38393` — tokens_used=598 — `smoke-test.txt` created with correct content — persists after refresh — credit deduction applied (500 credits) — overflow 98 ACCEPTED BY DESIGN — balance reached 0 correctly — `GLOBAL_EXECUTION_ENABLED=false` verified in .env and PM2 — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — QuotaGuard browser-session bypass — Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md` — **BILLING-READY-08B COMPLETE AND LOCKED 2026-08-07** — usage_records.created_at schema remediation — Checkpoint: `docs/BILLING-READY-08B-CHECKPOINT.md` — Final checkpoint: `docs/BILLING-READY-08-CHECKPOINT.md` — **PRIVATE-BETA-FUNCTIONAL-READINESS-04 COMPLETE AND LOCKED 2026-08-07** — All acceptance criteria satisfied — FR-04 parent checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-CHECKPOINT.md` — **ADMIN-CONSOLE-01 COMPLETE AND LOCKED 2026-08-08** — All children COMPLETE AND LOCKED — **ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07** — Checkpoint: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md` — **ADMIN-CONSOLE-01B COMPLETE AND LOCKED 2026-08-07** — Authenticated Admin Credit Grant API — Checkpoint: `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md` — **ADMIN-CONSOLE-01C COMPLETE AND LOCKED 2026-08-07** — Admin Console Shell + Users/Sessions — Checkpoint: `docs/ADMIN-CONSOLE-01C-CHECKPOINT.md` — **ADMIN-CONSOLE-01D COMPLETE AND LOCKED 2026-08-07** — Admin Credit Grant UI — Checkpoint: `docs/ADMIN-CONSOLE-01D-CHECKPOINT.md` — **ADMIN-CONSOLE-01E COMPLETE AND LOCKED 2026-08-08** — Staging Operator Validation + Parent Consolidation — PASS WITH NON-BLOCKING LIMITATIONS — Checkpoint: `docs/ADMIN-CONSOLE-01E-CHECKPOINT.md` — **ADMIN-CONSOLE-01E1 COMPLETE AND LOCKED 2026-08-08** — Invalid Locale Redirect Origin Fix — Checkpoint: `docs/ADMIN-CONSOLE-01E1-CHECKPOINT.md` — Parent checkpoint: `docs/ADMIN-CONSOLE-01-CHECKPOINT.md` — **PRIVATE-BETA-INVITE-01 BLOCKED** — private beta blocked by PRIVATE-BETA-BLOCKER-01 (recurring canonical landing page regression) and separate unresolved preview failure — Do not execute invitations until all blockers resolved — **PRIVATE-BETA-BLOCKER-01 COMPLETE AND LOCKED 2026-08-09** — Legacy workspace + feature-flag removal — Build-independence proven — All locales PASS — Commit `651f723447a85ec5d22139d6ba60be6680a0f8c6` — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-01-CHECKPOINT.md` — **PRIVATE-BETA-INVITE-01 BLOCKED** — landing page regression resolved — preview runtime failure unresolved — exact next task: PRIVATE-BETA-BLOCKER-02 — Preview Runtime Failure — GLOBAL_EXECUTION_ENABLED remains false
+**Program status:** **BILLING-READY-08 COMPLETE AND LOCKED 2026-08-07** — Controlled xAI smoke PASS — Execution ID `83acc0e9-84de-4f94-9e41-294701e38393` — tokens_used=598 — `smoke-test.txt` created with correct content — persists after refresh — credit deduction applied (500 credits) — overflow 98 ACCEPTED BY DESIGN — balance reached 0 correctly — `GLOBAL_EXECUTION_ENABLED=false` verified in .env and PM2 — **BILLING-READY-08A COMPLETE AND LOCKED 2026-08-07** — QuotaGuard browser-session bypass — Checkpoint: `docs/BILLING-READY-08A-CHECKPOINT.md` — **BILLING-READY-08B COMPLETE AND LOCKED 2026-08-07** — usage_records.created_at schema remediation — Checkpoint: `docs/BILLING-READY-08B-CHECKPOINT.md` — Final checkpoint: `docs/BILLING-READY-08-CHECKPOINT.md` — **PRIVATE-BETA-FUNCTIONAL-READINESS-04 COMPLETE AND LOCKED 2026-08-07** — All acceptance criteria satisfied — FR-04 parent checkpoint: `docs/PRIVATE-BETA-FUNCTIONAL-READINESS-04-CHECKPOINT.md` — **ADMIN-CONSOLE-01 COMPLETE AND LOCKED 2026-08-08** — All children COMPLETE AND LOCKED — **ADMIN-CONSOLE-01A COMPLETE AND LOCKED 2026-08-07** — Checkpoint: `docs/ADMIN-CONSOLE-01A-CHECKPOINT.md` — **ADMIN-CONSOLE-01B COMPLETE AND LOCKED 2026-08-07** — Authenticated Admin Credit Grant API — Checkpoint: `docs/ADMIN-CONSOLE-01B-CHECKPOINT.md` — **ADMIN-CONSOLE-01C COMPLETE AND LOCKED 2026-08-07** — Admin Console Shell + Users/Sessions — Checkpoint: `docs/ADMIN-CONSOLE-01C-CHECKPOINT.md` — **ADMIN-CONSOLE-01D COMPLETE AND LOCKED 2026-08-07** — Admin Credit Grant UI — Checkpoint: `docs/ADMIN-CONSOLE-01D-CHECKPOINT.md` — **ADMIN-CONSOLE-01E COMPLETE AND LOCKED 2026-08-08** — Staging Operator Validation + Parent Consolidation — PASS WITH NON-BLOCKING LIMITATIONS — Checkpoint: `docs/ADMIN-CONSOLE-01E-CHECKPOINT.md` — **ADMIN-CONSOLE-01E1 COMPLETE AND LOCKED 2026-08-08** — Invalid Locale Redirect Origin Fix — Checkpoint: `docs/ADMIN-CONSOLE-01E1-CHECKPOINT.md` — Parent checkpoint: `docs/ADMIN-CONSOLE-01-CHECKPOINT.md` — **PRIVATE-BETA-INVITE-01 BLOCKED** — private beta blocked by PRIVATE-BETA-BLOCKER-01 (recurring canonical landing page regression) and separate unresolved preview failure — Do not execute invitations until all blockers resolved — **PRIVATE-BETA-BLOCKER-01 COMPLETE AND LOCKED 2026-08-09** — Legacy workspace + feature-flag removal — Build-independence proven — All locales PASS — Commit `651f723447a85ec5d22139d6ba60be6680a0f8c6` — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-01-CHECKPOINT.md` — **PRIVATE-BETA-BLOCKER-02 COMPLETE AND LOCKED 2026-08-09** — Preview Runtime Failure — PreviewController fallback 4001→4002 — staging live preview PASS — Commit `f73da07ef8d1acc70d43d6b4980fd1d0d57e2883` — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-02-CHECKPOINT.md` — **PRIVATE-BETA-INVITE-01 UNBLOCKED** — landing-page and preview blockers resolved — do not execute invitations without registration and Keith explicit approval — GLOBAL_EXECUTION_ENABLED remains false
 
 
 \# TASKS.md ??Master Task Index
@@ -46457,5 +46457,133 @@ Two distinct regression vectors contribute to the recurring problem:
 - Step 4 — Consolidation / lock — COMPLETE — 2026-08-09
 
 **PRIVATE-BETA-BLOCKER-01 status:** COMPLETE AND LOCKED — 2026-08-09. All 20/20 acceptance criteria satisfied. Implementation commit: `651f723447a85ec5d22139d6ba60be6680a0f8c6`. Staging HEAD: `651f723447a85ec5d22139d6ba60be6680a0f8c6`. All locales PASS. Legacy workspace absent. Build-independence proven. No rollback required. Checkpoint: `docs/PRIVATE-BETA-BLOCKER-01-CHECKPOINT.md`.
-**PRIVATE-BETA-INVITE-01 status:** BLOCKED — separate unresolved preview runtime failure remains. Landing page regression resolved. Do not execute invitations until preview blocker resolved.
-**Preview failure:** Separate unresolved private-beta blocker — NOT investigated in PRIVATE-BETA-BLOCKER-01 — exact next task: PRIVATE-BETA-BLOCKER-02 — Preview Runtime Failure.
+**PRIVATE-BETA-INVITE-01 status:** UNBLOCKED for registration — landing-page and preview blockers resolved via PRIVATE-BETA-BLOCKER-01 / PRIVATE-BETA-BLOCKER-02. Do not execute invitations without registration and Keith explicit approval.
+**Preview failure:** Resolved by PRIVATE-BETA-BLOCKER-02 — COMPLETE AND LOCKED — 2026-08-09 — Checkpoint: `docs/PRIVATE-BETA-BLOCKER-02-CHECKPOINT.md`.
+
+---
+
+### PRIVATE-BETA-BLOCKER-02: Preview Runtime Failure
+
+**Status:** COMPLETE and LOCKED — 2026-08-09
+**Task ID:** PRIVATE-BETA-BLOCKER-02
+**Family:** PRIVATE-BETA-BLOCKER
+**Risk:** HIGH — blocked PRIVATE-BETA-INVITE-01 and all user-facing private beta activity
+**Workflow:** 4-step HIGH-RISK (registration + root-cause investigation → bounded implementation + regression tests → controlled staging deployment + live preview/browser validation → consolidation / lock)
+**Model:** Sonnet 4.6 (registration/investigation/consolidation); GPT-5.3 Codex (implementation)
+**Registered:** 2026-08-09
+**Completed:** 2026-08-09
+**Checkpoint:** `docs/PRIVATE-BETA-BLOCKER-02-CHECKPOINT.md`
+
+**Blocking context:**
+
+Preview did not work on staging. Recorded in FR-02, FR-03, FR-03A as unresolved finding. Keith independently confirmed on 2026-08-09. Blocked PRIVATE-BETA-INVITE-01 until resolved.
+
+**Recorded symptom:**
+
+```
+GET /api/preview/<session-id>/status → HTTP 404
+```
+
+**Root cause (confirmed by source investigation):**
+
+The API Gateway's `PreviewController` at `services/api-gateway/src/preview/preview.controller.ts` had an incorrect default port:
+
+```typescript
+private readonly containerManagerUrl = process.env.CONTAINER_MANAGER_URL || 'http://localhost:4001';
+```
+
+Port 4001 is the AI Service. The container-manager listens on port 4002. Other API Gateway clients (`ContainerManagerHttpClient`, `AdminService`) correctly default to port 4002. The `PreviewController` had this wrong default since the initial commit (`acc6bdd`, PHASE-32A-CHECKPOINT, 2026-02-10).
+
+On staging (PM2 deployment at `/opt/aisandbox`), `CONTAINER_MANAGER_URL` was NOT set in the `.env` file. The PM2 start commands only override `PORT` per process. Therefore the preview controller fell back to the wrong default, routing all preview requests to the AI Service which has no `/api/preview/*` routes → HTTP 404.
+
+**Why it was not caught earlier:**
+
+- PREV-01-02 validation used `docker compose -f docker-compose.prod.yml` where `CONTAINER_MANAGER_URL: http://container-manager:4002` IS explicitly set → validation passed
+- Other container-manager calls (`ContainerManagerHttpClient`) use the correct default port 4002 → non-preview functionality works
+- No prior test verified the PreviewController's proxy target URL
+- No prior contract test asserted frontend and backend agree on the preview endpoint chain
+
+**Causal chain (pre-fix):**
+
+1. Frontend (`frontend/app/[locale]/app/page.tsx`) calls `GET /api/preview/${sessionId}/status`
+2. Next.js rewrite or Caddy forwards to API Gateway at port 4000
+3. API Gateway `PreviewController` (`@Controller('preview')`, `@All('*')`) matches
+4. Guards pass (`SessionCookieGuard` + `PreviewOwnershipGuard`)
+5. Handler constructs proxy URL: `http://localhost:4001/api/preview/${sessionId}/status`
+6. Request reaches AI Service (port 4001) which has no preview routes
+7. AI Service NestJS returns 404
+8. API Gateway forwards 404 to frontend
+9. Frontend sets `previewState = 'error'`
+
+**Session/project identity:** NOT a contributing factor. Frontend correctly passes `sessionId` (database UUID). Backend expects `sessionId`. No project-first migration drift.
+
+**Nested static HTML / framework detection:** NOT a contributing factor. PREV-02-02 fix (requires `/workspace/index.html`) is preserved. `PreviewStrategyResolver` handles subdirectories correctly. No regression evidence.
+
+**Number of independent defects:** ONE. The wrong default port was the sole root cause.
+
+**Implementation commit:** `f73da07ef8d1acc70d43d6b4980fd1d0d57e2883` — `fix(preview): route preview proxy to container manager`
+
+**Files changed:**
+
+1. `services/api-gateway/src/preview/preview.controller.ts` — default port `'http://localhost:4001'` → `'http://localhost:4002'`
+2. `services/api-gateway/.env.example` — added `CONTAINER_MANAGER_URL=http://localhost:4002`
+3. `services/api-gateway/src/preview/__tests__/preview.proxy-target.spec.ts` — NEW
+4. `services/api-gateway/src/preview/__tests__/preview.endpoint-contract.spec.ts` — NEW
+
+**Local focused validation:**
+
+- New proxy-target tests: 3/3 PASS
+- New endpoint-contract tests: 5/5 PASS
+- Existing preview security/guard tests: 35/35 PASS
+- Focused preview total: 43/43 PASS
+- TypeScript: PASS
+- API Gateway build: PASS
+
+**Full-suite note (out of scope):** Full API Gateway suite had 1927 PASS / 96 FAIL / 6 SKIPPED. Differential validation established the 96 failures are VERIFIED UNRELATED pre-existing DI/bootstrap/Redis/infrastructure/test-harness debt. No failing suite imported or depended on PreviewController or `CONTAINER_MANAGER_URL`. Explicitly does not block this task.
+
+**Staging deployment evidence — 2026-08-09:**
+
+- Pre-deploy HEAD `651f723447a85ec5d22139d6ba60be6680a0f8c6` → final HEAD `f73da07ef8d1acc70d43d6b4980fd1d0d57e2883`
+- Fast-forward only; intervening commits `350b789` (docs) + `f73da07` (fix)
+- Backup: `/opt/aisandbox-backups/private-beta-blocker-02` (+ dist-backup)
+- Staging `.env` NOT changed; source default used
+- Only `aisandbox-api-gateway` restarted (216 → 217); other PM2 counts unchanged; all online
+- Health: API Gateway `/api/health` HTTP 200; public staging root HTTP 307 → `/en`
+- Live authenticated preview PASS — session `eb2bb0d7-7c26-4543-b432-c839f78d7d7d` — proxy HTTP 304 — content visible — Refresh Preview PASS — no wrong-service Nest 404 — no localhost leak — AI remained OFF
+
+**Step completion:**
+
+- Step 1 — Registration + root-cause investigation — COMPLETE — 2026-08-09
+- Step 2 — Bounded implementation + regression tests — COMPLETE — 2026-08-09
+- Step 2C — Differential full-suite verification — COMPLETE — 96 FAIL VERIFIED UNRELATED — 2026-08-09
+- Step 3 — Controlled staging deployment + live preview/browser validation — COMPLETE — PASS — 2026-08-09
+- Step 4 — Consolidation / lock — COMPLETE — 2026-08-09
+
+#### Acceptance Criteria
+
+- [x] Root cause identified as PreviewController wrong default port (4001 → AI Service)
+- [x] PreviewController fallback fixed to Container Manager `localhost:4002`
+- [x] `.env.example` documents `CONTAINER_MANAGER_URL=http://localhost:4002`
+- [x] Proxy-target regression tests added and PASS (3/3)
+- [x] Endpoint-contract tests added and PASS (5/5)
+- [x] Existing preview security/guard tests PASS (35/35)
+- [x] Focused preview total PASS (43/43)
+- [x] TypeScript PASS
+- [x] API Gateway build PASS
+- [x] Controlled staging deploy of expected commits only (`350b789` + `f73da07`)
+- [x] Backup / rollback readiness established
+- [x] Only API Gateway restarted
+- [x] API health HTTP 200
+- [x] Public staging healthy (307 → `/en`)
+- [x] Old wrong-service Nest 404 gone
+- [x] Live authenticated preview renders real content
+- [x] Preview Refresh PASS
+- [x] No localhost URL leak
+- [x] AI execution remained OFF / `GLOBAL_EXECUTION_ENABLED` unchanged
+- [x] Staging `.env` not changed
+- [x] Checkpoint created: `docs/PRIVATE-BETA-BLOCKER-02-CHECKPOINT.md`
+
+**Risk level:** LOW — single-line default-port fix + env example addition + new regression tests. No architectural change. No auth/security change. No migration. No dependency addition.
+
+**PRIVATE-BETA-BLOCKER-02 status:** COMPLETE AND LOCKED — 2026-08-09. All acceptance criteria satisfied. Staging live preview PASS. Implementation commit: `f73da07ef8d1acc70d43d6b4980fd1d0d57e2883`. Staging HEAD: `f73da07ef8d1acc70d43d6b4980fd1d0d57e2883`. Full-suite 96 FAIL preserved as unrelated pre-existing debt. Checkpoint: `docs/PRIVATE-BETA-BLOCKER-02-CHECKPOINT.md`.
+**PRIVATE-BETA-INVITE-01 status:** UNBLOCKED for registration — preview runtime failure resolved. Do not execute invitations without registration and Keith explicit approval.
